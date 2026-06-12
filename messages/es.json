@@ -1,0 +1,128 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "allCalculators": "Todos los calculadores",
+    "categories": "Categorías",
+    "suggest": "Sugerir",
+    "about": "Sobre nosotros",
+    "contact": "Contacto",
+    "privacy": "Privacidad",
+    "terms": "Términos"
+  },
+  "home": {
+    "eyebrow": "Herramientas cotidianas",
+    "headline": "Daily Calculations: herramientas para decisiones cotidianas.",
+    "description": "Explore calculadoras de hipotecas, impuestos, salud, conversión y automóviles con valores predeterminados claros, diseño accesible y resultados instantáneos.",
+    "featuredEyebrow": "Calculadoras destacadas",
+    "featuredHeadline": "Herramientas de inicio rápido"
+  },
+  "search": {
+    "label": "Buscar calculadoras",
+    "placeholder": "Hipoteca, IMC, millas, impuesto sobre ventas..."
+  },
+  "calculators": {
+    "eyebrow": "Todas las calculadoras",
+    "headline": "Explorar herramientas por categoría",
+    "description": "Encuentre calculadoras de finanzas, salud, medidas e impuestos diseñadas para uso diario."
+  },
+  "categories": {
+    "eyebrow": "Directorio de categorías",
+    "headline": "Explorar categorías de calculadoras",
+    "description": "Elija una categoría para ver herramientas enfocadas en finanzas, salud, medidas, impuestos, automóviles, hogar y tiempo."
+  },
+  "calculator": {
+    "howToUse": "Cómo usar esta calculadora",
+    "howToUseDesc1": "Ingrese los valores para cada campo y la calculadora se actualizará al instante. Use las unidades mostradas para cada herramienta.",
+    "howToUseDesc2": "Esta página se genera estáticamente para rendimiento y SEO, con marcado FAQ estructurado."
+  },
+  "suggestions": {
+    "headline": "Sugerir una mejora",
+    "description": "Damos la bienvenida a ideas y mejoras — comparta solicitudes de funciones, informes de errores o mejoras a continuación.",
+    "nameLabel": "Nombre (opcional)",
+    "emailLabel": "Correo electrónico (opcional)",
+    "suggestionLabel": "Sugerencia",
+    "submit": "Crear problema de GitHub",
+    "submitting": "Enviando…",
+    "successMessage": "Gracias — se ha abierto o creado exitosamente un problema de GitHub prellenado.",
+    "viewIssue": "Ver problema:",
+    "orOpenManually": "O abrir un problema de GitHub manualmente",
+    "errorMessage": "Proporcione una sugerencia más detallada (al menos 5 caracteres)."
+  },
+  "footer": {
+    "tagline": "Daily Calculations: herramientas para decisiones cotidianas.",
+    "suggestLink": "Sugerir una mejora",
+    "about": "Sobre nosotros",
+    "contact": "Contacto",
+    "privacy": "Privacidad",
+    "terms": "Términos"
+  },
+  "common": {
+    "tools": "{count} herramientas"
+  },
+  "about": {
+    "eyebrow": "Sobre nosotros",
+    "title": "Sobre Daily Calculations",
+    "metaDescription": "Conozca Daily Calculations — calculadoras en línea gratuitas y rápidas para hipotecas, IMC, préstamos, promedio y decisiones cotidianas.",
+    "intro": "Daily Calculations es una colección gratuita de calculadoras en línea para decisiones cotidianas — sin cuenta requerida, sin anuncios rastreadores, solo resultados rápidos y precisos.",
+    "missionTitle": "Nuestra misión",
+    "missionBody": "Creemos que las herramientas útiles deben ser accesibles para todos. Nuestro objetivo es hacer que las matemáticas detrás de las decisiones cotidianas — hipotecas, presupuestos, métricas de salud, conversiones de unidades — sean simples e instantáneas.",
+    "whatWeOfferTitle": "Lo que ofrecemos",
+    "whatWeOfferBody": "Más de 40 calculadoras en finanzas, salud, medidas, impuestos, automóviles y educación. Cada herramienta está diseñada para darle resultados claros e instantáneos sin registro y sin desorden.",
+    "whyFreeTitle": "Por qué es gratis",
+    "whyFreeBody": "Daily Calculations está respaldado por publicidad mínima y no intrusiva. Nunca requeriremos una cuenta ni venderemos sus datos personales para usar cualquier calculadora en este sitio.",
+    "accuracyTitle": "Una nota sobre la precisión",
+    "accuracyBody": "Nuestras calculadoras proporcionan estimaciones basadas en los datos que ingresa. Los resultados no son asesoramiento financiero, médico, fiscal o legal. Para decisiones importantes, revise los resultados con un profesional calificado.",
+    "contactTitle": "Ponerse en contacto",
+    "contactBody": "¿Tiene una pregunta, encontró un error o desea sugerir una nueva calculadora? Visite nuestra página de Contacto — leemos cada mensaje."
+  },
+  "privacyPolicy": {
+    "title": "Política de privacidad",
+    "metaDescription": "Lea la política de privacidad de Daily Calculations — qué datos recopilamos, cómo los usamos y sus derechos.",
+    "lastUpdated": "Última actualización: junio de 2025",
+    "section1Title": "Información que recopilamos",
+    "section1Body": "Daily Calculations no requiere que cree una cuenta. No recopilamos su nombre, dirección de correo electrónico ni ninguna información de identificación personal a menos que la envíe voluntariamente a través del formulario de sugerencias. Las entradas de la calculadora se procesan completamente en su navegador y nunca se envían a nuestros servidores.",
+    "section2Title": "Datos de uso y análisis",
+    "section2Body": "Utilizamos análisis que respetan la privacidad para comprender qué calculadoras son más útiles. Estos datos son agregados y anonimizados — no se pueden usar para identificarle personalmente.",
+    "section3Title": "Cookies",
+    "section3Body": "Usamos una sola cookie para recordar su tema de color preferido (modo claro u oscuro). Daily Calculations no establece cookies de seguimiento ni publicitarias.",
+    "section4Title": "Servicios de terceros",
+    "section4Body": "Podemos utilizar servicios de terceros como proveedores de análisis. Estos servicios tienen sus propias políticas de privacidad y pueden establecer sus propias cookies.",
+    "section5Title": "Retención de datos",
+    "section5Body": "Dado que recopilamos datos mínimos, hay poco que retener. La preferencia de tema se almacena en el almacenamiento local de su navegador y se puede borrar en cualquier momento.",
+    "section6Title": "Sus derechos",
+    "section6Body": "Tiene derecho a acceder, corregir o solicitar la eliminación de cualquier dato personal que tengamos sobre usted. Si tiene alguna preocupación, contáctenos.",
+    "contactTitle": "Contacto",
+    "contactBody": "¿Preguntas sobre esta política de privacidad? Abra un problema en nuestro repositorio de GitHub o use el formulario de sugerencias."
+  },
+  "terms": {
+    "title": "Términos y condiciones",
+    "metaDescription": "Lea los términos y condiciones de Daily Calculations — las reglas que rigen el uso de nuestras calculadoras en línea gratuitas.",
+    "lastUpdated": "Última actualización: junio de 2025",
+    "section1Title": "Aceptación de términos",
+    "section1Body": "Al usar Daily Calculations acepta estos términos. Si no está de acuerdo, no use el sitio. Podemos actualizar estos términos de vez en cuando.",
+    "section2Title": "Uso del servicio",
+    "section2Body": "Daily Calculations proporciona calculadoras en línea gratuitas con fines informativos y educativos. Puede usar el sitio para fines personales y no comerciales.",
+    "section3Title": "Sin garantías",
+    "section3Body": "Daily Calculations se proporciona 'tal cual' sin garantías de ningún tipo. Los resultados de las calculadoras son solo estimaciones y pueden no reflejar su situación específica.",
+    "section4Title": "Limitación de responsabilidad",
+    "section4Body": "Daily Calculations y sus operadores no son responsables de daños indirectos, incidentales o consecuentes derivados del uso del sitio. Los resultados no son asesoramiento financiero, médico, legal ni fiscal.",
+    "section5Title": "Propiedad intelectual",
+    "section5Body": "Todo el contenido de Daily Calculations es propiedad de o está licenciado por nuestro sitio. No puede reproducir nuestro contenido sin permiso previo por escrito.",
+    "section6Title": "Cambios en estos términos",
+    "section6Body": "Nos reservamos el derecho de modificar estos términos en cualquier momento. La fecha de la última actualización se indicará en la parte superior de esta página.",
+    "contactTitle": "Contacto",
+    "contactBody": "¿Preguntas sobre estos términos? Abra un problema en nuestro repositorio de GitHub o use el formulario de sugerencias."
+  },
+  "contact": {
+    "eyebrow": "Ponerse en contacto",
+    "title": "Contáctenos",
+    "metaDescription": "Contacte a Daily Calculations — reporte un error, sugiera una nueva calculadora o haga una pregunta.",
+    "intro": "Nos encantaría saber de usted. Ya sea que haya encontrado un error, quiera sugerir una nueva calculadora o tenga una pregunta — así puede comunicarse con nosotros.",
+    "githubTitle": "Reportar un error o solicitar una función",
+    "githubBody": "La mejor manera de contactarnos es a través de GitHub Issues. Abra un problema para reportar un error, solicitar una nueva calculadora o hacer una pregunta técnica.",
+    "githubCta": "Abrir un problema de GitHub",
+    "suggestTitle": "Sugerir una mejora",
+    "suggestBody": "Use nuestro formulario de sugerencias integrado para enviar ideas directamente desde el sitio. No se requiere cuenta de GitHub.",
+    "suggestCta": "Ir a sugerencias"
+  }
+}

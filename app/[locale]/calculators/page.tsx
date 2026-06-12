@@ -1,0 +1,51 @@
+import { getTranslations } from 'next-intl/server';
+import { setRequestLocale } from 'next-intl/server';
+import { calculators, categories } from '@/data/calculators';
+import CalculatorCard from '@/components/CalculatorCard';
+import CategoryCard from '@/components/CategoryCard';
+import { routing } from '@/i18n/routing';
+
+export const dynamic = 'force-static';
+
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
+
+export default async function CalculatorsPage({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: 'calculators' });
+  const tCommon = await getTranslations({ locale, namespace: 'common' });
+  return (
+    <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="space-y-6">
+        <div className="rounded-3xl border border-slate-200 bg-white/90 p-8 shadow-panel dark:border-slate-700 dark:bg-slate-950/80">
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-brand-700 dark:text-brand-300">{t('eyebrow')}</p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white">{t('headline')}</h1>
+          <p className="mt-4 text-slate-600 dark:text-slate-300">{t('description')}</p>
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-2">
+          {categories.map((category) => (
+            <CategoryCard
+              key={category.id}
+              category={category}
+              count={calculators.filter((item) => item.category === category.id).length}
+              toolsLabel={tCommon('tools', { count: calculators.filter((item) => item.category === category.id).length })}
+            />
+          ))}
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {calculators.map((calculator) => (
+            <CalculatorCard key={calculator.id} calculator={calculator} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

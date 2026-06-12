@@ -1,0 +1,128 @@
+{
+  "nav": {
+    "home": "Startseite",
+    "allCalculators": "Alle Rechner",
+    "categories": "Kategorien",
+    "suggest": "Vorschlagen",
+    "about": "Über uns",
+    "contact": "Kontakt",
+    "privacy": "Datenschutz",
+    "terms": "Bedingungen"
+  },
+  "home": {
+    "eyebrow": "Alltagswerkzeuge",
+    "headline": "Daily Calculations: Werkzeuge für tägliche Entscheidungen.",
+    "description": "Erkunden Sie Hypotheken-, Steuer-, Gesundheits- und Umrechnungsrechner mit klaren Voreinstellungen, zugänglichem Design und sofortigen Ergebnissen.",
+    "featuredEyebrow": "Ausgewählte Rechner",
+    "featuredHeadline": "Schnellstart-Tools"
+  },
+  "search": {
+    "label": "Rechner suchen",
+    "placeholder": "Hypothek, BMI, Meilen, Umsatzsteuer..."
+  },
+  "calculators": {
+    "eyebrow": "Alle Rechner",
+    "headline": "Werkzeuge nach Kategorie durchsuchen",
+    "description": "Finden Sie Finanz-, Gesundheits-, Maß- und Steuerrechner für den täglichen Gebrauch."
+  },
+  "categories": {
+    "eyebrow": "Kategorieverzeichnis",
+    "headline": "Rechnerkategorien durchsuchen",
+    "description": "Wählen Sie eine Kategorie, um fokussierte Tools für Finanzen, Gesundheit, Maße, Steuern, Auto, Heim und Zeit zu sehen."
+  },
+  "calculator": {
+    "howToUse": "So verwenden Sie diesen Rechner",
+    "howToUseDesc1": "Geben Sie die Werte für jedes Feld ein und der Rechner aktualisiert sich sofort. Verwenden Sie die angezeigten Einheiten für jedes Tool.",
+    "howToUseDesc2": "Diese Seite wird statisch generiert für Performance und SEO, mit strukturierten FAQ-Markierungen."
+  },
+  "suggestions": {
+    "headline": "Verbesserung vorschlagen",
+    "description": "Wir freuen uns über Ideen und Verbesserungen — teilen Sie Feature-Anfragen, Fehlerberichte oder Verbesserungen unten mit.",
+    "nameLabel": "Name (optional)",
+    "emailLabel": "E-Mail (optional)",
+    "suggestionLabel": "Vorschlag",
+    "submit": "GitHub-Issue erstellen",
+    "submitting": "Wird eingereicht…",
+    "successMessage": "Danke — ein vorausgefülltes GitHub-Issue wurde erfolgreich geöffnet oder erstellt.",
+    "viewIssue": "Issue anzeigen:",
+    "orOpenManually": "Oder ein GitHub-Issue manuell öffnen",
+    "errorMessage": "Bitte geben Sie einen detaillierteren Vorschlag an (mindestens 5 Zeichen)."
+  },
+  "footer": {
+    "tagline": "Daily Calculations: Werkzeuge für tägliche Entscheidungen.",
+    "suggestLink": "Verbesserung vorschlagen",
+    "about": "Über uns",
+    "contact": "Kontakt",
+    "privacy": "Datenschutz",
+    "terms": "Nutzungsbedingungen"
+  },
+  "common": {
+    "tools": "{count} Tools"
+  },
+  "about": {
+    "eyebrow": "Über uns",
+    "title": "Über Daily Calculations",
+    "metaDescription": "Erfahren Sie mehr über Daily Calculations — kostenlose, schnelle Online-Rechner für Hypotheken, BMI, Darlehen, Notendurchschnitt und Alltagsentscheidungen.",
+    "intro": "Daily Calculations ist eine kostenlose Sammlung von Online-Rechnern für alltägliche Entscheidungen — kein Konto erforderlich, keine verfolgenden Anzeigen, nur schnelle und genaue Ergebnisse.",
+    "missionTitle": "Unsere Mission",
+    "missionBody": "Wir glauben, dass nützliche Werkzeuge für jeden zugänglich sein sollten. Unser Ziel ist es, die Mathematik hinter alltäglichen Entscheidungen — Hypotheken, Budgets, Gesundheitsmetriken, Einheitenumrechnungen — einfach und sofort zu machen.",
+    "whatWeOfferTitle": "Was wir anbieten",
+    "whatWeOfferBody": "Über 40 Rechner in den Bereichen Finanzen, Gesundheit, Maße, Steuern, Auto und Bildung. Jedes Tool ist darauf ausgelegt, Ihnen klare, sofortige Ergebnisse ohne Anmeldung und ohne Unordnung zu liefern.",
+    "whyFreeTitle": "Warum es kostenlos ist",
+    "whyFreeBody": "Daily Calculations wird durch minimale, nicht aufdringliche Werbung unterstützt. Wir werden niemals ein Konto erfordern oder Ihre persönlichen Daten verkaufen, um einen Rechner auf dieser Website zu nutzen.",
+    "accuracyTitle": "Ein Hinweis zur Genauigkeit",
+    "accuracyBody": "Unsere Rechner liefern Schätzungen basierend auf den von Ihnen angegebenen Eingaben. Ergebnisse sind keine Finanz-, Medizin-, Steuer- oder Rechtsberatung. Für wichtige Entscheidungen überprüfen Sie die Ergebnisse bitte mit einem qualifizierten Fachmann.",
+    "contactTitle": "Kontakt aufnehmen",
+    "contactBody": "Haben Sie eine Frage, einen Fehler gefunden oder möchten Sie einen neuen Rechner vorschlagen? Besuchen Sie unsere Kontaktseite — wir lesen jede Nachricht."
+  },
+  "privacyPolicy": {
+    "title": "Datenschutzrichtlinie",
+    "metaDescription": "Lesen Sie die Datenschutzrichtlinie von Daily Calculations — welche Daten wir erheben, wie wir sie verwenden und Ihre Rechte.",
+    "lastUpdated": "Zuletzt aktualisiert: Juni 2025",
+    "section1Title": "Informationen, die wir erheben",
+    "section1Body": "Daily Calculations erfordert keine Kontoerstellung. Wir erfassen keine Namen, E-Mail-Adressen oder personenbezogene Daten, es sei denn, Sie übermitteln diese freiwillig über das Vorschlagsformular. Rechnereingaben werden vollständig in Ihrem Browser verarbeitet und nie an unsere Server gesendet.",
+    "section2Title": "Nutzungsdaten und Analysen",
+    "section2Body": "Wir verwenden datenschutzfreundliche Analysen, um zu verstehen, welche Rechner am nützlichsten sind. Diese Daten sind aggregiert und anonymisiert — sie können nicht zur Identifikation Ihrer Person verwendet werden.",
+    "section3Title": "Cookies",
+    "section3Body": "Wir verwenden ein einziges Cookie, um Ihre bevorzugte Farbgebung (Hell- oder Dunkelmodus) zu speichern. Von Daily Calculations selbst werden keine Tracking- oder Werbe-Cookies gesetzt.",
+    "section4Title": "Drittanbieterdienste",
+    "section4Body": "Wir können Drittanbieterdienste wie Analyseanbieter nutzen. Diese Dienste haben eigene Datenschutzrichtlinien und können eigene Cookies setzen.",
+    "section5Title": "Datenspeicherung",
+    "section5Body": "Da wir minimale Daten erfassen, gibt es wenig zu speichern. Die Theme-Einstellung wird im lokalen Speicher Ihres Browsers gespeichert und kann jederzeit durch Löschen der Browserdaten entfernt werden.",
+    "section6Title": "Ihre Rechte",
+    "section6Body": "Sie haben das Recht, auf personenbezogene Daten zuzugreifen, sie zu korrigieren oder deren Löschung zu beantragen. Da wir kaum persönliche Daten erfassen, ist dieses Recht selten anwendbar — bei Bedenken kontaktieren Sie uns bitte.",
+    "contactTitle": "Kontakt",
+    "contactBody": "Bei Fragen zu dieser Datenschutzrichtlinie öffnen Sie bitte ein Issue in unserem GitHub-Repository oder nutzen Sie das Vorschlagsformular."
+  },
+  "terms": {
+    "title": "Nutzungsbedingungen",
+    "metaDescription": "Lesen Sie die Nutzungsbedingungen von Daily Calculations — die Regeln für die Nutzung unserer kostenlosen Online-Rechner.",
+    "lastUpdated": "Zuletzt aktualisiert: Juni 2025",
+    "section1Title": "Annahme der Bedingungen",
+    "section1Body": "Durch die Nutzung von Daily Calculations stimmen Sie diesen Bedingungen zu. Wenn Sie nicht zustimmen, nutzen Sie die Website bitte nicht. Wir können diese Bedingungen von Zeit zu Zeit aktualisieren.",
+    "section2Title": "Nutzung des Dienstes",
+    "section2Body": "Daily Calculations stellt kostenlose Online-Rechner zu informativen und bildungsbezogenen Zwecken bereit. Sie dürfen die Website für persönliche, nicht-kommerzielle Zwecke nutzen.",
+    "section3Title": "Keine Gewährleistungen",
+    "section3Body": "Daily Calculations wird 'wie besehen' ohne jegliche Gewährleistungen bereitgestellt. Rechnerergebnisse sind nur Schätzungen und entsprechen möglicherweise nicht Ihrer spezifischen Situation.",
+    "section4Title": "Haftungsbeschränkung",
+    "section4Body": "Daily Calculations und seine Betreiber haften nicht für indirekte, zufällige oder Folgeschäden aus der Nutzung der Website. Rechnerergebnisse sind keine Finanz-, Medizin-, Rechts- oder Steuerberatung.",
+    "section5Title": "Geistiges Eigentum",
+    "section5Body": "Alle Inhalte auf Daily Calculations — einschließlich Rechnerlogik, Texte und Design — sind Eigentum unserer Website. Sie dürfen unsere Inhalte ohne vorherige schriftliche Genehmigung nicht reproduzieren.",
+    "section6Title": "Änderungen dieser Bedingungen",
+    "section6Body": "Wir behalten uns das Recht vor, diese Bedingungen jederzeit zu ändern. Das Datum der letzten Aktualisierung wird oben auf dieser Seite angezeigt.",
+    "contactTitle": "Kontakt",
+    "contactBody": "Fragen zu diesen Bedingungen? Öffnen Sie ein Issue in unserem GitHub-Repository oder nutzen Sie das Vorschlagsformular."
+  },
+  "contact": {
+    "eyebrow": "Kontakt aufnehmen",
+    "title": "Kontakt",
+    "metaDescription": "Kontaktieren Sie Daily Calculations — melden Sie einen Fehler, schlagen Sie einen neuen Rechner vor oder stellen Sie eine Frage.",
+    "intro": "Wir freuen uns von Ihnen zu hören. Ob Sie einen Fehler gefunden haben, einen neuen Rechner vorschlagen möchten oder eine Frage haben — so erreichen Sie uns.",
+    "githubTitle": "Einen Fehler melden oder eine Funktion anfragen",
+    "githubBody": "Der beste Weg, uns zu erreichen, ist über GitHub Issues. Öffnen Sie ein Issue, um einen Fehler zu melden, einen neuen Rechner anzufragen oder eine technische Frage zu stellen.",
+    "githubCta": "GitHub-Issue öffnen",
+    "suggestTitle": "Eine Verbesserung vorschlagen",
+    "suggestBody": "Nutzen Sie unser eingebautes Vorschlagsformular, um Ideen direkt von der Website einzureichen. Kein GitHub-Konto erforderlich.",
+    "suggestCta": "Zu Vorschlägen"
+  }
+}

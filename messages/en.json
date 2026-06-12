@@ -1,0 +1,128 @@
+{
+  "nav": {
+    "home": "Home",
+    "allCalculators": "All calculators",
+    "categories": "Categories",
+    "suggest": "Suggest",
+    "about": "About",
+    "contact": "Contact",
+    "privacy": "Privacy",
+    "terms": "Terms"
+  },
+  "home": {
+    "eyebrow": "Free online calculators",
+    "headline": "Calculator for Mortgage, BMI, Loan, GPA & More",
+    "description": "Free, fast online calculators for mortgage, BMI, loan, GPA, compound interest, auto loan, calorie, paycheck, age, investment, TDEE, and more. No signup needed — instant results.",
+    "featuredEyebrow": "Most-used calculators",
+    "featuredHeadline": "Popular calculators"
+  },
+  "search": {
+    "label": "Search calculators",
+    "placeholder": "Mortgage, BMI, miles, sales tax..."
+  },
+  "calculators": {
+    "eyebrow": "All calculators",
+    "headline": "Browse tools by category",
+    "description": "Find finance, health, measurement, and tax calculators designed for everyday use."
+  },
+  "categories": {
+    "eyebrow": "Category directory",
+    "headline": "Browse calculator categories",
+    "description": "Choose a category to view focused tools for finance, health, measurements, taxes, auto, home, and time."
+  },
+  "calculator": {
+    "howToUse": "How to use this calculator",
+    "howToUseDesc1": "Enter the values for each field and the calculator will update instantly. Use the units shown for each tool.",
+    "howToUseDesc2": "This page is statically generated for performance and SEO, with structured FAQ markup to help search engines understand the tool."
+  },
+  "suggestions": {
+    "headline": "Suggest an enhancement",
+    "description": "We welcome ideas and improvements — share feature requests, bug reports, or enhancements below.",
+    "nameLabel": "Name (optional)",
+    "emailLabel": "Email (optional)",
+    "suggestionLabel": "Suggestion",
+    "submit": "Create GitHub issue",
+    "submitting": "Submitting…",
+    "successMessage": "Thanks — a prefilled GitHub issue has been opened or created successfully.",
+    "viewIssue": "View issue:",
+    "orOpenManually": "Or open a GitHub issue manually",
+    "errorMessage": "Please provide a more detailed suggestion (at least 5 characters)."
+  },
+  "footer": {
+    "tagline": "Daily Calculations: tools for everyday decisions.",
+    "suggestLink": "Suggest an enhancement",
+    "about": "About",
+    "contact": "Contact",
+    "privacy": "Privacy Policy",
+    "terms": "Terms"
+  },
+  "common": {
+    "tools": "{count} tools"
+  },
+  "about": {
+    "eyebrow": "About us",
+    "title": "About Daily Calculations",
+    "metaDescription": "Learn about Daily Calculations — free, fast, no-signup online calculators for mortgage, BMI, loan, GPA, and everyday decisions.",
+    "intro": "Daily Calculations is a free collection of online calculators built for everyday decisions — no account required, no ads tracking you, just fast and accurate results.",
+    "missionTitle": "Our mission",
+    "missionBody": "We believe useful tools should be accessible to everyone. Our goal is to make the math behind everyday decisions — mortgages, budgets, health metrics, unit conversions — simple and instant.",
+    "whatWeOfferTitle": "What we offer",
+    "whatWeOfferBody": "Over 40 calculators across finance, health, measurements, taxes, auto, and education. Each tool is designed to give you clear, instant results with no signup and no clutter.",
+    "whyFreeTitle": "Why it's free",
+    "whyFreeBody": "Daily Calculations is supported by minimal, non-intrusive advertising. We will never require an account or sell your personal data to use any calculator on this site.",
+    "accuracyTitle": "A note on accuracy",
+    "accuracyBody": "Our calculators provide estimates based on the inputs you provide. Results are not financial, medical, tax, or legal advice. For important decisions, please review results with a qualified professional.",
+    "contactTitle": "Get in touch",
+    "contactBody": "Have a question, found a bug, or want to suggest a new calculator? Head to our Contact page — we read every message."
+  },
+  "privacyPolicy": {
+    "title": "Privacy Policy",
+    "metaDescription": "Read the Daily Calculations privacy policy — what data we collect, how we use it, and your rights.",
+    "lastUpdated": "Last updated: June 2025",
+    "section1Title": "Information we collect",
+    "section1Body": "Daily Calculations does not require you to create an account. We do not collect your name, email address, or any personally identifiable information unless you voluntarily submit it via the suggestion form. Calculator inputs are processed entirely in your browser and are never sent to our servers.",
+    "section2Title": "Usage data and analytics",
+    "section2Body": "We use privacy-respecting analytics to understand which calculators are most useful and how visitors navigate the site. This data is aggregated and anonymized — it cannot be used to identify you personally.",
+    "section3Title": "Cookies",
+    "section3Body": "We use a single cookie to remember your preferred color theme (light or dark mode). No tracking cookies or advertising cookies are set by Daily Calculations itself.",
+    "section4Title": "Third-party services",
+    "section4Body": "We may use third-party services such as analytics providers. These services have their own privacy policies and may set their own cookies. We choose providers with strong privacy commitments and, where possible, configure them to minimize data collection.",
+    "section5Title": "Data retention",
+    "section5Body": "Since we collect minimal data, there is little to retain. Theme preference is stored in your browser's local storage and can be cleared at any time by clearing your browser data.",
+    "section6Title": "Your rights",
+    "section6Body": "You have the right to access, correct, or request deletion of any personal data we hold about you. Because we collect almost no personal data, this right rarely applies — but if you have a concern, please contact us.",
+    "contactTitle": "Contact",
+    "contactBody": "If you have questions about this privacy policy, please open an issue on our GitHub repository or use the suggestion form on this site."
+  },
+  "terms": {
+    "title": "Terms & Conditions",
+    "metaDescription": "Read the Daily Calculations terms and conditions — the rules governing your use of our free online calculators.",
+    "lastUpdated": "Last updated: June 2025",
+    "section1Title": "Acceptance of terms",
+    "section1Body": "By using Daily Calculations you agree to these terms. If you do not agree, please do not use the site. We may update these terms from time to time; continued use after changes constitutes acceptance.",
+    "section2Title": "Use of the service",
+    "section2Body": "Daily Calculations provides free online calculator tools for informational and educational purposes. You may use the site for personal, non-commercial purposes. You agree not to misuse the service, attempt to disrupt it, or use it in any unlawful way.",
+    "section3Title": "No warranties",
+    "section3Body": "Daily Calculations is provided 'as is' without warranties of any kind. We strive for accuracy, but calculator results are estimates only and may not reflect your specific situation. We do not guarantee that the site will be available at all times or that it will be error-free.",
+    "section4Title": "Limitation of liability",
+    "section4Body": "To the fullest extent permitted by law, Daily Calculations and its operators are not liable for any indirect, incidental, or consequential damages arising from your use of the site or reliance on its results. Calculator outputs are not financial, medical, legal, or tax advice.",
+    "section5Title": "Intellectual property",
+    "section5Body": "All content on Daily Calculations — including calculator logic, text, and design — is owned by or licensed to us. You may not reproduce, distribute, or create derivative works from our content without prior written permission.",
+    "section6Title": "Changes to these terms",
+    "section6Body": "We reserve the right to modify these terms at any time. We will indicate the date of the most recent update at the top of this page. Your continued use of the site after any changes constitutes your acceptance of the new terms.",
+    "contactTitle": "Contact",
+    "contactBody": "Questions about these terms? Open an issue on our GitHub repository or use the suggestion form."
+  },
+  "contact": {
+    "eyebrow": "Get in touch",
+    "title": "Contact Us",
+    "metaDescription": "Contact Daily Calculations — report a bug, suggest a new calculator, or ask a question.",
+    "intro": "We'd love to hear from you. Whether you've found a bug, want to suggest a new calculator, or just have a question — here's how to reach us.",
+    "githubTitle": "Report a bug or request a feature",
+    "githubBody": "The best way to reach us is via GitHub Issues. Open an issue to report a bug, request a new calculator, or ask a technical question. We review all submissions.",
+    "githubCta": "Open a GitHub issue",
+    "suggestTitle": "Suggest an enhancement",
+    "suggestBody": "Use our built-in suggestion form to submit ideas directly from the site. No GitHub account required.",
+    "suggestCta": "Go to suggestions"
+  }
+}

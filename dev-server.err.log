@@ -1,0 +1,5 @@
+[browser] Uncaught Error: Couldn't find next-intl config file. Please follow the instructions at https://next-intl.dev/docs/getting-started/app-router
+    at RootLayout (about://React/Server/C:%5CAbhishek%5CLearning%5Cdailycalculations%5Cdailycalculations%5C.next%5Cdev%5Cserver%5Cchunks%5Cssr%5C_0ap4d1y._.js?0:65:280)
+[browser] Error: Couldn't find next-intl config file. Please follow the instructions at https://next-intl.dev/docs/getting-started/app-router
+    at RootLayout (about://React/Server/C:%5CAbhishek%5CLearning%5Cdailycalculations%5Cdailycalculations%5C.next%5Cdev%5Cserver%5Cchunks%5Cssr%5C_0ap4d1y._.js?0:65:280) (app/global-error.tsx:13:13)
+⚠ Found a change in next.config.ts. Restarting the server to apply the changes...

@@ -1,0 +1,35 @@
+
+> calcora@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.9 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.56.1:3000
+✓ Ready in 513ms
+Creating turbopack project {
+  dir: 'C:\\Abhishek\\Learning\\dailycalculations\\dailycalculations',
+  testMode: true
+}
+
+ GET /en 200 in 1744ms (next.js: 737ms, proxy.ts: 242ms, generate-params: 554ms, application-code: 765ms)
+ GET /en 200 in 318ms (next.js: 32ms, proxy.ts: 13ms, generate-params: 12ms, application-code: 272ms)
+ GET /en 200 in 162ms (next.js: 11ms, proxy.ts: 10ms, generate-params: 34µs, application-code: 141ms)
+ GET /en 200 in 152ms (next.js: 16ms, proxy.ts: 4ms, generate-params: 10ms, application-code: 132ms)
+ GET /en 200 in 123ms (next.js: 16ms, proxy.ts: 4ms, generate-params: 10ms, application-code: 103ms)
+ GET /en 200 in 112ms (next.js: 14ms, proxy.ts: 4ms, generate-params: 9ms, application-code: 94ms)
+ GET /en/calculators 200 in 1259ms (next.js: 1121ms, proxy.ts: 4ms, generate-params: 464ms, application-code: 135ms)
+ GET /en/categories 200 in 891ms (next.js: 810ms, proxy.ts: 4ms, generate-params: 489ms, application-code: 77ms)
+ GET /en/about 200 in 848ms (next.js: 759ms, proxy.ts: 4ms, generate-params: 449ms, application-code: 85ms)
+ GET /en/contact 200 in 829ms (next.js: 766ms, proxy.ts: 4ms, generate-params: 466ms, application-code: 59ms)
+ GET /en/calculators 200 in 168ms (next.js: 18ms, proxy.ts: 4ms, generate-params: 12ms, application-code: 146ms)
+▲ Next.js 16.2.9 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.56.1:3000
+✓ Ready in 446ms
+Creating turbopack project {
+  dir: 'C:\\Abhishek\\Learning\\dailycalculations\\dailycalculations',
+  testMode: true
+}
+
+ GET /en 200 in 1275ms (next.js: 688ms, proxy.ts: 158ms, generate-params: 544ms, application-code: 429ms)
+[?25h

@@ -1,12 +1,10 @@
 import './globals.css';
-import { getLocale } from 'next-intl/server';
 import ThemeProvider from '@/components/ThemeProvider';
 import Script from 'next/script';
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const locale = await getLocale();
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <Script async src="https://www.googletagmanager.com/gtag/js?id=G-GZHTCX35H4" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive" dangerouslySetInnerHTML={{__html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-GZHTCX35H4');`}} />

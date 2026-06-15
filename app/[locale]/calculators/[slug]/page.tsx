@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
@@ -52,6 +52,7 @@ export default async function CalculatorPage({
           <div className="space-y-4">
             <Link
               href={`/categories/${calculator.category}`}
+              locale={locale}
               className="text-sm font-semibold uppercase tracking-[0.25em] text-brand-700 dark:text-brand-300 inline-block"
             >
               {categoryTitle}

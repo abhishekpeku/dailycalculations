@@ -93,7 +93,7 @@ export default async function HomePage({
       <section className="space-y-6">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {categories.map((category) => (
-            <CategoryGrid key={category.id} category={category} />
+            <CategoryGrid key={category.id} category={category} locale={locale} />
           ))}
         </div>
       </section>
@@ -107,7 +107,7 @@ export default async function HomePage({
         </div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {featured.map((calculator) => (
-            <CalculatorCard key={calculator.id} calculator={calculator} variant="compact" />
+            <CalculatorCard key={calculator.id} calculator={calculator} locale={locale} variant="compact" />
           ))}
         </div>
       </section>

@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "next build",
+    "build": "next build --webpack",
     "dev": "next dev",
     "start": "next start",
     "lint": "eslint --config .eslintrc.cjs . --ignore-pattern \".next/**\" --ignore-pattern \"node_modules/**\" --ext .js,.jsx,.ts,.tsx --no-error-on-unmatched-pattern",
@@ -27,6 +27,7 @@
     "@typescript-eslint/eslint-plugin": "^8.57.0",
     "@typescript-eslint/parser": "^8.57.0",
     "autoprefixer": "^10.4.20",
+    "cross-env": "^10.1.0",
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.0",
     "postcss": "^8.4.36",

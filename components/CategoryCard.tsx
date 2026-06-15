@@ -4,13 +4,15 @@ import type { CalculatorCategory } from '@/data/calculators';
 type Props = {
   category: CalculatorCategory;
   count: number;
+  locale: string;
   toolsLabel?: string;
 };
 
-export default function CategoryCard({ category, count, toolsLabel }: Props) {
+export default function CategoryCard({ category, count, locale, toolsLabel }: Props) {
   return (
     <Link
       href={`/categories/${category.id}`}
+      locale={locale}
       className="group block rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-panel transition hover:-translate-y-0.5 hover:border-brand-200 dark:border-slate-800 dark:bg-slate-950/90"
     >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">

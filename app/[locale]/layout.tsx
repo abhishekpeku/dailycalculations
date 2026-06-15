@@ -75,7 +75,7 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
   const messages = await getMessages();
   return (
-    <NextIntlClientProvider messages={messages}>
+    <NextIntlClientProvider locale={locale} messages={messages}>
       <div className="flex min-h-screen flex-col">
         <Header />
         <main className="flex-1">{children}</main>

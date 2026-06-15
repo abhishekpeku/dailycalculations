@@ -3,13 +3,14 @@ import type { CalculatorConfig } from '@/data/calculators';
 
 type Props = {
   calculator: CalculatorConfig;
+  locale: string;
   variant?: 'default' | 'compact';
 };
 
-export default function CalculatorCard({ calculator, variant = 'default' }: Props) {
+export default function CalculatorCard({ calculator, locale, variant = 'default' }: Props) {
   return (
     <article className={`group rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-panel transition hover:-translate-y-0.5 hover:border-brand-200 dark:border-slate-800 dark:bg-slate-950/95 ${variant === 'compact' ? 'p-4' : ''}`}>
-      <Link href={`/calculators/${calculator.id}`} className="block">
+      <Link href={`/calculators/${calculator.id}`} locale={locale} className="block">
         <div className="space-y-3">
           <div>
             <h3 className="text-lg font-semibold text-slate-950 dark:text-white">{calculator.title}</h3>

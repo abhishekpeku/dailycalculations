@@ -36,6 +36,7 @@ export default async function CategoriesPage({
                 key={category.id}
                 category={category}
                 count={count}
+                locale={locale}
                 toolsLabel={tCommon('tools', { count })}
               />
             );

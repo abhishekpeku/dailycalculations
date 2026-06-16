@@ -4,6 +4,12 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 import CalculatorForm from '@/components/CalculatorForm';
+import GpaCalculator from '@/components/GpaCalculator';
+import PaycheckCalculator from '@/components/PaycheckCalculator';
+import CurrencyConverter from '@/components/CurrencyConverter';
+import TextToolsCalculator from '@/components/TextToolsCalculator';
+import PomodoroTimer from '@/components/PomodoroTimer';
+import TimeZonePlanner from '@/components/TimeZonePlanner';
 import FaqSection from '@/components/FaqSection';
 import { calculators, findCalculator, categories } from '@/data/calculators';
 import { buildCalculatorMetadata, buildPageJsonLd } from '@/lib/seo';
@@ -63,7 +69,14 @@ export default async function CalculatorPage({
           </div>
         </section>
 
-        <CalculatorForm calculator={clientCalculator} />
+        {slug === 'gpa-calculator' ? <GpaCalculator /> :
+         slug === 'paycheck-calculator' ? <PaycheckCalculator /> :
+         slug === 'currency-converter' ? <CurrencyConverter /> :
+         slug === 'character-counter' ? <TextToolsCalculator mode="character" /> :
+         slug === 'hashtag-counter' ? <TextToolsCalculator mode="hashtag" /> :
+         slug === 'pomodoro-timer' ? <PomodoroTimer /> :
+         slug === 'timezone-meeting-planner' ? <TimeZonePlanner /> :
+         <CalculatorForm calculator={clientCalculator} />}
 
         <section className="rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-panel dark:border-slate-800 dark:bg-slate-950/90">
           <h2 className="text-2xl font-semibold text-slate-950 dark:text-white">{t('howToUse')}</h2>

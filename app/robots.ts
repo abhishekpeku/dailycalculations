@@ -6,6 +6,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: '*',
       allow: '/',
     },
-    sitemap: 'https://dailycalculations.app/sitemap.xml',
+    sitemap: 'https://www.dailycalculations.com/sitemap.xml',
   };
 }

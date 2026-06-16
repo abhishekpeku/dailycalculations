@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import { calculators, categories } from '@/data/calculators';
 import { routing } from '@/i18n/routing';
 
-const baseUrl = 'https://dailycalculations.app';
+const baseUrl = 'https://www.dailycalculations.com';
 const { locales, defaultLocale } = routing;
 
 const staticPaths = [

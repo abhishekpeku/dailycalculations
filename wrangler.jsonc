@@ -10,13 +10,7 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
-  "kv_namespaces": [
-    {
-      "binding": "NEXT_INC_CACHE_KV",
-      "id": "d9fe1320238a4f2b90bc86253ae9730e"
-    }
-  ],
-  "services": [
+"services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
       "service": "dailycalculations"

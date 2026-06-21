@@ -30,12 +30,15 @@ const COURSE_TYPE_LABELS: Record<CourseType, string> = {
 let _id = 0;
 const uid = () => `c${++_id}`;
 
-const defaultCourse = (): Course => ({ id: uid(), name: '', grade: 4, credits: 3 });
+const defaultCourse = (): Course => ({ id: uid(), name: '', grade: 0, credits: 3 });
 const defaultSemester = (): Semester => ({ courses: [defaultCourse(), defaultCourse(), defaultCourse()] });
 
 function semesterGpa(courses: Course[]) {
   const credits = courses.reduce((s, c) => s + c.credits, 0);
   const points = courses.reduce((s, c) => s + c.grade * c.credits, 0);
+
+  // If the user leaves grades at the default (0), GPA should reflect that,
+  // not be artificially driven to 4.
   return { gpa: credits === 0 ? 0 : points / credits, credits, points };
 }
 
@@ -175,10 +178,10 @@ export default function GpaCalculator() {
                           type="number"
                           value={course.grade}
                           onChange={(e) => updateCourse(si, ci, 'grade', Number(e.target.value))}
-                          step={0.1}
+                          step={0.01}
                           min={0}
                           max={4}
-                          placeholder="4.0"
+                          placeholder="3.7"
                           className="w-full rounded-xl border border-slate-300 bg-white px-2 py-1.5 text-xs text-slate-900 outline-none transition focus:border-brand-500 focus:ring-1 focus:ring-brand-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-brand-400"
                         />
                         <input

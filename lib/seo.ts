@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 import { calculators, categories } from '@/data/calculators';
+import { SITE_NAME, SITE_URL } from '@/lib/site';
 
-export const siteName = 'Daily Calculations';
-export const siteUrl = 'https://dailycalculations.app';
+export const siteName = SITE_NAME;
+// temporary alias — call sites move to buildCanonical() in step 03
+export const siteUrl = SITE_URL;
 
 export const homeFaqs = [
   {

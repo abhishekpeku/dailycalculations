@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-09-10 · Current step: **01** · Steps done: **0 / 28**
+Last updated: 2026-09-10 · Current step: **02** · Steps done: **1 / 28**
 
 ---
 
@@ -34,8 +34,8 @@ Status values: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `PARKED`
 
 | # | Step | Status | Scope | Spec |
 |---|---|---|---|---|
-| 01 | Domain + `lib/site.ts` | **TODO** | Create `lib/site.ts` exporting `SITE_URL`. Replace the hardcoded domain in `lib/seo.ts`, `app/sitemap.ts`, `app/robots.ts` and every `generateMetadata`. Add the Cloudflare apex→www redirect rule. | §0, D1 |
-| 02 | English-only migration | TODO | `routing.locales = ['en']`, `localePrefix: 'as-needed'`. Delete `LanguageSwitcher` from `Header`. Update every `generateStaticParams` to drop the locale loop. Add 301s `/en/*` → `/*` in `middleware.ts`. Verify `app/page.tsx` no longer needs its `redirect('/en')`. | D2, D3, D4 |
+| 01 | Domain + `lib/site.ts` | **DONE** 2026-09-10 | Create `lib/site.ts` exporting `SITE_URL`. Replace the hardcoded domain in `lib/seo.ts`, `app/sitemap.ts`, `app/robots.ts` and every `generateMetadata`. Add the Cloudflare apex→www redirect rule. | §0, D1 |
+| 02 | English-only migration | **TODO** | `routing.locales = ['en']`, `localePrefix: 'as-needed'`. Delete `LanguageSwitcher` from `Header`. Update every `generateStaticParams` to drop the locale loop. Add 301s `/en/*` → `/*` in `middleware.ts`. Verify `app/page.tsx` no longer needs its `redirect('/en')`. | D2, D3, D4 |
 | 03 | Canonicals on every page | TODO | `buildCanonical(path)` in `lib/seo.ts`. Apply to **every** `generateMetadata` — including `calculators/[slug]` and `categories/[category]`, which currently have none. Remove the locale-blind canonicals in `about`/`contact`/`privacy-policy`/`terms` and the bare-root one on the homepage. | §2.1, D5 |
 | 04 | Sitemap + robots rewrite | TODO | Add `updatedAt: string` to `CalculatorConfig` and populate all 53. Rewrite `app/sitemap.ts`: one entry per path, no locale loops, real `lastModified`, `priority` 0.8 for calculators / 0.6 home / 0.5 rest. Point `robots.ts` at `SITE_URL`. | §2.4 |
 
@@ -117,7 +117,34 @@ is why 12-15 run after it.
 
 Append one line per completed step: `NN · YYYY-MM-DD · what changed · anything the next step needs`.
 
-_(empty — first entry goes here)_
+01 · 2026-09-10 · Created `lib/site.ts` (`SITE_URL`, `SITE_NAME`). `lib/seo.ts` now re-exports
+`siteName`/`siteUrl` from it — those aliases are temporary and step 03 removes them. `app/sitemap.ts`
+and `app/robots.ts` import `SITE_URL`. The stale `https://dailycalculations.app` string is gone from
+the repo; the only literal domain left is `lib/site.ts:2`. Build + lint pass.
+
+**Next step needs to know:**
+- `node_modules` was not present — `npm install` was required before the first build (706 packages, no
+  new dependencies added). Nothing changed in `package.json`.
+- `SITE_URL` reads `process.env.NEXT_PUBLIC_SITE_URL` first, so preview deployments can override it.
+- `app/[locale]/page.tsx:58` has `site: '@dailycalculations'` — that is the **Twitter handle**, not a
+  URL. It matched the step-01 grep; it is correct as-is. Same for the `dailycalculations` Worker name
+  in `wrangler.jsonc`.
+- `metadataBase` in `app/[locale]/layout.tsx:25` now resolves to the `.com` domain, so every relative
+  OG/Twitter URL moved with it. Verified in the built HTML.
+- ⚠️ **PENDING ON THE USER — not code:** the Cloudflare apex→www 301 redirect rule has **not** been
+  created. Until it is, `dailycalculations.com` and `www.dailycalculations.com` both serve 200s and
+  D1 is only half-enforced. See "Pending on the user" below.
+
+---
+
+## Pending on the user — not code
+
+- **Cloudflare apex → www 301 (from step 01, still open).**
+  Cloudflare dashboard → the `dailycalculations.com` zone → **Rules → Redirect Rules** → new rule:
+  *If hostname equals `dailycalculations.com` → Static redirect to `https://www.dailycalculations.com`,
+  preserve path and query string, status **301**.*
+  Do not attempt this in `next.config.ts` — those redirects run inside the Worker, after the request
+  has already been served on the wrong hostname.
 
 ---
 

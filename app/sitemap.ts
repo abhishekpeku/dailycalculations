@@ -1,8 +1,9 @@
 import { MetadataRoute } from 'next';
 import { calculators, categories } from '@/data/calculators';
 import { routing } from '@/i18n/routing';
+import { SITE_URL } from '@/lib/site';
 
-const baseUrl = 'https://www.dailycalculations.com';
+const baseUrl = SITE_URL;
 const { locales, defaultLocale } = routing;
 
 const staticPaths = [

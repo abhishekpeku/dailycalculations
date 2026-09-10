@@ -65,7 +65,7 @@ export async function generateMetadata({
 const featured = calculators.filter((c) =>
   ['mortgage-calculator', 'sales-tax-calculator', 'bmi-calculator', 'miles-to-kilometers-converter'].includes(c.id)
 );
-const searchItems = calculators.map(({ id, title, description }) => ({ id, title, description }));
+const searchItems = calculators.map(({ id, title, description, aliases }) => ({ id, title, description, aliases }));
 
 export default async function HomePage({
   params

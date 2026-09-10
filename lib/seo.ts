@@ -179,6 +179,80 @@ export function buildHowToSteps(slug: string): HowToStep[] {
   ];
 }
 
+export type RelatedLink = {
+  id: string;
+  href: string;
+  /** An alias of the target, not its title — varied anchor text is the point (§1.4). */
+  anchor: string;
+  description: string;
+};
+
+/** Stable, order-independent hash. The pages are force-static, so anchor choice must be pure. */
+function hashSlug(slug: string) {
+  let hash = 0;
+  for (let i = 0; i < slug.length; i += 1) {
+    hash = (hash * 31 + slug.charCodeAt(i)) % 100000;
+  }
+  return hash;
+}
+
+function capitalize(text: string) {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/**
+ * The visible "Also called ..." line under the H1. A sentence, not a keyword list.
+ * Same aliases the WebApplication node lists as alternateName.
+ */
+export function buildAliasSentence(slug: string): string | null {
+  const calculator = calculators.find((item) => item.id === slug);
+  if (!calculator || calculator.aliases.length === 0) return null;
+
+  const shown = calculator.aliases.slice(0, 4);
+  const article = /^[aeiou]/i.test(shown[0]) ? 'an' : 'a';
+  const list =
+    shown.length === 1
+      ? shown[0]
+      : `${shown.slice(0, -1).join(', ')}, or ${shown[shown.length - 1]}`;
+
+  return `Also called ${article} ${list}.`;
+}
+
+/**
+ * The "Related calculators" block. Anchor text is an alias of the *target*, picked from a hash of
+ * the *source* slug, so one calculator is linked under different wording from different pages —
+ * 53 varied anchors instead of 53 copies of the same title.
+ */
+export function buildRelatedLinks(slug: string): RelatedLink[] {
+  const calculator = calculators.find((item) => item.id === slug);
+  if (!calculator) return [];
+
+  const used = new Set<string>();
+  const offset = hashSlug(slug);
+
+  return calculator.related.flatMap((relatedId) => {
+    const target = calculators.find((item) => item.id === relatedId);
+    if (!target) return [];
+
+    const options = target.aliases.length > 0 ? target.aliases : [target.title];
+    let anchor = options[offset % options.length];
+    // Two links on one page reading the same would be confusing — take the next alias instead.
+    for (let i = 1; i < options.length && used.has(anchor); i += 1) {
+      anchor = options[(offset + i) % options.length];
+    }
+    used.add(anchor);
+
+    return [
+      {
+        id: target.id,
+        href: `/calculators/${target.id}`,
+        anchor: capitalize(anchor),
+        description: target.description
+      }
+    ];
+  });
+}
+
 export function buildPageJsonLd(slug: string) {
   const calculator = calculators.find((item) => item.id === slug);
   if (!calculator) return null;

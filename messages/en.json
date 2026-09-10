@@ -33,7 +33,9 @@
   "calculator": {
     "howToUse": "How to use this calculator",
     "howToUseDesc1": "Enter the values for each field and the calculator will update instantly. Use the units shown for each tool.",
-    "howToUseDesc2": "This page is statically generated for performance and SEO, with structured FAQ markup to help search engines understand the tool."
+    "howToUseDesc2": "This page is statically generated for performance and SEO, with structured FAQ markup to help search engines understand the tool.",
+    "relatedTitle": "Related calculators",
+    "relatedDescription": "Tools people usually reach for alongside this one."
   },
   "suggestions": {
     "headline": "Suggest an enhancement",

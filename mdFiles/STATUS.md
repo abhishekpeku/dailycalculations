@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-09-10 · Current step: **08** · Steps done: **7 / 28** · **Phase A complete**
+Last updated: 2026-09-10 · Current step: **09** · Steps done: **8 / 28** · **Phase A complete**
 
 ---
 
@@ -46,7 +46,7 @@ Status values: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `PARKED`
 | 05 | Calculator schema + alias data | **DONE** 2026-09-10 | Add `aliases: string[]`, `related: string[]`, `redirectFrom?: string[]` to `CalculatorConfig` (required except `redirectFrom`). Populate all 53 from the cluster tables. **Large mechanical edit — do it in 4 sub-batches by cluster, building after each.** | §1.3, §1.5 |
 | 06 | `redirectFrom` 301s | **DONE** 2026-09-10 | Generate 301s in `middleware.ts` from every `redirectFrom` slug to its canonical `/calculators/<id>`. Include `auto-loan-calculator`, `home-loan-calculator`, `house-loan-emi-calculator`, `word-counter`, `bmr-calculator`. | §2.5 |
 | 07 | Structured data + breadcrumb | **DONE** 2026-09-10 | Add `WebApplication` (with `alternateName: aliases`), `BreadcrumbList` and `HowTo` JSON-LD to `buildPageJsonLd`. Build a **visible** `Breadcrumb` component — Google cross-checks JSON-LD against rendered markup. | §2.3 |
-| 08 | Surface the aliases | TODO | "Also known as …" sentence under the H1. "Related calculators" block using `related`, with **alias anchor text**, not repeated titles. Extend `fuzzyFilter` in `CalculatorSearch.tsx:19` to match `aliases`. | §1.4 |
+| 08 | Surface the aliases | **DONE** 2026-09-10 | "Also known as …" sentence under the H1. "Related calculators" block using `related`, with **alias anchor text**, not repeated titles. Extend `fuzzyFilter` in `CalculatorSearch.tsx:19` to match `aliases`. | §1.4 |
 | 09 | Listing page search + `?q=` | TODO | Add category filter chips, the search box, and `?q=` / `?category=` params to `app/[locale]/calculators/page.tsx`. Then either fix or delete the broken `SearchAction` in `buildHomeJsonLd`. Also clean the homepage `keywords` array — drop `graphing calculator`. | §2.7, §4.5, §1.6 |
 
 ### Phase C — Content depth (pilot, measure, then roll out)
@@ -179,7 +179,35 @@ JSON parses, `alternateName` matches `aliases` on all 53, 0 `/en/` in JSON-LD or
 positions 1-4 with no `item` on the last, HowTo steps 2-9 and every step name visible. Build + lint
 pass; still 78 static pages.
 
+08 · 2026-09-10 · Aliases now surface in all four places §1.4 asks for (JSON-LD was already
+done in 07). Two new builders in `lib/seo.ts`: `buildAliasSentence(slug)` renders the visible
+"Also called a home loan calculator, …" line under the H1 (first 4 aliases, `a`/`an` chosen from
+the first one), and `buildRelatedLinks(slug)` returns `{ id, href, anchor, description }[]` where
+**`anchor` is an alias of the target, not its title** — picked from `hashSlug(sourceId) %
+target.aliases.length`, so the same target is linked under different wording from different pages.
+New `components/RelatedCalculators.tsx` renders the block after the FAQ.
+`CalculatorSearch.fuzzyFilter` now also matches `aliases` (`SearchItem` gained the field; the
+homepage `searchItems` map passes it through). Two strings added to `messages/en.json`
+→ `calculator.relatedTitle` / `relatedDescription`. `updatedAt` **not** bumped — template change,
+same call as step 07. Verified against all 53 prerendered HTML files: every page has the sentence
+and names only real aliases, link count matches `related` length on all 53, **0 dead links, 0
+self-links, 0 repeated anchors within a page, 0 `/en/` hrefs**, every anchor is a real alias of its
+target, and of the 49 targets linked from more than one page **0 have only one anchor form** —
+131 distinct anchor forms across 52 targets. Build + lint pass; still 78 static pages.
+
 **Next step needs to know:**
+
+- **The related block is the site's only calculator-to-calculator linking.** It renders from
+  `buildRelatedLinks(slug)`; step 10's template rewrite must keep it and must not re-derive anchors.
+  Anchor choice is a pure function of the two ids — keep it pure, the pages are `force-static`.
+- **`gpa-calculator` is linked from nowhere** (0 inbound `related` entries) because all four of its
+  real siblings are future pages. Step 26 fixes this when it swaps in the §1.5 values — until then
+  it is reachable only from the category/listing pages. `tip-calculator`,
+  `pregnancy-due-date-calculator` and `timezone-meeting-planner` have exactly 1 inbound link.
+- **Anchor text varies per source page, so a target's anchor is not stable across the site.** That
+  is deliberate (§1.4). Do not "fix" it by pinning `aliases[0]`.
+- **`CalculatorSearch`'s `SearchItem` now requires `aliases`.** Step 09 adds the same component to
+  the listing page — pass `aliases` there too or the alias matching silently disappears on that page.
 
 - **Step 07's shared builders are the page template's contract.** `buildBreadcrumbs(slug)` returns
   `{ name, href? }[]` (Home → Calculators → Category → Title, last one `href`-less) and

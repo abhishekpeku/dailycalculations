@@ -7,6 +7,7 @@ type SearchItem = {
   id: string;
   title: string;
   description: string;
+  aliases: string[];
 };
 
 type Props = {
@@ -21,7 +22,14 @@ export default function CalculatorSearch({ calculators, searchLabel = 'Search ca
   const [query, setQuery] = useState('');
   const filtered = useMemo(() => {
     if (!query.trim()) return calculators.slice(0, 6);
-    return calculators.filter((calculator) => fuzzyFilter(calculator.title, query) || fuzzyFilter(calculator.description, query)).slice(0, 8);
+    return calculators
+      .filter((calculator) =>
+        fuzzyFilter(calculator.title, query) ||
+        fuzzyFilter(calculator.description, query) ||
+        // Aliases are why "emi" or "home loan" finds the mortgage calculator.
+        calculator.aliases.some((alias) => fuzzyFilter(alias, query))
+      )
+      .slice(0, 8);
   }, [calculators, query]);
 
   return (

@@ -11,8 +11,9 @@ import PomodoroTimer from '@/components/PomodoroTimer';
 import TimeZonePlanner from '@/components/TimeZonePlanner';
 import FaqSection from '@/components/FaqSection';
 import Breadcrumb from '@/components/Breadcrumb';
+import RelatedCalculators from '@/components/RelatedCalculators';
 import { calculators, findCalculator } from '@/data/calculators';
-import { buildBreadcrumbs, buildCalculatorMetadata, buildHowToSteps, buildPageJsonLd } from '@/lib/seo';
+import { buildAliasSentence, buildBreadcrumbs, buildCalculatorMetadata, buildHowToSteps, buildPageJsonLd, buildRelatedLinks } from '@/lib/seo';
 import { routing } from '@/i18n/routing';
 
 export const dynamic = 'force-static';
@@ -48,6 +49,8 @@ export default async function CalculatorPage({
 
   const breadcrumbs = buildBreadcrumbs(slug);
   const howToSteps = buildHowToSteps(slug);
+  const aliasSentence = buildAliasSentence(slug);
+  const relatedLinks = buildRelatedLinks(slug);
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
@@ -56,6 +59,9 @@ export default async function CalculatorPage({
           <div className="space-y-4">
             <Breadcrumb items={breadcrumbs} />
             <h1 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-3xl">{calculator.title}</h1>
+            {aliasSentence ? (
+              <p className="max-w-3xl text-sm leading-6 text-slate-500 dark:text-slate-400">{aliasSentence}</p>
+            ) : null}
             <p className="max-w-3xl text-base leading-7 text-slate-600 dark:text-slate-300">{calculator.description}</p>
             <p className="text-sm text-slate-500 dark:text-slate-400">Example: {calculator.example}</p>
           </div>
@@ -91,6 +97,8 @@ export default async function CalculatorPage({
           description={`Common questions about using the ${calculator.title.toLowerCase()} and understanding the results.`}
           items={calculator.seo.faq}
         />
+
+        <RelatedCalculators title={t('relatedTitle')} description={t('relatedDescription')} items={relatedLinks} />
       </div>
       {jsonLd ? <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} /> : null}
     </div>

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import type { CalculatorHowToStep } from '@/data/calculators';
 import { calculators, categories } from '@/data/calculators';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 
@@ -125,10 +126,8 @@ export type Breadcrumb = {
   href?: string;
 };
 
-export type HowToStep = {
-  name: string;
-  text: string;
-};
+/** Owned by `data/calculators.ts` so hand-written steps and derived ones cannot drift apart. */
+export type HowToStep = CalculatorHowToStep;
 
 /**
  * The trail rendered by `<Breadcrumb>` and serialised into BreadcrumbList JSON-LD.
@@ -150,12 +149,15 @@ export function buildBreadcrumbs(slug: string): Breadcrumb[] {
 
 /**
  * The steps rendered in the "How to use" section and serialised into HowTo JSON-LD.
- * Derived from the input fields so it stays true as calculators change. The five
- * calculators with custom components have no `inputs` and fall back to generic steps.
+ * Hand-written steps win when the calculator has `content`; otherwise they are derived from the
+ * input fields so they stay true as calculators change. The five calculators with custom
+ * components have no `inputs` and fall back to generic steps.
  */
 export function buildHowToSteps(slug: string): HowToStep[] {
   const calculator = calculators.find((item) => item.id === slug);
   if (!calculator) return [];
+
+  if (calculator.content) return calculator.content.howTo.steps;
 
   const readResult = {
     name: 'Read the result',

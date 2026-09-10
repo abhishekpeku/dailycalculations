@@ -19,6 +19,37 @@ export type CalculatorFaq = {
   answer: string;
 };
 
+export type CalculatorHowToStep = {
+  name: string;
+  text: string;
+};
+
+/**
+ * Hand-written page depth (see mdFiles/instructions.md 4.2). Optional on purpose: a calculator
+ * without it renders the thin template, so pages can be deepened one at a time.
+ */
+export type CalculatorContent = {
+  /** Replaces the input-derived steps in buildHowToSteps, and therefore the HowTo JSON-LD. */
+  howTo: {
+    intro: string;
+    steps: CalculatorHowToStep[];
+    outro?: string;
+  };
+  formula: {
+    intro: string;
+    expression: string;
+    terms: { symbol: string; meaning: string }[];
+    note?: string;
+  };
+  workedExample: {
+    intro: string;
+    rows: { label: string; value: string }[];
+    result: string;
+    explanation: string;
+  };
+  watchOut: { title: string; body: string }[];
+};
+
 export type CalculatorConfig = {
   id: string;
   category: string;
@@ -33,6 +64,8 @@ export type CalculatorConfig = {
   title: string;
   description: string;
   example: string;
+  /** Long-form page content. Absent on calculators that have not been deepened yet. */
+  content?: CalculatorContent;
   inputs: CalculatorInput[];
   seo: {
     title: string;
@@ -42,7 +75,8 @@ export type CalculatorConfig = {
   compute: (values: CalculatorInputValues) => Record<string, number>;
 };
 
-export type CalculatorClientConfig = Omit<CalculatorConfig, 'compute'>;
+// `content` is server-rendered prose; it has no business in the client flight payload.
+export type CalculatorClientConfig = Omit<CalculatorConfig, 'compute' | 'content'>;
 
 export type CalculatorInputValues = Record<string, number>;
 
@@ -711,6 +745,106 @@ export const calculators: CalculatorConfig[] = [
     title: 'Date Difference Calculator',
     description: 'Find the number of days, weeks, and months between two dates using year, month, and day inputs.',
     example: 'Calculate days between January 1, 2024 and July 4, 2026.',
+    content: {
+      howTo: {
+        intro:
+          'The two dates go in as separate year, month and day fields, so there is no date format to get wrong. Written out, 3/4/2026 means 3 April in London and 4 March in New York; 2026, 3, 4 means the same thing everywhere.',
+        steps: [
+          {
+            name: 'Enter the start date',
+            text: 'Fill the first three fields with the date you are counting from — 2024, 1 and 1 for 1 January 2024. Use the full four-digit year.'
+          },
+          {
+            name: 'Enter the end date',
+            text: 'Fill the last three fields with the date you are counting to — 2026, 7 and 4 for 4 July 2026.'
+          },
+          {
+            name: 'Read the day count',
+            text: 'Days is the whole number of calendar days between the two dates. It is the figure you want for deadlines, countdowns and visa windows.'
+          },
+          {
+            name: 'Check weeks and months',
+            text: 'Weeks and months are the same gap expressed differently, and both keep their decimals — 130.71 weeks is 130 weeks and 5 days.'
+          },
+          {
+            name: 'Reverse the dates if it is easier',
+            text: 'The result is an absolute difference, so putting the later date first gives the same answer rather than a negative one.'
+          }
+        ],
+        outro:
+          'Nothing is submitted and nothing is stored — every figure is recalculated in your browser as you type.'
+      },
+      formula: {
+        intro:
+          'Counting days between dates is subtraction, but not on the calendar — months have four different lengths and February has two. The reliable method is to convert both dates to a single running count of milliseconds, subtract, and convert back.',
+        expression:
+          'days = round( (endDate − startDate) ÷ 86,400,000 )\nweeks = days ÷ 7\nmonths = days ÷ 30.44',
+        terms: [
+          {
+            symbol: 'endDate − startDate',
+            meaning:
+              'Both dates as a timestamp — the number of milliseconds since 1 January 1970 — subtracted. Uneven month lengths and leap days are already baked into the timestamp, so nothing needs to be handled separately.'
+          },
+          {
+            symbol: '86,400,000',
+            meaning: 'Milliseconds in one day: 1,000 × 60 seconds × 60 minutes × 24 hours.'
+          },
+          {
+            symbol: 'round( … )',
+            meaning:
+              'Daylight saving makes one day a year 23 hours long and another 25. Rounding to the nearest whole day absorbs that, so a clock change can never shift the count by one.'
+          },
+          {
+            symbol: '30.44',
+            meaning:
+              'The average length of a month: 365.25 days ÷ 12 = 30.4375, which is why the month figure is an approximation and the day figure is not.'
+          }
+        ],
+        note:
+          'Every date in the calculation is treated as midnight local time, so the answer is a count of calendar days rather than a duration in hours.'
+      },
+      workedExample: {
+        intro:
+          'Take the gap between 1 January 2024 and 4 July 2026 — a span that contains a leap day, so it is a fair test of the method.',
+        rows: [
+          { label: 'Start date', value: '1 January 2024 (2024, 1, 1)' },
+          { label: 'End date', value: '4 July 2026 (2026, 7, 4)' },
+          { label: '2024 (leap year)', value: '366 days' },
+          { label: '2025', value: '365 days' },
+          { label: '1 January to 4 July 2026', value: '184 days' }
+        ],
+        result: '915 days · 130.71 weeks · 30.06 months',
+        explanation:
+          '366 + 365 + 184 = 915 days. Dividing by 7 gives 130.71 weeks, which reads as 130 whole weeks plus 5 days. Dividing by 30.44 gives 30.06 months — close to two and a half years, as expected. Miss the leap day in 2024 and every one of those figures is wrong by one.'
+      },
+      watchOut: [
+        {
+          title: 'This is the gap, not an inclusive count',
+          body:
+            '915 days is the distance between the two dates. If you are counting days a visa is used, days billed, or nights booked and both the first and last day count, add one: 916.'
+        },
+        {
+          title: 'Months are an average, not calendar months',
+          body:
+            '30.06 months is 915 ÷ 30.44. It is not the same as "30 calendar months and 2 days", because the actual months in that span are not all 30.44 days long. For a notice period, a rental agreement or a contract term, count calendar months on a calendar.'
+        },
+        {
+          title: 'Impossible dates roll forward silently',
+          body:
+            'Entering 2 for the month and 30 for the day gives 1 or 2 March rather than an error, because out-of-range days are normalised rather than rejected. Check that the day you typed actually exists in that month.'
+        },
+        {
+          title: 'No time of day and no time zone',
+          body:
+            'Both dates are read as local midnight. A flight leaving at 23:00 and landing at 01:00 counts as one day, not two hours, and a deadline at 09:00 counts the same as one at 17:00.'
+        },
+        {
+          title: 'Business days are a different question',
+          body:
+            'The count is calendar days, weekends and public holidays included. For a rough working-day figure, multiply the weeks by 5 — 130.71 weeks is about 653 working days before holidays — and subtract the holidays that fall in the range.'
+        }
+      ]
+    },
     inputs: [
       { id: 'startYear', label: 'Start year', type: 'number', placeholder: '2024', defaultValue: 2024, step: 1, min: 1900 },
       { id: 'startMonth', label: 'Start month (1–12)', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 1 },
@@ -723,8 +857,14 @@ export const calculators: CalculatorConfig[] = [
       title: 'Date Difference Calculator',
       description: 'Calculate the exact number of days, weeks, and months between any two dates. Useful for deadlines, project planning, and event countdowns.',
       faq: [
-        { question: 'How do I calculate days between two dates?', answer: 'Enter the start and end year, month, and day. The calculator converts both to timestamps and computes the difference in days, weeks, and months.' },
-        { question: 'Does this account for leap years?', answer: 'Yes, the JavaScript Date object used internally handles leap years correctly.' }
+        { question: 'How do I calculate the number of days between two dates?', answer: 'Enter the start and end year, month, and day. Both dates are converted to a timestamp, subtracted, and divided by the number of milliseconds in a day, which gives the difference in days, weeks, and months.' },
+        { question: 'Does this account for leap years?', answer: 'Yes. Leap days are already part of each date\'s timestamp, so a span covering 29 February 2024 counts it automatically. Between 1 January 2024 and 4 July 2026 the calculator returns 915 days, which includes that extra day.' },
+        { question: 'Does the result include both the start and end date?', answer: 'No. The result is the gap between the two dates, so 1 January to 2 January is 1 day. If both the first and last day should count — days of a visa used, nights booked, days billed — add one to the result.' },
+        { question: 'Why is the number of months a decimal?', answer: 'Months are not all the same length, so the calculator divides by the average month of 30.44 days (365.25 / 12). That makes the month figure an approximation. The day count is exact, so use it whenever precision matters.' },
+        { question: 'How many weeks are between two dates?', answer: 'Divide the day count by 7. The decimal is leftover days rather than a fraction of a week: 130.71 weeks means 130 whole weeks plus 5 days.' },
+        { question: 'Can I use it as a countdown to a future date?', answer: 'Yes. Put today in the start fields and the future date in the end fields, and the day count is the number of days until it. The order does not actually matter — the result is an absolute difference, so reversing the dates gives the same answer rather than a negative one.' },
+        { question: 'Does the time of day or my time zone change the answer?', answer: 'No. Both dates are treated as midnight local time, so the answer is a count of calendar days. Daylight saving is absorbed by rounding to the nearest whole day, which means a clock change cannot push the count off by one.' },
+        { question: 'Can I count business days instead of calendar days?', answer: 'Not directly — the count includes weekends and public holidays. For a rough figure, multiply the number of weeks by 5, then subtract any holidays inside the range.' }
       ]
     },
     compute(values) {

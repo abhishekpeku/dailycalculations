@@ -11,6 +11,9 @@ import PomodoroTimer from '@/components/PomodoroTimer';
 import TimeZonePlanner from '@/components/TimeZonePlanner';
 import FaqSection from '@/components/FaqSection';
 import Breadcrumb from '@/components/Breadcrumb';
+import FormulaSection from '@/components/FormulaSection';
+import WorkedExampleSection from '@/components/WorkedExampleSection';
+import WatchOutSection from '@/components/WatchOutSection';
 import RelatedCalculators from '@/components/RelatedCalculators';
 import { calculators, findCalculator } from '@/data/calculators';
 import { buildAliasSentence, buildBreadcrumbs, buildCalculatorMetadata, buildHowToSteps, buildPageJsonLd, buildRelatedLinks } from '@/lib/seo';
@@ -43,7 +46,7 @@ export default async function CalculatorPage({
   const calculator = findCalculator(slug);
   if (!calculator) notFound();
 
-  const { compute, ...clientCalculator } = calculator;
+  const { compute, content, ...clientCalculator } = calculator;
   const jsonLd = buildPageJsonLd(slug);
   const t = await getTranslations({ locale, namespace: 'calculator' });
 
@@ -55,17 +58,15 @@ export default async function CalculatorPage({
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="space-y-8">
-        <section className="rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-panel dark:border-slate-800 dark:bg-slate-950/90">
-          <div className="space-y-4">
-            <Breadcrumb items={breadcrumbs} />
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-3xl">{calculator.title}</h1>
-            {aliasSentence ? (
-              <p className="max-w-3xl text-sm leading-6 text-slate-500 dark:text-slate-400">{aliasSentence}</p>
-            ) : null}
-            <p className="max-w-3xl text-base leading-7 text-slate-600 dark:text-slate-300">{calculator.description}</p>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Example: {calculator.example}</p>
-          </div>
-        </section>
+        {/* Deliberately not a card: the hero is compressed so the widget stays above the fold. */}
+        <header className="space-y-3">
+          <Breadcrumb items={breadcrumbs} />
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-3xl">{calculator.title}</h1>
+          {aliasSentence ? (
+            <p className="max-w-3xl text-sm leading-6 text-slate-500 dark:text-slate-400">{aliasSentence}</p>
+          ) : null}
+          <p className="max-w-3xl text-base leading-7 text-slate-600 dark:text-slate-300">{calculator.description}</p>
+        </header>
 
         {slug === 'gpa-calculator' ? <GpaCalculator /> :
          slug === 'paycheck-calculator' ? <PaycheckCalculator /> :
@@ -76,10 +77,12 @@ export default async function CalculatorPage({
          slug === 'timezone-meeting-planner' ? <TimeZonePlanner /> :
          <CalculatorForm calculator={clientCalculator} />}
 
+        <p className="text-sm text-slate-500 dark:text-slate-400">Example: {calculator.example}</p>
+
         <section id="how-to-use" className="rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-panel dark:border-slate-800 dark:bg-slate-950/90">
           <h2 className="text-2xl font-semibold text-slate-950 dark:text-white">{t('howToUse')}</h2>
           <div className="mt-4 space-y-4 text-slate-600 dark:text-slate-300">
-            <p>{t('howToUseDesc1')}</p>
+            <p>{content ? content.howTo.intro : t('howToUseDesc1')}</p>
             <ol className="list-decimal space-y-2 pl-5 marker:font-semibold marker:text-brand-700 dark:marker:text-brand-300">
               {howToSteps.map((step) => (
                 <li key={step.name}>
@@ -88,9 +91,13 @@ export default async function CalculatorPage({
                 </li>
               ))}
             </ol>
-            <p>{t('howToUseDesc2')}</p>
+            <p>{content ? content.howTo.outro ?? t('howToUseDesc2') : t('howToUseDesc2')}</p>
           </div>
         </section>
+
+        {content ? <FormulaSection title={t('formulaTitle')} formula={content.formula} /> : null}
+        {content ? <WorkedExampleSection title={t('workedExampleTitle')} example={content.workedExample} /> : null}
+        {content ? <WatchOutSection title={t('watchOutTitle')} items={content.watchOut} /> : null}
 
         <FaqSection
           title={`${calculator.title} FAQ`}

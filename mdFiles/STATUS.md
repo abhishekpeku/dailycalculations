@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-09-10 · Current step: **10** · Steps done: **9 / 28** · **Phase A complete**
+Last updated: 2026-09-10 · Current step: **11** · Steps done: **10 / 28** · **Phase A complete**
 
 ---
 
@@ -53,7 +53,7 @@ Status values: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `PARKED`
 
 | # | Step | Status | Scope | Spec |
 |---|---|---|---|---|
-| 10 | New page template + pilot | TODO | Rebuild the calculator page: breadcrumb → H1 + aliases → **widget above the fold** → How to use → The formula → Worked example → Watch out for → 6-8 FAQs → Related. Add the content fields to `CalculatorConfig`. **Populate for `date-difference-calculator` only.** | §4.2, §4.3, §5.2 |
+| 10 | New page template + pilot | **DONE** 2026-09-10 | Rebuild the calculator page: breadcrumb → H1 + aliases → **widget above the fold** → How to use → The formula → Worked example → Watch out for → 6-8 FAQs → Related. Add the content fields to `CalculatorConfig`. **Populate for `date-difference-calculator` only.** | §4.2, §4.3, §5.2 |
 | 11 | **MEASURE GATE** — no code | TODO | Deploy, request indexing on the pilot page, wait 2-3 weeks. Check Search Console position/impressions for `date-difference-calculator`. **If it does not move, stop and re-diagnose before spending effort on 52 more pages.** | §5.2, §7 |
 | 12 | Content rollout: finance + shopping | TODO | 13 calculators (finance 8 + shopping 5). Run **after** step 16. | §4.2 |
 | 13 | Content rollout: health + measurements | TODO | 10 calculators (health 6 + measurements 4). | §4.2 |
@@ -210,7 +210,63 @@ data, and a live hydrated run on `:3007` in Chrome (`?q=mortgage` → 2, `?q=emi
 `mortgage-calculator` by alias, `?category=health` → 6, chip + typing + clearing all round-trip the
 URL, `history.length` unchanged at 3, no console errors).
 
+10 · 2026-09-10 · **Phase C pilot shipped.** New optional `content?: CalculatorContent` on
+`CalculatorConfig` (`howTo` / `formula` / `workedExample` / `watchOut`), populated on
+**`date-difference-calculator` only**; its `seo.faq` went **2 → 8**. The template rebuild lands on
+all 53 pages: hero compressed out of its `shadow-panel` card (§4.3) so the widget sits above the
+fold, `example` moved below the widget, and three new server components —
+**`FormulaSection`**, **`WorkedExampleSection`**, **`WatchOutSection`** — render only when `content`
+exists. `buildHowToSteps` now returns the hand-written steps when `content` is present and falls
+back to the input-derived ones otherwise, so the `HowTo` JSON-LD followed for free (step 07's design
+paid off — one function changed, zero JSON-LD edits). Three strings added to `messages/en.json`.
+Verified: 78 static pages, 53/53 calculator pages with 4 JSON-LD nodes each, pilot H2 order exactly
+§4.2's, **1,379 words** (up from ~150), HowTo JSON-LD == the 5 hand-written steps and all 5 visible
+in the `<ol>`, FAQPage 8 entries, 0 content sections leaked onto the other 52, 0 `/en/` hrefs,
+canonical unchanged. Build + lint pass.
+
 **Next step needs to know:**
+
+- **Step 11 is the measure gate and it is now armed.** Deploy, request indexing on
+  `/calculators/date-difference-calculator`, wait 2-3 weeks, then read Search Console. Do **not**
+  start 12-15 until it moves. Note the ⚠ below — the deploy still carries the unfixed apex→www gap.
+- ⚠ **`updatedAt` on the pilot did not change, and that is correct.** It was already `2026-09-10`
+  and the content change happened on `2026-09-10`. Do not read it as a missed bump — the rule from
+  step 04 still stands, and steps 12-15 **must** bump it because those pages carry older dates.
+- **`content` is optional and must stay optional until 12-15 have run.** Making it required is the
+  natural-looking cleanup and it would break the build on 52 calculators. The whole point of the
+  step-11 gate is that those 52 are not written yet.
+- **`CalculatorClientConfig` is now `Omit<CalculatorConfig, 'compute' | 'content'>`.** The prose is
+  server-rendered; keeping it out of the props stops every word crossing the RSC boundary into
+  `CalculatorForm`. The page destructures `const { compute, content, ...clientCalculator }`.
+  Note this only trims the **flight payload** — `CalculatorForm` imports `findCalculator` from
+  `data/calculators` directly, so the whole data module is in the client bundle regardless. Parked.
+- **`lib/seo.ts`'s `HowToStep` is now an alias of `CalculatorHowToStep`** from `data/calculators.ts`.
+  Data owns the shape so hand-written and derived steps cannot drift; the import direction
+  (`lib/seo` → `data`) is unchanged, so there is no cycle. Do not re-declare the type in `lib/seo`.
+- **`FaqSection`'s title is now a real `<h2>`** (it was a styled `<span>`, so the FAQ block had no
+  heading element at all and the page's H2 sequence had a hole in it). The description became a
+  `<p>` and the wrapper a `<div>` inside the `<summary>`. **This also changes the homepage**, which
+  uses the same component — same classes, no visual change, one more correct H2. The individual FAQ
+  questions are still `<span>`s inside their `<summary>`; promoting them to `<h3>` is parked.
+- ⚠ **The `tailwind.config` dead-shade trap from step 09 is real and confirmed in the built CSS.**
+  Grepping `.next/static/css/*.css` shows `dark\:text-brand-100` present and
+  `dark\:text-brand-300` **absent** — every existing `dark:text-brand-300` in the codebase emits
+  nothing. The new components deliberately use `dark:text-brand-100` (`#d9ecff`, defined). **When
+  writing new components, only `brand-50 / 100 / 500 / 700` exist.** Still parked as a cleanup.
+- **The pilot's worked-example figures were verified against the live widget, not just arithmetic.**
+  1 Jan 2024 → 4 Jul 2026 renders 915 / 130.71 / 30.06, matching the hand-written numbers exactly.
+  Steps 12-15 should do the same — a worked example that disagrees with the calculator on its own
+  page is worse than no worked example.
+- **The section shell markup is duplicated five times now** (`page.tsx` how-to,
+  `FormulaSection`, `WorkedExampleSection`, `WatchOutSection`, `RelatedCalculators` all repeat
+  `rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-panel dark:…`). Extracting a
+  `ContentSection` shell was deliberately not done mid-step. Parked.
+- ⚠ **Chrome screenshot capture timed out twice** (`Page.captureScreenshot` after 30s) partway
+  through the visual check, while `read_console_messages` kept working and showed **no page errors**
+  — only Chrome-extension `message channel closed` noise. The tab was not frozen and the page is
+  fine; the capture subsystem is the flaky part. If it recurs, fall back to asserting against the
+  prerendered HTML and the built CSS rather than debugging the browser.
+
 
 - ⚠ **Never read the URL on `/calculators` with `useSearchParams()`.** The page is `force-static`;
   under static rendering Next bails the client tree up to the nearest `<Suspense>` out of the

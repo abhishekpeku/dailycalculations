@@ -20,12 +20,12 @@ export default function FaqSection({
     <section className="mt-16">
       <details className="group rounded-2xl border border-slate-200 bg-white/95 shadow-panel dark:border-slate-800 dark:bg-slate-950/90">
         <summary className="flex cursor-pointer list-none items-start justify-between gap-4 p-5">
-          <span>
-            <span className="block text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">{title}</span>
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">{title}</h2>
             {description ? (
-              <span className="mt-2 block text-base leading-7 text-slate-600 dark:text-slate-300">{description}</span>
+              <p className="mt-2 text-base leading-7 text-slate-600 dark:text-slate-300">{description}</p>
             ) : null}
-          </span>
+          </div>
           <span className="mt-1 text-lg text-brand-700 transition group-open:rotate-45 dark:text-brand-300" aria-hidden="true">
             +
           </span>

@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation';
-import { Link } from '@/i18n/navigation';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
@@ -11,8 +10,9 @@ import TextToolsCalculator from '@/components/TextToolsCalculator';
 import PomodoroTimer from '@/components/PomodoroTimer';
 import TimeZonePlanner from '@/components/TimeZonePlanner';
 import FaqSection from '@/components/FaqSection';
-import { calculators, findCalculator, categories } from '@/data/calculators';
-import { buildCalculatorMetadata, buildPageJsonLd } from '@/lib/seo';
+import Breadcrumb from '@/components/Breadcrumb';
+import { calculators, findCalculator } from '@/data/calculators';
+import { buildBreadcrumbs, buildCalculatorMetadata, buildHowToSteps, buildPageJsonLd } from '@/lib/seo';
 import { routing } from '@/i18n/routing';
 
 export const dynamic = 'force-static';
@@ -46,20 +46,15 @@ export default async function CalculatorPage({
   const jsonLd = buildPageJsonLd(slug);
   const t = await getTranslations({ locale, namespace: 'calculator' });
 
-  const categoryObj = categories.find((c) => c.id === calculator.category);
-  const categoryTitle = categoryObj ? categoryObj.title : calculator.category;
+  const breadcrumbs = buildBreadcrumbs(slug);
+  const howToSteps = buildHowToSteps(slug);
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="space-y-8">
         <section className="rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-panel dark:border-slate-800 dark:bg-slate-950/90">
           <div className="space-y-4">
-            <Link
-              href={`/categories/${calculator.category}`}
-              className="text-sm font-semibold uppercase tracking-[0.25em] text-brand-700 dark:text-brand-300 inline-block"
-            >
-              {categoryTitle}
-            </Link>
+            <Breadcrumb items={breadcrumbs} />
             <h1 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-3xl">{calculator.title}</h1>
             <p className="max-w-3xl text-base leading-7 text-slate-600 dark:text-slate-300">{calculator.description}</p>
             <p className="text-sm text-slate-500 dark:text-slate-400">Example: {calculator.example}</p>
@@ -75,10 +70,18 @@ export default async function CalculatorPage({
          slug === 'timezone-meeting-planner' ? <TimeZonePlanner /> :
          <CalculatorForm calculator={clientCalculator} />}
 
-        <section className="rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-panel dark:border-slate-800 dark:bg-slate-950/90">
+        <section id="how-to-use" className="rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-panel dark:border-slate-800 dark:bg-slate-950/90">
           <h2 className="text-2xl font-semibold text-slate-950 dark:text-white">{t('howToUse')}</h2>
           <div className="mt-4 space-y-4 text-slate-600 dark:text-slate-300">
             <p>{t('howToUseDesc1')}</p>
+            <ol className="list-decimal space-y-2 pl-5 marker:font-semibold marker:text-brand-700 dark:marker:text-brand-300">
+              {howToSteps.map((step) => (
+                <li key={step.name}>
+                  <span className="font-medium text-slate-900 dark:text-white">{step.name}.</span>{' '}
+                  {step.text}
+                </li>
+              ))}
+            </ol>
             <p>{t('howToUseDesc2')}</p>
           </div>
         </section>

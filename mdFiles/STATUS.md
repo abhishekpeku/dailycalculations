@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-09-10 · Current step: **07** · Steps done: **6 / 28** · **Phase A complete**
+Last updated: 2026-09-10 · Current step: **08** · Steps done: **7 / 28** · **Phase A complete**
 
 ---
 
@@ -45,7 +45,7 @@ Status values: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `PARKED`
 |---|---|---|---|---|
 | 05 | Calculator schema + alias data | **DONE** 2026-09-10 | Add `aliases: string[]`, `related: string[]`, `redirectFrom?: string[]` to `CalculatorConfig` (required except `redirectFrom`). Populate all 53 from the cluster tables. **Large mechanical edit — do it in 4 sub-batches by cluster, building after each.** | §1.3, §1.5 |
 | 06 | `redirectFrom` 301s | **DONE** 2026-09-10 | Generate 301s in `middleware.ts` from every `redirectFrom` slug to its canonical `/calculators/<id>`. Include `auto-loan-calculator`, `home-loan-calculator`, `house-loan-emi-calculator`, `word-counter`, `bmr-calculator`. | §2.5 |
-| 07 | Structured data + breadcrumb | TODO | Add `WebApplication` (with `alternateName: aliases`), `BreadcrumbList` and `HowTo` JSON-LD to `buildPageJsonLd`. Build a **visible** `Breadcrumb` component — Google cross-checks JSON-LD against rendered markup. | §2.3 |
+| 07 | Structured data + breadcrumb | **DONE** 2026-09-10 | Add `WebApplication` (with `alternateName: aliases`), `BreadcrumbList` and `HowTo` JSON-LD to `buildPageJsonLd`. Build a **visible** `Breadcrumb` component — Google cross-checks JSON-LD against rendered markup. | §2.3 |
 | 08 | Surface the aliases | TODO | "Also known as …" sentence under the H1. "Related calculators" block using `related`, with **alias anchor text**, not repeated titles. Extend `fuzzyFilter` in `CalculatorSearch.tsx:19` to match `aliases`. | §1.4 |
 | 09 | Listing page search + `?q=` | TODO | Add category filter chips, the search box, and `?q=` / `?category=` params to `app/[locale]/calculators/page.tsx`. Then either fix or delete the broken `SearchAction` in `buildHomeJsonLd`. Also clean the homepage `keywords` array — drop `graphing calculator`. | §2.7, §4.5, §1.6 |
 
@@ -165,8 +165,38 @@ instead of chaining; `/en/about-us` went from 2 hops to 1. Verified against a re
 all 6 slugs 301 to the right canonical, query strings survive, `/en/*` and `/de/*` variants resolve
 in one hop, 6 known-good pages still 200, and an unknown slug still 404s. Build + lint pass.
 
+07 · 2026-09-10 · `buildPageJsonLd` now returns **an array of 4 nodes** —
+`WebApplication` → `BreadcrumbList` → `HowTo` → `FAQPage` — matching `buildHomeJsonLd`'s shape (each
+node carries its own `@context`; the page already `JSON.stringify`s whatever it gets, so the page
+change was zero). Two new exports in `lib/seo.ts`, `buildBreadcrumbs(slug)` and
+`buildHowToSteps(slug)`, are the **single source** both the JSON-LD and the rendered markup read —
+Google cross-checks them and two hand-written copies would drift. New `components/Breadcrumb.tsx`
+(server component, `nav[aria-label="Breadcrumb"] > ol`, last crumb `aria-current="page"`) replaces
+the bare category eyebrow above the H1. The "How to use" section gained `id="how-to-use"` and a
+visible `<ol>` of the same steps the `HowTo` node lists. `updatedAt` deliberately **not** bumped —
+markup is not a content change. Verified by parsing all 53 prerendered HTML files: 4 nodes each,
+JSON parses, `alternateName` matches `aliases` on all 53, 0 `/en/` in JSON-LD or body, breadcrumb
+positions 1-4 with no `item` on the last, HowTo steps 2-9 and every step name visible. Build + lint
+pass; still 78 static pages.
+
 **Next step needs to know:**
 
+- **Step 07's shared builders are the page template's contract.** `buildBreadcrumbs(slug)` returns
+  `{ name, href? }[]` (Home → Calculators → Category → Title, last one `href`-less) and
+  `buildHowToSteps(slug)` returns `{ name, text }[]`. **Step 10 must render from these, not
+  re-derive them** — and when step 10 adds real hand-written how-to content to `CalculatorConfig`,
+  `buildHowToSteps` is the one function to change; the JSON-LD follows for free.
+- **`Breadcrumb.href` is `''` for Home, not `'/'`.** JSON-LD needs `${SITE_URL}` with no trailing
+  slash (agreeing with `buildCanonical('')` and the sitemap root); the component maps `''` → `/` for
+  the `<Link>`. Do not "fix" the empty string.
+- **`buildHowToSteps` derives steps from `calculator.inputs` and uses the labels verbatim.**
+  Lowercasing them was tried and reverted — it produced `Enter annual interest rate (apr)` and
+  `Enter fahrenheit`. Five calculators have **zero** `inputs` (`currency-converter`,
+  `character-counter`, `hashtag-counter`, `pomodoro-timer`, `timezone-meeting-planner`) and take a
+  generic 2-step fallback; any new custom-component calculator will too.
+- ⚠ **The heredoc-eats-backslashes trap is not specific to `middleware.ts`.** A quoted
+  `python - <<'PY'` heredoc collapsed `[^'\\]` in a validator regex to `[^'\]` and crashed it.
+  Write throwaway scripts to the scratchpad and run them by path.
 - **Every calculator edit must bump its `updatedAt`.** It is the sitemap's `<lastmod>` — the whole
   point of step 04 was to stop claiming all 53 pages changed on every deploy. Steps 12-15 (content
   rollout) should bump it on each page they touch; step 05 (alias data) should **not** — adding
@@ -299,6 +329,10 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
   a 6-entry redirect map, costing +95 KB raw / ~81 KB gzipped in the middleware bundle (step 06).
   A build-time codegen step emitting a literal map would remove it. Not worth doing until the
   Workers bundle size actually pinches.
+- **Category and listing pages still emit no JSON-LD.** `/categories/<id>` and `/calculators` have
+  no `BreadcrumbList` and no `ItemList`, and no visible breadcrumb. Deliberately out of scope in
+  step 07 (calculator pages only). `components/Breadcrumb.tsx` is generic and would drop straight
+  in. Worth doing once the category restructure (step 16) settles the names.
 - `graphing calculator` — dropped from the keywords array in step 09; genuinely hard to build and
   not worth it. Do not resurrect without a reason. (§1.6)
 - Baidu SEO for mainland China. Needs an ICP licence and separate tooling; Cloudflare is unreliable

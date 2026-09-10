@@ -119,22 +119,126 @@ export function buildCategoryMetadata(categoryId: string): Metadata {
   };
 }
 
+export type Breadcrumb = {
+  name: string;
+  /** Root-relative. Absent on the current page, which is never a link. */
+  href?: string;
+};
+
+export type HowToStep = {
+  name: string;
+  text: string;
+};
+
+/**
+ * The trail rendered by `<Breadcrumb>` and serialised into BreadcrumbList JSON-LD.
+ * Google cross-checks the two, so they must come from here and nowhere else.
+ */
+export function buildBreadcrumbs(slug: string): Breadcrumb[] {
+  const calculator = calculators.find((item) => item.id === slug);
+  if (!calculator) return [];
+
+  const category = categories.find((item) => item.id === calculator.category);
+
+  return [
+    { name: 'Home', href: '' },
+    { name: 'Calculators', href: '/calculators' },
+    { name: category ? category.title : calculator.category, href: `/categories/${calculator.category}` },
+    { name: calculator.title }
+  ];
+}
+
+/**
+ * The steps rendered in the "How to use" section and serialised into HowTo JSON-LD.
+ * Derived from the input fields so it stays true as calculators change. The five
+ * calculators with custom components have no `inputs` and fall back to generic steps.
+ */
+export function buildHowToSteps(slug: string): HowToStep[] {
+  const calculator = calculators.find((item) => item.id === slug);
+  if (!calculator) return [];
+
+  const readResult = {
+    name: 'Read the result',
+    text: 'Results update instantly as you type — there is nothing to submit and no signup.'
+  };
+
+  if (calculator.inputs.length === 0) {
+    return [
+      { name: 'Enter your values', text: `Fill in the fields in the ${calculator.title} above.` },
+      readResult
+    ];
+  }
+
+  // Labels keep their own casing — lowercasing turns "APR" into "apr".
+  return [
+    ...calculator.inputs.map((input) => ({
+      name: `Enter ${input.label}`,
+      text: `Type your value into the "${input.label}" field — for example ${input.placeholder}.`
+    })),
+    readResult
+  ];
+}
+
 export function buildPageJsonLd(slug: string) {
   const calculator = calculators.find((item) => item.id === slug);
   if (!calculator) return null;
 
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    'mainEntity': calculator.seo.faq.map((faq) => ({
-      '@type': 'Question',
-      'name': faq.question,
-      'acceptedAnswer': {
-        '@type': 'Answer',
-        'text': faq.answer
-      }
-    }))
-  };
+  const url = `${SITE_URL}/calculators/${calculator.id}`;
+
+  return [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebApplication',
+      'name': calculator.title,
+      'alternateName': calculator.aliases,
+      'url': url,
+      'description': calculator.seo.description,
+      'applicationCategory': 'UtilitiesApplication',
+      'operatingSystem': 'Any',
+      'browserRequirements': 'Requires JavaScript',
+      'offers': {
+        '@type': 'Offer',
+        'price': '0',
+        'priceCurrency': 'USD'
+      },
+      'isAccessibleForFree': true
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      'itemListElement': buildBreadcrumbs(slug).map((crumb, index) => ({
+        '@type': 'ListItem',
+        'position': index + 1,
+        'name': crumb.name,
+        ...(crumb.href === undefined ? {} : { 'item': `${SITE_URL}${crumb.href}` })
+      }))
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'HowTo',
+      'name': `How to use the ${calculator.title}`,
+      'description': calculator.description,
+      'url': `${url}#how-to-use`,
+      'step': buildHowToSteps(slug).map((step, index) => ({
+        '@type': 'HowToStep',
+        'position': index + 1,
+        'name': step.name,
+        'text': step.text
+      }))
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      'mainEntity': calculator.seo.faq.map((faq) => ({
+        '@type': 'Question',
+        'name': faq.question,
+        'acceptedAnswer': {
+          '@type': 'Answer',
+          'text': faq.answer
+        }
+      }))
+    }
+  ];
 }
 
 export function buildHomeJsonLd() {

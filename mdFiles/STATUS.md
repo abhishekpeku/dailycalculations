@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-09-10 · Current step: **05** · Steps done: **4 / 28** · **Phase A complete**
+Last updated: 2026-09-10 · Current step: **06** · Steps done: **5 / 28** · **Phase A complete**
 
 ---
 
@@ -43,7 +43,7 @@ Status values: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `PARKED`
 
 | # | Step | Status | Scope | Spec |
 |---|---|---|---|---|
-| 05 | Calculator schema + alias data | TODO | Add `aliases: string[]`, `related: string[]`, `redirectFrom?: string[]` to `CalculatorConfig` (required except `redirectFrom`). Populate all 53 from the cluster tables. **Large mechanical edit — do it in 4 sub-batches by cluster, building after each.** | §1.3, §1.5 |
+| 05 | Calculator schema + alias data | **DONE** 2026-09-10 | Add `aliases: string[]`, `related: string[]`, `redirectFrom?: string[]` to `CalculatorConfig` (required except `redirectFrom`). Populate all 53 from the cluster tables. **Large mechanical edit — do it in 4 sub-batches by cluster, building after each.** | §1.3, §1.5 |
 | 06 | `redirectFrom` 301s | TODO | Generate 301s in `middleware.ts` from every `redirectFrom` slug to its canonical `/calculators/<id>`. Include `auto-loan-calculator`, `home-loan-calculator`, `house-loan-emi-calculator`, `word-counter`, `bmr-calculator`. | §2.5 |
 | 07 | Structured data + breadcrumb | TODO | Add `WebApplication` (with `alternateName: aliases`), `BreadcrumbList` and `HowTo` JSON-LD to `buildPageJsonLd`. Build a **visible** `Breadcrumb` component — Google cross-checks JSON-LD against rendered markup. | §2.3 |
 | 08 | Surface the aliases | TODO | "Also known as …" sentence under the H1. "Related calculators" block using `related`, with **alias anchor text**, not repeated titles. Extend `fuzzyFilter` in `CalculatorSearch.tsx:19` to match `aliases`. | §1.4 |
@@ -148,6 +148,14 @@ the ~80% garbage hreflang alternates are gone. Verified: 72 `<url>`, 72 unique `
 `https://www.dailycalculations.com`, XML tag-balanced with all dates and URLs parseable. Build + lint
 pass.
 
+05 · 2026-09-10 · `aliases: string[]` and `related: string[]` (both **required**) plus
+`redirectFrom?: string[]` added to `CalculatorConfig` and populated on all 53 from §1.5. Pure data —
+no UI, no rendered output change, and **no `updatedAt` bumped** (all 53 still `2026-09-10`), which is
+correct per the step-04 note. Diff is 116 insertions, 0 deletions, one file. Validation passed:
+53 calculators, **0 broken `related` ids**, 0 self-references, 0 duplicate entries, every calculator
+≥3 aliases and 3-4 related, no `redirectFrom` slug colliding with a real id. Build + lint pass;
+still 78 static pages.
+
 **Next step needs to know:**
 
 - **Every calculator edit must bump its `updatedAt`.** It is the sitemap's `<lastmod>` — the whole
@@ -194,6 +202,41 @@ pass.
   agreeing after the step-04 rewrite.
 
 ---
+
+- **`redirectFrom` exists on exactly four calculators.** `mortgage-calculator`
+  (`home-loan-calculator`, `house-loan-emi-calculator`), `car-payment-calculator`
+  (`auto-loan-calculator`, `car-loan-calculator`), `tdee-calculator` (`bmr-calculator`),
+  `character-counter` (`word-counter`). **Step 06 generates the 301s from this field — do not
+  hand-list the slugs in `middleware.ts`.** Add them to the same `RENAMED_PATHS`-style block step 03
+  created, so they answer a real 301 and not a 308.
+- ⚠️ **Two `redirectFrom` entries are temporary and must be deleted when their page ships:**
+  `tdee-calculator → bmr-calculator` dies in **step 23**, `character-counter → word-counter` dies in
+  **step 26**. Leaving them in place would 301 the new page to the old one — i.e. the new calculator
+  would be unreachable. Both steps must also remove the redirect from `middleware.ts`.
+- **Forward references were stripped from `related` and must be restored later.** §1.5's tables
+  point at 15 calculators that do not exist yet; shipping those ids would have rendered dead
+  internal links in step 08. What to add back, and when:
+
+  | When | Restore to `related` |
+  |---|---|
+  | Step 23 (`bmr-calculator`) | add `bmr-calculator` to `bmi-calculator`, `calorie-calculator`, `tdee-calculator` |
+  | Step 24 (`math`) | add `percentage-calculator` to `salary-raise-calculator`, `discount-calculator`, `cashback-calculator` |
+  | Step 26 (`word-counter`) | add `word-counter` to `character-counter`, `hashtag-counter` |
+  | Step 26 (`study-time-calculator`) | add `study-time-calculator` to `pomodoro-timer` |
+  | Step 25 (`iban-calculator`) | add `iban-calculator` to `currency-converter` |
+  | Step 26 | **replace `gpa-calculator`'s whole `related` list** — see next bullet |
+
+- **`gpa-calculator` carries a placeholder `related` list.** All four §1.5 siblings
+  (`grade-calculator`, `final-grade-calculator`, `weighted-average-calculator`,
+  `percentage-calculator`) are future pages, so it would otherwise have shipped empty. It currently
+  has `pomodoro-timer`, `date-difference-calculator`, `character-counter`, `sleep-time-calculator`.
+  **Step 26 must swap in the §1.5 values.** This is the only invented `related` data in the file.
+- **Field order:** the three new fields sit directly after `updatedAt`, so every object opens
+  `id → category → updatedAt → aliases → related → redirectFrom → title`. §1.3 shows them after
+  `inputs`; the file's existing placement of `updatedAt` already differs from §1.3, and keeping the
+  metadata contiguous gives a stable one-line insertion anchor. Type declaration order matches.
+- **Steps 07 and 08 are now unblocked** — `aliases` feeds JSON-LD `alternateName` and the "Also
+  known as" line; `related` feeds the related-tools block with alias anchor text.
 
 ## Pending on the user — not code
 

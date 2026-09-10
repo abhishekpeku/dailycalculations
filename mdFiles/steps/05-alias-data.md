@@ -23,10 +23,10 @@ context window and degrade accuracy near the end, which is exactly where mistake
 If context still runs short, stop after any completed batch and update `STATUS.md` with
 `05 IN PROGRESS — batches 1-2 done`. A fresh session resumes from the next unticked box.
 
-- [ ] **Batch 1** — Clusters A, B, C (finance + work): 15 calculators
-- [ ] **Batch 2** — Clusters D, E, F (shopping + health + measurements): 16 calculators
-- [ ] **Batch 3** — Clusters G, H, I (auto + home + time): 16 calculators
-- [ ] **Batch 4** — Clusters J, K, L, M (travel + education + creator + text): 8 calculators
+- [x] **Batch 1** — Clusters A, B, C (finance + work): 15 calculators
+- [x] **Batch 2** — Clusters D, E, F (shopping + health + measurements): 16 calculators
+- [x] **Batch 3** — Clusters G, H, I (auto + home + time): 16 calculators
+- [x] **Batch 4** — Clusters J, K, L, M (travel + education + creator + text): 8 calculators
 
 Total 53 + 2 (`bmr-calculator`, `word-counter`) that do not exist yet — **skip those two**; they
 arrive in steps 23 and 26 and carry their own alias data.
@@ -84,12 +84,12 @@ arrive in steps 23 and 26 and carry their own alias data.
 
 ## Acceptance
 
-- [ ] All 4 batch boxes ticked.
-- [ ] `npm run build` passes.
-- [ ] TypeScript reports no missing `aliases` / `related` / `updatedAt` — i.e. all 53 are populated.
-- [ ] The validation script reports **0 broken related ids**.
-- [ ] Every calculator has ≥3 aliases and ≥3 related entries.
-- [ ] No calculator lists **itself** in `related`:
+- [x] All 4 batch boxes ticked.
+- [x] `npm run build` passes.
+- [x] TypeScript reports no missing `aliases` / `related` / `updatedAt` — i.e. all 53 are populated.
+- [x] The validation script reports **0 broken related ids**.
+- [x] Every calculator has ≥3 aliases and ≥3 related entries.
+- [x] No calculator lists **itself** in `related`:
       `node -e "…"` or eyeball during each batch.
 
 ## Do NOT
@@ -104,3 +104,24 @@ arrive in steps 23 and 26 and carry their own alias data.
 
 Update `mdFiles/STATUS.md`: mark 05 `DONE`, note the two `redirectFrom` entries that must be removed
 later (steps 23 and 26) so they are not forgotten, and confirm the validation script passed.
+
+---
+
+## Outcome — 2026-09-10
+
+All 53 populated. Build + lint pass. Validation: 53 calculators, 0 broken `related` ids,
+0 self-references, 0 duplicates, every calculator ≥3 aliases and 3-4 related.
+
+**Deviation 1 — forward references dropped.** §1.5's `related` tables cite 15 calculators that do
+not exist yet. Keeping them would have rendered dead links in step 08 and failed this step's own
+"0 broken related ids" check. They were removed; see the restore table in `STATUS.md`.
+
+**Deviation 2 — `gpa-calculator` backfilled.** All four of its spec siblings are future
+calculators, so it would have shipped with an empty `related`. Given
+`pomodoro-timer`, `date-difference-calculator`, `character-counter`, `sleep-time-calculator`
+(a student cluster from existing pages). Step 26 replaces these with the §1.5 values.
+
+**Deviation 3 — field order.** The three new fields sit after `updatedAt` (so the whole metadata
+block is `id → category → updatedAt → aliases → related → redirectFrom`), not after `inputs` as in
+§1.3. The file already put `updatedAt` after `category` rather than where §1.3 shows it; this keeps
+metadata contiguous and gives a single-line insertion anchor.

@@ -1,13 +1,29 @@
+import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 import CategoryCard from '@/components/CategoryCard';
 import { categories, calculators } from '@/data/calculators';
 import { routing } from '@/i18n/routing';
+import { buildCanonical } from '@/lib/seo';
 
 export const dynamic = 'force-static';
 
 export function generateStaticParams() {
   return [{ locale: routing.defaultLocale }];
+}
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'categories' });
+  return {
+    title: t('headline'),
+    description: t('description'),
+    alternates: buildCanonical('/categories')
+  };
 }
 
 export default async function CategoriesPage({

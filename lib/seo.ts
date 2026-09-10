@@ -2,9 +2,10 @@ import type { Metadata } from 'next';
 import { calculators, categories } from '@/data/calculators';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 
-export const siteName = SITE_NAME;
-// temporary alias — call sites move to buildCanonical() in step 03
-export const siteUrl = SITE_URL;
+/** Canonical URL for a root-relative path. Pass '' for the home page. */
+export function buildCanonical(path: string) {
+  return { canonical: `${SITE_URL}${path}` };
+}
 
 export const homeFaqs = [
   {
@@ -69,17 +70,18 @@ export function buildCalculatorMetadata(slug: string): Metadata {
   const calculator = calculators.find((item) => item.id === slug);
   if (!calculator) {
     return {
-      title: `Calculator — ${siteName}`,
+      title: `Calculator — ${SITE_NAME}`,
       description: 'Lightweight calculator tool.'
     };
   }
 
-  const title = `${calculator.title} | ${siteName}`;
+  const title = `${calculator.title} | ${SITE_NAME}`;
   const description = calculator.seo.description;
 
   return {
     title,
     description,
+    alternates: buildCanonical(`/calculators/${calculator.id}`),
     openGraph: {
       title,
       description,
@@ -97,17 +99,18 @@ export function buildCategoryMetadata(categoryId: string): Metadata {
   const category = categories.find((item) => item.id === categoryId);
   if (!category) {
     return {
-      title: `Category — ${siteName}`,
+      title: `Category — ${SITE_NAME}`,
       description: 'Browse calculator categories.'
     };
   }
 
-  const title = `${category.title} calculators | ${siteName}`;
+  const title = `${category.title} calculators | ${SITE_NAME}`;
   const description = `${category.description} Explore calculators in this category.`;
 
   return {
     title,
     description,
+    alternates: buildCanonical(`/categories/${category.id}`),
     openGraph: {
       title,
       description,
@@ -139,14 +142,14 @@ export function buildHomeJsonLd() {
     {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
-      'name': siteName,
-      'url': siteUrl,
+      'name': SITE_NAME,
+      'url': SITE_URL,
       'description': 'Free online calculators for mortgage, BMI, loan, GPA, compound interest, auto loan, calorie, paycheck, age, investment, TDEE, and more.',
       'potentialAction': {
         '@type': 'SearchAction',
         'target': {
           '@type': 'EntryPoint',
-          'urlTemplate': `${siteUrl}/calculators?q={search_term_string}`
+          'urlTemplate': `${SITE_URL}/calculators?q={search_term_string}`
         },
         'query-input': 'required name=search_term_string'
       }
@@ -154,9 +157,9 @@ export function buildHomeJsonLd() {
     {
       '@context': 'https://schema.org',
       '@type': 'Organization',
-      'name': siteName,
-      'url': siteUrl,
-      'logo': `${siteUrl}/web-app-manifest-192x192.png`
+      'name': SITE_NAME,
+      'url': SITE_URL,
+      'logo': `${SITE_URL}/web-app-manifest-192x192.png`
     },
     {
       '@context': 'https://schema.org',

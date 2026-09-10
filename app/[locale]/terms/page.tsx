@@ -2,7 +2,8 @@ import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 import type { Metadata } from 'next';
 import { routing } from '@/i18n/routing';
-import { siteName, siteUrl } from '@/lib/seo';
+import { buildCanonical } from '@/lib/seo';
+import { SITE_NAME } from '@/lib/site';
 
 export function generateStaticParams() {
   return [{ locale: routing.defaultLocale }];
@@ -15,11 +16,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'terms' });
-  const title = `${t('title')} | ${siteName}`;
+  const title = `${t('title')} | ${SITE_NAME}`;
   return {
     title,
     description: t('metaDescription'),
-    alternates: { canonical: `${siteUrl}/terms` }
+    alternates: buildCanonical('/terms')
   };
 }
 

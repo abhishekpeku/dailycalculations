@@ -6,7 +6,8 @@ import CategoryGrid from '@/components/CategoryGrid';
 import { calculators, categories } from '@/data/calculators';
 import CalculatorCard from '@/components/CalculatorCard';
 import FaqSection from '@/components/FaqSection';
-import { buildHomeJsonLd, siteName, siteUrl } from '@/lib/seo';
+import { buildCanonical, buildHomeJsonLd } from '@/lib/seo';
+import { SITE_NAME, SITE_URL } from '@/lib/site';
 import { routing } from '@/i18n/routing';
 import { Link } from '@/i18n/navigation';
 
@@ -23,7 +24,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'home' });
-  const title = `Free Online Calculator — Mortgage, BMI, Loan, GPA & More | ${siteName}`;
+  const title = `Free Online Calculator — Mortgage, BMI, Loan, GPA & More | ${SITE_NAME}`;
   const description = 'Use free online calculators for mortgage, BMI, loan, GPA, compound interest, auto loan, calorie, paycheck, age, investment, TDEE, and more. Fast, accurate, no signup required.';
   return {
     title,
@@ -40,14 +41,14 @@ export async function generateMetadata({
       title,
       description,
       type: 'website',
-      url: siteUrl,
-      siteName,
+      url: SITE_URL,
+      siteName: SITE_NAME,
       images: [
         {
-          url: `${siteUrl}/web-app-manifest-192x192.png`,
+          url: `${SITE_URL}/web-app-manifest-192x192.png`,
           width: 192,
           height: 192,
-          alt: `${siteName} — Free Online Calculators`
+          alt: `${SITE_NAME} — Free Online Calculators`
         }
       ]
     },
@@ -57,9 +58,7 @@ export async function generateMetadata({
       description,
       site: '@dailycalculations'
     },
-    alternates: {
-      canonical: siteUrl
-    }
+    alternates: buildCanonical('')
   };
 }
 

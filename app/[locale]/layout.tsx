@@ -6,12 +6,12 @@ import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { siteName, siteUrl } from '@/lib/seo';
+import { SITE_NAME, SITE_URL } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: {
-    default: `Free Online Calculator — Mortgage, BMI, Loan, GPA & More | ${siteName}`,
-    template: `%s | ${siteName}`
+    default: `Free Online Calculator — Mortgage, BMI, Loan, GPA & More | ${SITE_NAME}`,
+    template: `%s | ${SITE_NAME}`
   },
   description: 'Use free online calculators for mortgage, BMI, loan, GPA, compound interest, auto loan, calorie, paycheck, age, investment, TDEE, and more. Fast, accurate, no signup required.',
   keywords: [
@@ -22,25 +22,25 @@ export const metadata: Metadata = {
     'age calculator', 'investment calculator', 'tdee calculator',
     'final grade calculator', 'graphing calculator', 'time calculator'
   ],
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(SITE_URL),
   openGraph: {
-    title: `Free Online Calculator — Mortgage, BMI, Loan, GPA & More | ${siteName}`,
+    title: `Free Online Calculator — Mortgage, BMI, Loan, GPA & More | ${SITE_NAME}`,
     description: 'Use free online calculators for mortgage, BMI, loan, GPA, compound interest, auto loan, calorie, paycheck, age, investment, TDEE, and more.',
     type: 'website',
-    url: siteUrl,
-    siteName,
+    url: SITE_URL,
+    siteName: SITE_NAME,
     images: [
       {
-        url: `${siteUrl}/web-app-manifest-192x192.png`,
+        url: `${SITE_URL}/web-app-manifest-192x192.png`,
         width: 192,
         height: 192,
-        alt: `${siteName} — Free Online Calculators`
+        alt: `${SITE_NAME} — Free Online Calculators`
       }
     ]
   },
   twitter: {
     card: 'summary_large_image',
-    title: `Free Online Calculator — Mortgage, BMI, Loan, GPA & More | ${siteName}`,
+    title: `Free Online Calculator — Mortgage, BMI, Loan, GPA & More | ${SITE_NAME}`,
     description: 'Use free online calculators for mortgage, BMI, loan, GPA, compound interest, auto loan, calorie, paycheck, age, investment, TDEE, and more.'
   },
   robots: {

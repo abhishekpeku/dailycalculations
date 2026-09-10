@@ -1,14 +1,30 @@
+import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 import { calculators, categories } from '@/data/calculators';
 import CalculatorCard from '@/components/CalculatorCard';
 import CategoryCard from '@/components/CategoryCard';
 import { routing } from '@/i18n/routing';
+import { buildCanonical } from '@/lib/seo';
 
 export const dynamic = 'force-static';
 
 export function generateStaticParams() {
   return [{ locale: routing.defaultLocale }];
+}
+
+export async function generateMetadata({
+  params
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'calculators' });
+  return {
+    title: t('headline'),
+    description: t('description'),
+    alternates: buildCanonical('/calculators')
+  };
 }
 
 export default async function CalculatorsPage({

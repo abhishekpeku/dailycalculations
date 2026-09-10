@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-09-10 · Current step: **03** · Steps done: **2 / 28**
+Last updated: 2026-09-10 · Current step: **04** · Steps done: **3 / 28**
 
 ---
 
@@ -36,8 +36,8 @@ Status values: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `PARKED`
 |---|---|---|---|---|
 | 01 | Domain + `lib/site.ts` | **DONE** 2026-09-10 | Create `lib/site.ts` exporting `SITE_URL`. Replace the hardcoded domain in `lib/seo.ts`, `app/sitemap.ts`, `app/robots.ts` and every `generateMetadata`. Add the Cloudflare apex→www redirect rule. | §0, D1 |
 | 02 | English-only migration | **DONE** 2026-09-10 | `routing.locales = ['en']`, `localePrefix: 'as-needed'`. Delete `LanguageSwitcher` from `Header`. Update every `generateStaticParams` to drop the locale loop. Add 301s `/en/*` → `/*` in `middleware.ts`. Verify `app/page.tsx` no longer needs its `redirect('/en')`. | D2, D3, D4 |
-| 03 | Canonicals on every page | **TODO** | `buildCanonical(path)` in `lib/seo.ts`. Apply to **every** `generateMetadata` — including `calculators/[slug]` and `categories/[category]`, which currently have none. Remove the locale-blind canonicals in `about`/`contact`/`privacy-policy`/`terms` and the bare-root one on the homepage. | §2.1, D5 |
-| 04 | Sitemap + robots rewrite | TODO | Add `updatedAt: string` to `CalculatorConfig` and populate all 53. Rewrite `app/sitemap.ts`: one entry per path, no locale loops, real `lastModified`, `priority` 0.8 for calculators / 0.6 home / 0.5 rest. Point `robots.ts` at `SITE_URL`. | §2.4 |
+| 03 | Canonicals on every page | **DONE** 2026-09-10 | `buildCanonical(path)` in `lib/seo.ts`. Apply to **every** `generateMetadata` — including `calculators/[slug]` and `categories/[category]`, which currently have none. Remove the locale-blind canonicals in `about`/`contact`/`privacy-policy`/`terms` and the bare-root one on the homepage. | §2.1, D5 |
+| 04 | Sitemap + robots rewrite | **TODO** | Add `updatedAt: string` to `CalculatorConfig` and populate all 53. Rewrite `app/sitemap.ts`: one entry per path, no locale loops, real `lastModified`, `priority` 0.8 for calculators / 0.6 home / 0.5 rest. Point `robots.ts` at `SITE_URL`. | §2.4 |
 
 ### Phase B — Deep-link ranking (make Google surface the calculator, not the homepage)
 
@@ -129,6 +129,15 @@ the repo; the only literal domain left is `lib/site.ts:2`. Build + lint pass.
 removed from `Header` (the component file stays on disk for step 19). Build went from **~350 static
 pages to 82**; the sitemap from ~360 `<loc>` entries to **72**. Build + lint pass.
 
+03 · 2026-09-10 · `buildCanonical(path)` in `lib/seo.ts` is now the only place a canonical is
+built. It lives inside `buildCalculatorMetadata` / `buildCategoryMetadata`, so **every future
+calculator and category gets a canonical for free** — do not add one at the page level for those two.
+Added `generateMetadata` to `/calculators`, `/categories` and `/suggestions` (they had none and were
+inheriting the homepage title from the layout). The `siteName` / `siteUrl` aliases in `lib/seo.ts`
+are gone; call sites import `SITE_NAME` / `SITE_URL` from `lib/site` directly. Verified: 72 pages,
+72 unique canonicals, exactly one per page, none containing `/en/` or `dailycalculations.app`, no
+hreflang anywhere. Build + lint pass.
+
 **Next step needs to know:**
 
 - **Cards passed `locale={locale}` to next-intl's `<Link>`, which force-prefixes the URL.** Under
@@ -142,9 +151,6 @@ pages to 82**; the sitemap from ~360 `<loc>` entries to **72**. Build + lint pas
   backslash silently makes the negative lookahead match every non-empty path, so middleware runs on
   `/` only and every other route 404s while the build still passes. If routes 404 after touching
   `middleware.ts`, check this line first.
-- `app/[locale]/{about-us,contact-us,privacy,terms-and-conditions}/page.tsx` are alias stubs. They
-  redirected to `/${locale}/about` etc., which became a 301 chain; they now redirect to the plain
-  path. They still emit **307**, not 301 — parked, see below.
 - `app/sitemap.ts` still loops `routing.locales` and emits a self-referencing `hreflang` alternate.
   Harmless with one locale, and **step 04 rewrites the file anyway** — the loops and the
   `alternates` block both go then (D5: no hreflang).
@@ -153,6 +159,14 @@ pages to 82**; the sitemap from ~360 `<loc>` entries to **72**. Build + lint pas
   labels it `ƒ Proxy (Middleware)` in the build output. Cosmetic; the file is still `middleware.ts`.
 - ⚠️ **PENDING ON THE USER — not code:** the Cloudflare apex→www 301 redirect rule from step 01 is
   **still not created.** See "Pending on the user" below.
+- **The four alias stubs are gone.** `app/[locale]/{about-us,contact-us,privacy,terms-and-conditions}/`
+  were deleted in step 03 and replaced by a `RENAMED_PATHS` map in `middleware.ts` that answers a real
+  **301**. Deviation from the step-03 file, which said to use `permanentRedirect()` — that emits
+  **308**, not the 301 the acceptance check asked for. Step 06 adds its `redirectFrom` 301s to the
+  same block. Static page count: 82 → **78**.
+- **The homepage canonical has no trailing slash** (`https://www.dailycalculations.com`), because
+  `buildCanonical('')` concatenates. `app/sitemap.ts` builds the root the same way, so the two agree.
+  Keep them agreeing in step 04.
 
 ---
 
@@ -174,6 +188,13 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
 - `app/[locale]/layout.tsx` exports static `metadata` *and* pages export `generateMetadata` with
   overlapping OG/Twitter blocks — the same title string lives in four places. Collapse into
   `lib/seo.ts` helpers. (§4.6)
+- **Every title is suffixed twice**: `<title>BMI Calculator | Daily Calculations | Daily Calculations</title>`.
+  The layout sets `title.template = '%s | Daily Calculations'` *and* the page builders append
+  `| ${SITE_NAME}` themselves. Affects all 53 calculators, all 11 categories, and
+  `about`/`contact`/`privacy-policy`/`terms` — 68 pages. The fix is to drop the manual suffix and let
+  the template do it (the three `generateMetadata` blocks added in step 03 already do). Found during
+  step 03, deliberately not fixed there: it is a title change on 68 pages, not a canonical change.
+  Fold it into the metadata-collapse item above.
 - Decide whether the `[locale]` directory segment is worth keeping at all once English-only settles.
   Keeping it costs nothing and preserves the option to re-add languages; revisit only if it causes
   friction.
@@ -181,7 +202,5 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
   not worth it. Do not resurrect without a reason. (§1.6)
 - Baidu SEO for mainland China. Needs an ICP licence and separate tooling; Cloudflare is unreliable
   behind the GFW. The `CN` region profile is for Chinese speakers elsewhere. (§3.5)
-- The four alias stubs (`/about-us`, `/contact-us`, `/privacy`, `/terms-and-conditions`) use
-  `redirect()` from `next/navigation`, which returns **307**. For permanently renamed URLs these
-  should be 301s in `middleware.ts` alongside the dead-locale rules — natural fit for step 06, which
-  already generates `redirectFrom` 301s there.
+- ~~The four alias stubs return 307~~ — **done in step 03.** They are 301s in `middleware.ts` now
+  and the stub page files are deleted.

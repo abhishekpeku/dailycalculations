@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-09-10 · Current step: **06** · Steps done: **5 / 28** · **Phase A complete**
+Last updated: 2026-09-10 · Current step: **07** · Steps done: **6 / 28** · **Phase A complete**
 
 ---
 
@@ -44,7 +44,7 @@ Status values: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `PARKED`
 | # | Step | Status | Scope | Spec |
 |---|---|---|---|---|
 | 05 | Calculator schema + alias data | **DONE** 2026-09-10 | Add `aliases: string[]`, `related: string[]`, `redirectFrom?: string[]` to `CalculatorConfig` (required except `redirectFrom`). Populate all 53 from the cluster tables. **Large mechanical edit — do it in 4 sub-batches by cluster, building after each.** | §1.3, §1.5 |
-| 06 | `redirectFrom` 301s | TODO | Generate 301s in `middleware.ts` from every `redirectFrom` slug to its canonical `/calculators/<id>`. Include `auto-loan-calculator`, `home-loan-calculator`, `house-loan-emi-calculator`, `word-counter`, `bmr-calculator`. | §2.5 |
+| 06 | `redirectFrom` 301s | **DONE** 2026-09-10 | Generate 301s in `middleware.ts` from every `redirectFrom` slug to its canonical `/calculators/<id>`. Include `auto-loan-calculator`, `home-loan-calculator`, `house-loan-emi-calculator`, `word-counter`, `bmr-calculator`. | §2.5 |
 | 07 | Structured data + breadcrumb | TODO | Add `WebApplication` (with `alternateName: aliases`), `BreadcrumbList` and `HowTo` JSON-LD to `buildPageJsonLd`. Build a **visible** `Breadcrumb` component — Google cross-checks JSON-LD against rendered markup. | §2.3 |
 | 08 | Surface the aliases | TODO | "Also known as …" sentence under the H1. "Related calculators" block using `related`, with **alias anchor text**, not repeated titles. Extend `fuzzyFilter` in `CalculatorSearch.tsx:19` to match `aliases`. | §1.4 |
 | 09 | Listing page search + `?q=` | TODO | Add category filter chips, the search box, and `?q=` / `?category=` params to `app/[locale]/calculators/page.tsx`. Then either fix or delete the broken `SearchAction` in `buildHomeJsonLd`. Also clean the homepage `keywords` array — drop `graphing calculator`. | §2.7, §4.5, §1.6 |
@@ -156,6 +156,15 @@ correct per the step-04 note. Diff is 116 insertions, 0 deletions, one file. Val
 ≥3 aliases and 3-4 related, no `redirectFrom` slug colliding with a real id. Build + lint pass;
 still 78 static pages.
 
+06 · 2026-09-10 · New **`lib/redirects.ts`** derives `CALCULATOR_REDIRECTS` (old path → canonical
+path) from every calculator's `redirectFrom`; `middleware.ts` spreads it into the existing
+`RENAMED_PATHS` map. **Nothing is hand-listed** — retiring a redirect is now a one-line delete in
+`data/calculators.ts` and no other file changes. Also restructured the middleware to strip a dead
+locale prefix and resolve a rename **in the same pass**, so a URL needing both answers a single 301
+instead of chaining; `/en/about-us` went from 2 hops to 1. Verified against a real `next start`:
+all 6 slugs 301 to the right canonical, query strings survive, `/en/*` and `/de/*` variants resolve
+in one hop, 6 known-good pages still 200, and an unknown slug still 404s. Build + lint pass.
+
 **Next step needs to know:**
 
 - **Every calculator edit must bump its `updatedAt`.** It is the sitemap's `<lastmod>` — the whole
@@ -238,6 +247,26 @@ still 78 static pages.
 - **Steps 07 and 08 are now unblocked** — `aliases` feeds JSON-LD `alternateName` and the "Also
   known as" line; `related` feeds the related-tools block with alias anchor text.
 
+- **The six live 301s are `/calculators/<old>` → `/calculators/<canonical>`:**
+  `home-loan-calculator` + `house-loan-emi-calculator` → `mortgage-calculator`,
+  `auto-loan-calculator` + `car-loan-calculator` → `car-payment-calculator`,
+  `bmr-calculator` → `tdee-calculator`, `word-counter` → `character-counter`.
+- **Steps 23 and 26 now only need to touch `data/calculators.ts`.** Deleting the `redirectFrom`
+  entry removes the redirect — `lib/redirects.ts` and `middleware.ts` are derived and need no edit.
+  This is the whole reason the map is generated rather than written out.
+- **Middleware bundle grew 185,440 → 280,505 bytes raw (81,437 gzipped), +51%,** because importing
+  `data/calculators.ts` drags all 53 `compute()` bodies and every FAQ string into the edge bundle
+  for a 6-entry map. Accepted against a 3 MB Workers budget. If it ever matters, the fix is a
+  build-time codegen step emitting a literal map — see `Parked`.
+- ⚠️ **Rewriting `middleware.ts` wholesale is dangerous — the matcher line does not survive a bash
+  heredoc.** Even a quoted `<<'TS'` heredoc collapsed `\\` to `\` in the matcher regex, silently
+  reproducing the step-02 breakage (every route 404s, build still passes). Prefer a targeted edit
+  over rewriting the file, and check that line byte-for-byte afterwards.
+- ⚠️ **Something is already listening on :3000** in this environment. `npm run start` fails with
+  `EADDRINUSE` and, if you do not read the log, curl silently answers from that other server — which
+  looked exactly like the matcher bug and cost a debugging cycle. Verify on a free port
+  (`npx next start -p 3007`) and read the server log before trusting any HTTP check.
+
 ## Pending on the user — not code
 
 - **Cloudflare apex → www 301 (from step 01, still open).**
@@ -266,6 +295,10 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
 - Decide whether the `[locale]` directory segment is worth keeping at all once English-only settles.
   Keeping it costs nothing and preserves the option to re-add languages; revisit only if it causes
   friction.
+- **Middleware edge-bundle diet.** `lib/redirects.ts` imports all of `data/calculators.ts` to build
+  a 6-entry redirect map, costing +95 KB raw / ~81 KB gzipped in the middleware bundle (step 06).
+  A build-time codegen step emitting a literal map would remove it. Not worth doing until the
+  Workers bundle size actually pinches.
 - `graphing calculator` — dropped from the keywords array in step 09; genuinely hard to build and
   not worth it. Do not resurrect without a reason. (§1.6)
 - Baidu SEO for mainland China. Needs an ICP licence and separate tooling; Cloudflare is unreliable

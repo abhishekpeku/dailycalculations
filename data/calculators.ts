@@ -2,6 +2,8 @@ export type CalculatorCategory = {
   id: string;
   title: string;
   description: string;
+  /** Retired category ids that 301 to this one. */
+  redirectFrom?: string[];
 };
 
 export type CalculatorInput = {
@@ -81,17 +83,18 @@ export type CalculatorClientConfig = Omit<CalculatorConfig, 'compute' | 'content
 export type CalculatorInputValues = Record<string, number>;
 
 export const categories: CalculatorCategory[] = [
-  { id: 'finance', title: 'Finance', description: 'Mortgage, loans, savings, currency, and money tools.' },
-  { id: 'health', title: 'Health', description: 'BMI, hydration, wellness, and fitness calculators.' },
-  { id: 'measurements', title: 'Measurements', description: 'Common conversions between imperial and metric units.' },
-  { id: 'taxes', title: 'Taxes', description: 'Sales tax, tipping, and budgeting tools.' },
-  { id: 'auto', title: 'Auto', description: 'Car payments, fuel, EV, tolls, and commute calculators.' },
+  { id: 'finance', title: 'Finance', description: 'Mortgage, loan, EMI, savings, and investment calculators.' },
+  { id: 'health', title: 'Health', description: 'BMI, calories, hydration, and fitness calculators.' },
   { id: 'home', title: 'Home', description: 'Paint, tile, concrete, wallpaper, and home improvement calculators.' },
-  { id: 'time', title: 'Time & Date', description: 'Age, work hours, date difference, sleep, and time zone tools.' },
-  { id: 'education', title: 'Education', description: 'GPA, grade, and academic calculators.' },
+  { id: 'auto', title: 'Auto', description: 'Car payments, fuel, EV charging, tolls, and commute calculators.' },
+  { id: 'shopping', title: 'Shopping & Tax', description: 'Sales tax, tipping, discounts, cashback, and unit price tools.', redirectFrom: ['taxes'] },
+  { id: 'time', title: 'Time & Date', description: 'Age, date difference, work hours, sleep, and focus timers.' },
+  { id: 'travel', title: 'Travel', description: 'Trip budgets, visa stay limits, currency conversion, and meeting time zones.' },
   { id: 'work', title: 'Work & Career', description: 'Salary, meeting cost, freelance rate, and PTO calculators.' },
-  { id: 'shopping', title: 'Shopping', description: 'Discount, unit price, cashback, and EMI calculators.' },
-  { id: 'social', title: 'Social & Content', description: 'YouTube earnings, Instagram engagement, and text tools.' },
+  { id: 'measurements', title: 'Measurements', description: 'Common conversions between imperial and metric units.' },
+  { id: 'creator', title: 'Creator Tools', description: 'YouTube earnings and Instagram engagement calculators for creators.', redirectFrom: ['social'] },
+  { id: 'text', title: 'Text & Writing', description: 'Character counts, hashtag counts, and writing tools.' },
+  { id: 'education', title: 'Education', description: 'GPA, grade, and academic calculators.' }
 ];
 
 export const calculators: CalculatorConfig[] = [
@@ -201,7 +204,7 @@ export const calculators: CalculatorConfig[] = [
   },
   {
     id: 'sales-tax-calculator',
-    category: 'taxes',
+    category: 'shopping',
     updatedAt: '2026-09-10',
     aliases: ['vat calculator', 'gst calculator', 'tax added calculator', 'purchase tax calculator'],
     related: ['tip-calculator', 'discount-calculator', 'unit-price-calculator', 'cashback-calculator'],
@@ -228,7 +231,7 @@ export const calculators: CalculatorConfig[] = [
   },
   {
     id: 'tip-calculator',
-    category: 'taxes',
+    category: 'shopping',
     updatedAt: '2026-09-10',
     aliases: ['gratuity calculator', 'bill split calculator', 'restaurant tip calculator', 'service charge calculator'],
     related: ['sales-tax-calculator', 'discount-calculator', 'travel-budget-calculator', 'unit-price-calculator'],
@@ -991,7 +994,7 @@ export const calculators: CalculatorConfig[] = [
   },
   {
     id: 'travel-budget-calculator',
-    category: 'finance',
+    category: 'travel',
     updatedAt: '2026-09-10',
     aliases: ['trip cost calculator', 'holiday budget calculator', 'vacation cost estimator'],
     related: ['currency-converter', 'visa-stay-days-calculator', 'gas-cost-calculator', 'toll-cost-calculator'],
@@ -1030,7 +1033,7 @@ export const calculators: CalculatorConfig[] = [
   },
   {
     id: 'visa-stay-days-calculator',
-    category: 'finance',
+    category: 'travel',
     updatedAt: '2026-09-10',
     aliases: ['schengen calculator', '90/180 day calculator', 'visa days remaining calculator', 'overstay calculator'],
     related: ['date-difference-calculator', 'travel-budget-calculator', 'age-calculator', 'currency-converter'],
@@ -1629,7 +1632,7 @@ export const calculators: CalculatorConfig[] = [
   },
   {
     id: 'emi-calculator',
-    category: 'shopping',
+    category: 'finance',
     updatedAt: '2026-09-10',
     aliases: ['equated monthly installment calculator', 'loan emi calculator', 'house loan emi calculator', 'monthly installment calculator', 'bank emi calculator'],
     related: ['loan-calculator', 'mortgage-calculator', 'car-payment-calculator', 'loan-prepayment-calculator'],
@@ -1665,7 +1668,7 @@ export const calculators: CalculatorConfig[] = [
   // ── Social & Content ───────────────────────────────────────────────────────
   {
     id: 'youtube-earnings-calculator',
-    category: 'social',
+    category: 'creator',
     updatedAt: '2026-09-10',
     aliases: ['youtube money calculator', 'cpm revenue calculator', 'adsense earnings estimator', 'rpm calculator'],
     related: ['instagram-engagement-calculator', 'hashtag-counter', 'character-counter', 'freelancer-rate-calculator'],
@@ -1695,7 +1698,7 @@ export const calculators: CalculatorConfig[] = [
   },
   {
     id: 'instagram-engagement-calculator',
-    category: 'social',
+    category: 'creator',
     updatedAt: '2026-09-10',
     aliases: ['engagement rate calculator', 'social media engagement calculator', 'influencer rate calculator'],
     related: ['youtube-earnings-calculator', 'hashtag-counter', 'character-counter', 'freelancer-rate-calculator'],
@@ -1801,7 +1804,7 @@ export const calculators: CalculatorConfig[] = [
   // ── Custom-component stubs (rendered by special components in page.tsx) ────
   {
     id: 'currency-converter',
-    category: 'finance',
+    category: 'travel',
     updatedAt: '2026-09-10',
     aliases: ['exchange rate calculator', 'money converter', 'forex converter', 'foreign currency calculator'],
     related: ['travel-budget-calculator', 'investment-calculator', 'unit-price-calculator'],
@@ -1822,7 +1825,7 @@ export const calculators: CalculatorConfig[] = [
   },
   {
     id: 'character-counter',
-    category: 'social',
+    category: 'text',
     updatedAt: '2026-09-10',
     aliases: ['letter counter', 'text length calculator', 'twitter character counter', 'character count tool'],
     related: ['hashtag-counter', 'instagram-engagement-calculator', 'youtube-earnings-calculator'],
@@ -1844,7 +1847,7 @@ export const calculators: CalculatorConfig[] = [
   },
   {
     id: 'hashtag-counter',
-    category: 'social',
+    category: 'text',
     updatedAt: '2026-09-10',
     aliases: ['hashtag limit checker', 'instagram hashtag counter', 'tag counter'],
     related: ['character-counter', 'instagram-engagement-calculator', 'youtube-earnings-calculator'],
@@ -1885,7 +1888,7 @@ export const calculators: CalculatorConfig[] = [
   },
   {
     id: 'timezone-meeting-planner',
-    category: 'time',
+    category: 'travel',
     updatedAt: '2026-09-10',
     aliases: ['time zone converter', 'world clock meeting planner', 'meeting time across time zones'],
     related: ['travel-budget-calculator', 'work-hours-calculator', 'pomodoro-timer', 'meeting-cost-calculator'],

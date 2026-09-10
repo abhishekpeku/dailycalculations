@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-09-10 · Current step: **11** · Steps done: **10 / 28** · **Phase A complete**
+Last updated: 2026-09-10 · Current step: **11** (gate, waiting) · Steps done: **11 / 28** · **Phase A complete · Phase D complete**
 
 ---
 
@@ -67,7 +67,7 @@ is why 12-15 run after it.
 
 | # | Step | Status | Scope | Spec |
 |---|---|---|---|---|
-| 16 | Category restructure 11 → 14 | TODO | Rename `social`→`creator`. Merge `taxes`→`shopping`. Add `travel`, `text`, `math`, `tech`. Apply the 9 reassignments (`emi-calculator`→finance, `visa-stay-days`+`travel-budget`+`currency-converter`→travel, counters→text, …). 301 `/categories/taxes`→`/categories/shopping` and `/categories/social`→`/categories/creator`. Calculator URLs do not change. | §1.1, §1.2 |
+| 16 | Category restructure 11 → 14 | **DONE** 2026-09-10 | Rename `social`→`creator`. Merge `taxes`→`shopping`. Add `travel`, `text`. (**`math` + `tech` deferred to steps 24 / 25** — they would ship empty; see the session log.) Apply the 9 reassignments (`emi-calculator`→finance, `visa-stay-days`+`travel-budget`+`currency-converter`→travel, counters→text, …). 301 `/categories/taxes`→`/categories/shopping` and `/categories/social`→`/categories/creator`. Calculator URLs do not change. | §1.1, §1.2 |
 
 ### Phase E — Country / region layer
 
@@ -85,8 +85,8 @@ is why 12-15 run after it.
 | # | Step | Status | Scope | Spec |
 |---|---|---|---|---|
 | 23 | `bmr-calculator` | TODO | Cheapest win — the formula already exists inside `tdee-calculator`. Mifflin-St Jeor + Harris-Benedict side by side. Cross-link with TDEE. | §5.1 |
-| 24 | `math` category | TODO | `percentage-calculator` (highest volume of the lot, and the homepage already claims it with no page behind it), `scientific-calculator`, `fraction-calculator`, `average-calculator`, `ratio-calculator`. | §5.1, §1.5 N |
-| 25 | `tech` category | TODO | `ip-subnet-calculator`, `iban-calculator`, `data-storage-converter`, `password-strength-checker`. Build for authority, not ad revenue — this audience blocks ads. | §5.1, §5.4, §1.5 O |
+| 24 | `math` category | TODO | **Add the `math` entry to `categories` here** (step 16 deferred it — it would have shipped empty). `percentage-calculator` (highest volume of the lot, and the homepage already claims it with no page behind it), `scientific-calculator`, `fraction-calculator`, `average-calculator`, `ratio-calculator`. | §5.1, §1.5 N |
+| 25 | `tech` category | TODO | **Add the `tech` entry to `categories` here** (step 16 deferred it — it would have shipped empty). `ip-subnet-calculator`, `iban-calculator`, `data-storage-converter`, `password-strength-checker`. Build for authority, not ad revenue — this audience blocks ads. | §5.1, §5.4, §1.5 O |
 | 26 | `text` + `education` additions | TODO | `word-counter`; `grade-calculator`, `final-grade-calculator`, `weighted-average-calculator`, `study-time-calculator`. Takes `education` from 1 member to 5. | §1.2, §1.5 K/M |
 
 ### Phase G — Hygiene
@@ -224,7 +224,57 @@ Verified: 78 static pages, 53/53 calculator pages with 4 JSON-LD nodes each, pil
 in the `<ol>`, FAQPage 8 entries, 0 content sections leaked onto the other 52, 0 `/en/` hrefs,
 canonical unchanged. Build + lint pass.
 
+16 · 2026-09-10 · **Phase D complete.** Categories **11 → 12** (not 14 — see the deferral below).
+`social` → **`creator`** ("Creator Tools"), `taxes` merged into **`shopping`** ("Shopping & Tax"), new
+**`travel`** and **`text`**. Eleven calculators reassigned (the 9 from §1.2 plus the two YouTube/Instagram
+tools that rode the `social` rename). New `redirectFrom?: string[]` on **`CalculatorCategory`** and a new
+**`CATEGORY_REDIRECTS`** in `lib/redirects.ts`, built exactly like `CALCULATOR_REDIRECTS` — the two dead
+category 301s are **derived, not hand-listed**, so `middleware.ts` gained one spread and nothing else.
+Final distribution: finance 8 · health 6 · home 6 · auto 6 · shopping 5 · time 5 · travel 4 · work 4 ·
+measurements 4 · creator 2 · text 2 · education 1. Static pages **78 → 79**, sitemap **72 → 73**.
+Verified: 12 categories, 0 orphaned `category` values, 0 empty categories, card counts match the target
+table on all 12 prerendered pages, all 11 moved calculators still 200 on their unchanged slug with both
+the visible breadcrumb **and** the `BreadcrumbList` JSON-LD naming the new category, 0 `/en/` hrefs, and
+0 pages still linking `/categories/taxes` or `/categories/social`. Live on `next start -p 3021`:
+both dead categories 301 to the right target, query string preserved, `/en/categories/taxes` and
+`/de/categories/social` resolve in **one** hop, step-06's calculator 301s and `/about-us` still work,
+unknown category still 404s. Build + lint pass.
+
 **Next step needs to know:**
+
+- ⚠ **Only two of §1.2's four new categories were created. `math` and `tech` are deferred to steps
+  24 and 25** — the steps that build their calculators. Creating them now would have shipped two
+  category pages with an **empty** card grid, prerendered, linked from the homepage and `/calculators`,
+  and submitted in `sitemap.xml`. §1.2's own argument for merging `taxes` is that a two-item category
+  page is not worth having; a zero-item one is worse, and it would have sat in the index for the whole
+  of Phase F. **Steps 24 and 25 must each add their `categories` entry alongside their calculators** —
+  their scope rows now say so. End state is still 14.
+- **Category 301s are derived from `CalculatorCategory.redirectFrom`, same as the calculator ones.**
+  `shopping` carries `['taxes']`, `creator` carries `['social']`. Retiring a category redirect is a
+  one-line delete in `data/calculators.ts`; `lib/redirects.ts` and `middleware.ts` need no edit. Do
+  **not** hand-list category slugs in the middleware.
+- **No `updatedAt` was bumped, and that is correct.** Moving a calculator between category listings
+  changes its breadcrumb's middle crumb and nothing else — same call as steps 05, 07, 08 and 09.
+  Steps 12-15 still **must** bump it, because those rewrite the page body.
+- **The 12-15 batch counts in the step index are now the real ones.** Post-restructure: 12 = finance 8
+  + shopping 5 = **13**; 13 = health 6 + measurements 4 = **10**; 14 = auto 6 + home 6 = **12**;
+  15 = time 5 + travel 4 + work 4 + creator 2 + text 2 + education 1 = 18 minus the pilot = **17**.
+  Sum 52. These match — nothing to re-plan.
+- **`categories` is now ordered by member count, not by age.** The homepage grid (`lg:grid-cols-4`)
+  and `/calculators` therefore lead with the fat categories and end with `education` at 1. If step 24
+  or 26 changes counts, re-sort the array rather than appending.
+- **Four category descriptions were rewritten** (`finance`, `shopping`, `time`, `creator`) because each
+  named a calculator that left. If a future step moves a calculator, check the description of **both**
+  categories — they enumerate members and go stale silently.
+- ⚠ **`README.md` is now visibly wrong** — it has a `### Taxes` heading, no Travel/Text sections, and
+  files `unit-price-calculator` under Home. Deliberately not patched here: **step 27** regenerates the
+  whole list from `data/calculators.ts`. Do not hand-edit it in the meantime.
+- **Category and listing pages still emit no JSON-LD and no visible breadcrumb.** Parked since step 07,
+  and the reason it was worth waiting is now spent — the names are settled, so this is unblocked
+  whenever someone wants it. `components/Breadcrumb.tsx` is generic and drops straight in.
+- ⚠ **:3011 is now also occupied**, on top of the known :3000. This environment has several stray
+  listeners; probe with `netstat -ano | grep ":<port> "` before picking one. :3021 was free and worked.
+
 
 - **Step 11 is the measure gate and it is now armed.** Deploy, request indexing on
   `/calculators/date-difference-calculator`, wait 2-3 weeks, then read Search Console. Do **not**
@@ -464,7 +514,13 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
 - **Category and listing pages still emit no JSON-LD.** `/categories/<id>` and `/calculators` have
   no `BreadcrumbList` and no `ItemList`, and no visible breadcrumb. Deliberately out of scope in
   step 07 (calculator pages only). `components/Breadcrumb.tsx` is generic and would drop straight
-  in. Worth doing once the category restructure (step 16) settles the names.
+  in. ~~Worth doing once the category restructure (step 16) settles the names.~~ **Step 16 is done,
+  so this is now unblocked.**
+- **`common.tools` has no ICU plural** — `"{count} tools"` renders **"1 tools"** on the `education`
+  card. Pre-existing (that category has always had one member) and visible on the homepage,
+  `/categories` and `/calculators`. Fix is `{count, plural, one {# tool} other {# tools}}` in
+  `messages/en.json`. Found in step 16; not fixed there because it is a copy bug, not a taxonomy one.
+  Step 26 takes `education` to 5 members but the bug survives for any future 1-member category.
 - `graphing calculator` — dropped from the keywords array in step 09; genuinely hard to build and
   not worth it. Do not resurrect without a reason. (§1.6)
 - **Dead Tailwind brand shades.** `tailwind.config` defines `brand` at `50 / 100 / 500 / 700`

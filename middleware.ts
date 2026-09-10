@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
 import { routing } from './i18n/routing';
-import { CALCULATOR_REDIRECTS } from '@/lib/redirects';
+import { CALCULATOR_REDIRECTS, CATEGORY_REDIRECTS } from '@/lib/redirects';
 
 const intlMiddleware = createMiddleware(routing);
 
@@ -15,7 +15,8 @@ const RENAMED_PATHS: Record<string, string> = {
   '/contact-us': '/contact',
   '/privacy': '/privacy-policy',
   '/terms-and-conditions': '/terms',
-  ...CALCULATOR_REDIRECTS
+  ...CALCULATOR_REDIRECTS,
+  ...CATEGORY_REDIRECTS
 };
 
 export default function middleware(req: NextRequest) {

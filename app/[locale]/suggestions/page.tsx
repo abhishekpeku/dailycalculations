@@ -4,7 +4,7 @@ import SuggestionForm from '@/components/SuggestionForm';
 import { routing } from '@/i18n/routing';
 
 export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
+  return [{ locale: routing.defaultLocale }];
 }
 
 export default async function SuggestionsPage({

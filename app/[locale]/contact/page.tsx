@@ -6,7 +6,7 @@ import { routing } from '@/i18n/routing';
 import { siteName, siteUrl } from '@/lib/seo';
 
 export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
+  return [{ locale: routing.defaultLocale }];
 }
 
 export async function generateMetadata({

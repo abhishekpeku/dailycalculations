@@ -10,9 +10,7 @@ export const dynamic = 'force-static';
 export const dynamicParams = false;
 
 export async function generateStaticParams() {
-  return routing.locales.flatMap((locale) =>
-    categories.map((category) => ({ locale, category: category.id }))
-  );
+  return categories.map((category) => ({ locale: routing.defaultLocale, category: category.id }));
 }
 
 export async function generateMetadata({
@@ -50,7 +48,7 @@ export default async function CategoryPage({
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {categoryCalculators.map((calculator) => (
-            <CalculatorCard key={calculator.id} calculator={calculator} locale={locale} />
+            <CalculatorCard key={calculator.id} calculator={calculator} />
           ))}
         </div>
       </div>

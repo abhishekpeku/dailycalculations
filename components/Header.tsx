@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
-import LanguageSwitcher from './LanguageSwitcher';
 import { useTheme } from './ThemeProvider';
 
 function ThemeToggle({ className }: { className?: string }) {
@@ -56,13 +55,11 @@ export default function Header() {
           <Link href="/privacy-policy" className="transition hover:text-slate-900 dark:hover:text-white">{t('privacy')}</Link>
           <Link href="/terms" className="transition hover:text-slate-900 dark:hover:text-white">{t('terms')}</Link>
           <Link href="/suggestions" className="transition hover:text-slate-900 dark:hover:text-white">{t('suggest')}</Link>
-          <LanguageSwitcher />
           <ThemeToggle />
         </nav>
 
-        {/* Mobile: language switcher + hamburger button */}
+        {/* Mobile: theme toggle + hamburger button */}
         <div className="flex items-center gap-3 lg:hidden">
-          <LanguageSwitcher />
           <ThemeToggle />
           <button
             onClick={() => setOpen((prev) => !prev)}

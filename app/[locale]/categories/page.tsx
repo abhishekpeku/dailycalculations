@@ -7,7 +7,7 @@ import { routing } from '@/i18n/routing';
 export const dynamic = 'force-static';
 
 export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
+  return [{ locale: routing.defaultLocale }];
 }
 
 export default async function CategoriesPage({
@@ -36,7 +36,6 @@ export default async function CategoriesPage({
                 key={category.id}
                 category={category}
                 count={count}
-                locale={locale}
                 toolsLabel={tCommon('tools', { count })}
               />
             );

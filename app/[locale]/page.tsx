@@ -13,7 +13,7 @@ import { Link } from '@/i18n/navigation';
 export const dynamic = 'force-static';
 
 export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
+  return [{ locale: routing.defaultLocale }];
 }
 
 export async function generateMetadata({
@@ -95,7 +95,7 @@ export default async function HomePage({
       <section className="space-y-6">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {categories.map((category) => (
-            <CategoryGrid key={category.id} category={category} locale={locale} />
+            <CategoryGrid key={category.id} category={category} />
           ))}
         </div>
       </section>
@@ -109,7 +109,7 @@ export default async function HomePage({
         </div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {featured.map((calculator) => (
-            <CalculatorCard key={calculator.id} calculator={calculator} locale={locale} variant="compact" />
+            <CalculatorCard key={calculator.id} calculator={calculator} variant="compact" />
           ))}
         </div>
       </section>

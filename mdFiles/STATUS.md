@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-09-10 · Current step: **02** · Steps done: **1 / 28**
+Last updated: 2026-09-10 · Current step: **03** · Steps done: **2 / 28**
 
 ---
 
@@ -35,8 +35,8 @@ Status values: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `PARKED`
 | # | Step | Status | Scope | Spec |
 |---|---|---|---|---|
 | 01 | Domain + `lib/site.ts` | **DONE** 2026-09-10 | Create `lib/site.ts` exporting `SITE_URL`. Replace the hardcoded domain in `lib/seo.ts`, `app/sitemap.ts`, `app/robots.ts` and every `generateMetadata`. Add the Cloudflare apex→www redirect rule. | §0, D1 |
-| 02 | English-only migration | **TODO** | `routing.locales = ['en']`, `localePrefix: 'as-needed'`. Delete `LanguageSwitcher` from `Header`. Update every `generateStaticParams` to drop the locale loop. Add 301s `/en/*` → `/*` in `middleware.ts`. Verify `app/page.tsx` no longer needs its `redirect('/en')`. | D2, D3, D4 |
-| 03 | Canonicals on every page | TODO | `buildCanonical(path)` in `lib/seo.ts`. Apply to **every** `generateMetadata` — including `calculators/[slug]` and `categories/[category]`, which currently have none. Remove the locale-blind canonicals in `about`/`contact`/`privacy-policy`/`terms` and the bare-root one on the homepage. | §2.1, D5 |
+| 02 | English-only migration | **DONE** 2026-09-10 | `routing.locales = ['en']`, `localePrefix: 'as-needed'`. Delete `LanguageSwitcher` from `Header`. Update every `generateStaticParams` to drop the locale loop. Add 301s `/en/*` → `/*` in `middleware.ts`. Verify `app/page.tsx` no longer needs its `redirect('/en')`. | D2, D3, D4 |
+| 03 | Canonicals on every page | **TODO** | `buildCanonical(path)` in `lib/seo.ts`. Apply to **every** `generateMetadata` — including `calculators/[slug]` and `categories/[category]`, which currently have none. Remove the locale-blind canonicals in `about`/`contact`/`privacy-policy`/`terms` and the bare-root one on the homepage. | §2.1, D5 |
 | 04 | Sitemap + robots rewrite | TODO | Add `updatedAt: string` to `CalculatorConfig` and populate all 53. Rewrite `app/sitemap.ts`: one entry per path, no locale loops, real `lastModified`, `priority` 0.8 for calculators / 0.6 home / 0.5 rest. Point `robots.ts` at `SITE_URL`. | §2.4 |
 
 ### Phase B — Deep-link ranking (make Google surface the calculator, not the homepage)
@@ -122,18 +122,37 @@ Append one line per completed step: `NN · YYYY-MM-DD · what changed · anythin
 and `app/robots.ts` import `SITE_URL`. The stale `https://dailycalculations.app` string is gone from
 the repo; the only literal domain left is `lib/site.ts:2`. Build + lint pass.
 
+02 · 2026-09-10 · English-only. `routing.locales = ['en']`, `localePrefix: 'as-needed'`,
+`localeCookie: false`. `middleware.ts` now wraps the next-intl middleware and 301s `/en/*` and
+`/{de,fr,es,it}/*` to the unprefixed path (query string preserved). Deleted `app/page.tsx` (the old
+`redirect('/en')`). Every `generateStaticParams` returns a single `en` entry. `LanguageSwitcher`
+removed from `Header` (the component file stays on disk for step 19). Build went from **~350 static
+pages to 82**; the sitemap from ~360 `<loc>` entries to **72**. Build + lint pass.
+
 **Next step needs to know:**
-- `node_modules` was not present — `npm install` was required before the first build (706 packages, no
-  new dependencies added). Nothing changed in `package.json`.
-- `SITE_URL` reads `process.env.NEXT_PUBLIC_SITE_URL` first, so preview deployments can override it.
-- `app/[locale]/page.tsx:58` has `site: '@dailycalculations'` — that is the **Twitter handle**, not a
-  URL. It matched the step-01 grep; it is correct as-is. Same for the `dailycalculations` Worker name
-  in `wrangler.jsonc`.
-- `metadataBase` in `app/[locale]/layout.tsx:25` now resolves to the `.com` domain, so every relative
-  OG/Twitter URL moved with it. Verified in the built HTML.
-- ⚠️ **PENDING ON THE USER — not code:** the Cloudflare apex→www 301 redirect rule has **not** been
-  created. Until it is, `dailycalculations.com` and `www.dailycalculations.com` both serve 200s and
-  D1 is only half-enforced. See "Pending on the user" below.
+
+- **Cards passed `locale={locale}` to next-intl's `<Link>`, which force-prefixes the URL.** Under
+  `as-needed` that emitted `/en/calculators/...` in the rendered HTML — every internal link pointing
+  at a 301. The `locale` prop is gone from `CalculatorCard`, `CategoryCard`, `CategoryGrid` and the
+  category `<Link>` in `calculators/[slug]`. **Never pass an explicit `locale` to `<Link>`** — it is a
+  locale *switch*, not a hint. Verified: 0 `/en/` hrefs on home, `/calculators`, `/categories`,
+  a calculator page and a category page.
+- **The middleware `matcher` regex is escape-fragile.** It must read exactly
+  `'/((?!api|_next|_vercel|.*\..*).*)'` — a double backslash in the source. Collapsing it to a single
+  backslash silently makes the negative lookahead match every non-empty path, so middleware runs on
+  `/` only and every other route 404s while the build still passes. If routes 404 after touching
+  `middleware.ts`, check this line first.
+- `app/[locale]/{about-us,contact-us,privacy,terms-and-conditions}/page.tsx` are alias stubs. They
+  redirected to `/${locale}/about` etc., which became a 301 chain; they now redirect to the plain
+  path. They still emit **307**, not 301 — parked, see below.
+- `app/sitemap.ts` still loops `routing.locales` and emits a self-referencing `hreflang` alternate.
+  Harmless with one locale, and **step 04 rewrites the file anyway** — the loops and the
+  `alternates` block both go then (D5: no hreflang).
+- `setRequestLocale(locale)` is still on every server page and must stay.
+- Next.js 16 warns that the `middleware` file convention is deprecated in favor of `proxy`, and
+  labels it `ƒ Proxy (Middleware)` in the build output. Cosmetic; the file is still `middleware.ts`.
+- ⚠️ **PENDING ON THE USER — not code:** the Cloudflare apex→www 301 redirect rule from step 01 is
+  **still not created.** See "Pending on the user" below.
 
 ---
 
@@ -162,3 +181,7 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
   not worth it. Do not resurrect without a reason. (§1.6)
 - Baidu SEO for mainland China. Needs an ICP licence and separate tooling; Cloudflare is unreliable
   behind the GFW. The `CN` region profile is for Chinese speakers elsewhere. (§3.5)
+- The four alias stubs (`/about-us`, `/contact-us`, `/privacy`, `/terms-and-conditions`) use
+  `redirect()` from `next/navigation`, which returns **307**. For permanently renamed URLs these
+  should be 301s in `middleware.ts` alongside the dead-locale rules — natural fit for step 06, which
+  already generates `redirectFrom` 301s there.

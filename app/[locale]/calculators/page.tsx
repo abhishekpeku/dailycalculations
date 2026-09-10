@@ -8,7 +8,7 @@ import { routing } from '@/i18n/routing';
 export const dynamic = 'force-static';
 
 export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
+  return [{ locale: routing.defaultLocale }];
 }
 
 export default async function CalculatorsPage({
@@ -35,7 +35,6 @@ export default async function CalculatorsPage({
               key={category.id}
               category={category}
               count={calculators.filter((item) => item.category === category.id).length}
-              locale={locale}
               toolsLabel={tCommon('tools', { count: calculators.filter((item) => item.category === category.id).length })}
             />
           ))}
@@ -43,7 +42,7 @@ export default async function CalculatorsPage({
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {calculators.map((calculator) => (
-            <CalculatorCard key={calculator.id} calculator={calculator} locale={locale} />
+            <CalculatorCard key={calculator.id} calculator={calculator} />
           ))}
         </div>
       </div>

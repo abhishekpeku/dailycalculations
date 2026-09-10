@@ -1,10 +1,5 @@
 import { redirect } from 'next/navigation';
 
-export default async function TermsAndConditionsRedirect({
-  params
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
-  redirect(`/${locale}/terms`);
+export default function TermsAndConditionsRedirect() {
+  redirect('/terms');
 }

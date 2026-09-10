@@ -19,9 +19,7 @@ export const dynamic = 'force-static';
 export const dynamicParams = false;
 
 export async function generateStaticParams() {
-  return routing.locales.flatMap((locale) =>
-    calculators.map((calculator) => ({ locale, slug: calculator.id }))
-  );
+  return calculators.map((calculator) => ({ locale: routing.defaultLocale, slug: calculator.id }));
 }
 
 export async function generateMetadata({
@@ -58,7 +56,6 @@ export default async function CalculatorPage({
           <div className="space-y-4">
             <Link
               href={`/categories/${calculator.category}`}
-              locale={locale}
               className="text-sm font-semibold uppercase tracking-[0.25em] text-brand-700 dark:text-brand-300 inline-block"
             >
               {categoryTitle}

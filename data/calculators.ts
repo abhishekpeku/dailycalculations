@@ -22,6 +22,8 @@ export type CalculatorFaq = {
 export type CalculatorConfig = {
   id: string;
   category: string;
+  /** ISO date (YYYY-MM-DD) of the last real content change. Not the deploy date. */
+  updatedAt: string;
   title: string;
   description: string;
   example: string;
@@ -56,6 +58,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'mortgage-calculator',
     category: 'finance',
+    updatedAt: '2026-09-10',
     title: 'Mortgage Calculator',
     description: 'Estimate monthly mortgage payments for home loans with APR and term options.',
     example: 'Calculate a 30-year mortgage payment for a $350,000 home with 5% APR and 20% down payment.',
@@ -88,6 +91,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'loan-calculator',
     category: 'finance',
+    updatedAt: '2026-09-10',
     title: 'Loan Calculator',
     description: 'Compare monthly payments across loan amounts, APR, and repayment periods.',
     example: 'Estimate payments for a $20,000 loan at 6% APR over 5 years.',
@@ -118,6 +122,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'compound-interest-calculator',
     category: 'finance',
+    updatedAt: '2026-09-10',
     title: 'Compound Interest Calculator',
     description: 'Estimate future savings with compound interest and optional monthly contributions.',
     example: 'See how $5,000 grows at 4% APR with $200 monthly contributions over 10 years.',
@@ -150,6 +155,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'sales-tax-calculator',
     category: 'taxes',
+    updatedAt: '2026-09-10',
     title: 'Sales Tax Calculator',
     description: 'Compute total cost with sales tax and compare pre-tax versus final price.',
     example: 'Calculate the final total for a $125 purchase with 8.25% sales tax.',
@@ -174,6 +180,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'tip-calculator',
     category: 'taxes',
+    updatedAt: '2026-09-10',
     title: 'Tip Calculator',
     description: 'Calculate tip amount, total cost, and per-person share for dining bills.',
     example: 'Split a $72 dinner with an 18% tip across 3 people.',
@@ -200,6 +207,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'bmi-calculator',
     category: 'health',
+    updatedAt: '2026-09-10',
     title: 'BMI Calculator',
     description: 'Calculate body mass index using pounds and inches with familiar defaults.',
     example: 'Estimate BMI for someone who is 5 ft 9 in tall and weighs 170 lbs.',
@@ -223,6 +231,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'water-intake-calculator',
     category: 'health',
+    updatedAt: '2026-09-10',
     title: 'Water Intake Calculator',
     description: 'Estimate daily water needs based on body weight and activity level.',
     example: 'Calculate water intake for a 150 lb person with moderate activity.',
@@ -249,6 +258,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'miles-to-kilometers-converter',
     category: 'measurements',
+    updatedAt: '2026-09-10',
     title: 'Miles to Kilometers Converter',
     description: 'Convert miles to kilometers with a quick distance conversion tool.',
     example: 'Convert 10 miles to kilometers for a road trip distance.',
@@ -271,6 +281,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'fahrenheit-to-celsius-converter',
     category: 'measurements',
+    updatedAt: '2026-09-10',
     title: 'Fahrenheit to Celsius Converter',
     description: 'Convert Fahrenheit temperatures to Celsius instantly.',
     example: 'Convert 68°F to Celsius for weather or cooking temperatures.',
@@ -293,6 +304,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'pounds-to-kilograms-converter',
     category: 'measurements',
+    updatedAt: '2026-09-10',
     title: 'Pounds to Kilograms Converter',
     description: 'Convert pounds to kilograms quickly and accurately.',
     example: 'Convert 150 pounds to kilograms for fitness or shipping estimates.',
@@ -315,6 +327,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'gallons-to-liters-converter',
     category: 'measurements',
+    updatedAt: '2026-09-10',
     title: 'Gallons to Liters Converter',
     description: 'Convert gallons to liters for cooking, fuel, and container volume.',
     example: 'Convert 2.5 gallons to liters for recipe scaling.',
@@ -337,6 +350,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'car-payment-calculator',
     category: 'auto',
+    updatedAt: '2026-09-10',
     title: 'Car Payment Calculator',
     description: 'Estimate monthly car loan payments based on price, APR, and term.',
     example: 'Estimate payments for a $28,000 car with 4.5% APR over 6 years.',
@@ -369,6 +383,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'gas-cost-calculator',
     category: 'auto',
+    updatedAt: '2026-09-10',
     title: 'Gas Cost Calculator',
     description: 'Estimate fuel cost for a trip using distance, MPG, and fuel price.',
     example: 'Calculate fuel cost for a 180-mile trip at 28 MPG and $3.75 per gallon.',
@@ -394,6 +409,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'unit-price-calculator',
     category: 'shopping',
+    updatedAt: '2026-09-10',
     title: 'Unit Price Calculator',
     description: 'Compare product prices by unit to find the best deal.',
     example: 'Find the cost per ounce for a 24 oz package priced at $5.99.',
@@ -417,6 +433,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'age-calculator',
     category: 'time',
+    updatedAt: '2026-09-10',
     title: 'Age Calculator',
     description: 'Estimate current age using your birth year and the current year.',
     example: 'Calculate age for someone born in 1990 in the current year.',
@@ -440,6 +457,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'gpa-calculator',
     category: 'education',
+    updatedAt: '2026-09-10',
     title: 'GPA Calculator',
     description: 'Calculate your GPA across a full 2-year masters, 3-year, or 4-year bachelor\'s program. Add courses per semester and see per-semester and cumulative GPA instantly.',
     example: 'Calculate cumulative GPA for a 4-year bachelor\'s degree with different courses each semester.',
@@ -474,6 +492,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'calorie-calculator',
     category: 'health',
+    updatedAt: '2026-09-10',
     title: 'Calorie Calculator',
     description: 'Estimate daily calorie needs based on weight, height, age, and activity level.',
     example: 'Calculate daily calories for a 30-year-old, 170 lb, 5 ft 9 in person with moderate activity.',
@@ -504,6 +523,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'paycheck-calculator',
     category: 'finance',
+    updatedAt: '2026-09-10',
     title: 'Paycheck Calculator',
     description: 'Estimate your US net take-home pay with full 2025 deduction support — 401(k), HSA, FSA, dependent care, commuter benefits, health premiums, Roth 401(k), and more.',
     example: 'Calculate take-home pay for a $60,000 annual salary paid bi-weekly with 401(k) and health insurance deductions.',
@@ -537,6 +557,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'investment-calculator',
     category: 'finance',
+    updatedAt: '2026-09-10',
     title: 'Investment Calculator',
     description: 'Project investment growth with an initial amount, annual return, and time horizon.',
     example: 'See how a $10,000 investment grows at 7% annual return over 20 years.',
@@ -570,6 +591,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'tdee-calculator',
     category: 'health',
+    updatedAt: '2026-09-10',
     title: 'TDEE Calculator',
     description: 'Calculate total daily energy expenditure based on BMR and activity level.',
     example: 'Find the TDEE for a 25-year-old, 155 lb, 5 ft 6 in person with light activity.',
@@ -601,6 +623,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'work-hours-calculator',
     category: 'time',
+    updatedAt: '2026-09-10',
     title: 'Work Hours Calculator',
     description: 'Calculate total hours worked, overtime, and gross pay for a shift or week. Supports US overtime rules (over 40 hours/week at 1.5×).',
     example: 'Calculate pay for 45 hours worked at $18/hr with standard US overtime.',
@@ -631,6 +654,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'date-difference-calculator',
     category: 'time',
+    updatedAt: '2026-09-10',
     title: 'Date Difference Calculator',
     description: 'Find the number of days, weeks, and months between two dates using year, month, and day inputs.',
     example: 'Calculate days between January 1, 2024 and July 4, 2026.',
@@ -663,6 +687,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'sleep-time-calculator',
     category: 'time',
+    updatedAt: '2026-09-10',
     title: 'Sleep Time Calculator',
     description: 'Find the best bedtime or wake-up time based on 90-minute sleep cycles. Plan 5–6 complete cycles for optimal rest.',
     example: 'Find the best wake time if you fall asleep at 10:30 PM.',
@@ -696,6 +721,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'loan-prepayment-calculator',
     category: 'finance',
+    updatedAt: '2026-09-10',
     title: 'Loan Prepayment Calculator',
     description: 'See how extra payments reduce your loan payoff time and total interest. Works for mortgages, auto loans, personal loans, and student loans — all of which allow prepayment in the US.',
     example: 'Pay an extra $200/month on a $20,000 auto loan at 6% APR and see how much faster it is paid off.',
@@ -740,6 +766,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'inflation-calculator',
     category: 'finance',
+    updatedAt: '2026-09-10',
     title: 'Inflation Calculator',
     description: 'Find the future value of money accounting for inflation, or compare purchasing power across years.',
     example: 'See what $10,000 is worth in 10 years with 3% annual inflation.',
@@ -766,6 +793,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'travel-budget-calculator',
     category: 'finance',
+    updatedAt: '2026-09-10',
     title: 'Travel Budget Calculator',
     description: 'Plan your total international travel budget including flights, accommodation, food, activities, and miscellaneous costs.',
     example: 'Budget a 10-day Europe trip: $900 flights, $120/night hotel, $60/day food, $40/day activities.',
@@ -802,6 +830,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'visa-stay-days-calculator',
     category: 'finance',
+    updatedAt: '2026-09-10',
     title: 'Visa Stay Days Calculator',
     description: 'Calculate remaining visa days and check whether a planned trip fits within a 90/180-day Schengen rule or other visa windows.',
     example: 'Check if a 30-day trip fits within the 90-day Schengen allowance after 25 days already used.',
@@ -831,6 +860,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'salary-raise-calculator',
     category: 'work',
+    updatedAt: '2026-09-10',
     title: 'Salary Raise Calculator',
     description: 'Calculate your new salary after a raise, compare offers, and estimate annual, monthly, and hourly impact before and after taxes.',
     example: 'See the difference between a $72,000 salary and a 7% raise, paying bi-weekly.',
@@ -865,6 +895,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'meeting-cost-calculator',
     category: 'work',
+    updatedAt: '2026-09-10',
     title: 'Meeting Cost Calculator',
     description: 'Calculate the real dollar cost of a meeting based on attendee count, average salary, and duration. Helps teams evaluate meeting ROI.',
     example: 'Find the cost of a 1-hour meeting with 8 people averaging $85,000 salary.',
@@ -895,6 +926,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'freelancer-rate-calculator',
     category: 'work',
+    updatedAt: '2026-09-10',
     title: 'Freelancer Hourly Rate Calculator',
     description: 'Calculate the minimum hourly rate needed as a US freelancer to cover taxes, benefits, business expenses, and unpaid time.',
     example: 'Find the minimum hourly rate for a freelancer targeting $80,000 net income with 30 billable hours per week.',
@@ -927,6 +959,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'pto-calculator',
     category: 'work',
+    updatedAt: '2026-09-10',
     title: 'PTO / Vacation Calculator',
     description: 'Calculate accrued PTO, remaining balance, and cash value of unused vacation days based on US employer policies.',
     example: 'Find PTO balance for an employee who earns 15 days/year, has used 4 days, and earns $75,000.',
@@ -958,6 +991,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'ev-charging-calculator',
     category: 'auto',
+    updatedAt: '2026-09-10',
     title: 'EV Charging Cost Calculator',
     description: 'Estimate the cost to charge an electric vehicle at home or at a public charger, and compare to gas costs.',
     example: 'Calculate the cost to charge a Tesla Model 3 (75 kWh battery) at home at $0.16/kWh.',
@@ -992,6 +1026,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'toll-cost-calculator',
     category: 'auto',
+    updatedAt: '2026-09-10',
     title: 'Toll Cost Estimator',
     description: 'Estimate total toll costs for a US road trip or commute, including E-ZPass discount savings.',
     example: 'Estimate tolls for a daily commute with $2.50 toll each way, 22 work days per month.',
@@ -1024,6 +1059,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'commute-cost-calculator',
     category: 'auto',
+    updatedAt: '2026-09-10',
     title: 'Commute Cost Calculator',
     description: 'Calculate the full cost of your daily commute including fuel, tolls, parking, public transit, and vehicle wear.',
     example: 'Find monthly commute cost for a 25-mile round trip at 30 MPG with $15/day parking and $3 tolls.',
@@ -1060,6 +1096,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'running-pace-calculator',
     category: 'health',
+    updatedAt: '2026-09-10',
     title: 'Running Pace Calculator',
     description: 'Calculate your running pace, finish time, or distance. Supports miles and kilometers.',
     example: 'Find the pace needed to finish a 5K in 25 minutes.',
@@ -1089,6 +1126,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'pregnancy-due-date-calculator',
     category: 'health',
+    updatedAt: '2026-09-10',
     title: 'Pregnancy Due Date Calculator',
     description: 'Estimate your due date using Naegele\'s rule (LMP method) or IVF transfer date. Also calculates current weeks and trimester.',
     example: 'Find the due date for a pregnancy with last menstrual period starting March 1, 2026.',
@@ -1123,6 +1161,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'paint-calculator',
     category: 'home',
+    updatedAt: '2026-09-10',
     title: 'Paint Calculator',
     description: 'Calculate how many gallons of paint you need for walls and ceilings, accounting for doors, windows, and coats.',
     example: 'Calculate paint needed for a 12x14 ft room with 9 ft ceilings, 1 door, and 2 windows.',
@@ -1159,6 +1198,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'tile-calculator',
     category: 'home',
+    updatedAt: '2026-09-10',
     title: 'Tile Calculator',
     description: 'Calculate the number of tiles and boxes needed for a floor or wall project, including a waste allowance.',
     example: 'Calculate tiles needed for a 120 sq ft bathroom floor using 12x12 inch tiles.',
@@ -1190,6 +1230,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'concrete-calculator',
     category: 'home',
+    updatedAt: '2026-09-10',
     title: 'Concrete Calculator',
     description: 'Calculate cubic yards and bags of concrete needed for slabs, footings, or columns.',
     example: 'Calculate concrete for a 10x12 ft patio slab, 4 inches thick.',
@@ -1221,6 +1262,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'wallpaper-calculator',
     category: 'home',
+    updatedAt: '2026-09-10',
     title: 'Wallpaper Calculator',
     description: 'Calculate how many rolls of wallpaper you need for a room, accounting for pattern repeat and waste.',
     example: 'Find rolls needed for a 12x14 ft room with 9 ft ceilings using standard US double rolls.',
@@ -1253,6 +1295,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'furniture-fit-calculator',
     category: 'home',
+    updatedAt: '2026-09-10',
     title: 'Furniture Fit Calculator',
     description: 'Check if a piece of furniture fits in your room with clearance space for walkways and doors.',
     example: 'Check if a 78x36 inch sofa fits in a 12x14 ft living room with 36 inch walkways.',
@@ -1288,6 +1331,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'discount-calculator',
     category: 'shopping',
+    updatedAt: '2026-09-10',
     title: 'Discount Calculator',
     description: 'Calculate sale price, savings amount, and effective discount percentage for any purchase.',
     example: 'Find the final price of a $120 jacket with 30% off plus an additional 10% coupon.',
@@ -1318,6 +1362,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'cashback-calculator',
     category: 'shopping',
+    updatedAt: '2026-09-10',
     title: 'Cashback Calculator',
     description: 'Calculate cashback earnings from purchases, annual rewards value, and effective discount rate from rewards cards.',
     example: 'Estimate annual cashback on $2,000/month spending with a 2% rewards card.',
@@ -1350,6 +1395,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'emi-calculator',
     category: 'shopping',
+    updatedAt: '2026-09-10',
     title: 'EMI Calculator',
     description: 'Calculate monthly EMI (Equated Monthly Installment) for US retail financing, buy-now-pay-later, or personal loans used for purchases.',
     example: 'Calculate monthly payments for a $1,500 laptop financed at 18% APR over 12 months.',
@@ -1383,6 +1429,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'youtube-earnings-calculator',
     category: 'social',
+    updatedAt: '2026-09-10',
     title: 'YouTube Earnings Estimator',
     description: 'Estimate monthly and annual YouTube ad revenue based on views, RPM, and content niche.',
     example: 'Estimate earnings for a channel with 500,000 monthly views and $4 RPM.',
@@ -1410,6 +1457,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'instagram-engagement-calculator',
     category: 'social',
+    updatedAt: '2026-09-10',
     title: 'Instagram Engagement Calculator',
     description: 'Calculate engagement rate for Instagram posts and estimate sponsored post value based on follower count and engagement.',
     example: 'Calculate engagement rate for an account with 50,000 followers and an average of 1,200 likes and 80 comments per post.',
@@ -1439,6 +1487,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'electricity-bill-calculator',
     category: 'home',
+    updatedAt: '2026-09-10',
     title: 'Electricity Bill Estimator',
     description: 'Estimate your monthly electricity bill based on appliance usage and local utility rates.',
     example: 'Estimate monthly bill for a home using 900 kWh at $0.16/kWh with $12 fixed charges.',
@@ -1475,6 +1524,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'fuel-cost-calculator',
     category: 'auto',
+    updatedAt: '2026-09-10',
     title: 'Fuel Cost Calculator',
     description: 'Calculate annual fuel costs for your vehicle based on mileage, MPG, and gas prices. Compare gas vs diesel vs hybrid savings.',
     example: 'Find annual fuel cost for a vehicle driven 15,000 miles/year at 28 MPG and $3.75/gallon.',
@@ -1507,6 +1557,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'currency-converter',
     category: 'finance',
+    updatedAt: '2026-09-10',
     title: 'Currency Converter',
     description: 'Convert between 30+ world currencies using reference exchange rates. Includes USD, EUR, GBP, JPY, CAD, AUD, INR, and more.',
     example: 'Convert $500 USD to Euros, British Pounds, or Japanese Yen.',
@@ -1525,6 +1576,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'character-counter',
     category: 'social',
+    updatedAt: '2026-09-10',
     title: 'Character Counter',
     description: 'Count characters, words, sentences, and paragraphs. See how your text fits within platform limits for Twitter/X, Instagram, LinkedIn, and more.',
     example: 'Check if a tweet fits within the 280-character Twitter/X limit.',
@@ -1543,6 +1595,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'hashtag-counter',
     category: 'social',
+    updatedAt: '2026-09-10',
     title: 'Hashtag Counter',
     description: 'Count and extract unique hashtags from your caption or post. Check Instagram\'s 30-hashtag limit and see all tags at a glance.',
     example: 'Count hashtags in an Instagram caption and verify you are within the 30-hashtag limit.',
@@ -1560,6 +1613,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'pomodoro-timer',
     category: 'time',
+    updatedAt: '2026-09-10',
     title: 'Pomodoro Timer',
     description: 'A configurable Pomodoro timer with focus sessions, short breaks, long breaks, and session tracking. Based on the Pomodoro Technique.',
     example: 'Run 4 × 25-minute focus sessions with 5-minute breaks and a 15-minute long break.',
@@ -1578,6 +1632,7 @@ export const calculators: CalculatorConfig[] = [
   {
     id: 'timezone-meeting-planner',
     category: 'time',
+    updatedAt: '2026-09-10',
     title: 'Time Zone Meeting Planner',
     description: 'Find a meeting time that works across multiple US and international time zones. See current time in all major zones simultaneously.',
     example: 'Plan a meeting for New York, London, and Tokyo participants.',

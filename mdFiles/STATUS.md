@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-09-10 · Current step: **04** · Steps done: **3 / 28**
+Last updated: 2026-09-10 · Current step: **05** · Steps done: **4 / 28** · **Phase A complete**
 
 ---
 
@@ -30,14 +30,14 @@ Last updated: 2026-09-10 · Current step: **04** · Steps done: **3 / 28**
 
 Status values: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `PARKED`
 
-### Phase A — Foundation (correctness; nothing else works until these land)
+### Phase A — Foundation (correctness; nothing else works until these land) — **COMPLETE** 2026-09-10
 
 | # | Step | Status | Scope | Spec |
 |---|---|---|---|---|
 | 01 | Domain + `lib/site.ts` | **DONE** 2026-09-10 | Create `lib/site.ts` exporting `SITE_URL`. Replace the hardcoded domain in `lib/seo.ts`, `app/sitemap.ts`, `app/robots.ts` and every `generateMetadata`. Add the Cloudflare apex→www redirect rule. | §0, D1 |
 | 02 | English-only migration | **DONE** 2026-09-10 | `routing.locales = ['en']`, `localePrefix: 'as-needed'`. Delete `LanguageSwitcher` from `Header`. Update every `generateStaticParams` to drop the locale loop. Add 301s `/en/*` → `/*` in `middleware.ts`. Verify `app/page.tsx` no longer needs its `redirect('/en')`. | D2, D3, D4 |
 | 03 | Canonicals on every page | **DONE** 2026-09-10 | `buildCanonical(path)` in `lib/seo.ts`. Apply to **every** `generateMetadata` — including `calculators/[slug]` and `categories/[category]`, which currently have none. Remove the locale-blind canonicals in `about`/`contact`/`privacy-policy`/`terms` and the bare-root one on the homepage. | §2.1, D5 |
-| 04 | Sitemap + robots rewrite | **TODO** | Add `updatedAt: string` to `CalculatorConfig` and populate all 53. Rewrite `app/sitemap.ts`: one entry per path, no locale loops, real `lastModified`, `priority` 0.8 for calculators / 0.6 home / 0.5 rest. Point `robots.ts` at `SITE_URL`. | §2.4 |
+| 04 | Sitemap + robots rewrite | **DONE** 2026-09-10 | Add `updatedAt: string` to `CalculatorConfig` and populate all 53. Rewrite `app/sitemap.ts`: one entry per path, no locale loops, real `lastModified`, `priority` 0.8 for calculators / 0.6 home / 0.5 rest. Point `robots.ts` at `SITE_URL`. | §2.4 |
 
 ### Phase B — Deep-link ranking (make Google surface the calculator, not the homepage)
 
@@ -138,7 +138,33 @@ are gone; call sites import `SITE_NAME` / `SITE_URL` from `lib/site` directly. V
 72 unique canonicals, exactly one per page, none containing `/en/` or `dailycalculations.app`, no
 hreflang anywhere. Build + lint pass.
 
+04 · 2026-09-10 · **Phase A complete.** `updatedAt: string` (required) added to `CalculatorConfig`
+and populated on all 53 with the `2026-09-10` baseline. `app/sitemap.ts` rewritten flat — no locale
+loops, no `alternates`/hreflang, `changeFrequency: 'monthly'`, priority **0.8 calculators / 0.6 home
++ categories / 0.5 the other 7 static pages**. `robots.ts` now also `Disallow: /api/`. Sitemap entry
+count: **~360 (pre-step-02) → 72 (step 02) → 72 now**, but the 72 are no longer redirect targets and
+the ~80% garbage hreflang alternates are gone. Verified: 72 `<url>`, 72 unique `<loc>`, 0 containing
+`/en/` `/de/` `/fr/` `/es/` `/it/`, 0 `hreflang`/`xhtml:link`, every `<loc>` on
+`https://www.dailycalculations.com`, XML tag-balanced with all dates and URLs parseable. Build + lint
+pass.
+
 **Next step needs to know:**
+
+- **Every calculator edit must bump its `updatedAt`.** It is the sitemap's `<lastmod>` — the whole
+  point of step 04 was to stop claiming all 53 pages changed on every deploy. Steps 12-15 (content
+  rollout) should bump it on each page they touch; step 05 (alias data) should **not** — adding
+  `aliases`/`related` is not a content change the crawler needs to re-fetch for. Step 10's pilot
+  rewrite of `date-difference-calculator` **should** bump it.
+- `updatedAt` sits between `category` and `title` in each object literal. Step 05 adds three more
+  fields to the same type — keep the object key order matching the type declaration order.
+- `new Date('2026-09-10')` parses as **UTC midnight**, so calculator `<lastmod>` values render
+  `2026-09-10T00:00:00.000Z` while home/category/static entries carry the build timestamp. That
+  difference is intended and is what makes the sitemap look honest.
+- Home stays at `${SITE_URL}` with **no trailing slash**, matching `buildCanonical('')` from step 03.
+  They must keep agreeing.
+- Full sitemap validation against Search Console's tester is **step 28**, not done here. A structural
+  parse (tag balance, `new URL()` on every `<loc>`, `Date.parse()` on every `<lastmod>`, no
+  unescaped XML characters) passed locally.
 
 - **Cards passed `locale={locale}` to next-intl's `<Link>`, which force-prefixes the URL.** Under
   `as-needed` that emitted `/en/calculators/...` in the rendered HTML — every internal link pointing
@@ -151,9 +177,8 @@ hreflang anywhere. Build + lint pass.
   backslash silently makes the negative lookahead match every non-empty path, so middleware runs on
   `/` only and every other route 404s while the build still passes. If routes 404 after touching
   `middleware.ts`, check this line first.
-- `app/sitemap.ts` still loops `routing.locales` and emits a self-referencing `hreflang` alternate.
-  Harmless with one locale, and **step 04 rewrites the file anyway** — the loops and the
-  `alternates` block both go then (D5: no hreflang).
+- ~~`app/sitemap.ts` still loops `routing.locales` and emits a self-referencing `hreflang`
+  alternate.~~ — **done in step 04.** The loops and the `alternates` block are gone (D5).
 - `setRequestLocale(locale)` is still on every server page and must stay.
 - Next.js 16 warns that the `middleware` file convention is deprecated in favor of `proxy`, and
   labels it `ƒ Proxy (Middleware)` in the build output. Cosmetic; the file is still `middleware.ts`.
@@ -165,8 +190,8 @@ hreflang anywhere. Build + lint pass.
   **308**, not the 301 the acceptance check asked for. Step 06 adds its `redirectFrom` 301s to the
   same block. Static page count: 82 → **78**.
 - **The homepage canonical has no trailing slash** (`https://www.dailycalculations.com`), because
-  `buildCanonical('')` concatenates. `app/sitemap.ts` builds the root the same way, so the two agree.
-  Keep them agreeing in step 04.
+  `buildCanonical('')` concatenates. `app/sitemap.ts` builds the root the same way — verified still
+  agreeing after the step-04 rewrite.
 
 ---
 

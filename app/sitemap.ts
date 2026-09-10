@@ -1,60 +1,37 @@
 import { MetadataRoute } from 'next';
 import { calculators, categories } from '@/data/calculators';
-import { routing } from '@/i18n/routing';
 import { SITE_URL } from '@/lib/site';
 
-const baseUrl = SITE_URL;
-const { locales, defaultLocale } = routing;
-
-const staticPaths = [
-  '',
+// Home is emitted separately at a lower priority than the calculator pages —
+// the leaf pages are the product (see mdFiles/instructions.md §2.4).
+const STATIC_PATHS = [
+  '/calculators',
+  '/categories',
   '/about',
   '/contact',
   '/privacy-policy',
   '/terms',
-  '/calculators',
-  '/categories',
   '/suggestions',
 ];
 
-function buildEntry(path: string): MetadataRoute.Sitemap[number] {
-  const alternates: Record<string, string> = {};
-  for (const locale of locales) {
-    alternates[locale] =
-      locale === defaultLocale ? `${baseUrl}${path}` : `${baseUrl}/${locale}${path}`;
-  }
+function entry(path: string, priority: number, lastModified: Date): MetadataRoute.Sitemap[number] {
   return {
-    url: `${baseUrl}${path}`,
-    lastModified: new Date(),
-    alternates: { languages: alternates },
+    url: `${SITE_URL}${path}`,
+    lastModified,
+    changeFrequency: 'monthly',
+    priority,
   };
 }
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const entries: MetadataRoute.Sitemap = [];
+  const buildDate = new Date();
 
-  for (const path of staticPaths) {
-    entries.push(buildEntry(path));
-    for (const locale of locales) {
-      if (locale !== defaultLocale) entries.push(buildEntry(`/${locale}${path}`));
-    }
-  }
-
-  for (const calc of calculators) {
-    const path = `/calculators/${calc.id}`;
-    entries.push(buildEntry(path));
-    for (const locale of locales) {
-      if (locale !== defaultLocale) entries.push(buildEntry(`/${locale}${path}`));
-    }
-  }
-
-  for (const cat of categories) {
-    const path = `/categories/${cat.id}`;
-    entries.push(buildEntry(path));
-    for (const locale of locales) {
-      if (locale !== defaultLocale) entries.push(buildEntry(`/${locale}${path}`));
-    }
-  }
-
-  return entries;
+  return [
+    entry('', 0.6, buildDate),
+    ...STATIC_PATHS.map((path) => entry(path, 0.5, buildDate)),
+    ...calculators.map((calc) =>
+      entry(`/calculators/${calc.id}`, 0.8, new Date(calc.updatedAt))
+    ),
+    ...categories.map((cat) => entry(`/categories/${cat.id}`, 0.6, buildDate)),
+  ];
 }

@@ -23,7 +23,15 @@
   "calculators": {
     "eyebrow": "All calculators",
     "headline": "Browse tools by category",
-    "description": "Find finance, health, measurement, and tax calculators designed for everyday use."
+    "description": "Find finance, health, measurement, and tax calculators designed for everyday use.",
+    "searchLabel": "Search all calculators",
+    "searchPlaceholder": "Mortgage, BMI, miles, sales tax...",
+    "filterLabel": "Filter by category",
+    "allCategories": "All",
+    "resultCount": "Showing {count} of {total} calculators",
+    "emptyTitle": "No calculators match that search",
+    "emptyBody": "Try a shorter term, or clear the filters to see every calculator.",
+    "clearFilters": "Clear filters"
   },
   "categories": {
     "eyebrow": "Category directory",

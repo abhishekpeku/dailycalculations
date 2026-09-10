@@ -2,7 +2,9 @@ import { Link } from '@/i18n/navigation';
 import type { CalculatorConfig } from '@/data/calculators';
 
 type Props = {
-  calculator: CalculatorConfig;
+  // Narrowed so client components can render a card: `compute` is a function and
+  // does not survive the RSC serialization boundary.
+  calculator: Pick<CalculatorConfig, 'id' | 'title' | 'description' | 'category'>;
   variant?: 'default' | 'compact';
 };
 

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 import { calculators, categories } from '@/data/calculators';
-import CalculatorCard from '@/components/CalculatorCard';
+import CalculatorBrowser from '@/components/CalculatorBrowser';
 import CategoryCard from '@/components/CategoryCard';
 import { routing } from '@/i18n/routing';
 import { buildCanonical } from '@/lib/seo';
@@ -26,6 +26,15 @@ export async function generateMetadata({
     alternates: buildCanonical('/calculators')
   };
 }
+
+// Trimmed for the client boundary — `compute` and the FAQ strings stay on the server.
+const browseItems = calculators.map(({ id, category, title, description, aliases }) => ({
+  id,
+  category,
+  title,
+  description,
+  aliases
+}));
 
 export default async function CalculatorsPage({
   params
@@ -56,11 +65,7 @@ export default async function CalculatorsPage({
           ))}
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {calculators.map((calculator) => (
-            <CalculatorCard key={calculator.id} calculator={calculator} />
-          ))}
-        </div>
+        <CalculatorBrowser calculators={browseItems} categories={categories.map(({ id, title }) => ({ id, title }))} />
       </div>
     </div>
   );

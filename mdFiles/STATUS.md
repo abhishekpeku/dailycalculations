@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-09-10 · Current step: **09** · Steps done: **8 / 28** · **Phase A complete**
+Last updated: 2026-09-10 · Current step: **10** · Steps done: **9 / 28** · **Phase A complete**
 
 ---
 
@@ -47,7 +47,7 @@ Status values: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `PARKED`
 | 06 | `redirectFrom` 301s | **DONE** 2026-09-10 | Generate 301s in `middleware.ts` from every `redirectFrom` slug to its canonical `/calculators/<id>`. Include `auto-loan-calculator`, `home-loan-calculator`, `house-loan-emi-calculator`, `word-counter`, `bmr-calculator`. | §2.5 |
 | 07 | Structured data + breadcrumb | **DONE** 2026-09-10 | Add `WebApplication` (with `alternateName: aliases`), `BreadcrumbList` and `HowTo` JSON-LD to `buildPageJsonLd`. Build a **visible** `Breadcrumb` component — Google cross-checks JSON-LD against rendered markup. | §2.3 |
 | 08 | Surface the aliases | **DONE** 2026-09-10 | "Also known as …" sentence under the H1. "Related calculators" block using `related`, with **alias anchor text**, not repeated titles. Extend `fuzzyFilter` in `CalculatorSearch.tsx:19` to match `aliases`. | §1.4 |
-| 09 | Listing page search + `?q=` | TODO | Add category filter chips, the search box, and `?q=` / `?category=` params to `app/[locale]/calculators/page.tsx`. Then either fix or delete the broken `SearchAction` in `buildHomeJsonLd`. Also clean the homepage `keywords` array — drop `graphing calculator`. | §2.7, §4.5, §1.6 |
+| 09 | Listing page search + `?q=` | **DONE** 2026-09-10 | Add category filter chips, the search box, and `?q=` / `?category=` params to `app/[locale]/calculators/page.tsx`. Then either fix or delete the broken `SearchAction` in `buildHomeJsonLd`. Also clean the homepage `keywords` array — drop `graphing calculator`. | §2.7, §4.5, §1.6 |
 
 ### Phase C — Content depth (pilot, measure, then roll out)
 
@@ -195,7 +195,55 @@ self-links, 0 repeated anchors within a page, 0 `/en/` hrefs**, every anchor is 
 target, and of the 49 targets linked from more than one page **0 have only one anchor form** —
 131 distinct anchor forms across 52 targets. Build + lint pass; still 78 static pages.
 
+09 · 2026-09-10 · `/calculators` gained a search box, category filter chips and working
+`?q=` / `?category=` params, so §2.7's `SearchAction` promise is now true. New
+**`components/CalculatorBrowser.tsx`** (client) + **`lib/search.ts`** (`matchesQuery`,
+`parseListingParams`, `buildListingSearch` — all pure). `CalculatorSearch` now imports the same
+predicate instead of its own `fuzzyFilter`, so alias matching cannot drift between the two boxes.
+`CalculatorCard`'s prop narrowed to `Pick<CalculatorConfig, 'id'|'title'|'description'|'category'>`
+so a client component can render it. Homepage/layout `keywords` cut 19 → 15. **The `SearchAction`
+itself needed no code change** — its `urlTemplate` was already correct after step 02; this step made
+the target real. `updatedAt` **not** bumped — no calculator data changed. Build + lint pass; still
+78 static pages. Verified against the prerendered HTML (53/53 calculator links, 11/11 category
+links, 0 `/en/`, canonical unchanged), 27 unit assertions on the pure functions against the real
+data, and a live hydrated run on `:3007` in Chrome (`?q=mortgage` → 2, `?q=emi` → 3 incl.
+`mortgage-calculator` by alias, `?category=health` → 6, chip + typing + clearing all round-trip the
+URL, `history.length` unchanged at 3, no console errors).
+
 **Next step needs to know:**
+
+- ⚠ **Never read the URL on `/calculators` with `useSearchParams()`.** The page is `force-static`;
+  under static rendering Next bails the client tree up to the nearest `<Suspense>` out of the
+  prerendered HTML, which would delete all 53 crawlable calculator links from the page Google
+  fetches — the exact opposite of what §4.5 asks for. `CalculatorBrowser` therefore renders
+  **unfiltered** on first paint and reads `window.location.search` in a mount `useEffect`. Same
+  reason it writes the URL with `history.replaceState`, not `router.replace`. If a future step
+  "modernizes" this, re-run acceptance check 1 first.
+- **Filter state is client-only, so `?q=` and `?category=` serve the same document and the same
+  canonical `/calculators`.** No faceted URLs are indexable. The chips are `<button>`s, not links,
+  on purpose — do not turn them into `<Link>`s.
+- **`lib/search.ts` is now the single matching predicate** for both the homepage box and the listing
+  page. Step 16's category rename does not touch it; the chips render from whatever `categories`
+  holds, so the restructure needs no change here.
+- **`CalculatorBrowser` must never import `data/calculators`.** It takes trimmed props from the
+  server page (`id, category, title, description, aliases`). Importing the data module would drag
+  53 `compute()` bodies and every FAQ string into the client bundle — the step-06 middleware trap.
+  `compute` is a function and does not cross the RSC boundary at all; that is also why
+  `CalculatorCard`'s prop type was narrowed.
+- **`CalculatorBrowser` reads its strings with `useTranslations('calculators')` rather than taking
+  label props** like `CalculatorSearch` does. Deliberate deviation: `resultCount` needs a count at
+  render time and a formatter function cannot be passed to a client component (the first build
+  failed on exactly that). The layout's `NextIntlClientProvider` already supplies the messages.
+- ⚠ **`tailwind.config` only defines brand shades `50 / 100 / 500 / 700`.** `brand-600` was used for
+  the active chip and silently emitted no class at all — white text on a white background, caught
+  only by looking at a screenshot. **Existing components already reference undefined `brand-200`,
+  `brand-300`, `brand-400`, `brand-800`**; those hover/dark styles are quietly dead today. Parked.
+- **Three keywords come back later.** `percentage calculator` + `scientific calculator` in step 24,
+  `final grade calculator` in step 26 — the arrays in `app/[locale]/layout.tsx` and
+  `app/[locale]/page.tsx` are duplicates and must be edited together. `graphing calculator` is gone
+  for good (§1.6).
+- **Step 10 does not touch `/calculators`.** The listing page and the calculator page template are
+  independent; the browser component sits below the category cards and the hero is unchanged.
 
 - **The related block is the site's only calculator-to-calculator linking.** It renders from
   `buildRelatedLinks(slug)`; step 10's template rewrite must keep it and must not re-derive anchors.
@@ -363,6 +411,13 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
   in. Worth doing once the category restructure (step 16) settles the names.
 - `graphing calculator` — dropped from the keywords array in step 09; genuinely hard to build and
   not worth it. Do not resurrect without a reason. (§1.6)
+- **Dead Tailwind brand shades.** `tailwind.config` defines `brand` at `50 / 100 / 500 / 700`
+  only, but components reference `brand-200`, `brand-300`, `brand-400`, `brand-600` and
+  `brand-800` — `CalculatorCard`'s `hover:border-brand-200`, the layout's `dark:text-brand-300`,
+  and others. Those classes are never generated, so the styles silently do nothing. Found in
+  step 09 when the active filter chip rendered white-on-white. Fix is to either fill in the
+  palette or normalize every call site onto the four real shades — a site-wide visual change,
+  so not done mid-step.
 - Baidu SEO for mainland China. Needs an ICP licence and separate tooling; Cloudflare is unreliable
   behind the GFW. The `CN` region profile is for Chinese speakers elsewhere. (§3.5)
 - ~~The four alias stubs return 307~~ — **done in step 03.** They are 301s in `middleware.ts` now

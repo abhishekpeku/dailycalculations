@@ -2,13 +2,9 @@
 
 import { useMemo, useState } from 'react';
 import { Link } from '@/i18n/navigation';
+import { matchesQuery, type SearchableCalculator } from '@/lib/search';
 
-type SearchItem = {
-  id: string;
-  title: string;
-  description: string;
-  aliases: string[];
-};
+type SearchItem = SearchableCalculator;
 
 type Props = {
   calculators: SearchItem[];
@@ -16,20 +12,11 @@ type Props = {
   searchPlaceholder?: string;
 };
 
-const fuzzyFilter = (text: string, query: string) => text.toLowerCase().includes(query.toLowerCase());
-
 export default function CalculatorSearch({ calculators, searchLabel = 'Search calculators', searchPlaceholder = 'Mortgage, BMI, miles, sales tax...' }: Props) {
   const [query, setQuery] = useState('');
   const filtered = useMemo(() => {
     if (!query.trim()) return calculators.slice(0, 6);
-    return calculators
-      .filter((calculator) =>
-        fuzzyFilter(calculator.title, query) ||
-        fuzzyFilter(calculator.description, query) ||
-        // Aliases are why "emi" or "home loan" finds the mortgage calculator.
-        calculator.aliases.some((alias) => fuzzyFilter(alias, query))
-      )
-      .slice(0, 8);
+    return calculators.filter((calculator) => matchesQuery(calculator, query)).slice(0, 8);
   }, [calculators, query]);
 
   return (

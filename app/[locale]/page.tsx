@@ -29,13 +29,13 @@ export async function generateMetadata({
   return {
     title,
     description,
+    // Must stay identical to the array in layout.tsx — see the note there.
     keywords: [
       'calculator', 'mortgage calculator', 'bmi calculator', 'calorie calculator',
       'loan calculator', 'gpa calculator', 'compound interest calculator',
-      'auto loan calculator', 'car loan calculator', 'scientific calculator',
-      'percentage calculator', 'car payment calculator', 'paycheck calculator',
-      'age calculator', 'investment calculator', 'tdee calculator',
-      'final grade calculator', 'graphing calculator', 'time calculator'
+      'auto loan calculator', 'car loan calculator', 'car payment calculator',
+      'paycheck calculator', 'age calculator', 'investment calculator',
+      'tdee calculator', 'time calculator'
     ],
     openGraph: {
       title,

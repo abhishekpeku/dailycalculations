@@ -32,7 +32,7 @@ function stripDeadLocalePrefixes(pathname: string): string | null {
   return `/${segments.slice(end).join('/')}`;
 }
 
-export default function proxy(req: NextRequest) {
+export default function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
 
   // Strip every dead locale prefix and resolve a rename in one pass, so a URL needing

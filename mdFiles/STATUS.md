@@ -75,7 +75,7 @@ is why 12-15 run after it.
 |---|---|---|---|---|
 | 17 | Compute snapshot tests | TODO | Pure-function tests over all 53 `compute()` functions. **Must land before step 18** — that refactor changes every calculator's output formatting and is exactly where a silent regression hides. | §4.6 |
 | 18 | `lib/regions.ts` + provider | TODO | All 9 profiles with the §3.5 field values. `RegionProvider` mirroring `ThemeProvider`'s cookie-hydration shape. Refactor `lib/calculator.ts` formatters to take a `Region` instead of hardcoded `en-US`/`USD`. | §3.3 s1+s4, §3.5 |
-| 19 | Geo detection + switcher | TODO | `cf-ipcountry` read in `proxy.ts` (renamed from `middleware.ts` in session 31), **only when the cookie is absent**. Country switcher replacing `LanguageSwitcher`. Dismissible suggestion banner — **never a redirect**. | §3.3 s2/s3/s7, §3.4 |
+| 19 | Geo detection + switcher | TODO | `cf-ipcountry` read in `middleware.ts`, **only when the cookie is absent**. Country switcher replacing `LanguageSwitcher`. Dismissible suggestion banner — **never a redirect**. | §3.3 s2/s3/s7, §3.4 |
 | 20 | Region wave 1: US · GB · IN · AE · AU | TODO | UK stone + **imperial-gallon** MPG (4.546 L — a US-gallon MPG is wrong by 20%). India lakh/crore grouping, CGPA-10, "EMI" wording. **UAE: no personal income tax** — changes the paycheck calculator. AU superannuation + GST. | §3.5 |
 | 21 | Region wave 2: EU · TH · ID · CN | TODO | EU profile + DE/FR/ES/IT VAT overrides, comma decimal separator, L/100km, VAT-removal mode on the sales tax calculator. **TH Buddhist-era years** (2026 CE = 2569 BE — a Gregorian-only field gives a silent 543-year error). ID zero decimals. CN YMD dates. | §3.5 |
 | 22 | Live FX rates via KV | TODO | Replace the 30 static rates in `CurrencyConverter.tsx:5-11` with a daily KV-cached fetch. Show "Rates updated <date>". If they stay static, say so on the page. | §3.3 s8 |
@@ -93,7 +93,7 @@ is why 12-15 run after it.
 
 | # | Step | Status | Scope | Spec |
 |---|---|---|---|---|
-| 27 | Repo hygiene | TODO | `.gitignore` + delete `dev-server.log`, `dev-server.err.log`, `tsconfig.tsbuildinfo`. Regenerate the `README.md` calculator list from `data/calculators.ts`. Fix `mdFiles/memory/project_i18n.md` (it says next-intl 3.26.5 / 5 locales / `LanguageSwitcher`; reality is 4.13 / English-only, and `LanguageSwitcher` is deleted — its `proxy.ts` filename claim is coincidentally correct again as of session 31, but for the wrong reason). | §4.6 |
+| 27 | Repo hygiene | TODO | `.gitignore` + delete `dev-server.log`, `dev-server.err.log`, `tsconfig.tsbuildinfo`. Regenerate the `README.md` calculator list from `data/calculators.ts`. Fix `mdFiles/memory/project_i18n.md` (it says `proxy.ts` / next-intl 3.26.5; reality is `middleware.ts` / 4.13 / English-only — see session 31, which confirmed `middleware.ts` must stay). | §4.6 |
 | 28 | Search Console | TODO | Verify the domain, submit `/sitemap.xml`, request indexing on the top 15 calculators individually, then monitor the metrics table in §7. | §2.8, §7 |
 | 29 | IndexNow setup | **DONE** 2026-09-13 | Ran ahead of the queue in response to a Bing Webmaster Tools audit. Key file `public/<key>.txt`, submit script `scripts/indexnow.mjs` (fetches `/sitemap.xml`, POSTs every `<loc>` to `api.indexnow.org/indexnow`), wired into `npm run deploy` and exposed standalone as `npm run indexnow`. No new dependency — uses built-in `fetch`. | — |
 
@@ -404,16 +404,21 @@ unknown category still 404s. Build + lint pass.
   a calculator page and a category page.
 - **The `matcher` regex is escape-fragile.** It must read exactly
   `'/((?!api|_next|_vercel|.*\..*).*)'` — a double backslash in the source. Collapsing it to a single
-  backslash silently makes the negative lookahead match every non-empty path, so the proxy runs on
+  backslash silently makes the negative lookahead match every non-empty path, so middleware runs on
   `/` only and every other route 404s while the build still passes. If routes 404 after touching
-  `proxy.ts`, check this line first.
+  `middleware.ts`, check this line first.
 - ~~`app/sitemap.ts` still loops `routing.locales` and emits a self-referencing `hreflang`
   alternate.~~ — **done in step 04.** The loops and the `alternates` block are gone (D5).
 - `setRequestLocale(locale)` is still on every server page and must stay.
-- ~~Next.js 16 warns that the `middleware` file convention is deprecated in favor of `proxy`~~ —
-  **done in session 31.** File renamed `middleware.ts` → `proxy.ts`, exported function renamed
-  `middleware` → `proxy` (via `npx @next/codemod@canary middleware-to-proxy .`). Build output still
-  cosmetically labels the route `ƒ Proxy (Middleware)` either way.
+- ⚠️ **Next.js 16 warns that the `middleware` file convention is deprecated in favor of `proxy` —
+  do NOT migrate. The file must stay `middleware.ts`.** Session 31 tried the official codemod
+  (`middleware.ts` → `proxy.ts`) and it broke `npm run deploy`: per Next.js's own docs, "Proxy
+  defaults to using the Node.js runtime. The `runtime` config option is not available in Proxy
+  files" — there is no way to force `proxy.ts` back onto the Edge runtime. `@opennextjs/cloudflare`
+  hard-refuses Node.js middleware (`useNodeMiddleware()` in its `build.js`) and `npm run deploy`
+  exits 1 with "Node.js middleware is not currently supported." Reverted the same session. The
+  warning is genuinely cosmetic only as long as the file keeps the old `middleware.ts` name/export —
+  build output still labels the route `ƒ Proxy (Middleware)` regardless of which name is used.
 - ⚠️ **PENDING ON THE USER — not code:** the Cloudflare apex→www 301 redirect rule from step 01 is
   **still not created.** See "Pending on the user" below.
 - **The four alias stubs are gone.** `app/[locale]/{about-us,contact-us,privacy,terms-and-conditions}/`
@@ -431,12 +436,12 @@ unknown category still 404s. Build + lint pass.
   (`home-loan-calculator`, `house-loan-emi-calculator`), `car-payment-calculator`
   (`auto-loan-calculator`, `car-loan-calculator`), `tdee-calculator` (`bmr-calculator`),
   `character-counter` (`word-counter`). **Step 06 generates the 301s from this field — do not
-  hand-list the slugs in `proxy.ts`.** Add them to the same `RENAMED_PATHS`-style block step 03
+  hand-list the slugs in `middleware.ts`.** Add them to the same `RENAMED_PATHS`-style block step 03
   created, so they answer a real 301 and not a 308.
 - ⚠️ **Two `redirectFrom` entries are temporary and must be deleted when their page ships:**
   `tdee-calculator → bmr-calculator` dies in **step 23**, `character-counter → word-counter` dies in
   **step 26**. Leaving them in place would 301 the new page to the old one — i.e. the new calculator
-  would be unreachable. Both steps must also remove the redirect from `proxy.ts`.
+  would be unreachable. Both steps must also remove the redirect from `middleware.ts`.
 - **Forward references were stripped from `related` and must be restored later.** §1.5's tables
   point at 15 calculators that do not exist yet; shipping those ids would have rendered dead
   internal links in step 08. What to add back, and when:
@@ -467,17 +472,16 @@ unknown category still 404s. Build + lint pass.
   `auto-loan-calculator` + `car-loan-calculator` → `car-payment-calculator`,
   `bmr-calculator` → `tdee-calculator`, `word-counter` → `character-counter`.
 - **Steps 23 and 26 now only need to touch `data/calculators.ts`.** Deleting the `redirectFrom`
-  entry removes the redirect — `lib/redirects.ts` and `proxy.ts` are derived and need no edit.
+  entry removes the redirect — `lib/redirects.ts` and `middleware.ts` are derived and need no edit.
   This is the whole reason the map is generated rather than written out.
 - **Middleware bundle grew 185,440 → 280,505 bytes raw (81,437 gzipped), +51%,** because importing
   `data/calculators.ts` drags all 53 `compute()` bodies and every FAQ string into the edge bundle
   for a 6-entry map. Accepted against a 3 MB Workers budget. If it ever matters, the fix is a
   build-time codegen step emitting a literal map — see `Parked`.
-- ⚠️ **Rewriting `proxy.ts` wholesale is dangerous — the matcher line does not survive a bash
+- ⚠️ **Rewriting `middleware.ts` wholesale is dangerous — the matcher line does not survive a bash
   heredoc.** Even a quoted `<<'TS'` heredoc collapsed `\\` to `\` in the matcher regex, silently
   reproducing the step-02 breakage (every route 404s, build still passes). Prefer a targeted edit
-  over rewriting the file, and check that line byte-for-byte afterwards. (File was `middleware.ts`
-  until session 31's `middleware` → `proxy` rename; the trap applies equally to the new name.)
+  over rewriting the file, and check that line byte-for-byte afterwards.
 - ⚠️ **Something is already listening on :3000** in this environment. `npm run start` fails with
   `EADDRINUSE` and, if you do not read the log, curl silently answers from that other server — which
   looked exactly like the matcher bug and cost a debugging cycle. Verify on a free port
@@ -549,29 +553,38 @@ confirm a test server actually died, not just that the shell job appears to have
 31 · 2026-09-13 · Ran the official Next.js codemod (`npx @next/codemod@canary middleware-to-proxy .`)
 to clear the "middleware file convention is deprecated" build warning noted since early sessions.
 Renamed `middleware.ts` → `proxy.ts` and `export default function middleware` →
-`export default function proxy`; the matcher regex, `RENAMED_PATHS`, `DEAD_LOCALES` and
-`stripDeadLocalePrefixes` bodies are untouched. Verified the matcher line survived byte-for-byte
-(same check as session 30, same warning above still applies — it's now about `proxy.ts`, not
-`middleware.ts`). Updated the one stale in-repo comment referencing the old filename
-(`lib/redirects.ts:6`) and every forward-looking `STATUS.md` note that told a future session to
-edit `middleware.ts` (steps 19, 23/26's `redirectFrom` cleanup, the heredoc/rewrite warnings) —
-left the historical **DONE** step descriptions (02, 06, etc.) untouched since they correctly
-describe what the file was called when that work happened. Did **not** touch
-`mdFiles/memory/project_i18n.md` — still step 27's job, still wrong about 5 locales/next-intl 3.x/
-`LanguageSwitcher`, and its `proxy.ts` claim is now accidentally correct for an unrelated reason
-(that file predates the English-only migration entirely). Verified via clean build (no deprecation
-warning, 79 static pages, `ƒ Proxy (Middleware)` label unchanged) and a fresh `npx next start`
-re-run of session 30's exact curl checks — same redirect behavior. Confirmed no other source file
-imports from `./middleware` or references the old filename.
+`export default function proxy`; verified the matcher regex survived byte-for-byte and a clean
+`npm run build` passed with no deprecation warning. **Then `npm run deploy` failed** with
+`ERROR Node.js middleware is not currently supported. Consider switching to Edge Middleware.`
+Root cause, confirmed against `@opennextjs/cloudflare`'s own source
+(`useNodeMiddleware()`/`build.js`) and Next.js's `proxy.js` doc page: **`proxy.ts` always runs on
+the Node.js runtime — "The `runtime` config option is not available in Proxy files. Setting the
+`runtime` config option in Proxy will throw an error"** — there is no way to force it back onto
+Edge. `@opennextjs/cloudflare` refuses to bundle Node.js middleware outright, so the rename is
+permanently incompatible with this project's Cloudflare Workers deployment, not just a transitional
+warning. **Reverted in the same session**: `git mv proxy.ts middleware.ts`, function renamed back
+to `middleware`, `lib/redirects.ts:6`'s comment restored, and every `STATUS.md` note this session
+had pointed at `proxy.ts` (steps 19, 27, the matcher-regex warning, the wholesale-rewrite warning,
+the 23/26 `redirectFrom` cleanup notes) reverted to `middleware.ts`. Verified: `npm run build` and
+`npx opennextjs-cloudflare build` both pass cleanly (the latter reached "OpenNext build complete."
+with `.open-next/worker.js` produced — the exact step that failed before the revert).
+⚠️ **Decision: `middleware.ts` must not be renamed to `proxy.ts` while deploying via
+`@opennextjs/cloudflare`.** The deprecation warning is genuinely cosmetic *only* under the old
+name/export — do not "fix" it again without first confirming OpenNext Cloudflare supports Node.js
+middleware (or Edge-runtime proxy) upstream. Left `mdFiles/memory/project_i18n.md` untouched —
+still step 27's job, still wrong about 5 locales/next-intl 3.x/`LanguageSwitcher`; its claim that
+the file is `proxy.ts` is wrong again, for the original reason.
 
 **Next step needs to know:**
 
+- Do not re-attempt the `middleware.ts` → `proxy.ts` migration. See the ⚠️ decision above and the
+  updated warning further up this file — check `@opennextjs/cloudflare`'s changelog for Node.js
+  middleware / Edge-runtime-proxy support before ever revisiting this.
 - The lingering-test-server lesson from session 30 applies here too — this session's own verification
   server was killed via `netstat`+`taskkill` and confirmed via a second `netstat` check before
   finishing, not just `kill`.
-- `npm run deploy` was confirmed blocked-then-unblocked by the session-30 process leak, not by
-  anything in this rename. If `EPERM` on `.open-next` recurs, check for a stray `next start`/`next dev`
-  first, per the note above, before suspecting the build itself.
+- `npm run deploy`'s earlier `EPERM` was the session-30 process leak, unrelated to this rename
+  attempt. If `EPERM` on `.open-next` recurs, check for a stray `next start`/`next dev` first.
 
 ## Pending on the user — not code
 

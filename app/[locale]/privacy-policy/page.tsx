@@ -3,7 +3,6 @@ import { setRequestLocale } from 'next-intl/server';
 import type { Metadata } from 'next';
 import { routing } from '@/i18n/routing';
 import { buildCanonical } from '@/lib/seo';
-import { SITE_NAME } from '@/lib/site';
 
 export function generateStaticParams() {
   return [{ locale: routing.defaultLocale }];
@@ -16,9 +15,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'privacyPolicy' });
-  const title = `${t('title')} | ${SITE_NAME}`;
   return {
-    title,
+    title: t('title'),
     description: t('metaDescription'),
     alternates: buildCanonical('/privacy-policy')
   };

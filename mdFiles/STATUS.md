@@ -95,6 +95,7 @@ is why 12-15 run after it.
 |---|---|---|---|---|
 | 27 | Repo hygiene | TODO | `.gitignore` + delete `dev-server.log`, `dev-server.err.log`, `tsconfig.tsbuildinfo`. Regenerate the `README.md` calculator list from `data/calculators.ts`. Fix `mdFiles/memory/project_i18n.md` (it says `proxy.ts` / next-intl 3.26.5; reality is `middleware.ts` / 4.13 / English-only). | §4.6 |
 | 28 | Search Console | TODO | Verify the domain, submit `/sitemap.xml`, request indexing on the top 15 calculators individually, then monitor the metrics table in §7. | §2.8, §7 |
+| 29 | IndexNow setup | **DONE** 2026-09-13 | Ran ahead of the queue in response to a Bing Webmaster Tools audit. Key file `public/<key>.txt`, submit script `scripts/indexnow.mjs` (fetches `/sitemap.xml`, POSTs every `<loc>` to `api.indexnow.org/indexnow`), wired into `npm run deploy` and exposed standalone as `npm run indexnow`. No new dependency — uses built-in `fetch`. | — |
 
 ---
 
@@ -479,6 +480,47 @@ unknown category still 404s. Build + lint pass.
   looked exactly like the matcher bug and cost a debugging cycle. Verify on a free port
   (`npx next start -p 3007`) and read the server log before trusting any HTTP check.
 
+29 · 2026-09-13 · Ran out of queue order, in response to a Bing Webmaster Tools SEO report
+("duplicate titles", "duplicate descriptions", "descriptions too short", "set up IndexNow").
+Checked the duplicate-title/description claim against the actual data: **no exact duplicates
+exist** across any of the 54 `seo.title` / `seo.description` values or the 12 category
+title/description pairs, and every calculator/category page already carries a correct
+`buildCanonical` — the flag is almost certainly stale Bing crawl data from before step 02 killed
+the `/de` `/fr` `/es` `/it` locale-prefixed pages (those would have been genuine duplicates). No
+code fix applies; will clear once Bing recrawls the 301s. **Lengthened 17 `seo.description`
+values** that were under ~110 characters (as low as 60) up to the 120–160 char range, verified
+accurate against each calculator's actual `inputs`/`compute` before rewriting — no invented
+features. **Set up IndexNow**: key file at `public/<key>.txt`, `scripts/indexnow.mjs` (fetches
+`/sitemap.xml`, POSTs every `<loc>` to `api.indexnow.org/indexnow`, no new dependency), wired into
+`npm run deploy` and exposed standalone as `npm run indexnow`. Manually verified: 73 URLs
+submitted, 202 Accepted. **Found and fixed the doubled-title-suffix bug** noted in Parked since
+step 03 — confirmed it was still live by inspecting built HTML (`<title>Mortgage Calculator |
+Daily Calculations | Daily Calculations</title>`). Root cause: `app/[locale]/layout.tsx`'s
+`title.template = '%s | Daily Calculations'` applies once already; `lib/seo.ts`
+(`buildCalculatorMetadata`, `buildCategoryMetadata`, including their not-found fallbacks) and
+`about`/`contact`/`privacy-policy`/`terms` were also appending `| Daily Calculations` manually.
+Dropped the manual suffix in those seven spots so `title` goes through the template exactly once;
+kept a separate `fullTitle` (with suffix) for `openGraph`/`twitter`, since the template does not
+touch those. **The homepage is the one exception — its title.template does not apply to it**
+(verified empirically: a clean `rm -rf .next && npm run build` still renders home's `<title>` with
+no suffix at all when the manual one is dropped, while every other page renders correctly with
+exactly one). Left `app/[locale]/page.tsx` with its manual full-brand title, matching the original
+Parked note which never listed the homepage among the affected pages. Verified via built HTML in
+`.next/server/app/en*.html` across home, a calculator, a category, and all four static pages — one
+suffix everywhere, zero on none. Build + lint pass (lint's 115 errors are all pre-existing,
+confined to the untracked `.open-next/` build-output directory — see step 27).
+
+**Next step needs to know:**
+
+- The homepage title-template quirk is unexplained — worth a look if step 27's metadata-collapse
+  cleanup ever revisits `app/[locale]/page.tsx`. Empirically confirmed, cause unknown (possibly a
+  Next.js/next-intl interaction specific to the index segment matching its layout's own
+  `generateStaticParams` shape). Don't reintroduce the "drop the manual suffix" fix there without
+  re-verifying against a clean build.
+- The metadata-collapse item in Parked (overlapping OG/Twitter title strings across 4 places) is
+  still open — this session only removed the *doubling*, it did not consolidate the duplication of
+  the title string itself into one helper.
+
 ## Pending on the user — not code
 
 - **Cloudflare apex → www 301 (from step 01, still open).**
@@ -497,13 +539,6 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
 - `app/[locale]/layout.tsx` exports static `metadata` *and* pages export `generateMetadata` with
   overlapping OG/Twitter blocks — the same title string lives in four places. Collapse into
   `lib/seo.ts` helpers. (§4.6)
-- **Every title is suffixed twice**: `<title>BMI Calculator | Daily Calculations | Daily Calculations</title>`.
-  The layout sets `title.template = '%s | Daily Calculations'` *and* the page builders append
-  `| ${SITE_NAME}` themselves. Affects all 53 calculators, all 11 categories, and
-  `about`/`contact`/`privacy-policy`/`terms` — 68 pages. The fix is to drop the manual suffix and let
-  the template do it (the three `generateMetadata` blocks added in step 03 already do). Found during
-  step 03, deliberately not fixed there: it is a title change on 68 pages, not a canonical change.
-  Fold it into the metadata-collapse item above.
 - Decide whether the `[locale]` directory segment is worth keeping at all once English-only settles.
   Keeping it costs nothing and preserves the option to re-add languages; revisit only if it causes
   friction.

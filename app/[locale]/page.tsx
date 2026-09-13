@@ -24,7 +24,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'home' });
+  // The homepage's title.template does not apply here (it's the index segment for [locale],
+  // not a descendant of it) — unlike every other page, this one needs the brand suffix spelled
+  // out manually or it renders with no suffix at all.
   const title = `Free Online Calculator — Mortgage, BMI, Loan, GPA & More | ${SITE_NAME}`;
+  const fullTitle = title;
   const description = 'Use free online calculators for mortgage, BMI, loan, GPA, compound interest, auto loan, calorie, paycheck, age, investment, TDEE, and more. Fast, accurate, no signup required.';
   return {
     title,
@@ -38,7 +42,7 @@ export async function generateMetadata({
       'tdee calculator', 'time calculator'
     ],
     openGraph: {
-      title,
+      title: fullTitle,
       description,
       type: 'website',
       url: SITE_URL,
@@ -54,7 +58,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title,
+      title: fullTitle,
       description,
       site: '@dailycalculations'
     },

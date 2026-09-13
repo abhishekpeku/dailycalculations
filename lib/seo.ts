@@ -71,12 +71,15 @@ export function buildCalculatorMetadata(slug: string): Metadata {
   const calculator = calculators.find((item) => item.id === slug);
   if (!calculator) {
     return {
-      title: `Calculator — ${SITE_NAME}`,
+      title: 'Calculator',
       description: 'Lightweight calculator tool.'
     };
   }
 
-  const title = `${calculator.title} | ${SITE_NAME}`;
+  const title = calculator.title;
+  // Layout's title.template already appends " | Daily Calculations" to `title` — but not to
+  // openGraph/twitter, which need the full brand suffix spelled out here.
+  const fullTitle = `${title} | ${SITE_NAME}`;
   const description = calculator.seo.description;
 
   return {
@@ -84,13 +87,13 @@ export function buildCalculatorMetadata(slug: string): Metadata {
     description,
     alternates: buildCanonical(`/calculators/${calculator.id}`),
     openGraph: {
-      title,
+      title: fullTitle,
       description,
       type: 'article'
     },
     twitter: {
       card: 'summary_large_image',
-      title,
+      title: fullTitle,
       description
     }
   };
@@ -100,12 +103,15 @@ export function buildCategoryMetadata(categoryId: string): Metadata {
   const category = categories.find((item) => item.id === categoryId);
   if (!category) {
     return {
-      title: `Category — ${SITE_NAME}`,
+      title: 'Category',
       description: 'Browse calculator categories.'
     };
   }
 
-  const title = `${category.title} calculators | ${SITE_NAME}`;
+  const title = `${category.title} calculators`;
+  // Layout's title.template already appends " | Daily Calculations" to `title` — but not to
+  // openGraph, which needs the full brand suffix spelled out here.
+  const fullTitle = `${title} | ${SITE_NAME}`;
   const description = `${category.description} Explore calculators in this category.`;
 
   return {
@@ -113,7 +119,7 @@ export function buildCategoryMetadata(categoryId: string): Metadata {
     description,
     alternates: buildCanonical(`/categories/${category.id}`),
     openGraph: {
-      title,
+      title: fullTitle,
       description,
       type: 'website'
     }

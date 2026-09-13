@@ -9,9 +9,10 @@
     "start": "next start",
     "lint": "eslint --config .eslintrc.cjs . --ignore-pattern \".next/**\" --ignore-pattern \"node_modules/**\" --ext .js,.jsx,.ts,.tsx --no-error-on-unmatched-pattern",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy && node scripts/indexnow.mjs",
     "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "indexnow": "node scripts/indexnow.mjs"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.19.11",

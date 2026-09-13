@@ -116,7 +116,7 @@ export const calculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Mortgage Calculator',
-      description: 'Calculate monthly mortgage payments for home loans. Includes APR, loan term, down payment, and principal.',
+      description: 'Calculate monthly mortgage payments for home loans using your loan amount, APR, term, and down payment. See the total interest, total cost, and remaining loan principal.',
       faq: [
         { question: 'How do I calculate my mortgage payment?', answer: 'Enter your loan amount, APR, loan term, and down payment to estimate the monthly payment for your loan.' },
         { question: 'Does this calculator use standard loan conventions?', answer: 'Yes. It uses annual percentage rate (APR) and common mortgage terms like 15 or 30 years.' }
@@ -150,7 +150,7 @@ export const calculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Loan Calculator',
-      description: 'Estimate monthly payments for loans. Compare payment schedules based on APR and term length.',
+      description: 'Estimate monthly payments for personal, auto, or other fixed-rate loans. Enter the loan amount, APR, and term to compare payment schedules and total interest costs.',
       faq: [
         { question: 'How do I estimate loan payments?', answer: 'Enter the loan amount, APR, and loan term to calculate the monthly payment.' },
         { question: 'Can I use this for personal or auto loans?', answer: 'Yes, it works for any fixed-rate loan with the values you provide.' }
@@ -184,7 +184,7 @@ export const calculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Compound Interest Calculator',
-      description: 'Project compound interest growth with monthly contributions and annual return assumptions.',
+      description: 'Project how compound interest grows your savings over time. Enter a starting balance, annual rate, years invested, and optional monthly contributions for a future value estimate.',
       faq: [
         { question: 'What is compound interest?', answer: 'Compound interest is interest earned on both the original principal and accumulated interest.' },
         { question: 'Can I model monthly contributions?', answer: 'Yes, add a monthly contribution amount to see how your balance grows over time.' }
@@ -217,7 +217,7 @@ export const calculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Sales Tax Calculator',
-      description: 'Quickly calculate sales tax totals. Enter your purchase amount and sales tax rate for an instant final price.',
+      description: 'Quickly calculate sales tax on any purchase. Enter the amount and your local tax rate to see the exact tax owed and the final price you will pay at checkout.',
       faq: [
         { question: 'How do I calculate sales tax?', answer: 'Multiply the purchase amount by the sales tax rate, then add the result to the purchase amount for the total cost.' },
         { question: 'Can I use this tool with different tax rates?', answer: 'Yes, it works for any sales tax rate you enter, including combined local rates.' }
@@ -245,7 +245,7 @@ export const calculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Tip Calculator',
-      description: 'Quickly calculate tip totals and split the bill across multiple people.',
+      description: 'Quickly calculate a tip for any restaurant bill and split the total evenly across multiple people. Enter the bill amount, tip percentage, and party size for an instant breakdown.',
       faq: [
         { question: 'How much should I tip?', answer: 'Multiply the bill amount by the tip rate, then split the total by the number of people if needed.' },
         { question: 'Can this calculator split the bill?', answer: 'Yes, it computes both the total cost and the per-person share.' }
@@ -273,7 +273,7 @@ export const calculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'BMI Calculator',
-      description: 'BMI calculator using pounds and inches. Compare your BMI to standard health categories with instant results.',
+      description: 'Calculate your body mass index (BMI) using weight in pounds and height in inches. See instantly which standard health category — underweight to obese — your result falls into.',
       faq: [
         { question: 'What is BMI?', answer: 'BMI is body mass index, a ratio of weight to height used to screen for healthy body weight in adults.' },
         { question: 'How do I use this BMI calculator?', answer: 'Enter weight in pounds and height in inches to calculate your BMI using the standard formula.' }
@@ -299,7 +299,7 @@ export const calculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Water Intake Calculator',
-      description: 'Estimate daily water intake using weight and exercise level.',
+      description: 'Estimate how much water you should drink each day based on your body weight and daily activity minutes. Get a personalized recommendation in both ounces and liters.',
       faq: [
         { question: 'How much water should I drink?', answer: 'This tool estimates daily intake based on body weight and minutes of activity.' },
         { question: 'Does activity affect water needs?', answer: 'Yes, extra activity increases recommended hydration.' }
@@ -352,7 +352,7 @@ export const calculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Fahrenheit to Celsius Converter',
-      description: 'Quickly convert temperatures from Fahrenheit to Celsius for weather, travel, and recipes.',
+      description: 'Quickly convert any temperature from Fahrenheit to Celsius. Useful for checking the weather abroad, following international recipes, or converting oven temperatures.',
       faq: [
         { question: 'How do I convert Fahrenheit to Celsius?', answer: 'Subtract 32 from the temperature, then multiply by 5/9.' },
         { question: 'Can I use this for weather and cooking?', answer: 'Yes, this converter works for all Fahrenheit temperature values.' }
@@ -377,7 +377,7 @@ export const calculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Pounds to Kilograms Converter',
-      description: 'Fast conversion from pounds to kilograms for fitness, shipping, and general use.',
+      description: 'Fast, accurate conversion from pounds to kilograms. Useful for tracking fitness or weight-loss goals, calculating shipping weights, or converting to the metric system.',
       faq: [
         { question: 'How do I convert pounds to kilograms?', answer: 'Multiply pounds by 0.453592 to get kilograms.' },
         { question: 'Is this converter accurate?', answer: 'Yes, it uses the standard conversion factor for pounds to kilograms.' }
@@ -402,7 +402,7 @@ export const calculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Gallons to Liters Converter',
-      description: 'Quickly convert gallons to liters for practical volume and fuel planning.',
+      description: 'Quickly convert US gallons to liters for cooking, fuel planning, or any volume measurement. Get an instant, accurate result down to the decimal.',
       faq: [
         { question: 'How do I convert gallons to liters?', answer: 'Multiply gallons by 3.78541 to get liters.' },
         { question: 'Can I use this for both fuel and recipes?', answer: 'Yes, it works for all gallon to liter conversions.' }
@@ -431,7 +431,7 @@ export const calculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Car Payment Calculator',
-      description: 'Calculate monthly car payments for auto loans with price, down payment, APR, and term inputs.',
+      description: 'Calculate your monthly car payment for any auto loan. Enter the vehicle price, down payment, APR, and loan term to see the payment, total cost, and total interest.',
       faq: [
         { question: 'How do I calculate a car payment?', answer: 'Enter the car price, down payment, APR, and loan term to estimate the monthly cost.' },
         { question: 'Does this calculator handle auto loans?', answer: 'Yes, it works with fixed-rate auto loan values.' }
@@ -465,7 +465,7 @@ export const calculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Gas Cost Calculator',
-      description: 'Estimate the fuel cost of a trip using distance, miles per gallon, and price per gallon.',
+      description: 'Estimate the fuel cost of any road trip before you leave. Enter the distance, your vehicle MPG, and the price per gallon to see the total cost and gallons needed.',
       faq: [
         { question: 'How do I estimate gas cost?', answer: 'Divide distance by MPG, then multiply by fuel price to estimate total cost.' },
         { question: 'Is this useful for trip planning?', answer: 'Yes, it helps compare fuel expenses for different trips and vehicles.' }
@@ -492,7 +492,7 @@ export const calculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Unit Price Calculator',
-      description: 'Calculate the price per unit to compare package sizes and find the best deal.',
+      description: 'Calculate the price per unit for any product to compare different package sizes side by side and quickly spot which option is the better deal at the store.',
       faq: [
         { question: 'What is unit price?', answer: 'Unit price is the cost per single unit of weight or quantity in a product package.' },
         { question: 'How does this help me shop?', answer: 'It makes it easier to compare prices between different package sizes and brands.' }
@@ -518,7 +518,7 @@ export const calculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Age Calculator',
-      description: 'Quickly estimate your age using your birth year and the current year.',
+      description: 'Quickly estimate age from a birth year and a current year, including future or past years. Useful for eligibility checks, planning ahead, or a fast estimate without a full birth date.',
       faq: [
         { question: 'How do I calculate age?', answer: 'Subtract the birth year from the current year to estimate age.' },
         { question: 'Can I adjust the current year?', answer: 'Yes, change the current year to estimate age in a future year.' }
@@ -583,7 +583,7 @@ export const calculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Calorie Calculator',
-      description: 'Estimate daily calorie needs using the Mifflin-St Jeor equation with activity level adjustment.',
+      description: 'Estimate your daily calorie needs using the Mifflin-St Jeor equation. Enter your weight, height, age, and activity level for maintenance, weight-loss, and weight-gain targets.',
       faq: [
         { question: 'How are daily calories calculated?', answer: 'This tool uses the Mifflin-St Jeor formula to find your basal metabolic rate, then multiplies by your activity factor.' },
         { question: 'What activity factor should I use?', answer: 'Use 1.2 for sedentary, 1.375 for light activity, 1.55 for moderate, and 1.725 for active lifestyles.' }
@@ -689,7 +689,7 @@ export const calculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'TDEE Calculator',
-      description: 'Calculate total daily energy expenditure (TDEE) using the Mifflin-St Jeor BMR formula and activity multiplier.',
+      description: 'Calculate your total daily energy expenditure (TDEE) using the Mifflin-St Jeor BMR formula and an activity multiplier. Use it to set a calorie target for your weight goals.',
       faq: [
         { question: 'What is TDEE?', answer: 'TDEE stands for Total Daily Energy Expenditure — the total calories your body burns per day including all activity.' },
         { question: 'How is TDEE different from BMR?', answer: 'BMR is the calories burned at rest; TDEE multiplies BMR by your activity level to account for exercise and daily movement.' }
@@ -979,7 +979,7 @@ export const calculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Inflation Calculator – Purchasing Power Over Time',
-      description: 'Calculate the effect of inflation on purchasing power. See what today\'s dollars will be worth in the future.',
+      description: 'Calculate how inflation erodes purchasing power over time. Enter a starting amount, inflation rate, and number of years to see what today\'s dollars will be worth in the future.',
       faq: [
         { question: 'What is the average US inflation rate?', answer: 'The Federal Reserve targets 2% annual inflation. The long-term US average is approximately 3.3% since 1914.' },
         { question: 'What is the Rule of 72 for inflation?', answer: 'Divide 72 by the inflation rate to estimate how many years it takes for prices to double. At 3%, prices double roughly every 24 years.' }

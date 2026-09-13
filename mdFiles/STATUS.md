@@ -521,6 +521,22 @@ confined to the untracked `.open-next/` build-output directory — see step 27).
   still open — this session only removed the *doubling*, it did not consolidate the duplication of
   the title string itself into one helper.
 
+30 · 2026-09-13 · Continuation of step 29's ad-hoc Bing cleanup, interrupted by a VS Code restart
+mid-edit and resumed from the uncommitted working tree. `middleware.ts`'s dead-locale stripping
+only ever removed one leading segment; old language-switcher links left crawlable stacked prefixes
+like `/fr/it/calculators/x`, which resolved via two chained 301s (one per segment) instead of one —
+the exact kind of stale-crawl noise step 29 attributed to Bing's duplicate-title report. Replaced
+the single-segment `slice` with `stripDeadLocalePrefixes()`, a loop that strips every leading
+`en`/`de`/`fr`/`es`/`it` segment before the rename lookup runs, so a stacked-prefix URL needing
+both a strip and a rename still answers a single 301. Verified the matcher regex line survived
+byte-for-byte (`'/((?!api|_next|_vercel|.*\\..*).*)'`, double backslash intact — see the step-02/06
+warning above). Verified on a clean build + `npx next start -p 3007` (port 3000 was occupied by
+another process, per the existing warning): `/fr/it/calculators/mortgage-calculator` → single 301
+to `/calculators/mortgage-calculator`; `/de/en/contact-us` → single 301 to `/contact` (strip then
+rename in one hop); a lone `/fr/calculators` and plain `/` behave unchanged. Also added `test*` to
+`.gitignore` (untracked scratch files from this session's manual curl/port testing). No `STATUS.md`
+step was open for this — it rides on step 29's ad-hoc entry rather than the numbered queue.
+
 ## Pending on the user — not code
 
 - **Cloudflare apex → www 301 (from step 01, still open).**

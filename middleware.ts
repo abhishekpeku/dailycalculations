@@ -19,14 +19,25 @@ const RENAMED_PATHS: Record<string, string> = {
   ...CATEGORY_REDIRECTS
 };
 
+// Strips every leading dead-locale segment, not just one — old language-switcher links left
+// Google crawling doubled-up prefixes like /fr/it/calculators/x, which otherwise take two 301s
+// to resolve (one per segment) instead of one.
+function stripDeadLocalePrefixes(pathname: string): string | null {
+  const segments = pathname.split('/');
+  let end = 1;
+  while (end < segments.length && (segments[end] === 'en' || DEAD_LOCALES.includes(segments[end]))) {
+    end += 1;
+  }
+  if (end === 1) return null;
+  return `/${segments.slice(end).join('/')}`;
+}
+
 export default function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
-  const seg = pathname.split('/')[1];
 
-  // Strip a dead locale prefix and resolve a rename in one pass, so a URL needing
+  // Strip every dead locale prefix and resolve a rename in one pass, so a URL needing
   // both answers a single 301 rather than chaining through an intermediate.
-  const stripped =
-    seg === 'en' || DEAD_LOCALES.includes(seg) ? pathname.slice(seg.length + 1) || '/' : null;
+  const stripped = stripDeadLocalePrefixes(pathname);
 
   const lookup = stripped ?? pathname;
   const renamed = RENAMED_PATHS[lookup.endsWith('/') ? lookup.slice(0, -1) : lookup];

@@ -616,7 +616,7 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
   step 07 (calculator pages only). `components/Breadcrumb.tsx` is generic and would drop straight
   in. ~~Worth doing once the category restructure (step 16) settles the names.~~ **Step 16 is done,
   so this is now unblocked.**
-- ~~**`common.tools` has no ICU plural**~~ **Fixed on `preview/physics-force-calculator`** (lands when that branch merges) — `"{count} tools"` renders **"1 tools"** on the `education`
+- ~~**`common.tools` has no ICU plural**~~ **Fixed 2026-10-12** (merged to master with the v2 preview) — `"{count} tools"` renders **"1 tools"** on the `education`
   card. Pre-existing (that category has always had one member) and visible on the homepage,
   `/categories` and `/calculators`. Fix is `{count, plural, one {# tool} other {# tools}}` in
   `messages/en.json`. Found in step 16; not fixed there because it is a copy bug, not a taxonomy one.
@@ -634,16 +634,19 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
   artifact folder left by `npx opennextjs-cloudflare build`). Source code is clean with
   `npm run lint -- --ignore-pattern ".open-next/**"`. Fix: add that ignore pattern to the `lint`
   script. Found 2026-10-12 on branch `preview/physics-force-calculator`.
-- **`.claude*` is gitignored**, so the new `add-calculator` skill and `calculator-builder` agent
-  (`.claude/skills/`, `.claude/agents/`) exist only on this machine. To share them, change the rule
-  to `.claude/*` + `!.claude/skills/` + `!.claude/agents/`. That needs a decision: `settings.json`
-  would stay ignored.
-- **Preview branch `preview/physics-force-calculator` (2026-10-12)**: a demo of the
+- ~~**`.claude*` is gitignored**~~ **Done 2026-10-12**: `.gitignore` now ignores `.claude/*` except
+  `.claude/skills/` and `.claude/agents/`, so the `add-calculator` skill and `calculator-builder`
+  agent are versioned. `settings.json` stays ignored.
+- **Preview merged to `master` 2026-10-12** (fast-forward, commits `f17b7de` + `534b8a0`; not deployed. The user will deploy manually after the full rollout). Was branch `preview/physics-force-calculator`: a demo of the
   `mdFiles/omni-strategy.md` v2 template. It adds `force-calculator`, a `physics` category,
   `lib/units.ts`, `components/SolverCalculator.tsx` (solve for any field, unit switching, share
   link, copy, reset, log-scale benchmarks), and the TOC / concept / references / byline sections.
-  It also fixes the `common.tools` ICU plural ("1 tools"). Not adopted into the step index. Spec:
-  `mdFiles/calculator-template-v2.md`.
+  It also fixes the `common.tools` ICU plural ("1 tools"). Spec: `mdFiles/calculator-template-v2.md`.
+  **Next:** fold `mdFiles/calculator-rollout-plan.md` (E1–E7, batches 1–5, waves 1–4) into the step
+  index once the user settles its three open decisions (pace, step-11 gate, sector order).
+  **Workflow (user decision):** batch agents push a branch + open a PR, the main session merges after
+  the user approves, and the user never merges. No Cloudflare changes and no deploys until the user deploys
+  manually after the rollout.
 - Baidu SEO for mainland China. Needs an ICP licence and separate tooling; Cloudflare is unreliable
   behind the GFW. The `CN` region profile is for Chinese speakers elsewhere. (§3.5)
 - ~~The four alias stubs return 307~~ — **done in step 03.** They are 301s in `middleware.ts` now

@@ -15,6 +15,13 @@ import FormulaSection from '@/components/FormulaSection';
 import WorkedExampleSection from '@/components/WorkedExampleSection';
 import WatchOutSection from '@/components/WatchOutSection';
 import RelatedCalculators from '@/components/RelatedCalculators';
+import SolverCalculator from '@/components/SolverCalculator';
+import ConceptSection from '@/components/ConceptSection';
+import ReferencesSection from '@/components/ReferencesSection';
+import TableOfContents from '@/components/TableOfContents';
+import IconTile from '@/components/IconTile';
+import SectionHeading from '@/components/SectionHeading';
+import { CARD, categoryTheme } from '@/lib/categoryTheme';
 import { calculators, findCalculator } from '@/data/calculators';
 import { buildAliasSentence, buildBreadcrumbs, buildCalculatorMetadata, buildHowToSteps, buildPageJsonLd, buildRelatedLinks } from '@/lib/seo';
 import { routing } from '@/i18n/routing';
@@ -46,7 +53,7 @@ export default async function CalculatorPage({
   const calculator = findCalculator(slug);
   if (!calculator) notFound();
 
-  const { compute, content, ...clientCalculator } = calculator;
+  const { compute, content, solver, ...clientCalculator } = calculator;
   const jsonLd = buildPageJsonLd(slug);
   const t = await getTranslations({ locale, namespace: 'calculator' });
 
@@ -54,40 +61,95 @@ export default async function CalculatorPage({
   const howToSteps = buildHowToSteps(slug);
   const aliasSentence = buildAliasSentence(slug);
   const relatedLinks = buildRelatedLinks(slug);
+  const faqTitle = `${calculator.title} FAQ`;
+
+  // The table of contents only appears on v2 pages — the ones with a concept section.
+  const tocItems = content?.concept
+    ? [
+        { id: 'concept', label: content.concept.title },
+        { id: 'how-to-use', label: t('howToUse') },
+        { id: 'formula', label: t('formulaTitle') },
+        { id: 'worked-example', label: t('workedExampleTitle') },
+        ...(content.watchOut.length > 0 ? [{ id: 'watch-out', label: t('watchOutTitle') }] : []),
+        { id: 'faq', label: t('faqTocLabel') },
+        ...(content.references?.length ? [{ id: 'references', label: t('referencesTitle') }] : [])
+      ]
+    : null;
+  const reviewedDate = content?.lastReviewed
+    ? new Intl.DateTimeFormat('en-US', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(content.lastReviewed))
+    : null;
+
+  const widget = solver ? <SolverCalculator calculatorId={calculator.id} /> :
+    slug === 'gpa-calculator' ? <GpaCalculator /> :
+    slug === 'paycheck-calculator' ? <PaycheckCalculator /> :
+    slug === 'currency-converter' ? <CurrencyConverter /> :
+    slug === 'character-counter' ? <TextToolsCalculator mode="character" /> :
+    slug === 'hashtag-counter' ? <TextToolsCalculator mode="hashtag" /> :
+    slug === 'pomodoro-timer' ? <PomodoroTimer /> :
+    slug === 'timezone-meeting-planner' ? <TimeZonePlanner /> :
+    <CalculatorForm calculator={clientCalculator} />;
+  const example = <p className="text-sm text-slate-500 dark:text-slate-400">Example: {calculator.example}</p>;
+
+  const intro = (
+    <>
+      {aliasSentence ? (
+        <p className="text-sm leading-6 text-slate-500 dark:text-slate-400">{aliasSentence}</p>
+      ) : null}
+      <p className="text-base leading-7 text-slate-700 dark:text-slate-300">{calculator.description}</p>
+      {reviewedDate ? (
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          {t('byline')} · <time dateTime={content?.lastReviewed}>{t('lastReviewed', { date: reviewedDate })}</time>
+        </p>
+      ) : null}
+    </>
+  );
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+    <div className={`mx-auto w-full px-4 py-8 sm:px-6 lg:px-8 ${tocItems ? 'max-w-6xl' : 'max-w-5xl'}`}>
       <div className="space-y-8">
         {/* Deliberately not a card: the hero is compressed so the widget stays above the fold. */}
         <header className="space-y-3">
           <Breadcrumb items={breadcrumbs} />
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-3xl">{calculator.title}</h1>
-          {aliasSentence ? (
-            <p className="max-w-3xl text-sm leading-6 text-slate-500 dark:text-slate-400">{aliasSentence}</p>
-          ) : null}
-          <p className="max-w-3xl text-base leading-7 text-slate-600 dark:text-slate-300">{calculator.description}</p>
+          <div className="flex items-center gap-4">
+            <IconTile icon={categoryTheme(calculator.category).icon} color={categoryTheme(calculator.category).color} size="lg" />
+            <h1 className="text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">{calculator.title}</h1>
+          </div>
+          {tocItems ? null : <div className="max-w-3xl space-y-3">{intro}</div>}
         </header>
 
-        {slug === 'gpa-calculator' ? <GpaCalculator /> :
-         slug === 'paycheck-calculator' ? <PaycheckCalculator /> :
-         slug === 'currency-converter' ? <CurrencyConverter /> :
-         slug === 'character-counter' ? <TextToolsCalculator mode="character" /> :
-         slug === 'hashtag-counter' ? <TextToolsCalculator mode="hashtag" /> :
-         slug === 'pomodoro-timer' ? <PomodoroTimer /> :
-         slug === 'timezone-meeting-planner' ? <TimeZonePlanner /> :
-         <CalculatorForm calculator={clientCalculator} />}
+        {tocItems ? (
+          // v2 pages: calculator in the wide column; intro + table of contents in a narrower panel beside it.
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
+            <div className="space-y-4">
+              {widget}
+              {example}
+            </div>
+            <aside className="space-y-6 lg:sticky lg:top-6">
+              <div className={`${CARD} space-y-3`}>{intro}</div>
+              <TableOfContents title={t('contentsTitle')} items={tocItems} />
+            </aside>
+          </div>
+        ) : (
+          <>
+            {widget}
+            {example}
+          </>
+        )}
 
-        <p className="text-sm text-slate-500 dark:text-slate-400">Example: {calculator.example}</p>
+        {content?.concept ? <ConceptSection concept={content.concept} /> : null}
 
-        <section id="how-to-use" className="rounded-3xl border border-slate-200 bg-white/95 p-8 shadow-panel dark:border-slate-800 dark:bg-slate-950/90">
-          <h2 className="text-2xl font-semibold text-slate-950 dark:text-white">{t('howToUse')}</h2>
-          <div className="mt-4 space-y-4 text-slate-600 dark:text-slate-300">
+        <section id="how-to-use" className={CARD}>
+          <SectionHeading section="how-to-use" title={t('howToUse')} />
+          <div className="mt-5 space-y-5 text-base leading-7 text-slate-600 dark:text-slate-300">
             <p>{content ? content.howTo.intro : t('howToUseDesc1')}</p>
-            <ol className="list-decimal space-y-2 pl-5 marker:font-semibold marker:text-brand-700 dark:marker:text-brand-300">
-              {howToSteps.map((step) => (
-                <li key={step.name}>
-                  <span className="font-medium text-slate-900 dark:text-white">{step.name}.</span>{' '}
-                  {step.text}
+            <ol className="divide-y divide-slate-100 overflow-hidden rounded-2xl bg-slate-50 dark:divide-slate-800 dark:bg-slate-950/60">
+              {howToSteps.map((step, index) => (
+                <li key={step.name} className="flex gap-4 px-4 py-3.5">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#28A745] text-xs font-bold text-white">{index + 1}</span>
+                  <p className="text-sm leading-6">
+                    <span className="font-semibold text-slate-900 dark:text-white">{step.name}.</span>{' '}
+                    {step.text}
+                  </p>
                 </li>
               ))}
             </ol>
@@ -100,10 +162,12 @@ export default async function CalculatorPage({
         {content ? <WatchOutSection title={t('watchOutTitle')} items={content.watchOut} /> : null}
 
         <FaqSection
-          title={`${calculator.title} FAQ`}
+          title={faqTitle}
           description={`Common questions about using the ${calculator.title.toLowerCase()} and understanding the results.`}
           items={calculator.seo.faq}
         />
+
+        {content?.references ? <ReferencesSection title={t('referencesTitle')} references={content.references} /> : null}
 
         <RelatedCalculators title={t('relatedTitle')} description={t('relatedDescription')} items={relatedLinks} />
       </div>

@@ -81,6 +81,14 @@ with room to spare. You should never need context from a previous chat.
 **`mdFiles/instructions.md`** is the full spec and rationale for the whole project. It is long — read only
 the sections a step references, not the whole file.
 
+## Building calculators — run it in the background
+
+- New calculators follow **`mdFiles/calculator-template-v2.md`** and the **`add-calculator`**
+  skill (`.claude/skills/add-calculator/`). `force-calculator` is the reference implementation.
+- Develop in the background by default. Hand calculator builds to the **`calculator-builder`**
+  agent (`.claude/agents/`), each on its own branch, and run `npm run build` / `npm run dev` with
+  `run_in_background`, so the main session stays free. Always kill the dev server when done.
+
 ## Conventions
 
 - Match the existing code style; do not introduce new patterns or libraries without a reason.

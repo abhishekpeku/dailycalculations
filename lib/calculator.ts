@@ -40,6 +40,18 @@ export function formatNumber(value: number) {
   }).format(value);
 }
 
+// Science results: significant figures instead of compact "4.2K", which reads wrong next to a unit
+export function formatSignificant(value: number, digits = 4) {
+  const abs = Math.abs(value);
+  if (abs !== 0 && (abs >= 1e9 || abs < 1e-3)) {
+    return value.toExponential(digits - 1).replace('e+', ' × 10^').replace('e-', ' × 10^-');
+  }
+
+  return new Intl.NumberFormat('en-US', {
+    maximumSignificantDigits: digits
+  }).format(value);
+}
+
 // Full, non-compact representation for use in tooltips/title attributes
 export function formatFull(value: number, opts?: { currency?: boolean }) {
   if (opts?.currency) {

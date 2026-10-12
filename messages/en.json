@@ -46,7 +46,12 @@
     "workedExampleTitle": "Worked example",
     "watchOutTitle": "Things to watch out for",
     "relatedTitle": "Related calculators",
-    "relatedDescription": "Tools people usually reach for alongside this one."
+    "relatedDescription": "Tools people usually reach for alongside this one.",
+    "contentsTitle": "Table of contents",
+    "referencesTitle": "References",
+    "faqTocLabel": "FAQ",
+    "byline": "By the Daily Calculations editorial team",
+    "lastReviewed": "Last reviewed {date}"
   },
   "suggestions": {
     "headline": "Suggest an enhancement",
@@ -70,7 +75,7 @@
     "terms": "Terms"
   },
   "common": {
-    "tools": "{count} tools"
+    "tools": "{count, plural, one {# tool} other {# tools}}"
   },
   "homeFaq": {
     "title": "Frequently asked questions",

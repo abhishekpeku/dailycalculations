@@ -616,7 +616,7 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
   step 07 (calculator pages only). `components/Breadcrumb.tsx` is generic and would drop straight
   in. ~~Worth doing once the category restructure (step 16) settles the names.~~ **Step 16 is done,
   so this is now unblocked.**
-- **`common.tools` has no ICU plural** — `"{count} tools"` renders **"1 tools"** on the `education`
+- ~~**`common.tools` has no ICU plural**~~ **Fixed on `preview/physics-force-calculator`** (lands when that branch merges) — `"{count} tools"` renders **"1 tools"** on the `education`
   card. Pre-existing (that category has always had one member) and visible on the homepage,
   `/categories` and `/calculators`. Fix is `{count, plural, one {# tool} other {# tools}}` in
   `messages/en.json`. Found in step 16; not fixed there because it is a copy bug, not a taxonomy one.
@@ -630,6 +630,20 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
   step 09 when the active filter chip rendered white-on-white. Fix is to either fill in the
   palette or normalize every call site onto the four real shades — a site-wide visual change,
   so not done mid-step.
+- **`npm run lint` fails on `.open-next/` build output** (115 errors, all inside the OpenNext
+  artifact folder left by `npx opennextjs-cloudflare build`). Source code is clean with
+  `npm run lint -- --ignore-pattern ".open-next/**"`. Fix: add that ignore pattern to the `lint`
+  script. Found 2026-10-12 on branch `preview/physics-force-calculator`.
+- **`.claude*` is gitignored**, so the new `add-calculator` skill and `calculator-builder` agent
+  (`.claude/skills/`, `.claude/agents/`) exist only on this machine. To share them, change the rule
+  to `.claude/*` + `!.claude/skills/` + `!.claude/agents/`. That needs a decision: `settings.json`
+  would stay ignored.
+- **Preview branch `preview/physics-force-calculator` (2026-10-12)**: a demo of the
+  `mdFiles/omni-strategy.md` v2 template. It adds `force-calculator`, a `physics` category,
+  `lib/units.ts`, `components/SolverCalculator.tsx` (solve for any field, unit switching, share
+  link, copy, reset, log-scale benchmarks), and the TOC / concept / references / byline sections.
+  It also fixes the `common.tools` ICU plural ("1 tools"). Not adopted into the step index. Spec:
+  `mdFiles/calculator-template-v2.md`.
 - Baidu SEO for mainland China. Needs an ICP licence and separate tooling; Cloudflare is unreliable
   behind the GFW. The `CN` region profile is for Chinese speakers elsewhere. (§3.5)
 - ~~The four alias stubs return 307~~ — **done in step 03.** They are 301s in `middleware.ts` now

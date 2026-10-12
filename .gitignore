@@ -18,7 +18,5 @@ coverage/
 
 !.env.example
 .vscode*
-.claude/*
-!.claude/skills/
-!.claude/agents/
+.claude/settings.local.json
 test*

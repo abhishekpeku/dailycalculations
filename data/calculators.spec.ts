@@ -17,6 +17,9 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'bmi-calculator': ['bmi'] // height 0 -> 0/0
 };
 
+// Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.
+const FIXED_TODAY_MS = new Date(2026, 5, 17).getTime();
+
 const CALENDAR = /(?<!Per)(Year|Month|Day)$/;
 const CLOCK = /(Hour|Minute)$/;
 
@@ -58,8 +61,11 @@ function nonFiniteKeys(result: Record<string, number>) {
   return Object.keys(result).filter((key) => !Number.isFinite(result[key]));
 }
 
+const run = (calculator: CalculatorConfig, inputs: CalculatorInputValues) =>
+  calculator.compute(calculator.timeDependent ? { ...inputs, todayMs: FIXED_TODAY_MS } : inputs);
+
 const defaults = (calculator: CalculatorConfig) => inputSets(calculator).default;
-const computed = calculators.filter((c) => Object.keys(c.compute(defaults(c))).length > 0);
+const computed = calculators.filter((c) => Object.keys(run(c, defaults(c))).length > 0);
 let snapshotted = 0;
 
 describe('compute() snapshots', () => {
@@ -69,7 +75,7 @@ describe('compute() snapshots', () => {
       const snapshot: Record<string, unknown> = {};
 
       for (const [name, inputs] of Object.entries(sets)) {
-        const result = calculator.compute(inputs);
+        const result = run(calculator, inputs);
         const bad = nonFiniteKeys(result);
         const allowed = name === 'edge' ? KNOWN_NON_FINITE[calculator.id] ?? [] : [];
         assert.deepEqual(bad, allowed, `${calculator.id} ${name}: non-finite outputs`);
@@ -98,6 +104,18 @@ describe('custom-tool calculators', () => {
   test('are the only calculators with an empty compute()', () => {
     const empty = calculators.filter((c) => !computed.includes(c)).map((c) => c.id).sort();
     assert.deepEqual(empty, [...CUSTOM_TOOLS].sort());
+  });
+});
+
+describe('time-dependent calculators', () => {
+  test('pregnancy-due-date-calculator reads todayMs', () => {
+    const calculator = calculators.find((c) => c.id === 'pregnancy-due-date-calculator');
+    assert.ok(calculator?.timeDependent);
+    const inputs = defaults(calculator);
+    const june = calculator.compute({ ...inputs, todayMs: new Date(2026, 5, 17).getTime() });
+    const july = calculator.compute({ ...inputs, todayMs: new Date(2026, 6, 17).getTime() });
+    assert.equal(june.daysRemaining - july.daysRemaining, 30);
+    assert.equal(july.gestationalDays - june.gestationalDays, 30);
   });
 });
 

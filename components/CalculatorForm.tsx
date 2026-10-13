@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { CalculatorClientConfig, CalculatorInputValues, CalculatorInput } from '@/data/calculators';
 import { findCalculator } from '@/data/calculators';
 import { evaluateCalculator, formatCurrency, formatNumber, formatFull } from '@/lib/calculator';
@@ -25,6 +25,9 @@ export default function CalculatorForm({ calculator }: { calculator: CalculatorC
   }), {});
 
   const [values, setValues] = useState(initialState);
+  // Time-dependent results differ between build time and the visitor's clock; render them after mount.
+  const [mounted, setMounted] = useState(!calculator.timeDependent);
+  useEffect(() => setMounted(true), []);
 
   const results = useMemo(() => evaluateCalculator(liveCalculator, values), [liveCalculator, values]);
 
@@ -53,7 +56,7 @@ export default function CalculatorForm({ calculator }: { calculator: CalculatorC
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {Object.entries(results).map(([key, value]) => {
           const inputDef = calculator.inputs.find((item) => item.id === key) ?? null;
-          const display = formatValue(key, value, inputDef);
+          const display = mounted ? formatValue(key, value, inputDef) : '—';
           const full = inputDef?.type === 'currency' || key.includes('Amount') || key.includes('Cost') || key.includes('Payment') || key.includes('Interest') || key.includes('Principal')
             ? formatFull(value, { currency: true })
             : formatFull(value);
@@ -61,7 +64,7 @@ export default function CalculatorForm({ calculator }: { calculator: CalculatorC
           return (
             <div key={key} className="rounded-3xl border border-slate-200 bg-slate-50 p-4 text-sm dark:border-slate-700 dark:bg-slate-900">
               <p className="text-slate-500 dark:text-slate-400">{key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}</p>
-              <p title={full} className="mt-2 text-2xl font-semibold text-slate-950 dark:text-white">{display}</p>
+              <p title={mounted ? full : undefined} className="mt-2 text-2xl font-semibold text-slate-950 dark:text-white">{display}</p>
             </div>
           );
         })}

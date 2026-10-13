@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 import CalculatorForm from '@/components/CalculatorForm';
+import BreakdownCalculator from '@/components/BreakdownCalculator';
 import GpaCalculator from '@/components/GpaCalculator';
 import PaycheckCalculator from '@/components/PaycheckCalculator';
 import CurrencyConverter from '@/components/CurrencyConverter';
@@ -80,6 +81,7 @@ export default async function CalculatorPage({
     : null;
 
   const widget = solver ? <SolverCalculator calculatorId={calculator.id} /> :
+    calculator.breakdown ? <BreakdownCalculator calculatorId={calculator.id} /> :
     slug === 'gpa-calculator' ? <GpaCalculator /> :
     slug === 'paycheck-calculator' ? <PaycheckCalculator /> :
     slug === 'currency-converter' ? <CurrencyConverter /> :

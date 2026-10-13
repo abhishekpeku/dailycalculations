@@ -1,0 +1,2260 @@
+exports[`compute() snapshots > age-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "birthYear": 1990,
+      "currentYear": 2026
+    },
+    "outputs": {
+      "age": 36
+    }
+  },
+  "typical": {
+    "inputs": {
+      "birthYear": 1991,
+      "currentYear": 2027
+    },
+    "outputs": {
+      "age": 36
+    }
+  },
+  "edge": {
+    "inputs": {
+      "birthYear": 1900,
+      "currentYear": 1900
+    },
+    "outputs": {
+      "age": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > bmi-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "weight": 170,
+      "height": 69
+    },
+    "outputs": {
+      "bmi": 25.10186936
+    }
+  },
+  "typical": {
+    "inputs": {
+      "weight": 255,
+      "height": 104
+    },
+    "outputs": {
+      "bmi": 16.57405695
+    }
+  },
+  "edge": {
+    "inputs": {
+      "weight": 0,
+      "height": 0
+    },
+    "outputs": {
+      "bmi": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > calorie-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "weight": 170,
+      "height": 69,
+      "age": 30,
+      "activityFactor": 1.55
+    },
+    "outputs": {
+      "maintenanceCalories": 2668.29617,
+      "weightLossCalories": 2168.29617,
+      "weightGainCalories": 3168.29617
+    }
+  },
+  "typical": {
+    "inputs": {
+      "weight": 255,
+      "height": 104,
+      "age": 45,
+      "activityFactor": 2.325
+    },
+    "outputs": {
+      "maintenanceCalories": 6016.30857,
+      "weightLossCalories": 5516.30857,
+      "weightGainCalories": 6516.30857
+    }
+  },
+  "edge": {
+    "inputs": {
+      "weight": 0,
+      "height": 0,
+      "age": 1,
+      "activityFactor": 1
+    },
+    "outputs": {
+      "maintenanceCalories": 0,
+      "weightLossCalories": -500,
+      "weightGainCalories": 500
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > car-payment-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "carPrice": 28000,
+      "downPayment": 4000,
+      "interestRate": 4.5,
+      "years": 6
+    },
+    "outputs": {
+      "monthlyPayment": 380.9767137,
+      "totalCost": 27430.32338,
+      "totalInterest": 3430.323383,
+      "loanPrincipal": 24000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "carPrice": 42000,
+      "downPayment": 6000,
+      "interestRate": 6.75,
+      "years": 9
+    },
+    "outputs": {
+      "monthlyPayment": 445.6808078,
+      "totalCost": 48133.52724,
+      "totalInterest": 12133.52724,
+      "loanPrincipal": 36000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "carPrice": 0,
+      "downPayment": 0,
+      "interestRate": 0,
+      "years": 1
+    },
+    "outputs": {
+      "monthlyPayment": 0,
+      "totalCost": 0,
+      "totalInterest": 0,
+      "loanPrincipal": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > cashback-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "monthlySpend": 2000,
+      "cashbackRate": 2,
+      "bonusCategorySpend": 400,
+      "bonusCategoryRate": 5,
+      "annualFee": 0
+    },
+    "outputs": {
+      "monthlyCashback": 52,
+      "annualCashback": 624,
+      "netAnnualValue": 624,
+      "effectiveRate": 2.6
+    }
+  },
+  "typical": {
+    "inputs": {
+      "monthlySpend": 3000,
+      "cashbackRate": 3,
+      "bonusCategorySpend": 600,
+      "bonusCategoryRate": 7.5,
+      "annualFee": 0
+    },
+    "outputs": {
+      "monthlyCashback": 117,
+      "annualCashback": 1404,
+      "netAnnualValue": 1404,
+      "effectiveRate": 3.9
+    }
+  },
+  "edge": {
+    "inputs": {
+      "monthlySpend": 0,
+      "cashbackRate": 0,
+      "bonusCategorySpend": 0,
+      "bonusCategoryRate": 0,
+      "annualFee": 0
+    },
+    "outputs": {
+      "monthlyCashback": 0,
+      "annualCashback": 0,
+      "netAnnualValue": 0,
+      "effectiveRate": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > commute-cost-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "roundTripMiles": 25,
+      "mpg": 30,
+      "gasPricePerGallon": 3.75,
+      "daysPerMonth": 22,
+      "dailyParking": 0,
+      "dailyTolls": 0,
+      "wearCostPerMile": 0.21
+    },
+    "outputs": {
+      "dailyTotal": 8.375,
+      "monthlyTotal": 184.25,
+      "annualTotal": 2211,
+      "monthlyFuel": 68.75,
+      "monthlyParking": 0
+    }
+  },
+  "typical": {
+    "inputs": {
+      "roundTripMiles": 38,
+      "mpg": 45,
+      "gasPricePerGallon": 5.65,
+      "daysPerMonth": 33,
+      "dailyParking": 0,
+      "dailyTolls": 0,
+      "wearCostPerMile": 0.32
+    },
+    "outputs": {
+      "dailyTotal": 16.93111111,
+      "monthlyTotal": 558.7266667,
+      "annualTotal": 6704.72,
+      "monthlyFuel": 157.4466667,
+      "monthlyParking": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "roundTripMiles": 0,
+      "mpg": 1,
+      "gasPricePerGallon": 0,
+      "daysPerMonth": 1,
+      "dailyParking": 0,
+      "dailyTolls": 0,
+      "wearCostPerMile": 0
+    },
+    "outputs": {
+      "dailyTotal": 0,
+      "monthlyTotal": 0,
+      "annualTotal": 0,
+      "monthlyFuel": 0,
+      "monthlyParking": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > compound-interest-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "principal": 5000,
+      "annualRate": 4,
+      "years": 10,
+      "monthlyContribution": 200
+    },
+    "outputs": {
+      "futureValue": 36904.12436,
+      "totalInterest": 7904.124357,
+      "contributionTotal": 24000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "principal": 7500,
+      "annualRate": 6,
+      "years": 15,
+      "monthlyContribution": 300
+    },
+    "outputs": {
+      "futureValue": 105651.3155,
+      "totalInterest": 44151.31545,
+      "contributionTotal": 54000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "principal": 0,
+      "annualRate": 0,
+      "years": 0,
+      "monthlyContribution": 0
+    },
+    "outputs": {
+      "futureValue": 0,
+      "totalInterest": 0,
+      "contributionTotal": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > concrete-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "length": 10,
+      "width": 12,
+      "depthInches": 4,
+      "wastePercent": 10
+    },
+    "outputs": {
+      "cubicFeet": 40,
+      "cubicYards": 1.481481481,
+      "cubicYardsWithWaste": 1.62962963,
+      "bags80lb": 74,
+      "bags60lb": 98
+    }
+  },
+  "typical": {
+    "inputs": {
+      "length": 15,
+      "width": 18,
+      "depthInches": 6,
+      "wastePercent": 15
+    },
+    "outputs": {
+      "cubicFeet": 135,
+      "cubicYards": 5,
+      "cubicYardsWithWaste": 5.75,
+      "bags80lb": 259,
+      "bags60lb": 345
+    }
+  },
+  "edge": {
+    "inputs": {
+      "length": 0.1,
+      "width": 0.1,
+      "depthInches": 0.5,
+      "wastePercent": 0
+    },
+    "outputs": {
+      "cubicFeet": 0.0004166666667,
+      "cubicYards": 0.00001543209877,
+      "cubicYardsWithWaste": 0.00001543209877,
+      "bags80lb": 1,
+      "bags60lb": 1
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > date-difference-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "startYear": 2024,
+      "startMonth": 1,
+      "startDay": 1,
+      "endYear": 2026,
+      "endMonth": 7,
+      "endDay": 4
+    },
+    "outputs": {
+      "days": 915,
+      "weeks": 130.7142857,
+      "months": 30.05913272
+    }
+  },
+  "typical": {
+    "inputs": {
+      "startYear": 2025,
+      "startMonth": 2,
+      "startDay": 10,
+      "endYear": 2027,
+      "endMonth": 8,
+      "endDay": 13
+    },
+    "outputs": {
+      "days": 914,
+      "weeks": 130.5714286,
+      "months": 30.02628121
+    }
+  },
+  "edge": {
+    "inputs": {
+      "startYear": 1900,
+      "startMonth": 1,
+      "startDay": 1,
+      "endYear": 1900,
+      "endMonth": 1,
+      "endDay": 1
+    },
+    "outputs": {
+      "days": 0,
+      "weeks": 0,
+      "months": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > discount-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "originalPrice": 120,
+      "discountPercent": 30,
+      "additionalDiscount": 0,
+      "salesTaxRate": 0
+    },
+    "outputs": {
+      "afterFirst": 84,
+      "afterSecond": 84,
+      "tax": 0,
+      "finalPrice": 84,
+      "totalSavings": 36,
+      "effectiveDiscount": 30
+    }
+  },
+  "typical": {
+    "inputs": {
+      "originalPrice": 180,
+      "discountPercent": 45,
+      "additionalDiscount": 0,
+      "salesTaxRate": 0
+    },
+    "outputs": {
+      "afterFirst": 99,
+      "afterSecond": 99,
+      "tax": 0,
+      "finalPrice": 99,
+      "totalSavings": 81,
+      "effectiveDiscount": 45
+    }
+  },
+  "edge": {
+    "inputs": {
+      "originalPrice": 0,
+      "discountPercent": 0,
+      "additionalDiscount": 0,
+      "salesTaxRate": 0
+    },
+    "outputs": {
+      "afterFirst": 0,
+      "afterSecond": 0,
+      "tax": 0,
+      "finalPrice": 0,
+      "totalSavings": 0,
+      "effectiveDiscount": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > electricity-bill-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "monthlyKwh": 900,
+      "ratePerKwh": 0.16,
+      "fixedCharges": 12,
+      "tieredThreshold": 0,
+      "tieredRate": 0.22
+    },
+    "outputs": {
+      "energyCharge": 144,
+      "totalBill": 156,
+      "costPerDay": 5.2,
+      "annualBill": 1872,
+      "effectiveRatePerKwh": 0.1733333333
+    }
+  },
+  "typical": {
+    "inputs": {
+      "monthlyKwh": 1350,
+      "ratePerKwh": 0.24,
+      "fixedCharges": 18,
+      "tieredThreshold": 0,
+      "tieredRate": 0.33
+    },
+    "outputs": {
+      "energyCharge": 324,
+      "totalBill": 342,
+      "costPerDay": 11.4,
+      "annualBill": 4104,
+      "effectiveRatePerKwh": 0.2533333333
+    }
+  },
+  "edge": {
+    "inputs": {
+      "monthlyKwh": 0,
+      "ratePerKwh": 0,
+      "fixedCharges": 0,
+      "tieredThreshold": 0,
+      "tieredRate": 0
+    },
+    "outputs": {
+      "energyCharge": 0,
+      "totalBill": 0,
+      "costPerDay": 0,
+      "annualBill": 0,
+      "effectiveRatePerKwh": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > emi-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "loanAmount": 1500,
+      "annualRate": 18,
+      "months": 12,
+      "downPayment": 0
+    },
+    "outputs": {
+      "emi": 137.5199894,
+      "totalPayment": 1650.239872,
+      "totalInterest": 150.2398723,
+      "principal": 1500
+    }
+  },
+  "typical": {
+    "inputs": {
+      "loanAmount": 2250,
+      "annualRate": 27,
+      "months": 18,
+      "downPayment": 0
+    },
+    "outputs": {
+      "emi": 153.3986906,
+      "totalPayment": 2761.176431,
+      "totalInterest": 511.1764306,
+      "principal": 2250
+    }
+  },
+  "edge": {
+    "inputs": {
+      "loanAmount": 0,
+      "annualRate": 0,
+      "months": 1,
+      "downPayment": 0
+    },
+    "outputs": {
+      "emi": 0,
+      "totalPayment": 0,
+      "totalInterest": 0,
+      "principal": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > ev-charging-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "batteryKwh": 75,
+      "chargePercent": 20,
+      "electricityRate": 0.16,
+      "efficiency": 4,
+      "gasPricePerGallon": 3.75,
+      "gasMpg": 32
+    },
+    "outputs": {
+      "kwhNeeded": 60,
+      "chargingCost": 9.6,
+      "rangeAdded": 240,
+      "costPerMileEV": 0.04,
+      "costPerMileGas": 0.1171875,
+      "savingsPerMile": 0.0771875,
+      "annualSavings": 926.25
+    }
+  },
+  "typical": {
+    "inputs": {
+      "batteryKwh": 112.5,
+      "chargePercent": 30,
+      "electricityRate": 0.24,
+      "efficiency": 6,
+      "gasPricePerGallon": 5.65,
+      "gasMpg": 48
+    },
+    "outputs": {
+      "kwhNeeded": 78.75,
+      "chargingCost": 18.9,
+      "rangeAdded": 472.5,
+      "costPerMileEV": 0.04,
+      "costPerMileGas": 0.1177083333,
+      "savingsPerMile": 0.07770833333,
+      "annualSavings": 932.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "batteryKwh": 1,
+      "chargePercent": 0,
+      "electricityRate": 0,
+      "efficiency": 0.1,
+      "gasPricePerGallon": 0,
+      "gasMpg": 1
+    },
+    "outputs": {
+      "kwhNeeded": 1,
+      "chargingCost": 0,
+      "rangeAdded": 0.1,
+      "costPerMileEV": 0,
+      "costPerMileGas": 0,
+      "savingsPerMile": 0,
+      "annualSavings": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > fahrenheit-to-celsius-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "fahrenheit": 68
+    },
+    "outputs": {
+      "celsius": 20
+    }
+  },
+  "typical": {
+    "inputs": {
+      "fahrenheit": 102
+    },
+    "outputs": {
+      "celsius": 38.88888889
+    }
+  },
+  "edge": {
+    "inputs": {
+      "fahrenheit": -200
+    },
+    "outputs": {
+      "celsius": -128.8888889
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > force-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass": 1500,
+      "acceleration": 2.78
+    },
+    "outputs": {
+      "force": 4170
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass": 2250,
+      "acceleration": 4.17
+    },
+    "outputs": {
+      "force": 9382.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass": 0,
+      "acceleration": 0
+    },
+    "outputs": {
+      "force": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > freelancer-rate-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "targetNetIncome": 80000,
+      "billableHoursPerWeek": 30,
+      "weeksPerYear": 48,
+      "selfEmploymentTaxRate": 35,
+      "annualBusinessExpenses": 5000,
+      "annualBenefitsCost": 6000
+    },
+    "outputs": {
+      "minimumHourlyRate": 97.22222222,
+      "annualGrossRevenue": 140000,
+      "taxBurden": 49000,
+      "totalBillableHours": 1440
+    }
+  },
+  "typical": {
+    "inputs": {
+      "targetNetIncome": 120000,
+      "billableHoursPerWeek": 45,
+      "weeksPerYear": 72,
+      "selfEmploymentTaxRate": 53,
+      "annualBusinessExpenses": 7500,
+      "annualBenefitsCost": 9000
+    },
+    "outputs": {
+      "minimumHourlyRate": 89.63750985,
+      "annualGrossRevenue": 290425.5319,
+      "taxBurden": 153925.5319,
+      "totalBillableHours": 3240
+    }
+  },
+  "edge": {
+    "inputs": {
+      "targetNetIncome": 0,
+      "billableHoursPerWeek": 1,
+      "weeksPerYear": 1,
+      "selfEmploymentTaxRate": 0,
+      "annualBusinessExpenses": 0,
+      "annualBenefitsCost": 0
+    },
+    "outputs": {
+      "minimumHourlyRate": 0,
+      "annualGrossRevenue": 0,
+      "taxBurden": 0,
+      "totalBillableHours": 1
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > fuel-cost-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "annualMiles": 15000,
+      "mpg": 28,
+      "gasPricePerGallon": 3.75,
+      "comparisonMpg": 45
+    },
+    "outputs": {
+      "gallonsPerYear": 535.7142857,
+      "annualCost": 2008.928571,
+      "monthlyCost": 167.4107143,
+      "costPerMile": 0.1339285714,
+      "comparisonCost": 1250,
+      "annualSavings": 758.9285714
+    }
+  },
+  "typical": {
+    "inputs": {
+      "annualMiles": 22500,
+      "mpg": 42,
+      "gasPricePerGallon": 5.65,
+      "comparisonMpg": 67.5
+    },
+    "outputs": {
+      "gallonsPerYear": 535.7142857,
+      "annualCost": 3026.785714,
+      "monthlyCost": 252.2321429,
+      "costPerMile": 0.1345238095,
+      "comparisonCost": 1883.333333,
+      "annualSavings": 1143.452381
+    }
+  },
+  "edge": {
+    "inputs": {
+      "annualMiles": 0,
+      "mpg": 1,
+      "gasPricePerGallon": 0,
+      "comparisonMpg": 1
+    },
+    "outputs": {
+      "gallonsPerYear": 0,
+      "annualCost": 0,
+      "monthlyCost": 0,
+      "costPerMile": 0,
+      "comparisonCost": 0,
+      "annualSavings": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > furniture-fit-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "roomLengthFt": 14,
+      "roomWidthFt": 12,
+      "furnitureLengthIn": 78,
+      "furnitureWidthIn": 36,
+      "clearanceIn": 36
+    },
+    "outputs": {
+      "fits": 1,
+      "fitsLength": 1,
+      "fitsWidth": 1,
+      "remainingLength": 90,
+      "remainingWidth": 108,
+      "furnitureSqFt": 19.5,
+      "roomSqFt": 168
+    }
+  },
+  "typical": {
+    "inputs": {
+      "roomLengthFt": 21,
+      "roomWidthFt": 18,
+      "furnitureLengthIn": 117,
+      "furnitureWidthIn": 54,
+      "clearanceIn": 54
+    },
+    "outputs": {
+      "fits": 1,
+      "fitsLength": 1,
+      "fitsWidth": 1,
+      "remainingLength": 135,
+      "remainingWidth": 162,
+      "furnitureSqFt": 43.875,
+      "roomSqFt": 378
+    }
+  },
+  "edge": {
+    "inputs": {
+      "roomLengthFt": 1,
+      "roomWidthFt": 1,
+      "furnitureLengthIn": 1,
+      "furnitureWidthIn": 1,
+      "clearanceIn": 18
+    },
+    "outputs": {
+      "fits": 0,
+      "fitsLength": 0,
+      "fitsWidth": 0,
+      "remainingLength": 11,
+      "remainingWidth": 11,
+      "furnitureSqFt": 0.006944444444,
+      "roomSqFt": 1
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > gallons-to-liters-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "gallons": 2.5
+    },
+    "outputs": {
+      "liters": 9.463525
+    }
+  },
+  "typical": {
+    "inputs": {
+      "gallons": 3.8
+    },
+    "outputs": {
+      "liters": 14.384558
+    }
+  },
+  "edge": {
+    "inputs": {
+      "gallons": 0
+    },
+    "outputs": {
+      "liters": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > gas-cost-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "distance": 180,
+      "mpg": 28,
+      "pricePerGallon": 3.75
+    },
+    "outputs": {
+      "gallons": 6.428571429,
+      "totalCost": 24.10714286
+    }
+  },
+  "typical": {
+    "inputs": {
+      "distance": 270,
+      "mpg": 42,
+      "pricePerGallon": 5.63
+    },
+    "outputs": {
+      "gallons": 6.428571429,
+      "totalCost": 36.19285714
+    }
+  },
+  "edge": {
+    "inputs": {
+      "distance": 0,
+      "mpg": 1,
+      "pricePerGallon": 0
+    },
+    "outputs": {
+      "gallons": 0,
+      "totalCost": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > gpa-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "course1Grade": 4,
+      "course1Credits": 3,
+      "course2Grade": 3,
+      "course2Credits": 4,
+      "course3Grade": 2,
+      "course3Credits": 2
+    },
+    "outputs": {
+      "gpa": 3.111111111,
+      "totalCredits": 9,
+      "totalPoints": 28
+    }
+  },
+  "typical": {
+    "inputs": {
+      "course1Grade": 6,
+      "course1Credits": 4.5,
+      "course2Grade": 4.5,
+      "course2Credits": 6,
+      "course3Grade": 3,
+      "course3Credits": 3
+    },
+    "outputs": {
+      "gpa": 4.666666667,
+      "totalCredits": 13.5,
+      "totalPoints": 63
+    }
+  },
+  "edge": {
+    "inputs": {
+      "course1Grade": 0,
+      "course1Credits": 0,
+      "course2Grade": 0,
+      "course2Credits": 0,
+      "course3Grade": 0,
+      "course3Credits": 0
+    },
+    "outputs": {
+      "gpa": 0,
+      "totalCredits": 0,
+      "totalPoints": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > inflation-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "amount": 10000,
+      "inflationRate": 3,
+      "years": 10
+    },
+    "outputs": {
+      "futureValue": 13439.16379,
+      "purchasingPowerLoss": 3439.163793,
+      "presentValueEquivalent": 7440.939149
+    }
+  },
+  "typical": {
+    "inputs": {
+      "amount": 15000,
+      "inflationRate": 4.5,
+      "years": 15
+    },
+    "outputs": {
+      "futureValue": 29029.23665,
+      "purchasingPowerLoss": 14029.23665,
+      "presentValueEquivalent": 7750.806635
+    }
+  },
+  "edge": {
+    "inputs": {
+      "amount": 0,
+      "inflationRate": 0,
+      "years": 1
+    },
+    "outputs": {
+      "futureValue": 0,
+      "purchasingPowerLoss": 0,
+      "presentValueEquivalent": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > instagram-engagement-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "followers": 50000,
+      "avgLikes": 1200,
+      "avgComments": 80,
+      "avgShares": 40
+    },
+    "outputs": {
+      "totalEngagement": 1320,
+      "engagementRate": 2.64,
+      "estimatedPostValue": 500,
+      "cpm": 10
+    }
+  },
+  "typical": {
+    "inputs": {
+      "followers": 75000,
+      "avgLikes": 1800,
+      "avgComments": 120,
+      "avgShares": 60
+    },
+    "outputs": {
+      "totalEngagement": 1980,
+      "engagementRate": 2.64,
+      "estimatedPostValue": 750,
+      "cpm": 10
+    }
+  },
+  "edge": {
+    "inputs": {
+      "followers": 100,
+      "avgLikes": 0,
+      "avgComments": 0,
+      "avgShares": 0
+    },
+    "outputs": {
+      "totalEngagement": 0,
+      "engagementRate": 0,
+      "estimatedPostValue": 1,
+      "cpm": 10
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > investment-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "initialInvestment": 10000,
+      "annualReturn": 7,
+      "years": 20,
+      "annualContribution": 1200
+    },
+    "outputs": {
+      "futureValue": 87891.43541,
+      "totalContributed": 34000,
+      "totalGrowth": 53891.43541
+    }
+  },
+  "typical": {
+    "inputs": {
+      "initialInvestment": 15000,
+      "annualReturn": 10.5,
+      "years": 30,
+      "annualContribution": 1800
+    },
+    "outputs": {
+      "futureValue": 625475.0431,
+      "totalContributed": 69000,
+      "totalGrowth": 556475.0431
+    }
+  },
+  "edge": {
+    "inputs": {
+      "initialInvestment": 0,
+      "annualReturn": 0,
+      "years": 1,
+      "annualContribution": 0
+    },
+    "outputs": {
+      "futureValue": 0,
+      "totalContributed": 0,
+      "totalGrowth": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > loan-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "loanAmount": 20000,
+      "interestRate": 6,
+      "years": 5
+    },
+    "outputs": {
+      "monthlyPayment": 386.6560306,
+      "totalCost": 23199.36184,
+      "totalInterest": 3199.361835
+    }
+  },
+  "typical": {
+    "inputs": {
+      "loanAmount": 30000,
+      "interestRate": 9,
+      "years": 8
+    },
+    "outputs": {
+      "monthlyPayment": 439.5060982,
+      "totalCost": 42192.58543,
+      "totalInterest": 12192.58543
+    }
+  },
+  "edge": {
+    "inputs": {
+      "loanAmount": 0,
+      "interestRate": 0,
+      "years": 1
+    },
+    "outputs": {
+      "monthlyPayment": 0,
+      "totalCost": 0,
+      "totalInterest": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > loan-prepayment-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "loanAmount": 20000,
+      "interestRate": 6,
+      "years": 5,
+      "extraPayment": 200
+    },
+    "outputs": {
+      "regularMonthlyPayment": 386.6560306,
+      "newMonthlyPayment": 586.6560306,
+      "monthsSaved": 22,
+      "interestSaved": 1217.240821,
+      "newPayoffMonths": 38
+    }
+  },
+  "typical": {
+    "inputs": {
+      "loanAmount": 30000,
+      "interestRate": 9,
+      "years": 8,
+      "extraPayment": 300
+    },
+    "outputs": {
+      "regularMonthlyPayment": 439.5060982,
+      "newMonthlyPayment": 739.5060982,
+      "monthsSaved": 47,
+      "interestSaved": 6288.010028,
+      "newPayoffMonths": 49
+    }
+  },
+  "edge": {
+    "inputs": {
+      "loanAmount": 0,
+      "interestRate": 0,
+      "years": 1,
+      "extraPayment": 0
+    },
+    "outputs": {
+      "regularMonthlyPayment": 0,
+      "newMonthlyPayment": 0,
+      "monthsSaved": 12,
+      "interestSaved": 0,
+      "newPayoffMonths": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > meeting-cost-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "attendees": 8,
+      "avgSalary": 85000,
+      "durationMinutes": 60,
+      "employerLoadFactor": 1.3
+    },
+    "outputs": {
+      "totalCost": 425,
+      "costPerAttendee": 53.125,
+      "hourlyPerPerson": 53.125,
+      "annualIfWeekly": 22100
+    }
+  },
+  "typical": {
+    "inputs": {
+      "attendees": 12,
+      "avgSalary": 130000,
+      "durationMinutes": 90,
+      "employerLoadFactor": 1.95
+    },
+    "outputs": {
+      "totalCost": 2193.75,
+      "costPerAttendee": 182.8125,
+      "hourlyPerPerson": 121.875,
+      "annualIfWeekly": 114075
+    }
+  },
+  "edge": {
+    "inputs": {
+      "attendees": 1,
+      "avgSalary": 0,
+      "durationMinutes": 5,
+      "employerLoadFactor": 1
+    },
+    "outputs": {
+      "totalCost": 0,
+      "costPerAttendee": 0,
+      "hourlyPerPerson": 0,
+      "annualIfWeekly": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > miles-to-kilometers-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "miles": 10
+    },
+    "outputs": {
+      "kilometers": 16.0934
+    }
+  },
+  "typical": {
+    "inputs": {
+      "miles": 15
+    },
+    "outputs": {
+      "kilometers": 24.1401
+    }
+  },
+  "edge": {
+    "inputs": {
+      "miles": 0
+    },
+    "outputs": {
+      "kilometers": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > mortgage-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "loanAmount": 350000,
+      "interestRate": 5,
+      "years": 30,
+      "downPayment": 70000
+    },
+    "outputs": {
+      "monthlyPayment": 1503.100544,
+      "totalCost": 541116.196,
+      "totalInterest": 261116.196,
+      "loanPrincipal": 280000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "loanAmount": 525000,
+      "interestRate": 7.5,
+      "years": 45,
+      "downPayment": 105000
+    },
+    "outputs": {
+      "monthlyPayment": 2719.022182,
+      "totalCost": 1468271.979,
+      "totalInterest": 1048271.979,
+      "loanPrincipal": 420000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "loanAmount": 0,
+      "interestRate": 0,
+      "years": 1,
+      "downPayment": 0
+    },
+    "outputs": {
+      "monthlyPayment": 0,
+      "totalCost": 0,
+      "totalInterest": 0,
+      "loanPrincipal": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > paint-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "roomLength": 14,
+      "roomWidth": 12,
+      "ceilingHeight": 9,
+      "doors": 1,
+      "windows": 2,
+      "coats": 2,
+      "coveragePerGallon": 350
+    },
+    "outputs": {
+      "paintableArea": 418,
+      "gallonsNeeded": 2.388571429,
+      "gallonsWithBuffer": 2.627428571,
+      "ceilingArea": 168,
+      "ceilingGallons": 0.96
+    }
+  },
+  "typical": {
+    "inputs": {
+      "roomLength": 21,
+      "roomWidth": 18,
+      "ceilingHeight": 13.5,
+      "doors": 2,
+      "windows": 3,
+      "coats": 3,
+      "coveragePerGallon": 530
+    },
+    "outputs": {
+      "paintableArea": 968,
+      "gallonsNeeded": 5.479245283,
+      "gallonsWithBuffer": 6.027169811,
+      "ceilingArea": 378,
+      "ceilingGallons": 2.139622642
+    }
+  },
+  "edge": {
+    "inputs": {
+      "roomLength": 1,
+      "roomWidth": 1,
+      "ceilingHeight": 6,
+      "doors": 0,
+      "windows": 0,
+      "coats": 1,
+      "coveragePerGallon": 100
+    },
+    "outputs": {
+      "paintableArea": 24,
+      "gallonsNeeded": 0.24,
+      "gallonsWithBuffer": 0.264,
+      "ceilingArea": 1,
+      "ceilingGallons": 0.01
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > paycheck-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "annualSalary": 60000,
+      "payPeriodsPerYear": 26,
+      "federalTaxRate": 22,
+      "stateTaxRate": 5,
+      "otherDeductions": 200
+    },
+    "outputs": {
+      "grossPerPeriod": 2307.692308,
+      "federalTax": 507.6923077,
+      "stateTax": 115.3846154,
+      "netPay": 1484.615385,
+      "annualNetPay": 38600
+    }
+  },
+  "typical": {
+    "inputs": {
+      "annualSalary": 90000,
+      "payPeriodsPerYear": 39,
+      "federalTaxRate": 33,
+      "stateTaxRate": 7.5,
+      "otherDeductions": 300
+    },
+    "outputs": {
+      "grossPerPeriod": 2307.692308,
+      "federalTax": 761.5384615,
+      "stateTax": 173.0769231,
+      "netPay": 1073.076923,
+      "annualNetPay": 41850
+    }
+  },
+  "edge": {
+    "inputs": {
+      "annualSalary": 0,
+      "payPeriodsPerYear": 1,
+      "federalTaxRate": 0,
+      "stateTaxRate": 0,
+      "otherDeductions": 0
+    },
+    "outputs": {
+      "grossPerPeriod": 0,
+      "federalTax": 0,
+      "stateTax": 0,
+      "netPay": 0,
+      "annualNetPay": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > pounds-to-kilograms-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "pounds": 150
+    },
+    "outputs": {
+      "kilograms": 68.0388
+    }
+  },
+  "typical": {
+    "inputs": {
+      "pounds": 225
+    },
+    "outputs": {
+      "kilograms": 102.0582
+    }
+  },
+  "edge": {
+    "inputs": {
+      "pounds": 0
+    },
+    "outputs": {
+      "kilograms": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > pregnancy-due-date-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "lmpYear": 2026,
+      "lmpMonth": 3,
+      "lmpDay": 1,
+      "cycleLength": 28
+    },
+    "outputs": {
+      "gestationalWeeks": 15.42857143,
+      "daysRemaining": 172,
+      "trimester": 2,
+      "gestationalDays": 108
+    }
+  },
+  "typical": {
+    "inputs": {
+      "lmpYear": 2027,
+      "lmpMonth": 4,
+      "lmpDay": 10,
+      "cycleLength": 42
+    },
+    "outputs": {
+      "gestationalWeeks": 0,
+      "daysRemaining": 591,
+      "trimester": 1,
+      "gestationalDays": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "lmpYear": 2020,
+      "lmpMonth": 1,
+      "lmpDay": 1,
+      "cycleLength": 20
+    },
+    "outputs": {
+      "gestationalWeeks": 337,
+      "daysRemaining": 0,
+      "trimester": 3,
+      "gestationalDays": 2359
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > pto-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "annualPtoDays": 15,
+      "daysUsed": 4,
+      "annualSalary": 75000,
+      "workDaysPerYear": 260
+    },
+    "outputs": {
+      "remaining": 11,
+      "dailyRate": 288.4615385,
+      "cashValue": 3173.076923,
+      "usedCashValue": 1153.846154,
+      "usagePercent": 26.66666667
+    }
+  },
+  "typical": {
+    "inputs": {
+      "annualPtoDays": 22.5,
+      "daysUsed": 6,
+      "annualSalary": 113000,
+      "workDaysPerYear": 390
+    },
+    "outputs": {
+      "remaining": 16.5,
+      "dailyRate": 289.7435897,
+      "cashValue": 4780.769231,
+      "usedCashValue": 1738.461538,
+      "usagePercent": 26.66666667
+    }
+  },
+  "edge": {
+    "inputs": {
+      "annualPtoDays": 0,
+      "daysUsed": 0,
+      "annualSalary": 0,
+      "workDaysPerYear": 1
+    },
+    "outputs": {
+      "remaining": 0,
+      "dailyRate": 0,
+      "cashValue": 0,
+      "usedCashValue": 0,
+      "usagePercent": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > running-pace-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "distanceMiles": 3.1,
+      "totalMinutes": 25
+    },
+    "outputs": {
+      "paceMinPerMile": 8.064516129,
+      "paceMinPerKm": 5.011070457,
+      "speedMph": 7.44,
+      "speedKph": 11.9734896,
+      "marathonFinishMinutes": 211.4419355,
+      "halfMarathonFinishMinutes": 105.7209677
+    }
+  },
+  "typical": {
+    "inputs": {
+      "distanceMiles": 4.7,
+      "totalMinutes": 37.5
+    },
+    "outputs": {
+      "paceMinPerMile": 7.978723404,
+      "paceMinPerKm": 4.957761197,
+      "speedMph": 7.52,
+      "speedKph": 12.1022368,
+      "marathonFinishMinutes": 209.1925532,
+      "halfMarathonFinishMinutes": 104.5962766
+    }
+  },
+  "edge": {
+    "inputs": {
+      "distanceMiles": 0.1,
+      "totalMinutes": 0.5
+    },
+    "outputs": {
+      "paceMinPerMile": 5,
+      "paceMinPerKm": 3.106863683,
+      "speedMph": 12,
+      "speedKph": 19.31208,
+      "marathonFinishMinutes": 131.094,
+      "halfMarathonFinishMinutes": 65.547
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > salary-raise-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "currentSalary": 72000,
+      "raisePercent": 7,
+      "flatRaiseAmount": 0,
+      "taxRate": 28,
+      "payPeriodsPerYear": 26
+    },
+    "outputs": {
+      "newSalary": 77040,
+      "raiseAmount": 5040,
+      "raisePercent": 7,
+      "netCurrent": 51840,
+      "netNew": 55468.8,
+      "netIncrease": 3628.8,
+      "perPaycheckIncrease": 139.5692308,
+      "hourlyIncrease": 2.423076923
+    }
+  },
+  "typical": {
+    "inputs": {
+      "currentSalary": 108000,
+      "raisePercent": 10.5,
+      "flatRaiseAmount": 0,
+      "taxRate": 42,
+      "payPeriodsPerYear": 39
+    },
+    "outputs": {
+      "newSalary": 119340,
+      "raiseAmount": 11340,
+      "raisePercent": 10.5,
+      "netCurrent": 62640,
+      "netNew": 69217.2,
+      "netIncrease": 6577.2,
+      "perPaycheckIncrease": 168.6461538,
+      "hourlyIncrease": 5.451923077
+    }
+  },
+  "edge": {
+    "inputs": {
+      "currentSalary": 0,
+      "raisePercent": 0,
+      "flatRaiseAmount": 0,
+      "taxRate": 0,
+      "payPeriodsPerYear": 1
+    },
+    "outputs": {
+      "newSalary": 0,
+      "raiseAmount": 0,
+      "raisePercent": 0,
+      "netCurrent": 0,
+      "netNew": 0,
+      "netIncrease": 0,
+      "perPaycheckIncrease": 0,
+      "hourlyIncrease": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > sales-tax-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "purchaseAmount": 125,
+      "salesTaxRate": 8.25
+    },
+    "outputs": {
+      "taxAmount": 10.3125,
+      "totalAmount": 135.3125
+    }
+  },
+  "typical": {
+    "inputs": {
+      "purchaseAmount": 188,
+      "salesTaxRate": 12.38
+    },
+    "outputs": {
+      "taxAmount": 23.2744,
+      "totalAmount": 211.2744
+    }
+  },
+  "edge": {
+    "inputs": {
+      "purchaseAmount": 0,
+      "salesTaxRate": 0
+    },
+    "outputs": {
+      "taxAmount": 0,
+      "totalAmount": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > sleep-time-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "sleepHour": 22,
+      "sleepMinute": 30,
+      "fallAsleepMinutes": 14,
+      "targetCycles": 6
+    },
+    "outputs": {
+      "totalSleepHours": 9,
+      "wakeTimeDecimal": 7.733333333,
+      "wakeHour": 7,
+      "wakeMinute": 44
+    }
+  },
+  "typical": {
+    "inputs": {
+      "sleepHour": 1,
+      "sleepMinute": 45,
+      "fallAsleepMinutes": 21,
+      "targetCycles": 9
+    },
+    "outputs": {
+      "totalSleepHours": 13.5,
+      "wakeTimeDecimal": 15.6,
+      "wakeHour": 15,
+      "wakeMinute": 36
+    }
+  },
+  "edge": {
+    "inputs": {
+      "sleepHour": 0,
+      "sleepMinute": 0,
+      "fallAsleepMinutes": 0,
+      "targetCycles": 1
+    },
+    "outputs": {
+      "totalSleepHours": 1.5,
+      "wakeTimeDecimal": 1.5,
+      "wakeHour": 1,
+      "wakeMinute": 30
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > tdee-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "weight": 155,
+      "height": 66,
+      "age": 25,
+      "activityFactor": 1.375
+    },
+    "outputs": {
+      "tdee": 2242.3742,
+      "bmr": 1630.8176,
+      "cuttingCalories": 1742.3742,
+      "bulkingCalories": 2542.3742
+    }
+  },
+  "typical": {
+    "inputs": {
+      "weight": 233,
+      "height": 99,
+      "age": 38,
+      "activityFactor": 2.075
+    },
+    "outputs": {
+      "tdee": 5070.250797,
+      "bmr": 2443.49436,
+      "cuttingCalories": 4570.250797,
+      "bulkingCalories": 5370.250797
+    }
+  },
+  "edge": {
+    "inputs": {
+      "weight": 0,
+      "height": 0,
+      "age": 1,
+      "activityFactor": 1
+    },
+    "outputs": {
+      "tdee": 0,
+      "bmr": 0,
+      "cuttingCalories": -500,
+      "bulkingCalories": 300
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > tile-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "areaLength": 12,
+      "areaWidth": 10,
+      "tileLengthInch": 12,
+      "tileWidthInch": 12,
+      "wastePercent": 10,
+      "tilesPerBox": 10
+    },
+    "outputs": {
+      "roomSqFt": 120,
+      "tilesNeeded": 120,
+      "tilesWithWaste": 132,
+      "boxesNeeded": 14
+    }
+  },
+  "typical": {
+    "inputs": {
+      "areaLength": 18,
+      "areaWidth": 15,
+      "tileLengthInch": 18,
+      "tileWidthInch": 18,
+      "wastePercent": 15,
+      "tilesPerBox": 15
+    },
+    "outputs": {
+      "roomSqFt": 270,
+      "tilesNeeded": 120,
+      "tilesWithWaste": 138,
+      "boxesNeeded": 10
+    }
+  },
+  "edge": {
+    "inputs": {
+      "areaLength": 0.5,
+      "areaWidth": 0.5,
+      "tileLengthInch": 1,
+      "tileWidthInch": 1,
+      "wastePercent": 0,
+      "tilesPerBox": 1
+    },
+    "outputs": {
+      "roomSqFt": 0.25,
+      "tilesNeeded": 36,
+      "tilesWithWaste": 36,
+      "boxesNeeded": 36
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > tip-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "billAmount": 72,
+      "tipRate": 18,
+      "splitCount": 1
+    },
+    "outputs": {
+      "tipAmount": 12.96,
+      "totalAmount": 84.96,
+      "perPerson": 84.96
+    }
+  },
+  "typical": {
+    "inputs": {
+      "billAmount": 108,
+      "tipRate": 27,
+      "splitCount": 2
+    },
+    "outputs": {
+      "tipAmount": 29.16,
+      "totalAmount": 137.16,
+      "perPerson": 68.58
+    }
+  },
+  "edge": {
+    "inputs": {
+      "billAmount": 0,
+      "tipRate": 0,
+      "splitCount": 1
+    },
+    "outputs": {
+      "tipAmount": 0,
+      "totalAmount": 0,
+      "perPerson": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > toll-cost-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "tollPerTrip": 2.5,
+      "tripsPerDay": 2,
+      "daysPerMonth": 22,
+      "ezpassDiscount": 25
+    },
+    "outputs": {
+      "dailyCost": 5,
+      "monthlyCost": 110,
+      "annualCost": 1320,
+      "monthlyWithEzpass": 82.5,
+      "annualWithEzpass": 990,
+      "annualSavings": 330
+    }
+  },
+  "typical": {
+    "inputs": {
+      "tollPerTrip": 3.75,
+      "tripsPerDay": 3,
+      "daysPerMonth": 33,
+      "ezpassDiscount": 38
+    },
+    "outputs": {
+      "dailyCost": 11.25,
+      "monthlyCost": 371.25,
+      "annualCost": 4455,
+      "monthlyWithEzpass": 230.175,
+      "annualWithEzpass": 2762.1,
+      "annualSavings": 1692.9
+    }
+  },
+  "edge": {
+    "inputs": {
+      "tollPerTrip": 0,
+      "tripsPerDay": 1,
+      "daysPerMonth": 1,
+      "ezpassDiscount": 0
+    },
+    "outputs": {
+      "dailyCost": 0,
+      "monthlyCost": 0,
+      "annualCost": 0,
+      "monthlyWithEzpass": 0,
+      "annualWithEzpass": 0,
+      "annualSavings": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > travel-budget-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "flightCost": 900,
+      "nights": 10,
+      "hotelPerNight": 120,
+      "days": 10,
+      "foodPerDay": 60,
+      "activitiesPerDay": 40,
+      "miscBudget": 200,
+      "travelInsurance": 80
+    },
+    "outputs": {
+      "accommodation": 1200,
+      "food": 600,
+      "activities": 400,
+      "totalBudget": 3380,
+      "perDayCost": 338,
+      "buffer": 338,
+      "totalWithBuffer": 3718
+    }
+  },
+  "typical": {
+    "inputs": {
+      "flightCost": 1350,
+      "nights": 15,
+      "hotelPerNight": 180,
+      "days": 15,
+      "foodPerDay": 90,
+      "activitiesPerDay": 60,
+      "miscBudget": 300,
+      "travelInsurance": 120
+    },
+    "outputs": {
+      "accommodation": 2700,
+      "food": 1350,
+      "activities": 900,
+      "totalBudget": 6720,
+      "perDayCost": 448,
+      "buffer": 672,
+      "totalWithBuffer": 7392
+    }
+  },
+  "edge": {
+    "inputs": {
+      "flightCost": 0,
+      "nights": 1,
+      "hotelPerNight": 0,
+      "days": 1,
+      "foodPerDay": 0,
+      "activitiesPerDay": 0,
+      "miscBudget": 0,
+      "travelInsurance": 0
+    },
+    "outputs": {
+      "accommodation": 0,
+      "food": 0,
+      "activities": 0,
+      "totalBudget": 0,
+      "perDayCost": 0,
+      "buffer": 0,
+      "totalWithBuffer": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > unit-price-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "totalCost": 5.99,
+      "quantity": 24
+    },
+    "outputs": {
+      "unitPrice": 0.2495833333
+    }
+  },
+  "typical": {
+    "inputs": {
+      "totalCost": 8.98,
+      "quantity": 36
+    },
+    "outputs": {
+      "unitPrice": 0.2494444444
+    }
+  },
+  "edge": {
+    "inputs": {
+      "totalCost": 0,
+      "quantity": 0.1
+    },
+    "outputs": {
+      "unitPrice": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > visa-stay-days-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "allowedDays": 90,
+      "windowDays": 180,
+      "daysAlreadyUsed": 25,
+      "plannedTripDays": 30
+    },
+    "outputs": {
+      "remaining": 65,
+      "canStay": 1,
+      "overstayDays": 0,
+      "usagePercent": 27.77777778
+    }
+  },
+  "typical": {
+    "inputs": {
+      "allowedDays": 135,
+      "windowDays": 270,
+      "daysAlreadyUsed": 38,
+      "plannedTripDays": 45
+    },
+    "outputs": {
+      "remaining": 97,
+      "canStay": 1,
+      "overstayDays": 0,
+      "usagePercent": 28.14814815
+    }
+  },
+  "edge": {
+    "inputs": {
+      "allowedDays": 1,
+      "windowDays": 1,
+      "daysAlreadyUsed": 0,
+      "plannedTripDays": 1
+    },
+    "outputs": {
+      "remaining": 1,
+      "canStay": 1,
+      "overstayDays": 0,
+      "usagePercent": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > wallpaper-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "roomPerimeter": 52,
+      "wallHeight": 9,
+      "doors": 1,
+      "windows": 2,
+      "rollSqFt": 56,
+      "patternRepeatInch": 0
+    },
+    "outputs": {
+      "wallArea": 468,
+      "netArea": 418,
+      "adjustedArea": 459.8,
+      "rollsNeeded": 9
+    }
+  },
+  "typical": {
+    "inputs": {
+      "roomPerimeter": 78,
+      "wallHeight": 13.5,
+      "doors": 2,
+      "windows": 3,
+      "rollSqFt": 84,
+      "patternRepeatInch": 0
+    },
+    "outputs": {
+      "wallArea": 1053,
+      "netArea": 968,
+      "adjustedArea": 1064.8,
+      "rollsNeeded": 13
+    }
+  },
+  "edge": {
+    "inputs": {
+      "roomPerimeter": 4,
+      "wallHeight": 6,
+      "doors": 0,
+      "windows": 0,
+      "rollSqFt": 10,
+      "patternRepeatInch": 0
+    },
+    "outputs": {
+      "wallArea": 24,
+      "netArea": 24,
+      "adjustedArea": 26.4,
+      "rollsNeeded": 3
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > water-intake-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "weight": 150,
+      "activityLevel": 30
+    },
+    "outputs": {
+      "dailyOunces": 87,
+      "dailyLiters": 2.5728945
+    }
+  },
+  "typical": {
+    "inputs": {
+      "weight": 225,
+      "activityLevel": 45
+    },
+    "outputs": {
+      "dailyOunces": 130.5,
+      "dailyLiters": 3.85934175
+    }
+  },
+  "edge": {
+    "inputs": {
+      "weight": 0,
+      "activityLevel": 0
+    },
+    "outputs": {
+      "dailyOunces": 0,
+      "dailyLiters": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > work-hours-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "regularHours": 40,
+      "overtimeHours": 0,
+      "hourlyRate": 18,
+      "overtimeMultiplier": 1.5
+    },
+    "outputs": {
+      "totalHours": 40,
+      "regularPay": 720,
+      "overtimePay": 0,
+      "grossPay": 720,
+      "annualEstimate": 37440
+    }
+  },
+  "typical": {
+    "inputs": {
+      "regularHours": 60,
+      "overtimeHours": 0,
+      "hourlyRate": 27,
+      "overtimeMultiplier": 2.25
+    },
+    "outputs": {
+      "totalHours": 60,
+      "regularPay": 1620,
+      "overtimePay": 0,
+      "grossPay": 1620,
+      "annualEstimate": 84240
+    }
+  },
+  "edge": {
+    "inputs": {
+      "regularHours": 0,
+      "overtimeHours": 0,
+      "hourlyRate": 0,
+      "overtimeMultiplier": 1
+    },
+    "outputs": {
+      "totalHours": 0,
+      "regularPay": 0,
+      "overtimePay": 0,
+      "grossPay": 0,
+      "annualEstimate": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > youtube-earnings-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "monthlyViews": 500000,
+      "rpm": 4,
+      "ctr": 1.5
+    },
+    "outputs": {
+      "monthlyEarnings": 2000,
+      "annualEarnings": 24000,
+      "estimatedClicks": 7500
+    }
+  },
+  "typical": {
+    "inputs": {
+      "monthlyViews": 750000,
+      "rpm": 6,
+      "ctr": 2.3
+    },
+    "outputs": {
+      "monthlyEarnings": 4500,
+      "annualEarnings": 54000,
+      "estimatedClicks": 17250
+    }
+  },
+  "edge": {
+    "inputs": {
+      "monthlyViews": 0,
+      "rpm": 0,
+      "ctr": 0
+    },
+    "outputs": {
+      "monthlyEarnings": 0,
+      "annualEarnings": 0,
+      "estimatedClicks": 0
+    }
+  }
+}
+`;

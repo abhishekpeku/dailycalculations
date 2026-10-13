@@ -46,9 +46,18 @@ a = Δv ÷ t) gets its own page.
   builders and the step-17 snapshot tests read them.
 - `benchmarks` (optional) are everyday reference points, in SI, drawn on the result scale. Each one
   must be a real, checkable figure.
-- Need a new unit dimension? Add it to `UNITS` in `lib/units.ts` with factors from **NIST SP 811
-  Appendix B**, exact where the definition is exact. Never hard-code a conversion factor inside a
-  calculator.
+- Units: `lib/units.ts` has 17 dimensions (step 30). Besides the physical ones there are
+  `percent` (base = the percent number, so 5 means 5%), `count` and `currency` (a placeholder until
+  the region step). The **first unit of every dimension is its base**, with factor 1, and `solve`
+  functions take and return values in that base. Temperature's base is K. Fuel economy's is m³/m
+  (volume per distance): `volume = distance × economy`, and mpg and km/L are reciprocals of it.
+- Need a new unit or dimension? Add it to `UNITS`. Each unit defines its conversion in one of three
+  ways: `factor` (base = value × factor), `factor` + `offset` (affine:
+  base = (value + offset) × factor, as in °C and °F), or a `toBase`/`fromBase` function pair for
+  anything non-linear (`inverse(k)` builds reciprocal units such as mpg). Factors come from **NIST
+  SP 811 Appendix B**, exact where the definition is exact, written as expressions of the exact
+  constants (`FOOT ** 3`) with one source comment per dimension. Add a round-trip and an anchor
+  value to `lib/units.spec.ts`. Never hard-code a conversion factor inside a calculator.
 
 **Widget behavior (user decision, 2026-10-12):** there's no "solve for" picker. Every field is an
 input. The **least recently edited** field is calculated, highlighted in the category accent

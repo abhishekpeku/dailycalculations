@@ -13,8 +13,8 @@
     "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "indexnow": "node scripts/indexnow.mjs",
-    "test": "node --test \"data/**/*.spec.ts\"",
-    "test:update": "node --test --test-update-snapshots \"data/**/*.spec.ts\""
+    "test": "node --test \"{data,lib}/**/*.spec.ts\"",
+    "test:update": "node --test --test-update-snapshots \"{data,lib}/**/*.spec.ts\""
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.19.11",

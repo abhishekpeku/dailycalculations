@@ -1,5 +1,22 @@
 # Step 32 — Result visuals kit (E4)
 
+## Progress
+
+- [x] Step file
+- [x] `lib/visuals.ts` + `lib/visuals.spec.ts`
+- [x] LogScale (generalized; `SolverCalculator` uses it)
+- [x] RangeBar
+- [x] Donut
+- [x] CompareBars
+- [x] Timeline
+- [x] AmortizationTable + `lib/amortization.ts` + `lib/amortization.spec.ts`
+- [x] Doc fixes (D11, Phase H note, rollout plan §5/§6, skill, agent, template §2, incremental-commit rule, 5-calculator runs)
+- [x] Build, lint, test, force-page check
+- [x] STATUS.md, commit, PR
+
+Interrupted 2026-10-13 (token limit). Resume from the first unchecked box. (Every box is checked:
+the step was complete when the checkpoint was taken.)
+
 **Scope (from `STATUS.md`):** RangeBar, Donut, Timeline, AmortizationTable, LogScale (generalized),
 CompareBars. Hand-rolled SVG. Phase H step **E4**, after E3 (step 31).
 

@@ -211,11 +211,12 @@ waves 3–4 are seeds**, to be refined against search volume when their wave sta
 ## 5. How each batch runs
 
 1. One batch = one `calculator-builder` agent run (background), one branch (`wave/<n>-<sector>-<k>`),
-   ~10 calculators, **always branched from the latest `origin/master`**. **Only one agent runs at a
+   **5 calculators** (not 10, so each run stays small), **always branched from the latest `origin/master`**. **Only one agent runs at a
    time.** Nothing runs in parallel: the next batch starts only after the previous one is merged.
-2. The agent follows `.claude/skills/add-calculator/SKILL.md`: v2 fields, type A/B/C widget,
+2. Every agent commits and pushes after each sub-task (each calculator in a batch), keeps a Progress checklist in its step file, and opens a draft PR early, so an interrupted run can be resumed from the checklist.
+   The agent follows `.claude/skills/add-calculator/SKILL.md`: v2 fields, type A/B/C widget,
    **independent number verification**, build + lint. It commits, pushes its branch, and opens a
-   pull request with `gh pr create`. It never merges.
+   pull request with `gh pr create` (a draft at the start, marked ready with `gh pr ready` at the end). It never merges.
 3. The main session checks the PR: build, lint and `npm test` pass, and the agent's verification
    output is in the PR body.
 4. **The main session merges each passing PR without asking the user** (the user never merges):
@@ -229,12 +230,12 @@ waves 3–4 are seeds**, to be refined against search volume when their wave sta
 6. After each **sector**, run a measure gate: 4–6 weeks of Search Console impressions before
    opening the next sector in that wave.
 
-Pace, one batch at a time: a batch is ~10 calculators, and at the D12 default of one batch a week
-that is ~10 calculators/week. That was already the assumption, so running batches in sequence
-does not slow the plan. It only rules out catching up by running two at once. The existing
-conversions are 53 calculators in 5 batches, but batches 4 (12) and 5 (18) need two runs each, so
-7 runs: **~7 weeks**. Then wave 1 ~12 runs, wave 2 ~10, wave 3 ~12 and wave 4 ~8: **~49 weeks of
-building in all**. The per-sector measure gates (item 6) add nothing while another sector is
+Pace, one batch at a time: a run is 5 calculators, and the D12 default of 10 calculators a week
+means two runs a week, back to back. That was already the assumption, so running batches in
+sequence does not slow the plan. It only rules out catching up by running two at once. The
+existing conversions are 53 calculators: the plan's batches 1–5 (8, 9, 6, 12, 18) split into
+2 + 2 + 2 + 3 + 4 = 13 runs, **~6–7 weeks**. Then wave 1 ~24 runs, wave 2 ~20, wave 3 ~24 and wave
+4 ~16: **~49 weeks of building in all**. The per-sector measure gates (item 6) add nothing while another sector is
 queued to build during the wait. Any gate with nothing else queued adds its 4–6 weeks. Realistic
 total: **12–14 months**, slightly longer than the strategy §4.2 estimate of ~12 months.
 

@@ -24,7 +24,7 @@ Last updated: 2026-10-13 · Current step: **33** (E5, type-B widget) · steps 17
 | D7 | **Region codes** | `US` · `GB` · `EU` · `IN` · `AE` · `TH` · `ID` · `CN` · `AU`. **The UK is `GB` — not `EG`, which is Egypt.** `EU` is an internal profile key, not a `cf-ipcountry` value: map each European country code onto the `EU` profile plus its own VAT/currency override. |
 | D9 | **v2 template is the page format for every calculator.** (2026-10-12) | Approved by the user on the `force-calculator` preview. Spec: `mdFiles/calculator-template-v2.md`. Widget types A (auto-solve) / B (breakdown) / C (custom) per `mdFiles/calculator-rollout-plan.md`. |
 | D10 | **Go broad like Omni, in sector waves.** (2026-10-12) | `mdFiles/omni-strategy.md` §4. Each sector opens with ≥ 25 calculators. |
-| D11 | **One agent at a time; the main session merges; no deploys until the rollout is done.** (2026-10-12, workflow changed 2026-10-13) | Only **one background agent runs at a time**. Nothing runs in parallel, and batches go strictly in sequence. The agent pushes a branch and opens a PR. When the PR passes (build, lint, `npm test`), the **main session merges it without asking the user**, then starts the next agent. The user never merges. No Cloudflare changes. The user deploys manually at the end. |
+| D11 | **One agent at a time; the main session merges; no deploys until the rollout is done.** (2026-10-12, workflow changed 2026-10-13) | Only **one background agent runs at a time**. Nothing runs in parallel, and batches go strictly in sequence. The agent pushes a branch and opens a PR. When the PR passes (build, lint, `npm test`), the **main session merges it without asking the user**, then starts the next agent. The user never merges. Runs are **5 calculators**. Every agent commits and pushes after each sub-task (each calculator in a batch), keeps a Progress checklist in its step file, and opens a draft PR early, so an interrupted run can be resumed from the checklist. No Cloudflare changes. The user deploys manually at the end. |
 | D12 | **Defaults taken 2026-10-13, reversible:** pace 10 calculators/week; the step-11 gate does **not** block the rollout (the user said "continue with the planned work"; Search Console measurement still happens via step 28); sector order math/stats/conversion first. | The user didn't answer the three open questions, so these are the plan's defaults. Change them here if the user says otherwise. |
 | D8 | **Skip all "what is my IP" style queries.** | Zero-click (Google answers inline), flat trend, poor ad RPM, dilutes topical focus. `ip-subnet-calculator` is still built — it is a real calculation (§5.4). |
 
@@ -118,7 +118,7 @@ is why 12-15 run after it.
 | 37 | Batch 3: health (6) | TODO | YMYL. | §3 |
 | 38 | Batch 4: auto + home (12) | TODO | | §3 |
 | 39 | Batch 5: time, travel, work, creator, text, education (18) | TODO | | §3 |
-| 40–42 | Wave 1: math · statistics · conversion | TODO | Absorbs step 24 (math). ~10 calculators per sub-step. | §4 |
+| 40–42 | Wave 1: math · statistics · conversion | TODO | Absorbs step 24 (math). 5 calculators per agent run. | §4 |
 | 43–45 | Wave 2: construction · food · sports | TODO | | §4 |
 | 46–47 | Wave 3: physics · chemistry | TODO | Needs 30 + 31. | §4 |
 | 48–49 | Wave 4: biology · ecology + fun | TODO | Absorbs steps 23, 25, 26 where they fit. | §4 |

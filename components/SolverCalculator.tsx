@@ -8,6 +8,7 @@ import { UNITS, findUnit, fromBase, toBase, type UnitDimension } from '@/lib/uni
 import { editOrder, initialState, isSingleUnit, parse, plain, readShareParams, shareParams, solveState, type SolverState } from '@/lib/solverState';
 import { TILE_COLORS } from '@/components/IconTile';
 import { categoryTheme } from '@/lib/categoryTheme';
+import LogScale from '@/components/visuals/LogScale';
 
 // Fill any fields and the remaining one is calculated. The state logic lives in lib/solverState.ts.
 
@@ -38,44 +39,8 @@ function OutputRow({ output, value }: { output: SolverOutput; value: number }) {
   );
 }
 
-function LogScale({ value, benchmarks, accent }: { value: number; benchmarks: { label: string; value: number }[]; accent: string }) {
-  const min = -2;
-  const max = 9;
-  const position = (v: number) => Math.min(100, Math.max(0, ((Math.log10(v) - min) / (max - min)) * 100));
-  const valid = Number.isFinite(value) && value > 0;
-
-  return (
-    <div className="pt-2">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">How big is that force?</p>
-      <div className="relative mt-10 h-2 rounded-full bg-gradient-to-r from-sky-200 via-indigo-300 to-rose-300 dark:from-sky-900 dark:via-indigo-800 dark:to-rose-900">
-        {benchmarks.map((benchmark, index) => (
-          <div key={benchmark.label} className="absolute top-0 -translate-x-1/2" style={{ left: `${position(benchmark.value)}%` }}>
-            <div className="mx-auto h-2 w-px bg-slate-500/60" />
-            <p
-              className={`absolute left-1/2 w-24 -translate-x-1/2 text-center text-[11px] leading-tight text-slate-500 dark:text-slate-400 ${index % 2 === 0 ? 'top-4' : '-top-9'}`}
-            >
-              {benchmark.label}
-            </p>
-          </div>
-        ))}
-        {valid ? (
-          <div
-            className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow transition-all dark:border-slate-950"
-            style={{ left: `${position(value)}%`, backgroundColor: accent }}
-            aria-label="Your force"
-          />
-        ) : null}
-      </div>
-      <div className="mt-12 flex justify-between text-[11px] text-slate-400">
-        <span>0.01 N</span>
-        <span>1 N</span>
-        <span>1 kN</span>
-        <span>1 MN</span>
-        <span>1 GN</span>
-      </div>
-    </div>
-  );
-}
+// The force scale: 0.01 N to 1 GN, the range of the force-calculator benchmarks.
+const FORCE_SCALE = { min: -2, max: 9, ticks: ['0.01 N', '1 N', '1 kN', '1 MN', '1 GN'] };
 
 export default function SolverCalculator({ calculatorId }: { calculatorId: string }) {
   const calculator = findCalculator(calculatorId);
@@ -241,7 +206,7 @@ export default function SolverCalculator({ calculatorId }: { calculatorId: strin
           </div>
           {solver.benchmarks && forceVariable ? (
             <div className="px-5 pb-5">
-              <LogScale value={forceSi} benchmarks={solver.benchmarks} accent={accent} />
+              <LogScale {...FORCE_SCALE} value={forceSi} benchmarks={solver.benchmarks} accent={accent} title="How big is that force?" valueLabel="Your force" />
             </div>
           ) : null}
         </div>

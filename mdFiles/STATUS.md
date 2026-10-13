@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-10-13 · Current step: **32** (E4, result visuals kit) · steps 17 + 30 + 31 done (snapshot tests, units v2, solver v2) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
+Last updated: 2026-10-13 · Current step: **33** (E5, type-B widget) · steps 17 + 30 + 31 + 32 done (snapshot tests, units v2, solver v2, visuals kit) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
 
 ---
 
@@ -24,7 +24,7 @@ Last updated: 2026-10-13 · Current step: **32** (E4, result visuals kit) · ste
 | D7 | **Region codes** | `US` · `GB` · `EU` · `IN` · `AE` · `TH` · `ID` · `CN` · `AU`. **The UK is `GB` — not `EG`, which is Egypt.** `EU` is an internal profile key, not a `cf-ipcountry` value: map each European country code onto the `EU` profile plus its own VAT/currency override. |
 | D9 | **v2 template is the page format for every calculator.** (2026-10-12) | Approved by the user on the `force-calculator` preview. Spec: `mdFiles/calculator-template-v2.md`. Widget types A (auto-solve) / B (breakdown) / C (custom) per `mdFiles/calculator-rollout-plan.md`. |
 | D10 | **Go broad like Omni, in sector waves.** (2026-10-12) | `mdFiles/omni-strategy.md` §4. Each sector opens with ≥ 25 calculators. |
-| D11 | **The user never merges; no deploys until the rollout is done.** (2026-10-12) | Batch agents push a branch + open a PR, and the main session merges after the user approves. No Cloudflare changes. The user deploys manually at the end. |
+| D11 | **One agent at a time; the main session merges; no deploys until the rollout is done.** (2026-10-12, workflow changed 2026-10-13) | Only **one background agent runs at a time**. Nothing runs in parallel, and batches go strictly in sequence. The agent pushes a branch and opens a PR. When the PR passes (build, lint, `npm test`), the **main session merges it without asking the user**, then starts the next agent. The user never merges. No Cloudflare changes. The user deploys manually at the end. |
 | D12 | **Defaults taken 2026-10-13, reversible:** pace 10 calculators/week; the step-11 gate does **not** block the rollout (the user said "continue with the planned work"; Search Console measurement still happens via step 28); sector order math/stats/conversion first. | The user didn't answer the three open questions, so these are the plan's defaults. Change them here if the user says otherwise. |
 | D8 | **Skip all "what is my IP" style queries.** | Zero-click (Google answers inline), flat trend, poor ad RPM, dilutes topical focus. `ip-subnet-calculator` is still built — it is a real calculation (§5.4). |
 
@@ -110,9 +110,9 @@ is why 12-15 run after it.
 | 17 | (E1) Compute snapshot tests | **DONE** 2026-10-13 | Already in Phase E. **First step of the rollout.** | §2 E1 |
 | 30 | (E2) Units v2 | **DONE** 2026-10-13 | Length, area, volume, time, speed, temperature (affine), energy, power, pressure, data, fuel economy (inverse). | §2 E2 |
 | 31 | (E3) Solver v2 | **DONE** 2026-10-13 | Numeric solve for variables with no closed form (loan rate) + extra outputs beside the auto field. | §2 E3 |
-| 32 | (E4) Result visuals kit | TODO | RangeBar, Donut, Timeline, AmortizationTable, LogScale (generalized), CompareBars. Hand-rolled SVG. | §2 E4 |
+| 32 | (E4) Result visuals kit | **DONE** 2026-10-13 | RangeBar, Donut, Timeline, AmortizationTable, LogScale (generalized), CompareBars. Hand-rolled SVG. | §2 E4 |
 | 33 | (E5) Type-B widget | TODO | `BreakdownCalculator` replaces `CalculatorForm`. | §2 E5 |
-| 34 | (E7) Split data file | TODO | `data/calculators/<category>.ts`. **Moved before the batches**: parallel batch branches editing one 2,000-line file would conflict on every merge. | §2 E7 |
+| 34 | (E7) Split data file | TODO | `data/calculators/<category>.ts`. **Moved before the batches**: every batch editing one 2,000-line file means huge diffs and a conflict with any other open branch. | §2 E7 |
 | 35 | Batch 1: finance (8) | TODO | YMYL. | §3 |
 | 36 | Batch 2: shopping + conversion (9) | TODO | | §3 |
 | 37 | Batch 3: health (6) | TODO | YMYL. | §3 |
@@ -123,9 +123,10 @@ is why 12-15 run after it.
 | 46–47 | Wave 3: physics · chemistry | TODO | Needs 30 + 31. | §4 |
 | 48–49 | Wave 4: biology · ecology + fun | TODO | Absorbs steps 23, 25, 26 where they fit. | §4 |
 
-Order: **17 → 30 → 31 → 32 → 33 → 34 → 35 … 39 → 40 …**. Steps 18–22 (region) can run in
-parallel after 17. Each batch/wave step is a background `calculator-builder` run → PR → user
-approves → main session merges.
+Order: **17 → 30 → 31 → 32 → 33 → 34 → 35 … 39 → 40 …**, strictly one at a time. Steps 18–22
+(region) also run in sequence: they can be slotted in anywhere after 17, between two other steps,
+never alongside one. Each batch/wave step is one background `calculator-builder` run → PR → the
+main session merges once it passes, without asking (D11) → the next step starts.
 
 ## Order rules — these matter
 
@@ -658,6 +659,26 @@ and the AU 20 mL tbsp are not added; stone goes in with batch 2, because adding 
 
 31 · 2026-10-13 · **E3: solver v2** (stacked on step 30's PR). `solve` entries are now optional: a variable without one is found numerically from `equation` (residual) within its `bounds`/`guess` by `lib/solve.ts` (grid bracket → Brent, Newton fallback, capped, `NaN` with no root or at a pole). New `outputs` (derived figures under the result) and `fixed: true` (input-only, out of the auto rotation). State logic moved to `lib/solverState.ts`; single-unit dimensions show the unit inline; non-finite inputs/results mean no answer. force-calculator unchanged (same order, share link, snapshots); 145 tests. Step file: `mdFiles/steps/31-solver-v2.md`. **What step 32 (visuals kit) needs to know:** `solveState()` returns `{ target, result, si, outputs }` with every variable in SI, so a visual (Donut principal/interest, AmortizationTable) can read `si` and `outputs` directly; the result card already has an output `<dl>` and the force-only `LogScale` slot (`solver.benchmarks`) to generalize. Currency still uses the `¤` placeholder, rounded to cents via `formatFull`.
 
+32 · 2026-10-13 · **E4: result visuals kit.** New `components/visuals/`: `LogScale` (generalized from
+`SolverCalculator`: exponent range, tick labels and title are props), `RangeBar`, `Donut`,
+`CompareBars`, `Timeline`, `AmortizationTable` (the only client component: the "show all" toggle).
+Pure math in `lib/visuals.ts` (linear/log position, donut arcs, band lookup, bar widths, `tint`) and
+`lib/amortization.ts` (`monthlyPayment`, yearly `amortizationSchedule`). Accent from props, `role="img"`
++ worded `aria-label`, no clock or `window` reads, fixed heights. `SolverCalculator` now renders the
+shared `LogScale`, and the force page's markup is unchanged apart from the wrapper's `role`/`aria-label`.
+No calculator converted, no demo page. New `lib/visuals.spec.ts` + `lib/amortization.spec.ts`: **176
+tests** (was 145), snapshot unchanged. Build + lint pass. ⚠️ The brief's anchor "year-1 interest ≈
+$11,933.85" for $200k / 6% / 30 y is wrong: the closed form and a cent-rounded schedule both give
+**$11,933.19**, and the test uses that. Also folded in: **workflow change** (D11, Phase H note, rollout
+plan §5/§6 with the pace recomputed for one batch at a time, the add-calculator skill and
+`calculator-builder` agent). Template §2 gained "Result visuals". Step file: `mdFiles/steps/32-visuals-kit.md`.
+**What step 33 (type-B widget) needs to know:** `BreakdownCalculator` should take a visual slot
+that reads `compute()` outputs and renders one kit component per the template §2 table. Pass display
+units (not SI), the category accent from `TILE_COLORS[categoryTheme(category).color][1]`, and, for
+`Timeline`, `today` only after mount (`timeDependent`). `AmortizationTable` wants `principal`,
+`annualRate` (percent number) and `months`. The kit's default `format` is `formatSignificant`
+(cents for the table), with the same `¤` / en-US caveats as before until step 18.
+
 ## Pending on the user — not code
 
 - **Cloudflare apex → www 301 (from step 01, still open).**
@@ -726,9 +747,14 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
   It also fixes the `common.tools` ICU plural ("1 tools"). Spec: `mdFiles/calculator-template-v2.md`.
   **Next:** fold `mdFiles/calculator-rollout-plan.md` (E1–E7, batches 1–5, waves 1–4) into the step
   index once the user settles its three open decisions (pace, step-11 gate, sector order).
-  **Workflow (user decision):** batch agents push a branch + open a PR, the main session merges after
-  the user approves, and the user never merges. No Cloudflare changes and no deploys until the user deploys
+  **Workflow (user decision, changed 2026-10-13, see D11):** one batch agent at a time pushes a
+  branch + opens a PR, the main session merges each passing PR without asking, and the user never merges. No Cloudflare changes and no deploys until the user deploys
   manually after the rollout.
+- **`force-calculator` scale tick labels sit at even spacing, not at their log positions.** The
+  range is 10^-2 to 10^9, so "1 N" belongs at 18%, not 25%, and "1 kN" at 45%, not 50%. The
+  benchmarks and marker are placed correctly. Kept as-is in step 32 because the force output had
+  to stay visually identical. The fix is evenly spaced exponents (e.g. 10^-2 … 10^10 in steps of 3)
+  or positioned ticks in `LogScale`.
 - Baidu SEO for mainland China. Needs an ICP licence and separate tooling; Cloudflare is unreliable
   behind the GFW. The `CN` region profile is for Chinese speakers elsewhere. (§3.5)
 - ~~The four alias stubs return 307~~ — **done in step 03.** They are 301s in `middleware.ts` now

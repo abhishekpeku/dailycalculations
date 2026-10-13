@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-10-13 · Current step: **17** (E1, compute snapshot tests) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
+Last updated: 2026-10-13 · Current step: **30** (E2, units v2) · step 17 done (compute snapshot tests) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
 
 ---
 
@@ -77,7 +77,7 @@ is why 12-15 run after it.
 
 | # | Step | Status | Scope | Spec |
 |---|---|---|---|---|
-| 17 | Compute snapshot tests | TODO | Pure-function tests over all 53 `compute()` functions. **Must land before step 18** — that refactor changes every calculator's output formatting and is exactly where a silent regression hides. | §4.6 |
+| 17 | Compute snapshot tests | **DONE** 2026-10-13 | Pure-function tests over all 53 `compute()` functions. **Must land before step 18** — that refactor changes every calculator's output formatting and is exactly where a silent regression hides. | §4.6 |
 | 18 | `lib/regions.ts` + provider | TODO | All 9 profiles with the §3.5 field values. `RegionProvider` mirroring `ThemeProvider`'s cookie-hydration shape. Refactor `lib/calculator.ts` formatters to take a `Region` instead of hardcoded `en-US`/`USD`. | §3.3 s1+s4, §3.5 |
 | 19 | Geo detection + switcher | TODO | `cf-ipcountry` read in `middleware.ts`, **only when the cookie is absent**. Country switcher replacing `LanguageSwitcher`. Dismissible suggestion banner — **never a redirect**. | §3.3 s2/s3/s7, §3.4 |
 | 20 | Region wave 1: US · GB · IN · AE · AU | TODO | UK stone + **imperial-gallon** MPG (4.546 L — a US-gallon MPG is wrong by 20%). India lakh/crore grouping, CGPA-10, "EMI" wording. **UAE: no personal income tax** — changes the paycheck calculator. AU superannuation + GST. | §3.5 |
@@ -107,7 +107,7 @@ is why 12-15 run after it.
 
 | # | Step | Status | Scope | Plan |
 |---|---|---|---|---|
-| 17 | (E1) Compute snapshot tests | TODO | Already in Phase E. **First step of the rollout.** | §2 E1 |
+| 17 | (E1) Compute snapshot tests | **DONE** 2026-10-13 | Already in Phase E. **First step of the rollout.** | §2 E1 |
 | 30 | (E2) Units v2 | TODO | Length, area, volume, time, speed, temperature (affine), energy, power, pressure, data, fuel economy (inverse). | §2 E2 |
 | 31 | (E3) Solver v2 | TODO | Numeric solve for variables with no closed form (loan rate) + extra outputs beside the auto field. | §2 E3 |
 | 32 | (E4) Result visuals kit | TODO | RangeBar, Donut, Timeline, AmortizationTable, LogScale (generalized), CompareBars. Hand-rolled SVG. | §2 E4 |
@@ -614,6 +614,32 @@ the file is `proxy.ts` is wrong again, for the original reason.
 - `npm run deploy`'s earlier `EPERM` was the session-30 process leak, unrelated to this rename
   attempt. If `EPERM` on `.open-next` recurs, check for a stray `next start`/`next dev` first.
 
+17 · 2026-10-13 · **E1: compute snapshot tests.** New `data/calculators.spec.ts` (+ committed
+`data/calculators.spec.ts.snapshot`): `node:test` on Node 24 type stripping with the built-in
+`t.assert.snapshot`, **no new dependency**. Each of the **49** calculators with a non-empty `compute()`
+is snapshotted at 3 generated input sets (`default`; `typical` = defaults ×1.5 rounded to `step`, with
+calendar/clock fields shifted instead; `edge` = every input at `min` or 0), outputs rounded to 10
+significant digits. Plus: default/typical outputs must be finite, edge non-finites must match
+`KNOWN_NON_FINITE` exactly (only `bmi-calculator.bmi` today); the 5 custom tools must return `{}` and
+be the only ones that do; `force-calculator` `solve.*` against hand values + divide-by-zero NaN; a meta
+test that snapshotted + custom = all 54. **57 tests.** `tsconfig.json` gained
+`allowImportingTsExtensions: true` (the spec imports `./calculators.ts`; Node ESM needs the extension).
+Excluding the spec from tsconfig was tried and broke ESLint (`parserOptions.project`). `@types/node` is
+20.x and lacks `snapshot()` typings, so the one call site casts. Build + lint + test pass; second test
+run left the snapshot unchanged. Step file: `mdFiles/steps/17-compute-snapshot-tests.md`.
+
+**Next step needs to know:**
+
+- **Run:** `npm test`. **Update snapshots:** `npm run test:update` (= `node --test
+  --test-update-snapshots "data/**/*.spec.ts"`), then review the `.snapshot` diff before committing.
+  A new calculator fails `npm test` until its snapshot is written: that is intended.
+- Every v2 conversion (steps 32–37) and step 18 must keep `npm test` green **without** updating
+  snapshots, unless the PR says which output changed and why.
+- ⚠️ `.gitignore` has a bare `test*` pattern (hides `test_reports_google/`): any file or folder whose
+  name starts with `test` is silently untracked. Name test files `*.spec.ts`, never `tests/`.
+- When step 39 (E7) splits `data/calculators.ts`, the spec imports `calculators` from
+  `./calculators.ts` and the snapshot keys are calculator ids, so only the import path should move.
+
 ## Pending on the user — not code
 
 - **Cloudflare apex → www 301 (from step 01, still open).**
@@ -629,6 +655,16 @@ the file is `proxy.ts` is wrong again, for the original reason.
 
 Things noticed but deliberately out of scope. Add here instead of fixing mid-step.
 
+- **`pregnancy-due-date-calculator` has a hardcoded "today"** (`new Date(2026, 5, 17)` in `compute`).
+  Gestational age and days remaining are frozen at 2026-06-17: defaults (LMP 2026-03-01) give
+  `gestationalWeeks` 15.43 / `daysRemaining` 172 on any date; LMP 2027-04-10 gives
+  `gestationalDays` 0 / `daysRemaining` 591. Needs a real current date (client-side, after hydration,
+  since pages are force-static). Found in step 17; the snapshot pins today's behavior.
+- **`bmi-calculator` returns `NaN` at its own `min`** (`height` min is 0 → `bmi` = 0/0). Either
+  `min` > 0 or a guard. Recorded in `KNOWN_NON_FINITE` in `data/calculators.spec.ts`. Found in step 17.
+- **`mortgage-calculator` input labelled "Loan amount" is really the home price**: `compute`
+  subtracts `downPayment` from it (350,000 − 70,000 → principal 280,000), and the example line says
+  "a $350,000 home". Relabel (copy only) during the Batch 1 v2 conversion. Found in step 17.
 - `app/[locale]/layout.tsx` exports static `metadata` *and* pages export `generateMetadata` with
   overlapping OG/Twitter blocks — the same title string lives in four places. Collapse into
   `lib/seo.ts` helpers. (§4.6)

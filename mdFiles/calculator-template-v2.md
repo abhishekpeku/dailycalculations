@@ -41,6 +41,42 @@ a = Δv ÷ t) gets its own page.
   and many finance pages). Define one `SolverVariable` per field with a `dimension` from
   `lib/units.ts`, and one `solve[id]` function per variable. The functions take **SI base units**
   and return **SI**, or `NaN` when there's no answer (divide by zero, negative root).
+  Percent is passed as the percent number (5 = 5%), so divide by 100 yourself.
+- **No closed form for a variable?** (A loan's rate, compound interest with contributions solved
+  for years or rate.) Leave its `solve` entry out and give the solver an `equation`: the residual
+  of the governing formula, which is 0 when the variables are consistent. The widget finds the
+  missing variable numerically (`lib/solve.ts`: bracket, Brent, Newton fallback; `NaN` when there's
+  no root). Give that variable `bounds: [min, max]` in SI (and optionally `guess`, which defaults to
+  `defaultValue` in SI) so the search stays in the meaningful range, e.g. `[0, 100]` for a rate.
+  Closed-form `solve` entries still win wherever they exist.
+- **`outputs`** are extra figures derived from the solved set, such as total interest or total
+  paid: `{ id, label, dimension, unit?, compute(si) }`. `compute` gets every variable in SI, the
+  solved one included. They render under the main result, in `unit` (default: the base unit).
+- **`fixed: true`** on a variable keeps it an input that is never `auto` (a mortgage's down
+  payment, a tip's split count). It is left out of the least-recently-edited rotation.
+- Single-unit dimensions (`percent`, `count`, `currency`) show their unit inline instead of a menu.
+  Any input or result that isn't finite (0 mpg is `Infinity` in SI) counts as "no answer".
+
+```ts
+// Amortized loan: payment has a closed form, the rate does not.
+const payment = (P: number, n: number, apr: number) => {
+  const r = apr / 100 / 12; // percent is the percent number: 6 means 6%
+  return r === 0 ? P / n : (P * r) / (1 - (1 + r) ** -n);
+};
+solver: {
+  defaultTarget: 'payment',
+  variables: [
+    { id: 'payment', label: 'Monthly payment', symbol: 'M', dimension: 'currency', defaultValue: 1199.1, defaultUnit: 'currency' },
+    { id: 'principal', label: 'Loan amount', symbol: 'P', dimension: 'currency', defaultValue: 200000, defaultUnit: 'currency' },
+    { id: 'months', label: 'Term', symbol: 'n', dimension: 'count', defaultValue: 360, defaultUnit: 'count', bounds: [1, 1200] },
+    { id: 'rate', label: 'Interest rate', symbol: 'r', dimension: 'percent', defaultValue: 6, defaultUnit: '%', bounds: [0, 100] }
+  ],
+  solve: { payment: ({ principal, months, rate }) => payment(principal, months, rate) },
+  equation: (si) => si.payment - payment(si.principal, si.months, si.rate), // principal, months, rate: numeric
+  outputs: [{ id: 'totalInterest', label: 'Total interest', dimension: 'currency', compute: (si) => si.payment * si.months - si.principal }]
+}
+```
+
 - **Use `inputs` + `compute`** for one-directional calculators (e.g. date difference).
 - A `solver` calculator still needs `inputs` + `compute` for the forward direction. The JSON-LD
   builders and the step-17 snapshot tests read them.

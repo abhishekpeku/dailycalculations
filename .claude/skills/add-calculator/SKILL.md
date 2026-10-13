@@ -17,6 +17,10 @@ Read first, every time:
 1. **Branch.** Never work on `master`. Use `git checkout -b calc/<id>` (or `wave/<n>-<sector>` for a batch).
 2. **Pick the widget type.** If the formula can be rearranged, use `solver`. Otherwise use `inputs` + `compute`.
    Add any missing unit dimension to `lib/units.ts` (NIST SP 811 factors), not inline.
+   A variable with no closed form (a loan's rate) needs no `solve` entry: give the solver an
+   `equation` (residual, 0 when consistent) and the variable `bounds`, and the widget solves it
+   numerically. Put derived figures (total interest, total paid) in `outputs`, and mark
+   input-only fields (down payment, split count) `fixed: true`. See template §2.
 3. **Add the object** to `calculators` in `data/calculators.ts`, with every v2 field:
    `id` (kebab-case, ends in `-calculator` or `-converter`), `category`, `updatedAt` (today),
    `aliases` (≥ 4 real search phrasings), `related` (3–4 **existing** ids), `title`, `description`,

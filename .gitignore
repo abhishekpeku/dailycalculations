@@ -20,3 +20,4 @@ coverage/
 .vscode*
 .claude/settings.local.json
 test*
+.claude/worktrees/

@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-09-10 · Current step: **11** (gate, waiting) · Steps done: **11 / 28** · **Phase A complete · Phase D complete**
+Last updated: 2026-10-13 · Current step: **17** (E1, compute snapshot tests) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
 
 ---
 
@@ -22,6 +22,10 @@ Last updated: 2026-09-10 · Current step: **11** (gate, waiting) · Steps done: 
 | D5 | **No hreflang, no `x-default`, no translation phase.** | Consequence of D2. Canonicals become a plain `SITE_URL + path`. Sitemap shrinks ~300 entries → ~70. |
 | D6 | **Country is a cookie, never a URL.** | 9 region profiles change currency, units, tax labels and date formats. Zero new indexable URLs. Detection via Cloudflare `cf-ipcountry`, cookie-first, **never a redirect** (§3.2–3.4). |
 | D7 | **Region codes** | `US` · `GB` · `EU` · `IN` · `AE` · `TH` · `ID` · `CN` · `AU`. **The UK is `GB` — not `EG`, which is Egypt.** `EU` is an internal profile key, not a `cf-ipcountry` value: map each European country code onto the `EU` profile plus its own VAT/currency override. |
+| D9 | **v2 template is the page format for every calculator.** (2026-10-12) | Approved by the user on the `force-calculator` preview. Spec: `mdFiles/calculator-template-v2.md`. Widget types A (auto-solve) / B (breakdown) / C (custom) per `mdFiles/calculator-rollout-plan.md`. |
+| D10 | **Go broad like Omni, in sector waves.** (2026-10-12) | `mdFiles/omni-strategy.md` §4. Each sector opens with ≥ 25 calculators. |
+| D11 | **The user never merges; no deploys until the rollout is done.** (2026-10-12) | Batch agents push a branch + open a PR, and the main session merges after the user approves. No Cloudflare changes. The user deploys manually at the end. |
+| D12 | **Defaults taken 2026-10-13, reversible:** pace 10 calculators/week; the step-11 gate does **not** block the rollout (the user said "continue with the planned work"; Search Console measurement still happens via step 28); sector order math/stats/conversion first. | The user didn't answer the three open questions, so these are the plan's defaults. Change them here if the user says otherwise. |
 | D8 | **Skip all "what is my IP" style queries.** | Zero-click (Google answers inline), flat trend, poor ad RPM, dilutes topical focus. `ip-subnet-calculator` is still built — it is a real calculation (§5.4). |
 
 ---
@@ -54,11 +58,11 @@ Status values: `TODO` · `IN PROGRESS` · `DONE` · `BLOCKED` · `PARKED`
 | # | Step | Status | Scope | Spec |
 |---|---|---|---|---|
 | 10 | New page template + pilot | **DONE** 2026-09-10 | Rebuild the calculator page: breadcrumb → H1 + aliases → **widget above the fold** → How to use → The formula → Worked example → Watch out for → 6-8 FAQs → Related. Add the content fields to `CalculatorConfig`. **Populate for `date-difference-calculator` only.** | §4.2, §4.3, §5.2 |
-| 11 | **MEASURE GATE** — no code | TODO | Deploy, request indexing on the pilot page, wait 2-3 weeks. Check Search Console position/impressions for `date-difference-calculator`. **If it does not move, stop and re-diagnose before spending effort on 52 more pages.** | §5.2, §7 |
-| 12 | Content rollout: finance + shopping | TODO | 13 calculators (finance 8 + shopping 5). Run **after** step 16. | §4.2 |
-| 13 | Content rollout: health + measurements | TODO | 10 calculators (health 6 + measurements 4). | §4.2 |
-| 14 | Content rollout: auto + home | TODO | 12 calculators (auto 6 + home 6). | §4.2 |
-| 15 | Content rollout: time, travel, work, creator, text, education | TODO | 17 calculators (time 5 + travel 4 + work 4 + creator 2 + text 2 + education 1 = 18, **minus `date-difference-calculator`** already done as the step-10 pilot). | §4.2 |
+| 11 | **MEASURE GATE** — no code | **NON-BLOCKING** (D12) | Deploy, request indexing on the pilot page, wait 2-3 weeks. Check Search Console position/impressions for `date-difference-calculator`. **If it does not move, stop and re-diagnose before spending effort on 52 more pages.** | §5.2, §7 |
+| 12 | Content rollout: finance + shopping | **SUPERSEDED** by Phase H batches | 13 calculators (finance 8 + shopping 5). Run **after** step 16. | §4.2 |
+| 13 | Content rollout: health + measurements | **SUPERSEDED** by Phase H batches | 10 calculators (health 6 + measurements 4). | §4.2 |
+| 14 | Content rollout: auto + home | **SUPERSEDED** by Phase H batches | 12 calculators (auto 6 + home 6). | §4.2 |
+| 15 | Content rollout: time, travel, work, creator, text, education | **SUPERSEDED** by Phase H batches | 17 calculators (time 5 + travel 4 + work 4 + creator 2 + text 2 + education 1 = 18, **minus `date-difference-calculator`** already done as the step-10 pilot). | §4.2 |
 
 Batches 12-15 sum to **52** = all 53 minus the pilot. Counts are post-restructure (step 16), which
 is why 12-15 run after it.
@@ -98,6 +102,30 @@ is why 12-15 run after it.
 | 29 | IndexNow setup | **DONE** 2026-09-13 | Ran ahead of the queue in response to a Bing Webmaster Tools audit. Key file `public/<key>.txt`, submit script `scripts/indexnow.mjs` (fetches `/sitemap.xml`, POSTs every `<loc>` to `api.indexnow.org/indexnow`), wired into `npm run deploy` and exposed standalone as `npm run indexnow`. No new dependency — uses built-in `fetch`. | — |
 
 ---
+
+### Phase H — v2 rollout (plan: `mdFiles/calculator-rollout-plan.md`)
+
+| # | Step | Status | Scope | Plan |
+|---|---|---|---|---|
+| 17 | (E1) Compute snapshot tests | TODO | Already in Phase E. **First step of the rollout.** | §2 E1 |
+| 30 | (E2) Units v2 | TODO | Length, area, volume, time, speed, temperature (affine), energy, power, pressure, data, fuel economy (inverse). | §2 E2 |
+| 31 | (E3) Solver v2 | TODO | Numeric solve for variables with no closed form (loan rate) + extra outputs beside the auto field. | §2 E3 |
+| 32 | (E4) Result visuals kit | TODO | RangeBar, Donut, Timeline, AmortizationTable, LogScale (generalized), CompareBars. Hand-rolled SVG. | §2 E4 |
+| 33 | (E5) Type-B widget | TODO | `BreakdownCalculator` replaces `CalculatorForm`. | §2 E5 |
+| 34 | (E7) Split data file | TODO | `data/calculators/<category>.ts`. **Moved before the batches**: parallel batch branches editing one 2,000-line file would conflict on every merge. | §2 E7 |
+| 35 | Batch 1: finance (8) | TODO | YMYL. | §3 |
+| 36 | Batch 2: shopping + conversion (9) | TODO | | §3 |
+| 37 | Batch 3: health (6) | TODO | YMYL. | §3 |
+| 38 | Batch 4: auto + home (12) | TODO | | §3 |
+| 39 | Batch 5: time, travel, work, creator, text, education (18) | TODO | | §3 |
+| 40–42 | Wave 1: math · statistics · conversion | TODO | Absorbs step 24 (math). ~10 calculators per sub-step. | §4 |
+| 43–45 | Wave 2: construction · food · sports | TODO | | §4 |
+| 46–47 | Wave 3: physics · chemistry | TODO | Needs 30 + 31. | §4 |
+| 48–49 | Wave 4: biology · ecology + fun | TODO | Absorbs steps 23, 25, 26 where they fit. | §4 |
+
+Order: **17 → 30 → 31 → 32 → 33 → 34 → 35 … 39 → 40 …**. Steps 18–22 (region) can run in
+parallel after 17. Each batch/wave step is a background `calculator-builder` run → PR → user
+approves → main session merges.
 
 ## Order rules — these matter
 
@@ -634,9 +662,8 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
   artifact folder left by `npx opennextjs-cloudflare build`). Source code is clean with
   `npm run lint -- --ignore-pattern ".open-next/**"`. Fix: add that ignore pattern to the `lint`
   script. Found 2026-10-12 on branch `preview/physics-force-calculator`.
-- ~~**`.claude*` is gitignored**~~ **Done 2026-10-12**: `.gitignore` now ignores `.claude/*` except
-  `.claude/skills/` and `.claude/agents/`, so the `add-calculator` skill and `calculator-builder`
-  agent are versioned. `settings.json` stays ignored.
+- ~~**`.claude*` is gitignored**~~ **Done 2026-10-12**: all of `.claude/` is tracked (shared
+  `settings.json`, skills, agents). Only `.claude/settings.local.json` is ignored.
 - **Preview merged to `master` 2026-10-12** (fast-forward, commits `f17b7de` + `534b8a0`; not deployed. The user will deploy manually after the full rollout). Was branch `preview/physics-force-calculator`: a demo of the
   `mdFiles/omni-strategy.md` v2 template. It adds `force-calculator`, a `physics` category,
   `lib/units.ts`, `components/SolverCalculator.tsx` (solve for any field, unit switching, share

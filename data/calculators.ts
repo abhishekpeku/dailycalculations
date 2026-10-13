@@ -344,6 +344,15 @@ export const calculators: CalculatorConfig[] = [
       { id: 'tipRate', label: 'Tip rate', type: 'percent', placeholder: '18', defaultValue: 18, step: 0.25, min: 0 },
       { id: 'splitCount', label: 'Split among', type: 'number', placeholder: '3', defaultValue: 1, step: 1, min: 1 }
     ],
+    breakdown: {
+      headline: 'tipAmount',
+      outputs: [
+        { id: 'tipAmount', label: 'Tip', format: 'currency' },
+        { id: 'totalAmount', label: 'Total with tip', format: 'currency' },
+        { id: 'perPerson', label: 'Each person pays', format: 'currency' }
+      ],
+      visual: { type: 'donut', segments: [{ from: 'billAmount', label: 'Bill' }, { from: 'tipAmount', label: 'Tip' }], center: { from: 'totalAmount' }, centerSub: 'total' }
+    },
     seo: {
       title: 'Tip Calculator',
       description: 'Quickly calculate a tip for any restaurant bill and split the total evenly across multiple people. Enter the bill amount, tip percentage, and party size for an instant breakdown.',
@@ -1495,14 +1504,36 @@ export const calculators: CalculatorConfig[] = [
     description: 'Calculate how many gallons of paint you need for walls and ceilings, accounting for doors, windows, and coats.',
     example: 'Calculate paint needed for a 12x14 ft room with 9 ft ceilings, 1 door, and 2 windows.',
     inputs: [
-      { id: 'roomLength', label: 'Room length (ft)', type: 'number', placeholder: '14', defaultValue: 14, step: 0.5, min: 1 },
-      { id: 'roomWidth', label: 'Room width (ft)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.5, min: 1 },
-      { id: 'ceilingHeight', label: 'Ceiling height (ft)', type: 'number', placeholder: '9', defaultValue: 9, step: 0.5, min: 6 },
+      { id: 'roomLength', label: 'Room length', type: 'number', placeholder: '14', defaultValue: 14, step: 0.5, min: 1, dimension: 'length', unit: 'ft' },
+      { id: 'roomWidth', label: 'Room width', type: 'number', placeholder: '12', defaultValue: 12, step: 0.5, min: 1, dimension: 'length', unit: 'ft' },
+      { id: 'ceilingHeight', label: 'Ceiling height', type: 'number', placeholder: '9', defaultValue: 9, step: 0.5, min: 6, dimension: 'length', unit: 'ft' },
       { id: 'doors', label: 'Number of doors (each ~20 sq ft)', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0 },
       { id: 'windows', label: 'Number of windows (each ~15 sq ft)', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0 },
       { id: 'coats', label: 'Number of coats', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 1 },
       { id: 'coveragePerGallon', label: 'Coverage per gallon (sq ft, typical = 350)', type: 'number', placeholder: '350', defaultValue: 350, step: 10, min: 100 }
     ],
+    breakdown: {
+      headline: 'gallonsWithBuffer',
+      headlineLabel: 'Wall paint to buy',
+      outputs: [
+        { id: 'gallonsWithBuffer', dimension: 'volume', unit: 'gal', alsoIn: ['L'] },
+        { id: 'gallonsNeeded', label: 'Walls, no buffer', dimension: 'volume', unit: 'gal' },
+        { id: 'paintableArea', label: 'Paintable wall area (one coat)', dimension: 'area', unit: 'ft2' },
+        { id: 'ceilingArea', label: 'Ceiling area', dimension: 'area', unit: 'ft2' },
+        { id: 'ceilingGallons', label: 'Ceiling paint', dimension: 'volume', unit: 'gal' }
+      ],
+      groups: [
+        { title: 'Room', inputs: ['roomLength', 'roomWidth', 'ceilingHeight'] },
+        { title: 'Doors and windows', inputs: ['doors', 'windows'] },
+        { title: 'Coats and coverage', inputs: ['coats', 'coveragePerGallon'], optional: true }
+      ],
+      visual: {
+        type: 'compareBars',
+        title: 'Paint needed (US gallons)',
+        bars: [{ from: 'gallonsNeeded', label: 'Walls' }, { from: 'gallonsWithBuffer', label: 'Walls + 10% buffer' }, { from: 'ceilingGallons', label: 'Ceiling' }],
+        highlight: 1
+      }
+    },
     seo: {
       title: 'Paint Calculator – Gallons Needed for Walls and Ceilings',
       description: 'Calculate how many gallons of paint you need for any room. Accounts for doors, windows, number of coats, and paint coverage.',

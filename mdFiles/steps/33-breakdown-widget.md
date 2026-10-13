@@ -6,11 +6,11 @@
 - [x] Config types (`CalculatorBreakdown`, input `dimension`/`unit`) in `data/calculators.ts`
 - [x] `lib/breakdown.ts` + `lib/breakdown.spec.ts`
 - [x] `components/BreakdownCalculator.tsx` + page wiring
-- [ ] `paint-calculator` and `tip-calculator` converted (config only)
+- [x] `paint-calculator` and `tip-calculator` converted (config only)
 - [ ] Build, lint, test, curl checks
 - [ ] Docs (template §2, add-calculator skill), STATUS.md, PR ready
 
-Resume from the first unchecked box.
+Paused 2026-10-13 by the user. Resume from the first unchecked box.
 
 **Scope (from `STATUS.md`):** `BreakdownCalculator` replaces `CalculatorForm`. Phase H step **E5**,
 after E4 (step 32).

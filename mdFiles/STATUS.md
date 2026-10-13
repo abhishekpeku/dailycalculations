@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-10-13 · Current step: **30** (E2, units v2) · step 17 done (compute snapshot tests) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
+Last updated: 2026-10-13 · Current step: **31** (E3, solver v2) · steps 17 + 30 done (snapshot tests, units v2) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
 
 ---
 
@@ -108,7 +108,7 @@ is why 12-15 run after it.
 | # | Step | Status | Scope | Plan |
 |---|---|---|---|---|
 | 17 | (E1) Compute snapshot tests | **DONE** 2026-10-13 | Already in Phase E. **First step of the rollout.** | §2 E1 |
-| 30 | (E2) Units v2 | TODO | Length, area, volume, time, speed, temperature (affine), energy, power, pressure, data, fuel economy (inverse). | §2 E2 |
+| 30 | (E2) Units v2 | **DONE** 2026-10-13 | Length, area, volume, time, speed, temperature (affine), energy, power, pressure, data, fuel economy (inverse). | §2 E2 |
 | 31 | (E3) Solver v2 | TODO | Numeric solve for variables with no closed form (loan rate) + extra outputs beside the auto field. | §2 E3 |
 | 32 | (E4) Result visuals kit | TODO | RangeBar, Donut, Timeline, AmortizationTable, LogScale (generalized), CompareBars. Hand-rolled SVG. | §2 E4 |
 | 33 | (E5) Type-B widget | TODO | `BreakdownCalculator` replaces `CalculatorForm`. | §2 E5 |
@@ -641,6 +641,20 @@ run left the snapshot unchanged. Step file: `mdFiles/steps/17-compute-snapshot-t
   `./calculators.ts` and the snapshot keys are calculator ids, so only the import path should move.
 
 fix · 2026-10-13 · pregnancy-due-date-calculator uses the real date (injectable todayMs, timeDependent flag, post-mount render) · `compute()` reads optional `values.todayMs` (not an input) and falls back to the local current date. New optional `CalculatorConfig.timeDependent`; `CalculatorForm` shows `—` for its result values until mount, so static HTML and hydration match. The spec passes a pinned `todayMs` (2026-06-17) to timeDependent calculators, so the snapshot is unchanged. Any future date-relative calculator should set `timeDependent: true` and read `values.todayMs`.
+
+30 · 2026-10-13 · **E2: units v2.** `lib/units.ts` goes from 3 to 17 dimensions (adds length, area,
+volume, time, speed, temperature, energy, power, pressure, data, fuelEconomy, percent, count,
+currency). A `Unit` is now `factor`, `factor` + `offset` (affine; °C/°F) or a `toBase`/`fromBase` pair
+(`inverse(k)` for mpg, km/L). `UNITS`/`findUnit`/`toBase`/`fromBase` signatures unchanged;
+`SolverCalculator.tsx` and `force-calculator` untouched, and their factors are pinned in a test. New
+`lib/units.spec.ts` (37 tests: base-first, round trips, anchors); `npm test` glob is now
+`"{data,lib}/**/*.spec.ts"` (94 tests). Step file: `mdFiles/steps/30-units-v2.md`.
+**What step 31 (solver v2) needs to know:** bases are SI and first in each list, with K for
+temperature and **m³/m** for fuel economy (so `volume = distance × economy`); `percent` passes the
+percent number (5 = 5%), so solvers divide by 100. `toBase` of 0 mpg is `Infinity`. `count` and
+`currency` have a single unit, so the solver should hide the unit `<select>` for single-unit
+dimensions (it still renders one). Currency label is a `¤` placeholder until step 18 / E6. Stone (GB)
+and the AU 20 mL tbsp are not added; stone goes in with batch 2, because adding it now would change the force-calculator mass menu.
 
 ## Pending on the user — not code
 

@@ -16,6 +16,43 @@ export type CalculatorInput = {
   defaultValue: number;
   step?: number;
   min?: number;
+  /** Type-B widget only: a unit menu from lib/units.ts. `unit` is the one compute() expects. */
+  dimension?: UnitDimension;
+  unit?: string;
+};
+
+/** One figure in the type-B result card. `id` is a compute() key. */
+export type BreakdownOutput = {
+  id: string;
+  /** Default: the compute key, prettified. */
+  label?: string;
+  /** Default: `currency` when `dimension` is currency, otherwise 4 significant figures. */
+  format?: 'number' | 'integer' | 'currency' | 'percent';
+  /** The unit compute() returns, printed after the value. */
+  dimension?: UnitDimension;
+  unit?: string;
+  /** Other unit ids the headline is also shown in, e.g. ['L'] beside gallons. */
+  alsoIn?: string[];
+};
+
+/** A value for a visual: a compute() key or an input id, in display units. */
+export type BreakdownPart = { from: string; label?: string };
+
+/** The one result visual of a type-B widget (components/visuals/). */
+export type BreakdownVisual =
+  | { type: 'donut'; segments: BreakdownPart[]; center: BreakdownPart; centerSub?: string }
+  | { type: 'compareBars'; bars: BreakdownPart[]; title?: string; highlight?: number };
+
+/** Type-B "forward + breakdown" widget. Setting it switches the page from CalculatorForm to BreakdownCalculator. */
+export type CalculatorBreakdown = {
+  /** Compute key of the big accent number. */
+  headline: string;
+  headlineLabel?: string;
+  /** Rows under the headline, in order. Default: every other compute key. */
+  outputs?: BreakdownOutput[];
+  /** Inset input groups. Optional groups sit behind "More options". Unlisted inputs go last. */
+  groups?: { title?: string; inputs: string[]; optional?: true }[];
+  visual?: BreakdownVisual;
 };
 
 export type SolverVariable = {
@@ -129,6 +166,8 @@ export type CalculatorConfig = {
   solver?: CalculatorSolver;
   /** compute() reads the current date (or `values.todayMs`), so results render only after mount. */
   timeDependent?: true;
+  /** Type-B widget config (headline, rows, groups, visual). Absent: the page keeps CalculatorForm. */
+  breakdown?: CalculatorBreakdown;
   inputs: CalculatorInput[];
   seo: {
     title: string;

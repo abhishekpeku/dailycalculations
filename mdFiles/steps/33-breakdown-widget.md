@@ -3,7 +3,7 @@
 ## Progress
 
 - [x] Step file, draft PR
-- [ ] Config types (`CalculatorBreakdown`, input `dimension`/`unit`) in `data/calculators.ts`
+- [x] Config types (`CalculatorBreakdown`, input `dimension`/`unit`) in `data/calculators.ts`
 - [ ] `lib/breakdown.ts` + `lib/breakdown.spec.ts`
 - [ ] `components/BreakdownCalculator.tsx` + page wiring
 - [ ] `paint-calculator` and `tip-calculator` converted (config only)

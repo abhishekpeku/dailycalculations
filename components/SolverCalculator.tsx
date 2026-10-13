@@ -2,52 +2,41 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { findCalculator } from '@/data/calculators';
-import type { CalculatorSolver } from '@/data/calculators';
-import { formatSignificant } from '@/lib/calculator';
-import { UNITS, findUnit, fromBase, toBase } from '@/lib/units';
+import type { SolverOutput } from '@/data/calculators';
+import { formatFull, formatSignificant } from '@/lib/calculator';
+import { UNITS, findUnit, fromBase, toBase, type UnitDimension } from '@/lib/units';
+import { editOrder, initialState, isSingleUnit, parse, plain, readShareParams, shareParams, solveState, type SolverState } from '@/lib/solverState';
 import { TILE_COLORS } from '@/components/IconTile';
 import { categoryTheme } from '@/lib/categoryTheme';
 
-// Fill any fields and the remaining one is calculated. `order` lists variable ids from least to
-// most recently edited; the least recent one is always the calculated field.
-type State = {
-  values: Record<string, string>;
-  units: Record<string, string>;
-  order: string[];
-};
-
-function initialState(solver: CalculatorSolver): State {
-  return {
-    values: Object.fromEntries(solver.variables.map((v) => [v.id, String(v.defaultValue)])),
-    units: Object.fromEntries(solver.variables.map((v) => [v.id, v.defaultUnit])),
-    order: [solver.defaultTarget, ...solver.variables.map((v) => v.id).filter((id) => id !== solver.defaultTarget)]
-  };
-}
-
-// Share links carry ?solve=<id>&<id>=<value>&<id>_unit=<unit>. Read after hydration only, so the
-// page stays force-static; the canonical URL never includes them.
-function readShareParams(solver: CalculatorSolver, fallback: State): State {
-  const params = new URLSearchParams(window.location.search);
-  if (!params.has('solve')) return fallback;
-  const state: State = { values: { ...fallback.values }, units: { ...fallback.units }, order: [...fallback.order] };
-  const target = params.get('solve');
-  if (target && solver.variables.some((v) => v.id === target)) {
-    state.order = [target, ...state.order.filter((id) => id !== target)];
-  }
-  for (const variable of solver.variables) {
-    const value = params.get(variable.id);
-    const unit = params.get(`${variable.id}_unit`);
-    if (value !== null && Number.isFinite(Number(value))) state.values[variable.id] = value;
-    if (unit && UNITS[variable.dimension].some((u) => u.id === unit)) state.units[variable.id] = unit;
-  }
-  return state;
-}
+// Fill any fields and the remaining one is calculated. The state logic lives in lib/solverState.ts.
 
 const NUMBER_WORDS: Record<number, string> = { 1: 'one', 2: 'two', 3: 'three', 4: 'four' };
 
-const parse = (raw: string) => (raw.trim() === '' ? NaN : Number(raw.replace(/,/g, '')));
-// Editable form of a number: 6 significant figures, no grouping commas.
-const plain = (value: number) => String(Number(value.toPrecision(6)));
+// Money rounds to cents (the region step will format it properly); everything else to 4 significant figures.
+const formatValue = (value: number, dimension: UnitDimension) =>
+  dimension === 'currency' ? formatFull(Math.round(value * 100) / 100) : formatSignificant(value);
+
+// Single-unit dimensions read inline: 5%, ¤1,200, or a bare count.
+function withUnit(text: string, dimension: UnitDimension, unitId: string) {
+  const label = findUnit(dimension, unitId).label;
+  if (dimension === 'currency') return `${label}${text}`;
+  if (dimension === 'percent') return `${text}${label}`;
+  return label ? `${text} ${label}` : text;
+}
+
+function OutputRow({ output, value }: { output: SolverOutput; value: number }) {
+  const unit = output.unit ?? UNITS[output.dimension][0].id;
+  const shown = fromBase(value, output.dimension, unit);
+  return (
+    <div className="flex items-baseline justify-between gap-4 py-1.5 text-sm">
+      <dt className="text-slate-600 dark:text-slate-300">{output.label}</dt>
+      <dd className="font-semibold tabular-nums text-slate-900 dark:text-white">
+        {Number.isFinite(shown) ? withUnit(formatValue(shown, output.dimension), output.dimension, unit) : '—'}
+      </dd>
+    </div>
+  );
+}
 
 function LogScale({ value, benchmarks, accent }: { value: number; benchmarks: { label: string; value: number }[]; accent: string }) {
   const min = -2;
@@ -93,33 +82,27 @@ export default function SolverCalculator({ calculatorId }: { calculatorId: strin
   const solver = calculator?.solver;
   const accent = TILE_COLORS[categoryTheme(calculator?.category ?? '').color][1];
   const defaults = useMemo(() => (solver ? initialState(solver) : null), [solver]);
-  const [state, setState] = useState<State | null>(defaults);
+  const [state, setState] = useState<SolverState | null>(defaults);
   const [notice, setNotice] = useState('');
 
   useEffect(() => {
-    if (solver && defaults) setState(readShareParams(solver, defaults));
+    if (solver && defaults) setState(readShareParams(solver, defaults, window.location.search));
   }, [solver, defaults]);
 
   const target = state?.order[0] ?? '';
 
-  const result = useMemo(() => {
-    if (!solver || !state) return NaN;
-    const si: Record<string, number> = {};
-    for (const variable of solver.variables) {
-      if (variable.id === target) continue;
-      const value = parse(state.values[variable.id]);
-      if (!Number.isFinite(value)) return NaN;
-      si[variable.id] = toBase(value, variable.dimension, state.units[variable.id]);
-    }
-    return solver.solve[target](si);
-  }, [solver, state, target]);
+  const solution = useMemo(() => (solver && state ? solveState(solver, state) : null), [solver, state]);
+  const result = solution?.result ?? NaN;
 
   if (!solver || !state) return null;
 
   const targetVariable = solver.variables.find((v) => v.id === target) ?? solver.variables[0];
-  const display = (v: number, unitId: string) => formatSignificant(fromBase(v, targetVariable.dimension, unitId));
-  const resultText = Number.isFinite(result)
-    ? `${targetVariable.symbol} = ${display(result, state.units[target])} ${findUnit(targetVariable.dimension, state.units[target]).label}`
+  const display = (v: number, unitId: string) => formatValue(fromBase(v, targetVariable.dimension, unitId), targetVariable.dimension);
+  const converts = (unitId: string) => Number.isFinite(fromBase(result, targetVariable.dimension, unitId));
+  // Not finite in the chosen unit (e.g. 0 m³/m in mpg) counts as no answer too.
+  const answered = Number.isFinite(result) && converts(state.units[target]);
+  const resultText = answered
+    ? `${targetVariable.symbol} = ${withUnit(display(result, state.units[target]), targetVariable.dimension, state.units[target])}`
     : '';
 
   // The force on the scale, whether it was typed or calculated.
@@ -131,7 +114,7 @@ export default function SolverCalculator({ calculatorId }: { calculatorId: strin
       : toBase(parse(state.values[forceVariable.id]), 'force', state.units[forceVariable.id]);
 
   const editValue = (id: string, raw: string) => {
-    const order = [...state.order.filter((item) => item !== id), id];
+    const order = editOrder(state.order, id);
     // Typing into the calculated field makes it an input; the least recently edited field takes over.
     setState({ ...state, values: { ...state.values, [id]: raw }, order });
   };
@@ -153,12 +136,7 @@ export default function SolverCalculator({ calculatorId }: { calculatorId: strin
   };
 
   const share = async () => {
-    const params = new URLSearchParams({ solve: target });
-    for (const variable of solver.variables) {
-      if (variable.id !== target) params.set(variable.id, state.values[variable.id]);
-      params.set(`${variable.id}_unit`, state.units[variable.id]);
-    }
-    const url = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+    const url = `${window.location.origin}${window.location.pathname}?${shareParams(solver, state)}`;
     window.history.replaceState(null, '', url);
     try {
       await navigator.clipboard.writeText(url);
@@ -193,7 +171,7 @@ export default function SolverCalculator({ calculatorId }: { calculatorId: strin
           {solver.variables.map((variable) => {
             const isTarget = variable.id === target;
             const value = isTarget
-              ? (Number.isFinite(result) ? plain(fromBase(result, variable.dimension, state.units[variable.id])) : '')
+              ? (answered ? plain(fromBase(result, variable.dimension, state.units[variable.id])) : '')
               : state.values[variable.id];
             return (
               <div key={variable.id} className="flex items-center gap-3 px-4 py-3" style={isTarget ? { backgroundColor: `${accent}0F` } : undefined}>
@@ -214,16 +192,20 @@ export default function SolverCalculator({ calculatorId }: { calculatorId: strin
                   style={isTarget ? { color: accent } : undefined}
                   className={`w-28 rounded-lg bg-transparent px-2 py-1 text-right text-base tabular-nums outline-none focus:bg-slate-100 dark:focus:bg-slate-900 sm:w-36 ${isTarget ? 'font-semibold' : 'text-slate-950 dark:text-white'}`}
                 />
-                <select
-                  aria-label={`${variable.label} unit`}
-                  value={state.units[variable.id]}
-                  onChange={(event) => changeUnit(variable.id, event.target.value)}
-                  className="w-24 shrink-0 rounded-lg border-0 bg-slate-100 py-1 pl-2 pr-6 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-200 sm:w-28"
-                >
-                  {UNITS[variable.dimension].map((unit) => (
-                    <option key={unit.id} value={unit.id}>{unit.label}</option>
-                  ))}
-                </select>
+                {isSingleUnit(variable.dimension) ? (
+                  <span className="w-24 shrink-0 pl-2 text-sm text-slate-500 dark:text-slate-400 sm:w-28">{findUnit(variable.dimension, state.units[variable.id]).label}</span>
+                ) : (
+                  <select
+                    aria-label={`${variable.label} unit`}
+                    value={state.units[variable.id]}
+                    onChange={(event) => changeUnit(variable.id, event.target.value)}
+                    className="w-24 shrink-0 rounded-lg border-0 bg-slate-100 py-1 pl-2 pr-6 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-200 sm:w-28"
+                  >
+                    {UNITS[variable.dimension].map((unit) => (
+                      <option key={unit.id} value={unit.id}>{unit.label}</option>
+                    ))}
+                  </select>
+                )}
               </div>
             );
           })}
@@ -232,20 +214,29 @@ export default function SolverCalculator({ calculatorId }: { calculatorId: strin
         <div className="overflow-hidden rounded-2xl bg-white dark:bg-slate-950">
           <div className="p-5" style={{ backgroundImage: `linear-gradient(135deg, ${accent}1F, ${accent}08)` }}>
             <p className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: accent }}>Result</p>
-            {Number.isFinite(result) ? (
+            {answered ? (
               <>
                 <p className="text-4xl font-bold tabular-nums tracking-tight" style={{ color: accent }}>{resultText}</p>
                 <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-500 dark:text-slate-400">
                   {UNITS[targetVariable.dimension]
-                    .filter((unit) => unit.id !== state.units[target])
+                    .filter((unit) => unit.id !== state.units[target] && converts(unit.id))
                     .slice(0, 4)
                     .map((unit) => (
                       <span key={unit.id} className="tabular-nums">{display(result, unit.id)} {unit.label}</span>
                     ))}
                 </p>
+                {solver.outputs?.length ? (
+                  <dl className="mt-4 divide-y divide-slate-200 border-t border-slate-200 dark:divide-slate-800 dark:border-slate-800">
+                    {solver.outputs.map((output) => (
+                      <OutputRow key={output.id} output={output} value={solution?.outputs[output.id] ?? NaN} />
+                    ))}
+                  </dl>
+                ) : null}
               </>
             ) : (
-              <p className="text-sm text-slate-500 dark:text-slate-400">Enter the other values to see the result. A value you divide by cannot be zero.</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Enter the other values to see the result. {solver.equation ? 'Some combinations have no answer.' : 'A value you divide by cannot be zero.'}
+              </p>
             )}
           </div>
           {solver.benchmarks && forceVariable ? (

@@ -25,16 +25,42 @@ export type SolverVariable = {
   dimension: UnitDimension;
   defaultValue: number;
   defaultUnit: string;
+  /** Always an input, never the auto field (e.g. a loan's down payment, a tip's split count). */
+  fixed?: true;
+  /** Numeric-solve search range, in SI base units. Percent is the percent number: [0, 100] is 0–100%. */
+  bounds?: [number, number];
+  /** Numeric-solve starting point, in SI. Defaults to `defaultValue` converted to SI. */
+  guess?: number;
+};
+
+/** A figure derived from the solved set (e.g. total interest), shown under the main result. */
+export type SolverOutput = {
+  id: string;
+  label: string;
+  dimension: UnitDimension;
+  /** Display unit; defaults to the dimension's base unit. */
+  unit?: string;
+  /** Receives every variable in SI, the solved one included. Returns SI, or NaN for no answer. */
+  compute: (si: Record<string, number>) => number;
 };
 
 /**
- * Solve-for-any-field widget. One function per variable: it receives the other variables in SI
- * base units and returns this one in SI, or NaN when the inputs cannot produce an answer.
+ * Solve-for-any-field widget. Every function receives variables in SI base units and returns SI,
+ * or NaN when the inputs cannot produce an answer. **Percent is the percent number**: 5 means 5%,
+ * so the functions divide by 100 themselves.
+ *
+ * A variable is solved by its `solve[id]` entry when there is one. Otherwise the widget finds the
+ * root of `equation` numerically (lib/solve.ts), within that variable's `bounds`.
  */
 export type CalculatorSolver = {
   variables: SolverVariable[];
   defaultTarget: string;
-  solve: Record<string, (si: Record<string, number>) => number>;
+  /** Closed-form solutions. May leave out variables that `equation` covers. */
+  solve?: Record<string, (si: Record<string, number>) => number>;
+  /** Residual of the governing equation: 0 when the variables are consistent. */
+  equation?: (si: Record<string, number>) => number;
+  /** Extra results under the main one, computed from the solved set. */
+  outputs?: SolverOutput[];
   /** Everyday reference points (SI) drawn on the result scale. */
   benchmarks?: { label: string; value: number }[];
 };

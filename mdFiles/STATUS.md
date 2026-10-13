@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-10-13 · Current step: **31** (E3, solver v2) · steps 17 + 30 done (snapshot tests, units v2) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
+Last updated: 2026-10-13 · Current step: **32** (E4, result visuals kit) · steps 17 + 30 + 31 done (snapshot tests, units v2, solver v2) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
 
 ---
 
@@ -109,7 +109,7 @@ is why 12-15 run after it.
 |---|---|---|---|---|
 | 17 | (E1) Compute snapshot tests | **DONE** 2026-10-13 | Already in Phase E. **First step of the rollout.** | §2 E1 |
 | 30 | (E2) Units v2 | **DONE** 2026-10-13 | Length, area, volume, time, speed, temperature (affine), energy, power, pressure, data, fuel economy (inverse). | §2 E2 |
-| 31 | (E3) Solver v2 | TODO | Numeric solve for variables with no closed form (loan rate) + extra outputs beside the auto field. | §2 E3 |
+| 31 | (E3) Solver v2 | **DONE** 2026-10-13 | Numeric solve for variables with no closed form (loan rate) + extra outputs beside the auto field. | §2 E3 |
 | 32 | (E4) Result visuals kit | TODO | RangeBar, Donut, Timeline, AmortizationTable, LogScale (generalized), CompareBars. Hand-rolled SVG. | §2 E4 |
 | 33 | (E5) Type-B widget | TODO | `BreakdownCalculator` replaces `CalculatorForm`. | §2 E5 |
 | 34 | (E7) Split data file | TODO | `data/calculators/<category>.ts`. **Moved before the batches**: parallel batch branches editing one 2,000-line file would conflict on every merge. | §2 E7 |
@@ -655,6 +655,8 @@ percent number (5 = 5%), so solvers divide by 100. `toBase` of 0 mpg is `Infinit
 `currency` have a single unit, so the solver should hide the unit `<select>` for single-unit
 dimensions (it still renders one). Currency label is a `¤` placeholder until step 18 / E6. Stone (GB)
 and the AU 20 mL tbsp are not added; stone goes in with batch 2, because adding it now would change the force-calculator mass menu.
+
+31 · 2026-10-13 · **E3: solver v2** (stacked on step 30's PR). `solve` entries are now optional: a variable without one is found numerically from `equation` (residual) within its `bounds`/`guess` by `lib/solve.ts` (grid bracket → Brent, Newton fallback, capped, `NaN` with no root or at a pole). New `outputs` (derived figures under the result) and `fixed: true` (input-only, out of the auto rotation). State logic moved to `lib/solverState.ts`; single-unit dimensions show the unit inline; non-finite inputs/results mean no answer. force-calculator unchanged (same order, share link, snapshots); 145 tests. Step file: `mdFiles/steps/31-solver-v2.md`. **What step 32 (visuals kit) needs to know:** `solveState()` returns `{ target, result, si, outputs }` with every variable in SI, so a visual (Donut principal/interest, AmortizationTable) can read `si` and `outputs` directly; the result card already has an output `<dl>` and the force-only `LogScale` slot (`solver.benchmarks`) to generalize. Currency still uses the `¤` placeholder, rounded to cents via `formatFull`.
 
 ## Pending on the user — not code
 

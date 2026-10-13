@@ -101,6 +101,8 @@ export type CalculatorConfig = {
   content?: CalculatorContent;
   /** Present on calculators that can solve for any of their fields. Replaces CalculatorForm. */
   solver?: CalculatorSolver;
+  /** compute() reads the current date (or `values.todayMs`), so results render only after mount. */
+  timeDependent?: true;
   inputs: CalculatorInput[];
   seo: {
     title: string;
@@ -1388,6 +1390,7 @@ export const calculators: CalculatorConfig[] = [
     title: 'Pregnancy Due Date Calculator',
     description: 'Estimate your due date using Naegele\'s rule (LMP method) or IVF transfer date. Also calculates current weeks and trimester.',
     example: 'Find the due date for a pregnancy with last menstrual period starting March 1, 2026.',
+    timeDependent: true,
     inputs: [
       { id: 'lmpYear', label: 'LMP year (last menstrual period)', type: 'number', placeholder: '2026', defaultValue: 2026, step: 1, min: 2020 },
       { id: 'lmpMonth', label: 'LMP month (1–12)', type: 'number', placeholder: '3', defaultValue: 3, step: 1, min: 1 },
@@ -1407,7 +1410,8 @@ export const calculators: CalculatorConfig[] = [
       const lmp = new Date(values.lmpYear, values.lmpMonth - 1, values.lmpDay).getTime();
       const cycleAdjust = (values.cycleLength - 28) * 86400000;
       const dueDateMs = lmp + 280 * 86400000 + cycleAdjust;
-      const todayMs = new Date(2026, 5, 17).getTime();
+      const now = values.todayMs !== undefined ? new Date(values.todayMs) : new Date();
+      const todayMs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
       const gestationalDays = Math.max(0, Math.round((todayMs - lmp) / 86400000));
       const gestationalWeeks = gestationalDays / 7;
       const daysRemaining = Math.max(0, Math.round((dueDateMs - todayMs) / 86400000));

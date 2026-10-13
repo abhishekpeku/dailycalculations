@@ -640,6 +640,8 @@ run left the snapshot unchanged. Step file: `mdFiles/steps/17-compute-snapshot-t
 - When step 39 (E7) splits `data/calculators.ts`, the spec imports `calculators` from
   `./calculators.ts` and the snapshot keys are calculator ids, so only the import path should move.
 
+fix · 2026-10-13 · pregnancy-due-date-calculator uses the real date (injectable todayMs, timeDependent flag, post-mount render) · `compute()` reads optional `values.todayMs` (not an input) and falls back to the local current date. New optional `CalculatorConfig.timeDependent`; `CalculatorForm` shows `—` for its result values until mount, so static HTML and hydration match. The spec passes a pinned `todayMs` (2026-06-17) to timeDependent calculators, so the snapshot is unchanged. Any future date-relative calculator should set `timeDependent: true` and read `values.todayMs`.
+
 30 · 2026-10-13 · **E2: units v2.** `lib/units.ts` goes from 3 to 17 dimensions (adds length, area,
 volume, time, speed, temperature, energy, power, pressure, data, fuelEconomy, percent, count,
 currency). A `Unit` is now `factor`, `factor` + `offset` (affine; °C/°F) or a `toBase`/`fromBase` pair
@@ -669,11 +671,12 @@ and the AU 20 mL tbsp are not added; stone goes in with batch 2, because adding 
 
 Things noticed but deliberately out of scope. Add here instead of fixing mid-step.
 
-- **`pregnancy-due-date-calculator` has a hardcoded "today"** (`new Date(2026, 5, 17)` in `compute`).
+- ~~**`pregnancy-due-date-calculator` has a hardcoded "today"** (`new Date(2026, 5, 17)` in `compute`).
   Gestational age and days remaining are frozen at 2026-06-17: defaults (LMP 2026-03-01) give
   `gestationalWeeks` 15.43 / `daysRemaining` 172 on any date; LMP 2027-04-10 gives
   `gestationalDays` 0 / `daysRemaining` 591. Needs a real current date (client-side, after hydration,
-  since pages are force-static). Found in step 17; the snapshot pins today's behavior.
+  since pages are force-static). Found in step 17; the snapshot pins today's behavior.~~
+  **Fixed 2026-10-13** on fix/pregnancy-today
 - **`bmi-calculator` returns `NaN` at its own `min`** (`height` min is 0 → `bmi` = 0/0). Either
   `min` > 0 or a guard. Recorded in `KNOWN_NON_FINITE` in `data/calculators.spec.ts`. Found in step 17.
 - **`mortgage-calculator` input labelled "Loan amount" is really the home price**: `compute`

@@ -103,6 +103,37 @@ hands "auto" to the next-oldest field.
 Share links (`?solve=…&<id>=…&<id>_unit=…`) are read client-side after hydration. Pages stay
 `force-static`, and the canonical never includes the query string.
 
+### Result visuals (step 32): `components/visuals/`
+
+One hand-rolled SVG/Tailwind kit, no chart library. Pick from this table and never draw a new
+visual inside a calculator. If nothing fits, add it to the kit in its own step. The geometry lives
+in `lib/visuals.ts` and the loan schedule in `lib/amortization.ts`, both unit-tested.
+
+| Use it for | Component | Props |
+|---|---|---|
+| A value against named ranges: BMI WHO bands, typical engagement rates | `RangeBar` | `bands: {label, min, max, color?}[]` (contiguous, ascending; lower bound inclusive, upper exclusive), `value`, `accent`, `title?`, `valueLabel?`, `format?`, `summary?` |
+| Parts of a whole, 2–6 parts: principal vs interest, where a paycheck goes, a budget split | `Donut` | `segments: {label, value, color?}[]`, `accent`, `centerLabel`, `centerSub?`, `format?`, `summary?` |
+| 2–4 amounts side by side: EV vs gas, before vs after, then vs now, which is cheaper | `CompareBars` | `bars: {label, value, color?}[]`, `accent`, `title?`, `highlight?` (index in full accent, default 0), `format?`, `summary?` |
+| A span of time: pregnancy trimesters, the 180-day visa window, date difference | `Timeline` | `start`, `end` (any numeric axis), `phases?: {label, from, to}[]`, `milestones?: {label, at}[]`, `today?`, `todayLabel?`, `startLabel?`, `endLabel?`, `accent`, `title?`, `summary?` |
+| Any amortized loan (loan, mortgage, EMI, car payment) | `AmortizationTable` | `principal`, `annualRate` (percent number), `months`, `payment?`, `format?`, `initialYears?` (default 5, then a "Show all" toggle) |
+| A value spanning orders of magnitude, with everyday benchmarks (force, energy, data) | `LogScale` | `value`, `min`/`max` (powers of ten), `ticks: string[]` (spread evenly, so use evenly spaced exponents), `benchmarks: {label, value}[]`, `accent`, `title?`, `valueLabel?`, `summary?` |
+
+Rules that hold for all of them:
+
+- `accent` is the category color, `TILE_COLORS[categoryTheme(category).color][1]`, as `#RRGGBB`.
+  It fills marks only. Text and tracks are slate with `dark:` variants, so every visual works in
+  dark mode. Tints come from `tint(accent, alpha)`.
+- Each one has `role="img"` and an `aria-label` that states the result in words. Pass `summary` to
+  word it better. Legends, rows and the table stay real text.
+- Fixed heights and percentage widths: no layout shift, and fine at 360 px.
+- They render on the server, but **never pass the clock or `window`** during render. `Timeline`
+  takes `today` from the caller after mount (as `timeDependent` calculators do). `format`
+  defaults to `formatSignificant`, or to cents for `AmortizationTable`, until the region step.
+- Values are in display units. Convert from the solver's SI (`solveState().si` / `outputs`) with
+  `fromBase` before passing them.
+- `SolverCalculator` draws `LogScale` today, only for `force-calculator` (`solver.benchmarks`). Step 33
+  (E5) adds the visual slot to the type-B widget, and the batches wire the visuals in per calculator.
+
 ## 3. Content rules
 
 - **Write in our own words.** Formulas and facts are common knowledge, but other sites' prose is

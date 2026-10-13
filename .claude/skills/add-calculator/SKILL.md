@@ -15,12 +15,17 @@ Read first, every time:
 ## Procedure
 
 1. **Branch.** Never work on `master`. Use `git checkout -b calc/<id>` (or `wave/<n>-<sector>` for a batch).
+   A batch is **5 calculators**, not 10. Every agent commits and pushes after each sub-task (each calculator in a batch), keeps a Progress checklist in its step file, and opens a draft PR early, so an interrupted run can be resumed from the checklist.
+   Put a `## Progress` checklist (one box per calculator) at the top of the step file, push the branch,
+   and open a draft PR (`gh pr create --draft --base master`) before building. After each calculator
+   is verified, tick its box, then commit and push (`step NN: <id>`).
 2. **Pick the widget type.** If the formula can be rearranged, use `solver`. Otherwise use `inputs` + `compute`.
    Add any missing unit dimension to `lib/units.ts` (NIST SP 811 factors), not inline.
    A variable with no closed form (a loan's rate) needs no `solve` entry: give the solver an
    `equation` (residual, 0 when consistent) and the variable `bounds`, and the widget solves it
    numerically. Put derived figures (total interest, total paid) in `outputs`, and mark
-   input-only fields (down payment, split count) `fixed: true`. See template §2.
+   input-only fields (down payment, split count) `fixed: true`. See template §2. Take the result
+   visual from the kit in `components/visuals/` (template §2, "Result visuals"). Never draw a new one.
 3. **Add the object** to `calculators` in `data/calculators.ts`, with every v2 field:
    `id` (kebab-case, ends in `-calculator` or `-converter`), `category`, `updatedAt` (today),
    `aliases` (≥ 4 real search phrasings), `related` (3–4 **existing** ids), `title`, `description`,
@@ -44,7 +49,8 @@ Read first, every time:
      server breaks `npm run deploy` with `EPERM`.
 9. **Record:** if this is a numbered step, update `mdFiles/STATUS.md` as the protocol requires.
    Otherwise add a line to the session log under the branch name.
-10. **Commit** on the branch (`calc: add <id>` or `step NN: …`), **push the branch** and open a pull
-    request (`gh pr create --base master`, body = what was added + build/verification output).
-    Never merge and never deploy. Merging is done by the main session after the user approves
-    (see `mdFiles/calculator-rollout-plan.md` §5), so the user never has to merge anything.
+10. **Commit** on the branch (`calc: add <id>` or `step NN: …`), **push the branch**, update the
+    draft PR body (what was added + build/verification output) and mark it ready with `gh pr ready`.
+    Never merge and never deploy. The main session merges each passing PR without asking the user
+    (see `mdFiles/calculator-rollout-plan.md` §5 and `STATUS.md` D11), so the user never has to
+    merge anything. Only one builder agent runs at a time, so finish (PR opened) before stopping.

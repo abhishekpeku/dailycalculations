@@ -11,7 +11,11 @@ Before doing anything, read `CLAUDE.md`, `mdFiles/calculator-template-v2.md`, an
 
 Rules:
 - Work on your own branch, created from the latest `origin/master`, never on `master`. When the
-  build passes, push the branch and open a PR with `gh pr create --base master`. Never merge, never deploy.
+  build passes, push the branch and open a PR with `gh pr create --base master`. Never merge, never deploy:
+  the main session merges each passing PR without asking the user (`STATUS.md` D11).
+- Every agent commits and pushes after each sub-task (each calculator in a batch), keeps a Progress checklist in its step file, and opens a draft PR early, so an interrupted run can be resumed from the checklist. A batch is 5 calculators, not 10.
+- You are the only builder running. Batches go strictly one after another, so never start a
+  second batch or spawn another agent.
 - Build only the calculators you were asked for. Put anything else you notice on the `Parked`
   list in `mdFiles/STATUS.md` instead of fixing it.
 - Every number in the copy must be recomputed by an independent scratch script before you finish.

@@ -211,24 +211,33 @@ waves 3–4 are seeds**, to be refined against search volume when their wave sta
 ## 5. How each batch runs
 
 1. One batch = one `calculator-builder` agent run (background), one branch (`wave/<n>-<sector>-<k>`),
-   ~10 calculators, **always branched from the latest `origin/master`**.
-2. The agent follows `.claude/skills/add-calculator/SKILL.md`: v2 fields, type A/B/C widget,
+   **5 calculators** (not 10, so each run stays small), **always branched from the latest `origin/master`**. **Only one agent runs at a
+   time.** Nothing runs in parallel: the next batch starts only after the previous one is merged.
+2. Every agent commits and pushes after each sub-task (each calculator in a batch), keeps a Progress checklist in its step file, and opens a draft PR early, so an interrupted run can be resumed from the checklist.
+   The agent follows `.claude/skills/add-calculator/SKILL.md`: v2 fields, type A/B/C widget,
    **independent number verification**, build + lint. It commits, pushes its branch, and opens a
-   pull request with `gh pr create`. It never merges.
-3. The main session opens the batch in the browser for the user and leaves it open.
-4. **The user never merges.** When the user says it looks good, the main session merges:
+   pull request with `gh pr create` (a draft at the start, marked ready with `gh pr ready` at the end). It never merges.
+3. The main session checks the PR: build, lint and `npm test` pass, and the agent's verification
+   output is in the PR body.
+4. **The main session merges each passing PR without asking the user** (the user never merges):
    `gh pr merge <n> --squash --delete-branch`, then `git checkout master && git pull`, and records
    the step in `STATUS.md`. If master moved, it rebases the branch first, rebuilds, and only then
-   merges.
+   merges. A failing PR goes back to the agent (or is fixed in the main session) and is not merged.
+   The user can review the merged pages on `master` at any time.
 5. **Deploy stays separate.** `npm run deploy` runs only when the user asks. If the Cloudflare
    project is connected to GitHub (Workers Builds), a merge to `master` *is* a deploy, so the
    main session must check this once and record the answer here.
 6. After each **sector**, run a measure gate: 4–6 weeks of Search Console impressions before
    opening the next sector in that wave.
 
-Pace: at ~10 calculators/week, existing conversions take ~6 weeks, wave 1 ~12 weeks, wave 2
-~10 weeks, wave 3 ~12 weeks and wave 4 ~8 weeks. That's **roughly 12 months**, matching
-strategy §4.2.
+Pace, one batch at a time: a run is 5 calculators, and the D12 default of 10 calculators a week
+means two runs a week, back to back. That was already the assumption, so running batches in
+sequence does not slow the plan. It only rules out catching up by running two at once. The
+existing conversions are 53 calculators: the plan's batches 1–5 (8, 9, 6, 12, 18) split into
+2 + 2 + 2 + 3 + 4 = 13 runs, **~6–7 weeks**. Then wave 1 ~24 runs, wave 2 ~20, wave 3 ~24 and wave
+4 ~16: **~49 weeks of building in all**. The per-sector measure gates (item 6) add nothing while another sector is
+queued to build during the wait. Any gate with nothing else queued adds its 4–6 weeks. Realistic
+total: **12–14 months**, slightly longer than the strategy §4.2 estimate of ~12 months.
 
 ---
 
@@ -239,7 +248,8 @@ strategy §4.2.
   → E1 (step 17 tests) → E2 units v2 → E3 solver v2 → E4 visuals kit → E5 type-B widget
   → Batch 1 finance → Batch 2 shopping+conversion → Batch 3 health → Batch 4 auto+home → Batch 5 rest
   → E7 file split → Wave 1 → gate → Wave 2 → gate → Wave 3 → gate → Wave 4
-E6 (region, steps 18–21) runs in parallel after E1. Ads (strategy step 38) once ~100 v2 pages exist.
+E6 (region, steps 18–21) runs in sequence too, slotted between two steps any time after E1, never
+alongside one. Ads (strategy step 38) once ~100 v2 pages exist.
 ```
 
 Open decisions for the user before this goes into `STATUS.md`:

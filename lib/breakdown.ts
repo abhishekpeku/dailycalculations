@@ -1,8 +1,8 @@
 // State and defaults of the type-B breakdown widget, as plain functions so they can be unit-tested.
 // See mdFiles/steps/33-type-b-widget.md.
-import type { BreakdownFormat, BreakdownOutput, BreakdownPart, BreakdownVisual, CalculatorConfig, CalculatorInput } from '../data/calculators/index.ts';
+import type { BreakdownFormat, BreakdownOutput, BreakdownPart, BreakdownVisual, CalculatorConfig, CalculatorInput, CalculatorSolver } from '../data/calculators/index.ts';
 import { currencySymbol, formatDecimal, formatFull, formatSignificant } from './calculator.ts';
-import { parse, plain } from './solverState.ts';
+import { parse, plain, type Solution } from './solverState.ts';
 import { UNITS, findUnit, fromBase, toBase } from './units.ts';
 
 export type BreakdownState = {
@@ -155,14 +155,15 @@ export function breakdownShareParams(inputs: CalculatorInput[], state: Breakdown
   return params.toString();
 }
 
-/** Applies share params over `fallback`. Unknown ids, non-numbers and unknown units are ignored. */
+/** Applies share params over `fallback`. Unknown ids, non-numbers, unknown units and values outside `options` are ignored. */
 export function readBreakdownShareParams(inputs: CalculatorInput[], fallback: BreakdownState, search: string): BreakdownState {
   const params = new URLSearchParams(search);
   const values = { ...fallback.values };
   const units = { ...fallback.units };
   for (const input of inputs) {
     const raw = params.get(input.id);
-    if (raw !== null && Number.isFinite(parse(raw))) values[input.id] = raw.trim();
+    const allowed = raw !== null && Number.isFinite(parse(raw)) && (!input.options || input.options.some((option) => option.value === parse(raw)));
+    if (allowed) values[input.id] = raw.trim();
     const unit = params.get(`${input.id}_unit`);
     if (unit && input.dimension && UNITS[input.dimension].some((u) => u.id === unit)) units[input.id] = unit;
   }
@@ -219,4 +220,21 @@ export function visualKeys(visual: BreakdownVisual): string[] {
     case 'amortization':
       return [visual.principal, visual.annualRate, visual.months];
   }
+}
+
+// Type-A visuals (solver.visuals) reuse the kit configs. Values are in each dimension's base unit.
+
+/** How to print a solver variable, output or derived key in a visual. */
+export function describeSolverKey(solver: CalculatorSolver, id: string): ResolvedOutput {
+  const item = solver.variables.find((v) => v.id === id) ?? solver.outputs?.find((o) => o.id === id);
+  if (!item) return { id, label: prettify(id), format: MONEY_KEY.test(id) ? 'currency' : 'number' };
+  if (item.dimension === 'currency') return { id, label: item.label, format: 'currency' };
+  if (item.dimension === 'percent') return { id, label: item.label, format: 'percent' };
+  return { id, label: item.label, format: 'number', dimension: item.dimension, unit: UNITS[item.dimension][0].id };
+}
+
+/** Every variable, output and derived figure of a solved state, keyed by id. */
+export function solverVisualValues(solver: CalculatorSolver, solution: Solution): Record<string, number> {
+  const base = { ...solution.si, ...solution.outputs };
+  return { ...base, ...(solver.derive?.(base) ?? {}) };
 }

@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-10-19 · Current step: **35** (Batch 1, finance) · steps 17 + 30 + 31 + 32 + 33 + 34 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
+Last updated: 2026-10-19 · Current step: **36** (Batch 2, shopping + conversion) · steps 17 + 30–35 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
 
 ---
 
@@ -113,7 +113,7 @@ is why 12-15 run after it.
 | 32 | (E4) Result visuals kit | **DONE** 2026-10-13 | RangeBar, Donut, Timeline, AmortizationTable, LogScale (generalized), CompareBars. Hand-rolled SVG. | §2 E4 |
 | 33 | (E5) Type-B widget | **DONE** 2026-10-19 | `BreakdownCalculator` replaces `CalculatorForm`. | §2 E5 |
 | 34 | (E7) Split data file | **DONE** 2026-10-19 | `data/calculators/<category>.ts`. **Moved before the batches**: every batch editing one 2,000-line file means huge diffs and a conflict with any other open branch. | §2 E7 |
-| 35 | Batch 1: finance (8) | TODO | YMYL. | §3 |
+| 35 | Batch 1: finance (8) | **DONE** 2026-10-19 | YMYL. 6 × type A, loan-prepayment type B, paycheck C → B. PR #9. | §3 |
 | 36 | Batch 2: shopping + conversion (9) | TODO | | §3 |
 | 37 | Batch 3: health (6) | TODO | YMYL. | §3 |
 | 38 | Batch 4: auto + home (12) | TODO | | §3 |
@@ -736,6 +736,48 @@ Converting an existing calculator does not touch `calculatorOrder`; only a brand
 appended there. New types go in `data/calculators/types.ts`. Specs import
 `../data/calculators/index.ts`.
 
+35 · 2026-10-19 · **Batch 1 finance v2 — DONE** (branch `step/35-batch-1-finance`, PR #9; paused
+by the user after 7 of 8, then resumed the same day). All 8 finance calculators are on the v2
+template with full content, primary-source references and an "estimates only" note.
+Type A (`solver` beside the unchanged `inputs` + `compute()`): **loan** (Donut + AmortizationTable,
+rate numeric), **mortgage** (same; down payment `fixed`; input relabeled "Home price", Parked item
+closed), **emi** (same; down payment fixed), **compound-interest** (Donut start / contributions /
+interest; rate numeric), **investment** (Donut; return numeric), **inflation** (CompareBars; every
+field closed-form). Type B: **loan-prepayment** (Timeline payoff; term unit menu on `years`; explicit
+formats and labels), **paycheck** (C → B; Donut of where the money goes).
+Shared pieces: **`term` unit dimension** (`lib/units.ts`: months base, years = 12); **solver visual
+slot** `solver.visuals` + `solver.derive`, drawn by `BreakdownVisual` (`describeSolverKey`,
+`solverVisualValues` in `lib/breakdown.ts`); **menu inputs** `CalculatorInput.options` (`ChoiceRow`
+in `CalculatorWidget.tsx`, share links accept only listed values). `components/PaycheckCalculator.tsx`
+deleted, so it is no longer a custom tool. New tests: every shipped solver solves each field back to its
+default-state value and its visuals read keys that exist; menu share-link guard. **221 tests.**
+**Snapshot:** only `paycheck-calculator` changed. The new compute is a different contract: inputs
+filing status, pay frequency, state and local rate, 401(k) %, pre- and post-tax per paycheck; outputs
+net/gross/federal/SS/Medicare/state/local/deductions per paycheck plus yearly net. The old one was a
+flat "federal tax rate" placeholder the page never used. Everything else is byte-identical
+(compound-interest's compute now uses the annuity factor, which fixes a 0 ÷ 0 NaN at 0% with
+contributions but gives identical results on every snapshot input).
+**Paycheck uses 2026 figures**, checked on 2026-10-19 against IRS Rev. Proc. 2025-32 (IRB 2025-45),
+SSA (wage base $184,500) and the IRS newsroom (401(k) $24,500). The old component's 2025 standard
+deduction was pre-OBBBA and wrong. It also wrongly exempted 401(k) deferrals from FICA. The new
+model is annual liability ÷ paychecks, not Pub 15-T withholding, and says so. Dropped from the old
+component: separate HSA/FSA/dependent-care/commuter fields and their limits (now one pre-tax field).
+Numbers: an independent Python checker matched **110** copy figures (0 mismatches); the app's
+`compute()`/`solveState()` agree with it. Build + lint (ignoring `.open-next/**`, `.claude/**`) pass.
+**Decisions:** type-A variable ids may differ from `inputs` ids (`term` in months). The step ran 8
+calculators in one run because the brief scoped it so (D11 says 5 per run).
+**What step 36 (Batch 2, shopping + conversion) needs to know:**
+- Type A = add `solver` next to the existing `inputs` + `compute()`; the snapshot then does not move.
+  Put visuals in `solver.visuals` (same configs as type B) and display-only figures in `solver.derive`.
+  The two new solver tests run on every shipped solver automatically.
+- Fixed choices (US vs UK gallon, a second discount on/off) can use `CalculatorInput.options` on
+  type B. Type A has no menu input yet; use a unit menu (a dimension) instead where it fits.
+- No visual for "per-person chips", "strikethrough price card", a thermometer or a
+  common-values table exists in the kit. Use the nearest kit component or add to the kit in its own
+  step. Never draw one inside a calculator.
+- Stone (GB) still needs adding to `mass` for pounds-to-kilograms (step 30 note).
+- Type-A currency still shows the `¤` placeholder while kit visuals show `$` (Parked, step 18).
+
 ## Pending on the user — not code
 
 - **Cloudflare apex → www 301 (from step 01, still open).**
@@ -759,9 +801,10 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
   **Fixed 2026-10-13** on fix/pregnancy-today
 - **`bmi-calculator` returns `NaN` at its own `min`** (`height` min is 0 → `bmi` = 0/0). Either
   `min` > 0 or a guard. Recorded in `KNOWN_NON_FINITE` in `data/calculators.spec.ts`. Found in step 17.
-- **`mortgage-calculator` input labelled "Loan amount" is really the home price**: `compute`
+- ~~**`mortgage-calculator` input labelled "Loan amount" is really the home price**: `compute`
   subtracts `downPayment` from it (350,000 − 70,000 → principal 280,000), and the example line says
-  "a $350,000 home". Relabel (copy only) during the Batch 1 v2 conversion. Found in step 17.
+  "a $350,000 home". Relabel (copy only) during the Batch 1 v2 conversion. Found in step 17.~~
+  **Fixed in step 35** (label "Home price"; input id unchanged).
 - `app/[locale]/layout.tsx` exports static `metadata` *and* pages export `generateMetadata` with
   overlapping OG/Twitter blocks — the same title string lives in four places. Collapse into
   `lib/seo.ts` helpers. (§4.6)
@@ -820,6 +863,13 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
 - **Currency symbol differs between the widgets** (found in step 33): `SolverCalculator` prints the
   `¤` unit placeholder, `BreakdownCalculator` prints `$` through `lib/calculator.ts`. Step 18 should
   route both through the region-aware `lib/calculator.ts`.
+- **No growth-curve visual in the kit** (found in step 35): the rollout plan asks for a growth
+  curve (contributions vs interest over time) on compound-interest and investment. Those use a
+  Donut for now. Add a `GrowthCurve` (stacked area by year) to `components/visuals/` in its own
+  step, then switch both calculators to it.
+- `mdFiles/instructions.md` (§ file table, ~line 527) still lists `components/PaycheckCalculator.tsx`,
+  deleted in step 35. Paycheck's US tax figures now live in `data/calculators/finance.ts`
+  (`PAYROLL_2026`) and need a yearly update each October/November (IRS Rev. Proc., SSA wage base).
 - Baidu SEO for mainland China. Needs an ICP licence and separate tooling; Cloudflare is unreliable
   behind the GFW. The `CN` region profile is for Chinese speakers elsewhere. (§3.5)
 - ~~The four alias stubs return 307~~ — **done in step 03.** They are 301s in `middleware.ts` now

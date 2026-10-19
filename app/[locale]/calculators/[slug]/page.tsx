@@ -4,7 +4,6 @@ import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 import BreakdownCalculator from '@/components/BreakdownCalculator';
 import GpaCalculator from '@/components/GpaCalculator';
-import PaycheckCalculator from '@/components/PaycheckCalculator';
 import CurrencyConverter from '@/components/CurrencyConverter';
 import TextToolsCalculator from '@/components/TextToolsCalculator';
 import PomodoroTimer from '@/components/PomodoroTimer';
@@ -81,7 +80,6 @@ export default async function CalculatorPage({
 
   const widget = solver ? <SolverCalculator calculatorId={calculator.id} /> :
     slug === 'gpa-calculator' ? <GpaCalculator /> :
-    slug === 'paycheck-calculator' ? <PaycheckCalculator /> :
     slug === 'currency-converter' ? <CurrencyConverter /> :
     slug === 'character-counter' ? <TextToolsCalculator mode="character" /> :
     slug === 'hashtag-counter' ? <TextToolsCalculator mode="hashtag" /> :

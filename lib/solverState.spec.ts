@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import { calculators, type CalculatorSolver } from '../data/calculators/index.ts';
 import { editOrder, initialState, isSingleUnit, parse, plain, readShareParams, shareParams, solveFor, solveState } from './solverState.ts';
 import { toBase } from './units.ts';
+import { solverVisualValues, visualKeys } from './breakdown.ts';
 
 const force = calculators.find((c) => c.id === 'force-calculator')?.solver as CalculatorSolver;
 
@@ -182,6 +183,24 @@ describe('every shipped solver is well-formed', () => {
         assert.ok(solver.solve?.[variable.id] || solver.equation, `${variable.id}: no solve entry and no equation`);
       }
       for (const output of solver.outputs ?? []) assert.ok(!ids.includes(output.id), `${output.id}: output id clashes`);
+    });
+
+    // Solve the default target, then solve every other field back from that consistent set.
+    test(`${calculator.id}: every field solves back to its default-state value`, () => {
+      const solution = solveState(solver, initialState(solver));
+      assert.ok(Number.isFinite(solution.result), 'default target has an answer');
+      for (const variable of solver.variables.filter((v) => !v.fixed && v.id !== solution.target)) {
+        const known = Object.fromEntries(Object.entries(solution.si).filter(([id]) => id !== variable.id));
+        const back = solveFor(solver, variable.id, known);
+        assert.ok(Math.abs(back - solution.si[variable.id]) <= 1e-6 * Math.max(1, Math.abs(solution.si[variable.id])), `${variable.id}: ${back} vs ${solution.si[variable.id]}`);
+      }
+    });
+
+    test(`${calculator.id}: visuals read keys that exist`, () => {
+      const all = solverVisualValues(solver, solveState(solver, initialState(solver)));
+      for (const visual of solver.visuals ?? []) {
+        for (const key of visualKeys(visual)) assert.ok(Number.isFinite(all[key]), `${visual.type}: ${key}`);
+      }
     });
   }
 });

@@ -210,6 +210,15 @@ describe('share params', () => {
     const read = readBreakdownShareParams(roomInputs, defaults, '?length=abc&width_unit=parsec&waste_unit=m&nope=4&pricePerSqFt=5');
     assert.deepEqual(read, { ...defaults, values: { ...defaults.values, pricePerSqFt: '5' } });
   });
+
+  test('a menu input only accepts one of its options', () => {
+    const inputs: CalculatorInput[] = [
+      { id: 'status', label: 'Status', type: 'number', placeholder: '0', defaultValue: 0, options: [{ value: 0, label: 'A' }, { value: 1, label: 'B' }] }
+    ];
+    const defaults = initialBreakdownState(inputs);
+    assert.equal(readBreakdownShareParams(inputs, defaults, '?status=1').values.status, '1');
+    assert.equal(readBreakdownShareParams(inputs, defaults, '?status=7').values.status, '0');
+  });
 });
 
 describe('formatting', () => {

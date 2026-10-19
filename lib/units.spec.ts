@@ -40,7 +40,7 @@ describe('unit tables', () => {
   test('covers the dimensions the v2 rollout needs', () => {
     assert.deepEqual([...dimensions].sort(), [
       'acceleration', 'area', 'count', 'currency', 'data', 'energy', 'force', 'fuelEconomy', 'length',
-      'mass', 'percent', 'power', 'pressure', 'speed', 'temperature', 'time', 'volume'
+      'mass', 'percent', 'power', 'pressure', 'speed', 'temperature', 'term', 'time', 'volume'
     ]);
   });
 
@@ -147,6 +147,11 @@ describe('anchor values', () => {
       assert.equal(toBase(7.5, dimension, UNITS[dimension][0].id), 7.5);
     }
     assert.equal(UNITS.count[0].label, '');
+  });
+  test('term: base is months, 30 years = 360 months', () => {
+    assert.equal(UNITS.term[0].id, 'mo');
+    assert.equal(toBase(30, 'term', 'yr'), 360);
+    assert.equal(fromBase(60, 'term', 'yr'), 5);
   });
 });
 

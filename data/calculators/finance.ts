@@ -473,12 +473,117 @@ export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'investment-calculator',
     category: 'finance',
-    updatedAt: '2026-09-10',
+    updatedAt: '2026-10-19',
     aliases: ['sip calculator', 'return on investment calculator', 'roi calculator', 'portfolio growth calculator', 'retirement savings calculator'],
     related: ['compound-interest-calculator', 'inflation-calculator', 'paycheck-calculator', 'currency-converter'],
     title: 'Investment Calculator',
-    description: 'Project investment growth with an initial amount, annual return, and time horizon.',
-    example: 'See how a $10,000 investment grows at 7% annual return over 20 years.',
+    description: 'Project what an investment could grow to with yearly contributions, or work back to the starting amount, years or average annual return a goal requires.',
+    example: '$10,000 invested at an average 7% a year, plus $1,200 added at the end of each year, grows to about $87,891 in 20 years.',
+    solver: {
+      defaultTarget: 'futureValue',
+      variables: [
+        { id: 'futureValue', label: 'Future value', symbol: 'FV', dimension: 'currency', defaultValue: 87891.44, defaultUnit: 'currency' },
+        { id: 'initialInvestment', label: 'Initial investment', symbol: 'P', dimension: 'currency', defaultValue: 10000, defaultUnit: 'currency' },
+        { id: 'annualContribution', label: 'Yearly contribution', symbol: 'C', dimension: 'currency', defaultValue: 1200, defaultUnit: 'currency', fixed: true },
+        { id: 'years', label: 'Time invested', symbol: 't', dimension: 'term', defaultValue: 20, defaultUnit: 'yr', bounds: [0, 1200] },
+        { id: 'annualReturn', label: 'Average annual return', symbol: 'r', dimension: 'percent', defaultValue: 7, defaultUnit: '%', bounds: [-50, 100] }
+      ],
+      // `years` arrives in months (the term dimension's base); growth compounds once a year.
+      solve: {
+        futureValue: ({ initialInvestment, annualContribution, years, annualReturn }) =>
+          years >= 0 ? initialInvestment * growthFactor(annualReturn, 1, years / 12) + annualContribution * annuityFactor(annualReturn, 1, years / 12) : NaN,
+        initialInvestment: ({ futureValue, annualContribution, years, annualReturn }) => {
+          const start = (futureValue - annualContribution * annuityFactor(annualReturn, 1, years / 12)) / growthFactor(annualReturn, 1, years / 12);
+          return years >= 0 && start >= 0 ? start : NaN;
+        },
+        years: ({ futureValue, initialInvestment, annualContribution, annualReturn }) => {
+          const i = annualReturn / 100;
+          if (i === 0) return annualContribution > 0 ? ((futureValue - initialInvestment) / annualContribution) * 12 : NaN;
+          const t = Math.log((futureValue * i + annualContribution) / (initialInvestment * i + annualContribution)) / Math.log(1 + i);
+          return t >= 0 ? t * 12 : NaN;
+        }
+      },
+      // The return has no closed form when there are contributions: the widget finds it numerically.
+      equation: (si) =>
+        si.futureValue -
+        (si.initialInvestment * growthFactor(si.annualReturn, 1, si.years / 12) + si.annualContribution * annuityFactor(si.annualReturn, 1, si.years / 12)),
+      outputs: [
+        { id: 'totalContributed', label: 'Total invested', dimension: 'currency', compute: (si) => si.initialInvestment + (si.annualContribution * si.years) / 12 },
+        { id: 'totalGrowth', label: 'Investment growth', dimension: 'currency', compute: (si) => si.futureValue - si.initialInvestment - (si.annualContribution * si.years) / 12 }
+      ],
+      derive: (si) => ({ contributions: (si.annualContribution * si.years) / 12 }),
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'initialInvestment', label: 'Initial investment' },
+            { from: 'contributions', label: 'Yearly contributions' },
+            { from: 'totalGrowth', label: 'Growth' }
+          ],
+          center: 'futureValue',
+          centerSub: 'future value'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-19',
+      concept: {
+        title: 'How investments grow',
+        paragraphs: [
+          'An investment grows in two ways: the money you put in, and the returns that money earns. When returns are reinvested they start earning returns of their own, the same compounding that makes a savings account grow, which is why time in the market matters so much.',
+          'Unlike a savings account, an investment such as a stock or bond fund has no fixed rate. Prices rise and fall, sometimes sharply, from year to year. The rate you enter here is an assumed average annual return, applied as if every year earned exactly that. Real portfolios never grow in a straight line, and the order of good and bad years affects the result, especially when you are adding or withdrawing money.',
+          'Regular contributions often matter as much as the starting amount. Adding a fixed amount every year, whatever the market is doing, is a simple discipline, and those deposits compound too. This calculator adds your yearly contribution at the end of each year.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your yearly contribution (0 for a single investment), then any three of the other four fields. The fourth, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter the yearly contribution', text: 'This is always an input. For a monthly plan, enter 12 times the monthly amount.' },
+          { name: 'Project the future value', text: 'Type the initial investment, the time and an average annual return. The future value appears with the total invested and the growth broken out.' },
+          { name: 'Plan backward from a goal', text: 'Type a target future value. Leave the time alone to see how long it takes, or the initial investment to see how much to start with.' },
+          { name: 'Find the return you need', text: 'Fill in the goal, start, contribution and time so the return is the field left alone longest, and the calculator finds the average return required.' },
+          { name: 'Try several returns', text: 'Run a cautious, a middle and an optimistic return. The spread between them is a better guide than any single figure.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'With yearly compounding and a contribution at the end of each year, the future value is the initial amount grown for t years plus an ordinary annuity of the contributions.',
+        expression: 'FV = P × (1 + r)^t + C × ((1 + r)^t − 1) ÷ r\nt = ln((FV × r + C) ÷ (P × r + C)) ÷ ln(1 + r)\nTotal invested = P + C × t',
+        terms: [
+          { symbol: 'FV', meaning: 'Projected value at the end.' },
+          { symbol: 'P', meaning: 'Initial investment.' },
+          { symbol: 'C', meaning: 'Contribution added at the end of each year.' },
+          { symbol: 'r', meaning: 'Average annual return as a decimal (7% = 0.07). With r = 0 the contribution term is C × t.' },
+          { symbol: 't', meaning: 'Years invested.' }
+        ],
+        note: 'Estimates only. Returns are assumed constant; real returns vary, can be negative, and are reduced by fees, taxes and inflation. This is not investment advice.'
+      },
+      workedExample: {
+        intro: 'You invest $10,000 and add $1,200 at the end of each year for 20 years, assuming an average return of 7% a year. What could it grow to?',
+        rows: [
+          { label: 'Growth factor 1.07^20', value: '3.869684' },
+          { label: 'Initial investment grown (10,000 × 3.869684)', value: '$38,696.84' },
+          { label: 'Annuity factor (3.869684 − 1) ÷ 0.07', value: '40.995492' },
+          { label: 'Contributions grown (1,200 × 40.995492)', value: '$49,194.59' },
+          { label: 'Future value', value: '$87,891.44' },
+          { label: 'Total invested (10,000 + 1,200 × 20)', value: '$34,000' },
+          { label: 'Growth (87,891.44 − 34,000)', value: '$53,891.44' }
+        ],
+        result: 'FV ≈ $87,891 after 20 years, of which about $53,891 is growth',
+        explanation: 'After 10 years the same plan is worth only about $36,251; the second decade adds more than the first because the balance it compounds on is so much larger. At 5% a year the 20-year result would be about $66,212, and at 9% about $117,436, so the assumed return matters a great deal.'
+      },
+      watchOut: [
+        { title: 'Estimates only: returns are not guaranteed', body: 'Investments can lose value. A constant average return is a planning assumption, not a forecast, and past performance does not predict future results.' },
+        { title: 'Fees compound too', body: 'An expense ratio or advisory fee comes off the return every year. A 1% fee on a 7% return leaves 6%, which over decades makes a large difference.' },
+        { title: 'Inflation', body: 'The future value is in future dollars. Use the inflation calculator to see what it would buy in today\'s money.' },
+        { title: 'Taxes', body: 'Gains in a taxable account are taxed, while retirement accounts such as a 401(k) or IRA defer or exempt the tax. The calculator ignores taxes.' }
+      ],
+      references: [
+        { label: 'OpenStax, Contemporary Mathematics, §6.7 Investments', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-7-investments' },
+        { label: 'U.S. Securities and Exchange Commission, Investor.gov: Save and Invest', url: 'https://www.investor.gov/introduction-investing/investing-basics/save-and-invest' },
+        { label: 'U.S. Securities and Exchange Commission, Investor.gov glossary: Compound interest', url: 'https://www.investor.gov/introduction-investing/investing-basics/glossary/compound-interest' }
+      ]
+    },
     inputs: [
       { id: 'initialInvestment', label: 'Initial investment', type: 'currency', placeholder: '10000', defaultValue: 10000, step: 500, min: 0 },
       { id: 'annualReturn', label: 'Annual return rate', type: 'percent', placeholder: '7', defaultValue: 7, step: 0.1, min: 0 },
@@ -486,11 +591,15 @@ export const financeCalculators: CalculatorConfig[] = [
       { id: 'annualContribution', label: 'Annual contribution', type: 'currency', placeholder: '1200', defaultValue: 1200, step: 100, min: 0 }
     ],
     seo: {
-      title: 'Investment Calculator',
-      description: 'Project the future value of your investment using initial amount, annual return, and optional yearly contributions.',
+      title: 'Investment Calculator – Future Value & Required Return',
+      description: 'Free investment calculator: project the future value of an investment with yearly contributions, or find the years or return a goal needs.',
       faq: [
-        { question: 'How do I calculate investment growth?', answer: 'Enter your starting amount, expected annual return, investment duration, and any yearly contributions to see projected growth.' },
-        { question: 'Does this account for annual contributions?', answer: 'Yes, add a yearly contribution amount to model consistent investing over time.' }
+        { question: 'How do I calculate investment growth?', answer: 'Grow the starting amount by (1 + r)^t and add the future value of your yearly contributions, C × ((1 + r)^t − 1) ÷ r. $10,000 plus $1,200 a year at 7% for 20 years comes to about $87,891.' },
+        { question: 'How long will it take to reach my goal?', answer: 'Enter the goal as the future value and the calculator works out the time. Starting with $10,000 and adding $1,200 a year at 7%, $100,000 takes about 21.6 years.' },
+        { question: 'What return do I need to reach a goal?', answer: 'Fill in the goal, the start, the contribution and the time, and the calculator searches for the return. To reach $100,000 in 20 years from $10,000 plus $1,200 a year you need about 7.9% a year.' },
+        { question: 'What return should I assume?', answer: 'There is no safe single number. Run the calculator with a cautious, a middle and an optimistic return and plan around the range. Returns are never guaranteed, and fees and inflation reduce them.' },
+        { question: 'Can I use this as a SIP calculator?', answer: 'Yes, approximately. Enter 12 times your monthly installment as the yearly contribution. A SIP invests monthly, so its result will be a little higher than this yearly model.' },
+        { question: 'How much does starting earlier help?', answer: 'A lot. The same plan of $10,000 plus $1,200 a year at 7% is worth about $36,251 after 10 years, about $87,891 after 20 and about $189,475 after 30.' }
       ]
     },
     compute(values) {

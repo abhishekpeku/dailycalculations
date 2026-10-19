@@ -8,7 +8,7 @@
 - [x] mortgage-calculator (A · Donut + AmortizationTable; down payment fixed; "Loan amount" → "Home price")
 - [x] emi-calculator (A · Donut + AmortizationTable (yearly); down payment fixed)
 - [x] compound-interest-calculator (A · Donut start/contributions/interest)
-- [ ] investment-calculator (A · Donut initial/contributions/growth)
+- [x] investment-calculator (A · Donut initial/contributions/growth)
 - [ ] inflation-calculator (A · CompareBars then vs now)
 - [ ] loan-prepayment-calculator (B · Timeline payoff)
 - [ ] paycheck-calculator (C → B · Donut where the money goes)

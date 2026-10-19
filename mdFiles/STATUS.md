@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-10-19 · Current step: **35** (Batch 1, finance) · steps 17 + 30 + 31 + 32 + 33 + 34 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
+Last updated: 2026-10-19 · Current step: **35** (Batch 1, finance) — **IN PROGRESS, paused by the user after 7 of 8** · steps 17 + 30 + 31 + 32 + 33 + 34 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
 
 ---
 
@@ -113,7 +113,7 @@ is why 12-15 run after it.
 | 32 | (E4) Result visuals kit | **DONE** 2026-10-13 | RangeBar, Donut, Timeline, AmortizationTable, LogScale (generalized), CompareBars. Hand-rolled SVG. | §2 E4 |
 | 33 | (E5) Type-B widget | **DONE** 2026-10-19 | `BreakdownCalculator` replaces `CalculatorForm`. | §2 E5 |
 | 34 | (E7) Split data file | **DONE** 2026-10-19 | `data/calculators/<category>.ts`. **Moved before the batches**: every batch editing one 2,000-line file means huge diffs and a conflict with any other open branch. | §2 E7 |
-| 35 | Batch 1: finance (8) | TODO | YMYL. | §3 |
+| 35 | Batch 1: finance (8) | **IN PROGRESS** (paused 2026-10-19) | YMYL. Done: loan, mortgage, emi, compound-interest, investment, inflation, loan-prepayment. **Remaining: paycheck-calculator** (C → B), then verification, build, PR ready. Branch `step/35-batch-1-finance`, draft PR #9; checklist + resume notes in `mdFiles/steps/35-batch-1-finance.md`. | §3 |
 | 36 | Batch 2: shopping + conversion (9) | TODO | | §3 |
 | 37 | Batch 3: health (6) | TODO | YMYL. | §3 |
 | 38 | Batch 4: auto + home (12) | TODO | | §3 |
@@ -736,6 +736,27 @@ Converting an existing calculator does not touch `calculatorOrder`; only a brand
 appended there. New types go in `data/calculators/types.ts`. Specs import
 `../data/calculators/index.ts`.
 
+35 · 2026-10-19 · **Batch 1 finance — IN PROGRESS, paused by the user after loan-prepayment
+(7 of 8 done).** Branch `step/35-batch-1-finance`, **draft** PR #9. Done: loan, mortgage, emi,
+compound-interest, investment, inflation (type A: `solver` beside the unchanged `inputs` +
+`compute()`), loan-prepayment (type B `breakdown`: Timeline payoff visual, term unit menu on the
+`years` input). Each has full v2 content, references and an "estimates only" note. Shared pieces:
+new **`term` unit dimension** in `lib/units.ts` (months base, years = 12) so loan terms get a
+months/years menu; a **solver visual slot** — `solver.visuals?: BreakdownVisual[]` + `solver.derive?`
+rendered by `BreakdownVisual` from the solved set (`describeSolverKey` / `solverVisualValues` in
+`lib/breakdown.ts`). New tests: every shipped solver solves each field back to its default-state
+value, and its visuals read keys that exist. `npm test` 220 pass, **snapshot unchanged** (type A
+keeps `compute()`; compound-interest's `compute()` now uses the annuity factor, which fixes a 0 ÷ 0
+NaN at 0% with contributions but is identical on every snapshot input). Mortgage's "Loan amount"
+input relabeled "Home price" (Parked item done). Numbers: an independent Python checker matched 87
+copy figures with 0 mismatches, and the app's `compute()`/`solveState()` at defaults agree.
+**Decisions:** type-A ids differ from the `inputs` ids where clearer (`term` in months); no growth
+curve exists in the kit, so compound-interest / investment use a Donut (parked). The step ran as one
+8-calculator run because the brief scoped step 35 that way, though D11 says 5 per run.
+**Resume:** only `paycheck-calculator` remains — plan, verified 2026 IRS/SSA figures and the
+`options` input it needs are in the step file's "Notes for resuming". Then build + lint, STATUS
+DONE, final commit `step 35: batch 1 finance v2`, `gh pr ready`.
+
 ## Pending on the user — not code
 
 - **Cloudflare apex → www 301 (from step 01, still open).**
@@ -759,9 +780,10 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
   **Fixed 2026-10-13** on fix/pregnancy-today
 - **`bmi-calculator` returns `NaN` at its own `min`** (`height` min is 0 → `bmi` = 0/0). Either
   `min` > 0 or a guard. Recorded in `KNOWN_NON_FINITE` in `data/calculators.spec.ts`. Found in step 17.
-- **`mortgage-calculator` input labelled "Loan amount" is really the home price**: `compute`
+- ~~**`mortgage-calculator` input labelled "Loan amount" is really the home price**: `compute`
   subtracts `downPayment` from it (350,000 − 70,000 → principal 280,000), and the example line says
-  "a $350,000 home". Relabel (copy only) during the Batch 1 v2 conversion. Found in step 17.
+  "a $350,000 home". Relabel (copy only) during the Batch 1 v2 conversion. Found in step 17.~~
+  **Fixed in step 35** (label "Home price"; input id unchanged).
 - `app/[locale]/layout.tsx` exports static `metadata` *and* pages export `generateMetadata` with
   overlapping OG/Twitter blocks — the same title string lives in four places. Collapse into
   `lib/seo.ts` helpers. (§4.6)
@@ -820,6 +842,10 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
 - **Currency symbol differs between the widgets** (found in step 33): `SolverCalculator` prints the
   `¤` unit placeholder, `BreakdownCalculator` prints `$` through `lib/calculator.ts`. Step 18 should
   route both through the region-aware `lib/calculator.ts`.
+- **No growth-curve visual in the kit** (found in step 35): the rollout plan asks for a growth
+  curve (contributions vs interest over time) on compound-interest and investment. Those use a
+  Donut for now. Add a `GrowthCurve` (stacked area by year) to `components/visuals/` in its own
+  step, then switch both calculators to it.
 - Baidu SEO for mainland China. Needs an ICP licence and separate tooling; Cloudflare is unreliable
   behind the GFW. The `CN` region profile is for Chinese speakers elsewhere. (§3.5)
 - ~~The four alias stubs return 307~~ — **done in step 03.** They are 301s in `middleware.ts` now

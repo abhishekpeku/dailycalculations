@@ -14,7 +14,9 @@
 - [ ] paycheck-calculator (C → B · Donut where the money goes)
 - [ ] Number verification script, tests, build, lint, STATUS.md, PR ready
 
-Resume from the first unchecked box. Commit + push after each box (`step 35: <id>`).
+Paused 2026-10-19 by the user after loan-prepayment-calculator. Resume from the first unchecked box.
+
+Commit + push after each box (`step 35: <id>`).
 
 **Scope (from `STATUS.md`):** Batch 1 finance (8), YMYL. Convert the 8 existing finance
 calculators to the v2 template: widget type per the plan, units/formats, the listed result
@@ -53,3 +55,32 @@ an "estimates only" note, verified numbers. Ids/URLs unchanged; `calculatorOrder
   interest) and the curve is parked for the kit.
 - **Paycheck C → B** changes the compute contract (the old compute was a flat-rate placeholder; the
   page used `PaycheckCalculator.tsx`). Its snapshot diff is expected and explained in the PR.
+
+## Notes for resuming
+
+- **Verification:** the throwaway checker used so far re-implemented every formula in Python and
+  matched 87 copy figures across the first seven calculators (0 mismatches); the app's own
+  `compute()` and `solveState()` at defaults agree with the worked examples. Write a fresh
+  checker for paycheck's figures (and re-run the copy checks if any earlier copy changes).
+- **Paycheck plan (not started):** C → B through `BreakdownCalculator`, deleting
+  `components/PaycheckCalculator.tsx` and its branch in `app/[locale]/calculators/[slug]/page.tsx`.
+  Needs a small widget addition: `CalculatorInput.options?: { value: number; label: string }[]`
+  rendered as a menu (filing status 0/1/2 = single / married filing jointly / head of household;
+  pay frequency 52/26/24/12), with share-link values restricted to the options. `compute()` must
+  accept any number (the snapshot spec feeds defaults ×1.5 and `min`), e.g. round and clamp the
+  filing status. Proposed inputs: annual salary, pay frequency, filing status, state rate, local
+  rate (optional group), traditional 401(k) % of pay (capped at the annual limit), other pre-tax
+  deductions per paycheck (section 125: health/dental premiums, HSA, FSA), post-tax deductions per
+  paycheck. Visual: Donut of net pay / federal tax / Social Security + Medicare / state + local /
+  deductions, center = gross per paycheck. **The snapshot for paycheck will change** (new compute
+  contract); explain it in the PR.
+- **Use 2026 figures** (today is 2026-10-19; the old component's 2025 standard deduction is also
+  pre-OBBBA and wrong). Checked against IRS Rev. Proc. 2025-32 (IRB 2025-45) on 2026-10-19:
+  standard deduction $16,100 single / $32,200 MFJ / $24,150 HOH. Bracket tops (10/12/22/24/32/35%,
+  then 37%): single 12,400 / 50,400 / 105,700 / 201,775 / 256,225 / 640,600; MFJ 24,800 / 100,800 /
+  211,400 / 403,550 / 512,450 / 768,700; HOH 17,700 / 67,450 / 105,700 / 201,750 / 256,200 / 640,600.
+  Social Security wage base 2026 $184,500 (SSA); 6.2% SS, 1.45% Medicare, +0.9% over $200,000
+  (single/HOH) or $250,000 (MFJ). 401(k) elective deferral limit 2026 $24,500 (IRS newsroom).
+  Traditional 401(k) deferrals are subject to FICA (the old component wrongly exempted them);
+  section 125 premiums are not. The result is annual liability spread over paychecks, not Pub 15-T
+  withholding: say so in the estimate note.

@@ -1,4 +1,5 @@
 import type { UnitDimension } from '@/lib/units';
+import type { Band } from '@/lib/visuals';
 
 export type CalculatorCategory = {
   id: string;
@@ -16,6 +17,71 @@ export type CalculatorInput = {
   defaultValue: number;
   step?: number;
   min?: number;
+  /** Type-B widget: a unit menu from lib/units.ts. `unit` is the one compute() expects (default: the base). */
+  dimension?: UnitDimension;
+  unit?: string;
+};
+
+export type BreakdownFormat = 'currency' | 'percent' | 'integer' | 'number' | 'significant';
+
+/** One figure in the type-B result card: a compute() key or a `derive` key. */
+export type BreakdownOutput = {
+  id: string;
+  /** Default: the key in sentence case. */
+  label?: string;
+  /** Default: currency for money keys and currency inputs, otherwise `number` (up to 2 decimals). */
+  format?: BreakdownFormat;
+  /** The unit the value is in, printed after it. */
+  dimension?: UnitDimension;
+  unit?: string;
+  /** Headline only: other unit ids it is also shown in, e.g. ['L'] beside gallons. */
+  alsoIn?: string[];
+};
+
+/** A value for a visual, named by key: an input id, a compute() key or a `derive` key (display units). */
+export type BreakdownPart = { from: string; label?: string; color?: string };
+
+/** The one result visual of a type-B widget: a component from components/visuals/, fed by key. */
+export type BreakdownVisual =
+  | { type: 'donut'; segments: BreakdownPart[]; center: string; centerSub?: string }
+  | { type: 'compareBars'; bars: BreakdownPart[]; title?: string; highlight?: number }
+  | { type: 'rangeBar'; value: string; bands: Band[]; title?: string; valueLabel?: string }
+  | {
+      type: 'timeline';
+      start: string;
+      end: string;
+      phases?: { label: string; from: string; to: string }[];
+      milestones?: { label: string; at: string }[];
+      /** Key of "today" on the same axis, e.g. `todayMs` (set after mount on timeDependent calculators). */
+      today?: string;
+      startLabel?: string;
+      endLabel?: string;
+      title?: string;
+    }
+  | { type: 'amortization'; principal: string; annualRate: string; months: string; payment?: string }
+  | {
+      type: 'logScale';
+      value: string;
+      min: number;
+      max: number;
+      ticks: string[];
+      benchmarks: { label: string; value: number }[];
+      title?: string;
+      valueLabel?: string;
+    };
+
+/** Type-B "forward + breakdown" widget. Every field is optional: without it the widget uses defaults. */
+export type CalculatorBreakdown = {
+  /** Key of the big accent number. Default: the first compute() key. */
+  headline?: string;
+  headlineLabel?: string;
+  /** Headline and row formats, rows in order. Default: every other compute() key. */
+  outputs?: BreakdownOutput[];
+  /** Inset input groups; optional ones sit behind a disclosure. Unlisted inputs go last. */
+  groups?: { title?: string; inputs: string[]; optional?: true }[];
+  /** Display-only figures from inputs + outputs (compute units), for rows and the visual. */
+  derive?: (values: Record<string, number>) => Record<string, number>;
+  visual?: BreakdownVisual;
 };
 
 export type SolverVariable = {
@@ -125,10 +191,12 @@ export type CalculatorConfig = {
   example: string;
   /** Long-form page content. Absent on calculators that have not been deepened yet. */
   content?: CalculatorContent;
-  /** Present on calculators that can solve for any of their fields. Replaces CalculatorForm. */
+  /** Present on calculators that can solve for any of their fields (type A, SolverCalculator). */
   solver?: CalculatorSolver;
   /** compute() reads the current date (or `values.todayMs`), so results render only after mount. */
   timeDependent?: true;
+  /** Type-B widget layout: headline, rows, input groups, visual. Optional; BreakdownCalculator has defaults. */
+  breakdown?: CalculatorBreakdown;
   inputs: CalculatorInput[];
   seo: {
     title: string;
@@ -137,9 +205,6 @@ export type CalculatorConfig = {
   };
   compute: (values: CalculatorInputValues) => Record<string, number>;
 };
-
-// `content` is server-rendered prose; it has no business in the client flight payload.
-export type CalculatorClientConfig = Omit<CalculatorConfig, 'compute' | 'content' | 'solver'>;
 
 export type CalculatorInputValues = Record<string, number>;
 
@@ -1346,14 +1411,43 @@ export const calculators: CalculatorConfig[] = [
     description: 'Calculate the full cost of your daily commute including fuel, tolls, parking, public transit, and vehicle wear.',
     example: 'Find monthly commute cost for a 25-mile round trip at 30 MPG with $15/day parking and $3 tolls.',
     inputs: [
-      { id: 'roundTripMiles', label: 'Round-trip commute distance (miles)', type: 'number', placeholder: '25', defaultValue: 25, step: 1, min: 0 },
-      { id: 'mpg', label: 'Vehicle MPG', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1 },
+      { id: 'roundTripMiles', label: 'Round-trip commute distance', type: 'number', placeholder: '25', defaultValue: 25, step: 1, min: 0, dimension: 'length', unit: 'mi' },
+      { id: 'mpg', label: 'Vehicle fuel economy', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1, dimension: 'fuelEconomy', unit: 'mpg' },
       { id: 'gasPricePerGallon', label: 'Gas price ($/gallon)', type: 'currency', placeholder: '3.75', defaultValue: 3.75, step: 0.05, min: 0 },
       { id: 'daysPerMonth', label: 'Commute days per month', type: 'number', placeholder: '22', defaultValue: 22, step: 1, min: 1 },
       { id: 'dailyParking', label: 'Daily parking cost', type: 'currency', placeholder: '15', defaultValue: 0, step: 1, min: 0 },
       { id: 'dailyTolls', label: 'Daily tolls', type: 'currency', placeholder: '3', defaultValue: 0, step: 0.25, min: 0 },
       { id: 'wearCostPerMile', label: 'Vehicle wear cost per mile (IRS: $0.21)', type: 'currency', placeholder: '0.21', defaultValue: 0.21, step: 0.01, min: 0 }
     ],
+    breakdown: {
+      headline: 'monthlyTotal',
+      headlineLabel: 'Monthly commute cost',
+      outputs: [
+        { id: 'monthlyTotal', format: 'currency' },
+        { id: 'dailyTotal', label: 'Per day', format: 'currency' },
+        { id: 'annualTotal', label: 'Per year', format: 'currency' },
+        { id: 'monthlyFuel', label: 'Fuel per month', format: 'currency' },
+        { id: 'monthlyParking', label: 'Parking per month', format: 'currency' },
+        { id: 'monthlyTolls', label: 'Tolls per month', format: 'currency' },
+        { id: 'monthlyWear', label: 'Vehicle wear per month', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Trip', inputs: ['roundTripMiles', 'daysPerMonth', 'mpg', 'gasPricePerGallon'] },
+        { title: 'Daily costs', inputs: ['dailyParking', 'dailyTolls', 'wearCostPerMile'] }
+      ],
+      derive: (v) => ({ monthlyTolls: v.dailyTolls * v.daysPerMonth, monthlyWear: v.roundTripMiles * v.wearCostPerMile * v.daysPerMonth }),
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'monthlyFuel', label: 'Fuel' },
+          { from: 'monthlyParking', label: 'Parking' },
+          { from: 'monthlyTolls', label: 'Tolls' },
+          { from: 'monthlyWear', label: 'Wear' }
+        ],
+        center: 'monthlyTotal',
+        centerSub: 'per month'
+      }
+    },
     seo: {
       title: 'Commute Cost Calculator – Full Monthly and Annual Cost',
       description: 'Calculate the true cost of commuting including gas, tolls, parking, and vehicle wear. Compare driving vs public transit.',

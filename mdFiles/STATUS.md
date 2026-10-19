@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-10-13 · Current step: **33** (E5, type-B widget) · steps 17 + 30 + 31 + 32 done (snapshot tests, units v2, solver v2, visuals kit) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
+Last updated: 2026-10-19 · Current step: **34** (E7, split data file) · steps 17 + 30 + 31 + 32 + 33 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
 
 ---
 
@@ -111,7 +111,7 @@ is why 12-15 run after it.
 | 30 | (E2) Units v2 | **DONE** 2026-10-13 | Length, area, volume, time, speed, temperature (affine), energy, power, pressure, data, fuel economy (inverse). | §2 E2 |
 | 31 | (E3) Solver v2 | **DONE** 2026-10-13 | Numeric solve for variables with no closed form (loan rate) + extra outputs beside the auto field. | §2 E3 |
 | 32 | (E4) Result visuals kit | **DONE** 2026-10-13 | RangeBar, Donut, Timeline, AmortizationTable, LogScale (generalized), CompareBars. Hand-rolled SVG. | §2 E4 |
-| 33 | (E5) Type-B widget | TODO | `BreakdownCalculator` replaces `CalculatorForm`. | §2 E5 |
+| 33 | (E5) Type-B widget | **DONE** 2026-10-19 | `BreakdownCalculator` replaces `CalculatorForm`. | §2 E5 |
 | 34 | (E7) Split data file | TODO | `data/calculators/<category>.ts`. **Moved before the batches**: every batch editing one 2,000-line file means huge diffs and a conflict with any other open branch. | §2 E7 |
 | 35 | Batch 1: finance (8) | TODO | YMYL. | §3 |
 | 36 | Batch 2: shopping + conversion (9) | TODO | | §3 |
@@ -679,6 +679,38 @@ units (not SI), the category accent from `TILE_COLORS[categoryTheme(category).co
 `annualRate` (percent number) and `months`. The kit's default `format` is `formatSignificant`
 (cents for the table), with the same `¤` / en-US caveats as before until step 18.
 
+33 · 2026-10-19 · **E5: type-B widget.** New `components/BreakdownCalculator.tsx` renders every
+calculator that has no `solver` and isn't a custom type-C tool (48 pages): grouped inset inputs (unit
+menu when an input sets `dimension` + `unit`), a result card with the headline, breakdown rows and a
+visual slot (`components/BreakdownVisual.tsx`: donut, compareBars, rangeBar, timeline, amortization,
+logScale, fed by key), and share / copy / reset. **Decision: `CalculatorForm` is deleted, no shim**
+(the page was its only caller), and `CalculatorClientConfig` with it. Shared parts (card, field row,
+result panel, output rows, share/copy/reset bar, `widgetAccent`) moved from `SolverCalculator` into
+`components/CalculatorWidget.tsx`; the force page's rendered body is byte-identical to master's.
+Config: optional `CalculatorConfig.breakdown` (`headline`, `headlineLabel`, `outputs`, `groups`,
+`derive`, `visual`); with none, the first compute key is the headline and the rest are rows, and
+currency uses `CalculatorForm`'s exact money rule. Logic in `lib/breakdown.ts`; `compute()` untouched.
+Demo config on `commute-cost-calculator` (groups, mi/km + mpg/L/100 km menus, derived monthly tolls
+and wear, donut); its distance and MPG labels lost their unit suffix. `lib/calculator.ts` gained
+`formatDecimal` and `currencySymbol` (still en-US/USD inside that file, for step 18). **195 tests**
+(new `lib/breakdown.spec.ts`, including "every type-B calculator gives exactly `compute()` at its
+defaults"), snapshot unchanged; build + lint pass. Browser-checked on `next start`: unit switch keeps
+the cost, share link round-trips, reset clears the query, pregnancy shows real-date values after
+mount, no console errors. Step file: `mdFiles/steps/33-type-b-widget.md`. Template §2 gained
+"Type-B widget"; the add-calculator skill step 2 points at it.
+Behavior changes on default pages (display only): results are full, not compact ("$541,116.20", not
+"$541.1K"); labels are sentence case; a blank field shows "—" everywhere instead of computing with 0.
+**Surprise:** a paused earlier attempt exists (branch `step/33-breakdown-widget`, draft PR #6,
+worktree `.claude/worktrees/agent-a0c418cb814f507e7`) with an opt-in design. Superseded by PR #7; see Parked.
+**What step 34 (split data file) needs to know:** the breakdown types (`CalculatorBreakdown`,
+`BreakdownOutput`, `BreakdownVisual`, …) live beside `CalculatorConfig` and import `type Band` from
+`lib/visuals`; `lib/breakdown.spec.ts` imports `calculators` from `../data/calculators.ts`, as
+`data/calculators.spec.ts` does, so both import paths move. `breakdown.derive` is a function, so the
+data stays a `.ts` module imported client-side (as `compute` already requires).
+**What the batches need to know:** set `format: 'currency'` on money outputs whose key doesn't contain
+Amount/Cost/Payment/Interest/Principal (e.g. tip's `perPerson` prints as a plain number today), and
+give every output a real label (`bmi` shows as "Bmi").
+
 ## Pending on the user — not code
 
 - **Cloudflare apex → www 301 (from step 01, still open).**
@@ -755,6 +787,14 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
   benchmarks and marker are placed correctly. Kept as-is in step 32 because the force output had
   to stay visually identical. The fix is evenly spaced exponents (e.g. 10^-2 … 10^10 in steps of 3)
   or positioned ticks in `LogScale`.
+- **Superseded step-33 attempt to clean up** (found in step 33): branch `step/33-breakdown-widget`
+  (local + origin), draft PR #6, and the worktree `.claude/worktrees/agent-a0c418cb814f507e7`.
+  Close #6 and remove the worktree (`git worktree remove`) once PR #7 is merged. Until then,
+  `npm run lint` also lints the worktree's files and fails on them: use
+  `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"`.
+- **Currency symbol differs between the widgets** (found in step 33): `SolverCalculator` prints the
+  `¤` unit placeholder, `BreakdownCalculator` prints `$` through `lib/calculator.ts`. Step 18 should
+  route both through the region-aware `lib/calculator.ts`.
 - Baidu SEO for mainland China. Needs an ICP licence and separate tooling; Cloudflare is unreliable
   behind the GFW. The `CN` region profile is for Chinese speakers elsewhere. (§3.5)
 - ~~The four alias stubs return 307~~ — **done in step 03.** They are 301s in `middleware.ts` now

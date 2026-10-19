@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
-import CalculatorForm from '@/components/CalculatorForm';
+import BreakdownCalculator from '@/components/BreakdownCalculator';
 import GpaCalculator from '@/components/GpaCalculator';
 import PaycheckCalculator from '@/components/PaycheckCalculator';
 import CurrencyConverter from '@/components/CurrencyConverter';
@@ -53,7 +53,7 @@ export default async function CalculatorPage({
   const calculator = findCalculator(slug);
   if (!calculator) notFound();
 
-  const { compute, content, solver, ...clientCalculator } = calculator;
+  const { content, solver } = calculator;
   const jsonLd = buildPageJsonLd(slug);
   const t = await getTranslations({ locale, namespace: 'calculator' });
 
@@ -87,7 +87,7 @@ export default async function CalculatorPage({
     slug === 'hashtag-counter' ? <TextToolsCalculator mode="hashtag" /> :
     slug === 'pomodoro-timer' ? <PomodoroTimer /> :
     slug === 'timezone-meeting-planner' ? <TimeZonePlanner /> :
-    <CalculatorForm calculator={clientCalculator} />;
+    <BreakdownCalculator calculatorId={calculator.id} />;
   const example = <p className="text-sm text-slate-500 dark:text-slate-400">Example: {calculator.example}</p>;
 
   const intro = (

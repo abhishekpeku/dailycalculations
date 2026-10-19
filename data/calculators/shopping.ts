@@ -260,12 +260,108 @@ export const shoppingCalculators: CalculatorConfig[] = [
   {
     id: 'discount-calculator',
     category: 'shopping',
-    updatedAt: '2026-09-10',
-    aliases: ['percent off calculator', 'sale price calculator', 'markdown calculator', 'savings calculator'],
-    related: ['sales-tax-calculator', 'cashback-calculator', 'unit-price-calculator'],
+    updatedAt: '2026-10-19',
+    aliases: ['percent off calculator', 'sale price calculator', 'markdown calculator', 'savings calculator', 'stacked discount calculator'],
+    related: ['sales-tax-calculator', 'cashback-calculator', 'unit-price-calculator', 'tip-calculator'],
     title: 'Discount Calculator',
-    description: 'Calculate sale price, savings amount, and effective discount percentage for any purchase.',
-    example: 'Find the final price of a $120 jacket with 30% off plus an additional 10% coupon.',
+    description: 'Find the sale price after a percent-off discount, the original price behind a sale price, or the discount you are really getting, with an optional second coupon and sales tax.',
+    example: 'A $120 jacket at 30% off with an extra 10% coupon costs $75.60: you save $44.40, a total discount of 37%, not 40%.',
+    solver: {
+      defaultTarget: 'salePrice',
+      variables: [
+        { id: 'salePrice', label: 'Sale price', symbol: 'S', dimension: 'currency', defaultValue: 75.6, defaultUnit: 'currency' },
+        { id: 'originalPrice', label: 'Original price', symbol: 'O', dimension: 'currency', defaultValue: 120, defaultUnit: 'currency' },
+        { id: 'discount', label: 'Discount', symbol: 'd', dimension: 'percent', defaultValue: 30, defaultUnit: '%' },
+        { id: 'extraDiscount', label: 'Extra coupon on the sale price', symbol: 'c', dimension: 'percent', defaultValue: 10, defaultUnit: '%', fixed: true },
+        { id: 'taxRate', label: 'Sales tax rate', symbol: 'r', dimension: 'percent', defaultValue: 0, defaultUnit: '%', fixed: true }
+      ],
+      solve: {
+        salePrice: ({ originalPrice, discount, extraDiscount }) => originalPrice * (1 - discount / 100) * (1 - extraDiscount / 100),
+        originalPrice: ({ salePrice, discount, extraDiscount }) => {
+          const kept = (1 - discount / 100) * (1 - extraDiscount / 100);
+          return kept > 0 ? salePrice / kept : NaN;
+        },
+        // A sale price above the original would be a negative discount: no answer.
+        discount: ({ salePrice, originalPrice, extraDiscount }) => {
+          const afterCoupon = originalPrice * (1 - extraDiscount / 100);
+          const d = afterCoupon > 0 ? (1 - salePrice / afterCoupon) * 100 : NaN;
+          return d >= 0 && d <= 100 ? d : NaN;
+        }
+      },
+      outputs: [
+        { id: 'savings', label: 'You save', dimension: 'currency', compute: (si) => si.originalPrice - si.salePrice },
+        { id: 'totalDiscount', label: 'Total discount', dimension: 'percent', compute: (si) => (si.originalPrice > 0 ? (1 - si.salePrice / si.originalPrice) * 100 : NaN) },
+        { id: 'afterFirst', label: 'Price after the first discount', dimension: 'currency', compute: (si) => si.originalPrice * (1 - si.discount / 100) },
+        { id: 'tax', label: 'Sales tax on the sale price', dimension: 'currency', compute: (si) => si.salePrice * (si.taxRate / 100) },
+        { id: 'finalPrice', label: 'Sale price with tax', dimension: 'currency', compute: (si) => si.salePrice * (1 + si.taxRate / 100) }
+      ],
+      visuals: [
+        {
+          type: 'compareBars',
+          bars: [{ from: 'originalPrice', label: 'Original price' }, { from: 'salePrice', label: 'You pay (before tax)' }],
+          title: 'Before and after the discount',
+          highlight: 1
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-19',
+      concept: {
+        title: 'How percent-off discounts work',
+        paragraphs: [
+          'A percent-off discount takes a share of the price away. At 30% off you pay the other 70%, so the sale price is the original price times 0.70. Thinking in terms of the share you keep paying, rather than the share taken off, makes every other discount question easier.',
+          'Stacked discounts multiply; they do not add. A 30% markdown followed by an extra 10% coupon means you pay 70% of the price, then 90% of that, which is 63% of the original. The total discount is 37%, not 40%, because the coupon applies to the already-reduced price. The order does not matter: 10% off and then 30% off lands on the same price.',
+          'The same idea runs backwards. If you know the sale price and the percentage off, divide by the share you paid to recover the original price. If you know both prices, the discount is one minus their ratio. This calculator does all three, and adds sales tax on the reduced price when you enter a rate, because in most US states tax is charged on what you actually pay after a store discount.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of sale price, original price and discount. The third, marked auto, is calculated. The extra coupon and the tax rate are always inputs; set them to 0 to leave them out.',
+        steps: [
+          { name: 'Find the sale price', text: 'Type the original price and the percent off. The sale price, your savings and the total discount appear.' },
+          { name: 'Stack a coupon', text: 'Enter an extra percent-off coupon. It applies to the already-discounted price, as most store coupons do.' },
+          { name: 'Find the original price', text: 'Type the sale price and the discount, and leave the original price alone. It becomes the auto field.' },
+          { name: 'Check a "percent off" claim', text: 'Type the original and sale prices and leave the discount alone to see the real percentage.' },
+          { name: 'Add sales tax', text: 'Enter your sales tax rate to see the tax on the sale price and what you pay at the register.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Each discount multiplies the price by the share you still pay. Every field has a direct rearrangement.',
+        expression: 'S = O × (1 − d) × (1 − c)\nO = S ÷ ((1 − d) × (1 − c))\nd = 1 − S ÷ (O × (1 − c))\nTotal discount = 1 − S ÷ O\nWith tax = S × (1 + r)',
+        terms: [
+          { symbol: 'S', meaning: 'Sale price, after every discount and before tax.' },
+          { symbol: 'O', meaning: 'Original price.' },
+          { symbol: 'd', meaning: 'First discount as a decimal (30% = 0.30).' },
+          { symbol: 'c', meaning: 'Extra coupon on the sale price as a decimal (0 when there is none).' },
+          { symbol: 'r', meaning: 'Sales tax rate as a decimal.' }
+        ],
+        note: 'Coupons for a fixed amount (such as $10 off) are not percentages. Subtract them from the sale price yourself. Stores round to the cent, so a receipt can differ by a cent.'
+      },
+      workedExample: {
+        intro: 'A $120 jacket is marked 30% off, and you have a coupon for an extra 10% off the sale price. What do you pay, and what is the real discount? What if your sales tax is 8.25%?',
+        rows: [
+          { label: 'After 30% off (120 × 0.70)', value: '$84.00' },
+          { label: 'After the extra 10% (84 × 0.90)', value: '$75.60' },
+          { label: 'You save (120 − 75.60)', value: '$44.40' },
+          { label: 'Total discount (1 − 75.60 ÷ 120)', value: '37%' },
+          { label: 'Sales tax at 8.25% (75.60 × 0.0825)', value: '$6.24' },
+          { label: 'At the register (75.60 × 1.0825)', value: '$81.84' }
+        ],
+        result: 'S = $75.60 · you save $44.40, a 37% total discount',
+        explanation: 'Adding the two percentages would suggest 40% off and a $72.00 price. The coupon only takes 10% of the $84.00 sale price, $8.40, rather than 10% of the original $120, so you pay $3.60 more than the "40% off" figure.'
+      },
+      watchOut: [
+        { title: 'Stacked discounts do not add up', body: '30% off plus 10% off is 37% off, and two 50% discounts are 75% off, not free. Multiply the shares you pay instead of adding the percentages.' },
+        { title: 'Check the "original" price', body: 'A big percentage means little if the original price was inflated. The Federal Trade Commission\'s pricing guides say a "was" price should be one the item was really offered at, openly and in good faith, for a reasonable length of time.' },
+        { title: 'Dollar-off coupons are different', body: 'A $10-off coupon saves the same on any price, so it is worth more on a cheap item in percentage terms. This calculator takes percentages; subtract a fixed coupon from the sale price.' },
+        { title: 'Tax is on the price you pay', body: 'Store discounts usually lower the taxable price. Manufacturer coupons are taxed differently in some states, where tax is charged on the price before the coupon.' }
+      ],
+      references: [
+        { label: 'OpenStax, Contemporary Mathematics, §6.2 Discounts, Markups, and Sales Tax', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-2-discounts-markups-and-sales-tax' },
+        { label: 'Federal Trade Commission, Guides Against Deceptive Pricing, 16 CFR Part 233', url: 'https://www.ecfr.gov/current/title-16/chapter-I/subchapter-B/part-233' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.1 Understanding Percent', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-1-understanding-percent' }
+      ]
+    },
     inputs: [
       { id: 'originalPrice', label: 'Original price', type: 'currency', placeholder: '120', defaultValue: 120, step: 1, min: 0 },
       { id: 'discountPercent', label: 'Discount percentage', type: 'percent', placeholder: '30', defaultValue: 30, step: 0.5, min: 0 },
@@ -273,11 +369,15 @@ export const shoppingCalculators: CalculatorConfig[] = [
       { id: 'salesTaxRate', label: 'Sales tax rate', type: 'percent', placeholder: '8.25', defaultValue: 0, step: 0.01, min: 0 }
     ],
     seo: {
-      title: 'Discount Calculator – Sale Price and Savings',
-      description: 'Calculate the final price after single or stacked discounts, plus sales tax. Shows total savings and effective discount percentage.',
+      title: 'Discount Calculator – Sale Price, Savings & % Off',
+      description: 'Free discount calculator: sale price after percent off, stacked coupons and tax, the original price behind a sale, or the real discount between two prices.',
       faq: [
-        { question: 'How do stacked discounts work?', answer: 'Stacked discounts apply sequentially, not additively. A 30% off then 10% off is not 40% off — it is 37% off total (you pay 70% then 90% of that).' },
-        { question: 'What is the best day to shop for discounts in the US?', answer: 'Black Friday, Cyber Monday, Labor Day, and end-of-season sales typically offer the deepest discounts. Retail markdowns are also common mid-week.' }
+        { question: 'How do I calculate a discount?', answer: 'Multiply the original price by 1 minus the discount. At 30% off, a $120 item costs 120 × 0.70 = $84.00, and you save $36.00.' },
+        { question: 'How do stacked discounts work?', answer: 'They multiply. 30% off and then an extra 10% off means you pay 0.70 × 0.90 = 63% of the price, a 37% total discount, not 40%. On $120 that is $75.60.' },
+        { question: 'How do I find the original price from the sale price?', answer: 'Divide the sale price by the share you paid. A $45 item at 25% off was 45 ÷ 0.75 = $60.00 before the discount.' },
+        { question: 'How do I work out the percent off between two prices?', answer: 'Divide the sale price by the original and subtract the result from 1. A price cut from $80 to $56 is 1 − 56 ÷ 80 = 0.30, or 30% off.' },
+        { question: 'Is 20% off and then another 20% off the same as 40% off?', answer: 'No. You pay 0.80 × 0.80 = 64% of the price, so the total discount is 36%. On a $50 item that is $32.00, not $30.00.' },
+        { question: 'Is sales tax charged before or after a discount?', answer: 'For a store discount, tax is normally charged on the reduced price. With 8.25% tax, the $75.60 jacket costs $81.84 at the register. Some states tax manufacturer coupons on the price before the coupon.' }
       ]
     },
     compute(values) {

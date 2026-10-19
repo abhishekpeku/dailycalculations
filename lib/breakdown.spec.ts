@@ -130,7 +130,8 @@ describe('evaluateBreakdown', () => {
       for (const key of outputKeys) assert.ok(Object.is(all[key], expected[key]), `${calculator.id}.${key}: ${all[key]} vs ${expected[key]}`);
       checked++;
     }
-    assert.ok(checked >= 40, `checked ${checked}`);
+    // Guards against an empty loop only: the count falls as the rollout batches move calculators to type A.
+    assert.ok(checked >= 20, `checked ${checked}`);
   });
 
   test('typed values reach compute() unchanged', () => {

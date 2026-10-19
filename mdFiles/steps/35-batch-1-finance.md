@@ -9,7 +9,7 @@
 - [x] emi-calculator (A · Donut + AmortizationTable (yearly); down payment fixed)
 - [x] compound-interest-calculator (A · Donut start/contributions/interest)
 - [x] investment-calculator (A · Donut initial/contributions/growth)
-- [ ] inflation-calculator (A · CompareBars then vs now)
+- [x] inflation-calculator (A · CompareBars then vs now)
 - [ ] loan-prepayment-calculator (B · Timeline payoff)
 - [ ] paycheck-calculator (C → B · Donut where the money goes)
 - [ ] Number verification script, tests, build, lint, STATUS.md, PR ready

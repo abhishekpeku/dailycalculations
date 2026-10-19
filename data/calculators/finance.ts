@@ -665,23 +665,116 @@ export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'inflation-calculator',
     category: 'finance',
-    updatedAt: '2026-09-10',
+    updatedAt: '2026-10-19',
     aliases: ['purchasing power calculator', 'cost of living calculator', 'value of money over time calculator', 'price increase calculator'],
     related: ['compound-interest-calculator', 'investment-calculator', 'salary-raise-calculator', 'electricity-bill-calculator'],
     title: 'Inflation Calculator',
-    description: 'Find the future value of money accounting for inflation, or compare purchasing power across years.',
-    example: 'See what $10,000 is worth in 10 years with 3% annual inflation.',
+    description: 'See what something costing a given amount today will cost after years of inflation, or work out the inflation rate or number of years behind a price change.',
+    example: 'At 3% a year, something that costs $10,000 today will cost about $13,439 in 10 years, and $10,000 then will buy only what about $7,441 buys today.',
+    solver: {
+      defaultTarget: 'futureValue',
+      variables: [
+        { id: 'futureValue', label: 'Future cost', symbol: 'FV', dimension: 'currency', defaultValue: 13439.16, defaultUnit: 'currency' },
+        { id: 'amount', label: 'Cost today', symbol: 'A', dimension: 'currency', defaultValue: 10000, defaultUnit: 'currency' },
+        { id: 'years', label: 'Time', symbol: 't', dimension: 'term', defaultValue: 10, defaultUnit: 'yr' },
+        { id: 'inflationRate', label: 'Annual inflation rate', symbol: 'i', dimension: 'percent', defaultValue: 3, defaultUnit: '%' }
+      ],
+      // `years` arrives in months (the term dimension's base).
+      solve: {
+        futureValue: ({ amount, years, inflationRate }) => amount * (1 + inflationRate / 100) ** (years / 12),
+        amount: ({ futureValue, years, inflationRate }) => futureValue / (1 + inflationRate / 100) ** (years / 12),
+        years: ({ futureValue, amount, inflationRate }) => {
+          const t = (Math.log(futureValue / amount) / Math.log(1 + inflationRate / 100)) * 12;
+          return t >= 0 ? t : NaN;
+        },
+        inflationRate: ({ futureValue, amount, years }) =>
+          years > 0 && amount > 0 && futureValue > 0 ? ((futureValue / amount) ** (12 / years) - 1) * 100 : NaN
+      },
+      outputs: [
+        { id: 'increase', label: 'Price increase', dimension: 'currency', compute: (si) => si.futureValue - si.amount },
+        { id: 'todaysValue', label: 'What the same amount will buy then, in today\'s money', dimension: 'currency', compute: (si) => (si.amount * si.amount) / si.futureValue },
+        { id: 'powerLost', label: 'Purchasing power lost', dimension: 'percent', compute: (si) => (1 - si.amount / si.futureValue) * 100 }
+      ],
+      visuals: [
+        {
+          type: 'compareBars',
+          bars: [{ from: 'amount', label: 'Cost today' }, { from: 'futureValue', label: 'Cost after inflation' }],
+          title: 'Then vs now',
+          highlight: 1
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-19',
+      concept: {
+        title: 'What is inflation?',
+        paragraphs: [
+          'Inflation is the general rise in prices over time. When prices rise, each dollar buys a little less, so inflation is also a fall in the purchasing power of money. In the US it is usually measured by the Consumer Price Index (CPI), which the Bureau of Labor Statistics publishes every month from the prices of a broad basket of goods and services.',
+          'Inflation compounds like interest. At 3% a year, prices are 3% higher after one year, and the next year\'s 3% applies to those higher prices. That is why a modest-looking rate adds up: at 3% a year, prices roughly double in about 23 and a half years.',
+          'The Federal Reserve aims for inflation of 2% a year over the longer run, measured by the price index for personal consumption expenditures. Actual inflation varies a lot from year to year, so for long-range planning people often try a few rates rather than relying on one.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of the four fields. The fourth, marked auto, is calculated as you type.',
+        steps: [
+          { name: 'Project a future cost', text: 'Type today\'s cost, the number of years and an annual inflation rate. The future cost is calculated, along with the increase and the purchasing power lost.' },
+          { name: 'Find the inflation rate', text: 'Type a past price as the cost today, the price now as the future cost, and the years between them. Leave the rate alone and the average annual inflation is calculated.' },
+          { name: 'Find how long it takes', text: 'Leave the time alone to see how many years a given rate takes to raise a price to a target.' },
+          { name: 'Switch years and months', text: 'Use the menu beside the time field to enter it in months.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Prices grow by the inflation rate every year, compounded. Each rearrangement has a closed form, so every field is solved directly.',
+        expression: 'FV = A × (1 + i)^t\nA = FV ÷ (1 + i)^t\ni = (FV ÷ A)^(1/t) − 1\nt = ln(FV ÷ A) ÷ ln(1 + i)',
+        terms: [
+          { symbol: 'FV', meaning: 'Future cost after t years of inflation.' },
+          { symbol: 'A', meaning: 'Cost today.' },
+          { symbol: 'i', meaning: 'Average annual inflation rate as a decimal (3% = 0.03).' },
+          { symbol: 't', meaning: 'Time in years.' },
+          { symbol: 'A² ÷ FV', meaning: 'What the same nominal amount will buy at the end, expressed in today\'s dollars: A ÷ (1 + i)^t.' }
+        ],
+        note: 'Estimates only. A constant rate is a simplification: real inflation changes every year and differs between categories such as housing, food and health care.'
+      },
+      workedExample: {
+        intro: 'Something costs $10,000 today. If inflation averages 3% a year, what will it cost in 10 years, and what will $10,000 then be worth in today\'s money?',
+        rows: [
+          { label: 'Growth factor 1.03^10', value: '1.343916' },
+          { label: 'Future cost (10,000 × 1.343916)', value: '$13,439.16' },
+          { label: 'Price increase (13,439.16 − 10,000)', value: '$3,439.16' },
+          { label: 'Today\'s value of $10,000 then (10,000 ÷ 1.343916)', value: '$7,440.94' },
+          { label: 'Purchasing power lost (1 − 1 ÷ 1.343916)', value: '25.59%' }
+        ],
+        result: 'FV ≈ $13,439 · $10,000 then buys about $7,441 of today\'s goods',
+        explanation: 'Prices rise by about 34% in total over the 10 years, more than 10 × 3% = 30%, because each year\'s increase applies to the previous year\'s higher price. Put the other way, a dollar loses about a quarter of its purchasing power.'
+      },
+      watchOut: [
+        { title: 'Estimates only', body: 'Future inflation is unknown. Use a range of rates (for example 2%, 3% and 4%) and treat the results as scenarios, not forecasts.' },
+        { title: 'Your own inflation differs', body: 'The CPI averages a broad basket. If most of your spending goes on rent, tuition or medical care, prices you face may rise faster or slower than the headline rate.' },
+        { title: 'Past price changes need real index data', body: 'To compare actual prices between two past years, the exact answer comes from the published CPI for those years. The rate this calculator returns is the constant average that connects the two prices.' },
+        { title: 'Nominal and real returns', body: 'If savings earn 4% while prices rise 3%, the real gain is only about 1% a year. Compare the compound interest result with this one to see growth in today\'s money.' }
+      ],
+      references: [
+        { label: 'U.S. Bureau of Labor Statistics, Consumer Price Index', url: 'https://www.bls.gov/cpi/' },
+        { label: 'Board of Governors of the Federal Reserve System, Why does the Federal Reserve aim for inflation of 2 percent over the longer run?', url: 'https://www.federalreserve.gov/faqs/economy_14400.htm' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.4 Compound Interest', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-4-compound-interest' }
+      ]
+    },
     inputs: [
       { id: 'amount', label: 'Starting amount', type: 'currency', placeholder: '10000', defaultValue: 10000, step: 100, min: 0 },
       { id: 'inflationRate', label: 'Annual inflation rate', type: 'percent', placeholder: '3', defaultValue: 3, step: 0.1, min: 0 },
       { id: 'years', label: 'Years', type: 'number', placeholder: '10', defaultValue: 10, step: 1, min: 1 }
     ],
     seo: {
-      title: 'Inflation Calculator – Purchasing Power Over Time',
-      description: 'Calculate how inflation erodes purchasing power over time. Enter a starting amount, inflation rate, and number of years to see what today\'s dollars will be worth in the future.',
+      title: 'Inflation Calculator – Future Cost & Purchasing Power',
+      description: 'Free inflation calculator: future cost of today\'s prices, purchasing power lost, or the average inflation rate or years behind a price change.',
       faq: [
-        { question: 'What is the average US inflation rate?', answer: 'The Federal Reserve targets 2% annual inflation. The long-term US average is approximately 3.3% since 1914.' },
-        { question: 'What is the Rule of 72 for inflation?', answer: 'Divide 72 by the inflation rate to estimate how many years it takes for prices to double. At 3%, prices double roughly every 24 years.' }
+        { question: 'How do I calculate the effect of inflation?', answer: 'Multiply today\'s cost by (1 + rate)^years. At 3% a year, $10,000 becomes about $13,439 after 10 years.' },
+        { question: 'What will my money be worth in the future?', answer: 'Divide by the same factor instead. At 3% a year, $10,000 in 10 years will buy what about $7,441 buys today, a loss of about 25.6% of its purchasing power.' },
+        { question: 'How do I find the inflation rate between two prices?', answer: 'Use i = (new price ÷ old price)^(1/years) − 1. A price that rose from $100 to $150 over 10 years averaged about 4.14% a year.' },
+        { question: 'What inflation rate does the Federal Reserve target?', answer: 'The Federal Reserve aims for 2% a year over the longer run, measured by the price index for personal consumption expenditures. Actual inflation is often above or below that in any given year.' },
+        { question: 'What is the Rule of 72 for inflation?', answer: 'Divide 72 by the inflation rate to estimate how many years prices take to double. At 3% that gives 24 years; the exact figure is about 23.4 years.' },
+        { question: 'How long until prices rise by half?', answer: 'Enter a future cost 1.5 times today\'s and leave the time to be calculated. At 3% a year it takes about 13.7 years.' }
       ]
     },
     compute(values) {

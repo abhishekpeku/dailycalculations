@@ -227,21 +227,109 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'pounds-to-kilograms-converter',
     category: 'measurements',
-    updatedAt: '2026-09-10',
-    aliases: ['lbs to kg converter', 'weight converter', 'kg to pounds calculator', 'stone to kg converter'],
+    updatedAt: '2026-10-19',
+    aliases: ['lbs to kg converter', 'weight converter', 'kg to pounds calculator', 'stone to kg converter', 'lb to kg'],
     related: ['bmi-calculator', 'miles-to-kilometers-converter', 'gallons-to-liters-converter', 'fahrenheit-to-celsius-converter'],
     title: 'Pounds to Kilograms Converter',
-    description: 'Convert pounds to kilograms quickly and accurately.',
-    example: 'Convert 150 pounds to kilograms for fitness or shipping estimates.',
+    description: 'Convert pounds to kilograms, or kilograms to pounds, as you type. Stone, ounces, grams and tonnes are in the unit menus too.',
+    example: '150 lb is 68.04 kg, and 70 kg is 154.32 lb, or 11 stone and about a third of a pound.',
+    solver: {
+      defaultTarget: 'kilograms',
+      variables: [
+        { id: 'kilograms', label: 'Kilograms', symbol: 'kg', dimension: 'mass', defaultValue: 68.0389, defaultUnit: 'kg' },
+        { id: 'pounds', label: 'Pounds', symbol: 'lb', dimension: 'mass', defaultValue: 150, defaultUnit: 'lb' }
+      ],
+      // Both fields hold the same mass (in kg); the unit menus do the converting.
+      solve: {
+        kilograms: ({ pounds }) => (pounds >= 0 ? pounds : NaN),
+        pounds: ({ kilograms }) => (kilograms >= 0 ? kilograms : NaN)
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'kilograms',
+          min: -1,
+          max: 3,
+          ticks: ['0.1 kg', '1 kg', '10 kg', '100 kg', '1,000 kg'],
+          benchmarks: [
+            { label: '1 pound', value: 0.4536 },
+            { label: '1 stone', value: 6.35 },
+            { label: '100 pounds', value: 45.36 },
+            { label: 'US short ton (2,000 lb)', value: 907.2 }
+          ],
+          title: 'How heavy is that?',
+          valueLabel: 'Your weight'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-19',
+      concept: {
+        title: 'Pounds, stone and kilograms',
+        paragraphs: [
+          'The kilogram is the SI unit of mass, used for weight in almost every country. The pound is the customary unit in the US, and it is still common for body weight in the UK alongside the stone. Since 1959, the pound has been defined from the kilogram: one pound is exactly 0.45359237 kg.',
+          'Because the definition is exact, converting is one multiplication with no offset. One kilogram is about 2.20462 pounds, a little over two. A pound divides into 16 ounces of about 28.35 grams each, and 14 pounds make one stone, about 6.35 kg. British body weights are often given as "11 st 4 lb", meaning 11 stone plus 4 pounds, or 158 lb.',
+          'Everyday "weight" is really mass. A scale measures the downward force of gravity and shows it in kilograms or pounds, which is the right number for food, luggage, freight and people. Physics separates the two: the newton is the unit of force, and the force calculator on this site converts between them.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a weight in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Pounds to kilograms', text: 'Type the number of pounds. The kilograms field shows the conversion.' },
+          { name: 'Kilograms to pounds', text: 'Type into the kilograms field instead. It becomes the input and the pounds field is calculated.' },
+          { name: 'Use stone', text: 'Pick st from either menu for stone. For stone and pounds such as 11 st 4 lb, enter the total in pounds (11 × 14 + 4 = 158 lb).' },
+          { name: 'Use other units', text: 'The menus also offer grams, ounces and metric tonnes.' },
+          { name: 'Read the scale', text: 'The scale places the weight between a pound and a US ton.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'A pound is a fixed number of kilograms, so the conversion is one multiplication or division.',
+        expression: 'kg = lb × 0.45359237\nlb = kg ÷ 0.45359237 ≈ kg × 2.20462\nst = lb ÷ 14',
+        terms: [
+          { symbol: 'lb', meaning: 'Mass in avoirdupois pounds, the everyday pound.' },
+          { symbol: 'kg', meaning: 'Mass in kilograms.' },
+          { symbol: '0.45359237', meaning: 'Kilograms in a pound, exact by definition since 1959.' },
+          { symbol: 'st', meaning: 'Stone, 14 pounds (6.35029318 kg).' }
+        ],
+        note: 'The factors are exact. Results are rounded for display only.'
+      },
+      workedExample: {
+        intro: 'You weigh 150 lb and a form asks for kilograms. What do you enter, and what is that in stone?',
+        rows: [
+          { label: '150 × 0.45359237', value: '68.04 kg' },
+          { label: '150 ÷ 14', value: '10.71 st' },
+          { label: 'Whole stone and pounds (10 × 14 = 140, 150 − 140)', value: '10 st 10 lb' },
+          { label: 'Quick check: half of 150, minus 10%', value: '75 − 7.5 = 67.5 kg' }
+        ],
+        result: '150 lb ≈ 68.04 kg = 10 st 10 lb',
+        explanation: 'Halving and taking off 10% gives 0.45 kg per pound, under 1% below the exact 0.4536. For kilograms to pounds, double the figure and add 10%: 68 kg gives 136 + 13.6 = 149.6 lb.'
+      },
+      watchOut: [
+        { title: 'Stone and pounds are mixed units', body: '11 st 4 lb is not 11.4 stone. It is 11 + 4/14 ≈ 11.29 stone, or 158 lb. Convert it to pounds first.' },
+        { title: 'Tons come in three sizes', body: 'A US short ton is 2,000 lb (907.18 kg), a UK long ton 2,240 lb (1,016.05 kg) and a metric tonne 1,000 kg (2,204.62 lb). Check which one a figure uses.' },
+        { title: 'Troy weights are for precious metals', body: 'Gold and silver are priced per troy ounce, about 31.10 g, heavier than the everyday 28.35 g ounce. This converter uses everyday (avoirdupois) pounds and ounces.' },
+        { title: 'Rounded factors add up', body: 'Using 0.45 or 2.2 is fine for a quick check, but 2.2 understates by about 0.2%. For shipping, dosing or anything billed by weight, use the exact factor.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' },
+        { label: 'UK Weights and Measures Act 1985, Schedule 1 (definitions of the pound and the stone)', url: 'https://www.legislation.gov.uk/ukpga/1985/72/schedule/1' }
+      ]
+    },
     inputs: [
       { id: 'pounds', label: 'Pounds', type: 'number', placeholder: '150', defaultValue: 150, step: 0.1, min: 0 }
     ],
     seo: {
-      title: 'Pounds to Kilograms Converter',
-      description: 'Fast, accurate conversion from pounds to kilograms. Useful for tracking fitness or weight-loss goals, calculating shipping weights, or converting to the metric system.',
+      title: 'Pounds to Kilograms Converter (lb to kg, Stone)',
+      description: 'Free pounds to kilograms converter: lb to kg and kg to lb as you type, plus stone, ounces and grams, with the exact factor and a worked example.',
       faq: [
-        { question: 'How do I convert pounds to kilograms?', answer: 'Multiply pounds by 0.453592 to get kilograms.' },
-        { question: 'Is this converter accurate?', answer: 'Yes, it uses the standard conversion factor for pounds to kilograms.' }
+        { question: 'How do I convert pounds to kilograms?', answer: 'Multiply by 0.45359237. For 150 lb: 150 × 0.45359237 ≈ 68.04 kg.' },
+        { question: 'How do I convert kilograms to pounds?', answer: 'Divide by 0.45359237, or multiply by about 2.20462. 70 kg is about 154.32 lb.' },
+        { question: 'How many kilograms is a stone?', answer: 'One stone is 14 pounds, exactly 6.35029318 kg. 11 st 4 lb is 158 lb, about 71.67 kg.' },
+        { question: 'What is 100 kg in pounds and stone?', answer: 'About 220.46 lb, which is 15.75 stone, or 15 st 10.5 lb.' },
+        { question: 'How many ounces are in a pound?', answer: 'Sixteen. An ounce is about 28.35 grams, so a pound is about 453.6 grams.' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'For kilograms, halve the pounds and take off 10%: 150 lb gives 67.5 kg against 68.04 exactly. For pounds, double the kilograms and add 10%.' }
       ]
     },
     compute(values) {

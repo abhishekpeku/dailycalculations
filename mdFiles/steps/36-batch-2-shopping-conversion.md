@@ -11,7 +11,7 @@
 - [x] fahrenheit-to-celsius-converter (A · RangeBar freezing / body / boiling, in °C; plan: thermometer, not in kit)
 - [x] gallons-to-liters-converter (A · LogScale with can / gallon / 5 gal / oil barrel; plan: common-values table, not in kit)
 - [x] miles-to-kilometers-converter (A · LogScale with mile / 5K / half / marathon; plan: common-distances table, not in kit)
-- [ ] pounds-to-kilograms-converter (A, 2 fields; add stone to `mass`)
+- [x] pounds-to-kilograms-converter (A · LogScale with pound / stone / 100 lb / short ton; stone added to `mass`; plan: common-values table, not in kit)
 - [ ] Number verification script, tests, build, lint, STATUS.md, PR ready
 
 Commit + push after each box (`step 36: <id>`). Runs are 5 calculators (D11): the first run

@@ -10,7 +10,7 @@
 - [x] compound-interest-calculator (A · Donut start/contributions/interest)
 - [x] investment-calculator (A · Donut initial/contributions/growth)
 - [x] inflation-calculator (A · CompareBars then vs now)
-- [ ] loan-prepayment-calculator (B · Timeline payoff)
+- [x] loan-prepayment-calculator (B · Timeline payoff)
 - [ ] paycheck-calculator (C → B · Donut where the money goes)
 - [ ] Number verification script, tests, build, lint, STATUS.md, PR ready
 

@@ -618,25 +618,114 @@ export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'loan-prepayment-calculator',
     category: 'finance',
-    updatedAt: '2026-09-10',
+    updatedAt: '2026-10-19',
     aliases: ['extra payment calculator', 'early payoff calculator', 'mortgage payoff calculator', 'interest saved calculator'],
     related: ['mortgage-calculator', 'loan-calculator', 'emi-calculator', 'compound-interest-calculator'],
     title: 'Loan Prepayment Calculator',
-    description: 'See how extra payments reduce your loan payoff time and total interest. Works for mortgages, auto loans, personal loans, and student loans — all of which allow prepayment in the US.',
-    example: 'Pay an extra $200/month on a $20,000 auto loan at 6% APR and see how much faster it is paid off.',
+    description: 'See how an extra monthly payment shortens a loan and how much interest it saves. Works for mortgages, auto loans, personal loans and student loans.',
+    example: 'Paying an extra $200 a month on a $20,000, 5-year loan at 6% APR pays it off in 38 months instead of 60 and saves about $1,217 in interest.',
+    breakdown: {
+      headline: 'interestSaved',
+      headlineLabel: 'Interest saved',
+      outputs: [
+        { id: 'interestSaved', label: 'Interest saved', format: 'currency' },
+        { id: 'monthsSaved', label: 'Paid off sooner by', format: 'integer', dimension: 'term', unit: 'mo' },
+        { id: 'newPayoffMonths', label: 'New payoff time', format: 'integer', dimension: 'term', unit: 'mo' },
+        { id: 'regularMonthlyPayment', label: 'Regular monthly payment', format: 'currency' },
+        { id: 'newMonthlyPayment', label: 'Monthly payment with the extra', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your loan', inputs: ['loanAmount', 'interestRate', 'years'] },
+        { title: 'Extra payment', inputs: ['extraPayment'] }
+      ],
+      derive: (values) => ({ start: 0, originalMonths: Math.max(1, values.years * 12) }),
+      visual: {
+        type: 'timeline',
+        start: 'start',
+        end: 'originalMonths',
+        phases: [
+          { label: 'Paying with the extra', from: 'start', to: 'newPayoffMonths' },
+          { label: 'Months saved', from: 'newPayoffMonths', to: 'originalMonths' }
+        ],
+        startLabel: 'today',
+        endLabel: 'the original payoff date',
+        title: 'Payoff timeline'
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-19',
+      concept: {
+        title: 'Why extra payments save so much',
+        paragraphs: [
+          'On an amortized loan, each month\'s interest is charged on the balance you still owe. Any extra amount you pay goes straight to principal, so the balance drops faster, next month\'s interest is smaller, and more of every later payment goes to principal as well. The savings compound in your favor in the same way interest compounds against you.',
+          'Your required payment stays the same; the loan simply ends early. This calculator keeps the regular payment, adds your extra amount every month from the start, and runs the loan month by month until the balance reaches zero. It then compares the interest paid with the interest on the original schedule.',
+          'Extra payments do the most good early in a loan, when the balance and the interest share of each payment are largest. A given extra amount saves much more on a long mortgage than on a short car loan, both in months and in dollars.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the loan as it was originally set up, then the extra amount you plan to pay each month.',
+        steps: [
+          { name: 'Enter the loan', text: 'Type the original loan amount, the APR and the original term. Switch the term between years and months with the menu beside it.' },
+          { name: 'Enter the extra payment', text: 'Type the amount you will add to every monthly payment, on top of the regular payment.' },
+          { name: 'Read the savings', text: 'The headline is the interest saved. Below it are the months saved, the new payoff time and both monthly payments.' },
+          { name: 'Check the timeline', text: 'The bar shows how much of the original term you still pay and how many months the extra payments cut off.' },
+          { name: 'Compare amounts', text: 'Try several extra amounts to see where the savings level off for your budget.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The regular payment comes from the annuity formula. The prepayment schedule is then run month by month, because the payoff month has to be counted.',
+        expression: 'M = P × r ÷ (1 − (1 + r)^−n)\nEach month: interest = balance × r; balance −= (M + X − interest)\nInterest saved = (M × n − P) − interest paid with the extra',
+        terms: [
+          { symbol: 'M', meaning: 'Regular monthly payment.' },
+          { symbol: 'X', meaning: 'Extra amount paid every month.' },
+          { symbol: 'P', meaning: 'Original loan amount.' },
+          { symbol: 'r', meaning: 'Monthly rate, the APR ÷ 12 as a decimal.' },
+          { symbol: 'n', meaning: 'Original number of monthly payments.' }
+        ],
+        note: 'Estimates only. It assumes the extra amount is paid every month from the first payment and applied entirely to principal, with no prepayment penalty. The final month is counted as a whole month even when the last payment is smaller.'
+      },
+      workedExample: {
+        intro: 'You have a $20,000 loan at 6% APR over 5 years and add $200 to every monthly payment from the start. How much sooner is it paid off, and how much interest do you save?',
+        rows: [
+          { label: 'Regular payment', value: '$386.66' },
+          { label: 'Payment with the extra (386.66 + 200)', value: '$586.66' },
+          { label: 'Original schedule', value: '60 months, $3,199.36 interest' },
+          { label: 'With the extra payment', value: '38 months, $1,982.12 interest' },
+          { label: 'Months saved (60 − 38)', value: '22' },
+          { label: 'Interest saved (3,199.36 − 1,982.12)', value: '$1,217.24' }
+        ],
+        result: 'Paid off 22 months early · about $1,217 of interest saved',
+        explanation: 'The extra $200 a month adds up to about $7,600 of extra principal over 38 months, but you also skip 22 regular payments entirely. On a $280,000, 30-year mortgage at 5%, the same idea with an extra $200 a month saves about $67,926 and 82 months.'
+      },
+      watchOut: [
+        { title: 'Estimates only', body: 'Your lender\'s payoff statement is the binding figure. Rounding, payment dates and fees can shift the exact months and dollars.' },
+        { title: 'Make sure it goes to principal', body: 'Some servicers apply extra money to the next scheduled payment instead of the principal. Tell your servicer to apply it to principal and check your statement.' },
+        { title: 'Prepayment penalties', body: 'A few mortgages charge a fee for paying off the whole loan early, usually within the first three to five years. Check your loan documents before a large lump sum.' },
+        { title: 'Compare with other uses of the money', body: 'Paying off a 6% loan is a guaranteed 6% return. If you carry higher-rate debt or have no emergency fund, those usually come first.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, What is a prepayment penalty?', url: 'https://www.consumerfinance.gov/ask-cfpb/what-is-a-prepayment-penalty-en-1957/' },
+        { label: 'Consumer Financial Protection Bureau, Regulation Z §1026.43: Minimum standards for transactions secured by a dwelling (prepayment penalty limits)', url: 'https://www.consumerfinance.gov/rules-policy/regulations/1026/43/' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.8 The Basics of Loans', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-8-the-basics-of-loans' }
+      ]
+    },
     inputs: [
       { id: 'loanAmount', label: 'Original loan amount', type: 'currency', placeholder: '20000', defaultValue: 20000, step: 100, min: 0 },
       { id: 'interestRate', label: 'Annual interest rate (APR)', type: 'percent', placeholder: '6', defaultValue: 6, step: 0.01, min: 0 },
-      { id: 'years', label: 'Original loan term (years)', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 1 },
+      { id: 'years', label: 'Original loan term', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 1, dimension: 'term', unit: 'yr' },
       { id: 'extraPayment', label: 'Extra monthly payment', type: 'currency', placeholder: '200', defaultValue: 200, step: 25, min: 0 }
     ],
     seo: {
-      title: 'Loan Prepayment Calculator – Save on Interest',
-      description: 'Calculate interest savings and time saved by making extra loan payments. Works for US mortgages, auto loans, personal loans, and student loans.',
+      title: 'Loan Prepayment Calculator – Interest & Time Saved',
+      description: 'Free loan prepayment calculator: see how an extra monthly payment shortens a mortgage, auto, personal or student loan and how much interest it saves.',
       faq: [
-        { question: 'Which US loans allow prepayment without penalty?', answer: 'Federal student loans, most auto loans, and most personal loans have no prepayment penalty. Many mortgages also allow it, but check your note for a prepayment penalty clause common in the first 3–5 years on some products.' },
-        { question: 'How much interest can extra payments save?', answer: 'Even $50–$100 extra per month on a 30-year mortgage can save tens of thousands of dollars and shave years off the term.' },
-        { question: 'Does the extra payment apply to principal?', answer: 'When you make a payment, interest is calculated first on the outstanding balance, and any remainder reduces principal. Always mark extra payments as apply to principal with your lender.' }
+        { question: 'How much interest do extra payments save?', answer: 'It depends on the rate, the balance and how early you start. An extra $200 a month on a $20,000, 5-year loan at 6% saves about $1,217 and 22 months. On a $280,000, 30-year mortgage at 5%, an extra $100 a month saves about $39,499 and 47 months.' },
+        { question: 'Is it better to prepay early or late in the loan?', answer: 'Early. Interest is charged on the outstanding balance, which is largest at the start, so each extra dollar paid early avoids interest for every remaining month.' },
+        { question: 'Does the extra payment go to principal?', answer: 'It should, but check. Ask your servicer to apply extra amounts to principal rather than to the next scheduled payment, and confirm it on your statement.' },
+        { question: 'Which US loans allow prepayment without a penalty?', answer: 'Federal student loans have no prepayment penalty, and most auto and personal loans do not either. Some mortgages include one, usually for paying off the whole loan within the first three to five years, so check your loan documents.' },
+        { question: 'Will my monthly payment go down?', answer: 'No. With regular extra payments the required payment stays the same and the loan ends sooner. Some lenders offer a recast after a large lump sum, which lowers the payment instead.' },
+        { question: 'Should I prepay my loan or invest?', answer: 'Prepaying a loan earns a guaranteed return equal to its interest rate. Investing may earn more but is not guaranteed. Many people pay off high-rate debt first and keep an emergency fund before prepaying a low-rate mortgage.' }
       ]
     },
     compute(values) {

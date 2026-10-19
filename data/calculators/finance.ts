@@ -732,7 +732,7 @@ export const financeCalculators: CalculatorConfig[] = [
           { symbol: 'A', meaning: 'Cost today.' },
           { symbol: 'i', meaning: 'Average annual inflation rate as a decimal (3% = 0.03).' },
           { symbol: 't', meaning: 'Time in years.' },
-          { symbol: 'A² ÷ FV', meaning: 'What the same nominal amount will buy at the end, expressed in today\'s dollars: A ÷ (1 + i)^t.' }
+          { symbol: 'A ÷ (1 + i)^t', meaning: 'What the same dollar amount will buy at the end, in today\'s dollars.' }
         ],
         note: 'Estimates only. A constant rate is a simplification: real inflation changes every year and differs between categories such as housing, food and health care.'
       },

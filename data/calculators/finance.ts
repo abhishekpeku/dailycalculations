@@ -32,25 +32,124 @@ export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'mortgage-calculator',
     category: 'finance',
-    updatedAt: '2026-09-10',
+    updatedAt: '2026-10-19',
     aliases: ['home loan calculator', 'house payment calculator', 'mortgage payment calculator', 'home loan emi calculator', 'house loan emi calculator', 'monthly mortgage estimator'],
     related: ['loan-calculator', 'emi-calculator', 'loan-prepayment-calculator', 'car-payment-calculator'],
     redirectFrom: ['home-loan-calculator', 'house-loan-emi-calculator'],
     title: 'Mortgage Calculator',
-    description: 'Estimate monthly mortgage payments for home loans with APR and term options.',
-    example: 'Calculate a 30-year mortgage payment for a $350,000 home with 5% APR and 20% down payment.',
+    description: 'Find the monthly principal-and-interest payment on a home loan, or work backward to the home price, term or rate that fits your budget, with total interest and a year-by-year schedule.',
+    example: 'A $350,000 home with $70,000 (20%) down and a 30-year loan at 5% APR costs about $1,503.10 a month in principal and interest.',
+    solver: {
+      defaultTarget: 'monthlyPayment',
+      variables: [
+        { id: 'monthlyPayment', label: 'Monthly payment (P&I)', symbol: 'M', dimension: 'currency', defaultValue: 1503.1, defaultUnit: 'currency' },
+        { id: 'homePrice', label: 'Home price', symbol: 'H', dimension: 'currency', defaultValue: 350000, defaultUnit: 'currency' },
+        { id: 'downPayment', label: 'Down payment', symbol: 'D', dimension: 'currency', defaultValue: 70000, defaultUnit: 'currency', fixed: true },
+        { id: 'term', label: 'Loan term', symbol: 'n', dimension: 'term', defaultValue: 30, defaultUnit: 'yr' },
+        { id: 'interestRate', label: 'Interest rate (APR)', symbol: 'APR', dimension: 'percent', defaultValue: 5, defaultUnit: '%', bounds: [0, 100] }
+      ],
+      solve: {
+        monthlyPayment: ({ homePrice, downPayment, term, interestRate }) => loanPayment(homePrice - downPayment, term, interestRate),
+        homePrice: ({ monthlyPayment: payment, downPayment, term, interestRate }) => downPayment + loanPrincipal(payment, term, interestRate),
+        term: ({ homePrice, downPayment, monthlyPayment: payment, interestRate }) => loanMonths(homePrice - downPayment, payment, interestRate)
+      },
+      // The rate has no closed form: the widget finds it numerically.
+      equation: (si) => si.monthlyPayment - loanPayment(si.homePrice - si.downPayment, si.term, si.interestRate),
+      outputs: [
+        { id: 'loanAmount', label: 'Loan amount', dimension: 'currency', compute: (si) => si.homePrice - si.downPayment },
+        { id: 'totalInterest', label: 'Total interest', dimension: 'currency', compute: (si) => si.monthlyPayment * si.term - (si.homePrice - si.downPayment) },
+        { id: 'totalPaid', label: 'Total of all payments', dimension: 'currency', compute: (si) => si.monthlyPayment * si.term }
+      ],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [{ from: 'loanAmount', label: 'Principal' }, { from: 'totalInterest', label: 'Interest' }],
+          center: 'totalPaid',
+          centerSub: 'total paid'
+        },
+        { type: 'amortization', principal: 'loanAmount', annualRate: 'interestRate', months: 'term', payment: 'monthlyPayment' }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-19',
+      concept: {
+        title: 'How a mortgage payment works',
+        paragraphs: [
+          'A fixed-rate mortgage is an amortized loan: you borrow the home price minus your down payment and repay it in equal monthly installments over 15, 20 or 30 years. Each payment first covers the interest on the balance that month, and the remainder pays down the loan. Early on most of the payment is interest; by the final years almost all of it is principal.',
+          'This calculator gives the principal-and-interest part of the payment (often written P&I). The check you actually send your servicer is usually higher, because property tax, homeowners insurance and any mortgage insurance are commonly collected through an escrow account and added on top. Your Loan Estimate lists each of those pieces separately.',
+          'The same equation works backward. If you know the payment you can afford, the calculator finds the home price it supports for your down payment, rate and term, or the rate you would need to make a given price work.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your down payment, then fill in any three of the other four fields. The remaining one, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter the down payment', text: 'The down payment is always an input. The loan amount is the home price minus the down payment.' },
+          { name: 'Fill in three of the rest', text: 'Type the home price, the term and the interest rate, and the monthly payment is calculated. Switch the term between years and months with the menu beside it.' },
+          { name: 'Work backward from a budget', text: 'Type the monthly payment you can afford. The field you have left alone longest becomes the calculated one, so leave the home price alone to see the price your budget supports.' },
+          { name: 'Read the breakdown', text: 'Below the result you get the loan amount, total interest and total of all payments, a principal-against-interest chart and the year-by-year schedule.' },
+          { name: 'Add the extras yourself', text: 'Add your expected monthly property tax, insurance and any mortgage insurance to the result to estimate the full housing payment.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The payment is the standard annuity formula applied to the loan amount, the home price minus the down payment.',
+        expression: 'P = H − D\nM = P × r ÷ (1 − (1 + r)^−n)\nH = D + M × (1 − (1 + r)^−n) ÷ r\nn = −ln(1 − P × r ÷ M) ÷ ln(1 + r)',
+        terms: [
+          { symbol: 'M', meaning: 'Monthly principal-and-interest payment.' },
+          { symbol: 'H', meaning: 'Home price (purchase price).' },
+          { symbol: 'D', meaning: 'Down payment.' },
+          { symbol: 'P', meaning: 'Loan amount, H − D.' },
+          { symbol: 'r', meaning: 'Monthly rate: the annual rate ÷ 12, as a decimal. 5% is 0.0041667.' },
+          { symbol: 'n', meaning: 'Number of monthly payments: 360 for a 30-year loan.' }
+        ],
+        note: 'Estimates only. Property tax, homeowners insurance, mortgage insurance, HOA dues and closing costs are not included. Your Loan Estimate and Closing Disclosure are the binding figures.'
+      },
+      workedExample: {
+        intro: 'You buy a $350,000 home with a $70,000 down payment (20%) and take a 30-year fixed mortgage at 5%. What is the monthly principal-and-interest payment?',
+        rows: [
+          { label: 'Loan amount (P = 350,000 − 70,000)', value: '$280,000' },
+          { label: 'Monthly rate (r = 5% ÷ 12)', value: '0.0041667' },
+          { label: 'Number of payments (n = 30 × 12)', value: '360' },
+          { label: '(1 + r)^n', value: '4.46774' },
+          { label: '1 − (1 + r)^−n', value: '0.776173' },
+          { label: 'M = 280,000 × 0.0041667 ÷ 0.776173', value: '$1,503.10' },
+          { label: 'Total of 360 payments', value: '≈ $541,116' },
+          { label: 'Total interest (541,116 − 280,000)', value: '≈ $261,116' }
+        ],
+        result: 'M ≈ $1,503.10 a month (principal and interest)',
+        explanation: 'The first payment includes $1,166.67 of interest (280,000 × 0.0041667) and only $336.43 of principal. Over the first year you pay about $13,906 in interest and $4,131 in principal, leaving about $275,869 owed. Over the full 30 years the interest comes to almost as much as the loan itself.'
+      },
+      watchOut: [
+        { title: 'Estimates only: this is not your full payment', body: 'The result is principal and interest. Property tax, homeowners insurance and mortgage insurance are usually added through escrow, and they can add hundreds of dollars a month.' },
+        { title: 'Less than 20% down usually means mortgage insurance', body: 'On a conventional loan, a down payment under 20% of the price typically requires private mortgage insurance until you build enough equity. FHA loans carry their own mortgage insurance premium.' },
+        { title: 'Small rate changes add up', body: 'On a $280,000, 30-year loan, going from 5% to 5.5% adds about $86.71 a month, or about $31,215 over the life of the loan.' },
+        { title: 'Shorter terms save interest', body: 'The same loan over 15 years costs about $2,214.22 a month but only about $118,560 in interest, less than half the 30-year total.' },
+        { title: 'Adjustable rates', body: 'For an adjustable-rate mortgage this shows the payment for the initial rate only. Check the payment caps and the worst-case payment on your Loan Estimate.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, Loan Estimate Explainer', url: 'https://www.consumerfinance.gov/owning-a-home/loan-estimate/' },
+        { label: 'Consumer Financial Protection Bureau, What is private mortgage insurance?', url: 'https://www.consumerfinance.gov/ask-cfpb/what-is-private-mortgage-insurance-en-122/' },
+        { label: 'Freddie Mac, Primary Mortgage Market Survey (weekly average 30- and 15-year rates)', url: 'https://www.freddiemac.com/pmms' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.12 Renting and Homeownership', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-12-renting-and-homeownership' }
+      ]
+    },
     inputs: [
-      { id: 'loanAmount', label: 'Loan amount', type: 'currency', placeholder: '350000', defaultValue: 350000, step: 1000, min: 0 },
+      { id: 'loanAmount', label: 'Home price', type: 'currency', placeholder: '350000', defaultValue: 350000, step: 1000, min: 0 },
       { id: 'interestRate', label: 'Annual interest rate (APR)', type: 'percent', placeholder: '5', defaultValue: 5, step: 0.01, min: 0 },
       { id: 'years', label: 'Loan term (years)', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1 },
       { id: 'downPayment', label: 'Down payment', type: 'currency', placeholder: '70000', defaultValue: 70000, step: 500, min: 0 }
     ],
     seo: {
-      title: 'Mortgage Calculator',
-      description: 'Calculate monthly mortgage payments for home loans using your loan amount, APR, term, and down payment. See the total interest, total cost, and remaining loan principal.',
+      title: 'Mortgage Calculator – Monthly Payment & Home Price',
+      description: 'Free mortgage calculator: monthly principal-and-interest payment, or the home price, term or rate that fits your budget, with total interest and a schedule.',
       faq: [
-        { question: 'How do I calculate my mortgage payment?', answer: 'Enter your loan amount, APR, loan term, and down payment to estimate the monthly payment for your loan.' },
-        { question: 'Does this calculator use standard loan conventions?', answer: 'Yes. It uses annual percentage rate (APR) and common mortgage terms like 15 or 30 years.' }
+        { question: 'How do I calculate my mortgage payment?', answer: 'Subtract the down payment from the home price to get the loan amount, then apply M = P × r ÷ (1 − (1 + r)^−n). A $280,000 loan at 5% for 30 years comes to about $1,503.10 a month in principal and interest.' },
+        { question: 'Does the payment include taxes and insurance?', answer: 'No. It is principal and interest only. Property tax, homeowners insurance and any mortgage insurance are usually collected through escrow on top of it, and your Loan Estimate shows each of them.' },
+        { question: 'How much house can I afford for a given payment?', answer: 'Enter the payment you can afford, your down payment, the rate and the term, and the home price is calculated. $2,000 a month at 6.5% over 30 years with $70,000 down supports a price of about $386,422, before taxes and insurance.' },
+        { question: 'Is a 15-year or 30-year mortgage better?', answer: 'A 15-year loan costs more each month but far less overall. On $280,000 at 5%, the 15-year payment is about $2,214 with about $118,560 of interest; the 30-year payment is about $1,503 with about $261,116 of interest. Rates on 15-year loans are also usually lower.' },
+        { question: 'How much does a higher interest rate cost?', answer: 'On a $280,000, 30-year loan, each half point matters: 5% costs about $1,503.10 a month and 5.5% about $1,589.81, a difference of about $86.71 a month.' },
+        { question: 'Do I need 20% down?', answer: 'No, but on a conventional loan a down payment below 20% usually requires private mortgage insurance, which raises the monthly cost until you build enough equity.' },
+        { question: 'Why is so much of my early payment interest?', answer: 'Interest is charged on the balance still owed, which is largest at the start. In the first month of a $280,000 loan at 5%, $1,166.67 of the $1,503.10 payment is interest.' }
       ]
     },
     compute(values) {

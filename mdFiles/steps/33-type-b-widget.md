@@ -4,7 +4,7 @@
 
 - [x] Step file, draft PR
 - [x] Shared widget parts extracted from `SolverCalculator` (card, field row, result panel, output rows, share/copy/reset bar); force page HTML unchanged
-- [ ] Config types (`CalculatorBreakdown`, input `dimension`/`unit`) in `data/calculators.ts`
+- [x] Config types (`CalculatorBreakdown`, input `dimension`/`unit`) in `data/calculators.ts`
 - [ ] `lib/breakdown.ts` + `lib/breakdown.spec.ts`
 - [ ] `components/BreakdownCalculator.tsx` + `components/BreakdownVisual.tsx`; page renders it for every former `CalculatorForm` calculator; `CalculatorForm` deleted
 - [ ] Demo config on `commute-cost-calculator`

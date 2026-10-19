@@ -1,4 +1,5 @@
 import type { UnitDimension } from '@/lib/units';
+import type { Band } from '@/lib/visuals';
 
 export type CalculatorCategory = {
   id: string;
@@ -16,6 +17,71 @@ export type CalculatorInput = {
   defaultValue: number;
   step?: number;
   min?: number;
+  /** Type-B widget: a unit menu from lib/units.ts. `unit` is the one compute() expects (default: the base). */
+  dimension?: UnitDimension;
+  unit?: string;
+};
+
+export type BreakdownFormat = 'currency' | 'percent' | 'integer' | 'number' | 'significant';
+
+/** One figure in the type-B result card: a compute() key or a `derive` key. */
+export type BreakdownOutput = {
+  id: string;
+  /** Default: the key in sentence case. */
+  label?: string;
+  /** Default: currency for money keys and currency inputs, otherwise `number` (up to 2 decimals). */
+  format?: BreakdownFormat;
+  /** The unit the value is in, printed after it. */
+  dimension?: UnitDimension;
+  unit?: string;
+  /** Headline only: other unit ids it is also shown in, e.g. ['L'] beside gallons. */
+  alsoIn?: string[];
+};
+
+/** A value for a visual, named by key: an input id, a compute() key or a `derive` key (display units). */
+export type BreakdownPart = { from: string; label?: string; color?: string };
+
+/** The one result visual of a type-B widget: a component from components/visuals/, fed by key. */
+export type BreakdownVisual =
+  | { type: 'donut'; segments: BreakdownPart[]; center: string; centerSub?: string }
+  | { type: 'compareBars'; bars: BreakdownPart[]; title?: string; highlight?: number }
+  | { type: 'rangeBar'; value: string; bands: Band[]; title?: string; valueLabel?: string }
+  | {
+      type: 'timeline';
+      start: string;
+      end: string;
+      phases?: { label: string; from: string; to: string }[];
+      milestones?: { label: string; at: string }[];
+      /** Key of "today" on the same axis, e.g. `todayMs` (set after mount on timeDependent calculators). */
+      today?: string;
+      startLabel?: string;
+      endLabel?: string;
+      title?: string;
+    }
+  | { type: 'amortization'; principal: string; annualRate: string; months: string; payment?: string }
+  | {
+      type: 'logScale';
+      value: string;
+      min: number;
+      max: number;
+      ticks: string[];
+      benchmarks: { label: string; value: number }[];
+      title?: string;
+      valueLabel?: string;
+    };
+
+/** Type-B "forward + breakdown" widget. Every field is optional: without it the widget uses defaults. */
+export type CalculatorBreakdown = {
+  /** Key of the big accent number. Default: the first compute() key. */
+  headline?: string;
+  headlineLabel?: string;
+  /** Headline and row formats, rows in order. Default: every other compute() key. */
+  outputs?: BreakdownOutput[];
+  /** Inset input groups; optional ones sit behind a disclosure. Unlisted inputs go last. */
+  groups?: { title?: string; inputs: string[]; optional?: true }[];
+  /** Display-only figures from inputs + outputs (compute units), for rows and the visual. */
+  derive?: (values: Record<string, number>) => Record<string, number>;
+  visual?: BreakdownVisual;
 };
 
 export type SolverVariable = {
@@ -125,10 +191,12 @@ export type CalculatorConfig = {
   example: string;
   /** Long-form page content. Absent on calculators that have not been deepened yet. */
   content?: CalculatorContent;
-  /** Present on calculators that can solve for any of their fields. Replaces CalculatorForm. */
+  /** Present on calculators that can solve for any of their fields (type A, SolverCalculator). */
   solver?: CalculatorSolver;
   /** compute() reads the current date (or `values.todayMs`), so results render only after mount. */
   timeDependent?: true;
+  /** Type-B widget layout: headline, rows, input groups, visual. Optional; BreakdownCalculator has defaults. */
+  breakdown?: CalculatorBreakdown;
   inputs: CalculatorInput[];
   seo: {
     title: string;

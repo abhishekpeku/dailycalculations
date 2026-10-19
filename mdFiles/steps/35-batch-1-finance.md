@@ -12,9 +12,7 @@
 - [x] inflation-calculator (A · CompareBars then vs now)
 - [x] loan-prepayment-calculator (B · Timeline payoff)
 - [x] paycheck-calculator (C → B · Donut where the money goes)
-- [ ] Number verification script, tests, build, lint, STATUS.md, PR ready
-
-Paused 2026-10-19 by the user after loan-prepayment-calculator. Resume from the first unchecked box.
+- [x] Number verification script, tests, build, lint, STATUS.md, PR ready
 
 Commit + push after each box (`step 35: <id>`).
 
@@ -56,7 +54,7 @@ an "estimates only" note, verified numbers. Ids/URLs unchanged; `calculatorOrder
 - **Paycheck C → B** changes the compute contract (the old compute was a flat-rate placeholder; the
   page used `PaycheckCalculator.tsx`). Its snapshot diff is expected and explained in the PR.
 
-## Notes for resuming
+## Notes (written at the pause, kept for the record; all done)
 
 - **Verification:** the throwaway checker used so far re-implemented every formula in Python and
   matched 87 copy figures across the first seven calculators (0 mismatches); the app's own
@@ -84,3 +82,18 @@ an "estimates only" note, verified numbers. Ids/URLs unchanged; `calculatorOrder
   Traditional 401(k) deferrals are subject to FICA (the old component wrongly exempted them);
   section 125 premiums are not. The result is annual liability spread over paychecks, not Pub 15-T
   withholding: say so in the estimate note.
+
+## Paycheck: what shipped (resumed 2026-10-19)
+
+- `CalculatorInput.options` renders a menu (`ChoiceRow` in `components/CalculatorWidget.tsx`);
+  share links accept only listed values. `compute()` clamps/rounds, so the snapshot spec's
+  generated inputs still work.
+- `PAYROLL_2026` + `federalIncomeTax` at the top of `data/calculators/finance.ts`.
+  `components/PaycheckCalculator.tsx` deleted; its branch removed from the calculator page.
+- Dropped from the old component: separate HSA / FSA / dependent-care / commuter fields with
+  their individual limits, and the HSA coverage toggle. They are one "pre-tax per paycheck" field now.
+- Snapshot: only `paycheck-calculator` changed (new inputs and outputs). Every other snapshot is
+  byte-identical.
+- Verification: the Python checker now covers 110 copy figures (0 mismatches). The app's
+  `compute()` matches the independent model to 6 decimals on 6 input sets (all three filing
+  statuses, no 401(k), the 0.9% Medicare threshold, and a high-income monthly case).

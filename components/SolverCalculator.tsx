@@ -8,6 +8,8 @@ import { UNITS, findUnit, fromBase, toBase, type UnitDimension } from '@/lib/uni
 import { editOrder, initialState, isSingleUnit, parse, plain, readShareParams, shareParams, solveState, type SolverState } from '@/lib/solverState';
 import { AlsoIn, FIELD_GROUP, FieldRow, Headline, OutputItem, OutputList, ResultPanel, WidgetActions, WidgetCard, widgetAccent } from '@/components/CalculatorWidget';
 import LogScale from '@/components/visuals/LogScale';
+import BreakdownVisual from '@/components/BreakdownVisual';
+import { describeSolverKey, solverVisualValues } from '@/lib/breakdown';
 
 // Fill any fields and the remaining one is calculated. The state logic lives in lib/solverState.ts.
 
@@ -134,7 +136,19 @@ export default function SolverCalculator({ calculatorId }: { calculatorId: strin
         accent={accent}
         kicker="Result"
         visual={
-          solver.benchmarks && forceVariable ? (
+          answered && solution && solver.visuals?.length ? (
+            <div className="space-y-6">
+              {solver.visuals.map((visual, index) => (
+                <BreakdownVisual
+                  key={`${visual.type}-${index}`}
+                  visual={visual}
+                  all={solverVisualValues(solver, solution)}
+                  describe={(id) => describeSolverKey(solver, id)}
+                  accent={accent}
+                />
+              ))}
+            </div>
+          ) : solver.benchmarks && forceVariable ? (
             <LogScale {...FORCE_SCALE} value={forceSi} benchmarks={solver.benchmarks} accent={accent} title="How big is that force?" valueLabel="Your force" />
           ) : null
         }

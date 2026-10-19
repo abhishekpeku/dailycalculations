@@ -17,7 +17,8 @@ export type UnitDimension =
   | 'fuelEconomy'
   | 'percent'
   | 'count'
-  | 'currency';
+  | 'currency'
+  | 'term';
 
 // base = (value + offset) × factor. The offset is only for affine scales (temperature).
 type LinearConversion = { factor: number; offset?: number };
@@ -208,7 +209,12 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
   percent: [{ id: '%', label: '%', factor: 1 }],
   count: [{ id: 'count', label: '', factor: 1 }],
   // Placeholder until the region step sets the currency symbol and formatting.
-  currency: [{ id: 'currency', label: '¤', factor: 1 }]
+  currency: [{ id: 'currency', label: '¤', factor: 1 }],
+  // A loan or savings term in whole calendar months: 1 year = 12 months, exact by definition.
+  term: [
+    { id: 'mo', label: 'months', factor: 1 },
+    { id: 'yr', label: 'years', factor: 12 }
+  ]
 };
 
 export function findUnit(dimension: UnitDimension, unitId: string) {

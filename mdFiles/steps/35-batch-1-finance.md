@@ -2,8 +2,8 @@
 
 ## Progress
 
-- [ ] Step file, draft PR
-- [ ] Shared pieces: `term` unit dimension (months / years), solver visual slot (`solver.visuals`, `solver.derive`)
+- [x] Step file, draft PR
+- [x] Shared pieces: `term` unit dimension (months / years), solver visual slot (`solver.visuals`, `solver.derive`)
 - [ ] loan-calculator (A · Donut principal/interest + AmortizationTable)
 - [ ] mortgage-calculator (A · Donut + AmortizationTable; down payment fixed; "Loan amount" → "Home price")
 - [ ] emi-calculator (A · Donut + AmortizationTable (yearly); down payment fixed)

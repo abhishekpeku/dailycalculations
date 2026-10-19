@@ -129,6 +129,10 @@ export type CalculatorSolver = {
   outputs?: SolverOutput[];
   /** Everyday reference points (SI) drawn on the result scale. */
   benchmarks?: { label: string; value: number }[];
+  /** Display-only figures for the visuals, from every variable (SI) and output. */
+  derive?: (si: Record<string, number>) => Record<string, number>;
+  /** Result visuals from the kit, fed by key (a variable, an `outputs` id or a `derive` key, all SI). */
+  visuals?: BreakdownVisual[];
 };
 
 export type CalculatorFaq = {

@@ -4,21 +4,108 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'miles-to-kilometers-converter',
     category: 'measurements',
-    updatedAt: '2026-09-10',
-    aliases: ['mi to km converter', 'distance converter', 'km to miles calculator'],
+    updatedAt: '2026-10-19',
+    aliases: ['mi to km converter', 'distance converter', 'km to miles calculator', 'miles to km'],
     related: ['pounds-to-kilograms-converter', 'gallons-to-liters-converter', 'fahrenheit-to-celsius-converter', 'running-pace-calculator'],
     title: 'Miles to Kilometers Converter',
-    description: 'Convert miles to kilometers with a quick distance conversion tool.',
-    example: 'Convert 10 miles to kilometers for a road trip distance.',
+    description: 'Convert miles to kilometers, or kilometers to miles, as you type. Meters, feet, yards and nautical miles are in the unit menus too.',
+    example: '10 miles is 16.09 km, a 5K race is 3.11 miles, and a marathon (42.195 km) is 26.22 miles.',
+    solver: {
+      defaultTarget: 'kilometers',
+      variables: [
+        { id: 'kilometers', label: 'Kilometers', symbol: 'km', dimension: 'length', defaultValue: 16.0934, defaultUnit: 'km' },
+        { id: 'miles', label: 'Miles', symbol: 'mi', dimension: 'length', defaultValue: 10, defaultUnit: 'mi' }
+      ],
+      // Both fields hold the same distance (in meters); the unit menus do the converting.
+      solve: {
+        kilometers: ({ miles }) => (miles >= 0 ? miles : NaN),
+        miles: ({ kilometers }) => (kilometers >= 0 ? kilometers : NaN)
+      },
+      derive: (si) => ({ kmShown: si.kilometers / 1000 }),
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'kmShown',
+          min: -1,
+          max: 3,
+          ticks: ['0.1 km', '1 km', '10 km', '100 km', '1,000 km'],
+          benchmarks: [
+            { label: '1 mile', value: 1.609 },
+            { label: '5K race', value: 5 },
+            { label: 'Half marathon', value: 21.0975 },
+            { label: 'Marathon', value: 42.195 }
+          ],
+          title: 'How far is that?',
+          valueLabel: 'Your distance'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-19',
+      concept: {
+        title: 'Miles and kilometers',
+        paragraphs: [
+          'The mile and the kilometer measure the same thing, distance, on two different systems. The kilometer is 1,000 meters, the metric unit used for road distances in most of the world. The mile is a customary unit of 5,280 feet, still used on roads in the US and the UK.',
+          'Since 1959, the US and the other English-speaking countries have defined the yard as exactly 0.9144 meters. That makes the international mile exactly 1,609.344 meters, so 1 mile = 1.609344 km and the conversion is a single exact multiplication. Going the other way, 1 km is about 0.621371 miles.',
+          'For land surveying, the US kept a slightly longer "survey mile" for decades, about 3.2 millimeters longer per mile. NIST retired the US survey foot at the end of 2022, so every US mile is now the international mile. A nautical mile is a different unit altogether: exactly 1,852 meters, used at sea and in the air.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a distance in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Miles to kilometers', text: 'Type the number of miles. The kilometers field shows the conversion.' },
+          { name: 'Kilometers to miles', text: 'Type into the kilometers field instead. It becomes the input and the miles field is calculated.' },
+          { name: 'Use other units', text: 'Either menu also offers meters, feet, yards, inches and nautical miles.' },
+          { name: 'Read the scale', text: 'The scale places the distance against a mile, a 5K, a half marathon and a marathon.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'A mile is a fixed number of kilometers, so the conversion is one multiplication or division.',
+        expression: 'km = mi × 1.609344\nmi = km ÷ 1.609344 ≈ km × 0.621371',
+        terms: [
+          { symbol: 'mi', meaning: 'Distance in international miles (5,280 ft).' },
+          { symbol: 'km', meaning: 'Distance in kilometers (1,000 m).' },
+          { symbol: '1.609344', meaning: 'Kilometers in a mile, exact: 1,760 yd × 0.9144 m ÷ 1,000.' }
+        ],
+        note: 'The factor is exact. Results are rounded for display only. The same factor converts speeds: mph × 1.609344 = km/h.'
+      },
+      workedExample: {
+        intro: 'You are planning a 10-mile run and a race listed as 10 km. How far is each in the other unit?',
+        rows: [
+          { label: '10 miles × 1.609344', value: '16.09 km' },
+          { label: '10 km ÷ 1.609344', value: '6.21 miles' },
+          { label: 'Difference (16.09 − 10)', value: '6.09 km, about 3.79 miles' },
+          { label: 'Quick check: 10 × 1.6', value: '16 km' }
+        ],
+        result: '10 mi ≈ 16.09 km · 10 km ≈ 6.21 mi',
+        explanation: 'Multiplying by 1.6 is a good shortcut: it is only about 0.6% low. For kilometers to miles, multiplying by 5/8 (0.625) is about 0.6% high.'
+      },
+      watchOut: [
+        { title: 'Nautical miles are not miles', body: 'A nautical mile is 1,852 m, about 1.151 statute miles. Boat and aircraft speeds in knots use it. Pick nmi in the menu if your figure is nautical.' },
+        { title: 'Speeds convert the same way', body: '60 mph is about 96.56 km/h and 100 km/h about 62.14 mph. The same 1.609344 factor applies, because the hours cancel.' },
+        { title: 'Race distances are defined in kilometers', body: 'A marathon is 42.195 km, so 26.2 miles is a rounded figure (26.219 miles). Use the kilometer distance when precision matters.' },
+        { title: 'Old survey records', body: 'Land records from before 2023 may use US survey feet and miles. The difference is about 3.2 mm per mile, which matters only for surveying.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST, U.S. survey foot (deprecated after December 31, 2022)', url: 'https://www.nist.gov/pml/us-surveyfoot' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
     inputs: [
       { id: 'miles', label: 'Miles', type: 'number', placeholder: '10', defaultValue: 10, step: 0.1, min: 0 }
     ],
     seo: {
-      title: 'Miles to Kilometers Converter',
-      description: 'Fast conversion from miles to kilometers. Ideal for travel planning, exercise tracking, and distance comparisons.',
+      title: 'Miles to Kilometers Converter (mi to km)',
+      description: 'Free miles to kilometers converter: mi to km and km to mi as you type, with the exact factor, race distances, speeds and a worked example.',
       faq: [
-        { question: 'How do I convert miles to kilometers?', answer: 'Multiply the number of miles by 1.60934 to get the distance in kilometers.' },
-        { question: 'Is this tool good for road trips?', answer: 'Yes, it is great for quick distance conversion while planning travel or workouts.' }
+        { question: 'How do I convert miles to kilometers?', answer: 'Multiply by 1.609344. For 10 miles: 10 × 1.609344 = 16.09 km.' },
+        { question: 'How do I convert kilometers to miles?', answer: 'Divide by 1.609344, or multiply by about 0.621371. 100 km is about 62.14 miles.' },
+        { question: 'How many miles is a 5K or a 10K?', answer: 'A 5K is about 3.11 miles and a 10K about 6.21 miles. A half marathon (21.0975 km) is about 13.11 miles.' },
+        { question: 'How many miles is a marathon?', answer: 'A marathon is 42.195 km, which is about 26.22 miles. It is usually quoted as 26.2 miles.' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'Multiply miles by 1.6 for kilometers, or kilometers by 5/8 for miles. Neighboring Fibonacci numbers also work: 5 miles is about 8 km (8.05 exactly) and 8 miles about 13 km (12.87 exactly).' },
+        { question: 'Is a mile the same everywhere?', answer: 'The international mile, 1,609.344 m, is used for road distances in the US and the UK. The nautical mile (1,852 m) is a different unit, and the slightly longer US survey mile was retired at the end of 2022.' }
       ]
     },
     compute(values) {

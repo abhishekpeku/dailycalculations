@@ -10,7 +10,7 @@
 - [x] cashback-calculator (B · CompareBars rewards vs fee)
 - [x] fahrenheit-to-celsius-converter (A · RangeBar freezing / body / boiling, in °C; plan: thermometer, not in kit)
 - [x] gallons-to-liters-converter (A · LogScale with can / gallon / 5 gal / oil barrel; plan: common-values table, not in kit)
-- [ ] miles-to-kilometers-converter (A, 2 fields)
+- [x] miles-to-kilometers-converter (A · LogScale with mile / 5K / half / marathon; plan: common-distances table, not in kit)
 - [ ] pounds-to-kilograms-converter (A, 2 fields; add stone to `mass`)
 - [ ] Number verification script, tests, build, lint, STATUS.md, PR ready
 

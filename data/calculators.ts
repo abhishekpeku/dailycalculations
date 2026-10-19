@@ -206,9 +206,6 @@ export type CalculatorConfig = {
   compute: (values: CalculatorInputValues) => Record<string, number>;
 };
 
-// `content` is server-rendered prose; it has no business in the client flight payload.
-export type CalculatorClientConfig = Omit<CalculatorConfig, 'compute' | 'content' | 'solver'>;
-
 export type CalculatorInputValues = Record<string, number>;
 
 export const categories: CalculatorCategory[] = [

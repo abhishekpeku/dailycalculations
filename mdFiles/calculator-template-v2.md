@@ -77,7 +77,8 @@ solver: {
 }
 ```
 
-- **Use `inputs` + `compute`** for one-directional calculators (e.g. date difference).
+- **Use `inputs` + `compute`** for one-directional calculators (e.g. date difference). They render
+  through the type-B widget, `BreakdownCalculator` (step 33); see "Type-B widget" below.
 - A `solver` calculator still needs `inputs` + `compute` for the forward direction. The JSON-LD
   builders and the step-17 snapshot tests read them.
 - `benchmarks` (optional) are everyday reference points, in SI, drawn on the result scale. Each one
@@ -131,8 +132,35 @@ Rules that hold for all of them:
   defaults to `formatSignificant`, or to cents for `AmortizationTable`, until the region step.
 - Values are in display units. Convert from the solver's SI (`solveState().si` / `outputs`) with
   `fromBase` before passing them.
-- `SolverCalculator` draws `LogScale` today, only for `force-calculator` (`solver.benchmarks`). Step 33
-  (E5) adds the visual slot to the type-B widget, and the batches wire the visuals in per calculator.
+- `SolverCalculator` draws `LogScale` today, only for `force-calculator` (`solver.benchmarks`). The
+  type-B widget takes its visual from `breakdown.visual` (below).
+
+### Type-B widget (step 33): `breakdown`
+
+Every calculator without a `solver` (and not one of the custom type-C tools) renders through
+`components/BreakdownCalculator.tsx`: grouped inputs, then a result card with a headline, breakdown
+rows and one visual, plus share / copy / reset (shared with the solver in
+`components/CalculatorWidget.tsx`). Logic and defaults: `lib/breakdown.ts`. The optional
+`breakdown` field shapes it; with none, the first compute key is the headline, the rest are rows,
+labels are the keys in sentence case, and all inputs sit in one group. **`compute()` never changes.**
+
+- **Units on inputs:** `dimension` + `unit` on a `CalculatorInput` (the unit `compute()` expects)
+  gives the field a unit menu. The widget converts the typed value into `unit` before `compute()`.
+- `headline` (a key), `headlineLabel`, `outputs: { id, label?, format?, dimension?, unit?, alsoIn? }[]`
+  (row order; `format` is `currency` | `percent` | `integer` | `number` (≤ 2 decimals) |
+  `significant`). Set `format: 'currency'` explicitly: the default money guess only matches keys
+  containing Amount / Cost / Payment / Interest / Principal.
+- `groups: { title?, inputs, optional? }[]`: optional groups sit behind a disclosure. Unlisted inputs go last.
+- `derive(values)`: display-only extras from inputs + outputs (compute units), e.g. monthly tolls
+  for a donut. Rows and the visual can name them.
+- `visual`: one kit component fed by key (input id, compute key or derived key):
+  `donut` (`segments: {from, label?}[]`, `center`, `centerSub?`), `compareBars` (`bars`, `title?`,
+  `highlight?`), `rangeBar` (`value`, `bands`), `timeline` (`start`, `end`, `phases?`, `milestones?`,
+  `today?`: a key such as `todayMs`, which `timeDependent` calculators get after mount),
+  `amortization` (`principal`, `annualRate`, `months`, `payment?`), `logScale`. Values print in the
+  format of the first key the visual reads.
+- Share links: `?<id>=<value>&<id>_unit=<unit>`, only fields that differ from the defaults.
+- Reference config: `commute-cost-calculator`.
 
 ## 3. Content rules
 

@@ -19,7 +19,9 @@ Read first, every time:
    Put a `## Progress` checklist (one box per calculator) at the top of the step file, push the branch,
    and open a draft PR (`gh pr create --draft --base master`) before building. After each calculator
    is verified, tick its box, then commit and push (`step NN: <id>`).
-2. **Pick the widget type.** If the formula can be rearranged, use `solver`. Otherwise use `inputs` + `compute`.
+2. **Pick the widget type.** If the formula can be rearranged, use `solver`. Otherwise use `inputs` + `compute`
+   with a `breakdown` config (type B: headline, rows, input groups, units on inputs, `derive`, one
+   visual; template §2 "Type-B widget", reference `commute-cost-calculator`).
    Add any missing unit dimension to `lib/units.ts` (NIST SP 811 factors), not inline.
    A variable with no closed form (a loan's rate) needs no `solve` entry: give the solver an
    `equation` (residual, 0 when consistent) and the variable `bounds`, and the widget solves it

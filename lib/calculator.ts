@@ -66,3 +66,17 @@ export function formatFull(value: number, opts?: { currency?: boolean }) {
     maximumFractionDigits: 6
   }).format(value);
 }
+
+// Grouped, up to `maxDigits` decimals, never compact: the default for type-B breakdown figures.
+export function formatDecimal(value: number, maxDigits = 2) {
+  return new Intl.NumberFormat('en-US', {
+    maximumFractionDigits: maxDigits
+  }).format(value);
+}
+
+// The symbol shown beside currency inputs.
+export function currencySymbol() {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+    .formatToParts(0)
+    .find((part) => part.type === 'currency')?.value ?? '';
+}

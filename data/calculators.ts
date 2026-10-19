@@ -1411,14 +1411,43 @@ export const calculators: CalculatorConfig[] = [
     description: 'Calculate the full cost of your daily commute including fuel, tolls, parking, public transit, and vehicle wear.',
     example: 'Find monthly commute cost for a 25-mile round trip at 30 MPG with $15/day parking and $3 tolls.',
     inputs: [
-      { id: 'roundTripMiles', label: 'Round-trip commute distance (miles)', type: 'number', placeholder: '25', defaultValue: 25, step: 1, min: 0 },
-      { id: 'mpg', label: 'Vehicle MPG', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1 },
+      { id: 'roundTripMiles', label: 'Round-trip commute distance', type: 'number', placeholder: '25', defaultValue: 25, step: 1, min: 0, dimension: 'length', unit: 'mi' },
+      { id: 'mpg', label: 'Vehicle fuel economy', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1, dimension: 'fuelEconomy', unit: 'mpg' },
       { id: 'gasPricePerGallon', label: 'Gas price ($/gallon)', type: 'currency', placeholder: '3.75', defaultValue: 3.75, step: 0.05, min: 0 },
       { id: 'daysPerMonth', label: 'Commute days per month', type: 'number', placeholder: '22', defaultValue: 22, step: 1, min: 1 },
       { id: 'dailyParking', label: 'Daily parking cost', type: 'currency', placeholder: '15', defaultValue: 0, step: 1, min: 0 },
       { id: 'dailyTolls', label: 'Daily tolls', type: 'currency', placeholder: '3', defaultValue: 0, step: 0.25, min: 0 },
       { id: 'wearCostPerMile', label: 'Vehicle wear cost per mile (IRS: $0.21)', type: 'currency', placeholder: '0.21', defaultValue: 0.21, step: 0.01, min: 0 }
     ],
+    breakdown: {
+      headline: 'monthlyTotal',
+      headlineLabel: 'Monthly commute cost',
+      outputs: [
+        { id: 'monthlyTotal', format: 'currency' },
+        { id: 'dailyTotal', label: 'Per day', format: 'currency' },
+        { id: 'annualTotal', label: 'Per year', format: 'currency' },
+        { id: 'monthlyFuel', label: 'Fuel per month', format: 'currency' },
+        { id: 'monthlyParking', label: 'Parking per month', format: 'currency' },
+        { id: 'monthlyTolls', label: 'Tolls per month', format: 'currency' },
+        { id: 'monthlyWear', label: 'Vehicle wear per month', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Trip', inputs: ['roundTripMiles', 'daysPerMonth', 'mpg', 'gasPricePerGallon'] },
+        { title: 'Daily costs', inputs: ['dailyParking', 'dailyTolls', 'wearCostPerMile'] }
+      ],
+      derive: (v) => ({ monthlyTolls: v.dailyTolls * v.daysPerMonth, monthlyWear: v.roundTripMiles * v.wearCostPerMile * v.daysPerMonth }),
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'monthlyFuel', label: 'Fuel' },
+          { from: 'monthlyParking', label: 'Parking' },
+          { from: 'monthlyTolls', label: 'Tolls' },
+          { from: 'monthlyWear', label: 'Wear' }
+        ],
+        center: 'monthlyTotal',
+        centerSub: 'per month'
+      }
+    },
     seo: {
       title: 'Commute Cost Calculator – Full Monthly and Annual Cost',
       description: 'Calculate the true cost of commuting including gas, tolls, parking, and vehicle wear. Compare driving vs public transit.',

@@ -170,6 +170,31 @@ describe('evaluateBreakdown', () => {
   });
 });
 
+describe('commute-cost-calculator (the demo config)', () => {
+  const commute = byId('commute-cost-calculator');
+
+  test('the donut parts add up to the monthly total', () => {
+    const { all } = evaluateBreakdown(commute, initialBreakdownState(commute.inputs));
+    close(all.monthlyFuel + all.monthlyParking + all.monthlyTolls + all.monthlyWear, all.monthlyTotal);
+    const state = initialBreakdownState(commute.inputs);
+    state.values.dailyParking = '15';
+    state.values.dailyTolls = '3';
+    const paid = evaluateBreakdown(commute, state).all;
+    close(paid.monthlyTolls, 66);
+    close(paid.monthlyFuel + paid.monthlyParking + paid.monthlyTolls + paid.monthlyWear, paid.monthlyTotal);
+  });
+
+  test('km and L/100 km give the same cost as the miles and mpg they equal', () => {
+    const miles = evaluateBreakdown(commute, initialBreakdownState(commute.inputs)).all;
+    let state = initialBreakdownState(commute.inputs);
+    state = changeUnit(commute.inputs.find((input) => input.id === 'roundTripMiles')!, state, 'km');
+    state = changeUnit(commute.inputs.find((input) => input.id === 'mpg')!, state, 'L/100km');
+    const metric = evaluateBreakdown(commute, state).all;
+    close(metric.monthlyTotal, miles.monthlyTotal, 1e-5);
+    close(metric.roundTripMiles, 25, 1e-5);
+  });
+});
+
 describe('share params', () => {
   test('only changes are written, and they read back', () => {
     const defaults = initialBreakdownState(roomInputs);

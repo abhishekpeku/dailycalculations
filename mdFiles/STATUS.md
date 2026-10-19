@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-10-19 · Current step: **37** (Batch 3, health, YMYL) · steps 17 + 30–36 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split, batches 1–2) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
+Last updated: 2026-10-19 · Current step: **37** (Batch 3, health, YMYL — **paused by the user before starting**) · steps 17 + 30–36 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split, batches 1–2) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
 
 ---
 
@@ -115,7 +115,7 @@ is why 12-15 run after it.
 | 34 | (E7) Split data file | **DONE** 2026-10-19 | `data/calculators/<category>.ts`. **Moved before the batches**: every batch editing one 2,000-line file means huge diffs and a conflict with any other open branch. | §2 E7 |
 | 35 | Batch 1: finance (8) | **DONE** 2026-10-19 | YMYL. 6 × type A, loan-prepayment type B, paycheck C → B. PR #9. | §3 |
 | 36 | Batch 2: shopping + conversion (9) | **DONE** 2026-10-19 | 4 shopping type A (sales-tax, tip, discount, unit-price), cashback B, 4 converters type A. Stone added to `mass`. PR #10. | §3 |
-| 37 | Batch 3: health (6) | TODO | YMYL. | §3 |
+| 37 | Batch 3: health (6) | TODO (paused 2026-10-19 before any work) | YMYL. Nothing built yet: no branch, step file or PR. First run (5): bmi, calorie, tdee, water-intake, running-pace; second run: pregnancy-due-date. Pre-work design notes in the session log (2026-10-19, step 37 paused). | §3 |
 | 38 | Batch 4: auto + home (12) | TODO | | §3 |
 | 39 | Batch 5: time, travel, work, creator, text, education (18) | TODO | | §3 |
 | 40–42 | Wave 1: math · statistics · conversion | TODO | Absorbs step 24 (math). 5 calculators per agent run. | §4 |
@@ -814,6 +814,17 @@ Step file: `mdFiles/steps/36-batch-2-shopping-conversion.md`.
   use a single unit menu, or Park it.
 - Converting type-B calculators to type A lowers the `breakdown.spec` count again; the floor is 20.
 - Sub-cent money and the `¤` vs `$` symbol split are still open (Parked, step 18).
+
+37 · 2026-10-19 · **Batch 3 health — PAUSED before starting.** Paused by the user while the agent was still reading; nothing was written, branched or committed.
+Resume by starting step 37 fresh (write `mdFiles/steps/37-batch-3-health.md` first). Design notes
+from the read-through, planned but not built:
+- `bmi-calculator`: unitless output via the `count` dimension; solver guard for zero height without
+  touching `compute()`; give the output a real label (today it renders as "Bmi").
+- `running-pace-calculator`: likely needs a new `pace` dimension in `lib/units.ts` (base s/m, plus
+  min/km and min/mi) so time = distance × pace.
+- Kit gaps to Park, using the nearest kit component meanwhile: splits table, race-predictions table
+  and mm:ss formatting (stand-in: CompareBars of predicted race times); glasses-per-day row (water
+  intake); three-tier calorie-target bar.
 
 ## Pending on the user — not code
 

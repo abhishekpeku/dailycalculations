@@ -2,7 +2,7 @@
 // See mdFiles/steps/31-solver-v2.md. Run: npm test
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { calculators, type CalculatorSolver } from '../data/calculators.ts';
+import { calculators, type CalculatorSolver } from '../data/calculators/index.ts';
 import { editOrder, initialState, isSingleUnit, parse, plain, readShareParams, shareParams, solveFor, solveState } from './solverState.ts';
 import { toBase } from './units.ts';
 

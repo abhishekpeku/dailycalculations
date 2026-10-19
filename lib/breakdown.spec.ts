@@ -1,7 +1,7 @@
 // Type-B breakdown widget state. See mdFiles/steps/33-type-b-widget.md. Run: npm test
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { calculators, type CalculatorConfig, type CalculatorInput } from '../data/calculators.ts';
+import { calculators, type CalculatorConfig, type CalculatorInput } from '../data/calculators/index.ts';
 import {
   alsoInText,
   breakdownShareParams,

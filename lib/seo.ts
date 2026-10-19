@@ -132,7 +132,7 @@ export type Breadcrumb = {
   href?: string;
 };
 
-/** Owned by `data/calculators.ts` so hand-written steps and derived ones cannot drift apart. */
+/** Owned by `data/calculators/types.ts` so hand-written steps and derived ones cannot drift apart. */
 export type HowToStep = CalculatorHowToStep;
 
 /**

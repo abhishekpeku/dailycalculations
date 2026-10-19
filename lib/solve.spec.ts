@@ -1,7 +1,7 @@
 // Root finder and numeric-solve checks. See mdFiles/steps/31-solver-v2.md. Run: npm test
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import type { CalculatorSolver } from '../data/calculators.ts';
+import type { CalculatorSolver } from '../data/calculators/index.ts';
 import { findRoot } from './solve.ts';
 import { initialState, solveState, type SolverState } from './solverState.ts';
 import { toBase } from './units.ts';

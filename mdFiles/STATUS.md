@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-10-19 · Current step: **36** (Batch 2, shopping + conversion) · steps 17 + 30–35 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
+Last updated: 2026-10-19 · Current step: **36** (Batch 2, shopping + conversion; paused after 5 of 9, draft PR #10) · steps 17 + 30–35 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
 
 ---
 
@@ -114,7 +114,7 @@ is why 12-15 run after it.
 | 33 | (E5) Type-B widget | **DONE** 2026-10-19 | `BreakdownCalculator` replaces `CalculatorForm`. | §2 E5 |
 | 34 | (E7) Split data file | **DONE** 2026-10-19 | `data/calculators/<category>.ts`. **Moved before the batches**: every batch editing one 2,000-line file means huge diffs and a conflict with any other open branch. | §2 E7 |
 | 35 | Batch 1: finance (8) | **DONE** 2026-10-19 | YMYL. 6 × type A, loan-prepayment type B, paycheck C → B. PR #9. | §3 |
-| 36 | Batch 2: shopping + conversion (9) | TODO | | §3 |
+| 36 | Batch 2: shopping + conversion (9) | **IN PROGRESS** (paused 2026-10-19 after 5 of 9) | Done: sales-tax, tip, discount, unit-price (type A), cashback (B). Remaining: fahrenheit-to-celsius, gallons-to-liters, miles-to-kilometers, pounds-to-kilograms. Branch `step/36-batch-2-shopping-conversion`, draft PR #10. Resume from the step file's first unchecked box. | §3 |
 | 37 | Batch 3: health (6) | TODO | YMYL. | §3 |
 | 38 | Batch 4: auto + home (12) | TODO | | §3 |
 | 39 | Batch 5: time, travel, work, creator, text, education (18) | TODO | | §3 |
@@ -778,6 +778,23 @@ calculators in one run because the brief scoped it so (D11 says 5 per run).
 - Stone (GB) still needs adding to `mass` for pounds-to-kilograms (step 30 note).
 - Type-A currency still shows the `¤` placeholder while kit visuals show `$` (Parked, step 18).
 
+36 · 2026-10-19 · **Batch 2 shopping + conversion — PAUSED after 5 of 9** (branch
+`step/36-batch-2-shopping-conversion`, draft PR #10; D11 runs are 5 calculators). Done, all with full
+v2 content, references and verified numbers, `inputs` + `compute()` unchanged (snapshot unchanged):
+**sales-tax** (A: total ↔ price ↔ rate, so "remove tax" is solving for price; Donut price + tax),
+**tip** (A: tip ↔ bill ↔ tip %, people `fixed`; Donut bill + tip, per person in the center),
+**discount** (A: sale ↔ original ↔ % off; extra coupon and tax rate `fixed`; CompareBars original vs
+sale), **unit-price** (A: unit price ↔ cost ↔ quantity; item 2 `fixed`; outputs per 100 units, item 2
+unit price and the % difference; CompareBars of the per-100 figures), **cashback** (B: explicit
+currency/percent formats, real labels, two groups; CompareBars rewards vs fee).
+**Solver defaults differ from `inputs` defaults** on tip (3 people) and discount (extra 10% coupon),
+to match the example line; `inputs` defaults drive the snapshot, so they stay.
+**Test change:** `lib/breakdown.spec.ts` asserted at least 40 type-B calculators; each type-A conversion
+lowers that count, so the floor is now 20 (an empty-loop guard). **233 tests** pass.
+Numbers: independent Python checker matched **75** copy figures (0 mismatches); the app's
+`solveState()` / `compute()` agree. Step file: `mdFiles/steps/36-batch-2-shopping-conversion.md`.
+**Resume:** the four converters in `measurements.ts`; stone for `mass`; see the step file's Pause notes.
+
 ## Pending on the user — not code
 
 - **Cloudflare apex → www 301 (from step 01, still open).**
@@ -874,3 +891,11 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
   behind the GFW. The `CN` region profile is for Chinese speakers elsewhere. (§3.5)
 - ~~The four alias stubs return 307~~ — **done in step 03.** They are 301s in `middleware.ts` now
   and the stub page files are deleted.
+- **Kit gaps from step 36** (nearest kit component used instead): a stacked bar (sales tax: Donut
+  used), per-person chips (tip: Donut with the per-person share in the center), a strikethrough price
+  card (discount: CompareBars). Add to `components/visuals/` in their own step if wanted.
+- **Sub-cent money in the solver** (found in step 36): `SolverCalculator` and the kit round currency
+  to cents, so a $0.2496 unit price shows as $0.25. Unit price works around it with per-100 outputs.
+  Step 18 (region formatting) could show 3–4 decimals for money below $1.
+- **Duplicate alias** (found in step 36): `house loan emi calculator` is on both `emi-calculator` and
+  `mortgage-calculator`. Pick one.

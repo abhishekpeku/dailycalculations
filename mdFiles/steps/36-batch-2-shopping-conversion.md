@@ -53,3 +53,21 @@ untouched.
 - **Unit price and sub-cent money:** the solver rounds currency to cents, so a $0.2496 unit price
   shows as $0.25. Unit price adds a "per 100 units" output and draws its bars from per-100 figures,
   which keeps cent resolution. Sub-cent display is Parked for the region step.
+
+## Pause
+
+Paused 2026-10-19 after cashback-calculator. Resume from the first unchecked box.
+
+Notes for the resume run (the four converters, all in `data/calculators/measurements.ts`):
+
+- Same pattern: `solver` beside the unchanged `inputs` + `compute()`; check the snapshot stays put.
+- Two-field converters: one variable per unit, each with a `dimension` (`temperature`, `volume`,
+  `length`, `mass`) so the unit menus work; `solve` is just the identity in SI.
+- **Stone** still needs adding to `mass` in `lib/units.ts` (1 st = 14 lb, exact). Appending it
+  at the end changes the force-calculator mass menu (it gains "st"); decide and note it.
+- No thermometer or common-values table exists in the kit. Use the nearest kit component
+  (e.g. `LogScale`/`RangeBar` with benchmarks, or `CompareBars`) and Park the gap.
+- `lib/breakdown.spec.ts`'s type-B count floor is now 20 (was 40); the converters are type A, so
+  the count falls again (check it still passes).
+- Verification so far: `verify36.py` (scratchpad, Python, imports nothing from the app) matched
+  75 copy figures with 0 mismatches; the app's `solveState()` / `compute()` agree with it.

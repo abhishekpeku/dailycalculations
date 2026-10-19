@@ -6,7 +6,7 @@
 - [x] sales-tax-calculator (A · Donut price + tax)
 - [x] tip-calculator (A · Donut bill + tip, per-person center; split fixed)
 - [x] discount-calculator (A · CompareBars original vs sale; second discount + tax fixed)
-- [ ] unit-price-calculator (A · CompareBars item 1 vs item 2; item 2 fixed)
+- [x] unit-price-calculator (A · CompareBars item 1 vs item 2; item 2 fixed)
 - [ ] cashback-calculator (B · CompareBars rewards vs fee)
 - [ ] fahrenheit-to-celsius-converter (A, 2 fields)
 - [ ] gallons-to-liters-converter (A, 2 fields)

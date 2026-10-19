@@ -234,22 +234,114 @@ export const shoppingCalculators: CalculatorConfig[] = [
   {
     id: 'unit-price-calculator',
     category: 'shopping',
-    updatedAt: '2026-09-10',
-    aliases: ['price per unit calculator', 'cost per ounce calculator', 'price comparison calculator', 'grocery unit price'],
+    updatedAt: '2026-10-19',
+    aliases: ['price per unit calculator', 'cost per ounce calculator', 'price comparison calculator', 'grocery unit price', 'which is cheaper calculator'],
     related: ['discount-calculator', 'sales-tax-calculator', 'cashback-calculator', 'fuel-cost-calculator'],
     title: 'Unit Price Calculator',
-    description: 'Compare product prices by unit to find the best deal.',
-    example: 'Find the cost per ounce for a 24 oz package priced at $5.99.',
+    description: 'Work out the price per ounce, per item or per any unit, and compare two package sizes to see which is cheaper. Or find the price or quantity that matches a unit price.',
+    example: 'A 24 oz box at $5.99 costs about $0.25 an ounce ($24.96 per 100 oz). A 32 oz box at $7.49 is $23.41 per 100 oz, about 6.2% cheaper per ounce.',
+    solver: {
+      defaultTarget: 'unitPrice',
+      variables: [
+        { id: 'unitPrice', label: 'Item 1 price per unit', symbol: 'u', dimension: 'currency', defaultValue: 0.2496, defaultUnit: 'currency' },
+        { id: 'totalCost', label: 'Item 1 price', symbol: 'C', dimension: 'currency', defaultValue: 5.99, defaultUnit: 'currency' },
+        { id: 'quantity', label: 'Item 1 quantity (oz, items, sheets…)', symbol: 'q', dimension: 'count', defaultValue: 24, defaultUnit: 'count' },
+        { id: 'cost2', label: 'Item 2 price', symbol: 'C₂', dimension: 'currency', defaultValue: 7.49, defaultUnit: 'currency', fixed: true },
+        { id: 'quantity2', label: 'Item 2 quantity, same unit', symbol: 'q₂', dimension: 'count', defaultValue: 32, defaultUnit: 'count', fixed: true }
+      ],
+      solve: {
+        unitPrice: ({ totalCost, quantity }) => (quantity > 0 ? totalCost / quantity : NaN),
+        totalCost: ({ unitPrice, quantity }) => unitPrice * quantity,
+        quantity: ({ unitPrice, totalCost }) => (unitPrice > 0 ? totalCost / unitPrice : NaN)
+      },
+      // Per-100 figures keep cent resolution for small unit prices (the widget rounds money to cents).
+      outputs: [
+        { id: 'per100', label: 'Item 1 price per 100 units', dimension: 'currency', compute: (si) => si.unitPrice * 100 },
+        { id: 'unitPrice2', label: 'Item 2 price per unit', dimension: 'currency', compute: (si) => (si.quantity2 > 0 ? si.cost2 / si.quantity2 : NaN) },
+        { id: 'per100b', label: 'Item 2 price per 100 units', dimension: 'currency', compute: (si) => (si.quantity2 > 0 ? (si.cost2 / si.quantity2) * 100 : NaN) },
+        {
+          id: 'difference',
+          label: 'Item 2 per unit vs item 1 (negative = item 2 is cheaper)',
+          dimension: 'percent',
+          compute: (si) => (si.unitPrice > 0 && si.quantity2 > 0 ? (si.cost2 / si.quantity2 / si.unitPrice - 1) * 100 : NaN)
+        }
+      ],
+      visuals: [
+        {
+          type: 'compareBars',
+          bars: [{ from: 'per100', label: 'Item 1' }, { from: 'per100b', label: 'Item 2' }],
+          title: 'Price per 100 units: the shorter bar is cheaper'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-19',
+      concept: {
+        title: 'What is a unit price?',
+        paragraphs: [
+          'A unit price is what you pay for one unit of a product: one ounce, one fluid ounce, one pound, one sheet or one item. It is the package price divided by the quantity in the package. Because it strips out the package size, it is the fairest way to compare a small box with a large one, or one brand with another.',
+          'Many US stores print a unit price on the shelf tag next to the selling price, and several states require it. The National Conference on Weights and Measures publishes a model Uniform Unit Pricing Regulation in NIST Handbook 130 that sets common units for those labels, such as price per pound, per fluid ounce or per count, so that products sold by the same measure can be compared directly.',
+          'Bigger packages are often cheaper per unit, but not always. Sales, coupons and multi-packs regularly make the smaller size the better deal, which is why it pays to check the unit price rather than assume. This calculator works out the unit price for one item and compares it with a second.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of item 1\'s price, quantity and unit price. The third, marked auto, is calculated. Item 2 is the comparison.',
+        steps: [
+          { name: 'Enter item 1', text: 'Type the shelf price and the quantity in the package, in any unit you like: ounces, grams, items, rolls or sheets. The unit price appears.' },
+          { name: 'Enter item 2 in the same unit', text: 'Type the other package\'s price and quantity, using the same unit as item 1. Convert first if one is in pounds and the other in ounces (1 lb = 16 oz).' },
+          { name: 'Compare', text: 'The bars show both prices per 100 units, and the last line shows how much cheaper or dearer item 2 is per unit.' },
+          { name: 'Work backwards', text: 'Type a target unit price and a quantity, and leave the price alone, to see the most you should pay for that size.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'A unit price is a division. The comparison is the ratio of the two unit prices.',
+        expression: 'u = C ÷ q\nC = u × q\nq = C ÷ u\nItem 2 vs item 1 = (C₂ ÷ q₂) ÷ u − 1',
+        terms: [
+          { symbol: 'u', meaning: 'Item 1 price per unit.' },
+          { symbol: 'C', meaning: 'Item 1 package price.' },
+          { symbol: 'q', meaning: 'Item 1 quantity, in the unit you are comparing by.' },
+          { symbol: 'C₂, q₂', meaning: 'Item 2 package price and quantity, in the same unit as q.' }
+        ],
+        note: 'Results in money are rounded to cents, so a price per ounce of $0.2496 shows as $0.25. The per-100-units lines keep the extra precision.'
+      },
+      workedExample: {
+        intro: 'Cereal comes in a 24 oz box for $5.99 and a 32 oz box for $7.49. Which is cheaper per ounce, and by how much?',
+        rows: [
+          { label: 'Item 1 per ounce (5.99 ÷ 24)', value: '$0.2496' },
+          { label: 'Item 2 per ounce (7.49 ÷ 32)', value: '$0.2341' },
+          { label: 'Per 100 oz', value: '$24.96 vs $23.41' },
+          { label: 'Item 2 vs item 1 (0.2341 ÷ 0.2496 − 1)', value: '−6.22%' }
+        ],
+        result: 'u ≈ $0.25 per oz · the 32 oz box is about 6.2% cheaper per ounce',
+        explanation: 'The bigger box wins here, but only if you will use the extra 8 ounces before it goes stale. A cheaper unit price saves money only on what you actually use.'
+      },
+      watchOut: [
+        { title: 'Use the same unit for both', body: 'Comparing a price per pound with a price per ounce gives nonsense. Convert first: 1 lb is 16 oz, 1 kg is 1,000 g, and a liter is about 33.8 US fluid ounces.' },
+        { title: 'Bigger is not always cheaper', body: 'A 12-pack of cans at $6.99 is $0.58 a can, while a 24-pack at $14.49 is $0.60 a can. Promotions on the smaller size are common, so check every time.' },
+        { title: 'Compare what you use, not what is in the package', body: 'Toilet paper rolls differ in sheet count and paper towels in sheet size. Compare by sheets or by square feet rather than by rolls.' },
+        { title: 'Waste counts', body: 'Food that spoils before you finish it raises the real unit price. A larger package only saves money if you use it up.' }
+      ],
+      references: [
+        { label: 'NIST Handbook 130, Uniform Laws and Regulations in the Areas of Legal Metrology and Fuel Quality (current edition)', url: 'https://www.nist.gov/pml/owm/nist-handbook-130-current-edition' },
+        { label: 'NIST Handbook 130, Section IV.C, Uniform Unit Pricing Regulation', url: 'https://www.nist.gov/document/2026-hb-130-section-iv-c' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
     inputs: [
       { id: 'totalCost', label: 'Total cost', type: 'currency', placeholder: '5.99', defaultValue: 5.99, step: 0.01, min: 0 },
       { id: 'quantity', label: 'Quantity', type: 'number', placeholder: '24', defaultValue: 24, step: 0.1, min: 0.1 }
     ],
     seo: {
-      title: 'Unit Price Calculator',
-      description: 'Calculate the price per unit for any product to compare different package sizes side by side and quickly spot which option is the better deal at the store.',
+      title: 'Unit Price Calculator – Price per Ounce & Which Is Cheaper',
+      description: 'Free unit price calculator: price per ounce, per item or per any unit, and a side-by-side comparison of two package sizes to find the better deal.',
       faq: [
-        { question: 'What is unit price?', answer: 'Unit price is the cost per single unit of weight or quantity in a product package.' },
-        { question: 'How does this help me shop?', answer: 'It makes it easier to compare prices between different package sizes and brands.' }
+        { question: 'How do I calculate unit price?', answer: 'Divide the package price by the quantity. A 24 oz box at $5.99 is 5.99 ÷ 24 = $0.2496 an ounce, or about $24.96 per 100 ounces.' },
+        { question: 'How do I compare two package sizes?', answer: 'Work out the unit price of each in the same unit and pick the lower one. At $7.49, a 32 oz box is $0.2341 an ounce, about 6.2% cheaper than the 24 oz box at $5.99.' },
+        { question: 'Is the bigger package always the better deal?', answer: 'No. A 12-pack of cans at $6.99 is about $0.58 a can, while a 24-pack at $14.49 is about $0.60 a can, so the smaller pack is cheaper per can.' },
+        { question: 'How do I compare a price per pound with a price per ounce?', answer: 'Convert one of them first. A pound is 16 ounces, so a 1 lb bag at $3.49 is about $0.218 an ounce, cheaper than a 12 oz bag at $2.79, which is $0.2325 an ounce.' },
+        { question: 'Why does the calculator show a price per 100 units?', answer: 'Unit prices are often a fraction of a cent apart, and money results are rounded to the cent. Multiplying by 100 keeps those differences visible, the way shelf tags show a price per 100 count.' },
+        { question: 'Does the shelf tag unit price include sales tax?', answer: 'Usually not. Shelf prices and unit prices in the US are normally before sales tax, which is added at the register. Tax raises both items by the same percentage, so it does not change which one is cheaper.' }
       ]
     },
     compute(values) {

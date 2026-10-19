@@ -476,12 +476,101 @@ export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'emi-calculator',
     category: 'finance',
-    updatedAt: '2026-09-10',
+    updatedAt: '2026-10-19',
     aliases: ['equated monthly installment calculator', 'loan emi calculator', 'house loan emi calculator', 'monthly installment calculator', 'bank emi calculator'],
     related: ['loan-calculator', 'mortgage-calculator', 'car-payment-calculator', 'loan-prepayment-calculator'],
     title: 'EMI Calculator',
-    description: 'Calculate monthly EMI (Equated Monthly Installment) for US retail financing, buy-now-pay-later, or personal loans used for purchases.',
-    example: 'Calculate monthly payments for a $1,500 laptop financed at 18% APR over 12 months.',
+    description: 'Calculate the equated monthly installment (EMI) on a purchase or loan, or work back to the price, term or interest rate, with the total interest and a year-by-year schedule.',
+    example: 'A $1,500 laptop financed at 18% APR over 12 months, with nothing down, costs an EMI of about $137.52, or about $150.24 in interest.',
+    solver: {
+      defaultTarget: 'emi',
+      variables: [
+        { id: 'emi', label: 'Monthly installment (EMI)', symbol: 'EMI', dimension: 'currency', defaultValue: 137.52, defaultUnit: 'currency' },
+        { id: 'loanAmount', label: 'Purchase price', symbol: 'C', dimension: 'currency', defaultValue: 1500, defaultUnit: 'currency' },
+        { id: 'downPayment', label: 'Down payment', symbol: 'D', dimension: 'currency', defaultValue: 0, defaultUnit: 'currency', fixed: true },
+        { id: 'term', label: 'Term', symbol: 'n', dimension: 'term', defaultValue: 12, defaultUnit: 'mo' },
+        { id: 'annualRate', label: 'Interest rate (APR)', symbol: 'APR', dimension: 'percent', defaultValue: 18, defaultUnit: '%', bounds: [0, 100] }
+      ],
+      solve: {
+        emi: ({ loanAmount, downPayment, term, annualRate }) => loanPayment(loanAmount - downPayment, term, annualRate),
+        loanAmount: ({ emi, downPayment, term, annualRate }) => downPayment + loanPrincipal(emi, term, annualRate),
+        term: ({ loanAmount, downPayment, emi, annualRate }) => loanMonths(loanAmount - downPayment, emi, annualRate)
+      },
+      // The rate has no closed form: the widget finds it numerically.
+      equation: (si) => si.emi - loanPayment(si.loanAmount - si.downPayment, si.term, si.annualRate),
+      outputs: [
+        { id: 'principal', label: 'Amount financed', dimension: 'currency', compute: (si) => si.loanAmount - si.downPayment },
+        { id: 'totalInterest', label: 'Total interest', dimension: 'currency', compute: (si) => si.emi * si.term - (si.loanAmount - si.downPayment) },
+        { id: 'totalPayment', label: 'Total of all installments', dimension: 'currency', compute: (si) => si.emi * si.term }
+      ],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [{ from: 'principal', label: 'Amount financed' }, { from: 'totalInterest', label: 'Interest' }],
+          center: 'totalPayment',
+          centerSub: 'total of installments'
+        },
+        { type: 'amortization', principal: 'principal', annualRate: 'annualRate', months: 'term', payment: 'emi' }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-19',
+      concept: {
+        title: 'What is an EMI?',
+        paragraphs: [
+          'EMI stands for equated monthly installment: a fixed amount you pay every month until a loan or a financed purchase is fully repaid. The term is standard in India for home, car and personal loans, and the same arithmetic sits behind US retail financing, store installment plans and personal loans used for purchases.',
+          'Each installment is the same size, but what it pays for changes. Early installments are mostly interest, because interest is charged on the full balance; later ones are mostly principal. That is the reducing-balance method lenders use, and it is why the amortization schedule below the result shifts from interest to principal year by year.',
+          'Comparing offers by the installment alone is risky. A longer term lowers the EMI but raises the total interest, so look at the total of all installments as well. Promotions sold as "0% interest" deserve a careful read: some are deferred-interest plans that charge all the interest back to the purchase date if any balance remains when the promotion ends.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter any down payment, then fill in three of the other four fields. The remaining one, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter the price and down payment', text: 'The amount financed is the purchase price minus the down payment. Leave the down payment at 0 for a plain loan.' },
+          { name: 'Enter the rate and term', text: 'Type the APR and the number of months, or switch the term to years with the menu beside it. The EMI is calculated.' },
+          { name: 'Check a quoted installment', text: 'Type the installment a store or lender quoted, so the rate becomes the field left alone longest. The calculator finds the interest rate that installment implies.' },
+          { name: 'Read the totals', text: 'Under the result you get the amount financed, the total interest and the total of all installments, plus a chart and a yearly schedule.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The EMI formula is the standard reducing-balance annuity, usually written with (1 + r)^n on both sides of the fraction.',
+        expression: 'P = C − D\nEMI = P × r × (1 + r)^n ÷ ((1 + r)^n − 1)\nr = APR ÷ 100 ÷ 12',
+        terms: [
+          { symbol: 'EMI', meaning: 'Equated monthly installment.' },
+          { symbol: 'C', meaning: 'Purchase price or loan amount.' },
+          { symbol: 'D', meaning: 'Down payment (0 if none).' },
+          { symbol: 'P', meaning: 'Amount financed, C − D.' },
+          { symbol: 'r', meaning: 'Monthly interest rate as a decimal: 18% APR is 0.015.' },
+          { symbol: 'n', meaning: 'Number of monthly installments.' }
+        ],
+        note: 'Estimates only. Processing fees, insurance, taxes on interest (such as GST on EMI interest in India) and promotional terms are not included. Your financing agreement is the binding figure.'
+      },
+      workedExample: {
+        intro: 'You finance a $1,500 laptop at 18% APR over 12 months with no down payment. What is the EMI, and what does the financing cost?',
+        rows: [
+          { label: 'Amount financed (P)', value: '$1,500' },
+          { label: 'Monthly rate (r = 18% ÷ 12)', value: '0.015' },
+          { label: '(1 + r)^n = 1.015^12', value: '1.195618' },
+          { label: 'EMI = 1,500 × 0.015 × 1.195618 ÷ 0.195618', value: '$137.52' },
+          { label: 'Total of 12 installments', value: '≈ $1,650.24' },
+          { label: 'Total interest', value: '≈ $150.24' }
+        ],
+        result: 'EMI ≈ $137.52 a month · about $150.24 of interest',
+        explanation: 'The first installment carries $22.50 of interest (1,500 × 0.015) and $115.02 of principal. Paying $300 down instead would leave $1,200 to finance, for an EMI of about $110.02 and about $120.19 of interest.'
+      },
+      watchOut: [
+        { title: 'Estimates only', body: 'Fees, add-on insurance and promotional terms change the real cost. Read the APR and total of payments on your financing agreement.' },
+        { title: 'Deferred interest is not 0% interest', body: 'With a deferred-interest promotion, interest builds up in the background. If any of the balance is left when the promotional period ends, all of that interest back to the purchase date is charged.' },
+        { title: 'A lower EMI can cost more', body: 'Spreading $1,500 at 18% over 24 months instead of 12 drops the EMI from about $137.52 to $74.89 but nearly doubles the interest, from about $150 to $297.' },
+        { title: 'Flat-rate quotes', body: 'Some lenders quote a "flat" rate charged on the original amount for the whole term. That costs much more than the same reducing-balance rate. Ask for the APR.' }
+      ],
+      references: [
+        { label: 'OpenStax, Contemporary Mathematics, §6.8 The Basics of Loans', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-8-the-basics-of-loans' },
+        { label: 'Consumer Financial Protection Bureau, Regulation Z (Truth in Lending), Appendix J: Annual Percentage Rate Computations for Closed-End Credit Transactions', url: 'https://www.consumerfinance.gov/rules-policy/regulations/1026/j/' },
+        { label: 'Consumer Financial Protection Bureau, Encourages Retail Credit Card Companies to Consider More Transparent Promotions (deferred interest)', url: 'https://www.consumerfinance.gov/archive/newsroom/consumer-financial-protection-bureau-encourages-retail-credit-card-companies-consider-more-transparent-promotions/' }
+      ]
+    },
     inputs: [
       { id: 'loanAmount', label: 'Purchase / loan amount', type: 'currency', placeholder: '1500', defaultValue: 1500, step: 50, min: 0 },
       { id: 'annualRate', label: 'Annual interest rate (APR)', type: 'percent', placeholder: '18', defaultValue: 18, step: 0.25, min: 0 },
@@ -489,12 +578,16 @@ export const financeCalculators: CalculatorConfig[] = [
       { id: 'downPayment', label: 'Down payment', type: 'currency', placeholder: '0', defaultValue: 0, step: 50, min: 0 }
     ],
     seo: {
-      title: 'EMI Calculator – US Retail Financing and Buy Now Pay Later',
-      description: 'Calculate monthly installment payments for retail financing, store credit, or personal loans. Shows total interest and true APR cost.',
+      title: 'EMI Calculator – Monthly Installment, Interest & Schedule',
+      description: 'Free EMI calculator: equated monthly installment for any loan or financed purchase, or the price, term or rate behind an EMI, with total interest and a schedule.',
       faq: [
-        { question: 'What APR do US retailers typically charge?', answer: 'Store credit cards often charge 25–30% APR. BNPL services may be 0% promotional for 6–18 months, reverting to 20–30% after. Personal loans range from 6–36% depending on credit score.' },
-        { question: 'What is deferred interest?', answer: 'Some US store cards offer 0% promotional financing but charge retroactive interest if the balance is not paid in full by the end of the promo period. This is different from a true 0% loan.' },
-        { question: 'How do I compare financing offers?', answer: 'Always compare APR, not monthly payment. A lower monthly payment with a longer term often costs more in total interest.' }
+        { question: 'What is the EMI formula?', answer: 'EMI = P × r × (1 + r)^n ÷ ((1 + r)^n − 1), where P is the amount financed, r the monthly rate (APR ÷ 12) and n the number of months. $1,500 at 18% over 12 months gives about $137.52.' },
+        { question: 'How do I find the interest rate behind an EMI?', answer: 'Enter the price, the term and the quoted installment, and the calculator searches for the rate. A $1,500 purchase repaid at $140 a month for 12 months implies an APR of about 21.46%.' },
+        { question: 'Does a down payment reduce the EMI?', answer: 'Yes. Only the price minus the down payment is financed. $300 down on a $1,500 purchase at 18% over 12 months drops the EMI from about $137.52 to $110.02.' },
+        { question: 'Is a longer term better?', answer: 'It lowers each installment but raises the total cost. $1,500 at 18% costs about $150 in interest over 12 months and about $297 over 24 months.' },
+        { question: 'What is deferred interest?', answer: 'A promotion that charges no interest only if the whole balance is paid by the end of the promotional period. If anything is left, the interest from the purchase date is added at once. A true 0% plan charges no interest either way.' },
+        { question: 'How is an EMI different from a flat-rate installment?', answer: 'An EMI uses the reducing balance: interest is charged only on what you still owe. A flat rate charges interest on the original amount for the whole term, so the same quoted rate costs considerably more.' },
+        { question: 'What if the interest rate is 0%?', answer: 'The EMI is simply the amount financed divided by the number of months: $1,500 over 12 months is $125 a month.' }
       ]
     },
     compute(values) {

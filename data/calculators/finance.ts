@@ -28,6 +28,32 @@ const annuityFactor = (ratePercent: number, periodsPerYear: number, periods: num
   return i === 0 ? periods : ((1 + i) ** periods - 1) / i;
 };
 
+// US payroll figures for 2026, indexed by filing status (0 single, 1 married filing jointly, 2 head of
+// household). IRS Rev. Proc. 2025-32 (brackets, standard deduction), SSA (wage base), IRS (401(k) limit).
+const PAYROLL_2026 = {
+  standardDeduction: [16100, 32200, 24150],
+  bracketTops: [
+    [12400, 50400, 105700, 201775, 256225, 640600],
+    [24800, 100800, 211400, 403550, 512450, 768700],
+    [17700, 67450, 105700, 201750, 256200, 640600]
+  ],
+  rates: [0.1, 0.12, 0.22, 0.24, 0.32, 0.35, 0.37],
+  socialSecurityWageBase: 184500,
+  additionalMedicareThreshold: [200000, 250000, 200000],
+  max401k: 24500
+};
+
+const federalIncomeTax = (taxable: number, status: number) => {
+  const tops = [...PAYROLL_2026.bracketTops[status], Infinity];
+  let tax = 0;
+  let previous = 0;
+  for (let index = 0; index < tops.length && taxable > previous; index++) {
+    tax += (Math.min(taxable, tops[index]) - previous) * PAYROLL_2026.rates[index];
+    previous = tops[index];
+  }
+  return tax;
+};
+
 export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'mortgage-calculator',
@@ -437,37 +463,194 @@ export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'paycheck-calculator',
     category: 'finance',
-    updatedAt: '2026-09-10',
+    updatedAt: '2026-10-19',
     aliases: ['take home pay calculator', 'net salary calculator', 'after tax pay calculator', 'salary paycheck estimator'],
     related: ['salary-raise-calculator', 'work-hours-calculator', 'freelancer-rate-calculator', 'pto-calculator'],
     title: 'Paycheck Calculator',
-    description: 'Estimate your US net take-home pay with full 2025 deduction support — 401(k), HSA, FSA, dependent care, commuter benefits, health premiums, Roth 401(k), and more.',
-    example: 'Calculate take-home pay for a $60,000 annual salary paid bi-weekly with 401(k) and health insurance deductions.',
+    description: 'Estimate your US take-home pay per paycheck with 2026 federal income tax brackets, Social Security, Medicare, state and local tax, and pre-tax and post-tax deductions.',
+    example: 'A single filer earning $60,000 a year, paid every two weeks, with 5% state tax, 5% to a traditional 401(k) and $100 of pre-tax health premiums per paycheck takes home about $1,651.57 per paycheck.',
+    breakdown: {
+      headline: 'netPay',
+      headlineLabel: 'Take-home pay per paycheck',
+      outputs: [
+        { id: 'netPay', label: 'Take-home pay', format: 'currency' },
+        { id: 'grossPay', label: 'Gross pay', format: 'currency' },
+        { id: 'federalTax', label: 'Federal income tax', format: 'currency' },
+        { id: 'socialSecurity', label: 'Social Security (6.2%)', format: 'currency' },
+        { id: 'medicare', label: 'Medicare', format: 'currency' },
+        { id: 'stateTax', label: 'State income tax', format: 'currency' },
+        { id: 'localTax', label: 'Local income tax', format: 'currency' },
+        { id: 'retirement', label: 'Traditional 401(k)', format: 'currency' },
+        { id: 'preTaxDeductions', label: 'Other pre-tax deductions', format: 'currency' },
+        { id: 'postTaxDeductions', label: 'Post-tax deductions', format: 'currency' },
+        { id: 'annualNetPay', label: 'Take-home pay per year', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your pay', inputs: ['annualSalary', 'payPeriodsPerYear', 'filingStatus'] },
+        { title: 'State and local tax', inputs: ['stateTaxRate', 'localTaxRate'] },
+        { title: 'Deductions', inputs: ['retirementPercent', 'preTaxPerPeriod', 'postTaxPerPeriod'] }
+      ],
+      derive: (values) => ({
+        fica: values.socialSecurity + values.medicare,
+        stateAndLocal: values.stateTax + values.localTax,
+        deductions: values.retirement + values.preTaxDeductions + values.postTaxDeductions
+      }),
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'netPay', label: 'Take-home pay' },
+          { from: 'federalTax', label: 'Federal income tax' },
+          { from: 'fica', label: 'Social Security and Medicare' },
+          { from: 'stateAndLocal', label: 'State and local tax' },
+          { from: 'deductions', label: 'Deductions' }
+        ],
+        center: 'grossPay',
+        centerSub: 'gross per paycheck'
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-19',
+      concept: {
+        title: 'Where your paycheck goes',
+        paragraphs: [
+          'Your gross pay is your salary divided by the number of paychecks in the year. Before it reaches your bank account, your employer withholds federal income tax, Social Security and Medicare (together called FICA), usually state income tax and sometimes a city or county tax, plus any benefits you have signed up for. What is left is your net, or take-home, pay.',
+          'Federal income tax is progressive. You subtract the standard deduction ($16,100 for a single filer in 2026) and any pre-tax deductions from your salary, then each slice of the remaining taxable income is taxed at its own rate, from 10% up to 37%. Moving into a higher bracket only raises the rate on the dollars inside that bracket, never on all of your income.',
+          'Deductions come in two kinds. Pre-tax deductions, such as a traditional 401(k), and health, dental, HSA and FSA contributions made through a cafeteria plan, reduce the income that is taxed. A traditional 401(k) lowers income tax but not Social Security and Medicare, while cafeteria-plan premiums lower both. Post-tax deductions, such as a Roth 401(k) or some insurance, come out after every tax has been worked out.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your yearly salary and how often you are paid, then your state tax rate and any deductions. The take-home pay per paycheck is calculated as you type.',
+        steps: [
+          { name: 'Enter your pay', text: 'Type your annual salary before tax, then choose your pay frequency and filing status from the menus.' },
+          { name: 'Add state and local tax', text: 'Enter your state income tax rate, or 0 if your state has no income tax. Add a local rate if your city or county taxes wages.' },
+          { name: 'Add your deductions', text: 'Enter your traditional 401(k) contribution as a percent of pay, any other pre-tax deductions per paycheck (health, dental, vision, HSA, FSA) and any post-tax deductions per paycheck.' },
+          { name: 'Read the breakdown', text: 'The headline is your take-home pay per paycheck. Below it is every tax and deduction for one paycheck, the yearly take-home pay and a chart of where the money goes.' },
+          { name: 'Compare with your pay stub', text: 'Check the result against a recent pay stub. A large gap usually points to extra withholding on your Form W-4 or a deduction you have not entered.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The calculator works out a full year of tax and divides it by the number of paychecks.',
+        expression: 'Taxable income = salary − 401(k) − pre-tax deductions − standard deduction\nFederal tax = Σ (income in each bracket × that bracket\'s rate)\nSocial Security = 6.2% × min(salary − pre-tax deductions, $184,500)\nMedicare = 1.45% × (salary − pre-tax deductions) + 0.9% above $200,000 ($250,000 joint)\nState tax = state rate × (salary − 401(k) − pre-tax deductions)\nTake-home = salary − all taxes − all deductions, ÷ paychecks per year',
+        terms: [
+          { symbol: 'Standard deduction (2026)', meaning: '$16,100 single, $32,200 married filing jointly, $24,150 head of household.' },
+          { symbol: 'Single brackets (2026)', meaning: '10% to $12,400, 12% to $50,400, 22% to $105,700, 24% to $201,775, 32% to $256,225, 35% to $640,600, 37% above.' },
+          { symbol: 'Married filing jointly (2026)', meaning: '10% to $24,800, 12% to $100,800, 22% to $211,400, 24% to $403,550, 32% to $512,450, 35% to $768,700, 37% above.' },
+          { symbol: 'Head of household (2026)', meaning: '10% to $17,700, 12% to $67,450, 22% to $105,700, 24% to $201,750, 32% to $256,200, 35% to $640,600, 37% above.' },
+          { symbol: '401(k)', meaning: 'Traditional 401(k) deferral, capped at the 2026 limit of $24,500 (catch-up contributions for ages 50 and over are not modeled).' },
+          { symbol: 'Pre-tax deductions', meaning: 'Cafeteria-plan (section 125) premiums and HSA/FSA contributions: exempt from income tax and from Social Security and Medicare.' }
+        ],
+        note: 'Estimates only. This is your yearly tax liability spread evenly over your paychecks, not your employer\'s exact withholding, which follows IRS Publication 15-T and your Form W-4. Tax credits, other income, itemized deductions, bonuses and state-specific rules (brackets, credits, state disability insurance) are not included.'
+      },
+      workedExample: {
+        intro: 'A single filer earns $60,000 a year, paid every two weeks (26 paychecks), in a state with a 5% income tax. They put 5% of pay into a traditional 401(k) and pay $100 of pre-tax health premiums per paycheck.',
+        rows: [
+          { label: 'Gross pay (60,000 ÷ 26)', value: '$2,307.69' },
+          { label: '401(k) (5% of 60,000 = 3,000 a year)', value: '$115.38' },
+          { label: 'Health premiums (100 × 26 = 2,600 a year)', value: '$100.00' },
+          { label: 'Taxable income (60,000 − 3,000 − 2,600 − 16,100)', value: '$38,300 a year' },
+          { label: 'Federal tax (10% × 12,400 + 12% × 25,900 = 4,348)', value: '$167.23' },
+          { label: 'Social Security (6.2% × 57,400 = 3,558.80)', value: '$136.88' },
+          { label: 'Medicare (1.45% × 57,400 = 832.30)', value: '$32.01' },
+          { label: 'State tax (5% × 54,400 = 2,720)', value: '$104.62' },
+          { label: 'Take-home pay (42,940.90 a year ÷ 26)', value: '$1,651.57' }
+        ],
+        result: 'Take-home ≈ $1,651.57 per paycheck · about $42,941 a year',
+        explanation: 'Only $25,900 of the taxable income reaches the 12% bracket, so the federal tax is about 7.2% of the $60,000 salary, far below the 12% top rate. The 401(k) lowers income tax but not Social Security and Medicare, which is why FICA is charged on $57,400 while state tax is charged on $54,400.'
+      },
+      watchOut: [
+        { title: 'Estimates only', body: 'Actual withholding follows your Form W-4 and IRS Publication 15-T, and your final tax depends on your whole return. Use this to plan, and your pay stub for the real figures.' },
+        { title: 'State taxes vary', body: 'A single flat state rate is a simplification. Many states have their own brackets, deductions and credits, some tax 401(k) contributions, and a few have no income tax at all.' },
+        { title: '401(k) does not reduce FICA', body: 'Traditional 401(k) contributions lower income tax but are still subject to Social Security and Medicare. Cafeteria-plan health premiums lower both.' },
+        { title: 'High earners', body: 'Social Security stops at $184,500 of wages in 2026, so very high earners see bigger paychecks later in the year. The extra 0.9% Medicare tax applies above $200,000 (single) or $250,000 (joint), counted over the whole year.' }
+      ],
+      references: [
+        { label: 'Internal Revenue Service, Rev. Proc. 2025-32 (2026 tax brackets and standard deduction), Internal Revenue Bulletin 2025-45', url: 'https://www.irs.gov/irb/2025-45_IRB' },
+        { label: 'Internal Revenue Service, Topic no. 751, Social Security and Medicare withholding rates', url: 'https://www.irs.gov/taxtopics/tc751' },
+        { label: 'Social Security Administration, Contribution and Benefit Base', url: 'https://www.ssa.gov/oact/cola/cbb.html' },
+        { label: 'Internal Revenue Service, 401(k) limit increases to $24,500 for 2026', url: 'https://www.irs.gov/newsroom/401k-limit-increases-to-24500-for-2026-ira-limit-increases-to-7500' },
+        { label: 'Internal Revenue Service, Publication 15-T, Federal Income Tax Withholding Methods', url: 'https://www.irs.gov/publications/p15t' }
+      ]
+    },
     inputs: [
       { id: 'annualSalary', label: 'Annual salary', type: 'currency', placeholder: '60000', defaultValue: 60000, step: 1000, min: 0 },
-      { id: 'payPeriodsPerYear', label: 'Pay periods per year (bi-weekly = 26, monthly = 12)', type: 'number', placeholder: '26', defaultValue: 26, step: 1, min: 1 },
-      { id: 'federalTaxRate', label: 'Federal tax rate', type: 'percent', placeholder: '22', defaultValue: 22, step: 0.5, min: 0 },
-      { id: 'stateTaxRate', label: 'State tax rate', type: 'percent', placeholder: '5', defaultValue: 5, step: 0.1, min: 0 },
-      { id: 'otherDeductions', label: 'Other deductions per period (401k, health, etc.)', type: 'currency', placeholder: '200', defaultValue: 200, step: 10, min: 0 }
+      {
+        id: 'payPeriodsPerYear',
+        label: 'Pay frequency',
+        type: 'number',
+        placeholder: '26',
+        defaultValue: 26,
+        step: 1,
+        min: 1,
+        options: [
+          { value: 52, label: 'Weekly (52)' },
+          { value: 26, label: 'Every two weeks (26)' },
+          { value: 24, label: 'Twice a month (24)' },
+          { value: 12, label: 'Monthly (12)' }
+        ]
+      },
+      {
+        id: 'filingStatus',
+        label: 'Filing status',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Single' },
+          { value: 1, label: 'Married filing jointly' },
+          { value: 2, label: 'Head of household' }
+        ]
+      },
+      { id: 'stateTaxRate', label: 'State income tax rate', type: 'percent', placeholder: '5', defaultValue: 5, step: 0.1, min: 0 },
+      { id: 'localTaxRate', label: 'Local income tax rate', type: 'percent', placeholder: '0', defaultValue: 0, step: 0.1, min: 0 },
+      { id: 'retirementPercent', label: 'Traditional 401(k), % of pay', type: 'percent', placeholder: '5', defaultValue: 5, step: 0.5, min: 0 },
+      { id: 'preTaxPerPeriod', label: 'Pre-tax health, HSA, FSA per paycheck', type: 'currency', placeholder: '100', defaultValue: 100, step: 10, min: 0 },
+      { id: 'postTaxPerPeriod', label: 'Post-tax deductions per paycheck', type: 'currency', placeholder: '0', defaultValue: 0, step: 10, min: 0 }
     ],
     seo: {
-      title: 'Paycheck Calculator – 2025 US Deductions',
-      description: 'Calculate your exact net take-home pay with 2025 IRS tax brackets, Social Security, Medicare, 401(k), HSA, FSA, dependent care, commuter benefits, and health insurance.',
+      title: 'Paycheck Calculator 2026 – US Take-Home Pay',
+      description: 'Free 2026 paycheck calculator: US take-home pay after federal tax brackets, Social Security, Medicare, state and local tax, 401(k) and other deductions.',
       faq: [
-        { question: 'How is federal income tax calculated?', answer: 'Federal tax uses the 2025 IRS marginal bracket rates (10%–37%) applied to your taxable income after the standard deduction and pre-tax deductions like 401(k) and HSA.' },
-        { question: 'What pre-tax deductions reduce my taxes?', answer: 'Traditional 401(k), HSA, Health Care FSA, Dependent Care FSA, commuter benefits, and employer health/dental/vision premiums all reduce your federal and state taxable income.' },
-        { question: 'What is the difference between pre-tax and post-tax deductions?', answer: 'Pre-tax deductions (401k, HSA, FSA) lower your taxable income before taxes are calculated. Post-tax deductions (Roth 401k, life insurance) come out after all taxes are applied.' },
-        { question: 'What are the 2025 contribution limits?', answer: 'Traditional 401(k): $23,500 · HSA individual: $4,300, family: $8,550 · Health Care FSA: $3,300 · Dependent Care FSA: $5,000 · Commuter benefit: $325/month.' },
-        { question: 'Does this include Social Security and Medicare?', answer: 'Yes. Social Security is 6.2% up to the $176,100 wage base. Medicare is 1.45% on all wages, plus an additional 0.9% on wages above $200,000 (single) or $250,000 (married filing jointly).' }
+        { question: 'How is federal income tax on my paycheck estimated?', answer: 'Your salary minus pre-tax deductions and the standard deduction is run through the 2026 brackets, 10% up to 37%, and the yearly tax is divided by your number of paychecks. A single filer with $38,300 of taxable income owes $4,348, or about $167.23 per biweekly paycheck.' },
+        { question: 'What is the 2026 standard deduction?', answer: '$16,100 for single filers and married people filing separately, $32,200 for married couples filing jointly and $24,150 for heads of household.' },
+        { question: 'How much are Social Security and Medicare?', answer: 'Social Security is 6.2% of wages up to $184,500 in 2026, a maximum of $11,439. Medicare is 1.45% of all wages, plus 0.9% on wages above $200,000 for single filers or $250,000 for married couples filing jointly.' },
+        { question: 'How much does a 401(k) contribution reduce my take-home pay?', answer: 'Less than the contribution itself, because it lowers your income tax. In the worked example, putting $115.38 per paycheck into a traditional 401(k) cuts take-home pay by only about $95.77, from about $1,747.34 to $1,651.57.' },
+        { question: 'What is the difference between pre-tax and post-tax deductions?', answer: 'Pre-tax deductions, such as a traditional 401(k) or cafeteria-plan health premiums, come out before income tax is worked out, so they lower your tax. Post-tax deductions, such as a Roth 401(k), come out after tax and do not.' },
+        { question: 'Does filing status change my paycheck?', answer: 'Yes, through the standard deduction and bracket widths. With the example inputs, take-home pay per biweekly paycheck is about $1,651.57 single, $1,692.80 head of household and $1,733.42 married filing jointly (on one $60,000 salary).' },
+        { question: 'Why is my real paycheck different?', answer: 'Employers withhold using IRS Publication 15-T and the choices on your Form W-4, such as extra withholding or dependents. State rules, bonuses and benefits not entered here also change the figure. Treat this as an estimate.' }
       ]
     },
     compute(values) {
-      const grossPerPeriod = values.annualSalary / values.payPeriodsPerYear;
-      const federalTax = grossPerPeriod * (values.federalTaxRate / 100);
-      const stateTax = grossPerPeriod * (values.stateTaxRate / 100);
-      const netPay = grossPerPeriod - federalTax - stateTax - values.otherDeductions;
-      const annualNetPay = netPay * values.payPeriodsPerYear;
-      return { grossPerPeriod, federalTax, stateTax, netPay, annualNetPay };
+      const periods = Math.max(1, values.payPeriodsPerYear);
+      const status = Math.min(2, Math.max(0, Math.round(values.filingStatus)));
+      const salary = values.annualSalary;
+      const retirement = Math.min(salary * (values.retirementPercent / 100), PAYROLL_2026.max401k);
+      const preTax = values.preTaxPerPeriod * periods;
+      const federal = federalIncomeTax(Math.max(0, salary - retirement - preTax - PAYROLL_2026.standardDeduction[status]), status);
+      // Cafeteria-plan deductions are exempt from FICA; 401(k) deferrals are not.
+      const ficaWages = Math.max(0, salary - preTax);
+      const socialSecurity = Math.min(ficaWages, PAYROLL_2026.socialSecurityWageBase) * 0.062;
+      const medicare = ficaWages * 0.0145 + Math.max(0, ficaWages - PAYROLL_2026.additionalMedicareThreshold[status]) * 0.009;
+      const stateWages = Math.max(0, salary - retirement - preTax);
+      const stateTax = stateWages * (values.stateTaxRate / 100);
+      const localTax = stateWages * (values.localTaxRate / 100);
+      const postTax = values.postTaxPerPeriod * periods;
+      const annualNetPay = salary - retirement - preTax - federal - socialSecurity - medicare - stateTax - localTax - postTax;
+      return {
+        netPay: annualNetPay / periods,
+        grossPay: salary / periods,
+        federalTax: federal / periods,
+        socialSecurity: socialSecurity / periods,
+        medicare: medicare / periods,
+        stateTax: stateTax / periods,
+        localTax: localTax / periods,
+        retirement: retirement / periods,
+        preTaxDeductions: values.preTaxPerPeriod,
+        postTaxDeductions: values.postTaxPerPeriod,
+        annualNetPay
+      };
     }
   },
   {

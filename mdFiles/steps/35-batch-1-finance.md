@@ -11,7 +11,7 @@
 - [x] investment-calculator (A · Donut initial/contributions/growth)
 - [x] inflation-calculator (A · CompareBars then vs now)
 - [x] loan-prepayment-calculator (B · Timeline payoff)
-- [ ] paycheck-calculator (C → B · Donut where the money goes)
+- [x] paycheck-calculator (C → B · Donut where the money goes)
 - [ ] Number verification script, tests, build, lint, STATUS.md, PR ready
 
 Paused 2026-10-19 by the user after loan-prepayment-calculator. Resume from the first unchecked box.

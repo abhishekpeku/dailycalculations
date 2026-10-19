@@ -1375,47 +1375,74 @@ exports[`compute() snapshots > paycheck-calculator 1`] = `
     "inputs": {
       "annualSalary": 60000,
       "payPeriodsPerYear": 26,
-      "federalTaxRate": 22,
+      "filingStatus": 0,
       "stateTaxRate": 5,
-      "otherDeductions": 200
+      "localTaxRate": 0,
+      "retirementPercent": 5,
+      "preTaxPerPeriod": 100,
+      "postTaxPerPeriod": 0
     },
     "outputs": {
-      "grossPerPeriod": 2307.692308,
-      "federalTax": 507.6923077,
-      "stateTax": 115.3846154,
-      "netPay": 1484.615385,
-      "annualNetPay": 38600
+      "netPay": 1651.573077,
+      "grossPay": 2307.692308,
+      "federalTax": 167.2307692,
+      "socialSecurity": 136.8769231,
+      "medicare": 32.01153846,
+      "stateTax": 104.6153846,
+      "localTax": 0,
+      "retirement": 115.3846154,
+      "preTaxDeductions": 100,
+      "postTaxDeductions": 0,
+      "annualNetPay": 42940.9
     }
   },
   "typical": {
     "inputs": {
       "annualSalary": 90000,
       "payPeriodsPerYear": 39,
-      "federalTaxRate": 33,
+      "filingStatus": 0,
       "stateTaxRate": 7.5,
-      "otherDeductions": 300
+      "localTaxRate": 0,
+      "retirementPercent": 7.5,
+      "preTaxPerPeriod": 150,
+      "postTaxPerPeriod": 0
     },
     "outputs": {
-      "grossPerPeriod": 2307.692308,
-      "federalTax": 761.5384615,
-      "stateTax": 173.0769231,
-      "netPay": 1073.076923,
-      "annualNetPay": 41850
+      "netPay": 1460.500641,
+      "grossPay": 2307.692308,
+      "federalTax": 210.2051282,
+      "socialSecurity": 133.7769231,
+      "medicare": 31.28653846,
+      "stateTax": 148.8461538,
+      "localTax": 0,
+      "retirement": 173.0769231,
+      "preTaxDeductions": 150,
+      "postTaxDeductions": 0,
+      "annualNetPay": 56959.525
     }
   },
   "edge": {
     "inputs": {
       "annualSalary": 0,
       "payPeriodsPerYear": 1,
-      "federalTaxRate": 0,
+      "filingStatus": 0,
       "stateTaxRate": 0,
-      "otherDeductions": 0
+      "localTaxRate": 0,
+      "retirementPercent": 0,
+      "preTaxPerPeriod": 0,
+      "postTaxPerPeriod": 0
     },
     "outputs": {
-      "grossPerPeriod": 0,
-      "federalTax": 0,
-      "stateTax": 0,
       "netPay": 0,
+      "grossPay": 0,
+      "federalTax": 0,
+      "socialSecurity": 0,
+      "medicare": 0,
+      "stateTax": 0,
+      "localTax": 0,
+      "retirement": 0,
+      "preTaxDeductions": 0,
+      "postTaxDeductions": 0,
       "annualNetPay": 0
     }
   }

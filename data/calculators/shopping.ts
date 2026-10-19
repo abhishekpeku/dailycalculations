@@ -485,26 +485,107 @@ export const shoppingCalculators: CalculatorConfig[] = [
   {
     id: 'cashback-calculator',
     category: 'shopping',
-    updatedAt: '2026-09-10',
-    aliases: ['reward points calculator', 'credit card cashback calculator', 'rebate calculator'],
-    related: ['discount-calculator', 'sales-tax-calculator', 'unit-price-calculator'],
+    updatedAt: '2026-10-19',
+    aliases: ['reward points calculator', 'credit card cashback calculator', 'rebate calculator', 'credit card rewards calculator'],
+    related: ['discount-calculator', 'sales-tax-calculator', 'unit-price-calculator', 'tip-calculator'],
     title: 'Cashback Calculator',
-    description: 'Calculate cashback earnings from purchases, annual rewards value, and effective discount rate from rewards cards.',
-    example: 'Estimate annual cashback on $2,000/month spending with a 2% rewards card.',
+    description: 'Estimate what a cashback credit card is worth to you in a year: rewards on everyday and bonus-category spending, minus the annual fee, and the effective rate you earn.',
+    example: 'Spending $2,000 a month, with $400 of it earning 5% and the rest 2%, earns $52 a month: $624 a year, an effective 2.6% back.',
+    breakdown: {
+      headline: 'netAnnualValue',
+      headlineLabel: 'Net value per year, after the fee',
+      outputs: [
+        { id: 'netAnnualValue', label: 'Net value per year, after the fee', format: 'currency' },
+        { id: 'annualCashback', label: 'Rewards per year', format: 'currency' },
+        { id: 'monthlyCashback', label: 'Rewards per month', format: 'currency' },
+        { id: 'effectiveRate', label: 'Effective rewards rate, before the fee', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Your spending', inputs: ['monthlySpend', 'bonusCategorySpend'] },
+        { title: 'The card', inputs: ['cashbackRate', 'bonusCategoryRate', 'annualFee'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'annualCashback', label: 'Rewards per year' }, { from: 'annualFee', label: 'Annual fee' }],
+        title: 'Rewards vs fee'
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-19',
+      concept: {
+        title: 'How cashback cards pay you',
+        paragraphs: [
+          'A cashback credit card returns a percentage of what you spend on it as a statement credit, a deposit or points worth a fixed amount each. Flat-rate cards pay the same percentage on everything. Bonus-category cards pay a higher rate on certain kinds of spending, such as groceries, dining or gas, and a lower base rate on the rest.',
+          'What a card is worth to you depends on how your spending splits between those groups. Each part earns its own rate, and the parts add up: the bonus-category spending times the bonus rate, plus everything else times the base rate. Over a year, that is twelve months of rewards, minus any annual fee.',
+          'Dividing the monthly rewards by the total monthly spending gives the effective rate, a single number you can compare across cards. A card paying 5% on a small slice of your spending and 1% on the rest can come out below a simple 2% card. Comparing net value per year after the fee is the fairest test.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your typical monthly card spending and the card\'s reward rates. The result updates as you type.',
+        steps: [
+          { name: 'Enter your total spending', text: 'Type the total you put on the card in a typical month, bonus categories included.' },
+          { name: 'Enter the bonus-category part', text: 'Type how much of that total falls in the card\'s bonus categories. For a flat-rate card, enter 0.' },
+          { name: 'Enter the card\'s rates and fee', text: 'Type the base rate, the bonus rate and the annual fee from the card\'s terms.' },
+          { name: 'Read the result', text: 'The headline is the net value per year after the fee. Below it are the yearly and monthly rewards and the effective rate.' },
+          { name: 'Compare cards', text: 'Run each card you are considering with the same spending and keep the one with the highest net value. The bars show whether the rewards cover the fee.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Each part of your spending earns its own rate. The monthly rewards are added up, multiplied by 12 and reduced by the fee.',
+        expression: 'Monthly = (S − B) × r + B × b\nYearly = Monthly × 12\nNet = Yearly − F\nEffective rate = Monthly ÷ S',
+        terms: [
+          { symbol: 'S', meaning: 'Total monthly card spending, bonus categories included.' },
+          { symbol: 'B', meaning: 'The part of S that earns the bonus rate.' },
+          { symbol: 'r', meaning: 'Base rewards rate as a decimal (2% = 0.02).' },
+          { symbol: 'b', meaning: 'Bonus-category rate as a decimal.' },
+          { symbol: 'F', meaning: 'Annual fee.' }
+        ],
+        note: 'Estimates only. It assumes every dollar earns its full rate, with no bonus caps, rotating categories, sign-up bonuses or redemption losses, and that you pay the balance in full each month.'
+      },
+      workedExample: {
+        intro: 'You spend $2,000 a month on a card. Card A pays a flat 2% with no fee. Card B pays 6% on groceries, 1% on everything else and has a $95 annual fee, and $600 of your monthly spending is groceries. Which is worth more?',
+        rows: [
+          { label: 'Card A, monthly (2,000 × 0.02)', value: '$40.00' },
+          { label: 'Card A, net per year (40 × 12 − 0)', value: '$480.00' },
+          { label: 'Card B, monthly (1,400 × 0.01 + 600 × 0.06)', value: '$14.00 + $36.00 = $50.00' },
+          { label: 'Card B, rewards per year (50 × 12)', value: '$600.00' },
+          { label: 'Card B, net per year (600 − 95)', value: '$505.00' },
+          { label: 'Card B, effective rate (50 ÷ 2,000)', value: '2.5%' }
+        ],
+        result: 'Card B nets $505 a year, $25 more than card A\'s $480',
+        explanation: 'Card B wins only because grocery spending is large. With $400 of groceries instead, it would earn $16 + $24 = $40 a month, $480 a year, and only $385 after the fee, well behind card A.'
+      },
+      watchOut: [
+        { title: 'Interest wipes out rewards', body: 'Card interest rates are far higher than any rewards rate. If you carry a balance from month to month, the interest you pay will usually exceed the cashback you earn.' },
+        { title: 'Bonus caps and rotating categories', body: 'Many bonus rates apply only up to a spending cap, or only to categories that change each quarter and must be activated. Spending above the cap earns the base rate.' },
+        { title: 'Points are not always worth a cent', body: 'If rewards come as points, check what a point is worth when redeemed for cash. Some redemptions give less than the advertised rate.' },
+        { title: 'Read the fee in the card\'s disclosure table', body: 'US card issuers must show any annual fee in the standard table on the application. A fee waived for the first year still counts from the second year on.' },
+        { title: 'Estimates only', body: 'Card terms change and differ by issuer. Check the current rates, caps and fees in the card agreement before you choose.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, The Consumer Credit Card Market (2025 report)', url: 'https://www.consumerfinance.gov/data-research/research-reports/the-consumer-credit-card-market-2025/' },
+        { label: 'Consumer Financial Protection Bureau, Regulation Z §1026.60: Credit and charge card applications and solicitations (fee disclosure table)', url: 'https://www.consumerfinance.gov/rules-policy/regulations/1026/60/' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.1 Understanding Percent', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-1-understanding-percent' }
+      ]
+    },
     inputs: [
-      { id: 'monthlySpend', label: 'Monthly spending', type: 'currency', placeholder: '2000', defaultValue: 2000, step: 100, min: 0 },
-      { id: 'cashbackRate', label: 'Cashback rate on general purchases', type: 'percent', placeholder: '2', defaultValue: 2, step: 0.25, min: 0 },
-      { id: 'bonusCategorySpend', label: 'Monthly bonus category spending (dining, groceries, etc.)', type: 'currency', placeholder: '400', defaultValue: 400, step: 50, min: 0 },
-      { id: 'bonusCategoryRate', label: 'Bonus category cashback rate', type: 'percent', placeholder: '5', defaultValue: 5, step: 0.25, min: 0 },
-      { id: 'annualFee', label: 'Card annual fee', type: 'currency', placeholder: '0', defaultValue: 0, step: 25, min: 0 }
+      { id: 'monthlySpend', label: 'Total monthly card spending', type: 'currency', placeholder: '2000', defaultValue: 2000, step: 100, min: 0 },
+      { id: 'cashbackRate', label: 'Base rewards rate', type: 'percent', placeholder: '2', defaultValue: 2, step: 0.25, min: 0 },
+      { id: 'bonusCategorySpend', label: 'Of which in bonus categories', type: 'currency', placeholder: '400', defaultValue: 400, step: 50, min: 0 },
+      { id: 'bonusCategoryRate', label: 'Bonus-category rate', type: 'percent', placeholder: '5', defaultValue: 5, step: 0.25, min: 0 },
+      { id: 'annualFee', label: 'Annual fee', type: 'currency', placeholder: '0', defaultValue: 0, step: 25, min: 0 }
     ],
     seo: {
       title: 'Cashback Calculator – Credit Card Rewards Estimator',
-      description: 'Calculate annual cashback earnings from credit card rewards. Compare flat-rate vs bonus-category cards and factor in annual fees.',
+      description: 'Free cashback calculator: yearly credit card rewards on everyday and bonus-category spending, net of the annual fee, plus the effective rate you earn.',
       faq: [
-        { question: 'What is a good cashback rate in the US?', answer: 'Flat-rate cards offer 1.5–2% on all purchases. Premium cards offer 3–6% on bonus categories like groceries, dining, or gas, with lower rates elsewhere.' },
-        { question: 'Is a card with an annual fee worth it?', answer: 'A card with a $95 annual fee is worth it if your rewards exceed $95/year. Many premium cards offset fees with travel credits, lounge access, or high reward rates.' },
-        { question: 'Does cashback expire?', answer: 'Most US cashback rewards do not expire as long as the account is open and in good standing. Always check your card agreement.' }
+        { question: 'How do I calculate credit card cashback?', answer: 'Multiply each part of your spending by its rate and add them up. With $2,000 a month, $400 of it at 5% and $1,600 at 2%, you earn $20 + $32 = $52 a month, or $624 a year.' },
+        { question: 'What is an effective rewards rate?', answer: 'It is your total rewards divided by your total spending. $52 of rewards on $2,000 of spending is an effective 2.6%, a single figure you can compare across cards.' },
+        { question: 'Is a card with an annual fee worth it?', answer: 'Only if its extra rewards beat the fee. Compared with a 2% card, a card paying 5% in a bonus category earns 3 percentage points more there, so a $95 fee needs about $264 a month of bonus spending to break even (95 ÷ 12 ÷ 0.03).' },
+        { question: 'Is a flat 2% card better than a bonus-category card?', answer: 'It depends on your spending. On $2,000 a month, a flat 2% card earns $480 a year. A $95-fee card paying 6% on $600 of groceries and 1% on the rest nets $505, but only $385 if groceries are $400.' },
+        { question: 'Should I carry a balance to earn rewards?', answer: 'No. Card interest rates are much higher than rewards rates, so interest on a carried balance quickly outweighs any cashback. Rewards pay off only when you pay in full each month.' },
+        { question: 'Does cashback expire?', answer: 'It depends on the card. Many issuers keep rewards as long as the account is open and in good standing, but some expire or are lost when the account closes. Check your card agreement.' }
       ]
     },
     compute(values) {

@@ -8,7 +8,7 @@
 - [x] discount-calculator (A · CompareBars original vs sale; second discount + tax fixed)
 - [x] unit-price-calculator (A · CompareBars item 1 vs item 2; item 2 fixed)
 - [x] cashback-calculator (B · CompareBars rewards vs fee)
-- [ ] fahrenheit-to-celsius-converter (A, 2 fields)
+- [x] fahrenheit-to-celsius-converter (A · RangeBar freezing / body / boiling, in °C; plan: thermometer, not in kit)
 - [ ] gallons-to-liters-converter (A, 2 fields)
 - [ ] miles-to-kilometers-converter (A, 2 fields)
 - [ ] pounds-to-kilograms-converter (A, 2 fields; add stone to `mass`)

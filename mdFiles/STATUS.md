@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-10-19 · Current step: **36** (Batch 2, shopping + conversion; paused after 5 of 9, draft PR #10) · steps 17 + 30–35 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
+Last updated: 2026-10-19 · Current step: **37** (Batch 3, health, YMYL) · steps 17 + 30–36 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split, batches 1–2) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
 
 ---
 
@@ -114,7 +114,7 @@ is why 12-15 run after it.
 | 33 | (E5) Type-B widget | **DONE** 2026-10-19 | `BreakdownCalculator` replaces `CalculatorForm`. | §2 E5 |
 | 34 | (E7) Split data file | **DONE** 2026-10-19 | `data/calculators/<category>.ts`. **Moved before the batches**: every batch editing one 2,000-line file means huge diffs and a conflict with any other open branch. | §2 E7 |
 | 35 | Batch 1: finance (8) | **DONE** 2026-10-19 | YMYL. 6 × type A, loan-prepayment type B, paycheck C → B. PR #9. | §3 |
-| 36 | Batch 2: shopping + conversion (9) | **IN PROGRESS** (paused 2026-10-19 after 5 of 9) | Done: sales-tax, tip, discount, unit-price (type A), cashback (B). Remaining: fahrenheit-to-celsius, gallons-to-liters, miles-to-kilometers, pounds-to-kilograms. Branch `step/36-batch-2-shopping-conversion`, draft PR #10. Resume from the step file's first unchecked box. | §3 |
+| 36 | Batch 2: shopping + conversion (9) | **DONE** 2026-10-19 | 4 shopping type A (sales-tax, tip, discount, unit-price), cashback B, 4 converters type A. Stone added to `mass`. PR #10. | §3 |
 | 37 | Batch 3: health (6) | TODO | YMYL. | §3 |
 | 38 | Batch 4: auto + home (12) | TODO | | §3 |
 | 39 | Batch 5: time, travel, work, creator, text, education (18) | TODO | | §3 |
@@ -778,22 +778,42 @@ calculators in one run because the brief scoped it so (D11 says 5 per run).
 - Stone (GB) still needs adding to `mass` for pounds-to-kilograms (step 30 note).
 - Type-A currency still shows the `¤` placeholder while kit visuals show `$` (Parked, step 18).
 
-36 · 2026-10-19 · **Batch 2 shopping + conversion — PAUSED after 5 of 9** (branch
-`step/36-batch-2-shopping-conversion`, draft PR #10; D11 runs are 5 calculators). Done, all with full
-v2 content, references and verified numbers, `inputs` + `compute()` unchanged (snapshot unchanged):
-**sales-tax** (A: total ↔ price ↔ rate, so "remove tax" is solving for price; Donut price + tax),
-**tip** (A: tip ↔ bill ↔ tip %, people `fixed`; Donut bill + tip, per person in the center),
-**discount** (A: sale ↔ original ↔ % off; extra coupon and tax rate `fixed`; CompareBars original vs
-sale), **unit-price** (A: unit price ↔ cost ↔ quantity; item 2 `fixed`; outputs per 100 units, item 2
-unit price and the % difference; CompareBars of the per-100 figures), **cashback** (B: explicit
-currency/percent formats, real labels, two groups; CompareBars rewards vs fee).
-**Solver defaults differ from `inputs` defaults** on tip (3 people) and discount (extra 10% coupon),
-to match the example line; `inputs` defaults drive the snapshot, so they stay.
-**Test change:** `lib/breakdown.spec.ts` asserted at least 40 type-B calculators; each type-A conversion
-lowers that count, so the floor is now 20 (an empty-loop guard). **233 tests** pass.
-Numbers: independent Python checker matched **75** copy figures (0 mismatches); the app's
-`solveState()` / `compute()` agree. Step file: `mdFiles/steps/36-batch-2-shopping-conversion.md`.
-**Resume:** the four converters in `measurements.ts`; stone for `mass`; see the step file's Pause notes.
+36 · 2026-10-19 · **Batch 2 shopping + conversion v2 — DONE** (branch `step/36-batch-2-shopping-conversion`,
+PR #10). Two agent runs: paused after the five shopping calculators (D11), then resumed for the four
+converters. All 9 are on the v2 template with full content, primary references and verified numbers.
+`inputs` + `compute()` are unchanged on all nine, so **the compute snapshot did not move.**
+Type A (solver beside the unchanged forward compute): **sales-tax** (total ↔ price ↔ rate; "remove
+tax" = solve for price; Donut price + tax), **tip** (tip ↔ bill ↔ tip %; people `fixed`; Donut bill + tip
+with the per-person share in the center), **discount** (sale ↔ original ↔ % off; extra coupon and tax
+`fixed`; CompareBars original vs sale), **unit-price** (unit price ↔ cost ↔ quantity; item 2 `fixed`;
+per-100 outputs + % difference; CompareBars), **fahrenheit-to-celsius** (RangeBar freezing / body /
+boiling via a °C `derive` key; K and °R in the menus), **gallons-to-liters** (US/UK gallon via the unit
+menu; LogScale), **miles-to-kilometers** (LogScale with race distances), **pounds-to-kilograms** (stone in
+the menus; LogScale). Type B: **cashback** (explicit formats and labels, groups, CompareBars rewards vs fee).
+**Stone** (14 lb, exact) is appended to `mass` in `lib/units.ts`. The force-calculator mass menu now
+offers "st"; its other units, factors and default result (4,170 N) are unchanged (pinned test extended).
+Converters solve exactly via `lib/units.ts`, while the unchanged `compute()` keeps rounded factors
+(3.78541, 1.60934, 0.453592): they differ only in the sixth significant figure.
+Solver defaults differ from the `inputs` defaults on tip (3 people) and discount (extra 10% coupon),
+to match the example lines.
+**Test change:** `lib/breakdown.spec.ts` required at least 40 type-B calculators; each type-A conversion
+lowers that count, so the floor is now 20 (an empty-loop guard). **246 tests** pass.
+Numbers: an independent Python checker matched **173 of 173** copy figures (0 mismatches); the app's
+`solveState()` / `compute()` agree. Build + lint (ignoring `.open-next/**`, `.claude/**`) pass. All 9
+pages plus force checked on `next start` (H1, every section id, JSON-LD, visual aria-label).
+Step file: `mdFiles/steps/36-batch-2-shopping-conversion.md`.
+**What step 37 (Batch 3, health, YMYL) needs to know:**
+- Same pattern: type A adds `solver` beside the unchanged `inputs` + `compute()`; visuals go in
+  `solver.visuals`; display-unit figures (e.g. a value in °C or L rather than SI) come from
+  `solver.derive`, because solver visuals receive SI values.
+- Health is YMYL: references are mandatory, plus an "estimates only" / not-medical-advice note in
+  `formula.note` or a watch-out. Cite primary sources (CDC, NIH, WHO), never other calculator sites.
+- BMI's `RangeBar` with WHO bands fits the kit directly. `bmi-calculator` still returns NaN at its own
+  min (Parked); guard it in the solver (`NaN` on zero height) without touching `compute()`.
+- `mass` now has st (useful for BMI in GB). `length` has ft and in but no combined "5 ft 7 in" input:
+  use a single unit menu, or Park it.
+- Converting type-B calculators to type A lowers the `breakdown.spec` count again; the floor is 20.
+- Sub-cent money and the `¤` vs `$` symbol split are still open (Parked, step 18).
 
 ## Pending on the user — not code
 
@@ -893,7 +913,9 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
   and the stub page files are deleted.
 - **Kit gaps from step 36** (nearest kit component used instead): a stacked bar (sales tax: Donut
   used), per-person chips (tip: Donut with the per-person share in the center), a strikethrough price
-  card (discount: CompareBars). Add to `components/visuals/` in their own step if wanted.
+  card (discount: CompareBars), a thermometer (fahrenheit-to-celsius: RangeBar) and a common-values
+  table (gallons, miles, pounds: LogScale with benchmarks). Add to `components/visuals/` in their own
+  step if wanted.
 - **Sub-cent money in the solver** (found in step 36): `SolverCalculator` and the kit round currency
   to cents, so a $0.2496 unit price shows as $0.25. Unit price works around it with per-100 outputs.
   Step 18 (region formatting) could show 3–4 decimals for money below $1.

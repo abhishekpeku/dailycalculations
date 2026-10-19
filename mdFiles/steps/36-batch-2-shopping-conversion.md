@@ -12,7 +12,7 @@
 - [x] gallons-to-liters-converter (A · LogScale with can / gallon / 5 gal / oil barrel; plan: common-values table, not in kit)
 - [x] miles-to-kilometers-converter (A · LogScale with mile / 5K / half / marathon; plan: common-distances table, not in kit)
 - [x] pounds-to-kilograms-converter (A · LogScale with pound / stone / 100 lb / short ton; stone added to `mass`; plan: common-values table, not in kit)
-- [ ] Number verification script, tests, build, lint, STATUS.md, PR ready
+- [x] Number verification script, tests, build, lint, STATUS.md, PR ready
 
 Commit + push after each box (`step 36: <id>`). Runs are 5 calculators (D11): the first run
 builds the five shopping calculators and pauses; the second run does the four converters.
@@ -36,10 +36,10 @@ untouched.
 | discount | A | sale price ↔ original ↔ % off; second discount and tax rate fixed | after first discount, savings, effective %, tax, total with tax | strikethrough card → **CompareBars** original vs sale |
 | unit-price | A | unit price ↔ cost ↔ quantity; item 2 cost + quantity fixed | price per 100, item 2 unit price, item 2 vs item 1 | **CompareBars** which is cheaper |
 | cashback | B | — | net annual value, yearly rewards, monthly rewards, effective rate | **CompareBars** rewards vs fee |
-| fahrenheit-to-celsius | A | °F ↔ °C | — | thermometer (resume run) |
-| gallons-to-liters | A | gal ↔ L | — | common-values table (resume run) |
-| miles-to-kilometers | A | mi ↔ km | — | common-distances table (resume run) |
-| pounds-to-kilograms | A | lb ↔ kg (+ st) | — | common-values table (resume run) |
+| fahrenheit-to-celsius | A | °F ↔ °C (K and °R in the menus) | — | thermometer → **RangeBar** freezing / body / boiling, in °C |
+| gallons-to-liters | A | gal (US or UK in the menu) ↔ L | — | common-values table → **LogScale** with can / gallon / 5 gal / oil barrel |
+| miles-to-kilometers | A | mi ↔ km | — | common-distances table → **LogScale** with mile / 5K / half / marathon |
+| pounds-to-kilograms | A | lb ↔ kg (+ st in the menus) | — | common-values table → **LogScale** with pound / stone / 100 lb / short ton |
 
 ### Decisions
 
@@ -54,20 +54,19 @@ untouched.
   shows as $0.25. Unit price adds a "per 100 units" output and draws its bars from per-100 figures,
   which keeps cent resolution. Sub-cent display is Parked for the region step.
 
-## Pause
+## Notes (resumed and finished 2026-10-19)
 
-Paused 2026-10-19 after cashback-calculator. Resume from the first unchecked box.
-
-Notes for the resume run (the four converters, all in `data/calculators/measurements.ts`):
-
-- Same pattern: `solver` beside the unchanged `inputs` + `compute()`; check the snapshot stays put.
-- Two-field converters: one variable per unit, each with a `dimension` (`temperature`, `volume`,
-  `length`, `mass`) so the unit menus work; `solve` is just the identity in SI.
-- **Stone** still needs adding to `mass` in `lib/units.ts` (1 st = 14 lb, exact). Appending it
-  at the end changes the force-calculator mass menu (it gains "st"); decide and note it.
-- No thermometer or common-values table exists in the kit. Use the nearest kit component
-  (e.g. `LogScale`/`RangeBar` with benchmarks, or `CompareBars`) and Park the gap.
-- `lib/breakdown.spec.ts`'s type-B count floor is now 20 (was 40); the converters are type A, so
-  the count falls again (check it still passes).
-- Verification so far: `verify36.py` (scratchpad, Python, imports nothing from the app) matched
-  75 copy figures with 0 mismatches; the app's `solveState()` / `compute()` agree with it.
+- First run: the five shopping calculators, then a pause at 5 (D11). Second run: the four converters.
+- **Converters:** two solver variables of the same dimension, each with its own unit menu. `solve`
+  is the identity in SI, with `NaN` for negative values (below absolute zero for temperature).
+  The exact factors come from `lib/units.ts` (NIST SP 811), so the solver is exact while the
+  unchanged `compute()` keeps its rounded factors (3.78541, 1.60934, 0.453592). The two differ only
+  in the sixth significant figure. The snapshot has not moved.
+- **Stone** (14 lb, exact) is appended to `mass`. The force-calculator mass menu gains "st"; its other
+  units, factors, defaults and result (4,170 N) are unchanged. The pinned-factor test now includes st,
+  and an anchor test checks 1 st = 14 lb = 6.35029318 kg.
+- **Visuals:** no thermometer or common-values table in the kit. Temperature uses `RangeBar`
+  (fed by a `derive` key in °C). Volume, distance and mass use `LogScale` with real reference
+  points on evenly spaced exponents (10^-1 to 10^3). Gaps Parked.
+- **Verification:** `verify36.py` (scratchpad, Python, imports nothing from the app) matched
+  **173 of 173** copy figures, 0 mismatches. The app's `solveState()` / `compute()` agree.

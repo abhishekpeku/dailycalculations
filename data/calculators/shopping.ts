@@ -4,22 +4,107 @@ export const shoppingCalculators: CalculatorConfig[] = [
   {
     id: 'sales-tax-calculator',
     category: 'shopping',
-    updatedAt: '2026-09-10',
-    aliases: ['vat calculator', 'gst calculator', 'tax added calculator', 'purchase tax calculator'],
+    updatedAt: '2026-10-19',
+    aliases: ['vat calculator', 'gst calculator', 'tax added calculator', 'purchase tax calculator', 'reverse sales tax calculator'],
     related: ['tip-calculator', 'discount-calculator', 'unit-price-calculator', 'cashback-calculator'],
     title: 'Sales Tax Calculator',
-    description: 'Compute total cost with sales tax and compare pre-tax versus final price.',
-    example: 'Calculate the final total for a $125 purchase with 8.25% sales tax.',
+    description: 'Add sales tax to a price, take it back out of a tax-inclusive total, or find the tax rate from a receipt. Fill in any two of price, rate and total.',
+    example: 'A $125 purchase at 8.25% sales tax comes to $135.31, of which $10.31 is tax. A $108.25 total at the same rate was $100 before tax.',
+    solver: {
+      defaultTarget: 'total',
+      variables: [
+        { id: 'total', label: 'Total with tax', symbol: 'T', dimension: 'currency', defaultValue: 135.31, defaultUnit: 'currency' },
+        { id: 'price', label: 'Price before tax', symbol: 'P', dimension: 'currency', defaultValue: 125, defaultUnit: 'currency' },
+        { id: 'rate', label: 'Sales tax rate', symbol: 'r', dimension: 'percent', defaultValue: 8.25, defaultUnit: '%' }
+      ],
+      solve: {
+        total: ({ price, rate }) => price * (1 + rate / 100),
+        price: ({ total, rate }) => (1 + rate / 100 > 0 ? total / (1 + rate / 100) : NaN),
+        rate: ({ total, price }) => (price > 0 ? (total / price - 1) * 100 : NaN)
+      },
+      outputs: [{ id: 'tax', label: 'Sales tax', dimension: 'currency', compute: (si) => si.total - si.price }],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [{ from: 'price', label: 'Price before tax' }, { from: 'tax', label: 'Sales tax' }],
+          center: 'total',
+          centerSub: 'total with tax'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-19',
+      concept: {
+        title: 'What is sales tax?',
+        paragraphs: [
+          'Sales tax is a tax on retail purchases, charged as a percentage of the price and collected by the seller at checkout. In the US there is no national sales tax. States set their own rate, and counties, cities and special districts often add their own on top, so the rate you pay is the sum of several layers and can change from one town to the next.',
+          'Because it is a percentage, the tax grows in step with the price. At 8.25%, every $100 you spend carries $8.25 of tax, and the total is the price multiplied by 1.0825. The same multiplier works in reverse: divide a tax-inclusive total by 1.0825 and you get the price before tax.',
+          'Five states (Alaska, Delaware, Montana, New Hampshire and Oregon) have no statewide sales tax, although some Alaska towns charge a local one. Many states exempt or reduce the tax on groceries, prescription drugs or clothing, so the rate on a receipt can differ from item to item.',
+          'Outside the US, the same arithmetic applies to a value-added tax (VAT) or a goods and services tax (GST). The difference is that shelf prices there usually include the tax already, which is exactly the case the "remove tax" direction of this calculator handles.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of the three fields. The third, marked auto, is calculated as you type.',
+        steps: [
+          { name: 'Add tax to a price', text: 'Type the price before tax and your combined sales tax rate. The total with tax is calculated, and the tax itself is shown below it.' },
+          { name: 'Take tax out of a total', text: 'Type the total you paid and the rate, then leave the price alone. It becomes the auto field and shows the price before tax.' },
+          { name: 'Find the rate from a receipt', text: 'Type the subtotal as the price and the amount you paid as the total. The rate is calculated.' },
+          { name: 'Use your full local rate', text: 'Add the state, county and city rates together. Your state revenue department publishes the combined rate for each address.' },
+          { name: 'Check the chart', text: 'The ring shows how much of the total is the price and how much is tax.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The total is the price grown by the tax rate. Each of the three fields has a direct rearrangement, so nothing is solved numerically.',
+        expression: 'T = P × (1 + r)\nP = T ÷ (1 + r)\nr = T ÷ P − 1\nTax = T − P = P × r',
+        terms: [
+          { symbol: 'T', meaning: 'Total with tax, the amount you pay.' },
+          { symbol: 'P', meaning: 'Price before tax, the taxable amount.' },
+          { symbol: 'r', meaning: 'Combined sales tax rate as a decimal (8.25% = 0.0825).' },
+          { symbol: 'Tax', meaning: 'The sales tax charged, the difference between the total and the price.' }
+        ],
+        note: 'Estimates only. Stores round the tax to the cent, sometimes per item, so a receipt can differ from this result by a cent or two.'
+      },
+      workedExample: {
+        intro: 'You buy a $125 item where the combined sales tax rate is 8.25%. What do you pay, and how much of it is tax? Then, a second receipt shows $108.25 at the same rate. What was the price before tax?',
+        rows: [
+          { label: 'Rate as a decimal', value: '0.0825' },
+          { label: 'Tax (125 × 0.0825)', value: '$10.3125 → $10.31' },
+          { label: 'Total (125 × 1.0825)', value: '$135.3125 → $135.31' },
+          { label: 'Second receipt, price before tax (108.25 ÷ 1.0825)', value: '$100.00' },
+          { label: 'Second receipt, tax (108.25 − 100)', value: '$8.25' }
+        ],
+        result: 'T ≈ $135.31 with $10.31 of tax · $108.25 including tax was $100.00 before tax',
+        explanation: 'Taking tax out means dividing by 1.0825, not subtracting 8.25%. Subtracting 8.25% of $108.25 gives $99.32, which is 68 cents too low, because the tax was charged on the smaller pre-tax price, not on the total.'
+      },
+      watchOut: [
+        { title: 'Use the combined rate', body: 'The state rate alone usually understates what you pay. Add the county, city and district rates for the place of sale, or look up the combined rate on your state revenue department\'s website.' },
+        { title: 'Removing tax is a division', body: 'To find the pre-tax price, divide the total by (1 + rate). Subtracting the rate from the total always gives a figure that is slightly too low.' },
+        { title: 'Not everything is taxed the same', body: 'Groceries, medicine, clothing and services are exempt or taxed at a lower rate in many states. Shipping and delivery charges are taxable in some states and not in others.' },
+        { title: 'Rounding', body: 'Sellers round the tax to the cent, sometimes per line and sometimes on the whole receipt. Expect differences of a cent or two from this result.' },
+        { title: 'Estimates only', body: 'This calculator does arithmetic on the rate you enter. It does not look up rates or decide what is taxable. Your state revenue department is the authority for both.' }
+      ],
+      references: [
+        { label: 'OpenStax, Contemporary Mathematics, §6.2 Discounts, Markups, and Sales Tax', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-2-discounts-markups-and-sales-tax' },
+        { label: 'Internal Revenue Service, Topic no. 503, Deductible taxes (state and local general sales taxes)', url: 'https://www.irs.gov/taxtopics/tc503' },
+        { label: 'Streamlined Sales Tax Governing Board, member states and uniform sales tax rules', url: 'https://www.streamlinedsalestax.org/' }
+      ]
+    },
     inputs: [
-      { id: 'purchaseAmount', label: 'Purchase amount', type: 'currency', placeholder: '125', defaultValue: 125, step: 1, min: 0 },
+      { id: 'purchaseAmount', label: 'Price before tax', type: 'currency', placeholder: '125', defaultValue: 125, step: 1, min: 0 },
       { id: 'salesTaxRate', label: 'Sales tax rate', type: 'percent', placeholder: '8.25', defaultValue: 8.25, step: 0.01, min: 0 }
     ],
     seo: {
-      title: 'Sales Tax Calculator',
-      description: 'Quickly calculate sales tax on any purchase. Enter the amount and your local tax rate to see the exact tax owed and the final price you will pay at checkout.',
+      title: 'Sales Tax Calculator – Add or Remove Sales Tax',
+      description: 'Free sales tax calculator: add tax to a price, remove it from a tax-inclusive total, or find the rate from a receipt. Works with any state or local rate.',
       faq: [
-        { question: 'How do I calculate sales tax?', answer: 'Multiply the purchase amount by the sales tax rate, then add the result to the purchase amount for the total cost.' },
-        { question: 'Can I use this tool with different tax rates?', answer: 'Yes, it works for any sales tax rate you enter, including combined local rates.' }
+        { question: 'How do I calculate sales tax?', answer: 'Multiply the price by the tax rate as a decimal. A $125 purchase at 8.25% carries $125 × 0.0825 = $10.31 of tax, for a total of $135.31.' },
+        { question: 'How do I remove sales tax from a total?', answer: 'Divide the total by 1 plus the rate. At 8.25%, a $108.25 total was $108.25 ÷ 1.0825 = $100.00 before tax, and the tax was $8.25.' },
+        { question: 'How do I find the sales tax rate from a receipt?', answer: 'Divide the total by the pre-tax subtotal and subtract 1. A $40.00 subtotal that became $43.30 means a rate of 43.30 ÷ 40 − 1 = 0.0825, or 8.25%.' },
+        { question: 'Which US states have no sales tax?', answer: 'Alaska, Delaware, Montana, New Hampshire and Oregon have no statewide sales tax. Some Alaska cities and boroughs still charge a local sales tax.' },
+        { question: 'Why is my receipt different from the calculator by a cent?', answer: 'Stores round the tax to the cent, and some round each item separately before adding them up. Those roundings can move the total by a cent or two.' },
+        { question: 'Does this work for VAT or GST?', answer: 'Yes. The arithmetic is the same. Prices in VAT and GST countries usually include the tax, so enter the shelf price as the total and the rate, and the price before tax is calculated. At 20% VAT, a £60 price includes £10 of tax.' },
+        { question: 'Can I deduct sales tax on my federal return?', answer: 'If you itemize, you can choose to deduct state and local general sales taxes instead of state and local income taxes, within the combined SALT limit. IRS Topic 503 explains the rules.' }
       ]
     },
     compute(values) {

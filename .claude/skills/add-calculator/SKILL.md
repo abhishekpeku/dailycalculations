@@ -10,7 +10,7 @@ Read first, every time:
 2. `mdFiles/calculator-template-v2.md` (the page spec, which is the source of truth for fields and content rules)
 3. `mdFiles/STATUS.md`: check the current step and the Parked list. If the work belongs to a
    numbered step, follow that step's file instead of improvising.
-4. The `force-calculator` entry in `data/calculators.ts`: the reference implementation to copy.
+4. The `force-calculator` entry in `data/calculators/physics.ts`: the reference implementation to copy.
 
 ## Procedure
 
@@ -28,7 +28,8 @@ Read first, every time:
    numerically. Put derived figures (total interest, total paid) in `outputs`, and mark
    input-only fields (down payment, split count) `fixed: true`. See template §2. Take the result
    visual from the kit in `components/visuals/` (template §2, "Result visuals"). Never draw a new one.
-3. **Add the object** to `calculators` in `data/calculators.ts`, with every v2 field:
+3. **Add the object** to its category file, `data/calculators/<category>.ts`, and append its `id` to
+   `calculatorOrder` in `data/calculators/index.ts` (listing order; `npm test` fails if it is missing). Every v2 field:
    `id` (kebab-case, ends in `-calculator` or `-converter`), `category`, `updatedAt` (today),
    `aliases` (≥ 4 real search phrasings), `related` (3–4 **existing** ids), `title`, `description`,
    `example`, `solver?`, `content` (concept, howTo, formula, workedExample, watchOut, references,

@@ -7,7 +7,7 @@
 - [x] Import paths fixed (`.ts`-extension imports used by the Node test runner)
 - [x] Order guard test; `npm test` with the snapshot unchanged
 - [x] Build, lint, route/sitemap comparison against `master`
-- [ ] Docs (add-calculator skill, calculator-builder agent, template v2, CLAUDE.md, README), STATUS.md, PR ready
+- [x] Docs (add-calculator skill, calculator-builder agent, template v2, CLAUDE.md, README), STATUS.md, PR ready
 
 Resume from the first unchecked box.
 

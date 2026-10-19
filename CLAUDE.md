@@ -22,7 +22,7 @@ npm run deploy    # build + deploy to Cloudflare
 
 ## Architecture — the things that matter
 
-- **`data/calculators.ts` is the heart of the site.** One object per calculator = one page, one
+- **`data/calculators/` is the heart of the site** (one file per category; `index.ts` holds the order). One object per calculator = one page, one
   sitemap entry, one search entry. Adding a calculator means adding an object — no new files.
   Never hand-write a calculator page.
 - **`lib/site.ts`** holds `SITE_URL`. Never hardcode the domain anywhere else.

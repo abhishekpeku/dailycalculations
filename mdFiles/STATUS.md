@@ -828,7 +828,7 @@ from the read-through, planned but not built:
 
 ## Pending on the user — not code
 
-- **Cloudflare apex → www 301 (from step 01, still open).**
+- ~~**Cloudflare apex → www 301 (from step 01).**~~ **DONE 2026-10-19** — Redirect Rule added by the user; verified `http://` and `https://dailycalculations.com/<path>?<query>` → 301 to `https://www.dailycalculations.com/<path>?<query>`, www serves 200.
   Cloudflare dashboard → the `dailycalculations.com` zone → **Rules → Redirect Rules** → new rule:
   *If hostname equals `dailycalculations.com` → Static redirect to `https://www.dailycalculations.com`,
   preserve path and query string, status **301**.*

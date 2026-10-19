@@ -155,14 +155,15 @@ export function breakdownShareParams(inputs: CalculatorInput[], state: Breakdown
   return params.toString();
 }
 
-/** Applies share params over `fallback`. Unknown ids, non-numbers and unknown units are ignored. */
+/** Applies share params over `fallback`. Unknown ids, non-numbers, unknown units and values outside `options` are ignored. */
 export function readBreakdownShareParams(inputs: CalculatorInput[], fallback: BreakdownState, search: string): BreakdownState {
   const params = new URLSearchParams(search);
   const values = { ...fallback.values };
   const units = { ...fallback.units };
   for (const input of inputs) {
     const raw = params.get(input.id);
-    if (raw !== null && Number.isFinite(parse(raw))) values[input.id] = raw.trim();
+    const allowed = raw !== null && Number.isFinite(parse(raw)) && (!input.options || input.options.some((option) => option.value === parse(raw)));
+    if (allowed) values[input.id] = raw.trim();
     const unit = params.get(`${input.id}_unit`);
     if (unit && input.dimension && UNITS[input.dimension].some((u) => u.id === unit)) units[input.id] = unit;
   }

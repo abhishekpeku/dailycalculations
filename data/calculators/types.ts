@@ -20,6 +20,8 @@ export type CalculatorInput = {
   /** Type-B widget: a unit menu from lib/units.ts. `unit` is the one compute() expects (default: the base). */
   dimension?: UnitDimension;
   unit?: string;
+  /** Type-B widget: a fixed choice (filing status, pay frequency) shown as a menu. compute() gets the value. */
+  options?: { value: number; label: string }[];
 };
 
 export type BreakdownFormat = 'currency' | 'percent' | 'integer' | 'number' | 'significant';

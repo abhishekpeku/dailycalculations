@@ -69,6 +69,27 @@ export function FieldRow({ id, label, value, onChange, placeholder, autoAccent, 
   );
 }
 
+// One inset row with a menu instead of a number: a fixed choice such as filing status.
+export function ChoiceRow({ id, label, value, options, onChange }: { id: string; label: ReactNode; value: string; options: { value: number; label: string }[]; onChange: (raw: string) => void }) {
+  return (
+    <div className="flex items-center gap-3 px-4 py-3">
+      <label htmlFor={id} className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 text-sm text-slate-900 dark:text-slate-100">
+        {label}
+      </label>
+      <select
+        id={id}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="w-52 max-w-[60%] shrink-0 rounded-lg border-0 bg-slate-100 py-1 pl-2 pr-6 text-sm text-slate-800 dark:bg-slate-800 dark:text-slate-100 sm:w-64"
+      >
+        {options.map((option) => (
+          <option key={option.value} value={String(option.value)}>{option.label}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 // The result card: accent wash, a kicker, the figures, and an optional visual underneath.
 export function ResultPanel({ accent, kicker, children, visual }: { accent: string; kicker: string; children: ReactNode; visual?: ReactNode }) {
   return (

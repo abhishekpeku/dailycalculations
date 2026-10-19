@@ -56,7 +56,9 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
     { id: 'g', label: 'g', factor: 0.001 },
     { id: 't', label: 't', factor: 1000 },
     { id: 'lb', label: 'lb', factor: POUND },
-    { id: 'oz', label: 'oz', factor: 0.028349523125 }
+    { id: 'oz', label: 'oz', factor: 0.028349523125 },
+    // Stone (UK body weight) = 14 lb, exact. Appended last so the earlier menu order is unchanged.
+    { id: 'st', label: 'st', factor: 14 * POUND }
   ],
   acceleration: [
     { id: 'm/s2', label: 'm/s²', factor: 1 },

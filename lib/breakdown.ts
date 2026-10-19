@@ -1,6 +1,6 @@
 // State and defaults of the type-B breakdown widget, as plain functions so they can be unit-tested.
 // See mdFiles/steps/33-type-b-widget.md.
-import type { BreakdownFormat, BreakdownOutput, BreakdownPart, BreakdownVisual, CalculatorConfig, CalculatorInput } from '../data/calculators.ts';
+import type { BreakdownFormat, BreakdownOutput, BreakdownPart, BreakdownVisual, CalculatorConfig, CalculatorInput } from '../data/calculators/index.ts';
 import { currencySymbol, formatDecimal, formatFull, formatSignificant } from './calculator.ts';
 import { parse, plain } from './solverState.ts';
 import { UNITS, findUnit, fromBase, toBase } from './units.ts';

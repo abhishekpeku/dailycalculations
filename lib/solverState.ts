@@ -1,6 +1,6 @@
 // State of the auto-solve widget, as plain functions so they can be unit-tested.
 // See mdFiles/steps/31-solver-v2.md.
-import type { CalculatorSolver } from '../data/calculators.ts';
+import type { CalculatorSolver } from '../data/calculators/index.ts';
 import { findRoot } from './solve.ts';
 import { UNITS, toBase, type UnitDimension } from './units.ts';
 

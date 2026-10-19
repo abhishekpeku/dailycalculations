@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-10-19 · Current step: **34** (E7, split data file) · steps 17 + 30 + 31 + 32 + 33 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
+Last updated: 2026-10-19 · Current step: **35** (Batch 1, finance) · steps 17 + 30 + 31 + 32 + 33 + 34 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
 
 ---
 
@@ -97,7 +97,7 @@ is why 12-15 run after it.
 
 | # | Step | Status | Scope | Spec |
 |---|---|---|---|---|
-| 27 | Repo hygiene | TODO | `.gitignore` + delete `dev-server.log`, `dev-server.err.log`, `tsconfig.tsbuildinfo`. Regenerate the `README.md` calculator list from `data/calculators.ts`. Fix `mdFiles/memory/project_i18n.md` (it says `proxy.ts` / next-intl 3.26.5; reality is `middleware.ts` / 4.13 / English-only — see session 31, which confirmed `middleware.ts` must stay). | §4.6 |
+| 27 | Repo hygiene | TODO | `.gitignore` + delete `dev-server.log`, `dev-server.err.log`, `tsconfig.tsbuildinfo`. Regenerate the `README.md` calculator list from `data/calculators/`. Fix `mdFiles/memory/project_i18n.md` (it says `proxy.ts` / next-intl 3.26.5; reality is `middleware.ts` / 4.13 / English-only — see session 31, which confirmed `middleware.ts` must stay). | §4.6 |
 | 28 | Search Console | TODO | Verify the domain, submit `/sitemap.xml`, request indexing on the top 15 calculators individually, then monitor the metrics table in §7. | §2.8, §7 |
 | 29 | IndexNow setup | **DONE** 2026-09-13 | Ran ahead of the queue in response to a Bing Webmaster Tools audit. Key file `public/<key>.txt`, submit script `scripts/indexnow.mjs` (fetches `/sitemap.xml`, POSTs every `<loc>` to `api.indexnow.org/indexnow`), wired into `npm run deploy` and exposed standalone as `npm run indexnow`. No new dependency — uses built-in `fetch`. | — |
 
@@ -112,7 +112,7 @@ is why 12-15 run after it.
 | 31 | (E3) Solver v2 | **DONE** 2026-10-13 | Numeric solve for variables with no closed form (loan rate) + extra outputs beside the auto field. | §2 E3 |
 | 32 | (E4) Result visuals kit | **DONE** 2026-10-13 | RangeBar, Donut, Timeline, AmortizationTable, LogScale (generalized), CompareBars. Hand-rolled SVG. | §2 E4 |
 | 33 | (E5) Type-B widget | **DONE** 2026-10-19 | `BreakdownCalculator` replaces `CalculatorForm`. | §2 E5 |
-| 34 | (E7) Split data file | TODO | `data/calculators/<category>.ts`. **Moved before the batches**: every batch editing one 2,000-line file means huge diffs and a conflict with any other open branch. | §2 E7 |
+| 34 | (E7) Split data file | **DONE** 2026-10-19 | `data/calculators/<category>.ts`. **Moved before the batches**: every batch editing one 2,000-line file means huge diffs and a conflict with any other open branch. | §2 E7 |
 | 35 | Batch 1: finance (8) | TODO | YMYL. | §3 |
 | 36 | Batch 2: shopping + conversion (9) | TODO | | §3 |
 | 37 | Batch 3: health (6) | TODO | YMYL. | §3 |
@@ -710,6 +710,31 @@ data stays a `.ts` module imported client-side (as `compute` already requires).
 **What the batches need to know:** set `format: 'currency'` on money outputs whose key doesn't contain
 Amount/Cost/Payment/Interest/Principal (e.g. tip's `perPerson` prints as a plain number today), and
 give every output a real label (`bmi` shows as "Bmi").
+
+34 · 2026-10-19 · **E7: data file split.** `data/calculators.ts` (2,216 lines) is now
+`data/calculators/`: `types.ts` (every config type, unchanged), one `<category>.ts` per category id
+(13 files, each `export const <id>Calculators: CalculatorConfig[]`), and `index.ts` (`categories`,
+`calculators`, `findCalculator`, `findCategoryCalculators`, `export type *` from `types.ts`).
+`@/data/calculators` resolves to the index, so no app import changed. **Decision: listing order is an
+explicit `calculatorOrder` slug list in `index.ts`** — the old array interleaved categories, and
+listings, sitemap, search and the snapshot test follow it. `calculators` = all category arrays sorted
+by that list; an id missing from it sorts last, and the new `data/calculators/index.spec.ts` fails
+(unique ids, order list complete, each file holds only its own category). Section-divider comments
+were dropped; the five custom-tool stubs keep a one-line comment each. Files run by `npm test` import
+`../data/calculators/index.ts` (Node resolves neither directories nor `@/`). Verified: every
+calculator object deep-equal to master's (functions by source), `npm test` 198 pass with the
+snapshot unchanged, build + lint + `tsc` clean, and built `sitemap.xml`, prerendered routes and the
+calculator links on home / `/calculators` / `/categories` / every category page identical to a
+master build (only sitemap `lastmod` build timestamps differ). Docs: add-calculator skill,
+calculator-builder agent, template §4, CLAUDE.md architecture line, README. Step file:
+`mdFiles/steps/34-split-data-file.md`.
+**Surprise:** `tsconfig.tsbuildinfo` is tracked and every build rewrites it, so `git commit -a`
+picks it up (step 27 already covers deleting it). Don't commit it.
+**What step 35 (Batch 1, finance) needs to know:** all eight Batch-1 calculators live in
+`data/calculators/finance.ts`; edit only that file (plus `lib/units.ts` / visuals if needed).
+Converting an existing calculator does not touch `calculatorOrder`; only a brand-new id must be
+appended there. New types go in `data/calculators/types.ts`. Specs import
+`../data/calculators/index.ts`.
 
 ## Pending on the user — not code
 

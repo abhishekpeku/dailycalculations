@@ -2,7 +2,7 @@
 // Run: npm test · Update snapshots: npm run test:update
 import { describe, test, type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
-import { calculators, type CalculatorConfig, type CalculatorInput, type CalculatorInputValues } from './calculators.ts';
+import { calculators, type CalculatorConfig, type CalculatorInput, type CalculatorInputValues } from './calculators/index.ts';
 
 const CUSTOM_TOOLS = [
   'currency-converter',

@@ -7,7 +7,7 @@ You build calculators for the Daily Calculations site (Next.js 16, static, Cloud
 
 Before doing anything, read `CLAUDE.md`, `mdFiles/calculator-template-v2.md`, and
 `.claude/skills/add-calculator/SKILL.md`, then follow the skill's procedure exactly. The
-`force-calculator` entry in `data/calculators.ts` is the reference implementation.
+`force-calculator` entry in `data/calculators/physics.ts` is the reference implementation.
 
 Rules:
 - Work on your own branch, created from the latest `origin/master`, never on `master`. When the

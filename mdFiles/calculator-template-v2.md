@@ -178,6 +178,7 @@ labels are the keys in sentence case, and all inputs sit in one group. **`comput
 
 ## 4. Adding a new category
 
-Add it to `categories` in `data/calculators.ts`. A category needs **≥ 25 calculators within a wave**
+Add it to `categories` in `data/calculators/index.ts`, create `data/calculators/<id>.ts` exporting
+`<id>Calculators`, and spread it into `calculators` there. A category needs **≥ 25 calculators within a wave**
 before it's promoted in the nav (strategy §4.2). The single physics calculator on the preview
 branch is a demo exception.

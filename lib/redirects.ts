@@ -2,7 +2,7 @@ import { calculators, categories } from '@/data/calculators';
 
 /**
  * Old calculator slug → canonical path, derived from each calculator's `redirectFrom`.
- * Deriving it means retiring a redirect is a one-line delete in `data/calculators.ts`
+ * Deriving it means retiring a redirect is a one-line delete in `data/calculators/<category>.ts`
  * — nothing here or in `middleware.ts` needs to change.
  */
 export const CALCULATOR_REDIRECTS: Record<string, string> = Object.fromEntries(

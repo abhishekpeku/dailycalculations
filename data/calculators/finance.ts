@@ -293,12 +293,117 @@ export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'compound-interest-calculator',
     category: 'finance',
-    updatedAt: '2026-09-10',
+    updatedAt: '2026-10-19',
     aliases: ['interest growth calculator', 'savings growth calculator', 'future value calculator', 'compounding calculator'],
     related: ['investment-calculator', 'inflation-calculator', 'loan-prepayment-calculator', 'salary-raise-calculator'],
     title: 'Compound Interest Calculator',
-    description: 'Estimate future savings with compound interest and optional monthly contributions.',
-    example: 'See how $5,000 grows at 4% APR with $200 monthly contributions over 10 years.',
+    description: 'See how savings grow with monthly compounding and regular deposits, or work back to the starting balance, years or interest rate you need to reach a goal.',
+    example: '$5,000 at 4% a year, compounded monthly, with $200 added every month grows to about $36,904 in 10 years, including about $7,904 of interest.',
+    solver: {
+      defaultTarget: 'futureValue',
+      variables: [
+        { id: 'futureValue', label: 'Future value', symbol: 'FV', dimension: 'currency', defaultValue: 36904.12, defaultUnit: 'currency' },
+        { id: 'principal', label: 'Starting balance', symbol: 'P', dimension: 'currency', defaultValue: 5000, defaultUnit: 'currency' },
+        { id: 'monthlyContribution', label: 'Monthly contribution', symbol: 'C', dimension: 'currency', defaultValue: 200, defaultUnit: 'currency', fixed: true },
+        { id: 'years', label: 'Time', symbol: 't', dimension: 'term', defaultValue: 10, defaultUnit: 'yr', bounds: [0, 1200] },
+        { id: 'annualRate', label: 'Annual interest rate', symbol: 'r', dimension: 'percent', defaultValue: 4, defaultUnit: '%', bounds: [0, 100] }
+      ],
+      // `years` arrives in months (the term dimension's base); compounding is monthly.
+      solve: {
+        futureValue: ({ principal, monthlyContribution, years, annualRate }) =>
+          years >= 0 ? principal * growthFactor(annualRate, 12, years) + monthlyContribution * annuityFactor(annualRate, 12, years) : NaN,
+        principal: ({ futureValue, monthlyContribution, years, annualRate }) => {
+          const start = (futureValue - monthlyContribution * annuityFactor(annualRate, 12, years)) / growthFactor(annualRate, 12, years);
+          return years >= 0 && start >= 0 ? start : NaN;
+        },
+        years: ({ futureValue, principal, monthlyContribution, annualRate }) => {
+          const i = annualRate / 100 / 12;
+          if (i === 0) return monthlyContribution > 0 ? (futureValue - principal) / monthlyContribution : NaN;
+          const months = Math.log((futureValue * i + monthlyContribution) / (principal * i + monthlyContribution)) / Math.log(1 + i);
+          return months >= 0 ? months : NaN;
+        }
+      },
+      // The rate has no closed form when there are contributions: the widget finds it numerically.
+      equation: (si) =>
+        si.futureValue - (si.principal * growthFactor(si.annualRate, 12, si.years) + si.monthlyContribution * annuityFactor(si.annualRate, 12, si.years)),
+      outputs: [
+        { id: 'totalContributions', label: 'Total contributions', dimension: 'currency', compute: (si) => si.monthlyContribution * si.years },
+        { id: 'totalInterest', label: 'Interest earned', dimension: 'currency', compute: (si) => si.futureValue - si.principal - si.monthlyContribution * si.years }
+      ],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'principal', label: 'Starting balance' },
+            { from: 'totalContributions', label: 'Contributions' },
+            { from: 'totalInterest', label: 'Interest' }
+          ],
+          center: 'futureValue',
+          centerSub: 'future value'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-19',
+      concept: {
+        title: 'What is compound interest?',
+        paragraphs: [
+          'Compound interest is interest earned on interest. Each time interest is credited to an account it joins the balance, and the next round of interest is calculated on the larger amount. Simple interest, by contrast, is only ever paid on the original deposit.',
+          'How often interest is credited matters. Savings accounts and certificates of deposit in the US usually compound daily or monthly, and banks advertise the annual percentage yield (APY), which already includes the effect of compounding. A 4% rate compounded monthly is an APY of about 4.07%. This calculator compounds monthly and adds your contribution at the end of each month, which matches how most people save.',
+          'Time does most of the work. The growth factor (1 + r/12)^(12t) rises faster every year, so the last few years of a long plan add more interest than the first few. At 4% a year compounded monthly, money doubles in about 17.4 years; the Rule of 72 (72 ÷ 4 = 18 years) is a quick mental check.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your monthly contribution (0 if you only make one deposit), then any three of the other four fields. The fourth, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter the monthly contribution', text: 'This is always an input. Use 0 for a single lump sum.' },
+          { name: 'Find the future value', text: 'Type the starting balance, the time and the annual rate. The future value is calculated, with the contributions and interest broken out below.' },
+          { name: 'Plan for a goal', text: 'Type a target into the future value field. Leave the time alone and it tells you how long the goal takes; leave the starting balance alone and it tells you how much to start with.' },
+          { name: 'Find the rate you need', text: 'With the future value, start, time and contributions filled in, leaving the rate alone longest makes the calculator search for the rate that reaches your goal.' },
+          { name: 'Switch years and months', text: 'Use the menu beside the time field to enter it in months instead of years.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The future value is the starting balance grown for n months, plus the future value of a deposit made at the end of every month.',
+        expression: 'FV = P × (1 + i)^n + C × ((1 + i)^n − 1) ÷ i\ni = r ÷ 100 ÷ 12,  n = 12 × t\nn = ln((FV × i + C) ÷ (P × i + C)) ÷ ln(1 + i)',
+        terms: [
+          { symbol: 'FV', meaning: 'Future value: the balance at the end.' },
+          { symbol: 'P', meaning: 'Starting balance (principal).' },
+          { symbol: 'C', meaning: 'Contribution added at the end of each month.' },
+          { symbol: 'r', meaning: 'Annual interest rate, as a percent.' },
+          { symbol: 'i', meaning: 'Monthly rate as a decimal: 4% a year is 0.0033333.' },
+          { symbol: 't, n', meaning: 'Time in years, and the number of months (n = 12t). With i = 0 the contribution term is just C × n.' }
+        ],
+        note: 'Estimates only. Real accounts can compound daily, rates change over time, and taxes and fees reduce growth. This is not financial advice.'
+      },
+      workedExample: {
+        intro: 'You open a savings account with $5,000 at 4% a year, compounded monthly, and add $200 at the end of every month for 10 years. How much will you have?',
+        rows: [
+          { label: 'Monthly rate (i = 4% ÷ 12)', value: '0.0033333' },
+          { label: 'Months (n = 10 × 12)', value: '120' },
+          { label: 'Growth factor (1 + i)^120', value: '1.490833' },
+          { label: 'Starting balance grown (5,000 × 1.490833)', value: '$7,454.16' },
+          { label: 'Contributions grown (200 × 0.490833 ÷ 0.0033333)', value: '$29,449.96' },
+          { label: 'Future value', value: '$36,904.12' },
+          { label: 'Total contributions (200 × 120)', value: '$24,000' },
+          { label: 'Interest earned (36,904.12 − 5,000 − 24,000)', value: '$7,904.12' }
+        ],
+        result: 'FV ≈ $36,904 after 10 years, of which about $7,904 is interest',
+        explanation: 'The $5,000 on its own grows by about $2,454. Most of the interest comes from the contributions: each $200 deposit compounds from the month it is made, so the 120 deposits of $24,000 grow to about $29,450.'
+      },
+      watchOut: [
+        { title: 'Estimates only', body: 'Rates on savings accounts change, and investment returns are not guaranteed. Treat the result as a projection, not a promise.' },
+        { title: 'Rate versus APY', body: 'Banks advertise APY, which already includes compounding. Entering an APY here, where it is compounded again monthly, slightly overstates growth. Use the stated interest rate if you know it.' },
+        { title: 'Taxes and inflation', body: 'Interest in a regular US savings account is taxable each year, and inflation erodes what the final balance buys. Check the result in today\'s dollars with the inflation calculator.' },
+        { title: 'Contribution timing', body: 'Deposits here are made at the end of each month. Depositing at the start of the month adds one extra month of interest on every deposit.' }
+      ],
+      references: [
+        { label: 'OpenStax, Contemporary Mathematics, §6.4 Compound Interest', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-4-compound-interest' },
+        { label: 'U.S. Securities and Exchange Commission, Investor.gov glossary: Compound interest', url: 'https://www.investor.gov/introduction-investing/investing-basics/glossary/compound-interest' },
+        { label: 'U.S. Securities and Exchange Commission, Investor.gov glossary: Rule of 72', url: 'https://www.investor.gov/introduction-investing/investing-basics/glossary/rule-72' }
+      ]
+    },
     inputs: [
       { id: 'principal', label: 'Starting balance', type: 'currency', placeholder: '5000', defaultValue: 5000, step: 100, min: 0 },
       { id: 'annualRate', label: 'Annual interest rate', type: 'percent', placeholder: '4', defaultValue: 4, step: 0.01, min: 0 },
@@ -306,11 +411,16 @@ export const financeCalculators: CalculatorConfig[] = [
       { id: 'monthlyContribution', label: 'Monthly contribution', type: 'currency', placeholder: '200', defaultValue: 200, step: 10, min: 0 }
     ],
     seo: {
-      title: 'Compound Interest Calculator',
-      description: 'Project how compound interest grows your savings over time. Enter a starting balance, annual rate, years invested, and optional monthly contributions for a future value estimate.',
+      title: 'Compound Interest Calculator – With Monthly Deposits',
+      description: 'Free compound interest calculator with monthly contributions. Find the future value, or the starting balance, time or rate you need to reach a savings goal.',
       faq: [
-        { question: 'What is compound interest?', answer: 'Compound interest is interest earned on both the original principal and accumulated interest.' },
-        { question: 'Can I model monthly contributions?', answer: 'Yes, add a monthly contribution amount to see how your balance grows over time.' }
+        { question: 'What is compound interest?', answer: 'Interest that is added to the balance and then earns interest itself. Over long periods it grows much faster than simple interest, which is paid only on the original deposit.' },
+        { question: 'How is compound interest with monthly contributions calculated?', answer: 'FV = P × (1 + i)^n + C × ((1 + i)^n − 1) ÷ i, with i the monthly rate and n the number of months. $5,000 at 4% plus $200 a month for 10 years comes to about $36,904.' },
+        { question: 'How long will it take to reach my savings goal?', answer: 'Enter the goal as the future value and the calculator works out the time. Starting with $5,000 and adding $200 a month at 4%, $50,000 takes about 13.2 years.' },
+        { question: 'What interest rate do I need to reach a goal?', answer: 'Fill in the goal, the start, the contribution and the time, and the calculator searches for the rate. To turn $5,000 plus $200 a month into $40,000 in 10 years you need about 5.28% a year.' },
+        { question: 'How long does it take money to double?', answer: 'At 4% a year compounded monthly, about 17.4 years. The Rule of 72 gives a quick estimate: 72 divided by the rate, so 18 years at 4%.' },
+        { question: 'What is the difference between APR and APY?', answer: 'APY includes the effect of compounding over a year, so it is higher than the stated rate when interest compounds more than once a year. 4% compounded monthly is an APY of about 4.07%.' },
+        { question: 'Does compounding frequency matter much?', answer: 'Somewhat. $5,000 for 10 years at 4% grows to about $7,454 compounded monthly and about $7,401 compounded once a year. The rate and the time matter far more.' }
       ]
     },
     compute(values) {
@@ -318,9 +428,8 @@ export const financeCalculators: CalculatorConfig[] = [
       const months = Math.max(0, values.years * 12);
       const compoundPrincipal = values.principal * Math.pow(1 + monthlyRate, months);
       const contributionTotal = values.monthlyContribution * months;
-      const futureValue = values.monthlyContribution === 0
-        ? compoundPrincipal
-        : compoundPrincipal + values.monthlyContribution * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate);
+      // At a 0% rate the contributions simply add up (the annuity factor's 0 ÷ 0 limit is n).
+      const futureValue = compoundPrincipal + values.monthlyContribution * annuityFactor(values.annualRate, 12, months);
       const totalInterest = futureValue - values.principal - contributionTotal;
       return { futureValue, totalInterest, contributionTotal };
     }

@@ -337,7 +337,7 @@ export const homeCalculators: CalculatorConfig[] = [
           { label: '60 lb bags (1.6296 × 60, rounded up)', value: '98 bags' }
         ],
         result: '1.63 cubic yards, about 74 bags of 80 lb mix',
-        explanation: 'A driveway slab the same size but poured 6 inches thick instead of 4 would need 3.70 cubic yards (4.07 with waste) — more than double, since volume scales directly with depth. That is why even a small increase in thickness raises the material cost by a lot.'
+        explanation: 'The same 10 ft by 12 ft footprint poured 8 inches deep instead of 4 would need 2.96 cubic yards (3.26 with waste) — exactly double, since volume scales directly with depth for a fixed footprint. That is why even a modest increase in thickness raises the material cost by a lot.'
       },
       watchOut: [
         { title: 'Order a little extra', body: 'Spillage, an uneven subgrade and low spots that take more material all eat into a tight estimate. The 10% default reflects common contractor practice; use more on an irregular or sloped site.' },

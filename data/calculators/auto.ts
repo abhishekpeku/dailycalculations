@@ -264,27 +264,119 @@ export const autoCalculators: CalculatorConfig[] = [
   {
     id: 'ev-charging-calculator',
     category: 'auto',
-    updatedAt: '2026-09-10',
-    aliases: ['electric car charging cost', 'ev running cost calculator', 'kwh charging calculator'],
+    updatedAt: '2026-10-21',
+    aliases: ['electric car charging cost', 'ev running cost calculator', 'kwh charging calculator', 'ev vs gas cost calculator', 'cost to charge an electric car'],
     related: ['fuel-cost-calculator', 'electricity-bill-calculator', 'commute-cost-calculator', 'gas-cost-calculator'],
     title: 'EV Charging Cost Calculator',
-    description: 'Estimate the cost to charge an electric vehicle at home or at a public charger, and compare to gas costs.',
-    example: 'Calculate the cost to charge a Tesla Model 3 (75 kWh battery) at home at $0.16/kWh.',
+    description: 'Estimate what it costs to charge an electric vehicle from your battery size, starting charge and electricity rate, the range it adds, and how the cost per mile compares with a gas car. Efficiency in mi/kWh, kWh/100 mi or kWh/100 km.',
+    example: 'Charging a 75 kWh battery from 20% to 100% adds 60 kWh, which costs $9.60 at $0.16 per kWh and adds about 240 miles at 4 mi/kWh. That is $4.00 per 100 miles, against $11.72 for a 32 mpg gas car at $3.75 a gallon.',
+    breakdown: {
+      headline: 'chargingCost',
+      headlineLabel: 'Cost of this charge',
+      outputs: [
+        { id: 'chargingCost', format: 'currency' },
+        { id: 'kwhNeeded', label: 'Energy added', format: 'number', dimension: 'energy', unit: 'kWh' },
+        { id: 'rangeAdded', label: 'Range added', format: 'number', dimension: 'length', unit: 'mi' },
+        { id: 'costPer100EV', label: 'EV cost per 100 miles', format: 'currency' },
+        { id: 'costPer100Gas', label: 'Gas car cost per 100 miles', format: 'currency' },
+        { id: 'savingsPer100', label: 'Savings per 100 miles', format: 'currency' },
+        { id: 'annualSavings', label: 'Yearly savings at 12,000 miles', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Charge', inputs: ['batteryKwh', 'chargePercent', 'electricityRate', 'efficiency'] },
+        { title: 'Compare with a gas car', inputs: ['gasPricePerGallon', 'gasMpg'] }
+      ],
+      derive: (v) => ({ costPer100EV: v.costPerMileEV * 100, costPer100Gas: v.costPerMileGas * 100, savingsPer100: v.savingsPerMile * 100 }),
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'costPer100EV', label: 'Electric' },
+          { from: 'costPer100Gas', label: 'Gas' }
+        ],
+        title: 'Energy cost per 100 miles'
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What does it cost to charge an EV?',
+        paragraphs: [
+          'Charging cost is the energy you put in times the price of that energy. A battery’s capacity is measured in kilowatt-hours (kWh), and your electricity bill charges per kWh, so topping up a 75 kWh battery from 20% to full adds 60 kWh, which costs $9.60 at 16 cents a kWh. Electricity prices vary widely: the EIA’s July 2026 US residential average was 18.31 cents, with North Dakota at 13.41 cents and Hawaii at 48.00 cents.',
+          'For comparing running costs, cost per mile matters more than cost per charge. Divide the electricity price by your car’s efficiency in miles per kWh. At 4 mi/kWh and 16 cents, every 100 miles costs $4.00. A gas car at 32 mpg with gas at $3.75 a gallon spends about $11.72 on the same 100 miles. EV efficiency varies a lot by vehicle: the Department of Energy found model-year 2024 midsize electric cars ranged from about 2.2 to 4.2 miles per kWh, and standard two-wheel-drive SUVs from about 1.0 to 2.9.',
+          'The EPA rates EVs in kWh per 100 miles, measured from the wall outlet, so its figure already includes the energy lost while charging. It also publishes MPGe, which counts 33.7 kWh as the energy in one gallon of gasoline. The efficiency menu here takes mi/kWh, kWh/100 mi, kWh/100 km, Wh/mi or Wh/km, so you can type the number from the window sticker or the car’s trip screen.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in the charge, then a gas car to compare with.',
+        steps: [
+          { name: 'Enter the battery size', text: 'Use the usable capacity in kWh from the manufacturer’s specifications.' },
+          { name: 'Enter the starting charge', text: 'Type the state of charge you start from, as a percent. The calculator charges to 100%; to model charging to 80%, see the watch-outs.' },
+          { name: 'Enter your electricity rate', text: 'Use the price per kWh on your bill, including delivery charges, or the price a public charger shows.' },
+          { name: 'Enter the efficiency', text: 'Type your car’s efficiency and pick mi/kWh, kWh/100 mi, kWh/100 km, Wh/mi or Wh/km. The range added and cost per 100 miles follow from it.' },
+          { name: 'Compare with gas', text: 'Enter a gas price and the fuel economy of the car you would otherwise drive. The bars compare the energy cost per 100 miles.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Energy added is the empty part of the battery; cost and range follow from the rate and the efficiency.',
+        expression: 'E = B × (1 − s ÷ 100)\nC = E × r\nrange = E × η\nEV per mile = r ÷ η\ngas per mile = p ÷ mpg',
+        terms: [
+          { symbol: 'B', meaning: 'Battery capacity, in kWh.' },
+          { symbol: 's', meaning: 'Starting state of charge, in percent.' },
+          { symbol: 'E', meaning: 'Energy added to reach 100%, in kWh.' },
+          { symbol: 'r', meaning: 'Electricity price per kWh.' },
+          { symbol: 'η', meaning: 'Efficiency in miles per kWh. 4 mi/kWh = 25 kWh/100 mi.' },
+          { symbol: 'p, mpg', meaning: 'Gas price per gallon and the gas car’s fuel economy, for the comparison.' }
+        ],
+        note: 'An estimate. The charge cost counts the energy stored in the battery; the energy drawn from the wall is somewhat higher because of charging losses. Yearly savings assume 12,000 miles.'
+      },
+      workedExample: {
+        intro: 'Your EV has a 75 kWh battery at 20% charge. Home electricity costs $0.16 per kWh and the car averages 4 mi/kWh. Your old car did 32 mpg, and gas is $3.75 a gallon.',
+        rows: [
+          { label: 'Energy added (E = 75 × (1 − 0.20))', value: '60 kWh' },
+          { label: 'Charge cost (C = 60 × $0.16)', value: '$9.60' },
+          { label: 'Range added (60 × 4)', value: '240 miles' },
+          { label: 'EV cost per 100 miles ($0.16 ÷ 4 × 100)', value: '$4.00' },
+          { label: 'Gas cost per 100 miles ($3.75 ÷ 32 × 100)', value: '$11.72' },
+          { label: 'Saving per 100 miles', value: '$7.72' },
+          { label: 'Saving over 12,000 miles', value: '$926.25' }
+        ],
+        result: '$9.60 for the charge, about $926.25 a year less than gas',
+        explanation: 'At the July 2026 US residential average of 18.31 cents a kWh the same 60 kWh would cost about $10.99, and at Hawaii’s 48.00 cents about $28.80. The saving shrinks wherever electricity is expensive or the comparison car is very efficient.'
+      },
+      watchOut: [
+        { title: 'Charging losses', body: 'Some energy is lost as heat in the charger and battery, so the meter records more than the battery stores. The EPA’s kWh/100 mi rating includes these losses; the battery-capacity figure does not.' },
+        { title: 'Public fast charging', body: 'Public fast chargers set their own prices, per kWh or sometimes per minute, and they are often higher than home rates. Use the price shown in the charging network’s app for road-trip estimates.' },
+        { title: 'Charging to 80%', body: 'Many drivers stop at 80% for daily use. To model it, reduce the battery size to 80% of its capacity: a 75 kWh pack charged from 20% to 80% is the same as a 60 kWh pack charged from 25% to 100% (45 kWh added).' },
+        { title: 'Time-of-use rates', body: 'Some utilities charge less per kWh overnight. Use the rate for the hours you actually charge, plus any delivery charge per kWh on your bill.' },
+        { title: 'Cold weather', body: 'Efficiency falls in cold weather, when the battery and cabin need heating, so winter range and cost per mile are worse than the rating.' }
+      ],
+      references: [
+        { label: 'U.S. EPA, Fuel Economy and EV Range Testing (MPGe, 33.7 kWh per gallon, charging losses)', url: 'https://www.epa.gov/greenvehicles/fuel-economy-and-ev-range-testing' },
+        { label: 'U.S. Department of Energy, FOTW #1374: Model Year 2024 EVs Offer a Wide Range in Efficiency', url: 'https://www.energy.gov/cmei/vehicles/articles/fotw-1374-december-23-2024-model-year-2024-electric-vehicles-offer-consumers' },
+        { label: 'U.S. Energy Information Administration, Electric Power Monthly, Table 5.6.A: Average Price of Electricity by State', url: 'https://www.eia.gov/electricity/monthly/epm_table_grapher.php?t=epmt_5_6_a' },
+        { label: 'U.S. DOE Alternative Fuels Data Center, Charging Plug-In Electric Vehicles at Home', url: 'https://afdc.energy.gov/fuels/electricity-charging-home' }
+      ]
+    },
     inputs: [
       { id: 'batteryKwh', label: 'Battery capacity (kWh)', type: 'number', placeholder: '75', defaultValue: 75, step: 0.5, min: 1 },
-      { id: 'chargePercent', label: 'Charge from % to 100% (enter starting %)', type: 'number', placeholder: '20', defaultValue: 20, step: 5, min: 0 },
-      { id: 'electricityRate', label: 'Electricity rate ($/kWh)', type: 'currency', placeholder: '0.16', defaultValue: 0.16, step: 0.01, min: 0 },
-      { id: 'efficiency', label: 'Vehicle efficiency (miles per kWh)', type: 'number', placeholder: '4', defaultValue: 4, step: 0.1, min: 0.1 },
-      { id: 'gasPricePerGallon', label: 'Gas price for comparison ($/gallon)', type: 'currency', placeholder: '3.75', defaultValue: 3.75, step: 0.05, min: 0 },
-      { id: 'gasMpg', label: 'Gas vehicle MPG for comparison', type: 'number', placeholder: '32', defaultValue: 32, step: 1, min: 1 }
+      { id: 'chargePercent', label: 'Starting charge (charging to 100%)', type: 'percent', placeholder: '20', defaultValue: 20, step: 5, min: 0 },
+      { id: 'electricityRate', label: 'Electricity price per kWh', type: 'currency', placeholder: '0.16', defaultValue: 0.16, step: 0.01, min: 0 },
+      { id: 'efficiency', label: 'EV efficiency', type: 'number', placeholder: '4', defaultValue: 4, step: 0.1, min: 0.1, dimension: 'evEfficiency', unit: 'mi/kWh' },
+      { id: 'gasPricePerGallon', label: 'Gas price', type: 'currency', placeholder: '3.75', defaultValue: 3.75, step: 0.05, min: 0, dimension: 'fuelPrice', unit: 'cur/gal' },
+      { id: 'gasMpg', label: 'Gas car fuel economy', type: 'number', placeholder: '32', defaultValue: 32, step: 1, min: 1, dimension: 'fuelEconomy', unit: 'mpg' }
     ],
     seo: {
-      title: 'EV Charging Cost Calculator – Home and Public Charging',
-      description: 'Calculate the electricity cost to charge your EV and compare savings vs gasoline. Uses your local electricity rate and vehicle efficiency.',
+      title: 'EV Charging Cost Calculator – Cost per Charge & per Mile',
+      description: 'Free EV charging cost calculator: cost to charge from your battery size and electricity rate, range added, and EV vs gas cost per 100 miles.',
       faq: [
-        { question: 'What is the average US home electricity rate?', answer: 'The US average is approximately $0.16/kWh as of 2025, but varies widely — Hawaii is ~$0.39/kWh while Louisiana is ~$0.11/kWh.' },
-        { question: 'How much does it cost to fully charge an EV at home?', answer: 'A 75 kWh battery charged from empty costs $9–$15 at typical US home rates — far less than a tank of gas for comparable range.' },
-        { question: 'Are public chargers more expensive than home charging?', answer: 'Yes. DC fast chargers (Tesla Supercharger, Electrify America) typically cost $0.30–$0.50/kWh, making them 2–3× more expensive than home charging.' }
+        { question: 'How much does it cost to charge an EV at home?', answer: 'Multiply the kWh you add by your electricity rate. Adding 60 kWh (a 75 kWh battery from 20% to full) costs $9.60 at $0.16 per kWh, or about $10.99 at the July 2026 US residential average of 18.31 cents.' },
+        { question: 'What is the average US electricity rate?', answer: 'The EIA reported a US residential average of 18.31 cents per kWh for July 2026, from 13.41 cents in North Dakota to 48.00 cents in Hawaii. Your bill shows your own rate.' },
+        { question: 'Is an EV cheaper to run than a gas car?', answer: 'Usually, per mile. At 4 mi/kWh and $0.16 per kWh an EV spends $4.00 per 100 miles, while a 32 mpg car at $3.75 a gallon spends about $11.72. Expensive electricity, fast charging or a very efficient gas car narrows the gap.' },
+        { question: 'How do I convert mi/kWh to kWh/100 miles?', answer: 'Divide 100 by the mi/kWh figure. 4 mi/kWh is 25 kWh/100 mi. The efficiency menu converts between mi/kWh, kWh/100 mi, kWh/100 km, Wh/mi and Wh/km for you.' },
+        { question: 'What is MPGe?', answer: 'Miles per gallon equivalent. The EPA counts 33.7 kWh as the energy in one gallon of gasoline, so 4 mi/kWh is 134.8 MPGe. It compares energy use, not cost.' },
+        { question: 'Can I use kilometers and kWh/100 km?', answer: 'Yes. Pick kWh/100 km in the efficiency menu. At 16 kWh/100 km and 0.30 per kWh, 100 km costs 4.80. The results still show per 100 miles and in miles: the same car costs about 7.72 per 100 miles.' },
+        { question: 'Does the cost include charging losses?', answer: 'Not the charge cost, which counts the energy that reaches the battery. The EPA’s kWh/100 mi ratings are measured at the wall, so a cost per mile based on the EPA figure does include them.' }
       ]
     },
     compute(values) {

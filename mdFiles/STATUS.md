@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-10-20 · Current step: **38** (Batch 4, auto + home) · step 37 done (PR #11, awaiting merge) · steps 17 + 30–37 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split, batches 1–2) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
+Last updated: 2026-10-21 · Current step: **39** (Batch 5, time/travel/work/creator/text/education) · step 38 done (PR #13, ready for review) · steps 17 + 30–38 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split, batches 1–4) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
 
 ---
 
@@ -116,7 +116,7 @@ is why 12-15 run after it.
 | 35 | Batch 1: finance (8) | **DONE** 2026-10-19 | YMYL. 6 × type A, loan-prepayment type B, paycheck C → B. PR #9. | §3 |
 | 36 | Batch 2: shopping + conversion (9) | **DONE** 2026-10-19 | 4 shopping type A (sales-tax, tip, discount, unit-price), cashback B, 4 converters type A. Stone added to `mass`. PR #10. | §3 |
 | 37 | Batch 3: health (6) | DONE 2026-10-20 | YMYL. Branch `step/37-batch-3-health`, PR #11. All 6 health calculators on v2. See session log. | §3 |
-| 38 | Batch 4: auto + home (12) | **IN PROGRESS** (paused 2026-10-21 after wallpaper-cost, run 2 of 3) | Branch `step/38-batch-4-auto-home`, draft PR #13. Done: car-payment, gas-cost, fuel-cost, ev-charging, commute-cost, toll-cost, concrete, paint, tile, wallpaper. Remaining: electricity-bill, furniture-fit. Resume from the first unchecked box in `mdFiles/steps/38-batch-4-auto-home.md`. | §3 |
+| 38 | Batch 4: auto + home (12) | **DONE** 2026-10-21 | Branch `step/38-batch-4-auto-home`, PR #13 (ready for review). All 12: car-payment, gas-cost, fuel-cost, ev-charging, commute-cost, toll-cost, concrete, paint, tile, wallpaper, electricity-bill, furniture-fit. See session log. | §3 |
 | 39 | Batch 5: time, travel, work, creator, text, education (18) | TODO | | §3 |
 | 40–42 | Wave 1: math · statistics · conversion | TODO | Absorbs step 24 (math). 5 calculators per agent run. | §4 |
 | 43–45 | Wave 2: construction · food · sports | TODO | | §4 |
@@ -936,6 +936,45 @@ likely RangeBar on the tightest clearance margin, or CompareBars room vs furnitu
 decide and park the gap). Those two finish Batch 4 (12/12); mark the PR ready and the step DONE after.
 Don't commit `tsconfig.tsbuildinfo` / `next-env.d.ts`.
 
+38 · 2026-10-21 · **Batch 4 auto + home v2 — run 3 of 3, DONE (12/12)** (same branch, PR #13 now
+ready for review). `compute()` unchanged on both remaining calculators, so **the compute snapshot
+did not move** (still 268 tests).
+Type B: **electricity-bill** (`monthlyKwh`/`tieredThreshold` gain `dimension: 'energy'`/`unit: 'kWh'`;
+new `derive`d `effectiveRatePer100kWh` so the effective-rate row doesn't round away the fixed-charge
+effect at $0.17; tiered-pricing inputs moved into an optional disclosure group, default threshold 0 =
+flat rate), **furniture-fit** (room/furniture/clearance inputs gain `dimension: 'length'`, ft/in; new
+`derive`d `marginLength`/`marginWidth`/`tightestMargin` — `tightestMargin >= 0` is exactly equivalent
+to the old `fits` flag, so no boolean output format had to be invented).
+**Visual gaps, both parked:** electricity-bill's plan called for a "tier bar", but no kit visual reacts
+to a user-editable threshold input (`RangeBar` bands are fixed at config time) — nearest kit used
+instead is **CompareBars**, energy charge vs. total bill with fixed charges. Furniture-fit's plan
+called for a "top-down floor-plan SVG", not in the kit — nearest kit used instead is **RangeBar** on
+the tightest clearance margin (bands: won't fit / tight / comfortable / spacious), which turned out to
+be a clean fit since margin ≥ 0 already is the fits/doesn't-fit boundary.
+**Facts checked on primary sources 2026-10-21:** EIA Electric Power Monthly Table 5.6.A (residential
+avg 18.31 ¢/kWh, Jul 2026; ND 13.41 ¢, HI 48.00 ¢ — same figures run 1 used for auto, re-fetched and
+still current), EIA FAQ #97 (avg U.S. residential usage 899 kWh/month, 2022: 10,791 kWh/yr ÷ 12), EIA
+Glossary "block-rate structure", ENERGY STAR Low-/No-Cost Tips (LED $40/yr on 5 bulbs; smart thermostat
+>8% / ~$50/yr, ~$100/yr if often unoccupied); U.S. Access Board 2010 ADA Standards Ch. 4 (403.5.1, 36
+in clear width; 403.5.2, 42 in approaching a 180° turn); ICC IRC R311.6 (36 in minimum hallway width)
+and R311.2 (32 in minimum clear width at the required egress door).
+⚠ **`codes.iccsafe.org` (ICC's own code viewer) 403'd on both IRC fetches**, same failure mode as
+CFPB in run 1. Used `up.codes` instead — a free, widely-used code-text mirror, not a calculator site —
+for both IRC citations; noted in the furniture-fit references rather than silently substituting.
+Numbers: an independent Python checker (no app imports) matched **26 of 26** copy figures, 0
+mismatches. Both pages checked on `npm run dev`: H1, 8 section ids, JSON-LD present, and every visual
+`aria-label` matches the worked-example figures exactly (electricity "Energy charge $144.00, Total
+bill $156.00"; furniture-fit "Tightest clearance margin: 54 in falls in the Spacious band").
+`related`/`aliases` re-checked for self-reference, existence and duplication (0 problems) — furniture-
+fit's stray `miles-to-kilometers-converter` related link was swapped for `concrete-calculator` to
+match the paint/tile/wallpaper/furniture-fit mutual-linking cluster; electricity-bill's
+`travel-budget-calculator`/`inflation-calculator` pair was trimmed to one (`inflation-calculator`) in
+favor of `commute-cost-calculator`, also from this batch. `npm test` 268 pass; `npm run build` (81
+static pages) and lint (ignoring `.open-next/**`, `.claude/**`) pass; dev server killed.
+**Step 38 is DONE.** PR #13 covers all 12 Batch 4 calculators; marked ready for review (was draft).
+**Next (step 39):** Batch 5 — time, travel, work, creator, text, education (18 calculators). New step
+file needed; follow the same per-calculator commit + draft-PR-early pattern, 5 calculators per run.
+
 fix · 2026-10-20 · **Solver widget shows the real currency symbol, not `¤`** (branch `fix/currency-symbol`). `UNITS.currency[0].label` = `currencySymbol()` from `lib/calculator.ts`, so type-A inline values, input adornments and output rows print `$` like the type-B widget and the visuals. Share links use the unit id (`currency`), not the label, so they are unaffected. New `units.spec` test: no unit label contains `¤`.
 
 ## Pending on the user — not code
@@ -1025,6 +1064,21 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
   curve (contributions vs interest over time) on compound-interest and investment. Those use a
   Donut for now. Add a `GrowthCurve` (stacked area by year) to `components/visuals/` in its own
   step, then switch both calculators to it.
+- **No "tier bar" visual for a user-editable rate threshold** (found in step 38, batch 4):
+  electricity-bill's plan calls for a bar showing the two pricing tiers, but every kit visual with
+  bands (`RangeBar`) takes its bands as literal numbers fixed at config time, not from an input the
+  reader can change (`tieredThreshold`). Using CompareBars (energy charge vs. total bill) instead.
+  A genuinely reactive tier visual would need a new component that reads band edges from `all`,
+  not from static config — worth it only if more tiered-rate calculators are added later.
+- **No top-down floor-plan SVG in the kit** (found in step 38, batch 4): furniture-fit's plan calls
+  for an actual floor-plan illustration (room outline, furniture rectangle, clearance strip). Used
+  `RangeBar` on the derived `tightestMargin` instead (bands: won't fit / tight / comfortable /
+  spacious) — arguably a better fit for "does it fit" than a literal drawing would have been, but
+  it is still a stand-in for the plan's visual, not the visual itself.
+- **`codes.iccsafe.org` 403s to fetches** (found in step 38, batch 4, same symptom as CFPB in run 1):
+  the ICC's own free code viewer blocks automated fetches. `up.codes` (a free, widely-used code-text
+  mirror) was used instead for both IRC citations on furniture-fit-calculator. Revisit if a cleaner
+  primary-source route turns up.
 - `mdFiles/instructions.md` (§ file table, ~line 527) still lists `components/PaycheckCalculator.tsx`,
   deleted in step 35. Paycheck's US tax figures now live in `data/calculators/finance.ts`
   (`PAYROLL_2026`) and need a yearly update each October/November (IRS Rev. Proc., SSA wage base).

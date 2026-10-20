@@ -9,15 +9,15 @@
 - [x] ev-charging-calculator (B · CompareBars EV vs gas per 100 miles)
 - [x] commute-cost-calculator (B · Donut fuel/parking/tolls/wear, config from step 33; v2 content)
 - [x] toll-cost-calculator (B · CompareBars with vs without a toll pass)
-- [ ] concrete-calculator (A · volume ↔ length ↔ width ↔ depth; plan: bags chips)
+- [x] concrete-calculator (A · volume ↔ length ↔ width ↔ depth; plan: bags chips)
 - [x] paint-calculator (B · plan: can-count row → nearest kit CompareBars, gap parked)
 - [x] tile-calculator (B · plan: grid illustration → nearest kit CompareBars, gap parked)
 - [x] wallpaper-calculator (B · plan: roll-count row → nearest kit CompareBars, gap parked)
-- [ ] electricity-bill-calculator (B · plan: tier bar)
-- [ ] furniture-fit-calculator (B · plan: top-down floor plan)
-- [ ] Number verification script, tests, build, lint, STATUS.md, PR ready
+- [x] electricity-bill-calculator (B · plan: tier bar → nearest kit CompareBars, gap parked)
+- [x] furniture-fit-calculator (B · plan: top-down floor plan → nearest kit RangeBar, gap parked)
+- [x] Number verification script, tests, build, lint, STATUS.md, PR ready
 
-Paused 2026-10-21 after wallpaper-calculator (run 2 of 3). Resume from the first unchecked box.
+Step complete 2026-10-21 (run 3 of 3). All 12 Batch 4 calculators are on the v2 template.
 
 Run 1 checks (2026-10-21): `npm test` 265 pass (snapshot unchanged); `npm run build` passes; lint
 (ignoring `.open-next/**`, `.claude/**`) passes; independent Python checker 89 / 89 copy figures
@@ -34,6 +34,15 @@ replaced with an 8in-vs-4in comparison, exactly double, now verified); all 5 pag
 `breakdown-*` ids — JSON-LD, and every visual's `aria-label` matches the worked-example figures
 exactly: toll $1,320.00/$990.00, concrete 74/98 bags, paint 2.39/3, tile 120/132, wallpaper 8.21/9);
 `related`/`aliases` checked for self-reference, existence and duplication (0 problems); server killed.
+
+Run 3 checks (2026-10-21): `npm test` 268 pass (unchanged — compute() untouched on both); `npm run
+build` passes (81 static pages); lint (ignoring `.open-next/**`, `.claude/**`) passes;
+independent Python checker 26 / 26 copy figures, 0 mismatches; both pages checked on `npm run dev`
+(H1, 8 section ids, JSON-LD, visual `aria-label` matches the worked example exactly: electricity
+"Energy charge $144.00, Total bill $156.00", furniture-fit "Tightest clearance margin: 54 in falls
+in the Spacious band"); `related`/`aliases` checked for self-reference, existence and duplication
+(0 problems); server killed. Step closed — see STATUS.md step 38 entry for the full 12-calculator
+summary and PR #13 is marked ready.
 
 Commit + push after each box (`step 38: <id>`). Runs are 5 calculators (D11): run 1 builds
 car-payment → commute-cost and pauses; later runs do toll-cost and the six home calculators.

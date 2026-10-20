@@ -136,12 +136,91 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'tile-calculator',
     category: 'home',
-    updatedAt: '2026-09-10',
-    aliases: ['how many tiles do i need', 'floor tile calculator', 'tile area calculator'],
+    updatedAt: '2026-10-21',
+    aliases: ['how many tiles do i need', 'floor tile calculator', 'tile area calculator', 'tile boxes calculator', 'bathroom tile estimator'],
     related: ['paint-calculator', 'wallpaper-calculator', 'concrete-calculator', 'furniture-fit-calculator'],
     title: 'Tile Calculator',
-    description: 'Calculate the number of tiles and boxes needed for a floor or wall project, including a waste allowance.',
-    example: 'Calculate tiles needed for a 120 sq ft bathroom floor using 12x12 inch tiles.',
+    description: 'Find how many tiles and boxes a floor or wall needs from the area and the tile size, with a waste allowance for cuts and breakage.',
+    example: 'A 12x10 ft (120 sq ft) floor laid with 12x12 inch tiles needs 120 tiles, or 132 with a 10% waste allowance — 14 boxes at 10 tiles per box.',
+    breakdown: {
+      headline: 'boxesNeeded',
+      headlineLabel: 'Boxes to buy',
+      outputs: [
+        { id: 'boxesNeeded', format: 'integer' },
+        { id: 'tilesWithWaste', label: 'Tiles needed, with waste', format: 'number' },
+        { id: 'tilesNeeded', label: 'Tiles needed, exact', format: 'number' },
+        { id: 'roomSqFt', label: 'Area to cover', format: 'number', dimension: 'area', unit: 'ft2' }
+      ],
+      groups: [
+        { title: 'Area to cover', inputs: ['areaLength', 'areaWidth'] },
+        { title: 'Tile size', inputs: ['tileLengthInch', 'tileWidthInch'] },
+        { title: 'Waste & box size', inputs: ['wastePercent', 'tilesPerBox'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'tilesNeeded', label: 'Exact tiles' },
+          { from: 'tilesWithWaste', label: 'With waste allowance' }
+        ],
+        title: 'Tiles needed, before and after waste'
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'How many tiles and boxes a room needs',
+        paragraphs: [
+          'Tile is bought by the piece but measured by area, so the calculation has two steps: how many tiles cover the floor or wall, and how many boxes that rounds up to. Divide the area to cover by the footprint of one tile to get the exact count, then add a waste allowance for the cuts around edges, corners and fixtures that cannot be avoided. A 12 ft by 10 ft floor (120 sq ft) laid with 12×12 inch tiles needs exactly 120 tiles before any waste, since each tile covers 1 square foot.',
+          'The waste allowance exists because cut tiles are rarely reusable elsewhere in the room: a tile trimmed to fit along one wall is now the wrong size for the rest of the floor. Installers commonly plan for around 10% extra on a simple, square layout, and more on a room with a lot of corners, a diagonal layout, or a pattern like herringbone that creates more odd-shaped offcuts. The calculator’s default of 10% suits a straightforward rectangular room; raise it for a more complex layout.',
+          'Tile is sold by the box, so the last step rounds the tile count (with waste) up to a whole number of boxes, since a partial box still has to be bought in full. US floor tiles commonly come in sizes like 12×12, 16×16, 18×18 and 12×24 inches, while bathroom and kitchen walls often use smaller formats such as 3×6 inch subway tile — the tile-size fields here work for any rectangular tile, in any of those sizes.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the area, the tile size, and the waste and box settings.',
+        steps: [
+          { name: 'Enter the area to cover', text: 'Type the length and width of the floor or wall in feet. For an irregular room, measure it as a few rectangles and add the areas.' },
+          { name: 'Enter the tile size', text: 'Type the tile’s length and width in inches, as printed on the box.' },
+          { name: 'Set the waste allowance', text: 'Keep 10% for a simple layout, or raise it for diagonal, herringbone or heavily cut layouts.' },
+          { name: 'Enter tiles per box', text: 'Check the box label; it varies by tile size and brand.' },
+          { name: 'Read the result', text: 'The headline is the boxes to buy; the rows below show the exact tile count and the count with waste.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Area divided by one tile’s footprint gives the exact tile count; waste and box size set what you actually buy.',
+        expression: 'tile area = (Lt ÷ 12) × (Wt ÷ 12)\ntiles = area ÷ tile area\ntiles(waste) = tiles × (1 + waste%)\nboxes = ⌈ tiles(waste) ÷ per box ⌉',
+        terms: [
+          { symbol: 'area', meaning: 'Floor or wall area to cover, in square feet.' },
+          { symbol: 'Lt, Wt', meaning: 'Tile length and width, in inches.' },
+          { symbol: 'waste%', meaning: 'Extra percent for cuts and breakage; 10% suits a simple rectangular layout.' },
+          { symbol: 'per box', meaning: 'Tiles in one box, from the box label.' }
+        ],
+        note: 'An estimate. Grout line width, irregular rooms and pattern layouts (diagonal, herringbone) all change the real tile count; this treats the tile as its nominal size with no grout gap.'
+      },
+      workedExample: {
+        intro: 'You are tiling a 12 ft by 10 ft bathroom floor with 12×12 inch tiles, 10 tiles per box, and a 10% waste allowance.',
+        rows: [
+          { label: 'Area (12 × 10)', value: '120.00 sq ft' },
+          { label: 'Tile footprint ((12 ÷ 12) × (12 ÷ 12))', value: '1.00 sq ft' },
+          { label: 'Exact tiles (120.00 ÷ 1.00)', value: '120.00' },
+          { label: 'With 10% waste (120.00 × 1.10)', value: '132.00' },
+          { label: 'Boxes (132.00 ÷ 10, rounded up)', value: '14 boxes' }
+        ],
+        result: '132 tiles, 14 boxes',
+        explanation: 'That buys 140 tiles against the 132 needed, 8 spares — useful for future repairs, since replacement tile from a later production run can be a slightly different shade.'
+      },
+      watchOut: [
+        { title: 'Grout lines are not counted', body: 'The calculator uses each tile’s nominal size with no gap for grout, so it is a close estimate for small joints and slightly optimistic for wide grout lines or large-format tile with big spacers.' },
+        { title: 'Diagonal and pattern layouts use more tile', body: 'A layout run on the diagonal, or a pattern like herringbone or a brick offset, creates more odd-shaped cuts that cannot be reused, so raise the waste allowance above the 10% default for those layouts.' },
+        { title: 'Boxes round up, so you may have leftovers', body: 'Since you can only buy whole boxes, you will usually end up with a few spare tiles. Keep them: later production runs can vary slightly in shade (a different dye lot), and a spare from the original run matches better than a new purchase.' },
+        { title: 'Irregular rooms need to be split up', body: 'For an L-shaped room or one with alcoves, divide it into rectangles, find each area, and add them together before dividing by the tile footprint.' },
+        { title: 'Wall tile and floor tile use the same math', body: 'The formula works for either; just measure the wall area (height × width, minus any large openings) instead of a floor footprint.' }
+      ],
+      references: [
+        { label: 'Tile Council of North America, published ANSI A108/A118/A136.1 installation standards for ceramic, glass and stone tile', url: 'https://tcnatile.com/' },
+        { label: 'Ceramic Tile Education Foundation, The TCNA Handbook for Ceramic, Glass and Stone Tile Installation', url: 'https://www.ceramictilefoundation.org/blog/tcna-handbook' }
+      ]
+    },
     inputs: [
       { id: 'areaLength', label: 'Area length (ft)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.5, min: 0.5 },
       { id: 'areaWidth', label: 'Area width (ft)', type: 'number', placeholder: '10', defaultValue: 10, step: 0.5, min: 0.5 },
@@ -151,11 +230,17 @@ export const homeCalculators: CalculatorConfig[] = [
       { id: 'tilesPerBox', label: 'Tiles per box', type: 'number', placeholder: '10', defaultValue: 10, step: 1, min: 1 }
     ],
     seo: {
-      title: 'Tile Calculator – Floor and Wall Tile Estimator',
-      description: 'Calculate the number of tiles and boxes needed for any floor or wall project. Includes waste factor for cuts and breakage.',
+      title: 'Tile Calculator – Tiles and Boxes Needed',
+      description: 'Free tile calculator: how many tiles and boxes a floor or wall needs from the area and tile size, with a waste allowance for cuts and breakage.',
       faq: [
-        { question: 'How much waste should I account for?', answer: 'Add 10% for simple layouts, 15% for diagonal patterns, and up to 20% for complex cuts or irregular rooms.' },
-        { question: 'What tile sizes are most common in the US?', answer: 'Common sizes include 12×12, 16×16, 18×18, and 12×24 inch for floors. Subway tiles (3×6 inch) are popular for bathroom walls.' }
+        { question: 'How many tiles do I need for a room?', answer: 'Divide the area by one tile’s footprint. A 12×10 ft (120 sq ft) floor with 12×12 inch (1 sq ft) tiles needs 120 tiles before waste.' },
+        { question: 'How much extra tile should I order for waste?', answer: 'A common starting point is about 10% extra for a simple, square layout, with more for diagonal layouts, lots of corners, or patterns like herringbone that create more unusable offcuts.' },
+        { question: 'How many boxes of tile do I need?', answer: 'Divide the tile count with waste by the tiles per box and round up, since boxes are sold whole. 132 tiles at 10 per box is 14 boxes.' },
+        { question: 'What tile sizes are common for floors and walls?', answer: 'Common US floor sizes include 12×12, 16×16, 18×18 and 12×24 inch. Bathroom and kitchen walls often use smaller formats, such as 3×6 inch subway tile.' },
+        { question: 'Does this calculator account for grout lines?', answer: 'No, it uses each tile’s nominal size. That is a close estimate for narrow grout joints and slightly understates the count for wide grout lines or tiles installed with large spacers.' },
+        { question: 'Can I use this for wall tile, not just floors?', answer: 'Yes. Use the wall’s height and width (minus any large openings) as the area, and the same tile-size and waste fields apply.' },
+        { question: 'How do I calculate tile for an L-shaped or irregular room?', answer: 'Split the room into rectangles, find the area of each, and add them together before entering the total as the area to cover.' },
+        { question: 'Should I order all my tile at once?', answer: 'Yes, where possible. Tile is produced in batches (dye lots), and a later order can be a slightly different shade, so buying everything — including spares — from one run avoids a visible mismatch.' }
       ]
     },
     compute(values) {

@@ -11,7 +11,7 @@
 - [x] toll-cost-calculator (B · CompareBars with vs without a toll pass)
 - [ ] concrete-calculator (A · volume ↔ length ↔ width ↔ depth; plan: bags chips)
 - [x] paint-calculator (B · plan: can-count row → nearest kit CompareBars, gap parked)
-- [ ] tile-calculator (B · plan: grid illustration)
+- [x] tile-calculator (B · plan: grid illustration → nearest kit CompareBars, gap parked)
 - [ ] wallpaper-calculator (B · plan: roll-count row)
 - [ ] electricity-bill-calculator (B · plan: tier bar)
 - [ ] furniture-fit-calculator (B · plan: top-down floor plan)

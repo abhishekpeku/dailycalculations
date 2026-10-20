@@ -639,26 +639,116 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'electricity-bill-calculator',
     category: 'home',
-    updatedAt: '2026-09-10',
-    aliases: ['power bill estimator', 'kwh cost calculator', 'appliance running cost calculator', 'energy bill calculator'],
-    related: ['ev-charging-calculator', 'inflation-calculator', 'fuel-cost-calculator', 'travel-budget-calculator'],
+    updatedAt: '2026-10-21',
+    aliases: ['power bill estimator', 'kwh cost calculator', 'appliance running cost calculator', 'energy bill calculator', 'tiered electricity rate calculator'],
+    related: ['ev-charging-calculator', 'fuel-cost-calculator', 'commute-cost-calculator', 'inflation-calculator'],
     title: 'Electricity Bill Estimator',
-    description: 'Estimate your monthly electricity bill based on appliance usage and local utility rates.',
-    example: 'Estimate monthly bill for a home using 900 kWh at $0.16/kWh with $12 fixed charges.',
+    description: 'Estimate a monthly electricity bill from usage, rate and fixed charges, with an optional tiered (inclining-block) rate for usage above a threshold.',
+    example: 'A home using 900 kWh at $0.16/kWh with $12 in fixed monthly charges and no tiered rate comes to about $156.00 for the month — $1,872.00 projected for the year.',
+    breakdown: {
+      headline: 'totalBill',
+      headlineLabel: 'Estimated monthly bill',
+      outputs: [
+        { id: 'totalBill', label: 'Estimated monthly bill', format: 'currency' },
+        { id: 'energyCharge', label: 'Energy charge (before fixed charges)', format: 'currency' },
+        { id: 'effectiveRatePer100kWh', label: 'Effective rate (per 100 kWh, fixed charges included)', format: 'currency' },
+        { id: 'costPerDay', label: 'Cost per day (30-day month)', format: 'currency' },
+        { id: 'annualBill', label: 'Projected annual bill', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Usage', inputs: ['monthlyKwh'] },
+        { title: 'Rate & fixed charges', inputs: ['ratePerKwh', 'fixedCharges'] },
+        { title: 'Tiered pricing, if your utility bills this way', inputs: ['tieredThreshold', 'tieredRate'], optional: true }
+      ],
+      derive: (v) => ({ effectiveRatePer100kWh: v.effectiveRatePerKwh * 100 }),
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'energyCharge', label: 'Energy charge' },
+          { from: 'totalBill', label: 'Total bill' }
+        ],
+        title: 'Energy charge vs. total bill with fixed charges'
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What goes into an estimated electricity bill',
+        paragraphs: [
+          'The core of a bill is simple: usage times rate. Multiply the kilowatt-hours (kWh) a home uses in a month by the per-kWh rate on the bill, and that is the energy charge. The U.S. Energy Information Administration puts the average U.S. residential customer’s usage at about 899 kWh per month (10,791 kWh a year, EIA), which is why this calculator defaults to 900 — but the rate that gets multiplied by it varies enormously. EIA’s Electric Power Monthly put the national average residential rate at 18.31 cents per kWh in July 2026, ranging from 13.41 cents in North Dakota to 48.00 cents in Hawaii, so using your own rate from your own bill matters far more than any national average.',
+          'On top of the energy charge, nearly every bill adds fixed monthly charges — a customer or meter charge, delivery charges, and taxes — that do not scale with usage at all. Total bill is energy charge plus fixed charges. Because that fixed amount is spread across however many kWh were used, the bill’s effective rate (total bill ÷ usage) is always a little higher than the stated per-kWh rate: at the calculator’s defaults, a $0.16 rate and a $12 fixed charge work out to an effective rate of about $0.1733 per kWh, 8.3% above the stated rate.',
+          'Some utilities also bill a “block-rate structure” — EIA’s glossary defines it as a rate schedule that charges a different unit cost for successive blocks of usage, commonly a lower rate up to a threshold and a higher rate beyond it, intended to reward conservation. This calculator’s tiered-threshold field models exactly that: leave it at 0 for a flat rate, or set it to your utility’s threshold and a second rate for usage above it. A separate structure, time-of-use (TOU) pricing, charges more during peak hours of the day regardless of total volume — this calculator does not model a TOU schedule, so treat any result here as an estimate against your own bill’s actual rate structure.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your usage, your rate and your fixed charges; add a tiered threshold only if your utility bills that way.',
+        steps: [
+          { name: 'Enter monthly usage', text: 'Type the kilowatt-hours used in the month, from a recent bill, or use the roughly 900 kWh/month a typical U.S. household uses.' },
+          { name: 'Enter your rate per kWh', text: 'Use the per-kWh figure from your bill’s energy or supply charge line.' },
+          { name: 'Enter fixed monthly charges', text: 'Add the flat customer, meter or delivery charge and any taxes that do not change with usage.' },
+          { name: 'Set a tiered rate, if your utility uses one', text: 'Enter the kWh threshold and the higher rate that applies above it. Leave the threshold at 0 for a flat, single rate.' },
+          { name: 'Read the result', text: 'The headline is the estimated monthly bill; the rows below show the energy charge before fixed costs, the effective rate per 100 kWh, the daily cost and the bill projected across a year.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The energy charge is usage times rate, or a two-tier split once usage passes a threshold; fixed charges and a few simple conversions do the rest.',
+        expression: 'energy charge = usage × rate                                    (usage ≤ threshold, or no threshold)\nenergy charge = threshold × rate + (usage − threshold) × tier-2 rate   (usage > threshold > 0)\ntotal bill = energy charge + fixed charges\nannual bill = total bill × 12\neffective rate = total bill ÷ usage',
+        terms: [
+          { symbol: 'usage', meaning: 'Monthly electricity usage, in kWh.' },
+          { symbol: 'rate', meaning: 'Per-kWh rate for usage up to the threshold (or all usage, with no threshold).' },
+          { symbol: 'threshold, tier-2 rate', meaning: 'The kWh level where a higher rate starts, and that higher rate; 0 means a flat rate throughout.' },
+          { symbol: 'fixed charges', meaning: 'Flat monthly charges that do not scale with usage — customer, meter, delivery and tax lines.' },
+          { symbol: 'effective rate', meaning: 'The whole bill divided by usage — always at or above the stated per-kWh rate once any fixed charge is added.' }
+        ],
+        note: 'An estimate only. Real bills also add taxes and surcharges beyond a flat fixed charge, and many utilities bill some or all usage on a time-of-use schedule that varies by time of day rather than a flat or two-tier per-kWh rate — check your own utility’s rate schedule for an exact figure.'
+      },
+      workedExample: {
+        intro: 'A home uses 900 kWh in a month, pays $0.16 per kWh with no tiered rate, and has $12 in fixed monthly charges.',
+        rows: [
+          { label: 'Energy charge (900 × $0.16)', value: '$144.00' },
+          { label: 'Plus fixed charges', value: '$12.00' },
+          { label: 'Total bill (144.00 + 12.00)', value: '$156.00' },
+          { label: 'Cost per day (156.00 ÷ 30)', value: '$5.20' },
+          { label: 'Projected annual bill (156.00 × 12)', value: '$1,872.00' },
+          { label: 'Effective rate (156.00 ÷ 900)', value: '$0.1733/kWh' }
+        ],
+        result: '$156.00 estimated this month, $1,872.00 projected for the year',
+        explanation: 'The effective rate, $0.1733 per kWh, is 8.3% above the stated $0.16 rate — entirely because the flat $12 fixed charge gets spread across the 900 kWh used. A lower-usage month spreads that same $12 over fewer kWh, pushing the effective rate up further even if the stated per-kWh rate never changes.'
+      },
+      watchOut: [
+        { title: 'This is an estimate, not a bill', body: 'Real bills add taxes, regulatory surcharges and sometimes demand or minimum-usage charges this calculator does not model, on top of the energy and fixed charges it does.' },
+        { title: 'Rates vary enormously by state and utility', body: 'EIA’s Electric Power Monthly put the July 2026 residential average at 18.31 cents per kWh nationally, 13.41 cents in North Dakota and 48.00 cents in Hawaii — use your own bill’s rate, not a national figure.' },
+        { title: 'Tiered and time-of-use are different things', body: 'A tiered (block) rate charges more once total usage crosses a threshold, which is what this calculator models. A time-of-use rate charges more during peak hours of the day regardless of total usage — a separate structure this calculator does not model.' },
+        { title: 'Usage swings with the seasons', body: 'Heating and cooling can push monthly usage well above or below a 900 kWh baseline; a single month’s estimate does not represent a whole year unless usage is unusually stable.' },
+        { title: 'Small efficiency changes add up over a year', body: 'ENERGY STAR estimates that swapping a home’s five most-used bulbs for certified LEDs saves about $40 a year, and an ENERGY STAR smart thermostat cuts heating and cooling costs by more than 8%, about $50 a year on average (more if the home is often empty during the day) — useful context, not a guarantee for any specific bill.' }
+      ],
+      references: [
+        { label: 'U.S. Energy Information Administration, Electric Power Monthly, Table 5.6.A — Average Price of Electricity to Ultimate Customers (national and state residential rates)', url: 'https://www.eia.gov/electricity/monthly/epm_table_grapher.php?t=table_5_06_a' },
+        { label: 'U.S. Energy Information Administration, FAQ — How much electricity does an American home use?', url: 'https://www.eia.gov/tools/faqs/faq.php?id=97&t=3' },
+        { label: 'U.S. Energy Information Administration, Glossary — Block-rate structure', url: 'https://www.eia.gov/tools/glossary/index.php?id=Block-rate_structure' },
+        { label: 'ENERGY STAR, Low- to No-Cost Tips for Saving Energy at Home', url: 'https://www.energystar.gov/products/recent_program_updates/low-no-cost-tips' }
+      ]
+    },
     inputs: [
-      { id: 'monthlyKwh', label: 'Monthly usage (kWh)', type: 'number', placeholder: '900', defaultValue: 900, step: 10, min: 0 },
-      { id: 'ratePerKwh', label: 'Rate per kWh ($)', type: 'currency', placeholder: '0.16', defaultValue: 0.16, step: 0.01, min: 0 },
-      { id: 'fixedCharges', label: 'Fixed monthly charges (delivery, taxes)', type: 'currency', placeholder: '12', defaultValue: 12, step: 1, min: 0 },
-      { id: 'tieredThreshold', label: 'Tiered rate threshold (kWh, 0 = no tier)', type: 'number', placeholder: '0', defaultValue: 0, step: 50, min: 0 },
-      { id: 'tieredRate', label: 'Rate above threshold ($/kWh)', type: 'currency', placeholder: '0.22', defaultValue: 0.22, step: 0.01, min: 0 }
+      { id: 'monthlyKwh', label: 'Monthly usage', type: 'number', placeholder: '900', defaultValue: 900, step: 10, min: 0, dimension: 'energy', unit: 'kWh' },
+      { id: 'ratePerKwh', label: 'Rate per kWh', type: 'currency', placeholder: '0.16', defaultValue: 0.16, step: 0.01, min: 0 },
+      { id: 'fixedCharges', label: 'Fixed monthly charges (delivery, customer charge, taxes)', type: 'currency', placeholder: '12', defaultValue: 12, step: 1, min: 0 },
+      { id: 'tieredThreshold', label: 'Tiered-rate threshold (0 = flat rate)', type: 'number', placeholder: '0', defaultValue: 0, step: 50, min: 0, dimension: 'energy', unit: 'kWh' },
+      { id: 'tieredRate', label: 'Rate above the threshold', type: 'currency', placeholder: '0.22', defaultValue: 0.22, step: 0.01, min: 0 }
     ],
     seo: {
       title: 'Electricity Bill Estimator – Monthly kWh Cost Calculator',
-      description: 'Estimate your monthly electricity bill using kWh usage, utility rates, fixed charges, and tiered pricing common in US utility plans.',
+      description: 'Estimate your monthly electricity bill using kWh usage, your utility rate, fixed charges, and an optional tiered (inclining-block) rate for usage above a threshold.',
       faq: [
-        { question: 'What is the average US electricity bill?', answer: 'The average US household uses about 900 kWh/month, with bills averaging $115–$140 depending on state. Southern states tend to use more (AC), while Northeast states pay higher rates.' },
-        { question: 'What are tiered electricity rates?', answer: 'Many US utilities charge a lower rate for the first block of usage (e.g., first 500 kWh) and a higher rate for usage above that threshold.' },
-        { question: 'How can I reduce my electricity bill?', answer: 'Switch to LED lighting, use a programmable thermostat, run appliances during off-peak hours, and consider a time-of-use rate plan if your utility offers one.' }
+        { question: 'What is the average US electricity bill?', answer: 'Multiplying EIA’s national averages — about 899 kWh of monthly usage and an 18.31 cents/kWh residential rate (July 2026) — gives roughly $164.61 a month, but actual bills vary widely: EIA’s state rates alone range from 13.41 cents per kWh in North Dakota to 48.00 cents in Hawaii.' },
+        { question: 'What is a tiered (inclining-block) electricity rate?', answer: 'EIA defines a block-rate structure as a rate schedule that charges a different unit cost for successive blocks of usage — commonly a lower rate up to a threshold and a higher rate beyond it, meant to reward conservation.' },
+        { question: 'How do I find my own rate and fixed charges?', answer: 'Look at a recent bill’s energy or supply charge line for the per-kWh rate, and its customer, meter or delivery charge lines for the fixed amount that does not change with usage.' },
+        { question: 'Why is my effective rate higher than the rate I entered?', answer: 'The effective rate is the whole bill divided by usage, so the fixed charge gets spread across however many kWh were used. At this calculator’s defaults, a $0.16 stated rate becomes a $0.1733 effective rate once the $12 fixed charge is included — 8.3% higher.' },
+        { question: 'Does this estimate include taxes?', answer: 'Only if you add them into the fixed-charges field. This calculator does not add taxes or regulatory surcharges on its own, so treat the result as an estimate against your own bill.' },
+        { question: 'What is the difference between a tiered rate and a time-of-use rate?', answer: 'A tiered rate charges more once total monthly usage crosses a threshold, which this calculator models. A time-of-use rate charges more during peak hours of the day regardless of total usage — a different structure this calculator does not model.' },
+        { question: 'How can I lower my electricity bill?', answer: 'ENERGY STAR estimates that replacing a home’s five most-used light fixtures with certified LEDs saves about $40 a year, and an ENERGY STAR smart thermostat cuts heating and cooling costs by more than 8% (about $50 a year on average, more if the home is often empty during the day).' },
+        { question: 'How accurate is this estimate?', answer: 'It models the energy charge, an optional two-tier rate, and a flat fixed charge — the main drivers of most residential bills — but not taxes, surcharges, demand charges or a time-of-use schedule, so compare it against an actual bill rather than treating it as exact.' }
       ]
     },
     compute(values) {

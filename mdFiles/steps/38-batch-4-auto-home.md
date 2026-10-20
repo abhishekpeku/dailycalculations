@@ -17,6 +17,13 @@
 - [ ] furniture-fit-calculator (B · plan: top-down floor plan)
 - [ ] Number verification script, tests, build, lint, STATUS.md, PR ready
 
+Paused 2026-10-21 after commute-cost-calculator. Resume from the first unchecked box.
+
+Run 1 checks (2026-10-21): `npm test` 265 pass (snapshot unchanged); `npm run build` passes; lint
+(ignoring `.open-next/**`, `.claude/**`) passes; independent Python checker 89 / 89 copy figures
+(one mismatch found and fixed); the app's `solveState()` / `evaluateBreakdown()` agree; all 5 pages
+on `next start` show the H1, 8 section ids, JSON-LD and the visual's aria-label; server killed.
+
 Commit + push after each box (`step 38: <id>`). Runs are 5 calculators (D11): run 1 builds
 car-payment → commute-cost and pauses; later runs do toll-cost and the six home calculators.
 

@@ -116,7 +116,7 @@ is why 12-15 run after it.
 | 35 | Batch 1: finance (8) | **DONE** 2026-10-19 | YMYL. 6 × type A, loan-prepayment type B, paycheck C → B. PR #9. | §3 |
 | 36 | Batch 2: shopping + conversion (9) | **DONE** 2026-10-19 | 4 shopping type A (sales-tax, tip, discount, unit-price), cashback B, 4 converters type A. Stone added to `mass`. PR #10. | §3 |
 | 37 | Batch 3: health (6) | DONE 2026-10-20 | YMYL. Branch `step/37-batch-3-health`, PR #11. All 6 health calculators on v2. See session log. | §3 |
-| 38 | Batch 4: auto + home (12) | TODO | | §3 |
+| 38 | Batch 4: auto + home (12) | **IN PROGRESS** (paused 2026-10-21 after commute-cost) | Branch `step/38-batch-4-auto-home`, draft PR #13. Done: car-payment, gas-cost, fuel-cost, ev-charging, commute-cost. Remaining: toll-cost + the 6 home calculators. Resume from the first unchecked box in `mdFiles/steps/38-batch-4-auto-home.md`. | §3 |
 | 39 | Batch 5: time, travel, work, creator, text, education (18) | TODO | | §3 |
 | 40–42 | Wave 1: math · statistics · conversion | TODO | Absorbs step 24 (math). 5 calculators per agent run. | §4 |
 | 43–45 | Wave 2: construction · food · sports | TODO | | §4 |
@@ -860,6 +860,35 @@ Step file: `mdFiles/steps/37-batch-3-health.md`.
   symbol in both widgets (PR #12).
 - `lib/breakdown.spec.ts` type-B floor is 20; each A conversion lowers the count.
 
+38 · 2026-10-21 · **Batch 4 auto + home v2 — run 1 of 3, PAUSED after commute-cost** (branch
+`step/38-batch-4-auto-home`, draft PR #13). The five auto calculators done so far have full v2 content,
+primary references and verified numbers. `compute()` is unchanged on all five, so **the compute
+snapshot did not move.**
+Type A: **car-payment** (payment ↔ price ↔ term ↔ rate, rate numeric; down payment + trade-in
+`fixed`; Donut + AmortizationTable; YMYL "estimates only" note; reuses finance's `loanPayment` /
+`loanPrincipal` / `loanMonths`, now exported from `finance.ts`), **gas-cost** (cost ↔ distance ↔
+fuel economy ↔ fuel price, all closed form; outputs fuel used in gal and L, cost per 100 mi / 100 km;
+CompareBars one way vs round trip from `solver.derive`). Type B: **fuel-cost** (units on every input;
+CompareBars your car vs comparison car; cost per 100 mi derived), **ev-charging** (efficiency unit
+menu; starting charge now `type: 'percent'`; CompareBars EV vs gas per 100 mi), **commute-cost** (step-33
+config kept; labels no longer hardcode `$` or the wrong "IRS: $0.21"; fuel price unit menu).
+**New unit dimensions** in `lib/units.ts` (tests in `lib/units.spec.ts`): `fuelPrice` (base currency
+per m³; per L, per US gal, per UK gal; labels from `currencySymbol()`) so a fuel price follows the
+fuel-economy unit; `evEfficiency` (base J/m; kWh/100 mi as on EPA labels, kWh/100 km, Wh/mi, Wh/km,
+mi/kWh, km/kWh).
+**Facts checked on primary sources 2026-10-21:** IRS Notice 2026-10 (business rate 72.5 ¢/mi,
+depreciation 35 ¢/mi; the old FAQ's 2025 figures and the "$0.21 IRS wear" label were wrong), FEG 2026
+(15,000 mi/yr, 55% city, $4.33/gal regular, $0.15/kWh), EIA Table 5.6.A (July 2026 residential 18.31 ¢,
+ND 13.41 ¢, HI 48.00 ¢), FHWA (13,476 mi per driver), EPA (MPGe 33.7 kWh/gal, ratings include charging
+losses), DOE FOTW #1374, fueleconomy.gov driving tips, CFPB/FTC auto-loan pages. CFPB pages return
+403 to curl and FHWA/EPA timed out from curl, but each was confirmed via search/fetch.
+Numbers: an independent Python checker matched **89 of 89** copy figures (one mismatch found and
+fixed: 84-month extra interest $592.40, not $592.41); the app's `solveState()` / `evaluateBreakdown()`
+agree at the defaults, the worked examples and with metric units.
+**Resume notes (run 2):** next is toll-cost (B, CompareBars with vs without a pass), then concrete (A),
+paint, tile, wallpaper (run 2 ends after wallpaper or after 5), then electricity-bill and furniture-fit.
+`fuelPrice` / `evEfficiency` are available for any later input. Don't commit `tsconfig.tsbuildinfo` / `next-env.d.ts`.
+
 fix · 2026-10-20 · **Solver widget shows the real currency symbol, not `¤`** (branch `fix/currency-symbol`). `UNITS.currency[0].label` = `currencySymbol()` from `lib/calculator.ts`, so type-A inline values, input adornments and output rows print `$` like the type-B widget and the visuals. Share links use the unit id (`currency`), not the label, so they are unaffected. New `units.spec` test: no unit label contains `¤`.
 
 ## Pending on the user — not code
@@ -966,6 +995,14 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
   Step 18 (region formatting) could show 3–4 decimals for money below $1.
 - **Duplicate alias** (found in step 36): `house loan emi calculator` is on both `emi-calculator` and
   `mortgage-calculator`. Pick one.
+- **Kit and widget gaps from step 38** (nearest kit component used instead): a cost-per-mile chip
+  (gas-cost: CompareBars one way vs round trip). **Widget gaps:** the solver prints a `fuelPrice`
+  value as "3.75 $/gal (US)" (significant figures, symbol after) rather than "$3.75/gal"; type-B
+  outputs have no unit menu, so fuel-cost / ev-charging / commute results stay per 100 **miles** and
+  range in miles when inputs are metric, and commute's wear allowance stays per mile (no money-per-
+  distance dimension); ev-charging's battery has no unit menu (the `energy` menu offers J, cal, BTU…)
+  and its yearly savings are fixed at 12,000 miles inside `compute()`; ev-charging charges to 100%
+  only (no target-charge input). Changing those needs `compute()` changes (snapshot) or widget work.
 - **Kit and widget gaps from step 37** (nearest kit component used instead): a three-tier bar
   (calorie: CompareBars), a stacked bar (TDEE: Donut), a glasses-per-day row (water: CompareBars vs
   NASEM), a splits / race-predictions table (running pace: CompareBars of Riegel times).

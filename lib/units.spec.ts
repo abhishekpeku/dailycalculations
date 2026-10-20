@@ -40,7 +40,7 @@ describe('unit tables', () => {
 
   test('covers the dimensions the v2 rollout needs', () => {
     assert.deepEqual([...dimensions].sort(), [
-      'acceleration', 'area', 'count', 'currency', 'data', 'energy', 'force', 'fuelEconomy', 'length',
+      'acceleration', 'area', 'count', 'currency', 'data', 'energy', 'evEfficiency', 'force', 'fuelEconomy', 'fuelPrice', 'length',
       'mass', 'pace', 'percent', 'power', 'pressure', 'speed', 'temperature', 'term', 'time', 'volume'
     ]);
   });
@@ -145,6 +145,20 @@ describe('anchor values', () => {
     close(convert(5, 'fuelEconomy', 'L/100km', 'km/L'), 20);
     // Higher mpg means less fuel per distance.
     assert.ok(toBase(40, 'fuelEconomy', 'mpg') < toBase(20, 'fuelEconomy', 'mpg'));
+  });
+  test('fuel price: $3.75/gal (US) ≈ $0.9906/L, UK gallon is bigger', () => {
+    close(convert(3.75, 'fuelPrice', 'cur/gal', 'cur/L'), 3.75 / 3.785411784);
+    close(convert(1, 'fuelPrice', 'cur/L', 'cur/galUK'), 4.54609);
+    // 180 mi at 28 mpg and $3.75/gal: cost = distance × economy × price in base units.
+    close(toBase(180, 'length', 'mi') * toBase(28, 'fuelEconomy', 'mpg') * toBase(3.75, 'fuelPrice', 'cur/gal'), (180 / 28) * 3.75);
+    assert.ok(UNITS.fuelPrice.every((unit) => unit.label.startsWith(currencySymbol())));
+  });
+  test('EV efficiency: 4 mi/kWh = 25 kWh/100 mi = 250 Wh/mi ≈ 15.53 kWh/100 km', () => {
+    close(convert(4, 'evEfficiency', 'mi/kWh', 'kWh/100mi'), 25);
+    close(convert(25, 'evEfficiency', 'kWh/100mi', 'Wh/mi'), 250);
+    close(convert(25, 'evEfficiency', 'kWh/100mi', 'kWh/100km'), 25 / 1.609344);
+    close(convert(10, 'evEfficiency', 'km/kWh', 'kWh/100km'), 10);
+    assert.ok(toBase(5, 'evEfficiency', 'mi/kWh') < toBase(3, 'evEfficiency', 'mi/kWh'));
   });
   test('percent, count and currency are identity', () => {
     for (const dimension of ['percent', 'count', 'currency'] as const) {

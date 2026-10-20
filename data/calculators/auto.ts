@@ -1,16 +1,111 @@
 import type { CalculatorConfig } from './types.ts';
+import { loanMonths, loanPayment, loanPrincipal } from './finance.ts';
 
 export const autoCalculators: CalculatorConfig[] = [
   {
     id: 'car-payment-calculator',
     category: 'auto',
-    updatedAt: '2026-09-10',
-    aliases: ['auto loan calculator', 'car loan calculator', 'vehicle finance calculator', 'monthly car payment estimator'],
+    updatedAt: '2026-10-21',
+    aliases: ['auto loan calculator', 'car loan calculator', 'vehicle finance calculator', 'monthly car payment estimator', 'auto loan payment calculator'],
     related: ['loan-calculator', 'emi-calculator', 'commute-cost-calculator', 'fuel-cost-calculator'],
     redirectFrom: ['auto-loan-calculator', 'car-loan-calculator'],
     title: 'Car Payment Calculator',
-    description: 'Estimate monthly car loan payments based on price, APR, and term.',
-    example: 'Estimate payments for a $28,000 car with 4.5% APR over 6 years.',
+    description: 'Find the monthly payment on an auto loan from the car price, down payment, APR and term, or work backward to the price, term or rate that fits your budget, with total interest and a payment schedule.',
+    example: 'A $28,000 car with $4,000 down, financed for 6 years (72 months) at 4.5% APR, costs about $380.98 a month and $3,430.32 in total interest.',
+    solver: {
+      defaultTarget: 'monthlyPayment',
+      variables: [
+        { id: 'monthlyPayment', label: 'Monthly payment', symbol: 'M', dimension: 'currency', defaultValue: 380.98, defaultUnit: 'currency' },
+        { id: 'carPrice', label: 'Car price', symbol: 'C', dimension: 'currency', defaultValue: 28000, defaultUnit: 'currency' },
+        { id: 'downPayment', label: 'Down payment + trade-in', symbol: 'D', dimension: 'currency', defaultValue: 4000, defaultUnit: 'currency', fixed: true },
+        { id: 'term', label: 'Loan term', symbol: 'n', dimension: 'term', defaultValue: 6, defaultUnit: 'yr' },
+        { id: 'interestRate', label: 'Interest rate (APR)', symbol: 'APR', dimension: 'percent', defaultValue: 4.5, defaultUnit: '%', bounds: [0, 100] }
+      ],
+      solve: {
+        monthlyPayment: ({ carPrice, downPayment, term, interestRate }) => loanPayment(carPrice - downPayment, term, interestRate),
+        carPrice: ({ monthlyPayment: payment, downPayment, term, interestRate }) => downPayment + loanPrincipal(payment, term, interestRate),
+        term: ({ carPrice, downPayment, monthlyPayment: payment, interestRate }) => loanMonths(carPrice - downPayment, payment, interestRate)
+      },
+      // The rate has no closed form: the widget finds it numerically.
+      equation: (si) => si.monthlyPayment - loanPayment(si.carPrice - si.downPayment, si.term, si.interestRate),
+      outputs: [
+        { id: 'loanAmount', label: 'Amount financed', dimension: 'currency', compute: (si) => si.carPrice - si.downPayment },
+        { id: 'totalInterest', label: 'Total interest', dimension: 'currency', compute: (si) => si.monthlyPayment * si.term - (si.carPrice - si.downPayment) },
+        { id: 'totalPaid', label: 'Total of all payments', dimension: 'currency', compute: (si) => si.monthlyPayment * si.term }
+      ],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [{ from: 'loanAmount', label: 'Principal' }, { from: 'totalInterest', label: 'Interest' }],
+          center: 'totalPaid',
+          centerSub: 'total paid'
+        },
+        { type: 'amortization', principal: 'loanAmount', annualRate: 'interestRate', months: 'term', payment: 'monthlyPayment' }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'How a car payment is calculated',
+        paragraphs: [
+          'Most auto loans are simple-interest installment loans. You borrow the price of the car minus whatever you put down (cash plus any trade-in value), and repay it in equal monthly payments over a fixed term, usually 36 to 84 months. Each month the lender charges interest on the balance still owed, and the rest of your payment reduces that balance. Early payments are mostly interest; the last ones are almost all principal.',
+          'Three numbers drive the payment: the amount financed, the APR and the number of months. A longer term lowers the monthly payment, but you pay interest for longer, so the total cost rises. The Federal Trade Commission warns buyers not to focus only on the monthly figure for exactly this reason, and a long loan on a car that loses value quickly can leave you owing more than the car is worth.',
+          'The same formula runs in reverse. If you know the payment you can afford, the calculator finds the car price that budget supports for your down payment, rate and term, or the term or rate you would need to make a given price work. Use the APR from a lender quote or the Truth-in-Lending disclosure, not just the advertised interest rate, because the APR also counts lender fees.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your down payment, then fill in any three of the other four fields. The one you have left alone longest, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter the down payment', text: 'Include cash and the net value of any trade-in. It is always an input; the amount financed is the car price minus this figure.' },
+          { name: 'Enter the price, term and APR', text: 'Type the price you will finance (add sales tax and fees if they go into the loan), the term in years or months, and the APR. The monthly payment is calculated.' },
+          { name: 'Work backward from a budget', text: 'Type the monthly payment you can afford and leave the car price alone. It becomes the auto field and shows the price your budget supports.' },
+          { name: 'Compare terms', text: 'Switch the term between 48, 60, 72 and 84 months and watch the total interest below the result, not only the payment.' },
+          { name: 'Read the schedule', text: 'The chart splits the total into principal and interest, and the table shows the balance year by year.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The payment is the standard annuity formula applied to the amount financed.',
+        expression: 'P = C − D\nM = P × r ÷ (1 − (1 + r)^−n)\nC = D + M × (1 − (1 + r)^−n) ÷ r\nn = −ln(1 − P × r ÷ M) ÷ ln(1 + r)',
+        terms: [
+          { symbol: 'M', meaning: 'Monthly payment.' },
+          { symbol: 'C', meaning: 'Car price you finance, including any taxes and fees rolled into the loan.' },
+          { symbol: 'D', meaning: 'Down payment plus trade-in value.' },
+          { symbol: 'P', meaning: 'Amount financed, C − D.' },
+          { symbol: 'r', meaning: 'Monthly rate: the APR ÷ 12, as a decimal. 4.5% is 0.00375.' },
+          { symbol: 'n', meaning: 'Number of monthly payments: 72 for a 6-year loan. At 0% APR the payment is simply P ÷ n.' }
+        ],
+        note: 'Estimates only. Your lender calculates the exact payment, and the Truth-in-Lending disclosure in your contract is the binding figure. Sales tax, registration, dealer fees and add-ons are not included unless you add them to the price.'
+      },
+      workedExample: {
+        intro: 'You buy a $28,000 car, put $4,000 down and finance the rest for 6 years at 4.5% APR. What is the monthly payment?',
+        rows: [
+          { label: 'Amount financed (P = 28,000 − 4,000)', value: '$24,000' },
+          { label: 'Monthly rate (r = 4.5% ÷ 12)', value: '0.00375' },
+          { label: 'Number of payments (n = 6 × 12)', value: '72' },
+          { label: '(1 + r)^n', value: '1.30930' },
+          { label: '1 − (1 + r)^−n', value: '0.236235' },
+          { label: 'M = 24,000 × 0.00375 ÷ 0.236235', value: '$380.98' },
+          { label: 'Total of 72 payments', value: '$27,430.32' },
+          { label: 'Total interest (27,430.32 − 24,000)', value: '$3,430.32' }
+        ],
+        result: 'M ≈ $380.98 a month',
+        explanation: 'The first payment includes $90.00 of interest (24,000 × 0.00375) and $290.98 of principal. Over the first year you pay about $1,007 in interest and $3,565 in principal, leaving about $20,435 owed. Financing the same $24,000 over 60 months instead raises the payment to $447.43 but cuts the interest to $2,845.95.'
+      },
+      watchOut: [
+        { title: 'Estimates only', body: 'Lenders round, may charge fees that change the APR, and may count days differently. Use this to compare offers, then check the payment and APR on the Truth-in-Lending disclosure before you sign.' },
+        { title: 'Longer terms cost more', body: 'At 4.5% on $24,000, stretching from 72 to 84 months lowers the payment from $380.98 to $333.60 but adds $592.40 of interest, and keeps you owing more than the car is worth for longer.' },
+        { title: 'Taxes, fees and add-ons', body: 'Sales tax, title, registration and dealer fees are often rolled into the loan, as are add-ons such as extended warranties or GAP coverage. Add whatever you will finance to the car price, and remember that add-ons are optional.' },
+        { title: 'Your rate depends on your credit', body: 'The APR you are quoted depends on your credit history, the term, the car’s age and the lender. Getting a pre-approval from a bank or credit union gives you a rate to compare with dealer financing.' },
+        { title: 'Precomputed interest', body: 'Most auto loans are simple interest, which this calculator models: paying early saves interest. Some loans use precomputed interest, where paying early saves less. Your contract says which.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, What is the difference between a loan interest rate and the APR?', url: 'https://www.consumerfinance.gov/ask-cfpb/what-is-the-difference-between-a-loan-interest-rate-and-the-apr-en-733/' },
+        { label: 'Consumer Financial Protection Bureau, What is a Truth-in-Lending disclosure for an auto loan?', url: 'https://www.consumerfinance.gov/ask-cfpb/what-is-a-truth-in-lending-disclosure-for-an-auto-loan-en-787/' },
+        { label: 'Consumer Financial Protection Bureau, Simple interest vs precomputed interest on an auto loan', url: 'https://www.consumerfinance.gov/ask-cfpb/whats-the-difference-between-a-simple-interest-rate-and-precomputed-interest-on-an-auto-loan-en-841/' },
+        { label: 'Federal Trade Commission, Financing or Leasing a Car', url: 'https://consumer.ftc.gov/articles/financing-or-leasing-car' }
+      ]
+    },
     inputs: [
       { id: 'carPrice', label: 'Car price', type: 'currency', placeholder: '28000', defaultValue: 28000, step: 100, min: 0 },
       { id: 'downPayment', label: 'Down payment', type: 'currency', placeholder: '4000', defaultValue: 4000, step: 100, min: 0 },
@@ -18,11 +113,16 @@ export const autoCalculators: CalculatorConfig[] = [
       { id: 'years', label: 'Loan term (years)', type: 'number', placeholder: '6', defaultValue: 6, step: 1, min: 1 }
     ],
     seo: {
-      title: 'Car Payment Calculator',
-      description: 'Calculate your monthly car payment for any auto loan. Enter the vehicle price, down payment, APR, and loan term to see the payment, total cost, and total interest.',
+      title: 'Car Payment Calculator – Monthly Auto Loan Payment',
+      description: 'Free car payment calculator: monthly auto loan payment from price, down payment, APR and term, or the price your budget supports, with total interest.',
       faq: [
-        { question: 'How do I calculate a car payment?', answer: 'Enter the car price, down payment, APR, and loan term to estimate the monthly cost.' },
-        { question: 'Does this calculator handle auto loans?', answer: 'Yes, it works with fixed-rate auto loan values.' }
+        { question: 'How do I calculate a car payment?', answer: 'Subtract your down payment and trade-in from the price to get the amount financed, then apply M = P × r ÷ (1 − (1 + r)^−n), where r is the APR ÷ 12. $24,000 at 4.5% for 72 months comes to about $380.98 a month.' },
+        { question: 'Is a 60-month or 72-month car loan better?', answer: 'A shorter loan costs more each month but less overall. On $24,000 at 4.5%, 60 months is about $447.43 a month with $2,845.95 of interest; 72 months is about $380.98 with $3,430.32 of interest.' },
+        { question: 'How much car can I afford for $500 a month?', answer: 'Enter the payment, your down payment, the APR and the term, and the car price is calculated. $500 a month for 60 months at 6.5% with $4,000 down supports a price of about $29,554, before any taxes and fees you finance.' },
+        { question: 'How much does a higher APR cost?', answer: 'On $24,000 over 72 months, 4.5% costs about $380.98 a month and 7% about $409.18, a difference of about $28.20 a month or $2,030.36 over the loan.' },
+        { question: 'What is the payment on a 0% APR deal?', answer: 'With no interest the payment is the amount financed divided by the months: $24,000 over 72 months is $333.33 a month. Compare it with any cash rebate you would give up to get the 0% offer.' },
+        { question: 'What is the difference between the interest rate and the APR?', answer: 'The interest rate is the cost of borrowing the money. The APR adds lender fees to it, so it is the better figure for comparing loan offers. Lenders must disclose the APR.' },
+        { question: 'Should I include sales tax in the car price?', answer: 'Yes, if you are financing it. Whatever goes into the loan, including tax, title, registration, dealer fees and add-ons, is part of the amount financed and earns interest.' }
       ]
     },
     compute(values) {

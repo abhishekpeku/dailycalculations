@@ -18,6 +18,8 @@ export type UnitDimension =
   | 'pressure'
   | 'data'
   | 'fuelEconomy'
+  | 'fuelPrice'
+  | 'evEfficiency'
   | 'percent'
   | 'count'
   | 'currency'
@@ -216,6 +218,25 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
     { id: 'mpg', label: 'mpg (US)', ...inverse(US_GALLON / MILE) },
     { id: 'mpgUK', label: 'mpg (UK)', ...inverse(UK_GALLON / MILE) },
     { id: 'km/L', label: 'km/L', ...inverse(1e-3 / 1000) }
+  ],
+  // Money per volume of fuel, so a price follows the fuel-economy unit (US prices per gallon, most
+  // others per liter). Base is currency per m³; the gallons are the exact ones above.
+  fuelPrice: [
+    { id: 'cur/m3', label: `${currencySymbol()}/m³`, factor: 1 },
+    { id: 'cur/L', label: `${currencySymbol()}/L`, factor: 1 / 1e-3 },
+    { id: 'cur/gal', label: `${currencySymbol()}/gal (US)`, factor: 1 / US_GALLON },
+    { id: 'cur/galUK', label: `${currencySymbol()}/gal (UK)`, factor: 1 / UK_GALLON }
+  ],
+  // Electric-vehicle energy use. Base is energy per distance (J/m), like fuelEconomy; EPA labels use
+  // kWh/100 mi. Exact from the kWh (3.6 MJ) and the mile; distance-per-energy units are reciprocals.
+  evEfficiency: [
+    { id: 'J/m', label: 'J/m', factor: 1 },
+    { id: 'kWh/100mi', label: 'kWh/100 mi', factor: (HOUR * 1000) / (100 * MILE) },
+    { id: 'kWh/100km', label: 'kWh/100 km', factor: (HOUR * 1000) / 1e5 },
+    { id: 'Wh/mi', label: 'Wh/mi', factor: HOUR / MILE },
+    { id: 'Wh/km', label: 'Wh/km', factor: HOUR / 1000 },
+    { id: 'mi/kWh', label: 'mi/kWh', ...inverse((HOUR * 1000) / MILE) },
+    { id: 'km/kWh', label: 'km/kWh', ...inverse((HOUR * 1000) / 1000) }
   ],
   // Unit-less. The base value is the percent number itself (5 means 5%).
   percent: [{ id: '%', label: '%', factor: 1 }],

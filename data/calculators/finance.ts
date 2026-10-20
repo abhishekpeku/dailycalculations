@@ -3,17 +3,17 @@ import { monthlyPayment } from '../../lib/amortization.ts';
 
 // Amortized loans (loan, mortgage, EMI). Terms are in months; `apr` is the percent number (6 = 6%).
 // Each returns NaN when there is no answer.
-const loanPayment = (principal: number, months: number, apr: number) =>
+export const loanPayment = (principal: number, months: number, apr: number) =>
   principal >= 0 ? monthlyPayment(principal, apr, months) : NaN;
 
-const loanPrincipal = (payment: number, months: number, apr: number) => {
+export const loanPrincipal = (payment: number, months: number, apr: number) => {
   const r = apr / 100 / 12;
   if (!(months > 0) || !(payment >= 0)) return NaN;
   return r === 0 ? payment * months : (payment * (1 - (1 + r) ** -months)) / r;
 };
 
 // n = −ln(1 − P·r ÷ M) ÷ ln(1 + r). No answer when the payment does not cover the first month's interest.
-const loanMonths = (principal: number, payment: number, apr: number) => {
+export const loanMonths = (principal: number, payment: number, apr: number) => {
   const r = apr / 100 / 12;
   if (!(payment > 0) || !(principal >= 0)) return NaN;
   if (r === 0) return principal / payment;

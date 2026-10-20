@@ -513,23 +513,122 @@ export const healthCalculators: CalculatorConfig[] = [
   {
     id: 'running-pace-calculator',
     category: 'health',
-    updatedAt: '2026-09-10',
-    aliases: ['pace per mile calculator', 'marathon pace calculator', 'race time calculator', 'min per km calculator'],
+    updatedAt: '2026-10-20',
+    aliases: ['pace per mile calculator', 'marathon pace calculator', 'race time calculator', 'min per km calculator', 'race time predictor'],
     related: ['calorie-calculator', 'miles-to-kilometers-converter', 'tdee-calculator', 'sleep-time-calculator'],
     title: 'Running Pace Calculator',
-    description: 'Calculate your running pace, finish time, or distance. Supports miles and kilometers.',
-    example: 'Find the pace needed to finish a 5K in 25 minutes.',
+    description: 'Work out your running pace from a distance and time, your finish time from a pace, or how far a pace takes you, in miles or kilometers, with race-time predictions for the 5K to the marathon.',
+    example: 'A 5K in 25 minutes is a pace of 5:00 per km or about 8:03 per mile (12 km/h). The Riegel formula predicts about 52:07 for a 10K and 3:59:47 for a marathon from that result.',
+    solver: {
+      defaultTarget: 'pace',
+      variables: [
+        { id: 'pace', label: 'Pace', symbol: 'p', dimension: 'pace', defaultValue: 8.04672, defaultUnit: 'min/mi' },
+        { id: 'distance', label: 'Distance', symbol: 'd', dimension: 'length', defaultValue: 5, defaultUnit: 'km' },
+        { id: 'time', label: 'Time', symbol: 't', dimension: 'time', defaultValue: 25, defaultUnit: 'min' }
+      ],
+      // SI: s/m, m and s, so time = distance × pace.
+      solve: {
+        pace: ({ distance, time }) => (distance > 0 ? time / distance : NaN),
+        time: ({ distance, pace }) => distance * pace,
+        distance: ({ time, pace }) => (pace > 0 ? time / pace : NaN)
+      },
+      outputs: [
+        { id: 'speed', label: 'Speed', dimension: 'speed', unit: 'mph', compute: (si) => (si.time > 0 ? si.distance / si.time : NaN) },
+        { id: 'marathonEven', label: 'Marathon at this pace (even pace)', dimension: 'time', unit: 'min', compute: (si) => 42195 * si.pace }
+      ],
+      // Riegel (1981): T2 = T1 × (D2 ÷ D1)^1.06, in minutes for the chart.
+      derive: (si) => {
+        const riegel = (meters: number) => (si.distance > 0 ? (si.time * (meters / si.distance) ** 1.06) / 60 : NaN);
+        return { riegel5k: riegel(5000), riegel10k: riegel(10000), riegelHalf: riegel(21097.5), riegelMarathon: riegel(42195) };
+      },
+      visuals: [
+        {
+          type: 'compareBars',
+          bars: [
+            { from: 'riegel5k', label: '5K' },
+            { from: 'riegel10k', label: '10K' },
+            { from: 'riegelHalf', label: 'Half marathon' },
+            { from: 'riegelMarathon', label: 'Marathon' }
+          ],
+          title: 'Predicted race times, minutes (Riegel)'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-20',
+      concept: {
+        title: 'What is running pace?',
+        paragraphs: [
+          'Pace is the time it takes to cover a unit of distance, such as 8 minutes per mile or 5 minutes per kilometer. It is speed turned upside down: speed says how far you go in an hour, pace says how long each mile or kilometer takes. Runners prefer pace because it maps straight onto a watch and onto mile or kilometer markers along a course.',
+          'Pace, distance and time are tied together by one relation: time equals distance times pace. Know any two and you know the third. That is all a pace calculator does, but it saves the awkward arithmetic of mixing minutes, seconds, miles and kilometers. A 5K is 5 km, or about 3.107 miles; a 10K is 10 km; a half marathon is 21.0975 km (13.11 miles) and a marathon 42.195 km (26.22 miles).',
+          'Predicting a race you have not run is a different question. You cannot hold your 5K pace for a marathon, because pace slows as distance grows. In 1981 the engineer Peter Riegel fitted world records across distances and found that time rises roughly with distance to the power 1.06. The chart uses his formula to turn your current result into predicted times for the standard road distances.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of pace, distance and time. The third, marked auto, is calculated as you type.',
+        steps: [
+          { name: 'Find your pace', text: 'Type the distance and your time, choosing km or mi and min, h or s from the menus. The pace is calculated.' },
+          { name: 'Find a finish time', text: 'Type a target pace and the race distance, then leave time alone. It becomes the auto field.' },
+          { name: 'Find a distance', text: 'Type a pace and how long you will run. The distance is calculated.' },
+          { name: 'Read decimal minutes', text: 'Pace and time show as decimal minutes for now: 8.05 min/mi is 8 minutes 3 seconds (0.05 × 60 = 3), and 115.5 min is 1 hour 55 minutes 30 seconds.' },
+          { name: 'Check the predictions', text: 'The bars show Riegel predictions for the 5K, 10K, half marathon and marathon from the distance and time you entered.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Pace, distance and time are one equation. The race predictions use Riegel\'s power law.',
+        expression: 't = d × p\np = t ÷ d\nd = t ÷ p\nSpeed = d ÷ t\nRiegel: T₂ = T₁ × (D₂ ÷ D₁)^1.06',
+        terms: [
+          { symbol: 'p', meaning: 'Pace, time per distance (min/mi or min/km).' },
+          { symbol: 'd', meaning: 'Distance (1 mi = 1.609344 km exactly).' },
+          { symbol: 't', meaning: 'Elapsed time.' },
+          { symbol: 'T₁, D₁', meaning: 'Your known result: time and distance.' },
+          { symbol: 'T₂, D₂', meaning: 'The predicted time for a new distance.' },
+          { symbol: '1.06', meaning: 'Riegel\'s fatigue exponent for running: each doubling of distance multiplies time by about 2.085.' }
+        ],
+        note: 'Predictions are estimates only. They assume you have trained for the longer distance and race in similar conditions. Check with a doctor before starting a new or much harder running program.'
+      },
+      workedExample: {
+        intro: 'You run a 5K in 25 minutes. What was your pace, and what might you run over longer distances?',
+        rows: [
+          { label: 'Distance in miles (5 ÷ 1.609344)', value: '3.107 mi' },
+          { label: 'Pace per km (25 ÷ 5)', value: '5.00 min/km = 5:00/km' },
+          { label: 'Pace per mile (25 ÷ 3.107)', value: '8.047 min/mi ≈ 8:03/mi' },
+          { label: 'Speed (5 km ÷ 25 min × 60)', value: '12 km/h = 7.46 mph' },
+          { label: '10K prediction (25 × 2^1.06)', value: '52.12 min ≈ 52:07' },
+          { label: 'Half marathon (25 × 4.2195^1.06)', value: '115.0 min ≈ 1:55:00' },
+          { label: 'Marathon (25 × 8.439^1.06)', value: '239.8 min ≈ 3:59:47' }
+        ],
+        result: 'Pace 8:03/mi (5:00/km) · predicted 10K 52:07 · half 1:55:00 · marathon 3:59:47',
+        explanation: 'Holding 5:00/km for a whole marathon would take 210.98 minutes (3:30:58), half an hour faster than the Riegel prediction. That gap is the slowdown the formula builds in, and for many recreational runners the real marathon slowdown is bigger still, especially without long training runs.'
+      },
+      watchOut: [
+        { title: 'Predictions need matching training', body: 'Riegel\'s formula was fitted to world records, where athletes are trained for each distance. A 5K runner without long runs will usually run slower than predicted in a marathon.' },
+        { title: 'Stay within the formula\'s range', body: 'Riegel described the relation for events lasting from a few minutes to a few hours. Predictions from a very short sprint, or to ultramarathons, are much less reliable.' },
+        { title: 'Courses and conditions differ', body: 'Hills, heat, wind, altitude and crowded starts all slow you down. A GPS watch can also over- or under-measure the distance, so use the official race distance.' },
+        { title: 'Decimal minutes are not seconds', body: 'A pace of 8.5 min/mi is 8:30, not 8:50. Multiply the decimal part by 60 to get seconds.' },
+        { title: 'Build up gradually', body: 'Sudden jumps in mileage or pace raise the risk of injury. If you have a heart condition, other health problems or are new to exercise, talk to a doctor first.' }
+      ],
+      references: [
+        { label: 'Riegel PS, Athletic records and human endurance, American Scientist 69 (1981): 285–290', url: 'https://pubmed.ncbi.nlm.nih.gov/7235349/' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, the international mile)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'US Department of Health and Human Services, Physical Activity Guidelines for Americans, 2nd edition', url: 'https://odphp.health.gov/our-work/nutrition-physical-activity/physical-activity-guidelines/current-guidelines' }
+      ]
+    },
     inputs: [
       { id: 'distanceMiles', label: 'Distance (miles)', type: 'number', placeholder: '3.1', defaultValue: 3.1, step: 0.1, min: 0.1 },
       { id: 'totalMinutes', label: 'Total time (minutes)', type: 'number', placeholder: '25', defaultValue: 25, step: 0.5, min: 0.5 }
     ],
     seo: {
       title: 'Running Pace Calculator – Pace, Time, and Distance',
-      description: 'Calculate running pace per mile, finish time for races, and distance covered. Works for 5K, 10K, half marathon, and marathon.',
+      description: 'Calculate running pace per mile or km, finish time or distance, and predict 5K, 10K, half marathon and marathon times with the Riegel formula.',
       faq: [
-        { question: 'What is a good running pace?', answer: 'Average recreational runners finish a mile in 9–12 minutes. Competitive runners aim for sub-8 min/mile. Elite marathoners run under 5 min/mile.' },
-        { question: 'What pace do I need for common race distances?', answer: 'For a 30-min 5K you need 9:39/mile. For a 2-hour half marathon: 9:09/mile. For a 4-hour marathon: 9:09/mile.' },
-        { question: 'How do I convert pace to speed?', answer: 'Divide 60 by your pace in minutes per mile to get miles per hour. An 8 min/mile pace equals 7.5 mph.' }
+        { question: 'How do I calculate my running pace?', answer: 'Divide your time by the distance. A 5K (3.107 mi) in 25 minutes is 25 ÷ 5 = 5:00 per km, or 25 ÷ 3.107 = 8.05 minutes, about 8:03, per mile.' },
+        { question: 'What pace do I need for common race goals?', answer: 'A 30-minute 5K needs 9:39 per mile (6:00 per km). A 2-hour half marathon and a 4-hour marathon both need about 9:09 per mile (5:41 per km), because the marathon is exactly twice the half.' },
+        { question: 'How do I convert pace to speed?', answer: 'Divide 60 by your pace in minutes. 8 minutes per mile is 60 ÷ 8 = 7.5 mph, and 5 minutes per km is 12 km/h.' },
+        { question: 'How do I convert min/km to min/mile?', answer: 'Multiply by 1.609344, the kilometers in a mile. 5:00 per km × 1.609344 = 8.05 minutes, about 8:03 per mile. Divide to go the other way.' },
+        { question: 'How are race times predicted?', answer: 'With Peter Riegel\'s formula, T₂ = T₁ × (D₂ ÷ D₁)^1.06. From a 25-minute 5K it predicts 25 × 2^1.06 ≈ 52:07 for a 10K and about 3:59:47 for a marathon, assuming you train for the distance.' },
+        { question: 'How much running is enough for health?', answer: 'US Physical Activity Guidelines advise adults to get at least 150 minutes of moderate or 75 minutes of vigorous aerobic activity a week, or a mix. Running counts as vigorous, so about 75 minutes a week meets the minimum.' }
       ]
     },
     compute(values) {

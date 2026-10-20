@@ -1,7 +1,7 @@
 // State and defaults of the type-B breakdown widget, as plain functions so they can be unit-tested.
 // See mdFiles/steps/33-type-b-widget.md.
 import type { BreakdownFormat, BreakdownOutput, BreakdownPart, BreakdownVisual, CalculatorConfig, CalculatorInput, CalculatorSolver } from '../data/calculators/index.ts';
-import { currencySymbol, formatDecimal, formatFull, formatSignificant } from './calculator.ts';
+import { currencySymbol, formatDate, formatDecimal, formatFull, formatSignificant } from './calculator.ts';
 import { parse, plain, type Solution } from './solverState.ts';
 import { UNITS, findUnit, fromBase, toBase } from './units.ts';
 
@@ -182,6 +182,7 @@ export function formatOutput(value: number, output: ResolvedOutput, unitId = out
   if (!Number.isFinite(value)) return '—';
   if (output.format === 'currency') return formatFull(value, { currency: true });
   if (output.format === 'percent') return `${formatDecimal(value)}%`;
+  if (output.format === 'date') return formatDate(value);
   const text =
     output.format === 'integer' ? formatDecimal(Math.round(value), 0) : output.format === 'significant' ? formatSignificant(value) : formatDecimal(value);
   if (!output.dimension || output.dimension === 'currency') return text;

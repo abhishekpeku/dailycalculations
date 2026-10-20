@@ -229,6 +229,7 @@ describe('formatting', () => {
     assert.equal(formatOutput(1234.5, output({ id: 'a', label: 'A', format: 'currency' })), '$1,234.50');
     assert.equal(formatOutput(12.345, output({ id: 'a', label: 'A', format: 'percent' })), '12.35%');
     assert.equal(formatOutput(12345.678, output({ id: 'a', label: 'A', format: 'number' })), '12,345.68');
+    assert.equal(formatOutput(new Date(2026, 11, 6).getTime(), output({ id: 'a', label: 'A', format: 'date' })), 'December 6, 2026');
     assert.equal(formatOutput(12345.678, output({ id: 'a', label: 'A', format: 'integer' })), '12,346');
     assert.equal(formatOutput(0.000123456, output({ id: 'a', label: 'A', format: 'significant' })), '1.235 × 10^-4');
     assert.equal(formatOutput(NaN, output({ id: 'a', label: 'A', format: 'number' })), '—');

@@ -161,7 +161,7 @@ export const healthCalculators: CalculatorConfig[] = [
       derive: (values) => ({
         glasses: values.dailyOunces / 8,
         exerciseOunces: values.activityLevel * 0.4,
-        // NASEM adequate intakes from beverages (drinking water included), adults 19+.
+        // NASEM 2004: fluids from drinks behind the adequate intakes (men 3.0 L, women 2.2 L).
         referenceWomen: 2.2,
         referenceMen: 3.0
       }),
@@ -181,7 +181,7 @@ export const healthCalculators: CalculatorConfig[] = [
         title: 'How much water do you need?',
         paragraphs: [
           'Water makes up more than half of an adult\'s body weight, and you lose some all the time through urine, sweat and breathing. Healthy kidneys balance the books from day to day, and thirst is the body\'s main signal to top up. For most healthy people, drinking when thirsty and with meals is enough.',
-          'There is no single right amount. The US National Academies of Sciences, Engineering, and Medicine (NASEM) did not find enough evidence to set a requirement, so in 2004 it set "adequate intakes" from what healthy people actually consume: about 3.7 L of total water a day for men and 2.7 L for women aged 19 and over. Food supplies roughly a fifth of that, which leaves about 3.0 L (13 cups) for men and 2.2 L (9 cups) for women from drinks, including plain water, milk, coffee and tea.',
+          'There is no single right amount. The US National Academies of Sciences, Engineering, and Medicine (NASEM) did not find enough evidence to set a requirement, so in 2004 it set "adequate intakes" from what healthy people actually consume: about 3.7 L of total water a day for adult men and 2.7 L for adult women. Food supplies roughly a fifth of that, which leaves about 3.0 L (13 cups) for men and 2.2 L (9 cups) for women from drinks, including plain water, milk, coffee and tea.',
           'This calculator uses a popular rule of thumb instead, because it scales with body size and exercise: half an ounce of water for every pound of body weight, plus 0.4 oz for every minute of exercise (12 oz per half hour). The rule is not from a clinical guideline, so the chart puts your result next to the NASEM figures for comparison.',
           'Needs go up in hot or humid weather, at altitude, with fever, vomiting or diarrhea, and during pregnancy and breastfeeding. Some medical conditions, such as heart failure and kidney disease, call for less fluid, not more.'
         ]
@@ -644,26 +644,137 @@ export const healthCalculators: CalculatorConfig[] = [
   {
     id: 'pregnancy-due-date-calculator',
     category: 'health',
-    updatedAt: '2026-09-10',
-    aliases: ['due date calculator', 'conception date calculator', 'pregnancy week calculator', 'edd calculator'],
+    updatedAt: '2026-10-20',
+    aliases: ['due date calculator', 'conception date calculator', 'pregnancy week calculator', 'edd calculator', 'how far along am i'],
     related: ['age-calculator', 'date-difference-calculator', 'bmi-calculator', 'water-intake-calculator'],
     title: 'Pregnancy Due Date Calculator',
-    description: 'Estimate your due date using Naegele\'s rule (LMP method) or IVF transfer date. Also calculates current weeks and trimester.',
-    example: 'Find the due date for a pregnancy with last menstrual period starting March 1, 2026.',
+    description: 'Estimate your due date from the first day of your last menstrual period and your usual cycle length, and see how many weeks pregnant you are today, your trimester and the days left to go.',
+    example: 'With a last period starting March 1, 2026 and a 28-day cycle, the estimated due date is December 6, 2026 (280 days later). On June 17, 2026 that pregnancy is 15 weeks 3 days along, in the second trimester, with 172 days to go.',
     timeDependent: true,
+    breakdown: {
+      headline: 'dueDateMs',
+      headlineLabel: 'Estimated due date',
+      outputs: [
+        { id: 'dueDateMs', label: 'Estimated due date', format: 'date' },
+        { id: 'completedWeeks', label: 'Weeks pregnant today (completed weeks)', format: 'integer' },
+        { id: 'extraDays', label: 'Plus days', format: 'integer' },
+        { id: 'trimester', label: 'Trimester', format: 'integer' },
+        { id: 'daysRemaining', label: 'Days until the due date', format: 'integer' },
+        { id: 'conceptionMs', label: 'Likely conception date (about)', format: 'date' }
+      ],
+      groups: [
+        { title: 'First day of your last period', inputs: ['lmpMonth', 'lmpDay', 'lmpYear'] },
+        { title: 'Your cycle', inputs: ['cycleLength'] }
+      ],
+      // Calendar arithmetic (not ms) so a daylight-saving change cannot shift the date by a day.
+      // Timeline axis: days since the last period; trimesters per ACOG (14 0/7 and 28 0/7 weeks).
+      derive: (values) => {
+        const shift = values.cycleLength - 28;
+        const onDay = (days: number) => new Date(values.lmpYear, values.lmpMonth - 1, values.lmpDay + days).getTime();
+        return {
+          dueDateMs: onDay(280 + shift),
+          conceptionMs: onDay(14 + shift),
+          completedWeeks: Math.floor(values.gestationalDays / 7),
+          extraDays: values.gestationalDays % 7,
+          axisStart: 0,
+          secondTrimester: 98,
+          thirdTrimester: 196,
+          earlyTerm: 259,
+          dueDay: 280 + shift
+        };
+      },
+      visual: {
+        type: 'timeline',
+        start: 'axisStart',
+        end: 'dueDay',
+        phases: [
+          { label: 'First trimester', from: 'axisStart', to: 'secondTrimester' },
+          { label: 'Second trimester', from: 'secondTrimester', to: 'thirdTrimester' },
+          { label: 'Third trimester', from: 'thirdTrimester', to: 'dueDay' }
+        ],
+        milestones: [{ label: '37 weeks (early term)', at: 'earlyTerm' }],
+        today: 'gestationalDays',
+        startLabel: 'last period',
+        endLabel: 'due date',
+        title: 'Your pregnancy timeline'
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-20',
+      concept: {
+        title: 'How a due date is worked out',
+        paragraphs: [
+          'A pregnancy is dated from the first day of the last menstrual period (LMP), not from conception. That is a convention: the LMP is a date most people know, while the day of ovulation and fertilization usually is not. With a regular 28-day cycle, ovulation happens about two weeks after the LMP, so "weeks pregnant" includes roughly two weeks before conception.',
+          'A typical pregnancy lasts about 280 days, or 40 weeks, from the LMP. The traditional shortcut, Naegele\'s rule, adds a year, subtracts three months and adds seven days to the LMP. Counting 280 days exactly is the same idea without the uneven month lengths, and it is what this calculator does. If your cycles are longer or shorter than 28 days, ovulation tends to come later or earlier, so the due date moves by the difference.',
+          'Obstetricians divide pregnancy into three trimesters: the first runs to 13 weeks 6 days, the second from 14 weeks 0 days to 27 weeks 6 days, and the third from 28 weeks on. A baby born from 37 weeks 0 days is early term, and 39 weeks 0 days to 40 weeks 6 days is full term.',
+          'A due date is an estimate. Only a small share of babies are born on it, and many arrive in the weeks either side. The American College of Obstetricians and Gynecologists (ACOG) considers an ultrasound in the first trimester the most accurate way to date a pregnancy, and your care team may change your due date after one.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in the date of the first day of your last period and your usual cycle length. The results appear once the page has loaded, because they depend on today\'s date.',
+        steps: [
+          { name: 'Enter the first day of your last period', text: 'Type the month as a number (March is 3), the day and the year. Use the day bleeding started, not the day it ended.' },
+          { name: 'Enter your cycle length', text: 'Count from the first day of one period to the first day of the next. 28 days is the default; leave it if you are not sure.' },
+          { name: 'Read your due date', text: 'The headline is the estimated due date. Below it are how far along you are today in completed weeks and days, your trimester, the days left, and the likely conception date.' },
+          { name: 'Check the timeline', text: 'The bar shows the three trimesters, the start of early term at 37 weeks, and where today falls.' },
+          { name: 'Confirm with your care team', text: 'Bring the date to your first prenatal appointment. An early ultrasound may move it, and your clinician\'s date is the one to use.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The due date is 280 days after the last period, shifted by how much your cycle differs from 28 days. Gestational age is counted from the last period.',
+        expression: 'Due date = LMP + 280 days + (cycle − 28) days\nConception ≈ LMP + 14 days + (cycle − 28) days\nWeeks pregnant = (today − LMP) ÷ 7\nDays left = due date − today',
+        terms: [
+          { symbol: 'LMP', meaning: 'First day of the last menstrual period.' },
+          { symbol: 'cycle', meaning: 'Usual cycle length in days, first day of one period to the first day of the next.' },
+          { symbol: '280 days', meaning: '40 weeks, the conventional length of a pregnancy from the LMP.' },
+          { symbol: 'Trimesters', meaning: '1st: to 13 weeks 6 days · 2nd: 14 weeks 0 days to 27 weeks 6 days · 3rd: from 28 weeks 0 days (ACOG).' }
+        ],
+        note: 'Estimate only, not medical advice. A due date from the last period is a first estimate. Ultrasound dating, IVF transfer dates and your clinician\'s judgment take priority, and any bleeding, pain or other concern needs prompt medical care.'
+      },
+      workedExample: {
+        intro: 'Your last period started on March 1, 2026 and your cycles are 28 days. What is the due date, and how far along are you on June 17, 2026?',
+        rows: [
+          { label: 'Due date (March 1 + 280 days)', value: 'December 6, 2026' },
+          { label: 'Likely conception (March 1 + 14 days)', value: 'March 15, 2026' },
+          { label: 'Days since the last period (March 1 to June 17)', value: '108 days' },
+          { label: 'Weeks pregnant (108 ÷ 7)', value: '15 weeks 3 days' },
+          { label: 'Trimester (14 0/7 to 27 6/7 weeks)', value: 'Second' },
+          { label: 'Days left (June 17 to December 6)', value: '172 days' }
+        ],
+        result: 'Due date December 6, 2026 · 15 weeks 3 days on June 17 · second trimester · 172 days to go',
+        explanation: 'Naegele\'s rule by hand (March 1, plus one year, minus three months, plus seven days) gives December 8, two days later, because the months it skips are not all 30 days long. With a 35-day cycle, both the due date and the likely conception move 7 days later, to December 13 and March 22.'
+      },
+      watchOut: [
+        { title: 'It is an estimate, not a deadline', body: 'Only a small share of babies arrive on the due date itself. Most are born in the weeks around it, and ACOG counts any birth from 37 weeks 0 days to 41 weeks 6 days as early, full or late term.' },
+        { title: 'Ultrasound dating comes first', body: 'ACOG considers an ultrasound up to 13 weeks 6 days the most accurate way to date a pregnancy. If a later dating scan disagrees with the LMP date by more than a set margin, the due date is changed to match it.' },
+        { title: 'Irregular or unknown cycles', body: 'If your cycles vary a lot, you recently stopped hormonal contraception, or you do not remember the date, the LMP method can be off by weeks. Use the date your clinician gives you.' },
+        { title: 'IVF pregnancies are dated differently', body: 'After IVF, the due date comes from the embryo transfer date and embryo age, not the last period. This calculator does not cover that case.' },
+        { title: 'Estimate only, not medical advice', body: 'This page cannot assess a pregnancy. Contact a doctor or midwife about any symptom or worry, and call emergency services for heavy bleeding or severe pain.' }
+      ],
+      references: [
+        { label: 'ACOG Committee Opinion No. 700, Methods for Estimating the Due Date (2017)', url: 'https://www.acog.org/clinical/clinical-guidance/committee-opinion/articles/2017/05/methods-for-estimating-the-due-date' },
+        { label: 'ACOG Committee Opinion No. 579, Definition of Term Pregnancy (2013)', url: 'https://pubmed.ncbi.nlm.nih.gov/24150030/' },
+        { label: 'ACOG, How Your Fetus Grows During Pregnancy (patient FAQ)', url: 'https://www.acog.org/womens-health/faqs/how-your-fetus-grows-during-pregnancy' }
+      ]
+    },
     inputs: [
-      { id: 'lmpYear', label: 'LMP year (last menstrual period)', type: 'number', placeholder: '2026', defaultValue: 2026, step: 1, min: 2020 },
-      { id: 'lmpMonth', label: 'LMP month (1–12)', type: 'number', placeholder: '3', defaultValue: 3, step: 1, min: 1 },
-      { id: 'lmpDay', label: 'LMP day (1–31)', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 1 },
-      { id: 'cycleLength', label: 'Average cycle length (days, default 28)', type: 'number', placeholder: '28', defaultValue: 28, step: 1, min: 20 }
+      { id: 'lmpYear', label: 'Year', type: 'number', placeholder: '2026', defaultValue: 2026, step: 1, min: 2020 },
+      { id: 'lmpMonth', label: 'Month (1–12)', type: 'number', placeholder: '3', defaultValue: 3, step: 1, min: 1 },
+      { id: 'lmpDay', label: 'Day of the month', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 1 },
+      { id: 'cycleLength', label: 'Average cycle length (days)', type: 'number', placeholder: '28', defaultValue: 28, step: 1, min: 20 }
     ],
     seo: {
-      title: 'Pregnancy Due Date Calculator – Naegele\'s Rule',
-      description: 'Calculate your estimated due date using the last menstrual period (LMP) and Naegele\'s rule. Shows current gestational age in weeks and trimester.',
+      title: 'Pregnancy Due Date Calculator – Weeks and Trimester',
+      description: 'Estimate your due date from your last period and cycle length, and see how many weeks pregnant you are, your trimester and the days left.',
       faq: [
-        { question: 'How is the due date calculated?', answer: 'Naegele\'s rule: add 280 days (40 weeks) to the first day of your last menstrual period. For cycles other than 28 days, adjust by (cycle length − 28) days.' },
-        { question: 'What are the trimesters?', answer: 'First trimester: weeks 1–12. Second trimester: weeks 13–26. Third trimester: weeks 27–40.' },
-        { question: 'How accurate is the due date?', answer: 'Only about 5% of babies are born exactly on their due date. Most births occur within 2 weeks before or after. An ultrasound in the first trimester is the most accurate dating method.' }
+        { question: 'How is the due date calculated?', answer: 'Add 280 days (40 weeks) to the first day of your last period, then add or subtract the number of days your usual cycle is longer or shorter than 28. A last period on March 1, 2026 with a 28-day cycle gives December 6, 2026.' },
+        { question: 'How many weeks pregnant am I?', answer: 'Count the days from the first day of your last period to today and divide by 7. On June 17, 2026, a pregnancy with a last period on March 1, 2026 is 108 days, or 15 weeks 3 days, along.' },
+        { question: 'When does each trimester start?', answer: 'Using ACOG\'s definitions, the first trimester runs to 13 weeks 6 days, the second from 14 weeks 0 days to 27 weeks 6 days, and the third from 28 weeks 0 days until birth.' },
+        { question: 'How accurate is a due date from my last period?', answer: 'It is a reasonable first estimate if your cycles are regular, but only a small share of babies are born on the exact date. A first-trimester ultrasound is the most accurate dating method, and your clinician may adjust the date after one.' },
+        { question: 'When did I conceive?', answer: 'Usually about two weeks after the first day of your last period with a 28-day cycle, or later with longer cycles. For a last period on March 1, 2026, that is around March 15. Sperm can survive several days, so conception can follow intercourse by a few days.' },
+        { question: 'What do early term and full term mean?', answer: 'ACOG calls a birth from 37 weeks 0 days to 38 weeks 6 days early term, 39 weeks 0 days to 40 weeks 6 days full term, 41 weeks 0 days to 41 weeks 6 days late term, and 42 weeks or more postterm.' },
+        { question: 'Does this work for IVF pregnancies?', answer: 'No. IVF due dates are calculated from the embryo transfer date and the age of the embryo. Use the date your fertility clinic gives you.' }
       ]
     },
     compute(values) {
@@ -675,7 +786,8 @@ export const healthCalculators: CalculatorConfig[] = [
       const gestationalDays = Math.max(0, Math.round((todayMs - lmp) / 86400000));
       const gestationalWeeks = gestationalDays / 7;
       const daysRemaining = Math.max(0, Math.round((dueDateMs - todayMs) / 86400000));
-      const trimester = gestationalWeeks <= 12 ? 1 : gestationalWeeks <= 26 ? 2 : 3;
+      // ACOG: 1st trimester to 13 6/7 weeks, 2nd 14 0/7 to 27 6/7, 3rd from 28 0/7 (was ≤ 12 / ≤ 26 before step 37).
+      const trimester = gestationalWeeks < 14 ? 1 : gestationalWeeks < 28 ? 2 : 3;
       return { gestationalWeeks, daysRemaining, trimester, gestationalDays };
     }
   }

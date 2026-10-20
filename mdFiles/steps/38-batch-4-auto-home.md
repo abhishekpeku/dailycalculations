@@ -10,7 +10,7 @@
 - [x] commute-cost-calculator (B · Donut fuel/parking/tolls/wear, config from step 33; v2 content)
 - [x] toll-cost-calculator (B · CompareBars with vs without a toll pass)
 - [ ] concrete-calculator (A · volume ↔ length ↔ width ↔ depth; plan: bags chips)
-- [ ] paint-calculator (B · plan: can-count row)
+- [x] paint-calculator (B · plan: can-count row → nearest kit CompareBars, gap parked)
 - [ ] tile-calculator (B · plan: grid illustration)
 - [ ] wallpaper-calculator (B · plan: roll-count row)
 - [ ] electricity-bill-calculator (B · plan: tier bar)

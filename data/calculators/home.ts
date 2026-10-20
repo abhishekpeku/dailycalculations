@@ -9,12 +9,95 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'paint-calculator',
     category: 'home',
-    updatedAt: '2026-09-10',
-    aliases: ['how much paint do i need', 'wall paint coverage calculator', 'paint gallons calculator'],
+    updatedAt: '2026-10-21',
+    aliases: ['how much paint do i need', 'wall paint coverage calculator', 'paint gallons calculator', 'room paint estimator', 'paint cans needed calculator'],
     related: ['wallpaper-calculator', 'tile-calculator', 'concrete-calculator', 'furniture-fit-calculator'],
     title: 'Paint Calculator',
-    description: 'Calculate how many gallons of paint you need for walls and ceilings, accounting for doors, windows, and coats.',
-    example: 'Calculate paint needed for a 12x14 ft room with 9 ft ceilings, 1 door, and 2 windows.',
+    description: 'Find how many gallons of paint a room needs from its dimensions, doors, windows and number of coats, with a buffer for touch-ups and the whole cans you should buy.',
+    example: 'A 14x12 ft room with 9 ft ceilings, 1 door, 2 windows and 2 coats, at 350 sq ft per gallon, needs about 2.39 gallons (2.63 with a 10% buffer) — 3 one-gallon cans.',
+    breakdown: {
+      headline: 'gallonsWithBuffer',
+      headlineLabel: 'Gallons to buy',
+      outputs: [
+        { id: 'gallonsWithBuffer', label: 'Gallons with a 10% buffer', format: 'number' },
+        { id: 'cansToBuy', label: 'Cans to buy (1-gal cans)', format: 'integer' },
+        { id: 'gallonsNeeded', label: 'Gallons needed (no buffer)', format: 'number' },
+        { id: 'paintableArea', label: 'Paintable wall area', format: 'number', dimension: 'area', unit: 'ft2' },
+        { id: 'ceilingGallons', label: 'Ceiling paint, same coats', format: 'number' }
+      ],
+      groups: [
+        { title: 'Room', inputs: ['roomLength', 'roomWidth', 'ceilingHeight'] },
+        { title: 'Doors, windows & coats', inputs: ['doors', 'windows', 'coats'] },
+        { title: 'Paint coverage', inputs: ['coveragePerGallon'] }
+      ],
+      derive: (v) => ({ cansToBuy: Math.ceil(v.gallonsWithBuffer) }),
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'gallonsNeeded', label: 'Paint needed' },
+          { from: 'cansToBuy', label: 'Cans to buy' }
+        ],
+        title: 'Gallons needed vs. whole cans to buy'
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'How much paint a room really takes',
+        paragraphs: [
+          'The area you are painting is the wall perimeter times the ceiling height, minus the doors and windows you will not paint over. Multiply that paintable area by the number of coats, since a second coat covers the same area again, and divide by how far a gallon spreads to get the gallons you need. A typical 14×12 ft room with 9 ft ceilings, one door and two windows works out to about 418 square feet of paintable wall, or 836 square feet across two coats.',
+          'Manufacturers publish coverage per gallon on the can and on their technical data sheets, and it varies by product and by paint line. Sherwin-Williams states that a gallon of paint typically covers about 350–400 square feet, and Benjamin Moore’s data sheet for its Regal Select interior line lists 400–450 square feet per gallon at the recommended film thickness — both lower than the number on the label once you account for a rough, porous or previously unpainted surface, which soaks up more paint than a smooth repaint.',
+          'A door is commonly treated as about 20 square feet and a window as about 15 square feet for a quick estimate, which is what this calculator subtracts. Since paint is sold in whole cans — usually 1-gallon cans, or 5-gallon buckets for bigger jobs — the gallons you calculate almost never line up with a round number, so a small buffer and rounding up to the next whole can keeps you from running out mid-wall.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the room, then the doors, windows and coats, then your paint’s coverage.',
+        steps: [
+          { name: 'Enter the room dimensions', text: 'Type the length, width and ceiling height in feet.' },
+          { name: 'Enter doors and windows', text: 'Count how many of each the walls have; each is subtracted at about 20 and 15 square feet.' },
+          { name: 'Set the number of coats', text: 'Most rooms use 2 coats for even color; 1 coat may be enough for a close color match with a self-priming paint.' },
+          { name: 'Enter the coverage per gallon', text: 'Use the figure on your paint can or its data sheet; 350 is a reasonable default if you do not have it yet.' },
+          { name: 'Read the result', text: 'The headline is the gallons to buy with a 10% buffer; the rows below show the exact gallons needed, the paintable area, and the ceiling if you paint it in the same number of coats.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Wall area comes from the room’s perimeter and height; paintable area subtracts doors and windows, and coats and coverage set the gallons.',
+        expression: 'wall area = 2(L + W) × H\npaintable = wall area − (doors × 20 + windows × 15)\ngallons = paintable × coats ÷ coverage\nbuy = gallons × 1.10',
+        terms: [
+          { symbol: 'L, W, H', meaning: 'Room length, width and ceiling height, in feet.' },
+          { symbol: 'doors, windows', meaning: 'Count of each; subtracted at about 20 and 15 sq ft apiece.' },
+          { symbol: 'coats', meaning: 'Number of coats; each one re-covers the same paintable area.' },
+          { symbol: 'coverage', meaning: 'Square feet one gallon covers, from the can or data sheet (350–450 is typical for interior paint).' }
+        ],
+        note: 'An estimate. Textured, porous or unprimed surfaces, dark-to-light color changes and spray application all change real coverage. Round up to the next whole can either way.'
+      },
+      workedExample: {
+        intro: 'You are painting a 14 ft by 12 ft room with 9 ft ceilings, one door, two windows and two coats, using a paint rated at 350 sq ft per gallon.',
+        rows: [
+          { label: 'Wall area (2 × (14 + 12) × 9)', value: '468.00 sq ft' },
+          { label: 'Deductions (1 × 20 + 2 × 15)', value: '50.00 sq ft' },
+          { label: 'Paintable area (468.00 − 50.00)', value: '418.00 sq ft' },
+          { label: 'Total area across 2 coats (418.00 × 2)', value: '836.00 sq ft' },
+          { label: 'Gallons needed (836.00 ÷ 350)', value: '2.39 gal' },
+          { label: 'With a 10% buffer (2.3886 × 1.10)', value: '2.63 gal' },
+          { label: 'Cans to buy (round up)', value: '3 one-gallon cans' }
+        ],
+        result: '2.63 gallons needed, buy 3 one-gallon cans',
+        explanation: 'The ceiling, 168 sq ft at the same two coats, adds another 0.96 gallons if you paint it too — close to a full extra gallon, worth planning for before you shop.'
+      },
+      watchOut: [
+        { title: 'Texture and porosity change coverage', body: 'Coverage figures on the can assume a smooth, previously painted or primed surface. Textured walls, bare drywall or masonry can absorb noticeably more paint than the label states.' },
+        { title: 'Coverage differs by product', body: 'Sherwin-Williams quotes about 350–400 sq ft per gallon; Benjamin Moore’s Regal Select data sheet lists 400–450 sq ft. Use the figure for your actual paint, not a generic number, when it matters.' },
+        { title: 'A color change may need an extra coat', body: 'Benjamin Moore’s own data sheet recommends two coats on bare substrates to reach full color development; going from a dark wall to a light color, or the reverse, often needs a third coat or a tinted primer regardless of the stated coverage.' },
+        { title: 'Paint comes in whole cans', body: 'You cannot buy 2.63 gallons; round up to 3 one-gallon cans or a bucket size your store sells. A small amount left over is useful for future touch-ups if the lid is sealed well.' },
+        { title: 'The door and window deductions are averages', body: 'A standard interior door is close to 20 sq ft and a window to 15 sq ft, but oversized doors, bay windows or French doors remove more wall than that; measure an unusual opening directly.' }
+      ],
+      references: [
+        { label: 'Sherwin-Williams, Paint Calculator (typical coverage per gallon)', url: 'https://www.sherwin-williams.com/en-us/color/color-tools/paint-calculator' },
+        { label: 'Benjamin Moore, Regal Select Premium Interior Paint & Primer — Technical Data Sheet (coverage, recommended coats)', url: 'https://media.benjaminmoore.com/WebServices/prod/assets/stage/datasheets/TDS_0550/20180731%20550%20TDS%20US%20OKF.pdf' }
+      ]
+    },
     inputs: [
       { id: 'roomLength', label: 'Room length (ft)', type: 'number', placeholder: '14', defaultValue: 14, step: 0.5, min: 1 },
       { id: 'roomWidth', label: 'Room width (ft)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.5, min: 1 },
@@ -25,12 +108,17 @@ export const homeCalculators: CalculatorConfig[] = [
       { id: 'coveragePerGallon', label: 'Coverage per gallon (sq ft, typical = 350)', type: 'number', placeholder: '350', defaultValue: 350, step: 10, min: 100 }
     ],
     seo: {
-      title: 'Paint Calculator – Gallons Needed for Walls and Ceilings',
-      description: 'Calculate how many gallons of paint you need for any room. Accounts for doors, windows, number of coats, and paint coverage.',
+      title: 'Paint Calculator – Gallons and Cans Needed for a Room',
+      description: 'Free paint calculator: gallons of paint for any room from its dimensions, doors, windows and coats, with a 10% buffer and the whole cans to buy.',
       faq: [
-        { question: 'How much area does one gallon of paint cover?', answer: 'Most standard interior paints cover 350–400 sq ft per gallon on smooth surfaces. Textured walls may require 20–30% more.' },
-        { question: 'Should I buy extra paint?', answer: 'Add 10% to your calculated amount for touch-ups and waste. Paint can also be stored for future use if you keep the lid sealed.' },
-        { question: 'How many coats does a room need?', answer: 'Most rooms need 2 coats for good coverage. Painting over a dark color or using a primer first can help achieve full coverage in 2 coats.' }
+        { question: 'How much paint do I need for a room?', answer: 'Find the wall area (2 × (length + width) × height), subtract about 20 sq ft per door and 15 sq ft per window, multiply by the number of coats, and divide by the coverage per gallon. A 14×12 ft room with 9 ft ceilings, one door, two windows and two coats needs about 2.39 gallons.' },
+        { question: 'How much area does one gallon of paint cover?', answer: 'It depends on the product. Sherwin-Williams says a gallon typically covers about 350–400 sq ft; Benjamin Moore’s Regal Select data sheet lists 400–450 sq ft at the recommended film thickness. Textured or unprimed surfaces cover less.' },
+        { question: 'Should I buy extra paint?', answer: 'Yes. A 10% buffer covers touch-ups and small miscalculations; in the example, 2.39 gallons becomes 2.63 with the buffer, which rounds up to 3 one-gallon cans.' },
+        { question: 'How many coats does a room need?', answer: 'Most rooms need 2 coats for even color and durability. Benjamin Moore’s data sheet specifically recommends two coats on bare substrates; a close color match on a previously painted wall can sometimes get by with 1.' },
+        { question: 'How much do doors and windows reduce the paint I need?', answer: 'About 20 sq ft per standard door and 15 sq ft per standard window are subtracted from the wall area before the gallons are calculated; unusually large openings remove more.' },
+        { question: 'Do I need to paint the ceiling separately?', answer: 'Yes, it is not included in the wall total. The ceiling gallons row uses the room’s length × width at the same number of coats and coverage.' },
+        { question: 'What if my walls are textured or a different color?', answer: 'Textured, porous or unprimed drywall absorbs more paint than a smooth repaint, and a big color change often needs an extra coat or a tinted primer, so budget above the calculated figure in those cases.' },
+        { question: 'How many 1-gallon cans do I need to buy?', answer: 'Round the buffered gallons up to the next whole can. 2.63 gallons rounds up to 3 one-gallon cans, or you could buy one 5-gallon bucket for a bigger job.' }
       ]
     },
     compute(values) {

@@ -428,21 +428,12 @@ export const autoCalculators: CalculatorConfig[] = [
   {
     id: 'commute-cost-calculator',
     category: 'auto',
-    updatedAt: '2026-09-10',
-    aliases: ['cost of commuting calculator', 'daily travel cost calculator', 'work travel expense calculator'],
+    updatedAt: '2026-10-21',
+    aliases: ['cost of commuting calculator', 'daily travel cost calculator', 'work travel expense calculator', 'driving to work cost calculator', 'monthly commute cost'],
     related: ['fuel-cost-calculator', 'toll-cost-calculator', 'ev-charging-calculator', 'paycheck-calculator'],
     title: 'Commute Cost Calculator',
-    description: 'Calculate the full cost of your daily commute including fuel, tolls, parking, public transit, and vehicle wear.',
-    example: 'Find monthly commute cost for a 25-mile round trip at 30 MPG with $15/day parking and $3 tolls.',
-    inputs: [
-      { id: 'roundTripMiles', label: 'Round-trip commute distance', type: 'number', placeholder: '25', defaultValue: 25, step: 1, min: 0, dimension: 'length', unit: 'mi' },
-      { id: 'mpg', label: 'Vehicle fuel economy', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1, dimension: 'fuelEconomy', unit: 'mpg' },
-      { id: 'gasPricePerGallon', label: 'Gas price ($/gallon)', type: 'currency', placeholder: '3.75', defaultValue: 3.75, step: 0.05, min: 0 },
-      { id: 'daysPerMonth', label: 'Commute days per month', type: 'number', placeholder: '22', defaultValue: 22, step: 1, min: 1 },
-      { id: 'dailyParking', label: 'Daily parking cost', type: 'currency', placeholder: '15', defaultValue: 0, step: 1, min: 0 },
-      { id: 'dailyTolls', label: 'Daily tolls', type: 'currency', placeholder: '3', defaultValue: 0, step: 0.25, min: 0 },
-      { id: 'wearCostPerMile', label: 'Vehicle wear cost per mile (IRS: $0.21)', type: 'currency', placeholder: '0.21', defaultValue: 0.21, step: 0.01, min: 0 }
-    ],
+    description: 'Work out what driving to work really costs per day, per month and per year: fuel, parking, tolls and wear on the car, in miles or km, mpg or L/100 km, with a chart of where the money goes.',
+    example: 'A 25-mile round trip at 30 mpg with gas at $3.75, $15 a day parking, $3 of tolls and 21 cents a mile of wear costs about $26.38 a day, $580.25 a month (22 days) and $6,963 a year.',
     breakdown: {
       headline: 'monthlyTotal',
       headlineLabel: 'Monthly commute cost',
@@ -472,13 +463,86 @@ export const autoCalculators: CalculatorConfig[] = [
         centerSub: 'per month'
       }
     },
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What does a commute really cost?',
+        paragraphs: [
+          'Most people price a commute by the fuel alone, but driving to work costs more than gas. Parking and tolls are paid every day you go in, and every mile also wears the car: tires, oil changes, brakes and the loss in value that comes with higher mileage. This calculator adds those four pieces for one day, then multiplies by the days you commute each month and by 12 for the year.',
+          'Fuel is the round-trip distance divided by your fuel economy, times the fuel price. Wear is a per-mile allowance you choose. The default of 21 cents a mile is a modest placeholder; for comparison, the IRS’s 2026 standard mileage rate for business driving is 72.5 cents a mile, of which it treats 35 cents as depreciation alone. If you want a figure closer to the full cost of owning the car, use a higher wear rate.',
+          'The result is useful for more than budgeting. It tells you what a job closer to home, a parking permit, a transit pass or one more remote-work day is worth in dollars, and the chart shows which cost to attack first. In a downtown job, parking is often the biggest slice; on a long suburban drive, fuel and wear dominate.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in the trip, then the daily costs. Leave parking or tolls at 0 if you do not pay them.',
+        steps: [
+          { name: 'Enter the round trip', text: 'Type the distance there and back, in miles or km, and how many days a month you commute (22 is a typical full-time month).' },
+          { name: 'Enter your car and fuel price', text: 'Type your fuel economy in mpg (US or UK), L/100 km or km/L, and the fuel price per gallon or per liter.' },
+          { name: 'Add parking and tolls', text: 'Enter what you pay per day. For a monthly parking permit, divide it by your commute days.' },
+          { name: 'Set a wear rate', text: 'Keep the default cents per mile or use your own. A higher rate covers more of the true cost of owning the car.' },
+          { name: 'Read the breakdown', text: 'The headline is the monthly cost, with the daily and yearly totals and each piece below it. The donut shows where the money goes.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'One day of commuting is fuel plus parking plus tolls plus wear; the month and year follow from it.',
+        expression: 'fuel = d ÷ mpg × p\nwear = d × w\ndaily = fuel + parking + tolls + wear\nmonthly = daily × days\nyearly = monthly × 12',
+        terms: [
+          { symbol: 'd', meaning: 'Round-trip distance per day, in miles.' },
+          { symbol: 'mpg', meaning: 'Fuel economy in miles per US gallon (other units are converted for you).' },
+          { symbol: 'p', meaning: 'Fuel price per gallon.' },
+          { symbol: 'w', meaning: 'Wear and tear allowance per mile.' },
+          { symbol: 'days', meaning: 'Commute days per month.' }
+        ],
+        note: 'An estimate. Fuel prices, parking rates and real-world fuel economy change, and the wear rate is an allowance you choose, not a measured cost.'
+      },
+      workedExample: {
+        intro: 'You drive 25 miles a day there and back in a 30 mpg car, gas is $3.75 a gallon, parking is $15 a day, tolls are $3 a day, and you allow 21 cents a mile for wear. You commute 22 days a month.',
+        rows: [
+          { label: 'Fuel per day (25 ÷ 30 × $3.75)', value: '$3.13' },
+          { label: 'Wear per day (25 × $0.21)', value: '$5.25' },
+          { label: 'Day total (3.125 + 15 + 3 + 5.25)', value: '$26.38' },
+          { label: 'Month (26.375 × 22)', value: '$580.25' },
+          { label: '… of which parking (15 × 22)', value: '$330.00' },
+          { label: '… fuel, tolls, wear', value: '$68.75, $66.00, $115.50' },
+          { label: 'Year (580.25 × 12)', value: '$6,963.00' }
+        ],
+        result: 'About $580.25 a month, $6,963 a year',
+        explanation: 'Parking is 57% of the monthly cost here, far more than the $68.75 of fuel. Working from home two days a week (12 commute days instead of 22) would cut the month to $316.50, saving $263.75.'
+      },
+      watchOut: [
+        { title: 'Commuting is not tax-deductible', body: 'The IRS treats driving between home and your regular workplace as a personal expense, so you cannot deduct it, even with the standard mileage rate. Business trips from your workplace to a client are a different matter.' },
+        { title: 'The wear rate is a judgment call', body: 'The 21-cent default covers routine wear. The IRS’s 2026 business rate of 72.5 cents a mile is meant to cover the fixed and variable costs of running a car, fuel included, of which 35 cents is depreciation. If you use it as the wear rate, set the fuel price to 0 so fuel is not counted twice.' },
+        { title: 'Wear is per mile, even in km', body: 'If you switch the distance to kilometers, the wear allowance is still per mile. Divide a per-km rate by 0.621371 to get the per-mile figure.' },
+        { title: 'Count the days you actually go in', body: 'Holidays, vacation and remote days lower the count. Use your real average; 22 is a full month with no time off.' },
+        { title: 'Your time is a cost too', body: 'The calculator prices money, not hours. A long commute also costs time that could be worth more than the fuel.' }
+      ],
+      references: [
+        { label: 'Internal Revenue Service, Notice 2026-10: 2026 Standard Mileage Rates', url: 'https://www.irs.gov/pub/irs-drop/n-26-10.pdf' },
+        { label: 'Internal Revenue Service, Publication 463: Travel, Gift, and Car Expenses (commuting expenses)', url: 'https://www.irs.gov/publications/p463' },
+        { label: 'U.S. DOE and EPA, fueleconomy.gov: Gas Mileage Tips, Driving More Efficiently', url: 'https://www.fueleconomy.gov/feg/driveHabits.jsp' },
+        { label: 'U.S. Energy Information Administration, Gasoline and Diesel Fuel Update', url: 'https://www.eia.gov/petroleum/gasdiesel/' }
+      ]
+    },
+    inputs: [
+      { id: 'roundTripMiles', label: 'Round-trip commute distance', type: 'number', placeholder: '25', defaultValue: 25, step: 1, min: 0, dimension: 'length', unit: 'mi' },
+      { id: 'mpg', label: 'Vehicle fuel economy', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1, dimension: 'fuelEconomy', unit: 'mpg' },
+      { id: 'gasPricePerGallon', label: 'Fuel price', type: 'currency', placeholder: '3.75', defaultValue: 3.75, step: 0.05, min: 0, dimension: 'fuelPrice', unit: 'cur/gal' },
+      { id: 'daysPerMonth', label: 'Commute days per month', type: 'number', placeholder: '22', defaultValue: 22, step: 1, min: 1 },
+      { id: 'dailyParking', label: 'Daily parking cost', type: 'currency', placeholder: '15', defaultValue: 0, step: 1, min: 0 },
+      { id: 'dailyTolls', label: 'Daily tolls', type: 'currency', placeholder: '3', defaultValue: 0, step: 0.25, min: 0 },
+      { id: 'wearCostPerMile', label: 'Vehicle wear per mile', type: 'currency', placeholder: '0.21', defaultValue: 0.21, step: 0.01, min: 0 }
+    ],
     seo: {
-      title: 'Commute Cost Calculator – Full Monthly and Annual Cost',
-      description: 'Calculate the true cost of commuting including gas, tolls, parking, and vehicle wear. Compare driving vs public transit.',
+      title: 'Commute Cost Calculator – Daily, Monthly & Yearly Cost',
+      description: 'Free commute cost calculator: what driving to work costs per day, month and year, with fuel, parking, tolls and vehicle wear, in miles or km.',
       faq: [
-        { question: 'What is the IRS mileage rate?', answer: 'The IRS standard mileage rate for 2025 is $0.70 per mile for business driving. The vehicle wear/depreciation component is approximately $0.21/mile.' },
-        { question: 'What is the average US commute cost?', answer: 'The average American spends $2,000–$5,000 per year on commuting depending on location, distance, and mode of transportation.' },
-        { question: 'Can I deduct commuting costs?', answer: 'Ordinary commuting from home to a regular workplace is not deductible. However, if you work from home and travel to a client site, those miles may qualify as business travel.' }
+        { question: 'How do I calculate my commute cost?', answer: 'Add the day’s fuel (round-trip miles ÷ mpg × gas price), parking, tolls and wear (miles × a per-mile rate), then multiply by your commute days. 25 miles at 30 mpg and $3.75, with $15 parking, $3 tolls and 21 cents a mile of wear, is about $26.38 a day or $580.25 for 22 days.' },
+        { question: 'What is the IRS mileage rate for 2026?', answer: 'IRS Notice 2026-10 sets the 2026 business standard mileage rate at 72.5 cents a mile, of which 35 cents counts as depreciation. It is for business driving, not for your commute.' },
+        { question: 'Can I deduct my commute?', answer: 'No. The IRS treats travel between your home and your regular place of work as a personal commuting expense, whatever the distance. Travel from your workplace to another work location can be deductible business travel.' },
+        { question: 'What does a commute cost at the IRS rate?', answer: 'A 25-mile round trip on 22 days a month is 6,600 miles a year, which is $4,785 at 72.5 cents a mile. That rate already includes fuel, so it replaces the fuel and wear figures here rather than adding to them.' },
+        { question: 'How much does working from home save?', answer: 'Each day you skip saves one daily total. In the example, cutting from 22 to 12 commute days a month saves about $263.75 a month.' },
+        { question: 'Does it work in kilometers and liters?', answer: 'Yes. Pick km, L/100 km and a price per liter. A 40 km round trip at 7 L/100 km burns 2.8 liters a day, which costs 5.04 at 1.80 a liter. The wear allowance stays per mile.' }
       ]
     },
     compute(values) {

@@ -393,25 +393,112 @@ export const autoCalculators: CalculatorConfig[] = [
   {
     id: 'toll-cost-calculator',
     category: 'auto',
-    updatedAt: '2026-09-10',
-    aliases: ['toll estimator', 'highway toll calculator', 'road toll cost'],
+    updatedAt: '2026-10-21',
+    aliases: ['toll estimator', 'highway toll calculator', 'road toll cost', 'e-zpass cost calculator', 'monthly toll cost calculator', 'toll pass savings calculator'],
     related: ['commute-cost-calculator', 'gas-cost-calculator', 'travel-budget-calculator', 'fuel-cost-calculator'],
     title: 'Toll Cost Estimator',
-    description: 'Estimate total toll costs for a US road trip or commute, including E-ZPass discount savings.',
-    example: 'Estimate tolls for a daily commute with $2.50 toll each way, 22 work days per month.',
+    description: 'Estimate what tolls cost per day, month and year from the toll per trip, trips per day and days per month, and see what a transponder such as E-ZPass, SunPass, FasTrak or TxTag could save if your agency charges Pay-By-Plate drivers more.',
+    example: 'A $2.50 toll each way, twice a day, 22 days a month, costs about $110.00 a month ($1,320.00 a year). A transponder worth a 25% discount brings that to about $82.50 a month, saving $330.00 a year.',
+    breakdown: {
+      headline: 'annualCost',
+      headlineLabel: 'Toll cost per year',
+      outputs: [
+        { id: 'annualCost', format: 'currency' },
+        { id: 'monthlyCost', label: 'Per month', format: 'currency' },
+        { id: 'dailyCost', label: 'Per day', format: 'currency' },
+        { id: 'annualWithEzpass', label: 'Per year with a pass', format: 'currency' },
+        { id: 'monthlyWithEzpass', label: 'Per month with a pass', format: 'currency' },
+        { id: 'annualSavings', label: 'Yearly savings with a pass', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your tolls', inputs: ['tollPerTrip', 'tripsPerDay', 'daysPerMonth'] },
+        { title: 'Pass discount', inputs: ['ezpassDiscount'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'annualCost', label: 'No pass' },
+          { from: 'annualWithEzpass', label: 'With a pass' }
+        ],
+        title: 'Annual toll cost, with and without a pass'
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What tolls really add up to',
+        paragraphs: [
+          'A toll that feels small on its own turns into real money once it repeats every workday. Multiply the toll per trip by how many times you cross it each day, then by the days you drive in a month, and the total is usually bigger than people expect: $2.50 each way, twice a day, for 22 days, is $110.00 a month before any discount.',
+          'Most toll roads in the US are now fully electronic, with no cash lane at all. The E-ZPass InterAgency Group alone spans toll facilities across 20 states, and similar transponder networks cover the rest of the country, including SunPass in Florida, FasTrak in California and TxTag in Texas. Drivers without a transponder are usually billed later by mail from a photo of their license plate, a system often called Pay-By-Plate or Toll By Mail.',
+          'That billing method often costs more than a transponder, sometimes by a lot. The Central Florida Expressway Authority says its Pay By Plate toll rates are double its E-PASS rate, and the Dulles Toll Road in Virginia adds a $1.60-per-transaction processing fee to Pay-by-Plate invoices, making its $4.00 E-ZPass toll $5.60 by mail. How big the gap is varies by agency, which is why the discount here is a field you set rather than a fixed number.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your toll trip, then the discount a transponder gives you on your route.',
+        steps: [
+          { name: 'Enter the toll per trip', text: 'Use the one-way toll you pay most often. If several tolls apply on one trip, add them together first.' },
+          { name: 'Enter trips per day', text: 'Use 2 for a there-and-back commute, or however many times you cross the toll in a day.' },
+          { name: 'Enter days per month', text: 'Count the days you actually make the trip; 22 is a typical full-time work month.' },
+          { name: 'Enter the pass discount', text: 'Check your toll agency’s own rates for the gap between its transponder rate and its Pay-By-Plate or cash rate, and enter it as a percent. Use 0% if your road charges the same either way.' },
+          { name: 'Read the result', text: 'The headline is the yearly cost without a pass. The rows below show the daily and monthly figures, the cost with a pass, and the yearly saving.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'A day of tolls is the per-trip toll times the number of trips; the month and year follow by multiplication, and the pass discount scales all three down.',
+        expression: 'daily = t × n\nmonthly = daily × days\nannual = monthly × 12\nwith pass = amount × (1 − r)\nsavings = annual − annual(with pass)',
+        terms: [
+          { symbol: 't', meaning: 'Toll per trip, one way.' },
+          { symbol: 'n', meaning: 'Trips per day (2 for a round trip).' },
+          { symbol: 'days', meaning: 'Days per month you make the trip.' },
+          { symbol: 'r', meaning: 'Transponder/pass discount as a decimal: 25% is 0.25.' }
+        ],
+        note: 'An estimate. Real tolls vary by vehicle class, by time of day on roads with peak pricing, and by the specific agency’s own rate schedule. Use your own toll statement or the agency’s calculator for an exact figure.'
+      },
+      workedExample: {
+        intro: 'You pay a $2.50 toll each way on your commute, twice a day, 22 days a month. A transponder gives you a 25% discount on that road.',
+        rows: [
+          { label: 'Daily cost (t = 2.50 × 2)', value: '$5.00' },
+          { label: 'Monthly cost (5.00 × 22)', value: '$110.00' },
+          { label: 'Annual cost (110.00 × 12)', value: '$1,320.00' },
+          { label: 'Monthly with a pass (110.00 × 0.75)', value: '$82.50' },
+          { label: 'Annual with a pass (1,320.00 × 0.75)', value: '$990.00' },
+          { label: 'Annual saving (1,320.00 − 990.00)', value: '$330.00' }
+        ],
+        result: '$82.50 a month with a pass, $330.00 saved a year',
+        explanation: 'On a road like the Dulles Toll Road, where the gap is a flat $1.60-per-trip processing fee rather than a percent, the same 44 trips a month would add about $70.40 instead — more or less than the 25% figure here depending on the toll amount. Check your own agency’s rate card and adjust the discount field to match.'
+      },
+      watchOut: [
+        { title: 'The discount is not always a published percent', body: 'Some agencies, like Dulles, add a flat per-transaction fee to Pay-by-Plate bills rather than quoting a percent discount for a transponder. Work out the percent that fee represents on your own toll amount and enter that.' },
+        { title: 'Rates change by time of day and vehicle class', body: 'Many bridges, tunnels and turnpikes charge more during peak hours, and trucks or vehicles with more axles pay more than cars. Use an average toll from your own statement if your rate varies.' },
+        { title: 'A rental car’s toll plan is a separate program', body: 'Rental companies often bill tolls through their own pass, with a daily convenience fee on top of the toll itself. That fee is not part of this estimate; check the rental agreement.' },
+        { title: 'Commuting tolls are a personal expense for tax purposes', body: 'The IRS treats travel between home and your regular workplace as personal, so a commuting toll is not deductible even with the standard mileage rate. A toll paid on a business trip from your workplace can be.' },
+        { title: 'Most toll roads no longer take cash', body: 'With over 20 states inside the E-ZPass network alone, a driver without any transponder is usually billed by mail at the higher Pay-By-Plate rate by default, not given a cash option at the plaza.' }
+      ],
+      references: [
+        { label: 'E-ZPass Interagency Group, Toll Facilities in the E-ZPass Group', url: 'https://www.e-zpassgroup.org/index.php' },
+        { label: 'Central Florida Expressway Authority, Toll Payment Options (Pay By Plate vs. E-PASS)', url: 'https://www.cfxway.com/for-travelers/tolls/toll-payment-options/' },
+        { label: 'Metropolitan Washington Airports Authority, Dulles Toll Road Transitioning to All-Electronic Tolling', url: 'https://www.mwaa.com/news/dulles-toll-road-transitioning-all-electronic-tolling' },
+        { label: 'Internal Revenue Service, Publication 463: Travel, Gift, and Car Expenses', url: 'https://www.irs.gov/publications/p463' }
+      ]
+    },
     inputs: [
       { id: 'tollPerTrip', label: 'Toll cost per trip (one way)', type: 'currency', placeholder: '2.50', defaultValue: 2.50, step: 0.25, min: 0 },
       { id: 'tripsPerDay', label: 'Trips per day (2 = round trip)', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 1 },
       { id: 'daysPerMonth', label: 'Days per month', type: 'number', placeholder: '22', defaultValue: 22, step: 1, min: 1 },
-      { id: 'ezpassDiscount', label: 'E-ZPass / transponder discount (%)', type: 'percent', placeholder: '25', defaultValue: 25, step: 1, min: 0 }
+      { id: 'ezpassDiscount', label: 'Transponder / pass discount (%)', type: 'percent', placeholder: '25', defaultValue: 25, step: 1, min: 0 }
     ],
     seo: {
-      title: 'Toll Cost Estimator – US Road Trips and Commutes',
-      description: 'Calculate monthly and annual toll costs for commuting or road trips. Includes E-ZPass and electronic toll transponder discount savings.',
+      title: 'Toll Cost Estimator – Monthly & Yearly Toll Costs',
+      description: 'Free toll cost calculator: daily, monthly and yearly toll costs, plus the savings a transponder like E-ZPass, SunPass or FasTrak can offer over Pay-By-Plate billing.',
       faq: [
-        { question: 'Do I save money with E-ZPass?', answer: 'Yes. E-ZPass and similar transponders (SunPass, FasTrak, TxTag) typically offer 20–30% discounts over cash rates on most US toll roads.' },
-        { question: 'Which US states have the highest tolls?', answer: 'New York, New Jersey, Pennsylvania, Florida, and Illinois have some of the highest toll costs. The NY Thruway and NJ Turnpike are among the most expensive.' },
-        { question: 'Are tolls tax deductible?', answer: 'Tolls paid for business purposes can be deducted as a business expense or included in the IRS standard mileage rate calculation.' }
+        { question: 'How do I estimate my monthly toll cost?', answer: 'Multiply the toll per trip by the trips you make each day, then by the days you make the trip each month. A $2.50 toll, twice a day, 22 days a month, is $5.00 a day and $110.00 a month.' },
+        { question: 'Does a toll transponder actually save money?', answer: 'Often, yes, on roads that charge Pay-By-Plate drivers more. The Central Florida Expressway Authority says its Pay By Plate rate is double its E-PASS rate, and the Dulles Toll Road adds a $1.60 processing fee per transaction to Pay-by-Plate bills.' },
+        { question: 'How many states use E-ZPass?', answer: 'The E-ZPass InterAgency Group lists toll facilities across 20 states. Other parts of the country use their own networks, such as SunPass in Florida, FasTrak in California and TxTag in Texas.' },
+        { question: 'What happens if I don’t have a transponder?', answer: 'On most modern toll roads you’ll still be charged, usually billed by mail from a photo of your license plate (Pay-By-Plate or Toll By Mail), often at a higher rate than a transponder gets. Set the discount field to 0% to see the cost with no transponder discount at all.' },
+        { question: 'Are commuting tolls tax deductible?', answer: 'No. The IRS treats the drive between home and your regular workplace as a personal expense, so its tolls are not deductible, the same rule that applies to commuting mileage. Tolls on a business trip from your workplace can be a deductible expense.' },
+        { question: 'Do toll rates change by time of day?', answer: 'On many bridges, tunnels and turnpikes, yes. Peak-hour tolls can be noticeably higher than off-peak ones, so use the average toll from your own statement if your route has variable pricing.' },
+        { question: 'How much could a pass save me over a year?', answer: 'In the worked example, a $1,320.00 annual toll cost drops to $990.00 with a 25% pass discount, a saving of $330.00 a year. The saving scales with both your toll amount and the discount you enter.' }
       ]
     },
     compute(values) {

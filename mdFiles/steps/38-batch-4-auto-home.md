@@ -17,12 +17,23 @@
 - [ ] furniture-fit-calculator (B · plan: top-down floor plan)
 - [ ] Number verification script, tests, build, lint, STATUS.md, PR ready
 
-Paused 2026-10-21 after commute-cost-calculator. Resume from the first unchecked box.
+Paused 2026-10-21 after wallpaper-calculator (run 2 of 3). Resume from the first unchecked box.
 
 Run 1 checks (2026-10-21): `npm test` 265 pass (snapshot unchanged); `npm run build` passes; lint
 (ignoring `.open-next/**`, `.claude/**`) passes; independent Python checker 89 / 89 copy figures
 (one mismatch found and fixed); the app's `solveState()` / `evaluateBreakdown()` agree; all 5 pages
 on `next start` show the H1, 8 section ids, JSON-LD and the visual's aria-label; server killed.
+
+Run 2 checks (2026-10-21): `npm test` 268 pass (snapshot unchanged; +3 from the new concrete `solver`
+joining `lib/solverState.spec.ts`'s "every shipped solver is well-formed" loop); `npm run build`
+passes (81 static pages); lint (ignoring `.open-next/**`, `.claude/**`) passes; independent Python
+checker 40 / 40 copy figures (one mismatch found and fixed: the concrete worked example's "6in vs 4in,
+more than double" comparison had leftover numbers from an unrelated footprint and was also wrong —
+replaced with an 8in-vs-4in comparison, exactly double, now verified); all 5 pages checked on
+`npm run dev` (H1, 8 section ids — concrete has 4 more `solver-*` ids, paint/wallpaper 2–3
+`breakdown-*` ids — JSON-LD, and every visual's `aria-label` matches the worked-example figures
+exactly: toll $1,320.00/$990.00, concrete 74/98 bags, paint 2.39/3, tile 120/132, wallpaper 8.21/9);
+`related`/`aliases` checked for self-reference, existence and duplication (0 problems); server killed.
 
 Commit + push after each box (`step 38: <id>`). Runs are 5 calculators (D11): run 1 builds
 car-payment → commute-cost and pauses; later runs do toll-cost and the six home calculators.

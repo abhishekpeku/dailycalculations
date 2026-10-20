@@ -116,7 +116,7 @@ is why 12-15 run after it.
 | 35 | Batch 1: finance (8) | **DONE** 2026-10-19 | YMYL. 6 × type A, loan-prepayment type B, paycheck C → B. PR #9. | §3 |
 | 36 | Batch 2: shopping + conversion (9) | **DONE** 2026-10-19 | 4 shopping type A (sales-tax, tip, discount, unit-price), cashback B, 4 converters type A. Stone added to `mass`. PR #10. | §3 |
 | 37 | Batch 3: health (6) | DONE 2026-10-20 | YMYL. Branch `step/37-batch-3-health`, PR #11. All 6 health calculators on v2. See session log. | §3 |
-| 38 | Batch 4: auto + home (12) | **IN PROGRESS** (paused 2026-10-21 after commute-cost) | Branch `step/38-batch-4-auto-home`, draft PR #13. Done: car-payment, gas-cost, fuel-cost, ev-charging, commute-cost. Remaining: toll-cost + the 6 home calculators. Resume from the first unchecked box in `mdFiles/steps/38-batch-4-auto-home.md`. | §3 |
+| 38 | Batch 4: auto + home (12) | **IN PROGRESS** (paused 2026-10-21 after wallpaper-cost, run 2 of 3) | Branch `step/38-batch-4-auto-home`, draft PR #13. Done: car-payment, gas-cost, fuel-cost, ev-charging, commute-cost, toll-cost, concrete, paint, tile, wallpaper. Remaining: electricity-bill, furniture-fit. Resume from the first unchecked box in `mdFiles/steps/38-batch-4-auto-home.md`. | §3 |
 | 39 | Batch 5: time, travel, work, creator, text, education (18) | TODO | | §3 |
 | 40–42 | Wave 1: math · statistics · conversion | TODO | Absorbs step 24 (math). 5 calculators per agent run. | §4 |
 | 43–45 | Wave 2: construction · food · sports | TODO | | §4 |
@@ -889,6 +889,53 @@ agree at the defaults, the worked examples and with metric units.
 paint, tile, wallpaper (run 2 ends after wallpaper or after 5), then electricity-bill and furniture-fit.
 `fuelPrice` / `evEfficiency` are available for any later input. Don't commit `tsconfig.tsbuildinfo` / `next-env.d.ts`.
 
+38 · 2026-10-21 · **Batch 4 auto + home v2 — run 2 of 3, PAUSED after wallpaper** (same branch, draft
+PR #13). `compute()` unchanged on all five, so **the compute snapshot did not move** (still 268 tests,
+up from 265 only because the new concrete `solver` adds to `lib/solverState.spec.ts`'s "every shipped
+solver is well-formed" loop).
+Type A: **concrete** (volume ↔ length ↔ width ↔ depth, waste factor `fixed`; outputs `volumeWithWaste`,
+`bags80lb`/`bags60lb` via a `CUBIC_YARD_M3 = toBase(1, 'volume', 'yd3')` conversion from SI; CompareBars
+80 lb vs 60 lb bags — nearest kit match for the plan's "bags-needed chips", gap parked). Type B:
+**toll-cost** (breakdown added to the old pre-v2 stub; CompareBars annual cost with vs without a pass,
+exactly the plan's visual), **paint** (CompareBars gallons needed vs. whole cans to buy, via a
+`derive`d `cansToBuy = Math.ceil(gallonsWithBuffer)`; nearest kit for "can-count row", gap parked),
+**tile** (CompareBars exact tiles vs. with waste; nearest kit for "grid illustration", gap parked),
+**wallpaper** (CompareBars exact rolls vs. rolls to buy, via a `derive`d `rollsExact`; nearest kit for
+"roll-count row", gap parked). `length`/`area`/`volume` dimensions on every relevant input and output;
+no new unit dimensions needed.
+**Facts checked on primary sources 2026-10-21:** QUIKRETE Concrete Mix (1101) data sheet, read from the
+downloaded PDF directly (bag yields: 40 lb 0.30 ft³, 50 lb 0.375 ft³, 60 lb 0.45 ft³, 80 lb 0.60 ft³,
+90 lb 0.675 ft³ — 45/60/90 bags per cubic yard respectively); Ohio Concrete's Industry Recommendation
+for Exterior Concrete Flatwork (3½" minimum for sidewalks/driveways/patios, citing ACI/PCA/NRMCA);
+Sherwin-Williams' paint calculator page (350–400 sq ft/gal) and Benjamin Moore's Regal Select technical
+data sheet, read from the downloaded PDF (400–450 sq ft/gal, two coats recommended on bare substrates);
+Wallcovering Installers Association's consumer tips page (a 24"+ drop match "will require additional
+wallpaper to be ordered") and its Wallcovering Estimator page (perimeter × height ÷ ~25 sq ft per single
+roll); E-ZPass Interagency Group (20-state network), Central Florida Expressway Authority ("Pay By
+Plate toll rates are double the electronic rate") and MWAA's Dulles Toll Road announcement ($1.60
+Pay-by-Plate processing fee, $4.00 vs $5.60 at the Main Plaza); IRS Pub 463 (commuting tolls are
+personal, not deductible, same rule as commuting mileage).
+⚠ **Tile Council of North America's specific waste-factor percentages (10%/15%/20% by layout) could
+not be confirmed from a free primary source** — tcnatile.com/faqs and the TCNA Handbook PDF both
+404'd, and the Handbook itself is a $55 paid publication. The tile page cites TCNA generally (its
+published ANSI A108/A118/A136.1 standards) and the Ceramic Tile Education Foundation, and keeps the
+10% default's wording soft ("a common starting point") rather than attributing an exact percentage to
+TCNA. Revisit if a free TCNA source turns up later.
+Numbers: an independent Python checker matched **40 of 40** copy figures across all five calculators
+after one fix (the concrete worked-example's "6 inches instead of 4... more than double" comparison
+had leftover numbers from an unrelated footprint and was also arithmetically wrong — 6" is 1.5× the
+4" volume, not more than double; replaced with an 8"-vs-4" comparison, which is exactly double and now
+verified: 2.96 yd³ vs 1.48 yd³). The live app's solver/breakdown visuals were cross-checked on
+`next dev`: every `aria-label` matches the worked-example figures exactly (toll $1,320.00/$990.00,
+concrete 74/98 bags, paint 2.39/3, tile 120/132, wallpaper 8.21/9). `npm test` 268 pass; build (81
+static pages) and lint (ignoring `.open-next/**`, `.claude/**`) pass; server killed.
+**Resume notes (run 3):** next is electricity-bill (B, plan: tier bar → no tiered-rate visual in the
+kit, nearest is probably RangeBar or CompareBars low-tier vs high-tier cost; decide and park the gap),
+then furniture-fit (B, plan: top-down floor-plan SVG → no floor-plan component in the kit; nearest is
+likely RangeBar on the tightest clearance margin, or CompareBars room vs furniture+clearance footprint;
+decide and park the gap). Those two finish Batch 4 (12/12); mark the PR ready and the step DONE after.
+Don't commit `tsconfig.tsbuildinfo` / `next-env.d.ts`.
+
 fix · 2026-10-20 · **Solver widget shows the real currency symbol, not `¤`** (branch `fix/currency-symbol`). `UNITS.currency[0].label` = `currencySymbol()` from `lib/calculator.ts`, so type-A inline values, input adornments and output rows print `$` like the type-B widget and the visuals. Share links use the unit id (`currency`), not the label, so they are unaffected. New `units.spec` test: no unit label contains `¤`.
 
 ## Pending on the user — not code
@@ -1003,6 +1050,15 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
   distance dimension); ev-charging's battery has no unit menu (the `energy` menu offers J, cal, BTU…)
   and its yearly savings are fixed at 12,000 miles inside `compute()`; ev-charging charges to 100%
   only (no target-charge input). Changing those needs `compute()` changes (snapshot) or widget work.
+- **Kit and widget gaps from step 38 run 2** (nearest kit component used instead): bags-needed chips
+  (concrete: CompareBars 80 lb vs 60 lb bags), a can-count row (paint: CompareBars gallons needed vs.
+  whole cans to buy), a grid illustration (tile: CompareBars exact tiles vs. with waste), a roll-count
+  row (wallpaper: CompareBars exact rolls vs. rolls to buy). **Reference gap:** the Tile Council of
+  North America's specific waste-factor percentages by layout (10%/15%/20%) could not be confirmed
+  from a free source — `tcnatile.com/faqs` and the TCNA Handbook PDF both 404'd, and the Handbook is a
+  $55 paid publication. `tile-calculator`'s copy cites TCNA generally and the Ceramic Tile Education
+  Foundation, and keeps the 10% default worded as "a common starting point" rather than a cited exact
+  figure. Revisit with a TCNA Handbook copy or another primary source if one turns up.
 - **Kit and widget gaps from step 37** (nearest kit component used instead): a three-tier bar
   (calorie: CompareBars), a stacked bar (TDEE: Donut), a glasses-per-day row (water: CompareBars vs
   NASEM), a splits / race-predictions table (running pace: CompareBars of Riegel times).

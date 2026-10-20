@@ -19,7 +19,7 @@ const NUMBER_WORDS: Record<number, string> = { 1: 'one', 2: 'two', 3: 'three', 4
 const formatValue = (value: number, dimension: UnitDimension) =>
   dimension === 'currency' ? formatFull(Math.round(value * 100) / 100) : formatSignificant(value);
 
-// Single-unit dimensions read inline: 5%, ¤1,200, or a bare count.
+// Single-unit dimensions read inline: 5%, $1,200, or a bare count.
 function withUnit(text: string, dimension: UnitDimension, unitId: string) {
   const label = findUnit(dimension, unitId).label;
   if (dimension === 'currency') return `${label}${text}`;

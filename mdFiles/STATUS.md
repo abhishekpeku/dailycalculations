@@ -841,6 +841,8 @@ checked on `next start` (H1, section ids, JSON-LD, visual aria-labels).
 `todayMs` after mount), then the final box: rerun the checker, tests, build, lint, finish this entry,
 mark step 37 DONE and `gh pr ready 11`.
 
+fix · 2026-10-20 · **Solver widget shows the real currency symbol, not `¤`** (branch `fix/currency-symbol`). `UNITS.currency[0].label` = `currencySymbol()` from `lib/calculator.ts`, so type-A inline values, input adornments and output rows print `$` like the type-B widget and the visuals. Share links use the unit id (`currency`), not the label, so they are unaffected. New `units.spec` test: no unit label contains `¤`.
+
 ## Pending on the user — not code
 
 - ~~**Cloudflare apex → www 301 (from step 01).**~~ **DONE 2026-10-19** — Redirect Rule added by the user; verified `http://` and `https://dailycalculations.com/<path>?<query>` → 301 to `https://www.dailycalculations.com/<path>?<query>`, www serves 200.
@@ -923,9 +925,7 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
   Close #6 and remove the worktree (`git worktree remove`) once PR #7 is merged. Until then,
   `npm run lint` also lints the worktree's files and fails on them: use
   `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"`.
-- **Currency symbol differs between the widgets** (found in step 33): `SolverCalculator` prints the
-  `¤` unit placeholder, `BreakdownCalculator` prints `$` through `lib/calculator.ts`. Step 18 should
-  route both through the region-aware `lib/calculator.ts`.
+- ~~**Currency symbol differs between the widgets**~~ — **resolved 2026-10-20** (`fix/currency-symbol`): the `currency` unit label in `lib/units.ts` now comes from `currencySymbol()` in `lib/calculator.ts`, the single source step 18 makes region-aware.
 - **No growth-curve visual in the kit** (found in step 35): the rollout plan asks for a growth
   curve (contributions vs interest over time) on compound-interest and investment. Those use a
   Donut for now. Add a `GrowthCurve` (stacked area by year) to `components/visuals/` in its own

@@ -1,4 +1,9 @@
 import type { CalculatorConfig } from './types.ts';
+import { toBase } from '../../lib/units.ts';
+
+// Cubic meters in one cubic yard (NIST SP 811 yard), used to convert solver SI volumes into the
+// bags-per-cubic-yard figures from Quikrete's Concrete Mix data sheet.
+const CUBIC_YARD_M3 = toBase(1, 'volume', 'yd3');
 
 export const homeCalculators: CalculatorConfig[] = [
   {
@@ -77,12 +82,102 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'concrete-calculator',
     category: 'home',
-    updatedAt: '2026-09-10',
-    aliases: ['cubic yards of concrete calculator', 'cement calculator', 'slab concrete calculator'],
+    updatedAt: '2026-10-21',
+    aliases: ['cubic yards of concrete calculator', 'cement calculator', 'slab concrete calculator', 'how many bags of concrete do i need', 'concrete bag calculator'],
     related: ['tile-calculator', 'paint-calculator', 'wallpaper-calculator', 'gallons-to-liters-converter'],
     title: 'Concrete Calculator',
-    description: 'Calculate cubic yards and bags of concrete needed for slabs, footings, or columns.',
-    example: 'Calculate concrete for a 10x12 ft patio slab, 4 inches thick.',
+    description: 'Find the volume of concrete a slab, footing or post hole needs from its length, width and depth, or work backward from a target volume, in cubic feet or cubic yards, with the number of 60 lb and 80 lb bags.',
+    example: 'A 10x12 ft patio slab, 4 inches thick, needs 40 cubic feet (1.48 cubic yards) of concrete, or about 1.63 cubic yards with a 10% waste allowance — roughly 74 bags of 80 lb mix or 98 bags of 60 lb mix.',
+    solver: {
+      defaultTarget: 'volume',
+      variables: [
+        { id: 'volume', label: 'Concrete volume', symbol: 'V', dimension: 'volume', defaultValue: 1.4815, defaultUnit: 'yd3' },
+        { id: 'length', label: 'Length', symbol: 'L', dimension: 'length', defaultValue: 10, defaultUnit: 'ft' },
+        { id: 'width', label: 'Width', symbol: 'W', dimension: 'length', defaultValue: 12, defaultUnit: 'ft' },
+        { id: 'depth', label: 'Depth / thickness', symbol: 'd', dimension: 'length', defaultValue: 4, defaultUnit: 'in' },
+        { id: 'wastePercent', label: 'Waste factor', symbol: 'w', dimension: 'percent', defaultValue: 10, defaultUnit: '%', fixed: true }
+      ],
+      solve: {
+        volume: ({ length, width, depth }) => length * width * depth,
+        length: ({ volume, width, depth }) => (width * depth > 0 ? volume / (width * depth) : NaN),
+        width: ({ volume, length, depth }) => (length * depth > 0 ? volume / (length * depth) : NaN),
+        depth: ({ volume, length, width }) => (length * width > 0 ? volume / (length * width) : NaN)
+      },
+      outputs: [
+        { id: 'volumeWithWaste', label: 'Volume with waste factor', dimension: 'volume', unit: 'yd3', compute: (si) => si.volume * (1 + si.wastePercent / 100) },
+        // Quikrete Concrete Mix 1101 data sheet: 80 lb bag yields 0.60 ft³ (45/yd³), 60 lb bag 0.45 ft³ (60/yd³).
+        { id: 'bags80lb', label: '80 lb bags needed', dimension: 'count', compute: (si) => Math.ceil((si.volume * (1 + si.wastePercent / 100) / CUBIC_YARD_M3) * 45) },
+        { id: 'bags60lb', label: '60 lb bags needed', dimension: 'count', compute: (si) => Math.ceil((si.volume * (1 + si.wastePercent / 100) / CUBIC_YARD_M3) * 60) }
+      ],
+      visuals: [
+        {
+          type: 'compareBars',
+          bars: [
+            { from: 'bags80lb', label: '80 lb bags' },
+            { from: 'bags60lb', label: '60 lb bags' }
+          ],
+          title: 'Bags needed, by bag size'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'How much concrete a slab needs',
+        paragraphs: [
+          'Concrete is sold and poured by volume, not area, because a slab has a thickness as well as a length and width. Multiply the three together (in the same unit) to get the volume, then convert: concrete is bought in cubic yards for a ready-mix delivery, or in bagged mix measured by the bag. A 10 ft by 12 ft patio poured 4 inches deep is 40 cubic feet, which is 1.48 cubic yards.',
+          'Most residential flatwork is poured thinner than you might guess. An industry recommendation for exterior concrete flatwork, developed with reference to American Concrete Institute and Portland Cement Association standards, puts the usual minimum for sidewalks, driveways and patios at 3½ inches, the depth of the 2×4 lumber commonly used for the forms, rising to 4 inches or more under vehicle loads and 6 inches where a driveway meets the street.',
+          'For small jobs, bagged concrete mix is easier than ordering a truck. Quikrete’s data sheet for its standard Concrete Mix states that an 80 lb bag yields about 0.60 cubic feet once mixed, a 60 lb bag about 0.45 cubic feet, and a 40 lb bag about 0.30 cubic feet — so a cubic yard (27 cubic feet) takes about 45 bags at 80 lb, 60 bags at 60 lb, or 90 bags at 40 lb. A waste allowance on top covers spillage, an uneven subgrade and the extra depth that collects at low spots.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of length, width and depth; the volume is calculated. Waste is always an input.',
+        steps: [
+          { name: 'Enter the length and width', text: 'Measure the footprint of the slab, footing or post hole in feet (or meters).' },
+          { name: 'Enter the depth', text: 'Use the thickness in inches. 3½–4 inches is typical for a patio or sidewalk; thicker for a driveway.' },
+          { name: 'Set the waste factor', text: 'Keep the 10% default, or raise it for an uneven subgrade or a job with a lot of edges and corners.' },
+          { name: 'Read the volume', text: 'The result shows cubic feet and cubic yards, with the volume after the waste factor.' },
+          { name: 'Check the bag count', text: 'The chart shows how many 60 lb or 80 lb bags that volume takes, so you can compare the cost of bags with a ready-mix delivery.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Volume is length times width times depth; cubic yards and bag counts follow by division.',
+        expression: 'V = L × W × d\ncu yd = V ÷ 27\nVw = cu yd × (1 + waste%)\nbags(80 lb) = Vw × 45\nbags(60 lb) = Vw × 60',
+        terms: [
+          { symbol: 'L, W', meaning: 'Length and width of the area, in feet.' },
+          { symbol: 'd', meaning: 'Depth (thickness), in feet — divide inches by 12 first.' },
+          { symbol: 'V', meaning: 'Volume in cubic feet. 27 cubic feet make one cubic yard.' },
+          { symbol: 'Vw', meaning: 'Volume in cubic yards after the waste factor.' },
+          { symbol: 'waste%', meaning: 'Extra percent ordered for spillage and subgrade variation; 10% is a common default.' }
+        ],
+        note: 'An estimate. Bag yields and ready-mix pricing vary by brand and supplier; check the bag’s own data sheet or your ready-mix company for an exact figure, and always follow local building codes for required thickness and reinforcement.'
+      },
+      workedExample: {
+        intro: 'You are pouring a 10 ft by 12 ft patio slab, 4 inches thick, and want a 10% waste allowance.',
+        rows: [
+          { label: 'Depth in feet (4 ÷ 12)', value: '0.3333 ft' },
+          { label: 'Volume (V = 10 × 12 × 0.3333)', value: '40.00 ft³' },
+          { label: 'Cubic yards (40.00 ÷ 27)', value: '1.48 yd³' },
+          { label: 'With 10% waste (1.4815 × 1.10)', value: '1.63 yd³' },
+          { label: '80 lb bags (1.6296 × 45, rounded up)', value: '74 bags' },
+          { label: '60 lb bags (1.6296 × 60, rounded up)', value: '98 bags' }
+        ],
+        result: '1.63 cubic yards, about 74 bags of 80 lb mix',
+        explanation: 'A driveway slab the same size but poured 6 inches thick instead of 4 would need 3.70 cubic yards (4.07 with waste) — more than double, since volume scales directly with depth. That is why even a small increase in thickness raises the material cost by a lot.'
+      },
+      watchOut: [
+        { title: 'Order a little extra', body: 'Spillage, an uneven subgrade and low spots that take more material all eat into a tight estimate. The 10% default reflects common contractor practice; use more on an irregular or sloped site.' },
+        { title: 'Bag yields vary by product', body: 'The 45 bags (80 lb) and 60 bags (60 lb) per cubic yard figures come from Quikrete’s standard Concrete Mix. High-strength, fiber-reinforced or fast-setting mixes can yield a different volume per bag — check the specific bag’s data sheet.' },
+        { title: 'Thickness drives cost more than area', body: 'Volume is length × width × depth, so doubling the depth doubles the concrete needed for the same footprint. A driveway rated for vehicles is usually thicker than a footpath rated for foot traffic only.' },
+        { title: 'Ready-mix has a minimum order', body: 'For larger pours, a ready-mix truck is usually cheaper per cubic yard than dozens of bags, but most suppliers have a minimum order size. Call ahead for a job near that threshold.' },
+        { title: 'Curing takes days, not hours', body: 'Industry guidance recommends curing exterior flatwork for at least five to seven days, and keeping new concrete away from freezing for the first 48 hours, before it reaches a useful fraction of its design strength.' }
+      ],
+      references: [
+        { label: 'Ohio Concrete, Industry Recommendation for Exterior Concrete Flatwork (references ACI, PCA and NRMCA standards)', url: 'https://www.ohioconcrete.org/wp-content/uploads/2015/06/Industry-Recommendation-for-Exterior-Flatwork-Final.pdf' },
+        { label: 'QUIKRETE, Concrete Mix (Product No. 1101) Data Sheet — bag yields and mixing water', url: 'https://www.quikrete.com/pdfs/data_sheet-concrete%20mix%201101.pdf' }
+      ]
+    },
     inputs: [
       { id: 'length', label: 'Length (ft)', type: 'number', placeholder: '10', defaultValue: 10, step: 0.5, min: 0.1 },
       { id: 'width', label: 'Width (ft)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.5, min: 0.1 },
@@ -90,12 +185,16 @@ export const homeCalculators: CalculatorConfig[] = [
       { id: 'wastePercent', label: 'Waste factor (%)', type: 'percent', placeholder: '10', defaultValue: 10, step: 1, min: 0 }
     ],
     seo: {
-      title: 'Concrete Calculator – Cubic Yards and Bags',
-      description: 'Calculate how many cubic yards or 60-lb/80-lb bags of concrete you need for slabs, driveways, footings, and more.',
+      title: 'Concrete Calculator – Cubic Yards and Bags Needed',
+      description: 'Free concrete calculator: cubic feet and cubic yards for a slab, footing or post hole, plus how many 60 lb or 80 lb bags of concrete mix it takes.',
       faq: [
-        { question: 'How many cubic yards do I need?', answer: 'Multiply length × width × depth (all in feet), then divide by 27 to convert cubic feet to cubic yards.' },
-        { question: 'How many bags of concrete per cubic yard?', answer: 'One cubic yard requires approximately 45 bags of 80-lb concrete or 60 bags of 60-lb concrete.' },
-        { question: 'Should I order extra concrete?', answer: 'Always order 10% extra to account for spillage, settling, and uneven subgrade.' }
+        { question: 'How many cubic yards of concrete do I need?', answer: 'Multiply length × width × depth, all in feet, then divide by 27. A 10×12 ft slab 4 inches deep is 10 × 12 × 0.3333 = 40 cubic feet, or 1.48 cubic yards.' },
+        { question: 'How many 80 lb bags of concrete make a cubic yard?', answer: 'About 45, based on Quikrete’s data sheet yield of 0.60 cubic feet per 80 lb bag (27 ÷ 0.60 = 45). The 10×12 ft, 4-inch patio example needs about 74 bags once a 10% waste factor is added.' },
+        { question: 'How many 60 lb bags of concrete make a cubic yard?', answer: 'About 60, since a 60 lb bag yields roughly 0.45 cubic feet (27 ÷ 0.45 = 60). The same patio example needs about 98 of the 60 lb bags with 10% waste.' },
+        { question: 'How thick should a concrete patio or driveway be?', answer: 'Industry guidance referencing ACI and PCA standards puts the usual minimum at 3½ inches for sidewalks, driveways and patios, with 4 inches or more common where vehicles will drive on it.' },
+        { question: 'Should I order extra concrete?', answer: 'Yes. A 10% waste allowance is a common starting point for spillage and an uneven subgrade; the calculator applies it to the volume before converting to bags.' },
+        { question: 'When should I use ready-mix instead of bags?', answer: 'Bags suit small jobs like post holes or a short walkway. For a full driveway or a patio of more than a couple of cubic yards, a ready-mix delivery is usually cheaper per yard, though most suppliers have a minimum order.' },
+        { question: 'How do I convert the depth from inches into the formula?', answer: 'Divide the inches by 12 to get feet before multiplying. A 4-inch slab is 4 ÷ 12 = 0.3333 ft deep.' }
       ]
     },
     compute(values) {

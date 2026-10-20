@@ -8,7 +8,7 @@
 - [x] fuel-cost-calculator (B · CompareBars your car vs comparison car)
 - [x] ev-charging-calculator (B · CompareBars EV vs gas per 100 miles)
 - [x] commute-cost-calculator (B · Donut fuel/parking/tolls/wear, config from step 33; v2 content)
-- [ ] toll-cost-calculator (B · CompareBars with vs without a toll pass)
+- [x] toll-cost-calculator (B · CompareBars with vs without a toll pass)
 - [ ] concrete-calculator (A · volume ↔ length ↔ width ↔ depth; plan: bags chips)
 - [ ] paint-calculator (B · plan: can-count row)
 - [ ] tile-calculator (B · plan: grid illustration)

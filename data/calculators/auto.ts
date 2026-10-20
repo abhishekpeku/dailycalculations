@@ -403,25 +403,114 @@ export const autoCalculators: CalculatorConfig[] = [
   {
     id: 'fuel-cost-calculator',
     category: 'auto',
-    updatedAt: '2026-09-10',
-    aliases: ['petrol cost calculator', 'diesel cost calculator', 'trip fuel calculator', 'mpg cost calculator'],
+    updatedAt: '2026-10-21',
+    aliases: ['petrol cost calculator', 'diesel cost calculator', 'trip fuel calculator', 'mpg cost calculator', 'annual fuel cost calculator', 'mpg savings calculator'],
     related: ['gas-cost-calculator', 'commute-cost-calculator', 'ev-charging-calculator', 'toll-cost-calculator'],
     title: 'Fuel Cost Calculator',
-    description: 'Calculate annual fuel costs for your vehicle based on mileage, MPG, and gas prices. Compare gas vs diesel vs hybrid savings.',
-    example: 'Find annual fuel cost for a vehicle driven 15,000 miles/year at 28 MPG and $3.75/gallon.',
+    description: 'Estimate what your car costs to fuel each year and each month from the distance you drive, its fuel economy and the fuel price, and see how much a more efficient car would save. Works in miles or km, mpg or L/100 km, per gallon or per liter.',
+    example: 'Driving 15,000 miles a year at 28 mpg with gas at $3.75 a gallon costs about $2,008.93 a year ($167.41 a month). A 45 mpg car would cost $1,250.00, saving about $758.93 a year.',
+    breakdown: {
+      headline: 'annualCost',
+      headlineLabel: 'Fuel cost per year',
+      outputs: [
+        { id: 'annualCost', format: 'currency' },
+        { id: 'monthlyCost', label: 'Per month', format: 'currency' },
+        { id: 'costPer100mi', label: 'Per 100 miles', format: 'currency' },
+        { id: 'gallonsPerYear', label: 'Fuel per year', format: 'number', dimension: 'volume', unit: 'gal' },
+        { id: 'comparisonCost', label: 'Comparison car per year', format: 'currency' },
+        { id: 'annualSavings', label: 'Yearly savings with the comparison car', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your car', inputs: ['annualMiles', 'mpg', 'gasPricePerGallon'] },
+        { title: 'Compare with', inputs: ['comparisonMpg'] }
+      ],
+      derive: (v) => ({ costPer100mi: v.costPerMile * 100 }),
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'annualCost', label: 'Your car' },
+          { from: 'comparisonCost', label: 'Comparison car' }
+        ],
+        title: 'Fuel cost per year'
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What does a car cost to fuel?',
+        paragraphs: [
+          'A year of fuel is the distance you drive divided by your fuel economy, times the price of fuel. At 15,000 miles a year a 28 mpg car burns about 536 gallons, so every dollar on the price of a gallon adds about $536 to the yearly bill. That makes fuel one of the biggest running costs of a car, and one of the easiest to estimate.',
+          'The same arithmetic shows what a more efficient car is worth. Enter a second fuel economy and the calculator prices the same miles in that car, so you can see the yearly saving from a hybrid, a smaller engine or a newer model, and set it against the difference in purchase price. The EPA’s window sticker does a similar calculation, assuming 15,000 miles a year, 55% of it in the city.',
+          'Fuel economy is quoted in different units around the world. The US uses miles per US gallon, the UK miles per imperial gallon, and most other countries liters per 100 km. Every field here has a unit menu, so you can enter kilometers, L/100 km and a price per liter and still get the right answer.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in your driving and your car, then a second car to compare with.',
+        steps: [
+          { name: 'Enter how far you drive', text: 'Use your yearly distance in miles or km. Your odometer readings a year apart, or the mileage on two service records, give a good figure.' },
+          { name: 'Enter your fuel economy', text: 'Use your real-world average if you know it, or the combined rating from the window sticker or fueleconomy.gov. Pick mpg (US), mpg (UK), L/100 km or km/L.' },
+          { name: 'Enter the fuel price', text: 'Type the price you usually pay, per US gallon, per UK gallon or per liter.' },
+          { name: 'Add a comparison car', text: 'Enter the fuel economy of the car you are considering. The bars compare a year of fuel in each car.' },
+          { name: 'Read the result', text: 'The headline is your yearly fuel cost, with the monthly cost, the cost per 100 miles, the fuel you burn and the yearly saving below it.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Fuel per year is distance over fuel economy; cost is fuel times price.',
+        expression: 'G = D ÷ mpg\nA = G × p\nmonthly = A ÷ 12\nsavings = A − (D ÷ mpg₂) × p',
+        terms: [
+          { symbol: 'D', meaning: 'Distance driven per year, in miles.' },
+          { symbol: 'mpg', meaning: 'Your car’s fuel economy, in miles per US gallon (other units are converted for you).' },
+          { symbol: 'G', meaning: 'Fuel burned per year, in gallons.' },
+          { symbol: 'p', meaning: 'Fuel price per gallon.' },
+          { symbol: 'A', meaning: 'Fuel cost per year.' },
+          { symbol: 'mpg₂', meaning: 'Fuel economy of the comparison car. The saving shows as 0 if the comparison car uses more fuel.' }
+        ],
+        note: 'An estimate. Fuel prices move every week and real-world fuel economy depends on how, where and when you drive.'
+      },
+      workedExample: {
+        intro: 'You drive 15,000 miles a year in a car that averages 28 mpg, and gas costs $3.75 a gallon. You are thinking about a hybrid rated at 45 mpg.',
+        rows: [
+          { label: 'Fuel per year (G = 15,000 ÷ 28)', value: '535.7 gallons' },
+          { label: 'Cost per year (A = 535.7 × $3.75)', value: '$2,008.93' },
+          { label: 'Cost per month (2,008.93 ÷ 12)', value: '$167.41' },
+          { label: 'Cost per 100 miles ($3.75 ÷ 28 × 100)', value: '$13.39' },
+          { label: 'Hybrid fuel per year (15,000 ÷ 45)', value: '333.3 gallons' },
+          { label: 'Hybrid cost per year (333.3 × $3.75)', value: '$1,250.00' },
+          { label: 'Yearly saving (2,008.93 − 1,250.00)', value: '$758.93' }
+        ],
+        result: 'About $2,008.93 a year now, $758.93 a year less in the hybrid',
+        explanation: 'If the hybrid costs $3,000 more to buy, the fuel saving pays that back in about four years at these prices. Every 50 cents on the price of gas changes your current yearly bill by about $267.86 (535.7 gallons × $0.50).'
+      },
+      watchOut: [
+        { title: 'The mpg illusion', body: 'Fuel use falls with the inverse of mpg, so gains at the low end matter most. Over 10,000 miles, going from 10 to 20 mpg saves 500 gallons, while going from 25 to 50 mpg saves only 200. Compare cars by gallons or cost, not by mpg points.' },
+        { title: 'Use your real mileage', body: 'The sticker assumes 15,000 miles a year. The Federal Highway Administration’s figure for the average driver is 13,476 miles, and it varies a lot by age and job, so your own odometer is the best input.' },
+        { title: 'Prices change', body: 'The yearly cost scales with the fuel price. Check the EIA’s weekly retail prices for your region, or run the calculator at a high and a low price to see the range.' },
+        { title: 'Fuel is not the whole cost', body: 'A cheaper-to-fuel car can still cost more to own once purchase price, insurance and maintenance are included. Use the saving here as one input to that decision.' }
+      ],
+      references: [
+        { label: 'U.S. DOE and EPA, 2026 Fuel Economy Guide (annual fuel cost assumptions)', url: 'https://www.fueleconomy.gov/feg/pdfs/guides/FEG2026.pdf' },
+        { label: 'Federal Highway Administration, Average Annual Miles per Driver by Age Group', url: 'https://www.fhwa.dot.gov/ohim/onh00/bar8.htm' },
+        { label: 'U.S. Energy Information Administration, Gasoline and Diesel Fuel Update', url: 'https://www.eia.gov/petroleum/gasdiesel/' },
+        { label: 'Larrick, R. P. and Soll, J. B. (2008), The MPG Illusion, Science 320(5883)', url: 'https://doi.org/10.1126/science.1154983' }
+      ]
+    },
     inputs: [
-      { id: 'annualMiles', label: 'Annual miles driven', type: 'number', placeholder: '15000', defaultValue: 15000, step: 500, min: 0 },
-      { id: 'mpg', label: 'Vehicle MPG', type: 'number', placeholder: '28', defaultValue: 28, step: 0.5, min: 1 },
-      { id: 'gasPricePerGallon', label: 'Gas price ($/gallon)', type: 'currency', placeholder: '3.75', defaultValue: 3.75, step: 0.05, min: 0 },
-      { id: 'comparisonMpg', label: 'Comparison vehicle MPG (optional)', type: 'number', placeholder: '45', defaultValue: 45, step: 0.5, min: 1 }
+      { id: 'annualMiles', label: 'Distance driven per year', type: 'number', placeholder: '15000', defaultValue: 15000, step: 500, min: 0, dimension: 'length', unit: 'mi' },
+      { id: 'mpg', label: 'Your fuel economy', type: 'number', placeholder: '28', defaultValue: 28, step: 0.5, min: 1, dimension: 'fuelEconomy', unit: 'mpg' },
+      { id: 'gasPricePerGallon', label: 'Fuel price', type: 'currency', placeholder: '3.75', defaultValue: 3.75, step: 0.05, min: 0, dimension: 'fuelPrice', unit: 'cur/gal' },
+      { id: 'comparisonMpg', label: 'Comparison car fuel economy', type: 'number', placeholder: '45', defaultValue: 45, step: 0.5, min: 1, dimension: 'fuelEconomy', unit: 'mpg' }
     ],
     seo: {
-      title: 'Fuel Cost Calculator – Annual Gas Savings and MPG Comparison',
-      description: 'Calculate your annual fuel cost and compare fuel expenses between two vehicles. See how much you save by switching to a more fuel-efficient car.',
+      title: 'Fuel Cost Calculator – Yearly Gas Cost & MPG Savings',
+      description: 'Free fuel cost calculator: yearly and monthly fuel cost from distance, mpg or L/100 km and fuel price, plus the saving from a more efficient car.',
       faq: [
-        { question: 'What is the average US gas price?', answer: 'US average gasoline prices fluctuate. Regular unleaded has averaged $3.00–$4.00/gallon in recent years. Check GasBuddy or AAA for current local prices.' },
-        { question: 'How many miles does the average American drive per year?', answer: 'The US average is approximately 14,000–15,000 miles per year, but commuters in car-dependent areas often drive 20,000+ miles.' },
-        { question: 'How much do I save with a fuel-efficient car?', answer: 'Switching from 25 MPG to 40 MPG saves about $900/year at $3.75/gallon driving 15,000 miles. Hybrids and EVs can save $1,500–$2,500 annually over average gas vehicles.' }
+        { question: 'How do I calculate my yearly fuel cost?', answer: 'Divide the miles you drive in a year by your mpg to get gallons, then multiply by the price per gallon. 15,000 miles at 28 mpg is about 535.7 gallons, or about $2,008.93 a year at $3.75.' },
+        { question: 'How much do I save with a more fuel-efficient car?', answer: 'Price the same miles in both cars and subtract. At 15,000 miles and $3.75 a gallon, going from 25 mpg to 40 mpg saves about $843.75 a year, and from 28 mpg to 45 mpg about $758.93.' },
+        { question: 'How many miles does the average American drive a year?', answer: 'The Federal Highway Administration puts the average at 13,476 miles per driver, with drivers aged 20 to 54 averaging over 15,000. The EPA’s window sticker assumes 15,000 miles a year.' },
+        { question: 'What assumptions does the EPA sticker use for annual fuel cost?', answer: 'The 2026 Fuel Economy Guide assumes 15,000 miles a year, 55% city and 45% highway driving, and $4.33 a gallon for regular gasoline. Your own miles and prices will give a different figure.' },
+        { question: 'Can I use liters and kilometers?', answer: 'Yes. Pick km, L/100 km and a price per liter in the menus. 20,000 km at 6.5 L/100 km burns 1,300 liters, which costs 2,340 at 1.80 a liter.' },
+        { question: 'Why does a small mpg gain on a thirsty car save so much?', answer: 'Because fuel used is distance divided by mpg. Over 10,000 miles, 10 to 20 mpg saves 500 gallons but 25 to 50 mpg saves 200. Compare gallons, not mpg points.' }
       ]
     },
     compute(values) {

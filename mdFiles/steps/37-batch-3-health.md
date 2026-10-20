@@ -9,9 +9,9 @@
 - [x] water-intake-calculator (B · CompareBars your estimate vs NASEM reference intakes; plan: glasses-per-day row, not in kit)
 - [x] running-pace-calculator (A · CompareBars of Riegel race predictions; new `pace` dimension; plan: splits table, not in kit)
 - [x] pregnancy-due-date-calculator (B · Timeline with trimesters) — second run
-- [ ] Number verification script, tests, build, lint, STATUS.md, PR ready
+- [x] Number verification script, tests, build, lint, STATUS.md, PR ready
 
-Paused 2026-10-20 after running-pace-calculator. Resume from the first unchecked box.
+Paused 2026-10-20 after running-pace-calculator; resumed the same day. **Done 2026-10-20.**
 
 Commit + push after each box (`step 37: <id>`). Runs are 5 calculators (D11): the first run
 builds bmi → running-pace and pauses; the second run does pregnancy-due-date and finishes.

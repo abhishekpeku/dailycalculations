@@ -4,7 +4,7 @@
 
 - [x] Step file, draft PR
 - [x] car-payment-calculator (A · Donut principal/interest + AmortizationTable) — YMYL
-- [ ] gas-cost-calculator (A · cost ↔ distance ↔ economy ↔ price; plan: cost-per-mile chip, not in kit → CompareBars one way vs round trip)
+- [x] gas-cost-calculator (A · cost ↔ distance ↔ economy ↔ price; plan: cost-per-mile chip, not in kit → CompareBars one way vs round trip)
 - [ ] fuel-cost-calculator (B · CompareBars your car vs comparison car)
 - [ ] ev-charging-calculator (B · CompareBars EV vs gas per 100 miles)
 - [ ] commute-cost-calculator (B · Donut fuel/parking/tolls/wear, config from step 33; v2 content)

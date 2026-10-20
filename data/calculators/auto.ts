@@ -1,5 +1,6 @@
 import type { CalculatorConfig } from './types.ts';
 import { loanMonths, loanPayment, loanPrincipal } from './finance.ts';
+import { toBase } from '../../lib/units.ts';
 
 export const autoCalculators: CalculatorConfig[] = [
   {
@@ -140,23 +141,118 @@ export const autoCalculators: CalculatorConfig[] = [
   {
     id: 'gas-cost-calculator',
     category: 'auto',
-    updatedAt: '2026-09-10',
-    aliases: ['gas trip calculator', 'road trip fuel calculator', 'gas mileage cost calculator'],
+    updatedAt: '2026-10-21',
+    aliases: ['gas trip calculator', 'road trip fuel calculator', 'gas mileage cost calculator', 'trip gas cost estimator', 'how much gas for a trip'],
     related: ['fuel-cost-calculator', 'commute-cost-calculator', 'travel-budget-calculator', 'toll-cost-calculator'],
     title: 'Gas Cost Calculator',
-    description: 'Estimate fuel cost for a trip using distance, MPG, and fuel price.',
-    example: 'Calculate fuel cost for a 180-mile trip at 28 MPG and $3.75 per gallon.',
+    description: 'Work out the fuel cost of a trip from the distance, your fuel economy and the price of gas, or work backward to how far a budget takes you, in miles or kilometers, mpg or L/100 km, per gallon or per liter.',
+    example: 'A 180-mile trip at 28 mpg uses about 6.43 gallons. At $3.75 a gallon that is about $24.11 one way, $48.21 for the round trip, or $13.39 per 100 miles.',
+    solver: {
+      defaultTarget: 'cost',
+      variables: [
+        { id: 'cost', label: 'Fuel cost', symbol: 'C', dimension: 'currency', defaultValue: 24.11, defaultUnit: 'currency' },
+        { id: 'distance', label: 'Trip distance', symbol: 'd', dimension: 'length', defaultValue: 180, defaultUnit: 'mi' },
+        { id: 'economy', label: 'Fuel economy', symbol: 'e', dimension: 'fuelEconomy', defaultValue: 28, defaultUnit: 'mpg' },
+        { id: 'price', label: 'Fuel price', symbol: 'p', dimension: 'fuelPrice', defaultValue: 3.75, defaultUnit: 'cur/gal' }
+      ],
+      // SI: m, m³/m (fuel per distance) and currency per m³, so cost = distance × economy × price.
+      solve: {
+        cost: ({ distance, economy, price }) => distance * economy * price,
+        distance: ({ cost, economy, price }) => (economy * price > 0 ? cost / (economy * price) : NaN),
+        economy: ({ cost, distance, price }) => (distance * price > 0 ? cost / (distance * price) : NaN),
+        price: ({ cost, distance, economy }) => (distance * economy > 0 ? cost / (distance * economy) : NaN)
+      },
+      outputs: [
+        { id: 'fuelUsed', label: 'Fuel used', dimension: 'volume', unit: 'gal', compute: (si) => si.distance * si.economy },
+        { id: 'fuelUsedL', label: 'Fuel used (liters)', dimension: 'volume', unit: 'L', compute: (si) => si.distance * si.economy },
+        { id: 'costPer100mi', label: 'Cost per 100 miles', dimension: 'currency', compute: (si) => (si.distance > 0 ? (si.cost / si.distance) * toBase(100, 'length', 'mi') : NaN) },
+        { id: 'costPer100km', label: 'Cost per 100 km', dimension: 'currency', compute: (si) => (si.distance > 0 ? (si.cost / si.distance) * toBase(100, 'length', 'km') : NaN) }
+      ],
+      derive: (si) => ({ roundTrip: 2 * si.cost }),
+      visuals: [
+        {
+          type: 'compareBars',
+          bars: [{ from: 'cost', label: 'One way' }, { from: 'roundTrip', label: 'Round trip' }],
+          title: 'Fuel cost for the trip'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'How to work out the gas cost of a trip',
+        paragraphs: [
+          'The fuel cost of a drive comes down to three numbers: how far you go, how much fuel your car burns over that distance, and what the fuel costs. Divide the distance by your miles per gallon to get the gallons you will burn, then multiply by the price per gallon. A 180-mile drive in a 28 mpg car burns about 6.43 gallons, which costs about $24.11 at $3.75 a gallon.',
+          'Countries measure fuel economy differently. The US quotes miles per US gallon, the UK quotes miles per imperial gallon, which is about 20% larger (4.54609 liters against 3.785411784), and most other countries quote liters per 100 km, where a smaller number is better. The menus here convert between all of them, and the fuel price can be per US gallon, per UK gallon or per liter, so you can type the numbers exactly as your dashboard and the pump show them.',
+          'Because the relationship is a simple product, it also runs backward. Leave any one field alone and it is calculated from the other three: how far a $40 tank budget takes you, what fuel economy a trip implies from your receipt, or the gas price at which a trip passes a set amount.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of the four fields. The one you have left alone longest, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter the distance', text: 'Type the one-way trip distance and pick miles or kilometers. The chart doubles it for the round trip.' },
+          { name: 'Enter your fuel economy', text: 'Use your car’s combined rating or, better, your own figure from the trip computer or a fill-up log. Pick mpg (US), mpg (UK), L/100 km or km/L.' },
+          { name: 'Enter the fuel price', text: 'Type the pump price and pick per US gallon, per UK gallon or per liter.' },
+          { name: 'Read the cost', text: 'The fuel cost is calculated, with the fuel used and the cost per 100 miles and per 100 km below it.' },
+          { name: 'Or work backward', text: 'Type a budget into the cost and leave the distance alone to see how far it takes you.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Fuel used is distance divided by fuel economy (or distance times consumption, for L/100 km), and the cost is the fuel used times the price.',
+        expression: 'F = d ÷ mpg\nC = F × p = d × p ÷ mpg\nd = C × mpg ÷ p\nmetric: F = d × (L/100 km) ÷ 100',
+        terms: [
+          { symbol: 'C', meaning: 'Fuel cost of the trip.' },
+          { symbol: 'd', meaning: 'Distance driven, in miles (or km for the metric form).' },
+          { symbol: 'mpg', meaning: 'Fuel economy in miles per gallon. L/100 km = 235.215 ÷ mpg (US).' },
+          { symbol: 'F', meaning: 'Fuel used, in gallons (or liters).' },
+          { symbol: 'p', meaning: 'Fuel price per gallon (or per liter, with liters of fuel).' }
+        ],
+        note: 'An estimate. Real fuel economy changes with speed, traffic, load, weather and how the car is driven, so the actual cost can differ by 10% or more either way.'
+      },
+      workedExample: {
+        intro: 'You drive 180 miles to visit family in a car that averages 28 mpg, and gas costs $3.75 a gallon. What does the trip cost in fuel?',
+        rows: [
+          { label: 'Distance (d)', value: '180 miles' },
+          { label: 'Fuel economy', value: '28 mpg (8.40 L/100 km)' },
+          { label: 'Fuel used (F = 180 ÷ 28)', value: '6.43 gallons (24.3 L)' },
+          { label: 'Cost (C = 6.43 × $3.75)', value: '$24.11' },
+          { label: 'Cost per 100 miles (24.11 ÷ 180 × 100)', value: '$13.39' },
+          { label: 'Round trip (2 × 24.11)', value: '$48.21' }
+        ],
+        result: 'C ≈ $24.11 one way, $48.21 there and back',
+        explanation: 'Each extra 50 cents a gallon adds about $3.21 to this one-way trip (6.43 gallons × $0.50). The same trip in a car rated 40 mpg uses 4.5 gallons and costs about $16.88.'
+      },
+      watchOut: [
+        { title: 'Your real mpg is not the sticker mpg', body: 'Window-sticker ratings come from standardized tests. Your own average depends on speed, traffic, hills, load, weather and tire pressure, so a figure from your trip computer or a fill-up log gives a better estimate.' },
+        { title: 'Speed costs fuel', body: 'The Department of Energy’s fueleconomy.gov estimates that each 5 mph you drive over 50 mph is like paying about $0.30 more per gallon, and that aggressive driving can lower highway mileage by roughly 15% to 30%.' },
+        { title: 'US and UK gallons differ', body: 'A UK (imperial) gallon is 4.54609 liters, a US gallon 3.785411784 liters. 40 mpg in the UK is only about 33.3 mpg in US gallons, so pick the right unit in the menu.' },
+        { title: 'L/100 km runs the other way', body: 'In liters per 100 km a lower number means a more efficient car: 5 L/100 km is far better than 10 L/100 km. Mixing it up with km/L gives a wildly wrong cost.' },
+        { title: 'Fuel is only part of the trip', body: 'Tolls, parking and wear on the car add to the cost. The commute and toll calculators cover those.' }
+      ],
+      references: [
+        { label: 'U.S. Department of Energy and EPA, fueleconomy.gov: Gas Mileage Tips, Driving More Efficiently', url: 'https://www.fueleconomy.gov/feg/driveHabits.jsp' },
+        { label: 'U.S. Department of Energy and EPA, fueleconomy.gov: Factors That Affect Fuel Economy', url: 'https://www.fueleconomy.gov/feg/factors.shtml' },
+        { label: 'U.S. Energy Information Administration, Gasoline and Diesel Fuel Update (weekly retail prices)', url: 'https://www.eia.gov/petroleum/gasdiesel/' },
+        { label: 'NIST Special Publication 811, Appendix B: Conversion Factors (US and imperial gallon)', url: 'https://www.nist.gov/pml/special-publication-811/nist-guide-si-appendix-b-conversion-factors' }
+      ]
+    },
     inputs: [
       { id: 'distance', label: 'Distance (miles)', type: 'number', placeholder: '180', defaultValue: 180, step: 1, min: 0 },
       { id: 'mpg', label: 'Vehicle MPG', type: 'number', placeholder: '28', defaultValue: 28, step: 0.1, min: 1 },
       { id: 'pricePerGallon', label: 'Fuel price', type: 'currency', placeholder: '3.75', defaultValue: 3.75, step: 0.01, min: 0 }
     ],
     seo: {
-      title: 'Gas Cost Calculator',
-      description: 'Estimate the fuel cost of any road trip before you leave. Enter the distance, your vehicle MPG, and the price per gallon to see the total cost and gallons needed.',
+      title: 'Gas Cost Calculator – Fuel Cost of a Trip',
+      description: 'Free gas cost calculator: fuel cost of a trip from distance, mpg or L/100 km and the price per gallon or liter, or how far a fuel budget takes you.',
       faq: [
-        { question: 'How do I estimate gas cost?', answer: 'Divide distance by MPG, then multiply by fuel price to estimate total cost.' },
-        { question: 'Is this useful for trip planning?', answer: 'Yes, it helps compare fuel expenses for different trips and vehicles.' }
+        { question: 'How do I calculate the gas cost of a trip?', answer: 'Divide the distance by your miles per gallon to get the gallons used, then multiply by the price per gallon. 180 miles at 28 mpg is about 6.43 gallons, which costs about $24.11 at $3.75 a gallon.' },
+        { question: 'How do I calculate fuel cost in liters per 100 km?', answer: 'Multiply the distance in km by the L/100 km figure and divide by 100 to get liters, then multiply by the price per liter. 300 km at 7 L/100 km uses 21 liters, which costs 37.80 at 1.80 a liter.' },
+        { question: 'How far can I drive on a set budget?', answer: 'Type the budget into the cost, fill in your fuel economy and the price, and leave the distance alone. $40 at $3.75 a gallon in a 28 mpg car takes you about 299 miles.' },
+        { question: 'How do I convert mpg to L/100 km?', answer: 'Divide 235.215 by the mpg (US). 28 mpg is about 8.40 L/100 km. For UK mpg, divide 282.481 instead. The fuel economy menu does the conversion for you.' },
+        { question: 'Is a UK gallon the same as a US gallon?', answer: 'No. An imperial gallon is 4.54609 liters and a US gallon is 3.785411784 liters, so a UK mpg figure looks about 20% better than the same car in US mpg. 40 mpg (UK) is about 33.3 mpg (US).' },
+        { question: 'Should I use the EPA rating or my own mpg?', answer: 'Your own average is usually closer to reality, because speed, traffic, cargo and weather all change fuel use. Fill up, reset the trip meter, and divide the miles by the gallons at the next fill-up.' },
+        { question: 'Does the calculator include tolls and parking?', answer: 'No, it covers fuel only. Use the commute cost calculator for parking, tolls and vehicle wear, or the toll cost estimator for toll roads.' }
       ]
     },
     compute(values) {

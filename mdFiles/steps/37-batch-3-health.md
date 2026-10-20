@@ -3,7 +3,7 @@
 ## Progress
 
 - [x] Step file, draft PR
-- [ ] bmi-calculator (A · RangeBar with WHO adult bands)
+- [x] bmi-calculator (A · RangeBar with WHO adult bands)
 - [ ] calorie-calculator (B · CompareBars loss / maintenance / gain; plan: three-tier bar, not in kit)
 - [ ] tdee-calculator (B · Donut BMR + activity; plan: stacked bar, not in kit)
 - [ ] water-intake-calculator (B · CompareBars your estimate vs NASEM reference intakes; plan: glasses-per-day row, not in kit)

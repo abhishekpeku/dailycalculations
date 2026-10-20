@@ -11,6 +11,8 @@
 - [ ] pregnancy-due-date-calculator (B · Timeline with trimesters) — second run
 - [ ] Number verification script, tests, build, lint, STATUS.md, PR ready
 
+Paused 2026-10-20 after running-pace-calculator. Resume from the first unchecked box.
+
 Commit + push after each box (`step 37: <id>`). Runs are 5 calculators (D11): the first run
 builds bmi → running-pace and pauses; the second run does pregnancy-due-date and finishes.
 

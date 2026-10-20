@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-10-19 · Current step: **37** (Batch 3, health, YMYL — **paused by the user before starting**) · steps 17 + 30–36 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split, batches 1–2) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
+Last updated: 2026-10-20 · Current step: **37** (Batch 3, health, YMYL — **in progress, 5 of 6 done, paused after running-pace**; draft PR #11) · steps 17 + 30–36 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split, batches 1–2) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
 
 ---
 
@@ -115,7 +115,7 @@ is why 12-15 run after it.
 | 34 | (E7) Split data file | **DONE** 2026-10-19 | `data/calculators/<category>.ts`. **Moved before the batches**: every batch editing one 2,000-line file means huge diffs and a conflict with any other open branch. | §2 E7 |
 | 35 | Batch 1: finance (8) | **DONE** 2026-10-19 | YMYL. 6 × type A, loan-prepayment type B, paycheck C → B. PR #9. | §3 |
 | 36 | Batch 2: shopping + conversion (9) | **DONE** 2026-10-19 | 4 shopping type A (sales-tax, tip, discount, unit-price), cashback B, 4 converters type A. Stone added to `mass`. PR #10. | §3 |
-| 37 | Batch 3: health (6) | TODO (paused 2026-10-19 before any work) | YMYL. Nothing built yet: no branch, step file or PR. First run (5): bmi, calorie, tdee, water-intake, running-pace; second run: pregnancy-due-date. Pre-work design notes in the session log (2026-10-19, step 37 paused). | §3 |
+| 37 | Batch 3: health (6) | IN PROGRESS (paused 2026-10-20 after running-pace, 5 of 6) | YMYL. Branch `step/37-batch-3-health`, draft PR #11. Done: bmi, calorie, tdee, water-intake, running-pace. Remaining: pregnancy-due-date, then STATUS/PR ready. Resume from the first unchecked box in `mdFiles/steps/37-batch-3-health.md`. | §3 |
 | 38 | Batch 4: auto + home (12) | TODO | | §3 |
 | 39 | Batch 5: time, travel, work, creator, text, education (18) | TODO | | §3 |
 | 40–42 | Wave 1: math · statistics · conversion | TODO | Absorbs step 24 (math). 5 calculators per agent run. | §4 |
@@ -815,16 +815,31 @@ Step file: `mdFiles/steps/36-batch-2-shopping-conversion.md`.
 - Converting type-B calculators to type A lowers the `breakdown.spec` count again; the floor is 20.
 - Sub-cent money and the `¤` vs `$` symbol split are still open (Parked, step 18).
 
-37 · 2026-10-19 · **Batch 3 health — PAUSED before starting.** Paused by the user while the agent was still reading; nothing was written, branched or committed.
-Resume by starting step 37 fresh (write `mdFiles/steps/37-batch-3-health.md` first). Design notes
-from the read-through, planned but not built:
-- `bmi-calculator`: unitless output via the `count` dimension; solver guard for zero height without
-  touching `compute()`; give the output a real label (today it renders as "Bmi").
-- `running-pace-calculator`: likely needs a new `pace` dimension in `lib/units.ts` (base s/m, plus
-  min/km and min/mi) so time = distance × pace.
-- Kit gaps to Park, using the nearest kit component meanwhile: splits table, race-predictions table
-  and mm:ss formatting (stand-in: CompareBars of predicted race times); glasses-per-day row (water
-  intake); three-tier calorie-target bar.
+37 · 2026-10-20 · **Batch 3 health — IN PROGRESS, paused after 5 of 6 (D11)** (branch
+`step/37-batch-3-health`, draft PR #11; it also carries the two STATUS-only commits 0443633 and
+8259868 from local master). Done, each with full v2 content, primary references (CDC, WHO, NHLBI,
+NASEM, FAO/WHO/UNU, ACSM, Mifflin 1990, Frankenfield 2005, Hall 2011, Riegel 1981) and an
+"estimate only, not medical advice" note:
+- **bmi** (A): BMI ↔ weight ↔ height, BMI unitless via `count`, zero height → NaN in the solver
+  (`compute()` untouched, Parked NaN-at-min item still stands for it). Outputs: healthy-weight range
+  at BMI 18.5 / 24.9 (in lb). RangeBar with WHO/CDC adult bands. "Bmi" label gone (solver label).
+- **calorie** (B): CompareBars lose / maintain / gain; derived BMR row; weight/height unit menus.
+- **tdee** (B): Donut BMR + activity (derived `activityCalories`), center TDEE.
+- **water-intake** (B): CompareBars of the estimate vs NASEM adequate intakes from drinks
+  (2.2 L women, 3.0 L men, derived constants); headline fl oz with L and cups; glasses row.
+- **running-pace** (A): pace ↔ distance ↔ time; **new `pace` dimension** in `lib/units.ts` (base
+  s/m; min/km, min/mi, s/100 m; spec anchor added). Outputs speed (mph) and even-pace marathon;
+  CompareBars of Riegel predictions (5K/10K/half/marathon, minutes) from `solver.derive`.
+**Calorie + TDEE `compute()` gained a `sex` menu input** (0 = male, the old hard-coded +5; 1 = female,
+−161). Its snapshot values are 0 in all three sets, so **every output is unchanged**; the snapshot
+diff is only the new `"sex": 0` input line (3 per calculator). Activity factor is now a menu
+(1.2/1.375/1.55/1.725/1.9), so custom factors are no longer typeable.
+Numbers: independent Python checker, 103 checks, 0 mismatches; `solveState()` / `compute()` agree.
+`npm test` 254 pass; build and lint (ignoring `.open-next/**`, `.claude/**`) pass; all 5 pages
+checked on `next start` (H1, section ids, JSON-LD, visual aria-labels).
+**Resume:** build `pregnancy-due-date-calculator` (B, Timeline with trimesters; `timeDependent`,
+`todayMs` after mount), then the final box: rerun the checker, tests, build, lint, finish this entry,
+mark step 37 DONE and `gh pr ready 11`.
 
 ## Pending on the user — not code
 
@@ -932,3 +947,9 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
   Step 18 (region formatting) could show 3–4 decimals for money below $1.
 - **Duplicate alias** (found in step 36): `house loan emi calculator` is on both `emi-calculator` and
   `mortgage-calculator`. Pick one.
+- **Kit and widget gaps from step 37** (nearest kit component used instead): a three-tier bar
+  (calorie: CompareBars), a stacked bar (TDEE: Donut), a glasses-per-day row (water: CompareBars vs
+  NASEM), a splits / race-predictions table (running pace: CompareBars of Riegel times).
+  **No mm:ss / h:mm:ss formatting**: pace and times show decimal minutes (8.047 min/mi, not 8:03).
+  **No combined ft + in height input** (BMI, calorie, TDEE take one unit). BMI's healthy-range
+  outputs are fixed to lb until the region step picks units.

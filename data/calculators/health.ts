@@ -415,7 +415,7 @@ export const healthCalculators: CalculatorConfig[] = [
           { from: 'activityCalories', label: 'Activity and digestion' }
         ],
         center: 'tdee',
-        centerSub: 'kcal a day'
+        centerSub: 'TDEE per day'
       }
     },
     content: {

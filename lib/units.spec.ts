@@ -2,6 +2,7 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { UNITS, findUnit, fromBase, toBase, type UnitDimension } from './units.ts';
+import { currencySymbol } from './calculator.ts';
 
 const dimensions = Object.keys(UNITS) as UnitDimension[];
 
@@ -151,6 +152,10 @@ describe('anchor values', () => {
       assert.equal(toBase(7.5, dimension, UNITS[dimension][0].id), 7.5);
     }
     assert.equal(UNITS.count[0].label, '');
+  });
+  test('currency label is the real symbol from lib/calculator.ts, never the ¤ placeholder', () => {
+    assert.equal(UNITS.currency[0].label, currencySymbol());
+    for (const units of Object.values(UNITS)) for (const unit of units) assert.ok(!unit.label.includes('¤'), unit.id);
   });
   test('term: base is months, 30 years = 360 months', () => {
     assert.equal(UNITS.term[0].id, 'mo');

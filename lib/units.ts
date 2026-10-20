@@ -1,3 +1,5 @@
+import { currencySymbol } from './calculator.ts';
+
 // Unit conversions to the base unit of each dimension (the first unit listed, factor 1). Exact where
 // the definition is exact; otherwise NIST SP 811 Appendix B. See mdFiles/steps/30-units-v2.md.
 export type UnitDimension =
@@ -210,8 +212,8 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
   // Unit-less. The base value is the percent number itself (5 means 5%).
   percent: [{ id: '%', label: '%', factor: 1 }],
   count: [{ id: 'count', label: '', factor: 1 }],
-  // Placeholder until the region step sets the currency symbol and formatting.
-  currency: [{ id: 'currency', label: '¤', factor: 1 }],
+  // The symbol comes from lib/calculator.ts so the solver and breakdown widgets agree.
+  currency: [{ id: 'currency', label: currencySymbol(), factor: 1 }],
   // A loan or savings term in whole calendar months: 1 year = 12 months, exact by definition.
   term: [
     { id: 'mo', label: 'months', factor: 1 },

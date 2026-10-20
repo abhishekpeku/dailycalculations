@@ -24,7 +24,8 @@ export type CalculatorInput = {
   options?: { value: number; label: string }[];
 };
 
-export type BreakdownFormat = 'currency' | 'percent' | 'integer' | 'number' | 'significant';
+/** `date`: the value is epoch ms of a local calendar date, printed as a long date. */
+export type BreakdownFormat = 'currency' | 'percent' | 'integer' | 'number' | 'significant' | 'date';
 
 /** One figure in the type-B result card: a compute() key or a `derive` key. */
 export type BreakdownOutput = {

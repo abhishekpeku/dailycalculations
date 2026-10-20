@@ -11,6 +11,7 @@ export type UnitDimension =
   | 'volume'
   | 'time'
   | 'speed'
+  | 'pace'
   | 'temperature'
   | 'energy'
   | 'power'
@@ -141,6 +142,13 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
     { id: 'mph', label: 'mph', factor: MILE / HOUR },
     { id: 'kn', label: 'kn', factor: NAUTICAL_MILE / HOUR },
     { id: 'ft/s', label: 'ft/s', factor: FOOT }
+  ],
+  // Running pace, time per distance (the reciprocal of speed). Exact from the mile and kilometer.
+  pace: [
+    { id: 's/m', label: 's/m', factor: 1 },
+    { id: 'min/km', label: 'min/km', factor: 60 / 1000 },
+    { id: 'min/mi', label: 'min/mi', factor: 60 / MILE },
+    { id: 's/100m', label: 's/100 m', factor: 1 / 100 }
   ],
   // Affine and exact: K = °C + 273.15, K = (°F + 459.67) × 5/9, K = °R × 5/9.
   temperature: [

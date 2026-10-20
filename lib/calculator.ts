@@ -74,6 +74,11 @@ export function formatDecimal(value: number, maxDigits = 2) {
   }).format(value);
 }
 
+// A local calendar date from epoch ms, e.g. "December 6, 2026". Region formatting comes with step 18.
+export function formatDate(ms: number) {
+  return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(ms));
+}
+
 // The symbol shown beside currency inputs.
 export function currencySymbol() {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })

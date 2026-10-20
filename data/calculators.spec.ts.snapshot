@@ -69,7 +69,8 @@ exports[`compute() snapshots > calorie-calculator 1`] = `
       "weight": 170,
       "height": 69,
       "age": 30,
-      "activityFactor": 1.55
+      "activityFactor": 1.55,
+      "sex": 0
     },
     "outputs": {
       "maintenanceCalories": 2668.29617,
@@ -82,7 +83,8 @@ exports[`compute() snapshots > calorie-calculator 1`] = `
       "weight": 255,
       "height": 104,
       "age": 45,
-      "activityFactor": 2.325
+      "activityFactor": 2.325,
+      "sex": 0
     },
     "outputs": {
       "maintenanceCalories": 6016.30857,
@@ -95,7 +97,8 @@ exports[`compute() snapshots > calorie-calculator 1`] = `
       "weight": 0,
       "height": 0,
       "age": 1,
-      "activityFactor": 1
+      "activityFactor": 1,
+      "sex": 0
     },
     "outputs": {
       "maintenanceCalories": 0,
@@ -1773,7 +1776,8 @@ exports[`compute() snapshots > tdee-calculator 1`] = `
       "weight": 155,
       "height": 66,
       "age": 25,
-      "activityFactor": 1.375
+      "activityFactor": 1.375,
+      "sex": 0
     },
     "outputs": {
       "tdee": 2242.3742,
@@ -1787,7 +1791,8 @@ exports[`compute() snapshots > tdee-calculator 1`] = `
       "weight": 233,
       "height": 99,
       "age": 38,
-      "activityFactor": 2.075
+      "activityFactor": 2.075,
+      "sex": 0
     },
     "outputs": {
       "tdee": 5070.250797,
@@ -1801,7 +1806,8 @@ exports[`compute() snapshots > tdee-calculator 1`] = `
       "weight": 0,
       "height": 0,
       "age": 1,
-      "activityFactor": 1
+      "activityFactor": 1,
+      "sex": 0
     },
     "outputs": {
       "tdee": 0,

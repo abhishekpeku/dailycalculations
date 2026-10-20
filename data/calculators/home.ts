@@ -506,25 +506,121 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'furniture-fit-calculator',
     category: 'home',
-    updatedAt: '2026-09-10',
-    aliases: ['will it fit calculator', 'room layout calculator', 'doorway fit calculator'],
-    related: ['paint-calculator', 'tile-calculator', 'wallpaper-calculator', 'miles-to-kilometers-converter'],
+    updatedAt: '2026-10-21',
+    aliases: ['will it fit calculator', 'room layout calculator', 'doorway fit calculator', 'furniture clearance calculator'],
+    related: ['paint-calculator', 'tile-calculator', 'wallpaper-calculator', 'concrete-calculator'],
     title: 'Furniture Fit Calculator',
-    description: 'Check if a piece of furniture fits in your room with clearance space for walkways and doors.',
-    example: 'Check if a 78x36 inch sofa fits in a 12x14 ft living room with 36 inch walkways.',
+    description: 'Check whether a sofa, bed or other piece of furniture leaves enough walkway clearance in a room, measured along the room’s length and width separately, in feet or inches.',
+    example: 'A 78x36 inch sofa in a 14x12 ft room, with a 36 inch clearance target, leaves 54 inches to spare along the room’s length and 72 inches along its width — it fits comfortably.',
+    breakdown: {
+      headline: 'tightestMargin',
+      headlineLabel: 'Tightest clearance margin',
+      outputs: [
+        { id: 'tightestMargin', label: 'Tightest clearance margin', format: 'number', dimension: 'length', unit: 'in' },
+        { id: 'marginLength', label: 'Clearance margin along the length', format: 'number', dimension: 'length', unit: 'in' },
+        { id: 'marginWidth', label: 'Clearance margin along the width', format: 'number', dimension: 'length', unit: 'in' },
+        { id: 'roomSqFt', label: 'Room area', format: 'number', dimension: 'area', unit: 'ft2' },
+        { id: 'furnitureSqFt', label: 'Furniture footprint', format: 'number', dimension: 'area', unit: 'ft2' }
+      ],
+      groups: [
+        { title: 'Room', inputs: ['roomLengthFt', 'roomWidthFt'] },
+        { title: 'Furniture', inputs: ['furnitureLengthIn', 'furnitureWidthIn'] },
+        { title: 'Clearance', inputs: ['clearanceIn'] }
+      ],
+      derive: (v) => ({
+        marginLength: v.remainingLength - v.clearanceIn,
+        marginWidth: v.remainingWidth - v.clearanceIn,
+        tightestMargin: Math.min(v.remainingLength - v.clearanceIn, v.remainingWidth - v.clearanceIn)
+      }),
+      visual: {
+        type: 'rangeBar',
+        value: 'tightestMargin',
+        title: 'Tightest clearance margin',
+        bands: [
+          { label: 'Won’t fit', min: -36, max: 0 },
+          { label: 'Fits, tight', min: 0, max: 12 },
+          { label: 'Comfortable', min: 12, max: 36 },
+          { label: 'Spacious', min: 36, max: 96 }
+        ]
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What “does it fit” means here',
+        paragraphs: [
+          'This calculator makes two independent checks. Along the room’s length, it subtracts the furniture’s length from the room’s length (in inches) to see how much floor is left; along the room’s width, it does the same subtraction the other way. Both leftover strips are then compared against your clearance target — commonly 36 inches, the minimum clear width the U.S. Access Board’s 2010 ADA Standards set for an accessible route. A 14×12 ft room (168×144 inches) with a 78×36 inch sofa and a 36-inch clearance target leaves 90 inches lengthwise and 108 inches widthwise before the clearance is subtracted — margins of 54 and 72 inches once it is, so the sofa clears the target in both directions.',
+          'It is a quick sanity check, not a floor-plan simulator. The math treats the furniture as a rectangle sitting flush against one wall, fully inside the room, and checks the two directions on their own rather than modeling the true L-shaped floor space left around a piece placed in a corner. It does not know about doors swinging into the room, outlets, radiators, other furniture already in place, or a sectional’s actual silhouette, which can be considerably bigger than its simple length-by-width footprint. Treat a “fits” result as a green light to measure for real — painter’s tape on the floor in the furniture’s footprint is the cheap way to confirm it before anything is delivered.',
+          'A “fits” result also only covers the room, not the route to it. The furniture still has to get through a doorway or hallway to reach that room, and the legal minimum for an interior opening is narrower than the ADA’s walkway figure: the International Residential Code’s required egress door needs a clear width of only 32 inches (IRC R311.2), and the code sets no minimum at all for other interior doors beyond that one. A sofa that comfortably clears a 36-inch walkway target can still be a tight squeeze, or need to go in at an angle, through a 32-inch door frame or a narrower older one.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the room, then the furniture’s footprint, then the clearance you want to keep clear.',
+        steps: [
+          { name: 'Enter the room dimensions', text: 'Type the room’s length and width in feet.' },
+          { name: 'Enter the furniture’s footprint', text: 'Measure its length and width in inches at the widest point, including arms, rolled edges and legs.' },
+          { name: 'Set your clearance target', text: '36 inches matches the ADA’s minimum clear width for an accessible route; a secondary path past a side table can be tighter, a busy shared path wider.' },
+          { name: 'Read the result', text: 'The headline is the tighter of the two margins. Positive means it clears your target in both directions by that many inches; negative means it falls short in at least one direction.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The room is converted to inches, the furniture’s footprint is subtracted in each direction, and the clearance target is subtracted from what is left.',
+        expression: 'remaining length = (room length × 12) − furniture length\nremaining width = (room width × 12) − furniture width\nmargin = remaining − clearance\nfits = margin(length) ≥ 0 and margin(width) ≥ 0',
+        terms: [
+          { symbol: 'room length, width', meaning: 'Room dimensions, in feet, converted to inches by multiplying by 12.' },
+          { symbol: 'furniture length, width', meaning: 'The furniture’s footprint, in inches, at its widest point in each direction.' },
+          { symbol: 'clearance', meaning: 'Your walkway clearance target, in inches — 36 matches the ADA minimum for an accessible route.' },
+          { symbol: 'margin', meaning: 'Spare space beyond the clearance target in that direction; negative means it falls short.' }
+        ],
+        note: 'A two-direction check, not a floor-plan simulator — it assumes the furniture’s bounding box sits flush against one wall with nothing else in the room, and it does not check whether the piece can get through a doorway.'
+      },
+      workedExample: {
+        intro: 'You are placing a 78×36 inch sofa in a 14 ft by 12 ft room, with a 36-inch clearance target.',
+        rows: [
+          { label: 'Room in inches (14 × 12 × 12)', value: '168 in × 144 in' },
+          { label: 'Space left lengthwise (168 − 78)', value: '90 in' },
+          { label: 'Space left widthwise (144 − 36)', value: '108 in' },
+          { label: 'Clearance margin, length side (90 − 36)', value: '54 in' },
+          { label: 'Clearance margin, width side (108 − 36)', value: '72 in' },
+          { label: 'Tightest margin', value: '54 in' }
+        ],
+        result: 'Fits, with 54 in to spare in the tightest direction',
+        explanation: 'A much longer, 140-inch sectional in the same room would leave only 28 in lengthwise — 8 in short of the 36-inch target — so this check would flag it as not fitting lengthwise even though it still clears the width check.'
+      },
+      watchOut: [
+        { title: 'Two directions, not a real layout', body: 'The calculator checks the length and width independently; it does not model the L-shaped floor space actually left when a piece sits in a corner, or know about doors, outlets or other furniture already in the room.' },
+        { title: 'A doorway check is separate from a walkway check', body: 'Clearing your walkway target does not mean the piece clears the door on the way in. The IRC’s required egress door has a legal minimum clear width of only 32 inches (R311.2), and the code sets no minimum at all for other interior doors — measure the actual doorway the piece has to pass through.' },
+        { title: 'Clearance targets depend on the path', body: '36 inches is the ADA’s minimum for an accessible route generally; a secondary path past a side table can be tighter, while the ADA calls for 42 inches approaching a tight 180-degree turn — this tool checks a single straight clearance, not a turn.' },
+        { title: 'Measure the widest point', body: 'Arms, rolled edges, reclined leg rests and cushions all add to a piece’s real footprint. Measuring only the frame underestimates how much floor it actually needs.' },
+        { title: 'Both margins have to clear', body: 'A piece that is deep but narrow can pass the width check and fail the length check, or the reverse — the headline tightest margin is whichever one is closer to zero.' },
+        { title: 'An estimate, not a substitute for taping it out', body: 'This is a straight-line sanity check. For an irregular room, an L-shaped sectional, or a piece going up a staircase or around a tight turn, mark the footprint on the floor with tape and walk it before you buy.' }
+      ],
+      references: [
+        { label: 'U.S. Access Board, 2010 ADA Standards for Accessible Design — Chapter 4, Accessible Routes (403.5.1 clear width, 403.5.2 turns)', url: 'https://www.access-board.gov/ada/chapter/ch04/' },
+        { label: 'International Code Council, International Residential Code — R311.6 Hallways (36 in minimum width)', url: 'https://up.codes/s/hallways' },
+        { label: 'International Code Council, International Residential Code — R311.2 Egress Door (32 in minimum clear width)', url: 'https://up.codes/s/egress-door' }
+      ]
+    },
     inputs: [
-      { id: 'roomLengthFt', label: 'Room length (ft)', type: 'number', placeholder: '14', defaultValue: 14, step: 0.5, min: 1 },
-      { id: 'roomWidthFt', label: 'Room width (ft)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.5, min: 1 },
-      { id: 'furnitureLengthIn', label: 'Furniture length (inches)', type: 'number', placeholder: '78', defaultValue: 78, step: 1, min: 1 },
-      { id: 'furnitureWidthIn', label: 'Furniture width / depth (inches)', type: 'number', placeholder: '36', defaultValue: 36, step: 1, min: 1 },
-      { id: 'clearanceIn', label: 'Desired walkway clearance (inches, min 36 per ADA)', type: 'number', placeholder: '36', defaultValue: 36, step: 1, min: 18 }
+      { id: 'roomLengthFt', label: 'Room length', type: 'number', placeholder: '14', defaultValue: 14, step: 0.5, min: 1, dimension: 'length', unit: 'ft' },
+      { id: 'roomWidthFt', label: 'Room width', type: 'number', placeholder: '12', defaultValue: 12, step: 0.5, min: 1, dimension: 'length', unit: 'ft' },
+      { id: 'furnitureLengthIn', label: 'Furniture length', type: 'number', placeholder: '78', defaultValue: 78, step: 1, min: 1, dimension: 'length', unit: 'in' },
+      { id: 'furnitureWidthIn', label: 'Furniture width / depth', type: 'number', placeholder: '36', defaultValue: 36, step: 1, min: 1, dimension: 'length', unit: 'in' },
+      { id: 'clearanceIn', label: 'Desired walkway clearance (min 36 in per ADA)', type: 'number', placeholder: '36', defaultValue: 36, step: 1, min: 18, dimension: 'length', unit: 'in' }
     ],
     seo: {
-      title: 'Furniture Fit Calculator – Room Layout Planner',
-      description: 'Check if furniture fits in your room with proper ADA-recommended walkway clearance. Enter room and furniture dimensions in feet and inches.',
+      title: 'Furniture Fit Calculator – Room Layout & Clearance Planner',
+      description: 'Check if furniture fits in your room with enough walkway clearance, measured against the ADA’s 36-inch accessible-route minimum. Enter room and furniture dimensions in feet and inches.',
       faq: [
-        { question: 'How much clearance do I need around furniture?', answer: 'The ADA recommends at least 36 inches of clear walkway. Interior design guidelines suggest 30–36 inches around sofas and 42–48 inches for main traffic paths.' },
-        { question: 'How do I measure furniture for a room?', answer: 'Measure the widest point of the furniture including legs and arms. Also measure doorways (standard US interior door is 80×32 inches) to ensure the piece can be moved in.' }
+        { question: 'How much clearance does a sofa or other furniture need?', answer: 'The U.S. Access Board’s ADA Standards set 36 inches as the minimum clear width for an accessible route. That is a reasonable default for a main walkway; a secondary path past a side table can be tighter.' },
+        { question: 'Does this check whether the furniture fits through the door?', answer: 'No — it only checks the room’s floor space. A doorway is a separate check: the IRC’s required egress door has a legal minimum clear width of just 32 inches, narrower than most walkway targets, and other interior doors have no code minimum at all.' },
+        { question: 'How do I measure furniture for this calculator?', answer: 'Measure the length and width at the widest point, including arms, rolled edges and any legs or reclined footrests, not just the main frame.' },
+        { question: 'What does a negative clearance margin mean?', answer: 'It means the room falls short of your clearance target in that direction by that many inches — for example, a margin of −8 in means the piece needs 8 more inches than the room provides, in that direction.' },
+        { question: 'Does this work for an L-shaped sectional?', answer: 'Only approximately. Enter the sectional’s overall length and width as if it were a rectangle; the actual L shape leaves more usable floor at the open corner than this simple bounding-box check assumes.' },
+        { question: 'What clearance should I use for a shared or busy path?', answer: 'The ADA calls for 42 inches of clear width approaching a tight 180-degree turn, more than the general 36-inch minimum, so a busier shared path is a reasonable place to raise the clearance target.' },
+        { question: 'Why do both the length and width checks matter?', answer: 'A piece can be too long for one direction but fine for the other. The headline “tightest margin” is whichever of the two checks is closer to failing, so you can see which dimension is the actual constraint.' },
+        { question: 'Is this a substitute for measuring the room myself?', answer: 'No. It is a quick sanity check from a tape-measure’s worth of numbers. For anything close to the limit, or an irregular room, mark the furniture’s footprint on the floor with tape before you buy or move it.' }
       ]
     },
     compute(values) {

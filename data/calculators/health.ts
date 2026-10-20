@@ -1,5 +1,20 @@
 import type { CalculatorConfig } from './types.ts';
 
+// Conventional multipliers on a resting-rate estimate (calorie and TDEE calculators).
+const ACTIVITY_OPTIONS = [
+  { value: 1.2, label: 'Sedentary (little or no exercise)' },
+  { value: 1.375, label: 'Lightly active (1–3 days a week)' },
+  { value: 1.55, label: 'Moderately active (3–5 days a week)' },
+  { value: 1.725, label: 'Very active (6–7 days a week)' },
+  { value: 1.9, label: 'Extra active (hard daily training or physical job)' }
+];
+
+// Mifflin–St Jeor sex constant. 0 (male) is the default and what compute() used before step 37.
+const SEX_OPTIONS = [
+  { value: 0, label: 'Male' },
+  { value: 1, label: 'Female' }
+];
+
 export const healthCalculators: CalculatorConfig[] = [
   {
     id: 'bmi-calculator',
@@ -157,30 +172,123 @@ export const healthCalculators: CalculatorConfig[] = [
   {
     id: 'calorie-calculator',
     category: 'health',
-    updatedAt: '2026-09-10',
-    aliases: ['calories calculator', 'daily calorie needs calculator', 'calorie intake calculator', 'weight loss calorie calculator'],
+    updatedAt: '2026-10-20',
+    aliases: ['calories calculator', 'daily calorie needs calculator', 'calorie intake calculator', 'weight loss calorie calculator', 'how many calories should i eat'],
     related: ['tdee-calculator', 'bmi-calculator', 'running-pace-calculator'],
     title: 'Calorie Calculator',
-    description: 'Estimate daily calorie needs based on weight, height, age, and activity level.',
-    example: 'Calculate daily calories for a 30-year-old, 170 lb, 5 ft 9 in person with moderate activity.',
+    description: 'Estimate how many calories a day you burn, and a starting intake for losing, keeping or gaining weight, from your sex, age, height, weight and activity level with the Mifflin–St Jeor equation.',
+    example: 'A 30-year-old man, 5 ft 9 in and 170 lb, who is moderately active burns about 2,668 kcal a day. Eating about 2,168 kcal a day is a 500-calorie daily deficit; about 3,168 kcal a day is a 500-calorie surplus.',
+    breakdown: {
+      headline: 'maintenanceCalories',
+      headlineLabel: 'Calories to maintain your weight',
+      outputs: [
+        { id: 'maintenanceCalories', label: 'Calories to maintain your weight', format: 'integer', dimension: 'energy', unit: 'kcal', alsoIn: ['kJ'] },
+        { id: 'weightLossCalories', label: 'To lose weight (500 kcal a day below)', format: 'integer', dimension: 'energy', unit: 'kcal' },
+        { id: 'weightGainCalories', label: 'To gain weight (500 kcal a day above)', format: 'integer', dimension: 'energy', unit: 'kcal' },
+        { id: 'bmr', label: 'Resting metabolic rate (Mifflin–St Jeor)', format: 'integer', dimension: 'energy', unit: 'kcal' }
+      ],
+      groups: [
+        { title: 'About you', inputs: ['sex', 'age', 'weight', 'height'] },
+        { title: 'How active you are', inputs: ['activityFactor'] }
+      ],
+      derive: (values) => ({ bmr: values.maintenanceCalories / values.activityFactor }),
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'weightLossCalories', label: 'Lose' },
+          { from: 'maintenanceCalories', label: 'Maintain' },
+          { from: 'weightGainCalories', label: 'Gain' }
+        ],
+        title: 'Calories a day, by goal',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-20',
+      concept: {
+        title: 'How many calories do you need?',
+        paragraphs: [
+          'Your body uses energy all day: to keep your heart, brain, lungs and other organs running, to digest food, and to move. Nutrition labels count that energy in kilocalories, written "calories" or "kcal" (1 kcal = 4.184 kJ). When you eat about as much as you burn, your weight stays roughly steady. Eating less over weeks and months tends to lower it, and eating more tends to raise it.',
+          'Nobody can measure their daily burn at home, so calculators estimate it in two steps. First, a prediction equation estimates the resting metabolic rate: the energy you would use lying still for a day. This page uses the Mifflin–St Jeor equation, published in 1990 from measurements of 498 healthy adults. A 2005 systematic review for the American Dietetic Association found it the most reliable of the common equations, landing within 10% of measured resting rate for more people than the others, but still missing by more than that for some.',
+          'Second, the resting rate is multiplied by an activity factor to cover everything else you do in a day. The result is your estimated maintenance intake. The loss and gain figures are simply 500 kcal a day below and above it, a common starting point that dietitians then adjust to how your weight actually responds.',
+          'Treat every figure here as a first guess. Two people with the same age, height and weight can differ by a few hundred calories a day, and the only way to find your own number is to track your intake and weight for a few weeks.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in the five fields. The results update as you type.',
+        steps: [
+          { name: 'Choose your sex', text: 'The equation has one constant for men and one for women, 166 kcal apart, because of average differences in body composition.' },
+          { name: 'Enter age, weight and height', text: 'Pick units from the menus beside weight (lb, kg or st) and height (in, ft or cm). 5 ft 9 in is 69 in.' },
+          { name: 'Pick an activity level', text: 'Choose the description closest to a typical week, counting both exercise and how much you move at work. If unsure, pick the lower one: most people overestimate their activity.' },
+          { name: 'Read the targets', text: 'The headline is the estimated intake to maintain your weight. Below it are the 500-kcal deficit and surplus, and your resting rate.' },
+          { name: 'Adjust with real data', text: 'Eat close to your chosen target for two to four weeks while weighing yourself regularly, then raise or lower the target according to what the scale does.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The Mifflin–St Jeor equation estimates resting energy expenditure from weight, height and age. Multiplying by an activity factor gives daily needs.',
+        expression: 'BMR = 10 × kg + 6.25 × cm − 5 × age + s\nMaintain = BMR × activity factor\nLose = Maintain − 500\nGain = Maintain + 500',
+        terms: [
+          { symbol: 'BMR', meaning: 'Estimated resting (basal) metabolic rate, in kcal per day.' },
+          { symbol: 'kg, cm', meaning: 'Body weight in kilograms and height in centimeters (1 lb = 0.4536 kg, 1 in = 2.54 cm).' },
+          { symbol: 'age', meaning: 'Age in whole years.' },
+          { symbol: 's', meaning: '+5 for men, −161 for women.' },
+          { symbol: 'activity factor', meaning: '1.2 sedentary, 1.375 lightly active, 1.55 moderately active, 1.725 very active, 1.9 extra active. A common convention, not part of the 1990 paper.' }
+        ],
+        note: 'Estimate only, not medical advice. Prediction equations can be off by 10% or more for an individual. If you are pregnant, breastfeeding, under 18, have a medical condition or want to lose a lot of weight, ask a doctor or registered dietitian for a target.'
+      },
+      workedExample: {
+        intro: 'A 30-year-old man is 5 ft 9 in tall, weighs 170 lb and is moderately active (exercise three to five days a week). How many calories does he need?',
+        rows: [
+          { label: 'Weight (170 × 0.4536)', value: '77.11 kg' },
+          { label: 'Height (69 × 2.54)', value: '175.26 cm' },
+          { label: 'BMR (771.1 + 1,095.4 − 150 + 5)', value: '1,721 kcal/day' },
+          { label: 'Maintain (1,721.5 × 1.55)', value: '2,668 kcal/day' },
+          { label: 'Lose (2,668 − 500)', value: '2,168 kcal/day' },
+          { label: 'Gain (2,668 + 500)', value: '3,168 kcal/day' }
+        ],
+        result: 'About 2,668 kcal a day to maintain · 2,168 to lose · 3,168 to gain',
+        explanation: 'The four terms of the equation are 10 × 77.11 = 771.1, 6.25 × 175.26 = 1,095.4, 5 × 30 = 150, and the male constant +5. For a woman with the same age, height, weight and activity, the constant is −161 instead, so her resting rate is 1,555 kcal and her maintenance estimate about 2,411 kcal a day.'
+      },
+      watchOut: [
+        { title: 'The 500-calorie rule overpromises', body: 'The old idea that 3,500 kcal equals one pound, so a 500 kcal daily deficit loses a pound a week forever, ignores the fact that you burn less as you get lighter. NIH researchers found weight loss slows over time and recommend dynamic models, such as the NIDDK Body Weight Planner, for longer plans.' },
+        { title: 'Activity factors are rough', body: 'They are broad bands, and people tend to pick one too high. The FAO/WHO/UNU expert report puts sedentary or lightly active lifestyles at 1.40 to 1.69 times resting rate, so the 1.2 "sedentary" factor here is deliberately conservative.' },
+        { title: 'Not for everyone', body: 'The equation was built from healthy, non-pregnant adults. It is less reliable for very muscular people, older adults, people with obesity and some ethnic groups, and it does not apply in pregnancy, breastfeeding or illness.' },
+        { title: 'Do not go too low', body: 'Very low-calorie diets can cause muscle loss, nutrient shortfalls and gallstones, and should only be followed under medical supervision. A deficit that leaves you exhausted or hungry all the time is too big.' },
+        { title: 'Estimate only, not medical advice', body: 'Use these figures as a starting point, then adjust to how your weight and energy respond, ideally with help from a registered dietitian or doctor.' }
+      ],
+      references: [
+        { label: 'Mifflin MD, St Jeor ST, et al., A new predictive equation for resting energy expenditure in healthy individuals, American Journal of Clinical Nutrition 51 (1990): 241–247', url: 'https://pubmed.ncbi.nlm.nih.gov/2305711/' },
+        { label: 'Frankenfield D, Roth-Yousey L, Compher C, Comparison of predictive equations for resting metabolic rate in healthy nonobese and obese adults: a systematic review, J Am Diet Assoc 105 (2005): 775–789', url: 'https://pubmed.ncbi.nlm.nih.gov/15883556/' },
+        { label: 'Hall KD, et al., Quantification of the effect of energy imbalance on bodyweight, The Lancet 378 (2011): 826–837', url: 'https://pubmed.ncbi.nlm.nih.gov/21872751/' },
+        { label: 'FAO/WHO/UNU, Human energy requirements (2004), chapter 5: physical activity levels', url: 'https://www.fao.org/4/y5686e/y5686e07.htm' }
+      ]
+    },
     inputs: [
-      { id: 'weight', label: 'Weight (lb)', type: 'number', placeholder: '170', defaultValue: 170, step: 1, min: 0 },
-      { id: 'height', label: 'Height (in)', type: 'number', placeholder: '69', defaultValue: 69, step: 1, min: 0 },
+      { id: 'weight', label: 'Weight', type: 'number', placeholder: '170', defaultValue: 170, step: 1, min: 0, dimension: 'mass', unit: 'lb' },
+      { id: 'height', label: 'Height', type: 'number', placeholder: '69', defaultValue: 69, step: 1, min: 0, dimension: 'length', unit: 'in' },
       { id: 'age', label: 'Age (years)', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1 },
-      { id: 'activityFactor', label: 'Activity factor (1.2 = sedentary, 1.375 = light, 1.55 = moderate, 1.725 = active)', type: 'number', placeholder: '1.55', defaultValue: 1.55, step: 0.025, min: 1 }
+      { id: 'activityFactor', label: 'Activity level', type: 'number', placeholder: '1.55', defaultValue: 1.55, step: 0.025, min: 1, options: ACTIVITY_OPTIONS },
+      { id: 'sex', label: 'Sex', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0, options: SEX_OPTIONS }
     ],
     seo: {
-      title: 'Calorie Calculator',
-      description: 'Estimate your daily calorie needs using the Mifflin-St Jeor equation. Enter your weight, height, age, and activity level for maintenance, weight-loss, and weight-gain targets.',
+      title: 'Calorie Calculator – Daily Calories to Lose or Gain Weight',
+      description: 'Estimate your daily calorie needs with the Mifflin–St Jeor equation, plus starting targets to lose or gain weight. Works in lb, kg or stone and in or cm.',
       faq: [
-        { question: 'How are daily calories calculated?', answer: 'This tool uses the Mifflin-St Jeor formula to find your basal metabolic rate, then multiplies by your activity factor.' },
-        { question: 'What activity factor should I use?', answer: 'Use 1.2 for sedentary, 1.375 for light activity, 1.55 for moderate, and 1.725 for active lifestyles.' }
+        { question: 'How many calories should I eat a day?', answer: 'It depends on your size, age, sex and activity. A moderately active 30-year-old man who is 5 ft 9 in and 170 lb needs about 2,668 kcal a day to stay the same weight; a woman of the same size and activity needs about 2,411. Use those as starting points and adjust to how your weight changes.' },
+        { question: 'How are daily calories calculated?', answer: 'This calculator estimates your resting metabolic rate with the Mifflin–St Jeor equation (10 × kg + 6.25 × cm − 5 × age, plus 5 for men or minus 161 for women), then multiplies it by an activity factor between 1.2 and 1.9.' },
+        { question: 'What activity level should I choose?', answer: 'Sedentary (1.2) means little or no exercise; lightly active (1.375) one to three days a week; moderately active (1.55) three to five days; very active (1.725) six or seven days; extra active (1.9) hard daily training or a physical job. When in doubt, choose the lower level.' },
+        { question: 'Will a 500-calorie deficit lose a pound a week?', answer: 'At first it may come close, but not for long. As you lose weight you burn less, so the same intake gives a shrinking deficit. NIH research by Hall and colleagues replaced the 3,500-calories-per-pound rule with models that show weight loss slowing over time.' },
+        { question: 'How accurate is the Mifflin–St Jeor equation?', answer: 'It is the most reliable of the common equations for healthy adults, but a 2005 systematic review found it still missed measured resting rate by more than 10% for a sizable minority of people. Measured intake and weight over a few weeks are a better guide than any formula.' },
+        { question: 'Why does the calculator ask for my sex?', answer: 'Men on average carry more muscle than women of the same height and weight, so they burn more at rest. The equation accounts for that with a constant: +5 for men and −161 for women.' }
       ]
     },
     compute(values) {
       const weightKg = values.weight * 0.453592;
       const heightCm = values.height * 2.54;
-      const bmr = 10 * weightKg + 6.25 * heightCm - 5 * values.age + 5;
+      // Mifflin–St Jeor sex constant: sex 1 = female (−161); anything else = male (+5).
+      const sexConstant = values.sex === 1 ? -161 : 5;
+      const bmr = 10 * weightKg + 6.25 * heightCm - 5 * values.age + sexConstant;
       const maintenanceCalories = bmr * values.activityFactor;
       const weightLossCalories = maintenanceCalories - 500;
       const weightGainCalories = maintenanceCalories + 500;

@@ -298,31 +298,124 @@ export const healthCalculators: CalculatorConfig[] = [
   {
     id: 'tdee-calculator',
     category: 'health',
-    updatedAt: '2026-09-10',
-    aliases: ['total daily energy expenditure calculator', 'maintenance calories calculator', 'tdee and bmr calculator'],
+    updatedAt: '2026-10-20',
+    aliases: ['total daily energy expenditure calculator', 'maintenance calories calculator', 'tdee and bmr calculator', 'bmr calculator', 'basal metabolic rate calculator'],
     related: ['calorie-calculator', 'bmi-calculator', 'running-pace-calculator'],
     redirectFrom: ['bmr-calculator'],
     title: 'TDEE Calculator',
-    description: 'Calculate total daily energy expenditure based on BMR and activity level.',
-    example: 'Find the TDEE for a 25-year-old, 155 lb, 5 ft 6 in person with light activity.',
+    description: 'Estimate your total daily energy expenditure (TDEE) and basal metabolic rate (BMR) with the Mifflin–St Jeor equation, and see how much of your daily burn comes from resting versus activity.',
+    example: 'A 25-year-old man, 5 ft 6 in and 155 lb, who is lightly active has a BMR of about 1,631 kcal and a TDEE of about 2,242 kcal a day: 1,631 at rest plus about 612 from activity.',
+    breakdown: {
+      headline: 'tdee',
+      headlineLabel: 'Total daily energy expenditure (TDEE)',
+      outputs: [
+        { id: 'tdee', label: 'Total daily energy expenditure (TDEE)', format: 'integer', dimension: 'energy', unit: 'kcal', alsoIn: ['kJ'] },
+        { id: 'bmr', label: 'Basal metabolic rate (BMR)', format: 'integer', dimension: 'energy', unit: 'kcal' },
+        { id: 'activityCalories', label: 'Burned through activity (TDEE − BMR)', format: 'integer', dimension: 'energy', unit: 'kcal' },
+        { id: 'cuttingCalories', label: 'Cutting target (500 kcal a day below)', format: 'integer', dimension: 'energy', unit: 'kcal' },
+        { id: 'bulkingCalories', label: 'Lean bulking target (300 kcal a day above)', format: 'integer', dimension: 'energy', unit: 'kcal' }
+      ],
+      groups: [
+        { title: 'About you', inputs: ['sex', 'age', 'weight', 'height'] },
+        { title: 'How active you are', inputs: ['activityFactor'] }
+      ],
+      derive: (values) => ({ activityCalories: values.tdee - values.bmr }),
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'bmr', label: 'At rest (BMR)' },
+          { from: 'activityCalories', label: 'Activity and digestion' }
+        ],
+        center: 'tdee',
+        centerSub: 'kcal a day'
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-20',
+      concept: {
+        title: 'What are TDEE and BMR?',
+        paragraphs: [
+          'Total daily energy expenditure (TDEE) is the energy your body uses in a full day, counted in kilocalories (kcal). It has three parts. The basal or resting metabolic rate (BMR) is what your organs use to keep you alive at rest. The thermic effect of food is the energy spent digesting and storing what you eat. Activity covers everything from planned exercise to walking around, standing and fidgeting. For most people the resting part is the largest of the three.',
+          'Measuring BMR properly takes a laboratory: you lie still after an overnight fast while a device measures the oxygen you use and the carbon dioxide you breathe out. Prediction equations estimate it from easier numbers instead. This calculator uses the Mifflin–St Jeor equation from 1990, which a 2005 systematic review judged the most reliable of the common equations for healthy adults.',
+          'TDEE is then estimated by multiplying BMR by an activity factor, from 1.2 for a mostly seated day to 1.9 for hard daily training or heavy physical work. The factor folds the energy cost of digestion and of all movement into one number, which is why the chart shows them together.',
+          'TDEE is the number to plan around: eating about your TDEE keeps weight roughly steady, eating below it creates a deficit, and eating above it a surplus. Because both steps are estimates, your real TDEE may differ by a few hundred kcal a day.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in the five fields. Every figure updates as you type.',
+        steps: [
+          { name: 'Choose your sex and enter your age', text: 'The equation uses a different constant for men and women, and BMR falls by 5 kcal a day for every year of age.' },
+          { name: 'Enter weight and height', text: 'Use the unit menus: lb, kg or st for weight; in, ft or cm for height.' },
+          { name: 'Pick an activity level', text: 'Count every kind of movement in a typical week, not just workouts. If you are between two levels, choose the lower one.' },
+          { name: 'Read TDEE and BMR', text: 'The headline is your TDEE. Below it are your BMR, the calories that come from activity, and cutting and lean-bulking targets.' },
+          { name: 'Check the ring', text: 'The chart splits your TDEE into the resting part and the activity part.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'BMR comes from the Mifflin–St Jeor equation. TDEE is BMR times an activity factor.',
+        expression: 'BMR = 10 × kg + 6.25 × cm − 5 × age + s\nTDEE = BMR × activity factor\nActivity = TDEE − BMR\nCut = TDEE − 500 · Bulk = TDEE + 300',
+        terms: [
+          { symbol: 'BMR', meaning: 'Basal (resting) metabolic rate, kcal per day.' },
+          { symbol: 'kg, cm', meaning: 'Weight in kilograms, height in centimeters (1 lb = 0.4536 kg, 1 in = 2.54 cm).' },
+          { symbol: 's', meaning: 'Sex constant: +5 for men, −161 for women.' },
+          { symbol: 'activity factor', meaning: '1.2 sedentary, 1.375 lightly active, 1.55 moderately active, 1.725 very active, 1.9 extra active (a common convention).' },
+          { symbol: 'TDEE', meaning: 'Total daily energy expenditure, kcal per day.' }
+        ],
+        note: 'Estimate only, not medical advice. Both the equation and the activity factor can be off by 10% or more for an individual. For a medical diet, pregnancy, breastfeeding or anyone under 18, ask a doctor or registered dietitian.'
+      },
+      workedExample: {
+        intro: 'A 25-year-old man is 5 ft 6 in tall, weighs 155 lb and is lightly active (exercise one to three days a week). What are his BMR and TDEE?',
+        rows: [
+          { label: 'Weight (155 × 0.4536)', value: '70.31 kg' },
+          { label: 'Height (66 × 2.54)', value: '167.64 cm' },
+          { label: 'BMR (703.1 + 1,047.8 − 125 + 5)', value: '1,631 kcal/day' },
+          { label: 'TDEE (1,630.8 × 1.375)', value: '2,242 kcal/day' },
+          { label: 'From activity (2,242.4 − 1,630.8)', value: '612 kcal/day' },
+          { label: 'Cut (2,242 − 500) · Bulk (2,242 + 300)', value: '1,742 · 2,542 kcal/day' }
+        ],
+        result: 'BMR ≈ 1,631 kcal · TDEE ≈ 2,242 kcal a day',
+        explanation: 'About 73% of this TDEE is the resting rate (1,631 ÷ 2,242) and 27% comes from activity and digestion. A woman with the same age, height, weight and activity would use the −161 constant instead of +5: her BMR would be about 1,465 kcal and her TDEE about 2,014 kcal a day.'
+      },
+      watchOut: [
+        { title: 'BMR is not a minimum to eat', body: 'Your BMR is what you burn lying still all day. It is not a safe floor for intake, and it is not a target. Plans that go much below TDEE should be supervised by a doctor or dietitian.' },
+        { title: 'Activity factors are broad', body: 'A "lightly active" office worker and a "lightly active" nurse can burn very different amounts. If your weight changes when you eat at your estimated TDEE, your real TDEE is different: adjust it by the trend.' },
+        { title: 'TDEE changes as you do', body: 'Losing weight lowers both BMR and the energy cost of moving, so a deficit shrinks over time. Recalculate after every few kilograms (or about 10 lb) of change.' },
+        { title: 'Who the equation fits', body: 'Mifflin–St Jeor was built from healthy adults aged 19 to 78. It is less reliable for athletes with a lot of muscle, for people with obesity, older adults, some ethnic groups, and during pregnancy, breastfeeding or illness.' },
+        { title: 'Estimate only, not medical advice', body: 'Treat TDEE as a starting estimate to test against real results, not as a measurement.' }
+      ],
+      references: [
+        { label: 'Mifflin MD, St Jeor ST, et al., A new predictive equation for resting energy expenditure in healthy individuals, American Journal of Clinical Nutrition 51 (1990): 241–247', url: 'https://pubmed.ncbi.nlm.nih.gov/2305711/' },
+        { label: 'Frankenfield D, Roth-Yousey L, Compher C, Comparison of predictive equations for resting metabolic rate in healthy nonobese and obese adults: a systematic review, J Am Diet Assoc 105 (2005): 775–789', url: 'https://pubmed.ncbi.nlm.nih.gov/15883556/' },
+        { label: 'Hall KD, Heymsfield SB, et al., Energy balance and its components: implications for body weight regulation, American Journal of Clinical Nutrition 95 (2012)', url: 'https://doi.org/10.3945/ajcn.112.036350' },
+        { label: 'FAO/WHO/UNU, Human energy requirements (2004), chapter 5: physical activity levels', url: 'https://www.fao.org/4/y5686e/y5686e07.htm' }
+      ]
+    },
     inputs: [
-      { id: 'weight', label: 'Weight (lb)', type: 'number', placeholder: '155', defaultValue: 155, step: 1, min: 0 },
-      { id: 'height', label: 'Height (in)', type: 'number', placeholder: '66', defaultValue: 66, step: 1, min: 0 },
+      { id: 'weight', label: 'Weight', type: 'number', placeholder: '155', defaultValue: 155, step: 1, min: 0, dimension: 'mass', unit: 'lb' },
+      { id: 'height', label: 'Height', type: 'number', placeholder: '66', defaultValue: 66, step: 1, min: 0, dimension: 'length', unit: 'in' },
       { id: 'age', label: 'Age (years)', type: 'number', placeholder: '25', defaultValue: 25, step: 1, min: 1 },
-      { id: 'activityFactor', label: 'Activity factor (1.2 = sedentary, 1.375 = light, 1.55 = moderate, 1.725 = active)', type: 'number', placeholder: '1.375', defaultValue: 1.375, step: 0.025, min: 1 }
+      { id: 'activityFactor', label: 'Activity level', type: 'number', placeholder: '1.375', defaultValue: 1.375, step: 0.025, min: 1, options: ACTIVITY_OPTIONS },
+      { id: 'sex', label: 'Sex', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0, options: SEX_OPTIONS }
     ],
     seo: {
-      title: 'TDEE Calculator',
-      description: 'Calculate your total daily energy expenditure (TDEE) using the Mifflin-St Jeor BMR formula and an activity multiplier. Use it to set a calorie target for your weight goals.',
+      title: 'TDEE Calculator – Total Daily Energy Expenditure and BMR',
+      description: 'Estimate your TDEE and BMR with the Mifflin–St Jeor equation, see how much of your daily burn is resting vs activity, and get cutting and bulking targets.',
       faq: [
-        { question: 'What is TDEE?', answer: 'TDEE stands for Total Daily Energy Expenditure — the total calories your body burns per day including all activity.' },
-        { question: 'How is TDEE different from BMR?', answer: 'BMR is the calories burned at rest; TDEE multiplies BMR by your activity level to account for exercise and daily movement.' }
+        { question: 'What is TDEE?', answer: 'Total daily energy expenditure: every calorie your body uses in a day, from keeping your organs running to digesting food and moving. Eating about your TDEE keeps your weight roughly steady.' },
+        { question: 'How is TDEE different from BMR?', answer: 'BMR is the energy you would burn lying at rest all day. TDEE adds digestion and all your movement on top. A lightly active 25-year-old man at 5 ft 6 in and 155 lb has a BMR of about 1,631 kcal and a TDEE of about 2,242 kcal.' },
+        { question: 'How do I calculate my BMR?', answer: 'With the Mifflin–St Jeor equation: 10 × weight in kg + 6.25 × height in cm − 5 × age, then add 5 for men or subtract 161 for women. 70.31 kg, 167.64 cm and 25 years gives 703.1 + 1,047.8 − 125 + 5 ≈ 1,631 kcal a day for a man.' },
+        { question: 'How accurate is a TDEE calculator?', answer: 'It is an educated estimate. The BMR equation alone can miss by more than 10% for some people, and activity factors add more uncertainty. Eat at the estimate for two to four weeks and adjust by how your weight moves.' },
+        { question: 'How many calories should I eat to cut or bulk?', answer: 'A common starting point is about 500 kcal a day below TDEE to lose fat and about 300 kcal above it for a slow, lean gain. For the example above, that is about 1,742 and 2,542 kcal a day.' },
+        { question: 'Does age change TDEE?', answer: 'In the equation, every year of age lowers BMR by 5 kcal a day, so ten years is 50 kcal less at rest before the activity factor. Real changes with age also depend on muscle mass and how active you stay.' }
       ]
     },
     compute(values) {
       const weightKg = values.weight * 0.453592;
       const heightCm = values.height * 2.54;
-      const bmr = 10 * weightKg + 6.25 * heightCm - 5 * values.age + 5;
+      // Mifflin–St Jeor sex constant: sex 1 = female (−161); anything else = male (+5).
+      const sexConstant = values.sex === 1 ? -161 : 5;
+      const bmr = 10 * weightKg + 6.25 * heightCm - 5 * values.age + sexConstant;
       const tdee = bmr * values.activityFactor;
       const cuttingCalories = tdee - 500;
       const bulkingCalories = tdee + 300;

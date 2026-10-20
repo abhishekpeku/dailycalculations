@@ -6,7 +6,7 @@
 - [x] bmi-calculator (A · RangeBar with WHO adult bands)
 - [x] calorie-calculator (B · CompareBars loss / maintenance / gain; plan: three-tier bar, not in kit)
 - [x] tdee-calculator (B · Donut BMR + activity; plan: stacked bar, not in kit)
-- [ ] water-intake-calculator (B · CompareBars your estimate vs NASEM reference intakes; plan: glasses-per-day row, not in kit)
+- [x] water-intake-calculator (B · CompareBars your estimate vs NASEM reference intakes; plan: glasses-per-day row, not in kit)
 - [ ] running-pace-calculator (A · CompareBars of Riegel race predictions; new `pace` dimension; plan: splits table, not in kit)
 - [ ] pregnancy-due-date-calculator (B · Timeline with trimesters) — second run
 - [ ] Number verification script, tests, build, lint, STATUS.md, PR ready

@@ -143,22 +143,110 @@ export const healthCalculators: CalculatorConfig[] = [
   {
     id: 'water-intake-calculator',
     category: 'health',
-    updatedAt: '2026-09-10',
-    aliases: ['daily water calculator', 'hydration calculator', 'how much water should i drink'],
+    updatedAt: '2026-10-20',
+    aliases: ['daily water calculator', 'hydration calculator', 'how much water should i drink', 'water per day calculator', 'drinking water calculator'],
     related: ['calorie-calculator', 'tdee-calculator', 'bmi-calculator', 'gallons-to-liters-converter'],
     title: 'Water Intake Calculator',
-    description: 'Estimate daily water needs based on body weight and activity level.',
-    example: 'Calculate water intake for a 150 lb person with moderate activity.',
+    description: 'Get a rough daily drinking-water target from your body weight and exercise time, and compare it with the National Academies reference intakes for men and women.',
+    example: 'A 150 lb person who exercises 30 minutes a day gets a target of about 87 fl oz (2.57 L, or about 11 glasses of 8 oz): 75 oz for body weight plus 12 oz for exercise.',
+    breakdown: {
+      headline: 'dailyOunces',
+      headlineLabel: 'Water to drink per day',
+      outputs: [
+        { id: 'dailyOunces', label: 'Water to drink per day', format: 'number', dimension: 'volume', unit: 'floz', alsoIn: ['L', 'cup'] },
+        { id: 'dailyLiters', label: 'In liters', format: 'number', dimension: 'volume', unit: 'L' },
+        { id: 'glasses', label: '8-oz glasses, rounded', format: 'integer' },
+        { id: 'exerciseOunces', label: 'Of which for exercise', format: 'number', dimension: 'volume', unit: 'floz' }
+      ],
+      derive: (values) => ({
+        glasses: values.dailyOunces / 8,
+        exerciseOunces: values.activityLevel * 0.4,
+        // NASEM adequate intakes from beverages (drinking water included), adults 19+.
+        referenceWomen: 2.2,
+        referenceMen: 3.0
+      }),
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'dailyLiters', label: 'Your estimate' },
+          { from: 'referenceWomen', label: 'NASEM, women (from drinks)' },
+          { from: 'referenceMen', label: 'NASEM, men (from drinks)' }
+        ],
+        title: 'Liters a day vs reference intakes'
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-20',
+      concept: {
+        title: 'How much water do you need?',
+        paragraphs: [
+          'Water makes up more than half of an adult\'s body weight, and you lose some all the time through urine, sweat and breathing. Healthy kidneys balance the books from day to day, and thirst is the body\'s main signal to top up. For most healthy people, drinking when thirsty and with meals is enough.',
+          'There is no single right amount. The US National Academies of Sciences, Engineering, and Medicine (NASEM) did not find enough evidence to set a requirement, so in 2004 it set "adequate intakes" from what healthy people actually consume: about 3.7 L of total water a day for men and 2.7 L for women aged 19 and over. Food supplies roughly a fifth of that, which leaves about 3.0 L (13 cups) for men and 2.2 L (9 cups) for women from drinks, including plain water, milk, coffee and tea.',
+          'This calculator uses a popular rule of thumb instead, because it scales with body size and exercise: half an ounce of water for every pound of body weight, plus 0.4 oz for every minute of exercise (12 oz per half hour). The rule is not from a clinical guideline, so the chart puts your result next to the NASEM figures for comparison.',
+          'Needs go up in hot or humid weather, at altitude, with fever, vomiting or diarrhea, and during pregnancy and breastfeeding. Some medical conditions, such as heart failure and kidney disease, call for less fluid, not more.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in the two fields. The results update as you type.',
+        steps: [
+          { name: 'Enter your weight', text: 'Type your weight and pick lb, kg or st from the menu.' },
+          { name: 'Enter your exercise time', text: 'Type the minutes of exercise in a typical day, or switch the menu to hours. Use 0 on rest days.' },
+          { name: 'Read the target', text: 'The headline shows the daily amount in fluid ounces, with liters and US cups beside it, and the rows break out glasses and the exercise share.' },
+          { name: 'Compare with the reference intakes', text: 'The bars set your estimate against the NASEM adequate intakes from drinks for women and men.' },
+          { name: 'Let thirst and urine guide you', text: 'Pale yellow urine and rarely feeling thirsty are signs you are drinking enough. Adjust the target for heat and heavy sweating.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The estimate adds a body-weight part and an exercise part.',
+        expression: 'Water (fl oz) = 0.5 × weight (lb) + 0.4 × exercise (min)\nLiters = fl oz × 0.0295735\nGlasses = fl oz ÷ 8',
+        terms: [
+          { symbol: 'weight', meaning: 'Body weight in pounds (1 kg = 2.2046 lb).' },
+          { symbol: 'exercise', meaning: 'Minutes of exercise per day. 30 minutes adds 12 fl oz.' },
+          { symbol: '0.0295735', meaning: 'Liters in one US fluid ounce.' },
+          { symbol: 'glass', meaning: 'One US cup, 8 fl oz (about 237 mL).' }
+        ],
+        note: 'Estimate only, not medical advice. This is a rule of thumb, not a clinical recommendation. If you have kidney, heart or liver disease, or a doctor has limited your fluids, follow their advice instead.'
+      },
+      workedExample: {
+        intro: 'Someone weighs 150 lb and exercises for 30 minutes most days. How much should they aim to drink?',
+        rows: [
+          { label: 'Body-weight part (150 × 0.5)', value: '75 fl oz' },
+          { label: 'Exercise part (30 × 0.4)', value: '12 fl oz' },
+          { label: 'Total (75 + 12)', value: '87 fl oz' },
+          { label: 'In liters (87 × 0.0295735)', value: '2.57 L' },
+          { label: 'In 8-oz glasses (87 ÷ 8)', value: '10.9 ≈ 11' }
+        ],
+        result: 'About 87 fl oz (2.57 L, about 11 glasses) a day',
+        explanation: 'That sits between the NASEM adequate intakes from drinks: 2.2 L for women and 3.0 L for men. On a day without exercise the estimate drops to 75 fl oz (2.22 L). Remember that food, especially fruit, vegetables and soups, also provides water.'
+      },
+      watchOut: [
+        { title: 'It is a rule of thumb', body: 'The half-ounce-per-pound rule is a convenient starting point with no clinical trial behind it. The NASEM adequate intakes are based on what healthy people drink, and most people who drink to thirst meet them.' },
+        { title: 'More is not always better', body: 'Drinking far more than you lose, especially during long endurance events, can dilute the sodium in your blood (hyponatremia), which can be dangerous. The American College of Sports Medicine advises against drinking so much during exercise that you gain weight.' },
+        { title: 'Exercise needs vary widely', body: 'Sweat losses depend on intensity, heat, clothing and the person. Weighing yourself before and after a workout shows how much you lost: each pound lost is about 15 fl oz (450 mL) of fluid.' },
+        { title: 'Some people need less', body: 'People with heart failure, kidney disease or some liver conditions may be told to limit fluids. Older adults may feel thirst less, so they may need to drink on a schedule.' },
+        { title: 'Estimate only, not medical advice', body: 'Ask a doctor about fluid needs during pregnancy, breastfeeding, illness, or if you take diuretics or other medicines that affect fluid balance.' }
+      ],
+      references: [
+        { label: 'National Academies of Sciences, Engineering, and Medicine, Dietary Reference Intakes for Water, Potassium, Sodium, Chloride, and Sulfate (2005)', url: 'https://www.nationalacademies.org/publications/10925' },
+        { label: 'Sawka MN, et al., American College of Sports Medicine position stand: Exercise and fluid replacement, Medicine & Science in Sports & Exercise 39 (2007): 377–390', url: 'https://pubmed.ncbi.nlm.nih.gov/17277604/' },
+        { label: 'Centers for Disease Control and Prevention, About Water and Healthier Drinks', url: 'https://www.cdc.gov/healthy-weight-growth/water-healthy-drinks/index.html' }
+      ]
+    },
     inputs: [
-      { id: 'weight', label: 'Weight (lb)', type: 'number', placeholder: '150', defaultValue: 150, step: 1, min: 0 },
-      { id: 'activityLevel', label: 'Activity level (minutes/day)', type: 'number', placeholder: '30', defaultValue: 30, step: 5, min: 0 }
+      { id: 'weight', label: 'Weight', type: 'number', placeholder: '150', defaultValue: 150, step: 1, min: 0, dimension: 'mass', unit: 'lb' },
+      { id: 'activityLevel', label: 'Exercise per day', type: 'number', placeholder: '30', defaultValue: 30, step: 5, min: 0, dimension: 'time', unit: 'min' }
     ],
     seo: {
-      title: 'Water Intake Calculator',
-      description: 'Estimate how much water you should drink each day based on your body weight and daily activity minutes. Get a personalized recommendation in both ounces and liters.',
+      title: 'Water Intake Calculator – How Much Water to Drink a Day',
+      description: 'Estimate how much water to drink each day from your weight and exercise time, in ounces, liters and glasses, compared with National Academies reference intakes.',
       faq: [
-        { question: 'How much water should I drink?', answer: 'This tool estimates daily intake based on body weight and minutes of activity.' },
-        { question: 'Does activity affect water needs?', answer: 'Yes, extra activity increases recommended hydration.' }
+        { question: 'How much water should I drink a day?', answer: 'The National Academies set adequate intakes of about 3.7 L (125 fl oz) of total water a day for men and 2.7 L (91 fl oz) for women, counting water from food. From drinks alone, that is about 3.0 L (13 cups) for men and 2.2 L (9 cups) for women. Most healthy people meet it by drinking when thirsty.' },
+        { question: 'How is the estimate on this page worked out?', answer: 'Half an ounce per pound of body weight plus 0.4 oz per minute of exercise. A 150 lb person who exercises 30 minutes gets 75 + 12 = 87 fl oz, or 2.57 L. A 200 lb person with the same exercise gets 112 fl oz, or 3.31 L.' },
+        { question: 'Is eight glasses a day enough?', answer: 'Eight 8-oz glasses is 64 fl oz, about 1.9 L. That is below the National Academies figures for drinks (2.2 L for women and 3.0 L for men), but food and other drinks add to it, so many people get enough without counting.' },
+        { question: 'Do coffee and tea count?', answer: 'Yes. The National Academies counts all beverages, caffeinated ones included, toward total water. Moderate caffeine does not cause a net loss of fluid over the day.' },
+        { question: 'Can you drink too much water?', answer: 'Yes. Drinking much more than you lose, for example during a marathon, can lower blood sodium to dangerous levels (hyponatremia). Drink to replace what you sweat, not far beyond it.' },
+        { question: 'How do I know if I am drinking enough?', answer: 'Rarely feeling thirsty and passing pale yellow urine are good everyday signs. Dark urine, headache and tiredness can mean you need more, but see a doctor if symptoms persist.' }
       ]
     },
     compute(values) {

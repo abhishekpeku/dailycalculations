@@ -383,12 +383,94 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'wallpaper-calculator',
     category: 'home',
-    updatedAt: '2026-09-10',
-    aliases: ['wallpaper rolls calculator', 'how much wallpaper do i need', 'wall covering calculator'],
+    updatedAt: '2026-10-21',
+    aliases: ['wallpaper rolls calculator', 'how much wallpaper do i need', 'wall covering calculator', 'double roll calculator', 'wallpaper pattern repeat calculator'],
     related: ['paint-calculator', 'tile-calculator', 'furniture-fit-calculator', 'concrete-calculator'],
     title: 'Wallpaper Calculator',
-    description: 'Calculate how many rolls of wallpaper you need for a room, accounting for pattern repeat and waste.',
-    example: 'Find rolls needed for a 12x14 ft room with 9 ft ceilings using standard US double rolls.',
+    description: 'Find how many rolls of wallpaper a room needs from its perimeter, wall height, doors and windows, with the extra material a pattern repeat and a waste allowance add.',
+    example: 'A room with a 52 ft wall perimeter, 9 ft ceilings, 1 door and 2 windows needs about 8.21 standard US double rolls (56 sq ft each) with no pattern repeat — 9 rolls once rounded up.',
+    breakdown: {
+      headline: 'rollsNeeded',
+      headlineLabel: 'Rolls to buy',
+      outputs: [
+        { id: 'rollsNeeded', format: 'integer' },
+        { id: 'rollsExact', label: 'Rolls needed, exact', format: 'number' },
+        { id: 'adjustedArea', label: 'Wallpaper needed (with pattern & waste)', format: 'number', dimension: 'area', unit: 'ft2' },
+        { id: 'netArea', label: 'Net wall area (minus doors/windows)', format: 'number', dimension: 'area', unit: 'ft2' }
+      ],
+      groups: [
+        { title: 'Room', inputs: ['roomPerimeter', 'wallHeight'] },
+        { title: 'Doors & windows', inputs: ['doors', 'windows'] },
+        { title: 'Roll & pattern', inputs: ['rollSqFt', 'patternRepeatInch'] }
+      ],
+      derive: (v) => ({ rollsExact: v.adjustedArea / v.rollSqFt }),
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'rollsExact', label: 'Exact rolls' },
+          { from: 'rollsNeeded', label: 'Rolls to buy' }
+        ],
+        title: 'Rolls needed, exact vs. to buy'
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'How many rolls of wallpaper a room needs',
+        paragraphs: [
+          'Start from the wall area: the room’s perimeter times the wall height, minus the doors and windows you will not cover. The Wallcovering Installers Association’s own rough estimator uses a similar idea in reverse — perimeter times height, divided by about 25 sq ft of usable coverage per single roll — which lands close to the deduction-based figure here once doors and windows are subtracted. US wallpaper is usually sold as a “double roll,” commonly listed around 56 sq ft, roughly twice a single roll, though the exact figure varies by product and is printed on the label.',
+          'A pattern repeat adds real waste beyond the basic area, because each strip has to line up with the one next to it. The Wallcovering Installers Association notes that patterns with a significant drop match — 24 inches or more — require additional wallpaper to be ordered, since part of every strip above a certain length is trimmed off to keep the pattern aligned. A large, non-repeating texture or a solid color wastes almost nothing this way; a bold pattern with a big repeat can add 20% or more.',
+          'On top of the pattern allowance, this calculator adds a flat 10% buffer for seams, mismeasurement and trimming at the ceiling and baseboard — standard practice alongside any pattern-specific waste. Since rolls are sold whole, the final step rounds the adjusted area, divided by the roll’s coverage, up to the next whole roll.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the room, then the doors and windows, then your roll size and pattern repeat.',
+        steps: [
+          { name: 'Enter the room perimeter and wall height', text: 'Measure around all the walls you are covering, in feet, and the height from baseboard to ceiling. For a single accent wall, use just that wall’s width as the perimeter.' },
+          { name: 'Enter doors and windows', text: 'Count how many of each; each is subtracted at about 20 and 15 square feet.' },
+          { name: 'Enter the roll size', text: 'Use the square footage printed on your wallpaper’s label; 56 is typical for a US double roll.' },
+          { name: 'Enter the pattern repeat', text: 'Use 0 for a plain or random-match paper. For a patterned paper, use the vertical repeat distance in inches, from the label.' },
+          { name: 'Read the result', text: 'The headline is the rolls to buy; the rows below show the exact rolls needed and the net and adjusted wall area.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Wall area comes from the perimeter and height; the pattern repeat and a flat waste allowance scale it up before dividing by the roll size.',
+        expression: 'wall area = perimeter × height\nnet area = wall area − (doors × 20 + windows × 15)\nrepeat factor = 1 + repeat ÷ (height × 12), or 1 with no repeat\nadjusted area = net area × repeat factor × 1.10\nrolls = ⌈ adjusted area ÷ roll size ⌉',
+        terms: [
+          { symbol: 'perimeter, height', meaning: 'Total wall length and the wall height, in feet.' },
+          { symbol: 'doors, windows', meaning: 'Count of each; subtracted at about 20 and 15 sq ft apiece.' },
+          { symbol: 'repeat', meaning: 'Vertical pattern repeat, in inches; 0 for a plain or random-match paper.' },
+          { symbol: 'roll size', meaning: 'Coverage of one roll, in sq ft, from the product label (about 56 for a US double roll).' }
+        ],
+        note: 'An estimate. Roll coverage, usable width and the exact waste from a given repeat vary by product; always check the specific wallpaper’s label, and consider a WIA-certified installer for a large pattern repeat or an irregular room.'
+      },
+      workedExample: {
+        intro: 'A room has a 52 ft wall perimeter and 9 ft ceilings, with 1 door and 2 windows, using a 56 sq ft US double roll with no pattern repeat.',
+        rows: [
+          { label: 'Wall area (52 × 9)', value: '468.00 sq ft' },
+          { label: 'Deductions (1 × 20 + 2 × 15)', value: '50.00 sq ft' },
+          { label: 'Net area (468.00 − 50.00)', value: '418.00 sq ft' },
+          { label: 'Repeat factor (no repeat)', value: '1.00' },
+          { label: 'Adjusted area (418.00 × 1.00 × 1.10)', value: '459.80 sq ft' },
+          { label: 'Rolls, exact (459.80 ÷ 56)', value: '8.21' },
+          { label: 'Rolls to buy (rounded up)', value: '9 rolls' }
+        ],
+        result: '9 double rolls',
+        explanation: 'The same room in a paper with a 24-inch pattern repeat has a repeat factor of 1.2222 instead of 1.00, raising the adjusted area to about 561.98 sq ft and the rolls to buy to 11 — two more rolls for the pattern match alone.'
+      },
+      watchOut: [
+        { title: 'Pattern repeat adds real waste', body: 'The Wallcovering Installers Association notes that a significant drop match (24 inches or more) requires ordering additional wallpaper. In the worked example, a 24-inch repeat raises the roll count from 9 to 11 for the same room.' },
+        { title: 'Roll size varies by brand', body: '56 sq ft is a common figure for a US double roll, but it is not universal, and a European single roll covers roughly half that. Use the figure printed on your specific product.' },
+        { title: 'Measure the whole room, not one wall', body: 'The perimeter field expects the total length of every wall you are covering. For a single accent wall, enter just that wall’s width instead.' },
+        { title: 'Buy from the same production run', body: 'Wallpaper, like paint and tile, can vary slightly between print runs (a different dye lot), so buy enough — including a spare roll — from one order rather than reordering partway through.' },
+        { title: 'Textured or heavily patterned walls trim more', body: 'A busy pattern, an odd-shaped room, or a wall with a lot of corners typically wastes more than the flat 10% buffer accounts for; a wallcovering installer can give a tighter estimate for a complex job.' }
+      ],
+      references: [
+        { label: 'Wallcovering Installers Association, Wallpaper Tips & Info (pattern match types, drop match waste)', url: 'https://www.wallcoveringinstallers.org/consumers/wallcovering-resources/wallcovering-info-and-tips/' },
+        { label: 'Wallcovering Installers Association, Wallcovering Estimator (perimeter × height ÷ coverage formula)', url: 'https://www.wallcoveringinstallers.org/consumers/wallcovering-resources/wallcovering-estimator/' }
+      ]
+    },
     inputs: [
       { id: 'roomPerimeter', label: 'Room perimeter (ft)', type: 'number', placeholder: '52', defaultValue: 52, step: 1, min: 4 },
       { id: 'wallHeight', label: 'Wall height (ft)', type: 'number', placeholder: '9', defaultValue: 9, step: 0.5, min: 6 },
@@ -399,10 +481,16 @@ export const homeCalculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Wallpaper Calculator – Rolls Needed for Any Room',
-      description: 'Calculate how many wallpaper rolls you need based on room size, wall height, doors, windows, and pattern repeat.',
+      description: 'Free wallpaper calculator: how many rolls a room needs from its perimeter, wall height, doors, windows and pattern repeat, with a waste allowance.',
       faq: [
-        { question: 'What is a standard US wallpaper roll size?', answer: 'A standard US double roll covers approximately 56 sq ft. European single rolls cover about 28 sq ft. Always check the label.' },
-        { question: 'How does pattern repeat affect wallpaper quantity?', answer: 'With a pattern repeat, some paper is wasted at each seam to match the pattern. Larger repeats (18+ inches) waste more paper and require more rolls.' }
+        { question: 'How many rolls of wallpaper do I need?', answer: 'Find the net wall area (perimeter × height, minus doors and windows), scale it up for any pattern repeat and a 10% waste buffer, then divide by the roll’s coverage and round up. A 52 ft, 9 ft-tall room with no repeat needs about 9 double rolls.' },
+        { question: 'What is a wallpaper "double roll"?', answer: 'US wallpaper is typically sold as a double roll, commonly listed around 56 sq ft of coverage — roughly twice a single roll. The exact figure varies by product, so check the label.' },
+        { question: 'How does pattern repeat affect how much wallpaper I need?', answer: 'The Wallcovering Installers Association notes that patterns with a significant drop match (24 inches or more) require ordering additional wallpaper, since part of each strip is trimmed to keep the pattern aligned. In the worked example, a 24-inch repeat raises a 9-roll job to 11 rolls.' },
+        { question: 'Should I order extra wallpaper?', answer: 'Yes. The calculator already adds a 10% buffer for seams and trimming on top of any pattern-repeat waste; buying one extra roll beyond that is common practice for future repairs.' },
+        { question: 'How much do doors and windows reduce the wallpaper I need?', answer: 'About 20 sq ft per standard door and 15 sq ft per standard window are subtracted from the wall area before the rolls are calculated.' },
+        { question: 'What if my room isn’t rectangular?', answer: 'Measure the total perimeter of every wall you are covering (adding up each wall’s length) and use that as the room perimeter; the height is assumed to be the same all the way around.' },
+        { question: 'Can I use this for a single accent wall?', answer: 'Yes. Enter just that wall’s width as the perimeter instead of the whole room, and the same formula applies.' },
+        { question: 'What is a drop match versus a straight match?', answer: 'In a straight-across match, the design lines up the same way on every strip. In a drop match, the pattern is offset between strips, so the repeat distance effectively doubles for every other strip, which is why large-repeat patterns waste more paper.' }
       ]
     },
     compute(values) {

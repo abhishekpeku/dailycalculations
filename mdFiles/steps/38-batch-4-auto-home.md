@@ -12,7 +12,7 @@
 - [ ] concrete-calculator (A · volume ↔ length ↔ width ↔ depth; plan: bags chips)
 - [x] paint-calculator (B · plan: can-count row → nearest kit CompareBars, gap parked)
 - [x] tile-calculator (B · plan: grid illustration → nearest kit CompareBars, gap parked)
-- [ ] wallpaper-calculator (B · plan: roll-count row)
+- [x] wallpaper-calculator (B · plan: roll-count row → nearest kit CompareBars, gap parked)
 - [ ] electricity-bill-calculator (B · plan: tier bar)
 - [ ] furniture-fit-calculator (B · plan: top-down floor plan)
 - [ ] Number verification script, tests, build, lint, STATUS.md, PR ready

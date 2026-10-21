@@ -11,6 +11,62 @@ function gcd(x: number, y: number) {
   return a || 1;
 }
 
+// Normalizes a coefficient/exponent pair to standard scientific notation (1 <= |a| < 10, or a = 0).
+function normalizeScientific(a: number, b: number): [number, number] {
+  if (a === 0) return [0, 0];
+  let aa = a;
+  let bb = b;
+  while (Math.abs(aa) >= 10) {
+    aa /= 10;
+    bb += 1;
+  }
+  while (Math.abs(aa) < 1) {
+    aa *= 10;
+    bb -= 1;
+  }
+  aa = Number(aa.toPrecision(12)); // clear drift from repeated multiplication/division
+  if (Math.abs(aa) >= 10) {
+    aa /= 10;
+    bb += 1;
+  }
+  return [aa, bb];
+}
+
+// Plain decimal -> [coefficient, exponent] in standard scientific notation.
+function toScientific(x: number): [number, number] {
+  if (x === 0) return [0, 0];
+  const exp = Math.floor(Math.log10(Math.abs(x)));
+  const coeff = x / 10 ** exp;
+  return normalizeScientific(coeff, exp);
+}
+
+// Shifts the decimal point `shift` places via exponential-notation text, not multiplication, before
+// rounding: this is what avoids IEEE 754 binary64 representation error (1.005 is actually stored as
+// 1.00499999999999989...) by relying on JS's shortest-round-trip number-to-string conversion to
+// recover the intended decimal, then re-parsing it correctly rounded at the shifted scale.
+function shiftRound(value: number, shift: number, tie: (x: number) => number) {
+  const [coeff, exp] = `${value}e`.split('e');
+  const shifted = Number(`${coeff}e${Number(exp || 0) + shift}`);
+  const roundedShifted = tie(shifted);
+  const [coeff2, exp2] = `${roundedShifted}e`.split('e');
+  return Number(`${coeff2}e${Number(exp2 || 0) - shift}`);
+}
+
+// Ties away from zero: 2.5 -> 3, -2.5 -> -3. IEEE 754-2019's roundTiesToAway attribute.
+function roundHalfAwayFromZero(x: number) {
+  return x >= 0 ? Math.floor(x + 0.5) : Math.ceil(x - 0.5);
+}
+
+// Ties to the nearest even integer ("banker's rounding"): 2.5 -> 2, 3.5 -> 4, -2.5 -> -2. IEEE
+// 754-2019's default roundTiesToEven attribute, used because it has no net upward or downward bias
+// across many roundings.
+function roundHalfToEven(x: number) {
+  const floor = Math.floor(x);
+  const diff = x - floor;
+  if (Math.abs(diff - 0.5) < 1e-9) return floor % 2 === 0 ? floor : floor + 1;
+  return Math.round(x);
+}
+
 export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'percentage-calculator',
@@ -596,6 +652,123 @@ export const mathCalculators: CalculatorConfig[] = [
         simplifiedA: a / g,
         simplifiedB: b / g
       };
+    }
+  },
+  {
+    id: 'average-calculator',
+    category: 'math',
+    updatedAt: '2026-10-21',
+    aliases: ['mean calculator', 'average of numbers calculator', 'sum and average calculator', 'arithmetic mean calculator', 'average of 4 numbers calculator'],
+    related: ['weighted-average-calculator', 'gpa-calculator', 'percentage-calculator', 'percent-change-calculator'],
+    title: 'Average Calculator',
+    description: 'Find the arithmetic mean, sum, count, minimum and maximum of up to 8 numbers — enter 4 and add up to 4 more.',
+    example: 'Four test scores of 85, 90, 78 and 92 average to 86.25 — a number none of the four scores actually is.',
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What is an average?',
+        paragraphs: [
+          'In everyday language, "average" almost always means the arithmetic mean: add up every number in a list, then divide by how many numbers there are. It is the single most common way to summarize a whole list with one representative figure — a student\'s average test score, a city\'s average rainfall, a team\'s average points per game.',
+          'The arithmetic mean is one of several "measures of central tendency" used in statistics; the median (the middle value when the list is sorted) and the mode (the most frequent value) are others, and they can tell a very different story from the mean when a list has extreme values or a skewed shape. This calculator covers the plain arithmetic mean, along with the sum, count, minimum and maximum of the same list, which together give a fuller picture than the mean alone.',
+          'A closely related calculator, the weighted average, is worth knowing about if some numbers in your list should count more than others — a final exam worth more than a quiz, for instance. A plain average treats every number equally; a weighted average does not.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your numbers in the value fields. Leave any unused optional field at 0 and it is left out of the calculation entirely.',
+        steps: [
+          { name: 'Enter your main numbers', text: 'Type up to 4 numbers into the first group. These always count toward the average, even if one of them happens to be 0.' },
+          { name: 'Add more if you have them', text: 'Open "Add up to 4 more numbers" for up to 4 additional values. Leave any of these at 0 to skip it — a genuine 0 among your extra numbers needs a nonzero placeholder like 0.0001 instead.' },
+          { name: 'Read the average', text: 'The headline is the arithmetic mean: the sum of every number you entered, divided by how many of them there are.' },
+          { name: 'Check the sum, count, min and max', text: 'The breakdown below the average shows the total, how many numbers were counted, and the smallest and largest values in your list.' },
+          { name: 'See the range at a glance', text: 'The chart plots your lowest value, your average, and your highest value side by side.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The arithmetic mean is the sum of a list divided by how many numbers are in it.',
+        expression: 'Average = (x₁ + x₂ + ... + xₙ) ÷ n',
+        terms: [
+          { symbol: 'x₁, x₂, ..., xₙ', meaning: 'Each number in the list.' },
+          { symbol: 'n', meaning: 'The count of numbers in the list — how many of them there are.' }
+        ],
+        note: 'The 4 optional fields left at their default of 0 are not counted toward n; the first 4 fields always are, even when one of them is 0.'
+      },
+      workedExample: {
+        intro: 'Four test scores: 85, 90, 78 and 92.',
+        rows: [
+          { label: 'Sum (85 + 90 + 78 + 92)', value: '345' },
+          { label: 'Count', value: '4' },
+          { label: 'Average (345 ÷ 4)', value: '86.25' },
+          { label: 'Range', value: 'lowest 78, highest 92' }
+        ],
+        result: 'Average = 86.25 (sum 345, count 4)',
+        explanation: '86.25 is not one of the four scores entered, and that is normal — the mean is a representative middle figure, not a value that has to already appear in the list. Three of the four scores (85, 90, 92) sit above it, and one (78) sits well below; the mean still balances all four.'
+      },
+      watchOut: [
+        { title: 'An unused optional slot must be exactly 0', body: 'This calculator treats a 0 in one of the 4 optional fields as "not entered." If you genuinely have a 0 as one of your extra numbers, enter a tiny nonzero placeholder (such as 0.0001) instead so it is not dropped from the count.' },
+        { title: 'The average is sensitive to outliers', body: 'One unusually large or small number pulls the mean toward it. A list of 10, 12, 11 and 400 averages to 108.25 — far from any typical value in the list — because the mean does not ignore extremes the way the median would.' },
+        { title: 'Average and weighted average are different questions', body: 'A plain average treats every number the same. If some numbers should count more than others — a final exam worth more than a single quiz — use the weighted average calculator instead; the two will usually disagree.' },
+        { title: 'The result can fall outside the range of "typical" values', body: 'The average of 1, 1, 1 and 100 is 25.75 — higher than three of the four numbers and nowhere close to any single one of them, because one large value outweighs several small, identical ones.' }
+      ],
+      references: [
+        { label: 'OpenStax, Introductory Statistics 2e, §2.5 Measures of the Center of the Data', url: 'https://openstax.org/books/introductory-statistics-2e/pages/2-5-measures-of-the-center-of-the-data' },
+        { label: 'Wolfram MathWorld, Arithmetic Mean', url: 'https://mathworld.wolfram.com/ArithmeticMean.html' }
+      ]
+    },
+    inputs: [
+      { id: 'value1', label: 'Number 1', type: 'number', placeholder: '85', defaultValue: 85, step: 1 },
+      { id: 'value2', label: 'Number 2', type: 'number', placeholder: '90', defaultValue: 90, step: 1 },
+      { id: 'value3', label: 'Number 3', type: 'number', placeholder: '78', defaultValue: 78, step: 1 },
+      { id: 'value4', label: 'Number 4', type: 'number', placeholder: '92', defaultValue: 92, step: 1 },
+      { id: 'value5', label: 'Number 5 (0 = unused)', type: 'number', placeholder: '0', defaultValue: 0, step: 1 },
+      { id: 'value6', label: 'Number 6 (0 = unused)', type: 'number', placeholder: '0', defaultValue: 0, step: 1 },
+      { id: 'value7', label: 'Number 7 (0 = unused)', type: 'number', placeholder: '0', defaultValue: 0, step: 1 },
+      { id: 'value8', label: 'Number 8 (0 = unused)', type: 'number', placeholder: '0', defaultValue: 0, step: 1 }
+    ],
+    breakdown: {
+      headline: 'mean',
+      headlineLabel: 'Average (mean)',
+      outputs: [
+        { id: 'mean', label: 'Average (mean)', format: 'significant' },
+        { id: 'sum', label: 'Sum', format: 'significant' },
+        { id: 'count', label: 'Count', format: 'integer' },
+        { id: 'min', label: 'Lowest value', format: 'significant' },
+        { id: 'max', label: 'Highest value', format: 'significant' }
+      ],
+      groups: [
+        { title: 'Your numbers', inputs: ['value1', 'value2', 'value3', 'value4'] },
+        { title: 'Add up to 4 more numbers', inputs: ['value5', 'value6', 'value7', 'value8'], optional: true }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'min', label: 'Lowest value' }, { from: 'mean', label: 'Average' }, { from: 'max', label: 'Highest value' }],
+        title: 'Lowest, average, highest',
+        highlight: 1
+      }
+    },
+    seo: {
+      title: 'Average Calculator – Mean, Sum, Min & Max',
+      description: 'Free average calculator. Find the arithmetic mean, sum, count, minimum and maximum of up to 8 numbers.',
+      faq: [
+        { question: 'How do I calculate an average?', answer: 'Add up every number in the list, then divide by how many numbers there are. Four scores of 85, 90, 78 and 92 sum to 345, and 345 ÷ 4 = 86.25.' },
+        { question: 'What is the difference between average and mean?', answer: 'In everyday use they are the same thing. "Mean" is the more precise statistical term for what people usually call the "average" — the sum divided by the count.' },
+        { question: 'How many numbers can this calculator average?', answer: 'Up to 8: 4 always-counted fields plus 4 optional fields. Leave an optional field at 0 to exclude it from the average.' },
+        { question: 'Can the average be higher than every number in the list?', answer: 'No, and it can never be lower than every number either — the average always falls between the smallest and largest values in the list (inclusive, if every value is identical).' },
+        { question: 'What is the difference between average and weighted average?', answer: 'A plain average treats every number equally. A weighted average lets some numbers count more than others — see the weighted average calculator for that case, such as a final exam worth more than a quiz.' },
+        { question: 'Why is my average not a "round" number?', answer: 'The average is only guaranteed to be a whole number when the sum happens to divide evenly by the count. 345 ÷ 4 = 86.25, which is exact but not a whole number.' },
+        { question: 'Does one extreme value change the average a lot?', answer: 'Yes — the mean is sensitive to outliers. Averaging 10, 12, 11 and 400 gives 108.25, pulled far above three of the four numbers by the one large value.' },
+        { question: 'What does this calculator show besides the average?', answer: 'The sum of all your numbers, how many were counted, and the lowest and highest values among them.' }
+      ]
+    },
+    compute(values) {
+      const slots = [values.value1, values.value2, values.value3, values.value4, values.value5, values.value6, values.value7, values.value8];
+      const used = slots.filter((v, i) => i < 4 || v !== 0);
+      const count = used.length;
+      const sum = used.reduce((a, b) => a + b, 0);
+      const mean = sum / count;
+      const min = Math.min(...used);
+      const max = Math.max(...used);
+      return { mean, sum, count, min, max };
     }
   }
 

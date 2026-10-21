@@ -334,4 +334,156 @@ export const mathCalculators: CalculatorConfig[] = [
       return { percentDifference, absoluteDifference, average };
     }
   },
+  {
+    id: 'fraction-calculator',
+    category: 'math',
+    updatedAt: '2026-10-21',
+    aliases: ['add subtract multiply divide fractions calculator', 'simplify fraction calculator', 'mixed number calculator', 'fraction to decimal calculator'],
+    related: ['ratio-calculator', 'percentage-calculator', 'gpa-calculator', 'unit-price-calculator'],
+    title: 'Fraction Calculator',
+    description: 'Add, subtract, multiply or divide two fractions, with the answer simplified to lowest terms, as a mixed number, and as a decimal.',
+    example: '1/2 + 1/3 = 5/6 ≈ 0.8333. Switch the operator to see the same two fractions subtracted, multiplied or divided instead.',
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What is a fraction?',
+        paragraphs: [
+          'A fraction represents a part of a whole, written as one integer (the numerator) over another (the denominator): a/b, where b cannot be zero. The denominator says how many equal parts the whole is divided into, and the numerator says how many of those parts you have. Cut a pizza into 4 equal slices and eat 3, and you have eaten 3/4 of the pizza.',
+          'Every fraction has an equivalent decimal (divide the numerator by the denominator) and, if it is "improper" (numerator bigger than denominator), an equivalent mixed number — a whole number plus a smaller fraction, such as 7/2 = 3 1/2. This calculator shows all three forms for whichever fraction you end up with.',
+          'Combining two fractions with + or − needs a common denominator first; × and ÷ do not. This calculator handles all four operations the same way: it forms a common denominator, computes the result, and then simplifies it to lowest terms using the greatest common factor of the numerator and denominator.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter two fractions and pick an operation. The result updates as you type, already simplified.',
+        steps: [
+          { name: 'Enter the first fraction', text: 'Type its numerator and denominator. The denominator cannot be zero.' },
+          { name: 'Choose an operation', text: 'Add, subtract, multiply or divide. Dividing by a fraction is the same as multiplying by its reciprocal, which the calculator does for you.' },
+          { name: 'Enter the second fraction', text: 'For division, its numerator also cannot be zero — you cannot divide by a fraction that equals zero.' },
+          { name: 'Read the simplified result', text: 'The decimal value, the fraction in lowest terms, and the mixed number (whole part plus remainder) all come from the same answer.' },
+          { name: 'Compare the two inputs', text: 'The chart shows both fractions as decimals, so you can see at a glance which one is larger.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Addition and subtraction need a shared denominator first; multiplication and division work directly on the numerators and denominators.',
+        expression: 'a/b + c/d = (ad + bc) ÷ bd\na/b − c/d = (ad − bc) ÷ bd\na/b × c/d = ac ÷ bd\na/b ÷ c/d = a/b × d/c = ad ÷ bc',
+        terms: [
+          { symbol: 'a, c', meaning: 'The two numerators.' },
+          { symbol: 'b, d', meaning: 'The two denominators (never zero).' },
+          { symbol: 'bd', meaning: 'A common denominator formed by multiplying the two denominators together. It is not always the LEAST common denominator, so the result is simplified afterward.' }
+        ],
+        note: 'This calculator simplifies the result to lowest terms by dividing the numerator and denominator by their greatest common factor, so bd is always a safe, if not minimal, common denominator to start from.'
+      },
+      workedExample: {
+        intro: 'Add 1/2 and 1/3.',
+        rows: [
+          { label: 'Common denominator (2 × 3)', value: '6' },
+          { label: 'Numerator (1×3 + 1×2)', value: '3 + 2 = 5' },
+          { label: 'Result before simplifying', value: '5/6' },
+          { label: 'Simplified (GCF(5, 6) = 1, already lowest terms)', value: '5/6' },
+          { label: 'As a decimal', value: '5 ÷ 6 ≈ 0.8333' }
+        ],
+        result: '1/2 + 1/3 = 5/6 ≈ 0.8333',
+        explanation: '5/6 is already in lowest terms because 5 and 6 share no common factor other than 1. If the unsimplified result had been 4/6 instead, dividing both numbers by their greatest common factor (2) would reduce it to 2/3.'
+      },
+      watchOut: [
+        { title: 'A denominator of zero has no meaning', body: 'A fraction with a zero denominator is undefined — it does not represent a number, so the calculator cannot return an answer.' },
+        { title: 'Dividing by a zero numerator is still dividing by zero', body: 'Dividing by a fraction whose numerator is 0 means dividing by 0 (since 0/d = 0 for any nonzero d), which has no answer, the same as dividing any number by 0.' },
+        { title: 'Negative results and mixed numbers', body: 'For a negative result like −7/2, this calculator shows a mixed-number whole part of −3 and a remainder numerator of −1 over a denominator of 2 (meaning −3 and a further 1/2 below that), rather than the more familiar "−3 1/2" notation.' },
+        { title: 'Expects whole-number numerators and denominators', body: 'Typing a decimal into a numerator or denominator field still computes an answer, but fractions are defined for integers — convert a decimal to a fraction the other way around if that is where you are starting from.' }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §4.1 Visualize Fractions', url: 'https://openstax.org/books/prealgebra-2e/pages/4-1-visualize-fractions' },
+        { label: 'OpenStax, Prealgebra 2e, §4.2 Multiply and Divide Fractions', url: 'https://openstax.org/books/prealgebra-2e/pages/4-2-multiply-and-divide-fractions' },
+        { label: 'OpenStax, Prealgebra 2e, §4.5 Add and Subtract Fractions with Different Denominators', url: 'https://openstax.org/books/prealgebra-2e/pages/4-5-add-and-subtract-fractions-with-different-denominators' },
+        { label: 'Wolfram MathWorld, Fraction', url: 'https://mathworld.wolfram.com/Fraction.html' }
+      ]
+    },
+    inputs: [
+      { id: 'n1', label: 'First numerator', type: 'number', placeholder: '1', defaultValue: 1, step: 1 },
+      { id: 'd1', label: 'First denominator', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 1 },
+      {
+        id: 'operator',
+        label: 'Operation',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 1,
+        min: 1,
+        options: [
+          { value: 1, label: 'Add (+)' },
+          { value: 2, label: 'Subtract (−)' },
+          { value: 3, label: 'Multiply (×)' },
+          { value: 4, label: 'Divide (÷)' }
+        ]
+      },
+      { id: 'n2', label: 'Second numerator', type: 'number', placeholder: '1', defaultValue: 1, step: 1 },
+      { id: 'd2', label: 'Second denominator', type: 'number', placeholder: '3', defaultValue: 3, step: 1, min: 1 }
+    ],
+    breakdown: {
+      headline: 'decimalValue',
+      headlineLabel: 'Decimal value',
+      outputs: [
+        { id: 'decimalValue', label: 'Decimal value', format: 'significant' },
+        { id: 'simplifiedNumerator', label: 'Simplified numerator', format: 'integer' },
+        { id: 'simplifiedDenominator', label: 'Simplified denominator', format: 'integer' },
+        { id: 'mixedWhole', label: 'Mixed number — whole part', format: 'integer' },
+        { id: 'mixedRemainderNumerator', label: 'Mixed number — remainder numerator', format: 'integer' }
+      ],
+      groups: [{ inputs: ['n1', 'd1', 'operator', 'n2', 'd2'] }],
+      derive: (values) => ({
+        fraction1Decimal: values.d1 === 0 ? NaN : values.n1 / values.d1,
+        fraction2Decimal: values.d2 === 0 ? NaN : values.n2 / values.d2
+      }),
+      visual: { type: 'compareBars', bars: [{ from: 'fraction1Decimal', label: 'First fraction' }, { from: 'fraction2Decimal', label: 'Second fraction' }], title: 'Your two fractions, as decimals' }
+    },
+    seo: {
+      title: 'Fraction Calculator – Add, Subtract, Multiply, Divide',
+      description: 'Free fraction calculator. Add, subtract, multiply or divide two fractions, with the result simplified, as a mixed number and as a decimal.',
+      faq: [
+        { question: 'How do I add two fractions?', answer: 'Find a common denominator, add the numerators, then simplify: 1/2 + 1/3 = 3/6 + 2/6 = 5/6.' },
+        { question: 'How do I subtract fractions?', answer: 'Use the same common-denominator method and subtract the numerators: 1/2 − 1/3 = 3/6 − 2/6 = 1/6.' },
+        { question: 'How do I multiply fractions?', answer: 'Multiply the numerators together and the denominators together; no common denominator is needed: 1/2 × 1/3 = 1/6.' },
+        { question: 'How do I divide fractions?', answer: 'Multiply by the reciprocal of the second fraction: 1/2 ÷ 1/3 = 1/2 × 3/1 = 3/2.' },
+        { question: 'How do I simplify a fraction?', answer: 'Divide the numerator and denominator by their greatest common factor. 4/6 divided by 2 is 2/3.' },
+        { question: 'How do I convert a fraction to a mixed number?', answer: 'Divide the numerator by the denominator; the quotient is the whole part and the remainder sits over the original denominator: 7/2 = 3 remainder 1 = 3 1/2.' },
+        { question: 'How do I convert a fraction to a decimal?', answer: 'Divide the numerator by the denominator: 5/6 ≈ 0.8333.' },
+        { question: 'Why do fractions need a common denominator to add but not to multiply?', answer: 'Addition combines like-sized pieces, so the pieces must be the same size (the same denominator) first. Multiplication scales both the count and the size of the pieces at once, so it works directly on any denominators.' }
+      ]
+    },
+    compute(values) {
+      const { n1, d1, n2, d2, operator } = values;
+      const noAnswer = { decimalValue: NaN, simplifiedNumerator: NaN, simplifiedDenominator: NaN, mixedWhole: NaN, mixedRemainderNumerator: NaN };
+      if (d1 === 0 || d2 === 0) return noAnswer;
+
+      let rn: number;
+      let rd: number;
+      if (operator === 2) {
+        rn = n1 * d2 - n2 * d1;
+        rd = d1 * d2;
+      } else if (operator === 3) {
+        rn = n1 * n2;
+        rd = d1 * d2;
+      } else if (operator === 4) {
+        if (n2 === 0) return noAnswer; // dividing by zero
+        rn = n1 * d2;
+        rd = d1 * n2;
+      } else {
+        rn = n1 * d2 + n2 * d1; // operator 1 (add), and the safe fallback for any other value
+        rd = d1 * d2;
+      }
+      if (rd < 0) {
+        rn = -rn;
+        rd = -rd;
+      }
+
+      const divisor = gcd(rn, rd);
+      const simplifiedNumerator = rn / divisor;
+      const simplifiedDenominator = rd / divisor;
+      const decimalValue = rn / rd;
+      const mixedWhole = Math.trunc(simplifiedNumerator / simplifiedDenominator);
+      const mixedRemainderNumerator = simplifiedNumerator % simplifiedDenominator;
+      return { decimalValue, simplifiedNumerator, simplifiedDenominator, mixedWhole, mixedRemainderNumerator };
+    }
+  },
 ];

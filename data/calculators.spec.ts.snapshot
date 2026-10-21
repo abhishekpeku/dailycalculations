@@ -700,6 +700,59 @@ exports[`compute() snapshots > force-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > fraction-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "n1": 1,
+      "d1": 2,
+      "operator": 1,
+      "n2": 1,
+      "d2": 3
+    },
+    "outputs": {
+      "decimalValue": 0.8333333333,
+      "simplifiedNumerator": 5,
+      "simplifiedDenominator": 6,
+      "mixedWhole": 0,
+      "mixedRemainderNumerator": 5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "n1": 2,
+      "d1": 3,
+      "operator": 2,
+      "n2": 2,
+      "d2": 5
+    },
+    "outputs": {
+      "decimalValue": 0.2666666667,
+      "simplifiedNumerator": 4,
+      "simplifiedDenominator": 15,
+      "mixedWhole": 0,
+      "mixedRemainderNumerator": 4
+    }
+  },
+  "edge": {
+    "inputs": {
+      "n1": 0,
+      "d1": 1,
+      "operator": 1,
+      "n2": 0,
+      "d2": 1
+    },
+    "outputs": {
+      "decimalValue": 0,
+      "simplifiedNumerator": 0,
+      "simplifiedDenominator": 1,
+      "mixedWhole": 0,
+      "mixedRemainderNumerator": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > freelancer-rate-calculator 1`] = `
 {
   "default": {

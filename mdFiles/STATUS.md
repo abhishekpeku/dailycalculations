@@ -118,7 +118,7 @@ is why 12-15 run after it.
 | 37 | Batch 3: health (6) | DONE 2026-10-20 | YMYL. Branch `step/37-batch-3-health`, PR #11. All 6 health calculators on v2. See session log. | §3 |
 | 38 | Batch 4: auto + home (12) | **DONE** 2026-10-21 | Branch `step/38-batch-4-auto-home`, PR #13 (ready for review). All 12: car-payment, gas-cost, fuel-cost, ev-charging, commute-cost, toll-cost, concrete, paint, tile, wallpaper, electricity-bill, furniture-fit. See session log. | §3 |
 | 39 | Batch 5: time, travel, work, creator, text, education (18) | **DONE** 2026-10-21 | Branch `step/39-batch-5`, PR #14 (ready for review, no longer draft). All 18: date-difference, age, sleep-time, work-hours, pomodoro-timer, travel-budget, visa-stay-days, currency-converter, timezone-meeting-planner, freelancer-rate, meeting-cost, pto, salary-raise, youtube-earnings, instagram-engagement, character-counter, hashtag-counter, gpa-calculator (C → B). See session log. | §3 |
-| 40–42 | Wave 1: math · statistics · conversion — **NEW calculators, not conversions of existing ones** | **IN PROGRESS** | Absorbs step 24 (math). 5 calculators per agent run. Run 1/~6 **DONE** 2026-10-21: added the `math` category (`data/calculators/index.ts`, `data/calculators/math.ts`, `lib/categoryTheme.ts` orange/`function`) plus percentage-calculator (B), percent-change-calculator (A), percent-difference-calculator (B), fraction-calculator (B), ratio-calculator (A). Branch `step/40-wave-1-math-run-1`, PR #15 (ready for review). Run 2/~6 **DONE** 2026-10-21: average-calculator (B), weighted-average-calculator (B, cross-linked with gpa-calculator), rounding-calculator (B), scientific-notation-calculator (B), exponent-calculator (A). Branch `step/40-wave-1-math-run-2`, PR #16 (ready for review). Run 3/~6 **DONE** 2026-10-22: square-root-calculator (A), cube-root-calculator (A, `Math.cbrt` for real negative roots), logarithm-calculator (A, cross-linked with exponent-calculator), factorial-calculator (B, `BigInt` for exact digit counts), gcf-calculator (B, "How many numbers?" count selector, reuses the shared `gcd()` helper). Branch `step/40-wave-1-math-run-3`, PR #17 (ready for review). 15/~29 math calculators done. Next: run 4 — LCM, prime factorization, long division, quadratic formula, Pythagorean theorem. See session log and `mdFiles/steps/40-wave-1-math.md` for the full run breakdown and type decisions. | §4 |
+| 40–42 | Wave 1: math · statistics · conversion — **NEW calculators, not conversions of existing ones** | **IN PROGRESS** | Absorbs step 24 (math). 5 calculators per agent run. Run 1/~6 **DONE** 2026-10-21: added the `math` category (`data/calculators/index.ts`, `data/calculators/math.ts`, `lib/categoryTheme.ts` orange/`function`) plus percentage-calculator (B), percent-change-calculator (A), percent-difference-calculator (B), fraction-calculator (B), ratio-calculator (A). Branch `step/40-wave-1-math-run-1`, PR #15 (ready for review). Run 2/~6 **DONE** 2026-10-21: average-calculator (B), weighted-average-calculator (B, cross-linked with gpa-calculator), rounding-calculator (B), scientific-notation-calculator (B), exponent-calculator (A). Branch `step/40-wave-1-math-run-2`, PR #16 (ready for review). Run 3/~6 **DONE** 2026-10-22: square-root-calculator (A), cube-root-calculator (A, `Math.cbrt` for real negative roots), logarithm-calculator (A, cross-linked with exponent-calculator), factorial-calculator (B, `BigInt` for exact digit counts), gcf-calculator (B, "How many numbers?" count selector). Branch `step/40-wave-1-math-run-3`, PR #17 (ready for review). **Fix 2026-10-22** (pre-merge review of PR #17): `gcf-calculator` had wrongly reused the `fraction-calculator`/`ratio-calculator` `gcd()` helper, whose `|| 1` fallback made `GCF(0, 0, 12)` compute as `1` instead of `12` and `GCF(0, 0)` as `1` instead of the standard `0`. Fixed with a separate `gcdRaw()` (no fallback) for `gcf-calculator` only; `gcd()` and the other two calculators are untouched. 15/~29 math calculators done. Next: run 4 — LCM, prime factorization, long division, quadratic formula, Pythagorean theorem. See session log and `mdFiles/steps/40-wave-1-math.md` for the full run breakdown, type decisions and fix detail. | §4 |
 | 43–45 | Wave 2: construction · food · sports | TODO | | §4 |
 | 46–47 | Wave 3: physics · chemistry | TODO | Needs 30 + 31. | §4 |
 | 48–49 | Wave 4: biology · ecology + fun | TODO | Absorbs steps 23, 25, 26 where they fit. | §4 |
@@ -1259,6 +1259,22 @@ Divisor) — all loaded successfully, 0 reference failures (two initial OpenStax
 guesses 404'd before the correct URLs were found via search and cited instead). PR #17 opened as a
 draft before the first calculator was built, updated with the full run-3 summary, and taken off
 draft via `gh pr ready 17` once everything above passed.
+
+**2026-10-22 — fix on PR #17: gcf-calculator mishandled GCF(0, 0).** A pre-merge review caught that
+`gcf-calculator`'s `compute()` reused the `gcd()` helper shared by `fraction-calculator` and
+`ratio-calculator`, whose `return a || 1` fallback (needed so fraction/ratio simplification never
+divides by zero) is wrong for an actual GCF: `GCF(0, 0, 12)` computed as `gcd(gcd(0,0),12)` =
+`gcd(1,12)` = `1` instead of the correct `12`, and `GCF(0, 0)` reported `1` instead of the standard
+number-theory convention of `0`. Fixed by adding `gcdRaw()` (no fallback) for `gcf-calculator`
+only — `gcd()` and the other two calculators' behavior are untouched, confirmed byte-identical.
+Rewrote the GCF(0,0) watch-out item, added an FAQ entry, and added a third reference (Clark,
+*Elementary Number Theory*, Mathematics LibreTexts §6: "We define gcd(0,0) = 0") since neither
+OpenStax nor MathWorld state the zero case. Verified `GCF(0,0,12)=12`, `GCF(0,18)=18`,
+`GCF(0,0)=0`, `GCF(0,18,24)=6` (a zero among others doesn't change the result — only all-zero
+does), negatives and non-integer rounding, independently in Python and Node against the app's own
+`compute()`. Only `gcf-calculator`'s own edge snapshot entry changed (`gcf: 1 → 0`); `npm test`
+310/310, `npm run build` and lint pass. See `mdFiles/steps/40-wave-1-math.md`'s "Fix, 2026-10-22"
+section for the full writeup.
 
 ## Pending on the user — not code
 

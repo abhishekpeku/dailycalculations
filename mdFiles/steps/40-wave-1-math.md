@@ -177,3 +177,24 @@ and lint pass; the live page was re-checked on a local dev server (the `howMany`
 mounts, no leftover "0.0001" text), then the server was killed. See the Parked entry on "no
 list/array input in the calculator kit" for this fix generalized into a reusable pattern (a count
 selector plus array slicing, used whenever 0 is a legitimate data point rather than a true weight).
+
+## Fix, 2026-10-22: gcf-calculator mishandled GCF(0, 0)
+
+A pre-merge review of PR #17 caught a real bug: `gcf-calculator`'s `compute()` reduced its numbers
+with the shared `gcd()` helper at the top of `math.ts`, whose `return a || 1` fallback exists so
+fraction/ratio simplification never divides by zero — correct for those two pages, wrong for an
+actual GCF. Reusing it meant `GCF(0, 0, 12)` computed as `gcd(gcd(0,0), 12)` = `gcd(1, 12)` = `1`
+instead of the correct `12`, and `GCF(0, 0)` reported `1` instead of the standard number-theory
+convention of `0`.
+
+Fixed by adding `gcdRaw()`, a second Euclidean-algorithm function with no fallback (so
+`gcdRaw(0, 0) = 0`), used only by `gcf-calculator`; `gcd()` itself — and therefore
+`fraction-calculator`/`ratio-calculator` — is untouched, confirmed byte-identical and their
+snapshots unchanged. Rewrote the "GCF(0, 0)" watch-out item, added a dedicated FAQ entry, and added
+a third reference (Clark, *Elementary Number Theory*, Mathematics LibreTexts §6: "We define
+gcd(0,0) = 0") since neither OpenStax nor MathWorld state the zero case explicitly. Verified
+`GCF(0, 0, 12) = 12`, `GCF(0, 18) = 18`, `GCF(0, 0) = 0`, `GCF(0, 18, 24) = 6` (a zero among other
+numbers doesn't change the result — only all-zero does), negatives (`GCF(-12, 18) = 6`) and the
+non-integer rounding rule, independently in both a Python script and a Node one-liner against the
+app's own `compute()`. Only `gcf-calculator`'s own edge snapshot entry changed (`gcf: 1 → 0`,
+confirmed with `git diff`); `npm test` 310/310, `npm run build` and lint pass.

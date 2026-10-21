@@ -1183,6 +1183,134 @@ export const mathCalculators: CalculatorConfig[] = [
       }
       return { resultCoefficient, resultExponent, resultPlain };
     }
+  },
+  {
+    id: 'exponent-calculator',
+    category: 'math',
+    updatedAt: '2026-10-21',
+    aliases: ['power calculator', 'base and exponent calculator', 'exponentiation calculator', 'x to the power of y calculator'],
+    related: ['scientific-notation-calculator', 'fraction-calculator', 'ratio-calculator', 'percentage-calculator'],
+    title: 'Exponent Calculator',
+    description: 'Raise a base to a power — or enter the result instead and solve for the base or the exponent — the relationship behind squares, cubes, compound growth, and scientific notation.',
+    example: '2 raised to the 10th power is 1,024. Flip it around: what power of 2 gives 1,024? Also 10.',
+    solver: {
+      defaultTarget: 'result',
+      variables: [
+        { id: 'base', label: 'Base', symbol: 'b', dimension: 'count', defaultValue: 2, defaultUnit: 'count' },
+        { id: 'exponent', label: 'Exponent', symbol: 'n', dimension: 'count', defaultValue: 10, defaultUnit: 'count' },
+        { id: 'result', label: 'Result', symbol: 'bⁿ', dimension: 'count', defaultValue: 1024, defaultUnit: 'count' }
+      ],
+      solve: {
+        result: ({ base, exponent }) => base ** exponent,
+        base: ({ exponent, result }) => {
+          if (exponent === 0) return NaN; // any nonzero base to the 0 is 1: not a unique base
+          if (result === 0) return exponent > 0 ? 0 : NaN;
+          if (result < 0) {
+            // A real root of a negative number only exists for an odd integer exponent.
+            if (!Number.isInteger(exponent) || exponent % 2 === 0) return NaN;
+            return -((-result) ** (1 / exponent));
+          }
+          return result ** (1 / exponent);
+        },
+        exponent: ({ base, result }) => {
+          if (base <= 0 || base === 1) return NaN; // log base undefined for base <= 0, and log base 1 is always 0
+          if (result <= 0) return NaN; // no real log of a non-positive number
+          return Math.log(result) / Math.log(base);
+        }
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'result',
+          min: -3,
+          max: 15,
+          ticks: ['10⁻³', '10⁰', '10³', '10⁶', '10⁹', '10¹²', '10¹⁵'],
+          benchmarks: [
+            { label: '2¹⁰ = 1,024 (the "kibi" binary prefix)', value: 1024 },
+            { label: '10⁶ (one million)', value: 1e6 },
+            { label: '10⁹ (one billion)', value: 1e9 }
+          ],
+          title: 'How big is the result?',
+          valueLabel: 'Your result'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What is an exponent?',
+        paragraphs: [
+          'An exponent tells you how many times to multiply a base by itself: 2³ (read "2 to the power of 3," or "2 cubed") means 2 × 2 × 2 = 8. The base is the number being multiplied; the exponent (or "power") is the small raised number counting how many times. This shorthand is what makes exponents useful well beyond simple repeated multiplication — compound interest, population growth, and computer memory sizes (1 kibibyte = 2¹⁰ bytes) all rely on it.',
+          'The definition extends smoothly past positive whole numbers: any nonzero base raised to the 0 power is 1, a negative exponent means "take the reciprocal" (2⁻³ = 1 ÷ 2³ = 0.125), and a fractional exponent means a root (a base to the power 1/2 is its square root). This calculator also works the relationship backward: given the base and the result, it finds the exponent using a logarithm; given the exponent and the result, it finds the base using a root.',
+          'Not every combination has a real-number answer. Raising a negative number to a fractional exponent, or trying to find a logarithm of zero or a negative number, falls outside the real numbers for most cases — see "Watch out" below for exactly where this calculator draws the line and why.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of the three fields — base, exponent, result — and the third, marked auto, is calculated.',
+        steps: [
+          { name: 'Raise a base to a power', text: 'Enter the base and exponent. The result field, marked auto, fills in as base raised to that exponent.' },
+          { name: 'Solve for the base', text: 'Enter the exponent and the result to find what base produces it — the exponent\'s root of the result.' },
+          { name: 'Solve for the exponent', text: 'Enter the base and the result to find what power the base must be raised to — a logarithm.' },
+          { name: 'Switch which field is calculated', text: 'Type into the auto field and it becomes an input again; the field you left alone the longest becomes the new calculated one.' },
+          { name: 'See the scale', text: 'The chart places your result on a scale from thousandths to quadrillions, next to a few everyday reference points.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'One relationship, rearranged three ways.',
+        expression: 'result = baseⁿ\nbase = result^(1 ÷ n)  (when a real solution exists)\nn = log(result) ÷ log(base)  (when base > 0, base ≠ 1, and result > 0)',
+        terms: [
+          { symbol: 'base', meaning: 'The number being multiplied by itself.' },
+          { symbol: 'n (exponent)', meaning: 'How many times the base is multiplied by itself — extended to 0, negative and fractional values.' },
+          { symbol: 'result', meaning: 'The base raised to the exponent, also called the power.' }
+        ],
+        note: '0⁰ is taken as 1 here, a widely used convention (not a derived fact) that keeps formulas like the binomial theorem and power series working cleanly at the edge case.'
+      },
+      workedExample: {
+        intro: '2 raised to the 10th power — and the same relationship solved backward.',
+        rows: [
+          { label: 'Forward: 2¹⁰', value: '2×2×2×2×2×2×2×2×2×2 = 1,024' },
+          { label: 'Solve for the base, given n = 10 and result = 1,024', value: '1,024^(1/10) = 2' },
+          { label: 'Solve for the exponent, given base = 2 and result = 1,024', value: 'log(1,024) ÷ log(2) = 10' }
+        ],
+        result: '2¹⁰ = 1,024',
+        explanation: '1,024 is also the "kibi" binary prefix used for computer memory (1 kibibyte = 2¹⁰ bytes = 1,024 bytes), one reason powers of 2 show up constantly in computing.'
+      },
+      watchOut: [
+        { title: '0 to the power 0 is treated as 1', body: 'This is a mathematical convention, not a fact derived from the usual rules of exponents — some contexts (particularly limits in calculus) instead call 0⁰ an indeterminate form. This calculator follows the common computing and algebra convention of 0⁰ = 1.' },
+        { title: 'A negative base with a non-integer exponent has no real answer', body: 'Raising a negative number to a fractional power generally requires complex numbers — except for exponents that reduce to a fraction with an odd denominator (an odd root), such as 1/3. This calculator only evaluates negative bases with whole-number exponents; a dedicated root calculator is the better tool for odd roots of negative numbers.' },
+        { title: 'Solving for the exponent needs a positive base that is not 1, and a positive result', body: 'A logarithm is undefined for a base of 0 or a negative base, and taking log base 1 always gives 0 regardless of the result (since 1 raised to any power is still 1) — so no unique exponent exists. The result must also be positive, since a positive base can never produce a negative or zero result.' },
+        { title: 'A negative exponent means a reciprocal, not a negative result', body: '2⁻³ is 1 ÷ 2³ = 0.125, a small positive number — not −8. The sign of the exponent controls whether the base is multiplied or divided, not the sign of the result.' },
+        { title: 'Very large bases and exponents can overflow', body: 'Extremely large combinations, such as a large base raised to a large exponent, can exceed the largest number a computer can represent and show no finite answer at all, the same way a calculator display would show an overflow error.' }
+      ],
+      references: [
+        { label: 'Wolfram MathWorld, Exponent Laws', url: 'https://mathworld.wolfram.com/ExponentLaws.html' },
+        { label: 'OpenStax, Prealgebra 2e, §10.5 Integer Exponents and Scientific Notation', url: 'https://openstax.org/books/prealgebra-2e/pages/10-5-integer-exponents-and-scientific-notation' },
+        { label: 'NIST, Prefixes for Binary Multiples', url: 'https://physics.nist.gov/cuu/Units/binary.html' }
+      ]
+    },
+    inputs: [
+      { id: 'base', label: 'Base', type: 'number', placeholder: '2', defaultValue: 2, step: 1 },
+      { id: 'exponent', label: 'Exponent', type: 'number', placeholder: '10', defaultValue: 10, step: 1 }
+    ],
+    seo: {
+      title: 'Exponent Calculator – Powers, Bases & Roots',
+      description: 'Free exponent calculator. Raise a base to a power, or solve for the base or the exponent instead — covers zero, negative and fractional exponents.',
+      faq: [
+        { question: 'How do I calculate an exponent?', answer: 'Multiply the base by itself as many times as the exponent says. 2⁴ = 2 × 2 × 2 × 2 = 16.' },
+        { question: 'What is a number to the power of 0?', answer: 'Any nonzero number raised to the power 0 equals 1. This follows from the pattern of dividing by the base one more time for each exponent that decreases by 1 (2³=8, 2²=4, 2¹=2, 2⁰=1).' },
+        { question: 'What does a negative exponent mean?', answer: 'It means take the reciprocal of the positive-exponent version: 2⁻³ = 1 ÷ 2³ = 1/8 = 0.125.' },
+        { question: 'What does a fractional exponent mean?', answer: 'It means a root. A base to the power 1/2 is its square root, and a base to the power 1/3 is its cube root: 8^(1/3) = 2.' },
+        { question: 'What is 0 to the power of 0?', answer: 'By a widely used convention, this calculator treats it as 1, though it is sometimes called an indeterminate form in calculus rather than a derived value.' },
+        { question: 'Can you raise a negative number to a power?', answer: 'Yes, for a whole-number exponent: (−2)³ = −8 and (−2)⁴ = 16. A negative number raised to a non-integer exponent generally has no real-number answer.' },
+        { question: 'How do I solve for the exponent?', answer: 'Use a logarithm: exponent = log(result) ÷ log(base). For base 2 and result 1,024, that is log(1024) ÷ log(2) = 10.' },
+        { question: 'How do I solve for the base?', answer: 'Take the exponent-th root of the result: base = result^(1 ÷ exponent). For exponent 10 and result 1,024, that is 1,024^(1/10) = 2.' }
+      ]
+    },
+    compute(values) {
+      const { base, exponent } = values;
+      return { result: base ** exponent };
+    }
   }
 
 ];

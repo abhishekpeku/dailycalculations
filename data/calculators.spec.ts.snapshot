@@ -701,6 +701,38 @@ exports[`compute() snapshots > ev-charging-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > exponent-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "base": 2,
+      "exponent": 10
+    },
+    "outputs": {
+      "result": 1024
+    }
+  },
+  "typical": {
+    "inputs": {
+      "base": 3,
+      "exponent": 15
+    },
+    "outputs": {
+      "result": 14348907
+    }
+  },
+  "edge": {
+    "inputs": {
+      "base": 0,
+      "exponent": 0
+    },
+    "outputs": {
+      "result": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > fahrenheit-to-celsius-converter 1`] = `
 {
   "default": {

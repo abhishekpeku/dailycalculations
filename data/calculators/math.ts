@@ -1426,5 +1426,95 @@ export const mathCalculators: CalculatorConfig[] = [
       return { squareRoot: radicand < 0 ? NaN : Math.sqrt(radicand) };
     }
   },
+  {
+    id: 'cube-root-calculator',
+    category: 'math',
+    updatedAt: '2026-10-21',
+    aliases: ['cube root of a number calculator', 'cbrt calculator', 'find the cube root calculator', 'third root calculator'],
+    related: ['square-root-calculator', 'exponent-calculator', 'factorial-calculator', 'gcf-calculator'],
+    title: 'Cube Root Calculator',
+    description: 'Find the cube root of any real number, including negative numbers — unlike a square root, a cube root is always a real number.',
+    example: 'The cube root of 27 is 3, since 3 × 3 × 3 = 27. Unlike square roots, cube roots are real even for negative numbers: the cube root of −8 is −2.',
+    solver: {
+      defaultTarget: 'cubeRoot',
+      variables: [
+        { id: 'radicand', label: 'Number (radicand)', symbol: 'x', dimension: 'count', defaultValue: 27, defaultUnit: 'count' },
+        { id: 'cubeRoot', label: 'Cube root', symbol: '∛x', dimension: 'count', defaultValue: 3, defaultUnit: 'count' }
+      ],
+      solve: {
+        cubeRoot: ({ radicand }) => Math.cbrt(radicand),
+        radicand: ({ cubeRoot }) => cubeRoot ** 3
+      },
+      visuals: [{ type: 'compareBars', bars: [{ from: 'radicand', label: 'Your number' }, { from: 'cubeRoot', label: 'Its cube root' }], title: 'Your number vs its cube root' }]
+    },
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What is a cube root?',
+        paragraphs: [
+          'The cube root of a number x is a number r that, multiplied by itself three times, gives x back: r × r × r = x. 3 is the cube root of 27 because 3 × 3 × 3 = 27. Written with a radical, it is ∛x, or equivalently x^(1/3).',
+          "A cube root behaves differently from a square root in one important way: every real number, including negative ones, has exactly one real cube root. The cube root of −8 is −2, because −2 × −2 × −2 = −8 (two of the three negative signs cancel, and the third one stays). A square root has no such negative case, because squaring a negative number always gives a positive result — cubing a negative number gives a negative result instead, which is exactly why an odd root (cube, fifth, seventh...) of a negative number stays real while an even root does not.",
+          'Perfect cubes — 1, 8, 27, 64, 125, and so on — have a whole-number cube root. Everything else has an irrational cube root, shown here as a rounded decimal. This calculator also works backward: given a cube root, it cubes that value to find the original number.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter either the number or its cube root — the other field, marked auto, is calculated.',
+        steps: [
+          { name: 'Find a cube root', text: 'Enter the number, positive or negative. The cube root field, marked auto, fills in automatically — there is no domain restriction to worry about.' },
+          { name: 'Work backward', text: 'Type into the cube root field instead, and the number updates to that value cubed.' },
+          { name: 'Switch which field is calculated', text: 'Typing into the auto field hands "auto" back to the other one.' },
+          { name: 'Read a non-perfect-cube result', text: 'If the number is not a perfect cube, the result is a rounded decimal approximation.' },
+          { name: 'Compare the two values', text: 'The chart shows your number next to its cube root.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'A cube root undoes cubing. The two directions of the same relationship:',
+        expression: 'r = ∛x = x^(1/3)  (defined for every real x)\nx = r³',
+        terms: [
+          { symbol: 'x (radicand)', meaning: 'The number you are taking the root of. Can be positive, negative, or zero.' },
+          { symbol: 'r (cube root)', meaning: 'The real number that, cubed, gives x back. Always exists and is unique for a real x.' }
+        ],
+        note: "This calculator computes the real cube root directly (JavaScript's Math.cbrt), not by raising a negative number to the power 1/3 — that naive approach produces no real answer for a negative base in most programming languages and calculators, even though the real cube root clearly exists."
+      },
+      workedExample: {
+        intro: 'Find the cube root of −8, the case that trips up a square-root-style approach.',
+        rows: [
+          { label: 'Try r = −2', value: '(−2) × (−2) × (−2) = 4 × (−2) = −8' },
+          { label: 'Check it matches x', value: '−8 = −8 ✓' }
+        ],
+        result: '∛(−8) = −2',
+        explanation: 'The first two negative signs cancel in (−2) × (−2) = 4, and the third multiplication by −2 puts the sign back, landing on a negative result — which is exactly why every negative number has a real (negative) cube root, unlike a square root.'
+      },
+      watchOut: [
+        { title: 'Cube roots of negative numbers are real', body: 'Unlike a square root, a cube root never runs out of real answers: ∛(−8) = −2, because (−2)³ = −8. This holds for any odd-numbered root (cube, fifth, seventh...) of a negative number.' },
+        { title: 'Naive exponentiation can get this wrong', body: 'Computing a cube root as "raise to the power 1/3" fails for negative numbers in JavaScript and many calculators, returning no real answer even though one exists — this calculator computes the real cube root directly instead, so negative inputs work correctly.' },
+        { title: 'Exactly one real cube root, always', body: "A positive number has two square roots but exactly one real cube root (a negative number has two more cube roots, but they involve imaginary numbers and are not real) — there is no 'principal vs. other root' ambiguity to resolve the way there is for even roots." },
+        { title: 'Most cube roots are irrational', body: 'Only perfect cubes (1, 8, 27, 64, 125, ...) have a whole-number cube root. Everything else, like ∛10, is shown as a rounded decimal, not an exact value.' }
+      ],
+      references: [
+        { label: 'OpenStax, Elementary Algebra 2e, §9.7 Higher Roots', url: 'https://openstax.org/books/elementary-algebra-2e/pages/9-7-higher-roots' },
+        { label: 'Wolfram MathWorld, Cube Root', url: 'https://mathworld.wolfram.com/CubeRoot.html' }
+      ]
+    },
+    inputs: [{ id: 'radicand', label: 'Number (radicand)', type: 'number', placeholder: '27', defaultValue: 27, step: 1 }],
+    seo: {
+      title: 'Cube Root Calculator – Real Roots, Even for Negatives',
+      description: 'Free cube root calculator. Find the real cube root of any number, positive or negative, or solve backward from a cube root.',
+      faq: [
+        { question: 'What is the cube root of 27?', answer: '3, since 3 × 3 × 3 = 27.' },
+        { question: 'What is the cube root of a negative number?', answer: "A real number, unlike a square root. The cube root of −8 is −2, because (−2)³ = −8." },
+        { question: 'What is the cube root of 1000?', answer: '10, since 10 × 10 × 10 = 1,000.' },
+        { question: 'What is the cube root of 0?', answer: '0, since 0 × 0 × 0 = 0.' },
+        { question: 'Why does a cube root work for negative numbers but a square root does not?', answer: 'Squaring a negative number always gives a positive result, so no real number squares to a negative. Cubing a negative number gives a negative result, so a real cube root of a negative number always exists.' },
+        { question: 'Is the cube root the same as an exponent of 1/3?', answer: 'Yes — x^(1/3) and ∛x mean exactly the same thing.' },
+        { question: 'How many real cube roots does a number have?', answer: 'Exactly one. (There are two additional cube roots in the complex numbers, but only one is real.)' },
+        { question: 'How do I find the cube root of a number by hand?', answer: 'Estimate between two perfect cubes — ∛20 is between ∛8 = 2 and ∛27 = 3, closer to 3 — then refine the decimal, the same bracketing technique used for square roots.' }
+      ]
+    },
+    compute(values) {
+      return { cubeRoot: Math.cbrt(values.radicand) };
+    }
+  },
 
 ];

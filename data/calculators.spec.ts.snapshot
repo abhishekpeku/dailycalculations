@@ -439,6 +439,35 @@ exports[`compute() snapshots > concrete-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > cube-root-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "radicand": 27
+    },
+    "outputs": {
+      "cubeRoot": 3
+    }
+  },
+  "typical": {
+    "inputs": {
+      "radicand": 41
+    },
+    "outputs": {
+      "cubeRoot": 3.44821724
+    }
+  },
+  "edge": {
+    "inputs": {
+      "radicand": 0
+    },
+    "outputs": {
+      "cubeRoot": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > date-difference-calculator 1`] = `
 {
   "default": {

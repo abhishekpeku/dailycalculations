@@ -1,8 +1,11 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { WidgetCard, ResultPanel, Headline, AlsoIn, widgetAccent } from '@/components/CalculatorWidget';
 
-// Static rates relative to USD — updated periodically; not live
+// Static rates relative to USD — fixed reference values, not live. Update RATES_AS_OF when revised.
+// Live FX via KV is tracked separately (STATUS.md step 22); until then this table must read as
+// indicative, never as a live quote.
 const RATES: Record<string, number> = {
   USD: 1, EUR: 0.92, GBP: 0.79, JPY: 149.5, CAD: 1.36, AUD: 1.53,
   CHF: 0.90, CNY: 7.24, INR: 83.2, MXN: 17.2, BRL: 4.97, KRW: 1330,
@@ -10,6 +13,9 @@ const RATES: Record<string, number> = {
   ZAR: 18.6, AED: 3.67, SAR: 3.75, THB: 35.1, IDR: 15600, PHP: 55.8,
   TRY: 32.1, PLN: 4.01, CZK: 22.9, HUF: 360, RON: 4.57, BGN: 1.80,
 };
+
+const RATES_AS_OF = '2026-10-21';
+const RATES_AS_OF_LABEL = new Intl.DateTimeFormat('en-US', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(`${RATES_AS_OF}T00:00:00Z`));
 
 const CURRENCY_NAMES: Record<string, string> = {
   USD: 'US Dollar', EUR: 'Euro', GBP: 'British Pound', JPY: 'Japanese Yen',
@@ -39,7 +45,7 @@ function Select({ value, onChange }: { value: string; onChange: (v: string) => v
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-brand-400"
+      className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-500 dark:focus:ring-slate-700"
     >
       {CURRENCIES.map((c) => (
         <option key={c} value={c}>{c} – {CURRENCY_NAMES[c]}</option>
@@ -52,6 +58,7 @@ export default function CurrencyConverter() {
   const [amount, setAmount] = useState('100');
   const [from, setFrom] = useState('USD');
   const [to, setTo] = useState('EUR');
+  const accent = widgetAccent('travel');
 
   const result = useMemo(() => {
     const n = parseFloat(amount);
@@ -78,7 +85,19 @@ export default function CurrencyConverter() {
   }, [from, amount]);
 
   return (
-    <div className="space-y-6 rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-panel dark:border-slate-800 dark:bg-slate-950/90">
+    <WidgetCard>
+      <div
+        className="rounded-2xl border px-4 py-3 text-sm leading-5"
+        style={{ borderColor: `${accent}55`, backgroundColor: `${accent}0F` }}
+      >
+        <p style={{ color: accent }} className="font-semibold">Static reference rates — not live</p>
+        <p className="mt-0.5 text-slate-600 dark:text-slate-300">
+          Fixed values, last checked {RATES_AS_OF_LABEL}. Real exchange rates move constantly — check your
+          bank, card network or a live market source (see the references below) before converting money
+          for an actual transaction.
+        </p>
+      </div>
+
       <div className="space-y-4">
         <div className="space-y-1">
           <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Amount</label>
@@ -88,7 +107,7 @@ export default function CurrencyConverter() {
             onChange={(e) => setAmount(e.target.value)}
             min={0}
             step="any"
-            className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-lg font-semibold text-slate-900 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-brand-400"
+            className="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-lg font-semibold text-slate-900 outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-500 dark:focus:ring-slate-700"
           />
         </div>
 
@@ -99,7 +118,7 @@ export default function CurrencyConverter() {
           </div>
           <button
             onClick={swap}
-            className="mb-0.5 flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300 bg-slate-100 text-slate-600 transition hover:bg-brand-50 hover:border-brand-400 hover:text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400"
+            className="mb-0.5 flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300 bg-slate-100 text-slate-600 transition hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
             aria-label="Swap currencies"
           >
             ⇄
@@ -112,16 +131,13 @@ export default function CurrencyConverter() {
       </div>
 
       {result && (
-        <div className="rounded-2xl border border-brand-200 bg-brand-50 p-5 dark:border-brand-800 dark:bg-brand-950/30">
-          <p className="text-sm text-slate-500 dark:text-slate-400">{amount} {from} =</p>
-          <p className="mt-1 text-4xl font-bold text-brand-700 dark:text-brand-300">
-            {fmt(result.converted, to)} <span className="text-2xl">{to}</span>
-          </p>
-          <div className="mt-3 flex flex-wrap gap-4 text-xs text-slate-500 dark:text-slate-400">
-            <span>1 {from} = {fmt(result.rate, to)} {to}</span>
-            <span>1 {to} = {fmt(result.inverseRate, from)} {from}</span>
-          </div>
-        </div>
+        <ResultPanel accent={accent} kicker={`${amount} ${from} =`}>
+          <Headline accent={accent}>{fmt(result.converted, to)} {to}</Headline>
+          <AlsoIn>
+            <span className="tabular-nums">1 {from} = {fmt(result.rate, to)} {to}</span>
+            <span className="tabular-nums">1 {to} = {fmt(result.inverseRate, from)} {from}</span>
+          </AlsoIn>
+        </ResultPanel>
       )}
 
       <div>
@@ -133,7 +149,7 @@ export default function CurrencyConverter() {
             <button
               key={p.code}
               onClick={() => setTo(p.code)}
-              className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-left transition hover:border-brand-300 dark:border-slate-700 dark:bg-slate-900"
+              className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-left transition hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600"
             >
               <p className="text-xs text-slate-500 dark:text-slate-400">{p.code}</p>
               <p className="mt-0.5 font-semibold text-slate-800 dark:text-slate-200">{fmt(p.value, p.code)}</p>
@@ -143,8 +159,8 @@ export default function CurrencyConverter() {
       </div>
 
       <p className="text-center text-xs text-slate-400 dark:text-slate-500">
-        Rates are approximate and for reference only. Not live data.
+        Reference rates only, last checked {RATES_AS_OF_LABEL} — not live market data.
       </p>
-    </div>
+    </WidgetCard>
   );
 }

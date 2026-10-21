@@ -11,6 +11,18 @@ function gcd(x: number, y: number) {
   return a || 1;
 }
 
+// The actual greatest common factor, for gcf-calculator only: no "|| 1" fallback, so gcd(0, 0) is 0,
+// the standard number-theory convention (see gcf-calculator's references) — fraction/ratio
+// simplification need the `|| 1` safety above instead, so `gcd()` itself is left untouched here.
+function gcdRaw(x: number, y: number) {
+  let a = Math.abs(Math.round(x));
+  let b = Math.abs(Math.round(y));
+  while (b) {
+    [a, b] = [b, a % b];
+  }
+  return a;
+}
+
 // Normalizes a coefficient/exponent pair to standard scientific notation (1 <= |a| < 10, or a = 0).
 function normalizeScientific(a: number, b: number): [number, number] {
   if (a === 0) return [0, 0];
@@ -1331,6 +1343,557 @@ export const mathCalculators: CalculatorConfig[] = [
     compute(values) {
       const { base, exponent } = values;
       return { result: base ** exponent };
+    }
+  },
+  {
+    id: 'square-root-calculator',
+    category: 'math',
+    updatedAt: '2026-10-21',
+    aliases: ['sqrt calculator', 'square root of a number calculator', 'find the square root calculator', 'radical calculator', 'perfect square calculator'],
+    related: ['cube-root-calculator', 'exponent-calculator', 'factorial-calculator', 'gcf-calculator'],
+    title: 'Square Root Calculator',
+    description: 'Find the square root of a number, or work backward from a square root to the original number — the principal (nonnegative) root, with negative numbers flagged as having no real answer.',
+    example: 'The square root of 144 is 12, since 12 × 12 = 144. Not every square root is a whole number — √50 is irrational, about 7.0711.',
+    solver: {
+      defaultTarget: 'squareRoot',
+      variables: [
+        { id: 'radicand', label: 'Number (radicand)', symbol: 'x', dimension: 'count', defaultValue: 144, defaultUnit: 'count' },
+        { id: 'squareRoot', label: 'Square root', symbol: '√x', dimension: 'count', defaultValue: 12, defaultUnit: 'count' }
+      ],
+      solve: {
+        squareRoot: ({ radicand }) => (radicand < 0 ? NaN : Math.sqrt(radicand)),
+        radicand: ({ squareRoot }) => squareRoot ** 2
+      },
+      visuals: [{ type: 'compareBars', bars: [{ from: 'radicand', label: 'Your number' }, { from: 'squareRoot', label: 'Its square root' }], title: 'Your number vs its square root' }]
+    },
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What is a square root?',
+        paragraphs: [
+          'The square root of a number x is a number r that, multiplied by itself, gives x back: r × r = x. Every positive number actually has two square roots, one positive and one negative (3 × 3 = 9, and so does −3 × −3 = 9), but the radical sign √ by convention always means the positive one, called the principal square root. "The square root of 9" means 3, not −3, unless a problem says otherwise.',
+          'Numbers whose square root is a whole number — 1, 4, 9, 16, 25, and so on — are called perfect squares. Most numbers are not perfect squares, so their square roots are irrational: an endless, non-repeating decimal, like √2 ≈ 1.4142135... This calculator shows a rounded decimal for those, and also works backward — given a square root, it finds the number it came from by squaring.',
+          'A square root is really just a fractional exponent in disguise: x^(1/2) means exactly the same thing as √x. If you need other fractional or negative powers, not just the one-half case, the exponent calculator on this site handles the general relationship — see it for roots beyond the second power, too, alongside the dedicated cube root calculator for third powers.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter either the number or its square root — the other field, marked auto, is calculated.',
+        steps: [
+          { name: 'Find a square root', text: 'Enter the number (the radicand). The square root field, marked auto, fills in with the principal (nonnegative) root.' },
+          { name: 'Work backward', text: 'Type into the square root field instead, and the radicand updates to that value squared.' },
+          { name: 'Switch which field is calculated', text: 'Typing into the auto field hands "auto" back to the other one.' },
+          { name: 'Read a non-perfect-square result', text: 'If the number is not a perfect square, the result is a rounded decimal approximation of an irrational number, not an exact value.' },
+          { name: 'Compare the two values', text: 'The chart shows your number next to its square root, so the size of the gap between them is visible at a glance.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'A square root undoes squaring. The two directions of the same relationship:',
+        expression: 'r = √x = x^(1/2)  (for x ≥ 0)\nx = r²',
+        terms: [
+          { symbol: 'x (radicand)', meaning: 'The number you are taking the root of. Must be zero or positive for a real result.' },
+          { symbol: 'r (square root)', meaning: 'The principal (nonnegative) number that, squared, gives x back.' }
+        ],
+        note: 'A square root is the exponent-1/2 case of the general base-to-a-power relationship. For any other fractional or negative exponent, use the exponent calculator; for the exponent-1/3 (cube root) case specifically, use the cube root calculator.'
+      },
+      workedExample: {
+        intro: '50 is not a perfect square, so estimate √50 before finding its decimal value.',
+        rows: [
+          { label: 'Nearest perfect squares', value: '7² = 49 and 8² = 64' },
+          { label: 'Since 49 < 50 < 64', value: '√50 is between 7 and 8, closer to 7 (50 is closer to 49 than to 64)' },
+          { label: 'Decimal value', value: '√50 ≈ 7.0711' },
+          { label: 'Check', value: '7.0711² ≈ 50.0005 (rounding error from the 4-decimal approximation)' }
+        ],
+        result: '√50 ≈ 7.0711',
+        explanation: 'Bracketing a square root between two consecutive perfect squares is a quick way to sanity-check a calculator result by hand, and it is exactly how this calculator\'s own answer can be spot-verified without one.'
+      },
+      watchOut: [
+        { title: 'Negative numbers have no real square root', body: 'There is no real number that, squared, gives a negative result — a square (positive × positive, or negative × negative) is never negative. This calculator returns no answer for a negative radicand rather than a misleading one; extending the idea to negative numbers requires the imaginary unit i and complex numbers, a separate topic.' },
+        { title: 'Every positive number has two square roots', body: 'Both 3 and −3 square to 9, but the radical sign √ by convention refers only to the nonnegative one. This calculator always reports that principal root.' },
+        { title: 'Solving backward does not preserve a negative sign', body: 'Typing −3 into the square root field computes its square, 9, correctly — but solving forward from 9 again returns +3, not −3, since the forward direction always reports the principal root. The two directions are not perfectly symmetric for negative inputs.' },
+        { title: 'Most square roots are irrational', body: 'Only perfect squares (1, 4, 9, 16, 25, ...) have a whole-number square root. Everything else, like √2 or √50, is shown as a rounded decimal, not an exact value.' }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §5.7 Simplify and Use Square Roots', url: 'https://openstax.org/books/prealgebra-2e/pages/5-7-simplify-and-use-square-roots' },
+        { label: 'Wolfram MathWorld, Square Root', url: 'https://mathworld.wolfram.com/SquareRoot.html' }
+      ]
+    },
+    inputs: [{ id: 'radicand', label: 'Number (radicand)', type: 'number', placeholder: '144', defaultValue: 144, step: 1 }],
+    seo: {
+      title: 'Square Root Calculator – Find √x or Solve Backward',
+      description: 'Free square root calculator. Find the square root of any number, or solve backward from a square root to the original number.',
+      faq: [
+        { question: 'What is the square root of 144?', answer: '12, since 12 × 12 = 144.' },
+        { question: 'What is the square root of 2?', answer: 'An irrational number, approximately 1.4142. It never terminates or repeats.' },
+        { question: 'What is the square root of a negative number?', answer: 'There is no real-number answer, since no real number squared is negative. This needs complex numbers (multiples of the imaginary unit i), which this calculator does not compute.' },
+        { question: 'How do you estimate a square root that is not a perfect square?', answer: 'Find the two nearest perfect squares. √50 sits between 7² = 49 and 8² = 64, so √50 is between 7 and 8 — closer to 7, about 7.0711.' },
+        { question: 'What is the difference between a square root and an exponent of 1/2?', answer: 'Nothing — they mean the same thing: x^(1/2) = √x. The exponent calculator on this site handles the general case for any power.' },
+        { question: 'Can a square root be negative?', answer: 'A positive number has two square roots, +r and −r, but the radical sign √ by convention always refers to the nonnegative (principal) one.' },
+        { question: 'Is 0 a perfect square?', answer: 'Yes. √0 = 0, since 0 × 0 = 0.' },
+        { question: 'What is a perfect square?', answer: 'The square of a whole number — 1, 4, 9, 16, 25 and so on — whose square root is itself a whole number.' }
+      ]
+    },
+    compute(values) {
+      const radicand = values.radicand;
+      return { squareRoot: radicand < 0 ? NaN : Math.sqrt(radicand) };
+    }
+  },
+  {
+    id: 'cube-root-calculator',
+    category: 'math',
+    updatedAt: '2026-10-21',
+    aliases: ['cube root of a number calculator', 'cbrt calculator', 'find the cube root calculator', 'third root calculator'],
+    related: ['square-root-calculator', 'exponent-calculator', 'factorial-calculator', 'gcf-calculator'],
+    title: 'Cube Root Calculator',
+    description: 'Find the cube root of any real number, including negative numbers — unlike a square root, a cube root is always a real number.',
+    example: 'The cube root of 27 is 3, since 3 × 3 × 3 = 27. Unlike square roots, cube roots are real even for negative numbers: the cube root of −8 is −2.',
+    solver: {
+      defaultTarget: 'cubeRoot',
+      variables: [
+        { id: 'radicand', label: 'Number (radicand)', symbol: 'x', dimension: 'count', defaultValue: 27, defaultUnit: 'count' },
+        { id: 'cubeRoot', label: 'Cube root', symbol: '∛x', dimension: 'count', defaultValue: 3, defaultUnit: 'count' }
+      ],
+      solve: {
+        cubeRoot: ({ radicand }) => Math.cbrt(radicand),
+        radicand: ({ cubeRoot }) => cubeRoot ** 3
+      },
+      visuals: [{ type: 'compareBars', bars: [{ from: 'radicand', label: 'Your number' }, { from: 'cubeRoot', label: 'Its cube root' }], title: 'Your number vs its cube root' }]
+    },
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What is a cube root?',
+        paragraphs: [
+          'The cube root of a number x is a number r that, multiplied by itself three times, gives x back: r × r × r = x. 3 is the cube root of 27 because 3 × 3 × 3 = 27. Written with a radical, it is ∛x, or equivalently x^(1/3).',
+          "A cube root behaves differently from a square root in one important way: every real number, including negative ones, has exactly one real cube root. The cube root of −8 is −2, because −2 × −2 × −2 = −8 (two of the three negative signs cancel, and the third one stays). A square root has no such negative case, because squaring a negative number always gives a positive result — cubing a negative number gives a negative result instead, which is exactly why an odd root (cube, fifth, seventh...) of a negative number stays real while an even root does not.",
+          'Perfect cubes — 1, 8, 27, 64, 125, and so on — have a whole-number cube root. Everything else has an irrational cube root, shown here as a rounded decimal. This calculator also works backward: given a cube root, it cubes that value to find the original number.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter either the number or its cube root — the other field, marked auto, is calculated.',
+        steps: [
+          { name: 'Find a cube root', text: 'Enter the number, positive or negative. The cube root field, marked auto, fills in automatically — there is no domain restriction to worry about.' },
+          { name: 'Work backward', text: 'Type into the cube root field instead, and the number updates to that value cubed.' },
+          { name: 'Switch which field is calculated', text: 'Typing into the auto field hands "auto" back to the other one.' },
+          { name: 'Read a non-perfect-cube result', text: 'If the number is not a perfect cube, the result is a rounded decimal approximation.' },
+          { name: 'Compare the two values', text: 'The chart shows your number next to its cube root.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'A cube root undoes cubing. The two directions of the same relationship:',
+        expression: 'r = ∛x = x^(1/3)  (defined for every real x)\nx = r³',
+        terms: [
+          { symbol: 'x (radicand)', meaning: 'The number you are taking the root of. Can be positive, negative, or zero.' },
+          { symbol: 'r (cube root)', meaning: 'The real number that, cubed, gives x back. Always exists and is unique for a real x.' }
+        ],
+        note: "This calculator computes the real cube root directly (JavaScript's Math.cbrt), not by raising a negative number to the power 1/3 — that naive approach produces no real answer for a negative base in most programming languages and calculators, even though the real cube root clearly exists."
+      },
+      workedExample: {
+        intro: 'Find the cube root of −8, the case that trips up a square-root-style approach.',
+        rows: [
+          { label: 'Try r = −2', value: '(−2) × (−2) × (−2) = 4 × (−2) = −8' },
+          { label: 'Check it matches x', value: '−8 = −8 ✓' }
+        ],
+        result: '∛(−8) = −2',
+        explanation: 'The first two negative signs cancel in (−2) × (−2) = 4, and the third multiplication by −2 puts the sign back, landing on a negative result — which is exactly why every negative number has a real (negative) cube root, unlike a square root.'
+      },
+      watchOut: [
+        { title: 'Cube roots of negative numbers are real', body: 'Unlike a square root, a cube root never runs out of real answers: ∛(−8) = −2, because (−2)³ = −8. This holds for any odd-numbered root (cube, fifth, seventh...) of a negative number.' },
+        { title: 'Naive exponentiation can get this wrong', body: 'Computing a cube root as "raise to the power 1/3" fails for negative numbers in JavaScript and many calculators, returning no real answer even though one exists — this calculator computes the real cube root directly instead, so negative inputs work correctly.' },
+        { title: 'Exactly one real cube root, always', body: "A positive number has two square roots but exactly one real cube root (a negative number has two more cube roots, but they involve imaginary numbers and are not real) — there is no 'principal vs. other root' ambiguity to resolve the way there is for even roots." },
+        { title: 'Most cube roots are irrational', body: 'Only perfect cubes (1, 8, 27, 64, 125, ...) have a whole-number cube root. Everything else, like ∛10, is shown as a rounded decimal, not an exact value.' }
+      ],
+      references: [
+        { label: 'OpenStax, Elementary Algebra 2e, §9.7 Higher Roots', url: 'https://openstax.org/books/elementary-algebra-2e/pages/9-7-higher-roots' },
+        { label: 'Wolfram MathWorld, Cube Root', url: 'https://mathworld.wolfram.com/CubeRoot.html' }
+      ]
+    },
+    inputs: [{ id: 'radicand', label: 'Number (radicand)', type: 'number', placeholder: '27', defaultValue: 27, step: 1 }],
+    seo: {
+      title: 'Cube Root Calculator – Real Roots, Even for Negatives',
+      description: 'Free cube root calculator. Find the real cube root of any number, positive or negative, or solve backward from a cube root.',
+      faq: [
+        { question: 'What is the cube root of 27?', answer: '3, since 3 × 3 × 3 = 27.' },
+        { question: 'What is the cube root of a negative number?', answer: "A real number, unlike a square root. The cube root of −8 is −2, because (−2)³ = −8." },
+        { question: 'What is the cube root of 1000?', answer: '10, since 10 × 10 × 10 = 1,000.' },
+        { question: 'What is the cube root of 0?', answer: '0, since 0 × 0 × 0 = 0.' },
+        { question: 'Why does a cube root work for negative numbers but a square root does not?', answer: 'Squaring a negative number always gives a positive result, so no real number squares to a negative. Cubing a negative number gives a negative result, so a real cube root of a negative number always exists.' },
+        { question: 'Is the cube root the same as an exponent of 1/3?', answer: 'Yes — x^(1/3) and ∛x mean exactly the same thing.' },
+        { question: 'How many real cube roots does a number have?', answer: 'Exactly one. (There are two additional cube roots in the complex numbers, but only one is real.)' },
+        { question: 'How do I find the cube root of a number by hand?', answer: 'Estimate between two perfect cubes — ∛20 is between ∛8 = 2 and ∛27 = 3, closer to 3 — then refine the decimal, the same bracketing technique used for square roots.' }
+      ]
+    },
+    compute(values) {
+      return { cubeRoot: Math.cbrt(values.radicand) };
+    }
+  },
+  {
+    id: 'logarithm-calculator',
+    category: 'math',
+    updatedAt: '2026-10-21',
+    aliases: ['log calculator', 'log base calculator', 'natural log calculator', 'ln calculator', 'log base 2 calculator'],
+    related: ['exponent-calculator', 'scientific-notation-calculator', 'square-root-calculator', 'cube-root-calculator'],
+    title: 'Logarithm Calculator',
+    description: 'Find the logarithm of a number in any base, or solve backward for the base or the argument — includes the natural log (ln) and common log (base 10) alongside the result.',
+    example: 'log base 2 of 8 is 3, since 2³ = 8. Switch the base to compute a natural log (base e) or a common log (base 10) on the same relationship.',
+    solver: {
+      defaultTarget: 'result',
+      variables: [
+        { id: 'base', label: 'Base', symbol: 'b', dimension: 'count', defaultValue: 2, defaultUnit: 'count' },
+        { id: 'argument', label: 'Argument', symbol: 'x', dimension: 'count', defaultValue: 8, defaultUnit: 'count' },
+        { id: 'result', label: 'Logarithm', symbol: 'log_b(x)', dimension: 'count', defaultValue: 3, defaultUnit: 'count' }
+      ],
+      solve: {
+        result: ({ base, argument }) => (base <= 0 || base === 1 || argument <= 0 ? NaN : Math.log(argument) / Math.log(base)),
+        argument: ({ base, result }) => (base <= 0 || base === 1 ? NaN : base ** result),
+        base: ({ argument, result }) => {
+          if (argument <= 0 || result === 0) return NaN; // result 0 means x = b^0 = 1 for ANY base: no unique base
+          const b = argument ** (1 / result);
+          return b <= 0 || b === 1 ? NaN : b;
+        }
+      },
+      outputs: [
+        { id: 'naturalLog', label: 'Natural log (ln)', dimension: 'count', compute: (si) => (si.argument <= 0 ? NaN : Math.log(si.argument)) },
+        { id: 'commonLog', label: 'Common log (log₁₀)', dimension: 'count', compute: (si) => (si.argument <= 0 ? NaN : Math.log10(si.argument)) }
+      ],
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'argument',
+          min: -9,
+          max: 27,
+          ticks: ['10⁻⁹', '10⁻³', '10³', '10⁹', '10¹⁵', '10²¹', '10²⁷'],
+          benchmarks: [
+            { label: 'Neutral water, pH 7: [H⁺] = 10⁻⁷ mol/L', value: 1e-7 },
+            { label: 'Avogadro constant (~6.022 × 10²³ /mol)', value: 6.02214076e23 }
+          ],
+          title: 'Where does your number sit on the scale?',
+          valueLabel: 'Your argument'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What is a logarithm?',
+        paragraphs: [
+          "A logarithm answers the question \"what power do I raise this base to, to get this number?\" log_b(x) = y means exactly the same thing as b^y = x — a logarithm and an exponent are two ways of writing the same relationship, just solved for a different variable. log base 2 of 8 is 3, because 2³ = 8.",
+          'Two bases are common enough to have their own names and notation: base 10 is the "common log," written log(x) without a visible base, and base e (≈ 2.71828) is the "natural log," written ln(x). This calculator shows both alongside whatever base you actually chose, since converting between bases (the change-of-base formula) is just dividing one natural log by another: log_b(x) = ln(x) ÷ ln(b).',
+          'Logarithms turn multiplication into addition and show up anywhere a quantity is naturally measured on a multiplicative scale rather than an additive one — pH, sound intensity in decibels, and earthquake magnitude are all logarithmic scales, which is why a "one-point" jump on any of them represents a tenfold (or similar) change, not a small one. This calculator also solves the relationship in the other two directions: given a base and a result, it finds the argument (which is itself an exponentiation, b^y); given an argument and a result, it finds the base — see the exponent calculator if what you actually have is a base and an exponent and want the result directly.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of the three fields — base, argument, result — and the third, marked auto, is calculated.',
+        steps: [
+          { name: 'Find a logarithm', text: 'Enter the base and the argument. The result field, marked auto, fills in with log base b of the argument.' },
+          { name: 'Solve for the argument', text: 'Enter the base and a result to find what argument produces it — this computes base raised to that result.' },
+          { name: 'Solve for the base', text: 'Enter the argument and a result to find what base produces that logarithm.' },
+          { name: 'Switch which field is calculated', text: 'Type into the auto field and it becomes an input again; the field left alone the longest becomes the new calculated one.' },
+          { name: 'Check the natural and common log', text: 'Underneath the main result, the natural log (ln) and common log (base 10) of the same argument are shown for reference, regardless of which base you chose.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'A logarithm and an exponent describe the same relationship, rearranged for a different variable.',
+        expression: 'log_b(x) = y  ⇔  b^y = x\nx = b^y\nb = x^(1/y)  (y ≠ 0)\nChange of base: log_b(x) = ln(x) ÷ ln(b)',
+        terms: [
+          { symbol: 'b (base)', meaning: 'The number being raised to a power. Must be positive and not equal to 1.' },
+          { symbol: 'x (argument)', meaning: 'The number whose logarithm is being taken. Must be positive — no power of a positive base is ever zero or negative.' },
+          { symbol: 'y (result)', meaning: 'The exponent that makes b^y equal x. Can be positive, negative, or zero.' }
+        ],
+        note: 'Solving for the base divides by the result in the exponent (b = x^(1/y)), so a result of exactly 0 has no unique base: any positive base b ≠ 1 satisfies b⁰ = 1, so this calculator reports no answer for that case rather than guessing one.'
+      },
+      workedExample: {
+        intro: 'Find log base 2 of 8, then check it with the exponential form.',
+        rows: [
+          { label: 'Question', value: '2^y = 8 — what is y?' },
+          { label: 'Try y = 3', value: '2³ = 2 × 2 × 2 = 8' },
+          { label: 'Natural log, for reference', value: 'ln(8) ≈ 2.0794' },
+          { label: 'Common log, for reference', value: 'log₁₀(8) ≈ 0.9031' }
+        ],
+        result: 'log₂(8) = 3',
+        explanation: 'Every logarithm can be checked by converting it back to exponential form: log₂(8) = 3 is true exactly because 2³ = 8. The natural and common log of the same number 8 are different numbers from the base-2 result, because they ask the same question about a different base.'
+      },
+      watchOut: [
+        { title: 'The base must be positive and not 1', body: 'A negative base makes repeated exponentiation behave inconsistently (alternating sign), and a base of 1 always produces 1 no matter the exponent, so no unique logarithm exists for either case — this calculator returns no answer for them.' },
+        { title: 'The argument must be positive', body: 'A positive base raised to any real exponent is always positive, so there is no exponent that produces zero or a negative number. Logarithms of zero or negative numbers are undefined here (they are defined for complex numbers, a separate topic).' },
+        { title: 'The logarithm of 1 is always 0, in any valid base', body: 'Because b⁰ = 1 for every base b, log_b(1) = 0 regardless of which base you pick — this is not a special case this calculator needs to guard against, just a fact worth knowing when sanity-checking a result.' },
+        { title: 'A result of exactly 0 has no unique base to solve for', body: 'If the result is 0, the equation b⁰ = x only pins down x (it must be 1); any base at all satisfies it, so "solve for the base" has no single answer in that case.' }
+      ],
+      references: [
+        { label: 'OpenStax, College Algebra 2e, §6.3 Logarithmic Functions', url: 'https://openstax.org/books/college-algebra-2e/pages/6-3-logarithmic-functions' },
+        { label: 'NIST Digital Library of Mathematical Functions, §4.2 Logarithm, Exponential, Powers', url: 'https://dlmf.nist.gov/4.2' },
+        { label: 'Wolfram MathWorld, Logarithm', url: 'https://mathworld.wolfram.com/Logarithm.html' }
+      ]
+    },
+    inputs: [
+      { id: 'base', label: 'Base', type: 'number', placeholder: '2', defaultValue: 2, step: 1 },
+      { id: 'argument', label: 'Argument', type: 'number', placeholder: '8', defaultValue: 8, step: 1 }
+    ],
+    seo: {
+      title: 'Logarithm Calculator – Log, Ln, and Any Base',
+      description: 'Free logarithm calculator. Find log base b of a number, solve backward for the base or the argument, and see the natural and common log too.',
+      faq: [
+        { question: 'How do I calculate a logarithm?', answer: 'Ask what power the base must be raised to, to get the argument: log_b(x) = y means b^y = x. log base 2 of 8 is 3, since 2³ = 8.' },
+        { question: 'What is a natural log?', answer: 'A logarithm with base e (≈ 2.71828), written ln(x). ln(8) ≈ 2.0794.' },
+        { question: 'What is a common log?', answer: 'A logarithm with base 10, written log(x) or log₁₀(x). log₁₀(8) ≈ 0.9031.' },
+        { question: 'Why can\'t you take the log of zero or a negative number?', answer: 'A positive base raised to any real exponent is always positive, so no exponent produces zero or a negative result. There is no real-number logarithm for those inputs.' },
+        { question: 'What does log base 1 mean?', answer: 'Nothing well-defined: 1 raised to any power is always 1, so no exponent is uniquely tied to any other argument. This calculator excludes base 1.' },
+        { question: 'How is a logarithm related to an exponent?', answer: 'They are inverses of each other. If b^y = x, then log_b(x) = y — the exponent calculator on this site solves the same relationship for the result or the base given an exponent, instead of for the exponent itself.' },
+        { question: 'What is the change-of-base formula?', answer: 'log_b(x) = ln(x) ÷ ln(b), which lets you compute any base\'s logarithm using just the natural log.' },
+        { question: 'What is log base 10 of 100?', answer: '2, since 10² = 100.' }
+      ]
+    },
+    compute(values) {
+      const { base, argument } = values;
+      const validBase = base > 0 && base !== 1;
+      const result = !validBase || argument <= 0 ? NaN : Math.log(argument) / Math.log(base);
+      const naturalLog = argument <= 0 ? NaN : Math.log(argument);
+      const commonLog = argument <= 0 ? NaN : Math.log10(argument);
+      return { result, naturalLog, commonLog };
+    }
+  },
+  {
+    id: 'factorial-calculator',
+    category: 'math',
+    updatedAt: '2026-10-21',
+    aliases: ['n factorial calculator', 'x! calculator', 'factorial of a number calculator', 'permutations factorial calculator'],
+    related: ['gcf-calculator', 'exponent-calculator', 'scientific-notation-calculator', 'rounding-calculator'],
+    title: 'Factorial Calculator',
+    description: 'Find n! (n factorial), the product of every whole number from n down to 1 — plus its exact digit count and trailing-zero count, computed with exact integer math.',
+    example: '5! (5 factorial) is 5 × 4 × 3 × 2 × 1 = 120. Factorials grow fast: 20! already has 19 digits.',
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What is a factorial?',
+        paragraphs: [
+          'The factorial of a non-negative whole number n, written n!, is the product of every whole number from n down to 1: 5! = 5 × 4 × 3 × 2 × 1 = 120. It counts the number of ways to put n distinct things in order — there are 5! = 120 ways to line up 5 people, because any of 5 can go first, any of the remaining 4 can go second, and so on.',
+          'By convention, 0! = 1, not 0. This is not something you can get from repeated multiplication the way 5! comes from multiplying 5 numbers together — it reflects the combinatorial meaning instead: there is exactly one way to arrange zero objects (do nothing), so the "empty product" is defined as 1.',
+          'Factorials grow extraordinarily fast — far faster than exponential growth. 10! is about 3.6 million, but 20! already has 19 digits, and 100! has 158 digits. This calculator shows the exact digit count and the number of trailing zeros using exact integer arithmetic, even once the headline value itself is too large to display digit-for-digit and has to switch to scientific notation. Factorials are central to combinatorics — counting permutations and combinations — and the idea extends to non-whole numbers through the Gamma function, a separate topic covered by the NIST reference below.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter a whole number, 0 or larger. The result updates as you type.',
+        steps: [
+          { name: 'Enter n', text: 'Type a non-negative whole number. This calculator computes exactly for n up to 1,000.' },
+          { name: 'Read the factorial', text: 'The headline shows n!. Once it exceeds about a billion (around 13!), it is shown in scientific notation, the standard way to display a number too long to write out in full.' },
+          { name: 'Check the exact digit count', text: 'The digit count is computed with exact integer arithmetic, so it stays exact no matter how large n gets — even once the headline number itself is a rounded approximation.' },
+          { name: 'Check the trailing zeros', text: 'The number of zeros at the end of n! (from every factor of 10 hidden inside the product) is also exact.' },
+          { name: 'See the scale', text: 'The chart places n! on a scale from ordinary numbers to the astronomically large, next to a couple of reference factorials.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'A factorial is a product of consecutive whole numbers, defined by one simple rule for the base case.',
+        expression: 'n! = n × (n − 1) × (n − 2) × ... × 2 × 1  (n ≥ 1)\n0! = 1  (by convention)',
+        terms: [
+          { symbol: 'n', meaning: 'A non-negative whole number. This calculator does not evaluate factorials of negative or non-integer numbers.' },
+          { symbol: 'n!', meaning: 'The product of every whole number from n down to 1, or 1 when n = 0.' }
+        ],
+        note: 'The Gamma function, Γ(n + 1) = n!, extends the factorial to non-integer and complex numbers, but is a different (and more advanced) function from the plain integer factorial this calculator computes — see the NIST reference below.'
+      },
+      workedExample: {
+        intro: 'Compute 20! and its digit count and trailing zeros.',
+        rows: [
+          { label: '20!', value: '2,432,902,008,176,640,000' },
+          { label: 'Digit count', value: '19 digits' },
+          { label: 'Trailing zeros', value: '4 (from 20÷5 = 4 multiples of 5 among 1...20, each pairing with a factor of 2 to make a 10)' }
+        ],
+        result: '20! = 2,432,902,008,176,640,000 — 19 digits, 4 trailing zeros',
+        explanation: '20! is still small enough to show every digit exactly. By 171!, the exact value is a 310-digit number that exceeds what a standard 64-bit floating-point number can represent at all, and the headline becomes "Infinity" — the same overflow behavior as a basic calculator or a spreadsheet cell.'
+      },
+      watchOut: [
+        { title: 'Only defined here for non-negative whole numbers', body: 'A negative number or a non-whole number (like 3.5) has no factorial under this definition — this calculator returns no answer for those. The Gamma function extends factorials to those cases, but is a separate, more advanced function.' },
+        { title: '0! = 1, not 0', body: 'This follows from the combinatorial meaning (one way to arrange zero things), not from multiplying anything together — a common point of confusion, since every other factorial does come from a product.' },
+        { title: 'Factorials overflow a standard floating-point number past 170!', body: '170! is already a 307-digit number, right at the edge of what a 64-bit floating-point value can represent; 171! exceeds it entirely, and the headline value becomes "Infinity" — a genuine overflow, not a bug, and the same thing a basic calculator shows for a number too big to hold.' },
+        { title: 'Past about 15-17 significant digits, the headline number is rounded', body: 'A standard floating-point number only keeps about 15-17 significant decimal digits of precision, so once n! needs more digits than that to write out exactly (around 19! and up), the headline value shown in scientific notation is a correctly-rounded approximation, not the exact integer. The digit count and trailing-zero count, computed with exact integer math, stay exact at any size.' },
+        { title: 'Computes exactly up to n = 1,000', body: 'This calculator has a practical cap at n = 1,000 (a 2,568-digit number) to keep every result instant; above that, it returns no answer.' }
+      ],
+      references: [
+        { label: 'Wolfram MathWorld, Factorial', url: 'https://mathworld.wolfram.com/Factorial.html' },
+        { label: 'NIST Digital Library of Mathematical Functions, §5.2 Gamma Function: Definitions', url: 'https://dlmf.nist.gov/5.2' }
+      ]
+    },
+    inputs: [{ id: 'n', label: 'n', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 0 }],
+    breakdown: {
+      headline: 'factorialValue',
+      headlineLabel: 'n!',
+      outputs: [
+        { id: 'factorialValue', label: 'n!', format: 'significant' },
+        { id: 'digitCount', label: 'Exact digit count', format: 'integer' },
+        { id: 'trailingZeros', label: 'Trailing zeros', format: 'integer' }
+      ],
+      groups: [{ inputs: ['n'] }],
+      visual: {
+        type: 'logScale',
+        value: 'factorialValue',
+        min: 0,
+        max: 70,
+        ticks: ['10⁰', '10¹⁰', '10²⁰', '10³⁰', '10⁴⁰', '10⁵⁰', '10⁶⁰', '10⁷⁰'],
+        benchmarks: [
+          { label: '10! = 3,628,800', value: 3628800 },
+          { label: '52! ≈ 8.0658 × 10⁶⁷ (the ways to arrange a 52-card deck)', value: 8.065817517094388e67 }
+        ],
+        title: 'How big does n! get?',
+        valueLabel: 'Your n!'
+      }
+    },
+    seo: {
+      title: 'Factorial Calculator – n!, Digits & Trailing Zeros',
+      description: 'Free factorial calculator. Find n! for any non-negative whole number, with the exact digit count and trailing-zero count computed with exact integer math.',
+      faq: [
+        { question: 'What is 5 factorial?', answer: '5! = 5 × 4 × 3 × 2 × 1 = 120.' },
+        { question: 'What is 0 factorial?', answer: '0! = 1, by the convention that there is exactly one way to arrange zero objects.' },
+        { question: 'What is 10 factorial?', answer: '10! = 3,628,800.' },
+        { question: 'How many digits does 100! have?', answer: '158 digits.' },
+        { question: 'How many trailing zeros does 100! have?', answer: '24, from counting the multiples of 5 (and 25) among 1 through 100: ⌊100÷5⌋ + ⌊100÷25⌋ = 20 + 4 = 24.' },
+        { question: 'Why does my calculator show "Infinity" for a large n?', answer: 'Once n! needs more digits than a 64-bit floating-point number can hold (past 170!), the exact value overflows and displays as Infinity — the same limit a basic calculator or spreadsheet hits.' },
+        { question: 'Can you take the factorial of a negative or decimal number?', answer: 'Not with the plain factorial definition used here. The Gamma function extends factorial-like behavior to those numbers, but is a separate, more advanced function.' },
+        { question: 'What are factorials used for?', answer: 'Counting the number of ways to arrange or order things (permutations), and as a building block of combinations and probability.' }
+      ]
+    },
+    compute(values) {
+      const n = Math.round(values.n);
+      const noAnswer = { factorialValue: NaN, digitCount: NaN, trailingZeros: NaN };
+      if (!Number.isInteger(n) || n < 0 || n > 1000) return noAnswer;
+
+      let big = 1n;
+      for (let i = 2n; i <= BigInt(n); i++) big *= i;
+      const factorialValue = Number(big);
+      const digitCount = big.toString().length;
+
+      let trailingZeros = 0;
+      let power = 5;
+      while (power <= n) {
+        trailingZeros += Math.floor(n / power);
+        power *= 5;
+      }
+      return { factorialValue, digitCount, trailingZeros };
+    }
+  },
+  {
+    id: 'gcf-calculator',
+    category: 'math',
+    updatedAt: '2026-10-21',
+    aliases: ['greatest common factor calculator', 'gcd calculator', 'hcf calculator', 'greatest common divisor calculator', 'gcf of two numbers calculator'],
+    related: ['fraction-calculator', 'ratio-calculator', 'factorial-calculator', 'exponent-calculator'],
+    title: 'GCF Calculator',
+    description: 'Find the greatest common factor (GCF, also called GCD or HCF) of 2 to 4 numbers — the largest number that divides every one of them exactly.',
+    example: 'The greatest common factor of 12 and 18 is 6 — the largest number that divides both exactly. Add a third number, like 24, and the GCF is still 6.',
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What is the greatest common factor?',
+        paragraphs: [
+          "The greatest common factor (GCF) of two or more numbers is the largest number that divides every one of them with no remainder. The GCF of 12 and 18 is 6, since 6 divides both exactly (12 ÷ 6 = 2, 18 ÷ 6 = 3) and no larger number does. It is also called the greatest common divisor (GCD) or, in some countries, the highest common factor (HCF) — three names for exactly the same thing.",
+          'One standard way to find it is to break each number into prime factors and multiply together whatever primes they all share: 12 = 2² × 3 and 18 = 2 × 3², and the factors they have in common are one 2 and one 3, so the GCF is 2 × 3 = 6. A faster method for large numbers is the Euclidean algorithm, which repeatedly replaces the larger number with the remainder of dividing it by the smaller one until nothing is left — that method is what this calculator actually runs.',
+          'The GCF of three or more numbers works the same way, found two at a time: GCF(12, 18, 24) = GCF(GCF(12, 18), 24) = GCF(6, 24) = 6. The GCF is exactly the tool behind simplifying a fraction or a ratio to lowest terms — this site\'s fraction calculator and ratio calculator both divide by the GCF internally to reduce their answers, so a fraction like 12/18 and a ratio like 12:18 both reduce to 2:3 for the same underlying reason.'
+        ]
+      },
+      howTo: {
+        intro: 'Choose how many numbers you have (2 to 4), then enter exactly that many.',
+        steps: [
+          { name: 'Choose how many numbers', text: 'Set "How many numbers?" to 2, 3 or 4. Only that many of the number fields below are used, in order starting from Number 1.' },
+          { name: 'Enter your numbers', text: 'Type the numbers you want the greatest common factor of. Order does not matter.' },
+          { name: 'Read the GCF', text: 'The headline shows the largest number that divides every one of your numbers exactly.' },
+          { name: 'Check the summary', text: 'The breakdown also confirms how many numbers were used, in case the count got left on something other than what you intended.' },
+          { name: 'See it visually', text: 'The chart shows your smallest number, your largest number, and the GCF side by side.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The Euclidean algorithm finds the GCF of two numbers by repeated division, without needing to factor either one.',
+        expression: 'GCF(a, 0) = a\nGCF(a, b) = GCF(b, a mod b)  for b ≠ 0\nGCF(a, b, c) = GCF(GCF(a, b), c)',
+        terms: [
+          { symbol: 'a mod b', meaning: 'The remainder left over after dividing a by b.' },
+          { symbol: 'GCF(a, b, c)', meaning: 'The GCF of three or more numbers, found by taking the GCF of two at a time.' }
+        ],
+        note: 'Numbers are compared by their absolute value (so the GCF of a negative number is the same as for its positive version), and are rounded to the nearest whole number first, since the greatest common factor is only defined for integers.'
+      },
+      workedExample: {
+        intro: 'Find the GCF of 12, 18 and 24 using prime factorization, then check it against the Euclidean algorithm this calculator actually uses.',
+        rows: [
+          { label: 'Prime factorize each number', value: '12 = 2² × 3, 18 = 2 × 3², 24 = 2³ × 3' },
+          { label: 'Lowest power of each shared prime', value: '2¹ and 3¹ are common to all three' },
+          { label: 'Multiply the shared primes', value: '2 × 3 = 6' },
+          { label: 'Check with the Euclidean algorithm', value: 'GCF(12, 18) = 6, then GCF(6, 24) = 6' }
+        ],
+        result: 'GCF(12, 18, 24) = 6',
+        explanation: 'Both methods agree, as they always will — prime factorization and the Euclidean algorithm are two different ways of answering exactly the same question. 12 ÷ 6 = 2, 18 ÷ 6 = 3, and 24 ÷ 6 = 4, all with no remainder, confirming 6 divides every one of the three numbers.'
+      },
+      watchOut: [
+        { title: 'The GCF of 0 and a number is that number', body: 'GCF(0, 18) = 18, since every number divides 0 evenly (0 ÷ 18 = 0 exactly) and 18 is the largest number dividing 18 itself.' },
+        { title: 'GCF(0, 0, ..., 0) is 0, by convention', body: 'Every integer divides 0, so there is no single largest common divisor among only zeros under the ordinary definition. Number theory resolves this by defining GCF(0, 0) = 0 directly, rather than leaving it undefined — the convention this calculator follows, cited below.' },
+        { title: 'Negative numbers are compared by absolute value', body: 'GCF(−12, 18) is reported as 6, the same as GCF(12, 18), since the factors of −12 are the same set of numbers (up to sign) as the factors of 12 — the GCF itself is always shown as zero or positive.' },
+        { title: 'Non-integer inputs are rounded first', body: 'The greatest common factor is only defined for whole numbers, so a decimal typed into any field is rounded to the nearest integer before this calculator computes anything with it.' },
+        { title: 'Not the same as the least common multiple', body: 'The GCF is the largest number that divides every input; the least common multiple (LCM) is the smallest number every input divides into — a related but different calculation, covered by its own calculator rather than this one.' }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §10.6 Introduction to Factoring Polynomials (Example 10.80, GCF of 24 and 36)', url: 'https://openstax.org/books/prealgebra-2e/pages/10-6-introduction-to-factoring-polynomials' },
+        { label: 'Wolfram MathWorld, Greatest Common Divisor', url: 'https://mathworld.wolfram.com/GreatestCommonDivisor.html' },
+        { label: 'Pete L. Clark, Elementary Number Theory (Mathematics LibreTexts), §6: Greatest Common Divisor — "We define gcd(0,0) = 0"', url: 'https://math.libretexts.org/Bookshelves/Combinatorics_and_Discrete_Mathematics/Elementary_Number_Theory_(Clark)/01%3A_Chapters/06%3A_Greatest_Common_Divisor' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'howMany',
+        label: 'How many numbers?',
+        type: 'number',
+        placeholder: '2',
+        defaultValue: 2,
+        step: 1,
+        min: 2,
+        options: [
+          { value: 2, label: '2 numbers' },
+          { value: 3, label: '3 numbers' },
+          { value: 4, label: '4 numbers' }
+        ]
+      },
+      { id: 'num1', label: 'Number 1', type: 'number', placeholder: '12', defaultValue: 12, step: 1 },
+      { id: 'num2', label: 'Number 2', type: 'number', placeholder: '18', defaultValue: 18, step: 1 },
+      { id: 'num3', label: 'Number 3', type: 'number', placeholder: '24', defaultValue: 24, step: 1 },
+      { id: 'num4', label: 'Number 4', type: 'number', placeholder: '36', defaultValue: 36, step: 1 }
+    ],
+    breakdown: {
+      headline: 'gcf',
+      headlineLabel: 'Greatest common factor',
+      outputs: [
+        { id: 'gcf', label: 'Greatest common factor', format: 'integer' },
+        { id: 'numbersUsed', label: 'Numbers used', format: 'integer' }
+      ],
+      groups: [{ inputs: ['howMany', 'num1', 'num2'] }, { title: 'Third and fourth numbers (if you have more than two)', inputs: ['num3', 'num4'], optional: true }],
+      derive: (values) => {
+        const howMany = Math.min(4, Math.max(2, Math.round(values.howMany || 2)));
+        const nums = [values.num1, values.num2, values.num3, values.num4].slice(0, howMany);
+        return { minNumber: Math.min(...nums), maxNumber: Math.max(...nums) };
+      },
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'minNumber', label: 'Smallest number' }, { from: 'maxNumber', label: 'Largest number' }, { from: 'gcf', label: 'Greatest common factor' }],
+        title: 'Your numbers and their GCF'
+      }
+    },
+    seo: {
+      title: 'GCF Calculator – Greatest Common Factor of Numbers',
+      description: 'Free GCF (greatest common factor / GCD / HCF) calculator. Find the GCF of 2 to 4 numbers using the Euclidean algorithm.',
+      faq: [
+        { question: 'What is the GCF of 12 and 18?', answer: '6. It divides both evenly (12 ÷ 6 = 2 and 18 ÷ 6 = 3), and no larger number does.' },
+        { question: 'How do I find the GCF of three or more numbers?', answer: 'Find the GCF of the first two, then find the GCF of that result and the next number, repeating until every number has been included. GCF(12, 18, 24) = GCF(GCF(12, 18), 24) = GCF(6, 24) = 6.' },
+        { question: 'What if two numbers share no common factor besides 1?', answer: 'Their GCF is 1, and they are called coprime (or relatively prime) — for example, GCF(7, 15) = 1.' },
+        { question: "What is the difference between GCF and LCM?", answer: 'The GCF is the largest number that divides every input exactly. The least common multiple (LCM) is the smallest number that every input divides into — the opposite kind of question, covered by a separate calculator.' },
+        { question: 'How is the GCF used with fractions?', answer: 'Dividing a fraction\'s numerator and denominator by their GCF reduces it to lowest terms — 12/18 and its GCF of 6 reduce to 2/3, the same technique this site\'s fraction calculator and ratio calculator use.' },
+        { question: 'What is the GCF of 0 and a number?', answer: 'The other number. GCF(0, 18) = 18, since every number divides 0 evenly, and 18 is the largest number dividing 18 itself.' },
+        { question: 'What is the GCF of 0 and 0?', answer: '0, by the standard number-theory convention (GCF(0, 0) = 0), since there is no largest common divisor among only zeros otherwise — every integer divides 0.' },
+        { question: 'Can the GCF be negative?', answer: 'No. This calculator compares numbers by their absolute value and always reports the GCF as zero or positive.' },
+        { question: 'Is prime factorization or the Euclidean algorithm faster for finding the GCF?', answer: 'For large numbers, the Euclidean algorithm is much faster, since it avoids factoring either number at all — it is also the method this calculator runs.' }
+      ]
+    },
+    compute(values) {
+      const howMany = Math.min(4, Math.max(2, Math.round(values.howMany || 2)));
+      const nums = [values.num1, values.num2, values.num3, values.num4].slice(0, howMany);
+      const gcf = nums.reduce((acc, value) => gcdRaw(acc, value));
+      return { gcf, numbersUsed: howMany };
     }
   }
 

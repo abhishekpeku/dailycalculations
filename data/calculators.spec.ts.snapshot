@@ -439,6 +439,35 @@ exports[`compute() snapshots > concrete-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > cube-root-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "radicand": 27
+    },
+    "outputs": {
+      "cubeRoot": 3
+    }
+  },
+  "typical": {
+    "inputs": {
+      "radicand": 41
+    },
+    "outputs": {
+      "cubeRoot": 3.44821724
+    }
+  },
+  "edge": {
+    "inputs": {
+      "radicand": 0
+    },
+    "outputs": {
+      "cubeRoot": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > date-difference-calculator 1`] = `
 {
   "default": {
@@ -731,6 +760,41 @@ exports[`compute() snapshots > exponent-calculator 1`] = `
     },
     "outputs": {
       "result": 1
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > factorial-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "n": 5
+    },
+    "outputs": {
+      "factorialValue": 120,
+      "digitCount": 3,
+      "trailingZeros": 1
+    }
+  },
+  "typical": {
+    "inputs": {
+      "n": 8
+    },
+    "outputs": {
+      "factorialValue": 40320,
+      "digitCount": 5,
+      "trailingZeros": 1
+    }
+  },
+  "edge": {
+    "inputs": {
+      "n": 0
+    },
+    "outputs": {
+      "factorialValue": 1,
+      "digitCount": 1,
+      "trailingZeros": 0
     }
   }
 }
@@ -1082,6 +1146,50 @@ exports[`compute() snapshots > gas-cost-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > gcf-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "howMany": 2,
+      "num1": 12,
+      "num2": 18,
+      "num3": 24,
+      "num4": 36
+    },
+    "outputs": {
+      "gcf": 6,
+      "numbersUsed": 2
+    }
+  },
+  "typical": {
+    "inputs": {
+      "howMany": 3,
+      "num1": 18,
+      "num2": 27,
+      "num3": 36,
+      "num4": 54
+    },
+    "outputs": {
+      "gcf": 9,
+      "numbersUsed": 3
+    }
+  },
+  "edge": {
+    "inputs": {
+      "howMany": 2,
+      "num1": 0,
+      "num2": 0,
+      "num3": 0,
+      "num4": 0
+    },
+    "outputs": {
+      "gcf": 0,
+      "numbersUsed": 2
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > gpa-calculator 1`] = `
 {
   "default": {
@@ -1368,6 +1476,44 @@ exports[`compute() snapshots > loan-prepayment-calculator 1`] = `
       "monthsSaved": 12,
       "interestSaved": 0,
       "newPayoffMonths": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > logarithm-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "base": 2,
+      "argument": 8
+    },
+    "outputs": {
+      "result": 3,
+      "naturalLog": 2.079441542,
+      "commonLog": 0.903089987
+    }
+  },
+  "typical": {
+    "inputs": {
+      "base": 3,
+      "argument": 12
+    },
+    "outputs": {
+      "result": 2.261859507,
+      "naturalLog": 2.48490665,
+      "commonLog": 1.079181246
+    }
+  },
+  "edge": {
+    "inputs": {
+      "base": 0,
+      "argument": 0
+    },
+    "outputs": {
+      "result": "NaN",
+      "naturalLog": "NaN",
+      "commonLog": "NaN"
     }
   }
 }
@@ -2190,6 +2336,35 @@ exports[`compute() snapshots > sleep-time-calculator 1`] = `
       "wakeTimeDecimal": 1.5,
       "wakeHour": 1,
       "wakeMinute": 30
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > square-root-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "radicand": 144
+    },
+    "outputs": {
+      "squareRoot": 12
+    }
+  },
+  "typical": {
+    "inputs": {
+      "radicand": 216
+    },
+    "outputs": {
+      "squareRoot": 14.69693846
+    }
+  },
+  "edge": {
+    "inputs": {
+      "radicand": 0
+    },
+    "outputs": {
+      "squareRoot": 0
     }
   }
 }

@@ -32,7 +32,18 @@ fresh against the v2 template (`mdFiles/calculator-template-v2.md`) and the `add
   - [x] `npm test` (296/296), `npm run build` (92 static pages), `npm run lint` — all pass
   - [x] Spot-check the 5 pages + `/categories/math` + sitemap on a local server, kill the server
   - [x] Update `mdFiles/STATUS.md`, open/ready the PR
-- Run 3 (next): square root, cube root, logarithm, factorial, GCF
+- Run 3 (this run): **square-root-calculator, cube-root-calculator, logarithm-calculator,
+  factorial-calculator, gcf-calculator**
+  - [x] square-root-calculator (type A — solver, radicand ↔ square root)
+  - [x] cube-root-calculator (type A — solver, radicand ↔ cube root, Math.cbrt for real negatives)
+  - [x] logarithm-calculator (type A — solver, base/argument/result)
+  - [x] factorial-calculator (type B — breakdown; BigInt for exact digit count, double for the headline)
+  - [x] gcf-calculator (type B — breakdown; "How many numbers?" 2-4 count selector, not a 0-sentinel)
+  - [x] Snapshot tests (`npm run test:update`), `KNOWN_NON_FINITE` entries where a legitimate domain
+    edge produces a non-finite result
+  - [x] `npm test` (310/310), `npm run build` (97 static pages), `npm run lint`
+  - [x] Spot-check the 5 pages + `/categories/math` + sitemap on a local server, kill the server
+  - [x] Update `mdFiles/STATUS.md`, open/ready the PR
 - Run 4: LCM, prime factorization, long division, quadratic formula, Pythagorean theorem
 - Run 5: triangle, circle, area, volume, surface area
 - Run 6: slope, distance between two points, midpoint, scientific-calculator
@@ -76,6 +87,22 @@ percent-change, percent-difference, fraction, ratio; run 2: average, weighted av
 scientific notation, exponent). PR #16 ready for review. Next session picks up run 3: square root,
 cube root, logarithm, factorial, GCF.
 
+## Type decisions (run 3)
+
+| Calculator | Type | Why | Visual |
+|---|---|---|---|
+| square-root-calculator | A (solver) | `r = √x`, `x = r²` is a clean 2-variable invertible pair — simpler than the other solvers' 3+ variables, since a square root only has two quantities in play. Negative `x` has no real root; `solve.squareRoot` returns `NaN` for it rather than hiding the restriction. **Overlap with exponent-calculator**: a square root is the exponent-1/2 case of the general base/exponent relationship already covered there, so the concept/formula copy explicitly cross-links to it (and to the new cube-root-calculator) instead of re-teaching fractional exponents from scratch — the page's own content stays focused on the principal-root convention, estimating irrational roots between consecutive perfect squares, and the two-real-roots caveat, none of which exponent-calculator covers. | CompareBars: the number vs its square root |
+| cube-root-calculator | A (solver) | `r = ∛x`, `x = r³`, same 2-variable shape as the square root pair, but with no domain restriction at all — `Math.cbrt` is real for every input, including negatives, which is the whole differentiator from square-root-calculator and the headline fact the concept copy leads with. **Edge-case guard**: uses `Math.cbrt(x)`, not `x ** (1/3)`, since JavaScript's `**` returns `NaN` for a negative base with a fractional exponent even though the real cube root clearly exists — verified directly (`(-8) ** (1/3)` → `NaN`, `Math.cbrt(-8)` → `-2`) and called out in `formula.note` and a `watchOut` item. | CompareBars: the number vs its cube root |
+| logarithm-calculator | A (solver) | `log_b(x) = y ⇔ b^y = x` rearranges for all three variables (result via a log, argument via exponentiation, base via a root), the same shape as exponent-calculator's forward/base/exponent solve but entered from the "I have a base and an argument, what's the exponent" direction most log searches want by default. `solve.result`/`solve.argument` guard `base ≤ 0`, `base = 1`, `argument ≤ 0`; `solve.base` additionally guards `result = 0` (no unique base solves `b⁰ = x` for a fixed x ≠ ... any b works). **`KNOWN_NON_FINITE`** registered (`result`, `naturalLog`, `commonLog`): the edge test's `base = 0, argument = 0` (both inputs have no `min` set, so edge defaults to 0) is outside the log domain on every count. **Overlap with exponent-calculator**: same inverse relationship, but the content stays log-specific — common/natural log naming, the change-of-base formula, and log-scale real-world uses (pH, decibels, earthquake magnitude, the last one explicitly named in the OpenStax source) — and cross-links rather than repeating exponent-calculator's power-law content. `solver.outputs` adds the natural log and common log of the same argument underneath the main result, computed identically in `compute()` so the snapshot captures them too. | LogScale: the argument on a magnitude scale, with a pH-neutral-water and an Avogadro-constant benchmark (reusing the same -9..27 scale convention as scientific-notation-calculator) |
+| factorial-calculator | B | `n!` is not invertible (no closed form for "what n gives this factorial" in general), so no solver — a plain one-input breakdown. **Edge-case guards**: non-integer or negative `n` returns no answer; `n` is capped at 1,000 for instant results. **Precision**: computes the exact product with `BigInt`, so the exact digit count (`big.toString().length`) and trailing-zero count (Legendre's formula, counting factors of 5) stay exact at any size, while the headline `factorialValue` converts to a `Number` for display — `format: 'significant'` already switches to scientific notation past 1e9 (around 13!), so the kit's existing formatting prevents the "rounded digits shown as exact" trap by itself; the watch-out copy explains why the digit count stays exact even once the headline is a rounded approximation. 171! and above overflow a double to `Infinity` (170! is the last finite one, confirmed with both Python and a Node `BigInt`→`Number` check), documented as expected overflow behavior, not a bug. No `KNOWN_NON_FINITE` entry needed — default (`n=5`), typical (`n=8`) and edge (`n=0`) are all comfortably finite. | LogScale: `factorialValue` against `10! = 3,628,800` and `52! ≈ 8.0658 × 10⁶⁷` (the number of ways to shuffle a standard deck, which follows directly from the permutation rule already covered by the MathWorld reference, not a separately-sourced statistic) |
+| gcf-calculator | B | GCF of a variable-length list of numbers has no solver shape. **Input-count lesson applied directly**: uses a "How many numbers?" `options` menu (2-4), not a 0-means-unused sentinel on `num3`/`num4` — the exact pattern the run-2 fix established for `average-calculator`, applied here from the start instead of discovered after the fact. `compute()` reuses the `gcd()` helper already defined at the top of `math.ts` for `fraction-calculator`/`ratio-calculator` (reduced pairwise across the chosen count via `nums.reduce(gcd)`), so all three pages agree on the same `GCF(0, 0) = 1` convention rather than each inventing its own. **Edge cases documented, not specially guarded**: `GCF(0, n) = n` and `GCF(-12, 18) = 6` both fall out of the existing `gcd()` behavior (absolute value, 0 identity) with no extra code; `GCF(0, 0) = 1` is flagged in `watchOut` as this site's convention, not a universal one. No `KNOWN_NON_FINITE` entry needed — every path resolves to a finite integer. | CompareBars: smallest number / largest number / GCF (derived summary values, not the raw `num1..4` slots, so the chart stays meaningful regardless of how many of the 4 slots are in use — the same `CompareBars`-cap workaround `average-calculator` established in run 2) |
+
+**Paused 2026-10-22 after run 3.** 15/~29 math calculators done (run 1: math category + percentage,
+percent-change, percent-difference, fraction, ratio; run 2: average, weighted average, rounding,
+scientific notation, exponent; run 3: square root, cube root, logarithm, factorial, GCF). PR #17
+ready for review. Next session picks up run 4: LCM, prime factorization, long division, quadratic
+formula, Pythagorean theorem.
+
 ## Verification
 
 **Run 1:** every number in the copy (worked examples, FAQ figures, the `example` line) was
@@ -104,6 +131,30 @@ Goldberg paper is cited instead for the float-representation and round-to-even m
 is still named in prose as the standard term, per the existing precedent for inaccessible primary
 sources (e.g. `codes.iccsafe.org` in step 38).
 
+**Run 3:** every number in the copy (worked examples, FAQ figures, `example` lines, LogScale
+benchmarks) was recomputed twice — once by an independent Python script in the scratchpad
+(`verify_run3.py`, no app imports) and again by a standalone Node one-liner for the
+JavaScript-specific behaviors Python doesn't share (`(-8) ** (1/3)` is `NaN` in JS but a complex
+number in Python; `Math.cbrt`; `BigInt` factorial digit counts; `Number(BigInt)` overflow to
+`Infinity` at 171!) — 0 mismatches between either script and the app's own `compute()`/solver
+output (cross-checked against the regenerated snapshot file directly). `npm test` 310/310 (up from
+296), `npm run build` (97 static pages, up from 92), `npm run lint -- --ignore-pattern
+".open-next/**" --ignore-pattern ".claude/**"` all pass. All 5 pages spot-checked on a local dev
+server (H1, every v2 section id, 2 JSON-LD blocks, the correct widget mounted — `solver-*` fields
+for the 3 type-A calculators, `breakdown-*` for factorial and GCF — and the rendered `example`
+line matched word-for-word), plus `/categories/math` and `sitemap.xml` both list all 5; dev server
+killed and port 3000 confirmed free afterward. Alias/related/id collision check run
+programmatically across all 69 calculators: no new collisions (the one pre-existing alias
+collision, "house loan emi calculator" on mortgage-calculator/emi-calculator, predates this run).
+References fetched directly: OpenStax (Prealgebra 2e §5.7 for square roots, §10.6 for GCF via its
+plain-number GCF(24,36)=12 example before the polynomial extension; Elementary Algebra 2e §9.7 for
+real cube roots of negatives; College Algebra 2e §6.3 for logarithms), NIST DLMF (§4.2 Logarithm,
+Exponential, Powers; §5.2 Gamma Function, for the factorial-extension aside), and Wolfram MathWorld
+(Square Root, Cube Root, Logarithm, Factorial, Greatest Common Divisor) — never calculator sites.
+Two initial URL guesses 404'd (an OpenStax Prealgebra square-root section number guessed wrong, and
+a GCF section guessed wrong) and were corrected via search before being cited, so the final
+reference list has 0 failures.
+
 ## Fix, 2026-10-21: average-calculator counted the wrong numbers
 
 A pre-merge review of PR #16 caught a real bug in the first version of `average-calculator`: (1)
@@ -126,3 +177,24 @@ and lint pass; the live page was re-checked on a local dev server (the `howMany`
 mounts, no leftover "0.0001" text), then the server was killed. See the Parked entry on "no
 list/array input in the calculator kit" for this fix generalized into a reusable pattern (a count
 selector plus array slicing, used whenever 0 is a legitimate data point rather than a true weight).
+
+## Fix, 2026-10-22: gcf-calculator mishandled GCF(0, 0)
+
+A pre-merge review of PR #17 caught a real bug: `gcf-calculator`'s `compute()` reduced its numbers
+with the shared `gcd()` helper at the top of `math.ts`, whose `return a || 1` fallback exists so
+fraction/ratio simplification never divides by zero — correct for those two pages, wrong for an
+actual GCF. Reusing it meant `GCF(0, 0, 12)` computed as `gcd(gcd(0,0), 12)` = `gcd(1, 12)` = `1`
+instead of the correct `12`, and `GCF(0, 0)` reported `1` instead of the standard number-theory
+convention of `0`.
+
+Fixed by adding `gcdRaw()`, a second Euclidean-algorithm function with no fallback (so
+`gcdRaw(0, 0) = 0`), used only by `gcf-calculator`; `gcd()` itself — and therefore
+`fraction-calculator`/`ratio-calculator` — is untouched, confirmed byte-identical and their
+snapshots unchanged. Rewrote the "GCF(0, 0)" watch-out item, added a dedicated FAQ entry, and added
+a third reference (Clark, *Elementary Number Theory*, Mathematics LibreTexts §6: "We define
+gcd(0,0) = 0") since neither OpenStax nor MathWorld state the zero case explicitly. Verified
+`GCF(0, 0, 12) = 12`, `GCF(0, 18) = 18`, `GCF(0, 0) = 0`, `GCF(0, 18, 24) = 6` (a zero among other
+numbers doesn't change the result — only all-zero does), negatives (`GCF(-12, 18) = 6`) and the
+non-integer rounding rule, independently in both a Python script and a Node one-liner against the
+app's own `compute()`. Only `gcf-calculator`'s own edge snapshot entry changed (`gcf: 1 → 0`,
+confirmed with `git diff`); `npm test` 310/310, `npm run build` and lint pass.

@@ -1520,6 +1520,44 @@ exports[`compute() snapshots > percent-change-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > percent-difference-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "valueA": 40,
+      "valueB": 60
+    },
+    "outputs": {
+      "percentDifference": 40,
+      "absoluteDifference": 20,
+      "average": 50
+    }
+  },
+  "typical": {
+    "inputs": {
+      "valueA": 60,
+      "valueB": 90
+    },
+    "outputs": {
+      "percentDifference": 40,
+      "absoluteDifference": 30,
+      "average": 75
+    }
+  },
+  "edge": {
+    "inputs": {
+      "valueA": 0,
+      "valueB": 0
+    },
+    "outputs": {
+      "percentDifference": "NaN",
+      "absoluteDifference": 0,
+      "average": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > percentage-calculator 1`] = `
 {
   "default": {

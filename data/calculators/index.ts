@@ -93,7 +93,8 @@ export const calculatorOrder: string[] = [
   'timezone-meeting-planner',
   'force-calculator',
   'percentage-calculator',
-  'percent-change-calculator'
+  'percent-change-calculator',
+  'percent-difference-calculator'
 ];
 
 const rank = (id: string) => {

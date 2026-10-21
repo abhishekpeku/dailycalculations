@@ -237,4 +237,101 @@ export const mathCalculators: CalculatorConfig[] = [
       return { percentChange, absoluteChange };
     }
   },
+  {
+    id: 'percent-difference-calculator',
+    category: 'math',
+    updatedAt: '2026-10-21',
+    aliases: ['percent difference between two numbers calculator', 'relative difference calculator', 'percent variance calculator', 'compare two numbers percentage calculator'],
+    related: ['percent-change-calculator', 'percentage-calculator', 'unit-price-calculator', 'ratio-calculator'],
+    title: 'Percent Difference Calculator',
+    description: 'Compare two values with no "before" or "after" — percent difference measures how far apart two numbers are relative to their average, the way scientists compare two measurements.',
+    example: 'Two scales both weigh the same object: one reads 40 g, the other 60 g. Their average is 50 g and they differ by 20 g, a percent difference of 40%.',
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What is percent difference?',
+        paragraphs: [
+          'Percent difference compares two values that are both just measurements or estimates, with neither one singled out as the "correct" or "original" one. It answers "how far apart are these two numbers, relative to their size?" rather than "how much did this grow?" — that second question is percent change, a different calculator, because it needs a clear starting point.',
+          'Because neither value is privileged, percent difference divides the gap between them by their AVERAGE, not by either value alone. That makes it symmetric: swapping which number you call "A" and which you call "B" gives exactly the same answer, which is not true of percent change.',
+          'Percent difference shows up most often in science and engineering, where two instruments, two trials, or two methods produce slightly different readings for the same real quantity and neither is "ground truth." It is closely related to percent error, used instead when one of the two numbers IS a known, accepted true value — percent error divides by that true value, not by an average.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the two values being compared. Which one you type first makes no difference to the result.',
+        steps: [
+          { name: 'Enter both values', text: 'Type the two numbers you want to compare — two measurements, two estimates, or any pair with no clear "before."' },
+          { name: 'Read the percent difference', text: 'The headline shows how far apart they are as a percentage of their average.' },
+          { name: 'Check the absolute difference', text: 'The breakdown also shows the plain gap between the two numbers, and their average, in case you need those directly.' },
+          { name: 'Compare with percent change instead, if needed', text: 'If one of your two numbers is clearly the "before" and the other the "after," the percent change calculator answers a related but different question.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Percent difference divides the absolute gap between two values by their average.',
+        expression: 'Percent difference = (|A − B| ÷ ((A + B) ÷ 2)) × 100',
+        terms: [
+          { symbol: 'A, B', meaning: 'The two values being compared. Order does not matter.' },
+          { symbol: '|A − B|', meaning: 'The absolute (always positive) difference between them.' },
+          { symbol: '(A + B) ÷ 2', meaning: 'Their average, used as the reference point instead of either value alone.' }
+        ],
+        note: 'This is a measure of relative difference, not a statement about which value is correct. Use percent error instead when one value is a known, accepted reference.'
+      },
+      workedExample: {
+        intro: 'Two kitchen scales weigh the same bag of flour. Scale 1 reads 40 g; scale 2 reads 60 g. How far apart are the readings, relative to their size?',
+        rows: [
+          { label: 'Absolute difference (|40 − 60|)', value: '20 g' },
+          { label: 'Average ((40 + 60) ÷ 2)', value: '50 g' },
+          { label: 'Percent difference (20 ÷ 50 × 100)', value: '40%' }
+        ],
+        result: '40% apart, relative to a 50 g average',
+        explanation: 'Neither scale is assumed correct — percent difference just states how far apart two independent readings are. If one scale were a certified reference instead, the right tool would be percent error, dividing by that reference value (40 g) instead of the average: (20 ÷ 40) × 100 = 50%.'
+      },
+      watchOut: [
+        { title: 'Needs a nonzero average', body: 'If both values are zero, their average is zero and the percent difference is undefined — there is no "size" to measure the gap against.' },
+        { title: 'Not the same as percent error', body: 'Percent error divides by a known, accepted true value. Percent difference divides by the average of two values with no accepted "truth." Using the wrong one changes both the number and the claim you are making.' },
+        { title: 'Always positive', body: 'Percent difference uses the absolute value of the gap, so it never reports a negative number or a direction — only how far apart, not which one is bigger.' },
+        { title: 'Small numbers exaggerate the percentage', body: 'Two values of 1 and 3 differ by 100% even though the actual gap is just 2 units. Percent difference is a relative measure, so check the absolute difference alongside it.' }
+      ],
+      references: [
+        { label: 'North Carolina State University / Advanced Instructional Systems, Percent Error and Percent Difference (physics lab manual)', url: 'https://www.webassign.net/question_assets/ncsucalcphysmechl3/percent_error/manual.html' },
+        { label: 'OpenStax, Prealgebra 2e, §6.2 Solve General Applications of Percent', url: 'https://openstax.org/books/prealgebra-2e/pages/6-2-solve-general-applications-of-percent' }
+      ]
+    },
+    inputs: [
+      { id: 'valueA', label: 'Value A', type: 'number', placeholder: '40', defaultValue: 40, step: 1 },
+      { id: 'valueB', label: 'Value B', type: 'number', placeholder: '60', defaultValue: 60, step: 1 }
+    ],
+    breakdown: {
+      headline: 'percentDifference',
+      headlineLabel: 'Percent difference',
+      outputs: [
+        { id: 'percentDifference', label: 'Percent difference', format: 'percent' },
+        { id: 'absoluteDifference', label: 'Absolute difference', format: 'number' },
+        { id: 'average', label: 'Average of the two values', format: 'number' }
+      ],
+      groups: [{ inputs: ['valueA', 'valueB'] }],
+      visual: { type: 'compareBars', bars: [{ from: 'valueA', label: 'Value A' }, { from: 'valueB', label: 'Value B' }], title: 'Value A vs Value B' }
+    },
+    seo: {
+      title: 'Percent Difference Calculator – Compare Two Values',
+      description: 'Free percent difference calculator. Compare two measurements or estimates with no "before" value, using the absolute difference over their average.',
+      faq: [
+        { question: 'How do I calculate percent difference?', answer: 'Take the absolute difference between the two values, divide by their average, and multiply by 100: |A − B| ÷ ((A + B) ÷ 2) × 100. For 40 and 60, that is 40%.' },
+        { question: 'What is the difference between percent difference and percent error?', answer: 'Percent difference divides by the average of two values with no known truth. Percent error divides by a known, accepted value, measuring how far a result is from that reference.' },
+        { question: 'What is the difference between percent difference and percent change?', answer: 'Percent change has a direction (old to new) and divides by the old value. Percent difference is symmetric — it divides by the average, so the order of the two numbers does not matter.' },
+        { question: 'Can percent difference be negative?', answer: 'No. It is based on an absolute difference, so it is always zero or positive.' },
+        { question: 'Why does percent difference use the average instead of one value?', answer: 'Because neither of the two values is treated as more correct than the other, the average is a neutral reference point for both.' },
+        { question: 'When is percent difference used in science?', answer: 'When comparing two independent measurements or trials of the same quantity, such as two students’ lab results for the same experiment, with no accepted "true" value available.' },
+        { question: 'What does a 0% percent difference mean?', answer: 'The two values are identical.' },
+        { question: 'Does it matter which value is entered first?', answer: 'No. Percent difference uses the absolute difference and the average of both values, so entering 40 and 60 gives the same answer as entering 60 and 40.' }
+      ]
+    },
+    compute(values) {
+      const { valueA, valueB } = values;
+      const absoluteDifference = Math.abs(valueA - valueB);
+      const average = (valueA + valueB) / 2;
+      const percentDifference = average === 0 ? NaN : (absoluteDifference / average) * 100;
+      return { percentDifference, absoluteDifference, average };
+    }
+  },
 ];

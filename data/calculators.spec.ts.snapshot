@@ -45,6 +45,71 @@ exports[`compute() snapshots > age-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > average-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "howMany": 4,
+      "value1": 85,
+      "value2": 90,
+      "value3": 78,
+      "value4": 92,
+      "value5": 0,
+      "value6": 0,
+      "value7": 0,
+      "value8": 0
+    },
+    "outputs": {
+      "mean": 86.25,
+      "sum": 345,
+      "count": 4,
+      "min": 78,
+      "max": 92
+    }
+  },
+  "typical": {
+    "inputs": {
+      "howMany": 6,
+      "value1": 128,
+      "value2": 135,
+      "value3": 117,
+      "value4": 138,
+      "value5": 0,
+      "value6": 0,
+      "value7": 0,
+      "value8": 0
+    },
+    "outputs": {
+      "mean": 86.33333333,
+      "sum": 518,
+      "count": 6,
+      "min": 0,
+      "max": 138
+    }
+  },
+  "edge": {
+    "inputs": {
+      "howMany": 2,
+      "value1": 0,
+      "value2": 0,
+      "value3": 0,
+      "value4": 0,
+      "value5": 0,
+      "value6": 0,
+      "value7": 0,
+      "value8": 0
+    },
+    "outputs": {
+      "mean": 0,
+      "sum": 0,
+      "count": 2,
+      "min": 0,
+      "max": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > bmi-calculator 1`] = `
 {
   "default": {
@@ -634,6 +699,38 @@ exports[`compute() snapshots > ev-charging-calculator 1`] = `
       "costPerMileGas": 0,
       "savingsPerMile": 0,
       "annualSavings": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > exponent-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "base": 2,
+      "exponent": 10
+    },
+    "outputs": {
+      "result": 1024
+    }
+  },
+  "typical": {
+    "inputs": {
+      "base": 3,
+      "exponent": 15
+    },
+    "outputs": {
+      "result": 14348907
+    }
+  },
+  "edge": {
+    "inputs": {
+      "base": 0,
+      "exponent": 0
+    },
+    "outputs": {
+      "result": 1
     }
   }
 }
@@ -1816,6 +1913,47 @@ exports[`compute() snapshots > ratio-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > rounding-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "value": 12.345,
+      "decimalPlaces": 2,
+      "direction": 1,
+      "tieRule": 1
+    },
+    "outputs": {
+      "rounded": 12.35,
+      "difference": 0.005
+    }
+  },
+  "typical": {
+    "inputs": {
+      "value": 18.518,
+      "decimalPlaces": 3,
+      "direction": 2,
+      "tieRule": 2
+    },
+    "outputs": {
+      "rounded": 18.518,
+      "difference": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "value": 0,
+      "decimalPlaces": 0,
+      "direction": 1,
+      "tieRule": 1
+    },
+    "outputs": {
+      "rounded": 0,
+      "difference": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > running-pace-calculator 1`] = `
 {
   "default": {
@@ -1955,6 +2093,56 @@ exports[`compute() snapshots > sales-tax-calculator 1`] = `
     "outputs": {
       "taxAmount": 0,
       "totalAmount": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > scientific-notation-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mode": 1,
+      "value": 299792458,
+      "coefficient": 4,
+      "exponent": 3,
+      "coefficient2": 2,
+      "exponent2": 2
+    },
+    "outputs": {
+      "resultCoefficient": 2.99792458,
+      "resultExponent": 8,
+      "resultPlain": 299792458
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mode": 2,
+      "value": 449688687,
+      "coefficient": 6,
+      "exponent": 5,
+      "coefficient2": 3,
+      "exponent2": 3
+    },
+    "outputs": {
+      "resultCoefficient": 6,
+      "resultExponent": 5,
+      "resultPlain": 600000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mode": 1,
+      "value": 0,
+      "coefficient": 0,
+      "exponent": 0,
+      "coefficient2": 0,
+      "exponent2": 0
+    },
+    "outputs": {
+      "resultCoefficient": 0,
+      "resultExponent": 0,
+      "resultPlain": 0
     }
   }
 }
@@ -2434,6 +2622,74 @@ exports[`compute() snapshots > water-intake-calculator 1`] = `
     "outputs": {
       "dailyOunces": 0,
       "dailyLiters": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > weighted-average-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "value1": 85,
+      "weight1": 30,
+      "value2": 90,
+      "weight2": 50,
+      "value3": 78,
+      "weight3": 20,
+      "value4": 0,
+      "weight4": 0,
+      "value5": 0,
+      "weight5": 0,
+      "value6": 0,
+      "weight6": 0
+    },
+    "outputs": {
+      "weightedAverage": 86.1,
+      "weightedSum": 8610,
+      "totalWeight": 100
+    }
+  },
+  "typical": {
+    "inputs": {
+      "value1": 128,
+      "weight1": 45,
+      "value2": 135,
+      "weight2": 75,
+      "value3": 117,
+      "weight3": 30,
+      "value4": 0,
+      "weight4": 0,
+      "value5": 0,
+      "weight5": 0,
+      "value6": 0,
+      "weight6": 0
+    },
+    "outputs": {
+      "weightedAverage": 129.3,
+      "weightedSum": 19395,
+      "totalWeight": 150
+    }
+  },
+  "edge": {
+    "inputs": {
+      "value1": 0,
+      "weight1": 0,
+      "value2": 0,
+      "weight2": 0,
+      "value3": 0,
+      "weight3": 0,
+      "value4": 0,
+      "weight4": 0,
+      "value5": 0,
+      "weight5": 0,
+      "value6": 0,
+      "weight6": 0
+    },
+    "outputs": {
+      "weightedAverage": "NaN",
+      "weightedSum": 0,
+      "totalWeight": 0
     }
   }
 }

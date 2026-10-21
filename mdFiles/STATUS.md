@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-10-21 · Current step: **40** (Wave 1: math · statistics · conversion — NEW calculators), **IN PROGRESS** (run 1/~6 done: math category + percentage, percent-change, percent-difference, fraction, ratio; PR #15 ready for review) · step 39 **DONE** 2026-10-21 (Batch 5, all 18: time, travel, work, creator, text, education; PR #14 ready for review) · step 38 done (PR #13, ready for review) · steps 17 + 30–39 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split, batches 1–5) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
+Last updated: 2026-10-21 · Current step: **40** (Wave 1: math · statistics · conversion — NEW calculators), **IN PROGRESS** (run 2/~6 done: run 1 — math category + percentage, percent-change, percent-difference, fraction, ratio (PR #15 ready for review); run 2 — average, weighted average, rounding, scientific notation, exponent (PR #16 ready for review)) · step 39 **DONE** 2026-10-21 (Batch 5, all 18: time, travel, work, creator, text, education; PR #14 ready for review) · step 38 done (PR #13, ready for review) · steps 17 + 30–39 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split, batches 1–5) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
 
 ---
 
@@ -118,7 +118,7 @@ is why 12-15 run after it.
 | 37 | Batch 3: health (6) | DONE 2026-10-20 | YMYL. Branch `step/37-batch-3-health`, PR #11. All 6 health calculators on v2. See session log. | §3 |
 | 38 | Batch 4: auto + home (12) | **DONE** 2026-10-21 | Branch `step/38-batch-4-auto-home`, PR #13 (ready for review). All 12: car-payment, gas-cost, fuel-cost, ev-charging, commute-cost, toll-cost, concrete, paint, tile, wallpaper, electricity-bill, furniture-fit. See session log. | §3 |
 | 39 | Batch 5: time, travel, work, creator, text, education (18) | **DONE** 2026-10-21 | Branch `step/39-batch-5`, PR #14 (ready for review, no longer draft). All 18: date-difference, age, sleep-time, work-hours, pomodoro-timer, travel-budget, visa-stay-days, currency-converter, timezone-meeting-planner, freelancer-rate, meeting-cost, pto, salary-raise, youtube-earnings, instagram-engagement, character-counter, hashtag-counter, gpa-calculator (C → B). See session log. | §3 |
-| 40–42 | Wave 1: math · statistics · conversion — **NEW calculators, not conversions of existing ones** | **IN PROGRESS** | Absorbs step 24 (math). 5 calculators per agent run. Run 1/~6 **DONE** 2026-10-21: added the `math` category (`data/calculators/index.ts`, `data/calculators/math.ts`, `lib/categoryTheme.ts` orange/`function`) plus percentage-calculator (B), percent-change-calculator (A), percent-difference-calculator (B), fraction-calculator (B), ratio-calculator (A). Branch `step/40-wave-1-math-run-1`, PR #15 (ready for review). Next: run 2 — average, weighted average, rounding, scientific notation, exponent. See session log and `mdFiles/steps/40-wave-1-math.md` for the full run breakdown and type decisions. | §4 |
+| 40–42 | Wave 1: math · statistics · conversion — **NEW calculators, not conversions of existing ones** | **IN PROGRESS** | Absorbs step 24 (math). 5 calculators per agent run. Run 1/~6 **DONE** 2026-10-21: added the `math` category (`data/calculators/index.ts`, `data/calculators/math.ts`, `lib/categoryTheme.ts` orange/`function`) plus percentage-calculator (B), percent-change-calculator (A), percent-difference-calculator (B), fraction-calculator (B), ratio-calculator (A). Branch `step/40-wave-1-math-run-1`, PR #15 (ready for review). Run 2/~6 **DONE** 2026-10-21: average-calculator (B), weighted-average-calculator (B, cross-linked with gpa-calculator), rounding-calculator (B), scientific-notation-calculator (B), exponent-calculator (A). Branch `step/40-wave-1-math-run-2`, PR #16 (ready for review). Next: run 3 — square root, cube root, logarithm, factorial, GCF. See session log and `mdFiles/steps/40-wave-1-math.md` for the full run breakdown and type decisions. | §4 |
 | 43–45 | Wave 2: construction · food · sports | TODO | | §4 |
 | 46–47 | Wave 3: physics · chemistry | TODO | Needs 30 + 31. | §4 |
 | 48–49 | Wave 4: biology · ecology + fun | TODO | Absorbs steps 23, 25, 26 where they fit. | §4 |
@@ -1115,6 +1115,85 @@ programmatically (a small script slicing the array by calculator boundaries) rat
 running `npm run test:update` + `npm test` after each slice. For a wave that touches only new
 files, there is no need to fall back to the "bundle into one commit" exception batches 1-5 needed.
 
+**2026-10-21 — step 40, Wave 1: math, run 2/~6 (5 new calculators).** Branch
+`step/40-wave-1-math-run-2` from `origin/master`, PR #16 opened as draft before the first
+calculator was built. Added 5 calculators to the existing `math` category
+(`data/calculators/math.ts`) and appended each id to `calculatorOrder`
+(`data/calculators/index.ts`):
+
+- **average-calculator** (type B): a plain list of numbers has no single invertible equation, and
+  the kit has no list/array input (every `CalculatorInput` is one number) — see the kit-gap entry in
+  Parked. Uses 4 always-counted value slots plus 4 optional ones behind a disclosure, matching
+  `gpa-calculator`'s fixed-slot pattern but with its own convention: since a plain average has no
+  weight to zero out the way GPA's credits do, the 4 optional slots are excluded by their array
+  index when left at the default of 0 (documented as a watch-out, not hidden). Mean, sum, count, min
+  and max are always finite — no `KNOWN_NON_FINITE` entry needed. CompareBars visual shows the
+  derived min/average/max rather than the raw slots, which stays meaningful regardless of how many
+  optional slots are filled in and sidesteps `CompareBars`'s hard 4-bar cap
+  (`components/visuals/CompareBars.tsx` slices to `bars.slice(0, 4)`, found while designing this
+  calculator — noted in Parked).
+- **weighted-average-calculator** (type B): generalizes `gpa-calculator`'s actual mechanism (value ×
+  weight, summed, divided by total weight) from grades/credits to any value/weight pairs — 3
+  always-counted pairs plus 3 optional ones, where a weight of 0 is a mathematically correct
+  exclusion (unlike average-calculator's workaround). All-weights-zero is a genuine 0÷0;
+  `KNOWN_NON_FINITE` registered (`weightedAverage`). Cross-linked with `gpa-calculator` rather than
+  duplicating it: GPA is named explicitly in the concept/watch-out copy and in `related` as the
+  grades-and-credits special case of this calculator; `gpa-calculator` itself was not edited, since
+  this step builds only the calculators it was asked for. Donut visual shows each component's weight
+  as a share of the total weight.
+- **rounding-calculator** (type B): one value field, a signed `decimalPlaces` field (negative values
+  round to tens/hundreds/thousands, the spreadsheet-ROUND sign convention), a direction menu
+  (nearest/up/down) and a tie-breaking rule (half away from zero / half to even) used only by
+  "nearest." Rounds by shifting the decimal point through exponential-notation text
+  (`` `${value}e` `` split/rebuilt at a shifted exponent) rather than multiplying, which exploits
+  JS's shortest-round-trip number-to-string conversion to sidestep the classic IEEE 754 binary64
+  representation error — verified against the textbook 1.005 case (correctly rounds to 1.01, not the
+  naive 1.00) in the Python script. No `KNOWN_NON_FINITE` needed (`direction`/`tieRule` have
+  `min: 1`, landing on safe branches at the edge case).
+- **scientific-notation-calculator** (type B): a `mode` menu over four related but distinct
+  operations (convert a number to scientific notation, convert it back, multiply two
+  scientific-notation numbers, divide two). No "a × 10ᵇ" breakdown format exists (the same gap
+  `fraction-calculator` hit with "a/b" in run 1), so the coefficient and exponent are separate
+  numeric rows; prose shows the real notation. LogScale visual plots the result's decimal value
+  against two NIST-sourced benchmarks (a nanometer, the Avogadro constant) — thematically apt, since
+  the calculator's whole subject is expressing very large or very small numbers.
+- **exponent-calculator** (type A, solver): `result = base^exponent` solves for all three variables
+  — an nth root for `base`, a logarithm for `exponent` — with `NaN` for the genuine real-domain
+  restrictions (no real nth root of a negative number except an odd integer exponent; no real log of
+  a non-positive number or of a base ≤ 0 or = 1), flagged in `watchOut` rather than hidden. The
+  forward direction needs no special-casing: JavaScript's `**` operator already matches the chosen
+  conventions (0⁰ = 1, negative base with a non-integer exponent = `NaN`). LogScale visual against
+  computing/math magnitude benchmarks (2¹⁰ = 1,024, 10⁶, 10⁹).
+
+Verification: 5 calculators committed one at a time, each paired with `npm run test:update` +
+`npm test` immediately after. Every number in the copy (worked examples, FAQ figures, `example`
+lines, LogScale benchmarks) was recomputed by an independent Python script in the scratchpad
+(`verify_run2.py`, no app imports, run via the Python 3.12 interpreter path) before shipping —
+0 mismatches, including the float-precision case and every domain-restricted solver branch on
+exponent-calculator (checked against a hand-ported copy of the same branching logic run in Node,
+which matched the Python results exactly). `npm test` 296/296 (up from 290 after run 1), snapshot
+diff is pure additions. `npm run build` passes, 92 static pages (was 87: +5 calculator pages).
+`npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` passes.
+`KNOWN_NON_FINITE` entry added only for `weighted-average-calculator` (`weightedAverage`, all
+weights 0); the other 4 new calculators resolve to finite outputs at every one of the spec's three
+input sets (default, typical, edge) without needing a NaN allowance, confirmed by `npm test` passing
+on the first `test:update` run for each with no failures. Alias/related/id collision check run
+programmatically across all 64 calculators: no new collisions (the one pre-existing "house loan emi
+calculator" alias collision on mortgage-calculator/emi-calculator predates this run); no broken
+`related` ids, no self-references. All 5 pages, `/categories/math` and `sitemap.xml` spot-checked on
+a local dev server (H1, all 8 content section ids, 2 JSON-LD blocks, the correct widget mounted per
+type), then the server was killed and port 3000 confirmed free. References fetched directly:
+OpenStax (Introductory Statistics 2e §2.5, Prealgebra 2e §10.5), Wolfram MathWorld (Arithmetic Mean,
+Weighted Mean, Exponent Laws), NIST (CODATA speed of light and Avogadro constant, SI prefixes, binary
+prefixes), and D. Goldberg's "What Every Computer Scientist Should Know About Floating-Point
+Arithmetic" (hosted by Oracle) — all loaded successfully except
+`ieeexplore.ieee.org/document/8766229` (the IEEE 754-2019 standard's own landing page), which
+returned no readable content; the Goldberg paper is cited instead for the rounding/float material,
+and "IEEE 754" is still named in prose as the standard term, following the precedent set by the
+`codes.iccsafe.org` 403 in step 38. PR #16 opened as a draft before the first calculator was built,
+updated with the full run-2 summary, and taken off draft via `gh pr ready 16` once everything above
+passed.
+
 ## Pending on the user — not code
 
 - ~~**Cloudflare apex → www 301 (from step 01).**~~ **DONE 2026-10-19** — Redirect Rule added by the user; verified `http://` and `https://dailycalculations.com/<path>?<query>` → 301 to `https://www.dailycalculations.com/<path>?<query>`, www serves 200.
@@ -1129,6 +1208,29 @@ files, there is no need to fall back to the "bundle into one commit" exception b
 ## Parked
 
 Things noticed but deliberately out of scope. Add here instead of fixing mid-step.
+
+- **No list/array input in the calculator kit** (found in step 40, run 2): every `CalculatorInput` is
+  a single number, so a calculator that conceptually wants "a list of numbers" (average, and any
+  future stats calculator needing one) has to fall back to a fixed number of numbered slots, as
+  `gpa-calculator` already did for courses. `average-calculator` and `weighted-average-calculator`
+  both do this (8 and 12 slots respectively, half behind an optional disclosure). The initial version
+  of `average-calculator` tried to extend GPA's "0 excludes a slot" convention to a plain average,
+  which is wrong there: a weight of 0 genuinely removes a component from a weighted sum, but a value
+  of 0 is a real data point in a plain list (a test score of 0, say), so silently dropping it is a
+  wrong-answer trap, not a convenience. Fixed in the same PR (#16) by adding an explicit
+  **"How many numbers?" options field (2-8)**, with `compute()` averaging exactly the first N slots
+  in order, zeros included — this is the stopgap pattern worth reusing for any future fixed-slot
+  "list" input: a count selector plus array slicing, never an implicit sentinel value, whenever 0 (or
+  any other value) is a legitimate data point rather than a true weight. A real list input (add/remove
+  rows) would still be a `components/` + `lib/breakdown.ts` change worth its own step once enough
+  calculators need one — Wave 1's statistics category (mean/median/mode, standard deviation,
+  variance, etc., all genuinely list-based) will hit the same wall repeatedly.
+- **`CompareBars` silently caps at 4 bars** (`components/visuals/CompareBars.tsx`: `bars.slice(0, 4)`,
+  found in step 40, run 2 while designing `average-calculator`): the prop comment already says "2-4
+  bars," so this is documented behavior, not a bug, but it means a visual cannot show more than 4
+  individual values side by side. `average-calculator` works around it by charting the derived
+  min/average/max (3 bars) instead of the raw value slots, which stays correct regardless of how many
+  of the 8 slots are in use.
 
 - ~~**`pregnancy-due-date-calculator` has a hardcoded "today"** (`new Date(2026, 5, 17)` in `compute`).
   Gestational age and days remaining are frozen at 2026-06-17: defaults (LMP 2026-03-01) give

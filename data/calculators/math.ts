@@ -1030,6 +1030,159 @@ export const mathCalculators: CalculatorConfig[] = [
       const difference = Number((rounded - value).toPrecision(10));
       return { rounded, difference };
     }
+  },
+  {
+    id: 'scientific-notation-calculator',
+    category: 'math',
+    updatedAt: '2026-10-21',
+    aliases: ['standard form calculator', 'convert to scientific notation calculator', 'multiply scientific notation calculator', 'scientific notation to a number calculator'],
+    related: ['exponent-calculator', 'rounding-calculator', 'fraction-calculator', 'percentage-calculator'],
+    title: 'Scientific Notation Calculator',
+    description: 'Convert a number to and from scientific notation (a × 10ᵇ), or multiply and divide two numbers that are already written in scientific notation.',
+    example: 'The speed of light, 299,792,458 m/s, is 2.99792458 × 10⁸ m/s in scientific notation.',
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What is scientific notation?',
+        paragraphs: [
+          'Scientific notation writes a number as a × 10ᵇ, where a (the coefficient) is between 1 and 10 and b (the exponent) is an integer. It is the standard way to write very large or very small numbers compactly and consistently — the speed of light, 299,792,458 m/s, becomes the far more manageable 2.99792458 × 10⁸ m/s, and a measurement like 0.0000012 meters becomes 1.2 × 10⁻⁶ meters.',
+          'The exponent tells you how many places the decimal point moves: a positive exponent means a large number (move the decimal point right), a negative exponent means a small number (move it left). Chemistry, physics, and astronomy lean on scientific notation constantly, since quantities there routinely span dozens of orders of magnitude — from the size of an atom to the distance to a star.',
+          'This calculator handles the two directions people need most: converting a plain number into scientific notation (or the reverse), and multiplying or dividing two numbers that are already written in that form, which comes up often in science coursework.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick a mode, then fill in the fields it uses. The result updates as you type.',
+        steps: [
+          { name: 'Choose a mode', text: 'Convert a plain number to scientific notation, convert scientific notation back to a plain number, or multiply or divide two numbers already in scientific notation.' },
+          { name: 'Enter a plain number (mode 1)', text: 'Type any number. It does not need to already be between 1 and 10 — the calculator normalizes it.' },
+          { name: 'Enter a coefficient and exponent (modes 2-4)', text: 'The coefficient is the "a" in a × 10ᵇ; the exponent is "b". For multiply or divide, enter a second coefficient and exponent as well.' },
+          { name: 'Read the result', text: 'The result shows the decimal value, plus the coefficient and exponent of its scientific-notation form.' },
+          { name: 'Check the scale', text: 'The chart places the result on a scale spanning atomic to astronomical magnitudes, alongside two reference points.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Converting is a direct substitution. Multiplying and dividing combine the coefficients and add or subtract the exponents, then renormalize if the coefficient drifts outside the 1-10 range.',
+        expression: 'a × 10ᵇ  (1 ≤ |a| < 10, b an integer)\n(a₁ × 10^b₁) × (a₂ × 10^b₂) = (a₁ × a₂) × 10^(b₁ + b₂)\n(a₁ × 10^b₁) ÷ (a₂ × 10^b₂) = (a₁ ÷ a₂) × 10^(b₁ − b₂)',
+        terms: [
+          { symbol: 'a', meaning: 'The coefficient (also called the mantissa or significand) — always between 1 and 10 in standard form.' },
+          { symbol: 'b', meaning: 'The exponent — the power of 10, which can be positive, negative or zero.' }
+        ],
+        note: 'If multiplying or dividing leaves the coefficient outside the 1-10 range (such as 30, from 6 × 5), the result is renormalized — 30 × 10⁵ becomes 3 × 10⁶, with the exponent adjusted to compensate.'
+      },
+      workedExample: {
+        intro: 'The same relationship, used four ways.',
+        rows: [
+          { label: 'Convert 299,792,458 to scientific notation', value: '2.99792458 × 10⁸' },
+          { label: 'Convert 4 × 10³ to a plain number', value: '4,000' },
+          { label: '(4 × 10³) × (2 × 10²)', value: '8 × 10⁵ = 800,000' },
+          { label: '(4 × 10³) ÷ (2 × 10²)', value: '2 × 10¹ = 20' }
+        ],
+        result: '2.99792458 × 10⁸ · 4,000 · 8 × 10⁵ · 2 × 10¹',
+        explanation: 'A multiplication that pushes the coefficient past 10 renormalizes automatically: (6 × 10³) × (5 × 10²) multiplies to 30 × 10⁵, which is not standard form (30 is not between 1 and 10), so it becomes 3 × 10⁶ instead — the same value, written correctly.'
+      },
+      watchOut: [
+        { title: 'Zero has no true scientific notation', body: 'There is no exponent that turns 0 into a number between 1 and 10, since 0 divided by any power of 10 is still 0. This calculator shows 0 as 0 × 10⁰ by convention rather than returning no answer.' },
+        { title: 'The coefficient must stay between 1 and 10', body: 'A raw multiplication or division can briefly produce a coefficient of 30 or 0.5; this calculator renormalizes it back into the 1-10 range and adjusts the exponent to match, so the displayed answer is always in standard form.' },
+        { title: 'Dividing by a zero coefficient is still dividing by zero', body: 'If the second number in a division has a coefficient of 0, the whole second number is 0 (0 × any power of 10 is 0), and dividing by it has no defined answer.' },
+        { title: 'Floating-point numbers have limited precision', body: 'Computers store numbers in IEEE 754 binary64, which holds roughly 15-17 significant decimal digits. A coefficient typed with more digits than that will be rounded internally — not a bug specific to this calculator, but a limit of how computers represent numbers generally.' }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §10.5 Integer Exponents and Scientific Notation', url: 'https://openstax.org/books/prealgebra-2e/pages/10-5-integer-exponents-and-scientific-notation' },
+        { label: 'NIST, CODATA value: speed of light in vacuum', url: 'https://physics.nist.gov/cgi-bin/cuu/Value?c' },
+        { label: 'NIST, CODATA value: Avogadro constant', url: 'https://physics.nist.gov/cgi-bin/cuu/Value?na' },
+        { label: 'NIST, Metric (SI) Prefixes', url: 'https://www.nist.gov/pml/owm/metric-si-prefixes' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'mode',
+        label: 'What do you want to do?',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 1,
+        min: 1,
+        options: [
+          { value: 1, label: 'Convert a number to scientific notation' },
+          { value: 2, label: 'Convert scientific notation to a number' },
+          { value: 3, label: 'Multiply two scientific-notation numbers' },
+          { value: 4, label: 'Divide two scientific-notation numbers' }
+        ]
+      },
+      { id: 'value', label: 'Number (mode 1)', type: 'number', placeholder: '299792458', defaultValue: 299792458, step: 1 },
+      { id: 'coefficient', label: 'Coefficient, a (modes 2-4)', type: 'number', placeholder: '4', defaultValue: 4, step: 0.1 },
+      { id: 'exponent', label: 'Exponent, b (modes 2-4)', type: 'number', placeholder: '3', defaultValue: 3, step: 1 },
+      { id: 'coefficient2', label: 'Second coefficient (modes 3-4)', type: 'number', placeholder: '2', defaultValue: 2, step: 0.1 },
+      { id: 'exponent2', label: 'Second exponent (modes 3-4)', type: 'number', placeholder: '2', defaultValue: 2, step: 1 }
+    ],
+    breakdown: {
+      headline: 'resultPlain',
+      headlineLabel: 'Result (decimal)',
+      outputs: [
+        { id: 'resultPlain', label: 'Result (decimal)', format: 'significant' },
+        { id: 'resultCoefficient', label: 'Coefficient, a', format: 'significant' },
+        { id: 'resultExponent', label: 'Exponent, b (power of 10)', format: 'integer' }
+      ],
+      groups: [
+        { inputs: ['mode', 'value'] },
+        { title: 'First number in scientific notation (modes 2-4)', inputs: ['coefficient', 'exponent'], optional: true },
+        { title: 'Second number (multiply / divide only)', inputs: ['coefficient2', 'exponent2'], optional: true }
+      ],
+      visual: {
+        type: 'logScale',
+        value: 'resultPlain',
+        min: -9,
+        max: 27,
+        ticks: ['10⁻⁹', '10⁻³', '10³', '10⁹', '10¹⁵', '10²¹', '10²⁷'],
+        benchmarks: [
+          { label: '1 nanometer (10⁻⁹ m)', value: 1e-9 },
+          { label: 'Avogadro constant (~6.022 × 10²³ /mol)', value: 6.02214076e23 }
+        ],
+        title: 'How big is the result?',
+        valueLabel: 'Your result'
+      }
+    },
+    seo: {
+      title: 'Scientific Notation Calculator – Convert, Multiply, Divide',
+      description: 'Free scientific notation calculator. Convert a number to and from a × 10^b form, or multiply and divide two scientific-notation numbers.',
+      faq: [
+        { question: 'How do I convert a number to scientific notation?', answer: 'Write it as a × 10ᵇ with a between 1 and 10. 299,792,458 becomes 2.99792458 × 10⁸, since moving the decimal point 8 places left gives a coefficient of 2.99792458.' },
+        { question: 'How do I convert scientific notation back to a plain number?', answer: 'Multiply the coefficient by 10 raised to the exponent. 4 × 10³ = 4 × 1,000 = 4,000.' },
+        { question: 'How do I multiply two numbers in scientific notation?', answer: 'Multiply the coefficients and add the exponents: (4×10³) × (2×10²) = (4×2) × 10^(3+2) = 8 × 10⁵ = 800,000.' },
+        { question: 'How do I divide two numbers in scientific notation?', answer: 'Divide the coefficients and subtract the exponents: (4×10³) ÷ (2×10²) = (4÷2) × 10^(3-2) = 2 × 10¹ = 20.' },
+        { question: 'What if the coefficient ends up above 10 after multiplying?', answer: 'Renormalize it: divide the coefficient by 10 and add 1 to the exponent, repeating until it is back between 1 and 10. 30 × 10⁵ becomes 3 × 10⁶.' },
+        { question: 'Why is scientific notation used in science?', answer: 'Physical quantities span enormous ranges — from the size of an atom to the distance between galaxies — and scientific notation keeps numbers at any scale equally compact and easy to compare.' },
+        { question: 'What does a negative exponent mean?', answer: 'It means the number is smaller than 1. 1.2 × 10⁻⁶ equals 0.0000012 — the decimal point moves 6 places to the left.' },
+        { question: 'How is scientific notation written in standard form?', answer: 'Standard (normalized) form always keeps the coefficient between 1 and 10; 42 × 10⁵ is correct arithmetic but not standard form, which would be 4.2 × 10⁶.' }
+      ]
+    },
+    compute(values) {
+      const { mode, value, coefficient, exponent, coefficient2, exponent2 } = values;
+      let resultCoefficient: number;
+      let resultExponent: number;
+      let resultPlain: number;
+      if (mode === 2) {
+        [resultCoefficient, resultExponent] = normalizeScientific(coefficient, exponent);
+        resultPlain = coefficient * 10 ** exponent;
+      } else if (mode === 3) {
+        [resultCoefficient, resultExponent] = normalizeScientific(coefficient * coefficient2, exponent + exponent2);
+        resultPlain = resultCoefficient * 10 ** resultExponent;
+      } else if (mode === 4) {
+        if (coefficient2 === 0) {
+          resultCoefficient = NaN;
+          resultExponent = NaN;
+          resultPlain = NaN;
+        } else {
+          [resultCoefficient, resultExponent] = normalizeScientific(coefficient / coefficient2, exponent - exponent2);
+          resultPlain = resultCoefficient * 10 ** resultExponent;
+        }
+      } else {
+        [resultCoefficient, resultExponent] = toScientific(value); // mode 1, and the safe fallback for any other value
+        resultPlain = value;
+      }
+      return { resultCoefficient, resultExponent, resultPlain };
+    }
   }
 
 ];

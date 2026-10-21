@@ -2063,6 +2063,56 @@ exports[`compute() snapshots > sales-tax-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > scientific-notation-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mode": 1,
+      "value": 299792458,
+      "coefficient": 4,
+      "exponent": 3,
+      "coefficient2": 2,
+      "exponent2": 2
+    },
+    "outputs": {
+      "resultCoefficient": 2.99792458,
+      "resultExponent": 8,
+      "resultPlain": 299792458
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mode": 2,
+      "value": 449688687,
+      "coefficient": 6,
+      "exponent": 5,
+      "coefficient2": 3,
+      "exponent2": 3
+    },
+    "outputs": {
+      "resultCoefficient": 6,
+      "resultExponent": 5,
+      "resultPlain": 600000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mode": 1,
+      "value": 0,
+      "coefficient": 0,
+      "exponent": 0,
+      "coefficient2": 0,
+      "exponent2": 0
+    },
+    "outputs": {
+      "resultCoefficient": 0,
+      "resultExponent": 0,
+      "resultPlain": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > sleep-time-calculator 1`] = `
 {
   "default": {

@@ -31,9 +31,17 @@ function gcdRaw(x: number, y: number) {
 function lcmPair(x: number, y: number) {
   const a = Math.abs(Math.round(x));
   const b = Math.abs(Math.round(y));
+  // An input that is already beyond Number.MAX_SAFE_INTEGER (2^53 - 1) lost precision before this
+  // function ever saw it, so refuse rather than silently compute on an already-wrong number.
+  if (!Number.isSafeInteger(a) || !Number.isSafeInteger(b)) return NaN;
   if (a === 0 && b === 0) return NaN;
   if (a === 0 || b === 0) return 0;
-  return (a * b) / gcdRaw(a, b);
+  // Divide before multiplying (a ÷ gcd is always an exact integer) to keep the intermediate value
+  // as small as possible, then refuse the result itself if it still overflows 2^53 — e.g. the LCM
+  // of four large, pairwise-coprime primes can exceed 2^53 even though every input is tiny by
+  // comparison, since gcd(a,b)=1 leaves nothing to divide out before the multiplication.
+  const result = (a / gcdRaw(a, b)) * b;
+  return Number.isSafeInteger(result) ? result : NaN;
 }
 
 // Normalizes a coefficient/exponent pair to standard scientific notation (1 <= |a| < 10, or a = 0).
@@ -1840,6 +1848,7 @@ export const mathCalculators: CalculatorConfig[] = [
         { title: 'GCF(0, 0, ..., 0) is 0, by convention', body: 'Every integer divides 0, so there is no single largest common divisor among only zeros under the ordinary definition. Number theory resolves this by defining GCF(0, 0) = 0 directly, rather than leaving it undefined — the convention this calculator follows, cited below.' },
         { title: 'Negative numbers are compared by absolute value', body: 'GCF(−12, 18) is reported as 6, the same as GCF(12, 18), since the factors of −12 are the same set of numbers (up to sign) as the factors of 12 — the GCF itself is always shown as zero or positive.' },
         { title: 'Non-integer inputs are rounded first', body: 'The greatest common factor is only defined for whole numbers, so a decimal typed into any field is rounded to the nearest integer before this calculator computes anything with it.' },
+        { title: 'An input beyond 9,007,199,254,740,991 is refused, not rounded silently', body: 'That number (2^53 − 1) is the largest whole number JavaScript can represent exactly. A number you type that is already larger than this has lost precision before this calculator ever sees it, so rather than compute a GCF from an already-wrong number, this calculator shows no answer for any input that large.' },
         { title: 'Not the same as the least common multiple', body: 'The GCF is the largest number that divides every input; the least common multiple (LCM) is the smallest number every input divides into — a related but different calculation, covered by its own calculator rather than this one.' }
       ],
       references: [
@@ -1905,6 +1914,10 @@ export const mathCalculators: CalculatorConfig[] = [
     compute(values) {
       const howMany = Math.min(4, Math.max(2, Math.round(values.howMany || 2)));
       const nums = [values.num1, values.num2, values.num3, values.num4].slice(0, howMany);
+      // An input already beyond Number.MAX_SAFE_INTEGER (2^53 - 1) lost precision before this
+      // function ever saw it (GCF itself never grows past the smallest input, but a result built
+      // from an already-imprecise input would still be silently wrong), so refuse instead.
+      if (nums.some((n) => !Number.isSafeInteger(Math.abs(Math.round(n))))) return { gcf: NaN, numbersUsed: howMany };
       const gcf = nums.reduce((acc, value) => gcdRaw(acc, value));
       return { gcf, numbersUsed: howMany };
     }
@@ -1962,7 +1975,7 @@ export const mathCalculators: CalculatorConfig[] = [
         { title: 'The LCM of a nonzero number and 0 is 0 — but LCM(0, 0) is undefined', body: 'By a widely used convention, LCM(n, 0) = 0 for any nonzero n, since 0 is the only common multiple they share. LCM(0, 0), though, has no positive common multiple at all (every multiple of 0 is 0 itself), so this calculator reports no answer for that specific case rather than guessing a value — this is this calculator\'s convention, not a universal one, since some sources leave LCM(n, 0) undefined too.' },
         { title: 'Negative numbers are compared by absolute value', body: 'LCM(−4, 6) is reported as 12, the same as LCM(4, 6), since this calculator always shows the LCM as zero or positive.' },
         { title: 'Non-integer inputs are rounded first', body: 'The LCM is only defined for whole numbers, so a decimal typed into any field is rounded to the nearest integer before this calculator computes anything with it.' },
-        { title: 'Large numbers can lose precision', body: 'The LCM of two numbers with few shared factors can be close to their full product — the LCM of two large primes is just their product. Results above about 9 quadrillion (JavaScript\'s safe integer limit) may no longer be exact.' },
+        { title: 'Very large results are refused, not shown inexactly', body: 'The LCM of numbers with few shared factors is close to their full product — the LCM of four large, pairwise-coprime primes, for instance, is just their product, which can run past 9,007,199,254,740,991 (2^53 − 1, the largest whole number JavaScript can represent exactly) even though each individual input is unremarkable. Rather than silently round such a result to the nearest representable number, this calculator checks for that condition and shows no answer instead.' },
         { title: 'Not the same as the GCF', body: 'The LCM is the smallest number every input divides into; the GCF is the largest number that divides every input — opposite kinds of questions, answered by two different calculators.' }
       ],
       references: [
@@ -2022,7 +2035,8 @@ export const mathCalculators: CalculatorConfig[] = [
         { question: 'What is the LCM of two numbers with no shared factors?', answer: 'Their product. If GCF(a, b) = 1 (the numbers are coprime), LCM(a, b) = a × b ÷ 1 = a × b — for example, LCM(4, 9) = 36.' },
         { question: 'What is the LCM of 0 and a nonzero number?', answer: '0, by a widely used convention, since the only multiple 0 has is 0 itself, making 0 the only number both 0 and any other number could ever divide into.' },
         { question: 'What is the LCM of 0 and 0?', answer: 'Undefined. There is no positive number that 0 and 0 both divide into, since the only multiple 0 has is 0 itself, so this calculator reports no answer for that specific case.' },
-        { question: 'Can the LCM be negative?', answer: 'No. This calculator compares numbers by their absolute value and always reports the LCM as zero or positive.' }
+        { question: 'Can the LCM be negative?', answer: 'No. This calculator compares numbers by their absolute value and always reports the LCM as zero or positive.' },
+        { question: 'Why does my LCM show no answer even though all my numbers are small?', answer: 'The LCM of several large, pairwise-coprime numbers (numbers that share no common factors) is close to their full product, which can exceed 9,007,199,254,740,991 — the largest whole number JavaScript can represent exactly — even when none of the individual numbers looks unusually large. This calculator shows no answer rather than a silently rounded, slightly wrong one.' }
       ]
     },
     compute(values) {
@@ -2248,7 +2262,8 @@ export const mathCalculators: CalculatorConfig[] = [
         { title: 'The divisor cannot be 0', body: 'Division by zero has no defined answer — this calculator returns no result rather than a misleading one.' },
         { title: 'The remainder sign convention differs from some calculators and languages', body: 'This calculator always keeps the remainder between 0 and the divisor (exclusive), even for a negative dividend or divisor. A calculator or programming language using truncated division instead would report a negative remainder for −17 ÷ 5 (−3 remainder −2) rather than this page\'s −4 remainder 3 — both reconstruct the dividend correctly, they simply split it differently.' },
         { title: 'Decimal inputs are rounded first', body: 'Long division with a remainder is defined for whole numbers. A decimal typed into either field is rounded to the nearest whole number before dividing.' },
-        { title: 'The decimal result can repeat forever', body: 'Not every division produces a terminating decimal — 1 ÷ 3 = 0.333... repeats indefinitely. The decimal result shown is rounded for display, not exact.' }
+        { title: 'The decimal result can repeat forever', body: 'Not every division produces a terminating decimal — 1 ÷ 3 = 0.333... repeats indefinitely. The decimal result shown is rounded for display, not exact.' },
+        { title: 'A dividend or divisor beyond 9,007,199,254,740,991 is refused', body: 'That number (2^53 − 1) is the largest whole number JavaScript can represent exactly. A number you type that is already larger than this has lost precision before this calculator ever sees it, so rather than show a quotient or remainder built from an already-wrong number, this calculator shows no answer instead.' }
       ],
       references: [
         { label: 'OpenStax, Prealgebra 2e, §1.5 Divide Whole Numbers', url: 'https://openstax.org/books/prealgebra-2e/pages/1-5-divide-whole-numbers' },
@@ -2287,7 +2302,12 @@ export const mathCalculators: CalculatorConfig[] = [
     compute(values) {
       const dividend = Math.round(values.dividend);
       const divisor = Math.round(values.divisor);
-      if (divisor === 0) return { quotient: NaN, remainder: NaN, decimalResult: NaN, check: NaN };
+      const noAnswer = { quotient: NaN, remainder: NaN, decimalResult: NaN, check: NaN };
+      if (divisor === 0) return noAnswer;
+      // A dividend or divisor already beyond Number.MAX_SAFE_INTEGER (2^53 - 1) lost precision
+      // before this function ever saw it, so refuse rather than silently show a wrong quotient
+      // or remainder built from an already-imprecise number.
+      if (!Number.isSafeInteger(dividend) || !Number.isSafeInteger(divisor)) return noAnswer;
       const absDivisor = Math.abs(divisor);
       const remainder = ((dividend % divisor) + absDivisor) % absDivisor;
       const quotient = (dividend - remainder) / divisor;

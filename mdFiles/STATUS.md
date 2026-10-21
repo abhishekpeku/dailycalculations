@@ -1276,6 +1276,65 @@ does), negatives and non-integer rounding, independently in Python and Node agai
 310/310, `npm run build` and lint pass. See `mdFiles/steps/40-wave-1-math.md`'s "Fix, 2026-10-22"
 section for the full writeup.
 
+**2026-10-22 — step 40, Wave 1: math, run 4/~6 (5 new calculators).** Branch
+`step/40-wave-1-math-run-4` from `origin/master`, PR #18 opened as draft before the first
+calculator was built. Added 5 calculators to the existing `math` category
+(`data/calculators/math.ts`) and appended each id to `calculatorOrder` (`data/calculators/index.ts`):
+
+- **lcm-calculator** (type B): same "How many numbers?" 2-4 pattern as `gcf-calculator`, with a new
+  `lcmPair` helper (`LCM(a,b) = |a×b| ÷ gcd(a,b)`, reusing `gcdRaw`). `LCM(n,0)=0` for nonzero n by
+  a widely used convention, but `LCM(0,0)` is left undefined (`NaN`) rather than 0 — a real bug
+  caught and fixed mid-run when fetching references showed GCF(0,0)=0 and LCM(0,0)="undefined" are
+  different conventions, not the same one; see the "Fix" note in the step file. `KNOWN_NON_FINITE`
+  registered. CompareBars visual (smallest/largest number/LCM).
+- **prime-factorization-calculator** (type B): trial division, capped at 10¹² for instant results.
+  The kit has no list input and `compute()` must return plain numbers, so the factorization uses 6
+  fixed prime/exponent slot pairs — but never silently truncates: `distinctPrimeFactors` and an
+  `extraDistinctPrimeFactors` counter are always the true, complete figures regardless of how many
+  of the 6 slots are shown (0 has no factorization, 1 has the legitimate empty one). CompareBars
+  visual (your number / smallest prime factor / largest prime factor).
+- **long-division-calculator** (type B): quotient and remainder, not invertible, so no solver.
+  Picks and documents a specific remainder sign convention — `0 ≤ remainder < |divisor|` regardless
+  of either operand's sign (Euclidean division), not the "truncate toward zero" convention several
+  languages default to — verified directly against the deployed JS `%` operator's own sign
+  behavior, not just assumed. `KNOWN_NON_FINITE` registered for divisor 0. CompareBars visual
+  (dividend vs divisor).
+- **quadratic-formula-calculator** (type B): `ax²+bx+c=0` has two simultaneous roots from one input
+  triple, so not a solver (same non-invertibility reasoning as `percent-difference-calculator`).
+  Handles `a=0` (linear), discriminant `>0`/`=0`/`<0` (two real roots / one repeated root / a real
+  + imaginary pair, never a bare `NaN`), and floating-point near-zero discriminants via a
+  magnitude-relative tolerance. Default coefficients were chosen to survive the automated
+  "typical" input set's ×1.5-and-round scaling without flipping the discriminant's sign.
+  `KNOWN_NON_FINITE` registered for the `a=b=c=0` degenerate case. CompareBars visual (Root 1 vs
+  Root 2).
+- **pythagorean-theorem-calculator** (type A, solver): `a²+b²=c²`, a clean 3-variable invertible
+  relationship. Solving for a leg returns `NaN` when the hypotenuse does not strictly exceed the
+  other leg (an impossible triangle), per the plan's explicit requirement. `solver.outputs` adds
+  the triangle's area as a bonus figure. No `KNOWN_NON_FINITE` entry needed (the forward-only
+  automated edge case, legs at 0, is finite). CompareBars visual (leg a / leg b / hypotenuse).
+
+Verification: every number in the copy was recomputed independently in `verify_run4.py`
+(scratchpad, no app imports) — 0 mismatches after fixing one transcription error in the script
+itself (not the app) — and cross-checked directly against the app's own `compute()` via a Node
+one-liner for every default, a complex-root case, a repeated-root case, the linear and degenerate
+quadratic cases, the prime-factorization `n=0`/`n=1`/over-cap/negative cases, and both
+divide-by-zero cases. `npm test` 318/318 (up from 310), `npm run build` (102 static pages, up from
+97), lint clean. All 5 pages, `/categories/math` and `sitemap.xml` spot-checked on a local dev
+server (H1, every v2 section id, 2 JSON-LD blocks, the correct widget mounted, `example` lines
+matched word-for-word, plus a `?a=1&b=2&c=5` share-link confirming the complex-root rows render
+instead of a bare NaN), then the server was killed and port 3000 confirmed free. Alias/related/id
+collision check across all 74 calculators: no new collisions. References fetched directly, with 6
+of 13 needing a wrong initial section-number guess corrected via search before citing (OpenStax
+chapter/section numbers for LCM/prime factorization, long division, the quadratic formula and the
+Pythagorean theorem; a Clark LibreTexts section number) — 0 failures in the final list; one new
+source (Mount Royal University's *Abstract Algebra I*, Mathematics LibreTexts §1.2) was added
+specifically because neither MathWorld nor the Clark text state the LCM-with-zero convention. PR
+#18 opened as a draft before the first calculator was built, updated with the full run-4 summary,
+and taken off draft via `gh pr ready 18` once everything above passed. See
+`mdFiles/steps/40-wave-1-math.md`'s "Type decisions (run 4)" and "Fix, 2026-10-22: lcm-calculator"
+sections for the full writeup. Next session picks up run 5: triangle, circle, area, volume,
+surface area.
+
 ## Pending on the user — not code
 
 - ~~**Cloudflare apex → www 301 (from step 01).**~~ **DONE 2026-10-19** — Redirect Rule added by the user; verified `http://` and `https://dailycalculations.com/<path>?<query>` → 301 to `https://www.dailycalculations.com/<path>?<query>`, www serves 200.
@@ -1307,6 +1366,13 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
   rows) would still be a `components/` + `lib/breakdown.ts` change worth its own step once enough
   calculators need one — Wave 1's statistics category (mean/median/mode, standard deviation,
   variance, etc., all genuinely list-based) will hit the same wall repeatedly.
+  **Second instance (step 40, run 4):** `prime-factorization-calculator` hit the same wall with a
+  variable-length prime/exponent factorization. Since a factor count can't be sliced by a
+  user-chosen "how many," the fix here was a fixed 6 slot pairs plus an honest
+  `extraDistinctPrimeFactors` counter (and true, non-derived `distinctPrimeFactors`/
+  `smallestPrimeFactor`/`largestPrimeFactor` figures) so the rare case of more factors than slots is
+  reported, not silently truncated — a second reusable pattern (count the overflow instead of
+  hiding it) worth applying to any future unboundedly-long-list calculator in the same kit gap.
 - **`CompareBars` silently caps at 4 bars** (`components/visuals/CompareBars.tsx`: `bars.slice(0, 4)`,
   found in step 40, run 2 while designing `average-calculator`): the prop comment already says "2-4
   bars," so this is documented behavior, not a bug, but it means a visual cannot show more than 4

@@ -1332,6 +1332,99 @@ export const mathCalculators: CalculatorConfig[] = [
       const { base, exponent } = values;
       return { result: base ** exponent };
     }
-  }
+  },
+  {
+    id: 'square-root-calculator',
+    category: 'math',
+    updatedAt: '2026-10-21',
+    aliases: ['sqrt calculator', 'square root of a number calculator', 'find the square root calculator', 'radical calculator', 'perfect square calculator'],
+    related: ['cube-root-calculator', 'exponent-calculator', 'factorial-calculator', 'gcf-calculator'],
+    title: 'Square Root Calculator',
+    description: 'Find the square root of a number, or work backward from a square root to the original number — the principal (nonnegative) root, with negative numbers flagged as having no real answer.',
+    example: 'The square root of 144 is 12, since 12 × 12 = 144. Not every square root is a whole number — √50 is irrational, about 7.0711.',
+    solver: {
+      defaultTarget: 'squareRoot',
+      variables: [
+        { id: 'radicand', label: 'Number (radicand)', symbol: 'x', dimension: 'count', defaultValue: 144, defaultUnit: 'count' },
+        { id: 'squareRoot', label: 'Square root', symbol: '√x', dimension: 'count', defaultValue: 12, defaultUnit: 'count' }
+      ],
+      solve: {
+        squareRoot: ({ radicand }) => (radicand < 0 ? NaN : Math.sqrt(radicand)),
+        radicand: ({ squareRoot }) => squareRoot ** 2
+      },
+      visuals: [{ type: 'compareBars', bars: [{ from: 'radicand', label: 'Your number' }, { from: 'squareRoot', label: 'Its square root' }], title: 'Your number vs its square root' }]
+    },
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What is a square root?',
+        paragraphs: [
+          'The square root of a number x is a number r that, multiplied by itself, gives x back: r × r = x. Every positive number actually has two square roots, one positive and one negative (3 × 3 = 9, and so does −3 × −3 = 9), but the radical sign √ by convention always means the positive one, called the principal square root. "The square root of 9" means 3, not −3, unless a problem says otherwise.',
+          'Numbers whose square root is a whole number — 1, 4, 9, 16, 25, and so on — are called perfect squares. Most numbers are not perfect squares, so their square roots are irrational: an endless, non-repeating decimal, like √2 ≈ 1.4142135... This calculator shows a rounded decimal for those, and also works backward — given a square root, it finds the number it came from by squaring.',
+          'A square root is really just a fractional exponent in disguise: x^(1/2) means exactly the same thing as √x. If you need other fractional or negative powers, not just the one-half case, the exponent calculator on this site handles the general relationship — see it for roots beyond the second power, too, alongside the dedicated cube root calculator for third powers.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter either the number or its square root — the other field, marked auto, is calculated.',
+        steps: [
+          { name: 'Find a square root', text: 'Enter the number (the radicand). The square root field, marked auto, fills in with the principal (nonnegative) root.' },
+          { name: 'Work backward', text: 'Type into the square root field instead, and the radicand updates to that value squared.' },
+          { name: 'Switch which field is calculated', text: 'Typing into the auto field hands "auto" back to the other one.' },
+          { name: 'Read a non-perfect-square result', text: 'If the number is not a perfect square, the result is a rounded decimal approximation of an irrational number, not an exact value.' },
+          { name: 'Compare the two values', text: 'The chart shows your number next to its square root, so the size of the gap between them is visible at a glance.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'A square root undoes squaring. The two directions of the same relationship:',
+        expression: 'r = √x = x^(1/2)  (for x ≥ 0)\nx = r²',
+        terms: [
+          { symbol: 'x (radicand)', meaning: 'The number you are taking the root of. Must be zero or positive for a real result.' },
+          { symbol: 'r (square root)', meaning: 'The principal (nonnegative) number that, squared, gives x back.' }
+        ],
+        note: 'A square root is the exponent-1/2 case of the general base-to-a-power relationship. For any other fractional or negative exponent, use the exponent calculator; for the exponent-1/3 (cube root) case specifically, use the cube root calculator.'
+      },
+      workedExample: {
+        intro: '50 is not a perfect square, so estimate √50 before finding its decimal value.',
+        rows: [
+          { label: 'Nearest perfect squares', value: '7² = 49 and 8² = 64' },
+          { label: 'Since 49 < 50 < 64', value: '√50 is between 7 and 8, closer to 7 (50 is closer to 49 than to 64)' },
+          { label: 'Decimal value', value: '√50 ≈ 7.0711' },
+          { label: 'Check', value: '7.0711² ≈ 50.0005 (rounding error from the 4-decimal approximation)' }
+        ],
+        result: '√50 ≈ 7.0711',
+        explanation: 'Bracketing a square root between two consecutive perfect squares is a quick way to sanity-check a calculator result by hand, and it is exactly how this calculator\'s own answer can be spot-verified without one.'
+      },
+      watchOut: [
+        { title: 'Negative numbers have no real square root', body: 'There is no real number that, squared, gives a negative result — a square (positive × positive, or negative × negative) is never negative. This calculator returns no answer for a negative radicand rather than a misleading one; extending the idea to negative numbers requires the imaginary unit i and complex numbers, a separate topic.' },
+        { title: 'Every positive number has two square roots', body: 'Both 3 and −3 square to 9, but the radical sign √ by convention refers only to the nonnegative one. This calculator always reports that principal root.' },
+        { title: 'Solving backward does not preserve a negative sign', body: 'Typing −3 into the square root field computes its square, 9, correctly — but solving forward from 9 again returns +3, not −3, since the forward direction always reports the principal root. The two directions are not perfectly symmetric for negative inputs.' },
+        { title: 'Most square roots are irrational', body: 'Only perfect squares (1, 4, 9, 16, 25, ...) have a whole-number square root. Everything else, like √2 or √50, is shown as a rounded decimal, not an exact value.' }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §5.7 Simplify and Use Square Roots', url: 'https://openstax.org/books/prealgebra-2e/pages/5-7-simplify-and-use-square-roots' },
+        { label: 'Wolfram MathWorld, Square Root', url: 'https://mathworld.wolfram.com/SquareRoot.html' }
+      ]
+    },
+    inputs: [{ id: 'radicand', label: 'Number (radicand)', type: 'number', placeholder: '144', defaultValue: 144, step: 1 }],
+    seo: {
+      title: 'Square Root Calculator – Find √x or Solve Backward',
+      description: 'Free square root calculator. Find the square root of any number, or solve backward from a square root to the original number.',
+      faq: [
+        { question: 'What is the square root of 144?', answer: '12, since 12 × 12 = 144.' },
+        { question: 'What is the square root of 2?', answer: 'An irrational number, approximately 1.4142. It never terminates or repeats.' },
+        { question: 'What is the square root of a negative number?', answer: 'There is no real-number answer, since no real number squared is negative. This needs complex numbers (multiples of the imaginary unit i), which this calculator does not compute.' },
+        { question: 'How do you estimate a square root that is not a perfect square?', answer: 'Find the two nearest perfect squares. √50 sits between 7² = 49 and 8² = 64, so √50 is between 7 and 8 — closer to 7, about 7.0711.' },
+        { question: 'What is the difference between a square root and an exponent of 1/2?', answer: 'Nothing — they mean the same thing: x^(1/2) = √x. The exponent calculator on this site handles the general case for any power.' },
+        { question: 'Can a square root be negative?', answer: 'A positive number has two square roots, +r and −r, but the radical sign √ by convention always refers to the nonnegative (principal) one.' },
+        { question: 'Is 0 a perfect square?', answer: 'Yes. √0 = 0, since 0 × 0 = 0.' },
+        { question: 'What is a perfect square?', answer: 'The square of a whole number — 1, 4, 9, 16, 25 and so on — whose square root is itself a whole number.' }
+      ]
+    },
+    compute(values) {
+      const radicand = values.radicand;
+      return { squareRoot: radicand < 0 ? NaN : Math.sqrt(radicand) };
+    }
+  },
 
 ];

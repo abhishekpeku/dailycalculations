@@ -2195,6 +2195,35 @@ exports[`compute() snapshots > sleep-time-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > square-root-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "radicand": 144
+    },
+    "outputs": {
+      "squareRoot": 12
+    }
+  },
+  "typical": {
+    "inputs": {
+      "radicand": 216
+    },
+    "outputs": {
+      "squareRoot": 14.69693846
+    }
+  },
+  "edge": {
+    "inputs": {
+      "radicand": 0
+    },
+    "outputs": {
+      "squareRoot": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > tdee-calculator 1`] = `
 {
   "default": {

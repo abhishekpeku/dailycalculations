@@ -32,7 +32,18 @@ fresh against the v2 template (`mdFiles/calculator-template-v2.md`) and the `add
   - [x] `npm test` (296/296), `npm run build` (92 static pages), `npm run lint` — all pass
   - [x] Spot-check the 5 pages + `/categories/math` + sitemap on a local server, kill the server
   - [x] Update `mdFiles/STATUS.md`, open/ready the PR
-- Run 3 (next): square root, cube root, logarithm, factorial, GCF
+- Run 3 (this run): **square-root-calculator, cube-root-calculator, logarithm-calculator,
+  factorial-calculator, gcf-calculator**
+  - [ ] square-root-calculator (type A — solver, radicand ↔ square root)
+  - [ ] cube-root-calculator (type A — solver, radicand ↔ cube root, Math.cbrt for real negatives)
+  - [ ] logarithm-calculator (type A — solver, base/argument/result)
+  - [ ] factorial-calculator (type B — breakdown; BigInt for exact digit count, double for the headline)
+  - [ ] gcf-calculator (type B — breakdown; "How many numbers?" 2-4 count selector, not a 0-sentinel)
+  - [ ] Snapshot tests (`npm run test:update`), `KNOWN_NON_FINITE` entries where a legitimate domain
+    edge produces a non-finite result
+  - [ ] `npm test`, `npm run build`, `npm run lint`
+  - [ ] Spot-check the 5 pages + `/categories/math` + sitemap on a local server, kill the server
+  - [ ] Update `mdFiles/STATUS.md`, open/ready the PR
 - Run 4: LCM, prime factorization, long division, quadratic formula, Pythagorean theorem
 - Run 5: triangle, circle, area, volume, surface area
 - Run 6: slope, distance between two points, midpoint, scientific-calculator

@@ -23,15 +23,15 @@ fresh against the v2 template (`mdFiles/calculator-template-v2.md`) and the `add
 
 - Run 2 (this run): **average-calculator, weighted-average-calculator, rounding-calculator,
   scientific-notation-calculator, exponent-calculator**
-  - [ ] average-calculator (type B — 8 value slots, "blank"-style ignore via a kit-gap workaround)
-  - [ ] weighted-average-calculator (type B — 6 value/weight pairs, cross-linked with gpa-calculator)
-  - [ ] rounding-calculator (type B — decimal places + direction/tie-rule menus)
-  - [ ] scientific-notation-calculator (type B — mode menu: convert / multiply / divide)
-  - [ ] exponent-calculator (type A — solver, base/exponent/result)
-  - [ ] Snapshot tests (`npm run test:update`), `KNOWN_NON_FINITE` entry for weighted-average-calculator
-  - [ ] `npm test`, `npm run build`, `npm run lint`
-  - [ ] Spot-check the 5 pages on a local server, kill the server
-  - [ ] Update `mdFiles/STATUS.md`, open/ready the PR
+  - [x] average-calculator (type B — 8 value slots, "blank"-style ignore via a kit-gap workaround)
+  - [x] weighted-average-calculator (type B — 6 value/weight pairs, cross-linked with gpa-calculator)
+  - [x] rounding-calculator (type B — decimal places + direction/tie-rule menus)
+  - [x] scientific-notation-calculator (type B — mode menu: convert / multiply / divide)
+  - [x] exponent-calculator (type A — solver, base/exponent/result)
+  - [x] Snapshot tests (`npm run test:update`), `KNOWN_NON_FINITE` entry for weighted-average-calculator
+  - [x] `npm test` (296/296), `npm run build` (92 static pages), `npm run lint` — all pass
+  - [x] Spot-check the 5 pages + `/categories/math` + sitemap on a local server, kill the server
+  - [x] Update `mdFiles/STATUS.md`, open/ready the PR
 - Run 3 (next): square root, cube root, logarithm, factorial, GCF
 - Run 4: LCM, prime factorization, long division, quadratic formula, Pythagorean theorem
 - Run 5: triangle, circle, area, volume, surface area
@@ -71,14 +71,35 @@ up run 2: average, weighted average, rounding, scientific notation, exponent.
 | scientific-notation-calculator | B | Converting between a plain number and `a × 10^b` form, and multiplying/dividing two numbers already in that form, are four related but distinct operations picked by a `mode` menu — not one invertible equation. **Kit gap**: no "a × 10^b" breakdown format exists (same gap `fraction-calculator` hit with "a/b"), so the coefficient and exponent are separate numeric rows; prose shows the real notation. Normalizing a coefficient back into [1, 10) after multiply/divide uses the same string-based float cleanup as rounding-calculator, to avoid drift from repeated multiplication. | LogScale: the result's plain decimal value against two NIST-sourced magnitude benchmarks (a nanometer, 10⁻⁹ m; the Avogadro constant, ~6.022×10²³) — the calculator's whole subject is "how to write very large or very small numbers," so a log-scale "how big is that" visual fits every mode, not just one |
 | exponent-calculator | A (solver) | `result = base^exponent` rearranges for all three variables: forward power, an nth root for `base`, and a logarithm for `exponent`. Both inverses have real domain restrictions (no real nth root of a negative number except for odd integer exponents; no real logarithm of a non-positive number or of a base ≤ 0 or = 1), which the solve functions return `NaN` for — flagged in `watchOut`, not hidden. The forward direction needs no special-casing: JavaScript's `**` operator already matches the chosen conventions (0⁰ = 1, negative base with a non-integer exponent = `NaN`), both cited to IEEE 754 / NIST DLMF. | LogScale: the result against computing/physics-style magnitude benchmarks (2¹⁰ = 1,024, the NIST-defined "kibi" binary prefix; 10⁶; 10⁹) |
 
-**Paused 2026-10-21 after run 2.** 10/~29 math calculators done. PR for this run is open; see the
-session log in `STATUS.md` for build/verification results and run 3's list (square root, cube root,
-logarithm, factorial, GCF).
+**Paused 2026-10-21 after run 2.** 10/~29 math calculators done (run 1: math category + percentage,
+percent-change, percent-difference, fraction, ratio; run 2: average, weighted average, rounding,
+scientific notation, exponent). PR #16 ready for review. Next session picks up run 3: square root,
+cube root, logarithm, factorial, GCF.
 
 ## Verification
 
-Every number in the copy (worked examples, FAQ figures, the `example` line) was recomputed by an
-independent Python script in the scratchpad (no app imports) before shipping — see the PR body for
-the script's output. References are fetched sources only (OpenStax Prealgebra 2e, Wolfram MathWorld,
-and a North Carolina State University physics lab manual for percent difference/error) — never
-calculator sites.
+**Run 1:** every number in the copy (worked examples, FAQ figures, the `example` line) was
+recomputed by an independent Python script in the scratchpad (no app imports) before shipping — see
+PR #15's body for the script's output. References are fetched sources only (OpenStax Prealgebra 2e,
+Wolfram MathWorld, and a North Carolina State University physics lab manual for percent
+difference/error) — never calculator sites.
+
+**Run 2:** every number (worked examples, FAQ figures, `example` lines, LogScale benchmarks) was
+recomputed by an independent Python script in the scratchpad (`verify_run2.py`, no app imports) —
+0 mismatches, including the float-precision case (1.005 rounds to 1.01, not the naive 1.00) and the
+domain-restricted solver branches on `exponent-calculator` (negative base with an odd vs. even
+integer exponent, log-domain restrictions). `npm test` 296/296, `npm run build` (92 static pages, up
+from 87), `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` all pass.
+All 5 pages spot-checked on a local dev server (H1, all 8 content section ids, 2 JSON-LD blocks, the
+correct widget mounted — `breakdown-*` fields for the 4 type-B calculators, `solver-base` for
+exponent-calculator), plus `/categories/math` and `sitemap.xml` both list all 5; dev server killed
+and port 3000 confirmed free afterward. References are fetched sources only — OpenStax (Introductory
+Statistics 2e §2.5 for mean/weighted mean, Prealgebra 2e §10.5 for integer exponents/scientific
+notation), Wolfram MathWorld (Arithmetic Mean, Weighted Mean, Exponent Laws), NIST (CODATA speed of
+light and Avogadro constant, SI prefixes, binary prefixes), and D. Goldberg's "What Every Computer
+Scientist Should Know About Floating-Point Arithmetic" for the IEEE 754 rounding/float-representation
+notes — never calculator sites. One fetch failure: `ieeexplore.ieee.org/document/8766229` (the IEEE
+754-2019 standard itself) returned no readable content (likely paywalled/JS-rendered), so the
+Goldberg paper is cited instead for the float-representation and round-to-even material; "IEEE 754"
+is still named in prose as the standard term, per the existing precedent for inaccessible primary
+sources (e.g. `codes.iccsafe.org` in step 38).

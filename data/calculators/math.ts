@@ -902,6 +902,134 @@ export const mathCalculators: CalculatorConfig[] = [
       const weightedAverage = totalWeight === 0 ? NaN : weightedSum / totalWeight;
       return { weightedAverage, weightedSum, totalWeight };
     }
+  },
+  {
+    id: 'rounding-calculator',
+    category: 'math',
+    updatedAt: '2026-10-21',
+    aliases: ['round a number calculator', 'round to the nearest calculator', 'round to decimal places calculator', 'round up or down calculator'],
+    related: ['scientific-notation-calculator', 'exponent-calculator', 'percentage-calculator', 'average-calculator'],
+    title: 'Rounding Calculator',
+    description: 'Round a number to any number of decimal places (or to the nearest ten, hundred or thousand), rounding to the nearest value, always up, or always down, with a choice of tie-breaking rule.',
+    example: '12.345 rounds to 12.35 at 2 decimal places (nearest, ties away from zero) — and 1.005 correctly rounds to 1.01, not the 1.00 a naive calculation gives because of how computers store decimals.',
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What does it mean to round a number?',
+        paragraphs: [
+          'Rounding replaces a number with a nearby one that is simpler to work with — fewer decimal places, or a multiple of ten, a hundred, or a thousand. It trades a little precision for a number that is easier to read, say out loud, or use in a quick estimate. "Round $19.97 to the nearest dollar" and "round 12,345 people to the nearest thousand" are the same operation at different scales.',
+          'There are two separate choices involved in rounding: which direction to round (to the nearest value, always up, or always down), and — only when rounding to the nearest value — how to break an exact tie, where the number sits precisely halfway between two candidates. This calculator exposes both choices rather than picking one silently, because different fields (money, statistics, general arithmetic) commonly use different tie-breaking conventions.',
+          'Rounding also runs into a subtle computing issue: most decimal numbers, including common ones like 0.1 or 1.005, cannot be stored exactly in the binary floating-point format computers use internally. A naive rounding calculation can silently give the wrong answer for numbers that look perfectly ordinary — this calculator is built specifically to avoid that trap (see "Watch out" below).'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the number to round, choose how many decimal places to keep, then pick a direction and, if needed, a tie-breaking rule.',
+        steps: [
+          { name: 'Enter the number', text: 'Type the value you want to round.' },
+          { name: 'Set the decimal places', text: 'A positive number rounds to that many decimal places (2 means to the nearest hundredth). Use 0 for the nearest whole number, or a negative number to round to tens (−1), hundreds (−2) or thousands (−3).' },
+          { name: 'Choose a direction', text: 'Round to the nearest value, always round up (ceiling), or always round down (floor), regardless of which is closer.' },
+          { name: 'Pick a tie-breaking rule', text: 'This only matters for "round to the nearest" when the number sits exactly halfway between two candidates. "Half away from zero" is the everyday rule taught in school; "half to even" (banker\'s rounding) is the default in most computing systems because it avoids a consistent upward bias across many roundings.' },
+          { name: 'Read the result', text: 'The headline is the rounded value; the row below shows how far it moved from your original number.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'All four rounding modes shift the decimal point by the chosen number of places, apply a rule to the resulting integer part, then shift back.',
+        expression: 'Nearest, ties away from zero: 2.5 → 3, −2.5 → −3\nNearest, ties to even: 2.5 → 2, 3.5 → 4, −2.5 → −2\nAlways up (ceiling): 2.1 → 3, −2.9 → −2\nAlways down (floor): 2.9 → 2, −2.1 → −3',
+        terms: [
+          { symbol: 'Decimal places', meaning: 'How many digits after the decimal point to keep; negative values round to tens, hundreds or thousands instead.' },
+          { symbol: 'Tie', meaning: 'A number that sits exactly halfway between the two nearest candidates at the chosen precision, such as 2.5 at 0 decimal places.' }
+        ],
+        note: 'IEEE 754, the standard that defines how computers represent and round floating-point numbers, calls these two tie-breaking rules roundTiesToAway and roundTiesToEven; the second is the default most programming languages and processors use internally.'
+      },
+      workedExample: {
+        intro: 'Round 12.345 to 2 decimal places, rounding to the nearest value with ties away from zero.',
+        rows: [
+          { label: 'Shift the decimal point 2 places', value: '12.345 → 1,234.5' },
+          { label: 'This is an exact tie — round away from zero', value: '1,234.5 → 1,235' },
+          { label: 'Shift back', value: '1,235 → 12.35' }
+        ],
+        result: '12.345 rounds to 12.35',
+        explanation: 'The difference between the rounded and original value is 0.005. If the tie rule were "half to even" instead, 1,234.5 would round to 1,234 (the nearest even whole number), giving 12.34 — the two tie-breaking rules genuinely disagree on numbers that land exactly halfway.'
+      },
+      watchOut: [
+        { title: 'Floating-point representation can break naive rounding', body: 'A common decimal like 1.005 cannot be stored exactly in the binary format computers use (IEEE 754 binary64); internally it is closer to 1.00499999999999989. A calculation that simply multiplies by 100 and rounds gets 1.00, not 1.01. This calculator shifts the decimal point using the exact text of the number instead of multiplying, which avoids that error — 1.005 correctly rounds to 1.01 here.' },
+        { title: 'The tie rule only matters for exact ties', body: 'If a number is not exactly halfway between two candidates at your chosen precision, "nearest" rounds to whichever candidate is closer regardless of which tie rule is selected — the tie rule changes nothing for 12.346 or 12.344, only for an exact 12.345.' },
+        { title: 'Negative decimal places round to tens, hundreds or thousands', body: '−1 rounds to the nearest ten, −2 to the nearest hundred, and so on — the same sign convention used by spreadsheet rounding functions.' },
+        { title: 'Round up and round down ignore how close the number is', body: '"Always round up" turns 10.01 into 11 at 0 decimal places, even though 10.01 is much closer to 10 — ceiling and floor are about direction, not closeness.' }
+      ],
+      references: [
+        { label: 'D. Goldberg, "What Every Computer Scientist Should Know About Floating-Point Arithmetic" (ACM Computing Surveys, 1991; hosted by Oracle)', url: 'https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html' }
+      ]
+    },
+    inputs: [
+      { id: 'value', label: 'Number to round', type: 'number', placeholder: '12.345', defaultValue: 12.345, step: 0.001 },
+      { id: 'decimalPlaces', label: 'Decimal places (negative rounds to tens, hundreds, ...)', type: 'number', placeholder: '2', defaultValue: 2, step: 1 },
+      {
+        id: 'direction',
+        label: 'Direction',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 1,
+        min: 1,
+        options: [
+          { value: 1, label: 'Round to the nearest' },
+          { value: 2, label: 'Always round up (ceiling)' },
+          { value: 3, label: 'Always round down (floor)' }
+        ]
+      },
+      {
+        id: 'tieRule',
+        label: 'Tie-breaking rule (nearest only)',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 1,
+        min: 1,
+        options: [
+          { value: 1, label: 'Half away from zero' },
+          { value: 2, label: 'Half to even (banker\'s rounding)' }
+        ]
+      }
+    ],
+    breakdown: {
+      headline: 'rounded',
+      headlineLabel: 'Rounded value',
+      outputs: [
+        { id: 'rounded', label: 'Rounded value', format: 'significant' },
+        { id: 'difference', label: 'Difference from the original', format: 'significant' }
+      ],
+      groups: [{ inputs: ['value', 'decimalPlaces'] }, { title: 'Rounding rule', inputs: ['direction', 'tieRule'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'value', label: 'Original value' }, { from: 'rounded', label: 'Rounded value' }],
+        title: 'Before and after rounding',
+        highlight: 1
+      }
+    },
+    seo: {
+      title: 'Rounding Calculator – Decimal Places, Up, Down & Ties',
+      description: 'Free rounding calculator. Round to any number of decimal places (or tens, hundreds, thousands), nearest, up or down, with half-away-from-zero or half-to-even ties.',
+      faq: [
+        { question: 'How do I round a number to 2 decimal places?', answer: 'Set "Decimal places" to 2 and "Direction" to "Round to the nearest." 12.345 rounds to 12.35.' },
+        { question: 'How do I round to the nearest ten or hundred?', answer: 'Use a negative decimal-places value: −1 rounds to the nearest ten, −2 to the nearest hundred. 1,234 rounds to 1,200 at −2.' },
+        { question: 'What is the difference between "half away from zero" and "half to even"?', answer: 'Both only affect exact ties. "Half away from zero" rounds 2.5 to 3 and −2.5 to −3. "Half to even" (banker\'s rounding) rounds 2.5 to 2 and 3.5 to 4 — whichever even number is nearest — and is the default in most computing systems because it has no net bias across many roundings.' },
+        { question: 'Why does 1.005 sometimes round to 1.00 instead of 1.01?', answer: 'Because computers store most decimals as an approximation in binary (IEEE 754 binary64); 1.005 is actually stored as a number very slightly below 1.005. A calculation that multiplies by 100 and rounds inherits that error. This calculator avoids it by working from the number\'s exact decimal text instead.' },
+        { question: 'What is the difference between rounding and truncating?', answer: 'Truncating simply cuts off the extra digits (12.349 truncates to 12.34). Rounding looks at the cut-off digits and may round the last kept digit up — 12.349 rounds to 12.35 at 2 decimal places.' },
+        { question: 'What does "round up" (ceiling) mean for negative numbers?', answer: 'Ceiling always moves toward positive infinity, so −2.9 rounds up to −2, not −3 — "up" means larger, not "away from zero."' },
+        { question: 'Does the tie rule matter if my number is not an exact tie?', answer: 'No. "Round to the nearest" always picks whichever candidate is closer when there is a closer one; the tie rule only changes the answer for a number that sits exactly halfway.' },
+        { question: 'Can decimal places be negative?', answer: 'Yes — a negative value rounds to tens, hundreds, thousands and so on, the same convention used by spreadsheet ROUND-style functions.' }
+      ]
+    },
+    compute(values) {
+      const { value, decimalPlaces, direction, tieRule } = values;
+      const shift = Math.round(decimalPlaces);
+      const tie = direction === 2 ? Math.ceil : direction === 3 ? Math.floor : tieRule === 2 ? roundHalfToEven : roundHalfAwayFromZero;
+      const rounded = shiftRound(value, shift, tie);
+      const difference = Number((rounded - value).toPrecision(10));
+      return { rounded, difference };
+    }
   }
 
 ];

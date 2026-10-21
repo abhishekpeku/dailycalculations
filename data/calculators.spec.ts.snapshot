@@ -1878,6 +1878,47 @@ exports[`compute() snapshots > ratio-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > rounding-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "value": 12.345,
+      "decimalPlaces": 2,
+      "direction": 1,
+      "tieRule": 1
+    },
+    "outputs": {
+      "rounded": 12.35,
+      "difference": 0.005
+    }
+  },
+  "typical": {
+    "inputs": {
+      "value": 18.518,
+      "decimalPlaces": 3,
+      "direction": 2,
+      "tieRule": 2
+    },
+    "outputs": {
+      "rounded": 18.518,
+      "difference": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "value": 0,
+      "decimalPlaces": 0,
+      "direction": 1,
+      "tieRule": 1
+    },
+    "outputs": {
+      "rounded": 0,
+      "difference": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > running-pace-calculator 1`] = `
 {
   "default": {

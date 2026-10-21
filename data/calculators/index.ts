@@ -98,7 +98,8 @@ export const calculatorOrder: string[] = [
   'fraction-calculator',
   'ratio-calculator',
   'average-calculator',
-  'weighted-average-calculator'
+  'weighted-average-calculator',
+  'rounding-calculator'
 ];
 
 const rank = (id: string) => {

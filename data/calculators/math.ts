@@ -486,4 +486,117 @@ export const mathCalculators: CalculatorConfig[] = [
       return { decimalValue, simplifiedNumerator, simplifiedDenominator, mixedWhole, mixedRemainderNumerator };
     }
   },
+  {
+    id: 'ratio-calculator',
+    category: 'math',
+    updatedAt: '2026-10-21',
+    aliases: ['ratio simplifier', 'simplify a ratio calculator', 'proportion calculator', 'solve a ratio calculator', 'equivalent ratio calculator'],
+    related: ['fraction-calculator', 'percentage-calculator', 'unit-price-calculator', 'gas-cost-calculator'],
+    title: 'Ratio Calculator',
+    description: 'Simplify a ratio to lowest terms, or solve a proportion A:B = C:D for the missing term using cross-multiplication.',
+    example: '4:6 simplifies to 2:3. In the proportion 4:6 = 10:D, the missing term is D = 15.',
+    solver: {
+      defaultTarget: 'd',
+      variables: [
+        { id: 'a', label: 'A', symbol: 'A', dimension: 'count', defaultValue: 4, defaultUnit: 'count' },
+        { id: 'b', label: 'B', symbol: 'B', dimension: 'count', defaultValue: 6, defaultUnit: 'count' },
+        { id: 'c', label: 'C', symbol: 'C', dimension: 'count', defaultValue: 10, defaultUnit: 'count' },
+        { id: 'd', label: 'D', symbol: 'D', dimension: 'count', defaultValue: 15, defaultUnit: 'count' }
+      ],
+      solve: {
+        a: ({ b, c, d }) => (d === 0 ? NaN : (b * c) / d),
+        b: ({ a, c, d }) => (c === 0 ? NaN : (a * d) / c),
+        c: ({ a, b, d }) => (b === 0 ? NaN : (a * d) / b),
+        d: ({ a, b, c }) => (a === 0 ? NaN : (b * c) / a)
+      },
+      outputs: [
+        { id: 'simplifiedA', label: 'A : B simplified — A', dimension: 'count', compute: (si) => si.a / gcd(si.a, si.b) },
+        { id: 'simplifiedB', label: 'A : B simplified — B', dimension: 'count', compute: (si) => si.b / gcd(si.a, si.b) }
+      ],
+      derive: (si) => ({ total: si.a + si.b }),
+      visuals: [{ type: 'donut', segments: [{ from: 'a', label: 'A' }, { from: 'b', label: 'B' }], center: 'total', centerSub: 'A + B' }]
+    },
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What is a ratio?',
+        paragraphs: [
+          'A ratio compares two quantities by showing how many times one contains the other, written A:B or as the fraction A/B. A recipe that calls for 2 cups of flour to 1 cup of sugar has a flour-to-sugar ratio of 2:1 — for every 2 parts flour, there is 1 part sugar, regardless of whether you are making a small batch or a huge one.',
+          'A proportion states that two ratios are equal: A:B = C:D. Proportions are how ratios scale — if 2:1 scales up to 10:D, then D must be 5, because an equivalent ratio keeps the same relationship between its two parts. The standard way to solve a proportion is cross-multiplication: A × D = B × C.',
+          'Simplifying a ratio to lowest terms works exactly like simplifying a fraction: divide both numbers by their greatest common factor. 4:6 and 2:3 describe the same relationship, just as 4/6 and 2/3 are the same fraction.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter any three of the four terms in the proportion A:B = C:D, and the fourth, marked auto, is calculated.',
+        steps: [
+          { name: 'Set up the proportion', text: 'Think of your problem as "A is to B as C is to D." Enter the three terms you know.' },
+          { name: 'Read the missing term', text: 'The field you left alone the longest is calculated automatically using cross-multiplication.' },
+          { name: 'Check the simplified ratio', text: 'The result also shows A:B reduced to its lowest terms, which is useful even when you already know all four numbers.' },
+          { name: 'Switch which term is calculated', text: 'Type into the auto field to make it an input again; a different field then becomes the calculated one.' },
+          { name: 'See the split visually', text: 'The chart shows A and B as two parts of their combined total.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'A proportion says two ratios are equal. Cross-multiplying the equation gives a formula for any missing term.',
+        expression: 'A : B = C : D  ⇔  A × D = B × C\nA = (B × C) ÷ D\nB = (A × D) ÷ C\nC = (A × D) ÷ B\nD = (B × C) ÷ A',
+        terms: [
+          { symbol: 'A : B', meaning: 'The first ratio.' },
+          { symbol: 'C : D', meaning: 'The second, equivalent ratio.' },
+          { symbol: 'A × D = B × C', meaning: 'The cross products of a true proportion are always equal — multiply diagonally across the equals sign.' }
+        ],
+        note: 'Solving for any one term divides by one of the other three, so that other term cannot be zero.'
+      },
+      workedExample: {
+        intro: 'A paint mix uses a ratio of 4 parts blue to 6 parts white. How much white is needed for 10 parts blue, keeping the same ratio?',
+        rows: [
+          { label: 'Set up the proportion', value: '4 : 6 = 10 : D' },
+          { label: 'Cross-multiply', value: '4 × D = 6 × 10' },
+          { label: 'Solve for D', value: 'D = 60 ÷ 4 = 15' },
+          { label: 'Simplify the original ratio', value: '4:6 ÷ GCF(4, 6) = 2 → 2:3' }
+        ],
+        result: 'D = 15 · simplified ratio 2:3',
+        explanation: '10 parts blue needs 15 parts white to keep the same 4:6 (equivalently 2:3) mix. Checking the cross products confirms it: 4 × 15 = 60, and 6 × 10 = 60.'
+      },
+      watchOut: [
+        { title: 'No term can be zero when solving for another', body: 'Solving for A divides by D, solving for D divides by A, and so on — a proportion with a zero in the "wrong" place has no defined missing term.' },
+        { title: 'Order matters within each ratio, not between them', body: 'A:B = C:D is not the same statement as A:B = D:C. Keep the parts in the same order on both sides — blue:white on the left must match blue:white on the right.' },
+        { title: '"Simplified" uses whole-number math', body: 'The simplified A:B uses the greatest common factor of two integers. Typing decimals still produces an answer, but "lowest terms" strictly applies to whole numbers.' },
+        { title: 'A ratio is not the same as a fraction of the total', body: 'A ratio of 2:3 means 2 parts to 3 parts (5 parts total), not "2 out of 3." The first quantity is 2/5 of the total, not 2/3 of it — a common mix-up.' }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §6.5 Solve Proportions and Their Applications', url: 'https://openstax.org/books/prealgebra-2e/pages/6-5-solve-proportions-and-their-applications' },
+        { label: 'Wolfram MathWorld, Ratio', url: 'https://mathworld.wolfram.com/Ratio.html' }
+      ]
+    },
+    inputs: [
+      { id: 'a', label: 'A', type: 'number', placeholder: '4', defaultValue: 4, step: 1 },
+      { id: 'b', label: 'B', type: 'number', placeholder: '6', defaultValue: 6, step: 1 },
+      { id: 'c', label: 'C', type: 'number', placeholder: '10', defaultValue: 10, step: 1 }
+    ],
+    seo: {
+      title: 'Ratio Calculator – Simplify Ratios & Solve Proportions',
+      description: 'Free ratio calculator. Simplify a ratio to lowest terms, or solve a proportion A:B = C:D for the missing term with cross-multiplication.',
+      faq: [
+        { question: 'How do I simplify a ratio?', answer: 'Divide both terms by their greatest common factor. 4:6 ÷ 2 = 2:3.' },
+        { question: 'How do I solve a proportion?', answer: 'Cross-multiply: in A:B = C:D, A × D = B × C, then divide to isolate the unknown term.' },
+        { question: 'What is the difference between a ratio and a proportion?', answer: 'A ratio compares two quantities (A:B). A proportion states that two ratios are equal (A:B = C:D).' },
+        { question: 'What is the difference between a ratio and a fraction?', answer: 'A ratio of 2:3 compares two separate quantities totaling 5; the fraction 2/3 usually means 2 parts out of a total of 3. They are related but answer different questions.' },
+        { question: 'How do I scale a ratio up or down?', answer: 'Multiply or divide both terms by the same number. 2:3 scaled by 5 is 10:15, the same ratio.' },
+        { question: 'Can a ratio have more than two terms?', answer: 'Yes, such as 2:3:5, but each pair within it still simplifies and scales the same way as a two-term ratio.' },
+        { question: 'What does it mean for cross products to be equal?', answer: "It is the test for whether a proportion is true: if A × D = B × C, then A:B and C:D really are equivalent ratios." },
+        { question: 'Can a ratio term be negative?', answer: 'Mathematically yes, but ratios almost always describe real-world quantities — ingredients, distances, odds — that are zero or positive.' }
+      ]
+    },
+    compute(values) {
+      const { a, b, c } = values;
+      const g = gcd(a, b);
+      return {
+        d: a === 0 ? NaN : (b * c) / a,
+        simplifiedA: a / g,
+        simplifiedB: b / g
+      };
+    }
+  }
+
 ];

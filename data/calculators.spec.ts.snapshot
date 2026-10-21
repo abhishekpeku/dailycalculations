@@ -1775,6 +1775,47 @@ exports[`compute() snapshots > pto-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > ratio-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "a": 4,
+      "b": 6,
+      "c": 10
+    },
+    "outputs": {
+      "d": 15,
+      "simplifiedA": 2,
+      "simplifiedB": 3
+    }
+  },
+  "typical": {
+    "inputs": {
+      "a": 6,
+      "b": 9,
+      "c": 15
+    },
+    "outputs": {
+      "d": 22.5,
+      "simplifiedA": 2,
+      "simplifiedB": 3
+    }
+  },
+  "edge": {
+    "inputs": {
+      "a": 0,
+      "b": 0,
+      "c": 0
+    },
+    "outputs": {
+      "d": "NaN",
+      "simplifiedA": 0,
+      "simplifiedB": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > running-pace-calculator 1`] = `
 {
   "default": {

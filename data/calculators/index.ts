@@ -95,7 +95,8 @@ export const calculatorOrder: string[] = [
   'percentage-calculator',
   'percent-change-calculator',
   'percent-difference-calculator',
-  'fraction-calculator'
+  'fraction-calculator',
+  'ratio-calculator'
 ];
 
 const rank = (id: string) => {

@@ -770,6 +770,138 @@ export const mathCalculators: CalculatorConfig[] = [
       const max = Math.max(...used);
       return { mean, sum, count, min, max };
     }
+  },
+  {
+    id: 'weighted-average-calculator',
+    category: 'math',
+    updatedAt: '2026-10-21',
+    aliases: ['weighted mean calculator', 'weighted average grade calculator', 'weighted score calculator', 'weighted average with percentages calculator'],
+    related: ['average-calculator', 'gpa-calculator', 'percentage-calculator', 'ratio-calculator'],
+    title: 'Weighted Average Calculator',
+    description: 'Find the weighted average of up to 6 values, each with its own weight — the method behind course grades, index scores, and any total where some parts count more than others.',
+    example: 'A midterm (85, weight 30), final exam (90, weight 50) and homework (78, weight 20) combine to a weighted average of 86.1 — higher than the plain average of the same three scores, 84.33, because the best score carries the most weight.',
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What is a weighted average?',
+        paragraphs: [
+          'A weighted average gives each value its own importance, instead of treating every number the same way a plain average does. Multiply each value by its weight, add those products together, then divide by the total of the weights. A component with a bigger weight has a bigger say in the final result.',
+          'This is the exact method behind a course grade built from a midterm, a final exam and homework in different proportions — and it is also exactly how GPA works, with each course grade weighted by its credit hours. The GPA calculator is this same calculation, specialized to grades and credits; use this calculator for any other value/weight scenario, like a performance score, an index built from several indicators, or a rubric with multiple weighted criteria.',
+          'A common point of confusion is assuming the weights must add up to 100 or to 1. They do not — this calculator divides by the total of whatever weights you enter, so weights of 30/50/20 produce exactly the same result as 3/5/2 or 0.3/0.5/0.2, since all three sets have the same proportions.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter each component\'s value and weight. Leave an optional component\'s weight at 0 to exclude it.',
+        steps: [
+          { name: 'Enter your first 3 components', text: 'Type the value and weight for each of the 3 main components, such as a midterm score and the percentage it counts toward a final grade.' },
+          { name: 'Add more components if needed', text: 'Open "Add up to 3 more components" for up to 3 additional value/weight pairs. Leave an unused pair\'s weight at 0 — a weight of 0 means that component does not affect the result at all.' },
+          { name: 'Read the weighted average', text: 'The headline is the weighted average: the weighted sum divided by the total weight.' },
+          { name: 'Check the totals', text: 'The breakdown shows the weighted sum (before dividing) and the total weight (the sum of every weight you entered), useful for checking your own arithmetic.' },
+          { name: 'See each component\'s share', text: 'The chart shows each component\'s weight as a share of the total weight, so you can see at a glance which one has the most influence.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Each value is multiplied by its own weight before the values are combined; dividing by the total weight normalizes the result regardless of what scale the weights happen to be on.',
+        expression: 'Weighted average = (v₁w₁ + v₂w₂ + ... + vₙwₙ) ÷ (w₁ + w₂ + ... + wₙ)',
+        terms: [
+          { symbol: 'v₁, v₂, ..., vₙ', meaning: 'Each value (a score, a measurement, a grade).' },
+          { symbol: 'w₁, w₂, ..., wₙ', meaning: 'Each value\'s weight — how much it should count, relative to the others.' }
+        ],
+        note: 'The weights do not need to sum to 1 or to 100; dividing by their total handles any scale. A component with weight 0 contributes nothing to either the numerator or the denominator, which is exactly how this calculator excludes an unused optional component.'
+      },
+      workedExample: {
+        intro: 'A course grade built from a midterm (85, worth 30% of the grade), a final exam (90, worth 50%) and homework (78, worth 20%).',
+        rows: [
+          { label: 'Weighted values (85×30, 90×50, 78×20)', value: '2,550 + 4,500 + 1,560' },
+          { label: 'Weighted sum', value: '8,610' },
+          { label: 'Total weight (30 + 50 + 20)', value: '100' },
+          { label: 'Weighted average (8,610 ÷ 100)', value: '86.1' }
+        ],
+        result: 'Weighted average = 86.1',
+        explanation: 'The plain average of 85, 90 and 78 is only 84.33 — lower than the weighted result, because the weighted average gives the strongest score (the 90 on the final) the largest weight (50), pulling the combined result upward.'
+      },
+      watchOut: [
+        { title: 'A weight of 0 excludes that component entirely', body: 'Whether it is one of the 3 optional components or, less usefully, one of the main 3, a weight of 0 means that component adds nothing to the weighted sum or the total weight — identical to leaving it out altogether.' },
+        { title: 'Weights do not need to add up to 100% or to 1', body: 'Because the formula divides by the total of the weights, 30/50/20 and 3/5/2 give exactly the same weighted average. There is no need to rescale your weights before entering them.' },
+        { title: 'All weights at 0 has no defined average', body: 'If every weight is 0, the total weight is 0 and dividing by it has no answer — the same as any division by zero. This calculator shows no result in that case rather than a misleading number.' },
+        { title: 'This is the same math GPA uses, specialized', body: 'A GPA is a weighted average where the values are grade points and the weights are credit hours. Use the dedicated GPA calculator for that specific case — it also groups your credits into letter-grade bands, which this general-purpose calculator does not.' }
+      ],
+      references: [
+        { label: 'OpenStax, Introductory Statistics 2e, §2.5 Measures of the Center of the Data', url: 'https://openstax.org/books/introductory-statistics-2e/pages/2-5-measures-of-the-center-of-the-data' },
+        { label: 'Wolfram MathWorld, Weighted Mean', url: 'https://mathworld.wolfram.com/WeightedMean.html' }
+      ]
+    },
+    inputs: [
+      { id: 'value1', label: 'Component 1 value', type: 'number', placeholder: '85', defaultValue: 85, step: 1 },
+      { id: 'weight1', label: 'Component 1 weight', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 0 },
+      { id: 'value2', label: 'Component 2 value', type: 'number', placeholder: '90', defaultValue: 90, step: 1 },
+      { id: 'weight2', label: 'Component 2 weight', type: 'number', placeholder: '50', defaultValue: 50, step: 1, min: 0 },
+      { id: 'value3', label: 'Component 3 value', type: 'number', placeholder: '78', defaultValue: 78, step: 1 },
+      { id: 'weight3', label: 'Component 3 weight', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 0 },
+      { id: 'value4', label: 'Component 4 value', type: 'number', placeholder: '0', defaultValue: 0, step: 1 },
+      { id: 'weight4', label: 'Component 4 weight (0 = unused)', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0 },
+      { id: 'value5', label: 'Component 5 value', type: 'number', placeholder: '0', defaultValue: 0, step: 1 },
+      { id: 'weight5', label: 'Component 5 weight (0 = unused)', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0 },
+      { id: 'value6', label: 'Component 6 value', type: 'number', placeholder: '0', defaultValue: 0, step: 1 },
+      { id: 'weight6', label: 'Component 6 weight (0 = unused)', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'weightedAverage',
+      headlineLabel: 'Weighted average',
+      outputs: [
+        { id: 'weightedAverage', label: 'Weighted average', format: 'significant' },
+        { id: 'weightedSum', label: 'Weighted sum', format: 'significant' },
+        { id: 'totalWeight', label: 'Total weight', format: 'significant' }
+      ],
+      groups: [
+        { title: 'Component 1', inputs: ['value1', 'weight1'] },
+        { title: 'Component 2', inputs: ['value2', 'weight2'] },
+        { title: 'Component 3', inputs: ['value3', 'weight3'] },
+        { title: 'Add up to 3 more components', inputs: ['value4', 'weight4', 'value5', 'weight5', 'value6', 'weight6'], optional: true }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'weight1', label: 'Component 1 weight' },
+          { from: 'weight2', label: 'Component 2 weight' },
+          { from: 'weight3', label: 'Component 3 weight' },
+          { from: 'weight4', label: 'Component 4 weight' },
+          { from: 'weight5', label: 'Component 5 weight' },
+          { from: 'weight6', label: 'Component 6 weight' }
+        ],
+        center: 'weightedAverage',
+        centerSub: 'weighted average'
+      }
+    },
+    seo: {
+      title: 'Weighted Average Calculator – Weighted Mean',
+      description: 'Free weighted average calculator. Combine up to 6 values with their own weights — for grades, scores, or any total where some parts count more than others.',
+      faq: [
+        { question: 'How do I calculate a weighted average?', answer: 'Multiply each value by its weight, add the results, then divide by the total of the weights. (85×30 + 90×50 + 78×20) ÷ (30+50+20) = 8,610 ÷ 100 = 86.1.' },
+        { question: 'Do the weights need to add up to 100?', answer: 'No. This calculator divides by whatever the weights actually add up to, so 30/50/20 and 3/5/2 give the identical result since they have the same proportions.' },
+        { question: 'What is the difference between an average and a weighted average?', answer: 'A plain average treats every value equally. A weighted average lets some values count more than others — see the average calculator for the unweighted case.' },
+        { question: 'Is GPA a weighted average?', answer: 'Yes — grade points are the values and credit hours are the weights. The dedicated GPA calculator uses this same calculation, plus a grade-distribution chart specific to letter grades.' },
+        { question: 'What happens if I set a weight to 0?', answer: 'That component is excluded from both the weighted sum and the total weight, exactly as if it had not been entered at all.' },
+        { question: 'Can a weighted average be lower than every value?', answer: 'No — like a plain average, a weighted average always falls between the lowest and highest value entered (assuming all weights are zero or positive).' },
+        { question: 'What if all my weights are 0?', answer: 'The total weight is 0, and dividing by it has no defined answer — the same as any division by zero.' },
+        { question: 'Can weights be percentages?', answer: 'Yes. Entering 30, 50 and 20 (percentage points that happen to sum to 100) works the same as entering 0.30, 0.50 and 0.20 — the result is identical either way.' }
+      ]
+    },
+    compute(values) {
+      const pairs: [number, number][] = [
+        [values.value1, values.weight1],
+        [values.value2, values.weight2],
+        [values.value3, values.weight3],
+        [values.value4, values.weight4],
+        [values.value5, values.weight5],
+        [values.value6, values.weight6]
+      ];
+      const totalWeight = pairs.reduce((sum, [, w]) => sum + w, 0);
+      const weightedSum = pairs.reduce((sum, [v, w]) => sum + v * w, 0);
+      const weightedAverage = totalWeight === 0 ? NaN : weightedSum / totalWeight;
+      return { weightedAverage, weightedSum, totalWeight };
+    }
   }
 
 ];

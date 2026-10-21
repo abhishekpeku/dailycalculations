@@ -2501,6 +2501,74 @@ exports[`compute() snapshots > water-intake-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > weighted-average-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "value1": 85,
+      "weight1": 30,
+      "value2": 90,
+      "weight2": 50,
+      "value3": 78,
+      "weight3": 20,
+      "value4": 0,
+      "weight4": 0,
+      "value5": 0,
+      "weight5": 0,
+      "value6": 0,
+      "weight6": 0
+    },
+    "outputs": {
+      "weightedAverage": 86.1,
+      "weightedSum": 8610,
+      "totalWeight": 100
+    }
+  },
+  "typical": {
+    "inputs": {
+      "value1": 128,
+      "weight1": 45,
+      "value2": 135,
+      "weight2": 75,
+      "value3": 117,
+      "weight3": 30,
+      "value4": 0,
+      "weight4": 0,
+      "value5": 0,
+      "weight5": 0,
+      "value6": 0,
+      "weight6": 0
+    },
+    "outputs": {
+      "weightedAverage": 129.3,
+      "weightedSum": 19395,
+      "totalWeight": 150
+    }
+  },
+  "edge": {
+    "inputs": {
+      "value1": 0,
+      "weight1": 0,
+      "value2": 0,
+      "weight2": 0,
+      "value3": 0,
+      "weight3": 0,
+      "value4": 0,
+      "weight4": 0,
+      "value5": 0,
+      "weight5": 0,
+      "value6": 0,
+      "weight6": 0
+    },
+    "outputs": {
+      "weightedAverage": "NaN",
+      "weightedSum": 0,
+      "totalWeight": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > work-hours-calculator 1`] = `
 {
   "default": {

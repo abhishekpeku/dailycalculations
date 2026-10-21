@@ -15,14 +15,15 @@ export const metadata: Metadata = {
   },
   description: 'Use free online calculators for mortgage, BMI, loan, GPA, compound interest, auto loan, calorie, paycheck, age, investment, TDEE, and more. Fast, accurate, no signup required.',
   // Only terms a real page answers — a keyword promising a tool the site does not have
-  // trains Google that the homepage is a poor match. Steps 24 and 26 add back
-  // 'percentage calculator', 'scientific calculator' and 'final grade calculator'.
+  // trains Google that the homepage is a poor match. 'percentage calculator' added back
+  // in step 40, now that a real page exists. Step 26 still owes 'scientific calculator'
+  // and 'final grade calculator'.
   keywords: [
     'calculator', 'mortgage calculator', 'bmi calculator', 'calorie calculator',
     'loan calculator', 'gpa calculator', 'compound interest calculator',
     'auto loan calculator', 'car loan calculator', 'car payment calculator',
     'paycheck calculator', 'age calculator', 'investment calculator',
-    'tdee calculator', 'time calculator'
+    'tdee calculator', 'time calculator', 'percentage calculator'
   ],
   metadataBase: new URL(SITE_URL),
   openGraph: {

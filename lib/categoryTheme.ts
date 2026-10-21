@@ -14,7 +14,8 @@ export const CATEGORY_THEME: Record<string, { color: TileColor; icon: IconName }
   creator: { color: 'pink', icon: 'play' },
   text: { color: 'gray', icon: 'text' },
   education: { color: 'blue', icon: 'cap' },
-  physics: { color: 'indigo', icon: 'atom' }
+  physics: { color: 'indigo', icon: 'atom' },
+  math: { color: 'orange', icon: 'function' }
 };
 
 export function categoryTheme(categoryId: string) {

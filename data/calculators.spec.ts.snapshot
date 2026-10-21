@@ -700,6 +700,59 @@ exports[`compute() snapshots > force-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > fraction-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "n1": 1,
+      "d1": 2,
+      "operator": 1,
+      "n2": 1,
+      "d2": 3
+    },
+    "outputs": {
+      "decimalValue": 0.8333333333,
+      "simplifiedNumerator": 5,
+      "simplifiedDenominator": 6,
+      "mixedWhole": 0,
+      "mixedRemainderNumerator": 5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "n1": 2,
+      "d1": 3,
+      "operator": 2,
+      "n2": 2,
+      "d2": 5
+    },
+    "outputs": {
+      "decimalValue": 0.2666666667,
+      "simplifiedNumerator": 4,
+      "simplifiedDenominator": 15,
+      "mixedWhole": 0,
+      "mixedRemainderNumerator": 4
+    }
+  },
+  "edge": {
+    "inputs": {
+      "n1": 0,
+      "d1": 1,
+      "operator": 1,
+      "n2": 0,
+      "d2": 1
+    },
+    "outputs": {
+      "decimalValue": 0,
+      "simplifiedNumerator": 0,
+      "simplifiedDenominator": 1,
+      "mixedWhole": 0,
+      "mixedRemainderNumerator": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > freelancer-rate-calculator 1`] = `
 {
   "default": {
@@ -1485,6 +1538,117 @@ exports[`compute() snapshots > paycheck-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > percent-change-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "oldValue": 80,
+      "newValue": 100
+    },
+    "outputs": {
+      "percentChange": 25,
+      "absoluteChange": 20
+    }
+  },
+  "typical": {
+    "inputs": {
+      "oldValue": 120,
+      "newValue": 150
+    },
+    "outputs": {
+      "percentChange": 25,
+      "absoluteChange": 30
+    }
+  },
+  "edge": {
+    "inputs": {
+      "oldValue": 0,
+      "newValue": 0
+    },
+    "outputs": {
+      "percentChange": "NaN",
+      "absoluteChange": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > percent-difference-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "valueA": 40,
+      "valueB": 60
+    },
+    "outputs": {
+      "percentDifference": 40,
+      "absoluteDifference": 20,
+      "average": 50
+    }
+  },
+  "typical": {
+    "inputs": {
+      "valueA": 60,
+      "valueB": 90
+    },
+    "outputs": {
+      "percentDifference": 40,
+      "absoluteDifference": 30,
+      "average": 75
+    }
+  },
+  "edge": {
+    "inputs": {
+      "valueA": 0,
+      "valueB": 0
+    },
+    "outputs": {
+      "percentDifference": "NaN",
+      "absoluteDifference": 0,
+      "average": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > percentage-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mode": 1,
+      "x": 20,
+      "y": 150,
+      "direction": 1
+    },
+    "outputs": {
+      "result": 30
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mode": 2,
+      "x": 30,
+      "y": 225,
+      "direction": 2
+    },
+    "outputs": {
+      "result": 13.33333333
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mode": 1,
+      "x": 0,
+      "y": 0,
+      "direction": -1
+    },
+    "outputs": {
+      "result": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > pounds-to-kilograms-converter 1`] = `
 {
   "default": {
@@ -1606,6 +1770,47 @@ exports[`compute() snapshots > pto-calculator 1`] = `
       "cashValue": 0,
       "usedCashValue": 0,
       "usagePercent": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > ratio-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "a": 4,
+      "b": 6,
+      "c": 10
+    },
+    "outputs": {
+      "d": 15,
+      "simplifiedA": 2,
+      "simplifiedB": 3
+    }
+  },
+  "typical": {
+    "inputs": {
+      "a": 6,
+      "b": 9,
+      "c": 15
+    },
+    "outputs": {
+      "d": 22.5,
+      "simplifiedA": 2,
+      "simplifiedB": 3
+    }
+  },
+  "edge": {
+    "inputs": {
+      "a": 0,
+      "b": 0,
+      "c": 0
+    },
+    "outputs": {
+      "d": "NaN",
+      "simplifiedA": 0,
+      "simplifiedB": 0
     }
   }
 }

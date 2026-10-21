@@ -92,7 +92,8 @@ export const calculatorOrder: string[] = [
   'pomodoro-timer',
   'timezone-meeting-planner',
   'force-calculator',
-  'percentage-calculator'
+  'percentage-calculator',
+  'percent-change-calculator'
 ];
 
 const rank = (id: string) => {

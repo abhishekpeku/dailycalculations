@@ -1485,6 +1485,41 @@ exports[`compute() snapshots > paycheck-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > percent-change-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "oldValue": 80,
+      "newValue": 100
+    },
+    "outputs": {
+      "percentChange": 25,
+      "absoluteChange": 20
+    }
+  },
+  "typical": {
+    "inputs": {
+      "oldValue": 120,
+      "newValue": 150
+    },
+    "outputs": {
+      "percentChange": 25,
+      "absoluteChange": 30
+    }
+  },
+  "edge": {
+    "inputs": {
+      "oldValue": 0,
+      "newValue": 0
+    },
+    "outputs": {
+      "percentChange": "NaN",
+      "absoluteChange": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > percentage-calculator 1`] = `
 {
   "default": {

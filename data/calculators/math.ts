@@ -138,4 +138,103 @@ export const mathCalculators: CalculatorConfig[] = [
       return { result };
     }
   },
+  {
+    id: 'percent-change-calculator',
+    category: 'math',
+    updatedAt: '2026-10-21',
+    aliases: ['percent increase or decrease calculator', 'rate of change calculator', 'percent growth calculator', 'old value new value percent calculator'],
+    related: ['percentage-calculator', 'percent-difference-calculator', 'salary-raise-calculator', 'inflation-calculator'],
+    title: 'Percent Change Calculator',
+    description: 'Find the percent increase or decrease between an old and a new value, or work backward to the new value or the original value from a percent change.',
+    example: 'Going from 80 to 100 is a 25% increase — but going back from 100 to 80 is only a 20% decrease, not 25%.',
+    solver: {
+      defaultTarget: 'percentChange',
+      variables: [
+        { id: 'oldValue', label: 'Old (starting) value', symbol: 'A', dimension: 'count', defaultValue: 80, defaultUnit: 'count' },
+        { id: 'newValue', label: 'New (ending) value', symbol: 'B', dimension: 'count', defaultValue: 100, defaultUnit: 'count' },
+        { id: 'percentChange', label: 'Percent change', symbol: '%Δ', dimension: 'percent', defaultValue: 25, defaultUnit: '%' }
+      ],
+      solve: {
+        newValue: ({ oldValue, percentChange }) => oldValue * (1 + percentChange / 100),
+        oldValue: ({ newValue, percentChange }) => (1 + percentChange / 100 === 0 ? NaN : newValue / (1 + percentChange / 100)),
+        percentChange: ({ oldValue, newValue }) => (oldValue === 0 ? NaN : ((newValue - oldValue) / oldValue) * 100)
+      },
+      outputs: [{ id: 'absoluteChange', label: 'Absolute change', dimension: 'count', compute: (si) => si.newValue - si.oldValue }],
+      visuals: [{ type: 'compareBars', bars: [{ from: 'oldValue', label: 'Old value' }, { from: 'newValue', label: 'New value' }], title: 'Old vs new', highlight: 1 }]
+    },
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What is percent change?',
+        paragraphs: [
+          'Percent change measures how much a number has moved, relative to where it started. It is the standard way to describe growth or decline — a stock price, a population, a utility bill — because it works the same whether the numbers involved are small or huge: a change from 4 to 5 and a change from 4 million to 5 million are both a 25% increase.',
+          "The key feature of percent change is that it is always measured against the STARTING value, not the ending one. That single fact explains something people often find surprising: a big percent increase is not undone by the same-sized percent decrease, because the second move starts from a different number.",
+          'This calculator solves the relationship in every direction. Give it the old and new values to find the percent change; give it the old value and a percent change to project the new value; or give it the new value and a percent change to work out what the old value must have been.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of the three fields — old value, new value, percent change — and the third is calculated automatically.',
+        steps: [
+          { name: 'Find a percent change', text: 'Enter the old and new values. The percent change field, marked auto, fills in — positive for an increase, negative for a decrease.' },
+          { name: 'Project a new value', text: 'Enter the old value and a percent change (use a negative number for a decrease) to see what the new value becomes.' },
+          { name: 'Work backward to the old value', text: 'Enter the new value and a percent change to find the original value before that change happened.' },
+          { name: 'Switch which field is calculated', text: 'Type into the auto field and it becomes an input; the field you left alone the longest becomes the calculated one instead.' },
+          { name: 'Compare the two values', text: 'The bar chart shows the old and new values side by side, so the size of the move is visible, not just the percentage.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'One relationship connects all three quantities. Rearranging it gives a formula for each.',
+        expression: '%Δ = ((B − A) ÷ A) × 100\nB = A × (1 + %Δ ÷ 100)\nA = B ÷ (1 + %Δ ÷ 100)',
+        terms: [
+          { symbol: 'A', meaning: 'The old (starting) value.' },
+          { symbol: 'B', meaning: 'The new (ending) value.' },
+          { symbol: '%Δ', meaning: 'The percent change: positive for an increase, negative for a decrease.' }
+        ],
+        note: 'Percent change needs a nonzero starting value — dividing by an old value of zero has no defined answer, the same as any division by zero.'
+      },
+      workedExample: {
+        intro: 'A town had 80,000 residents at one census and 100,000 at the next. What was the percent change, and how big was the move in people?',
+        rows: [
+          { label: 'Change (B − A)', value: '100,000 − 80,000 = 20,000' },
+          { label: 'Percent change ((B − A) ÷ A × 100)', value: '(20,000 ÷ 80,000) × 100 = 25%' }
+        ],
+        result: '%Δ = 25% · absolute change = 20,000',
+        explanation: 'The population grew by a quarter. If it later fell back from 100,000 to 80,000, that would be a decrease of (20,000 ÷ 100,000) × 100 = 20%, not 25% — the same 20,000-person move is a smaller share of the larger starting number.'
+      },
+      watchOut: [
+        { title: 'Percent change is not reversible by the same percentage', body: 'A 25% increase from 80 to 100 is undone by a 20% decrease, not a 25% decrease, because the second move starts from the larger number, 100.' },
+        { title: 'Zero as a starting value has no percent change', body: 'If the old value is zero, any nonzero new value is technically an infinite percent increase. This calculator returns no answer for that case rather than a meaningless number.' },
+        { title: 'Percent change vs. percentage points', body: 'If a tax rate moves from 5% to 7%, that is a 2 percentage-point increase, but a 40% percent change ((7 − 5) ÷ 5 × 100). The two phrases describe different things and are often mixed up in news reporting.' },
+        { title: 'A quantity that cannot go negative bottoms out at −100%', body: 'A population or a price cannot fall below zero, so the most negative percent change it can ever show is −100% (hitting zero). Quantities that can go negative themselves, like profit, have no such floor.' }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §6.2 Solve General Applications of Percent', url: 'https://openstax.org/books/prealgebra-2e/pages/6-2-solve-general-applications-of-percent' },
+        { label: 'Wolfram MathWorld, Percent', url: 'https://mathworld.wolfram.com/Percent.html' }
+      ]
+    },
+    inputs: [
+      { id: 'oldValue', label: 'Old (starting) value', type: 'number', placeholder: '80', defaultValue: 80, step: 1 },
+      { id: 'newValue', label: 'New (ending) value', type: 'number', placeholder: '100', defaultValue: 100, step: 1 }
+    ],
+    seo: {
+      title: 'Percent Change Calculator – Percent Increase or Decrease',
+      description: 'Free percent change calculator. Find the percent increase or decrease between two values, or solve for the new value or the original value.',
+      faq: [
+        { question: 'How do I calculate percent change?', answer: 'Subtract the old value from the new value, divide by the old value, and multiply by 100: ((new − old) ÷ old) × 100. Going from 80 to 100 is (20 ÷ 80) × 100 = 25%.' },
+        { question: 'How is percent change different from percent difference?', answer: 'Percent change has a direction (old to new) and divides by the OLD value. Percent difference, a separate calculator, is symmetric and divides by the average of the two values, for comparisons with no clear "before."' },
+        { question: 'What does a negative percent change mean?', answer: 'The new value is smaller than the old one. Going from 100 to 80 is a −20% change: (80 − 100) ÷ 100 × 100 = −20%.' },
+        { question: 'How do I find the new value from a percent change?', answer: 'Multiply the old value by (1 + percent ÷ 100). 80 increased by 25% is 80 × 1.25 = 100.' },
+        { question: 'How do I find the original value from a percent change?', answer: 'Divide the new value by (1 + percent ÷ 100). 100 after a 25% increase came from 100 ÷ 1.25 = 80.' },
+        { question: 'Why is going up 25% and back down 25% not a round trip?', answer: 'Because the second 25% is taken from a different, larger number. 100 decreased by 25% is 75, not back to 80.' },
+        { question: 'What is percent change used for?', answer: 'Describing growth or decline in prices, populations, wages and investments — anywhere two values are compared across time.' },
+        { question: 'Can percent change be more than 100%?', answer: 'Yes, whenever a value more than doubles. Tripling a value is a 200% increase, since (3x − x) ÷ x × 100 = 200%.' }
+      ]
+    },
+    compute(values) {
+      const percentChange = values.oldValue === 0 ? NaN : ((values.newValue - values.oldValue) / values.oldValue) * 100;
+      const absoluteChange = values.newValue - values.oldValue;
+      return { percentChange, absoluteChange };
+    }
+  },
 ];

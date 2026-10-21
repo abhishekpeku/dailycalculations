@@ -78,12 +78,23 @@ exactly the kind of unsourced benchmark the coordinator said to avoid (also, Ran
 be static per the schema, same constraint as visa-stay-days in run 2).
 
 Run 4 (last 3):
-- [ ] character-counter (C)
-- [ ] hashtag-counter (C)
-- [ ] gpa-calculator (C → B)
+- [x] character-counter (C)
+- [x] hashtag-counter (C)
+- [x] gpa-calculator (C → B)
 
-Paused 2026-10-21 after instagram-engagement-calculator. Resume from the first unchecked box
-(character-counter, run 4).
+Run 4 done 2026-10-21 (verification session). `npm test` 277/277, `npm run build` (81 static
+pages) and lint pass. All three calculators' copy figures re-verified with an independent Python
+script (no app imports) — 0 mismatches (character-counter's 137-char worked example and all 7
+platform-limit checks; hashtag-counter's 5-match/4-unique worked example; gpa-calculator's 6-course
+62.4 points / 19 credits / 3.2842 GPA / A=9,B=7,C=3 band sums). Every platform character limit's
+`references` entry was individually fetched and confirmed to state the cited number: X's 280-char
+limit and 23-char t.co URL wrapping, Meta's Instagram caption 2,200/30-hashtags/20-@-tags, LinkedIn's
+3,000, YouTube's 100/5,000, Twilio's GSM-7 160 / UCS-2 70, and Google Search Central's "no fixed
+limit" for meta descriptions. All 3 GPA references fetched and confirmed too: College Board's "just
+one common example" + "always check with your school" language, UNC's A-=3.7, and University of
+Cincinnati's A-=3.6667. Nothing failed to load; no limits needed to be removed beyond what the run-4
+commits had already removed (Facebook post length, meta-description length). Dev server spot-check
+of all 3 pages (H1, section ids, JSON-LD, widget mount) passed; port 3000 confirmed free afterward.
 
 ## Notes for resuming
 

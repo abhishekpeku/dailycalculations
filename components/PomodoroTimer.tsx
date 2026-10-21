@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { WidgetCard, widgetAccent } from '@/components/CalculatorWidget';
 
 type Phase = 'work' | 'short' | 'long';
 
@@ -67,6 +68,7 @@ export default function PomodoroTimer() {
   const progress = 1 - secondsLeft / totalSeconds;
   const circumference = 2 * Math.PI * 80;
   const strokeDashoffset = circumference * (1 - progress);
+  const accent = widgetAccent('time');
 
   const phaseColors: Record<Phase, string> = {
     work: 'text-red-500',
@@ -78,7 +80,7 @@ export default function PomodoroTimer() {
   };
 
   return (
-    <div className="space-y-6 rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-panel dark:border-slate-800 dark:bg-slate-950/90">
+    <WidgetCard>
       {/* Timer display */}
       <div className="flex flex-col items-center gap-4">
         <div className="relative">
@@ -111,7 +113,8 @@ export default function PomodoroTimer() {
         <div className="flex gap-3">
           <button
             onClick={() => setRunning((r) => !r)}
-            className="rounded-2xl bg-brand-600 px-8 py-3 font-semibold text-white transition hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-600"
+            style={{ backgroundColor: accent }}
+            className="rounded-2xl px-8 py-3 font-semibold text-white transition hover:opacity-90"
           >
             {running ? 'Pause' : 'Start'}
           </button>
@@ -147,12 +150,12 @@ export default function PomodoroTimer() {
                 value={value}
                 min={1}
                 onChange={(e) => { set(Number(e.target.value)); reset(); }}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-brand-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 outline-none focus:border-slate-400 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-slate-500"
               />
             </label>
           ))}
         </div>
       </div>
-    </div>
+    </WidgetCard>
   );
 }

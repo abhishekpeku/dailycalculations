@@ -17,11 +17,19 @@ category accent) where it's low-risk.
 ## Progress
 
 Run 1 (first 5):
-- [ ] date-difference-calculator (B) — add concept + references + breakdown/Timeline visual; compute() unchanged
-- [ ] age-calculator (B) — rework to birth month/day/year + today, exact years/months/days, next-birthday Timeline
-- [ ] sleep-time-calculator (B) — breakdown + cycle Timeline visual; compute() unchanged
-- [ ] work-hours-calculator (B) — breakdown + Donut (regular vs overtime); compute() unchanged
-- [ ] pomodoro-timer (C) — full content + WidgetCard restyle, timer logic unchanged
+- [x] date-difference-calculator (B) — add concept + references + breakdown/Timeline visual; compute() unchanged
+- [x] age-calculator (B) — rework to birth month/day/year + today, exact years/months/days, next-birthday Timeline
+- [x] sleep-time-calculator (B) — breakdown + cycle Timeline visual; compute() unchanged
+- [x] work-hours-calculator (B) — breakdown + Donut (regular vs overtime); compute() unchanged
+- [x] pomodoro-timer (C) — full content + WidgetCard restyle, timer logic unchanged
+
+Run 1 done 2026-10-21. `npm test` 268/268, `npm run build` (81 static pages) and lint pass.
+age-calculator's compute()/inputs changed (birthYear+currentYear -> birthMonth/birthDay/birthYear,
+timeDependent); snapshot regenerated with `npm run test:update`, diff reviewed (only that
+calculator changed). Everything else in this run kept compute()/inputs unchanged, only adding
+`breakdown`/`content`. Fixed a pre-existing dead-class bug in PomodoroTimer.tsx while restyling it
+(bg-brand-600/700/focus:border-brand-500 don't exist in the Tailwind config — see STATUS.md Parked
+"Dead Tailwind brand shades") by switching to the shared WidgetCard + inline accent color instead.
 
 Run 2 (next 5):
 - [ ] travel-budget-calculator (B)

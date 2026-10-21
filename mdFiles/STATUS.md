@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-10-21 · Current step: **40** (Wave 1: math · statistics · conversion — NEW calculators), **IN PROGRESS** (run 2/~6 done: run 1 — math category + percentage, percent-change, percent-difference, fraction, ratio (PR #15 ready for review); run 2 — average, weighted average, rounding, scientific notation, exponent (PR #16 ready for review)) · step 39 **DONE** 2026-10-21 (Batch 5, all 18: time, travel, work, creator, text, education; PR #14 ready for review) · step 38 done (PR #13, ready for review) · steps 17 + 30–39 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split, batches 1–5) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
+Last updated: 2026-10-22 · Current step: **40** (Wave 1: math · statistics · conversion — NEW calculators), **IN PROGRESS** (run 3/~6 done: run 1 — math category + percentage, percent-change, percent-difference, fraction, ratio (PR #15 ready for review); run 2 — average, weighted average, rounding, scientific notation, exponent (PR #16 ready for review); run 3 — square root, cube root, logarithm, factorial, GCF (PR #17 ready for review)) · step 39 **DONE** 2026-10-21 (Batch 5, all 18: time, travel, work, creator, text, education; PR #14 ready for review) · step 38 done (PR #13, ready for review) · steps 17 + 30–39 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split, batches 1–5) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
 
 ---
 
@@ -118,7 +118,7 @@ is why 12-15 run after it.
 | 37 | Batch 3: health (6) | DONE 2026-10-20 | YMYL. Branch `step/37-batch-3-health`, PR #11. All 6 health calculators on v2. See session log. | §3 |
 | 38 | Batch 4: auto + home (12) | **DONE** 2026-10-21 | Branch `step/38-batch-4-auto-home`, PR #13 (ready for review). All 12: car-payment, gas-cost, fuel-cost, ev-charging, commute-cost, toll-cost, concrete, paint, tile, wallpaper, electricity-bill, furniture-fit. See session log. | §3 |
 | 39 | Batch 5: time, travel, work, creator, text, education (18) | **DONE** 2026-10-21 | Branch `step/39-batch-5`, PR #14 (ready for review, no longer draft). All 18: date-difference, age, sleep-time, work-hours, pomodoro-timer, travel-budget, visa-stay-days, currency-converter, timezone-meeting-planner, freelancer-rate, meeting-cost, pto, salary-raise, youtube-earnings, instagram-engagement, character-counter, hashtag-counter, gpa-calculator (C → B). See session log. | §3 |
-| 40–42 | Wave 1: math · statistics · conversion — **NEW calculators, not conversions of existing ones** | **IN PROGRESS** | Absorbs step 24 (math). 5 calculators per agent run. Run 1/~6 **DONE** 2026-10-21: added the `math` category (`data/calculators/index.ts`, `data/calculators/math.ts`, `lib/categoryTheme.ts` orange/`function`) plus percentage-calculator (B), percent-change-calculator (A), percent-difference-calculator (B), fraction-calculator (B), ratio-calculator (A). Branch `step/40-wave-1-math-run-1`, PR #15 (ready for review). Run 2/~6 **DONE** 2026-10-21: average-calculator (B), weighted-average-calculator (B, cross-linked with gpa-calculator), rounding-calculator (B), scientific-notation-calculator (B), exponent-calculator (A). Branch `step/40-wave-1-math-run-2`, PR #16 (ready for review). Next: run 3 — square root, cube root, logarithm, factorial, GCF. See session log and `mdFiles/steps/40-wave-1-math.md` for the full run breakdown and type decisions. | §4 |
+| 40–42 | Wave 1: math · statistics · conversion — **NEW calculators, not conversions of existing ones** | **IN PROGRESS** | Absorbs step 24 (math). 5 calculators per agent run. Run 1/~6 **DONE** 2026-10-21: added the `math` category (`data/calculators/index.ts`, `data/calculators/math.ts`, `lib/categoryTheme.ts` orange/`function`) plus percentage-calculator (B), percent-change-calculator (A), percent-difference-calculator (B), fraction-calculator (B), ratio-calculator (A). Branch `step/40-wave-1-math-run-1`, PR #15 (ready for review). Run 2/~6 **DONE** 2026-10-21: average-calculator (B), weighted-average-calculator (B, cross-linked with gpa-calculator), rounding-calculator (B), scientific-notation-calculator (B), exponent-calculator (A). Branch `step/40-wave-1-math-run-2`, PR #16 (ready for review). Run 3/~6 **DONE** 2026-10-22: square-root-calculator (A), cube-root-calculator (A, `Math.cbrt` for real negative roots), logarithm-calculator (A, cross-linked with exponent-calculator), factorial-calculator (B, `BigInt` for exact digit counts), gcf-calculator (B, "How many numbers?" count selector, reuses the shared `gcd()` helper). Branch `step/40-wave-1-math-run-3`, PR #17 (ready for review). 15/~29 math calculators done. Next: run 4 — LCM, prime factorization, long division, quadratic formula, Pythagorean theorem. See session log and `mdFiles/steps/40-wave-1-math.md` for the full run breakdown and type decisions. | §4 |
 | 43–45 | Wave 2: construction · food · sports | TODO | | §4 |
 | 46–47 | Wave 3: physics · chemistry | TODO | Needs 30 + 31. | §4 |
 | 48–49 | Wave 4: biology · ecology + fun | TODO | Absorbs steps 23, 25, 26 where they fit. | §4 |
@@ -1193,6 +1193,72 @@ and "IEEE 754" is still named in prose as the standard term, following the prece
 `codes.iccsafe.org` 403 in step 38. PR #16 opened as a draft before the first calculator was built,
 updated with the full run-2 summary, and taken off draft via `gh pr ready 16` once everything above
 passed.
+
+**2026-10-22 — step 40, Wave 1: math, run 3/~6 (5 new calculators).** Branch
+`step/40-wave-1-math-run-3` from `origin/master`, PR #17 opened as draft before the first
+calculator was built. Added 5 calculators to the existing `math` category
+(`data/calculators/math.ts`) and appended each id to `calculatorOrder`
+(`data/calculators/index.ts`):
+
+- **square-root-calculator** (type A, solver): a 2-variable radicand/square-root pair (`r = √x`,
+  `x = r²`), simpler than the other solvers since a square root only involves two quantities.
+  Negative radicands return no real answer (`NaN`), explained alongside a brief complex-number
+  aside. Cross-linked with `exponent-calculator` (a square root is the exponent-1/2 case) and the
+  new `cube-root-calculator`, rather than re-teaching fractional exponents. CompareBars visual
+  (the number vs its square root).
+- **cube-root-calculator** (type A, solver): same 2-variable shape, but `Math.cbrt` has no domain
+  restriction at all — every real number, including negatives, has a real cube root, the headline
+  differentiator from the square root page. Deliberately uses `Math.cbrt(x)`, not `x ** (1/3)`,
+  since JavaScript's `**` returns `NaN` for a negative base with a fractional exponent even though
+  the real root exists (verified: `(-8) ** (1/3)` → `NaN`, `Math.cbrt(-8)` → `-2`). CompareBars
+  visual (the number vs its cube root).
+- **logarithm-calculator** (type A, solver): `log_b(x) = y ⇔ b^y = x` rearranged for all three
+  variables, the same inverse relationship as `exponent-calculator` but entered from the
+  "base + argument → exponent" direction most log searches want, with its own content (common/
+  natural log naming, change-of-base, pH/decibel/earthquake-magnitude real-world uses) rather than
+  repeating the exponent page. `solver.outputs` shows the natural and common log of the same
+  argument underneath the main result. `KNOWN_NON_FINITE` registered (`result`, `naturalLog`,
+  `commonLog`): the edge test's `base = 0, argument = 0` is outside the log domain on every count.
+  LogScale visual (the argument on a magnitude scale, with a pH-neutral-water and an
+  Avogadro-constant benchmark).
+- **factorial-calculator** (type B): not invertible, so no solver. Computes the exact product with
+  `BigInt`, so the digit count (`big.toString().length`) and trailing-zero count (Legendre's
+  formula) stay exact at any size, while the headline value converts to a `Number` for display —
+  the kit's existing `format: 'significant'` already switches to scientific notation past 1e9
+  (around 13!), which by itself avoids showing rounded digits as if they were exact. Capped at
+  n = 1,000 for instant results; 171! and above overflow a double to `Infinity` (170! is the last
+  finite one), documented as expected overflow, not a bug. LogScale visual (`10! = 3,628,800` and
+  `52! ≈ 8.0658 × 10⁶⁷`, the number of ways to shuffle a deck — a direct consequence of the
+  permutation rule, not a separately-sourced statistic).
+- **gcf-calculator** (type B): a "How many numbers?" 2-4 `options` menu, not a 0-means-unused
+  sentinel on the optional slots — the exact lesson the run-2 `average-calculator` fix established,
+  applied here from the start. `compute()` reuses the `gcd()` helper already shared by
+  `fraction-calculator`/`ratio-calculator`, so all three pages agree on the same
+  `GCF(0, 0) = 1` convention. `GCF(0, n) = n` and `GCF(-12, 18) = 6` fall out of the existing
+  `gcd()` behavior with no extra code; both documented in `watchOut`. CompareBars visual (smallest
+  number / largest number / GCF — derived summary values, correct regardless of how many of the 4
+  slots are in use, the same `CompareBars`-cap workaround `average-calculator` used).
+
+Verification: every number in the copy (worked examples, FAQ figures, `example` lines, LogScale
+benchmarks) was recomputed twice — an independent Python script in the scratchpad (no app imports)
+and a standalone Node one-liner for JS-specific behaviors Python doesn't share (`(-8) ** (1/3)` vs
+`Math.cbrt`, `BigInt` digit counts, `Number(BigInt)` overflow at 171!) — 0 mismatches against the
+app's own `compute()`/solver output. `npm test` 310/310 (up from 296), `npm run build` (97 static
+pages, up from 92), `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern
+".claude/**"` all pass. Alias/related/id collision check run programmatically across all 69
+calculators: no new collisions (the pre-existing "house loan emi calculator" alias collision
+predates this run); no broken `related` ids, no self-references. All 5 pages, `/categories/math`
+and `sitemap.xml` spot-checked on a local dev server (H1, every v2 section id, 2 JSON-LD blocks,
+`solver-*` fields for the 3 type-A calculators, `breakdown-*` for factorial and GCF, and the
+rendered `example` line matched word-for-word), then the server was killed and port 3000 confirmed
+free. References fetched directly: OpenStax (Prealgebra 2e §5.7 square roots, §10.6 GCF via its
+plain-number GCF(24,36)=12 example; Elementary Algebra 2e §9.7 real cube roots of negatives;
+College Algebra 2e §6.3 logarithms), NIST DLMF (§4.2 Logarithm/Exponential/Powers, §5.2 Gamma
+Function), and Wolfram MathWorld (Square Root, Cube Root, Logarithm, Factorial, Greatest Common
+Divisor) — all loaded successfully, 0 reference failures (two initial OpenStax section-number
+guesses 404'd before the correct URLs were found via search and cited instead). PR #17 opened as a
+draft before the first calculator was built, updated with the full run-3 summary, and taken off
+draft via `gh pr ready 17` once everything above passed.
 
 ## Pending on the user — not code
 

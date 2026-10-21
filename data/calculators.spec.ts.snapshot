@@ -1390,6 +1390,50 @@ exports[`compute() snapshots > investment-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > lcm-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "howMany": 2,
+      "num1": 4,
+      "num2": 6,
+      "num3": 9,
+      "num4": 10
+    },
+    "outputs": {
+      "lcm": 12,
+      "numbersUsed": 2
+    }
+  },
+  "typical": {
+    "inputs": {
+      "howMany": 3,
+      "num1": 6,
+      "num2": 9,
+      "num3": 14,
+      "num4": 15
+    },
+    "outputs": {
+      "lcm": 126,
+      "numbersUsed": 3
+    }
+  },
+  "edge": {
+    "inputs": {
+      "howMany": 2,
+      "num1": 0,
+      "num2": 0,
+      "num3": 0,
+      "num4": 0
+    },
+    "outputs": {
+      "lcm": "NaN",
+      "numbersUsed": 2
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > loan-calculator 1`] = `
 {
   "default": {
@@ -1514,6 +1558,47 @@ exports[`compute() snapshots > logarithm-calculator 1`] = `
       "result": "NaN",
       "naturalLog": "NaN",
       "commonLog": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > long-division-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "dividend": 17,
+      "divisor": 5
+    },
+    "outputs": {
+      "quotient": 3,
+      "remainder": 2,
+      "decimalResult": 3.4,
+      "check": 17
+    }
+  },
+  "typical": {
+    "inputs": {
+      "dividend": 26,
+      "divisor": 8
+    },
+    "outputs": {
+      "quotient": 3,
+      "remainder": 2,
+      "decimalResult": 3.25,
+      "check": 26
+    }
+  },
+  "edge": {
+    "inputs": {
+      "dividend": 0,
+      "divisor": 0
+    },
+    "outputs": {
+      "quotient": "NaN",
+      "remainder": "NaN",
+      "decimalResult": "NaN",
+      "check": "NaN"
     }
   }
 }
@@ -1968,6 +2053,86 @@ exports[`compute() snapshots > pregnancy-due-date-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > prime-factorization-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "n": 360
+    },
+    "outputs": {
+      "distinctPrimeFactors": 3,
+      "prime1": 2,
+      "exponent1": 3,
+      "prime2": 3,
+      "exponent2": 2,
+      "prime3": 5,
+      "exponent3": 1,
+      "prime4": 0,
+      "exponent4": 0,
+      "prime5": 0,
+      "exponent5": 0,
+      "prime6": 0,
+      "exponent6": 0,
+      "totalPrimeFactors": 6,
+      "numberOfDivisors": 24,
+      "extraDistinctPrimeFactors": 0,
+      "smallestPrimeFactor": 2,
+      "largestPrimeFactor": 5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "n": 540
+    },
+    "outputs": {
+      "distinctPrimeFactors": 3,
+      "prime1": 2,
+      "exponent1": 2,
+      "prime2": 3,
+      "exponent2": 3,
+      "prime3": 5,
+      "exponent3": 1,
+      "prime4": 0,
+      "exponent4": 0,
+      "prime5": 0,
+      "exponent5": 0,
+      "prime6": 0,
+      "exponent6": 0,
+      "totalPrimeFactors": 6,
+      "numberOfDivisors": 24,
+      "extraDistinctPrimeFactors": 0,
+      "smallestPrimeFactor": 2,
+      "largestPrimeFactor": 5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "n": 1
+    },
+    "outputs": {
+      "distinctPrimeFactors": 0,
+      "prime1": 0,
+      "exponent1": 0,
+      "prime2": 0,
+      "exponent2": 0,
+      "prime3": 0,
+      "exponent3": 0,
+      "prime4": 0,
+      "exponent4": 0,
+      "prime5": 0,
+      "exponent5": 0,
+      "prime6": 0,
+      "exponent6": 0,
+      "totalPrimeFactors": 0,
+      "numberOfDivisors": 1,
+      "extraDistinctPrimeFactors": 0,
+      "smallestPrimeFactor": 0,
+      "largestPrimeFactor": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > pto-calculator 1`] = `
 {
   "default": {
@@ -2013,6 +2178,94 @@ exports[`compute() snapshots > pto-calculator 1`] = `
       "cashValue": 0,
       "usedCashValue": 0,
       "usagePercent": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > pythagorean-theorem-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "legA": 3,
+      "legB": 4
+    },
+    "outputs": {
+      "hypotenuse": 5,
+      "area": 6
+    }
+  },
+  "typical": {
+    "inputs": {
+      "legA": 5,
+      "legB": 6
+    },
+    "outputs": {
+      "hypotenuse": 7.810249676,
+      "area": 15
+    }
+  },
+  "edge": {
+    "inputs": {
+      "legA": 0,
+      "legB": 0
+    },
+    "outputs": {
+      "hypotenuse": 0,
+      "area": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > quadratic-formula-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "a": 2,
+      "b": -10,
+      "c": 8
+    },
+    "outputs": {
+      "discriminant": 36,
+      "root1": 4,
+      "root2": 1,
+      "realPart": 2.5,
+      "imaginaryPart": 0,
+      "vertexX": 2.5,
+      "vertexY": -4.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "a": 3,
+      "b": -15,
+      "c": 12
+    },
+    "outputs": {
+      "discriminant": 81,
+      "root1": 4,
+      "root2": 1,
+      "realPart": 2.5,
+      "imaginaryPart": 0,
+      "vertexX": 2.5,
+      "vertexY": -6.75
+    }
+  },
+  "edge": {
+    "inputs": {
+      "a": 0,
+      "b": 0,
+      "c": 0
+    },
+    "outputs": {
+      "discriminant": "NaN",
+      "root1": "NaN",
+      "root2": "NaN",
+      "realPart": "NaN",
+      "imaginaryPart": "NaN",
+      "vertexX": "NaN",
+      "vertexY": "NaN"
     }
   }
 }

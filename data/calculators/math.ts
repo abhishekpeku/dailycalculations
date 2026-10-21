@@ -23,6 +23,19 @@ function gcdRaw(x: number, y: number) {
   return a;
 }
 
+// Least common multiple of two (rounded, absolute-valued) integers, for lcm-calculator. Reuses
+// gcdRaw (no "|| 1" fallback). By a common convention, lcm(a, 0) = 0 for any nonzero a (0 is the
+// only common multiple of a and 0) — see lcm-calculator's references — but lcm(0, 0) stays
+// undefined, since no POSITIVE common multiple of 0 and 0 exists at all (0 is the only multiple of
+// 0, and 0 does not count as "positive"). This is why the all-zero case returns NaN instead of 0.
+function lcmPair(x: number, y: number) {
+  const a = Math.abs(Math.round(x));
+  const b = Math.abs(Math.round(y));
+  if (a === 0 && b === 0) return NaN;
+  if (a === 0 || b === 0) return 0;
+  return (a * b) / gcdRaw(a, b);
+}
+
 // Normalizes a coefficient/exponent pair to standard scientific notation (1 <= |a| < 10, or a = 0).
 function normalizeScientific(a: number, b: number): [number, number] {
   if (a === 0) return [0, 0];
@@ -1894,6 +1907,616 @@ export const mathCalculators: CalculatorConfig[] = [
       const nums = [values.num1, values.num2, values.num3, values.num4].slice(0, howMany);
       const gcf = nums.reduce((acc, value) => gcdRaw(acc, value));
       return { gcf, numbersUsed: howMany };
+    }
+  },
+  {
+    id: 'lcm-calculator',
+    category: 'math',
+    updatedAt: '2026-10-22',
+    aliases: ['lcd calculator', 'least common denominator calculator', 'least common multiple calculator', 'lcm of two numbers calculator', 'find the lcm calculator'],
+    related: ['gcf-calculator', 'fraction-calculator', 'ratio-calculator', 'prime-factorization-calculator'],
+    title: 'LCM Calculator',
+    description: 'Find the least common multiple (LCM) of 2 to 4 numbers — the smallest positive number every one of them divides into evenly, also used as the least common denominator (LCD) for adding fractions.',
+    example: 'The LCM of 4 and 6 is 12 — the smallest number both 4 and 6 divide into evenly. Add a third number, like 9, and the LCM becomes 36.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is the least common multiple?',
+        paragraphs: [
+          'The least common multiple (LCM) of two or more numbers is the smallest positive number that every one of them divides into with no remainder. The multiples of 4 are 4, 8, 12, 16, 20...; the multiples of 6 are 6, 12, 18, 24...; the smallest number appearing in both lists is 12, so the LCM of 4 and 6 is 12.',
+          'One way to find it is to list multiples of each number until one repeats, which works but gets slow for large numbers. A faster way uses the greatest common factor (GCF): for two numbers, LCM(a, b) = |a × b| ÷ GCF(a, b). This works because multiplying the two numbers together counts every shared factor twice, and dividing by the GCF removes the duplicate — this calculator uses this formula, with the Euclidean algorithm doing the GCF part.',
+          'The LCM of three or more numbers is found two at a time, the same way the GCF is: LCM(4, 6, 9) = LCM(LCM(4, 6), 9) = LCM(12, 9) = 36. The most common everyday use of the LCM is finding a common denominator when adding or subtracting fractions with different denominators — in that context it is usually called the least common denominator (LCD), but it is the exact same calculation applied to the denominators.'
+        ]
+      },
+      howTo: {
+        intro: 'Choose how many numbers you have (2 to 4), then enter exactly that many.',
+        steps: [
+          { name: 'Choose how many numbers', text: 'Set "How many numbers?" to 2, 3 or 4. Only that many of the number fields below are used, in order starting from Number 1.' },
+          { name: 'Enter your numbers', text: 'Type the numbers you want the least common multiple of. Order does not matter.' },
+          { name: 'Read the LCM', text: 'The headline shows the smallest positive number that every one of your numbers divides into exactly.' },
+          { name: 'Check the summary', text: 'The breakdown also confirms how many numbers were used.' },
+          { name: 'See it visually', text: 'The chart shows your smallest number, your largest number, and the LCM side by side — the LCM is always at least as large as your biggest number.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The LCM of two numbers comes directly from their GCF — no separate algorithm is needed.',
+        expression: 'LCM(a, b) = |a × b| ÷ GCF(a, b)\nLCM(a, b, c) = LCM(LCM(a, b), c)',
+        terms: [
+          { symbol: 'GCF(a, b)', meaning: 'The greatest common factor of a and b, computed with the Euclidean algorithm — see the GCF calculator.' },
+          { symbol: 'LCM(a, b, c)', meaning: 'The LCM of three or more numbers, found by taking the LCM of two at a time.' }
+        ],
+        note: 'By a common convention, LCM(a, 0) = 0 for any nonzero a, since 0 is the only common multiple a and 0 share. LCM(0, 0) is left undefined — there is no positive common multiple of 0 and 0 at all. Numbers are compared by absolute value and rounded to the nearest whole number first, since the LCM is only defined for integers.'
+      },
+      workedExample: {
+        intro: 'Find the LCM of 4, 6 and 9 using the GCF-based formula, two numbers at a time.',
+        rows: [
+          { label: 'LCM(4, 6): GCF(4, 6) = 2', value: '(4 × 6) ÷ 2 = 12' },
+          { label: 'LCM(12, 9): GCF(12, 9) = 3', value: '(12 × 9) ÷ 3 = 36' },
+          { label: 'Check', value: '36 ÷ 4 = 9, 36 ÷ 6 = 6, 36 ÷ 9 = 4 — all exact' }
+        ],
+        result: 'LCM(4, 6, 9) = 36',
+        explanation: '36 is the smallest number that 4, 6 and 9 all divide into exactly. Any smaller common multiple, like 12 or 18, fails for at least one of the three numbers (18 ÷ 4 is not a whole number).'
+      },
+      watchOut: [
+        { title: 'The LCM of a nonzero number and 0 is 0 — but LCM(0, 0) is undefined', body: 'By a widely used convention, LCM(n, 0) = 0 for any nonzero n, since 0 is the only common multiple they share. LCM(0, 0), though, has no positive common multiple at all (every multiple of 0 is 0 itself), so this calculator reports no answer for that specific case rather than guessing a value — this is this calculator\'s convention, not a universal one, since some sources leave LCM(n, 0) undefined too.' },
+        { title: 'Negative numbers are compared by absolute value', body: 'LCM(−4, 6) is reported as 12, the same as LCM(4, 6), since this calculator always shows the LCM as zero or positive.' },
+        { title: 'Non-integer inputs are rounded first', body: 'The LCM is only defined for whole numbers, so a decimal typed into any field is rounded to the nearest integer before this calculator computes anything with it.' },
+        { title: 'Large numbers can lose precision', body: 'The LCM of two numbers with few shared factors can be close to their full product — the LCM of two large primes is just their product. Results above about 9 quadrillion (JavaScript\'s safe integer limit) may no longer be exact.' },
+        { title: 'Not the same as the GCF', body: 'The LCM is the smallest number every input divides into; the GCF is the largest number that divides every input — opposite kinds of questions, answered by two different calculators.' }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §2.5 Prime Factorization and the Least Common Multiple', url: 'https://openstax.org/books/prealgebra-2e/pages/2-5-prime-factorization-and-the-least-common-multiple' },
+        { label: 'Wolfram MathWorld, Least Common Multiple', url: 'https://mathworld.wolfram.com/LeastCommonMultiple.html' },
+        { label: 'Mathematics LibreTexts, Mount Royal University Abstract Algebra I, §1.2: Greatest Common Divisor and Least Common Multiple — "A common convention is lcm(a,0) = 0 for all non zero integers a" and "lcm(0,0) = undefined"', url: 'https://math.libretexts.org/Courses/Mount_Royal_University/Abstract_Algebra_I/Chapter_1:_Integers/1.2:_Greatest_common_divisor_and_least_common_multiple' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'howMany',
+        label: 'How many numbers?',
+        type: 'number',
+        placeholder: '2',
+        defaultValue: 2,
+        step: 1,
+        min: 2,
+        options: [
+          { value: 2, label: '2 numbers' },
+          { value: 3, label: '3 numbers' },
+          { value: 4, label: '4 numbers' }
+        ]
+      },
+      { id: 'num1', label: 'Number 1', type: 'number', placeholder: '4', defaultValue: 4, step: 1 },
+      { id: 'num2', label: 'Number 2', type: 'number', placeholder: '6', defaultValue: 6, step: 1 },
+      { id: 'num3', label: 'Number 3', type: 'number', placeholder: '9', defaultValue: 9, step: 1 },
+      { id: 'num4', label: 'Number 4', type: 'number', placeholder: '10', defaultValue: 10, step: 1 }
+    ],
+    breakdown: {
+      headline: 'lcm',
+      headlineLabel: 'Least common multiple',
+      outputs: [
+        { id: 'lcm', label: 'Least common multiple', format: 'integer' },
+        { id: 'numbersUsed', label: 'Numbers used', format: 'integer' }
+      ],
+      groups: [{ inputs: ['howMany', 'num1', 'num2'] }, { title: 'Third and fourth numbers (if you have more than two)', inputs: ['num3', 'num4'], optional: true }],
+      derive: (values) => {
+        const howMany = Math.min(4, Math.max(2, Math.round(values.howMany || 2)));
+        const nums = [values.num1, values.num2, values.num3, values.num4].slice(0, howMany);
+        return { minNumber: Math.min(...nums), maxNumber: Math.max(...nums) };
+      },
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'minNumber', label: 'Smallest number' }, { from: 'maxNumber', label: 'Largest number' }, { from: 'lcm', label: 'Least common multiple' }],
+        title: 'Your numbers and their LCM'
+      }
+    },
+    seo: {
+      title: 'LCM Calculator – Least Common Multiple of Numbers',
+      description: 'Free LCM (least common multiple / LCD) calculator. Find the LCM of 2 to 4 numbers using the GCF-based formula.',
+      faq: [
+        { question: 'What is the LCM of 4 and 6?', answer: '12. Both 4 and 6 divide into 12 exactly (12 ÷ 4 = 3, 12 ÷ 6 = 2), and no smaller positive number works for both.' },
+        { question: 'How do I find the LCM using the GCF?', answer: 'Divide the product of the two numbers by their GCF: LCM(a, b) = (a × b) ÷ GCF(a, b). For 4 and 6, GCF(4, 6) = 2, so LCM = (4 × 6) ÷ 2 = 12.' },
+        { question: 'How do I find the LCM of three or more numbers?', answer: 'Find the LCM of the first two, then find the LCM of that result and the next number, repeating until every number has been included. LCM(4, 6, 9) = LCM(LCM(4, 6), 9) = LCM(12, 9) = 36.' },
+        { question: 'What is the difference between LCM and GCF?', answer: 'The LCM is the smallest number every input divides into; the GCF is the largest number that divides every input exactly — opposite kinds of questions.' },
+        { question: 'How is the LCM used with fractions?', answer: 'The LCM of two denominators is their least common denominator (LCD), the smallest denominator both fractions can be rewritten with before adding or subtracting them.' },
+        { question: 'What is the LCM of two numbers with no shared factors?', answer: 'Their product. If GCF(a, b) = 1 (the numbers are coprime), LCM(a, b) = a × b ÷ 1 = a × b — for example, LCM(4, 9) = 36.' },
+        { question: 'What is the LCM of 0 and a nonzero number?', answer: '0, by a widely used convention, since the only multiple 0 has is 0 itself, making 0 the only number both 0 and any other number could ever divide into.' },
+        { question: 'What is the LCM of 0 and 0?', answer: 'Undefined. There is no positive number that 0 and 0 both divide into, since the only multiple 0 has is 0 itself, so this calculator reports no answer for that specific case.' },
+        { question: 'Can the LCM be negative?', answer: 'No. This calculator compares numbers by their absolute value and always reports the LCM as zero or positive.' }
+      ]
+    },
+    compute(values) {
+      const howMany = Math.min(4, Math.max(2, Math.round(values.howMany || 2)));
+      const nums = [values.num1, values.num2, values.num3, values.num4].slice(0, howMany);
+      const lcm = nums.reduce((acc, value) => lcmPair(acc, value));
+      return { lcm, numbersUsed: howMany };
+    }
+  },
+  {
+    id: 'prime-factorization-calculator',
+    category: 'math',
+    updatedAt: '2026-10-22',
+    aliases: ['prime factors calculator', 'factor tree calculator', 'find the prime factorization calculator', 'prime factorization of a number'],
+    related: ['gcf-calculator', 'lcm-calculator', 'factorial-calculator', 'square-root-calculator'],
+    title: 'Prime Factorization Calculator',
+    description: 'Break a whole number down into the prime numbers that multiply together to make it, with the exponent on each one, the total factor count, and the number of divisors.',
+    example: '360 = 2³ × 3² × 5 — three distinct prime factors, six prime factors counting repeats, and 24 total divisors.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is prime factorization?',
+        paragraphs: [
+          "Prime factorization breaks a whole number down into the prime numbers that multiply together to make it. A prime number (2, 3, 5, 7, 11...) has no divisors besides 1 and itself; every other whole number greater than 1 is a product of primes in exactly one way, ignoring order — this fact is important enough to have a name, the Fundamental Theorem of Arithmetic. 360 = 2 × 2 × 2 × 3 × 3 × 5, usually written in exponent form as 2³ × 3² × 5.",
+          'This calculator finds that factorization with trial division: it tests whether 2 divides the number, then 3, then every integer up to the square root of what remains, dividing out each prime as many times as it goes in before moving to the next candidate. Anything left over after that point is itself a prime (there cannot be two factors both bigger than the square root, since their product would exceed the original number).',
+          'A few other facts fall straight out of the factorization once you have it: the number of distinct primes involved, the total count of prime factors if repeats are counted (the exponents added together), and the number of divisors the original number has in total — multiply one more than each exponent together (for 360 = 2³ × 3² × 5¹, that is (3+1) × (2+1) × (1+1) = 4 × 3 × 2 = 24 divisors). Prime factorization is also exactly the method behind the GCF and LCM calculators on this site: factor two numbers, and their GCF is the shared primes at the lower exponent, while their LCM is every prime at the higher exponent.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter a whole number from 2 up to a trillion. The result updates as you type.',
+        steps: [
+          { name: 'Enter a number', text: 'Type the whole number you want to factorize. Decimals are rounded to the nearest whole number first.' },
+          { name: 'Read the prime factors', text: 'The breakdown lists each distinct prime factor found, in increasing order, alongside its exponent (how many times it divides the number).' },
+          { name: 'Check the summary figures', text: 'Distinct prime factor count is the headline; total prime factors (counting repeats), the number of divisors, and a count of any extra factors beyond what is listed are shown underneath.' },
+          { name: 'Watch for "extra factors"', text: 'This calculator displays up to 6 distinct prime factors. A number built from more than 6 (rare — it takes at least the first 7 prime numbers multiplied together, 510,510) shows how many more exist beyond the list, rather than silently cutting them off.' },
+          { name: 'See it visually', text: 'The chart compares your number with its smallest and largest prime factor.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Trial division repeatedly finds the smallest prime that still divides what is left, and divides it out as many times as it goes in.',
+        expression: 'n = p₁^e₁ × p₂^e₂ × ... × pₖ^eₖ\nNumber of divisors = (e₁ + 1) × (e₂ + 1) × ... × (eₖ + 1)',
+        terms: [
+          { symbol: 'p₁, p₂, ..., pₖ', meaning: 'The distinct prime factors of n, in increasing order.' },
+          { symbol: 'e₁, e₂, ..., eₖ', meaning: 'The exponent on each prime — how many times it appears in the factorization.' }
+        ],
+        note: 'Negative numbers are factored by their absolute value, since −1 is a unit, not a prime, by the standard definition. 0 has no factorization (every integer divides it), and 1 has an empty one — zero prime factors — since it is the product of no primes at all.'
+      },
+      workedExample: {
+        intro: 'Factorize 360.',
+        rows: [
+          { label: 'Divide out 2s', value: '360 ÷ 2 = 180, ÷2 = 90, ÷2 = 45 (not divisible by 2 anymore) — three 2s' },
+          { label: 'Divide out 3s', value: '45 ÷ 3 = 15, ÷3 = 5 (not divisible by 3 anymore) — two 3s' },
+          { label: 'Divide out 5s', value: '5 ÷ 5 = 1 — one 5, and nothing is left' },
+          { label: 'Number of divisors', value: '(3 + 1) × (2 + 1) × (1 + 1) = 4 × 3 × 2 = 24' }
+        ],
+        result: '360 = 2³ × 3² × 5 — 3 distinct primes, 6 total prime factors, 24 divisors',
+        explanation: 'Checking: 2³ × 3² × 5 = 8 × 9 × 5 = 360 ✓. The 24 divisors run from 1 and 2 up to 180 and 360 itself — every combination of the available prime powers.'
+      },
+      watchOut: [
+        { title: 'Only the first 6 distinct prime factors are listed', body: 'A number built from more than 6 distinct primes needs at least the first 7 prime numbers multiplied together (510,510 = 2×3×5×7×11×13×17), which is rare for an everyday number. When it happens, the "extra distinct prime factors" figure reports how many more exist beyond the 6 shown, rather than quietly dropping them — the distinct and total factor counts always include every prime, shown or not.' },
+        { title: '0 has no prime factorization', body: 'Every integer divides 0 evenly, so there is no finite list of primes that uniquely produces it. This calculator returns no answer for 0.' },
+        { title: '1 is not prime and has no prime factors', body: 'By definition, 1 is a unit, not a prime — it has zero prime factors (the "empty product"), which is different from having no defined answer at all. Its divisor count is 1 (only itself).' },
+        { title: 'Negative numbers use their absolute value', body: 'The prime factorization of −360 is reported the same as 360, since −1 is excluded from the primes by definition (it has a multiplicative inverse, which no prime does).' },
+        { title: 'Capped at one trillion for speed', body: 'Trial division checks candidates up to the square root of the number, so even a trillion only needs about a million checks — instant in a browser. This calculator returns no answer above that cap rather than risk a slow, frozen page for an unbounded input.' }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §2.5 Prime Factorization and the Least Common Multiple', url: 'https://openstax.org/books/prealgebra-2e/pages/2-5-prime-factorization-and-the-least-common-multiple' },
+        { label: 'Wolfram MathWorld, Fundamental Theorem of Arithmetic', url: 'https://mathworld.wolfram.com/FundamentalTheoremofArithmetic.html' },
+        { label: 'Wolfram MathWorld, Divisor Function', url: 'https://mathworld.wolfram.com/DivisorFunction.html' }
+      ]
+    },
+    inputs: [{ id: 'n', label: 'Number', type: 'number', placeholder: '360', defaultValue: 360, step: 1, min: 1 }],
+    breakdown: {
+      headline: 'distinctPrimeFactors',
+      headlineLabel: 'Distinct prime factors',
+      outputs: [
+        { id: 'distinctPrimeFactors', label: 'Distinct prime factors', format: 'integer' },
+        { id: 'prime1', label: 'Prime factor #1', format: 'integer' },
+        { id: 'exponent1', label: 'Exponent #1', format: 'integer' },
+        { id: 'prime2', label: 'Prime factor #2', format: 'integer' },
+        { id: 'exponent2', label: 'Exponent #2', format: 'integer' },
+        { id: 'prime3', label: 'Prime factor #3', format: 'integer' },
+        { id: 'exponent3', label: 'Exponent #3', format: 'integer' },
+        { id: 'prime4', label: 'Prime factor #4', format: 'integer' },
+        { id: 'exponent4', label: 'Exponent #4', format: 'integer' },
+        { id: 'prime5', label: 'Prime factor #5', format: 'integer' },
+        { id: 'exponent5', label: 'Exponent #5', format: 'integer' },
+        { id: 'prime6', label: 'Prime factor #6', format: 'integer' },
+        { id: 'exponent6', label: 'Exponent #6', format: 'integer' },
+        { id: 'totalPrimeFactors', label: 'Total prime factors (with repeats)', format: 'integer' },
+        { id: 'numberOfDivisors', label: 'Number of divisors', format: 'integer' },
+        { id: 'extraDistinctPrimeFactors', label: 'Extra distinct prime factors (beyond #1-6)', format: 'integer' }
+      ],
+      groups: [{ inputs: ['n'] }],
+      derive: (values) => ({ absN: Math.abs(Math.round(values.n)) }),
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'absN', label: 'Your number' }, { from: 'smallestPrimeFactor', label: 'Smallest prime factor' }, { from: 'largestPrimeFactor', label: 'Largest prime factor' }],
+        title: 'Your number and its prime factors'
+      }
+    },
+    seo: {
+      title: 'Prime Factorization Calculator – Factor Any Number',
+      description: 'Free prime factorization calculator. Find the prime factors of any whole number, with exponents, total factor count and number of divisors.',
+      faq: [
+        { question: 'What is the prime factorization of 360?', answer: '2³ × 3² × 5, meaning 2 × 2 × 2 × 3 × 3 × 5 = 360.' },
+        { question: 'How do you find the prime factorization of a number?', answer: 'Divide repeatedly by the smallest prime that still divides evenly (starting with 2), moving to the next prime once it stops dividing evenly, and continuing until only 1 is left.' },
+        { question: 'Is 1 a prime number?', answer: 'No. A prime number has exactly two divisors (1 and itself); 1 has only one divisor, so it is excluded by definition and has no prime factors at all.' },
+        { question: 'What is the prime factorization of a prime number?', answer: 'Just itself, to the first power — for example, 17 = 17¹, with one distinct prime factor.' },
+        { question: 'How many divisors does a number have?', answer: 'Add 1 to each exponent in its prime factorization and multiply the results together. 360 = 2³ × 3² × 5¹ has (3+1)(2+1)(1+1) = 24 divisors.' },
+        { question: 'Why does prime factorization matter for GCF and LCM?', answer: 'The GCF of two numbers is the primes they share at the lower exponent; the LCM is every prime involved at the higher exponent — both calculators on this site compute these the faster way (the Euclidean algorithm), but factorization is the idea behind them.' },
+        { question: 'What is the prime factorization of 0?', answer: 'Undefined. Every integer divides 0 evenly, so there is no finite factorization that produces it uniquely.' },
+        { question: 'Can a negative number be prime factorized?', answer: 'This calculator factors its absolute value, since −1 itself is not considered a prime number.' }
+      ]
+    },
+    compute(values) {
+      const nAbs = Math.abs(Math.round(values.n));
+      const SLOTS = 6;
+      const CAP = 1e12;
+      const noAnswer = {
+        distinctPrimeFactors: NaN,
+        prime1: NaN, exponent1: NaN, prime2: NaN, exponent2: NaN, prime3: NaN, exponent3: NaN,
+        prime4: NaN, exponent4: NaN, prime5: NaN, exponent5: NaN, prime6: NaN, exponent6: NaN,
+        totalPrimeFactors: NaN, numberOfDivisors: NaN, extraDistinctPrimeFactors: NaN,
+        smallestPrimeFactor: NaN, largestPrimeFactor: NaN
+      };
+      if (nAbs === 0 || nAbs > CAP) return noAnswer;
+
+      const factors: [number, number][] = [];
+      let remaining = nAbs;
+      if (remaining > 1) {
+        for (let p = 2; p * p <= remaining; p++) {
+          if (remaining % p === 0) {
+            let exponent = 0;
+            while (remaining % p === 0) {
+              remaining /= p;
+              exponent++;
+            }
+            factors.push([p, exponent]);
+          }
+        }
+        if (remaining > 1) factors.push([remaining, 1]); // one large prime factor left over
+      }
+
+      const distinctPrimeFactors = factors.length;
+      const totalPrimeFactors = factors.reduce((sum, [, exponent]) => sum + exponent, 0);
+      const numberOfDivisors = factors.reduce((product, [, exponent]) => product * (exponent + 1), 1);
+      const extraDistinctPrimeFactors = Math.max(0, distinctPrimeFactors - SLOTS);
+      const shown = Array.from({ length: SLOTS }, (_, i) => factors[i] ?? [0, 0]);
+      const smallestPrimeFactor = factors.length ? factors[0][0] : 0;
+      const largestPrimeFactor = factors.length ? factors[factors.length - 1][0] : 0;
+
+      return {
+        distinctPrimeFactors,
+        prime1: shown[0][0], exponent1: shown[0][1],
+        prime2: shown[1][0], exponent2: shown[1][1],
+        prime3: shown[2][0], exponent3: shown[2][1],
+        prime4: shown[3][0], exponent4: shown[3][1],
+        prime5: shown[4][0], exponent5: shown[4][1],
+        prime6: shown[5][0], exponent6: shown[5][1],
+        totalPrimeFactors,
+        numberOfDivisors,
+        extraDistinctPrimeFactors,
+        smallestPrimeFactor,
+        largestPrimeFactor
+      };
+    }
+  },
+  {
+    id: 'long-division-calculator',
+    category: 'math',
+    updatedAt: '2026-10-22',
+    aliases: ['division with remainder calculator', 'quotient and remainder calculator', 'long division steps calculator', 'divide and find the remainder calculator'],
+    related: ['fraction-calculator', 'gcf-calculator', 'lcm-calculator', 'rounding-calculator'],
+    title: 'Long Division Calculator',
+    description: 'Divide two whole numbers to find the quotient and remainder, or the full decimal result — the remainder is always zero or positive, the standard convention for the Division Algorithm.',
+    example: '17 ÷ 5 = 3 remainder 2 (3.4 as a decimal). Check it: 3 × 5 + 2 = 17.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is long division?',
+        paragraphs: [
+          'Long division is the step-by-step method for dividing one whole number (the dividend) by another (the divisor) by hand, producing a quotient (how many times the divisor fits in) and a remainder (what is left over). 17 ÷ 5 goes 3 whole times (3 × 5 = 15), with 2 left over, so the quotient is 3 and the remainder is 2.',
+          'Every division of whole numbers follows the Division Algorithm: for a dividend a and a nonzero divisor b, there exist unique whole numbers q (the quotient) and r (the remainder) such that a = bq + r, with r always zero or positive and strictly smaller than |b|. This calculator reports the remainder using exactly that convention, even when the dividend or divisor is negative, where some programming languages instead allow a negative remainder.',
+          'The same answer can be written three ways: as a quotient and remainder (3 remainder 2), as a full decimal (3.4), or — if you need an exact fraction instead of a rounded decimal — as the improper fraction 17/5, which this site\'s fraction calculator can simplify or convert to a mixed number.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the dividend (the number being divided) and the divisor (the number dividing it).',
+        steps: [
+          { name: 'Enter the dividend', text: 'The number being split up — in 17 ÷ 5, that is 17.' },
+          { name: 'Enter the divisor', text: 'The number doing the dividing — in 17 ÷ 5, that is 5. It cannot be 0.' },
+          { name: 'Read the quotient and remainder', text: 'The headline shows the whole-number quotient; the remainder underneath is always between 0 and the divisor.' },
+          { name: 'Check the decimal result', text: 'The full, non-rounded decimal value of the division is shown alongside, in case you need more precision than a remainder gives.' },
+          { name: 'Verify with the check figure', text: 'Quotient × divisor + remainder always reconstructs the original dividend — a quick way to confirm the division by hand.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The Division Algorithm guarantees a unique quotient and a nonnegative remainder smaller than the divisor, for any nonzero divisor.',
+        expression: 'a = b × q + r,  0 ≤ r < |b|\nq = (a − r) ÷ b\ndecimal result = a ÷ b',
+        terms: [
+          { symbol: 'a (dividend)', meaning: 'The number being divided.' },
+          { symbol: 'b (divisor)', meaning: 'The number dividing it. Cannot be 0.' },
+          { symbol: 'q (quotient)', meaning: 'How many whole times b divides into a.' },
+          { symbol: 'r (remainder)', meaning: 'What is left over — always zero or positive, and always less than |b|, regardless of the sign of a or b.' }
+        ],
+        note: 'This nonnegative-remainder convention (sometimes called Euclidean division) is not the only one in use — many programming languages instead truncate toward zero, which can give a negative remainder for a negative dividend. This calculator always keeps 0 ≤ r < |b|, matching the classical Division Algorithm.'
+      },
+      workedExample: {
+        intro: 'Divide −17 by 5 — the case where the sign convention matters most.',
+        rows: [
+          { label: 'Find r with 0 ≤ r < 5', value: 'r = 3 (since −17 = 5 × (−4) + 3)' },
+          { label: 'Solve for q', value: 'q = (−17 − 3) ÷ 5 = −20 ÷ 5 = −4' },
+          { label: 'Check', value: '(−4) × 5 + 3 = −20 + 3 = −17 ✓' },
+          { label: 'As a decimal', value: '−17 ÷ 5 = −3.4' }
+        ],
+        result: '−17 ÷ 5 = −4 remainder 3 (−3.4 as a decimal)',
+        explanation: 'Notice the quotient is −4, not −3: truncating toward zero would give −3 remainder −2, but this calculator keeps the remainder nonnegative (3, not −2) by rounding the quotient down (toward negative infinity) instead.'
+      },
+      watchOut: [
+        { title: 'The divisor cannot be 0', body: 'Division by zero has no defined answer — this calculator returns no result rather than a misleading one.' },
+        { title: 'The remainder sign convention differs from some calculators and languages', body: 'This calculator always keeps the remainder between 0 and the divisor (exclusive), even for a negative dividend or divisor. A calculator or programming language using truncated division instead would report a negative remainder for −17 ÷ 5 (−3 remainder −2) rather than this page\'s −4 remainder 3 — both reconstruct the dividend correctly, they simply split it differently.' },
+        { title: 'Decimal inputs are rounded first', body: 'Long division with a remainder is defined for whole numbers. A decimal typed into either field is rounded to the nearest whole number before dividing.' },
+        { title: 'The decimal result can repeat forever', body: 'Not every division produces a terminating decimal — 1 ÷ 3 = 0.333... repeats indefinitely. The decimal result shown is rounded for display, not exact.' }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §1.5 Divide Whole Numbers', url: 'https://openstax.org/books/prealgebra-2e/pages/1-5-divide-whole-numbers' },
+        { label: 'Pete L. Clark, Elementary Number Theory (Mathematics LibreTexts), §5: The Division Algorithm', url: 'https://math.libretexts.org/Bookshelves/Combinatorics_and_Discrete_Mathematics/Elementary_Number_Theory_(Clark)/01%3A_Chapters/05%3A_The_Division_Algorithm' }
+      ]
+    },
+    inputs: [
+      { id: 'dividend', label: 'Dividend', type: 'number', placeholder: '17', defaultValue: 17, step: 1 },
+      { id: 'divisor', label: 'Divisor', type: 'number', placeholder: '5', defaultValue: 5, step: 1 }
+    ],
+    breakdown: {
+      headline: 'quotient',
+      headlineLabel: 'Quotient',
+      outputs: [
+        { id: 'quotient', label: 'Quotient', format: 'integer' },
+        { id: 'remainder', label: 'Remainder', format: 'integer' },
+        { id: 'decimalResult', label: 'Decimal result', format: 'significant' },
+        { id: 'check', label: 'Check (quotient × divisor + remainder)', format: 'integer' }
+      ],
+      groups: [{ inputs: ['dividend', 'divisor'] }],
+      visual: { type: 'compareBars', bars: [{ from: 'dividend', label: 'Dividend' }, { from: 'divisor', label: 'Divisor' }], title: 'Dividend vs divisor' }
+    },
+    seo: {
+      title: 'Long Division Calculator – Quotient & Remainder',
+      description: 'Free long division calculator. Find the quotient and remainder of two whole numbers, plus the decimal result, with a clear remainder sign convention.',
+      faq: [
+        { question: 'How do I do long division?', answer: 'Find how many whole times the divisor fits into the dividend (the quotient), then subtract to find what is left over (the remainder). 17 ÷ 5: 5 fits 3 times (15), leaving a remainder of 2.' },
+        { question: 'What is 17 divided by 5?', answer: 'Quotient 3, remainder 2 — or 3.4 as a decimal.' },
+        { question: 'How do you divide negative numbers with a remainder?', answer: 'This calculator keeps the remainder zero or positive, adjusting the quotient down to make it work: −17 ÷ 5 is −4 remainder 3, not −3 remainder −2.' },
+        { question: 'Why is my remainder different from another calculator?', answer: 'Some calculators and programming languages use truncated division instead, allowing a negative remainder for a negative dividend. This calculator uses the nonnegative-remainder convention from the classical Division Algorithm.' },
+        { question: 'Can the remainder be larger than the divisor?', answer: 'No. By definition, the remainder is always strictly less than the absolute value of the divisor — if it were not, the quotient would need to be one larger.' },
+        { question: 'What does it mean if the remainder is 0?', answer: 'The divisor divides the dividend exactly, with no leftover — the division is exact, like 20 ÷ 5 = 4 remainder 0.' },
+        { question: 'How do I convert a division into a decimal?', answer: 'Divide the dividend by the divisor directly: 17 ÷ 5 = 3.4. This calculator shows both the quotient-and-remainder form and the decimal form at once.' }
+      ]
+    },
+    compute(values) {
+      const dividend = Math.round(values.dividend);
+      const divisor = Math.round(values.divisor);
+      if (divisor === 0) return { quotient: NaN, remainder: NaN, decimalResult: NaN, check: NaN };
+      const absDivisor = Math.abs(divisor);
+      const remainder = ((dividend % divisor) + absDivisor) % absDivisor;
+      const quotient = (dividend - remainder) / divisor;
+      const decimalResult = dividend / divisor;
+      const check = quotient * divisor + remainder;
+      return { quotient, remainder, decimalResult, check };
+    }
+  },
+  {
+    id: 'quadratic-formula-calculator',
+    category: 'math',
+    updatedAt: '2026-10-22',
+    aliases: ['quadratic equation solver', 'find the roots of a quadratic calculator', 'solve ax2+bx+c=0 calculator', 'discriminant calculator'],
+    related: ['square-root-calculator', 'exponent-calculator', 'pythagorean-theorem-calculator', 'gcf-calculator'],
+    title: 'Quadratic Formula Calculator',
+    description: 'Solve ax² + bx + c = 0 for both roots using the quadratic formula, including complex roots when the discriminant is negative, plus the discriminant and the parabola\'s vertex.',
+    example: '2x² − 10x + 8 = 0 has roots x = 4 and x = 1, since dividing by 2 gives x² − 5x + 4 = (x − 4)(x − 1) = 0.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is the quadratic formula?',
+        paragraphs: [
+          'A quadratic equation has the form ax² + bx + c = 0, where a, b and c are known numbers and a is not 0. Unlike a linear equation, a quadratic generally has two solutions ("roots") — the two x-values where the parabola y = ax² + bx + c crosses the x-axis. The quadratic formula finds both at once from the three coefficients, without needing to guess or factor.',
+          'The expression under the square root, b² − 4ac, is called the discriminant, and its sign alone tells you what kind of roots to expect before you even finish the calculation: positive means two distinct real roots, zero means exactly one repeated real root (the parabola just touches the x-axis), and negative means no real roots at all — the parabola never crosses the x-axis, and the two roots are complex numbers instead, written in the form p ± qi.',
+          'The same formula also locates the vertex of the parabola, its lowest or highest point: the x-coordinate is always −b ÷ (2a), exactly halfway between two real roots by symmetry (and still meaningful even when the roots are complex, as the real part of the complex pair). If a is 0, the equation is not quadratic at all — it is a linear equation, bx + c = 0, solved by a single division instead.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the three coefficients a, b and c from ax² + bx + c = 0.',
+        steps: [
+          { name: 'Enter a, b and c', text: 'Match them to your equation in the standard form ax² + bx + c = 0. a cannot be 0 for a genuine quadratic.' },
+          { name: 'Read the two roots', text: 'Root 1 and Root 2 are the two solutions. If they are equal, the equation has exactly one repeated root.' },
+          { name: 'Check the discriminant', text: 'Positive means two real roots (shown above), zero means a repeated root, negative means the roots are complex — shown as a real part and an imaginary part instead.' },
+          { name: 'Read the complex form, if shown', text: 'When the discriminant is negative, Root 1 and Root 2 show no value — the real part and imaginary part rows describe the pair p ± qi instead.' },
+          { name: 'Check the vertex', text: 'The vertex x- and y-coordinates locate the parabola\'s turning point, useful for graphing or finding a maximum or minimum.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The quadratic formula solves ax² + bx + c = 0 directly from its three coefficients.',
+        expression: 'x = (−b ± √(b² − 4ac)) ÷ (2a)\nDiscriminant: Δ = b² − 4ac\nVertex: x = −b ÷ (2a), y = c − b² ÷ (4a)',
+        terms: [
+          { symbol: 'a, b, c', meaning: 'The coefficients of ax² + bx + c = 0. a cannot be 0.' },
+          { symbol: 'Δ (discriminant)', meaning: 'b² − 4ac. Its sign determines whether the roots are two real numbers, one repeated real number, or a complex pair.' },
+          { symbol: 'p ± qi', meaning: 'The complex-root form used when Δ < 0: p is the real part (−b ÷ 2a), q is the (always nonnegative) imaginary part, √(−Δ) ÷ (2a).' }
+        ],
+        note: 'A discriminant that is mathematically exactly 0 can come out as a tiny nonzero number after floating-point rounding (for instance 4.000000000000002 instead of 4). This calculator treats a discriminant within about a billionth of 0, relative to the size of b² and 4ac, as exactly 0 — a repeated root — rather than reporting two almost-identical real roots or, worse, a razor-thin complex pair.'
+      },
+      workedExample: {
+        intro: 'Solve 2x² − 10x + 8 = 0.',
+        rows: [
+          { label: 'Discriminant', value: 'Δ = (−10)² − 4(2)(8) = 100 − 64 = 36' },
+          { label: 'Square root of the discriminant', value: '√36 = 6' },
+          { label: 'Root 1', value: 'x₁ = (10 + 6) ÷ (2×2) = 16 ÷ 4 = 4' },
+          { label: 'Root 2', value: 'x₂ = (10 − 6) ÷ (2×2) = 4 ÷ 4 = 1' },
+          { label: 'Vertex', value: 'x = 10 ÷ 4 = 2.5, y = 8 − 100 ÷ 8 = −4.5' }
+        ],
+        result: 'x = 4 or x = 1, vertex at (2.5, −4.5)',
+        explanation: 'Check each root by substitution: 2(4)² − 10(4) + 8 = 32 − 40 + 8 = 0 ✓, and 2(1)² − 10(1) + 8 = 2 − 10 + 8 = 0 ✓. The discriminant being a perfect square (36 = 6²) is why both roots come out as whole numbers here — most quadratics are not this tidy.'
+      },
+      watchOut: [
+        { title: 'a cannot be 0', body: 'If a is 0, the equation is linear (bx + c = 0, not quadratic), solved by x = −c ÷ b instead. This calculator still reports that single root when a is 0 and b is not, but Root 1 and Root 2 come out equal to each other, not from the quadratic formula.' },
+        { title: 'A negative discriminant means complex roots, not an error', body: 'x² + 2x + 5 = 0 has discriminant 4 − 20 = −16, which is negative — the parabola never crosses the x-axis. The two roots are complex: −1 + 2i and −1 − 2i, shown as a real part (−1) and an imaginary part (2) instead of as Root 1 / Root 2, which this calculator leaves blank in that case rather than showing a bare "NaN."' },
+        { title: 'A discriminant of 0 means one repeated root, not two', body: 'x² − 4x + 4 = 0 has discriminant 16 − 16 = 0, giving the single repeated root x = 2 — both Root 1 and Root 2 show the same value, since (x − 2)² touches the x-axis at exactly one point.' },
+        { title: 'Very small floating-point discriminants are treated as 0', body: 'A discriminant computed as, say, 3 × 10⁻¹⁴ instead of exactly 0 (a rounding artifact of squaring and multiplying floating-point numbers) is snapped to the repeated-root case, rather than reported as "two real roots" that are actually identical or a complex pair with a vanishingly thin imaginary part.' }
+      ],
+      references: [
+        { label: 'OpenStax, Elementary Algebra 2e, §10.3 Solve Quadratic Equations Using the Quadratic Formula', url: 'https://openstax.org/books/elementary-algebra-2e/pages/10-3-solve-quadratic-equations-using-the-quadratic-formula' },
+        { label: 'OpenStax, College Algebra 2e, §2.5 Quadratic Equations', url: 'https://openstax.org/books/college-algebra-2e/pages/2-5-quadratic-equations' },
+        { label: 'Wolfram MathWorld, Quadratic Formula', url: 'https://mathworld.wolfram.com/QuadraticFormula.html' }
+      ]
+    },
+    inputs: [
+      { id: 'a', label: 'a', type: 'number', placeholder: '2', defaultValue: 2, step: 1 },
+      { id: 'b', label: 'b', type: 'number', placeholder: '-10', defaultValue: -10, step: 1 },
+      { id: 'c', label: 'c', type: 'number', placeholder: '8', defaultValue: 8, step: 1 }
+    ],
+    breakdown: {
+      headline: 'root1',
+      headlineLabel: 'Root 1 (x₁)',
+      outputs: [
+        { id: 'root1', label: 'Root 1 (x₁)', format: 'significant' },
+        { id: 'root2', label: 'Root 2 (x₂)', format: 'significant' },
+        { id: 'discriminant', label: 'Discriminant (b² − 4ac)', format: 'significant' },
+        { id: 'realPart', label: 'Real part / axis of symmetry (−b ÷ 2a)', format: 'significant' },
+        { id: 'imaginaryPart', label: 'Imaginary part (if complex)', format: 'significant' },
+        { id: 'vertexX', label: 'Vertex x-coordinate', format: 'significant' },
+        { id: 'vertexY', label: 'Vertex y-coordinate', format: 'significant' }
+      ],
+      groups: [{ inputs: ['a', 'b', 'c'] }],
+      visual: { type: 'compareBars', bars: [{ from: 'root1', label: 'Root 1 (x₁)' }, { from: 'root2', label: 'Root 2 (x₂)' }], title: 'Root 1 vs Root 2' }
+    },
+    seo: {
+      title: 'Quadratic Formula Calculator – Solve for x, Real or Complex',
+      description: 'Free quadratic formula calculator. Solve ax² + bx + c = 0 for both roots, including complex roots, plus the discriminant and vertex.',
+      faq: [
+        { question: 'What is the quadratic formula?', answer: 'x = (−b ± √(b² − 4ac)) ÷ (2a), which solves any equation of the form ax² + bx + c = 0 for both values of x.' },
+        { question: 'What is the discriminant?', answer: 'b² − 4ac, the expression under the square root. Positive gives two real roots, zero gives one repeated real root, negative gives two complex roots.' },
+        { question: 'What happens when the discriminant is negative?', answer: 'The equation has no real roots. The two roots are complex numbers, written p ± qi, where p is −b ÷ (2a) and q is √(−discriminant) ÷ (2a).' },
+        { question: 'What if a is 0?', answer: 'The equation is not quadratic — it is linear, bx + c = 0, solved by x = −c ÷ b instead.' },
+        { question: 'How do you find the vertex of a parabola from a, b and c?', answer: 'The x-coordinate is −b ÷ (2a); substitute that back into ax² + bx + c to find the y-coordinate.' },
+        { question: 'What does it mean if both roots are the same?', answer: 'The discriminant is 0, so the parabola touches the x-axis at exactly one point instead of crossing it at two.' },
+        { question: 'Can the quadratic formula give a non-whole-number answer?', answer: 'Yes — most quadratics do not have whole-number roots. Whenever the discriminant is not a perfect square, the roots are irrational decimals.' },
+        { question: 'How do I check a quadratic formula answer?', answer: 'Substitute each root back into ax² + bx + c; it should equal 0 for both. For 2x² − 10x + 8 = 0 with x = 4: 2(16) − 40 + 8 = 0.' }
+      ]
+    },
+    compute(values) {
+      const { a, b, c } = values;
+      if (a === 0) {
+        if (b === 0) return { discriminant: NaN, root1: NaN, root2: NaN, realPart: NaN, imaginaryPart: NaN, vertexX: NaN, vertexY: NaN };
+        const root = -c / b;
+        return { discriminant: NaN, root1: root, root2: root, realPart: root, imaginaryPart: 0, vertexX: NaN, vertexY: NaN };
+      }
+      const discriminant = b * b - 4 * a * c;
+      const vertexX = -b / (2 * a);
+      const vertexY = c - (b * b) / (4 * a);
+      const scale = Math.max(1, b * b, Math.abs(4 * a * c));
+      if (Math.abs(discriminant) < 1e-9 * scale) {
+        const root = -b / (2 * a);
+        return { discriminant: 0, root1: root, root2: root, realPart: root, imaginaryPart: 0, vertexX, vertexY };
+      }
+      if (discriminant > 0) {
+        const sq = Math.sqrt(discriminant);
+        const root1 = (-b + sq) / (2 * a);
+        const root2 = (-b - sq) / (2 * a);
+        return { discriminant, root1, root2, realPart: -b / (2 * a), imaginaryPart: 0, vertexX, vertexY };
+      }
+      const realPart = -b / (2 * a);
+      const imaginaryPart = Math.abs(Math.sqrt(-discriminant) / (2 * a));
+      return { discriminant, root1: NaN, root2: NaN, realPart, imaginaryPart, vertexX, vertexY };
+    }
+  },
+  {
+    id: 'pythagorean-theorem-calculator',
+    category: 'math',
+    updatedAt: '2026-10-22',
+    aliases: ['hypotenuse calculator', 'a2+b2=c2 calculator', 'right triangle side calculator', 'find the hypotenuse calculator', 'pythagoras theorem calculator'],
+    related: ['square-root-calculator', 'quadratic-formula-calculator', 'exponent-calculator', 'ratio-calculator'],
+    title: 'Pythagorean Theorem Calculator',
+    description: 'Solve a² + b² = c² for any side of a right triangle — enter the two legs to find the hypotenuse, or a leg and the hypotenuse to find the other leg.',
+    example: 'A 3-4-5 right triangle: legs of 3 ft and 4 ft give a hypotenuse of 5 ft, since 3² + 4² = 9 + 16 = 25 = 5².',
+    solver: {
+      defaultTarget: 'hypotenuse',
+      variables: [
+        { id: 'legA', label: 'Leg a', symbol: 'a', dimension: 'length', defaultValue: 3, defaultUnit: 'ft' },
+        { id: 'legB', label: 'Leg b', symbol: 'b', dimension: 'length', defaultValue: 4, defaultUnit: 'ft' },
+        { id: 'hypotenuse', label: 'Hypotenuse c', symbol: 'c', dimension: 'length', defaultValue: 5, defaultUnit: 'ft' }
+      ],
+      solve: {
+        hypotenuse: ({ legA, legB }) => Math.sqrt(legA ** 2 + legB ** 2),
+        legA: ({ legB, hypotenuse }) => (hypotenuse > legB ? Math.sqrt(hypotenuse ** 2 - legB ** 2) : NaN),
+        legB: ({ legA, hypotenuse }) => (hypotenuse > legA ? Math.sqrt(hypotenuse ** 2 - legA ** 2) : NaN)
+      },
+      outputs: [{ id: 'area', label: 'Triangle area', dimension: 'area', compute: (si) => (si.legA * si.legB) / 2 }],
+      visuals: [{ type: 'compareBars', bars: [{ from: 'legA', label: 'Leg a' }, { from: 'legB', label: 'Leg b' }, { from: 'hypotenuse', label: 'Hypotenuse c' }], title: 'The three sides' }]
+    },
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is the Pythagorean theorem?',
+        paragraphs: [
+          'The Pythagorean theorem relates the three sides of any right triangle (a triangle with one 90° angle): the sum of the squares of the two shorter sides, called legs, equals the square of the longest side, the hypotenuse, which always sits opposite the right angle. Written as a formula: a² + b² = c². A 3-4-5 triangle is the classic example — 3² + 4² = 9 + 16 = 25, and 25 is 5².',
+          'The theorem works in exactly one direction as a check (if a² + b² = c², the triangle is a right triangle) and in three directions as a calculator: given any two sides, the third follows by rearranging the formula — c = √(a² + b²) for the hypotenuse, or a = √(c² − b²) for a leg. This calculator solves whichever one you leave as the automatically calculated field.',
+          "It is one of the oldest and most widely used results in mathematics, with applications anywhere a straight-line distance needs to be found from two perpendicular measurements — a ladder's reach against a wall, the diagonal of a rectangular screen or room, or the straight-line distance between two points on a grid (the same formula underlies the distance-between-two-points calculation in coordinate geometry)."
+        ]
+      },
+      howTo: {
+        intro: 'Enter any two of the three sides — the third, marked auto, is calculated.',
+        steps: [
+          { name: 'Find the hypotenuse', text: 'Enter both legs. The hypotenuse field, marked auto, fills in as the square root of the sum of their squares.' },
+          { name: 'Find a missing leg', text: 'Enter the hypotenuse and the other leg instead. The missing leg is found by rearranging the formula — it requires the hypotenuse to be longer than that other leg.' },
+          { name: 'Switch which field is calculated', text: 'Type into the auto field and it becomes an input again; the field left alone the longest becomes the new calculated one.' },
+          { name: 'Check the units', text: 'Switch the unit menu on any side (feet, meters, inches...) and the other two convert automatically to match.' },
+          { name: 'Read the triangle area', text: 'The area (½ × leg a × leg b) is shown underneath, a free bonus from already knowing both legs.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'One relationship between the three sides of a right triangle, rearranged three ways.',
+        expression: 'a² + b² = c²\nc = √(a² + b²)\na = √(c² − b²)  (requires c > b)\nb = √(c² − a²)  (requires c > a)',
+        terms: [
+          { symbol: 'a, b (legs)', meaning: 'The two sides that meet at the right angle.' },
+          { symbol: 'c (hypotenuse)', meaning: 'The longest side, opposite the right angle. Always longer than either leg individually.' }
+        ],
+        note: 'Area = ½ × a × b, since the two legs form the base and height of the triangle (they meet at a right angle).'
+      },
+      workedExample: {
+        intro: "A 6-foot ladder problem, scaled up from the classic 3-4-5 triangle: a ladder's foot sits 6 ft from a wall, and the ladder reaches 8 ft up the wall. How long is the ladder?",
+        rows: [
+          { label: 'Square each leg', value: '6² = 36, 8² = 64' },
+          { label: 'Add them', value: '36 + 64 = 100' },
+          { label: 'Take the square root', value: '√100 = 10' },
+          { label: 'Area, as a bonus', value: '½ × 6 × 8 = 24 ft²' }
+        ],
+        result: 'Hypotenuse = 10 ft, area = 24 ft²',
+        explanation: 'This is the 3-4-5 triangle scaled up by a factor of 2 (6 = 3×2, 8 = 4×2, 10 = 5×2) — any multiple of 3-4-5 is automatically a right triangle, which is why it shows up so often as a quick way to check a corner is square on a job site.'
+      },
+      watchOut: [
+        { title: 'The hypotenuse must be longer than each leg', body: 'Solving for a leg given the hypotenuse and the other leg requires the hypotenuse to be the strictly longest side. Entering a hypotenuse of 5 and a leg of 6 has no answer — 6 could not be a leg of a triangle whose longest side is only 5 — and this calculator reports no result rather than a misleading negative-under-the-root value.' },
+        { title: 'Only works for right triangles', body: 'a² + b² = c² is specific to triangles with a 90° angle. For any other triangle, the related (but more general) Law of Cosines is needed instead.' },
+        { title: 'Negative side lengths are not physically meaningful', body: 'A length cannot be negative, but squaring removes the sign anyway — entering −6 for a leg gives the identical result as entering 6. Treat negative inputs as a typo, not a valid measurement.' },
+        { title: 'Which side is the hypotenuse matters', body: 'The hypotenuse is always the side opposite the right angle, and always the longest of the three — mixing it up with a leg when setting up the problem is a common source of a wrong answer, even though the arithmetic itself is simple.' }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §9.3 Use Properties of Angles, Triangles, and the Pythagorean Theorem', url: 'https://openstax.org/books/prealgebra-2e/pages/9-3-use-properties-of-angles-triangles-and-the-pythagorean-theorem' },
+        { label: 'Wolfram MathWorld, Pythagorean Theorem', url: 'https://mathworld.wolfram.com/PythagoreanTheorem.html' }
+      ]
+    },
+    inputs: [
+      { id: 'legA', label: 'Leg a', type: 'number', placeholder: '3', defaultValue: 3, step: 1 },
+      { id: 'legB', label: 'Leg b', type: 'number', placeholder: '4', defaultValue: 4, step: 1 }
+    ],
+    seo: {
+      title: 'Pythagorean Theorem Calculator – Solve a² + b² = c²',
+      description: 'Free Pythagorean theorem calculator. Find the hypotenuse of a right triangle from its two legs, or solve for a missing leg instead.',
+      faq: [
+        { question: 'What is the Pythagorean theorem?', answer: 'For any right triangle, a² + b² = c², where a and b are the two legs and c is the hypotenuse (the side opposite the right angle).' },
+        { question: 'How do I find the hypotenuse?', answer: 'Square both legs, add them, then take the square root: c = √(a² + b²). For legs 3 and 4, c = √(9 + 16) = √25 = 5.' },
+        { question: 'How do I find a missing leg?', answer: 'Square the hypotenuse, subtract the square of the known leg, then take the square root: a = √(c² − b²). For a hypotenuse of 5 and a leg of 4, a = √(25 − 16) = √9 = 3.' },
+        { question: 'What is a 3-4-5 triangle?', answer: 'The smallest right triangle with whole-number side lengths — legs 3 and 4, hypotenuse 5 — often used to check that a corner is exactly 90°.' },
+        { question: 'Does the Pythagorean theorem work for any triangle?', answer: 'No, only right triangles (one 90° angle). Other triangles need the Law of Cosines, a more general formula that reduces to the Pythagorean theorem when one angle is 90°.' },
+        { question: 'Can the hypotenuse be shorter than a leg?', answer: 'No. The hypotenuse is always the longest side of a right triangle, since it is opposite the largest (90°) angle.' },
+        { question: 'How is the Pythagorean theorem used in real life?', answer: 'Finding a straight-line distance from two perpendicular measurements — a diagonal screen size, a ladder\'s reach, a TV stand\'s fit, or the distance between two points on a map.' },
+        { question: 'What units does this calculator use?', answer: 'Any length unit — feet, meters, inches and more are available from the unit menu on each field, and converting one updates the others automatically.' }
+      ]
+    },
+    compute(values) {
+      const { legA, legB } = values;
+      return { hypotenuse: Math.sqrt(legA ** 2 + legB ** 2), area: (legA * legB) / 2 };
     }
   }
 

@@ -1183,7 +1183,7 @@ exports[`compute() snapshots > gcf-calculator 1`] = `
       "num4": 0
     },
     "outputs": {
-      "gcf": 1,
+      "gcf": 0,
       "numbersUsed": 2
     }
   }

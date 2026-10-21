@@ -11,6 +11,18 @@ function gcd(x: number, y: number) {
   return a || 1;
 }
 
+// The actual greatest common factor, for gcf-calculator only: no "|| 1" fallback, so gcd(0, 0) is 0,
+// the standard number-theory convention (see gcf-calculator's references) — fraction/ratio
+// simplification need the `|| 1` safety above instead, so `gcd()` itself is left untouched here.
+function gcdRaw(x: number, y: number) {
+  let a = Math.abs(Math.round(x));
+  let b = Math.abs(Math.round(y));
+  while (b) {
+    [a, b] = [b, a % b];
+  }
+  return a;
+}
+
 // Normalizes a coefficient/exponent pair to standard scientific notation (1 <= |a| < 10, or a = 0).
 function normalizeScientific(a: number, b: number): [number, number] {
   if (a === 0) return [0, 0];
@@ -1812,14 +1824,15 @@ export const mathCalculators: CalculatorConfig[] = [
       },
       watchOut: [
         { title: 'The GCF of 0 and a number is that number', body: 'GCF(0, 18) = 18, since every number divides 0 evenly (0 ÷ 18 = 0 exactly) and 18 is the largest number dividing 18 itself.' },
-        { title: 'GCF(0, 0) is treated as 1 here, by convention', body: 'Mathematically, every number divides 0, so there is no single largest common factor when both numbers are 0. This calculator reports 1 for that specific edge case rather than an undefined result; other sources instead leave it undefined or call it 0.' },
+        { title: 'GCF(0, 0, ..., 0) is 0, by convention', body: 'Every integer divides 0, so there is no single largest common divisor among only zeros under the ordinary definition. Number theory resolves this by defining GCF(0, 0) = 0 directly, rather than leaving it undefined — the convention this calculator follows, cited below.' },
         { title: 'Negative numbers are compared by absolute value', body: 'GCF(−12, 18) is reported as 6, the same as GCF(12, 18), since the factors of −12 are the same set of numbers (up to sign) as the factors of 12 — the GCF itself is always shown as zero or positive.' },
         { title: 'Non-integer inputs are rounded first', body: 'The greatest common factor is only defined for whole numbers, so a decimal typed into any field is rounded to the nearest integer before this calculator computes anything with it.' },
         { title: 'Not the same as the least common multiple', body: 'The GCF is the largest number that divides every input; the least common multiple (LCM) is the smallest number every input divides into — a related but different calculation, covered by its own calculator rather than this one.' }
       ],
       references: [
         { label: 'OpenStax, Prealgebra 2e, §10.6 Introduction to Factoring Polynomials (Example 10.80, GCF of 24 and 36)', url: 'https://openstax.org/books/prealgebra-2e/pages/10-6-introduction-to-factoring-polynomials' },
-        { label: 'Wolfram MathWorld, Greatest Common Divisor', url: 'https://mathworld.wolfram.com/GreatestCommonDivisor.html' }
+        { label: 'Wolfram MathWorld, Greatest Common Divisor', url: 'https://mathworld.wolfram.com/GreatestCommonDivisor.html' },
+        { label: 'Pete L. Clark, Elementary Number Theory (Mathematics LibreTexts), §6: Greatest Common Divisor — "We define gcd(0,0) = 0"', url: 'https://math.libretexts.org/Bookshelves/Combinatorics_and_Discrete_Mathematics/Elementary_Number_Theory_(Clark)/01%3A_Chapters/06%3A_Greatest_Common_Divisor' }
       ]
     },
     inputs: [
@@ -1870,7 +1883,8 @@ export const mathCalculators: CalculatorConfig[] = [
         { question: 'What if two numbers share no common factor besides 1?', answer: 'Their GCF is 1, and they are called coprime (or relatively prime) — for example, GCF(7, 15) = 1.' },
         { question: "What is the difference between GCF and LCM?", answer: 'The GCF is the largest number that divides every input exactly. The least common multiple (LCM) is the smallest number that every input divides into — the opposite kind of question, covered by a separate calculator.' },
         { question: 'How is the GCF used with fractions?', answer: 'Dividing a fraction\'s numerator and denominator by their GCF reduces it to lowest terms — 12/18 and its GCF of 6 reduce to 2/3, the same technique this site\'s fraction calculator and ratio calculator use.' },
-        { question: 'What is the GCF of 0 and a number?', answer: 'The other number. GCF(0, 18) = 18, since every number divides 0 evenly.' },
+        { question: 'What is the GCF of 0 and a number?', answer: 'The other number. GCF(0, 18) = 18, since every number divides 0 evenly, and 18 is the largest number dividing 18 itself.' },
+        { question: 'What is the GCF of 0 and 0?', answer: '0, by the standard number-theory convention (GCF(0, 0) = 0), since there is no largest common divisor among only zeros otherwise — every integer divides 0.' },
         { question: 'Can the GCF be negative?', answer: 'No. This calculator compares numbers by their absolute value and always reports the GCF as zero or positive.' },
         { question: 'Is prime factorization or the Euclidean algorithm faster for finding the GCF?', answer: 'For large numbers, the Euclidean algorithm is much faster, since it avoids factoring either number at all — it is also the method this calculator runs.' }
       ]
@@ -1878,7 +1892,7 @@ export const mathCalculators: CalculatorConfig[] = [
     compute(values) {
       const howMany = Math.min(4, Math.max(2, Math.round(values.howMany || 2)));
       const nums = [values.num1, values.num2, values.num3, values.num4].slice(0, howMany);
-      const gcf = nums.reduce((acc, value) => gcd(acc, value));
+      const gcf = nums.reduce((acc, value) => gcdRaw(acc, value));
       return { gcf, numbersUsed: howMany };
     }
   }

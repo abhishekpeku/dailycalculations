@@ -17,11 +17,11 @@ category accent) where it's low-risk.
 ## Progress
 
 Run 1 (first 5):
-- [x] date-difference-calculator (B) — add concept + references + breakdown/Timeline visual; compute() unchanged
-- [x] age-calculator (B) — rework to birth month/day/year + today, exact years/months/days, next-birthday Timeline
-- [x] sleep-time-calculator (B) — breakdown + cycle Timeline visual; compute() unchanged
-- [x] work-hours-calculator (B) — breakdown + Donut (regular vs overtime); compute() unchanged
-- [x] pomodoro-timer (C) — full content + WidgetCard restyle, timer logic unchanged
+- [ ] date-difference-calculator (B) — add concept + references + breakdown/Timeline visual; compute() unchanged
+- [ ] age-calculator (B) — rework to birth month/day/year + today, exact years/months/days, next-birthday Timeline
+- [ ] sleep-time-calculator (B) — breakdown + cycle Timeline visual; compute() unchanged
+- [ ] work-hours-calculator (B) — breakdown + Donut (regular vs overtime); compute() unchanged
+- [ ] pomodoro-timer (C) — full content + WidgetCard restyle, timer logic unchanged
 
 Run 2 (next 5):
 - [ ] travel-budget-calculator (B)

@@ -14,6 +14,7 @@ import { creatorCalculators } from './creator.ts';
 import { textCalculators } from './text.ts';
 import { educationCalculators } from './education.ts';
 import { physicsCalculators } from './physics.ts';
+import { mathCalculators } from './math.ts';
 
 export type * from './types.ts';
 
@@ -30,7 +31,8 @@ export const categories: CalculatorCategory[] = [
   { id: 'creator', title: 'Creator Tools', description: 'YouTube earnings and Instagram engagement calculators for creators.', redirectFrom: ['social'] },
   { id: 'text', title: 'Text & Writing', description: 'Character counts, hashtag counts, and writing tools.' },
   { id: 'education', title: 'Education', description: 'GPA, grade, and academic calculators.' },
-  { id: 'physics', title: 'Physics', description: 'Force, motion, energy, and other physics formulas solved for any variable.' }
+  { id: 'physics', title: 'Physics', description: 'Force, motion, energy, and other physics formulas solved for any variable.' },
+  { id: 'math', title: 'Math', description: 'Percentages, fractions, ratios, and everyday math calculators.' }
 ];
 
 // Display order for listings, the sitemap and search; the old single array's order, kept exactly.
@@ -89,7 +91,8 @@ export const calculatorOrder: string[] = [
   'hashtag-counter',
   'pomodoro-timer',
   'timezone-meeting-planner',
-  'force-calculator'
+  'force-calculator',
+  'percentage-calculator'
 ];
 
 const rank = (id: string) => {
@@ -110,7 +113,8 @@ export const calculators: CalculatorConfig[] = [
   ...creatorCalculators,
   ...textCalculators,
   ...educationCalculators,
-  ...physicsCalculators
+  ...physicsCalculators,
+  ...mathCalculators
 ].sort((a, b) => rank(a.id) - rank(b.id));
 
 export function findCalculator(slug: string) {

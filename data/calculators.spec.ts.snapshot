@@ -1485,6 +1485,44 @@ exports[`compute() snapshots > paycheck-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > percentage-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mode": 1,
+      "x": 20,
+      "y": 150,
+      "direction": 1
+    },
+    "outputs": {
+      "result": 30
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mode": 2,
+      "x": 30,
+      "y": 225,
+      "direction": 2
+    },
+    "outputs": {
+      "result": 13.33333333
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mode": 1,
+      "x": 0,
+      "y": 0,
+      "direction": -1
+    },
+    "outputs": {
+      "result": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > pounds-to-kilograms-converter 1`] = `
 {
   "default": {

@@ -1,0 +1,141 @@
+import type { CalculatorConfig } from './types.ts';
+
+// Greatest common factor, used to simplify fractions and ratios. Always a positive integer (or 1
+// for 0/0, since there is no meaningful factor to divide by).
+function gcd(x: number, y: number) {
+  let a = Math.abs(Math.round(x));
+  let b = Math.abs(Math.round(y));
+  while (b) {
+    [a, b] = [b, a % b];
+  }
+  return a || 1;
+}
+
+export const mathCalculators: CalculatorConfig[] = [
+  {
+    id: 'percentage-calculator',
+    category: 'math',
+    updatedAt: '2026-10-21',
+    aliases: ['percent of a number calculator', 'what percent is x of y calculator', 'increase or decrease by percent calculator', 'percent calculator', 'basic percentage calculator'],
+    related: ['percent-change-calculator', 'percent-difference-calculator', 'discount-calculator', 'sales-tax-calculator'],
+    title: 'Percentage Calculator',
+    description: 'Work out X% of Y, what percent X is of Y, the percent change between two numbers, or increase/decrease a number by a percentage — four everyday percent problems on one page.',
+    example: '20% of 150 is 30. Switch modes on the same two numbers to ask "what percent is 20 of 150?" (13.33%) or "increase 150 by 20%" (180).',
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What is a percentage?',
+        paragraphs: [
+          "A percentage is a way of writing a fraction out of 100. \"Percent\" comes from the Latin per centum, \"per hundred,\" so 20% literally means 20 out of every 100 — the fraction 20/100, or the decimal 0.20. Percentages let you compare proportions of very different sizes on the same scale: a 20% tip on a $40 meal and a 20% raise on a $60,000 salary describe the same relative size of change, even though the dollar amounts are nothing alike.",
+          'Most percentage questions boil down to one of four everyday problems: finding a percentage OF a number (a 20% tip on $40), finding what percentage one number IS of another (20 is what percent of 150?), finding the percent change between two numbers (a price that moved from $150 to $180), or adjusting a number up or down by a percentage (increase $150 by 20%). This calculator covers all four — pick the mode that matches your question, and the same two fields work for each.',
+          'Every mode reduces to the same relationship: percent = part ÷ whole × 100. Which number is the "part" and which is the "whole" changes with the question, which is exactly why a plain "20 and 150" can mean four different things depending on what you are asking.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick the mode that matches your question, then type the two numbers it needs. The result updates as you type.',
+        steps: [
+          { name: 'Choose a mode', text: 'The four modes cover the questions people actually ask: a percentage of a number, what percent one number is of another, the percent change between two numbers, and increasing or decreasing a number by a percent.' },
+          { name: 'Enter X and Y', text: 'What X and Y mean changes with the mode: in "X% of Y," X is the percent and Y is the whole; in "percent change from X to Y," X is the starting value and Y is the ending value.' },
+          { name: 'Set a direction for mode 4', text: '"Increase or decrease Y by X%" needs one more choice, tucked under "More options": whether X% is added to Y or taken away from it.' },
+          { name: 'Read the result', text: 'The result is a plain number. In modes 1 and 4 it is an amount in the same units as Y; in modes 2 and 3 it is itself a percentage.' },
+          { name: 'Compare the two values', text: 'The chart below the result always shows X and Y side by side, so you can see which one is bigger regardless of which mode you picked.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'All four modes come from one relationship: a percent is a part divided by a whole, times 100. Each mode just picks a different part and whole.',
+        expression: 'X% of Y = (X ÷ 100) × Y\nX is what % of Y = (X ÷ Y) × 100\nPercent change from X to Y = ((Y − X) ÷ X) × 100\nY increased/decreased by X% = Y ± (X ÷ 100) × Y',
+        terms: [
+          { symbol: 'X', meaning: 'Depending on the mode: the percentage rate, the part being compared, or the starting value.' },
+          { symbol: 'Y', meaning: 'Depending on the mode: the whole, the total being compared against, or the ending value.' },
+          { symbol: '÷ 100', meaning: 'Converts a percent number (20) into the fraction or decimal it represents (0.20) before multiplying.' }
+        ],
+        note: 'The "percent change" mode only makes sense when X (the starting value) is not zero — dividing by zero is undefined, the same way 5 ÷ 0 is undefined.'
+      },
+      workedExample: {
+        intro: 'Take the same two numbers, 20 and 150, through all four modes to see how the meaning changes.',
+        rows: [
+          { label: 'Mode 1 — 20% of 150', value: '(20 ÷ 100) × 150 = 30' },
+          { label: 'Mode 2 — 20 is what % of 150?', value: '(20 ÷ 150) × 100 ≈ 13.33%' },
+          { label: 'Mode 3 — percent change from 20 to 150', value: '((150 − 20) ÷ 20) × 100 = 650%' },
+          { label: 'Mode 4 — increase 150 by 20%', value: '150 + (20 ÷ 100) × 150 = 180' }
+        ],
+        result: '30 · 13.33% · 650% · 180 — four different answers from the same two numbers',
+        explanation: 'Notice how large the "percent change from 20 to 150" answer is: going from a small number to a much bigger one is always a large percent change, because the small starting value sits in the denominator. That is also why percent change is not symmetric — the percent change from 150 back down to 20 is only −86.67% ((20 − 150) ÷ 150 × 100), not −650%.'
+      },
+      watchOut: [
+        { title: 'Percent change is not symmetric', body: 'Going from 20 to 150 is a 650% increase, but going back from 150 to 20 is only an 86.67% decrease, not −650%. Percent change is always relative to the starting value, and the two starting values here are different.' },
+        { title: '"Percent of" is not the same as "percent change"', body: '20% of 150 (mode 1, giving 30) and a 20% increase on 150 (mode 4, giving 180) use the same percent but answer completely different questions. Make sure the mode matches what you are actually asking.' },
+        { title: 'A share of a whole cannot exceed 100% the way growth can', body: 'A number can grow by more than 100% (tripling is a 200% increase), but a part can never be more than 100% of its own whole — if "X is what % of Y" gives something above 100%, X is simply bigger than Y.' },
+        { title: 'Rounding changes the displayed answer', body: '13.33% is a rounded display of the repeating decimal 13.333…%. For financial or scientific use, carry extra decimal places before rounding a final answer.' }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §6.1 Understand Percent', url: 'https://openstax.org/books/prealgebra-2e/pages/6-1-understand-percent' },
+        { label: 'OpenStax, Prealgebra 2e, §6.2 Solve General Applications of Percent', url: 'https://openstax.org/books/prealgebra-2e/pages/6-2-solve-general-applications-of-percent' },
+        { label: 'Wolfram MathWorld, Percent', url: 'https://mathworld.wolfram.com/Percent.html' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'mode',
+        label: 'What do you want to work out?',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 1,
+        min: 1,
+        options: [
+          { value: 1, label: 'X% of Y' },
+          { value: 2, label: 'X is what percent of Y?' },
+          { value: 3, label: 'Percent change from X to Y' },
+          { value: 4, label: 'Increase or decrease Y by X%' }
+        ]
+      },
+      { id: 'x', label: 'X', type: 'number', placeholder: '20', defaultValue: 20, step: 1 },
+      { id: 'y', label: 'Y', type: 'number', placeholder: '150', defaultValue: 150, step: 1 },
+      {
+        id: 'direction',
+        label: 'Direction (mode 4 only)',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 2,
+        min: -1,
+        options: [
+          { value: 1, label: 'Increase Y by X%' },
+          { value: -1, label: 'Decrease Y by X%' }
+        ]
+      }
+    ],
+    breakdown: {
+      headline: 'result',
+      headlineLabel: 'Result',
+      outputs: [{ id: 'result', label: 'Result', format: 'significant' }],
+      groups: [{ inputs: ['mode', 'x', 'y'] }, { title: 'Only used for "increase or decrease" mode', inputs: ['direction'], optional: true }],
+      visual: { type: 'compareBars', bars: [{ from: 'x', label: 'Value A (X)' }, { from: 'y', label: 'Value B (Y)' }], title: 'Your two values' }
+    },
+    seo: {
+      title: 'Percentage Calculator – Percent Of, Change & Increase',
+      description: 'Free percentage calculator: find X% of Y, what percent X is of Y, percent change between two numbers, or increase/decrease a number by a percent.',
+      faq: [
+        { question: 'How do I calculate a percentage of a number?', answer: 'Divide the percent by 100 and multiply by the number: X% of Y = (X ÷ 100) × Y. For example, 20% of 150 is (20 ÷ 100) × 150 = 30.' },
+        { question: 'How do I find what percent one number is of another?', answer: 'Divide the part by the whole and multiply by 100: (X ÷ Y) × 100. 20 is (20 ÷ 150) × 100 ≈ 13.33% of 150.' },
+        { question: 'How do I calculate percent change?', answer: 'Subtract the starting value from the ending value, divide by the starting value, and multiply by 100: ((new − old) ÷ old) × 100. From 20 to 150 that is 650%.' },
+        { question: 'How do I increase or decrease a number by a percentage?', answer: 'Multiply the number by the percentage (divided by 100), then add the result to increase it or subtract it to decrease it. Increasing 150 by 20% gives 150 + 0.20 × 150 = 180; decreasing it by 20% gives 150 − 30 = 120.' },
+        { question: 'Why is the percent change from 20 to 150 so much bigger than the change back from 150 to 20?', answer: 'Percent change is always measured against the starting value. 20 to 150 is measured against the small number 20 (a 650% increase); 150 to 20 is measured against the much larger 150 (only an 86.67% decrease).' },
+        { question: 'What is 100% of a number?', answer: '100% of any number is the number itself, since (100 ÷ 100) × Y = Y.' },
+        { question: 'Can a percentage be negative?', answer: 'Yes. A percent change is negative when the ending value is smaller than the starting value — the percent change from 150 to 20 is −86.67%, a decrease.' },
+        { question: 'Why does "percent" mean "per hundred"?', answer: 'The word comes from the Latin per centum. Expressing any ratio out of 100 lets completely different quantities — a tip and a raise, a test score and a tax rate — be compared on the same scale.' }
+      ]
+    },
+    compute(values) {
+      const { mode, x, y, direction } = values;
+      let result: number;
+      if (mode === 2) result = y === 0 ? NaN : (x / y) * 100;
+      else if (mode === 3) result = x === 0 ? NaN : ((y - x) / x) * 100;
+      else if (mode === 4) result = y + (x / 100) * y * (direction || 1);
+      else result = (x / 100) * y; // mode 1, and the safe fallback for any other value
+      return { result };
+    }
+  },
+];

@@ -53,19 +53,37 @@ the official EU short-stay calculator + CBP I-94 compliance, with an explicit "n
 note. timezone-meeting-planner cites the IANA Time Zone Database + NIST DST rules.
 
 Run 3 (next 5):
-- [ ] meeting-cost-calculator (B)
-- [ ] pto-calculator (B)
-- [ ] salary-raise-calculator (A)
-- [ ] youtube-earnings-calculator (A)
-- [ ] instagram-engagement-calculator (B)
+- [x] meeting-cost-calculator (B)
+- [x] pto-calculator (B)
+- [x] salary-raise-calculator (A)
+- [x] youtube-earnings-calculator (A)
+- [x] instagram-engagement-calculator (B)
+
+Run 3 done 2026-10-21. `npm test` 277/277 (no snapshot changes — all 5 `compute()`/`inputs` pairs
+left untouched; salary-raise and youtube-earnings got solvers added alongside, verified via
+`git diff`). `npm run build` (81 static pages) and lint pass. meeting-cost-calculator's "cost
+ticker" (a live running total) has no static-kit equivalent, so it uses CompareBars (this meeting
+vs. annual-if-weekly) instead — documented in the commit. Found and fixed a pre-existing wrong
+FAQ figure on meeting-cost-calculator (claimed $22k/yr for a scenario that its own formula gives
+$29,250 for) and dropped an unsourced "31 hours/month in unproductive meetings" stat. Per the
+coordinator's instructions: salary-raise-calculator has an explicit estimate-only/not-tax-advice
+note (flat-rate tax model, not real marginal brackets); youtube-earnings-calculator and
+instagram-engagement-calculator now treat every RPM/CPM/engagement-rate figure as a user-supplied
+illustrative assumption, never a fact, cite official YouTube/Instagram/Meta docs for definitions
+and eligibility, and drop several pre-existing unsourced "industry average" claims
+(RPM-by-niche, "$100/10k followers," "nano 4-8%, mega <1.5%" engagement benchmarks) that had no
+citable source. instagram-engagement-calculator's visual is a Donut of the user's own engagement
+composition rather than the plan's "RangeBar of typical rates," since typical-rate bands would be
+exactly the kind of unsourced benchmark the coordinator said to avoid (also, RangeBar bands must
+be static per the schema, same constraint as visa-stay-days in run 2).
 
 Run 4 (last 3):
 - [ ] character-counter (C)
 - [ ] hashtag-counter (C)
 - [ ] gpa-calculator (C → B)
 
-Paused 2026-10-21 after freelancer-rate-calculator. Resume from the first unchecked box
-(meeting-cost-calculator, run 3).
+Paused 2026-10-21 after instagram-engagement-calculator. Resume from the first unchecked box
+(character-counter, run 4).
 
 ## Notes for resuming
 

@@ -1213,9 +1213,17 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
   a single number, so a calculator that conceptually wants "a list of numbers" (average, and any
   future stats calculator needing one) has to fall back to a fixed number of numbered slots, as
   `gpa-calculator` already did for courses. `average-calculator` and `weighted-average-calculator`
-  both do this (8 and 12 slots respectively, half behind an optional disclosure). A real list input
-  (add/remove rows) would be a `components/` + `lib/breakdown.ts` change worth its own step once
-  enough calculators need one — Wave 1's statistics category (mean/median/mode, standard deviation,
+  both do this (8 and 12 slots respectively, half behind an optional disclosure). The initial version
+  of `average-calculator` tried to extend GPA's "0 excludes a slot" convention to a plain average,
+  which is wrong there: a weight of 0 genuinely removes a component from a weighted sum, but a value
+  of 0 is a real data point in a plain list (a test score of 0, say), so silently dropping it is a
+  wrong-answer trap, not a convenience. Fixed in the same PR (#16) by adding an explicit
+  **"How many numbers?" options field (2-8)**, with `compute()` averaging exactly the first N slots
+  in order, zeros included — this is the stopgap pattern worth reusing for any future fixed-slot
+  "list" input: a count selector plus array slicing, never an implicit sentinel value, whenever 0 (or
+  any other value) is a legitimate data point rather than a true weight. A real list input (add/remove
+  rows) would still be a `components/` + `lib/breakdown.ts` change worth its own step once enough
+  calculators need one — Wave 1's statistics category (mean/median/mode, standard deviation,
   variance, etc., all genuinely list-based) will hit the same wall repeatedly.
 - **`CompareBars` silently caps at 4 bars** (`components/visuals/CompareBars.tsx`: `bars.slice(0, 4)`,
   found in step 40, run 2 while designing `average-calculator`): the prop comment already says "2-4

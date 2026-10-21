@@ -1642,5 +1642,123 @@ export const mathCalculators: CalculatorConfig[] = [
       return { result, naturalLog, commonLog };
     }
   },
+  {
+    id: 'factorial-calculator',
+    category: 'math',
+    updatedAt: '2026-10-21',
+    aliases: ['n factorial calculator', 'x! calculator', 'factorial of a number calculator', 'permutations factorial calculator'],
+    related: ['gcf-calculator', 'exponent-calculator', 'scientific-notation-calculator', 'rounding-calculator'],
+    title: 'Factorial Calculator',
+    description: 'Find n! (n factorial), the product of every whole number from n down to 1 — plus its exact digit count and trailing-zero count, computed with exact integer math.',
+    example: '5! (5 factorial) is 5 × 4 × 3 × 2 × 1 = 120. Factorials grow fast: 20! already has 19 digits.',
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What is a factorial?',
+        paragraphs: [
+          'The factorial of a non-negative whole number n, written n!, is the product of every whole number from n down to 1: 5! = 5 × 4 × 3 × 2 × 1 = 120. It counts the number of ways to put n distinct things in order — there are 5! = 120 ways to line up 5 people, because any of 5 can go first, any of the remaining 4 can go second, and so on.',
+          'By convention, 0! = 1, not 0. This is not something you can get from repeated multiplication the way 5! comes from multiplying 5 numbers together — it reflects the combinatorial meaning instead: there is exactly one way to arrange zero objects (do nothing), so the "empty product" is defined as 1.',
+          'Factorials grow extraordinarily fast — far faster than exponential growth. 10! is about 3.6 million, but 20! already has 19 digits, and 100! has 158 digits. This calculator shows the exact digit count and the number of trailing zeros using exact integer arithmetic, even once the headline value itself is too large to display digit-for-digit and has to switch to scientific notation. Factorials are central to combinatorics — counting permutations and combinations — and the idea extends to non-whole numbers through the Gamma function, a separate topic covered by the NIST reference below.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter a whole number, 0 or larger. The result updates as you type.',
+        steps: [
+          { name: 'Enter n', text: 'Type a non-negative whole number. This calculator computes exactly for n up to 1,000.' },
+          { name: 'Read the factorial', text: 'The headline shows n!. Once it exceeds about a billion (around 13!), it is shown in scientific notation, the standard way to display a number too long to write out in full.' },
+          { name: 'Check the exact digit count', text: 'The digit count is computed with exact integer arithmetic, so it stays exact no matter how large n gets — even once the headline number itself is a rounded approximation.' },
+          { name: 'Check the trailing zeros', text: 'The number of zeros at the end of n! (from every factor of 10 hidden inside the product) is also exact.' },
+          { name: 'See the scale', text: 'The chart places n! on a scale from ordinary numbers to the astronomically large, next to a couple of reference factorials.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'A factorial is a product of consecutive whole numbers, defined by one simple rule for the base case.',
+        expression: 'n! = n × (n − 1) × (n − 2) × ... × 2 × 1  (n ≥ 1)\n0! = 1  (by convention)',
+        terms: [
+          { symbol: 'n', meaning: 'A non-negative whole number. This calculator does not evaluate factorials of negative or non-integer numbers.' },
+          { symbol: 'n!', meaning: 'The product of every whole number from n down to 1, or 1 when n = 0.' }
+        ],
+        note: 'The Gamma function, Γ(n + 1) = n!, extends the factorial to non-integer and complex numbers, but is a different (and more advanced) function from the plain integer factorial this calculator computes — see the NIST reference below.'
+      },
+      workedExample: {
+        intro: 'Compute 20! and its digit count and trailing zeros.',
+        rows: [
+          { label: '20!', value: '2,432,902,008,176,640,000' },
+          { label: 'Digit count', value: '19 digits' },
+          { label: 'Trailing zeros', value: '4 (from 20÷5 = 4 multiples of 5 among 1...20, each pairing with a factor of 2 to make a 10)' }
+        ],
+        result: '20! = 2,432,902,008,176,640,000 — 19 digits, 4 trailing zeros',
+        explanation: '20! is still small enough to show every digit exactly. By 171!, the exact value is a 310-digit number that exceeds what a standard 64-bit floating-point number can represent at all, and the headline becomes "Infinity" — the same overflow behavior as a basic calculator or a spreadsheet cell.'
+      },
+      watchOut: [
+        { title: 'Only defined here for non-negative whole numbers', body: 'A negative number or a non-whole number (like 3.5) has no factorial under this definition — this calculator returns no answer for those. The Gamma function extends factorials to those cases, but is a separate, more advanced function.' },
+        { title: '0! = 1, not 0', body: 'This follows from the combinatorial meaning (one way to arrange zero things), not from multiplying anything together — a common point of confusion, since every other factorial does come from a product.' },
+        { title: 'Factorials overflow a standard floating-point number past 170!', body: '170! is already a 307-digit number, right at the edge of what a 64-bit floating-point value can represent; 171! exceeds it entirely, and the headline value becomes "Infinity" — a genuine overflow, not a bug, and the same thing a basic calculator shows for a number too big to hold.' },
+        { title: 'Past about 15-17 significant digits, the headline number is rounded', body: 'A standard floating-point number only keeps about 15-17 significant decimal digits of precision, so once n! needs more digits than that to write out exactly (around 19! and up), the headline value shown in scientific notation is a correctly-rounded approximation, not the exact integer. The digit count and trailing-zero count, computed with exact integer math, stay exact at any size.' },
+        { title: 'Computes exactly up to n = 1,000', body: 'This calculator has a practical cap at n = 1,000 (a 2,568-digit number) to keep every result instant; above that, it returns no answer.' }
+      ],
+      references: [
+        { label: 'Wolfram MathWorld, Factorial', url: 'https://mathworld.wolfram.com/Factorial.html' },
+        { label: 'NIST Digital Library of Mathematical Functions, §5.2 Gamma Function: Definitions', url: 'https://dlmf.nist.gov/5.2' }
+      ]
+    },
+    inputs: [{ id: 'n', label: 'n', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 0 }],
+    breakdown: {
+      headline: 'factorialValue',
+      headlineLabel: 'n!',
+      outputs: [
+        { id: 'factorialValue', label: 'n!', format: 'significant' },
+        { id: 'digitCount', label: 'Exact digit count', format: 'integer' },
+        { id: 'trailingZeros', label: 'Trailing zeros', format: 'integer' }
+      ],
+      groups: [{ inputs: ['n'] }],
+      visual: {
+        type: 'logScale',
+        value: 'factorialValue',
+        min: 0,
+        max: 70,
+        ticks: ['10⁰', '10¹⁰', '10²⁰', '10³⁰', '10⁴⁰', '10⁵⁰', '10⁶⁰', '10⁷⁰'],
+        benchmarks: [
+          { label: '10! = 3,628,800', value: 3628800 },
+          { label: '52! ≈ 8.0658 × 10⁶⁷ (the ways to arrange a 52-card deck)', value: 8.065817517094388e67 }
+        ],
+        title: 'How big does n! get?',
+        valueLabel: 'Your n!'
+      }
+    },
+    seo: {
+      title: 'Factorial Calculator – n!, Digits & Trailing Zeros',
+      description: 'Free factorial calculator. Find n! for any non-negative whole number, with the exact digit count and trailing-zero count computed with exact integer math.',
+      faq: [
+        { question: 'What is 5 factorial?', answer: '5! = 5 × 4 × 3 × 2 × 1 = 120.' },
+        { question: 'What is 0 factorial?', answer: '0! = 1, by the convention that there is exactly one way to arrange zero objects.' },
+        { question: 'What is 10 factorial?', answer: '10! = 3,628,800.' },
+        { question: 'How many digits does 100! have?', answer: '158 digits.' },
+        { question: 'How many trailing zeros does 100! have?', answer: '24, from counting the multiples of 5 (and 25) among 1 through 100: ⌊100÷5⌋ + ⌊100÷25⌋ = 20 + 4 = 24.' },
+        { question: 'Why does my calculator show "Infinity" for a large n?', answer: 'Once n! needs more digits than a 64-bit floating-point number can hold (past 170!), the exact value overflows and displays as Infinity — the same limit a basic calculator or spreadsheet hits.' },
+        { question: 'Can you take the factorial of a negative or decimal number?', answer: 'Not with the plain factorial definition used here. The Gamma function extends factorial-like behavior to those numbers, but is a separate, more advanced function.' },
+        { question: 'What are factorials used for?', answer: 'Counting the number of ways to arrange or order things (permutations), and as a building block of combinations and probability.' }
+      ]
+    },
+    compute(values) {
+      const n = Math.round(values.n);
+      const noAnswer = { factorialValue: NaN, digitCount: NaN, trailingZeros: NaN };
+      if (!Number.isInteger(n) || n < 0 || n > 1000) return noAnswer;
+
+      let big = 1n;
+      for (let i = 2n; i <= BigInt(n); i++) big *= i;
+      const factorialValue = Number(big);
+      const digitCount = big.toString().length;
+
+      let trailingZeros = 0;
+      let power = 5;
+      while (power <= n) {
+        trailingZeros += Math.floor(n / power);
+        power *= 5;
+      }
+      return { factorialValue, digitCount, trailingZeros };
+    }
+  },
 
 ];

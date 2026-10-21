@@ -1760,5 +1760,127 @@ export const mathCalculators: CalculatorConfig[] = [
       return { factorialValue, digitCount, trailingZeros };
     }
   },
+  {
+    id: 'gcf-calculator',
+    category: 'math',
+    updatedAt: '2026-10-21',
+    aliases: ['greatest common factor calculator', 'gcd calculator', 'hcf calculator', 'greatest common divisor calculator', 'gcf of two numbers calculator'],
+    related: ['fraction-calculator', 'ratio-calculator', 'factorial-calculator', 'exponent-calculator'],
+    title: 'GCF Calculator',
+    description: 'Find the greatest common factor (GCF, also called GCD or HCF) of 2 to 4 numbers — the largest number that divides every one of them exactly.',
+    example: 'The greatest common factor of 12 and 18 is 6 — the largest number that divides both exactly. Add a third number, like 24, and the GCF is still 6.',
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What is the greatest common factor?',
+        paragraphs: [
+          "The greatest common factor (GCF) of two or more numbers is the largest number that divides every one of them with no remainder. The GCF of 12 and 18 is 6, since 6 divides both exactly (12 ÷ 6 = 2, 18 ÷ 6 = 3) and no larger number does. It is also called the greatest common divisor (GCD) or, in some countries, the highest common factor (HCF) — three names for exactly the same thing.",
+          'One standard way to find it is to break each number into prime factors and multiply together whatever primes they all share: 12 = 2² × 3 and 18 = 2 × 3², and the factors they have in common are one 2 and one 3, so the GCF is 2 × 3 = 6. A faster method for large numbers is the Euclidean algorithm, which repeatedly replaces the larger number with the remainder of dividing it by the smaller one until nothing is left — that method is what this calculator actually runs.',
+          'The GCF of three or more numbers works the same way, found two at a time: GCF(12, 18, 24) = GCF(GCF(12, 18), 24) = GCF(6, 24) = 6. The GCF is exactly the tool behind simplifying a fraction or a ratio to lowest terms — this site\'s fraction calculator and ratio calculator both divide by the GCF internally to reduce their answers, so a fraction like 12/18 and a ratio like 12:18 both reduce to 2:3 for the same underlying reason.'
+        ]
+      },
+      howTo: {
+        intro: 'Choose how many numbers you have (2 to 4), then enter exactly that many.',
+        steps: [
+          { name: 'Choose how many numbers', text: 'Set "How many numbers?" to 2, 3 or 4. Only that many of the number fields below are used, in order starting from Number 1.' },
+          { name: 'Enter your numbers', text: 'Type the numbers you want the greatest common factor of. Order does not matter.' },
+          { name: 'Read the GCF', text: 'The headline shows the largest number that divides every one of your numbers exactly.' },
+          { name: 'Check the summary', text: 'The breakdown also confirms how many numbers were used, in case the count got left on something other than what you intended.' },
+          { name: 'See it visually', text: 'The chart shows your smallest number, your largest number, and the GCF side by side.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The Euclidean algorithm finds the GCF of two numbers by repeated division, without needing to factor either one.',
+        expression: 'GCF(a, 0) = a\nGCF(a, b) = GCF(b, a mod b)  for b ≠ 0\nGCF(a, b, c) = GCF(GCF(a, b), c)',
+        terms: [
+          { symbol: 'a mod b', meaning: 'The remainder left over after dividing a by b.' },
+          { symbol: 'GCF(a, b, c)', meaning: 'The GCF of three or more numbers, found by taking the GCF of two at a time.' }
+        ],
+        note: 'Numbers are compared by their absolute value (so the GCF of a negative number is the same as for its positive version), and are rounded to the nearest whole number first, since the greatest common factor is only defined for integers.'
+      },
+      workedExample: {
+        intro: 'Find the GCF of 12, 18 and 24 using prime factorization, then check it against the Euclidean algorithm this calculator actually uses.',
+        rows: [
+          { label: 'Prime factorize each number', value: '12 = 2² × 3, 18 = 2 × 3², 24 = 2³ × 3' },
+          { label: 'Lowest power of each shared prime', value: '2¹ and 3¹ are common to all three' },
+          { label: 'Multiply the shared primes', value: '2 × 3 = 6' },
+          { label: 'Check with the Euclidean algorithm', value: 'GCF(12, 18) = 6, then GCF(6, 24) = 6' }
+        ],
+        result: 'GCF(12, 18, 24) = 6',
+        explanation: 'Both methods agree, as they always will — prime factorization and the Euclidean algorithm are two different ways of answering exactly the same question. 12 ÷ 6 = 2, 18 ÷ 6 = 3, and 24 ÷ 6 = 4, all with no remainder, confirming 6 divides every one of the three numbers.'
+      },
+      watchOut: [
+        { title: 'The GCF of 0 and a number is that number', body: 'GCF(0, 18) = 18, since every number divides 0 evenly (0 ÷ 18 = 0 exactly) and 18 is the largest number dividing 18 itself.' },
+        { title: 'GCF(0, 0) is treated as 1 here, by convention', body: 'Mathematically, every number divides 0, so there is no single largest common factor when both numbers are 0. This calculator reports 1 for that specific edge case rather than an undefined result; other sources instead leave it undefined or call it 0.' },
+        { title: 'Negative numbers are compared by absolute value', body: 'GCF(−12, 18) is reported as 6, the same as GCF(12, 18), since the factors of −12 are the same set of numbers (up to sign) as the factors of 12 — the GCF itself is always shown as zero or positive.' },
+        { title: 'Non-integer inputs are rounded first', body: 'The greatest common factor is only defined for whole numbers, so a decimal typed into any field is rounded to the nearest integer before this calculator computes anything with it.' },
+        { title: 'Not the same as the least common multiple', body: 'The GCF is the largest number that divides every input; the least common multiple (LCM) is the smallest number every input divides into — a related but different calculation, covered by its own calculator rather than this one.' }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §10.6 Introduction to Factoring Polynomials (Example 10.80, GCF of 24 and 36)', url: 'https://openstax.org/books/prealgebra-2e/pages/10-6-introduction-to-factoring-polynomials' },
+        { label: 'Wolfram MathWorld, Greatest Common Divisor', url: 'https://mathworld.wolfram.com/GreatestCommonDivisor.html' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'howMany',
+        label: 'How many numbers?',
+        type: 'number',
+        placeholder: '2',
+        defaultValue: 2,
+        step: 1,
+        min: 2,
+        options: [
+          { value: 2, label: '2 numbers' },
+          { value: 3, label: '3 numbers' },
+          { value: 4, label: '4 numbers' }
+        ]
+      },
+      { id: 'num1', label: 'Number 1', type: 'number', placeholder: '12', defaultValue: 12, step: 1 },
+      { id: 'num2', label: 'Number 2', type: 'number', placeholder: '18', defaultValue: 18, step: 1 },
+      { id: 'num3', label: 'Number 3', type: 'number', placeholder: '24', defaultValue: 24, step: 1 },
+      { id: 'num4', label: 'Number 4', type: 'number', placeholder: '36', defaultValue: 36, step: 1 }
+    ],
+    breakdown: {
+      headline: 'gcf',
+      headlineLabel: 'Greatest common factor',
+      outputs: [
+        { id: 'gcf', label: 'Greatest common factor', format: 'integer' },
+        { id: 'numbersUsed', label: 'Numbers used', format: 'integer' }
+      ],
+      groups: [{ inputs: ['howMany', 'num1', 'num2'] }, { title: 'Third and fourth numbers (if you have more than two)', inputs: ['num3', 'num4'], optional: true }],
+      derive: (values) => {
+        const howMany = Math.min(4, Math.max(2, Math.round(values.howMany || 2)));
+        const nums = [values.num1, values.num2, values.num3, values.num4].slice(0, howMany);
+        return { minNumber: Math.min(...nums), maxNumber: Math.max(...nums) };
+      },
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'minNumber', label: 'Smallest number' }, { from: 'maxNumber', label: 'Largest number' }, { from: 'gcf', label: 'Greatest common factor' }],
+        title: 'Your numbers and their GCF'
+      }
+    },
+    seo: {
+      title: 'GCF Calculator – Greatest Common Factor of Numbers',
+      description: 'Free GCF (greatest common factor / GCD / HCF) calculator. Find the GCF of 2 to 4 numbers using the Euclidean algorithm.',
+      faq: [
+        { question: 'What is the GCF of 12 and 18?', answer: '6. It divides both evenly (12 ÷ 6 = 2 and 18 ÷ 6 = 3), and no larger number does.' },
+        { question: 'How do I find the GCF of three or more numbers?', answer: 'Find the GCF of the first two, then find the GCF of that result and the next number, repeating until every number has been included. GCF(12, 18, 24) = GCF(GCF(12, 18), 24) = GCF(6, 24) = 6.' },
+        { question: 'What if two numbers share no common factor besides 1?', answer: 'Their GCF is 1, and they are called coprime (or relatively prime) — for example, GCF(7, 15) = 1.' },
+        { question: "What is the difference between GCF and LCM?", answer: 'The GCF is the largest number that divides every input exactly. The least common multiple (LCM) is the smallest number that every input divides into — the opposite kind of question, covered by a separate calculator.' },
+        { question: 'How is the GCF used with fractions?', answer: 'Dividing a fraction\'s numerator and denominator by their GCF reduces it to lowest terms — 12/18 and its GCF of 6 reduce to 2/3, the same technique this site\'s fraction calculator and ratio calculator use.' },
+        { question: 'What is the GCF of 0 and a number?', answer: 'The other number. GCF(0, 18) = 18, since every number divides 0 evenly.' },
+        { question: 'Can the GCF be negative?', answer: 'No. This calculator compares numbers by their absolute value and always reports the GCF as zero or positive.' },
+        { question: 'Is prime factorization or the Euclidean algorithm faster for finding the GCF?', answer: 'For large numbers, the Euclidean algorithm is much faster, since it avoids factoring either number at all — it is also the method this calculator runs.' }
+      ]
+    },
+    compute(values) {
+      const howMany = Math.min(4, Math.max(2, Math.round(values.howMany || 2)));
+      const nums = [values.num1, values.num2, values.num3, values.num4].slice(0, howMany);
+      const gcf = nums.reduce((acc, value) => gcd(acc, value));
+      return { gcf, numbersUsed: howMany };
+    }
+  }
 
 ];

@@ -1146,6 +1146,50 @@ exports[`compute() snapshots > gas-cost-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > gcf-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "howMany": 2,
+      "num1": 12,
+      "num2": 18,
+      "num3": 24,
+      "num4": 36
+    },
+    "outputs": {
+      "gcf": 6,
+      "numbersUsed": 2
+    }
+  },
+  "typical": {
+    "inputs": {
+      "howMany": 3,
+      "num1": 18,
+      "num2": 27,
+      "num3": 36,
+      "num4": 54
+    },
+    "outputs": {
+      "gcf": 9,
+      "numbersUsed": 3
+    }
+  },
+  "edge": {
+    "inputs": {
+      "howMany": 2,
+      "num1": 0,
+      "num2": 0,
+      "num3": 0,
+      "num4": 0
+    },
+    "outputs": {
+      "gcf": 1,
+      "numbersUsed": 2
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > gpa-calculator 1`] = `
 {
   "default": {

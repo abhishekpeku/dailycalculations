@@ -105,7 +105,8 @@ export const calculatorOrder: string[] = [
   'square-root-calculator',
   'cube-root-calculator',
   'logarithm-calculator',
-  'factorial-calculator'
+  'factorial-calculator',
+  'gcf-calculator'
 ];
 
 const rank = (id: string) => {

@@ -1516,5 +1516,131 @@ export const mathCalculators: CalculatorConfig[] = [
       return { cubeRoot: Math.cbrt(values.radicand) };
     }
   },
+  {
+    id: 'logarithm-calculator',
+    category: 'math',
+    updatedAt: '2026-10-21',
+    aliases: ['log calculator', 'log base calculator', 'natural log calculator', 'ln calculator', 'log base 2 calculator'],
+    related: ['exponent-calculator', 'scientific-notation-calculator', 'square-root-calculator', 'cube-root-calculator'],
+    title: 'Logarithm Calculator',
+    description: 'Find the logarithm of a number in any base, or solve backward for the base or the argument — includes the natural log (ln) and common log (base 10) alongside the result.',
+    example: 'log base 2 of 8 is 3, since 2³ = 8. Switch the base to compute a natural log (base e) or a common log (base 10) on the same relationship.',
+    solver: {
+      defaultTarget: 'result',
+      variables: [
+        { id: 'base', label: 'Base', symbol: 'b', dimension: 'count', defaultValue: 2, defaultUnit: 'count' },
+        { id: 'argument', label: 'Argument', symbol: 'x', dimension: 'count', defaultValue: 8, defaultUnit: 'count' },
+        { id: 'result', label: 'Logarithm', symbol: 'log_b(x)', dimension: 'count', defaultValue: 3, defaultUnit: 'count' }
+      ],
+      solve: {
+        result: ({ base, argument }) => (base <= 0 || base === 1 || argument <= 0 ? NaN : Math.log(argument) / Math.log(base)),
+        argument: ({ base, result }) => (base <= 0 || base === 1 ? NaN : base ** result),
+        base: ({ argument, result }) => {
+          if (argument <= 0 || result === 0) return NaN; // result 0 means x = b^0 = 1 for ANY base: no unique base
+          const b = argument ** (1 / result);
+          return b <= 0 || b === 1 ? NaN : b;
+        }
+      },
+      outputs: [
+        { id: 'naturalLog', label: 'Natural log (ln)', dimension: 'count', compute: (si) => (si.argument <= 0 ? NaN : Math.log(si.argument)) },
+        { id: 'commonLog', label: 'Common log (log₁₀)', dimension: 'count', compute: (si) => (si.argument <= 0 ? NaN : Math.log10(si.argument)) }
+      ],
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'argument',
+          min: -9,
+          max: 27,
+          ticks: ['10⁻⁹', '10⁻³', '10³', '10⁹', '10¹⁵', '10²¹', '10²⁷'],
+          benchmarks: [
+            { label: 'Neutral water, pH 7: [H⁺] = 10⁻⁷ mol/L', value: 1e-7 },
+            { label: 'Avogadro constant (~6.022 × 10²³ /mol)', value: 6.02214076e23 }
+          ],
+          title: 'Where does your number sit on the scale?',
+          valueLabel: 'Your argument'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-21',
+      concept: {
+        title: 'What is a logarithm?',
+        paragraphs: [
+          "A logarithm answers the question \"what power do I raise this base to, to get this number?\" log_b(x) = y means exactly the same thing as b^y = x — a logarithm and an exponent are two ways of writing the same relationship, just solved for a different variable. log base 2 of 8 is 3, because 2³ = 8.",
+          'Two bases are common enough to have their own names and notation: base 10 is the "common log," written log(x) without a visible base, and base e (≈ 2.71828) is the "natural log," written ln(x). This calculator shows both alongside whatever base you actually chose, since converting between bases (the change-of-base formula) is just dividing one natural log by another: log_b(x) = ln(x) ÷ ln(b).',
+          'Logarithms turn multiplication into addition and show up anywhere a quantity is naturally measured on a multiplicative scale rather than an additive one — pH, sound intensity in decibels, and earthquake magnitude are all logarithmic scales, which is why a "one-point" jump on any of them represents a tenfold (or similar) change, not a small one. This calculator also solves the relationship in the other two directions: given a base and a result, it finds the argument (which is itself an exponentiation, b^y); given an argument and a result, it finds the base — see the exponent calculator if what you actually have is a base and an exponent and want the result directly.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of the three fields — base, argument, result — and the third, marked auto, is calculated.',
+        steps: [
+          { name: 'Find a logarithm', text: 'Enter the base and the argument. The result field, marked auto, fills in with log base b of the argument.' },
+          { name: 'Solve for the argument', text: 'Enter the base and a result to find what argument produces it — this computes base raised to that result.' },
+          { name: 'Solve for the base', text: 'Enter the argument and a result to find what base produces that logarithm.' },
+          { name: 'Switch which field is calculated', text: 'Type into the auto field and it becomes an input again; the field left alone the longest becomes the new calculated one.' },
+          { name: 'Check the natural and common log', text: 'Underneath the main result, the natural log (ln) and common log (base 10) of the same argument are shown for reference, regardless of which base you chose.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'A logarithm and an exponent describe the same relationship, rearranged for a different variable.',
+        expression: 'log_b(x) = y  ⇔  b^y = x\nx = b^y\nb = x^(1/y)  (y ≠ 0)\nChange of base: log_b(x) = ln(x) ÷ ln(b)',
+        terms: [
+          { symbol: 'b (base)', meaning: 'The number being raised to a power. Must be positive and not equal to 1.' },
+          { symbol: 'x (argument)', meaning: 'The number whose logarithm is being taken. Must be positive — no power of a positive base is ever zero or negative.' },
+          { symbol: 'y (result)', meaning: 'The exponent that makes b^y equal x. Can be positive, negative, or zero.' }
+        ],
+        note: 'Solving for the base divides by the result in the exponent (b = x^(1/y)), so a result of exactly 0 has no unique base: any positive base b ≠ 1 satisfies b⁰ = 1, so this calculator reports no answer for that case rather than guessing one.'
+      },
+      workedExample: {
+        intro: 'Find log base 2 of 8, then check it with the exponential form.',
+        rows: [
+          { label: 'Question', value: '2^y = 8 — what is y?' },
+          { label: 'Try y = 3', value: '2³ = 2 × 2 × 2 = 8' },
+          { label: 'Natural log, for reference', value: 'ln(8) ≈ 2.0794' },
+          { label: 'Common log, for reference', value: 'log₁₀(8) ≈ 0.9031' }
+        ],
+        result: 'log₂(8) = 3',
+        explanation: 'Every logarithm can be checked by converting it back to exponential form: log₂(8) = 3 is true exactly because 2³ = 8. The natural and common log of the same number 8 are different numbers from the base-2 result, because they ask the same question about a different base.'
+      },
+      watchOut: [
+        { title: 'The base must be positive and not 1', body: 'A negative base makes repeated exponentiation behave inconsistently (alternating sign), and a base of 1 always produces 1 no matter the exponent, so no unique logarithm exists for either case — this calculator returns no answer for them.' },
+        { title: 'The argument must be positive', body: 'A positive base raised to any real exponent is always positive, so there is no exponent that produces zero or a negative number. Logarithms of zero or negative numbers are undefined here (they are defined for complex numbers, a separate topic).' },
+        { title: 'The logarithm of 1 is always 0, in any valid base', body: 'Because b⁰ = 1 for every base b, log_b(1) = 0 regardless of which base you pick — this is not a special case this calculator needs to guard against, just a fact worth knowing when sanity-checking a result.' },
+        { title: 'A result of exactly 0 has no unique base to solve for', body: 'If the result is 0, the equation b⁰ = x only pins down x (it must be 1); any base at all satisfies it, so "solve for the base" has no single answer in that case.' }
+      ],
+      references: [
+        { label: 'OpenStax, College Algebra 2e, §6.3 Logarithmic Functions', url: 'https://openstax.org/books/college-algebra-2e/pages/6-3-logarithmic-functions' },
+        { label: 'NIST Digital Library of Mathematical Functions, §4.2 Logarithm, Exponential, Powers', url: 'https://dlmf.nist.gov/4.2' },
+        { label: 'Wolfram MathWorld, Logarithm', url: 'https://mathworld.wolfram.com/Logarithm.html' }
+      ]
+    },
+    inputs: [
+      { id: 'base', label: 'Base', type: 'number', placeholder: '2', defaultValue: 2, step: 1 },
+      { id: 'argument', label: 'Argument', type: 'number', placeholder: '8', defaultValue: 8, step: 1 }
+    ],
+    seo: {
+      title: 'Logarithm Calculator – Log, Ln, and Any Base',
+      description: 'Free logarithm calculator. Find log base b of a number, solve backward for the base or the argument, and see the natural and common log too.',
+      faq: [
+        { question: 'How do I calculate a logarithm?', answer: 'Ask what power the base must be raised to, to get the argument: log_b(x) = y means b^y = x. log base 2 of 8 is 3, since 2³ = 8.' },
+        { question: 'What is a natural log?', answer: 'A logarithm with base e (≈ 2.71828), written ln(x). ln(8) ≈ 2.0794.' },
+        { question: 'What is a common log?', answer: 'A logarithm with base 10, written log(x) or log₁₀(x). log₁₀(8) ≈ 0.9031.' },
+        { question: 'Why can\'t you take the log of zero or a negative number?', answer: 'A positive base raised to any real exponent is always positive, so no exponent produces zero or a negative result. There is no real-number logarithm for those inputs.' },
+        { question: 'What does log base 1 mean?', answer: 'Nothing well-defined: 1 raised to any power is always 1, so no exponent is uniquely tied to any other argument. This calculator excludes base 1.' },
+        { question: 'How is a logarithm related to an exponent?', answer: 'They are inverses of each other. If b^y = x, then log_b(x) = y — the exponent calculator on this site solves the same relationship for the result or the base given an exponent, instead of for the exponent itself.' },
+        { question: 'What is the change-of-base formula?', answer: 'log_b(x) = ln(x) ÷ ln(b), which lets you compute any base\'s logarithm using just the natural log.' },
+        { question: 'What is log base 10 of 100?', answer: '2, since 10² = 100.' }
+      ]
+    },
+    compute(values) {
+      const { base, argument } = values;
+      const validBase = base > 0 && base !== 1;
+      const result = !validBase || argument <= 0 ? NaN : Math.log(argument) / Math.log(base);
+      const naturalLog = argument <= 0 ? NaN : Math.log(argument);
+      const commonLog = argument <= 0 ? NaN : Math.log10(argument);
+      return { result, naturalLog, commonLog };
+    }
+  },
 
 ];

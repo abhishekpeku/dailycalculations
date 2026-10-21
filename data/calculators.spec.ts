@@ -18,7 +18,8 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'percent-change-calculator': ['percentChange'], // old value 0 -> divide by zero
   'percent-difference-calculator': ['percentDifference'], // both values 0 -> average 0
   'ratio-calculator': ['d'], // a (the term being divided by) 0 -> divide by zero
-  'weighted-average-calculator': ['weightedAverage'] // all weights 0 -> 0/0
+  'weighted-average-calculator': ['weightedAverage'], // all weights 0 -> 0/0
+  'logarithm-calculator': ['result', 'naturalLog', 'commonLog'] // base 0 and argument 0 -> invalid log domain
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

@@ -1402,6 +1402,44 @@ exports[`compute() snapshots > loan-prepayment-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > logarithm-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "base": 2,
+      "argument": 8
+    },
+    "outputs": {
+      "result": 3,
+      "naturalLog": 2.079441542,
+      "commonLog": 0.903089987
+    }
+  },
+  "typical": {
+    "inputs": {
+      "base": 3,
+      "argument": 12
+    },
+    "outputs": {
+      "result": 2.261859507,
+      "naturalLog": 2.48490665,
+      "commonLog": 1.079181246
+    }
+  },
+  "edge": {
+    "inputs": {
+      "base": 0,
+      "argument": 0
+    },
+    "outputs": {
+      "result": "NaN",
+      "naturalLog": "NaN",
+      "commonLog": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > meeting-cost-calculator 1`] = `
 {
   "default": {

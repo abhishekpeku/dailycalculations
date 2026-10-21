@@ -103,7 +103,8 @@ export const calculatorOrder: string[] = [
   'scientific-notation-calculator',
   'exponent-calculator',
   'square-root-calculator',
-  'cube-root-calculator'
+  'cube-root-calculator',
+  'logarithm-calculator'
 ];
 
 const rank = (id: string) => {

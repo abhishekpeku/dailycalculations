@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-10-21 · Current step: **40** (Wave 1: math · statistics · conversion — NEW calculators) · step 39 **DONE** 2026-10-21 (Batch 5, all 18: time, travel, work, creator, text, education; PR #14 ready for review) · step 38 done (PR #13, ready for review) · steps 17 + 30–39 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split, batches 1–5) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
+Last updated: 2026-10-21 · Current step: **40** (Wave 1: math · statistics · conversion — NEW calculators), **IN PROGRESS** (run 1/~6 done: math category + percentage, percent-change, percent-difference, fraction, ratio; PR #15 ready for review) · step 39 **DONE** 2026-10-21 (Batch 5, all 18: time, travel, work, creator, text, education; PR #14 ready for review) · step 38 done (PR #13, ready for review) · steps 17 + 30–39 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split, batches 1–5) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
 
 ---
 
@@ -118,7 +118,7 @@ is why 12-15 run after it.
 | 37 | Batch 3: health (6) | DONE 2026-10-20 | YMYL. Branch `step/37-batch-3-health`, PR #11. All 6 health calculators on v2. See session log. | §3 |
 | 38 | Batch 4: auto + home (12) | **DONE** 2026-10-21 | Branch `step/38-batch-4-auto-home`, PR #13 (ready for review). All 12: car-payment, gas-cost, fuel-cost, ev-charging, commute-cost, toll-cost, concrete, paint, tile, wallpaper, electricity-bill, furniture-fit. See session log. | §3 |
 | 39 | Batch 5: time, travel, work, creator, text, education (18) | **DONE** 2026-10-21 | Branch `step/39-batch-5`, PR #14 (ready for review, no longer draft). All 18: date-difference, age, sleep-time, work-hours, pomodoro-timer, travel-budget, visa-stay-days, currency-converter, timezone-meeting-planner, freelancer-rate, meeting-cost, pto, salary-raise, youtube-earnings, instagram-engagement, character-counter, hashtag-counter, gpa-calculator (C → B). See session log. | §3 |
-| 40–42 | Wave 1: math · statistics · conversion — **NEW calculators, not conversions of existing ones** | TODO | Absorbs step 24 (math). 5 calculators per agent run. | §4 |
+| 40–42 | Wave 1: math · statistics · conversion — **NEW calculators, not conversions of existing ones** | **IN PROGRESS** | Absorbs step 24 (math). 5 calculators per agent run. Run 1/~6 **DONE** 2026-10-21: added the `math` category (`data/calculators/index.ts`, `data/calculators/math.ts`, `lib/categoryTheme.ts` orange/`function`) plus percentage-calculator (B), percent-change-calculator (A), percent-difference-calculator (B), fraction-calculator (B), ratio-calculator (A). Branch `step/40-wave-1-math-run-1`, PR #15 (ready for review). Next: run 2 — average, weighted average, rounding, scientific notation, exponent. See session log and `mdFiles/steps/40-wave-1-math.md` for the full run breakdown and type decisions. | §4 |
 | 43–45 | Wave 2: construction · food · sports | TODO | | §4 |
 | 46–47 | Wave 3: physics · chemistry | TODO | Needs 30 + 31. | §4 |
 | 48–49 | Wave 4: biology · ecology + fun | TODO | Absorbs steps 23, 25, 26 where they fit. | §4 |
@@ -1033,6 +1033,87 @@ now done** — PR #14 body rewritten with the full 18-calculator summary, a snap
   batches 1-5 doesn't apply the same way; the step-40 step file should state the wave's calculator
   list up front (per `mdFiles/calculator-rollout-plan.md` §4) before any code, same as batch 5's
   step file did.
+
+**2026-10-21 — step 40, Wave 1: math, run 1/~6 (5 new calculators).** Branch
+`step/40-wave-1-math-run-1` from `origin/master`. Added the `math` category (`data/calculators/index.ts`
+categories array + `calculatorOrder`, new `data/calculators/math.ts`, `lib/categoryTheme.ts` —
+orange / `function` icon, since every other `IconTile` color is already assigned to another
+category and no "percent/calculator" glyph exists in the kit) and 5 brand-new calculators per
+`mdFiles/calculator-rollout-plan.md` §4 and the step file (`mdFiles/steps/40-wave-1-math.md`),
+written just-in-time before this run:
+
+- **percentage-calculator** (type B): a `mode` options menu (X% of Y / X is what % of Y / percent
+  change / increase-decrease by X%) over two generic numbers, since the four formulas are not one
+  invertible equation a solver could auto-fill. `compute()` always returns one `result` key
+  computed from whichever mode is selected, so the breakdown config never needs to change shape at
+  runtime. CompareBars visual (the two raw inputs, mode-agnostic).
+- **percent-change-calculator** (type A, solver): `%Δ = ((B−A)÷A)×100` rearranges cleanly for all
+  three variables, same shape as `inflation-calculator`'s rate solve. CompareBars visual (old vs
+  new), reusing that calculator's "then vs now" pattern.
+- **percent-difference-calculator** (type B): `|A−B| ÷ ((A+B)÷2) × 100` is symmetric and not
+  uniquely invertible (solving for A given B and the percent needs to know which one is larger —
+  two possible answers), so no solver. CompareBars visual (value A vs value B).
+- **fraction-calculator** (type B): operator menu (add/subtract/multiply/divide) over two
+  fractions. The `BreakdownFormat` enum has no "a/b" fraction type, so the simplified fraction,
+  mixed number and decimal are each broken into their own numeric row instead of rendered as
+  "1/2" text live — the worked example and FAQ use standard "a/b" notation in prose. CompareBars
+  visual (the two input fractions as decimals).
+- **ratio-calculator** (type A, solver): A:B = C:D cross-multiplies to a closed form for any one
+  of the four terms, same shape as force-calculator's three-variable solve. Donut visual (A and B
+  as parts of their total). Also covers "proportion calculator" search intent via alias, since the
+  solver *is* a proportion solver.
+
+**Dedup decision:** the plan's math list also names "mixed number" and "proportion" as separate
+calculators. Both were absorbed into run 1's pages instead of getting their own — fraction-calculator
+already converts every result to a mixed number (one of its breakdown rows), and ratio-calculator's
+A:B = C:D solver already is a proportion solver. This mirrors the template's "one equation, all
+directions" rule for force-calculator; a standalone "mixed number calculator" or "proportion
+calculator" page would be near-duplicate content. Captured instead as aliases on fraction-calculator
+and ratio-calculator respectively. This drops the math category's total from the plan's ~31 named
+topics to ~29 pages across all runs — noted here, not hidden.
+
+Also fixed the pre-existing gap the plan called out: the homepage copy (`messages/en.json` `homeSeo.p5`)
+has claimed "The percentage calculator handles tip splits, discounts, tax rates, and markups" since
+before step 16, with no page behind it. `app/[locale]/layout.tsx`'s `keywords` array had an explicit
+comment since step 16 saying step 24 would "add back" `'percentage calculator'` once a real page
+existed — done now; `'scientific calculator'` and `'final grade calculator'` are still owed (the
+comment is updated to say so).
+
+Verification: 5 calculators committed one at a time (`git add` + `git commit`, each paired with
+`npm run test:update` + `npm test` immediately after, so every commit's snapshot and
+`KNOWN_NON_FINITE` state is self-consistent) — true per-calculator granularity was possible here
+because `math.ts` is a brand-new file, unlike the shared-file batches in steps 37-39. Every number
+in the copy (worked examples, FAQ figures, `example` lines) was recomputed by an independent
+Python script in the scratchpad (no app imports; run via the Python 3.12 interpreter path noted
+above) — this caught one real error before shipping: a watch-out item claimed "two values of 1 and
+2 differ by 100%," but the actual percent *difference* for 1 and 2 is 66.67% (100% would be the
+answer for 1 and 3 instead); fixed to use 1 and 3. `npm test` 288/288 (up from 278 after run 1's
+first commit), snapshot diff is pure additions (0 changes to any existing entry, confirmed with
+`git diff --stat`). `npm run build` passes, 87 static pages (was 81: +5 calculator pages, +1
+category page). `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"`
+passes. `KNOWN_NON_FINITE` entries added for the 3 calculators whose edge case (every input at its
+`min`, 0 where unset) hits a legitimate divide-by-zero: `percent-change-calculator`
+(`percentChange`), `percent-difference-calculator` (`percentDifference`), `ratio-calculator` (`d`).
+`percentage-calculator` and `fraction-calculator` needed no whitelist — their `mode`/`operator`
+menus were given an explicit `min` landing on a divide-safe branch, so even the edge case resolves
+to a finite number. Alias/related/id collision check run programmatically across all 59 calculators:
+no new collisions (the one pre-existing alias collision, "house loan emi calculator" on
+mortgage-calculator/emi-calculator, predates this run). All 5 pages + `/categories/math` + the
+sitemap spot-checked on a local dev server (H1, every v2 section id, 2 JSON-LD blocks, widget
+mount, the rendered example line, and the orange category accent color — confirmed the `#28A745`
+seen in each page's HTML is the universal green "how-to-use" step-number styling, not the category
+accent, which is correctly `#FF8A00` for math), then the server was killed and port 3000 confirmed
+free. References fetched directly, all loaded successfully, nothing failed: OpenStax Prealgebra 2e
+§6.1/§6.2/§4.1/§4.2/§4.5/§6.5, Wolfram MathWorld (Percent/Fraction/Ratio), and a North Carolina
+State University / Advanced Instructional Systems physics lab manual for percent error vs. percent
+difference. PR #15 opened as draft early (before the first calculator was built), updated with the
+full run-1 summary, and taken off draft via `gh pr ready 15` once everything above passed.
+
+**Lessons for run 2 and beyond:** per-calculator commits are straightforward when the whole file is
+new (as here) — write the full category file once, then reconstruct each commit's prefix
+programmatically (a small script slicing the array by calculator boundaries) rather than retyping,
+running `npm run test:update` + `npm test` after each slice. For a wave that touches only new
+files, there is no need to fall back to the "bundle into one commit" exception batches 1-5 needed.
 
 ## Pending on the user — not code
 

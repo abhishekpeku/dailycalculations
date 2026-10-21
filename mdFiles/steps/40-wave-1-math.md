@@ -47,6 +47,10 @@ drops the math category's total from the plan's ~31 named topics to ~29 pages; r
 | fraction-calculator | B | Arithmetic on two fractions with an operator choice; not a single rearrangeable equation. The breakdown format enum (`currency/percent/integer/number/significant/date`) has no "a/b" fraction format, so the simplified fraction, mixed number and decimal are each broken into their own numeric row (numerator, denominator, whole, remainder) rather than rendered as "1/2" text in the live widget — the worked example and FAQ show the standard "a/b" notation in prose instead. | CompareBars: the two input fractions, as decimals |
 | ratio-calculator | A (solver) | A:B = C:D cross-multiplies to a closed form for any one of the four terms (`a=(bc)/d`, etc.), same shape as force-calculator's three-variable solve. | Donut: A and B as two parts of their total (also covers "proportion calculator" search intent) |
 
+**Paused 2026-10-21 after run 1.** 5/~29 math calculators done (math category + percentage,
+percent-change, percent-difference, fraction, ratio). PR #15 ready for review. Next session picks
+up run 2: average, weighted average, rounding, scientific notation, exponent.
+
 ## Verification
 
 Every number in the copy (worked examples, FAQ figures, the `example` line) was recomputed by an

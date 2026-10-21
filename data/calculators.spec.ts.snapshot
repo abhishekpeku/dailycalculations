@@ -49,6 +49,7 @@ exports[`compute() snapshots > average-calculator 1`] = `
 {
   "default": {
     "inputs": {
+      "howMany": 4,
       "value1": 85,
       "value2": 90,
       "value3": 78,
@@ -68,6 +69,7 @@ exports[`compute() snapshots > average-calculator 1`] = `
   },
   "typical": {
     "inputs": {
+      "howMany": 6,
       "value1": 128,
       "value2": 135,
       "value3": 117,
@@ -78,15 +80,16 @@ exports[`compute() snapshots > average-calculator 1`] = `
       "value8": 0
     },
     "outputs": {
-      "mean": 129.5,
+      "mean": 86.33333333,
       "sum": 518,
-      "count": 4,
-      "min": 117,
+      "count": 6,
+      "min": 0,
       "max": 138
     }
   },
   "edge": {
     "inputs": {
+      "howMany": 2,
       "value1": 0,
       "value2": 0,
       "value3": 0,
@@ -99,7 +102,7 @@ exports[`compute() snapshots > average-calculator 1`] = `
     "outputs": {
       "mean": 0,
       "sum": 0,
-      "count": 4,
+      "count": 2,
       "min": 0,
       "max": 0
     }

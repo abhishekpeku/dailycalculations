@@ -661,7 +661,7 @@ export const mathCalculators: CalculatorConfig[] = [
     aliases: ['mean calculator', 'average of numbers calculator', 'sum and average calculator', 'arithmetic mean calculator', 'average of 4 numbers calculator'],
     related: ['weighted-average-calculator', 'gpa-calculator', 'percentage-calculator', 'percent-change-calculator'],
     title: 'Average Calculator',
-    description: 'Find the arithmetic mean, sum, count, minimum and maximum of up to 8 numbers — enter 4 and add up to 4 more.',
+    description: 'Find the arithmetic mean, sum, count, minimum and maximum of 2 to 8 numbers — choose how many you have, then enter exactly that many.',
     example: 'Four test scores of 85, 90, 78 and 92 average to 86.25 — a number none of the four scores actually is.',
     content: {
       lastReviewed: '2026-10-21',
@@ -674,12 +674,13 @@ export const mathCalculators: CalculatorConfig[] = [
         ]
       },
       howTo: {
-        intro: 'Enter your numbers in the value fields. Leave any unused optional field at 0 and it is left out of the calculation entirely.',
+        intro: 'Choose how many numbers you have, then fill in exactly that many of the number fields, in order starting from Number 1.',
         steps: [
-          { name: 'Enter your main numbers', text: 'Type up to 4 numbers into the first group. These always count toward the average, even if one of them happens to be 0.' },
-          { name: 'Add more if you have them', text: 'Open "Add up to 4 more numbers" for up to 4 additional values. Leave any of these at 0 to skip it — a genuine 0 among your extra numbers needs a nonzero placeholder like 0.0001 instead.' },
-          { name: 'Read the average', text: 'The headline is the arithmetic mean: the sum of every number you entered, divided by how many of them there are.' },
-          { name: 'Check the sum, count, min and max', text: 'The breakdown below the average shows the total, how many numbers were counted, and the smallest and largest values in your list.' },
+          { name: 'Choose how many numbers', text: 'Set "How many numbers?" to the count of values you actually have, from 2 to 8. Only that many of the Number fields below are used, in order.' },
+          { name: 'Enter your main numbers', text: 'Fill in Number 1 onward. A genuine 0 among them counts normally — it is averaged in like any other value, not dropped.' },
+          { name: 'Add more if you need them', text: 'If your count is above 4, open "Add up to 4 more numbers" for Number 5 through Number 8.' },
+          { name: 'Read the average', text: 'The headline is the arithmetic mean: the sum of your chosen count of numbers, divided by that count.' },
+          { name: 'Check the sum, count, min and max', text: 'The breakdown below the average shows the total, how many numbers were counted, and the smallest and largest values among them.' },
           { name: 'See the range at a glance', text: 'The chart plots your lowest value, your average, and your highest value side by side.' }
         ],
         outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
@@ -689,9 +690,9 @@ export const mathCalculators: CalculatorConfig[] = [
         expression: 'Average = (x₁ + x₂ + ... + xₙ) ÷ n',
         terms: [
           { symbol: 'x₁, x₂, ..., xₙ', meaning: 'Each number in the list.' },
-          { symbol: 'n', meaning: 'The count of numbers in the list — how many of them there are.' }
+          { symbol: 'n', meaning: '"How many numbers?" — this calculator averages exactly the first n Number fields, in order, whatever their values are.' }
         ],
-        note: 'The 4 optional fields left at their default of 0 are not counted toward n; the first 4 fields always are, even when one of them is 0.'
+        note: 'Number fields beyond your chosen count are ignored completely, regardless of what is typed in them; every field counted toward n is included as-is, zeros included.'
       },
       workedExample: {
         intro: 'Four test scores: 85, 90, 78 and 92.',
@@ -705,7 +706,8 @@ export const mathCalculators: CalculatorConfig[] = [
         explanation: '86.25 is not one of the four scores entered, and that is normal — the mean is a representative middle figure, not a value that has to already appear in the list. Three of the four scores (85, 90, 92) sit above it, and one (78) sits well below; the mean still balances all four.'
       },
       watchOut: [
-        { title: 'An unused optional slot must be exactly 0', body: 'This calculator treats a 0 in one of the 4 optional fields as "not entered." If you genuinely have a 0 as one of your extra numbers, enter a tiny nonzero placeholder (such as 0.0001) instead so it is not dropped from the count.' },
+        { title: 'A genuine 0 is a real value, not an "unused" marker', body: 'If one of your numbers really is 0 — a test score of 0, say — type it in and include it in your count. This calculator averages exactly the fields covered by "How many numbers?," zeros and all; it never silently drops a 0.' },
+        { title: '"How many numbers?" decides what counts, not which fields are filled in', body: 'Fields beyond your chosen count are ignored completely, even if you typed a value into one of them. Set the count first, then fill in that many fields starting from Number 1.' },
         { title: 'The average is sensitive to outliers', body: 'One unusually large or small number pulls the mean toward it. A list of 10, 12, 11 and 400 averages to 108.25 — far from any typical value in the list — because the mean does not ignore extremes the way the median would.' },
         { title: 'Average and weighted average are different questions', body: 'A plain average treats every number the same. If some numbers should count more than others — a final exam worth more than a single quiz — use the weighted average calculator instead; the two will usually disagree.' },
         { title: 'The result can fall outside the range of "typical" values', body: 'The average of 1, 1, 1 and 100 is 25.75 — higher than three of the four numbers and nowhere close to any single one of them, because one large value outweighs several small, identical ones.' }
@@ -716,14 +718,32 @@ export const mathCalculators: CalculatorConfig[] = [
       ]
     },
     inputs: [
+      {
+        id: 'howMany',
+        label: 'How many numbers?',
+        type: 'number',
+        placeholder: '4',
+        defaultValue: 4,
+        step: 1,
+        min: 2,
+        options: [
+          { value: 2, label: '2 numbers' },
+          { value: 3, label: '3 numbers' },
+          { value: 4, label: '4 numbers' },
+          { value: 5, label: '5 numbers' },
+          { value: 6, label: '6 numbers' },
+          { value: 7, label: '7 numbers' },
+          { value: 8, label: '8 numbers' }
+        ]
+      },
       { id: 'value1', label: 'Number 1', type: 'number', placeholder: '85', defaultValue: 85, step: 1 },
       { id: 'value2', label: 'Number 2', type: 'number', placeholder: '90', defaultValue: 90, step: 1 },
       { id: 'value3', label: 'Number 3', type: 'number', placeholder: '78', defaultValue: 78, step: 1 },
       { id: 'value4', label: 'Number 4', type: 'number', placeholder: '92', defaultValue: 92, step: 1 },
-      { id: 'value5', label: 'Number 5 (0 = unused)', type: 'number', placeholder: '0', defaultValue: 0, step: 1 },
-      { id: 'value6', label: 'Number 6 (0 = unused)', type: 'number', placeholder: '0', defaultValue: 0, step: 1 },
-      { id: 'value7', label: 'Number 7 (0 = unused)', type: 'number', placeholder: '0', defaultValue: 0, step: 1 },
-      { id: 'value8', label: 'Number 8 (0 = unused)', type: 'number', placeholder: '0', defaultValue: 0, step: 1 }
+      { id: 'value5', label: 'Number 5', type: 'number', placeholder: '0', defaultValue: 0, step: 1 },
+      { id: 'value6', label: 'Number 6', type: 'number', placeholder: '0', defaultValue: 0, step: 1 },
+      { id: 'value7', label: 'Number 7', type: 'number', placeholder: '0', defaultValue: 0, step: 1 },
+      { id: 'value8', label: 'Number 8', type: 'number', placeholder: '0', defaultValue: 0, step: 1 }
     ],
     breakdown: {
       headline: 'mean',
@@ -736,7 +756,7 @@ export const mathCalculators: CalculatorConfig[] = [
         { id: 'max', label: 'Highest value', format: 'significant' }
       ],
       groups: [
-        { title: 'Your numbers', inputs: ['value1', 'value2', 'value3', 'value4'] },
+        { title: 'Your numbers', inputs: ['howMany', 'value1', 'value2', 'value3', 'value4'] },
         { title: 'Add up to 4 more numbers', inputs: ['value5', 'value6', 'value7', 'value8'], optional: true }
       ],
       visual: {
@@ -752,7 +772,7 @@ export const mathCalculators: CalculatorConfig[] = [
       faq: [
         { question: 'How do I calculate an average?', answer: 'Add up every number in the list, then divide by how many numbers there are. Four scores of 85, 90, 78 and 92 sum to 345, and 345 ÷ 4 = 86.25.' },
         { question: 'What is the difference between average and mean?', answer: 'In everyday use they are the same thing. "Mean" is the more precise statistical term for what people usually call the "average" — the sum divided by the count.' },
-        { question: 'How many numbers can this calculator average?', answer: 'Up to 8: 4 always-counted fields plus 4 optional fields. Leave an optional field at 0 to exclude it from the average.' },
+        { question: 'How many numbers can this calculator average?', answer: 'From 2 to 8 — set "How many numbers?" to your count, then fill in that many Number fields starting from Number 1. Fields beyond your count are ignored; fields within it are included even if one is 0.' },
         { question: 'Can the average be higher than every number in the list?', answer: 'No, and it can never be lower than every number either — the average always falls between the smallest and largest values in the list (inclusive, if every value is identical).' },
         { question: 'What is the difference between average and weighted average?', answer: 'A plain average treats every number equally. A weighted average lets some numbers count more than others — see the weighted average calculator for that case, such as a final exam worth more than a quiz.' },
         { question: 'Why is my average not a "round" number?', answer: 'The average is only guaranteed to be a whole number when the sum happens to divide evenly by the count. 345 ÷ 4 = 86.25, which is exact but not a whole number.' },
@@ -762,7 +782,8 @@ export const mathCalculators: CalculatorConfig[] = [
     },
     compute(values) {
       const slots = [values.value1, values.value2, values.value3, values.value4, values.value5, values.value6, values.value7, values.value8];
-      const used = slots.filter((v, i) => i < 4 || v !== 0);
+      const n = Math.min(8, Math.max(2, Math.round(values.howMany)));
+      const used = slots.slice(0, n);
       const count = used.length;
       const sum = used.reduce((a, b) => a + b, 0);
       const mean = sum / count;

@@ -1335,6 +1335,25 @@ and taken off draft via `gh pr ready 18` once everything above passed. See
 sections for the full writeup. Next session picks up run 5: triangle, circle, area, volume,
 surface area.
 
+**2026-10-22 — fix on PR #18: lcm-calculator silently showed a wrong digit above
+Number.MAX_SAFE_INTEGER.** A coordinator review after the PR was marked ready caught that
+`lcm-calculator`'s `lcmPair` did `(a * b) / gcdRaw(a, b)` with no overflow check. Chained over 4
+pairwise-coprime numbers (`LCM(9973, 9967, 9949, 9941)`, all four prime), the true result
+(9,831,047,217,181,019) exceeds `2^53 − 1`, and the app showed 9,831,047,217,181,020 instead — a
+wrong digit, not a `NaN`. Fixed by dividing before multiplying and refusing (`NaN`) whenever an
+input or the result itself isn't `Number.isSafeInteger`. Audited `gcf-calculator` (inputs can be
+already-imprecise even though GCF itself never grows past the smallest input) and
+`long-division-calculator` (dividend/divisor checked before dividing; quotient can't exceed the
+dividend's magnitude) for the same class of bug and added the same guard to both.
+`prime-factorization-calculator`'s existing 1e12 cap was confirmed already well inside the safe
+range, no change needed (the kit's `CalculatorInput` type has no `max` field to additionally
+enforce this at the input level). None of the three fixes changed the automated snapshot (the
+default/typical/edge sets stay well within the safe range); added a watch-out + FAQ entry to each
+affected calculator and a new overflow-audit section to `verify_run4.py` using Python's exact
+bignums to confirm both the true value and the guard's threshold. `npm test` 318/318 (unchanged),
+`npm run build` and lint pass. See `mdFiles/steps/40-wave-1-math.md`'s final "Fix, 2026-10-22"
+section for the full writeup.
+
 ## Pending on the user — not code
 
 - ~~**Cloudflare apex → www 301 (from step 01).**~~ **DONE 2026-10-19** — Redirect Rule added by the user; verified `http://` and `https://dailycalculations.com/<path>?<query>` → 301 to `https://www.dailycalculations.com/<path>?<query>`, www serves 200.

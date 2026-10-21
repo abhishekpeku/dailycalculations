@@ -44,7 +44,22 @@ fresh against the v2 template (`mdFiles/calculator-template-v2.md`) and the `add
   - [x] `npm test` (310/310), `npm run build` (97 static pages), `npm run lint`
   - [x] Spot-check the 5 pages + `/categories/math` + sitemap on a local server, kill the server
   - [x] Update `mdFiles/STATUS.md`, open/ready the PR
-- Run 4: LCM, prime factorization, long division, quadratic formula, Pythagorean theorem
+- Run 4 (this run): **lcm-calculator, prime-factorization-calculator, long-division-calculator,
+  quadratic-formula-calculator, pythagorean-theorem-calculator**
+  - [x] lcm-calculator (type B — "How many numbers?" 2-4, reuses `gcdRaw`; lcm(n,0)=0 by
+    convention, lcm(0,0) left undefined)
+  - [x] prime-factorization-calculator (type B — breakdown; fixed 6 prime/exponent slots, 1e12
+    input cap, honest "extra distinct prime factors" counter for the rare overflow case)
+  - [x] long-division-calculator (type B — breakdown; Euclidean/nonnegative-remainder convention)
+  - [x] quadratic-formula-calculator (type B — breakdown; two simultaneous roots, not invertible)
+  - [x] pythagorean-theorem-calculator (type A — solver; a²+b²=c²)
+  - [x] Snapshot tests (`npm run test:update`), `KNOWN_NON_FINITE` entries where a legitimate domain
+    edge produces a non-finite result
+  - [x] `npm test` (318/318), `npm run build` (102 static pages), `npm run lint`
+  - [x] Spot-check the 5 pages + `/categories/math` + sitemap on a local server, kill the server
+  - [x] Update `mdFiles/STATUS.md`, open/ready the PR
+  - [x] Post-review fix: refuse (not silently round) LCM/GCF/long-division results beyond
+    `Number.MAX_SAFE_INTEGER` — see the last "Fix" section below
 - Run 5: triangle, circle, area, volume, surface area
 - Run 6: slope, distance between two points, midpoint, scientific-calculator
 
@@ -103,6 +118,22 @@ scientific notation, exponent; run 3: square root, cube root, logarithm, factori
 ready for review. Next session picks up run 4: LCM, prime factorization, long division, quadratic
 formula, Pythagorean theorem.
 
+## Type decisions (run 4)
+
+| Calculator | Type | Why | Visual |
+|---|---|---|---|
+| lcm-calculator | B | LCM of a variable-length list has no solver shape, same reasoning as `gcf-calculator`. Uses the same "How many numbers?" 2-4 count selector (not a 0-sentinel) and reuses `gcdRaw` via a new `lcmPair` helper: `LCM(a,b) = \|a×b\| ÷ gcd(a,b)`. **Zero convention, decided mid-run after fetching references**: the first draft returned `LCM(0,0) = 0`, mirroring `gcf-calculator`'s `GCF(0,0)=0`. Fetching the actual references showed this is wrong for LCM specifically — one Mount Royal University LibreTexts source states plainly "`lcm(a,0) = 0` for all non zero integers a" **and** "`lcm(0,0) = undefined`," and a second (Mount Royal's Higher Arithmetic text) goes further and calls `lcm(a,0)` itself undefined. Fixed to match the first, more common convention: `lcm(n,0)=0` for nonzero n, `lcm(0,0)=NaN`, registered in `KNOWN_NON_FINITE` (the automated edge case, since `num1`/`num2` have no `min`, is exactly `(0,0)`). **Overflow, caught in post-review** (see the last "Fix" section below): the original `(a*b)/gcdRaw(a,b)` formula had no check for results beyond `Number.MAX_SAFE_INTEGER`, so four large pairwise-coprime inputs could silently show a wrong digit instead of refusing. | CompareBars: smallest number / largest number / LCM (same derived-summary pattern as `gcf-calculator`, sidesteps the 4-bar cap) |
+| prime-factorization-calculator | B | A factorization is inherently variable-length (anywhere from 1 to ~10 distinct primes for a reasonably sized number), which the kit's numeric-only `compute()` return type and lack of a list input (Parked: "No list/array input in the calculator kit") cannot render directly. **Chosen bound**: 6 fixed prime/exponent slot pairs, with the input capped at 10¹² (trial division to √10¹² ≈ 10⁶ iterations, instant, and comfortably inside `Number.MAX_SAFE_INTEGER` — confirmed in the post-review safe-integer audit, no change needed here). A number with more than 6 distinct primes (rare — needs at least the first 7 primes multiplied together, 510,510) is **not silently truncated**: `distinctPrimeFactors` (the true total) and a dedicated `extraDistinctPrimeFactors` counter (0 in the overwhelmingly common case) are both always correct regardless of how many slots are shown, and `smallestPrimeFactor`/`largestPrimeFactor` are computed directly from the full factor list, not derived from the visible slots, so they stay correct even when the list overflows the 6 shown. 0 has no factorization (`NaN`, not hit by the automated edge case since `n`'s `min` is 1); 1 has the legitimate empty factorization (0 distinct primes, 1 divisor) rather than `NaN`. | CompareBars: your number / smallest prime factor / largest prime factor |
+| long-division-calculator | B | Division with a remainder is lossy, not invertible (many (dividend, divisor) pairs share a quotient), so no solver. **Remainder sign convention, the task's required decision point**: this calculator always keeps `0 ≤ remainder < \|divisor\|`, regardless of the sign of either operand (`r = ((d % v) + \|v\|) % \|v\|`, `q = (d − r) ÷ v`) — sometimes called Euclidean division, and distinct from the "truncate toward zero" convention several programming languages use by default (which would give a *negative* remainder for a negative dividend). Verified against the classical Division Algorithm theorem (OpenStax, Clark's LibreTexts) and cross-checked directly against the deployed JS `%` operator's own sign quirk (JS `%` takes the sign of the *dividend*; this calculator's two extra normalization steps make the final `r`/`q` convention-invariant regardless of the host language's raw `%` semantics — verified this claim directly against Node, not just assumed it). | CompareBars: dividend vs divisor |
+| quadratic-formula-calculator | B | `ax²+bx+c=0` has **two** simultaneous roots from one input triple, not a single invertible scalar — solving backward (given one root, find a, b, c) is underdetermined, the same non-invertibility reasoning as `percent-difference-calculator`. Handles every case the task calls for explicitly: `a=0` (linear, `x=−c÷b`, with a further `b=0` degenerate "0=0" case registered as `NaN` in `KNOWN_NON_FINITE`), discriminant `>0` (two real roots), `=0` (one repeated root, via a magnitude-relative floating-point near-zero tolerance, not an exact `=== 0` check), and `<0` (complex roots shown as a real part and a nonnegative imaginary part — `p ± qi` — rather than a bare `NaN`). **Rounding-safe defaults**: the default/typical/edge triad had to be chosen so the automated snapshot's "typical" input set (default × 1.5, rounded to the nearest step) doesn't accidentally flip the discriminant's sign through rounding noise — solved by picking defaults (`a=2, b=−10, c=8`) that scale to exact integers at ×1.5, confirmed by hand before committing to them. | CompareBars: Root 1 vs Root 2 (NaN renders as empty/blank bars in the complex case, handled gracefully by the existing kit, not a new code path) |
+| pythagorean-theorem-calculator | A (solver) | `a²+b²=c²` is a clean, symmetric 3-variable invertible relationship — closed-form in every direction, the same shape as `force-calculator`. `solve.legA`/`solve.legB` return `NaN` when the hypotenuse does not strictly exceed the other leg (an impossible triangle), per the task's explicit requirement. `solver.outputs` adds the triangle's area (½ab) as a free bonus figure. The automated snapshot's "edge" case (`legA=0, legB=0`, since neither has a `min`) gives a finite `hypotenuse=0`/`area=0` — no `KNOWN_NON_FINITE` entry needed; the `NaN`-producing leg-solve direction is a solver-only (bidirectional) behavior the automated harness's forward-only `compute()` never exercises, same as every other solver calculator built so far, verified manually instead. | CompareBars: leg a / leg b / hypotenuse |
+
+**Paused 2026-10-22 after run 4.** 20/~29 math calculators done (run 1: math category + percentage,
+percent-change, percent-difference, fraction, ratio; run 2: average, weighted average, rounding,
+scientific notation, exponent; run 3: square root, cube root, logarithm, factorial, GCF; run 4:
+LCM, prime factorization, long division, quadratic formula, Pythagorean theorem). PR #18 ready for
+review. Next session picks up run 5: triangle, circle, area, volume, surface area.
+
 ## Verification
 
 **Run 1:** every number in the copy (worked examples, FAQ figures, the `example` line) was
@@ -155,6 +186,49 @@ Two initial URL guesses 404'd (an OpenStax Prealgebra square-root section number
 a GCF section guessed wrong) and were corrected via search before being cited, so the final
 reference list has 0 failures.
 
+**Run 4:** every number in the copy (worked examples, FAQ figures, `example` lines) was recomputed
+independently in `verify_run4.py` (scratchpad, no app imports) — 0 mismatches after one correction
+to the script itself (an `LCM(17, −5)`-style sign-convention case where the script's first expected
+value was transcribed wrong, not a bug in the app; re-derived by hand and confirmed against a
+direct Node run of the deployed `compute()` before fixing the script). Cross-checked directly
+against the app's own `compute()` via `node -e "import('./data/calculators/index.ts')..."` for
+every default, a complex-root case, a repeated-root case, a linear (`a=0`) case, the all-zero
+degenerate case, the `n=0`/`n=1`/over-cap/negative cases for prime factorization, and the
+divide-by-zero cases — every figure matched. `npm test` 318/318 (up from 310), `npm run build` (102
+static pages, up from 97), `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern
+".claude/**"` all pass. All 5 pages spot-checked on a local dev server (H1, every v2 section id, 2
+JSON-LD blocks, the correct widget mounted — `solver-legA`/`solver-legB`/`solver-hypotenuse` for
+Pythagorean, the `example` line rendered word-for-word for all 5), plus a `?a=1&b=2&c=5` share-link
+check confirming the complex-root "Real part"/"Imaginary part" rows render instead of a bare NaN;
+`/categories/math` and `sitemap.xml` both list all 5 new ids; dev server killed and port 3000
+confirmed free afterward. `next-env.d.ts` reverted before committing. Programmatic alias/related/id
+collision check across all 74 calculators: no new collisions (the one pre-existing alias collision,
+"house loan emi calculator" on mortgage-calculator/emi-calculator, predates this run).
+
+References fetched directly, with corrections along the way: OpenStax Prealgebra 2e §2.5 (Prime
+Factorization and the Least Common Multiple — corrected from an initial wrong guess of §4.3/§4.5,
+the actual chapter is 2, not 4) and §1.5 (Divide Whole Numbers — corrected from a wrong guess of
+§1.4) and §9.3 (Pythagorean Theorem — corrected from a wrong guess of §9.5); OpenStax Elementary
+Algebra 2e §10.3 (Quadratic Formula — corrected from a wrong guess of §9.8) and College Algebra 2e
+§2.5 (Quadratic Equations, correct on the first guess); Wolfram MathWorld (Least Common Multiple,
+Fundamental Theorem of Arithmetic, Divisor Function, Quadratic Formula, Pythagorean Theorem); Pete
+L. Clark's *Elementary Number Theory* (Mathematics LibreTexts) §5, The Division Algorithm
+(corrected from a wrong guess of §2); and Mount Royal University's *Abstract Algebra I* (Mathematics
+LibreTexts) §1.2, for the LCM-with-zero convention that neither MathWorld nor the Clark text state.
+Every final URL was fetched and its content confirmed to match the claim before citing — 0 fetch
+failures in the final list, though 6 of the 13 references needed at least one wrong guess corrected
+via search first.
+
+**Post-review (run 4):** a coordinator review of PR #18 before merge caught a real silent-wrong-digit
+bug in `lcm-calculator` (see the last "Fix" section below for the full writeup). The fix, and the
+same-class audit it prompted for `gcf-calculator` and `long-division-calculator`, were verified with
+an added "LCM/GCF/long-division overflow audit" section in `verify_run4.py`, using Python's exact
+arbitrary-precision integers to confirm both the true mathematical value and that the app's new
+`Number.isSafeInteger` guard refuses at the right threshold — 0 mismatches. `npm test` 318/318
+(snapshot unchanged: the guard only changes behavior for inputs beyond what the default/typical/edge
+automated input sets exercise), `npm run build` (102 static pages), lint clean. Re-checked on a local
+dev server and killed afterward; port 3000 confirmed free.
+
 ## Fix, 2026-10-21: average-calculator counted the wrong numbers
 
 A pre-merge review of PR #16 caught a real bug in the first version of `average-calculator`: (1)
@@ -198,3 +272,61 @@ numbers doesn't change the result — only all-zero does), negatives (`GCF(-12, 
 non-integer rounding rule, independently in both a Python script and a Node one-liner against the
 app's own `compute()`. Only `gcf-calculator`'s own edge snapshot entry changed (`gcf: 1 → 0`,
 confirmed with `git diff`); `npm test` 310/310, `npm run build` and lint pass.
+
+## Fix, 2026-10-22: lcm-calculator's first draft got LCM(0, 0) wrong
+
+The first version of `lcm-calculator`'s `lcmPair` helper returned `0` for `LCM(0, 0)`, by direct
+analogy with `gcf-calculator`'s `GCF(0, 0) = 0`. Fetching the actual references for this run (not
+just reusing GCF's citation, which doesn't cover LCM at all) surfaced a Mount Royal University
+LibreTexts page stating plainly: *"A common convention is lcm(a,0) = 0 for all non zero integers
+a"* and *"lcm(0,0) = undefined."* `GCF(0,0)=0` and `LCM(0,0)=0` are **not** the same kind of
+convention — GCF(0,0) has a defensible "every number divides 0" argument, but LCM(0,0) has no
+positive common multiple to appeal to at all, since 0 is the *only* multiple 0 has. Fixed by making
+`lcmPair(0, 0)` return `NaN` while `lcmPair(n, 0) = 0` for any nonzero `n` stays as originally
+built; registered `lcm-calculator: ['lcm']` in `KNOWN_NON_FINITE` (the automated edge case, since
+neither `num1` nor `num2` has a `min`, is exactly `(0, 0)`). Rewrote the "LCM of 0 and 0" watch-out
+and added a dedicated FAQ entry; the worked example and every other FAQ figure were unaffected.
+Caught and fixed before the first commit of this run, so it never reached a pushed snapshot.
+
+## Fix, 2026-10-22: lcm/gcf/long-division silently overflowed Number.MAX_SAFE_INTEGER
+
+A coordinator review of PR #18, after it was marked ready, caught a second and more serious bug:
+`lcm-calculator`'s `lcmPair` computed `(a * b) / gcdRaw(a, b)` with no check that the result still
+fits in a double-precision float exactly. Chained over 4 pairwise-coprime numbers — e.g.
+`LCM(9973, 9967, 9949, 9941)`, all four prime, so nothing cancels in the GCF step — the true result
+is `9,831,047,217,181,019`, which exceeds `Number.MAX_SAFE_INTEGER` (`2^53 − 1` =
+`9,007,199,254,740,991`). The app showed `9,831,047,217,181,020` instead: a **silently wrong digit**,
+not a `NaN` — exactly the class of bug the run-2 and run-3 "Fix" sections above were written to
+guard against, and one this run's own number-verification pass missed, since every number actually
+used in the shipped copy happened to stay well within the safe range.
+
+Fixed `lcmPair` two ways: (1) divide before multiplying (`(a / gcdRaw(a, b)) * b`) to keep the
+intermediate value as small as possible — this alone does not fix the failing case above, since
+`gcd = 1` for coprime inputs leaves nothing to divide out first, but it does help other cases and
+costs nothing; (2) refuse (`NaN`) whenever either input, or the result itself, is not
+`Number.isSafeInteger`. Audited the other three run-4 calculators for the same class of bug:
+
+- **gcf-calculator**: the GCF itself can never exceed the smallest input (Euclidean algorithm only
+  ever shrinks), so there is no *growth* risk the way LCM has — but an input already beyond
+  `2^53 − 1` has lost precision before `compute()` ever sees it, so a confidently-displayed GCF
+  built from an already-wrong number would still be a silent bug of the same family. Added the same
+  `Number.isSafeInteger` input guard.
+- **long-division-calculator**: the quotient can never exceed the dividend's own magnitude (the
+  rounded divisor is always ≥ 1 once zero is ruled out), so again no growth risk — but the dividend
+  and divisor are now checked the same way before dividing.
+- **prime-factorization-calculator**: already capped at `10^12`, confirmed comfortably inside
+  `Number.MAX_SAFE_INTEGER` (`10^12 < 2^53 − 1`), so no change was needed here. The kit's
+  `CalculatorInput` type has no `max` field (only `min`), so there is no separate input-level
+  enforcement to add beyond the existing in-`compute()` cap — documented here rather than silently
+  skipped.
+
+None of the three fixes changed the automated snapshot: the default/typical/edge input sets for all
+three calculators stay well within the safe-integer range, so no new `KNOWN_NON_FINITE` entries were
+needed (`npm test` 318/318, unchanged pass count, 0 snapshot diff). Added a watch-out item + FAQ
+entry to `lcm-calculator`, `gcf-calculator` and `long-division-calculator` explaining the refusal in
+plain language (citing `9,007,199,254,740,991` / `2^53 − 1` by name, not just "very large numbers"),
+and a new "LCM/GCF/long-division overflow audit" section to `verify_run4.py` that uses Python's
+exact arbitrary-precision integers to confirm both the true mathematical value for the failing case
+and that the app's guard now triggers at exactly the right threshold — 0 mismatches. `npm run build`
+(102 static pages) and lint pass; re-checked on a local dev server, then killed, port 3000 confirmed
+free.

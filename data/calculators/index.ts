@@ -106,7 +106,12 @@ export const calculatorOrder: string[] = [
   'cube-root-calculator',
   'logarithm-calculator',
   'factorial-calculator',
-  'gcf-calculator'
+  'gcf-calculator',
+  'lcm-calculator',
+  'prime-factorization-calculator',
+  'long-division-calculator',
+  'quadratic-formula-calculator',
+  'pythagorean-theorem-calculator'
 ];
 
 const rank = (id: string) => {

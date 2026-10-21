@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { WidgetCard } from '@/components/CalculatorWidget';
 
 type Zone = {
   label: string;
@@ -93,7 +94,7 @@ export default function TimeZonePlanner() {
   const regions = [...new Set(ZONES.map((z) => z.region))];
 
   return (
-    <div className="space-y-6 rounded-3xl border border-slate-200 bg-white/95 p-6 shadow-panel dark:border-slate-800 dark:bg-slate-950/90">
+    <WidgetCard>
       {/* Base time picker */}
       <div className="space-y-3">
         <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Your meeting time</p>
@@ -166,7 +167,7 @@ export default function TimeZonePlanner() {
                 <button
                   key={z.iana}
                   onClick={() => toggleZone(z.iana)}
-                  className={`rounded-xl border px-3 py-1 text-xs transition ${selected.includes(z.iana) ? 'border-brand-500 bg-brand-50 text-brand-700 dark:border-brand-400 dark:bg-brand-950 dark:text-brand-300' : 'border-slate-200 bg-white text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400'}`}
+                  className={`rounded-xl border px-3 py-1 text-xs transition ${selected.includes(z.iana) ? 'border-brand-500 bg-brand-50 text-brand-700 dark:border-brand-500 dark:bg-brand-500/20 dark:text-brand-100' : 'border-slate-200 bg-white text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400'}`}
                 >
                   {z.label}
                 </button>
@@ -181,6 +182,11 @@ export default function TimeZonePlanner() {
         <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-yellow-300" /> Early / late (7–9am, 5–8pm)</span>
         <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-red-400" /> Outside hours</span>
       </div>
-    </div>
+
+      <p className="text-center text-xs text-slate-400 dark:text-slate-500">
+        Offsets and daylight saving transitions come from the IANA Time Zone Database, as implemented
+        by your browser.
+      </p>
+    </WidgetCard>
   );
 }

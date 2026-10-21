@@ -50,6 +50,9 @@ Run 4 (last 3):
 - [ ] hashtag-counter (C)
 - [ ] gpa-calculator (C → B)
 
+Paused 2026-10-21 after pomodoro-timer. Resume from the first unchecked box
+(travel-budget-calculator, run 2).
+
 ## Notes for resuming
 
 - Branch: `step/39-batch-5`. Draft PR opened early; keep it draft until all 18 are done.

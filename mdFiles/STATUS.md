@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-10-21 · Current step: **39** (Batch 5, time/travel/work/creator/text/education) · step 38 done (PR #13, ready for review) · steps 17 + 30–38 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split, batches 1–4) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
+Last updated: 2026-10-21 · Current step: **39** (Batch 5, time/travel/work/creator/text/education) — **IN PROGRESS, paused after run 1 of 4** (5/18 done: date-difference, age, sleep-time, work-hours, pomodoro-timer; PR #14 draft) · step 38 done (PR #13, ready for review) · steps 17 + 30–38 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split, batches 1–4) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
 
 ---
 
@@ -117,7 +117,7 @@ is why 12-15 run after it.
 | 36 | Batch 2: shopping + conversion (9) | **DONE** 2026-10-19 | 4 shopping type A (sales-tax, tip, discount, unit-price), cashback B, 4 converters type A. Stone added to `mass`. PR #10. | §3 |
 | 37 | Batch 3: health (6) | DONE 2026-10-20 | YMYL. Branch `step/37-batch-3-health`, PR #11. All 6 health calculators on v2. See session log. | §3 |
 | 38 | Batch 4: auto + home (12) | **DONE** 2026-10-21 | Branch `step/38-batch-4-auto-home`, PR #13 (ready for review). All 12: car-payment, gas-cost, fuel-cost, ev-charging, commute-cost, toll-cost, concrete, paint, tile, wallpaper, electricity-bill, furniture-fit. See session log. | §3 |
-| 39 | Batch 5: time, travel, work, creator, text, education (18) | TODO | | §3 |
+| 39 | Batch 5: time, travel, work, creator, text, education (18) | **IN PROGRESS** (paused 2026-10-21 after run 1) | Branch `step/39-batch-5`, PR #14 draft. Run 1/4 done: date-difference, age, sleep-time, work-hours, pomodoro-timer. Remaining: travel-budget, visa-stay-days, currency-converter, timezone-meeting-planner, freelancer-rate (run 2); meeting-cost, pto, salary-raise, youtube-earnings, instagram-engagement (run 3); character-counter, hashtag-counter, gpa-calculator (run 4). Checklist: `mdFiles/steps/39-batch-5.md`. | §3 |
 | 40–42 | Wave 1: math · statistics · conversion | TODO | Absorbs step 24 (math). 5 calculators per agent run. | §4 |
 | 43–45 | Wave 2: construction · food · sports | TODO | | §4 |
 | 46–47 | Wave 3: physics · chemistry | TODO | Needs 30 + 31. | §4 |
@@ -972,10 +972,15 @@ match the paint/tile/wallpaper/furniture-fit mutual-linking cluster; electricity
 favor of `commute-cost-calculator`, also from this batch. `npm test` 268 pass; `npm run build` (81
 static pages) and lint (ignoring `.open-next/**`, `.claude/**`) pass; dev server killed.
 **Step 38 is DONE.** PR #13 covers all 12 Batch 4 calculators; marked ready for review (was draft).
-**Next (step 39):** Batch 5 — time, travel, work, creator, text, education (18 calculators). New step
-file needed; follow the same per-calculator commit + draft-PR-early pattern, 5 calculators per run.
 
 fix · 2026-10-20 · **Solver widget shows the real currency symbol, not `¤`** (branch `fix/currency-symbol`). `UNITS.currency[0].label` = `currencySymbol()` from `lib/calculator.ts`, so type-A inline values, input adornments and output rows print `$` like the type-B widget and the visuals. Share links use the unit id (`currency`), not the label, so they are unaffected. New `units.spec` test: no unit label contains `¤`.
+
+step 39 · 2026-10-21 · **Batch 5 run 1/4 — time calculators** (branch `step/39-batch-5`, PR #14 draft). Step file `mdFiles/steps/39-batch-5.md` written with the full 18-item checklist grouped by run before any code changed. This run: date-difference-calculator (added `concept` + `references` + a `breakdown` Timeline visual; `compute()`/inputs untouched — it already had howTo/formula/workedExample/watchOut from the step-10 pilot), age-calculator (rebuilt from a trivial `birthYear - currentYear` into real `birthMonth/birthDay/birthYear` + `timeDependent: true`, returning exact years/months/days, total days lived and days to the next birthday, with a next-birthday Timeline — this is a deliberate `compute()`/inputs change, snapshot regenerated with `npm run test:update` and the diff checked to touch only `age-calculator`), sleep-time-calculator (breakdown + a Timeline showing 4/5/6-cycle wake-time options; `compute()` unchanged), work-hours-calculator (breakdown + Donut for regular vs overtime pay — the plan's "stacked bar" wording maps to Donut here, matching the precedent already set by `tdee-calculator` and `cashback-calculator` in earlier batches since the kit has no literal stacked-bar component; `compute()` unchanged), and pomodoro-timer (type C: full v2 content — the page template already renders TOC/concept/howTo/etc. from `calculator.content` regardless of widget type, confirmed by reading `app/[locale]/calculators/[slug]/page.tsx` — plus a restyle onto the shared `WidgetCard` + category accent color, which also fixed a pre-existing dead-Tailwind-class bug, `bg-brand-600`/`hover:bg-brand-700`/`focus:border-brand-500`, none of which exist in the Tailwind config per the "Dead Tailwind brand shades" Parked item). All five calculators' copy figures were re-verified with an independent Python script (no app imports); 0 mismatches after one self-caught arithmetic slip in the script itself (sleep-time wake minute, fixed before trusting the result). References fetched directly: IEEE POSIX (epoch), Royal Museums Greenwich (leap years — the first guessed URL 404'd, found the right one via search), NHLBI (sleep stages), CDC (sleep duration), US DOL (overtime + FLSA), California DIR (daily overtime), Duke University ARC and the official Pomodoro® Technique site. **Not loaded** (tried, moved on per the no-retry-loop rule): US Naval Observatory "Introduction to Calendars" (`ECONNRESET` twice) and NINDS "Brain Basics: Understanding Sleep" (403) — NHLBI substituted for the latter. `npm test` 268/268, `npm run build` (81 static pages) and lint (ignoring `.open-next/**`, `.claude/**`) pass; dev server killed; `related`/`aliases` checked for self-reference, existence and duplication across all 5 (clean — the one alias collision found, `mortgage-calculator`/`emi-calculator` on "house loan emi calculator", predates this batch).
+**Paused after run 1 of 4.** Remaining 13: travel-budget, visa-stay-days, currency-converter,
+timezone-meeting-planner, freelancer-rate (run 2); meeting-cost, pto, salary-raise,
+youtube-earnings, instagram-engagement (run 3); character-counter, hashtag-counter, gpa-calculator
+(run 4). Resume from `mdFiles/steps/39-batch-5.md`'s first unchecked box. PR #14 stays draft until
+all 18 are done.
 
 ## Pending on the user — not code
 

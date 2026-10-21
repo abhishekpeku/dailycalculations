@@ -32,11 +32,25 @@ calculator changed). Everything else in this run kept compute()/inputs unchanged
 "Dead Tailwind brand shades") by switching to the shared WidgetCard + inline accent color instead.
 
 Run 2 (next 5):
-- [ ] travel-budget-calculator (B)
-- [ ] visa-stay-days-calculator (B)
-- [ ] currency-converter (C)
-- [ ] timezone-meeting-planner (C)
-- [ ] freelancer-rate-calculator (A)
+- [x] travel-budget-calculator (B)
+- [x] visa-stay-days-calculator (B)
+- [x] currency-converter (C)
+- [x] timezone-meeting-planner (C)
+- [x] freelancer-rate-calculator (A)
+
+Run 2 done 2026-10-21. `npm test` 271/271 (no snapshot changes — travel-budget, visa-stay-days,
+timezone/currency (empty compute) and freelancer-rate all kept `compute()`/`inputs` unchanged;
+freelancer-rate's solver was added alongside per the Type-A rule). `npm run build` (81 static
+pages) and lint pass. visa-stay-days-calculator's "180-day window bar" uses a percent-based
+RangeBar (0-100 / 100-200%) rather than day-count bands, since BreakdownVisual bands must be
+static and allowedDays is a user-adjustable input — documented in the commit. currency-converter
+and timezone-meeting-planner (type C) restyled onto the shared WidgetCard/ResultPanel; this also
+fixed real dead-Tailwind-class bugs (bg/border/text using brand-200/300/400/800/950, none of
+which exist in tailwind.config.ts) that were silently breaking colors, worst in dark mode.
+currency-converter now has a persistent "static, not live" banner with an as-of date, repeated in
+a watchOut item, the footer and an FAQ, per the coordinator's instruction. visa-stay-days cites
+the official EU short-stay calculator + CBP I-94 compliance, with an explicit "not legal advice"
+note. timezone-meeting-planner cites the IANA Time Zone Database + NIST DST rules.
 
 Run 3 (next 5):
 - [ ] meeting-cost-calculator (B)
@@ -50,8 +64,8 @@ Run 4 (last 3):
 - [ ] hashtag-counter (C)
 - [ ] gpa-calculator (C → B)
 
-Paused 2026-10-21 after pomodoro-timer. Resume from the first unchecked box
-(travel-budget-calculator, run 2).
+Paused 2026-10-21 after freelancer-rate-calculator. Resume from the first unchecked box
+(meeting-cost-calculator, run 3).
 
 ## Notes for resuming
 

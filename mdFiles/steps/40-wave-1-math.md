@@ -21,8 +21,18 @@ fresh against the v2 template (`mdFiles/calculator-template-v2.md`) and the `add
   - [x] Spot-check the 5 pages + `/categories/math` + sitemap on a local server, kill the server
   - [x] Update `mdFiles/STATUS.md`, open/ready the PR
 
-- Run 2 (next): average, weighted average, rounding, scientific notation, exponent
-- Run 3: square root, cube root, logarithm, factorial, GCF
+- Run 2 (this run): **average-calculator, weighted-average-calculator, rounding-calculator,
+  scientific-notation-calculator, exponent-calculator**
+  - [ ] average-calculator (type B — 8 value slots, "blank"-style ignore via a kit-gap workaround)
+  - [ ] weighted-average-calculator (type B — 6 value/weight pairs, cross-linked with gpa-calculator)
+  - [ ] rounding-calculator (type B — decimal places + direction/tie-rule menus)
+  - [ ] scientific-notation-calculator (type B — mode menu: convert / multiply / divide)
+  - [ ] exponent-calculator (type A — solver, base/exponent/result)
+  - [ ] Snapshot tests (`npm run test:update`), `KNOWN_NON_FINITE` entry for weighted-average-calculator
+  - [ ] `npm test`, `npm run build`, `npm run lint`
+  - [ ] Spot-check the 5 pages on a local server, kill the server
+  - [ ] Update `mdFiles/STATUS.md`, open/ready the PR
+- Run 3 (next): square root, cube root, logarithm, factorial, GCF
 - Run 4: LCM, prime factorization, long division, quadratic formula, Pythagorean theorem
 - Run 5: triangle, circle, area, volume, surface area
 - Run 6: slope, distance between two points, midpoint, scientific-calculator
@@ -50,6 +60,20 @@ drops the math category's total from the plan's ~31 named topics to ~29 pages; r
 **Paused 2026-10-21 after run 1.** 5/~29 math calculators done (math category + percentage,
 percent-change, percent-difference, fraction, ratio). PR #15 ready for review. Next session picks
 up run 2: average, weighted average, rounding, scientific notation, exponent.
+
+## Type decisions (run 2)
+
+| Calculator | Type | Why | Visual |
+|---|---|---|---|
+| average-calculator | B | A plain list of numbers has no single invertible equation. **Kit gap**: there is no list/array input in the kit (every `CalculatorInput` is one number), so this uses a fixed number of slots like `gpa-calculator`'s course rows — 4 always-counted slots (`value1`-`value4`) plus 4 optional slots behind a disclosure (`value5`-`value8`). Unlike GPA (where a 0 credit genuinely means "no weight," a mathematically correct exclusion), a plain average has no weight to zero out, so the 4 optional slots use a documented convention instead: left at their default of 0, they are excluded from the sum/count entirely (checked by array index, not by a weight multiplying to 0). Mean, sum, count, min and max are always finite (count is always ≥ 4), so no `KNOWN_NON_FINITE` entry is needed. | CompareBars: min / average / max (derived summary stats, not the raw slots — correct regardless of how many optional slots are in use, sidestepping `CompareBars`'s 4-bar cap) |
+| weighted-average-calculator | B | Mirrors `gpa-calculator`'s actual mechanism exactly, generalized from grades/credits to any value/weight pairs: 3 always-counted pairs (`value1..3`/`weight1..3`) plus 3 optional pairs behind a disclosure (`value4..6`/`weight4..6`), where a 0 weight is a mathematically correct exclusion (it contributes 0 to both the weighted sum and the total weight), not a workaround. All-zero weights (the `edge` test set) is a genuine 0÷0 — `KNOWN_NON_FINITE` registered, same as `percent-change-calculator`'s divide-by-zero. **Cross-link, not a duplicate**: GPA is a named special case (grade points weighted by credit hours) of this general calculator; content explicitly says so and links to `gpa-calculator` in `related` and in prose, rather than re-teaching credit-weighted averaging from scratch. | Donut: each pair's weight as a share of the total weight (parts of a whole — distinct from GPA's own Donut, which groups credits into letter-grade bands, not weights) |
+| rounding-calculator | B | Rounding is lossy (many inputs map to one output), not invertible, so no solver. One value field, a `decimalPlaces` field (negative values round to tens/hundreds, matching the sign convention of spreadsheet ROUND functions), a `direction` menu (nearest / round up / round down) and a `tieRule` menu (half away from zero / half to even) used only by "nearest." **Float precision**: naive `value * 10**n` rounding fails on cases like 1.005 (stored internally as 1.00499999999999989... per IEEE 754 binary64), so rounding shifts the decimal point through a string/exponential-notation round trip instead of multiplication, which exploits JS's shortest-round-trip number-to-string conversion to recover the intended decimal before re-parsing it at the shifted scale — verified against the classic 1.005 case in the Python script. Cites IEEE 754-2019 for both the tie-breaking rule names and the float-representation note. | CompareBars: original value vs rounded value |
+| scientific-notation-calculator | B | Converting between a plain number and `a × 10^b` form, and multiplying/dividing two numbers already in that form, are four related but distinct operations picked by a `mode` menu — not one invertible equation. **Kit gap**: no "a × 10^b" breakdown format exists (same gap `fraction-calculator` hit with "a/b"), so the coefficient and exponent are separate numeric rows; prose shows the real notation. Normalizing a coefficient back into [1, 10) after multiply/divide uses the same string-based float cleanup as rounding-calculator, to avoid drift from repeated multiplication. | LogScale: the result's plain decimal value against two NIST-sourced magnitude benchmarks (a nanometer, 10⁻⁹ m; the Avogadro constant, ~6.022×10²³) — the calculator's whole subject is "how to write very large or very small numbers," so a log-scale "how big is that" visual fits every mode, not just one |
+| exponent-calculator | A (solver) | `result = base^exponent` rearranges for all three variables: forward power, an nth root for `base`, and a logarithm for `exponent`. Both inverses have real domain restrictions (no real nth root of a negative number except for odd integer exponents; no real logarithm of a non-positive number or of a base ≤ 0 or = 1), which the solve functions return `NaN` for — flagged in `watchOut`, not hidden. The forward direction needs no special-casing: JavaScript's `**` operator already matches the chosen conventions (0⁰ = 1, negative base with a non-integer exponent = `NaN`), both cited to IEEE 754 / NIST DLMF. | LogScale: the result against computing/physics-style magnitude benchmarks (2¹⁰ = 1,024, the NIST-defined "kibi" binary prefix; 10⁶; 10⁹) |
+
+**Paused 2026-10-21 after run 2.** 10/~29 math calculators done. PR for this run is open; see the
+session log in `STATUS.md` for build/verification results and run 3's list (square root, cube root,
+logarithm, factorial, GCF).
 
 ## Verification
 

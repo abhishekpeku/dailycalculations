@@ -2538,6 +2538,274 @@ export const mathCalculators: CalculatorConfig[] = [
       const { legA, legB } = values;
       return { hypotenuse: Math.sqrt(legA ** 2 + legB ** 2), area: (legA * legB) / 2 };
     }
+  },
+  {
+    id: 'triangle-calculator',
+    category: 'math',
+    updatedAt: '2026-10-22',
+    aliases: ['triangle solver', 'sss triangle calculator', 'sas triangle calculator', 'triangle angle calculator', 'find missing angle triangle calculator'],
+    related: ['pythagorean-theorem-calculator', 'area-calculator', 'circle-calculator', 'surface-area-calculator'],
+    title: 'Triangle Calculator',
+    description: 'Solve any triangle from three sides (SSS), two sides and the angle between them (SAS), or two angles and the side between them (ASA) — get every side, angle, the perimeter and the area.',
+    example: 'A triangle with sides 7, 9 and 12 has angles of about 35.43°, 48.19° and 96.38°, a perimeter of 28 and an area of about 31.30, found with the law of cosines and Heron’s formula.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is a triangle solver?',
+        paragraphs: [
+          'Any triangle is completely fixed by three independent measurements — but which three you happen to know changes which formula finds the rest. Know all three sides (SSS, "side-side-side")? The law of cosines finds every angle, and Heron’s formula finds the area directly from the sides, with no angle needed at all. Know two sides and the angle trapped between them (SAS, "side-angle-side")? The law of cosines finds the third side first, and then the same angle formulas find the other two angles. Know two angles and the side that connects them (ASA, "angle-side-angle")? The third angle is just 180° minus the other two, and the law of sines finds the two missing sides.',
+          'This calculator covers all three of those well-posed cases on one page, sharing the same six fields (three sides, three angles) and switching which ones it reads based on the mode you pick. Whichever route it takes, it always finishes the same way: it ends up knowing all three sides, recomputes all three angles from them with the law of cosines for internal consistency, and reports the perimeter and the area.',
+          'One case is deliberately left out: SSA, two sides and an angle that is NOT between them. That case is mathematically ambiguous — the same two sides and angle can match zero, one or two different triangles, depending on the numbers — so instead of guessing at one of the answers, this calculator asks for a different combination of three measurements instead.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick the mode that matches what you actually measured, then fill in exactly those three fields.',
+        steps: [
+          { name: 'Choose SSS, SAS or ASA', text: 'SSS needs all three sides. SAS needs two sides and the angle squeezed between them. ASA needs two angles and the side that joins them.' },
+          { name: 'Fill in only the fields that mode uses', text: 'The other fields stay visible (tucked under "More options" for SAS/ASA) but compute() ignores whatever is left over in them for that mode — they do not need to be blanked out.' },
+          { name: 'Check the triangle is possible', text: 'SSS requires each side to be shorter than the sum of the other two (the triangle inequality). ASA requires the two given angles to add to less than 180°. If either fails, every result is left blank rather than shown as a wrong number.' },
+          { name: 'Read every side, angle, the perimeter and the area', text: 'All six measurements are filled in regardless of which three you started from, plus the perimeter (the sum of the sides) and the area (from Heron’s formula).' },
+          { name: 'Compare the three sides', text: 'The chart shows side a, side b and side c side by side, so you can see at a glance which is longest.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Three different starting points, all converging on the same final sides-and-angles picture.',
+        expression:
+          'Law of cosines: c² = a² + b² − 2ab·cos(C)\nLaw of sines: a ÷ sin(A) = b ÷ sin(B) = c ÷ sin(C)\nHeron’s formula: Area = √(s(s−a)(s−b)(s−c)), where s = (a+b+c) ÷ 2',
+        terms: [
+          { symbol: 'a, b, c', meaning: 'The three sides. By convention, side a is opposite angle A, side b opposite angle B, and side c opposite angle C.' },
+          { symbol: 'A, B, C', meaning: 'The three angles, in degrees, always adding up to 180°.' },
+          { symbol: 's', meaning: 'The semiperimeter — half of the triangle’s perimeter — a bookkeeping shortcut Heron’s formula uses, not a separate measurement.' }
+        ],
+        note: 'For SSS, the law of cosines is rearranged to solve for an angle instead of a side: cos(A) = (b² + c² − a²) ÷ (2bc), then A = arccos(...). The calculator applies this once for each angle.'
+      },
+      workedExample: {
+        intro: 'A surveyor measures all three sides of a triangular plot: 7 m, 9 m and 12 m (SSS). What are its angles, perimeter and area?',
+        rows: [
+          { label: 'Angle A (opposite side 7)', value: 'arccos((9² + 12² − 7²) ÷ (2 × 9 × 12)) ≈ 35.43°' },
+          { label: 'Angle B (opposite side 9)', value: 'arccos((7² + 12² − 9²) ÷ (2 × 7 × 12)) ≈ 48.19°' },
+          { label: 'Angle C (opposite side 12)', value: '180° − 35.43° − 48.19° ≈ 96.38°' },
+          { label: 'Perimeter', value: '7 + 9 + 12 = 28' },
+          { label: 'Semiperimeter (s)', value: '28 ÷ 2 = 14' },
+          { label: 'Area (Heron’s formula)', value: '√(14 × 7 × 5 × 2) = √980 ≈ 31.30' }
+        ],
+        result: 'A ≈ 35.43° · B ≈ 48.19° · C ≈ 96.38° · perimeter = 28 · area ≈ 31.30',
+        explanation: 'Notice the three angles add to 180.00°, the universal check for any triangle. Side 12, the longest side, sits opposite the largest angle (96.38°) — the longest side is always opposite the largest angle, and the shortest side is always opposite the smallest one.'
+      },
+      watchOut: [
+        { title: 'SSA (two sides and a non-included angle) is not supported', body: 'Two sides and an angle that is not between them can describe zero, one or two valid triangles — the "ambiguous case" of the law of sines. Rather than silently pick one answer, this calculator leaves that combination out; measure the included angle instead (SAS) or a third side (SSS).' },
+        { title: 'A triangle must pass the triangle inequality', body: 'Each side must be strictly shorter than the sum of the other two. Sides 1, 2 and 10 fail (1 + 2 is nowhere near 10) and every output is left blank rather than showing a result for a shape that cannot exist.' },
+        { title: 'Degrees, not radians', body: 'Every angle field expects degrees (90 for a right angle, not 1.5708). Entering radians by mistake will throw off every other field that depends on it.' },
+        { title: 'Left-over fields in other modes are ignored, not blanked', body: 'Switching from SSS to SAS does not erase the side-c field — it is simply not read in SAS mode, where the third side is calculated instead. Re-entering it has no effect until you switch back to a mode that uses it directly.' },
+        { title: 'This only finds area, angles, sides and perimeter', body: 'For the kind of right-triangle-only hypotenuse problem where exactly two sides are known and the angle between them is a right angle, the dedicated Pythagorean theorem calculator is faster — it is the SAS case here with the included angle fixed at 90°.' }
+      ],
+      references: [
+        { label: 'OpenStax, Algebra and Trigonometry 2e, §10.1 Non-right Triangles: Law of Sines', url: 'https://openstax.org/books/algebra-and-trigonometry-2e/pages/10-1-non-right-triangles-law-of-sines' },
+        { label: 'OpenStax, Algebra and Trigonometry 2e, §10.2 Non-right Triangles: Law of Cosines', url: 'https://openstax.org/books/algebra-and-trigonometry-2e/pages/10-2-non-right-triangles-law-of-cosines' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'mode',
+        label: 'What do you know?',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 1,
+        min: 1,
+        options: [
+          { value: 1, label: 'Three sides (SSS)' },
+          { value: 2, label: 'Two sides + the angle between them (SAS)' },
+          { value: 3, label: 'Two angles + the side between them (ASA)' }
+        ]
+      },
+      { id: 'sideA', label: 'Side a', type: 'number', placeholder: '3', defaultValue: 3, step: 1 },
+      { id: 'sideB', label: 'Side b', type: 'number', placeholder: '4', defaultValue: 4, step: 1 },
+      { id: 'sideC', label: 'Side c (between angles A and B)', type: 'number', placeholder: '5', defaultValue: 5, step: 1 },
+      { id: 'angleA', label: 'Angle A, in degrees (opposite side a)', type: 'number', placeholder: '36.87', defaultValue: 36.87, step: 0.01 },
+      { id: 'angleB', label: 'Angle B, in degrees (opposite side b)', type: 'number', placeholder: '53.13', defaultValue: 53.13, step: 0.01 },
+      { id: 'angleC', label: 'Angle C, in degrees (between sides a and b)', type: 'number', placeholder: '90', defaultValue: 90, step: 0.01 }
+    ],
+    breakdown: {
+      headline: 'area',
+      headlineLabel: 'Area',
+      outputs: [
+        { id: 'area', label: 'Area', format: 'number' },
+        { id: 'perimeter', label: 'Perimeter', format: 'number' },
+        { id: 'sideA', label: 'Side a', format: 'number' },
+        { id: 'sideB', label: 'Side b', format: 'number' },
+        { id: 'sideC', label: 'Side c', format: 'number' },
+        { id: 'angleA', label: 'Angle A (degrees)', format: 'number' },
+        { id: 'angleB', label: 'Angle B (degrees)', format: 'number' },
+        { id: 'angleC', label: 'Angle C (degrees)', format: 'number' }
+      ],
+      groups: [
+        { inputs: ['mode'] },
+        { inputs: ['sideA', 'sideB', 'sideC'] },
+        { title: 'Only used for "two sides + angle" (SAS) mode', inputs: ['angleC'], optional: true },
+        { title: 'Only used for "two angles + side" (ASA) mode', inputs: ['angleA', 'angleB'], optional: true }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'sideA', label: 'Side a' }, { from: 'sideB', label: 'Side b' }, { from: 'sideC', label: 'Side c' }],
+        title: 'The three sides'
+      }
+    },
+    seo: {
+      title: 'Triangle Calculator – Solve SSS, SAS or ASA for Sides, Angles & Area',
+      description: 'Free triangle calculator. Enter three sides, two sides and an angle, or two angles and a side to find every side, angle, the perimeter and the area.',
+      faq: [
+        { question: 'How do I find the angles of a triangle from its three sides?', answer: 'Use the law of cosines rearranged for an angle: cos(A) = (b² + c² − a²) ÷ (2bc), then take the arccosine. Repeat for each angle, or let this calculator do it for all three at once from the SSS mode.' },
+        { question: 'How do I find the area of a triangle from its three sides?', answer: 'Use Heron’s formula: find the semiperimeter s = (a + b + c) ÷ 2, then Area = √(s(s−a)(s−b)(s−c)). For sides 7, 9 and 12, s = 14 and the area is √(14×7×5×2) = √980 ≈ 31.30.' },
+        { question: 'What is the SAS (side-angle-side) case?', answer: 'You know two sides and the angle trapped between them. The law of cosines finds the third side first (for sides 8 and 10 with a 60° included angle, the third side is about 9.17), then the same formula, rearranged, finds the other two angles.' },
+        { question: 'What is the ASA (angle-side-angle) case?', answer: 'You know two angles and the side that joins them. The third angle is 180° minus the other two, and the law of sines finds the two missing sides. For angles 50° and 60° with a 10-unit side between them, the third angle is 70° and the other two sides are about 8.15 and 9.22.' },
+        { question: 'Why isn’t SSA (two sides and a non-included angle) supported?', answer: 'It is the one combination that can be genuinely ambiguous: depending on the numbers, the same two sides and angle can match zero triangles, exactly one, or two different ones (the "ambiguous case" of the law of sines). Rather than silently choose one possible answer, this calculator asks for a different, unambiguous combination.' },
+        { question: 'How do I know if three side lengths can actually form a triangle?', answer: 'Check the triangle inequality: each side must be strictly less than the sum of the other two. Sides 1, 2 and 10 cannot form a triangle, because 1 + 2 = 3 is far less than 10.' },
+        { question: 'Do the three angles of a triangle always add up to 180°?', answer: 'Yes, for any triangle on a flat plane (Euclidean geometry) — this is a basic property used throughout this calculator, for example to find the third angle in ASA mode by subtracting the other two from 180°.' },
+        { question: 'What units does this calculator use?', answer: 'Sides are plain numbers — pick whatever consistent unit you measured in (feet, meters, inches). Angles are always in degrees, not radians.' }
+      ]
+    },
+    compute(values) {
+      const { mode, sideA, sideB, sideC, angleA, angleB, angleC } = values;
+      const notATriangle = { sideA: NaN, sideB: NaN, sideC: NaN, angleA: NaN, angleB: NaN, angleC: NaN, perimeter: NaN, area: NaN };
+      let a = sideA;
+      let b = sideB;
+      let c = sideC;
+      if (mode === 2) {
+        // SAS: two sides and the angle between them -> third side via the law of cosines.
+        if (!(sideA > 0) || !(sideB > 0) || !(angleC > 0 && angleC < 180)) return notATriangle;
+        a = sideA;
+        b = sideB;
+        c = Math.sqrt(a * a + b * b - 2 * a * b * Math.cos((angleC * Math.PI) / 180));
+      } else if (mode === 3) {
+        // ASA: two angles and the side between them -> other two sides via the law of sines.
+        if (!(angleA > 0) || !(angleB > 0) || angleA + angleB >= 180 || !(sideC > 0)) return notATriangle;
+        const bigC = 180 - angleA - angleB;
+        c = sideC;
+        a = (c * Math.sin((angleA * Math.PI) / 180)) / Math.sin((bigC * Math.PI) / 180);
+        b = (c * Math.sin((angleB * Math.PI) / 180)) / Math.sin((bigC * Math.PI) / 180);
+      }
+      // mode 1 (SSS), and the fallback for any other value, uses sideA/sideB/sideC directly.
+      const valid = a > 0 && b > 0 && c > 0 && a + b > c && b + c > a && a + c > b;
+      if (!valid) return notATriangle;
+      const clamp = (x: number) => Math.max(-1, Math.min(1, x));
+      const toDeg = (r: number) => (r * 180) / Math.PI;
+      const bigA = toDeg(Math.acos(clamp((b * b + c * c - a * a) / (2 * b * c))));
+      const bigB = toDeg(Math.acos(clamp((a * a + c * c - b * b) / (2 * a * c))));
+      const s = (a + b + c) / 2;
+      const discriminant = s * (s - a) * (s - b) * (s - c);
+      return {
+        sideA: a,
+        sideB: b,
+        sideC: c,
+        angleA: bigA,
+        angleB: bigB,
+        angleC: 180 - bigA - bigB,
+        perimeter: a + b + c,
+        area: discriminant > 0 ? Math.sqrt(discriminant) : 0
+      };
+    }
+  },
+  {
+    id: 'circle-calculator',
+    category: 'math',
+    updatedAt: '2026-10-22',
+    aliases: ['radius to circumference calculator', 'radius to area calculator', 'diameter calculator', 'circumference calculator', 'circle area calculator'],
+    related: ['area-calculator', 'triangle-calculator', 'pythagorean-theorem-calculator', 'volume-calculator'],
+    title: 'Circle Calculator',
+    description: 'Enter a circle’s radius or diameter to get the other, plus its circumference and area, with the formulas shown.',
+    example: 'A circle with a 7 m radius has a 14 m diameter, a circumference of about 43.98 m, and an area of about 153.94 m².',
+    solver: {
+      defaultTarget: 'diameter',
+      variables: [
+        { id: 'radius', label: 'Radius', symbol: 'r', dimension: 'length', defaultValue: 5, defaultUnit: 'm' },
+        { id: 'diameter', label: 'Diameter', symbol: 'd', dimension: 'length', defaultValue: 10, defaultUnit: 'm' }
+      ],
+      solve: {
+        diameter: ({ radius }) => radius * 2,
+        radius: ({ diameter }) => diameter / 2
+      },
+      outputs: [
+        { id: 'circumference', label: 'Circumference', dimension: 'length', compute: (si) => 2 * Math.PI * si.radius },
+        { id: 'area', label: 'Area', dimension: 'area', compute: (si) => Math.PI * si.radius ** 2 }
+      ],
+      visuals: [
+        { type: 'compareBars', bars: [{ from: 'radius', label: 'Radius' }, { from: 'diameter', label: 'Diameter' }], title: 'Radius and diameter' }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is a circle calculator?',
+        paragraphs: [
+          'A circle is defined by a single number — how far every point on it sits from the center, its radius — and everything else about its size follows automatically. Double the radius and you double the diameter, double the circumference, and quadruple the area, because area grows with the square of the radius.',
+          'The constant that connects a circle’s straight-line measurements (radius, diameter) to its curved ones (circumference, area) is π (pi), the ratio of any circle’s circumference to its diameter — approximately 3.14159, and the same for every circle regardless of size. This calculator enters π to full floating-point precision, not a rounded 3.14, so the answer is as accurate as your input.',
+          'Enter either the radius or the diameter — whichever you know — and the other three figures (the other of radius/diameter, the circumference, and the area) are filled in immediately.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter either the radius or the diameter. The other one, marked auto, is calculated, and the circumference and area always update underneath.',
+        steps: [
+          { name: 'Enter the radius', text: 'Type the distance from the center to the edge. The diameter field fills in as exactly double.' },
+          { name: 'Or enter the diameter instead', text: 'Type into the diameter field and the radius becomes exactly half of it — only one of the two needs to be known.' },
+          { name: 'Read the circumference and area', text: 'Both update automatically underneath, using the current radius: circumference = 2πr, area = πr².' },
+          { name: 'Switch units at any time', text: 'Changing the unit menu on either field converts the number you typed, so 5 m correctly becomes 16.4 ft rather than silently turning into 5 ft.' },
+          { name: 'Share or copy', text: 'Share result copies a link that reopens the calculator with your exact radius and unit. Copy result copies the figures as text.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Every circle measurement follows from the radius alone.',
+        expression: 'd = 2r\nC = 2πr = πd\nA = πr²',
+        terms: [
+          { symbol: 'r', meaning: 'Radius — the distance from the center to any point on the circle.' },
+          { symbol: 'd', meaning: 'Diameter — a straight line through the center, exactly twice the radius.' },
+          { symbol: 'C', meaning: 'Circumference — the distance all the way around the circle.' },
+          { symbol: 'π', meaning: 'Pi, approximately 3.14159265 — the fixed ratio of any circle’s circumference to its diameter.' }
+        ],
+        note: 'To work backward from a known circumference or area instead of the radius: r = C ÷ (2π), or r = √(A ÷ π).'
+      },
+      workedExample: {
+        intro: 'A circular table has a 14 m diameter. What is its radius, circumference and area?',
+        rows: [
+          { label: 'Radius (d ÷ 2)', value: '14 ÷ 2 = 7 m' },
+          { label: 'Circumference (2πr, or πd)', value: '2 × π × 7 = π × 14 ≈ 43.98 m' },
+          { label: 'Area (πr²)', value: 'π × 7² = π × 49 ≈ 153.94 m²' }
+        ],
+        result: 'Radius = 7 m · Circumference ≈ 43.98 m · Area ≈ 153.94 m²',
+        explanation: 'Doubling the earlier 7 m-radius example to a 14 m diameter is the same circle described the other way — the radius comes straight back out as 7 m, confirming d = 2r both directions.'
+      },
+      watchOut: [
+        { title: 'This solves from radius or diameter, not circumference or area', body: 'The live widget only auto-solves between radius and diameter, since a circle has one degree of freedom and the widget needs exactly one known field. If you only know the circumference or area, use the manual formulas above (r = C ÷ (2π) or r = √(A ÷ π)) to get the radius first, then enter that.' },
+        { title: 'Area grows with the square of the radius, not the diameter directly', body: 'Doubling the radius quadruples the area (2² = 4), not doubles it — a common source of underestimating how much more material a bigger circle (a pizza, a pipe) actually needs.' },
+        { title: 'π is irrational — any decimal value is an approximation', body: 'This calculator uses JavaScript’s built-in π to about 15 significant digits, far more precise than the common shorthand 3.14 or 22/7. For most practical purposes the difference is invisible, but it means two calculators rounding π differently can disagree in the last displayed digit.' },
+        { title: 'Radius and diameter must be the same unit as each other', body: 'The unit menu on each field keeps them consistent automatically — typing 5 into the radius field with the unit set to meters and then reading the diameter in feet is handled for you, not something to convert by hand.' }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §9.5 Solve Geometry Applications: Circles and Irregular Figures', url: 'https://openstax.org/books/prealgebra-2e/pages/9-5-solve-geometry-applications-circles-and-irregular-figures' },
+        { label: 'Wolfram MathWorld, Circle', url: 'https://mathworld.wolfram.com/Circle.html' }
+      ]
+    },
+    inputs: [{ id: 'radius', label: 'Radius (m)', type: 'number', placeholder: '5', defaultValue: 5, step: 0.1, min: 0 }],
+    seo: {
+      title: 'Circle Calculator – Radius, Diameter, Circumference & Area',
+      description: 'Free circle calculator. Enter a radius or diameter to find the other, plus the circumference and area, with every formula shown.',
+      faq: [
+        { question: 'How do I find the circumference of a circle?', answer: 'Multiply the radius by 2π, or the diameter by π: C = 2πr = πd. A 7 m radius gives a circumference of 2 × π × 7 ≈ 43.98 m.' },
+        { question: 'How do I find the area of a circle?', answer: 'Square the radius and multiply by π: A = πr². A 7 m radius gives an area of π × 49 ≈ 153.94 m².' },
+        { question: 'How do I find the radius from the diameter?', answer: 'Divide the diameter by 2: r = d ÷ 2. A 14 m diameter gives a 7 m radius.' },
+        { question: 'How do I find the radius from the circumference?', answer: 'Divide the circumference by 2π: r = C ÷ (2π). A circumference of about 31.42 gives a radius of 31.42 ÷ (2π) ≈ 5.' },
+        { question: 'How do I find the radius from the area?', answer: 'Divide the area by π and take the square root: r = √(A ÷ π). An area of about 78.54 gives a radius of √(78.54 ÷ π) ≈ 5.' },
+        { question: 'What is pi (π)?', answer: 'Pi is the ratio of any circle’s circumference to its diameter, approximately 3.14159265. It is irrational — its decimal digits never end or repeat — and the same for every circle regardless of size.' },
+        { question: 'Does doubling the radius double the area?', answer: 'No. Area depends on the radius squared, so doubling the radius quadruples the area (2² = 4), not doubles it.' },
+        { question: 'What units does this calculator use?', answer: 'Any length unit from the menu — meters, feet, inches and more. The area is shown in the matching squared unit (m², ft², etc.).' }
+      ]
+    },
+    compute(values) {
+      const { radius } = values;
+      return { diameter: radius * 2, circumference: 2 * Math.PI * radius, area: Math.PI * radius ** 2 };
+    }
   }
 
 ];

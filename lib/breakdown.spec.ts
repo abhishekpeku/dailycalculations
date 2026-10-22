@@ -120,9 +120,12 @@ describe('evaluateBreakdown', () => {
     let checked = 0;
     for (const calculator of calculators) {
       if (calculator.solver) continue;
-      const defaults = Object.fromEntries(calculator.inputs.map((input) => [input.id, input.defaultValue]));
+      const defaults = Object.fromEntries(calculator.inputs.filter((input) => input.type !== 'list').map((input) => [input.id, input.defaultValue]));
+      const lists = Object.fromEntries(
+        calculator.inputs.filter((input) => input.type === 'list').map((input) => [input.id, input.listDefault ?? []])
+      );
       const extra: Record<string, number> = calculator.timeDependent ? { todayMs } : {};
-      const expected = calculator.compute({ ...defaults, ...extra });
+      const expected = calculator.compute({ ...defaults, ...extra }, lists);
       if (Object.keys(expected).length === 0) continue; // custom tools (type C)
       const { all, outputKeys, complete } = evaluateBreakdown(calculator, initialBreakdownState(calculator.inputs), extra);
       assert.ok(complete, calculator.id);

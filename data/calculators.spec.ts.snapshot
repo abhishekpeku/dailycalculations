@@ -87,15 +87,14 @@ exports[`compute() snapshots > average-calculator 1`] = `
 {
   "default": {
     "inputs": {
-      "howMany": 4,
-      "value1": 85,
-      "value2": 90,
-      "value3": 78,
-      "value4": 92,
-      "value5": 0,
-      "value6": 0,
-      "value7": 0,
-      "value8": 0
+      "lists": {
+        "data": [
+          85,
+          90,
+          78,
+          92
+        ]
+      }
     },
     "outputs": {
       "mean": 86.25,
@@ -107,40 +106,35 @@ exports[`compute() snapshots > average-calculator 1`] = `
   },
   "typical": {
     "inputs": {
-      "howMany": 6,
-      "value1": 128,
-      "value2": 135,
-      "value3": 117,
-      "value4": 138,
-      "value5": 0,
-      "value6": 0,
-      "value7": 0,
-      "value8": 0
+      "lists": {
+        "data": [
+          128,
+          135,
+          117,
+          138
+        ]
+      }
     },
     "outputs": {
-      "mean": 86.33333333,
+      "mean": 129.5,
       "sum": 518,
-      "count": 6,
-      "min": 0,
+      "count": 4,
+      "min": 117,
       "max": 138
     }
   },
   "edge": {
     "inputs": {
-      "howMany": 2,
-      "value1": 0,
-      "value2": 0,
-      "value3": 0,
-      "value4": 0,
-      "value5": 0,
-      "value6": 0,
-      "value7": 0,
-      "value8": 0
+      "lists": {
+        "data": [
+          0
+        ]
+      }
     },
     "outputs": {
       "mean": 0,
       "sum": 0,
-      "count": 2,
+      "count": 1,
       "min": 0,
       "max": 0
     }
@@ -1725,17 +1719,15 @@ exports[`compute() snapshots > mean-median-mode-calculator 1`] = `
 {
   "default": {
     "inputs": {
-      "howMany": 5,
-      "value1": 7,
-      "value2": 9,
-      "value3": 7,
-      "value4": 10,
-      "value5": 8,
-      "value6": 0,
-      "value7": 0,
-      "value8": 0,
-      "value9": 0,
-      "value10": 0
+      "lists": {
+        "data": [
+          7,
+          9,
+          7,
+          10,
+          8
+        ]
+      }
     },
     "outputs": {
       "mean": 8.2,
@@ -1751,43 +1743,35 @@ exports[`compute() snapshots > mean-median-mode-calculator 1`] = `
   },
   "typical": {
     "inputs": {
-      "howMany": 8,
-      "value1": 11,
-      "value2": 14,
-      "value3": 11,
-      "value4": 15,
-      "value5": 12,
-      "value6": 0,
-      "value7": 0,
-      "value8": 0,
-      "value9": 0,
-      "value10": 0
+      "lists": {
+        "data": [
+          11,
+          14,
+          11,
+          15,
+          12
+        ]
+      }
     },
     "outputs": {
-      "mean": 7.875,
-      "median": 11,
-      "primaryMode": 0,
+      "mean": 12.6,
+      "median": 12,
+      "primaryMode": 11,
       "modeCount": 1,
       "sum": 63,
-      "count": 8,
-      "min": 0,
+      "count": 5,
+      "min": 11,
       "max": 15,
-      "range": 15
+      "range": 4
     }
   },
   "edge": {
     "inputs": {
-      "howMany": 1,
-      "value1": 0,
-      "value2": 0,
-      "value3": 0,
-      "value4": 0,
-      "value5": 0,
-      "value6": 0,
-      "value7": 0,
-      "value8": 0,
-      "value9": 0,
-      "value10": 0
+      "lists": {
+        "data": [
+          0
+        ]
+      }
     },
     "outputs": {
       "mean": 0,
@@ -2231,18 +2215,17 @@ exports[`compute() snapshots > percentile-calculator 1`] = `
 {
   "default": {
     "inputs": {
-      "howMany": 6,
       "targetPercentile": 75,
-      "value1": 60,
-      "value2": 55,
-      "value3": 90,
-      "value4": 65,
-      "value5": 78,
-      "value6": 70,
-      "value7": 0,
-      "value8": 0,
-      "value9": 0,
-      "value10": 0
+      "lists": {
+        "data": [
+          60,
+          55,
+          90,
+          65,
+          78,
+          70
+        ]
+      }
     },
     "outputs": {
       "percentileValue": 81,
@@ -2255,42 +2238,35 @@ exports[`compute() snapshots > percentile-calculator 1`] = `
   },
   "typical": {
     "inputs": {
-      "howMany": 9,
       "targetPercentile": 113,
-      "value1": 90,
-      "value2": 83,
-      "value3": 135,
-      "value4": 98,
-      "value5": 117,
-      "value6": 105,
-      "value7": 0,
-      "value8": 0,
-      "value9": 0,
-      "value10": 0
+      "lists": {
+        "data": [
+          90,
+          83,
+          135,
+          98,
+          117,
+          105
+        ]
+      }
     },
     "outputs": {
       "percentileValue": 135,
-      "rank": 9,
-      "median": 90,
-      "min": 0,
+      "rank": 6,
+      "median": 101.5,
+      "min": 83,
       "max": 135,
-      "count": 9
+      "count": 6
     }
   },
   "edge": {
     "inputs": {
-      "howMany": 1,
       "targetPercentile": 0,
-      "value1": 0,
-      "value2": 0,
-      "value3": 0,
-      "value4": 0,
-      "value5": 0,
-      "value6": 0,
-      "value7": 0,
-      "value8": 0,
-      "value9": 0,
-      "value10": 0
+      "lists": {
+        "data": [
+          0
+        ]
+      }
     },
     "outputs": {
       "percentileValue": 0,
@@ -3001,17 +2977,15 @@ exports[`compute() snapshots > standard-deviation-calculator 1`] = `
 {
   "default": {
     "inputs": {
-      "howMany": 5,
-      "value1": 72,
-      "value2": 85,
-      "value3": 90,
-      "value4": 78,
-      "value5": 95,
-      "value6": 0,
-      "value7": 0,
-      "value8": 0,
-      "value9": 0,
-      "value10": 0
+      "lists": {
+        "data": [
+          72,
+          85,
+          90,
+          78,
+          95
+        ]
+      }
     },
     "outputs": {
       "mean": 84,
@@ -3024,40 +2998,32 @@ exports[`compute() snapshots > standard-deviation-calculator 1`] = `
   },
   "typical": {
     "inputs": {
-      "howMany": 8,
-      "value1": 108,
-      "value2": 128,
-      "value3": 135,
-      "value4": 117,
-      "value5": 143,
-      "value6": 0,
-      "value7": 0,
-      "value8": 0,
-      "value9": 0,
-      "value10": 0
+      "lists": {
+        "data": [
+          108,
+          128,
+          135,
+          117,
+          143
+        ]
+      }
     },
     "outputs": {
-      "mean": 78.875,
-      "count": 8,
-      "populationVariance": 3830.109375,
-      "sampleVariance": 4377.267857,
-      "populationStdDev": 61.88787745,
-      "sampleStdDev": 66.16092394
+      "mean": 126.2,
+      "count": 5,
+      "populationVariance": 155.76,
+      "sampleVariance": 194.7,
+      "populationStdDev": 12.48038461,
+      "sampleStdDev": 13.95349419
     }
   },
   "edge": {
     "inputs": {
-      "howMany": 1,
-      "value1": 0,
-      "value2": 0,
-      "value3": 0,
-      "value4": 0,
-      "value5": 0,
-      "value6": 0,
-      "value7": 0,
-      "value8": 0,
-      "value9": 0,
-      "value10": 0
+      "lists": {
+        "data": [
+          0
+        ]
+      }
     },
     "outputs": {
       "mean": 0,
@@ -3478,17 +3444,15 @@ exports[`compute() snapshots > variance-calculator 1`] = `
 {
   "default": {
     "inputs": {
-      "howMany": 5,
-      "value1": 72,
-      "value2": 85,
-      "value3": 90,
-      "value4": 78,
-      "value5": 95,
-      "value6": 0,
-      "value7": 0,
-      "value8": 0,
-      "value9": 0,
-      "value10": 0
+      "lists": {
+        "data": [
+          72,
+          85,
+          90,
+          78,
+          95
+        ]
+      }
     },
     "outputs": {
       "mean": 84,
@@ -3501,40 +3465,32 @@ exports[`compute() snapshots > variance-calculator 1`] = `
   },
   "typical": {
     "inputs": {
-      "howMany": 8,
-      "value1": 108,
-      "value2": 128,
-      "value3": 135,
-      "value4": 117,
-      "value5": 143,
-      "value6": 0,
-      "value7": 0,
-      "value8": 0,
-      "value9": 0,
-      "value10": 0
+      "lists": {
+        "data": [
+          108,
+          128,
+          135,
+          117,
+          143
+        ]
+      }
     },
     "outputs": {
-      "mean": 78.875,
-      "count": 8,
-      "populationVariance": 3830.109375,
-      "sampleVariance": 4377.267857,
-      "populationStdDev": 61.88787745,
-      "sampleStdDev": 66.16092394
+      "mean": 126.2,
+      "count": 5,
+      "populationVariance": 155.76,
+      "sampleVariance": 194.7,
+      "populationStdDev": 12.48038461,
+      "sampleStdDev": 13.95349419
     }
   },
   "edge": {
     "inputs": {
-      "howMany": 1,
-      "value1": 0,
-      "value2": 0,
-      "value3": 0,
-      "value4": 0,
-      "value5": 0,
-      "value6": 0,
-      "value7": 0,
-      "value8": 0,
-      "value9": 0,
-      "value10": 0
+      "lists": {
+        "data": [
+          0
+        ]
+      }
     },
     "outputs": {
       "mean": 0,

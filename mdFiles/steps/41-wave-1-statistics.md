@@ -309,15 +309,24 @@ dropped and the 1,000-value cap.
 
 All 5 retrofits change their `inputs` shape in the snapshot from the old `howMany`/`value1..value10`
 (or `value1..8` for `average-calculator`) scalar fields to a single `data: number[]` list (plus
-`targetPercentile` unchanged on `percentile-calculator`) — this is the entire diff. Every `outputs`
-value for the `default` and `typical` snapshot rows is **numerically identical** to the pre-retrofit
-snapshot, because `listDefault` carries over the exact same numbers the old `value1..N` slots used
-and the formulas (`varianceOf`, `percentileOf`, the mean/median/mode logic) are untouched — only
-*where* the array comes from changed (`lists.data` instead of `readList(values, min)`). The `edge`
-row is unchanged in substance too: the old edge case was `howMany` at its `min` (1, or 2 for
-`average-calculator` pre-retrofit) with every `value*` slot at `0`, i.e. a list of that many zeros;
-the new edge case (`lib/calculators.spec.ts`'s `edgeList`) is literally "`listMin` zeros," the same
-list. `KNOWN_NON_FINITE` needed no edits — `standard-deviation-calculator`/`variance-calculator`'s
+`targetPercentile` unchanged on `percentile-calculator`). The **`default` row's `outputs` are
+numerically identical** to the pre-retrofit snapshot on every one of the 5 (mean 86.25, mean 8.2,
+percentileValue 81, population/sample figures unchanged, etc.) — `listDefault` carries the exact same
+numbers the old `value1..N` slots used, and the formulas (`varianceOf`, `percentileOf`, the
+mean/median/mode logic) are untouched; only *where* the array comes from changed (`lists.data`
+instead of `readList(values, min)`).
+
+The **`typical` and `edge` rows' `outputs` do change**, and that is the harness's own synthetic input
+generation changing, not the calculators: the old harness scaled a scalar `howMany` field by 1.5 and
+zero-padded unused `value*` slots up to 10, so e.g. `average-calculator`'s old "typical" case averaged
+6 slots (4 real values scaled ×1.5, plus 2 zero-padded slots it shouldn't have counted) into a mean of
+86.33; the new `edgeList`/`typicalList` in `data/calculators.spec.ts` instead scale exactly the
+`listDefault` array's own values (4 values in, 4 values out, no padding), giving a mean of 129.5 for
+the same calculator — a more honest "typical" case, with no artifact of the old fixed-slot shape
+leaking into the test. The `edge` row is unchanged in substance: the old edge case was `howMany` at
+its `min` with every `value*` slot at `0` (i.e., a list of `min` zeros); the new edge case is literally
+"`listMin` zeros" — the same list, just without the other 9 (unused) zero-padded slots cluttering the
+snapshot. `KNOWN_NON_FINITE` needed no edits — `standard-deviation-calculator`/`variance-calculator`'s
 sample-variance-at-n=1 divide-by-zero and `z-score-calculator`'s divide-by-zero are unchanged.
 
 ### Verification

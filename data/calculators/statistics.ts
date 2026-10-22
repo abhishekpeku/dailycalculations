@@ -1,44 +1,19 @@
-import type { CalculatorConfig, CalculatorInput, CalculatorInputValues } from './types.ts';
+import type { CalculatorConfig, CalculatorInput } from './types.ts';
 
-// Shared "data list" input: the array-slicing pattern established for average-calculator /
-// weighted-average-calculator (see STATUS.md Parked, "No list/array input in the calculator kit").
-// Every CalculatorInput is one number, so a calculator that wants "a list of numbers" falls back to
-// a fixed MAX_LIST_SIZE of numbered value slots plus a "How many numbers?" count selector.
-// compute() always reads exactly the first `howMany` slots, in order, zeros included — a typed 0 is
-// a real data point, never a sentinel for "unused." Reused by every list-based calculator in this
-// category; see mdFiles/steps/41-wave-1-statistics.md for the full writeup.
-const MAX_LIST_SIZE = 10;
-
-function listCountInput(defaultValue: number, min: number, label = 'How many numbers?'): CalculatorInput {
-  const options: { value: number; label: string }[] = [];
-  for (let value = min; value <= MAX_LIST_SIZE; value += 1) {
-    options.push({ value, label: `${value} number${value === 1 ? '' : 's'}` });
-  }
-  return { id: 'howMany', label, type: 'number', placeholder: String(defaultValue), defaultValue, step: 1, min, options };
-}
-
-function listValueInputs(defaults: number[]): CalculatorInput[] {
-  const slots: number[] = [...defaults];
-  while (slots.length < MAX_LIST_SIZE) slots.push(0);
-  return slots.map((value, i) => ({ id: `value${i + 1}`, label: `Number ${i + 1}`, type: 'number' as const, placeholder: String(value), defaultValue: value, step: 1 }));
-}
-
-/** The chosen slice of the list, in order, exactly `howMany` long (clamped to [min, MAX_LIST_SIZE]). */
-function readList(values: CalculatorInputValues, min: number): number[] {
-  const slots = Array.from({ length: MAX_LIST_SIZE }, (_, i) => values[`value${i + 1}`]);
-  const n = Math.min(MAX_LIST_SIZE, Math.max(min, Math.round(values.howMany)));
-  return slots.slice(0, n);
-}
-
-/** Input groups for a data-list calculator: `visible` main slots, the rest behind a disclosure. */
-function listGroups(visible: number) {
-  const main = Array.from({ length: visible }, (_, i) => `value${i + 1}`);
-  const rest = MAX_LIST_SIZE - visible;
-  const optional = Array.from({ length: rest }, (_, i) => `value${visible + i + 1}`);
-  return [
-    { title: 'Your numbers', inputs: ['howMany', ...main] },
-    { title: `Add up to ${rest} more numbers`, inputs: optional, optional: true as const }
-  ];
+// Shared "data list" input: a paste-a-list textarea (CalculatorInput.type: 'list'), parsed by
+// lib/listParse.ts. Replaces the "How many numbers?" + numbered-slot stopgap statistics run 1
+// shipped with — see mdFiles/steps/41-wave-1-statistics.md, "List input (between run 1 and run 2)",
+// for why and the full design. Every list-based calculator in this category reuses this one helper.
+function listInput(defaults: number[], min = 1): CalculatorInput {
+  return {
+    id: 'data',
+    label: 'Your numbers',
+    type: 'list',
+    placeholder: 'Paste or type numbers, separated by commas, spaces or new lines',
+    defaultValue: 0,
+    listDefault: defaults,
+    listMin: min
+  };
 }
 
 // Population and sample variance of a list, shared by standard-deviation-calculator and
@@ -73,7 +48,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
     aliases: ['mean median mode calculator', 'measures of central tendency calculator', 'median calculator', 'find the mode calculator', 'central tendency calculator'],
     related: ['average-calculator', 'standard-deviation-calculator', 'percentile-calculator', 'weighted-average-calculator'],
     title: 'Mean, Median & Mode Calculator',
-    description: 'Find the mean, median and mode of up to 10 numbers — the three most common ways to summarize a data set with one typical value, and how they can disagree.',
+    description: 'Find the mean, median and mode of a list of numbers — up to 1,000 of them — the three most common ways to summarize a data set with one typical value, and how they can disagree.',
     example: "Five kids at a party are 7, 9, 7, 10 and 8 years old. The mean is 8.2, the median is 8, and the mode is 7 (it's the only age that repeats).",
     content: {
       lastReviewed: '2026-10-22',
@@ -83,14 +58,14 @@ export const statisticsCalculators: CalculatorConfig[] = [
           'Mean, median and mode are the three most common "measures of central tendency" — three different ways of answering the same question, "what is a typical value in this data set?" They usually land close to each other, but not always, and the gap between them is often the most useful thing a data set can tell you.',
           'The mean is the arithmetic average: add every value and divide by how many there are (the same calculation this site\'s average calculator does). The median is the middle value once the list is sorted — half the data falls below it, half above. The mode is simply the value that shows up most often; a data set can have one mode, several (multimodal), or none at all if every value is different.',
           'They diverge most clearly on skewed data. Household income is the classic example: a handful of very high earners pull the mean upward, while the median — unaffected by how extreme the biggest values get, only by their rank — stays close to what a "typical" household actually earns. That is why income statistics are almost always reported as a median, not a mean.',
-          'This calculator covers all three together. For a plain mean on its own, with up to 8 numbers instead of 10, see the average calculator; for how spread out the data is around the mean, see the standard deviation and variance calculators.'
+          'This calculator covers all three together. For a plain mean on its own, see the average calculator; for how spread out the data is around the mean, see the standard deviation and variance calculators.'
         ]
       },
       howTo: {
-        intro: 'Choose how many numbers you have, then fill in exactly that many of the number fields, in order starting from Number 1.',
+        intro: 'Paste or type your numbers into the box, separated by commas, spaces or new lines — a column copied straight out of a spreadsheet works as-is.',
         steps: [
-          { name: 'Choose how many numbers', text: 'Set "How many numbers?" to the count of values you actually have, from 1 to 10. Only that many of the Number fields below are used, in order.' },
-          { name: 'Enter your numbers', text: 'Fill in Number 1 onward. A genuine 0 among them counts normally; order does not matter, since the calculator sorts the list itself.' },
+          { name: 'Paste your numbers', text: 'Paste or type your numbers, separated by commas, spaces, semicolons or new lines. A genuine 0 among them counts normally; order does not matter, since the calculator sorts the list itself.' },
+          { name: 'Check the count', text: 'The box shows a live count of how many numbers it understood. Anything that isn\'t a number is dropped and listed below the box, so a stray label or unit does not silently throw off your result.' },
           { name: 'Read the mean', text: 'The headline is the arithmetic mean: the sum of your numbers divided by how many there are.' },
           { name: 'Check the median and mode', text: 'The rows below show the median (the middle value once sorted) and the mode (the most frequent value), plus how many values are tied for that mode.' },
           { name: 'See the sum, min, max and range', text: 'The remaining rows give the total, the smallest and largest values, and the range between them.' },
@@ -103,7 +78,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
         expression: 'Mean = (x₁ + x₂ + ... + xₙ) ÷ n\nMedian = the middle value when sorted (or the average of the two middle values if n is even)\nMode = the value(s) that occur most often',
         terms: [
           { symbol: 'x₁, x₂, ..., xₙ', meaning: 'Each number in the list.' },
-          { symbol: 'n', meaning: '"How many numbers?" — this calculator uses exactly the first n Number fields, in order.' }
+          { symbol: 'n', meaning: 'How many numbers you entered (up to 1,000).' }
         ],
         note: 'If every value in a list of 2 or more is different, there is no mode by the usual definition — this calculator reports that honestly (as "—") rather than guessing. A single-number list is the one exception: its one value counts as its own mode.'
       },
@@ -123,7 +98,8 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { title: 'The mean is sensitive to outliers; the median usually is not', body: 'Change the largest age in the example from 10 to 50 and the mean jumps to 16.2 — no longer a believable "typical" age — while the median stays at 8, since it only cares about rank, not magnitude.' },
         { title: 'No mode, or more than one, are both normal outcomes', body: 'If every value in a list of 2 or more numbers is different, this calculator reports no mode at all (shown as "—"), rather than picking one arbitrarily. If two or more values are tied for the most frequent, it reports all of them as tied (a multimodal data set) and names the smallest as the "primary" one shown on the chart.' },
         { title: 'The median formula depends on whether the count is odd or even', body: 'With an odd count, the median is the single middle value after sorting. With an even count, it is the average of the two middle values — which, unlike the mean of the whole list, can be a number that falls exactly between two data points.' },
-        { title: 'This is not the same as a weighted average', body: 'Mean, median and mode all treat every number in the list equally. If some numbers should count more than others — like a final exam worth more than a quiz — use the weighted average calculator instead.' }
+        { title: 'This is not the same as a weighted average', body: 'Mean, median and mode all treat every number in the list equally. If some numbers should count more than others — like a final exam worth more than a quiz — use the weighted average calculator instead.' },
+        { title: 'Non-numeric tokens are dropped, not averaged in as zero', body: 'Anything pasted into the box that is not a number — a stray label, a unit, a trailing comma — is silently left out of the calculation and listed under the box, up to a 1,000-number cap. Check the live count against what you expected to paste.' }
       ],
       references: [
         { label: 'OpenStax, Introductory Statistics 2e, §2.5 Measures of the Center of the Data', url: 'https://openstax.org/books/introductory-statistics-2e/pages/2-5-measures-of-the-center-of-the-data' },
@@ -131,7 +107,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { label: 'Wolfram MathWorld, Mode', url: 'https://mathworld.wolfram.com/Mode.html' }
       ]
     },
-    inputs: [listCountInput(5, 1), ...listValueInputs([7, 9, 7, 10, 8])],
+    inputs: [listInput([7, 9, 7, 10, 8], 1)],
     breakdown: {
       headline: 'mean',
       headlineLabel: 'Mean (average)',
@@ -146,7 +122,6 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { id: 'max', label: 'Highest value', format: 'significant' },
         { id: 'range', label: 'Range', format: 'significant' }
       ],
-      groups: listGroups(5),
       visual: {
         type: 'compareBars',
         bars: [{ from: 'min', label: 'Lowest value' }, { from: 'mean', label: 'Mean' }, { from: 'max', label: 'Highest value' }],
@@ -156,7 +131,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
     },
     seo: {
       title: 'Mean, Median & Mode Calculator – Central Tendency',
-      description: 'Free mean, median and mode calculator. Find all three measures of central tendency for up to 10 numbers, with a worked example and clear mode rules.',
+      description: 'Free mean, median and mode calculator. Paste a list of up to 1,000 numbers to find all three measures of central tendency, with a worked example and clear mode rules.',
       faq: [
         { question: 'How do I find the mean, median and mode?', answer: 'The mean is the sum divided by the count. The median is the middle value once the list is sorted. The mode is the value that appears most often. For 7, 9, 7, 10, 8: mean 8.2, median 8, mode 7.' },
         { question: 'What is the difference between mean, median and mode?', answer: 'They are three different ways to describe a "typical" value. The mean uses every number\'s exact size; the median only uses rank (position once sorted); the mode only uses frequency (how often a value repeats).' },
@@ -165,11 +140,12 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { question: 'Can a data set have more than one mode?', answer: 'Yes — if two or more values are tied for the highest frequency, the data set is multimodal. This calculator reports how many values are tied and shows the smallest of them as the "primary" one on the chart.' },
         { question: 'How is the median calculated for an even number of values?', answer: 'Average the two middle values after sorting. For 4 sorted values, that is the average of the 2nd and 3rd.' },
         { question: 'Why is my mean not one of the numbers I entered?', answer: 'The mean is a calculated balance point, not a value that has to already appear in the list — the same as the average calculator\'s result.' },
-        { question: 'Is the mode the same as an outlier?', answer: 'No — they are opposites in a sense. The mode is the most common value; an outlier is an unusually rare, extreme value far from the rest of the data.' }
+        { question: 'Is the mode the same as an outlier?', answer: 'No — they are opposites in a sense. The mode is the most common value; an outlier is an unusually rare, extreme value far from the rest of the data.' },
+        { question: 'How many numbers can I enter?', answer: 'Up to 1,000. Paste or type them into the box, separated by commas, spaces, semicolons or new lines — a column copied from a spreadsheet pastes in as-is.' }
       ]
     },
-    compute(values) {
-      const list = readList(values, 1);
+    compute(values, lists) {
+      const list = lists.data;
       const n = list.length;
       const sum = list.reduce((a, b) => a + b, 0);
       const mean = sum / n;
@@ -204,7 +180,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
     aliases: ['std dev calculator', 'standard deviation of a data set calculator', 'population standard deviation calculator', 'sample standard deviation calculator', 'sigma calculator'],
     related: ['variance-calculator', 'mean-median-mode-calculator', 'z-score-calculator', 'average-calculator'],
     title: 'Standard Deviation Calculator',
-    description: 'Find the population and sample standard deviation of up to 10 numbers, shown side by side with every step of the calculation.',
+    description: 'Find the population and sample standard deviation of a list of numbers — up to 1,000 of them — shown side by side with every step of the calculation.',
     example: 'Five test scores of 72, 85, 90, 78 and 95 have a mean of 84, a population standard deviation of about 8.22, and a sample standard deviation of about 9.19.',
     content: {
       lastReviewed: '2026-10-22',
@@ -217,10 +193,10 @@ export const statisticsCalculators: CalculatorConfig[] = [
         ]
       },
       howTo: {
-        intro: 'Choose how many numbers you have, then fill in exactly that many of the number fields, in order starting from Number 1.',
+        intro: 'Paste or type your numbers into the box, separated by commas, spaces or new lines — the calculation does not depend on the order they are in.',
         steps: [
-          { name: 'Choose how many numbers', text: 'Set "How many numbers?" to your count, from 1 to 10. Only that many Number fields are used.' },
-          { name: 'Enter your numbers', text: 'Fill in Number 1 onward, in any order — the calculation does not depend on the order you type them in.' },
+          { name: 'Paste your numbers', text: 'Paste or type your numbers, separated by commas, spaces, semicolons or new lines, in any order — up to 1,000 of them.' },
+          { name: 'Check the count', text: 'Anything that isn\'t a number is dropped and listed below the box, along with the live count of numbers it understood.' },
           { name: 'Read the sample standard deviation', text: 'The headline divides by n − 1, the common default for data that is a sample of a larger group.' },
           { name: 'Check the population standard deviation', text: 'The row below divides by n instead — use this one only if your numbers are the entire population, not a sample of it.' },
           { name: 'See both variances', text: 'The variance rows show each standard deviation\'s value before the square root — useful if you need variance directly for a further calculation.' },
@@ -234,7 +210,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
         terms: [
           { symbol: 'xᵢ', meaning: 'Each number in the list.' },
           { symbol: 'mean', meaning: 'The arithmetic mean of the list.' },
-          { symbol: 'n', meaning: '"How many numbers?" — the count of values used.' }
+          { symbol: 'n', meaning: 'How many numbers you entered (up to 1,000).' }
         ],
         note: 'This is an estimate of spread, not a prediction — a different sample from the same underlying population would give a slightly different number. Use the population version only when your list is genuinely the entire group of interest, not a sample drawn from something larger.'
       },
@@ -256,14 +232,15 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { title: 'Dividing by n or n − 1 is not a rounding choice — it changes which question you are answering', body: 'Population and sample standard deviation are two different, equally valid calculations, not two roundings of the same answer. Picking the wrong one for your situation gives a number that technically answers a different question than the one you meant to ask.' },
         { title: 'A single value has no sample standard deviation', body: 'With only one number, the sample formula divides by n − 1 = 0 — a genuine 0 ÷ 0, mathematically undefined. This calculator shows that honestly as "—" rather than guessing a value. The population standard deviation of a single value is still a legitimate 0 (one point has no spread).' },
         { title: 'Standard deviation is sensitive to outliers, like the mean it is built around', body: 'Because every deviation is squared before being averaged, one unusually far-off value can dominate the result far more than its single vote would suggest.' },
-        { title: 'This is a point estimate, not the "true" spread', body: 'A different sample of the same size from the same underlying group would almost certainly produce a slightly different standard deviation. The n − 1 correction reduces the bias of that estimate; it does not eliminate the sampling variation itself.' }
+        { title: 'This is a point estimate, not the "true" spread', body: 'A different sample of the same size from the same underlying group would almost certainly produce a slightly different standard deviation. The n − 1 correction reduces the bias of that estimate; it does not eliminate the sampling variation itself.' },
+        { title: 'Non-numeric tokens are dropped, not treated as zero', body: 'Anything pasted into the box that is not a number is silently left out of the calculation and listed under the box, up to a 1,000-number cap. Check the live count against what you expected to paste.' }
       ],
       references: [
         { label: 'OpenStax, Introductory Statistics 2e, §2.7 Measures of the Spread of the Data', url: 'https://openstax.org/books/introductory-statistics-2e/pages/2-7-measures-of-the-spread-of-the-data' },
         { label: 'Wolfram MathWorld, Standard Deviation', url: 'https://mathworld.wolfram.com/StandardDeviation.html' }
       ]
     },
-    inputs: [listCountInput(5, 1), ...listValueInputs([72, 85, 90, 78, 95])],
+    inputs: [listInput([72, 85, 90, 78, 95], 1)],
     breakdown: {
       headline: 'sampleStdDev',
       headlineLabel: 'Standard deviation (sample, s)',
@@ -275,7 +252,6 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { id: 'mean', label: 'Mean', format: 'significant' },
         { id: 'count', label: 'Count', format: 'integer' }
       ],
-      groups: listGroups(5),
       visual: {
         type: 'compareBars',
         bars: [{ from: 'populationStdDev', label: 'Population (σ)' }, { from: 'sampleStdDev', label: 'Sample (s)' }],
@@ -285,7 +261,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
     },
     seo: {
       title: 'Standard Deviation Calculator – Population & Sample',
-      description: 'Free standard deviation calculator. Find both the population and sample standard deviation of up to 10 numbers, with variance and a worked example.',
+      description: 'Free standard deviation calculator. Paste a list of up to 1,000 numbers to find both the population and sample standard deviation, with variance and a worked example.',
       faq: [
         { question: 'How do I calculate standard deviation?', answer: 'Find the mean, subtract it from each number and square the result, add those squares up, divide by n (population) or n − 1 (sample), then take the square root.' },
         { question: "What is the difference between population and sample standard deviation?", answer: 'Population standard deviation divides by n, the full count — use it only when your data is the entire group you care about. Sample standard deviation divides by n − 1, the common choice when your data is a sample of a larger group.' },
@@ -294,11 +270,12 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { question: 'Can I find standard deviation with only one number?', answer: 'The population standard deviation of a single value is 0 (no spread). The sample standard deviation is undefined — it needs at least two values, since its formula divides by n − 1.' },
         { question: 'How is standard deviation related to variance?', answer: 'Standard deviation is the square root of variance. Variance is in squared units (useful for further statistics); standard deviation is in the original units, which is usually easier to interpret.' },
         { question: 'Which spreadsheet function matches this calculator?', answer: "Excel and Google Sheets' STDEV (and STDEV.S) match this calculator's sample standard deviation; STDEVP (or STDEV.P) matches the population figure." },
-        { question: 'Does the order I enter numbers in matter?', answer: 'No — standard deviation only depends on which values are in the list, not the order they were typed in.' }
+        { question: 'Does the order I enter numbers in matter?', answer: 'No — standard deviation only depends on which values are in the list, not the order they were typed in.' },
+        { question: 'How many numbers can I enter?', answer: 'Up to 1,000. Paste or type them into the box, separated by commas, spaces, semicolons or new lines.' }
       ]
     },
-    compute(values) {
-      const list = readList(values, 1);
+    compute(values, lists) {
+      const list = lists.data;
       const { mean, populationVariance, sampleVariance } = varianceOf(list);
       return {
         mean,
@@ -317,7 +294,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
     aliases: ['variance of a data set calculator', 'population variance calculator', 'sample variance calculator', 'find the variance calculator'],
     related: ['standard-deviation-calculator', 'mean-median-mode-calculator', 'z-score-calculator', 'average-calculator'],
     title: 'Variance Calculator',
-    description: 'Find the population and sample variance of up to 10 numbers, shown side by side — the squared-units measure of spread behind standard deviation.',
+    description: 'Find the population and sample variance of a list of up to 1,000 numbers, shown side by side — the squared-units measure of spread behind standard deviation.',
     example: 'The same five test scores as the standard deviation calculator — 72, 85, 90, 78 and 95 — have a population variance of 67.6 and a sample variance of 84.5.',
     content: {
       lastReviewed: '2026-10-22',
@@ -330,10 +307,10 @@ export const statisticsCalculators: CalculatorConfig[] = [
         ]
       },
       howTo: {
-        intro: 'Choose how many numbers you have, then fill in exactly that many of the number fields, in order starting from Number 1.',
+        intro: 'Paste or type your numbers into the box, separated by commas, spaces or new lines, in any order.',
         steps: [
-          { name: 'Choose how many numbers', text: 'Set "How many numbers?" to your count, from 1 to 10. Only that many Number fields are used.' },
-          { name: 'Enter your numbers', text: 'Fill in Number 1 onward, in any order.' },
+          { name: 'Paste your numbers', text: 'Paste or type your numbers, separated by commas, spaces, semicolons or new lines — up to 1,000 of them.' },
+          { name: 'Check the count', text: 'Anything that isn\'t a number is dropped and listed below the box, along with the live count of numbers it understood.' },
           { name: 'Read the sample variance', text: 'The headline divides by n − 1, the common default for a sample of a larger group.' },
           { name: 'Check the population variance', text: 'The row below divides by n instead — use it only when your numbers are the entire population.' },
           { name: 'See the matching standard deviations', text: 'The last two rows show each variance\'s square root, tying this page directly to the standard deviation calculator\'s own numbers.' },
@@ -347,7 +324,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
         terms: [
           { symbol: 'xᵢ', meaning: 'Each number in the list.' },
           { symbol: 'mean', meaning: 'The arithmetic mean of the list.' },
-          { symbol: 'n', meaning: '"How many numbers?" — the count of values used.' }
+          { symbol: 'n', meaning: 'How many numbers you entered (up to 1,000).' }
         ],
         note: 'Variance is standard deviation before the final square root, so σ² = σ × σ and s² = s × s always hold exactly.'
       },
@@ -367,14 +344,15 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { title: 'Variance is in squared units', body: 'A variance of 67.6 on test scores out of 100 is "67.6 points squared" — a real number with no direct real-world reading. Its square root, standard deviation, is the figure usually quoted to a general audience.' },
         { title: 'A single value has no sample variance', body: 'The sample formula divides by n − 1 = 0 when n = 1 — a genuine 0 ÷ 0. This calculator reports that honestly as "—." Population variance of a single value is still a legitimate 0.' },
         { title: 'Dividing by n or n − 1 is not interchangeable', body: 'Same as standard deviation: population and sample variance answer different questions, not two roundings of one answer. Use population variance only when your numbers are the entire group of interest.' },
-        { title: 'Variance and standard deviation are not independent findings', body: 'They come from exactly the same calculation up to the final square root — if you already have one, you already have the other, and cross-checking a variance calculator against a standard deviation calculator on the same data is really just checking the same arithmetic twice.' }
+        { title: 'Variance and standard deviation are not independent findings', body: 'They come from exactly the same calculation up to the final square root — if you already have one, you already have the other, and cross-checking a variance calculator against a standard deviation calculator on the same data is really just checking the same arithmetic twice.' },
+        { title: 'Non-numeric tokens are dropped, not treated as zero', body: 'Anything pasted into the box that is not a number is silently left out of the calculation and listed under the box, up to a 1,000-number cap. Check the live count against what you expected to paste.' }
       ],
       references: [
         { label: 'OpenStax, Introductory Statistics 2e, §2.7 Measures of the Spread of the Data', url: 'https://openstax.org/books/introductory-statistics-2e/pages/2-7-measures-of-the-spread-of-the-data' },
         { label: 'Wolfram MathWorld, Variance', url: 'https://mathworld.wolfram.com/Variance.html' }
       ]
     },
-    inputs: [listCountInput(5, 1), ...listValueInputs([72, 85, 90, 78, 95])],
+    inputs: [listInput([72, 85, 90, 78, 95], 1)],
     breakdown: {
       headline: 'sampleVariance',
       headlineLabel: 'Variance (sample, s²)',
@@ -386,7 +364,6 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { id: 'sampleStdDev', label: 'Standard deviation (sample), for reference', format: 'significant' },
         { id: 'populationStdDev', label: 'Standard deviation (population), for reference', format: 'significant' }
       ],
-      groups: listGroups(5),
       visual: {
         type: 'compareBars',
         bars: [{ from: 'populationVariance', label: 'Population (σ²)' }, { from: 'sampleVariance', label: 'Sample (s²)' }],
@@ -396,7 +373,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
     },
     seo: {
       title: 'Variance Calculator – Population & Sample',
-      description: 'Free variance calculator. Find both the population and sample variance of up to 10 numbers, plus the matching standard deviations, with a worked example.',
+      description: 'Free variance calculator. Paste a list of up to 1,000 numbers to find both the population and sample variance, plus the matching standard deviations, with a worked example.',
       faq: [
         { question: 'How do I calculate variance?', answer: 'Find the mean, subtract it from each number and square the result, add those squares up, then divide by n (population) or n − 1 (sample).' },
         { question: 'What is the difference between variance and standard deviation?', answer: 'Variance is the average of squared differences from the mean; standard deviation is its square root. They measure the same spread — variance in squared units, standard deviation in the original units.' },
@@ -405,11 +382,12 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { question: 'Can variance be negative?', answer: 'No. Every term being summed is a squared difference, which can never be negative, so variance is always zero or positive.' },
         { question: 'What does a variance of 0 mean?', answer: 'Every value in the list is identical — there is no spread at all.' },
         { question: 'Which spreadsheet function matches this calculator?', answer: "Excel and Google Sheets' VAR (and VAR.S) match this calculator's sample variance; VARP (or VAR.P) matches the population figure." },
-        { question: 'Can I find variance with only one number?', answer: 'Population variance of a single value is 0. Sample variance is undefined, since its formula divides by n − 1 = 0.' }
+        { question: 'Can I find variance with only one number?', answer: 'Population variance of a single value is 0. Sample variance is undefined, since its formula divides by n − 1 = 0.' },
+        { question: 'How many numbers can I enter?', answer: 'Up to 1,000. Paste or type them into the box, separated by commas, spaces, semicolons or new lines.' }
       ]
     },
-    compute(values) {
-      const list = readList(values, 1);
+    compute(values, lists) {
+      const list = lists.data;
       const { mean, populationVariance, sampleVariance } = varianceOf(list);
       return {
         mean,
@@ -548,7 +526,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
     aliases: ['percentile rank calculator', 'find the percentile calculator', 'percentile of a data set calculator', 'what percentile calculator'],
     related: ['mean-median-mode-calculator', 'standard-deviation-calculator', 'z-score-calculator', 'average-calculator'],
     title: 'Percentile Calculator',
-    description: 'Find any percentile of up to 10 numbers using linear interpolation between the closest ranked values — the method NIST\'s own statistics handbook documents.',
+    description: 'Find any percentile of a list of up to 1,000 numbers using linear interpolation between the closest ranked values — the method NIST\'s own statistics handbook documents.',
     example: 'Six exam scores — 55, 60, 65, 70, 78 and 90 — have a 75th percentile of 81 and a 50th percentile (the median) of 67.5.',
     content: {
       lastReviewed: '2026-10-22',
@@ -561,10 +539,10 @@ export const statisticsCalculators: CalculatorConfig[] = [
         ]
       },
       howTo: {
-        intro: 'Choose how many numbers you have, fill in that many Number fields, then set the percentile you want to find.',
+        intro: 'Paste or type your numbers into the box, then set the percentile you want to find.',
         steps: [
-          { name: 'Choose how many numbers', text: 'Set "How many numbers?" to your count, from 1 to 10. Only that many Number fields are used.' },
-          { name: 'Enter your numbers', text: 'Fill in Number 1 onward, in any order — the calculator sorts the list itself.' },
+          { name: 'Paste your numbers', text: 'Paste or type your numbers, separated by commas, spaces, semicolons or new lines, in any order — up to 1,000 of them. The calculator sorts the list itself.' },
+          { name: 'Check the count', text: 'Anything that isn\'t a number is dropped and listed below the box, along with the live count of numbers it understood.' },
           { name: 'Set the target percentile', text: 'Enter the percentile you want to find, from 0 to 100. The default, 75, finds the value marking the top quarter of the data.' },
           { name: 'Read the result', text: 'The headline is the value at that percentile, interpolated between the two closest ranked numbers when it does not land exactly on one of them.' },
           { name: 'Check the rank', text: 'The rank row shows the exact (possibly fractional) position in the sorted list that the target percentile corresponds to.' },
@@ -577,7 +555,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
         expression: 'rank = (P ÷ 100) × (n + 1)\nvalue = Y(k) + d × (Y(k+1) − Y(k)),  where k = ⌊rank⌋ and d = rank − k',
         terms: [
           { symbol: 'P', meaning: 'The target percentile, 0 to 100.' },
-          { symbol: 'n', meaning: '"How many numbers?" — the count of values used.' },
+          { symbol: 'n', meaning: 'How many numbers you entered (up to 1,000).' },
           { symbol: 'Y(k)', meaning: 'The k-th smallest value in the sorted list (Y(1) is the minimum).' }
         ],
         note: 'If the rank falls at or before the first value, or at or beyond the last, the result is simply the minimum or maximum — entering a percentile below 0 or above 100 behaves the same as entering exactly 0 or 100, since the formula\'s own boundary rule already clamps it.'
@@ -597,14 +575,18 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { title: 'Different tools can give different percentile answers for the same data', body: 'Microsoft Excel\'s PERCENTILE and PERCENTILE.INC functions use a different interpolation rule ("type 7": rank = P ÷ 100 × (n − 1) + 1) than the NIST-documented method this calculator uses ("type 6"). Both are standard, cited, legitimate methods — they are not a bug in either tool, just two different conventions, and they tend to agree closely but not exactly.' },
         { title: 'A single value is its own every percentile', body: 'With only one number in the list, the rank formula always resolves to that one value, regardless of what percentile you ask for — there is nothing else for it to interpolate between.' },
         { title: 'The 50th percentile is not always identical to the median formula taught separately', body: 'For this calculator\'s method, they do agree — the 50th percentile and the textbook "average of the two middle values" median give the same answer. That is a property of this particular method, not a universal guarantee across every percentile definition.' },
-        { title: 'Percentile is not the same as percentage', body: 'Scoring in the 90th percentile does not mean getting 90% of questions right — it means scoring at or above roughly 90% of whoever you are being compared against, which depends entirely on how that group performed.' }
+        { title: 'Percentile is not the same as percentage', body: 'Scoring in the 90th percentile does not mean getting 90% of questions right — it means scoring at or above roughly 90% of whoever you are being compared against, which depends entirely on how that group performed.' },
+        { title: 'Non-numeric tokens are dropped, not treated as zero', body: 'Anything pasted into the box that is not a number is silently left out of the calculation and listed under the box, up to a 1,000-number cap. Check the live count against what you expected to paste.' }
       ],
       references: [
         { label: 'NIST/SEMATECH e-Handbook of Statistical Methods, §7.2.6.2 Percentiles', url: 'https://www.itl.nist.gov/div898/handbook/prc/section2/prc262.htm' },
         { label: 'OpenStax, Introductory Statistics 2e, §2.5 Measures of the Center of the Data', url: 'https://openstax.org/books/introductory-statistics-2e/pages/2-5-measures-of-the-center-of-the-data' }
       ]
     },
-    inputs: [listCountInput(6, 1), { id: 'targetPercentile', label: 'Target percentile', type: 'percent', placeholder: '75', defaultValue: 75, step: 1, min: 0 }, ...listValueInputs([60, 55, 90, 65, 78, 70])],
+    inputs: [
+      listInput([60, 55, 90, 65, 78, 70], 1),
+      { id: 'targetPercentile', label: 'Target percentile', type: 'percent', placeholder: '75', defaultValue: 75, step: 1, min: 0 }
+    ],
     breakdown: {
       headline: 'percentileValue',
       headlineLabel: 'Value at this percentile',
@@ -616,10 +598,6 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { id: 'max', label: 'Highest value', format: 'significant' },
         { id: 'count', label: 'Count', format: 'integer' }
       ],
-      groups: [
-        { title: 'Your numbers', inputs: ['howMany', 'targetPercentile', 'value1', 'value2', 'value3', 'value4', 'value5', 'value6'] },
-        { title: 'Add up to 4 more numbers', inputs: ['value7', 'value8', 'value9', 'value10'], optional: true }
-      ],
       visual: {
         type: 'compareBars',
         bars: [{ from: 'min', label: 'Lowest value' }, { from: 'percentileValue', label: 'Your percentile' }, { from: 'max', label: 'Highest value' }],
@@ -629,20 +607,20 @@ export const statisticsCalculators: CalculatorConfig[] = [
     },
     seo: {
       title: 'Percentile Calculator – Rank & Interpolate',
-      description: 'Free percentile calculator. Find any percentile of up to 10 numbers using the NIST-documented linear interpolation method, with a worked example.',
+      description: 'Free percentile calculator. Paste a list of up to 1,000 numbers and find any percentile using the NIST-documented linear interpolation method, with a worked example.',
       faq: [
         { question: 'How do I calculate a percentile?', answer: 'Sort the data, convert the target percentile into a fractional rank, then interpolate between the two sorted values on either side of that rank. For 55, 60, 65, 70, 78, 90, the 75th percentile is 81.' },
         { question: 'What percentile method does this calculator use?', answer: 'Linear interpolation between the closest ranked values, following the NIST/SEMATECH Engineering Statistics Handbook\'s definition (Hyndman & Fan\'s "type 6") — the same method NIST\'s own Dataplot software defaults to.' },
         { question: 'Why does this give a different answer than Excel?', answer: "Excel's PERCENTILE/PERCENTILE.INC functions use a slightly different interpolation rule (\"type 7\"). Both are standard, documented methods; they usually agree closely but can differ by a small amount." },
         { question: 'What is the 50th percentile?', answer: "The median — the value with half the data at or below it and half at or above it. For this calculator's method, it always matches the textbook median formula exactly." },
         { question: 'What happens if I enter a percentile above 100 or below 0?', answer: 'The result clamps to the maximum or minimum value in the list, the same as entering exactly 100 or 0 — the field has no upper limit of its own, so this is handled inside the calculation instead.' },
-        { question: 'How many numbers can this calculator use?', answer: 'From 1 to 10 — set "How many numbers?" to your count, then fill in that many fields starting from Number 1.' },
+        { question: 'How many numbers can I enter?', answer: 'Up to 1,000. Paste or type them into the box, separated by commas, spaces, semicolons or new lines.' },
         { question: 'Is a percentile the same as a percentage score?', answer: "No. A percentile compares a value's rank against other values in the same data set; a percentage score (like 90% correct) is a raw fraction of possible points, unrelated to how anyone else performed." },
         { question: 'Does the order I enter numbers in matter?', answer: 'No — the calculator sorts the list itself before finding the percentile.' }
       ]
     },
-    compute(values) {
-      const list = readList(values, 1);
+    compute(values, lists) {
+      const list = lists.data;
       const sorted = [...list].sort((a, b) => a - b);
       const n = sorted.length;
       const targetPercentile = Math.min(100, Math.max(0, values.targetPercentile));

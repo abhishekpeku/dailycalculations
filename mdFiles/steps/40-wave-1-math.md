@@ -60,7 +60,18 @@ fresh against the v2 template (`mdFiles/calculator-template-v2.md`) and the `add
   - [x] Update `mdFiles/STATUS.md`, open/ready the PR
   - [x] Post-review fix: refuse (not silently round) LCM/GCF/long-division results beyond
     `Number.MAX_SAFE_INTEGER` — see the last "Fix" section below
-- Run 5: triangle, circle, area, volume, surface area
+- Run 5 (this run): **triangle-calculator, circle-calculator, area-calculator, volume-calculator,
+  surface-area-calculator**
+  - [ ] triangle-calculator (type B — mode menu SSS/SAS/ASA, shared side/angle fields)
+  - [ ] circle-calculator (type A — solver, radius ⟷ diameter, circumference/area as outputs)
+  - [ ] area-calculator (type B — shape mode menu, shared length inputs, area dimension output)
+  - [ ] volume-calculator (type B — shape mode menu, shared length inputs, volume dimension output)
+  - [ ] surface-area-calculator (type B — shape mode menu, same shared inputs as volume)
+  - [ ] Snapshot tests (`npm run test:update`), `KNOWN_NON_FINITE` entries where a legitimate domain
+    edge produces a non-finite result
+  - [ ] `npm test`, `npm run build`, `npm run lint`
+  - [ ] Spot-check the 5 pages + `/categories/math` + sitemap on a local server, kill the server
+  - [ ] Update `mdFiles/STATUS.md`, open/ready the PR
 - Run 6: slope, distance between two points, midpoint, scientific-calculator
 
 **Dedup decision (run 1):** the plan's list also names "mixed number" and "proportion" as separate
@@ -133,6 +144,16 @@ percent-change, percent-difference, fraction, ratio; run 2: average, weighted av
 scientific notation, exponent; run 3: square root, cube root, logarithm, factorial, GCF; run 4:
 LCM, prime factorization, long division, quadratic formula, Pythagorean theorem). PR #18 ready for
 review. Next session picks up run 5: triangle, circle, area, volume, surface area.
+
+## Type decisions (run 5)
+
+| Calculator | Type | Why | Visual |
+|---|---|---|---|
+| triangle-calculator | B, with a `mode` options menu | Solving a triangle from SSS, SAS or ASA is three distinct closed-form procedures sharing one 6-field input set (`sideA/sideB/sideC/angleA/angleB/angleC`) — not one invertible equation across all three, so no `solver`. Every mode converges on the same two final steps: get all three sides, then compute all three angles via the law of cosines and the area via Heron's formula, so the three formulas stay internally consistent regardless of which inputs were given. The ambiguous SSA case (two sides and a non-included angle, which can have 0, 1 or 2 valid triangles) is explicitly **not** supported — flagged in `watchOut`, not silently guessed at. Invalid input (the triangle inequality failing, a non-positive side, an angle outside (0°, 180°), or two ASA angles summing to ≥180°) returns `NaN` on every output rather than a wrong number. | CompareBars: side a / side b / side c |
+| circle-calculator | A (solver) | Radius and diameter are a trivial 2-variable invertible pair (`d = 2r`), the same shape as `square-root-calculator`. Circumference and area are **not** added as solver variables, even though "find the radius from the circumference" is a real search intent: a circle only has **one** degree of freedom (any one of radius/diameter/circumference/area determines all the others), but the solver widget's "least-recently-edited field is auto" model needs exactly N−1 independent knowns for N variables — correct for a 3-variable relationship like `force-calculator`'s F = ma, but **not** for a 4-variable circle, where 3 "known" fields would usually be mutually inconsistent. Circumference and area are instead `solver.outputs` (always freshly derived from the current radius, like `pythagorean-theorem-calculator`'s triangle area), and the manual formulas for working backward from a known circumference or area are given in the formula section and FAQ instead of wired into the live widget — an honest, documented scope limit rather than a fake solve. | CompareBars: radius vs diameter |
+| area-calculator | B, with a `mode` shape menu | Five shapes (square, rectangle, triangle, circle, trapezoid) each use a different, non-interchangeable area formula from a shared pool of up to three generic length inputs (`dim1/dim2/dim3`) — not one rearrangeable equation, so no solver. Deliberately does **not** also compute perimeter: a triangle's area formula here only takes a base and a height, not all three sides, so a perimeter figure would have to either silently assume a right triangle or fabricate a third side — `watchOut` names this limit and cross-links to the new `triangle-calculator` (which does take all three sides) for anyone who actually wants a perimeter. | LogScale: the resulting area against three cited everyday areas (an ISO 216 A4 sheet, a FIBA basketball court, a FIFA-recommended soccer pitch) — chosen over a CompareBars of `dim1`/`dim2` because those two inputs are not even both used in every mode (square and circle only take one), while "how big is this area, really" is a meaningful question in every mode |
+| volume-calculator | B, with a `mode` shape menu | Same reasoning as `area-calculator`, one dimension up: cube, rectangular box, cylinder, sphere and cone each have a distinct volume formula from the same shared `dim1/dim2/dim3` length-input pool (radius/height or length/width/height depending on shape), picked by mode rather than solved. | LogScale: the resulting volume against three cited everyday volumes (a 355 mL drink can, a US gallon — 3.785411784 L exactly, per NIST — and a FINA/World Aquatics-standard Olympic pool at 50 m × 25 m × 2 m minimum = 2,500 m³) |
+| surface-area-calculator | B, with a `mode` shape menu | Same five solids and the same `dim1/dim2/dim3` inputs as `volume-calculator` (deliberately kept in lockstep, so the two pages read as a matched pair and share one mental model), but each solid's surface-area formula instead of its volume formula — again not a single rearrangeable equation. | LogScale: the resulting surface area against the same three area benchmarks `area-calculator` uses (A4 sheet, basketball court, soccer pitch), for the same reason — a surface area is still fundamentally "how much area," so the same benchmark set applies honestly |
 
 ## Verification
 

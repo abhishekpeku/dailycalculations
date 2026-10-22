@@ -3205,6 +3205,416 @@ export const mathCalculators: CalculatorConfig[] = [
       else surfaceArea = dim1 >= 0 && dim2 >= 0 && dim3 >= 0 ? 2 * (dim1 * dim2 + dim1 * dim3 + dim2 * dim3) : NaN; // mode 2 (box), and the fallback
       return { surfaceArea };
     }
+  },
+  {
+    id: 'slope-calculator',
+    category: 'math',
+    updatedAt: '2026-10-22',
+    aliases: ['slope formula calculator', 'rise over run calculator', 'gradient calculator', 'find the slope calculator', 'slope of a line calculator'],
+    related: ['distance-calculator', 'midpoint-calculator', 'pythagorean-theorem-calculator', 'ratio-calculator'],
+    title: 'Slope Calculator',
+    description: 'Find the slope, angle of inclination, y-intercept and distance between two (x, y) points — everything needed to write the equation of the line through them.',
+    example: 'The line through (1, 2) and (4, 8) has a slope of 2, an angle of about 63.43°, and the equation y = 2x.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is slope?',
+        paragraphs: [
+          'Slope measures how steep a line is: how much it rises or falls (Δy) for every step it takes sideways (Δx). Given any two points on a line, (x₁, y₁) and (x₂, y₂), the slope is the ratio of those two changes, m = (y₂ − y₁) ÷ (x₂ − x₁) — the "rise over run" most algebra classes lead with. A slope of 2 means the line climbs 2 units for every 1 unit it moves right; a slope of 0 is perfectly flat.',
+          'The sign and size of the slope describe the line at a glance: positive slopes rise left to right, negative slopes fall, and the bigger the number (ignoring its sign), the steeper the line. One case breaks the formula outright — a vertical line, where x₁ and x₂ are equal, makes the denominator zero. There is no slope for a vertical line (not an infinite one, just undefined), even though the line itself is perfectly real and has a well-defined 90° angle.',
+          'This calculator reports four things from the same two points: the slope itself, the angle the line makes with the horizontal, the y-intercept (where the line crosses the y-axis, assuming it is extended in both directions), and the straight-line distance between the two points — the same distance formula used by the dedicated distance calculator, and literally the Pythagorean theorem applied to the two coordinate differences.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the two points the line passes through; every other figure follows automatically.',
+        steps: [
+          { name: 'Enter Point A', text: 'Type the x- and y-coordinates of the first point.' },
+          { name: 'Enter Point B', text: 'Type the x- and y-coordinates of the second point. Order does not matter — slope, angle and distance come out the same either way.' },
+          { name: 'Read the slope and the equation', text: 'The slope (m) and y-intercept (b) are both shown, which together give the full equation of the line, y = mx + b.' },
+          { name: 'Check the angle', text: 'The angle of inclination (0° up to just under 180°) shows how steep the line is independent of direction — 0° is flat, 90° is vertical.' },
+          { name: 'Watch for a vertical line', text: 'If both points share the same x-coordinate, the slope and y-intercept are left blank (undefined) rather than shown as a wrong number — the angle still reads 90°.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'One pair of points, four related figures.',
+        expression: 'm = (y₂ − y₁) ÷ (x₂ − x₁)\nb = y₁ − m·x₁\nθ = angle of inclination, from arctan(Δy ÷ Δx), kept between 0° and 180°\nd = √((x₂ − x₁)² + (y₂ − y₁)²)',
+        terms: [
+          { symbol: 'm', meaning: 'Slope: the ratio of vertical change to horizontal change between the two points.' },
+          { symbol: 'b', meaning: 'The y-intercept — where the line crosses the y-axis — found by substituting Point A back into y = mx + b and solving for b.' },
+          { symbol: 'θ (theta)', meaning: 'The angle of inclination: how far the line tilts from flat horizontal, always between 0° and 180°, regardless of which point is entered first.' },
+          { symbol: 'd', meaning: 'The straight-line distance between the two points, from the distance formula (the Pythagorean theorem applied to Δx and Δy).' }
+        ],
+        note: 'The angle is found directly from Δx and Δy, not from the slope itself, so a vertical line still gets an honest 90° even though its slope is undefined.'
+      },
+      workedExample: {
+        intro: 'A hiking trail climbs steadily: it starts at (0, 0) and, 120 ft later measured flat along the ground, it has risen 15 ft, ending at (120, 15). How steep is it, and how long is the trail itself?',
+        rows: [
+          { label: 'Run (Δx)', value: '120 − 0 = 120 ft' },
+          { label: 'Rise (Δy)', value: '15 − 0 = 15 ft' },
+          { label: 'Slope (m = 15 ÷ 120)', value: '0.125' },
+          { label: 'Angle (arctan(0.125))', value: '≈ 7.13°' },
+          { label: 'y-intercept (b = 0 − 0.125 × 0)', value: '0' },
+          { label: 'Distance (√(120² + 15²))', value: '≈ 120.93 ft' }
+        ],
+        result: 'Slope = 0.125 (a 12.5% grade) · angle ≈ 7.13° · equation: y = 0.125x · trail length ≈ 120.93 ft',
+        explanation: 'A slope of 0.125, written as a percentage (×100), is a 12.5% grade — a common way trail and road steepness is reported. The trail itself (≈120.93 ft) is slightly longer than the flat 120 ft it covers, because it also climbs 15 ft; the distance formula accounts for both.'
+      },
+      watchOut: [
+        { title: 'A vertical line has no slope — not an infinite one', body: 'When both points share the same x-coordinate, the slope formula divides by zero. Mathematically that means "undefined," not a very large or infinite number. This calculator leaves the slope and y-intercept blank for a vertical line rather than showing something misleading.' },
+        { title: 'The angle is still defined even when the slope is not', body: 'A vertical line has a perfectly good angle of inclination, 90°, even though it has no slope. The two figures answer slightly different questions, and only one of them breaks for a vertical line.' },
+        { title: 'A horizontal line has a slope of exactly 0, not "no slope"', body: 'Don’t confuse "slope of zero" (flat, horizontal — a completely normal, defined line) with "slope is undefined" (vertical). They describe opposite situations that are easy to mix up.' },
+        { title: 'The y-intercept assumes the line keeps going', body: 'b is where the line would cross the y-axis if extended in both directions — useful for the line’s equation, but not meaningful if you only care about the segment between your two specific points.' },
+        { title: 'Order of the two points does not matter', body: 'Swapping Point A and Point B flips the sign of both Δx and Δy, which cancels out in the slope formula (and distance is already unsigned) — the slope, angle and distance all come out the same either way.' }
+      ],
+      references: [
+        { label: 'OpenStax, Algebra and Trigonometry 2e, §4.1 Linear Functions', url: 'https://openstax.org/books/algebra-and-trigonometry-2e/pages/4-1-linear-functions' },
+        { label: 'Wolfram MathWorld, Slope', url: 'https://mathworld.wolfram.com/Slope.html' }
+      ]
+    },
+    inputs: [
+      { id: 'x1', label: 'x₁ (Point A)', type: 'number', placeholder: '1', defaultValue: 1, step: 1 },
+      { id: 'y1', label: 'y₁ (Point A)', type: 'number', placeholder: '2', defaultValue: 2, step: 1 },
+      { id: 'x2', label: 'x₂ (Point B)', type: 'number', placeholder: '4', defaultValue: 4, step: 1 },
+      { id: 'y2', label: 'y₂ (Point B)', type: 'number', placeholder: '8', defaultValue: 8, step: 1 }
+    ],
+    breakdown: {
+      headline: 'slope',
+      headlineLabel: 'Slope (m)',
+      outputs: [
+        { id: 'slope', label: 'Slope (m)', format: 'significant' },
+        { id: 'angle', label: 'Angle of inclination (degrees)', format: 'number' },
+        { id: 'yIntercept', label: 'y-intercept (b)', format: 'significant' },
+        { id: 'distance', label: 'Distance between the points', format: 'significant' }
+      ],
+      groups: [
+        { title: 'Point A', inputs: ['x1', 'y1'] },
+        { title: 'Point B', inputs: ['x2', 'y2'] }
+      ],
+      derive: (values) => ({ deltaX: Math.abs(values.x2 - values.x1), deltaY: Math.abs(values.y2 - values.y1) }),
+      visual: { type: 'compareBars', bars: [{ from: 'deltaX', label: 'Run (|Δx|)' }, { from: 'deltaY', label: 'Rise (|Δy|)' }], title: 'Rise and run between the two points' }
+    },
+    seo: {
+      title: 'Slope Calculator – Find Slope, Angle, y-Intercept & Distance',
+      description: 'Free slope calculator. Enter two points to find the slope, the angle of inclination, the y-intercept and the distance between them, with the line equation.',
+      faq: [
+        { question: 'How do you calculate the slope between two points?', answer: 'Divide the change in y by the change in x: m = (y₂ − y₁) ÷ (x₂ − x₁). For (1, 2) and (4, 8), m = (8 − 2) ÷ (4 − 1) = 6 ÷ 3 = 2.' },
+        { question: 'What does a slope of 0 mean?', answer: 'The line is perfectly horizontal — y does not change as x changes. The line through (1, 5) and (4, 5) has slope (5 − 5) ÷ (4 − 1) = 0.' },
+        { question: 'Why is the slope of a vertical line undefined?', answer: 'A vertical line has the same x-coordinate at every point, so x₂ − x₁ = 0 and the slope formula divides by zero — mathematically undefined, not infinite. The line still has a well-defined 90° angle, just no slope.' },
+        { question: 'How do I find the equation of a line from two points?', answer: 'Find the slope m, then find b by plugging either point into y = mx + b and solving for b. For (1, 2) and (4, 8): m = 2, and b = 2 − 2(1) = 0, giving y = 2x.' },
+        { question: 'How do I find the angle of a line from its slope?', answer: 'Take the arctangent of the slope: θ = arctan(m). A slope of 1 gives a 45° angle; a slope of 2 gives about 63.43°. This calculator finds the angle directly from the two points, so it still works even when the slope itself is undefined — a vertical line reads 90°.' },
+        { question: 'Does it matter which point I enter first?', answer: 'No. Swapping Point A and Point B reverses the sign of both the rise and the run, which cancels out in the slope and leaves the angle and distance unchanged.' },
+        { question: 'How is slope related to the distance between two points?', answer: 'They come from the same two numbers, Δx and Δy, used differently: slope is their ratio (Δy ÷ Δx), while distance is √(Δx² + Δy²) — literally the Pythagorean theorem, with Δx and Δy as the two legs.' },
+        { question: 'What is a negative slope?', answer: 'A line that falls from left to right. The line through (0, 10) and (5, 0) has slope (0 − 10) ÷ (5 − 0) = −2 — it drops 2 units for every 1 unit it moves right.' }
+      ]
+    },
+    compute(values) {
+      const { x1, y1, x2, y2 } = values;
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      if (dx === 0 && dy === 0) return { slope: NaN, angle: NaN, yIntercept: NaN, distance: 0 };
+      const slope = dx === 0 ? NaN : dy / dx;
+      const rawAngle = (Math.atan2(dy, dx) * 180) / Math.PI;
+      const angle = ((rawAngle % 180) + 180) % 180; // angle of inclination, direction-independent, in [0, 180)
+      const yIntercept = dx === 0 ? NaN : y1 - slope * x1;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      return { slope, angle, yIntercept, distance };
+    }
+  },
+  {
+    id: 'distance-calculator',
+    category: 'math',
+    updatedAt: '2026-10-22',
+    aliases: ['distance between two points calculator', 'coordinate distance calculator', 'distance formula calculator', '2 point distance calculator', 'euclidean distance calculator'],
+    related: ['midpoint-calculator', 'slope-calculator', 'pythagorean-theorem-calculator', 'square-root-calculator'],
+    title: 'Distance Calculator',
+    description: 'Find the straight-line distance between two (x, y) points on a coordinate plane, using the distance formula — the Pythagorean theorem applied to the two coordinate differences.',
+    example: 'The distance between (1, 2) and (4, 6) is √(3² + 4²) = √25 = 5.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is the distance formula?',
+        paragraphs: [
+          'The distance between two points (x₁, y₁) and (x₂, y₂) on a flat coordinate plane is d = √((x₂ − x₁)² + (y₂ − y₁)²). It is not a separate rule to memorize so much as the Pythagorean theorem in disguise: the horizontal gap (Δx) and the vertical gap (Δy) between the two points form the two legs of a right triangle, and the straight-line distance between the points is that triangle’s hypotenuse.',
+          'That connection is why the defaults on this page, a 3-4-5 triangle’s worth of coordinates, come out to a distance of exactly 5 — the same 3-4-5 right triangle that shows up throughout basic geometry. Any two points whose coordinate differences happen to match a Pythagorean triple (3-4-5, 5-12-13, 8-6-10, and so on) will do the same.',
+          'This is a straight-line ("as the crow flies") distance only. It assumes both coordinates are measured on the same flat scale — it has nothing to say about a path that has to follow roads, stairs, or any other route that is not a straight segment between the two points.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the two points; the distance between them is calculated as you type.',
+        steps: [
+          { name: 'Enter Point A', text: 'Type the x- and y-coordinates of the first point.' },
+          { name: 'Enter Point B', text: 'Type the x- and y-coordinates of the second point.' },
+          { name: 'Read the distance', text: 'The straight-line distance between the two points appears immediately, along with the horizontal and vertical gaps it was built from.' },
+          { name: 'Check the right triangle', text: 'The chart shows |Δx| and |Δy| side by side — the two legs of the right triangle whose hypotenuse is the distance you just found.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The Pythagorean theorem, applied to two coordinate points instead of a drawn triangle.',
+        expression: 'Δx = x₂ − x₁\nΔy = y₂ − y₁\nd = √(Δx² + Δy²)',
+        terms: [
+          { symbol: 'Δx, Δy', meaning: 'The horizontal and vertical gaps between the two points — the two legs of the right triangle formed by the points and the grid lines through them.' },
+          { symbol: 'd', meaning: 'The distance between the points — the hypotenuse of that same right triangle.' }
+        ],
+        note: 'Squaring both differences removes their sign, so it never matters which point is "first" — the distance comes out identical either way.'
+      },
+      workedExample: {
+        intro: 'Two delivery stops sit on a city grid (measured in blocks): one at (2, 3), the other at (10, 9). How far apart are they, as a straight line?',
+        rows: [
+          { label: 'Δx', value: '10 − 2 = 8 blocks' },
+          { label: 'Δy', value: '9 − 3 = 6 blocks' },
+          { label: 'Square and add', value: '8² + 6² = 64 + 36 = 100' },
+          { label: 'Square root', value: '√100 = 10' }
+        ],
+        result: 'Distance = 10 blocks',
+        explanation: 'This is a 6-8-10 right triangle — the 3-4-5 triangle scaled up by a factor of 2. The straight-line distance (10 blocks) is shorter than the 8 + 6 = 14 blocks a delivery driver would actually travel along the grid, since real streets can’t cut across the diagonal.'
+      },
+      watchOut: [
+        { title: 'This is a straight line, not a travel distance', body: 'The distance formula answers "how far apart are these two points," not "how far do I have to drive or walk." A route along streets, stairs, or any path that is not a straight segment will be longer.' },
+        { title: 'Order of the two points does not matter', body: 'Squaring Δx and Δy removes their sign, so swapping Point A and Point B gives the exact same distance.' },
+        { title: 'Both coordinates need to be on the same scale', body: 'The formula has no idea what your x and y actually mean. Mixing units within one axis (feet for one point, meters for the other) or using two axes with different scales produces a number that looks fine but means nothing physically.' },
+        { title: 'Zero distance is a legitimate answer', body: 'If both points are identical, the distance is exactly 0 — a correct result, not an error, the same way a triangle with a 0-length side would be treated as a genuine degenerate case elsewhere on this site.' }
+      ],
+      references: [
+        { label: 'OpenStax, Algebra and Trigonometry 2e, §2.1 The Rectangular Coordinate Systems and Graphs', url: 'https://openstax.org/books/algebra-and-trigonometry-2e/pages/2-1-the-rectangular-coordinate-systems-and-graphs' },
+        { label: 'Wolfram MathWorld, Distance', url: 'https://mathworld.wolfram.com/Distance.html' }
+      ]
+    },
+    inputs: [
+      { id: 'x1', label: 'x₁ (Point A)', type: 'number', placeholder: '1', defaultValue: 1, step: 1 },
+      { id: 'y1', label: 'y₁ (Point A)', type: 'number', placeholder: '2', defaultValue: 2, step: 1 },
+      { id: 'x2', label: 'x₂ (Point B)', type: 'number', placeholder: '4', defaultValue: 4, step: 1 },
+      { id: 'y2', label: 'y₂ (Point B)', type: 'number', placeholder: '6', defaultValue: 6, step: 1 }
+    ],
+    breakdown: {
+      headline: 'distance',
+      headlineLabel: 'Distance',
+      outputs: [
+        { id: 'distance', label: 'Distance', format: 'significant' },
+        { id: 'deltaX', label: '|Δx| (horizontal gap)', format: 'number' },
+        { id: 'deltaY', label: '|Δy| (vertical gap)', format: 'number' }
+      ],
+      groups: [
+        { title: 'Point A', inputs: ['x1', 'y1'] },
+        { title: 'Point B', inputs: ['x2', 'y2'] }
+      ],
+      visual: { type: 'compareBars', bars: [{ from: 'deltaX', label: '|Δx|' }, { from: 'deltaY', label: '|Δy|' }, { from: 'distance', label: 'Distance' }], title: 'The right triangle behind the distance formula' }
+    },
+    seo: {
+      title: 'Distance Calculator – Distance Between Two Points',
+      description: 'Free distance calculator. Find the straight-line distance between two (x, y) coordinates using the distance formula, with the Pythagorean steps shown.',
+      faq: [
+        { question: 'What is the distance formula?', answer: 'd = √((x₂ − x₁)² + (y₂ − y₁)²), the straight-line distance between two points (x₁, y₁) and (x₂, y₂) on a flat plane.' },
+        { question: 'Is the distance formula the same as the Pythagorean theorem?', answer: 'Yes — it is the Pythagorean theorem applied to coordinates. Δx and Δy are the two legs of a right triangle, and the distance is its hypotenuse: d = √(Δx² + Δy²) is the same shape as c = √(a² + b²).' },
+        { question: 'How do I find the distance between (1, 2) and (4, 6)?', answer: 'Δx = 4 − 1 = 3, Δy = 6 − 2 = 4, so d = √(3² + 4²) = √25 = 5.' },
+        { question: 'Can the distance be a decimal?', answer: 'Yes, almost always. The distance is only a whole number when Δx and Δy happen to form a Pythagorean triple (like 3-4-5); otherwise it is an irrational decimal, such as the distance between (0, 0) and (1, 1), which is √2 ≈ 1.41.' },
+        { question: 'Does the order of the two points matter?', answer: 'No. Squaring Δx and Δy removes their sign, so the distance from A to B is identical to the distance from B to A.' },
+        { question: 'Is this the same as the distance I would actually travel?', answer: 'No — this is the straight-line ("as the crow flies") distance. Travel along roads, paths or stairs is almost always longer, since those routes can’t cut across the diagonal the way a straight line does.' },
+        { question: 'What if the two points are the same?', answer: 'The distance is 0. That is a correct, legitimate result, not an error — two identical points are zero distance apart by definition.' },
+        { question: 'Does this work in 3D, with a z-coordinate?', answer: 'The same idea extends to three dimensions by adding a third squared difference, d = √(Δx² + Δy² + Δz²), but this calculator covers the two-dimensional (x, y) case.' }
+      ]
+    },
+    compute(values) {
+      const { x1, y1, x2, y2 } = values;
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      return { distance: Math.sqrt(dx * dx + dy * dy), deltaX: Math.abs(dx), deltaY: Math.abs(dy) };
+    }
+  },
+  {
+    id: 'midpoint-calculator',
+    category: 'math',
+    updatedAt: '2026-10-22',
+    aliases: ['midpoint formula calculator', 'midpoint of two points calculator', 'find the midpoint calculator', 'center point calculator', 'line segment midpoint calculator'],
+    related: ['distance-calculator', 'slope-calculator', 'average-calculator', 'pythagorean-theorem-calculator'],
+    title: 'Midpoint Calculator',
+    description: 'Find the exact midpoint between two (x, y) coordinates — the point that splits the segment between them into two equal halves.',
+    example: 'The midpoint between (2, 3) and (8, 11) is (5, 7), exactly halfway along the 10-unit segment that connects them.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is the midpoint formula?',
+        paragraphs: [
+          'The midpoint of two points (x₁, y₁) and (x₂, y₂) is simply the average of their x-coordinates and the average of their y-coordinates: M = ((x₁ + x₂) ÷ 2, (y₁ + y₂) ÷ 2). Each axis is handled completely independently — the midpoint’s x-coordinate only depends on x₁ and x₂, never on either y-value, and vice versa.',
+          'That makes the midpoint formula, underneath, just the two-number average from the average calculator, applied twice: once to the two x-coordinates and once to the two y-coordinates. There is nothing geometric about the averaging step itself — it is the same arithmetic as averaging any other pair of numbers.',
+          'A useful property worth checking by eye: the midpoint always sits exactly halfway along the straight segment between the two points, so its distance to each endpoint is identical. This calculator shows that distance split both ways, which is a quick way to confirm a midpoint calculation is right.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the two endpoints; the midpoint and the distances to it follow automatically.',
+        steps: [
+          { name: 'Enter Point A', text: 'Type the x- and y-coordinates of the first endpoint.' },
+          { name: 'Enter Point B', text: 'Type the x- and y-coordinates of the second endpoint.' },
+          { name: 'Read the midpoint', text: 'The midpoint’s x- and y-coordinates are each the average of the two endpoints’ matching coordinate.' },
+          { name: 'Check the two halves', text: 'The distance from Point A to the midpoint and from the midpoint to Point B are shown side by side — they are always exactly equal.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Average the x-coordinates, average the y-coordinates — that is the whole formula.',
+        expression: 'Mx = (x₁ + x₂) ÷ 2\nMy = (y₁ + y₂) ÷ 2\nM = (Mx, My)',
+        terms: [
+          { symbol: 'Mx, My', meaning: 'The midpoint’s x- and y-coordinates, each the plain average of the two endpoints’ matching coordinate.' }
+        ],
+        note: 'Because each axis is averaged independently, the midpoint of a vertical or horizontal segment needs no special case — the formula already handles it.'
+      },
+      workedExample: {
+        intro: 'Two hikers start a shared trail at (0, 0) and plan to meet partway, at the point exactly halfway to their friend’s cabin at (6, 8) miles. Where do they meet, and how far does each of them walk?',
+        rows: [
+          { label: 'Midpoint x (Mx)', value: '(0 + 6) ÷ 2 = 3' },
+          { label: 'Midpoint y (My)', value: '(0 + 8) ÷ 2 = 4' },
+          { label: 'Total distance, (0,0) to (6,8)', value: '√(6² + 8²) = √100 = 10 miles' },
+          { label: 'Each hiker’s distance to the midpoint', value: '10 ÷ 2 = 5 miles' }
+        ],
+        result: 'Midpoint = (3, 4) · each hiker walks 5 miles',
+        explanation: 'The 6-8-10 right triangle (a scaled-up 3-4-5) makes the total distance a clean 10 miles, so each half is exactly 5 — a quick way to confirm (3, 4) really is the midpoint and not just an approximate halfway point.'
+      },
+      watchOut: [
+        { title: 'The midpoint only works along the straight segment', body: 'M is the halfway point of the straight line connecting the two coordinates — it says nothing about the midpoint of a curved or road-based route between them.' },
+        { title: 'Order of the two points does not matter', body: 'Addition is commutative, so swapping Point A and Point B gives the exact same midpoint.' },
+        { title: 'The two axes never interact', body: 'The midpoint’s x-coordinate comes only from the two x-values; its y-coordinate comes only from the two y-values. A common mistake is accidentally averaging an x with a y.' },
+        { title: 'The midpoint is usually not a whole number', body: 'Unless x₁ + x₂ and y₁ + y₂ both happen to be even, the midpoint will have a .5 in it — that is a completely normal, exact answer, not a rounding issue.' }
+      ],
+      references: [
+        { label: 'OpenStax, Algebra and Trigonometry 2e, §2.1 The Rectangular Coordinate Systems and Graphs', url: 'https://openstax.org/books/algebra-and-trigonometry-2e/pages/2-1-the-rectangular-coordinate-systems-and-graphs' },
+        { label: 'Wolfram MathWorld, Midpoint', url: 'https://mathworld.wolfram.com/Midpoint.html' }
+      ]
+    },
+    inputs: [
+      { id: 'x1', label: 'x₁ (Point A)', type: 'number', placeholder: '2', defaultValue: 2, step: 1 },
+      { id: 'y1', label: 'y₁ (Point A)', type: 'number', placeholder: '3', defaultValue: 3, step: 1 },
+      { id: 'x2', label: 'x₂ (Point B)', type: 'number', placeholder: '8', defaultValue: 8, step: 1 },
+      { id: 'y2', label: 'y₂ (Point B)', type: 'number', placeholder: '11', defaultValue: 11, step: 1 }
+    ],
+    breakdown: {
+      headline: 'midX',
+      headlineLabel: 'Midpoint x-coordinate (Mx)',
+      outputs: [
+        { id: 'midY', label: 'Midpoint y-coordinate (My)', format: 'number' },
+        { id: 'distanceAToMid', label: 'Point A to midpoint', format: 'significant' },
+        { id: 'distanceMidToB', label: 'Midpoint to Point B', format: 'significant' },
+        { id: 'distanceAB', label: 'Total distance, A to B', format: 'significant' }
+      ],
+      groups: [
+        { title: 'Point A', inputs: ['x1', 'y1'] },
+        { title: 'Point B', inputs: ['x2', 'y2'] }
+      ],
+      visual: { type: 'compareBars', bars: [{ from: 'distanceAToMid', label: 'Point A to midpoint' }, { from: 'distanceMidToB', label: 'Midpoint to Point B' }], title: 'Equal distance to the midpoint from each point' }
+    },
+    seo: {
+      title: 'Midpoint Calculator – Find the Midpoint of Two Points',
+      description: 'Free midpoint calculator. Find the exact midpoint between two (x, y) coordinates, plus the equal distance from each point to it.',
+      faq: [
+        { question: 'What is the midpoint formula?', answer: 'M = ((x₁ + x₂) ÷ 2, (y₁ + y₂) ÷ 2) — average the two x-coordinates for the midpoint’s x, and average the two y-coordinates for its y.' },
+        { question: 'How do I find the midpoint of (2, 3) and (8, 11)?', answer: 'Mx = (2 + 8) ÷ 2 = 5, My = (3 + 11) ÷ 2 = 7, so the midpoint is (5, 7).' },
+        { question: 'Is the midpoint always a whole number?', answer: 'No. It is only a whole number when both coordinate sums (x₁ + x₂ and y₁ + y₂) are even. The midpoint of (1, 1) and (2, 2), for example, is (1.5, 1.5).' },
+        { question: 'Does the order of the two points matter?', answer: 'No. Addition is commutative, so swapping Point A and Point B gives the exact same midpoint.' },
+        { question: 'How far is the midpoint from each original point?', answer: 'Always exactly half the total distance between the two points, since the midpoint sits precisely in the middle of the straight segment connecting them.' },
+        { question: 'How is the midpoint formula related to averages?', answer: 'It is two ordinary two-number averages applied at once — one for the x-coordinates, one for the y-coordinates — with no other geometry involved.' },
+        { question: 'Can the midpoint formula be used for more than two points?', answer: 'Not directly. The midpoint formula is specific to two points; the "center" of three or more points is a different calculation (a centroid), found by averaging all of their x-coordinates and all of their y-coordinates together.' },
+        { question: 'What is the midpoint used for?', answer: 'Common uses include finding the center of a line segment or shape, locating a point exactly between two landmarks, and geometry proofs about bisected segments.' }
+      ]
+    },
+    compute(values) {
+      const { x1, y1, x2, y2 } = values;
+      const midX = (x1 + x2) / 2;
+      const midY = (y1 + y2) / 2;
+      const distanceAB = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+      return { midX, midY, distanceAB, distanceAToMid: distanceAB / 2, distanceMidToB: distanceAB / 2 };
+    }
+  },
+  // Custom-component stub: rendered by a special component in page.tsx (ScientificCalculator), the
+  // same pattern as pomodoro-timer and timezone-meeting-planner. See mdFiles/steps/40-wave-1-math.md,
+  // run 6, for why: the "solve for any field" and type-B breakdown models both assume a fixed set of
+  // numeric fields, which doesn't fit a free-form expression calculator.
+  {
+    id: 'scientific-calculator',
+    category: 'math',
+    updatedAt: '2026-10-22',
+    aliases: ['online scientific calculator', 'trig calculator', 'sin cos tan calculator', 'scientific calculator online', 'advanced calculator'],
+    related: ['exponent-calculator', 'logarithm-calculator', 'square-root-calculator', 'factorial-calculator'],
+    title: 'Scientific Calculator',
+    description: 'A browser-based scientific calculator: standard arithmetic plus trigonometric, logarithmic, power, root and factorial functions, with a degrees/radians toggle for angles.',
+    example: 'sin(30°) + log(100) × 5! = 0.5 + 2 × 120 = 240.5, evaluated in one expression following the standard order of operations.',
+    inputs: [],
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What does a scientific calculator add over a basic one?',
+        paragraphs: [
+          'A basic four-function calculator only adds, subtracts, multiplies and divides, one operation at a time. A scientific calculator additionally understands trigonometric functions (sine, cosine, tangent and their inverses), logarithms, powers, roots and factorials, and — critically — a full expression typed at once, evaluated with the standard order of operations: parentheses and functions first, then exponents, then multiplication and division, then addition and subtraction.',
+          'Angles are the one place a scientific calculator needs an explicit choice: degrees (a full circle is 360°) or radians (a full circle is 2π). The same number typed into sin() means something completely different depending on which mode is active, so this calculator keeps the current mode visible at all times and recomputes the display the instant it is switched.',
+          'This page evaluates a whole typed expression rather than focusing on any single operation. For a deep dive into one specific calculation — the mechanics of a logarithm, a factorial, an exponent or a square root, with a worked example and a formula explained step by step — the dedicated calculators linked below cover each of those individually.'
+        ]
+      },
+      howTo: {
+        intro: 'Build an expression with the buttons (or type it directly), then read the live result.',
+        steps: [
+          { name: 'Enter numbers and operators', text: 'Use the digit pad and +, −, ×, ÷ as on any calculator. The result below the display updates as you type.' },
+          { name: 'Use a function', text: 'Tapping sin, cos, ln, √ and the others inserts the function name with an opening parenthesis, so you can type the value and close it yourself.' },
+          { name: 'Set the angle unit', text: 'Switch between Deg and Rad before using any trig function — it changes both how an angle you type in is interpreted and how an inverse-trig result is reported.' },
+          { name: 'Use parentheses to control order', text: 'Parentheses always resolve first, exactly as in written math — (2+3)×4 is 20, while 2+3×4 is 14.' },
+          { name: 'Press = or Enter', text: 'Finalizes the current expression, replacing the display with the result so you can keep building on it.' },
+          { name: 'Clear or correct', text: 'AC clears everything; the backspace key (⌫) removes one character at a time.' }
+        ],
+        outro: 'Everything is evaluated in your browser by a small expression parser written for this page — never by running the typed text as code.'
+      },
+      formula: {
+        intro: 'There is no single equation here — instead, a fixed order of operations decides how any typed expression is read.',
+        expression: 'Parentheses and functions (sin, log, √, ...) → Factorials (!) → Exponents (^, right to left) → Unary minus/plus → Multiplication and division (left to right, including implied multiplication like 2π) → Addition and subtraction (left to right)',
+        terms: [
+          { symbol: 'sin, cos, tan', meaning: 'The three basic trigonometric functions, interpreted in whichever angle unit (degrees or radians) is currently selected.' },
+          { symbol: 'sin⁻¹, cos⁻¹, tan⁻¹', meaning: 'The inverse trig functions (arcsine, arccosine, arctangent); their results are reported in the same angle unit.' },
+          { symbol: 'ln, log', meaning: 'Natural logarithm (base e) and common logarithm (base 10).' },
+          { symbol: '√, π, e', meaning: 'Square root; the circle constant π ≈ 3.14159; Euler’s number e ≈ 2.71828.' },
+          { symbol: 'n!', meaning: 'Factorial: the product of every whole number from 1 to n, defined only for a nonnegative integer n.' }
+        ],
+        note: 'Because unary minus has looser precedence than exponentiation, −2^2 evaluates to −4 (the negative of 2²), the same convention taught in algebra classes — not (−2)² = 4. The parser is a small hand-written recursive-descent evaluator limited to the operations above; it never executes the typed text as JavaScript. sin, cos and tan return exact values (0, 1 or −1) at every multiple of 90° in Degree mode, and treat a radian-mode result closer than 10⁻¹⁵ to zero as exactly zero, rather than showing a stray floating-point remainder like 0.0000000000000001.'
+      },
+      workedExample: {
+        intro: 'Evaluate sin(30°) + log(100) × 5! in one expression, in Degree mode.',
+        rows: [
+          { label: 'sin(30°)', value: '0.5' },
+          { label: 'log(100) (base 10)', value: '2' },
+          { label: '5!', value: '5 × 4 × 3 × 2 × 1 = 120' },
+          { label: 'Multiply (order of operations: × before +)', value: '2 × 120 = 240' },
+          { label: 'Add', value: '0.5 + 240 = 240.5' }
+        ],
+        result: '240.5',
+        explanation: 'Even though it is typed left to right, × 5! is evaluated before the addition, following the standard order of operations — the same way 2+3×4 means 2+12, not 5×4.'
+      },
+      watchOut: [
+        { title: 'tan() has no answer exactly at 90°, 270° and their equivalents', body: 'The true tangent of 90° is undefined — cosine is exactly 0 there, so the ratio sine ÷ cosine has no value. This calculator shows no result for exactly 90°, 270°, 450° and so on, rather than the huge-but-finite number naive floating-point math would otherwise produce. A value merely close to 90°, like 89.9999°, is not undefined — it has a real (very large) tangent, and still shows one.' },
+        { title: '−2^2 is −4, not 4', body: 'Exponentiation is applied before the leading minus sign, so −2^2 means −(2²) = −4. To square −2 itself, use parentheses: (−2)^2 = 4.' },
+        { title: 'ln, log and √ refuse an out-of-domain input', body: 'The logarithm of a non-positive number and the square root of a negative number have no real answer. This calculator shows no result for them rather than inventing one.' },
+        { title: 'Factorial only accepts a nonnegative whole number', body: '2.5! and (−3)! have no result here. Values above 170! are reported as too large to represent exactly (the point where a standard double-precision number overflows), not shown as a rounded, falsely precise digit string.' },
+        { title: 'The angle unit applies to every trig function at once', body: 'Switching between Deg and Rad re-reads the whole expression immediately — there is no way to mix degrees and radians within one calculation.' }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §2.1 Use the Language of Algebra (order of operations)', url: 'https://openstax.org/books/prealgebra-2e/pages/2-1-use-the-language-of-algebra' },
+        { label: 'NIST Digital Library of Mathematical Functions, §4.2 Logarithm, Exponential, Powers: Definitions', url: 'https://dlmf.nist.gov/4.2' },
+        { label: 'NIST Digital Library of Mathematical Functions, §4.14 Trigonometric Functions: Definitions and Periodicity', url: 'https://dlmf.nist.gov/4.14' },
+        { label: 'NIST Digital Library of Mathematical Functions, §4.23 Inverse Trigonometric Functions', url: 'https://dlmf.nist.gov/4.23' }
+      ]
+    },
+    seo: {
+      title: 'Scientific Calculator – Trig, Log, Powers & Factorials',
+      description: 'Free online scientific calculator. Evaluate expressions with sin/cos/tan, inverse trig, ln/log, powers, roots and factorials, with a degrees/radians toggle.',
+      faq: [
+        { question: 'What functions does this scientific calculator support?', answer: 'Addition, subtraction, multiplication, division, parentheses, powers (^), square roots (√), sin/cos/tan and their inverses (sin⁻¹/cos⁻¹/tan⁻¹), natural and common logarithms (ln, log), the constants π and e, and factorials (!).' },
+        { question: 'How do I switch between degrees and radians?', answer: 'Use the Deg/Rad toggle above the display. It changes how every trig function reads its input and reports its output, and re-evaluates the current expression immediately.' },
+        { question: 'Does it follow the standard order of operations?', answer: 'Yes — parentheses and functions first, then exponents, then multiplication and division left to right, then addition and subtraction left to right, the same convention taught in algebra (sometimes called PEMDAS).' },
+        { question: 'Why does −2^2 give −4 and not 4?', answer: 'Exponentiation happens before the unary minus is applied, so −2^2 means −(2²) = −4. If you want (−2)² = 4, type the parentheses explicitly.' },
+        { question: 'What happens with the square root or logarithm of a negative number?', answer: 'There is no result: the square root of a negative number and the logarithm of a non-positive number have no real-number answer, so this calculator shows nothing rather than a wrong number.' },
+        { question: 'Can I use parentheses and nested functions?', answer: 'Yes, including nesting, like sin(log(100)×30), and implied multiplication, like 2π or 3(4+5), which are both read as if a × were typed between them.' },
+        { question: 'Does this calculator use eval() or run my input as code?', answer: 'No. Every expression is read by a small parser written specifically for the four operations, powers, roots, trig, logs and factorial listed above — it never executes the typed text as JavaScript or any other programming language.' },
+        { question: 'What happens when I calculate tan(90)?', answer: 'There is no result. Tangent is undefined at 90°, 270° and every equivalent angle, since cosine is exactly 0 there — this calculator reports no answer for those exact angles rather than a distorted, extremely large number. An angle merely close to 90°, such as 89.9999°, is not undefined and still returns its real (very large) tangent.' }
+      ]
+    },
+    compute() {
+      return {};
+    }
   }
 
 ];

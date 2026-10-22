@@ -7,6 +7,7 @@ import CurrencyConverter from '@/components/CurrencyConverter';
 import TextToolsCalculator from '@/components/TextToolsCalculator';
 import PomodoroTimer from '@/components/PomodoroTimer';
 import TimeZonePlanner from '@/components/TimeZonePlanner';
+import ScientificCalculator from '@/components/ScientificCalculator';
 import FaqSection from '@/components/FaqSection';
 import Breadcrumb from '@/components/Breadcrumb';
 import FormulaSection from '@/components/FormulaSection';
@@ -83,6 +84,7 @@ export default async function CalculatorPage({
     slug === 'hashtag-counter' ? <TextToolsCalculator mode="hashtag" /> :
     slug === 'pomodoro-timer' ? <PomodoroTimer /> :
     slug === 'timezone-meeting-planner' ? <TimeZonePlanner /> :
+    slug === 'scientific-calculator' ? <ScientificCalculator /> :
     <BreakdownCalculator calculatorId={calculator.id} />;
   const example = <p className="text-sm text-slate-500 dark:text-slate-400">Example: {calculator.example}</p>;
 

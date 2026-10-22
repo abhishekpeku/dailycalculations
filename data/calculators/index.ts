@@ -116,7 +116,11 @@ export const calculatorOrder: string[] = [
   'circle-calculator',
   'area-calculator',
   'volume-calculator',
-  'surface-area-calculator'
+  'surface-area-calculator',
+  'slope-calculator',
+  'distance-calculator',
+  'midpoint-calculator',
+  'scientific-calculator'
 ];
 
 const rank = (id: string) => {

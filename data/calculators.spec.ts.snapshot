@@ -376,9 +376,9 @@ exports[`compute() snapshots > chi-square-calculator 1`] = `
         "observed": [
           8,
           12,
-          9,
+          10,
           14,
-          7,
+          6,
           10
         ],
         "expected": [
@@ -392,9 +392,9 @@ exports[`compute() snapshots > chi-square-calculator 1`] = `
       }
     },
     "outputs": {
-      "chiSquareStatistic": 3.4,
+      "chiSquareStatistic": 4,
       "degreesOfFreedom": 5,
-      "pValue": 0.6385699231,
+      "pValue": 0.5494159514,
       "minExpected": 10,
       "count": 6
     }
@@ -408,9 +408,9 @@ exports[`compute() snapshots > chi-square-calculator 1`] = `
         "observed": [
           12,
           18,
-          14,
+          15,
           21,
-          11,
+          9,
           15
         ],
         "expected": [
@@ -424,9 +424,9 @@ exports[`compute() snapshots > chi-square-calculator 1`] = `
       }
     },
     "outputs": {
-      "chiSquareStatistic": 4.733333333,
+      "chiSquareStatistic": 6,
       "degreesOfFreedom": 5,
-      "pValue": 0.4492833424,
+      "pValue": 0.3062189184,
       "minExpected": 15,
       "count": 6
     }

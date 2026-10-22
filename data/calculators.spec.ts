@@ -177,6 +177,107 @@ describe('force-calculator solver', () => {
   });
 });
 
+// Pre-merge review of PR #25 (statistics run 4) found three real bugs, each verified independently
+// in the scratchpad's verify_run4_premerge_fixes.mjs before these permanent tests were written.
+describe('statistics run 4 pre-merge review fixes (PR #25)', () => {
+  const byId = (id: string) => {
+    const calculator = calculators.find((c) => c.id === id);
+    assert.ok(calculator, id);
+    return calculator!;
+  };
+
+  describe('fix 1: a non-integer sample/population size is refused (NaN), never silently answered', () => {
+    test('confidence-interval-calculator: a fractional sample size gives no answer', () => {
+      const calc = byId('confidence-interval-calculator');
+      const base = Object.fromEntries(calc.inputs.map((i) => [i.id, i.defaultValue]));
+      const bad = calc.compute({ ...base, sampleSize: 10.5 });
+      assert.ok(Number.isNaN(bad.degreesOfFreedom) && Number.isNaN(bad.marginOfError));
+      const good = calc.compute({ ...base });
+      assert.ok(Number.isFinite(good.marginOfError));
+    });
+
+    test('margin-of-error-calculator: a fractional sample size or nonzero population size gives no answer', () => {
+      const calc = byId('margin-of-error-calculator');
+      const base = Object.fromEntries(calc.inputs.map((i) => [i.id, i.defaultValue]));
+      assert.ok(Number.isNaN(calc.compute({ ...base, sampleSize: 999.5 }).marginOfErrorPercent));
+      assert.ok(Number.isFinite(calc.compute({ ...base, populationSize: 2000 }).marginOfErrorPercent));
+      assert.ok(Number.isNaN(calc.compute({ ...base, populationSize: 2000.5 }).marginOfErrorPercent));
+      // populationSize = 0 is a valid sentinel ("not applied"), not a fractional-input error.
+      assert.ok(Number.isFinite(calc.compute({ ...base, populationSize: 0 }).marginOfErrorPercent));
+    });
+
+    test('sample-size-calculator: a fractional nonzero population size gives no answer', () => {
+      const calc = byId('sample-size-calculator');
+      const base = Object.fromEntries(calc.inputs.map((i) => [i.id, i.defaultValue]));
+      assert.ok(Number.isFinite(calc.compute({ ...base, populationSize: 2000 }).sampleSize));
+      assert.ok(Number.isNaN(calc.compute({ ...base, populationSize: 2000.5 }).sampleSize));
+    });
+
+    test('t-test-calculator: a fractional sample size gives no answer, in either mode', () => {
+      const calc = byId('t-test-calculator');
+      const oneSample = { mode: 1, tailType: 1, sampleMean: 85, popMean: 80, sampleStdDev: 12, sampleSize: 10.5, mean2: 78, stdDev2: 15, sampleSize2: 25 };
+      const bad1 = calc.compute(oneSample);
+      assert.ok(Number.isNaN(bad1.degreesOfFreedom) && Number.isNaN(bad1.pValue));
+      const twoSample = { mode: 2, tailType: 1, sampleMean: 85, popMean: 80, sampleStdDev: 12, sampleSize: 30, mean2: 78, stdDev2: 15, sampleSize2: 24.5 };
+      const bad2 = calc.compute(twoSample);
+      assert.ok(Number.isNaN(bad2.degreesOfFreedom) && Number.isNaN(bad2.pValue));
+    });
+
+    test('standard-error-calculator: a fractional sample size (summary mode) gives no answer', () => {
+      const calc = byId('standard-error-calculator');
+      const bad = calc.compute({ mode: 1, sampleStdDev: 15, sampleSize: 36.5 }, { data: [12, 15, 18] });
+      assert.ok(Number.isNaN(bad.standardError));
+    });
+  });
+
+  describe('fix 2: a perfect fit shows an exact p-value of 0, never the underflow floor', () => {
+    test('correlation-calculator: perfect correlation gives r=1, t=Infinity, pValue=0 exactly', () => {
+      const calc = byId('correlation-calculator');
+      const result = calc.compute({}, { xData: [1, 2, 3], yData: [2, 4, 6] });
+      assert.equal(result.r, 1);
+      assert.equal(result.tStatistic, Infinity);
+      assert.equal(result.pValue, 0); // not floored to 1e-300 — the true value here IS exactly 0
+    });
+
+    test('t-test-calculator: a one-sample perfect fit (s=0, mean != hypothesized mean) gives t=Infinity, a finite df, and pValue=0 exactly', () => {
+      const calc = byId('t-test-calculator');
+      const result = calc.compute({ mode: 1, tailType: 1, sampleMean: 85, popMean: 80, sampleStdDev: 0, sampleSize: 30, mean2: 78, stdDev2: 15, sampleSize2: 25 });
+      assert.equal(result.tStatistic, Infinity);
+      assert.equal(result.degreesOfFreedom, 29); // a real, finite df — this is not the s=0-AND-equal-means NaN case
+      assert.equal(result.pValue, 0);
+    });
+
+    test('linear-regression-calculator: a perfect fit gives a genuine, unfloored standard error of exactly 0', () => {
+      const calc = byId('linear-regression-calculator');
+      const result = calc.compute({ predictAtX: 4 }, { xData: [1, 2, 3], yData: [2, 4, 6] });
+      assert.equal(result.standardError, 0);
+      assert.equal(result.rSquared, 1);
+    });
+  });
+
+  describe('fix 3: chi-square goodness-of-fit refuses mismatched totals and negative counts', () => {
+    test('expected entered as proportions (totals do not match observed) gives no answer', () => {
+      const calc = byId('chi-square-calculator');
+      const result = calc.compute({ mode: 2, chiSquareStat: 0, degreesOfFreedom: 1 }, { observed: [24, 24, 12], expected: [0.4, 0.4, 0.2] });
+      assert.ok(Number.isNaN(result.chiSquareStatistic) && Number.isNaN(result.pValue));
+    });
+
+    test('matching totals still compute normally', () => {
+      const calc = byId('chi-square-calculator');
+      const result = calc.compute({ mode: 2, chiSquareStat: 0, degreesOfFreedom: 1 }, { observed: [8, 12, 10, 14, 6, 10], expected: [10, 10, 10, 10, 10, 10] });
+      assert.equal(result.chiSquareStatistic, 4);
+    });
+
+    test('a negative observed or expected count gives no answer', () => {
+      const calc = byId('chi-square-calculator');
+      const negObserved = calc.compute({ mode: 2, chiSquareStat: 0, degreesOfFreedom: 1 }, { observed: [-5, 15, 10], expected: [5, 10, 5] });
+      assert.ok(Number.isNaN(negObserved.chiSquareStatistic));
+      const negExpected = calc.compute({ mode: 2, chiSquareStat: 0, degreesOfFreedom: 1 }, { observed: [5, 10, 5], expected: [-5, 15, 10] });
+      assert.ok(Number.isNaN(negExpected.chiSquareStatistic));
+    });
+  });
+});
+
 // Runs last: node:test executes a file's tests in declaration order.
 test('every calculator with a non-empty compute() was snapshotted', () => {
   assert.equal(snapshotted, computed.length);

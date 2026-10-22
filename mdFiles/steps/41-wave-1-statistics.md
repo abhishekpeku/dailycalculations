@@ -1105,3 +1105,90 @@ specific edge convention rather than a hand-picked example:
   number vs. a proportion-SE's percent under one `BreakdownOutput.format`), not a new one.
 - **This run's statistics list (per the plan) is now 20/~25 done.** Next: run 5 — relative risk,
   odds ratio, expected value, coefficient of variation, outlier.
+
+### Pre-merge review fix (2026-10-23): four issues found on PR #25
+
+A pre-merge review verified this run's numerics (chi-square SF against exact closed forms,
+Welch t/df/p, shift-invariance at 1e9, the `pairedLists` mismatch guard) and found three real bugs
+plus one proactive audit confirming a fourth area was clean — all in `data/calculators/statistics.ts`
+unless noted.
+
+1. **Non-integer sample sizes were silently accepted — the same bug class run 3's binomial fix
+   addressed.** `t-test-calculator` with `sampleSize = 10.5` computed `degreesOfFreedom = 9.5` and a
+   plausible-looking `p ≈ 0.3067`, answering a different, fractional-sample question with no sign
+   anything was wrong. Auditing every other statistics calculator that takes a literal count found
+   the same gap in `confidence-interval-calculator` (`sampleSize`), `margin-of-error-calculator`
+   (`sampleSize` and, one comparison deeper, a fractional nonzero `populationSize` silently
+   skipping the finite population correction instead of being refused), `sample-size-calculator`
+   (`populationSize`, same gap), and `standard-error-calculator`'s summary-stats mode
+   (`sampleSize`). **Fix:** a new shared `requireIntegerAtLeast(value, min)` returns the value
+   unchanged when it is a whole number >= `min`, otherwise `NaN` — applied to every one of those
+   fields (`min` 2 for a sample size that needs `n − 1` degrees of freedom to be positive, 1 where
+   the formula itself allows it, e.g. `standard-error-calculator`'s summary mode). A population size
+   of exactly `0` is untouched — it is the documented "not applied" sentinel, not an input to
+   validate. `correlation-calculator`/`linear-regression-calculator` were already safe (their `n`
+   comes from a list's own `.length`, always an integer by construction) and needed no change.
+2. **A perfect fit showed the underflow floor instead of an exact 0 — the same "exact vs.
+   underflowed" lesson run 3's binomial fix already established.** `correlation-calculator` with
+   `x=[1,2,3], y=[2,4,6]` gives `r = 1` exactly, making `tStatistic` exactly `+Infinity` (a real,
+   correctly-computed result — `tSF(Infinity, df)` returns an exact `0`, not `NaN`) — but the old
+   code floored every p-value unconditionally, showing `1e-300` for a case whose true p-value is
+   exactly `0` (`P(T > Infinity) = 0` by definition, not a continuous quantity that underflowed
+   double precision). The same bug was reachable in `t-test-calculator`'s one-sample mode: a sample
+   with zero standard deviation but a mean different from the hypothesized one gives
+   `tStatistic = Infinity` with a perfectly ordinary, finite `degreesOfFreedom` (unlike the
+   already-handled `0/0` case where both are equal). **Fix:** a new shared
+   `floorFiniteTailProbability(rawPValue, statistic)` skips the floor exactly when `statistic` is
+   non-finite (`+-Infinity`, never reachable as `NaN` at that point, since both calculators already
+   guard `NaN` separately before this call) — the discriminator is the test statistic's own
+   finiteness, not whether the computed probability happens to equal `0` (which is why this is a
+   different, new helper from run 3's `floorNonzeroProbability`, not a reuse of it: that one is
+   correctly keyed on value-equality for binomial's genuinely *discrete* exact cases, which would
+   wrongly treat a merely very-small-but-nonzero finite-`t` p-value as if it were exact). `tStatistic`
+   itself is left as the real `Infinity` it is (not a new sentinel) and still renders as "—" through
+   the kit's existing non-finite convention; a new watch-out item on both pages explains this
+   explicitly so the dash is not mistaken for a missing calculation. `linear-regression-calculator`
+   does not output a p-value, so there was nothing to floor there; its own perfect-fit case
+   (`standardError = 0`) was checked and confirmed already correct — `Math.max(sse, 0)` clamps float
+   noise, and `0` passes through as the genuine, un-floored answer it is (standard error is not a
+   probability and was never run through either floor function) — a watch-out item now says so.
+3. **Chi-square goodness-of-fit didn't check that observed and expected were on the same scale.**
+   The formula assumes both lists are counts summing to the same total; entering `expected` as
+   proportions (`0.4, 0.4, 0.2`) or percentages (`40, 40, 20`) while `observed` stayed as raw counts
+   made the statistic silently meaningless, with no sign anything was wrong. **Fix, chosen over
+   silently rescaling** (the task's own two offered options): refuse outright. `compute()` now sums
+   both lists and returns `NaN` for every output when the two totals differ by more than
+   `TOTALS_RELATIVE_TOLERANCE = 1e-6` relative (tight enough to catch a real mismatch, loose enough
+   to tolerate ordinary floating-point rounding in the sums themselves) — stated explicitly in a new
+   watch-out item and FAQ answer, with the exact fix needed ("multiply each proportion by the number
+   of observations") rather than just a refusal with no path forward. Also rejects a negative
+   observed or expected value outright (previously only mentioned in prose, never actually checked).
+   **Snapshot-harness side effect, not a new bug**: the harness's own synthetic "typical" input
+   (`data/calculators.spec.ts`'s `typicalList`, which scales every list value by 1.5x and rounds
+   each one independently) shifted `observed`'s and `expected`'s rounded totals apart purely from
+   independent rounding once either list had an odd value — tripping this new, correct guard on a
+   harness artifact. Fixed by changing `observed`'s default worked example from
+   `[8, 12, 9, 14, 7, 10]` to `[8, 12, 10, 14, 6, 10]` (same total of 60, same "a die rolled 60
+   times" story, but every value even, so 1.5x scaling is always an exact integer on both lists with
+   no rounding to shift the totals apart) — every affected number in the copy (the `example` line,
+   the worked example's rows/result/explanation, one FAQ answer) was recomputed and corrected:
+   χ² = 4 (not 3.4), p-value ≈ 0.5494 (not 0.6386).
+4. **Master hygiene**: noted by the reviewer as a separate repo-state issue unrelated to this run's
+   code; no action taken on `master` as part of this fix (out of scope for this branch).
+
+**Verification**, re-run with the corrected code (`verify_run4_premerge_fixes.mjs`, scratchpad,
+importing the real shipped `data/calculators/index.ts`): every case above reproduces exactly the
+behavior described — e.g. `confidence-interval-calculator` with a fractional `sampleSize` now
+returns `NaN` for every output while a valid `sampleSize = 36` is byte-for-byte unchanged from
+before this fix (`marginOfError ≈ 1.3872404176377346`); `correlation-calculator`'s perfect-fit case
+now returns `pValue: 0` exactly (not `1e-300`); `chi-square-calculator`'s proportions-as-expected
+case now returns `NaN` for every output, and its corrected worked example (`χ²=4, df=5,
+p≈0.5494159513527811`) matches the regenerated snapshot exactly. 11 new permanent tests added
+directly to `data/calculators.spec.ts` (a new `describe('statistics run 4 pre-merge review fixes
+(PR #25)', ...)` block, following the existing `force-calculator solver` describe block's own
+precedent for calculator-specific assertions beyond the generic snapshot harness), one per fix
+scenario. `npm test` 482/482 (up from 471), `npm run lint` clean, `npm run build` passes (132
+static pages, unchanged — these are fixes, not new calculators). Only `chi-square-calculator`'s
+snapshot changed (8 lines, the corrected worked-example numbers); every other affected
+calculator's default/typical/edge snapshot is unchanged, confirming these fixes are surgical and
+do not alter behavior for any already-valid input.

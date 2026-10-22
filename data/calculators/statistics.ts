@@ -28,6 +28,38 @@ function clampConfidence(level: number) {
   return Math.min(99.99, Math.max(0.01, level));
 }
 
+// Pre-merge review fix (run 4, PR #25): several statistics calculators take a literal count — a
+// sample size, a finite population size — that mathematically must be a whole number. A fractional
+// "n" (e.g. 10.5) was silently accepted and answered a different question (a fractional degrees of
+// freedom, a fractional standard error) without saying so — the same bug class a pre-merge review
+// of binomial-distribution-calculator found in run 3 (there, Math.round silently changed the
+// question; here, prior to this fix, nothing rounded OR refused it). Returns the value unchanged
+// when it is a whole number >= min, otherwise NaN — never a rounded guess.
+function requireIntegerAtLeast(value: number, min: number) {
+  return Number.isInteger(value) && value >= min ? value : NaN;
+}
+
+// Pre-merge review fix (run 4, PR #25): a perfect correlation or fit (r = +-1, or a one-sample
+// t-test where every value is identical) makes the t-statistic exactly +-Infinity — a real,
+// legitimate result (tCDF/tSF already return an exact 0 or 1 there, never NaN), not a missing
+// calculation. The true p-value at t = +-Infinity is EXACTLY 0 (P(T > Infinity) = 0 by definition),
+// not a continuous quantity that underflowed double precision the way a merely large FINITE t's
+// p-value genuinely can — flooring an exact 0 to 1e-300 would misrepresent a provably perfect
+// result as "immeasurably tiny" rather than "impossible to be more extreme." Same "exact vs.
+// underflowed" distinction a pre-merge review of binomial-distribution-calculator already
+// established (run 3, floorNonzeroProbability above) — here the discriminator is the test
+// statistic's own finiteness, not whether the computed probability happens to equal 0.
+function floorFiniteTailProbability(rawPValue: number, statistic: number) {
+  return Number.isFinite(statistic) ? floorTinyProbability(rawPValue) : rawPValue;
+}
+
+// Pre-merge review fix (run 4, PR #25): chi-square-calculator's goodness-of-fit totals check
+// (observed and expected must sum to the same total, within float noise) — see its own compute()
+// comment for the full reasoning. 1e-6 relative is tight enough to catch a real mismatch (observed
+// summing to 60, expected entered as proportions summing to 1) while tolerating ordinary floating-
+// point rounding in the sums themselves.
+const TOTALS_RELATIVE_TOLERANCE = 1e-6;
+
 // Shared "data list" input: a paste-a-list textarea (CalculatorInput.type: 'list'), parsed by
 // lib/listParse.ts. Replaces the "How many numbers?" + numbered-slot stopgap statistics run 1
 // shipped with — see mdFiles/steps/41-wave-1-statistics.md, "List input (between run 1 and run 2)",
@@ -939,7 +971,8 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { title: 'Picking z when you should pick t overstates your precision', body: 'Using the normal distribution when you only actually have a sample standard deviation gives an interval that is narrower than it should be, because it ignores the extra uncertainty of having estimated σ from the sample itself. When in doubt, use the t-interval — it is the more conservative, more honest choice, and the two converge anyway as the sample grows.' },
         { title: 'This assumes the sampling distribution of the mean is approximately normal', body: 'By the central limit theorem this is a safe assumption for most samples of 30 or more, or for any sample size if the underlying population itself is roughly normal. For small, heavily skewed samples the result can be unreliable.' },
         { title: 'A confidence level is not a probability about this specific interval', body: 'Once a sample is collected and the interval is calculated, it either does or does not contain the true mean — there is no remaining randomness to attach a 95% probability to. The 95% describes the reliability of the method over many repeated samples, not this one outcome.' },
-        { title: 'Confidence level is clamped between 0.01% and 99.99%', body: 'A 100% confidence level would require an interval infinitely wide (the only way to be completely certain), which is not a useful answer, so this calculator treats anything at or above 100% the same as 99.99%, and anything at or below 0% the same as 0.01%.' }
+        { title: 'Confidence level is clamped between 0.01% and 99.99%', body: 'A 100% confidence level would require an interval infinitely wide (the only way to be completely certain), which is not a useful answer, so this calculator treats anything at or above 100% the same as 99.99%, and anything at or below 0% the same as 0.01%.' },
+        { title: 'Sample size must be a whole number of at least 2', body: 'A sample of 10.5 observations is not a real count, and a sample of 1 has no degrees of freedom left for a t-interval. Entering a fractional or sub-2 sample size shows no answer rather than quietly computing a confidence interval for a different, fractional-sized sample than the one you actually have.' }
       ],
       references: [
         { label: 'OpenStax, Introductory Statistics 2e, §8.1 A Single Population Mean using the Normal Distribution', url: 'https://openstax.org/books/introductory-statistics-2e/pages/8-1-a-single-population-mean-using-the-normal-distribution' },
@@ -1005,7 +1038,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
     },
     compute(values) {
       const { mode, sampleMean, stdDev, sampleSize, confidenceLevel } = values;
-      const n = sampleSize;
+      const n = requireIntegerAtLeast(sampleSize, 2); // a fractional or sub-2 sample size is an honest NaN, not a silently-answered different question
       const confidence = clampConfidence(confidenceLevel);
       const alpha = 1 - confidence / 100;
       const degreesOfFreedom = n - 1;
@@ -1080,7 +1113,8 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { title: 'Margin of error only covers sampling error', body: 'It says nothing about bias from how the sample was chosen — a poorly designed survey (a non-random sample, leading questions, low response rates) can be wrong by far more than the stated margin of error, which assumes a properly randomized sample.' },
         { title: '"54% ± 3%" does not mean the true value is definitely between 51% and 57%', body: 'Like any confidence interval, the stated confidence level (usually 95%) describes how often the method gets it right across many repeated samples, not the probability for this one survey.' },
         { title: 'The finite population correction is off by default for a reason', body: 'Setting the population size to 0 treats the population as effectively infinite — the standard assumption for national or other very large surveys. Only enter a real population size when your sample is a meaningful fraction of a genuinely finite group.' },
-        { title: 'A margin of error near 50% is as wide as this calculation gets', body: 'Because p̂(1 − p̂) is largest at p̂ = 0.5, a result close to an even 50/50 split carries the widest possible margin of error for a given sample size — a 50% result is less statistically precise than a 90% or 10% result from the same size sample, even though it is reported with the same ± figure convention.' }
+        { title: 'A margin of error near 50% is as wide as this calculation gets', body: 'Because p̂(1 − p̂) is largest at p̂ = 0.5, a result close to an even 50/50 split carries the widest possible margin of error for a given sample size — a 50% result is less statistically precise than a 90% or 10% result from the same size sample, even though it is reported with the same ± figure convention.' },
+        { title: 'Sample size and population size must be whole numbers', body: 'A sample or population of 1,000.5 is not a real count. A fractional sample size (at least 2) shows no answer; a fractional, nonzero population size is treated the same way, rather than silently applying the finite population correction to the wrong-scale number.' }
       ],
       references: [
         { label: 'OpenStax, Introductory Statistics 2e, §8.3 A Population Proportion', url: 'https://openstax.org/books/introductory-statistics-2e/pages/8-3-a-population-proportion' },
@@ -1130,14 +1164,19 @@ export const statisticsCalculators: CalculatorConfig[] = [
     },
     compute(values) {
       const { sampleProportion, sampleSize, confidenceLevel, populationSize } = values;
-      const n = sampleSize;
+      const n = requireIntegerAtLeast(sampleSize, 2); // a fractional sample size is an honest NaN, not a silently-answered different question
       const confidence = clampConfidence(confidenceLevel);
       const alpha = 1 - confidence / 100;
       const z = normalInverseCDF(1 - alpha / 2);
       const p = Math.min(100, Math.max(0, sampleProportion)) / 100;
       const standardError = Math.sqrt((p * (1 - p)) / n);
-      const applyFpc = populationSize > n;
-      const fpc = applyFpc ? Math.sqrt((populationSize - n) / (populationSize - 1)) : 1;
+      // populationSize = 0 is a valid sentinel ("treat as infinite"/not applied); any other value
+      // must itself be a whole number — a fractional population was silently ignored before this
+      // fix (N > n compares false against NaN, which looks identical to "FPC not needed"), the same
+      // gap as a fractional sample size, just hidden one comparison deeper.
+      const N = populationSize === 0 ? 0 : requireIntegerAtLeast(populationSize, 1);
+      const applyFpc = !Number.isNaN(N) && N > n;
+      const fpc = Number.isNaN(N) ? NaN : applyFpc ? Math.sqrt((N - n) / (N - 1)) : 1;
       const marginOfError = z * standardError * fpc;
       const marginOfErrorPercent = marginOfError * 100;
       const sampleProportionPercent = p * 100;
@@ -1208,7 +1247,8 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { title: 'Using 50% when the true proportion is different does not make the result wrong — only larger than strictly necessary', body: 'The 50% default is a safety margin. If the true proportion later turns out to be, say, 20%, your resulting margin of error at the actual sample size will be narrower than the ±4% you planned for, not wider.' },
         { title: 'This plans for sampling error only', body: 'It does not account for non-response (people who decline to answer) or any bias in how the sample is chosen. Real survey planning typically inflates this number further to allow for an expected response rate.' },
         { title: 'The finite population correction only shrinks the required sample — it never increases it', body: 'It matters only when the population itself is small relative to the sample you would otherwise need; for a large or effectively unlimited population it makes negligible difference, which is why it is off by default (population size = 0).' },
-        { title: 'A smaller margin of error or higher confidence always costs more sample, not less', body: 'Both tightening the margin of error and raising the confidence level increase the required sample size — there is no way to get a more precise, more confident result from fewer respondents.' }
+        { title: 'A smaller margin of error or higher confidence always costs more sample, not less', body: 'Both tightening the margin of error and raising the confidence level increase the required sample size — there is no way to get a more precise, more confident result from fewer respondents.' },
+        { title: 'A nonzero population size must be a whole number', body: 'A population of 2,000.5 is not a real count. Leave population size at 0 to skip the finite population correction entirely; any other value must be a whole number, or this calculator shows no answer rather than applying the correction to a fractional population.' }
       ],
       references: [
         { label: 'OpenStax, Introductory Statistics 2e, §8.3 A Population Proportion', url: 'https://openstax.org/books/introductory-statistics-2e/pages/8-3-a-population-proportion' },
@@ -1264,10 +1304,17 @@ export const statisticsCalculators: CalculatorConfig[] = [
       const p = Math.min(100, Math.max(0, estimatedProportion)) / 100;
       const e = Math.max(0.01, marginOfError) / 100;
       const rawSampleSizeUnadjusted = (z * z * p * (1 - p)) / (e * e);
-      const applyFpc = populationSize > rawSampleSizeUnadjusted;
-      const rawSampleSize = applyFpc ? rawSampleSizeUnadjusted / (1 + (rawSampleSizeUnadjusted - 1) / populationSize) : rawSampleSizeUnadjusted;
+      // populationSize = 0 is a valid sentinel ("treat as infinite"); any other value must itself
+      // be a whole number, same fix and reasoning as margin-of-error-calculator's own populationSize.
+      const N = populationSize === 0 ? 0 : requireIntegerAtLeast(populationSize, 1);
+      const applyFpc = !Number.isNaN(N) && N > rawSampleSizeUnadjusted;
+      const rawSampleSize = Number.isNaN(N)
+        ? NaN
+        : applyFpc
+          ? rawSampleSizeUnadjusted / (1 + (rawSampleSizeUnadjusted - 1) / N)
+          : rawSampleSizeUnadjusted;
       return {
-        sampleSize: Math.ceil(rawSampleSize),
+        sampleSize: Math.ceil(rawSampleSize), // Math.ceil(NaN) is NaN — stays an honest no-answer
         rawSampleSize,
         criticalValue: z,
         marginOfErrorPercent: e * 100,
@@ -2204,7 +2251,8 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { title: 'This measures a straight-line relationship only', body: 'Two variables can have a strong, obvious curved relationship (like a U-shape) and still show an r close to 0, because Pearson\'s r only detects the straight-line part of how they move together. Always look at a plot of the actual data, not just the number.' },
         { title: 'Your x and y lists must be the same length', body: 'Every x-value needs exactly one matching y-value, in the same order. If the two lists have different counts, this calculator shows no answer rather than guessing by cutting off the extra values or padding the shorter list.' },
         { title: 'A p-value needs at least 3 pairs', body: 'The significance test needs n − 2 degrees of freedom to be at least 1, so with only 2 points, r is still computed (and is always exactly +1 or −1 for 2 points, since any 2 points lie on a line) but the p-value is not meaningful and shows no answer.' },
-        { title: 'This is Pearson\'s r, not Spearman\'s', body: 'If your data has strong outliers or a relationship that is monotonic but not straight ("always increasing, but curving"), a Spearman rank correlation is often more honest — this calculator does not compute it.' }
+        { title: 'This is Pearson\'s r, not Spearman\'s', body: 'If your data has strong outliers or a relationship that is monotonic but not straight ("always increasing, but curving"), a Spearman rank correlation is often more honest — this calculator does not compute it.' },
+        { title: 'A perfect fit (r = +1 or −1) shows the t-statistic as "—", not an error', body: 'When every point lies exactly on a straight line, the t-statistic used for the p-value is mathematically infinite, which this site displays the same way as any other no-answer case: a dash. The p-value, however, is a genuine, exact 0 in that case (not a tiny underflowed number), because a correlation this perfect could not happen by chance at all.' }
       ],
       references: [
         { label: 'OpenStax, Introductory Statistics 2e, §12.4 The Regression Equation (covers r and its significance test)', url: 'https://openstax.org/books/introductory-statistics-2e/pages/12-4-the-regression-equation' },
@@ -2266,7 +2314,12 @@ export const statisticsCalculators: CalculatorConfig[] = [
       // Guarded explicitly rather than relying on tSF's own NaN short-circuit: r = +-1 makes
       // tStatistic exactly +-Infinity (a legitimate, finite-producing case for tSF), but a NaN
       // tStatistic (zero variance) must never reach tSF at all, by this function's own contract.
-      const pValue = degreesOfFreedom > 0 && Number.isFinite(rSquared) ? floorTinyProbability(2 * tSF(Math.abs(tStatistic), degreesOfFreedom)) : NaN;
+      // Pre-merge review fix (run 4, PR #25): at a perfect fit (r = +-1), tStatistic is +-Infinity
+      // and the true p-value is EXACTLY 0 — floorFiniteTailProbability skips the underflow floor in
+      // that case (see its own comment above) rather than showing a misleadingly tiny 1e-300.
+      const pValue = degreesOfFreedom > 0 && Number.isFinite(rSquared)
+        ? floorFiniteTailProbability(2 * tSF(Math.abs(tStatistic), degreesOfFreedom), tStatistic)
+        : NaN;
       return { r, rSquared, tStatistic, degreesOfFreedom, pValue, count: n };
     }
   },
@@ -2328,7 +2381,8 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { title: 'The intercept can be a meaningless extrapolation', body: 'The intercept is the predicted y at x = 0, even when no data near x = 0 actually exists. Treat it as part of the line\'s equation, not necessarily as a realistic prediction on its own.' },
         { title: 'Predicting far outside your data range is extrapolation', body: 'The fitted line is only tested by the data you gave it. Predicting a y-value for an x far beyond your actual x-values assumes the same straight-line relationship keeps holding, which may not be true.' },
         { title: 'A regression line does not prove x causes y', body: 'Exactly like correlation, a fitted line only describes how the data points relate on average — it does not establish that changing x would actually change y.' },
-        { title: 'Zero variance in x has no defined slope', body: 'If every x-value is identical, there is no line to fit (division by zero in the slope formula), so this calculator shows no answer rather than a false result.' }
+        { title: 'Zero variance in x has no defined slope', body: 'If every x-value is identical, there is no line to fit (division by zero in the slope formula), so this calculator shows no answer rather than a false result.' },
+        { title: 'A standard error of exactly 0 means a perfect fit, not an error', body: 'When every point lies exactly on the fitted line (the same perfect-fit case as r = +1 or −1 on the correlation calculator), the standard error of the estimate is a genuine, correctly computed 0 — every actual y-value matches its predicted value exactly, with no leftover scatter to measure.' }
       ],
       references: [
         { label: 'OpenStax, Introductory Statistics 2e, §12.3 The Regression Equation', url: 'https://openstax.org/books/introductory-statistics-2e/pages/12-3-the-regression-equation' },
@@ -2448,7 +2502,8 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { title: 'A t-test assumes independent, roughly normal samples', body: 'For small samples that are heavily skewed, or for paired/matched data (the same subjects measured twice), the plain one- or two-sample t-test used here is not the right tool — a paired t-test or a non-parametric test would be more appropriate.' },
         { title: 'The tail type must be decided before seeing the data, not after', body: 'Choosing a one-tailed test (or switching direction) after seeing which way the result leans artificially inflates the chance of a "significant" finding.' },
         { title: 'Statistical significance is not the same as practical importance', body: 'With a large enough sample, even a tiny, practically meaningless difference can produce a very small p-value. Always consider the actual size of the difference, not just whether the p-value clears a threshold.' },
-        { title: 'Very small p-values are shown in scientific notation, not rounded to zero', body: 'Exactly as on the p-value calculator, an extreme t-statistic produces a p-value shown in scientific notation, floored at 1 × 10⁻³⁰⁰ for the rare case where the true value underflows a computer\'s smallest representable number.' }
+        { title: 'Very small p-values are shown in scientific notation, not rounded to zero', body: 'Exactly as on the p-value calculator, an extreme t-statistic produces a p-value shown in scientific notation, floored at 1 × 10⁻³⁰⁰ for the rare case where the true value underflows a computer\'s smallest representable number. The one exception is a perfect one-sample fit (every value in the sample exactly equal, and different from the hypothesized mean) — there the t-statistic is mathematically infinite (shown as "—", not a missing result) and the p-value is an exact 0, not floored, since it is not an underflow of a nonzero number.' },
+        { title: 'Sample sizes must be whole numbers of at least 2', body: 'A sample of 10.5 observations is not a real count, and a sample of 1 leaves no degrees of freedom. Entering a fractional or sub-2 sample size (either sample, in two-sample mode) shows no answer rather than quietly computing a t-test for a different, fractional-sized sample.' }
       ],
       references: [
         { label: 'OpenStax, Introductory Statistics 2e, §10.1 Two Population Means with Unknown Standard Deviations (Welch\'s t-test)', url: 'https://openstax.org/books/introductory-statistics-2e/pages/10-1-two-population-means-with-unknown-standard-deviations' },
@@ -2535,21 +2590,28 @@ export const statisticsCalculators: CalculatorConfig[] = [
     compute(values) {
       const { mode, tailType, sampleMean, popMean, sampleStdDev, sampleSize, mean2, stdDev2, sampleSize2 } = values;
       const noAnswer = { tStatistic: NaN, degreesOfFreedom: NaN, pValue: NaN, standardError: NaN };
+      // Every sample size is a literal count of observations — a fractional 10.5 is an honest NaN,
+      // not a silently-answered different question (same bug class a pre-merge review found in
+      // binomial-distribution-calculator, run 3: there it was Math.round silently rounding; here,
+      // before this fix, nothing refused it at all, so a df of 9.5 or 44.17 was computed and shown
+      // as if it meant something).
+      const n1 = requireIntegerAtLeast(sampleSize, 2);
+      const n2 = requireIntegerAtLeast(sampleSize2, 2);
       let tStatistic: number;
       let degreesOfFreedom: number;
       let standardError: number;
       if (mode === 1) {
-        standardError = sampleStdDev / Math.sqrt(sampleSize);
+        standardError = sampleStdDev / Math.sqrt(n1);
         tStatistic = (sampleMean - popMean) / standardError; // 0/0 (s=0 and means equal) is an honest NaN
-        degreesOfFreedom = sampleSize - 1;
+        degreesOfFreedom = n1 - 1;
       } else {
-        const v1 = (sampleStdDev * sampleStdDev) / sampleSize;
-        const v2 = (stdDev2 * stdDev2) / sampleSize2;
+        const v1 = (sampleStdDev * sampleStdDev) / n1;
+        const v2 = (stdDev2 * stdDev2) / n2;
         standardError = Math.sqrt(v1 + v2);
         tStatistic = (sampleMean - mean2) / standardError;
         // Welch-Satterthwaite: a genuinely non-integer df by design, not a rounding artifact — tCDF/tSF
         // (lib/distributions.ts) work with any df > 0, integer or not.
-        degreesOfFreedom = (v1 + v2) ** 2 / (v1 ** 2 / (sampleSize - 1) + v2 ** 2 / (sampleSize2 - 1));
+        degreesOfFreedom = (v1 + v2) ** 2 / (v1 ** 2 / (n1 - 1) + v2 ** 2 / (n2 - 1));
       }
       // Guarded explicitly, same reasoning as correlation-calculator: a zero standard error with
       // equal means makes tStatistic an honest NaN (0/0), which must never reach tCDF/tSF (it would
@@ -2561,7 +2623,12 @@ export const statisticsCalculators: CalculatorConfig[] = [
       const leftTail = tCDF(tStatistic, degreesOfFreedom);
       const rightTail = tSF(tStatistic, degreesOfFreedom);
       const rawPValue = tailType === 2 ? leftTail : tailType === 3 ? rightTail : 2 * Math.min(leftTail, rightTail);
-      return { tStatistic, degreesOfFreedom, pValue: floorTinyProbability(rawPValue), standardError };
+      // Pre-merge review fix (run 4, PR #25): a one-sample test where every value is identical
+      // (sampleStdDev = 0, mean != hypothesized mean) makes tStatistic exactly +-Infinity with a
+      // perfectly finite, valid degreesOfFreedom — the true p-value there is EXACTLY 0, not a
+      // continuous quantity that underflowed, so it must not be floored (floorFiniteTailProbability
+      // above).
+      return { tStatistic, degreesOfFreedom, pValue: floorFiniteTailProbability(rawPValue, tStatistic), standardError };
     }
   },
   {
@@ -2572,7 +2639,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
     related: ['p-value-calculator', 't-test-calculator', 'binomial-distribution-calculator', 'confidence-interval-calculator'],
     title: 'Chi-Square Calculator',
     description: 'Find a chi-square p-value directly from a χ² statistic and degrees of freedom, or run a goodness-of-fit test from observed and expected counts.',
-    example: 'Rolling a die 60 times gives observed counts of 8, 12, 9, 14, 7 and 10 against an expected 10 per face — χ² ≈ 3.4 with 5 degrees of freedom, a p-value of about 0.6386 (not significant).',
+    example: 'Rolling a die 60 times gives observed counts of 8, 12, 10, 14, 6 and 10 against an expected 10 per face — χ² = 4 with 5 degrees of freedom, a p-value of about 0.5494 (not significant).',
     content: {
       lastReviewed: '2026-10-22',
       concept: {
@@ -2604,26 +2671,27 @@ export const statisticsCalculators: CalculatorConfig[] = [
         note: 'The p-value is computed directly from the upper regularized incomplete gamma function (the standard way to evaluate a chi-square tail), not read from a table limited to a handful of common df/significance combinations.'
       },
       workedExample: {
-        intro: 'A fair six-sided die is rolled 60 times. If it is fair, each face is expected 10 times. The actual counts are: 8, 12, 9, 14, 7, 10.',
+        intro: 'A fair six-sided die is rolled 60 times. If it is fair, each face is expected 10 times. The actual counts are: 8, 12, 10, 14, 6, 10.',
         rows: [
           { label: '(8−10)²/10', value: '0.4' },
           { label: '(12−10)²/10', value: '0.4' },
-          { label: '(9−10)²/10', value: '0.1' },
-          { label: '(14−10)²/10', value: '1.6' },
-          { label: '(7−10)²/10', value: '0.9' },
           { label: '(10−10)²/10', value: '0' },
-          { label: 'χ² (sum of all six)', value: '3.4' },
+          { label: '(14−10)²/10', value: '1.6' },
+          { label: '(6−10)²/10', value: '1.6' },
+          { label: '(10−10)²/10', value: '0' },
+          { label: 'χ² (sum of all six)', value: '4' },
           { label: 'Degrees of freedom (6 categories − 1)', value: '5' }
         ],
-        result: 'χ² = 3.4, df = 5, p-value ≈ 0.6386',
-        explanation: 'A p-value of about 0.64 is well above the common 0.05 threshold, so there is no evidence here that the die is unfair — these counts are entirely consistent with ordinary random variation around an expected 10 per face.'
+        result: 'χ² = 4, df = 5, p-value ≈ 0.5494',
+        explanation: 'A p-value of about 0.55 is well above the common 0.05 threshold, so there is no evidence here that the die is unfair — these counts are entirely consistent with ordinary random variation around an expected 10 per face.'
       },
       watchOut: [
         { title: 'The goodness-of-fit test needs enough expected counts', body: 'The chi-square approximation becomes unreliable when any category\'s expected count is below about 5 — a common rule of thumb, not a hard mathematical line. This calculator always shows the smallest expected count it was given, so you can check this yourself.' },
         { title: 'Your observed and expected lists must be the same length', body: 'Every observed count needs exactly one matching expected count, in the same category order. If the two lists have different counts, this calculator shows no answer rather than guessing.' },
         { title: 'This does not build a contingency table (test of independence)', body: 'A chi-square test of independence between two categorical variables (a contingency table) is a related but different setup. This calculator only computes the single-row goodness-of-fit statistic — if you already have a χ² statistic and degrees of freedom from a contingency table test done elsewhere, "enter directly" mode still finds its p-value correctly.' },
         { title: 'A large p-value does not prove the categories match perfectly', body: 'It only means this data does not provide strong evidence against the expected distribution — a small sample can fail to detect a real but modest mismatch.' },
-        { title: 'Expected counts (and the χ² statistic) should not be negative', body: 'A negative or zero expected count is not meaningful for this test and will show as no answer or an undefined ratio; this calculator does not silently correct it for you.' }
+        { title: 'Observed and expected must be entered as counts on the same scale, not proportions', body: 'This calculator checks that your observed and expected lists add up to the same total (within a tiny rounding tolerance) before computing anything. If you enter expected values as proportions or percentages (0.4, 0.4, 0.2, or 40, 40, 20) while observed stays as raw counts, the totals will not match and this calculator shows no answer, rather than silently rescaling one list to match the other and risking a guess in the wrong direction. Convert your expected values to counts on the same scale as observed first — e.g. multiply each proportion by the total number of observations.' },
+        { title: 'Negative counts are refused outright', body: 'An observed or expected count can never be negative. This calculator shows no answer rather than a nonsensical or misleading result if either list contains a negative value.' }
       ],
       references: [
         { label: 'NIST/SEMATECH e-Handbook of Statistical Methods, §1.3.5.15 Chi-Square Goodness-of-Fit Test', url: 'https://www.itl.nist.gov/div898/handbook/eda/section3/eda35f.htm' },
@@ -2647,13 +2715,21 @@ export const statisticsCalculators: CalculatorConfig[] = [
       },
       { id: 'chiSquareStat', label: 'χ² statistic (direct entry)', type: 'number', placeholder: '10.5', defaultValue: 10.5, step: 0.1, min: 0 },
       { id: 'degreesOfFreedom', label: 'Degrees of freedom (direct entry)', type: 'number', placeholder: '4', defaultValue: 4, step: 1, min: 1 },
+      // Deliberately all-even values (pre-merge review fix, run 4, PR #25): the snapshot harness's
+      // "typical" case scales every list value by 1.5x independently and rounds each to the nearest
+      // integer (data/calculators.spec.ts's typicalList), which can shift observed's and expected's
+      // totals apart by rounding alone if either list has an odd value — tripping this calculator's
+      // own new "totals must match" guard on a harness artifact, not a real calculator bug. Every
+      // value here and in `expected` below is even, so 1.5x is always an exact integer with no
+      // rounding on either list, keeping their scaled totals equal (90 and 90) the same way the
+      // unscaled ones are (60 and 60).
       {
         id: 'observed',
         label: 'Observed counts',
         type: 'list',
         placeholder: 'Paste or type each category\'s observed count — commas, spaces or new lines between them.',
         defaultValue: 0,
-        listDefault: [8, 12, 9, 14, 7, 10],
+        listDefault: [8, 12, 10, 14, 6, 10],
         listMin: 2
       },
       {
@@ -2699,13 +2775,14 @@ export const statisticsCalculators: CalculatorConfig[] = [
       title: 'Chi-Square Calculator – Goodness-of-Fit P-value',
       description: 'Free chi-square calculator. Enter χ² and df directly, or run a goodness-of-fit test from observed and expected category counts, with the exact p-value.',
       faq: [
-        { question: 'How do I calculate a chi-square goodness-of-fit statistic?', answer: 'For each category, square the difference between the observed and expected count, divide by the expected count, then add up every category. For six die-roll categories (observed 8,12,9,14,7,10, all expected 10), χ² = 3.4.' },
+        { question: 'How do I calculate a chi-square goodness-of-fit statistic?', answer: 'For each category, square the difference between the observed and expected count, divide by the expected count, then add up every category. For six die-roll categories (observed 8,12,10,14,6,10, all expected 10), χ² = 4.' },
         { question: 'How do I find a chi-square p-value from χ² and df?', answer: 'This calculator computes it directly from the chi-square distribution\'s upper tail — no table lookup needed, and it works for any degrees of freedom, not just the handful of common ones printed in textbook tables.' },
         { question: 'What does a small chi-square p-value mean?', answer: 'It means the observed counts differ from the expected counts by more than would typically happen by chance alone — conventionally, a p-value under 0.05 is called statistically significant.' },
         { question: 'What is the "expected count below 5" warning about?', answer: 'The chi-square approximation becomes less reliable when a category\'s expected count is small — a widely used rule of thumb sets the caution line at 5. This calculator shows the smallest expected count you entered so you can check this directly.' },
         { question: 'Can this calculator test a contingency table (test of independence)?', answer: 'Not directly — it does not build a contingency table from raw cross-tabulated data. If you already have a χ² statistic and degrees of freedom from a contingency table test, "enter directly" mode finds its p-value correctly.' },
         { question: 'How many categories can I enter?', answer: 'Up to 1,000 observed values and 1,000 expected values, pasted as two separate lists — though realistic goodness-of-fit tests usually have far fewer categories than that.' },
-        { question: 'What happens if my observed and expected lists are different lengths?', answer: 'This calculator shows no result rather than guessing — every observed count needs exactly one matching expected count, in the same order.' }
+        { question: 'What happens if my observed and expected lists are different lengths?', answer: 'This calculator shows no result rather than guessing — every observed count needs exactly one matching expected count, in the same order.' },
+        { question: 'Why does this show no answer when I enter expected values as percentages or proportions?', answer: 'This calculator checks that your observed and expected lists sum to the same total before computing anything, since the goodness-of-fit formula assumes both are counts on the same scale. If expected is entered as proportions (0.4, 0.4, 0.2) or percentages (40, 40, 20) while observed stays as raw counts, the totals will not match, and it shows no answer rather than silently rescaling one list to match the other. Convert expected to counts on the observed total first — multiply each proportion by the number of observations.' }
       ]
     },
     compute(values, lists) {
@@ -2718,11 +2795,23 @@ export const statisticsCalculators: CalculatorConfig[] = [
       const observed = lists.observed;
       const expected = lists.expected;
       if (observed.length !== expected.length) return noAnswer; // honest no-answer, never truncated/padded
+      // Pre-merge review fix (run 4, PR #25): a negative count is never a real observed or expected
+      // frequency, and a goodness-of-fit chi-square assumes both lists are counts on the SAME total
+      // scale (e.g. both raw counts summing to the same sample size). If a user enters "expected" as
+      // proportions or percentages (0.4, 0.4, 0.2, or 40, 40, 20) while observed stays as raw
+      // counts, every term's denominator is on a different scale and the statistic is silently
+      // meaningless — refused outright here (an honest NaN), rather than guessing which scale was
+      // intended and rescaling for them.
+      if (observed.some((value) => value < 0) || expected.some((value) => value < 0)) return noAnswer;
       const n = observed.length;
+      const totalObserved = observed.reduce((a, b) => a + b, 0);
+      const totalExpected = expected.reduce((a, b) => a + b, 0);
+      const totalsMismatch = Math.abs(totalObserved - totalExpected) > TOTALS_RELATIVE_TOLERANCE * Math.max(totalObserved, totalExpected, 1);
+      if (totalsMismatch) return noAnswer;
       let statistic = 0;
       for (let i = 0; i < n; i++) {
         const diff = observed[i] - expected[i];
-        statistic += (diff * diff) / expected[i]; // expected[i] <= 0 gives an honest Infinity/NaN term, not a crash
+        statistic += (diff * diff) / expected[i]; // expected[i] === 0 gives an honest Infinity/NaN term, not a crash
       }
       const degreesOfFreedomComputed = n - 1;
       const minExpected = Math.min(...expected);
@@ -2780,7 +2869,8 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { title: 'Standard error is not standard deviation', body: 'The standard deviation describes spread in the raw data; the standard error describes precision in the sample mean. They are related by ÷√n, but answer different questions, and mixing them up is a common source of confusing a plot\'s error bars.' },
         { title: 'A single data point has no standard error', body: 'With only one value, the sample standard deviation itself is undefined (there is nothing to measure spread against), so this calculator shows no answer rather than a false 0.' },
         { title: 'For a proportion, use the margin of error calculator instead', body: 'This page is specifically for the standard error of a mean. The standard error of a proportion (used for survey and poll percentages) already appears as a row on the margin of error calculator.' },
-        { title: 'A smaller standard error does not mean a more accurate sample', body: 'It means a more precise estimate of whatever the sample is actually measuring. A large, precise sample can still be biased (for example, by who was surveyed) in a way that no amount of precision fixes.' }
+        { title: 'A smaller standard error does not mean a more accurate sample', body: 'It means a more precise estimate of whatever the sample is actually measuring. A large, precise sample can still be biased (for example, by who was surveyed) in a way that no amount of precision fixes.' },
+        { title: 'Sample size must be a whole number', body: 'When entering summary statistics directly, a sample size of 36.5 is not a real count — this calculator shows no answer rather than quietly computing a standard error for a fractional sample. (Pasting a data list always gives a whole-number count automatically.)' }
       ],
       references: [
         { label: 'NIST/SEMATECH e-Handbook of Statistical Methods, §1.3.5.2 Confidence Limits for the Mean (defines the standard error of the mean)', url: 'https://www.itl.nist.gov/div898/handbook/eda/section3/eda352.htm' },
@@ -2845,7 +2935,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
       let n: number;
       if (mode === 1) {
         s = sampleStdDev;
-        n = sampleSize;
+        n = requireIntegerAtLeast(sampleSize, 1); // a fractional sample size is an honest NaN, not a silently-answered different question
       } else {
         const list = lists.data;
         n = list.length;

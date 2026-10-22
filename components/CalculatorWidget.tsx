@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { TILE_COLORS } from '@/components/IconTile';
 import { categoryTheme } from '@/lib/categoryTheme';
+import { LIST_MAX, parseNumberList } from '@/lib/listParse';
 import type { Unit } from '@/lib/units';
 
 // The parts every v2 widget shares (type A SolverCalculator, type B BreakdownCalculator).
@@ -65,6 +66,58 @@ export function FieldRow({ id, label, value, onChange, placeholder, autoAccent, 
       ) : (
         <span className="w-24 shrink-0 pl-2 text-sm text-slate-500 dark:text-slate-400 sm:w-28">{unitLabel}</span>
       )}
+    </div>
+  );
+}
+
+type ListFieldRowProps = {
+  id: string;
+  label: ReactNode;
+  value: string;
+  onChange: (raw: string) => void;
+  placeholder?: string;
+  /** Minimum numbers required; shown as a note while below it. */
+  min: number;
+  /** Numbers beyond this many are dropped; defaults to lib/listParse.ts's LIST_MAX. */
+  max?: number;
+};
+
+// A paste-a-list field: a textarea plus a live parsed count and an inline note for anything the
+// parser dropped (non-numeric tokens, or the cap). lib/listParse.ts does the actual parsing — this
+// component only re-runs it on every keystroke to describe what the user just typed.
+export function ListFieldRow({ id, label, value, onChange, placeholder, min, max = LIST_MAX }: ListFieldRowProps) {
+  const parsed = useMemo(() => parseNumberList(value, max), [value, max]);
+  const notes: string[] = [];
+  if (parsed.ignored.length) {
+    const shown = parsed.ignored.slice(0, 5).join(', ');
+    const more = parsed.ignored.length > 5 ? `, and ${parsed.ignored.length - 5} more` : '';
+    notes.push(`Ignored ${parsed.ignored.length} value${parsed.ignored.length === 1 ? '' : 's'} that weren't numbers: ${shown}${more}.`);
+  }
+  if (parsed.truncated) notes.push(`Only the first ${max.toLocaleString()} numbers are used.`);
+  if (parsed.values.length < min) notes.push(`Enter at least ${min} number${min === 1 ? '' : 's'}.`);
+  const noteId = `${id}-note`;
+
+  return (
+    <div className="flex flex-col gap-2 px-4 py-3">
+      <div className="flex items-center justify-between gap-3">
+        <label htmlFor={id} className="text-sm text-slate-900 dark:text-slate-100">{label}</label>
+        <span className="shrink-0 text-xs tabular-nums text-slate-500 dark:text-slate-400">
+          {parsed.values.length} number{parsed.values.length === 1 ? '' : 's'}
+        </span>
+      </div>
+      <textarea
+        id={id}
+        value={value}
+        placeholder={placeholder}
+        onChange={(event) => onChange(event.target.value)}
+        rows={3}
+        aria-describedby={notes.length ? noteId : undefined}
+        aria-invalid={notes.length > 0}
+        className="w-full resize-y rounded-lg bg-slate-100 px-3 py-2 text-sm tabular-nums text-slate-950 outline-none focus:bg-white focus:ring-2 focus:ring-slate-300 dark:bg-slate-900 dark:text-white dark:focus:bg-slate-950 dark:focus:ring-slate-700"
+      />
+      {notes.length ? (
+        <p id={noteId} className="text-xs text-amber-600 dark:text-amber-400">{notes.join(' ')}</p>
+      ) : null}
     </div>
   );
 }

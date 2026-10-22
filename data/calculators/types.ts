@@ -12,8 +12,11 @@ export type CalculatorCategory = {
 export type CalculatorInput = {
   id: string;
   label: string;
-  type: 'number' | 'percent' | 'currency';
+  /** 'list': a paste-a-list textarea (lib/listParse.ts), type-B widget only. See `listDefault`/`listMin`/`listMax`. */
+  type: 'number' | 'percent' | 'currency' | 'list';
+  /** For `type: 'list'`, this is the textarea's HTML placeholder text instead. */
   placeholder: string;
+  /** Unused for `type: 'list'` (kept required so every other input type stays simple); use `listDefault`. */
   defaultValue: number;
   step?: number;
   min?: number;
@@ -22,6 +25,12 @@ export type CalculatorInput = {
   unit?: string;
   /** Type-B widget: a fixed choice (filing status, pay frequency) shown as a menu. compute() gets the value. */
   options?: { value: number; label: string }[];
+  /** `type: 'list'` only: the numbers shown in the textarea by default. */
+  listDefault?: number[];
+  /** `type: 'list'` only: minimum numbers required before the widget treats the field as complete. Default 1. */
+  listMin?: number;
+  /** `type: 'list'` only: numbers beyond this many are dropped. Default lib/listParse.ts's LIST_MAX (1000). */
+  listMax?: number;
 };
 
 /** `date`: the value is epoch ms of a local calendar date, printed as a long date. */
@@ -210,7 +219,12 @@ export type CalculatorConfig = {
     description: string;
     faq: CalculatorFaq[];
   };
-  compute: (values: CalculatorInputValues) => Record<string, number>;
+  /**
+   * `lists` holds the parsed numbers of every `type: 'list'` input, keyed by its id — `values`
+   * never carries a list input's id. Calculators with no list input ignore the second parameter
+   * (a function with fewer declared parameters than this type still satisfies it).
+   */
+  compute: (values: CalculatorInputValues, lists: Record<string, number[]>) => Record<string, number>;
 };
 
 export type CalculatorInputValues = Record<string, number>;

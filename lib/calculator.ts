@@ -1,7 +1,7 @@
 import type { CalculatorConfig, CalculatorInputValues } from '@/data/calculators';
 
-export function evaluateCalculator(calculator: CalculatorConfig, values: CalculatorInputValues) {
-  return calculator.compute(values);
+export function evaluateCalculator(calculator: CalculatorConfig, values: CalculatorInputValues, lists: Record<string, number[]> = {}) {
+  return calculator.compute(values, lists);
 }
 
 // Return a compact, human-friendly representation for large numbers

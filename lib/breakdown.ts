@@ -2,6 +2,7 @@
 // See mdFiles/steps/33-type-b-widget.md.
 import type { BreakdownFormat, BreakdownOutput, BreakdownPart, BreakdownVisual, CalculatorConfig, CalculatorInput, CalculatorSolver } from '../data/calculators/index.ts';
 import { currencySymbol, formatDate, formatDecimal, formatFull, formatSignificant } from './calculator.ts';
+import { formatNumberList, LIST_MAX, parseNumberList } from './listParse.ts';
 import { parse, plain, type Solution } from './solverState.ts';
 import { UNITS, findUnit, fromBase, toBase } from './units.ts';
 
@@ -86,21 +87,35 @@ export function describeKey(id: string, resolved: ResolvedBreakdown, inputs: Cal
 
 export function initialBreakdownState(inputs: CalculatorInput[]): BreakdownState {
   return {
-    values: Object.fromEntries(inputs.map((input) => [input.id, String(input.defaultValue)])),
+    values: Object.fromEntries(
+      inputs.map((input) => [input.id, input.type === 'list' ? (input.listDefault ?? []).join(', ') : String(input.defaultValue)])
+    ),
     units: Object.fromEntries(inputs.map((input) => [input.id, defaultUnit(input)]))
   };
 }
 
-/** The typed values as compute() expects them: numbers in each input's own `unit`. Blank is NaN. */
+/** The typed values as compute() expects them: numbers in each input's own `unit`. Blank is NaN. `list` inputs are excluded — see computeLists. */
 export function computeValues(inputs: CalculatorInput[], state: BreakdownState): Record<string, number> {
   return Object.fromEntries(
-    inputs.map((input) => {
-      const value = parse(state.values[input.id] ?? '');
-      const chosen = state.units[input.id] || defaultUnit(input);
-      if (!input.dimension || chosen === defaultUnit(input)) return [input.id, value];
-      return [input.id, fromBase(toBase(value, input.dimension, chosen), input.dimension, defaultUnit(input))];
-    })
+    inputs
+      .filter((input) => input.type !== 'list')
+      .map((input) => {
+        const value = parse(state.values[input.id] ?? '');
+        const chosen = state.units[input.id] || defaultUnit(input);
+        if (!input.dimension || chosen === defaultUnit(input)) return [input.id, value];
+        return [input.id, fromBase(toBase(value, input.dimension, chosen), input.dimension, defaultUnit(input))];
+      })
   );
+}
+
+/** The parsed numbers of every `type: 'list'` input, keyed by its id. Non-numeric tokens are dropped (lib/listParse.ts). */
+export function computeLists(inputs: CalculatorInput[], state: BreakdownState): Record<string, number[]> {
+  const lists: Record<string, number[]> = {};
+  for (const input of inputs) {
+    if (input.type !== 'list') continue;
+    lists[input.id] = parseNumberList(state.values[input.id] ?? '', input.listMax ?? LIST_MAX).values;
+  }
+  return lists;
 }
 
 export type Evaluation = {
@@ -122,11 +137,19 @@ export function evaluateBreakdown(
   extra: Record<string, number> = {}
 ): Evaluation {
   const values = computeValues(calculator.inputs, state);
-  const complete = Object.values(values).every(Number.isFinite);
-  const results = complete ? calculator.compute({ ...values, ...extra }) : {};
+  const lists = computeLists(calculator.inputs, state);
+  const listInputs = calculator.inputs.filter((input) => input.type === 'list');
+  const listsComplete = listInputs.every((input) => (lists[input.id]?.length ?? 0) >= (input.listMin ?? 1));
+  const complete = Object.values(values).every(Number.isFinite) && listsComplete;
+  const results = complete ? calculator.compute({ ...values, ...extra }, lists) : {};
   const outputKeys = complete
     ? Object.keys(results)
-    : Object.keys(calculator.compute({ ...computeValues(calculator.inputs, initialBreakdownState(calculator.inputs)), ...extra }));
+    : Object.keys(
+        calculator.compute(
+          { ...computeValues(calculator.inputs, initialBreakdownState(calculator.inputs)), ...extra },
+          computeLists(calculator.inputs, initialBreakdownState(calculator.inputs))
+        )
+      );
   const base: Record<string, number> = { ...extra, ...values };
   for (const key of outputKeys) base[key] = complete ? results[key] : NaN;
   const derived = complete && calculator.breakdown?.derive ? calculator.breakdown.derive(base) : {};
@@ -144,23 +167,39 @@ export function changeUnit(input: CalculatorInput, state: BreakdownState, unitId
   return { values, units: { ...state.units, [input.id]: unitId } };
 }
 
-/** `<id>=<value>` and `<id>_unit=<unit>`, only where they differ from the defaults. */
+// A list input's share param is capped well below any URL-length problem: 1,000 numbers need
+// nowhere near this many characters, so a hand-edited or malicious oversized value is just dropped.
+const MAX_SHARE_LIST_CHARS = 12000;
+
+const listParam = (input: CalculatorInput, raw: string) => formatNumberList(parseNumberList(raw, input.listMax ?? LIST_MAX).values);
+
+/** `<id>=<value>` and `<id>_unit=<unit>`, only where they differ from the defaults. List inputs share their parsed, comma-joined form. */
 export function breakdownShareParams(inputs: CalculatorInput[], state: BreakdownState) {
   const defaults = initialBreakdownState(inputs);
   const params = new URLSearchParams();
   for (const input of inputs) {
+    if (input.type === 'list') {
+      const current = listParam(input, state.values[input.id] ?? '');
+      if (current !== listParam(input, defaults.values[input.id] ?? '')) params.set(input.id, current);
+      continue;
+    }
     if (state.values[input.id] !== defaults.values[input.id]) params.set(input.id, state.values[input.id]);
     if (state.units[input.id] !== defaults.units[input.id]) params.set(`${input.id}_unit`, state.units[input.id]);
   }
   return params.toString();
 }
 
-/** Applies share params over `fallback`. Unknown ids, non-numbers, unknown units and values outside `options` are ignored. */
+/** Applies share params over `fallback`. Unknown ids, non-numbers, unknown units, oversized lists and values outside `options` are ignored. */
 export function readBreakdownShareParams(inputs: CalculatorInput[], fallback: BreakdownState, search: string): BreakdownState {
   const params = new URLSearchParams(search);
   const values = { ...fallback.values };
   const units = { ...fallback.units };
   for (const input of inputs) {
+    if (input.type === 'list') {
+      const raw = params.get(input.id);
+      if (raw !== null && raw.length <= MAX_SHARE_LIST_CHARS) values[input.id] = listParam(input, raw);
+      continue;
+    }
     const raw = params.get(input.id);
     const allowed = raw !== null && Number.isFinite(parse(raw)) && (!input.options || input.options.some((option) => option.value === parse(raw)));
     if (allowed) values[input.id] = raw.trim();

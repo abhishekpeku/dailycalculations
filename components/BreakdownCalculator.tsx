@@ -17,7 +17,7 @@ import {
   resolveBreakdown,
   type BreakdownState
 } from '@/lib/breakdown';
-import { AlsoIn, ChoiceRow, FIELD_GROUP, FieldRow, Headline, OutputItem, OutputList, ResultPanel, WidgetActions, WidgetCard, widgetAccent } from '@/components/CalculatorWidget';
+import { AlsoIn, ChoiceRow, FIELD_GROUP, FieldRow, Headline, ListFieldRow, OutputItem, OutputList, ResultPanel, WidgetActions, WidgetCard, widgetAccent } from '@/components/CalculatorWidget';
 import BreakdownVisual from '@/components/BreakdownVisual';
 
 // Type B: inputs flow forward into a headline, a breakdown and one visual. The logic lives in lib/breakdown.ts.
@@ -58,7 +58,18 @@ export default function BreakdownCalculator({ calculatorId }: { calculatorId: st
   const headlineText = show(resolved.headline.id);
   const visual = calculator.breakdown?.visual;
 
-  const renderField = (input: CalculatorInput) => input.options ? (
+  const renderField = (input: CalculatorInput) => input.type === 'list' ? (
+    <ListFieldRow
+      key={input.id}
+      id={`breakdown-${input.id}`}
+      label={input.label}
+      value={state.values[input.id] ?? ''}
+      placeholder={input.placeholder}
+      min={input.listMin ?? 1}
+      max={input.listMax}
+      onChange={(raw) => setState({ ...state, values: { ...state.values, [input.id]: raw } })}
+    />
+  ) : input.options ? (
     <ChoiceRow
       key={input.id}
       id={`breakdown-${input.id}`}

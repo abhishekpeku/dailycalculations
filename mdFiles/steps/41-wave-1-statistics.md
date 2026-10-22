@@ -173,3 +173,261 @@ between `mean-median-mode-calculator` and `average-calculator`'s existing "mean 
 **Paused / resumed:** run 1 is complete — category added, all 5 calculators built, tested, verified
 and pushed. Next session picks up run 2: confidence interval, margin of error, sample size,
 p-value, quartile/IQR.
+
+---
+
+## List input (between run 1 and run 2)
+
+User-approved work inserted before statistics run 2: a reusable paste-a-list textarea input for
+the type-B widget, replacing the "How many numbers?" + 10 numbered slots stopgap
+(`listCountInput`/`listValueInputs`/`readList`/`listGroups`, `MAX_LIST_SIZE = 10`) that run 1 used
+and that the pre-existing Parked note ("No list/array input in the calculator kit") predicted this
+category would hit repeatedly. Real users paste 20–1,000 values; a fixed 10-slot form cannot take
+that. Branch `step/41-list-input`.
+
+### Progress
+
+- [x] Design written here before coding (this section)
+- [x] Branch `step/41-list-input` from `origin/master`, draft PR opened early
+- [x] `lib/listParse.ts` — pure parser (`parseNumberList`, `formatNumberList`, `LIST_MAX`) + `lib/listParse.spec.ts`
+- [x] `data/calculators/types.ts` — `type: 'list'` on `CalculatorInput` (+ `listDefault`/`listMin`/`listMax`), `compute()` gains a second `lists: Record<string, number[]>` parameter
+- [x] `lib/breakdown.ts` — `computeLists`, list-aware `computeValues`/`evaluateBreakdown` completeness, list-aware `breakdownShareParams`/`readBreakdownShareParams`, list-aware `initialBreakdownState`
+- [x] `components/CalculatorWidget.tsx` — `ListFieldRow` (textarea, live count, inline error, `aria-describedby`)
+- [x] `components/BreakdownCalculator.tsx` — routes `type: 'list'` inputs to `ListFieldRow`
+- [x] `lib/calculator.ts` — `evaluateCalculator` (dead export) updated for the new `compute()` signature, for type-correctness only
+- [x] `data/calculators.spec.ts` — snapshot harness builds `{ values, lists }` per input set (default/typical/edge), list inputs excluded from the old scalar-only path
+- [x] Retrofit `mean-median-mode-calculator`, `standard-deviation-calculator`, `variance-calculator`, `percentile-calculator` (statistics) and `average-calculator` (math) onto the list input; remove the now-unused `listCountInput`/`listValueInputs`/`readList`/`listGroups`/`MAX_LIST_SIZE` helpers from `statistics.ts`
+- [x] `weighted-average-calculator` — decision recorded below, **not** retrofitted
+- [x] Snapshot tests regenerated for the 5 retrofitted calculators (`npm run test:update`), diffs explained below
+- [x] `npm test`, `npm run lint`, `npm run build`
+- [x] Spot-check in dev: paste a 50-value list on `mean-median-mode-calculator`, share link round-trip; kill the dev server
+- [x] Update `mdFiles/STATUS.md` (row 40–42 + session log), resolve the Parked "No list/array input" note
+- [x] Mark PR ready
+
+### Design decisions
+
+**Type: a new `CalculatorInput.type: 'list'`, not a change to the shape of `number`.** Added fields
+`listDefault?: number[]` (shown in the textarea by default), `listMin?: number` (default 1),
+`listMax?: number` (default `lib/listParse.ts`'s `LIST_MAX = 1000`). `defaultValue`/`step`/`min` stay
+on the type (every other input type still needs them) but are unused for `'list'`; `placeholder` is
+reused as-is for the textarea's HTML `placeholder` — no new field needed for that.
+
+**`compute()` gets a second parameter, not a union type on the first one.** The instructions offered
+two options: `values: number | number[]` on the existing record, or a separate `lists` argument. A
+union would force every existing `compute(values) { ... values.x * 2 ... }` body to narrow `values.x`
+before any arithmetic — a mechanical but real edit to every one of the ~90 existing calculators just
+to keep them compiling. A second parameter needs no such edit: `CalculatorConfig['compute']` is now
+`(values: CalculatorInputValues, lists: Record<string, number[]>) => Record<string, number>`, and a
+function expression with fewer declared parameters than its type's signature is valid TypeScript (the
+same reason `.map((x) => ...)` ignoring the index/array parameters compiles) — every existing
+`compute(values) { ... }` still type-checks unchanged, and still behaves identically, because nothing
+calls the second parameter unless a calculator's own body reads `lists`. `CalculatorInputValues`
+(`Record<string, number>`) is untouched, and list inputs are deliberately kept **out** of it — a list
+id never appears as a key in `values`, so the existing "every value in `values` is finite ⇒ complete"
+check in `evaluateBreakdown` needed no change to stop firing on an array.
+
+**Separators: comma, whitespace (space/tab/newline) or semicolon, any mix, any amount.**
+`lib/listParse.ts`'s `parseNumberList` splits on `/[,;\s]+/`, so a pasted spreadsheet column
+(newline-separated), a comma-separated line, and a messy mix of both split identically. Decimal is a
+dot; a comma is always a separator, never a decimal mark — stated here and in the Parked note below,
+since the site's region system (`lib/regions.ts`, step 18, not yet built) will eventually need a
+comma-decimal locale (EU) and this parser does not attempt to guess which role a comma plays. No
+`eval`/`new Function` anywhere: every token is tested against a strict regex
+(`/^[+-]?(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i`) before `Number()` ever sees it, so arbitrary input can
+only ever become a number or be rejected, never executed.
+
+**Bad tokens: parsed numbers are kept, non-numeric tokens are dropped and reported — not a hard
+refusal.** Chosen over rejecting the whole paste on the first bad token, because a single stray
+token (a trailing "total:", a copy-pasted unit) in an otherwise-good 200-value paste is extremely
+common, and discarding the other 199 valid numbers over one bad token is a worse user experience than
+quietly using the good ones. The widget states this honestly: `ListFieldRow` shows a live count of
+numbers actually parsed, and when any tokens were dropped it lists up to 5 of them verbatim (with a
+total count) in a message tied to the textarea via `aria-describedby`, so nothing is silently wrong —
+the user sees exactly what was ignored and can fix it. `-0` normalizes to `0` (not kept as a distinct
+negative zero) since nothing in the kit treats them differently and showing "−0" back to a user who
+typed `-0` would read as a bug.
+
+**Cap: 1,000 values (`LIST_MAX`), silently enforced by keeping only the first 1,000 and flagging it
+(`ParsedList.truncated`).** Matches the instructions' "~1,000" and the existing fixed-slot cap
+precedent (`MAX_LIST_SIZE = 10` before this, `prime-factorization-calculator`'s 6-slot cap, etc.) —
+every list-shaped input in this kit states an honest, visible ceiling rather than claiming an
+unbounded field. A calculator can override it per input via `listMax` if a smaller cap ever makes
+sense; none of the 5 retrofits does.
+
+**Share links: compact and re-canonicalized on both write and read.** `breakdownShareParams` encodes
+a list input as `formatNumberList(parseNumberList(...).values)` — comma-joined with no separating
+spaces or line breaks, and only the numbers that actually parsed, so 50 pasted values with stray
+whitespace share as `1,2,3,...` rather than carrying the user's original formatting into the URL.
+`readBreakdownShareParams` re-parses on the way back in and additionally refuses any list parameter
+longer than `MAX_SHARE_LIST_CHARS` (12,000 characters — comfortably above what 1,000 numbers need,
+comfortably below a URL-length problem) by falling back to the default list entirely, so a
+hand-edited or malicious URL can't blow up the address bar.
+
+**Widget: `BreakdownCalculator`'s `renderField` gets a third branch, `ListFieldRow`, ahead of the
+existing `options`/plain-number branches.** No change to `SolverCalculator` — no solver calculator
+needs a list input yet, and the type-B widget is the only one the instructions asked to retrofit.
+`ListFieldRow` lives in `components/CalculatorWidget.tsx` beside `FieldRow`/`ChoiceRow`, the other
+widget-shared row components, and is a plain controlled `<textarea>`: the label, a live
+`N numbers` counter, and (only when non-empty) one `<p>` carrying every active note — ignored-token
+list, truncation, or "enter at least N numbers" — wired to the textarea with `aria-describedby` and
+`aria-invalid`. No row-level unit menu (list inputs have no `dimension`), matching how a plain
+`currency`/`percent` field already renders without one.
+
+**Mode as text: not done.** The task allowed listing all tied modes as text "only if cheap." It is
+not cheap: `BreakdownOutput`/`compute()`'s return type is strictly `Record<string, number>`
+site-wide, and `formatOutput` only knows how to print a number. Threading a text-shaped result
+through that path would be a second, unrelated type change touching every calculator's output
+typing, not a one-line addition — parked below rather than improvised here. `mean-median-mode-calculator`
+keeps its existing `primaryMode`/`modeCount` pair from run 1 unchanged.
+
+**`weighted-average-calculator`: kept as paired boxes, not retrofitted.** A "clean two-list design"
+(one list of values, one same-length list of weights) would need the two lists kept in lockstep by
+position with no shared-length enforcement anywhere in the kit — a wrong-paste-length bug (49 values,
+50 weights) would silently mispair every component after the mismatch, with no mechanism in this
+change to catch it. That is a real design problem worth its own step with its own validation, not a
+corner to cut inside this one. The existing 6-pair value/weight boxes are unaffected.
+
+**`average-calculator`'s minimum count changes from 2 to 1.** The old count selector's `min: 2` was
+never a mathematical requirement — a one-number "average" is trivially that number — it was just the
+count-selector's own default floor, copied from nowhere in particular. Retrofitting onto `listMin: 1`
+matches the convention every statistics list input in this file already uses (`min: 1`, "a single
+value is a legitimate data point, not an error") rather than inventing a different floor for the one
+math-category retrofit. No other behavior changes: the formula, the worked example (85, 90, 78, 92 →
+86.25) and every FAQ figure are untouched.
+
+**Content edits are mechanical, not a rewrite.** Each retrofitted calculator's `concept` paragraphs,
+`workedExample`, and the math itself are untouched — the numbers were already independently verified
+in run 1 (and for `average-calculator`, in step 40 run 2) and nothing about *how* the formula works
+changed, only *how numbers get in*. Only the sentences that described the old mechanism directly
+("Choose how many numbers you have, then fill in exactly that many of the number fields, in order
+starting from Number 1," "Set 'How many numbers?' to...," "Add up to N more numbers," the FAQ
+question "How many numbers can this calculator use?") were rewritten to describe pasting a list
+instead, plus one new watch-out item per retrofitted calculator about non-numeric tokens being
+dropped and the 1,000-value cap.
+
+### Snapshot diffs (explained)
+
+All 5 retrofits change their `inputs` shape in the snapshot from the old `howMany`/`value1..value10`
+(or `value1..8` for `average-calculator`) scalar fields to a single `data: number[]` list (plus
+`targetPercentile` unchanged on `percentile-calculator`). The **`default` row's `outputs` are
+numerically identical** to the pre-retrofit snapshot on every one of the 5 (mean 86.25, mean 8.2,
+percentileValue 81, population/sample figures unchanged, etc.) — `listDefault` carries the exact same
+numbers the old `value1..N` slots used, and the formulas (`varianceOf`, `percentileOf`, the
+mean/median/mode logic) are untouched; only *where* the array comes from changed (`lists.data`
+instead of `readList(values, min)`).
+
+The **`typical` and `edge` rows' `outputs` do change**, and that is the harness's own synthetic input
+generation changing, not the calculators: the old harness scaled a scalar `howMany` field by 1.5 and
+zero-padded unused `value*` slots up to 10, so e.g. `average-calculator`'s old "typical" case averaged
+6 slots (4 real values scaled ×1.5, plus 2 zero-padded slots it shouldn't have counted) into a mean of
+86.33; the new `edgeList`/`typicalList` in `data/calculators.spec.ts` instead scale exactly the
+`listDefault` array's own values (4 values in, 4 values out, no padding), giving a mean of 129.5 for
+the same calculator — a more honest "typical" case, with no artifact of the old fixed-slot shape
+leaking into the test. The `edge` row is unchanged in substance: the old edge case was `howMany` at
+its `min` with every `value*` slot at `0` (i.e., a list of `min` zeros); the new edge case is literally
+"`listMin` zeros" — the same list, just without the other 9 (unused) zero-padded slots cluttering the
+snapshot. `KNOWN_NON_FINITE` needed no edits — `standard-deviation-calculator`/`variance-calculator`'s
+sample-variance-at-n=1 divide-by-zero and `z-score-calculator`'s divide-by-zero are unchanged.
+
+### Verification
+
+Re-ran the retrofit's own scratch check (`verify_list_input.mjs`, scratchpad, plain Node) comparing
+each retrofitted calculator's shipped `compute()` output against the exact run-1 worked-example
+figures it must still produce (mean-median-mode: mean 8.2/median 8/mode 7; standard deviation ≈
+8.221921916437786 (population) / ≈ 9.192388155425117 (sample); variance 67.6/84.5; percentile 81 at
+P=75, 67.5 at P=50; average-calculator 86.25) — 0 mismatches, confirming the list-input retrofit did
+not change a single number. `lib/listParse.spec.ts` covers separators (comma/space/tab/newline/
+semicolon, mixed), an empty/whitespace-only string, bad tokens (reported, not silently dropped from
+the return), the 1,000 cap (`truncated: true`, exactly 1,000 kept), scientific notation
+(`1e3`/`1.5E-2`), negative numbers, and `-0` normalizing to `0`.
+
+### Parked (new)
+
+- **List input is not locale-aware.** Decimals are always a dot; a comma is always a separator,
+  never a decimal mark. `lib/regions.ts` (step 18, not yet built) will need an EU comma-decimal mode
+  eventually — when it lands, `parseNumberList` needs a locale-aware variant (or a region-aware
+  separator set) alongside it. Noted here and in `STATUS.md`'s Parked list.
+- **Mode-as-text output.** Listing every tied mode as text (not just `primaryMode`/`modeCount`) needs
+  a text-shaped result type threaded through `BreakdownOutput`/`compute()`'s return type and
+  `formatOutput` — a real, separate kit change, not a one-line addition. Not done.
+- **`weighted-average-calculator`'s two-list design.** A value-list + weight-list pairing needs a
+  length-mismatch guard the kit does not have yet. Not done; see the decision above.
+
+### Pre-merge review fix (2026-10-22): thousands separators, unicode minus, currency, percent
+
+Pre-merge review of PR #22 found that `parseNumberList` silently gave a wrong answer on exactly the
+input real users paste most: a thousands-separated number. `"1,000, 2,500, 3,000"` parsed to
+`[1, 0, 2, 500, 3, 0]` (every comma was always a value separator, no exceptions), `"−3"` (U+2212, the
+typographic minus every browser's number-formatting and Word/web copy-paste actually produce, not
+the ASCII hyphen) was dropped as unparseable, and `"$12.50, $8"` / `"45%, 50%"` were dropped
+entirely. None of this showed up as a build/lint/test failure — it is a silent-wrong-result class of
+bug, not a crash, which is exactly why it was flagged as a mandatory pre-merge fix rather than left
+for a later cleanup.
+
+**The disambiguation rule (thousands commas vs. separator commas):** a token's internal comma(s) are
+read as thousands separators — `GROUPED_NUMBER = /^[+-]?\d{1,3}(,\d{3})+(\.\d+)?$/`, i.e. a 1-3 digit
+group then one or more exactly-3-digit groups, optionally with a decimal tail — **only when the
+whole input also uses some other separator** (whitespace or a semicolon) between its values. If the
+entire input uses only bare commas with no whitespace anywhere (`"100,200,300"`, `"1,2,3"`), every
+comma stays a plain value separator, unchanged from before. This is the only signal that can
+disambiguate the two readings at all: `"100,200,300"` is *textually* indistinguishable from the
+6-figure number 100200300, and the task that requested this fix explicitly chose "some other
+separator present" as the tie-breaker (and gave `"100,200,300"` with no whitespace as the worked
+example that must still read as three numbers, not one). Implementation: split the input on
+whitespace/semicolon runs first; if that yields more than one chunk, every chunk is tested against
+`GROUPED_NUMBER` before anything else; a chunk that doesn't match (e.g. `"1,23"` out of `"1,23, 4"` —
+`"23"` isn't a 3-digit group) falls through to being split on its own commas and validated token by
+token, so `"1,23, 4"` reads as `1, 23, 4`, not as one failed token. A single trailing comma on a
+chunk (`"1,000,"` out of `"1,000, 2,500"`) is stripped first, since it's a separator remnant, not
+part of the number.
+
+**Made visible, never silent (the task's explicit requirement):** `ParsedList` gained
+`groupedAsThousands: string[]`, the original text of every value whose comma was read as a thousands
+separator. `ListFieldRow` shows it as a dedicated, non-error informational line (`"Read "1,000",
+"2,500" as thousands-separated — the comma was not treated as a separator between numbers."`),
+separate from the amber error line (dropped tokens, the cap, too few numbers) and from
+`aria-invalid`, which stays tied only to actual errors — reading a number correctly is not an error
+state. Every retrofitted calculator's "non-numeric tokens are dropped" watch-out item, and the shared
+list-input placeholder text (now the literal helper text under the box), state the $/%/thousands-
+comma rule explicitly rather than leaving it to be discovered.
+
+**Unicode minus and currency/percent affixes**, a single `cleanToken` helper applied to every atomic
+token before it is tested: normalizes a leading U+2212 (−) or U+2013 (en dash, –) to an ASCII `-`
+(both are what real browsers/Word/web copy-paste actually produce for a minus sign, not the ASCII
+hyphen the original regex only accepted); strips one leading currency symbol (`$ £ € ₹ ¥`), keeping
+whatever sign is on either side of it (`-$5` and `$-5` both read as `-5`); strips one trailing `%`,
+leaving the number unchanged (`45%` reads as `45`, not `0.45` — stated in the helper text, since the
+other reading is equally defensible and silently picking one needs saying out loud). Parentheses
+negatives (`"(123)"`) and hex (`"0x1F"`) remain unsupported and reported, unchanged — the task asked
+to extend affix support, not to add a second number-literal grammar.
+
+**Share-link round trip is unaffected and was explicitly re-tested**: `formatNumberList` always
+writes plain `Number`-stringified values with no grouping commas at all
+(`formatNumberList([1000, 2500])` → `"1000,2500"`), so a share URL built from a thousands-grouped
+paste re-parses through the **bare-comma path** on read-back (no whitespace in the serialized form)
+and lands on the exact same numbers — verified directly in `lib/listParse.spec.ts` and
+`lib/breakdown.spec.ts` (`breakdownShareParams`/`readBreakdownShareParams`), not just asserted.
+
+**Known, accepted remaining gap** (documented in `lib/listParse.ts`'s module comment, not silently
+left out): several *lines*, each itself a bare comma-separated list with no other separator within
+the line but a newline *between* lines (`"100,200,300\n400,500,600"`), still reads every in-line
+comma as a thousands separator, because the rule is evaluated over the *whole* input and a newline
+is present somewhere in it. This exact shape was not in the task's test list; the fix follows the
+task's stated rule exactly (an unqualified "whole input" condition) rather than inventing an
+additional per-line heuristic the task didn't ask for. Rare in practice (a multi-line paste where
+every single line independently needs 3+ grouped values with nothing else distinguishing them from
+a flat list); noted here and in `STATUS.md`'s Parked list as a residual limitation of the rule as
+specified, should it ever come up.
+
+**Verification**: all 5 retrofitted calculators' worked-example numbers were re-checked against
+`verify_list_input.mjs` (scratchpad, plain Node, no app imports) after this fix and are byte-for-byte
+unchanged (mean 8.2/median 8/mode 7; population SD ≈8.221921916437786/sample SD
+≈9.192388155425117; population/sample variance 67.6/84.5; percentile 81 at P75, 67.5 at P50; average
+86.25) — this fix only touches how text is tokenized before `compute()` ever runs, not any formula.
+The four exact bug-report inputs were additionally re-run end-to-end through `evaluateBreakdown` (not
+just the parser in isolation): `"1,000, 2,500, 3,000"` → mean 2166.67, count 3 (previously wrong);
+`"−3"` → mean −3, count 1 (previously dropped); `"$12.50, $8"` → mean 10.25, count 2 (previously all
+dropped); `"45%, 50%"` → mean 47.5, count 2 (previously all dropped). 34 parser unit tests (up from
+20) and 2 new share-link tests in `lib/breakdown.spec.ts`; `npm test` 403/403, `npm run lint`,
+`npm run build` all pass. No existing snapshot changed (this fix is parser/widget-only; `compute()`
+and every calculator's default/typical/edge inputs are untouched).

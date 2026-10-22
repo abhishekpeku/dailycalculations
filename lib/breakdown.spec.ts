@@ -2,6 +2,7 @@
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { calculators, type CalculatorConfig, type CalculatorInput } from '../data/calculators/index.ts';
+import { parseNumberList } from './listParse.ts';
 import {
   alsoInText,
   breakdownShareParams,
@@ -120,9 +121,12 @@ describe('evaluateBreakdown', () => {
     let checked = 0;
     for (const calculator of calculators) {
       if (calculator.solver) continue;
-      const defaults = Object.fromEntries(calculator.inputs.map((input) => [input.id, input.defaultValue]));
+      const defaults = Object.fromEntries(calculator.inputs.filter((input) => input.type !== 'list').map((input) => [input.id, input.defaultValue]));
+      const lists = Object.fromEntries(
+        calculator.inputs.filter((input) => input.type === 'list').map((input) => [input.id, input.listDefault ?? []])
+      );
       const extra: Record<string, number> = calculator.timeDependent ? { todayMs } : {};
-      const expected = calculator.compute({ ...defaults, ...extra });
+      const expected = calculator.compute({ ...defaults, ...extra }, lists);
       if (Object.keys(expected).length === 0) continue; // custom tools (type C)
       const { all, outputKeys, complete } = evaluateBreakdown(calculator, initialBreakdownState(calculator.inputs), extra);
       assert.ok(complete, calculator.id);
@@ -219,6 +223,26 @@ describe('share params', () => {
     const defaults = initialBreakdownState(inputs);
     assert.equal(readBreakdownShareParams(inputs, defaults, '?status=1').values.status, '1');
     assert.equal(readBreakdownShareParams(inputs, defaults, '?status=7').values.status, '0');
+  });
+
+  test('a list input with thousands-separated numbers round-trips exactly, with no grouping commas left to re-ambiguate', () => {
+    const inputs: CalculatorInput[] = [{ id: 'data', label: 'Numbers', type: 'list', placeholder: '', defaultValue: 0, listDefault: [1, 2], listMin: 1 }];
+    const defaults = initialBreakdownState(inputs);
+    const state = { ...defaults, values: { data: '1,000, 2,500, 3,000' } };
+    const query = breakdownShareParams(inputs, state);
+    assert.equal(query, 'data=1000%2C2500%2C3000'); // comma-joined plain numbers, URL-encoded — no grouping commas survive
+    const read = readBreakdownShareParams(inputs, defaults, `?${query}`);
+    assert.equal(read.values.data, '1000,2500,3000');
+    assert.deepEqual(parseNumberList(read.values.data).values, [1000, 2500, 3000]);
+    assert.deepEqual(parseNumberList(read.values.data).groupedAsThousands, []); // nothing left to misread as grouping
+  });
+
+  test('an oversized list share param falls back to the default instead of being accepted', () => {
+    const inputs: CalculatorInput[] = [{ id: 'data', label: 'Numbers', type: 'list', placeholder: '', defaultValue: 0, listDefault: [1, 2], listMin: 1 }];
+    const defaults = initialBreakdownState(inputs);
+    const huge = Array.from({ length: 5000 }, (_, i) => i).join(',');
+    const read = readBreakdownShareParams(inputs, defaults, `?data=${huge}`);
+    assert.equal(read.values.data, defaults.values.data); // too long (> MAX_SHARE_LIST_CHARS) — kept at the default
   });
 });
 

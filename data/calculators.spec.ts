@@ -55,13 +55,30 @@ function typicalValue(input: CalculatorInput) {
   return Math.max(input.min ?? -Infinity, scaled);
 }
 
-function inputSets(calculator: CalculatorConfig): Record<string, CalculatorInputValues> {
-  const build = (pick: (input: CalculatorInput) => number) =>
-    Object.fromEntries(calculator.inputs.map((input) => [input.id, pick(input)]));
+type InputSet = { values: CalculatorInputValues; lists: Record<string, number[]> };
+
+// A 'list' input has no single numeric default/typical/edge the way a scalar input does — it is
+// excluded from `values` entirely (compute() never sees a list id as a key there, same as the live
+// widget via lib/breakdown.ts's computeValues) and built into `lists` instead, from `listDefault`.
+function typicalList(input: CalculatorInput): number[] {
+  return (input.listDefault ?? []).map((v) => roundToStep(v * 1.5, 1));
+}
+
+function edgeList(input: CalculatorInput): number[] {
+  return Array.from({ length: input.listMin ?? 1 }, () => 0);
+}
+
+function inputSets(calculator: CalculatorConfig): Record<string, InputSet> {
+  const scalarInputs = calculator.inputs.filter((input) => input.type !== 'list');
+  const listInputs = calculator.inputs.filter((input) => input.type === 'list');
+  const buildValues = (pick: (input: CalculatorInput) => number) =>
+    Object.fromEntries(scalarInputs.map((input) => [input.id, pick(input)]));
+  const buildLists = (pick: (input: CalculatorInput) => number[]) =>
+    Object.fromEntries(listInputs.map((input) => [input.id, pick(input)]));
   return {
-    default: build((input) => input.defaultValue),
-    typical: build(typicalValue),
-    edge: build((input) => input.min ?? 0)
+    default: { values: buildValues((input) => input.defaultValue), lists: buildLists((input) => input.listDefault ?? []) },
+    typical: { values: buildValues(typicalValue), lists: buildLists(typicalList) },
+    edge: { values: buildValues((input) => input.min ?? 0), lists: buildLists(edgeList) }
   };
 }
 
@@ -75,8 +92,8 @@ function nonFiniteKeys(result: Record<string, number>) {
   return Object.keys(result).filter((key) => !Number.isFinite(result[key]));
 }
 
-const run = (calculator: CalculatorConfig, inputs: CalculatorInputValues) =>
-  calculator.compute(calculator.timeDependent ? { ...inputs, todayMs: FIXED_TODAY_MS } : inputs);
+const run = (calculator: CalculatorConfig, set: InputSet) =>
+  calculator.compute(calculator.timeDependent ? { ...set.values, todayMs: FIXED_TODAY_MS } : set.values, set.lists);
 
 const defaults = (calculator: CalculatorConfig) => inputSets(calculator).default;
 const computed = calculators.filter((c) => Object.keys(run(c, defaults(c))).length > 0);
@@ -88,13 +105,15 @@ describe('compute() snapshots', () => {
       const sets = inputSets(calculator);
       const snapshot: Record<string, unknown> = {};
 
-      for (const [name, inputs] of Object.entries(sets)) {
-        const result = run(calculator, inputs);
+      for (const [name, set] of Object.entries(sets)) {
+        const result = run(calculator, set);
         const bad = nonFiniteKeys(result);
         const allowed = name === 'edge' ? KNOWN_NON_FINITE[calculator.id] ?? [] : [];
         assert.deepEqual(bad, allowed, `${calculator.id} ${name}: non-finite outputs`);
+        // Only calculators with a list input carry a `lists` key — every other snapshot's `inputs`
+        // shape is untouched, so this change does not move a single existing calculator's snapshot.
         snapshot[name] = {
-          inputs,
+          inputs: Object.keys(set.lists).length ? { ...set.values, lists: set.lists } : set.values,
           outputs: Object.fromEntries(Object.entries(result).map(([key, value]) => [key, normalize(value)]))
         };
       }
@@ -111,7 +130,8 @@ describe('custom-tool calculators', () => {
     for (const id of CUSTOM_TOOLS) {
       const calculator = calculators.find((c) => c.id === id);
       assert.ok(calculator, `${id} exists`);
-      assert.deepEqual(calculator.compute(defaults(calculator)), {}, id);
+      const set = defaults(calculator);
+      assert.deepEqual(calculator.compute(set.values, set.lists), {}, id);
     }
   });
 
@@ -125,9 +145,9 @@ describe('time-dependent calculators', () => {
   test('pregnancy-due-date-calculator reads todayMs', () => {
     const calculator = calculators.find((c) => c.id === 'pregnancy-due-date-calculator');
     assert.ok(calculator?.timeDependent);
-    const inputs = defaults(calculator);
-    const june = calculator.compute({ ...inputs, todayMs: new Date(2026, 5, 17).getTime() });
-    const july = calculator.compute({ ...inputs, todayMs: new Date(2026, 6, 17).getTime() });
+    const inputs = defaults(calculator).values;
+    const june = calculator.compute({ ...inputs, todayMs: new Date(2026, 5, 17).getTime() }, {});
+    const july = calculator.compute({ ...inputs, todayMs: new Date(2026, 6, 17).getTime() }, {});
     assert.equal(june.daysRemaining - july.daysRemaining, 30);
     assert.equal(july.gestationalDays - june.gestationalDays, 30);
   });

@@ -25,7 +25,10 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'quadratic-formula-calculator': ['discriminant', 'root1', 'root2', 'realPart', 'imaginaryPart', 'vertexX', 'vertexY'], // a=0, b=0, c=0 -> no single equation (0 = 0)
   'lcm-calculator': ['lcm'], // both numbers 0 -> LCM(0, 0) is undefined by convention, not 0
   'triangle-calculator': ['sideA', 'sideB', 'sideC', 'angleA', 'angleB', 'angleC', 'perimeter', 'area'], // mode 1 (SSS), all three sides 0 -> fails the triangle inequality
-  'slope-calculator': ['slope', 'angle', 'yIntercept'] // both points identical (0,0)-(0,0) -> no line at all, distance is still a legitimate 0
+  'slope-calculator': ['slope', 'angle', 'yIntercept'], // both points identical (0,0)-(0,0) -> no line at all, distance is still a legitimate 0
+  'standard-deviation-calculator': ['sampleVariance', 'sampleStdDev'], // howMany=1 (its min) -> sample divides by n-1=0
+  'variance-calculator': ['sampleVariance', 'sampleStdDev'], // howMany=1 (its min) -> sample divides by n-1=0
+  'z-score-calculator': ['zScore'] // standard deviation 0 (no min set) -> divide by zero
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

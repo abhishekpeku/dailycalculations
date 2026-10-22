@@ -1721,6 +1721,89 @@ exports[`compute() snapshots > long-division-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > mean-median-mode-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "howMany": 5,
+      "value1": 7,
+      "value2": 9,
+      "value3": 7,
+      "value4": 10,
+      "value5": 8,
+      "value6": 0,
+      "value7": 0,
+      "value8": 0,
+      "value9": 0,
+      "value10": 0
+    },
+    "outputs": {
+      "mean": 8.2,
+      "median": 8,
+      "primaryMode": 7,
+      "modeCount": 1,
+      "sum": 41,
+      "count": 5,
+      "min": 7,
+      "max": 10,
+      "range": 3
+    }
+  },
+  "typical": {
+    "inputs": {
+      "howMany": 8,
+      "value1": 11,
+      "value2": 14,
+      "value3": 11,
+      "value4": 15,
+      "value5": 12,
+      "value6": 0,
+      "value7": 0,
+      "value8": 0,
+      "value9": 0,
+      "value10": 0
+    },
+    "outputs": {
+      "mean": 7.875,
+      "median": 11,
+      "primaryMode": 0,
+      "modeCount": 1,
+      "sum": 63,
+      "count": 8,
+      "min": 0,
+      "max": 15,
+      "range": 15
+    }
+  },
+  "edge": {
+    "inputs": {
+      "howMany": 1,
+      "value1": 0,
+      "value2": 0,
+      "value3": 0,
+      "value4": 0,
+      "value5": 0,
+      "value6": 0,
+      "value7": 0,
+      "value8": 0,
+      "value9": 0,
+      "value10": 0
+    },
+    "outputs": {
+      "mean": 0,
+      "median": 0,
+      "primaryMode": 0,
+      "modeCount": 1,
+      "sum": 0,
+      "count": 1,
+      "min": 0,
+      "max": 0,
+      "range": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > meeting-cost-calculator 1`] = `
 {
   "default": {
@@ -2139,6 +2222,83 @@ exports[`compute() snapshots > percentage-calculator 1`] = `
     },
     "outputs": {
       "result": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > percentile-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "howMany": 6,
+      "targetPercentile": 75,
+      "value1": 60,
+      "value2": 55,
+      "value3": 90,
+      "value4": 65,
+      "value5": 78,
+      "value6": 70,
+      "value7": 0,
+      "value8": 0,
+      "value9": 0,
+      "value10": 0
+    },
+    "outputs": {
+      "percentileValue": 81,
+      "rank": 5.25,
+      "median": 67.5,
+      "min": 55,
+      "max": 90,
+      "count": 6
+    }
+  },
+  "typical": {
+    "inputs": {
+      "howMany": 9,
+      "targetPercentile": 113,
+      "value1": 90,
+      "value2": 83,
+      "value3": 135,
+      "value4": 98,
+      "value5": 117,
+      "value6": 105,
+      "value7": 0,
+      "value8": 0,
+      "value9": 0,
+      "value10": 0
+    },
+    "outputs": {
+      "percentileValue": 135,
+      "rank": 9,
+      "median": 90,
+      "min": 0,
+      "max": 135,
+      "count": 9
+    }
+  },
+  "edge": {
+    "inputs": {
+      "howMany": 1,
+      "targetPercentile": 0,
+      "value1": 0,
+      "value2": 0,
+      "value3": 0,
+      "value4": 0,
+      "value5": 0,
+      "value6": 0,
+      "value7": 0,
+      "value8": 0,
+      "value9": 0,
+      "value10": 0
+    },
+    "outputs": {
+      "percentileValue": 0,
+      "rank": 1,
+      "median": 0,
+      "min": 0,
+      "max": 0,
+      "count": 1
     }
   }
 }
@@ -2837,6 +2997,80 @@ exports[`compute() snapshots > square-root-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > standard-deviation-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "howMany": 5,
+      "value1": 72,
+      "value2": 85,
+      "value3": 90,
+      "value4": 78,
+      "value5": 95,
+      "value6": 0,
+      "value7": 0,
+      "value8": 0,
+      "value9": 0,
+      "value10": 0
+    },
+    "outputs": {
+      "mean": 84,
+      "count": 5,
+      "populationVariance": 67.6,
+      "sampleVariance": 84.5,
+      "populationStdDev": 8.221921916,
+      "sampleStdDev": 9.192388155
+    }
+  },
+  "typical": {
+    "inputs": {
+      "howMany": 8,
+      "value1": 108,
+      "value2": 128,
+      "value3": 135,
+      "value4": 117,
+      "value5": 143,
+      "value6": 0,
+      "value7": 0,
+      "value8": 0,
+      "value9": 0,
+      "value10": 0
+    },
+    "outputs": {
+      "mean": 78.875,
+      "count": 8,
+      "populationVariance": 3830.109375,
+      "sampleVariance": 4377.267857,
+      "populationStdDev": 61.88787745,
+      "sampleStdDev": 66.16092394
+    }
+  },
+  "edge": {
+    "inputs": {
+      "howMany": 1,
+      "value1": 0,
+      "value2": 0,
+      "value3": 0,
+      "value4": 0,
+      "value5": 0,
+      "value6": 0,
+      "value7": 0,
+      "value8": 0,
+      "value9": 0,
+      "value10": 0
+    },
+    "outputs": {
+      "mean": 0,
+      "count": 1,
+      "populationVariance": 0,
+      "sampleVariance": "NaN",
+      "populationStdDev": 0,
+      "sampleStdDev": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > surface-area-calculator 1`] = `
 {
   "default": {
@@ -3240,6 +3474,80 @@ exports[`compute() snapshots > unit-price-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > variance-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "howMany": 5,
+      "value1": 72,
+      "value2": 85,
+      "value3": 90,
+      "value4": 78,
+      "value5": 95,
+      "value6": 0,
+      "value7": 0,
+      "value8": 0,
+      "value9": 0,
+      "value10": 0
+    },
+    "outputs": {
+      "mean": 84,
+      "count": 5,
+      "populationVariance": 67.6,
+      "sampleVariance": 84.5,
+      "populationStdDev": 8.221921916,
+      "sampleStdDev": 9.192388155
+    }
+  },
+  "typical": {
+    "inputs": {
+      "howMany": 8,
+      "value1": 108,
+      "value2": 128,
+      "value3": 135,
+      "value4": 117,
+      "value5": 143,
+      "value6": 0,
+      "value7": 0,
+      "value8": 0,
+      "value9": 0,
+      "value10": 0
+    },
+    "outputs": {
+      "mean": 78.875,
+      "count": 8,
+      "populationVariance": 3830.109375,
+      "sampleVariance": 4377.267857,
+      "populationStdDev": 61.88787745,
+      "sampleStdDev": 66.16092394
+    }
+  },
+  "edge": {
+    "inputs": {
+      "howMany": 1,
+      "value1": 0,
+      "value2": 0,
+      "value3": 0,
+      "value4": 0,
+      "value5": 0,
+      "value6": 0,
+      "value7": 0,
+      "value8": 0,
+      "value9": 0,
+      "value10": 0
+    },
+    "outputs": {
+      "mean": 0,
+      "count": 1,
+      "populationVariance": 0,
+      "sampleVariance": "NaN",
+      "populationStdDev": 0,
+      "sampleStdDev": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > visa-stay-days-calculator 1`] = `
 {
   "default": {
@@ -3567,6 +3875,41 @@ exports[`compute() snapshots > youtube-earnings-calculator 1`] = `
       "monthlyEarnings": 0,
       "annualEarnings": 0,
       "estimatedClicks": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > z-score-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "value": 1200,
+      "mean": 1050,
+      "standardDeviation": 200
+    },
+    "outputs": {
+      "zScore": 0.75
+    }
+  },
+  "typical": {
+    "inputs": {
+      "value": 1800,
+      "mean": 1575,
+      "standardDeviation": 300
+    },
+    "outputs": {
+      "zScore": 0.75
+    }
+  },
+  "edge": {
+    "inputs": {
+      "value": 0,
+      "mean": 0,
+      "standardDeviation": 0
+    },
+    "outputs": {
+      "zScore": "NaN"
     }
   }
 }

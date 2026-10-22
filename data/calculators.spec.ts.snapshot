@@ -506,6 +506,62 @@ exports[`compute() snapshots > concrete-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > confidence-interval-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mode": 2,
+      "sampleMean": 15.2,
+      "stdDev": 4.1,
+      "sampleSize": 36,
+      "confidenceLevel": 95
+    },
+    "outputs": {
+      "marginOfError": 1.387240418,
+      "lowerBound": 13.81275958,
+      "upperBound": 16.58724042,
+      "criticalValue": 2.030107928,
+      "standardError": 0.6833333333,
+      "degreesOfFreedom": 35
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mode": 3,
+      "sampleMean": 22.8,
+      "stdDev": 6.1,
+      "sampleSize": 54,
+      "confidenceLevel": 143
+    },
+    "outputs": {
+      "marginOfError": 3.492961746,
+      "lowerBound": 19.30703825,
+      "upperBound": 26.29296175,
+      "criticalValue": 4.20785605,
+      "standardError": 0.8301048573,
+      "degreesOfFreedom": 53
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mode": 1,
+      "sampleMean": 0,
+      "stdDev": 0,
+      "sampleSize": 2,
+      "confidenceLevel": 1
+    },
+    "outputs": {
+      "marginOfError": 0,
+      "lowerBound": 0,
+      "upperBound": 0,
+      "criticalValue": 0.01253346951,
+      "standardError": 0,
+      "degreesOfFreedom": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > cube-root-calculator 1`] = `
 {
   "default": {
@@ -1715,6 +1771,56 @@ exports[`compute() snapshots > long-division-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > margin-of-error-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "sampleProportion": 54,
+      "sampleSize": 1000,
+      "confidenceLevel": 95,
+      "populationSize": 0
+    },
+    "outputs": {
+      "marginOfErrorPercent": 3.089042523,
+      "lowerBound": 50.91095748,
+      "upperBound": 57.08904252,
+      "criticalValue": 1.959963985,
+      "standardErrorPercent": 1.576071064
+    }
+  },
+  "typical": {
+    "inputs": {
+      "sampleProportion": 81,
+      "sampleSize": 1500,
+      "confidenceLevel": 143,
+      "populationSize": 0
+    },
+    "outputs": {
+      "marginOfErrorPercent": 3.940845032,
+      "lowerBound": 77.05915497,
+      "upperBound": 84.94084503,
+      "criticalValue": 3.890591886,
+      "standardErrorPercent": 1.012916581
+    }
+  },
+  "edge": {
+    "inputs": {
+      "sampleProportion": 0,
+      "sampleSize": 2,
+      "confidenceLevel": 1,
+      "populationSize": 0
+    },
+    "outputs": {
+      "marginOfErrorPercent": 0,
+      "lowerBound": 0,
+      "upperBound": 0,
+      "criticalValue": 0.01253346951,
+      "standardErrorPercent": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > mean-median-mode-calculator 1`] = `
 {
   "default": {
@@ -1956,6 +2062,47 @@ exports[`compute() snapshots > mortgage-calculator 1`] = `
       "totalCost": 0,
       "totalInterest": 0,
       "loanPrincipal": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > p-value-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mode": 1,
+      "testStatistic": 2.15,
+      "degreesOfFreedom": 20,
+      "tailType": 1
+    },
+    "outputs": {
+      "pValue": 0.03155521478,
+      "cdfValue": 0.9842223926
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mode": 2,
+      "testStatistic": 3.22,
+      "degreesOfFreedom": 30,
+      "tailType": 2
+    },
+    "outputs": {
+      "pValue": 0.9984621376,
+      "cdfValue": 0.9984621376
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mode": 1,
+      "testStatistic": 0,
+      "degreesOfFreedom": 1,
+      "tailType": 1
+    },
+    "outputs": {
+      "pValue": 1,
+      "cdfValue": 0.5
     }
   }
 }
@@ -2574,6 +2721,82 @@ exports[`compute() snapshots > quadratic-formula-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > quartile-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "lists": {
+        "data": [
+          60,
+          65,
+          70,
+          72,
+          78,
+          85,
+          90,
+          95
+        ]
+      }
+    },
+    "outputs": {
+      "iqr": 22.5,
+      "q1": 66.25,
+      "median": 75,
+      "q3": 88.75,
+      "lowerFence": 32.5,
+      "upperFence": 122.5,
+      "outlierCount": 0,
+      "count": 8
+    }
+  },
+  "typical": {
+    "inputs": {
+      "lists": {
+        "data": [
+          90,
+          98,
+          105,
+          108,
+          117,
+          128,
+          135,
+          143
+        ]
+      }
+    },
+    "outputs": {
+      "iqr": 33.5,
+      "q1": 99.75,
+      "median": 112.5,
+      "q3": 133.25,
+      "lowerFence": 49.5,
+      "upperFence": 183.5,
+      "outlierCount": 0,
+      "count": 8
+    }
+  },
+  "edge": {
+    "inputs": {
+      "lists": {
+        "data": [
+          0
+        ]
+      }
+    },
+    "outputs": {
+      "iqr": 0,
+      "q1": 0,
+      "median": 0,
+      "q3": 0,
+      "lowerFence": 0,
+      "upperFence": 0,
+      "outlierCount": 0,
+      "count": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > ratio-calculator 1`] = `
 {
   "default": {
@@ -2795,6 +3018,56 @@ exports[`compute() snapshots > sales-tax-calculator 1`] = `
     "outputs": {
       "taxAmount": 0,
       "totalAmount": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > sample-size-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "confidenceLevel": 95,
+      "marginOfError": 4,
+      "estimatedProportion": 50,
+      "populationSize": 0
+    },
+    "outputs": {
+      "sampleSize": 601,
+      "rawSampleSize": 600.2279407,
+      "criticalValue": 1.959963985,
+      "marginOfErrorPercent": 4,
+      "estimatedProportionPercent": 50
+    }
+  },
+  "typical": {
+    "inputs": {
+      "confidenceLevel": 143,
+      "marginOfError": 6,
+      "estimatedProportion": 75,
+      "populationSize": 0
+    },
+    "outputs": {
+      "sampleSize": 789,
+      "rawSampleSize": 788.3700639,
+      "criticalValue": 3.890591886,
+      "marginOfErrorPercent": 6,
+      "estimatedProportionPercent": 75
+    }
+  },
+  "edge": {
+    "inputs": {
+      "confidenceLevel": 1,
+      "marginOfError": 0.1,
+      "estimatedProportion": 0,
+      "populationSize": 0
+    },
+    "outputs": {
+      "sampleSize": 0,
+      "rawSampleSize": 0,
+      "criticalValue": 0.01253346951,
+      "marginOfErrorPercent": 0.1,
+      "estimatedProportionPercent": 0
     }
   }
 }

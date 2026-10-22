@@ -127,7 +127,12 @@ export const calculatorOrder: string[] = [
   'standard-deviation-calculator',
   'variance-calculator',
   'z-score-calculator',
-  'percentile-calculator'
+  'percentile-calculator',
+  'confidence-interval-calculator',
+  'margin-of-error-calculator',
+  'sample-size-calculator',
+  'p-value-calculator',
+  'quartile-calculator'
 ];
 
 const rank = (id: string) => {

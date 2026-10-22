@@ -1210,18 +1210,20 @@ statistics is 25/25.
       Haldane-Anscombe / standard continuity correction, the rare disease assumption, OpenStax's
       discrete expected-value formula, NIST's coefficient-of-variation formula and Wikipedia's
       ratio-scale caveat, NIST's outlier-detection page, Wikipedia's outlier definition)
-- [ ] `relative-risk-calculator` (type B)
-- [ ] `odds-ratio-calculator` (type B, cross-linked with relative-risk-calculator)
-- [ ] `expected-value-calculator` (type B, two paired lists)
-- [ ] `coefficient-of-variation-calculator` (type B, list or summary-stats mode)
-- [ ] `outlier-calculator` (type B, reuses `percentileOf`, cross-linked with quartile-calculator)
-- [ ] `data/calculators/index.ts`'s `calculatorOrder`, `KNOWN_NON_FINITE` entries, snapshot tests
+- [x] `relative-risk-calculator` (type B)
+- [x] `odds-ratio-calculator` (type B, cross-linked with relative-risk-calculator)
+- [x] `expected-value-calculator` (type B, two paired lists)
+- [x] `coefficient-of-variation-calculator` (type B, list or summary-stats mode)
+- [x] `outlier-calculator` (type B, reuses `percentileOf`, cross-linked with quartile-calculator)
+- [x] `data/calculators/index.ts`'s `calculatorOrder`, `KNOWN_NON_FINITE` entries, snapshot tests
       (`npm run test:update`)
-- [ ] `npm test`, `npm run build`, `npm run lint` all pass
-- [ ] Data-integrity check (duplicate ids/aliases, broken `related`, SEO length)
-- [ ] Spot-check the 5 pages + updated `/categories/statistics` + sitemap on a local dev server, kill it, confirm port 3000 free
-- [ ] Update `mdFiles/STATUS.md` (row 40-42 marked complete at 25/25 + session log)
-- [ ] Mark PR ready
+- [x] `npm test`, `npm run build`, `npm run lint` all pass
+- [x] Data-integrity check (duplicate ids/aliases, broken `related`, SEO length) — caught and fixed
+      3 oversized `seo.title` strings before committing (relative-risk-, expected-value- and
+      coefficient-of-variation-calculator, all originally over 60 characters)
+- [x] Spot-check the 5 pages + updated `/categories/statistics` + sitemap on a local dev server, kill it, confirm port 3000 free
+- [x] Update `mdFiles/STATUS.md` (row 40-42 marked complete at 25/25 + session log)
+- [x] Mark PR ready
 
 ### Zero-cell policy for relative-risk-calculator / odds-ratio-calculator
 
@@ -1361,11 +1363,22 @@ standard normal inverse CDF) *before* any copy was written, then diffed against 
 
 **Data-integrity check**, run programmatically against the live data module for all 5 new
 calculators (scratch script, deleted after use): 0 duplicate ids, 0 broken `related` ids, 0
-self-references, 0 new duplicate aliases, every new `seo.title` <= 60 characters and
-`seo.description` <= 160 characters, 5-8 FAQs and 4-5 aliases/4 related ids each.
+self-references, 0 new duplicate aliases (the one pre-existing collision, "house loan emi
+calculator" on `emi-calculator`/`mortgage-calculator`, predates this run and is untouched), 7-8
+FAQs and 4 aliases/4 related ids each. **Caught and fixed before committing**: the script's first
+pass found three `seo.title` strings over the 60-character limit — `relative-risk-calculator`
+("Relative Risk Calculator – Risk Ratio with Confidence Interval", 62), `expected-value-calculator`
+("Expected Value Calculator – Mean, Variance & Standard Deviation", 63) and
+`coefficient-of-variation-calculator` ("Coefficient of Variation Calculator – CV from Data or
+Summary Stats", 67) — shortened to 45, 45 and 45 characters respectively, then the build was
+re-run (the first `npm run build` had already captured the old, over-length titles) and the
+script re-run clean.
 
-`npm test`, `npm run build`, `npm run lint` results, the dev-server spot-check and the final
-static-page/test counts are recorded in `STATUS.md`'s session log for this run.
+`npm test` 487/487 (up from 482), `npm run lint` clean, `npm run build` passes (137 static pages,
+up from 132). All 5 pages, `/categories/statistics` and `sitemap.xml` spot-checked on a local dev
+server (H1, `breakdown-<id>` widget mounted, exactly one JSON-LD `<script>` per page, all 5 ids
+present on both the category page and the sitemap); dev server killed and port 3000 confirmed
+free (no `LISTENING` entry) afterward.
 
 ### Parked (new, this run)
 

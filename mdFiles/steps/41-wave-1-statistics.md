@@ -855,3 +855,253 @@ new pages — this is a fix to an existing calculator, not a new one). No calcul
 `compute()`-snapshot changed (binomial-distribution-calculator's default/typical/edge snapshot values
 round to the same displayed precision under both the old and new PMF algorithm, since none of its
 pre-existing test cases exercised the bug — only n in the hundreds of thousands or more did).
+
+---
+
+## Run 4: correlation, linear regression, t-test, chi-square, standard error
+
+Branch `step/41-wave-1-statistics-run-4`, from `origin/master` (which already has run 1, the list
+input, run 2 + its pre-merge fix, and run 3 + its pre-merge fix merged).
+
+### Progress
+
+- [x] Branch created from `origin/master`, draft PR #25 opened early (draft)
+- [x] New kit mechanism: `CalculatorBreakdown.pairedLists` (`data/calculators/types.ts`,
+      `lib/breakdown.ts`, `components/BreakdownCalculator.tsx`) — a specific "lengths don't match"
+      message for two paired list inputs, on top of `compute()`'s own independent length guard
+- [x] `pairedListInputs`/`pairedStats` shared helpers (`data/calculators/statistics.ts`)
+- [x] `correlation-calculator` (type B, two list inputs)
+- [x] `linear-regression-calculator` (type B, two list inputs + optional prediction)
+- [x] `t-test-calculator` (type B, one-sample / two-sample Welch, two/left/right tails)
+- [x] `chi-square-calculator` (type B, direct χ²+df entry / goodness-of-fit) — new `chiSquareSF`/
+      `chiSquareCDF` in `lib/distributions.ts`, reusing the existing upper-incomplete-gamma engine;
+      `gammaQ`'s iteration budget scaled + convergence-checked (previously a fixed 200 cap)
+- [x] `standard-error-calculator` (type B, summary stats or a raw list; SE of a proportion scoped
+      out, cross-linked to margin-of-error-calculator's own `standardErrorPercent` row)
+- [x] Hardened `normalSF`/`tSF` against a `NaN` statistic (would otherwise recurse forever)
+- [x] Independent scratch verification (`verify_run4.mjs`, plus a standalone odd-df chi-square
+      cross-check and a numerical-stability check with x ~ 1e9) of every number in the copy, before
+      and after fixing two wrong hand-estimated worked-example figures
+- [x] `data/calculators/index.ts`'s `calculatorOrder`, `KNOWN_NON_FINITE` entries, snapshot tests
+      (`npm run test:update`)
+- [x] New `lib/breakdown.spec.ts` tests for `pairedLists`/`pairedListMismatch`
+- [x] `npm test`, `npm run build`, `npm run lint` all pass
+- [x] Data-integrity check (duplicate ids/aliases, broken `related`, SEO length) — caught and fixed
+      one 173-character `seo.description` on `linear-regression-calculator`
+- [x] Spot-check the 5 pages + updated `/categories/statistics` + sitemap on a local dev server, kill it
+- [x] Update `mdFiles/STATUS.md` (row 40–42 + session log)
+- [x] Mark PR ready
+
+### The two-list design: `pairedLists`
+
+The task's brief named a real kit gap directly: the list input (`CalculatorInput.type: 'list'`) is
+single-list, and the Parked note on `weighted-average-calculator`'s own value/weight pairing idea
+had already flagged that a two-list design needs "a length-mismatch guard the kit does not have
+yet" before it can be built honestly. This run builds that guard, generically, rather than
+one-off inside `correlation-calculator`'s own `compute()`.
+
+**Two ordinary list inputs, not a new input type.** `correlation-calculator`/`linear-regression-calculator`
+simply declare two `type: 'list'` inputs (`xData`, `yData`) via a new `pairedListInputs(xDefaults,
+yDefaults, min)` helper. The kit already parses, shares and completeness-checks every list input
+independently by its own id (`lib/breakdown.ts`'s `computeLists`/`evaluateBreakdown` iterate
+`inputs.filter(i => i.type === 'list')` generically) — two list inputs on one calculator needed zero
+changes there. What the kit did **not** do on its own is notice the two lists are the same length.
+
+**The guard lives in two places, deliberately, not one:**
+
+1. **`compute()` itself** checks `xs.length !== ys.length` and returns `NaN` for every output when
+   they differ — never truncating the longer list or padding the shorter one to force an answer.
+   This is the part that actually makes the guard honest, and it has to be in `compute()` itself
+   (not only in the widget) because `data/calculators.spec.ts`'s snapshot harness calls
+   `calculator.compute()` **directly**, with no widget in between at all — a guard that only lived
+   in `lib/breakdown.ts` would never be exercised by that test.
+2. **`breakdown.pairedLists: [string, string]`** (new, optional, on `CalculatorBreakdown`) names
+   the two list input ids. `evaluateBreakdown` (`lib/breakdown.ts`) checks their parsed lengths and,
+   when they differ, returns a new `pairedListMismatch: { aLabel, bLabel, aLength, bLength }` on its
+   `Evaluation` result — using each input's own `label`, so the message is in the calculator's own
+   words, not a generic one. `complete` is deliberately **not** forced to `false` for a mismatch
+   (every field genuinely is filled; `listMin` is satisfied on both) — only `compute()`'s own
+   `NaN` makes the headline unanswered, exactly the same path a zero-variance edge case already
+   takes. `BreakdownCalculator.tsx` shows a specific, amber-colored message naming both counts
+   whenever `complete && pairedListMismatch`, instead of (or in addition to) the generic "Fill in
+   every field to see the result." line, which would otherwise be literally false in this case
+   (nothing is actually unfilled).
+
+**Reused by both calculators, as asked.** `correlation-calculator` and `linear-regression-calculator`
+both declare `pairedLists: ['xData', 'yData']` and both use the same `pairedListInputs`/`pairedStats`
+helpers — the two pages can never silently disagree on the underlying sums, the same
+"kept-in-lockstep" precedent `standard-deviation-calculator`/`variance-calculator` set in run 1.
+
+**Can `weighted-average-calculator` be retrofitted now? Not in this run (parked below), but the
+blocker is gone.** The mechanism this run built (two list inputs + `pairedLists`) is exactly what a
+clean value/weight two-list redesign of `weighted-average-calculator` would need, and nothing about
+it is correlation/regression-specific. It is not done here because the task explicitly scoped this
+run to the 5 named calculators ("don't retrofit it in this run — park it") — not because of any
+remaining technical gap.
+
+### Numerical stability: mean-centered sums, not the single-pass shortcut
+
+The task's explicit instruction: "Use numerically stable formulas (center the data — two-pass, not
+Σxy − n·x̄ȳ — test with x values around 1e9)." `pairedStats` computes `meanX`/`meanY` first, then a
+second pass accumulating `Σ(x−x̄)²`, `Σ(y−ȳ)²` and `Σ(x−x̄)(y−ȳ)` from the already-centered
+differences — never the textbook one-pass shortcut that multiplies raw `x*y` and subtracts
+`n*x̄*ȳ`, two numbers that are both huge and nearly equal once `x` or `y` themselves are large.
+
+**Verified directly in `verify_run4.mjs`**: shifting the worked example's x-values by exactly 1e9
+(so they are "around 1e9" the way a raw calendar year, a population count or a large ID number
+would be) and recomputing `r` with the two-pass, mean-centered formula gives `0.9926074592606494`,
+matching the unshifted result `0.9926074592606497` to 15 significant digits — a shift that should
+mathematically not move `r` at all (Pearson's r is shift-invariant) and, with this formula,
+genuinely doesn't. The same script also implements the naive one-pass shortcut
+(`n·Σxy − Σx·Σy`) for comparison: on the exact same shifted data, it returns `Infinity` — not a
+slightly-less-precise number, an outright broken one, since `Σx²` and `(Σx)²` both overflow the
+precision needed to find their own small difference once `x` is shifted into the billions. This is
+concrete evidence for the choice, not just an assertion that centering is "more stable."
+
+### Type decisions (run 4)
+
+| Calculator | Type | Why | Visual |
+|---|---|---|---|
+| correlation-calculator | B | Two paired lists in, three related figures out (r, r², a p-value) — no single invertible equation, so no `solver`. **Pearson specifically, stated explicitly, per the task's instruction**: the concept section and a watch-out item both say this is Pearson's r, not Spearman's rank correlation, and name what Spearman would handle better (outliers, monotonic-but-not-linear relationships) that this page does not. **p-value via `tSF`, df = n − 2**, exactly as the task specifies, reusing `lib/distributions.ts`'s existing `tSF` rather than a new implementation; the two-tailed p-value is `2 × tSF(\|t\|, df)`, guarded so a `NaN` `t` (zero variance in x or y) is **never** passed into `tSF` — `tSF`'s own recursive `-t` branch would otherwise recurse on `NaN` forever (a real risk this run found and fixed at the `lib/distributions.ts` level too, below). **Zero variance → honest NaN**: `r = Sxy / sqrt(Sxx * Syy)` is a literal `0/0` when either list has zero variance, registered in `calculators.spec.ts`'s `KNOWN_NON_FINITE` for the edge case (both lists at their `listMin` of 2 zeros each). | rangeBar: r against five conventional strength bands (strong negative / moderate negative / weak or none / moderate positive / strong positive), stated as a convention, not a strict rule, same honesty precedent as quartile-calculator's IQR fences |
+| linear-regression-calculator | B | Slope, intercept, r² and the standard error of the estimate from the same paired lists — again no solver shape. **Reuses `pairedStats`, the exact same centered sums `correlation-calculator` uses**, so r² here is provably the same number as `correlation-calculator`'s own r² on identical data, not a second, separately-computed version that could silently disagree. **"Optional" prediction, the kit-shaped way**: the task asked for an optional prediction at x; `CalculatorInput` has no concept of a truly optional field (a blank field makes the whole calculator incomplete, per `evaluateBreakdown`'s `Number.isFinite` check), so `predictAtX` is an always-present numeric field with a sensible default already inside the example data, documented as "optional" in the sense that it can be changed or ignored, not literally skippable — the same honest workaround `margin-of-error-calculator`'s `populationSize` (default 0, "not applied") already established for an "optional" field. **SSE computed from the identity `Syy − slope×Sxy`**, not a second pass over the raw residuals, reusing sums `pairedStats` already produced; clamped at 0 (`Math.max(sse, 0)`) only to absorb float noise when `r` is extremely close to ±1, never to hide a real negative. | compareBars: intercept vs. the predicted y at the chosen x |
+| t-test-calculator | B | A mean (or two means) in, a t-statistic/df/p-value out — not invertible, so no solver. **Scope, stated explicitly per the task's "choose honestly" instruction**: one-sample (x̄, μ₀, s, n) and two-sample **Welch** (unequal-variance) only — the classic equal-variance (Student's pooled) t-test is explicitly named as not offered, with the reasoning (Welch's is the safer, broadly-applicable default, and since 2017 R's own `t.test()` default) stated in the concept section rather than left unexplained. **Welch–Satterthwaite df is deliberately non-integer** and fed straight into `tCDF`/`tSF`, which the task's own instruction flagged as something that "must work" — it already does, since those functions take `df` as a plain number with no integer assumption anywhere in `lib/distributions.ts` (confirmed directly; no change needed there). Same three-tail pattern as `p-value-calculator` (`tailType` 1/2/3), same `floorTinyProbability` reuse for a tiny p-value. **Zero-standard-error guard**: a `NaN` t-statistic (equal means, zero standard error — `0/0`) is checked explicitly before ever calling `tCDF`/`tSF`, for the same "never pass `NaN` into a function with a `-t` recursive branch" reason as correlation-calculator; a zero standard error with **unequal** means is a legitimate `±Infinity` t-statistic, which `tSF` already handles directly (no recursion, no guard needed). | rangeBar: the p-value against the same four significance bands `p-value-calculator`/`binomial-distribution-calculator` already use |
+| chi-square-calculator | B | **Scope, per the task's own "and/or" framing**: direct χ²+df entry, and goodness-of-fit (observed vs. expected lists, same `pairedLists` guard as correlation/regression) — both modes behind one `mode` selector, same pattern as `confidence-interval-calculator`'s z/t toggle. **A contingency table (2×2 / test of independence) is explicitly parked, per the task's own permission** ("otherwise park"): building one cleanly would need a genuinely new, table-shaped input the kit has nothing like today, not a corner worth cutting inside this run. If a reader already has a χ² and df from a contingency table computed elsewhere, "enter directly" mode still finds its p-value correctly, stated in a watch-out item. **New `chiSquareSF`/`chiSquareCDF` in `lib/distributions.ts`**, via the standard identity `Q_chi2(x, df) = Q_gamma(df/2, x/2)` reusing the file's own `gammaQ` (the same engine `normalSF` already uses) — no third incomplete-gamma implementation. **`gammaQ` itself needed the same fix `betacf`/`incompleteBeta` got in run 3's pre-merge review**: its two branches (`gammaPSeries`/`gammaQContinuedFraction`) had the same fixed `MAX_ITERATIONS = 200` cap, and a goodness-of-fit test with many categories can reach a df in the hundreds — both now scale their iteration budget to their own parameters (the same `ITERATION_SCALE`/`MAX_ITERATIONS_CEILING` constants `betacf` already defined) and report `NaN` on non-convergence rather than guessing. Fixed proactively, before shipping, rather than waiting for a future review to find it the way run 3's binomial bug was found. **Expected-count-below-5 warning, surfaced as a real number, not just prose**: `minExpected` is always computed and shown as its own row, per the task's explicit instruction to "warn when expected counts < 5." | rangeBar: the p-value against the same four bands |
+| standard-error-calculator | B | SE of the mean has no solver shape (it is one formula over three quantities with only one direction anyone asks for). **Scope, per the task's "state which" instruction, following run 2's own precedent**: SE of the mean only, from either summary statistics (s, n) or a raw data list (reusing `varianceOf`, the same shared helper `standard-deviation-calculator`/`variance-calculator` already use) — **not** SE of a proportion, which is explicitly scoped out and cross-linked to `margin-of-error-calculator`'s own `standardErrorPercent` row, which already computes exactly that. This mirrors `margin-of-error-calculator`'s own mean-vs-proportion scope decision from run 2 (there, for the opposite reason): mixing a plain-number mean-SE and a percent-formatted proportion-SE under one `BreakdownOutput.format` is the same "no per-row conditional formatting" kit limitation already on the Parked list, not a new one found here. | compareBars: the standard deviation used vs. the resulting standard error, to show the ÷√n relationship directly |
+
+### Robustness fix found while building this run: `normalSF`/`tSF` recursing forever on `NaN`
+
+Both functions have a `z < 0` / `t < 0` branch that recurses as `1 - normalSF(-z)` / `1 - tSF(-t,
+df)`. Neither function previously checked for `NaN` input: since `NaN >= 0` and `NaN > 0` are both
+`false`, a `NaN` argument would fall into that recursive branch, and `-NaN` is still `NaN`, so the
+function would call itself with the same `NaN` argument forever — an unbounded recursion that would
+either hang or crash with a stack-size error, not produce a `NaN` result the way every other invalid
+input in this file honestly does.
+
+This was never reachable by any run-1–3 calculator (every existing caller only ever passes a value
+already guarded finite before it gets there, e.g. `normal-distribution-calculator`'s own
+`if (!(standardDeviation > 0)) return noAnswer;` before it ever computes a z-score). It **is**
+reachable by this run's own zero-variance/zero-standard-error edge cases in
+`correlation-calculator` and `t-test-calculator`, where a `0/0` t-statistic is a reachable
+intermediate value. Rather than rely on every future caller remembering to guard this by hand (this
+run's own two calculators do add that guard too, as defense in depth, documented in their own
+`compute()` comments), the fix is at the shared layer: `normalSF`/`tSF` both now return `NaN`
+immediately when their first argument is `NaN`, before reaching the recursive branch — a general
+fix that protects every future caller, the same "fix it where every caller benefits" precedent run
+3's `betacf`/`incompleteBeta` convergence fix set.
+
+### Verification
+
+Every number recomputed independently in `verify_run4.mjs` (scratchpad, plain Node, no app imports
+— including from-scratch re-implementations of `logGamma`, the upper incomplete gamma, the
+incomplete beta, and `tSF`), *before* any copy was written, then diffed against the shipped
+`compute()` output via the regenerated snapshot file:
+
+- **correlation-calculator / linear-regression-calculator** (six (study hours, exam score) pairs:
+  (2,65), (3,70), (5,75), (7,85), (8,88), (9,95)): `meanX` = 5.666666666666667, `meanY` =
+  79.66666666666667, `Sxx` = 39.333333333333336, `Syy` = 663.3333333333334, `Sxy` =
+  160.33333333333334 — **r = 0.9926074592606497, r² = 0.9852695681798824, df = 4, t =
+  16.356854520192375, p-value = 0.00008177248796069724**; **slope = 4.076271186440678, intercept =
+  56.567796610169495, standard error of the estimate = 1.5629448519284022, predicted y at x=6 =
+  81.02542372881356**. All match the shipped snapshot to full float precision. **An earlier draft of
+  this run's copy had hand-estimated these worked-example figures wrong** (a mis-added `Sxy`/`Sxx`/
+  `Syy`, giving a plausible-looking but incorrect r ≈ 0.9934 and a badly wrong regression line) —
+  caught by this exact verification step, before merging, and every affected sentence (the `example`
+  line, the worked-example rows, the result/explanation text, and 4 FAQ answers across both pages)
+  was corrected to the real computed figures above. This is the mechanism the project's own
+  verification step exists to catch, and it did.
+- **t-test-calculator** (class A: mean 85, sd 12, n=30; class B: mean 78, sd 15, n=25, Welch,
+  two-tailed): standard error = 3.714835124201342, t = 1.8843366572035793, df =
+  45.67473018235952, p-value = 0.06589295724365467 — matches the snapshot exactly.
+- **chi-square-calculator** (die roll, observed 8/12/9/14/7/10, expected 10 each): χ² = 3.4
+  (exact), df = 5, p-value = 0.6385699231037957 — matches the snapshot exactly. **Cross-checked by
+  an entirely separate algorithm**, not just a second run of the same `gammaQ` engine: a direct
+  Simpson's-rule numerical integration of the chi-square(5) PDF from 3.4 to 400 (`chiSquarePdf`
+  built on a standalone Stirling-series `logGamma`, not the Lanczos one `lib/distributions.ts`
+  uses), giving **0.6385699231032248** — agreement to a relative error of about 5.7×10⁻¹³, with the
+  integral's own sanity check (0 to 400) landing at 0.9999999999998187, confirming the PDF itself
+  integrates to 1 as it must. This matters specifically because df=5 is **odd**, so the simpler
+  "chi-square with even df has an elementary closed form" check (used below for the even-df cases)
+  cannot cross-check it — the numerical integration is a genuinely independent method that works for
+  any df.
+- **chi-square SF, published critical values** (the task's own required checks): `chiSquareSF(3.841459,
+  1)` = 0.049999994653195844 (expected ≈ 0.05), `chiSquareSF(18.307038, 10)` = 0.05000000082473231
+  (expected ≈ 0.05) — both match to the ~6-7 significant digits the cited critical-value constants
+  themselves carry (the constants are quoted at that precision; this is not this function's own
+  accuracy ceiling). **Far tail, χ²=100, df=10**: `chiSquareSF(100, 10)` = 5.44970198292052e-17,
+  cross-checked against the exact elementary closed form for even df (df=10 is even): chi-square
+  with `df = 2k` has `SF(x) = e^(-x/2) × Σ_{i=0}^{k-1} (x/2)^i / i!`, giving
+  **5.4497019829205295e-17** — a relative error of about 1.7×10⁻¹⁵, far inside the ≤1e-9 target.
+  The same even-df closed form was additionally checked across df = 2, 10, 900 and 998 (the last
+  two standing in for a goodness-of-fit test with many categories) at various x, all agreeing to a
+  relative error between 10⁻¹³ and 10⁻¹⁵ — including the large-df cases that specifically exercise
+  `gammaQ`'s now-fixed iteration-scaling (at the original, unscaled 200-iteration cap these would
+  have been meaningfully wrong, the same bug class run 3's binomial fix addressed).
+- **standard-error-calculator**: mode 1 (s=15, n=36): SE = 2.5 exactly. Mode 2 (list 12, 15, 18,
+  21, 24, 27, 30): mean = 21, sample standard deviation ≈ 6.48074069840786, SE ≈
+  2.449489742783178 — both match the shipped snapshot.
+
+**Data-integrity check**, run programmatically against the live data module for all 5 new
+calculators (`check_integrity_run4_tmp.mjs`, project root, deleted after use): 103 total calculators
+(up from 98), 0 duplicate ids, 0 broken `related` ids, 0 self-references, 0 new duplicate aliases
+(the one pre-existing collision, "house loan emi calculator," predates this run); every new
+`seo.description` ≤ 160 characters (caught and fixed one 173-character description on
+`linear-regression-calculator` before shipping, the same kind of catch run 3 made on
+`normal-distribution-calculator`'s description), 7-8 FAQs and 4 aliases/4 related ids each.
+
+`npm test` 471/471 (up from 463), `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern
+".claude/**"` clean, `npm run build` passes (132 static pages, up from 127). All 5 pages
+spot-checked on a local dev server: H1, every v2 section id (concept, how-to-use, formula,
+worked-example, watch-out, faq, references, related), exactly one JSON-LD `<script>` tag per page;
+`/categories/statistics` links to all 5 new ids and `sitemap.xml` lists all 5; dev server killed and
+port 3000 confirmed free afterward.
+
+### KNOWN_NON_FINITE entries added (and why each one is the automated edge case, not a real gap)
+
+The snapshot harness's automated "edge" input set is every scalar input at its own `min` and every
+list input at `listMin` zeros — for a `mode` selector field, that is whichever option value equals
+its `min`, which happens to select a **different mode** than the calculator's own default for 3 of
+these 4 new entries. None of these are hidden bugs; each is the documented zero-variance /
+zero-standard-error honest-NaN case the task itself asked for, just reached via the harness's
+specific edge convention rather than a hand-picked example:
+
+- `correlation-calculator`: `['r', 'rSquared', 'tStatistic', 'pValue']` — both lists at `listMin`
+  (2 zeros each) → zero variance in both x and y → `r = 0/0`.
+- `linear-regression-calculator`: `['slope', 'intercept', 'rSquared', 'standardError', 'predictedY']`
+  — same zero-variance cause as correlation-calculator (same two list inputs, same `listMin`).
+- `t-test-calculator`: `['tStatistic', 'pValue']` — `mode`'s own `min` (1) selects one-sample mode
+  at the edge set (not the calculator's own `defaultValue: 2`); with `sampleStdDev` and
+  `sampleMean`/`popMean` all at their own `min`/`0`, the one-sample t-statistic is `(0−0)/(0/√n) =
+  0/0`. `degreesOfFreedom` and `standardError` stay finite (0 and `n−1` respectively) — only the
+  two outputs that actually depend on the `0/0` are listed, matching the harness's exact assertion.
+- `chi-square-calculator`: `['minExpected', 'count']` — `mode`'s own `min` (1) selects direct-entry
+  mode at the edge set (not the calculator's own `defaultValue: 2`); `minExpected`/`count` are, by
+  design, only ever populated in goodness-of-fit mode, so they are honestly `NaN` (never computed at
+  all, not a divide-by-zero) whenever direct-entry mode is active. `chiSquareStatistic`,
+  `degreesOfFreedom` and `pValue` all stay finite in this case (χ²=0, df=1, p=1 — a statistic of
+  exactly 0 against 1 degree of freedom is a perfectly well-defined, 100%-confidence "no mismatch"
+  result).
+- `standard-error-calculator` needed **no** new entry: `mode`'s own `min` (1) happens to match its
+  `defaultValue`, so the edge set stays in summary-stats mode with `sampleStdDev=0`, `sampleSize=1`
+  (its own `min`), giving `SE = 0/√1 = 0` — a genuine, finite zero (a sample with a standard
+  deviation of 0 has a standard error of exactly 0), not a `0/0`.
+
+### Parked (new, this run)
+
+- **`weighted-average-calculator`'s two-list retrofit**: the kit gap that blocked it (no
+  length-mismatch guard) is now resolved by `breakdown.pairedLists` + the `compute()`-level guard
+  this run built — see "The two-list design" above. Not retrofitted in this run per the task's own
+  instruction to park it, but the next session doing so has everything it needs already built and
+  named.
+- **Chi-square contingency tables (2×2 / test of independence)**: explicitly out of scope per the
+  task's own "otherwise park" permission — would need a genuinely new, table-shaped input the kit
+  has nothing like today.
+- **t-test-calculator's classic equal-variance (Student's pooled) t-test**: not offered; Welch's
+  method (which does not require that assumption) was chosen as the single, stated default, per the
+  task's "choose honestly... state which" instruction. A future step could add it as a second mode
+  if real demand shows up.
+- **standard-error-calculator's SE of a proportion**: scoped out, cross-linked to
+  `margin-of-error-calculator`'s existing `standardErrorPercent` row — the real blocker is the same
+  "no per-row conditional formatting" kit limitation already on the Parked list (a mean-SE's plain
+  number vs. a proportion-SE's percent under one `BreakdownOutput.format`), not a new one.
+- **This run's statistics list (per the plan) is now 20/~25 done.** Next: run 5 — relative risk,
+  odds ratio, expected value, coefficient of variation, outlier.

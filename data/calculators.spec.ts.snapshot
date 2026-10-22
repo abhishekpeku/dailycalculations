@@ -45,6 +45,44 @@ exports[`compute() snapshots > age-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > area-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mode": 2,
+      "dim1": 5,
+      "dim2": 3,
+      "dim3": 10
+    },
+    "outputs": {
+      "area": 15
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mode": 3,
+      "dim1": 7.5,
+      "dim2": 4.5,
+      "dim3": 15
+    },
+    "outputs": {
+      "area": 16.875
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mode": 1,
+      "dim1": 0,
+      "dim2": 0,
+      "dim3": 0
+    },
+    "outputs": {
+      "area": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > average-calculator 1`] = `
 {
   "default": {
@@ -281,6 +319,41 @@ exports[`compute() snapshots > cashback-calculator 1`] = `
       "annualCashback": 0,
       "netAnnualValue": 0,
       "effectiveRate": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > circle-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "radius": 5
+    },
+    "outputs": {
+      "diameter": 10,
+      "circumference": 31.41592654,
+      "area": 78.53981634
+    }
+  },
+  "typical": {
+    "inputs": {
+      "radius": 7.5
+    },
+    "outputs": {
+      "diameter": 15,
+      "circumference": 47.1238898,
+      "area": 176.7145868
+    }
+  },
+  "edge": {
+    "inputs": {
+      "radius": 0
+    },
+    "outputs": {
+      "diameter": 0,
+      "circumference": 0,
+      "area": 0
     }
   }
 }
@@ -2623,6 +2696,44 @@ exports[`compute() snapshots > square-root-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > surface-area-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mode": 2,
+      "dim1": 4,
+      "dim2": 3,
+      "dim3": 2
+    },
+    "outputs": {
+      "surfaceArea": 52
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mode": 3,
+      "dim1": 6,
+      "dim2": 4.5,
+      "dim3": 3
+    },
+    "outputs": {
+      "surfaceArea": 395.8406744
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mode": 1,
+      "dim1": 0,
+      "dim2": 0,
+      "dim3": 0
+    },
+    "outputs": {
+      "surfaceArea": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > tdee-calculator 1`] = `
 {
   "default": {
@@ -2888,6 +2999,74 @@ exports[`compute() snapshots > travel-budget-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > triangle-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mode": 1,
+      "sideA": 3,
+      "sideB": 4,
+      "sideC": 5,
+      "angleA": 36.87,
+      "angleB": 53.13,
+      "angleC": 90
+    },
+    "outputs": {
+      "sideA": 3,
+      "sideB": 4,
+      "sideC": 5,
+      "angleA": 36.86989765,
+      "angleB": 53.13010235,
+      "angleC": 90,
+      "perimeter": 12,
+      "area": 6
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mode": 2,
+      "sideA": 5,
+      "sideB": 6,
+      "sideC": 8,
+      "angleA": 55.3,
+      "angleB": 79.7,
+      "angleC": 135
+    },
+    "outputs": {
+      "sideA": 5,
+      "sideB": 6,
+      "sideC": 10.16987743,
+      "angleA": 20.34350171,
+      "angleB": 24.65649829,
+      "angleC": 135,
+      "perimeter": 21.16987743,
+      "area": 10.60660172
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mode": 1,
+      "sideA": 0,
+      "sideB": 0,
+      "sideC": 0,
+      "angleA": 0,
+      "angleB": 0,
+      "angleC": 0
+    },
+    "outputs": {
+      "sideA": "NaN",
+      "sideB": "NaN",
+      "sideC": "NaN",
+      "angleA": "NaN",
+      "angleB": "NaN",
+      "angleC": "NaN",
+      "perimeter": "NaN",
+      "area": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > unit-price-calculator 1`] = `
 {
   "default": {
@@ -2962,6 +3141,44 @@ exports[`compute() snapshots > visa-stay-days-calculator 1`] = `
       "canStay": 1,
       "overstayDays": 0,
       "usagePercent": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > volume-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mode": 2,
+      "dim1": 4,
+      "dim2": 3,
+      "dim3": 2
+    },
+    "outputs": {
+      "volume": 24
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mode": 3,
+      "dim1": 6,
+      "dim2": 4.5,
+      "dim3": 3
+    },
+    "outputs": {
+      "volume": 508.9380099
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mode": 1,
+      "dim1": 0,
+      "dim2": 0,
+      "dim3": 0
+    },
+    "outputs": {
+      "volume": 0
     }
   }
 }

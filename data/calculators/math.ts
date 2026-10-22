@@ -2538,6 +2538,673 @@ export const mathCalculators: CalculatorConfig[] = [
       const { legA, legB } = values;
       return { hypotenuse: Math.sqrt(legA ** 2 + legB ** 2), area: (legA * legB) / 2 };
     }
+  },
+  {
+    id: 'triangle-calculator',
+    category: 'math',
+    updatedAt: '2026-10-22',
+    aliases: ['triangle solver', 'sss triangle calculator', 'sas triangle calculator', 'triangle angle calculator', 'find missing angle triangle calculator'],
+    related: ['pythagorean-theorem-calculator', 'area-calculator', 'circle-calculator', 'surface-area-calculator'],
+    title: 'Triangle Calculator',
+    description: 'Solve any triangle from three sides (SSS), two sides and the angle between them (SAS), or two angles and the side between them (ASA) — get every side, angle, the perimeter and the area.',
+    example: 'A triangle with sides 7, 9 and 12 has angles of about 35.43°, 48.19° and 96.38°, a perimeter of 28 and an area of about 31.30, found with the law of cosines and Heron’s formula.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is a triangle solver?',
+        paragraphs: [
+          'Any triangle is completely fixed by three independent measurements — but which three you happen to know changes which formula finds the rest. Know all three sides (SSS, "side-side-side")? The law of cosines finds every angle, and Heron’s formula finds the area directly from the sides, with no angle needed at all. Know two sides and the angle trapped between them (SAS, "side-angle-side")? The law of cosines finds the third side first, and then the same angle formulas find the other two angles. Know two angles and the side that connects them (ASA, "angle-side-angle")? The third angle is just 180° minus the other two, and the law of sines finds the two missing sides.',
+          'This calculator covers all three of those well-posed cases on one page, sharing the same six fields (three sides, three angles) and switching which ones it reads based on the mode you pick. Whichever route it takes, it always finishes the same way: it ends up knowing all three sides, recomputes all three angles from them with the law of cosines for internal consistency, and reports the perimeter and the area.',
+          'One case is deliberately left out: SSA, two sides and an angle that is NOT between them. That case is mathematically ambiguous — the same two sides and angle can match zero, one or two different triangles, depending on the numbers — so instead of guessing at one of the answers, this calculator asks for a different combination of three measurements instead.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick the mode that matches what you actually measured, then fill in exactly those three fields.',
+        steps: [
+          { name: 'Choose SSS, SAS or ASA', text: 'SSS needs all three sides. SAS needs two sides and the angle squeezed between them. ASA needs two angles and the side that joins them.' },
+          { name: 'Fill in only the fields that mode uses', text: 'The other fields stay visible (tucked under "More options" for SAS/ASA) but compute() ignores whatever is left over in them for that mode — they do not need to be blanked out.' },
+          { name: 'Check the triangle is possible', text: 'SSS requires each side to be shorter than the sum of the other two (the triangle inequality). ASA requires the two given angles to add to less than 180°. If either fails, every result is left blank rather than shown as a wrong number.' },
+          { name: 'Read every side, angle, the perimeter and the area', text: 'All six measurements are filled in regardless of which three you started from, plus the perimeter (the sum of the sides) and the area (from Heron’s formula).' },
+          { name: 'Compare the three sides', text: 'The chart shows side a, side b and side c side by side, so you can see at a glance which is longest.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Three different starting points, all converging on the same final sides-and-angles picture.',
+        expression:
+          'Law of cosines: c² = a² + b² − 2ab·cos(C)\nLaw of sines: a ÷ sin(A) = b ÷ sin(B) = c ÷ sin(C)\nHeron’s formula: Area = √(s(s−a)(s−b)(s−c)), where s = (a+b+c) ÷ 2',
+        terms: [
+          { symbol: 'a, b, c', meaning: 'The three sides. By convention, side a is opposite angle A, side b opposite angle B, and side c opposite angle C.' },
+          { symbol: 'A, B, C', meaning: 'The three angles, in degrees, always adding up to 180°.' },
+          { symbol: 's', meaning: 'The semiperimeter — half of the triangle’s perimeter — a bookkeeping shortcut Heron’s formula uses, not a separate measurement.' }
+        ],
+        note: 'For SSS, the law of cosines is rearranged to solve for an angle instead of a side: cos(A) = (b² + c² − a²) ÷ (2bc), then A = arccos(...). The calculator applies this once for each angle.'
+      },
+      workedExample: {
+        intro: 'A surveyor measures all three sides of a triangular plot: 7 m, 9 m and 12 m (SSS). What are its angles, perimeter and area?',
+        rows: [
+          { label: 'Angle A (opposite side 7)', value: 'arccos((9² + 12² − 7²) ÷ (2 × 9 × 12)) ≈ 35.43°' },
+          { label: 'Angle B (opposite side 9)', value: 'arccos((7² + 12² − 9²) ÷ (2 × 7 × 12)) ≈ 48.19°' },
+          { label: 'Angle C (opposite side 12)', value: '180° − 35.43° − 48.19° ≈ 96.38°' },
+          { label: 'Perimeter', value: '7 + 9 + 12 = 28' },
+          { label: 'Semiperimeter (s)', value: '28 ÷ 2 = 14' },
+          { label: 'Area (Heron’s formula)', value: '√(14 × 7 × 5 × 2) = √980 ≈ 31.30' }
+        ],
+        result: 'A ≈ 35.43° · B ≈ 48.19° · C ≈ 96.38° · perimeter = 28 · area ≈ 31.30',
+        explanation: 'Notice the three angles add to 180.00°, the universal check for any triangle. Side 12, the longest side, sits opposite the largest angle (96.38°) — the longest side is always opposite the largest angle, and the shortest side is always opposite the smallest one.'
+      },
+      watchOut: [
+        { title: 'SSA (two sides and a non-included angle) is not supported', body: 'Two sides and an angle that is not between them can describe zero, one or two valid triangles — the "ambiguous case" of the law of sines. Rather than silently pick one answer, this calculator leaves that combination out; measure the included angle instead (SAS) or a third side (SSS).' },
+        { title: 'A triangle must pass the triangle inequality', body: 'Each side must be strictly shorter than the sum of the other two. Sides 1, 2 and 10 fail (1 + 2 is nowhere near 10) and every output is left blank rather than showing a result for a shape that cannot exist.' },
+        { title: 'Degrees, not radians', body: 'Every angle field expects degrees (90 for a right angle, not 1.5708). Entering radians by mistake will throw off every other field that depends on it.' },
+        { title: 'Left-over fields in other modes are ignored, not blanked', body: 'Switching from SSS to SAS does not erase the side-c field — it is simply not read in SAS mode, where the third side is calculated instead. Re-entering it has no effect until you switch back to a mode that uses it directly.' },
+        { title: 'This only finds area, angles, sides and perimeter', body: 'For the kind of right-triangle-only hypotenuse problem where exactly two sides are known and the angle between them is a right angle, the dedicated Pythagorean theorem calculator is faster — it is the SAS case here with the included angle fixed at 90°.' }
+      ],
+      references: [
+        { label: 'OpenStax, Algebra and Trigonometry 2e, §10.1 Non-right Triangles: Law of Sines', url: 'https://openstax.org/books/algebra-and-trigonometry-2e/pages/10-1-non-right-triangles-law-of-sines' },
+        { label: 'OpenStax, Algebra and Trigonometry 2e, §10.2 Non-right Triangles: Law of Cosines', url: 'https://openstax.org/books/algebra-and-trigonometry-2e/pages/10-2-non-right-triangles-law-of-cosines' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'mode',
+        label: 'What do you know?',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 1,
+        min: 1,
+        options: [
+          { value: 1, label: 'Three sides (SSS)' },
+          { value: 2, label: 'Two sides + the angle between them (SAS)' },
+          { value: 3, label: 'Two angles + the side between them (ASA)' }
+        ]
+      },
+      { id: 'sideA', label: 'Side a', type: 'number', placeholder: '3', defaultValue: 3, step: 1 },
+      { id: 'sideB', label: 'Side b', type: 'number', placeholder: '4', defaultValue: 4, step: 1 },
+      { id: 'sideC', label: 'Side c (between angles A and B)', type: 'number', placeholder: '5', defaultValue: 5, step: 1 },
+      { id: 'angleA', label: 'Angle A, in degrees (opposite side a)', type: 'number', placeholder: '36.87', defaultValue: 36.87, step: 0.01 },
+      { id: 'angleB', label: 'Angle B, in degrees (opposite side b)', type: 'number', placeholder: '53.13', defaultValue: 53.13, step: 0.01 },
+      { id: 'angleC', label: 'Angle C, in degrees (between sides a and b)', type: 'number', placeholder: '90', defaultValue: 90, step: 0.01 }
+    ],
+    breakdown: {
+      headline: 'area',
+      headlineLabel: 'Area',
+      outputs: [
+        { id: 'area', label: 'Area', format: 'number' },
+        { id: 'perimeter', label: 'Perimeter', format: 'number' },
+        { id: 'sideA', label: 'Side a', format: 'number' },
+        { id: 'sideB', label: 'Side b', format: 'number' },
+        { id: 'sideC', label: 'Side c', format: 'number' },
+        { id: 'angleA', label: 'Angle A (degrees)', format: 'number' },
+        { id: 'angleB', label: 'Angle B (degrees)', format: 'number' },
+        { id: 'angleC', label: 'Angle C (degrees)', format: 'number' }
+      ],
+      groups: [
+        { inputs: ['mode'] },
+        { inputs: ['sideA', 'sideB', 'sideC'] },
+        { title: 'Only used for "two sides + angle" (SAS) mode', inputs: ['angleC'], optional: true },
+        { title: 'Only used for "two angles + side" (ASA) mode', inputs: ['angleA', 'angleB'], optional: true }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'sideA', label: 'Side a' }, { from: 'sideB', label: 'Side b' }, { from: 'sideC', label: 'Side c' }],
+        title: 'The three sides'
+      }
+    },
+    seo: {
+      title: 'Triangle Calculator – Solve SSS, SAS or ASA for Sides, Angles & Area',
+      description: 'Free triangle calculator. Enter three sides, two sides and an angle, or two angles and a side to find every side, angle, the perimeter and the area.',
+      faq: [
+        { question: 'How do I find the angles of a triangle from its three sides?', answer: 'Use the law of cosines rearranged for an angle: cos(A) = (b² + c² − a²) ÷ (2bc), then take the arccosine. Repeat for each angle, or let this calculator do it for all three at once from the SSS mode.' },
+        { question: 'How do I find the area of a triangle from its three sides?', answer: 'Use Heron’s formula: find the semiperimeter s = (a + b + c) ÷ 2, then Area = √(s(s−a)(s−b)(s−c)). For sides 7, 9 and 12, s = 14 and the area is √(14×7×5×2) = √980 ≈ 31.30.' },
+        { question: 'What is the SAS (side-angle-side) case?', answer: 'You know two sides and the angle trapped between them. The law of cosines finds the third side first (for sides 8 and 10 with a 60° included angle, the third side is about 9.17), then the same formula, rearranged, finds the other two angles.' },
+        { question: 'What is the ASA (angle-side-angle) case?', answer: 'You know two angles and the side that joins them. The third angle is 180° minus the other two, and the law of sines finds the two missing sides. For angles 50° and 60° with a 10-unit side between them, the third angle is 70° and the other two sides are about 8.15 and 9.22.' },
+        { question: 'Why isn’t SSA (two sides and a non-included angle) supported?', answer: 'It is the one combination that can be genuinely ambiguous: depending on the numbers, the same two sides and angle can match zero triangles, exactly one, or two different ones (the "ambiguous case" of the law of sines). Rather than silently choose one possible answer, this calculator asks for a different, unambiguous combination.' },
+        { question: 'How do I know if three side lengths can actually form a triangle?', answer: 'Check the triangle inequality: each side must be strictly less than the sum of the other two. Sides 1, 2 and 10 cannot form a triangle, because 1 + 2 = 3 is far less than 10.' },
+        { question: 'Do the three angles of a triangle always add up to 180°?', answer: 'Yes, for any triangle on a flat plane (Euclidean geometry) — this is a basic property used throughout this calculator, for example to find the third angle in ASA mode by subtracting the other two from 180°.' },
+        { question: 'What units does this calculator use?', answer: 'Sides are plain numbers — pick whatever consistent unit you measured in (feet, meters, inches). Angles are always in degrees, not radians.' }
+      ]
+    },
+    compute(values) {
+      const { mode, sideA, sideB, sideC, angleA, angleB, angleC } = values;
+      const notATriangle = { sideA: NaN, sideB: NaN, sideC: NaN, angleA: NaN, angleB: NaN, angleC: NaN, perimeter: NaN, area: NaN };
+      let a = sideA;
+      let b = sideB;
+      let c = sideC;
+      if (mode === 2) {
+        // SAS: two sides and the angle between them -> third side via the law of cosines.
+        if (!(sideA > 0) || !(sideB > 0) || !(angleC > 0 && angleC < 180)) return notATriangle;
+        a = sideA;
+        b = sideB;
+        c = Math.sqrt(a * a + b * b - 2 * a * b * Math.cos((angleC * Math.PI) / 180));
+      } else if (mode === 3) {
+        // ASA: two angles and the side between them -> other two sides via the law of sines.
+        if (!(angleA > 0) || !(angleB > 0) || angleA + angleB >= 180 || !(sideC > 0)) return notATriangle;
+        const bigC = 180 - angleA - angleB;
+        c = sideC;
+        a = (c * Math.sin((angleA * Math.PI) / 180)) / Math.sin((bigC * Math.PI) / 180);
+        b = (c * Math.sin((angleB * Math.PI) / 180)) / Math.sin((bigC * Math.PI) / 180);
+      }
+      // mode 1 (SSS), and the fallback for any other value, uses sideA/sideB/sideC directly.
+      const valid = a > 0 && b > 0 && c > 0 && a + b > c && b + c > a && a + c > b;
+      if (!valid) return notATriangle;
+      const clamp = (x: number) => Math.max(-1, Math.min(1, x));
+      const toDeg = (r: number) => (r * 180) / Math.PI;
+      const bigA = toDeg(Math.acos(clamp((b * b + c * c - a * a) / (2 * b * c))));
+      const bigB = toDeg(Math.acos(clamp((a * a + c * c - b * b) / (2 * a * c))));
+      const s = (a + b + c) / 2;
+      const discriminant = s * (s - a) * (s - b) * (s - c);
+      return {
+        sideA: a,
+        sideB: b,
+        sideC: c,
+        angleA: bigA,
+        angleB: bigB,
+        angleC: 180 - bigA - bigB,
+        perimeter: a + b + c,
+        area: discriminant > 0 ? Math.sqrt(discriminant) : 0
+      };
+    }
+  },
+  {
+    id: 'circle-calculator',
+    category: 'math',
+    updatedAt: '2026-10-22',
+    aliases: ['radius to circumference calculator', 'radius to area calculator', 'diameter calculator', 'circumference calculator', 'circle area calculator'],
+    related: ['area-calculator', 'triangle-calculator', 'pythagorean-theorem-calculator', 'volume-calculator'],
+    title: 'Circle Calculator',
+    description: 'Enter a circle’s radius or diameter to get the other, plus its circumference and area, with the formulas shown.',
+    example: 'A circle with a 7 m radius has a 14 m diameter, a circumference of about 43.98 m, and an area of about 153.94 m².',
+    solver: {
+      defaultTarget: 'diameter',
+      variables: [
+        { id: 'radius', label: 'Radius', symbol: 'r', dimension: 'length', defaultValue: 5, defaultUnit: 'm' },
+        { id: 'diameter', label: 'Diameter', symbol: 'd', dimension: 'length', defaultValue: 10, defaultUnit: 'm' }
+      ],
+      solve: {
+        diameter: ({ radius }) => radius * 2,
+        radius: ({ diameter }) => diameter / 2
+      },
+      outputs: [
+        { id: 'circumference', label: 'Circumference', dimension: 'length', compute: (si) => 2 * Math.PI * si.radius },
+        { id: 'area', label: 'Area', dimension: 'area', compute: (si) => Math.PI * si.radius ** 2 }
+      ],
+      visuals: [
+        { type: 'compareBars', bars: [{ from: 'radius', label: 'Radius' }, { from: 'diameter', label: 'Diameter' }], title: 'Radius and diameter' }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is a circle calculator?',
+        paragraphs: [
+          'A circle is defined by a single number — how far every point on it sits from the center, its radius — and everything else about its size follows automatically. Double the radius and you double the diameter, double the circumference, and quadruple the area, because area grows with the square of the radius.',
+          'The constant that connects a circle’s straight-line measurements (radius, diameter) to its curved ones (circumference, area) is π (pi), the ratio of any circle’s circumference to its diameter — approximately 3.14159, and the same for every circle regardless of size. This calculator enters π to full floating-point precision, not a rounded 3.14, so the answer is as accurate as your input.',
+          'Enter either the radius or the diameter — whichever you know — and the other three figures (the other of radius/diameter, the circumference, and the area) are filled in immediately.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter either the radius or the diameter. The other one, marked auto, is calculated, and the circumference and area always update underneath.',
+        steps: [
+          { name: 'Enter the radius', text: 'Type the distance from the center to the edge. The diameter field fills in as exactly double.' },
+          { name: 'Or enter the diameter instead', text: 'Type into the diameter field and the radius becomes exactly half of it — only one of the two needs to be known.' },
+          { name: 'Read the circumference and area', text: 'Both update automatically underneath, using the current radius: circumference = 2πr, area = πr².' },
+          { name: 'Switch units at any time', text: 'Changing the unit menu on either field converts the number you typed, so 5 m correctly becomes 16.4 ft rather than silently turning into 5 ft.' },
+          { name: 'Share or copy', text: 'Share result copies a link that reopens the calculator with your exact radius and unit. Copy result copies the figures as text.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Every circle measurement follows from the radius alone.',
+        expression: 'd = 2r\nC = 2πr = πd\nA = πr²',
+        terms: [
+          { symbol: 'r', meaning: 'Radius — the distance from the center to any point on the circle.' },
+          { symbol: 'd', meaning: 'Diameter — a straight line through the center, exactly twice the radius.' },
+          { symbol: 'C', meaning: 'Circumference — the distance all the way around the circle.' },
+          { symbol: 'π', meaning: 'Pi, approximately 3.14159265 — the fixed ratio of any circle’s circumference to its diameter.' }
+        ],
+        note: 'To work backward from a known circumference or area instead of the radius: r = C ÷ (2π), or r = √(A ÷ π).'
+      },
+      workedExample: {
+        intro: 'A circular table has a 14 m diameter. What is its radius, circumference and area?',
+        rows: [
+          { label: 'Radius (d ÷ 2)', value: '14 ÷ 2 = 7 m' },
+          { label: 'Circumference (2πr, or πd)', value: '2 × π × 7 = π × 14 ≈ 43.98 m' },
+          { label: 'Area (πr²)', value: 'π × 7² = π × 49 ≈ 153.94 m²' }
+        ],
+        result: 'Radius = 7 m · Circumference ≈ 43.98 m · Area ≈ 153.94 m²',
+        explanation: 'Doubling the earlier 7 m-radius example to a 14 m diameter is the same circle described the other way — the radius comes straight back out as 7 m, confirming d = 2r both directions.'
+      },
+      watchOut: [
+        { title: 'This solves from radius or diameter, not circumference or area', body: 'The live widget only auto-solves between radius and diameter, since a circle has one degree of freedom and the widget needs exactly one known field. If you only know the circumference or area, use the manual formulas above (r = C ÷ (2π) or r = √(A ÷ π)) to get the radius first, then enter that.' },
+        { title: 'Area grows with the square of the radius, not the diameter directly', body: 'Doubling the radius quadruples the area (2² = 4), not doubles it — a common source of underestimating how much more material a bigger circle (a pizza, a pipe) actually needs.' },
+        { title: 'π is irrational — any decimal value is an approximation', body: 'This calculator uses JavaScript’s built-in π to about 15 significant digits, far more precise than the common shorthand 3.14 or 22/7. For most practical purposes the difference is invisible, but it means two calculators rounding π differently can disagree in the last displayed digit.' },
+        { title: 'Radius and diameter must be the same unit as each other', body: 'The unit menu on each field keeps them consistent automatically — typing 5 into the radius field with the unit set to meters and then reading the diameter in feet is handled for you, not something to convert by hand.' }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §9.5 Solve Geometry Applications: Circles and Irregular Figures', url: 'https://openstax.org/books/prealgebra-2e/pages/9-5-solve-geometry-applications-circles-and-irregular-figures' },
+        { label: 'Wolfram MathWorld, Circle', url: 'https://mathworld.wolfram.com/Circle.html' }
+      ]
+    },
+    inputs: [{ id: 'radius', label: 'Radius (m)', type: 'number', placeholder: '5', defaultValue: 5, step: 0.1, min: 0 }],
+    seo: {
+      title: 'Circle Calculator – Radius, Diameter, Circumference & Area',
+      description: 'Free circle calculator. Enter a radius or diameter to find the other, plus the circumference and area, with every formula shown.',
+      faq: [
+        { question: 'How do I find the circumference of a circle?', answer: 'Multiply the radius by 2π, or the diameter by π: C = 2πr = πd. A 7 m radius gives a circumference of 2 × π × 7 ≈ 43.98 m.' },
+        { question: 'How do I find the area of a circle?', answer: 'Square the radius and multiply by π: A = πr². A 7 m radius gives an area of π × 49 ≈ 153.94 m².' },
+        { question: 'How do I find the radius from the diameter?', answer: 'Divide the diameter by 2: r = d ÷ 2. A 14 m diameter gives a 7 m radius.' },
+        { question: 'How do I find the radius from the circumference?', answer: 'Divide the circumference by 2π: r = C ÷ (2π). A circumference of about 31.42 gives a radius of 31.42 ÷ (2π) ≈ 5.' },
+        { question: 'How do I find the radius from the area?', answer: 'Divide the area by π and take the square root: r = √(A ÷ π). An area of about 78.54 gives a radius of √(78.54 ÷ π) ≈ 5.' },
+        { question: 'What is pi (π)?', answer: 'Pi is the ratio of any circle’s circumference to its diameter, approximately 3.14159265. It is irrational — its decimal digits never end or repeat — and the same for every circle regardless of size.' },
+        { question: 'Does doubling the radius double the area?', answer: 'No. Area depends on the radius squared, so doubling the radius quadruples the area (2² = 4), not doubles it.' },
+        { question: 'What units does this calculator use?', answer: 'Any length unit from the menu — meters, feet, inches and more. The area is shown in the matching squared unit (m², ft², etc.).' }
+      ]
+    },
+    compute(values) {
+      const { radius } = values;
+      return { diameter: radius * 2, circumference: 2 * Math.PI * radius, area: Math.PI * radius ** 2 };
+    }
+  },
+  {
+    id: 'area-calculator',
+    category: 'math',
+    updatedAt: '2026-10-22',
+    aliases: ['square footage calculator', 'area of a shape calculator', 'rectangle area calculator', 'trapezoid area calculator', 'find the area calculator'],
+    related: ['circle-calculator', 'triangle-calculator', 'volume-calculator', 'surface-area-calculator'],
+    title: 'Area Calculator',
+    description: 'Find the area of a square, rectangle, triangle, circle or trapezoid from its basic measurements, with the formula for every shape shown.',
+    example: 'A 5 m × 3 m rectangular room has a floor area of 15 m². Switch shapes to find a triangle, circle or trapezoid’s area from its own measurements instead.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is area?',
+        paragraphs: [
+          'Area is the amount of flat surface a two-dimensional shape covers — how much paint a wall needs, how much turf a lawn needs, how much floor a rug needs to fit. It is always measured in square units (square meters, square feet), because it is fundamentally a count of how many unit squares (1 m × 1 m, 1 ft × 1 ft) would tile the shape exactly.',
+          'Every shape has its own area formula, but they are closely related. A rectangle’s area is simply length times width — the most basic case, since a 1 × 1 unit square obviously has an area of 1. A triangle is exactly half of the rectangle that would enclose it (its base times its height), which is why the triangle formula carries that extra ÷ 2. A circle swaps straight sides for π times the radius squared. A trapezoid, with two different-length parallel sides, averages them before multiplying by the height.',
+          'This calculator covers five of the most commonly needed shapes — square, rectangle, triangle, circle and trapezoid — on one page, so switching between them does not mean hunting down a different formula each time.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick the shape, then fill in just the measurements that shape needs.',
+        steps: [
+          { name: 'Choose a shape', text: 'Square, rectangle, triangle, circle or trapezoid. Each one uses its own formula underneath.' },
+          { name: 'Enter the first measurement', text: 'A side (square), a length (rectangle), a base (triangle), a radius (circle), or one parallel side (trapezoid).' },
+          { name: 'Enter the second measurement, if that shape needs one', text: 'A width (rectangle), a height (triangle or trapezoid). Square and circle only need the first measurement.' },
+          { name: 'Add the trapezoid’s second parallel side', text: 'Tucked under "More options" since only the trapezoid shape reads it — the other four shapes ignore it entirely.' },
+          { name: 'Read the area, and see how big it really is', text: 'The scale below the result places your area against an A4 sheet of paper, a basketball court and a soccer pitch, so a number like "420 m²" has something concrete to compare against.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Five shapes, five formulas — all of them variations on "multiply two lengths together."',
+        expression:
+          'Square: A = s²\nRectangle: A = l × w\nTriangle: A = ½ × b × h\nCircle: A = π × r²\nTrapezoid: A = ½ × (b₁ + b₂) × h',
+        terms: [
+          { symbol: 's', meaning: 'A square’s side length.' },
+          { symbol: 'l, w', meaning: 'A rectangle’s length and width.' },
+          { symbol: 'b, h', meaning: 'A triangle’s base and height (the perpendicular distance from the base to the opposite vertex) or a trapezoid’s height (the perpendicular distance between its two parallel sides).' },
+          { symbol: 'r', meaning: 'A circle’s radius.' },
+          { symbol: 'b₁, b₂', meaning: 'A trapezoid’s two parallel sides (its "bases"), which do not have to be the same length.' }
+        ],
+        note: 'This calculator finds area only, not perimeter — a triangle’s perimeter needs all three side lengths, not just a base and a height. See the Triangle Calculator for that.'
+      },
+      workedExample: {
+        intro: 'A trapezoid-shaped garden bed has two parallel sides of 6 m and 10 m, and the perpendicular distance between them is 4 m. What is its area?',
+        rows: [
+          { label: 'Average the two parallel sides', value: '(6 + 10) ÷ 2 = 8 m' },
+          { label: 'Multiply by the height', value: '8 × 4 = 32' }
+        ],
+        result: 'Area = 32 m²',
+        explanation: 'Averaging the two parallel sides turns the trapezoid into an "equivalent rectangle" of the same height — a trapezoid is effectively a rectangle whose top and bottom sides don’t quite match, and averaging them is exactly what makes the simple length-times-width rectangle formula work for it too.'
+      },
+      watchOut: [
+        { title: 'This finds area only, not perimeter', body: 'A triangle’s area formula here only needs a base and a height, not all three sides, so there isn’t enough information to also report a perimeter without assuming a shape (like a right triangle) that may not be true. For a triangle’s perimeter, use the Triangle Calculator, which takes all three sides.' },
+        { title: 'A triangle’s height is perpendicular to its base, not a slanted side', body: 'The "height" in A = ½bh is the straight-up-and-down distance from the base to the opposite corner — not the length of one of the other two sides, which is almost always a different number.' },
+        { title: 'A zero measurement gives a zero area, not an error', body: 'A square with a side of 0 is a single point with no area — a real, if trivial, answer, not a mistake. Negative measurements are rejected instead, since a length cannot be negative.' },
+        { title: 'Mixing units gives a meaningless number', body: 'Multiplying a length in meters by a width in feet does not produce a valid area in either unit. Convert both measurements to the same unit first — the length unit menu here handles that automatically for whichever unit you pick.' }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §9.4 Use Properties of Rectangles, Triangles, and Trapezoids', url: 'https://openstax.org/books/prealgebra-2e/pages/9-4-use-properties-of-rectangles-triangles-and-trapezoids' },
+        { label: 'OpenStax, Prealgebra 2e, §9.5 Solve Geometry Applications: Circles and Irregular Figures', url: 'https://openstax.org/books/prealgebra-2e/pages/9-5-solve-geometry-applications-circles-and-irregular-figures' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'mode',
+        label: 'Shape',
+        type: 'number',
+        placeholder: '2',
+        defaultValue: 2,
+        step: 1,
+        min: 1,
+        options: [
+          { value: 1, label: 'Square' },
+          { value: 2, label: 'Rectangle' },
+          { value: 3, label: 'Triangle' },
+          { value: 4, label: 'Circle' },
+          { value: 5, label: 'Trapezoid' }
+        ]
+      },
+      { id: 'dim1', label: 'First measurement (side, base or radius)', type: 'number', placeholder: '5', defaultValue: 5, step: 0.1, dimension: 'length', unit: 'm' },
+      { id: 'dim2', label: 'Second measurement (width or height)', type: 'number', placeholder: '3', defaultValue: 3, step: 0.1, dimension: 'length', unit: 'm' },
+      { id: 'dim3', label: 'Second parallel side (trapezoid only)', type: 'number', placeholder: '10', defaultValue: 10, step: 0.1, dimension: 'length', unit: 'm' }
+    ],
+    breakdown: {
+      headline: 'area',
+      headlineLabel: 'Area',
+      outputs: [{ id: 'area', label: 'Area', dimension: 'area' }],
+      groups: [
+        { inputs: ['mode'] },
+        { inputs: ['dim1', 'dim2'] },
+        { title: 'Only used for the trapezoid shape', inputs: ['dim3'], optional: true }
+      ],
+      visual: {
+        type: 'logScale',
+        value: 'area',
+        min: -2,
+        max: 4,
+        ticks: ['10⁻²', '10⁻¹', '10⁰', '10¹', '10²', '10³', '10⁴'],
+        benchmarks: [
+          { label: 'An ISO 216 A4 sheet of paper (0.21 m × 0.297 m ≈ 0.0624 m²)', value: 0.06237 },
+          { label: 'A FIBA-regulation basketball court (28 m × 15 m = 420 m²)', value: 420 },
+          { label: 'A FIFA-recommended soccer pitch (105 m × 68 m = 7,140 m²)', value: 7140 }
+        ],
+        title: 'How big is this area?',
+        valueLabel: 'Your area'
+      }
+    },
+    seo: {
+      title: 'Area Calculator – Square, Rectangle, Triangle, Circle & Trapezoid',
+      description: 'Free area calculator for a square, rectangle, triangle, circle or trapezoid. Enter the basic measurements and see the formula for each shape.',
+      faq: [
+        { question: 'How do I find the area of a rectangle?', answer: 'Multiply length by width: A = l × w. A 5 m by 3 m room has an area of 15 m².' },
+        { question: 'How do I find the area of a square?', answer: 'Square the side length: A = s². A 4 m side gives an area of 4² = 16 m².' },
+        { question: 'How do I find the area of a triangle?', answer: 'Multiply the base by the height, then halve it: A = ½ × b × h. A base of 6 m and a height of 4 m gives an area of ½ × 6 × 4 = 12 m².' },
+        { question: 'How do I find the area of a circle?', answer: 'Square the radius and multiply by π: A = πr². A 5 m radius gives an area of π × 25 ≈ 78.54 m².' },
+        { question: 'How do I find the area of a trapezoid?', answer: 'Average the two parallel sides, then multiply by the height: A = ½(b₁ + b₂) × h. Parallel sides of 6 m and 10 m with a height of 4 m give ½ × 16 × 4 = 32 m².' },
+        { question: 'Does this calculator also find the perimeter?', answer: 'No. A triangle’s perimeter needs all three side lengths, and this calculator only takes a base and a height for the triangle shape. Use the Triangle Calculator for a perimeter alongside the area.' },
+        { question: 'What is the difference between a square and a rectangle?', answer: 'A square is a rectangle whose length and width happen to be equal, so A = s² is really just A = l × w with l = w. Either formula gives the same answer for a square.' },
+        { question: 'What units does this calculator use?', answer: 'Any length unit from the menu — meters, feet, inches and more. The area is shown in the matching squared unit (m², ft², etc.), converted automatically.' }
+      ]
+    },
+    compute(values) {
+      const { mode, dim1, dim2, dim3 } = values;
+      let area: number;
+      if (mode === 1) area = dim1 >= 0 ? dim1 ** 2 : NaN; // square
+      else if (mode === 3) area = dim1 >= 0 && dim2 >= 0 ? 0.5 * dim1 * dim2 : NaN; // triangle (base x height / 2)
+      else if (mode === 4) area = dim1 >= 0 ? Math.PI * dim1 ** 2 : NaN; // circle (dim1 = radius)
+      else if (mode === 5) area = dim1 >= 0 && dim2 >= 0 && dim3 >= 0 ? 0.5 * (dim1 + dim3) * dim2 : NaN; // trapezoid (dim2 = height)
+      else area = dim1 >= 0 && dim2 >= 0 ? dim1 * dim2 : NaN; // mode 2 (rectangle), and the fallback
+      return { area };
+    }
+  },
+  {
+    id: 'volume-calculator',
+    category: 'math',
+    updatedAt: '2026-10-22',
+    aliases: ['volume of a shape calculator', 'cylinder volume calculator', 'sphere volume calculator', 'box volume calculator', 'cone volume calculator'],
+    related: ['surface-area-calculator', 'area-calculator', 'circle-calculator', 'concrete-calculator'],
+    title: 'Volume Calculator',
+    description: 'Find the volume of a cube, rectangular box, cylinder, sphere or cone from its basic measurements, with the formula for every shape shown.',
+    example: 'A rectangular box 4 m × 3 m × 2 m holds 24 m³. Switch shapes to find a cylinder, sphere or cone’s volume from its own measurements instead.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is volume?',
+        paragraphs: [
+          'Volume is how much three-dimensional space a solid takes up — how much water a tank holds, how much concrete a footing needs, how much air a room contains. It is measured in cubic units (cubic meters, cubic feet), a count of how many unit cubes (1 m × 1 m × 1 m) would fill the solid exactly.',
+          'Every solid’s volume formula is some version of "base area times height" or a fixed fraction of it. A rectangular box is its length times width times height — three measurements multiplied straight through. A cube is the special case where all three happen to be equal, so it is just the side cubed. A cylinder is a circle’s area (πr²) times its height. A cone is exactly one-third of the cylinder that would enclose it, the same way a triangle is half of its enclosing rectangle. A sphere’s formula, four-thirds times π times the radius cubed, follows from calculus rather than a simple "base times height" picture, but it is just as mechanical to apply.',
+          'This calculator covers five of the most commonly needed solids — cube, rectangular box, cylinder, sphere and cone — on one page.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick the solid, then fill in just the measurements it needs.',
+        steps: [
+          { name: 'Choose a solid', text: 'Cube, rectangular box, cylinder, sphere or cone. Each one uses its own formula underneath.' },
+          { name: 'Enter the first measurement', text: 'A side (cube), a length (box), or a radius (cylinder, sphere, cone).' },
+          { name: 'Enter the second measurement, if that solid needs one', text: 'A height (cylinder or cone). A sphere needs only the radius.' },
+          { name: 'Add the box’s third measurement', text: 'Tucked under "More options" since only the rectangular box shape reads a third length — the other four shapes ignore it entirely.' },
+          { name: 'Read the volume, and see how big it really is', text: 'The scale below the result places your volume against a drink can, a US gallon, and a minimum-size Olympic pool, so a number like "2,500 m³" has something concrete to compare against.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Five solids, five formulas — each one a base area carried through a height, or a fixed multiple of it.',
+        expression:
+          'Cube: V = s³\nRectangular box: V = l × w × h\nCylinder: V = π × r² × h\nSphere: V = (4⁄3) × π × r³\nCone: V = (1⁄3) × π × r² × h',
+        terms: [
+          { symbol: 's', meaning: 'A cube’s side length.' },
+          { symbol: 'l, w, h', meaning: 'A rectangular box’s length, width and height.' },
+          { symbol: 'r', meaning: 'The radius of a cylinder, sphere or cone’s circular base.' },
+          { symbol: 'h', meaning: 'The height of a cylinder or cone, measured perpendicular to its circular base.' }
+        ],
+        note: 'A cone’s volume is exactly one-third of a cylinder with the same radius and height — easy to confuse, since they look similar but differ by a factor of 3.'
+      },
+      workedExample: {
+        intro: 'A cylindrical water tank has a radius of 3 m and a height of 5 m. How much water can it hold?',
+        rows: [
+          { label: 'Base area (πr²)', value: 'π × 3² = π × 9 ≈ 28.27 m²' },
+          { label: 'Multiply by the height', value: '28.27 × 5 ≈ 141.37' }
+        ],
+        result: 'Volume ≈ 141.37 m³',
+        explanation: 'A cylinder’s volume is just its circular base area carried straight up through its height — the same "base times height" idea as a rectangular box, with the rectangle swapped for a circle.'
+      },
+      watchOut: [
+        { title: 'A cone is one-third of the matching cylinder, not the same', body: 'A cone and a cylinder with the same radius and height are easy to mix up visually, but the cone holds exactly a third as much — forgetting the ⅓ is the single most common mistake with this formula.' },
+        { title: 'The radius is squared or cubed, not multiplied once', body: 'Doubling a sphere’s or cylinder’s radius does not double its volume — a sphere’s volume scales with the cube of the radius (2³ = 8 times more), and a cylinder’s with the square of the radius for the same height (2² = 4 times more).' },
+        { title: 'A zero measurement gives a zero volume, not an error', body: 'A cube with a side of 0 is a single point with no volume — a real, if trivial, answer, not a mistake. Negative measurements are rejected instead, since a length cannot be negative.' },
+        { title: 'Volume and surface area are different questions', body: 'Volume is how much a solid holds; surface area is how much material wraps around its outside. A larger solid generally has more of both, but not in the same proportion — see the Surface Area Calculator for the companion figure.' }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §9.6 Solve Geometry Applications: Volume and Surface Area', url: 'https://openstax.org/books/prealgebra-2e/pages/9-6-solve-geometry-applications-volume-and-surface-area' },
+        { label: 'Wolfram MathWorld, Cone', url: 'https://mathworld.wolfram.com/Cone.html' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'mode',
+        label: 'Shape',
+        type: 'number',
+        placeholder: '2',
+        defaultValue: 2,
+        step: 1,
+        min: 1,
+        options: [
+          { value: 1, label: 'Cube' },
+          { value: 2, label: 'Rectangular box' },
+          { value: 3, label: 'Cylinder' },
+          { value: 4, label: 'Sphere' },
+          { value: 5, label: 'Cone' }
+        ]
+      },
+      { id: 'dim1', label: 'First measurement (side, length or radius)', type: 'number', placeholder: '4', defaultValue: 4, step: 0.1, dimension: 'length', unit: 'm' },
+      { id: 'dim2', label: 'Second measurement (width or height)', type: 'number', placeholder: '3', defaultValue: 3, step: 0.1, dimension: 'length', unit: 'm' },
+      { id: 'dim3', label: 'Third measurement (box only, its depth)', type: 'number', placeholder: '2', defaultValue: 2, step: 0.1, dimension: 'length', unit: 'm' }
+    ],
+    breakdown: {
+      headline: 'volume',
+      headlineLabel: 'Volume',
+      outputs: [{ id: 'volume', label: 'Volume', dimension: 'volume' }],
+      groups: [
+        { inputs: ['mode'] },
+        { inputs: ['dim1', 'dim2'] },
+        { title: 'Only used for the rectangular box shape', inputs: ['dim3'], optional: true }
+      ],
+      visual: {
+        type: 'logScale',
+        value: 'volume',
+        min: -4,
+        max: 4,
+        ticks: ['10⁻⁴', '10⁻²', '10⁰', '10²', '10⁴'],
+        benchmarks: [
+          { label: 'A 355 mL drink can (0.000355 m³)', value: 0.000355 },
+          { label: 'A US gallon (3.785411784 L, exact)', value: 0.003785411784 },
+          { label: 'An Olympic pool, World Aquatics minimum (50 m × 25 m × 2 m = 2,500 m³)', value: 2500 }
+        ],
+        title: 'How big is this volume?',
+        valueLabel: 'Your volume'
+      }
+    },
+    seo: {
+      title: 'Volume Calculator – Cube, Box, Cylinder, Sphere & Cone',
+      description: 'Free volume calculator for a cube, rectangular box, cylinder, sphere or cone. Enter the basic measurements and see the formula for each shape.',
+      faq: [
+        { question: 'How do I find the volume of a rectangular box?', answer: 'Multiply length by width by height: V = l × w × h. A 4 m by 3 m by 2 m box holds 24 m³.' },
+        { question: 'How do I find the volume of a cube?', answer: 'Cube the side length: V = s³. A 3 m side gives a volume of 3³ = 27 m³.' },
+        { question: 'How do I find the volume of a cylinder?', answer: 'Multiply the circular base area by the height: V = πr²h. A 3 m radius and 5 m height give π × 9 × 5 ≈ 141.37 m³.' },
+        { question: 'How do I find the volume of a sphere?', answer: 'Cube the radius, multiply by π, then by 4⁄3: V = (4⁄3)πr³. A 3 m radius gives (4⁄3) × π × 27 ≈ 113.10 m³.' },
+        { question: 'How do I find the volume of a cone?', answer: 'Multiply the circular base area by the height, then take a third of it: V = (1⁄3)πr²h. A 3 m radius and 5 m height give (1⁄3) × π × 9 × 5 ≈ 47.12 m³ — exactly a third of the matching cylinder above.' },
+        { question: 'Why is a cone’s volume a third of a cylinder’s?', answer: 'It is a geometric fact (provable with calculus or Cavalieri’s principle) that any cone is exactly one-third of the cylinder sharing its base and height, regardless of the radius or height chosen.' },
+        { question: 'Does doubling the radius double the volume?', answer: 'No. A sphere’s volume scales with the cube of the radius, so doubling it multiplies the volume by 2³ = 8. A cylinder or cone’s volume scales with the square of the radius (for the same height), so doubling it multiplies the volume by 2² = 4.' },
+        { question: 'What units does this calculator use?', answer: 'Any length unit from the menu — meters, feet, inches and more. The volume is shown in the matching cubed unit (m³, ft³, etc.), converted automatically.' }
+      ]
+    },
+    compute(values) {
+      const { mode, dim1, dim2, dim3 } = values;
+      let volume: number;
+      if (mode === 1) volume = dim1 >= 0 ? dim1 ** 3 : NaN; // cube
+      else if (mode === 3) volume = dim1 >= 0 && dim2 >= 0 ? Math.PI * dim1 ** 2 * dim2 : NaN; // cylinder (dim1 = radius, dim2 = height)
+      else if (mode === 4) volume = dim1 >= 0 ? (4 / 3) * Math.PI * dim1 ** 3 : NaN; // sphere
+      else if (mode === 5) volume = dim1 >= 0 && dim2 >= 0 ? (1 / 3) * Math.PI * dim1 ** 2 * dim2 : NaN; // cone
+      else volume = dim1 >= 0 && dim2 >= 0 && dim3 >= 0 ? dim1 * dim2 * dim3 : NaN; // mode 2 (rectangular box), and the fallback
+      return { volume };
+    }
+  },
+  {
+    id: 'surface-area-calculator',
+    category: 'math',
+    updatedAt: '2026-10-22',
+    aliases: ['surface area of a shape calculator', 'cylinder surface area calculator', 'sphere surface area calculator', 'box surface area calculator', 'cone surface area calculator'],
+    related: ['volume-calculator', 'area-calculator', 'circle-calculator', 'paint-calculator'],
+    title: 'Surface Area Calculator',
+    description: 'Find the total surface area of a cube, rectangular box, cylinder, sphere or cone from its basic measurements, with the formula for every shape shown.',
+    example: 'A rectangular box 4 m × 3 m × 2 m has a total surface area of 52 m² — the sum of all six faces. Switch shapes to find a cylinder, sphere or cone’s surface area from its own measurements instead.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is surface area?',
+        paragraphs: [
+          'Surface area is the total area of every face wrapped around the outside of a solid — how much wrapping paper covers a box, how much metal forms a can, how much paint a tank’s exterior needs. Unlike volume, which measures what a solid holds on the inside, surface area only cares about its outer skin, and the two do not grow at the same rate as a solid gets bigger.',
+          'A rectangular box has six rectangular faces in three matching pairs (top/bottom, front/back, left/right), so its formula adds up all three pairs: 2lw + 2lh + 2wh. A cube is the special case where every face is an identical square, six of them, giving the much simpler 6s². A sphere’s surface area, 4πr², is exactly four times the area of the circle you would get by slicing straight through its middle — a surprisingly clean relationship first proven by Archimedes. A cylinder unwraps into a rectangle (its curved side) plus two circular end caps. A cone similarly unwraps into a circular base plus a curved "lateral" surface.',
+          'This calculator covers five of the most commonly needed solids — cube, rectangular box, cylinder, sphere and cone — and always reports the total surface area, every face included.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick the solid, then fill in just the measurements it needs.',
+        steps: [
+          { name: 'Choose a solid', text: 'Cube, rectangular box, cylinder, sphere or cone. Each one uses its own formula underneath.' },
+          { name: 'Enter the first measurement', text: 'A side (cube), a length (box), or a radius (cylinder, sphere, cone).' },
+          { name: 'Enter the second measurement, if that solid needs one', text: 'A height (cylinder or cone). A sphere needs only the radius.' },
+          { name: 'Add the box’s third measurement', text: 'Tucked under "More options" since only the rectangular box shape reads a third length — the other four shapes ignore it entirely.' },
+          { name: 'Read the surface area, and see how big it really is', text: 'The scale below the result places your surface area against an A4 sheet of paper, a basketball court and a soccer pitch, the same everyday benchmarks the Area Calculator uses.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Five solids, five formulas — each one the sum of every face wrapped around the outside.',
+        expression:
+          'Cube: S = 6s²\nRectangular box: S = 2lw + 2lh + 2wh\nCylinder: S = 2πr² + 2πrh\nSphere: S = 4πr²\nCone: S = πr² + πr√(r² + h²)',
+        terms: [
+          { symbol: 's', meaning: 'A cube’s side length.' },
+          { symbol: 'l, w, h', meaning: 'A rectangular box’s length, width and height.' },
+          { symbol: 'r', meaning: 'The radius of a cylinder, sphere or cone’s circular base.' },
+          { symbol: 'h', meaning: 'The height of a cylinder or cone, measured perpendicular to its circular base.' },
+          { symbol: '√(r² + h²)', meaning: 'A cone’s slant height — the distance along its sloped side from the base edge to the tip, found with the Pythagorean theorem from its radius and height.' }
+        ],
+        note: 'This reports the cone’s TOTAL surface area (base circle πr² plus the curved lateral surface πr × slant height). If you only want the curved side, without the base, that is just the second term, πr√(r² + h²), on its own.'
+      },
+      workedExample: {
+        intro: 'The same cylindrical tank from the Volume Calculator’s example — radius 3 m, height 5 m. How much metal does its outer surface need?',
+        rows: [
+          { label: 'Two circular end caps (2πr²)', value: '2 × π × 3² = 2 × π × 9 ≈ 56.55 m²' },
+          { label: 'Curved side (2πrh)', value: '2 × π × 3 × 5 ≈ 94.25 m²' },
+          { label: 'Add them together', value: '56.55 + 94.25 ≈ 150.80' }
+        ],
+        result: 'Surface area ≈ 150.80 m²',
+        explanation: 'A cylinder’s surface splits cleanly into three flat-when-unrolled pieces: two identical circles for the top and bottom, and one rectangle for the curved side, whose width is the circle’s own circumference (2πr) once unrolled flat.'
+      },
+      watchOut: [
+        { title: 'This cone formula includes the base', body: 'Some references give only a cone’s LATERAL (side) surface area, πr√(r² + h²), leaving the circular base out. This calculator reports the TOTAL — base included — since that matches what "how much material covers this cone" usually means in practice.' },
+        { title: 'Surface area and volume do not grow at the same rate', body: 'Doubling every measurement of a solid multiplies its surface area by 4 (a squared effect) but its volume by 8 (a cubed effect) — why a large solid always has proportionally less surface relative to its volume than a small one, a relationship that shows up everywhere from cooling coffee to animal body heat loss.' },
+        { title: 'A zero measurement gives a zero surface area, not an error', body: 'A cube with a side of 0 is a single point with no surface — a real, if trivial, answer, not a mistake. Negative measurements are rejected instead, since a length cannot be negative.' },
+        { title: 'Surface area is not the same question as volume', body: 'A tall, thin cylinder and a short, wide one can hold very different amounts (volume) while needing a similar amount of material to build (surface area), or vice versa — the two figures answer genuinely different practical questions, so check which one a task actually calls for.' }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §9.6 Solve Geometry Applications: Volume and Surface Area', url: 'https://openstax.org/books/prealgebra-2e/pages/9-6-solve-geometry-applications-volume-and-surface-area' },
+        { label: 'Wolfram MathWorld, Cone', url: 'https://mathworld.wolfram.com/Cone.html' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'mode',
+        label: 'Shape',
+        type: 'number',
+        placeholder: '2',
+        defaultValue: 2,
+        step: 1,
+        min: 1,
+        options: [
+          { value: 1, label: 'Cube' },
+          { value: 2, label: 'Rectangular box' },
+          { value: 3, label: 'Cylinder' },
+          { value: 4, label: 'Sphere' },
+          { value: 5, label: 'Cone' }
+        ]
+      },
+      { id: 'dim1', label: 'First measurement (side, length or radius)', type: 'number', placeholder: '4', defaultValue: 4, step: 0.1, dimension: 'length', unit: 'm' },
+      { id: 'dim2', label: 'Second measurement (width or height)', type: 'number', placeholder: '3', defaultValue: 3, step: 0.1, dimension: 'length', unit: 'm' },
+      { id: 'dim3', label: 'Third measurement (box only, its depth)', type: 'number', placeholder: '2', defaultValue: 2, step: 0.1, dimension: 'length', unit: 'm' }
+    ],
+    breakdown: {
+      headline: 'surfaceArea',
+      headlineLabel: 'Surface area',
+      outputs: [{ id: 'surfaceArea', label: 'Surface area', dimension: 'area' }],
+      groups: [
+        { inputs: ['mode'] },
+        { inputs: ['dim1', 'dim2'] },
+        { title: 'Only used for the rectangular box shape', inputs: ['dim3'], optional: true }
+      ],
+      visual: {
+        type: 'logScale',
+        value: 'surfaceArea',
+        min: -2,
+        max: 4,
+        ticks: ['10⁻²', '10⁻¹', '10⁰', '10¹', '10²', '10³', '10⁴'],
+        benchmarks: [
+          { label: 'An ISO 216 A4 sheet of paper (0.21 m × 0.297 m ≈ 0.0624 m²)', value: 0.06237 },
+          { label: 'A FIBA-regulation basketball court (28 m × 15 m = 420 m²)', value: 420 },
+          { label: 'A FIFA-recommended soccer pitch (105 m × 68 m = 7,140 m²)', value: 7140 }
+        ],
+        title: 'How big is this surface area?',
+        valueLabel: 'Your surface area'
+      }
+    },
+    seo: {
+      title: 'Surface Area Calculator – Cube, Box, Cylinder, Sphere & Cone',
+      description: 'Free surface area calculator for a cube, rectangular box, cylinder, sphere or cone. Enter the basic measurements and see the formula for each shape.',
+      faq: [
+        { question: 'How do I find the surface area of a rectangular box?', answer: 'Add up all three pairs of matching faces: S = 2lw + 2lh + 2wh. A 4 m by 3 m by 2 m box has a surface area of 2(12) + 2(8) + 2(6) = 52 m².' },
+        { question: 'How do I find the surface area of a cube?', answer: 'Multiply one face’s area by 6: S = 6s². A 3 m side gives a surface area of 6 × 9 = 54 m².' },
+        { question: 'How do I find the surface area of a cylinder?', answer: 'Add the two circular end caps to the curved side: S = 2πr² + 2πrh. A 3 m radius and 5 m height give 2π(9) + 2π(3)(5) ≈ 56.55 + 94.25 ≈ 150.80 m².' },
+        { question: 'How do I find the surface area of a sphere?', answer: 'Square the radius and multiply by 4π: S = 4πr². A 3 m radius gives a surface area of 4π(9) ≈ 113.10 m².' },
+        { question: 'How do I find the surface area of a cone?', answer: 'Add the circular base to the curved lateral surface: S = πr² + πr√(r² + h²). A 3 m radius and 5 m height give a slant height of √(9 + 25) ≈ 5.83 m, and a surface area of π(9) + π(3)(5.83) ≈ 83.23 m².' },
+        { question: 'Does this include the base of the cone?', answer: 'Yes, this calculator reports the total surface area including the circular base. For the lateral (side-only) surface area, subtract πr² from the result, or use πr × slant height directly.' },
+        { question: 'Why does a bigger solid have relatively less surface area?', answer: 'Surface area scales with the square of a solid’s size while volume scales with the cube, so as a solid grows, its volume outpaces its surface area — doubling every dimension multiplies surface area by 4 but volume by 8.' },
+        { question: 'What units does this calculator use?', answer: 'Any length unit from the menu — meters, feet, inches and more. The surface area is shown in the matching squared unit (m², ft², etc.), converted automatically.' }
+      ]
+    },
+    compute(values) {
+      const { mode, dim1, dim2, dim3 } = values;
+      let surfaceArea: number;
+      if (mode === 1) surfaceArea = dim1 >= 0 ? 6 * dim1 ** 2 : NaN; // cube
+      else if (mode === 3) surfaceArea = dim1 >= 0 && dim2 >= 0 ? 2 * Math.PI * dim1 ** 2 + 2 * Math.PI * dim1 * dim2 : NaN; // cylinder
+      else if (mode === 4) surfaceArea = dim1 >= 0 ? 4 * Math.PI * dim1 ** 2 : NaN; // sphere
+      else if (mode === 5) surfaceArea = dim1 >= 0 && dim2 >= 0 ? Math.PI * dim1 ** 2 + Math.PI * dim1 * Math.sqrt(dim1 ** 2 + dim2 ** 2) : NaN; // cone, base + lateral
+      else surfaceArea = dim1 >= 0 && dim2 >= 0 && dim3 >= 0 ? 2 * (dim1 * dim2 + dim1 * dim3 + dim2 * dim3) : NaN; // mode 2 (box), and the fallback
+      return { surfaceArea };
+    }
   }
 
 ];

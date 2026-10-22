@@ -111,7 +111,12 @@ export const calculatorOrder: string[] = [
   'prime-factorization-calculator',
   'long-division-calculator',
   'quadratic-formula-calculator',
-  'pythagorean-theorem-calculator'
+  'pythagorean-theorem-calculator',
+  'triangle-calculator',
+  'circle-calculator',
+  'area-calculator',
+  'volume-calculator',
+  'surface-area-calculator'
 ];
 
 const rank = (id: string) => {

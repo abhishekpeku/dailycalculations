@@ -60,7 +60,19 @@ fresh against the v2 template (`mdFiles/calculator-template-v2.md`) and the `add
   - [x] Update `mdFiles/STATUS.md`, open/ready the PR
   - [x] Post-review fix: refuse (not silently round) LCM/GCF/long-division results beyond
     `Number.MAX_SAFE_INTEGER` — see the last "Fix" section below
-- Run 5: triangle, circle, area, volume, surface area
+- Run 5 (this run): **triangle-calculator, circle-calculator, area-calculator, volume-calculator,
+  surface-area-calculator**
+  - [x] triangle-calculator (type B — mode menu SSS/SAS/ASA, shared side/angle fields)
+  - [x] circle-calculator (type A — solver, radius ⟷ diameter, circumference/area as outputs)
+  - [x] area-calculator (type B — shape mode menu, shared length inputs, area dimension output)
+  - [x] volume-calculator (type B — shape mode menu, shared length inputs, volume dimension output)
+  - [x] surface-area-calculator (type B — shape mode menu, same shared inputs as volume)
+  - [x] Snapshot tests (`npm run test:update`); only `triangle-calculator` needed a `KNOWN_NON_FINITE`
+    entry (all-zero SSS fails the triangle inequality) — area/volume/surface-area treat a zero
+    measurement as a legitimate (degenerate) finite 0, not an error
+  - [x] `npm test` (326/326), `npm run build` (107 static pages), `npm run lint`
+  - [x] Spot-check the 5 pages + `/categories/math` + sitemap on a local server, kill the server
+  - [x] Update `mdFiles/STATUS.md`, open/ready the PR
 - Run 6: slope, distance between two points, midpoint, scientific-calculator
 
 **Dedup decision (run 1):** the plan's list also names "mixed number" and "proportion" as separate
@@ -133,6 +145,16 @@ percent-change, percent-difference, fraction, ratio; run 2: average, weighted av
 scientific notation, exponent; run 3: square root, cube root, logarithm, factorial, GCF; run 4:
 LCM, prime factorization, long division, quadratic formula, Pythagorean theorem). PR #18 ready for
 review. Next session picks up run 5: triangle, circle, area, volume, surface area.
+
+## Type decisions (run 5)
+
+| Calculator | Type | Why | Visual |
+|---|---|---|---|
+| triangle-calculator | B, with a `mode` options menu | Solving a triangle from SSS, SAS or ASA is three distinct closed-form procedures sharing one 6-field input set (`sideA/sideB/sideC/angleA/angleB/angleC`) — not one invertible equation across all three, so no `solver`. Every mode converges on the same two final steps: get all three sides, then compute all three angles via the law of cosines and the area via Heron's formula, so the three formulas stay internally consistent regardless of which inputs were given. The ambiguous SSA case (two sides and a non-included angle, which can have 0, 1 or 2 valid triangles) is explicitly **not** supported — flagged in `watchOut`, not silently guessed at. Invalid input (the triangle inequality failing, a non-positive side, an angle outside (0°, 180°), or two ASA angles summing to ≥180°) returns `NaN` on every output rather than a wrong number. | CompareBars: side a / side b / side c |
+| circle-calculator | A (solver) | Radius and diameter are a trivial 2-variable invertible pair (`d = 2r`), the same shape as `square-root-calculator`. Circumference and area are **not** added as solver variables, even though "find the radius from the circumference" is a real search intent: a circle only has **one** degree of freedom (any one of radius/diameter/circumference/area determines all the others), but the solver widget's "least-recently-edited field is auto" model needs exactly N−1 independent knowns for N variables — correct for a 3-variable relationship like `force-calculator`'s F = ma, but **not** for a 4-variable circle, where 3 "known" fields would usually be mutually inconsistent. Circumference and area are instead `solver.outputs` (always freshly derived from the current radius, like `pythagorean-theorem-calculator`'s triangle area), and the manual formulas for working backward from a known circumference or area are given in the formula section and FAQ instead of wired into the live widget — an honest, documented scope limit rather than a fake solve. | CompareBars: radius vs diameter |
+| area-calculator | B, with a `mode` shape menu | Five shapes (square, rectangle, triangle, circle, trapezoid) each use a different, non-interchangeable area formula from a shared pool of up to three generic length inputs (`dim1/dim2/dim3`) — not one rearrangeable equation, so no solver. Deliberately does **not** also compute perimeter: a triangle's area formula here only takes a base and a height, not all three sides, so a perimeter figure would have to either silently assume a right triangle or fabricate a third side — `watchOut` names this limit and cross-links to the new `triangle-calculator` (which does take all three sides) for anyone who actually wants a perimeter. | LogScale: the resulting area against three cited everyday areas (an ISO 216 A4 sheet, a FIBA basketball court, a FIFA-recommended soccer pitch) — chosen over a CompareBars of `dim1`/`dim2` because those two inputs are not even both used in every mode (square and circle only take one), while "how big is this area, really" is a meaningful question in every mode |
+| volume-calculator | B, with a `mode` shape menu | Same reasoning as `area-calculator`, one dimension up: cube, rectangular box, cylinder, sphere and cone each have a distinct volume formula from the same shared `dim1/dim2/dim3` length-input pool (radius/height or length/width/height depending on shape), picked by mode rather than solved. | LogScale: the resulting volume against three cited everyday volumes (a 355 mL drink can, a US gallon — 3.785411784 L exactly, per NIST — and a FINA/World Aquatics-standard Olympic pool at 50 m × 25 m × 2 m minimum = 2,500 m³) |
+| surface-area-calculator | B, with a `mode` shape menu | Same five solids and the same `dim1/dim2/dim3` inputs as `volume-calculator` (deliberately kept in lockstep, so the two pages read as a matched pair and share one mental model), but each solid's surface-area formula instead of its volume formula — again not a single rearrangeable equation. | LogScale: the resulting surface area against the same three area benchmarks `area-calculator` uses (A4 sheet, basketball court, soccer pitch), for the same reason — a surface area is still fundamentally "how much area," so the same benchmark set applies honestly |
 
 ## Verification
 
@@ -330,3 +352,54 @@ exact arbitrary-precision integers to confirm both the true mathematical value f
 and that the app's guard now triggers at exactly the right threshold — 0 mismatches. `npm run build`
 (102 static pages) and lint pass; re-checked on a local dev server, then killed, port 3000 confirmed
 free.
+
+**Run 5:** every number in the copy (worked examples, FAQ figures, `example` lines, LogScale
+benchmarks) was recomputed independently in `verify_run5.mjs` (scratchpad, plain JavaScript, no app
+imports — chosen over Python this time since `triangle-calculator`'s law-of-cosines/law-of-sines
+results needed to match the app's own `Math.acos`/`Math.sin` floating-point behavior exactly) — 0
+mismatches. Every figure was then cross-checked a second time by calling the app's own `compute()`
+directly (`node -e "import('./data/calculators/index.ts')..."`), for: the 3-4-5 default and 7-9-12
+worked-example triangles (SSS), the SAS case (a=8, b=10, included angle 60°), the ASA case (angles
+50°/60°, included side 10), the invalid 1-2-10 triangle (confirms every output comes back `NaN`, not
+a wrong number), the circle default (r=5) and worked example (d=14 → r=7), and every shape in
+area-calculator, volume-calculator and surface-area-calculator (square/rectangle/triangle/circle/
+trapezoid; cube/box/cylinder/sphere/cone, both volume and surface area) — every figure matched
+exactly. `npm test` 326/326 (up from 318), `npm run build` (107 static pages, up from 102),
+`npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` all pass.
+Data-integrity check run programmatically against the live data module for all 5 new calculators:
+0 broken `related` ids, 0 self-references, 0 duplicate aliases against any other calculator, all 79
+ids unique. All 5 pages spot-checked on a local dev server (H1, every v2 section id, exactly one
+JSON-LD `<script>` tag per page containing all 4 node types — `WebApplication`, `BreadcrumbList`,
+`HowTo`, `FAQPage` — confirmed by parsing it rather than just grepping for the tag, since the whole
+array serializes onto one line; the correct widget mounted — `breakdown-mode` for the four type-B
+calculators, `solver-radius`/`solver-diameter` for circle-calculator; a `?mode=2&sideA=8&sideB=10&
+angleC=60` share-link on triangle-calculator also returned 200), plus `/categories/math` and
+`sitemap.xml` both list all 5 new ids (confirmed as exact substring matches, not just non-zero grep
+counts, since "area-calculator" is also a substring of "surface-area-calculator"); dev server
+killed and port 3000 confirmed free afterward.
+
+References fetched directly, each confirmed to contain the exact formula claimed before citing:
+OpenStax Algebra and Trigonometry 2e §10.1 (Law of Sines) and §10.2 (Law of Cosines, which also
+states Heron's formula) for `triangle-calculator`; OpenStax Prealgebra 2e §9.4 (rectangle/triangle/
+trapezoid area), §9.5 (circle circumference/area), and §9.6 (volume and surface area for all five
+solids — explicitly stating it does not cover a cone's surface area) for `area-calculator`,
+`circle-calculator`, `volume-calculator` and `surface-area-calculator`; Wolfram MathWorld's Circle,
+Heron's Formula, Law of Cosines, Law of Sines and Cone pages (the last supplying the cone's lateral
+surface area formula, πrs with slant height s = √(r²+h²), that OpenStax deliberately omits — this
+calculator's cone figure adds the base, πr², on top of MathWorld's lateral-only term, and says so
+explicitly in `formula.note` and a watch-out item). The FIBA 2026 Official Basketball Rules (28 m ×
+15 m court) and ISO 216 (A4 = 210 mm × 297 mm) were verified via web search/fetch for the
+`area-calculator`/`surface-area-calculator` LogScale benchmarks, but — following the precedent that
+force-calculator's own benchmarks (an apple, a rocket) were never individually cited in its
+References list — these benchmark captions are not added as formal references, since the `content.
+references` list is reserved for the 2-4 primary sources behind the calculator's actual math, not
+every incidental fact named in a chart caption. The same applies to the US gallon (3.785411784 L,
+already asserted as exact in `lib/units.ts`'s own NIST SP 811 comment) and the Olympic pool minimum
+(World Aquatics/FINA facility rules, 50 m × 25 m × 2 m) used in `volume-calculator`'s benchmarks.
+
+**Paused 2026-10-22 after run 5.** 25/~29 math calculators done (run 1: math category + percentage,
+percent-change, percent-difference, fraction, ratio; run 2: average, weighted average, rounding,
+scientific notation, exponent; run 3: square root, cube root, logarithm, factorial, GCF; run 4: LCM,
+prime factorization, long division, quadratic formula, Pythagorean theorem; run 5: triangle, circle,
+area, volume, surface area). PR #19 ready for review. Next session picks up run 6: slope, distance
+between two points, midpoint, scientific-calculator.

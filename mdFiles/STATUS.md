@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-10-22 · Current step: **40** (Wave 1: math · statistics · conversion — NEW calculators), **IN PROGRESS** (run 3/~6 done: run 1 — math category + percentage, percent-change, percent-difference, fraction, ratio (PR #15 ready for review); run 2 — average, weighted average, rounding, scientific notation, exponent (PR #16 ready for review); run 3 — square root, cube root, logarithm, factorial, GCF (PR #17 ready for review)) · step 39 **DONE** 2026-10-21 (Batch 5, all 18: time, travel, work, creator, text, education; PR #14 ready for review) · step 38 done (PR #13, ready for review) · steps 17 + 30–39 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split, batches 1–5) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
+Last updated: 2026-10-22 · Current step: **40** (Wave 1: math · statistics · conversion — NEW calculators), **IN PROGRESS** (run 5/~6 done: run 1 — math category + percentage, percent-change, percent-difference, fraction, ratio (PR #15 ready for review); run 2 — average, weighted average, rounding, scientific notation, exponent (PR #16 ready for review); run 3 — square root, cube root, logarithm, factorial, GCF (PR #17 ready for review); run 4 — LCM, prime factorization, long division, quadratic formula, Pythagorean theorem (PR #18 ready for review); run 5 — triangle, circle, area, volume, surface area (PR #19 ready for review)) · step 39 **DONE** 2026-10-21 (Batch 5, all 18: time, travel, work, creator, text, education; PR #14 ready for review) · step 38 done (PR #13, ready for review) · steps 17 + 30–39 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split, batches 1–5) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
 
 ---
 
@@ -118,7 +118,7 @@ is why 12-15 run after it.
 | 37 | Batch 3: health (6) | DONE 2026-10-20 | YMYL. Branch `step/37-batch-3-health`, PR #11. All 6 health calculators on v2. See session log. | §3 |
 | 38 | Batch 4: auto + home (12) | **DONE** 2026-10-21 | Branch `step/38-batch-4-auto-home`, PR #13 (ready for review). All 12: car-payment, gas-cost, fuel-cost, ev-charging, commute-cost, toll-cost, concrete, paint, tile, wallpaper, electricity-bill, furniture-fit. See session log. | §3 |
 | 39 | Batch 5: time, travel, work, creator, text, education (18) | **DONE** 2026-10-21 | Branch `step/39-batch-5`, PR #14 (ready for review, no longer draft). All 18: date-difference, age, sleep-time, work-hours, pomodoro-timer, travel-budget, visa-stay-days, currency-converter, timezone-meeting-planner, freelancer-rate, meeting-cost, pto, salary-raise, youtube-earnings, instagram-engagement, character-counter, hashtag-counter, gpa-calculator (C → B). See session log. | §3 |
-| 40–42 | Wave 1: math · statistics · conversion — **NEW calculators, not conversions of existing ones** | **IN PROGRESS** | Absorbs step 24 (math). 5 calculators per agent run. Run 1/~6 **DONE** 2026-10-21: added the `math` category (`data/calculators/index.ts`, `data/calculators/math.ts`, `lib/categoryTheme.ts` orange/`function`) plus percentage-calculator (B), percent-change-calculator (A), percent-difference-calculator (B), fraction-calculator (B), ratio-calculator (A). Branch `step/40-wave-1-math-run-1`, PR #15 (ready for review). Run 2/~6 **DONE** 2026-10-21: average-calculator (B), weighted-average-calculator (B, cross-linked with gpa-calculator), rounding-calculator (B), scientific-notation-calculator (B), exponent-calculator (A). Branch `step/40-wave-1-math-run-2`, PR #16 (ready for review). Run 3/~6 **DONE** 2026-10-22: square-root-calculator (A), cube-root-calculator (A, `Math.cbrt` for real negative roots), logarithm-calculator (A, cross-linked with exponent-calculator), factorial-calculator (B, `BigInt` for exact digit counts), gcf-calculator (B, "How many numbers?" count selector). Branch `step/40-wave-1-math-run-3`, PR #17 (ready for review). **Fix 2026-10-22** (pre-merge review of PR #17): `gcf-calculator` had wrongly reused the `fraction-calculator`/`ratio-calculator` `gcd()` helper, whose `|| 1` fallback made `GCF(0, 0, 12)` compute as `1` instead of `12` and `GCF(0, 0)` as `1` instead of the standard `0`. Fixed with a separate `gcdRaw()` (no fallback) for `gcf-calculator` only; `gcd()` and the other two calculators are untouched. 15/~29 math calculators done. Next: run 4 — LCM, prime factorization, long division, quadratic formula, Pythagorean theorem. See session log and `mdFiles/steps/40-wave-1-math.md` for the full run breakdown, type decisions and fix detail. | §4 |
+| 40–42 | Wave 1: math · statistics · conversion — **NEW calculators, not conversions of existing ones** | **IN PROGRESS** | Absorbs step 24 (math). 5 calculators per agent run. Run 1/~6 **DONE** 2026-10-21: added the `math` category (`data/calculators/index.ts`, `data/calculators/math.ts`, `lib/categoryTheme.ts` orange/`function`) plus percentage-calculator (B), percent-change-calculator (A), percent-difference-calculator (B), fraction-calculator (B), ratio-calculator (A). Branch `step/40-wave-1-math-run-1`, PR #15 (ready for review). Run 2/~6 **DONE** 2026-10-21: average-calculator (B), weighted-average-calculator (B, cross-linked with gpa-calculator), rounding-calculator (B), scientific-notation-calculator (B), exponent-calculator (A). Branch `step/40-wave-1-math-run-2`, PR #16 (ready for review). Run 3/~6 **DONE** 2026-10-22: square-root-calculator (A), cube-root-calculator (A, `Math.cbrt` for real negative roots), logarithm-calculator (A, cross-linked with exponent-calculator), factorial-calculator (B, `BigInt` for exact digit counts), gcf-calculator (B, "How many numbers?" count selector). Branch `step/40-wave-1-math-run-3`, PR #17 (ready for review). **Fix 2026-10-22** (pre-merge review of PR #17): `gcf-calculator` had wrongly reused the `fraction-calculator`/`ratio-calculator` `gcd()` helper, whose `|| 1` fallback made `GCF(0, 0, 12)` compute as `1` instead of `12` and `GCF(0, 0)` as `1` instead of the standard `0`. Fixed with a separate `gcdRaw()` (no fallback) for `gcf-calculator` only; `gcd()` and the other two calculators are untouched. 15/~29 math calculators done. Run 4/~6 **DONE** 2026-10-22: lcm-calculator (B, "How many numbers?" selector, `lcm(a,0)=0`/`lcm(0,0)=NaN` convention), prime-factorization-calculator (B, 6 fixed prime/exponent slots, 10¹² cap), long-division-calculator (B, Euclidean nonnegative-remainder convention), quadratic-formula-calculator (B, two simultaneous roots incl. complex), pythagorean-theorem-calculator (A). Branch `step/40-wave-1-math-run-4`, PR #18 (ready for review). **Post-merge-review fix**: `lcm-calculator`'s `(a*b)/gcd` silently overflowed `Number.MAX_SAFE_INTEGER` on large pairwise-coprime inputs (a wrong digit, not a `NaN`) — fixed by dividing before multiplying plus a `Number.isSafeInteger` refusal guard, audited (and where needed, patched the same way) across `gcf-calculator` and `long-division-calculator` too. 20/~29 math calculators done. Run 5/~6 **DONE** 2026-10-22: triangle-calculator (B, mode menu SSS/SAS/ASA sharing one 6-field input set, law of cosines + Heron's formula, SSA deliberately unsupported), circle-calculator (A, radius ⟷ diameter solver with circumference/area as derived outputs — a circle's single degree of freedom doesn't fit 4 mutual solver variables), area-calculator / volume-calculator / surface-area-calculator (all B, a shared shape-mode-menu + `dim1/dim2/dim3` length-input pattern kept in lockstep across the three pages, each with a LogScale visual against cited everyday area/volume benchmarks). Branch `step/40-wave-1-math-run-5`, PR #19 (ready for review). 25/~29 math calculators done. Next: run 6 — slope, distance between two points, midpoint, scientific-calculator. See session log and `mdFiles/steps/40-wave-1-math.md` for the full run breakdown, type decisions and fix detail. | §4 |
 | 43–45 | Wave 2: construction · food · sports | TODO | | §4 |
 | 46–47 | Wave 3: physics · chemistry | TODO | Needs 30 + 31. | §4 |
 | 48–49 | Wave 4: biology · ecology + fun | TODO | Absorbs steps 23, 25, 26 where they fit. | §4 |
@@ -1353,6 +1353,73 @@ affected calculator and a new overflow-audit section to `verify_run4.py` using P
 bignums to confirm both the true value and the guard's threshold. `npm test` 318/318 (unchanged),
 `npm run build` and lint pass. See `mdFiles/steps/40-wave-1-math.md`'s final "Fix, 2026-10-22"
 section for the full writeup.
+
+**2026-10-22 — step 40, Wave 1: math, run 5/~6 (5 new calculators).** Branch
+`step/40-wave-1-math-run-5` from `origin/master`, PR #19 opened as draft before the first
+calculator was built. Added 5 calculators to the existing `math` category
+(`data/calculators/math.ts`) and appended each id to `calculatorOrder` (`data/calculators/index.ts`):
+
+- **triangle-calculator** (type B): a `mode` menu for SSS / SAS / ASA sharing one 6-field input set
+  (three sides, three angles), since the three cases are distinct closed-form procedures, not one
+  invertible equation. All three converge on the same final step — get all three sides, then
+  recompute all three angles with the law of cosines and the area with Heron's formula, so the
+  three paths stay internally consistent. The ambiguous SSA case (two sides and a non-included
+  angle, which can match 0, 1 or 2 triangles) is explicitly not supported — flagged in `watchOut`,
+  not guessed at. Invalid input (triangle inequality failure, a non-positive side, an angle outside
+  (0°, 180°), or two ASA angles summing to ≥ 180°) returns `NaN` on every output. `KNOWN_NON_FINITE`
+  registered (the automated edge case is SSS with all three sides at 0). CompareBars visual (side a
+  / side b / side c).
+- **circle-calculator** (type A, solver): radius ⟷ diameter, a trivial 2-variable invertible pair,
+  with circumference and area as `solver.outputs` rather than solver variables — a circle has only
+  one degree of freedom, so a 4-variable solver (radius/diameter/circumference/area) would need the
+  widget's "N−1 known fields" model to somehow treat 3 user-typed numbers as simultaneously
+  consistent, which they usually would not be. Manual back-solve formulas (from a known
+  circumference or area) are given in the formula section and FAQ instead of wired into the live
+  widget — a documented scope limit, not a fake solve. CompareBars visual (radius vs diameter).
+- **area-calculator** (type B): a `mode` shape menu (square, rectangle, triangle, circle,
+  trapezoid) over a shared `dim1`/`dim2`/`dim3` length-input pool, each shape reading a different,
+  non-interchangeable formula. Deliberately does not also report perimeter, since the triangle mode
+  only takes a base and a height, not all three sides — `watchOut` names the limit and cross-links
+  to `triangle-calculator`. LogScale visual against three cited everyday areas (an ISO 216 A4 sheet,
+  a FIBA-regulation basketball court, a FIFA-recommended soccer pitch).
+- **volume-calculator** (type B): the same shape-mode-menu pattern one dimension up — cube,
+  rectangular box, cylinder, sphere, cone — over the same `dim1`/`dim2`/`dim3` inputs (reused as
+  radius/height or length/width/height depending on shape). LogScale visual against a drink can, a
+  US gallon (3.785411784 L, exact per NIST), and a World Aquatics/FINA-minimum Olympic pool (2,500 m³).
+- **surface-area-calculator** (type B): the same five solids and the same `dim1`/`dim2`/`dim3`
+  inputs as `volume-calculator`, kept in lockstep so the two pages share one mental model, but each
+  solid's surface-area formula instead of its volume formula. The cone figure is explicitly the
+  TOTAL surface area (base + lateral, πr² + πr√(r²+h²)) — called out against the lateral-only
+  convention MathWorld's Cone page uses, since OpenStax's own volume/surface-area section states
+  outright that it does not cover a cone's surface area at all. LogScale visual reusing
+  area-calculator's same three benchmarks.
+
+Verification: every number in the copy (worked examples, FAQ figures, `example` lines, LogScale
+benchmarks) was recomputed independently in `verify_run5.mjs` (scratchpad, plain JavaScript rather
+than Python this run, so the triangle trig matches the app's own `Math`-object floating-point
+behavior exactly) — 0 mismatches — and cross-checked a second time directly against the app's own
+`compute()` via a Node one-liner, covering every shape/mode combination across all 5 calculators,
+the SSS/SAS/ASA triangle cases, the invalid-triangle case (confirms `NaN` on every output, not a
+wrong number), and the circle default/worked-example pair. `npm test` 326/326 (up from 318),
+`npm run build` (107 static pages, up from 102), lint clean. Data-integrity check run
+programmatically for all 5 new calculators: 0 broken `related` ids, 0 self-references, 0 duplicate
+aliases, all 79 ids unique. All 5 pages, `/categories/math` and `sitemap.xml` spot-checked on a
+local dev server (H1, every v2 section id, one JSON-LD `<script>` tag per page parsed to confirm
+all 4 node types, the correct widget mounted, a `?mode=2&sideA=8&sideB=10&angleC=60` share-link on
+triangle-calculator returning 200), then the server was killed and port 3000 confirmed free.
+References fetched directly and each confirmed to state the exact formula claimed before citing:
+OpenStax Algebra and Trigonometry 2e §10.1/§10.2 (law of sines/cosines, Heron's formula), OpenStax
+Prealgebra 2e §9.4/§9.5/§9.6 (rectangle/triangle/trapezoid area, circle circumference/area, and
+volume/surface area for all five solids), and Wolfram MathWorld's Circle, Heron's Formula, Law of
+Cosines, Law of Sines and Cone pages. LogScale benchmark facts (FIBA court, ISO 216 A4, the exact
+NIST gallon already asserted in `lib/units.ts`, the World Aquatics Olympic-pool minimum) were
+verified via search/fetch but, following the precedent that force-calculator's own chart benchmarks
+were never individually cited, are not added to the formal `content.references` list — that list is
+reserved for the calculator's core math sources. PR #19 opened as a draft before the first
+calculator was built, updated with the full run-5 summary, and taken off draft via `gh pr ready 19`
+once everything above passed. See `mdFiles/steps/40-wave-1-math.md`'s "Type decisions (run 5)" and
+"Verification" sections for the full writeup. Next session picks up run 6: slope, distance between
+two points, midpoint, scientific-calculator.
 
 ## Pending on the user — not code
 

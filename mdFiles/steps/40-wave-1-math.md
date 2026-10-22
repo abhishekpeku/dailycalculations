@@ -71,8 +71,8 @@ fresh against the v2 template (`mdFiles/calculator-template-v2.md`) and the `add
     entry (all-zero SSS fails the triangle inequality) — area/volume/surface-area treat a zero
     measurement as a legitimate (degenerate) finite 0, not an error
   - [x] `npm test` (326/326), `npm run build` (107 static pages), `npm run lint`
-  - [ ] Spot-check the 5 pages + `/categories/math` + sitemap on a local server, kill the server
-  - [ ] Update `mdFiles/STATUS.md`, open/ready the PR
+  - [x] Spot-check the 5 pages + `/categories/math` + sitemap on a local server, kill the server
+  - [x] Update `mdFiles/STATUS.md`, open/ready the PR
 - Run 6: slope, distance between two points, midpoint, scientific-calculator
 
 **Dedup decision (run 1):** the plan's list also names "mixed number" and "proportion" as separate
@@ -352,3 +352,54 @@ exact arbitrary-precision integers to confirm both the true mathematical value f
 and that the app's guard now triggers at exactly the right threshold — 0 mismatches. `npm run build`
 (102 static pages) and lint pass; re-checked on a local dev server, then killed, port 3000 confirmed
 free.
+
+**Run 5:** every number in the copy (worked examples, FAQ figures, `example` lines, LogScale
+benchmarks) was recomputed independently in `verify_run5.mjs` (scratchpad, plain JavaScript, no app
+imports — chosen over Python this time since `triangle-calculator`'s law-of-cosines/law-of-sines
+results needed to match the app's own `Math.acos`/`Math.sin` floating-point behavior exactly) — 0
+mismatches. Every figure was then cross-checked a second time by calling the app's own `compute()`
+directly (`node -e "import('./data/calculators/index.ts')..."`), for: the 3-4-5 default and 7-9-12
+worked-example triangles (SSS), the SAS case (a=8, b=10, included angle 60°), the ASA case (angles
+50°/60°, included side 10), the invalid 1-2-10 triangle (confirms every output comes back `NaN`, not
+a wrong number), the circle default (r=5) and worked example (d=14 → r=7), and every shape in
+area-calculator, volume-calculator and surface-area-calculator (square/rectangle/triangle/circle/
+trapezoid; cube/box/cylinder/sphere/cone, both volume and surface area) — every figure matched
+exactly. `npm test` 326/326 (up from 318), `npm run build` (107 static pages, up from 102),
+`npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` all pass.
+Data-integrity check run programmatically against the live data module for all 5 new calculators:
+0 broken `related` ids, 0 self-references, 0 duplicate aliases against any other calculator, all 79
+ids unique. All 5 pages spot-checked on a local dev server (H1, every v2 section id, exactly one
+JSON-LD `<script>` tag per page containing all 4 node types — `WebApplication`, `BreadcrumbList`,
+`HowTo`, `FAQPage` — confirmed by parsing it rather than just grepping for the tag, since the whole
+array serializes onto one line; the correct widget mounted — `breakdown-mode` for the four type-B
+calculators, `solver-radius`/`solver-diameter` for circle-calculator; a `?mode=2&sideA=8&sideB=10&
+angleC=60` share-link on triangle-calculator also returned 200), plus `/categories/math` and
+`sitemap.xml` both list all 5 new ids (confirmed as exact substring matches, not just non-zero grep
+counts, since "area-calculator" is also a substring of "surface-area-calculator"); dev server
+killed and port 3000 confirmed free afterward.
+
+References fetched directly, each confirmed to contain the exact formula claimed before citing:
+OpenStax Algebra and Trigonometry 2e §10.1 (Law of Sines) and §10.2 (Law of Cosines, which also
+states Heron's formula) for `triangle-calculator`; OpenStax Prealgebra 2e §9.4 (rectangle/triangle/
+trapezoid area), §9.5 (circle circumference/area), and §9.6 (volume and surface area for all five
+solids — explicitly stating it does not cover a cone's surface area) for `area-calculator`,
+`circle-calculator`, `volume-calculator` and `surface-area-calculator`; Wolfram MathWorld's Circle,
+Heron's Formula, Law of Cosines, Law of Sines and Cone pages (the last supplying the cone's lateral
+surface area formula, πrs with slant height s = √(r²+h²), that OpenStax deliberately omits — this
+calculator's cone figure adds the base, πr², on top of MathWorld's lateral-only term, and says so
+explicitly in `formula.note` and a watch-out item). The FIBA 2026 Official Basketball Rules (28 m ×
+15 m court) and ISO 216 (A4 = 210 mm × 297 mm) were verified via web search/fetch for the
+`area-calculator`/`surface-area-calculator` LogScale benchmarks, but — following the precedent that
+force-calculator's own benchmarks (an apple, a rocket) were never individually cited in its
+References list — these benchmark captions are not added as formal references, since the `content.
+references` list is reserved for the 2-4 primary sources behind the calculator's actual math, not
+every incidental fact named in a chart caption. The same applies to the US gallon (3.785411784 L,
+already asserted as exact in `lib/units.ts`'s own NIST SP 811 comment) and the Olympic pool minimum
+(World Aquatics/FINA facility rules, 50 m × 25 m × 2 m) used in `volume-calculator`'s benchmarks.
+
+**Paused 2026-10-22 after run 5.** 25/~29 math calculators done (run 1: math category + percentage,
+percent-change, percent-difference, fraction, ratio; run 2: average, weighted average, rounding,
+scientific notation, exponent; run 3: square root, cube root, logarithm, factorial, GCF; run 4: LCM,
+prime factorization, long division, quadratic formula, Pythagorean theorem; run 5: triangle, circle,
+area, volume, surface area). PR #19 ready for review. Next session picks up run 6: slope, distance
+between two points, midpoint, scientific-calculator.

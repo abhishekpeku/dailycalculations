@@ -40,11 +40,25 @@
 import { findRoot } from './solve.ts';
 
 const MAX_ITERATIONS = 200;
+// betacf's continued fraction needs roughly O(sqrt(a+b)) terms to converge once a and b are in the
+// thousands or more. A pre-merge review of binomial-distribution-calculator (which calls incompleteBeta
+// with a, b scaling directly with its trial count n) found the fixed MAX_ITERATIONS=200 cap silently
+// returned an unconverged, wrong value for n in the millions, with no signal that anything had gone
+// wrong — e.g. n=1,000,000 needs ~420 iterations to actually converge, and n=1,000,000,000 needs
+// ~3,840. ITERATION_SCALE/MAX_ITERATIONS_CEILING give betacf an iteration budget that scales with the
+// parameters (verified empirically, with margin, in mdFiles/steps/41-wave-1-statistics.md's "Pre-merge
+// review fix" note) instead of a one-size-fits-all constant; the ceiling bounds worst-case runtime
+// (confirmed under 5ms even at its full 200,000 iterations) regardless of how large a caller passes.
+const ITERATION_SCALE = 30;
+const MAX_ITERATIONS_CEILING = 200000;
 const EPSILON = 3e-16; // close to double precision; both continued fractions below converge to this
 const FLOOR = 1e-300; // avoids a literal division by zero without biasing the result
 
-/** Lanczos approximation (g=7, n=9), ~15-digit accuracy. */
-function logGamma(x: number): number {
+/**
+ * Lanczos approximation (g=7, n=9), ~15-digit accuracy. Exported for reuse (the Student's t
+ * functions below, and binomial-distribution-calculator's stirlerr-based saddle-point PMF).
+ */
+export function logGamma(x: number): number {
   const g = 7;
   const coeffs = [
     0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905,
@@ -163,8 +177,13 @@ export function normalInverseCDF(p: number): number {
 
 // ---------- Student's t ----------
 
-/** Continued fraction for the incomplete beta function (Numerical Recipes §6.4, Lentz's algorithm). */
-function betacf(x: number, a: number, b: number): number {
+/**
+ * Continued fraction for the incomplete beta function (Numerical Recipes §6.4, Lentz's algorithm).
+ * Returns whether it actually converged within its (parameter-scaled) iteration budget, so a caller
+ * never has to guess whether `h` is the real answer or a truncated partial result — see the
+ * ITERATION_SCALE/MAX_ITERATIONS_CEILING comment above for why a fixed cap isn't enough.
+ */
+function betacf(x: number, a: number, b: number): { h: number; converged: boolean } {
   const qab = a + b;
   const qap = a + 1;
   const qam = a - 1;
@@ -173,7 +192,9 @@ function betacf(x: number, a: number, b: number): number {
   if (Math.abs(d) < FLOOR) d = FLOOR;
   d = 1 / d;
   let h = d;
-  for (let m = 1; m <= MAX_ITERATIONS; m++) {
+  const maxIterations = Math.min(MAX_ITERATIONS_CEILING, Math.max(MAX_ITERATIONS, Math.ceil(ITERATION_SCALE * Math.sqrt(a + b))));
+  let converged = false;
+  for (let m = 1; m <= maxIterations; m++) {
     const m2 = 2 * m;
     let aa = (m * (b - m) * x) / ((qam + m2) * (a + m2));
     d = 1 + aa * d;
@@ -190,18 +211,32 @@ function betacf(x: number, a: number, b: number): number {
     d = 1 / d;
     const delta = d * c;
     h *= delta;
-    if (Math.abs(delta - 1) < EPSILON) break;
+    if (Math.abs(delta - 1) < EPSILON) {
+      converged = true;
+      break;
+    }
   }
-  return h;
+  return { h, converged };
 }
 
-/** Regularized incomplete beta function I_x(a, b), 0 <= x <= 1. */
-function incompleteBeta(x: number, a: number, b: number): number {
+/**
+ * Regularized incomplete beta function I_x(a, b), 0 <= x <= 1. **NaN when the continued fraction
+ * does not converge within its iteration budget** — never a silently wrong value from a truncated
+ * expansion (this replaced a real bug: see mdFiles/steps/41-wave-1-statistics.md's "Pre-merge review
+ * fix (binomial CDF/SF)" note). Exported for binomial-distribution-calculator, which uses the standard
+ * identity relating it to a binomial tail probability (I_p(k, n-k+1) = P(X >= k)) to compute the upper
+ * tail directly, never as 1 - CDF; also used by tCDF/tSF below, so this fix protects both.
+ */
+export function incompleteBeta(x: number, a: number, b: number): number {
   if (x <= 0) return 0;
   if (x >= 1) return 1;
   const prefactor = Math.exp(logGamma(a + b) - logGamma(a) - logGamma(b) + a * Math.log(x) + b * Math.log(1 - x));
-  if (x < (a + 1) / (a + b + 2)) return (prefactor * betacf(x, a, b)) / a;
-  return 1 - (prefactor * betacf(1 - x, b, a)) / b;
+  if (x < (a + 1) / (a + b + 2)) {
+    const { h, converged } = betacf(x, a, b);
+    return converged ? (prefactor * h) / a : NaN;
+  }
+  const { h, converged } = betacf(1 - x, b, a);
+  return converged ? 1 - (prefactor * h) / b : NaN;
 }
 
 /** P(T > t), the upper tail, computed directly from the incomplete beta (never as 1 - tCDF(t, df)). */

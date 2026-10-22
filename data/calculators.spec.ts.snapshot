@@ -142,6 +142,53 @@ exports[`compute() snapshots > average-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > binomial-distribution-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "trials": 10,
+      "probability": 50,
+      "successes": 6
+    },
+    "outputs": {
+      "pmfAtK": 0.205078125,
+      "cdfAtK": 0.828125,
+      "sfAtK": 0.376953125,
+      "mean": 5,
+      "standardDeviation": 1.58113883
+    }
+  },
+  "typical": {
+    "inputs": {
+      "trials": 15,
+      "probability": 75,
+      "successes": 9
+    },
+    "outputs": {
+      "pmfAtK": 0.09174776729,
+      "cdfAtK": 0.1483680774,
+      "sfAtK": 0.9433796899,
+      "mean": 11.25,
+      "standardDeviation": 1.677050983
+    }
+  },
+  "edge": {
+    "inputs": {
+      "trials": 0,
+      "probability": 0,
+      "successes": 0
+    },
+    "outputs": {
+      "pmfAtK": 1,
+      "cdfAtK": 1,
+      "sfAtK": 1,
+      "mean": 0,
+      "standardDeviation": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > bmi-calculator 1`] = `
 {
   "default": {
@@ -348,6 +395,47 @@ exports[`compute() snapshots > circle-calculator 1`] = `
       "diameter": 0,
       "circumference": 0,
       "area": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > combination-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "n": 52,
+      "r": 5
+    },
+    "outputs": {
+      "combinations": 2598960,
+      "digitCount": 7,
+      "combinationsWithRepetition": 3819816,
+      "digitCountWithRepetition": 7
+    }
+  },
+  "typical": {
+    "inputs": {
+      "n": 78,
+      "r": 8
+    },
+    "outputs": {
+      "combinations": 23446881320,
+      "digitCount": 11,
+      "combinationsWithRepetition": 48124511370,
+      "digitCountWithRepetition": 11
+    }
+  },
+  "edge": {
+    "inputs": {
+      "n": 0,
+      "r": 0
+    },
+    "outputs": {
+      "combinations": 1,
+      "digitCount": 1,
+      "combinationsWithRepetition": 1,
+      "digitCountWithRepetition": 1
     }
   }
 }
@@ -2067,6 +2155,62 @@ exports[`compute() snapshots > mortgage-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > normal-distribution-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mean": 100,
+      "standardDeviation": 15,
+      "x": 115,
+      "lowerBound": 85,
+      "upperBound": 115,
+      "percentile": 90
+    },
+    "outputs": {
+      "pLessThanX": 0.8413447461,
+      "pGreaterThanX": 0.1586552539,
+      "zScore": 1,
+      "pBetween": 0.6826894921,
+      "xAtPercentile": 119.2232735
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mean": 150,
+      "standardDeviation": 23,
+      "x": 173,
+      "lowerBound": 128,
+      "upperBound": 173,
+      "percentile": 135
+    },
+    "outputs": {
+      "pLessThanX": 0.8413447461,
+      "pGreaterThanX": 0.1586552539,
+      "zScore": 1,
+      "pBetween": 0.6719403927,
+      "xAtPercentile": 235.5373792
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mean": 0,
+      "standardDeviation": 0,
+      "x": 0,
+      "lowerBound": 0,
+      "upperBound": 0,
+      "percentile": 0
+    },
+    "outputs": {
+      "pLessThanX": "NaN",
+      "pGreaterThanX": "NaN",
+      "zScore": "NaN",
+      "pBetween": "NaN",
+      "xAtPercentile": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > p-value-calculator 1`] = `
 {
   "default": {
@@ -2427,6 +2571,47 @@ exports[`compute() snapshots > percentile-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > permutation-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "n": 5,
+      "r": 3
+    },
+    "outputs": {
+      "permutations": 60,
+      "digitCount": 2,
+      "permutationsWithRepetition": 125,
+      "digitCountWithRepetition": 3
+    }
+  },
+  "typical": {
+    "inputs": {
+      "n": 8,
+      "r": 5
+    },
+    "outputs": {
+      "permutations": 6720,
+      "digitCount": 4,
+      "permutationsWithRepetition": 32768,
+      "digitCountWithRepetition": 5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "n": 0,
+      "r": 0
+    },
+    "outputs": {
+      "permutations": 1,
+      "digitCount": 1,
+      "permutationsWithRepetition": 1,
+      "digitCountWithRepetition": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > pounds-to-kilograms-converter 1`] = `
 {
   "default": {
@@ -2578,6 +2763,53 @@ exports[`compute() snapshots > prime-factorization-calculator 1`] = `
       "extraDistinctPrimeFactors": 0,
       "smallestPrimeFactor": 0,
       "largestPrimeFactor": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > probability-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "probabilityA": 70,
+      "probabilityB": 60
+    },
+    "outputs": {
+      "bothPercent": 42,
+      "eitherPercent": 88,
+      "exactlyOnePercent": 46,
+      "neitherPercent": 12,
+      "notAPercent": 30,
+      "notBPercent": 40
+    }
+  },
+  "typical": {
+    "inputs": {
+      "probabilityA": 105,
+      "probabilityB": 90
+    },
+    "outputs": {
+      "bothPercent": 90,
+      "eitherPercent": 100,
+      "exactlyOnePercent": 10,
+      "neitherPercent": 0,
+      "notAPercent": 0,
+      "notBPercent": 10
+    }
+  },
+  "edge": {
+    "inputs": {
+      "probabilityA": 0,
+      "probabilityB": 0
+    },
+    "outputs": {
+      "bothPercent": 0,
+      "eitherPercent": 0,
+      "exactlyOnePercent": 0,
+      "neitherPercent": 100,
+      "notAPercent": 100,
+      "notBPercent": 100
     }
   }
 }

@@ -28,7 +28,8 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'slope-calculator': ['slope', 'angle', 'yIntercept'], // both points identical (0,0)-(0,0) -> no line at all, distance is still a legitimate 0
   'standard-deviation-calculator': ['sampleVariance', 'sampleStdDev'], // howMany=1 (its min) -> sample divides by n-1=0
   'variance-calculator': ['sampleVariance', 'sampleStdDev'], // howMany=1 (its min) -> sample divides by n-1=0
-  'z-score-calculator': ['zScore'] // standard deviation 0 (no min set) -> divide by zero
+  'z-score-calculator': ['zScore'], // standard deviation 0 (no min set) -> divide by zero
+  'normal-distribution-calculator': ['pLessThanX', 'pGreaterThanX', 'zScore', 'pBetween', 'xAtPercentile'] // standard deviation 0 (its min) -> honest no-answer
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

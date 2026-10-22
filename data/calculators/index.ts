@@ -132,7 +132,12 @@ export const calculatorOrder: string[] = [
   'margin-of-error-calculator',
   'sample-size-calculator',
   'p-value-calculator',
-  'quartile-calculator'
+  'quartile-calculator',
+  'probability-calculator',
+  'permutation-calculator',
+  'combination-calculator',
+  'binomial-distribution-calculator',
+  'normal-distribution-calculator'
 ];
 
 const rank = (id: string) => {

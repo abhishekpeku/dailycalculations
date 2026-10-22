@@ -2365,7 +2365,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
     },
     seo: {
       title: 'Linear Regression Calculator – Slope, Intercept, R²',
-      description: 'Free linear regression calculator. Paste paired x and y lists to find the least-squares slope, intercept, r² and standard error of the estimate, with an optional prediction.',
+      description: 'Free linear regression calculator. Paste paired x and y lists to find the least-squares slope, intercept, r² and standard error of the estimate.',
       faq: [
         { question: 'How do I calculate a linear regression line?', answer: 'Center both lists on their own means, find the slope as Σ(x−x̄)(y−ȳ) ÷ Σ(x−x̄)², then the intercept as ȳ minus the slope times x̄. For six students\' study hours and scores, that gives y ≈ 56.57 + 4.08x.' },
         { question: 'What does the slope mean?', answer: 'It is the predicted change in y for every one-unit increase in x. A slope of 4.08 means each extra hour of study predicts about 4.08 more exam points, on average, for this data.' },

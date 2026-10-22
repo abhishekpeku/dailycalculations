@@ -33,7 +33,12 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'correlation-calculator': ['r', 'rSquared', 'tStatistic', 'pValue'], // xData/yData both [0,0] (listMin) -> zero variance, 0/0
   'linear-regression-calculator': ['slope', 'intercept', 'rSquared', 'standardError', 'predictedY'], // xData/yData both [0,0] (listMin) -> zero variance, 0/0
   't-test-calculator': ['tStatistic', 'pValue'], // mode's own min selects one-sample mode; sampleStdDev 0 and sampleMean=popMean=0 -> 0/0
-  'chi-square-calculator': ['minExpected', 'count'] // mode's own min selects direct-entry mode, which never sets these two
+  'chi-square-calculator': ['minExpected', 'count'], // mode's own min selects direct-entry mode, which never sets these two
+  'relative-risk-calculator': ['relativeRisk', 'ciLower', 'ciUpper', 'riskExposedPercent', 'riskUnexposedPercent', 'correctionApplied'], // a=b=c=d=0 (all min 0) -> a+b=0, no row proportion exists
+  'odds-ratio-calculator': ['oddsRatio', 'ciLower', 'ciUpper', 'riskExposedPercent', 'riskUnexposedPercent', 'correctionApplied'], // a=b=c=d=0 (all min 0) -> a+b=0, no row proportion exists
+  'expected-value-calculator': ['expectedValue', 'variance', 'standardDeviation', 'expectedValueMinusSd', 'expectedValuePlusSd'], // listMin=1 zeros on both lists -> probabilitySum=0, fails the sum-to-1 check (probabilitySum itself stays a finite 0)
+  'coefficient-of-variation-calculator': ['sampleCV', 'populationCV', 'sampleStdDevUsed'], // list mode, listMin=1 zero -> mean=0 (CV undefined) and n=1 sample variance is 0/0 (key order matches compute()'s own return order)
+  'outlier-calculator': ['lowestOutlier', 'highestOutlier'] // listMin=1 zero -> outlierCount=0, so there is no lowest/highest outlier to report
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

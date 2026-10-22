@@ -142,7 +142,12 @@ export const calculatorOrder: string[] = [
   'linear-regression-calculator',
   't-test-calculator',
   'chi-square-calculator',
-  'standard-error-calculator'
+  'standard-error-calculator',
+  'relative-risk-calculator',
+  'odds-ratio-calculator',
+  'expected-value-calculator',
+  'coefficient-of-variation-calculator',
+  'outlier-calculator'
 ];
 
 const rank = (id: string) => {

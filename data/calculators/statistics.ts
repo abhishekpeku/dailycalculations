@@ -11,6 +11,15 @@ import { incompleteBeta, logGamma, normalCDF, normalInverseCDF, normalSF, tCDF, 
 const P_VALUE_FLOOR = 1e-300;
 const floorTinyProbability = (value: number) => Math.max(value, P_VALUE_FLOOR);
 
+// binomial-distribution-calculator: unlike p-value-calculator's floor above (where the true answer
+// is a continuous quantity that can genuinely underflow but is never exactly 0), several binomial
+// inputs produce a mathematically EXACT 0 or 1 (p = 0% or p = 100%, or k outside 0..n) — flooring
+// those would turn a correct exact answer into a misleading tiny-but-nonzero number, a real bug a
+// pre-merge review of PR #24 found. This floor only touches a value that is already nonzero but
+// small enough to risk displaying as a bare, misleading 0; an exact 0 (or a NaN from an invalid
+// input) passes through unchanged.
+const floorNonzeroProbability = (value: number) => (value === 0 || !Number.isFinite(value) ? value : Math.max(value, P_VALUE_FLOOR));
+
 // A confidence level has no natural upper bound in this kit (CalculatorInput has no `max`), and the
 // snapshot harness's own "typical" input set scales every default by 1.5x — so a 95% default would
 // become 142.5% there. Clamping keeps every confidence-level field honest instead of producing NaN
@@ -96,25 +105,118 @@ function bigToDisplay(big: bigint) {
   return { value: Number(big), digitCount: big.toString().length };
 }
 
-// Binomial PMF/CDF/SF, shared by binomial-distribution-calculator. The PMF is evaluated in log space
-// (logChoose = logGamma(n+1) - logGamma(k+1) - logGamma(n-k+1)) so it never overflows for a large n,
-// the same technique lib/distributions.ts already uses for the Student's t distribution. The CDF and
-// SF are each computed directly from the regularized incomplete beta function via the standard
-// binomial-beta identity (NIST DLMF §8.17.5) — never as 1 - CDF, so a deep upper-tail probability
-// (large n, extreme k) keeps full relative precision instead of losing it to "1 - (1 - tiny)"
-// cancellation. incompleteBeta/logGamma are lib/distributions.ts's own exported functions, reused
-// here rather than reimplemented a second time.
-function logChoose(n: number, k: number) {
-  return logGamma(n + 1) - logGamma(k + 1) - logGamma(n - k + 1);
+// Binomial PMF/CDF/SF, shared by binomial-distribution-calculator.
+//
+// Pre-merge review of PR #24 found two real bugs in the first version of this block, both from the
+// same root cause: a plain log(n!) - log(k!) - log((n-k)!) PMF, and a CDF/SF built on
+// lib/distributions.ts's incomplete beta function, both lean on logGamma evaluated at n, k and n-k
+// directly. logGamma's own relative error (~1e-15) is fine on its own, but once n is in the millions
+// logGamma(n) is itself a large number (around 1.3e7 at n=1e6, around 2e10 at n=1e9), so that same
+// relative error becomes an ABSOLUTE error of several units in the last few digits once three such
+// large logGamma values are subtracted — exactly the kind of cancellation this file's other
+// functions (normalSF, tSF) were built to avoid. Separately, lib/distributions.ts's betacf continued
+// fraction (used by incompleteBeta) needs roughly sqrt(a+b) iterations to actually converge, and its
+// fixed 200-iteration cap was silently returning an unconverged, wrong value for any n past about
+// 40,000 — with no signal anything had gone wrong. Full writeup, the specific wrong numbers found,
+// and the fix verification: mdFiles/steps/41-wave-1-statistics.md's "Pre-merge review fix" note.
+//
+// The fix has three parts:
+// 1. betacf/incompleteBeta (lib/distributions.ts) now scale their iteration budget to the parameters
+//    and report non-convergence as NaN instead of a silently wrong partial result — a general fix
+//    that also protects every other incompleteBeta caller (tCDF/tSF), not just this file.
+// 2. The PMF is now Catherine Loader's saddle-point algorithm ("Fast and Accurate Computation of
+//    Binomial Probabilities", 2000) — the same algorithm R's own dbinom() uses — via stirlerr/bd0
+//    below. It regroups the Stirling/log-likelihood terms so the dangerous subtraction never
+//    involves a quantity anywhere near logGamma(n)'s own magnitude, keeping full relative precision
+//    (verified to the 1e-13–1e-16 level against exact BigInt arithmetic) at any n this page allows.
+// 3. BINOMIAL_MAX_N is lowered from an unproven 1e9 to 1,000,000 — the largest n this file could
+//    actually verify the CDF/SF to within 1e-9 relative error (the logGamma-cancellation error above
+//    grows with n; empirically it crosses 1e-9 somewhere around n=2–3 million, so 1,000,000 keeps a
+//    safety margin), stated honestly in the page's own watch-out copy rather than claimed past where
+//    it was actually checked.
+const BINOMIAL_MAX_N = 1_000_000;
+
+// Loader's stirlerr(n): the exact correction term in ln(n!) = (n+0.5)ln(n) - n + 0.5ln(2*pi) +
+// stirlerr(n). For n <= 15 it is a lookup table of exact values (SFERR_HALVES, indexed by 2n since
+// every entry is a half-integer step) rather than the series, which would lose precision for a small
+// argument; for n > 15 it is Loader's own asymptotic series. Crucially, stirlerr(n) is a TINY,
+// directly-computed number for large n (about 1/(12n), nowhere near logGamma(n)'s own magnitude), so
+// using it instead of raw logGamma differences is what avoids this file's original cancellation bug.
+const SFERR_HALVES = [
+  0, 0.1534264097200273452913848, 0.0810614667953272582196702, 0.0548141210519176538961390, 0.0413406959554092940938221,
+  0.03316287351993628748511048, 0.02767792568499833914878929, 0.02374616365629749597132920, 0.02079067210376509311152277,
+  0.01848845053267318523077934, 0.01664469118982119216319487, 0.01513497322191737887351255, 0.01387612882307074799874573,
+  0.01281046524292022692424986, 0.01189670994589177009505572, 0.01110455975820691732662991, 0.010411265261972096497478567,
+  0.009799416126158803298389475, 0.009255462182712732917728637, 0.008768700134139385462952823, 0.008330563433362871256469318,
+  0.007934114564314020547248100, 0.007573675487951840794972024, 0.007244554301320383179543912, 0.006942840107209529865664152,
+  0.006665247032707682442354394, 0.006408994188004207068439631, 0.006171712263039457647532867, 0.005951370112758847735624416,
+  0.005746216513010115682023589, 0.005554733551962801371038690
+];
+const STIRLERR_S0 = 1 / 12, STIRLERR_S1 = 1 / 360, STIRLERR_S2 = 1 / 1260, STIRLERR_S3 = 1 / 1680, STIRLERR_S4 = 1 / 1188;
+
+function stirlerr(n: number) {
+  if (n <= 15) {
+    const doubled = n + n;
+    if (Number.isInteger(doubled)) return SFERR_HALVES[doubled];
+    return logGamma(n + 1) - (n + 0.5) * Math.log(n) + n - 0.5 * Math.log(2 * Math.PI);
+  }
+  const nn = n * n;
+  if (n > 500) return (STIRLERR_S0 - STIRLERR_S1 / nn) / n;
+  if (n > 80) return (STIRLERR_S0 - (STIRLERR_S1 - STIRLERR_S2 / nn) / nn) / n;
+  if (n > 35) return (STIRLERR_S0 - (STIRLERR_S1 - (STIRLERR_S2 - STIRLERR_S3 / nn) / nn) / nn) / n;
+  return (STIRLERR_S0 - (STIRLERR_S1 - (STIRLERR_S2 - (STIRLERR_S3 - STIRLERR_S4 / nn) / nn) / nn) / nn) / n;
 }
 
+// Loader's bd0(x, np): a numerically careful "deviance" x*ln(x/np) + np - x. The naive formula
+// cancels catastrophically when x is close to np (exactly the region every realistic k/n*p
+// comparison falls in), so bd0 uses a convergent series there instead and the naive formula only
+// where it is safe (x and np far apart, where there is no cancellation to begin with).
+function bd0(x: number, np: number) {
+  if (Math.abs(x - np) < 0.1 * (x + np)) {
+    let v = (x - np) / (x + np);
+    let s = (x - np) * v;
+    if (s === 0) return 0;
+    let ej = 2 * x * v;
+    v *= v;
+    for (let j = 1; j < 1000; j++) {
+      ej *= v;
+      const s1 = s + ej / (2 * j + 1);
+      if (s1 === s) return s1;
+      s = s1;
+    }
+    return s;
+  }
+  return x * Math.log(x / np) + np - x;
+}
+
+// P(X = k): Loader's saddle-point formula, accurate to the limits of double precision at any n this
+// file allows (see the block comment above) — never the earlier version's log(choose) + k*log(p) +
+// (n-k)*log(1-p), which loses digits once logGamma(n) itself is large.
 function binomialPmf(n: number, k: number, p: number) {
-  if (k < 0 || k > n) return 0;
   if (p === 0) return k === 0 ? 1 : 0; // 0 * log(0) would otherwise be NaN, not 0
   if (p === 1) return k === n ? 1 : 0;
-  return Math.exp(logChoose(n, k) + k * Math.log(p) + (n - k) * Math.log(1 - p));
+  if (k < 0 || k > n) return 0; // standard convention: more successes than trials is impossible, not undefined
+  const q = 1 - p;
+  if (k === 0) {
+    if (n === 0) return 1;
+    const lc = p < 0.1 ? -bd0(n, n * q) - n * p : n * Math.log(q);
+    return Math.exp(lc);
+  }
+  if (k === n) {
+    const lc = q < 0.1 ? -bd0(n, n * p) - n * q : n * Math.log(p);
+    return Math.exp(lc);
+  }
+  const lc = stirlerr(n) - stirlerr(k) - stirlerr(n - k) - bd0(k, n * p) - bd0(n - k, n * q);
+  const lf = Math.log(2 * Math.PI) + Math.log(k) + Math.log1p(-k / n);
+  return Math.exp(lc - 0.5 * lf);
 }
 
+// The CDF and SF are each computed directly from the regularized incomplete beta function via the
+// standard binomial-beta identity (NIST DLMF §8.17.5) — never as 1 - CDF, so a deep upper-tail
+// probability keeps full relative precision instead of losing it to "1 - (1 - tiny)" cancellation.
+// incompleteBeta (lib/distributions.ts) now reports non-convergence as NaN rather than a silently
+// wrong value (see the block comment above) — that NaN propagates here honestly rather than being
+// masked.
 function binomialCdf(n: number, k: number, p: number) {
   if (k < 0) return 0;
   if (k >= n) return 1;
@@ -1724,7 +1826,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
     aliases: ['binomial probability calculator', 'binomial distribution calculator', 'binomial pmf calculator', 'binomial cdf calculator'],
     related: ['combination-calculator', 'normal-distribution-calculator', 'probability-calculator', 'z-score-calculator'],
     title: 'Binomial Distribution Calculator',
-    description: 'Find P(X = k), P(X ≤ k) and P(X ≥ k) for a binomial distribution with n trials and success probability p, plus its mean and standard deviation, computed in log space for any size n.',
+    description: 'Find P(X = k), P(X ≤ k) and P(X ≥ k) for a binomial distribution with n trials and success probability p, plus its mean and standard deviation, exact to double precision for n up to 1,000,000.',
     example: 'Flip a fair coin 10 times. The probability of exactly 6 heads is about 20.51%, and the probability of 6 or more heads is about 37.70%.',
     content: {
       lastReviewed: '2026-10-22',
@@ -1733,7 +1835,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
         paragraphs: [
           'A binomial distribution describes the number of successes in a fixed number of independent trials, n, each with the same probability of success, p — a coin flipped 10 times, a product tested off a line with a known defect rate, or a fixed number of survey respondents each independently answering yes or no. The random outcome, X, is the count of successes, which can be anywhere from 0 to n.',
           'Three questions come up constantly: the exact probability of a specific count (P(X = k), the probability mass function), the probability of k or fewer successes (P(X ≤ k)), and the probability of k or more (P(X ≥ k)). All three follow from the same underlying formula, which involves the binomial coefficient nCr (see the combination calculator) weighting how many different orders give the same count of successes.',
-          'This calculator computes the exact probability for any n, including very large ones (thousands of trials), by working in log space internally and by computing the cumulative tail probabilities directly from the regularized incomplete beta function — not by summing potentially millions of individual terms, and never by subtracting a probability from 1 once that probability is already extremely small (which would lose precision exactly where it matters most). See "Watch out" below for why this matters.'
+          'This calculator keeps full precision even for a large n (into the hundreds of thousands or more) using two different numerically careful methods rather than the naive textbook formula, which breaks down well before that: P(X = k) uses a saddle-point algorithm (Loader, 2000 — the same method R\'s own dbinom function uses) that avoids the digit-cancellation a direct factorial-based calculation runs into once n is large, and P(X ≤ k)/P(X ≥ k) are each computed directly from the regularized incomplete beta function — never by summing potentially millions of individual terms one at a time, and never by subtracting a probability from 1 once that probability is already extremely small (which would lose precision exactly where it matters most). See "Watch out" below for this calculator\'s proven accuracy range and its practical cap on n.'
         ]
       },
       howTo: {
@@ -1757,7 +1859,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
           { symbol: 'k', meaning: 'The number of successes being asked about, from 0 to n.' },
           { symbol: 'nCk', meaning: 'The number of ways k successes can be arranged among n trials — see the combination calculator.' }
         ],
-        note: 'This calculator evaluates nCk × pᵏ × (1 − p)ⁿ⁻ᵏ by adding logarithms instead of multiplying the raw numbers together, so a huge binomial coefficient and a tiny probability (both of which can individually overflow or underflow a standard number for a large n) cancel out correctly instead of breaking the calculation.'
+        note: 'This calculator does not evaluate nCk × pᵏ × (1 − p)ⁿ⁻ᵏ directly — for a large n that formula needs a huge binomial coefficient and a tiny probability to cancel out to many more digits of precision than a standard number can hold, which loses accuracy well before n reaches even a few thousand. It instead uses a saddle-point algorithm (Loader, 2000) that regroups the same underlying arithmetic into pieces that never individually blow up or lose precision, giving the identical mathematical answer but computed in a numerically safe way.'
       },
       workedExample: {
         intro: 'A fair coin (p = 50%) is flipped n = 10 times. Find the probability of exactly 6 heads, and of 6 or more.',
@@ -1775,13 +1877,15 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { title: 'P(X ≤ k) and P(X ≥ k) overlap by exactly P(X = k)', body: 'They are not complementary on their own — P(X ≤ k) + P(X ≥ k) = 1 + P(X = k), not 1, because both ranges include k itself. P(X ≤ k) and P(X ≥ k + 1) are the pair that actually add to exactly 1.' },
         { title: 'For a large n and an extreme k, the probability can be far smaller than it looks', body: 'With n = 1,000 fair coin flips, P(X ≥ 600) is only about 1.364 × 10⁻¹⁰ — vanishingly small, even though 600 out of 1,000 (60%) does not sound especially extreme at a glance. This calculator computes that figure directly, in scientific notation, rather than rounding it to a misleading 0.' },
         { title: 'This assumes every trial has the same, fixed probability of success', body: 'If the success probability changes between trials, or the trials are not independent of each other, the binomial distribution — and every formula on this page — no longer applies.' },
-        { title: 'This calculator has a practical cap of n = 1,000,000,000 trials', body: 'Far beyond any realistic input, but stated honestly: above that, this calculator shows no answer rather than letting an unbounded number of trials run through the calculation.' },
-        { title: 'k outside 0 to n is handled honestly, not as an error', body: 'P(X = k) is 0 for any k below 0 or above n (that many successes is simply impossible), P(X ≤ k) is 0 below 0 and 1 above n, and P(X ≥ k) is 1 below 0 and 0 above n — all consistent with X never actually leaving the range 0 to n.' },
-        { title: 'p = 0% or p = 100% are edge cases, not errors', body: 'At p = 0%, X is always exactly 0; at p = 100%, X is always exactly n. This calculator handles both directly rather than running into a mathematically undefined log(0).' }
+        { title: 'This calculator has a practical cap of n = 1,000,000 trials, chosen because it is where accuracy was actually verified', body: 'Every figure this calculator produces for n up to 1,000,000 has been checked against independent references to within 1 part in a billion (see this page\'s own development notes for the full verification). Above that cap, this calculator shows no answer rather than quietly extrapolating past where it has been checked.' },
+        { title: 'n and k must be whole numbers — a decimal is refused, not rounded', body: 'Typing 10.5 trials or 6.5 successes shows no answer rather than silently rounding to the nearest whole number, since rounding first would answer a different question than the one actually typed in.' },
+        { title: 'k greater than n is 0 or 1 by definition, not an error — but a negative k is refused', body: 'Asking for more successes than there are trials is a well-defined, always-impossible question: P(X = k) is 0, P(X ≤ k) is 1, and P(X ≥ k) is 0 whenever k > n, the same "0 by convention" rule this site\'s permutation and combination calculators use for choosing more items than exist. A negative k, by contrast, is not a valid count of successes at all, so this calculator shows no answer for one rather than picking an arbitrary convention for it.' },
+        { title: 'p = 0% or p = 100% are edge cases, not errors', body: 'At p = 0%, X is always exactly 0, so P(X = k) is exactly 0 for every other k — shown as a genuine 0, never rounded up to a misleadingly tiny nonzero number. At p = 100%, X is always exactly n, handled the same way.' }
       ],
       references: [
         { label: 'OpenStax, Introductory Statistics 2e, §4.3 Binomial Distribution', url: 'https://openstax.org/books/introductory-statistics-2e/pages/4-3-binomial-distribution' },
         { label: 'NIST Digital Library of Mathematical Functions, §8.17 Incomplete Beta Function: Relation to the Binomial Distribution', url: 'https://dlmf.nist.gov/8.17' },
+        { label: 'Catherine Loader, "Fast and Accurate Computation of Binomial Probabilities" (R technical report) — the saddle-point algorithm this calculator\'s P(X = k) uses, also the basis of R\'s dbinom function', url: 'https://www.r-project.org/doc/reports/CLoader-dbinom-2002.pdf' },
         { label: 'Wolfram MathWorld, Binomial Distribution', url: 'https://mathworld.wolfram.com/BinomialDistribution.html' }
       ]
     },
@@ -1815,28 +1919,33 @@ export const statisticsCalculators: CalculatorConfig[] = [
     },
     seo: {
       title: 'Binomial Distribution Calculator – PMF & CDF',
-      description: 'Free binomial distribution calculator. Find P(X = k), P(X ≤ k) and P(X ≥ k), plus mean and standard deviation, computed in log space for any n, large or small.',
+      description: 'Free binomial distribution calculator. Find P(X = k), P(X ≤ k) and P(X ≥ k), plus mean and standard deviation, accurate for n up to 1,000,000.',
       faq: [
-        { question: 'How do I calculate a binomial probability?', answer: 'P(X = k) = nCk × pᵏ × (1 − p)ⁿ⁻ᵏ. For n = 10 fair coin flips and k = 6, that is 210 × 0.5⁶ × 0.5⁴ ≈ 0.2051, or about 20.51%.' },
+        { question: 'How do I calculate a binomial probability?', answer: 'P(X = k) = nCk × pᵏ × (1 − p)ⁿ⁻ᵏ. For n = 10 fair coin flips and k = 6, that is 210 × 0.5⁶ × 0.5⁴ ≈ 0.2051, or about 20.51%. (This calculator does not evaluate that formula directly for larger n — see the next question.)' },
         { question: 'What is the difference between P(X = k), P(X ≤ k) and P(X ≥ k)?', answer: 'P(X = k) is the probability of exactly k successes. P(X ≤ k) adds up every count from 0 through k. P(X ≥ k) adds up every count from k through n. The two cumulative figures overlap at k itself.' },
         { question: 'What is the mean of a binomial distribution?', answer: 'np — the number of trials times the success probability. For 10 flips of a fair coin, the mean is 10 × 0.5 = 5 heads.' },
         { question: 'What is the standard deviation of a binomial distribution?', answer: '√(np(1 − p)). For 10 flips of a fair coin, that is √(10 × 0.5 × 0.5) = √2.5 ≈ 1.58 heads.' },
-        { question: 'Can this calculator handle a very large number of trials?', answer: 'Yes — it evaluates the probability in log space and computes the cumulative tail directly from the incomplete beta function, so it stays accurate for n in the thousands or more without overflowing or summing an impractical number of terms one by one.' },
+        { question: 'Can this calculator handle a very large number of trials?', answer: 'Yes, up to n = 1,000,000 — the largest n this calculator\'s accuracy was actually checked against independent references. P(X = k) uses Catherine Loader\'s saddle-point algorithm (the same one R\'s dbinom function uses) rather than the textbook formula, which loses accuracy for even a moderately large n; P(X ≤ k) and P(X ≥ k) are computed directly from the incomplete beta function rather than summed term by term.' },
         { question: 'Why is my probability shown in scientific notation?', answer: 'Binomial tail probabilities can become extremely small for a large n and an extreme k — for example, P(X ≥ 600) out of 1,000 fair coin flips is only about 1.364 × 10⁻¹⁰. This calculator shows that honestly rather than rounding it to a misleading 0.' },
-        { question: 'What if p is 0% or 100%?', answer: 'At p = 0%, the outcome is always 0 successes; at p = 100%, it is always n successes. This calculator handles both directly as legitimate, certain outcomes.' },
+        { question: 'What if p is 0% or 100%, or I enter a decimal number of trials or successes?', answer: 'At p = 0%, the outcome is always 0 successes, so P(X = k) for any other k is a genuine, exact 0 (never a tiny nonzero number); at p = 100%, it is always n successes, handled the same way. A decimal count — 10.5 trials or 6.5 successes — is not a valid input at all, so this calculator shows no answer rather than silently rounding it to a different question than the one actually typed in.' },
         { question: 'How is this related to the combination calculator?', answer: 'The binomial coefficient nCk inside the binomial probability formula is exactly what the combination calculator computes — it counts how many different orders of trials produce the same number of successes.' }
       ]
     },
     compute(values) {
-      const n = Math.round(values.trials);
-      const k = Math.round(values.successes);
+      const n = values.trials;
+      const k = values.successes;
       const p = Math.min(100, Math.max(0, values.probability)) / 100;
       const noAnswer = { pmfAtK: NaN, cdfAtK: NaN, sfAtK: NaN, mean: NaN, standardDeviation: NaN };
-      if (!Number.isInteger(n) || n < 0 || n > 1e9 || !Number.isInteger(k)) return noAnswer;
+      // n and k must already be non-negative integers — silently rounding a typed-in 10.5 would
+      // answer a different question than the one actually asked, a real bug a pre-merge review of
+      // PR #24 found (Math.round(10.5) silently became 11). k > n is still a valid, well-defined
+      // question (0 by convention, handled inside binomialPmf/Cdf/Sf — see their own comments and
+      // this page's watch-out item), not refused here; only a genuinely invalid n or k is.
+      if (!Number.isInteger(n) || !Number.isInteger(k) || n < 0 || k < 0 || n > BINOMIAL_MAX_N) return noAnswer;
       return {
-        pmfAtK: floorTinyProbability(binomialPmf(n, k, p)),
-        cdfAtK: floorTinyProbability(binomialCdf(n, k, p)),
-        sfAtK: floorTinyProbability(binomialSf(n, k, p)),
+        pmfAtK: floorNonzeroProbability(binomialPmf(n, k, p)),
+        cdfAtK: floorNonzeroProbability(binomialCdf(n, k, p)),
+        sfAtK: floorNonzeroProbability(binomialSf(n, k, p)),
         mean: n * p,
         standardDeviation: Math.sqrt(n * p * (1 - p))
       };

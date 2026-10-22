@@ -8,7 +8,7 @@
 // module's own implementation.
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { normalCDF, normalInverseCDF, normalSF, tCDF, tInverseCDF, tSF } from './distributions.ts';
+import { incompleteBeta, normalCDF, normalInverseCDF, normalSF, tCDF, tInverseCDF, tSF } from './distributions.ts';
 
 // Pre-merge review fix: the task's original ">= 6 significant digits" was found to be met only in
 // *displayed* digits, not in the underlying relative error, once the previous erf approximation's
@@ -99,6 +99,50 @@ describe('tSF (upper tail, computed directly)', () => {
     const farTail = tSF(50, 5);
     assert.ok(farTail > 0 && farTail < 1e-6);
     closeRelative(farTail, 1 - tCDF(50, 5), 1e-9); // the two routes must still agree on the math
+  });
+});
+
+describe('incompleteBeta (parameter-scaled convergence, see binomial-distribution-calculator\'s "Pre-merge review fix")', () => {
+  // Pre-merge review of PR #24 (binomial-distribution-calculator) found that betacf's old fixed
+  // 200-iteration cap silently returned an unconverged, wrong value once a and b were in the tens
+  // of thousands or more (binomial-distribution-calculator calls incompleteBeta with a, b scaling
+  // directly with its trial count n). These tests check the fix directly, at the actual scale the
+  // bug report used, not just through a calculator.
+
+  test('a reflection identity (I_x(a,b) = 1 - I_(1-x)(b,a)) holds exactly at huge a, b', () => {
+    // This identity is a property of the Beta function itself, true for any valid x, a, b — an
+    // independent check that does not rely on any other part of this module or on a separately
+    // sourced reference value. If betacf had stopped short of converging, the two independently
+    // computed sides would not actually sum to 1.
+    for (const [a, b] of [[500000, 500001], [500000000, 500000001], [300000, 700001]]) {
+      closeRelative(incompleteBeta(0.5, a, b) + incompleteBeta(0.5, b, a), 1, 1e-12);
+    }
+  });
+
+  test('converges (not NaN) for a, b at the binomial-distribution-calculator\'s own n = 1,000,000 cap', () => {
+    const value = incompleteBeta(0.5, 500000, 500001);
+    assert.ok(Number.isFinite(value), 'must not be NaN at the scale this site actually uses');
+  });
+
+  test('matches the bug report\'s own reference figure at n = 1,000,000 (symmetric binomial CDF at the midpoint)', () => {
+    // P(X <= n/2 | p=0.5) = I_0.5(n-k, k+1) with k=n/2=500000. The reference value,
+    // 0.5003989421806658, is 0.5 + pmf(500000)/2 computed independently via Loader's saddle-point
+    // algorithm (statistics.ts's binomialPmf, verified separately against exact BigInt arithmetic
+    // for moderate n in verify_run3.mjs) -- a genuinely different computation path from betacf.
+    closeRelative(incompleteBeta(0.5, 500000, 500001), 0.5003989421806658, 1e-9);
+  });
+
+  test('reports non-convergence as NaN rather than a wrong value, for a pathologically huge a, b beyond any real caller\'s range', () => {
+    // a+b = 1e15 is far past anything binomial-distribution-calculator's own n <= 1,000,000 cap (or
+    // any realistic t-distribution degrees of freedom) would ever pass; confirmed separately (see
+    // the step file) that betacf's iteration count genuinely exhausts its ceiling here, rather than
+    // this test merely asserting a cap exists without checking it is ever reached.
+    assert.ok(Number.isNaN(incompleteBeta(0.5, 5e14, 5e14 + 1)));
+  });
+
+  test('x <= 0 or x >= 1 are still the plain boundary values, independent of convergence', () => {
+    assert.equal(incompleteBeta(0, 500000, 500001), 0);
+    assert.equal(incompleteBeta(1, 500000, 500001), 1);
   });
 });
 

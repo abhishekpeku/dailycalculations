@@ -761,3 +761,97 @@ build-time diff noted in every previous run).
   future step could add a `max`-aware percentile field once the kit grows one, but that gap already
   exists everywhere else `targetPercentile`/`confidenceLevel` are clamped manually
   (percentile-calculator, confidence-interval-calculator), so it is not a new gap introduced here.
+
+### Pre-merge review fix (2026-10-22): binomial-distribution-calculator had five real bugs
+
+Pre-merge review of PR #24 found that `binomial-distribution-calculator` gave wrong results past a
+fairly modest n, and mishandled several edge cases outright. All five issues shared a root cause
+(incompleteBeta's fixed iteration cap and logGamma-based PMF both breaking down at scale) or a common
+pattern (a shared floor/rounding helper applied too bluntly). Full detail below; the short version:
+
+1. **Large-n CDF/SF was silently wrong, not just imprecise.** `lib/distributions.ts`'s `betacf`
+   (the continued fraction behind `incompleteBeta`) needs roughly `O(sqrt(a+b))` iterations to
+   actually converge once `a`/`b` are in the thousands or more — `binomialCdf`/`binomialSf` call it
+   with `a`, `b` scaling directly with `n`. The old fixed `MAX_ITERATIONS = 200` cap was far too low
+   past about n = 40,000: at n = 1,000,000 it returned `0.5003881988` for a case the review confirmed
+   should be `0.50039894` (wrong at the 5th digit, needing 417 iterations to actually converge); at
+   n = 1,000,000,000 it returned complete garbage that this page's own tiny-probability floor then
+   turned into a misleadingly confident `1 × 10⁻³⁰⁰`. **Fix:** `betacf` now scales its iteration
+   budget to the parameters (`Math.ceil(30 * Math.sqrt(a + b))`, capped at a hard
+   `MAX_ITERATIONS_CEILING = 200000` for worst-case runtime safety — confirmed under 5ms even at the
+   full ceiling) and reports whether it actually converged; `incompleteBeta` returns `NaN` rather
+   than a silent wrong value when it did not, protecting every other caller (`tCDF`/`tSF`, used by
+   confidence-interval-calculator and p-value-calculator) the same way, not just this one calculator.
+2. **PMF precision at huge n.** The original PMF (`exp(logChoose(n,k) + k*ln(p) + (n-k)*ln(1-p))`,
+   with `logChoose` built from raw `logGamma` differences) loses digits once `logGamma(n)` itself is
+   large — `logGamma`'s own ~1e-15 *relative* error becomes a much bigger *absolute* error once its
+   argument is in the billions. **Fix:** `binomialPmf` (`data/calculators/statistics.ts`) now uses
+   Catherine Loader's saddle-point algorithm ("Fast and Accurate Computation of Binomial
+   Probabilities", the same method R's own `dbinom` function uses) via a `stirlerr`/`bd0` pair that
+   regroups the same arithmetic into pieces that never individually approach `logGamma(n)`'s own
+   magnitude. Verified against exact `BigInt` arithmetic for n up to 5,000 (relative error 1e-13 to
+   1e-16) in `verify_run3.mjs`.
+3. **An exact 0 was being shown as `1 × 10⁻³⁰⁰`.** The shared `floorTinyProbability` helper (built
+   for p-value-calculator, where the true answer is a continuous quantity that can genuinely
+   underflow but is never exactly 0) was being applied unconditionally to every binomial output —
+   including the many binomial cases that are mathematically EXACTLY 0 (p=0% with k≠0, p=100% with
+   k≠n, k outside 0..n). **Fix:** a new, binomial-specific `floorNonzeroProbability` passes an exact
+   0 (or a `NaN`) through unchanged, and only floors a value that is already nonzero but small enough
+   to risk displaying as a misleading bare 0. `floorTinyProbability` itself is untouched — this is a
+   new, separate helper, not a change to p-value-calculator's existing behavior.
+4. **Non-integer trials/successes were silently rounded, not refused.** `Math.round(10.5)` quietly
+   became 11 and computed an answer to a different question than the one typed in.
+   **Fix:** `compute()` now checks `Number.isInteger` on the raw input values directly (no rounding
+   step at all) and returns no answer for a non-integer n or k.
+5. **k > n and negative inputs needed an explicit, stated convention.** Chosen: `k > n` (or `k < 0`
+   is a genuinely impossible count, not an input error, by the same "0 by convention" rule this run's
+   own permutation/combination calculators use for choosing more items than exist) stays a
+   well-defined 0/1 (handled inside `binomialPmf`/`Cdf`/`Sf`, documented in a watch-out item); a
+   negative `k` or `n`, or `n` past the new cap, is refused outright (`NaN`) since it violates the
+   "non-negative integer" requirement with no sensible convention to fall back on. `p` outside
+   0–100% continues to clamp to the nearest valid percentage (same convention every other
+   percent-shaped field on this site already uses).
+
+**BINOMIAL_MAX_N lowered from an unproven 1,000,000,000 to a proven 1,000,000.** With `betacf` now
+actually converging, the *remaining* error source is `incompleteBeta`'s own `logGamma`-based
+prefactor computation (unrelated to the iteration-cap bug above, and not practical to eliminate
+without porting a much larger specialized algorithm — DiDinato & Morris's `bratio`). Measured
+directly in `verify_run3.mjs` against the symmetric-midpoint identity `P(X≤n/2 | p=0.5) = 0.5 +
+pmf(n/2)/2` (itself independent of `incompleteBeta`, since the right-hand side uses only the
+now-accurate Loader PMF): relative error is 2.2×10⁻¹⁰ at n=1,000,000, crossing 1×10⁻⁹ somewhere
+around n=3,000,000. `BINOMIAL_MAX_N = 1,000,000` keeps a safety margin inside the range this file
+actually checked, per the task's own explicit instruction to lower the cap to where accuracy is
+proven rather than claim it past that point. Stated honestly in a watch-out item and the FAQ, not
+silently narrowed.
+
+**Verification**, re-run with the corrected code (`verify_binomial_fix_tmp.mjs`, project root,
+deleted after use, importing the real shipped `data/calculators/index.ts` — the only honest way to
+check "does the shipped module give the shipped numbers"):
+- n=1,000,000, p=50%, k=500,000: `cdfAtK`/`sfAtK` = **0.5003989420688252** (matches the review's own
+  expected ≈0.50039894; was 0.5003881988 before the fix).
+- n=1,000,000,000 (now past the cap): every output is `NaN` (an honest no-answer; was a wrongly
+  confident `1×10⁻³⁰⁰` before).
+- Asymmetric n=1,000,000, p=30%, k=300,500: `pmfAtK`=0.00047991816459567587, `cdfAtK`=0.8626169720928362,
+  `sfAtK`=0.13786294600175744 — self-consistent with the "overlap by exactly pmf" identity
+  (`cdfAtK + sfAtK = 1 + pmfAtK`, both sides agree to about 1e-10).
+- n=10, p=100%, k=9: `pmfAtK`=**0** (was `1×10⁻³⁰⁰`). n=10, p=0%, k=3: `pmfAtK`=**0**,
+  `sfAtK`=**0** (was `1×10⁻³⁰⁰` for both). n=10, k=11 (>n=10): `pmfAtK`=**0**, `sfAtK`=**0**,
+  `cdfAtK`=**1** — well-defined, not refused.
+- trials=10.5, successes=6.5, or successes=-1: every output is `NaN` (was silently rounded/accepted
+  before).
+- p=150% (>100%): clamps to 100% as before, now correctly honored alongside the other fixes.
+- The exactly-at-cap case (n=1,000,000) still computes; n=1,000,001 (one past the cap) returns `NaN`.
+- The original worked example (n=10, p=50%, k=6) and the large-n FAQ figure (n=1,000, p=50%,
+  P(X≥600)≈1.364×10⁻¹⁰) are both unchanged (both already well inside the proven-accurate range, and
+  neither triggers any of the five bugs above).
+
+**Tests added**: `lib/distributions.spec.ts` gained 5 new tests for `incompleteBeta` directly
+(now exported — a reflection-identity check at huge a/b that needs no external reference, a
+convergence check at the calculator's own n=1,000,000 scale, a regression test pinned to the bug
+report's own reference figure, a genuine non-convergence case at a+b=1e15 — confirmed to actually
+exhaust the iteration ceiling, not just assert one exists — and the plain x≤0/x≥1 boundary values).
+`npm test` 463/463 (up from 458), `npm run lint` clean, `npm run build` passes (127 static pages, no
+new pages — this is a fix to an existing calculator, not a new one). No calculator's
+`compute()`-snapshot changed (binomial-distribution-calculator's default/typical/edge snapshot values
+round to the same displayed precision under both the old and new PMF algorithm, since none of its
+pre-existing test cases exercised the bug — only n in the hundreds of thousands or more did).

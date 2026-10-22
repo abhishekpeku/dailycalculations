@@ -431,3 +431,125 @@ dropped); `"45%, 50%"` → mean 47.5, count 2 (previously all dropped). 34 parse
 20) and 2 new share-link tests in `lib/breakdown.spec.ts`; `npm test` 403/403, `npm run lint`,
 `npm run build` all pass. No existing snapshot changed (this fix is parser/widget-only; `compute()`
 and every calculator's default/typical/edge inputs are untouched).
+
+---
+
+## Run 2: confidence interval, margin of error, sample size, p-value, quartile/IQR
+
+Branch `step/41-wave-1-statistics-run-2`, from `origin/master` (which already has run 1 + the list
+input merged). Five calculators needing the standard normal and Student's t distributions — the
+first calculators on the site that need a probability-distribution module, not just arithmetic.
+
+### Progress
+
+- [x] Branch created, this section written before coding
+- [x] `lib/distributions.ts` (`normalCDF`, `normalInverseCDF`, `tCDF`, `tInverseCDF`) +
+      `lib/distributions.spec.ts` against published table values
+- [x] Independent scratch verification (`verify_run2.mjs`) of the distribution module and every
+      worked example, before writing any copy
+- [x] confidence-interval-calculator (type B)
+- [x] margin-of-error-calculator (type B)
+- [x] sample-size-calculator (type B)
+- [x] p-value-calculator (type B)
+- [x] quartile-calculator (type B, list input, reuses `percentileOf`)
+- [x] Snapshot tests (`npm run test:update`), re-diff against the scratch script
+- [x] `npm test`, `npm run build`, `npm run lint` all pass
+- [x] Spot-check the 5 pages + updated `/categories/statistics` + sitemap on a local dev server, kill it
+- [x] Update `mdFiles/STATUS.md` (row 40–42 + session log)
+- [x] Mark PR ready
+
+### The distribution module (`lib/distributions.ts`)
+
+No dependency added — everything is hand-written, dependency-free, and unit-tested against
+published table values, matching the rest of the kit's numeric code (`lib/solve.ts`,
+`lib/amortization.ts`).
+
+- **`normalCDF(z)`**: the Abramowitz & Stegun 7.1.26 rational approximation to `erf` (max absolute
+  error 1.5×10⁻⁷), then `Φ(z) = 0.5(1 + erf(z/√2))`.
+- **`normalInverseCDF(p)`**: Peter J. Acklam's rational approximation for the standard normal
+  quantile function (2003, public-domain algorithm widely used in statistics software), accurate to
+  about 1.15×10⁻⁹ relative error over `0 < p < 1`. A closed form, not a root-find — exact and fast
+  for every confidence level the calculators need.
+- **`tCDF(t, df)`**: the regularized incomplete beta function via the standard Student's t identity
+  `P(T ≤ t) = 1 − 0.5·I_x(df/2, 0.5)` for `t > 0` (and the mirror for `t < 0`), `x = df/(df+t²)`.
+  The incomplete beta itself is Numerical Recipes' continued-fraction evaluation (Lentz's
+  algorithm, `betacf`) with a Lanczos-approximation `logGamma` for the beta prefactor — the
+  standard, textbook way to compute it without a dependency.
+- **`tInverseCDF(p, df)`**: found by root-finding `tCDF(t, df) − p = 0` with the project's own
+  `lib/solve.ts` `findRoot` (Brent's method, already used by the solver widget for rate-type
+  variables) rather than a second, separately-erred closed-form inverse-t approximation — `tCDF` is
+  strictly monotonic in `t` for any `df > 0`, so there is exactly one root and Brent's method finds
+  it to a much tighter tolerance than 6 significant figures.
+
+**Accuracy evidence** (`lib/distributions.spec.ts`, published reference values): `normalCDF(1.96)` ≈
+0.975002 (Φ(1.96) = 0.9750021…), `normalInverseCDF(0.975)` ≈ 1.959964 (the standard 95% two-tailed
+z-critical value), `normalInverseCDF(0.95)` ≈ 1.644854, `normalInverseCDF(0.995)` ≈ 2.575829,
+`tInverseCDF(0.975, 10)` ≈ 2.228139 (the textbook df=10, 95% two-tailed t-table entry),
+`tInverseCDF(0.975, 1)` ≈ 12.706205, `tInverseCDF(0.995, 1)` ≈ 63.656741 — all matching published
+tables (NIST/SEMATECH's t-table, standard normal tables) to at least 6 significant digits, several to
+8-9. Stated accuracy target (the task's instruction): **≥ 6 significant digits** — met with margin.
+
+### Type decisions (run 2)
+
+| Calculator | Type | Why | Visual |
+|---|---|---|---|
+| confidence-interval-calculator | B | Mean-based CI (x̄, standard deviation, n, confidence level) — not a single invertible equation once a distribution's inverse-CDF is involved, so no `solver`. **z vs. t, explicit mode selector** (the task's required decision point): `mode` 1 = "known population σ (z-interval)", 2 = "only a sample s (t-interval)", default 2 — matching real-world practice, where the population standard deviation is almost never actually known and the t-interval (df = n−1) is the honest default; content explains why t is wider than z for the same confidence level (it accounts for the extra uncertainty of estimating σ from the sample itself) and why the gap shrinks as n grows. Summary-statistic entry (x̄, s, n), not a pasted raw-data list — keeps the page focused on the CI formula itself; content cross-links to mean-median-mode-calculator/standard-deviation-calculator for readers who have raw data and need x̄/s first, the same one-job-per-page precedent `z-score-calculator` already set against `standard-deviation-calculator`. `degreesOfFreedom` (n−1) is always shown, labeled "used in t-mode only," rather than conditionally NaN'd in z-mode — avoids an artificial edge case for a field that is simply unused, not undefined, in z-mode. Confidence level has no natural upper bound in the kit (no `max` on `CalculatorInput`, the same gap percentile-calculator worked around) — `compute()` clamps it to `[0.01, 99.99]`, identically to percentile-calculator's own `targetPercentile` clamp, so a value of exactly 100% (which would mathematically require an infinitely wide interval) degrades gracefully instead of emitting `NaN`. | compareBars: lower bound / sample mean / upper bound |
+| margin-of-error-calculator | B | **Proportion-based only, a deliberate and stated scope decision** (the task's phrasing allows "and/or"): a mean-based margin of error is exactly `critical value × standard error`, already fully exposed as the `marginOfError` row on confidence-interval-calculator — building a second UI for the identical arithmetic (with the structural problem that a proportion's margin is a percent and a mean's margin is in the data's own units, which `compute()`'s single fixed `breakdown.headline` key cannot switch between by mode) would either duplicate that page or force an awkward two-headline design; the content explicitly says so and cross-links there instead. Proportion-based is also by far the dominant real-world "margin of error calculator" search intent (survey/poll results). Uses the **Wald interval's margin** (`z × √(p̂(1−p̂)/n)`), stated explicitly as the simplest, most widely taught method, with a watch-out item noting the Wilson interval (used by some statistical software) handles small samples or extreme proportions (p̂ near 0% or 100%) more accurately, where the Wald margin can understate the true uncertainty. **Finite population correction, explicitly optional**: a `populationSize` field defaulting to 0 (meaning "not applied, treat the population as effectively infinite"), applied only when a sensible finite population greater than the sample size is actually given — stated plainly in content/watch-out, not left to be discovered. | compareBars: lower bound / sample proportion / upper bound |
+| sample-size-calculator | B | Closed-form rearrangement of the margin-of-error formula for `n`, directly reusing the same `normalInverseCDF` critical value — no solver needed since it is not meaningfully invertible in the other direction (margin of error as a function of a non-integer sample size has no reciprocal "solve for p̂" use case worth a shared widget). **Conservative default `p̂ = 50%`** (the task's instruction): variance `p(1−p)` is maximized at p=0.5, so using 50% when the true proportion is unknown guarantees the resulting sample size is large enough for *any* actual proportion — stated explicitly in content, with a watch-out item that a known-narrower estimate (e.g. "about 20% of customers churn") gives a smaller, still-valid sample size. **Always rounds up** (`Math.ceil`), stated in watch-out and FAQ: a fractional sample size under-covers the stated confidence/margin, so the conventional, honest rule is to round toward more data, never fewer. Same optional finite-population-correction field and default-off convention as margin-of-error-calculator, applied with the standard formula `n_adjusted = n₀ ÷ (1 + (n₀−1)/N)`. | compareBars: exact calculation (unrounded) / sample size needed (rounded up) |
+| p-value-calculator | B | A score → one-sided cumulative probability → a tail read-off is not an invertible equation (and the three tail conventions give three different one-way answers from the same inputs), so `solver` does not fit. **z vs. t mode selector**, same pattern as confidence-interval-calculator, `degreesOfFreedom` used only in t-mode (clamped to a minimum of 1, not conditionally NaN'd). **Three tail types** (two-tailed default, left/"less than", right/"greater than") computed directly from the one-sided CDF: two-tailed = `2 × min(CDF, 1−CDF)`, left = `CDF`, right = `1 − CDF` — all three are always well-defined for any finite score and any `df ≥ 1`, so this calculator needed **zero** `KNOWN_NON_FINITE` entries, the first of the five. **Tiny p-values, clamped honestly, not to 0 or float noise** (the task's explicit instruction): `pValue`'s `format: 'significant'` (not `'number'`, which rounds to 2 decimals and would silently show `0.00` for anything under a cent) routes any value under 10⁻³ through `lib/calculator.ts`'s existing scientific-notation branch (`formatSignificant`) — so a p-value of 5.74×10⁻⁷ (the worked FAQ example at z=5) displays as `5.742 × 10^-7`, the true computed figure, never a bare `0`; content explains that papers conventionally report very small p-values as "p < 0.0001" rather than the exact figure, and why this calculator shows the real number instead. | rangeBar: the p-value against the four conventional significance bands (< 0.01 highly significant, 0.01–0.05 significant, 0.05–0.10 marginal, ≥ 0.10 not significant) |
+| quartile-calculator | B | Rank-and-interpolate on a list, same shape as percentile-calculator, so no solver. **Reuses `percentileOf`, the exact same private helper percentile-calculator already defines in this file** — the task's own instruction ("the same NIST/Hyndman–Fan type 6 as percentile-calculator for consistency... cross-link percentile-calculator") taken literally: Q1/Q2/Q3 are `percentileOf(sorted, 25/50/75)`, guaranteeing this page can never silently disagree with percentile-calculator on the same data, the same cross-calculator-consistency precedent standard-deviation/variance-calculator set in run 1. **Tukey's 1.5×IQR fences** (`lowerFence = Q1 − 1.5×IQR`, `upperFence = Q3 + 1.5×IQR`) plus an honest `outlierCount` (how many of the entered values fall outside the fences) — not a list of the outlier values themselves, since `compute()`'s return type is strictly `Record<string, number>` (the same "mode as text" kit limit run 1's list-input work already parked) and a count is the honest, kit-shaped alternative rather than inventing a text output. Content states Excel/TI's quartile functions can differ slightly, same honesty precedent as percentile-calculator's own Excel-disagreement watch-out. | compareBars: Q1 / median (Q2) / Q3 |
+
+### Verification
+
+Every number recomputed independently in `verify_run2.mjs` (scratchpad, plain Node, no app
+imports, including from-scratch re-implementations of `erf`, Acklam's inverse-normal rational
+approximation, the Lanczos `logGamma`, Numerical Recipes' `betacf`/incomplete-beta, and a plain
+bisection root-finder standing in for `lib/solve.ts`'s `findRoot`) *before* any copy was written,
+then diffed against the shipped `compute()`/distribution-module output via the regenerated snapshot
+file — 0 mismatches. Key figures (full detail in the script's own output, re-run before this report):
+
+- **Distributions**: `normalCDF(1.96)` = 0.9750021738917761, `normalInverseCDF(0.975)` =
+  1.959963986120195, `normalInverseCDF(0.95)` = 1.644853625133699, `normalInverseCDF(0.995)` =
+  2.5758293064439264, `tInverseCDF(0.975, 10)` = 2.228138851986274, `tInverseCDF(0.975, 1)` =
+  12.70620473617467, `tInverseCDF(0.995, 1)` = 63.656741162870844 — all within 6+ significant
+  digits of the published reference values quoted above.
+- **confidence-interval-calculator** (x̄=15.2, s=4.1, n=36, 95%, t-mode): df=35, t*≈2.030108,
+  standard error≈0.683333, margin≈1.387240, interval ≈ [13.8128, 16.5872]. FAQ z-mode example
+  (x̄=100, σ=15, n=50, 95%): z*≈1.959964, margin≈4.157711, interval ≈ [95.8423, 104.1577].
+- **margin-of-error-calculator** (p̂=54%, n=1000, 95%): z*≈1.959964, standard error≈1.576071%,
+  margin ≈ ±3.0890%. FPC FAQ example (p̂=50%, n=200, N=2000, 95%): margin without FPC ≈ ±6.9295%,
+  with FPC (factor ≈0.948921) ≈ ±6.5756%.
+- **sample-size-calculator** (95%, margin 4%, p̂=50%): z*≈1.959964, n₀≈600.228, rounds up to
+  **601**. FPC FAQ example (same inputs, N=2000): adjusted n≈461.851, rounds up to **462**. Second
+  FAQ example (99%, margin 3%, p̂=50%): n₀≈1843.027, rounds up to **1844**.
+- **p-value-calculator**: z=2.15 two-tailed p≈0.031555 (3.1555%); t=2.5, df=20, one-tailed (right)
+  p≈0.010617, two-tailed p≈0.021234; extreme-case z=5 two-tailed p≈5.7421×10⁻⁷ (the tiny-p-value
+  FAQ example, confirming the scientific-notation display path).
+- **quartile-calculator** (8 scores: 60, 65, 70, 72, 78, 85, 90, 95): Q1=66.25, median=75, Q3=88.75,
+  IQR=22.5, fences [32.5, 122.5], 0 outliers (both the min 60 and max 95 sit inside the fences).
+
+**Data-integrity check**, run programmatically against the live data module for all 5 new
+calculators: 93 total calculators, 0 duplicate ids, 0 broken `related` ids, 0 self-references, 0
+new duplicate aliases, every new `seo.title` ≤ 60 characters and `seo.description` ≤ 160 characters,
+5–8 FAQs and 4-5 aliases/4 related ids each.
+
+`npm test`, `npm run build`, `npm run lint` results and the dev-server spot-check are recorded in
+`STATUS.md`'s session log for this run, alongside the final static-page and test counts.
+
+### Parked (new, this run)
+
+- **Margin-of-error-calculator's mean-based mode was explicitly scoped out**, not forgotten — see
+  the type-decision table above. If a future step wants it anyway, the real blocker is
+  `BreakdownOutput`'s single fixed `format` per key: a `headline` cannot be `'percent'` in one mode
+  and `'number'`/`'significant'` in another from the same compute() key, which is the same
+  underlying kit limitation (no per-row conditional formatting) that blocked "mode as text" in the
+  list-input work.
+- **The list parser's known locale gap (comma decimal, step 18) applies to quartile-calculator too**,
+  since it uses the same `type: 'list'` input as every other list-based statistics calculator. Not a
+  new gap, just a new calculator that inherits the existing one.
+- **Wald vs. Wilson proportion intervals**: margin-of-error-calculator and sample-size-calculator
+  both use the simpler, more widely taught Wald method, stated honestly with a watch-out pointing at
+  Wilson's better small-sample/extreme-proportion behavior. A Wilson-interval variant was considered
+  and explicitly not built — it would need its own critical-value handling baked differently into
+  the margin formula (not a simple swap), and the task's own instructions allowed picking one method
+  "honestly" rather than requiring both.

@@ -128,6 +128,22 @@ describe('scientificCalc: a combined expression', () => {
     // sin(30°) + log(100) × 5! = 0.5 + 2 × 120 = 240.5
     close(evaluateExpression('sin(30) + log(100) * 5!'), 240.5);
   });
+
+  test('nested function composition', () => {
+    close(evaluateExpression('sin(cos(0))'), Math.sin(Math.PI / 180)); // cos(0)=1 (deg argument to sin)
+    close(evaluateExpression('ln(e^2)'), 2);
+    close(evaluateExpression('sqrt(sqrt(16))'), 2);
+  });
+
+  test('implicit multiplication combined with a function call', () => {
+    close(evaluateExpression('2sin(90)'), 2); // 2 * sin(90deg) = 2 * 1
+    close(evaluateExpression('3√(4)'), 6); // 3 * sqrt(4) = 3 * 2
+  });
+
+  test('a long expression mixing every feature at once', () => {
+    // (2+3)^2 - 4! / ln(e) + 2pi = 25 - 24/1 + 2pi = 1 + 2pi
+    close(evaluateExpression('(2+3)^2 - 4!/ln(e) + 2pi'), 1 + 2 * Math.PI);
+  });
 });
 
 describe('scientificCalc: malformed input', () => {

@@ -553,3 +553,102 @@ new duplicate aliases, every new `seo.title` ≤ 60 characters and `seo.descript
   and explicitly not built — it would need its own critical-value handling baked differently into
   the margin formula (not a simple swap), and the task's own instructions allowed picking one method
   "honestly" rather than requiring both.
+
+### Pre-merge review fix (2026-10-22): normalCDF's erf approximation was not accurate enough for its own job
+
+Pre-merge review of PR #23 measured the *relative* error of the original `normalCDF` (Abramowitz &
+Stegun 7.1.26, a rational approximation to `erf` with a fixed ~1.5×10⁻⁷ **absolute** error budget)
+against published high-precision tail values and found it badly wrong exactly where a p-value
+calculator's job actually is — once the quantity being measured is itself smaller than that fixed
+absolute error, every digit of it is noise:
+
+| z | measured `1 - normalCDF(z)` (old) | true `Q(z)` | relative error |
+|---|---|---|---|
+| 3 | 1.349967×10⁻³ | 1.349898×10⁻³ | 5×10⁻⁵ |
+| 4 | 3.168604×10⁻⁵ | 3.167124×10⁻⁵ | 5×10⁻⁴ |
+| 5 | 2.871050×10⁻⁷ | 2.866516×10⁻⁷ | 1.6×10⁻³ (displayed "2.871 × 10^-7", true value 2.867) |
+| 8 | 6.66×10⁻¹⁶ | 6.22×10⁻¹⁶ | 7% |
+
+An *absolute*-error budget is the wrong thing to control when the downstream number (a p-value) is
+itself routinely smaller than that budget — the original "≥ 6 significant digits" target was being
+met only in the sense of "6 digits printed," not "6 correct digits," which is a materially different
+and much weaker claim, and dishonest relative to the task's actual accuracy instruction. There was a
+second, compounding bug of the same shape: `1 - normalCDF(z)` and the old `tCDF`-derived `1 -
+cdfValue` both derive a tiny quantity by subtracting something close to 1 from 1 — "1 − (1 − ε)" is a
+textbook floating-point cancellation trap that can lose most of ε's own significant digits even when
+the "1 − ε" part was computed perfectly.
+
+**The fix, in `lib/distributions.ts`:**
+
+- `normalCDF`'s `erf`-based approximation is replaced entirely. The standard normal tail
+  `Q(z) = P(Z > z)` is now `0.5 × Q_gamma(1/2, z²/2)`, the standard identity relating `erfc` to the
+  **upper regularized incomplete gamma function** (Numerical Recipes §6.2's "gammq": a power series
+  for `x < a+1`, Lentz's continued fraction otherwise — the exact same continued-fraction technique
+  already used for the incomplete beta function below it in the same file). The continued-fraction
+  branch, which is what every realistic tail p-value actually exercises, computes the tiny quantity
+  **directly**, never as `1 - P`.
+- A new exported `normalSF(z)` is the upper tail, computed directly by the formula above (positive
+  `z`) or as `1 - normalSF(-z)` (negative `z`, where the result is close to 1, a case floating point
+  handles with no precision loss — the dangerous direction is only ever "subtract two close numbers"
+  or "1 minus something close to 1," never "1 minus something tiny"). `normalCDF(z)` is now built
+  from `normalSF` the same way (`1 - normalSF(z)` for `z >= 0`, `normalSF(-z)` for `z < 0`), so it is
+  never the thing computing a tiny tail by subtraction either.
+- `tCDF` gained a sibling, `tSF(t, df)`, the Student's t upper tail, computed directly from the
+  incomplete beta for its own sign of `t` (mirroring `normalSF` exactly) rather than ever being
+  derived as `1 - tCDF`.
+- `normalInverseCDF` keeps Acklam's rational approximation as its starting point, now refined by one
+  step of **Halley's method** (Acklam's own suggested refinement, using the newly-exact
+  `normalCDF`), which tightens its already-good ~1.15×10⁻⁹ relative error to within a few ULPs of
+  double precision over the confidence levels this project actually uses. `tInverseCDF` is unchanged
+  (Brent's-method root-finding on `tCDF`, which was never the source of the bug).
+
+**`p-value-calculator`'s `compute()` was restructured to match**: it now computes `leftTail` (the
+CDF) and `rightTail` (the SF) as two independently-safe quantities and picks between them per tail
+type — `2 × min(leftTail, rightTail)` for two-tailed, so the two-tailed case also never subtracts
+from 1. Both are floored at `P_VALUE_FLOOR = 1e-300` before being returned, which fixes a second,
+separate honesty problem the review flagged: for a sufficiently extreme test statistic (beyond
+roughly ±39), the true p-value is smaller than the smallest representable `double`
+(`Number.MIN_VALUE` ≈ 5×10⁻³²⁴) and genuinely underflows to a hardware `0` — not a bug, but a bare
+`"0"` on the page reads as "no evidence at all" rather than "immeasurably small, beyond what this
+calculator can represent." The floor keeps the displayed figure an honest, nonzero, scientific-
+notation number (`1 × 10⁻³⁰⁰`) instead, with a new watch-out item and an updated FAQ answer saying so
+explicitly, exactly as asked ("< 1 × 10⁻³⁰⁰ style message or similar, never 0").
+
+**Tests, replaced wholesale (`lib/distributions.spec.ts`, 45 tests, up from 26)**: every assertion now
+checks **relative** error against a tolerance of 1×10⁻⁹ or tighter (the review's own ask), not the
+loose absolute/mixed tolerances the first version used. The normal tail is checked against the
+review's own 7 reference `Q(z)` values (z = 1.96 through 10, quoted to 15-16 significant digits),
+matching to a relative error around 10⁻¹⁵ in every case — far inside the 10⁻⁹ target. The Student's t
+tail is checked two ways: against the review's own `t(0.975, df=10)` table entry, and — for a genuine
+"far tail" check, since there is no single universally-quoted extreme-t reference — against **two
+exact elementary closed forms**: the t-distribution with 1 degree of freedom is exactly the Cauchy
+distribution (`SF(t) = 0.5 - atan(t)/π`), and with 2 degrees of freedom has the standard closed form
+`SF(t) = 0.5 - t/(2√(2+t²))`; `tSF` matches both to a relative error around 10⁻¹² to 10⁻¹⁴ for `t` up
+to 1000. `normalInverseCDF`/`tInverseCDF`'s own reference constants were extended from the standard
+6-decimal textbook/t-table values to 16 significant digits via an independent bisection search on
+the now-validated `normalCDF`/`tCDF` (a different algorithm family from Acklam+Halley or
+Brent's-method root-finding, so this is a genuine cross-check, not circular).
+
+**Re-verification of every number in the 5 calculators' copy**, re-run with the corrected module
+(scratchpad, plain Node, importing the real `lib/distributions.ts` — the only honest way to check
+"does the shipped module give the shipped numbers," now that the module itself is what needed
+fixing): confidence-interval-calculator (margin ≈1.387240, interval [13.812760, 16.587240]),
+margin-of-error-calculator (margin ≈3.089043%), sample-size-calculator (n₀≈600.228, rounds to 601)
+all reproduce the **same displayed digits** as before the fix — the bug was specific to tail
+probabilities smaller than roughly 10⁻³, and none of those three calculators' worked examples or FAQ
+figures are that small. **p-value-calculator's two displayed figures that are in that regime both
+needed a correction**: the worked example (z=2.15, two-tailed) still rounds to the same "≈ 0.0316"
+the copy states (new exact value 0.03155521 vs. the old 0.03155510 — identical to 4 significant
+figures), but the FAQ's "extremely small" illustration at z=5 was wrong in its *displayed* digits
+(it said "5.742 × 10⁻⁷"; the corrected value is **5.733 × 10⁻⁷**) and has been fixed in the copy.
+Regenerated snapshot (`npm run test:update`): every changed figure across all 5 calculators moves
+only in the 9th-10th significant digit (Halley refinement tightening already-accurate quantiles)
+except `p-value-calculator`'s own two figures discussed above, and its `edge` case, where
+`0.9999999990`/`0.5000000005` (float noise from the old `erf` approximation evaluating exactly at
+z=0) become the mathematically exact `1`/`0.5`. `npm test` 453/453 (up from 434), `npm run lint`,
+`npm run build` all pass.
+
+**Corrected accuracy claim**: the original "≥ 6 significant digits" framing is replaced in this file
+and in `lib/distributions.ts`'s own header comment with the actual, measured result — a *relative*
+error around 10⁻¹² to 10⁻¹⁵ for every function in this module across every value tested, not merely
+"6 digits printed."

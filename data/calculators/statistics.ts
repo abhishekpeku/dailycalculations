@@ -1,5 +1,15 @@
 import type { CalculatorConfig, CalculatorInput } from './types.ts';
-import { normalCDF, normalInverseCDF, tCDF, tInverseCDF } from '../../lib/distributions.ts';
+import { normalCDF, normalInverseCDF, normalSF, tCDF, tInverseCDF, tSF } from '../../lib/distributions.ts';
+
+// p-value-calculator: a floor on the displayed p-value and cumulative probability. For an extreme
+// test statistic (z or t beyond roughly +-39) the true probability underflows below the smallest
+// representable double (~5e-324) and is mathematically, not just displayably, indistinguishable
+// from 0 in double precision. Rather than show a bare "0" (which reads as "no evidence at all,"
+// not "smaller than this calculator can represent"), this floor keeps the displayed figure a
+// genuine, nonzero, honestly tiny number that formats in scientific notation — see the watch-out
+// item on p-value-calculator for the wording shown to the reader.
+const P_VALUE_FLOOR = 1e-300;
+const floorTinyProbability = (value: number) => Math.max(value, P_VALUE_FLOOR);
 
 // A confidence level has no natural upper bound in this kit (CalculatorInput has no `max`), and the
 // snapshot harness's own "typical" input set scales every default by 1.5x — so a 95% default would
@@ -1095,6 +1105,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { title: 'A small p-value does not mean a large or important effect', body: 'With a large enough sample, even a tiny, practically meaningless difference can produce a very small p-value. Statistical significance and real-world significance are different questions.' },
         { title: 'The tail type must be decided before seeing the data, not after', body: 'Choosing a one-tailed test (or switching between tail types) after seeing which direction the result went in artificially inflates the chance of a "significant" finding. Pick the tail type from the actual research question, in advance.' },
         { title: 'Very small p-values are shown in scientific notation, not rounded to zero', body: 'A p-value of 0.0000005742 is shown as such, not as a misleading flat 0.0000. Published results often report anything below a threshold as "p < 0.0001" rather than the exact tiny figure — both are honest; this calculator shows the real computed number.' },
+        { title: 'An extreme test statistic (beyond roughly ±39) shows a floor value, not a literal zero', body: 'Past that point, the true p-value is smaller than the smallest number a computer can represent at all (about 5 × 10⁻³²⁴) — it is not wrong, it is simply beyond double-precision arithmetic. Rather than display a bare "0," which would read as "no evidence whatsoever" rather than "immeasurably small," this calculator shows 1 × 10⁻³⁰⁰ as an honest stand-in: read any value at or below it as "far smaller than this figure, beyond what this calculator can distinguish," not as the test statistic\'s exact probability.' },
         { title: 'This calculator starts from a test statistic, not raw data', body: 'It does not compute a z-score or t-score itself — use the z-score calculator, or compute a sample mean and standard deviation first, to get the test statistic this page converts into a p-value.' }
       ],
       references: [
@@ -1166,7 +1177,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { question: 'How do I find a p-value from a t-score?', answer: 'Same idea, using the Student\'s t distribution with your degrees of freedom (usually sample size minus 1) instead of the normal distribution. For t = 2.5 with 20 degrees of freedom, a right-tailed p-value is about 0.0106.' },
         { question: 'What is the difference between one-tailed and two-tailed?', answer: 'A two-tailed test measures how extreme a result is in either direction and is the standard default. A one-tailed test (left or right) measures extremeness in only one specific direction, used only when the research question itself is directional and decided in advance.' },
         { question: 'What p-value counts as "statistically significant"?', answer: 'There is no universal cutoff, but 0.05 is by far the most common convention: a p-value below 0.05 is typically called significant at the 5% level, below 0.01 at the 1% level. The threshold should be chosen before looking at the data, not after.' },
-        { question: 'Can a p-value be exactly 0?', answer: 'In theory no — it can get extremely small (this calculator shows it in scientific notation, like 5.742 × 10⁻⁷) but mathematically never reaches exactly 0 for a finite test statistic. Many published results simply report "p < 0.0001" once it is below a practical reporting threshold.' },
+        { question: 'Can a p-value be exactly 0?', answer: 'Mathematically, no — it can get extremely small (a z-score of 5, two-tailed, gives about 5.733 × 10⁻⁷, shown in scientific notation) but never reaches exactly 0 for a finite test statistic. For a very extreme test statistic (beyond roughly ±39), the true value is smaller than a computer can represent at all; this calculator shows 1 × 10⁻³⁰⁰ in that case rather than a misleading flat 0. Many published results simply report "p < 0.0001" once it is below a practical reporting threshold.' },
         { question: 'Does a smaller p-value mean a bigger effect?', answer: 'No. A p-value measures how surprising the result would be if there were truly no effect, not the size of the effect itself. A large sample can produce a very small p-value for a practically tiny difference.' },
         { question: 'How do I get the test statistic to put into this calculator?', answer: 'Use the z-score calculator for a z-score, or compute a t-statistic from a sample mean, standard deviation and hypothesized value — this calculator converts an already-calculated test statistic into a p-value, it does not derive one from raw data.' },
         { question: 'What does the degrees of freedom field do?', answer: 'It is only used in t-score mode, where it controls the exact shape of the Student\'s t distribution — typically the sample size minus 1 for a one-sample test. It has no effect in z-score mode.' }
@@ -1176,9 +1187,13 @@ export const statisticsCalculators: CalculatorConfig[] = [
       const { mode, testStatistic, degreesOfFreedom, tailType } = values;
       const useT = mode === 2;
       const df = Math.max(1, degreesOfFreedom);
-      const cdfValue = useT ? tCDF(testStatistic, df) : normalCDF(testStatistic);
-      const pValue = tailType === 2 ? cdfValue : tailType === 3 ? 1 - cdfValue : 2 * Math.min(cdfValue, 1 - cdfValue);
-      return { pValue, cdfValue };
+      // leftTail and rightTail are each computed by their own direct, symmetric formula (never by
+      // subtracting one from 1), so a two-tailed or right-tailed p-value for a large |testStatistic|
+      // never loses precision to floating-point cancellation — see lib/distributions.ts.
+      const leftTail = useT ? tCDF(testStatistic, df) : normalCDF(testStatistic);
+      const rightTail = useT ? tSF(testStatistic, df) : normalSF(testStatistic);
+      const rawPValue = tailType === 2 ? leftTail : tailType === 3 ? rightTail : 2 * Math.min(leftTail, rightTail);
+      return { pValue: floorTinyProbability(rawPValue), cdfValue: floorTinyProbability(leftTail) };
     }
   },
   {

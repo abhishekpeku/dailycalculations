@@ -554,7 +554,7 @@ exports[`compute() snapshots > confidence-interval-calculator 1`] = `
       "marginOfError": 0,
       "lowerBound": 0,
       "upperBound": 0,
-      "criticalValue": 0.01253346952,
+      "criticalValue": 0.01253346951,
       "standardError": 0,
       "degreesOfFreedom": 1
     }
@@ -1781,10 +1781,10 @@ exports[`compute() snapshots > margin-of-error-calculator 1`] = `
       "populationSize": 0
     },
     "outputs": {
-      "marginOfErrorPercent": 3.089042526,
-      "lowerBound": 50.91095747,
-      "upperBound": 57.08904253,
-      "criticalValue": 1.959963986,
+      "marginOfErrorPercent": 3.089042523,
+      "lowerBound": 50.91095748,
+      "upperBound": 57.08904252,
+      "criticalValue": 1.959963985,
       "standardErrorPercent": 1.576071064
     }
   },
@@ -1796,10 +1796,10 @@ exports[`compute() snapshots > margin-of-error-calculator 1`] = `
       "populationSize": 0
     },
     "outputs": {
-      "marginOfErrorPercent": 3.940845029,
+      "marginOfErrorPercent": 3.940845032,
       "lowerBound": 77.05915497,
       "upperBound": 84.94084503,
-      "criticalValue": 3.890591884,
+      "criticalValue": 3.890591886,
       "standardErrorPercent": 1.012916581
     }
   },
@@ -1814,7 +1814,7 @@ exports[`compute() snapshots > margin-of-error-calculator 1`] = `
       "marginOfErrorPercent": 0,
       "lowerBound": 0,
       "upperBound": 0,
-      "criticalValue": 0.01253346952,
+      "criticalValue": 0.01253346951,
       "standardErrorPercent": 0
     }
   }
@@ -2077,8 +2077,8 @@ exports[`compute() snapshots > p-value-calculator 1`] = `
       "tailType": 1
     },
     "outputs": {
-      "pValue": 0.03155510262,
-      "cdfValue": 0.9842224487
+      "pValue": 0.03155521478,
+      "cdfValue": 0.9842223926
     }
   },
   "typical": {
@@ -2101,8 +2101,8 @@ exports[`compute() snapshots > p-value-calculator 1`] = `
       "tailType": 1
     },
     "outputs": {
-      "pValue": 0.999999999,
-      "cdfValue": 0.5000000005
+      "pValue": 1,
+      "cdfValue": 0.5
     }
   }
 }
@@ -3034,8 +3034,8 @@ exports[`compute() snapshots > sample-size-calculator 1`] = `
     },
     "outputs": {
       "sampleSize": 601,
-      "rawSampleSize": 600.2279417,
-      "criticalValue": 1.959963986,
+      "rawSampleSize": 600.2279407,
+      "criticalValue": 1.959963985,
       "marginOfErrorPercent": 4,
       "estimatedProportionPercent": 50
     }
@@ -3049,8 +3049,8 @@ exports[`compute() snapshots > sample-size-calculator 1`] = `
     },
     "outputs": {
       "sampleSize": 789,
-      "rawSampleSize": 788.370063,
-      "criticalValue": 3.890591884,
+      "rawSampleSize": 788.3700639,
+      "criticalValue": 3.890591886,
       "marginOfErrorPercent": 6,
       "estimatedProportionPercent": 75
     }
@@ -3065,7 +3065,7 @@ exports[`compute() snapshots > sample-size-calculator 1`] = `
     "outputs": {
       "sampleSize": 0,
       "rawSampleSize": 0,
-      "criticalValue": 0.01253346952,
+      "criticalValue": 0.01253346951,
       "marginOfErrorPercent": 0.1,
       "estimatedProportionPercent": 0
     }

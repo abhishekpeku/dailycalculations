@@ -113,7 +113,8 @@ export const calculatorOrder: string[] = [
   'quadratic-formula-calculator',
   'pythagorean-theorem-calculator',
   'triangle-calculator',
-  'circle-calculator'
+  'circle-calculator',
+  'area-calculator'
 ];
 
 const rank = (id: string) => {

@@ -62,9 +62,9 @@ fresh against the v2 template (`mdFiles/calculator-template-v2.md`) and the `add
     `Number.MAX_SAFE_INTEGER` — see the last "Fix" section below
 - Run 5 (this run): **triangle-calculator, circle-calculator, area-calculator, volume-calculator,
   surface-area-calculator**
-  - [ ] triangle-calculator (type B — mode menu SSS/SAS/ASA, shared side/angle fields)
-  - [ ] circle-calculator (type A — solver, radius ⟷ diameter, circumference/area as outputs)
-  - [ ] area-calculator (type B — shape mode menu, shared length inputs, area dimension output)
+  - [x] triangle-calculator (type B — mode menu SSS/SAS/ASA, shared side/angle fields)
+  - [x] circle-calculator (type A — solver, radius ⟷ diameter, circumference/area as outputs)
+  - [x] area-calculator (type B — shape mode menu, shared length inputs, area dimension output)
   - [ ] volume-calculator (type B — shape mode menu, shared length inputs, volume dimension output)
   - [ ] surface-area-calculator (type B — shape mode menu, same shared inputs as volume)
   - [ ] Snapshot tests (`npm run test:update`), `KNOWN_NON_FINITE` entries where a legitimate domain

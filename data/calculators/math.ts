@@ -2806,6 +2806,139 @@ export const mathCalculators: CalculatorConfig[] = [
       const { radius } = values;
       return { diameter: radius * 2, circumference: 2 * Math.PI * radius, area: Math.PI * radius ** 2 };
     }
+  },
+  {
+    id: 'area-calculator',
+    category: 'math',
+    updatedAt: '2026-10-22',
+    aliases: ['square footage calculator', 'area of a shape calculator', 'rectangle area calculator', 'trapezoid area calculator', 'find the area calculator'],
+    related: ['circle-calculator', 'triangle-calculator', 'volume-calculator', 'surface-area-calculator'],
+    title: 'Area Calculator',
+    description: 'Find the area of a square, rectangle, triangle, circle or trapezoid from its basic measurements, with the formula for every shape shown.',
+    example: 'A 5 m × 3 m rectangular room has a floor area of 15 m². Switch shapes to find a triangle, circle or trapezoid’s area from its own measurements instead.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is area?',
+        paragraphs: [
+          'Area is the amount of flat surface a two-dimensional shape covers — how much paint a wall needs, how much turf a lawn needs, how much floor a rug needs to fit. It is always measured in square units (square meters, square feet), because it is fundamentally a count of how many unit squares (1 m × 1 m, 1 ft × 1 ft) would tile the shape exactly.',
+          'Every shape has its own area formula, but they are closely related. A rectangle’s area is simply length times width — the most basic case, since a 1 × 1 unit square obviously has an area of 1. A triangle is exactly half of the rectangle that would enclose it (its base times its height), which is why the triangle formula carries that extra ÷ 2. A circle swaps straight sides for π times the radius squared. A trapezoid, with two different-length parallel sides, averages them before multiplying by the height.',
+          'This calculator covers five of the most commonly needed shapes — square, rectangle, triangle, circle and trapezoid — on one page, so switching between them does not mean hunting down a different formula each time.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick the shape, then fill in just the measurements that shape needs.',
+        steps: [
+          { name: 'Choose a shape', text: 'Square, rectangle, triangle, circle or trapezoid. Each one uses its own formula underneath.' },
+          { name: 'Enter the first measurement', text: 'A side (square), a length (rectangle), a base (triangle), a radius (circle), or one parallel side (trapezoid).' },
+          { name: 'Enter the second measurement, if that shape needs one', text: 'A width (rectangle), a height (triangle or trapezoid). Square and circle only need the first measurement.' },
+          { name: 'Add the trapezoid’s second parallel side', text: 'Tucked under "More options" since only the trapezoid shape reads it — the other four shapes ignore it entirely.' },
+          { name: 'Read the area, and see how big it really is', text: 'The scale below the result places your area against an A4 sheet of paper, a basketball court and a soccer pitch, so a number like "420 m²" has something concrete to compare against.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Five shapes, five formulas — all of them variations on "multiply two lengths together."',
+        expression:
+          'Square: A = s²\nRectangle: A = l × w\nTriangle: A = ½ × b × h\nCircle: A = π × r²\nTrapezoid: A = ½ × (b₁ + b₂) × h',
+        terms: [
+          { symbol: 's', meaning: 'A square’s side length.' },
+          { symbol: 'l, w', meaning: 'A rectangle’s length and width.' },
+          { symbol: 'b, h', meaning: 'A triangle’s base and height (the perpendicular distance from the base to the opposite vertex) or a trapezoid’s height (the perpendicular distance between its two parallel sides).' },
+          { symbol: 'r', meaning: 'A circle’s radius.' },
+          { symbol: 'b₁, b₂', meaning: 'A trapezoid’s two parallel sides (its "bases"), which do not have to be the same length.' }
+        ],
+        note: 'This calculator finds area only, not perimeter — a triangle’s perimeter needs all three side lengths, not just a base and a height. See the Triangle Calculator for that.'
+      },
+      workedExample: {
+        intro: 'A trapezoid-shaped garden bed has two parallel sides of 6 m and 10 m, and the perpendicular distance between them is 4 m. What is its area?',
+        rows: [
+          { label: 'Average the two parallel sides', value: '(6 + 10) ÷ 2 = 8 m' },
+          { label: 'Multiply by the height', value: '8 × 4 = 32' }
+        ],
+        result: 'Area = 32 m²',
+        explanation: 'Averaging the two parallel sides turns the trapezoid into an "equivalent rectangle" of the same height — a trapezoid is effectively a rectangle whose top and bottom sides don’t quite match, and averaging them is exactly what makes the simple length-times-width rectangle formula work for it too.'
+      },
+      watchOut: [
+        { title: 'This finds area only, not perimeter', body: 'A triangle’s area formula here only needs a base and a height, not all three sides, so there isn’t enough information to also report a perimeter without assuming a shape (like a right triangle) that may not be true. For a triangle’s perimeter, use the Triangle Calculator, which takes all three sides.' },
+        { title: 'A triangle’s height is perpendicular to its base, not a slanted side', body: 'The "height" in A = ½bh is the straight-up-and-down distance from the base to the opposite corner — not the length of one of the other two sides, which is almost always a different number.' },
+        { title: 'A zero measurement gives a zero area, not an error', body: 'A square with a side of 0 is a single point with no area — a real, if trivial, answer, not a mistake. Negative measurements are rejected instead, since a length cannot be negative.' },
+        { title: 'Mixing units gives a meaningless number', body: 'Multiplying a length in meters by a width in feet does not produce a valid area in either unit. Convert both measurements to the same unit first — the length unit menu here handles that automatically for whichever unit you pick.' }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §9.4 Use Properties of Rectangles, Triangles, and Trapezoids', url: 'https://openstax.org/books/prealgebra-2e/pages/9-4-use-properties-of-rectangles-triangles-and-trapezoids' },
+        { label: 'OpenStax, Prealgebra 2e, §9.5 Solve Geometry Applications: Circles and Irregular Figures', url: 'https://openstax.org/books/prealgebra-2e/pages/9-5-solve-geometry-applications-circles-and-irregular-figures' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'mode',
+        label: 'Shape',
+        type: 'number',
+        placeholder: '2',
+        defaultValue: 2,
+        step: 1,
+        min: 1,
+        options: [
+          { value: 1, label: 'Square' },
+          { value: 2, label: 'Rectangle' },
+          { value: 3, label: 'Triangle' },
+          { value: 4, label: 'Circle' },
+          { value: 5, label: 'Trapezoid' }
+        ]
+      },
+      { id: 'dim1', label: 'First measurement (side, base or radius)', type: 'number', placeholder: '5', defaultValue: 5, step: 0.1, dimension: 'length', unit: 'm' },
+      { id: 'dim2', label: 'Second measurement (width or height)', type: 'number', placeholder: '3', defaultValue: 3, step: 0.1, dimension: 'length', unit: 'm' },
+      { id: 'dim3', label: 'Second parallel side (trapezoid only)', type: 'number', placeholder: '10', defaultValue: 10, step: 0.1, dimension: 'length', unit: 'm' }
+    ],
+    breakdown: {
+      headline: 'area',
+      headlineLabel: 'Area',
+      outputs: [{ id: 'area', label: 'Area', dimension: 'area' }],
+      groups: [
+        { inputs: ['mode'] },
+        { inputs: ['dim1', 'dim2'] },
+        { title: 'Only used for the trapezoid shape', inputs: ['dim3'], optional: true }
+      ],
+      visual: {
+        type: 'logScale',
+        value: 'area',
+        min: -2,
+        max: 4,
+        ticks: ['10⁻²', '10⁻¹', '10⁰', '10¹', '10²', '10³', '10⁴'],
+        benchmarks: [
+          { label: 'An ISO 216 A4 sheet of paper (0.21 m × 0.297 m ≈ 0.0624 m²)', value: 0.06237 },
+          { label: 'A FIBA-regulation basketball court (28 m × 15 m = 420 m²)', value: 420 },
+          { label: 'A FIFA-recommended soccer pitch (105 m × 68 m = 7,140 m²)', value: 7140 }
+        ],
+        title: 'How big is this area?',
+        valueLabel: 'Your area'
+      }
+    },
+    seo: {
+      title: 'Area Calculator – Square, Rectangle, Triangle, Circle & Trapezoid',
+      description: 'Free area calculator for a square, rectangle, triangle, circle or trapezoid. Enter the basic measurements and see the formula for each shape.',
+      faq: [
+        { question: 'How do I find the area of a rectangle?', answer: 'Multiply length by width: A = l × w. A 5 m by 3 m room has an area of 15 m².' },
+        { question: 'How do I find the area of a square?', answer: 'Square the side length: A = s². A 4 m side gives an area of 4² = 16 m².' },
+        { question: 'How do I find the area of a triangle?', answer: 'Multiply the base by the height, then halve it: A = ½ × b × h. A base of 6 m and a height of 4 m gives an area of ½ × 6 × 4 = 12 m².' },
+        { question: 'How do I find the area of a circle?', answer: 'Square the radius and multiply by π: A = πr². A 5 m radius gives an area of π × 25 ≈ 78.54 m².' },
+        { question: 'How do I find the area of a trapezoid?', answer: 'Average the two parallel sides, then multiply by the height: A = ½(b₁ + b₂) × h. Parallel sides of 6 m and 10 m with a height of 4 m give ½ × 16 × 4 = 32 m².' },
+        { question: 'Does this calculator also find the perimeter?', answer: 'No. A triangle’s perimeter needs all three side lengths, and this calculator only takes a base and a height for the triangle shape. Use the Triangle Calculator for a perimeter alongside the area.' },
+        { question: 'What is the difference between a square and a rectangle?', answer: 'A square is a rectangle whose length and width happen to be equal, so A = s² is really just A = l × w with l = w. Either formula gives the same answer for a square.' },
+        { question: 'What units does this calculator use?', answer: 'Any length unit from the menu — meters, feet, inches and more. The area is shown in the matching squared unit (m², ft², etc.), converted automatically.' }
+      ]
+    },
+    compute(values) {
+      const { mode, dim1, dim2, dim3 } = values;
+      let area: number;
+      if (mode === 1) area = dim1 >= 0 ? dim1 ** 2 : NaN; // square
+      else if (mode === 3) area = dim1 >= 0 && dim2 >= 0 ? 0.5 * dim1 * dim2 : NaN; // triangle (base x height / 2)
+      else if (mode === 4) area = dim1 >= 0 ? Math.PI * dim1 ** 2 : NaN; // circle (dim1 = radius)
+      else if (mode === 5) area = dim1 >= 0 && dim2 >= 0 && dim3 >= 0 ? 0.5 * (dim1 + dim3) * dim2 : NaN; // trapezoid (dim2 = height)
+      else area = dim1 >= 0 && dim2 >= 0 ? dim1 * dim2 : NaN; // mode 2 (rectangle), and the fallback
+      return { area };
+    }
   }
 
 ];

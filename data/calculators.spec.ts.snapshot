@@ -45,6 +45,44 @@ exports[`compute() snapshots > age-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > area-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mode": 2,
+      "dim1": 5,
+      "dim2": 3,
+      "dim3": 10
+    },
+    "outputs": {
+      "area": 15
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mode": 3,
+      "dim1": 7.5,
+      "dim2": 4.5,
+      "dim3": 15
+    },
+    "outputs": {
+      "area": 16.875
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mode": 1,
+      "dim1": 0,
+      "dim2": 0,
+      "dim3": 0
+    },
+    "outputs": {
+      "area": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > average-calculator 1`] = `
 {
   "default": {

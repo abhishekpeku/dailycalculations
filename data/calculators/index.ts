@@ -15,6 +15,7 @@ import { textCalculators } from './text.ts';
 import { educationCalculators } from './education.ts';
 import { physicsCalculators } from './physics.ts';
 import { mathCalculators } from './math.ts';
+import { statisticsCalculators } from './statistics.ts';
 
 export type * from './types.ts';
 
@@ -32,7 +33,8 @@ export const categories: CalculatorCategory[] = [
   { id: 'text', title: 'Text & Writing', description: 'Character counts, hashtag counts, and writing tools.' },
   { id: 'education', title: 'Education', description: 'GPA, grade, and academic calculators.' },
   { id: 'physics', title: 'Physics', description: 'Force, motion, energy, and other physics formulas solved for any variable.' },
-  { id: 'math', title: 'Math', description: 'Percentages, fractions, ratios, and everyday math calculators.' }
+  { id: 'math', title: 'Math', description: 'Percentages, fractions, ratios, and everyday math calculators.' },
+  { id: 'statistics', title: 'Statistics', description: 'Mean, median, mode, standard deviation, variance, z-scores, and percentiles.' }
 ];
 
 // Display order for listings, the sitemap and search; the old single array's order, kept exactly.
@@ -120,7 +122,12 @@ export const calculatorOrder: string[] = [
   'slope-calculator',
   'distance-calculator',
   'midpoint-calculator',
-  'scientific-calculator'
+  'scientific-calculator',
+  'mean-median-mode-calculator',
+  'standard-deviation-calculator',
+  'variance-calculator',
+  'z-score-calculator',
+  'percentile-calculator'
 ];
 
 const rank = (id: string) => {
@@ -142,7 +149,8 @@ export const calculators: CalculatorConfig[] = [
   ...textCalculators,
   ...educationCalculators,
   ...physicsCalculators,
-  ...mathCalculators
+  ...mathCalculators,
+  ...statisticsCalculators
 ].sort((a, b) => rank(a.id) - rank(b.id));
 
 export function findCalculator(slug: string) {

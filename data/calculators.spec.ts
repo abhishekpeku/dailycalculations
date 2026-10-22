@@ -29,7 +29,11 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'standard-deviation-calculator': ['sampleVariance', 'sampleStdDev'], // howMany=1 (its min) -> sample divides by n-1=0
   'variance-calculator': ['sampleVariance', 'sampleStdDev'], // howMany=1 (its min) -> sample divides by n-1=0
   'z-score-calculator': ['zScore'], // standard deviation 0 (no min set) -> divide by zero
-  'normal-distribution-calculator': ['pLessThanX', 'pGreaterThanX', 'zScore', 'pBetween', 'xAtPercentile'] // standard deviation 0 (its min) -> honest no-answer
+  'normal-distribution-calculator': ['pLessThanX', 'pGreaterThanX', 'zScore', 'pBetween', 'xAtPercentile'], // standard deviation 0 (its min) -> honest no-answer
+  'correlation-calculator': ['r', 'rSquared', 'tStatistic', 'pValue'], // xData/yData both [0,0] (listMin) -> zero variance, 0/0
+  'linear-regression-calculator': ['slope', 'intercept', 'rSquared', 'standardError', 'predictedY'], // xData/yData both [0,0] (listMin) -> zero variance, 0/0
+  't-test-calculator': ['tStatistic', 'pValue'], // mode's own min selects one-sample mode; sampleStdDev 0 and sampleMean=popMean=0 -> 0/0
+  'chi-square-calculator': ['minExpected', 'count'] // mode's own min selects direct-entry mode, which never sets these two
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

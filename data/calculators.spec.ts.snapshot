@@ -365,6 +365,99 @@ exports[`compute() snapshots > cashback-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > chi-square-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mode": 2,
+      "chiSquareStat": 10.5,
+      "degreesOfFreedom": 4,
+      "lists": {
+        "observed": [
+          8,
+          12,
+          9,
+          14,
+          7,
+          10
+        ],
+        "expected": [
+          10,
+          10,
+          10,
+          10,
+          10,
+          10
+        ]
+      }
+    },
+    "outputs": {
+      "chiSquareStatistic": 3.4,
+      "degreesOfFreedom": 5,
+      "pValue": 0.6385699231,
+      "minExpected": 10,
+      "count": 6
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mode": 3,
+      "chiSquareStat": 15.8,
+      "degreesOfFreedom": 6,
+      "lists": {
+        "observed": [
+          12,
+          18,
+          14,
+          21,
+          11,
+          15
+        ],
+        "expected": [
+          15,
+          15,
+          15,
+          15,
+          15,
+          15
+        ]
+      }
+    },
+    "outputs": {
+      "chiSquareStatistic": 4.733333333,
+      "degreesOfFreedom": 5,
+      "pValue": 0.4492833424,
+      "minExpected": 15,
+      "count": 6
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mode": 1,
+      "chiSquareStat": 0,
+      "degreesOfFreedom": 1,
+      "lists": {
+        "observed": [
+          0,
+          0
+        ],
+        "expected": [
+          0,
+          0
+        ]
+      }
+    },
+    "outputs": {
+      "chiSquareStatistic": 0,
+      "degreesOfFreedom": 1,
+      "pValue": 1,
+      "minExpected": "NaN",
+      "count": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > circle-calculator 1`] = `
 {
   "default": {
@@ -645,6 +738,93 @@ exports[`compute() snapshots > confidence-interval-calculator 1`] = `
       "criticalValue": 0.01253346951,
       "standardError": 0,
       "degreesOfFreedom": 1
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > correlation-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "lists": {
+        "xData": [
+          2,
+          3,
+          5,
+          7,
+          8,
+          9
+        ],
+        "yData": [
+          65,
+          70,
+          75,
+          85,
+          88,
+          95
+        ]
+      }
+    },
+    "outputs": {
+      "r": 0.9926074593,
+      "rSquared": 0.9852695682,
+      "tStatistic": 16.35685452,
+      "degreesOfFreedom": 4,
+      "pValue": 0.00008177248796,
+      "count": 6
+    }
+  },
+  "typical": {
+    "inputs": {
+      "lists": {
+        "xData": [
+          3,
+          5,
+          8,
+          11,
+          12,
+          14
+        ],
+        "yData": [
+          98,
+          105,
+          113,
+          128,
+          132,
+          143
+        ]
+      }
+    },
+    "outputs": {
+      "r": 0.9928056989,
+      "rSquared": 0.9856631558,
+      "tStatistic": 16.58316698,
+      "degreesOfFreedom": 4,
+      "pValue": 0.00007745077133,
+      "count": 6
+    }
+  },
+  "edge": {
+    "inputs": {
+      "lists": {
+        "xData": [
+          0,
+          0
+        ],
+        "yData": [
+          0,
+          0
+        ]
+      }
+    },
+    "outputs": {
+      "r": "NaN",
+      "rSquared": "NaN",
+      "tStatistic": "NaN",
+      "degreesOfFreedom": 0,
+      "pValue": "NaN",
+      "count": 2
     }
   }
 }
@@ -1684,6 +1864,96 @@ exports[`compute() snapshots > lcm-calculator 1`] = `
     "outputs": {
       "lcm": "NaN",
       "numbersUsed": 2
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > linear-regression-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "predictAtX": 6,
+      "lists": {
+        "xData": [
+          2,
+          3,
+          5,
+          7,
+          8,
+          9
+        ],
+        "yData": [
+          65,
+          70,
+          75,
+          85,
+          88,
+          95
+        ]
+      }
+    },
+    "outputs": {
+      "slope": 4.076271186,
+      "intercept": 56.56779661,
+      "rSquared": 0.9852695682,
+      "standardError": 1.562944852,
+      "predictedY": 81.02542373,
+      "count": 6
+    }
+  },
+  "typical": {
+    "inputs": {
+      "predictAtX": 9,
+      "lists": {
+        "xData": [
+          3,
+          5,
+          8,
+          11,
+          12,
+          14
+        ],
+        "yData": [
+          98,
+          105,
+          113,
+          128,
+          132,
+          143
+        ]
+      }
+    },
+    "outputs": {
+      "slope": 4.027522936,
+      "intercept": 84.25688073,
+      "rSquared": 0.9856631558,
+      "standardError": 2.314691808,
+      "predictedY": 120.5045872,
+      "count": 6
+    }
+  },
+  "edge": {
+    "inputs": {
+      "predictAtX": 0,
+      "lists": {
+        "xData": [
+          0,
+          0
+        ],
+        "yData": [
+          0,
+          0
+        ]
+      }
+    },
+    "outputs": {
+      "slope": "NaN",
+      "intercept": "NaN",
+      "rSquared": "NaN",
+      "standardError": "NaN",
+      "predictedY": "NaN",
+      "count": 2
     }
   }
 }
@@ -3542,6 +3812,74 @@ exports[`compute() snapshots > standard-deviation-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > standard-error-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mode": 1,
+      "sampleStdDev": 15,
+      "sampleSize": 36,
+      "lists": {
+        "data": [
+          12,
+          15,
+          18,
+          21,
+          24,
+          27,
+          30
+        ]
+      }
+    },
+    "outputs": {
+      "standardError": 2.5,
+      "sampleStdDevUsed": 15,
+      "sampleSizeUsed": 36
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mode": 2,
+      "sampleStdDev": 22.5,
+      "sampleSize": 54,
+      "lists": {
+        "data": [
+          18,
+          23,
+          27,
+          32,
+          36,
+          41,
+          45
+        ]
+      }
+    },
+    "outputs": {
+      "standardError": 3.675622952,
+      "sampleStdDevUsed": 9.724784243,
+      "sampleSizeUsed": 7
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mode": 1,
+      "sampleStdDev": 0,
+      "sampleSize": 1,
+      "lists": {
+        "data": [
+          0
+        ]
+      }
+    },
+    "outputs": {
+      "standardError": 0,
+      "sampleStdDevUsed": 0,
+      "sampleSizeUsed": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > surface-area-calculator 1`] = `
 {
   "default": {
@@ -3575,6 +3913,68 @@ exports[`compute() snapshots > surface-area-calculator 1`] = `
     },
     "outputs": {
       "surfaceArea": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > t-test-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mode": 2,
+      "tailType": 1,
+      "sampleMean": 85,
+      "popMean": 80,
+      "sampleStdDev": 12,
+      "sampleSize": 30,
+      "mean2": 78,
+      "stdDev2": 15,
+      "sampleSize2": 25
+    },
+    "outputs": {
+      "tStatistic": 1.884336657,
+      "degreesOfFreedom": 45.67473018,
+      "pValue": 0.06589295724,
+      "standardError": 3.714835124
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mode": 3,
+      "tailType": 2,
+      "sampleMean": 127.5,
+      "popMean": 120,
+      "sampleStdDev": 18,
+      "sampleSize": 45,
+      "mean2": 117,
+      "stdDev2": 22.5,
+      "sampleSize2": 38
+    },
+    "outputs": {
+      "tStatistic": 2.317797868,
+      "degreesOfFreedom": 70.4872731,
+      "pValue": 0.9883159939,
+      "standardError": 4.530162074
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mode": 1,
+      "tailType": 1,
+      "sampleMean": 0,
+      "popMean": 0,
+      "sampleStdDev": 0,
+      "sampleSize": 2,
+      "mean2": 0,
+      "stdDev2": 0,
+      "sampleSize2": 2
+    },
+    "outputs": {
+      "tStatistic": "NaN",
+      "degreesOfFreedom": 1,
+      "pValue": "NaN",
+      "standardError": 0
     }
   }
 }

@@ -2153,7 +2153,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
     related: ['linear-regression-calculator', 'standard-deviation-calculator', 'mean-median-mode-calculator', 'p-value-calculator'],
     title: 'Correlation Coefficient Calculator',
     description: 'Find the Pearson correlation coefficient (r), r² and a p-value for a pair of x and y lists — how strongly two variables move together, and whether that relationship is likely to be real.',
-    example: 'Six students\' study hours (2, 3, 5, 7, 8, 9) and exam scores (65, 70, 75, 85, 88, 95) have a Pearson correlation of r ≈ 0.9934 — a very strong positive relationship.',
+    example: 'Six students\' study hours (2, 3, 5, 7, 8, 9) and exam scores (65, 70, 75, 85, 88, 95) have a Pearson correlation of r ≈ 0.9926 — a very strong positive relationship.',
     content: {
       lastReviewed: '2026-10-22',
       concept: {
@@ -2191,13 +2191,13 @@ export const statisticsCalculators: CalculatorConfig[] = [
         rows: [
           { label: 'Mean x̄', value: '5.6667' },
           { label: 'Mean ȳ', value: '79.6667' },
-          { label: 'Σ(x − x̄)(y − ȳ)', value: '≈ 170.6667' },
-          { label: 'Σ(x − x̄)²', value: '≈ 29.3333' },
-          { label: 'Σ(y − ȳ)²', value: '≈ 1009.3333' },
-          { label: 'r = 170.6667 ÷ √(29.3333 × 1009.3333)', value: '≈ 0.9934' }
+          { label: 'Σ(x − x̄)(y − ȳ)', value: '≈ 160.3333' },
+          { label: 'Σ(x − x̄)²', value: '≈ 39.3333' },
+          { label: 'Σ(y − ȳ)²', value: '≈ 663.3333' },
+          { label: 'r = 160.3333 ÷ √(39.3333 × 663.3333)', value: '≈ 0.9926' }
         ],
-        result: 'r ≈ 0.9934, r² ≈ 0.9868, p-value ≈ 0.00006',
-        explanation: 'r is close to +1: more study hours line up very closely with higher exam scores in this small data set. r² says about 98.7% of the variation in exam scores lines up with study hours. The tiny p-value says a correlation this strong would be very unlikely to appear by chance if study hours and exam scores were truly unrelated — though with only 6 students, this is a small, illustrative sample, not proof that studying causes a higher score.'
+        result: 'r ≈ 0.9926, r² ≈ 0.9853, p-value ≈ 8.177 × 10⁻⁵',
+        explanation: 'r is close to +1: more study hours line up very closely with higher exam scores in this small data set. r² says about 98.5% of the variation in exam scores lines up with study hours. The tiny p-value says a correlation this strong would be very unlikely to appear by chance if study hours and exam scores were truly unrelated — though with only 6 students, this is a small, illustrative sample, not proof that studying causes a higher score.'
       },
       watchOut: [
         { title: 'Correlation is not causation', body: 'A strong r only says two variables move together, never that one causes the other. Both could be driven by a third factor, or the relationship could run the other way, or it could simply be a coincidence in a small sample.' },
@@ -2243,9 +2243,9 @@ export const statisticsCalculators: CalculatorConfig[] = [
       title: 'Correlation Calculator – Pearson r, r², P-value',
       description: 'Free correlation coefficient calculator. Paste paired x and y lists to find Pearson\'s r, r² and a p-value, computed with numerically stable, mean-centered sums.',
       faq: [
-        { question: 'How do I calculate the correlation coefficient?', answer: 'Center both lists on their own means, then divide the sum of the paired products Σ(x−x̄)(y−ȳ) by the square root of Σ(x−x̄)² times Σ(y−ȳ)². For six students\' study hours and scores, that gives r ≈ 0.9934.' },
+        { question: 'How do I calculate the correlation coefficient?', answer: 'Center both lists on their own means, then divide the sum of the paired products Σ(x−x̄)(y−ȳ) by the square root of Σ(x−x̄)² times Σ(y−ȳ)². For six students\' study hours and scores, that gives r ≈ 0.9926.' },
         { question: 'What does a correlation of 0 mean?', answer: 'It means there is no straight-line relationship detectable between the two variables — not necessarily that they are unrelated, since a strong curved relationship can still produce r ≈ 0.' },
-        { question: 'What is the difference between r and r²?', answer: 'r (from −1 to +1) shows the direction and strength of a linear relationship. r² (always 0 to 1) restates the strength as the share of one variable\'s variation that lines up with the other — r = 0.9934 gives r² ≈ 0.9868, meaning about 98.7% of the variation in y lines up with x.' },
+        { question: 'What is the difference between r and r²?', answer: 'r (from −1 to +1) shows the direction and strength of a linear relationship. r² (always 0 to 1) restates the strength as the share of one variable\'s variation that lines up with the other — r = 0.9926 gives r² ≈ 0.9853, meaning about 98.5% of the variation in y lines up with x.' },
         { question: 'Does a strong correlation prove causation?', answer: 'No. A strong r only shows that two variables move together; it says nothing about whether one causes the other, whether a third factor causes both, or whether the pattern is simply a coincidence in a small sample.' },
         { question: 'What does the p-value tell me here?', answer: 'It is the probability of seeing a correlation at least this strong, in either direction, purely by chance, if the true correlation were actually 0. A small p-value (conventionally under 0.05) suggests the relationship is unlikely to be chance alone.' },
         { question: 'What is the smallest sample size this calculator can test?', answer: 'r itself can be computed from as few as 2 pairs (and is always exactly +1 or −1 for exactly 2 points). The p-value needs at least 3 pairs, since its degrees of freedom (n − 2) must be at least 1.' },
@@ -2278,7 +2278,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
     related: ['correlation-calculator', 'slope-calculator', 'standard-deviation-calculator', 'p-value-calculator'],
     title: 'Linear Regression Calculator',
     description: 'Find the least-squares line of best fit (slope, intercept, r² and the standard error of the estimate) for a pair of x and y lists, with an optional prediction at any x.',
-    example: 'For six students\' study hours (2, 3, 5, 7, 8, 9) and exam scores (65, 70, 75, 85, 88, 95), the line of best fit is y ≈ 46.70 + 5.82x, so 6 hours of study predicts a score of about 81.6.',
+    example: 'For six students\' study hours (2, 3, 5, 7, 8, 9) and exam scores (65, 70, 75, 85, 88, 95), the line of best fit is y ≈ 56.57 + 4.08x, so 6 hours of study predicts a score of about 81.0.',
     content: {
       lastReviewed: '2026-10-22',
       concept: {
@@ -2314,14 +2314,14 @@ export const statisticsCalculators: CalculatorConfig[] = [
       workedExample: {
         intro: 'The same six (study hours, exam score) pairs as the correlation calculator\'s example: (2, 65), (3, 70), (5, 75), (7, 85), (8, 88), (9, 95).',
         rows: [
-          { label: 'Slope (b = 170.6667 ÷ 29.3333)', value: '≈ 5.8182' },
-          { label: 'Intercept (a = 79.6667 − 5.8182 × 5.6667)', value: '≈ 46.7045' },
-          { label: 'r² (same data as the correlation calculator)', value: '≈ 0.9868' },
-          { label: 'Standard error of the estimate', value: '≈ 2.0000' },
-          { label: 'Predicted y at x = 6', value: '≈ 81.6136' }
+          { label: 'Slope (b = 160.3333 ÷ 39.3333)', value: '≈ 4.0763' },
+          { label: 'Intercept (a = 79.6667 − 4.0763 × 5.6667)', value: '≈ 56.5678' },
+          { label: 'r² (same data as the correlation calculator)', value: '≈ 0.9853' },
+          { label: 'Standard error of the estimate', value: '≈ 1.5629' },
+          { label: 'Predicted y at x = 6', value: '≈ 81.0254' }
         ],
-        result: 'y ≈ 46.70 + 5.82x',
-        explanation: 'Each extra study hour predicts about 5.82 more points on the exam, starting from a baseline of about 46.70 points at zero hours (an extrapolation — nobody in this small sample studied 0 hours). A student studying 6 hours is predicted to score about 81.6, close to the actual scores of the students who studied 5 and 7 hours.'
+        result: 'y ≈ 56.57 + 4.08x',
+        explanation: 'Each extra study hour predicts about 4.08 more points on the exam, starting from a baseline of about 56.57 points at zero hours (an extrapolation — nobody in this small sample studied 0 hours). A student studying 6 hours is predicted to score about 81.0, close to the actual scores of the students who studied 5 and 7 hours.'
       },
       watchOut: [
         { title: 'Your x and y lists must be the same length', body: 'Every x-value needs exactly one matching y-value, in the same order. If the counts differ, this calculator shows no answer rather than cutting off the extra values or padding the shorter list.' },
@@ -2367,9 +2367,9 @@ export const statisticsCalculators: CalculatorConfig[] = [
       title: 'Linear Regression Calculator – Slope, Intercept, R²',
       description: 'Free linear regression calculator. Paste paired x and y lists to find the least-squares slope, intercept, r² and standard error of the estimate, with an optional prediction.',
       faq: [
-        { question: 'How do I calculate a linear regression line?', answer: 'Center both lists on their own means, find the slope as Σ(x−x̄)(y−ȳ) ÷ Σ(x−x̄)², then the intercept as ȳ minus the slope times x̄. For six students\' study hours and scores, that gives y ≈ 46.70 + 5.82x.' },
-        { question: 'What does the slope mean?', answer: 'It is the predicted change in y for every one-unit increase in x. A slope of 5.82 means each extra hour of study predicts about 5.82 more exam points, on average, for this data.' },
-        { question: 'What is the standard error of the estimate?', answer: 'It measures the typical size of the gap between the actual y-values and the line\'s predicted y-values, in y\'s own units — here, about 2.0 exam points.' },
+        { question: 'How do I calculate a linear regression line?', answer: 'Center both lists on their own means, find the slope as Σ(x−x̄)(y−ȳ) ÷ Σ(x−x̄)², then the intercept as ȳ minus the slope times x̄. For six students\' study hours and scores, that gives y ≈ 56.57 + 4.08x.' },
+        { question: 'What does the slope mean?', answer: 'It is the predicted change in y for every one-unit increase in x. A slope of 4.08 means each extra hour of study predicts about 4.08 more exam points, on average, for this data.' },
+        { question: 'What is the standard error of the estimate?', answer: 'It measures the typical size of the gap between the actual y-values and the line\'s predicted y-values, in y\'s own units — here, about 1.56 exam points.' },
         { question: 'How is this related to the correlation calculator?', answer: 'They use the same underlying sums. r² on this page is exactly the square of the correlation coefficient (r) on that one, and the slope always has the same sign as r.' },
         { question: 'Can I predict a y-value for a new x?', answer: 'Yes — change "Predict y at x" to any value and this calculator applies the fitted line directly. Predictions far outside your actual x-range are extrapolations and less trustworthy.' },
         { question: 'What if my x and y lists are different lengths?', answer: 'This calculator shows no result and states both counts, rather than silently cutting off extra values or padding the shorter list.' },
@@ -2436,7 +2436,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
         intro: 'Two classes\' test scores: class A has a mean of 85, a standard deviation of 12, and 30 students; class B has a mean of 78, a standard deviation of 15, and 25 students. Is the difference statistically significant (two-tailed)?',
         rows: [
           { label: 'Standard error (√(12²/30 + 15²/25))', value: '≈ 3.7148' },
-          { label: 't-statistic ((85 − 78) ÷ 3.7148)', value: '≈ 1.8844' },
+          { label: 't-statistic ((85 − 78) ÷ 3.7148)', value: '≈ 1.8843' },
           { label: 'Welch–Satterthwaite degrees of freedom', value: '≈ 45.67' },
           { label: 'Two-tailed p-value', value: '≈ 0.0659' }
         ],
@@ -2572,7 +2572,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
     related: ['p-value-calculator', 't-test-calculator', 'binomial-distribution-calculator', 'confidence-interval-calculator'],
     title: 'Chi-Square Calculator',
     description: 'Find a chi-square p-value directly from a χ² statistic and degrees of freedom, or run a goodness-of-fit test from observed and expected counts.',
-    example: 'Rolling a die 60 times gives observed counts of 8, 12, 9, 14, 7 and 10 against an expected 10 per face — χ² ≈ 3.4 with 5 degrees of freedom, a p-value of about 0.638 (not significant).',
+    example: 'Rolling a die 60 times gives observed counts of 8, 12, 9, 14, 7 and 10 against an expected 10 per face — χ² ≈ 3.4 with 5 degrees of freedom, a p-value of about 0.6386 (not significant).',
     content: {
       lastReviewed: '2026-10-22',
       concept: {
@@ -2615,7 +2615,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
           { label: 'χ² (sum of all six)', value: '3.4' },
           { label: 'Degrees of freedom (6 categories − 1)', value: '5' }
         ],
-        result: 'χ² = 3.4, df = 5, p-value ≈ 0.6384',
+        result: 'χ² = 3.4, df = 5, p-value ≈ 0.6386',
         explanation: 'A p-value of about 0.64 is well above the common 0.05 threshold, so there is no evidence here that the die is unfair — these counts are entirely consistent with ordinary random variation around an expected 10 per face.'
       },
       watchOut: [

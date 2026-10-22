@@ -65,11 +65,12 @@ fresh against the v2 template (`mdFiles/calculator-template-v2.md`) and the `add
   - [x] triangle-calculator (type B — mode menu SSS/SAS/ASA, shared side/angle fields)
   - [x] circle-calculator (type A — solver, radius ⟷ diameter, circumference/area as outputs)
   - [x] area-calculator (type B — shape mode menu, shared length inputs, area dimension output)
-  - [ ] volume-calculator (type B — shape mode menu, shared length inputs, volume dimension output)
-  - [ ] surface-area-calculator (type B — shape mode menu, same shared inputs as volume)
-  - [ ] Snapshot tests (`npm run test:update`), `KNOWN_NON_FINITE` entries where a legitimate domain
-    edge produces a non-finite result
-  - [ ] `npm test`, `npm run build`, `npm run lint`
+  - [x] volume-calculator (type B — shape mode menu, shared length inputs, volume dimension output)
+  - [x] surface-area-calculator (type B — shape mode menu, same shared inputs as volume)
+  - [x] Snapshot tests (`npm run test:update`); only `triangle-calculator` needed a `KNOWN_NON_FINITE`
+    entry (all-zero SSS fails the triangle inequality) — area/volume/surface-area treat a zero
+    measurement as a legitimate (degenerate) finite 0, not an error
+  - [x] `npm test` (326/326), `npm run build` (107 static pages), `npm run lint`
   - [ ] Spot-check the 5 pages + `/categories/math` + sitemap on a local server, kill the server
   - [ ] Update `mdFiles/STATUS.md`, open/ready the PR
 - Run 6: slope, distance between two points, midpoint, scientific-calculator

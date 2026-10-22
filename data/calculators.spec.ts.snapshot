@@ -2696,6 +2696,44 @@ exports[`compute() snapshots > square-root-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > surface-area-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mode": 2,
+      "dim1": 4,
+      "dim2": 3,
+      "dim3": 2
+    },
+    "outputs": {
+      "surfaceArea": 52
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mode": 3,
+      "dim1": 6,
+      "dim2": 4.5,
+      "dim3": 3
+    },
+    "outputs": {
+      "surfaceArea": 395.8406744
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mode": 1,
+      "dim1": 0,
+      "dim2": 0,
+      "dim3": 0
+    },
+    "outputs": {
+      "surfaceArea": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > tdee-calculator 1`] = `
 {
   "default": {
@@ -3103,6 +3141,44 @@ exports[`compute() snapshots > visa-stay-days-calculator 1`] = `
       "canStay": 1,
       "overstayDays": 0,
       "usagePercent": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > volume-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mode": 2,
+      "dim1": 4,
+      "dim2": 3,
+      "dim3": 2
+    },
+    "outputs": {
+      "volume": 24
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mode": 3,
+      "dim1": 6,
+      "dim2": 4.5,
+      "dim3": 3
+    },
+    "outputs": {
+      "volume": 508.9380099
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mode": 1,
+      "dim1": 0,
+      "dim2": 0,
+      "dim3": 0
+    },
+    "outputs": {
+      "volume": 0
     }
   }
 }

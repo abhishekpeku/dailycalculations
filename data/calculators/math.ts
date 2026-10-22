@@ -2939,6 +2939,272 @@ export const mathCalculators: CalculatorConfig[] = [
       else area = dim1 >= 0 && dim2 >= 0 ? dim1 * dim2 : NaN; // mode 2 (rectangle), and the fallback
       return { area };
     }
+  },
+  {
+    id: 'volume-calculator',
+    category: 'math',
+    updatedAt: '2026-10-22',
+    aliases: ['volume of a shape calculator', 'cylinder volume calculator', 'sphere volume calculator', 'box volume calculator', 'cone volume calculator'],
+    related: ['surface-area-calculator', 'area-calculator', 'circle-calculator', 'concrete-calculator'],
+    title: 'Volume Calculator',
+    description: 'Find the volume of a cube, rectangular box, cylinder, sphere or cone from its basic measurements, with the formula for every shape shown.',
+    example: 'A rectangular box 4 m × 3 m × 2 m holds 24 m³. Switch shapes to find a cylinder, sphere or cone’s volume from its own measurements instead.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is volume?',
+        paragraphs: [
+          'Volume is how much three-dimensional space a solid takes up — how much water a tank holds, how much concrete a footing needs, how much air a room contains. It is measured in cubic units (cubic meters, cubic feet), a count of how many unit cubes (1 m × 1 m × 1 m) would fill the solid exactly.',
+          'Every solid’s volume formula is some version of "base area times height" or a fixed fraction of it. A rectangular box is its length times width times height — three measurements multiplied straight through. A cube is the special case where all three happen to be equal, so it is just the side cubed. A cylinder is a circle’s area (πr²) times its height. A cone is exactly one-third of the cylinder that would enclose it, the same way a triangle is half of its enclosing rectangle. A sphere’s formula, four-thirds times π times the radius cubed, follows from calculus rather than a simple "base times height" picture, but it is just as mechanical to apply.',
+          'This calculator covers five of the most commonly needed solids — cube, rectangular box, cylinder, sphere and cone — on one page.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick the solid, then fill in just the measurements it needs.',
+        steps: [
+          { name: 'Choose a solid', text: 'Cube, rectangular box, cylinder, sphere or cone. Each one uses its own formula underneath.' },
+          { name: 'Enter the first measurement', text: 'A side (cube), a length (box), or a radius (cylinder, sphere, cone).' },
+          { name: 'Enter the second measurement, if that solid needs one', text: 'A height (cylinder or cone). A sphere needs only the radius.' },
+          { name: 'Add the box’s third measurement', text: 'Tucked under "More options" since only the rectangular box shape reads a third length — the other four shapes ignore it entirely.' },
+          { name: 'Read the volume, and see how big it really is', text: 'The scale below the result places your volume against a drink can, a US gallon, and a minimum-size Olympic pool, so a number like "2,500 m³" has something concrete to compare against.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Five solids, five formulas — each one a base area carried through a height, or a fixed multiple of it.',
+        expression:
+          'Cube: V = s³\nRectangular box: V = l × w × h\nCylinder: V = π × r² × h\nSphere: V = (4⁄3) × π × r³\nCone: V = (1⁄3) × π × r² × h',
+        terms: [
+          { symbol: 's', meaning: 'A cube’s side length.' },
+          { symbol: 'l, w, h', meaning: 'A rectangular box’s length, width and height.' },
+          { symbol: 'r', meaning: 'The radius of a cylinder, sphere or cone’s circular base.' },
+          { symbol: 'h', meaning: 'The height of a cylinder or cone, measured perpendicular to its circular base.' }
+        ],
+        note: 'A cone’s volume is exactly one-third of a cylinder with the same radius and height — easy to confuse, since they look similar but differ by a factor of 3.'
+      },
+      workedExample: {
+        intro: 'A cylindrical water tank has a radius of 3 m and a height of 5 m. How much water can it hold?',
+        rows: [
+          { label: 'Base area (πr²)', value: 'π × 3² = π × 9 ≈ 28.27 m²' },
+          { label: 'Multiply by the height', value: '28.27 × 5 ≈ 141.37' }
+        ],
+        result: 'Volume ≈ 141.37 m³',
+        explanation: 'A cylinder’s volume is just its circular base area carried straight up through its height — the same "base times height" idea as a rectangular box, with the rectangle swapped for a circle.'
+      },
+      watchOut: [
+        { title: 'A cone is one-third of the matching cylinder, not the same', body: 'A cone and a cylinder with the same radius and height are easy to mix up visually, but the cone holds exactly a third as much — forgetting the ⅓ is the single most common mistake with this formula.' },
+        { title: 'The radius is squared or cubed, not multiplied once', body: 'Doubling a sphere’s or cylinder’s radius does not double its volume — a sphere’s volume scales with the cube of the radius (2³ = 8 times more), and a cylinder’s with the square of the radius for the same height (2² = 4 times more).' },
+        { title: 'A zero measurement gives a zero volume, not an error', body: 'A cube with a side of 0 is a single point with no volume — a real, if trivial, answer, not a mistake. Negative measurements are rejected instead, since a length cannot be negative.' },
+        { title: 'Volume and surface area are different questions', body: 'Volume is how much a solid holds; surface area is how much material wraps around its outside. A larger solid generally has more of both, but not in the same proportion — see the Surface Area Calculator for the companion figure.' }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §9.6 Solve Geometry Applications: Volume and Surface Area', url: 'https://openstax.org/books/prealgebra-2e/pages/9-6-solve-geometry-applications-volume-and-surface-area' },
+        { label: 'Wolfram MathWorld, Cone', url: 'https://mathworld.wolfram.com/Cone.html' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'mode',
+        label: 'Shape',
+        type: 'number',
+        placeholder: '2',
+        defaultValue: 2,
+        step: 1,
+        min: 1,
+        options: [
+          { value: 1, label: 'Cube' },
+          { value: 2, label: 'Rectangular box' },
+          { value: 3, label: 'Cylinder' },
+          { value: 4, label: 'Sphere' },
+          { value: 5, label: 'Cone' }
+        ]
+      },
+      { id: 'dim1', label: 'First measurement (side, length or radius)', type: 'number', placeholder: '4', defaultValue: 4, step: 0.1, dimension: 'length', unit: 'm' },
+      { id: 'dim2', label: 'Second measurement (width or height)', type: 'number', placeholder: '3', defaultValue: 3, step: 0.1, dimension: 'length', unit: 'm' },
+      { id: 'dim3', label: 'Third measurement (box only, its depth)', type: 'number', placeholder: '2', defaultValue: 2, step: 0.1, dimension: 'length', unit: 'm' }
+    ],
+    breakdown: {
+      headline: 'volume',
+      headlineLabel: 'Volume',
+      outputs: [{ id: 'volume', label: 'Volume', dimension: 'volume' }],
+      groups: [
+        { inputs: ['mode'] },
+        { inputs: ['dim1', 'dim2'] },
+        { title: 'Only used for the rectangular box shape', inputs: ['dim3'], optional: true }
+      ],
+      visual: {
+        type: 'logScale',
+        value: 'volume',
+        min: -4,
+        max: 4,
+        ticks: ['10⁻⁴', '10⁻²', '10⁰', '10²', '10⁴'],
+        benchmarks: [
+          { label: 'A 355 mL drink can (0.000355 m³)', value: 0.000355 },
+          { label: 'A US gallon (3.785411784 L, exact)', value: 0.003785411784 },
+          { label: 'An Olympic pool, World Aquatics minimum (50 m × 25 m × 2 m = 2,500 m³)', value: 2500 }
+        ],
+        title: 'How big is this volume?',
+        valueLabel: 'Your volume'
+      }
+    },
+    seo: {
+      title: 'Volume Calculator – Cube, Box, Cylinder, Sphere & Cone',
+      description: 'Free volume calculator for a cube, rectangular box, cylinder, sphere or cone. Enter the basic measurements and see the formula for each shape.',
+      faq: [
+        { question: 'How do I find the volume of a rectangular box?', answer: 'Multiply length by width by height: V = l × w × h. A 4 m by 3 m by 2 m box holds 24 m³.' },
+        { question: 'How do I find the volume of a cube?', answer: 'Cube the side length: V = s³. A 3 m side gives a volume of 3³ = 27 m³.' },
+        { question: 'How do I find the volume of a cylinder?', answer: 'Multiply the circular base area by the height: V = πr²h. A 3 m radius and 5 m height give π × 9 × 5 ≈ 141.37 m³.' },
+        { question: 'How do I find the volume of a sphere?', answer: 'Cube the radius, multiply by π, then by 4⁄3: V = (4⁄3)πr³. A 3 m radius gives (4⁄3) × π × 27 ≈ 113.10 m³.' },
+        { question: 'How do I find the volume of a cone?', answer: 'Multiply the circular base area by the height, then take a third of it: V = (1⁄3)πr²h. A 3 m radius and 5 m height give (1⁄3) × π × 9 × 5 ≈ 47.12 m³ — exactly a third of the matching cylinder above.' },
+        { question: 'Why is a cone’s volume a third of a cylinder’s?', answer: 'It is a geometric fact (provable with calculus or Cavalieri’s principle) that any cone is exactly one-third of the cylinder sharing its base and height, regardless of the radius or height chosen.' },
+        { question: 'Does doubling the radius double the volume?', answer: 'No. A sphere’s volume scales with the cube of the radius, so doubling it multiplies the volume by 2³ = 8. A cylinder or cone’s volume scales with the square of the radius (for the same height), so doubling it multiplies the volume by 2² = 4.' },
+        { question: 'What units does this calculator use?', answer: 'Any length unit from the menu — meters, feet, inches and more. The volume is shown in the matching cubed unit (m³, ft³, etc.), converted automatically.' }
+      ]
+    },
+    compute(values) {
+      const { mode, dim1, dim2, dim3 } = values;
+      let volume: number;
+      if (mode === 1) volume = dim1 >= 0 ? dim1 ** 3 : NaN; // cube
+      else if (mode === 3) volume = dim1 >= 0 && dim2 >= 0 ? Math.PI * dim1 ** 2 * dim2 : NaN; // cylinder (dim1 = radius, dim2 = height)
+      else if (mode === 4) volume = dim1 >= 0 ? (4 / 3) * Math.PI * dim1 ** 3 : NaN; // sphere
+      else if (mode === 5) volume = dim1 >= 0 && dim2 >= 0 ? (1 / 3) * Math.PI * dim1 ** 2 * dim2 : NaN; // cone
+      else volume = dim1 >= 0 && dim2 >= 0 && dim3 >= 0 ? dim1 * dim2 * dim3 : NaN; // mode 2 (rectangular box), and the fallback
+      return { volume };
+    }
+  },
+  {
+    id: 'surface-area-calculator',
+    category: 'math',
+    updatedAt: '2026-10-22',
+    aliases: ['surface area of a shape calculator', 'cylinder surface area calculator', 'sphere surface area calculator', 'box surface area calculator', 'cone surface area calculator'],
+    related: ['volume-calculator', 'area-calculator', 'circle-calculator', 'paint-calculator'],
+    title: 'Surface Area Calculator',
+    description: 'Find the total surface area of a cube, rectangular box, cylinder, sphere or cone from its basic measurements, with the formula for every shape shown.',
+    example: 'A rectangular box 4 m × 3 m × 2 m has a total surface area of 52 m² — the sum of all six faces. Switch shapes to find a cylinder, sphere or cone’s surface area from its own measurements instead.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is surface area?',
+        paragraphs: [
+          'Surface area is the total area of every face wrapped around the outside of a solid — how much wrapping paper covers a box, how much metal forms a can, how much paint a tank’s exterior needs. Unlike volume, which measures what a solid holds on the inside, surface area only cares about its outer skin, and the two do not grow at the same rate as a solid gets bigger.',
+          'A rectangular box has six rectangular faces in three matching pairs (top/bottom, front/back, left/right), so its formula adds up all three pairs: 2lw + 2lh + 2wh. A cube is the special case where every face is an identical square, six of them, giving the much simpler 6s². A sphere’s surface area, 4πr², is exactly four times the area of the circle you would get by slicing straight through its middle — a surprisingly clean relationship first proven by Archimedes. A cylinder unwraps into a rectangle (its curved side) plus two circular end caps. A cone similarly unwraps into a circular base plus a curved "lateral" surface.',
+          'This calculator covers five of the most commonly needed solids — cube, rectangular box, cylinder, sphere and cone — and always reports the total surface area, every face included.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick the solid, then fill in just the measurements it needs.',
+        steps: [
+          { name: 'Choose a solid', text: 'Cube, rectangular box, cylinder, sphere or cone. Each one uses its own formula underneath.' },
+          { name: 'Enter the first measurement', text: 'A side (cube), a length (box), or a radius (cylinder, sphere, cone).' },
+          { name: 'Enter the second measurement, if that solid needs one', text: 'A height (cylinder or cone). A sphere needs only the radius.' },
+          { name: 'Add the box’s third measurement', text: 'Tucked under "More options" since only the rectangular box shape reads a third length — the other four shapes ignore it entirely.' },
+          { name: 'Read the surface area, and see how big it really is', text: 'The scale below the result places your surface area against an A4 sheet of paper, a basketball court and a soccer pitch, the same everyday benchmarks the Area Calculator uses.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Five solids, five formulas — each one the sum of every face wrapped around the outside.',
+        expression:
+          'Cube: S = 6s²\nRectangular box: S = 2lw + 2lh + 2wh\nCylinder: S = 2πr² + 2πrh\nSphere: S = 4πr²\nCone: S = πr² + πr√(r² + h²)',
+        terms: [
+          { symbol: 's', meaning: 'A cube’s side length.' },
+          { symbol: 'l, w, h', meaning: 'A rectangular box’s length, width and height.' },
+          { symbol: 'r', meaning: 'The radius of a cylinder, sphere or cone’s circular base.' },
+          { symbol: 'h', meaning: 'The height of a cylinder or cone, measured perpendicular to its circular base.' },
+          { symbol: '√(r² + h²)', meaning: 'A cone’s slant height — the distance along its sloped side from the base edge to the tip, found with the Pythagorean theorem from its radius and height.' }
+        ],
+        note: 'This reports the cone’s TOTAL surface area (base circle πr² plus the curved lateral surface πr × slant height). If you only want the curved side, without the base, that is just the second term, πr√(r² + h²), on its own.'
+      },
+      workedExample: {
+        intro: 'The same cylindrical tank from the Volume Calculator’s example — radius 3 m, height 5 m. How much metal does its outer surface need?',
+        rows: [
+          { label: 'Two circular end caps (2πr²)', value: '2 × π × 3² = 2 × π × 9 ≈ 56.55 m²' },
+          { label: 'Curved side (2πrh)', value: '2 × π × 3 × 5 ≈ 94.25 m²' },
+          { label: 'Add them together', value: '56.55 + 94.25 ≈ 150.80' }
+        ],
+        result: 'Surface area ≈ 150.80 m²',
+        explanation: 'A cylinder’s surface splits cleanly into three flat-when-unrolled pieces: two identical circles for the top and bottom, and one rectangle for the curved side, whose width is the circle’s own circumference (2πr) once unrolled flat.'
+      },
+      watchOut: [
+        { title: 'This cone formula includes the base', body: 'Some references give only a cone’s LATERAL (side) surface area, πr√(r² + h²), leaving the circular base out. This calculator reports the TOTAL — base included — since that matches what "how much material covers this cone" usually means in practice.' },
+        { title: 'Surface area and volume do not grow at the same rate', body: 'Doubling every measurement of a solid multiplies its surface area by 4 (a squared effect) but its volume by 8 (a cubed effect) — why a large solid always has proportionally less surface relative to its volume than a small one, a relationship that shows up everywhere from cooling coffee to animal body heat loss.' },
+        { title: 'A zero measurement gives a zero surface area, not an error', body: 'A cube with a side of 0 is a single point with no surface — a real, if trivial, answer, not a mistake. Negative measurements are rejected instead, since a length cannot be negative.' },
+        { title: 'Surface area is not the same question as volume', body: 'A tall, thin cylinder and a short, wide one can hold very different amounts (volume) while needing a similar amount of material to build (surface area), or vice versa — the two figures answer genuinely different practical questions, so check which one a task actually calls for.' }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §9.6 Solve Geometry Applications: Volume and Surface Area', url: 'https://openstax.org/books/prealgebra-2e/pages/9-6-solve-geometry-applications-volume-and-surface-area' },
+        { label: 'Wolfram MathWorld, Cone', url: 'https://mathworld.wolfram.com/Cone.html' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'mode',
+        label: 'Shape',
+        type: 'number',
+        placeholder: '2',
+        defaultValue: 2,
+        step: 1,
+        min: 1,
+        options: [
+          { value: 1, label: 'Cube' },
+          { value: 2, label: 'Rectangular box' },
+          { value: 3, label: 'Cylinder' },
+          { value: 4, label: 'Sphere' },
+          { value: 5, label: 'Cone' }
+        ]
+      },
+      { id: 'dim1', label: 'First measurement (side, length or radius)', type: 'number', placeholder: '4', defaultValue: 4, step: 0.1, dimension: 'length', unit: 'm' },
+      { id: 'dim2', label: 'Second measurement (width or height)', type: 'number', placeholder: '3', defaultValue: 3, step: 0.1, dimension: 'length', unit: 'm' },
+      { id: 'dim3', label: 'Third measurement (box only, its depth)', type: 'number', placeholder: '2', defaultValue: 2, step: 0.1, dimension: 'length', unit: 'm' }
+    ],
+    breakdown: {
+      headline: 'surfaceArea',
+      headlineLabel: 'Surface area',
+      outputs: [{ id: 'surfaceArea', label: 'Surface area', dimension: 'area' }],
+      groups: [
+        { inputs: ['mode'] },
+        { inputs: ['dim1', 'dim2'] },
+        { title: 'Only used for the rectangular box shape', inputs: ['dim3'], optional: true }
+      ],
+      visual: {
+        type: 'logScale',
+        value: 'surfaceArea',
+        min: -2,
+        max: 4,
+        ticks: ['10⁻²', '10⁻¹', '10⁰', '10¹', '10²', '10³', '10⁴'],
+        benchmarks: [
+          { label: 'An ISO 216 A4 sheet of paper (0.21 m × 0.297 m ≈ 0.0624 m²)', value: 0.06237 },
+          { label: 'A FIBA-regulation basketball court (28 m × 15 m = 420 m²)', value: 420 },
+          { label: 'A FIFA-recommended soccer pitch (105 m × 68 m = 7,140 m²)', value: 7140 }
+        ],
+        title: 'How big is this surface area?',
+        valueLabel: 'Your surface area'
+      }
+    },
+    seo: {
+      title: 'Surface Area Calculator – Cube, Box, Cylinder, Sphere & Cone',
+      description: 'Free surface area calculator for a cube, rectangular box, cylinder, sphere or cone. Enter the basic measurements and see the formula for each shape.',
+      faq: [
+        { question: 'How do I find the surface area of a rectangular box?', answer: 'Add up all three pairs of matching faces: S = 2lw + 2lh + 2wh. A 4 m by 3 m by 2 m box has a surface area of 2(12) + 2(8) + 2(6) = 52 m².' },
+        { question: 'How do I find the surface area of a cube?', answer: 'Multiply one face’s area by 6: S = 6s². A 3 m side gives a surface area of 6 × 9 = 54 m².' },
+        { question: 'How do I find the surface area of a cylinder?', answer: 'Add the two circular end caps to the curved side: S = 2πr² + 2πrh. A 3 m radius and 5 m height give 2π(9) + 2π(3)(5) ≈ 56.55 + 94.25 ≈ 150.80 m².' },
+        { question: 'How do I find the surface area of a sphere?', answer: 'Square the radius and multiply by 4π: S = 4πr². A 3 m radius gives a surface area of 4π(9) ≈ 113.10 m².' },
+        { question: 'How do I find the surface area of a cone?', answer: 'Add the circular base to the curved lateral surface: S = πr² + πr√(r² + h²). A 3 m radius and 5 m height give a slant height of √(9 + 25) ≈ 5.83 m, and a surface area of π(9) + π(3)(5.83) ≈ 83.23 m².' },
+        { question: 'Does this include the base of the cone?', answer: 'Yes, this calculator reports the total surface area including the circular base. For the lateral (side-only) surface area, subtract πr² from the result, or use πr × slant height directly.' },
+        { question: 'Why does a bigger solid have relatively less surface area?', answer: 'Surface area scales with the square of a solid’s size while volume scales with the cube, so as a solid grows, its volume outpaces its surface area — doubling every dimension multiplies surface area by 4 but volume by 8.' },
+        { question: 'What units does this calculator use?', answer: 'Any length unit from the menu — meters, feet, inches and more. The surface area is shown in the matching squared unit (m², ft², etc.), converted automatically.' }
+      ]
+    },
+    compute(values) {
+      const { mode, dim1, dim2, dim3 } = values;
+      let surfaceArea: number;
+      if (mode === 1) surfaceArea = dim1 >= 0 ? 6 * dim1 ** 2 : NaN; // cube
+      else if (mode === 3) surfaceArea = dim1 >= 0 && dim2 >= 0 ? 2 * Math.PI * dim1 ** 2 + 2 * Math.PI * dim1 * dim2 : NaN; // cylinder
+      else if (mode === 4) surfaceArea = dim1 >= 0 ? 4 * Math.PI * dim1 ** 2 : NaN; // sphere
+      else if (mode === 5) surfaceArea = dim1 >= 0 && dim2 >= 0 ? Math.PI * dim1 ** 2 + Math.PI * dim1 * Math.sqrt(dim1 ** 2 + dim2 ** 2) : NaN; // cone, base + lateral
+      else surfaceArea = dim1 >= 0 && dim2 >= 0 && dim3 >= 0 ? 2 * (dim1 * dim2 + dim1 * dim3 + dim2 * dim3) : NaN; // mode 2 (box), and the fallback
+      return { surfaceArea };
+    }
   }
 
 ];

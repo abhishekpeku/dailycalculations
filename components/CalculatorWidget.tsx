@@ -87,15 +87,29 @@ type ListFieldRowProps = {
 // component only re-runs it on every keystroke to describe what the user just typed.
 export function ListFieldRow({ id, label, value, onChange, placeholder, min, max = LIST_MAX }: ListFieldRowProps) {
   const parsed = useMemo(() => parseNumberList(value, max), [value, max]);
-  const notes: string[] = [];
+
+  // Errors: something was dropped, capped, or there isn't enough data yet. Drives aria-invalid.
+  const errorNotes: string[] = [];
   if (parsed.ignored.length) {
     const shown = parsed.ignored.slice(0, 5).join(', ');
     const more = parsed.ignored.length > 5 ? `, and ${parsed.ignored.length - 5} more` : '';
-    notes.push(`Ignored ${parsed.ignored.length} value${parsed.ignored.length === 1 ? '' : 's'} that weren't numbers: ${shown}${more}.`);
+    errorNotes.push(`Ignored ${parsed.ignored.length} value${parsed.ignored.length === 1 ? '' : 's'} that weren't numbers: ${shown}${more}.`);
   }
-  if (parsed.truncated) notes.push(`Only the first ${max.toLocaleString()} numbers are used.`);
-  if (parsed.values.length < min) notes.push(`Enter at least ${min} number${min === 1 ? '' : 's'}.`);
-  const noteId = `${id}-note`;
+  if (parsed.truncated) errorNotes.push(`Only the first ${max.toLocaleString()} numbers are used.`);
+  if (parsed.values.length < min) errorNotes.push(`Enter at least ${min} number${min === 1 ? '' : 's'}.`);
+
+  // Informational only: a comma was read as a thousands separator, not as an error — still stated
+  // out loud (never silently), per mdFiles/steps/41-wave-1-statistics.md's "List input" section.
+  const infoNotes: string[] = [];
+  if (parsed.groupedAsThousands.length) {
+    const shown = parsed.groupedAsThousands.slice(0, 3).map((text) => `"${text}"`).join(', ');
+    const more = parsed.groupedAsThousands.length > 3 ? `, and ${parsed.groupedAsThousands.length - 3} more` : '';
+    infoNotes.push(`Read ${shown}${more} as thousands-separated — the comma was not treated as a separator between numbers.`);
+  }
+
+  const infoId = `${id}-info`;
+  const errorId = `${id}-note`;
+  const describedBy = [infoNotes.length ? infoId : '', errorNotes.length ? errorId : ''].filter(Boolean).join(' ') || undefined;
 
   return (
     <div className="flex flex-col gap-2 px-4 py-3">
@@ -111,12 +125,15 @@ export function ListFieldRow({ id, label, value, onChange, placeholder, min, max
         placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}
         rows={3}
-        aria-describedby={notes.length ? noteId : undefined}
-        aria-invalid={notes.length > 0}
+        aria-describedby={describedBy}
+        aria-invalid={errorNotes.length > 0}
         className="w-full resize-y rounded-lg bg-slate-100 px-3 py-2 text-sm tabular-nums text-slate-950 outline-none focus:bg-white focus:ring-2 focus:ring-slate-300 dark:bg-slate-900 dark:text-white dark:focus:bg-slate-950 dark:focus:ring-slate-700"
       />
-      {notes.length ? (
-        <p id={noteId} className="text-xs text-amber-600 dark:text-amber-400">{notes.join(' ')}</p>
+      {infoNotes.length ? (
+        <p id={infoId} className="text-xs text-slate-500 dark:text-slate-400">{infoNotes.join(' ')}</p>
+      ) : null}
+      {errorNotes.length ? (
+        <p id={errorId} className="text-xs text-amber-600 dark:text-amber-400">{errorNotes.join(' ')}</p>
       ) : null}
     </div>
   );

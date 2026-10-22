@@ -9,7 +9,7 @@ function listInput(defaults: number[], min = 1): CalculatorInput {
     id: 'data',
     label: 'Your numbers',
     type: 'list',
-    placeholder: 'Paste or type numbers, separated by commas, spaces or new lines',
+    placeholder: 'Paste or type numbers — commas, spaces or new lines between them. $, % and thousands commas like 1,000 are understood.',
     defaultValue: 0,
     listDefault: defaults,
     listMin: min
@@ -99,7 +99,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { title: 'No mode, or more than one, are both normal outcomes', body: 'If every value in a list of 2 or more numbers is different, this calculator reports no mode at all (shown as "—"), rather than picking one arbitrarily. If two or more values are tied for the most frequent, it reports all of them as tied (a multimodal data set) and names the smallest as the "primary" one shown on the chart.' },
         { title: 'The median formula depends on whether the count is odd or even', body: 'With an odd count, the median is the single middle value after sorting. With an even count, it is the average of the two middle values — which, unlike the mean of the whole list, can be a number that falls exactly between two data points.' },
         { title: 'This is not the same as a weighted average', body: 'Mean, median and mode all treat every number in the list equally. If some numbers should count more than others — like a final exam worth more than a quiz — use the weighted average calculator instead.' },
-        { title: 'Non-numeric tokens are dropped, not averaged in as zero', body: 'Anything pasted into the box that is not a number — a stray label, a unit, a trailing comma — is silently left out of the calculation and listed under the box, up to a 1,000-number cap. Check the live count against what you expected to paste.' }
+        { title: 'Non-numeric tokens are dropped, not averaged in as zero', body: 'Anything pasted into the box that is not a number — a stray label, a unit, a trailing comma — is silently left out of the calculation and listed under the box, up to a 1,000-number cap. Check the live count against what you expected to paste. A leading $, a trailing %, and commas used as thousands separators (1,000) are understood and not dropped — a comma is only read as a thousands separator when something else (a space, a new line) also separates your numbers; a bare comma-only list like 100,200,300 still reads as three numbers.' }
       ],
       references: [
         { label: 'OpenStax, Introductory Statistics 2e, §2.5 Measures of the Center of the Data', url: 'https://openstax.org/books/introductory-statistics-2e/pages/2-5-measures-of-the-center-of-the-data' },
@@ -233,7 +233,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { title: 'A single value has no sample standard deviation', body: 'With only one number, the sample formula divides by n − 1 = 0 — a genuine 0 ÷ 0, mathematically undefined. This calculator shows that honestly as "—" rather than guessing a value. The population standard deviation of a single value is still a legitimate 0 (one point has no spread).' },
         { title: 'Standard deviation is sensitive to outliers, like the mean it is built around', body: 'Because every deviation is squared before being averaged, one unusually far-off value can dominate the result far more than its single vote would suggest.' },
         { title: 'This is a point estimate, not the "true" spread', body: 'A different sample of the same size from the same underlying group would almost certainly produce a slightly different standard deviation. The n − 1 correction reduces the bias of that estimate; it does not eliminate the sampling variation itself.' },
-        { title: 'Non-numeric tokens are dropped, not treated as zero', body: 'Anything pasted into the box that is not a number is silently left out of the calculation and listed under the box, up to a 1,000-number cap. Check the live count against what you expected to paste.' }
+        { title: 'Non-numeric tokens are dropped, not treated as zero', body: 'Anything pasted into the box that is not a number is silently left out of the calculation and listed under the box, up to a 1,000-number cap. Check the live count against what you expected to paste. A leading $, a trailing %, and commas used as thousands separators (1,000) are understood and not dropped — a comma is only read as a thousands separator when something else (a space, a new line) also separates your numbers.' }
       ],
       references: [
         { label: 'OpenStax, Introductory Statistics 2e, §2.7 Measures of the Spread of the Data', url: 'https://openstax.org/books/introductory-statistics-2e/pages/2-7-measures-of-the-spread-of-the-data' },
@@ -345,7 +345,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { title: 'A single value has no sample variance', body: 'The sample formula divides by n − 1 = 0 when n = 1 — a genuine 0 ÷ 0. This calculator reports that honestly as "—." Population variance of a single value is still a legitimate 0.' },
         { title: 'Dividing by n or n − 1 is not interchangeable', body: 'Same as standard deviation: population and sample variance answer different questions, not two roundings of one answer. Use population variance only when your numbers are the entire group of interest.' },
         { title: 'Variance and standard deviation are not independent findings', body: 'They come from exactly the same calculation up to the final square root — if you already have one, you already have the other, and cross-checking a variance calculator against a standard deviation calculator on the same data is really just checking the same arithmetic twice.' },
-        { title: 'Non-numeric tokens are dropped, not treated as zero', body: 'Anything pasted into the box that is not a number is silently left out of the calculation and listed under the box, up to a 1,000-number cap. Check the live count against what you expected to paste.' }
+        { title: 'Non-numeric tokens are dropped, not treated as zero', body: 'Anything pasted into the box that is not a number is silently left out of the calculation and listed under the box, up to a 1,000-number cap. Check the live count against what you expected to paste. A leading $, a trailing %, and commas used as thousands separators (1,000) are understood and not dropped — a comma is only read as a thousands separator when something else (a space, a new line) also separates your numbers.' }
       ],
       references: [
         { label: 'OpenStax, Introductory Statistics 2e, §2.7 Measures of the Spread of the Data', url: 'https://openstax.org/books/introductory-statistics-2e/pages/2-7-measures-of-the-spread-of-the-data' },
@@ -576,7 +576,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
         { title: 'A single value is its own every percentile', body: 'With only one number in the list, the rank formula always resolves to that one value, regardless of what percentile you ask for — there is nothing else for it to interpolate between.' },
         { title: 'The 50th percentile is not always identical to the median formula taught separately', body: 'For this calculator\'s method, they do agree — the 50th percentile and the textbook "average of the two middle values" median give the same answer. That is a property of this particular method, not a universal guarantee across every percentile definition.' },
         { title: 'Percentile is not the same as percentage', body: 'Scoring in the 90th percentile does not mean getting 90% of questions right — it means scoring at or above roughly 90% of whoever you are being compared against, which depends entirely on how that group performed.' },
-        { title: 'Non-numeric tokens are dropped, not treated as zero', body: 'Anything pasted into the box that is not a number is silently left out of the calculation and listed under the box, up to a 1,000-number cap. Check the live count against what you expected to paste.' }
+        { title: 'Non-numeric tokens are dropped, not treated as zero', body: 'Anything pasted into the box that is not a number is silently left out of the calculation and listed under the box, up to a 1,000-number cap. Check the live count against what you expected to paste. A leading $, a trailing %, and commas used as thousands separators (1,000) are understood and not dropped — a comma is only read as a thousands separator when something else (a space, a new line) also separates your numbers.' }
       ],
       references: [
         { label: 'NIST/SEMATECH e-Handbook of Statistical Methods, §7.2.6.2 Percentiles', url: 'https://www.itl.nist.gov/div898/handbook/prc/section2/prc262.htm' },

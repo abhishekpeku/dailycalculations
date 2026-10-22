@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-10-22 · Current step: **40–42** (Wave 1: math · statistics · conversion — NEW calculators), **IN PROGRESS** (math sub-wave **complete**, 29/~29 math calculators across 6 runs, PRs #15–#20; statistics sub-wave started, run 1/~5 **done**: statistics category + mean-median-mode, standard-deviation, variance, z-score, percentile, 5/~25 statistics calculators, branch `step/41-wave-1-statistics-run-1`, PR #21 ready for review; **user-approved paste-a-list input inserted before run 2**, branch `step/41-list-input`, PR #22 ready for review — see Parked "No list/array input" resolution and the session log below) · step 39 **DONE** 2026-10-21 (Batch 5, all 18: time, travel, work, creator, text, education; PR #14 ready for review) · step 38 done (PR #13, ready for review) · steps 17 + 30–39 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split, batches 1–5) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
+Last updated: 2026-10-22 · Current step: **40–42** (Wave 1: math · statistics · conversion — NEW calculators), **IN PROGRESS** (math sub-wave **complete**, 29/~29 math calculators across 6 runs, PRs #15–#20; statistics sub-wave started, run 1/~5 **done**: statistics category + mean-median-mode, standard-deviation, variance, z-score, percentile, 5/~25 statistics calculators, branch `step/41-wave-1-statistics-run-1`, PR #21 ready for review; **user-approved paste-a-list input inserted before run 2**, branch `step/41-list-input`, PR #22 ready for review, **pre-merge review fix applied** (thousands separators / unicode minus / currency / percent — see Parked "No list/array input" resolution and the session log below) · step 39 **DONE** 2026-10-21 (Batch 5, all 18: time, travel, work, creator, text, education; PR #14 ready for review) · step 38 done (PR #13, ready for review) · steps 17 + 30–39 done (snapshot tests, units v2, solver v2, visuals kit, type-B widget, data split, batches 1–5) · **v2 template merged** (`f17b7de`) · Rollout plan: `mdFiles/calculator-rollout-plan.md`
 
 ---
 
@@ -1611,10 +1611,30 @@ Things noticed but deliberately out of scope. Add here instead of fixing mid-ste
   in the kit. Not affected by the list-input component above, which solves a different problem
   (arbitrarily many individual numbers, not a small fixed set of factor/exponent pairs).
   **New Parked note from this work**: the list parser is not locale-aware (decimals are always a
-  dot; a comma is always a separator) — `lib/regions.ts` (step 18) will eventually need an EU
-  comma-decimal variant. Also not done: mode-as-text output (needs a text-shaped result type through
-  `BreakdownOutput`/`compute()`, a separate kit change), and `weighted-average-calculator`'s two-list
-  design (needs a length-mismatch guard).
+  dot; a comma is always a separator or a thousands separator, never a decimal mark) —
+  `lib/regions.ts` (step 18) will eventually need an EU comma-decimal variant. Also not done:
+  mode-as-text output (needs a text-shaped result type through `BreakdownOutput`/`compute()`, a
+  separate kit change), and `weighted-average-calculator`'s two-list design (needs a length-mismatch
+  guard).
+  **Pre-merge review fix (2026-10-22, same PR #22, before merge)**: `parseNumberList` silently gave a
+  wrong answer on a thousands-separated paste — `"1,000, 2,500, 3,000"` parsed to
+  `[1, 0, 2, 500, 3, 0]`, every comma having always been a value separator with no exception — and
+  dropped a typographic minus (U+2212, what real browsers/Word actually paste, not the ASCII hyphen),
+  a leading currency symbol, and a trailing `%` entirely. Fixed: a token's comma(s) are read as
+  thousands separators only when the whole input also uses some other separator (space/newline/
+  semicolon) between values — a bare comma-only input (`"100,200,300"`) keeps every comma as a plain
+  separator, unchanged, since the two readings are genuinely indistinguishable from the text alone
+  without that signal. Made visible, not silent: `ParsedList.groupedAsThousands` names every value
+  read this way, and `ListFieldRow` shows a dedicated (non-error) note saying so. Also normalizes a
+  leading U+2212/en-dash minus, a leading `$ £ € ₹ ¥`, and a trailing `%` (45% reads as 45). One
+  known, accepted residual gap, documented in `lib/listParse.ts`: multiple newline-separated *lines*
+  that are each themselves a bare comma-list (`"100,200,300\n400,500,600"`) still read every in-line
+  comma as thousands-grouping, since the rule is evaluated over the whole input and a newline exists
+  somewhere in it — not in the fix's required test list, follows the stated rule literally rather
+  than inventing an extra per-line heuristic. Full writeup, the exact disambiguation regex and all
+  new tests: `mdFiles/steps/41-wave-1-statistics.md`, "Pre-merge review fix". `npm test` 403/403
+  (up from 387), `npm run lint`, `npm run build` all pass; no existing snapshot changed (parser/widget
+  only, `compute()` untouched).
 - **`CompareBars` silently caps at 4 bars** (`components/visuals/CompareBars.tsx`: `bars.slice(0, 4)`,
   found in step 40, run 2 while designing `average-calculator`): the prop comment already says "2-4
   bars," so this is documented behavior, not a bug, but it means a visual cannot show more than 4

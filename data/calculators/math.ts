@@ -739,7 +739,7 @@ export const mathCalculators: CalculatorConfig[] = [
       },
       watchOut: [
         { title: 'A genuine 0 is a real value, not an "unused" marker', body: 'If one of your numbers really is 0 — a test score of 0, say — paste it in like any other number. This calculator averages every number it parses, zeros included; it never silently drops a 0.' },
-        { title: 'Non-numeric tokens are dropped, not averaged in as zero', body: 'Anything pasted into the box that is not a number — a stray label, a unit, a trailing comma — is silently left out of the calculation and listed under the box, up to a 1,000-number cap. Check the live count against what you expected to paste.' },
+        { title: 'Non-numeric tokens are dropped, not averaged in as zero', body: 'Anything pasted into the box that is not a number — a stray label, a unit, a trailing comma — is silently left out of the calculation and listed under the box, up to a 1,000-number cap. Check the live count against what you expected to paste. A leading $, a trailing %, and commas used as thousands separators (1,000) are understood and not dropped — a comma is only read as a thousands separator when something else (a space, a new line) also separates your numbers; a bare comma-only list like 100,200,300 still reads as three numbers.' },
         { title: 'The average is sensitive to outliers', body: 'One unusually large or small number pulls the mean toward it. A list of 10, 12, 11 and 400 averages to 108.25 — far from any typical value in the list — because the mean does not ignore extremes the way the median would.' },
         { title: 'Average and weighted average are different questions', body: 'A plain average treats every number the same. If some numbers should count more than others — a final exam worth more than a single quiz — use the weighted average calculator instead; the two will usually disagree.' },
         { title: 'The result can fall outside the range of "typical" values', body: 'The average of 1, 1, 1 and 100 is 25.75 — higher than three of the four numbers and nowhere close to any single one of them, because one large value outweighs several small, identical ones.' }
@@ -754,7 +754,7 @@ export const mathCalculators: CalculatorConfig[] = [
         id: 'data',
         label: 'Your numbers',
         type: 'list',
-        placeholder: 'Paste or type numbers, separated by commas, spaces or new lines',
+        placeholder: 'Paste or type numbers — commas, spaces or new lines between them. $, % and thousands commas like 1,000 are understood.',
         defaultValue: 0,
         listDefault: [85, 90, 78, 92],
         listMin: 1

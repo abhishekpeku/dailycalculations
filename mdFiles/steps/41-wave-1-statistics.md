@@ -352,3 +352,82 @@ the return), the 1,000 cap (`truncated: true`, exactly 1,000 kept), scientific n
   `formatOutput` — a real, separate kit change, not a one-line addition. Not done.
 - **`weighted-average-calculator`'s two-list design.** A value-list + weight-list pairing needs a
   length-mismatch guard the kit does not have yet. Not done; see the decision above.
+
+### Pre-merge review fix (2026-10-22): thousands separators, unicode minus, currency, percent
+
+Pre-merge review of PR #22 found that `parseNumberList` silently gave a wrong answer on exactly the
+input real users paste most: a thousands-separated number. `"1,000, 2,500, 3,000"` parsed to
+`[1, 0, 2, 500, 3, 0]` (every comma was always a value separator, no exceptions), `"−3"` (U+2212, the
+typographic minus every browser's number-formatting and Word/web copy-paste actually produce, not
+the ASCII hyphen) was dropped as unparseable, and `"$12.50, $8"` / `"45%, 50%"` were dropped
+entirely. None of this showed up as a build/lint/test failure — it is a silent-wrong-result class of
+bug, not a crash, which is exactly why it was flagged as a mandatory pre-merge fix rather than left
+for a later cleanup.
+
+**The disambiguation rule (thousands commas vs. separator commas):** a token's internal comma(s) are
+read as thousands separators — `GROUPED_NUMBER = /^[+-]?\d{1,3}(,\d{3})+(\.\d+)?$/`, i.e. a 1-3 digit
+group then one or more exactly-3-digit groups, optionally with a decimal tail — **only when the
+whole input also uses some other separator** (whitespace or a semicolon) between its values. If the
+entire input uses only bare commas with no whitespace anywhere (`"100,200,300"`, `"1,2,3"`), every
+comma stays a plain value separator, unchanged from before. This is the only signal that can
+disambiguate the two readings at all: `"100,200,300"` is *textually* indistinguishable from the
+6-figure number 100200300, and the task that requested this fix explicitly chose "some other
+separator present" as the tie-breaker (and gave `"100,200,300"` with no whitespace as the worked
+example that must still read as three numbers, not one). Implementation: split the input on
+whitespace/semicolon runs first; if that yields more than one chunk, every chunk is tested against
+`GROUPED_NUMBER` before anything else; a chunk that doesn't match (e.g. `"1,23"` out of `"1,23, 4"` —
+`"23"` isn't a 3-digit group) falls through to being split on its own commas and validated token by
+token, so `"1,23, 4"` reads as `1, 23, 4`, not as one failed token. A single trailing comma on a
+chunk (`"1,000,"` out of `"1,000, 2,500"`) is stripped first, since it's a separator remnant, not
+part of the number.
+
+**Made visible, never silent (the task's explicit requirement):** `ParsedList` gained
+`groupedAsThousands: string[]`, the original text of every value whose comma was read as a thousands
+separator. `ListFieldRow` shows it as a dedicated, non-error informational line (`"Read "1,000",
+"2,500" as thousands-separated — the comma was not treated as a separator between numbers."`),
+separate from the amber error line (dropped tokens, the cap, too few numbers) and from
+`aria-invalid`, which stays tied only to actual errors — reading a number correctly is not an error
+state. Every retrofitted calculator's "non-numeric tokens are dropped" watch-out item, and the shared
+list-input placeholder text (now the literal helper text under the box), state the $/%/thousands-
+comma rule explicitly rather than leaving it to be discovered.
+
+**Unicode minus and currency/percent affixes**, a single `cleanToken` helper applied to every atomic
+token before it is tested: normalizes a leading U+2212 (−) or U+2013 (en dash, –) to an ASCII `-`
+(both are what real browsers/Word/web copy-paste actually produce for a minus sign, not the ASCII
+hyphen the original regex only accepted); strips one leading currency symbol (`$ £ € ₹ ¥`), keeping
+whatever sign is on either side of it (`-$5` and `$-5` both read as `-5`); strips one trailing `%`,
+leaving the number unchanged (`45%` reads as `45`, not `0.45` — stated in the helper text, since the
+other reading is equally defensible and silently picking one needs saying out loud). Parentheses
+negatives (`"(123)"`) and hex (`"0x1F"`) remain unsupported and reported, unchanged — the task asked
+to extend affix support, not to add a second number-literal grammar.
+
+**Share-link round trip is unaffected and was explicitly re-tested**: `formatNumberList` always
+writes plain `Number`-stringified values with no grouping commas at all
+(`formatNumberList([1000, 2500])` → `"1000,2500"`), so a share URL built from a thousands-grouped
+paste re-parses through the **bare-comma path** on read-back (no whitespace in the serialized form)
+and lands on the exact same numbers — verified directly in `lib/listParse.spec.ts` and
+`lib/breakdown.spec.ts` (`breakdownShareParams`/`readBreakdownShareParams`), not just asserted.
+
+**Known, accepted remaining gap** (documented in `lib/listParse.ts`'s module comment, not silently
+left out): several *lines*, each itself a bare comma-separated list with no other separator within
+the line but a newline *between* lines (`"100,200,300\n400,500,600"`), still reads every in-line
+comma as a thousands separator, because the rule is evaluated over the *whole* input and a newline
+is present somewhere in it. This exact shape was not in the task's test list; the fix follows the
+task's stated rule exactly (an unqualified "whole input" condition) rather than inventing an
+additional per-line heuristic the task didn't ask for. Rare in practice (a multi-line paste where
+every single line independently needs 3+ grouped values with nothing else distinguishing them from
+a flat list); noted here and in `STATUS.md`'s Parked list as a residual limitation of the rule as
+specified, should it ever come up.
+
+**Verification**: all 5 retrofitted calculators' worked-example numbers were re-checked against
+`verify_list_input.mjs` (scratchpad, plain Node, no app imports) after this fix and are byte-for-byte
+unchanged (mean 8.2/median 8/mode 7; population SD ≈8.221921916437786/sample SD
+≈9.192388155425117; population/sample variance 67.6/84.5; percentile 81 at P75, 67.5 at P50; average
+86.25) — this fix only touches how text is tokenized before `compute()` ever runs, not any formula.
+The four exact bug-report inputs were additionally re-run end-to-end through `evaluateBreakdown` (not
+just the parser in isolation): `"1,000, 2,500, 3,000"` → mean 2166.67, count 3 (previously wrong);
+`"−3"` → mean −3, count 1 (previously dropped); `"$12.50, $8"` → mean 10.25, count 2 (previously all
+dropped); `"45%, 50%"` → mean 47.5, count 2 (previously all dropped). 34 parser unit tests (up from
+20) and 2 new share-link tests in `lib/breakdown.spec.ts`; `npm test` 403/403, `npm run lint`,
+`npm run build` all pass. No existing snapshot changed (this fix is parser/widget-only; `compute()`
+and every calculator's default/typical/edge inputs are untouched).

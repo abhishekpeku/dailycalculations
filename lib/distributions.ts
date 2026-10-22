@@ -1,7 +1,8 @@
-// Dependency-free standard normal and Student's t distribution functions, for the confidence
-// interval, margin of error, sample size and p-value calculators. See mdFiles/steps/41-wave-1-statistics.md,
-// "Run 2: ... The distribution module" and its "Pre-merge review fix" note, for the full accuracy
-// writeup, citations and the bug this version fixes.
+// Dependency-free standard normal, Student's t and chi-square distribution functions, for the
+// confidence interval, margin of error, sample size, p-value, t-test and chi-square calculators.
+// See mdFiles/steps/41-wave-1-statistics.md, "Run 2: ... The distribution module" and its
+// "Pre-merge review fix" note, for the full accuracy writeup, citations and the bug this version
+// fixes.
 //
 // normalCDF / normalSF: the standard normal tail Q(z) = P(Z > z) is computed as one-half of the
 // *upper* regularized incomplete gamma function, Q(z) = 0.5 * Q_gamma(1/2, z^2/2) — the standard
@@ -31,6 +32,12 @@
 //   elsewhere by the solver widget) on tCDF, rather than a second, separately-erred closed-form
 //   inverse-t approximation — tCDF is strictly monotonic in t for any df > 0, so there is exactly
 //   one root.
+// chiSquareSF / chiSquareCDF: the standard identity relating the chi-square tail to the upper
+//   regularized incomplete gamma function, Q_chi2(x, df) = Q_gamma(df/2, x/2) — reuses the same
+//   gammaQ this file's normalSF is built on, rather than a third implementation. gammaQ's
+//   iteration budget now scales with its own parameters and reports non-convergence as NaN
+//   (the same fix betacf/incompleteBeta already needed for binomial-distribution-calculator),
+//   since chi-square-calculator's goodness-of-fit mode can reach a df in the hundreds.
 //
 // Accuracy target: >= 6 significant digits (the task's original instruction); in practice the
 // normal tail functions hold a *relative* error well under 1e-9 across the whole tested range
@@ -74,27 +81,42 @@ export function logGamma(x: number): number {
 
 // ---------- Upper incomplete gamma (Numerical Recipes §6.2, "gammq") ----------
 
+// Both branches below need roughly O(sqrt(a)) (series) or O(a) (continued fraction) terms once `a`
+// is in the hundreds or more — chi-square-calculator calls this with a = df/2, and df can be in the
+// hundreds for a goodness-of-fit test with many categories (up to this file's list-input cap).
+// Scaled iteration budgets + an honest non-convergence signal, same fix and same constants as
+// betacf below (see its comment): a fixed MAX_ITERATIONS=200 cap was the exact bug a pre-merge
+// review found in binomial-distribution-calculator's use of betacf, so chi-square-calculator's new
+// use of this function is given the same treatment from the start rather than waiting to hit it.
+
 /** Series expansion for the lower regularized incomplete gamma P(a, x), valid for x < a + 1. */
-function gammaPSeries(a: number, x: number): number {
+function gammaPSeries(a: number, x: number): { value: number; converged: boolean } {
   let ap = a;
   let sum = 1 / a;
   let del = sum;
-  for (let n = 1; n <= MAX_ITERATIONS; n++) {
+  const maxIterations = Math.min(MAX_ITERATIONS_CEILING, Math.max(MAX_ITERATIONS, Math.ceil(ITERATION_SCALE * Math.sqrt(a))));
+  let converged = false;
+  for (let n = 1; n <= maxIterations; n++) {
     ap += 1;
     del *= x / ap;
     sum += del;
-    if (Math.abs(del) < Math.abs(sum) * EPSILON) break;
+    if (Math.abs(del) < Math.abs(sum) * EPSILON) {
+      converged = true;
+      break;
+    }
   }
-  return sum * Math.exp(-x + a * Math.log(x) - logGamma(a));
+  return { value: sum * Math.exp(-x + a * Math.log(x) - logGamma(a)), converged };
 }
 
 /** Continued fraction for the upper regularized incomplete gamma Q(a, x), valid for x >= a + 1. */
-function gammaQContinuedFraction(a: number, x: number): number {
+function gammaQContinuedFraction(a: number, x: number): { value: number; converged: boolean } {
   let b = x + 1 - a;
   let c = 1 / FLOOR;
   let d = 1 / b;
   let h = d;
-  for (let i = 1; i <= MAX_ITERATIONS; i++) {
+  const maxIterations = Math.min(MAX_ITERATIONS_CEILING, Math.max(MAX_ITERATIONS, Math.ceil(ITERATION_SCALE * Math.sqrt(a + x))));
+  let converged = false;
+  for (let i = 1; i <= maxIterations; i++) {
     const an = -i * (i - a);
     b += 2;
     d = an * d + b;
@@ -104,9 +126,12 @@ function gammaQContinuedFraction(a: number, x: number): number {
     d = 1 / d;
     const delta = d * c;
     h *= delta;
-    if (Math.abs(delta - 1) < EPSILON) break;
+    if (Math.abs(delta - 1) < EPSILON) {
+      converged = true;
+      break;
+    }
   }
-  return Math.exp(-x + a * Math.log(x) - logGamma(a)) * h;
+  return { value: Math.exp(-x + a * Math.log(x) - logGamma(a)) * h, converged };
 }
 
 /**
@@ -114,19 +139,32 @@ function gammaQContinuedFraction(a: number, x: number): number {
  * Dispatches to whichever of the two classical methods converges quickly (Numerical Recipes'
  * "gammq"): a power series when x is small relative to a, a continued fraction otherwise. The
  * continued-fraction branch computes Q directly, never as 1 minus the series — exactly the
- * property this module's tail functions need for a p-value far out in the tail.
+ * property this module's tail functions need for a p-value far out in the tail. **NaN when the
+ * chosen branch does not converge within its (parameter-scaled) iteration budget** — never a
+ * silently wrong partial result, the same contract incompleteBeta below guarantees.
  */
 function gammaQ(a: number, x: number): number {
   if (x < 0 || a <= 0) return NaN;
   if (x === 0) return 1;
-  if (x < a + 1) return 1 - gammaPSeries(a, x);
-  return gammaQContinuedFraction(a, x);
+  if (x < a + 1) {
+    const { value, converged } = gammaPSeries(a, x);
+    return converged ? 1 - value : NaN;
+  }
+  const { value, converged } = gammaQContinuedFraction(a, x);
+  return converged ? value : NaN;
 }
 
 // ---------- Standard normal ----------
 
-/** P(Z > z), the upper tail, computed directly (never as 1 - normalCDF(z)). */
+/**
+ * P(Z > z), the upper tail, computed directly (never as 1 - normalCDF(z)). NaN for a NaN `z`
+ * (never a flat 0/1), guarded explicitly: without this check, `z >= 0` and `z > 0` are both false
+ * for `NaN`, so the recursive branch below (`-z`) would call itself with `NaN` forever instead of
+ * terminating — a caller that lets a zero-variance calculation reach this function (e.g. a z-score
+ * of 0/0) gets an honest NaN instead of a hung page.
+ */
 export function normalSF(z: number): number {
+  if (Number.isNaN(z)) return NaN;
   if (z >= 0) return 0.5 * gammaQ(0.5, (z * z) / 2);
   return 1 - normalSF(-z); // "1 - tiny" loses no precision; only "tiny - tiny" or "1 - (1 - tiny)" would
 }
@@ -134,6 +172,29 @@ export function normalSF(z: number): number {
 /** P(Z <= z) for the standard normal distribution. */
 export function normalCDF(z: number): number {
   return z >= 0 ? 1 - normalSF(z) : normalSF(-z);
+}
+
+// ---------- Chi-square ----------
+
+/**
+ * P(X > x) for a chi-square distribution with `df` degrees of freedom — chi-square-calculator's
+ * p-value. The standard identity Q_chi2(x, df) = Q_gamma(df/2, x/2) (e.g. NIST DLMF §8.2.4) reuses
+ * the same upper-incomplete-gamma machinery normalSF is built on above, rather than a third,
+ * separately-erred implementation. gammaQ's continued-fraction branch (what a real tail p-value
+ * exercises) computes the tail directly, never as 1 - CDF, and now reports non-convergence as NaN
+ * (see gammaQ's own comment) instead of a silently wrong value for a large df.
+ */
+export function chiSquareSF(x: number, df: number): number {
+  if (!(df > 0)) return NaN;
+  if (x <= 0) return 1;
+  return gammaQ(df / 2, x / 2);
+}
+
+/** P(X <= x) for a chi-square distribution with `df` degrees of freedom. */
+export function chiSquareCDF(x: number, df: number): number {
+  if (!(df > 0)) return NaN;
+  if (x <= 0) return 0;
+  return 1 - chiSquareSF(x, df);
 }
 
 /** Peter J. Acklam's rational approximation (2003), ~1.15e-9 relative error for 0 < p < 1. */
@@ -239,9 +300,16 @@ export function incompleteBeta(x: number, a: number, b: number): number {
   return converged ? 1 - (prefactor * h) / b : NaN;
 }
 
-/** P(T > t), the upper tail, computed directly from the incomplete beta (never as 1 - tCDF(t, df)). */
+/**
+ * P(T > t), the upper tail, computed directly from the incomplete beta (never as 1 - tCDF(t, df)).
+ * NaN for a NaN `t` — the same explicit guard as normalSF above, and for the same reason: `t > 0`
+ * is false for `NaN`, so without this check the recursive branch would call itself with `NaN`
+ * forever rather than terminating. t-test-calculator and correlation-calculator's own zero-variance
+ * cases (a t-statistic that comes out 0/0) rely on this to produce an honest NaN, not a hung page.
+ */
 export function tSF(t: number, df: number): number {
   if (!(df > 0)) return NaN;
+  if (Number.isNaN(t)) return NaN;
   if (t === 0) return 0.5;
   if (t > 0) {
     const x = df / (df + t * t);

@@ -125,6 +125,8 @@ export type Evaluation = {
   outputKeys: string[];
   /** False while any field is blank or not a number: nothing is computed then. */
   complete: boolean;
+  /** Set when `breakdown.pairedLists` names two list inputs whose parsed lengths currently differ. */
+  pairedListMismatch?: { aLabel: string; bLabel: string; aLength: number; bLength: number };
 };
 
 /**
@@ -142,6 +144,17 @@ export function evaluateBreakdown(
   const listsComplete = listInputs.every((input) => (lists[input.id]?.length ?? 0) >= (input.listMin ?? 1));
   const complete = Object.values(values).every(Number.isFinite) && listsComplete;
   const results = complete ? calculator.compute({ ...values, ...extra }, lists) : {};
+  const pairedLists = calculator.breakdown?.pairedLists;
+  let pairedListMismatch: Evaluation['pairedListMismatch'];
+  if (pairedLists && listsComplete) {
+    const [aId, bId] = pairedLists;
+    const aLength = lists[aId]?.length ?? 0;
+    const bLength = lists[bId]?.length ?? 0;
+    if (aLength !== bLength) {
+      const label = (id: string) => calculator.inputs.find((input) => input.id === id)?.label ?? id;
+      pairedListMismatch = { aLabel: label(aId), bLabel: label(bId), aLength, bLength };
+    }
+  }
   const outputKeys = complete
     ? Object.keys(results)
     : Object.keys(
@@ -153,7 +166,7 @@ export function evaluateBreakdown(
   const base: Record<string, number> = { ...extra, ...values };
   for (const key of outputKeys) base[key] = complete ? results[key] : NaN;
   const derived = complete && calculator.breakdown?.derive ? calculator.breakdown.derive(base) : {};
-  return { all: { ...base, ...derived }, outputKeys, complete };
+  return { all: { ...base, ...derived }, outputKeys, complete, pairedListMismatch };
 }
 
 /** Converts a typed value when its unit menu changes, so the quantity stays the same. */

@@ -94,6 +94,15 @@ export type CalculatorBreakdown = {
   /** Display-only figures from inputs + outputs (compute units), for rows and the visual. */
   derive?: (values: Record<string, number>) => Record<string, number>;
   visual?: BreakdownVisual;
+  /**
+   * Two `type: 'list'` input ids that must parse to the same length (e.g. paired x/y data). When
+   * they currently differ, the widget shows a specific "lengths don't match" message naming both
+   * counts instead of the generic "fill in every field" one — `compute()` itself must still return
+   * NaN for a mismatch (this is a display-only hint, not what makes the guard honest). See
+   * correlation-calculator / linear-regression-calculator and
+   * mdFiles/steps/41-wave-1-statistics.md, "Run 4".
+   */
+  pairedLists?: [string, string];
 };
 
 export type SolverVariable = {

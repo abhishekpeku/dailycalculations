@@ -48,7 +48,7 @@ export default function BreakdownCalculator({ calculatorId }: { calculatorId: st
 
   if (!calculator || !evaluation) return null;
 
-  const { all, outputKeys, complete } = evaluation;
+  const { all, outputKeys, complete, pairedListMismatch } = evaluation;
   const resolved = resolveBreakdown(calculator, outputKeys);
   const describe = (id: string) => describeKey(id, resolved, inputs);
   const show = (id: string) => (mounted ? formatOutput(all[id] ?? NaN, describe(id)) : '—');
@@ -125,6 +125,13 @@ export default function BreakdownCalculator({ calculatorId }: { calculatorId: st
         ) : null}
         {mounted && !complete ? (
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Fill in every field to see the result.</p>
+        ) : null}
+        {mounted && complete && pairedListMismatch ? (
+          <p className="mt-2 text-sm text-amber-600 dark:text-amber-400">
+            {pairedListMismatch.aLabel} has {pairedListMismatch.aLength} number{pairedListMismatch.aLength === 1 ? '' : 's'}, but{' '}
+            {pairedListMismatch.bLabel.toLowerCase()} has {pairedListMismatch.bLength} — enter the same count in both before this can
+            compute a result. Nothing is truncated or padded to force an answer.
+          </p>
         ) : null}
         {resolved.rows.length ? (
           <OutputList>

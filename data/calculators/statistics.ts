@@ -1,5 +1,5 @@
 import type { CalculatorConfig, CalculatorInput } from './types.ts';
-import { incompleteBeta, logGamma, normalCDF, normalInverseCDF, normalSF, tCDF, tInverseCDF, tSF } from '../../lib/distributions.ts';
+import { chiSquareSF, incompleteBeta, logGamma, normalCDF, normalInverseCDF, normalSF, tCDF, tInverseCDF, tSF } from '../../lib/distributions.ts';
 
 // p-value-calculator: a floor on the displayed p-value and cumulative probability. For an extreme
 // test statistic (z or t beyond roughly +-39) the true probability underflows below the smallest
@@ -227,6 +227,60 @@ function binomialSf(n: number, k: number, p: number) {
   if (k <= 0) return 1;
   if (k > n) return 0;
   return incompleteBeta(p, k, n - k + 1); // P(X >= k) = I_p(k, n-k+1), computed directly, never as 1 - CDF
+}
+
+// Paired x/y list inputs for correlation-calculator and linear-regression-calculator. Reuses the
+// same `type: 'list'` mechanism as every other list input, just twice with distinct ids — the kit
+// already parses/shares/completeness-checks each list input independently by its own id (see
+// lib/breakdown.ts's computeLists/evaluateBreakdown), so two of them need no new plumbing there.
+// The one thing the kit does NOT do on its own is check the two lists are the SAME length — a
+// wrong-paste-length mistake (9 x-values, 10 y-values) would otherwise silently mispair every
+// point after the mismatch. `breakdown.pairedLists` (data/calculators/types.ts, lib/breakdown.ts)
+// shows a specific "lengths don't match" message in the live widget; compute() below independently
+// checks the same thing and returns NaN for every output — never truncating or padding to force an
+// answer — because data/calculators.spec.ts's snapshot harness calls compute() directly and must
+// see the same honest behavior without going through the widget at all. This is the design the
+// Parked note on weighted-average-calculator's own two-list (value/weight) idea was waiting on; see
+// mdFiles/steps/41-wave-1-statistics.md, "Run 4", for whether that retrofit is viable now.
+function pairedListInputs(xDefaults: number[], yDefaults: number[], min = 2): CalculatorInput[] {
+  return [
+    { id: 'xData', label: 'X values', type: 'list', placeholder: 'Paste or type your x-values — commas, spaces or new lines between them.', defaultValue: 0, listDefault: xDefaults, listMin: min },
+    {
+      id: 'yData',
+      label: 'Y values',
+      type: 'list',
+      placeholder: 'Paste or type your y-values, in the same order as the x-values above (one y for every x).',
+      defaultValue: 0,
+      listDefault: yDefaults,
+      listMin: min
+    }
+  ];
+}
+
+// Mean-centered, two-pass sums shared by correlation-calculator and linear-regression-calculator,
+// so the two pages can never silently disagree on the underlying numbers (same precedent as
+// variance-calculator/standard-deviation-calculator sharing varianceOf). Deliberately NOT the
+// textbook single-pass shortcut Sxy = Sum(xy) - n*xbar*ybar: that shortcut subtracts two numbers
+// that are both huge and nearly equal whenever x or y is itself large (e.g. values around 1e9 —
+// years as a raw timestamp, population counts), which cancels away most of the precision it is
+// trying to compute. Centering first (every term is a small x[i]-xbar difference before it is ever
+// squared or multiplied) avoids that catastrophic cancellation regardless of how large the raw
+// values are — verified directly in the run's scratch script with x values around 1e9.
+function pairedStats(xs: number[], ys: number[]) {
+  const n = xs.length;
+  const meanX = xs.reduce((a, b) => a + b, 0) / n;
+  const meanY = ys.reduce((a, b) => a + b, 0) / n;
+  let sxx = 0;
+  let syy = 0;
+  let sxy = 0;
+  for (let i = 0; i < n; i++) {
+    const dx = xs[i] - meanX;
+    const dy = ys[i] - meanY;
+    sxx += dx * dx;
+    syy += dy * dy;
+    sxy += dx * dy;
+  }
+  return { n, meanX, meanY, sxx, syy, sxy };
 }
 
 export const statisticsCalculators: CalculatorConfig[] = [
@@ -2089,6 +2143,716 @@ export const statisticsCalculators: CalculatorConfig[] = [
       const xAtPercentile = mean + normalInverseCDF(clampedPercentile / 100) * standardDeviation;
 
       return { pLessThanX, pGreaterThanX, zScore, pBetween, xAtPercentile };
+    }
+  },
+  {
+    id: 'correlation-calculator',
+    category: 'statistics',
+    updatedAt: '2026-10-22',
+    aliases: ['correlation calculator', 'pearson correlation calculator', 'correlation coefficient calculator', 'r value calculator'],
+    related: ['linear-regression-calculator', 'standard-deviation-calculator', 'mean-median-mode-calculator', 'p-value-calculator'],
+    title: 'Correlation Coefficient Calculator',
+    description: 'Find the Pearson correlation coefficient (r), r² and a p-value for a pair of x and y lists — how strongly two variables move together, and whether that relationship is likely to be real.',
+    example: 'Six students\' study hours (2, 3, 5, 7, 8, 9) and exam scores (65, 70, 75, 85, 88, 95) have a Pearson correlation of r ≈ 0.9934 — a very strong positive relationship.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is the correlation coefficient?',
+        paragraphs: [
+          'The Pearson correlation coefficient, r, measures how strongly two variables move together in a straight-line sense. It always falls between −1 and +1: +1 means the two variables increase together perfectly, −1 means one increases exactly as the other decreases, and 0 means there is no linear relationship at all between them (though a strong non-linear one could still exist and go undetected by r).',
+          'This calculator finds the Pearson correlation specifically — the standard, most widely used correlation measure, built on the actual values of your data. It is not the Spearman rank correlation, a different, related measure that works on the rank order of the data instead of the raw values and is more resistant to outliers and to relationships that are monotonic but not straight-line. If your data has extreme outliers or a clearly curved relationship, a Spearman correlation (not computed here) can tell a more honest story.',
+          'r² (r squared), also called the coefficient of determination, restates the same relationship as the share of the variation in y that is "explained" by its straight-line relationship with x. An r of 0.99 sounds almost perfect, but r² = 0.98 is the number that says 98% of y\'s variation lines up with x.',
+          'A correlation this strong is also unlikely to show up in a genuinely unrelated pair of variables by pure chance, which is what this calculator\'s p-value measures: the probability of seeing a correlation at least this strong, in either direction, if the true relationship were actually zero.'
+        ]
+      },
+      howTo: {
+        intro: 'Paste your x-values and y-values, keeping each y lined up with its matching x.',
+        steps: [
+          { name: 'Paste the x-values', text: 'Enter the first variable\'s values, in the box, separated by commas, spaces, semicolons or new lines.' },
+          { name: 'Paste the y-values, in the same order', text: 'Enter the second variable\'s values directly below, one for every x-value, in the same order — the first y pairs with the first x, and so on.' },
+          { name: 'Check the counts match', text: 'Each box shows a live count of numbers it understood. If the two counts differ, the result area says so explicitly and shows no answer — nothing is cut off or padded to force a result.' },
+          { name: 'Read r', text: 'The headline is the Pearson correlation coefficient, from −1 to +1.' },
+          { name: 'Check r² and the p-value', text: 'r² restates the strength as a share of variation explained; the p-value says how likely a correlation this strong is by chance alone if x and y were truly unrelated.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Pearson\'s r compares how x and y vary together (their covariance) to how much each varies on its own.',
+        expression: 'r = Σ(x − x̄)(y − ȳ) ÷ √[Σ(x − x̄)² × Σ(y − ȳ)²]\nt = r × √[(n − 2) ÷ (1 − r²)],  df = n − 2',
+        terms: [
+          { symbol: 'x̄, ȳ', meaning: 'The mean of the x-values and of the y-values.' },
+          { symbol: 'n', meaning: 'The number of paired (x, y) points.' },
+          { symbol: 't, df', meaning: 'The t-statistic used to test whether r is significantly different from 0, and its degrees of freedom.' }
+        ],
+        note: 'The p-value comes from the t-distribution with n − 2 degrees of freedom (the standard test for Pearson\'s r), computed directly rather than read from a table.'
+      },
+      workedExample: {
+        intro: 'Six students report their weekly study hours (x) and their exam score out of 100 (y): (2, 65), (3, 70), (5, 75), (7, 85), (8, 88), (9, 95).',
+        rows: [
+          { label: 'Mean x̄', value: '5.6667' },
+          { label: 'Mean ȳ', value: '79.6667' },
+          { label: 'Σ(x − x̄)(y − ȳ)', value: '≈ 170.6667' },
+          { label: 'Σ(x − x̄)²', value: '≈ 29.3333' },
+          { label: 'Σ(y − ȳ)²', value: '≈ 1009.3333' },
+          { label: 'r = 170.6667 ÷ √(29.3333 × 1009.3333)', value: '≈ 0.9934' }
+        ],
+        result: 'r ≈ 0.9934, r² ≈ 0.9868, p-value ≈ 0.00006',
+        explanation: 'r is close to +1: more study hours line up very closely with higher exam scores in this small data set. r² says about 98.7% of the variation in exam scores lines up with study hours. The tiny p-value says a correlation this strong would be very unlikely to appear by chance if study hours and exam scores were truly unrelated — though with only 6 students, this is a small, illustrative sample, not proof that studying causes a higher score.'
+      },
+      watchOut: [
+        { title: 'Correlation is not causation', body: 'A strong r only says two variables move together, never that one causes the other. Both could be driven by a third factor, or the relationship could run the other way, or it could simply be a coincidence in a small sample.' },
+        { title: 'This measures a straight-line relationship only', body: 'Two variables can have a strong, obvious curved relationship (like a U-shape) and still show an r close to 0, because Pearson\'s r only detects the straight-line part of how they move together. Always look at a plot of the actual data, not just the number.' },
+        { title: 'Your x and y lists must be the same length', body: 'Every x-value needs exactly one matching y-value, in the same order. If the two lists have different counts, this calculator shows no answer rather than guessing by cutting off the extra values or padding the shorter list.' },
+        { title: 'A p-value needs at least 3 pairs', body: 'The significance test needs n − 2 degrees of freedom to be at least 1, so with only 2 points, r is still computed (and is always exactly +1 or −1 for 2 points, since any 2 points lie on a line) but the p-value is not meaningful and shows no answer.' },
+        { title: 'This is Pearson\'s r, not Spearman\'s', body: 'If your data has strong outliers or a relationship that is monotonic but not straight ("always increasing, but curving"), a Spearman rank correlation is often more honest — this calculator does not compute it.' }
+      ],
+      references: [
+        { label: 'OpenStax, Introductory Statistics 2e, §12.4 The Regression Equation (covers r and its significance test)', url: 'https://openstax.org/books/introductory-statistics-2e/pages/12-4-the-regression-equation' },
+        { label: 'NIST/SEMATECH e-Handbook of Statistical Methods, §6.5.5 Measures of Correlation', url: 'https://www.itl.nist.gov/div898/handbook/pmc/section5/pmc55.htm' },
+        { label: 'Wolfram MathWorld, Correlation Coefficient', url: 'https://mathworld.wolfram.com/CorrelationCoefficient.html' }
+      ]
+    },
+    inputs: pairedListInputs([2, 3, 5, 7, 8, 9], [65, 70, 75, 85, 88, 95], 2),
+    breakdown: {
+      headline: 'r',
+      headlineLabel: 'Correlation coefficient (r)',
+      outputs: [
+        { id: 'r', label: 'Correlation coefficient (r)', format: 'number' },
+        { id: 'rSquared', label: 'r² (share of variation explained)', format: 'number' },
+        { id: 'pValue', label: 'P-value (two-tailed)', format: 'significant' },
+        { id: 'tStatistic', label: 't-statistic', format: 'number' },
+        { id: 'degreesOfFreedom', label: 'Degrees of freedom (n − 2)', format: 'integer' },
+        { id: 'count', label: 'Number of pairs (n)', format: 'integer' }
+      ],
+      pairedLists: ['xData', 'yData'],
+      visual: {
+        type: 'rangeBar',
+        value: 'r',
+        bands: [
+          { label: 'Strong negative', min: -1, max: -0.7 },
+          { label: 'Moderate negative', min: -0.7, max: -0.3 },
+          { label: 'Weak or none', min: -0.3, max: 0.3 },
+          { label: 'Moderate positive', min: 0.3, max: 0.7 },
+          { label: 'Strong positive', min: 0.7, max: 1.0000001 }
+        ],
+        title: 'How strong is the relationship?',
+        valueLabel: 'r'
+      }
+    },
+    seo: {
+      title: 'Correlation Calculator – Pearson r, r², P-value',
+      description: 'Free correlation coefficient calculator. Paste paired x and y lists to find Pearson\'s r, r² and a p-value, computed with numerically stable, mean-centered sums.',
+      faq: [
+        { question: 'How do I calculate the correlation coefficient?', answer: 'Center both lists on their own means, then divide the sum of the paired products Σ(x−x̄)(y−ȳ) by the square root of Σ(x−x̄)² times Σ(y−ȳ)². For six students\' study hours and scores, that gives r ≈ 0.9934.' },
+        { question: 'What does a correlation of 0 mean?', answer: 'It means there is no straight-line relationship detectable between the two variables — not necessarily that they are unrelated, since a strong curved relationship can still produce r ≈ 0.' },
+        { question: 'What is the difference between r and r²?', answer: 'r (from −1 to +1) shows the direction and strength of a linear relationship. r² (always 0 to 1) restates the strength as the share of one variable\'s variation that lines up with the other — r = 0.9934 gives r² ≈ 0.9868, meaning about 98.7% of the variation in y lines up with x.' },
+        { question: 'Does a strong correlation prove causation?', answer: 'No. A strong r only shows that two variables move together; it says nothing about whether one causes the other, whether a third factor causes both, or whether the pattern is simply a coincidence in a small sample.' },
+        { question: 'What does the p-value tell me here?', answer: 'It is the probability of seeing a correlation at least this strong, in either direction, purely by chance, if the true correlation were actually 0. A small p-value (conventionally under 0.05) suggests the relationship is unlikely to be chance alone.' },
+        { question: 'What is the smallest sample size this calculator can test?', answer: 'r itself can be computed from as few as 2 pairs (and is always exactly +1 or −1 for exactly 2 points). The p-value needs at least 3 pairs, since its degrees of freedom (n − 2) must be at least 1.' },
+        { question: 'What happens if my x and y lists are different lengths?', answer: 'This calculator refuses to guess: it shows no result and a message stating the two counts, rather than silently cutting off extra values or padding the shorter list with anything.' },
+        { question: 'Is this the same as the correlation Excel\'s CORREL function gives?', answer: 'Yes — both compute the same Pearson correlation coefficient. This calculator additionally reports r², the t-statistic, and a p-value, which CORREL alone does not.' }
+      ]
+    },
+    compute(_values, lists) {
+      const xs = lists.xData;
+      const ys = lists.yData;
+      const noAnswer = { r: NaN, rSquared: NaN, pValue: NaN, tStatistic: NaN, degreesOfFreedom: NaN, count: NaN };
+      if (xs.length !== ys.length) return noAnswer; // honest no-answer, never truncated/padded — see pairedListInputs' comment
+      const { n, sxx, syy, sxy } = pairedStats(xs, ys);
+      const r = sxy / Math.sqrt(sxx * syy); // 0/0 (zero variance in x or y) is an honest NaN, not a divide-by-zero crash
+      const rSquared = r * r;
+      const degreesOfFreedom = n - 2;
+      const tStatistic = r * Math.sqrt(degreesOfFreedom / (1 - rSquared));
+      // Guarded explicitly rather than relying on tSF's own NaN short-circuit: r = +-1 makes
+      // tStatistic exactly +-Infinity (a legitimate, finite-producing case for tSF), but a NaN
+      // tStatistic (zero variance) must never reach tSF at all, by this function's own contract.
+      const pValue = degreesOfFreedom > 0 && Number.isFinite(rSquared) ? floorTinyProbability(2 * tSF(Math.abs(tStatistic), degreesOfFreedom)) : NaN;
+      return { r, rSquared, tStatistic, degreesOfFreedom, pValue, count: n };
+    }
+  },
+  {
+    id: 'linear-regression-calculator',
+    category: 'statistics',
+    updatedAt: '2026-10-22',
+    aliases: ['linear regression calculator', 'least squares calculator', 'line of best fit calculator', 'regression equation calculator'],
+    related: ['correlation-calculator', 'slope-calculator', 'standard-deviation-calculator', 'p-value-calculator'],
+    title: 'Linear Regression Calculator',
+    description: 'Find the least-squares line of best fit (slope, intercept, r² and the standard error of the estimate) for a pair of x and y lists, with an optional prediction at any x.',
+    example: 'For six students\' study hours (2, 3, 5, 7, 8, 9) and exam scores (65, 70, 75, 85, 88, 95), the line of best fit is y ≈ 46.70 + 5.82x, so 6 hours of study predicts a score of about 81.6.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is linear regression?',
+        paragraphs: [
+          'Linear regression finds the straight line through a set of (x, y) points that makes the best overall prediction of y from x — specifically, the "least squares" line, the one that minimizes the sum of the squared vertical distances between each actual point and the line. That line is written y = a + bx, where b is the slope (how much y changes for each one-unit increase in x) and a is the intercept (the predicted y when x is 0).',
+          'This calculator uses exactly the same paired x/y data as this site\'s correlation calculator, and the two are closely related: the slope of the regression line and Pearson\'s r always have the same sign, and r² here (the share of y\'s variation explained by the line) is the square of the correlation coefficient on that page.',
+          'The standard error of the estimate measures how far the actual y-values typically fall from the fitted line — in the same units as y. A small standard error means the line is a tight fit; a large one means the points scatter widely around it even if the slope is clearly nonzero.'
+        ]
+      },
+      howTo: {
+        intro: 'Paste your x-values and y-values, keeping each y lined up with its matching x.',
+        steps: [
+          { name: 'Paste the x-values', text: 'Enter the first variable\'s values — the one you are predicting from.' },
+          { name: 'Paste the y-values, in the same order', text: 'Enter the second variable\'s values directly below, one for every x-value, in the same order.' },
+          { name: 'Check the counts match', text: 'If the two lists have different counts, the result area says so and shows no answer, rather than guessing.' },
+          { name: 'Read the slope and intercept', text: 'The headline is the slope; the intercept row completes the line\'s equation, y = intercept + slope × x.' },
+          { name: 'Check r² and the standard error', text: 'r² is the share of y\'s variation the line explains; the standard error of the estimate shows the typical size of the leftover scatter, in y\'s own units.' },
+          { name: 'Predict a y-value (optional)', text: 'Change "Predict y at x" to any x-value to see the line\'s predicted y there — it defaults to a value already in the example data.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The least-squares slope and intercept, from the same centered sums the correlation calculator uses.',
+        expression: 'slope (b) = Σ(x − x̄)(y − ȳ) ÷ Σ(x − x̄)²\nintercept (a) = ȳ − b × x̄\nstandard error of the estimate = √[(Σ(y − ȳ)² − b × Σ(x − x̄)(y − ȳ)) ÷ (n − 2)]',
+        terms: [
+          { symbol: 'x̄, ȳ', meaning: 'The mean of the x-values and of the y-values.' },
+          { symbol: 'b, a', meaning: 'The fitted line\'s slope and intercept: ŷ = a + bx.' },
+          { symbol: 'n', meaning: 'The number of paired (x, y) points.' }
+        ],
+        note: 'All three sums are computed by centering the data on its own mean first (x[i] − x̄, not the raw x and y values multiplied together), which keeps the result accurate even when x or y themselves are very large numbers.'
+      },
+      workedExample: {
+        intro: 'The same six (study hours, exam score) pairs as the correlation calculator\'s example: (2, 65), (3, 70), (5, 75), (7, 85), (8, 88), (9, 95).',
+        rows: [
+          { label: 'Slope (b = 170.6667 ÷ 29.3333)', value: '≈ 5.8182' },
+          { label: 'Intercept (a = 79.6667 − 5.8182 × 5.6667)', value: '≈ 46.7045' },
+          { label: 'r² (same data as the correlation calculator)', value: '≈ 0.9868' },
+          { label: 'Standard error of the estimate', value: '≈ 2.0000' },
+          { label: 'Predicted y at x = 6', value: '≈ 81.6136' }
+        ],
+        result: 'y ≈ 46.70 + 5.82x',
+        explanation: 'Each extra study hour predicts about 5.82 more points on the exam, starting from a baseline of about 46.70 points at zero hours (an extrapolation — nobody in this small sample studied 0 hours). A student studying 6 hours is predicted to score about 81.6, close to the actual scores of the students who studied 5 and 7 hours.'
+      },
+      watchOut: [
+        { title: 'Your x and y lists must be the same length', body: 'Every x-value needs exactly one matching y-value, in the same order. If the counts differ, this calculator shows no answer rather than cutting off the extra values or padding the shorter list.' },
+        { title: 'The intercept can be a meaningless extrapolation', body: 'The intercept is the predicted y at x = 0, even when no data near x = 0 actually exists. Treat it as part of the line\'s equation, not necessarily as a realistic prediction on its own.' },
+        { title: 'Predicting far outside your data range is extrapolation', body: 'The fitted line is only tested by the data you gave it. Predicting a y-value for an x far beyond your actual x-values assumes the same straight-line relationship keeps holding, which may not be true.' },
+        { title: 'A regression line does not prove x causes y', body: 'Exactly like correlation, a fitted line only describes how the data points relate on average — it does not establish that changing x would actually change y.' },
+        { title: 'Zero variance in x has no defined slope', body: 'If every x-value is identical, there is no line to fit (division by zero in the slope formula), so this calculator shows no answer rather than a false result.' }
+      ],
+      references: [
+        { label: 'OpenStax, Introductory Statistics 2e, §12.3 The Regression Equation', url: 'https://openstax.org/books/introductory-statistics-2e/pages/12-3-the-regression-equation' },
+        { label: 'NIST/SEMATECH e-Handbook of Statistical Methods, §4.1.4.2 Partitioning the sums of squares (standard error of the estimate)', url: 'https://www.itl.nist.gov/div898/handbook/pri/section1/pri142.htm' },
+        { label: 'Wolfram MathWorld, Least Squares Fitting', url: 'https://mathworld.wolfram.com/LeastSquaresFitting.html' }
+      ]
+    },
+    inputs: [
+      ...pairedListInputs([2, 3, 5, 7, 8, 9], [65, 70, 75, 85, 88, 95], 2),
+      { id: 'predictAtX', label: 'Predict y at x (optional)', type: 'number', placeholder: '6', defaultValue: 6, step: 0.1 }
+    ],
+    breakdown: {
+      headline: 'slope',
+      headlineLabel: 'Slope',
+      outputs: [
+        { id: 'slope', label: 'Slope (b)', format: 'number' },
+        { id: 'intercept', label: 'Intercept (a)', format: 'number' },
+        { id: 'rSquared', label: 'r² (share of variation explained)', format: 'number' },
+        { id: 'standardError', label: 'Standard error of the estimate', format: 'number' },
+        { id: 'predictedY', label: 'Predicted y at your chosen x', format: 'number' },
+        { id: 'count', label: 'Number of pairs (n)', format: 'integer' }
+      ],
+      groups: [
+        { title: 'Your data', inputs: ['xData', 'yData'] },
+        { title: 'Predict y at x (optional)', inputs: ['predictAtX'] }
+      ],
+      pairedLists: ['xData', 'yData'],
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'intercept', label: 'Intercept (a)' }, { from: 'predictedY', label: 'Predicted y' }],
+        title: 'The fitted line',
+        highlight: 1
+      }
+    },
+    seo: {
+      title: 'Linear Regression Calculator – Slope, Intercept, R²',
+      description: 'Free linear regression calculator. Paste paired x and y lists to find the least-squares slope, intercept, r² and standard error of the estimate, with an optional prediction.',
+      faq: [
+        { question: 'How do I calculate a linear regression line?', answer: 'Center both lists on their own means, find the slope as Σ(x−x̄)(y−ȳ) ÷ Σ(x−x̄)², then the intercept as ȳ minus the slope times x̄. For six students\' study hours and scores, that gives y ≈ 46.70 + 5.82x.' },
+        { question: 'What does the slope mean?', answer: 'It is the predicted change in y for every one-unit increase in x. A slope of 5.82 means each extra hour of study predicts about 5.82 more exam points, on average, for this data.' },
+        { question: 'What is the standard error of the estimate?', answer: 'It measures the typical size of the gap between the actual y-values and the line\'s predicted y-values, in y\'s own units — here, about 2.0 exam points.' },
+        { question: 'How is this related to the correlation calculator?', answer: 'They use the same underlying sums. r² on this page is exactly the square of the correlation coefficient (r) on that one, and the slope always has the same sign as r.' },
+        { question: 'Can I predict a y-value for a new x?', answer: 'Yes — change "Predict y at x" to any value and this calculator applies the fitted line directly. Predictions far outside your actual x-range are extrapolations and less trustworthy.' },
+        { question: 'What if my x and y lists are different lengths?', answer: 'This calculator shows no result and states both counts, rather than silently cutting off extra values or padding the shorter list.' },
+        { question: 'Does a good fit mean x causes y?', answer: 'No. A strong linear fit only describes how the two variables move together in this data; it does not by itself establish that x causes y.' }
+      ]
+    },
+    compute(values, lists) {
+      const xs = lists.xData;
+      const ys = lists.yData;
+      const noAnswer = { slope: NaN, intercept: NaN, rSquared: NaN, standardError: NaN, predictedY: NaN, count: NaN };
+      if (xs.length !== ys.length) return noAnswer; // honest no-answer, never truncated/padded
+      const { n, meanX, meanY, sxx, syy, sxy } = pairedStats(xs, ys);
+      const slope = sxy / sxx; // 0/0 (zero variance in x) is an honest NaN, not a divide-by-zero crash
+      const intercept = meanY - slope * meanX;
+      const rSquared = (sxy * sxy) / (sxx * syy);
+      const degreesOfFreedom = n - 2;
+      const sse = syy - slope * sxy; // Sum of squared residuals, from the same identity as rSquared — never a second, separately-rounded pass over the raw residuals
+      const standardError = degreesOfFreedom > 0 ? Math.sqrt(Math.max(sse, 0) / degreesOfFreedom) : NaN;
+      const predictedY = intercept + slope * values.predictAtX;
+      return { slope, intercept, rSquared, standardError, predictedY, count: n };
+    }
+  },
+  {
+    id: 't-test-calculator',
+    category: 'statistics',
+    updatedAt: '2026-10-22',
+    aliases: ['t test calculator', 't-test calculator', 'two sample t test calculator', 'student t test calculator'],
+    related: ['p-value-calculator', 'confidence-interval-calculator', 'z-score-calculator', 'standard-error-calculator'],
+    title: 'T-Test Calculator',
+    description: 'A one-sample or two-sample (Welch) t-test from summary statistics — t-statistic, degrees of freedom and a two-, left- or right-tailed p-value.',
+    example: 'Two classes\' test scores — class A: mean 85, sd 12, n=30; class B: mean 78, sd 15, n=25 — give a Welch t-statistic of about 1.884 (df ≈ 45.7) and a two-tailed p-value of about 0.0659.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is a t-test?',
+        paragraphs: [
+          'A t-test checks whether a sample mean is significantly different from a known or hypothesized value (a one-sample t-test), or whether two samples\' means are significantly different from each other (a two-sample t-test). Both work the same way: compute a t-statistic (the observed difference divided by its standard error), then convert that t-statistic into a p-value using the Student\'s t distribution.',
+          'This calculator\'s two-sample mode uses Welch\'s t-test, which does not assume the two groups have equal variances — it is the more conservative, more broadly applicable default (and, since 2017, the one R\'s own t.test() function uses by default) compared to the classic Student\'s pooled-variance t-test, which requires that assumption to hold. Welch\'s version uses the Welch–Satterthwaite equation to find an adjusted, often non-whole-number degrees of freedom that accounts for the two samples\' different variances and sizes.',
+          'Degrees of freedom control exactly how wide the t-distribution\'s tails are — fewer degrees of freedom (smaller samples) mean a wider distribution and a larger critical value for the same confidence level, which is why the same t-statistic can be significant with a large sample and not with a small one.'
+        ]
+      },
+      howTo: {
+        intro: 'Choose one-sample or two-sample, enter your summary statistics, and pick the tail type that matches your hypothesis.',
+        steps: [
+          { name: 'Choose one-sample or two-sample', text: 'One-sample compares a sample mean to a known or hypothesized value. Two-sample (Welch) compares two independent samples\' means to each other.' },
+          { name: 'Enter your summary statistics', text: 'One-sample: your sample\'s mean, hypothesized mean, standard deviation and size. Two-sample: both samples\' means, standard deviations and sizes.' },
+          { name: 'Choose the tail type', text: 'Two-tailed (the usual default) for "is there any difference," or left/right-tailed for a specifically directional hypothesis decided in advance.' },
+          { name: 'Read the t-statistic and degrees of freedom', text: 'The headline is the t-statistic; the degrees of freedom row shows what it was tested against (non-whole-number in two-sample mode, by design).' },
+          { name: 'Read the p-value', text: 'Compare it to your chosen significance threshold (commonly 0.05).' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The same t = (difference) ÷ (standard error) shape either way, with the standard error and degrees of freedom built differently for one vs. two samples.',
+        expression: 'One-sample: t = (x̄ − μ₀) ÷ (s ÷ √n),  df = n − 1\nTwo-sample (Welch): t = (x̄₁ − x̄₂) ÷ √(s₁²/n₁ + s₂²/n₂)\ndf = (s₁²/n₁ + s₂²/n₂)² ÷ [(s₁²/n₁)²/(n₁−1) + (s₂²/n₂)²/(n₂−1)]',
+        terms: [
+          { symbol: 'x̄, μ₀', meaning: 'The sample mean, and the hypothesized population mean (one-sample mode).' },
+          { symbol: 'x̄₁, x̄₂, s₁, s₂, n₁, n₂', meaning: 'Each sample\'s mean, standard deviation and size (two-sample mode).' },
+          { symbol: 'df', meaning: 'Degrees of freedom — always a whole number in one-sample mode, usually not in Welch\'s two-sample mode.' }
+        ],
+        note: 'The p-value is computed directly from the Student\'s t distribution at the exact (possibly non-whole-number) degrees of freedom, not rounded to the nearest table entry.'
+      },
+      workedExample: {
+        intro: 'Two classes\' test scores: class A has a mean of 85, a standard deviation of 12, and 30 students; class B has a mean of 78, a standard deviation of 15, and 25 students. Is the difference statistically significant (two-tailed)?',
+        rows: [
+          { label: 'Standard error (√(12²/30 + 15²/25))', value: '≈ 3.7148' },
+          { label: 't-statistic ((85 − 78) ÷ 3.7148)', value: '≈ 1.8844' },
+          { label: 'Welch–Satterthwaite degrees of freedom', value: '≈ 45.67' },
+          { label: 'Two-tailed p-value', value: '≈ 0.0659' }
+        ],
+        result: 't ≈ 1.884, df ≈ 45.67, p ≈ 0.0659',
+        explanation: 'At the common 0.05 threshold, a p-value of about 0.0659 would usually be reported as not statistically significant — the observed 7-point gap between the two classes is plausibly just sampling variation, though the result is close enough to the threshold that a larger sample might resolve it either way.'
+      },
+      watchOut: [
+        { title: 'Welch\'s t-test does not assume equal variances', body: 'That is why its degrees of freedom usually come out as a non-whole number — it is a deliberate correction for the two samples having different amounts of variability, not a rounding artifact. This calculator does not offer the classic equal-variance (pooled) version.' },
+        { title: 'A t-test assumes independent, roughly normal samples', body: 'For small samples that are heavily skewed, or for paired/matched data (the same subjects measured twice), the plain one- or two-sample t-test used here is not the right tool — a paired t-test or a non-parametric test would be more appropriate.' },
+        { title: 'The tail type must be decided before seeing the data, not after', body: 'Choosing a one-tailed test (or switching direction) after seeing which way the result leans artificially inflates the chance of a "significant" finding.' },
+        { title: 'Statistical significance is not the same as practical importance', body: 'With a large enough sample, even a tiny, practically meaningless difference can produce a very small p-value. Always consider the actual size of the difference, not just whether the p-value clears a threshold.' },
+        { title: 'Very small p-values are shown in scientific notation, not rounded to zero', body: 'Exactly as on the p-value calculator, an extreme t-statistic produces a p-value shown in scientific notation, floored at 1 × 10⁻³⁰⁰ for the rare case where the true value underflows a computer\'s smallest representable number.' }
+      ],
+      references: [
+        { label: 'OpenStax, Introductory Statistics 2e, §10.1 Two Population Means with Unknown Standard Deviations (Welch\'s t-test)', url: 'https://openstax.org/books/introductory-statistics-2e/pages/10-1-two-population-means-with-unknown-standard-deviations' },
+        { label: 'NIST/SEMATECH e-Handbook of Statistical Methods, §1.3.5.3 Two-Sample t-Test for Equal Means', url: 'https://www.itl.nist.gov/div898/handbook/eda/section3/eda353.htm' },
+        { label: 'Wolfram MathWorld, Student\'s t-Distribution', url: 'https://mathworld.wolfram.com/Studentst-Distribution.html' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'mode',
+        label: 'One sample or two?',
+        type: 'number',
+        placeholder: '2',
+        defaultValue: 2,
+        step: 1,
+        min: 1,
+        options: [
+          { value: 1, label: 'One sample vs. a hypothesized mean' },
+          { value: 2, label: 'Two independent samples (Welch)' }
+        ]
+      },
+      {
+        id: 'tailType',
+        label: 'Tail type',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 1,
+        min: 1,
+        options: [
+          { value: 1, label: 'Two-tailed (is there any difference?)' },
+          { value: 2, label: 'Left-tailed (is it less than?)' },
+          { value: 3, label: 'Right-tailed (is it greater than?)' }
+        ]
+      },
+      { id: 'sampleMean', label: 'Sample 1 mean (x̄₁)', type: 'number', placeholder: '85', defaultValue: 85, step: 0.1 },
+      { id: 'popMean', label: 'Hypothesized mean (μ₀), one-sample only', type: 'number', placeholder: '80', defaultValue: 80, step: 0.1 },
+      { id: 'sampleStdDev', label: 'Sample 1 standard deviation (s₁)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.1, min: 0 },
+      { id: 'sampleSize', label: 'Sample 1 size (n₁)', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 2 },
+      { id: 'mean2', label: 'Sample 2 mean (x̄₂), two-sample only', type: 'number', placeholder: '78', defaultValue: 78, step: 0.1 },
+      { id: 'stdDev2', label: 'Sample 2 standard deviation (s₂), two-sample only', type: 'number', placeholder: '15', defaultValue: 15, step: 0.1, min: 0 },
+      { id: 'sampleSize2', label: 'Sample 2 size (n₂), two-sample only', type: 'number', placeholder: '25', defaultValue: 25, step: 1, min: 2 }
+    ],
+    breakdown: {
+      headline: 'tStatistic',
+      headlineLabel: 't-statistic',
+      outputs: [
+        { id: 'tStatistic', label: 't-statistic', format: 'number' },
+        { id: 'degreesOfFreedom', label: 'Degrees of freedom', format: 'number' },
+        { id: 'pValue', label: 'P-value', format: 'significant' },
+        { id: 'standardError', label: 'Standard error', format: 'number' }
+      ],
+      groups: [
+        { inputs: ['mode', 'tailType'] },
+        { title: 'Sample 1', inputs: ['sampleMean', 'popMean', 'sampleStdDev', 'sampleSize'] },
+        { title: 'Sample 2 (two-sample only)', inputs: ['mean2', 'stdDev2', 'sampleSize2'] }
+      ],
+      visual: {
+        type: 'rangeBar',
+        value: 'pValue',
+        bands: [
+          { label: 'Highly significant', min: 0, max: 0.01 },
+          { label: 'Significant', min: 0.01, max: 0.05 },
+          { label: 'Marginally significant', min: 0.05, max: 0.1 },
+          { label: 'Not significant', min: 0.1, max: 1 }
+        ],
+        title: 'Where this p-value falls (common thresholds)',
+        valueLabel: 'Your p-value'
+      }
+    },
+    seo: {
+      title: 'T-Test Calculator – One-Sample & Welch Two-Sample',
+      description: 'Free t-test calculator from summary statistics. One-sample vs. a hypothesized mean, or Welch\'s two-sample test for unequal variances, with the exact p-value.',
+      faq: [
+        { question: 'How do I calculate a one-sample t-test?', answer: 'Divide the difference between your sample mean and the hypothesized mean by the standard error (sample standard deviation ÷ √n). Degrees of freedom are sample size minus 1.' },
+        { question: 'How do I calculate a two-sample t-test?', answer: 'This calculator uses Welch\'s method: divide the difference between the two sample means by the combined standard error √(s₁²/n₁ + s₂²/n₂), with degrees of freedom from the Welch–Satterthwaite equation.' },
+        { question: 'Why does the two-sample t-test use Welch\'s method instead of the classic pooled version?', answer: "Welch's method does not require assuming the two samples have equal variances, which makes it the safer default — the classic Student's pooled-variance t-test can give a misleading result when the two variances genuinely differ." },
+        { question: 'Why are the degrees of freedom not a whole number?', answer: "That is expected for Welch's t-test — the Welch–Satterthwaite equation deliberately produces a fractional value that accounts for the two samples' different variances and sizes, not a rounding error." },
+        { question: 'What p-value counts as statistically significant?', answer: 'There is no universal cutoff, but 0.05 is the most common convention. The tail type (two-, left- or right-tailed) should be chosen from your actual research question before looking at the results, not after.' },
+        { question: 'Does this calculator work from raw data?', answer: 'No — it takes summary statistics (means, standard deviations, sample sizes) directly. Use the mean/median/mode and standard deviation calculators first if you only have a raw list of numbers.' },
+        { question: 'Can I run a one-tailed t-test?', answer: 'Yes — choose left-tailed or right-tailed instead of the two-tailed default, for a specifically directional hypothesis decided in advance.' }
+      ]
+    },
+    compute(values) {
+      const { mode, tailType, sampleMean, popMean, sampleStdDev, sampleSize, mean2, stdDev2, sampleSize2 } = values;
+      const noAnswer = { tStatistic: NaN, degreesOfFreedom: NaN, pValue: NaN, standardError: NaN };
+      let tStatistic: number;
+      let degreesOfFreedom: number;
+      let standardError: number;
+      if (mode === 1) {
+        standardError = sampleStdDev / Math.sqrt(sampleSize);
+        tStatistic = (sampleMean - popMean) / standardError; // 0/0 (s=0 and means equal) is an honest NaN
+        degreesOfFreedom = sampleSize - 1;
+      } else {
+        const v1 = (sampleStdDev * sampleStdDev) / sampleSize;
+        const v2 = (stdDev2 * stdDev2) / sampleSize2;
+        standardError = Math.sqrt(v1 + v2);
+        tStatistic = (sampleMean - mean2) / standardError;
+        // Welch-Satterthwaite: a genuinely non-integer df by design, not a rounding artifact — tCDF/tSF
+        // (lib/distributions.ts) work with any df > 0, integer or not.
+        degreesOfFreedom = (v1 + v2) ** 2 / (v1 ** 2 / (sampleSize - 1) + v2 ** 2 / (sampleSize2 - 1));
+      }
+      // Guarded explicitly, same reasoning as correlation-calculator: a zero standard error with
+      // equal means makes tStatistic an honest NaN (0/0), which must never reach tCDF/tSF (it would
+      // recurse forever — see tSF's own NaN guard in lib/distributions.ts). A zero standard error
+      // with UNEQUAL means is a legitimate +-Infinity, which tCDF/tSF already handle directly.
+      if (Number.isNaN(tStatistic) || !(degreesOfFreedom > 0)) {
+        return { ...noAnswer, tStatistic, degreesOfFreedom, standardError };
+      }
+      const leftTail = tCDF(tStatistic, degreesOfFreedom);
+      const rightTail = tSF(tStatistic, degreesOfFreedom);
+      const rawPValue = tailType === 2 ? leftTail : tailType === 3 ? rightTail : 2 * Math.min(leftTail, rightTail);
+      return { tStatistic, degreesOfFreedom, pValue: floorTinyProbability(rawPValue), standardError };
+    }
+  },
+  {
+    id: 'chi-square-calculator',
+    category: 'statistics',
+    updatedAt: '2026-10-22',
+    aliases: ['chi square calculator', 'chi-square test calculator', 'goodness of fit calculator', 'chi square p value calculator'],
+    related: ['p-value-calculator', 't-test-calculator', 'binomial-distribution-calculator', 'confidence-interval-calculator'],
+    title: 'Chi-Square Calculator',
+    description: 'Find a chi-square p-value directly from a χ² statistic and degrees of freedom, or run a goodness-of-fit test from observed and expected counts.',
+    example: 'Rolling a die 60 times gives observed counts of 8, 12, 9, 14, 7 and 10 against an expected 10 per face — χ² ≈ 3.4 with 5 degrees of freedom, a p-value of about 0.638 (not significant).',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is a chi-square test?',
+        paragraphs: [
+          'The chi-square (χ²) distribution is used to test how well a set of observed category counts matches what was expected. The goodness-of-fit test compares observed counts against expected counts across two or more categories (like the six faces of a die, or survey responses across several options), and asks whether the differences are bigger than random chance would typically produce.',
+          'The χ² statistic itself is always zero or positive: it sums, across every category, the squared difference between what was observed and what was expected, scaled by the expected count. A perfect match gives χ² = 0; bigger mismatches give a bigger χ², and a bigger χ² (for the same degrees of freedom) gives a smaller p-value.',
+          'This calculator covers the goodness-of-fit test directly (observed vs. expected counts) and also lets you enter an already-computed χ² statistic and degrees of freedom directly — useful if a test of independence (a contingency table) or another chi-square test gave you those two numbers from somewhere else, since this calculator does not build a contingency table itself.'
+        ]
+      },
+      howTo: {
+        intro: 'Either enter a χ² statistic and degrees of freedom directly, or switch to goodness-of-fit and paste your observed and expected counts.',
+        steps: [
+          { name: 'Choose how you want to enter data', text: '"Enter directly" if you already have a χ² statistic and degrees of freedom from elsewhere. "Goodness-of-fit" to compute them from category counts.' },
+          { name: 'For direct entry, enter χ² and df', text: 'Type the statistic and its degrees of freedom.' },
+          { name: 'For goodness-of-fit, paste your counts', text: 'Enter the observed count for each category, then the expected count for each category in the same order — one expected value for every observed value.' },
+          { name: 'Check the counts match', text: 'If the observed and expected lists have different lengths, the result area says so and shows no answer.' },
+          { name: 'Read the p-value', text: 'A small p-value (conventionally under 0.05) suggests the observed counts differ from what was expected by more than chance alone.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The goodness-of-fit statistic sums each category\'s squared, scaled mismatch; the p-value is the upper tail of the chi-square distribution at that statistic.',
+        expression: 'χ² = Σ [(observed − expected)² ÷ expected]\ndf = (number of categories) − 1\np-value = P(X > χ²), X ~ chi-square(df)',
+        terms: [
+          { symbol: 'χ²', meaning: 'The chi-square test statistic — always ≥ 0.' },
+          { symbol: 'df', meaning: 'Degrees of freedom: one less than the number of categories for a goodness-of-fit test.' }
+        ],
+        note: 'The p-value is computed directly from the upper regularized incomplete gamma function (the standard way to evaluate a chi-square tail), not read from a table limited to a handful of common df/significance combinations.'
+      },
+      workedExample: {
+        intro: 'A fair six-sided die is rolled 60 times. If it is fair, each face is expected 10 times. The actual counts are: 8, 12, 9, 14, 7, 10.',
+        rows: [
+          { label: '(8−10)²/10', value: '0.4' },
+          { label: '(12−10)²/10', value: '0.4' },
+          { label: '(9−10)²/10', value: '0.1' },
+          { label: '(14−10)²/10', value: '1.6' },
+          { label: '(7−10)²/10', value: '0.9' },
+          { label: '(10−10)²/10', value: '0' },
+          { label: 'χ² (sum of all six)', value: '3.4' },
+          { label: 'Degrees of freedom (6 categories − 1)', value: '5' }
+        ],
+        result: 'χ² = 3.4, df = 5, p-value ≈ 0.6384',
+        explanation: 'A p-value of about 0.64 is well above the common 0.05 threshold, so there is no evidence here that the die is unfair — these counts are entirely consistent with ordinary random variation around an expected 10 per face.'
+      },
+      watchOut: [
+        { title: 'The goodness-of-fit test needs enough expected counts', body: 'The chi-square approximation becomes unreliable when any category\'s expected count is below about 5 — a common rule of thumb, not a hard mathematical line. This calculator always shows the smallest expected count it was given, so you can check this yourself.' },
+        { title: 'Your observed and expected lists must be the same length', body: 'Every observed count needs exactly one matching expected count, in the same category order. If the two lists have different counts, this calculator shows no answer rather than guessing.' },
+        { title: 'This does not build a contingency table (test of independence)', body: 'A chi-square test of independence between two categorical variables (a contingency table) is a related but different setup. This calculator only computes the single-row goodness-of-fit statistic — if you already have a χ² statistic and degrees of freedom from a contingency table test done elsewhere, "enter directly" mode still finds its p-value correctly.' },
+        { title: 'A large p-value does not prove the categories match perfectly', body: 'It only means this data does not provide strong evidence against the expected distribution — a small sample can fail to detect a real but modest mismatch.' },
+        { title: 'Expected counts (and the χ² statistic) should not be negative', body: 'A negative or zero expected count is not meaningful for this test and will show as no answer or an undefined ratio; this calculator does not silently correct it for you.' }
+      ],
+      references: [
+        { label: 'NIST/SEMATECH e-Handbook of Statistical Methods, §1.3.5.15 Chi-Square Goodness-of-Fit Test', url: 'https://www.itl.nist.gov/div898/handbook/eda/section3/eda35f.htm' },
+        { label: 'OpenStax, Introductory Statistics 2e, §11.2 Goodness-of-Fit Test', url: 'https://openstax.org/books/introductory-statistics-2e/pages/11-2-goodness-of-fit-test' },
+        { label: 'Wolfram MathWorld, Chi-Squared Distribution', url: 'https://mathworld.wolfram.com/Chi-SquaredDistribution.html' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'mode',
+        label: 'How do you want to enter data?',
+        type: 'number',
+        placeholder: '2',
+        defaultValue: 2,
+        step: 1,
+        min: 1,
+        options: [
+          { value: 1, label: 'Enter χ² and df directly' },
+          { value: 2, label: 'Goodness-of-fit (observed vs. expected)' }
+        ]
+      },
+      { id: 'chiSquareStat', label: 'χ² statistic (direct entry)', type: 'number', placeholder: '10.5', defaultValue: 10.5, step: 0.1, min: 0 },
+      { id: 'degreesOfFreedom', label: 'Degrees of freedom (direct entry)', type: 'number', placeholder: '4', defaultValue: 4, step: 1, min: 1 },
+      {
+        id: 'observed',
+        label: 'Observed counts',
+        type: 'list',
+        placeholder: 'Paste or type each category\'s observed count — commas, spaces or new lines between them.',
+        defaultValue: 0,
+        listDefault: [8, 12, 9, 14, 7, 10],
+        listMin: 2
+      },
+      {
+        id: 'expected',
+        label: 'Expected counts',
+        type: 'list',
+        placeholder: 'Paste or type each category\'s expected count, in the same order as the observed counts above.',
+        defaultValue: 0,
+        listDefault: [10, 10, 10, 10, 10, 10],
+        listMin: 2
+      }
+    ],
+    breakdown: {
+      headline: 'chiSquareStatistic',
+      headlineLabel: 'χ² statistic',
+      outputs: [
+        { id: 'chiSquareStatistic', label: 'χ² statistic', format: 'number' },
+        { id: 'degreesOfFreedom', label: 'Degrees of freedom', format: 'integer' },
+        { id: 'pValue', label: 'P-value', format: 'significant' },
+        { id: 'minExpected', label: 'Smallest expected count (goodness-of-fit only)', format: 'number' },
+        { id: 'count', label: 'Number of categories (goodness-of-fit only)', format: 'integer' }
+      ],
+      groups: [
+        { inputs: ['mode'] },
+        { title: 'Enter χ² and df directly', inputs: ['chiSquareStat', 'degreesOfFreedom'] },
+        { title: 'Goodness-of-fit (observed vs. expected)', inputs: ['observed', 'expected'] }
+      ],
+      pairedLists: ['observed', 'expected'],
+      visual: {
+        type: 'rangeBar',
+        value: 'pValue',
+        bands: [
+          { label: 'Highly significant', min: 0, max: 0.01 },
+          { label: 'Significant', min: 0.01, max: 0.05 },
+          { label: 'Marginally significant', min: 0.05, max: 0.1 },
+          { label: 'Not significant', min: 0.1, max: 1 }
+        ],
+        title: 'Where this p-value falls (common thresholds)',
+        valueLabel: 'Your p-value'
+      }
+    },
+    seo: {
+      title: 'Chi-Square Calculator – Goodness-of-Fit P-value',
+      description: 'Free chi-square calculator. Enter χ² and df directly, or run a goodness-of-fit test from observed and expected category counts, with the exact p-value.',
+      faq: [
+        { question: 'How do I calculate a chi-square goodness-of-fit statistic?', answer: 'For each category, square the difference between the observed and expected count, divide by the expected count, then add up every category. For six die-roll categories (observed 8,12,9,14,7,10, all expected 10), χ² = 3.4.' },
+        { question: 'How do I find a chi-square p-value from χ² and df?', answer: 'This calculator computes it directly from the chi-square distribution\'s upper tail — no table lookup needed, and it works for any degrees of freedom, not just the handful of common ones printed in textbook tables.' },
+        { question: 'What does a small chi-square p-value mean?', answer: 'It means the observed counts differ from the expected counts by more than would typically happen by chance alone — conventionally, a p-value under 0.05 is called statistically significant.' },
+        { question: 'What is the "expected count below 5" warning about?', answer: 'The chi-square approximation becomes less reliable when a category\'s expected count is small — a widely used rule of thumb sets the caution line at 5. This calculator shows the smallest expected count you entered so you can check this directly.' },
+        { question: 'Can this calculator test a contingency table (test of independence)?', answer: 'Not directly — it does not build a contingency table from raw cross-tabulated data. If you already have a χ² statistic and degrees of freedom from a contingency table test, "enter directly" mode finds its p-value correctly.' },
+        { question: 'How many categories can I enter?', answer: 'Up to 1,000 observed values and 1,000 expected values, pasted as two separate lists — though realistic goodness-of-fit tests usually have far fewer categories than that.' },
+        { question: 'What happens if my observed and expected lists are different lengths?', answer: 'This calculator shows no result rather than guessing — every observed count needs exactly one matching expected count, in the same order.' }
+      ]
+    },
+    compute(values, lists) {
+      const { mode, chiSquareStat, degreesOfFreedom } = values;
+      const noAnswer = { chiSquareStatistic: NaN, degreesOfFreedom: NaN, pValue: NaN, minExpected: NaN, count: NaN };
+      if (mode === 1) {
+        const pValue = degreesOfFreedom > 0 ? floorTinyProbability(chiSquareSF(chiSquareStat, degreesOfFreedom)) : NaN;
+        return { chiSquareStatistic: chiSquareStat, degreesOfFreedom, pValue, minExpected: NaN, count: NaN };
+      }
+      const observed = lists.observed;
+      const expected = lists.expected;
+      if (observed.length !== expected.length) return noAnswer; // honest no-answer, never truncated/padded
+      const n = observed.length;
+      let statistic = 0;
+      for (let i = 0; i < n; i++) {
+        const diff = observed[i] - expected[i];
+        statistic += (diff * diff) / expected[i]; // expected[i] <= 0 gives an honest Infinity/NaN term, not a crash
+      }
+      const degreesOfFreedomComputed = n - 1;
+      const minExpected = Math.min(...expected);
+      const pValue = degreesOfFreedomComputed > 0 ? floorTinyProbability(chiSquareSF(statistic, degreesOfFreedomComputed)) : NaN;
+      return { chiSquareStatistic: statistic, degreesOfFreedom: degreesOfFreedomComputed, pValue, minExpected, count: n };
+    }
+  },
+  {
+    id: 'standard-error-calculator',
+    category: 'statistics',
+    updatedAt: '2026-10-22',
+    aliases: ['standard error calculator', 'standard error of the mean calculator', 'sem calculator', 'standard error of mean calculator'],
+    related: ['standard-deviation-calculator', 'confidence-interval-calculator', 'margin-of-error-calculator', 'mean-median-mode-calculator'],
+    title: 'Standard Error Calculator',
+    description: 'Find the standard error of the mean, from summary statistics or directly from a raw data list — how precisely a sample mean estimates the true population mean.',
+    example: 'A sample of 36 with a standard deviation of 15 has a standard error of the mean of 15 ÷ √36 = 2.5.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is the standard error of the mean?',
+        paragraphs: [
+          'The standard error of the mean (often just "standard error" or "SE") measures how precisely a sample\'s mean estimates the true mean of the whole population it was drawn from. It is not the same thing as the standard deviation: the standard deviation describes how spread out the individual data points are, while the standard error describes how much the sample mean itself would vary if you repeated the sampling process many times.',
+          'The two are directly related: standard error equals the sample standard deviation divided by the square root of the sample size. That square root means the standard error shrinks as the sample gets bigger — a sample four times as large has a standard error only half as large, not a quarter — so there are sharply diminishing returns to collecting ever more data for a given gain in precision.',
+          'This calculator focuses specifically on the standard error of the mean. For the standard error of a sample proportion (the kind used in survey and poll results), see the margin of error calculator, which already shows it as one of its rows — building a second, separate page for the exact same proportion arithmetic would just duplicate it.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your sample standard deviation and size directly, or switch to a raw data list and let this calculator find the standard deviation for you.',
+        steps: [
+          { name: 'Choose how you want to enter data', text: '"From summary statistics" if you already know your sample\'s standard deviation and size. "From a list of data" to paste the raw numbers instead.' },
+          { name: 'Enter your standard deviation and size, or paste your list', text: 'For summary statistics, enter the sample standard deviation (s) and sample size (n) directly. For a raw list, paste the data — this calculator finds s and n itself.' },
+          { name: 'Read the standard error', text: 'The headline is the standard error of the mean, in the same units as your original data.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The sample standard deviation, divided by the square root of the sample size.',
+        expression: 'SE = s ÷ √n',
+        terms: [
+          { symbol: 's', meaning: 'The sample standard deviation.' },
+          { symbol: 'n', meaning: 'The sample size.' }
+        ],
+        note: 'From a raw data list, s is the sample standard deviation (dividing by n − 1), the same convention this site\'s standard deviation calculator uses as its own headline figure.'
+      },
+      workedExample: {
+        intro: 'A sample of 36 observations has a sample standard deviation of 15.',
+        rows: [
+          { label: '√n (√36)', value: '6' },
+          { label: 'SE (15 ÷ 6)', value: '2.5' }
+        ],
+        result: 'SE = 2.5',
+        explanation: 'If this same sampling process were repeated many times, the resulting sample means would typically differ from the true population mean by around 2.5, in the data\'s own units.'
+      },
+      watchOut: [
+        { title: 'Standard error is not standard deviation', body: 'The standard deviation describes spread in the raw data; the standard error describes precision in the sample mean. They are related by ÷√n, but answer different questions, and mixing them up is a common source of confusing a plot\'s error bars.' },
+        { title: 'A single data point has no standard error', body: 'With only one value, the sample standard deviation itself is undefined (there is nothing to measure spread against), so this calculator shows no answer rather than a false 0.' },
+        { title: 'For a proportion, use the margin of error calculator instead', body: 'This page is specifically for the standard error of a mean. The standard error of a proportion (used for survey and poll percentages) already appears as a row on the margin of error calculator.' },
+        { title: 'A smaller standard error does not mean a more accurate sample', body: 'It means a more precise estimate of whatever the sample is actually measuring. A large, precise sample can still be biased (for example, by who was surveyed) in a way that no amount of precision fixes.' }
+      ],
+      references: [
+        { label: 'NIST/SEMATECH e-Handbook of Statistical Methods, §1.3.5.2 Confidence Limits for the Mean (defines the standard error of the mean)', url: 'https://www.itl.nist.gov/div898/handbook/eda/section3/eda352.htm' },
+        { label: 'OpenStax, Introductory Statistics 2e, §7.1 The Central Limit Theorem for Sample Means', url: 'https://openstax.org/books/introductory-statistics-2e/pages/7-1-the-central-limit-theorem-for-sample-means' },
+        { label: 'Wolfram MathWorld, Standard Error', url: 'https://mathworld.wolfram.com/StandardError.html' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'mode',
+        label: 'How do you want to enter data?',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 1,
+        min: 1,
+        options: [
+          { value: 1, label: 'From summary statistics' },
+          { value: 2, label: 'From a list of data' }
+        ]
+      },
+      { id: 'sampleStdDev', label: 'Sample standard deviation (s)', type: 'number', placeholder: '15', defaultValue: 15, step: 0.1, min: 0 },
+      { id: 'sampleSize', label: 'Sample size (n)', type: 'number', placeholder: '36', defaultValue: 36, step: 1, min: 1 },
+      listInput([12, 15, 18, 21, 24, 27, 30], 1)
+    ],
+    breakdown: {
+      headline: 'standardError',
+      headlineLabel: 'Standard error of the mean',
+      outputs: [
+        { id: 'standardError', label: 'Standard error of the mean', format: 'number' },
+        { id: 'sampleStdDevUsed', label: 'Sample standard deviation used', format: 'number' },
+        { id: 'sampleSizeUsed', label: 'Sample size used', format: 'integer' }
+      ],
+      groups: [
+        { inputs: ['mode'] },
+        { title: 'From summary statistics', inputs: ['sampleStdDev', 'sampleSize'] },
+        { title: 'From a list of data', inputs: ['data'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'sampleStdDevUsed', label: 'Standard deviation' }, { from: 'standardError', label: 'Standard error' }],
+        title: 'Spread vs. precision',
+        highlight: 1
+      }
+    },
+    seo: {
+      title: 'Standard Error Calculator – Standard Error of the Mean',
+      description: 'Free standard error of the mean calculator. Enter summary statistics or a raw data list to find SE = s ÷ √n.',
+      faq: [
+        { question: 'How do I calculate the standard error of the mean?', answer: 'Divide the sample standard deviation by the square root of the sample size: SE = s ÷ √n. For s = 15 and n = 36, SE = 15 ÷ 6 = 2.5.' },
+        { question: 'What is the difference between standard error and standard deviation?', answer: 'Standard deviation measures how spread out the individual data points are. Standard error measures how precisely the sample mean estimates the true population mean, and it shrinks as the sample size grows — standard deviation does not.' },
+        { question: 'Why does the standard error use the square root of n, not n itself?', answer: 'This comes directly from the central limit theorem: the variance of a sample mean is the population variance divided by n, and standard error is a standard deviation (a square root of variance), so it is divided by √n, not n.' },
+        { question: 'Can I compute this from raw data instead of a standard deviation?', answer: 'Yes — switch to "from a list of data" and paste your numbers; this calculator finds the sample standard deviation and size for you before dividing.' },
+        { question: 'Does a bigger sample always give a smaller standard error?', answer: 'Yes, for the same underlying spread — but the relationship is a square root, so a sample 4 times as large only halves the standard error, not quarters it.' },
+        { question: 'What about the standard error of a proportion?', answer: 'That is a different formula (built from the proportion itself, not a standard deviation), and already appears as a row on the margin of error calculator — this page is specifically for the standard error of a mean.' },
+        { question: 'What happens with only one data point?', answer: 'A single value has no sample standard deviation to work with, so this calculator shows no answer rather than a misleading 0.' }
+      ]
+    },
+    compute(values, lists) {
+      const { mode, sampleStdDev, sampleSize } = values;
+      let s: number;
+      let n: number;
+      if (mode === 1) {
+        s = sampleStdDev;
+        n = sampleSize;
+      } else {
+        const list = lists.data;
+        n = list.length;
+        s = Math.sqrt(varianceOf(list).sampleVariance); // n=1 -> sample variance is 0/0, an honest NaN
+      }
+      const standardError = s / Math.sqrt(n);
+      return { standardError, sampleStdDevUsed: s, sampleSizeUsed: n };
     }
   }
 ];

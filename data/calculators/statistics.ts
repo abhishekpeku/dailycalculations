@@ -1,5 +1,5 @@
 import type { CalculatorConfig, CalculatorInput } from './types.ts';
-import { normalCDF, normalInverseCDF, normalSF, tCDF, tInverseCDF, tSF } from '../../lib/distributions.ts';
+import { incompleteBeta, logGamma, normalCDF, normalInverseCDF, normalSF, tCDF, tInverseCDF, tSF } from '../../lib/distributions.ts';
 
 // p-value-calculator: a floor on the displayed p-value and cumulative probability. For an extreme
 // test statistic (z or t beyond roughly +-39) the true probability underflows below the smallest
@@ -57,6 +57,74 @@ function percentileOf(sorted: number[], targetPercentile: number) {
   if (k <= 0) return sorted[0];
   if (k >= n) return sorted[n - 1];
   return sorted[k - 1] + d * (sorted[k] - sorted[k - 1]);
+}
+
+// Exact integer arithmetic (BigInt) for permutation-calculator and combination-calculator, so a
+// large nPr/nCr is never silently shown as a rounded double pretending to be exact — same precedent
+// as factorial-calculator (step 40 run 3). Capped at the same practical n = 1,000 that calculator uses.
+const COUNTING_MAX_N = 1000;
+
+// nPr(n, r) = n x (n-1) x ... x (n-r+1), r terms — computed directly rather than via n!/(n-r)!, so a
+// large n with a small or moderate r (e.g. n=1000, r=2) never needs a needlessly huge intermediate
+// factorial just to produce a much smaller answer. r > n is 0 ways by the standard convention (not
+// "undefined") — Wolfram MathWorld's Permutation entry states this explicitly.
+function nPrBig(n: number, r: number): bigint {
+  if (r > n) return 0n;
+  let result = 1n;
+  const nBig = BigInt(n);
+  for (let i = 0n; i < BigInt(r); i++) result *= nBig - i;
+  return result;
+}
+
+function factorialBig(n: number): bigint {
+  let result = 1n;
+  for (let i = 2n; i <= BigInt(n); i++) result *= i;
+  return result;
+}
+
+// nCr = nPr(n, r) / r!, exact BigInt division — always exact because nCr is always a whole number,
+// a standard combinatorial fact, so BigInt's floor-division never actually floors anything here.
+function nCrBig(n: number, r: number): bigint {
+  if (r > n) return 0n;
+  return nPrBig(n, r) / factorialBig(r);
+}
+
+// BigInt -> a display number, honestly: Number(big) past Number.MAX_SAFE_INTEGER (2^53 - 1) is a
+// correctly-rounded double, not the exact integer — exactly factorial-calculator's own note. The
+// digit count, from the BigInt's own string form, stays exact at any size.
+function bigToDisplay(big: bigint) {
+  return { value: Number(big), digitCount: big.toString().length };
+}
+
+// Binomial PMF/CDF/SF, shared by binomial-distribution-calculator. The PMF is evaluated in log space
+// (logChoose = logGamma(n+1) - logGamma(k+1) - logGamma(n-k+1)) so it never overflows for a large n,
+// the same technique lib/distributions.ts already uses for the Student's t distribution. The CDF and
+// SF are each computed directly from the regularized incomplete beta function via the standard
+// binomial-beta identity (NIST DLMF §8.17.5) — never as 1 - CDF, so a deep upper-tail probability
+// (large n, extreme k) keeps full relative precision instead of losing it to "1 - (1 - tiny)"
+// cancellation. incompleteBeta/logGamma are lib/distributions.ts's own exported functions, reused
+// here rather than reimplemented a second time.
+function logChoose(n: number, k: number) {
+  return logGamma(n + 1) - logGamma(k + 1) - logGamma(n - k + 1);
+}
+
+function binomialPmf(n: number, k: number, p: number) {
+  if (k < 0 || k > n) return 0;
+  if (p === 0) return k === 0 ? 1 : 0; // 0 * log(0) would otherwise be NaN, not 0
+  if (p === 1) return k === n ? 1 : 0;
+  return Math.exp(logChoose(n, k) + k * Math.log(p) + (n - k) * Math.log(1 - p));
+}
+
+function binomialCdf(n: number, k: number, p: number) {
+  if (k < 0) return 0;
+  if (k >= n) return 1;
+  return incompleteBeta(1 - p, n - k, k + 1); // P(X <= k) = I_(1-p)(n-k, k+1)
+}
+
+function binomialSf(n: number, k: number, p: number) {
+  if (k <= 0) return 1;
+  if (k > n) return 0;
+  return incompleteBeta(p, k, n - k + 1); // P(X >= k) = I_p(k, n-k+1), computed directly, never as 1 - CDF
 }
 
 export const statisticsCalculators: CalculatorConfig[] = [
@@ -1307,6 +1375,611 @@ export const statisticsCalculators: CalculatorConfig[] = [
       const upperFence = q3 + 1.5 * iqr;
       const outlierCount = list.filter((value) => value < lowerFence || value > upperFence).length;
       return { iqr, q1, median, q3, lowerFence, upperFence, outlierCount, count: n };
+    }
+  },
+  {
+    id: 'probability-calculator',
+    category: 'statistics',
+    updatedAt: '2026-10-22',
+    aliases: ['probability of two events calculator', 'and or probability calculator', 'independent events calculator', 'probability calculator'],
+    related: ['permutation-calculator', 'combination-calculator', 'binomial-distribution-calculator', 'z-score-calculator'],
+    title: 'Probability Calculator',
+    description: 'Find the probability of two independent events both happening, either happening, neither happening, or exactly one happening, from each event\'s own probability.',
+    example: 'A student has a 70% chance of passing math and a 60% chance of passing science, independently. The chance of passing both is 42%, and the chance of passing at least one is 88%.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is the probability of two events?',
+        paragraphs: [
+          'This calculator starts from the probability of two separate events, A and B, and finds the probability of several combinations of them: both happening, at least one happening, neither happening, exactly one happening, and each event not happening on its own. All of it follows from basic probability rules once A and B are independent.',
+          'Two events are independent when knowing the outcome of one tells you nothing about the other — a coin flip and a dice roll, or (per this calculator\'s own assumption) the worked example\'s math and science results. Independence is what makes "P(A and B) = P(A) × P(B)" valid; for dependent events (passing a prerequisite course changes your chance of passing the next one, say), this simple multiplication rule does not apply, and a different, conditional-probability calculation would be needed instead.',
+          'Every probability on this page is entered and shown as a percentage between 0% and 100% — 0% meaning the event never happens, 100% meaning it always does, and everything in between describing how likely it is relative to those two extremes.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the probability of event A and the probability of event B, each as a percentage.',
+        steps: [
+          { name: 'Enter P(A)', text: 'The probability that event A happens, from 0% to 100%.' },
+          { name: 'Enter P(B)', text: 'The probability that event B happens, from 0% to 100%, assumed independent of A.' },
+          { name: 'Read P(A and B)', text: 'The headline is the chance both events happen, found by multiplying the two probabilities together.' },
+          { name: 'Check the other combinations', text: 'The rows below show P(A or B) (at least one happens), P(not A), P(exactly one, but not both) and P(neither).' },
+          { name: 'Compare them', text: 'The chart places P(A and B), P(A or B) and P(neither) side by side, the three combinations that together summarize the whole picture.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Five combinations, all built from the same two independent probabilities.',
+        expression: 'P(A and B) = P(A) × P(B)\nP(A or B) = P(A) + P(B) − P(A and B)\nP(not A) = 1 − P(A)\nP(exactly one) = P(A) × P(not B) + P(not A) × P(B)\nP(neither) = P(not A) × P(not B)',
+        terms: [
+          { symbol: 'P(A), P(B)', meaning: 'The probability of each event, independently of the other.' },
+          { symbol: 'P(not A)', meaning: 'The probability event A does not happen, 1 − P(A).' }
+        ],
+        note: 'These formulas only hold because A and B are assumed independent. For two events that are not independent (one influences the other), P(A and B) requires a conditional probability, P(B given A), which this calculator does not ask for and should not be used for.'
+      },
+      workedExample: {
+        intro: 'A student has a 70% chance of passing math (event A) and a 60% chance of passing science (event B), with the two results assumed independent of each other.',
+        rows: [
+          { label: 'P(A and B) = 0.70 × 0.60', value: '0.42, i.e. 42%' },
+          { label: 'P(A or B) = 0.70 + 0.60 − 0.42', value: '0.88, i.e. 88%' },
+          { label: 'P(not A) = 1 − 0.70', value: '0.30, i.e. 30%' },
+          { label: 'P(exactly one) = 0.70 × 0.40 + 0.30 × 0.60', value: '0.46, i.e. 46%' },
+          { label: 'P(neither) = 0.30 × 0.40', value: '0.12, i.e. 12%' }
+        ],
+        result: 'P(both) = 42%, P(at least one) = 88%, P(neither) = 12%',
+        explanation: 'As a check, P(A or B) always equals 1 − P(neither): 1 − 0.12 = 0.88, matching the direct calculation — "at least one happens" and "neither happens" are opposite outcomes, so their probabilities must add to 100%.'
+      },
+      watchOut: [
+        { title: 'This assumes A and B are independent — check that before trusting the result', body: 'If one event changes the likelihood of the other (drawing two cards from a deck without replacement, say), these formulas give the wrong answer. Independence has to come from how the events actually work, not from how the numbers happen to look.' },
+        { title: '"Exactly one" is not the same as "at least one"', body: 'P(A or B) (at least one, including possibly both) and P(exactly one) (one or the other, but not both) are two different, equally valid questions. This calculator reports both separately rather than assuming which one you meant.' },
+        { title: 'Probabilities are clamped to the 0%–100% range', body: 'A probability outside that range is not meaningful, so any input is treated as the nearest valid percentage before anything else is calculated.' },
+        { title: 'P(A and B) being small does not mean either event alone is unlikely', body: 'Two individually fairly likely events (70% and 60% here) still have a combined "both happen" probability well under either one on its own, simply because requiring both to happen is a stricter condition than requiring just one.' }
+      ],
+      references: [
+        { label: 'OpenStax, Introductory Statistics 2e, §3.2 Independent and Mutually Exclusive Events', url: 'https://openstax.org/books/introductory-statistics-2e/pages/3-2-independent-and-mutually-exclusive-events' },
+        { label: 'Wolfram MathWorld, Independent Statistics', url: 'https://mathworld.wolfram.com/IndependentStatistics.html' }
+      ]
+    },
+    inputs: [
+      { id: 'probabilityA', label: 'P(A)', type: 'percent', placeholder: '70', defaultValue: 70, step: 1, min: 0 },
+      { id: 'probabilityB', label: 'P(B)', type: 'percent', placeholder: '60', defaultValue: 60, step: 1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'bothPercent',
+      headlineLabel: 'P(A and B) — both happen',
+      outputs: [
+        { id: 'bothPercent', label: 'P(A and B) — both happen', format: 'percent' },
+        { id: 'eitherPercent', label: 'P(A or B) — at least one happens', format: 'percent' },
+        { id: 'exactlyOnePercent', label: 'P(exactly one) — one but not both', format: 'percent' },
+        { id: 'neitherPercent', label: 'P(neither) happens', format: 'percent' },
+        { id: 'notAPercent', label: 'P(not A)', format: 'percent' },
+        { id: 'notBPercent', label: 'P(not B)', format: 'percent' }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'bothPercent', label: 'Both' }, { from: 'eitherPercent', label: 'At least one' }, { from: 'neitherPercent', label: 'Neither' }],
+        title: 'Both, at least one, or neither',
+        highlight: 0
+      }
+    },
+    seo: {
+      title: 'Probability Calculator – Two Independent Events',
+      description: 'Free probability calculator. Find P(A and B), P(A or B), P(neither) and P(exactly one) for two independent events from each one\'s own probability.',
+      faq: [
+        { question: 'How do I find the probability of two independent events both happening?', answer: 'Multiply their individual probabilities: P(A and B) = P(A) × P(B). For a 70% and a 60% chance, that is 0.70 × 0.60 = 0.42, or 42%.' },
+        { question: 'How do I find the probability that at least one of two events happens?', answer: 'Add the two probabilities and subtract the chance both happen: P(A or B) = P(A) + P(B) − P(A and B). For 70% and 60%, that is 70 + 60 − 42 = 88%.' },
+        { question: 'What does "independent" mean here?', answer: 'It means the outcome of one event has no effect on the probability of the other — knowing A happened would not change your estimate of how likely B is. This calculator\'s formulas only work under that assumption.' },
+        { question: 'What is the difference between "at least one" and "exactly one"?', answer: '"At least one" (P(A or B)) includes the case where both happen. "Exactly one" excludes it, counting only the cases where one event happens and the other does not.' },
+        { question: 'How do I find the probability that neither event happens?', answer: 'Multiply the two "not" probabilities: P(neither) = (1 − P(A)) × (1 − P(B)). For 70% and 60%, that is 0.30 × 0.40 = 0.12, or 12%.' },
+        { question: 'Can I enter a probability as a decimal instead of a percentage?', answer: 'This calculator\'s fields take a percentage (0 to 100). Enter 0.7 as 70, not as 0.7 — a plain 0.7 would be read as 0.7%, not 70%.' },
+        { question: 'What if the two events are not independent?', answer: 'These formulas no longer apply — P(A and B) would need the conditional probability of B given A, which is not something this calculator asks for or computes.' },
+        { question: 'Why is P(A and B) smaller than either P(A) or P(B) alone?', answer: 'Requiring two things to both happen is always at least as restrictive as requiring just one of them, so the combined probability can never be larger than the smaller of the two individual probabilities.' }
+      ]
+    },
+    compute(values) {
+      const pA = Math.min(100, Math.max(0, values.probabilityA)) / 100;
+      const pB = Math.min(100, Math.max(0, values.probabilityB)) / 100;
+      const notA = 1 - pA;
+      const notB = 1 - pB;
+      const both = pA * pB;
+      const either = pA + pB - both;
+      const exactlyOne = pA * notB + notA * pB;
+      const neither = notA * notB;
+      return {
+        bothPercent: both * 100,
+        eitherPercent: either * 100,
+        exactlyOnePercent: exactlyOne * 100,
+        neitherPercent: neither * 100,
+        notAPercent: notA * 100,
+        notBPercent: notB * 100
+      };
+    }
+  },
+  {
+    id: 'permutation-calculator',
+    category: 'statistics',
+    updatedAt: '2026-10-22',
+    aliases: ['npr calculator', 'permutations calculator', 'order matters calculator', 'arrangements calculator'],
+    related: ['combination-calculator', 'factorial-calculator', 'probability-calculator', 'binomial-distribution-calculator'],
+    title: 'Permutation Calculator',
+    description: 'Find nPr, the number of ways to arrange r items out of n in order, computed exactly with integer math — plus the ordered count when repetition is allowed.',
+    example: 'There are 5 runners in a race. There are 5P3 = 60 ways to award 1st, 2nd and 3rd place among them.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is a permutation?',
+        paragraphs: [
+          'A permutation is an arrangement of items where order matters — 1st, 2nd and 3rd place among 5 runners are a different outcome if the same three runners finish in a different order. The number of ways to arrange r items chosen from a set of n, without reusing any item, is written nPr (or P(n, r)), and it is always counting distinct orderings, not just distinct selections.',
+          'This is different from a combination, which counts selections where order does not matter (which three runners make the podium, regardless of who came first) — see the combination calculator for that question. nPr is always at least as large as nCr for the same n and r, by exactly a factor of r!, since every unordered selection corresponds to r! different orderings of it.',
+          'This calculator also shows the related count when repetition is allowed — choosing r items in order from n options where the same option can be picked more than once (a 3-digit PIN from 10 digits, say) — which is simply nʳ, a different and much simpler formula that does not involve factorials at all.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter n (how many items there are) and r (how many you are arranging).',
+        steps: [
+          { name: 'Enter n', text: 'How many distinct items are available in total.' },
+          { name: 'Enter r', text: 'How many of them you are arranging, in order.' },
+          { name: 'Read nPr', text: 'The headline is the number of ways to arrange r of the n items without repeating any of them, computed with exact integer arithmetic.' },
+          { name: 'Check the exact digit count', text: 'The digit count stays exact even once nPr itself is too large for a 64-bit number to hold precisely — see "Watch out" below.' },
+          { name: 'Check the with-repetition count', text: 'The remaining rows show nʳ, the number of ordered sequences of length r from n options if repeating an option is allowed — a different question with its own formula.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Without repetition, nPr multiplies r consecutive descending factors starting from n. With repetition, it is simply n raised to the power r.',
+        expression: 'Without repetition: nPr = n × (n−1) × (n−2) × ... × (n−r+1) = n! ÷ (n−r)!\nWith repetition: nʳ',
+        terms: [
+          { symbol: 'n', meaning: 'How many distinct items are available (0 to 1,000).' },
+          { symbol: 'r', meaning: 'How many items are being arranged, in order (0 to 1,000).' }
+        ],
+        note: 'By convention, nPr = 0 when r > n (there is no way to arrange more distinct items than exist). nPr with r = 0 is 1 — there is exactly one way to arrange nothing, the same "empty arrangement" convention the factorial calculator uses for 0!.'
+      },
+      workedExample: {
+        intro: 'Of 5 runners, 1st, 2nd and 3rd place are awarded — r = 3 ordered positions from n = 5 people, no repeats (nobody can finish in two places at once).',
+        rows: [
+          { label: 'nPr = 5 × 4 × 3 (3 descending factors starting at 5)', value: '60' },
+          { label: 'With repetition, for comparison: 5³', value: '125' }
+        ],
+        result: '5P3 = 60 ways to award the podium',
+        explanation: 'The with-repetition figure, 125, answers a different question — it would be the count if the "same runner" could occupy more than one podium spot, which cannot happen in a real race, which is exactly why the two numbers do not match.'
+      },
+      watchOut: [
+        { title: 'This calculator is exact up to n = 1,000', body: 'Above that, the factor-by-factor multiplication would take an impractically long time to stay exact, so this calculator shows no answer for an n or r larger than 1,000 — the same practical cap the factorial calculator uses.' },
+        { title: 'Past 2^53 − 1 (about 9.007 quadrillion), the displayed number is a rounded approximation, not the exact integer', body: 'For example, 25P20 is exactly 129,260,083,694,424,883,200,000 (24 digits) — but a standard 64-bit number can only hold about 15–17 significant digits exactly, so the headline value, shown in scientific notation past that size, is a correctly-rounded approximation. The digit count is computed separately with exact integer arithmetic and stays exact at any size.' },
+        { title: 'r > n gives 0 for the without-repetition count, not an error', body: 'You cannot arrange more distinct items than you have, so this calculator reports 0 ways rather than refusing to answer — a standard mathematical convention, not a special case invented for this page.' },
+        { title: 'Order matters here — this is not the same question as the combination calculator', body: 'If you only care which items are chosen, not what order they come in, use the combination calculator instead; it will always give a smaller number for the same n and r (nCr = nPr ÷ r!).' },
+        { title: 'Non-integer n or r are rounded to the nearest whole number first', body: 'Permutations only make sense for counting whole, indivisible items, so a decimal typed into either field is rounded before this calculator computes anything with it.' }
+      ],
+      references: [
+        { label: 'Wolfram MathWorld, Permutation', url: 'https://mathworld.wolfram.com/Permutation.html' },
+        { label: 'NIST Digital Library of Mathematical Functions, §26.1 Combinatorial Analysis: Permutations', url: 'https://dlmf.nist.gov/26.1' }
+      ]
+    },
+    inputs: [
+      { id: 'n', label: 'n (items available)', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 0 },
+      { id: 'r', label: 'r (items arranged)', type: 'number', placeholder: '3', defaultValue: 3, step: 1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'permutations',
+      headlineLabel: 'nPr (without repetition)',
+      outputs: [
+        { id: 'permutations', label: 'nPr (without repetition)', format: 'significant' },
+        { id: 'digitCount', label: 'Exact digit count', format: 'integer' },
+        { id: 'permutationsWithRepetition', label: 'nʳ (with repetition)', format: 'significant' },
+        { id: 'digitCountWithRepetition', label: 'Exact digit count (with repetition)', format: 'integer' }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'permutations', label: 'Without repetition (nPr)' }, { from: 'permutationsWithRepetition', label: 'With repetition (nʳ)' }],
+        title: 'Without vs. with repetition',
+        highlight: 0
+      }
+    },
+    seo: {
+      title: 'Permutation Calculator – nPr, Exact Integer Math',
+      description: 'Free permutation calculator. Find nPr (and the with-repetition count nʳ) for any n and r up to 1,000, with exact integer arithmetic and digit counts.',
+      faq: [
+        { question: 'How do I calculate a permutation?', answer: 'Multiply r consecutive descending factors starting from n: nPr = n × (n−1) × ... × (n−r+1). For n=5, r=3: 5 × 4 × 3 = 60.' },
+        { question: 'What is the difference between a permutation and a combination?', answer: 'A permutation (nPr) counts arrangements where order matters; a combination (nCr) counts selections where it does not. nPr is always nCr × r! — larger by a factor of however many ways the r chosen items could be reordered.' },
+        { question: 'What does nPr mean when r is greater than n?', answer: 'It is 0 — you cannot arrange more distinct items than you have. This calculator reports 0 rather than treating it as an error.' },
+        { question: 'What is nPr with repetition?', answer: 'If the same item can be chosen more than once, the count of ordered sequences of length r from n options is simply nʳ, not nPr — a 4-digit PIN (digits can repeat) has 10⁴ = 10,000 possibilities, not 10P4 = 5,040.' },
+        { question: 'What is 5P3?', answer: '5P3 = 5 × 4 × 3 = 60.' },
+        { question: 'What is nPr when r = 0?', answer: '1 — there is exactly one way to arrange zero items, the same "empty arrangement" convention as 0! = 1.' },
+        { question: 'How large an n or r can this calculator handle?', answer: 'Up to 1,000 for each, computed with exact integer (BigInt) arithmetic. Past about 2^53 − 1, the displayed headline number is a correctly-rounded approximation rather than the exact integer, but the digit count stays exact.' },
+        { question: 'Can n or r be negative or a decimal?', answer: 'Permutations are only defined for non-negative whole numbers. A decimal is rounded to the nearest whole number first; a negative value gives no answer.' }
+      ]
+    },
+    compute(values) {
+      const n = Math.round(values.n);
+      const r = Math.round(values.r);
+      const noAnswer = { permutations: NaN, digitCount: NaN, permutationsWithRepetition: NaN, digitCountWithRepetition: NaN };
+      if (!Number.isInteger(n) || !Number.isInteger(r) || n < 0 || r < 0 || n > COUNTING_MAX_N || r > COUNTING_MAX_N) return noAnswer;
+      const without = bigToDisplay(nPrBig(n, r));
+      const withRepetition = bigToDisplay(BigInt(n) ** BigInt(r));
+      return {
+        permutations: without.value,
+        digitCount: without.digitCount,
+        permutationsWithRepetition: withRepetition.value,
+        digitCountWithRepetition: withRepetition.digitCount
+      };
+    }
+  },
+  {
+    id: 'combination-calculator',
+    category: 'statistics',
+    updatedAt: '2026-10-22',
+    aliases: ['ncr calculator', 'combinations calculator', 'n choose r calculator', 'binomial coefficient calculator'],
+    related: ['permutation-calculator', 'factorial-calculator', 'binomial-distribution-calculator', 'probability-calculator'],
+    title: 'Combination Calculator',
+    description: 'Find nCr ("n choose r"), the number of ways to select r items out of n where order does not matter, computed exactly with integer math — plus the count with repetition allowed.',
+    example: 'A poker hand draws 5 cards from a 52-card deck. There are 52C5 = 2,598,960 possible 5-card hands.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is a combination?',
+        paragraphs: [
+          'A combination is a selection of items where order does not matter — a 5-card poker hand is the same hand no matter what order the cards were dealt in. The number of ways to choose r items from a set of n, with no repeats and no regard to order, is written nCr, "n choose r," or as the binomial coefficient (ⁿᵣ). It is the same quantity that gives the binomial distribution its name and appears directly in its formula.',
+          'nCr is always smaller than (or equal to, at the edges) nPr for the same n and r, specifically by a factor of r! — the number of orders the same r chosen items could have been arranged in, which a combination deliberately ignores. See the permutation calculator for that related, order-sensitive count.',
+          'This calculator also shows the count when repetition is allowed — choosing r items from n types where the same type can be picked more than once and order still does not matter (2 scoops of ice cream from 3 flavors, say, where "vanilla + vanilla" is a valid choice) — a different formula called a multiset coefficient, nCr applied to (n + r − 1, r) instead of (n, r).'
+        ]
+      },
+      howTo: {
+        intro: 'Enter n (how many items there are) and r (how many you are choosing).',
+        steps: [
+          { name: 'Enter n', text: 'How many distinct items are available in total.' },
+          { name: 'Enter r', text: 'How many of them you are selecting, with order not mattering.' },
+          { name: 'Read nCr', text: 'The headline is the number of ways to choose r of the n items with no repeats, computed with exact integer arithmetic.' },
+          { name: 'Check the exact digit count', text: 'The digit count stays exact even once nCr itself is too large for a 64-bit number to hold precisely — see "Watch out" below.' },
+          { name: 'Check the with-repetition count', text: 'The remaining rows show the multiset coefficient — the number of ways to choose r items from n types if repeating a type is allowed.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Without repetition, nCr divides nPr by r! to remove the orderings a combination does not care about. With repetition, the same nCr formula is applied to a shifted pair of numbers.',
+        expression: 'Without repetition: nCr = nPr ÷ r! = n! ÷ (r! × (n−r)!)\nWith repetition: C(n + r − 1, r)',
+        terms: [
+          { symbol: 'n', meaning: 'How many distinct items (or types) are available (0 to 1,000).' },
+          { symbol: 'r', meaning: 'How many items are being chosen (0 to 1,000).' }
+        ],
+        note: 'By convention, nCr = 0 when r > n (there is no way to choose more distinct items than exist, without repeats). nCr with r = 0 is 1 — there is exactly one way to choose nothing, the empty selection.'
+      },
+      workedExample: {
+        intro: 'A 5-card poker hand is dealt from a standard 52-card deck — choosing r = 5 cards from n = 52, with no repeats and no regard to the order dealt.',
+        rows: [
+          { label: 'nPr(52, 5) = 52 × 51 × 50 × 49 × 48', value: '311,875,200' },
+          { label: '5! (the orderings a combination ignores)', value: '120' },
+          { label: 'nCr = 311,875,200 ÷ 120', value: '2,598,960' }
+        ],
+        result: '52C5 = 2,598,960 possible hands',
+        explanation: 'This is the well-known total count of distinct 5-card poker hands — the number used as the denominator in every poker-hand-probability calculation (the chance of a royal flush, for instance, is 4 ÷ 2,598,960).'
+      },
+      watchOut: [
+        { title: 'This calculator is exact up to n = 1,000', body: 'Above that, the calculation would take an impractically long time to stay exact, so this calculator shows no answer for an n or r larger than 1,000 — the same practical cap the factorial and permutation calculators use.' },
+        { title: 'Past 2^53 − 1 (about 9.007 quadrillion), the displayed number is a rounded approximation, not the exact integer', body: 'For example, 60C30 is exactly 118,264,581,564,861,424 (18 digits) — a standard 64-bit number only holds about 15–17 significant digits exactly, so the headline value, shown in scientific notation past that size, is a correctly-rounded approximation of the true integer. The digit count is computed separately with exact integer arithmetic and stays exact at any size.' },
+        { title: 'r > n gives 0 for the without-repetition count, not an error', body: 'You cannot choose more distinct items than you have without repeating one, so this calculator reports 0 ways rather than refusing to answer — a standard convention, not a special case invented for this page.' },
+        { title: 'Order does not matter here — this is not the same question as the permutation calculator', body: 'If the order of the chosen items matters (who finishes 1st vs. 2nd, not just who makes the podium), use the permutation calculator instead; it will always give a larger number for the same n and r.' },
+        { title: 'Non-integer n or r are rounded to the nearest whole number first', body: 'Combinations only make sense for counting whole, indivisible items, so a decimal typed into either field is rounded before this calculator computes anything with it.' }
+      ],
+      references: [
+        { label: 'Wolfram MathWorld, Binomial Coefficient', url: 'https://mathworld.wolfram.com/BinomialCoefficient.html' },
+        { label: 'NIST Digital Library of Mathematical Functions, §26.1 Combinatorial Analysis: Combinations', url: 'https://dlmf.nist.gov/26.1' }
+      ]
+    },
+    inputs: [
+      { id: 'n', label: 'n (items available)', type: 'number', placeholder: '52', defaultValue: 52, step: 1, min: 0 },
+      { id: 'r', label: 'r (items chosen)', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'combinations',
+      headlineLabel: 'nCr (without repetition)',
+      outputs: [
+        { id: 'combinations', label: 'nCr (without repetition)', format: 'significant' },
+        { id: 'digitCount', label: 'Exact digit count', format: 'integer' },
+        { id: 'combinationsWithRepetition', label: 'With repetition (multiset)', format: 'significant' },
+        { id: 'digitCountWithRepetition', label: 'Exact digit count (with repetition)', format: 'integer' }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'combinations', label: 'Without repetition (nCr)' }, { from: 'combinationsWithRepetition', label: 'With repetition' }],
+        title: 'Without vs. with repetition',
+        highlight: 0
+      }
+    },
+    seo: {
+      title: 'Combination Calculator – nCr, Exact Integer Math',
+      description: 'Free combination calculator. Find nCr ("n choose r") and the with-repetition count for any n and r up to 1,000, with exact integer arithmetic and digit counts.',
+      faq: [
+        { question: 'How do I calculate a combination?', answer: 'Divide nPr by r!: nCr = n! ÷ (r! × (n−r)!). For a 52-card deck choosing 5 cards, 52C5 = 2,598,960.' },
+        { question: 'What is the difference between a combination and a permutation?', answer: 'A combination (nCr) counts selections where order does not matter; a permutation (nPr) counts arrangements where it does. nPr = nCr × r! — permutations are always the larger (or equal) count.' },
+        { question: 'What does nCr mean when r is greater than n?', answer: 'It is 0 — you cannot choose more distinct items than you have without repeating one. This calculator reports 0 rather than treating it as an error.' },
+        { question: 'What is a combination with repetition?', answer: 'If the same item can be chosen more than once and order still does not matter — 2 scoops of ice cream from 3 flavors, where two scoops of the same flavor is valid — the count is the "multiset coefficient" C(n + r − 1, r), a different and larger number than plain nCr.' },
+        { question: 'What is 49 choose 6?', answer: '49C6 = 13,983,816 — the number of possible 6-number combinations in a classic lottery format.' },
+        { question: 'What is nCr when r = 0?', answer: '1 — there is exactly one way to choose nothing, the empty selection.' },
+        { question: 'How large an n or r can this calculator handle?', answer: 'Up to 1,000 for each, computed with exact integer (BigInt) arithmetic. Past about 2^53 − 1, the displayed headline number is a correctly-rounded approximation rather than the exact integer, but the digit count stays exact.' },
+        { question: 'Can n or r be negative or a decimal?', answer: 'Combinations are only defined for non-negative whole numbers. A decimal is rounded to the nearest whole number first; a negative value gives no answer.' }
+      ]
+    },
+    compute(values) {
+      const n = Math.round(values.n);
+      const r = Math.round(values.r);
+      const noAnswer = { combinations: NaN, digitCount: NaN, combinationsWithRepetition: NaN, digitCountWithRepetition: NaN };
+      if (!Number.isInteger(n) || !Number.isInteger(r) || n < 0 || r < 0 || n > COUNTING_MAX_N || r > COUNTING_MAX_N) return noAnswer;
+      const without = bigToDisplay(nCrBig(n, r));
+      // Multiset coefficient C(n+r-1, r), special-cased at n=0: choosing nothing (r=0) is always the
+      // one "empty selection" even from zero types, but choosing any r > 0 items from zero types is
+      // impossible — n+r-1 would be -1 there, which nCrBig does not need to handle as a real input.
+      const withRepetitionBig = r === 0 ? 1n : n === 0 ? 0n : nCrBig(n + r - 1, r);
+      const withRepetition = bigToDisplay(withRepetitionBig);
+      return {
+        combinations: without.value,
+        digitCount: without.digitCount,
+        combinationsWithRepetition: withRepetition.value,
+        digitCountWithRepetition: withRepetition.digitCount
+      };
+    }
+  },
+  {
+    id: 'binomial-distribution-calculator',
+    category: 'statistics',
+    updatedAt: '2026-10-22',
+    aliases: ['binomial probability calculator', 'binomial distribution calculator', 'binomial pmf calculator', 'binomial cdf calculator'],
+    related: ['combination-calculator', 'normal-distribution-calculator', 'probability-calculator', 'z-score-calculator'],
+    title: 'Binomial Distribution Calculator',
+    description: 'Find P(X = k), P(X ≤ k) and P(X ≥ k) for a binomial distribution with n trials and success probability p, plus its mean and standard deviation, computed in log space for any size n.',
+    example: 'Flip a fair coin 10 times. The probability of exactly 6 heads is about 20.51%, and the probability of 6 or more heads is about 37.70%.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is a binomial distribution?',
+        paragraphs: [
+          'A binomial distribution describes the number of successes in a fixed number of independent trials, n, each with the same probability of success, p — a coin flipped 10 times, a product tested off a line with a known defect rate, or a fixed number of survey respondents each independently answering yes or no. The random outcome, X, is the count of successes, which can be anywhere from 0 to n.',
+          'Three questions come up constantly: the exact probability of a specific count (P(X = k), the probability mass function), the probability of k or fewer successes (P(X ≤ k)), and the probability of k or more (P(X ≥ k)). All three follow from the same underlying formula, which involves the binomial coefficient nCr (see the combination calculator) weighting how many different orders give the same count of successes.',
+          'This calculator computes the exact probability for any n, including very large ones (thousands of trials), by working in log space internally and by computing the cumulative tail probabilities directly from the regularized incomplete beta function — not by summing potentially millions of individual terms, and never by subtracting a probability from 1 once that probability is already extremely small (which would lose precision exactly where it matters most). See "Watch out" below for why this matters.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the number of trials, the probability of success per trial, and the number of successes you want to find a probability for.',
+        steps: [
+          { name: 'Enter the number of trials (n)', text: 'How many independent trials there are in total.' },
+          { name: 'Enter the probability of success (p)', text: 'The chance of success on any single trial, the same for every trial, as a percentage.' },
+          { name: 'Enter the number of successes (k)', text: 'The specific count of successes the probabilities below are calculated around.' },
+          { name: 'Read P(X = k)', text: 'The headline is the exact probability of getting precisely k successes, no more and no fewer.' },
+          { name: 'Check the cumulative probabilities', text: 'The rows below show P(X ≤ k) (k or fewer successes) and P(X ≥ k) (k or more), plus the distribution\'s mean (np) and standard deviation.' },
+          { name: 'Read the chart', text: 'The bar shows where P(X = k) falls against common statistical-significance thresholds — the same bands the p-value calculator uses, since a binomial tail probability is often itself used as a p-value.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The probability mass function, and the mean and standard deviation that follow directly from it.',
+        expression: 'P(X = k) = nCk × pᵏ × (1 − p)ⁿ⁻ᵏ\nMean = np\nStandard deviation = √(np(1 − p))',
+        terms: [
+          { symbol: 'n', meaning: 'The number of independent trials.' },
+          { symbol: 'p', meaning: 'The probability of success on each trial, the same every time.' },
+          { symbol: 'k', meaning: 'The number of successes being asked about, from 0 to n.' },
+          { symbol: 'nCk', meaning: 'The number of ways k successes can be arranged among n trials — see the combination calculator.' }
+        ],
+        note: 'This calculator evaluates nCk × pᵏ × (1 − p)ⁿ⁻ᵏ by adding logarithms instead of multiplying the raw numbers together, so a huge binomial coefficient and a tiny probability (both of which can individually overflow or underflow a standard number for a large n) cancel out correctly instead of breaking the calculation.'
+      },
+      workedExample: {
+        intro: 'A fair coin (p = 50%) is flipped n = 10 times. Find the probability of exactly 6 heads, and of 6 or more.',
+        rows: [
+          { label: 'nCk = 10C6', value: '210' },
+          { label: 'P(X = 6) = 210 × 0.5⁶ × 0.5⁴', value: '210 ÷ 1024 ≈ 0.205078, i.e. ≈ 20.51%' },
+          { label: 'P(X ≤ 6) (6 or fewer heads)', value: '848 ÷ 1024 = 0.828125, i.e. 82.81%' },
+          { label: 'P(X ≥ 6) (6 or more heads)', value: '386 ÷ 1024 = 0.376953, i.e. ≈ 37.70%' },
+          { label: 'Mean (10 × 0.5) and standard deviation (√(10 × 0.5 × 0.5))', value: '5 heads, ≈ 1.58 heads' }
+        ],
+        result: 'P(X=6) ≈ 20.51%, P(X≥6) ≈ 37.70%',
+        explanation: 'Because p = 0.5 exactly, every one of these probabilities is a simple fraction with denominator 1,024 = 2¹⁰, which is why they check out to clean values here — for any other p, the same formula still applies but rarely lands on such tidy fractions.'
+      },
+      watchOut: [
+        { title: 'P(X ≤ k) and P(X ≥ k) overlap by exactly P(X = k)', body: 'They are not complementary on their own — P(X ≤ k) + P(X ≥ k) = 1 + P(X = k), not 1, because both ranges include k itself. P(X ≤ k) and P(X ≥ k + 1) are the pair that actually add to exactly 1.' },
+        { title: 'For a large n and an extreme k, the probability can be far smaller than it looks', body: 'With n = 1,000 fair coin flips, P(X ≥ 600) is only about 1.364 × 10⁻¹⁰ — vanishingly small, even though 600 out of 1,000 (60%) does not sound especially extreme at a glance. This calculator computes that figure directly, in scientific notation, rather than rounding it to a misleading 0.' },
+        { title: 'This assumes every trial has the same, fixed probability of success', body: 'If the success probability changes between trials, or the trials are not independent of each other, the binomial distribution — and every formula on this page — no longer applies.' },
+        { title: 'This calculator has a practical cap of n = 1,000,000,000 trials', body: 'Far beyond any realistic input, but stated honestly: above that, this calculator shows no answer rather than letting an unbounded number of trials run through the calculation.' },
+        { title: 'k outside 0 to n is handled honestly, not as an error', body: 'P(X = k) is 0 for any k below 0 or above n (that many successes is simply impossible), P(X ≤ k) is 0 below 0 and 1 above n, and P(X ≥ k) is 1 below 0 and 0 above n — all consistent with X never actually leaving the range 0 to n.' },
+        { title: 'p = 0% or p = 100% are edge cases, not errors', body: 'At p = 0%, X is always exactly 0; at p = 100%, X is always exactly n. This calculator handles both directly rather than running into a mathematically undefined log(0).' }
+      ],
+      references: [
+        { label: 'OpenStax, Introductory Statistics 2e, §4.3 Binomial Distribution', url: 'https://openstax.org/books/introductory-statistics-2e/pages/4-3-binomial-distribution' },
+        { label: 'NIST Digital Library of Mathematical Functions, §8.17 Incomplete Beta Function: Relation to the Binomial Distribution', url: 'https://dlmf.nist.gov/8.17' },
+        { label: 'Wolfram MathWorld, Binomial Distribution', url: 'https://mathworld.wolfram.com/BinomialDistribution.html' }
+      ]
+    },
+    inputs: [
+      { id: 'trials', label: 'Number of trials (n)', type: 'number', placeholder: '10', defaultValue: 10, step: 1, min: 0 },
+      { id: 'probability', label: 'Probability of success (p)', type: 'percent', placeholder: '50', defaultValue: 50, step: 1, min: 0 },
+      { id: 'successes', label: 'Number of successes (k)', type: 'number', placeholder: '6', defaultValue: 6, step: 1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'pmfAtK',
+      headlineLabel: 'P(X = k)',
+      outputs: [
+        { id: 'pmfAtK', label: 'P(X = k)', format: 'significant' },
+        { id: 'cdfAtK', label: 'P(X ≤ k)', format: 'significant' },
+        { id: 'sfAtK', label: 'P(X ≥ k)', format: 'significant' },
+        { id: 'mean', label: 'Mean (np)', format: 'significant' },
+        { id: 'standardDeviation', label: 'Standard deviation', format: 'significant' }
+      ],
+      visual: {
+        type: 'rangeBar',
+        value: 'pmfAtK',
+        bands: [
+          { label: 'Highly significant', min: 0, max: 0.01 },
+          { label: 'Significant', min: 0.01, max: 0.05 },
+          { label: 'Marginally significant', min: 0.05, max: 0.1 },
+          { label: 'Not significant', min: 0.1, max: 1 }
+        ],
+        title: 'Where P(X = k) falls (common thresholds)',
+        valueLabel: 'Your P(X = k)'
+      }
+    },
+    seo: {
+      title: 'Binomial Distribution Calculator – PMF & CDF',
+      description: 'Free binomial distribution calculator. Find P(X = k), P(X ≤ k) and P(X ≥ k), plus mean and standard deviation, computed in log space for any n, large or small.',
+      faq: [
+        { question: 'How do I calculate a binomial probability?', answer: 'P(X = k) = nCk × pᵏ × (1 − p)ⁿ⁻ᵏ. For n = 10 fair coin flips and k = 6, that is 210 × 0.5⁶ × 0.5⁴ ≈ 0.2051, or about 20.51%.' },
+        { question: 'What is the difference between P(X = k), P(X ≤ k) and P(X ≥ k)?', answer: 'P(X = k) is the probability of exactly k successes. P(X ≤ k) adds up every count from 0 through k. P(X ≥ k) adds up every count from k through n. The two cumulative figures overlap at k itself.' },
+        { question: 'What is the mean of a binomial distribution?', answer: 'np — the number of trials times the success probability. For 10 flips of a fair coin, the mean is 10 × 0.5 = 5 heads.' },
+        { question: 'What is the standard deviation of a binomial distribution?', answer: '√(np(1 − p)). For 10 flips of a fair coin, that is √(10 × 0.5 × 0.5) = √2.5 ≈ 1.58 heads.' },
+        { question: 'Can this calculator handle a very large number of trials?', answer: 'Yes — it evaluates the probability in log space and computes the cumulative tail directly from the incomplete beta function, so it stays accurate for n in the thousands or more without overflowing or summing an impractical number of terms one by one.' },
+        { question: 'Why is my probability shown in scientific notation?', answer: 'Binomial tail probabilities can become extremely small for a large n and an extreme k — for example, P(X ≥ 600) out of 1,000 fair coin flips is only about 1.364 × 10⁻¹⁰. This calculator shows that honestly rather than rounding it to a misleading 0.' },
+        { question: 'What if p is 0% or 100%?', answer: 'At p = 0%, the outcome is always 0 successes; at p = 100%, it is always n successes. This calculator handles both directly as legitimate, certain outcomes.' },
+        { question: 'How is this related to the combination calculator?', answer: 'The binomial coefficient nCk inside the binomial probability formula is exactly what the combination calculator computes — it counts how many different orders of trials produce the same number of successes.' }
+      ]
+    },
+    compute(values) {
+      const n = Math.round(values.trials);
+      const k = Math.round(values.successes);
+      const p = Math.min(100, Math.max(0, values.probability)) / 100;
+      const noAnswer = { pmfAtK: NaN, cdfAtK: NaN, sfAtK: NaN, mean: NaN, standardDeviation: NaN };
+      if (!Number.isInteger(n) || n < 0 || n > 1e9 || !Number.isInteger(k)) return noAnswer;
+      return {
+        pmfAtK: floorTinyProbability(binomialPmf(n, k, p)),
+        cdfAtK: floorTinyProbability(binomialCdf(n, k, p)),
+        sfAtK: floorTinyProbability(binomialSf(n, k, p)),
+        mean: n * p,
+        standardDeviation: Math.sqrt(n * p * (1 - p))
+      };
+    }
+  },
+  {
+    id: 'normal-distribution-calculator',
+    category: 'statistics',
+    updatedAt: '2026-10-22',
+    aliases: ['normal distribution calculator', 'gaussian distribution calculator', 'bell curve calculator', 'normal probability calculator'],
+    related: ['z-score-calculator', 'binomial-distribution-calculator', 'percentile-calculator', 'standard-deviation-calculator'],
+    title: 'Normal Distribution Calculator',
+    description: 'Find probabilities and percentiles for a normal distribution, given its mean and standard deviation: P(X < x), P(X > x), P(a < X < b), the z-score, and the value at any percentile.',
+    example: 'IQ scores are normal with mean 100 and standard deviation 15. A score of 115 has a z-score of 1, and about 84.13% of scores fall below it.',
+    content: {
+      lastReviewed: '2026-10-22',
+      concept: {
+        title: 'What is a normal distribution?',
+        paragraphs: [
+          'The normal (or Gaussian) distribution is the familiar symmetric, bell-shaped curve that many real-world measurements approximately follow — heights, measurement errors, IQ scores, and many manufacturing tolerances among them. It is fully described by just two numbers: its mean (μ), where the curve is centered, and its standard deviation (σ), which controls how spread out it is.',
+          'This calculator answers the questions that come up most often once you have those two numbers and a value of interest: what fraction of the distribution lies below a value (P(X < x)), above it (P(X > x)), or between two values (P(a < X < b)); how many standard deviations a value is from the mean (its z-score, the same calculation the z-score calculator performs on its own); and, working backward, what value corresponds to a given percentile.',
+          'All of it is built from the cumulative distribution function (CDF) of the standard normal distribution, the same function behind this site\'s confidence interval, margin of error and p-value calculators — just applied here directly to a mean and standard deviation of your choosing rather than to a sample statistic.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the distribution\'s mean and standard deviation, then any value, range or percentile you want to check.',
+        steps: [
+          { name: 'Enter the mean and standard deviation', text: 'These two numbers fully describe the normal distribution being used.' },
+          { name: 'Enter a value (x)', text: 'The headline shows what fraction of the distribution falls below this value, plus its z-score.' },
+          { name: 'Enter a range (a and b)', text: 'A separate row shows the probability of falling between these two values — in either order, this calculator sorts them automatically.' },
+          { name: 'Enter a percentile', text: 'A separate row works backward from a percentile (0 to 100) to the value at that point in the distribution.' },
+          { name: 'Read the chart', text: 'The bar shows where your value\'s z-score falls against five bands from far below to far above average, the same bands the z-score calculator uses.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Every probability here comes from the standard normal CDF, Φ, applied to a z-score.',
+        expression: 'z = (x − μ) ÷ σ\nP(X < x) = Φ(z)\nP(X > x) = 1 − Φ(z)\nP(a < X < b) = Φ(zᵦ) − Φ(zₐ)\nx at percentile p = μ + Φ⁻¹(p ÷ 100) × σ',
+        terms: [
+          { symbol: 'μ (mean), σ (standard deviation)', meaning: 'The two numbers that fully describe this normal distribution.' },
+          { symbol: 'Φ', meaning: 'The standard normal cumulative distribution function — the probability of being below a given z-score.' },
+          { symbol: 'Φ⁻¹', meaning: 'Its inverse: the z-score below which a given probability of the distribution falls.' }
+        ],
+        note: 'P(X > x) is computed directly as its own tail probability, not as 1 − Φ(z) — the two give the same mathematical answer, but computing the tail directly avoids losing precision for a value far out in the tail, where Φ(z) rounds to a number indistinguishable from 1 in ordinary floating-point arithmetic.'
+      },
+      workedExample: {
+        intro: 'IQ scores are modeled as normal with mean μ = 100 and standard deviation σ = 15. Find how a score of x = 115 compares, and the 90th-percentile score.',
+        rows: [
+          { label: 'z = (115 − 100) ÷ 15', value: '1' },
+          { label: 'P(X < 115) = Φ(1)', value: '≈ 0.8413, i.e. ≈ 84.13%' },
+          { label: 'P(X > 115) = 1 − Φ(1), computed directly', value: '≈ 0.1587, i.e. ≈ 15.87%' },
+          { label: 'P(85 < X < 115) (within 1 standard deviation of the mean)', value: '≈ 0.6827, i.e. ≈ 68.27%' },
+          { label: 'Score at the 90th percentile: 100 + Φ⁻¹(0.90) × 15', value: '≈ 119.22' }
+        ],
+        result: 'z = 1, P(X < 115) ≈ 84.13%, 90th percentile ≈ 119.22',
+        explanation: 'A score of 115 sits exactly one standard deviation above average — the same "68-95-99.7 rule" behind the ≈ 68.27% figure for the range 85 to 115, the well-known statement that about 68% of a normal distribution falls within one standard deviation of its mean.'
+      },
+      watchOut: [
+        { title: 'This assumes the data actually is approximately normal', body: 'Not every real-world measurement is — heavily skewed data (like income) is a common example where a normal-distribution model gives a misleading answer. Check that assumption before trusting the result.' },
+        { title: 'A and b are automatically sorted for you', body: 'If you enter a larger number in the "lower bound" field than the "upper bound" field, this calculator swaps them before calculating P(a < X < b), rather than returning a nonsensical negative probability.' },
+        { title: 'The standard deviation must be a positive number', body: 'A standard deviation of zero would mean every value is identical (no distribution at all), and a negative one is not mathematically meaningful. This calculator shows no answer for either.' },
+        { title: 'The percentile field is clamped between 0.01% and 99.99%', body: 'A value of exactly 0% or 100% would correspond to negative or positive infinity, which has no useful numeric answer, so this calculator treats anything at or beyond those limits as the nearest valid percentage.' },
+        { title: 'Deep-tail probabilities are computed directly, never by subtracting from 1', body: 'For an extreme value (several standard deviations out), computing P(X > x) as "1 minus a number very close to 1" would lose almost all of its meaningful digits. This calculator computes that tail probability directly instead, the same approach this site\'s p-value calculator uses.' }
+      ],
+      references: [
+        { label: 'OpenStax, Introductory Statistics 2e, §6.1 The Standard Normal Distribution', url: 'https://openstax.org/books/introductory-statistics-2e/pages/6-1-the-standard-normal-distribution' },
+        { label: 'NIST/SEMATECH e-Handbook of Statistical Methods, §1.3.6.6.1 Normal Distribution', url: 'https://www.itl.nist.gov/div898/handbook/eda/section3/eda3661.htm' },
+        { label: 'Wolfram MathWorld, Normal Distribution', url: 'https://mathworld.wolfram.com/NormalDistribution.html' }
+      ]
+    },
+    inputs: [
+      { id: 'mean', label: 'Mean (μ)', type: 'number', placeholder: '100', defaultValue: 100, step: 1 },
+      { id: 'standardDeviation', label: 'Standard deviation (σ)', type: 'number', placeholder: '15', defaultValue: 15, step: 1, min: 0 },
+      { id: 'x', label: 'Value (x)', type: 'number', placeholder: '115', defaultValue: 115, step: 1 },
+      { id: 'lowerBound', label: 'Range lower bound (a)', type: 'number', placeholder: '85', defaultValue: 85, step: 1 },
+      { id: 'upperBound', label: 'Range upper bound (b)', type: 'number', placeholder: '115', defaultValue: 115, step: 1 },
+      { id: 'percentile', label: 'Percentile', type: 'percent', placeholder: '90', defaultValue: 90, step: 1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'pLessThanX',
+      headlineLabel: 'P(X < x)',
+      outputs: [
+        { id: 'pLessThanX', label: 'P(X < x)', format: 'significant' },
+        { id: 'pGreaterThanX', label: 'P(X > x)', format: 'significant' },
+        { id: 'zScore', label: 'Z-score of x', format: 'significant' },
+        { id: 'pBetween', label: 'P(a < X < b)', format: 'significant' },
+        { id: 'xAtPercentile', label: 'Value at the chosen percentile', format: 'significant' }
+      ],
+      groups: [
+        { inputs: ['mean', 'standardDeviation'] },
+        { inputs: ['x'] },
+        { title: 'A range (optional)', inputs: ['lowerBound', 'upperBound'], optional: true },
+        { title: 'A percentile, worked backward (optional)', inputs: ['percentile'], optional: true }
+      ],
+      visual: {
+        type: 'rangeBar',
+        value: 'zScore',
+        bands: [
+          { label: 'Far below average', min: -4, max: -2 },
+          { label: 'Below average', min: -2, max: -1 },
+          { label: 'Typical (within 1 SD)', min: -1, max: 1 },
+          { label: 'Above average', min: 1, max: 2 },
+          { label: 'Far above average', min: 2, max: 4 }
+        ],
+        title: 'Where x falls',
+        valueLabel: 'Z-score of x'
+      }
+    },
+    seo: {
+      title: 'Normal Distribution Calculator – Probability & Percentile',
+      description: 'Free normal distribution calculator. Find P(X < x), P(X > x), P(a < X < b), the z-score, and the value at any percentile, from a mean and standard deviation.',
+      faq: [
+        { question: 'How do I find a probability from a normal distribution?', answer: 'Convert the value to a z-score, z = (x − μ) ÷ σ, then look up (or compute directly) the standard normal CDF at that z. For μ = 100, σ = 15, x = 115: z = 1, and P(X < 115) ≈ 84.13%.' },
+        { question: 'How do I find the value at a given percentile?', answer: 'Use the inverse CDF: x = μ + Φ⁻¹(p ÷ 100) × σ. For the 90th percentile with μ = 100, σ = 15, that is 100 + 1.2816 × 15 ≈ 119.22.' },
+        { question: 'What is the 68-95-99.7 rule?', answer: 'For any normal distribution, about 68% of values fall within 1 standard deviation of the mean, about 95% within 2, and about 99.7% within 3 — this calculator computes the exact figure for any range you enter, not just those three.' },
+        { question: 'What is the difference between this and the z-score calculator?', answer: 'The z-score calculator solves z = (x − μ) ÷ σ for any one of its four variables. This calculator takes that same z-score further, converting it into actual probabilities and percentiles.' },
+        { question: 'Why is P(X > x) not just 1 − P(X < x) here?', answer: "Mathematically they are equal, but this calculator computes P(X > x) directly rather than subtracting from 1, which avoids a precision loss that shows up specifically for values several standard deviations from the mean." },
+        { question: 'What if my lower bound is bigger than my upper bound?', answer: 'This calculator automatically swaps them before calculating the probability between them, so the range is always treated correctly regardless of which order you typed them in.' },
+        { question: 'Can the standard deviation be 0 or negative?', answer: 'No — a standard deviation of 0 means there is no spread at all (every value would be identical), and a negative one is not meaningful. This calculator shows no answer for either.' },
+        { question: 'Does this assume my data is normally distributed?', answer: 'Yes — every calculation on this page assumes the data genuinely follows a normal distribution. For skewed data, a percentile calculated directly from the raw data (see the percentile calculator) is more honest than one derived from a normal-distribution assumption.' }
+      ]
+    },
+    compute(values) {
+      const { mean, standardDeviation, x, percentile } = values;
+      const noAnswer = { pLessThanX: NaN, pGreaterThanX: NaN, zScore: NaN, pBetween: NaN, xAtPercentile: NaN };
+      if (!(standardDeviation > 0)) return noAnswer;
+      const zScore = (x - mean) / standardDeviation;
+      const pLessThanX = normalCDF(zScore);
+      const pGreaterThanX = normalSF(zScore);
+
+      const lo = Math.min(values.lowerBound, values.upperBound);
+      const hi = Math.max(values.lowerBound, values.upperBound);
+      const zLo = (lo - mean) / standardDeviation;
+      const zHi = (hi - mean) / standardDeviation;
+      // P(a < X < b) as a difference of two tails on the SAME side of the mean, never a difference of
+      // two values both close to 1 (or both close to 0 in magnitude but on opposite sides) — see the
+      // module comment on normalSF in lib/distributions.ts for why this ordering avoids cancellation.
+      const pBetween = zLo >= 0 && zHi >= 0 ? normalSF(zLo) - normalSF(zHi) : normalCDF(zHi) - normalCDF(zLo);
+
+      const clampedPercentile = Math.min(99.99, Math.max(0.01, percentile));
+      const xAtPercentile = mean + normalInverseCDF(clampedPercentile / 100) * standardDeviation;
+
+      return { pLessThanX, pGreaterThanX, zScore, pBetween, xAtPercentile };
     }
   }
 ];

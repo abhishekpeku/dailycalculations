@@ -681,3 +681,83 @@ either.
 - [x] Spot-check the 5 pages + updated `/categories/statistics` + sitemap on a local dev server, kill it
 - [x] Update `mdFiles/STATUS.md` (row 40–42 + session log)
 - [x] Mark PR ready
+
+### Type decisions (run 3)
+
+| Calculator | Type | Why | Visual |
+|---|---|---|---|
+| probability-calculator | B | Two independent event probabilities combined five ways (AND/OR/NOT/exactly-one/neither) has no single invertible equation, so `solver` does not fit. **Inputs are percent, not decimal, stated explicitly** (the task's required "pick one and say so"): both `probabilityA`/`probabilityB` are `type: 'percent'`, consistent with every other probability-shaped input already in this file (`confidenceLevel`, `sampleProportion`). **Independence is a stated assumption, not a detected property**: the concept section and a dedicated watch-out item say plainly that P(A and B) = P(A) × P(B) only holds for independent events, and that dependent events need a conditional probability this calculator does not compute. Clamped to [0, 100] like every other percent field with no kit-level `max`. | compareBars: P(A and B) / P(A or B) / P(neither) |
+| permutation-calculator | B | nPr is a count, not a solvable equation — "solve for r given n and the count" has no closed form worth a widget. **Exactness via `BigInt`, same precedent as `factorial-calculator`** (step 40 run 3): `nPrBig` multiplies r descending BigInt factors directly, rather than computing `n!/(n-r)!` with two potentially enormous factorials, so a large n with a small r (say n=1000, r=2) stays instant. **r > n is 0, not "undefined"**: this is the standard combinatorial convention (Wolfram MathWorld's Permutation entry states it explicitly), not a special case invented for this page, matching the task's "handle r > n ... honestly" instruction with an actual citation rather than an arbitrary choice. **With/without repetition shown together, no mode selector needed**: nPr (without repetition) and nʳ (with repetition) are two independent, always-valid calculations from the same n/r inputs — unlike normal-distribution-calculator's case below, there is no format conflict (both are exact integers), so both ship as two always-visible output pairs rather than a toggle, exactly the "only if it fits cleanly" bar the task set. **Past `Number.MAX_SAFE_INTEGER`, the headline is 'significant' format (scientific notation) with an explicit watch-out note**, never a silently-wrong rounded double passed off as exact — the same honesty convention `factorial-calculator` already established — while the separate `digitCount` output (from the BigInt's own string length) stays exact at any size. | compareBars: nPr (without repetition) / nʳ (with repetition) |
+| combination-calculator | B | Same reasoning as permutation-calculator: nCr is a count with no solvable inverse. **nCr computed as `nPrBig(n,r) / r!`, not `n!/(r!(n-r)!)` directly** — avoids a needlessly huge intermediate `n!` when r is small relative to n, and the division is always exact (nCr is provably a whole number, a standard combinatorial fact, so BigInt's floor-division never actually floors). **Cross-checked against Pascal's identity** (`C(n,r) = C(n-1,r-1) + C(n-1,r)`) for five (n, r) pairs in `verify_run3.mjs`, per the task's explicit instruction, not just against a single known constant. **With-repetition variant is the multiset coefficient `C(n+r-1, r)`**, special-cased at n=0 (r=0 → 1, the empty selection even from zero types; r>0 → 0, since `n+r-1` would be -1, not a meaningful input to `nCrBig`) rather than letting that edge fall through to the general formula incorrectly. | compareBars: nCr (without repetition) / with-repetition (multiset) |
+| binomial-distribution-calculator | B | P(X=k)/P(X≤k)/P(X≥k) from (n, p, k) has no solver shape (three outputs from three inputs, not one invertible equation). **PMF in log space** (`logChoose(n,k) = logGamma(n+1) - logGamma(k+1) - logGamma(n-k+1)`, then `exp(logChoose + k·ln(p) + (n-k)·ln(1-p))`), reusing `lib/distributions.ts`'s own newly-exported `logGamma` rather than reimplementing it — exactly the task's instruction, and the same technique that file already uses for the Student's t distribution. **CDF and SF each computed directly from the regularized incomplete beta function via the standard binomial-beta identity** (NIST DLMF §8.17.5: `P(X≤k) = I_(1-p)(n-k, k+1)`, `P(X≥k) = I_p(k, n-k+1)`), reusing the same newly-exported `incompleteBeta` — **SF is never derived as `1 - CDF`**, satisfying the task's explicit instruction and avoiding the exact cancellation bug run 2's pre-merge fix found in `normalCDF`. **p=0/p=1 edge cases**: the CDF/SF formulas need no special-casing at all (`incompleteBeta`'s own `x<=0 → 0`/`x>=1 → 1` boundary checks make `1-p=1` or `p=0` resolve correctly automatically), but the PMF does need explicit guards, since `0 × log(0)` would otherwise be `NaN` rather than the correct `0` or `1`. **Tiny probabilities floored and shown in scientific notation**, reusing the exact `floorTinyProbability`/`P_VALUE_FLOOR` helper p-value-calculator already defines in this file, not a second copy of the same logic. | rangeBar: P(X=k) against the same significance bands as p-value-calculator (a binomial tail is frequently used as one) |
+| normal-distribution-calculator | B | Given μ, σ and a value/range/percentile, the five quantities asked for (P(X<x), P(X>x), z, P(a<X<b), x-at-percentile) are each independently computable from the same inputs with no conflict — so, unlike `confidence-interval-calculator`'s z-vs-t mode toggle, **no mode selector was needed at all**: every output is always shown, computed directly from `mean`/`standardDeviation`/`x`/`lowerBound`/`upperBound`/`percentile`, which are all independent fields rather than mutually exclusive choices. This sidesteps the kit's "no per-row conditional formatting" limitation noted in the Parked list (and run 2's margin-of-error-calculator scope decision) entirely, rather than working around it. **Reuses `normalCDF`/`normalSF`/`normalInverseCDF` directly** (the task's explicit instruction), no duplicated distribution math. **P(a<X<b) computed as a same-side tail difference**, exactly as the task specifies: when both bounds' z-scores are ≥ 0, `normalSF(zLo) - normalSF(zHi)` (both small quantities, no "1 minus something near 1" cancellation); otherwise `normalCDF(zHi) - normalCDF(zLo)`. **a/b auto-sorted** (`Math.min`/`Math.max`) rather than returning a nonsensical negative probability if entered in the "wrong" order — stated explicitly in a watch-out item. **σ ≤ 0 → honest `NaN` for every output**, registered in `calculators.spec.ts`'s `KNOWN_NON_FINITE` (the kit's automated edge case sets `standardDeviation` to its own `min: 0`), the same pattern `z-score-calculator` established for a zero standard deviation. | rangeBar: the z-score of x, against the same five bands `z-score-calculator` uses |
+
+### Verification (run 3)
+
+Every number recomputed independently in `verify_run3.mjs` (scratchpad, plain Node, no app imports)
+*before* any content was written, then diffed against the shipped `compute()` output via the
+regenerated snapshot file — 0 mismatches:
+
+- **probability-calculator** (P(A)=70%, P(B)=60%, independent): P(both)=42%, P(at least one)=88%,
+  P(not A)=30%, P(exactly one)=46%, P(neither)=12%; cross-checked P(A or B) = 1 − P(neither) (0.88 =
+  1 − 0.12) as an independent algebraic identity, not just the direct formula.
+- **permutation-calculator**: 5P3 = 60 (cross-checked against 5!/2! via a second, independent
+  factorial-based computation), 5³ = 125 with repetition. The "past `Number.MAX_SAFE_INTEGER`" watch-out
+  example, 25P20, is exactly **129,260,083,694,424,883,200,000** (24 digits) — confirmed by comparing
+  the exact `BigInt` string against `Number(bigint)`'s rounded value, which differs starting partway
+  through the digits, concretely demonstrating the honesty claim in the copy (not just asserting it).
+- **combination-calculator**: 52C5 = **2,598,960** (poker hands), cross-checked via
+  `nPr(52,5)/5! = 311,875,200/120 = 2,598,960`. Pascal's identity `C(n,r) = C(n-1,r-1) + C(n-1,r)`
+  checked and matched for (10,3), (20,7) and (49,6). 49C6 = 13,983,816 (lottery FAQ figure). The
+  "past `Number.MAX_SAFE_INTEGER`" watch-out example, 60C30, is exactly **118,264,581,564,861,424**
+  (18 digits) — `Number()` of it differs in its last two digits, again concretely demonstrated, not
+  asserted. Multiset C(3+2-1,2) = C(4,2) = 6 (the ice cream example).
+- **binomial-distribution-calculator** (n=10, p=50%, k=6): P(X=6) = 210/1024 = **0.205078125**,
+  P(X≤6) = 848/1024 = **0.828125**, P(X≥6) = 386/1024 = **0.376953125** — all exact fractions since
+  p=0.5, cross-checked via a direct 11-term summation of the PMF (not via the incomplete-beta
+  identity) as a genuinely independent method; mean 5, SD ≈ 1.5811388300841898. The large-n FAQ
+  figure (n=1000, p=50%, P(X≥600)) was verified against **exact BigInt rational arithmetic**
+  (summing `C(1000,k)` for k=600..1000 as exact integers over the exact denominator `2¹⁰⁰⁰`, converted
+  to a 60-digit decimal string with no floating point involved at any step) —
+  **0.000000000136423207803300921280439044842779936858403383608042**, i.e. ≈ **1.364232078×10⁻¹⁰**.
+  The shipped `incompleteBeta`-based `binomialSf` gives 1.364232078033285×10⁻¹⁰ against this exact
+  reference's 1.364232078033009×10⁻¹⁰ — agreement to 10 significant digits, consistent with the
+  module's own established relative-error bound.
+- **normal-distribution-calculator** (μ=100, σ=15, x=115): z=1 exactly; cross-checked against
+  published 16-digit standard normal table values (not derived from this file's own code): Φ(1) =
+  0.8413447460685429, the upper tail 1−Φ(1) = 0.15865525393145707 (quoted directly as a published
+  constant, not computed via subtraction), P(85<X<115) = 2Φ(1)−1 = 0.6826894921370859 (the familiar
+  "68" in the 68-95-99.7 rule), and the published 90th-percentile z-critical value 1.2815515655446008
+  gives x = 100 + 1.2815515655446008×15 = 119.22327348316901 at the 90th percentile. The shipped
+  snapshot matches every one of these to its full displayed precision (0.8413447461, 0.1586552539,
+  0.6826894921, 119.2232735).
+
+**Data-integrity check**, run programmatically against the live data module for all 5 new
+calculators (`check_integrity_run3_tmp.mjs`, project root, deleted after use): 98 total calculators
+(up from 93), 0 duplicate ids, 0 broken `related` ids, 0 self-references, 0 new duplicate aliases
+(the one pre-existing collision, "house loan emi calculator" on `emi-calculator`/`mortgage-calculator`,
+predates this run and is untouched); every new `seo.title` ≤ 60 characters and `seo.description` ≤
+160 characters (caught and fixed one 161-character description on `normal-distribution-calculator`
+before shipping), 8 FAQs and 4 aliases/4 related ids each.
+
+`npm test` 458/458 (up from 453), `npm run build` (127 static pages), `npm run lint -- --ignore-pattern
+".open-next/**" --ignore-pattern ".claude/**"` all pass. All 5 pages spot-checked on a local dev
+server: H1, every v2 section id (concept, how-to-use, formula, worked-example, watch-out, faq,
+references, related), exactly one JSON-LD `<script>` tag per page; `/categories/statistics` links to
+all 5 new ids and `sitemap.xml` lists all 5; dev server killed and port 3000 confirmed free
+afterward. `next-env.d.ts`/`tsconfig.tsbuildinfo` reverted before committing (the same stray
+build-time diff noted in every previous run).
+
+### Parked (new, this run)
+
+- **`permutation-calculator`/`combination-calculator` cap at n = 1,000** (matching
+  `factorial-calculator`'s own cap), and **`binomial-distribution-calculator` caps at n = 1,000,000,000**
+  (log-space/incomplete-beta evaluation has no real numerical reason to cap lower than that, so the
+  cap there is a generous sanity bound, not a precision limit). Neither cap is expected to be hit in
+  realistic use; both are stated honestly in their own watch-out items anyway, per this project's
+  existing convention of disclosing every practical limit.
+- **`normal-distribution-calculator`'s range and percentile fields are always shown, not optional
+  toggles** — a deliberate scope choice (see the type-decision table above), not an oversight. A
+  future step could add a `max`-aware percentile field once the kit grows one, but that gap already
+  exists everywhere else `targetPercentile`/`confidenceLevel` are clamped manually
+  (percentile-calculator, confidence-interval-calculator), so it is not a new gap introduced here.

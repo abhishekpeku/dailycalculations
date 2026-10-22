@@ -644,6 +644,50 @@ exports[`compute() snapshots > discount-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > distance-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "x1": 1,
+      "y1": 2,
+      "x2": 4,
+      "y2": 6
+    },
+    "outputs": {
+      "distance": 5,
+      "deltaX": 3,
+      "deltaY": 4
+    }
+  },
+  "typical": {
+    "inputs": {
+      "x1": 2,
+      "y1": 3,
+      "x2": 6,
+      "y2": 9
+    },
+    "outputs": {
+      "distance": 7.211102551,
+      "deltaX": 4,
+      "deltaY": 6
+    }
+  },
+  "edge": {
+    "inputs": {
+      "x1": 0,
+      "y1": 0,
+      "x2": 0,
+      "y2": 0
+    },
+    "outputs": {
+      "distance": 0,
+      "deltaX": 0,
+      "deltaY": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > electricity-bill-calculator 1`] = `
 {
   "default": {
@@ -1724,6 +1768,56 @@ exports[`compute() snapshots > meeting-cost-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > midpoint-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "x1": 2,
+      "y1": 3,
+      "x2": 8,
+      "y2": 11
+    },
+    "outputs": {
+      "midX": 5,
+      "midY": 7,
+      "distanceAB": 10,
+      "distanceAToMid": 5,
+      "distanceMidToB": 5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "x1": 3,
+      "y1": 5,
+      "x2": 12,
+      "y2": 17
+    },
+    "outputs": {
+      "midX": 7.5,
+      "midY": 11,
+      "distanceAB": 15,
+      "distanceAToMid": 7.5,
+      "distanceMidToB": 7.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "x1": 0,
+      "y1": 0,
+      "x2": 0,
+      "y2": 0
+    },
+    "outputs": {
+      "midX": 0,
+      "midY": 0,
+      "distanceAB": 0,
+      "distanceAToMid": 0,
+      "distanceMidToB": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > miles-to-kilometers-converter 1`] = `
 {
   "default": {
@@ -2662,6 +2756,53 @@ exports[`compute() snapshots > sleep-time-calculator 1`] = `
       "wakeTimeDecimal": 1.5,
       "wakeHour": 1,
       "wakeMinute": 30
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > slope-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "x1": 1,
+      "y1": 2,
+      "x2": 4,
+      "y2": 8
+    },
+    "outputs": {
+      "slope": 2,
+      "angle": 63.43494882,
+      "yIntercept": 0,
+      "distance": 6.708203932
+    }
+  },
+  "typical": {
+    "inputs": {
+      "x1": 2,
+      "y1": 3,
+      "x2": 6,
+      "y2": 12
+    },
+    "outputs": {
+      "slope": 2.25,
+      "angle": 66.03751103,
+      "yIntercept": -1.5,
+      "distance": 9.848857802
+    }
+  },
+  "edge": {
+    "inputs": {
+      "x1": 0,
+      "y1": 0,
+      "x2": 0,
+      "y2": 0
+    },
+    "outputs": {
+      "slope": "NaN",
+      "angle": "NaN",
+      "yIntercept": "NaN",
+      "distance": 0
     }
   }
 }

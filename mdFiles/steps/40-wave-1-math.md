@@ -73,7 +73,26 @@ fresh against the v2 template (`mdFiles/calculator-template-v2.md`) and the `add
   - [x] `npm test` (326/326), `npm run build` (107 static pages), `npm run lint`
   - [x] Spot-check the 5 pages + `/categories/math` + sitemap on a local server, kill the server
   - [x] Update `mdFiles/STATUS.md`, open/ready the PR
-- Run 6: slope, distance between two points, midpoint, scientific-calculator
+- Run 6 (this run, final math run): **slope-calculator, distance-calculator, midpoint-calculator,
+  scientific-calculator**
+  - [x] slope-calculator (type B — breakdown; two points, slope/angle/y-intercept/distance,
+    vertical line returns `NaN` slope honestly while the angle stays a real 90°)
+  - [x] distance-calculator (type B — breakdown; two points, distance formula as the Pythagorean
+    theorem applied to Δx/Δy)
+  - [x] midpoint-calculator (type B — breakdown; two points, midpoint plus the equal
+    distance-to-midpoint from each endpoint as a self-check visual)
+  - [x] scientific-calculator (type C — custom component, like `pomodoro-timer`/
+    `timezone-meeting-planner`; a small hand-written expression parser, no `eval`/`new Function`;
+    decision and scope writeup below)
+  - [x] Snapshot tests (`npm run test:update`), `KNOWN_NON_FINITE` entry for slope-calculator
+    (both points identical — no line, so no slope/angle/intercept, but distance is still a
+    legitimate 0)
+  - [x] Parser unit tests (`lib/scientificCalc.spec.ts`, 22 tests — precedence, right-assoc power,
+    factorial, deg/rad trig, domain guards, malformed input)
+  - [x] `npm test` (351/351, up from 326), `npm run build` (111 static pages, up from 107),
+    `npm run lint` — all pass
+  - [x] Spot-check the 4 pages + `/categories/math` + sitemap on a local server, kill the server
+  - [x] Update `mdFiles/STATUS.md`, mark the PR ready
 
 **Dedup decision (run 1):** the plan's list also names "mixed number" and "proportion" as separate
 calculators. Both are absorbed into run 1's pages instead of getting their own: fraction-calculator
@@ -155,6 +174,15 @@ review. Next session picks up run 5: triangle, circle, area, volume, surface are
 | area-calculator | B, with a `mode` shape menu | Five shapes (square, rectangle, triangle, circle, trapezoid) each use a different, non-interchangeable area formula from a shared pool of up to three generic length inputs (`dim1/dim2/dim3`) — not one rearrangeable equation, so no solver. Deliberately does **not** also compute perimeter: a triangle's area formula here only takes a base and a height, not all three sides, so a perimeter figure would have to either silently assume a right triangle or fabricate a third side — `watchOut` names this limit and cross-links to the new `triangle-calculator` (which does take all three sides) for anyone who actually wants a perimeter. | LogScale: the resulting area against three cited everyday areas (an ISO 216 A4 sheet, a FIBA basketball court, a FIFA-recommended soccer pitch) — chosen over a CompareBars of `dim1`/`dim2` because those two inputs are not even both used in every mode (square and circle only take one), while "how big is this area, really" is a meaningful question in every mode |
 | volume-calculator | B, with a `mode` shape menu | Same reasoning as `area-calculator`, one dimension up: cube, rectangular box, cylinder, sphere and cone each have a distinct volume formula from the same shared `dim1/dim2/dim3` length-input pool (radius/height or length/width/height depending on shape), picked by mode rather than solved. | LogScale: the resulting volume against three cited everyday volumes (a 355 mL drink can, a US gallon — 3.785411784 L exactly, per NIST — and a FINA/World Aquatics-standard Olympic pool at 50 m × 25 m × 2 m minimum = 2,500 m³) |
 | surface-area-calculator | B, with a `mode` shape menu | Same five solids and the same `dim1/dim2/dim3` inputs as `volume-calculator` (deliberately kept in lockstep, so the two pages read as a matched pair and share one mental model), but each solid's surface-area formula instead of its volume formula — again not a single rearrangeable equation. | LogScale: the resulting surface area against the same three area benchmarks `area-calculator` uses (A4 sheet, basketball court, soccer pitch), for the same reason — a surface area is still fundamentally "how much area," so the same benchmark set applies honestly |
+
+## Type decisions (run 6)
+
+| Calculator | Type | Why | Visual |
+|---|---|---|---|
+| slope-calculator | B | `m = (y₂−y₁)÷(x₂−x₁)` over two free points is a 5-quantity relationship (x1,y1,x2,y2,m) with no single "any field can be the auto one" solve — fixing 4 of the 5 and back-solving a coordinate is ambiguous (two points, e.g. mirrored across the known one, satisfy the same slope), the same non-invertibility reasoning `triangle-calculator` and `circle-calculator` used. **Vertical-line handling, the task's required decision point**: slope and y-intercept return `NaN` when `x1 === x2` (division by zero is genuinely undefined, not a very large or infinite number), but the angle is computed directly from `atan2(Δy, Δx)` rather than from the slope, so a vertical line still reports an honest 90° instead of also going blank — the one figure of the four that survives a vertical line. Angle is normalized to `[0°, 180°)` via `((raw % 180) + 180) % 180` so it is direction-independent (swapping the two points gives the same angle), matching MathWorld's own `m = tan θ` definition. `KNOWN_NON_FINITE` registered for the one true degenerate case, both points identical (the automated edge case, since none of the 4 inputs has a `min`) — distance is still a legitimate finite 0 there, same "a zero measurement is a real answer" precedent `area-calculator` set in run 5. | CompareBars: `|Δx|` (run) vs `|Δy|` (rise), via a `derive` key since neither is a `compute()` output on its own |
+| distance-calculator | B | Same non-invertibility reasoning as slope: `d = √(Δx²+Δy²)` over 4 free coordinates can't nominate one field as "the auto one" without ambiguity (an unspecified coordinate solved from a known distance has two mirror-image answers, with no "positive" convention the way a leg length has in `pythagorean-theorem-calculator`). Deliberately kept as the thinnest possible page — distance, `|Δx|`, `|Δy|` — so it reads as `pythagorean-theorem-calculator`'s coordinate-geometry sibling rather than duplicating slope/midpoint content; cross-linked to both rather than re-explaining them. No `KNOWN_NON_FINITE` needed: identical points give a legitimate finite 0, the same "zero is a real degenerate answer" precedent as the other geometry calculators. | CompareBars: `|Δx|` / `|Δy|` / distance — the same leg-a/leg-b/hypotenuse shape as `pythagorean-theorem-calculator`'s visual, named explicitly in the content as the same triangle |
+| midpoint-calculator | B | `Mx=(x1+x2)÷2`, `My=(y1+y2)÷2` are each individually a clean 3-variable invertible relationship (exactly `average-calculator`'s n=2 case), but the two axes can't share one solver panel without an ambiguous back-solve (knowing `Mx` and `x1` alone doesn't pin down `x2` vs. some other pair averaging to the same midpoint without a third constraint) — same reasoning class as slope/distance. Added `distanceAToMid`/`distanceMidToB` as a honest self-check bonus (always exactly equal, by construction) rather than letting the page end at just two coordinates. No `KNOWN_NON_FINITE` needed — every output is finite for any input, including identical points (midpoint = that point, distance 0). | CompareBars: distance from Point A to the midpoint vs. midpoint to Point B — deliberately always equal, a visual proof the midpoint is correct rather than just two more numbers |
+| scientific-calculator | C (custom component) | Does not fit `solver` (no single rearrangeable equation — a free-form expression has no fixed set of variables at all) or the type-B `breakdown` widget (a fixed `inputs` array can't represent an open-ended typed expression). Follows the existing type-C precedent exactly (`pomodoro-timer`, `timezone-meeting-planner`, `currency-converter`, `character-counter`/`hashtag-counter`): `inputs: []`, `compute() { return {}; }`, a hardcoded `slug === 'scientific-calculator'` branch in `app/[locale]/calculators/[slug]/page.tsx`, and full v2 content (concept/howTo/formula/workedExample/watchOut/FAQ/references) exactly as those custom tools carry. **Scope check against the task's "stop and park if it needs its own step" instruction**: the new code is `lib/scientificCalc.ts` (a ~200-line hand-written recursive-descent parser: tokenizer, operator precedence, no `eval`/`new Function` anywhere) plus `components/ScientificCalculator.tsx` (a ~180-line button-grid widget, the same size class as `PomodoroTimer.tsx`/`TextToolsCalculator.tsx`, both ~160-190 lines) — comparable to the existing type-C tools, not larger, so it was built in this run rather than parked. Supports `+ − × ÷ ^` (right-associative, so `2^3^2 = 512`), parentheses, implicit multiplication (`2π`, `3(4+5)`), unary minus binding looser than `^` (`−2^2 = −4`, the standard algebra convention), `sin/cos/tan` with a Deg/Rad toggle, `asin/acos/atan` (domain-guarded, returns `NaN` outside [−1, 1] rather than a wrong number), `ln`/`log` (natural/base-10, non-positive arguments refuse), `√` (negative radicand refuses), `π`, `e`, and `!` (nonnegative integers only; refuses non-integers and negatives; honestly overflows to `Infinity` past 170!, the same threshold `factorial-calculator` established in run 3). 22 unit tests in `lib/scientificCalc.spec.ts` cover precedence, right-associativity, the deg/rad toggle, every domain guard, and malformed input (throws rather than guessing). | None — a free-form expression tool has no single "the result" scale to chart; the live numeric preview under the display is the result, matching `PomodoroTimer`/`TextToolsCalculator`'s own precedent of no `LogScale`/`CompareBars` either |
 
 ## Verification
 
@@ -403,3 +431,46 @@ scientific notation, exponent; run 3: square root, cube root, logarithm, factori
 prime factorization, long division, quadratic formula, Pythagorean theorem; run 5: triangle, circle,
 area, volume, surface area). PR #19 ready for review. Next session picks up run 6: slope, distance
 between two points, midpoint, scientific-calculator.
+
+**Run 6:** every number in the copy (the default/worked-example/FAQ figures for all three
+coordinate-geometry calculators, plus the scientific-calculator worked example) was recomputed
+independently in `verify_run6.mjs` (scratchpad, plain JavaScript, no app imports) — 35 checks, 0
+mismatches, including the vertical-line case (slope/y-intercept `NaN`, angle exactly 90°), the
+identical-points degenerate case (slope/angle `NaN`, distance a legitimate 0), and the scientific
+worked example `sin(30°) + log(100) × 5! = 240.5`. The scientific-calculator's parser additionally
+got 22 dedicated unit tests (`lib/scientificCalc.spec.ts`) covering operator precedence,
+right-associative `^`, factorial binding, the deg/rad toggle on both forward and inverse trig,
+every domain guard (asin/acos out of [−1,1], ln/log non-positive, sqrt negative, factorial
+non-integer/negative), and malformed input (throws rather than returning a wrong number).
+`npm test` 351/351 (up from 326), `npm run build` (111 static pages, up from 107),
+`npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` all pass. A
+programmatic check across all 83 calculators found 0 broken `related` ids, 0 self-references, and 0
+new duplicate aliases (the one pre-existing collision, "house loan emi calculator" on
+mortgage-calculator/emi-calculator, predates this run). All 4 pages, `/categories/math` and
+`sitemap.xml` spot-checked on a local dev server: H1, every v2 section id, exactly one JSON-LD
+`<script>` per page containing all 4 node types (`WebApplication`, `BreadcrumbList`, `HowTo`,
+`FAQPage`), the correct widget mounted (`breakdown-x1`/`y1`/`x2`/`y2` fields for the three type-B
+calculators, the custom `ScientificCalculator` button grid for the fourth), a
+`?x1=3&y1=1&x2=3&y2=9` vertical-line share-link on slope-calculator returning 200, and both listing
+pages containing all 4 new ids as exact substring matches; dev server killed afterward, port 3000
+confirmed free. References fetched directly and each confirmed (via `WebFetch`) to state the exact
+formula claimed before citing: OpenStax Algebra and Trigonometry 2e §4.1 (slope, including the
+explicit "slope of a vertical line is undefined" statement) and §2.1 (distance formula, midpoint
+formula — confirmed on the same page, re-cited for both distance-calculator and midpoint-calculator
+rather than guessed); OpenStax Prealgebra 2e §2.1 (order of operations, via a corrected search after
+an initial guess of §1.2/§1.9 both 404'd); NIST DLMF §4.2 (logarithm/exponential definitions, reused
+from runs 2–3's citation of the same chapter), §4.14 (trig function definitions) and §4.23 (inverse
+trig functions); Wolfram MathWorld's Slope, Distance and Midpoint pages. No invented statistics or
+benchmarks were needed this run (no LogScale visual), so no benchmark-sourcing section applies.
+
+**Paused 2026-10-22 after run 6 — Wave 1 math is complete.** 29/~29 math calculators done (run 1:
+math category + percentage, percent-change, percent-difference, fraction, ratio; run 2: average,
+weighted average, rounding, scientific notation, exponent; run 3: square root, cube root,
+logarithm, factorial, GCF; run 4: LCM, prime factorization, long division, quadratic formula,
+Pythagorean theorem; run 5: triangle, circle, area, volume, surface area; run 6: slope, distance,
+midpoint, scientific-calculator). PR for this run is ready for review. The math category's own
+`calculator-rollout-plan.md` §4 list is now fully built (the "mixed number"/"proportion" dedup from
+run 1 absorbed those two into fraction-calculator/ratio-calculator rather than separate pages, per
+that run's dedup decision). Next session moves on to the **statistics** part of Wave 1 (a new
+category, following the same just-in-time step-file process this file used), per
+`mdFiles/calculator-rollout-plan.md` §4 and `STATUS.md`'s 40–42 row.

@@ -118,7 +118,7 @@ is why 12-15 run after it.
 | 37 | Batch 3: health (6) | DONE 2026-10-20 | YMYL. Branch `step/37-batch-3-health`, PR #11. All 6 health calculators on v2. See session log. | §3 |
 | 38 | Batch 4: auto + home (12) | **DONE** 2026-10-21 | Branch `step/38-batch-4-auto-home`, PR #13 (ready for review). All 12: car-payment, gas-cost, fuel-cost, ev-charging, commute-cost, toll-cost, concrete, paint, tile, wallpaper, electricity-bill, furniture-fit. See session log. | §3 |
 | 39 | Batch 5: time, travel, work, creator, text, education (18) | **DONE** 2026-10-21 | Branch `step/39-batch-5`, PR #14 (ready for review, no longer draft). All 18: date-difference, age, sleep-time, work-hours, pomodoro-timer, travel-budget, visa-stay-days, currency-converter, timezone-meeting-planner, freelancer-rate, meeting-cost, pto, salary-raise, youtube-earnings, instagram-engagement, character-counter, hashtag-counter, gpa-calculator (C → B). See session log. | §3 |
-| 40–42 | Wave 1: math · statistics · conversion — **NEW calculators, not conversions of existing ones** | **IN PROGRESS** | Absorbs step 24 (math). 5 calculators per agent run. Run 1/~6 **DONE** 2026-10-21: added the `math` category (`data/calculators/index.ts`, `data/calculators/math.ts`, `lib/categoryTheme.ts` orange/`function`) plus percentage-calculator (B), percent-change-calculator (A), percent-difference-calculator (B), fraction-calculator (B), ratio-calculator (A). Branch `step/40-wave-1-math-run-1`, PR #15 (ready for review). Run 2/~6 **DONE** 2026-10-21: average-calculator (B), weighted-average-calculator (B, cross-linked with gpa-calculator), rounding-calculator (B), scientific-notation-calculator (B), exponent-calculator (A). Branch `step/40-wave-1-math-run-2`, PR #16 (ready for review). Run 3/~6 **DONE** 2026-10-22: square-root-calculator (A), cube-root-calculator (A, `Math.cbrt` for real negative roots), logarithm-calculator (A, cross-linked with exponent-calculator), factorial-calculator (B, `BigInt` for exact digit counts), gcf-calculator (B, "How many numbers?" count selector). Branch `step/40-wave-1-math-run-3`, PR #17 (ready for review). **Fix 2026-10-22** (pre-merge review of PR #17): `gcf-calculator` had wrongly reused the `fraction-calculator`/`ratio-calculator` `gcd()` helper, whose `|| 1` fallback made `GCF(0, 0, 12)` compute as `1` instead of `12` and `GCF(0, 0)` as `1` instead of the standard `0`. Fixed with a separate `gcdRaw()` (no fallback) for `gcf-calculator` only; `gcd()` and the other two calculators are untouched. 15/~29 math calculators done. Run 4/~6 **DONE** 2026-10-22: lcm-calculator (B, "How many numbers?" selector, `lcm(a,0)=0`/`lcm(0,0)=NaN` convention), prime-factorization-calculator (B, 6 fixed prime/exponent slots, 10¹² cap), long-division-calculator (B, Euclidean nonnegative-remainder convention), quadratic-formula-calculator (B, two simultaneous roots incl. complex), pythagorean-theorem-calculator (A). Branch `step/40-wave-1-math-run-4`, PR #18 (ready for review). **Post-merge-review fix**: `lcm-calculator`'s `(a*b)/gcd` silently overflowed `Number.MAX_SAFE_INTEGER` on large pairwise-coprime inputs (a wrong digit, not a `NaN`) — fixed by dividing before multiplying plus a `Number.isSafeInteger` refusal guard, audited (and where needed, patched the same way) across `gcf-calculator` and `long-division-calculator` too. 20/~29 math calculators done. Run 5/~6 **DONE** 2026-10-22: triangle-calculator (B, mode menu SSS/SAS/ASA sharing one 6-field input set, law of cosines + Heron's formula, SSA deliberately unsupported), circle-calculator (A, radius ⟷ diameter solver with circumference/area as derived outputs — a circle's single degree of freedom doesn't fit 4 mutual solver variables), area-calculator / volume-calculator / surface-area-calculator (all B, a shared shape-mode-menu + `dim1/dim2/dim3` length-input pattern kept in lockstep across the three pages, each with a LogScale visual against cited everyday area/volume benchmarks). Branch `step/40-wave-1-math-run-5`, PR #19 (ready for review). 25/~29 math calculators done. Next: run 6 — slope, distance between two points, midpoint, scientific-calculator. See session log and `mdFiles/steps/40-wave-1-math.md` for the full run breakdown, type decisions and fix detail. | §4 |
+| 40–42 | Wave 1: math · statistics · conversion — **NEW calculators, not conversions of existing ones** | **IN PROGRESS** | Absorbs step 24 (math). 5 calculators per agent run. Run 1/~6 **DONE** 2026-10-21: added the `math` category (`data/calculators/index.ts`, `data/calculators/math.ts`, `lib/categoryTheme.ts` orange/`function`) plus percentage-calculator (B), percent-change-calculator (A), percent-difference-calculator (B), fraction-calculator (B), ratio-calculator (A). Branch `step/40-wave-1-math-run-1`, PR #15 (ready for review). Run 2/~6 **DONE** 2026-10-21: average-calculator (B), weighted-average-calculator (B, cross-linked with gpa-calculator), rounding-calculator (B), scientific-notation-calculator (B), exponent-calculator (A). Branch `step/40-wave-1-math-run-2`, PR #16 (ready for review). Run 3/~6 **DONE** 2026-10-22: square-root-calculator (A), cube-root-calculator (A, `Math.cbrt` for real negative roots), logarithm-calculator (A, cross-linked with exponent-calculator), factorial-calculator (B, `BigInt` for exact digit counts), gcf-calculator (B, "How many numbers?" count selector). Branch `step/40-wave-1-math-run-3`, PR #17 (ready for review). **Fix 2026-10-22** (pre-merge review of PR #17): `gcf-calculator` had wrongly reused the `fraction-calculator`/`ratio-calculator` `gcd()` helper, whose `|| 1` fallback made `GCF(0, 0, 12)` compute as `1` instead of `12` and `GCF(0, 0)` as `1` instead of the standard `0`. Fixed with a separate `gcdRaw()` (no fallback) for `gcf-calculator` only; `gcd()` and the other two calculators are untouched. 15/~29 math calculators done. Run 4/~6 **DONE** 2026-10-22: lcm-calculator (B, "How many numbers?" selector, `lcm(a,0)=0`/`lcm(0,0)=NaN` convention), prime-factorization-calculator (B, 6 fixed prime/exponent slots, 10¹² cap), long-division-calculator (B, Euclidean nonnegative-remainder convention), quadratic-formula-calculator (B, two simultaneous roots incl. complex), pythagorean-theorem-calculator (A). Branch `step/40-wave-1-math-run-4`, PR #18 (ready for review). **Post-merge-review fix**: `lcm-calculator`'s `(a*b)/gcd` silently overflowed `Number.MAX_SAFE_INTEGER` on large pairwise-coprime inputs (a wrong digit, not a `NaN`) — fixed by dividing before multiplying plus a `Number.isSafeInteger` refusal guard, audited (and where needed, patched the same way) across `gcf-calculator` and `long-division-calculator` too. 20/~29 math calculators done. Run 5/~6 **DONE** 2026-10-22: triangle-calculator (B, mode menu SSS/SAS/ASA sharing one 6-field input set, law of cosines + Heron's formula, SSA deliberately unsupported), circle-calculator (A, radius ⟷ diameter solver with circumference/area as derived outputs — a circle's single degree of freedom doesn't fit 4 mutual solver variables), area-calculator / volume-calculator / surface-area-calculator (all B, a shared shape-mode-menu + `dim1/dim2/dim3` length-input pattern kept in lockstep across the three pages, each with a LogScale visual against cited everyday area/volume benchmarks). Branch `step/40-wave-1-math-run-5`, PR #19 (ready for review). 25/~29 math calculators done. Run 6/~6 **DONE** 2026-10-22 — **the math sub-wave is now complete**: slope-calculator (B, two points → slope/angle/y-intercept/distance; vertical line gives an honest `NaN` slope but a real 90° angle), distance-calculator (B, the distance formula as the Pythagorean theorem applied to two coordinates), midpoint-calculator (B, two points → midpoint, with the equal distance-to-midpoint from each endpoint as a self-check visual), scientific-calculator (type C custom component — `lib/scientificCalc.ts`, a small hand-written recursive-descent expression parser with no `eval`/`new Function`, plus `components/ScientificCalculator.tsx`, the same size class as the existing `pomodoro-timer`/`timezone-meeting-planner` custom tools, so built directly rather than parked as its own step; 22 parser unit tests). Branch `step/40-wave-1-math-run-6`, PR #<PR_NUMBER> (ready for review). 29/~29 math calculators done — the math category itself is now feature-complete per `calculator-rollout-plan.md` §4. Next: the **statistics** part of this row (a new category, not yet started). See session log and `mdFiles/steps/40-wave-1-math.md` for the full run breakdown, type decisions and verification detail. | §4 |
 | 43–45 | Wave 2: construction · food · sports | TODO | | §4 |
 | 46–47 | Wave 3: physics · chemistry | TODO | Needs 30 + 31. | §4 |
 | 48–49 | Wave 4: biology · ecology + fun | TODO | Absorbs steps 23, 25, 26 where they fit. | §4 |
@@ -1420,6 +1420,69 @@ calculator was built, updated with the full run-5 summary, and taken off draft v
 once everything above passed. See `mdFiles/steps/40-wave-1-math.md`'s "Type decisions (run 5)" and
 "Verification" sections for the full writeup. Next session picks up run 6: slope, distance between
 two points, midpoint, scientific-calculator.
+
+**2026-10-22 — step 40, Wave 1: math, run 6/6 (final math run — 4 new calculators).** Branch
+`step/40-wave-1-math-run-6` from `origin/master`. Added 4 calculators to the existing `math`
+category (`data/calculators/math.ts`) and appended each id to `calculatorOrder`
+(`data/calculators/index.ts`):
+
+- **slope-calculator** (type B): two points → slope, angle of inclination, y-intercept and the
+  distance between them. A vertical line (`x1 === x2`) returns `NaN` for slope and y-intercept —
+  genuinely undefined, not infinite — but the angle is computed directly from `atan2(Δy, Δx)`
+  rather than from the slope, so it still reports an honest 90° instead of also going blank.
+  `KNOWN_NON_FINITE` registered for the one true degenerate case (both points identical, the
+  automated edge case). CompareBars visual: `|Δx|` (run) vs `|Δy|` (rise), via a `derive` key.
+- **distance-calculator** (type B): two points → the distance formula, explicitly framed as the
+  Pythagorean theorem applied to the coordinate differences. Deliberately thin (distance, `|Δx|`,
+  `|Δy|`) and cross-linked to `pythagorean-theorem-calculator`, `slope-calculator` and
+  `midpoint-calculator` rather than re-explaining them. CompareBars visual: `|Δx|` / `|Δy|` /
+  distance, the same leg-a/leg-b/hypotenuse shape as `pythagorean-theorem-calculator`'s own visual.
+- **midpoint-calculator** (type B): two points → the midpoint, plus the distance from each point to
+  the midpoint shown side by side as a self-check (the two halves are always exactly equal by
+  construction). Each axis is averaged independently — `average-calculator`'s own two-number
+  average, applied twice.
+- **scientific-calculator** (type C, custom component): does not fit `solver` (no single
+  rearrangeable equation — a free-form typed expression has no fixed variable set) or the type-B
+  `breakdown` widget (a fixed `inputs` array can't represent open-ended text). Built as a custom
+  component exactly like the existing `pomodoro-timer`/`timezone-meeting-planner` tools:
+  `inputs: []`, `compute() { return {}; }`, a hardcoded slug branch in
+  `app/[locale]/calculators/[slug]/page.tsx`, full v2 content. New code: `lib/scientificCalc.ts` (a
+  small hand-written recursive-descent expression parser and evaluator — tokenizer, standard
+  operator precedence, **no `eval`/`new Function` anywhere**) and
+  `components/ScientificCalculator.tsx` (an iOS-style button-grid widget). Both are the same size
+  class as the existing custom tools (`PomodoroTimer.tsx`/`TextToolsCalculator.tsx` are ~160-190
+  lines each), so this was built directly in this run rather than parked as its own step, per the
+  task's explicit size check. Supports `+ − × ÷ ^` (right-associative: `2^3^2 = 512`),
+  parentheses, implicit multiplication (`2π`, `3(4+5)`), unary minus binding looser than `^`
+  (`−2^2 = −4`, the standard algebra-class convention), `sin/cos/tan` with a Deg/Rad toggle,
+  `asin/acos/atan` (domain-guarded), `ln`/`log` (natural/base-10, non-positive arguments refuse),
+  `√` (negative radicand refuses), `π`, `e`, and `!` (nonnegative integers only, honestly overflows
+  to `Infinity` past 170! — the same threshold `factorial-calculator` established in run 3). 22
+  dedicated unit tests in `lib/scientificCalc.spec.ts`.
+
+Verification: every number in the copy was recomputed independently in `verify_run6.mjs`
+(scratchpad, plain JavaScript, no app imports) — 35 checks, 0 mismatches, including the
+vertical-line case, the identical-points degenerate case, and the scientific-calculator worked
+example (`sin(30°) + log(100) × 5! = 240.5`). `npm test` 351/351 (up from 326, including the 22 new
+parser tests), `npm run build` (111 static pages, up from 107), `npm run lint -- --ignore-pattern
+".open-next/**" --ignore-pattern ".claude/**"` all pass. A programmatic check across all 83
+calculators found 0 broken `related` ids, 0 self-references, 0 new duplicate aliases (the one
+pre-existing collision predates this run). All 4 pages, `/categories/math` and `sitemap.xml`
+spot-checked on a local dev server (H1, every v2 section id, one JSON-LD `<script>` per page with
+all 4 node types, the correct widget mounted, a vertical-line share-link on slope-calculator
+returning 200); dev server killed, port 3000 confirmed free. References fetched directly and each
+confirmed via `WebFetch`/`WebSearch` before citing: OpenStax Algebra and Trigonometry 2e §4.1
+(slope, including its explicit "slope of a vertical line is undefined" statement) and §2.1
+(distance and midpoint formulas, both confirmed on the same page); OpenStax Prealgebra 2e §2.1
+(order of operations — two wrong section-number guesses, §1.2 and §1.9, both 404'd before the
+right one was found via search); NIST DLMF §4.2, §4.14 and §4.23 (logs/exponentials, trig
+definitions, inverse trig); Wolfram MathWorld's Slope, Distance and Midpoint pages. PR #<PR_NUMBER>
+opened as a draft before the first calculator was built, updated with the full run-6 summary, and
+taken off draft via `gh pr ready` once everything above passed. See
+`mdFiles/steps/40-wave-1-math.md`'s "Type decisions (run 6)" and "Verification" sections for the
+full writeup. **The math sub-wave of step 40 is now complete** (29/~29 calculators across 6 runs).
+Next session starts the **statistics** part of Wave 1 — a new category, following the same
+just-in-time step-file process.
 
 ## Pending on the user — not code
 

@@ -9,7 +9,8 @@ const CUSTOM_TOOLS = [
   'character-counter',
   'hashtag-counter',
   'pomodoro-timer',
-  'timezone-meeting-planner'
+  'timezone-meeting-planner',
+  'scientific-calculator'
 ];
 
 // Current behavior at the edge set (calculator id -> output keys that are not finite). Asserted exactly.
@@ -23,7 +24,8 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'long-division-calculator': ['quotient', 'remainder', 'decimalResult', 'check'], // divisor 0 -> divide by zero
   'quadratic-formula-calculator': ['discriminant', 'root1', 'root2', 'realPart', 'imaginaryPart', 'vertexX', 'vertexY'], // a=0, b=0, c=0 -> no single equation (0 = 0)
   'lcm-calculator': ['lcm'], // both numbers 0 -> LCM(0, 0) is undefined by convention, not 0
-  'triangle-calculator': ['sideA', 'sideB', 'sideC', 'angleA', 'angleB', 'angleC', 'perimeter', 'area'] // mode 1 (SSS), all three sides 0 -> fails the triangle inequality
+  'triangle-calculator': ['sideA', 'sideB', 'sideC', 'angleA', 'angleB', 'angleC', 'perimeter', 'area'], // mode 1 (SSS), all three sides 0 -> fails the triangle inequality
+  'slope-calculator': ['slope', 'angle', 'yIntercept'] // both points identical (0,0)-(0,0) -> no line at all, distance is still a legitimate 0
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

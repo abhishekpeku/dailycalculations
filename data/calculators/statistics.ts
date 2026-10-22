@@ -757,7 +757,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
     },
     seo: {
       title: 'Confidence Interval Calculator – Mean, z or t',
-      description: 'Free confidence interval calculator for a population mean. Choose the z-interval (known σ) or t-interval (sample s), with critical values computed directly, not table-rounded.',
+      description: 'Free confidence interval calculator for a mean. Choose z (known σ) or t (sample s); critical values are computed directly, not rounded from a printed table.',
       faq: [
         { question: 'How do I calculate a confidence interval for a mean?', answer: 'Take the sample mean, then add and subtract a margin of error: a critical value (from the z or t distribution) times the standard error (standard deviation ÷ √n). For a sample of 36 with mean 15.2 and sample standard deviation 4.1 at 95% confidence, the interval is about 13.81 to 16.59.' },
         { question: 'When do I use the z-interval instead of the t-interval?', answer: 'Only when the population standard deviation (σ) is genuinely known ahead of time, independent of your sample. In almost every other real situation, you only have a sample standard deviation, and the t-interval (with n − 1 degrees of freedom) is the correct, more conservative choice.' },
@@ -882,7 +882,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
     },
     seo: {
       title: 'Margin of Error Calculator – Survey & Poll Proportions',
-      description: 'Free margin of error calculator for a survey proportion. Enter the sample proportion, sample size and confidence level, with an optional finite population correction.',
+      description: 'Free margin of error calculator for a survey proportion, from the sample proportion, size and confidence level, with an optional finite population correction.',
       faq: [
         { question: 'How do I calculate margin of error?', answer: 'Multiply the critical value for your confidence level by the standard error, √(p̂(1 − p̂) ÷ n). For a sample proportion of 54% out of 1,000 people at 95% confidence, the margin of error is about ±3.09 percentage points.' },
         { question: 'Why does a 50% result have the largest margin of error?', answer: 'The standard error formula depends on p̂(1 − p̂), which is largest when p̂ = 0.5. A result near 0% or 100% produces a smaller margin of error for the same sample size.' },
@@ -1010,7 +1010,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
     },
     seo: {
       title: 'Sample Size Calculator – Surveys & Polls',
-      description: 'Free sample size calculator for surveys and polls. Enter your target margin of error, confidence level and estimated proportion to find the minimum respondents needed, always rounded up.',
+      description: 'Free sample size calculator for surveys. Enter a target margin of error, confidence level and estimated proportion to find the minimum respondents needed.',
       faq: [
         { question: 'How do I calculate the sample size I need?', answer: 'Use n = z(α/2)² × p(1 − p) ÷ e², where z is the critical value for your confidence level, p is your estimated proportion (50% if unknown) and e is your target margin of error. For 95% confidence, a 4% margin and p = 50%, the result is about 600.23, rounded up to 601.' },
         { question: 'Why does this use 50% as the default proportion?', answer: 'Because p(1 − p) — the term driving the required sample size — is largest when p = 50%, using it as a default guarantees your sample is large enough regardless of what the true proportion turns out to be. It is the standard, conservative assumption when you have no better estimate.' },
@@ -1160,7 +1160,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
     },
     seo: {
       title: 'P-Value Calculator – From a Z-Score or T-Score',
-      description: 'Free p-value calculator. Enter a z-score or t-score and choose two-tailed, left-tailed or right-tailed to find the exact p-value, computed directly from the distribution.',
+      description: 'Free p-value calculator. Enter a z-score or t-score and choose two-, left- or right-tailed to find the exact p-value, computed directly from the distribution.',
       faq: [
         { question: 'How do I find a p-value from a z-score?', answer: 'Find the cumulative probability (CDF) at that z-score from the standard normal distribution, then convert it based on the tail type: two-tailed is 2 × min(CDF, 1 − CDF). For z = 2.15, two-tailed, the p-value is about 0.0316.' },
         { question: 'How do I find a p-value from a t-score?', answer: 'Same idea, using the Student\'s t distribution with your degrees of freedom (usually sample size minus 1) instead of the normal distribution. For t = 2.5 with 20 degrees of freedom, a right-tailed p-value is about 0.0106.' },

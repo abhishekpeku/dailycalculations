@@ -82,11 +82,48 @@ function factorial(n: number): number {
 const toRadians = (x: number, mode: AngleMode) => (mode === 'deg' ? (x * Math.PI) / 180 : x);
 const fromRadians = (x: number, mode: AngleMode) => (mode === 'deg' ? (x * 180) / Math.PI : x);
 
+// IEEE 754 double precision can't represent pi exactly, so Math.sin(Math.PI) etc. land a few
+// ulps away from the true value (~1.2e-16, not 0) and Math.tan(Math.PI/2) is a huge finite number
+// instead of undefined. Post-review fix (pre-merge review of PR #20): snap results this close to
+// zero back to exactly zero in radian mode, and compute degree mode exactly at multiples of 90°
+// (where the angle itself is exact, unlike pi/2 in radians) instead of routing through Math.PI at
+// all. Only the exact multiple snaps — an angle merely close to 90°, like 89.9999°, still returns
+// the real (large but finite) tangent, never a fabricated "no answer".
+const RAD_SNAP = 1e-15;
+const snapZero = (v: number) => (Math.abs(v) < RAD_SNAP ? 0 : v);
+
+// sin/cos/tan in degree mode, exact at every multiple of 90° (0, 90, 180, 270, ...).
+function degTrig(deg: number, which: 'sin' | 'cos' | 'tan'): number {
+  const reduced = ((deg % 360) + 360) % 360; // normalize to [0, 360)
+  if (which === 'sin') {
+    if (reduced === 0 || reduced === 180) return 0;
+    if (reduced === 90) return 1;
+    if (reduced === 270) return -1;
+    return Math.sin(toRadians(deg, 'deg'));
+  }
+  if (which === 'cos') {
+    if (reduced === 90 || reduced === 270) return 0;
+    if (reduced === 0) return 1;
+    if (reduced === 180) return -1;
+    return Math.cos(toRadians(deg, 'deg'));
+  }
+  // tan
+  if (reduced === 0 || reduced === 180) return 0;
+  if (reduced === 90 || reduced === 270) return NaN; // undefined: cosine is exactly 0 there
+  const rad = toRadians(deg, 'deg');
+  return Math.sin(rad) / Math.cos(rad);
+}
+
 function applyFunc(name: FuncName, x: number, mode: AngleMode): number {
   switch (name) {
-    case 'sin': return Math.sin(toRadians(x, mode));
-    case 'cos': return Math.cos(toRadians(x, mode));
-    case 'tan': return Math.tan(toRadians(x, mode));
+    case 'sin': return mode === 'deg' ? degTrig(x, 'sin') : snapZero(Math.sin(x));
+    case 'cos': return mode === 'deg' ? degTrig(x, 'cos') : snapZero(Math.cos(x));
+    case 'tan': {
+      if (mode === 'deg') return degTrig(x, 'tan');
+      const s = snapZero(Math.sin(x));
+      const c = snapZero(Math.cos(x));
+      return c === 0 ? NaN : s / c; // undefined wherever cosine is exactly 0 (pi/2, 3pi/2, ...)
+    }
     case 'asin': return x < -1 || x > 1 ? NaN : fromRadians(Math.asin(x), mode);
     case 'acos': return x < -1 || x > 1 ? NaN : fromRadians(Math.acos(x), mode);
     case 'atan': return fromRadians(Math.atan(x), mode);

@@ -91,6 +91,39 @@ describe('scientificCalc: trig, deg/rad toggle', () => {
     close(evaluateExpression('cos(pi/3)', 'rad'), 0.5);
   });
 
+  // Post-review fix (pre-merge review of PR #20): IEEE 754 double precision can't represent pi
+  // exactly, so a naive Math.sin(Math.PI) lands a few ulps away from 0 (and Math.tan(Math.PI/2)
+  // is a huge finite number) instead of the true, mathematically exact answer.
+  test('degree mode is exact at multiples of 90°, not a floating-point approximation', () => {
+    assert.equal(evaluateExpression('cos(90)'), 0);
+    assert.equal(evaluateExpression('sin(180)'), 0);
+    assert.equal(evaluateExpression('tan(180)'), 0);
+    assert.equal(evaluateExpression('cos(450)'), 0); // 450° = 90° + a full turn
+    assert.equal(evaluateExpression('sin(-180)'), 0);
+    assert.equal(evaluateExpression('sin(90)'), 1);
+    assert.equal(evaluateExpression('cos(180)'), -1);
+  });
+
+  test('tan is undefined (NaN, not a huge number) exactly at 90° and 270°', () => {
+    assert.ok(Number.isNaN(evaluateExpression('tan(90)')));
+    assert.ok(Number.isNaN(evaluateExpression('tan(270)')));
+  });
+
+  test('a value merely close to 90°, not exactly on it, still returns the real tangent', () => {
+    const t = evaluateExpression('tan(89.9999)');
+    assert.ok(Number.isFinite(t) && t > 1000); // genuinely huge, but a real finite number
+  });
+
+  test('radian mode snaps a near-zero sin/cos result to exactly 0', () => {
+    assert.equal(evaluateExpression('sin(pi)', 'rad'), 0);
+    assert.equal(evaluateExpression('cos(pi/2)', 'rad'), 0);
+  });
+
+  test('radian mode: tan is NaN wherever cos snaps to 0', () => {
+    assert.ok(Number.isNaN(evaluateExpression('tan(pi/2)', 'rad')));
+    assert.ok(Number.isNaN(evaluateExpression('tan(3*pi/2)', 'rad')));
+  });
+
   test('inverse trig returns in the selected angle mode', () => {
     close(evaluateExpression('asin(0.5)'), 30);
     close(evaluateExpression('asin(0.5)', 'rad'), Math.PI / 6);

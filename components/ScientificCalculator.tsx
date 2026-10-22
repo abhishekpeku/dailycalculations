@@ -53,9 +53,11 @@ export default function ScientificCalculator() {
     }
   }, [expression, angleMode]);
 
-  const insert = (text: string) => setExpression((prev) => prev + text);
+  // After an "Error" result, typing anything should start a fresh expression rather than
+  // literally appending onto the word "Error" (post-review fix, pre-merge review of PR #20).
+  const insert = (text: string) => setExpression((prev) => (prev === 'Error' ? text : prev + text));
   const clear = () => setExpression('');
-  const backspace = () => setExpression((prev) => prev.slice(0, -1));
+  const backspace = () => setExpression((prev) => (prev === 'Error' ? '' : prev.slice(0, -1)));
   const equals = () => {
     try {
       const value = evaluateExpression(expression, angleMode);

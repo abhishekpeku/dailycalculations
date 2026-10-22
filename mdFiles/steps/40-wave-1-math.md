@@ -463,6 +463,49 @@ from runs 2–3's citation of the same chapter), §4.14 (trig function definitio
 trig functions); Wolfram MathWorld's Slope, Distance and Midpoint pages. No invented statistics or
 benchmarks were needed this run (no LogScale visual), so no benchmark-sourcing section applies.
 
+## Fix, 2026-10-22: scientific-calculator's trig functions showed floating-point noise instead of exact answers
+
+A pre-merge review of PR #20 caught two silent-wrong-result bugs in `lib/scientificCalc.ts`,
+both stemming from the same root cause: IEEE 754 double precision can't represent `π` exactly, so
+routing every angle through `Math.PI` (degree inputs converted to radians before calling
+`Math.sin`/`Math.cos`/`Math.tan`) meant values that are mathematically exact came out a few ulps
+off instead:
+
+- `cos(90°)`, `sin(180°)`, `tan(180°)` and `sin(π)` (radians) all showed a tiny nonzero number
+  (e.g. `6.123233996e-17`) instead of the true `0`.
+- `tan(90°)`, `tan(270°)` and `tan(π/2)` (radians) showed an enormous but finite number
+  (`16331239350000000`) instead of correctly reporting no answer — tangent is undefined wherever
+  cosine is exactly 0, and this is the one case the task's own domain-guard philosophy
+  ("never a wrong number") was supposed to cover but didn't, since the floating-point cosine was
+  never *exactly* 0 to trigger a zero-check.
+
+Fixed two ways, matched to the two angle modes: **degree mode** no longer routes through radians
+at all for the four exact cases — `degTrig()` reduces the angle to `[0°, 360°)` and returns the
+exact value (`0`, `±1`, or `NaN` for tangent) whenever the reduced angle is *exactly* `0°, 90°,
+180°` or `270°`, falling through to the ordinary `Math.sin`/`cos`/`tan` path otherwise. **Radian
+mode** instead snaps any `sin`/`cos` result within `1e-15` of zero to exactly `0` (`snapZero()`),
+and `tan` returns `NaN` whenever its (now-snapped) cosine is `0`. Both fixes are deliberately
+conservative: a value merely *close* to a special angle (`tan(89.9999°)`, confirmed with its own
+test) still returns its real, large-but-finite tangent — only the exact multiple snaps, exactly as
+the review's own guidance specified ("don't snap 89.9999"). Also fixed a related widget bug:
+`ScientificCalculator.tsx`'s `insert()` appended onto the literal string `"Error"` on the next
+keypress (e.g. `"Error5"`); it now starts a fresh expression instead, and `backspace()` after an
+`"Error"` clears it outright rather than slicing a character off the word itself.
+
+Added 5 new tests to `lib/scientificCalc.spec.ts` (30 total, up from 25) covering every case from
+the review report exactly: `cos(90)=0`, `sin(180)=0`, `tan(180)=0`, `cos(450)=0`, `sin(-180)=0`,
+`tan(90)`/`tan(270)` both `NaN`, `tan(89.9999)` still a real large number, and the radian-mode
+`sin(π)=0`/`tan(π/2)` and `tan(3π/2)` both `NaN` cases. Independently re-verified all of them with
+a standalone Node one-liner calling the real `evaluateExpression` (not the test file) — 0
+mismatches — and reran the full `verify_run6.mjs` worked-example check (`sin(30°)+log(100)×5!
+=240.5`, unaffected since 30° isn't a special angle). Rewrote the one watch-out item and FAQ entry
+in `scientific-calculator`'s content that described the old (now-fixed) "huge number instead of an
+error" behavior, and added a line to `formula.note` documenting the exact-value/snap-to-zero
+behavior. `npm test` 359/359 (up from 354), `npm run build` (111 static pages, unchanged — this
+run adds no new pages), lint clean. No snapshot changes: `scientific-calculator`'s `compute()`
+still returns `{}` regardless (its real logic lives in the custom widget, untouched by the
+snapshot harness).
+
 **Paused 2026-10-22 after run 6 — Wave 1 math is complete.** 29/~29 math calculators done (run 1:
 math category + percentage, percent-change, percent-difference, fraction, ratio; run 2: average,
 weighted average, rounding, scientific notation, exponent; run 3: square root, cube root,

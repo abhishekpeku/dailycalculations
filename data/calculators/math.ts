@@ -3570,7 +3570,7 @@ export const mathCalculators: CalculatorConfig[] = [
           { symbol: '√, π, e', meaning: 'Square root; the circle constant π ≈ 3.14159; Euler’s number e ≈ 2.71828.' },
           { symbol: 'n!', meaning: 'Factorial: the product of every whole number from 1 to n, defined only for a nonnegative integer n.' }
         ],
-        note: 'Because unary minus has looser precedence than exponentiation, −2^2 evaluates to −4 (the negative of 2²), the same convention taught in algebra classes — not (−2)² = 4. The parser is a small hand-written recursive-descent evaluator limited to the operations above; it never executes the typed text as JavaScript.'
+        note: 'Because unary minus has looser precedence than exponentiation, −2^2 evaluates to −4 (the negative of 2²), the same convention taught in algebra classes — not (−2)² = 4. The parser is a small hand-written recursive-descent evaluator limited to the operations above; it never executes the typed text as JavaScript. sin, cos and tan return exact values (0, 1 or −1) at every multiple of 90° in Degree mode, and treat a radian-mode result closer than 10⁻¹⁵ to zero as exactly zero, rather than showing a stray floating-point remainder like 0.0000000000000001.'
       },
       workedExample: {
         intro: 'Evaluate sin(30°) + log(100) × 5! in one expression, in Degree mode.',
@@ -3585,7 +3585,7 @@ export const mathCalculators: CalculatorConfig[] = [
         explanation: 'Even though it is typed left to right, × 5! is evaluated before the addition, following the standard order of operations — the same way 2+3×4 means 2+12, not 5×4.'
       },
       watchOut: [
-        { title: 'tan() near 90°, 270°... shows a huge number, not an error', body: 'The true tangent of 90° is undefined (infinite). Floating-point math can only approximate 90° exactly, so tan(90) returns an extremely large but finite number instead of a clean error — a known limit of calculator arithmetic in general, not specific to this page.' },
+        { title: 'tan() has no answer exactly at 90°, 270° and their equivalents', body: 'The true tangent of 90° is undefined — cosine is exactly 0 there, so the ratio sine ÷ cosine has no value. This calculator shows no result for exactly 90°, 270°, 450° and so on, rather than the huge-but-finite number naive floating-point math would otherwise produce. A value merely close to 90°, like 89.9999°, is not undefined — it has a real (very large) tangent, and still shows one.' },
         { title: '−2^2 is −4, not 4', body: 'Exponentiation is applied before the leading minus sign, so −2^2 means −(2²) = −4. To square −2 itself, use parentheses: (−2)^2 = 4.' },
         { title: 'ln, log and √ refuse an out-of-domain input', body: 'The logarithm of a non-positive number and the square root of a negative number have no real answer. This calculator shows no result for them rather than inventing one.' },
         { title: 'Factorial only accepts a nonnegative whole number', body: '2.5! and (−3)! have no result here. Values above 170! are reported as too large to represent exactly (the point where a standard double-precision number overflows), not shown as a rounded, falsely precise digit string.' },
@@ -3609,7 +3609,7 @@ export const mathCalculators: CalculatorConfig[] = [
         { question: 'What happens with the square root or logarithm of a negative number?', answer: 'There is no result: the square root of a negative number and the logarithm of a non-positive number have no real-number answer, so this calculator shows nothing rather than a wrong number.' },
         { question: 'Can I use parentheses and nested functions?', answer: 'Yes, including nesting, like sin(log(100)×30), and implied multiplication, like 2π or 3(4+5), which are both read as if a × were typed between them.' },
         { question: 'Does this calculator use eval() or run my input as code?', answer: 'No. Every expression is read by a small parser written specifically for the four operations, powers, roots, trig, logs and factorial listed above — it never executes the typed text as JavaScript or any other programming language.' },
-        { question: 'Why does tan(90) show a huge number instead of an error?', answer: 'The true tangent of 90° is infinite, but floating-point arithmetic can only get extremely close to exactly 90°, so it returns a very large (but finite) number instead — a limitation shared by essentially every digital calculator.' }
+        { question: 'What happens when I calculate tan(90)?', answer: 'There is no result. Tangent is undefined at 90°, 270° and every equivalent angle, since cosine is exactly 0 there — this calculator reports no answer for those exact angles rather than a distorted, extremely large number. An angle merely close to 90°, such as 89.9999°, is not undefined and still returns its real (very large) tangent.' }
       ]
     },
     compute() {

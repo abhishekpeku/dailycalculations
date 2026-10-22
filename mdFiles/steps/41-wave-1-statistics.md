@@ -652,3 +652,32 @@ z=0) become the mathematically exact `1`/`0.5`. `npm test` 453/453 (up from 434)
 and in `lib/distributions.ts`'s own header comment with the actual, measured result — a *relative*
 error around 10⁻¹² to 10⁻¹⁵ for every function in this module across every value tested, not merely
 "6 digits printed."
+
+---
+
+## Run 3: probability, permutation, combination, binomial distribution, normal distribution
+
+Branch `step/41-wave-1-statistics-run-3`, from `origin/master` (which already has run 1, the list
+input, and run 2 + its pre-merge fix merged). Reuses `lib/distributions.ts`'s `normalCDF`/`normalSF`/
+`normalInverseCDF` directly (no duplication) and newly exports `logGamma`/`incompleteBeta` from the
+same file for the binomial calculator's log-space PMF and direct-tail CDF, rather than reimplementing
+either.
+
+### Progress
+
+- [x] Branch created, this section written before coding
+- [x] Exported `logGamma`/`incompleteBeta` from `lib/distributions.ts` (previously file-private),
+      for reuse by binomial-distribution-calculator — no new distribution math duplicated
+- [x] `probability-calculator` (type B)
+- [x] `permutation-calculator` (type B, `BigInt` exact nPr + n^r-with-repetition)
+- [x] `combination-calculator` (type B, `BigInt` exact nCr + multiset-with-repetition)
+- [x] `binomial-distribution-calculator` (type B, log-space PMF, direct-tail CDF via incomplete beta)
+- [x] `normal-distribution-calculator` (type B, `normalCDF`/`normalSF`/`normalInverseCDF`, no mode
+      selector needed — every output is independently computable from the same inputs)
+- [x] Independent scratch verification (`verify_run3.mjs`) of every number in the copy, including a
+      BigInt rational cross-check for nCr/nPr and a published reference for the large-n binomial tail
+- [x] Snapshot tests (`npm run test:update`), re-diff against the scratch script
+- [x] `npm test`, `npm run build`, `npm run lint` all pass
+- [x] Spot-check the 5 pages + updated `/categories/statistics` + sitemap on a local dev server, kill it
+- [x] Update `mdFiles/STATUS.md` (row 40–42 + session log)
+- [x] Mark PR ready

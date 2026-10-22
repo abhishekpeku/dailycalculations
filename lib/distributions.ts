@@ -43,8 +43,12 @@ const MAX_ITERATIONS = 200;
 const EPSILON = 3e-16; // close to double precision; both continued fractions below converge to this
 const FLOOR = 1e-300; // avoids a literal division by zero without biasing the result
 
-/** Lanczos approximation (g=7, n=9), ~15-digit accuracy. */
-function logGamma(x: number): number {
+/**
+ * Lanczos approximation (g=7, n=9), ~15-digit accuracy. Exported for binomial-distribution-calculator's
+ * log-space PMF (logChoose = logGamma(n+1) - logGamma(k+1) - logGamma(n-k+1)), so it is never
+ * reimplemented a second time for the same purpose this file already solved.
+ */
+export function logGamma(x: number): number {
   const g = 7;
   const coeffs = [
     0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313, -176.61502916214059, 12.507343278686905,
@@ -195,8 +199,12 @@ function betacf(x: number, a: number, b: number): number {
   return h;
 }
 
-/** Regularized incomplete beta function I_x(a, b), 0 <= x <= 1. */
-function incompleteBeta(x: number, a: number, b: number): number {
+/**
+ * Regularized incomplete beta function I_x(a, b), 0 <= x <= 1. Exported for
+ * binomial-distribution-calculator, which uses the standard identity relating it to a binomial tail
+ * probability (I_p(k, n-k+1) = P(X >= k)) to compute the upper tail directly, never as 1 - CDF.
+ */
+export function incompleteBeta(x: number, a: number, b: number): number {
   if (x <= 0) return 0;
   if (x >= 1) return 1;
   const prefactor = Math.exp(logGamma(a + b) - logGamma(a) - logGamma(b) + a * Math.log(x) + b * Math.log(1 - x));

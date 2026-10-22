@@ -137,7 +137,12 @@ export const calculatorOrder: string[] = [
   'permutation-calculator',
   'combination-calculator',
   'binomial-distribution-calculator',
-  'normal-distribution-calculator'
+  'normal-distribution-calculator',
+  'correlation-calculator',
+  'linear-regression-calculator',
+  't-test-calculator',
+  'chi-square-calculator',
+  'standard-error-calculator'
 ];
 
 const rank = (id: string) => {

@@ -175,6 +175,53 @@ describe('evaluateBreakdown', () => {
   });
 });
 
+describe('pairedLists (breakdown.pairedLists)', () => {
+  // A minimal two-list calculator, same shape as correlation-calculator/linear-regression-calculator
+  // (run 4): compute() independently refuses a length mismatch (never truncating/padding), and
+  // breakdown.pairedLists additionally surfaces a specific mismatch message via evaluateBreakdown,
+  // rather than the generic "fill in every field" one.
+  const pairedInputs: CalculatorInput[] = [
+    { id: 'xData', label: 'X values', type: 'list', placeholder: '', defaultValue: 0, listDefault: [1, 2, 3], listMin: 1 },
+    { id: 'yData', label: 'Y values', type: 'list', placeholder: '', defaultValue: 0, listDefault: [4, 5, 6], listMin: 1 }
+  ];
+  const paired: Pick<CalculatorConfig, 'inputs' | 'breakdown' | 'compute'> = {
+    inputs: pairedInputs,
+    breakdown: { headline: 'sum', pairedLists: ['xData', 'yData'] },
+    compute: (_v, lists) => {
+      const xs = lists.xData;
+      const ys = lists.yData;
+      if (xs.length !== ys.length) return { sum: NaN };
+      return { sum: xs.reduce((a, b, i) => a + b + ys[i], 0) };
+    }
+  };
+
+  test('matched lengths: no mismatch, complete, compute() runs', () => {
+    const { all, complete, pairedListMismatch } = evaluateBreakdown(paired, initialBreakdownState(pairedInputs));
+    assert.equal(complete, true);
+    assert.equal(pairedListMismatch, undefined);
+    assert.equal(all.sum, 21); // (1+4)+(2+5)+(3+6)
+  });
+
+  test('mismatched lengths: pairedListMismatch set with both labels and lengths, no answer', () => {
+    // `complete` stays true (every field IS filled — min counts are both met) so compute() still
+    // runs; it is compute()'s own length check that produces the honest NaN here, exactly as the
+    // snapshot harness (which never goes through evaluateBreakdown at all) would see it too.
+    // `pairedListMismatch` is the display-only hint that lets the widget show a specific message
+    // instead of (wrongly) claiming a field is unfilled.
+    const state = initialBreakdownState(pairedInputs);
+    state.values.yData = '4, 5';
+    const { all, complete, pairedListMismatch } = evaluateBreakdown(paired, state);
+    assert.equal(complete, true);
+    assert.ok(Number.isNaN(all.sum));
+    assert.deepEqual(pairedListMismatch, { aLabel: 'X values', bLabel: 'Y values', aLength: 3, bLength: 2 });
+  });
+
+  test('compute() itself (called directly, as the snapshot harness does) also refuses a mismatch', () => {
+    const result = paired.compute({}, { xData: [1, 2, 3], yData: [4, 5] });
+    assert.ok(Number.isNaN(result.sum));
+  });
+});
+
 describe('commute-cost-calculator (the demo config)', () => {
   const commute = byId('commute-cost-calculator');
 

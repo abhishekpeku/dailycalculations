@@ -1192,3 +1192,208 @@ static pages, unchanged — these are fixes, not new calculators). Only `chi-squ
 snapshot changed (8 lines, the corrected worked-example numbers); every other affected
 calculator's default/typical/edge snapshot is unchanged, confirming these fixes are surgical and
 do not alter behavior for any already-valid input.
+
+---
+
+## Run 5: relative risk, odds ratio, expected value, coefficient of variation, outlier
+
+Branch `step/41-wave-1-statistics-run-5`, from `origin/master` (which already has runs 1-4 and
+every pre-merge fix merged, `769a127`). **Final run of the statistics sub-wave** — after this,
+statistics is 25/25.
+
+### Progress
+
+- [x] Branch created from `origin/master`, this section written before coding, draft PR opened early
+- [x] Independent scratch verification (`verify_run5.mjs`, plain Node, no app imports) of every
+      worked example and edge case, before writing any copy or code
+- [x] Live references fetched and quoted before citing (Katz 1978, Woolf 1955, the
+      Haldane-Anscombe / standard continuity correction, the rare disease assumption, OpenStax's
+      discrete expected-value formula, NIST's coefficient-of-variation formula and Wikipedia's
+      ratio-scale caveat, NIST's outlier-detection page, Wikipedia's outlier definition)
+- [x] `relative-risk-calculator` (type B)
+- [x] `odds-ratio-calculator` (type B, cross-linked with relative-risk-calculator)
+- [x] `expected-value-calculator` (type B, two paired lists)
+- [x] `coefficient-of-variation-calculator` (type B, list or summary-stats mode)
+- [x] `outlier-calculator` (type B, reuses `percentileOf`, cross-linked with quartile-calculator)
+- [x] `data/calculators/index.ts`'s `calculatorOrder`, `KNOWN_NON_FINITE` entries, snapshot tests
+      (`npm run test:update`)
+- [x] `npm test`, `npm run build`, `npm run lint` all pass
+- [x] Data-integrity check (duplicate ids/aliases, broken `related`, SEO length) — caught and fixed
+      3 oversized `seo.title` strings before committing (relative-risk-, expected-value- and
+      coefficient-of-variation-calculator, all originally over 60 characters)
+- [x] Spot-check the 5 pages + updated `/categories/statistics` + sitemap on a local dev server, kill it, confirm port 3000 free
+- [x] Update `mdFiles/STATUS.md` (row 40-42 marked complete at 25/25 + session log)
+- [x] Mark PR ready
+
+### Zero-cell policy for relative-risk-calculator / odds-ratio-calculator
+
+**Chosen: the (modified) Haldane-Anscombe correction — add 0.5 to all four cells, but only when
+at least one cell is already 0** — rather than refusing outright. Reasoning: a 2x2 table with a
+zero cell is extremely common in exactly the studies that reach for a relative-risk or
+odds-ratio calculator in the first place (a rare outcome in a small or moderate sample), so
+refusing outright would make the page unusable for a large share of its realistic traffic. The
+correction is named and stated visibly (not a silent fudge) on both pages, with a
+`correctionApplied` output row. **Still refused outright (`NaN`), with no correction possible**:
+`a+b=0` (no exposed group at all) or `c+d=0` (no unexposed group at all) — there is no row
+proportion to compute in the first place, the same "some things are refused outright" precedent
+`chi-square-calculator`'s totals-mismatch guard and `binomial-distribution-calculator`'s
+negative-input guard already set. This matches the peer-reviewed description of the "standard
+continuity correction" (Ades, Caldwell, Anwer & Dias, *Research Synthesis Methods*, 2025: "0.5 is
+added to every cell of a 2 x 2 table with a zero cell") — confirmed by direct fetch before citing,
+not assumed from the method's common name alone.
+
+### Type decisions (run 5)
+
+| Calculator | Type | Why | Visual |
+|---|---|---|---|
+| relative-risk-calculator | B | Four raw counts (a 2x2 table) plus a confidence level combine non-linearly into a ratio and a log-method CI — no single invertible equation a solver widget would fit. **Non-negative integer counts, checked on the raw value** (`Number.isInteger(value) && value >= 0`, never after rounding) — the same "whole-count-or-refuse" convention `requireIntegerAtLeast` already established for sample sizes, generalized to allow 0 (a real, legitimate cell count) since `requireIntegerAtLeast`'s own `min` convention is 1. **Katz log method CI** (`SE(ln RR) = sqrt(1/a - 1/(a+b) + 1/c - 1/(c+d))`, `CI = exp(ln(RR) +- z* x SE)`, `z* = normalInverseCDF(1 - alpha/2)`), the same z-critical-value pattern `confidence-interval-calculator` already uses. **Zero-cell policy**: see above. | compareBars: CI lower bound / RR / CI upper bound |
+| odds-ratio-calculator | B | Same four-count, non-linear shape as relative-risk-calculator — deliberately kept in lockstep with it (same input shape, same zero-cell policy, same confidence-level clamp), the same "kept in lockstep" precedent `standard-deviation-calculator`/`variance-calculator` set in run 1. **Woolf log method CI** (`SE(ln OR) = sqrt(1/a + 1/b + 1/c + 1/d)`, same CI construction as relative-risk-calculator). **Cross-linked both ways** with relative-risk-calculator (each in the other's `related`), and both pages' content states explicitly when OR approximates RR (the rare disease/rare outcome assumption, cited from Wikipedia's dedicated "Rare disease assumption" page, which names Sander Greenland's 10%-prevalence rule of thumb). | compareBars: CI lower bound / OR / CI upper bound |
+| expected-value-calculator | B | Two paired lists (outcome values, probabilities) combined by a weighted sum — no solver shape. **Two ordinary `type: 'list'` inputs plus `breakdown.pairedLists`**, the exact mechanism built in run 4 for `correlation-calculator`/`chi-square-calculator` (not the `pairedListInputs` x/y helper, whose hardcoded `xData`/`yData` ids and labels don't fit "outcomes"/"probabilities" — the same reasoning `chi-square-calculator` already applied when it wrote its own `observed`/`expected` list inputs directly rather than reusing that helper). **Probabilities as plain decimals in [0, 1]**, stated explicitly in the label/placeholder — the simplest convention for a sum-to-1 check. **Validated, never silently renormalized**: every probability must be in [0, 1] AND the list must sum to 1 within `EV_PROBABILITY_SUM_TOLERANCE = 1e-6` (named and sized exactly like `TOTALS_RELATIVE_TOLERANCE`), or every output is an honest `NaN` with a watch-out item explaining why — never a silent divide-by-the-sum rescaling. A diagnostic `probabilitySum` output is always shown (even when invalid) so a reader can see exactly why their input was refused. | compareBars: expected value / expected value - SD / expected value + SD (the headline against one SD on either side) |
+| coefficient-of-variation-calculator | B | CV = SD / mean has no solver shape once two entry modes (a raw list vs. summary statistics) are both supported — the same mode-selector shape `standard-error-calculator` (run 4) already established. **Both `populationCV` and `sampleCV` always shown side by side, headline is sample** — the same precedent `standard-deviation-calculator` set in run 1 — computed from `varianceOf` (reused, not reimplemented) in list mode; in summary-statistics mode, both rows show the same number from the one SD value entered directly, stated honestly in a watch-out item rather than inventing a second SD it was never given. **Mean = 0 -> explicit `NaN`, not `Infinity`** (a literal zero mean makes CV undefined), the same "divisions refused outright" precedent as other zero-denominator guards sitewide. **Ratio-scale caveat stated explicitly**, cited directly from Wikipedia's "Coefficient of variation" page (its own worked Celsius/Fahrenheit/Kelvin example, fetched and quoted before citing) plus NIST's DATAPLOT reference for the formula itself. | compareBars: population CV / sample CV |
+| outlier-calculator | B | A list, Tukey fences and a z-score cross-check — no solver shape. **Reuses `percentileOf` directly**, the exact same file-private function `quartile-calculator` already uses for Q1/Q3, so the two pages can never silently disagree on the same data (same "kept in lockstep" precedent as the pairs above). **Differentiated from quartile-calculator** (full reasoning in "Dedup / overlap check" below): adds `lowestOutlier`/`highestOutlier` (actual values, not just a count), adds an always-visible z-score outlier count (`|z| > 3` against the list's own mean and *population* standard deviation, stated explicitly), and its content is about "what is an outlier and what to do about it," not quartiles — which it explicitly defers to quartile-calculator's own page rather than re-explaining. | compareBars: lowest value / median / highest value |
+
+### Dedup / overlap check (run 5)
+
+- **outlier-calculator vs. quartile-calculator**: real, deliberate overlap on Q1/Q3/IQR/fences —
+  resolved by reusing the exact same `percentileOf` function (never a second, possibly-disagreeing
+  implementation), by adding figures quartile-calculator does not have (`lowestOutlier`,
+  `highestOutlier`, the z-score cross-check), and by writing outlier-calculator's own concept/
+  how-to/FAQ content around "what is an outlier, what causes one, what to do about it" rather than
+  re-teaching quartiles — which it explicitly defers to quartile-calculator's page instead
+  (cross-linked in `related` and in a watch-out item). **One-directional linking**: outlier-calculator
+  links to quartile-calculator; quartile-calculator's own file is **not** touched (out of this run's
+  scope), the same precedent run 2's own note on `weighted-average-calculator`/`gpa-calculator` set.
+- **relative-risk-calculator vs. odds-ratio-calculator**: deliberately near-identical input shape
+  (both take the same 2x2 table) — not a near-duplicate, because they answer two different,
+  commonly-confused questions (a risk ratio vs. an odds ratio) with two different, by-name-cited
+  CI methods (Katz vs. Woolf), and the plan's own list names them as two separate topics. Explicit
+  cross-linking both ways, plus a stated rare-disease-assumption bridge between them, is the
+  standard way epidemiology texts treat this pair rather than merging them into one page.
+- No other existing calculator or alias overlaps any of this run's 5 ids, aliases or concepts.
+
+### Verification
+
+Every number recomputed independently in `verify_run5.mjs` (scratchpad, plain Node, no app
+imports — including an independent reimplementation of Acklam's rational approximation for the
+standard normal inverse CDF) *before* any copy was written, then diffed against the shipped
+`compute()` output via the regenerated snapshot file.
+
+- **Distributions cross-check**: `normalInverseCDF(0.975)` = 1.959963986120195 (95% two-tailed
+  z-critical value), matching the value runs 2-4 already established to 6+ digits — the
+  independent Acklam-only reimplementation here (no Halley refinement, unlike the shipped
+  `lib/distributions.ts`) agrees with the shipped module's own value to at least 9 significant
+  digits, confirming the shipped `normalInverseCDF` is being read correctly by these two
+  calculators.
+- **relative-risk-calculator / odds-ratio-calculator**, worked example (a cohort of 100 smokers
+  with 20 developing the disease vs. 100 non-smokers with 5 developing it, a=20, b=80, c=5, d=95,
+  95% CI, no zero cells so no correction applied): `riskExposed`=0.2, `riskUnexposed`=0.05,
+  **RR = 4**, `SE(ln RR)` ~= 0.479583152, 95% CI ~= [1.562565, 10.239575]; **OR = 4.75**,
+  `SE(ln OR)` ~= 0.522519201, 95% CI ~= [1.705786, 13.227043]. At 90% CI: RR 95% range
+  [1.817479, 8.803404], OR [2.011090, 11.219039]; at 99% CI: RR [1.162962, 13.757976], OR
+  [1.236425, 18.248172] — all from the same z = `normalInverseCDF(1 - alpha/2)` used above.
+  **Zero-cell example** (a=0, b=10, c=5, d=15, 95% CI, Haldane-Anscombe correction applied since
+  a=0): corrected cells 0.5/10.5/5.5/15.5, RR ~= 0.173554, 95% CI ~= [0.010536, 2.858728]; OR ~=
+  0.134199, 95% CI ~= [0.006687, 2.693240]. **Degenerate examples** (a=0,b=0,c=5,d=15 and
+  a=20,b=80,c=0,d=0) both correctly refuse with every output `NaN` — no row proportion exists for
+  the all-zero row, and the correction does not and should not apply there.
+- **expected-value-calculator**, worked example (a simple game: win $10 with 20% probability, win
+  $2 with 30% probability, lose $5 with 50% probability; outcomes [10, 2, -5], probabilities [0.2,
+  0.3, 0.5], summing to exactly 1): **E[X] = $0.10** (0.10000000000000009 before display rounding,
+  ordinary floating-point noise, not a bug), **Var(X) = 33.69**, **SD ~= 5.804309**. An invalid-sum
+  example (probabilities [0.5, 0.4], summing to 0.9) correctly refuses (every output `NaN` except
+  the diagnostic `probabilitySum` = 0.9, shown so the reader can see why). A mismatched-length
+  example (3 outcomes, 2 probabilities) correctly refuses every output including `probabilitySum`.
+- **coefficient-of-variation-calculator**, list mode, reusing standard-deviation-calculator's own
+  worked example (72, 85, 90, 78, 95) so the two pages' numbers can be cross-checked directly:
+  mean 84, population SD ~= 8.221921916437786 (run 1's own verified figure), sample SD ~=
+  9.192388155425117 (ditto), **populationCV ~= 9.788002%**, **sampleCV ~= 10.943319%**. Summary
+  mode (mean=84, SD=9.19 entered directly): **CV ~= 10.940476%**, intentionally a slightly
+  different *displayed* figure from the list mode's sample CV above, since 9.19 is a rounded
+  placeholder value, not the exact 9.192388155425117 — both numbers are independently correct for
+  their own stated inputs. The mean=0 guard was checked directly: mean=0 with any standard
+  deviation refuses with `NaN`, never `Infinity`.
+- **outlier-calculator**, worked example (4, 8, 6, 5, 3, 7, 50 — six ordinary values plus one
+  obvious outlier): Q1=4, median=6, Q3=8, IQR=4, lower fence=-2, upper fence=14, **1 Tukey outlier
+  (50)**, `lowestOutlier` = `highestOutlier` = 50 (only one outlier present). Population mean
+  ~=11.857143, population SD ~=15.651824, so 50's own z-score is only ~=2.437 — **the z-score
+  method finds 0 outliers on the exact same data**, a genuine and deliberately kept example of
+  "masking" (the outlier itself inflates the mean and SD it is being measured against), used
+  directly in the page's own content as the reason both methods are offered side by side rather
+  than treated as interchangeable. The single-value edge case (list = [0]) gives `outlierCount` =
+  0 and both `lowestOutlier`/`highestOutlier` = `NaN` (no outlier exists to report), confirming the
+  behavior item 2 of the brief requires.
+
+**Reference accuracy, fetched and quoted directly before citing** (not guessed):
+- Katz D, Baptista J, Azen SP, Pike MC (1978), "Obtaining Confidence Intervals for the Risk Ratio
+  in Cohort Studies," *Biometrics* 34(3):469-474 — confirmed live via a GraphPad statistics FAQ
+  page naming the exact citation, and independently via Wikipedia's "Relative risk" page, which
+  states the same `SE(log(RR))` formula and cites Katz et al. (1978) directly by its own reference
+  list.
+- Woolf B (1955), "On Estimating the Relation Between Blood Group and Disease," *Annals of Human
+  Genetics* 19(4):251-253 (Wiley, DOI 10.1111/j.1469-1809.1955.tb01348.x) — confirmed live via a
+  direct search resolving to the Wiley abstract page with the exact title, volume, issue and page
+  numbers.
+- Ades AE, Caldwell DM, Anwer S, Dias S (2025), "Continuity corrections with Mantel-Haenszel
+  estimators in Cochrane reviews," *Research Synthesis Methods* 16(5):823-825 — fetched directly
+  (PMC); confirms the "standard continuity correction" of adding 0.5 to every cell of a 2x2 table
+  with a zero cell, the exact behavior this run implements and names as the (modified)
+  Haldane-Anscombe correction.
+- Wikipedia, "Rare disease assumption" — fetched directly; confirms the OR ~= RR condition and
+  attributes the commonly cited 10%-prevalence rule of thumb to Sander Greenland, while also
+  stating the real limitation (the approximation can still fail even under 10% prevalence
+  depending on exposure-group-specific rates) — both the approximation and its limitation are
+  stated in this run's content, not just the convenient half.
+- OpenStax, *Introductory Statistics 2e*, SS4.2 "Mean or Expected Value and Standard Deviation" —
+  fetched directly; confirms the exact formula `mu = sum(x * P(x))` and the corresponding variance/
+  standard-deviation construction this run's `expected-value-calculator` uses.
+- NIST Dataplot Reference Manual, "COEFFICIENT OF VARIATION" (`coef_var.pdf`) — fetched directly;
+  confirms `cv = s / xbar` as the formula definition.
+- Wikipedia, "Coefficient of variation" — fetched directly; confirms the ratio-scale requirement
+  ("the coefficient of variation should be computed only for data measured on scales that have a
+  meaningful zero") and quotes its own worked Celsius/Fahrenheit/Kelvin example (differing CV
+  values for the same underlying temperatures) used directly in this run's watch-out copy.
+- NIST/SEMATECH *Engineering Statistics Handbook*, SS1.3.5.17 "Detection of Outliers" — fetched
+  directly; confirms the plain z-score method's definition and, honestly reflected in this run's
+  own watch-out copy, that NIST's own recommendation is a *modified* z-score (median/MAD-based,
+  threshold 3.5) rather than the simpler mean/population-SD z-score (threshold 3) this calculator
+  offers as an always-visible secondary check — stated as a real, cited difference, not implied to
+  be NIST's own preferred method.
+- Wikipedia, "Outlier" — fetched directly; confirms the general definition and the "do not
+  automatically delete an outlier" guidance used in this run's concept/watch-out copy.
+
+**Data-integrity check**, run programmatically against the live data module for all 5 new
+calculators (scratch script, deleted after use): 0 duplicate ids, 0 broken `related` ids, 0
+self-references, 0 new duplicate aliases (the one pre-existing collision, "house loan emi
+calculator" on `emi-calculator`/`mortgage-calculator`, predates this run and is untouched), 7-8
+FAQs and 4 aliases/4 related ids each. **Caught and fixed before committing**: the script's first
+pass found three `seo.title` strings over the 60-character limit — `relative-risk-calculator`
+("Relative Risk Calculator – Risk Ratio with Confidence Interval", 62), `expected-value-calculator`
+("Expected Value Calculator – Mean, Variance & Standard Deviation", 63) and
+`coefficient-of-variation-calculator` ("Coefficient of Variation Calculator – CV from Data or
+Summary Stats", 67) — shortened to 45, 45 and 45 characters respectively, then the build was
+re-run (the first `npm run build` had already captured the old, over-length titles) and the
+script re-run clean.
+
+`npm test` 487/487 (up from 482), `npm run lint` clean, `npm run build` passes (137 static pages,
+up from 132). All 5 pages, `/categories/statistics` and `sitemap.xml` spot-checked on a local dev
+server (H1, `breakdown-<id>` widget mounted, exactly one JSON-LD `<script>` per page, all 5 ids
+present on both the category page and the sitemap); dev server killed and port 3000 confirmed
+free (no `LISTENING` entry) afterward.
+
+### Parked (new, this run)
+
+- **Haldane-Anscombe's known small bias**: the correction is a standard, widely used fix for the
+  zero-cell problem, but it is also known in the methods literature to introduce a small bias into
+  the point estimate itself (not just the interval) in some regimes — stated plainly in a
+  watch-out item on both pages rather than presented as a free fix with no tradeoff. Not a
+  deeper alternative (e.g. exact/mid-p methods) — out of scope for this run.
+- **relative-risk-calculator / odds-ratio-calculator do not build a full contingency-table UI**
+  (stratified tables, Mantel-Haenszel pooling) — a single 2x2 table only, matching
+  chi-square-calculator's own "does not build a contingency table" scope decision from run 4.
+- **coefficient-of-variation-calculator's summary mode cannot distinguish a population SD from a
+  sample SD** — both rows show the same number when a single SD value is entered directly, stated
+  honestly rather than guessing which one was meant. A future redesign could add a type selector
+  for this if it turns out to matter in practice.
+- **outlier-calculator does not implement NIST's own preferred modified z-score (median/MAD)**,
+  only the simpler mean/population-SD version, clamped at the conventional threshold of 3 — stated
+  honestly as a difference from NIST's own current recommendation, not a hidden gap.

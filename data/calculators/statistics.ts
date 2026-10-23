@@ -315,6 +315,83 @@ function pairedStats(xs: number[], ys: number[]) {
   return { n, meanX, meanY, sxx, syy, sxy };
 }
 
+// relative-risk-calculator / odds-ratio-calculator: a 2x2 table cell is a count, so it must be a
+// whole number >= 0 -- checked on the RAW input value, never after Math.round, the same
+// raw-value discipline requireIntegerAtLeast already established for sample sizes (run 4's
+// pre-merge review fix). This generalizes that check to allow 0 (a cell count of zero is real
+// data, not an error), which requireIntegerAtLeast's own min >= 1 convention does not cover.
+function requireNonNegativeInteger(value: number) {
+  return Number.isInteger(value) && value >= 0;
+}
+
+// Shared 2x2-table statistics for relative-risk-calculator and odds-ratio-calculator, so the two
+// pages can never silently disagree on the same table -- the same "kept in lockstep" precedent
+// standard-deviation-calculator/variance-calculator set in run 1.
+//
+//           Outcome+   Outcome-
+// Exposed       a          b
+// Unexposed     c          d
+//
+// Zero-cell policy (see mdFiles/steps/41-wave-1-statistics.md, "Run 5" for the full reasoning):
+// the (modified) Haldane-Anscombe correction -- add 0.5 to all four cells -- is applied whenever
+// ANY one cell is exactly 0, confirmed as the standard "continuity correction" by a direct fetch
+// of Ades, Caldwell, Anwer & Dias, Research Synthesis Methods (2025): "0.5 is added to every cell
+// of a 2x2 table with a zero cell." A genuinely degenerate table -- a+b=0 (no exposed group at
+// all) or c+d=0 (no unexposed group at all) -- has no row proportion to compute in the first
+// place and is refused outright (NaN), no correction possible, the same "some things are refused
+// outright" precedent chi-square-calculator's totals-mismatch guard and
+// binomial-distribution-calculator's negative-input guard already set.
+function twoByTwoStats(a: number, b: number, c: number, d: number, confidenceLevel: number) {
+  const noAnswer = { riskExposed: NaN, riskUnexposed: NaN, relativeRisk: NaN, rrLower: NaN, rrUpper: NaN, oddsRatio: NaN, orLower: NaN, orUpper: NaN, correctionApplied: NaN };
+  if (![a, b, c, d].every(requireNonNegativeInteger)) return noAnswer;
+  if (a + b === 0 || c + d === 0) return noAnswer; // no row proportion exists for an empty group
+  const correctionApplied = a === 0 || b === 0 || c === 0 || d === 0 ? 1 : 0;
+  const a2 = a + correctionApplied * 0.5;
+  const b2 = b + correctionApplied * 0.5;
+  const c2 = c + correctionApplied * 0.5;
+  const d2 = d + correctionApplied * 0.5;
+  const riskExposed = a2 / (a2 + b2);
+  const riskUnexposed = c2 / (c2 + d2);
+  const relativeRisk = riskExposed / riskUnexposed;
+  const oddsRatio = (a2 * d2) / (b2 * c2);
+  const alpha = 1 - clampConfidence(confidenceLevel) / 100;
+  const z = normalInverseCDF(1 - alpha / 2);
+  const seRR = Math.sqrt(1 / a2 - 1 / (a2 + b2) + 1 / c2 - 1 / (c2 + d2)); // Katz log method (1978)
+  const seOR = Math.sqrt(1 / a2 + 1 / b2 + 1 / c2 + 1 / d2); // Woolf log method (1955)
+  const lnRR = Math.log(relativeRisk);
+  const lnOR = Math.log(oddsRatio);
+  return {
+    riskExposed,
+    riskUnexposed,
+    relativeRisk,
+    rrLower: Math.exp(lnRR - z * seRR),
+    rrUpper: Math.exp(lnRR + z * seRR),
+    oddsRatio,
+    orLower: Math.exp(lnOR - z * seOR),
+    orUpper: Math.exp(lnOR + z * seOR),
+    correctionApplied
+  };
+}
+
+// Shared 2x2-table input fields for relative-risk-calculator and odds-ratio-calculator -- same
+// ids, labels and defaults on both pages, so a value typed on one page means the same thing as
+// the same id would on the other.
+function twoByTwoInputs(): CalculatorInput[] {
+  return [
+    { id: 'a', label: 'Exposed, outcome occurred (a)', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 0 },
+    { id: 'b', label: 'Exposed, outcome did not occur (b)', type: 'number', placeholder: '80', defaultValue: 80, step: 1, min: 0 },
+    { id: 'c', label: 'Unexposed, outcome occurred (c)', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 0 },
+    { id: 'd', label: 'Unexposed, outcome did not occur (d)', type: 'number', placeholder: '95', defaultValue: 95, step: 1, min: 0 },
+    { id: 'confidenceLevel', label: 'Confidence level', type: 'percent', placeholder: '95', defaultValue: 95, step: 1, min: 1 }
+  ];
+}
+
+// expected-value-calculator: probabilities are entered as plain decimals in [0, 1] and must sum
+// to 1 -- within a small, stated relative tolerance, the same named-constant pattern
+// TOTALS_RELATIVE_TOLERANCE already sets for chi-square-calculator's observed/expected totals
+// check. A list that fails either check is refused outright (NaN), never silently renormalized.
+const EV_PROBABILITY_SUM_TOLERANCE = 1e-6;
+
 export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'mean-median-mode-calculator',
@@ -2943,6 +3020,653 @@ export const statisticsCalculators: CalculatorConfig[] = [
       }
       const standardError = s / Math.sqrt(n);
       return { standardError, sampleStdDevUsed: s, sampleSizeUsed: n };
+    }
+  },
+  {
+    id: 'relative-risk-calculator',
+    category: 'statistics',
+    updatedAt: '2026-10-23',
+    aliases: ['relative risk calculator', 'risk ratio calculator', 'rr calculator', 'cohort study risk ratio calculator'],
+    related: ['odds-ratio-calculator', 'confidence-interval-calculator', 'p-value-calculator', 'chi-square-calculator'],
+    title: 'Relative Risk Calculator',
+    description: 'Find the relative risk (risk ratio) and its confidence interval from a 2x2 exposed/unexposed outcome table, using the Katz log method.',
+    example: 'Out of 100 smokers, 20 develop the disease; out of 100 non-smokers, 5 do. The relative risk is 4 — smokers are 4 times as likely to develop it.',
+    content: {
+      lastReviewed: '2026-10-23',
+      concept: {
+        title: 'What is relative risk?',
+        paragraphs: [
+          'Relative risk (RR), also called the risk ratio, compares how often an outcome happens in an exposed group against how often it happens in an unexposed group. It comes from a 2x2 table: how many of the exposed group had the outcome (a) or did not (b), and how many of the unexposed group had the outcome (c) or did not (d).',
+          'RR = 1 means the outcome is exactly as likely in both groups — the exposure makes no difference. RR > 1 means the exposed group is more likely to have the outcome; RR < 1 means less likely. An RR of 4, for example, means the exposed group\'s risk is four times the unexposed group\'s risk — not four percentage points higher, four times as large.',
+          'Relative risk is the natural measure from a cohort or randomized study, where both groups are followed forward in time and their outcome rates are directly observed. A case-control study, which starts from the outcome rather than the exposure, cannot measure it directly — that is what the odds ratio calculator is for instead, and the two are closely related (see the watch-out items below for when they agree closely and when they do not).'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in the four counts from your 2x2 table, then set a confidence level.',
+        steps: [
+          { name: 'Enter the exposed group\'s counts', text: 'How many exposed people had the outcome (a) and how many did not (b).' },
+          { name: 'Enter the unexposed group\'s counts', text: 'How many unexposed people had the outcome (c) and how many did not (d).' },
+          { name: 'Set a confidence level', text: 'The default is 95%, the most common choice in published research.' },
+          { name: 'Read the relative risk', text: 'The headline is the risk ratio itself, with its confidence interval shown as a range below it.' },
+          { name: 'Check whether the interval crosses 1', text: 'If the confidence interval includes 1, the data does not rule out "no real difference between the groups" at the chosen confidence level.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The relative risk is the exposed group\'s outcome rate divided by the unexposed group\'s outcome rate. Its confidence interval uses the Katz log method, since the log of RR is closer to normally distributed than RR itself.',
+        expression: 'RR = [a ÷ (a+b)] ÷ [c ÷ (c+d)]\nSE(ln RR) = sqrt(1/a − 1/(a+b) + 1/c − 1/(c+d))\nCI = exp(ln(RR) ± z* × SE(ln RR))',
+        terms: [
+          { symbol: 'a, b', meaning: 'Exposed group: outcome occurred (a) or did not (b).' },
+          { symbol: 'c, d', meaning: 'Unexposed group: outcome occurred (c) or did not (d).' },
+          { symbol: 'z*', meaning: 'The normal distribution\'s critical value for the chosen confidence level, e.g. about 1.96 for 95%.' }
+        ],
+        note: 'If any one of the four counts is 0, this calculator adds 0.5 to all four cells before computing anything (the Haldane-Anscombe correction, a standard, named fix for the zero-cell problem — see the watch-out items), and says so in the "correction applied" row. If an entire row is 0 (no exposed people at all, or no unexposed people at all), there is no outcome rate to compute for that row in the first place, and this calculator shows no answer rather than a meaningless one.'
+      },
+      workedExample: {
+        intro: 'A cohort study follows 100 smokers and 100 non-smokers. 20 of the smokers develop the disease (a=20, b=80); 5 of the non-smokers do (c=5, d=95).',
+        rows: [
+          { label: 'Risk in the exposed group (20 ÷ 100)', value: '20% (0.20)' },
+          { label: 'Risk in the unexposed group (5 ÷ 100)', value: '5% (0.05)' },
+          { label: 'Relative risk (0.20 ÷ 0.05)', value: '4' },
+          { label: 'SE(ln RR)', value: '≈ 0.4796' },
+          { label: '95% CI', value: '≈ 1.56 to 10.24' }
+        ],
+        result: 'RR = 4, 95% CI ≈ [1.56, 10.24]',
+        explanation: 'Smokers in this study were 4 times as likely to develop the disease as non-smokers. The confidence interval (1.56 to 10.24) does not include 1, so this data is consistent with a real difference between the two groups, not just random chance — though the interval is wide, since the sample is fairly small.'
+      },
+      watchOut: [
+        { title: 'Relative risk is a ratio, not a difference', body: 'An RR of 4 means 4 times the risk, not 4 percentage points more risk. Always state it as "X times as likely," never as a plain subtraction of the two percentages.' },
+        { title: 'A zero cell triggers a stated correction, not a crash', body: 'If any one of a, b, c or d is exactly 0, this calculator adds 0.5 to all four cells (the Haldane-Anscombe correction) before computing the risk ratio and its interval, and flags this in the "correction applied" row. This is a standard, named adjustment for the zero-cell problem, not a silent fudge — but it is also known to introduce a small bias of its own, so treat a corrected estimate as approximate, especially with very small counts.' },
+        { title: 'An empty row has no answer at all', body: 'If there are no exposed people (a+b = 0) or no unexposed people (c+d = 0), there is no outcome rate to compute for that group, correction or not — this calculator shows no answer rather than guessing.' },
+        { title: 'Relative risk and odds ratio are not the same number', body: 'They answer related but different questions and are numerically equal only as an approximation. See the odds ratio calculator, and the watch-out item there, for when that approximation holds.' },
+        { title: 'Relative risk needs a cohort-style table, not a case-control one', body: 'This formula assumes a and c are real counts out of real group totals (a+b, c+d) that were actually followed forward. A case-control study\'s group sizes are usually set by the researcher, not by nature, which is exactly why case-control studies report an odds ratio instead.' },
+        { title: 'A confidence interval crossing 1 is not "no effect," only "not statistically distinguishable from no effect"', body: 'With a small sample, a real and meaningful difference can still produce a confidence interval that includes 1.' }
+      ],
+      references: [
+        { label: 'Katz D, Baptista J, Azen SP, Pike MC (1978), "Obtaining Confidence Intervals for the Risk Ratio in Cohort Studies," Biometrics 34(3):469–474', url: 'https://www.jstor.org/stable/2530610' },
+        { label: 'Ades AE, Caldwell DM, Anwer S, Dias S (2025), "Continuity corrections with Mantel–Haenszel estimators in Cochrane reviews," Research Synthesis Methods 16(5):823–825', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC12527532/' },
+        { label: 'Wikipedia, Rare disease assumption', url: 'https://en.wikipedia.org/wiki/Rare_disease_assumption' }
+      ]
+    },
+    inputs: twoByTwoInputs(),
+    breakdown: {
+      headline: 'relativeRisk',
+      headlineLabel: 'Relative risk (RR)',
+      outputs: [
+        { id: 'relativeRisk', label: 'Relative risk (RR)', format: 'significant' },
+        { id: 'ciLower', label: 'Confidence interval, lower bound', format: 'significant' },
+        { id: 'ciUpper', label: 'Confidence interval, upper bound', format: 'significant' },
+        { id: 'riskExposedPercent', label: 'Risk in the exposed group', format: 'percent' },
+        { id: 'riskUnexposedPercent', label: 'Risk in the unexposed group', format: 'percent' },
+        { id: 'correctionApplied', label: 'Haldane-Anscombe correction applied (0 = no, 1 = yes)', format: 'integer' }
+      ],
+      groups: [
+        { title: 'Exposed group', inputs: ['a', 'b'] },
+        { title: 'Unexposed group', inputs: ['c', 'd'] },
+        { inputs: ['confidenceLevel'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'ciLower', label: 'CI lower' }, { from: 'relativeRisk', label: 'Relative risk' }, { from: 'ciUpper', label: 'CI upper' }],
+        title: 'Relative risk, with its confidence interval',
+        highlight: 1
+      }
+    },
+    seo: {
+      title: 'Relative Risk Calculator – Risk Ratio with CI',
+      description: 'Free relative risk calculator. Enter a 2x2 exposed/unexposed outcome table to find the risk ratio and its confidence interval using the Katz log method.',
+      faq: [
+        { question: 'How do I calculate relative risk?', answer: 'Divide the exposed group\'s outcome rate by the unexposed group\'s outcome rate: RR = [a ÷ (a+b)] ÷ [c ÷ (c+d)]. For a=20, b=80, c=5, d=95, that is 0.20 ÷ 0.05 = 4.' },
+        { question: 'What does a relative risk of 4 mean?', answer: 'The exposed group is 4 times as likely to have the outcome as the unexposed group — not 4 percentage points more likely, 4 times as likely.' },
+        { question: 'How is the confidence interval for relative risk calculated?', answer: 'This calculator uses the Katz log method: it finds the standard error of ln(RR), then builds the interval as exp(ln(RR) ± z* × SE), where z* is the normal distribution\'s critical value for the chosen confidence level.' },
+        { question: 'What happens if one of my four counts is 0?', answer: 'This calculator adds 0.5 to all four cells (the Haldane-Anscombe correction, a standard fix for the zero-cell problem) before computing anything, and shows this in the "correction applied" row — never a silent divide-by-zero.' },
+        { question: 'What if there are no exposed people, or no unexposed people, at all?', answer: 'Then there is no outcome rate to compute for that group, and this calculator shows no answer rather than a meaningless one, correction or not.' },
+        { question: 'Is relative risk the same as odds ratio?', answer: 'No, though they are related and can be close in value when the outcome is uncommon in both groups (the "rare disease assumption"). See the odds ratio calculator for the odds-based version and when the two approximate each other.' },
+        { question: 'Can I use this calculator for a case-control study?', answer: 'Not directly — relative risk needs real, followed-forward group totals (cohort or randomized data). A case-control study should use the odds ratio calculator instead.' },
+        { question: 'What does it mean if the confidence interval includes 1?', answer: 'An RR of 1 means no difference between the groups. If the interval spans 1, the data does not rule out "no real difference" at the chosen confidence level.' }
+      ]
+    },
+    compute(values) {
+      const { a, b, c, d, confidenceLevel } = values;
+      const stats = twoByTwoStats(a, b, c, d, confidenceLevel);
+      return {
+        relativeRisk: stats.relativeRisk,
+        ciLower: stats.rrLower,
+        ciUpper: stats.rrUpper,
+        riskExposedPercent: stats.riskExposed * 100,
+        riskUnexposedPercent: stats.riskUnexposed * 100,
+        correctionApplied: stats.correctionApplied
+      };
+    }
+  },
+  {
+    id: 'odds-ratio-calculator',
+    category: 'statistics',
+    updatedAt: '2026-10-23',
+    aliases: ['odds ratio calculator', 'or calculator statistics', 'case control odds ratio calculator', 'odds ratio confidence interval calculator'],
+    related: ['relative-risk-calculator', 'confidence-interval-calculator', 'p-value-calculator', 'chi-square-calculator'],
+    title: 'Odds Ratio Calculator',
+    description: 'Find the odds ratio and its confidence interval from a 2x2 exposed/unexposed outcome table, using the Woolf log method.',
+    example: 'Out of 100 smokers, 20 develop the disease (80 do not); out of 100 non-smokers, 5 do (95 do not). The odds ratio is 4.75.',
+    content: {
+      lastReviewed: '2026-10-23',
+      concept: {
+        title: 'What is an odds ratio?',
+        paragraphs: [
+          'The odds ratio (OR) compares the odds of an outcome in an exposed group against the odds of that outcome in an unexposed group. Odds are not the same thing as a probability or a risk: the odds of an outcome are (number with the outcome) ÷ (number without it), while risk is (number with the outcome) ÷ (total). For a rare outcome the two are close; for a common one, they can differ a lot.',
+          'OR = 1 means the odds are the same in both groups. OR > 1 means higher odds in the exposed group; OR < 1 means lower odds. The odds ratio comes from the same 2x2 table as relative risk: a and c are how many of the exposed and unexposed groups had the outcome, b and d are how many did not.',
+          'The odds ratio is the standard measure for a case-control study, where researchers start from the outcome (people who already have a condition, and matched people who do not) rather than following an exposed and unexposed group forward in time. Because a case-control study\'s group sizes are usually chosen by the researcher, not observed in nature, it cannot measure relative risk directly, but it can still measure the odds ratio — and, under the "rare disease assumption" described below, that odds ratio closely approximates the relative risk that a cohort study would have found.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in the four counts from your 2x2 table, then set a confidence level.',
+        steps: [
+          { name: 'Enter the exposed group\'s counts', text: 'How many exposed people had the outcome (a) and how many did not (b).' },
+          { name: 'Enter the unexposed group\'s counts', text: 'How many unexposed people had the outcome (c) and how many did not (d).' },
+          { name: 'Set a confidence level', text: 'The default is 95%, the most common choice in published research.' },
+          { name: 'Read the odds ratio', text: 'The headline is the odds ratio itself, with its confidence interval shown as a range below it.' },
+          { name: 'Check whether the interval crosses 1', text: 'If the confidence interval includes 1, the data does not rule out "no real difference between the groups" at the chosen confidence level.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The odds ratio is the exposed group\'s odds divided by the unexposed group\'s odds. Its confidence interval uses the Woolf log method, since the log of OR is closer to normally distributed than OR itself.',
+        expression: 'OR = (a × d) ÷ (b × c)\nSE(ln OR) = sqrt(1/a + 1/b + 1/c + 1/d)\nCI = exp(ln(OR) ± z* × SE(ln OR))',
+        terms: [
+          { symbol: 'a, b', meaning: 'Exposed group: outcome occurred (a) or did not (b).' },
+          { symbol: 'c, d', meaning: 'Unexposed group: outcome occurred (c) or did not (d).' },
+          { symbol: 'z*', meaning: 'The normal distribution\'s critical value for the chosen confidence level, e.g. about 1.96 for 95%.' }
+        ],
+        note: 'If any one of the four counts is 0, this calculator adds 0.5 to all four cells before computing anything (the Haldane-Anscombe correction — the exact same policy, applied identically, as the relative risk calculator), and says so in the "correction applied" row. If an entire row is 0, there is no odds to compute for that row in the first place, and this calculator shows no answer.'
+      },
+      workedExample: {
+        intro: 'The same cohort as the relative risk calculator\'s example: 20 of 100 smokers develop the disease (a=20, b=80); 5 of 100 non-smokers do (c=5, d=95).',
+        rows: [
+          { label: 'Odds in the exposed group (20 ÷ 80)', value: '0.25' },
+          { label: 'Odds in the unexposed group (5 ÷ 95)', value: '≈ 0.0526' },
+          { label: 'Odds ratio (20 × 95) ÷ (80 × 5)', value: '4.75' },
+          { label: 'SE(ln OR)', value: '≈ 0.5225' },
+          { label: '95% CI', value: '≈ 1.71 to 13.23' }
+        ],
+        result: 'OR = 4.75, 95% CI ≈ [1.71, 13.23]',
+        explanation: 'The odds of developing the disease were 4.75 times as high for smokers as for non-smokers. This is noticeably bigger than the same data\'s relative risk of 4 — a direct illustration that OR and RR are not interchangeable once the outcome is not rare (here, 20% and 5% are both too common for the rare-disease approximation to hold closely).'
+      },
+      watchOut: [
+        { title: 'Odds ratio is not relative risk', body: 'They are different measures and are only close in value when the outcome is uncommon in both groups (commonly, under about 10% prevalence — the "rare disease assumption"). This run\'s own worked example (20% and 5%) shows the gap: OR = 4.75 vs. RR = 4 for the exact same table.' },
+        { title: 'A zero cell triggers a stated correction, not a crash', body: 'If any one of a, b, c or d is exactly 0, this calculator adds 0.5 to all four cells (the Haldane-Anscombe correction) before computing the odds ratio and its interval, and flags this in the "correction applied" row — a standard, named adjustment, but one with a small known bias of its own, so treat a corrected estimate as approximate with very small counts.' },
+        { title: 'An empty row has no answer at all', body: 'If there are no exposed people (a+b = 0) or no unexposed people (c+d = 0), there is no odds to compute for that group, correction or not — this calculator shows no answer rather than guessing.' },
+        { title: 'Odds ratio can overstate the effect for a common outcome', body: 'When the outcome happens to more than roughly 10-20% of a group, the odds ratio tends to be farther from 1 than the relative risk is, for the same underlying data — this is the mathematical reason it should not be read as "the risk ratio" once an outcome is common.' },
+        { title: 'This page only handles a single 2x2 table', body: 'A stratified analysis across several tables (for example, pooling with Mantel-Haenszel weights) is a related but separate calculation this page does not perform.' },
+        { title: 'A confidence interval crossing 1 is not "no effect," only "not statistically distinguishable from no effect"', body: 'With a small sample, a real and meaningful difference can still produce a confidence interval that includes 1.' }
+      ],
+      references: [
+        { label: 'Woolf B (1955), "On Estimating the Relation Between Blood Group and Disease," Annals of Human Genetics 19(4):251–253', url: 'https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1469-1809.1955.tb01348.x' },
+        { label: 'Ades AE, Caldwell DM, Anwer S, Dias S (2025), "Continuity corrections with Mantel–Haenszel estimators in Cochrane reviews," Research Synthesis Methods 16(5):823–825', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC12527532/' },
+        { label: 'Wikipedia, Rare disease assumption', url: 'https://en.wikipedia.org/wiki/Rare_disease_assumption' }
+      ]
+    },
+    inputs: twoByTwoInputs(),
+    breakdown: {
+      headline: 'oddsRatio',
+      headlineLabel: 'Odds ratio (OR)',
+      outputs: [
+        { id: 'oddsRatio', label: 'Odds ratio (OR)', format: 'significant' },
+        { id: 'ciLower', label: 'Confidence interval, lower bound', format: 'significant' },
+        { id: 'ciUpper', label: 'Confidence interval, upper bound', format: 'significant' },
+        { id: 'riskExposedPercent', label: 'Risk (not odds) in the exposed group, for reference', format: 'percent' },
+        { id: 'riskUnexposedPercent', label: 'Risk (not odds) in the unexposed group, for reference', format: 'percent' },
+        { id: 'correctionApplied', label: 'Haldane-Anscombe correction applied (0 = no, 1 = yes)', format: 'integer' }
+      ],
+      groups: [
+        { title: 'Exposed group', inputs: ['a', 'b'] },
+        { title: 'Unexposed group', inputs: ['c', 'd'] },
+        { inputs: ['confidenceLevel'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'ciLower', label: 'CI lower' }, { from: 'oddsRatio', label: 'Odds ratio' }, { from: 'ciUpper', label: 'CI upper' }],
+        title: 'Odds ratio, with its confidence interval',
+        highlight: 1
+      }
+    },
+    seo: {
+      title: 'Odds Ratio Calculator – OR with Confidence Interval',
+      description: 'Free odds ratio calculator. Enter a 2x2 exposed/unexposed outcome table to find the odds ratio and its confidence interval using the Woolf log method.',
+      faq: [
+        { question: 'How do I calculate an odds ratio?', answer: 'Cross-multiply the 2x2 table: OR = (a × d) ÷ (b × c). For a=20, b=80, c=5, d=95, that is (20 × 95) ÷ (80 × 5) = 1900 ÷ 400 = 4.75.' },
+        { question: 'What does an odds ratio of 4.75 mean?', answer: 'The odds of the outcome are 4.75 times as high in the exposed group as in the unexposed group. It is not the same claim as "4.75 times as likely" in the plain-risk sense — see the relative risk calculator for that.' },
+        { question: 'How is the confidence interval for an odds ratio calculated?', answer: 'This calculator uses the Woolf log method: it finds the standard error of ln(OR), then builds the interval as exp(ln(OR) ± z* × SE), where z* is the normal distribution\'s critical value for the chosen confidence level.' },
+        { question: 'What happens if one of my four counts is 0?', answer: 'This calculator adds 0.5 to all four cells (the Haldane-Anscombe correction, the exact same policy as the relative risk calculator) before computing anything, and shows this in the "correction applied" row.' },
+        { question: 'What if there are no exposed people, or no unexposed people, at all?', answer: 'Then there is no odds to compute for that group, and this calculator shows no answer rather than a meaningless one, correction or not.' },
+        { question: 'When does an odds ratio approximate a relative risk?', answer: 'When the outcome is uncommon in both groups — commonly cited as roughly 10% prevalence or less, the "rare disease assumption." This run\'s own worked example (20% and 5% prevalence) is deliberately not rare enough: OR = 4.75 vs. RR = 4, a visible, real gap.' },
+        { question: 'Why do case-control studies report odds ratios instead of relative risk?', answer: 'A case-control study\'s group sizes are usually set by the researcher (e.g. matching one control per case), not observed from a real population, so it cannot measure a true risk — but the odds ratio it produces still estimates the odds ratio a cohort study would have found.' },
+        { question: 'What does it mean if the confidence interval includes 1?', answer: 'An OR of 1 means no difference in odds between the groups. If the interval spans 1, the data does not rule out "no real difference" at the chosen confidence level.' }
+      ]
+    },
+    compute(values) {
+      const { a, b, c, d, confidenceLevel } = values;
+      const stats = twoByTwoStats(a, b, c, d, confidenceLevel);
+      return {
+        oddsRatio: stats.oddsRatio,
+        ciLower: stats.orLower,
+        ciUpper: stats.orUpper,
+        riskExposedPercent: stats.riskExposed * 100,
+        riskUnexposedPercent: stats.riskUnexposed * 100,
+        correctionApplied: stats.correctionApplied
+      };
+    }
+  },
+  {
+    id: 'expected-value-calculator',
+    category: 'statistics',
+    updatedAt: '2026-10-23',
+    aliases: ['expected value calculator', 'ev calculator', 'expected value of a discrete random variable calculator', 'expected value and variance calculator'],
+    related: ['probability-calculator', 'standard-deviation-calculator', 'binomial-distribution-calculator', 'mean-median-mode-calculator'],
+    title: 'Expected Value Calculator',
+    description: 'Find the expected value, variance and standard deviation of a discrete random variable from its possible outcomes and their probabilities.',
+    example: 'A game pays $10 (20% chance), $2 (30% chance), or loses $5 (50% chance). Its expected value is $0.10 — on average, a small long-run profit.',
+    content: {
+      lastReviewed: '2026-10-23',
+      concept: {
+        title: 'What is expected value?',
+        paragraphs: [
+          'Expected value is the long-run average outcome of a random process, if you could repeat it an enormous number of times. It is not a prediction of any single outcome — a game with an expected value of $0.10 will never actually pay out ten cents on any one play — it is a weighted average of every possible outcome, weighted by how likely each one is.',
+          'A "discrete random variable" just means a quantity that can take on a specific, countable list of values, each with its own probability — a dice roll, a game\'s payout, an insurance claim size. This calculator takes that list directly: every outcome value, paired with the probability of that outcome.',
+          'Expected value alone does not describe risk. Two games can have the identical expected value while one pays out a small, steady amount every time and the other rarely pays out anything but occasionally pays out a lot — this is exactly what variance and standard deviation measure, and this calculator reports both alongside the expected value itself.'
+        ]
+      },
+      howTo: {
+        intro: 'List every possible outcome value and its probability, in matching order.',
+        steps: [
+          { name: 'List the outcome values', text: 'Every possible result — a dollar payout, a number of items, anything numeric — one per line or separated by commas.' },
+          { name: 'List the matching probabilities', text: 'For each outcome above, its probability as a decimal between 0 and 1 (not a percentage), in the exact same order. All of them must add up to 1.' },
+          { name: 'Check the probability total', text: 'If the probabilities don\'t add up to 1, or the two lists are different lengths, this calculator shows no answer and says why, rather than guessing.' },
+          { name: 'Read the expected value', text: 'The headline is the long-run average outcome.' },
+          { name: 'Check the variance and standard deviation', text: 'These describe how spread out the possible outcomes are around that average.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The expected value is a probability-weighted sum. The variance is the probability-weighted average of each outcome\'s squared distance from that expected value.',
+        expression: 'E(X) = Σ (xᵢ × pᵢ)\nVar(X) = Σ [pᵢ × (xᵢ − E(X))²]\nSD(X) = √Var(X)',
+        terms: [
+          { symbol: 'xᵢ', meaning: 'The i-th possible outcome value.' },
+          { symbol: 'pᵢ', meaning: 'The probability of that outcome, as a decimal (so they all add up to 1).' }
+        ],
+        note: 'Probabilities on this page are entered as plain decimals (0.2 for a 20% chance), not percentages — enter 0.2, not 20.'
+      },
+      workedExample: {
+        intro: 'A simple game: win $10 with a 20% chance, win $2 with a 30% chance, or lose $5 with a 50% chance.',
+        rows: [
+          { label: '10 × 0.2', value: '2' },
+          { label: '2 × 0.3', value: '0.6' },
+          { label: '−5 × 0.5', value: '−2.5' },
+          { label: 'E(X) = 2 + 0.6 − 2.5', value: '0.1' },
+          { label: 'Var(X)', value: '33.69' },
+          { label: 'SD(X) = √33.69', value: '≈ 5.8043' }
+        ],
+        result: 'E(X) = $0.10, Var(X) = 33.69, SD(X) ≈ 5.80',
+        explanation: 'On average, playing this game many times nets about 10 cents per play — a small long-run edge — but any single play\'s actual result ($10, $2 or −$5) is nowhere near that average, which is exactly what the fairly large standard deviation (≈5.80, compared to an average of just $0.10) is telling you.'
+      },
+      watchOut: [
+        { title: 'Probabilities must sum to 1 (or this calculator refuses to guess)', body: 'If your probabilities add up to 0.9 or 1.1 instead of exactly 1 (allowing a tiny rounding tolerance), this calculator shows no answer and displays the sum it actually found, rather than silently dividing by that sum to force a result — a sum that is off by a meaningful amount usually means an outcome was left out or a probability was mistyped.' },
+        { title: 'Enter probabilities as decimals, not percentages', body: 'Enter a 20% chance as 0.2, not 20 — this calculator does not guess which convention you meant, and treats every number literally.' },
+        { title: 'The two lists must be the same length, in the same order', body: 'Every outcome value needs exactly one matching probability, in the same position. A pasted list that is too short or too long on one side gives no answer rather than mispairing the remaining values.' },
+        { title: 'Expected value is a long-run average, not a likely single outcome', body: 'A $0.10 expected value does not mean any individual play nets 10 cents — in the worked example, every actual outcome is $10, $2 or −$5. It describes what the average converges to only after a great many repetitions.' },
+        { title: 'A negative outcome value is normal, not an error', body: 'A loss (like −$5 above) is simply a negative number in the outcome list — this calculator does not require every outcome to be positive.' }
+      ],
+      references: [
+        { label: 'OpenStax, Introductory Statistics 2e, §4.2 Mean or Expected Value and Standard Deviation', url: 'https://openstax.org/books/introductory-statistics-2e/pages/4-2-mean-or-expected-value-and-standard-deviation' },
+        { label: 'Wolfram MathWorld, Expectation Value', url: 'https://mathworld.wolfram.com/ExpectationValue.html' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'outcomes',
+        label: 'Outcome values',
+        type: 'list',
+        placeholder: 'Paste or type each possible outcome\'s value — commas, spaces or new lines between them.',
+        defaultValue: 0,
+        listDefault: [10, 2, -5],
+        listMin: 1
+      },
+      {
+        id: 'probabilities',
+        label: 'Probabilities (decimals, e.g. 0.2 for 20%)',
+        type: 'list',
+        placeholder: 'Paste or type each outcome\'s probability as a decimal between 0 and 1, in the same order as the outcomes above. They must add up to 1.',
+        defaultValue: 0,
+        listDefault: [0.2, 0.3, 0.5],
+        listMin: 1
+      }
+    ],
+    breakdown: {
+      headline: 'expectedValue',
+      headlineLabel: 'Expected value',
+      outputs: [
+        { id: 'expectedValue', label: 'Expected value E(X)', format: 'number' },
+        { id: 'variance', label: 'Variance', format: 'number' },
+        { id: 'standardDeviation', label: 'Standard deviation', format: 'number' },
+        { id: 'probabilitySum', label: 'Sum of your probabilities (must be 1)', format: 'number' }
+      ],
+      pairedLists: ['outcomes', 'probabilities'],
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'expectedValueMinusSd', label: 'E(X) − SD' }, { from: 'expectedValue', label: 'E(X)' }, { from: 'expectedValuePlusSd', label: 'E(X) + SD' }],
+        title: 'Expected value and one standard deviation either side',
+        highlight: 1
+      }
+    },
+    seo: {
+      title: 'Expected Value Calculator – EV, Variance & SD',
+      description: 'Free expected value calculator. Enter outcome values and their probabilities to find E(X), variance and standard deviation for a discrete random variable.',
+      faq: [
+        { question: 'How do I calculate expected value?', answer: 'Multiply each outcome by its probability, then add up the products: E(X) = Σ(xᵢ × pᵢ). For outcomes 10, 2, −5 with probabilities 0.2, 0.3, 0.5: (10×0.2) + (2×0.3) + (−5×0.5) = 2 + 0.6 − 2.5 = 0.1.' },
+        { question: 'Do my probabilities have to add up to exactly 1?', answer: 'Yes (allowing a tiny rounding tolerance) — a probability distribution must cover every possible outcome exactly once. This calculator checks the total and refuses to guess if it is off.' },
+        { question: 'Should I enter probabilities as percentages or decimals?', answer: 'Decimals between 0 and 1 — enter a 30% chance as 0.3, not 30.' },
+        { question: 'How do I calculate the variance of a random variable?', answer: 'For each outcome, find its squared distance from the expected value, multiply by its probability, and add up the results: Var(X) = Σ[pᵢ × (xᵢ − E(X))²]. For the worked example, that comes to 33.69.' },
+        { question: 'What does the standard deviation add that expected value does not?', answer: 'Expected value is the long-run average; standard deviation measures how far individual outcomes typically swing from that average. Two games can share the same expected value and have very different risk.' },
+        { question: 'What happens if I enter a different number of outcomes and probabilities?', answer: 'This calculator shows no answer and says the two lists do not match in length, rather than pairing them incorrectly.' },
+        { question: 'Can an outcome value be negative?', answer: 'Yes — a loss is simply a negative outcome value, exactly as in the worked example\'s −$5 outcome.' }
+      ]
+    },
+    compute(values, lists) {
+      const outcomes = lists.outcomes;
+      const probabilities = lists.probabilities;
+      const noAnswer = { expectedValue: NaN, variance: NaN, standardDeviation: NaN, probabilitySum: NaN, expectedValueMinusSd: NaN, expectedValuePlusSd: NaN };
+      if (outcomes.length !== probabilities.length) return noAnswer; // honest no-answer, never truncated/padded
+      const probabilitySum = probabilities.reduce((sum, p) => sum + p, 0);
+      const inRange = probabilities.every((p) => p >= 0 && p <= 1);
+      const sumValid = Math.abs(probabilitySum - 1) <= EV_PROBABILITY_SUM_TOLERANCE;
+      if (!inRange || !sumValid) return { expectedValue: NaN, variance: NaN, standardDeviation: NaN, probabilitySum, expectedValueMinusSd: NaN, expectedValuePlusSd: NaN };
+      const expectedValue = outcomes.reduce((sum, x, i) => sum + x * probabilities[i], 0);
+      const variance = probabilities.reduce((sum, p, i) => sum + p * (outcomes[i] - expectedValue) ** 2, 0);
+      const standardDeviation = Math.sqrt(variance);
+      return {
+        expectedValue,
+        variance,
+        standardDeviation,
+        probabilitySum,
+        expectedValueMinusSd: expectedValue - standardDeviation,
+        expectedValuePlusSd: expectedValue + standardDeviation
+      };
+    }
+  },
+  {
+    id: 'coefficient-of-variation-calculator',
+    category: 'statistics',
+    updatedAt: '2026-10-23',
+    aliases: ['coefficient of variation calculator', 'cv calculator', 'relative standard deviation calculator', 'cv statistics calculator'],
+    related: ['standard-deviation-calculator', 'variance-calculator', 'mean-median-mode-calculator', 'standard-error-calculator'],
+    title: 'Coefficient of Variation Calculator',
+    description: 'Find the coefficient of variation (CV) — standard deviation as a percentage of the mean — from a raw data list or from summary statistics, with population and sample CV shown side by side.',
+    example: 'Five test scores (72, 85, 90, 78, 95) have a mean of 84 and a sample standard deviation of about 9.19, giving a coefficient of variation of about 10.94%.',
+    content: {
+      lastReviewed: '2026-10-23',
+      concept: {
+        title: 'What is the coefficient of variation?',
+        paragraphs: [
+          'The coefficient of variation (CV) expresses a standard deviation as a percentage of the mean: CV = (standard deviation ÷ mean) × 100. Because it is a ratio rather than a raw number, it lets you compare how spread out two data sets are relative to their own typical size, even when those data sets are measured in completely different units or have very different averages.',
+          'A standard deviation of 10 means something different for a data set averaging 1,000 than for one averaging 20 — the first is barely any spread at all (CV ≈ 1%), the second is enormous relative to its own average (CV = 50%). Comparing the raw standard deviations alone would miss this entirely; comparing the CVs makes it obvious.',
+          'This calculator supports two ways to get there: paste a raw data list and let it compute the mean and standard deviation for you, or enter a mean and standard deviation you already have. Like this site\'s standard deviation calculator, it shows both the population and sample versions side by side rather than silently picking one.'
+        ]
+      },
+      howTo: {
+        intro: 'Choose whether you have a raw data list or already know the mean and standard deviation.',
+        steps: [
+          { name: 'Choose how you want to enter data', text: '"From a data list" to paste raw numbers and let this calculator find the mean and standard deviation. "From mean and standard deviation" to enter those two values directly.' },
+          { name: 'Enter your data or your two summary numbers', text: 'For a list, paste your numbers. For summary statistics, enter the mean and the standard deviation you already have.' },
+          { name: 'Read the coefficient of variation', text: 'The headline is the sample CV; the population CV is shown immediately below it.' },
+          { name: 'Compare across data sets', text: 'A lower CV means less relative spread; a higher CV means more — this is the number to compare, not the raw standard deviations, whenever the data sets have different means or units.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The coefficient of variation is the standard deviation divided by the mean, usually shown as a percentage.',
+        expression: 'CV = (s ÷ x̄) × 100',
+        terms: [
+          { symbol: 's', meaning: 'The standard deviation (population or sample).' },
+          { symbol: 'x̄', meaning: 'The mean of the data.' }
+        ],
+        note: 'From a raw data list, this calculator computes both the population standard deviation (÷ n) and the sample standard deviation (÷ n − 1), the same two figures this site\'s standard deviation calculator reports, and shows both resulting CVs. From summary statistics, you supply one standard deviation value directly, so both rows show the same figure — there is no second value to tell population and sample apart in that mode.'
+      },
+      workedExample: {
+        intro: 'Five test scores: 72, 85, 90, 78, 95 — the same worked example this site\'s standard deviation calculator uses, so the two pages\' figures can be checked against each other directly.',
+        rows: [
+          { label: 'Mean', value: '84' },
+          { label: 'Population standard deviation', value: '≈ 8.2219' },
+          { label: 'Sample standard deviation', value: '≈ 9.1924' },
+          { label: 'Population CV (8.2219 ÷ 84 × 100)', value: '≈ 9.79%' },
+          { label: 'Sample CV (9.1924 ÷ 84 × 100)', value: '≈ 10.94%' }
+        ],
+        result: 'Population CV ≈ 9.79%, sample CV ≈ 10.94%',
+        explanation: 'A CV of about 11% means the sample standard deviation is roughly a ninth the size of the mean — a fairly tight cluster of scores relative to their own average.'
+      },
+      watchOut: [
+        { title: 'The mean must not be 0', body: 'Dividing by a mean of exactly 0 makes CV mathematically undefined — this calculator shows no answer rather than a misleading Infinity or a false 0.' },
+        { title: 'CV only makes sense for ratio-scale data with a true zero', body: 'The coefficient of variation should only be computed for data where 0 genuinely means "none of it" — a count, a weight, a price. Temperature in Celsius or Fahrenheit is the classic counter-example: the same four readings give a CV of about 25.5% in Fahrenheit but about 86% in Celsius, purely because both scales place their zero at an arbitrary point rather than true "no heat." (In Kelvin, which does have a true zero, both would give the same, meaningful CV.) Never use CV on interval-scale data like these.' },
+        { title: 'Summary-statistics mode cannot separate population from sample', body: 'When you enter a standard deviation directly, this calculator does not know whether it is a population or sample figure, so both the population CV and sample CV rows show the exact same number. Switch to the raw-data-list mode to see them differ from an actual list, as the worked example above does.' },
+        { title: 'A single data point has no sample CV', body: 'With only one value in a raw data list, the sample standard deviation is undefined (0 ÷ 0), so the sample CV shows no answer — the population CV still computes normally, as a single point genuinely has zero spread.' },
+        { title: 'CV is sensitive to a mean near zero even when not exactly zero', body: 'As the mean approaches 0, even a small, ordinary standard deviation produces a huge CV — a very large CV can be a sign that this data set\'s mean is simply close to zero, not that the data is unusually variable.' }
+      ],
+      references: [
+        { label: 'NIST Dataplot Reference Manual, Coefficient of Variation', url: 'https://www.itl.nist.gov/div898/software/dataplot/refman2/ch2/coef_var.pdf' },
+        { label: 'Wikipedia, Coefficient of variation', url: 'https://en.wikipedia.org/wiki/Coefficient_of_variation' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'mode',
+        label: 'How do you want to enter data?',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 1,
+        min: 1,
+        options: [
+          { value: 1, label: 'From a data list' },
+          { value: 2, label: 'From mean and standard deviation' }
+        ]
+      },
+      { id: 'mean', label: 'Mean', type: 'number', placeholder: '84', defaultValue: 84, step: 0.1 },
+      { id: 'standardDeviation', label: 'Standard deviation', type: 'number', placeholder: '9.19', defaultValue: 9.19, step: 0.01, min: 0 },
+      listInput([72, 85, 90, 78, 95], 1)
+    ],
+    breakdown: {
+      headline: 'sampleCV',
+      headlineLabel: 'Coefficient of variation (sample)',
+      outputs: [
+        { id: 'sampleCV', label: 'Coefficient of variation (sample)', format: 'percent' },
+        { id: 'populationCV', label: 'Coefficient of variation (population)', format: 'percent' },
+        { id: 'meanUsed', label: 'Mean used', format: 'number' },
+        { id: 'sampleStdDevUsed', label: 'Sample standard deviation used', format: 'number' },
+        { id: 'populationStdDevUsed', label: 'Population standard deviation used', format: 'number' }
+      ],
+      groups: [
+        { inputs: ['mode'] },
+        { title: 'From a data list', inputs: ['data'] },
+        { title: 'From mean and standard deviation', inputs: ['mean', 'standardDeviation'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'populationCV', label: 'Population CV' }, { from: 'sampleCV', label: 'Sample CV' }],
+        title: 'Population vs. sample coefficient of variation',
+        highlight: 1
+      }
+    },
+    seo: {
+      title: 'Coefficient of Variation Calculator – CV & SD',
+      description: 'Free coefficient of variation calculator. Find CV from a raw data list or from a mean and standard deviation, with population and sample CV shown side by side.',
+      faq: [
+        { question: 'How do I calculate the coefficient of variation?', answer: 'Divide the standard deviation by the mean and multiply by 100: CV = (s ÷ x̄) × 100. For a mean of 84 and a sample standard deviation of about 9.19, CV ≈ (9.19 ÷ 84) × 100 ≈ 10.94%.' },
+        { question: 'What is a "good" coefficient of variation?', answer: 'It depends entirely on the field and the data — there is no universal threshold. CV is most useful for comparing the relative spread of two or more data sets against each other, not for judging a single CV in isolation.' },
+        { question: 'Why does this show two different CV numbers from the same list?', answer: 'Like this site\'s standard deviation calculator, this page computes both the population standard deviation (dividing by n) and the sample standard deviation (dividing by n − 1), and reports both resulting CVs rather than silently picking one.' },
+        { question: 'Can I use CV on temperature data?', answer: 'Not on Celsius or Fahrenheit — both have an arbitrary zero, so the computed CV changes depending on which scale you used, which makes it meaningless. Kelvin, which has a true zero, would give a valid CV for the same data.' },
+        { question: 'What happens if the mean is 0?', answer: 'CV is undefined when the mean is exactly 0, since you would be dividing by zero — this calculator shows no answer rather than a misleading result.' },
+        { question: 'Can I enter a standard deviation directly instead of a list?', answer: 'Yes — switch to "from mean and standard deviation" and enter both numbers. Since only one standard deviation is given, both the population and sample CV rows show that same figure.' },
+        { question: 'Is the coefficient of variation the same as relative standard deviation?', answer: 'Yes, "relative standard deviation" (RSD) is another common name for the same calculation, sometimes defined using the absolute value of the mean so it is always positive.' }
+      ]
+    },
+    compute(values, lists) {
+      const { mode, mean: meanInput, standardDeviation } = values;
+      let mean: number;
+      let populationStdDevUsed: number;
+      let sampleStdDevUsed: number;
+      if (mode === 1) {
+        const list = lists.data;
+        const stats = varianceOf(list);
+        mean = stats.mean;
+        populationStdDevUsed = Math.sqrt(stats.populationVariance);
+        sampleStdDevUsed = Math.sqrt(stats.sampleVariance); // n=1 -> sample variance is 0/0, an honest NaN
+      } else {
+        mean = meanInput;
+        populationStdDevUsed = standardDeviation;
+        sampleStdDevUsed = standardDeviation; // one SD value entered directly -- both rows show it, stated in watchOut
+      }
+      // A literal 0 mean makes CV undefined (division by zero) -- refused outright as NaN, never Infinity.
+      const populationCV = mean === 0 ? NaN : (populationStdDevUsed / mean) * 100;
+      const sampleCV = mean === 0 ? NaN : (sampleStdDevUsed / mean) * 100;
+      return { sampleCV, populationCV, meanUsed: mean, sampleStdDevUsed, populationStdDevUsed };
+    }
+  },
+  {
+    id: 'outlier-calculator',
+    category: 'statistics',
+    updatedAt: '2026-10-23',
+    aliases: ['outlier calculator', 'find outliers calculator', 'outlier detection calculator', 'statistical outlier calculator'],
+    related: ['quartile-calculator', 'standard-deviation-calculator', 'z-score-calculator', 'mean-median-mode-calculator'],
+    title: 'Outlier Calculator',
+    description: 'Find outliers in a list of numbers using Tukey\'s 1.5×IQR fences and an always-visible z-score cross-check, with the actual lowest and highest outlier values, not just a count.',
+    example: 'In the list 4, 8, 6, 5, 3, 7, 50, the value 50 is flagged as an outlier by Tukey\'s fences — but its own z-score is only about 2.4, below the usual |z| > 3 cutoff, since the outlier itself pulls the mean and spread it is being measured against.',
+    content: {
+      lastReviewed: '2026-10-23',
+      concept: {
+        title: 'What is an outlier, and what should I do about one?',
+        paragraphs: [
+          'An outlier is a data point that differs noticeably from the rest of a data set — much higher or lower than everything around it. Outliers can come from a genuine, unusual event (one customer placing a huge order), from a measurement or data-entry error (a misplaced decimal point), or simply from ordinary variability in a distribution with naturally heavy tails.',
+          'Finding an outlier is not the same as deciding what to do about it. Automatically deleting any flagged value is a controversial and often wrong move — it can quietly bias your results if the extreme value is real. A flagged outlier is a prompt to look closer at that specific data point, not an automatic verdict on it.',
+          'This calculator offers two independent ways to flag outliers from the same list: Tukey\'s 1.5×IQR fences (the same quartile-based method this site\'s quartile calculator already computes) and a simple z-score check. For how Q1, the median, Q3 and the interquartile range themselves are calculated and cited, see the quartile calculator — this page focuses specifically on what counts as an outlier and why the two methods can disagree.'
+        ]
+      },
+      howTo: {
+        intro: 'Paste or type your numbers into the box.',
+        steps: [
+          { name: 'Paste your numbers', text: 'Separated by commas, spaces, semicolons or new lines, in any order — up to 1,000 of them.' },
+          { name: 'Read the Tukey outlier count', text: 'The headline is how many of your values fall outside the 1.5×IQR fences.' },
+          { name: 'Check the lowest and highest outlier', text: 'If any values were flagged, their actual lowest and highest values are shown, not just a count.' },
+          { name: 'Check the z-score cross-check', text: 'A second, independent count of how many values have |z| > 3 against the list\'s own mean and standard deviation.' },
+          { name: 'Compare the two methods', text: 'If they disagree, the worked example below explains the most common reason why.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Two independent methods, both always computed from the same list.',
+        expression: 'Tukey: outlier if value < Q1 − 1.5×IQR or value > Q3 + 1.5×IQR\nZ-score: outlier if |value − mean| ÷ population standard deviation > 3',
+        terms: [
+          { symbol: 'Q1, Q3, IQR', meaning: 'The first and third quartiles and the interquartile range — see the quartile calculator for exactly how these are computed and cited.' },
+          { symbol: 'z', meaning: 'How many standard deviations a value sits from the mean, using the list\'s own population standard deviation (dividing by n, not n − 1).' }
+        ],
+        note: 'The z-score check here uses the plain mean and population standard deviation, with the conventional |z| > 3 threshold. NIST\'s own Engineering Statistics Handbook notes this simple version "can be misleading, particularly for small sample sizes," and recommends a modified z-score (based on the median and median absolute deviation, with a 3.5 threshold) instead — stated honestly here as a real difference from NIST\'s own current recommendation, not implied to be it.'
+      },
+      workedExample: {
+        intro: 'Seven values: 4, 8, 6, 5, 3, 7, 50.',
+        rows: [
+          { label: 'Q1 / median / Q3', value: '4 / 6 / 8' },
+          { label: 'IQR (8 − 4)', value: '4' },
+          { label: 'Lower / upper fence', value: '−2 / 14' },
+          { label: 'Tukey outliers', value: '1 (the value 50)' },
+          { label: 'Mean / population standard deviation', value: '≈ 11.857 / ≈ 15.652' },
+          { label: 'z-score of 50', value: '≈ 2.437' },
+          { label: 'Z-score outliers (|z| > 3)', value: '0' }
+        ],
+        result: 'Tukey flags 1 outlier (50); the z-score method flags 0',
+        explanation: 'This is a textbook case of "masking": the single extreme value (50) drags the mean and standard deviation upward so much that its own z-score no longer clears the |z| > 3 bar, even though Tukey\'s fences (built from the more outlier-resistant median and quartiles) still catch it easily. Neither method is "wrong" — this is exactly why both are shown here rather than treated as interchangeable.'
+      },
+      watchOut: [
+        { title: 'The two methods can disagree, and that is expected, not a bug', body: 'A single extreme value inflates the very mean and standard deviation the z-score method measures it against (see the worked example above) — Tukey\'s fences, built from medians and quartiles, resist this far better. When the two disagree, lean on the Tukey result for a single obvious extreme value.' },
+        { title: 'A flagged outlier is not automatically wrong', body: 'It is a prompt to look closer at that specific value, not proof that it is a measurement error — removing a data point just because it is unusual is a controversial practice that can bias your results if the value is genuinely real.' },
+        { title: 'With no outliers, there is no "lowest" or "highest" outlier to report', body: 'If the Tukey outlier count is 0, the lowest-outlier and highest-outlier figures show no answer, since there is nothing in that category to report — not a calculation error.' },
+        { title: 'A single value has no outliers by either method', body: 'With only one number in the list, there is nothing else to compare it against — Q1, the median and Q3 all collapse onto that one value, and its own z-score is undefined (0 ÷ 0).' },
+        { title: 'This page reuses the quartile calculator\'s own method, not a second one', body: 'Q1, Q3 and the IQR here are computed exactly the same way, from the exact same function, as this site\'s quartile calculator — the two pages can never silently disagree on the same data. See that page for the method\'s full citation and for the quartiles themselves if that is specifically what you need.' },
+        { title: 'The z-score check here is not NIST\'s own recommended version', body: 'NIST\'s Engineering Statistics Handbook recommends a modified z-score (median/MAD-based, threshold 3.5) over the simpler mean/standard-deviation version offered here — this calculator states that difference explicitly rather than implying its simpler check is NIST\'s preferred method.' }
+      ],
+      references: [
+        { label: 'Wikipedia, Outlier', url: 'https://en.wikipedia.org/wiki/Outlier' },
+        { label: 'NIST/SEMATECH e-Handbook of Statistical Methods, §1.3.5.17 Detection of Outliers', url: 'https://www.itl.nist.gov/div898/handbook/eda/section3/eda35h.htm' }
+      ]
+    },
+    inputs: [listInput([4, 8, 6, 5, 3, 7, 50], 1)],
+    breakdown: {
+      headline: 'outlierCount',
+      headlineLabel: 'Tukey outliers found',
+      outputs: [
+        { id: 'outlierCount', label: 'Tukey outliers found', format: 'integer' },
+        { id: 'lowestOutlier', label: 'Lowest outlier value', format: 'significant' },
+        { id: 'highestOutlier', label: 'Highest outlier value', format: 'significant' },
+        { id: 'zOutlierCount', label: 'Z-score outliers found (|z| > 3)', format: 'integer' },
+        { id: 'q1', label: 'Q1 (25th percentile)', format: 'significant' },
+        { id: 'median', label: 'Median', format: 'significant' },
+        { id: 'q3', label: 'Q3 (75th percentile)', format: 'significant' },
+        { id: 'iqr', label: 'Interquartile range (IQR)', format: 'significant' },
+        { id: 'lowerFence', label: 'Lower fence', format: 'significant' },
+        { id: 'upperFence', label: 'Upper fence', format: 'significant' },
+        { id: 'meanUsed', label: 'Mean', format: 'significant' },
+        { id: 'stdDevUsed', label: 'Population standard deviation', format: 'significant' },
+        { id: 'lowestValue', label: 'Lowest value in your list', format: 'significant' },
+        { id: 'highestValue', label: 'Highest value in your list', format: 'significant' }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'lowestValue', label: 'Lowest' }, { from: 'median', label: 'Median' }, { from: 'highestValue', label: 'Highest' }],
+        title: 'Your data\'s range',
+        highlight: 1
+      }
+    },
+    seo: {
+      title: 'Outlier Calculator – Tukey Fences & Z-Score Check',
+      description: 'Free outlier calculator. Paste a list of up to 1,000 numbers to find outliers by Tukey\'s 1.5×IQR fences and an always-visible z-score cross-check.',
+      faq: [
+        { question: 'How do I find outliers in a data set?', answer: 'This calculator uses Tukey\'s fences: sort the data, find Q1 and Q3, compute the interquartile range (IQR = Q3 − Q1), then flag anything below Q1 − 1.5×IQR or above Q3 + 1.5×IQR.' },
+        { question: 'What is the actual outlier value, not just how many there are?', answer: 'This calculator reports the lowest and highest flagged values directly, not just a count — if only one value is flagged, both figures are that same value.' },
+        { question: 'What is the z-score method for finding outliers?', answer: 'Flag any value whose z-score — how many standard deviations it sits from the mean — has an absolute value greater than 3. This calculator always shows this count alongside the Tukey result, since the two methods can disagree.' },
+        { question: 'Why would the two methods give different answers on the same data?', answer: 'A single very extreme value inflates the mean and standard deviation it is being measured against, which can hide it from the z-score check even while Tukey\'s quartile-based fences still catch it easily — this calculator\'s own worked example shows exactly this.' },
+        { question: 'Should I just delete an outlier once I find one?', answer: 'Not automatically. A flagged value is a prompt to look closer at it, not proof that it is wrong — deleting real data just because it is unusual is a controversial practice that can bias your results.' },
+        { question: 'Is this the same calculation as the quartile calculator?', answer: 'The Q1, Q3 and IQR figures are computed the exact same way, reusing the same method — but this page adds the actual outlier values (not just a count) and the z-score cross-check, and focuses its explanation on what an outlier is and what to do about it rather than re-explaining quartiles.' },
+        { question: 'What happens if there are no outliers?', answer: 'The outlier count shows 0, and the lowest/highest outlier figures show no answer, since there is nothing in that category to report.' }
+      ]
+    },
+    compute(values, lists) {
+      const list = lists.data;
+      const sorted = [...list].sort((a, b) => a - b);
+      const q1 = percentileOf(sorted, 25);
+      const median = percentileOf(sorted, 50);
+      const q3 = percentileOf(sorted, 75);
+      const iqr = q3 - q1;
+      const lowerFence = q1 - 1.5 * iqr;
+      const upperFence = q3 + 1.5 * iqr;
+      const outliers = list.filter((value) => value < lowerFence || value > upperFence);
+      const outlierCount = outliers.length;
+      const lowestOutlier = outlierCount ? Math.min(...outliers) : NaN; // no outliers -> nothing to report, an honest NaN
+      const highestOutlier = outlierCount ? Math.max(...outliers) : NaN;
+      const { mean, populationVariance } = varianceOf(list);
+      const stdDevUsed = Math.sqrt(populationVariance);
+      const zOutlierCount = list.filter((value) => Math.abs((value - mean) / stdDevUsed) > 3).length;
+      return {
+        outlierCount,
+        lowestOutlier,
+        highestOutlier,
+        zOutlierCount,
+        q1,
+        median,
+        q3,
+        iqr,
+        lowerFence,
+        upperFence,
+        meanUsed: mean,
+        stdDevUsed,
+        lowestValue: Math.min(...list),
+        highestValue: Math.max(...list)
+      };
     }
   }
 ];

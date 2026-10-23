@@ -493,6 +493,76 @@ exports[`compute() snapshots > circle-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > coefficient-of-variation-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mode": 1,
+      "mean": 84,
+      "standardDeviation": 9.19,
+      "lists": {
+        "data": [
+          72,
+          85,
+          90,
+          78,
+          95
+        ]
+      }
+    },
+    "outputs": {
+      "sampleCV": 10.94331923,
+      "populationCV": 9.788002281,
+      "meanUsed": 84,
+      "sampleStdDevUsed": 9.192388155,
+      "populationStdDevUsed": 8.221921916
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mode": 2,
+      "mean": 126,
+      "standardDeviation": 13.79,
+      "lists": {
+        "data": [
+          108,
+          128,
+          135,
+          117,
+          143
+        ]
+      }
+    },
+    "outputs": {
+      "sampleCV": 10.94444444,
+      "populationCV": 10.94444444,
+      "meanUsed": 126,
+      "sampleStdDevUsed": 13.79,
+      "populationStdDevUsed": 13.79
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mode": 1,
+      "mean": 0,
+      "standardDeviation": 0,
+      "lists": {
+        "data": [
+          0
+        ]
+      }
+    },
+    "outputs": {
+      "sampleCV": "NaN",
+      "populationCV": "NaN",
+      "meanUsed": 0,
+      "sampleStdDevUsed": "NaN",
+      "populationStdDevUsed": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > combination-calculator 1`] = `
 {
   "default": {
@@ -1163,6 +1233,79 @@ exports[`compute() snapshots > ev-charging-calculator 1`] = `
       "costPerMileGas": 0,
       "savingsPerMile": 0,
       "annualSavings": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > expected-value-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "lists": {
+        "outcomes": [
+          10,
+          2,
+          -5
+        ],
+        "probabilities": [
+          0.2,
+          0.3,
+          0.5
+        ]
+      }
+    },
+    "outputs": {
+      "expectedValue": 0.1,
+      "variance": 33.69,
+      "standardDeviation": 5.804308744,
+      "probabilitySum": 1,
+      "expectedValueMinusSd": -5.704308744,
+      "expectedValuePlusSd": 5.904308744
+    }
+  },
+  "typical": {
+    "inputs": {
+      "lists": {
+        "outcomes": [
+          15,
+          3,
+          -7
+        ],
+        "probabilities": [
+          0,
+          0,
+          1
+        ]
+      }
+    },
+    "outputs": {
+      "expectedValue": -7,
+      "variance": 0,
+      "standardDeviation": 0,
+      "probabilitySum": 1,
+      "expectedValueMinusSd": -7,
+      "expectedValuePlusSd": -7
+    }
+  },
+  "edge": {
+    "inputs": {
+      "lists": {
+        "outcomes": [
+          0
+        ],
+        "probabilities": [
+          0
+        ]
+      }
+    },
+    "outputs": {
+      "expectedValue": "NaN",
+      "variance": "NaN",
+      "standardDeviation": "NaN",
+      "probabilitySum": 0,
+      "expectedValueMinusSd": "NaN",
+      "expectedValuePlusSd": "NaN"
     }
   }
 }
@@ -2481,6 +2624,154 @@ exports[`compute() snapshots > normal-distribution-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > odds-ratio-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "a": 20,
+      "b": 80,
+      "c": 5,
+      "d": 95,
+      "confidenceLevel": 95
+    },
+    "outputs": {
+      "oddsRatio": 4.75,
+      "ciLower": 1.70578566,
+      "ciUpper": 13.22704284,
+      "riskExposedPercent": 20,
+      "riskUnexposedPercent": 5,
+      "correctionApplied": 0
+    }
+  },
+  "typical": {
+    "inputs": {
+      "a": 30,
+      "b": 120,
+      "c": 8,
+      "d": 143,
+      "confidenceLevel": 143
+    },
+    "outputs": {
+      "oddsRatio": 4.46875,
+      "ciLower": 0.8832050074,
+      "ciUpper": 22.61052235,
+      "riskExposedPercent": 20,
+      "riskUnexposedPercent": 5.298013245,
+      "correctionApplied": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "a": 0,
+      "b": 0,
+      "c": 0,
+      "d": 0,
+      "confidenceLevel": 1
+    },
+    "outputs": {
+      "oddsRatio": "NaN",
+      "ciLower": "NaN",
+      "ciUpper": "NaN",
+      "riskExposedPercent": "NaN",
+      "riskUnexposedPercent": "NaN",
+      "correctionApplied": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > outlier-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "lists": {
+        "data": [
+          4,
+          8,
+          6,
+          5,
+          3,
+          7,
+          50
+        ]
+      }
+    },
+    "outputs": {
+      "outlierCount": 1,
+      "lowestOutlier": 50,
+      "highestOutlier": 50,
+      "zOutlierCount": 0,
+      "q1": 4,
+      "median": 6,
+      "q3": 8,
+      "iqr": 4,
+      "lowerFence": -2,
+      "upperFence": 14,
+      "meanUsed": 11.85714286,
+      "stdDevUsed": 15.65182391,
+      "lowestValue": 3,
+      "highestValue": 50
+    }
+  },
+  "typical": {
+    "inputs": {
+      "lists": {
+        "data": [
+          6,
+          12,
+          9,
+          8,
+          5,
+          11,
+          75
+        ]
+      }
+    },
+    "outputs": {
+      "outlierCount": 1,
+      "lowestOutlier": 75,
+      "highestOutlier": 75,
+      "zOutlierCount": 0,
+      "q1": 6,
+      "median": 9,
+      "q3": 12,
+      "iqr": 6,
+      "lowerFence": -3,
+      "upperFence": 21,
+      "meanUsed": 18,
+      "stdDevUsed": 23.38497686,
+      "lowestValue": 5,
+      "highestValue": 75
+    }
+  },
+  "edge": {
+    "inputs": {
+      "lists": {
+        "data": [
+          0
+        ]
+      }
+    },
+    "outputs": {
+      "outlierCount": 0,
+      "lowestOutlier": "NaN",
+      "highestOutlier": "NaN",
+      "zOutlierCount": 0,
+      "q1": 0,
+      "median": 0,
+      "q3": 0,
+      "iqr": 0,
+      "lowerFence": 0,
+      "upperFence": 0,
+      "meanUsed": 0,
+      "stdDevUsed": 0,
+      "lowestValue": 0,
+      "highestValue": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > p-value-calculator 1`] = `
 {
   "default": {
@@ -3335,6 +3626,62 @@ exports[`compute() snapshots > ratio-calculator 1`] = `
       "d": "NaN",
       "simplifiedA": 0,
       "simplifiedB": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > relative-risk-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "a": 20,
+      "b": 80,
+      "c": 5,
+      "d": 95,
+      "confidenceLevel": 95
+    },
+    "outputs": {
+      "relativeRisk": 4,
+      "ciLower": 1.562564927,
+      "ciUpper": 10.23957451,
+      "riskExposedPercent": 20,
+      "riskUnexposedPercent": 5,
+      "correctionApplied": 0
+    }
+  },
+  "typical": {
+    "inputs": {
+      "a": 30,
+      "b": 120,
+      "c": 8,
+      "d": 143,
+      "confidenceLevel": 143
+    },
+    "outputs": {
+      "relativeRisk": 3.775,
+      "ciLower": 0.8578565385,
+      "ciUpper": 16.61189763,
+      "riskExposedPercent": 20,
+      "riskUnexposedPercent": 5.298013245,
+      "correctionApplied": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "a": 0,
+      "b": 0,
+      "c": 0,
+      "d": 0,
+      "confidenceLevel": 1
+    },
+    "outputs": {
+      "relativeRisk": "NaN",
+      "ciLower": "NaN",
+      "ciUpper": "NaN",
+      "riskExposedPercent": "NaN",
+      "riskUnexposedPercent": "NaN",
+      "correctionApplied": "NaN"
     }
   }
 }

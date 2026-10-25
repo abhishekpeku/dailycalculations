@@ -1,4 +1,5 @@
 import type { CalculatorConfig } from './types.ts';
+import { toBase, fromBase } from '../../lib/units.ts';
 
 export const measurementsCalculators: CalculatorConfig[] = [
   {
@@ -81,6 +82,17 @@ export const measurementsCalculators: CalculatorConfig[] = [
         result: '10 mi ≈ 16.09 km · 10 km ≈ 6.21 mi',
         explanation: 'Multiplying by 1.6 is a good shortcut: it is only about 0.6% low. For kilometers to miles, multiplying by 5/8 (0.625) is about 0.6% high.'
       },
+      commonValues: {
+        title: 'Common miles to kilometers conversions',
+        dimension: 'length',
+        from: 'mi',
+        to: 'km',
+        values: [1, 3, 5, 10, 13.1, 20, 26.2, 50, 100],
+        reverse: {
+          title: 'Common kilometers to miles conversions',
+          values: [1, 5, 10, 21.1, 42.2, 50, 100]
+        }
+      },
       watchOut: [
         { title: 'Nautical miles are not miles', body: 'A nautical mile is 1,852 m, about 1.151 statute miles. Boat and aircraft speeds in knots use it. Pick nmi in the menu if your figure is nautical.' },
         { title: 'Speeds convert the same way', body: '60 mph is about 96.56 km/h and 100 km/h about 62.14 mph. The same 1.609344 factor applies, because the hours cancel.' },
@@ -109,7 +121,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
       ]
     },
     compute(values) {
-      const kilometers = values.miles * 1.60934;
+      const kilometers = fromBase(toBase(values.miles, 'length', 'mi'), 'length', 'km');
       return { kilometers };
     }
   },
@@ -191,6 +203,17 @@ export const measurementsCalculators: CalculatorConfig[] = [
         result: '350 °F ≈ 176.7 °C (ovens use 180 °C) · 20 °C = 68 °F',
         explanation: 'Recipes written in Celsius usually round 350 °F to 180 °C, which is about 6 °F hotter (356 °F). That is well within the swing of a home oven thermostat.'
       },
+      commonValues: {
+        title: 'Common Fahrenheit to Celsius conversions',
+        dimension: 'temperature',
+        from: 'F',
+        to: 'C',
+        values: [0, 32, 68, 98.6, 100, 212, 350, 400],
+        reverse: {
+          title: 'Common Celsius to Fahrenheit conversions',
+          values: [-18, 0, 20, 25, 37, 100, 180, 200]
+        }
+      },
       watchOut: [
         { title: 'Subtract before multiplying', body: 'Multiplying first gives the wrong answer: 68 × 5/9 − 32 is about 5.8, not 20. Take away 32 first, then multiply by 5/9.' },
         { title: 'Temperature differences convert without the 32', body: 'A change of 10 °C is a change of 18 °F, not 50 °F. When you convert a rise or fall in temperature, multiply by 9/5 or 5/9 only.' },
@@ -220,7 +243,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
       ]
     },
     compute(values) {
-      const celsius = (values.fahrenheit - 32) * (5 / 9);
+      const celsius = fromBase(toBase(values.fahrenheit, 'temperature', 'F'), 'temperature', 'C');
       return { celsius };
     }
   },
@@ -305,6 +328,17 @@ export const measurementsCalculators: CalculatorConfig[] = [
         result: '150 lb ≈ 68.04 kg = 10 st 10 lb',
         explanation: 'Halving and taking off 10% gives 0.45 kg per pound, under 1% below the exact 0.4536. For kilograms to pounds, double the figure and add 10%: 68 kg gives 136 + 13.6 = 149.6 lb.'
       },
+      commonValues: {
+        title: 'Common pounds to kilograms conversions',
+        dimension: 'mass',
+        from: 'lb',
+        to: 'kg',
+        values: [1, 5, 10, 50, 100, 150, 200, 250],
+        reverse: {
+          title: 'Common kilograms to pounds conversions',
+          values: [1, 5, 10, 50, 70, 100, 150]
+        }
+      },
       watchOut: [
         { title: 'Stone and pounds are mixed units', body: '11 st 4 lb is not 11.4 stone. It is 11 + 4/14 ≈ 11.29 stone, or 158 lb. Convert it to pounds first.' },
         { title: 'Tons come in three sizes', body: 'A US short ton is 2,000 lb (907.18 kg), a UK long ton 2,240 lb (1,016.05 kg) and a metric tonne 1,000 kg (2,204.62 lb). Check which one a figure uses.' },
@@ -333,7 +367,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
       ]
     },
     compute(values) {
-      const kilograms = values.pounds * 0.453592;
+      const kilograms = fromBase(toBase(values.pounds, 'mass', 'lb'), 'mass', 'kg');
       return { kilograms };
     }
   },
@@ -419,6 +453,17 @@ export const measurementsCalculators: CalculatorConfig[] = [
         result: '2.5 US gal ≈ 9.46 L · 2.5 UK gal ≈ 11.37 L',
         explanation: 'Multiplying by 4 and taking off 5% is a handy mental shortcut for US gallons, because 3.785 is about 4 × 0.95. It lands within half a percent.'
       },
+      commonValues: {
+        title: 'Common gallons (US) to liters conversions',
+        dimension: 'volume',
+        from: 'gal',
+        to: 'L',
+        values: [1, 2, 2.5, 5, 10, 15, 20, 55],
+        reverse: {
+          title: 'Common liters to gallons (US) conversions',
+          values: [1, 5, 10, 20, 50, 100]
+        }
+      },
       watchOut: [
         { title: 'Know which gallon you have', body: 'Older UK and Canadian recipes, fuel figures and car economy ratings use imperial gallons. Using the US factor for them understates the volume by about 17%.' },
         { title: 'Dry gallons are different again', body: 'The US dry gallon (about 4.405 L) is a rarely used unit for grain and produce. Liquid measures, fuel and recipes use the 231 cubic inch liquid gallon.' },
@@ -448,7 +493,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
       ]
     },
     compute(values) {
-      const liters = values.gallons * 3.78541;
+      const liters = fromBase(toBase(values.gallons, 'volume', 'gal'), 'volume', 'L');
       return { liters };
     }
   }

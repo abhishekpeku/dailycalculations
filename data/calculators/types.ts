@@ -198,6 +198,22 @@ export type CalculatorContent = {
     explanation: string;
   };
   watchOut: { title: string; body: string }[];
+  /**
+   * A real, computed "common conversions" table for conversion pages (mdFiles/steps/42-wave-1-conversion.md).
+   * `values` (in `from` units) are converted to `to` units through lib/units.ts at render time, never
+   * typed in. `reverse`, when present, is a second table in the opposite direction with its own values
+   * (in `to` units, converted back to `from`) and title.
+   */
+  commonValues?: {
+    title: string;
+    dimension: UnitDimension;
+    from: string;
+    to: string;
+    values: number[];
+    reverse?: { title: string; values: number[] };
+    /** Decimal places for a plain numeric cell. Default 2. Ignored for a feet+inches column (lib/commonValues.ts). */
+    decimals?: number;
+  };
 };
 
 export type CalculatorConfig = {

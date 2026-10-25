@@ -14,10 +14,10 @@ existing converters are the reference pattern for this sub-wave, not `force-calc
 
 - Run 1 (this run): **common-values table kit section + retrofit of the 4 existing converters +
   cm-to-inches, feet-to-meters, ounces-to-milliliters, grams-to-ounces, mph-to-kph.**
-  - [ ] Kit: `content.commonValues` (type, renderer, TOC entry, unit test) — see "Kit addition"
-  - [ ] Fix `miles-to-kilometers-converter`'s `compute()` (uses `1.60934`, must use the exact
+  - [x] Kit: `content.commonValues` (type, renderer, TOC entry, unit test) — see "Kit addition"
+  - [x] Fix `miles-to-kilometers-converter`'s `compute()` (uses `1.60934`, must use the exact
     factor via `lib/units.ts`) and audit the other three existing `compute()`s the same way
-  - [ ] Retrofit `commonValues` onto the 4 existing converters (miles↔km, °F↔°C, lb↔kg, gal↔L)
+  - [x] Retrofit `commonValues` onto the 4 existing converters (miles↔km, °F↔°C, lb↔kg, gal↔L)
   - [ ] centimeters-to-inches-converter
   - [ ] feet-to-meters-converter
   - [ ] ounces-to-milliliters-converter (US fl oz; UK fl oz in the menu and a watch-out)

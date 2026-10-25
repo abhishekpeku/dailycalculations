@@ -1664,7 +1664,7 @@ exports[`compute() snapshots > gallons-to-liters-converter 1`] = `
       "gallons": 2.5
     },
     "outputs": {
-      "liters": 9.463525
+      "liters": 9.46352946
     }
   },
   "typical": {
@@ -1672,7 +1672,7 @@ exports[`compute() snapshots > gallons-to-liters-converter 1`] = `
       "gallons": 3.8
     },
     "outputs": {
-      "liters": 14.384558
+      "liters": 14.38456478
     }
   },
   "edge": {
@@ -2499,7 +2499,7 @@ exports[`compute() snapshots > miles-to-kilometers-converter 1`] = `
       "miles": 10
     },
     "outputs": {
-      "kilometers": 16.0934
+      "kilometers": 16.09344
     }
   },
   "typical": {
@@ -2507,7 +2507,7 @@ exports[`compute() snapshots > miles-to-kilometers-converter 1`] = `
       "miles": 15
     },
     "outputs": {
-      "kilometers": 24.1401
+      "kilometers": 24.14016
     }
   },
   "edge": {
@@ -3180,7 +3180,7 @@ exports[`compute() snapshots > pounds-to-kilograms-converter 1`] = `
       "pounds": 150
     },
     "outputs": {
-      "kilograms": 68.0388
+      "kilograms": 68.0388555
     }
   },
   "typical": {
@@ -3188,7 +3188,7 @@ exports[`compute() snapshots > pounds-to-kilograms-converter 1`] = `
       "pounds": 225
     },
     "outputs": {
-      "kilograms": 102.0582
+      "kilograms": 102.0582833
     }
   },
   "edge": {

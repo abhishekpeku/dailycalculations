@@ -74,13 +74,13 @@ value set, so no table is a copy of another page's.
 - [x] `weight-converter`
 - [x] `volume-converter`
 - [x] `area-converter`
-- [ ] `speed-converter`
-- [ ] Move `distance converter` / `weight converter` / `volume converter` aliases onto the new pages
-- [ ] Independent scratch verification (`verify_run2.mjs`) of every copy figure before committing
-- [ ] `npm test`, `npm run build`,
+- [x] `speed-converter`
+- [x] Move `distance converter` / `weight converter` / `volume converter` aliases onto the new pages
+- [x] Independent scratch verification (`verify_run2.mjs`) of every copy figure before committing
+- [x] `npm test`, `npm run build`,
   `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` pass
-- [ ] Spot-check the 5 new pages + `/categories/measurements` on a local server, kill the server
-- [ ] Update `mdFiles/STATUS.md` (row 40–42 + session log), `gh pr ready`
+- [x] Spot-check the 5 new pages + `/categories/measurements` on a local server, kill the server
+- [x] Update `mdFiles/STATUS.md` (row 40–42 + session log), `gh pr ready`
 
 ## Planned run breakdown (re-evaluate each run against what exists before building it)
 

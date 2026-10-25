@@ -4269,6 +4269,35 @@ exports[`compute() snapshots > slope-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > speed-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "metersPerSecond": 10
+    },
+    "outputs": {
+      "kph": 36
+    }
+  },
+  "typical": {
+    "inputs": {
+      "metersPerSecond": 15
+    },
+    "outputs": {
+      "kph": 54
+    }
+  },
+  "edge": {
+    "inputs": {
+      "metersPerSecond": 0
+    },
+    "outputs": {
+      "kph": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > square-root-calculator 1`] = `
 {
   "default": {

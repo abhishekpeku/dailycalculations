@@ -1593,5 +1593,126 @@ export const measurementsCalculators: CalculatorConfig[] = [
       const squareFeet = fromBase(toBase(values.squareMeters, 'area', 'm2'), 'area', 'ft2');
       return { squareFeet };
     }
+  },
+  {
+    id: 'speed-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['speed converter', 'meters per second to km/h converter', 'convert speed units', 'velocity converter', 'mph to m/s converter'],
+    related: ['mph-to-kph-converter', 'running-pace-calculator', 'length-converter', 'gas-cost-calculator'],
+    title: 'Speed Converter',
+    description: 'Convert between meters per second, kilometers per hour, miles per hour, knots and feet per second, in any direction, as you type.',
+    example: '10 meters per second is exactly 36 km/h, and 15 m/s (a fast cyclist) is 54 km/h.',
+    solver: {
+      defaultTarget: 'kph',
+      variables: [
+        { id: 'metersPerSecond', label: 'Meters per second', symbol: 'm/s', dimension: 'speed', defaultValue: 10, defaultUnit: 'm/s' },
+        { id: 'kph', label: 'Kilometers per hour', symbol: 'km/h', dimension: 'speed', defaultValue: 36, defaultUnit: 'km/h' }
+      ],
+      // Both fields hold the same speed (in m/s); the unit menus already list every speed unit in
+      // lib/units.ts (m/s, km/h, mph, kn, ft/s), so either menu is a full speed converter.
+      solve: {
+        metersPerSecond: ({ kph }) => (kph >= 0 ? kph : NaN),
+        kph: ({ metersPerSecond }) => (metersPerSecond >= 0 ? metersPerSecond : NaN)
+      },
+      derive: (si) => ({ kphShown: si.metersPerSecond * 3.6 }),
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'kphShown',
+          min: 0,
+          max: 4,
+          ticks: ['1 km/h', '10 km/h', '100 km/h', '1,000 km/h', '10,000 km/h'],
+          benchmarks: [
+            { label: 'A brisk walk (about 6 km/h)', value: 6 },
+            { label: 'A typical highway speed (about 110 km/h)', value: 110 },
+            { label: 'A high-speed train (about 300 km/h)', value: 300 },
+            { label: 'The speed of sound at sea level (about 1,225 km/h)', value: 1225.044 }
+          ],
+          title: 'How fast is that?',
+          valueLabel: 'Your speed'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Speed units, metric and customary',
+        paragraphs: [
+          'Speed is distance divided by time, so every speed unit here comes from a length unit and a time unit together. Meters per second is the SI combination, used in physics and engineering. Kilometers per hour is the everyday metric speed used almost everywhere for driving and weather; miles per hour is its customary counterpart, used in the US and the UK.',
+          'Because a kilometer and an hour are each defined exactly, the conversion between meters per second and kilometers per hour is exact too, with no rounded physical constant involved: 1 m/s means 1 m every second, which is 3,600 m every hour, which is 3.6 km every hour — so 1 m/s = 3.6 km/h, exactly. Miles per hour and knots bring in the mile (1,609.344 m, exact) and the nautical mile (1,852 m, exact), so those conversions are exact too, just with a less convenient-looking factor.',
+          'This page is the general case: any field can take any speed unit, from a walking pace in m/s up to a nautical speed in knots. For the mile-and-kilometer pair specifically, with its own worked table of common road speeds, see the mph to km/h converter.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a speed in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Pick your starting unit', text: 'Open the unit menu beside the first field and choose meters per second, kilometers per hour, miles per hour, knots or feet per second.' },
+          { name: 'Type the speed', text: 'Enter the number. The other field recalculates immediately.' },
+          { name: 'Change the target unit', text: 'Open the second field\'s menu to see the same speed in any other unit.' },
+          { name: 'Read the scale', text: 'The scale places your speed against a brisk walk, a highway, a high-speed train and the speed of sound.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Every speed unit here reduces to meters per second first, then to the target unit.',
+        expression: 'm/s = value × factor(unit)\nresult = m/s ÷ factor(target unit)',
+        terms: [
+          { symbol: 'factor(unit)', meaning: 'Meters per second per unit, exact: 0.277778 (1,000/3,600) for km/h, 0.447040 (1,609.344/3,600) for mph, 0.514444 (1,852/3,600) for kn, 0.3048 for ft/s.' },
+          { symbol: 'm/s', meaning: 'The speed in the base SI unit, used internally for every conversion.' }
+        ],
+        note: 'The m/s-to-km/h factor (3.6) is exact and the cleanest of the set, since both the meter/kilometer and the second/hour are exact SI relationships with nothing historical or rounded in between.'
+      },
+      workedExample: {
+        intro: 'A treadmill is set to 15 m/s record pace, and a car\'s speedometer shows 90 km/h. What is each in the other unit?',
+        rows: [
+          { label: '15 × 3.6', value: '54 km/h' },
+          { label: '90 ÷ 3.6', value: '25 m/s' },
+          { label: 'Quick check: 15 × 4, minus 10%', value: '60 − 6 = 54 km/h' }
+        ],
+        result: '15 m/s = 54 km/h · 90 km/h = 25 m/s',
+        explanation: 'The factor here is exactly 3.6, so there is no rounding at all, unlike most unit pairs on this site. "×4, minus 10%" is a clean mental shortcut because 4 × 0.9 = 3.6 exactly.'
+      },
+      commonValues: {
+        title: 'Common meters per second to km/h conversions',
+        dimension: 'speed',
+        from: 'm/s',
+        to: 'km/h',
+        values: [1, 2, 5, 10, 20, 30, 50, 100],
+        reverse: {
+          title: 'Common km/h to meters per second conversions',
+          values: [10, 36, 50, 60, 90, 100, 120]
+        }
+      },
+      watchOut: [
+        { title: 'Knots are nautical, not statute', body: 'A knot is 1 nautical mile (1,852 m) per hour, about 1.852 km/h — not the same as a mile per hour (1.609344 km/h).' },
+        { title: 'This converts a rate, not a distance', body: 'Speed and distance share a conversion factor for a given unit pair only because time cancels out; they are still different physical quantities.' },
+        { title: 'Speedometers can read a little fast', body: 'Many car speedometers read a few percent fast for mechanical and legal-tolerance reasons, so a converted GPS speed will not always match the dashboard exactly.' },
+        { title: 'The speed of sound varies with conditions', body: 'About 1,225 km/h is for dry air at sea level under standard atmospheric conditions; it is slower at altitude and faster in warmer air.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'metersPerSecond', label: 'Meters per second', type: 'number', placeholder: '10', defaultValue: 10, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Speed Converter (m/s, km/h, mph, knots)',
+      description: 'Free speed converter: meters per second, kilometers per hour, miles per hour, knots and feet per second, in any direction, with exact factors.',
+      faq: [
+        { question: 'How do I convert m/s to km/h?', answer: 'Multiply by 3.6 — exact, since 1,000 m fits into 3,600 s the same number of times either way. 15 m/s × 3.6 = 54 km/h.' },
+        { question: 'How do I convert km/h to m/s?', answer: 'Divide by 3.6. 90 km/h ÷ 3.6 = 25 m/s.' },
+        { question: 'How do I convert m/s to mph?', answer: 'Multiply by about 2.236936 (3.6 ÷ 1.609344). 25 m/s is about 55.92 mph.' },
+        { question: 'Why is the m/s to km/h factor exact?', answer: 'Both the meter/kilometer and the second/hour relationships are exact SI definitions, with no historical or rounded physical constant in between, unlike the mile or the pound.' },
+        { question: 'How does a knot compare to m/s?', answer: 'A knot is exactly 1,852/3,600 ≈ 0.514444 m/s, since a nautical mile is exactly 1,852 m.' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'For km/h to m/s, divide by 3.6 exactly — no shortcut needed. For mph, multiply km/h by about 0.62 instead.' }
+      ]
+    },
+    compute(values) {
+      const kph = fromBase(toBase(values.metersPerSecond, 'speed', 'm/s'), 'speed', 'km/h');
+      return { kph };
+    }
   }
 ];

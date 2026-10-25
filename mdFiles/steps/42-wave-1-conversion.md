@@ -225,6 +225,96 @@ exactly:
 - [x] Spot-check the 5 new pages + `/categories/measurements` on a local server, kill the server
 - [x] Update `mdFiles/STATUS.md` (row 40–42 + session log — incl. what run 5 needs), `gh pr ready`
 
+## Run 5
+
+Pairs: kW↔hp, psi↔bar, kcal↔kJ, MB↔GB, mpg↔L/100 km. Same pair-converter pattern as runs 1 and 4,
+with the overlap rule from run 4: run 3's general pages already use kW↔hp, psi↔bar, kJ↔kcal and
+GB↔MB as *their own* default pairs (`power-converter`, `pressure-converter`, `energy-converter`,
+`data-storage-converter`), each with a `commonValues` table on that exact pair. mpg↔L/100 km has no
+general-page overlap (no general fuel-economy converter exists yet) but is reciprocal (non-linear),
+which needs its own check.
+
+**Dedupe check (programmatic, against every `id`/alias/`redirectFrom` in `data/calculators/*.ts`
+before building)**: no existing id for any of the 5 candidate ids
+(`horsepower-to-kilowatts-converter`, `bar-to-psi-converter`, `kilocalories-to-kilojoules-converter`,
+`megabytes-to-gigabytes-converter`, `mpg-to-l-100km-converter`). Alias collisions found: the
+*opposite-direction* alias on each of the four run-3 general pages is an exact or near-exact string
+match for what the new pair page would naturally want as its own primary alias —
+`power-converter` has `'hp to kw calculator'` (its own pair is kW→hp), `pressure-converter` has
+`'bar to psi calculator'` (its own pair is psi→bar), `energy-converter` has `'kcal to kj calculator'`
+(its own pair is kJ→kcal), `data-storage-converter` has `'mb to gb calculator'` (its own pair is
+GB→MB). Same precedent as run 4's `'sq ft to sq m converter'` move: each of these four aliases
+moves off the general page onto the new, more specific pair page; each general page drops from 5 to
+4 aliases, staying at the ≥4 floor, so no replacement alias is needed. No other phrasings (hp/kw,
+psi/bar, kcal/kj, mb/gb, mpg, l/100km, fuel economy) collide anywhere else in the dataset.
+
+**Design per pair** — opposite primary direction from the sibling general page (per "what run 5
+needs to know" in `STATUS.md`), a pair-specific id/title, and a `commonValues` table aimed at that
+pair's real search intent, not a copy of the general page's table:
+
+- `horsepower-to-kilowatts-converter` — primary hp→kW (opposite of `power-converter`'s kW→hp).
+  Intent: car/motor power ratings, not the generic watt-scale `power-converter` already covers.
+  Table: hp→kW uses common engine/motor horsepower figures; reverse kW→hp uses standard electric
+  motor kW ratings. Watch-out: ties the "electrical horsepower" (746 W rounded, used on some motor
+  nameplates) more directly to the motor-rating angle than `power-converter`'s one-line mention.
+- `bar-to-psi-converter` — primary bar→psi (opposite of `pressure-converter`'s psi→bar). Intent:
+  tire, pressure-washer and espresso-machine pressures, not the generic Pa-to-Torr scale
+  `pressure-converter` already covers. Table: bar→psi spans tire/bike/espresso bar figures; reverse
+  psi→bar spans tire and pressure-washer psi figures.
+- `kilocalories-to-kilojoules-converter` — primary kcal→kJ (opposite of `energy-converter`'s
+  kJ→kcal). Intent: reading a food nutrition label (which of kcal/kJ a given country's label uses),
+  not the generic joule-to-BTU scale `energy-converter` already covers. Table: food-label-sized
+  kcal and kJ figures. No claim about any country's *reference daily intake* figure (regulatory
+  rounding there varies by country and is a known trap) — only the literal arithmetic conversion of
+  a label's own printed energy figure.
+- `megabytes-to-gigabytes-converter` — primary MB→GB (opposite of `data-storage-converter`'s
+  GB→MB). Intent: file and phone/data-plan sizes, not the generic bit/byte/binary-prefix scope
+  `data-storage-converter` already covers in full. Table: file and plan-size MB/GB figures. Repeats
+  the decimal-vs-binary point with one concrete worked figure (not the full explanation, which stays
+  on `data-storage-converter` — cross-linked via `related`).
+- `mpg-to-l-100km-converter` — new dimension, no general-page overlap. Primary mpg (US)→L/100 km,
+  since the site's primary market (CLAUDE.md) searches "mpg to l/100km" more than the reverse. US
+  and UK mpg are different units (`UNITS.fuelEconomy` already has both `mpg` and `mpgUK` — no unit
+  addition needed) and the imperial gallon is bigger, so UK mpg reads higher for the same real
+  economy; the menu offers both, a watch-out explains the gap. **Reciprocal-relation correctness**:
+  `lib/units.ts`'s `mpg`/`mpgUK`/`km/L` are already modeled as `inverse()` (base = k ÷ value), so
+  `toBase`/`fromBase` already do the non-linear math — no new math is written in the calculator
+  itself, same as every other pair converter. Confirmed the "higher mpg = lower L/100 km" direction
+  and the zero/negative guard with `lib/units.spec.ts`'s existing fuel-economy test block before
+  writing any copy. **Zero/negative guard**: typing 0 or a negative value into either field must not
+  show `Infinity`. Traced this through the actual engine rather than assuming: `toBase(0, 'fuelEconomy',
+  'mpg')` is already `Infinity` (the reciprocal unit's own math), which fails `solveState`'s
+  `Number.isFinite` check (`lib/solverState.ts`'s own comment: "0 mpg is Infinity in SI") *before*
+  `solve()` ever runs, so the field just shows no answer, not `Infinity` — the kit already generically
+  guards this, confirmed by reading `lib/solverState.ts` and `components/SolverCalculator.tsx`
+  (`converts()`/`answered`) rather than inventing a new guard. The pair's own `solve` functions use
+  the same `>= 0` pattern as every other pair converter for consistency, not a special `> 0`. The
+  `mpg` text `input`'s `min: 1` mirrors `gas-cost-calculator`'s existing mpg input in `auto.ts`
+  (never 0). Visual: `logScale` on a `derive`d `mpgShown` (works regardless of which field is the
+  solved one, same pattern as `power-converter`'s `kwShown`), with everyday, "about"-qualified
+  benchmarks (compact hybrid, sedan, pickup truck) in the same uncited-benchmark style as the rest
+  of the kit — no banding taxonomy invented.
+
+### Progress
+
+- [x] Dedupe check (ids + aliases, programmatic) and the design decisions above
+- [ ] Move `'hp to kw calculator'` off `power-converter`, `'bar to psi calculator'` off
+  `pressure-converter`, `'kcal to kj calculator'` off `energy-converter`, `'mb to gb calculator'`
+  off `data-storage-converter`
+- [ ] `horsepower-to-kilowatts-converter`
+- [ ] `bar-to-psi-converter`
+- [ ] `kilocalories-to-kilojoules-converter`
+- [ ] `megabytes-to-gigabytes-converter`
+- [ ] `mpg-to-l-100km-converter`
+- [ ] Independent scratch verification (`verify_run5.mjs`) of every copy figure, incl. the reciprocal
+  mpg↔L/100 km relation and the exact UK/US mpg constants, before committing
+- [ ] `npm test`, `npm run build`,
+  `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` pass
+- [ ] Spot-check the 5 new pages + `/categories/measurements` on a local server (incl. typing 0 into
+  the mpg/L-100km fields to confirm no `Infinity` is shown), kill the server
+- [ ] Update `mdFiles/STATUS.md` (row 40–42 + session log — incl. a concrete scope proposal for
+  run 6, the lookup-table converters), `gh pr ready`
+
 ## Planned run breakdown (re-evaluate each run against what exists before building it)
 
 The plan's list is "~65, only pairs with real search volume, each with a real common-values

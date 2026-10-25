@@ -1740,6 +1740,12 @@ new general page, replacing it there with a specific enough alias to stay at or 
 
 Things noticed but deliberately out of scope. Add here instead of fixing mid-step.
 
+- **`formatDecimal` (`lib/calculator.ts`) hardcodes `'en-US'`** (noticed 2026-10-25, step 42 review).
+  It formats the static `content.commonValues` tables, so a UK/EU visitor sees `1,234.56` regardless
+  of region. The table is server-rendered (`force-static`, no request headers), so a fix would need
+  either a client-side re-format after hydration or an accepted fixed format. CLAUDE.md says never
+  hardcode `en-US` — decide which, alongside the region work.
+
 - **Cloudflare "Workers Builds" GitHub check fails on every push** (noticed 2026-10-22, PR #19 onward,
   including `master` commits `1d0ad1c`, `a7a0378`): the user found the build is *skipped* rather than
   failing on code. The local `opennextjs-cloudflare build` passes. Harmless while deploys are manual

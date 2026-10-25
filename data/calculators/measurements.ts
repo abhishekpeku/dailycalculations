@@ -693,7 +693,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
         rows: [
           { label: '9 × 0.3048', value: '2.74 m' },
           { label: '2.1 ÷ 0.3048', value: '6.8898 ft' },
-          { label: '0.8898 ft × 12, rounded', value: '83 in total' }
+          { label: '0.8898 ft × 12 = 10.68 in, rounded', value: '6 ft 11 in' }
         ],
         result: '9 ft = 2.74 m · 2.1 m ≈ 6 ft 11 in',
         explanation: 'Converting feet and inches means rounding the TOTAL inches first: 6.8898 ft is 82.68 in, which rounds to 83 in, i.e. 6 ft 11 in — never "6 ft 12 in".'

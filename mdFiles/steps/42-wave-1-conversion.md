@@ -210,7 +210,7 @@ exactly:
 ### Progress
 
 - [x] Dedupe check (ids + aliases, programmatic) and the decisions above
-- [ ] Kit addition: `commonValues.stoneLbs` (`lib/commonValues.ts`, `types.ts`,
+- [x] Kit addition: `commonValues.stoneLbs` (`lib/commonValues.ts`, `types.ts`,
   `CommonValuesSection.tsx`, tests)
 - [ ] Move `'stone to kg converter'` alias off `pounds-to-kilograms-converter`; move
   `'sq ft to sq m converter'` alias off `area-converter`

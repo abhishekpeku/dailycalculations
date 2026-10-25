@@ -212,11 +212,11 @@ export type CalculatorContent = {
     values: number[];
     /**
      * A second table, `to` units -> `from` units, with its own values (in `to` units) and title.
-     * Its own `feetInches` is local to ITS columns: 'from' is this table's left column (displayed
-     * in `to` units), 'to' is its right column (displayed in `from` units).
+     * Its own `feetInches`/`stoneLbs` is local to ITS columns: 'from' is this table's left column
+     * (displayed in `to` units), 'to' is its right column (displayed in `from` units).
      */
-    reverse?: { title: string; values: number[]; feetInches?: 'from' | 'to' };
-    /** Decimal places for a plain numeric cell. Default 2. Ignored for a feet+inches column. */
+    reverse?: { title: string; values: number[]; feetInches?: 'from' | 'to'; stoneLbs?: 'from' | 'to' };
+    /** Decimal places for a plain numeric cell. Default 2. Ignored for a feet+inches/stone+lb column. */
     decimals?: number;
     /**
      * Render the named column (dimension must be 'length') as "5 ft 11 in" instead of a decimal
@@ -224,6 +224,13 @@ export type CalculatorContent = {
      * column's real unit via lib/units.ts; this only changes how it is displayed (lib/commonValues.ts).
      */
     feetInches?: 'from' | 'to';
+    /**
+     * Render the named column (dimension must be 'mass') as "11 st 4 lb" instead of a decimal
+     * number — body-weight rows on a kg<->stone page (mdFiles/steps/42-wave-1-conversion.md, run 4).
+     * Same principle as `feetInches`: rounds the total pounds first, then splits, so it can never
+     * print "14 lb".
+     */
+    stoneLbs?: 'from' | 'to';
   };
 };
 

@@ -83,6 +83,35 @@ exports[`compute() snapshots > area-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > area-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "squareMeters": 10
+    },
+    "outputs": {
+      "squareFeet": 107.6391042
+    }
+  },
+  "typical": {
+    "inputs": {
+      "squareMeters": 15
+    },
+    "outputs": {
+      "squareFeet": 161.4586563
+    }
+  },
+  "edge": {
+    "inputs": {
+      "squareMeters": 0
+    },
+    "outputs": {
+      "squareFeet": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > average-calculator 1`] = `
 {
   "default": {
@@ -5015,6 +5044,35 @@ exports[`compute() snapshots > volume-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > volume-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "liters": 10
+    },
+    "outputs": {
+      "gallons": 2.641720524
+    }
+  },
+  "typical": {
+    "inputs": {
+      "liters": 15
+    },
+    "outputs": {
+      "gallons": 3.962580785
+    }
+  },
+  "edge": {
+    "inputs": {
+      "liters": 0
+    },
+    "outputs": {
+      "gallons": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > wallpaper-calculator 1`] = `
 {
   "default": {
@@ -5098,6 +5156,35 @@ exports[`compute() snapshots > water-intake-calculator 1`] = `
     "outputs": {
       "dailyOunces": 0,
       "dailyLiters": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > weight-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "kilograms": 10
+    },
+    "outputs": {
+      "pounds": 22.04622622
+    }
+  },
+  "typical": {
+    "inputs": {
+      "kilograms": 15
+    },
+    "outputs": {
+      "pounds": 33.06933933
+    }
+  },
+  "edge": {
+    "inputs": {
+      "kilograms": 0
+    },
+    "outputs": {
+      "pounds": 0
     }
   }
 }

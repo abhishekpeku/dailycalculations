@@ -71,9 +71,9 @@ value set, so no table is a copy of another page's.
 
 - [x] Dedupe check (ids + aliases, programmatic) and the decisions above
 - [x] `length-converter`
-- [ ] `weight-converter`
-- [ ] `volume-converter`
-- [ ] `area-converter`
+- [x] `weight-converter`
+- [x] `volume-converter`
+- [x] `area-converter`
 - [ ] `speed-converter`
 - [ ] Move `distance converter` / `weight converter` / `volume converter` aliases onto the new pages
 - [ ] Independent scratch verification (`verify_run2.mjs`) of every copy figure before committing

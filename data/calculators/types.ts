@@ -198,6 +198,33 @@ export type CalculatorContent = {
     explanation: string;
   };
   watchOut: { title: string; body: string }[];
+  /**
+   * A real, computed "common conversions" table for conversion pages (mdFiles/steps/42-wave-1-conversion.md).
+   * `values` (in `from` units) are converted to `to` units through lib/units.ts at render time, never
+   * typed in. `reverse`, when present, is a second table in the opposite direction with its own values
+   * (in `to` units, converted back to `from`) and title.
+   */
+  commonValues?: {
+    title: string;
+    dimension: UnitDimension;
+    from: string;
+    to: string;
+    values: number[];
+    /**
+     * A second table, `to` units -> `from` units, with its own values (in `to` units) and title.
+     * Its own `feetInches` is local to ITS columns: 'from' is this table's left column (displayed
+     * in `to` units), 'to' is its right column (displayed in `from` units).
+     */
+    reverse?: { title: string; values: number[]; feetInches?: 'from' | 'to' };
+    /** Decimal places for a plain numeric cell. Default 2. Ignored for a feet+inches column. */
+    decimals?: number;
+    /**
+     * Render the named column (dimension must be 'length') as "5 ft 11 in" instead of a decimal
+     * number — e.g. a height row on cm<->in or ft<->m pages. The value is still computed in that
+     * column's real unit via lib/units.ts; this only changes how it is displayed (lib/commonValues.ts).
+     */
+    feetInches?: 'from' | 'to';
+  };
 };
 
 export type CalculatorConfig = {

@@ -365,6 +365,35 @@ exports[`compute() snapshots > cashback-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > centimeters-to-inches-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "centimeters": 25.4
+    },
+    "outputs": {
+      "inches": 10
+    }
+  },
+  "typical": {
+    "inputs": {
+      "centimeters": 38.1
+    },
+    "outputs": {
+      "inches": 15
+    }
+  },
+  "edge": {
+    "inputs": {
+      "centimeters": 0
+    },
+    "outputs": {
+      "inches": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > chi-square-calculator 1`] = `
 {
   "default": {
@@ -1407,6 +1436,35 @@ exports[`compute() snapshots > fahrenheit-to-celsius-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > feet-to-meters-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "feet": 6
+    },
+    "outputs": {
+      "meters": 1.8288
+    }
+  },
+  "typical": {
+    "inputs": {
+      "feet": 9
+    },
+    "outputs": {
+      "meters": 2.7432
+    }
+  },
+  "edge": {
+    "inputs": {
+      "feet": 0
+    },
+    "outputs": {
+      "meters": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > force-calculator 1`] = `
 {
   "default": {
@@ -1664,7 +1722,7 @@ exports[`compute() snapshots > gallons-to-liters-converter 1`] = `
       "gallons": 2.5
     },
     "outputs": {
-      "liters": 9.463525
+      "liters": 9.46352946
     }
   },
   "typical": {
@@ -1672,7 +1730,7 @@ exports[`compute() snapshots > gallons-to-liters-converter 1`] = `
       "gallons": 3.8
     },
     "outputs": {
-      "liters": 14.384558
+      "liters": 14.38456478
     }
   },
   "edge": {
@@ -1831,6 +1889,35 @@ exports[`compute() snapshots > gpa-calculator 1`] = `
       "gpa": 0,
       "totalCredits": 0,
       "totalPoints": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > grams-to-ounces-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "grams": 100
+    },
+    "outputs": {
+      "ounces": 3.527396195
+    }
+  },
+  "typical": {
+    "inputs": {
+      "grams": 150
+    },
+    "outputs": {
+      "ounces": 5.291094292
+    }
+  },
+  "edge": {
+    "inputs": {
+      "grams": 0
+    },
+    "outputs": {
+      "ounces": 0
     }
   }
 }
@@ -2499,7 +2586,7 @@ exports[`compute() snapshots > miles-to-kilometers-converter 1`] = `
       "miles": 10
     },
     "outputs": {
-      "kilometers": 16.0934
+      "kilometers": 16.09344
     }
   },
   "typical": {
@@ -2507,7 +2594,7 @@ exports[`compute() snapshots > miles-to-kilometers-converter 1`] = `
       "miles": 15
     },
     "outputs": {
-      "kilometers": 24.1401
+      "kilometers": 24.14016
     }
   },
   "edge": {
@@ -2563,6 +2650,35 @@ exports[`compute() snapshots > mortgage-calculator 1`] = `
       "totalCost": 0,
       "totalInterest": 0,
       "loanPrincipal": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > mph-to-kph-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mph": 60
+    },
+    "outputs": {
+      "kph": 96.56064
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mph": 90
+    },
+    "outputs": {
+      "kph": 144.84096
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mph": 0
+    },
+    "outputs": {
+      "kph": 0
     }
   }
 }
@@ -2675,6 +2791,35 @@ exports[`compute() snapshots > odds-ratio-calculator 1`] = `
       "riskExposedPercent": "NaN",
       "riskUnexposedPercent": "NaN",
       "correctionApplied": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > ounces-to-milliliters-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "ounces": 1
+    },
+    "outputs": {
+      "milliliters": 29.57352956
+    }
+  },
+  "typical": {
+    "inputs": {
+      "ounces": 1.5
+    },
+    "outputs": {
+      "milliliters": 44.36029434
+    }
+  },
+  "edge": {
+    "inputs": {
+      "ounces": 0
+    },
+    "outputs": {
+      "milliliters": 0
     }
   }
 }
@@ -3180,7 +3325,7 @@ exports[`compute() snapshots > pounds-to-kilograms-converter 1`] = `
       "pounds": 150
     },
     "outputs": {
-      "kilograms": 68.0388
+      "kilograms": 68.0388555
     }
   },
   "typical": {
@@ -3188,7 +3333,7 @@ exports[`compute() snapshots > pounds-to-kilograms-converter 1`] = `
       "pounds": 225
     },
     "outputs": {
-      "kilograms": 102.0582
+      "kilograms": 102.0582833
     }
   },
   "edge": {

@@ -6,8 +6,8 @@ export const measurementsCalculators: CalculatorConfig[] = [
     id: 'miles-to-kilometers-converter',
     category: 'measurements',
     updatedAt: '2026-10-19',
-    aliases: ['mi to km converter', 'distance converter', 'km to miles calculator', 'miles to km'],
-    related: ['pounds-to-kilograms-converter', 'gallons-to-liters-converter', 'fahrenheit-to-celsius-converter', 'running-pace-calculator'],
+    aliases: ['mi to km converter', 'km to miles calculator', 'miles to km', 'convert miles to kilometers'],
+    related: ['pounds-to-kilograms-converter', 'gallons-to-liters-converter', 'fahrenheit-to-celsius-converter', 'length-converter'],
     title: 'Miles to Kilometers Converter',
     description: 'Convert miles to kilometers, or kilometers to miles, as you type. Meters, feet, yards and nautical miles are in the unit menus too.',
     example: '10 miles is 16.09 km, a 5K race is 3.11 miles, and a marathon (42.195 km) is 26.22 miles.',
@@ -251,8 +251,8 @@ export const measurementsCalculators: CalculatorConfig[] = [
     id: 'pounds-to-kilograms-converter',
     category: 'measurements',
     updatedAt: '2026-10-19',
-    aliases: ['lbs to kg converter', 'weight converter', 'kg to pounds calculator', 'stone to kg converter', 'lb to kg'],
-    related: ['bmi-calculator', 'miles-to-kilometers-converter', 'gallons-to-liters-converter', 'fahrenheit-to-celsius-converter'],
+    aliases: ['lbs to kg converter', 'kg to pounds calculator', 'stone to kg converter', 'lb to kg'],
+    related: ['bmi-calculator', 'weight-converter', 'gallons-to-liters-converter', 'fahrenheit-to-celsius-converter'],
     title: 'Pounds to Kilograms Converter',
     description: 'Convert pounds to kilograms, or kilograms to pounds, as you type. Stone, ounces, grams and tonnes are in the unit menus too.',
     example: '150 lb is 68.04 kg, and 70 kg is 154.32 lb, or 11 stone and about a third of a pound.',
@@ -375,8 +375,8 @@ export const measurementsCalculators: CalculatorConfig[] = [
     id: 'gallons-to-liters-converter',
     category: 'measurements',
     updatedAt: '2026-10-19',
-    aliases: ['gal to l converter', 'volume converter', 'liters to gallons calculator', 'fuel volume converter', 'imperial gallon converter'],
-    related: ['fuel-cost-calculator', 'miles-to-kilometers-converter', 'pounds-to-kilograms-converter', 'water-intake-calculator'],
+    aliases: ['gal to l converter', 'liters to gallons calculator', 'fuel volume converter', 'imperial gallon converter'],
+    related: ['fuel-cost-calculator', 'volume-converter', 'pounds-to-kilograms-converter', 'water-intake-calculator'],
     title: 'Gallons to Liters Converter',
     description: 'Convert US or UK (imperial) gallons to liters, or liters to gallons, as you type. Quarts, pints, cups and fluid ounces are in the unit menus too.',
     example: '2.5 US gallons is about 9.46 liters. A UK (imperial) gallon is 4.546 liters, about 20% more than a US gallon.',
@@ -1108,6 +1108,127 @@ export const measurementsCalculators: CalculatorConfig[] = [
     compute(values) {
       const kph = fromBase(toBase(values.mph, 'speed', 'mph'), 'speed', 'km/h');
       return { kph };
+    }
+  },
+  {
+    id: 'length-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['length converter', 'distance converter', 'metric to imperial length converter', 'convert meters to feet', 'unit length converter'],
+    related: ['feet-to-meters-converter', 'miles-to-kilometers-converter', 'centimeters-to-inches-converter', 'area-converter'],
+    title: 'Length Converter',
+    description: 'Convert between meters, feet, kilometers, miles, yards, inches, centimeters, millimeters and nautical miles, in any direction, as you type.',
+    example: '1 meter is about 3.28 feet, and 100 yards (an American football field) is 91.44 meters.',
+    solver: {
+      defaultTarget: 'feet',
+      variables: [
+        { id: 'meters', label: 'Meters', symbol: 'm', dimension: 'length', defaultValue: 1, defaultUnit: 'm' },
+        { id: 'feet', label: 'Feet', symbol: 'ft', dimension: 'length', defaultValue: 3.2808, defaultUnit: 'ft' }
+      ],
+      // Both fields hold the same length (in meters); the unit menus already list every length
+      // unit in lib/units.ts (m, km, cm, mm, mi, yd, ft, in, nmi), so either menu is a full length converter.
+      solve: {
+        meters: ({ feet }) => (feet >= 0 ? feet : NaN),
+        feet: ({ meters }) => (meters >= 0 ? meters : NaN)
+      },
+      derive: (si) => ({ mShown: si.meters }),
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'mShown',
+          min: -1,
+          max: 3,
+          ticks: ['0.1 m', '1 m', '10 m', '100 m', '1,000 m'],
+          benchmarks: [
+            { label: 'A sheet of A4 paper (length)', value: 0.297 },
+            { label: 'A standard interior door height', value: 2.032 },
+            { label: 'A 100-yard American football field', value: 91.44 },
+            { label: '1 kilometer', value: 1000 }
+          ],
+          title: 'How long is that?',
+          valueLabel: 'Your length'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Length, metric and customary',
+        paragraphs: [
+          'Length is the most common thing people convert, because the world uses two different systems side by side. Almost every country measures length in meters, kilometers, centimeters and millimeters, the metric (SI) units built on powers of ten. The US, and parts of the UK, still use feet, inches, yards and miles for everyday things: height, room sizes, road distances and construction.',
+          'Every customary unit in use today is defined exactly from the meter, not the other way around. Since 1959, the international yard has been exactly 0.9144 m, which fixes the foot at 0.3048 m, the inch at 0.0254 m, and the mile (5,280 ft) at exactly 1,609.344 m. That means converting any of them is a single, exact multiplication or division — nothing is rounded except the number you see on screen.',
+          'This page is the general case: any field can take any length unit, from millimeters up to nautical miles, so you can go straight from, say, yards to centimeters without stopping at meters first. For a specific everyday pair with its own worked table — miles and kilometers, feet and meters, or centimeters and inches — the dedicated converters linked below go deeper on that one pair.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a length in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Pick your starting unit', text: 'Open the unit menu beside the first field and choose meters, feet, kilometers, miles, yards, inches, centimeters, millimeters or nautical miles.' },
+          { name: 'Type the length', text: 'Enter the number. The other field recalculates immediately.' },
+          { name: 'Change the target unit', text: 'Open the second field\'s menu to see the same length in any other unit — it converts again with no extra step.' },
+          { name: 'Read the scale', text: 'The scale places your length against a sheet of paper, a doorway, a football field and a kilometer.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Every length unit here reduces to meters first, then to the target unit — the same two steps regardless of which units you pick.',
+        expression: 'meters = value × factor(unit)\nresult = meters ÷ factor(target unit)',
+        terms: [
+          { symbol: 'factor(unit)', meaning: 'Meters per unit, exact: 1,000 for km, 0.3048 for ft, 0.0254 for in, 1,609.344 for mi, 0.9144 for yd, 1,852 for nmi.' },
+          { symbol: 'meters', meaning: 'The length in the base SI unit, used internally for every conversion.' }
+        ],
+        note: 'Every factor above is an exact definition, not a measurement, so results are rounded for display only, never for the underlying math.'
+      },
+      workedExample: {
+        intro: 'You measure a room at 25 m and a rug at 100 ft. How long is each in the other unit?',
+        rows: [
+          { label: '25 ÷ 0.3048', value: '82.02 ft' },
+          { label: '100 × 0.3048', value: '30.48 m' },
+          { label: 'Quick check: 25 × 3.28', value: '≈ 82 ft' }
+        ],
+        result: '25 m ≈ 82.02 ft · 100 ft = 30.48 m',
+        explanation: 'Multiplying by 3.28 instead of the exact 3.280840 is within about 0.03%, close enough for most everyday checks.'
+      },
+      commonValues: {
+        title: 'Common meters to feet conversions',
+        dimension: 'length',
+        from: 'm',
+        to: 'ft',
+        values: [1, 2, 3, 5, 10, 20, 50, 100],
+        reverse: {
+          title: 'Common feet to meters conversions',
+          values: [1, 3, 6, 10, 20, 50, 100]
+        }
+      },
+      watchOut: [
+        { title: 'Pick the right unit before you type', body: 'Each field remembers its own unit. If you meant to type centimeters but the menu still says meters, the result will be off by a factor of 100.' },
+        { title: 'Feet and inches is two units, not a decimal', body: '5.5 ft is 5 ft 6 in, not "5 ft 5 in". For a height already written as feet and inches, see the centimeters to inches or feet to meters converters, which handle the split.' },
+        { title: 'Nautical miles are not statute miles', body: 'A nautical mile is exactly 1,852 m, about 1.151 times a statute mile (1,609.344 m). Used at sea and in the air, not on roads.' },
+        { title: 'The US survey foot is retired', body: 'Old land-survey figures used a foot about 0.0002 m longer than today\'s. NIST deprecated the US survey foot at the end of 2022; every foot here is the 0.3048 m international foot.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'meters', label: 'Meters', type: 'number', placeholder: '1', defaultValue: 1, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Length Converter (m, ft, km, mi, in, yd, cm)',
+      description: 'Free length converter: meters, feet, kilometers, miles, yards, inches, centimeters and millimeters, in any direction, with exact factors.',
+      faq: [
+        { question: 'How do I convert meters to feet?', answer: 'Multiply by about 3.28084 (or divide by 0.3048). For 25 m: 25 ÷ 0.3048 ≈ 82.02 ft.' },
+        { question: 'How do I convert feet to meters?', answer: 'Multiply by 0.3048. 100 ft × 0.3048 = 30.48 m.' },
+        { question: 'How many feet are in a mile?', answer: 'A mile is 5,280 ft, exactly 1,609.344 m — the same exact factor the miles to kilometers converter uses.' },
+        { question: 'How many meters are in a yard?', answer: 'A yard is exactly 0.9144 m, or 3 ft.' },
+        { question: 'What is 1 meter in feet and inches?', answer: 'About 3 ft 3.37 in: 1 m is 3.280840 ft, and 0.280840 ft × 12 ≈ 3.37 in.' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'Multiply meters by 3.3 for a rough feet figure (about 0.6% high), or feet by 0.3 for meters (about 1.6% low).' }
+      ]
+    },
+    compute(values) {
+      const feet = fromBase(toBase(values.meters, 'length', 'm'), 'length', 'ft');
+      return { feet };
     }
   }
 ];

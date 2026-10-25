@@ -2099,6 +2099,35 @@ exports[`compute() snapshots > lcm-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > length-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "meters": 1
+    },
+    "outputs": {
+      "feet": 3.280839895
+    }
+  },
+  "typical": {
+    "inputs": {
+      "meters": 1.5
+    },
+    "outputs": {
+      "feet": 4.921259843
+    }
+  },
+  "edge": {
+    "inputs": {
+      "meters": 0
+    },
+    "outputs": {
+      "feet": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > linear-regression-calculator 1`] = `
 {
   "default": {

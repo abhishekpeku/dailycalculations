@@ -152,7 +152,8 @@ export const calculatorOrder: string[] = [
   'feet-to-meters-converter',
   'ounces-to-milliliters-converter',
   'grams-to-ounces-converter',
-  'mph-to-kph-converter'
+  'mph-to-kph-converter',
+  'length-converter'
 ];
 
 const rank = (id: string) => {

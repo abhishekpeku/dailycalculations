@@ -70,7 +70,7 @@ value set, so no table is a copy of another page's.
 ### Progress
 
 - [x] Dedupe check (ids + aliases, programmatic) and the decisions above
-- [ ] `length-converter`
+- [x] `length-converter`
 - [ ] `weight-converter`
 - [ ] `volume-converter`
 - [ ] `area-converter`

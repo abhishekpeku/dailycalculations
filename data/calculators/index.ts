@@ -147,7 +147,12 @@ export const calculatorOrder: string[] = [
   'odds-ratio-calculator',
   'expected-value-calculator',
   'coefficient-of-variation-calculator',
-  'outlier-calculator'
+  'outlier-calculator',
+  'centimeters-to-inches-converter',
+  'feet-to-meters-converter',
+  'ounces-to-milliliters-converter',
+  'grams-to-ounces-converter',
+  'mph-to-kph-converter'
 ];
 
 const rank = (id: string) => {

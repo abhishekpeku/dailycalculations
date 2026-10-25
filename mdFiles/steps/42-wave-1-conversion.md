@@ -18,17 +18,17 @@ existing converters are the reference pattern for this sub-wave, not `force-calc
   - [x] Fix `miles-to-kilometers-converter`'s `compute()` (uses `1.60934`, must use the exact
     factor via `lib/units.ts`) and audit the other three existing `compute()`s the same way
   - [x] Retrofit `commonValues` onto the 4 existing converters (miles↔km, °F↔°C, lb↔kg, gal↔L)
-  - [ ] centimeters-to-inches-converter
-  - [ ] feet-to-meters-converter
-  - [ ] ounces-to-milliliters-converter (US fl oz; UK fl oz in the menu and a watch-out)
-  - [ ] grams-to-ounces-converter (avoirdupois oz; troy oz called out in a watch-out, not in the menu
+  - [x] centimeters-to-inches-converter
+  - [x] feet-to-meters-converter
+  - [x] ounces-to-milliliters-converter (US fl oz; UK fl oz in the menu and a watch-out)
+  - [x] grams-to-ounces-converter (avoirdupois oz; troy oz called out in a watch-out, not in the menu
     unless `lib/units.ts` already has it)
-  - [ ] mph-to-kph-converter
-  - [ ] Snapshot tests (`npm run test:update`, diff touches only the intended ids), round-trip tests
-  - [ ] `npm test`, `npm run build`, `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` pass
-  - [ ] Spot-check the new pages + one retrofitted page + `/categories/measurements` on a local
+  - [x] mph-to-kph-converter
+  - [x] Snapshot tests (`npm run test:update`, diff touches only the intended ids), round-trip tests
+  - [x] `npm test`, `npm run build`, `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` pass
+  - [x] Spot-check the new pages + one retrofitted page + `/categories/measurements` on a local
     server (H1, section ids incl. `common-values`, JSON-LD, table figures), kill the server
-  - [ ] Update `mdFiles/STATUS.md` (row 40–42 + session log), open/ready the PR
+  - [x] Update `mdFiles/STATUS.md` (row 40–42 + session log), open/ready the PR
 
 ## Planned run breakdown (re-evaluate each run against what exists before building it)
 

@@ -496,5 +496,618 @@ export const measurementsCalculators: CalculatorConfig[] = [
       const liters = fromBase(toBase(values.gallons, 'volume', 'gal'), 'volume', 'L');
       return { liters };
     }
+  },
+  {
+    id: 'centimeters-to-inches-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['cm to inches converter', 'inches to cm converter', 'convert cm to in', 'centimeters to inches calculator'],
+    related: ['feet-to-meters-converter', 'miles-to-kilometers-converter', 'bmi-calculator', 'pounds-to-kilograms-converter'],
+    title: 'Centimeters to Inches Converter',
+    description: 'Convert centimeters to inches, or inches to centimeters, as you type. Includes a table of common heights in feet and inches.',
+    example: '25.4 cm is exactly 10 inches, and 180 cm, a common height, is about 5 ft 11 in.',
+    solver: {
+      defaultTarget: 'inches',
+      variables: [
+        { id: 'centimeters', label: 'Centimeters', symbol: 'cm', dimension: 'length', defaultValue: 25.4, defaultUnit: 'cm' },
+        { id: 'inches', label: 'Inches', symbol: 'in', dimension: 'length', defaultValue: 10, defaultUnit: 'in' }
+      ],
+      // Both fields hold the same length (in meters); the unit menus do the converting.
+      solve: {
+        centimeters: ({ inches }) => (inches >= 0 ? inches : NaN),
+        inches: ({ centimeters }) => (centimeters >= 0 ? centimeters : NaN)
+      },
+      derive: (si) => ({ cmShown: si.centimeters * 100 }),
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'cmShown',
+          min: -1,
+          max: 3,
+          ticks: ['0.1 cm', '1 cm', '10 cm', '100 cm', '1,000 cm'],
+          benchmarks: [
+            { label: 'A staple', value: 1 },
+            { label: 'A credit card width', value: 5.4 },
+            { label: 'A sheet of A4 paper', value: 29.7 },
+            { label: 'A common adult height (170 cm)', value: 170 }
+          ],
+          title: 'How long is that?',
+          valueLabel: 'Your length'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Centimeters and inches',
+        paragraphs: [
+          'The centimeter is a metric unit of length, one hundredth of a meter, used worldwide for everyday measurements too small to need a full meter. The inch is a customary unit used mainly in the US, equal to 1/12 of a foot. Since 1959, the inch has been defined from the meter: one inch is exactly 2.54 centimeters, by the same international yard-and-pound agreement that fixed the mile (see the miles to kilometers converter).',
+          'Because the definition is exact, converting is one multiplication or division with no offset. One centimeter is about 0.3937 inches, so a quick way to think about it is that an inch is a little more than two and a half centimeters. Rulers and tape measures often show both scales side by side for this reason.',
+          'Height is the most common place these two units meet: countries that use the metric system record height in centimeters, while the US and the UK use feet and inches. 180 cm, a common adult height, is just short of 6 feet — specifically 5 ft 11 in. Converting a height means finding the total inches first, then splitting off whole feet, so the inches part never rolls over into "12 in" by mistake.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a length in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Centimeters to inches', text: 'Type the length in centimeters. The inches field shows the conversion.' },
+          { name: 'Inches to centimeters', text: 'Type into the inches field instead. It becomes the input and the centimeters field is calculated.' },
+          { name: 'Use other units', text: 'Either menu also offers meters, millimeters, feet and yards.' },
+          { name: 'Read the scale', text: 'The scale places the length against a staple, a credit card, a sheet of A4 paper and an average adult height.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'An inch is a fixed number of centimeters, so the conversion is one multiplication or division.',
+        expression: 'in = cm ÷ 2.54\ncm = in × 2.54',
+        terms: [
+          { symbol: 'cm', meaning: 'Length in centimeters, 1/100 of a meter.' },
+          { symbol: 'in', meaning: 'Length in inches.' },
+          { symbol: '2.54', meaning: 'Centimeters in an inch, exact by definition since 1959.' }
+        ],
+        note: 'The factor is exact. Results are rounded for display only.'
+      },
+      workedExample: {
+        intro: 'A box is 45 cm long and a shelf is 20 inches deep. How long is the box in inches, and how deep is the shelf in centimeters?',
+        rows: [
+          { label: '45 ÷ 2.54', value: '17.72 in' },
+          { label: '20 × 2.54', value: '50.8 cm' },
+          { label: 'Quick check: 45 × 0.4', value: '18 in' }
+        ],
+        result: '45 cm ≈ 17.72 in · 20 in = 50.8 cm',
+        explanation: 'Multiplying by 0.4 instead of dividing by 2.54 is a handy shortcut and lands within about 2%.'
+      },
+      commonValues: {
+        title: 'Common centimeters to inches conversions',
+        dimension: 'length',
+        from: 'cm',
+        to: 'in',
+        values: [1, 2.54, 5, 10, 15, 20, 30, 50, 100],
+        reverse: {
+          title: 'Common heights, feet & inches to centimeters',
+          values: [60, 63, 66, 69, 72, 75, 78],
+          feetInches: 'from'
+        }
+      },
+      watchOut: [
+        { title: 'Round the total inches first', body: 'Converting a height like 69.3 in, round to the nearest whole inch before splitting into feet and inches: 69 in is 5 ft 9 in, not 4 ft 21 in. Never split the unrounded decimal.' },
+        { title: 'A tape measure is less precise than this', body: 'A physical ruler or tape measure is usually only accurate to about 1 mm (0.04 in), well within the precision this converter shows.' },
+        { title: 'An inch is not a foot', body: 'An inch is 1/12 of a foot. For whole feet, use the feet to meters converter, which handles the larger unit.' },
+        { title: 'Shoe and ring sizes have their own scales', body: 'Shoe and ring sizes are not simple multiples of the inch or centimeter; this converter is for lengths only.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'centimeters', label: 'Centimeters', type: 'number', placeholder: '25.4', defaultValue: 25.4, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Centimeters to Inches Converter (cm to in)',
+      description: 'Free centimeters to inches converter: cm to in and back as you type, with the exact 2.54 factor, common heights in ft and in, and a worked example.',
+      faq: [
+        { question: 'How do I convert centimeters to inches?', answer: 'Divide by 2.54. For 45 cm: 45 ÷ 2.54 ≈ 17.72 in.' },
+        { question: 'How do I convert inches to centimeters?', answer: 'Multiply by 2.54. 20 in × 2.54 = 50.8 cm.' },
+        { question: 'How many inches is 180 cm?', answer: 'About 70.87 in, which rounds to 71 in, or 5 ft 11 in.' },
+        { question: 'How many centimeters is 6 feet?', answer: '6 ft is 72 in, which is 182.88 cm.' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'Multiply centimeters by 0.4 for a rough inch figure (45 cm gives 18 in against 17.72 exactly), or inches by 2.5 for centimeters.' },
+        { question: 'Why do rulers show both cm and inches?', answer: 'Because both units are common depending on where you are, and a dual ruler avoids needing a separate conversion.' }
+      ]
+    },
+    compute(values) {
+      const inches = fromBase(toBase(values.centimeters, 'length', 'cm'), 'length', 'in');
+      return { inches };
+    }
+  },
+  {
+    id: 'feet-to-meters-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['ft to m converter', 'feet to meters calculator', 'meters to feet converter', 'convert feet to meters'],
+    related: ['centimeters-to-inches-converter', 'miles-to-kilometers-converter', 'bmi-calculator', 'pounds-to-kilograms-converter'],
+    title: 'Feet to Meters Converter',
+    description: 'Convert feet to meters, or meters to feet, as you type. Includes a table of common heights in feet and inches.',
+    example: '1 ft is exactly 0.3048 m, and a 6 ft person is about 1.83 m tall.',
+    solver: {
+      defaultTarget: 'meters',
+      variables: [
+        { id: 'meters', label: 'Meters', symbol: 'm', dimension: 'length', defaultValue: 1.8288, defaultUnit: 'm' },
+        { id: 'feet', label: 'Feet', symbol: 'ft', dimension: 'length', defaultValue: 6, defaultUnit: 'ft' }
+      ],
+      // Both fields hold the same length (in meters); the unit menus do the converting.
+      solve: {
+        meters: ({ feet }) => (feet >= 0 ? feet : NaN),
+        feet: ({ meters }) => (meters >= 0 ? meters : NaN)
+      },
+      derive: (si) => ({ mShown: si.meters }),
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'mShown',
+          min: -1,
+          max: 3,
+          ticks: ['0.1 m', '1 m', '10 m', '100 m', '1,000 m'],
+          benchmarks: [
+            { label: 'A standard interior doorway (80 in)', value: 2.032 },
+            { label: 'A basketball hoop (10 ft)', value: 3.048 },
+            { label: 'An Olympic pool length', value: 50 }
+          ],
+          title: 'How tall or long is that?',
+          valueLabel: 'Your length'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Feet and meters',
+        paragraphs: [
+          'The foot is a customary unit of length used for height, construction and sports in the US and, alongside meters, in the UK. The meter is the SI base unit of length, used for almost everything else in the world. Since 1959, the international foot has been defined from the meter: one foot is exactly 0.3048 meters, fixed by the same agreement that set the yard and the pound (see the miles to kilometers converter).',
+          'Because the definition is exact, converting between feet and meters is a single multiplication or division. A foot is also 12 inches, so converting a height in feet and inches means finding the total inches first (feet × 12 + inches), then multiplying by 0.0254 to reach meters — or the reverse: divide the meters by 0.3048 to get decimal feet, then split the whole feet from the remaining inches.',
+          'Height is the most common everyday use for this conversion. A 6-foot person is about 1.83 m tall, and many countries record adult height only in centimeters or meters. The US briefly kept a very slightly different "US survey foot" for land surveying, defined as 1,200/3,937 meters; NIST retired it at the end of 2022, so every foot measurement today uses the same 0.3048 m international definition.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a length in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Feet to meters', text: 'Type the number of feet. The meters field shows the conversion.' },
+          { name: 'Meters to feet', text: 'Type into the meters field instead. It becomes the input and the feet field is calculated.' },
+          { name: 'Enter feet and inches together', text: 'Convert the inches to a decimal first (divide by 12) and add it to the feet, e.g. 5 ft 9 in is 5.75 ft.' },
+          { name: 'Use other units', text: 'Either menu also offers centimeters, millimeters, yards and inches.' },
+          { name: 'Read the scale', text: 'The scale places the length against a doorway, a basketball hoop and an Olympic pool.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'A foot is a fixed number of meters, so the conversion is one multiplication or division.',
+        expression: 'm = ft × 0.3048\nft = m ÷ 0.3048 ≈ m × 3.28084',
+        terms: [
+          { symbol: 'ft', meaning: 'Length in international feet, 12 inches.' },
+          { symbol: 'm', meaning: 'Length in meters, the SI base unit.' },
+          { symbol: '0.3048', meaning: 'Meters in a foot, exact by definition since 1959.' }
+        ],
+        note: 'The factor is exact. Results are rounded for display only.'
+      },
+      workedExample: {
+        intro: 'A room is 9 ft wide and a doorway is 2.1 m tall. How wide is the room in meters, and how tall is the doorway in feet and inches?',
+        rows: [
+          { label: '9 × 0.3048', value: '2.74 m' },
+          { label: '2.1 ÷ 0.3048', value: '6.8898 ft' },
+          { label: '0.8898 ft × 12, rounded', value: '83 in total' }
+        ],
+        result: '9 ft = 2.74 m · 2.1 m ≈ 6 ft 11 in',
+        explanation: 'Converting feet and inches means rounding the TOTAL inches first: 6.8898 ft is 82.68 in, which rounds to 83 in, i.e. 6 ft 11 in — never "6 ft 12 in".'
+      },
+      commonValues: {
+        title: 'Common heights, feet & inches to meters',
+        dimension: 'length',
+        from: 'ft',
+        to: 'm',
+        values: [5, 5.25, 5.5, 5.75, 6, 6.25, 6.5],
+        feetInches: 'from',
+        reverse: {
+          title: 'Common meters to feet conversions',
+          values: [1, 1.5, 2, 3, 5, 10, 50, 100],
+          feetInches: 'to'
+        }
+      },
+      watchOut: [
+        { title: 'Round the total inches, not the feet', body: 'Splitting 6.89 ft into "6 ft 0.89 in" is wrong. Convert to total inches first (6.89 × 12 ≈ 82.68), round that, then split: 83 in is 6 ft 11 in.' },
+        { title: 'Feet and inches is two units, not a decimal', body: '5.5 ft is 5 ft 6 in, not "5 ft 5 in" or 5.5 inches. Multiply the decimal part by 12 to get the inches.' },
+        { title: 'The US survey foot is retired', body: 'Old land-survey measurements used a foot about 0.0002 m longer. NIST deprecated the US survey foot at the end of 2022; today every foot is the 0.3048 m international foot.' },
+        { title: 'Meters and yards are close but different', body: 'A meter (about 3.2808 ft) is about 9% longer than a yard (3 ft). Do not mix them up when reading European versus American measurements.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' },
+        { label: 'NIST, U.S. survey foot (deprecated after December 31, 2022)', url: 'https://www.nist.gov/pml/us-surveyfoot' }
+      ]
+    },
+    inputs: [
+      { id: 'feet', label: 'Feet', type: 'number', placeholder: '6', defaultValue: 6, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Feet to Meters Converter (ft to m)',
+      description: 'Free feet to meters converter: ft to m and back as you type, with the exact 0.3048 factor, common heights in ft and in, and a worked example.',
+      faq: [
+        { question: 'How do I convert feet to meters?', answer: 'Multiply by 0.3048. 9 ft × 0.3048 = 2.74 m (rounded).' },
+        { question: 'How do I convert meters to feet?', answer: 'Divide by 0.3048, or multiply by about 3.28084. 2 m is about 6.56 ft.' },
+        { question: 'How tall is 6 feet in meters?', answer: '6 × 0.3048 = 1.8288 m, about 1.83 m.' },
+        { question: 'How do I convert feet and inches to meters?', answer: 'Add the inches as a fraction of a foot first (inches ÷ 12), then multiply the total by 0.3048. 5 ft 9 in is 5.75 ft, which is about 1.75 m.' },
+        { question: 'What is 2 meters in feet and inches?', answer: 'About 6.56 ft: 2 ÷ 0.3048 = 6.5617 ft, which is 78.74 in, rounding to 79 in, or 6 ft 7 in.' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'Multiply feet by 0.3 for a rough meters figure (9 ft gives 2.7 m against 2.74 exactly), or meters by 3.3 for feet.' }
+      ]
+    },
+    compute(values) {
+      const meters = fromBase(toBase(values.feet, 'length', 'ft'), 'length', 'm');
+      return { meters };
+    }
+  },
+  {
+    id: 'ounces-to-milliliters-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['oz to ml converter', 'fluid ounces to ml calculator', 'ml to oz converter', 'convert fl oz to ml'],
+    related: ['gallons-to-liters-converter', 'grams-to-ounces-converter', 'water-intake-calculator', 'pounds-to-kilograms-converter'],
+    title: 'Ounces to Milliliters Converter',
+    description: 'Convert US fluid ounces to milliliters, or milliliters to fluid ounces, as you type. UK (imperial) fluid ounces are in the unit menu too.',
+    example: '1 US fl oz is about 29.57 mL, and a 12 fl oz can of soda is about 354.88 mL.',
+    solver: {
+      defaultTarget: 'milliliters',
+      variables: [
+        { id: 'milliliters', label: 'Milliliters', symbol: 'mL', dimension: 'volume', defaultValue: 29.5735, defaultUnit: 'mL' },
+        { id: 'ounces', label: 'Fluid ounces', symbol: 'fl oz', dimension: 'volume', defaultValue: 1, defaultUnit: 'floz' }
+      ],
+      // Both fields hold the same volume (in m³); the unit menus do the converting.
+      solve: {
+        milliliters: ({ ounces }) => (ounces >= 0 ? ounces : NaN),
+        ounces: ({ milliliters }) => (milliliters >= 0 ? milliliters : NaN)
+      },
+      derive: (si) => ({ mlShown: si.milliliters * 1e6 }),
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'mlShown',
+          min: 0,
+          max: 4,
+          ticks: ['1 mL', '10 mL', '100 mL', '1,000 mL', '10,000 mL'],
+          benchmarks: [
+            { label: '1 US fl oz', value: 29.5735295625 },
+            { label: 'A 1.5 fl oz shot', value: 44.3602943438 },
+            { label: 'A 12 fl oz can', value: 354.882354750 },
+            { label: 'A 1-liter bottle', value: 1000 }
+          ],
+          title: 'How much is that?',
+          valueLabel: 'Your volume'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'US fluid ounces, UK fluid ounces and milliliters',
+        paragraphs: [
+          'The fluid ounce measures volume, not weight, despite sharing a name with the ounce of mass. The US fluid ounce is defined from the US gallon: a gallon is 128 US fluid ounces, which makes one US fl oz exactly 29.5735295625 milliliters. Milliliters and liters are the metric units used for drinks, medicine doses and recipes almost everywhere else.',
+          'The UK (imperial) fluid ounce is a different size. An imperial gallon holds 160 imperial fluid ounces, making one UK fl oz exactly 28.4130625 milliliters, about 4% smaller than the US fluid ounce. The difference matters for recipes and drink sizes from the UK, Canada, Australia and other countries that historically used imperial measures.',
+          'Because both definitions are exact, converting is one multiplication or division with no offset. A US cup is 8 US fluid ounces (about 236.6 mL), and a "standard" US shot is commonly 1.5 fl oz (about 44.4 mL), though some states and recipes use 1 or 2 fl oz instead.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a volume in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Fluid ounces to milliliters', text: 'Type the number of fluid ounces. The milliliters field shows the conversion.' },
+          { name: 'Pick US or UK fluid ounces', text: 'The ounces field starts in US fl oz. Choose fl oz (UK) from its menu for imperial fluid ounces.' },
+          { name: 'Milliliters to fluid ounces', text: 'Type into the milliliters field instead. It becomes the input and the ounces field is calculated.' },
+          { name: 'Use other units', text: 'Either menu also offers liters, cups, tablespoons and teaspoons.' },
+          { name: 'Read the scale', text: 'The scale places the volume against a shot, a can of soda and a liter bottle.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Each fluid ounce is a fixed number of milliliters, so the conversion is one multiplication or division.',
+        expression: 'mL = fl oz (US) × 29.5735295625\nmL = fl oz (UK) × 28.4130625\nfl oz (US) = mL ÷ 29.5735295625',
+        terms: [
+          { symbol: 'mL', meaning: 'Volume in milliliters.' },
+          { symbol: 'fl oz (US)', meaning: 'US fluid ounce, 1/128 of a US gallon.' },
+          { symbol: 'fl oz (UK)', meaning: 'Imperial fluid ounce, 1/160 of an imperial gallon.' },
+          { symbol: '29.5735295625', meaning: 'Milliliters in a US fluid ounce, exact.' }
+        ],
+        note: 'Both factors are exact definitions. Results are rounded for display only.'
+      },
+      workedExample: {
+        intro: 'A recipe calls for 8 fl oz of milk, and your measuring cup is marked in milliliters. How many milliliters is that, and how many US fl oz is a 500 mL bottle?',
+        rows: [
+          { label: '8 × 29.5735295625', value: '236.59 mL' },
+          { label: '500 ÷ 29.5735295625', value: '16.91 fl oz' },
+          { label: 'Quick check: 8 × 30', value: '240 mL' }
+        ],
+        result: '8 US fl oz ≈ 236.59 mL · 500 mL ≈ 16.91 US fl oz',
+        explanation: 'Multiplying by 30 instead of 29.57 is a handy shortcut and overstates by about 1.5%.'
+      },
+      commonValues: {
+        title: 'Common US fluid ounces to milliliters conversions',
+        dimension: 'volume',
+        from: 'floz',
+        to: 'mL',
+        values: [1, 2, 4, 8, 12, 16, 20, 32],
+        decimals: 1,
+        reverse: {
+          title: 'Common milliliters to US fluid ounces conversions',
+          values: [50, 100, 250, 355, 500, 750, 1000]
+        }
+      },
+      watchOut: [
+        { title: 'US and UK fluid ounces differ', body: 'A US fl oz (29.57 mL) is about 4% larger than a UK fl oz (28.41 mL). Using the wrong one on an imported recipe or bottle size will be off by that much.' },
+        { title: 'Fluid ounces are volume, not weight', body: 'An ounce of water weighs close to 1 fl oz by volume only because water is close to 1 g/mL. For other liquids, oz (mass) and fl oz (volume) are not interchangeable — see the grams to ounces converter for mass.' },
+        { title: 'Shot sizes vary', body: 'A "standard" shot is commonly 1.5 fl oz in the US, but some places pour 1 fl oz or 2 fl oz. Check the local standard before converting a recipe by shots.' },
+        { title: 'Cups are not standardized worldwide', body: 'A US cup is 8 US fl oz (about 237 mL); a metric cup (used in Australia and parts of Europe) is 250 mL exactly, a different unit, not a rounding of the US cup.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'ounces', label: 'Fluid ounces', type: 'number', placeholder: '1', defaultValue: 1, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Ounces to Milliliters Converter (fl oz to mL)',
+      description: 'Free fluid ounces to milliliters converter: US or UK fl oz to mL and back as you type, with the exact factors and a worked example.',
+      faq: [
+        { question: 'How many milliliters are in a fluid ounce?', answer: 'A US fluid ounce is exactly 29.5735295625 mL, about 29.57 mL. A UK (imperial) fluid ounce is exactly 28.4130625 mL.' },
+        { question: 'How do I convert fluid ounces to milliliters?', answer: 'Multiply US fl oz by 29.5735295625. For 8 fl oz: 8 × 29.5735295625 ≈ 236.59 mL.' },
+        { question: 'How do I convert milliliters to fluid ounces?', answer: 'Divide by 29.5735295625 for US fl oz. 500 mL is about 16.91 US fl oz, or 17.60 UK fl oz.' },
+        { question: 'How many fluid ounces are in a cup?', answer: 'A US cup is 8 US fl oz, about 236.59 mL. A metric cup is 250 mL, about 8.45 US fl oz.' },
+        { question: 'Why is a UK fluid ounce smaller than a US fluid ounce?', answer: 'They come from different gallons. The US gallon divides into 128 fl oz; the larger imperial gallon divides into 160 fl oz, so each imperial fl oz ends up smaller even though the gallon itself is bigger.' },
+        { question: 'How many milliliters are in a 12 fl oz can?', answer: 'About 354.88 mL for a US fl oz can, or 340.96 mL if the can is measured in UK fl oz.' }
+      ]
+    },
+    compute(values) {
+      const milliliters = fromBase(toBase(values.ounces, 'volume', 'floz'), 'volume', 'mL');
+      return { milliliters };
+    }
+  },
+  {
+    id: 'grams-to-ounces-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['g to oz converter', 'grams to ounces calculator', 'oz to grams converter', 'convert grams to ounces'],
+    related: ['pounds-to-kilograms-converter', 'ounces-to-milliliters-converter', 'miles-to-kilometers-converter', 'water-intake-calculator'],
+    title: 'Grams to Ounces Converter',
+    description: 'Convert grams to ounces, or ounces to grams, as you type. Uses the everyday avoirdupois ounce, the same one the pounds to kilograms converter uses.',
+    example: '100 g is about 3.53 oz, and a 1 oz slice is about 28.35 g.',
+    solver: {
+      defaultTarget: 'ounces',
+      variables: [
+        { id: 'grams', label: 'Grams', symbol: 'g', dimension: 'mass', defaultValue: 100, defaultUnit: 'g' },
+        { id: 'ounces', label: 'Ounces', symbol: 'oz', dimension: 'mass', defaultValue: 3.5274, defaultUnit: 'oz' }
+      ],
+      // Both fields hold the same mass (in kg); the unit menus do the converting.
+      solve: {
+        grams: ({ ounces }) => (ounces >= 0 ? ounces : NaN),
+        ounces: ({ grams }) => (grams >= 0 ? grams : NaN)
+      },
+      derive: (si) => ({ gShown: si.grams * 1000 }),
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'gShown',
+          min: -1,
+          max: 3,
+          ticks: ['0.1 g', '1 g', '10 g', '100 g', '1,000 g'],
+          benchmarks: [
+            { label: '1 oz', value: 28.349523125 },
+            { label: '4 oz (1/4 lb)', value: 113.398092500 },
+            { label: '8 oz (1/2 lb)', value: 226.796185000 },
+            { label: '16 oz (1 lb)', value: 453.59237 }
+          ],
+          title: 'How heavy is that?',
+          valueLabel: 'Your weight'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Grams and ounces',
+        paragraphs: [
+          'The gram is a metric unit of mass, one thousandth of a kilogram, used for small weights like food portions and postage. The everyday ounce, used in the US for cooking, mail and packaging, is the avoirdupois ounce: 1/16 of the avoirdupois pound. Since 1959, the pound has been defined from the kilogram, which makes one avoirdupois ounce exactly 28.349523125 grams.',
+          'Because the definition is exact, converting is one multiplication or division with no offset. One gram is about 0.0353 oz, so a quick way to think about it is that an ounce is a bit over 28 grams. This converter uses the everyday avoirdupois ounce, the same one the pounds to kilograms converter uses for body weight and shipping.',
+          'A different, heavier ounce — the troy ounce, about 31.1034768 g — is used only for precious metals like gold and silver, never for food or body weight. Mixing the two is a common mistake: a troy ounce of gold weighs about 10% more than an avoirdupois ounce of the same number.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a weight in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Grams to ounces', text: 'Type the weight in grams. The ounces field shows the conversion.' },
+          { name: 'Ounces to grams', text: 'Type into the ounces field instead. It becomes the input and the grams field is calculated.' },
+          { name: 'Use other units', text: 'Either menu also offers kilograms, pounds and stone.' },
+          { name: 'Read the scale', text: 'The scale places the weight against 1, 4, 8 and 16 ounces.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'An ounce is a fixed number of grams, so the conversion is one multiplication or division.',
+        expression: 'oz = g ÷ 28.349523125\ng = oz × 28.349523125',
+        terms: [
+          { symbol: 'g', meaning: 'Mass in grams.' },
+          { symbol: 'oz', meaning: 'Mass in avoirdupois ounces, 1/16 pound.' },
+          { symbol: '28.349523125', meaning: 'Grams in an ounce, exact: 0.45359237 kg ÷ 16 × 1,000.' }
+        ],
+        note: 'The factor is exact. Results are rounded for display only.'
+      },
+      workedExample: {
+        intro: 'A recipe calls for 100 g of flour and your kitchen scale only shows ounces. How many ounces is that, and how many grams is a standard 8 oz package?',
+        rows: [
+          { label: '100 ÷ 28.349523125', value: '3.53 oz' },
+          { label: '8 × 28.349523125', value: '226.80 g' },
+          { label: 'Quick check: 100 × 0.035', value: '3.5 oz' }
+        ],
+        result: '100 g ≈ 3.53 oz · 8 oz = 226.80 g',
+        explanation: 'Multiplying by 0.035 instead of dividing by 28.35 is a close shortcut, under 1% off.'
+      },
+      commonValues: {
+        title: 'Common grams to ounces conversions',
+        dimension: 'mass',
+        from: 'g',
+        to: 'oz',
+        values: [1, 5, 10, 28.35, 50, 100, 250, 500, 1000],
+        reverse: {
+          title: 'Common ounces to grams conversions',
+          values: [1, 2, 4, 8, 16]
+        }
+      },
+      watchOut: [
+        { title: 'This is the everyday ounce, not the troy ounce', body: 'Gold, silver and other precious metals are priced per troy ounce (about 31.10 g), roughly 10% heavier than the avoirdupois ounce (28.35 g) this converter uses.' },
+        { title: 'Fluid ounces are a different unit entirely', body: 'An ounce of mass (weight) is not the same as a fluid ounce of volume. Use the ounces to milliliters converter for liquid volumes.' },
+        { title: 'Kitchen scales round', body: 'Most digital kitchen scales show whole or half grams, so a converted figure like 3.53 oz will usually be read off the scale as 3.5 oz.' },
+        { title: 'Package labels round too', body: 'A "100 g" package is usually close to, not exactly, 100.00 g, and a US "4 oz" package is often labeled with its rounded metric equivalent (113 g) alongside it.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'grams', label: 'Grams', type: 'number', placeholder: '100', defaultValue: 100, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Grams to Ounces Converter (g to oz)',
+      description: 'Free grams to ounces converter: g to oz and back as you type, using the everyday avoirdupois ounce, with the exact factor and a worked example.',
+      faq: [
+        { question: 'How do I convert grams to ounces?', answer: 'Divide by 28.349523125. For 100 g: 100 ÷ 28.349523125 ≈ 3.53 oz.' },
+        { question: 'How do I convert ounces to grams?', answer: 'Multiply by 28.349523125. 8 oz × 28.349523125 ≈ 226.80 g.' },
+        { question: 'How many grams are in a pound?', answer: '453.59237 g, since a pound is 16 ounces and an ounce is 28.349523125 g.' },
+        { question: 'Is this the same ounce used for gold?', answer: 'No. Gold and other precious metals use the troy ounce (about 31.1034768 g), heavier than the everyday avoirdupois ounce (28.349523125 g) used here for food and body weight.' },
+        { question: 'How many ounces is 250 g?', answer: 'About 8.82 oz (250 ÷ 28.349523125).' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'Divide grams by 28, or multiply by 0.035, for a rough ounce figure. For grams, multiply ounces by 28.35.' }
+      ]
+    },
+    compute(values) {
+      const ounces = fromBase(toBase(values.grams, 'mass', 'g'), 'mass', 'oz');
+      return { ounces };
+    }
+  },
+  {
+    id: 'mph-to-kph-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['mph to km/h converter', 'miles per hour to kph calculator', 'kph to mph converter', 'convert mph to kmh'],
+    related: ['miles-to-kilometers-converter', 'running-pace-calculator', 'gas-cost-calculator', 'commute-cost-calculator'],
+    title: 'Mph to Kph Converter',
+    description: 'Convert miles per hour to kilometers per hour, or kph to mph, as you type.',
+    example: '60 mph is about 96.56 km/h, and 100 km/h is about 62.14 mph.',
+    solver: {
+      defaultTarget: 'kph',
+      variables: [
+        { id: 'kph', label: 'Kilometers per hour', symbol: 'km/h', dimension: 'speed', defaultValue: 96.5606, defaultUnit: 'km/h' },
+        { id: 'mph', label: 'Miles per hour', symbol: 'mph', dimension: 'speed', defaultValue: 60, defaultUnit: 'mph' }
+      ],
+      // Both fields hold the same speed (in m/s); the unit menus do the converting.
+      solve: {
+        kph: ({ mph }) => (mph >= 0 ? mph : NaN),
+        mph: ({ kph }) => (kph >= 0 ? kph : NaN)
+      },
+      derive: (si) => ({ kphShown: si.kph * 3.6 }),
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'kphShown',
+          min: 0,
+          max: 3,
+          ticks: ['1 km/h', '10 km/h', '100 km/h', '1,000 km/h'],
+          benchmarks: [
+            { label: '1 knot (a nautical mile per hour)', value: 1.852 },
+            { label: 'A brisk walking pace', value: 5 },
+            { label: 'A typical urban speed limit', value: 50 },
+            { label: 'A typical highway speed', value: 100 }
+          ],
+          title: 'How fast is that?',
+          valueLabel: 'Your speed'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Miles per hour and kilometers per hour',
+        paragraphs: [
+          'Miles per hour (mph) is the customary speed unit used for road speeds and speed limits in the US and the UK. Kilometers per hour (km/h or kph) is the metric equivalent used almost everywhere else, including on car speedometers worldwide, which is why most cars sold internationally show both scales.',
+          'Speed is distance divided by time, so converting it uses the same exact factor as the distance itself: a mile is exactly 1.609344 kilometers, and an hour is an hour either way, so 1 mph is exactly 1.609344 km/h. There is no separate "speed factor" to remember beyond the one already used for miles to kilometers.',
+          'Because the hours cancel, the conversion is one multiplication or division with no offset, the same as the miles to kilometers converter. 60 mph, a common US highway speed, is about 96.56 km/h; 100 km/h, a common highway speed outside the US, is about 62.14 mph.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a speed in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Mph to km/h', text: 'Type the speed in miles per hour. The km/h field shows the conversion.' },
+          { name: 'Km/h to mph', text: 'Type into the km/h field instead. It becomes the input and the mph field is calculated.' },
+          { name: 'Use other units', text: 'Either menu also offers meters per second, knots and feet per second.' },
+          { name: 'Read the scale', text: 'The scale places the speed against a brisk walk, a knot, a city speed limit and a highway speed.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'A mile per hour is a fixed number of kilometers per hour, so the conversion is one multiplication or division.',
+        expression: 'km/h = mph × 1.609344\nmph = km/h ÷ 1.609344 ≈ km/h × 0.621371',
+        terms: [
+          { symbol: 'mph', meaning: 'Speed in miles per hour.' },
+          { symbol: 'km/h', meaning: 'Speed in kilometers per hour.' },
+          { symbol: '1.609344', meaning: 'Kilometers in a mile, exact — the same factor the miles to kilometers converter uses.' }
+        ],
+        note: 'The factor is exact. Results are rounded for display only.'
+      },
+      workedExample: {
+        intro: 'A speed limit sign reads 65 mph and another reads 110 km/h. How fast is each in the other unit?',
+        rows: [
+          { label: '65 × 1.609344', value: '104.61 km/h' },
+          { label: '110 ÷ 1.609344', value: '68.35 mph' },
+          { label: 'Quick check: 65 × 1.6', value: '104 km/h' }
+        ],
+        result: '65 mph ≈ 104.61 km/h · 110 km/h ≈ 68.35 mph',
+        explanation: 'Multiplying by 1.6 is a close shortcut, under 0.6% low; dividing by 1.6 (or multiplying by 0.625) works about as well the other way.'
+      },
+      commonValues: {
+        title: 'Common mph to km/h conversions',
+        dimension: 'speed',
+        from: 'mph',
+        to: 'km/h',
+        values: [10, 20, 30, 40, 50, 55, 60, 65, 70, 100],
+        decimals: 1,
+        reverse: {
+          title: 'Common km/h to mph conversions',
+          values: [20, 40, 50, 60, 80, 100, 110, 120, 130]
+        }
+      },
+      watchOut: [
+        { title: 'Knots are a different unit', body: 'A knot is 1 nautical mile per hour (1.852 km/h), used at sea and in the air, not the same as a mile per hour (1.609344 km/h).' },
+        { title: 'Speed limits are posted in whole units', body: 'A sign reading "100 km/h" converts to 62.14 mph, not a round number, so don’t expect foreign speed limits to match familiar mph figures exactly.' },
+        { title: 'This converts a rate, not a distance', body: 'Converting mph to km/h uses the same 1.609344 factor as miles to km, but it is a different physical quantity (speed, not distance) — see the miles to kilometers converter for distances.' },
+        { title: 'Speedometers can read a little fast', body: 'Many car speedometers read a few percent fast for mechanical and legal-tolerance reasons, so a car\'s displayed speed and a converted GPS speed will not always match exactly.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'mph', label: 'Miles per hour', type: 'number', placeholder: '60', defaultValue: 60, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Mph to Kph Converter (mph to km/h)',
+      description: 'Free mph to km/h converter: miles per hour to kilometers per hour and back as you type, with the exact 1.609344 factor and a worked example.',
+      faq: [
+        { question: 'How do I convert mph to km/h?', answer: 'Multiply by 1.609344. For 65 mph: 65 × 1.609344 ≈ 104.61 km/h.' },
+        { question: 'How do I convert km/h to mph?', answer: 'Divide by 1.609344, or multiply by about 0.621371. 110 km/h is about 68.35 mph.' },
+        { question: 'What is 60 mph in km/h?', answer: 'About 96.56 km/h (60 × 1.609344).' },
+        { question: 'What is 100 km/h in mph?', answer: 'About 62.14 mph (100 ÷ 1.609344).' },
+        { question: 'Is a knot the same as a mph?', answer: 'No. A knot is 1 nautical mile per hour, 1.852 km/h, slightly faster than 1 mph (1.609344 km/h).' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'Multiply mph by 1.6 for km/h, or km/h by 0.625 (5/8) for mph — the same shortcuts as miles to kilometers.' }
+      ]
+    },
+    compute(values) {
+      const kph = fromBase(toBase(values.mph, 'speed', 'mph'), 'speed', 'km/h');
+      return { kph };
+    }
   }
 ];

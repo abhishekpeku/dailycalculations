@@ -2079,5 +2079,126 @@ export const measurementsCalculators: CalculatorConfig[] = [
       const kilocalories = fromBase(toBase(values.kilojoules, 'energy', 'kJ'), 'energy', 'kcal');
       return { kilocalories };
     }
+  },
+  {
+    id: 'power-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['power converter', 'kw to hp converter', 'hp to kw calculator', 'horsepower converter', 'watts to horsepower converter'],
+    related: ['energy-converter', 'pressure-converter', 'force-calculator', 'electricity-bill-calculator'],
+    title: 'Power Converter',
+    description: 'Convert between watts, kilowatts, horsepower, metric horsepower (PS) and BTU per hour, in any direction, as you type.',
+    example: 'A 100 kW electric motor is about 134.1 hp, and 1 hp is about 1.4% more powerful than 1 metric horsepower (PS).',
+    solver: {
+      defaultTarget: 'horsepower',
+      variables: [
+        { id: 'kilowatts', label: 'Kilowatts', symbol: 'kW', dimension: 'power', defaultValue: 100, defaultUnit: 'kW' },
+        { id: 'horsepower', label: 'Horsepower', symbol: 'hp', dimension: 'power', defaultValue: 134.1022, defaultUnit: 'hp' }
+      ],
+      // Both fields hold the same power (in watts); the unit menus already list every power unit in
+      // lib/units.ts (W, kW, MW, hp, PS, BTU/h), so either menu is a full power converter.
+      solve: {
+        kilowatts: ({ horsepower }) => (horsepower >= 0 ? horsepower : NaN),
+        horsepower: ({ kilowatts }) => (kilowatts >= 0 ? kilowatts : NaN)
+      },
+      derive: (si) => ({ kwShown: si.kilowatts / 1000 }),
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'kwShown',
+          min: -2,
+          max: 4,
+          ticks: ['0.01 kW', '0.1 kW', '1 kW', '10 kW', '100 kW', '1,000 kW', '10,000 kW'],
+          benchmarks: [
+            { label: 'A microwave oven (about 1.1 kW)', value: 1.1 },
+            { label: 'A small car engine (about 75 kW / 100 hp)', value: 75 },
+            { label: 'A family car engine (about 134 hp / 100 kW)', value: 100 },
+            { label: 'A Formula 1 engine (about 750–900 kW)', value: 800 }
+          ],
+          title: 'How powerful is that?',
+          valueLabel: 'Your power'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Watts, horsepower and metric horsepower',
+        paragraphs: [
+          'Power is energy delivered per unit of time. The watt (W), the SI unit, is one joule per second, used for appliances and electrical ratings worldwide. The kilowatt (1,000 W) is the usual scale for motors, generators and car engines in countries that use metric units.',
+          'Horsepower (hp) is defined mechanically as 550 foot-pounds-force per second, a figure that traces back to James Watt\'s 18th-century comparison of a steam engine to a draft horse. It converts to exactly 745.69987158227 W. Metric horsepower (PS, from the German Pferdestärke) is a related but different unit, defined as 75 kilogram-force-meters per second, exactly 735.49875 W.',
+          'Because the two definitions do not match, 1 hp is about 1.387% more than 1 PS — close enough that car brochures sometimes blur the two, but not interchangeable for anything precise. A car rated "100 kW (134 hp)" and one rated "100 kW (136 PS)" have the identical 100 kW engine; only the horsepower-like unit printed next to it differs.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a power value in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Pick your starting unit', text: 'Open the unit menu beside the first field and choose watts, kilowatts, megawatts, mechanical horsepower, metric horsepower (PS) or BTU per hour.' },
+          { name: 'Type the value', text: 'Enter the number. The other field recalculates immediately.' },
+          { name: 'Change the target unit', text: 'Open the second field\'s menu to see the same power in any other unit.' },
+          { name: 'Read the scale', text: 'The scale places your power against a microwave, a small car engine, a family car engine and a Formula 1 engine.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Every power unit here reduces to watts first, then to the target unit.',
+        expression: 'W = value × factor(unit)\nresult = W ÷ factor(target unit)',
+        terms: [
+          { symbol: 'factor(unit)', meaning: 'Watts per unit: 745.69987158227 for hp (550 ft·lbf/s, exact), 735.49875 for PS (75 kgf·m/s, exact), 0.293071 for BTU/h.' },
+          { symbol: 'W', meaning: 'The power in the base SI unit, used internally for every conversion.' }
+        ],
+        note: 'Both horsepower definitions are exact from their own historical definitions, so results are rounded for display only.'
+      },
+      workedExample: {
+        intro: 'An electric motor is rated at 100 kW. How much is that in mechanical horsepower, and what would the same number of horsepower be in kW?',
+        rows: [
+          { label: '100,000 ÷ 745.69987158227', value: '134.10 hp' },
+          { label: '134 × 745.69987158227 ÷ 1,000', value: '99.92 kW' },
+          { label: 'Quick check: 100 × 1.34', value: '134 hp' }
+        ],
+        result: '100 kW ≈ 134.10 hp · 134 hp ≈ 99.92 kW',
+        explanation: 'Multiplying kW by 1.34 is a close mental shortcut for horsepower, within about 0.08%. The same 134 hp is about 135.86 PS (134 × 1.013870), since metric horsepower is the slightly smaller unit.'
+      },
+      commonValues: {
+        title: 'Common kilowatts to horsepower conversions',
+        dimension: 'power',
+        from: 'kW',
+        to: 'hp',
+        values: [1, 5, 10, 50, 75, 100, 150, 200, 300],
+        reverse: {
+          title: 'Common horsepower to kilowatts conversions',
+          values: [10, 50, 100, 134, 150, 200, 300, 400]
+        }
+      },
+      watchOut: [
+        { title: 'Horsepower and metric horsepower are different units', body: 'This converter\'s "hp" is the mechanical horsepower (745.69987158227 W), slightly larger than metric horsepower, PS (735.49875 W) — about 1.39% larger. A car spec quoting "150 PS" is not the same as "150 hp."' },
+        { title: 'There are other, rarer horsepower definitions', body: 'Electrical horsepower (746 W, a rounded US convention for motor nameplates) and boiler horsepower are different again, each by a small fraction of a percent. This converter uses the standard mechanical horsepower.' },
+        { title: 'Power is a rate, not an amount', body: 'A 100 kW motor running for 2 hours uses 200 kWh of energy — power and energy are related but different quantities. For the energy side, see the energy converter.' },
+        { title: 'BTU/h appears on HVAC equipment', body: 'Air conditioners and furnaces are often rated in BTU per hour rather than watts; 12,000 BTU/h (a "1-ton" air conditioner, a cooling-industry term unrelated to weight) is about 3.52 kW.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'kilowatts', label: 'Kilowatts', type: 'number', placeholder: '100', defaultValue: 100, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Power Converter (Watts, kW, Horsepower, PS)',
+      description: 'Free power converter: watts, kilowatts, horsepower, metric horsepower (PS) and BTU/h, in any direction, with exact factors and a car-engine example.',
+      faq: [
+        { question: 'How do I convert kW to horsepower?', answer: 'Divide by 0.74569987158227 (or multiply by about 1.34102). 100 kW ÷ 0.74569987158227 ≈ 134.10 hp.' },
+        { question: 'How do I convert horsepower to kW?', answer: 'Multiply by 0.74569987158227. 134 hp × 0.74569987158227 ≈ 99.92 kW.' },
+        { question: 'What is the difference between hp and PS?', answer: 'hp (mechanical horsepower, 745.69987158227 W) is about 1.39% larger than PS (metric horsepower, 735.49875 W). 1 hp ≈ 1.0139 PS.' },
+        { question: 'How many watts are in 1 horsepower?', answer: 'Exactly 745.69987158227 W, from the definition 550 foot-pounds-force per second.' },
+        { question: 'How many watts are in 1 PS (metric horsepower)?', answer: 'Exactly 735.49875 W, from the definition 75 kilogram-force-meters per second.' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'Multiply kW by about 1.34 for horsepower (within about 0.08%), or divide horsepower by about 1.34 for kW.' }
+      ]
+    },
+    compute(values) {
+      const horsepower = fromBase(toBase(values.kilowatts, 'power', 'kW'), 'power', 'hp');
+      return { horsepower };
+    }
   }
 ];

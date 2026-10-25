@@ -3434,6 +3434,35 @@ exports[`compute() snapshots > pounds-to-kilograms-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > power-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "kilowatts": 100
+    },
+    "outputs": {
+      "horsepower": 134.102209
+    }
+  },
+  "typical": {
+    "inputs": {
+      "kilowatts": 150
+    },
+    "outputs": {
+      "horsepower": 201.1533134
+    }
+  },
+  "edge": {
+    "inputs": {
+      "kilowatts": 0
+    },
+    "outputs": {
+      "horsepower": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > pregnancy-due-date-calculator 1`] = `
 {
   "default": {

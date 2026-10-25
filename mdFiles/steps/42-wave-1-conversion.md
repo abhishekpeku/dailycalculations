@@ -135,8 +135,8 @@ table direction/values, e.g. `weight-converter` kg→lb vs `pounds-to-kilograms-
 
 ### Progress
 
-- [ ] Dedupe check (ids + aliases, programmatic) and the decisions above
-- [ ] `time-converter`
+- [x] Dedupe check (ids + aliases, programmatic) and the decisions above
+- [x] `time-converter`
 - [ ] `pressure-converter`
 - [ ] `energy-converter`
 - [ ] `power-converter`

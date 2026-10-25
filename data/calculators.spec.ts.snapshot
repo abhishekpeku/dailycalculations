@@ -4662,6 +4662,35 @@ exports[`compute() snapshots > tile-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > time-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "hours": 2
+    },
+    "outputs": {
+      "minutes": 120
+    }
+  },
+  "typical": {
+    "inputs": {
+      "hours": 3
+    },
+    "outputs": {
+      "minutes": 180
+    }
+  },
+  "edge": {
+    "inputs": {
+      "hours": 0
+    },
+    "outputs": {
+      "minutes": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > tip-calculator 1`] = `
 {
   "default": {

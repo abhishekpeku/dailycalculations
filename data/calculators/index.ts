@@ -157,7 +157,8 @@ export const calculatorOrder: string[] = [
   'weight-converter',
   'volume-converter',
   'area-converter',
-  'speed-converter'
+  'speed-converter',
+  'time-converter'
 ];
 
 const rank = (id: string) => {

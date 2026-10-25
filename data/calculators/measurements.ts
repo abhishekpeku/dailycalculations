@@ -1714,5 +1714,127 @@ export const measurementsCalculators: CalculatorConfig[] = [
       const kph = fromBase(toBase(values.metersPerSecond, 'speed', 'm/s'), 'speed', 'km/h');
       return { kph };
     }
+  },
+  {
+    id: 'time-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['time converter', 'hours to minutes converter', 'minutes to hours calculator', 'time unit converter', 'convert time units'],
+    related: ['date-difference-calculator', 'work-hours-calculator', 'sleep-time-calculator', 'speed-converter'],
+    title: 'Time Converter',
+    description: 'Convert between seconds, minutes, hours, days, weeks, months and years, in any direction, as you type.',
+    example: '2 hours is exactly 120 minutes, and a 150-minute flight is exactly 2.5 hours.',
+    solver: {
+      defaultTarget: 'minutes',
+      variables: [
+        { id: 'hours', label: 'Hours', symbol: 'h', dimension: 'time', defaultValue: 2, defaultUnit: 'h' },
+        { id: 'minutes', label: 'Minutes', symbol: 'min', dimension: 'time', defaultValue: 120, defaultUnit: 'min' }
+      ],
+      // Both fields hold the same duration (in seconds); the unit menus already list every time unit
+      // in lib/units.ts (s, ms, min, h, days, weeks, months, years), so either menu is a full time
+      // converter.
+      solve: {
+        hours: ({ minutes }) => (minutes >= 0 ? minutes : NaN),
+        minutes: ({ hours }) => (hours >= 0 ? hours : NaN)
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'hours',
+          min: 0,
+          max: 8,
+          ticks: ['1 s', '10 s', '100 s', '1,000 s', '10,000 s', '100,000 s', '1,000,000 s', '10,000,000 s', '100,000,000 s'],
+          benchmarks: [
+            { label: 'A heartbeat (about 1 second)', value: 1 },
+            { label: 'A coffee break (15 minutes)', value: 900 },
+            { label: 'A workday (8 hours)', value: 28800 },
+            { label: 'A week (7 days)', value: 604800 },
+            { label: '1 year (365.25 days, average)', value: 31557600 }
+          ],
+          title: 'How long is that?',
+          valueLabel: 'Your duration'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Seconds, minutes, hours and the calendar units',
+        paragraphs: [
+          'The second is the SI base unit of time. Minutes, hours, days and weeks are all exact multiples of it — 60 seconds to a minute, 60 minutes to an hour, 24 hours to a day, 7 days to a week — so converting among them is always a whole-number multiplication or division with nothing to round.',
+          'Months and years are different. A calendar month runs 28 to 31 days and a calendar year 365 or 366 days (a leap year), depending on which month or year it is. This converter cannot know which specific month or year you mean, so it uses the Julian year average instead: 365.25 days (accounting for a leap day roughly every 4 years), and a month as one-twelfth of that, about 30.4375 days. For a specific calendar range — "how many days between March 3 and July 4" — use the date difference calculator instead, which works from actual calendar dates.',
+          'Everything from seconds through weeks converts exactly: typing 2 hours and seeing exactly 120 minutes, or 9,000 seconds, involves no rounding at all. It is only once months or years enter the picture that "convert" starts to mean "estimate."'
+        ]
+      },
+      howTo: {
+        intro: 'Type a duration in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Pick your starting unit', text: 'Open the unit menu beside the first field and choose seconds, milliseconds, minutes, hours, days, weeks, months or years.' },
+          { name: 'Type the duration', text: 'Enter the number. The other field recalculates immediately.' },
+          { name: 'Change the target unit', text: 'Open the second field\'s menu to see the same duration in any other unit.' },
+          { name: 'Read the scale', text: 'The scale places your duration against a heartbeat, a coffee break, a workday, a week and a year.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Every time unit here reduces to seconds first, then to the target unit.',
+        expression: 's = value × factor(unit)\nresult = s ÷ factor(target unit)',
+        terms: [
+          { symbol: 'factor(unit)', meaning: 'Seconds per unit: 60 for min, 3,600 for h, 86,400 for day, 604,800 for week — all exact — and 2,629,800 for month, 31,557,600 for year, both averages (365.25-day Julian year).' },
+          { symbol: 's', meaning: 'The duration in the base SI unit, used internally for every conversion.' }
+        ],
+        note: 'Seconds through weeks are exact; months and years are stated as averages, not exact calendar lengths.'
+      },
+      workedExample: {
+        intro: 'A flight is scheduled for 2.5 hours and a project log shows 150 minutes of work. How many minutes is the flight, and how many hours is the logged work?',
+        rows: [
+          { label: '2.5 h × 60', value: '150 min' },
+          { label: '150 min ÷ 60', value: '2.5 h' },
+          { label: '2.5 h × 3,600', value: '9,000 s' }
+        ],
+        result: '2.5 h = 150 min = 9,000 s',
+        explanation: 'Because every factor from seconds up through weeks is an exact whole-number multiple (60, 60, 24, 7), none of these conversions round at all — unlike months and years, which this page treats as averages (see the watch-out below).'
+      },
+      commonValues: {
+        title: 'Common hours to minutes conversions',
+        dimension: 'time',
+        from: 'h',
+        to: 'min',
+        values: [0.5, 1, 1.5, 2, 4, 8, 12, 24],
+        reverse: {
+          title: 'Common minutes to hours conversions',
+          values: [15, 30, 45, 60, 90, 120, 480, 1440]
+        }
+      },
+      watchOut: [
+        { title: 'Months and years here are averages', body: 'This converter uses the 365.25-day Julian year and a month as a twelfth of that (about 30.4375 days), not a specific calendar month (28–31 days) or calendar year (365 or 366 days). Three months this way is 91.3125 days, which will not exactly match three particular calendar months.' },
+        { title: 'A day here is always exactly 24 hours', body: 'Real calendar days occasionally run 23 or 25 hours where clocks shift for daylight saving time. This is a plain duration conversion, not a calendar lookup.' },
+        { title: 'For a specific date range, use the date difference calculator', body: 'That calculator counts the exact number of days between two real calendar dates, correctly handling leap years and each month\'s real length — this converter only scales a duration you already have.' },
+        { title: 'Milliseconds matter for precise timing', body: 'Sports timing, computing and audio/video work often need milliseconds (1/1,000 of a second), which is in the unit menu alongside the everyday units.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'hours', label: 'Hours', type: 'number', placeholder: '2', defaultValue: 2, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Time Converter (Seconds, Minutes, Hours, Days)',
+      description: 'Free time converter: seconds, minutes, hours, days, weeks, months and years, in any direction, with exact factors and honest month/year averages.',
+      faq: [
+        { question: 'How many minutes are in an hour?', answer: '60, exactly. For 2.5 hours: 2.5 × 60 = 150 minutes.' },
+        { question: 'How many hours are in a day?', answer: '24, exactly. A week is 7 days, so 168 hours.' },
+        { question: 'How many days are in a year?', answer: 'This converter uses 365.25 (the Julian year average, accounting for leap years). A specific calendar year is 365 days, or 366 in a leap year.' },
+        { question: 'How many days are in a month?', answer: 'This converter uses a twelfth of the average year, about 30.4375 days. A specific calendar month runs from 28 to 31 days — use the date difference calculator for an exact one.' },
+        { question: 'How many seconds are in a day?', answer: '86,400 — 24 × 60 × 60.' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'For hours to minutes, just multiply by 60 — there is no rounding to worry about. For minutes to hours, divide by 60: 150 minutes ÷ 60 = 2.5 hours exactly.' }
+      ]
+    },
+    compute(values) {
+      const minutes = fromBase(toBase(values.hours, 'time', 'h'), 'time', 'min');
+      return { minutes };
+    }
   }
 ];

@@ -82,6 +82,71 @@ value set, so no table is a copy of another page's.
 - [x] Spot-check the 5 new pages + `/categories/measurements` on a local server, kill the server
 - [x] Update `mdFiles/STATUS.md` (row 40–42 + session log), `gh pr ready`
 
+## Run 3
+
+General converters, continued: time, pressure, energy, power, data storage — same "general page,
+existing widget, new default pair + its own `commonValues` table" pattern as run 2.
+
+**Dedupe check (programmatic, against every `id`/alias/`redirectFrom` in `data/calculators/*.ts`
+before building)**: `time-converter`, `pressure-converter`, `energy-converter`, `power-converter`
+and `data-storage-converter` are all free ids. No alias collisions either — checked every file for
+"time converter" / "pressure converter" / "energy converter" / "power converter" / "data storage
+converter" and related phrasings (mb to gb, psi to bar, hp to kw, joule, btu, torr, mmhg, bit/byte
+converter, bandwidth, etc.). `time.ts` (age-calculator, work-hours-calculator,
+date-difference-calculator, sleep-time-calculator, pomodoro-timer) is about dates/durations/timers,
+not unit conversion — no overlap. `physics.ts` has only `force-calculator` so far — no existing
+energy/power/pressure calculator to collide with (those are planned for a later physics wave, not
+this step). `home.ts`'s `electricity-bill-calculator` ("energy bill calculator" alias) and
+`health.ts`'s `tdee-calculator` ("total daily energy expenditure calculator") are unrelated topics
+(billing, metabolism), not unit conversion.
+
+**Default pairs** (per dimension, a sensible everyday pair — same precedent as run 2, where a
+general page's default pair can share units with a sibling pair-page, differentiated by its own
+table direction/values, e.g. `weight-converter` kg→lb vs `pounds-to-kilograms-converter` lb→kg):
+- `time-converter`: hours ↔ minutes — the default pair is deliberately one of the *exact*
+  conversions in `UNITS.time` (60 min = 1 h exactly), so the lead example carries no caveat; months
+  and years (both averages) are covered in the table, formula note and a watch-out instead.
+- `pressure-converter`: psi ↔ bar — tire-pressure scale, relatable, and `psi` is exact from `lbf/in²`.
+- `energy-converter`: kilojoules ↔ kilocalories — nutrition-label pair, both units already in
+  `UNITS.energy`.
+- `power-converter`: kilowatts ↔ horsepower — engine-power pair.
+- `data-storage-converter`: gigabytes ↔ megabytes — the most-searched general pair; the page's
+  whole point (decimal vs. binary, bits vs. bytes) is covered in concept/formula/watchOut/FAQ and a
+  GiB-inclusive commonValues table, not in the default pair itself.
+
+**Accuracy notes specific to this run** (per the work order):
+- **Time**: `lib/units.ts`'s `mo`/`yr` are *averages* (`YEAR = 365.25 × 86400 s`, `month = YEAR/12`)
+  — stated as such in concept/formula/watchOut, never presented as exact.
+- **Data storage**: decimal (KB/MB/GB = 1000ⁿ) vs. binary (KiB/MiB/GiB = 1024ⁿ) explained, including
+  why a "1 TB" drive shows about 931 GiB in an OS; bits vs. bytes (Mbit/s network speed vs. MB/s
+  file transfer) called out with a worked conversion.
+- **Energy**: `cal`/`kcal` in `lib/units.ts` are the *thermochemical* calorie (4.184 J exact); a food
+  "Calorie" is a kcal. `BTU` in `lib/units.ts` is the International Table BTU (1055.05585262 J) —
+  cited as such, not the thermochemical or 59°F BTU variants.
+- **Power**: mechanical hp (`550 × ft × lbf` = 550 ft·lbf/s ≈ 745.7 W) vs. metric PS
+  (`75 × kgf × m/s` = 75 kgf·m/s = 735.49875 W exactly) — both exact from their own definitions,
+  explained as two different "horsepower-like" units, hp slightly larger than PS.
+- **Pressure**: mmHg (133.322387415 Pa, a conventional density-based definition) vs. Torr
+  (101325/760 Pa exactly) — nearly but not exactly equal (confirmed via `lib/units.spec.ts`'s own
+  `atm → mmHg` test, which already uses a 1e-5 tolerance, not exact equality); psi is exact via
+  `lbf/in²`.
+- No unit was missing from `lib/units.ts` for any of the five dimensions — nothing added to `UNITS`
+  or `lib/units.spec.ts` this run.
+
+### Progress
+
+- [ ] Dedupe check (ids + aliases, programmatic) and the decisions above
+- [ ] `time-converter`
+- [ ] `pressure-converter`
+- [ ] `energy-converter`
+- [ ] `power-converter`
+- [ ] `data-storage-converter`
+- [ ] Independent scratch verification (`verify_run3.mjs`) of every copy figure before committing
+- [ ] `npm test`, `npm run build`,
+  `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` pass
+- [ ] Spot-check the 5 new pages + `/categories/measurements` on a local server, kill the server
+- [ ] Update `mdFiles/STATUS.md` (row 40–42 + session log), `gh pr ready`
+
 ## Planned run breakdown (re-evaluate each run against what exists before building it)
 
 The plan's list is "~65, only pairs with real search volume, each with a real common-values

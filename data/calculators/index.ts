@@ -161,7 +161,8 @@ export const calculatorOrder: string[] = [
   'time-converter',
   'pressure-converter',
   'energy-converter',
-  'power-converter'
+  'power-converter',
+  'data-storage-converter'
 ];
 
 const rank = (id: string) => {

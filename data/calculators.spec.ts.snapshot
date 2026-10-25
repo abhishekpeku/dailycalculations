@@ -987,6 +987,35 @@ exports[`compute() snapshots > cube-root-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > data-storage-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "gigabytes": 1
+    },
+    "outputs": {
+      "megabytes": 1000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "gigabytes": 1.5
+    },
+    "outputs": {
+      "megabytes": 1500
+    }
+  },
+  "edge": {
+    "inputs": {
+      "gigabytes": 0
+    },
+    "outputs": {
+      "megabytes": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > date-difference-calculator 1`] = `
 {
   "default": {

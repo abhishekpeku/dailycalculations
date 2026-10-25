@@ -140,7 +140,7 @@ table direction/values, e.g. `weight-converter` kg→lb vs `pounds-to-kilograms-
 - [x] `pressure-converter`
 - [x] `energy-converter`
 - [x] `power-converter`
-- [ ] `data-storage-converter`
+- [x] `data-storage-converter`
 - [ ] Independent scratch verification (`verify_run3.mjs`) of every copy figure before committing
 - [ ] `npm test`, `npm run build`,
   `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` pass

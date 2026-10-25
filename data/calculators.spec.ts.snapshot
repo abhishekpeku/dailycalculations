@@ -987,6 +987,35 @@ exports[`compute() snapshots > cube-root-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > data-storage-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "gigabytes": 1
+    },
+    "outputs": {
+      "megabytes": 1000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "gigabytes": 1.5
+    },
+    "outputs": {
+      "megabytes": 1500
+    }
+  },
+  "edge": {
+    "inputs": {
+      "gigabytes": 0
+    },
+    "outputs": {
+      "megabytes": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > date-difference-calculator 1`] = `
 {
   "default": {
@@ -1229,6 +1258,35 @@ exports[`compute() snapshots > emi-calculator 1`] = `
       "totalPayment": 0,
       "totalInterest": 0,
       "principal": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > energy-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "kilojoules": 836.8
+    },
+    "outputs": {
+      "kilocalories": 200
+    }
+  },
+  "typical": {
+    "inputs": {
+      "kilojoules": 1255.2
+    },
+    "outputs": {
+      "kilocalories": 300
+    }
+  },
+  "edge": {
+    "inputs": {
+      "kilojoules": 0
+    },
+    "outputs": {
+      "kilocalories": 0
     }
   }
 }
@@ -3405,6 +3463,35 @@ exports[`compute() snapshots > pounds-to-kilograms-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > power-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "kilowatts": 100
+    },
+    "outputs": {
+      "horsepower": 134.102209
+    }
+  },
+  "typical": {
+    "inputs": {
+      "kilowatts": 150
+    },
+    "outputs": {
+      "horsepower": 201.1533134
+    }
+  },
+  "edge": {
+    "inputs": {
+      "kilowatts": 0
+    },
+    "outputs": {
+      "horsepower": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > pregnancy-due-date-calculator 1`] = `
 {
   "default": {
@@ -3447,6 +3534,35 @@ exports[`compute() snapshots > pregnancy-due-date-calculator 1`] = `
       "daysRemaining": 0,
       "trimester": 3,
       "gestationalDays": 2359
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > pressure-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "psi": 32
+    },
+    "outputs": {
+      "bar": 2.206322334
+    }
+  },
+  "typical": {
+    "inputs": {
+      "psi": 48
+    },
+    "outputs": {
+      "bar": 3.309483501
+    }
+  },
+  "edge": {
+    "inputs": {
+      "psi": 0
+    },
+    "outputs": {
+      "bar": 0
     }
   }
 }
@@ -4657,6 +4773,35 @@ exports[`compute() snapshots > tile-calculator 1`] = `
       "tilesNeeded": 36,
       "tilesWithWaste": 36,
       "boxesNeeded": 36
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > time-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "hours": 2
+    },
+    "outputs": {
+      "minutes": 120
+    }
+  },
+  "typical": {
+    "inputs": {
+      "hours": 3
+    },
+    "outputs": {
+      "minutes": 180
+    }
+  },
+  "edge": {
+    "inputs": {
+      "hours": 0
+    },
+    "outputs": {
+      "minutes": 0
     }
   }
 }

@@ -1714,5 +1714,613 @@ export const measurementsCalculators: CalculatorConfig[] = [
       const kph = fromBase(toBase(values.metersPerSecond, 'speed', 'm/s'), 'speed', 'km/h');
       return { kph };
     }
+  },
+  {
+    id: 'time-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['time converter', 'hours to minutes converter', 'minutes to hours calculator', 'time unit converter', 'convert time units'],
+    related: ['date-difference-calculator', 'work-hours-calculator', 'sleep-time-calculator', 'speed-converter'],
+    title: 'Time Converter',
+    description: 'Convert between seconds, minutes, hours, days, weeks, months and years, in any direction, as you type.',
+    example: '2 hours is exactly 120 minutes, and a 150-minute flight is exactly 2.5 hours.',
+    solver: {
+      defaultTarget: 'minutes',
+      variables: [
+        { id: 'hours', label: 'Hours', symbol: 'h', dimension: 'time', defaultValue: 2, defaultUnit: 'h' },
+        { id: 'minutes', label: 'Minutes', symbol: 'min', dimension: 'time', defaultValue: 120, defaultUnit: 'min' }
+      ],
+      // Both fields hold the same duration (in seconds); the unit menus already list every time unit
+      // in lib/units.ts (s, ms, min, h, days, weeks, months, years), so either menu is a full time
+      // converter.
+      solve: {
+        hours: ({ minutes }) => (minutes >= 0 ? minutes : NaN),
+        minutes: ({ hours }) => (hours >= 0 ? hours : NaN)
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'hours',
+          min: 0,
+          max: 8,
+          ticks: ['1 s', '10 s', '100 s', '1,000 s', '10,000 s', '100,000 s', '1,000,000 s', '10,000,000 s', '100,000,000 s'],
+          benchmarks: [
+            { label: 'A heartbeat (about 1 second)', value: 1 },
+            { label: 'A coffee break (15 minutes)', value: 900 },
+            { label: 'A workday (8 hours)', value: 28800 },
+            { label: 'A week (7 days)', value: 604800 },
+            { label: '1 year (365.25 days, average)', value: 31557600 }
+          ],
+          title: 'How long is that?',
+          valueLabel: 'Your duration'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Seconds, minutes, hours and the calendar units',
+        paragraphs: [
+          'The second is the SI base unit of time. Minutes, hours, days and weeks are all exact multiples of it — 60 seconds to a minute, 60 minutes to an hour, 24 hours to a day, 7 days to a week — so converting among them is always a whole-number multiplication or division with nothing to round.',
+          'Months and years are different. A calendar month runs 28 to 31 days and a calendar year 365 or 366 days (a leap year), depending on which month or year it is. This converter cannot know which specific month or year you mean, so it uses the Julian year average instead: 365.25 days (accounting for a leap day roughly every 4 years), and a month as one-twelfth of that, about 30.4375 days. For a specific calendar range — "how many days between March 3 and July 4" — use the date difference calculator instead, which works from actual calendar dates.',
+          'Everything from seconds through weeks converts exactly: typing 2 hours and seeing exactly 120 minutes, or 9,000 seconds, involves no rounding at all. It is only once months or years enter the picture that "convert" starts to mean "estimate."'
+        ]
+      },
+      howTo: {
+        intro: 'Type a duration in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Pick your starting unit', text: 'Open the unit menu beside the first field and choose seconds, milliseconds, minutes, hours, days, weeks, months or years.' },
+          { name: 'Type the duration', text: 'Enter the number. The other field recalculates immediately.' },
+          { name: 'Change the target unit', text: 'Open the second field\'s menu to see the same duration in any other unit.' },
+          { name: 'Read the scale', text: 'The scale places your duration against a heartbeat, a coffee break, a workday, a week and a year.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Every time unit here reduces to seconds first, then to the target unit.',
+        expression: 's = value × factor(unit)\nresult = s ÷ factor(target unit)',
+        terms: [
+          { symbol: 'factor(unit)', meaning: 'Seconds per unit: 60 for min, 3,600 for h, 86,400 for day, 604,800 for week — all exact — and 2,629,800 for month, 31,557,600 for year, both averages (365.25-day Julian year).' },
+          { symbol: 's', meaning: 'The duration in the base SI unit, used internally for every conversion.' }
+        ],
+        note: 'Seconds through weeks are exact; months and years are stated as averages, not exact calendar lengths.'
+      },
+      workedExample: {
+        intro: 'A flight is scheduled for 2.5 hours and a project log shows 150 minutes of work. How many minutes is the flight, and how many hours is the logged work?',
+        rows: [
+          { label: '2.5 h × 60', value: '150 min' },
+          { label: '150 min ÷ 60', value: '2.5 h' },
+          { label: '2.5 h × 3,600', value: '9,000 s' }
+        ],
+        result: '2.5 h = 150 min = 9,000 s',
+        explanation: 'Because every factor from seconds up through weeks is an exact whole-number multiple (60, 60, 24, 7), none of these conversions round at all — unlike months and years, which this page treats as averages (see the watch-out below).'
+      },
+      commonValues: {
+        title: 'Common hours to minutes conversions',
+        dimension: 'time',
+        from: 'h',
+        to: 'min',
+        values: [0.5, 1, 1.5, 2, 4, 8, 12, 24],
+        reverse: {
+          title: 'Common minutes to hours conversions',
+          values: [15, 30, 45, 60, 90, 120, 480, 1440]
+        }
+      },
+      watchOut: [
+        { title: 'Months and years here are averages', body: 'This converter uses the 365.25-day Julian year and a month as a twelfth of that (about 30.4375 days), not a specific calendar month (28–31 days) or calendar year (365 or 366 days). Three months this way is 91.3125 days, which will not exactly match three particular calendar months.' },
+        { title: 'A day here is always exactly 24 hours', body: 'Real calendar days occasionally run 23 or 25 hours where clocks shift for daylight saving time. This is a plain duration conversion, not a calendar lookup.' },
+        { title: 'For a specific date range, use the date difference calculator', body: 'That calculator counts the exact number of days between two real calendar dates, correctly handling leap years and each month\'s real length — this converter only scales a duration you already have.' },
+        { title: 'Milliseconds matter for precise timing', body: 'Sports timing, computing and audio/video work often need milliseconds (1/1,000 of a second), which is in the unit menu alongside the everyday units.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'hours', label: 'Hours', type: 'number', placeholder: '2', defaultValue: 2, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Time Converter (Seconds, Minutes, Hours, Days)',
+      description: 'Free time converter: seconds, minutes, hours, days, weeks, months and years, in any direction, with exact factors and honest month/year averages.',
+      faq: [
+        { question: 'How many minutes are in an hour?', answer: '60, exactly. For 2.5 hours: 2.5 × 60 = 150 minutes.' },
+        { question: 'How many hours are in a day?', answer: '24, exactly. A week is 7 days, so 168 hours.' },
+        { question: 'How many days are in a year?', answer: 'This converter uses 365.25 (the Julian year average, accounting for leap years). A specific calendar year is 365 days, or 366 in a leap year.' },
+        { question: 'How many days are in a month?', answer: 'This converter uses a twelfth of the average year, about 30.4375 days. A specific calendar month runs from 28 to 31 days — use the date difference calculator for an exact one.' },
+        { question: 'How many seconds are in a day?', answer: '86,400 — 24 × 60 × 60.' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'For hours to minutes, just multiply by 60 — there is no rounding to worry about. For minutes to hours, divide by 60: 150 minutes ÷ 60 = 2.5 hours exactly.' }
+      ]
+    },
+    compute(values) {
+      const minutes = fromBase(toBase(values.hours, 'time', 'h'), 'time', 'min');
+      return { minutes };
+    }
+  },
+  {
+    id: 'pressure-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['pressure converter', 'psi to bar converter', 'bar to psi calculator', 'pressure unit converter', 'kpa to psi converter'],
+    related: ['force-calculator', 'energy-converter', 'power-converter', 'speed-converter'],
+    title: 'Pressure Converter',
+    description: 'Convert between pascals, bar, psi, atmospheres, mmHg and Torr, in any direction, as you type.',
+    example: 'A car tire inflated to 32 psi is about 2.21 bar, just over the 2.2 bar often printed on a spec sheet.',
+    solver: {
+      defaultTarget: 'bar',
+      variables: [
+        { id: 'psi', label: 'PSI', symbol: 'psi', dimension: 'pressure', defaultValue: 32, defaultUnit: 'psi' },
+        { id: 'bar', label: 'Bar', symbol: 'bar', dimension: 'pressure', defaultValue: 2.206322, defaultUnit: 'bar' }
+      ],
+      // Both fields hold the same pressure (in pascals); the unit menus already list every pressure
+      // unit in lib/units.ts (Pa, kPa, MPa, bar, mbar, psi, atm, mmHg, inHg, Torr), so either menu is
+      // a full pressure converter.
+      solve: {
+        psi: ({ bar }) => (bar >= 0 ? bar : NaN),
+        bar: ({ psi }) => (psi >= 0 ? psi : NaN)
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'psi',
+          min: 2,
+          max: 6,
+          ticks: ['100 Pa', '1,000 Pa', '10,000 Pa', '100,000 Pa', '1,000,000 Pa'],
+          benchmarks: [
+            { label: '1 standard atmosphere (sea-level air pressure)', value: 101325 },
+            { label: 'A passenger car tire (about 32 psi)', value: 220632 },
+            { label: 'A road bicycle tire (about 100 psi)', value: 689476 },
+            { label: 'A truck tire (about 120 psi)', value: 827371 }
+          ],
+          title: 'How much pressure is that?',
+          valueLabel: 'Your pressure'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Pressure units: SI, imperial and conventional',
+        paragraphs: [
+          'Pressure is force spread over an area, so every unit here reduces to the pascal (Pa), the SI unit: one newton per square meter. The bar (100,000 Pa, close to ordinary atmospheric pressure) and its hundredth, the millibar, are common in meteorology. The psi (pounds-force per square inch) is the everyday US unit for tire and tank pressure, and is exact by definition from the pound-force and the inch.',
+          'The standard atmosphere (atm) is defined as exactly 101,325 Pa — not a measured average, a fixed reference. Historically, pressure was also measured by how high it pushed a column of mercury: the millimeter of mercury (mmHg) and the torr are both close to 1/760 of an atmosphere, which is why "760 mmHg" and "760 Torr" both describe sea-level air pressure.',
+          'mmHg and Torr are nearly, but not exactly, the same unit. mmHg is defined from the density of mercury and standard gravity (133.322387415 Pa), while the Torr is defined as exactly 1/760 of an atmosphere (133.32236842… Pa) — the two differ by about 1 part in 7 million, far too small to matter outside precision instrumentation, but not literally identical.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a pressure in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Pick your starting unit', text: 'Open the unit menu beside the first field and choose pascals, kilopascals, megapascals, bar, millibar, psi, atmospheres, mmHg, inHg or Torr.' },
+          { name: 'Type the pressure', text: 'Enter the number. The other field recalculates immediately.' },
+          { name: 'Change the target unit', text: 'Open the second field\'s menu to see the same pressure in any other unit.' },
+          { name: 'Read the scale', text: 'The scale places your pressure against sea-level air pressure, a car tire, a bicycle tire and a truck tire.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Every pressure unit here reduces to pascals first, then to the target unit.',
+        expression: 'Pa = value × factor(unit)\nresult = Pa ÷ factor(target unit)',
+        terms: [
+          { symbol: 'factor(unit)', meaning: 'Pascals per unit: 100,000 for bar, 101,325 for atm (both exact), 6,894.757293168 for psi (exact, from lbf/in²), 133.322387415 for mmHg, 133.32236842… for Torr (both conventional).' },
+          { symbol: 'Pa', meaning: 'The pressure in the base SI unit, used internally for every conversion.' }
+        ],
+        note: 'psi, bar and atm are exact by definition; mmHg and Torr are each exact by their own (slightly different) conventional definitions, so results are rounded for display only.'
+      },
+      workedExample: {
+        intro: 'A tire gauge reads 32 psi and the vehicle\'s spec sheet calls for 2.2 bar. Is the tire correctly inflated?',
+        rows: [
+          { label: '32 × 6,894.757293168', value: '220,632 Pa' },
+          { label: '220,632 ÷ 100,000', value: '2.21 bar' },
+          { label: '2.2 bar × 100,000 ÷ 6,894.757293168', value: '31.91 psi' }
+        ],
+        result: '32 psi ≈ 2.21 bar · 2.2 bar ≈ 31.91 psi',
+        explanation: '32 psi is about 2.21 bar, just above the 2.2 bar spec — well within normal gauge tolerance. The two figures are close enough that a spec sheet rounding either one to one decimal place is standard practice, not an error.'
+      },
+      commonValues: {
+        title: 'Common psi to bar conversions',
+        dimension: 'pressure',
+        from: 'psi',
+        to: 'bar',
+        values: [10, 20, 30, 32, 35, 50, 80, 100, 120],
+        reverse: {
+          title: 'Common bar to psi conversions',
+          values: [1, 1.5, 2, 2.2, 2.5, 3, 5, 8]
+        }
+      },
+      watchOut: [
+        { title: 'Gauge pressure is not absolute pressure', body: 'A tire gauge reads "gauge pressure" — how much higher than the surrounding atmosphere — while this converter treats every number as the pressure itself (absolute pressure). Mixing the two gives an answer off by about 1 atmosphere (14.7 psi, 101,325 Pa).' },
+        { title: 'mmHg and Torr are close but not identical', body: 'They differ by about 1 part in 7 million (mmHg is defined from mercury\'s density and standard gravity; Torr is exactly 1/760 atm). Treat them as interchangeable only outside precision scientific work.' },
+        { title: 'psi is exact; mmHg and Torr are conventional, not measured', body: 'All of these are fixed definitions, not physical measurements with uncertainty — but they come from different historical conventions, which is why mmHg and Torr do not quite match.' },
+        { title: 'Weather reports often use inHg or mbar', body: 'US weather reports typically give barometric pressure in inHg (around 29.92 at sea level); many other countries use hPa, numerically the same as millibars.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'psi', label: 'PSI', type: 'number', placeholder: '32', defaultValue: 32, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Pressure Converter (Pa, Bar, PSI, Atm, mmHg)',
+      description: 'Free pressure converter: pascals, bar, psi, atmospheres, mmHg, inHg and Torr, in any direction, with exact factors and a tire-pressure example.',
+      faq: [
+        { question: 'How do I convert psi to bar?', answer: 'Multiply by about 0.0689476 (psi\'s pascal factor divided by 100,000). 32 psi × 0.0689476 ≈ 2.21 bar.' },
+        { question: 'How do I convert bar to psi?', answer: 'Multiply by about 14.5038. 2.2 bar × 14.5038 ≈ 31.91 psi.' },
+        { question: 'How many Pa are in 1 atmosphere?', answer: 'Exactly 101,325 Pa, by definition — about 14.696 psi or 1.01325 bar.' },
+        { question: 'Is mmHg the same as Torr?', answer: 'Almost: they differ by about 1 part in 7 million, since mmHg comes from mercury\'s density and the Torr is defined as exactly 1/760 of an atmosphere. For everyday use they are interchangeable.' },
+        { question: 'What is the difference between gauge and absolute pressure?', answer: 'Gauge pressure (what a tire gauge shows) is measured relative to the surrounding atmosphere. Absolute pressure includes that atmosphere, so it reads about 14.7 psi (1 atm) higher than the gauge figure for the same tire.' },
+        { question: 'What psi is a typical car tire?', answer: 'Most passenger cars call for around 30–35 psi, but the correct figure is on the vehicle\'s door-jamb placard or owner\'s manual, not a universal number.' }
+      ]
+    },
+    compute(values) {
+      const bar = fromBase(toBase(values.psi, 'pressure', 'psi'), 'pressure', 'bar');
+      return { bar };
+    }
+  },
+  {
+    id: 'energy-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['energy converter', 'kj to kcal converter', 'kcal to kj calculator', 'joules to calories converter', 'energy unit converter'],
+    related: ['calorie-calculator', 'power-converter', 'pressure-converter', 'electricity-bill-calculator'],
+    title: 'Energy Converter',
+    description: 'Convert between joules, kilojoules, calories, kilocalories, kilowatt-hours and BTU, in any direction, as you type.',
+    example: '200 kcal (a snack-sized food label figure) is about 836.8 kJ, and 1 kWh is exactly 3.6 MJ.',
+    solver: {
+      defaultTarget: 'kilocalories',
+      variables: [
+        { id: 'kilojoules', label: 'Kilojoules', symbol: 'kJ', dimension: 'energy', defaultValue: 836.8, defaultUnit: 'kJ' },
+        { id: 'kilocalories', label: 'Kilocalories', symbol: 'kcal', dimension: 'energy', defaultValue: 200, defaultUnit: 'kcal' }
+      ],
+      // Both fields hold the same energy (in joules); the unit menus already list every energy unit
+      // in lib/units.ts (J, kJ, MJ, cal, kcal, Wh, kWh, BTU, ft·lbf), so either menu is a full energy
+      // converter.
+      solve: {
+        kilojoules: ({ kilocalories }) => (kilocalories >= 0 ? kilocalories : NaN),
+        kilocalories: ({ kilojoules }) => (kilojoules >= 0 ? kilojoules : NaN)
+      },
+      derive: (si) => ({ kjShown: si.kilojoules / 1000 }),
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'kjShown',
+          min: -1,
+          max: 5,
+          ticks: ['0.1 kJ', '1 kJ', '10 kJ', '100 kJ', '1,000 kJ', '10,000 kJ', '100,000 kJ'],
+          benchmarks: [
+            { label: 'An apple (about 300 kJ)', value: 300 },
+            { label: 'A snack (200 kcal, about 837 kJ)', value: 836.8 },
+            { label: 'A full day of food (2,000 kcal, about 8,368 kJ)', value: 8368 },
+            { label: '1 kWh of electricity (3,600 kJ)', value: 3600 }
+          ],
+          title: 'How much energy is that?',
+          valueLabel: 'Your energy'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Joules, calories and the other energy units',
+        paragraphs: [
+          'The joule (J) is the SI unit of energy, used throughout physics and engineering. The calorie, used for food energy, was originally defined as the energy to raise one gram of water by one degree Celsius; this converter uses the thermochemical calorie, fixed at exactly 4.184 J, the modern standard definition.',
+          'Food labels write "Calories" with a capital C, and that word means a kilocalorie (1,000 small calories, 4,184 J) — not the small calorie from chemistry. A 200-"Calorie" snack is 200 kcal, about 836.8 kJ. This is a long-standing and sometimes confusing naming convention, not an error on the label.',
+          'The kilowatt-hour (kWh), used for electricity bills, is exactly 3.6 megajoules, because it is a kilowatt of power sustained for an hour (1,000 W × 3,600 s = 3,600,000 J). The BTU (British thermal unit), common in heating and cooling specs, is the International Table BTU in this converter, fixed at exactly 1,055.05585262 J — one of a few historical BTU definitions, this being the one most common in current engineering use.'
+        ]
+      },
+      howTo: {
+        intro: 'Type an energy amount in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Pick your starting unit', text: 'Open the unit menu beside the first field and choose joules, kilojoules, megajoules, calories, kilocalories, watt-hours, kilowatt-hours, BTU or foot-pounds.' },
+          { name: 'Type the amount', text: 'Enter the number. The other field recalculates immediately.' },
+          { name: 'Change the target unit', text: 'Open the second field\'s menu to see the same energy in any other unit.' },
+          { name: 'Read the scale', text: 'The scale places your energy against an apple, a snack, a full day of food and a kilowatt-hour.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Every energy unit here reduces to joules first, then to the target unit.',
+        expression: 'J = value × factor(unit)\nresult = J ÷ factor(target unit)',
+        terms: [
+          { symbol: 'factor(unit)', meaning: 'Joules per unit: 4.184 for cal, 4,184 for kcal (both exact, thermochemical), 3,600,000 for kWh (exact), 1,055.05585262 for BTU (exact, International Table definition).' },
+          { symbol: 'J', meaning: 'The energy in the base SI unit, used internally for every conversion.' }
+        ],
+        note: 'Every factor above is an exact definition, not a measured average, so results are rounded for display only.'
+      },
+      workedExample: {
+        intro: 'A nutrition label lists a snack at 200 kcal, and an energy spec gives 837 kJ. How do the two compare?',
+        rows: [
+          { label: '200 × 4.184', value: '836.8 kJ' },
+          { label: '837 ÷ 4.184', value: '200.05 kcal' },
+          { label: 'Quick check: 200 × 4', value: '≈ 800 kJ' }
+        ],
+        result: '200 kcal ≈ 836.8 kJ · 837 kJ ≈ 200.05 kcal',
+        explanation: 'Multiplying by 4 instead of the exact 4.184 understates kJ by about 4.4%; for kJ to kcal, dividing by 4 instead overstates by about 4.6%.'
+      },
+      commonValues: {
+        title: 'Common kJ to kcal conversions',
+        dimension: 'energy',
+        from: 'kJ',
+        to: 'kcal',
+        values: [1, 10, 100, 500, 837, 1000, 2000],
+        reverse: {
+          title: 'Common kcal to kJ conversions',
+          values: [50, 100, 200, 250, 500, 1000, 2000]
+        }
+      },
+      watchOut: [
+        { title: 'A food "Calorie" is a kilocalorie', body: 'Nutrition labels write "Calories" (capital C) to mean kilocalories (1,000 small calories), a long-standing convention — not a typo and not the same as the small calorie used in chemistry.' },
+        { title: 'This converter uses the thermochemical calorie', body: 'There are several historical definitions of the calorie, differing by a few parts in ten thousand. 4.184 J (thermochemical) is the modern standard this converter and most current references use.' },
+        { title: 'BTU has more than one historical definition', body: 'This converter uses the International Table BTU (1,055.05585262 J), the most common in current engineering specs. Older thermochemical or 59°F BTU definitions differ by a small fraction of a percent — close enough for everyday use but worth checking for lab-grade precision.' },
+        { title: 'Energy is not power', body: 'A kilowatt-hour (kWh) is an amount of energy, not a rate. For power (energy per time — watts, horsepower), see the power converter.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'kilojoules', label: 'Kilojoules', type: 'number', placeholder: '836.8', defaultValue: 836.8, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Energy Converter (J, kJ, Calories, kWh, BTU)',
+      description: 'Free energy converter: joules, kilojoules, calories, kilocalories, kilowatt-hours and BTU, in any direction, with exact factors and a food-label example.',
+      faq: [
+        { question: 'How do I convert kcal to kJ?', answer: 'Multiply by 4.184. For 200 kcal: 200 × 4.184 = 836.8 kJ.' },
+        { question: 'How do I convert kJ to kcal?', answer: 'Divide by 4.184. 837 kJ ÷ 4.184 ≈ 200.05 kcal.' },
+        { question: 'Is a food Calorie the same as a calorie?', answer: 'A food "Calorie" (capital C) is a kilocalorie, 1,000 small calories — 4,184 J. A chemistry "calorie" (lowercase) is 1/1,000 of that, 4.184 J.' },
+        { question: 'How many joules are in 1 kWh?', answer: 'Exactly 3,600,000 J (3.6 MJ) — a kilowatt sustained for an hour.' },
+        { question: 'What is a BTU in joules?', answer: 'This converter uses the International Table BTU, exactly 1,055.05585262 J, the definition most common in current heating and cooling specs.' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'Multiply kcal by 4 for a rough kJ figure (about 4.4% low), or divide kJ by 4 for kcal (about 4.6% high).' }
+      ]
+    },
+    compute(values) {
+      const kilocalories = fromBase(toBase(values.kilojoules, 'energy', 'kJ'), 'energy', 'kcal');
+      return { kilocalories };
+    }
+  },
+  {
+    id: 'power-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['power converter', 'kw to hp converter', 'hp to kw calculator', 'horsepower converter', 'watts to horsepower converter'],
+    related: ['energy-converter', 'pressure-converter', 'force-calculator', 'electricity-bill-calculator'],
+    title: 'Power Converter',
+    description: 'Convert between watts, kilowatts, horsepower, metric horsepower (PS) and BTU per hour, in any direction, as you type.',
+    example: 'A 100 kW electric motor is about 134.1 hp, and 1 hp is about 1.4% more powerful than 1 metric horsepower (PS).',
+    solver: {
+      defaultTarget: 'horsepower',
+      variables: [
+        { id: 'kilowatts', label: 'Kilowatts', symbol: 'kW', dimension: 'power', defaultValue: 100, defaultUnit: 'kW' },
+        { id: 'horsepower', label: 'Horsepower', symbol: 'hp', dimension: 'power', defaultValue: 134.1022, defaultUnit: 'hp' }
+      ],
+      // Both fields hold the same power (in watts); the unit menus already list every power unit in
+      // lib/units.ts (W, kW, MW, hp, PS, BTU/h), so either menu is a full power converter.
+      solve: {
+        kilowatts: ({ horsepower }) => (horsepower >= 0 ? horsepower : NaN),
+        horsepower: ({ kilowatts }) => (kilowatts >= 0 ? kilowatts : NaN)
+      },
+      derive: (si) => ({ kwShown: si.kilowatts / 1000 }),
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'kwShown',
+          min: -2,
+          max: 4,
+          ticks: ['0.01 kW', '0.1 kW', '1 kW', '10 kW', '100 kW', '1,000 kW', '10,000 kW'],
+          benchmarks: [
+            { label: 'A microwave oven (about 1.1 kW)', value: 1.1 },
+            { label: 'A small car engine (about 75 kW / 100 hp)', value: 75 },
+            { label: 'A family car engine (about 134 hp / 100 kW)', value: 100 },
+            { label: 'A Formula 1 engine (about 750–900 kW)', value: 800 }
+          ],
+          title: 'How powerful is that?',
+          valueLabel: 'Your power'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Watts, horsepower and metric horsepower',
+        paragraphs: [
+          'Power is energy delivered per unit of time. The watt (W), the SI unit, is one joule per second, used for appliances and electrical ratings worldwide. The kilowatt (1,000 W) is the usual scale for motors, generators and car engines in countries that use metric units.',
+          'Horsepower (hp) is defined mechanically as 550 foot-pounds-force per second, a figure that traces back to James Watt\'s 18th-century comparison of a steam engine to a draft horse. It converts to exactly 745.69987158227 W. Metric horsepower (PS, from the German Pferdestärke) is a related but different unit, defined as 75 kilogram-force-meters per second, exactly 735.49875 W.',
+          'Because the two definitions do not match, 1 hp is about 1.387% more than 1 PS — close enough that car brochures sometimes blur the two, but not interchangeable for anything precise. A car rated "100 kW (134 hp)" and one rated "100 kW (136 PS)" have the identical 100 kW engine; only the horsepower-like unit printed next to it differs.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a power value in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Pick your starting unit', text: 'Open the unit menu beside the first field and choose watts, kilowatts, megawatts, mechanical horsepower, metric horsepower (PS) or BTU per hour.' },
+          { name: 'Type the value', text: 'Enter the number. The other field recalculates immediately.' },
+          { name: 'Change the target unit', text: 'Open the second field\'s menu to see the same power in any other unit.' },
+          { name: 'Read the scale', text: 'The scale places your power against a microwave, a small car engine, a family car engine and a Formula 1 engine.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Every power unit here reduces to watts first, then to the target unit.',
+        expression: 'W = value × factor(unit)\nresult = W ÷ factor(target unit)',
+        terms: [
+          { symbol: 'factor(unit)', meaning: 'Watts per unit: 745.69987158227 for hp (550 ft·lbf/s, exact), 735.49875 for PS (75 kgf·m/s, exact), 0.293071 for BTU/h.' },
+          { symbol: 'W', meaning: 'The power in the base SI unit, used internally for every conversion.' }
+        ],
+        note: 'Both horsepower definitions are exact from their own historical definitions, so results are rounded for display only.'
+      },
+      workedExample: {
+        intro: 'An electric motor is rated at 100 kW. How much is that in mechanical horsepower, and what would the same number of horsepower be in kW?',
+        rows: [
+          { label: '100,000 ÷ 745.69987158227', value: '134.10 hp' },
+          { label: '134 × 745.69987158227 ÷ 1,000', value: '99.92 kW' },
+          { label: 'Quick check: 100 × 1.34', value: '134 hp' }
+        ],
+        result: '100 kW ≈ 134.10 hp · 134 hp ≈ 99.92 kW',
+        explanation: 'Multiplying kW by 1.34 is a close mental shortcut for horsepower, within about 0.08%. The same 134 hp is about 135.86 PS (134 × 1.013870), since metric horsepower is the slightly smaller unit.'
+      },
+      commonValues: {
+        title: 'Common kilowatts to horsepower conversions',
+        dimension: 'power',
+        from: 'kW',
+        to: 'hp',
+        values: [1, 5, 10, 50, 75, 100, 150, 200, 300],
+        reverse: {
+          title: 'Common horsepower to kilowatts conversions',
+          values: [10, 50, 100, 134, 150, 200, 300, 400]
+        }
+      },
+      watchOut: [
+        { title: 'Horsepower and metric horsepower are different units', body: 'This converter\'s "hp" is the mechanical horsepower (745.69987158227 W), slightly larger than metric horsepower, PS (735.49875 W) — about 1.39% larger. A car spec quoting "150 PS" is not the same as "150 hp."' },
+        { title: 'There are other, rarer horsepower definitions', body: 'Electrical horsepower (746 W, a rounded US convention for motor nameplates) and boiler horsepower are different again, each by a small fraction of a percent. This converter uses the standard mechanical horsepower.' },
+        { title: 'Power is a rate, not an amount', body: 'A 100 kW motor running for 2 hours uses 200 kWh of energy — power and energy are related but different quantities. For the energy side, see the energy converter.' },
+        { title: 'BTU/h appears on HVAC equipment', body: 'Air conditioners and furnaces are often rated in BTU per hour rather than watts; 12,000 BTU/h (a "1-ton" air conditioner, a cooling-industry term unrelated to weight) is about 3.52 kW.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'kilowatts', label: 'Kilowatts', type: 'number', placeholder: '100', defaultValue: 100, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Power Converter (Watts, kW, Horsepower, PS)',
+      description: 'Free power converter: watts, kilowatts, horsepower, metric horsepower (PS) and BTU/h, in any direction, with exact factors and a car-engine example.',
+      faq: [
+        { question: 'How do I convert kW to horsepower?', answer: 'Divide by 0.74569987158227 (or multiply by about 1.34102). 100 kW ÷ 0.74569987158227 ≈ 134.10 hp.' },
+        { question: 'How do I convert horsepower to kW?', answer: 'Multiply by 0.74569987158227. 134 hp × 0.74569987158227 ≈ 99.92 kW.' },
+        { question: 'What is the difference between hp and PS?', answer: 'hp (mechanical horsepower, 745.69987158227 W) is about 1.39% larger than PS (metric horsepower, 735.49875 W). 1 hp ≈ 1.0139 PS.' },
+        { question: 'How many watts are in 1 horsepower?', answer: 'Exactly 745.69987158227 W, from the definition 550 foot-pounds-force per second.' },
+        { question: 'How many watts are in 1 PS (metric horsepower)?', answer: 'Exactly 735.49875 W, from the definition 75 kilogram-force-meters per second.' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'Multiply kW by about 1.34 for horsepower (within about 0.08%), or divide horsepower by about 1.34 for kW.' }
+      ]
+    },
+    compute(values) {
+      const horsepower = fromBase(toBase(values.kilowatts, 'power', 'kW'), 'power', 'hp');
+      return { horsepower };
+    }
+  },
+  {
+    id: 'data-storage-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['data storage converter', 'gb to mb converter', 'mb to gb calculator', 'bit to byte converter', 'storage unit converter'],
+    related: ['energy-converter', 'power-converter', 'character-counter', 'time-converter'],
+    title: 'Data Storage Converter',
+    description: 'Convert between bits, bytes, kilobytes, megabytes, gigabytes, terabytes and their binary (KiB/MiB/GiB) equivalents, in any direction, as you type.',
+    example: '1 GB (decimal, the way drives are sold) is 1,000 MB, but only about 0.9313 GiB (binary), which is why a "1 TB" drive shows about 931 "GB" in Windows.',
+    solver: {
+      defaultTarget: 'megabytes',
+      variables: [
+        { id: 'gigabytes', label: 'Gigabytes', symbol: 'GB', dimension: 'data', defaultValue: 1, defaultUnit: 'GB' },
+        { id: 'megabytes', label: 'Megabytes', symbol: 'MB', dimension: 'data', defaultValue: 1000, defaultUnit: 'MB' }
+      ],
+      // Both fields hold the same amount of data (in bits); the unit menus already list every data
+      // unit in lib/units.ts, decimal (bit, kbit, Mbit, Gbit, B, KB, MB, GB, TB, PB) and binary (KiB,
+      // MiB, GiB, TiB), so either menu is a full data-storage converter.
+      solve: {
+        gigabytes: ({ megabytes }) => (megabytes >= 0 ? megabytes : NaN),
+        megabytes: ({ gigabytes }) => (gigabytes >= 0 ? gigabytes : NaN)
+      },
+      derive: (si) => ({ mbShown: si.gigabytes / (8 * 1e6) }),
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'mbShown',
+          min: -2,
+          max: 8,
+          ticks: ['0.01 MB', '1 MB', '100 MB', '10,000 MB', '1,000,000 MB', '100,000,000 MB'],
+          benchmarks: [
+            { label: 'A photo from a phone camera (about 4 MB)', value: 4 },
+            { label: 'A music track (MP3, about 8 MB)', value: 8 },
+            { label: 'A single-layer DVD (4.7 GB, 4,700 MB)', value: 4700 },
+            { label: 'A smartphone\'s storage (128 GB, 128,000 MB)', value: 128000 }
+          ],
+          title: 'How much data is that?',
+          valueLabel: 'Your data'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Decimal and binary data units, and bits vs. bytes',
+        paragraphs: [
+          'A byte is 8 bits, and every storage unit here builds on one or the other. Beyond that, there are two different, equally valid ways to scale up: the decimal system (kilo- = 1,000, as in every other SI prefix) and the binary system (kibi- = 1,024, the power of two closest to 1,000, which is how memory addressing naturally divides). Storage makers sell drives in decimal gigabytes (1 GB = 1,000,000,000 bytes); Windows reports binary gibibytes but labels them "GB".',
+          'That mismatch is why a drive sold as "1 TB" shows up as about 931 GB in Windows, which counts in binary but labels the result "GB" (macOS, iOS and most Linux file managers count in decimal and show the full 1 TB): 1 TB is exactly 1,000,000,000,000 bytes, but dividing that by 2^30 (1,073,741,824) bytes per "GiB" gives about 931.32, not 1,000. Nothing is missing or defective — the drive and the OS are simply using two different, both-correct definitions of a large number of bytes. The IEC introduced the ki/Mi/Gi/Ti naming in 1998 specifically so "KB" could keep meaning 1,000 bytes and "KiB" could unambiguously mean 1,024.',
+          'Network and internet speeds are usually quoted in bits per second (Mbit/s, Gbit/s — often written Mbps, Gbps), while file sizes and storage are quoted in bytes (MB, GB). An internet plan advertised as "1 Gbps" tops out at about 125 MB/s of actual file transfer, not 1,000 MB/s, because there are 8 bits in a byte.'
+        ]
+      },
+      howTo: {
+        intro: 'Type an amount of data in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Pick your starting unit', text: 'Open the unit menu beside the first field and choose bits, kilobits, megabits, gigabits, bytes, KB, MB, GB, TB, PB, or the binary KiB, MiB, GiB, TiB.' },
+          { name: 'Type the amount', text: 'Enter the number. The other field recalculates immediately.' },
+          { name: 'Change the target unit', text: 'Open the second field\'s menu to see the same amount of data in any other unit — decimal or binary.' },
+          { name: 'Read the scale', text: 'The scale places your data against a photo, a music track, a DVD and a smartphone\'s storage.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Every data unit here reduces to bits first, then to the target unit.',
+        expression: 'bit = value × factor(unit)\nresult = bit ÷ factor(target unit)',
+        terms: [
+          { symbol: 'factor(unit)', meaning: 'Bits per unit: 8 for B, 8,000 for KB, 8,000,000 for MB, 8×10⁹ for GB (decimal: 1,000ⁿ); 8,192 for KiB, 8×2²⁰ for MiB, 8×2³⁰ for GiB (binary: 1,024ⁿ).' },
+          { symbol: 'bit', meaning: 'The amount of data in the base unit, used internally for every conversion.' }
+        ],
+        note: 'Decimal (KB/MB/GB) and binary (KiB/MiB/GiB) prefixes are both exact definitions of different numbers — the "error" people notice is a labeling mismatch, not a rounding error.'
+      },
+      workedExample: {
+        intro: 'A drive is advertised as 1 TB. How many decimal GB is that, and how many binary GiB will Windows actually show?',
+        rows: [
+          { label: '1 TB ÷ 1 GB (both decimal, 1,000ⁿ)', value: '1,000 GB' },
+          { label: '1 TB (1,000,000,000,000 bytes) ÷ 2³⁰ bytes per GiB', value: '≈ 931.32 GiB' },
+          { label: 'Quick check: 1,000 × 0.9313', value: '≈ 931.3' }
+        ],
+        result: '1 TB = 1,000 GB (decimal) ≈ 931.32 GiB (binary)',
+        explanation: 'The drive maker\'s 1,000,000,000,000-byte "1 TB" and Windows\' binary "GB" (really GiB) are both correct, exact units — they are just different-sized units for the same bytes, which is why Windows shows a smaller number than the box.'
+      },
+      commonValues: {
+        title: 'Common gigabytes to megabytes conversions',
+        dimension: 'data',
+        from: 'GB',
+        to: 'MB',
+        values: [0.5, 1, 2, 4, 8, 16, 32, 64],
+        reverse: {
+          title: 'Common megabytes to gigabytes conversions',
+          values: [128, 256, 500, 512, 1000, 2000, 4000, 8000]
+        }
+      },
+      watchOut: [
+        { title: 'Decimal and binary units are both "correct" — just different sizes', body: '1 GB (decimal) is 1,000,000,000 bytes; 1 GiB (binary) is 1,073,741,824 bytes, about 7.4% more. A "1 TB" drive is exactly 1,000 GB but only about 931.32 GiB — nothing is missing.' },
+        { title: 'Bits and bytes look alike but differ by 8×', body: 'An internet plan advertised as "100 Mbps" (100 megabits per second) downloads at about 12.5 MB/s (megabytes per second) at best, not 100 MB/s. Check for a lowercase "b" (bits) versus capital "B" (bytes).' },
+        { title: 'Windows labels GiB as "GB"', body: 'Windows File Explorer computes in binary (1,024ⁿ) but displays the label "GB" — this converter\'s "GB" option is the decimal (1,000ⁿ) unit; use "GiB" from the menu to match what Windows shows. macOS (since 10.6), iOS and most Linux file managers use decimal GB, matching the box.' },
+        { title: 'RAM is conventionally sold and addressed in binary units', body: 'Memory chips come in binary-friendly sizes (powers of 2), so RAM capacity almost always lines up exactly in GiB even when labeled "GB" on the box.' }
+      ],
+      references: [
+        { label: 'NIST, Prefixes for Binary Multiples', url: 'https://physics.nist.gov/cuu/Units/binary.html' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'gigabytes', label: 'Gigabytes', type: 'number', placeholder: '1', defaultValue: 1, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Data Storage Converter (GB, MB, GiB, Bits)',
+      description: 'Free data storage converter: bits, bytes, KB, MB, GB, TB and binary KiB/MiB/GiB/TiB, in any direction, with the decimal-vs-binary difference explained.',
+      faq: [
+        { question: 'How many MB are in a GB?', answer: '1,000 MB in a decimal GB (this converter\'s default). In binary terms, 1 GiB is 1,024 MiB.' },
+        { question: 'Why does a 1 TB drive show up as 931 GB on my computer?', answer: 'The drive is sold in decimal terabytes (1,000,000,000,000 bytes), but Windows divides by binary gibibytes (1,073,741,824 bytes) while labeling the result "GB": 1 TB ÷ 2^30 bytes ≈ 931.32. macOS, iOS and most Linux file managers count in decimal and show 1 TB.' },
+        { question: 'What is the difference between MB and Mb?', answer: 'MB (capital B) is megabytes; Mb or Mbit (lowercase b) is megabits. There are 8 bits in a byte, so 1 MB = 8 Mbit.' },
+        { question: 'How fast is a 100 Mbps internet connection in MB/s?', answer: 'About 12.5 MB/s at best (100 ÷ 8), since internet speeds are quoted in megabits, not megabytes, per second.' },
+        { question: 'How many bytes are in a GiB?', answer: 'Exactly 1,073,741,824 bytes (2^30), about 7.4% more than the 1,000,000,000 bytes in a decimal GB.' },
+        { question: 'Which should I use, GB or GiB?', answer: 'Use GB (decimal) to match how storage is sold and priced, and GiB (binary) to match what Windows displays for the same drive.' }
+      ]
+    },
+    compute(values) {
+      const megabytes = fromBase(toBase(values.gigabytes, 'data', 'GB'), 'data', 'MB');
+      return { megabytes };
+    }
   }
 ];

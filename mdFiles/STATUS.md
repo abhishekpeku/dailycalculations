@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-10-25 · Current step: **40–42** (Wave 1: math · statistics · conversion — NEW calculators). Math sub-wave **complete** (29 calculators, 6 runs, PRs #15–#20). Statistics sub-wave **complete** (25 calculators, 5 runs, PRs #21 and #23–#26, plus the paste-a-list input in PR #22). **Conversion sub-wave started 2026-10-25, run 3/~13 done**: run 1 added the `content.commonValues` kit plus 5 pair converters (PR #28, not yet merged). Run 2 added the 5 general one-dimension converters — length, weight, volume, area, speed (PR #29, not yet merged). Run 3 added 5 more general converters — time, pressure, energy, power, data storage — same pattern (existing widget already lists every unit of a dimension; "general" means SEO framing, default pair, own `commonValues` table). 123 calculators, 16 categories on branch `step/42-wave-1-conversion-run-3` (PR #30, not yet merged). See the 2026-10-25 session log entry for what run 4 needs to know.
+Last updated: 2026-10-25 · Current step: **40–42** (Wave 1: math · statistics · conversion — NEW calculators). Math sub-wave **complete** (29 calculators, 6 runs, PRs #15–#20). Statistics sub-wave **complete** (25 calculators, 5 runs, PRs #21 and #23–#26, plus the paste-a-list input in PR #22). **Conversion sub-wave started 2026-10-25, run 4/~13 done**: run 1 added the `content.commonValues` kit plus 5 pair converters (PR #28, not yet merged). Run 2 added the 5 general one-dimension converters — length, weight, volume, area, speed (PR #29, not yet merged). Run 3 added 5 more general converters — time, pressure, energy, power, data storage (PR #30, not yet merged). Run 4 added 5 high-volume pair converters — mm↔in, mL↔cups, kg↔stone, acres↔hectares, sq ft↔sq m — each differentiated from the general pages' own default pair/table (overlap rule), plus a `commonValues.stoneLbs` kit extension (mirrors `feetInches`) so kg↔stone body weights display as "11 st 4 lb", never "11 st 14 lb". 128 calculators, 16 categories on branch `step/42-wave-1-conversion-run-4` (PR #31, not yet merged). See the 2026-10-25 session log entry for what run 5 needs to know.
 
 ---
 
@@ -1809,6 +1809,72 @@ kW↔hp, psi↔bar, kcal↔kJ, MB↔GB, mpg↔L/100 km — note that this run's 
 kW↔hp, psi↔bar, kJ↔kcal and GB↔MB as their *own* default pairs, so run 5 should pick each pair's
 *other* direction and a distinct commonValues value set for its dedicated page, exactly as run 2
 did for `weight-converter` (kg→lb) vs. `pounds-to-kilograms-converter` (lb→kg).
+
+**2026-10-25 — step 42, Wave 1: conversion, run 4/~13 (5 high-volume pairs, PR #31).** Added
+`millimeters-to-inches-converter` (default mm→in, table built around metric drill bit sizes and
+fractional inches 1/16–1 in), `milliliters-to-cups-converter` (default mL→cups, US customary cup
+236.5882365 mL stated as the default against the 250 mL metric cup, and the UK's lack of a
+standard cup measure), `kilograms-to-stone-converter` (default kg→stone, the first page with a real
+stone table — body-weight kg values shown as stone + pounds, e.g. "11 st 0 lb"), `acres-to-hectares-
+converter` (default acre→ha, table built around farmland/land-parcel sizes), and `square-feet-to-
+square-meters-converter` (primary direction ft²→m², the *opposite* of `area-converter`'s own default
+m²→ft², per the overlap rule — table built around room/home sizes, 500–3,000 ft² and 10–200 m²).
+
+**Overlap/dedupe decisions** (programmatic check against every `id`/alias in `data/calculators/*.ts`
+before building; full detail in `mdFiles/steps/42-wave-1-conversion.md` → "Run 4"): two existing
+aliases were moved to the new, more specific pages — `'stone to kg converter'` off
+`pounds-to-kilograms-converter` onto `kilograms-to-stone-converter`, and `'sq ft to sq m converter'`
+off `area-converter` onto `square-feet-to-square-meters-converter` (same precedent as run 2's
+`distance converter` move). The other three pairs (mm/in, mL/cup, acre/ha) had no alias collisions
+and no existing table on the sibling general page for that specific pair, so no alias moves were
+needed there — the general pages (`length-converter`, `volume-converter`, `area-converter`) list
+those units in their menus but never built a table around them.
+
+**Kit addition: `commonValues.stoneLbs`.** Mirrors `feetInches` exactly (same file, same
+round-the-total-first-then-split principle, now for mass/pounds instead of length/inches):
+`formatStoneLbs(totalPounds)` in `lib/commonValues.ts`, the `stoneLbs?: 'from' | 'to'` field in
+`data/calculators/types.ts` (on both the table and `reverse`), `CommonValuesSection.tsx` updated to
+combine `feetInches`/`stoneLbs` into one display mode, and unit tests mirroring the existing
+`formatFeetInches` tests (including a 300-value sweep proving "14 lb" can never print, the same way
+"12 in" can't). Fully backward compatible — `columnHeader`/`cellText`'s `asFeetInches` boolean
+parameter still accepts `true`/`false` unchanged; `'stoneLbs'` is a new third option.
+
+**No unit was missing from `lib/units.ts`** — mm, in, mL, cup, cupMetric, kg, st, acre, ha, m2 and
+ft2 all already existed (st was added in run 1); nothing added to `UNITS` or `lib/units.spec.ts`
+this run.
+
+**Verification**: every copy figure — example lines, worked-example rows, FAQ answers,
+`commonValues` table values (forward and reverse), visual benchmarks — recomputed independently in
+a scratchpad script (`verify_run4.mjs`, no app imports, the same NIST constants hand-copied from
+`lib/units.ts`) before any of it was committed; no mismatches found. The stone-and-pounds rows were
+specifically checked to confirm no remainder ever reads 14 lb (e.g. 70 kg → 154.3236 lb → rounds to
+154 lb → 11 st 0 lb, never drifting to "10 st 14 lb").
+
+Checked programmatically: 0 duplicate calculator ids; every new page's `related` ids exist with no
+self-reference; the only alias collision anywhere in the dataset remains the pre-existing,
+out-of-scope `house loan emi calculator`, already on the Parked list, not touched; every new
+`seo.title` ≤60 chars (41–50) and `seo.description` ≤160 chars (127–153); 6 FAQs and 5 aliases per
+new page. 128 total calculators (123 + 5), 16 categories (unchanged). `npm test` 603/603 (up from
+578 after the snapshot update — diff touched only the 5 new ids), lint clean, `npm run build` passes
+(157 static pages, up from 152). Spot-checked all 5 new pages plus `/categories/measurements` on a
+local dev server (H1 text, the `common-values` section id, JSON-LD present, and the
+`kilograms-to-stone-converter` table rendering "11 st 0 lb" / "7 st 12 lb" etc. with no table cell
+ever showing "14 lb" — the only "11 st 14 lb" string in the rendered page is inside the FAQ prose
+explaining why it can't happen, not a table cell); killed the server afterward (port 3000 confirmed
+free).
+
+**What run 5 needs to know**: per the step file's "Planned run breakdown", run 5 is pairs kW↔hp,
+psi↔bar, kcal↔kJ, MB↔GB, mpg↔L/100 km. Apply the same overlap rule as run 4: this run's (run 3's)
+general pages already use kW↔hp, psi↔bar, kJ↔kcal and GB↔MB as their *own* default pairs
+(`power-converter`, `pressure-converter`, `energy-converter`, `data-storage-converter`), so each run
+5 pair page should take the *other* primary direction (e.g. `kilowatts-to-horsepower-converter`
+hp→kW if `power-converter`'s default is kW→hp — check the exact direction in
+`data/calculators/measurements.ts` before assuming) plus a distinct `commonValues` value set, the
+same move `square-feet-to-square-meters-converter` made against `area-converter` this run. `mpg↔L/100
+km` is the one pair with no existing sibling default-pair collision (the `fuelEconomy` dimension's
+reciprocal units are not any general page's default), so it just needs a dedupe check for aliases/id
+and its own table — no direction-flip needed. Do the alias-collision check programmatically first,
+same as every run.
 
 ## Pending on the user — not code
 

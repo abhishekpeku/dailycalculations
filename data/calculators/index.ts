@@ -162,7 +162,12 @@ export const calculatorOrder: string[] = [
   'pressure-converter',
   'energy-converter',
   'power-converter',
-  'data-storage-converter'
+  'data-storage-converter',
+  'millimeters-to-inches-converter',
+  'milliliters-to-cups-converter',
+  'kilograms-to-stone-converter',
+  'acres-to-hectares-converter',
+  'square-feet-to-square-meters-converter'
 ];
 
 const rank = (id: string) => {

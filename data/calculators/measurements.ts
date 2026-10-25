@@ -251,7 +251,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
     id: 'pounds-to-kilograms-converter',
     category: 'measurements',
     updatedAt: '2026-10-19',
-    aliases: ['lbs to kg converter', 'kg to pounds calculator', 'stone to kg converter', 'lb to kg'],
+    aliases: ['lbs to kg converter', 'kg to pounds calculator', 'convert pounds to kilograms', 'lb to kg'],
     related: ['bmi-calculator', 'weight-converter', 'gallons-to-liters-converter', 'fahrenheit-to-celsius-converter'],
     title: 'Pounds to Kilograms Converter',
     description: 'Convert pounds to kilograms, or kilograms to pounds, as you type. Stone, ounces, grams and tonnes are in the unit menus too.',
@@ -1477,7 +1477,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
     id: 'area-converter',
     category: 'measurements',
     updatedAt: '2026-10-25',
-    aliases: ['area converter', 'square meters to square feet converter', 'convert area units', 'area unit converter', 'sq ft to sq m converter'],
+    aliases: ['area converter', 'square meters to square feet converter', 'convert area units', 'area unit converter'],
     related: ['length-converter', 'volume-converter', 'area-calculator', 'tile-calculator'],
     title: 'Area Converter',
     description: 'Convert between square meters, square feet, square kilometers, square miles, acres, hectares and square yards, in any direction, as you type.',
@@ -2321,6 +2321,619 @@ export const measurementsCalculators: CalculatorConfig[] = [
     compute(values) {
       const megabytes = fromBase(toBase(values.gigabytes, 'data', 'GB'), 'data', 'MB');
       return { megabytes };
+    }
+  },
+  {
+    id: 'millimeters-to-inches-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['mm to inches converter', 'inches to mm converter', 'convert mm to in', 'millimeters to inches calculator', 'drill bit size converter'],
+    related: ['centimeters-to-inches-converter', 'feet-to-meters-converter', 'length-converter', 'square-feet-to-square-meters-converter'],
+    title: 'Millimeters to Inches Converter',
+    description: 'Convert millimeters to inches, or inches to millimeters, as you type. Includes a table of metric drill bit sizes and fractional inches.',
+    example: '10 mm is about 0.3937 in, and a 1/4 in (0.25 in) drill bit is exactly 6.35 mm.',
+    solver: {
+      defaultTarget: 'inches',
+      variables: [
+        { id: 'millimeters', label: 'Millimeters', symbol: 'mm', dimension: 'length', defaultValue: 10, defaultUnit: 'mm' },
+        { id: 'inches', label: 'Inches', symbol: 'in', dimension: 'length', defaultValue: 0.3937, defaultUnit: 'in' }
+      ],
+      // Both fields hold the same length (in meters); the unit menus do the converting.
+      solve: {
+        millimeters: ({ inches }) => (inches >= 0 ? inches : NaN),
+        inches: ({ millimeters }) => (millimeters >= 0 ? millimeters : NaN)
+      },
+      derive: (si) => ({ mmShown: si.millimeters * 1000 }),
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'mmShown',
+          min: -1,
+          max: 3,
+          ticks: ['0.1 mm', '1 mm', '10 mm', '100 mm', '1,000 mm'],
+          benchmarks: [
+            { label: 'A 1/16 in drill bit (1.5875 mm)', value: 1.5875 },
+            { label: 'An M8 bolt (8 mm)', value: 8 },
+            { label: 'A 1/2 in drill bit (12.7 mm)', value: 12.7 },
+            { label: 'An A4 sheet, short side (210 mm)', value: 210 }
+          ],
+          title: 'How small (or big) is that?',
+          valueLabel: 'Your length'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Millimeters and inches',
+        paragraphs: [
+          'The millimeter is a metric unit of length, one thousandth of a meter, used worldwide wherever a measurement is too small to need a centimeter. The inch is a customary unit, used mainly in the US and for some parts specifications elsewhere, equal to 1/12 of a foot. Since 1959, the inch has been defined from the meter by the same international yard-and-pound agreement that fixes every other customary length on this site: one inch is exactly 25.4 millimeters.',
+          'Because that definition is exact, converting between millimeters and inches is a single multiplication or division, with no rounding built into the factor itself — only the number you see on screen is rounded. One millimeter is about 0.03937 inches, so a credit card\'s 0.76 mm thickness is about 0.030 in, and a 10 mm socket is about 0.3937 in.',
+          'This pair matters most for tools and hardware: drill bits, screws and bolts are sold in both metric sizes (millimeters) and fractional inch sizes (1/16 in, 1/8 in, and so on), and a workshop often needs to match one to the other. Fractional inches are not decimals — 1/4 in is 0.25 in, not 1.4 in — so the table below converts the common fractions directly.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a length in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Millimeters to inches', text: 'Type the length in millimeters. The inches field shows the conversion.' },
+          { name: 'Inches to millimeters', text: 'Type into the inches field instead. It becomes the input and the millimeters field is calculated.' },
+          { name: 'Enter a fraction as a decimal', text: 'Convert a fraction first: 1/8 in is 0.125 in, 3/4 in is 0.75 in.' },
+          { name: 'Use other units', text: 'Either menu also offers centimeters, meters, feet and yards.' },
+          { name: 'Read the scale', text: 'The scale places the length against a small drill bit, a bolt and a sheet of A4 paper.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'An inch is a fixed number of millimeters, so the conversion is one multiplication or division.',
+        expression: 'in = mm ÷ 25.4\nmm = in × 25.4',
+        terms: [
+          { symbol: 'mm', meaning: 'Length in millimeters, 1/1,000 of a meter.' },
+          { symbol: 'in', meaning: 'Length in inches.' },
+          { symbol: '25.4', meaning: 'Millimeters in an inch, exact by definition since 1959.' }
+        ],
+        note: 'The factor is exact. Results are rounded for display only.'
+      },
+      workedExample: {
+        intro: 'A hardware store sells an 8 mm drill bit and a 3/8 in bolt. What is the bit\'s size in inches, and the bolt\'s size in millimeters?',
+        rows: [
+          { label: '8 ÷ 25.4', value: '0.3150 in' },
+          { label: '0.375 × 25.4', value: '9.525 mm' },
+          { label: 'Quick check: 8 × 0.04', value: '0.32 in' }
+        ],
+        result: '8 mm ≈ 0.315 in · 3/8 in = 9.525 mm',
+        explanation: 'Multiplying by 0.04 instead of dividing by 25.4 is a rough shortcut and lands within about 2%. For inches to millimeters, multiplying by 25 instead of 25.4 is about 1.6% low.'
+      },
+      commonValues: {
+        title: 'Common millimeters to inches (drill bit) conversions',
+        dimension: 'length',
+        from: 'mm',
+        to: 'in',
+        values: [1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20],
+        decimals: 4,
+        reverse: {
+          title: 'Common fractional inches to millimeters conversions',
+          values: [0.0625, 0.125, 0.1875, 0.25, 0.3125, 0.375, 0.5, 0.625, 0.75, 1]
+        }
+      },
+      watchOut: [
+        { title: 'Fractional inches are not decimals', body: '3/8 in is 0.375 in, not 3.8 in. Convert the fraction to a decimal first (divide the top number by the bottom) before typing it in.' },
+        { title: 'A millimeter is not a centimeter', body: 'There are 10 mm in a cm, so reading "10" off a ruler\'s cm side instead of its mm side understates a length tenfold. Check which scale you are using.' },
+        { title: 'Drill bit sets mix metric and fractional sizes', body: 'A 6 mm bit (0.2362 in) and a 1/4 in bit (6.35 mm) are close but not identical. For a tight fit, match the exact size the fastener calls for, not the nearest-looking one.' },
+        { title: 'A tape measure is less precise than this', body: 'A physical ruler or tape measure is usually accurate to about ±0.5 mm (0.02 in), well within the precision shown here.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'millimeters', label: 'Millimeters', type: 'number', placeholder: '10', defaultValue: 10, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Millimeters to Inches Converter (mm to in)',
+      description: 'Free millimeters to inches converter: mm to in and back as you type, with the exact 25.4 factor, drill bit sizes, fractional inches and a worked example.',
+      faq: [
+        { question: 'How do I convert millimeters to inches?', answer: 'Divide by 25.4. For 8 mm: 8 ÷ 25.4 ≈ 0.315 in.' },
+        { question: 'How do I convert inches to millimeters?', answer: 'Multiply by 25.4. 0.375 in × 25.4 = 9.525 mm.' },
+        { question: 'What is a 10 mm drill bit in inches?', answer: 'About 0.3937 in, slightly larger than a 3/8 in bit (0.375 in, 9.525 mm).' },
+        { question: 'How many millimeters is 1/4 inch?', answer: 'Exactly 6.35 mm (0.25 × 25.4).' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'Multiply millimeters by 0.04 for a rough inch figure (within about 2%), or inches by 25 for millimeters (within about 1.6%).' },
+        { question: 'How many millimeters are in a centimeter?', answer: 'Exactly 10. A 10 mm length is the same as 1 cm — see the centimeters to inches converter for that pair.' }
+      ]
+    },
+    compute(values) {
+      const inches = fromBase(toBase(values.millimeters, 'length', 'mm'), 'length', 'in');
+      return { inches };
+    }
+  },
+  {
+    id: 'milliliters-to-cups-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['ml to cups converter', 'cups to ml calculator', 'convert milliliters to cups', 'cup to milliliter converter', 'recipe cup converter'],
+    related: ['ounces-to-milliliters-converter', 'gallons-to-liters-converter', 'volume-converter', 'grams-to-ounces-converter'],
+    title: 'Milliliters to Cups Converter',
+    description: 'Convert milliliters to US cups, or cups to milliliters, as you type. Covers the US customary cup and the metric cup, and states which is the default.',
+    example: '1 US cup is about 236.59 mL, and a 250 mL metric cup is about 1.06 US cups.',
+    solver: {
+      defaultTarget: 'milliliters',
+      variables: [
+        { id: 'milliliters', label: 'Milliliters', symbol: 'mL', dimension: 'volume', defaultValue: 236.5882, defaultUnit: 'mL' },
+        { id: 'cups', label: 'Cups', symbol: 'cup', dimension: 'volume', defaultValue: 1, defaultUnit: 'cup' }
+      ],
+      // Both fields hold the same volume (in m³); the unit menus do the converting.
+      solve: {
+        milliliters: ({ cups }) => (cups >= 0 ? cups : NaN),
+        cups: ({ milliliters }) => (milliliters >= 0 ? milliliters : NaN)
+      },
+      derive: (si) => ({ mLShown: si.milliliters * 1e6 }),
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'mLShown',
+          min: -1,
+          max: 4,
+          ticks: ['0.1 mL', '1 mL', '10 mL', '100 mL', '1,000 mL', '10,000 mL'],
+          benchmarks: [
+            { label: 'A US teaspoon (about 4.93 mL)', value: 4.9289 },
+            { label: '1 US cup (236.59 mL)', value: 236.5882 },
+            { label: '1 US pint, 2 cups (about 473.18 mL)', value: 473.1765 },
+            { label: '1 liter (1,000 mL)', value: 1000 }
+          ],
+          title: 'How much is that?',
+          valueLabel: 'Your volume'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Cups and milliliters',
+        paragraphs: [
+          'The milliliter is a metric unit of volume, one thousandth of a liter, used on packaging and in recipes almost everywhere outside the US. The cup is a US customary unit for cooking, defined as 8 US fluid ounces. Because the US fluid ounce traces back to the exact 231 cubic inch US gallon (the same exact definition the gallons to liters converter uses), one US cup is exactly 236.5882365 mL — no rounding in the factor itself.',
+          'Cup is not one worldwide size, though. This converter defaults to the US customary cup (236.59 mL), the one used in American recipes and on this site\'s other volume converters. A separate metric cup, exactly 250 mL, is used in Australia, New Zealand and some European recipe conversions — close to the US cup but about 5.6% bigger. The unit menu offers both; pick "cup (metric)" for the 250 mL version.',
+          'The UK has no standardized "cup" measure for cooking at all: British recipes give volumes in milliliters, pints or fluid ounces, or weigh ingredients in grams, rather than measuring by the cup. A US recipe\'s "1 cup of flour" also cannot be swapped for "1 cup of water" by weight — this converter changes the unit of volume only, not what is being measured.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a volume in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Milliliters to cups', text: 'Type the volume in milliliters. The cups field shows the conversion in US customary cups.' },
+          { name: 'Cups to milliliters', text: 'Type into the cups field instead. It becomes the input and the milliliters field is calculated.' },
+          { name: 'Switch to the metric cup', text: 'Open the cups field\'s menu and choose "cup (metric)" for the 250 mL version used in some recipes.' },
+          { name: 'Use other units', text: 'Either menu also offers liters, US and UK fluid ounces, tablespoons and teaspoons.' },
+          { name: 'Read the scale', text: 'The scale places the volume against a teaspoon, a cup, a pint and a liter.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'A US cup is a fixed number of milliliters, so the conversion is one multiplication or division.',
+        expression: 'mL = cup (US) × 236.5882365\ncup (US) = mL ÷ 236.5882365\nmL = cup (metric) × 250',
+        terms: [
+          { symbol: 'mL', meaning: 'Volume in milliliters, 1/1,000 of a liter.' },
+          { symbol: 'cup (US)', meaning: 'US customary cup, 8 US fluid ounces — this converter\'s default.' },
+          { symbol: '236.5882365', meaning: 'Milliliters in a US cup, exact: derived from the 231 in³ US gallon.' },
+          { symbol: 'cup (metric)', meaning: 'A separate, rounder unit, exactly 250 mL, used in Australia, New Zealand and some recipes.' }
+        ],
+        note: 'Both factors are exact definitions. Results are rounded for display only.'
+      },
+      workedExample: {
+        intro: 'A recipe calls for 1.5 cups of milk, and a European version of the same recipe lists 500 mL of flour. How much is each in the other unit?',
+        rows: [
+          { label: '1.5 × 236.5882365', value: '354.88 mL' },
+          { label: '500 ÷ 236.5882365', value: '2.11 cups' },
+          { label: 'Quick check: 1.5 × 240', value: '360 mL' }
+        ],
+        result: '1.5 cups ≈ 354.88 mL · 500 mL ≈ 2.11 cups',
+        explanation: 'Multiplying by 240 instead of the exact 236.588 overstates by about 1.4% — close enough for most recipes, but not for anything measured precisely.'
+      },
+      commonValues: {
+        title: 'Common US cups to milliliters conversions',
+        dimension: 'volume',
+        from: 'cup',
+        to: 'mL',
+        values: [0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4],
+        reverse: {
+          title: 'Common milliliters to US cups conversions',
+          values: [50, 100, 125, 150, 200, 250, 500, 1000]
+        }
+      },
+      watchOut: [
+        { title: 'The metric cup is not the US cup', body: 'A metric cup (250 mL) is about 5.6% bigger than a US customary cup (236.59 mL). Using the wrong one in a recipe adds up over several cups of an ingredient.' },
+        { title: 'The UK does not use "cups" as a standard measure', body: 'British recipes give volumes in milliliters, pints or fluid ounces, or weigh ingredients in grams, instead of cups.' },
+        { title: 'A "cup" of flour and a "cup" of water are not the same weight', body: 'This converter changes only the unit of volume. A cup of flour weighs roughly half as much as a cup of water, because density differs by ingredient.' },
+        { title: 'Dry and liquid measuring cups hold the same volume', body: 'In the US, a dry measuring cup and a liquid measuring cup are both 236.59 mL; they are shaped differently for accuracy, not sized differently.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'cups', label: 'Cups', type: 'number', placeholder: '1', defaultValue: 1, step: 0.25, min: 0 }
+    ],
+    seo: {
+      title: 'Milliliters to Cups Converter (mL to Cups)',
+      description: 'Free milliliters to cups converter: mL to US cups and back as you type, plus the metric cup, with the exact factors and a worked example.',
+      faq: [
+        { question: 'How many milliliters are in a cup?', answer: 'A US customary cup is exactly 236.5882365 mL, about 236.59 mL. A metric cup, used in some countries, is exactly 250 mL.' },
+        { question: 'How do I convert milliliters to cups?', answer: 'Divide by 236.5882365. For 500 mL: 500 ÷ 236.5882365 ≈ 2.11 US cups.' },
+        { question: 'How do I convert cups to milliliters?', answer: 'Multiply by 236.5882365. 1.5 cups × 236.5882365 ≈ 354.88 mL.' },
+        { question: 'Does the UK use cups for cooking?', answer: 'Not as a standard unit. British recipes measure volume in milliliters, pints or fluid ounces, or weigh ingredients in grams.' },
+        { question: 'What is the difference between a US cup and a metric cup?', answer: 'A US cup is 236.5882365 mL (8 US fluid ounces); a metric cup is a rounder 250 mL, about 5.6% more. Pick "cup (metric)" from the unit menu if your recipe uses it.' },
+        { question: 'How many cups are in a liter?', answer: 'About 4.23 US cups (1,000 ÷ 236.5882365), or exactly 4 metric cups (1,000 ÷ 250).' }
+      ]
+    },
+    compute(values) {
+      const milliliters = fromBase(toBase(values.cups, 'volume', 'cup'), 'volume', 'mL');
+      return { milliliters };
+    }
+  },
+  {
+    id: 'kilograms-to-stone-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['kg to stone converter', 'stone to kg converter', 'convert kilograms to stone', 'kg to stone and pounds', 'stone and pounds calculator'],
+    related: ['pounds-to-kilograms-converter', 'weight-converter', 'bmi-calculator', 'grams-to-ounces-converter'],
+    title: 'Kilograms to Stone Converter',
+    description: 'Convert kilograms to stone, or stone to kilograms, as you type. Results show stone and pounds together, like "11 st 4 lb".',
+    example: '70 kg is about 11 st 0 lb, and 11 st 4 lb (158 lb) is about 71.67 kg.',
+    solver: {
+      defaultTarget: 'stone',
+      variables: [
+        { id: 'kilograms', label: 'Kilograms', symbol: 'kg', dimension: 'mass', defaultValue: 70, defaultUnit: 'kg' },
+        { id: 'stone', label: 'Stone', symbol: 'st', dimension: 'mass', defaultValue: 11.0231, defaultUnit: 'st' }
+      ],
+      // Both fields hold the same mass (in kg); the unit menus do the converting.
+      solve: {
+        kilograms: ({ stone }) => (stone >= 0 ? stone : NaN),
+        stone: ({ kilograms }) => (kilograms >= 0 ? kilograms : NaN)
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'kilograms',
+          min: -1,
+          max: 3,
+          ticks: ['0.1 kg', '1 kg', '10 kg', '100 kg', '1,000 kg'],
+          benchmarks: [
+            { label: 'A newborn baby (about 3.5 kg, 0.55 st)', value: 3.5 },
+            { label: 'A typical airline checked-bag limit (23 kg, 3.62 st)', value: 23 },
+            { label: '100 kilograms (15.75 st)', value: 100 },
+            { label: '1 metric tonne (157.47 st)', value: 1000 }
+          ],
+          title: 'How heavy is that?',
+          valueLabel: 'Your weight'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Kilograms and stone',
+        paragraphs: [
+          'The kilogram is the SI base unit of mass, used almost everywhere for everyday weight. The stone is a traditional British and Irish unit, still the everyday way many people in the UK and Ireland state body weight, alongside or instead of kilograms. A stone is defined as 14 pounds, and because the pound has been fixed at exactly 0.45359237 kg since 1959, a stone is exactly 6.35029318 kg — a single, exact conversion with no offset.',
+          'Stone is almost always combined with a remainder of pounds rather than used as a decimal: a weight is written "11 st 4 lb", meaning 11 whole stone plus 4 more pounds (158 lb total), not 11.4 stone. Converting that mixed figure means adding the pounds first (11 × 14 + 4 = 158 lb), then converting to kilograms — or going the other way: convert to kilograms, then to total pounds, then split off the whole stone.',
+          'The stone is not used for anything except body weight today — parcels, produce and most other everyday weighing in the UK use kilograms or, informally, pounds, not stone. This converter is built for the body-weight use case, so its table below shows results the way a scale or a doctor\'s office would: in whole stone and pounds.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a weight in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Kilograms to stone', text: 'Type the weight in kilograms. The stone field shows the conversion as a decimal.' },
+          { name: 'Stone to kilograms', text: 'Type into the stone field instead. It becomes the input and the kilograms field is calculated.' },
+          { name: 'Read stone and pounds together', text: 'For a weight already written as stone and pounds, such as 11 st 4 lb, add the pounds first (11 × 14 + 4 = 158), switch the stone field\'s unit to lb, and type 158.' },
+          { name: 'Use other units', text: 'Either menu also offers pounds, grams, ounces and metric tonnes.' },
+          { name: 'Read the scale', text: 'The scale places the weight against a newborn baby, an airline bag limit and a metric tonne.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'A stone is a fixed number of kilograms, so the conversion is one multiplication or division.',
+        expression: 'kg = st × 6.35029318\nst = kg ÷ 6.35029318\nlb = st × 14',
+        terms: [
+          { symbol: 'st', meaning: 'Stone, the traditional British/Irish body-weight unit.' },
+          { symbol: 'kg', meaning: 'Mass in kilograms, the SI base unit.' },
+          { symbol: '6.35029318', meaning: 'Kilograms in a stone, exact: 14 × 0.45359237.' },
+          { symbol: 'lb', meaning: 'Pounds; a stone is always exactly 14 of them.' }
+        ],
+        note: 'The factor is exact. Results are rounded for display only; the stone-and-pounds figure rounds the TOTAL pounds first, then splits it, so it never shows "14 lb".'
+      },
+      workedExample: {
+        intro: 'You weigh 70 kg and want that in stone and pounds. A friend\'s weight is given as 11 st 4 lb — what is that in kilograms?',
+        rows: [
+          { label: '70 ÷ 0.45359237', value: '154.32 lb' },
+          { label: 'Round to the nearest pound, then split (154 ÷ 14 = 11, remainder 0)', value: '11 st 0 lb' },
+          { label: '11 st 4 lb as total pounds (11 × 14 + 4)', value: '158 lb' },
+          { label: '158 × 0.45359237', value: '71.67 kg' }
+        ],
+        result: '70 kg ≈ 11 st 0 lb · 11 st 4 lb ≈ 71.67 kg',
+        explanation: '70 kg lands almost exactly on a whole stone (11 st 0 lb); a kilogram either way shifts the pounds remainder by about 2 lb, not a whole stone, since a stone is 6.35 kg.'
+      },
+      commonValues: {
+        title: 'Common kilograms to stone conversions',
+        dimension: 'mass',
+        from: 'kg',
+        to: 'st',
+        values: [50, 60, 70, 75, 80, 90, 100, 110],
+        stoneLbs: 'to',
+        reverse: {
+          title: 'Common whole stone to kilograms conversions',
+          values: [6, 8, 9, 10, 11, 12, 13, 15, 18]
+        }
+      },
+      watchOut: [
+        { title: 'Stone and pounds is a mixed unit, not a decimal', body: '11 st 4 lb is not 11.4 stone — it is 11 + 4/14 ≈ 11.29 stone, or 158 lb in total. Add the pounds to the total first.' },
+        { title: 'Round the total pounds before splitting', body: 'Splitting an unrounded figure can print an impossible "14 lb" remainder. This converter\'s stone-and-pounds table rounds the total pounds first, then divides by 14, the same way the feet-and-inches tables round total inches first.' },
+        { title: 'Stone is rarely used for anything but body weight', body: 'Luggage, parcels and produce in the UK are weighed in kilograms or pounds, not stone. Using "stone" for anything else is almost always informal.' },
+        { title: 'Not every English-speaking country uses stone', body: 'The US does not use stone at all for body weight, reporting only pounds; the UK and Ireland are the main places it is still common.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' },
+        { label: 'UK Weights and Measures Act 1985, Schedule 1 (definitions of the pound and the stone)', url: 'https://www.legislation.gov.uk/ukpga/1985/72/schedule/1' }
+      ]
+    },
+    inputs: [
+      { id: 'kilograms', label: 'Kilograms', type: 'number', placeholder: '70', defaultValue: 70, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Kilograms to Stone Converter (kg to St, Lb)',
+      description: 'Free kilograms to stone converter: kg to stone and back as you type, with results shown in stone and pounds, like "11 st 4 lb".',
+      faq: [
+        { question: 'How do I convert kilograms to stone?', answer: 'Divide by 6.35029318. For 70 kg: 70 ÷ 6.35029318 ≈ 11.02 stone, which is 11 st 0 lb.' },
+        { question: 'How do I convert stone to kilograms?', answer: 'Multiply by 6.35029318. 11 stone × 6.35029318 ≈ 69.85 kg.' },
+        { question: 'How many pounds are in a stone?', answer: 'Exactly 14. A weight of 11 st 4 lb is 158 lb in total.' },
+        { question: 'What is 158 lb in kilograms?', answer: 'About 71.67 kg (158 × 0.45359237).' },
+        { question: 'Why does the stone-and-pounds figure never show "14 lb"?', answer: 'Because the pounds remainder after dividing by 14 is always between 0 and 13. This converter rounds the total pounds first, then splits, so a result like "11 st 14 lb" (which would really be 12 st 0 lb) can never appear.' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'Divide kilograms by 6.35 for a rough stone figure (70 kg gives about 11.02 st, close to the exact 11.0231), or multiply stone by 6.35 for kilograms.' }
+      ]
+    },
+    compute(values) {
+      const stone = fromBase(toBase(values.kilograms, 'mass', 'kg'), 'mass', 'st');
+      return { stone };
+    }
+  },
+  {
+    id: 'acres-to-hectares-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['acres to hectares converter', 'hectares to acres calculator', 'convert acres to hectares', 'acre to ha converter', 'farmland size converter'],
+    related: ['area-converter', 'square-feet-to-square-meters-converter', 'length-converter', 'volume-converter'],
+    title: 'Acres to Hectares Converter',
+    description: 'Convert acres to hectares, or hectares to acres, as you type. Includes a table of common farmland and land-parcel sizes.',
+    example: '1 acre is about 0.4047 hectares, and a 10-hectare farm is about 24.71 acres.',
+    solver: {
+      defaultTarget: 'hectares',
+      variables: [
+        { id: 'acres', label: 'Acres', symbol: 'ac', dimension: 'area', defaultValue: 1, defaultUnit: 'acre' },
+        { id: 'hectares', label: 'Hectares', symbol: 'ha', dimension: 'area', defaultValue: 0.4047, defaultUnit: 'ha' }
+      ],
+      // Both fields hold the same area (in m²); the unit menus do the converting.
+      solve: {
+        acres: ({ hectares }) => (hectares >= 0 ? hectares : NaN),
+        hectares: ({ acres }) => (acres >= 0 ? acres : NaN)
+      },
+      derive: (si) => ({ haShown: si.hectares / 1e4 }),
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'haShown',
+          min: -1,
+          max: 3,
+          ticks: ['0.1 ha', '1 ha', '10 ha', '100 ha', '1,000 ha'],
+          benchmarks: [
+            { label: 'A FIFA-recommended soccer pitch (105 m × 68 m, 0.714 ha)', value: 0.714 },
+            { label: 'A US quarter-quarter section, the standard 40-acre survey parcel (about 16.19 ha)', value: 16.1874 },
+            { label: '100 hectares (about 247.11 acres)', value: 100 }
+          ],
+          title: 'How much land is that?',
+          valueLabel: 'Your area'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Acres and hectares',
+        paragraphs: [
+          'The acre is a customary unit of land area, still the standard for real estate listings and farmland in the US; the hectare is the metric land unit used for farmland and land-area statistics in most of the rest of the world. Both are now defined exactly from the meter: an acre is 4,840 square yards, which with the exact 0.9144 m yard works out to exactly 4,046.8564224 m²; a hectare is defined directly as exactly 10,000 m² — a square 100 m on each side.',
+          'Because both definitions are exact, converting between them is a single multiplication or division. One acre is about 0.4047 hectares, so an acre is a little under half a hectare; one hectare is about 2.4711 acres, a little under two and a half acres. There is no offset, the same as every other area pair on this site.',
+          'Unlike a hectare, an acre has no fixed shape — historically it described the area a team of oxen could plow in a day, and today it is simply 43,560 square feet, in any rectangle, strip or irregular boundary that adds up to that figure. A hectare, by construction, is always exactly 100 m × 100 m if laid out as a square, though a real plot of that area is rarely a perfect square either.'
+        ]
+      },
+      howTo: {
+        intro: 'Type an area in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Acres to hectares', text: 'Type the area in acres. The hectares field shows the conversion.' },
+          { name: 'Hectares to acres', text: 'Type into the hectares field instead. It becomes the input and the acres field is calculated.' },
+          { name: 'Use other units', text: 'Either menu also offers square meters, square feet, square kilometers and square miles.' },
+          { name: 'Read the scale', text: 'The scale places the land area against a soccer pitch, a 40-acre survey parcel and 100 hectares.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'An acre is a fixed number of hectares, so the conversion is one multiplication or division.',
+        expression: 'ha = acre × 0.40468564224\nacre = ha ÷ 0.40468564224 ≈ ha × 2.47105',
+        terms: [
+          { symbol: 'acre', meaning: 'Land area, 4,840 square yards (43,560 ft²).' },
+          { symbol: 'ha', meaning: 'Hectare, exactly 10,000 m².' },
+          { symbol: '0.40468564224', meaning: 'Hectares in an acre, exact: 4,046.8564224 m² ÷ 10,000.' }
+        ],
+        note: 'Both factors are exact definitions. Results are rounded for display only.'
+      },
+      workedExample: {
+        intro: 'A listing advertises a 10-hectare farm, and a neighboring lot is 40 acres. How big is each in the other unit?',
+        rows: [
+          { label: '10 × 2.47105381', value: '24.71 acres' },
+          { label: '40 × 0.40468564224', value: '16.19 ha' },
+          { label: 'Quick check: 10 × 2.5', value: '25 acres' }
+        ],
+        result: '10 ha ≈ 24.71 acres · 40 acres ≈ 16.19 ha',
+        explanation: 'Multiplying by 2.5 instead of the exact 2.47105 overstates by about 1.2%; for acres to hectares, multiplying by 0.4 instead of 0.404686 understates by about 1.2%.'
+      },
+      commonValues: {
+        title: 'Common acres to hectares conversions',
+        dimension: 'area',
+        from: 'acre',
+        to: 'ha',
+        values: [0.25, 0.5, 1, 2, 5, 10, 20, 40, 100],
+        reverse: {
+          title: 'Common hectares to acres conversions',
+          values: [1, 2, 5, 10, 20, 50, 100, 250]
+        }
+      },
+      watchOut: [
+        { title: 'The acre has no fixed shape', body: 'An acre (4,840 yd²) can be any rectangle, strip or irregular boundary that adds up to 43,560 ft². A square acre would be about 208.7 ft on each side.' },
+        { title: 'The US survey acre is very slightly different', body: 'Some older US land records use the US survey acre, based on the now-retired US survey foot, about 4 parts per million larger than the international acre this converter uses — not a practical difference for most purposes.' },
+        { title: 'A hectare is always 10,000 m²', body: 'Unlike the acre, the hectare is defined directly from the square meter, with no customary-unit history — a cleaner definition, though just as exact once converted to acres.' },
+        { title: 'Farmland statistics usually use hectares, listings usually use acres', body: 'International land-area reporting is typically in hectares; US real estate and farmland listings are typically in acres. Converting matters when comparing the two.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'acres', label: 'Acres', type: 'number', placeholder: '1', defaultValue: 1, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Acres to Hectares Converter (Acres to Ha)',
+      description: 'Free acres to hectares converter: acres to ha and back as you type, with the exact factor, farmland sizes and a worked example.',
+      faq: [
+        { question: 'How do I convert acres to hectares?', answer: 'Multiply by 0.40468564224. For 40 acres: 40 × 0.40468564224 ≈ 16.19 ha.' },
+        { question: 'How do I convert hectares to acres?', answer: 'Divide by 0.40468564224, or multiply by about 2.47105. 10 ha is about 24.71 acres.' },
+        { question: 'How many square feet are in an acre?', answer: 'Exactly 43,560 ft² (4,840 yd²).' },
+        { question: 'How many square meters are in a hectare?', answer: 'Exactly 10,000 m², about 2.4711 acres.' },
+        { question: 'What is a "quarter-quarter section"?', answer: 'A standard 40-acre parcel in the US Public Land Survey System, about 16.19 hectares.' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'Multiply acres by 0.4 for a rough hectare figure (about 1.2% low), or hectares by 2.5 for acres (about 1.2% high).' }
+      ]
+    },
+    compute(values) {
+      const hectares = fromBase(toBase(values.acres, 'area', 'acre'), 'area', 'ha');
+      return { hectares };
+    }
+  },
+  {
+    id: 'square-feet-to-square-meters-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['sq ft to sq m converter', 'square feet to square meters calculator', 'convert square feet to square meters', 'square footage to square meters', 'room size converter'],
+    related: ['area-converter', 'length-converter', 'acres-to-hectares-converter', 'feet-to-meters-converter'],
+    title: 'Square Feet to Square Meters Converter',
+    description: 'Convert square feet to square meters, or square meters to square feet, as you type. Includes a table of common room and home sizes.',
+    example: '1,500 sq ft (a US home size) is about 139.35 m², and a 70 m² apartment is about 753.47 sq ft.',
+    solver: {
+      defaultTarget: 'squareMeters',
+      variables: [
+        { id: 'squareFeet', label: 'Square feet', symbol: 'ft²', dimension: 'area', defaultValue: 1500, defaultUnit: 'ft2' },
+        { id: 'squareMeters', label: 'Square meters', symbol: 'm²', dimension: 'area', defaultValue: 139.3546, defaultUnit: 'm2' }
+      ],
+      // Both fields hold the same area (in m²); the unit menus do the converting. Primary direction
+      // is ft²→m², the opposite of area-converter's own default (m²→ft²), by design (overlap rule).
+      solve: {
+        squareFeet: ({ squareMeters }) => (squareMeters >= 0 ? squareMeters : NaN),
+        squareMeters: ({ squareFeet }) => (squareFeet >= 0 ? squareFeet : NaN)
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'squareMeters',
+          min: 0,
+          max: 3,
+          ticks: ['1 m²', '10 m²', '100 m²', '1,000 m²'],
+          benchmarks: [
+            { label: 'A king-size mattress (76 in × 80 in, about 3.92 m², 42.22 ft²)', value: 3.9226 },
+            { label: 'A common single-car garage door opening (9 ft × 7 ft, about 5.85 m², 63 ft²)', value: 5.8529 },
+            { label: 'A standard parking space (about 15 m², 161.46 ft²)', value: 15 },
+            { label: 'A tennis doubles court (78 ft × 36 ft, about 260.87 m²)', value: 260.8717 }
+          ],
+          title: 'How big is that room?',
+          valueLabel: 'Your area'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Square feet and square meters',
+        paragraphs: [
+          'Square feet is the everyday unit for home and room sizes on US real estate listings; square meters, the SI unit, is used the same way almost everywhere else. Both are simply a length unit squared: a square foot is exactly 0.3048² = 0.09290304 m², because the foot itself has been defined as exactly 0.3048 m since 1959 (see the feet to meters converter).',
+          'This pair gets its own page because it is the one international home buyers, renters and travelers hit most often — a listing in one unit and a reader who thinks in the other. The general area converter on this site covers every area unit, including acres and hectares for land; this page is specifically the ft²/m² pair, oriented around room and home sizes rather than farmland or city blocks.',
+          'Converting a floor area is different from converting a single length: doubling only one wall of a room does not double the floor area, and the square-foot factor cannot be applied to a single linear measurement. If you only have a room\'s length and width in feet, multiply them together first to get square feet, then convert the result.'
+        ]
+      },
+      howTo: {
+        intro: 'Type an area in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Square feet to square meters', text: 'Type the area in square feet. The square meters field shows the conversion.' },
+          { name: 'Square meters to square feet', text: 'Type into the square meters field instead. It becomes the input and the square feet field is calculated.' },
+          { name: 'Multiply length by width first', text: 'If you only have a room\'s dimensions, multiply length × width in feet (or meters) to get the area before converting.' },
+          { name: 'Use other units', text: 'Either menu also offers acres, hectares, square yards and square kilometers.' },
+          { name: 'Read the scale', text: 'The scale places the area against a king-size mattress, a garage door opening, a parking space and a tennis court.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'A square foot is a fixed number of square meters, so the conversion is one multiplication or division.',
+        expression: 'm² = ft² × 0.09290304\nft² = m² ÷ 0.09290304 ≈ m² × 10.76391',
+        terms: [
+          { symbol: 'ft²', meaning: 'Area in square feet.' },
+          { symbol: 'm²', meaning: 'Area in square meters, the SI unit.' },
+          { symbol: '0.09290304', meaning: 'Square meters in a square foot, exact: 0.3048 × 0.3048.' }
+        ],
+        note: 'The factor is exact, from squaring the exact foot definition. Results are rounded for display only.'
+      },
+      workedExample: {
+        intro: 'A US listing advertises a 1,500 sq ft home, and a European listing advertises a 70 m² apartment. How big is each in the other unit?',
+        rows: [
+          { label: '1,500 × 0.09290304', value: '139.35 m²' },
+          { label: '70 ÷ 0.09290304', value: '753.47 ft²' },
+          { label: 'Quick check: 1,500 × 0.093', value: '139.5 m²' }
+        ],
+        result: '1,500 ft² ≈ 139.35 m² · 70 m² ≈ 753.47 ft²',
+        explanation: 'Multiplying by 0.093 instead of the exact 0.09290304 overstates by about 0.1%, close enough for a rough comparison between listings.'
+      },
+      commonValues: {
+        title: 'Common home sizes, square feet to square meters',
+        dimension: 'area',
+        from: 'ft2',
+        to: 'm2',
+        values: [500, 750, 1000, 1200, 1500, 2000, 2500, 3000],
+        reverse: {
+          title: 'Common room and apartment sizes, square meters to square feet',
+          values: [10, 20, 30, 50, 70, 100, 150, 200]
+        }
+      },
+      watchOut: [
+        { title: 'This converts area, not a single length', body: 'If you have a room\'s length and width in feet, multiply them together to get square feet first — applying this factor to a single linear measurement gives the wrong answer entirely.' },
+        { title: '"Square footage" in a listing can vary', body: 'What counts as a home\'s square footage (finished space only, garage included or not) differs between listings; this converter only changes the unit, not what was included when the figure was measured.' },
+        { title: 'Don\'t confuse square feet with linear feet', body: 'A "10-foot wall" is a length (10 ft), not an area (10 ft²) — area needs two dimensions multiplied together.' },
+        { title: 'Acres and hectares are for land, not rooms', body: 'For a whole lot or farm rather than a room or home\'s floor area, the acres to hectares converter and the general area converter cover the larger land units.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'squareFeet', label: 'Square feet', type: 'number', placeholder: '1500', defaultValue: 1500, step: 10, min: 0 }
+    ],
+    seo: {
+      title: 'Square Feet to Square Meters Converter (Ft² to M²)',
+      description: 'Free square feet to square meters converter: sq ft to m² and back as you type, with the exact factor, room and home sizes, and a worked example.',
+      faq: [
+        { question: 'How do I convert square feet to square meters?', answer: 'Multiply by 0.09290304. For 1,500 ft²: 1,500 × 0.09290304 ≈ 139.35 m².' },
+        { question: 'How do I convert square meters to square feet?', answer: 'Divide by 0.09290304, or multiply by about 10.76391. 70 m² is about 753.47 ft².' },
+        { question: 'How many square meters is a 1,500 sq ft home?', answer: 'About 139.35 m² (1,500 × 0.09290304).' },
+        { question: 'How many square feet is a 100 m² apartment?', answer: 'About 1,076.39 ft² (100 ÷ 0.09290304).' },
+        { question: 'Why is this a separate page from the area converter?', answer: 'The general area converter covers every area unit, including acres and hectares for land. This page is the dedicated square feet/square meters pair, with a table built around room and home sizes.' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'Multiply square feet by about 0.093 for square meters (about 0.1% high), or square meters by about 10.8 for square feet (about 0.3% high).' }
+      ]
+    },
+    compute(values) {
+      const squareMeters = fromBase(toBase(values.squareFeet, 'area', 'ft2'), 'area', 'm2');
+      return { squareMeters };
     }
   }
 ];

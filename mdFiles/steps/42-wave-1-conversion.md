@@ -212,18 +212,18 @@ exactly:
 - [x] Dedupe check (ids + aliases, programmatic) and the decisions above
 - [x] Kit addition: `commonValues.stoneLbs` (`lib/commonValues.ts`, `types.ts`,
   `CommonValuesSection.tsx`, tests)
-- [ ] Move `'stone to kg converter'` alias off `pounds-to-kilograms-converter`; move
+- [x] Move `'stone to kg converter'` alias off `pounds-to-kilograms-converter`; move
   `'sq ft to sq m converter'` alias off `area-converter`
-- [ ] `millimeters-to-inches-converter`
-- [ ] `milliliters-to-cups-converter`
-- [ ] `kilograms-to-stone-converter`
-- [ ] `acres-to-hectares-converter`
-- [ ] `square-feet-to-square-meters-converter`
-- [ ] Independent scratch verification (`verify_run4.mjs`) of every copy figure before committing
-- [ ] `npm test`, `npm run build`,
+- [x] `millimeters-to-inches-converter`
+- [x] `milliliters-to-cups-converter`
+- [x] `kilograms-to-stone-converter`
+- [x] `acres-to-hectares-converter`
+- [x] `square-feet-to-square-meters-converter`
+- [x] Independent scratch verification (`verify_run4.mjs`) of every copy figure before committing
+- [x] `npm test`, `npm run build`,
   `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` pass
-- [ ] Spot-check the 5 new pages + `/categories/measurements` on a local server, kill the server
-- [ ] Update `mdFiles/STATUS.md` (row 40–42 + session log — incl. what run 5 needs), `gh pr ready`
+- [x] Spot-check the 5 new pages + `/categories/measurements` on a local server, kill the server
+- [x] Update `mdFiles/STATUS.md` (row 40–42 + session log — incl. what run 5 needs), `gh pr ready`
 
 ## Planned run breakdown (re-evaluate each run against what exists before building it)
 

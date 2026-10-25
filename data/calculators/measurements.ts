@@ -2209,7 +2209,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
     related: ['energy-converter', 'power-converter', 'character-counter', 'time-converter'],
     title: 'Data Storage Converter',
     description: 'Convert between bits, bytes, kilobytes, megabytes, gigabytes, terabytes and their binary (KiB/MiB/GiB) equivalents, in any direction, as you type.',
-    example: '1 GB (decimal, the way drives are sold) is 1,000 MB, but only about 0.9313 GiB (binary), which is why a "1 TB" drive shows about 931 GiB in an operating system.',
+    example: '1 GB (decimal, the way drives are sold) is 1,000 MB, but only about 0.9313 GiB (binary), which is why a "1 TB" drive shows about 931 "GB" in Windows.',
     solver: {
       defaultTarget: 'megabytes',
       variables: [
@@ -2247,8 +2247,8 @@ export const measurementsCalculators: CalculatorConfig[] = [
       concept: {
         title: 'Decimal and binary data units, and bits vs. bytes',
         paragraphs: [
-          'A byte is 8 bits, and every storage unit here builds on one or the other. Beyond that, there are two different, equally valid ways to scale up: the decimal system (kilo- = 1,000, as in every other SI prefix) and the binary system (kibi- = 1,024, the power of two closest to 1,000, which is how memory addressing naturally divides). Storage makers sell drives in decimal gigabytes (1 GB = 1,000,000,000 bytes); operating systems traditionally report binary gibibytes but often mislabel them "GB".',
-          'That mismatch is why a drive sold as "1 TB" shows up as about 931 GiB in Windows or macOS: 1 TB is exactly 1,000,000,000,000 bytes, but dividing that by 2^30 (1,073,741,824) bytes per "GiB" gives about 931.32, not 1,000. Nothing is missing or defective — the drive and the OS are simply using two different, both-correct definitions of a large number of bytes. The IEC introduced the ki/Mi/Gi/Ti naming in 1998 specifically so "KB" could keep meaning 1,000 bytes and "KiB" could unambiguously mean 1,024.',
+          'A byte is 8 bits, and every storage unit here builds on one or the other. Beyond that, there are two different, equally valid ways to scale up: the decimal system (kilo- = 1,000, as in every other SI prefix) and the binary system (kibi- = 1,024, the power of two closest to 1,000, which is how memory addressing naturally divides). Storage makers sell drives in decimal gigabytes (1 GB = 1,000,000,000 bytes); Windows reports binary gibibytes but labels them "GB".',
+          'That mismatch is why a drive sold as "1 TB" shows up as about 931 GB in Windows, which counts in binary but labels the result "GB" (macOS, iOS and most Linux file managers count in decimal and show the full 1 TB): 1 TB is exactly 1,000,000,000,000 bytes, but dividing that by 2^30 (1,073,741,824) bytes per "GiB" gives about 931.32, not 1,000. Nothing is missing or defective — the drive and the OS are simply using two different, both-correct definitions of a large number of bytes. The IEC introduced the ki/Mi/Gi/Ti naming in 1998 specifically so "KB" could keep meaning 1,000 bytes and "KiB" could unambiguously mean 1,024.',
           'Network and internet speeds are usually quoted in bits per second (Mbit/s, Gbit/s — often written Mbps, Gbps), while file sizes and storage are quoted in bytes (MB, GB). An internet plan advertised as "1 Gbps" tops out at about 125 MB/s of actual file transfer, not 1,000 MB/s, because there are 8 bits in a byte.'
         ]
       },
@@ -2272,14 +2272,14 @@ export const measurementsCalculators: CalculatorConfig[] = [
         note: 'Decimal (KB/MB/GB) and binary (KiB/MiB/GiB) prefixes are both exact definitions of different numbers — the "error" people notice is a labeling mismatch, not a rounding error.'
       },
       workedExample: {
-        intro: 'A drive is advertised as 1 TB. How many decimal GB is that, and how many binary GiB will an operating system actually show?',
+        intro: 'A drive is advertised as 1 TB. How many decimal GB is that, and how many binary GiB will Windows actually show?',
         rows: [
           { label: '1 TB ÷ 1 GB (both decimal, 1,000ⁿ)', value: '1,000 GB' },
           { label: '1 TB (1,000,000,000,000 bytes) ÷ 2³⁰ bytes per GiB', value: '≈ 931.32 GiB' },
           { label: 'Quick check: 1,000 × 0.9313', value: '≈ 931.3' }
         ],
         result: '1 TB = 1,000 GB (decimal) ≈ 931.32 GiB (binary)',
-        explanation: 'The drive maker\'s 1,000,000,000,000-byte "1 TB" and the operating system\'s "GiB" are both correct, exact units — they are just different-sized units for the same bytes, which is why the displayed capacity always looks smaller than the box.'
+        explanation: 'The drive maker\'s 1,000,000,000,000-byte "1 TB" and Windows\' binary "GB" (really GiB) are both correct, exact units — they are just different-sized units for the same bytes, which is why Windows shows a smaller number than the box.'
       },
       commonValues: {
         title: 'Common gigabytes to megabytes conversions',
@@ -2295,7 +2295,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
       watchOut: [
         { title: 'Decimal and binary units are both "correct" — just different sizes', body: '1 GB (decimal) is 1,000,000,000 bytes; 1 GiB (binary) is 1,073,741,824 bytes, about 7.4% more. A "1 TB" drive is exactly 1,000 GB but only about 931.32 GiB — nothing is missing.' },
         { title: 'Bits and bytes look alike but differ by 8×', body: 'An internet plan advertised as "100 Mbps" (100 megabits per second) downloads at about 12.5 MB/s (megabytes per second) at best, not 100 MB/s. Check for a lowercase "b" (bits) versus capital "B" (bytes).' },
-        { title: 'Many operating systems label GiB as "GB"', body: 'Windows\' File Explorer, for instance, computes in binary (1,024ⁿ) but displays the label "GB" — this converter\'s "GB" option is the decimal (1,000ⁿ) unit; use "GiB" from the menu to match what an OS actually shows.' },
+        { title: 'Windows labels GiB as "GB"', body: 'Windows File Explorer computes in binary (1,024ⁿ) but displays the label "GB" — this converter\'s "GB" option is the decimal (1,000ⁿ) unit; use "GiB" from the menu to match what Windows shows. macOS (since 10.6), iOS and most Linux file managers use decimal GB, matching the box.' },
         { title: 'RAM is conventionally sold and addressed in binary units', body: 'Memory chips come in binary-friendly sizes (powers of 2), so RAM capacity almost always lines up exactly in GiB even when labeled "GB" on the box.' }
       ],
       references: [
@@ -2311,11 +2311,11 @@ export const measurementsCalculators: CalculatorConfig[] = [
       description: 'Free data storage converter: bits, bytes, KB, MB, GB, TB and binary KiB/MiB/GiB/TiB, in any direction, with the decimal-vs-binary difference explained.',
       faq: [
         { question: 'How many MB are in a GB?', answer: '1,000 MB in a decimal GB (this converter\'s default). In binary terms, 1 GiB is 1,024 MiB.' },
-        { question: 'Why does a 1 TB drive show up as 931 GB in my computer?', answer: 'The drive is sold in decimal terabytes (1,000,000,000,000 bytes), but the operating system is dividing by binary gibibytes (1,073,741,824 bytes) while labeling the result "GB." 1 TB ÷ 2^30 bytes ≈ 931.32 GiB.' },
+        { question: 'Why does a 1 TB drive show up as 931 GB on my computer?', answer: 'The drive is sold in decimal terabytes (1,000,000,000,000 bytes), but Windows divides by binary gibibytes (1,073,741,824 bytes) while labeling the result "GB": 1 TB ÷ 2^30 bytes ≈ 931.32. macOS, iOS and most Linux file managers count in decimal and show 1 TB.' },
         { question: 'What is the difference between MB and Mb?', answer: 'MB (capital B) is megabytes; Mb or Mbit (lowercase b) is megabits. There are 8 bits in a byte, so 1 MB = 8 Mbit.' },
         { question: 'How fast is a 100 Mbps internet connection in MB/s?', answer: 'About 12.5 MB/s at best (100 ÷ 8), since internet speeds are quoted in megabits, not megabytes, per second.' },
         { question: 'How many bytes are in a GiB?', answer: 'Exactly 1,073,741,824 bytes (2^30), about 7.4% more than the 1,000,000,000 bytes in a decimal GB.' },
-        { question: 'Which should I use, GB or GiB?', answer: 'Use GB (decimal) to match how storage is sold and priced, and GiB (binary) to match what most operating systems display for the same drive.' }
+        { question: 'Which should I use, GB or GiB?', answer: 'Use GB (decimal) to match how storage is sold and priced, and GiB (binary) to match what Windows displays for the same drive.' }
       ]
     },
     compute(values) {

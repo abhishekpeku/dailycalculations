@@ -20,13 +20,33 @@ export function formatFeetInches(totalInches: number) {
   return `${sign}${feet} ft ${inches} in`;
 }
 
-export function columnHeader(dimension: UnitDimension, unitId: string, asFeetInches = false) {
-  return asFeetInches ? 'ft & in' : findUnit(dimension, unitId).label;
+// Total pounds (may be fractional, e.g. from an exact unit conversion) -> "11 st 4 lb". Rounds the
+// TOTAL pounds first, then splits, so the pounds part is always 0-13 and can never print as
+// "14 lb" (mdFiles/steps/42-wave-1-conversion.md, run 4, "Kit addition: commonValues.stoneLbs") —
+// same principle as formatFeetInches above.
+export function formatStoneLbs(totalPounds: number) {
+  const rounded = Math.round(totalPounds);
+  const sign = rounded < 0 ? '-' : '';
+  const abs = Math.abs(rounded);
+  const stone = Math.floor(abs / 14);
+  const lbs = abs % 14;
+  return `${sign}${stone} st ${lbs} lb`;
 }
 
-// `value` is already in `unitId` units. When `asFeetInches`, it is re-expressed as total inches
-// (via lib/units.ts, so the conversion is exact) and split into feet + inches for display.
-export function cellText(value: number, dimension: UnitDimension, unitId: string, decimals: number, asFeetInches = false) {
-  if (asFeetInches && dimension === 'length') return formatFeetInches(convert(value, dimension, unitId, 'in'));
+// `display` is `true`/`false` for the original feet+inches column (kept for backward compatibility)
+// or 'stoneLbs' for a mass column shown as stone + pounds.
+type ColumnDisplay = boolean | 'stoneLbs';
+
+export function columnHeader(dimension: UnitDimension, unitId: string, display: ColumnDisplay = false) {
+  if (display === 'stoneLbs') return 'st & lb';
+  return display ? 'ft & in' : findUnit(dimension, unitId).label;
+}
+
+// `value` is already in `unitId` units. When `display` is true, it is re-expressed as total inches
+// (via lib/units.ts, so the conversion is exact) and split into feet + inches. When 'stoneLbs', it
+// is re-expressed as total pounds and split into stone + pounds, the same way.
+export function cellText(value: number, dimension: UnitDimension, unitId: string, decimals: number, display: ColumnDisplay = false) {
+  if (display === 'stoneLbs' && dimension === 'mass') return formatStoneLbs(convert(value, dimension, unitId, 'lb'));
+  if (display && dimension === 'length') return formatFeetInches(convert(value, dimension, unitId, 'in'));
   return formatDecimal(value, decimals);
 }

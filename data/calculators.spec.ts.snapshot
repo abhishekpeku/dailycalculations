@@ -1,3 +1,32 @@
+exports[`compute() snapshots > acres-to-hectares-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "acres": 1
+    },
+    "outputs": {
+      "hectares": 0.4046856422
+    }
+  },
+  "typical": {
+    "inputs": {
+      "acres": 1.5
+    },
+    "outputs": {
+      "hectares": 0.6070284634
+    }
+  },
+  "edge": {
+    "inputs": {
+      "acres": 0
+    },
+    "outputs": {
+      "hectares": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > age-calculator 1`] = `
 {
   "default": {
@@ -2142,6 +2171,35 @@ exports[`compute() snapshots > investment-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > kilograms-to-stone-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "kilograms": 70
+    },
+    "outputs": {
+      "stone": 11.02311311
+    }
+  },
+  "typical": {
+    "inputs": {
+      "kilograms": 105
+    },
+    "outputs": {
+      "stone": 16.53466966
+    }
+  },
+  "edge": {
+    "inputs": {
+      "kilograms": 0
+    },
+    "outputs": {
+      "stone": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > lcm-calculator 1`] = `
 {
   "default": {
@@ -2719,6 +2777,64 @@ exports[`compute() snapshots > miles-to-kilometers-converter 1`] = `
     },
     "outputs": {
       "kilometers": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > milliliters-to-cups-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "cups": 1
+    },
+    "outputs": {
+      "milliliters": 236.5882365
+    }
+  },
+  "typical": {
+    "inputs": {
+      "cups": 1.5
+    },
+    "outputs": {
+      "milliliters": 354.8823548
+    }
+  },
+  "edge": {
+    "inputs": {
+      "cups": 0
+    },
+    "outputs": {
+      "milliliters": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > millimeters-to-inches-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "millimeters": 10
+    },
+    "outputs": {
+      "inches": 0.3937007874
+    }
+  },
+  "typical": {
+    "inputs": {
+      "millimeters": 15
+    },
+    "outputs": {
+      "inches": 0.5905511811
+    }
+  },
+  "edge": {
+    "inputs": {
+      "millimeters": 0
+    },
+    "outputs": {
+      "inches": 0
     }
   }
 }
@@ -4409,6 +4525,35 @@ exports[`compute() snapshots > speed-converter 1`] = `
     },
     "outputs": {
       "kph": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > square-feet-to-square-meters-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "squareFeet": 1500
+    },
+    "outputs": {
+      "squareMeters": 139.35456
+    }
+  },
+  "typical": {
+    "inputs": {
+      "squareFeet": 2250
+    },
+    "outputs": {
+      "squareMeters": 209.03184
+    }
+  },
+  "edge": {
+    "inputs": {
+      "squareFeet": 0
+    },
+    "outputs": {
+      "squareMeters": 0
     }
   }
 }

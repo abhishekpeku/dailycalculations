@@ -149,6 +149,82 @@ table direction/values, e.g. `weight-converter` kg→lb vs `pounds-to-kilograms-
 - [x] Spot-check the 5 new pages + `/categories/measurements` on a local server, kill the server
 - [x] Update `mdFiles/STATUS.md` (row 40–42 + session log), `gh pr ready`
 
+## Run 4
+
+High-volume pairs: inches↔mm, mL↔cups, kg↔stone, acres↔hectares, sq ft↔sq m — same pair-converter
+pattern as run 1 (`centimeters-to-inches-converter`), with the overlap rule: each pair page must not
+cannibalize the general pages from run 2/3 that already cover the same units.
+
+**Dedupe check (programmatic, against every `id`/alias/`redirectFrom` in `data/calculators/*.ts`
+before building)**: no existing id for any of the 5 new ids. Two alias collisions found and
+resolved by moving the alias to the new, more specific page (same precedent as run 2's `distance
+converter` move):
+- `'stone to kg converter'` was an alias of `pounds-to-kilograms-converter` — moved to
+  `kilograms-to-stone-converter`, since that page is the one actually dedicated to stone.
+- `'sq ft to sq m converter'` was an alias of `area-converter` — moved to
+  `square-feet-to-square-meters-converter`, since that page is the one actually dedicated to that
+  pair; `area-converter` keeps `'square meters to square feet converter'` (its own primary
+  direction, m²→ft²).
+No other alias phrasings (checked: mm/in, drill bit, ml/cup, acre, hectare) collide anywhere.
+
+**Overlap differentiation** (per pair, vs. the sibling general page that already lists the same
+units in its menu):
+- `millimeters-to-inches-converter`: `length-converter`'s own default pair is m↔ft and its table
+  uses round meter/feet values — no mm/in table there at all. New page's table targets drill-bit
+  and fastener sizes (mm) and fractional inches (1/16 in … 1 in), a distinct, mm-specific intent
+  `length-converter` doesn't serve.
+- `milliliters-to-cups-converter`: `volume-converter`'s own default pair is L↔US gal and its table
+  is liter/gallon volumes — no cup table there. New page's table uses recipe-size cup amounts (¼–4
+  cups) and bottle/carton mL amounts (50–1,000 mL), and states the US customary cup (236.59 mL) as
+  the default against the metric cup (250 mL) and the UK's lack of a standard cup measure.
+- `kilograms-to-stone-converter`: `weight-converter`'s own default pair is kg↔lb, no stone table.
+  `pounds-to-kilograms-converter` only *mentions* stone in a watch-out, with no table either — this
+  new page is the first with a real stone table, body-weight kg values shown as "st lb" (e.g. "11
+  st 0 lb"), never "X st 14 lb" (see "Kit addition: `stoneLbs`" below).
+- `acres-to-hectares-converter`: `area-converter`'s own default pair is m²↔ft², no acre/hectare
+  table (acres and hectares are only in its unit menus, not its table). New page's table uses
+  farmland/land-parcel sizes (¼ acre – 100 acres; 1–250 ha).
+- `square-feet-to-square-meters-converter`: `area-converter`'s own default pair IS m²↔ft², so this
+  page takes the *opposite* primary direction (ft²→m², vs. `area-converter`'s m²→ft²) and a
+  distinct table — room/home sizes (500–3,000 ft²; 10–200 m²) — vs. `area-converter`'s generic
+  round numbers (1–500 m²; 100–10,000 ft²).
+
+**Kit addition (run 4): `commonValues.stoneLbs`**. The work order's "st lb" display (e.g. "11 st 4
+lb", never "11 st 14 lb") needs the same round-total-then-split principle as `feetInches`, but for
+mass (stone + pounds) instead of length (feet + inches). Added minimally, mirroring `feetInches`
+exactly:
+- `lib/commonValues.ts`: `formatStoneLbs(totalPounds)` — rounds total pounds first, then splits
+  into whole stone (`÷14`) and a 0–13 lb remainder (`%14`), so it can never print "14 lb", the same
+  way `formatFeetInches` can never print "12 in". `columnHeader`/`cellText`'s existing boolean
+  `asFeetInches` parameter becomes `boolean | 'stoneLbs'` (fully backward compatible — `true`/
+  `false` behave exactly as before); `'stoneLbs'` converts the cell's value to pounds (via
+  `convert(..., 'lb')`) and runs it through `formatStoneLbs`.
+- `data/calculators/types.ts`: `commonValues.stoneLbs?: 'from' | 'to'` and
+  `reverse.stoneLbs?: 'from' | 'to'`, same shape and convention as `feetInches`.
+- `components/CommonValuesSection.tsx`: reads `stoneLbs` alongside `feetInches` and passes the
+  combined display mode into `columnHeader`/`cellText`.
+- `lib/commonValues.spec.ts`: unit tests for `formatStoneLbs` (splits, the 14-lb boundary, negative
+  values) plus the existing "walks every calculator's table" test extended to also assert no
+  feetInches/stoneLbs cell ever reads "14 lb" (mirroring the "12 in" assertion).
+
+### Progress
+
+- [x] Dedupe check (ids + aliases, programmatic) and the decisions above
+- [x] Kit addition: `commonValues.stoneLbs` (`lib/commonValues.ts`, `types.ts`,
+  `CommonValuesSection.tsx`, tests)
+- [x] Move `'stone to kg converter'` alias off `pounds-to-kilograms-converter`; move
+  `'sq ft to sq m converter'` alias off `area-converter`
+- [x] `millimeters-to-inches-converter`
+- [x] `milliliters-to-cups-converter`
+- [x] `kilograms-to-stone-converter`
+- [x] `acres-to-hectares-converter`
+- [x] `square-feet-to-square-meters-converter`
+- [x] Independent scratch verification (`verify_run4.mjs`) of every copy figure before committing
+- [x] `npm test`, `npm run build`,
+  `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` pass
+- [x] Spot-check the 5 new pages + `/categories/measurements` on a local server, kill the server
+- [x] Update `mdFiles/STATUS.md` (row 40–42 + session log — incl. what run 5 needs), `gh pr ready`
+
 ## Planned run breakdown (re-evaluate each run against what exists before building it)
 
 The plan's list is "~65, only pairs with real search volume, each with a real common-values

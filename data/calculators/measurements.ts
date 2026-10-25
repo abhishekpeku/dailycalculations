@@ -2491,7 +2491,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
         title: 'Cups and milliliters',
         paragraphs: [
           'The milliliter is a metric unit of volume, one thousandth of a liter, used on packaging and in recipes almost everywhere outside the US. The cup is a US customary unit for cooking, defined as 8 US fluid ounces. Because the US fluid ounce traces back to the exact 231 cubic inch US gallon (the same exact definition the gallons to liters converter uses), one US cup is exactly 236.5882365 mL — no rounding in the factor itself.',
-          'Cup is not one worldwide size, though. This converter defaults to the US customary cup (236.59 mL), the one used in American recipes and on this site\'s other volume converters. A separate metric cup, exactly 250 mL, is used in Australia, New Zealand and some European recipe conversions — close to the US cup but about 5.6% bigger. The unit menu offers both; pick "cup (metric)" for the 250 mL version.',
+          'Cup is not one worldwide size, though. This converter defaults to the US customary cup (236.59 mL), the one used in American recipes and on this site\'s other volume converters. A separate metric cup, exactly 250 mL, is used in Australia, New Zealand and some European recipe conversions — close to the US cup but about 5.7% bigger. The unit menu offers both; pick "cup (metric)" for the 250 mL version.',
           'The UK has no standardized "cup" measure for cooking at all: British recipes give volumes in milliliters, pints or fluid ounces, or weigh ingredients in grams, rather than measuring by the cup. A US recipe\'s "1 cup of flour" also cannot be swapped for "1 cup of water" by weight — this converter changes the unit of volume only, not what is being measured.'
         ]
       },
@@ -2518,7 +2518,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
         note: 'Both factors are exact definitions. Results are rounded for display only.'
       },
       workedExample: {
-        intro: 'A recipe calls for 1.5 cups of milk, and a European version of the same recipe lists 500 mL of flour. How much is each in the other unit?',
+        intro: 'A recipe calls for 1.5 cups of milk, and a European version of the same recipe lists 500 mL of stock. How much is each in the other unit?',
         rows: [
           { label: '1.5 × 236.5882365', value: '354.88 mL' },
           { label: '500 ÷ 236.5882365', value: '2.11 cups' },
@@ -2539,7 +2539,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
         }
       },
       watchOut: [
-        { title: 'The metric cup is not the US cup', body: 'A metric cup (250 mL) is about 5.6% bigger than a US customary cup (236.59 mL). Using the wrong one in a recipe adds up over several cups of an ingredient.' },
+        { title: 'The metric cup is not the US cup', body: 'A metric cup (250 mL) is about 5.7% bigger than a US customary cup (236.59 mL). Using the wrong one in a recipe adds up over several cups of an ingredient.' },
         { title: 'The UK does not use "cups" as a standard measure', body: 'British recipes give volumes in milliliters, pints or fluid ounces, or weigh ingredients in grams, instead of cups.' },
         { title: 'A "cup" of flour and a "cup" of water are not the same weight', body: 'This converter changes only the unit of volume. A cup of flour weighs roughly half as much as a cup of water, because density differs by ingredient.' },
         { title: 'Dry and liquid measuring cups hold the same volume', body: 'In the US, a dry measuring cup and a liquid measuring cup are both 236.59 mL; they are shaped differently for accuracy, not sized differently.' }
@@ -2560,7 +2560,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
         { question: 'How do I convert milliliters to cups?', answer: 'Divide by 236.5882365. For 500 mL: 500 ÷ 236.5882365 ≈ 2.11 US cups.' },
         { question: 'How do I convert cups to milliliters?', answer: 'Multiply by 236.5882365. 1.5 cups × 236.5882365 ≈ 354.88 mL.' },
         { question: 'Does the UK use cups for cooking?', answer: 'Not as a standard unit. British recipes measure volume in milliliters, pints or fluid ounces, or weigh ingredients in grams.' },
-        { question: 'What is the difference between a US cup and a metric cup?', answer: 'A US cup is 236.5882365 mL (8 US fluid ounces); a metric cup is a rounder 250 mL, about 5.6% more. Pick "cup (metric)" from the unit menu if your recipe uses it.' },
+        { question: 'What is the difference between a US cup and a metric cup?', answer: 'A US cup is 236.5882365 mL (8 US fluid ounces); a metric cup is a rounder 250 mL, about 5.7% more. Pick "cup (metric)" from the unit menu if your recipe uses it.' },
         { question: 'How many cups are in a liter?', answer: 'About 4.23 US cups (1,000 ÷ 236.5882365), or exactly 4 metric cups (1,000 ÷ 250).' }
       ]
     },

@@ -1,10 +1,10 @@
 // See mdFiles/steps/42-wave-1-conversion.md, "Kit addition (run 1): content.commonValues". Run: npm test
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cellText, columnHeader, convert, formatFeetInches, isFeetUnit } from './commonValues.ts';
+import { cellText, columnHeader, convert, formatFeetInches } from './commonValues.ts';
 import { calculators } from '../data/calculators/index.ts';
 
-const close = (actual: number, expected: number, tolerance = 1e-12) =>
+const close = (actual: number, expected: number, tolerance = 1e-9) =>
   assert.ok(
     Math.abs(actual - expected) <= tolerance * Math.max(1, Math.abs(expected)),
     `${actual} ≈ ${expected}`
@@ -13,43 +13,43 @@ const close = (actual: number, expected: number, tolerance = 1e-12) =>
 describe('formatFeetInches', () => {
   test('splits total inches into feet + inches', () => {
     assert.equal(formatFeetInches(0), '0 ft 0 in');
-    assert.equal(formatFeetInches(5), '5 ft 0 in');
-    assert.equal(formatFeetInches(5 + 11 / 12), '5 ft 11 in');
+    assert.equal(formatFeetInches(60), '5 ft 0 in');
+    assert.equal(formatFeetInches(71), '5 ft 11 in');
   });
 
   test('never prints 12 in: rounds the TOTAL inches first, then splits', () => {
-    // 5 ft 11.9999 in is 71.9999 in, which rounds to 72 in = 6 ft 0 in, never "5 ft 12 in".
-    const almostSix = 5 + 11.9999 / 12;
-    assert.equal(formatFeetInches(almostSix), '6 ft 0 in');
-    // Exactly on the rounding boundary (71.5 in -> rounds up to 72 in).
-    assert.equal(formatFeetInches(71.5 / 12), '6 ft 0 in');
+    // 71.9999 total inches rounds to 72 in = 6 ft 0 in, never "5 ft 12 in".
+    assert.equal(formatFeetInches(71.9999), '6 ft 0 in');
+    // Exactly on the rounding boundary.
+    assert.equal(formatFeetInches(71.5), '6 ft 0 in');
     for (let totalInches = -200; totalInches <= 200; totalInches += 1) {
-      const text = formatFeetInches(totalInches / 12 + 0.00001 * Math.sin(totalInches));
+      const text = formatFeetInches(totalInches + 0.0001 * Math.sin(totalInches));
       assert.ok(!/\b12 in\b/.test(text), `${totalInches}: ${text}`);
     }
   });
 
-  test('handles negative feet (below absolute zero never reaches here, but the math must still hold)', () => {
-    assert.equal(formatFeetInches(-1), '-1 ft 0 in');
+  test('handles negative total inches', () => {
+    assert.equal(formatFeetInches(-12), '-1 ft 0 in');
   });
 });
 
-describe('isFeetUnit / columnHeader / cellText', () => {
-  test('only length/ft is the feet-inches unit', () => {
-    assert.ok(isFeetUnit('length', 'ft'));
-    assert.ok(!isFeetUnit('length', 'm'));
-    assert.ok(!isFeetUnit('mass', 'kg'));
+describe('columnHeader / cellText', () => {
+  test('columnHeader: feetInches columns say "ft & in", otherwise the unit label', () => {
+    assert.equal(columnHeader('length', 'ft', true), 'ft & in');
+    assert.equal(columnHeader('length', 'in', true), 'ft & in'); // a cm<->in height row can use this too
+    assert.equal(columnHeader('length', 'cm', false), 'cm');
+    assert.equal(columnHeader('mass', 'kg', false), 'kg');
   });
 
-  test('columnHeader labels feet specially, everything else by its unit label', () => {
-    assert.equal(columnHeader('length', 'ft'), 'ft & in');
-    assert.equal(columnHeader('length', 'cm'), 'cm');
-    assert.equal(columnHeader('mass', 'kg'), 'kg');
+  test('cellText: a feetInches column re-expresses its value as inches, any length unit', () => {
+    // 5.9167 ft (71 in) -> "5 ft 11 in"
+    assert.equal(cellText(5.9167, 'length', 'ft', 2, true), formatFeetInches(convert(5.9167, 'length', 'ft', 'in')));
+    assert.equal(cellText(71, 'length', 'in', 2, true), '5 ft 11 in');
+    assert.equal(cellText(180, 'length', 'cm', 2, true), formatFeetInches(convert(180, 'length', 'cm', 'in')));
   });
 
-  test('cellText renders feet as feet+inches and everything else as a plain decimal', () => {
-    assert.equal(cellText(5.9167, 'length', 'ft', 2), formatFeetInches(5.9167));
-    assert.equal(cellText(10.456, 'length', 'cm', 2), '10.46');
+  test('cellText: a plain column is a decimal number', () => {
+    assert.equal(cellText(10.456, 'length', 'cm', 2, false), '10.46');
   });
 });
 
@@ -73,20 +73,26 @@ describe('every calculator commonValues table', () => {
   for (const calculator of withTables) {
     test(`${calculator.id}: every row round-trips and no feet-inches cell says "12 in"`, () => {
       const cv = calculator.content!.commonValues!;
+      const decimals = cv.decimals ?? 2;
+
       for (const value of cv.values) {
-        const roundTripped = convert(convert(value, cv.dimension, cv.from, cv.to), cv.dimension, cv.to, cv.from);
-        close(roundTripped, value, 1e-9);
-        const toText = cellText(convert(value, cv.dimension, cv.from, cv.to), cv.dimension, cv.to, cv.decimals ?? 2);
-        assert.ok(!/\b12 in\b/.test(toText), `${calculator.id} forward: ${toText}`);
-        const fromText = cellText(value, cv.dimension, cv.from, cv.decimals ?? 2);
+        const toValue = convert(value, cv.dimension, cv.from, cv.to);
+        close(convert(toValue, cv.dimension, cv.to, cv.from), value);
+        const fromText = cellText(value, cv.dimension, cv.from, decimals, cv.feetInches === 'from');
+        const toText = cellText(toValue, cv.dimension, cv.to, decimals, cv.feetInches === 'to');
         assert.ok(!/\b12 in\b/.test(fromText), `${calculator.id} forward from-column: ${fromText}`);
+        assert.ok(!/\b12 in\b/.test(toText), `${calculator.id} forward to-column: ${toText}`);
       }
+
       if (cv.reverse) {
+        const reverseFeetInches = cv.reverse.feetInches;
         for (const value of cv.reverse.values) {
-          const roundTripped = convert(convert(value, cv.dimension, cv.to, cv.from), cv.dimension, cv.from, cv.to);
-          close(roundTripped, value, 1e-9);
-          const toText = cellText(convert(value, cv.dimension, cv.to, cv.from), cv.dimension, cv.from, cv.decimals ?? 2);
-          assert.ok(!/\b12 in\b/.test(toText), `${calculator.id} reverse: ${toText}`);
+          const backValue = convert(value, cv.dimension, cv.to, cv.from);
+          close(convert(backValue, cv.dimension, cv.from, cv.to), value);
+          const leftText = cellText(value, cv.dimension, cv.to, decimals, reverseFeetInches === 'from');
+          const rightText = cellText(backValue, cv.dimension, cv.from, decimals, reverseFeetInches === 'to');
+          assert.ok(!/\b12 in\b/.test(leftText), `${calculator.id} reverse left: ${leftText}`);
+          assert.ok(!/\b12 in\b/.test(rightText), `${calculator.id} reverse right: ${rightText}`);
         }
       }
     });

@@ -8,25 +8,25 @@ export function convert(value: number, dimension: UnitDimension, from: string, t
   return fromBase(toBase(value, dimension, from), dimension, to);
 }
 
-export function isFeetUnit(dimension: UnitDimension, unitId: string) {
-  return dimension === 'length' && unitId === 'ft';
-}
-
-// Decimal feet -> "5 ft 11 in". Rounds the TOTAL inches first, then splits, so the inches part is
-// always 0-11 and can never print as "12 in" (mdFiles/steps/42-wave-1-conversion.md, "Feet + inches").
-export function formatFeetInches(totalFeet: number) {
-  const totalInches = Math.round(totalFeet * 12);
-  const sign = totalInches < 0 ? '-' : '';
-  const absInches = Math.abs(totalInches);
-  const feet = Math.floor(absInches / 12);
-  const inches = absInches % 12;
+// Total inches (may be fractional, e.g. from an exact unit conversion) -> "5 ft 11 in". Rounds the
+// TOTAL inches first, then splits, so the inches part is always 0-11 and can never print as
+// "12 in" (mdFiles/steps/42-wave-1-conversion.md, "Feet + inches").
+export function formatFeetInches(totalInches: number) {
+  const rounded = Math.round(totalInches);
+  const sign = rounded < 0 ? '-' : '';
+  const abs = Math.abs(rounded);
+  const feet = Math.floor(abs / 12);
+  const inches = abs % 12;
   return `${sign}${feet} ft ${inches} in`;
 }
 
-export function columnHeader(dimension: UnitDimension, unitId: string) {
-  return isFeetUnit(dimension, unitId) ? 'ft & in' : findUnit(dimension, unitId).label;
+export function columnHeader(dimension: UnitDimension, unitId: string, asFeetInches = false) {
+  return asFeetInches ? 'ft & in' : findUnit(dimension, unitId).label;
 }
 
-export function cellText(value: number, dimension: UnitDimension, unitId: string, decimals: number) {
-  return isFeetUnit(dimension, unitId) ? formatFeetInches(value) : formatDecimal(value, decimals);
+// `value` is already in `unitId` units. When `asFeetInches`, it is re-expressed as total inches
+// (via lib/units.ts, so the conversion is exact) and split into feet + inches for display.
+export function cellText(value: number, dimension: UnitDimension, unitId: string, decimals: number, asFeetInches = false) {
+  if (asFeetInches && dimension === 'length') return formatFeetInches(convert(value, dimension, unitId, 'in'));
+  return formatDecimal(value, decimals);
 }

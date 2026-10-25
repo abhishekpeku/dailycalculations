@@ -6,8 +6,8 @@ export const measurementsCalculators: CalculatorConfig[] = [
     id: 'miles-to-kilometers-converter',
     category: 'measurements',
     updatedAt: '2026-10-19',
-    aliases: ['mi to km converter', 'distance converter', 'km to miles calculator', 'miles to km'],
-    related: ['pounds-to-kilograms-converter', 'gallons-to-liters-converter', 'fahrenheit-to-celsius-converter', 'running-pace-calculator'],
+    aliases: ['mi to km converter', 'km to miles calculator', 'miles to km', 'convert miles to kilometers'],
+    related: ['pounds-to-kilograms-converter', 'gallons-to-liters-converter', 'fahrenheit-to-celsius-converter', 'length-converter'],
     title: 'Miles to Kilometers Converter',
     description: 'Convert miles to kilometers, or kilometers to miles, as you type. Meters, feet, yards and nautical miles are in the unit menus too.',
     example: '10 miles is 16.09 km, a 5K race is 3.11 miles, and a marathon (42.195 km) is 26.22 miles.',
@@ -251,8 +251,8 @@ export const measurementsCalculators: CalculatorConfig[] = [
     id: 'pounds-to-kilograms-converter',
     category: 'measurements',
     updatedAt: '2026-10-19',
-    aliases: ['lbs to kg converter', 'weight converter', 'kg to pounds calculator', 'stone to kg converter', 'lb to kg'],
-    related: ['bmi-calculator', 'miles-to-kilometers-converter', 'gallons-to-liters-converter', 'fahrenheit-to-celsius-converter'],
+    aliases: ['lbs to kg converter', 'kg to pounds calculator', 'stone to kg converter', 'lb to kg'],
+    related: ['bmi-calculator', 'weight-converter', 'gallons-to-liters-converter', 'fahrenheit-to-celsius-converter'],
     title: 'Pounds to Kilograms Converter',
     description: 'Convert pounds to kilograms, or kilograms to pounds, as you type. Stone, ounces, grams and tonnes are in the unit menus too.',
     example: '150 lb is 68.04 kg, and 70 kg is 154.32 lb, or 11 stone and about a third of a pound.',
@@ -375,8 +375,8 @@ export const measurementsCalculators: CalculatorConfig[] = [
     id: 'gallons-to-liters-converter',
     category: 'measurements',
     updatedAt: '2026-10-19',
-    aliases: ['gal to l converter', 'volume converter', 'liters to gallons calculator', 'fuel volume converter', 'imperial gallon converter'],
-    related: ['fuel-cost-calculator', 'miles-to-kilometers-converter', 'pounds-to-kilograms-converter', 'water-intake-calculator'],
+    aliases: ['gal to l converter', 'liters to gallons calculator', 'fuel volume converter', 'imperial gallon converter'],
+    related: ['fuel-cost-calculator', 'volume-converter', 'pounds-to-kilograms-converter', 'water-intake-calculator'],
     title: 'Gallons to Liters Converter',
     description: 'Convert US or UK (imperial) gallons to liters, or liters to gallons, as you type. Quarts, pints, cups and fluid ounces are in the unit menus too.',
     example: '2.5 US gallons is about 9.46 liters. A UK (imperial) gallon is 4.546 liters, about 20% more than a US gallon.',
@@ -1107,6 +1107,611 @@ export const measurementsCalculators: CalculatorConfig[] = [
     },
     compute(values) {
       const kph = fromBase(toBase(values.mph, 'speed', 'mph'), 'speed', 'km/h');
+      return { kph };
+    }
+  },
+  {
+    id: 'length-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['length converter', 'distance converter', 'metric to imperial length converter', 'convert meters to feet', 'unit length converter'],
+    related: ['feet-to-meters-converter', 'miles-to-kilometers-converter', 'centimeters-to-inches-converter', 'area-converter'],
+    title: 'Length Converter',
+    description: 'Convert between meters, feet, kilometers, miles, yards, inches, centimeters, millimeters and nautical miles, in any direction, as you type.',
+    example: '1 meter is about 3.28 feet, and 100 yards (an American football field) is 91.44 meters.',
+    solver: {
+      defaultTarget: 'feet',
+      variables: [
+        { id: 'meters', label: 'Meters', symbol: 'm', dimension: 'length', defaultValue: 1, defaultUnit: 'm' },
+        { id: 'feet', label: 'Feet', symbol: 'ft', dimension: 'length', defaultValue: 3.2808, defaultUnit: 'ft' }
+      ],
+      // Both fields hold the same length (in meters); the unit menus already list every length
+      // unit in lib/units.ts (m, km, cm, mm, mi, yd, ft, in, nmi), so either menu is a full length converter.
+      solve: {
+        meters: ({ feet }) => (feet >= 0 ? feet : NaN),
+        feet: ({ meters }) => (meters >= 0 ? meters : NaN)
+      },
+      derive: (si) => ({ mShown: si.meters }),
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'mShown',
+          min: -1,
+          max: 3,
+          ticks: ['0.1 m', '1 m', '10 m', '100 m', '1,000 m'],
+          benchmarks: [
+            { label: 'A sheet of A4 paper (length)', value: 0.297 },
+            { label: 'A standard interior door height', value: 2.032 },
+            { label: 'A 100-yard American football field', value: 91.44 },
+            { label: '1 kilometer', value: 1000 }
+          ],
+          title: 'How long is that?',
+          valueLabel: 'Your length'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Length, metric and customary',
+        paragraphs: [
+          'Length is the most common thing people convert, because the world uses two different systems side by side. Almost every country measures length in meters, kilometers, centimeters and millimeters, the metric (SI) units built on powers of ten. The US, and parts of the UK, still use feet, inches, yards and miles for everyday things: height, room sizes, road distances and construction.',
+          'Every customary unit in use today is defined exactly from the meter, not the other way around. Since 1959, the international yard has been exactly 0.9144 m, which fixes the foot at 0.3048 m, the inch at 0.0254 m, and the mile (5,280 ft) at exactly 1,609.344 m. That means converting any of them is a single, exact multiplication or division — nothing is rounded except the number you see on screen.',
+          'This page is the general case: any field can take any length unit, from millimeters up to nautical miles, so you can go straight from, say, yards to centimeters without stopping at meters first. For a specific everyday pair with its own worked table — miles and kilometers, feet and meters, or centimeters and inches — the dedicated converters linked below go deeper on that one pair.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a length in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Pick your starting unit', text: 'Open the unit menu beside the first field and choose meters, feet, kilometers, miles, yards, inches, centimeters, millimeters or nautical miles.' },
+          { name: 'Type the length', text: 'Enter the number. The other field recalculates immediately.' },
+          { name: 'Change the target unit', text: 'Open the second field\'s menu to see the same length in any other unit — it converts again with no extra step.' },
+          { name: 'Read the scale', text: 'The scale places your length against a sheet of paper, a doorway, a football field and a kilometer.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Every length unit here reduces to meters first, then to the target unit — the same two steps regardless of which units you pick.',
+        expression: 'meters = value × factor(unit)\nresult = meters ÷ factor(target unit)',
+        terms: [
+          { symbol: 'factor(unit)', meaning: 'Meters per unit, exact: 1,000 for km, 0.3048 for ft, 0.0254 for in, 1,609.344 for mi, 0.9144 for yd, 1,852 for nmi.' },
+          { symbol: 'meters', meaning: 'The length in the base SI unit, used internally for every conversion.' }
+        ],
+        note: 'Every factor above is an exact definition, not a measurement, so results are rounded for display only, never for the underlying math.'
+      },
+      workedExample: {
+        intro: 'You measure a room at 25 m and a rug at 100 ft. How long is each in the other unit?',
+        rows: [
+          { label: '25 ÷ 0.3048', value: '82.02 ft' },
+          { label: '100 × 0.3048', value: '30.48 m' },
+          { label: 'Quick check: 25 × 3.28', value: '≈ 82 ft' }
+        ],
+        result: '25 m ≈ 82.02 ft · 100 ft = 30.48 m',
+        explanation: 'Multiplying by 3.28 instead of the exact 3.280840 is within about 0.03%, close enough for most everyday checks.'
+      },
+      commonValues: {
+        title: 'Common meters to feet conversions',
+        dimension: 'length',
+        from: 'm',
+        to: 'ft',
+        values: [1, 2, 3, 5, 10, 20, 50, 100],
+        reverse: {
+          title: 'Common feet to meters conversions',
+          values: [1, 3, 6, 10, 20, 50, 100]
+        }
+      },
+      watchOut: [
+        { title: 'Pick the right unit before you type', body: 'Each field remembers its own unit. If you meant to type centimeters but the menu still says meters, the result will be off by a factor of 100.' },
+        { title: 'Feet and inches is two units, not a decimal', body: '5.5 ft is 5 ft 6 in, not "5 ft 5 in". For a height already written as feet and inches, see the centimeters to inches or feet to meters converters, which handle the split.' },
+        { title: 'Nautical miles are not statute miles', body: 'A nautical mile is exactly 1,852 m, about 1.151 times a statute mile (1,609.344 m). Used at sea and in the air, not on roads.' },
+        { title: 'The US survey foot is retired', body: 'Old land-survey figures used a foot about 0.0002 m longer than today\'s. NIST deprecated the US survey foot at the end of 2022; every foot here is the 0.3048 m international foot.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'meters', label: 'Meters', type: 'number', placeholder: '1', defaultValue: 1, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Length Converter (m, ft, km, mi, in, yd, cm)',
+      description: 'Free length converter: meters, feet, kilometers, miles, yards, inches, centimeters and millimeters, in any direction, with exact factors.',
+      faq: [
+        { question: 'How do I convert meters to feet?', answer: 'Multiply by about 3.28084 (or divide by 0.3048). For 25 m: 25 ÷ 0.3048 ≈ 82.02 ft.' },
+        { question: 'How do I convert feet to meters?', answer: 'Multiply by 0.3048. 100 ft × 0.3048 = 30.48 m.' },
+        { question: 'How many feet are in a mile?', answer: 'A mile is 5,280 ft, exactly 1,609.344 m — the same exact factor the miles to kilometers converter uses.' },
+        { question: 'How many meters are in a yard?', answer: 'A yard is exactly 0.9144 m, or 3 ft.' },
+        { question: 'What is 1 meter in feet and inches?', answer: 'About 3 ft 3.37 in: 1 m is 3.280840 ft, and 0.280840 ft × 12 ≈ 3.37 in.' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'Multiply meters by 3.3 for a rough feet figure (about 0.6% high), or feet by 0.3 for meters (about 1.6% low).' }
+      ]
+    },
+    compute(values) {
+      const feet = fromBase(toBase(values.meters, 'length', 'm'), 'length', 'ft');
+      return { feet };
+    }
+  },
+  {
+    id: 'weight-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['weight converter', 'mass converter', 'kg to lb converter', 'convert kilograms to pounds', 'weight unit converter'],
+    related: ['pounds-to-kilograms-converter', 'grams-to-ounces-converter', 'bmi-calculator', 'volume-converter'],
+    title: 'Weight Converter',
+    description: 'Convert between kilograms, pounds, grams, ounces, stone and metric tonnes, in any direction, as you type.',
+    example: '10 kilograms is about 22.05 pounds, and 75 kg (an average adult) is about 165.35 lb.',
+    solver: {
+      defaultTarget: 'pounds',
+      variables: [
+        { id: 'kilograms', label: 'Kilograms', symbol: 'kg', dimension: 'mass', defaultValue: 10, defaultUnit: 'kg' },
+        { id: 'pounds', label: 'Pounds', symbol: 'lb', dimension: 'mass', defaultValue: 22.0462, defaultUnit: 'lb' }
+      ],
+      // Both fields hold the same mass (in kg); the unit menus already list every mass unit in
+      // lib/units.ts (kg, g, t, lb, oz, st), so either menu is a full weight converter.
+      solve: {
+        kilograms: ({ pounds }) => (pounds >= 0 ? pounds : NaN),
+        pounds: ({ kilograms }) => (kilograms >= 0 ? kilograms : NaN)
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'kilograms',
+          min: -1,
+          max: 3,
+          ticks: ['0.1 kg', '1 kg', '10 kg', '100 kg', '1,000 kg'],
+          benchmarks: [
+            { label: 'A newborn baby (about 3.5 kg)', value: 3.5 },
+            { label: 'A typical airline checked-bag limit (23 kg)', value: 23 },
+            { label: '100 kilograms', value: 100 },
+            { label: '1 metric tonne', value: 1000 }
+          ],
+          title: 'How heavy is that?',
+          valueLabel: 'Your weight'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Weight (mass) units, metric and customary',
+        paragraphs: [
+          'The kilogram is the SI base unit of mass, used for everyday weight almost everywhere in the world. The pound, used for body weight and shipping in the US and informally in the UK alongside the stone, is defined exactly from the kilogram: since 1959, one avoirdupois pound has been exactly 0.45359237 kg.',
+          'Because that definition is exact, converting between any mass units here — kilograms, grams, metric tonnes, pounds, ounces or stone — is always a single multiplication or division with no rounding error of its own. A gram is a thousandth of a kilogram; an ounce is a sixteenth of a pound (about 28.35 g); a stone is 14 pounds (about 6.35 kg); a metric tonne is 1,000 kg.',
+          'This page is the general case: any field can take any mass unit, so you can go straight from stone to grams without a middle step. For body weight specifically, the pounds to kilograms converter and the grams to ounces converter have their own worked tables and height/food-portion context.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a weight in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Pick your starting unit', text: 'Open the unit menu beside the first field and choose kilograms, pounds, grams, ounces, stone or metric tonnes.' },
+          { name: 'Type the weight', text: 'Enter the number. The other field recalculates immediately.' },
+          { name: 'Change the target unit', text: 'Open the second field\'s menu to see the same weight in any other unit.' },
+          { name: 'Read the scale', text: 'The scale places your weight against a newborn baby, an airline bag limit and a metric tonne.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Every mass unit here reduces to kilograms first, then to the target unit.',
+        expression: 'kilograms = value × factor(unit)\nresult = kilograms ÷ factor(target unit)',
+        terms: [
+          { symbol: 'factor(unit)', meaning: 'Kilograms per unit, exact: 0.001 for g, 1,000 for t, 0.45359237 for lb, 0.028349523125 for oz, 6.35029318 for st.' },
+          { symbol: 'kilograms', meaning: 'The mass in the base SI unit, used internally for every conversion.' }
+        ],
+        note: 'Everyday "weight" is really mass; a scale measures the force of gravity and reports it in kilograms or pounds, the right unit for food, luggage and body weight. See the force calculator for the physics distinction.'
+      },
+      workedExample: {
+        intro: 'You weigh 75 kg and a package is labeled 200 lb. How much is each in the other unit?',
+        rows: [
+          { label: '75 ÷ 0.45359237', value: '165.35 lb' },
+          { label: '200 × 0.45359237', value: '90.72 kg' },
+          { label: 'Quick check: 75 × 2.2', value: '≈ 165 lb' }
+        ],
+        result: '75 kg ≈ 165.35 lb · 200 lb ≈ 90.72 kg',
+        explanation: 'Multiplying by 2.2 instead of the exact 2.204623 is about 0.2% low; for pounds to kilograms, multiplying by 0.45 instead of 0.45359237 is about 0.8% low.'
+      },
+      commonValues: {
+        title: 'Common kilograms to pounds conversions',
+        dimension: 'mass',
+        from: 'kg',
+        to: 'lb',
+        values: [1, 5, 10, 20, 50, 70, 100, 150],
+        reverse: {
+          title: 'Common pounds to kilograms conversions',
+          values: [1, 10, 50, 100, 150, 200]
+        }
+      },
+      watchOut: [
+        { title: 'Mass and weight are not quite the same word', body: 'This converter and everyday scales measure mass. A newton (force due to gravity) is a different unit entirely — see the force calculator.' },
+        { title: 'Tons come in three sizes', body: 'A US short ton is 2,000 lb (907.18 kg), a UK long ton 2,240 lb (1,016.05 kg) and a metric tonne 1,000 kg (2,204.62 lb). This converter uses the metric tonne.' },
+        { title: 'Troy weights are for precious metals', body: 'Gold and silver are priced per troy ounce, about 31.10 g — heavier than the everyday avoirdupois ounce (28.35 g) this converter uses.' },
+        { title: 'Stone and pounds are mixed units', body: '11 st 4 lb is not 11.4 stone; it is 11 + 4/14 ≈ 11.29 stone, or 158 lb. Convert to pounds first if you have a mixed figure.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'kilograms', label: 'Kilograms', type: 'number', placeholder: '10', defaultValue: 10, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Weight Converter (kg, lb, g, oz, stone, tonne)',
+      description: 'Free weight converter: kilograms, pounds, grams, ounces, stone and metric tonnes, in any direction, with exact factors and a worked example.',
+      faq: [
+        { question: 'How do I convert kilograms to pounds?', answer: 'Multiply by about 2.204623 (or divide by 0.45359237). For 75 kg: 75 ÷ 0.45359237 ≈ 165.35 lb.' },
+        { question: 'How do I convert pounds to kilograms?', answer: 'Multiply by 0.45359237. 200 lb × 0.45359237 ≈ 90.72 kg.' },
+        { question: 'How many pounds are in a stone?', answer: 'A stone is 14 pounds, exactly 6.35029318 kg.' },
+        { question: 'How many kilograms are in a metric tonne?', answer: 'Exactly 1,000 kg, about 2,204.62 lb.' },
+        { question: 'What is the difference between mass and weight?', answer: 'Mass (kg, lb) is how much matter something has. Weight is the force of gravity on that mass, measured in newtons — see the force calculator.' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'Multiply kilograms by 2.2 for a rough pounds figure (about 0.2% low), or pounds by 0.45 for kilograms (about 0.8% low).' }
+      ]
+    },
+    compute(values) {
+      const pounds = fromBase(toBase(values.kilograms, 'mass', 'kg'), 'mass', 'lb');
+      return { pounds };
+    }
+  },
+  {
+    id: 'volume-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['volume converter', 'liters to gallons converter', 'convert volume units', 'volume unit converter', 'ml to liters converter'],
+    related: ['gallons-to-liters-converter', 'ounces-to-milliliters-converter', 'water-intake-calculator', 'length-converter'],
+    title: 'Volume Converter',
+    description: 'Convert between liters, US and UK gallons, milliliters, cups, quarts, pints, tablespoons and cubic meters, in any direction, as you type.',
+    example: '10 liters is about 2.64 US gallons, and 50 liters (a large travel case) is about 13.21 gallons.',
+    solver: {
+      defaultTarget: 'gallons',
+      variables: [
+        { id: 'liters', label: 'Liters', symbol: 'L', dimension: 'volume', defaultValue: 10, defaultUnit: 'L' },
+        { id: 'gallons', label: 'Gallons', symbol: 'gal', dimension: 'volume', defaultValue: 2.6417, defaultUnit: 'gal' }
+      ],
+      // Both fields hold the same volume (in m³); the unit menus already list every volume unit in
+      // lib/units.ts (m³, L, mL, US/UK gal, qt, pt, cup, fl oz, tbsp, tsp, ft³, yd³, in³), so either
+      // menu is a full volume converter.
+      solve: {
+        liters: ({ gallons }) => (gallons >= 0 ? gallons : NaN),
+        gallons: ({ liters }) => (liters >= 0 ? liters : NaN)
+      },
+      derive: (si) => ({ litersShown: si.liters * 1000 }),
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'litersShown',
+          min: -3,
+          max: 3,
+          ticks: ['0.001 L', '0.01 L', '0.1 L', '1 L', '10 L', '100 L', '1,000 L'],
+          benchmarks: [
+            { label: 'A teaspoon (about 5 mL)', value: 0.005 },
+            { label: 'A 1-liter bottle', value: 1 },
+            { label: 'A bathtub (about 150 L)', value: 150 },
+            { label: '1 cubic meter (1,000 L)', value: 1000 }
+          ],
+          title: 'How much is that?',
+          valueLabel: 'Your volume'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Volume units, metric and customary',
+        paragraphs: [
+          'The liter is a metric unit of volume, one cubic decimeter, used worldwide for drinks, fuel and recipes. The US gallon, used for fuel and large liquid volumes in the US, is defined as exactly 231 cubic inches, which is exactly 3.785411784 L. The imperial (UK) gallon is a different, larger unit, exactly 4.54609 L, used historically in the UK and the Commonwealth.',
+          'Because both gallon definitions are exact, converting between any volume unit here — liters, milliliters, cubic meters, US or UK gallons, quarts, pints, cups, tablespoons or teaspoons — is always a single multiplication or division, with no offset. Smaller units follow their own gallon: a US gallon is 4 US quarts, 8 US pints, 16 US cups or 128 US fluid ounces; a UK gallon is 8 UK pints or 160 UK fluid ounces.',
+          'This page is the general case: any field can take any volume unit, so you can go straight from UK pints to cubic meters without a middle step. For fuel volumes specifically or for drink and recipe measures, the gallons to liters converter and the ounces to milliliters converter have their own worked tables.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a volume in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Pick your starting unit', text: 'Open the unit menu beside the first field and choose liters, US or UK gallons, milliliters, cups, quarts, pints, tablespoons, teaspoons or cubic meters.' },
+          { name: 'Type the volume', text: 'Enter the number. The other field recalculates immediately.' },
+          { name: 'Change the target unit', text: 'Open the second field\'s menu to see the same volume in any other unit.' },
+          { name: 'Read the scale', text: 'The scale places your volume against a teaspoon, a bottle, a bathtub and a cubic meter.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Every volume unit here reduces to liters first, then to the target unit.',
+        expression: 'liters = value × factor(unit)\nresult = liters ÷ factor(target unit)',
+        terms: [
+          { symbol: 'factor(unit)', meaning: 'Liters per unit, exact: 1,000 for m³, 0.001 for mL, 3.785411784 for US gal, 4.54609 for UK gal.' },
+          { symbol: 'liters', meaning: 'The volume, scaled from the base SI unit (cubic meters), used internally for every conversion.' }
+        ],
+        note: 'Every factor above is an exact definition, not a measurement, so results are rounded for display only.'
+      },
+      workedExample: {
+        intro: 'You need 50 liters of water for an event, and a container is marked in US gallons. How many gallons is that, and how many liters is a 15-gallon drum?',
+        rows: [
+          { label: '50 ÷ 3.785411784', value: '13.21 gal' },
+          { label: '15 × 3.785411784', value: '56.78 L' },
+          { label: 'Quick check: 50 × 0.26', value: '≈ 13 gal' }
+        ],
+        result: '50 L ≈ 13.21 gal · 15 gal ≈ 56.78 L',
+        explanation: 'Multiplying by 0.26 instead of the exact 0.264172 is within about 1.6%; for gallons to liters, multiplying by 3.8 instead of 3.785412 is within about 0.4%.'
+      },
+      commonValues: {
+        title: 'Common liters to gallons conversions',
+        dimension: 'volume',
+        from: 'L',
+        to: 'gal',
+        values: [1, 2, 5, 10, 20, 50, 100, 200],
+        reverse: {
+          title: 'Common gallons to liters conversions',
+          values: [1, 2, 5, 10, 20, 55]
+        }
+      },
+      watchOut: [
+        { title: 'Know which gallon you have', body: 'An imperial (UK) gallon is about 20% bigger than a US gallon. Using the wrong factor understates or overstates a volume by that much.' },
+        { title: 'Dry gallons are different again', body: 'The rarely used US dry gallon (about 4.405 L) is for grain and produce. This converter, like fuel and recipe figures, uses the 231 in³ liquid gallon.' },
+        { title: 'Cups are not standardized worldwide', body: 'A US cup is 8 US fl oz (about 237 mL); a metric cup (used in Australia and parts of Europe) is exactly 250 mL, a different unit.' },
+        { title: 'This converts volume, not mass', body: 'A liter of water weighs about 1 kg, but a liter of oil or syrup weighs something else. For mass, use the weight converter instead.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'liters', label: 'Liters', type: 'number', placeholder: '10', defaultValue: 10, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Volume Converter (L, gal, mL, cups, m³)',
+      description: 'Free volume converter: liters, US and UK gallons, milliliters, cups, quarts, pints and cubic meters, in any direction, with exact factors.',
+      faq: [
+        { question: 'How do I convert liters to US gallons?', answer: 'Divide by 3.785411784 (or multiply by about 0.264172). For 50 L: 50 ÷ 3.785411784 ≈ 13.21 gal.' },
+        { question: 'How do I convert US gallons to liters?', answer: 'Multiply by 3.785411784. 15 gal × 3.785411784 ≈ 56.78 L.' },
+        { question: 'How many liters are in an imperial (UK) gallon?', answer: 'Exactly 4.54609 L, about 20% more than a US gallon (3.785411784 L).' },
+        { question: 'How many milliliters are in a liter?', answer: '1,000 mL, since milli- means one-thousandth.' },
+        { question: 'How many US gallons are in a cubic meter?', answer: '1 m³ is 1,000 L, about 264.17 US gallons.' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'Multiply liters by 0.26 for a rough gallon figure (about 1.6% low), or gallons by 3.8 for liters (about 0.4% high).' }
+      ]
+    },
+    compute(values) {
+      const gallons = fromBase(toBase(values.liters, 'volume', 'L'), 'volume', 'gal');
+      return { gallons };
+    }
+  },
+  {
+    id: 'area-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['area converter', 'square meters to square feet converter', 'convert area units', 'area unit converter', 'sq ft to sq m converter'],
+    related: ['length-converter', 'volume-converter', 'area-calculator', 'tile-calculator'],
+    title: 'Area Converter',
+    description: 'Convert between square meters, square feet, square kilometers, square miles, acres, hectares and square yards, in any direction, as you type.',
+    example: '10 square meters is about 107.64 square feet, and a 1,500 sq ft apartment is about 139.35 square meters.',
+    solver: {
+      defaultTarget: 'squareFeet',
+      variables: [
+        { id: 'squareMeters', label: 'Square meters', symbol: 'm²', dimension: 'area', defaultValue: 10, defaultUnit: 'm2' },
+        { id: 'squareFeet', label: 'Square feet', symbol: 'ft²', dimension: 'area', defaultValue: 107.6391, defaultUnit: 'ft2' }
+      ],
+      // Both fields hold the same area (in m²); the unit menus already list every area unit in
+      // lib/units.ts (m², km², cm², mm², ha, mi², acre, yd², ft², in²), so either menu is a full
+      // area converter.
+      solve: {
+        squareMeters: ({ squareFeet }) => (squareFeet >= 0 ? squareFeet : NaN),
+        squareFeet: ({ squareMeters }) => (squareMeters >= 0 ? squareMeters : NaN)
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'squareMeters',
+          min: 0,
+          max: 4,
+          ticks: ['1 m²', '10 m²', '100 m²', '1,000 m²', '10,000 m²'],
+          benchmarks: [
+            { label: 'A standard parking space (about 15 m²)', value: 15 },
+            { label: 'A tennis court (about 261 m²)', value: 261 },
+            { label: 'A basketball court (420 m²)', value: 420 },
+            { label: '1 hectare (10,000 m²)', value: 10000 }
+          ],
+          title: 'How big is that?',
+          valueLabel: 'Your area'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Area units, metric and customary',
+        paragraphs: [
+          'Area measures the size of a surface — a room, a lot, a field — and every unit here is a length unit squared. The square meter, the SI unit, is used worldwide for room sizes and land. The square foot, used for US real estate listings, and the acre, used for larger lots and farmland, are the common customary units.',
+          'Because every length unit this site uses is defined exactly (see the length converter), every area unit built from it is exact too: a square foot is exactly 0.3048² = 0.09290304 m², and an acre — 4,840 square yards by definition — is exactly 4,046.8564224 m². A hectare, the metric land unit, is defined as exactly 10,000 m², about 2.471 acres.',
+          'This page is the general case: any field can take any area unit, so you can go straight from acres to square meters, or hectares to square feet, without a middle step. The dedicated area calculator, by contrast, computes the area of a shape (a rectangle, triangle or circle) from its own dimensions — this page only converts an area you already know.'
+        ]
+      },
+      howTo: {
+        intro: 'Type an area in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Pick your starting unit', text: 'Open the unit menu beside the first field and choose square meters, square feet, square kilometers, square miles, acres, hectares, square yards, square centimeters or square inches.' },
+          { name: 'Type the area', text: 'Enter the number. The other field recalculates immediately.' },
+          { name: 'Change the target unit', text: 'Open the second field\'s menu to see the same area in any other unit.' },
+          { name: 'Read the scale', text: 'The scale places your area against a parking space, a tennis court, a basketball court and a hectare.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Every area unit here reduces to square meters first, then to the target unit.',
+        expression: 'm² = value × factor(unit)\nresult = m² ÷ factor(target unit)',
+        terms: [
+          { symbol: 'factor(unit)', meaning: 'Square meters per unit, exact: 0.09290304 for ft², 4,046.8564224 for acre, 10,000 for ha, 1,000,000 for km².' },
+          { symbol: 'm²', meaning: 'The area in the base SI unit, used internally for every conversion.' }
+        ],
+        note: 'Every factor above comes from squaring an exact length definition, so results are rounded for display only, never for the underlying math.'
+      },
+      workedExample: {
+        intro: 'A room measures 20 m² and a listing advertises 1,500 sq ft. How big is each in the other unit?',
+        rows: [
+          { label: '20 ÷ 0.09290304', value: '215.28 ft²' },
+          { label: '1,500 × 0.09290304', value: '139.35 m²' },
+          { label: 'Quick check: 20 × 10.8', value: '≈ 216 ft²' }
+        ],
+        result: '20 m² ≈ 215.28 ft² · 1,500 ft² ≈ 139.35 m²',
+        explanation: 'Multiplying by 10.8 instead of the exact 10.763910 overstates by about 0.3%; for square feet to square meters, multiplying by 0.093 instead of 0.09290304 overstates by about 0.1%.'
+      },
+      commonValues: {
+        title: 'Common square meters to square feet conversions',
+        dimension: 'area',
+        from: 'm2',
+        to: 'ft2',
+        values: [1, 5, 10, 20, 50, 100, 200, 500],
+        reverse: {
+          title: 'Common square feet to square meters conversions',
+          values: [100, 500, 1000, 2000, 5000, 10000]
+        }
+      },
+      watchOut: [
+        { title: 'This converts area, not length', body: 'Doubling a length quadruples its area. Converting an area with the plain length factor (0.3048 instead of 0.09290304 for feet) gives an answer off by that same factor.' },
+        { title: 'The acre is not a square', body: 'An acre (4,840 yd²) is a unit of area with no fixed shape, historically the area a team of oxen could plow in a day. A square acre would be about 69.57 yd (208.7 ft) on each side.' },
+        { title: 'Hectares and acres are both land units, not the same size', body: '1 hectare (10,000 m²) is about 2.471 acres, so dividing a hectare figure straight by 1 acre\'s number understates the land area.' },
+        { title: 'US survey acres differ very slightly', body: 'Some older US land records use the US survey acre, based on the now-retired US survey foot, about 4 parts per million larger than the international acre this converter uses.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'squareMeters', label: 'Square meters', type: 'number', placeholder: '10', defaultValue: 10, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Area Converter (m², ft², acres, hectares)',
+      description: 'Free area converter: square meters, square feet, acres, hectares, square kilometers and square miles, in any direction, with exact factors.',
+      faq: [
+        { question: 'How do I convert square meters to square feet?', answer: 'Multiply by about 10.763910 (or divide by 0.09290304). For 20 m²: 20 ÷ 0.09290304 ≈ 215.28 ft².' },
+        { question: 'How do I convert square feet to square meters?', answer: 'Multiply by 0.09290304. 1,500 ft² × 0.09290304 ≈ 139.35 m².' },
+        { question: 'How many square feet are in an acre?', answer: 'An acre is 4,840 yd², exactly 43,560 ft².' },
+        { question: 'How many square meters are in a hectare?', answer: 'Exactly 10,000 m², about 2.471 acres or 107,639.10 ft².' },
+        { question: 'How do I convert square meters to acres?', answer: 'Divide by 4,046.8564224. 10,000 m² is about 2.471 acres.' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'Multiply square meters by about 10.8 for square feet (about 0.3% high), or square feet by about 0.093 for square meters (about 0.1% high).' }
+      ]
+    },
+    compute(values) {
+      const squareFeet = fromBase(toBase(values.squareMeters, 'area', 'm2'), 'area', 'ft2');
+      return { squareFeet };
+    }
+  },
+  {
+    id: 'speed-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['speed converter', 'meters per second to km/h converter', 'convert speed units', 'velocity converter', 'mph to m/s converter'],
+    related: ['mph-to-kph-converter', 'running-pace-calculator', 'length-converter', 'gas-cost-calculator'],
+    title: 'Speed Converter',
+    description: 'Convert between meters per second, kilometers per hour, miles per hour, knots and feet per second, in any direction, as you type.',
+    example: '10 meters per second is exactly 36 km/h, and 15 m/s (a fast cyclist) is 54 km/h.',
+    solver: {
+      defaultTarget: 'kph',
+      variables: [
+        { id: 'metersPerSecond', label: 'Meters per second', symbol: 'm/s', dimension: 'speed', defaultValue: 10, defaultUnit: 'm/s' },
+        { id: 'kph', label: 'Kilometers per hour', symbol: 'km/h', dimension: 'speed', defaultValue: 36, defaultUnit: 'km/h' }
+      ],
+      // Both fields hold the same speed (in m/s); the unit menus already list every speed unit in
+      // lib/units.ts (m/s, km/h, mph, kn, ft/s), so either menu is a full speed converter.
+      solve: {
+        metersPerSecond: ({ kph }) => (kph >= 0 ? kph : NaN),
+        kph: ({ metersPerSecond }) => (metersPerSecond >= 0 ? metersPerSecond : NaN)
+      },
+      derive: (si) => ({ kphShown: si.metersPerSecond * 3.6 }),
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'kphShown',
+          min: 0,
+          max: 4,
+          ticks: ['1 km/h', '10 km/h', '100 km/h', '1,000 km/h', '10,000 km/h'],
+          benchmarks: [
+            { label: 'A brisk walk (about 6 km/h)', value: 6 },
+            { label: 'A typical highway speed (about 110 km/h)', value: 110 },
+            { label: 'A high-speed train (about 300 km/h)', value: 300 },
+            { label: 'The speed of sound at sea level (about 1,225 km/h)', value: 1225.044 }
+          ],
+          title: 'How fast is that?',
+          valueLabel: 'Your speed'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Speed units, metric and customary',
+        paragraphs: [
+          'Speed is distance divided by time, so every speed unit here comes from a length unit and a time unit together. Meters per second is the SI combination, used in physics and engineering. Kilometers per hour is the everyday metric speed used almost everywhere for driving and weather; miles per hour is its customary counterpart, used in the US and the UK.',
+          'Because a kilometer and an hour are each defined exactly, the conversion between meters per second and kilometers per hour is exact too, with no rounded physical constant involved: 1 m/s means 1 m every second, which is 3,600 m every hour, which is 3.6 km every hour — so 1 m/s = 3.6 km/h, exactly. Miles per hour and knots bring in the mile (1,609.344 m, exact) and the nautical mile (1,852 m, exact), so those conversions are exact too, just with a less convenient-looking factor.',
+          'This page is the general case: any field can take any speed unit, from a walking pace in m/s up to a nautical speed in knots. For the mile-and-kilometer pair specifically, with its own worked table of common road speeds, see the mph to km/h converter.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a speed in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Pick your starting unit', text: 'Open the unit menu beside the first field and choose meters per second, kilometers per hour, miles per hour, knots or feet per second.' },
+          { name: 'Type the speed', text: 'Enter the number. The other field recalculates immediately.' },
+          { name: 'Change the target unit', text: 'Open the second field\'s menu to see the same speed in any other unit.' },
+          { name: 'Read the scale', text: 'The scale places your speed against a brisk walk, a highway, a high-speed train and the speed of sound.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Every speed unit here reduces to meters per second first, then to the target unit.',
+        expression: 'm/s = value × factor(unit)\nresult = m/s ÷ factor(target unit)',
+        terms: [
+          { symbol: 'factor(unit)', meaning: 'Meters per second per unit, exact: 0.277778 (1,000/3,600) for km/h, 0.447040 (1,609.344/3,600) for mph, 0.514444 (1,852/3,600) for kn, 0.3048 for ft/s.' },
+          { symbol: 'm/s', meaning: 'The speed in the base SI unit, used internally for every conversion.' }
+        ],
+        note: 'The m/s-to-km/h factor (3.6) is exact and the cleanest of the set, since both the meter/kilometer and the second/hour are exact SI relationships with nothing historical or rounded in between.'
+      },
+      workedExample: {
+        intro: 'A treadmill is set to 15 m/s record pace, and a car\'s speedometer shows 90 km/h. What is each in the other unit?',
+        rows: [
+          { label: '15 × 3.6', value: '54 km/h' },
+          { label: '90 ÷ 3.6', value: '25 m/s' },
+          { label: 'Quick check: 15 × 4, minus 10%', value: '60 − 6 = 54 km/h' }
+        ],
+        result: '15 m/s = 54 km/h · 90 km/h = 25 m/s',
+        explanation: 'The factor here is exactly 3.6, so there is no rounding at all, unlike most unit pairs on this site. "×4, minus 10%" is a clean mental shortcut because 4 × 0.9 = 3.6 exactly.'
+      },
+      commonValues: {
+        title: 'Common meters per second to km/h conversions',
+        dimension: 'speed',
+        from: 'm/s',
+        to: 'km/h',
+        values: [1, 2, 5, 10, 20, 30, 50, 100],
+        reverse: {
+          title: 'Common km/h to meters per second conversions',
+          values: [10, 36, 50, 60, 90, 100, 120]
+        }
+      },
+      watchOut: [
+        { title: 'Knots are nautical, not statute', body: 'A knot is 1 nautical mile (1,852 m) per hour, about 1.852 km/h — not the same as a mile per hour (1.609344 km/h).' },
+        { title: 'This converts a rate, not a distance', body: 'Speed and distance share a conversion factor for a given unit pair only because time cancels out; they are still different physical quantities.' },
+        { title: 'Speedometers can read a little fast', body: 'Many car speedometers read a few percent fast for mechanical and legal-tolerance reasons, so a converted GPS speed will not always match the dashboard exactly.' },
+        { title: 'The speed of sound varies with conditions', body: 'About 1,225 km/h is for dry air at sea level under standard atmospheric conditions; it is slower at altitude and faster in warmer air.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'metersPerSecond', label: 'Meters per second', type: 'number', placeholder: '10', defaultValue: 10, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Speed Converter (m/s, km/h, mph, knots)',
+      description: 'Free speed converter: meters per second, kilometers per hour, miles per hour, knots and feet per second, in any direction, with exact factors.',
+      faq: [
+        { question: 'How do I convert m/s to km/h?', answer: 'Multiply by 3.6 — exact, since 1,000 m fits into 3,600 s the same number of times either way. 15 m/s × 3.6 = 54 km/h.' },
+        { question: 'How do I convert km/h to m/s?', answer: 'Divide by 3.6. 90 km/h ÷ 3.6 = 25 m/s.' },
+        { question: 'How do I convert m/s to mph?', answer: 'Multiply by about 2.236936 (3.6 ÷ 1.609344). 25 m/s is about 55.92 mph.' },
+        { question: 'Why is the m/s to km/h factor exact?', answer: 'Both the meter/kilometer and the second/hour relationships are exact SI definitions, with no historical or rounded physical constant in between, unlike the mile or the pound.' },
+        { question: 'How does a knot compare to m/s?', answer: 'A knot is exactly 1,852/3,600 ≈ 0.514444 m/s, since a nautical mile is exactly 1,852 m.' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'For km/h to m/s, divide by 3.6 exactly — no shortcut needed. For mph, multiply km/h by about 0.62 instead.' }
+      ]
+    },
+    compute(values) {
+      const kph = fromBase(toBase(values.metersPerSecond, 'speed', 'm/s'), 'speed', 'km/h');
       return { kph };
     }
   }

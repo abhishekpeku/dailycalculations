@@ -30,6 +30,58 @@ existing converters are the reference pattern for this sub-wave, not `force-calc
     server (H1, section ids incl. `common-values`, JSON-LD, table figures), kill the server
   - [x] Update `mdFiles/STATUS.md` (row 40–42 + session log), open/ready the PR
 
+## Run 2
+
+General one-dimension converters: length, weight (mass), volume, area, speed — all units of that
+dimension offered in the unit menus (already true for every existing pair converter, since
+`SolverCalculator` lists every `UNITS[dimension]` entry regardless of `defaultUnit` — confirmed by
+reading `components/SolverCalculator.tsx:126`). "General" here means the page's SEO framing, a
+sensible default pair, and its own `commonValues` table — not a new widget pattern.
+
+**Dedupe decisions** (checked programmatically against every existing `id`/alias before building):
+- `distance converter` moves from `miles-to-kilometers-converter` to the new `length-converter`
+  (the generic term belongs on the page that covers every length unit, not one specific pair).
+- `weight converter` moves from `pounds-to-kilograms-converter` to the new `weight-converter`.
+- `volume converter` moves from `gallons-to-liters-converter` to the new `volume-converter`.
+- `area converter` and `speed converter` are new aliases (no prior collision found).
+- No id collision with the existing geometry calculators `area-calculator`, `volume-calculator`,
+  `distance-calculator` (math category — shape area/volume/coordinate distance, a different topic
+  entirely; checked their aliases too, no overlap).
+
+**Temperature decision**: no separate general temperature-converter page this run.
+`fahrenheit-to-celsius-converter` already offers all 4 units in `UNITS.temperature` (K, °C, °F, °R)
+in both its unit menus, and already holds the alias "temperature converter". A separate general
+page would be a near-duplicate with nothing left to add.
+
+**Default pairs** (per dimension, a sensible everyday pair, not necessarily the pair the kit's
+other pages already use for their own pair converter):
+- `length-converter`: meters ↔ feet.
+- `weight-converter`: kilograms ↔ pounds.
+- `volume-converter`: liters ↔ US gallons.
+- `area-converter`: square meters ↔ square feet.
+- `speed-converter`: meters per second ↔ km/h (mph↔km/h is already `mph-to-kph-converter`'s own
+  pair; m/s↔km/h differentiates this page and is exact — 1 m/s = 3.6 km/h exactly).
+
+**commonValues tables**: each page's table uses its own default pair, in the *opposite* primary
+direction from any sibling pair-converter that already covers the same two units (e.g.
+`weight-converter`'s table is kg→lb; `pounds-to-kilograms-converter`'s is lb→kg), with a distinct
+value set, so no table is a copy of another page's.
+
+### Progress
+
+- [x] Dedupe check (ids + aliases, programmatic) and the decisions above
+- [ ] `length-converter`
+- [ ] `weight-converter`
+- [ ] `volume-converter`
+- [ ] `area-converter`
+- [ ] `speed-converter`
+- [ ] Move `distance converter` / `weight converter` / `volume converter` aliases onto the new pages
+- [ ] Independent scratch verification (`verify_run2.mjs`) of every copy figure before committing
+- [ ] `npm test`, `npm run build`,
+  `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` pass
+- [ ] Spot-check the 5 new pages + `/categories/measurements` on a local server, kill the server
+- [ ] Update `mdFiles/STATUS.md` (row 40–42 + session log), `gh pr ready`
+
 ## Planned run breakdown (re-evaluate each run against what exists before building it)
 
 The plan's list is "~65, only pairs with real search volume, each with a real common-values

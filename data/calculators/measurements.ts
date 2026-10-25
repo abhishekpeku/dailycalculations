@@ -1841,7 +1841,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
     id: 'pressure-converter',
     category: 'measurements',
     updatedAt: '2026-10-25',
-    aliases: ['pressure converter', 'psi to bar converter', 'bar to psi calculator', 'pressure unit converter', 'kpa to psi converter'],
+    aliases: ['pressure converter', 'psi to bar converter', 'pressure unit converter', 'kpa to psi converter'],
     related: ['force-calculator', 'energy-converter', 'power-converter', 'speed-converter'],
     title: 'Pressure Converter',
     description: 'Convert between pascals, bar, psi, atmospheres, mmHg and Torr, in any direction, as you type.',
@@ -1962,7 +1962,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
     id: 'energy-converter',
     category: 'measurements',
     updatedAt: '2026-10-25',
-    aliases: ['energy converter', 'kj to kcal converter', 'kcal to kj calculator', 'joules to calories converter', 'energy unit converter'],
+    aliases: ['energy converter', 'kj to kcal converter', 'joules to calories converter', 'energy unit converter'],
     related: ['calorie-calculator', 'power-converter', 'pressure-converter', 'electricity-bill-calculator'],
     title: 'Energy Converter',
     description: 'Convert between joules, kilojoules, calories, kilocalories, kilowatt-hours and BTU, in any direction, as you type.',
@@ -2084,7 +2084,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
     id: 'power-converter',
     category: 'measurements',
     updatedAt: '2026-10-25',
-    aliases: ['power converter', 'kw to hp converter', 'hp to kw calculator', 'horsepower converter', 'watts to horsepower converter'],
+    aliases: ['power converter', 'kw to hp converter', 'horsepower converter', 'watts to horsepower converter'],
     related: ['energy-converter', 'pressure-converter', 'force-calculator', 'electricity-bill-calculator'],
     title: 'Power Converter',
     description: 'Convert between watts, kilowatts, horsepower, metric horsepower (PS) and BTU per hour, in any direction, as you type.',
@@ -2205,7 +2205,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
     id: 'data-storage-converter',
     category: 'measurements',
     updatedAt: '2026-10-25',
-    aliases: ['data storage converter', 'gb to mb converter', 'mb to gb calculator', 'bit to byte converter', 'storage unit converter'],
+    aliases: ['data storage converter', 'gb to mb converter', 'bit to byte converter', 'storage unit converter'],
     related: ['energy-converter', 'power-converter', 'character-counter', 'time-converter'],
     title: 'Data Storage Converter',
     description: 'Convert between bits, bytes, kilobytes, megabytes, gigabytes, terabytes and their binary (KiB/MiB/GiB) equivalents, in any direction, as you type.',
@@ -2934,6 +2934,623 @@ export const measurementsCalculators: CalculatorConfig[] = [
     compute(values) {
       const squareMeters = fromBase(toBase(values.squareFeet, 'area', 'ft2'), 'area', 'm2');
       return { squareMeters };
+    }
+  },
+  {
+    id: 'horsepower-to-kilowatts-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['hp to kw calculator', 'horsepower to kw converter', 'car horsepower to kilowatts', 'engine hp to kw converter', 'electric motor hp to kw'],
+    related: ['power-converter', 'energy-converter', 'pressure-converter', 'force-calculator'],
+    title: 'Horsepower to Kilowatts Converter',
+    description: 'Convert horsepower to kilowatts, or kilowatts to horsepower, as you type. Built around car and electric-motor power ratings.',
+    example: 'A 150 hp car engine is about 111.86 kW, and a 3 kW electric motor is about 4.02 hp.',
+    solver: {
+      defaultTarget: 'kilowatts',
+      variables: [
+        { id: 'horsepower', label: 'Horsepower', symbol: 'hp', dimension: 'power', defaultValue: 150, defaultUnit: 'hp' },
+        { id: 'kilowatts', label: 'Kilowatts', symbol: 'kW', dimension: 'power', defaultValue: 111.855, defaultUnit: 'kW' }
+      ],
+      // Both fields hold the same power (in watts); the unit menus already list every power unit in
+      // lib/units.ts. Primary direction is hp->kW, the opposite of power-converter's own default
+      // (kW->hp), by design (overlap rule) — this page's own angle is car and motor ratings.
+      solve: {
+        horsepower: ({ kilowatts }) => (kilowatts >= 0 ? kilowatts : NaN),
+        kilowatts: ({ horsepower }) => (horsepower >= 0 ? horsepower : NaN)
+      },
+      derive: (si) => ({ kwShown: si.kilowatts / 1000 }),
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'kwShown',
+          min: -2,
+          max: 4,
+          ticks: ['0.01 kW', '0.1 kW', '1 kW', '10 kW', '100 kW', '1,000 kW', '10,000 kW'],
+          benchmarks: [
+            { label: 'A small household electric motor (about 1 kW / 1.34 hp)', value: 1 },
+            { label: 'A compact car engine (about 70 hp / 52.2 kW)', value: 52.199 },
+            { label: 'A family car engine (about 150 hp / 111.9 kW)', value: 111.855 },
+            { label: 'A sports car engine (about 500 hp / 372.8 kW)', value: 372.8499 }
+          ],
+          title: 'How powerful is that?',
+          valueLabel: 'Your power'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Horsepower and kilowatts, for cars and motors',
+        paragraphs: [
+          'Horsepower (hp) and the kilowatt (kW) both measure power — energy delivered per unit of time — and either can describe the same engine or motor. The general power converter on this site covers the full set of power units (watts, megawatts, PS, BTU/h) on an appliance-to-industrial scale; this page is specifically the hp/kW pair, oriented around car engines and electric motors, the two places most people actually need it.',
+          'Mechanical horsepower is defined as 550 foot-pounds-force per second, exactly 745.69987158227 W. A car brochure that lists both figures — say "111.9 kW (150 hp)" — is describing one engine with two different, exact units; neither number is an approximation of the other, they are both exact conversions of the same physical output.',
+          'Electric motor nameplates sometimes use a different, rounded "electrical horsepower" of exactly 746 W, a US convention from motor manufacturing, rather than the 745.69987158227 W mechanical horsepower used throughout this site. The two are extremely close — about 0.04% apart — but it explains why a motor\'s kW-to-hp conversion printed on its own nameplate can differ very slightly from this converter\'s result.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a power value in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Horsepower to kilowatts', text: 'Type the engine or motor rating in horsepower. The kilowatts field shows the conversion.' },
+          { name: 'Kilowatts to horsepower', text: 'Type into the kilowatts field instead. It becomes the input and horsepower is calculated.' },
+          { name: 'Use other power units', text: 'Either menu also offers watts, megawatts, metric horsepower (PS) and BTU per hour.' },
+          { name: 'Read the scale', text: 'The scale places the power against a small motor, a compact car, a family car and a sports car engine.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'A horsepower is a fixed number of watts, so the conversion is one multiplication or division.',
+        expression: 'kW = hp × 0.74569987158227\nhp = kW ÷ 0.74569987158227',
+        terms: [
+          { symbol: 'hp', meaning: 'Mechanical horsepower, 550 foot-pounds-force per second.' },
+          { symbol: 'kW', meaning: 'Kilowatts, the SI unit of power scaled by 1,000.' },
+          { symbol: '0.74569987158227', meaning: 'Kilowatts in one horsepower, exact from the definition.' }
+        ],
+        note: 'The factor is exact, from the historical definition of mechanical horsepower. Results are rounded for display only.'
+      },
+      workedExample: {
+        intro: 'A car\'s spec sheet lists a 150 hp engine, and a motor catalog lists a 3 kW electric motor. How much is each in the other unit?',
+        rows: [
+          { label: '150 × 0.74569987158227', value: '111.86 kW' },
+          { label: '3 ÷ 0.74569987158227', value: '4.02 hp' },
+          { label: 'Quick check: 150 × 0.746', value: '111.9 kW' }
+        ],
+        result: '150 hp ≈ 111.86 kW · 3 kW ≈ 4.02 hp',
+        explanation: 'Multiplying by 0.746 instead of the exact 0.74569987158227 overstates by about 0.04%, close enough for a rough comparison between a car spec sheet and a motor catalog.'
+      },
+      commonValues: {
+        title: 'Common car and motor horsepower to kilowatts conversions',
+        dimension: 'power',
+        from: 'hp',
+        to: 'kW',
+        values: [70, 100, 150, 200, 300, 400, 500, 700],
+        reverse: {
+          title: 'Common electric motor kilowatts to horsepower conversions',
+          values: [1, 1.5, 2.2, 3.7, 5.5, 7.5, 11, 15, 22]
+        }
+      },
+      watchOut: [
+        { title: 'hp and PS (metric horsepower) are different units', body: 'This converter\'s "hp" is mechanical horsepower (745.69987158227 W); metric horsepower (PS), common on European and Japanese spec sheets, is a slightly smaller unit (735.49875 W). See the power converter for a PS-specific breakdown.' },
+        { title: 'Motor nameplates sometimes use a rounded 746 W "electrical horsepower"', body: 'The difference from the 745.69987158227 W mechanical horsepower used here is tiny — about 0.04% — but it is why two sources can print very slightly different kW figures for the same motor.' },
+        { title: 'Power is not energy', body: 'A 150 hp engine running for an hour does not use "150 hp" of anything — power is a rate. For the energy side of a car or motor, see the energy converter.' },
+        { title: 'A bigger engine number is not always a faster car', body: 'Horsepower and kilowatts measure the engine\'s power output, not the vehicle\'s weight, gearing, aerodynamics or traction, all of which also decide how a car actually performs.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'horsepower', label: 'Horsepower', type: 'number', placeholder: '150', defaultValue: 150, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Horsepower to Kilowatts Converter (hp to kW)',
+      description: 'Free horsepower to kilowatts converter: hp to kW and back as you type, with the exact factor, car and motor power ratings, and a worked example.',
+      faq: [
+        { question: 'How do I convert horsepower to kilowatts?', answer: 'Multiply by 0.74569987158227. For 150 hp: 150 × 0.74569987158227 ≈ 111.86 kW.' },
+        { question: 'How do I convert kilowatts to horsepower?', answer: 'Divide by 0.74569987158227, or multiply by about 1.34102. 3 kW ÷ 0.74569987158227 ≈ 4.02 hp.' },
+        { question: 'How many kW is a 150 hp car?', answer: 'About 111.86 kW (150 × 0.74569987158227).' },
+        { question: 'How many hp is a 100 kW motor?', answer: 'About 134.10 hp (100,000 ÷ 745.69987158227).' },
+        { question: 'Why is this a separate page from the power converter?', answer: 'The general power converter covers every power unit, including metric horsepower (PS) and BTU per hour. This page is the dedicated hp/kW pair, with a table built around car and electric-motor ratings.' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'Multiply hp by about 0.746 for kW (about 0.04% high), or kW by about 1.34 for hp (about 0.08% low).' }
+      ]
+    },
+    compute(values) {
+      const kilowatts = fromBase(toBase(values.horsepower, 'power', 'hp'), 'power', 'kW');
+      return { kilowatts };
+    }
+  },
+  {
+    id: 'bar-to-psi-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['bar to psi calculator', 'espresso machine bar to psi', 'pressure washer psi to bar', 'tire pressure bar to psi', 'convert bar to psi'],
+    related: ['pressure-converter', 'force-calculator', 'power-converter', 'energy-converter'],
+    title: 'Bar to PSI Converter',
+    description: 'Convert bar to psi, or psi to bar, as you type. Built around tire, espresso-machine and pressure-washer ratings.',
+    example: 'An espresso machine\'s 9 bar pump is about 130.53 psi, and a car tire at 32 psi is about 2.21 bar.',
+    solver: {
+      defaultTarget: 'psi',
+      variables: [
+        { id: 'bar', label: 'Bar', symbol: 'bar', dimension: 'pressure', defaultValue: 9, defaultUnit: 'bar' },
+        { id: 'psi', label: 'PSI', symbol: 'psi', dimension: 'pressure', defaultValue: 130.534, defaultUnit: 'psi' }
+      ],
+      // Both fields hold the same pressure (in pascals); the unit menus already list every pressure
+      // unit in lib/units.ts. Primary direction is bar->psi, the opposite of pressure-converter's
+      // own default (psi->bar), by design (overlap rule) — this page's own angle is tire, espresso
+      // and pressure-washer ratings rather than the general Pa-to-Torr scale.
+      solve: {
+        bar: ({ psi }) => (psi >= 0 ? psi : NaN),
+        psi: ({ bar }) => (bar >= 0 ? bar : NaN)
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'bar',
+          min: -1,
+          max: 3,
+          ticks: ['0.1 bar', '1 bar', '10 bar', '100 bar', '1,000 bar'],
+          benchmarks: [
+            { label: 'A road bicycle tire (about 100 psi / 6.9 bar)', value: 6.895 },
+            { label: 'A car tire (about 32 psi / 2.2 bar)', value: 2.206 },
+            { label: 'An espresso machine\'s pump (about 9 bar / 130.5 psi)', value: 9 },
+            { label: 'A consumer pressure washer (up to about 150 bar / 2,176 psi)', value: 150 }
+          ],
+          title: 'How much pressure is that?',
+          valueLabel: 'Your pressure'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Bar and psi, for tires, washers and espresso machines',
+        paragraphs: [
+          'Bar and psi (pounds-force per square inch) are two everyday pressure units — bar is close to ordinary atmospheric pressure (100,000 Pa) and is common on European equipment specs; psi is the US customary unit and appears on tire placards and US-made pressure washers. The general pressure converter on this site covers the full scientific set (Pa, atm, mmHg, Torr); this page is specifically the bar/psi pair, oriented around the consumer equipment people actually look up — tires, pressure washers and espresso machines.',
+          'Espresso extraction is conventionally built around 9 bar of pump pressure (about 130.5 psi) — a long-standing reference point that many machines and portafilter pressure gauges are marked against, even though a given shot\'s actual brew pressure can vary with the grind, dose and tamp.',
+          'Consumer electric pressure washers are usually rated in psi in the US and bar almost everywhere else, from light-duty machines around 1,300 psi (about 90 bar) up to heavy-duty models above 2,000 psi (about 138 bar). Car and bicycle tires sit at a much lower pressure than either — typically 30-35 psi (about 2.1-2.4 bar) for a car, 80-120 psi (about 5.5-8.3 bar) for a road bike.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a pressure in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Bar to psi', text: 'Type the pressure in bar. The psi field shows the conversion.' },
+          { name: 'PSI to bar', text: 'Type into the psi field instead. It becomes the input and bar is calculated.' },
+          { name: 'Use other pressure units', text: 'Either menu also offers pascals, kilopascals, atmospheres, mmHg, inHg and Torr.' },
+          { name: 'Read the scale', text: 'The scale places the pressure against a bicycle tire, a car tire, an espresso machine and a pressure washer.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'A bar is a fixed number of psi, so the conversion is one multiplication or division.',
+        expression: 'psi = bar × 100,000 ÷ 6,894.757293168\npsi ≈ bar × 14.5038',
+        terms: [
+          { symbol: 'bar', meaning: 'Pressure in bar, exactly 100,000 Pa.' },
+          { symbol: 'psi', meaning: 'Pounds-force per square inch, exactly 6,894.757293168 Pa.' },
+          { symbol: '14.5038', meaning: 'PSI in one bar, exact (100,000 ÷ 6,894.757293168), rounded for display here.' }
+        ],
+        note: 'Both bar and psi are exact by definition, so results are rounded for display only.'
+      },
+      workedExample: {
+        intro: 'An espresso machine\'s gauge reads 9 bar, and a car tire placard calls for 32 psi. How much is each in the other unit?',
+        rows: [
+          { label: '9 × 100,000 ÷ 6,894.757293168', value: '130.53 psi' },
+          { label: '32 × 6,894.757293168 ÷ 100,000', value: '2.21 bar' },
+          { label: 'Quick check: 9 × 14.5', value: '130.5 psi' }
+        ],
+        result: '9 bar ≈ 130.53 psi · 32 psi ≈ 2.21 bar',
+        explanation: 'Multiplying by 14.5 instead of the exact 14.5038 understates by about 0.03%, close enough for comparing a gauge reading to a spec sheet.'
+      },
+      commonValues: {
+        title: 'Common bar to psi conversions (tires, bikes, espresso, pressure washers)',
+        dimension: 'pressure',
+        from: 'bar',
+        to: 'psi',
+        values: [1, 1.5, 2.2, 2.5, 2.8, 3, 9, 100, 130, 150],
+        reverse: {
+          title: 'Common psi to bar conversions (tires and pressure washers)',
+          values: [30, 32, 35, 80, 100, 120, 1300, 1600, 2000, 3000]
+        }
+      },
+      watchOut: [
+        { title: 'Gauge pressure, not absolute pressure', body: 'A tire or washer gauge reads pressure relative to the surrounding atmosphere; this converter treats every number as the pressure itself. For tires and pressure washers that is exactly how the rating is normally quoted, so no adjustment is needed for everyday use.' },
+        { title: 'Actual espresso brew pressure varies', body: 'The "9 bar" figure is a long-standing reference point for machine pumps, not a guarantee of what pressure reaches the coffee puck — grind size, dose and tamp all change the real resistance the pump works against.' },
+        { title: 'US and European pressure-washer ratings use different units', body: 'A US-market washer\'s psi rating and a European one\'s bar rating are not directly comparable at a glance — convert first. 2,000 psi is about 138 bar, not 2,000 bar.' },
+        { title: 'For the full pressure unit set, see the pressure converter', body: 'Pascals, atmospheres, mmHg, inHg and Torr — along with the mmHg-vs-Torr nuance — are covered on the general pressure converter, not repeated here.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'bar', label: 'Bar', type: 'number', placeholder: '9', defaultValue: 9, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Bar to PSI Converter (Tires, Espresso, Pressure Washers)',
+      description: 'Free bar to psi converter: bar to psi and back as you type, with the exact factor, tire, espresso-machine and pressure-washer examples.',
+      faq: [
+        { question: 'How do I convert bar to psi?', answer: 'Multiply by about 14.5038. For 9 bar: 9 × 14.5038 ≈ 130.53 psi.' },
+        { question: 'How do I convert psi to bar?', answer: 'Divide by about 14.5038, or multiply by about 0.0689476. 32 psi × 0.0689476 ≈ 2.21 bar.' },
+        { question: 'What psi is a 9 bar espresso machine?', answer: 'About 130.53 psi (9 × 100,000 ÷ 6,894.757293168).' },
+        { question: 'What bar is a 2,000 psi pressure washer?', answer: 'About 137.9 bar (2,000 × 6,894.757293168 ÷ 100,000).' },
+        { question: 'Why is this a separate page from the pressure converter?', answer: 'The general pressure converter covers every pressure unit, including atmospheres, mmHg and Torr. This page is the dedicated bar/psi pair, with a table built around tire, espresso-machine and pressure-washer ratings.' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'Multiply bar by about 14.5 for psi (about 0.03% low), or psi by about 0.069 for bar (about 0.08% high).' }
+      ]
+    },
+    compute(values) {
+      const psi = fromBase(toBase(values.bar, 'pressure', 'bar'), 'pressure', 'psi');
+      return { psi };
+    }
+  },
+  {
+    id: 'kilocalories-to-kilojoules-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['kcal to kj calculator', 'calories to kilojoules converter', 'food label kcal to kj', 'convert kcal to kj', 'nutrition energy converter'],
+    related: ['energy-converter', 'calorie-calculator', 'power-converter', 'pressure-converter'],
+    title: 'Kilocalories to Kilojoules Converter',
+    description: 'Convert kilocalories (food Calories) to kilojoules, or kilojoules to kilocalories, as you type. Built around nutrition-label figures.',
+    example: 'A 200 kcal snack-bar label is about 836.8 kJ, and a 1,000 kJ EU label figure is about 239.01 kcal.',
+    solver: {
+      defaultTarget: 'kilojoules',
+      variables: [
+        { id: 'kilocalories', label: 'Kilocalories', symbol: 'kcal', dimension: 'energy', defaultValue: 200, defaultUnit: 'kcal' },
+        { id: 'kilojoules', label: 'Kilojoules', symbol: 'kJ', dimension: 'energy', defaultValue: 836.8, defaultUnit: 'kJ' }
+      ],
+      // Both fields hold the same energy (in joules); the unit menus already list every energy unit
+      // in lib/units.ts. Primary direction is kcal->kJ, the opposite of energy-converter's own
+      // default (kJ->kcal), by design (overlap rule) — this page's own angle is reading a food
+      // nutrition label, which some countries print in kcal, some in kJ, and some in both.
+      solve: {
+        kilocalories: ({ kilojoules }) => (kilojoules >= 0 ? kilojoules : NaN),
+        kilojoules: ({ kilocalories }) => (kilocalories >= 0 ? kilocalories : NaN)
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'kilocalories',
+          min: 0,
+          max: 4,
+          ticks: ['1 kcal', '10 kcal', '100 kcal', '1,000 kcal', '10,000 kcal'],
+          benchmarks: [
+            { label: 'A piece of fruit (about 80 kcal, 334.7 kJ)', value: 80 },
+            { label: 'A snack bar (about 200 kcal, 836.8 kJ)', value: 200 },
+            { label: 'A fast-food meal (about 800 kcal, 3,347 kJ)', value: 800 },
+            { label: 'A whole day\'s food intake for many adults (about 2,000 kcal, 8,368 kJ)', value: 2000 }
+          ],
+          title: 'How much food energy is that?',
+          valueLabel: 'Your energy'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Reading a food label in kcal or kJ',
+        paragraphs: [
+          'A food "Calorie" (capital C), the unit on US nutrition labels, is actually a kilocalorie — 1,000 of the small chemistry calories, or exactly 4,184 J. Many other countries\' nutrition labels print kilojoules instead, or both figures side by side. The general energy converter on this site covers the full set of energy units (joules, BTU, kWh); this page is specifically the kcal/kJ pair, oriented around reading a food label in whichever unit it happens to use.',
+          'Because the kcal-to-kJ factor (4.184, exact) is not a round number, a label\'s printed kJ figure for a given kcal figure is always a rounded conversion, not a separately measured quantity — the two numbers describe the exact same food energy. A product that advertises "200 Calories" and one that advertises "836.8 kJ" can be the identical food, just labeled for a different market.',
+          'This converter uses the thermochemical calorie (4.184 J, exact), the definition food-energy figures are built from. It is a fixed, defined ratio, not a laboratory measurement with its own uncertainty, which is why a kcal-to-kJ conversion is always exact to as many decimal places as you want.'
+        ]
+      },
+      howTo: {
+        intro: 'Type an energy value in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Kilocalories to kilojoules', text: 'Type the figure in kilocalories (the "Calories" on a US label). The kilojoules field shows the conversion.' },
+          { name: 'Kilojoules to kilocalories', text: 'Type into the kilojoules field instead. It becomes the input and kilocalories is calculated.' },
+          { name: 'Use other energy units', text: 'Either menu also offers joules, megajoules, calories, watt-hours, kilowatt-hours and BTU.' },
+          { name: 'Read the scale', text: 'The scale places the figure against a piece of fruit, a snack bar, a fast-food meal and a full day\'s intake.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'A kilocalorie is a fixed number of kilojoules, so the conversion is one multiplication or division.',
+        expression: 'kJ = kcal × 4.184\nkcal = kJ ÷ 4.184',
+        terms: [
+          { symbol: 'kcal', meaning: 'Kilocalories — a food "Calorie" is one kilocalorie.' },
+          { symbol: 'kJ', meaning: 'Kilojoules, 1,000 joules, the SI-derived unit many non-US food labels use.' },
+          { symbol: '4.184', meaning: 'Kilojoules in one kilocalorie, exact (the thermochemical calorie is defined as 4.184 J).' }
+        ],
+        note: 'The factor is exact by definition, so results are rounded for display only.'
+      },
+      workedExample: {
+        intro: 'A US-market snack bar\'s label says 200 Calories, and an EU-market label on another product says 1,000 kJ. How much is each in the other unit?',
+        rows: [
+          { label: '200 × 4.184', value: '836.8 kJ' },
+          { label: '1,000 ÷ 4.184', value: '239.01 kcal' },
+          { label: 'Quick check: 200 × 4', value: '800 kJ' }
+        ],
+        result: '200 kcal ≈ 836.8 kJ · 1,000 kJ ≈ 239.01 kcal',
+        explanation: 'Multiplying by 4 instead of the exact 4.184 understates kJ by about 4.4%, close enough for a rough comparison, but not for anything exact.'
+      },
+      commonValues: {
+        title: 'Common food-label kilocalories to kilojoules conversions',
+        dimension: 'energy',
+        from: 'kcal',
+        to: 'kJ',
+        values: [100, 150, 200, 250, 300, 400, 500, 600],
+        decimals: 1,
+        reverse: {
+          title: 'Common food-label kilojoules to kilocalories conversions',
+          values: [500, 1000, 1500, 2000, 2500, 3000, 4000]
+        }
+      },
+      watchOut: [
+        { title: 'This converts the printed label figure, not a daily reference value', body: 'A country\'s official "reference daily intake" shown on a label (where required) is a separate regulatory figure set by that country\'s food authority, and its kJ and kcal versions are sometimes rounded differently from each other rather than being an exact conversion of one another. This converter only does the literal arithmetic on whatever number you type in.' },
+        { title: 'A food Calorie is a kilocalorie, not a calorie', body: 'The capital-C "Calorie" on US labels equals 1,000 of the small chemistry "calories" (lowercase) — exactly one kilocalorie, 4,184 J. Confusing the two is a factor-of-1,000 mistake.' },
+        { title: '"Energy" on a label is not the same as "fat" or "sugar" grams', body: 'The kcal/kJ figure is the food\'s total energy from all sources (carbohydrate, protein, fat and alcohol); converting it does not tell you anything about any single nutrient.' },
+        { title: 'For the full energy unit set, see the energy converter', body: 'Joules, calories, watt-hours, kilowatt-hours and BTU — including the BTU-definition and calorie-type notes — are covered on the general energy converter, not repeated here.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'kilocalories', label: 'Kilocalories', type: 'number', placeholder: '200', defaultValue: 200, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Kilocalories to Kilojoules Converter (kcal to kJ)',
+      description: 'Free kcal to kJ converter: kilocalories to kilojoules and back as you type, with the exact factor and nutrition-label examples.',
+      faq: [
+        { question: 'How do I convert kcal to kJ?', answer: 'Multiply by 4.184. For 200 kcal: 200 × 4.184 = 836.8 kJ.' },
+        { question: 'How do I convert kJ to kcal?', answer: 'Divide by 4.184. For 1,000 kJ: 1,000 ÷ 4.184 ≈ 239.01 kcal.' },
+        { question: 'How many kJ is a 200-Calorie snack?', answer: 'About 836.8 kJ (200 × 4.184).' },
+        { question: 'How many Calories is a 1,000 kJ label figure?', answer: 'About 239.01 kcal (1,000 ÷ 4.184).' },
+        { question: 'Why is this a separate page from the energy converter?', answer: 'The general energy converter covers every energy unit, including joules, BTU and kWh. This page is the dedicated kcal/kJ pair, with a table built around food-label-sized figures.' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'Multiply kcal by 4 for a rough kJ figure (about 4.4% low), or divide kJ by 4 for kcal (about 4.6% high).' }
+      ]
+    },
+    compute(values) {
+      const kilojoules = fromBase(toBase(values.kilocalories, 'energy', 'kcal'), 'energy', 'kJ');
+      return { kilojoules };
+    }
+  },
+  {
+    id: 'megabytes-to-gigabytes-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['mb to gb calculator', 'file size converter', 'phone storage mb to gb', 'photo and video file size converter', 'convert mb to gb'],
+    related: ['data-storage-converter', 'character-counter', 'time-converter', 'energy-converter'],
+    title: 'Megabytes to Gigabytes Converter',
+    description: 'Convert megabytes to gigabytes, or gigabytes to megabytes, as you type. Built around file, photo, video and data-plan sizes.',
+    example: 'A 500 MB photo library is 0.5 GB (decimal), and a 2 GB data plan is 2,000 MB.',
+    solver: {
+      defaultTarget: 'gigabytes',
+      variables: [
+        { id: 'megabytes', label: 'Megabytes', symbol: 'MB', dimension: 'data', defaultValue: 500, defaultUnit: 'MB' },
+        { id: 'gigabytes', label: 'Gigabytes', symbol: 'GB', dimension: 'data', defaultValue: 0.5, defaultUnit: 'GB' }
+      ],
+      // Both fields hold the same amount of data (in bits); the unit menus already list every data
+      // unit in lib/units.ts, decimal and binary. Primary direction is MB->GB, the opposite of
+      // data-storage-converter's own default (GB->MB), by design (overlap rule) — this page's own
+      // angle is file, photo/video and phone/data-plan sizes, not the full bit/byte/binary scope.
+      solve: {
+        megabytes: ({ gigabytes }) => (gigabytes >= 0 ? gigabytes : NaN),
+        gigabytes: ({ megabytes }) => (megabytes >= 0 ? megabytes : NaN)
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'megabytes',
+          min: -1,
+          max: 6,
+          ticks: ['0.1 MB', '10 MB', '1,000 MB', '100,000 MB', '10,000,000 MB'],
+          benchmarks: [
+            { label: 'A phone photo (about 4 MB)', value: 4 },
+            { label: 'A 3-minute music track (about 8 MB)', value: 8 },
+            { label: 'A small phone data plan (2 GB, 2,000 MB)', value: 2000 },
+            { label: 'A smartphone\'s storage (128 GB, 128,000 MB)', value: 128000 }
+          ],
+          title: 'How much data is that?',
+          valueLabel: 'Your data'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Megabytes and gigabytes, for files and data plans',
+        paragraphs: [
+          'A gigabyte (decimal) is 1,000 megabytes, and a megabyte is 1,000,000 bytes — the counting system every file size, phone storage spec and mobile data plan is sold in. The general data storage converter on this site covers the full decimal-and-binary set (bits, bytes, KB through PB, KiB through TiB); this page is specifically the MB/GB pair, oriented around the sizes people actually look up — photos, videos, downloads and data plans.',
+          'There is a second, equally valid way to count: binary, where a "gibibyte" (GiB) is 1,024 mebibytes (MiB), the power of two closest to 1,000. A file manager or phone settings screen that is actually counting in binary but labeling the result "GB" will show a smaller number than the decimal gigabyte figure for the exact same file — a 500 MB (decimal, 500,000,000-byte) photo library is about 476.84 MiB, not 500.',
+          'A phone advertised with "128 GB" of storage never shows quite 128 GB free out of the box. Part of the gap is exactly this counting difference (decimal GB vs. binary GiB, if the display is using binary math under a "GB" label); the rest is the operating system, pre-installed apps and the storage formatting itself, none of which is a unit-conversion issue at all.'
+        ]
+      },
+      howTo: {
+        intro: 'Type an amount of data in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Megabytes to gigabytes', text: 'Type the file or data-plan size in megabytes. The gigabytes field shows the conversion.' },
+          { name: 'Gigabytes to megabytes', text: 'Type into the gigabytes field instead. It becomes the input and megabytes is calculated.' },
+          { name: 'Use other data units', text: 'Either menu also offers bits, kilobits, megabits, gigabits, bytes, and the binary KiB, MiB, GiB and TiB.' },
+          { name: 'Read the scale', text: 'The scale places the amount against a photo, a music track, a small data plan and a smartphone\'s storage.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'A megabyte is a fixed number of gigabytes, so the conversion is one multiplication or division by 1,000.',
+        expression: 'GB = MB ÷ 1,000\nMB = GB × 1,000',
+        terms: [
+          { symbol: 'MB', meaning: 'Megabytes, 1,000,000 bytes (decimal, the way files and plans are sold).' },
+          { symbol: 'GB', meaning: 'Gigabytes, 1,000 megabytes, 1,000,000,000 bytes (decimal).' }
+        ],
+        note: 'Both are exact decimal (base-1,000) SI prefixes, so results are exact; display rounding only shows up on non-round inputs.'
+      },
+      workedExample: {
+        intro: 'A photo library is 500 MB, and a mobile data plan is sold as 2 GB. How much is each in the other unit?',
+        rows: [
+          { label: '500 ÷ 1,000', value: '0.5 GB' },
+          { label: '2 × 1,000', value: '2,000 MB' },
+          { label: 'Same 500 MB, expressed in binary MiB', value: '≈ 476.84 MiB' }
+        ],
+        result: '500 MB = 0.5 GB · 2 GB = 2,000 MB',
+        explanation: 'The decimal MB-to-GB conversion is exact. The 476.84 MiB figure is not a different amount of data — it is the same bytes counted in binary (1,024-based) units instead of decimal, which is why a file manager using binary math can show a smaller number under a "GB" or "MB" label.'
+      },
+      commonValues: {
+        title: 'Common file and download sizes, megabytes to gigabytes',
+        dimension: 'data',
+        from: 'MB',
+        to: 'GB',
+        values: [100, 250, 500, 750, 1000, 2000, 5000, 10000],
+        reverse: {
+          title: 'Common phone and data-plan sizes, gigabytes to megabytes',
+          values: [1, 2, 5, 10, 20, 50, 100]
+        }
+      },
+      watchOut: [
+        { title: 'Decimal MB/GB and binary MiB/GiB are not the same number', body: 'A file manager or OS setting that counts in binary (1,024-based) but labels the result "MB" or "GB" shows a smaller number than the decimal figure for the identical file — 500 MB decimal is about 476.84 MiB binary, same bytes either way.' },
+        { title: '"128 GB" of phone storage is never 128 GB free', body: 'System software, pre-installed apps and storage formatting all take real space before you store anything, on top of any decimal-vs-binary display difference — none of it is a unit-conversion error.' },
+        { title: 'Network speed (Mbps) is not the same unit as file size (MB)', body: 'Internet and phone-plan speeds are quoted in bits per second; there are 8 bits in a byte, so a "100 Mbps" connection downloads at roughly 12.5 MB/s, not 100 MB/s. See the data storage converter for the full bits-vs-bytes breakdown.' },
+        { title: 'For the full data unit set, see the data storage converter', body: 'Bits, bytes, kilobytes through petabytes and the binary KiB/MiB/GiB/TiB set are all covered on the general data storage converter, not repeated here.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST "Prefixes for Binary Multiples"', url: 'https://physics.nist.gov/cuu/Units/binary.html' }
+      ]
+    },
+    inputs: [
+      { id: 'megabytes', label: 'Megabytes', type: 'number', placeholder: '500', defaultValue: 500, step: 10, min: 0 }
+    ],
+    seo: {
+      title: 'Megabytes to Gigabytes Converter (MB to GB)',
+      description: 'Free MB to GB converter: megabytes to gigabytes and back as you type, with decimal vs binary explained and file-size examples.',
+      faq: [
+        { question: 'How do I convert MB to GB?', answer: 'Divide by 1,000. For 500 MB: 500 ÷ 1,000 = 0.5 GB.' },
+        { question: 'How do I convert GB to MB?', answer: 'Multiply by 1,000. For 2 GB: 2 × 1,000 = 2,000 MB.' },
+        { question: 'Is 1,000 MB always 1 GB?', answer: 'In the decimal system this converter uses, yes, exactly. Some operating systems instead count in binary (1,024-based MiB/GiB) but still show the label "GB" or "MB," which gives a smaller displayed number for the same bytes.' },
+        { question: 'Why does my phone show less storage than advertised?', answer: 'Partly decimal-vs-binary counting (if the display uses binary math under a decimal label) and partly system software, pre-installed apps and storage formatting, which take real space regardless of counting system.' },
+        { question: 'Why is this a separate page from the data storage converter?', answer: 'The general data storage converter covers every data unit, including bits and the binary KiB/MiB/GiB/TiB set. This page is the dedicated MB/GB pair, with a table built around file, photo/video and data-plan sizes.' },
+        { question: 'How many MB is a 100 Mbps internet connection per second?', answer: 'About 12.5 MB/s — divide the megabit figure by 8, since there are 8 bits in a byte.' }
+      ]
+    },
+    compute(values) {
+      const gigabytes = fromBase(toBase(values.megabytes, 'data', 'MB'), 'data', 'GB');
+      return { gigabytes };
+    }
+  },
+  {
+    id: 'mpg-to-l-100km-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['mpg to l/100km converter', 'fuel economy converter', 'l/100km to mpg calculator', 'miles per gallon to liters per 100km', 'uk mpg to us mpg converter'],
+    related: ['gas-cost-calculator', 'fuel-cost-calculator', 'speed-converter', 'volume-converter'],
+    title: 'MPG to L/100km Converter',
+    description: 'Convert miles per gallon to liters per 100 km, or back, as you type. Covers US mpg, UK mpg and km/L.',
+    example: 'A 28 mpg (US) car uses about 8.40 L/100 km, and a 6 L/100 km car is about 39.20 mpg (US).',
+    solver: {
+      defaultTarget: 'l100km',
+      variables: [
+        { id: 'mpg', label: 'Miles per gallon (US)', symbol: 'mpg', dimension: 'fuelEconomy', defaultValue: 28, defaultUnit: 'mpg' },
+        { id: 'l100km', label: 'Liters per 100 km', symbol: 'L/100km', dimension: 'fuelEconomy', defaultValue: 8.4005, defaultUnit: 'L/100km' }
+      ],
+      // Both fields hold the same fuel economy (volume per distance, in m³/m); the unit menus
+      // already list mpg (US), mpg (UK) and km/L, each modeled in lib/units.ts as the reciprocal of
+      // the base (so this calculator writes no reciprocal math of its own — toBase/fromBase already
+      // do it). Primary direction is mpg (US)->L/100 km, the site's primary market's search
+      // direction (CLAUDE.md). The >= 0 guard is the same pattern every other pair converter uses;
+      // 0 or a negative mpg or L/100 km is already caught upstream (0 mpg is Infinity in SI — see
+      // lib/solverState.ts) before solve() ever runs, so no Infinity reaches the page.
+      solve: {
+        mpg: ({ l100km }) => (l100km >= 0 ? l100km : NaN),
+        l100km: ({ mpg }) => (mpg >= 0 ? mpg : NaN)
+      },
+      derive: (si) => ({ mpgShown: fromBase(si.mpg, 'fuelEconomy', 'mpg') }),
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'mpgShown',
+          min: 0,
+          max: 2,
+          ticks: ['1 mpg', '10 mpg', '100 mpg'],
+          benchmarks: [
+            { label: 'A full-size pickup truck (about 18 mpg, 13.1 L/100 km)', value: 18 },
+            { label: 'A typical sedan (about 30 mpg, 7.84 L/100 km)', value: 30 },
+            { label: 'A compact hybrid (about 50 mpg, 4.70 L/100 km)', value: 50 }
+          ],
+          title: 'How efficient is that, in mpg (US)?',
+          valueLabel: 'Your fuel economy'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'MPG and liters per 100 km measure fuel economy in opposite directions',
+        paragraphs: [
+          'Miles per gallon (mpg) is distance per volume of fuel — a bigger number means a more efficient car. Liters per 100 km is volume of fuel per distance — a smaller number means a more efficient car. The two run in opposite directions and are not related by a simple multiplication; converting between them means dividing a constant by the value, not multiplying by one, which is why this page\'s math always goes through a division.',
+          'The US and UK define a different-sized gallon, so "miles per gallon" is two different units depending on which country\'s gallon is meant. A US gallon is 3.785411784 liters; a UK (imperial) gallon is 4.54609 liters, about 20.1% bigger. For the exact same real fuel economy, the UK mpg number is about 20% higher than the US mpg number, because each UK gallon carries the car further. This converter offers both mpg (US) and mpg (UK) in its unit menus, plus km/L.',
+          'Liters per 100 km has no US/UK ambiguity — a liter is a liter everywhere — which is one reason most of the world settled on it instead of a gallon-based unit. The 100 km distance is just a convenient scale, chosen so everyday cars land in a readable range (roughly 4 to 15) rather than a long string of decimals.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a fuel economy in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'MPG to L/100 km', text: 'Type your car\'s rating in miles per gallon. The L/100 km field shows the conversion.' },
+          { name: 'L/100 km to MPG', text: 'Type into the L/100 km field instead. It becomes the input and mpg is calculated.' },
+          { name: 'Switch to UK mpg or km/L', text: 'Open either menu to choose mpg (UK) instead of mpg (US), or km/L.' },
+          { name: 'Read the scale', text: 'The scale places the fuel economy against a pickup truck, a sedan and a hybrid, in mpg (US).' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'MPG and L/100 km are reciprocals of each other (through a unit-conversion constant), not a simple multiplication.',
+        expression: 'L/100 km = 235.214583 ÷ mpg (US)\nmpg (US) = 235.214583 ÷ L/100 km\nL/100 km = 282.480936 ÷ mpg (UK)',
+        terms: [
+          { symbol: '235.214583', meaning: 'Exactly 100 × (US gallon in liters, 3.785411784) ÷ (mile in km, 1.609344) — the US mpg/L-per-100km constant.' },
+          { symbol: '282.480936', meaning: 'The same constant using the UK (imperial) gallon, 4.54609 L, in place of the US gallon.' }
+        ],
+        note: 'The constants are exact, built from the exact mile, US gallon and UK gallon definitions. A higher mpg always means a lower L/100 km, and the reverse.'
+      },
+      workedExample: {
+        intro: 'A car is rated 28 mpg (US). A European spec sheet for a different car lists 6 L/100 km. How efficient is each in the other unit?',
+        rows: [
+          { label: '235.214583 ÷ 28', value: '8.40 L/100 km' },
+          { label: '235.214583 ÷ 6', value: '39.20 mpg (US)' },
+          { label: 'Which is more efficient: 28 mpg or 6 L/100 km?', value: '6 L/100 km (≈39.2 mpg) is more efficient' }
+        ],
+        result: '28 mpg (US) ≈ 8.40 L/100 km · 6 L/100 km ≈ 39.20 mpg (US)',
+        explanation: 'The 6 L/100 km car is more efficient than the 28 mpg car (39.2 mpg-equivalent beats 28 mpg) — reading the two numbers correctly matters more here than with most unit pairs, since a bigger L/100 km number is actually worse, the opposite of mpg.'
+      },
+      commonValues: {
+        title: 'Common mpg (US) to L/100 km conversions',
+        dimension: 'fuelEconomy',
+        from: 'mpg',
+        to: 'L/100km',
+        values: [15, 20, 25, 28, 30, 35, 40, 50, 60],
+        reverse: {
+          title: 'Common L/100 km to mpg (US) conversions',
+          values: [3, 4, 5, 6, 7, 8, 10, 12, 15]
+        }
+      },
+      watchOut: [
+        { title: 'Higher mpg is better; higher L/100 km is worse', body: 'The two scales run in opposite directions. Going from 20 to 40 mpg and going from 10 to 5 L/100 km describe the same improvement; mixing up which direction is "better" on either scale gives the exact opposite conclusion.' },
+        { title: 'UK mpg and US mpg are not the same unit', body: 'A UK (imperial) gallon is bigger (4.54609 L vs. 3.785411784 L), so for the same real fuel economy, mpg (UK) reads about 20% higher than mpg (US) — 40 mpg (UK) is about 33.3 mpg (US), not the same car doing worse.' },
+        { title: 'Small gains matter more at low mpg than at high mpg', body: 'Because fuel used is distance ÷ mpg, going from 10 to 20 mpg saves far more fuel over a given distance than going from 40 to 80 mpg, even though both are "double the mpg." Compare L/100 km or total fuel used, not mpg points, when judging a real saving.' },
+        { title: 'Typing 0 or a negative value shows no answer, not an error', body: 'Zero and negative fuel economy are not physically meaningful (they would imply infinite or reversed fuel use), so the calculator shows no result for either field rather than a nonsensical number.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'mpg', label: 'Miles per gallon (US)', type: 'number', placeholder: '28', defaultValue: 28, step: 0.1, min: 1 }
+    ],
+    seo: {
+      title: 'MPG to L/100km Converter (US & UK MPG)',
+      description: 'Free mpg to L/100km converter: miles per gallon to liters per 100 km and back, with US mpg, UK mpg and km/L, and a fuel-economy comparison example.',
+      faq: [
+        { question: 'How do I convert mpg to L/100 km?', answer: 'Divide 235.214583 by the mpg (US) figure. For 28 mpg: 235.214583 ÷ 28 ≈ 8.40 L/100 km.' },
+        { question: 'How do I convert L/100 km to mpg?', answer: 'Divide 235.214583 by the L/100 km figure. For 6 L/100 km: 235.214583 ÷ 6 ≈ 39.20 mpg (US).' },
+        { question: 'How do I convert UK mpg to L/100 km?', answer: 'Divide 282.480936 by the mpg (UK) figure, using the bigger imperial gallon. For 40 mpg (UK): 282.480936 ÷ 40 ≈ 7.06 L/100 km.' },
+        { question: 'Is UK mpg the same as US mpg?', answer: 'No. The imperial (UK) gallon is about 20.1% bigger than the US gallon, so for the same real fuel economy the UK mpg number reads about 20% higher. 40 mpg (UK) is about 33.3 mpg (US).' },
+        { question: 'Why does a bigger number mean something different on each scale?', answer: 'Mpg is distance per volume (bigger is better); L/100 km is volume per distance (smaller is better). They measure the same thing from opposite directions, so the converter divides rather than multiplies.' },
+        { question: 'What happens if I type 0 mpg?', answer: 'The calculator shows no result. Zero or negative fuel economy has no physical meaning, so rather than showing an error or an infinite number, the field is simply left blank.' }
+      ]
+    },
+    compute(values) {
+      const l100km = fromBase(toBase(values.mpg, 'fuelEconomy', 'mpg'), 'fuelEconomy', 'L/100km');
+      return { l100km };
     }
   }
 ];

@@ -200,6 +200,35 @@ exports[`compute() snapshots > average-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > bar-to-psi-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "bar": 9
+    },
+    "outputs": {
+      "psi": 130.533964
+    }
+  },
+  "typical": {
+    "inputs": {
+      "bar": 13.5
+    },
+    "outputs": {
+      "psi": 195.8009459
+    }
+  },
+  "edge": {
+    "inputs": {
+      "bar": 0
+    },
+    "outputs": {
+      "psi": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > binomial-distribution-calculator 1`] = `
 {
   "default": {
@@ -2039,6 +2068,35 @@ exports[`compute() snapshots > grams-to-ounces-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > horsepower-to-kilowatts-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "horsepower": 150
+    },
+    "outputs": {
+      "kilowatts": 111.8549807
+    }
+  },
+  "typical": {
+    "inputs": {
+      "horsepower": 225
+    },
+    "outputs": {
+      "kilowatts": 167.7824711
+    }
+  },
+  "edge": {
+    "inputs": {
+      "horsepower": 0
+    },
+    "outputs": {
+      "kilowatts": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > inflation-calculator 1`] = `
 {
   "default": {
@@ -2166,6 +2224,35 @@ exports[`compute() snapshots > investment-calculator 1`] = `
       "futureValue": 0,
       "totalContributed": 0,
       "totalGrowth": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > kilocalories-to-kilojoules-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "kilocalories": 200
+    },
+    "outputs": {
+      "kilojoules": 836.8
+    }
+  },
+  "typical": {
+    "inputs": {
+      "kilocalories": 300
+    },
+    "outputs": {
+      "kilojoules": 1255.2
+    }
+  },
+  "edge": {
+    "inputs": {
+      "kilocalories": 0
+    },
+    "outputs": {
+      "kilojoules": 0
     }
   }
 }
@@ -2703,6 +2790,35 @@ exports[`compute() snapshots > meeting-cost-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > megabytes-to-gigabytes-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "megabytes": 500
+    },
+    "outputs": {
+      "gigabytes": 0.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "megabytes": 750
+    },
+    "outputs": {
+      "gigabytes": 0.75
+    }
+  },
+  "edge": {
+    "inputs": {
+      "megabytes": 0
+    },
+    "outputs": {
+      "gigabytes": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > midpoint-calculator 1`] = `
 {
   "default": {
@@ -2882,6 +2998,35 @@ exports[`compute() snapshots > mortgage-calculator 1`] = `
       "totalCost": 0,
       "totalInterest": 0,
       "loanPrincipal": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > mpg-to-l-100km-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mpg": 28
+    },
+    "outputs": {
+      "l100km": 8.400520833
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mpg": 42
+    },
+    "outputs": {
+      "l100km": 5.600347222
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mpg": 1
+    },
+    "outputs": {
+      "l100km": 235.2145833
     }
   }
 }

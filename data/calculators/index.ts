@@ -167,7 +167,12 @@ export const calculatorOrder: string[] = [
   'milliliters-to-cups-converter',
   'kilograms-to-stone-converter',
   'acres-to-hectares-converter',
-  'square-feet-to-square-meters-converter'
+  'square-feet-to-square-meters-converter',
+  'horsepower-to-kilowatts-converter',
+  'bar-to-psi-converter',
+  'kilocalories-to-kilojoules-converter',
+  'megabytes-to-gigabytes-converter',
+  'mpg-to-l-100km-converter'
 ];
 
 const rank = (id: string) => {

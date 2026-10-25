@@ -298,19 +298,24 @@ pair's real search intent, not a copy of the general page's table:
 ### Progress
 
 - [x] Dedupe check (ids + aliases, programmatic) and the design decisions above
-- [ ] Move `'hp to kw calculator'` off `power-converter`, `'bar to psi calculator'` off
+- [x] Move `'hp to kw calculator'` off `power-converter`, `'bar to psi calculator'` off
   `pressure-converter`, `'kcal to kj calculator'` off `energy-converter`, `'mb to gb calculator'`
   off `data-storage-converter`
-- [ ] `horsepower-to-kilowatts-converter`
-- [ ] `bar-to-psi-converter`
-- [ ] `kilocalories-to-kilojoules-converter`
-- [ ] `megabytes-to-gigabytes-converter`
-- [ ] `mpg-to-l-100km-converter`
-- [ ] Independent scratch verification (`verify_run5.mjs`) of every copy figure, incl. the reciprocal
-  mpg↔L/100 km relation and the exact UK/US mpg constants, before committing
-- [ ] `npm test`, `npm run build`,
-  `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` pass
-- [ ] Spot-check the 5 new pages + `/categories/measurements` on a local server (incl. typing 0 into
+- [x] `horsepower-to-kilowatts-converter`
+- [x] `bar-to-psi-converter`
+- [x] `kilocalories-to-kilojoules-converter`
+- [x] `megabytes-to-gigabytes-converter`
+- [x] `mpg-to-l-100km-converter`
+- [x] Independent scratch verification (`verify_run5.mjs`) of every copy figure, incl. the reciprocal
+  mpg↔L/100 km relation and the exact UK/US mpg constants, before committing — caught and fixed two
+  slips before committing: the `bar-to-psi-converter` mental-math FAQ had the wrong direction/percent
+  for the "psi × 0.069 → bar" shortcut (it is about 0.08% *high*, not low), and the
+  `kilocalories-to-kilojoules-converter` logScale benchmark rounded 80 kcal to "335 kJ" instead of the
+  correct 334.7 kJ.
+- [x] `npm test` (628/628, snapshot diff touches only the 5 new ids), `npm run build` (162 static
+  pages, up from 157), `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"`
+  (clean) — all pass
+- [x] Spot-check the 5 new pages + `/categories/measurements` on a local server (incl. typing 0 into
   the mpg/L-100km fields to confirm no `Infinity` is shown), kill the server
 - [ ] Update `mdFiles/STATUS.md` (row 40–42 + session log — incl. a concrete scope proposal for
   run 6, the lookup-table converters), `gh pr ready`

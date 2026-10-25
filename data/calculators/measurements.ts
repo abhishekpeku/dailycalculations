@@ -1957,5 +1957,127 @@ export const measurementsCalculators: CalculatorConfig[] = [
       const bar = fromBase(toBase(values.psi, 'pressure', 'psi'), 'pressure', 'bar');
       return { bar };
     }
+  },
+  {
+    id: 'energy-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['energy converter', 'kj to kcal converter', 'kcal to kj calculator', 'joules to calories converter', 'energy unit converter'],
+    related: ['calorie-calculator', 'power-converter', 'pressure-converter', 'electricity-bill-calculator'],
+    title: 'Energy Converter',
+    description: 'Convert between joules, kilojoules, calories, kilocalories, kilowatt-hours and BTU, in any direction, as you type.',
+    example: '200 kcal (a snack-sized food label figure) is about 836.8 kJ, and 1 kWh is exactly 3.6 MJ.',
+    solver: {
+      defaultTarget: 'kilocalories',
+      variables: [
+        { id: 'kilojoules', label: 'Kilojoules', symbol: 'kJ', dimension: 'energy', defaultValue: 836.8, defaultUnit: 'kJ' },
+        { id: 'kilocalories', label: 'Kilocalories', symbol: 'kcal', dimension: 'energy', defaultValue: 200, defaultUnit: 'kcal' }
+      ],
+      // Both fields hold the same energy (in joules); the unit menus already list every energy unit
+      // in lib/units.ts (J, kJ, MJ, cal, kcal, Wh, kWh, BTU, ft·lbf), so either menu is a full energy
+      // converter.
+      solve: {
+        kilojoules: ({ kilocalories }) => (kilocalories >= 0 ? kilocalories : NaN),
+        kilocalories: ({ kilojoules }) => (kilojoules >= 0 ? kilojoules : NaN)
+      },
+      derive: (si) => ({ kjShown: si.kilojoules / 1000 }),
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'kjShown',
+          min: -1,
+          max: 5,
+          ticks: ['0.1 kJ', '1 kJ', '10 kJ', '100 kJ', '1,000 kJ', '10,000 kJ', '100,000 kJ'],
+          benchmarks: [
+            { label: 'An apple (about 300 kJ)', value: 300 },
+            { label: 'A snack (200 kcal, about 837 kJ)', value: 836.8 },
+            { label: 'A full day of food (2,000 kcal, about 8,368 kJ)', value: 8368 },
+            { label: '1 kWh of electricity (3,600 kJ)', value: 3600 }
+          ],
+          title: 'How much energy is that?',
+          valueLabel: 'Your energy'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Joules, calories and the other energy units',
+        paragraphs: [
+          'The joule (J) is the SI unit of energy, used throughout physics and engineering. The calorie, used for food energy, was originally defined as the energy to raise one gram of water by one degree Celsius; this converter uses the thermochemical calorie, fixed at exactly 4.184 J, the modern standard definition.',
+          'Food labels write "Calories" with a capital C, and that word means a kilocalorie (1,000 small calories, 4,184 J) — not the small calorie from chemistry. A 200-"Calorie" snack is 200 kcal, about 836.8 kJ. This is a long-standing and sometimes confusing naming convention, not an error on the label.',
+          'The kilowatt-hour (kWh), used for electricity bills, is exactly 3.6 megajoules, because it is a kilowatt of power sustained for an hour (1,000 W × 3,600 s = 3,600,000 J). The BTU (British thermal unit), common in heating and cooling specs, is the International Table BTU in this converter, fixed at exactly 1,055.05585262 J — one of a few historical BTU definitions, this being the one most common in current engineering use.'
+        ]
+      },
+      howTo: {
+        intro: 'Type an energy amount in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Pick your starting unit', text: 'Open the unit menu beside the first field and choose joules, kilojoules, megajoules, calories, kilocalories, watt-hours, kilowatt-hours, BTU or foot-pounds.' },
+          { name: 'Type the amount', text: 'Enter the number. The other field recalculates immediately.' },
+          { name: 'Change the target unit', text: 'Open the second field\'s menu to see the same energy in any other unit.' },
+          { name: 'Read the scale', text: 'The scale places your energy against an apple, a snack, a full day of food and a kilowatt-hour.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Every energy unit here reduces to joules first, then to the target unit.',
+        expression: 'J = value × factor(unit)\nresult = J ÷ factor(target unit)',
+        terms: [
+          { symbol: 'factor(unit)', meaning: 'Joules per unit: 4.184 for cal, 4,184 for kcal (both exact, thermochemical), 3,600,000 for kWh (exact), 1,055.05585262 for BTU (exact, International Table definition).' },
+          { symbol: 'J', meaning: 'The energy in the base SI unit, used internally for every conversion.' }
+        ],
+        note: 'Every factor above is an exact definition, not a measured average, so results are rounded for display only.'
+      },
+      workedExample: {
+        intro: 'A nutrition label lists a snack at 200 kcal, and an energy spec gives 837 kJ. How do the two compare?',
+        rows: [
+          { label: '200 × 4.184', value: '836.8 kJ' },
+          { label: '837 ÷ 4.184', value: '200.05 kcal' },
+          { label: 'Quick check: 200 × 4', value: '≈ 800 kJ' }
+        ],
+        result: '200 kcal ≈ 836.8 kJ · 837 kJ ≈ 200.05 kcal',
+        explanation: 'Multiplying by 4 instead of the exact 4.184 understates kJ by about 4.4%; for kJ to kcal, dividing by 4 instead overstates by about 4.6%.'
+      },
+      commonValues: {
+        title: 'Common kJ to kcal conversions',
+        dimension: 'energy',
+        from: 'kJ',
+        to: 'kcal',
+        values: [1, 10, 100, 500, 837, 1000, 2000],
+        reverse: {
+          title: 'Common kcal to kJ conversions',
+          values: [50, 100, 200, 250, 500, 1000, 2000]
+        }
+      },
+      watchOut: [
+        { title: 'A food "Calorie" is a kilocalorie', body: 'Nutrition labels write "Calories" (capital C) to mean kilocalories (1,000 small calories), a long-standing convention — not a typo and not the same as the small calorie used in chemistry.' },
+        { title: 'This converter uses the thermochemical calorie', body: 'There are several historical definitions of the calorie, differing by a few parts in ten thousand. 4.184 J (thermochemical) is the modern standard this converter and most current references use.' },
+        { title: 'BTU has more than one historical definition', body: 'This converter uses the International Table BTU (1,055.05585262 J), the most common in current engineering specs. Older thermochemical or 59°F BTU definitions differ by a small fraction of a percent — close enough for everyday use but worth checking for lab-grade precision.' },
+        { title: 'Energy is not power', body: 'A kilowatt-hour (kWh) is an amount of energy, not a rate. For power (energy per time — watts, horsepower), see the power converter.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'kilojoules', label: 'Kilojoules', type: 'number', placeholder: '836.8', defaultValue: 836.8, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Energy Converter (J, kJ, Calories, kWh, BTU)',
+      description: 'Free energy converter: joules, kilojoules, calories, kilocalories, kilowatt-hours and BTU, in any direction, with exact factors and a food-label example.',
+      faq: [
+        { question: 'How do I convert kcal to kJ?', answer: 'Multiply by 4.184. For 200 kcal: 200 × 4.184 = 836.8 kJ.' },
+        { question: 'How do I convert kJ to kcal?', answer: 'Divide by 4.184. 837 kJ ÷ 4.184 ≈ 200.05 kcal.' },
+        { question: 'Is a food Calorie the same as a calorie?', answer: 'A food "Calorie" (capital C) is a kilocalorie, 1,000 small calories — 4,184 J. A chemistry "calorie" (lowercase) is 1/1,000 of that, 4.184 J.' },
+        { question: 'How many joules are in 1 kWh?', answer: 'Exactly 3,600,000 J (3.6 MJ) — a kilowatt sustained for an hour.' },
+        { question: 'What is a BTU in joules?', answer: 'This converter uses the International Table BTU, exactly 1,055.05585262 J, the definition most common in current heating and cooling specs.' },
+        { question: 'Is there an easy way to convert in my head?', answer: 'Multiply kcal by 4 for a rough kJ figure (about 4.4% low), or divide kJ by 4 for kcal (about 4.6% high).' }
+      ]
+    },
+    compute(values) {
+      const kilocalories = fromBase(toBase(values.kilojoules, 'energy', 'kJ'), 'energy', 'kcal');
+      return { kilocalories };
+    }
   }
 ];

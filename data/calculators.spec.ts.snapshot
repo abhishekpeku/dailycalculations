@@ -1234,6 +1234,35 @@ exports[`compute() snapshots > emi-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > energy-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "kilojoules": 836.8
+    },
+    "outputs": {
+      "kilocalories": 200
+    }
+  },
+  "typical": {
+    "inputs": {
+      "kilojoules": 1255.2
+    },
+    "outputs": {
+      "kilocalories": 300
+    }
+  },
+  "edge": {
+    "inputs": {
+      "kilojoules": 0
+    },
+    "outputs": {
+      "kilocalories": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > ev-charging-calculator 1`] = `
 {
   "default": {

@@ -3452,6 +3452,35 @@ exports[`compute() snapshots > pregnancy-due-date-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > pressure-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "psi": 32
+    },
+    "outputs": {
+      "bar": 2.206322334
+    }
+  },
+  "typical": {
+    "inputs": {
+      "psi": 48
+    },
+    "outputs": {
+      "bar": 3.309483501
+    }
+  },
+  "edge": {
+    "inputs": {
+      "psi": 0
+    },
+    "outputs": {
+      "bar": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > prime-factorization-calculator 1`] = `
 {
   "default": {

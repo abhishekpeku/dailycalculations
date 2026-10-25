@@ -1836,5 +1836,126 @@ export const measurementsCalculators: CalculatorConfig[] = [
       const minutes = fromBase(toBase(values.hours, 'time', 'h'), 'time', 'min');
       return { minutes };
     }
+  },
+  {
+    id: 'pressure-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-25',
+    aliases: ['pressure converter', 'psi to bar converter', 'bar to psi calculator', 'pressure unit converter', 'kpa to psi converter'],
+    related: ['force-calculator', 'energy-converter', 'power-converter', 'speed-converter'],
+    title: 'Pressure Converter',
+    description: 'Convert between pascals, bar, psi, atmospheres, mmHg and Torr, in any direction, as you type.',
+    example: 'A car tire inflated to 32 psi is about 2.21 bar, just over the 2.2 bar often printed on a spec sheet.',
+    solver: {
+      defaultTarget: 'bar',
+      variables: [
+        { id: 'psi', label: 'PSI', symbol: 'psi', dimension: 'pressure', defaultValue: 32, defaultUnit: 'psi' },
+        { id: 'bar', label: 'Bar', symbol: 'bar', dimension: 'pressure', defaultValue: 2.206322, defaultUnit: 'bar' }
+      ],
+      // Both fields hold the same pressure (in pascals); the unit menus already list every pressure
+      // unit in lib/units.ts (Pa, kPa, MPa, bar, mbar, psi, atm, mmHg, inHg, Torr), so either menu is
+      // a full pressure converter.
+      solve: {
+        psi: ({ bar }) => (bar >= 0 ? bar : NaN),
+        bar: ({ psi }) => (psi >= 0 ? psi : NaN)
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'psi',
+          min: 2,
+          max: 6,
+          ticks: ['100 Pa', '1,000 Pa', '10,000 Pa', '100,000 Pa', '1,000,000 Pa'],
+          benchmarks: [
+            { label: '1 standard atmosphere (sea-level air pressure)', value: 101325 },
+            { label: 'A passenger car tire (about 32 psi)', value: 220632 },
+            { label: 'A road bicycle tire (about 100 psi)', value: 689476 },
+            { label: 'A truck tire (about 120 psi)', value: 827371 }
+          ],
+          title: 'How much pressure is that?',
+          valueLabel: 'Your pressure'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-10-25',
+      concept: {
+        title: 'Pressure units: SI, imperial and conventional',
+        paragraphs: [
+          'Pressure is force spread over an area, so every unit here reduces to the pascal (Pa), the SI unit: one newton per square meter. The bar (100,000 Pa, close to ordinary atmospheric pressure) and its hundredth, the millibar, are common in meteorology. The psi (pounds-force per square inch) is the everyday US unit for tire and tank pressure, and is exact by definition from the pound-force and the inch.',
+          'The standard atmosphere (atm) is defined as exactly 101,325 Pa — not a measured average, a fixed reference. Historically, pressure was also measured by how high it pushed a column of mercury: the millimeter of mercury (mmHg) and the torr are both close to 1/760 of an atmosphere, which is why "760 mmHg" and "760 Torr" both describe sea-level air pressure.',
+          'mmHg and Torr are nearly, but not exactly, the same unit. mmHg is defined from the density of mercury and standard gravity (133.322387415 Pa), while the Torr is defined as exactly 1/760 of an atmosphere (133.32236842… Pa) — the two differ by about 1 part in 7 million, far too small to matter outside precision instrumentation, but not literally identical.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a pressure in either field. The other one, marked auto, is converted as you type.',
+        steps: [
+          { name: 'Pick your starting unit', text: 'Open the unit menu beside the first field and choose pascals, kilopascals, megapascals, bar, millibar, psi, atmospheres, mmHg, inHg or Torr.' },
+          { name: 'Type the pressure', text: 'Enter the number. The other field recalculates immediately.' },
+          { name: 'Change the target unit', text: 'Open the second field\'s menu to see the same pressure in any other unit.' },
+          { name: 'Read the scale', text: 'The scale places your pressure against sea-level air pressure, a car tire, a bicycle tire and a truck tire.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Every pressure unit here reduces to pascals first, then to the target unit.',
+        expression: 'Pa = value × factor(unit)\nresult = Pa ÷ factor(target unit)',
+        terms: [
+          { symbol: 'factor(unit)', meaning: 'Pascals per unit: 100,000 for bar, 101,325 for atm (both exact), 6,894.757293168 for psi (exact, from lbf/in²), 133.322387415 for mmHg, 133.32236842… for Torr (both conventional).' },
+          { symbol: 'Pa', meaning: 'The pressure in the base SI unit, used internally for every conversion.' }
+        ],
+        note: 'psi, bar and atm are exact by definition; mmHg and Torr are each exact by their own (slightly different) conventional definitions, so results are rounded for display only.'
+      },
+      workedExample: {
+        intro: 'A tire gauge reads 32 psi and the vehicle\'s spec sheet calls for 2.2 bar. Is the tire correctly inflated?',
+        rows: [
+          { label: '32 × 6,894.757293168', value: '220,632 Pa' },
+          { label: '220,632 ÷ 100,000', value: '2.21 bar' },
+          { label: '2.2 bar × 100,000 ÷ 6,894.757293168', value: '31.91 psi' }
+        ],
+        result: '32 psi ≈ 2.21 bar · 2.2 bar ≈ 31.91 psi',
+        explanation: '32 psi is about 2.21 bar, just above the 2.2 bar spec — well within normal gauge tolerance. The two figures are close enough that a spec sheet rounding either one to one decimal place is standard practice, not an error.'
+      },
+      commonValues: {
+        title: 'Common psi to bar conversions',
+        dimension: 'pressure',
+        from: 'psi',
+        to: 'bar',
+        values: [10, 20, 30, 32, 35, 50, 80, 100, 120],
+        reverse: {
+          title: 'Common bar to psi conversions',
+          values: [1, 1.5, 2, 2.2, 2.5, 3, 5, 8]
+        }
+      },
+      watchOut: [
+        { title: 'Gauge pressure is not absolute pressure', body: 'A tire gauge reads "gauge pressure" — how much higher than the surrounding atmosphere — while this converter treats every number as the pressure itself (absolute pressure). Mixing the two gives an answer off by about 1 atmosphere (14.7 psi, 101,325 Pa).' },
+        { title: 'mmHg and Torr are close but not identical', body: 'They differ by about 1 part in 7 million (mmHg is defined from mercury\'s density and standard gravity; Torr is exactly 1/760 atm). Treat them as interchangeable only outside precision scientific work.' },
+        { title: 'psi is exact; mmHg and Torr are conventional, not measured', body: 'All of these are fixed definitions, not physical measurements with uncertainty — but they come from different historical conventions, which is why mmHg and Torr do not quite match.' },
+        { title: 'Weather reports often use inHg or mbar', body: 'US weather reports typically give barometric pressure in inHg (around 29.92 at sea level); many other countries use hPa, numerically the same as millibars.' }
+      ],
+      references: [
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NIST Handbook 44, Appendix C, General Tables of Units of Measurement', url: 'https://www.nist.gov/pml/owm/nist-handbook-44-current-edition' }
+      ]
+    },
+    inputs: [
+      { id: 'psi', label: 'PSI', type: 'number', placeholder: '32', defaultValue: 32, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Pressure Converter (Pa, Bar, PSI, Atm, mmHg)',
+      description: 'Free pressure converter: pascals, bar, psi, atmospheres, mmHg, inHg and Torr, in any direction, with exact factors and a tire-pressure example.',
+      faq: [
+        { question: 'How do I convert psi to bar?', answer: 'Multiply by about 0.0689476 (psi\'s pascal factor divided by 100,000). 32 psi × 0.0689476 ≈ 2.21 bar.' },
+        { question: 'How do I convert bar to psi?', answer: 'Multiply by about 14.5038. 2.2 bar × 14.5038 ≈ 31.91 psi.' },
+        { question: 'How many Pa are in 1 atmosphere?', answer: 'Exactly 101,325 Pa, by definition — about 14.696 psi or 1.01325 bar.' },
+        { question: 'Is mmHg the same as Torr?', answer: 'Almost: they differ by about 1 part in 7 million, since mmHg comes from mercury\'s density and the Torr is defined as exactly 1/760 of an atmosphere. For everyday use they are interchangeable.' },
+        { question: 'What is the difference between gauge and absolute pressure?', answer: 'Gauge pressure (what a tire gauge shows) is measured relative to the surrounding atmosphere. Absolute pressure includes that atmosphere, so it reads about 14.7 psi (1 atm) higher than the gauge figure for the same tire.' },
+        { question: 'What psi is a typical car tire?', answer: 'Most passenger cars call for around 30–35 psi, but the correct figure is on the vehicle\'s door-jamb placard or owner\'s manual, not a universal number.' }
+      ]
+    },
+    compute(values) {
+      const bar = fromBase(toBase(values.psi, 'pressure', 'psi'), 'pressure', 'bar');
+      return { bar };
+    }
   }
 ];

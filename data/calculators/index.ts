@@ -172,7 +172,12 @@ export const calculatorOrder: string[] = [
   'bar-to-psi-converter',
   'kilocalories-to-kilojoules-converter',
   'megabytes-to-gigabytes-converter',
-  'mpg-to-l-100km-converter'
+  'mpg-to-l-100km-converter',
+  'cups-to-grams-converter',
+  'cups-to-grams-flour',
+  'cups-to-grams-sugar',
+  'cups-to-grams-butter',
+  'cups-to-grams-rice'
 ];
 
 const rank = (id: string) => {

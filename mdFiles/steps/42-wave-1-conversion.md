@@ -523,20 +523,35 @@ for that system's sizes rather than an invalid or negative size number.
 - [x] Independent scratch script (`shoe_formulas.mjs`) reproducing every formula, cross-checking
   against Nike's chart, confirming the UK-child-0 / UK-child-13½ / UK-adult-1 boundary points, and
   surfacing + designing around the floating-point round-trip hazard in the children's formulas
-- [ ] `lib/shoeSizes.ts` (shared, cited formula module)
-- [ ] `lib/shoeSizes.spec.ts` (unit tests against the Nike chart rows + Wikipedia's boundary points)
-- [ ] Dedupe check (ids + aliases, programmatic) before writing the calculator objects
-- [ ] `shoe-size-converter`
-- [ ] `mens-shoe-size-chart`
-- [ ] `womens-shoe-size-chart`
-- [ ] `kids-shoe-size-chart`
-- [ ] Second independent scratch verification of every copy figure (example/FAQ/worked-example/
-  reference-table numbers) against the lib's actual output before committing
-- [ ] `npm test`, `npm run build`,
-  `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` pass
-- [ ] Spot-check the 4 new pages + `/categories/measurements` on a local server, kill the server
-  (port 3000 confirmed free)
-- [ ] Update `mdFiles/STATUS.md` (row 40–42 + session log, incl. a "Run 8 proposal" for ring sizes),
+- [x] `lib/shoeSizes.ts` (shared, cited formula module)
+- [x] `lib/shoeSizes.spec.ts` (21 tests: boundary points, the Nike cross-check, valid-range guards,
+  the children's round-trip hazard demonstration)
+- [x] Dedupe check (ids + aliases, programmatic) before writing the calculator objects — no
+  collisions for any of the 4 ids or their aliases; found one **pre-existing, unrelated** alias
+  collision ("house loan emi calculator" on `mortgage-calculator` and `emi-calculator`), parked in
+  `STATUS.md`, not fixed this run
+- [x] `shoe-size-converter`
+- [x] `mens-shoe-size-chart`
+- [x] `womens-shoe-size-chart`
+- [x] `kids-shoe-size-chart`
+- [x] Second independent scratch verification (`verify_run7.mjs`) of every copy figure before
+  committing — caught and fixed 3 display-rounding slips (womens-shoe-size-chart's worked-example
+  rows showed 5.47/6.47/7.97, the true values round to 5.46/6.46/7.96) and one unit mismatch
+  (mens-shoe-size-chart's `example` field paired "262 mm" with "10.33 in", two different foot
+  lengths — 262 mm is 10.31 in; fixed to pair the table's exact 26.25 cm/10.33 in row together)
+  before committing. A third script (`check_run7.mjs`) confirmed 0 new duplicate ids/aliases, every
+  `related` id exists with no self-reference, and every `seo.title`/`seo.description`/FAQ count
+  within budget for all 4 new calculators.
+- [x] `npm test` (664/664, snapshot diff adds only the 4 new ids — required adding
+  `calculators.spec.ts`'s `KNOWN_NON_FINITE` entries for the foot-length-0 edge case, and lowering
+  `kids-shoe-size-chart`'s default foot length from the originally-drafted 165 mm to 110 mm so the
+  test harness's "typical" set (1.5× default) stays inside the kids' valid range — 165 mm became
+  the *typical* snapshot instead, not lost), `npm run build` (171 static pages, up from 167),
+  `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` (clean) — all pass
+- [x] Spot-check the 4 new pages + `/categories/measurements` on a local server (H1s, every section
+  id incl. `reference-table`, JSON-LD present, table figures matched the verification script
+  exactly), kill the server (port 3000 confirmed free)
+- [x] Update `mdFiles/STATUS.md` (row 40–42 + session log, incl. a "Run 8 proposal" for ring sizes),
   `gh pr ready`
 
 ## Run 8 proposal (not built this run)

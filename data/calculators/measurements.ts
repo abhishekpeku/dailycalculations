@@ -1,6 +1,16 @@
 import type { CalculatorConfig } from './types.ts';
 import { toBase, fromBase } from '../../lib/units.ts';
 import { gramsPerCup, INGREDIENT_DENSITIES } from '../../lib/ingredients.ts';
+import {
+  CATEGORY_CODE,
+  categoryFromCode,
+  euAdultSize,
+  footMmFromUkAdult,
+  kidsSizesFromTargetUsSize,
+  roundToHalf,
+  roundToWhole,
+  shoeSizesFromFootMm
+} from '../../lib/shoeSizes.ts';
 
 // A cup amount -> [grams, ounces] row for a reference table, for one ingredient's density. Every
 // value is computed here, never typed in (mdFiles/steps/42-wave-1-conversion.md, "Run 6").
@@ -18,6 +28,55 @@ const CUP_AMOUNTS: { label: string; cups: number }[] = [
   { label: '1 cup', cups: 1 },
   { label: '1½ cups', cups: 1.5 },
   { label: '2 cups', cups: 2 }
+];
+
+// Foot length (mm) -> cm/in, via lib/units.ts, for the shoe-size reference tables below.
+function footMmToCm(footMm: number) {
+  return fromBase(toBase(footMm, 'length', 'mm'), 'length', 'cm');
+}
+function footMmToIn(footMm: number) {
+  return fromBase(toBase(footMm, 'length', 'mm'), 'length', 'in');
+}
+
+// A men's chart row keyed by a round US men's size: UK = US men's - 1 (lib/shoeSizes.ts), EU and
+// foot length computed from that one shared foot length, never typed in. See "Run 7".
+function mensChartRow(usMen: number) {
+  const uk = usMen - 1;
+  const footMm = footMmFromUkAdult(uk);
+  return { label: String(usMen), values: [uk, roundToWhole(euAdultSize(footMm)), footMmToCm(footMm), footMmToIn(footMm)] };
+}
+
+// A women's chart row keyed by a round US women's size ("common" scale: women's = men's + 1.5).
+function womensChartRow(usWomen: number) {
+  const usMen = usWomen - 1.5;
+  const uk = usMen - 1;
+  const footMm = footMmFromUkAdult(uk);
+  return { label: String(usWomen), values: [usMen, uk, roundToWhole(euAdultSize(footMm)), footMmToCm(footMm)] };
+}
+
+// A kids' chart row keyed by a round US kids' size, computed from one shared last-length value
+// (kidsSizesFromTargetUsSize), not by inverting usChildSize/ukChildSize's own foot-length path —
+// see lib/shoeSizes.spec.ts, "children's round-trip hazard", for why that matters here.
+function kidsChartRow(usKids: number) {
+  const row = kidsSizesFromTargetUsSize(usKids);
+  return { label: String(usKids), values: [roundToHalf(row.ukSize), roundToWhole(row.euSize), footMmToCm(row.footMm)] };
+}
+
+// Shared result rows for every shoe-size page's breakdown (US size for the chosen/fixed category,
+// UK, EU, Mondopoint, foot length cm/in) — see "Run 7".
+const SHOE_OUTPUTS = [
+  { id: 'usSize', label: 'US size', format: 'number' as const },
+  { id: 'ukSize', label: 'UK size', format: 'number' as const },
+  { id: 'euSize', label: 'EU size', format: 'number' as const },
+  { id: 'mondopoint', label: 'Mondopoint', dimension: 'length' as const, unit: 'mm' },
+  { id: 'footCm', label: 'Foot length', dimension: 'length' as const, unit: 'cm' },
+  { id: 'footIn', label: 'Foot length', dimension: 'length' as const, unit: 'in' }
+];
+
+const SHOE_BANDS = [
+  { label: 'Kids’ sizes (UK child 0–13½)', min: 70, max: 194 },
+  { label: 'Between kids’ and adult sizes', min: 194, max: 203 },
+  { label: 'Adult sizes (UK 1 and up)', min: 203, max: 330 }
 ];
 
 export const measurementsCalculators: CalculatorConfig[] = [
@@ -4147,6 +4206,443 @@ export const measurementsCalculators: CalculatorConfig[] = [
     compute(values) {
       const grams = values.amount * gramsPerCup('rice');
       return { grams };
+    }
+  },
+  {
+    id: 'shoe-size-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-26',
+    aliases: ['shoe size calculator', 'convert shoe size', 'foot length to shoe size', 'mondopoint size converter', 'shoe size chart'],
+    related: ['mens-shoe-size-chart', 'womens-shoe-size-chart', 'kids-shoe-size-chart', 'centimeters-to-inches-converter', 'millimeters-to-inches-converter'],
+    title: 'Shoe Size Converter',
+    description: 'Convert a foot length (or a known size) to US, UK, EU and Mondopoint shoe sizes, for men’s, women’s or kids’ sizing, with every formula and source cited.',
+    example: 'A 260 mm (26 cm) foot is about a US men’s 8½, UK 7½, EU 41 — or, read as a women’s foot, a US women’s 10.',
+    breakdown: {
+      headline: 'usSize',
+      headlineLabel: 'US size',
+      outputs: SHOE_OUTPUTS,
+      groups: [{ inputs: ['category', 'footLength'] }],
+      visual: {
+        type: 'rangeBar',
+        value: 'footLength',
+        title: 'Where this foot length sits',
+        valueLabel: 'Foot length',
+        bands: SHOE_BANDS
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-26',
+      concept: {
+        title: 'There is no single, universal shoe size',
+        paragraphs: [
+          'Unlike a length or a weight, a shoe size is not a fixed physical unit — it is a position on one of several different numbering systems, and each system is pegged to the shoe’s last (the mould it is built on), not directly to the bare foot. US and UK sizes step in barleycorns, an old English unit equal to ⅓ inch of last length. EU sizes (the "Paris point" system) step in ⅔ cm of last length. Mondopoint, the system used on many sports-shoe labels worldwide, is simply the foot length itself in millimeters.',
+          'Because the last is longer than the bare foot by a fitting allowance, and because UK/US and EU sizing use two different, separately documented allowances (about 17 mm for UK/US, about 13 mm for EU), the same foot length does not convert to EU and UK/US sizes by one shared formula — this calculator applies each system’s own documented allowance, never a single blended one.',
+          'Adult US sizing also differs by sex: women’s sizes are not simply the same scale as men’s. Two offsets are documented — a "common" retail scale (women’s = men’s + 1½, used here, and the one that matches Nike’s own published chart exactly) and an older "standard"/FIA scale (women’s = men’s + 1). Children’s sizing is its own separate scale again, which resets at the top: a child’s largest size (13 or 13½) is followed by adult/youth size 1, not 14.',
+          'Every brand also publishes its own chart, and those charts routinely differ from the formulas below by half a size or more — see the watch-out below for a concrete, checked example. Treat every figure here as a reliable estimate for comparing systems, not as a guarantee of fit for any one brand.'
+        ]
+      },
+      howTo: {
+        intro: 'Measure your foot length heel to toe, choose who the shoe is for, and type the length in.',
+        steps: [
+          { name: 'Measure foot length', text: 'Stand on a piece of paper and mark your heel and longest toe, then measure the distance in millimeters, centimeters or inches — switch the unit menu to whichever you measured in.' },
+          { name: 'Choose the category', text: 'Pick men’s, women’s or kids’. The same foot length gives a different US number depending on which scale is used.' },
+          { name: 'Type the length', text: 'Enter the measured foot length. The sizes update as you type.' },
+          { name: 'Read every system at once', text: 'US, UK, EU and Mondopoint sizes are all shown together, plus the foot length in cm and in.' },
+          { name: 'Check the dedicated charts', text: 'The men’s, women’s and kids’ chart pages list common whole and half sizes across every system at a glance.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Every size is derived from one foot length, using each system’s own, separately documented last-length allowance and step size.',
+        expression: 'UK (adult) = (foot length, mm ÷ 25.4) × 3 − 23\nEU (adult) = 0.15 × foot length (mm) + 2\nUS men’s = UK (adult) + 1\nUS women’s = US men’s + 1.5\nMondopoint = foot length (mm), rounded to the nearest 5 mm',
+        terms: [
+          { symbol: 'UK (adult)', meaning: 'From ISO 19407’s unified formula (Wikipedia, "Shoe size"), which already includes the UK/US system’s own last-length allowance.' },
+          { symbol: 'EU (adult)', meaning: 'The Paris-point formula, with the EU system’s own (different, smaller) last-length allowance already included.' },
+          { symbol: 'US men’s / women’s', meaning: 'US men’s is UK + 1 (the documented "customary" offset); US women’s uses the "common" retail scale, men’s + 1.5 — see the watch-out for the alternative "standard"/FIA scale (+1).' },
+          { symbol: 'Mondopoint', meaning: 'The foot length itself, in millimeters, rounded to the nearest 5 mm (ISO’s casual-footwear interval).' }
+        ],
+        note: 'Children’s sizes use their own formulas and their own, smaller last-length allowance (foot × 1.08 + 6 mm) — see the kids’ chart page. Every size is rounded to the nearest size that actually exists: half steps for UK/US, whole steps for EU.'
+      },
+      workedExample: {
+        intro: 'A foot measures 260 mm (26.0 cm, 10.24 in), read as a men’s foot.',
+        rows: [
+          { label: 'UK = (260 ÷ 25.4) × 3 − 23', value: '7.71 → rounds to UK 7.5' },
+          { label: 'US men’s = UK + 1', value: '8.71 → rounds to US 8.5' },
+          { label: 'EU = 0.15 × 260 + 2', value: '41.0 → rounds to EU 41' },
+          { label: 'Mondopoint = 260, nearest 5 mm', value: '260' }
+        ],
+        result: '260 mm ≈ US men’s 8½, UK 7½, EU 41, Mondopoint 260',
+        explanation: 'The same 260 mm foot read as a women’s foot would be US women’s 10 (US men’s 8.5 + 1.5) — the UK, EU and Mondopoint figures do not change, only the US number does, because only the US system splits by sex.'
+      },
+      referenceTable: {
+        title: 'Common adult shoe sizes across systems ("common" US women’s scale)',
+        columns: ['US men’s', 'US women’s', 'UK', 'EU'],
+        rows: [6, 7, 8, 9, 10, 11, 12, 13].map((usMen) => ({
+          label: String(usMen),
+          values: [usMen, usMen + 1.5, usMen - 1, roundToWhole(euAdultSize(footMmFromUkAdult(usMen - 1)))]
+        })),
+        decimals: 1,
+        note: 'US women’s uses the "common" retail scale (men’s + 1.5). EU is rounded to the nearest whole size; some brands also sell EU half sizes. Kids’ sizing is a separate scale — see the kids’ chart.'
+      },
+      watchOut: [
+        { title: 'There is no single universal standard — brands vary', body: 'For a 10 in (25.4 cm) foot, this calculator’s formula gives UK 7 and EU 40 for a US men’s 8 — but Nike’s own published chart lists the same US men’s 8 as UK 7.5 and EU 41, a full EU size and half a UK size different. Always check the specific brand’s own chart when precise fit matters.' },
+        { title: 'Width is not covered', body: 'Every figure here is a length-based size. Width (narrow, medium, wide — or a letter/number width system) is a separate measurement this calculator does not convert.' },
+        { title: 'Two documented US women’s scales exist', body: 'This calculator uses the "common" retail scale (women’s = men’s + 1.5), which matches Nike’s own chart. An older "standard"/FIA (Footwear Industries of America) scale uses women’s = men’s + 1 instead — about half a size smaller for the same foot.' },
+        { title: 'Kids’ sizing resets at the top, not through 14', body: 'A child’s largest size is 13 (or 13½) in both UK and US kids’ numbering. The next size up is adult/youth size 1, not 14 — switch the category to men’s or women’s once a foot is past the kids’ range.' },
+        { title: 'Always try shoes on when possible', body: 'A calculated size is a starting point for shopping online, not a guarantee — foot shape, the specific shoe’s last and the materials used all affect real-world fit.' }
+      ],
+      references: [
+        { label: 'Wikipedia, "Shoe size" (UK/US barleycorn formulas, the Paris-point/EU formula, Mondopoint, and the ISO 19407 unified formula)', url: 'https://en.wikipedia.org/wiki/Shoe_size' },
+        { label: 'Nike, Men’s Footwear Size Chart (manufacturer cross-check)', url: 'https://www.nike.com/size-fit/mens-footwear' }
+      ]
+    },
+    inputs: [
+      { id: 'footLength', label: 'Foot length', type: 'number', placeholder: '260', defaultValue: 260, step: 1, min: 0, dimension: 'length', unit: 'mm' },
+      {
+        id: 'category',
+        label: 'Category',
+        type: 'number',
+        placeholder: String(CATEGORY_CODE.mens),
+        defaultValue: CATEGORY_CODE.mens,
+        step: 1,
+        min: 0,
+        options: [
+          { value: CATEGORY_CODE.mens, label: "Men's" },
+          { value: CATEGORY_CODE.womens, label: "Women's" },
+          { value: CATEGORY_CODE.kids, label: "Kids'" }
+        ]
+      }
+    ],
+    seo: {
+      title: 'Shoe Size Converter – US, UK, EU, Mondopoint',
+      description: 'Convert foot length to US, UK, EU and Mondopoint shoe sizes for men’s, women’s or kids’, with the formulas, sources and brand-variation caveats shown.',
+      faq: [
+        { question: 'How do I convert my foot length to a shoe size?', answer: 'Measure your foot length heel to toe, choose men’s, women’s or kids’, and type the length in — US, UK, EU and Mondopoint sizes all appear together.' },
+        { question: 'Why do US and UK sizes differ for the same foot?', answer: 'US men’s sizes are numbered one higher than the equivalent UK size by the documented "customary" offset — a UK 7 and a US men’s 8 are (by this formula) the same last length.' },
+        { question: 'What is the difference between US men’s and US women’s sizes?', answer: 'The "common" US retail scale used here sets women’s = men’s + 1.5 for the same foot length — so a US men’s 8 and a US women’s 9.5 are the same length. An older "standard" scale uses +1 instead.' },
+        { question: 'What is Mondopoint?', answer: 'Mondopoint is simply your foot length in millimeters, rounded to the nearest 5 mm — it is the one system that does not use an offset numbering scheme at all.' },
+        { question: 'Why does my shoe size differ between brands?', answer: 'Brands publish their own charts, which commonly differ from the formula-based conversion here by half a size or more — this calculator gives the standards-based figure, not any one brand’s own chart.' },
+        { question: 'What happens to sizing after kids’ size 13?', answer: 'Kids’ sizing stops at 13 (or 13½); the next size up is adult/youth size 1, not 14. Switch the category selector to men’s or women’s for a foot in that range.' },
+        { question: 'Does this calculator cover shoe width?', answer: 'No — only length-based sizing. Width uses a separate letter or number scale that varies by brand.' }
+      ]
+    },
+    compute(values) {
+      const category = categoryFromCode(values.category);
+      const result = shoeSizesFromFootMm(values.footLength, category);
+      return {
+        usSize: result.usSize,
+        ukSize: result.ukSize,
+        euSize: result.euSize,
+        mondopoint: result.mondopoint,
+        footCm: footMmToCm(values.footLength),
+        footIn: footMmToIn(values.footLength)
+      };
+    }
+  },
+  {
+    id: 'mens-shoe-size-chart',
+    category: 'measurements',
+    updatedAt: '2026-10-26',
+    aliases: ['men’s shoe size chart', 'mens shoe size converter', 'us to uk shoe size men', 'men’s shoe size to eu', 'what size shoe am i men'],
+    related: ['shoe-size-converter', 'womens-shoe-size-chart', 'kids-shoe-size-chart', 'centimeters-to-inches-converter'],
+    title: 'Men’s Shoe Size Chart',
+    description: 'Convert a men’s US shoe size, foot length or UK/EU size to every other system, with a full US 7–13 chart and every formula cited.',
+    example: 'A US men’s 9 is a UK 8, an EU 41, and a 26.25 cm (10.33 in) foot.',
+    breakdown: {
+      headline: 'usSize',
+      headlineLabel: 'US men’s size',
+      outputs: SHOE_OUTPUTS,
+      visual: {
+        type: 'rangeBar',
+        value: 'footLength',
+        title: 'Where this foot length sits',
+        valueLabel: 'Foot length',
+        bands: SHOE_BANDS
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-26',
+      concept: {
+        title: 'Men’s shoe sizing across US, UK and EU',
+        paragraphs: [
+          'A men’s US shoe size is numbered one higher than the equivalent UK size, by the "customary" offset documented in the barleycorn-based UK/US sizing system (Wikipedia, "Shoe size"): US men’s = UK + 1. The EU ("Paris point") size follows a different, separately documented formula, in ⅔ cm steps of the last length rather than ⅓ inch barleycorns.',
+          'This page is fixed to men’s sizing — the general shoe size converter also covers women’s and kids’, and the women’s chart below gives the US women’s scale directly.',
+          'Real manufacturer charts can differ from the formula below. Checked against Nike’s own published men’s chart, the formula’s UK figure runs about half a size lower, and its EU figure about one size lower, than Nike’s own listed values for the same US men’s size — a real, checked gap, not a guess.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a foot length to see every system’s men’s size, or scan the chart below for a known size.',
+        steps: [
+          { name: 'Measure or estimate foot length', text: 'Enter a foot length in millimeters, centimeters or inches.' },
+          { name: 'Read the sizes', text: 'US men’s, UK, EU and Mondopoint sizes, plus the foot length in cm and in, all update together.' },
+          { name: 'Or look up a known size', text: 'The chart below lists US men’s 7–13 against UK, EU and foot length directly.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'US men’s size is the UK adult formula’s result, plus 1.',
+        expression: 'UK = (foot length, mm ÷ 25.4) × 3 − 23\nUS men’s = UK + 1\nEU = 0.15 × foot length (mm) + 2',
+        terms: [
+          { symbol: 'UK', meaning: 'ISO 19407’s unified UK formula from foot length in millimeters (Wikipedia, "Shoe size").' },
+          { symbol: 'US men’s', meaning: 'UK + 1, the documented "customary" US offset.' },
+          { symbol: 'EU', meaning: 'The Paris-point formula, with the EU system’s own last-length allowance already included.' }
+        ],
+        note: 'Rounded to the nearest half size for UK/US, nearest whole size for EU — a size that does not exist (like a US 8.3) is never shown.'
+      },
+      workedExample: {
+        intro: 'A man’s foot measures 262 mm (26.2 cm, 10.31 in).',
+        rows: [
+          { label: 'UK = (262 ÷ 25.4) × 3 − 23', value: '7.94 → rounds to UK 8' },
+          { label: 'US men’s = UK + 1', value: '8.94 → rounds to US 9' },
+          { label: 'EU = 0.15 × 262 + 2', value: '41.3 → rounds to EU 41' }
+        ],
+        result: '262 mm ≈ US men’s 9, UK 8, EU 41',
+        explanation: 'The chart below lists this same US 9 row — UK 8, EU 41, 26.2 cm — computed the same way, for every common whole US men’s size.'
+      },
+      referenceTable: {
+        title: 'Men’s US sizes to UK, EU and foot length',
+        columns: ['US men’s', 'UK', 'EU', 'Foot length (cm)', 'Foot length (in)'],
+        rows: [7, 8, 9, 10, 11, 12, 13].map(mensChartRow),
+        decimals: 2,
+        note: 'UK and EU are rounded to the nearest size that exists. Brand charts (checked against Nike’s) can run about half a UK size and about one EU size higher than this formula for the same US men’s size — see the watch-out.'
+      },
+      watchOut: [
+        { title: 'Nike’s own chart runs higher than this formula', body: 'For a US men’s 8, this formula gives UK 7 and EU 40; Nike’s own published chart lists UK 7.5 and EU 41 for the same US men’s 8. The gap was checked at several sizes and stayed consistent — always check the specific brand’s chart for precise fit.' },
+        { title: 'Width is not covered', body: 'This is a length-based size only. Width (narrow/medium/wide, or a letter system) is separate and brand-specific.' },
+        { title: 'This is adult men’s sizing', body: 'For kids’ sizes, use the kids’ chart — children’s sizing uses its own formulas and resets at size 13/13½ rather than continuing into the men’s scale.' }
+      ],
+      references: [
+        { label: 'Wikipedia, "Shoe size" (UK barleycorn formula and the US "customary" offset)', url: 'https://en.wikipedia.org/wiki/Shoe_size' },
+        { label: 'Nike, Men’s Footwear Size Chart (manufacturer cross-check)', url: 'https://www.nike.com/size-fit/mens-footwear' }
+      ]
+    },
+    inputs: [{ id: 'footLength', label: 'Foot length', type: 'number', placeholder: '262', defaultValue: 262, step: 1, min: 0, dimension: 'length', unit: 'mm' }],
+    seo: {
+      title: 'Men’s Shoe Size Chart – US to UK, EU',
+      description: 'Men’s US shoe size chart converting to UK, EU and foot length (cm/in), with the formula, a manufacturer cross-check and sources cited.',
+      faq: [
+        { question: 'What is a US men’s 9 in UK sizing?', answer: 'UK 8, by the documented "customary" offset (US men’s = UK + 1).' },
+        { question: 'What is a US men’s 9 in EU sizing?', answer: 'EU 41, from the Paris-point formula applied to the same foot length (about 26.2 cm).' },
+        { question: 'How many cm is a US men’s 10?', answer: 'About 27.1 cm (10.67 in) — see the chart for every US men’s size from 7 to 13.' },
+        { question: 'Is a men’s shoe size chart the same at every brand?', answer: 'No. Checked against Nike’s own published chart, this formula runs about half a UK size and about one EU size lower than Nike’s listed values for the same US men’s size.' },
+        { question: 'How is a men’s shoe size different from a women’s for the same foot?', answer: 'The US women’s "common" scale adds 1.5 to the equivalent men’s size for the same foot length — see the women’s chart.' }
+      ]
+    },
+    compute(values) {
+      const result = shoeSizesFromFootMm(values.footLength, 'mens');
+      return {
+        usSize: result.usSize,
+        ukSize: result.ukSize,
+        euSize: result.euSize,
+        mondopoint: result.mondopoint,
+        footCm: footMmToCm(values.footLength),
+        footIn: footMmToIn(values.footLength)
+      };
+    }
+  },
+  {
+    id: 'womens-shoe-size-chart',
+    category: 'measurements',
+    updatedAt: '2026-10-26',
+    aliases: ['women’s shoe size chart', 'womens shoe size converter', 'us to uk shoe size women', 'women’s shoe size to eu', 'what size shoe am i women'],
+    related: ['shoe-size-converter', 'mens-shoe-size-chart', 'kids-shoe-size-chart', 'centimeters-to-inches-converter'],
+    title: 'Women’s Shoe Size Chart',
+    description: 'Convert a women’s US shoe size, foot length or UK/EU size to every other system, with a full US 5–11 chart and every formula cited.',
+    example: 'A US women’s 8 is a US men’s 6.5, a UK 5.5, an EU 38, and a 241 mm (9.49 in) foot.',
+    breakdown: {
+      headline: 'usSize',
+      headlineLabel: 'US women’s size',
+      outputs: SHOE_OUTPUTS,
+      visual: {
+        type: 'rangeBar',
+        value: 'footLength',
+        title: 'Where this foot length sits',
+        valueLabel: 'Foot length',
+        bands: SHOE_BANDS
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-26',
+      concept: {
+        title: 'Women’s shoe sizing across US, UK and EU',
+        paragraphs: [
+          'US women’s shoe sizes follow the "common" US retail scale (Wikipedia, "Shoe size"): women’s = men’s + 1.5, for the same foot length. This matches Nike’s own published chart exactly at every size checked. An older "standard"/FIA (Footwear Industries of America) scale instead uses women’s = men’s + 1 — about half a size smaller for the same foot — which some charts still use, so a size can read differently between sources.',
+          'UK and EU sizing do not split by sex the same way the US system does: the UK/EU figures shown here are the same adult formulas used on the men’s chart, applied to the same foot length.',
+          'This page is fixed to women’s sizing — the general converter also covers men’s and kids’.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a foot length to see every system’s women’s size, or scan the chart below for a known size.',
+        steps: [
+          { name: 'Measure or estimate foot length', text: 'Enter a foot length in millimeters, centimeters or inches.' },
+          { name: 'Read the sizes', text: 'US women’s, UK, EU and Mondopoint sizes, plus the foot length in cm and in, all update together.' },
+          { name: 'Or look up a known size', text: 'The chart below lists US women’s 5–11 against the US men’s equivalent, UK, EU and foot length directly.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'US women’s size is the US men’s formula’s result, plus 1.5, on the "common" scale.',
+        expression: 'UK = (foot length, mm ÷ 25.4) × 3 − 23\nUS men’s equivalent = UK + 1\nUS women’s = US men’s equivalent + 1.5\nEU = 0.15 × foot length (mm) + 2',
+        terms: [
+          { symbol: 'US women’s', meaning: 'The "common" retail scale: men’s equivalent + 1.5. An older "standard"/FIA scale uses +1 instead — see the watch-out.' },
+          { symbol: 'UK / EU', meaning: 'The same adult formulas as the men’s chart (ISO 19407’s UK formula; the Paris-point EU formula), applied to the same foot length.' }
+        ],
+        note: 'Rounded to the nearest half size for US/UK, nearest whole size for EU.'
+      },
+      workedExample: {
+        intro: 'A woman’s foot measures 241 mm (24.1 cm, 9.49 in).',
+        rows: [
+          { label: 'UK = (241 ÷ 25.4) × 3 − 23', value: '5.46 → rounds to UK 5.5' },
+          { label: 'US men’s equivalent = UK + 1', value: '6.46 → rounds to US men’s 6.5' },
+          { label: 'US women’s = men’s equivalent + 1.5', value: '7.96 → rounds to US women’s 8' },
+          { label: 'EU = 0.15 × 241 + 2', value: '38.2 → rounds to EU 38' }
+        ],
+        result: '241 mm ≈ US women’s 8, US men’s 6.5, UK 5.5, EU 38',
+        explanation: 'The chart below’s US women’s 8 row is computed the same way, for every common whole and half US women’s size from 5 to 11.'
+      },
+      referenceTable: {
+        title: 'Women’s US sizes to the US men’s equivalent, UK, EU and foot length',
+        columns: ['US women’s', 'US men’s equivalent', 'UK', 'EU', 'Foot length (cm)'],
+        rows: [5, 6, 7, 8, 9, 10, 11].map(womensChartRow),
+        decimals: 2,
+        note: 'US women’s uses the "common" retail scale (men’s + 1.5), matching Nike’s own chart. UK and EU are rounded to the nearest size that exists.'
+      },
+      watchOut: [
+        { title: 'Two documented US women’s scales exist', body: 'This chart uses the "common" retail scale (+1.5 from the men’s equivalent), which matches Nike’s own published chart. An older "standard"/FIA scale uses +1 instead — about half a size smaller for the same foot. If a size feels consistently half a size off, this is a likely reason.' },
+        { title: 'Width is not covered', body: 'This is a length-based size only. Width (narrow/medium/wide, or a letter system) is separate and brand-specific.' },
+        { title: 'This is adult women’s sizing', body: 'For kids’ sizes, use the kids’ chart — children’s sizing uses its own formulas and does not continue into the women’s scale.' }
+      ],
+      references: [
+        { label: 'Wikipedia, "Shoe size" (US women’s "common" and "standard"/FIA scales, UK barleycorn formula)', url: 'https://en.wikipedia.org/wiki/Shoe_size' },
+        { label: 'Nike, Men’s Footwear Size Chart, which lists matching women’s sizes (manufacturer cross-check)', url: 'https://www.nike.com/size-fit/mens-footwear' }
+      ]
+    },
+    inputs: [{ id: 'footLength', label: 'Foot length', type: 'number', placeholder: '241', defaultValue: 241, step: 1, min: 0, dimension: 'length', unit: 'mm' }],
+    seo: {
+      title: 'Women’s Shoe Size Chart – US to UK, EU',
+      description: 'Women’s US shoe size chart converting to the men’s equivalent, UK, EU and foot length (cm), with the formula and sources cited.',
+      faq: [
+        { question: 'What is a US women’s 8 in men’s sizing?', answer: 'US men’s 6.5, on the "common" scale used here (women’s = men’s + 1.5).' },
+        { question: 'What is a US women’s 8 in UK sizing?', answer: 'UK 5.5, from the same foot length (about 24.1 cm) run through the UK adult formula.' },
+        { question: 'What is a US women’s 8 in EU sizing?', answer: 'EU 38, from the Paris-point formula.' },
+        { question: 'Why do some charts show a different women’s size for the same foot?', answer: 'Two US scales are documented: the "common" one used here (men’s + 1.5) and an older "standard"/FIA scale (men’s + 1) — about half a size apart for the same foot.' },
+        { question: 'How many cm is a US women’s 9?', answer: 'About 25.0 cm — see the chart for every US women’s size from 5 to 11.' },
+        { question: 'Does this chart cover shoe width?', answer: 'No — only length-based sizing. Width uses a separate letter or number scale that varies by brand.' }
+      ]
+    },
+    compute(values) {
+      const result = shoeSizesFromFootMm(values.footLength, 'womens');
+      return {
+        usSize: result.usSize,
+        ukSize: result.ukSize,
+        euSize: result.euSize,
+        mondopoint: result.mondopoint,
+        footCm: footMmToCm(values.footLength),
+        footIn: footMmToIn(values.footLength)
+      };
+    }
+  },
+  {
+    id: 'kids-shoe-size-chart',
+    category: 'measurements',
+    updatedAt: '2026-10-26',
+    aliases: ['kids shoe size chart', 'children’s shoe size converter', 'toddler shoe size chart', 'kids shoe size to cm', 'youth shoe size chart'],
+    related: ['shoe-size-converter', 'mens-shoe-size-chart', 'womens-shoe-size-chart', 'centimeters-to-inches-converter'],
+    title: 'Kids’ Shoe Size Chart',
+    description: 'Convert a kids’ US or UK shoe size, or a child’s foot length, to every system, with a full US 8–13½ chart and the kids-to-adult reset explained.',
+    example: 'A US kids’ 10 is a UK kids’ 10, and about a 16.5 cm (6.49 in) foot.',
+    breakdown: {
+      headline: 'usSize',
+      headlineLabel: 'US kids’ size',
+      outputs: SHOE_OUTPUTS,
+      visual: {
+        type: 'rangeBar',
+        value: 'footLength',
+        title: 'Where this foot length sits',
+        valueLabel: 'Foot length',
+        bands: SHOE_BANDS
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-26',
+      concept: {
+        title: 'Kids’ shoe sizing, and where it ends',
+        paragraphs: [
+          'Kids’ UK and US shoe sizes both use the same ⅓-inch-barleycorn step as the adult systems, but with their own zero point and their own last-length allowance for a child’s foot (foot length × 1.08 + 6 mm, from ISO 19407 — different from the adult allowance used on the men’s and women’s charts). UK and US kids’ sizes run almost together, a quarter of a size apart (US kids’ = UK kids’ + ¼), which is why many real charts simply show the same number for both.',
+          'The EU figure for kids’ sizes is the least certain number on this page: no separately published Paris-point formula specific to children’s lasts was found, so it is estimated here from the general Paris-point principle applied to the ISO children’s last-length figure above, not from a directly quoted formula.',
+          'Kids’ sizing stops at 13 (US) or 13½ (UK) — the next size up resets to adult/youth size 1, not 14. Past that point, use the men’s or women’s chart instead.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a child’s foot length to see every system’s kids’ size, or scan the chart below for a known size.',
+        steps: [
+          { name: 'Measure foot length', text: 'Stand the child on paper, mark heel and longest toe, and measure the distance — kids’ feet are worth re-measuring every few months.' },
+          { name: 'Type the length', text: 'Enter it in millimeters, centimeters or inches.' },
+          { name: 'Read the sizes', text: 'US and UK kids’ sizes, an approximate EU size, and the foot length in cm and in all update together.' },
+          { name: 'Watch for the top of the range', text: 'A foot too long for kids’ sizing shows no kids’ answer — switch to the men’s or women’s chart instead.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Kids’ sizes use their own last length, 8% longer than the bare foot plus 6 mm.',
+        expression: 'last length (mm) = foot length (mm) × 1.08 + 6\nUK kids’ = (last length, in) × 3 − 12\nUS kids’ = (last length, in) × 3 − 11.75\nEU kids’ (approximate) = 1.5 × last length (cm)',
+        terms: [
+          { symbol: 'last length', meaning: 'ISO 19407’s children’s allowance: 8% longer than the bare foot, plus 6 mm — a different formula from the adult allowance.' },
+          { symbol: 'UK / US kids’', meaning: 'Quoted formulas (Wikipedia, "Shoe size"); the two are always exactly 0.25 apart for the same last length.' },
+          { symbol: 'EU kids’', meaning: 'Estimated from the general Paris-point principle, not a separately quoted children’s formula — the least certain figure on this page.' }
+        ],
+        note: 'Valid only for a last length corresponding to UK child sizes 0 to 13½ (about 89 mm to 194 mm of bare foot length). Outside that range, no kids’ size is shown.'
+      },
+      workedExample: {
+        intro: 'A child’s foot measures 165 mm (16.5 cm, 6.5 in).',
+        rows: [
+          { label: 'last length = 165 × 1.08 + 6', value: '184.2 mm (7.25 in)' },
+          { label: 'UK kids’ = 7.25 × 3 − 12', value: '9.75 → rounds to UK 10' },
+          { label: 'US kids’ = 7.25 × 3 − 11.75', value: '10.0 → US kids’ 10' },
+          { label: 'EU kids’ (approx.) = 1.5 × 18.42 cm', value: '27.6 → rounds to EU 28' }
+        ],
+        result: '165 mm ≈ US kids’ 10, UK kids’ 10, EU kids’ ≈28',
+        explanation: 'UK and US land on the same whole number here only because of how 9.75 and 10.0 each round — at other lengths they can show half a size apart, since the two formulas are always exactly a quarter of a size apart before rounding.'
+      },
+      referenceTable: {
+        title: 'Kids’ US sizes to UK, EU (approximate) and foot length',
+        columns: ['US kids’', 'UK kids’', 'EU kids’ (approx.)', 'Foot length (cm)'],
+        rows: [8, 9, 10, 11, 12, 13, 13.5].map(kidsChartRow),
+        decimals: 2,
+        note: 'UK kids’ is always exactly 0.25 size below US kids’ before rounding. EU kids’ is estimated, not from a directly quoted children’s formula — see the concept section.'
+      },
+      watchOut: [
+        { title: 'Sizing resets after 13 (or 13½) — not 14', body: 'Kids’ sizing stops at US 13 / UK 13½. The next size up is adult/youth size 1 — use the men’s or women’s chart for a foot that large.' },
+        { title: 'The EU figure here is an estimate', body: 'No separately published Paris-point formula for children’s lasts was found, so the EU kids’ figure is derived from the general principle, not a directly quoted children’s formula — treat it as the least certain number on this page.' },
+        { title: 'Kids’ feet grow fast', body: 'Re-measure every few months rather than relying on a size bought even a season ago — a growing child’s foot can move up a full size in a few months.' },
+        { title: 'Width is not covered', body: 'This is a length-based size only. Many kids’ shoes are also sold in a single standard width.' }
+      ],
+      references: [
+        { label: 'Wikipedia, "Shoe size" (UK and US children’s barleycorn formulas, ISO 19407 children’s last-length allowance)', url: 'https://en.wikipedia.org/wiki/Shoe_size' }
+      ]
+    },
+    inputs: [{ id: 'footLength', label: 'Foot length', type: 'number', placeholder: '110', defaultValue: 110, step: 1, min: 0, dimension: 'length', unit: 'mm' }],
+    seo: {
+      title: 'Kids’ Shoe Size Chart – US, UK, EU',
+      description: 'Kids’ shoe size chart converting US and UK sizes to EU (approximate) and foot length, with the formulas, the adult-size reset and sources cited.',
+      faq: [
+        { question: 'What is a US kids’ size 10 in UK sizing?', answer: 'UK kids’ 10 as well, for a roughly 16.5 cm foot — UK is always exactly 0.25 size below US before rounding, so the two sometimes round to the same whole number and sometimes land half a size apart.' },
+        { question: 'What comes after kids’ size 13?', answer: 'Adult/youth size 1, not 14. Both UK and US kids’ sizing stop at 13 (UK goes to 13½) and reset into the adult numbering from there.' },
+        { question: 'How accurate is the EU figure for kids’ sizes?', answer: 'Less certain than the US/UK figures — no separately published Paris-point formula specific to children’s lasts was found, so it is estimated from the general principle rather than a directly quoted children’s formula.' },
+        { question: 'How often should I re-measure my child’s feet?', answer: 'Every few months — a growing child’s foot can move up a full size over a season.' },
+        { question: 'How many cm is a US kids’ size 12?', answer: 'About 18.1 cm (7.11 in).' }
+      ]
+    },
+    compute(values) {
+      const result = shoeSizesFromFootMm(values.footLength, 'kids');
+      return {
+        usSize: result.usSize,
+        ukSize: result.ukSize,
+        euSize: result.euSize,
+        mondopoint: result.mondopoint,
+        footCm: footMmToCm(values.footLength),
+        footIn: footMmToIn(values.footLength)
+      };
     }
   }
 ];

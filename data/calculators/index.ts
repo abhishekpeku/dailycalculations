@@ -177,7 +177,11 @@ export const calculatorOrder: string[] = [
   'cups-to-grams-flour',
   'cups-to-grams-sugar',
   'cups-to-grams-butter',
-  'cups-to-grams-rice'
+  'cups-to-grams-rice',
+  'shoe-size-converter',
+  'mens-shoe-size-chart',
+  'womens-shoe-size-chart',
+  'kids-shoe-size-chart'
 ];
 
 const rank = (id: string) => {

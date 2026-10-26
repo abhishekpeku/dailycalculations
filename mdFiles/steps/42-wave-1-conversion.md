@@ -437,28 +437,117 @@ exactly 250/236.5882365 ≈ 1.0568 — stated as a ratio, not a second density t
 - [x] Update `mdFiles/STATUS.md` (row 40–42 + session log, incl. the Wave 2 "cups to grams" dedupe
   note and a concrete scoped proposal for run 7 — shoe/ring/clothing sizes, not built), `gh pr ready`
 
-## Run 7 proposal (not built this run — scope to re-check before starting)
+## Run 7
 
-Shoe size converter(s), the next lookup-table run. Unlike run 6's densities, shoe size scales are
-not simple arithmetic lookups — they're offset-based numbering systems (US, UK, EU/Paris point,
-and foot length in cm/in) that differ by region and, for adult sizing, by sex. Proposed scope,
-**to re-verify against primary sizing-authority sources before building, not from memory**:
+Shoe size converter(s) — the first offset-based (not density-based) lookup-table run. Formulas and
+constants fetched and verified before writing any copy (never from memory):
 
-- `shoe-size-converter` — type B, probably with a "men's / women's / kids'" selector (a `select`
-  input akin to run 6's ingredient picker) and foot length in cm/in as the actual solvable
-  quantity, with US, UK and EU size as derived lookups (likely via a small lookup table per system,
-  similar in shape to `lib/ingredients.ts`, not a `lib/units.ts` dimension — EU sizing in particular
-  is *not* a fixed offset from US/UK, it is closer to (foot length in cm + a constant) × 1.5, and
-  the exact constant and women's-vs-men's offset need to be checked against a named sizing
-  authority (e.g. a shoe manufacturer's or retailer's official size chart, not a random blog) before
-  any number goes into copy.
-- Possible split into `mens-shoe-size-chart` / `womens-shoe-size-chart` if the men's/women's US
-  offset (commonly cited as 1.5 sizes, but to be verified, not assumed) makes a combined page
-  awkward — decide after drafting the first page, the same way run 6 decided its ingredient split
-  only after drafting the shared table.
-- Needs its own dedupe check (ids/aliases) and its own "Run 7" progress section before building,
-  per this file's own pattern. Ring size and clothing size remain separate, later runs — do not
-  fold them into run 7.
+**Sources actually fetched**:
+- Wikipedia, "Shoe size" (`en.wikipedia.org/wiki/Shoe_size`) — fetched as **raw wikitext**
+  (`...&action=raw`) and read directly, not via an AI-summarized fetch (a first summarized fetch of
+  the rendered page gave *internally inconsistent* constants across two attempts — e.g. "male shoe
+  size ≈ 3×foot−24" in one pass and "≈3×foot−22" in another — so raw wikitext was fetched and read
+  line-by-line instead, which is what every constant below is taken from). Specifically: the UK
+  barleycorn formulas (child and adult), the US formulas (men's, women's "standard/FIA" and
+  "common" scales, children's), the Paris-point/EU formula, Mondopoint's definition, and the
+  "ISO 19407 and shoe size conversion" section's unified foot-length-in-mm formulas for UK and EUR.
+- Nike's published men's/women's/UK/EU size chart (`nike.com/size-fit/mens-footwear`), fetched as a
+  real manufacturer cross-check, never as the formula source.
+- Clarks, REI, New Balance and ASICS size-guide pages were also attempted and returned 403/404 —
+  swapped to Nike rather than retried, per the no-retry-loops rule.
+
+**Where sources disagree (stated on the page, not silently picked)**:
+- **Men's/women's US offset**: Wikipedia documents two scales — "standard"/FIA: women's = men's + 1;
+  "common": women's = men's + 1.5. Nike's real chart matches the "common" (+1.5) scale exactly at
+  every row checked (e.g. men's 8 ↔ women's 9.5, men's 10 ↔ women's 11.5), so **+1.5 is the
+  calculator's primary figure**, with the FIA +1 scale named in a watch-out.
+- **UK/US offset**: the "standard" formula gives US men's = UK + 1 exactly (derived: UK adult =
+  3×last(in)−25, US men = 3×last(in)−24). Nike's own chart instead shows a 0.5-size gap (US men's 8
+  = UK 7.5, not UK 7) at every row checked — **the standard formula's +1 is used as the computed
+  figure**, with Nike's own smaller real-world gap named as a concrete, cited brand-variation
+  example (not vague "brands vary" hand-waving).
+- **EU/last-length allowance**: the UK/US system's foot→last allowance (2 barleycorns ≈ 16.9 mm) and
+  the EU/Paris-point system's own allowance (2 Paris points ≈ 13.3 mm) are different, documented
+  constants — using the ISO 19407 formulas directly (each system's own allowance already baked in,
+  never mixed) avoids silently picking one over the other.
+- **Children's EU figure**: no separately published Paris-point formula for children's lasts was
+  found (only the general "last length in Paris points, for adults and children alike" principle,
+  applied here to ISO 19407's own children's last-length allowance: foot×1.08+6 mm). Marked on the
+  kids page as the least-certain of the three converted sizes.
+
+**Shared, cited module**: `lib/shoeSizes.ts`, mirroring `lib/ingredients.ts`'s shape — every
+constant commented with its source, pure functions from foot length in mm (the Mondopoint value) to
+UK/US/EU sizes, `lib/shoeSizes.spec.ts` testing them against the Nike chart rows above and the
+UK-child/US-adult boundary points quoted from Wikipedia (last length 4 in → UK child 0; 8½ in → UK
+child 13½; 8⅔ in → UK adult 1). A floating-point hazard was found and designed around while
+building the verification script (see "Accuracy notes" below) — the lib's own functions always
+compute every size straight from one `footMm` value, never by inverting one system's formula and
+re-deriving through another's.
+
+**Rounding**: UK/US sizes round to the nearest half (`Math.round(x*2)/2`); EU rounds to the nearest
+whole Paris point (most brands sell EU in whole sizes; a watch-out says some brands offer EU half
+sizes); Mondopoint rounds to the nearest 5 mm (ISO's casual-footwear interval). A foot length outside
+a system's valid range (e.g. an adult-sized foot on the kids' category, or vice versa) returns `NaN`
+for that system's sizes rather than an invalid or negative size number.
+
+**Pages (4, not 5 — recorded below why the 5th candidate was skipped)**:
+- `shoe-size-converter` — type B. Inputs: `footLength` (dimension `length`, default unit `mm`, the
+  literal Mondopoint value) and `category` (`options`: Men's/Women's/Kids', values `0`/`1`/`2` —
+  fixed, inherently-distinct category codes, not a lookup value that could collide, per the run 6
+  parked lesson in `STATUS.md`). Outputs: the category-appropriate US size (headline), UK size, EU
+  size, Mondopoint (nearest 5 mm), and the foot length itself with `alsoIn: ['cm', 'in']`.
+  `referenceTable`: one row per listed ingredient... no — one row per common shoe size *per system*,
+  a men's/women's/kids' comparison. `rangeBar` visual on the raw foot length (mm) showing kids' vs
+  adult ranges, bands derived from the same formulas' own boundary points (not invented).
+- `mens-shoe-size-chart` — fixed to men's, no selector. Table: US men's 7–13 → UK, EU, foot length.
+  Intent: people who already know they want a men's chart, not a general converter.
+- `womens-shoe-size-chart` — fixed to women's. Table: US women's 5–11 → US men's equivalent, UK, EU,
+  foot length. Intent: same as above, women's-specific, high standalone search volume ("women's
+  shoe size chart").
+- `kids-shoe-size-chart` — fixed to kids'. Table: US kids' 8–13½ → UK, EU (flagged approximate), foot
+  length, built from a single shared last-length value per row (not the live widget's
+  footMm-based path) to avoid the floating-point hazard above. Watch-out: the kids' 13 (or 13½) to
+  youth/adult 1 reset, quoted from Wikipedia.
+- **Skipped**: a dedicated US↔UK pair page and a dedicated "foot length (cm) to shoe size" page.
+  Every page above already shows US, UK, EU and foot length side by side for its own audience — a
+  separate US↔UK-only page or a foot-length-first page would be a near-duplicate of the general
+  page's own mechanics with no distinct audience split (unlike run 6's ingredients, which are
+  genuinely different numbers per page). Recorded here instead of built, per the run's own
+  "fewer is fine" allowance.
+
+### Progress
+
+- [x] Fetch and read Wikipedia's raw wikitext for the UK/US/EU/Mondopoint formulas (not a
+  summarized fetch — see "Sources actually fetched")
+- [x] Fetch Nike's published size chart as a manufacturer cross-check
+- [x] Independent scratch script (`shoe_formulas.mjs`) reproducing every formula, cross-checking
+  against Nike's chart, confirming the UK-child-0 / UK-child-13½ / UK-adult-1 boundary points, and
+  surfacing + designing around the floating-point round-trip hazard in the children's formulas
+- [ ] `lib/shoeSizes.ts` (shared, cited formula module)
+- [ ] `lib/shoeSizes.spec.ts` (unit tests against the Nike chart rows + Wikipedia's boundary points)
+- [ ] Dedupe check (ids + aliases, programmatic) before writing the calculator objects
+- [ ] `shoe-size-converter`
+- [ ] `mens-shoe-size-chart`
+- [ ] `womens-shoe-size-chart`
+- [ ] `kids-shoe-size-chart`
+- [ ] Second independent scratch verification of every copy figure (example/FAQ/worked-example/
+  reference-table numbers) against the lib's actual output before committing
+- [ ] `npm test`, `npm run build`,
+  `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` pass
+- [ ] Spot-check the 4 new pages + `/categories/measurements` on a local server, kill the server
+  (port 3000 confirmed free)
+- [ ] Update `mdFiles/STATUS.md` (row 40–42 + session log, incl. a "Run 8 proposal" for ring sizes),
+  `gh pr ready`
+
+## Run 8 proposal (not built this run)
+
+Ring size converter: US/UK/EU size, inner diameter (mm) and circumference (mm), per ISO 8653. Like
+run 7, this is an offset/diameter-based system, not a density lookup — `lib/ringSizes.ts` would hold
+the diameter-to-size tables per region (US sizes step by a fixed diameter increment; UK/Australian
+sizes use a letter-and-quarter system; EU uses circumference directly in mm), each constant sourced
+and cross-checked against a named jeweler's/standards chart before any number goes into copy, the
+same way run 7 cross-checked against Nike's. Needs its own dedupe check and its own "Run 8" progress
+section before building. Clothing size remains a separate, later run.
 
 ## Planned run breakdown (re-evaluate each run against what exists before building it)
 

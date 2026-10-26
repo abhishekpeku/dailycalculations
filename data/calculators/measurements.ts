@@ -1,5 +1,24 @@
 import type { CalculatorConfig } from './types.ts';
 import { toBase, fromBase } from '../../lib/units.ts';
+import { gramsPerCup, INGREDIENT_DENSITIES } from '../../lib/ingredients.ts';
+
+// A cup amount -> [grams, ounces] row for a reference table, for one ingredient's density. Every
+// value is computed here, never typed in (mdFiles/steps/42-wave-1-conversion.md, "Run 6").
+function cupAmountRow(label: string, cups: number, gramsPerCupValue: number) {
+  const grams = cups * gramsPerCupValue;
+  return { label, values: [grams, fromBase(toBase(grams, 'mass', 'g'), 'mass', 'oz')] };
+}
+
+const CUP_AMOUNTS: { label: string; cups: number }[] = [
+  { label: '¼ cup', cups: 0.25 },
+  { label: '⅓ cup', cups: 1 / 3 },
+  { label: '½ cup', cups: 0.5 },
+  { label: '⅔ cup', cups: 2 / 3 },
+  { label: '¾ cup', cups: 0.75 },
+  { label: '1 cup', cups: 1 },
+  { label: '1½ cups', cups: 1.5 },
+  { label: '2 cups', cups: 2 }
+];
 
 export const measurementsCalculators: CalculatorConfig[] = [
   {
@@ -3551,6 +3570,583 @@ export const measurementsCalculators: CalculatorConfig[] = [
     compute(values) {
       const l100km = fromBase(toBase(values.mpg, 'fuelEconomy', 'mpg'), 'fuelEconomy', 'L/100km');
       return { l100km };
+    }
+  },
+  {
+    id: 'cups-to-grams-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-26',
+    aliases: ['cups to grams calculator', 'grams to cups converter', 'baking conversion calculator', 'cup to gram converter for cooking', 'convert cups to grams'],
+    related: ['cups-to-grams-flour', 'cups-to-grams-sugar', 'cups-to-grams-butter', 'cups-to-grams-rice', 'milliliters-to-cups-converter', 'grams-to-ounces-converter'],
+    title: 'Cups to Grams Converter',
+    description: 'Convert cups to grams for common cooking and baking ingredients, with ounces shown alongside. Pick an ingredient first — a cup of flour, sugar and butter are three different weights.',
+    example: '1 cup of all-purpose flour weighs about 120 g (4.23 oz); 1 cup of granulated sugar weighs about 198 g (6.98 oz) — same cup, different ingredient, different weight.',
+    breakdown: {
+      headline: 'grams',
+      headlineLabel: 'Weight',
+      outputs: [{ id: 'grams', label: 'Weight', format: 'number', dimension: 'mass', unit: 'g', alsoIn: ['oz'] }],
+      visual: {
+        type: 'logScale',
+        value: 'grams',
+        min: -1,
+        max: 4,
+        ticks: ['0.1 g', '1 g', '10 g', '100 g', '1,000 g', '10,000 g'],
+        benchmarks: [
+          { label: '1 tablespoon of butter (about 14.13 g)', value: 14.125 },
+          { label: '1 stick of butter (113 g)', value: 113 },
+          { label: '1 cup of all-purpose flour (120 g)', value: 120 },
+          { label: '1 pound (453.59 g)', value: 453.59237 }
+        ],
+        title: 'How much is that?',
+        valueLabel: 'Your amount'
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-26',
+      concept: {
+        title: 'Why a cup of flour and a cup of sugar don’t weigh the same',
+        paragraphs: [
+          'A cup measures volume — how much space an ingredient takes up — not weight. Weight depends on density, and density is different for every ingredient: a cup of light, airy flour weighs far less than a cup of dense, syrupy honey, even though both fill the same measuring cup to the same line. That is why a single "cups to grams" factor cannot exist for cooking the way it does for a pure unit like inches or pounds: the number of grams in a cup is a property of the ingredient, not of the cup.',
+          'This calculator covers the most commonly searched cooking and baking ingredients. Pick one from the menu, type an amount in cups (or switch to tablespoons, teaspoons or milliliters in the unit menu), and it multiplies your amount by that ingredient’s grams-per-cup figure. The reference table below lists every ingredient at a glance, and the dedicated flour, sugar, butter and rice pages go deeper on each.',
+          'Every figure here traces to a named, primary source: King Arthur Baking Company’s published Ingredient Weight Chart for most baking ingredients, and USDA FoodData Central for rice, milk and honey, which that chart does not cover. Each source also states its own measuring method — King Arthur’s flour figure, for instance, assumes the flour was spooned into the cup and leveled, not scooped straight from the bag. Changing the method changes the weight, which the dedicated ingredient pages explain in more detail.',
+          'The cup used throughout is the US customary cup, exactly 236.5882365 mL. A metric cup, used in Australia, New Zealand and some recipes, is a rounder 250 mL — about 5.7% bigger. If your recipe uses a metric cup, multiply any gram figure here by about 1.057 (250 ÷ 236.5882365) to match it.'
+        ]
+      },
+      howTo: {
+        intro: 'Choose an ingredient, then type an amount. The weight updates as you type.',
+        steps: [
+          { name: 'Pick an ingredient', text: 'Open the ingredient menu and choose what you are measuring — flour, sugar, butter and nine other common ingredients are listed.' },
+          { name: 'Type the amount', text: 'Enter the amount in cups, or switch the unit menu to tablespoons, teaspoons or milliliters.' },
+          { name: 'Read the weight', text: 'The result shows grams, with ounces alongside it.' },
+          { name: 'Check the reference table', text: 'Scan 1 cup of every listed ingredient at once, in grams and ounces, with its source.' },
+          { name: 'Switch ingredients anytime', text: 'Changing the ingredient re-runs the same amount through its own density — the cup amount you typed does not change.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Weight is amount times density: grams equal the number of cups times how much one cup of that ingredient weighs.',
+        expression: 'grams = cups × density (g per US cup)\noz = grams ÷ 28.349523125',
+        terms: [
+          { symbol: 'cups', meaning: 'Volume in US customary cups, 236.5882365 mL each.' },
+          { symbol: 'density', meaning: 'Grams in one cup of the chosen ingredient — a measured, cited figure, not a fixed unit factor.' },
+          { symbol: '28.349523125', meaning: 'Grams in one avoirdupois ounce, exact.' }
+        ],
+        note: 'Unlike a length or mass conversion, the "density" term is an ingredient property from a cited source, not a defined physical constant — it can vary with how the ingredient is measured.'
+      },
+      workedExample: {
+        intro: 'A recipe calls for 2½ cups of all-purpose flour, and the same amount of granulated sugar for a second batch.',
+        rows: [
+          { label: '2.5 cups flour × 120 g/cup', value: '300.00 g' },
+          { label: '300 ÷ 28.349523125', value: '10.58 oz' },
+          { label: '2.5 cups sugar × 198 g/cup', value: '495.00 g' }
+        ],
+        result: '2.5 cups of flour ≈ 300 g (10.58 oz); 2.5 cups of sugar ≈ 495 g',
+        explanation: 'The cup amount is identical in both lines — only the ingredient changed, and the weight differs by 195 g. Always check which ingredient a "cups to grams" figure is for.'
+      },
+      referenceTable: {
+        title: 'Grams and ounces per US cup, by ingredient',
+        columns: ['Ingredient', 'Grams per cup', 'Ounces per cup'],
+        rows: INGREDIENT_DENSITIES.map((item) => ({
+          label: item.label,
+          values: [item.gramsPerCup, fromBase(toBase(item.gramsPerCup, 'mass', 'g'), 'mass', 'oz')]
+        })),
+        decimals: 2,
+        note: 'Each figure is for 1 US customary cup (236.5882365 mL), rounded for display. A metric cup (250 mL) is about 5.7% bigger — multiply any figure by about 1.057 to use one instead. See the sources below for each ingredient’s own method.'
+      },
+      watchOut: [
+        { title: 'A cup is a volume, grams are a weight', body: 'The two only relate to each other through an ingredient’s density, which is why this page asks which ingredient you are measuring before it can give you an answer.' },
+        { title: 'This is the US customary cup', body: 'A metric cup (250 mL), used in Australia, New Zealand and some recipes, is about 5.7% bigger. Scale any gram figure here by about 1.057 if your recipe uses one.' },
+        { title: 'How you fill the cup changes the weight', body: 'Spooning flour into a cup and leveling it gives a different weight than scooping straight from the bag; packing brown sugar firmly gives a different weight than scooping it loosely. The dedicated ingredient pages state which method their figure assumes.' },
+        { title: 'Not every ingredient is listed', body: 'This picker covers common baking and cooking ingredients with a citable published density. For anything else, the most reliable option is weighing 1 cup of it yourself on a kitchen scale.' }
+      ],
+      references: [
+        { label: "King Arthur Baking Company, Ingredient Weight Chart", url: 'https://www.kingarthurbaking.com/learn/ingredient-weight-chart' },
+        { label: 'USDA FoodData Central, U.S. Department of Agriculture (rice #169756 and #168878, milk #171265, honey #169640)', url: 'https://fdc.nal.usda.gov/' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'amount', label: 'Amount', type: 'number', placeholder: '1', defaultValue: 1, step: 0.25, min: 0, dimension: 'volume', unit: 'cup' },
+      {
+        id: 'ingredient',
+        label: 'Ingredient',
+        type: 'number',
+        placeholder: String(gramsPerCup('flour')),
+        defaultValue: gramsPerCup('flour'),
+        step: 1,
+        min: 0,
+        options: INGREDIENT_DENSITIES.map((item) => ({ value: item.gramsPerCup, label: item.label }))
+      }
+    ],
+    seo: {
+      title: 'Cups to Grams Converter – By Ingredient',
+      description: 'Free cups to grams converter: pick an ingredient — flour, sugar, butter, rice and more — and convert cups to grams and ounces, with every figure cited.',
+      faq: [
+        { question: 'How many grams are in a cup?', answer: 'It depends entirely on the ingredient. A cup of all-purpose flour is about 120 g, a cup of granulated sugar is about 198 g, and a cup of butter is about 226 g — pick your ingredient from the menu to get the right figure.' },
+        { question: 'Why doesn’t a cup always weigh the same in grams?', answer: 'A cup is a volume. Weight depends on density, which is different for every ingredient, so "how many grams in a cup" only has an answer once you say which ingredient.' },
+        { question: 'Is this the US cup or the metric cup?', answer: 'The US customary cup, 236.5882365 mL. A metric cup (250 mL), used in some countries, is about 5.7% bigger — multiply by about 1.057 to convert a figure here to the metric cup.' },
+        { question: 'How many ounces are in a cup of flour?', answer: 'About 4.23 oz (120 g ÷ 28.349523125), using the spooned-and-leveled figure this page and the dedicated flour page use.' },
+        { question: 'What if my ingredient isn’t listed?', answer: 'Weigh 1 cup of it on a kitchen scale. Density is a property of the ingredient, not a physical constant, so an unlisted ingredient has no single correct factor to look up.' },
+        { question: 'Does how I fill the cup change the gram figure?', answer: 'Yes. Spooning an ingredient in and leveling it, scooping it straight from a container, and packing it down can each give a noticeably different weight for the "same" cup. See the flour and sugar pages for specific figures.' }
+      ]
+    },
+    compute(values) {
+      const grams = values.amount * values.ingredient;
+      return { grams };
+    }
+  },
+  {
+    id: 'cups-to-grams-flour',
+    category: 'measurements',
+    updatedAt: '2026-10-26',
+    aliases: ['flour cups to grams', 'how many grams in a cup of flour', 'all purpose flour grams per cup', 'flour grams to cups converter', 'baking flour weight converter'],
+    related: ['cups-to-grams-converter', 'cups-to-grams-sugar', 'cups-to-grams-butter', 'grams-to-ounces-converter', 'milliliters-to-cups-converter'],
+    title: 'Cups to Grams – All-Purpose Flour',
+    description: 'Convert cups of all-purpose flour to grams and ounces, using King Arthur Baking’s spooned-and-leveled figure, with a table of common amounts and the scooped-flour trap explained.',
+    example: '1 cup of all-purpose flour, spooned and leveled, weighs about 120 g (4.23 oz); 2 cups weighs about 240 g (8.47 oz).',
+    breakdown: {
+      headline: 'grams',
+      headlineLabel: 'Flour weight',
+      outputs: [{ id: 'grams', label: 'Flour weight', format: 'number', dimension: 'mass', unit: 'g', alsoIn: ['oz'] }],
+      visual: {
+        type: 'logScale',
+        value: 'grams',
+        min: -1,
+        max: 4,
+        ticks: ['0.1 g', '1 g', '10 g', '100 g', '1,000 g', '10,000 g'],
+        benchmarks: [
+          { label: '1 tablespoon of flour (about 7.5 g)', value: 7.5 },
+          { label: '1 cup of flour (120 g)', value: 120 },
+          { label: '2 cups of flour (240 g)', value: 240 },
+          { label: 'A 1 kg bag of flour', value: 1000 }
+        ],
+        title: 'How much flour is that?',
+        valueLabel: 'Your amount'
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-26',
+      concept: {
+        title: 'How much does a cup of flour weigh?',
+        paragraphs: [
+          'King Arthur Baking Company’s published Ingredient Weight Chart gives all-purpose flour as 120 g per US cup (236.5882365 mL), measured by spooning the flour into the cup and leveling it off with a straight edge — never packing or shaking it down. That is the figure this page uses, and the one most US recipes implicitly assume when they give a weight for "1 cup of flour."',
+          'The same chart gives bread flour the identical 120 g per cup, using the same method. Bread flour and all-purpose flour differ in protein content, not in how densely their particles pack into a measuring cup, so the two flours weigh about the same per cup even though they bake differently.',
+          'Weighing flour is more reliable than measuring it by cup precisely because the cup method is sensitive to how you fill it. A kitchen scale removes that variable entirely: 120 g of flour is 120 g of flour, however it got into the bowl.'
+        ]
+      },
+      howTo: {
+        intro: 'Type an amount of flour in cups. The weight updates as you type.',
+        steps: [
+          { name: 'Type the cup amount', text: 'Enter how many cups of flour the recipe calls for.' },
+          { name: 'Use another unit if you prefer', text: 'Switch the unit menu to tablespoons, teaspoons or milliliters.' },
+          { name: 'Read the weight', text: 'The result shows grams, with ounces alongside it.' },
+          { name: 'Spoon and level, don’t scoop', text: 'This figure assumes flour spooned into the cup and leveled — see the watch-out below for what scooping changes.' },
+          { name: 'Check the table', text: 'Common cup amounts from ¼ cup to 2 cups are listed below in grams and ounces.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Flour weight is cups times King Arthur’s spooned-and-leveled figure of 120 g per cup.',
+        expression: 'grams = cups × 120\noz = grams ÷ 28.349523125',
+        terms: [
+          { symbol: 'cups', meaning: 'Volume of flour in US customary cups.' },
+          { symbol: '120', meaning: 'Grams per cup of all-purpose flour, spooned into the cup and leveled (King Arthur Baking Company).' },
+          { symbol: '28.349523125', meaning: 'Grams in one avoirdupois ounce, exact.' }
+        ],
+        note: 'The 120 g figure is this source’s measured value for its stated method, not a defined physical constant. Scooping instead of spooning gives a heavier cup — see the watch-out below.'
+      },
+      workedExample: {
+        intro: 'A cookie recipe calls for 2¼ cups of all-purpose flour, spooned and leveled.',
+        rows: [
+          { label: '2.25 cups × 120 g/cup', value: '270.00 g' },
+          { label: '270 ÷ 28.349523125', value: '9.52 oz' },
+          { label: 'If scooped instead, about 140 g/cup', value: '315.00 g' }
+        ],
+        result: '2¼ cups ≈ 270 g (9.52 oz), spooned and leveled',
+        explanation: 'Scooping instead of spooning adds about 45 g here — nearly ¼ cup’s worth of extra flour — enough to noticeably toughen a dough or make a batter heavier than intended.'
+      },
+      referenceTable: {
+        title: 'All-purpose flour: cups to grams and ounces',
+        columns: ['Amount', 'Grams', 'Ounces'],
+        rows: CUP_AMOUNTS.map(({ label, cups }) => cupAmountRow(label, cups, gramsPerCup('flour'))),
+        decimals: 2,
+        note: 'Flour spooned into the cup and leveled (King Arthur Baking Company, 120 g per US cup). Scooped flour typically weighs more — see the watch-out below.'
+      },
+      watchOut: [
+        { title: 'Spooned, not scooped', body: 'Scooping a measuring cup directly into a flour bag compacts the flour and commonly weighs 130–150 g per cup — up to 25% more than the 120 g spooned-and-leveled figure this page uses. The difference can toughen baked goods or throw off a recipe’s hydration.' },
+        { title: 'Sifted flour is measured after sifting', body: 'If a recipe says "1 cup sifted flour," it means measure after sifting, not before — sifting adds air, so a cup of sifted flour weighs less than a cup of the same flour before it was sifted.' },
+        { title: 'Bread flour weighs about the same per cup', body: 'King Arthur’s chart lists bread flour at the identical 120 g per cup — the two flours differ in protein content, not in how they pack into a measuring cup.' },
+        { title: 'This is US all-purpose flour', body: 'Flour milled to other countries’ standards (such as UK plain flour) can have a different protein content and, in some cases, a different typical density than US all-purpose flour.' }
+      ],
+      references: [
+        { label: "King Arthur Baking Company, Ingredient Weight Chart", url: 'https://www.kingarthurbaking.com/learn/ingredient-weight-chart' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'amount', label: 'Flour', type: 'number', placeholder: '1', defaultValue: 1, step: 0.25, min: 0, dimension: 'volume', unit: 'cup' }
+    ],
+    seo: {
+      title: 'Cups to Grams – All-Purpose Flour Converter',
+      description: 'Free flour cups to grams converter: convert all-purpose flour, spooned and leveled, to grams and ounces, with a table and the scooped-flour trap explained.',
+      faq: [
+        { question: 'How many grams are in a cup of flour?', answer: 'About 120 g, using King Arthur Baking Company’s spooned-and-leveled figure — flour spooned into the cup and leveled off, not scooped from the bag.' },
+        { question: 'Is bread flour the same weight per cup as all-purpose flour?', answer: 'Yes, per the same chart — both are listed at 120 g per cup. They differ in protein content, which affects baking, not in how densely they fill a measuring cup.' },
+        { question: 'Why do some sources say a cup of flour is 125 g or even 150 g?', answer: 'Different sources use different measuring methods. Scooping flour straight from the bag packs it down and commonly gives 130–150 g per cup; this page uses the spooned-and-leveled method (120 g), which most US recipes assume.' },
+        { question: 'How many ounces are in a cup of flour?', answer: 'About 4.23 oz (120 g ÷ 28.349523125).' },
+        { question: 'How much is 2 cups of flour in grams?', answer: '240 g (2 × 120 g), about 8.47 oz.' },
+        { question: 'Should I weigh flour instead of measuring it by cup?', answer: 'For consistent results, yes — King Arthur Baking itself recommends weighing flour, since cup measurements vary with how the flour is handled.' }
+      ]
+    },
+    compute(values) {
+      const grams = values.amount * gramsPerCup('flour');
+      return { grams };
+    }
+  },
+  {
+    id: 'cups-to-grams-sugar',
+    category: 'measurements',
+    updatedAt: '2026-10-26',
+    aliases: ['sugar cups to grams', 'how many grams in a cup of sugar', 'granulated sugar grams per cup', 'brown sugar cups to grams', 'powdered sugar cups to grams'],
+    related: ['cups-to-grams-converter', 'cups-to-grams-flour', 'cups-to-grams-butter', 'grams-to-ounces-converter', 'milliliters-to-cups-converter'],
+    title: 'Cups to Grams – Sugar',
+    description: 'Convert cups of granulated, packed brown or powdered sugar to grams and ounces, with all three side by side, using King Arthur Baking’s ingredient weight chart.',
+    example: '1 cup of granulated sugar weighs about 198 g (6.98 oz); 1 cup of packed brown sugar weighs about 213 g (7.51 oz); 1 cup of powdered sugar weighs about 113 g (3.99 oz).',
+    breakdown: {
+      headline: 'grams',
+      headlineLabel: 'Sugar weight',
+      outputs: [{ id: 'grams', label: 'Sugar weight', format: 'number', dimension: 'mass', unit: 'g', alsoIn: ['oz'] }],
+      groups: [{ inputs: ['sugarType', 'amount'] }],
+      visual: {
+        type: 'logScale',
+        value: 'grams',
+        min: -1,
+        max: 4,
+        ticks: ['0.1 g', '1 g', '10 g', '100 g', '1,000 g', '10,000 g'],
+        benchmarks: [
+          { label: '1 tablespoon of granulated sugar (about 12.38 g)', value: 12.375 },
+          { label: '1 cup of granulated sugar (198 g)', value: 198 },
+          { label: '1 cup of packed brown sugar (213 g)', value: 213 },
+          { label: 'A 1 kg bag of sugar', value: 1000 }
+        ],
+        title: 'How much sugar is that?',
+        valueLabel: 'Your amount'
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-26',
+      concept: {
+        title: 'Granulated, brown and powdered sugar don’t weigh the same',
+        paragraphs: [
+          'King Arthur Baking Company’s Ingredient Weight Chart lists three different sugars at three different cup weights: granulated sugar at 198 g per cup, brown sugar (packed) at 213 g per cup, and unsifted powdered (confectioners’) sugar at 113 g per cup. "Sugar" in a recipe can mean any of the three, so this page lets you pick which one you are measuring.',
+          'Brown sugar’s figure assumes it is packed firmly into the cup, which is how almost every recipe means it unless it specifically says "lightly packed" or "loose" — the molasses coating brown sugar grains makes them clump and compress, so packing matters more for brown sugar than for granulated sugar.',
+          'Powdered sugar is fine and powdery, so it compresses easily too; this figure is for sugar that has not been sifted first. If a recipe calls for "1 cup sifted powdered sugar," measure after sifting — sifting adds air and lightens the cup for the same weight of sugar.'
+        ]
+      },
+      howTo: {
+        intro: 'Choose which sugar you are measuring, then type the amount in cups.',
+        steps: [
+          { name: 'Pick the sugar type', text: 'Choose granulated, packed brown, or powdered (unsifted) sugar from the menu.' },
+          { name: 'Type the cup amount', text: 'Enter how many cups the recipe calls for.' },
+          { name: 'Use another unit if you prefer', text: 'Switch the unit menu to tablespoons, teaspoons or milliliters.' },
+          { name: 'Read the weight', text: 'The result shows grams, with ounces alongside it.' },
+          { name: 'Check the table', text: 'All three sugars are compared side by side, cup amount by cup amount, below.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Sugar weight is cups times that sugar’s own grams-per-cup figure.',
+        expression: 'grams = cups × density (198 granulated, 213 brown packed, or 113 powdered)\noz = grams ÷ 28.349523125',
+        terms: [
+          { symbol: 'cups', meaning: 'Volume of sugar in US customary cups.' },
+          { symbol: 'density', meaning: 'Grams per cup for the chosen sugar type (King Arthur Baking Company).' },
+          { symbol: '28.349523125', meaning: 'Grams in one avoirdupois ounce, exact.' }
+        ],
+        note: 'Each density is a measured figure for its own stated method (packed for brown sugar, unsifted for powdered), not a defined physical constant.'
+      },
+      workedExample: {
+        intro: 'A cake recipe needs ¾ cup of granulated sugar for the batter and ½ cup of packed brown sugar for the streusel topping.',
+        rows: [
+          { label: '0.75 cup granulated × 198 g/cup', value: '148.50 g' },
+          { label: '0.5 cup packed brown × 213 g/cup', value: '106.50 g' },
+          { label: 'Total sugar by weight', value: '255.00 g' }
+        ],
+        result: '¾ cup granulated + ½ cup packed brown sugar ≈ 255 g total',
+        explanation: 'Weighing each sugar separately by its own figure, then adding the weights, avoids compounding two different cup-measuring errors into one dish.'
+      },
+      referenceTable: {
+        title: 'Granulated, brown and powdered sugar: cups to grams',
+        columns: ['Amount', 'Granulated (g)', 'Brown, packed (g)', 'Powdered, unsifted (g)'],
+        rows: CUP_AMOUNTS.map(({ label, cups }) => ({
+          label,
+          values: [cups * gramsPerCup('sugar'), cups * gramsPerCup('brownSugar'), cups * gramsPerCup('powderedSugar')]
+        })),
+        decimals: 2,
+        note: 'King Arthur Baking Company: granulated sugar 198 g/cup; brown sugar 213 g/cup, packed; powdered sugar 113 g/cup, unsifted.'
+      },
+      watchOut: [
+        { title: 'Granulated, brown and powdered sugar are not interchangeable by cup', body: 'The same cup amount of each weighs a different number of grams — use the table above or the matching sugar type in the calculator, not one figure for all three.' },
+        { title: 'Brown sugar is measured packed', body: 'This figure assumes brown sugar pressed firmly into the cup, which is how most recipes mean it. Loosely scooped brown sugar takes up more volume for the same weight, so it weighs less per cup than this figure.' },
+        { title: 'Powdered sugar settles and compresses', body: 'This figure is for unsifted powdered sugar. Sifted powdered sugar holds more air for the same weight, so measuring after sifting (as a recipe specifying "sifted" intends) gives a lighter cup.' },
+        { title: 'This is the US customary cup', body: 'A metric cup (250 mL) is about 5.7% bigger than the US cup used here — scale any figure by about 1.057 if your recipe uses a metric cup.' }
+      ],
+      references: [
+        { label: "King Arthur Baking Company, Ingredient Weight Chart", url: 'https://www.kingarthurbaking.com/learn/ingredient-weight-chart' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'sugarType',
+        label: 'Sugar type',
+        type: 'number',
+        placeholder: String(gramsPerCup('sugar')),
+        defaultValue: gramsPerCup('sugar'),
+        step: 1,
+        min: 0,
+        options: [
+          { value: gramsPerCup('sugar'), label: 'Granulated sugar' },
+          { value: gramsPerCup('brownSugar'), label: 'Brown sugar, packed' },
+          { value: gramsPerCup('powderedSugar'), label: "Powdered (confectioners') sugar" }
+        ]
+      },
+      { id: 'amount', label: 'Amount', type: 'number', placeholder: '1', defaultValue: 1, step: 0.25, min: 0, dimension: 'volume', unit: 'cup' }
+    ],
+    seo: {
+      title: 'Cups to Grams – Sugar Converter',
+      description: 'Free sugar cups to grams converter: granulated, packed brown or powdered sugar, to grams and ounces, with all three compared in one table.',
+      faq: [
+        { question: 'How many grams are in a cup of sugar?', answer: 'About 198 g for granulated sugar, 213 g for packed brown sugar, or 113 g for unsifted powdered sugar — the three are different weights per cup.' },
+        { question: 'How many grams are in a cup of brown sugar?', answer: 'About 213 g, packed firmly into the cup — the method almost every recipe assumes when it says "1 cup brown sugar."' },
+        { question: 'How many grams are in a cup of powdered sugar?', answer: 'About 113 g, unsifted. Sifted powdered sugar weighs less per cup because sifting adds air.' },
+        { question: 'How many ounces are in a cup of sugar?', answer: 'About 6.98 oz for granulated sugar (198 g ÷ 28.349523125).' },
+        { question: 'Is brown sugar heavier than granulated sugar?', answer: 'Yes, per cup — 213 g versus 198 g — because packed brown sugar’s molasses-coated grains compress more densely into the same measuring cup.' },
+        { question: 'Does the type of sugar matter for a recipe?', answer: 'Yes. Substituting one sugar for another by cup, rather than by the matching weight, changes how much sugar actually goes into the recipe.' }
+      ]
+    },
+    compute(values) {
+      const grams = values.amount * values.sugarType;
+      return { grams };
+    }
+  },
+  {
+    id: 'cups-to-grams-butter',
+    category: 'measurements',
+    updatedAt: '2026-10-26',
+    aliases: ['butter cups to grams', 'how many grams in a stick of butter', 'butter stick to grams converter', 'cup of butter in grams', 'tablespoon of butter in grams'],
+    related: ['cups-to-grams-converter', 'cups-to-grams-flour', 'cups-to-grams-sugar', 'grams-to-ounces-converter', 'milliliters-to-cups-converter'],
+    title: 'Cups to Grams – Butter',
+    description: 'Convert cups, sticks or tablespoons of butter to grams and ounces, using King Arthur Baking’s ingredient weight chart, with the US stick explained.',
+    example: '1 stick of butter (½ cup, 8 tablespoons) weighs 113 g (3.99 oz); 1 cup (2 sticks) weighs 226 g (7.97 oz).',
+    breakdown: {
+      headline: 'grams',
+      headlineLabel: 'Butter weight',
+      outputs: [{ id: 'grams', label: 'Butter weight', format: 'number', dimension: 'mass', unit: 'g', alsoIn: ['oz'] }],
+      visual: {
+        type: 'logScale',
+        value: 'grams',
+        min: -1,
+        max: 4,
+        ticks: ['0.1 g', '1 g', '10 g', '100 g', '1,000 g', '10,000 g'],
+        benchmarks: [
+          { label: '1 tablespoon of butter (14.13 g)', value: 14.125 },
+          { label: '1 stick of butter (113 g)', value: 113 },
+          { label: '1 cup, 2 sticks (226 g)', value: 226 },
+          { label: '4 sticks, about 1 pound (452 g)', value: 452 }
+        ],
+        title: 'How much butter is that?',
+        valueLabel: 'Your amount'
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-26',
+      concept: {
+        title: 'Butter, sticks and the US measuring cup',
+        paragraphs: [
+          'King Arthur Baking Company’s Ingredient Weight Chart gives butter as 113 g for 8 tablespoons (½ cup) — so 1 full cup of butter is 226 g. In the US, butter is sold in 113 g sticks, each printed with tablespoon marks along its wrapper, which makes cutting a stick at the marked line often faster and just as accurate as packing a measuring cup.',
+          'Because sticks are a everyday US unit, this page’s table is built around sticks and tablespoons rather than the cup fractions used on the flour and sugar pages — "1 stick," "¼ cup (4 tablespoons)" and "2 sticks" are closer to how US recipes and butter wrappers actually describe an amount.',
+          'This figure does not distinguish salted from unsalted butter: the small amount of salt in salted butter is not enough of its total weight to matter for a recipe’s measuring, only its flavor.'
+        ]
+      },
+      howTo: {
+        intro: 'Type an amount of butter in cups, or switch units for sticks, tablespoons or grams directly.',
+        steps: [
+          { name: 'Type the amount', text: 'Enter the amount of butter in cups, or switch the unit menu to tablespoons, teaspoons or milliliters.' },
+          { name: 'Read the weight', text: 'The result shows grams, with ounces alongside it.' },
+          { name: 'Use the stick table instead', text: 'If your recipe or wrapper measures in sticks or tablespoons, the table below converts those directly.' },
+          { name: 'Cut at the wrapper line', text: 'A US butter wrapper’s printed tablespoon marks are usually quicker and as accurate as a measuring cup.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Butter weight is cups times 226 g per cup — twice King Arthur’s 113 g half-cup (8 tablespoon) figure.',
+        expression: 'grams = cups × 226\noz = grams ÷ 28.349523125',
+        terms: [
+          { symbol: 'cups', meaning: 'Volume of butter in US customary cups.' },
+          { symbol: '226', meaning: 'Grams per cup of butter: 2 × 113 g, King Arthur Baking Company’s figure for 8 tablespoons.' },
+          { symbol: '28.349523125', meaning: 'Grams in one avoirdupois ounce, exact.' }
+        ],
+        note: 'The 113 g figure is this source’s measured value for US butter, not a defined physical constant.'
+      },
+      workedExample: {
+        intro: 'A pie crust recipe calls for 1½ sticks of cold butter, and a European version of the recipe gives the amount in grams instead.',
+        rows: [
+          { label: '1.5 sticks = 0.75 cup', value: '12 tbsp' },
+          { label: '0.75 cup × 226 g/cup', value: '169.50 g' },
+          { label: '169.50 ÷ 28.349523125', value: '5.98 oz' }
+        ],
+        result: '1½ sticks of butter ≈ 169.50 g (5.98 oz)',
+        explanation: 'Cutting at the wrapper’s 12-tablespoon mark (1½ sticks × 8 tablespoons each) is usually faster and just as accurate as packing ¾ cup of butter into a measuring cup.'
+      },
+      referenceTable: {
+        title: 'Butter: sticks and tablespoons to grams',
+        columns: ['Amount', 'Grams', 'Ounces'],
+        rows: [
+          cupAmountRow('1 tablespoon', 1 / 16, gramsPerCup('butter')),
+          cupAmountRow('¼ cup (4 tablespoons)', 0.25, gramsPerCup('butter')),
+          cupAmountRow('1 stick — ½ cup (8 tablespoons)', 0.5, gramsPerCup('butter')),
+          cupAmountRow('1 cup — 2 sticks', 1, gramsPerCup('butter')),
+          cupAmountRow('2 cups — 4 sticks', 2, gramsPerCup('butter'))
+        ],
+        decimals: 2,
+        note: 'King Arthur Baking Company: 113 g per 8 tablespoons (½ cup, 1 US stick). 4 sticks (452 g) is about 0.35% under the exact 453.59237 g pound — a quirk of US butter packaging, not a unit identity.'
+      },
+      watchOut: [
+        { title: 'A US stick is 113 g, 8 tablespoons, ½ cup', body: 'All three describe the same amount of butter. Cutting a stick at its printed wrapper lines is usually quicker and as accurate as measuring by cup.' },
+        { title: '4 sticks is close to, but not exactly, 1 pound', body: '4 sticks weigh 452 g by this chart, about 0.35% under the exact 453.59237 g pound — close enough that US butter is commonly sold and described as "1 lb" per 4 sticks.' },
+        { title: 'Salted and unsalted butter are treated the same here', body: 'This figure does not separately account for salted butter; the salt’s share of the total weight is too small to matter for measuring.' },
+        { title: 'European butter blocks are commonly sold in different sizes', body: 'US butter sticks are a US convention — other countries’ common block sizes differ, so weighing by grams rather than counting sticks is more reliable outside the US.' }
+      ],
+      references: [
+        { label: "King Arthur Baking Company, Ingredient Weight Chart", url: 'https://www.kingarthurbaking.com/learn/ingredient-weight-chart' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'amount', label: 'Butter', type: 'number', placeholder: '1', defaultValue: 1, step: 0.25, min: 0, dimension: 'volume', unit: 'cup' }
+    ],
+    seo: {
+      title: 'Cups to Grams – Butter Converter',
+      description: 'Free butter cups to grams converter: sticks, tablespoons and cups of butter to grams and ounces, with the US stick (113 g) explained.',
+      faq: [
+        { question: 'How many grams are in a stick of butter?', answer: '113 g, per King Arthur Baking Company’s chart — 1 US stick is ½ cup or 8 tablespoons.' },
+        { question: 'How many grams are in a cup of butter?', answer: '226 g, which is 2 sticks.' },
+        { question: 'How many tablespoons are in a stick of butter?', answer: '8 tablespoons, the standard US stick marking.' },
+        { question: 'How many grams are in a tablespoon of butter?', answer: 'About 14.13 g (¹⁄₁₆ cup × 226 g).' },
+        { question: 'Is 4 sticks of butter the same as 1 pound?', answer: 'Almost — 4 sticks weigh 452 g by this chart, about 0.35% under the exact 453.59237 g pound, which is why US butter is sold and labeled as "1 lb" per 4 sticks.' },
+        { question: 'Does salted butter weigh the same as unsalted butter?', answer: 'Essentially yes for measuring purposes — the salt in salted butter is too small a share of the total weight to matter in a recipe.' }
+      ]
+    },
+    compute(values) {
+      const grams = values.amount * gramsPerCup('butter');
+      return { grams };
+    }
+  },
+  {
+    id: 'cups-to-grams-rice',
+    category: 'measurements',
+    updatedAt: '2026-10-26',
+    aliases: ['rice cups to grams', 'how many grams in a cup of rice', 'rice grams to cups converter', 'cup of uncooked rice in grams', 'rice weight converter'],
+    related: ['cups-to-grams-converter', 'cups-to-grams-flour', 'cups-to-grams-sugar', 'grams-to-ounces-converter', 'milliliters-to-cups-converter'],
+    title: 'Cups to Grams – Rice',
+    description: 'Convert cups of uncooked white rice to grams and ounces, using USDA FoodData Central figures, with the uncooked-vs-cooked trap explained for rice-cooker ratios.',
+    example: '1 cup of uncooked long-grain white rice weighs about 185 g (6.53 oz); 1 cup of the same rice cooked weighs about 158 g (5.57 oz).',
+    breakdown: {
+      headline: 'grams',
+      headlineLabel: 'Rice weight',
+      outputs: [{ id: 'grams', label: 'Rice weight', format: 'number', dimension: 'mass', unit: 'g', alsoIn: ['oz'] }],
+      visual: {
+        type: 'logScale',
+        value: 'grams',
+        min: -1,
+        max: 4,
+        ticks: ['0.1 g', '1 g', '10 g', '100 g', '1,000 g', '10,000 g'],
+        benchmarks: [
+          { label: 'A ½-cup serving of uncooked rice (92.5 g)', value: 92.5 },
+          { label: '1 cup of uncooked rice (185 g)', value: 185 },
+          { label: 'A 1 kg bag of rice', value: 1000 }
+        ],
+        title: 'How much rice is that?',
+        valueLabel: 'Your amount'
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-26',
+      concept: {
+        title: 'Rice, by weight, outside of baking',
+        paragraphs: [
+          'USDA FoodData Central lists 1 cup of raw, unenriched long-grain white rice at 185 g. Unlike the baking ingredients on this site’s other cooking pages, rice weight matters most for rice cookers and water-ratio cooking, where the rice-to-water ratio is often given by weight for accuracy rather than by the less precise cup measure.',
+          'This figure is for uncooked rice. A recipe or package that says "1 cup rice" with no further qualifier almost always means uncooked — cooked rice is measured and sold completely differently.',
+          'USDA FoodData Central separately lists 1 cup of cooked, enriched long-grain white rice at 158 g — less than the 185 g of uncooked rice in a cup, even though cooking adds water and increases total weight. That is not a contradiction: cooking makes rice fluffier and less densely packed, so the same cup holds less mass of cooked rice than it did of compact, uncooked grains, even as the total rice-plus-water system gains weight overall.'
+        ]
+      },
+      howTo: {
+        intro: 'Type an amount of uncooked rice in cups. The weight updates as you type.',
+        steps: [
+          { name: 'Type the cup amount', text: 'Enter how many cups of uncooked rice you are measuring.' },
+          { name: 'Use another unit if you prefer', text: 'Switch the unit menu to tablespoons, teaspoons or milliliters.' },
+          { name: 'Read the weight', text: 'The result shows grams, with ounces alongside it.' },
+          { name: 'Check you mean uncooked rice', text: 'This figure is for uncooked rice — see the watch-out below if your recipe means cooked rice instead.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Rice weight is cups times USDA’s figure of 185 g per cup of uncooked long-grain white rice.',
+        expression: 'grams = cups × 185\noz = grams ÷ 28.349523125',
+        terms: [
+          { symbol: 'cups', meaning: 'Volume of uncooked rice in US customary cups.' },
+          { symbol: '185', meaning: 'Grams per cup of raw, unenriched long-grain white rice (USDA FoodData Central).' },
+          { symbol: '28.349523125', meaning: 'Grams in one avoirdupois ounce, exact.' }
+        ],
+        note: 'This is a measured figure for one specific rice (raw, unenriched, long-grain, white); other rice varieties can weigh a different amount per cup.'
+      },
+      workedExample: {
+        intro: 'A rice cooker’s instructions call for ¾ cup of uncooked rice per serving.',
+        rows: [
+          { label: '0.75 cup × 185 g/cup', value: '138.75 g' },
+          { label: '138.75 ÷ 28.349523125', value: '4.89 oz' },
+          { label: 'Compare: ¾ cup cooked would be lighter — see watch-out', value: '118.50 g' }
+        ],
+        result: '¾ cup of uncooked rice ≈ 138.75 g (4.89 oz)',
+        explanation: 'The "compare" row is ¾ cup of cooked rice at USDA’s 158 g/cup figure — shown to make the point that the same cup amount of uncooked and cooked rice are not interchangeable weights.'
+      },
+      referenceTable: {
+        title: 'Uncooked long-grain white rice: cups to grams and ounces',
+        columns: ['Amount', 'Grams', 'Ounces'],
+        rows: CUP_AMOUNTS.map(({ label, cups }) => cupAmountRow(label, cups, gramsPerCup('rice'))),
+        decimals: 2,
+        note: 'USDA FoodData Central #169756, raw, unenriched, long-grain white rice, 185 g per US cup.'
+      },
+      watchOut: [
+        { title: 'Uncooked and cooked rice are not the same weight per cup', body: 'USDA lists 185 g for 1 cup uncooked but 158 g for 1 cup cooked — cooking makes rice fluffier and less densely packed, so a cup of cooked rice actually weighs less than a cup of uncooked rice, even though the rice itself gained weight from absorbed water.' },
+        { title: '"1 cup of rice" in a recipe usually means uncooked', body: 'Unless a recipe specifically says "1 cup cooked rice," assume it means uncooked — check the recipe’s own wording if the amount seems unusually large or small for the dish.' },
+        { title: 'This figure is for one specific rice', body: 'USDA’s 185 g figure is for raw, unenriched, long-grain white rice. Brown rice, basmati, jasmine and short-grain rice can each weigh a somewhat different amount per cup.' },
+        { title: 'This is the US customary cup', body: 'A metric cup (250 mL) is about 5.7% bigger than the US cup used here.' }
+      ],
+      references: [
+        { label: 'USDA FoodData Central #169756, "Rice, white, long-grain, regular, raw, unenriched"', url: 'https://fdc.nal.usda.gov/food-details/169756/nutrients' },
+        { label: 'USDA FoodData Central #168878, "Rice, white, long-grain, regular, enriched, cooked"', url: 'https://fdc.nal.usda.gov/food-details/168878/nutrients' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units, Appendix B (conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'amount', label: 'Uncooked rice', type: 'number', placeholder: '1', defaultValue: 1, step: 0.25, min: 0, dimension: 'volume', unit: 'cup' }
+    ],
+    seo: {
+      title: 'Cups to Grams – Rice Converter',
+      description: 'Free rice cups to grams converter: uncooked long-grain white rice to grams and ounces, from USDA figures, with the cooked-rice trap explained.',
+      faq: [
+        { question: 'How many grams are in a cup of rice?', answer: 'About 185 g for uncooked, raw long-grain white rice (USDA FoodData Central).' },
+        { question: 'Is cooked rice the same weight per cup as uncooked rice?', answer: 'No — USDA lists 1 cup of cooked rice at 158 g, less than the 185 g for 1 cup uncooked, because cooked rice is fluffier and packs less densely into the same cup.' },
+        { question: 'How many ounces are in a cup of rice?', answer: 'About 6.53 oz uncooked (185 g ÷ 28.349523125).' },
+        { question: 'How much is ¾ cup of rice in grams?', answer: '138.75 g uncooked (0.75 × 185 g).' },
+        { question: 'Does this figure work for brown or basmati rice?', answer: 'Not exactly — 185 g per cup is specifically for raw, unenriched, long-grain white rice. Other rice varieties can weigh a somewhat different amount per cup.' },
+        { question: 'Why do rice cooker instructions give weight instead of cups?', answer: 'Weight is more precise than volume for the rice-to-water ratio that determines texture, so many rice cookers and recipes specify rice by weight for consistent results.' }
+      ]
+    },
+    compute(values) {
+      const grams = values.amount * gramsPerCup('rice');
+      return { grams };
     }
   }
 ];

@@ -75,6 +75,12 @@ export const INGREDIENT_DENSITIES: Ingredient[] = [
     source: 'USDA FoodData Central #169756, "Rice, white, long-grain, regular, raw, unenriched"'
   },
   {
+    id: 'riceCooked',
+    label: 'Cooked long-grain white rice',
+    gramsPerCup: 158,
+    source: 'USDA FoodData Central #168878, "Rice, white, long-grain, regular, enriched, cooked"'
+  },
+  {
     id: 'oats',
     label: 'Rolled oats (old-fashioned)',
     gramsPerCup: 89,

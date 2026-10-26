@@ -1045,6 +1045,157 @@ exports[`compute() snapshots > cube-root-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > cups-to-grams-butter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "amount": 1
+    },
+    "outputs": {
+      "grams": 226
+    }
+  },
+  "typical": {
+    "inputs": {
+      "amount": 1.5
+    },
+    "outputs": {
+      "grams": 339
+    }
+  },
+  "edge": {
+    "inputs": {
+      "amount": 0
+    },
+    "outputs": {
+      "grams": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > cups-to-grams-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "amount": 1,
+      "ingredient": 120
+    },
+    "outputs": {
+      "grams": 120
+    }
+  },
+  "typical": {
+    "inputs": {
+      "amount": 1.5,
+      "ingredient": 180
+    },
+    "outputs": {
+      "grams": 270
+    }
+  },
+  "edge": {
+    "inputs": {
+      "amount": 0,
+      "ingredient": 0
+    },
+    "outputs": {
+      "grams": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > cups-to-grams-flour 1`] = `
+{
+  "default": {
+    "inputs": {
+      "amount": 1
+    },
+    "outputs": {
+      "grams": 120
+    }
+  },
+  "typical": {
+    "inputs": {
+      "amount": 1.5
+    },
+    "outputs": {
+      "grams": 180
+    }
+  },
+  "edge": {
+    "inputs": {
+      "amount": 0
+    },
+    "outputs": {
+      "grams": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > cups-to-grams-rice 1`] = `
+{
+  "default": {
+    "inputs": {
+      "amount": 1
+    },
+    "outputs": {
+      "grams": 185
+    }
+  },
+  "typical": {
+    "inputs": {
+      "amount": 1.5
+    },
+    "outputs": {
+      "grams": 277.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "amount": 0
+    },
+    "outputs": {
+      "grams": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > cups-to-grams-sugar 1`] = `
+{
+  "default": {
+    "inputs": {
+      "sugarType": 198,
+      "amount": 1
+    },
+    "outputs": {
+      "grams": 198
+    }
+  },
+  "typical": {
+    "inputs": {
+      "sugarType": 297,
+      "amount": 1.5
+    },
+    "outputs": {
+      "grams": 445.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "sugarType": 0,
+      "amount": 0
+    },
+    "outputs": {
+      "grams": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > data-storage-converter 1`] = `
 {
   "default": {

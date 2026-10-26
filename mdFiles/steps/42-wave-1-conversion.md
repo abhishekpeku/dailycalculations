@@ -415,16 +415,25 @@ exactly 250/236.5882365 ≈ 1.0568 — stated as a ratio, not a second density t
   keys options by `gramsPerCup`), noted as a sentence on `cups-to-grams-flour` instead
 - [x] Kit addition: `content.referenceTable` (`types.ts`, `ReferenceTableSection.tsx`, `page.tsx`
   wiring, `lib/categoryTheme.ts`'s `SECTION_THEME`), parallel to `commonValues`, not touching it
-- [ ] `cups-to-grams-converter`
-- [ ] `cups-to-grams-flour`
-- [ ] `cups-to-grams-sugar`
-- [ ] `cups-to-grams-butter`
-- [ ] `cups-to-grams-rice`
-- [ ] Independent scratch verification (`verify_run6.mjs`) of every copy figure, every
-  `referenceTable` row and the metric-cup scale factor, before committing
-- [ ] `npm test`, `npm run build`,
-  `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` pass
-- [ ] Spot-check the 5 new pages + `/categories/measurements` on a local server, kill the server
+- [x] `cups-to-grams-converter`
+- [x] `cups-to-grams-flour`
+- [x] `cups-to-grams-sugar`
+- [x] `cups-to-grams-butter`
+- [x] `cups-to-grams-rice`
+- [x] Independent scratch verification (`verify_run6.mjs`, 61 checks) of every copy figure before
+  committing — all passed on the first run of the formal checks (the earlier informal printout had
+  already caught the arithmetic while drafting, e.g. correctly computing "4 sticks of butter" as
+  2 cups × 226 g = 452 g, not a wrong 226 × 4 = 904 g typo made once while exploring the numbers by
+  hand). A second scratch script (`check_run6.mjs`) confirmed 0 duplicate ids, 0 new duplicate
+  aliases, every `related` id exists with no self-reference, and every `seo.title`/`seo.description`
+  within budget — it caught `cups-to-grams-flour`'s `seo.description` at 169 chars (over the 160
+  limit), fixed before committing.
+- [x] `npm test` (639/639, snapshot diff touches only the 5 new ids), `npm run build` (167 static
+  pages, up from 162), `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern
+  ".claude/**"` (clean) — all pass
+- [x] Spot-check the 5 new pages + `/categories/measurements` on a local server (H1s, `common-values`
+  vs `reference-table` section ids, the ingredient `<select>`'s 12 distinct-value options with flour
+  as the default, JSON-LD present), kill the server (port 3000 confirmed free)
 - [ ] Update `mdFiles/STATUS.md` (row 40–42 + session log, incl. the Wave 2 "cups to grams" dedupe
   note and a concrete scoped proposal for run 7 — shoe/ring/clothing sizes, not built), `gh pr ready`
 

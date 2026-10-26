@@ -320,6 +320,111 @@ pair's real search intent, not a copy of the general page's table:
 - [ ] Update `mdFiles/STATUS.md` (row 40–42 + session log — incl. a concrete scope proposal for
   run 6, the lookup-table converters), `gh pr ready`
 
+## Run 6
+
+Lookup-table converters, first of the runs 6+ group: cooking cups↔grams by ingredient. A materially
+different shape from runs 1–5 — none of this is a single exact factor through `lib/units.ts`; it's
+an empirical density (grams per US cup) that varies by ingredient and is only as precise as its
+source. Five pages: one general page with an ingredient picker, plus four dedicated ingredient
+pages for the highest search-intent ingredients.
+
+**Dedupe check (programmatic, against every `id`/alias/`redirectFrom` in `data/calculators/*.ts`
+before building)**: no existing id or alias collision for `cups-to-grams-converter`,
+`cups-to-grams-flour`, `cups-to-grams-sugar`, `cups-to-grams-butter`, `cups-to-grams-rice` (checked
+every id containing "cup"/"gram"/"flour"/"sugar"/"butter"/"rice" and every `aliases:` line
+containing the same — only unrelated hits: `grams-to-ounces-converter`'s own id/aliases, a flour
+example in its worked-example prose, and `milliliters-to-cups-converter`'s "recipe cup converter"
+alias, none of which collide).
+
+**Ingredient pick (5th dedicated page)**: rice, not milk. Rice is the ingredient most often needing
+an exact cups→grams figure *outside* baking too — rice cookers and rice-to-water ratios are commonly
+given by weight (185 g/cup) for accuracy, and "1 cup rice in grams" has real, distinct search intent
+from the baking ingredients. Milk is almost always measured by volume in recipes (a cup/mL figure
+already suffices), so a dedicated milk page would have little to add beyond the general page's row
+for it.
+
+**Sources actually fetched** (never hand-copied from memory): King Arthur Baking Company's
+Ingredient Weight Chart (`https://www.kingarthurbaking.com/learn/ingredient-weight-chart`) for the
+baking-specific ingredients, and USDA FoodData Central (SR Legacy) for rice, milk and honey, which
+King Arthur's chart does not list. Exact rows fetched and used — see "Shared density table" below.
+
+**Shared density table — one place, every row cited, g/cup never retyped elsewhere**: a new
+`lib/ingredients.ts`, `INGREDIENT_DENSITIES: Ingredient[]`, each row `{ id, label, gramsPerCup,
+source }`. The `cups-to-grams-converter` page's ingredient `options` and every dedicated page's
+density constant are built by looking up this table by `id` (`gramsPerCup('flour')`, etc.), never a
+re-typed literal. The ounces-per-cup figure (wherever shown) is computed from `gramsPerCup` via
+`lib/units.ts`'s `mass` dimension (`fromBase(toBase(g, 'mass', 'g'), 'mass', 'oz')`), not a second
+hand-typed number.
+
+**Table rendering decision**: `content.commonValues` doesn't fit — it's built around a
+`UnitDimension` + two unit ids from `lib/units.ts`, and a gram-per-cup density isn't a NIST unit
+factor, it's an ingredient property. Added a **minimal, generic, parallel field**,
+`content.referenceTable` (`data/calculators/types.ts`), rendered by a new
+`components/ReferenceTableSection.tsx` (same card/caption/table styling as `CommonValuesSection`,
+its own section id so it doesn't touch `commonValues`'s type, renderer or existing 25-page test at
+all): `{ title, columns: string[], rows: { label: string; values: number[] }[], decimals?, note? }`.
+`values` are always the result of a computed expression in the data file (a cups×density
+multiplication or a `lib/units.ts` conversion), never a literal typed from a calculation done by
+hand. Wired into `app/[locale]/calculators/[slug]/page.tsx`'s `tocItems` and render list exactly
+where `commonValues` is, as a sibling condition — `commonValues`'s own code path is untouched.
+Covers two shapes with the same component: a per-ingredient comparison table (general page: one row
+per ingredient, g/cup and oz/cup) and a per-amount table (dedicated pages: one row per cup amount,
+grams and ounces for that one ingredient).
+
+**Pages**:
+- `cups-to-grams-converter` — type B. Inputs: `amount` (dimension `volume`, default unit `cup`, so
+  the existing volume unit menu — tbsp, tsp, mL, etc. — works unchanged) and `ingredient` (`options`
+  built from `INGREDIENT_DENSITIES`, value = that row's `gramsPerCup`, so the chosen numeric value
+  *is* the density — no separate lookup needed in `compute()`). `compute()`: `grams = amount ×
+  ingredient` (amount is already converted to cups by the widget, since the input's `unit` is
+  `'cup'`); headline `grams`, `alsoIn: ['oz']` (computed by the existing `alsoInText` dimension
+  conversion, not a second compute key). `referenceTable`: one row per ingredient (12 rows, g/cup
+  and oz/cup), the actual density reference chart.
+- `cups-to-grams-flour` — all-purpose flour (120 g/cup, King Arthur, spooned-and-leveled). Intent:
+  the single most-searched version of this query. `referenceTable`: cup amounts (¼–2 cups) → grams
+  → oz for *this* ingredient only. Watch-out: spooned-and-leveled (120 g) vs. scooped-straight-from-
+  the-bag (can run 130–150 g, overpacked by up to ~25%) — both figures stated honestly, King
+  Arthur's spooned method named as this page's basis, not presented as the only "right" number.
+- `cups-to-grams-sugar` — granulated sugar (198 g/cup, King Arthur). Intent: baking's second-most
+  common conversion. Also carries brown sugar (213 g/cup, packed) and powdered sugar (113 g/cup,
+  unsifted) as extra rows/watch-out, since "sugar" searches split across all three and King Arthur
+  cites all three directly.
+- `cups-to-grams-butter` — butter (227 g/cup; King Arthur's own listed figure is 113 g per 8 tbsp /
+  ½ cup, doubled). Intent/table distinctive from flour/sugar: US butter is sold in sticks (1 stick =
+  ½ cup = 8 tbsp = 113 g), so the table's rows are sticks and tablespoons, not just cup fractions —
+  "2 sticks = 1 cup = 227 g", "1 tbsp ≈ 14.2 g". Watch-out: 4 sticks (1 lb butter) is about 453.6 g,
+  close to but not quite the exact 453.59237 g pound (`lib/units.ts`'s `POUND` constant) — a
+  coincidence of US butter packaging, not a unit identity.
+- `cups-to-grams-rice` — uncooked long-grain white rice (185 g/cup, USDA FDC #169756). Intent: rice-
+  cooker and recipe water-ratio use, a distinct audience from the baking pages above. Watch-out:
+  this is *uncooked* rice; cooked rice weighs roughly 3× as much per cup because it absorbs water,
+  so a recipe's "1 cup rice" almost always means uncooked unless stated otherwise.
+
+**US vs. metric cup**: every page states the US customary cup (236.5882365 mL, `lib/units.ts`) is
+the basis, and that a metric cup (250 mL, about 5.7% bigger) would scale every gram figure up by
+exactly 250/236.5882365 ≈ 1.0568 — stated as a ratio, not a second density table (the point is
+`lib/units.ts`'s existing cup unit, not a new cup size to model).
+
+### Progress
+
+- [x] Dedupe check (ids + aliases, programmatic) and the ingredient/source decisions above
+- [x] Fetch King Arthur's Ingredient Weight Chart and USDA FoodData Central (rice, milk, honey)
+- [ ] `lib/ingredients.ts` (shared, cited density table) + unit test
+- [ ] Kit addition: `content.referenceTable` (`types.ts`, `ReferenceTableSection.tsx`, `page.tsx`
+  wiring), parallel to `commonValues`, not touching it
+- [ ] `cups-to-grams-converter`
+- [ ] `cups-to-grams-flour`
+- [ ] `cups-to-grams-sugar`
+- [ ] `cups-to-grams-butter`
+- [ ] `cups-to-grams-rice`
+- [ ] Independent scratch verification (`verify_run6.mjs`) of every copy figure, every
+  `referenceTable` row and the metric-cup scale factor, before committing
+- [ ] `npm test`, `npm run build`,
+  `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` pass
+- [ ] Spot-check the 5 new pages + `/categories/measurements` on a local server, kill the server
+- [ ] Update `mdFiles/STATUS.md` (row 40–42 + session log, incl. the Wave 2 "cups to grams" dedupe
+  note and a concrete scoped proposal for run 7 — shoe/ring/clothing sizes, not built), `gh pr ready`
+
 ## Planned run breakdown (re-evaluate each run against what exists before building it)
 
 The plan's list is "~65, only pairs with real search volume, each with a real common-values

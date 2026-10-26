@@ -3952,7 +3952,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
           { label: '1 tablespoon of butter (14.13 g)', value: 14.125 },
           { label: '1 stick of butter (113 g)', value: 113 },
           { label: '1 cup, 2 sticks (226 g)', value: 226 },
-          { label: '4 sticks, about 1 pound (452 g)', value: 452 }
+          { label: '4 sticks (1 lb)', value: 453.59237 }
         ],
         title: 'How much butter is that?',
         valueLabel: 'Your amount'
@@ -4009,11 +4009,11 @@ export const measurementsCalculators: CalculatorConfig[] = [
           cupAmountRow('2 cups — 4 sticks', 2, gramsPerCup('butter'))
         ],
         decimals: 2,
-        note: 'King Arthur Baking Company: 113 g per 8 tablespoons (½ cup, 1 US stick). 4 sticks (452 g) is about 0.35% under the exact 453.59237 g pound — a quirk of US butter packaging, not a unit identity.'
+        note: 'King Arthur Baking Company: 113 g per 8 tablespoons (½ cup, 1 US stick). A US stick is sold as ¼ lb (4 oz, 113.4 g), so the chart\'s 113 g is that figure rounded; 4 sticks are exactly 1 lb (453.59 g), not the 452 g the rounded figure suggests.'
       },
       watchOut: [
         { title: 'A US stick is 113 g, 8 tablespoons, ½ cup', body: 'All three describe the same amount of butter. Cutting a stick at its printed wrapper lines is usually quicker and as accurate as measuring by cup.' },
-        { title: '4 sticks is close to, but not exactly, 1 pound', body: '4 sticks weigh 452 g by this chart, about 0.35% under the exact 453.59237 g pound — close enough that US butter is commonly sold and described as "1 lb" per 4 sticks.' },
+        { title: '4 sticks is 1 pound', body: 'A US stick is packaged as ¼ lb (4 oz, about 113.4 g), so 4 sticks are 1 lb (453.59 g). The 113 g per stick used here is that figure rounded, which is why multiplying it by 4 gives 452 g, about 1.6 g short.' },
         { title: 'Salted and unsalted butter are treated the same here', body: 'This figure does not separately account for salted butter; the salt’s share of the total weight is too small to matter for measuring.' },
         { title: 'European butter blocks are commonly sold in different sizes', body: 'US butter sticks are a US convention — other countries’ common block sizes differ, so weighing by grams rather than counting sticks is more reliable outside the US.' }
       ],
@@ -4033,7 +4033,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
         { question: 'How many grams are in a cup of butter?', answer: '226 g, which is 2 sticks.' },
         { question: 'How many tablespoons are in a stick of butter?', answer: '8 tablespoons, the standard US stick marking.' },
         { question: 'How many grams are in a tablespoon of butter?', answer: 'About 14.13 g (¹⁄₁₆ cup × 226 g).' },
-        { question: 'Is 4 sticks of butter the same as 1 pound?', answer: 'Almost — 4 sticks weigh 452 g by this chart, about 0.35% under the exact 453.59237 g pound, which is why US butter is sold and labeled as "1 lb" per 4 sticks.' },
+        { question: 'Is 4 sticks of butter the same as 1 pound?', answer: 'Yes. A US stick is packaged as ¼ lb (4 oz, about 113.4 g), so 4 sticks are 1 lb (453.59 g). Charts round a stick to 113 g, so 4 × 113 = 452 g is a rounding artifact, not a real shortfall.' },
         { question: 'Does salted butter weigh the same as unsalted butter?', answer: 'Essentially yes for measuring purposes — the salt in salted butter is too small a share of the total weight to matter in a recipe.' }
       ]
     },

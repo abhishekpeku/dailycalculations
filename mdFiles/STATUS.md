@@ -2046,6 +2046,13 @@ rationale: `mdFiles/steps/42-wave-1-conversion.md`, "Run 6" section.
 
 Things noticed but deliberately out of scope. Add here instead of fixing mid-step.
 
+- **`cups-to-grams-converter`'s ingredient `<select>` uses the density itself as each option's
+  value** (step 42 run 6, 2026-10-26). Two ingredients with the same density can't both be listed,
+  which is why bread flour (120 g/cup, same as all-purpose) is missing, enforced by a "densities are
+  distinct" test. Fix when an ingredient needs it: key options by ingredient id and look up the
+  density in `compute()`. Review also corrected the butter page: a US stick is ¼ lb (113.4 g), so
+  4 sticks are exactly 1 lb; King Arthur's 113 g is a rounding.
+
 - **`formatDecimal` (`lib/calculator.ts`) hardcodes `'en-US'`** (noticed 2026-10-25, step 42 review).
   It formats the static `content.commonValues` tables, so a UK/EU visitor sees `1,234.56` regardless
   of region. The table is server-rendered (`force-static`, no request headers), so a fix would need

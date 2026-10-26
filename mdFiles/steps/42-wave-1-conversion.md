@@ -434,8 +434,31 @@ exactly 250/236.5882365 ≈ 1.0568 — stated as a ratio, not a second density t
 - [x] Spot-check the 5 new pages + `/categories/measurements` on a local server (H1s, `common-values`
   vs `reference-table` section ids, the ingredient `<select>`'s 12 distinct-value options with flour
   as the default, JSON-LD present), kill the server (port 3000 confirmed free)
-- [ ] Update `mdFiles/STATUS.md` (row 40–42 + session log, incl. the Wave 2 "cups to grams" dedupe
+- [x] Update `mdFiles/STATUS.md` (row 40–42 + session log, incl. the Wave 2 "cups to grams" dedupe
   note and a concrete scoped proposal for run 7 — shoe/ring/clothing sizes, not built), `gh pr ready`
+
+## Run 7 proposal (not built this run — scope to re-check before starting)
+
+Shoe size converter(s), the next lookup-table run. Unlike run 6's densities, shoe size scales are
+not simple arithmetic lookups — they're offset-based numbering systems (US, UK, EU/Paris point,
+and foot length in cm/in) that differ by region and, for adult sizing, by sex. Proposed scope,
+**to re-verify against primary sizing-authority sources before building, not from memory**:
+
+- `shoe-size-converter` — type B, probably with a "men's / women's / kids'" selector (a `select`
+  input akin to run 6's ingredient picker) and foot length in cm/in as the actual solvable
+  quantity, with US, UK and EU size as derived lookups (likely via a small lookup table per system,
+  similar in shape to `lib/ingredients.ts`, not a `lib/units.ts` dimension — EU sizing in particular
+  is *not* a fixed offset from US/UK, it is closer to (foot length in cm + a constant) × 1.5, and
+  the exact constant and women's-vs-men's offset need to be checked against a named sizing
+  authority (e.g. a shoe manufacturer's or retailer's official size chart, not a random blog) before
+  any number goes into copy.
+- Possible split into `mens-shoe-size-chart` / `womens-shoe-size-chart` if the men's/women's US
+  offset (commonly cited as 1.5 sizes, but to be verified, not assumed) makes a combined page
+  awkward — decide after drafting the first page, the same way run 6 decided its ingredient split
+  only after drafting the shared table.
+- Needs its own dedupe check (ids/aliases) and its own "Run 7" progress section before building,
+  per this file's own pattern. Ring size and clothing size remain separate, later runs — do not
+  fold them into run 7.
 
 ## Planned run breakdown (re-evaluate each run against what exists before building it)
 

@@ -17,6 +17,7 @@ import RelatedCalculators from '@/components/RelatedCalculators';
 import SolverCalculator from '@/components/SolverCalculator';
 import ConceptSection from '@/components/ConceptSection';
 import CommonValuesSection from '@/components/CommonValuesSection';
+import ReferenceTableSection from '@/components/ReferenceTableSection';
 import ReferencesSection from '@/components/ReferencesSection';
 import TableOfContents from '@/components/TableOfContents';
 import IconTile from '@/components/IconTile';
@@ -71,6 +72,7 @@ export default async function CalculatorPage({
         { id: 'formula', label: t('formulaTitle') },
         { id: 'worked-example', label: t('workedExampleTitle') },
         ...(content.commonValues ? [{ id: 'common-values', label: content.commonValues.title }] : []),
+        ...(content.referenceTable ? [{ id: 'reference-table', label: content.referenceTable.title }] : []),
         ...(content.watchOut.length > 0 ? [{ id: 'watch-out', label: t('watchOutTitle') }] : []),
         { id: 'faq', label: t('faqTocLabel') },
         ...(content.references?.length ? [{ id: 'references', label: t('referencesTitle') }] : [])
@@ -160,6 +162,7 @@ export default async function CalculatorPage({
         {content ? <FormulaSection title={t('formulaTitle')} formula={content.formula} /> : null}
         {content ? <WorkedExampleSection title={t('workedExampleTitle')} example={content.workedExample} /> : null}
         {content?.commonValues ? <CommonValuesSection title={content.commonValues.title} commonValues={content.commonValues} /> : null}
+        {content?.referenceTable ? <ReferenceTableSection title={content.referenceTable.title} referenceTable={content.referenceTable} /> : null}
         {content ? <WatchOutSection title={t('watchOutTitle')} items={content.watchOut} /> : null}
 
         <FaqSection

@@ -30,6 +30,7 @@ export const SECTION_THEME: Record<string, { color: TileColor; icon: IconName }>
   formula: { color: 'purple', icon: 'function' },
   'worked-example': { color: 'orange', icon: 'pencil' },
   'common-values': { color: 'teal', icon: 'grid' },
+  'reference-table': { color: 'teal', icon: 'grid' },
   'watch-out': { color: 'red', icon: 'alert' },
   faq: { color: 'teal', icon: 'question' },
   references: { color: 'gray', icon: 'book' },

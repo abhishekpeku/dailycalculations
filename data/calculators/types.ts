@@ -232,6 +232,23 @@ export type CalculatorContent = {
      */
     stoneLbs?: 'from' | 'to';
   };
+  /**
+   * A generic, computed reference table for pages whose numbers are not a `lib/units.ts` factor —
+   * e.g. a cooking ingredient's density (mdFiles/steps/42-wave-1-conversion.md, "Run 6"). Parallel
+   * to `commonValues`, not a replacement: use whichever field actually fits the page's numbers.
+   * `values` must be the result of a computed expression in the data file (a lookup-table density
+   * times an amount, or a `lib/units.ts` conversion), never a literal copied from a hand calculation.
+   */
+  referenceTable?: {
+    title: string;
+    /** Header row: the label column's header, then one header per `values` entry. */
+    columns: string[];
+    rows: { label: string; values: number[] }[];
+    /** Decimal places for a cell. Default 0. */
+    decimals?: number;
+    /** A short footnote under the table, e.g. the method or source a density assumes. */
+    note?: string;
+  };
 };
 
 export type CalculatorConfig = {

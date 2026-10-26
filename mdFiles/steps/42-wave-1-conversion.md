@@ -409,9 +409,12 @@ exactly 250/236.5882365 ≈ 1.0568 — stated as a ratio, not a second density t
 
 - [x] Dedupe check (ids + aliases, programmatic) and the ingredient/source decisions above
 - [x] Fetch King Arthur's Ingredient Weight Chart and USDA FoodData Central (rice, milk, honey)
-- [ ] `lib/ingredients.ts` (shared, cited density table) + unit test
-- [ ] Kit addition: `content.referenceTable` (`types.ts`, `ReferenceTableSection.tsx`, `page.tsx`
-  wiring), parallel to `commonValues`, not touching it
+- [x] `lib/ingredients.ts` (shared, cited density table) + unit test — bread flour deliberately not
+  its own row (King Arthur gives it the identical 120 g/cup as all-purpose flour; a separate row
+  would duplicate a density, which the general page's ingredient `<select>` can't allow since it
+  keys options by `gramsPerCup`), noted as a sentence on `cups-to-grams-flour` instead
+- [x] Kit addition: `content.referenceTable` (`types.ts`, `ReferenceTableSection.tsx`, `page.tsx`
+  wiring, `lib/categoryTheme.ts`'s `SECTION_THEME`), parallel to `commonValues`, not touching it
 - [ ] `cups-to-grams-converter`
 - [ ] `cups-to-grams-flour`
 - [ ] `cups-to-grams-sugar`

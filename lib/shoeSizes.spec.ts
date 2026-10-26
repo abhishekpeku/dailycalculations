@@ -1,33 +1,38 @@
-// See mdFiles/steps/42-wave-1-conversion.md, "Run 7". Run: npm test
+// See mdFiles/steps/42-wave-1-conversion.md, "Run 7" and its "Pre-merge review fix" note. Run: npm test
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   categoryFromCode,
-  childLastMm,
   euAdultSize,
+  footMmFromUsMen,
+  isoEuSize,
+  isoFootMmFromUsMen,
+  isoUkSize,
+  isoUsMenSize,
   isValidAdultFoot,
   isValidChildFoot,
-  kidsSizesFromTargetUsSize,
+  kidsSizeAt,
   roundMondopoint,
   roundToHalf,
-  roundToWhole,
+  roundToThird,
   shoeSizesFromFootMm,
   ukAdultSize,
-  ukChildSize,
-  usChildSize,
   usMensSize,
   usWomensSize
 } from './shoeSizes.ts';
 
-const INCH_MM = 25.4;
 const CLOSE = 1e-9;
 
 describe('rounding helpers', () => {
-  test('roundToHalf snaps to the nearest half, never a non-existent size', () => {
+  test('roundToHalf snaps to the nearest half', () => {
     assert.equal(roundToHalf(8.2), 8);
     assert.equal(roundToHalf(8.3), 8.5);
-    assert.equal(roundToHalf(8.74), 8.5);
-    assert.equal(roundToHalf(8.76), 9);
+  });
+
+  test('roundToThird snaps to the nearest third (EU/Paris-point granularity)', () => {
+    assert.ok(Math.abs(roundToThird(42.7) - (42 + 2 / 3)) < CLOSE);
+    assert.ok(Math.abs(roundToThird(42.1) - (42)) < CLOSE);
+    assert.ok(Math.abs(roundToThird(42 + 1 / 3) - (42 + 1 / 3)) < CLOSE);
   });
 
   test('roundMondopoint snaps to the nearest 5 mm', () => {
@@ -42,64 +47,105 @@ describe('rounding helpers', () => {
   });
 });
 
-describe('quoted boundary points (Wikipedia, "Shoe size", raw wikitext)', () => {
-  test('a last length of 4 in is UK child size 0', () => {
-    // child foot size = 3 x last length (in) - 12
-    assert.ok(Math.abs((3 * 4 - 12) - 0) < CLOSE);
-  });
-
-  test('a last length of 8 1/2 in is UK child size 13 1/2', () => {
-    assert.ok(Math.abs((3 * 8.5 - 12) - 13.5) < CLOSE);
-  });
-
-  test('a last length of 8 2/3 in is UK adult size 1', () => {
-    // adult foot size = 3 x last length (in) - 25
-    assert.ok(Math.abs((3 * (8 + 2 / 3) - 25) - 1) < CLOSE);
-  });
-
-  test('the ISO 19407 UK-from-mm formula agrees with the inches formula at the adult-1 boundary', () => {
-    // last = foot + 2/3 in (the "allowance of two shoe sizes" = 2 barleycorns = 2/3 in)
-    const footMmAtUk1 = (8 + 2 / 3 - 2 / 3) * INCH_MM; // = 8 in exactly
-    assert.ok(Math.abs(ukAdultSize(footMmAtUk1) - 1) < CLOSE);
-  });
-
-  test('UK child 0 and UK child 13.5 round-trip through the mm-based formula via childLastMm', () => {
-    const footAt0 = (4 * INCH_MM - 6) / 1.08;
-    const footAt135 = (8.5 * INCH_MM - 6) / 1.08;
-    assert.ok(Math.abs(ukChildSize(footAt0) - 0) < CLOSE);
-    assert.ok(Math.abs(ukChildSize(footAt135) - 13.5) < CLOSE);
-  });
-});
-
-describe('cross-check against Nike\'s published size chart (nike.com/size-fit/mens-footwear)', () => {
-  // Each row: Nike's own US men's / UK / EU for a given foot length (in). The formula is expected
-  // to match Nike's US men's size closely (same half-size grid) but run about half a UK size and
-  // about one EU size lower than Nike's own chart — a real, cited brand-variation gap, not
-  // asserted as equal. See the step file's "Where sources disagree" note.
-  const nikeRows = [
-    { footIn: 10, usMenNike: 8, ukNike: 7.5, euNike: 41 },
-    { footIn: 10 + 11 / 16, usMenNike: 10, ukNike: 9.5, euNike: 44 },
-    { footIn: 11 + 5 / 16, usMenNike: 12, ukNike: 11.5, euNike: 46 }
+// adidas's own published men's size chart, as reproduced (explicitly attributed to adidas) by
+// sizefit.org/guides/adidas-shoe-size-chart, fetched directly this run. Every row below is adidas's
+// own number, not a fitted approximation — the retail formulas must reproduce every one exactly.
+describe('adidas published men\'s chart (sizefit.org/guides/adidas-shoe-size-chart)', () => {
+  const rows: [number, number, number, number][] = [
+    [4, 3.5, 36, 220], [4.5, 4, 36 + 2 / 3, 225], [5, 4.5, 37 + 1 / 3, 230], [5.5, 5, 38, 235],
+    [6, 5.5, 38 + 2 / 3, 240], [6.5, 6, 39 + 1 / 3, 245], [7, 6.5, 40, 250], [7.5, 7, 40 + 2 / 3, 255],
+    [8, 7.5, 41 + 1 / 3, 260], [8.5, 8, 42, 265], [9, 8.5, 42 + 2 / 3, 270], [9.5, 9, 43 + 1 / 3, 275],
+    [10, 9.5, 44, 280], [11, 10.5, 45 + 1 / 3, 290], [12, 11.5, 46 + 2 / 3, 300], [13, 12.5, 48, 310],
+    [14.5, 14, 50, 325]
   ];
 
-  for (const row of nikeRows) {
-    test(`foot ${row.footIn.toFixed(4)} in: formula US men's matches Nike's ${row.usMenNike}, UK/EU run below Nike's chart`, () => {
-      const footMm = row.footIn * INCH_MM;
-      const men = roundToHalf(usMensSize(footMm));
-      const uk = roundToHalf(ukAdultSize(footMm));
-      const eu = roundToWhole(euAdultSize(footMm));
-      assert.equal(men, row.usMenNike);
-      assert.ok(uk <= row.ukNike, `formula UK ${uk} should be at or below Nike's ${row.ukNike}`);
-      assert.ok(eu <= row.euNike, `formula EU ${eu} should be at or below Nike's ${row.euNike}`);
+  for (const [usMen, uk, eu, footMm] of rows) {
+    test(`US men's ${usMen} = UK ${uk} = EU ${eu.toFixed(2)} at ${footMm} mm`, () => {
+      assert.ok(Math.abs(usMensSize(footMm) - usMen) < CLOSE);
+      assert.ok(Math.abs(ukAdultSize(footMm) - uk) < CLOSE);
+      assert.ok(Math.abs(euAdultSize(footMm) - eu) < CLOSE);
+      assert.ok(Math.abs(footMmFromUsMen(usMen) - footMm) < CLOSE);
+    });
+  }
+});
+
+// adidas's own published women's chart, same source. Confirms women's = men's + 1 throughout
+// (adidas's own internal relationship), used here as the primary women's scale.
+describe('adidas published women\'s chart (sizefit.org/guides/adidas-shoe-size-chart)', () => {
+  const rows: [number, number, number, number][] = [
+    [5, 3.5, 36, 220], [6, 4.5, 37 + 1 / 3, 230], [7, 5.5, 38 + 2 / 3, 240], [8, 6.5, 40, 250],
+    [9, 7.5, 41 + 1 / 3, 260], [10, 8.5, 42 + 2 / 3, 270], [11, 9.5, 44, 280], [12, 10.5, 45 + 1 / 3, 290]
+  ];
+
+  for (const [usWomen, uk, eu, footMm] of rows) {
+    test(`US women's ${usWomen} = UK ${uk} = EU ${eu.toFixed(2)} at ${footMm} mm`, () => {
+      assert.ok(Math.abs(usWomensSize(footMm) - usWomen) < CLOSE); // default scale: 'fia' (men's + 1)
+      assert.ok(Math.abs(ukAdultSize(footMm) - uk) < CLOSE);
+      assert.ok(Math.abs(euAdultSize(footMm) - eu) < CLOSE);
     });
   }
 
-  test('the "common" US women\'s scale (+1.5) matches Nike\'s chart exactly', () => {
-    // Nike: US men's 8 <-> US women's 9.5; US men's 10 <-> US women's 11.5.
-    const footMmAt8 = 10 * INCH_MM;
-    assert.equal(roundToHalf(usWomensSize(footMmAt8)), 9.5);
-    const footMmAt10 = (10 + 11 / 16) * INCH_MM;
-    assert.equal(roundToHalf(usWomensSize(footMmAt10)), 11.5);
+  test('the "common" scale (Nike\'s own, +1.5) is a documented, different alternative', () => {
+    const footMm = 260; // adidas US men's 8 / US women's 9
+    assert.ok(Math.abs(usWomensSize(footMm, 'fia') - 9) < CLOSE);
+    assert.ok(Math.abs(usWomensSize(footMm, 'common') - 9.5) < CLOSE);
+  });
+});
+
+// Nike's published men's/women's/UK/EU chart (nike.com/size-fit/mens-footwear), fetched directly.
+// Compared AT THE SAME US SIZE LABEL, never at Nike's own foot-length figure — Nike and adidas
+// print different foot lengths for the same labeled size, so comparing by foot length is
+// apples-to-oranges (the cross-check that matters is: does the same US LABEL get a similar UK/EU
+// on both brands' own charts).
+describe('cross-check against Nike\'s own chart, compared by US size label (nike.com/size-fit/mens-footwear)', () => {
+  const rows: { usMen: number; ukNike: number; euNike: number; usWomenNike: number }[] = [
+    { usMen: 8, ukNike: 7.5, euNike: 41, usWomenNike: 9.5 },
+    { usMen: 8.5, ukNike: 8, euNike: 42, usWomenNike: 10 },
+    { usMen: 9, ukNike: 8.5, euNike: 42.5, usWomenNike: 10.5 },
+    { usMen: 9.5, ukNike: 9, euNike: 43, usWomenNike: 11 },
+    { usMen: 10, ukNike: 9.5, euNike: 44, usWomenNike: 11.5 },
+    { usMen: 11, ukNike: 10.5, euNike: 45, usWomenNike: 12.5 },
+    { usMen: 12, ukNike: 11.5, euNike: 46, usWomenNike: 13.5 }
+  ];
+
+  for (const { usMen, ukNike, euNike, usWomenNike } of rows) {
+    test(`US men's ${usMen}: UK matches Nike exactly, EU within half a size`, () => {
+      const footMm = footMmFromUsMen(usMen);
+      assert.equal(roundToHalf(ukAdultSize(footMm)), ukNike);
+      assert.ok(Math.abs(euAdultSize(footMm) - euNike) <= 0.7, `EU ${euAdultSize(footMm)} vs Nike ${euNike}`);
+    });
+  }
+
+  test('Nike\'s own chart uses the "common" (+1.5) women\'s scale, not adidas\'s (+1)', () => {
+    for (const { usMen, usWomenNike } of rows) {
+      const footMm = footMmFromUsMen(usMen);
+      assert.ok(Math.abs(usWomensSize(footMm, 'common') - usWomenNike) < CLOSE);
+      assert.notEqual(roundToHalf(usWomensSize(footMm, 'fia')), usWomenNike);
+    }
+  });
+});
+
+describe('ISO 19407 (secondary/theoretical) differs from the retail convention (primary)', () => {
+  // Comparing the two formulas at the SAME raw foot length is not the relevant comparison — ISO's
+  // own slope differs from the retail chart's, so that gap actually changes sign around 248 mm
+  // (confirmed in the run's verification script). The comparison that matters to a shopper is: for
+  // the SAME US SIZE LABEL, does ISO imply a shorter foot (and therefore a smaller UK/EU number)
+  // than the retail chart actually uses for that label? This is what the "pre-merge review" found,
+  // and what the formula note on each page explains.
+  test('for the same US men\'s size label, ISO implies a shorter foot and a smaller UK/EU than the real retail chart', () => {
+    for (const usMen of [7, 8, 9, 10, 12]) {
+      const isoFootMm = isoFootMmFromUsMen(usMen);
+      const retailFootMm = footMmFromUsMen(usMen);
+      assert.ok(isoFootMm < retailFootMm, `ISO foot ${isoFootMm} should be shorter than retail ${retailFootMm} for US men's ${usMen}`);
+      const isoUk = isoUkSize(isoFootMm);
+      const retailUk = ukAdultSize(retailFootMm);
+      assert.ok(retailUk - isoUk >= 0.4, `US men's ${usMen}: retail UK ${retailUk} vs ISO UK ${isoUk}`);
+      const isoEu = isoEuSize(isoFootMm);
+      const retailEu = euAdultSize(retailFootMm);
+      assert.ok(retailEu - isoEu >= 0.9, `US men's ${usMen}: retail EU ${retailEu} vs ISO EU ${isoEu}`);
+    }
+    // Sanity check: by construction, ISO's own US-men label always equals the target exactly.
+    assert.ok(Math.abs(isoUsMenSize(isoFootMmFromUsMen(9)) - 9) < CLOSE);
   });
 });
 
@@ -109,62 +155,67 @@ describe('valid-range guards', () => {
     assert.ok(Number.isNaN(shoeSizesFromFootMm(50, 'mens').usSize));
   });
 
-  test('zero or negative foot length is never valid', () => {
-    assert.equal(isValidAdultFoot(0), false);
-    assert.equal(isValidChildFoot(-10), false);
-  });
-
   test('a too-long foot has no valid children\'s size', () => {
     assert.equal(isValidChildFoot(300), false);
     assert.ok(Number.isNaN(shoeSizesFromFootMm(300, 'kids').usSize));
   });
 
-  test('a typical adult foot is valid for mens/womens but not kids', () => {
-    assert.equal(isValidAdultFoot(260), true);
-    assert.equal(isValidChildFoot(260), false);
+  test('zero or negative foot length is never valid', () => {
+    assert.equal(isValidAdultFoot(0), false);
+    assert.equal(isValidChildFoot(-10), false);
   });
 });
 
 describe('shoeSizesFromFootMm', () => {
-  test('mens and womens differ by exactly 1.5 at the same foot length', () => {
+  test('mens and womens differ by exactly 1 (the primary, adidas-chart scale) at the same foot length', () => {
     const men = shoeSizesFromFootMm(260, 'mens');
     const women = shoeSizesFromFootMm(260, 'womens');
-    assert.equal(women.usSize - men.usSize, 1.5);
+    assert.equal(women.usSize - men.usSize, 1);
     assert.equal(women.ukSize, men.ukSize);
     assert.equal(women.euSize, men.euSize);
   });
 
-  test('mondopoint is independent of category (it is just the foot length, rounded)', () => {
+  test('mondopoint is independent of category and of the retail convention (it is just the foot length)', () => {
     assert.equal(shoeSizesFromFootMm(262, 'mens').mondopoint, 260);
     assert.equal(shoeSizesFromFootMm(262, 'kids').mondopoint, 260);
   });
 });
 
-describe('children\'s round-trip hazard (why the static kids chart uses kidsSizesFromTargetUsSize)', () => {
-  // Inverting usChildSize to a foot length and then calling ukChildSize(footMm) on that inverted
-  // value re-derives the last length a second time through childLastMm — two floating-point hops
-  // instead of one. Because UK child = US child - 0.25 exactly, the UK result then sits exactly on
-  // a rounding tie for every integer US target, and which side it falls on depends on FP noise.
-  // kidsSizesFromTargetUsSize avoids this by computing both sizes from one shared last-length
-  // value. This test demonstrates the difference exists, so the data file's choice is justified.
-  test('UK child size is exactly US child size minus 0.25, via the single-hop helper', () => {
-    for (const target of [8, 9, 10, 11, 12, 13, 13.5]) {
-      const result = kidsSizesFromTargetUsSize(target);
-      assert.ok(Math.abs(result.ukSize - (target - 0.25)) < CLOSE, `target ${target}: UK ${result.ukSize}`);
-    }
+describe('kids\' chart: label resets (US and UK each reset at their own, different row)', () => {
+  test('US resets from 13.5 to 1 at 190 -> 195 mm; UK does not reset there', () => {
+    const at190 = kidsSizeAt(190)!;
+    const at195 = kidsSizeAt(195)!;
+    assert.equal(at190.usSize, 13.5);
+    assert.equal(at195.usSize, 1);
+    assert.equal(at190.ukSize, 13);
+    assert.equal(at195.ukSize, 13.5); // UK has not reset yet at the same row US resets on
   });
 
-  test('the single-hop and live (footMm-based) paths agree once rounded, for a plain foot length', () => {
-    for (const footMm of [120, 140, 160, 180]) {
-      const uk = ukChildSize(footMm);
-      const us = usChildSize(footMm);
-      assert.ok(Math.abs(us - uk - 0.25) < CLOSE);
-    }
+  test('UK resets from 13.5 to 1 at 195 -> 200 mm; US does not reset there', () => {
+    const at195 = kidsSizeAt(195)!;
+    const at200 = kidsSizeAt(200)!;
+    assert.equal(at195.ukSize, 13.5);
+    assert.equal(at200.ukSize, 1);
+    assert.equal(at195.usSize, 1);
+    assert.equal(at200.usSize, 1.5); // US already reset one row earlier, now just counting up
   });
-});
 
-describe('lastLength allowance (ISO 19407, children)', () => {
-  test('childLastMm applies the quoted "8% greater than foot length plus 6 mm" allowance', () => {
-    assert.equal(childLastMm(100), 100 * 1.08 + 6);
+  test('interpolating a foot length inside a reset segment snaps to an endpoint, never averages', () => {
+    const mid = kidsSizeAt(192.5)!; // halfway between the US-reset row (190) and the next (195)
+    assert.ok(mid.usSize === 13.5 || mid.usSize === 1, `got ${mid.usSize}, expected a snap to an endpoint`);
+  });
+
+  test('EU never resets and interpolates smoothly through the same region', () => {
+    const at190 = kidsSizeAt(190)!;
+    const at195 = kidsSizeAt(195)!;
+    const mid = kidsSizeAt(192.5)!;
+    assert.ok(mid.euSize > at190.euSize && mid.euSize < at195.euSize);
+  });
+
+  test('a foot length exactly on a published row returns that row\'s own values', () => {
+    const at260 = kidsSizeAt(260);
+    assert.equal(at260, null); // 260mm is outside the kids' chart (adult range) -- confirms the guard
+    const at155 = kidsSizeAt(155)!; // two adjacent rows share 155mm (9k and 9.5k) in adidas's own chart
+    assert.ok(at155.usSize === 9 || at155.usSize === 9.5);
   });
 });

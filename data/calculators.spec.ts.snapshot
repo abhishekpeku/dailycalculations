@@ -2384,28 +2384,28 @@ exports[`compute() snapshots > kids-shoe-size-chart 1`] = `
 {
   "default": {
     "inputs": {
-      "footLength": 110
+      "footLength": 160
     },
     "outputs": {
-      "usSize": 3,
-      "ukSize": 2.5,
-      "euSize": 19,
-      "mondopoint": 110,
-      "footCm": 11,
-      "footIn": 4.330708661
+      "usSize": 10,
+      "ukSize": 9.5,
+      "euSize": 27,
+      "mondopoint": 160,
+      "footCm": 16,
+      "footIn": 6.299212598
     }
   },
   "typical": {
     "inputs": {
-      "footLength": 165
+      "footLength": 240
     },
     "outputs": {
-      "usSize": 10,
-      "ukSize": 10,
-      "euSize": 28,
-      "mondopoint": 165,
-      "footCm": 16.5,
-      "footIn": 6.496062992
+      "usSize": 6,
+      "ukSize": 5.5,
+      "euSize": 38.66666667,
+      "mondopoint": 240,
+      "footCm": 24,
+      "footIn": 9.448818898
     }
   },
   "edge": {
@@ -3021,9 +3021,9 @@ exports[`compute() snapshots > mens-shoe-size-chart 1`] = `
       "footLength": 262
     },
     "outputs": {
-      "usSize": 9,
-      "ukSize": 8,
-      "euSize": 41,
+      "usSize": 8,
+      "ukSize": 7.5,
+      "euSize": 41.66666667,
       "mondopoint": 260,
       "footCm": 26.2,
       "footIn": 10.31496063
@@ -3034,9 +3034,9 @@ exports[`compute() snapshots > mens-shoe-size-chart 1`] = `
       "footLength": 393
     },
     "outputs": {
-      "usSize": 24.5,
-      "ukSize": 23.5,
-      "euSize": 61,
+      "usSize": 21.5,
+      "ukSize": 21,
+      "euSize": 59,
       "mondopoint": 395,
       "footCm": 39.3,
       "footIn": 15.47244094
@@ -4799,9 +4799,9 @@ exports[`compute() snapshots > shoe-size-converter 1`] = `
       "category": 0
     },
     "outputs": {
-      "usSize": 8.5,
+      "usSize": 8,
       "ukSize": 7.5,
-      "euSize": 41,
+      "euSize": 41.33333333,
       "mondopoint": 260,
       "footCm": 26,
       "footIn": 10.23622047
@@ -4813,9 +4813,9 @@ exports[`compute() snapshots > shoe-size-converter 1`] = `
       "category": 0
     },
     "outputs": {
-      "usSize": 24,
-      "ukSize": 23,
-      "euSize": 61,
+      "usSize": 21,
+      "ukSize": 20.5,
+      "euSize": 58.66666667,
       "mondopoint": 390,
       "footCm": 39,
       "footIn": 15.35433071
@@ -6012,28 +6012,28 @@ exports[`compute() snapshots > womens-shoe-size-chart 1`] = `
 {
   "default": {
     "inputs": {
-      "footLength": 241
+      "footLength": 240
     },
     "outputs": {
-      "usSize": 8,
+      "usSize": 7,
       "ukSize": 5.5,
-      "euSize": 38,
+      "euSize": 38.66666667,
       "mondopoint": 240,
-      "footCm": 24.1,
-      "footIn": 9.488188976
+      "footCm": 24,
+      "footIn": 9.448818898
     }
   },
   "typical": {
     "inputs": {
-      "footLength": 362
+      "footLength": 360
     },
     "outputs": {
-      "usSize": 22.5,
-      "ukSize": 20,
-      "euSize": 56,
+      "usSize": 19,
+      "ukSize": 17.5,
+      "euSize": 54.66666667,
       "mondopoint": 360,
-      "footCm": 36.2,
-      "footIn": 14.2519685
+      "footCm": 36,
+      "footIn": 14.17322835
     }
   },
   "edge": {

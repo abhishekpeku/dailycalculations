@@ -38,7 +38,13 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'odds-ratio-calculator': ['oddsRatio', 'ciLower', 'ciUpper', 'riskExposedPercent', 'riskUnexposedPercent', 'correctionApplied'], // a=b=c=d=0 (all min 0) -> a+b=0, no row proportion exists
   'expected-value-calculator': ['expectedValue', 'variance', 'standardDeviation', 'expectedValueMinusSd', 'expectedValuePlusSd'], // listMin=1 zeros on both lists -> probabilitySum=0, fails the sum-to-1 check (probabilitySum itself stays a finite 0)
   'coefficient-of-variation-calculator': ['sampleCV', 'populationCV', 'sampleStdDevUsed'], // list mode, listMin=1 zero -> mean=0 (CV undefined) and n=1 sample variance is 0/0 (key order matches compute()'s own return order)
-  'outlier-calculator': ['lowestOutlier', 'highestOutlier'] // listMin=1 zero -> outlierCount=0, so there is no lowest/highest outlier to report
+  'outlier-calculator': ['lowestOutlier', 'highestOutlier'], // listMin=1 zero -> outlierCount=0, so there is no lowest/highest outlier to report
+  // footLength 0 (its min) is shorter than every system's valid range (lib/shoeSizes.ts's
+  // isValidAdultFoot/isValidChildFoot) -> no US/UK/EU size exists; mondopoint and foot cm/in stay finite (0).
+  'shoe-size-converter': ['usSize', 'ukSize', 'euSize'],
+  'mens-shoe-size-chart': ['usSize', 'ukSize', 'euSize'],
+  'womens-shoe-size-chart': ['usSize', 'ukSize', 'euSize'],
+  'kids-shoe-size-chart': ['usSize', 'ukSize', 'euSize']
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

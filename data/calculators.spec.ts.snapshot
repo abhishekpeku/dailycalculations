@@ -2380,6 +2380,50 @@ exports[`compute() snapshots > investment-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > kids-shoe-size-chart 1`] = `
+{
+  "default": {
+    "inputs": {
+      "footLength": 160
+    },
+    "outputs": {
+      "usSize": 10,
+      "ukSize": 9.5,
+      "euSize": 27,
+      "mondopoint": 160,
+      "footCm": 16,
+      "footIn": 6.299212598
+    }
+  },
+  "typical": {
+    "inputs": {
+      "footLength": 240
+    },
+    "outputs": {
+      "usSize": 6,
+      "ukSize": 5.5,
+      "euSize": 38.66666667,
+      "mondopoint": 240,
+      "footCm": 24,
+      "footIn": 9.448818898
+    }
+  },
+  "edge": {
+    "inputs": {
+      "footLength": 0
+    },
+    "outputs": {
+      "usSize": "NaN",
+      "ukSize": "NaN",
+      "euSize": "NaN",
+      "mondopoint": 0,
+      "footCm": 0,
+      "footIn": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > kilocalories-to-kilojoules-converter 1`] = `
 {
   "default": {
@@ -2965,6 +3009,50 @@ exports[`compute() snapshots > megabytes-to-gigabytes-converter 1`] = `
     },
     "outputs": {
       "gigabytes": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > mens-shoe-size-chart 1`] = `
+{
+  "default": {
+    "inputs": {
+      "footLength": 262
+    },
+    "outputs": {
+      "usSize": 8,
+      "ukSize": 7.5,
+      "euSize": 41.66666667,
+      "mondopoint": 260,
+      "footCm": 26.2,
+      "footIn": 10.31496063
+    }
+  },
+  "typical": {
+    "inputs": {
+      "footLength": 393
+    },
+    "outputs": {
+      "usSize": 21.5,
+      "ukSize": 21,
+      "euSize": 59,
+      "mondopoint": 395,
+      "footCm": 39.3,
+      "footIn": 15.47244094
+    }
+  },
+  "edge": {
+    "inputs": {
+      "footLength": 0
+    },
+    "outputs": {
+      "usSize": "NaN",
+      "ukSize": "NaN",
+      "euSize": "NaN",
+      "mondopoint": 0,
+      "footCm": 0,
+      "footIn": 0
     }
   }
 }
@@ -4703,6 +4791,53 @@ exports[`compute() snapshots > scientific-notation-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > shoe-size-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "footLength": 260,
+      "category": 0
+    },
+    "outputs": {
+      "usSize": 8,
+      "ukSize": 7.5,
+      "euSize": 41.33333333,
+      "mondopoint": 260,
+      "footCm": 26,
+      "footIn": 10.23622047
+    }
+  },
+  "typical": {
+    "inputs": {
+      "footLength": 390,
+      "category": 0
+    },
+    "outputs": {
+      "usSize": 21,
+      "ukSize": 20.5,
+      "euSize": 58.66666667,
+      "mondopoint": 390,
+      "footCm": 39,
+      "footIn": 15.35433071
+    }
+  },
+  "edge": {
+    "inputs": {
+      "footLength": 0,
+      "category": 0
+    },
+    "outputs": {
+      "usSize": "NaN",
+      "ukSize": "NaN",
+      "euSize": "NaN",
+      "mondopoint": 0,
+      "footCm": 0,
+      "footIn": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > sleep-time-calculator 1`] = `
 {
   "default": {
@@ -5868,6 +6003,50 @@ exports[`compute() snapshots > weighted-average-calculator 1`] = `
       "weightedAverage": "NaN",
       "weightedSum": 0,
       "totalWeight": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > womens-shoe-size-chart 1`] = `
+{
+  "default": {
+    "inputs": {
+      "footLength": 240
+    },
+    "outputs": {
+      "usSize": 7,
+      "ukSize": 5.5,
+      "euSize": 38.66666667,
+      "mondopoint": 240,
+      "footCm": 24,
+      "footIn": 9.448818898
+    }
+  },
+  "typical": {
+    "inputs": {
+      "footLength": 360
+    },
+    "outputs": {
+      "usSize": 19,
+      "ukSize": 17.5,
+      "euSize": 54.66666667,
+      "mondopoint": 360,
+      "footCm": 36,
+      "footIn": 14.17322835
+    }
+  },
+  "edge": {
+    "inputs": {
+      "footLength": 0
+    },
+    "outputs": {
+      "usSize": "NaN",
+      "ukSize": "NaN",
+      "euSize": "NaN",
+      "mondopoint": 0,
+      "footCm": 0,
+      "footIn": 0
     }
   }
 }

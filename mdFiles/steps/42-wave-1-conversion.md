@@ -608,6 +608,142 @@ pages, unchanged — a correction, not a new page), lint clean. Spot-checked all
 dev server again (table figures matched the new verification script exactly); server killed, port
 3000 confirmed free.
 
+## Run 8
+
+Ring size converter(s). Like run 7, this is a cited-table/formula lookup, not a single `lib/units.ts`
+factor, and the run 7 lesson applies again: verify every headline constant against real charts
+before writing copy, not from memory.
+
+**Sources actually fetched**:
+- Wikipedia, "Ring size" (`en.wikipedia.org/wiki/Ring_size`), fetched as raw wikitext (not an
+  AI-summarized fetch — same lesson as run 7) via `curl`. Gives, verbatim: ISO 8653:2016's own
+  definition ("defines standard ring sizes in terms of the inner circumference of the ring measured
+  in millimeters"); the North America formula, cited to the 1921 Circular of the Bureau of
+  Standards No. 43 ("ring sizes are specified using a numerical scale with ¼ steps, where whole
+  sizes differ by 0.032 in of internal diameter" — giving `C_ISO = 2.55 × s_NA + 36.5` and
+  `d_ISO = 0.8128 × s_NA + 11.63`); and the UK/Ireland/Australia system, cited to British Standard
+  6820:1987 ("one alphabetical size division equals 1.25 mm of circumferential length. For a
+  baseline, ring size C has a circumference of 40 mm").
+- Goldsmiths (a real UK jeweler), ring size chart (`goldsmiths.co.uk/i/know-your-ring-size`),
+  fetched directly — UK letter, circumference, diameter, EU and US columns, A through Z.
+- Angara (a real US jeweler), ring size guide (`angara.com/blog/ring-size-guide`), fetched directly
+  — US size 3–13, diameter, circumference, UK letter and EU columns.
+- Ken Walker Jewelers, "How Ring Width Affects Sizing" (`kenwalkerjewelers.com/blog/jewelry/
+  how-ring-width-affects-sizing`), fetched for the wide-band and finger-swelling watch-outs, with
+  exact quotes.
+- Attempted and not used (blocked or no usable table, per the no-retry-loops rule — swapped source
+  rather than retried): brilliance.com (403), jamesallen.com (redirected to a generic Blue Nile
+  page), stuller.com/resources/sizing-charts/ring-sizes (404), bluenile.com and gemsociety.org (the
+  fetched pages were navigation/menu content, no table present), brilliantearth.com/ring-sizing-guide
+  (404).
+
+**Constants verified independently** (`verify scratchpad`, `ring_formulas.mjs`, run before any lib
+code was written) — every formula below reproduced and cross-checked against both jewelers' charts:
+- **EU/ISO** = the inner circumference in mm, rounded to the nearest whole mm (ISO 8653:2016's own
+  definition — not a fitted approximation).
+- **Diameter ↔ circumference**: exact geometry, `diameter = circumference ÷ π`.
+- **US/Canada** = `(circumference_mm − 36.5) ÷ 2.55`, rounded to the nearest quarter size (Wikipedia's
+  NA formula). Checked against Angara's own chart: computed circumference is within 0.5 mm of
+  Angara's listed figure at every size 3–13, widening slightly (to ~0.45 mm) only at the largest
+  size checked — normal chart-rounding-level noise, not a structural disagreement (unlike run 7's
+  shoe-size ISO-vs-retail gap).
+- **UK/Ireland/Australia** = a letter + optional half, from British Standard 6820:1987's own cited
+  definition (`circumference_mm = 0.625 × index + 37.5`, where index 0 = A, 1 = A½, 2 = B, … 50 = Z,
+  each index step = half of the Standard's own 1.25 mm per full letter, baseline C — index 4 — at
+  exactly 40 mm circumference, matching the Standard's own stated baseline exactly). Checked against
+  Goldsmiths' real UK chart (using their diameter column, which is the more fundamental of their two
+  slightly-inconsistent columns): **22 of 26 letters A–Z match exactly**; the other 4 (Q, R, U, X)
+  differ by exactly one half-letter, consistent with Goldsmiths' own 1-decimal rounding landing a
+  value right at a half-letter boundary, not a disagreement with the Standard. Checked against
+  Angara's chart (a US retailer's international conversion column, not a UK-specific authority):
+  consistently about half a letter different from the Standard-based figure throughout — a real,
+  bounded disagreement, documented in a watch-out, with the UK's own Standard (validated against the
+  real UK chart) used as the primary figure, the same precedent as run 7 picking the chart backed by
+  the fuller, more authoritative source.
+- Valid UK range: A (index 0) through Z (index 50) only — no UK letter is shown outside that range
+  (not extrapolated), the same "chart-defined range, NaN outside" precedent as run 7's shoe charts,
+  since there is no single authoritative standard for a size past Z.
+- Negative/zero guard: a circumference ≤ 0 gives no US or EU size (`NaN`), matching the "no negative
+  length" accuracy rule; diameter and circumference themselves stay plain, finite arithmetic (even at
+  0), the same precedent as shoe's `mondopoint`/`footCm`/`footIn` staying finite when the size
+  outputs go `NaN`.
+
+**Kit addition: `BreakdownOutput.labels`**. Unlike every system on the shoe-size pages, a UK ring
+letter ("N½") is not a number, and `compute()` can only return `Record<string, number>` — the kit
+has no way to show a non-numeric output. Added a **minimal, generic, parallel field**,
+`labels?: { value: number; label: string }[]`, on `BreakdownOutput` (`data/calculators/types.ts`),
+mirroring a `CalculatorInput`'s own `options` field but for an *output*: `compute()` still returns a
+real number (the UK letter's fixed index, so `NaN`/finite checks work exactly as before), and
+`formatOutput` (`lib/breakdown.ts`) looks the value up in `labels` for display when present, falling
+back to a plain number if no exact match (never used in practice, since the index is always one of
+the lookup's own keys). No other output or calculator is touched — every existing `formatOutput`
+caller with no `labels` behaves identically. `UK_LETTER_LABELS` (`lib/ringSizes.ts`) is the one
+generated lookup table every page's `ukIndex` output references, never a second hand-typed list.
+
+**Pages (2, not up to 4 — recorded below why 2 of the 4 candidates were skipped)**:
+- `ring-size-converter` — type B. Inputs: `measurement` (dimension `length`, default unit `mm`,
+  default 54) and `measureBy` (`options`: Inner diameter / Inner circumference, values `0`/`1` —
+  fixed, inherently distinct codes, not a lookup value that could collide, per the run 6 parked
+  lesson; default `1`, circumference, since that is ISO 8653's own basis and the most common
+  self-measuring method — wrapping a strip of paper or string around the finger). Outputs: US size
+  (headline), UK size (`ukIndex`, via the new `labels` lookup), EU/ISO size, diameter (mm),
+  circumference (mm). `referenceTable`: one row per whole UK letter A–Z, with US/EU/diameter/
+  circumference columns — the real cross-system comparison chart. `rangeBar` visual on the raw
+  circumference, bands at the UK A/Z boundaries (the one authoritative range this page's formulas
+  actually cover end to end).
+- `us-to-uk-ring-size-chart` — fixed US-size input (plain number, no unit, default 7, step 0.5).
+  Satisfies the "a known size" input the general page doesn't take directly, and the "US↔UK ring
+  size chart" candidate below. Headline: UK size (`ukIndex`, via the same `labels` lookup — this
+  page's whole point). `referenceTable`: rows labeled `"US <n> = UK <letter>"` (US 3–13, half steps),
+  columns EU/diameter/circumference — keyed by US size (not by UK letter, unlike the general page's
+  own table), so the two tables are genuinely distinct, not a copy of each other (same precedent as
+  every prior pair-converter run).
+- **Skipped**: "ring size by circumference" and "ring size by diameter". The general
+  `ring-size-converter` already takes *either* as its direct input via the `measureBy` selector — a
+  separate page for one or the other would be a near-duplicate of the general page's own mechanics,
+  the same reasoning run 7 used to skip a dedicated "foot length to shoe size" page. Recorded here
+  instead of built, per run 7's "fewer is fine" allowance (confirmed in the run 8 proposal below).
+  A dedicated EU/ISO chart page was considered and also skipped: EU/ISO size *is* the circumference
+  in mm by definition, already a one-line fact fully covered by the general page's content and
+  table — a separate page would have nothing distinct to add.
+
+### Progress
+
+- [x] Fetch Wikipedia's raw wikitext (ISO 8653, BS 6820:1987, the NA formula) and two real jewelers'
+  charts (Goldsmiths UK, Angara US), plus the wide-band/finger-swelling source
+- [x] Independent scratch script (`ring_formulas.mjs`) reproducing every formula, cross-checking
+  against both jewelers' charts, confirming the BS 6820 baseline and the A–Z valid range, before any
+  lib code was written
+- [x] Kit addition: `BreakdownOutput.labels` (`data/calculators/types.ts`, `lib/breakdown.ts`)
+- [x] `lib/ringSizes.ts` (shared, cited formula + `UK_LETTER_LABELS` module)
+- [x] `lib/ringSizes.spec.ts`
+- [x] Dedupe check (ids + aliases, programmatic) before writing the calculator objects
+- [x] `ring-size-converter`
+- [x] `us-to-uk-ring-size-chart`
+- [x] Second independent scratch verification (`verify_run8.mjs`) of every copy figure before
+  committing
+- [x] `npm test`, `npm run build`,
+  `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` pass
+- [x] Spot-check the 2 new pages + `/categories/measurements` on a local server, kill the server
+  (port 3000 confirmed free)
+- [x] Update `mdFiles/STATUS.md` (row 40–42 + session log, incl. the shoe-EU-thirds Parked note and
+  a "Run 9 proposal" for clothing sizes, not built), `gh pr ready`
+
+## Run 9 proposal (not built this run)
+
+Clothing sizes — scoped carefully, since most clothing-size letters (S/M/L) vary by brand with no
+single defined standard the way ring/shoe sizing has ISO 8653 / BS 6820 / the NA formula. Candidates
+worth building, each with a real defined numeric standard behind it: **US↔UK↔EU women's dress size**
+(a real, if brand-fuzzy, numeric correspondence many charts agree on within a size); **men's
+chest/waist in inches↔cm** (a plain unit conversion, arguably belongs in the general `length-converter`
+family rather than a new "clothing size" page — check for overlap before building); **men's
+US↔UK↔EU suit/shirt collar size** (collar size is a real neck measurement in inches, a defined linear
+relationship, similar in shape to the ring/shoe runs). **Not recommended**: a generic "S/M/L to
+numeric size" page — no single authority defines this across brands (worse than even run 7's
+shoe-brand disagreement), so a calculator here would either have to pick one arbitrary brand's chart
+(misleading, presented as general) or hedge so much the page has no real headline number. Needs its
+own dedupe check and a "Run 9" progress section before building.
+
 ## Run 8 proposal (not built this run)
 
 Ring size converter: US/UK/EU size, inner diameter (mm) and circumference (mm), per ISO 8653. Like

@@ -4506,6 +4506,50 @@ exports[`compute() snapshots > relative-risk-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > ring-size-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "measurement": 40,
+      "measureBy": 0
+    },
+    "outputs": {
+      "usSize": 1.25,
+      "ukIndex": 4,
+      "euSize": 40,
+      "diameterMm": 12.73239545,
+      "circumferenceMm": 40
+    }
+  },
+  "typical": {
+    "inputs": {
+      "measurement": 60,
+      "measureBy": 0
+    },
+    "outputs": {
+      "usSize": 9.25,
+      "ukIndex": 36,
+      "euSize": 60,
+      "diameterMm": 19.09859317,
+      "circumferenceMm": 60
+    }
+  },
+  "edge": {
+    "inputs": {
+      "measurement": 0,
+      "measureBy": 0
+    },
+    "outputs": {
+      "usSize": "NaN",
+      "ukIndex": "NaN",
+      "euSize": "NaN",
+      "diameterMm": 0,
+      "circumferenceMm": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > rounding-calculator 1`] = `
 {
   "default": {
@@ -5640,6 +5684,44 @@ exports[`compute() snapshots > unit-price-calculator 1`] = `
     },
     "outputs": {
       "unitPrice": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > us-to-uk-ring-size-chart 1`] = `
+{
+  "default": {
+    "inputs": {
+      "usSize": 7
+    },
+    "outputs": {
+      "ukIndex": 27,
+      "euSize": 54,
+      "diameterMm": 17.30014231,
+      "circumferenceMm": 54.35
+    }
+  },
+  "typical": {
+    "inputs": {
+      "usSize": 10.5
+    },
+    "outputs": {
+      "ukIndex": 41,
+      "euSize": 63,
+      "diameterMm": 20.14105805,
+      "circumferenceMm": 63.275
+    }
+  },
+  "edge": {
+    "inputs": {
+      "usSize": 0
+    },
+    "outputs": {
+      "ukIndex": "NaN",
+      "euSize": 37,
+      "diameterMm": 11.61831085,
+      "circumferenceMm": 36.5
     }
   }
 }

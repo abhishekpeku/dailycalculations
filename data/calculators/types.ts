@@ -48,6 +48,14 @@ export type BreakdownOutput = {
   unit?: string;
   /** Headline only: other unit ids it is also shown in, e.g. ['L'] beside gallons. */
   alsoIn?: string[];
+  /**
+   * A fixed lookup from a computed numeric code to a display string (e.g. a UK ring-size letter,
+   * "N½") — mirrors a `CalculatorInput`'s own `options`, but for an output. `compute()` still
+   * returns a real number (so NaN/finite checks work exactly as before); when present, `formatOutput`
+   * (lib/breakdown.ts) looks the value up here for display instead of formatting it as a number.
+   * See mdFiles/steps/42-wave-1-conversion.md, "Run 8".
+   */
+  labels?: { value: number; label: string }[];
 };
 
 /** A value for a visual, named by key: an input id, a compute() key or a `derive` key (display units). */

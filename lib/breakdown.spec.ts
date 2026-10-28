@@ -307,6 +307,19 @@ describe('formatting', () => {
     assert.equal(formatOutput(Infinity, output({ id: 'a', label: 'A', format: 'currency' })), '—');
   });
 
+  test('labels override numeric formatting (e.g. a ring-size letter) — see mdFiles/steps/42-wave-1-conversion.md, "Run 8"', () => {
+    const uk = output({
+      id: 'ukIndex',
+      label: 'UK size',
+      format: 'number',
+      labels: [{ value: 0, label: 'A' }, { value: 1, label: 'A½' }, { value: 26, label: 'N' }]
+    });
+    assert.equal(formatOutput(26, uk), 'N');
+    assert.equal(formatOutput(0, uk), 'A');
+    assert.equal(formatOutput(NaN, uk), '—'); // still goes through the ordinary non-finite guard first
+    assert.equal(formatOutput(5, uk), '5'); // no matching label: falls back to a plain number, never crashes
+  });
+
   test('units follow the value', () => {
     const area = output({ id: 'area', label: 'Area', format: 'number', dimension: 'area', unit: 'ft2', alsoIn: ['m2'] });
     assert.match(formatOutput(120, area), /^120 ft/);

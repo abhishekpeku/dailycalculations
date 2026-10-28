@@ -232,6 +232,10 @@ export function inputUnitLabel(input: CalculatorInput, unitId: string) {
 /** One figure as text, with its unit. Currency goes through lib/calculator.ts (region-aware from step 18). */
 export function formatOutput(value: number, output: ResolvedOutput, unitId = output.unit): string {
   if (!Number.isFinite(value)) return '—';
+  if (output.labels) {
+    const match = output.labels.find((entry) => Math.abs(entry.value - value) < 1e-9);
+    return match ? match.label : formatDecimal(value);
+  }
   if (output.format === 'currency') return formatFull(value, { currency: true });
   if (output.format === 'percent') return `${formatDecimal(value)}%`;
   if (output.format === 'date') return formatDate(value);

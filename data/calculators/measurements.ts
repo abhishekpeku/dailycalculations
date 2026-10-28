@@ -10,6 +10,18 @@ import {
   shoeSizesFromFootMm,
   ukAdultSize
 } from '../../lib/shoeSizes.ts';
+import {
+  circumferenceFromDiameter,
+  circumferenceFromUkIndex,
+  circumferenceFromUsSize,
+  diameterFromCircumference,
+  euSizeFromCircumference,
+  formatUkLetter,
+  MEASURE_BY,
+  UK_LETTER_LABELS,
+  ukIndexFromCircumference,
+  usSizeFromCircumference
+} from '../../lib/ringSizes.ts';
 
 // A cup amount -> [grams, ounces] row for a reference table, for one ingredient's density. Every
 // value is computed here, never typed in (mdFiles/steps/42-wave-1-conversion.md, "Run 6").
@@ -81,6 +93,46 @@ const SHOE_BANDS = [
   { label: 'adidas kids’ chart range', min: 70, max: 220 },
   { label: 'adidas adult chart range', min: 220, max: 330 }
 ];
+
+// Shared result rows for both ring-size pages' breakdowns — see "Run 8". `ukIndex`'s `labels` is
+// the one generated lookup (lib/ringSizes.ts's UK_LETTER_LABELS), never a second hand-typed list.
+const RING_OUTPUTS = [
+  { id: 'usSize', label: 'US / Canada size', format: 'number' as const },
+  { id: 'ukIndex', label: 'UK / Ireland / Australia size', labels: UK_LETTER_LABELS },
+  { id: 'euSize', label: 'EU / ISO size', format: 'number' as const },
+  { id: 'diameterMm', label: 'Inner diameter', dimension: 'length' as const, unit: 'mm' },
+  { id: 'circumferenceMm', label: 'Inner circumference', dimension: 'length' as const, unit: 'mm' }
+];
+
+// Bands for the general ring converter's rangeBar visual, at the UK letter system's own A/Z
+// boundaries (37.5mm / 68.75mm circumference, British Standard 6820:1987 — see lib/ringSizes.ts).
+const RING_BANDS = [
+  { label: 'Below UK A (no UK letter)', min: 20, max: 37.5 },
+  { label: 'UK A–Z range', min: 37.5, max: 68.75 },
+  { label: 'Above UK Z (no UK letter)', min: 68.75, max: 85 }
+];
+
+// A general-page reference-table row keyed by a whole UK letter (even index = no half size),
+// computed from the one shared circumference `circumferenceFromUkIndex` gives, never typed in.
+function ringChartRowByUk(ukIndex: number) {
+  const circumferenceMm = circumferenceFromUkIndex(ukIndex);
+  return {
+    label: formatUkLetter(ukIndex)!,
+    values: [usSizeFromCircumference(circumferenceMm), euSizeFromCircumference(circumferenceMm), diameterFromCircumference(circumferenceMm), circumferenceMm]
+  };
+}
+
+// A US-to-UK chart row keyed by a known US/Canada size, both halves of the conversion in the row's
+// own label text (the UK letter is not a number, so it cannot be a `values` column — see "Run 8"'s
+// kit-addition note for why the live widget's headline instead uses `BreakdownOutput.labels`).
+function ringChartRowByUs(usSize: number) {
+  const circumferenceMm = circumferenceFromUsSize(usSize);
+  const ukLabel = formatUkLetter(ukIndexFromCircumference(circumferenceMm)) ?? '—';
+  return {
+    label: `US ${usSize} = UK ${ukLabel}`,
+    values: [euSizeFromCircumference(circumferenceMm), diameterFromCircumference(circumferenceMm), circumferenceMm]
+  };
+}
 
 export const measurementsCalculators: CalculatorConfig[] = [
   {
@@ -4643,6 +4695,234 @@ export const measurementsCalculators: CalculatorConfig[] = [
         mondopoint: result.mondopoint,
         footCm: footMmToCm(values.footLength),
         footIn: footMmToIn(values.footLength)
+      };
+    }
+  },
+  {
+    id: 'ring-size-converter',
+    category: 'measurements',
+    updatedAt: '2026-10-29',
+    aliases: ['ring size calculator', 'convert ring size', 'ring size chart', 'finger size to ring size', 'circumference to ring size'],
+    related: ['us-to-uk-ring-size-chart', 'millimeters-to-inches-converter', 'centimeters-to-inches-converter', 'length-converter'],
+    title: 'Ring Size Converter',
+    description: 'Convert a ring’s inner diameter or inner circumference (mm) to US/Canada, UK/Ireland/Australia and EU/ISO sizes, from the cited standard behind each system.',
+    example: 'A 40 mm inner circumference is about a US 1¼, UK C, EU 40 — the same ring measured as a 12.73 mm diameter instead.',
+    breakdown: {
+      headline: 'usSize',
+      headlineLabel: 'US / Canada size',
+      outputs: RING_OUTPUTS,
+      groups: [{ inputs: ['measureBy', 'measurement'] }],
+      visual: {
+        type: 'rangeBar',
+        value: 'circumferenceMm',
+        title: 'Where this circumference sits',
+        valueLabel: 'Inner circumference',
+        bands: RING_BANDS
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-29',
+      concept: {
+        title: 'Three real, defined standards — not a single universal ring size',
+        paragraphs: [
+          'A ring size is not one fixed physical unit the way a length is, but unlike shoe sizes (where the theoretical standard runs noticeably smaller than real retail charts), every number here comes from an officially defined standard, and each one is checked below against a real jeweler’s own published chart — not a theory-versus-reality gap, more the normal half-a-step rounding noise you would see between any two charts.',
+          'EU/ISO sizing is the simplest: ISO 8653:2016 defines the size number as, literally, the ring’s inner circumference in millimeters. US/Canada sizing is a numerical scale in quarter-size steps, defined (per the 1921 Circular of the Bureau of Standards) so that each whole size differs by exactly 0.032 in of inner diameter. UK/Ireland/Australia sizing is an alphabetical scale with half sizes, redefined in metric terms by British Standard 6820:1987: each full letter is 1.25 mm of inner circumference, with ring size C fixed at exactly 40 mm as the baseline.',
+          'Checked against Goldsmiths’ own published UK chart, this calculator’s UK letter matches exactly at 22 of the 26 letters A–Z, with the other 4 off by only one half-letter — consistent with Goldsmiths’ own chart rounding to one decimal place, not a real disagreement. Checked against Angara’s own published US chart, this calculator’s US size matches their listed circumference within half a millimeter at every size from 3 to 13. Angara’s own UK column (a US retailer’s international conversion, not a UK-specific authority) runs about half a letter different from this calculator’s figure throughout — a real, documented difference between two real jewelers’ charts, not an error on either side.',
+          'There is no UK letter below A or above Z: that is simply outside the alphabet the British Standard defines, not a gap in this calculator.'
+        ]
+      },
+      howTo: {
+        intro: 'Measure a ring that already fits, or wrap a thin strip of paper or string around your finger, then enter the measurement.',
+        steps: [
+          { name: 'Choose what you measured', text: 'Pick inner diameter (across an existing ring’s inside edge) or inner circumference (around your finger with a strip of paper or string, then measured flat).' },
+          { name: 'Enter the measurement', text: 'Type the number in millimeters, or switch the unit menu to centimeters or inches.' },
+          { name: 'Read every system at once', text: 'US/Canada, UK/Ireland/Australia, EU/ISO, diameter and circumference are all shown together.' },
+          { name: 'Check the chart for a known US size instead', text: 'If you already know your US size, the US to UK ring size chart below looks it up directly, with no measuring needed.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Each system’s own cited definition, computed directly from the inner circumference.',
+        expression: 'EU/ISO = circumference (mm), rounded to the nearest whole mm\nUS/Canada = (circumference, mm − 36.5) ÷ 2.55, rounded to the nearest quarter size\nUK index = (circumference, mm − 37.5) ÷ 0.625, rounded to the nearest half letter\nDiameter = circumference ÷ π',
+        terms: [
+          { symbol: 'EU/ISO', meaning: 'ISO 8653:2016’s own definition: the size number IS the inner circumference in millimeters.' },
+          { symbol: 'US/Canada', meaning: 'The North America scale (Wikipedia, via the 1921 Bureau of Standards circular), checked against Angara’s own published chart.' },
+          { symbol: 'UK index', meaning: 'British Standard 6820:1987’s own definition: one full letter is 1.25 mm of circumference; ring size C sits at exactly 40 mm. Checked against Goldsmiths’ own published chart.' }
+        ],
+        note: 'A measurement of 0 or less has no size in any system — those fields show no answer rather than a negative or nonsensical number. No UK letter exists below A or above Z.'
+      },
+      workedExample: {
+        intro: 'A measured inner circumference of 40 mm — British Standard 6820:1987’s own cited baseline for UK size C.',
+        rows: [
+          { label: 'EU/ISO = 40, rounded', value: '40' },
+          { label: 'US/Canada = (40 − 36.5) ÷ 2.55', value: '1.37 → rounds to 1¼' },
+          { label: 'UK index = (40 − 37.5) ÷ 0.625', value: '4.0 → index 4 (C)' },
+          { label: 'Diameter = 40 ÷ π', value: '12.73 mm' }
+        ],
+        result: '40 mm circumference = US 1¼, UK C, EU 40, 12.73 mm diameter',
+        explanation: 'The same ring measured the other way — a 12.73 mm diameter — gives back exactly 40 mm of circumference (diameter × π), so either measurement leads to the same sizes.'
+      },
+      referenceTable: {
+        title: 'UK letters A–Z across every system (British Standard 6820:1987, cross-checked against Goldsmiths’ chart)',
+        columns: ['UK', 'US/Canada', 'EU/ISO', 'Diameter (mm)', 'Circumference (mm)'],
+        rows: Array.from({ length: 26 }, (_, i) => i * 2).map(ringChartRowByUk),
+        decimals: 2,
+        note: 'US/Canada is rounded to the nearest quarter size; a real US jeweler’s own international conversion chart (Angara) runs about half a letter different from the UK column here throughout — see the watch-out.'
+      },
+      watchOut: [
+        { title: 'Two real jewelers’ charts differ on the UK letter by about half a letter', body: 'This calculator’s UK figure follows British Standard 6820:1987 directly, validated almost exactly against a real UK jeweler’s own chart (Goldsmiths). A US retailer’s own international conversion column (checked here against Angara’s chart) runs about half a letter different throughout — a real, bounded difference between two real charts, not an error.' },
+        { title: 'Wide bands fit tighter — consider sizing up', body: 'Ken Walker Jewelers: rings 6 mm wide or wider often need "a quarter to half size larger," and bands 7 mm or wider often need "a half-size larger than their standard ring size," since a wider band covers more of the finger and needs more room to pass the knuckle.' },
+        { title: 'Finger size changes through the day and with temperature', body: 'Ken Walker Jewelers: hands "tend to expand later in the day due to movement and ambient warmth," while cold weather causes fingers to "shrink slightly" and heat causes them to "swell." Measure a few times, including in the evening, for a more reliable size.' },
+        { title: 'The paper or string method is quick but imprecise', body: 'A strip of paper or string can stretch or sit at a slight angle, which measures a circumference a little bigger or smaller than the truth. A rigid plastic or metal ring sizer, or a jeweler’s own sizing, is more reliable for a ring you plan to buy.' },
+        { title: 'A ring has to pass over the knuckle, not just fit the base of the finger', body: 'If a knuckle is noticeably wider than the base of the finger, a ring sized to the base alone may not go on comfortably — a jeweler can advise on sizing for a larger knuckle.' }
+      ],
+      references: [
+        { label: 'Wikipedia, "Ring size" (ISO 8653:2016, British Standard 6820:1987, the North America formula)', url: 'https://en.wikipedia.org/wiki/Ring_size' },
+        { label: 'Goldsmiths, ring size chart (UK jeweler cross-check)', url: 'https://www.goldsmiths.co.uk/i/know-your-ring-size' },
+        { label: 'Angara, ring size guide (US jeweler cross-check)', url: 'https://www.angara.com/blog/ring-size-guide/' },
+        { label: 'Ken Walker Jewelers, "How Ring Width Affects Sizing"', url: 'https://www.kenwalkerjewelers.com/blog/jewelry/how-ring-width-affects-sizing' }
+      ]
+    },
+    inputs: [
+      { id: 'measurement', label: 'Measurement', type: 'number', placeholder: '40', defaultValue: 40, step: 0.1, min: 0, dimension: 'length', unit: 'mm' },
+      {
+        id: 'measureBy',
+        label: 'Measuring',
+        type: 'number',
+        placeholder: String(MEASURE_BY.circumference),
+        defaultValue: MEASURE_BY.circumference,
+        step: 1,
+        min: 0,
+        options: [
+          { value: MEASURE_BY.diameter, label: 'Inner diameter' },
+          { value: MEASURE_BY.circumference, label: 'Inner circumference' }
+        ]
+      }
+    ],
+    seo: {
+      title: 'Ring Size Converter – US, UK, EU, mm',
+      description: 'Convert a ring’s inner diameter or circumference (mm) to US/Canada, UK/Ireland/Australia and EU/ISO sizes, from the cited standard behind each system.',
+      faq: [
+        { question: 'How do I convert my ring measurement to a size?', answer: 'Measure the inner diameter of a ring that fits, or wrap a strip of paper or string around your finger for the circumference, then enter it — US/Canada, UK/Ireland/Australia, EU/ISO, diameter and circumference all appear together.' },
+        { question: 'What is a UK size in EU/ISO sizing?', answer: 'EU/ISO sizing is simply the inner circumference in millimeters (ISO 8653:2016), so a UK N (53.75 mm circumference) is close to EU 54.' },
+        { question: 'Why do different websites show a slightly different UK letter for my US size?', answer: 'This calculator follows the UK’s own British Standard 6820:1987 directly, checked against a real UK jeweler’s chart. A US retailer’s own international conversion column can run about half a letter different — both are real, documented figures, just from two different sources.' },
+        { question: 'How is a ring’s circumference related to its diameter?', answer: 'Circumference = diameter × π, the same geometry as any circle — so a 17.2 mm diameter is about 54.0 mm of circumference.' },
+        { question: 'Is there a UK letter for a very small or very large ring?', answer: 'No — the UK alphabetical system only runs from A to Z. A circumference below about 37.5 mm or above about 68.75 mm has no UK letter, only a US and EU size.' },
+        { question: 'Should I size up for a wide wedding band?', answer: 'Often, yes — jewelers commonly suggest a quarter to half a size larger for bands 6 mm wide or wider, since a wider band needs more room to pass the knuckle.' },
+        { question: 'When should I measure my finger for the most accurate size?', answer: 'In the evening, when fingers are typically largest, and at normal room temperature — cold weather can shrink a finger slightly, giving a size that runs small.' }
+      ]
+    },
+    compute(values) {
+      const circumferenceMm = values.measureBy === MEASURE_BY.diameter ? circumferenceFromDiameter(values.measurement) : values.measurement;
+      return {
+        usSize: usSizeFromCircumference(circumferenceMm),
+        ukIndex: ukIndexFromCircumference(circumferenceMm),
+        euSize: euSizeFromCircumference(circumferenceMm),
+        diameterMm: diameterFromCircumference(circumferenceMm),
+        circumferenceMm
+      };
+    }
+  },
+  {
+    id: 'us-to-uk-ring-size-chart',
+    category: 'measurements',
+    updatedAt: '2026-10-29',
+    aliases: ['us to uk ring size chart', 'us to uk ring size conversion', 'ring size conversion chart', 'what is my uk ring size', 'convert us ring size to uk'],
+    related: ['ring-size-converter', 'millimeters-to-inches-converter', 'centimeters-to-inches-converter', 'length-converter'],
+    title: 'US to UK Ring Size Chart',
+    description: 'Convert a known US/Canada ring size to UK/Ireland/Australia, EU/ISO, inner diameter and circumference, with a full US 3–13 chart.',
+    example: 'A US size 7 ring is about a UK N½, EU 54, with a 17.30 mm diameter (54.35 mm circumference).',
+    breakdown: {
+      headline: 'ukIndex',
+      headlineLabel: 'UK / Ireland / Australia size',
+      outputs: RING_OUTPUTS.filter((output) => output.id !== 'usSize'),
+      visual: {
+        type: 'rangeBar',
+        value: 'circumferenceMm',
+        title: 'Where this circumference sits',
+        valueLabel: 'Inner circumference',
+        bands: RING_BANDS
+      }
+    },
+    content: {
+      lastReviewed: '2026-10-29',
+      concept: {
+        title: 'A known US/Canada size, converted directly to UK and every other system',
+        paragraphs: [
+          'The US/Canada ring-size scale and the UK/Ireland/Australia letter scale are both built from the same underlying measurement — inner circumference — just numbered differently: US/Canada counts in quarter-size steps from a 1921 Bureau of Standards definition, while UK/Ireland/Australia counts in letters and half-letters from British Standard 6820:1987.',
+          'This page starts from a known US/Canada size rather than a fresh measurement — if you only know a size you already own or have been told, this skips straight to the conversion. For a size measured from scratch, the general ring size converter takes a raw diameter or circumference instead.',
+          'Checked against Goldsmiths’ own published UK chart, the UK figure here matches exactly at 22 of 26 letters A–Z (the other 4 are off by one half-letter, consistent with Goldsmiths’ own rounding). A US retailer’s own international conversion column (Angara) runs about half a letter different throughout — see the watch-out.'
+        ]
+      },
+      howTo: {
+        intro: 'Type a known US/Canada size, or scan the chart below.',
+        steps: [
+          { name: 'Enter the US/Canada size', text: 'Whole or half sizes both work (e.g. 7 or 7.5).' },
+          { name: 'Read the UK size and every other system', text: 'UK/Ireland/Australia, EU/ISO, diameter and circumference all update together.' },
+          { name: 'Or look up a known size directly', text: 'The chart below lists US/Canada 3–13 against UK, EU and millimeters.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The US/Canada size converts to a circumference first, then every other system reads from that same circumference.',
+        expression: 'Circumference (mm) = 2.55 × US/Canada size + 36.5\nUK index = (circumference, mm − 37.5) ÷ 0.625, rounded to the nearest half letter\nEU/ISO = circumference, rounded to the nearest whole mm\nDiameter = circumference ÷ π',
+        terms: [
+          { symbol: 'Circumference from US/Canada', meaning: 'The North America scale’s own defining relationship (Wikipedia, via the 1921 Bureau of Standards circular), checked against Angara’s published chart.' },
+          { symbol: 'UK index', meaning: 'British Standard 6820:1987’s own definition — see the general ring size converter’s formula note for the full citation.' }
+        ],
+        note: 'No UK letter exists for a US/Canada size whose circumference falls outside the British Standard’s own A–Z range (roughly US 0.4 to US 12.6) — those sizes show a US, EU, diameter and circumference figure, but no UK letter.'
+      },
+      workedExample: {
+        intro: 'A known US/Canada size of 7.',
+        rows: [
+          { label: 'Circumference = 2.55 × 7 + 36.5', value: '54.35 mm' },
+          { label: 'UK index = (54.35 − 37.5) ÷ 0.625', value: '26.96 → rounds to index 27 (N½)' },
+          { label: 'EU/ISO = 54.35, rounded', value: '54' },
+          { label: 'Diameter = 54.35 ÷ π', value: '17.30 mm' }
+        ],
+        result: 'US 7 = UK N½, EU 54, 17.30 mm diameter (54.35 mm circumference)',
+        explanation: 'The chart below lists this exact US 7 row, alongside every other common US/Canada size from 3 to 13.'
+      },
+      referenceTable: {
+        title: 'US/Canada 3–13 to UK, EU, diameter and circumference',
+        columns: ['US = UK', 'EU/ISO', 'Diameter (mm)', 'Circumference (mm)'],
+        rows: Array.from({ length: 21 }, (_, i) => 3 + i * 0.5).map(ringChartRowByUs),
+        decimals: 2,
+        note: 'US/Canada sizes above about 12.6 have no UK letter (outside the British Standard’s own A–Z range) — shown as "UK —" in the row label.'
+      },
+      watchOut: [
+        { title: 'Two real jewelers’ charts differ on the UK letter by about half a letter', body: 'This calculator’s UK figure follows British Standard 6820:1987 directly, validated almost exactly against a real UK jeweler’s own chart (Goldsmiths). A US retailer’s own international conversion column (checked here against Angara’s chart) runs about half a letter different throughout — a real, bounded difference between two real charts, not an error.' },
+        { title: 'Wide bands fit tighter — consider sizing up', body: 'Ken Walker Jewelers: rings 6 mm wide or wider often need "a quarter to half size larger," and bands 7 mm or wider often need "a half-size larger than their standard ring size."' },
+        { title: 'Finger size changes through the day and with temperature', body: 'Ken Walker Jewelers: hands "tend to expand later in the day due to movement and ambient warmth," while cold weather causes fingers to shrink slightly. A size taken from a single measurement can be off by a bit either way.' },
+        { title: 'This page assumes the US/Canada size is already correct', body: 'If the starting US/Canada size itself was measured loosely (e.g. with a paper strip), every converted figure inherits that uncertainty — the general ring size converter can double-check a size against a fresh measurement.' }
+      ],
+      references: [
+        { label: 'Wikipedia, "Ring size" (ISO 8653:2016, British Standard 6820:1987, the North America formula)', url: 'https://en.wikipedia.org/wiki/Ring_size' },
+        { label: 'Goldsmiths, ring size chart (UK jeweler cross-check)', url: 'https://www.goldsmiths.co.uk/i/know-your-ring-size' },
+        { label: 'Angara, ring size guide (US jeweler cross-check)', url: 'https://www.angara.com/blog/ring-size-guide/' },
+        { label: 'Ken Walker Jewelers, "How Ring Width Affects Sizing"', url: 'https://www.kenwalkerjewelers.com/blog/jewelry/how-ring-width-affects-sizing' }
+      ]
+    },
+    inputs: [{ id: 'usSize', label: 'US / Canada size', type: 'number', placeholder: '7', defaultValue: 7, step: 0.5, min: 0 }],
+    seo: {
+      title: 'US to UK Ring Size Chart & Converter',
+      description: 'Convert a US/Canada ring size to UK/Ireland/Australia, EU/ISO, diameter and circumference, with a full US 3–13 chart.',
+      faq: [
+        { question: 'What is a US size 7 ring in UK sizing?', answer: 'UK N½, on British Standard 6820:1987’s own definition — matched almost exactly against a real UK jeweler’s chart (Goldsmiths).' },
+        { question: 'What is a US size 7 ring in EU/ISO sizing?', answer: 'EU 54 — ISO 8653:2016 defines the EU/ISO size as the inner circumference in millimeters, and a US 7 is about 54.35 mm.' },
+        { question: 'How many millimeters is a US size 7 ring?', answer: 'About 17.30 mm inner diameter, or 54.35 mm inner circumference — see the chart for every US/Canada size from 3 to 13.' },
+        { question: 'Why does a US retailer’s chart show a different UK letter than this page?', answer: 'This page follows the UK’s own official standard directly; a US retailer’s international conversion column is a simplified approximation that runs about half a letter different throughout — both are real figures from real charts.' },
+        { question: 'Is there a UK equivalent for every US/Canada size?', answer: 'No — the UK letter system only covers US/Canada sizes roughly 0.4 to 12.6. Outside that, there is a US, EU and millimeter figure but no UK letter.' },
+        { question: 'Does this chart account for band width?', answer: 'No — every figure here is for a standard, narrow band. Jewelers commonly suggest sizing up a quarter to half a size for bands 6 mm wide or wider.' }
+      ]
+    },
+    compute(values) {
+      const circumferenceMm = circumferenceFromUsSize(values.usSize);
+      return {
+        ukIndex: ukIndexFromCircumference(circumferenceMm),
+        euSize: euSizeFromCircumference(circumferenceMm),
+        diameterMm: diameterFromCircumference(circumferenceMm),
+        circumferenceMm
       };
     }
   }

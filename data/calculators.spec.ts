@@ -44,7 +44,15 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'shoe-size-converter': ['usSize', 'ukSize', 'euSize'],
   'mens-shoe-size-chart': ['usSize', 'ukSize', 'euSize'],
   'womens-shoe-size-chart': ['usSize', 'ukSize', 'euSize'],
-  'kids-shoe-size-chart': ['usSize', 'ukSize', 'euSize']
+  'kids-shoe-size-chart': ['usSize', 'ukSize', 'euSize'],
+  // measurement 0 (its min) -> circumferenceMm 0, not > 0 (lib/ringSizes.ts's isValidRingMeasurement)
+  // -> usSize/euSize have no answer either; diameterMm/circumferenceMm stay finite (0), same
+  // precedent as shoe's mondopoint/footCm/footIn.
+  'ring-size-converter': ['usSize', 'ukIndex', 'euSize'],
+  // usSize 0 (its min) -> circumferenceMm 36.5, inside the valid (>0) range but below the UK A/Z
+  // window (37.5-68.75mm) -> ukIndex has no answer; usSize isn't an output here (headline is
+  // ukIndex), euSize/diameterMm/circumferenceMm stay finite.
+  'us-to-uk-ring-size-chart': ['ukIndex']
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

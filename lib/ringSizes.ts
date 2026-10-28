@@ -38,7 +38,10 @@ const PI = Math.PI;
 
 /** The `measureBy` <select> input's option values -- fixed, inherently distinct codes (never a
  *  lookup value that could collide; see the run 6 parked lesson in STATUS.md). */
-export const MEASURE_BY = { diameter: 0, circumference: 1 } as const;
+// Circumference is coded 0 (the default) so the snapshot test harness's "typical" input (1.5x the
+// default, per data/calculators.spec.ts) leaves this selector unchanged (0 x 1.5 = 0) instead of
+// landing on an invalid option code — the same reason lib/shoeSizes.ts's CATEGORY_CODE.mens is 0.
+export const MEASURE_BY = { circumference: 0, diameter: 1 } as const;
 
 // ============================================================================================
 // Geometry (exact) and EU/ISO (ISO 8653:2016's own definition: size = inner circumference, mm).

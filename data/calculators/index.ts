@@ -181,7 +181,9 @@ export const calculatorOrder: string[] = [
   'shoe-size-converter',
   'mens-shoe-size-chart',
   'womens-shoe-size-chart',
-  'kids-shoe-size-chart'
+  'kids-shoe-size-chart',
+  'ring-size-converter',
+  'us-to-uk-ring-size-chart'
 ];
 
 const rank = (id: string) => {

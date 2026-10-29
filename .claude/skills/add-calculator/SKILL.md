@@ -11,6 +11,8 @@ Read first, every time:
 3. `mdFiles/STATUS.md`: check the current step and the Parked list. If the work belongs to a
    numbered step, follow that step's file instead of improvising.
 4. The `force-calculator` entry in `data/calculators/physics.ts`: the reference implementation to copy.
+   For converters and lookup pages (sizes, densities), use `data/calculators/measurements.ts` and
+   template §2 "Conversion and lookup pages" instead.
 
 ## Procedure
 
@@ -38,11 +40,16 @@ Read first, every time:
 4. **Write the content in our own words.** Cite primary sources only. No invented people or credentials.
 5. **Verify every number.** Write a throwaway script in the scratchpad that imports nothing from
    the app. Re-implement the formula, recompute the worked example, every FAQ figure, the
-   `example` line and the benchmarks, then compare them to the copy. Fix the copy, not the
-   check. Report the script's output.
-6. **Check:** `related` ids exist, there's no self-reference, `id` is unique and doesn't collide
-   with any `redirectFrom`, and `aliases` aren't duplicated on another calculator.
-7. **Build:** `npm run lint` and `npm run build`, both run in the background. Both must pass.
+   `example` line and the benchmarks, then compare them to the copy. Include every "about N%
+   high/low" claim, computed exactly. Fix the copy, not the check. Report the script's output.
+   Check real-world claims too, and don't overgeneralize (template §3).
+6. **Check programmatically:** `related` ids exist, there's no self-reference, `id` is unique and
+   doesn't collide with any `redirectFrom`, `aliases` aren't duplicated on another calculator, and
+   `seo.title` ≤ 60 and `seo.description` ≤ 160 characters.
+7. **Build:** `npm test`, `npm run build` and
+   `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"`, all run in the
+   background. All must pass. If `compute()` changed, run `npm run test:update` and check that the
+   snapshot diff touches only the intended ids. Don't commit `tsconfig.tsbuildinfo` or `next-env.d.ts`.
 8. **Look at it:** start `npm run dev` in the background, fetch `/calculators/<id>` with curl,
    and confirm the H1, the TOC, every section id and the JSON-LD script are present.
    - **In the main session:** leave the dev server running and open the page in a Chrome tab

@@ -2126,6 +2126,9 @@ check for it before inventing a parallel mechanism.
 
 step 40–42 · 2026-10-29 · **Closed.** Run 8 (ring sizes, PR #35) merged after review (table matches standard jeweler charts: US 7 = UK N½ = EU 54 = 17.3 mm). The user decided **not** to build clothing sizes (the run-9 proposal) — Wave 1 conversion ends at run 8, and the `Run 9 proposal` section in `mdFiles/steps/42-wave-1-conversion.md` is kept only as a record. Next step: **43–45, Wave 2** (construction · food · sports) — no step file yet; write `mdFiles/steps/43-wave-2-construction.md` (or similar) just-in-time from `mdFiles/calculator-rollout-plan.md` §4. Remember the food list's "cups to grams" is already delivered (step 42 run 6).
 
+
+docs · 2026-10-29 · **Post-Wave-1 doc refresh (no code).** `mdFiles/calculator-template-v2.md` is marked adopted and gains §2 "Conversion and lookup pages" (pair/general converter pattern, overlap rule, `commonValues`, `referenceTable`, `BreakdownOutput.labels`, cited lookup modules, select options keyed by id/code, real charts over theoretical formulas) and §3 review lessons (compute every % claim exactly, don't overgeneralize, read sources directly). `.claude/skills/add-calculator/SKILL.md` and `.claude/agents/calculator-builder.md` now point at those sections and give the full test/build/lint command. `mdFiles/calculator-rollout-plan.md` §4 records Wave 1 as done, clothing size dropped and cups to grams already delivered.
+
 ## Pending on the user — not code
 
 - ~~**Cloudflare apex → www 301 (from step 01).**~~ **DONE 2026-10-19** — Redirect Rule added by the user; verified `http://` and `https://dailycalculations.com/<path>?<query>` → 301 to `https://www.dailycalculations.com/<path>?<query>`, www serves 200.

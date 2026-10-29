@@ -18,7 +18,11 @@ Rules:
   second batch or spawn another agent.
 - Build only the calculators you were asked for. Put anything else you notice on the `Parked`
   list in `mdFiles/STATUS.md` instead of fixing it.
-- Every number in the copy must be recomputed by an independent scratch script before you finish.
+- Every number in the copy must be recomputed by an independent scratch script before you finish,
+  including every "% high/low" shortcut claim. Headline figures for lookup pages must match the
+  published charts people actually use, not just a theoretical formula (template §2–§3).
+- Leave the working directory on `master` when you finish, with your branch pushed and the PR
+  description updated, so the main session can review it.
 - Never invent authors, reviewers, credentials, press mentions or "N people found this helpful" counts.
 - Before finishing, make sure no dev server is left running on port 3000.
 

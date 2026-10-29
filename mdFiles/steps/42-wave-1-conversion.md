@@ -729,7 +729,7 @@ generated lookup table every page's `ukIndex` output references, never a second 
 - [x] Update `mdFiles/STATUS.md` (row 40–42 + session log, incl. the shoe-EU-thirds Parked note and
   a "Run 9 proposal" for clothing sizes, not built), `gh pr ready`
 
-## Run 9 proposal (not built this run)
+## Run 9 proposal — DROPPED (user decision, 2026-10-29; step 42 closed after run 8)
 
 Clothing sizes — scoped carefully, since most clothing-size letters (S/M/L) vary by brand with no
 single defined standard the way ring/shoe sizing has ISO 8653 / BS 6820 / the NA formula. Candidates

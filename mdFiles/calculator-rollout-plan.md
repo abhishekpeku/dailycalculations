@@ -159,6 +159,12 @@ waves 3–4 are seeds**, to be refined against search volume when their wave sta
   L↔gal, km↔mi, mph↔kph, in↔mm, g↔oz …), **only pairs with real search volume**, each with a
   real common-values table.
 
+**Wave 1 status: DONE 2026-10-29** (steps 40–42, PRs #15–#36): math 29, statistics 25 and
+conversion 36 pages, with 144 calculators on the site. Conversion stopped at run 8. **Clothing size
+was dropped by the user's decision**, since no single standard defines letter sizes across brands.
+The food list's "cups to grams" below was delivered in Wave 1 (step 42 run 6), so don't rebuild it.
+Details: `mdFiles/steps/42-wave-1-conversion.md`.
+
 ### Wave 2: Construction, Food, Sports (~100)
 
 - **home → Home & Construction** (+~25): drywall, roofing, flooring, decking, fence, gravel,

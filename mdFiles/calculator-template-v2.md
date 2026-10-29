@@ -2,8 +2,9 @@
 
 Introduced 2026-10-12 with the `force-calculator` preview (branch
 `preview/physics-force-calculator`). Strategy context: `mdFiles/omni-strategy.md` §3–§4.
-Status: **preview**. The template is not yet adopted in `STATUS.md`. Once it is, this file is
-the reference for steps 30, 43 and every sector-wave step.
+Status: **adopted.** Every calculator since batch 1 (step 35) follows it. This file is the reference
+for every sector-wave step (Wave 1, steps 40–42, done 2026-10-29; Wave 2 next). Lookup and
+conversion additions from step 42 are in §2, "Conversion and lookup pages".
 
 ---
 
@@ -20,6 +21,8 @@ the reference for steps 30, 43 and every sector-wave step.
 | 7 | How to use, 4–6 steps | `content.howTo` | yes |
 | 8 | The formula, plus a term glossary | `content.formula` | yes |
 | 9 | Worked example: realistic numbers, every step shown | `content.workedExample` | yes |
+| 9a | Common-values table (unit → unit, computed through `lib/units.ts`) | `content.commonValues` | converters |
+| 9b | Reference table (computed rows that aren't a unit factor: densities, size charts) | `content.referenceTable` | lookup pages |
 | 10 | Things to watch out for, 3–5 items | `content.watchOut` | yes |
 | 11 | FAQ, 5–8 questions | `seo.faq` | yes |
 | 12 | References, 2–4 primary sources | `content.references` | yes |
@@ -162,6 +165,40 @@ labels are the keys in sentence case, and all inputs sit in one group. **`comput
 - Share links: `?<id>=<value>&<id>_unit=<unit>`, only fields that differ from the defaults.
 - Reference config: `commute-cost-calculator`.
 
+### Conversion and lookup pages (step 42)
+
+Full history: `mdFiles/steps/42-wave-1-conversion.md`. Reference configs live in
+`data/calculators/measurements.ts`.
+
+- **Pair converter** (e.g. `centimeters-to-inches-converter`): a two-variable `solver`, both
+  variables the same `dimension`. `solve` passes the base value through with a `>= 0` guard, and
+  the unit menus do the converting. `compute()` must use `toBase`/`fromBase` from `lib/units.ts`;
+  never type a factor (three older converters shipped with rounded factors and had to be fixed).
+- **General converter** (e.g. `length-converter`): the same shape. The unit menus already list
+  every unit of the dimension. Pick a sensible default pair.
+- **Overlap rule:** a pair page next to a general page must have its own id, title and aliases,
+  the opposite primary direction where sensible, and a table aimed at that pair's own search intent
+  (drill bits for mm↔in, room sizes for ft²↔m²). If it has no distinct intent, don't build it.
+- **`content.commonValues`** (`lib/commonValues.ts`, `components/CommonValuesSection.tsx`):
+  `{ title, dimension, from, to, values, reverse?: { title, values, feetInches?, stoneLbs? },
+  decimals?, feetInches?, stoneLbs? }`. The right-hand column is computed, never typed.
+  `feetInches` / `stoneLbs` (`'from' | 'to'`) display as "5 ft 11 in" / "11 st 4 lb". Totals are
+  rounded first and then split, so "12 in" or "14 lb" can never print.
+- **`content.referenceTable`** (`components/ReferenceTableSection.tsx`): for computed rows that
+  aren't a unit factor. Every cell is an expression over a shared module, never a literal.
+- **Lookup data lives in one typed, cited module plus a spec**: `lib/ingredients.ts` (grams per
+  cup), `lib/shoeSizes.ts`, `lib/ringSizes.ts`. Every row names its source, and the spec asserts
+  rows from the named published chart.
+- **Select options are keyed by id or code, never by the lookup value itself.** Two rows with the
+  same value collide (see the `cups-to-grams-converter` Parked item). Use code `0` for the default
+  option: the snapshot harness scales inputs by 1.5, and only 0 survives that unchanged.
+- **`BreakdownOutput.labels`** (`data/calculators/types.ts`): `[{ value, label }]` for an output
+  that isn't a number (a UK ring letter "N½"). `compute()` returns the numeric index;
+  `formatOutput` shows the label.
+- **Real charts beat theoretical formulas.** Headline figures must match the published charts
+  people buy against (brand shoe charts, jeweler ring charts). A standard (ISO 19407) that
+  disagrees with retail by a size goes in as background, not as the headline.
+
 ## 3. Content rules
 
 - **Write in our own words.** Formulas and facts are common knowledge, but other sites' prose is
@@ -170,7 +207,13 @@ labels are the keys in sentence case, and all inputs sit in one group. **`comput
 - **No invented people or credentials.** The byline is the editorial team until a real, named
   reviewer exists.
 - **Every number in the worked example and FAQ must be recomputed** with the calculator's own
-  functions before shipping (see the skill's verification step).
+  functions before shipping (see the skill's verification step). That includes every "about N%
+  high/low" shortcut claim and every benchmark. Compute them exactly: 250 ÷ 236.588 is 5.7%, not 5.6%.
+- **Don't overgeneralize real-world claims.** Review has caught "most operating systems show GiB"
+  (only Windows does), "4 US butter sticks aren't 1 lb" (they are, because a stick is ¼ lb) and "a
+  European recipe lists flour in mL" (European recipes weigh flour). Name the specific case instead.
+- **Read sources directly.** Fetch the page itself, or the raw wikitext (`?action=raw`), rather than
+  an AI summary of it. One summarizing fetch returned different constants on two passes.
 - US English spelling in copy. Show metric and US units side by side where both matter.
 - Finance and health pages (YMYL): references are mandatory, and so is a one-line "estimates only"
   note in `formula.note` or a watch-out item.

@@ -50,7 +50,7 @@
     "workedExampleTitle": "Worked example",
     "watchOutTitle": "Things to watch out for",
     "relatedTitle": "Related calculators",
-    "relatedDescription": "Tools people usually reach for alongside this one.",
+    "relatedAll": "All {category} calculators",
     "contentsTitle": "Table of contents",
     "referencesTitle": "References",
     "faqTocLabel": "FAQ",

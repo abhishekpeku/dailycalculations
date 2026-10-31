@@ -24,7 +24,7 @@ import IconTile from '@/components/IconTile';
 import SectionHeading from '@/components/SectionHeading';
 import HowItWorksCard from '@/components/HowItWorksCard';
 import { CARD, categoryTheme } from '@/lib/categoryTheme';
-import { calculators, findCalculator } from '@/data/calculators';
+import { calculators, categories, findCalculator } from '@/data/calculators';
 import { buildAliasSentence, buildBreadcrumbs, buildCalculatorMetadata, buildHowToSteps, buildPageJsonLd, buildRelatedLinks } from '@/lib/seo';
 import { buildFlow, describeFlow } from '@/lib/howItWorks';
 import { routing } from '@/i18n/routing';
@@ -105,6 +105,15 @@ export default async function CalculatorPage({
     slug === 'timezone-meeting-planner' ? <TimeZonePlanner /> :
     slug === 'scientific-calculator' ? <ScientificCalculator /> :
     <BreakdownCalculator calculatorId={calculator.id} />;
+  const categoryTitle = categories.find((category) => category.id === calculator.category)?.title ?? '';
+  const related = (
+    <RelatedCalculators
+      title={t('relatedTitle')}
+      items={relatedLinks}
+      allLabel={t('relatedAll', { category: categoryTitle.toLowerCase() })}
+      allHref={`/categories/${calculator.category}`}
+    />
+  );
   const example = <p className="text-sm text-slate-500 dark:text-slate-400">Example: {calculator.example}</p>;
 
   const intro = (
@@ -143,6 +152,7 @@ export default async function CalculatorPage({
             <div className="space-y-4">
               {widget}
               {example}
+              {related}
             </div>
             <aside className="space-y-6 lg:sticky lg:top-6">
               <HowItWorksCard
@@ -164,6 +174,7 @@ export default async function CalculatorPage({
           <>
             {widget}
             {example}
+            {related}
           </>
         )}
 
@@ -202,7 +213,6 @@ export default async function CalculatorPage({
 
         {content?.references ? <ReferencesSection title={t('referencesTitle')} references={content.references} /> : null}
 
-        <RelatedCalculators title={t('relatedTitle')} description={t('relatedDescription')} items={relatedLinks} />
       </div>
       {jsonLd ? <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} /> : null}
     </div>

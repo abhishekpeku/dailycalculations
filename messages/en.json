@@ -55,7 +55,14 @@
     "referencesTitle": "References",
     "faqTocLabel": "FAQ",
     "byline": "By the Daily Calculations editorial team",
-    "lastReviewed": "Last reviewed {date}"
+    "lastReviewed": "Last reviewed {date}",
+    "howItWorksLabel": "How it works",
+    "orSolveAnyField": "or solve for any field",
+    "alsoCalledLabel": "Also called",
+    "moreInputs": "+{count} more",
+    "reviewed": "Reviewed {date}",
+    "sources": "{count, plural, one {# source} other {# sources}}",
+    "diagramSummary": "Enter {inputs} to get {output}."
   },
   "suggestions": {
     "headline": "Suggest an enhancement",

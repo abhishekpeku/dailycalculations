@@ -22,9 +22,11 @@ import ReferencesSection from '@/components/ReferencesSection';
 import TableOfContents from '@/components/TableOfContents';
 import IconTile from '@/components/IconTile';
 import SectionHeading from '@/components/SectionHeading';
+import HowItWorksCard from '@/components/HowItWorksCard';
 import { CARD, categoryTheme } from '@/lib/categoryTheme';
 import { calculators, findCalculator } from '@/data/calculators';
 import { buildAliasSentence, buildBreadcrumbs, buildCalculatorMetadata, buildHowToSteps, buildPageJsonLd, buildRelatedLinks } from '@/lib/seo';
+import { buildFlow, describeFlow } from '@/lib/howItWorks';
 import { routing } from '@/i18n/routing';
 
 export const dynamic = 'force-static';
@@ -82,6 +84,19 @@ export default async function CalculatorPage({
     ? new Intl.DateTimeFormat('en-US', { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(content.lastReviewed))
     : null;
 
+  // The "How it works" diagram, derived from the calculator's own solver/breakdown data — see
+  // lib/howItWorks.ts. `null` for the handful of custom-component widgets (currency converter, etc.).
+  const flow = buildFlow(calculator);
+  const aliases = calculator.aliases.slice(0, 4); // same slice buildAliasSentence uses
+  const moreInputsLabel = flow && flow.inputs.length > 5 ? t('moreInputs', { count: flow.inputs.length - 4 }) : null;
+  const diagramSummary = flow ? t('diagramSummary', describeFlow(flow)) : null;
+  const sourceCount = content?.references?.length ?? 0;
+  const trust = [
+    { text: t('byline') },
+    ...(reviewedDate ? [{ icon: 'check' as const, text: t('reviewed', { date: reviewedDate }) }] : []),
+    ...(sourceCount > 0 ? [{ icon: 'book' as const, text: t('sources', { count: sourceCount }), href: '#references' }] : [])
+  ];
+
   const widget = solver ? <SolverCalculator calculatorId={calculator.id} /> :
     slug === 'currency-converter' ? <CurrencyConverter /> :
     slug === 'character-counter' ? <TextToolsCalculator mode="character" /> :
@@ -121,13 +136,27 @@ export default async function CalculatorPage({
 
         {tocItems ? (
           // v2 pages: calculator in the wide column; intro + table of contents in a narrower panel beside it.
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
+          // grid-cols-1 (Tailwind's minmax(0,1fr)) matters below lg: without it, a grid item has no
+          // width ceiling, and the diagram's non-wrapping pill labels (e.g. freelancer-rate-calculator's
+          // "Self-employment + income tax rate") push the whole page into horizontal overflow at phone width.
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
             <div className="space-y-4">
               {widget}
               {example}
             </div>
             <aside className="space-y-6 lg:sticky lg:top-6">
-              <div className={`${CARD} space-y-3`}>{intro}</div>
+              <HowItWorksCard
+                category={calculator.category}
+                flow={flow}
+                description={calculator.description}
+                aliases={aliases}
+                diagramSummary={diagramSummary}
+                howItWorksLabel={t('howItWorksLabel')}
+                orSolveAnyLabel={t('orSolveAnyField')}
+                moreInputsLabel={moreInputsLabel}
+                alsoCalledLabel={t('alsoCalledLabel')}
+                trust={trust}
+              />
               <TableOfContents title={t('contentsTitle')} items={tocItems} />
             </aside>
           </div>

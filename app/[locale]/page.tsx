@@ -153,7 +153,7 @@ export default async function HomePage({
               {t('categoryViewAll')}
             </Link>
           </div>
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-3 sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))]">
             {categories.map((category) => {
               const theme = categoryTheme(category.id);
               const count = calculators.filter((c) => c.category === category.id).length;
@@ -161,7 +161,7 @@ export default async function HomePage({
                 <Link
                   key={category.id}
                   href={`/categories/${category.id}`}
-                  className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_20px_rgba(15,23,42,0.05)] ring-1 ring-slate-900/5 transition hover:-translate-y-0.5 dark:bg-slate-900 dark:ring-white/10"
+                  className="flex flex-col items-start gap-2 rounded-2xl bg-white p-4 sm:flex-row sm:items-center sm:gap-3 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_20px_rgba(15,23,42,0.05)] ring-1 ring-slate-900/5 transition hover:-translate-y-0.5 dark:bg-slate-900 dark:ring-white/10"
                 >
                   <IconTile icon={theme.icon} color={theme.color} size="md" />
                   <div>
@@ -174,12 +174,12 @@ export default async function HomePage({
           </div>
         </section>
 
-        <section className="mt-12 space-y-4">
+        <section className="mb-16 mt-12 space-y-4">
           <div>
             <h2 className="text-2xl font-semibold text-[#1D1D1F] dark:text-white">{t('popularHeadline')}</h2>
             <p className="mt-1 text-sm text-[#6E6E73] dark:text-slate-400">{t('popularSubline')}</p>
           </div>
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] auto-rows-[200px] gap-4">
+          <div className="grid auto-rows-[minmax(180px,auto)] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {POPULAR.map((card, index) => {
               const calculator = findCalculator(card.id);
               if (!calculator) return null;
@@ -192,7 +192,7 @@ export default async function HomePage({
                   <Link
                     key={card.id}
                     href={`/calculators/${card.id}`}
-                    className="row-span-2 flex flex-col justify-between rounded-3xl p-6 text-white shadow-[0_10px_30px_rgba(15,23,42,0.12)] transition hover:-translate-y-0.5 sm:p-8"
+                    className="flex flex-col justify-between rounded-3xl p-6 sm:col-span-2 lg:col-span-1 lg:row-span-2 text-white shadow-[0_10px_30px_rgba(15,23,42,0.12)] transition hover:-translate-y-0.5 sm:p-8"
                     style={{ backgroundImage: 'linear-gradient(160deg, #34C759, #1E8E3E)' }}
                   >
                     <div>
@@ -225,8 +225,8 @@ export default async function HomePage({
                     <IconTile icon={theme.icon} color={theme.color} size="lg" />
                     <h3 className="text-base font-semibold text-[#1D1D1F] dark:text-white">{calculator.title}</h3>
                   </div>
-                  <p className="mt-3 text-sm leading-6 text-[#515154] dark:text-slate-300">
-                    {card.example ? <span className="font-mono text-[#1D1D1F] dark:text-white">{card.example}</span> : calculator.description}
+                  <p className="mt-4 line-clamp-3 text-sm leading-6 text-[#515154] dark:text-slate-300">
+                    {card.example ? <span className="text-xl font-semibold tracking-tight text-[#1D1D1F] dark:text-white">{card.example}</span> : calculator.description}
                   </p>
                 </Link>
               );

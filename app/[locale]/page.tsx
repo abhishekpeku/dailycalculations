@@ -2,12 +2,12 @@ import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 import type { Metadata } from 'next';
 import CalculatorSearch from '@/components/CalculatorSearch';
-import CategoryGrid from '@/components/CategoryGrid';
-import { calculators, categories } from '@/data/calculators';
-import CalculatorCard from '@/components/CalculatorCard';
+import IconTile, { type TileColor } from '@/components/IconTile';
+import { calculators, categories, findCalculator } from '@/data/calculators';
 import FaqSection from '@/components/FaqSection';
 import { buildCanonical, buildHomeJsonLd } from '@/lib/seo';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
+import { categoryTheme } from '@/lib/categoryTheme';
 import { routing } from '@/i18n/routing';
 import { Link } from '@/i18n/navigation';
 
@@ -66,10 +66,38 @@ export async function generateMetadata({
   };
 }
 
-const featured = calculators.filter((c) =>
-  ['mortgage-calculator', 'sales-tax-calculator', 'bmi-calculator', 'miles-to-kilometers-converter'].includes(c.id)
-);
 const searchItems = calculators.map(({ id, title, description, aliases }) => ({ id, title, description, aliases }));
+
+// Short display labels for the hero's "Try:" row — the real calculator titles ("Mortgage
+// Calculator") are too long for this compact line; the approved copy spells these out exactly.
+const TRY_LINKS = [
+  { id: 'mortgage-calculator', label: 'Mortgage' },
+  { id: 'bmi-calculator', label: 'BMI' },
+  { id: 'sales-tax-calculator', label: 'Sales tax' },
+  { id: 'percentage-calculator', label: 'Percentage' }
+];
+
+// Light-mode tint per category color, for the small "Popular calculators" cards. Dark mode falls
+// back to the site's usual dark card surface (see the render below) rather than a second,
+// colored dark-mode system.
+const POPULAR_TINT: Partial<Record<TileColor, string>> = {
+  pink: 'bg-[#FDECEF]',
+  red: 'bg-[#FDEDEB]',
+  purple: 'bg-[#F4EAFB]',
+  orange: 'bg-[#FFF3E0]'
+};
+
+// The first entry renders as the large green feature card; the rest as small tinted cards.
+// `example` must be unit/currency-neutral (the site is region-aware) — verified by hand:
+// 26.2 mi = 42.16 km (1 mi = 1.609344 km), 15% of 80 = 12. Cards with no `example` show the
+// calculator's own description instead.
+const POPULAR = [
+  { id: 'mortgage-calculator' },
+  { id: 'bmi-calculator' },
+  { id: 'sales-tax-calculator' },
+  { id: 'miles-to-kilometers-converter', example: '26.2 mi = 42.16 km' },
+  { id: 'percentage-calculator', example: '15% of 80 = 12' }
+];
 
 export default async function HomePage({
   params
@@ -80,96 +108,163 @@ export default async function HomePage({
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'home' });
   const tSearch = await getTranslations({ locale, namespace: 'search' });
+  const tCommon = await getTranslations({ locale, namespace: 'common' });
   const tFaq = await getTranslations({ locale, namespace: 'homeFaq' });
   const tSeo = await getTranslations({ locale, namespace: 'homeSeo' });
+  // "mortgage, BMI, loan, GPA and {count} more" — the 4 named calculators excluded, never a literal.
+  const moreCount = calculators.length - 4;
+
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-      <section className="space-y-6 py-10">
-        <div className="grid gap-4 rounded-3xl border border-slate-200 bg-white/90 p-8 shadow-panel backdrop-blur dark:border-slate-700 dark:bg-slate-950/80">
-          <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-brand-700 dark:text-brand-300">{t('eyebrow')}</p>
-            <h1 className="mt-4 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">{t('headline')}</h1>
-            <p className="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">{t('description')}</p>
+    <div className="bg-[#F5F5F7] dark:bg-slate-950">
+      <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+        <section className="py-6 text-center sm:py-12">
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#0066CC] dark:text-brand-300">{t('eyebrow')}</p>
+          <h1 className="mt-4 text-4xl font-semibold tracking-tight text-[#1D1D1F] dark:text-white sm:text-5xl">{t('headline')}</h1>
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-[#515154] dark:text-slate-300">
+            {t('subtitle', { count: moreCount })}
+          </p>
+
+          <div className="relative mx-auto mt-8 max-w-xl">
+            <CalculatorSearch
+              calculators={searchItems}
+              searchLabel={tSearch('label')}
+              searchPlaceholder={tSearch('placeholder')}
+              noResultsLabel={tSearch('noResults')}
+            />
           </div>
-          <CalculatorSearch calculators={searchItems} searchLabel={tSearch('label')} searchPlaceholder={tSearch('placeholder')} />
-        </div>
-      </section>
 
-      <section className="space-y-6">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {categories.map((category) => (
-            <CategoryGrid key={category.id} category={category} />
-          ))}
-        </div>
-      </section>
+          <p className="mt-5 text-sm text-[#6E6E73] dark:text-slate-400">
+            {t('tryLabel')}{' '}
+            {TRY_LINKS.map((link, index) => (
+              <span key={link.id}>
+                {index > 0 && <span className="mx-1.5">·</span>}
+                <Link href={`/calculators/${link.id}`} className="font-medium text-[#0066CC] transition hover:underline dark:text-brand-300">
+                  {link.label}
+                </Link>
+              </span>
+            ))}
+          </p>
+        </section>
 
-      <section className="mt-10 space-y-4">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-600 dark:text-slate-400">{t('featuredEyebrow')}</p>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-950 dark:text-white">{t('featuredHeadline')}</h2>
-          </div>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {featured.map((calculator) => (
-            <CalculatorCard key={calculator.id} calculator={calculator} variant="compact" />
-          ))}
-        </div>
-      </section>
-
-      <section className="mt-10 space-y-4">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-600 dark:text-slate-400">Site information</p>
-          <h2 className="mt-2 text-2xl font-semibold text-slate-950 dark:text-white">Helpful pages</h2>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            { href: '/about', title: 'About Us', description: 'Learn what Daily Calculations offers and how the tools are built.' },
-            { href: '/contact', title: 'Contact Us', description: 'Report a bug, ask a question, or suggest a new calculator.' },
-            { href: '/privacy-policy', title: 'Privacy Policy', description: 'Read how calculator inputs, preferences, and data are handled.' },
-            { href: '/terms', title: 'Terms & Conditions', description: 'Review the rules and disclaimers for using the calculators.' }
-          ].map((page) => (
-            <Link
-              key={page.href}
-              href={page.href}
-              className="rounded-2xl border border-slate-200 bg-white/95 p-5 shadow-panel transition hover:-translate-y-0.5 hover:border-brand-300 hover:text-brand-800 dark:border-slate-800 dark:bg-slate-950/90 dark:hover:border-brand-700 dark:hover:text-brand-200"
-            >
-              <h3 className="text-base font-semibold text-slate-950 dark:text-white">{page.title}</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{page.description}</p>
+        <section className="mt-6 space-y-4">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-2xl font-semibold text-[#1D1D1F] dark:text-white">{t('categoryHeadline')}</h2>
+            <Link href="/calculators" className="text-sm font-medium text-[#0066CC] transition hover:underline dark:text-brand-300">
+              {t('categoryViewAll')}
             </Link>
-          ))}
-        </div>
-      </section>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildHomeJsonLd()) }} />
-
-      <FaqSection
-        title={tFaq('title')}
-        description={tFaq('description')}
-        items={Array.from({ length: 14 }, (_, i) => ({
-          question: tFaq(`q${i}`),
-          answer: tFaq(`a${i}`)
-        }))}
-      />
-
-      <section className="mt-16">
-        <details className="group rounded-2xl border border-slate-200 bg-white/90 shadow-panel backdrop-blur dark:border-slate-700 dark:bg-slate-950/80">
-          <summary className="flex cursor-pointer list-none items-start justify-between gap-4 p-5">
-            <span className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">{tSeo('title')}</span>
-            <span className="mt-1 text-lg text-brand-700 transition group-open:rotate-45 dark:text-brand-300" aria-hidden="true">
-              +
-            </span>
-          </summary>
-          <div className="space-y-4 border-t border-slate-200 p-5 text-base leading-7 text-slate-600 dark:border-slate-800 dark:text-slate-300">
-            <p>{tSeo('p1')}</p>
-            <p>{tSeo('p2')}</p>
-            <p>{tSeo('p3')}</p>
-            <p>{tSeo('p4')}</p>
-            <p>{tSeo('p5')}</p>
-            <p>{tSeo('p6')}</p>
-            <p>{tSeo('p7')}</p>
           </div>
-        </details>
-      </section>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3">
+            {categories.map((category) => {
+              const theme = categoryTheme(category.id);
+              const count = calculators.filter((c) => c.category === category.id).length;
+              return (
+                <Link
+                  key={category.id}
+                  href={`/categories/${category.id}`}
+                  className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_20px_rgba(15,23,42,0.05)] ring-1 ring-slate-900/5 transition hover:-translate-y-0.5 dark:bg-slate-900 dark:ring-white/10"
+                >
+                  <IconTile icon={theme.icon} color={theme.color} size="md" />
+                  <div>
+                    <p className="text-base font-semibold text-[#1D1D1F] dark:text-white">{category.title}</p>
+                    <p className="text-sm text-[#6E6E73] dark:text-slate-400">{tCommon('calculators', { count })}</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="mt-12 space-y-4">
+          <div>
+            <h2 className="text-2xl font-semibold text-[#1D1D1F] dark:text-white">{t('popularHeadline')}</h2>
+            <p className="mt-1 text-sm text-[#6E6E73] dark:text-slate-400">{t('popularSubline')}</p>
+          </div>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] auto-rows-[200px] gap-4">
+            {POPULAR.map((card, index) => {
+              const calculator = findCalculator(card.id);
+              if (!calculator) return null;
+              const theme = categoryTheme(calculator.category);
+
+              if (index === 0) {
+                // The large feature card: solid green gradient, white text, its own inset panel.
+                const categoryLabel = categories.find((c) => c.id === calculator.category)?.title ?? '';
+                return (
+                  <Link
+                    key={card.id}
+                    href={`/calculators/${card.id}`}
+                    className="row-span-2 flex flex-col justify-between rounded-3xl p-6 text-white shadow-[0_10px_30px_rgba(15,23,42,0.12)] transition hover:-translate-y-0.5 sm:p-8"
+                    style={{ backgroundImage: 'linear-gradient(160deg, #34C759, #1E8E3E)' }}
+                  >
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.25em] text-white/80">{categoryLabel}</p>
+                      <h3 className="mt-3 text-2xl font-semibold sm:text-3xl">{calculator.title}</h3>
+                      <p className="mt-3 max-w-md text-sm leading-6 text-white/90">{calculator.description}</p>
+                    </div>
+                    <div className="mt-6 rounded-2xl bg-white/15 p-4">
+                      <div className="flex flex-wrap gap-2">
+                        {['Monthly payment', 'Total interest', 'Amortization schedule'].map((chip) => (
+                          <span key={chip} className="rounded-full bg-white/20 px-3 py-1 text-xs font-medium">
+                            {chip}
+                          </span>
+                        ))}
+                      </div>
+                      <p className="mt-3 text-sm font-semibold">Open calculator →</p>
+                    </div>
+                  </Link>
+                );
+              }
+
+              const tint = POPULAR_TINT[theme.color] ?? 'bg-slate-100';
+              return (
+                <Link
+                  key={card.id}
+                  href={`/calculators/${card.id}`}
+                  className={`flex flex-col justify-between rounded-3xl p-5 transition hover:-translate-y-0.5 dark:bg-slate-900 dark:ring-1 dark:ring-white/10 ${tint}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <IconTile icon={theme.icon} color={theme.color} size="lg" />
+                    <h3 className="text-base font-semibold text-[#1D1D1F] dark:text-white">{calculator.title}</h3>
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-[#515154] dark:text-slate-300">
+                    {card.example ? <span className="font-mono text-[#1D1D1F] dark:text-white">{card.example}</span> : calculator.description}
+                  </p>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildHomeJsonLd()) }} />
+
+        <FaqSection
+          title={tFaq('title')}
+          description={tFaq('description')}
+          items={Array.from({ length: 14 }, (_, i) => ({
+            question: tFaq(`q${i}`),
+            answer: tFaq(`a${i}`)
+          }))}
+        />
+
+        <section className="mt-16">
+          <details className="group rounded-2xl border border-slate-200 bg-white/90 shadow-panel backdrop-blur dark:border-slate-700 dark:bg-slate-950/80">
+            <summary className="flex cursor-pointer list-none items-start justify-between gap-4 p-5">
+              <span className="text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">{tSeo('title')}</span>
+              <span className="mt-1 text-lg text-brand-700 transition group-open:rotate-45 dark:text-brand-300" aria-hidden="true">
+                +
+              </span>
+            </summary>
+            <div className="space-y-4 border-t border-slate-200 p-5 text-base leading-7 text-slate-600 dark:border-slate-800 dark:text-slate-300">
+              <p>{tSeo('p1')}</p>
+              <p>{tSeo('p2')}</p>
+              <p>{tSeo('p3')}</p>
+              <p>{tSeo('p4')}</p>
+              <p>{tSeo('p5')}</p>
+              <p>{tSeo('p6')}</p>
+              <p>{tSeo('p7')}</p>
+            </div>
+          </details>
+        </section>
+      </div>
     </div>
   );
 }

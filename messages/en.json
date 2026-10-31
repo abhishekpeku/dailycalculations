@@ -11,14 +11,18 @@
   },
   "home": {
     "eyebrow": "Free online calculators",
-    "headline": "Calculator for Mortgage, BMI, Loan, GPA & More",
-    "description": "Free, fast online calculators for mortgage, BMI, loan, GPA, compound interest, auto loan, calorie, paycheck, age, investment, TDEE, and more. No signup needed — instant results.",
-    "featuredEyebrow": "Most-used calculators",
-    "featuredHeadline": "Popular calculators"
+    "headline": "What do you want to calculate?",
+    "subtitle": "Free, fast calculators for mortgage, BMI, loan, GPA and {count} more. No signup — instant results.",
+    "tryLabel": "Try:",
+    "categoryHeadline": "Browse by category",
+    "categoryViewAll": "All calculators ›",
+    "popularHeadline": "Popular calculators",
+    "popularSubline": "The tools people open most."
   },
   "search": {
     "label": "Search calculators",
-    "placeholder": "Mortgage, BMI, miles, sales tax..."
+    "placeholder": "Mortgage, BMI, miles, sales tax...",
+    "noResults": "No calculators match."
   },
   "calculators": {
     "eyebrow": "All calculators",
@@ -67,15 +71,23 @@
     "errorMessage": "Please provide a more detailed suggestion (at least 5 characters)."
   },
   "footer": {
-    "tagline": "Daily Calculations: tools for everyday decisions.",
-    "suggestLink": "Suggest an enhancement",
-    "about": "About",
-    "contact": "Contact",
-    "privacy": "Privacy Policy",
-    "terms": "Terms"
+    "bannerTitle": "Can’t find the calculator you need?",
+    "bannerBody": "Tell us — we build the most-requested ones first.",
+    "bannerCta": "Suggest a calculator",
+    "brand": "Daily Calculations",
+    "blurb": "Free, accurate calculators for money, health, home and everyday math.",
+    "categoriesHeading": "Categories",
+    "companyHeading": "Company",
+    "companyAbout": "About us",
+    "companyContact": "Contact us",
+    "companySuggest": "Suggest a calculator",
+    "companyPrivacy": "Privacy policy",
+    "companyTerms": "Terms & conditions",
+    "copyright": "© {year} Daily Calculations. Results are estimates — not financial or medical advice."
   },
   "common": {
-    "tools": "{count, plural, one {# tool} other {# tools}}"
+    "tools": "{count, plural, one {# tool} other {# tools}}",
+    "calculators": "{count, plural, one {# calculator} other {# calculators}}"
   },
   "homeFaq": {
     "title": "Frequently asked questions",

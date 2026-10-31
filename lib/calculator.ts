@@ -58,6 +58,7 @@ export function formatFull(value: number, opts?: { currency?: boolean }) {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
+      minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }).format(value);
   }
@@ -65,6 +66,11 @@ export function formatFull(value: number, opts?: { currency?: boolean }) {
   return new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 6
   }).format(value);
+}
+
+// Money without a symbol: grouped, always exactly two decimals, so a column of amounts lines up.
+export function formatMoney(value: number) {
+  return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
 }
 
 // Grouped, up to `maxDigits` decimals, never compact: the default for type-B breakdown figures.

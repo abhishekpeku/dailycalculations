@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { findCalculator } from '@/data/calculators';
 import type { SolverOutput } from '@/data/calculators';
-import { formatFull, formatSignificant } from '@/lib/calculator';
+import { formatMoney, formatSignificant } from '@/lib/calculator';
 import { UNITS, findUnit, fromBase, toBase, type UnitDimension } from '@/lib/units';
 import { editOrder, initialState, isSingleUnit, parse, plain, readShareParams, shareParams, solveState, type SolverState } from '@/lib/solverState';
 import { AlsoIn, FIELD_GROUP, FieldRow, Headline, OutputItem, OutputList, ResultPanel, WidgetActions, WidgetCard, widgetAccent } from '@/components/CalculatorWidget';
@@ -15,9 +15,9 @@ import { describeSolverKey, solverVisualValues } from '@/lib/breakdown';
 
 const NUMBER_WORDS: Record<number, string> = { 1: 'one', 2: 'two', 3: 'three', 4: 'four' };
 
-// Money rounds to cents (the region step will format it properly); everything else to 4 significant figures.
+// Money always shows cents; everything else 4 significant figures.
 const formatValue = (value: number, dimension: UnitDimension) =>
-  dimension === 'currency' ? formatFull(Math.round(value * 100) / 100) : formatSignificant(value);
+  dimension === 'currency' ? formatMoney(value) : formatSignificant(value);
 
 // Single-unit dimensions read inline: 5%, $1,200, or a bare count.
 function withUnit(text: string, dimension: UnitDimension, unitId: string) {
@@ -102,7 +102,7 @@ export default function SolverCalculator({ calculatorId }: { calculatorId: strin
         {solver.variables.map((variable) => {
           const isTarget = variable.id === target;
           const value = isTarget
-            ? (answered ? plain(fromBase(result, variable.dimension, state.units[variable.id])) : '')
+            ? (answered ? (variable.dimension === 'currency' ? result.toFixed(2) : plain(fromBase(result, variable.dimension, state.units[variable.id]))) : '')
             : state.values[variable.id];
           return (
             <FieldRow

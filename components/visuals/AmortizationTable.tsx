@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { formatFull } from '@/lib/calculator';
+import { formatMoney } from '@/lib/calculator';
 import { amortizationSchedule } from '@/lib/amortization';
 
 type AmortizationTableProps = {
@@ -16,7 +16,7 @@ type AmortizationTableProps = {
   initialYears?: number;
 };
 
-const money = (value: number) => formatFull(Math.round(value * 100) / 100);
+const money = formatMoney;
 
 // Yearly interest, principal and balance. The math lives in lib/amortization.ts.
 export default function AmortizationTable({ principal, annualRate, months, payment, format = money, initialYears = 5 }: AmortizationTableProps) {

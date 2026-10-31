@@ -21,7 +21,8 @@
   },
   "search": {
     "label": "Search calculators",
-    "placeholder": "Mortgage, BMI, miles, sales tax..."
+    "placeholder": "Mortgage, BMI, miles, sales tax...",
+    "noResults": "No calculators match."
   },
   "calculators": {
     "eyebrow": "All calculators",

@@ -47,8 +47,11 @@ blue `#0066CC`. 390px phone width, no horizontal scroll. No new dependencies.
   existing precedent of the (now-deleted) "Helpful pages" block, which was also literal JSX
   strings. Section-level headings (hero, "Browse by category", "Popular calculators") go through
   `messages/en.json` as before.
-- D-UX1-3: The "Try:" row's 4 link labels are pulled from `calculators.find(...).title` (via
-  `data/calculators`), not retyped, so they can't drift from the real calculator titles.
+- D-UX1-3: The "Try:" row's 4 link labels are short literal strings ("Mortgage", "BMI", "Sales
+  tax", "Percentage") hardcoded in `page.tsx`, not the real calculator titles ("Mortgage
+  Calculator" etc. — too long for this compact row and the approved copy spells out the short
+  form exactly). Each still links to the real calculator id, so a 404 can't happen even if a
+  title changes later.
 - D-UX1-4: Subtitle "more" count = `calculators.length - 4` (the 4 named calculators), computed
   in `page.tsx`, never a literal in `messages/en.json` (the ICU string takes `{count}`).
 - D-UX1-5: `footer` namespace keys fully renamed/replaced (`bannerTitle`, `bannerBody`,

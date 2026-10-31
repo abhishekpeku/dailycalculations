@@ -19,6 +19,7 @@ export const healthCalculators: CalculatorConfig[] = [
   {
     id: 'bmi-calculator',
     category: 'health',
+    glyph: 'BMI',
     updatedAt: '2026-10-20',
     aliases: ['body mass index calculator', 'bmi calculator for men', 'bmi calculator for women', 'bmi chart calculator', 'healthy weight calculator'],
     related: ['calorie-calculator', 'tdee-calculator', 'pounds-to-kilograms-converter'],
@@ -143,6 +144,7 @@ export const healthCalculators: CalculatorConfig[] = [
   {
     id: 'water-intake-calculator',
     category: 'health',
+    glyph: 'H₂O',
     updatedAt: '2026-10-20',
     aliases: ['daily water calculator', 'hydration calculator', 'how much water should i drink', 'water per day calculator', 'drinking water calculator'],
     related: ['calorie-calculator', 'tdee-calculator', 'bmi-calculator', 'gallons-to-liters-converter'],
@@ -260,6 +262,7 @@ export const healthCalculators: CalculatorConfig[] = [
   {
     id: 'calorie-calculator',
     category: 'health',
+    glyph: 'kcal',
     updatedAt: '2026-10-20',
     aliases: ['calories calculator', 'daily calorie needs calculator', 'calorie intake calculator', 'weight loss calorie calculator', 'how many calories should i eat'],
     related: ['tdee-calculator', 'bmi-calculator', 'running-pace-calculator'],
@@ -386,6 +389,7 @@ export const healthCalculators: CalculatorConfig[] = [
   {
     id: 'tdee-calculator',
     category: 'health',
+    glyph: 'TDEE',
     updatedAt: '2026-10-20',
     aliases: ['total daily energy expenditure calculator', 'maintenance calories calculator', 'tdee and bmr calculator', 'bmr calculator', 'basal metabolic rate calculator'],
     related: ['calorie-calculator', 'bmi-calculator', 'running-pace-calculator'],
@@ -513,6 +517,7 @@ export const healthCalculators: CalculatorConfig[] = [
   {
     id: 'running-pace-calculator',
     category: 'health',
+    glyph: 'pace',
     updatedAt: '2026-10-20',
     aliases: ['pace per mile calculator', 'marathon pace calculator', 'race time calculator', 'min per km calculator', 'race time predictor'],
     related: ['calorie-calculator', 'miles-to-kilometers-converter', 'tdee-calculator', 'sleep-time-calculator'],
@@ -644,6 +649,7 @@ export const healthCalculators: CalculatorConfig[] = [
   {
     id: 'pregnancy-due-date-calculator',
     category: 'health',
+    glyph: 'EDD',
     updatedAt: '2026-10-20',
     aliases: ['due date calculator', 'conception date calculator', 'pregnancy week calculator', 'edd calculator', 'how far along am i'],
     related: ['age-calculator', 'date-difference-calculator', 'bmi-calculator', 'water-intake-calculator'],

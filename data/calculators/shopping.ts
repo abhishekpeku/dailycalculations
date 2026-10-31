@@ -4,6 +4,7 @@ export const shoppingCalculators: CalculatorConfig[] = [
   {
     id: 'sales-tax-calculator',
     category: 'shopping',
+    glyph: 'tax',
     updatedAt: '2026-10-19',
     aliases: ['vat calculator', 'gst calculator', 'tax added calculator', 'purchase tax calculator', 'reverse sales tax calculator'],
     related: ['tip-calculator', 'discount-calculator', 'unit-price-calculator', 'cashback-calculator'],
@@ -116,6 +117,7 @@ export const shoppingCalculators: CalculatorConfig[] = [
   {
     id: 'tip-calculator',
     category: 'shopping',
+    glyph: 'tip',
     updatedAt: '2026-10-19',
     aliases: ['gratuity calculator', 'bill split calculator', 'restaurant tip calculator', 'service charge calculator', 'tip percentage calculator'],
     related: ['sales-tax-calculator', 'discount-calculator', 'travel-budget-calculator', 'unit-price-calculator'],
@@ -234,6 +236,7 @@ export const shoppingCalculators: CalculatorConfig[] = [
   {
     id: 'unit-price-calculator',
     category: 'shopping',
+    glyph: '$/u',
     updatedAt: '2026-10-19',
     aliases: ['price per unit calculator', 'cost per ounce calculator', 'price comparison calculator', 'grocery unit price', 'which is cheaper calculator'],
     related: ['discount-calculator', 'sales-tax-calculator', 'cashback-calculator', 'fuel-cost-calculator'],
@@ -352,6 +355,7 @@ export const shoppingCalculators: CalculatorConfig[] = [
   {
     id: 'discount-calculator',
     category: 'shopping',
+    glyph: '-%',
     updatedAt: '2026-10-19',
     aliases: ['percent off calculator', 'sale price calculator', 'markdown calculator', 'savings calculator', 'stacked discount calculator'],
     related: ['sales-tax-calculator', 'cashback-calculator', 'unit-price-calculator', 'tip-calculator'],
@@ -485,6 +489,7 @@ export const shoppingCalculators: CalculatorConfig[] = [
   {
     id: 'cashback-calculator',
     category: 'shopping',
+    glyph: 'cb',
     updatedAt: '2026-10-19',
     aliases: ['reward points calculator', 'credit card cashback calculator', 'rebate calculator', 'credit card rewards calculator'],
     related: ['discount-calculator', 'sales-tax-calculator', 'unit-price-calculator', 'tip-calculator'],

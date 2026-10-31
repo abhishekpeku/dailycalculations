@@ -6,6 +6,7 @@ export const autoCalculators: CalculatorConfig[] = [
   {
     id: 'car-payment-calculator',
     category: 'auto',
+    glyph: 'M',
     updatedAt: '2026-10-21',
     aliases: ['auto loan calculator', 'car loan calculator', 'vehicle finance calculator', 'monthly car payment estimator', 'auto loan payment calculator'],
     related: ['loan-calculator', 'emi-calculator', 'commute-cost-calculator', 'fuel-cost-calculator'],
@@ -141,6 +142,7 @@ export const autoCalculators: CalculatorConfig[] = [
   {
     id: 'gas-cost-calculator',
     category: 'auto',
+    glyph: 'gal',
     updatedAt: '2026-10-21',
     aliases: ['gas trip calculator', 'road trip fuel calculator', 'gas mileage cost calculator', 'trip gas cost estimator', 'how much gas for a trip'],
     related: ['fuel-cost-calculator', 'commute-cost-calculator', 'travel-budget-calculator', 'toll-cost-calculator'],
@@ -264,6 +266,7 @@ export const autoCalculators: CalculatorConfig[] = [
   {
     id: 'ev-charging-calculator',
     category: 'auto',
+    glyph: 'kWh',
     updatedAt: '2026-10-21',
     aliases: ['electric car charging cost', 'ev running cost calculator', 'kwh charging calculator', 'ev vs gas cost calculator', 'cost to charge an electric car'],
     related: ['fuel-cost-calculator', 'electricity-bill-calculator', 'commute-cost-calculator', 'gas-cost-calculator'],
@@ -393,6 +396,7 @@ export const autoCalculators: CalculatorConfig[] = [
   {
     id: 'toll-cost-calculator',
     category: 'auto',
+    glyph: 'toll',
     updatedAt: '2026-10-21',
     aliases: ['toll estimator', 'highway toll calculator', 'road toll cost', 'e-zpass cost calculator', 'monthly toll cost calculator', 'toll pass savings calculator'],
     related: ['commute-cost-calculator', 'gas-cost-calculator', 'travel-budget-calculator', 'fuel-cost-calculator'],
@@ -515,6 +519,7 @@ export const autoCalculators: CalculatorConfig[] = [
   {
     id: 'commute-cost-calculator',
     category: 'auto',
+    glyph: 'mi',
     updatedAt: '2026-10-21',
     aliases: ['cost of commuting calculator', 'daily travel cost calculator', 'work travel expense calculator', 'driving to work cost calculator', 'monthly commute cost'],
     related: ['fuel-cost-calculator', 'toll-cost-calculator', 'ev-charging-calculator', 'paycheck-calculator'],
@@ -646,6 +651,7 @@ export const autoCalculators: CalculatorConfig[] = [
   {
     id: 'fuel-cost-calculator',
     category: 'auto',
+    glyph: '$',
     updatedAt: '2026-10-21',
     aliases: ['petrol cost calculator', 'diesel cost calculator', 'trip fuel calculator', 'mpg cost calculator', 'annual fuel cost calculator', 'mpg savings calculator'],
     related: ['gas-cost-calculator', 'commute-cost-calculator', 'ev-charging-calculator', 'toll-cost-calculator'],

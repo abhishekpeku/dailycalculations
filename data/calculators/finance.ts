@@ -58,6 +58,7 @@ export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'mortgage-calculator',
     category: 'finance',
+    glyph: 'M',
     updatedAt: '2026-10-19',
     aliases: ['home loan calculator', 'house payment calculator', 'mortgage payment calculator', 'home loan emi calculator', 'house loan emi calculator', 'monthly mortgage estimator'],
     related: ['loan-calculator', 'emi-calculator', 'loan-prepayment-calculator', 'car-payment-calculator'],
@@ -193,6 +194,7 @@ export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'loan-calculator',
     category: 'finance',
+    glyph: 'L',
     updatedAt: '2026-10-19',
     aliases: ['personal loan calculator', 'monthly payment calculator', 'loan repayment calculator', 'installment calculator', 'borrowing cost calculator'],
     related: ['mortgage-calculator', 'emi-calculator', 'car-payment-calculator', 'loan-prepayment-calculator'],
@@ -319,6 +321,7 @@ export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'compound-interest-calculator',
     category: 'finance',
+    glyph: 'FV',
     updatedAt: '2026-10-19',
     aliases: ['interest growth calculator', 'savings growth calculator', 'future value calculator', 'compounding calculator'],
     related: ['investment-calculator', 'inflation-calculator', 'loan-prepayment-calculator', 'salary-raise-calculator'],
@@ -463,6 +466,7 @@ export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'paycheck-calculator',
     category: 'finance',
+    glyph: '$',
     updatedAt: '2026-10-19',
     aliases: ['take home pay calculator', 'net salary calculator', 'after tax pay calculator', 'salary paycheck estimator'],
     related: ['salary-raise-calculator', 'work-hours-calculator', 'freelancer-rate-calculator', 'pto-calculator'],
@@ -656,6 +660,7 @@ export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'investment-calculator',
     category: 'finance',
+    glyph: 'Inv',
     updatedAt: '2026-10-19',
     aliases: ['sip calculator', 'return on investment calculator', 'roi calculator', 'portfolio growth calculator', 'retirement savings calculator'],
     related: ['compound-interest-calculator', 'inflation-calculator', 'paycheck-calculator', 'currency-converter'],
@@ -801,6 +806,7 @@ export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'loan-prepayment-calculator',
     category: 'finance',
+    glyph: 'L↓',
     updatedAt: '2026-10-19',
     aliases: ['extra payment calculator', 'early payoff calculator', 'mortgage payoff calculator', 'interest saved calculator'],
     related: ['mortgage-calculator', 'loan-calculator', 'emi-calculator', 'compound-interest-calculator'],
@@ -937,6 +943,7 @@ export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'inflation-calculator',
     category: 'finance',
+    glyph: 'CPI',
     updatedAt: '2026-10-19',
     aliases: ['purchasing power calculator', 'cost of living calculator', 'value of money over time calculator', 'price increase calculator'],
     related: ['compound-interest-calculator', 'investment-calculator', 'salary-raise-calculator', 'electricity-bill-calculator'],
@@ -1059,6 +1066,7 @@ export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'emi-calculator',
     category: 'finance',
+    glyph: 'EMI',
     updatedAt: '2026-10-19',
     aliases: ['equated monthly installment calculator', 'loan emi calculator', 'house loan emi calculator', 'monthly installment calculator', 'bank emi calculator'],
     related: ['loan-calculator', 'mortgage-calculator', 'car-payment-calculator', 'loan-prepayment-calculator'],

@@ -75,14 +75,32 @@ blue `#0066CC`. 390px phone width, no horizontal scroll. No new dependencies.
 
 - [x] Research: read CLAUDE.md, STATUS.md, all touched components/data/messages files
 - [x] Write this step file, commit, push, open draft PR
-- [ ] `messages/en.json`: home/search/common/footer key updates
-- [ ] Hero rebuild in `page.tsx`
-- [ ] `components/CalculatorSearch.tsx` rebuild (dropdown behavior)
-- [ ] "Browse by category" section + delete `CategoryGrid.tsx` if unused
-- [ ] "Popular calculators" bento section
-- [ ] Remove "Helpful pages" section
-- [ ] `components/Footer.tsx` rebuild (navy, banner, 3 columns, bottom bar)
-- [ ] Verify at desktop + 390px, dark mode, footer on a calculator page
-- [ ] `npm run build` / `npm run lint` / `npm test` all green
-- [ ] Update `mdFiles/STATUS.md` (UX-01 row, session log, Parked if anything found)
+- [x] `messages/en.json`: home/search/common/footer key updates
+- [x] Hero rebuild in `page.tsx`
+- [x] `components/CalculatorSearch.tsx` rebuild (dropdown behavior)
+- [x] "Browse by category" section + delete `CategoryGrid.tsx` (confirmed unused, deleted)
+- [x] "Popular calculators" bento section
+- [x] Remove "Helpful pages" section
+- [x] `components/Footer.tsx` rebuild (navy, banner, 3 columns, bottom bar)
+- [x] Verify via rendered HTML + compiled CSS (desktop markup, grid auto-fill/auto-fit classes
+      compiled, category/popular counts and examples derived correctly, metadata/canonical/
+      JSON-LD unchanged, footer renders on a calculator page). Chrome browser tool was not
+      connected in this environment, so no live screenshot at 390px — verified no-overflow by
+      construction instead (see "Unsure / parked" below).
+- [x] `npm run build` / `npm run lint` / `npm test` all green (742/742 tests; lint clean once the
+      two pre-existing, out-of-scope artifact dirs — `.open-next/`, the old `.claude/worktrees/`
+      — are excluded, same exclusion `STATUS.md`'s Parked list already documents)
+- [x] Update `mdFiles/STATUS.md` (UX-01 row, session log, Parked note added)
 - [ ] `gh pr ready`
+
+### Unsure / parked
+- Claude in Chrome was not connected in this sandbox, so the 390px-width and dark-mode checks
+  are a code-level review (every new grid uses `auto-fill`/`auto-fit` + `minmax`, which cannot
+  overflow its container; every new color has a `dark:` pair except the footer and the mortgage
+  feature card, which are deliberately fixed-color by the brief) rather than an actual screenshot.
+  Worth a quick visual pass before merge if a browser is available.
+- Popular-card `IconTile` size: the brief asks for "~40px" on category cards and "44px" on
+  Popular cards, but `IconTile` only offers `sm`(28)/`md`(36)/`lg`(56). Used `md` for category
+  (closest to 40) and `lg` for Popular (56, not 44, but visibly bigger than category's `md` —
+  preserves the intended size hierarchy). Not a new size variant, since one isn't otherwise
+  needed yet.

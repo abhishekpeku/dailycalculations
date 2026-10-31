@@ -115,11 +115,11 @@ under the existing `calculator` namespace. `page.tsx` calls `t()` for all of the
 
 ## Progress
 
-- [ ] Step file written, committed, pushed; draft PR open
-- [ ] `lib/howItWorks.ts` + `lib/howItWorks.spec.ts`, `npm test` green
-- [ ] `messages/en.json` strings added
-- [ ] `components/HowItWorksCard.tsx` built
-- [ ] Wired into `app/[locale]/calculators/[slug]/page.tsx`
+- [x] Step file written, committed, pushed; draft PR open (#41)
+- [x] `lib/howItWorks.ts` + `lib/howItWorks.spec.ts`, `npm test` green
+- [x] `messages/en.json` strings added
+- [x] `components/HowItWorksCard.tsx` built
+- [x] Wired into `app/[locale]/calculators/[slug]/page.tsx`
 - [ ] `npm run build` passes, lint checked
 - [ ] Desktop screenshots: mortgage, bmi, miles-to-km, standard-deviation, freelancer-rate, currency-converter
 - [ ] Phone (390px) screenshots: same six pages

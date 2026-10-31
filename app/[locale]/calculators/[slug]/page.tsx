@@ -136,7 +136,10 @@ export default async function CalculatorPage({
 
         {tocItems ? (
           // v2 pages: calculator in the wide column; intro + table of contents in a narrower panel beside it.
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
+          // grid-cols-1 (Tailwind's minmax(0,1fr)) matters below lg: without it, a grid item has no
+          // width ceiling, and the diagram's non-wrapping pill labels (e.g. freelancer-rate-calculator's
+          // "Self-employment + income tax rate") push the whole page into horizontal overflow at phone width.
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
             <div className="space-y-4">
               {widget}
               {example}

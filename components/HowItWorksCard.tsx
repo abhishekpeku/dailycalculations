@@ -32,7 +32,10 @@ function Pill({ symbol, label }: { symbol?: string; label: string }) {
   return (
     <div className="flex h-9 min-w-0 items-center gap-1.5 rounded-[10px] bg-[#F5F5F7] px-2.5 dark:bg-slate-800" title={label}>
       {symbol ? (
-        <span className="w-[14px] shrink-0 font-serif text-[14px] italic font-bold leading-none text-[#6E6E73] dark:text-slate-400">{symbol}</span>
+        // ~14px for a one-letter symbol (H, m); grows instead of clipping for a longer one (APR, mi).
+        <span className="min-w-[14px] shrink-0 whitespace-nowrap font-serif text-[14px] italic font-bold leading-none text-[#6E6E73] dark:text-slate-400">
+          {symbol}
+        </span>
       ) : null}
       <span className="min-w-0 truncate text-[13px] text-slate-700 dark:text-slate-200">{label}</span>
     </div>

@@ -120,8 +120,11 @@ under the existing `calculator` namespace. `page.tsx` calls `t()` for all of the
 - [x] `messages/en.json` strings added
 - [x] `components/HowItWorksCard.tsx` built
 - [x] Wired into `app/[locale]/calculators/[slug]/page.tsx`
-- [ ] `npm run build` passes, lint checked
-- [ ] Desktop screenshots: mortgage, bmi, miles-to-km, standard-deviation, freelancer-rate, currency-converter
-- [ ] Phone (390px) screenshots: same six pages
-- [ ] Fixes from visual check applied
-- [ ] `mdFiles/STATUS.md` updated; dev server killed; `gh pr ready`
+- [x] `npm run build` passes, lint checked (clean)
+- [x] Desktop screenshots: mortgage, bmi, miles-to-km, standard-deviation, freelancer-rate, currency-converter
+- [x] Phone (390px) screenshots: same six pages
+- [x] Fixes from visual check applied: multi-char symbol slot (`w-[14px]` -> `min-w-[14px]`, was
+      overlapping the label for "APR"/"mi"); `grid-cols-1` added to the aside/widget grid (below
+      `lg:` it had no column template at all, so freelancer-rate-calculator's long non-wrapping pill
+      labels forced the whole page into horizontal overflow at phone width)
+- [x] `mdFiles/STATUS.md` updated; dev server killed; `gh pr ready`

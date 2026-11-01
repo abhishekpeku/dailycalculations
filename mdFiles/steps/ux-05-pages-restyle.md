@@ -104,10 +104,10 @@ touching its submit/validation logic.
 - [x] Part A: homepage Popular cards -> GlyphBadge
 - [x] Part A: RelatedCalculators -> GlyphBadge
 - [x] Part A: visual check (desktop/phone/dark) of homepage + a calculator page — all legible, no fixes needed
-- [ ] Part B: `/calculators` rebuilt as the Apple-style browse page
-- [ ] Part B: `/categories` index redirect added (middleware) + removed from sitemap + page deleted
-- [ ] Part B: internal links to `/categories` index updated (CategoriesMenu "Browse all")
-- [ ] Part B: visual + redirect check
+- [x] Part B: `/calculators` rebuilt as the Apple-style browse page
+- [x] Part B: `/categories` index redirect added (middleware) + removed from sitemap + page deleted
+- [x] Part B: internal links to `/categories` index updated (CategoriesMenu "Browse all")
+- [x] Part B: visual + redirect check — desktop/phone/dark all good, `?q=emi` swaps grouped listing for flat results, `/categories` 301s to `/calculators`
 - [ ] Part C: category page restyle (breadcrumb, header, grid, other-categories row)
 - [ ] Part C: filter input on the 3 big categories (measurements/math/statistics)
 - [ ] Part C: visual check (one small + one big category page)

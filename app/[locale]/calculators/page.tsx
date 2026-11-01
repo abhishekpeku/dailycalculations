@@ -3,9 +3,9 @@ import { getTranslations } from 'next-intl/server';
 import { setRequestLocale } from 'next-intl/server';
 import { calculators, categories } from '@/data/calculators';
 import CalculatorBrowser from '@/components/CalculatorBrowser';
-import CategoryCard from '@/components/CategoryCard';
 import { routing } from '@/i18n/routing';
 import { buildCanonical } from '@/lib/seo';
+import { CARD } from '@/lib/categoryTheme';
 
 export const dynamic = 'force-static';
 
@@ -28,12 +28,22 @@ export async function generateMetadata({
 }
 
 // Trimmed for the client boundary — `compute` and the FAQ strings stay on the server.
-const browseItems = calculators.map(({ id, category, title, description, aliases }) => ({
+const browseItems = calculators.map(({ id, category, title, description, aliases, glyph }) => ({
   id,
   category,
   title,
   description,
-  aliases
+  aliases,
+  glyph
+}));
+
+// One section per category, count derived (never hardcoded) so a future calculator addition
+// updates this page for free.
+const browseCategories = categories.map((category) => ({
+  id: category.id,
+  title: category.title,
+  description: category.description,
+  count: calculators.filter((item) => item.category === category.id).length
 }));
 
 export default async function CalculatorsPage({
@@ -44,28 +54,21 @@ export default async function CalculatorsPage({
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'calculators' });
-  const tCommon = await getTranslations({ locale, namespace: 'common' });
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="space-y-6">
-        <div className="rounded-3xl border border-slate-200 bg-white/90 p-8 shadow-panel dark:border-slate-700 dark:bg-slate-950/80">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-brand-700 dark:text-brand-300">{t('eyebrow')}</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white">{t('headline')}</h1>
-          <p className="mt-4 text-slate-600 dark:text-slate-300">{t('description')}</p>
-        </div>
+    <div className="bg-[#F5F5F7] dark:bg-slate-950">
+      <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="space-y-6">
+          <div className={CARD}>
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#0066CC] dark:text-brand-300">{t('eyebrow')}</p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-[#1D1D1F] dark:text-white">{t('headline')}</h1>
+            <p className="mt-4 text-[#515154] dark:text-slate-300">{t('description')}</p>
+            <p className="mt-2 text-sm text-[#6E6E73] dark:text-slate-400">
+              {t('countLine', { count: calculators.length, categoryCount: categories.length })}
+            </p>
+          </div>
 
-        <div className="grid gap-4 xl:grid-cols-2">
-          {categories.map((category) => (
-            <CategoryCard
-              key={category.id}
-              category={category}
-              count={calculators.filter((item) => item.category === category.id).length}
-              toolsLabel={tCommon('tools', { count: calculators.filter((item) => item.category === category.id).length })}
-            />
-          ))}
+          <CalculatorBrowser calculators={browseItems} categories={browseCategories} />
         </div>
-
-        <CalculatorBrowser calculators={browseItems} categories={categories.map(({ id, title }) => ({ id, title }))} />
       </div>
     </div>
   );

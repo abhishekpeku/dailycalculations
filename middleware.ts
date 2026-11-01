@@ -15,6 +15,9 @@ const RENAMED_PATHS: Record<string, string> = {
   '/contact-us': '/contact',
   '/privacy': '/privacy-policy',
   '/terms-and-conditions': '/terms',
+  // UX-05: the categories index is folded into /calculators (one browse page instead of two).
+  // The 15 /categories/<id> pages are untouched — this is the index only.
+  '/categories': '/calculators',
   ...CALCULATOR_REDIRECTS,
   ...CATEGORY_REDIRECTS
 };

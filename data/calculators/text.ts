@@ -5,6 +5,7 @@ export const textCalculators: CalculatorConfig[] = [
   {
     id: 'character-counter',
     category: 'text',
+    glyph: 'Aa',
     updatedAt: '2026-10-21',
     aliases: ['letter counter', 'text length calculator', 'twitter character counter', 'character count tool', 'word counter'],
     related: ['hashtag-counter', 'instagram-engagement-calculator', 'youtube-earnings-calculator'],
@@ -94,6 +95,7 @@ export const textCalculators: CalculatorConfig[] = [
   {
     id: 'hashtag-counter',
     category: 'text',
+    glyph: '#',
     updatedAt: '2026-10-21',
     aliases: ['hashtag limit checker', 'instagram hashtag counter', 'tag counter'],
     related: ['character-counter', 'instagram-engagement-calculator', 'youtube-earnings-calculator'],

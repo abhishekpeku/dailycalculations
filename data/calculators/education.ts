@@ -4,6 +4,7 @@ export const educationCalculators: CalculatorConfig[] = [
   {
     id: 'gpa-calculator',
     category: 'education',
+    glyph: 'GPA',
     updatedAt: '2026-10-21',
     aliases: ['grade point average calculator', 'cgpa calculator', 'college gpa calculator', 'semester gpa calculator'],
     related: ['date-difference-calculator', 'character-counter', 'sleep-time-calculator', 'pomodoro-timer'],

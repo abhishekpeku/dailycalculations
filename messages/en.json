@@ -9,6 +9,19 @@
     "privacy": "Privacy",
     "terms": "Terms"
   },
+  "navMenu": {
+    "filterLabel": "Filter {count, plural, one {# calculator} other {# calculators}}",
+    "searchLabel": "Search {count, plural, one {# calculator} other {# calculators}}",
+    "openCategoryPage": "Open {category} page ›",
+    "openCategoryPageMobile": "Open the {category} page ›",
+    "browseAllCategories": "Browse all categories ›",
+    "popularLabel": "Popular:",
+    "noMatches": "No calculators match \"{query}\".",
+    "menuTitle": "Menu",
+    "closeMenu": "Close menu",
+    "backToCategories": "‹ Categories",
+    "categoriesHeading": "Categories"
+  },
   "home": {
     "eyebrow": "Free online calculators",
     "headline": "What do you want to calculate?",

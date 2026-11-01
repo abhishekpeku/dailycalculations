@@ -4,6 +4,7 @@ export const workCalculators: CalculatorConfig[] = [
   {
     id: 'salary-raise-calculator',
     category: 'work',
+    glyph: 'S′',
     updatedAt: '2026-10-21',
     aliases: ['pay rise calculator', 'percentage increase in salary', 'promotion pay calculator', 'new salary calculator'],
     related: ['paycheck-calculator', 'inflation-calculator', 'freelancer-rate-calculator'],
@@ -130,6 +131,7 @@ export const workCalculators: CalculatorConfig[] = [
   {
     id: 'meeting-cost-calculator',
     category: 'work',
+    glyph: '$',
     updatedAt: '2026-10-21',
     aliases: ['cost of meeting calculator', 'meeting time cost', 'salary per hour meeting cost'],
     related: ['work-hours-calculator', 'freelancer-rate-calculator', 'paycheck-calculator', 'pomodoro-timer'],
@@ -246,6 +248,7 @@ export const workCalculators: CalculatorConfig[] = [
   {
     id: 'freelancer-rate-calculator',
     category: 'work',
+    glyph: '$/h',
     updatedAt: '2026-10-21',
     aliases: ['hourly rate calculator', 'contractor rate calculator', 'day rate calculator', 'consulting fee calculator'],
     related: ['paycheck-calculator', 'work-hours-calculator', 'meeting-cost-calculator', 'salary-raise-calculator'],
@@ -400,6 +403,7 @@ export const workCalculators: CalculatorConfig[] = [
   {
     id: 'pto-calculator',
     category: 'work',
+    glyph: 'PTO',
     updatedAt: '2026-10-21',
     aliases: ['vacation days calculator', 'paid time off accrual calculator', 'annual leave calculator', 'holiday allowance calculator'],
     related: ['work-hours-calculator', 'paycheck-calculator', 'date-difference-calculator', 'travel-budget-calculator'],

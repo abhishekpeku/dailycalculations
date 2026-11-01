@@ -262,6 +262,8 @@ export type CalculatorContent = {
 export type CalculatorConfig = {
   id: string;
   category: string;
+  /** A 1-4 character math/unit symbol shown on a tinted badge in menus and listings. */
+  glyph: string;
   /** ISO date (YYYY-MM-DD) of the last real content change. Not the deploy date. */
   updatedAt: string;
   /** Search synonyms. Surfaces in on-page copy, search matching, JSON-LD alternateName. */

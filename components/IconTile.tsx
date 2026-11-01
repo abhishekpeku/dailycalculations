@@ -45,6 +45,8 @@ export type IconName = keyof typeof ICONS;
 const SIZES = {
   sm: { box: 'h-7 w-7 rounded-[8px]', icon: 15 },
   md: { box: 'h-9 w-9 rounded-[10px]', icon: 19 },
+  // Between md and lg: the categories menu's selected-category header (desktop panel, phone screen).
+  xl: { box: 'h-11 w-11 rounded-[13px]', icon: 22 },
   lg: { box: 'h-14 w-14 rounded-[16px]', icon: 28 }
 };
 

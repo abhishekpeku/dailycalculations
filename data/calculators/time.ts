@@ -4,6 +4,7 @@ export const timeCalculators: CalculatorConfig[] = [
   {
     id: 'age-calculator',
     category: 'time',
+    glyph: 'yrs',
     updatedAt: '2026-10-21',
     aliases: ['how old am i calculator', 'date of birth calculator', 'age in days calculator', 'birthday calculator', 'chronological age calculator'],
     related: ['date-difference-calculator', 'pregnancy-due-date-calculator', 'visa-stay-days-calculator', 'sleep-time-calculator'],
@@ -148,6 +149,7 @@ export const timeCalculators: CalculatorConfig[] = [
   {
     id: 'work-hours-calculator',
     category: 'time',
+    glyph: 'hrs',
     updatedAt: '2026-10-21',
     aliases: ['timesheet calculator', 'hours worked calculator', 'time card calculator', 'shift hours calculator'],
     related: ['paycheck-calculator', 'pto-calculator', 'meeting-cost-calculator', 'freelancer-rate-calculator'],
@@ -266,6 +268,7 @@ export const timeCalculators: CalculatorConfig[] = [
   {
     id: 'date-difference-calculator',
     category: 'time',
+    glyph: 'Δd',
     updatedAt: '2026-10-21',
     aliases: ['days between dates calculator', 'date duration calculator', 'countdown calculator', 'weeks between dates', 'days until date'],
     related: ['age-calculator', 'visa-stay-days-calculator', 'pto-calculator', 'work-hours-calculator'],
@@ -446,6 +449,7 @@ export const timeCalculators: CalculatorConfig[] = [
   {
     id: 'sleep-time-calculator',
     category: 'time',
+    glyph: 'zzz',
     updatedAt: '2026-10-21',
     aliases: ['bedtime calculator', 'sleep cycle calculator', 'wake up time calculator', 'when should i sleep'],
     related: ['pomodoro-timer', 'timezone-meeting-planner', 'age-calculator', 'tdee-calculator'],
@@ -575,6 +579,7 @@ export const timeCalculators: CalculatorConfig[] = [
   {
     id: 'pomodoro-timer',
     category: 'time',
+    glyph: '25',
     updatedAt: '2026-10-21',
     aliases: ['focus timer', 'study timer', '25 minute timer', 'productivity timer', 'tomato timer'],
     related: ['sleep-time-calculator', 'work-hours-calculator', 'meeting-cost-calculator'],

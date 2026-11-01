@@ -104,6 +104,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'percentage-calculator',
     category: 'math',
+    glyph: '%',
     updatedAt: '2026-10-21',
     aliases: ['percent of a number calculator', 'what percent is x of y calculator', 'increase or decrease by percent calculator', 'percent calculator', 'basic percentage calculator'],
     related: ['percent-change-calculator', 'percent-difference-calculator', 'discount-calculator', 'sales-tax-calculator'],
@@ -230,6 +231,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'percent-change-calculator',
     category: 'math',
+    glyph: '%Δ',
     updatedAt: '2026-10-21',
     aliases: ['percent increase or decrease calculator', 'rate of change calculator', 'percent growth calculator', 'old value new value percent calculator'],
     related: ['percentage-calculator', 'percent-difference-calculator', 'salary-raise-calculator', 'inflation-calculator'],
@@ -329,6 +331,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'percent-difference-calculator',
     category: 'math',
+    glyph: 'Δ%',
     updatedAt: '2026-10-21',
     aliases: ['percent difference between two numbers calculator', 'relative difference calculator', 'percent variance calculator', 'compare two numbers percentage calculator'],
     related: ['percent-change-calculator', 'percentage-calculator', 'unit-price-calculator', 'ratio-calculator'],
@@ -426,6 +429,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'fraction-calculator',
     category: 'math',
+    glyph: 'a/b',
     updatedAt: '2026-10-21',
     aliases: ['add subtract multiply divide fractions calculator', 'simplify fraction calculator', 'mixed number calculator', 'fraction to decimal calculator'],
     related: ['ratio-calculator', 'percentage-calculator', 'gpa-calculator', 'unit-price-calculator'],
@@ -578,6 +582,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'ratio-calculator',
     category: 'math',
+    glyph: 'a:b',
     updatedAt: '2026-10-21',
     aliases: ['ratio simplifier', 'simplify a ratio calculator', 'proportion calculator', 'solve a ratio calculator', 'equivalent ratio calculator'],
     related: ['fraction-calculator', 'percentage-calculator', 'unit-price-calculator', 'gas-cost-calculator'],
@@ -690,6 +695,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'average-calculator',
     category: 'math',
+    glyph: 'x̄',
     updatedAt: '2026-10-21',
     aliases: ['mean calculator', 'average of numbers calculator', 'sum and average calculator', 'arithmetic mean calculator', 'average of 4 numbers calculator'],
     related: ['weighted-average-calculator', 'gpa-calculator', 'percentage-calculator', 'percent-change-calculator'],
@@ -804,6 +810,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'weighted-average-calculator',
     category: 'math',
+    glyph: 'WA',
     updatedAt: '2026-10-21',
     aliases: ['weighted mean calculator', 'weighted average grade calculator', 'weighted score calculator', 'weighted average with percentages calculator'],
     related: ['average-calculator', 'gpa-calculator', 'percentage-calculator', 'ratio-calculator'],
@@ -936,6 +943,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'rounding-calculator',
     category: 'math',
+    glyph: '≈',
     updatedAt: '2026-10-21',
     aliases: ['round a number calculator', 'round to the nearest calculator', 'round to decimal places calculator', 'round up or down calculator'],
     related: ['scientific-notation-calculator', 'exponent-calculator', 'percentage-calculator', 'average-calculator'],
@@ -1064,6 +1072,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'scientific-notation-calculator',
     category: 'math',
+    glyph: '×10ⁿ',
     updatedAt: '2026-10-21',
     aliases: ['standard form calculator', 'convert to scientific notation calculator', 'multiply scientific notation calculator', 'scientific notation to a number calculator'],
     related: ['exponent-calculator', 'rounding-calculator', 'fraction-calculator', 'percentage-calculator'],
@@ -1217,6 +1226,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'exponent-calculator',
     category: 'math',
+    glyph: 'xⁿ',
     updatedAt: '2026-10-21',
     aliases: ['power calculator', 'base and exponent calculator', 'exponentiation calculator', 'x to the power of y calculator'],
     related: ['scientific-notation-calculator', 'fraction-calculator', 'ratio-calculator', 'percentage-calculator'],
@@ -1345,6 +1355,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'square-root-calculator',
     category: 'math',
+    glyph: '√x',
     updatedAt: '2026-10-21',
     aliases: ['sqrt calculator', 'square root of a number calculator', 'find the square root calculator', 'radical calculator', 'perfect square calculator'],
     related: ['cube-root-calculator', 'exponent-calculator', 'factorial-calculator', 'gcf-calculator'],
@@ -1438,6 +1449,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'cube-root-calculator',
     category: 'math',
+    glyph: '∛x',
     updatedAt: '2026-10-21',
     aliases: ['cube root of a number calculator', 'cbrt calculator', 'find the cube root calculator', 'third root calculator'],
     related: ['square-root-calculator', 'exponent-calculator', 'factorial-calculator', 'gcf-calculator'],
@@ -1528,6 +1540,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'logarithm-calculator',
     category: 'math',
+    glyph: 'log',
     updatedAt: '2026-10-21',
     aliases: ['log calculator', 'log base calculator', 'natural log calculator', 'ln calculator', 'log base 2 calculator'],
     related: ['exponent-calculator', 'scientific-notation-calculator', 'square-root-calculator', 'cube-root-calculator'],
@@ -1654,6 +1667,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'factorial-calculator',
     category: 'math',
+    glyph: 'n!',
     updatedAt: '2026-10-21',
     aliases: ['n factorial calculator', 'x! calculator', 'factorial of a number calculator', 'permutations factorial calculator'],
     related: ['gcf-calculator', 'exponent-calculator', 'scientific-notation-calculator', 'rounding-calculator'],
@@ -1772,6 +1786,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'gcf-calculator',
     category: 'math',
+    glyph: 'GCF',
     updatedAt: '2026-10-21',
     aliases: ['greatest common factor calculator', 'gcd calculator', 'hcf calculator', 'greatest common divisor calculator', 'gcf of two numbers calculator'],
     related: ['fraction-calculator', 'ratio-calculator', 'factorial-calculator', 'exponent-calculator'],
@@ -1901,6 +1916,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'lcm-calculator',
     category: 'math',
+    glyph: 'LCM',
     updatedAt: '2026-10-22',
     aliases: ['lcd calculator', 'least common denominator calculator', 'least common multiple calculator', 'lcm of two numbers calculator', 'find the lcm calculator'],
     related: ['gcf-calculator', 'fraction-calculator', 'ratio-calculator', 'prime-factorization-calculator'],
@@ -2025,6 +2041,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'prime-factorization-calculator',
     category: 'math',
+    glyph: 'p×q',
     updatedAt: '2026-10-22',
     aliases: ['prime factors calculator', 'factor tree calculator', 'find the prime factorization calculator', 'prime factorization of a number'],
     related: ['gcf-calculator', 'lcm-calculator', 'factorial-calculator', 'square-root-calculator'],
@@ -2185,6 +2202,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'long-division-calculator',
     category: 'math',
+    glyph: '÷',
     updatedAt: '2026-10-22',
     aliases: ['division with remainder calculator', 'quotient and remainder calculator', 'long division steps calculator', 'divide and find the remainder calculator'],
     related: ['fraction-calculator', 'gcf-calculator', 'lcm-calculator', 'rounding-calculator'],
@@ -2295,6 +2313,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'quadratic-formula-calculator',
     category: 'math',
+    glyph: 'x²',
     updatedAt: '2026-10-22',
     aliases: ['quadratic equation solver', 'find the roots of a quadratic calculator', 'solve ax2+bx+c=0 calculator', 'discriminant calculator'],
     related: ['square-root-calculator', 'exponent-calculator', 'pythagorean-theorem-calculator', 'gcf-calculator'],
@@ -2419,6 +2438,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'pythagorean-theorem-calculator',
     category: 'math',
+    glyph: 'c',
     updatedAt: '2026-10-22',
     aliases: ['hypotenuse calculator', 'a2+b2=c2 calculator', 'right triangle side calculator', 'find the hypotenuse calculator', 'pythagoras theorem calculator'],
     related: ['square-root-calculator', 'quadratic-formula-calculator', 'exponent-calculator', 'ratio-calculator'],
@@ -2518,6 +2538,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'triangle-calculator',
     category: 'math',
+    glyph: '△',
     updatedAt: '2026-10-22',
     aliases: ['triangle solver', 'sss triangle calculator', 'sas triangle calculator', 'triangle angle calculator', 'find missing angle triangle calculator'],
     related: ['pythagorean-theorem-calculator', 'area-calculator', 'circle-calculator', 'surface-area-calculator'],
@@ -2686,6 +2707,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'circle-calculator',
     category: 'math',
+    glyph: '○',
     updatedAt: '2026-10-22',
     aliases: ['radius to circumference calculator', 'radius to area calculator', 'diameter calculator', 'circumference calculator', 'circle area calculator'],
     related: ['area-calculator', 'triangle-calculator', 'pythagorean-theorem-calculator', 'volume-calculator'],
@@ -2786,6 +2808,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'area-calculator',
     category: 'math',
+    glyph: 'A',
     updatedAt: '2026-10-22',
     aliases: ['square footage calculator', 'area of a shape calculator', 'rectangle area calculator', 'trapezoid area calculator', 'find the area calculator'],
     related: ['circle-calculator', 'triangle-calculator', 'volume-calculator', 'surface-area-calculator'],
@@ -2919,6 +2942,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'volume-calculator',
     category: 'math',
+    glyph: 'V',
     updatedAt: '2026-10-22',
     aliases: ['volume of a shape calculator', 'cylinder volume calculator', 'sphere volume calculator', 'box volume calculator', 'cone volume calculator'],
     related: ['surface-area-calculator', 'area-calculator', 'circle-calculator', 'concrete-calculator'],
@@ -3051,6 +3075,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'surface-area-calculator',
     category: 'math',
+    glyph: 'SA',
     updatedAt: '2026-10-22',
     aliases: ['surface area of a shape calculator', 'cylinder surface area calculator', 'sphere surface area calculator', 'box surface area calculator', 'cone surface area calculator'],
     related: ['volume-calculator', 'area-calculator', 'circle-calculator', 'paint-calculator'],
@@ -3185,6 +3210,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'slope-calculator',
     category: 'math',
+    glyph: 'm',
     updatedAt: '2026-10-22',
     aliases: ['slope formula calculator', 'rise over run calculator', 'gradient calculator', 'find the slope calculator', 'slope of a line calculator'],
     related: ['distance-calculator', 'midpoint-calculator', 'pythagorean-theorem-calculator', 'ratio-calculator'],
@@ -3300,6 +3326,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'distance-calculator',
     category: 'math',
+    glyph: 'd',
     updatedAt: '2026-10-22',
     aliases: ['distance between two points calculator', 'coordinate distance calculator', 'distance formula calculator', '2 point distance calculator', 'euclidean distance calculator'],
     related: ['midpoint-calculator', 'slope-calculator', 'pythagorean-theorem-calculator', 'square-root-calculator'],
@@ -3401,6 +3428,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'midpoint-calculator',
     category: 'math',
+    glyph: 'M',
     updatedAt: '2026-10-22',
     aliases: ['midpoint formula calculator', 'midpoint of two points calculator', 'find the midpoint calculator', 'center point calculator', 'line segment midpoint calculator'],
     related: ['distance-calculator', 'slope-calculator', 'average-calculator', 'pythagorean-theorem-calculator'],
@@ -3507,6 +3535,7 @@ export const mathCalculators: CalculatorConfig[] = [
   {
     id: 'scientific-calculator',
     category: 'math',
+    glyph: 'fx',
     updatedAt: '2026-10-22',
     aliases: ['online scientific calculator', 'trig calculator', 'sin cos tan calculator', 'scientific calculator online', 'advanced calculator'],
     related: ['exponent-calculator', 'logarithm-calculator', 'square-root-calculator', 'factorial-calculator'],

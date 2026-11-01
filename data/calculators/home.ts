@@ -9,6 +9,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'paint-calculator',
     category: 'home',
+    glyph: 'gal',
     updatedAt: '2026-10-21',
     aliases: ['how much paint do i need', 'wall paint coverage calculator', 'paint gallons calculator', 'room paint estimator', 'paint cans needed calculator'],
     related: ['wallpaper-calculator', 'tile-calculator', 'concrete-calculator', 'furniture-fit-calculator'],
@@ -136,6 +137,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'tile-calculator',
     category: 'home',
+    glyph: 'ft²',
     updatedAt: '2026-10-21',
     aliases: ['how many tiles do i need', 'floor tile calculator', 'tile area calculator', 'tile boxes calculator', 'bathroom tile estimator'],
     related: ['paint-calculator', 'wallpaper-calculator', 'concrete-calculator', 'furniture-fit-calculator'],
@@ -255,6 +257,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'concrete-calculator',
     category: 'home',
+    glyph: 'yd³',
     updatedAt: '2026-10-21',
     aliases: ['cubic yards of concrete calculator', 'cement calculator', 'slab concrete calculator', 'how many bags of concrete do i need', 'concrete bag calculator'],
     related: ['tile-calculator', 'paint-calculator', 'wallpaper-calculator', 'gallons-to-liters-converter'],
@@ -383,6 +386,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'wallpaper-calculator',
     category: 'home',
+    glyph: 'roll',
     updatedAt: '2026-10-21',
     aliases: ['wallpaper rolls calculator', 'how much wallpaper do i need', 'wall covering calculator', 'double roll calculator', 'wallpaper pattern repeat calculator'],
     related: ['paint-calculator', 'tile-calculator', 'furniture-fit-calculator', 'concrete-calculator'],
@@ -506,6 +510,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'furniture-fit-calculator',
     category: 'home',
+    glyph: 'fit',
     updatedAt: '2026-10-21',
     aliases: ['will it fit calculator', 'room layout calculator', 'doorway fit calculator', 'furniture clearance calculator'],
     related: ['paint-calculator', 'tile-calculator', 'wallpaper-calculator', 'concrete-calculator'],
@@ -639,6 +644,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'electricity-bill-calculator',
     category: 'home',
+    glyph: 'kWh',
     updatedAt: '2026-10-21',
     aliases: ['power bill estimator', 'kwh cost calculator', 'appliance running cost calculator', 'energy bill calculator', 'tiered electricity rate calculator'],
     related: ['ev-charging-calculator', 'fuel-cost-calculator', 'commute-cost-calculator', 'inflation-calculator'],

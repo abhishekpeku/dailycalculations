@@ -4,6 +4,7 @@ export const physicsCalculators: CalculatorConfig[] = [
   {
     id: 'force-calculator',
     category: 'physics',
+    glyph: 'F',
     updatedAt: '2026-10-12',
     aliases: ["newton's second law calculator", 'f = ma calculator', 'net force calculator', 'mass and acceleration calculator', 'newton calculator'],
     related: ['pounds-to-kilograms-converter', 'miles-to-kilometers-converter', 'fahrenheit-to-celsius-converter'],

@@ -138,6 +138,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'miles-to-kilometers-converter',
     category: 'measurements',
+    group: 'Length & Distance',
     glyph: 'km',
     updatedAt: '2026-10-19',
     aliases: ['mi to km converter', 'km to miles calculator', 'miles to km', 'convert miles to kilometers'],
@@ -262,6 +263,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'fahrenheit-to-celsius-converter',
     category: 'measurements',
+    group: 'Temperature, Energy & Power',
     glyph: '°C',
     updatedAt: '2026-10-19',
     aliases: ['f to c converter', 'temperature converter', 'celsius to fahrenheit calculator', 'degree converter', 'kelvin converter'],
@@ -385,6 +387,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'pounds-to-kilograms-converter',
     category: 'measurements',
+    group: 'Weight & Mass',
     glyph: 'kg',
     updatedAt: '2026-10-19',
     aliases: ['lbs to kg converter', 'kg to pounds calculator', 'convert pounds to kilograms', 'lb to kg'],
@@ -510,6 +513,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'gallons-to-liters-converter',
     category: 'measurements',
+    group: 'Volume & Cooking',
     glyph: 'L',
     updatedAt: '2026-10-19',
     aliases: ['gal to l converter', 'liters to gallons calculator', 'fuel volume converter', 'imperial gallon converter'],
@@ -637,6 +641,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'centimeters-to-inches-converter',
     category: 'measurements',
+    group: 'Length & Distance',
     glyph: 'in',
     updatedAt: '2026-10-25',
     aliases: ['cm to inches converter', 'inches to cm converter', 'convert cm to in', 'centimeters to inches calculator'],
@@ -760,6 +765,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'feet-to-meters-converter',
     category: 'measurements',
+    group: 'Length & Distance',
     glyph: 'm',
     updatedAt: '2026-10-25',
     aliases: ['ft to m converter', 'feet to meters calculator', 'meters to feet converter', 'convert feet to meters'],
@@ -885,6 +891,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'ounces-to-milliliters-converter',
     category: 'measurements',
+    group: 'Volume & Cooking',
     glyph: 'mL',
     updatedAt: '2026-10-25',
     aliases: ['oz to ml converter', 'fluid ounces to ml calculator', 'ml to oz converter', 'convert fl oz to ml'],
@@ -1010,6 +1017,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'grams-to-ounces-converter',
     category: 'measurements',
+    group: 'Weight & Mass',
     glyph: 'oz',
     updatedAt: '2026-10-25',
     aliases: ['g to oz converter', 'grams to ounces calculator', 'oz to grams converter', 'convert grams to ounces'],
@@ -1132,6 +1140,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'mph-to-kph-converter',
     category: 'measurements',
+    group: 'Speed & Fuel',
     glyph: 'km/h',
     updatedAt: '2026-10-25',
     aliases: ['mph to km/h converter', 'miles per hour to kph calculator', 'kph to mph converter', 'convert mph to kmh'],
@@ -1255,6 +1264,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'length-converter',
     category: 'measurements',
+    group: 'Length & Distance',
     glyph: 'ft',
     updatedAt: '2026-10-25',
     aliases: ['length converter', 'distance converter', 'metric to imperial length converter', 'convert meters to feet', 'unit length converter'],
@@ -1377,6 +1387,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'weight-converter',
     category: 'measurements',
+    group: 'Weight & Mass',
     glyph: 'lb',
     updatedAt: '2026-10-25',
     aliases: ['weight converter', 'mass converter', 'kg to lb converter', 'convert kilograms to pounds', 'weight unit converter'],
@@ -1498,6 +1509,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'volume-converter',
     category: 'measurements',
+    group: 'Volume & Cooking',
     glyph: 'gal',
     updatedAt: '2026-10-25',
     aliases: ['volume converter', 'liters to gallons converter', 'convert volume units', 'volume unit converter', 'ml to liters converter'],
@@ -1621,6 +1633,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'area-converter',
     category: 'measurements',
+    group: 'Area & Land',
     glyph: 'ft²',
     updatedAt: '2026-10-25',
     aliases: ['area converter', 'square meters to square feet converter', 'convert area units', 'area unit converter'],
@@ -1743,6 +1756,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'speed-converter',
     category: 'measurements',
+    group: 'Speed & Fuel',
     glyph: 'km/h',
     updatedAt: '2026-10-25',
     aliases: ['speed converter', 'meters per second to km/h converter', 'convert speed units', 'velocity converter', 'mph to m/s converter'],
@@ -1865,6 +1879,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'time-converter',
     category: 'measurements',
+    group: 'Time',
     glyph: 'min',
     updatedAt: '2026-10-25',
     aliases: ['time converter', 'hours to minutes converter', 'minutes to hours calculator', 'time unit converter', 'convert time units'],
@@ -1988,6 +2003,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'pressure-converter',
     category: 'measurements',
+    group: 'Pressure',
     glyph: 'bar',
     updatedAt: '2026-10-25',
     aliases: ['pressure converter', 'psi to bar converter', 'pressure unit converter', 'kpa to psi converter'],
@@ -2110,6 +2126,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'energy-converter',
     category: 'measurements',
+    group: 'Temperature, Energy & Power',
     glyph: 'kcal',
     updatedAt: '2026-10-25',
     aliases: ['energy converter', 'kj to kcal converter', 'joules to calories converter', 'energy unit converter'],
@@ -2233,6 +2250,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'power-converter',
     category: 'measurements',
+    group: 'Temperature, Energy & Power',
     glyph: 'hp',
     updatedAt: '2026-10-25',
     aliases: ['power converter', 'kw to hp converter', 'horsepower converter', 'watts to horsepower converter'],
@@ -2355,6 +2373,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'data-storage-converter',
     category: 'measurements',
+    group: 'Data Storage',
     glyph: 'MB',
     updatedAt: '2026-10-25',
     aliases: ['data storage converter', 'gb to mb converter', 'bit to byte converter', 'storage unit converter'],
@@ -2478,6 +2497,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'millimeters-to-inches-converter',
     category: 'measurements',
+    group: 'Length & Distance',
     glyph: 'in',
     updatedAt: '2026-10-25',
     aliases: ['mm to inches converter', 'inches to mm converter', 'convert mm to in', 'millimeters to inches calculator', 'drill bit size converter'],
@@ -2602,6 +2622,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'milliliters-to-cups-converter',
     category: 'measurements',
+    group: 'Volume & Cooking',
     glyph: 'cup',
     updatedAt: '2026-10-25',
     aliases: ['ml to cups converter', 'cups to ml calculator', 'convert milliliters to cups', 'cup to milliliter converter', 'recipe cup converter'],
@@ -2726,6 +2747,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'kilograms-to-stone-converter',
     category: 'measurements',
+    group: 'Weight & Mass',
     glyph: 'st',
     updatedAt: '2026-10-25',
     aliases: ['kg to stone converter', 'stone to kg converter', 'convert kilograms to stone', 'kg to stone and pounds', 'stone and pounds calculator'],
@@ -2852,6 +2874,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'acres-to-hectares-converter',
     category: 'measurements',
+    group: 'Area & Land',
     glyph: 'ha',
     updatedAt: '2026-10-25',
     aliases: ['acres to hectares converter', 'hectares to acres calculator', 'convert acres to hectares', 'acre to ha converter', 'farmland size converter'],
@@ -2973,6 +2996,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'square-feet-to-square-meters-converter',
     category: 'measurements',
+    group: 'Area & Land',
     glyph: 'm²',
     updatedAt: '2026-10-25',
     aliases: ['sq ft to sq m converter', 'square feet to square meters calculator', 'convert square feet to square meters', 'square footage to square meters', 'room size converter'],
@@ -3096,6 +3120,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'horsepower-to-kilowatts-converter',
     category: 'measurements',
+    group: 'Temperature, Energy & Power',
     glyph: 'kW',
     updatedAt: '2026-10-25',
     aliases: ['hp to kw calculator', 'horsepower to kw converter', 'car horsepower to kilowatts', 'engine hp to kw converter', 'electric motor hp to kw'],
@@ -3220,6 +3245,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'bar-to-psi-converter',
     category: 'measurements',
+    group: 'Pressure',
     glyph: 'psi',
     updatedAt: '2026-10-25',
     aliases: ['bar to psi calculator', 'espresso machine bar to psi', 'pressure washer psi to bar', 'tire pressure bar to psi', 'convert bar to psi'],
@@ -3344,6 +3370,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'kilocalories-to-kilojoules-converter',
     category: 'measurements',
+    group: 'Temperature, Energy & Power',
     glyph: 'kJ',
     updatedAt: '2026-10-25',
     aliases: ['kcal to kj calculator', 'calories to kilojoules converter', 'food label kcal to kj', 'convert kcal to kj', 'nutrition energy converter'],
@@ -3469,6 +3496,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'megabytes-to-gigabytes-converter',
     category: 'measurements',
+    group: 'Data Storage',
     glyph: 'GB',
     updatedAt: '2026-10-25',
     aliases: ['mb to gb calculator', 'file size converter', 'phone storage mb to gb', 'photo and video file size converter', 'convert mb to gb'],
@@ -3592,6 +3620,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'mpg-to-l-100km-converter',
     category: 'measurements',
+    group: 'Speed & Fuel',
     glyph: 'mpg',
     updatedAt: '2026-10-25',
     aliases: ['mpg to l/100km converter', 'fuel economy converter', 'l/100km to mpg calculator', 'miles per gallon to liters per 100km', 'uk mpg to us mpg converter'],
@@ -3718,6 +3747,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'cups-to-grams-converter',
     category: 'measurements',
+    group: 'Volume & Cooking',
     glyph: 'g',
     updatedAt: '2026-10-26',
     aliases: ['cups to grams calculator', 'grams to cups converter', 'baking conversion calculator', 'cup to gram converter for cooking', 'convert cups to grams'],
@@ -3842,6 +3872,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'cups-to-grams-flour',
     category: 'measurements',
+    group: 'Volume & Cooking',
     glyph: 'flr',
     updatedAt: '2026-10-26',
     aliases: ['flour cups to grams', 'how many grams in a cup of flour', 'all purpose flour grams per cup', 'flour grams to cups converter', 'baking flour weight converter'],
@@ -3951,6 +3982,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'cups-to-grams-sugar',
     category: 'measurements',
+    group: 'Volume & Cooking',
     glyph: 'sug',
     updatedAt: '2026-10-26',
     aliases: ['sugar cups to grams', 'how many grams in a cup of sugar', 'granulated sugar grams per cup', 'brown sugar cups to grams', 'powdered sugar cups to grams'],
@@ -4078,6 +4110,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'cups-to-grams-butter',
     category: 'measurements',
+    group: 'Volume & Cooking',
     glyph: 'btr',
     updatedAt: '2026-10-26',
     aliases: ['butter cups to grams', 'how many grams in a stick of butter', 'butter stick to grams converter', 'cup of butter in grams', 'tablespoon of butter in grams'],
@@ -4192,6 +4225,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'cups-to-grams-rice',
     category: 'measurements',
+    group: 'Volume & Cooking',
     glyph: 'rice',
     updatedAt: '2026-10-26',
     aliases: ['rice cups to grams', 'how many grams in a cup of rice', 'rice grams to cups converter', 'cup of uncooked rice in grams', 'rice weight converter'],
@@ -4300,6 +4334,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'shoe-size-converter',
     category: 'measurements',
+    group: 'Shoe Sizes',
     glyph: 'sz',
     updatedAt: '2026-10-26',
     aliases: ['shoe size calculator', 'convert shoe size', 'foot length to shoe size', 'mondopoint size converter', 'shoe size chart'],
@@ -4432,6 +4467,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'mens-shoe-size-chart',
     category: 'measurements',
+    group: 'Shoe Sizes',
     glyph: 'M',
     updatedAt: '2026-10-26',
     aliases: ['men’s shoe size chart', 'mens shoe size converter', 'us to uk shoe size men', 'men’s shoe size to eu', 'what size shoe am i men'],
@@ -4534,6 +4570,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'womens-shoe-size-chart',
     category: 'measurements',
+    group: 'Shoe Sizes',
     glyph: 'W',
     updatedAt: '2026-10-26',
     aliases: ['women’s shoe size chart', 'womens shoe size converter', 'us to uk shoe size women', 'women’s shoe size to eu', 'what size shoe am i women'],
@@ -4638,6 +4675,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'kids-shoe-size-chart',
     category: 'measurements',
+    group: 'Shoe Sizes',
     glyph: 'K',
     updatedAt: '2026-10-26',
     aliases: ['kids shoe size chart', 'children’s shoe size converter', 'toddler shoe size chart', 'kids shoe size to cm', 'youth shoe size chart'],
@@ -4739,6 +4777,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'ring-size-converter',
     category: 'measurements',
+    group: 'Ring Sizes',
     glyph: '⌀',
     updatedAt: '2026-10-29',
     aliases: ['ring size calculator', 'convert ring size', 'ring size chart', 'finger size to ring size', 'circumference to ring size'],
@@ -4865,6 +4904,7 @@ export const measurementsCalculators: CalculatorConfig[] = [
   {
     id: 'us-to-uk-ring-size-chart',
     category: 'measurements',
+    group: 'Ring Sizes',
     glyph: 'UK',
     updatedAt: '2026-10-29',
     aliases: ['us to uk ring size chart', 'us to uk ring size conversion', 'ring size conversion chart', 'what is my uk ring size', 'convert us ring size to uk'],

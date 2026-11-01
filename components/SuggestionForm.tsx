@@ -55,31 +55,50 @@ export default function SuggestionForm() {
 
   if (sent) {
     return (
-      <div>
-        <p className="rounded-md bg-green-50 p-4 text-sm text-green-800">Thanks — a prefilled GitHub issue has been opened or created successfully.</p>
-        {createdUrl ? <p className="mt-2 text-sm">View issue: <a className="text-blue-600" href={createdUrl} target="_blank" rel="noreferrer">{createdUrl}</a></p> : null}
+      <div className="rounded-2xl bg-[#E8F7EC] p-4 text-sm text-[#1E7A34] dark:bg-[#1E7A34]/15 dark:text-[#4CD964]">
+        <p>Thanks — a prefilled GitHub issue has been opened or created successfully.</p>
+        {createdUrl ? <p className="mt-2">View issue: <a className="font-medium underline" href={createdUrl} target="_blank" rel="noreferrer">{createdUrl}</a></p> : null}
       </div>
     );
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error ? <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">{error}</div> : null}
+      {error ? <div className="rounded-2xl bg-[#FDEDEB] p-3 text-sm text-[#B5241C] dark:bg-[#B5241C]/15 dark:text-[#FF6B5E]">{error}</div> : null}
       <div>
-        <label className="block text-sm font-medium text-slate-700">Name (optional)</label>
-        <input value={name} onChange={(e) => setName(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2" />
+        <label className="block text-sm font-medium text-[#515154] dark:text-slate-300">Name (optional)</label>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-[#F5F5F7] px-4 py-2.5 text-[#1D1D1F] outline-none transition focus:border-[#0066CC] focus:ring-2 focus:ring-[#0066CC]/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700">Email (optional)</label>
-        <input value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 w-full rounded-md border px-3 py-2" />
+        <label className="block text-sm font-medium text-[#515154] dark:text-slate-300">Email (optional)</label>
+        <input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-[#F5F5F7] px-4 py-2.5 text-[#1D1D1F] outline-none transition focus:border-[#0066CC] focus:ring-2 focus:ring-[#0066CC]/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700">Suggestion</label>
-        <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={6} className="mt-1 w-full rounded-md border px-3 py-2" />
+        <label className="block text-sm font-medium text-[#515154] dark:text-slate-300">Suggestion</label>
+        <textarea
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          rows={6}
+          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-[#F5F5F7] px-4 py-2.5 text-[#1D1D1F] outline-none transition focus:border-[#0066CC] focus:ring-2 focus:ring-[#0066CC]/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+        />
       </div>
-      <div className="flex items-center gap-2">
-        <button disabled={submitting} type="submit" className="inline-flex items-center rounded-md bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50">{submitting ? 'Submitting…' : 'Create GitHub issue'}</button>
-        <a className="text-sm text-slate-600" href="https://github.com/abhishekpeku/calcora/issues/new" target="_blank" rel="noreferrer">Or open a GitHub issue manually</a>
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          disabled={submitting}
+          type="submit"
+          className="inline-flex items-center rounded-full bg-[#0066CC] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0A58B0] disabled:opacity-50"
+        >
+          {submitting ? 'Submitting…' : 'Create GitHub issue'}
+        </button>
+        <a className="text-sm text-[#6E6E73] transition hover:text-[#1D1D1F] dark:text-slate-400 dark:hover:text-white" href="https://github.com/abhishekpeku/calcora/issues/new" target="_blank" rel="noreferrer">Or open a GitHub issue manually</a>
       </div>
     </form>
   );

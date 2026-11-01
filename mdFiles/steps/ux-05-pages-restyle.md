@@ -111,7 +111,7 @@ touching its submit/validation logic.
 - [x] Part C: category page restyle (breadcrumb, header, grid, other-categories row)
 - [x] Part C: filter input on the 3 big categories (measurements/math/statistics) — threshold `count > 15`
 - [x] Part C: visual check (one small + one big category page) — desktop/phone/dark all good
-- [ ] Part D: About / Contact restyle
-- [ ] Part D: Privacy / Terms restyle
-- [ ] Part D: Suggestions + SuggestionForm restyle, visual check
-- [ ] Final: `npm run build` + `npm test` + lint, STATUS.md updated, PR marked ready
+- [x] Part D: About / Contact restyle
+- [x] Part D: Privacy / Terms restyle
+- [x] Part D: Suggestions + SuggestionForm restyle, visual check
+- [x] Final: `npm run build` + `npm test` + lint, STATUS.md updated, PR marked ready

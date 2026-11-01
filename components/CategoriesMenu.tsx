@@ -136,7 +136,7 @@ export default function CategoriesMenu({ nav, onNavigate }: Props) {
                   </span>
                 ))}
               </p>
-              <Link href="/categories" onClick={onNavigate} className="font-medium text-brand-700 transition hover:text-brand-500 dark:text-brand-300">
+              <Link href="/calculators" onClick={onNavigate} className="font-medium text-brand-700 transition hover:text-brand-500 dark:text-brand-300">
                 {t('browseAllCategories')}
               </Link>
             </div>

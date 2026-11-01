@@ -6,7 +6,6 @@ import { SITE_URL } from '@/lib/site';
 // the leaf pages are the product (see mdFiles/instructions.md §2.4).
 const STATIC_PATHS = [
   '/calculators',
-  '/categories',
   '/about',
   '/contact',
   '/privacy-policy',

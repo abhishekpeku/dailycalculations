@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
-import { Link } from '@/i18n/navigation';
 import Breadcrumb from '@/components/Breadcrumb';
 import IconTile from '@/components/IconTile';
 import GlyphCalculatorCard from '@/components/GlyphCalculatorCard';
@@ -64,8 +63,6 @@ export default async function CategoryPage({
     glyph
   }));
 
-  const otherCategories = categories.filter((item) => item.id !== category.id);
-
   return (
     <div className="bg-[#F5F5F7] dark:bg-slate-950">
       <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
@@ -93,25 +90,6 @@ export default async function CategoryPage({
                 ))}
               </div>
             )}
-          </div>
-
-          <div className={CARD}>
-            <h2 className="text-lg font-bold text-[#1D1D1F] dark:text-white">{t('otherCategoriesHeading')}</h2>
-            <div className="mt-4 grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-2">
-              {otherCategories.map((other) => {
-                const otherTheme = categoryTheme(other.id);
-                return (
-                  <Link
-                    key={other.id}
-                    href={`/categories/${other.id}`}
-                    className="flex items-center gap-2.5 rounded-xl p-2 text-sm font-medium text-[#1D1D1F] transition hover:bg-[#F5F5F7] dark:text-white dark:hover:bg-slate-800"
-                  >
-                    <IconTile icon={otherTheme.icon} color={otherTheme.color} size="sm" />
-                    {other.title}
-                  </Link>
-                );
-              })}
-            </div>
           </div>
         </div>
       </div>

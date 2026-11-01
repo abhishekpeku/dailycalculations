@@ -51,8 +51,7 @@
   },
   "categoryPage": {
     "breadcrumbHome": "Home",
-    "breadcrumbCalculators": "Calculators",
-    "otherCategoriesHeading": "Other categories"
+    "breadcrumbCalculators": "Calculators"
   },
   "calculator": {
     "howToUse": "How to use this calculator",

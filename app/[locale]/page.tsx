@@ -3,6 +3,7 @@ import { setRequestLocale } from 'next-intl/server';
 import type { Metadata } from 'next';
 import CalculatorSearch from '@/components/CalculatorSearch';
 import IconTile, { type TileColor } from '@/components/IconTile';
+import GlyphBadge from '@/components/GlyphBadge';
 import { calculators, categories, findCalculator } from '@/data/calculators';
 import FaqSection from '@/components/FaqSection';
 import { buildCanonical, buildHomeJsonLd } from '@/lib/seo';
@@ -222,7 +223,7 @@ export default async function HomePage({
                   className={`flex flex-col justify-between rounded-3xl p-5 transition hover:-translate-y-0.5 dark:bg-slate-900 dark:ring-1 dark:ring-white/10 ${tint}`}
                 >
                   <div className="flex items-center gap-3">
-                    <IconTile icon={theme.icon} color={theme.color} size="lg" />
+                    <GlyphBadge glyph={calculator.glyph} color={theme.color} size={56} />
                     <h3 className="text-base font-semibold text-[#1D1D1F] dark:text-white">{calculator.title}</h3>
                   </div>
                   <p className="mt-4 line-clamp-3 text-sm leading-6 text-[#515154] dark:text-slate-300">

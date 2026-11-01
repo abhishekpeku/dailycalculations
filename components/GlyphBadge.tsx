@@ -4,8 +4,11 @@ import { GLYPH_TINT } from '@/lib/categoryTheme';
 // A calculator's math/unit symbol on a tinted square — the glyph equivalent of IconTile, used
 // wherever a calculator is listed (menus, the categories dropdown, the phone sheet). Decorative
 // only, so aria-hidden; the title text next to it is what screen readers get.
-// Light/dark pairs are CSS variables set inline, read by a static `dark:[...]` arbitrary-value
-// class, so the actual color swap happens in CSS (no theme JS, no flash on first paint).
+// Light/dark pairs are CSS variables set inline, read by *both* a plain and a `dark:` arbitrary-
+// value class — never by `style.backgroundColor`/`color` directly, which an inline style would
+// always win over the `dark:` class's rule, leaving dark mode unable to override it. Four
+// distinctly-named variables (not two, overridden per mode) sidestep that fight entirely, so the
+// color swap happens in CSS with no theme JS and no flash on first paint.
 
 const FONT_SCALE: Record<number, number> = {
   1: 0.46,
@@ -28,16 +31,16 @@ export default function GlyphBadge({ glyph, color, size = 40 }: Props) {
   return (
     <span
       aria-hidden="true"
-      className="inline-flex shrink-0 items-center justify-center rounded-[11px] leading-none dark:[background-color:var(--badge-dark-tint)] dark:[color:var(--badge-dark-ink)]"
+      className="inline-flex shrink-0 items-center justify-center rounded-[11px] leading-none [background-color:var(--badge-tint)] [color:var(--badge-ink)] dark:[background-color:var(--badge-dark-tint)] dark:[color:var(--badge-dark-ink)]"
       style={{
         width: size,
         height: size,
-        backgroundColor: tint,
-        color: ink,
         fontFamily: 'ui-serif, Georgia, serif',
         fontStyle: 'italic',
         fontWeight: 700,
         fontSize,
+        '--badge-tint': tint,
+        '--badge-ink': ink,
         '--badge-dark-tint': darkTint,
         '--badge-dark-ink': darkInk
       } as React.CSSProperties}

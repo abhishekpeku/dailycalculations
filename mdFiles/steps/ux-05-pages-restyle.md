@@ -108,9 +108,9 @@ touching its submit/validation logic.
 - [x] Part B: `/categories` index redirect added (middleware) + removed from sitemap + page deleted
 - [x] Part B: internal links to `/categories` index updated (CategoriesMenu "Browse all")
 - [x] Part B: visual + redirect check — desktop/phone/dark all good, `?q=emi` swaps grouped listing for flat results, `/categories` 301s to `/calculators`
-- [ ] Part C: category page restyle (breadcrumb, header, grid, other-categories row)
-- [ ] Part C: filter input on the 3 big categories (measurements/math/statistics)
-- [ ] Part C: visual check (one small + one big category page)
+- [x] Part C: category page restyle (breadcrumb, header, grid, other-categories row)
+- [x] Part C: filter input on the 3 big categories (measurements/math/statistics) — threshold `count > 15`
+- [x] Part C: visual check (one small + one big category page) — desktop/phone/dark all good
 - [ ] Part D: About / Contact restyle
 - [ ] Part D: Privacy / Terms restyle
 - [ ] Part D: Suggestions + SuggestionForm restyle, visual check

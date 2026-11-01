@@ -11,11 +11,15 @@ type Props = {
   active?: boolean;
   chevron?: boolean;
   onClick: () => void;
+  // Previews the row's category in the right pane without committing to it (no query clear, no
+  // onNavigate) — wired to both mouse hover and keyboard focus so arrow-key users get the same
+  // live preview as mouse users, not just a bare focus ring.
+  onPreview?: () => void;
   // React 19: function components take `ref` as an ordinary prop, no forwardRef needed.
   ref?: React.Ref<HTMLButtonElement>;
 };
 
-export default function CategoryMenuRow({ category, active = false, chevron = false, onClick, ref }: Props) {
+export default function CategoryMenuRow({ category, active = false, chevron = false, onClick, onPreview, ref }: Props) {
   const theme = categoryTheme(category.id);
   return (
     <button
@@ -24,6 +28,8 @@ export default function CategoryMenuRow({ category, active = false, chevron = fa
       role="option"
       aria-selected={active}
       onClick={onClick}
+      onMouseEnter={onPreview}
+      onFocus={onPreview}
       className={`flex w-full items-center gap-3 rounded-[12px] px-3 py-2.5 text-left transition ${
         active ? 'bg-[#F2F2F7] dark:bg-slate-800' : 'hover:bg-[#F7F7F8] dark:hover:bg-slate-800/60'
       }`}

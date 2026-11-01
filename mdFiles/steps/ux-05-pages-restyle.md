@@ -101,9 +101,9 @@ touching its submit/validation logic.
 
 ## Progress
 
-- [ ] Part A: homepage Popular cards -> GlyphBadge
-- [ ] Part A: RelatedCalculators -> GlyphBadge
-- [ ] Part A: visual check (desktop/phone/dark) of homepage + a calculator page
+- [x] Part A: homepage Popular cards -> GlyphBadge
+- [x] Part A: RelatedCalculators -> GlyphBadge
+- [x] Part A: visual check (desktop/phone/dark) of homepage + a calculator page — all legible, no fixes needed
 - [ ] Part B: `/calculators` rebuilt as the Apple-style browse page
 - [ ] Part B: `/categories` index redirect added (middleware) + removed from sitemap + page deleted
 - [ ] Part B: internal links to `/categories` index updated (CategoriesMenu "Browse all")

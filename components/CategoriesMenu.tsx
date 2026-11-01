@@ -84,6 +84,7 @@ export default function CategoriesMenu({ nav, onNavigate }: Props) {
                 setSelectedCategory(category.id);
                 setQuery('');
               }}
+              onPreview={() => setSelectedCategory(category.id)}
             />
           ))}
         </div>

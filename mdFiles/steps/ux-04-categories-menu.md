@@ -88,12 +88,53 @@ Body scroll locked while open; Escape/close returns focus to the hamburger.
 
 ## Progress
 
-- [ ] Step file written, committed, pushed; draft PR open
-- [ ] Part 1: `glyph` field + type doc comment + 144 glyphs assigned + `data/calculators/glyph.spec.ts`, `npm test` green
-- [ ] `components/GlyphBadge.tsx` + tint/ink table in `lib/categoryTheme.ts`
-- [ ] `lib/navData.ts` (`buildNavData`)
-- [ ] Desktop `Header.tsx` Categories dropdown wired to `app/[locale]/layout.tsx`
-- [ ] Phone sheet drill-down
-- [ ] `npm run build` passes; chunk sizes compared
-- [ ] Visual check (desktop open/Finance, Measurements, filter, phone menu, phone category, dark mode) + fixes
-- [ ] `mdFiles/STATUS.md` updated; dev server killed; `gh pr ready`
+- [x] Step file written, committed, pushed; draft PR open
+- [x] Part 1: `glyph` field + type doc comment + 144 glyphs assigned + `data/calculators/glyph.spec.ts`, `npm test` green
+- [x] `components/GlyphBadge.tsx` + tint/ink table in `lib/categoryTheme.ts`
+- [x] `lib/navData.ts` (`buildNavData`)
+- [x] Desktop `Header.tsx` Categories dropdown wired to `app/[locale]/layout.tsx`
+- [x] Phone sheet drill-down
+- [x] `npm run build` passes; chunk sizes compared (total `.next/static/chunks` grew ~17KB for the whole feature; no calculator content in any client chunk)
+- [x] Visual check (desktop open/Finance, Measurements, filter, phone menu, phone category, dark mode) + fixes
+- [x] `mdFiles/STATUS.md` updated; dev server killed; `gh pr ready`
+
+## Interrupted and resumed (2026-11-01)
+
+The original build agent hit its weekly usage limit mid-task. Part 1 (glyphs + GlyphBadge, commits
+`1fb56ce`/`49aae69`) was already committed and survived intact. Part 2/3 (the dropdown, phone sheet,
+nav data model, Header wiring) existed only as uncommitted working-tree changes — not lost, but not
+yet verified. The main session (now Sonnet 5, after an account change mid-conversation) reviewed that
+code, found it complete and well-built, and took over finishing it directly rather than re-spawning a
+background agent (which would hit the same weekly limit).
+
+### Two real bugs found and fixed during the visual check
+
+1. **GlyphBadge colors didn't switch in dark mode.** The component set `backgroundColor`/`color` via
+   inline `style` while relying on a `dark:` Tailwind class to override them — inline style always
+   wins over a stylesheet rule for the same property, so the override never applied. Confirmed by a
+   forced-dark-mode screenshot (badge stayed light-pink on a dark background). Fixed by moving both
+   light and dark values entirely into CSS custom properties, read by two separate classes (plain +
+   `dark:`) instead of fighting over `backgroundColor`/`color` directly. Confirmed in the compiled CSS
+   that the `dark:` rule's selector (`.foo:is(.dark *)`) has strictly higher specificity than the
+   light rule, and re-confirmed visually.
+
+2. **The phone sheet (and the desktop scrim) never covered the full screen.** Both used
+   `className="fixed inset-0 ..."` as a plain child of `<header>`. The header has `backdrop-blur`,
+   and `backdrop-filter` (like `transform`/`filter`/`perspective`) makes an element a CSS containing
+   block for `fixed`-position descendants — so both `fixed inset-0` children were pinned to the
+   header's own ~70px box instead of the viewport, never actually covering the page. A screenshot of
+   the "open" phone sheet showed only the header bar with ordinary homepage content underneath.
+   Fixed by portaling both to `document.body` via `createPortal` (guarded for
+   `typeof document === 'undefined'`, so SSR still renders nothing for them, matching their real
+   default-closed state). Verified two ways: a `--dump-dom` capture showing the sheet's markup now a
+   direct child of `<body>` with `overflow: hidden` correctly applied, and a direct (non-iframe)
+   screenshot showing it full-screen.
+
+   A side note for whoever tests this kind of forced-open UI next: screenshotting by forcing
+   `useState(true)` at mount is not equivalent to a real click. It also surfaced a hydration error
+   ("Hydration failed ... RedirectErrorBoundary") that turned out to be specific to forcing non-default
+   initial state at the SSR/first-client-render boundary — confirmed by reverting to real defaults and
+   seeing a completely clean hydration log, and by reasoning that any state change from a real
+   post-mount click happens after hydration already succeeded, which carries no mismatch risk at all.
+   This was a testing-methodology artifact, not a shipped bug; it's recorded here only so it isn't
+   mistaken for one in a future session.

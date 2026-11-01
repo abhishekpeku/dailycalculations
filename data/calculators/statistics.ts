@@ -2684,7 +2684,6 @@ export const statisticsCalculators: CalculatorConfig[] = [
     },
     compute(values) {
       const { mode, tailType, sampleMean, popMean, sampleStdDev, sampleSize, mean2, stdDev2, sampleSize2 } = values;
-      const noAnswer = { tStatistic: NaN, degreesOfFreedom: NaN, pValue: NaN, standardError: NaN };
       // Every sample size is a literal count of observations — a fractional 10.5 is an honest NaN,
       // not a silently-answered different question (same bug class a pre-merge review found in
       // binomial-distribution-calculator, run 3: there it was Math.round silently rounding; here,
@@ -2713,7 +2712,11 @@ export const statisticsCalculators: CalculatorConfig[] = [
       // recurse forever — see tSF's own NaN guard in lib/distributions.ts). A zero standard error
       // with UNEQUAL means is a legitimate +-Infinity, which tCDF/tSF already handle directly.
       if (Number.isNaN(tStatistic) || !(degreesOfFreedom > 0)) {
-        return { ...noAnswer, tStatistic, degreesOfFreedom, standardError };
+        // Written out rather than spread over a shared "noAnswer" template: the minifier sees
+        // {...noAnswer, tStatistic, ...} as one object literal with tStatistic/degreesOfFreedom/
+        // standardError each written twice, and warns "duplicate key" even though the later value
+        // is the one that wins either way — the behavior is identical, this just avoids the noise.
+        return { tStatistic, degreesOfFreedom, pValue: NaN, standardError };
       }
       const leftTail = tCDF(tStatistic, degreesOfFreedom);
       const rightTail = tSF(tStatistic, degreesOfFreedom);

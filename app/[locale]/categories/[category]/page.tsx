@@ -54,13 +54,14 @@ export default async function CategoryPage({
     { name: category.title }
   ];
 
-  const browseItems = categoryCalculators.map(({ id, title, description, category: calcCategory, aliases, glyph }) => ({
+  const browseItems = categoryCalculators.map(({ id, title, description, category: calcCategory, aliases, glyph, group }) => ({
     id,
     title,
     description,
     category: calcCategory,
     aliases,
-    glyph
+    glyph,
+    group
   }));
 
   return (

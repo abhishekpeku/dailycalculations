@@ -106,13 +106,30 @@ Every other category file: `group` stays `undefined` on every calculator — enf
 ## Progress
 
 - [x] Step file written, branch created
-- [ ] Draft PR opened
-- [ ] Part 1: `group?` field added to `CalculatorConfig`
-- [ ] Part 2a: measurements.ts tagged (40/40)
-- [ ] Part 2b: math.ts tagged (29/29)
-- [ ] Part 2c: statistics.ts tagged (25/25)
-- [ ] Group-coverage test added
-- [ ] Part 3: rendering (CategoryCalculatorFilter grouped sections)
-- [ ] Build / test / lint pass
-- [ ] Visual verification (desktop/phone/dark) for all 6 checks above
-- [ ] STATUS.md updated, PR marked ready
+- [x] Draft PR opened (#48)
+- [x] Part 1: `group?` field added to `CalculatorConfig`
+- [x] Part 2a: measurements.ts tagged (40/40)
+- [x] Part 2b: math.ts tagged (29/29)
+- [x] Part 2c: statistics.ts tagged (25/25)
+- [x] Group-coverage test added
+- [x] Part 3: rendering (CategoryCalculatorFilter grouped sections)
+- [x] Build / test / lint pass
+- [x] Visual verification (desktop/phone/dark) for all 6 checks above
+- [x] STATUS.md updated, PR marked ready
+
+## Interrupted and resumed (2026-11-02)
+
+The build agent hit its session usage limit partway through Part 3, right after running `npm test`
+and before the production build or any visual check. Parts 1–2 (the `group` field, all three
+files tagged, the coverage test) were already committed and pushed — safe. Part 3 (the
+`CategoryCalculatorFilter.tsx` grouped-sections rendering and the one-line `page.tsx` change to
+pass `group` through) existed only as uncommitted working-tree changes.
+
+The main session reviewed that uncommitted diff line by line (it was complete and correct, not a
+partial draft), then ran everything the agent hadn't gotten to: `npm test` (754/754), `npm run
+build`, lint, and the full visual check — including a real CDP-driven value-set + `input` event
+into the search box (not just a screenshot) to confirm the filtered state still shows one flat
+grid, no group headings. Two spot checks (Fahrenheit→Celsius's and Scientific Calculator's exact
+`group` value, by reading the data file directly rather than trusting the agent's own count
+report) confirmed the tagging matches the approved taxonomy exactly. Everything passed on the
+first try; nothing needed fixing before merging.

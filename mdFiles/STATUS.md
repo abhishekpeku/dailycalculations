@@ -2316,6 +2316,11 @@ Association's 6.75 bricks/sq ft figure from batch 1 while re-checking this batch
 
 Things noticed but deliberately out of scope. Add here instead of fixing mid-step.
 
+- **`calc.updatedAt` (`data/calculators/types.ts`) has no remaining reader** (found 2026-11-03,
+  fixing the sitemap's dates): `app/sitemap.ts` now derives lastmod from git history
+  (`lib/gitDate.ts`) instead of this hand-typed field. Left in place on all 154 calculator objects
+  rather than mass-removing the field and updating `calculator-template-v2.md`/the `add-calculator`
+  skill — out of scope for a date-fix PR. Worth a dedicated cleanup step if it's ever removed.
 - **Every `home`-category page's breadcrumb shows "Home" twice** (noticed building step 43-45
   Construction batch 1, 2026-11-02): `Home / Calculators / Home / <Calculator Title>` — the site-root
   crumb (`t('breadcrumbHome')`) and the category-title crumb (`category.title`, which is literally

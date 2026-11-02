@@ -3366,6 +3366,59 @@ exports[`compute() snapshots > millimeters-to-inches-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > mortar-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "wallLength": 18,
+      "wallHeight": 8,
+      "bricksPerSqFt": 6.75,
+      "bricksPerBag": 37,
+      "wastePercent": 15
+    },
+    "outputs": {
+      "wallArea": 144,
+      "bricksNeeded": 972,
+      "bagsExact": 26.27027027,
+      "bagsWithWaste": 30.21081081,
+      "bagsToBuy": 31
+    }
+  },
+  "typical": {
+    "inputs": {
+      "wallLength": 27,
+      "wallHeight": 12,
+      "bricksPerSqFt": 10.15,
+      "bricksPerBag": 56,
+      "wastePercent": 23
+    },
+    "outputs": {
+      "wallArea": 324,
+      "bricksNeeded": 3288.6,
+      "bagsExact": 58.725,
+      "bagsWithWaste": 72.23175,
+      "bagsToBuy": 73
+    }
+  },
+  "edge": {
+    "inputs": {
+      "wallLength": 1,
+      "wallHeight": 1,
+      "bricksPerSqFt": 0.1,
+      "bricksPerBag": 1,
+      "wastePercent": 0
+    },
+    "outputs": {
+      "wallArea": 1,
+      "bricksNeeded": 0.1,
+      "bagsExact": 0.1,
+      "bagsWithWaste": 0.1,
+      "bagsToBuy": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > mortgage-calculator 1`] = `
 {
   "default": {

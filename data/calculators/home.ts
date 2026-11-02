@@ -900,7 +900,7 @@ export const homeCalculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Drywall Calculator – Sheets Needed for a Room',
-      description: 'Free drywall calculator: how many sheets of drywall a room needs from its dimensions, doors, windows, sheet size and an optional ceiling, with a waste allowance.',
+      description: 'Free drywall calculator: how many sheets a room needs from its dimensions, doors, windows, sheet size and an optional ceiling, with a waste allowance.',
       faq: [
         { question: 'How many sheets of drywall do I need?', answer: 'Find the net wall area (2 × (length + width) × height, minus about 20 sq ft per door and 15 sq ft per window), divide by your sheet’s coverage, add a waste allowance, and round up. A 14×12 ft room with 9 ft ceilings, one door, two windows and 10% waste needs 15 standard 4×8 ft sheets.' },
         { question: 'What size does drywall come in?', answer: 'USG’s own installation guide and major retailers list 4×8 ft (32 sq ft) as the standard, most common size, with 4×10 ft (40 sq ft) and 4×12 ft (48 sq ft) available for taller walls or longer runs with fewer seams.' },
@@ -1135,7 +1135,7 @@ export const homeCalculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Gravel Calculator – Cubic Yards and Tons Needed',
-      description: 'Free gravel calculator: cubic feet, cubic yards and tons of gravel needed from area and depth, with an editable density for your gravel type and a waste allowance.',
+      description: 'Free gravel calculator: cubic feet, cubic yards and tons of gravel needed from area and depth, with an editable density for your gravel type and a waste factor.',
       faq: [
         { question: 'How much gravel do I need?', answer: 'Multiply the area by the depth to get volume, convert to cubic yards, then multiply by the gravel’s density in tons per cubic yard. A 50×10 ft base, 4 inches deep, at 1.4 tons/yd³ needs 6.17 cubic yards, 8.64 tons, before waste.' },
         { question: 'How many tons of gravel are in a cubic yard?', answer: 'It depends on the stone. Supplier-measured figures (Mulch Pros, Earthstone Rock) put most crushed stone and pea gravel at about 1.3 to 1.45 tons per cubic yard — this calculator defaults to 1.4, the #89/pea-gravel figure, but the density field is editable for your own supplier’s number.' },
@@ -1277,6 +1277,124 @@ export const homeCalculators: CalculatorConfig[] = [
       const cubicYardsWithWaste = cubicYards * (1 + values.wastePercent / 100);
       const tonsWithWaste = cubicYardsWithWaste * values.densityTonsPerCubicYard;
       return { cubicFeet, cubicYards, tonsExact, cubicYardsWithWaste, tonsWithWaste };
+    }
+  },
+  {
+    id: 'mortar-calculator',
+    category: 'home',
+    glyph: 'bag',
+    updatedAt: '2026-11-02',
+    aliases: ['how many bags of mortar do i need', 'mortar bags calculator', 'mortar mix calculator', 'brick mortar calculator', 'masonry mortar calculator'],
+    related: ['brick-calculator', 'concrete-calculator', 'sand-calculator'],
+    title: 'Mortar Calculator',
+    description: 'Find how many bags of mortar mix a brick wall needs from its length and height, using the same bricks-per-square-foot figure as this site’s brick calculator and a waste allowance, in bags needed.',
+    example: 'An 18x8 ft wall (972 bricks at 6.75 bricks per sq ft) needs 26.27 bags of mortar at 37 bricks per 80 lb bag, or 31 bags with a 15% waste allowance.',
+    breakdown: {
+      headline: 'bagsToBuy',
+      headlineLabel: 'Bags to buy',
+      outputs: [
+        { id: 'bagsToBuy', label: 'Bags to buy', format: 'integer' },
+        { id: 'bagsWithWaste', label: 'Bags needed, with waste', format: 'number' },
+        { id: 'bagsExact', label: 'Bags needed, exact', format: 'number' },
+        { id: 'bricksNeeded', label: 'Bricks this wall needs', format: 'number' },
+        { id: 'wallArea', label: 'Wall area', format: 'number', dimension: 'area', unit: 'ft2' }
+      ],
+      groups: [
+        { title: 'Wall', inputs: ['wallLength', 'wallHeight'] },
+        { title: 'Brick size, bag yield & waste', inputs: ['bricksPerSqFt', 'bricksPerBag', 'wastePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'bagsExact', label: 'Exact bags' },
+          { from: 'bagsToBuy', label: 'Bags to buy' }
+        ],
+        title: 'Mortar bags needed, exact vs. to buy'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-02',
+      concept: {
+        title: 'How many bags of mortar a brick wall needs',
+        paragraphs: [
+          'Mortar is bought by the bag, but how many bags a wall needs follows from the same brick count this site’s brick calculator works out — wall area times a bricks-per-square-foot figure — because more bricks means more joints to fill with mortar. QUIKRETE’s own data sheet for its Mortar Mix (Product No. 1102) states plainly: “Each 80 lb bag of QUIKRETE Mortar Mix will lay up to 37 standard bricks.” Divide the brick count by 37 and you have the bags needed, before any waste.',
+          'The Brick Industry Association’s (BIA) Technical Notes on Brick Construction 10 covers mortar quantity estimating too, and separately from brick waste, it calls for adding more to the net mortar figure: “as a general rule, add 15 to 25 percent to the net mortar quantities” for waste — a wider range than the 5% BIA recommends for brick itself, because mortar is also lost to the mixer, the mortarboard and the tooling of joints, not just to cuts. This calculator defaults to 15%, the low end of BIA’s own range.',
+          'Because both this page and the brick calculator start from the same wall-area-times-bricks-per-square-foot step, they agree on bricks for the same wall, inputs and all — this page just carries that brick count one step further, into bags. Use them side by side: brick-calculator for the units, this one for the mortar that holds them together.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the wall, then the same bricks-per-square-foot figure you used on the brick calculator, the bag yield, and a waste allowance.',
+        steps: [
+          { name: 'Enter the wall length and height', text: 'Measure the net area you are building — the same figure you would use on the brick calculator.' },
+          { name: 'Set bricks per square foot', text: 'Keep 6.75 for standard modular brick with a ⅜ in. mortar joint, matching this site’s brick calculator default.' },
+          { name: 'Set the bag yield', text: 'Keep 37 bricks per 80 lb bag, QUIKRETE’s own published figure for its Mortar Mix, or use your product’s own data sheet.' },
+          { name: 'Set the waste allowance', text: 'Keep the 15% default — the low end of BIA’s 15-to-25-percent recommended range — or raise it toward 25% for a messier job.' },
+          { name: 'Read the result', text: 'The headline is the bags to buy; the rows below show the exact bag count and the bricks this wall needs.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Wall area times bricks-per-square-foot gives the brick count; bricks divided by bag yield gives bags, and a waste factor sets what you actually buy.',
+        expression: 'wall area = L × H\nbricks = wall area × bricks/sq ft\nbags = bricks ÷ bricks/bag\nbags(waste) = bags × (1 + waste%)\nbuy = ⌈ bags(waste) ⌉',
+        terms: [
+          { symbol: 'L, H', meaning: 'Wall length and height, in feet.' },
+          { symbol: 'bricks/sq ft', meaning: 'Bricks needed per square foot of wall; 6.75 for standard modular brick, matching the brick calculator.' },
+          { symbol: 'bricks/bag', meaning: 'Standard bricks one 80 lb bag of mortar mix lays; 37, per QUIKRETE’s own data sheet.' },
+          { symbol: 'waste%', meaning: 'Extra percent for mixing, board and tooling loss; BIA recommends 15–25%, this defaults to the 15% low end.' }
+        ],
+        note: 'An estimate for standard-size bricks laid in a running or stack bond with a ⅜ in. joint. A different brick size, a thicker or thinner joint, or a bonded pattern with headers changes the bricks-per-square-foot figure and therefore the mortar needed — adjust that field to match, the same way the brick calculator does.'
+      },
+      workedExample: {
+        intro: 'You are laying mortar for an 18 ft long, 8 ft tall wall in standard modular brick (6.75 bricks per sq ft), using 80 lb bags that lay 37 bricks each, with a 15% waste allowance.',
+        rows: [
+          { label: 'Wall area (18 × 8)', value: '144.00 sq ft' },
+          { label: 'Bricks needed (144.00 × 6.75)', value: '972.00' },
+          { label: 'Bags, exact (972.00 ÷ 37)', value: '26.27' },
+          { label: 'With 15% waste (26.27 × 1.15)', value: '30.21' },
+          { label: 'Bags to buy (rounded up)', value: '31 bags' }
+        ],
+        result: '31 bags of 80 lb mortar mix',
+        explanation: 'Raising the waste allowance to BIA’s upper 25% instead of 15% pushes the same job to 33 bags exact-before-rounding (26.27 × 1.25 = 32.84, so still 33 after rounding up) — 2 more bags, the cost of planning for a messier job.'
+      },
+      watchOut: [
+        { title: 'Mortar waste runs higher than brick waste', body: 'BIA recommends at least 5% waste for brick itself but 15 to 25% for mortar — mortar is lost to the mixer, the mortarboard and tooling the joints, not just to cuts, so it needs a bigger allowance.' },
+        { title: 'Keep the brick figure consistent with your brick order', body: 'This page’s bricks-per-square-foot field should match whatever you used on the brick calculator for the same wall — they are meant to be used together, not independently guessed.' },
+        { title: 'Bag yield is specific to one product', body: 'The 37-bricks-per-80-lb-bag figure is QUIKRETE’s own published yield for its Mortar Mix; other brands or bag sizes (40 lb, 60 lb) lay a different number — check your product’s data sheet.' },
+        { title: 'A thicker or thinner joint changes both bricks and mortar', body: 'BIA’s own Table 4 lists a different bricks-per-square-foot and mortar-per-brick figure for a ½ in. joint than for the standard ⅜ in. — adjust the bricks-per-square-foot field to match your actual joint if it is not ⅜ in.' },
+        { title: 'Blocks are not bricks', body: 'QUIKRETE’s data sheet separately states the same 80 lb bag lays only 13 standard 8×8×16 in. concrete blocks, far fewer than 37 bricks, because each block covers much more wall per unit — this calculator is for brick, not block, walls.' }
+      ],
+      references: [
+        { label: 'QUIKRETE, Mortar Mix (Product No. 1102) Data Sheet — bag yield in standard bricks and blocks', url: 'https://www.quikrete.com/pdfs/data_sheet-mortar%20mix%201102.pdf' },
+        { label: 'Brick Industry Association, Technical Notes on Brick Construction 10 — Dimensioning and Estimating Brick Masonry (Table 4 mortar quantities; mortar waste recommendation)', url: 'https://www.gobrick.com/media/file/10-dimensioning-and-estimating-brick-masonry.pdf' }
+      ]
+    },
+    inputs: [
+      { id: 'wallLength', label: 'Wall length (ft)', type: 'number', placeholder: '18', defaultValue: 18, step: 0.5, min: 1 },
+      { id: 'wallHeight', label: 'Wall height (ft)', type: 'number', placeholder: '8', defaultValue: 8, step: 0.5, min: 1 },
+      { id: 'bricksPerSqFt', label: 'Bricks per sq ft (standard modular, ⅜ in. joint = 6.75)', type: 'number', placeholder: '6.75', defaultValue: 6.75, step: 0.05, min: 0.1 },
+      { id: 'bricksPerBag', label: 'Bricks laid per 80 lb bag (Quikrete = 37)', type: 'number', placeholder: '37', defaultValue: 37, step: 1, min: 1 },
+      { id: 'wastePercent', label: 'Waste allowance (%)', type: 'percent', placeholder: '15', defaultValue: 15, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Mortar Calculator – Bags Needed for a Brick Wall',
+      description: 'Free mortar calculator: how many bags of mortar mix a brick wall needs, using 37 bricks per 80 lb bag (QUIKRETE) and a 15% waste allowance.',
+      faq: [
+        { question: 'How many bags of mortar do I need?', answer: 'Find the brick count (wall area × bricks per sq ft), divide by the bricks one bag lays, then add a waste allowance. An 18×8 ft wall (972 bricks at 6.75 per sq ft) needs 26.27 bags at 37 bricks per 80 lb bag, 31 bags with 15% waste.' },
+        { question: 'How many bricks does one bag of mortar lay?', answer: 'QUIKRETE’s own data sheet for its Mortar Mix (Product No. 1102) states an 80 lb bag lays up to 37 standard bricks, or 13 standard 8×8×16 in. concrete blocks.' },
+        { question: 'How much waste allowance should I use for mortar?', answer: 'The Brick Industry Association recommends adding 15 to 25 percent to the net mortar quantity for waste — more than the 5% minimum it recommends for brick itself, since mortar is also lost to mixing, the board and tooling joints.' },
+        { question: 'Why does this use the same bricks-per-square-foot figure as the brick calculator?', answer: 'Because mortar quantity depends on how many bricks — and therefore how many joints — the wall has, the same figure that determines the brick count. Keep the two calculators’ settings consistent for the same wall.' },
+        { question: 'Does a different brick size change how much mortar I need?', answer: 'Yes. A different brick size or mortar joint thickness changes both the bricks-per-square-foot figure and the mortar-per-brick quantity — the Brick Industry Association’s Table 4 lists separate figures for each named brick size and joint.' },
+        { question: 'Is mortar the same as concrete?', answer: 'No. Mortar bonds brick or block together in thin joints; concrete is poured in bulk for slabs, footings and foundations. This site’s concrete calculator covers slab volume and concrete bag counts separately.' },
+        { question: 'Can I use this for a concrete block wall instead of brick?', answer: 'Not directly — QUIKRETE’s own figures differ by unit type (37 bricks vs. 13 standard 8×8×16 in. blocks per 80 lb bag), so a block wall needs its own bricks-per-square-foot-equivalent and bag-yield figures, not this page’s brick defaults.' }
+      ]
+    },
+    compute(values) {
+      const wallArea = values.wallLength * values.wallHeight;
+      const bricksNeeded = wallArea * values.bricksPerSqFt;
+      const bagsExact = bricksNeeded / values.bricksPerBag;
+      const bagsWithWaste = bagsExact * (1 + values.wastePercent / 100);
+      const bagsToBuy = Math.ceil(bagsWithWaste);
+      return { wallArea, bricksNeeded, bagsExact, bagsWithWaste, bagsToBuy };
     }
   }
 ];

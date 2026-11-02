@@ -1156,5 +1156,127 @@ export const homeCalculators: CalculatorConfig[] = [
       const tonsWithWaste = cubicYardsWithWaste * values.densityTonsPerCubicYard;
       return { cubicFeet, cubicYards, tonsExact, cubicYardsWithWaste, tonsWithWaste };
     }
+  },
+  {
+    id: 'sand-calculator',
+    category: 'home',
+    glyph: 'ton',
+    updatedAt: '2026-11-02',
+    aliases: ['how much sand do i need', 'sand tons calculator', 'sandbox sand calculator', 'paver sand calculator', 'play sand calculator'],
+    related: ['gravel-calculator', 'concrete-calculator', 'brick-calculator'],
+    title: 'Sand Calculator',
+    description: 'Find the volume (cubic feet and cubic yards) and weight (tons) of sand a sandbox, paver base or bedding layer needs from its area and depth, with an editable density for your sand type.',
+    example: 'A 6x4 ft sandbox filled 12 inches deep in sand at 1.3 tons per cubic yard needs 0.89 cubic yards (1.16 tons), or 0.98 cubic yards (1.27 tons) with a 10% waste allowance.',
+    breakdown: {
+      headline: 'tonsWithWaste',
+      headlineLabel: 'Tons to buy',
+      outputs: [
+        { id: 'tonsWithWaste', label: 'Tons to buy', format: 'number' },
+        { id: 'tonsExact', label: 'Tons needed, exact', format: 'number' },
+        { id: 'cubicYardsWithWaste', label: 'Cubic yards to buy', format: 'number' },
+        { id: 'cubicYards', label: 'Cubic yards, exact', format: 'number' },
+        { id: 'cubicFeet', label: 'Cubic feet, exact', format: 'number' }
+      ],
+      groups: [
+        { title: 'Area & depth', inputs: ['areaLength', 'areaWidth', 'depthInches'] },
+        { title: 'Density & waste', inputs: ['densityTonsPerCubicYard', 'wastePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'tonsExact', label: 'Exact tons' },
+          { from: 'tonsWithWaste', label: 'Tons to buy' }
+        ],
+        title: 'Sand needed, exact vs. to buy'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-02',
+      concept: {
+        title: 'How much sand a sandbox or paver base needs',
+        paragraphs: [
+          'Sand is sold and delivered by weight (tons), the same way gravel is, so the calculation follows the same two steps: find the volume from area times depth, then convert to weight with the sand’s density. A 6 ft by 4 ft sandbox filled a full 12 inches deep is 24 cubic feet, or 0.89 cubic yards — a small, but real, example of how a seemingly modest footprint adds up once there’s real depth behind it.',
+          'Density varies by sand type more than most people expect. Mulch Pros Landscape Supply’s own-scale measurements put mason and river sand — the common bedding and paver-base sands — at about 2,600 lb (1.3 tons) per cubic yard, which is this calculator’s default. A second supplier, EarthStone Rock, states a general “sand” figure of about 3,000 lb (1.5 tons) per cubic yard — a real, bounded disagreement between two real suppliers, not a typo on either side, most likely reflecting a damper or coarser sand than Mulch Pros’ own dry mason/river sand. That roughly 1.3-to-1.5 ton-per-cubic-yard range is why the density field here is editable: use your own supplier’s figure whenever you have it.',
+          'Moisture is the biggest single reason two suppliers’ sand figures can differ for what is nominally the same material — damp sand weighs noticeably more per cubic yard than the same sand bone dry, which both suppliers note affects their own weigh scales. None of that changes the volume you need to fill your sandbox or bed to the depth you want; it only changes how many tons that volume weighs when you go to buy it.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the area and depth, then your sand’s density and a waste allowance.',
+        steps: [
+          { name: 'Enter the area', text: 'Type the length and width of the sandbox, patio base or bedding layer in feet.' },
+          { name: 'Enter the depth', text: 'Use the thickness in inches — a full sandbox fill is commonly 12 inches, a paver bedding layer just 1 to 2 inches.' },
+          { name: 'Set the density', text: 'Keep 1.3 tons per cubic yard for a typical dry mason or river sand, or use your supplier’s own figure — it can run higher, toward 1.5, for a damper or coarser sand.' },
+          { name: 'Set the waste allowance', text: 'Keep 10% for settling and spillage, or raise it for a larger or less even job.' },
+          { name: 'Read the result', text: 'The headline is the tons to buy; the rows below show the exact cubic feet, cubic yards and tons before waste.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Area times depth gives the volume; volume times density gives the weight, and a waste factor sets what you actually buy.',
+        expression: 'cu ft = L × W × (depth ÷ 12)\ncu yd = cu ft ÷ 27\ntons = cu yd × density\nbuy = cu yd × (1 + waste%) × density',
+        terms: [
+          { symbol: 'L, W', meaning: 'Area length and width, in feet.' },
+          { symbol: 'depth', meaning: 'Depth of sand, in inches — divide by 12 to get feet.' },
+          { symbol: 'density', meaning: 'Tons per cubic yard for your sand type; supplier-measured figures range from about 1.3 (dry mason/river sand) to 1.5 (a damper or coarser sand).' },
+          { symbol: 'waste%', meaning: 'Extra percent for settling and spillage; 10% is a common starting point.' }
+        ],
+        note: 'An estimate. Sand suppliers sell by the ton, and a wetter load weighs more than the same dry volume — confirm whether a quoted density is dry or as-delivered before ordering a tight amount.'
+      },
+      workedExample: {
+        intro: 'You are filling a 6 ft by 4 ft sandbox a full 12 inches deep, using sand at 1.3 tons per cubic yard with a 10% waste allowance.',
+        rows: [
+          { label: 'Area (6 × 4)', value: '24.00 sq ft' },
+          { label: 'Depth in feet (12 ÷ 12)', value: '1.0000 ft' },
+          { label: 'Cubic feet (24.00 × 1.0000)', value: '24.00 ft³' },
+          { label: 'Cubic yards (24.00 ÷ 27)', value: '0.89 yd³' },
+          { label: 'Tons, exact (0.89 × 1.3)', value: '1.16 tons' },
+          { label: 'Cubic yards with 10% waste (0.89 × 1.10)', value: '0.98 yd³' },
+          { label: 'Tons to buy (0.98 × 1.3)', value: '1.27 tons' }
+        ],
+        result: '1.27 tons to order (1.16 tons exact)',
+        explanation: 'The same sandbox filled with a damper sand at 1.5 tons per cubic yard instead of 1.3 would need 1.47 tons with the same 10% waste — about 15.4% more weight for the identical volume, entirely from the heavier sand.'
+      },
+      watchOut: [
+        { title: 'Density varies a lot by sand type and moisture', body: 'Supplier-measured figures range from about 1.3 tons per cubic yard for dry mason/river sand to about 1.5 for a damper or coarser sand — use your own supplier’s number when you have it instead of the 1.3 default.' },
+        { title: 'A full sandbox needs more sand than it looks like', body: 'A modest 6×4 ft sandbox filled a full 12 inches deep is still 24 cubic feet — almost a full cubic yard — because depth multiplies the area, not just adds to it.' },
+        { title: 'Paver and patio bedding layers are shallow on purpose', body: 'A bedding or leveling layer of sand under pavers or a patio is typically just 1 to 2 inches, far less than a play sandbox fill — enter the thin depth your specific project actually calls for.' },
+        { title: 'Order a little extra for settling and spillage', body: 'Sand compacts and settles once in place, and some is lost to spillage during handling — the 10% default covers typical loss, more for a rougher or larger job.' },
+        { title: 'Children’s play sand has its own safety standard', body: 'Play sand sold for sandboxes is commonly required to meet ASTM F1951 or similar playground-surfacing standards in addition to a density figure — check the bag’s labeling, not just this calculator, before buying sand a child will play in.' }
+      ],
+      references: [
+        { label: 'Mulch Pros Landscape Supply, Material Weight and Coverage (own-scale measured tons per cubic yard by sand type)', url: 'https://mulchpros.com/material-weight-and-coverage/' },
+        { label: 'EarthStone Rock, Cubic Yards vs. Tons for Landscape Rock (sand density figure, moisture note)', url: 'https://earthstonerock.com/blogs/landscaping-guides/cubic-yards-vs-tons' }
+      ]
+    },
+    inputs: [
+      { id: 'areaLength', label: 'Area length (ft)', type: 'number', placeholder: '6', defaultValue: 6, step: 0.5, min: 0.5 },
+      { id: 'areaWidth', label: 'Area width (ft)', type: 'number', placeholder: '4', defaultValue: 4, step: 0.5, min: 0.5 },
+      { id: 'depthInches', label: 'Depth (inches)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.5, min: 0.5 },
+      { id: 'densityTonsPerCubicYard', label: 'Density (tons per cubic yard, typical = 1.3)', type: 'number', placeholder: '1.3', defaultValue: 1.3, step: 0.05, min: 0.5 },
+      { id: 'wastePercent', label: 'Waste allowance (%)', type: 'percent', placeholder: '10', defaultValue: 10, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Sand Calculator – Cubic Yards and Tons Needed',
+      description: 'Free sand calculator: cubic feet, cubic yards and tons of sand needed from area and depth, with an editable density for your sand type and a waste allowance.',
+      faq: [
+        { question: 'How much sand do I need?', answer: 'Multiply the area by the depth to get volume, convert to cubic yards, then multiply by the sand’s density in tons per cubic yard. A 6×4 ft sandbox, 12 inches deep, at 1.3 tons/yd³ needs 0.89 cubic yards, 1.16 tons, before waste.' },
+        { question: 'How many tons of sand are in a cubic yard?', answer: 'It depends on the sand type and moisture. Mulch Pros Landscape Supply’s own-scale figures put dry mason/river sand at about 1.3 tons per cubic yard; EarthStone Rock states a general sand figure closer to 1.5 — this calculator defaults to 1.3 but the density field is editable.' },
+        { question: 'Why do different suppliers give different sand weights?', answer: 'Mostly moisture and sand type. A damper or coarser sand weighs more per cubic yard than a dry, fine mason sand — both suppliers cited here note moisture changes the real weigh-scale figure.' },
+        { question: 'How deep should sand be for a sandbox?', answer: 'A full play sandbox fill is commonly built to about 12 inches deep; a bedding or leveling layer under pavers or a patio is typically only 1 to 2 inches.' },
+        { question: 'Should I order extra sand for waste?', answer: 'Yes, a 10% allowance is a common starting point for settling and spillage during handling — more for a larger or rougher job.' },
+        { question: 'Is play sand for a sandbox different from regular sand?', answer: 'It can be. Play sand sold for sandboxes is commonly required to meet ASTM F1951 or a similar playground-surfacing standard, on top of whatever density figure applies — check the bag’s own labeling for that.' },
+        { question: 'How do I convert the depth from inches into the formula?', answer: 'Divide the inches by 12 to get feet before multiplying by the area — a 12-inch depth is 12 ÷ 12 = 1.00 ft.' }
+      ]
+    },
+    compute(values) {
+      const areaSqFt = values.areaLength * values.areaWidth;
+      const depthFt = values.depthInches / 12;
+      const cubicFeet = areaSqFt * depthFt;
+      const cubicYards = cubicFeet / 27;
+      const tonsExact = cubicYards * values.densityTonsPerCubicYard;
+      const cubicYardsWithWaste = cubicYards * (1 + values.wastePercent / 100);
+      const tonsWithWaste = cubicYardsWithWaste * values.densityTonsPerCubicYard;
+      return { cubicFeet, cubicYards, tonsExact, cubicYardsWithWaste, tonsWithWaste };
+    }
   }
 ];

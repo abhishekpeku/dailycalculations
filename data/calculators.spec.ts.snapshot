@@ -4956,6 +4956,59 @@ exports[`compute() snapshots > sample-size-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > sand-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "areaLength": 6,
+      "areaWidth": 4,
+      "depthInches": 12,
+      "densityTonsPerCubicYard": 1.3,
+      "wastePercent": 10
+    },
+    "outputs": {
+      "cubicFeet": 24,
+      "cubicYards": 0.8888888889,
+      "tonsExact": 1.155555556,
+      "cubicYardsWithWaste": 0.9777777778,
+      "tonsWithWaste": 1.271111111
+    }
+  },
+  "typical": {
+    "inputs": {
+      "areaLength": 9,
+      "areaWidth": 6,
+      "depthInches": 18,
+      "densityTonsPerCubicYard": 1.95,
+      "wastePercent": 15
+    },
+    "outputs": {
+      "cubicFeet": 81,
+      "cubicYards": 3,
+      "tonsExact": 5.85,
+      "cubicYardsWithWaste": 3.45,
+      "tonsWithWaste": 6.7275
+    }
+  },
+  "edge": {
+    "inputs": {
+      "areaLength": 0.5,
+      "areaWidth": 0.5,
+      "depthInches": 0.5,
+      "densityTonsPerCubicYard": 0.5,
+      "wastePercent": 0
+    },
+    "outputs": {
+      "cubicFeet": 0.01041666667,
+      "cubicYards": 0.0003858024691,
+      "tonsExact": 0.0001929012346,
+      "cubicYardsWithWaste": 0.0003858024691,
+      "tonsWithWaste": 0.0001929012346
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > scientific-notation-calculator 1`] = `
 {
   "default": {

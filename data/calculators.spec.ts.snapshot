@@ -1372,6 +1372,77 @@ exports[`compute() snapshots > distance-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > drywall-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "roomLength": 14,
+      "roomWidth": 12,
+      "ceilingHeight": 9,
+      "doors": 1,
+      "windows": 2,
+      "includeCeiling": 0,
+      "sheetSqFt": 32,
+      "wastePercent": 10
+    },
+    "outputs": {
+      "wallArea": 468,
+      "netWallArea": 418,
+      "ceilingArea": 168,
+      "totalArea": 418,
+      "sheetsExact": 13.0625,
+      "sheetsWithWaste": 14.36875,
+      "sheetsToBuy": 15,
+      "coverageBought": 480
+    }
+  },
+  "typical": {
+    "inputs": {
+      "roomLength": 21,
+      "roomWidth": 18,
+      "ceilingHeight": 13.5,
+      "doors": 2,
+      "windows": 3,
+      "includeCeiling": 0,
+      "sheetSqFt": 48,
+      "wastePercent": 15
+    },
+    "outputs": {
+      "wallArea": 1053,
+      "netWallArea": 968,
+      "ceilingArea": 378,
+      "totalArea": 968,
+      "sheetsExact": 20.16666667,
+      "sheetsWithWaste": 23.19166667,
+      "sheetsToBuy": 24,
+      "coverageBought": 1152
+    }
+  },
+  "edge": {
+    "inputs": {
+      "roomLength": 1,
+      "roomWidth": 1,
+      "ceilingHeight": 6,
+      "doors": 0,
+      "windows": 0,
+      "includeCeiling": 0,
+      "sheetSqFt": 32,
+      "wastePercent": 0
+    },
+    "outputs": {
+      "wallArea": 24,
+      "netWallArea": 24,
+      "ceilingArea": 1,
+      "totalArea": 24,
+      "sheetsExact": 0.75,
+      "sheetsWithWaste": 0.75,
+      "sheetsToBuy": 1,
+      "coverageBought": 32
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > electricity-bill-calculator 1`] = `
 {
   "default": {

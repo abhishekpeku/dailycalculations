@@ -770,5 +770,158 @@ export const homeCalculators: CalculatorConfig[] = [
       const effectiveRatePerKwh = values.monthlyKwh > 0 ? totalBill / values.monthlyKwh : 0;
       return { energyCharge, totalBill, costPerDay, annualBill, effectiveRatePerKwh };
     }
+  },
+  {
+    id: 'drywall-calculator',
+    category: 'home',
+    glyph: 'sht',
+    updatedAt: '2026-11-02',
+    aliases: ['how many sheets of drywall do i need', 'sheetrock calculator', 'gypsum board calculator', 'drywall sheets calculator', 'how much drywall do i need'],
+    related: ['paint-calculator', 'wallpaper-calculator', 'tile-calculator', 'concrete-calculator'],
+    title: 'Drywall Calculator',
+    description: 'Find how many sheets of drywall a room needs from its dimensions, doors, windows and sheet size, with a waste allowance for cuts and breakage, in sheets needed and square feet of coverage.',
+    example: 'A 14x12 ft room with 9 ft ceilings, 1 door and 2 windows needs 15 standard 4x8 ft sheets of drywall (480 sq ft) for the walls alone, with a 10% waste allowance.',
+    breakdown: {
+      headline: 'sheetsToBuy',
+      headlineLabel: 'Sheets to buy',
+      outputs: [
+        { id: 'sheetsToBuy', label: 'Sheets to buy', format: 'integer' },
+        { id: 'sheetsWithWaste', label: 'Sheets needed, with waste', format: 'number' },
+        { id: 'sheetsExact', label: 'Sheets needed, exact', format: 'number' },
+        { id: 'coverageBought', label: 'Coverage bought', format: 'number', dimension: 'area', unit: 'ft2' },
+        { id: 'totalArea', label: 'Area to cover', format: 'number', dimension: 'area', unit: 'ft2' }
+      ],
+      groups: [
+        { title: 'Room', inputs: ['roomLength', 'roomWidth', 'ceilingHeight'] },
+        { title: 'Doors, windows & ceiling', inputs: ['doors', 'windows', 'includeCeiling'] },
+        { title: 'Sheet size & waste', inputs: ['sheetSqFt', 'wastePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'sheetsExact', label: 'Exact sheets' },
+          { from: 'sheetsToBuy', label: 'Sheets to buy' }
+        ],
+        title: 'Sheets needed, exact vs. to buy'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-02',
+      concept: {
+        title: 'How many sheets of drywall a room needs',
+        paragraphs: [
+          'Start from the wall area — the room’s perimeter times the ceiling height, minus the doors and windows you will not cover — the same deduction this site’s paint and wallpaper calculators use, at about 20 sq ft per door and 15 sq ft per window. Divide that area by one sheet’s coverage to get the exact sheet count, then decide whether to cover the ceiling the same way. USG’s own Sheetrock Brand Installation and Finishing Guide walks through exactly this: measure the length and height of each wall, subtract large openings, do the same for the ceiling, then total the square footage and look up the sheet count.',
+          'Drywall is sold in a few standard sizes. USG’s guide and the panels sold at Home Depot and Lowe’s agree on the same three: 4×8 ft (32 sq ft) is the standard, most common size for most rooms; 4×10 ft (40 sq ft) and 4×12 ft (48 sq ft) cover a tall wall or a long run with fewer seams, trading a bigger, heavier, harder-to-maneuver panel for less taping. A 4×8 ft sheet weighs just over 50 lb, per Home Depot’s own panel guide — the longer sizes weigh proportionally more and are harder for one person to carry alone.',
+          'Neither manufacturer’s own guide states a specific waste percentage — their coverage tables assume you already know how many sheets you want, cuts included. In practice, contractors commonly add about 10% on top of the exact count for trim waste and breakage on a simple, rectangular room, and raise that to 15% or more for a room with a lot of corners, angles, or window and door openings that force more cuts. Since sheets are sold whole, the final step always rounds the sheet count (with waste) up.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the room, then its doors, windows and whether you are covering the ceiling, then your sheet size and waste allowance.',
+        steps: [
+          { name: 'Enter the room dimensions', text: 'Type the length, width and ceiling height in feet.' },
+          { name: 'Enter doors and windows', text: 'Count how many of each the walls have; each is subtracted at about 20 and 15 square feet.' },
+          { name: 'Choose whether to include the ceiling', text: 'Select “yes” to add the ceiling’s square footage (length × width) to the total; select “no” for walls only.' },
+          { name: 'Pick your sheet size', text: '4×8 ft (32 sq ft) is standard for most rooms; 4×12 ft (48 sq ft) covers a tall wall or long run in fewer sheets.' },
+          { name: 'Set the waste allowance', text: 'Keep 10% for a simple rectangular room, or raise it for a room with many corners, angles or openings.' },
+          { name: 'Read the result', text: 'The headline is the sheets to buy; the rows below show the exact sheets needed and the square footage you are covering and buying.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Wall area comes from the room’s perimeter and height; doors, windows and an optional ceiling adjust the area, and sheet size and waste set the sheet count.',
+        expression: 'wall area = 2(L + W) × H\nnet wall area = wall area − (doors × 20 + windows × 15)\ntotal area = net wall area, + (L × W) if covering the ceiling\nsheets = total area ÷ sheet size\nbuy = ⌈ sheets × (1 + waste%) ⌉',
+        terms: [
+          { symbol: 'L, W, H', meaning: 'Room length, width and ceiling height, in feet.' },
+          { symbol: 'doors, windows', meaning: 'Count of each; subtracted at about 20 and 15 sq ft apiece.' },
+          { symbol: 'sheet size', meaning: 'Coverage of one sheet, in sq ft — 32 for a 4×8 ft sheet, 48 for a 4×12 ft sheet.' },
+          { symbol: 'waste%', meaning: 'Extra percent for cuts and breakage; 10% is common contractor practice for a simple room.' }
+        ],
+        note: 'An estimate. Soffits, archways, vaulted ceilings and a lot of cutouts for outlets or fixtures all increase the real cut waste beyond a flat percentage; USG’s and other manufacturers’ coverage tables assume you already know the finished sheet count, not a waste allowance on top.'
+      },
+      workedExample: {
+        intro: 'You are drywalling a 14 ft by 12 ft room with 9 ft ceilings, one door, two windows and a 10% waste allowance, using standard 4×8 ft (32 sq ft) sheets, walls only.',
+        rows: [
+          { label: 'Wall area (2 × (14 + 12) × 9)', value: '468.00 sq ft' },
+          { label: 'Deductions (1 × 20 + 2 × 15)', value: '50.00 sq ft' },
+          { label: 'Net wall area (468.00 − 50.00)', value: '418.00 sq ft' },
+          { label: 'Sheets, exact (418.00 ÷ 32)', value: '13.06' },
+          { label: 'With 10% waste (13.0625 × 1.10)', value: '14.37' },
+          { label: 'Sheets to buy (rounded up)', value: '15 sheets' },
+          { label: 'Coverage bought (15 × 32)', value: '480.00 sq ft' }
+        ],
+        result: '15 sheets of 4×8 ft drywall, 480 sq ft bought',
+        explanation: 'Covering the 168 sq ft ceiling too (14 × 12) raises the total to 586 sq ft, 18.31 sheets exact, 20.14 with waste — 21 sheets, 6 more than walls alone. Switching to 4×12 ft (48 sq ft) sheets for the walls-only job instead needs only 10 sheets, since each one covers 50% more area, at the cost of handling a longer, heavier panel.'
+      },
+      watchOut: [
+        { title: 'No manufacturer states a single waste percentage', body: 'USG’s and other brands’ own coverage tables assume you already know the finished sheet count; the 10% waste allowance here reflects common contractor practice for a simple room, not a number either manufacturer publishes.' },
+        { title: 'Complex rooms need more waste', body: 'A room with soffits, archways, a vaulted ceiling or a lot of outlet and fixture cutouts creates more unusable offcuts than a plain rectangular room — raise the waste allowance well above 10% for those.' },
+        { title: 'Bigger sheets are heavier and harder to install alone', body: 'A 4×8 ft sheet weighs just over 50 lb per Home Depot’s own panel guide; a 4×12 ft sheet is half again as long and proportionally heavier, usually needing a second person or a panel lifter.' },
+        { title: 'The ceiling is a separate choice, not automatic', body: 'This calculator only adds the ceiling’s square footage when you select it — leaving it on “no” estimates the walls alone, which is common when a ceiling is already finished or being handled separately.' },
+        { title: 'Sheets are sold whole', body: 'You cannot buy 14.37 sheets; the result always rounds up to 15, the same as paint and tile round up to whole cans and boxes on this site.' }
+      ],
+      references: [
+        { label: 'USG, Sheetrock Brand Installation and Finishing Guide (panel sizes, coverage table, measuring method)', url: 'https://www.usg.com/content/dam/USG/pdpmovedocuments/cgc-sheetrock-gypsum-panels-installation-guide-en-J371.pdf' },
+        { label: 'The Home Depot, Types of Drywall (panel sizes, use cases, weight)', url: 'https://www.homedepot.com/c/ab/types-of-drywall/9ba683603be9fa5395fab90c24feaae' }
+      ]
+    },
+    inputs: [
+      { id: 'roomLength', label: 'Room length (ft)', type: 'number', placeholder: '14', defaultValue: 14, step: 0.5, min: 1 },
+      { id: 'roomWidth', label: 'Room width (ft)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.5, min: 1 },
+      { id: 'ceilingHeight', label: 'Ceiling height (ft)', type: 'number', placeholder: '9', defaultValue: 9, step: 0.5, min: 6 },
+      { id: 'doors', label: 'Number of doors (each ~20 sq ft)', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0 },
+      { id: 'windows', label: 'Number of windows (each ~15 sq ft)', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0 },
+      {
+        id: 'includeCeiling',
+        label: 'Cover the ceiling too?',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'No — walls only' },
+          { value: 1, label: 'Yes — walls and ceiling' }
+        ]
+      },
+      {
+        id: 'sheetSqFt',
+        label: 'Sheet size',
+        type: 'number',
+        placeholder: '32',
+        defaultValue: 32,
+        step: 1,
+        min: 32,
+        options: [
+          { value: 32, label: '4×8 ft (32 sq ft)' },
+          { value: 48, label: '4×12 ft (48 sq ft)' }
+        ]
+      },
+      { id: 'wastePercent', label: 'Waste allowance (%)', type: 'percent', placeholder: '10', defaultValue: 10, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Drywall Calculator – Sheets Needed for a Room',
+      description: 'Free drywall calculator: how many sheets of drywall a room needs from its dimensions, doors, windows, sheet size and an optional ceiling, with a waste allowance.',
+      faq: [
+        { question: 'How many sheets of drywall do I need?', answer: 'Find the net wall area (2 × (length + width) × height, minus about 20 sq ft per door and 15 sq ft per window), divide by your sheet’s coverage, add a waste allowance, and round up. A 14×12 ft room with 9 ft ceilings, one door, two windows and 10% waste needs 15 standard 4×8 ft sheets.' },
+        { question: 'What size does drywall come in?', answer: 'USG’s own installation guide and major retailers list 4×8 ft (32 sq ft) as the standard, most common size, with 4×10 ft (40 sq ft) and 4×12 ft (48 sq ft) available for taller walls or longer runs with fewer seams.' },
+        { question: 'How much waste allowance should I use for drywall?', answer: 'Neither USG’s nor a retailer’s own coverage guide states a specific waste figure. 10% is common contractor practice for a simple rectangular room; raise it to 15% or more for a room with many corners, angles, soffits or openings.' },
+        { question: 'Should I drywall the ceiling at the same time as the walls?', answer: 'It is a separate choice this calculator leaves to you — switching “cover the ceiling too?” to yes adds the room’s length × width to the total area before dividing into sheets.' },
+        { question: 'Is a bigger sheet always better?', answer: 'Fewer, bigger sheets mean fewer seams to tape and finish, but a 4×12 ft sheet is half again as long as a 4×8 ft sheet and proportionally heavier — a 4×8 ft sheet already weighs just over 50 lb per Home Depot’s panel guide — and usually needs a second installer or a panel lifter.' },
+        { question: 'How much drywall does doors and windows save me?', answer: 'About 20 sq ft per standard door and 15 sq ft per standard window are subtracted from the wall area before the sheet count is calculated; larger openings remove more.' },
+        { question: 'Why does the sheet count round up?', answer: 'Drywall is sold in whole sheets, so 14.37 sheets needed becomes 15 bought — the same whole-unit rounding this site’s paint, tile and wallpaper calculators use.' }
+      ]
+    },
+    compute(values) {
+      const wallArea = 2 * (values.roomLength + values.roomWidth) * values.ceilingHeight;
+      const deductions = values.doors * 20 + values.windows * 15;
+      const netWallArea = Math.max(0, wallArea - deductions);
+      const ceilingArea = values.roomLength * values.roomWidth;
+      const totalArea = netWallArea + (values.includeCeiling === 1 ? ceilingArea : 0);
+      const sheetsExact = totalArea / values.sheetSqFt;
+      const sheetsWithWaste = sheetsExact * (1 + values.wastePercent / 100);
+      const sheetsToBuy = Math.ceil(sheetsWithWaste);
+      const coverageBought = sheetsToBuy * values.sheetSqFt;
+      return { wallArea, netWallArea, ceilingArea, totalArea, sheetsExact, sheetsWithWaste, sheetsToBuy, coverageBought };
+    }
   }
 ];

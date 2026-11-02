@@ -172,6 +172,16 @@ what Google's Helpful Content system demotes.
 `india-income-tax-calculator`) are different calculations, not region variants of one page, so
 they don't conflict with D6. Flagged as a decision anyway.
 
+**Decided 2026-11-02: widen the competitive scan beyond Omni, starting next wave.** This whole
+document is Omni-only — nobody has checked what calculator.net, CalculatorSoup, GigaCalculator,
+RapidTables and the other sites that actually rank pages 1–3 for calculator searches cover that
+Omni and we don't. The current plan (this wave table, the ~520 target) stays as-is; nothing here
+changes retroactively. But **before scoping Wave 2 (construction, food, sports) and every wave
+after it**, add a step: search for the top-ranking sites per sector, pull their calculator
+listings, and diff against both Omni's coverage and ours — a calculator a competitor ranks for
+that neither Omni nor we have is exactly the kind of gap worth catching before, not after,
+building a wave. Treat it as one extra planning task per wave, not a separate standalone project.
+
 ### 4.3 Architecture that breaks at 500 calculators (fix before Wave 1)
 
 | Problem | Today | Fix |

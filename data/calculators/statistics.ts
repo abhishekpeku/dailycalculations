@@ -396,6 +396,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'mean-median-mode-calculator',
     category: 'statistics',
+    group: 'Descriptive Statistics',
     glyph: 'x̄',
     updatedAt: '2026-10-22',
     aliases: ['mean median mode calculator', 'measures of central tendency calculator', 'median calculator', 'find the mode calculator', 'central tendency calculator'],
@@ -529,6 +530,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'standard-deviation-calculator',
     category: 'statistics',
+    group: 'Descriptive Statistics',
     glyph: 'σ',
     updatedAt: '2026-10-22',
     aliases: ['std dev calculator', 'standard deviation of a data set calculator', 'population standard deviation calculator', 'sample standard deviation calculator', 'sigma calculator'],
@@ -644,6 +646,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'variance-calculator',
     category: 'statistics',
+    group: 'Descriptive Statistics',
     glyph: 'σ²',
     updatedAt: '2026-10-22',
     aliases: ['variance of a data set calculator', 'population variance calculator', 'sample variance calculator', 'find the variance calculator'],
@@ -757,6 +760,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'z-score-calculator',
     category: 'statistics',
+    group: 'Descriptive Statistics',
     glyph: 'z',
     updatedAt: '2026-10-22',
     aliases: ['z score calculator', 'standard score calculator', 'number of standard deviations calculator', 'z value calculator'],
@@ -878,6 +882,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'percentile-calculator',
     category: 'statistics',
+    group: 'Descriptive Statistics',
     glyph: 'P',
     updatedAt: '2026-10-22',
     aliases: ['percentile rank calculator', 'find the percentile calculator', 'percentile of a data set calculator', 'what percentile calculator'],
@@ -995,6 +1000,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'confidence-interval-calculator',
     category: 'statistics',
+    group: 'Hypothesis Testing',
     glyph: 'CI',
     updatedAt: '2026-10-22',
     aliases: ['confidence interval calculator', 'ci calculator', 'margin of error for a mean calculator', 'confidence interval for the mean calculator'],
@@ -1142,6 +1148,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'margin-of-error-calculator',
     category: 'statistics',
+    group: 'Hypothesis Testing',
     glyph: '±',
     updatedAt: '2026-10-22',
     aliases: ['margin of error calculator', 'survey margin of error calculator', 'poll margin of error calculator', 'error bound for a proportion calculator'],
@@ -1276,6 +1283,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'sample-size-calculator',
     category: 'statistics',
+    group: 'Hypothesis Testing',
     glyph: 'n',
     updatedAt: '2026-10-22',
     aliases: ['sample size calculator', 'survey sample size calculator', 'how many people to survey calculator', 'minimum sample size calculator'],
@@ -1410,6 +1418,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'p-value-calculator',
     category: 'statistics',
+    group: 'Hypothesis Testing',
     glyph: 'p',
     updatedAt: '2026-10-22',
     aliases: ['p value calculator', 'p-value from z score calculator', 'p-value from t score calculator', 'significance calculator'],
@@ -1556,6 +1565,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'quartile-calculator',
     category: 'statistics',
+    group: 'Descriptive Statistics',
     glyph: 'Q',
     updatedAt: '2026-10-22',
     aliases: ['quartile calculator', 'iqr calculator', 'interquartile range calculator', 'find the quartiles calculator', 'q1 q3 calculator'],
@@ -1670,6 +1680,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'probability-calculator',
     category: 'statistics',
+    group: 'Probability',
     glyph: 'P(A)',
     updatedAt: '2026-10-22',
     aliases: ['probability of two events calculator', 'and or probability calculator', 'independent events calculator', 'probability calculator'],
@@ -1788,6 +1799,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'permutation-calculator',
     category: 'statistics',
+    group: 'Probability',
     glyph: 'nPr',
     updatedAt: '2026-10-22',
     aliases: ['npr calculator', 'permutations calculator', 'order matters calculator', 'arrangements calculator'],
@@ -1898,6 +1910,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'combination-calculator',
     category: 'statistics',
+    group: 'Probability',
     glyph: 'nCr',
     updatedAt: '2026-10-22',
     aliases: ['ncr calculator', 'combinations calculator', 'n choose r calculator', 'binomial coefficient calculator'],
@@ -2013,6 +2026,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'binomial-distribution-calculator',
     category: 'statistics',
+    group: 'Probability',
     glyph: 'Bin',
     updatedAt: '2026-10-22',
     aliases: ['binomial probability calculator', 'binomial distribution calculator', 'binomial pmf calculator', 'binomial cdf calculator'],
@@ -2146,6 +2160,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'normal-distribution-calculator',
     category: 'statistics',
+    group: 'Probability',
     glyph: 'φ',
     updatedAt: '2026-10-22',
     aliases: ['normal distribution calculator', 'gaussian distribution calculator', 'bell curve calculator', 'normal probability calculator'],
@@ -2287,6 +2302,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'correlation-calculator',
     category: 'statistics',
+    group: 'Relationships Between Variables',
     glyph: 'r',
     updatedAt: '2026-10-22',
     aliases: ['correlation calculator', 'pearson correlation calculator', 'correlation coefficient calculator', 'r value calculator'],
@@ -2419,6 +2435,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'linear-regression-calculator',
     category: 'statistics',
+    group: 'Relationships Between Variables',
     glyph: 'ŷ',
     updatedAt: '2026-10-22',
     aliases: ['linear regression calculator', 'least squares calculator', 'line of best fit calculator', 'regression equation calculator'],
@@ -2543,6 +2560,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 't-test-calculator',
     category: 'statistics',
+    group: 'Hypothesis Testing',
     glyph: 't',
     updatedAt: '2026-10-22',
     aliases: ['t test calculator', 't-test calculator', 'two sample t test calculator', 'student t test calculator'],
@@ -2732,6 +2750,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'chi-square-calculator',
     category: 'statistics',
+    group: 'Hypothesis Testing',
     glyph: 'χ²',
     updatedAt: '2026-10-22',
     aliases: ['chi square calculator', 'chi-square test calculator', 'goodness of fit calculator', 'chi square p value calculator'],
@@ -2921,6 +2940,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'standard-error-calculator',
     category: 'statistics',
+    group: 'Hypothesis Testing',
     glyph: 'SE',
     updatedAt: '2026-10-22',
     aliases: ['standard error calculator', 'standard error of the mean calculator', 'sem calculator', 'standard error of mean calculator'],
@@ -3048,6 +3068,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'relative-risk-calculator',
     category: 'statistics',
+    group: 'Relationships Between Variables',
     glyph: 'RR',
     updatedAt: '2026-10-23',
     aliases: ['relative risk calculator', 'risk ratio calculator', 'rr calculator', 'cohort study risk ratio calculator'],
@@ -3166,6 +3187,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'odds-ratio-calculator',
     category: 'statistics',
+    group: 'Relationships Between Variables',
     glyph: 'OR',
     updatedAt: '2026-10-23',
     aliases: ['odds ratio calculator', 'or calculator statistics', 'case control odds ratio calculator', 'odds ratio confidence interval calculator'],
@@ -3284,6 +3306,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'expected-value-calculator',
     category: 'statistics',
+    group: 'Probability',
     glyph: 'E(X)',
     updatedAt: '2026-10-23',
     aliases: ['expected value calculator', 'ev calculator', 'expected value of a discrete random variable calculator', 'expected value and variance calculator'],
@@ -3421,6 +3444,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'coefficient-of-variation-calculator',
     category: 'statistics',
+    group: 'Descriptive Statistics',
     glyph: 'CV',
     updatedAt: '2026-10-23',
     aliases: ['coefficient of variation calculator', 'cv calculator', 'relative standard deviation calculator', 'cv statistics calculator'],
@@ -3559,6 +3583,7 @@ export const statisticsCalculators: CalculatorConfig[] = [
   {
     id: 'outlier-calculator',
     category: 'statistics',
+    group: 'Descriptive Statistics',
     glyph: 'out',
     updatedAt: '2026-10-23',
     aliases: ['outlier calculator', 'find outliers calculator', 'outlier detection calculator', 'statistical outlier calculator'],

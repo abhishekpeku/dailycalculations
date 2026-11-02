@@ -272,6 +272,10 @@ export type CalculatorConfig = {
   related: string[];
   /** Extra slugs that 301 to this calculator. */
   redirectFrom?: string[];
+  /** Optional sub-grouping shown as a labeled section within a large category's page (today: the
+   * three categories past SEARCH_THRESHOLD in categories/[category]/page.tsx). Every calculator in
+   * a grouped category must have one — don't leave stragglers ungrouped (see categories.spec.ts). */
+  group?: string;
   title: string;
   description: string;
   example: string;

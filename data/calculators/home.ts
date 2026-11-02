@@ -1034,5 +1034,127 @@ export const homeCalculators: CalculatorConfig[] = [
       const bricksToBuy = Math.ceil(bricksWithWaste);
       return { wallArea, bricksExact, bricksWithWaste, bricksToBuy };
     }
+  },
+  {
+    id: 'gravel-calculator',
+    category: 'home',
+    glyph: 'ton',
+    updatedAt: '2026-11-02',
+    aliases: ['how much gravel do i need', 'gravel tons calculator', 'crushed stone calculator', 'gravel yards calculator', 'driveway gravel calculator'],
+    related: ['sand-calculator', 'concrete-calculator', 'brick-calculator'],
+    title: 'Gravel Calculator',
+    description: 'Find the volume (cubic feet and cubic yards) and weight (tons) of gravel a driveway, path or bed needs from its area and depth, with an editable density for your gravel type and a waste allowance.',
+    example: 'A 50x10 ft driveway base, 4 inches deep in gravel at 1.4 tons per cubic yard, needs 6.17 cubic yards (8.64 tons), or 6.79 cubic yards (9.51 tons) with a 10% waste allowance.',
+    breakdown: {
+      headline: 'tonsWithWaste',
+      headlineLabel: 'Tons to buy',
+      outputs: [
+        { id: 'tonsWithWaste', label: 'Tons to buy', format: 'number' },
+        { id: 'tonsExact', label: 'Tons needed, exact', format: 'number' },
+        { id: 'cubicYardsWithWaste', label: 'Cubic yards to buy', format: 'number' },
+        { id: 'cubicYards', label: 'Cubic yards, exact', format: 'number' },
+        { id: 'cubicFeet', label: 'Cubic feet, exact', format: 'number' }
+      ],
+      groups: [
+        { title: 'Area & depth', inputs: ['areaLength', 'areaWidth', 'depthInches'] },
+        { title: 'Density & waste', inputs: ['densityTonsPerCubicYard', 'wastePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'tonsExact', label: 'Exact tons' },
+          { from: 'tonsWithWaste', label: 'Tons to buy' }
+        ],
+        title: 'Gravel needed, exact vs. to buy'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-02',
+      concept: {
+        title: 'How much gravel a driveway or path needs',
+        paragraphs: [
+          'Gravel is bought and delivered by weight (tons), but it is spread by volume — area times depth. Convert between the two with the material’s density: cubic yards times tons per cubic yard gives the tons to order. The area-times-depth part is straightforward (a 50 ft by 10 ft driveway base, 4 inches deep, is 166.67 cubic feet, or 6.17 cubic yards), but the density varies by gravel type, which is why it is an editable field here rather than a fixed constant.',
+          'Mulch Pros Landscape Supply, a real aggregate yard, publishes figures measured on its own scale: #57, #34, #5 and #6 crushed stone and mason/river sand run about 2,700 lb (1.35 tons) per cubic yard, #89 stone and pea gravel about 2,800 lb (1.4 tons), crush & run about 2,900 lb (1.45 tons), and river rock or slate chips about 2,600 lb (1.3 tons). A second landscape supplier, EarthStone Rock, puts general landscape and pea gravel at about 1.35 tons per cubic yard too — the two suppliers broadly agree gravel runs roughly 1.3 to 1.45 tons per cubic yard depending on the specific stone, which is why this calculator defaults to 1.4 (the #89/pea-gravel figure) but lets you type in your own supplier’s number.',
+          'Moisture also changes the real weight a delivery truck carries, since wet gravel weighs more than the same volume dry — EarthStone Rock notes this directly. None of that changes how much volume you need to cover your area at your chosen depth, only how many tons that volume weighs, so entering your supplier’s quoted density (dry or as-delivered) gives the most accurate order weight.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the area and depth, then your gravel’s density and a waste allowance.',
+        steps: [
+          { name: 'Enter the area', text: 'Type the length and width of the driveway, path or bed in feet.' },
+          { name: 'Enter the depth', text: 'Use the thickness in inches — a gravel driveway base is commonly 4 to 6 inches, a path topping 2 to 3 inches.' },
+          { name: 'Set the density', text: 'Keep 1.4 tons per cubic yard for a typical crushed stone or pea gravel, or use your supplier’s own figure — it can run from about 1.3 to 1.45 depending on the stone.' },
+          { name: 'Set the waste allowance', text: 'Keep 10% for settling and an uneven subgrade, or raise it for a larger or less even job.' },
+          { name: 'Read the result', text: 'The headline is the tons to buy; the rows below show the exact cubic feet, cubic yards and tons before waste.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Area times depth gives the volume; volume times density gives the weight, and a waste factor sets what you actually buy.',
+        expression: 'cu ft = L × W × (depth ÷ 12)\ncu yd = cu ft ÷ 27\ntons = cu yd × density\nbuy = cu yd × (1 + waste%) × density',
+        terms: [
+          { symbol: 'L, W', meaning: 'Area length and width, in feet.' },
+          { symbol: 'depth', meaning: 'Depth of gravel, in inches — divide by 12 to get feet.' },
+          { symbol: 'density', meaning: 'Tons per cubic yard for your gravel type; about 1.3–1.45 for most crushed stone and pea gravel, per supplier-measured figures.' },
+          { symbol: 'waste%', meaning: 'Extra percent for settling, compaction and an uneven subgrade; 10% is a common starting point.' }
+        ],
+        note: 'An estimate. Gravel suppliers sell by the ton, and a yard will usually round a delivery up to its nearest standard load size — confirm minimums before ordering.'
+      },
+      workedExample: {
+        intro: 'You are building a 50 ft by 10 ft gravel driveway base, 4 inches deep, using gravel at 1.4 tons per cubic yard with a 10% waste allowance.',
+        rows: [
+          { label: 'Area (50 × 10)', value: '500.00 sq ft' },
+          { label: 'Depth in feet (4 ÷ 12)', value: '0.3333 ft' },
+          { label: 'Cubic feet (500.00 × 0.3333)', value: '166.67 ft³' },
+          { label: 'Cubic yards (166.67 ÷ 27)', value: '6.17 yd³' },
+          { label: 'Tons, exact (6.17 × 1.4)', value: '8.64 tons' },
+          { label: 'Cubic yards with 10% waste (6.17 × 1.10)', value: '6.79 yd³' },
+          { label: 'Tons to buy (6.79 × 1.4)', value: '9.51 tons' }
+        ],
+        result: '9.51 tons to order (8.64 tons exact)',
+        explanation: 'The same area in a denser crush & run (1.45 tons per cubic yard, per Mulch Pros’ own figures) instead of 1.4 would need 9.85 tons with the same 10% waste — about 3.6% more weight for the identical volume, purely from the denser material.'
+      },
+      watchOut: [
+        { title: 'Density varies by gravel type', body: 'Supplier-measured figures put most crushed stone and pea gravel at about 1.3 to 1.45 tons per cubic yard — use your own supplier’s number when you have it instead of the 1.4 default.' },
+        { title: 'Wet gravel weighs more than dry', body: 'A delivery weighed after rain, or stockpiled gravel that has absorbed moisture, weighs more per cubic yard than the same dry volume — ask your supplier whether their quoted density is dry or as-delivered.' },
+        { title: 'Depth drives weight directly', body: 'Volume scales linearly with depth for a fixed area, so doubling the depth (say, from 4 to 8 inches for a heavier-duty base) doubles the tons needed.' },
+        { title: 'Order a little extra for settling', body: 'Loose gravel compacts under traffic and rain, and an uneven subgrade collects more material at low spots than a flat one — the 10% default covers typical settling, more for a rougher site.' },
+        { title: 'Suppliers sell and deliver by the ton, often with a minimum', body: 'Most aggregate yards price and haul by the ton, and many have a minimum delivery size — a small job may cost close to the same as a somewhat larger one once delivery is included.' }
+      ],
+      references: [
+        { label: 'Mulch Pros Landscape Supply, Material Weight and Coverage (own-scale measured tons per cubic yard by stone type)', url: 'https://mulchpros.com/material-weight-and-coverage/' },
+        { label: 'EarthStone Rock, Cubic Yards vs. Tons for Landscape Rock (density range, moisture note)', url: 'https://earthstonerock.com/blogs/landscaping-guides/cubic-yards-vs-tons' }
+      ]
+    },
+    inputs: [
+      { id: 'areaLength', label: 'Area length (ft)', type: 'number', placeholder: '50', defaultValue: 50, step: 0.5, min: 0.5 },
+      { id: 'areaWidth', label: 'Area width (ft)', type: 'number', placeholder: '10', defaultValue: 10, step: 0.5, min: 0.5 },
+      { id: 'depthInches', label: 'Depth (inches)', type: 'number', placeholder: '4', defaultValue: 4, step: 0.5, min: 0.5 },
+      { id: 'densityTonsPerCubicYard', label: 'Density (tons per cubic yard, typical = 1.4)', type: 'number', placeholder: '1.4', defaultValue: 1.4, step: 0.05, min: 0.5 },
+      { id: 'wastePercent', label: 'Waste allowance (%)', type: 'percent', placeholder: '10', defaultValue: 10, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Gravel Calculator – Cubic Yards and Tons Needed',
+      description: 'Free gravel calculator: cubic feet, cubic yards and tons of gravel needed from area and depth, with an editable density for your gravel type and a waste allowance.',
+      faq: [
+        { question: 'How much gravel do I need?', answer: 'Multiply the area by the depth to get volume, convert to cubic yards, then multiply by the gravel’s density in tons per cubic yard. A 50×10 ft base, 4 inches deep, at 1.4 tons/yd³ needs 6.17 cubic yards, 8.64 tons, before waste.' },
+        { question: 'How many tons of gravel are in a cubic yard?', answer: 'It depends on the stone. Supplier-measured figures (Mulch Pros, Earthstone Rock) put most crushed stone and pea gravel at about 1.3 to 1.45 tons per cubic yard — this calculator defaults to 1.4, the #89/pea-gravel figure, but the density field is editable for your own supplier’s number.' },
+        { question: 'Does gravel type really change the weight much?', answer: 'Yes. River rock and slate chips run closer to 1.3 tons per cubic yard in Mulch Pros’ own measurements, while crush & run runs closer to 1.45 — about a 10% difference in weight for the identical volume.' },
+        { question: 'Should I order extra gravel for waste?', answer: 'Yes, a 10% allowance is a common starting point for settling, compaction and an uneven subgrade — more for a larger or rougher job.' },
+        { question: 'How deep should a gravel driveway base be?', answer: 'A gravel driveway base is commonly built 4 to 6 inches deep; a thinner 2 to 3 inch layer is more typical for topping a path, not supporting vehicle loads.' },
+        { question: 'Does wet gravel weigh the same as dry gravel?', answer: 'No — wet gravel weighs more per cubic yard than the same dry volume. If your supplier’s quoted density is a dry figure but the delivery is weighed after rain, the real tonnage can run higher than this estimate.' },
+        { question: 'How do I convert the depth from inches into the formula?', answer: 'Divide the inches by 12 to get feet before multiplying by the area — a 4-inch depth is 4 ÷ 12 = 0.3333 ft.' }
+      ]
+    },
+    compute(values) {
+      const areaSqFt = values.areaLength * values.areaWidth;
+      const depthFt = values.depthInches / 12;
+      const cubicFeet = areaSqFt * depthFt;
+      const cubicYards = cubicFeet / 27;
+      const tonsExact = cubicYards * values.densityTonsPerCubicYard;
+      const cubicYardsWithWaste = cubicYards * (1 + values.wastePercent / 100);
+      const tonsWithWaste = cubicYardsWithWaste * values.densityTonsPerCubicYard;
+      return { cubicFeet, cubicYards, tonsExact, cubicYardsWithWaste, tonsWithWaste };
+    }
   }
 ];

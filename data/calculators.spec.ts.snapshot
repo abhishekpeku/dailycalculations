@@ -2337,6 +2337,59 @@ exports[`compute() snapshots > grams-to-ounces-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > gravel-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "areaLength": 50,
+      "areaWidth": 10,
+      "depthInches": 4,
+      "densityTonsPerCubicYard": 1.4,
+      "wastePercent": 10
+    },
+    "outputs": {
+      "cubicFeet": 166.6666667,
+      "cubicYards": 6.172839506,
+      "tonsExact": 8.641975309,
+      "cubicYardsWithWaste": 6.790123457,
+      "tonsWithWaste": 9.50617284
+    }
+  },
+  "typical": {
+    "inputs": {
+      "areaLength": 75,
+      "areaWidth": 15,
+      "depthInches": 6,
+      "densityTonsPerCubicYard": 2.1,
+      "wastePercent": 15
+    },
+    "outputs": {
+      "cubicFeet": 562.5,
+      "cubicYards": 20.83333333,
+      "tonsExact": 43.75,
+      "cubicYardsWithWaste": 23.95833333,
+      "tonsWithWaste": 50.3125
+    }
+  },
+  "edge": {
+    "inputs": {
+      "areaLength": 0.5,
+      "areaWidth": 0.5,
+      "depthInches": 0.5,
+      "densityTonsPerCubicYard": 0.5,
+      "wastePercent": 0
+    },
+    "outputs": {
+      "cubicFeet": 0.01041666667,
+      "cubicYards": 0.0003858024691,
+      "tonsExact": 0.0001929012346,
+      "cubicYardsWithWaste": 0.0003858024691,
+      "tonsWithWaste": 0.0001929012346
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > horsepower-to-kilowatts-converter 1`] = `
 {
   "default": {

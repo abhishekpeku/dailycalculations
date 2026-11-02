@@ -85,16 +85,28 @@ add one if so (home.ts entries currently have no `group` field at all).
 - [x] Sources fetched directly and independently verified (scratch script) before writing copy
 - [x] `fence-calculator` (committed)
 - [x] `decking-calculator` (committed)
-- [ ] `roofing-calculator`
-- [ ] `roof-pitch-calculator`
-- [ ] `paver-calculator`
-- [ ] Append remaining 3 ids to `calculatorOrder` in `data/calculators/index.ts`
-- [ ] `npm test` (snapshots picked up generically; `npm run test:update` run, diff checked)
-- [ ] `npm run build` and `npm run lint` clean
-- [ ] Programmatic dataset check: ids unique, no self-reference in `related`, no alias collisions,
-  `seo.title`/`seo.description` within budget, 4+ aliases, 5-8 FAQ entries, glyph uniqueness
-- [ ] Visual check: desktop screenshots of all 5 pages, one dark-mode pass, `/categories/home`
-  listing all 16 with correct glyph badges; dev server stopped after
+- [x] `roofing-calculator` (committed)
+- [x] `roof-pitch-calculator` (committed)
+- [x] `paver-calculator` (committed; also cross-linked `gravel-calculator`/`sand-calculator`'s
+  `related` to it)
+- [x] Append all 5 ids to `calculatorOrder` in `data/calculators/index.ts`
+- [x] `npm test` (765/765), `npm run test:update` run after each calculator, diff checked each
+  time (only the new id's snapshot added, numbers match the independent scratch script)
+- [x] `npm run build` (182 static pages, +5 as expected) and
+  `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` (clean)
+- [x] Programmatic dataset check (`check_run2.mjs`): ids unique, no self-reference in `related`,
+  no new alias collisions, `seo.title`/`seo.description` within budget (caught and fixed one
+  161-char `paver-calculator` description), 4+ aliases, 5-8 FAQ entries, glyph uniqueness (all 16
+  `home` glyphs distinct: `gal ft² yd³ roll fit kWh sht brk grv snd bag fnc dek sq X12 pvr`).
+  Found one **pre-existing** alias collision unrelated to this batch ("house loan emi calculator"
+  on both `mortgage-calculator` and `emi-calculator`) — parked, not fixed here (out of scope).
+- [x] Visual check: desktop screenshots of all 5 pages (numbers match the worked examples exactly)
+  and `/categories/home` (16 calculators, distinct glyph badges, search box now showing since 16 >
+  `SEARCH_THRESHOLD` 15 — automatic, no `group` field needed since none of `home.ts`'s calculators
+  have one yet); one dark-mode pass (`roof-pitch-calculator`, forced via
+  `--force-dark-mode --enable-features=WebContentsForceDark`, since `--blink-settings=preferredColorScheme=2`
+  did not actually flip `prefers-color-scheme` in this Chrome build — verified with a throwaway
+  `matchMedia` test page before trusting it). Dev server confirmed stopped (port 3000 free).
 - [ ] Update `mdFiles/STATUS.md` and tick "Construction batch 2" in
   `mdFiles/steps/43-45-wave-2-construction-food-sports.md`
 - [ ] `gh pr ready`

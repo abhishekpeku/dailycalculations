@@ -1322,6 +1322,62 @@ exports[`compute() snapshots > date-difference-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > decking-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "deckWidth": 12,
+      "deckLength": 16,
+      "boardWidthIn": 5.5,
+      "gapIn": 0.1875,
+      "boardLengthFt": 16,
+      "wastePercent": 10
+    },
+    "outputs": {
+      "rowsNeeded": 26,
+      "boardsPerRow": 1,
+      "boardsExact": 26,
+      "boardsWithWaste": 29,
+      "deckArea": 192
+    }
+  },
+  "typical": {
+    "inputs": {
+      "deckWidth": 18,
+      "deckLength": 24,
+      "boardWidthIn": 8.3,
+      "gapIn": 0.3125,
+      "boardLengthFt": 24,
+      "wastePercent": 15
+    },
+    "outputs": {
+      "rowsNeeded": 26,
+      "boardsPerRow": 1,
+      "boardsExact": 26,
+      "boardsWithWaste": 30,
+      "deckArea": 432
+    }
+  },
+  "edge": {
+    "inputs": {
+      "deckWidth": 1,
+      "deckLength": 1,
+      "boardWidthIn": 1,
+      "gapIn": 0,
+      "boardLengthFt": 1,
+      "wastePercent": 0
+    },
+    "outputs": {
+      "rowsNeeded": 12,
+      "boardsPerRow": 1,
+      "boardsExact": 12,
+      "boardsWithWaste": 12,
+      "deckArea": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > discount-calculator 1`] = `
 {
   "default": {
@@ -1874,6 +1930,44 @@ exports[`compute() snapshots > feet-to-meters-converter 1`] = `
     },
     "outputs": {
       "meters": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > fence-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "fenceLength": 100,
+      "panelWidth": 8
+    },
+    "outputs": {
+      "panelsNeeded": 13,
+      "postsNeeded": 15,
+      "actualCoverage": 104
+    }
+  },
+  "typical": {
+    "inputs": {
+      "fenceLength": 150,
+      "panelWidth": 12
+    },
+    "outputs": {
+      "panelsNeeded": 13,
+      "postsNeeded": 15,
+      "actualCoverage": 156
+    }
+  },
+  "edge": {
+    "inputs": {
+      "fenceLength": 1,
+      "panelWidth": 1
+    },
+    "outputs": {
+      "panelsNeeded": 1,
+      "postsNeeded": 3,
+      "actualCoverage": 1
     }
   }
 }

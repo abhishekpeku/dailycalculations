@@ -1396,5 +1396,233 @@ export const homeCalculators: CalculatorConfig[] = [
       const bagsToBuy = Math.ceil(bagsWithWaste);
       return { wallArea, bricksNeeded, bagsExact, bagsWithWaste, bagsToBuy };
     }
+  },
+  {
+    id: 'fence-calculator',
+    category: 'home',
+    glyph: 'fnc',
+    updatedAt: '2026-11-02',
+    aliases: ['how much fencing do i need', 'how many fence posts do i need', 'fence panel calculator', 'fence material calculator', 'fence post calculator'],
+    related: ['decking-calculator', 'paver-calculator', 'concrete-calculator'],
+    title: 'Fence Calculator',
+    description: 'Find how many fence panels and posts a fence run needs from its total length and a panel width, using the same panel-plus-two posts convention published by The Home Depot.',
+    example: 'A 100 ft fence run built with 8 ft panels needs 13 panels (104 ft of coverage once rounded up) and 15 posts, following The Home Depot’s own "panels plus two" posts rule.',
+    breakdown: {
+      headline: 'postsNeeded',
+      headlineLabel: 'Posts needed',
+      outputs: [
+        { id: 'postsNeeded', label: 'Posts needed', format: 'integer' },
+        { id: 'panelsNeeded', label: 'Panels needed', format: 'integer' },
+        { id: 'actualCoverage', label: 'Coverage once rounded to whole panels', format: 'number', dimension: 'length', unit: 'ft' }
+      ],
+      groups: [
+        { title: 'Fence run & panel width', inputs: ['fenceLength', 'panelWidth'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'fenceLength', label: 'Fence length needed' },
+          { from: 'actualCoverage', label: 'Coverage with whole panels' }
+        ],
+        title: 'Fence length vs. coverage once rounded to whole panels'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-02',
+      concept: {
+        title: 'How many panels and posts a fence run needs',
+        paragraphs: [
+          'Fence panels and posts are a matched pair: pre-assembled vinyl and aluminum fence panels are built in fixed widths, almost always 6 ft or 8 ft, and the posts that hold them have to sit exactly that far apart, center to center, or the panel will not fit. That makes panel width and post spacing the same number for panel-based fencing, which is why this calculator asks for only one of them. Divide the total fence length by the panel width and round up to get the number of panels; a 100 ft run built with 8 ft panels needs 13 panels, since 12 panels would only cover 96 ft.',
+          'The Home Depot’s own published fence-building guide gives a simple rule for turning a panel count into a post count: "Add two to the number of panels to determine how many posts you will need." That is one more than the bare geometric minimum of panels-plus-one (which is all a straight, uninterrupted run of shared posts strictly requires), and it is the retailer’s own stated buying rule, not a derived number — it is followed here exactly rather than replaced with a smaller "exact" count, since corners, gate posts and a spare are a normal part of a real fence-building order.',
+          'A site-built fence — rails and pickets attached directly to posts rather than pre-made panels — follows the same post-spacing idea with more freedom: The Home Depot’s guide also recommends positioning posts "every 6-feet to 8-feet" for that style, so the panel-width field doubles as the post-spacing field either way.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the total fence length, then the panel width (or post spacing, for a rail-built fence).',
+        steps: [
+          { name: 'Measure the fence run', text: 'Add up the total length the fence needs to cover, in feet, following the property line or run you are fencing.' },
+          { name: 'Enter the panel width', text: 'Use 8 for standard 8 ft vinyl or aluminum panels, 6 for 6 ft panels, or your own chosen post spacing (6–8 ft is typical) for a rail-built fence.' },
+          { name: 'Read the panels needed', text: 'The fence length divided by the panel width, rounded up to a whole panel.' },
+          { name: 'Read the posts needed', text: 'The headline figure: panels plus two, The Home Depot’s own published rule for panel fencing.' },
+          { name: 'Check the actual coverage', text: 'Rounding up to whole panels almost always covers slightly more than the measured run — the chart shows the difference.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Panels come from the fence length divided by the panel width; posts follow The Home Depot’s own panels-plus-two rule.',
+        expression: 'panels = ⌈ length ÷ panel width ⌉\nposts = panels + 2\ncoverage = panels × panel width',
+        terms: [
+          { symbol: 'length', meaning: 'Total fence run to cover, in feet.' },
+          { symbol: 'panel width', meaning: 'Width of one pre-made panel (commonly 6 or 8 ft), or the chosen post spacing for a rail-built fence.' },
+          { symbol: 'panels', meaning: 'Panels needed, rounded up — a fence can only be built from whole panels.' },
+          { symbol: 'posts', meaning: 'Panels plus two, per The Home Depot’s published fence-building guide.' }
+        ],
+        note: 'An estimate for a single straight run. Corners, gates and slopes typically need extra posts beyond this count — add one post per corner and two per gate opening before ordering.'
+      },
+      workedExample: {
+        intro: 'You are fencing a 100 ft property line with standard 8 ft vinyl panels.',
+        rows: [
+          { label: 'Panels (⌈100 ÷ 8⌉)', value: '13 panels' },
+          { label: 'Posts (13 + 2)', value: '15 posts' },
+          { label: 'Coverage (13 × 8)', value: '104.00 ft' }
+        ],
+        result: '13 panels, 15 posts, 104 ft of coverage',
+        explanation: 'The same 100 ft run built with 6 ft panels instead needs 17 panels (⌈100 ÷ 6⌉ = 17) and 19 posts — more, smaller panels always need more posts for the same length, since posts are spaced closer together.'
+      },
+      watchOut: [
+        { title: 'Corners and gates need extra posts', body: 'This calculator covers one straight run. A fence with corners needs an extra post at each corner (it is shared by two runs, but still a physical post), and a gate opening needs its own two gate posts beyond the panel count.' },
+        { title: 'Panel width varies by manufacturer', body: '6 ft and 8 ft are the two common pre-made panel widths, but always check the specific product — a panel that is a few inches short of a round number changes the post spacing it needs.' },
+        { title: 'Posts are set below the frost line', body: 'How deep a post needs to be set depends on local frost depth and soil, which varies by region — check your local building code or a installer rather than using one fixed depth nationwide.' },
+        { title: 'Rounding up almost always buys slightly more coverage than you measured', body: 'Since panels only come in whole widths, the actual fence built is usually a little longer than the measured run, as in the worked example’s 104 ft of coverage for a 100 ft run.' },
+        { title: 'Post footings are concrete, not fence material', body: 'Setting posts plumb in concrete is standard practice for a permanent fence; this site’s concrete calculator finds the concrete volume for those post holes separately.' }
+      ],
+      references: [
+        { label: 'The Home Depot, "How to Build a Fence" (post spacing and the panels-plus-two posts rule)', url: 'https://www.homedepot.com/c/ah/how-to-build-a-fence/9ba683603be9fa5395fab90a485b4ce' }
+      ]
+    },
+    inputs: [
+      { id: 'fenceLength', label: 'Fence length (ft)', type: 'number', placeholder: '100', defaultValue: 100, step: 1, min: 1 },
+      { id: 'panelWidth', label: 'Panel width / post spacing (ft, 6 or 8 is typical)', type: 'number', placeholder: '8', defaultValue: 8, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Fence Calculator – Panels and Posts Needed',
+      description: 'Free fence calculator: panels and posts needed for any fence run, using The Home Depot’s own panels-plus-two posts rule for panel fencing.',
+      faq: [
+        { question: 'How many fence posts do I need?', answer: 'Divide the fence length by the panel width to get the panels needed, rounding up, then add 2 — The Home Depot’s own published rule for panel fencing. A 100 ft run with 8 ft panels needs 13 panels and 15 posts.' },
+        { question: 'How much fencing do I need?', answer: 'Measure the total length of the run you are fencing. Since panels only come in whole widths, the actual length built (13 × 8 = 104 ft for a 100 ft run) is usually a little more than you measured.' },
+        { question: 'What is the standard width of a fence panel?', answer: '6 ft and 8 ft are the two widths most pre-assembled vinyl and aluminum fence panels come in; post spacing has to match the panel width exactly for the panel to fit.' },
+        { question: 'How far apart should fence posts be for a rail-built fence?', answer: 'The Home Depot’s guide recommends positioning posts every 6 to 8 feet for a picket or rail-built fence, the same range as the common pre-made panel widths.' },
+        { question: 'Do corners and gates need extra posts?', answer: 'Yes. This calculator covers one straight run; add one post per corner and two gate posts per gate opening on top of the calculated total.' },
+        { question: 'Why does the calculator add 2 posts instead of 1?', answer: 'The bare geometric minimum for a straight run of shared posts is panels plus one, but The Home Depot’s own published guide states panels plus two for panel fencing, which better matches a real order with end posts and a small buffer.' },
+        { question: 'How deep should fence posts be set?', answer: 'It depends on local frost depth, soil and fence height, which vary by region — check your local building code or a fencing contractor rather than a single nationwide figure.' }
+      ]
+    },
+    compute(values) {
+      const panelsNeeded = Math.ceil(values.fenceLength / values.panelWidth);
+      const postsNeeded = panelsNeeded + 2;
+      const actualCoverage = panelsNeeded * values.panelWidth;
+      return { panelsNeeded, postsNeeded, actualCoverage };
+    }
+  },
+  {
+    id: 'decking-calculator',
+    category: 'home',
+    glyph: 'dek',
+    updatedAt: '2026-11-02',
+    aliases: ['how many deck boards do i need', 'deck board calculator', 'composite decking calculator', 'deck material calculator', 'decking board spacing calculator'],
+    related: ['fence-calculator', 'paver-calculator', 'concrete-calculator'],
+    title: 'Decking Calculator',
+    description: 'Find how many deck boards a deck needs from its two dimensions, the board width, the gap between boards and the standard board length, with a waste allowance, using Trex’s own published board dimensions and gap spacing.',
+    example: 'A 12x16 ft deck built with 5.5 in wide boards, a 3⁄₁₆ in gap and 16 ft boards needs 26 boards exactly, or 29 with a 10% waste allowance.',
+    breakdown: {
+      headline: 'boardsWithWaste',
+      headlineLabel: 'Boards to buy',
+      outputs: [
+        { id: 'boardsWithWaste', label: 'Boards to buy', format: 'integer' },
+        { id: 'boardsExact', label: 'Boards needed, exact', format: 'number' },
+        { id: 'rowsNeeded', label: 'Rows of boards', format: 'integer' },
+        { id: 'boardsPerRow', label: 'Boards per row', format: 'integer' },
+        { id: 'deckArea', label: 'Deck area', format: 'number', dimension: 'area', unit: 'ft2' }
+      ],
+      groups: [
+        { title: 'Deck size', inputs: ['deckWidth', 'deckLength'] },
+        { title: 'Board size & spacing', inputs: ['boardWidthIn', 'gapIn', 'boardLengthFt'] },
+        { title: 'Waste', inputs: ['wastePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'boardsExact', label: 'Exact boards' },
+          { from: 'boardsWithWaste', label: 'Boards to buy' }
+        ],
+        title: 'Deck boards needed, exact vs. to buy'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-02',
+      concept: {
+        title: 'How many deck boards a deck needs',
+        paragraphs: [
+          'A deck is covered in two directions at once: boards run the length of the deck, laid side by side across its width, with a small gap between each one. Trex’s 2022 Decking Installation Guide lists its standard square-edge boards as .94 in thick by 5.5 in wide, sold in 12, 16 and 20 ft lengths — a width and length range common across composite decking brands. Add the gap to the board width to get how much width each row of decking actually takes up, then divide the deck’s width by that figure, rounded up, to get the number of rows.',
+          'The same guide sets the minimum required width-to-width gap at 3⁄₁₆ in, in any weather, and an end-to-end gap of either 1⁄₈ in (above 40°F) or 3⁄₁₆ in (below 40°F) — composite decking expands and contracts with temperature, so the gap prevents boards from buckling against each other. This calculator uses the 3⁄₁₆ in width-to-width figure as its default, since that is the gap every row’s width depends on.',
+          'The second direction is how many boards it takes to span the deck’s length: divide that length by the board’s own length (rounded up), since a single board that runs short of the deck needs a second board end to end. Multiplying rows by boards-per-row gives the exact board count, and a waste allowance on top covers trim cuts at the edges and the occasional damaged or warped board.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the deck’s two dimensions, then the board size and spacing, then a waste allowance.',
+        steps: [
+          { name: 'Enter the deck width', text: 'The dimension the boards run across, side by side — this sets how many rows of boards you need.' },
+          { name: 'Enter the deck length', text: 'The dimension the boards run along — this sets how many boards it takes to span one row.' },
+          { name: 'Enter the board width and gap', text: 'Trex’s standard board is 5.5 in wide with a minimum 3⁄₁₆ in (0.1875 in) width-to-width gap; use your product’s own label if it differs.' },
+          { name: 'Enter the board length', text: 'Composite decking commonly comes in 12, 16 or 20 ft lengths — use the one closest to your deck’s length to minimize end joints.' },
+          { name: 'Read the result', text: 'The headline is the boards to buy with waste; the rows below show the exact board count, the rows of boards, and boards per row.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Rows come from the deck width divided by one row’s footprint (board width plus gap); boards per row come from the deck length divided by the board length.',
+        expression: 'row width = (board width + gap) ÷ 12\nrows = ⌈ deck width ÷ row width ⌉\nboards per row = ⌈ deck length ÷ board length ⌉\nboards = rows × boards per row\nboards(waste) = ⌈ boards × (1 + waste%) ⌉',
+        terms: [
+          { symbol: 'deck width', meaning: 'The dimension the boards run across, side by side, in feet.' },
+          { symbol: 'deck length', meaning: 'The dimension the boards run along, in feet.' },
+          { symbol: 'board width, gap', meaning: 'The board’s own width and the width-to-width gap, in inches; Trex’s minimum gap is 3⁄₁₆ in.' },
+          { symbol: 'board length', meaning: 'The board’s standard length, in feet — 12, 16 and 20 ft are common.' },
+          { symbol: 'waste%', meaning: 'Extra percent for trim cuts at the deck’s edges and the occasional damaged board.' }
+        ],
+        note: 'An estimate for a simple, single-direction board layout. A picture-frame or diagonal pattern, or a deck with cutouts for posts and stairs, needs more boards than this straightforward rows-times-length calculation.'
+      },
+      workedExample: {
+        intro: 'You are decking a 12 ft by 16 ft deck with 5.5 in wide composite boards, a 3⁄₁₆ in (0.1875 in) gap, 16 ft board lengths and a 10% waste allowance.',
+        rows: [
+          { label: 'Row width ((5.5 + 0.1875) ÷ 12)', value: '0.4740 ft' },
+          { label: 'Rows (⌈12 ÷ 0.4740⌉)', value: '26 rows' },
+          { label: 'Boards per row (⌈16 ÷ 16⌉)', value: '1 board' },
+          { label: 'Boards, exact (26 × 1)', value: '26 boards' },
+          { label: 'With 10% waste (⌈26 × 1.10⌉)', value: '29 boards' }
+        ],
+        result: '29 boards to buy',
+        explanation: 'Choosing 12 ft boards instead of 16 ft for the same 16 ft-long deck would need 2 boards per row (⌈16 ÷ 12⌉ = 2) instead of 1, doubling the board count to 52 exact — always match the board length to the deck’s own length where you can, to cut down on end joints and waste.'
+      },
+      watchOut: [
+        { title: 'The minimum gap depends on temperature', body: 'Trex’s guide sets the end-to-end gap at 1⁄₈ in above 40°F but 3⁄₁₆ in below it, since composite boards contract in cold weather; the width-to-width gap stays at a 3⁄₁₆ in minimum in any weather.' },
+        { title: 'Matching board length to deck length cuts waste', body: 'Boards shorter than the deck’s length need a butt joint partway across, which the exact-board count in this calculator does not add extra boards for — choosing a board length that matches or slightly exceeds the deck’s length avoids that entirely.' },
+        { title: 'Patterns use more board than a straight layout', body: 'A diagonal, herringbone or picture-frame layout wastes more material in cuts than this straightforward rows-times-length calculation assumes; raise the waste allowance for those patterns.' },
+        { title: 'Joist spacing is a separate requirement', body: 'Trex’s own span chart requires joists no more than 16 in on center (residential, 1 in boards) — that is a framing requirement underneath the deck, not a board-count question, and is not covered by this calculator.' },
+        { title: 'Boards are sold by the piece, not cut to length', body: 'You cannot buy a fraction of a board; this calculator already rounds the board count up to a whole number both before and after the waste allowance.' }
+      ],
+      references: [
+        { label: 'Trex Company, Inc., 2022 Decking Installation Guide (board dimensions, gapping requirements, joist spanning)', url: 'https://www.trex.com/content/dam/trex/literature/product-installation/2022-trex-decking-installation-guide.pdf' }
+      ]
+    },
+    inputs: [
+      { id: 'deckWidth', label: 'Deck width — boards run across this (ft)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.5, min: 1 },
+      { id: 'deckLength', label: 'Deck length — boards run along this (ft)', type: 'number', placeholder: '16', defaultValue: 16, step: 0.5, min: 1 },
+      { id: 'boardWidthIn', label: 'Board width (in, Trex standard = 5.5)', type: 'number', placeholder: '5.5', defaultValue: 5.5, step: 0.1, min: 1 },
+      { id: 'gapIn', label: 'Width-to-width gap (in, Trex minimum = 0.1875)', type: 'number', placeholder: '0.1875', defaultValue: 0.1875, step: 0.0625, min: 0 },
+      { id: 'boardLengthFt', label: 'Board length (ft, 12/16/20 are standard)', type: 'number', placeholder: '16', defaultValue: 16, step: 1, min: 1 },
+      { id: 'wastePercent', label: 'Waste allowance (%)', type: 'percent', placeholder: '10', defaultValue: 10, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Decking Calculator – Deck Boards Needed',
+      description: 'Free decking calculator: how many deck boards you need from the deck size, board width, gap spacing and board length, with a waste allowance.',
+      faq: [
+        { question: 'How many deck boards do I need?', answer: 'Divide the deck width by (board width + gap) for the rows, and the deck length by the board length for boards per row, then multiply. A 12x16 ft deck with 5.5 in boards, a 3⁄₁₆ in gap and 16 ft boards needs 26 boards exactly, 29 with a 10% waste allowance.' },
+        { question: 'What gap should I leave between deck boards?', answer: 'Trex’s 2022 Decking Installation Guide sets a minimum 3⁄₁₆ in (0.1875 in) width-to-width gap in any weather, and an end-to-end gap of 1⁄₈ in above 40°F or 3⁄₁₆ in below it.' },
+        { question: 'What length do deck boards come in?', answer: 'Trex’s standard composite boards come in 12, 16 and 20 ft lengths. Matching the board length to your deck’s own length minimizes end joints and waste.' },
+        { question: 'How wide is a standard deck board?', answer: '5.5 in is the standard actual width for Trex’s 1 in square-edge composite boards, a width shared by most composite decking brands.' },
+        { question: 'Why does board length matter for the board count?', answer: 'A board shorter than the deck’s length needs a second board end to end to finish the row. Using 12 ft boards on a 16 ft-long deck needs 2 boards per row instead of 1, doubling the exact board count in the worked example.' },
+        { question: 'How much extra decking should I order for waste?', answer: '10% is a reasonable default for a simple, straight layout; raise it for a diagonal, herringbone or picture-frame pattern, which wastes more material in cuts.' },
+        { question: 'Does this calculator account for joist spacing?', answer: 'No, joist spacing is a framing requirement underneath the deck (Trex’s own span chart calls for 16 in on center for residential 1 in boards), separate from how many boards the decking itself needs.' }
+      ]
+    },
+    compute(values) {
+      const rowWidthFt = (values.boardWidthIn + values.gapIn) / 12;
+      const rowsNeeded = Math.ceil(values.deckWidth / rowWidthFt);
+      const boardsPerRow = Math.ceil(values.deckLength / values.boardLengthFt);
+      const boardsExact = rowsNeeded * boardsPerRow;
+      const boardsWithWaste = Math.ceil(boardsExact * (1 + values.wastePercent / 100));
+      const deckArea = values.deckWidth * values.deckLength;
+      return { rowsNeeded, boardsPerRow, boardsExact, boardsWithWaste, deckArea };
+    }
   }
 ];

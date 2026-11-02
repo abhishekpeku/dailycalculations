@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { calculators, categories } from '@/data/calculators';
 import { SITE_URL } from '@/lib/site';
+import { categoryFileLastModified } from '@/lib/gitDate';
 
 // Home is emitted separately at a lower priority than the calculator pages —
 // the leaf pages are the product (see mdFiles/instructions.md §2.4).
@@ -29,8 +30,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     entry('', 0.6, buildDate),
     ...STATIC_PATHS.map((path) => entry(path, 0.5, buildDate)),
     ...calculators.map((calc) =>
-      entry(`/calculators/${calc.id}`, 0.8, new Date(calc.updatedAt))
+      entry(`/calculators/${calc.id}`, 0.8, categoryFileLastModified(calc.category))
     ),
-    ...categories.map((cat) => entry(`/categories/${cat.id}`, 0.6, buildDate)),
+    ...categories.map((cat) => entry(`/categories/${cat.id}`, 0.6, categoryFileLastModified(cat.id))),
   ];
 }

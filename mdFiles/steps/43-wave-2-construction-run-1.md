@@ -85,19 +85,23 @@ needed this run.
   proposed aliases
 - [x] Sources fetched directly (see above) and independent scratch verification
   (`verify_run1.mjs`) of every worked-example and FAQ figure, before writing any copy
-- [ ] `drywall-calculator`
-- [ ] `brick-calculator`
-- [ ] `gravel-calculator`
-- [ ] `sand-calculator`
-- [ ] `mortar-calculator`
-- [ ] Append all 5 ids to `calculatorOrder` in `data/calculators/index.ts`
-- [ ] Snapshot tests picked up automatically by `data/calculators.spec.ts` (no new test file needed —
+- [x] `drywall-calculator`
+- [x] `brick-calculator`
+- [x] `gravel-calculator`
+- [x] `sand-calculator`
+- [x] `mortar-calculator`
+- [x] Append all 5 ids to `calculatorOrder` in `data/calculators/index.ts`
+- [x] Snapshot tests picked up automatically by `data/calculators.spec.ts` (no new test file needed —
   every `compute()` with non-empty output is snapshotted generically); `npm run test:update` and
   confirm the diff touches only the 5 new ids
-- [ ] `npm test`, `npm run build`,
-  `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` all pass
-- [ ] Visual check: desktop screenshots of all 5 pages, one phone-width, one dark-mode, plus
-  `/categories/home` listing all 11 calculators with glyph badges; kill the dev server after
-- [ ] Update `mdFiles/STATUS.md` (step 43-45 row/notes + session log) and tick "Construction batch 1"
+- [x] `npm test` (759/759), `npm run build` (177 static pages),
+  `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` (clean) all pass
+- [x] Programmatic dataset check (`check_run1.mjs`): ids unique, no self-reference in `related`, no
+  new alias collisions, `seo.title`/`seo.description` within budget (caught and fixed 2 over-budget
+  descriptions), 4+ aliases, 5-8 FAQ entries
+- [x] Visual check: desktop screenshots of all 5 pages, one dark-mode pass, plus `/categories/home`
+  listing all 11 calculators with correct glyph badges; kill the dev server after — done, except a
+  true phone-width screenshot (blocked by a sandbox `resize_window` limitation, see STATUS.md Parked)
+- [x] Update `mdFiles/STATUS.md` (step 43-45 row/notes + session log) and tick "Construction batch 1"
   in `mdFiles/steps/43-45-wave-2-construction-food-sports.md`'s own Progress checklist
-- [ ] `gh pr ready`
+- [x] `gh pr ready`

@@ -93,7 +93,11 @@ and merges.
 
 ## Progress
 
-- [ ] Construction batch 1 (5): TODO
-- [ ] Construction batch 2+ : TODO
+- [x] Construction batch 1 (5): DONE 2026-11-02 — drywall, brick, gravel, sand, mortar calculators.
+  Branch `step/43-wave-2-construction-run-1`, PR #51. Details: `mdFiles/steps/43-wave-2-construction-run-1.md`, `mdFiles/STATUS.md` row 43–45 and session log.
+- [ ] Construction batch 2+ : TODO — remaining candidates from the 23-item list above (mulch,
+  topsoil, fence, decking, roofing/shingle, roof pitch, insulation, flooring, carpet, stair, paver,
+  retaining wall, board foot, rebar, pool/tank volume, siding, AC tonnage/BTU, framing/stud —
+  drywall/brick/gravel/sand/mortar now done), final cut still the build agent's call
 - [ ] Food batches: TODO
 - [ ] Sports batches: TODO

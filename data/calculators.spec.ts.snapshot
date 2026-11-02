@@ -308,6 +308,53 @@ exports[`compute() snapshots > bmi-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > brick-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "wallLength": 18,
+      "wallHeight": 8,
+      "bricksPerSqFt": 6.75,
+      "wastePercent": 5
+    },
+    "outputs": {
+      "wallArea": 144,
+      "bricksExact": 972,
+      "bricksWithWaste": 1020.6,
+      "bricksToBuy": 1021
+    }
+  },
+  "typical": {
+    "inputs": {
+      "wallLength": 27,
+      "wallHeight": 12,
+      "bricksPerSqFt": 10.15,
+      "wastePercent": 8
+    },
+    "outputs": {
+      "wallArea": 324,
+      "bricksExact": 3288.6,
+      "bricksWithWaste": 3551.688,
+      "bricksToBuy": 3552
+    }
+  },
+  "edge": {
+    "inputs": {
+      "wallLength": 1,
+      "wallHeight": 1,
+      "bricksPerSqFt": 0.1,
+      "wastePercent": 0
+    },
+    "outputs": {
+      "wallArea": 1,
+      "bricksExact": 0.1,
+      "bricksWithWaste": 0.1,
+      "bricksToBuy": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > calorie-calculator 1`] = `
 {
   "default": {

@@ -923,5 +923,116 @@ export const homeCalculators: CalculatorConfig[] = [
       const coverageBought = sheetsToBuy * values.sheetSqFt;
       return { wallArea, netWallArea, ceilingArea, totalArea, sheetsExact, sheetsWithWaste, sheetsToBuy, coverageBought };
     }
+  },
+  {
+    id: 'brick-calculator',
+    category: 'home',
+    glyph: 'brk',
+    updatedAt: '2026-11-02',
+    aliases: ['how many bricks do i need', 'brick wall calculator', 'bricks per square foot calculator', 'brickwork calculator', 'brick veneer calculator'],
+    related: ['mortar-calculator', 'concrete-calculator', 'sand-calculator', 'tile-calculator'],
+    title: 'Brick Calculator',
+    description: 'Find how many bricks a wall needs from its length and height, using the standard modular brick size and a waste allowance for cuts and breakage.',
+    example: 'An 18x8 ft wall built with standard modular brick (6.75 bricks per sq ft) needs 972 bricks exactly, or 1,021 with a 5% waste allowance.',
+    breakdown: {
+      headline: 'bricksToBuy',
+      headlineLabel: 'Bricks to buy',
+      outputs: [
+        { id: 'bricksToBuy', label: 'Bricks to buy', format: 'integer' },
+        { id: 'bricksWithWaste', label: 'Bricks needed, with waste', format: 'number' },
+        { id: 'bricksExact', label: 'Bricks needed, exact', format: 'number' },
+        { id: 'wallArea', label: 'Wall area', format: 'number', dimension: 'area', unit: 'ft2' }
+      ],
+      groups: [
+        { title: 'Wall', inputs: ['wallLength', 'wallHeight'] },
+        { title: 'Brick size & waste', inputs: ['bricksPerSqFt', 'wastePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'bricksExact', label: 'Exact bricks' },
+          { from: 'bricksToBuy', label: 'Bricks to buy' }
+        ],
+        title: 'Bricks needed, exact vs. to buy'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-02',
+      concept: {
+        title: 'How many bricks a wall needs',
+        paragraphs: [
+          'The Brick Industry Association’s (BIA) Technical Notes on Brick Construction 10, the standard estimating reference for the industry, uses a “wall-area” method: multiply the net wall area (length × height, minus openings) by a known quantity of brick per square foot. That quantity depends on the brick’s size and its mortar joint, because both set how many bricks fit in a square foot. BIA’s own Table 4 gives modular brick — nominal 4 in. × 2⅔ in. × 8 in. (specified 3⅝ × 2¼ × 7⅝ in.) laid with a standard ⅜ in. mortar joint — at 675 bricks per 100 sq ft, exactly 6.75 bricks per square foot, and that is this calculator’s default.',
+          'Modular brick is the most common size used in North America, per BIA’s own Technical Note, which is why it is the default here, but the reference covers many other named sizes and joint widths — a closure modular brick (4 in. tall) needs only 450 per 100 sq ft, a king-size non-modular brick 455, a Roman brick 600 — each with its own bricks-per-square-foot figure in BIA’s Table 4. The bricks-per-square-foot field here is editable for exactly that reason: swap in the figure for whatever brick size and joint you are actually laying.',
+          'BIA’s own Table 4 figures are the net count, before any waste — the same technical note separately recommends adding at least 5% to the net brick quantity for breakage and waste on the jobsite, more for a job with unusual conditions or a less experienced crew. Since bricks are sold and delivered by the unit (often palletized in round numbers), the final step rounds the brick count with waste up to a whole number.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the wall, then the bricks-per-square-foot figure for your brick and joint size, then a waste allowance.',
+        steps: [
+          { name: 'Enter the wall length and height', text: 'Measure the net area you are building — subtract any large openings like doors or windows first if the wall has them.' },
+          { name: 'Set bricks per square foot', text: 'Keep 6.75 for standard modular brick with a ⅜ in. mortar joint, or use the figure from BIA’s Technical Note 10 (or your brick supplier) for a different size or joint.' },
+          { name: 'Set the waste allowance', text: 'Keep the 5% default — BIA’s own recommended minimum — or raise it for a job with a lot of cuts, corners or an inexperienced crew.' },
+          { name: 'Read the result', text: 'The headline is the bricks to buy; the rows below show the exact brick count and the wall area.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Wall area times a bricks-per-square-foot figure gives the exact count; a waste factor sets what you actually buy.',
+        expression: 'wall area = L × H\nbricks = wall area × bricks/sq ft\nbricks(waste) = bricks × (1 + waste%)\nbuy = ⌈ bricks(waste) ⌉',
+        terms: [
+          { symbol: 'L, H', meaning: 'Wall length and height, in feet (net of any large openings).' },
+          { symbol: 'bricks/sq ft', meaning: 'Bricks needed per square foot of wall for your brick size and joint — 6.75 for standard modular brick with a ⅜ in. joint, per BIA Technical Note 10, Table 4.' },
+          { symbol: 'waste%', meaning: 'Extra percent for breakage and cuts; BIA recommends at least 5%.' }
+        ],
+        note: 'An estimate for a single-wythe running-bond wall. A bond pattern with headers (English, Flemish) needs more brick per square foot — BIA’s Table 6 gives correction factors — and this figure does not include mortar, covered separately by this site’s mortar calculator.'
+      },
+      workedExample: {
+        intro: 'You are building an 18 ft long, 8 ft tall wall with standard modular brick (6.75 bricks per sq ft) and a 5% waste allowance.',
+        rows: [
+          { label: 'Wall area (18 × 8)', value: '144.00 sq ft' },
+          { label: 'Bricks, exact (144.00 × 6.75)', value: '972.00' },
+          { label: 'With 5% waste (972.00 × 1.05)', value: '1,020.60' },
+          { label: 'Bricks to buy (rounded up)', value: '1,021 bricks' }
+        ],
+        result: '1,021 bricks',
+        explanation: 'The same wall built with closure modular brick instead (4.50 bricks per sq ft, per BIA’s Table 4) would need only 648 bricks exact, 681 with the same 5% waste — 340 fewer bricks, because each closure modular brick is taller and covers more wall per unit.'
+      },
+      watchOut: [
+        { title: 'Brick size changes the count a lot', body: 'BIA’s Table 4 lists very different bricks-per-square-foot figures by size — 6.75 for standard modular, 4.50 for closure modular, 6.00 for Roman brick — so using the wrong figure for your actual brick can be off by a large margin.' },
+        { title: 'This covers brick only, not mortar', body: 'Use this site’s mortar calculator alongside it — mortar quantity depends on the same brick size and joint, but is estimated separately because it is bought in bags, not units.' },
+        { title: 'A bond pattern with headers needs more brick', body: 'The 6.75-per-sq-ft figure assumes a running or stack bond. A pattern with headers every few courses (English, Flemish) uses BIA’s own correction factors — for example, full headers every fifth course adds a net ⅕ more brick.' },
+        { title: 'Measure the net wall area', body: 'Subtract any door, window or other large opening from the wall’s gross length × height before entering it here — this calculator does not deduct openings for you.' },
+        { title: 'BIA’s 5% waste is a minimum, not a universal figure', body: 'BIA’s own Technical Note calls 5% “a general rule” and notes that “particular job conditions or experience may warrant using a higher percentage” — an inexperienced crew or an intricate pattern justifies more.' }
+      ],
+      references: [
+        { label: 'Brick Industry Association, Technical Notes on Brick Construction 10 — Dimensioning and Estimating Brick Masonry (Table 4: brick and mortar quantities; brick breakage and waste)', url: 'https://www.gobrick.com/media/file/10-dimensioning-and-estimating-brick-masonry.pdf' }
+      ]
+    },
+    inputs: [
+      { id: 'wallLength', label: 'Wall length (ft)', type: 'number', placeholder: '18', defaultValue: 18, step: 0.5, min: 1 },
+      { id: 'wallHeight', label: 'Wall height (ft)', type: 'number', placeholder: '8', defaultValue: 8, step: 0.5, min: 1 },
+      { id: 'bricksPerSqFt', label: 'Bricks per sq ft (standard modular, ⅜ in. joint = 6.75)', type: 'number', placeholder: '6.75', defaultValue: 6.75, step: 0.05, min: 0.1 },
+      { id: 'wastePercent', label: 'Waste allowance (%)', type: 'percent', placeholder: '5', defaultValue: 5, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Brick Calculator – Bricks Needed for a Wall',
+      description: 'Free brick calculator: how many bricks a wall needs from its length and height, using standard modular brick (6.75 per sq ft) and a waste allowance.',
+      faq: [
+        { question: 'How many bricks do I need for a wall?', answer: 'Multiply the wall’s net area (length × height) by the bricks-per-square-foot figure for your brick size, then add a waste allowance. An 18×8 ft wall in standard modular brick (6.75 per sq ft) needs 972 bricks exact, 1,021 with 5% waste.' },
+        { question: 'How many bricks are in a square foot?', answer: 'For standard US modular brick (3⅝ × 2¼ × 7⅝ in.) with a ⅜ in. mortar joint, the Brick Industry Association’s Technical Note 10 gives 675 bricks per 100 sq ft — 6.75 per square foot — in a single-wythe running-bond wall.' },
+        { question: 'How much extra brick should I buy for waste?', answer: 'The Brick Industry Association’s own estimating guide recommends adding at least 5% to the net brick count for breakage and cuts, more for an intricate pattern or a less experienced crew.' },
+        { question: 'Does brick size change how many I need?', answer: 'Yes, substantially. BIA’s Table 4 lists 6.75 bricks per sq ft for standard modular brick, but only 4.50 for the taller closure modular size and 6.00 for Roman brick — the same wall needs a very different brick count depending on the size.' },
+        { question: 'Does this calculator include mortar?', answer: 'No. Mortar is estimated separately, by bag, using this site’s mortar calculator — brick count and mortar both depend on the same brick size and joint but are bought in different units.' },
+        { question: 'What if my wall uses a pattern with headers, like English or Flemish bond?', answer: 'A header bond uses more brick than a plain running bond. BIA’s correction factors add a fraction on top — for example, full headers every fifth course add a net ⅕ more brick than the running-bond figure.' },
+        { question: 'How do I count bricks for a wall with doors or windows?', answer: 'Subtract the door and window area from the wall’s gross length × height first, then enter that net area’s length and height (or an equivalent length for the same net area) here.' }
+      ]
+    },
+    compute(values) {
+      const wallArea = values.wallLength * values.wallHeight;
+      const bricksExact = wallArea * values.bricksPerSqFt;
+      const bricksWithWaste = bricksExact * (1 + values.wastePercent / 100);
+      const bricksToBuy = Math.ceil(bricksWithWaste);
+      return { wallArea, bricksExact, bricksWithWaste, bricksToBuy };
+    }
   }
 ];

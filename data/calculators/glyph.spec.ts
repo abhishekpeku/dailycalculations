@@ -19,3 +19,22 @@ test('every calculator has a non-empty glyph of at most 4 user-perceived charact
     );
   }
 });
+
+// A glyph's whole job is to tell sibling calculators apart at a glance (menus, category pages,
+// related-calculator cards all show one category's calculators side by side) — a repeat within
+// the same category defeats that, even though it's harmless across different categories. Caught
+// once already (gravel-calculator and sand-calculator both shipped as 'ton'); this is the
+// regression guard for the batches still to come.
+test('no two calculators in the same category share a glyph', () => {
+  const seenByCategory = new Map<string, Map<string, string>>();
+  for (const calculator of calculators) {
+    const seen = seenByCategory.get(calculator.category) ?? new Map<string, string>();
+    seenByCategory.set(calculator.category, seen);
+    const earlierId = seen.get(calculator.glyph);
+    assert.ok(
+      !earlierId,
+      `${calculator.id} and ${earlierId} both use glyph "${calculator.glyph}" in category "${calculator.category}"`
+    );
+    seen.set(calculator.glyph, calculator.id);
+  }
+});

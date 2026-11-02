@@ -1038,7 +1038,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'gravel-calculator',
     category: 'home',
-    glyph: 'ton',
+    glyph: 'grv',
     updatedAt: '2026-11-02',
     aliases: ['how much gravel do i need', 'gravel tons calculator', 'crushed stone calculator', 'gravel yards calculator', 'driveway gravel calculator'],
     related: ['sand-calculator', 'concrete-calculator', 'brick-calculator'],
@@ -1160,7 +1160,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'sand-calculator',
     category: 'home',
-    glyph: 'ton',
+    glyph: 'snd',
     updatedAt: '2026-11-02',
     aliases: ['how much sand do i need', 'sand tons calculator', 'sandbox sand calculator', 'paver sand calculator', 'play sand calculator'],
     related: ['gravel-calculator', 'concrete-calculator', 'brick-calculator'],

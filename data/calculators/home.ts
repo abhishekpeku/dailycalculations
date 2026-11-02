@@ -1041,7 +1041,7 @@ export const homeCalculators: CalculatorConfig[] = [
     glyph: 'grv',
     updatedAt: '2026-11-02',
     aliases: ['how much gravel do i need', 'gravel tons calculator', 'crushed stone calculator', 'gravel yards calculator', 'driveway gravel calculator'],
-    related: ['sand-calculator', 'concrete-calculator', 'brick-calculator'],
+    related: ['sand-calculator', 'concrete-calculator', 'brick-calculator', 'paver-calculator'],
     title: 'Gravel Calculator',
     description: 'Find the volume (cubic feet and cubic yards) and weight (tons) of gravel a driveway, path or bed needs from its area and depth, with an editable density for your gravel type and a waste allowance.',
     example: 'A 50x10 ft driveway base, 4 inches deep in gravel at 1.4 tons per cubic yard, needs 6.17 cubic yards (8.64 tons), or 6.79 cubic yards (9.51 tons) with a 10% waste allowance.',
@@ -1163,7 +1163,7 @@ export const homeCalculators: CalculatorConfig[] = [
     glyph: 'snd',
     updatedAt: '2026-11-02',
     aliases: ['how much sand do i need', 'sand tons calculator', 'sandbox sand calculator', 'paver sand calculator', 'play sand calculator'],
-    related: ['gravel-calculator', 'concrete-calculator', 'brick-calculator'],
+    related: ['gravel-calculator', 'concrete-calculator', 'brick-calculator', 'paver-calculator'],
     title: 'Sand Calculator',
     description: 'Find the volume (cubic feet and cubic yards) and weight (tons) of sand a sandbox, paver base or bedding layer needs from its area and depth, with an editable density for your sand type.',
     example: 'A 6x4 ft sandbox filled 12 inches deep in sand at 1.3 tons per cubic yard needs 0.89 cubic yards (1.16 tons), or 0.98 cubic yards (1.27 tons) with a 10% waste allowance.',
@@ -1395,6 +1395,591 @@ export const homeCalculators: CalculatorConfig[] = [
       const bagsWithWaste = bagsExact * (1 + values.wastePercent / 100);
       const bagsToBuy = Math.ceil(bagsWithWaste);
       return { wallArea, bricksNeeded, bagsExact, bagsWithWaste, bagsToBuy };
+    }
+  },
+  {
+    id: 'fence-calculator',
+    category: 'home',
+    glyph: 'fnc',
+    updatedAt: '2026-11-02',
+    aliases: ['how much fencing do i need', 'how many fence posts do i need', 'fence panel calculator', 'fence material calculator', 'fence post calculator'],
+    related: ['decking-calculator', 'paver-calculator', 'concrete-calculator'],
+    title: 'Fence Calculator',
+    description: 'Find how many fence panels and posts a fence run needs from its total length and a panel width, using the same panel-plus-two posts convention published by The Home Depot.',
+    example: 'A 100 ft fence run built with 8 ft panels needs 13 panels (104 ft of coverage once rounded up) and 15 posts, following The Home Depot’s own "panels plus two" posts rule.',
+    breakdown: {
+      headline: 'postsNeeded',
+      headlineLabel: 'Posts needed',
+      outputs: [
+        { id: 'postsNeeded', label: 'Posts needed', format: 'integer' },
+        { id: 'panelsNeeded', label: 'Panels needed', format: 'integer' },
+        { id: 'actualCoverage', label: 'Coverage once rounded to whole panels', format: 'number', dimension: 'length', unit: 'ft' }
+      ],
+      groups: [
+        { title: 'Fence run & panel width', inputs: ['fenceLength', 'panelWidth'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'fenceLength', label: 'Fence length needed' },
+          { from: 'actualCoverage', label: 'Coverage with whole panels' }
+        ],
+        title: 'Fence length vs. coverage once rounded to whole panels'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-02',
+      concept: {
+        title: 'How many panels and posts a fence run needs',
+        paragraphs: [
+          'Fence panels and posts are a matched pair: pre-assembled vinyl and aluminum fence panels are built in fixed widths, almost always 6 ft or 8 ft, and the posts that hold them have to sit exactly that far apart, center to center, or the panel will not fit. That makes panel width and post spacing the same number for panel-based fencing, which is why this calculator asks for only one of them. Divide the total fence length by the panel width and round up to get the number of panels; a 100 ft run built with 8 ft panels needs 13 panels, since 12 panels would only cover 96 ft.',
+          'The Home Depot’s own published fence-building guide gives a simple rule for turning a panel count into a post count: "Add two to the number of panels to determine how many posts you will need." That is one more than the bare geometric minimum of panels-plus-one (which is all a straight, uninterrupted run of shared posts strictly requires), and it is the retailer’s own stated buying rule, not a derived number — it is followed here exactly rather than replaced with a smaller "exact" count, since corners, gate posts and a spare are a normal part of a real fence-building order.',
+          'A site-built fence — rails and pickets attached directly to posts rather than pre-made panels — follows the same post-spacing idea with more freedom: The Home Depot’s guide also recommends positioning posts "every 6-feet to 8-feet" for that style, so the panel-width field doubles as the post-spacing field either way.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the total fence length, then the panel width (or post spacing, for a rail-built fence).',
+        steps: [
+          { name: 'Measure the fence run', text: 'Add up the total length the fence needs to cover, in feet, following the property line or run you are fencing.' },
+          { name: 'Enter the panel width', text: 'Use 8 for standard 8 ft vinyl or aluminum panels, 6 for 6 ft panels, or your own chosen post spacing (6–8 ft is typical) for a rail-built fence.' },
+          { name: 'Read the panels needed', text: 'The fence length divided by the panel width, rounded up to a whole panel.' },
+          { name: 'Read the posts needed', text: 'The headline figure: panels plus two, The Home Depot’s own published rule for panel fencing.' },
+          { name: 'Check the actual coverage', text: 'Rounding up to whole panels almost always covers slightly more than the measured run — the chart shows the difference.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Panels come from the fence length divided by the panel width; posts follow The Home Depot’s own panels-plus-two rule.',
+        expression: 'panels = ⌈ length ÷ panel width ⌉\nposts = panels + 2\ncoverage = panels × panel width',
+        terms: [
+          { symbol: 'length', meaning: 'Total fence run to cover, in feet.' },
+          { symbol: 'panel width', meaning: 'Width of one pre-made panel (commonly 6 or 8 ft), or the chosen post spacing for a rail-built fence.' },
+          { symbol: 'panels', meaning: 'Panels needed, rounded up — a fence can only be built from whole panels.' },
+          { symbol: 'posts', meaning: 'Panels plus two, per The Home Depot’s published fence-building guide.' }
+        ],
+        note: 'An estimate for a single straight run. Corners, gates and slopes typically need extra posts beyond this count — add one post per corner and two per gate opening before ordering.'
+      },
+      workedExample: {
+        intro: 'You are fencing a 100 ft property line with standard 8 ft vinyl panels.',
+        rows: [
+          { label: 'Panels (⌈100 ÷ 8⌉)', value: '13 panels' },
+          { label: 'Posts (13 + 2)', value: '15 posts' },
+          { label: 'Coverage (13 × 8)', value: '104.00 ft' }
+        ],
+        result: '13 panels, 15 posts, 104 ft of coverage',
+        explanation: 'The same 100 ft run built with 6 ft panels instead needs 17 panels (⌈100 ÷ 6⌉ = 17) and 19 posts — more, smaller panels always need more posts for the same length, since posts are spaced closer together.'
+      },
+      watchOut: [
+        { title: 'Corners and gates need extra posts', body: 'This calculator covers one straight run. A fence with corners needs an extra post at each corner (it is shared by two runs, but still a physical post), and a gate opening needs its own two gate posts beyond the panel count.' },
+        { title: 'Panel width varies by manufacturer', body: '6 ft and 8 ft are the two common pre-made panel widths, but always check the specific product — a panel that is a few inches short of a round number changes the post spacing it needs.' },
+        { title: 'Posts are set below the frost line', body: 'How deep a post needs to be set depends on local frost depth and soil, which varies by region — check your local building code or a installer rather than using one fixed depth nationwide.' },
+        { title: 'Rounding up almost always buys slightly more coverage than you measured', body: 'Since panels only come in whole widths, the actual fence built is usually a little longer than the measured run, as in the worked example’s 104 ft of coverage for a 100 ft run.' },
+        { title: 'Post footings are concrete, not fence material', body: 'Setting posts plumb in concrete is standard practice for a permanent fence; this site’s concrete calculator finds the concrete volume for those post holes separately.' }
+      ],
+      references: [
+        { label: 'The Home Depot, "How to Build a Fence" (post spacing and the panels-plus-two posts rule)', url: 'https://www.homedepot.com/c/ah/how-to-build-a-fence/9ba683603be9fa5395fab90a485b4ce' }
+      ]
+    },
+    inputs: [
+      { id: 'fenceLength', label: 'Fence length (ft)', type: 'number', placeholder: '100', defaultValue: 100, step: 1, min: 1 },
+      { id: 'panelWidth', label: 'Panel width / post spacing (ft, 6 or 8 is typical)', type: 'number', placeholder: '8', defaultValue: 8, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Fence Calculator – Panels and Posts Needed',
+      description: 'Free fence calculator: panels and posts needed for any fence run, using The Home Depot’s own panels-plus-two posts rule for panel fencing.',
+      faq: [
+        { question: 'How many fence posts do I need?', answer: 'Divide the fence length by the panel width to get the panels needed, rounding up, then add 2 — The Home Depot’s own published rule for panel fencing. A 100 ft run with 8 ft panels needs 13 panels and 15 posts.' },
+        { question: 'How much fencing do I need?', answer: 'Measure the total length of the run you are fencing. Since panels only come in whole widths, the actual length built (13 × 8 = 104 ft for a 100 ft run) is usually a little more than you measured.' },
+        { question: 'What is the standard width of a fence panel?', answer: '6 ft and 8 ft are the two widths most pre-assembled vinyl and aluminum fence panels come in; post spacing has to match the panel width exactly for the panel to fit.' },
+        { question: 'How far apart should fence posts be for a rail-built fence?', answer: 'The Home Depot’s guide recommends positioning posts every 6 to 8 feet for a picket or rail-built fence, the same range as the common pre-made panel widths.' },
+        { question: 'Do corners and gates need extra posts?', answer: 'Yes. This calculator covers one straight run; add one post per corner and two gate posts per gate opening on top of the calculated total.' },
+        { question: 'Why does the calculator add 2 posts instead of 1?', answer: 'The bare geometric minimum for a straight run of shared posts is panels plus one, but The Home Depot’s own published guide states panels plus two for panel fencing, which better matches a real order with end posts and a small buffer.' },
+        { question: 'How deep should fence posts be set?', answer: 'It depends on local frost depth, soil and fence height, which vary by region — check your local building code or a fencing contractor rather than a single nationwide figure.' }
+      ]
+    },
+    compute(values) {
+      const panelsNeeded = Math.ceil(values.fenceLength / values.panelWidth);
+      const postsNeeded = panelsNeeded + 2;
+      const actualCoverage = panelsNeeded * values.panelWidth;
+      return { panelsNeeded, postsNeeded, actualCoverage };
+    }
+  },
+  {
+    id: 'decking-calculator',
+    category: 'home',
+    glyph: 'dek',
+    updatedAt: '2026-11-02',
+    aliases: ['how many deck boards do i need', 'deck board calculator', 'composite decking calculator', 'deck material calculator', 'decking board spacing calculator'],
+    related: ['fence-calculator', 'paver-calculator', 'concrete-calculator'],
+    title: 'Decking Calculator',
+    description: 'Find how many deck boards a deck needs from its two dimensions, the board width, the gap between boards and the standard board length, with a waste allowance, using Trex’s own published board dimensions and gap spacing.',
+    example: 'A 12x16 ft deck built with 5.5 in wide boards, a 3⁄₁₆ in gap and 16 ft boards needs 26 boards exactly, or 29 with a 10% waste allowance.',
+    breakdown: {
+      headline: 'boardsWithWaste',
+      headlineLabel: 'Boards to buy',
+      outputs: [
+        { id: 'boardsWithWaste', label: 'Boards to buy', format: 'integer' },
+        { id: 'boardsExact', label: 'Boards needed, exact', format: 'number' },
+        { id: 'rowsNeeded', label: 'Rows of boards', format: 'integer' },
+        { id: 'boardsPerRow', label: 'Boards per row', format: 'integer' },
+        { id: 'deckArea', label: 'Deck area', format: 'number', dimension: 'area', unit: 'ft2' }
+      ],
+      groups: [
+        { title: 'Deck size', inputs: ['deckWidth', 'deckLength'] },
+        { title: 'Board size & spacing', inputs: ['boardWidthIn', 'gapIn', 'boardLengthFt'] },
+        { title: 'Waste', inputs: ['wastePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'boardsExact', label: 'Exact boards' },
+          { from: 'boardsWithWaste', label: 'Boards to buy' }
+        ],
+        title: 'Deck boards needed, exact vs. to buy'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-02',
+      concept: {
+        title: 'How many deck boards a deck needs',
+        paragraphs: [
+          'A deck is covered in two directions at once: boards run the length of the deck, laid side by side across its width, with a small gap between each one. Trex’s 2022 Decking Installation Guide lists its standard square-edge boards as .94 in thick by 5.5 in wide, sold in 12, 16 and 20 ft lengths — a width and length range common across composite decking brands. Add the gap to the board width to get how much width each row of decking actually takes up, then divide the deck’s width by that figure, rounded up, to get the number of rows.',
+          'The same guide sets the minimum required width-to-width gap at 3⁄₁₆ in, in any weather, and an end-to-end gap of either 1⁄₈ in (above 40°F) or 3⁄₁₆ in (below 40°F) — composite decking expands and contracts with temperature, so the gap prevents boards from buckling against each other. This calculator uses the 3⁄₁₆ in width-to-width figure as its default, since that is the gap every row’s width depends on.',
+          'The second direction is how many boards it takes to span the deck’s length: divide that length by the board’s own length (rounded up), since a single board that runs short of the deck needs a second board end to end. Multiplying rows by boards-per-row gives the exact board count, and a waste allowance on top covers trim cuts at the edges and the occasional damaged or warped board.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the deck’s two dimensions, then the board size and spacing, then a waste allowance.',
+        steps: [
+          { name: 'Enter the deck width', text: 'The dimension the boards run across, side by side — this sets how many rows of boards you need.' },
+          { name: 'Enter the deck length', text: 'The dimension the boards run along — this sets how many boards it takes to span one row.' },
+          { name: 'Enter the board width and gap', text: 'Trex’s standard board is 5.5 in wide with a minimum 3⁄₁₆ in (0.1875 in) width-to-width gap; use your product’s own label if it differs.' },
+          { name: 'Enter the board length', text: 'Composite decking commonly comes in 12, 16 or 20 ft lengths — use the one closest to your deck’s length to minimize end joints.' },
+          { name: 'Read the result', text: 'The headline is the boards to buy with waste; the rows below show the exact board count, the rows of boards, and boards per row.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Rows come from the deck width divided by one row’s footprint (board width plus gap); boards per row come from the deck length divided by the board length.',
+        expression: 'row width = (board width + gap) ÷ 12\nrows = ⌈ deck width ÷ row width ⌉\nboards per row = ⌈ deck length ÷ board length ⌉\nboards = rows × boards per row\nboards(waste) = ⌈ boards × (1 + waste%) ⌉',
+        terms: [
+          { symbol: 'deck width', meaning: 'The dimension the boards run across, side by side, in feet.' },
+          { symbol: 'deck length', meaning: 'The dimension the boards run along, in feet.' },
+          { symbol: 'board width, gap', meaning: 'The board’s own width and the width-to-width gap, in inches; Trex’s minimum gap is 3⁄₁₆ in.' },
+          { symbol: 'board length', meaning: 'The board’s standard length, in feet — 12, 16 and 20 ft are common.' },
+          { symbol: 'waste%', meaning: 'Extra percent for trim cuts at the deck’s edges and the occasional damaged board.' }
+        ],
+        note: 'An estimate for a simple, single-direction board layout. A picture-frame or diagonal pattern, or a deck with cutouts for posts and stairs, needs more boards than this straightforward rows-times-length calculation.'
+      },
+      workedExample: {
+        intro: 'You are decking a 12 ft by 16 ft deck with 5.5 in wide composite boards, a 3⁄₁₆ in (0.1875 in) gap, 16 ft board lengths and a 10% waste allowance.',
+        rows: [
+          { label: 'Row width ((5.5 + 0.1875) ÷ 12)', value: '0.4740 ft' },
+          { label: 'Rows (⌈12 ÷ 0.4740⌉)', value: '26 rows' },
+          { label: 'Boards per row (⌈16 ÷ 16⌉)', value: '1 board' },
+          { label: 'Boards, exact (26 × 1)', value: '26 boards' },
+          { label: 'With 10% waste (⌈26 × 1.10⌉)', value: '29 boards' }
+        ],
+        result: '29 boards to buy',
+        explanation: 'Choosing 12 ft boards instead of 16 ft for the same 16 ft-long deck would need 2 boards per row (⌈16 ÷ 12⌉ = 2) instead of 1, doubling the board count to 52 exact — always match the board length to the deck’s own length where you can, to cut down on end joints and waste.'
+      },
+      watchOut: [
+        { title: 'The minimum gap depends on temperature', body: 'Trex’s guide sets the end-to-end gap at 1⁄₈ in above 40°F but 3⁄₁₆ in below it, since composite boards contract in cold weather; the width-to-width gap stays at a 3⁄₁₆ in minimum in any weather.' },
+        { title: 'Matching board length to deck length cuts waste', body: 'Boards shorter than the deck’s length need a butt joint partway across, which the exact-board count in this calculator does not add extra boards for — choosing a board length that matches or slightly exceeds the deck’s length avoids that entirely.' },
+        { title: 'Patterns use more board than a straight layout', body: 'A diagonal, herringbone or picture-frame layout wastes more material in cuts than this straightforward rows-times-length calculation assumes; raise the waste allowance for those patterns.' },
+        { title: 'Joist spacing is a separate requirement', body: 'Trex’s own span chart requires joists no more than 16 in on center (residential, 1 in boards) — that is a framing requirement underneath the deck, not a board-count question, and is not covered by this calculator.' },
+        { title: 'Boards are sold by the piece, not cut to length', body: 'You cannot buy a fraction of a board; this calculator already rounds the board count up to a whole number both before and after the waste allowance.' }
+      ],
+      references: [
+        { label: 'Trex Company, Inc., 2022 Decking Installation Guide (board dimensions, gapping requirements, joist spanning)', url: 'https://www.trex.com/content/dam/trex/literature/product-installation/2022-trex-decking-installation-guide.pdf' }
+      ]
+    },
+    inputs: [
+      { id: 'deckWidth', label: 'Deck width — boards run across this (ft)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.5, min: 1 },
+      { id: 'deckLength', label: 'Deck length — boards run along this (ft)', type: 'number', placeholder: '16', defaultValue: 16, step: 0.5, min: 1 },
+      { id: 'boardWidthIn', label: 'Board width (in, Trex standard = 5.5)', type: 'number', placeholder: '5.5', defaultValue: 5.5, step: 0.1, min: 1 },
+      { id: 'gapIn', label: 'Width-to-width gap (in, Trex minimum = 0.1875)', type: 'number', placeholder: '0.1875', defaultValue: 0.1875, step: 0.0625, min: 0 },
+      { id: 'boardLengthFt', label: 'Board length (ft, 12/16/20 are standard)', type: 'number', placeholder: '16', defaultValue: 16, step: 1, min: 1 },
+      { id: 'wastePercent', label: 'Waste allowance (%)', type: 'percent', placeholder: '10', defaultValue: 10, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Decking Calculator – Deck Boards Needed',
+      description: 'Free decking calculator: how many deck boards you need from the deck size, board width, gap spacing and board length, with a waste allowance.',
+      faq: [
+        { question: 'How many deck boards do I need?', answer: 'Divide the deck width by (board width + gap) for the rows, and the deck length by the board length for boards per row, then multiply. A 12x16 ft deck with 5.5 in boards, a 3⁄₁₆ in gap and 16 ft boards needs 26 boards exactly, 29 with a 10% waste allowance.' },
+        { question: 'What gap should I leave between deck boards?', answer: 'Trex’s 2022 Decking Installation Guide sets a minimum 3⁄₁₆ in (0.1875 in) width-to-width gap in any weather, and an end-to-end gap of 1⁄₈ in above 40°F or 3⁄₁₆ in below it.' },
+        { question: 'What length do deck boards come in?', answer: 'Trex’s standard composite boards come in 12, 16 and 20 ft lengths. Matching the board length to your deck’s own length minimizes end joints and waste.' },
+        { question: 'How wide is a standard deck board?', answer: '5.5 in is the standard actual width for Trex’s 1 in square-edge composite boards, a width shared by most composite decking brands.' },
+        { question: 'Why does board length matter for the board count?', answer: 'A board shorter than the deck’s length needs a second board end to end to finish the row. Using 12 ft boards on a 16 ft-long deck needs 2 boards per row instead of 1, doubling the exact board count in the worked example.' },
+        { question: 'How much extra decking should I order for waste?', answer: '10% is a reasonable default for a simple, straight layout; raise it for a diagonal, herringbone or picture-frame pattern, which wastes more material in cuts.' },
+        { question: 'Does this calculator account for joist spacing?', answer: 'No, joist spacing is a framing requirement underneath the deck (Trex’s own span chart calls for 16 in on center for residential 1 in boards), separate from how many boards the decking itself needs.' }
+      ]
+    },
+    compute(values) {
+      const rowWidthFt = (values.boardWidthIn + values.gapIn) / 12;
+      const rowsNeeded = Math.ceil(values.deckWidth / rowWidthFt);
+      const boardsPerRow = Math.ceil(values.deckLength / values.boardLengthFt);
+      const boardsExact = rowsNeeded * boardsPerRow;
+      const boardsWithWaste = Math.ceil(boardsExact * (1 + values.wastePercent / 100));
+      const deckArea = values.deckWidth * values.deckLength;
+      return { rowsNeeded, boardsPerRow, boardsExact, boardsWithWaste, deckArea };
+    }
+  },
+  {
+    id: 'roofing-calculator',
+    category: 'home',
+    glyph: 'sq',
+    updatedAt: '2026-11-02',
+    aliases: ['roof shingles calculator', 'roofing squares calculator', 'how many bundles of shingles do i need', 'shingle calculator', 'roof square footage calculator'],
+    related: ['roof-pitch-calculator', 'fence-calculator', 'decking-calculator'],
+    title: 'Roofing Calculator',
+    description: 'Find how many roofing squares and shingle bundles a roof needs from its footprint and pitch, with a waste allowance and GAF’s own published bundles-per-square figure.',
+    example: 'A 40x30 ft footprint (1,200 sq ft) at a 6-in-12 pitch has an actual roof area of 1,341.64 sq ft, or about 14.76 squares with a 10% waste allowance — 45 bundles at GAF’s 3 bundles per square.',
+    breakdown: {
+      headline: 'bundlesNeeded',
+      headlineLabel: 'Bundles to buy',
+      outputs: [
+        { id: 'bundlesNeeded', label: 'Bundles to buy', format: 'integer' },
+        { id: 'squaresNeeded', label: 'Roofing squares, with waste', format: 'number' },
+        { id: 'roofAreaWithWaste', label: 'Roof area, with waste', format: 'number', dimension: 'area', unit: 'ft2' },
+        { id: 'roofArea', label: 'Actual roof area (sloped)', format: 'number', dimension: 'area', unit: 'ft2' },
+        { id: 'footprintArea', label: 'Footprint area (flat)', format: 'number', dimension: 'area', unit: 'ft2' }
+      ],
+      groups: [
+        { title: 'Roof footprint', inputs: ['footprintLength', 'footprintWidth'] },
+        { title: 'Pitch & waste', inputs: ['roofPitchRise', 'wastePercent'] },
+        { title: 'Shingle coverage', inputs: ['bundlesPerSquare'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'footprintArea', label: 'Flat footprint' },
+          { from: 'roofArea', label: 'Actual sloped roof area' }
+        ],
+        title: 'Footprint area vs. actual sloped roof area'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-02',
+      concept: {
+        title: 'How many squares and bundles of shingles a roof needs',
+        paragraphs: [
+          'A sloped roof always covers more actual surface than the flat footprint of the house underneath it, because the roof plane is tilted. The ratio between the two — the pitch multiplier — follows directly from the Pythagorean theorem applied to the standard way roof pitch is expressed: a rise of some number of inches for every 12 inches of horizontal run. For a 6-in-12 roof, the multiplier is √(1 + (6÷12)²) = √1.25 ≈ 1.118, meaning the real roof surface is about 11.8% more than the flat footprint. Multiply footprint area by this figure to get the actual area to be shingled.',
+          'Roofing is bought and measured in "squares," a roofing-trade unit equal to 100 square feet of actual roof surface — a convention that has nothing to do with the shape of the roof and everything to do with making material estimates comparable across jobs of any size. Shingles themselves are bundled into smaller, liftable packages: GAF’s own product data sheet for its Timberline HDZ shingles, the best-selling shingle in the US, states "Bundles/Square: 3" and "Pieces/Square: 64," meaning each bundle covers about 33.3 square feet. Other product lines bundle differently — some thicker, heavier shingles use 4 or 5 bundles per square — so this figure is editable.',
+          'A waste allowance on top of the squares figure covers the cuts at hips, valleys, ridges and rake edges that a real roof always has, which a simple length-times-width footprint calculation does not account for. The final bundle count rounds up, since a partial bundle still has to be bought whole.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the roof’s footprint, its pitch, a waste allowance, and the shingle’s bundles-per-square figure.',
+        steps: [
+          { name: 'Enter the roof footprint', text: 'The length and width of the building’s footprint (or one roof plane at a time, for a complex roof), in feet.' },
+          { name: 'Enter the pitch', text: 'The rise in inches for every 12 inches of horizontal run — 6 is a common moderate pitch.' },
+          { name: 'Set the waste allowance', text: 'Keep 10% for a simple gable roof; raise it toward 15–20% for a roof with hips, valleys or dormers that create more cuts.' },
+          { name: 'Enter the bundles per square', text: 'Check the shingle’s own packaging; GAF’s Timberline HDZ uses 3, but heavier or specialty shingles can use 4 or 5.' },
+          { name: 'Read the result', text: 'The headline is the bundles to buy; the rows below show the squares needed and the actual sloped roof area against the flat footprint.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The pitch multiplier scales the flat footprint up to the actual sloped roof area; squares and bundles follow by division and multiplication.',
+        expression: 'multiplier = √(1 + (rise ÷ 12)²)\nroof area = footprint area × multiplier\narea(waste) = roof area × (1 + waste%)\nsquares = area(waste) ÷ 100\nbundles = ⌈ squares × bundles/square ⌉',
+        terms: [
+          { symbol: 'footprint area', meaning: 'Length × width of the roof’s flat footprint, in square feet.' },
+          { symbol: 'rise', meaning: 'Vertical rise, in inches, for every 12 inches of horizontal run — the standard way US roof pitch is expressed.' },
+          { symbol: 'multiplier', meaning: 'The ratio of actual sloped roof area to flat footprint area, from the Pythagorean theorem.' },
+          { symbol: 'waste%', meaning: 'Extra percent for cuts at hips, valleys, ridges and rake edges.' },
+          { symbol: 'bundles/square', meaning: 'Bundles that make up one 100 sq ft square; 3 for GAF Timberline HDZ, per its own product data sheet.' }
+        ],
+        note: 'An estimate. A roof with multiple planes at different pitches, or a complex hip-and-valley layout, needs each plane measured and summed separately for an exact figure.'
+      },
+      workedExample: {
+        intro: 'A house has a 40 ft by 30 ft footprint, a roof pitch of 6-in-12, a 10% waste allowance, and GAF Timberline HDZ shingles at 3 bundles per square.',
+        rows: [
+          { label: 'Footprint area (40 × 30)', value: '1,200.00 sq ft' },
+          { label: 'Pitch multiplier (√(1 + (6÷12)²))', value: '1.1180' },
+          { label: 'Actual roof area (1,200.00 × 1.1180)', value: '1,341.64 sq ft' },
+          { label: 'With 10% waste (1,341.64 × 1.10)', value: '1,475.80 sq ft' },
+          { label: 'Squares (1,475.80 ÷ 100)', value: '14.76 squares' },
+          { label: 'Bundles (14.76 × 3, rounded up)', value: '45 bundles' }
+        ],
+        result: '14.76 squares, 45 bundles',
+        explanation: 'A steeper 12-in-12 pitch on the same footprint has a multiplier of 1.4142 instead of 1.1180 — a 26.5% larger actual roof area for the identical footprint, which is why a steep roof always needs noticeably more shingle than a shallow one covering the same house.'
+      },
+      watchOut: [
+        { title: 'Pitch changes the real roof area more than it looks', body: 'Going from a 6-in-12 to a 12-in-12 pitch on the same footprint raises the multiplier from 1.118 to 1.414, about 26.5% more actual roof area — a steeper roof is not just a cosmetic choice, it is noticeably more material.' },
+        { title: 'Bundles per square is specific to the product', body: 'GAF’s Timberline HDZ uses 3 bundles per square; its own Woodland-style shingles use 4. Always check the bundle you are actually buying rather than assuming 3.' },
+        { title: 'A hip-and-valley roof wastes more than a simple gable', body: 'More hips, valleys and dormers mean more angled cuts that cannot be reused elsewhere — raise the waste allowance well above 10% for a complex roof shape.' },
+        { title: 'Low-slope roofs need a different system entirely', body: 'Asphalt shingles are a steep-slope product; building codes commonly set 2-in-12 as a minimum slope for them, and the National Roofing Contractors Association recommends 4-in-12 or more as best practice. A flatter roof needs a membrane roofing system, not shingles.' },
+        { title: 'Multiple roof planes need to be measured separately', body: 'This calculator treats the roof as one footprint at one pitch; a roof with wings or additions at different pitches needs each plane’s own footprint and pitch run through separately and the squares added together.' }
+      ],
+      references: [
+        { label: 'GAF, Timberline HDZ Shingles (bundles and pieces per square)', url: 'https://www.gaf.com/en-us/roofing-materials/residential-roofing-materials/shingles/timberline-hdz' },
+        { label: 'National Roofing Contractors Association, "Roof slope guidelines," Professional Roofing, August 2018 (code minimum and NRCA-recommended minimum slope for asphalt shingles)', url: 'https://www.professionalroofing.net/Articles/Roof-slope-guidelines--08-01-2018/4284' }
+      ]
+    },
+    inputs: [
+      { id: 'footprintLength', label: 'Roof footprint length (ft)', type: 'number', placeholder: '40', defaultValue: 40, step: 1, min: 1 },
+      { id: 'footprintWidth', label: 'Roof footprint width (ft)', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1 },
+      { id: 'roofPitchRise', label: 'Pitch — rise per 12 in. of run (in)', type: 'number', placeholder: '6', defaultValue: 6, step: 0.5, min: 0 },
+      { id: 'wastePercent', label: 'Waste allowance (%)', type: 'percent', placeholder: '10', defaultValue: 10, step: 1, min: 0 },
+      { id: 'bundlesPerSquare', label: 'Bundles per square (GAF Timberline HDZ = 3)', type: 'number', placeholder: '3', defaultValue: 3, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Roofing Calculator – Squares and Shingle Bundles Needed',
+      description: 'Free roofing calculator: squares and shingle bundles needed from the roof footprint and pitch, with a waste allowance and GAF’s bundles-per-square figure.',
+      faq: [
+        { question: 'How many squares of shingles do I need?', answer: 'Multiply the footprint area by the pitch multiplier (√(1+(rise÷12)²)) to get the actual roof area, add a waste allowance, then divide by 100. A 1,200 sq ft footprint at 6-in-12 needs about 14.76 squares with 10% waste.' },
+        { question: 'How many bundles of shingles are in a square?', answer: 'It depends on the product. GAF’s Timberline HDZ, a common architectural shingle, uses 3 bundles per 100 sq ft square (64 pieces per square), per GAF’s own product data.' },
+        { question: 'What is a roofing "square"?', answer: 'A roofing-trade unit equal to 100 square feet of actual roof surface — not a shape, just a standard measure used to estimate and price roofing jobs of any size.' },
+        { question: 'How does roof pitch affect how much shingle I need?', answer: 'A steeper pitch means more actual roof surface for the same footprint. A 12-in-12 roof has about 26.5% more surface area than the same footprint at 6-in-12, because the multiplier rises from 1.118 to 1.414.' },
+        { question: 'How much extra shingle should I order for waste?', answer: '10% is a common starting point for a simple gable roof; raise it toward 15–20% for a roof with more hips, valleys or dormers, which create more angled cuts.' },
+        { question: 'What is the minimum roof pitch for asphalt shingles?', answer: 'Building codes commonly allow asphalt shingles down to a 2-in-12 slope, but the National Roofing Contractors Association recommends 4-in-12 or steeper as best practice; flatter roofs need a membrane system instead.' },
+        { question: 'Do all shingle brands use the same bundles-per-square figure?', answer: 'No. GAF’s Timberline HDZ uses 3; some heavier or specialty shingle lines use 4 or 5 bundles per square because each bundle is kept light enough to lift onto the roof.' }
+      ]
+    },
+    compute(values) {
+      const footprintArea = values.footprintLength * values.footprintWidth;
+      const pitchMultiplier = Math.sqrt(1 + (values.roofPitchRise / 12) ** 2);
+      const roofArea = footprintArea * pitchMultiplier;
+      const roofAreaWithWaste = roofArea * (1 + values.wastePercent / 100);
+      const squaresNeeded = roofAreaWithWaste / 100;
+      const bundlesNeeded = Math.ceil(squaresNeeded * values.bundlesPerSquare);
+      return { footprintArea, roofArea, roofAreaWithWaste, squaresNeeded, bundlesNeeded };
+    }
+  },
+  {
+    id: 'roof-pitch-calculator',
+    category: 'home',
+    glyph: 'X12',
+    updatedAt: '2026-11-02',
+    aliases: ['roof pitch to degrees calculator', 'rafter length calculator', 'roof angle calculator', 'roof slope calculator', 'pitch calculator'],
+    related: ['roofing-calculator', 'decking-calculator', 'fence-calculator'],
+    title: 'Roof Pitch Calculator',
+    description: 'Find a roof’s angle in degrees and its rafter length from the pitch (rise per 12 inches of run) and the horizontal run, using the Pythagorean theorem.',
+    example: 'A 6-in-12 pitch over a 12 ft horizontal run has a roof angle of about 26.57° and a rafter length of about 13.42 ft.',
+    breakdown: {
+      headline: 'angleDeg',
+      headlineLabel: 'Roof angle',
+      outputs: [
+        { id: 'angleDeg', label: 'Roof angle (degrees)', format: 'number' },
+        { id: 'pitchMultiplier', label: 'Pitch multiplier (rafter length per ft of run)', format: 'number' },
+        { id: 'rafterLengthFt', label: 'Rafter length', format: 'number', dimension: 'length', unit: 'ft' }
+      ],
+      groups: [
+        { title: 'Pitch', inputs: ['riseIn'] },
+        { title: 'Rafter run', inputs: ['runFt'] }
+      ],
+      visual: {
+        type: 'rangeBar',
+        value: 'angleDeg',
+        title: 'Roof angle against code and NRCA shingle-slope guidance',
+        bands: [
+          { label: 'Below code minimum for shingles (under 2-in-12)', min: 0, max: 9.46 },
+          { label: 'Code minimum, below NRCA’s recommendation', min: 9.46, max: 18.43 },
+          { label: 'Meets NRCA’s recommended minimum (4-in-12+)', min: 18.43, max: 90 }
+        ]
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-02',
+      concept: {
+        title: 'Roof pitch, angle and rafter length',
+        paragraphs: [
+          'US roofing and carpentry express a roof’s steepness as a pitch: the rise in inches for every 12 inches of horizontal run, written as "X in 12" or X:12. Wikipedia’s entry on roof pitch states the convention plainly: "a roof that rises 6 inches for every 12 inches of horizontal run has a slope of 6:12." That ratio is really a tangent — rise over run — so the angle in degrees follows directly from trigonometry: angle = arctan(rise ÷ 12).',
+          'The same rise-and-run triangle gives the rafter length through the Pythagorean theorem. For every 12 inches of run, the rafter covers a hypotenuse of √(12² + rise²) inches — or, as a multiplier per foot of run, √(1 + (rise÷12)²). Multiply that multiplier by the actual horizontal run (commonly half the building’s width, for a common rafter running from the ridge to the wall plate) to get the rafter’s true length, longer than the run itself because it travels up the slope rather than straight across.',
+          'Traditionally, carpenters laid this out on a framing square using the rise-per-12-inches figure directly, without ever computing the angle in degrees at all — Wikipedia notes that framing squares provide "rise-per-unit-run information, which is essential for calculating rafter lengths." The degree figure this calculator shows is useful for a miter saw or an angle finder, but the rise-over-run ratio itself is the older and still most common way the trade measures pitch.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the pitch as a rise per 12 inches of run, then the actual horizontal run the rafter covers.',
+        steps: [
+          { name: 'Enter the rise', text: 'The vertical rise, in inches, for every 12 inches of horizontal run — 6 is a common moderate pitch, written 6-in-12.' },
+          { name: 'Enter the horizontal run', text: 'The actual horizontal distance the rafter spans, in feet — commonly half the building’s width for a simple gable roof.' },
+          { name: 'Read the angle', text: 'The headline figure, in degrees, useful for setting a miter saw or angle finder.' },
+          { name: 'Read the rafter length', text: 'The true sloped length of the rafter, always longer than the horizontal run itself.' },
+          { name: 'Check the slope-guidance band', text: 'The chart shows where the angle falls against the code minimum and NRCA’s recommended minimum for asphalt shingles.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The angle comes from the arctangent of rise over a 12-inch run; the rafter length comes from the Pythagorean theorem applied to the same triangle.',
+        expression: 'multiplier = √(1 + (rise ÷ 12)²)\nangle = arctan(rise ÷ 12)\nrafter length = run × multiplier',
+        terms: [
+          { symbol: 'rise', meaning: 'Vertical rise, in inches, for every 12 inches of horizontal run.' },
+          { symbol: 'run', meaning: 'The actual horizontal distance the rafter spans, in feet.' },
+          { symbol: 'multiplier', meaning: 'Rafter length per foot of horizontal run — also the roof’s area multiplier over its flat footprint.' },
+          { symbol: 'angle', meaning: 'The roof’s slope, in degrees from horizontal.' }
+        ],
+        note: 'An estimate for a simple common rafter with no overhang. A real rafter also needs a small overhang added at the eave and a seat/plumb cut allowance, which a carpenter adds on top of this bare triangle length.'
+      },
+      workedExample: {
+        intro: 'A roof has a 6-in-12 pitch, and the common rafter spans a 12 ft horizontal run from ridge to wall plate.',
+        rows: [
+          { label: 'Multiplier (√(1 + (6÷12)²))', value: '1.1180' },
+          { label: 'Angle (arctan(6÷12))', value: '26.57°' },
+          { label: 'Rafter length (12 × 1.1180)', value: '13.42 ft' }
+        ],
+        result: 'Angle ≈ 26.57°, rafter length ≈ 13.42 ft',
+        explanation: 'A shallower 4-in-12 pitch over a 15 ft run gives an angle of 18.43° and a rafter length of about 15.81 ft — exactly the code-vs-NRCA boundary this calculator’s chart marks, since 4-in-12 is the National Roofing Contractors Association’s own recommended minimum slope for asphalt shingles.'
+      },
+      watchOut: [
+        { title: 'The run is the rafter’s run, not the whole building width', body: 'For a simple gable roof, the common rafter’s horizontal run is normally half the building’s width (ridge to wall), not the full width — use the half-width figure, not the whole span.' },
+        { title: 'This is the bare triangle, not a cut list', body: 'Real rafters need an added eave overhang and the angled plumb and seat cuts at each end; a carpenter adds those on top of this calculator’s raw rafter length.' },
+        { title: 'Degrees and X-in-12 describe the same slope two ways', body: 'A 6-in-12 pitch and a 26.57° angle are the identical slope; carpentry has historically used the rise-per-12-inches figure directly on a framing square, while degrees are more useful for a digital angle finder or miter saw.' },
+        { title: 'Shingles have a recommended minimum slope', body: 'Building codes commonly allow asphalt shingles as low as 2-in-12 (about 9.46°), but the National Roofing Contractors Association recommends 4-in-12 (about 18.43°) or steeper as best practice — this calculator’s chart marks both thresholds.' },
+        { title: 'A hip or valley rafter is a different, steeper calculation', body: 'This calculator covers a common rafter, running straight up the slope. A hip or valley rafter runs at a diagonal across two roof planes and needs its own, longer formula.' }
+      ],
+      references: [
+        { label: 'Wikipedia, "Roof pitch" (the rise/run "X in 12" convention; framing squares)', url: 'https://en.wikipedia.org/wiki/Roof_pitch' },
+        { label: 'National Roofing Contractors Association, "Roof slope guidelines," Professional Roofing, August 2018 (code minimum and recommended minimum slope for asphalt shingles)', url: 'https://www.professionalroofing.net/Articles/Roof-slope-guidelines--08-01-2018/4284' }
+      ]
+    },
+    inputs: [
+      { id: 'riseIn', label: 'Rise (inches per 12 in. of run)', type: 'number', placeholder: '6', defaultValue: 6, step: 0.5, min: 0 },
+      { id: 'runFt', label: 'Horizontal run (ft)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.5, min: 0.1 }
+    ],
+    seo: {
+      title: 'Roof Pitch Calculator – Angle and Rafter Length',
+      description: 'Free roof pitch calculator: find the angle in degrees and the rafter length from a rise-per-12-inch pitch and the horizontal run, using the Pythagorean theorem.',
+      faq: [
+        { question: 'How do I convert roof pitch to degrees?', answer: 'Take the arctangent of the rise divided by 12. A 6-in-12 pitch is arctan(6÷12) ≈ 26.57°.' },
+        { question: 'How do I find rafter length from roof pitch?', answer: 'Multiply the horizontal run by the pitch multiplier, √(1 + (rise÷12)²). A 6-in-12 pitch over a 12 ft run gives a rafter length of about 13.42 ft.' },
+        { question: 'What does "6 in 12" roof pitch mean?', answer: 'The roof rises 6 inches for every 12 inches of horizontal run — the standard US way of expressing roof steepness, also written 6:12.' },
+        { question: 'What is the minimum roof pitch for shingles?', answer: 'Building codes commonly allow asphalt shingles down to 2-in-12 (about 9.46°), but the National Roofing Contractors Association recommends 4-in-12 (about 18.43°) or steeper as best practice.' },
+        { question: 'Is the rafter run the same as half the building width?', answer: 'For a simple gable roof with a common rafter, yes — the horizontal run is normally half the building’s width, from the outside wall to the center ridge.' },
+        { question: 'Why is the rafter longer than the horizontal run?', answer: 'Because the rafter travels up the slope, not straight across. The Pythagorean theorem relates the two: rafter length = run × √(1 + (rise÷12)²), always longer than the run itself for any positive pitch.' },
+        { question: 'Does this calculator add an overhang or cut allowances?', answer: 'No, it gives the bare rise-run-rafter triangle. A real cut list adds an eave overhang and the plumb and seat cuts a carpenter makes at each end of the rafter.' }
+      ]
+    },
+    compute(values) {
+      const pitchMultiplier = Math.sqrt(1 + (values.riseIn / 12) ** 2);
+      const angleDeg = Math.atan(values.riseIn / 12) * (180 / Math.PI);
+      const rafterLengthFt = values.runFt * pitchMultiplier;
+      return { pitchMultiplier, angleDeg, rafterLengthFt };
+    }
+  },
+  {
+    id: 'paver-calculator',
+    category: 'home',
+    glyph: 'pvr',
+    updatedAt: '2026-11-02',
+    aliases: ['how many pavers do i need', 'patio paver calculator', 'paver patio calculator', 'hardscape paver calculator', 'paver base calculator'],
+    related: ['gravel-calculator', 'sand-calculator', 'concrete-calculator'],
+    title: 'Paver Calculator',
+    description: 'Find how many pavers a patio or walkway needs from its area and paver size, with a waste allowance, plus the base gravel and bedding sand volumes from ICPI’s own installation standard.',
+    example: 'A 12x10 ft (120 sq ft) patio laid with 8x4 in pavers needs 540 pavers exactly, or 567 with a 5% waste allowance — plus 1.48 cubic yards of base gravel and 0.37 cubic yards of bedding sand.',
+    breakdown: {
+      headline: 'paversWithWaste',
+      headlineLabel: 'Pavers to buy',
+      outputs: [
+        { id: 'paversWithWaste', label: 'Pavers to buy', format: 'integer' },
+        { id: 'paversExact', label: 'Pavers needed, exact', format: 'number' },
+        { id: 'areaSqFt', label: 'Patio area', format: 'number', dimension: 'area', unit: 'ft2' },
+        { id: 'baseVolumeCuYd', label: 'Base gravel needed', format: 'number' },
+        { id: 'sandVolumeCuYd', label: 'Bedding sand needed', format: 'number' }
+      ],
+      groups: [
+        { title: 'Patio area', inputs: ['areaLength', 'areaWidth'] },
+        { title: 'Paver size & waste', inputs: ['paverLengthIn', 'paverWidthIn', 'wastePercent'] },
+        { title: 'Base & bedding sand depth', inputs: ['baseDepthIn', 'sandDepthIn'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'paversExact', label: 'Exact pavers' },
+          { from: 'paversWithWaste', label: 'Pavers to buy' }
+        ],
+        title: 'Pavers needed, exact vs. to buy'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-02',
+      concept: {
+        title: 'How many pavers, and how much base, a patio needs',
+        paragraphs: [
+          'Pavers are bought by the piece but measured by area, so the first step divides the patio or walkway’s area by the footprint of one paver. A 12 ft by 10 ft patio (120 sq ft) laid with 8 in by 4 in pavers — a common concrete paver size — needs exactly 540 pavers before any waste, since each paver covers 8×4÷144 = 0.2222 square feet. Oregon State University Extension’s own published installation guide puts the waste allowance plainly: "You should always add 5% to this figure, to allow for the pavers that will be cut to fit curves and odd spaces. If you know that you will be cutting a lot of pavers, you should add 10%."',
+          'A paver patio is not just the pavers themselves — it sits on a compacted base and a thin bedding sand layer underneath. The Interlocking Concrete Pavement Institute (ICPI), the trade association for the segmental paving industry, states in its Tech Spec 10 installation guide that "Minimum aggregate base thickness for walks should be 4 to 6 in." and that pavers are set on "Bedding sand nominal 1 in. (25 mm) thick." Oregon State’s extension guide independently confirms both figures, giving the same 4–6 in base range and a 1 in sand layer in its own step-by-step instructions.',
+          'Both the base gravel and the bedding sand are bought by volume — the same area times a depth calculation this site’s gravel and sand calculators already use — so this page converts the patio’s area at the chosen base and sand depths into cubic feet and cubic yards, ready to compare against a supplier’s delivered-by-the-yard pricing.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the patio area, the paver size and a waste allowance, then the base and bedding sand depths.',
+        steps: [
+          { name: 'Enter the patio area', text: 'Type the length and width of the patio or walkway, in feet. For an irregular shape, measure it as a few rectangles and add the areas.' },
+          { name: 'Enter the paver size', text: 'Type the paver’s length and width in inches, as printed on the pack — 8 by 4 in is a common concrete paver size.' },
+          { name: 'Set the waste allowance', text: 'Keep 5% for a simple rectangular layout, per Oregon State Extension’s guide, or raise it to 10% for a lot of cuts, curves or a diagonal pattern.' },
+          { name: 'Set the base and bedding sand depth', text: 'Keep ICPI’s own 4 in base and 1 in bedding sand figures for a pedestrian patio or walkway, or raise the base toward 6–8 in if the area will see vehicle traffic.' },
+          { name: 'Read the result', text: 'The headline is the pavers to buy; the rows below show the exact paver count, the area, and the base gravel and bedding sand volumes.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Area divided by one paver’s footprint gives the exact paver count; the same area times each depth gives the base and sand volumes.',
+        expression: 'paver area = (Lp ÷ 12) × (Wp ÷ 12)\npavers = ⌈ (area ÷ paver area) × (1 + waste%) ⌉\nbase volume = area × (base depth ÷ 12) ÷ 27\nsand volume = area × (sand depth ÷ 12) ÷ 27',
+        terms: [
+          { symbol: 'area', meaning: 'Patio or walkway area to cover, in square feet.' },
+          { symbol: 'Lp, Wp', meaning: 'Paver length and width, in inches.' },
+          { symbol: 'waste%', meaning: 'Extra percent for cuts at curves and edges; 5% for a simple layout, 10% for heavy cutting, per Oregon State Extension.' },
+          { symbol: 'base depth', meaning: 'Compacted aggregate base thickness, in inches; ICPI recommends 4–6 in for walks and patios.' },
+          { symbol: 'sand depth', meaning: 'Bedding sand thickness, in inches; ICPI’s own standard is a nominal 1 in.' }
+        ],
+        note: 'An estimate. Base depth should increase for vehicle traffic or a soft/clay subgrade, per ICPI’s own guidance; always compact the base and screed the bedding sand to a consistent depth before laying pavers.'
+      },
+      workedExample: {
+        intro: 'You are laying a 12 ft by 10 ft patio with 8 in by 4 in pavers, a 5% waste allowance, a 4 in base and a 1 in bedding sand layer.',
+        rows: [
+          { label: 'Area (12 × 10)', value: '120.00 sq ft' },
+          { label: 'Paver footprint ((8÷12) × (4÷12))', value: '0.2222 sq ft' },
+          { label: 'Exact pavers (120.00 ÷ 0.2222)', value: '540.00' },
+          { label: 'With 5% waste (540.00 × 1.05)', value: '567.00' },
+          { label: 'Base volume (120.00 × (4÷12) ÷ 27)', value: '1.48 cu yd' },
+          { label: 'Sand volume (120.00 × (1÷12) ÷ 27)', value: '0.37 cu yd' }
+        ],
+        result: '567 pavers, 1.48 cu yd base gravel, 0.37 cu yd bedding sand',
+        explanation: 'Raising the base depth to ICPI’s 6 in upper figure for the same 120 sq ft patio needs 2.22 cu yd of base instead of 1.48 — 50% more — while the paver and sand figures stay the same, since only the base layer’s thickness changed.'
+      },
+      watchOut: [
+        { title: 'Base depth depends on use, not just the ICPI minimum', body: 'ICPI’s 4–6 in figure is for walks and patios; its own Tech Spec 10 calls for 6–8 in for driveways carrying vehicles, and more over soft or clay subgrades.' },
+        { title: 'Pavers round up in whole units, base and sand round up in whole deliveries', body: 'You cannot buy a fraction of a paver, and most suppliers sell base and sand by the cubic yard or by the bag — check your supplier’s own minimum order and unit size against the calculated volumes.' },
+        { title: 'Bedding sand is not joint sand', body: 'The 1 in bedding sand this calculator computes goes under the pavers, screeded flat before they are laid; sand swept into the joints afterward is a separate, much smaller quantity not covered here.' },
+        { title: 'A complex pattern wastes more than a simple one', body: 'Oregon State Extension’s 5% default suits a straightforward rectangular layout; a 45° or herringbone pattern, or a curved edge, cuts more pavers and should use a higher waste allowance.' },
+        { title: 'Paver size varies widely by product', body: '8 by 4 in is one common size, but concrete pavers are sold in many shapes and sizes from small cobbles to large-format slabs — always use your own product’s printed dimensions.' }
+      ],
+      references: [
+        { label: 'Interlocking Concrete Pavement Institute, Tech Spec 10 — Application Guide for Interlocking Concrete Pavements (base depth, bedding sand thickness)', url: 'https://www.cmha.org/wp-content/uploads/2023/12/TechSpec10-ApplicationGuide2022.pdf' },
+        { label: 'Oregon State University Extension Service, "10-Step Guide to Installing Pavers" (waste allowance, base and bedding sand depth)', url: 'https://extension.oregonstate.edu/sites/extd8/files/documents/1/howtoinstallpavers.pdf' }
+      ]
+    },
+    inputs: [
+      { id: 'areaLength', label: 'Patio length (ft)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.5, min: 0.5 },
+      { id: 'areaWidth', label: 'Patio width (ft)', type: 'number', placeholder: '10', defaultValue: 10, step: 0.5, min: 0.5 },
+      { id: 'paverLengthIn', label: 'Paver length (in)', type: 'number', placeholder: '8', defaultValue: 8, step: 0.5, min: 1 },
+      { id: 'paverWidthIn', label: 'Paver width (in)', type: 'number', placeholder: '4', defaultValue: 4, step: 0.5, min: 1 },
+      { id: 'wastePercent', label: 'Waste allowance (%)', type: 'percent', placeholder: '5', defaultValue: 5, step: 1, min: 0 },
+      { id: 'baseDepthIn', label: 'Base gravel depth (in, ICPI walks/patios = 4–6)', type: 'number', placeholder: '4', defaultValue: 4, step: 0.5, min: 1 },
+      { id: 'sandDepthIn', label: 'Bedding sand depth (in, ICPI nominal = 1)', type: 'number', placeholder: '1', defaultValue: 1, step: 0.25, min: 0.5 }
+    ],
+    seo: {
+      title: 'Paver Calculator – Pavers, Base and Bedding Sand Needed',
+      description: 'Free paver calculator: pavers needed for a patio or walkway, with a waste allowance, plus base gravel and bedding sand volumes from ICPI’s own standard.',
+      faq: [
+        { question: 'How many pavers do I need for a patio?', answer: 'Divide the patio area by one paver’s footprint, then add a waste allowance. A 12×10 ft (120 sq ft) patio with 8×4 in pavers needs 540 pavers exactly, 567 with a 5% waste allowance.' },
+        { question: 'How much extra should I order for cut pavers?', answer: 'Oregon State University Extension’s installation guide recommends adding 5% for a simple layout, or 10% if you know you will be cutting a lot of pavers for curves or odd spaces.' },
+        { question: 'How deep should the base be under pavers?', answer: 'The Interlocking Concrete Pavement Institute’s Tech Spec 10 recommends a 4 to 6 in compacted aggregate base for walks and patios, and 6 to 8 in for driveways carrying vehicles.' },
+        { question: 'How thick should the bedding sand layer be?', answer: 'ICPI’s own standard calls for a nominal 1 in bedding sand layer under the pavers, screeded flat before laying — not used to fill depressions in the base.' },
+        { question: 'How much base gravel and sand do I need in cubic yards?', answer: 'Multiply the patio area by the depth (in feet) and divide by 27. The 120 sq ft worked example needs 1.48 cu yd of base gravel at 4 in deep and 0.37 cu yd of bedding sand at 1 in deep.' },
+        { question: 'Is bedding sand the same as the sand swept into the joints?', answer: 'No. Bedding sand is the 1 in layer the pavers sit on, screeded flat; joint sand is swept into the gaps between pavers afterward, a separate and much smaller quantity.' },
+        { question: 'What paver size does this calculator assume?', answer: '8 by 4 in by default, a common concrete paver size, but the length and width fields work for any rectangular paver — use your own product’s printed dimensions.' }
+      ]
+    },
+    compute(values) {
+      const areaSqFt = values.areaLength * values.areaWidth;
+      const paverSqFt = (values.paverLengthIn / 12) * (values.paverWidthIn / 12);
+      const paversExact = areaSqFt / paverSqFt;
+      const paversWithWaste = Math.ceil(paversExact * (1 + values.wastePercent / 100));
+      const baseVolumeCuYd = (areaSqFt * (values.baseDepthIn / 12)) / 27;
+      const sandVolumeCuYd = (areaSqFt * (values.sandDepthIn / 12)) / 27;
+      return { areaSqFt, paversExact, paversWithWaste, baseVolumeCuYd, sandVolumeCuYd };
     }
   }
 ];

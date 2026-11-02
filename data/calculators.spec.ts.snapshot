@@ -1322,6 +1322,62 @@ exports[`compute() snapshots > date-difference-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > decking-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "deckWidth": 12,
+      "deckLength": 16,
+      "boardWidthIn": 5.5,
+      "gapIn": 0.1875,
+      "boardLengthFt": 16,
+      "wastePercent": 10
+    },
+    "outputs": {
+      "rowsNeeded": 26,
+      "boardsPerRow": 1,
+      "boardsExact": 26,
+      "boardsWithWaste": 29,
+      "deckArea": 192
+    }
+  },
+  "typical": {
+    "inputs": {
+      "deckWidth": 18,
+      "deckLength": 24,
+      "boardWidthIn": 8.3,
+      "gapIn": 0.3125,
+      "boardLengthFt": 24,
+      "wastePercent": 15
+    },
+    "outputs": {
+      "rowsNeeded": 26,
+      "boardsPerRow": 1,
+      "boardsExact": 26,
+      "boardsWithWaste": 30,
+      "deckArea": 432
+    }
+  },
+  "edge": {
+    "inputs": {
+      "deckWidth": 1,
+      "deckLength": 1,
+      "boardWidthIn": 1,
+      "gapIn": 0,
+      "boardLengthFt": 1,
+      "wastePercent": 0
+    },
+    "outputs": {
+      "rowsNeeded": 12,
+      "boardsPerRow": 1,
+      "boardsExact": 12,
+      "boardsWithWaste": 12,
+      "deckArea": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > discount-calculator 1`] = `
 {
   "default": {
@@ -1874,6 +1930,44 @@ exports[`compute() snapshots > feet-to-meters-converter 1`] = `
     },
     "outputs": {
       "meters": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > fence-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "fenceLength": 100,
+      "panelWidth": 8
+    },
+    "outputs": {
+      "panelsNeeded": 13,
+      "postsNeeded": 15,
+      "actualCoverage": 104
+    }
+  },
+  "typical": {
+    "inputs": {
+      "fenceLength": 150,
+      "panelWidth": 12
+    },
+    "outputs": {
+      "panelsNeeded": 13,
+      "postsNeeded": 15,
+      "actualCoverage": 156
+    }
+  },
+  "edge": {
+    "inputs": {
+      "fenceLength": 1,
+      "panelWidth": 1
+    },
+    "outputs": {
+      "panelsNeeded": 1,
+      "postsNeeded": 3,
+      "actualCoverage": 1
     }
   }
 }
@@ -3857,6 +3951,65 @@ exports[`compute() snapshots > paint-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > paver-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "areaLength": 12,
+      "areaWidth": 10,
+      "paverLengthIn": 8,
+      "paverWidthIn": 4,
+      "wastePercent": 5,
+      "baseDepthIn": 4,
+      "sandDepthIn": 1
+    },
+    "outputs": {
+      "areaSqFt": 120,
+      "paversExact": 540,
+      "paversWithWaste": 567,
+      "baseVolumeCuYd": 1.481481481,
+      "sandVolumeCuYd": 0.3703703704
+    }
+  },
+  "typical": {
+    "inputs": {
+      "areaLength": 18,
+      "areaWidth": 15,
+      "paverLengthIn": 12,
+      "paverWidthIn": 6,
+      "wastePercent": 8,
+      "baseDepthIn": 6,
+      "sandDepthIn": 1.5
+    },
+    "outputs": {
+      "areaSqFt": 270,
+      "paversExact": 540,
+      "paversWithWaste": 584,
+      "baseVolumeCuYd": 5,
+      "sandVolumeCuYd": 1.25
+    }
+  },
+  "edge": {
+    "inputs": {
+      "areaLength": 0.5,
+      "areaWidth": 0.5,
+      "paverLengthIn": 1,
+      "paverWidthIn": 1,
+      "wastePercent": 0,
+      "baseDepthIn": 1,
+      "sandDepthIn": 0.5
+    },
+    "outputs": {
+      "areaSqFt": 0.25,
+      "paversExact": 36,
+      "paversWithWaste": 36,
+      "baseVolumeCuYd": 0.0007716049383,
+      "sandVolumeCuYd": 0.0003858024691
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > paycheck-calculator 1`] = `
 {
   "default": {
@@ -4769,6 +4922,97 @@ exports[`compute() snapshots > ring-size-converter 1`] = `
       "euSize": "NaN",
       "diameterMm": 0,
       "circumferenceMm": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > roof-pitch-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "riseIn": 6,
+      "runFt": 12
+    },
+    "outputs": {
+      "pitchMultiplier": 1.118033989,
+      "angleDeg": 26.56505118,
+      "rafterLengthFt": 13.41640786
+    }
+  },
+  "typical": {
+    "inputs": {
+      "riseIn": 9,
+      "runFt": 18
+    },
+    "outputs": {
+      "pitchMultiplier": 1.25,
+      "angleDeg": 36.86989765,
+      "rafterLengthFt": 22.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "riseIn": 0,
+      "runFt": 0.1
+    },
+    "outputs": {
+      "pitchMultiplier": 1,
+      "angleDeg": 0,
+      "rafterLengthFt": 0.1
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > roofing-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "footprintLength": 40,
+      "footprintWidth": 30,
+      "roofPitchRise": 6,
+      "wastePercent": 10,
+      "bundlesPerSquare": 3
+    },
+    "outputs": {
+      "footprintArea": 1200,
+      "roofArea": 1341.640786,
+      "roofAreaWithWaste": 1475.804865,
+      "squaresNeeded": 14.75804865,
+      "bundlesNeeded": 45
+    }
+  },
+  "typical": {
+    "inputs": {
+      "footprintLength": 60,
+      "footprintWidth": 45,
+      "roofPitchRise": 9,
+      "wastePercent": 15,
+      "bundlesPerSquare": 5
+    },
+    "outputs": {
+      "footprintArea": 2700,
+      "roofArea": 3375,
+      "roofAreaWithWaste": 3881.25,
+      "squaresNeeded": 38.8125,
+      "bundlesNeeded": 195
+    }
+  },
+  "edge": {
+    "inputs": {
+      "footprintLength": 1,
+      "footprintWidth": 1,
+      "roofPitchRise": 0,
+      "wastePercent": 0,
+      "bundlesPerSquare": 1
+    },
+    "outputs": {
+      "footprintArea": 1,
+      "roofArea": 1,
+      "roofAreaWithWaste": 1,
+      "squaresNeeded": 0.01,
+      "bundlesNeeded": 1
     }
   }
 }

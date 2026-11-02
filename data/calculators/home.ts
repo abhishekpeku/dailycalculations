@@ -770,5 +770,631 @@ export const homeCalculators: CalculatorConfig[] = [
       const effectiveRatePerKwh = values.monthlyKwh > 0 ? totalBill / values.monthlyKwh : 0;
       return { energyCharge, totalBill, costPerDay, annualBill, effectiveRatePerKwh };
     }
+  },
+  {
+    id: 'drywall-calculator',
+    category: 'home',
+    glyph: 'sht',
+    updatedAt: '2026-11-02',
+    aliases: ['how many sheets of drywall do i need', 'sheetrock calculator', 'gypsum board calculator', 'drywall sheets calculator', 'how much drywall do i need'],
+    related: ['paint-calculator', 'wallpaper-calculator', 'tile-calculator', 'concrete-calculator'],
+    title: 'Drywall Calculator',
+    description: 'Find how many sheets of drywall a room needs from its dimensions, doors, windows and sheet size, with a waste allowance for cuts and breakage, in sheets needed and square feet of coverage.',
+    example: 'A 14x12 ft room with 9 ft ceilings, 1 door and 2 windows needs 15 standard 4x8 ft sheets of drywall (480 sq ft) for the walls alone, with a 10% waste allowance.',
+    breakdown: {
+      headline: 'sheetsToBuy',
+      headlineLabel: 'Sheets to buy',
+      outputs: [
+        { id: 'sheetsToBuy', label: 'Sheets to buy', format: 'integer' },
+        { id: 'sheetsWithWaste', label: 'Sheets needed, with waste', format: 'number' },
+        { id: 'sheetsExact', label: 'Sheets needed, exact', format: 'number' },
+        { id: 'coverageBought', label: 'Coverage bought', format: 'number', dimension: 'area', unit: 'ft2' },
+        { id: 'totalArea', label: 'Area to cover', format: 'number', dimension: 'area', unit: 'ft2' }
+      ],
+      groups: [
+        { title: 'Room', inputs: ['roomLength', 'roomWidth', 'ceilingHeight'] },
+        { title: 'Doors, windows & ceiling', inputs: ['doors', 'windows', 'includeCeiling'] },
+        { title: 'Sheet size & waste', inputs: ['sheetSqFt', 'wastePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'sheetsExact', label: 'Exact sheets' },
+          { from: 'sheetsToBuy', label: 'Sheets to buy' }
+        ],
+        title: 'Sheets needed, exact vs. to buy'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-02',
+      concept: {
+        title: 'How many sheets of drywall a room needs',
+        paragraphs: [
+          'Start from the wall area — the room’s perimeter times the ceiling height, minus the doors and windows you will not cover — the same deduction this site’s paint and wallpaper calculators use, at about 20 sq ft per door and 15 sq ft per window. Divide that area by one sheet’s coverage to get the exact sheet count, then decide whether to cover the ceiling the same way. USG’s own Sheetrock Brand Installation and Finishing Guide walks through exactly this: measure the length and height of each wall, subtract large openings, do the same for the ceiling, then total the square footage and look up the sheet count.',
+          'Drywall is sold in a few standard sizes. USG’s guide and the panels sold at Home Depot and Lowe’s agree on the same three: 4×8 ft (32 sq ft) is the standard, most common size for most rooms; 4×10 ft (40 sq ft) and 4×12 ft (48 sq ft) cover a tall wall or a long run with fewer seams, trading a bigger, heavier, harder-to-maneuver panel for less taping. A 4×8 ft sheet weighs just over 50 lb, per Home Depot’s own panel guide — the longer sizes weigh proportionally more and are harder for one person to carry alone.',
+          'Neither manufacturer’s own guide states a specific waste percentage — their coverage tables assume you already know how many sheets you want, cuts included. In practice, contractors commonly add about 10% on top of the exact count for trim waste and breakage on a simple, rectangular room, and raise that to 15% or more for a room with a lot of corners, angles, or window and door openings that force more cuts. Since sheets are sold whole, the final step always rounds the sheet count (with waste) up.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the room, then its doors, windows and whether you are covering the ceiling, then your sheet size and waste allowance.',
+        steps: [
+          { name: 'Enter the room dimensions', text: 'Type the length, width and ceiling height in feet.' },
+          { name: 'Enter doors and windows', text: 'Count how many of each the walls have; each is subtracted at about 20 and 15 square feet.' },
+          { name: 'Choose whether to include the ceiling', text: 'Select “yes” to add the ceiling’s square footage (length × width) to the total; select “no” for walls only.' },
+          { name: 'Pick your sheet size', text: '4×8 ft (32 sq ft) is standard for most rooms; 4×12 ft (48 sq ft) covers a tall wall or long run in fewer sheets.' },
+          { name: 'Set the waste allowance', text: 'Keep 10% for a simple rectangular room, or raise it for a room with many corners, angles or openings.' },
+          { name: 'Read the result', text: 'The headline is the sheets to buy; the rows below show the exact sheets needed and the square footage you are covering and buying.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Wall area comes from the room’s perimeter and height; doors, windows and an optional ceiling adjust the area, and sheet size and waste set the sheet count.',
+        expression: 'wall area = 2(L + W) × H\nnet wall area = wall area − (doors × 20 + windows × 15)\ntotal area = net wall area, + (L × W) if covering the ceiling\nsheets = total area ÷ sheet size\nbuy = ⌈ sheets × (1 + waste%) ⌉',
+        terms: [
+          { symbol: 'L, W, H', meaning: 'Room length, width and ceiling height, in feet.' },
+          { symbol: 'doors, windows', meaning: 'Count of each; subtracted at about 20 and 15 sq ft apiece.' },
+          { symbol: 'sheet size', meaning: 'Coverage of one sheet, in sq ft — 32 for a 4×8 ft sheet, 48 for a 4×12 ft sheet.' },
+          { symbol: 'waste%', meaning: 'Extra percent for cuts and breakage; 10% is common contractor practice for a simple room.' }
+        ],
+        note: 'An estimate. Soffits, archways, vaulted ceilings and a lot of cutouts for outlets or fixtures all increase the real cut waste beyond a flat percentage; USG’s and other manufacturers’ coverage tables assume you already know the finished sheet count, not a waste allowance on top.'
+      },
+      workedExample: {
+        intro: 'You are drywalling a 14 ft by 12 ft room with 9 ft ceilings, one door, two windows and a 10% waste allowance, using standard 4×8 ft (32 sq ft) sheets, walls only.',
+        rows: [
+          { label: 'Wall area (2 × (14 + 12) × 9)', value: '468.00 sq ft' },
+          { label: 'Deductions (1 × 20 + 2 × 15)', value: '50.00 sq ft' },
+          { label: 'Net wall area (468.00 − 50.00)', value: '418.00 sq ft' },
+          { label: 'Sheets, exact (418.00 ÷ 32)', value: '13.06' },
+          { label: 'With 10% waste (13.0625 × 1.10)', value: '14.37' },
+          { label: 'Sheets to buy (rounded up)', value: '15 sheets' },
+          { label: 'Coverage bought (15 × 32)', value: '480.00 sq ft' }
+        ],
+        result: '15 sheets of 4×8 ft drywall, 480 sq ft bought',
+        explanation: 'Covering the 168 sq ft ceiling too (14 × 12) raises the total to 586 sq ft, 18.31 sheets exact, 20.14 with waste — 21 sheets, 6 more than walls alone. Switching to 4×12 ft (48 sq ft) sheets for the walls-only job instead needs only 10 sheets, since each one covers 50% more area, at the cost of handling a longer, heavier panel.'
+      },
+      watchOut: [
+        { title: 'No manufacturer states a single waste percentage', body: 'USG’s and other brands’ own coverage tables assume you already know the finished sheet count; the 10% waste allowance here reflects common contractor practice for a simple room, not a number either manufacturer publishes.' },
+        { title: 'Complex rooms need more waste', body: 'A room with soffits, archways, a vaulted ceiling or a lot of outlet and fixture cutouts creates more unusable offcuts than a plain rectangular room — raise the waste allowance well above 10% for those.' },
+        { title: 'Bigger sheets are heavier and harder to install alone', body: 'A 4×8 ft sheet weighs just over 50 lb per Home Depot’s own panel guide; a 4×12 ft sheet is half again as long and proportionally heavier, usually needing a second person or a panel lifter.' },
+        { title: 'The ceiling is a separate choice, not automatic', body: 'This calculator only adds the ceiling’s square footage when you select it — leaving it on “no” estimates the walls alone, which is common when a ceiling is already finished or being handled separately.' },
+        { title: 'Sheets are sold whole', body: 'You cannot buy 14.37 sheets; the result always rounds up to 15, the same as paint and tile round up to whole cans and boxes on this site.' }
+      ],
+      references: [
+        { label: 'USG, Sheetrock Brand Installation and Finishing Guide (panel sizes, coverage table, measuring method)', url: 'https://www.usg.com/content/dam/USG/pdpmovedocuments/cgc-sheetrock-gypsum-panels-installation-guide-en-J371.pdf' },
+        { label: 'The Home Depot, Types of Drywall (panel sizes, use cases, weight)', url: 'https://www.homedepot.com/c/ab/types-of-drywall/9ba683603be9fa5395fab90c24feaae' }
+      ]
+    },
+    inputs: [
+      { id: 'roomLength', label: 'Room length (ft)', type: 'number', placeholder: '14', defaultValue: 14, step: 0.5, min: 1 },
+      { id: 'roomWidth', label: 'Room width (ft)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.5, min: 1 },
+      { id: 'ceilingHeight', label: 'Ceiling height (ft)', type: 'number', placeholder: '9', defaultValue: 9, step: 0.5, min: 6 },
+      { id: 'doors', label: 'Number of doors (each ~20 sq ft)', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0 },
+      { id: 'windows', label: 'Number of windows (each ~15 sq ft)', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0 },
+      {
+        id: 'includeCeiling',
+        label: 'Cover the ceiling too?',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'No — walls only' },
+          { value: 1, label: 'Yes — walls and ceiling' }
+        ]
+      },
+      {
+        id: 'sheetSqFt',
+        label: 'Sheet size',
+        type: 'number',
+        placeholder: '32',
+        defaultValue: 32,
+        step: 1,
+        min: 32,
+        options: [
+          { value: 32, label: '4×8 ft (32 sq ft)' },
+          { value: 48, label: '4×12 ft (48 sq ft)' }
+        ]
+      },
+      { id: 'wastePercent', label: 'Waste allowance (%)', type: 'percent', placeholder: '10', defaultValue: 10, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Drywall Calculator – Sheets Needed for a Room',
+      description: 'Free drywall calculator: how many sheets a room needs from its dimensions, doors, windows, sheet size and an optional ceiling, with a waste allowance.',
+      faq: [
+        { question: 'How many sheets of drywall do I need?', answer: 'Find the net wall area (2 × (length + width) × height, minus about 20 sq ft per door and 15 sq ft per window), divide by your sheet’s coverage, add a waste allowance, and round up. A 14×12 ft room with 9 ft ceilings, one door, two windows and 10% waste needs 15 standard 4×8 ft sheets.' },
+        { question: 'What size does drywall come in?', answer: 'USG’s own installation guide and major retailers list 4×8 ft (32 sq ft) as the standard, most common size, with 4×10 ft (40 sq ft) and 4×12 ft (48 sq ft) available for taller walls or longer runs with fewer seams.' },
+        { question: 'How much waste allowance should I use for drywall?', answer: 'Neither USG’s nor a retailer’s own coverage guide states a specific waste figure. 10% is common contractor practice for a simple rectangular room; raise it to 15% or more for a room with many corners, angles, soffits or openings.' },
+        { question: 'Should I drywall the ceiling at the same time as the walls?', answer: 'It is a separate choice this calculator leaves to you — switching “cover the ceiling too?” to yes adds the room’s length × width to the total area before dividing into sheets.' },
+        { question: 'Is a bigger sheet always better?', answer: 'Fewer, bigger sheets mean fewer seams to tape and finish, but a 4×12 ft sheet is half again as long as a 4×8 ft sheet and proportionally heavier — a 4×8 ft sheet already weighs just over 50 lb per Home Depot’s panel guide — and usually needs a second installer or a panel lifter.' },
+        { question: 'How much drywall does doors and windows save me?', answer: 'About 20 sq ft per standard door and 15 sq ft per standard window are subtracted from the wall area before the sheet count is calculated; larger openings remove more.' },
+        { question: 'Why does the sheet count round up?', answer: 'Drywall is sold in whole sheets, so 14.37 sheets needed becomes 15 bought — the same whole-unit rounding this site’s paint, tile and wallpaper calculators use.' }
+      ]
+    },
+    compute(values) {
+      const wallArea = 2 * (values.roomLength + values.roomWidth) * values.ceilingHeight;
+      const deductions = values.doors * 20 + values.windows * 15;
+      const netWallArea = Math.max(0, wallArea - deductions);
+      const ceilingArea = values.roomLength * values.roomWidth;
+      const totalArea = netWallArea + (values.includeCeiling === 1 ? ceilingArea : 0);
+      const sheetsExact = totalArea / values.sheetSqFt;
+      const sheetsWithWaste = sheetsExact * (1 + values.wastePercent / 100);
+      const sheetsToBuy = Math.ceil(sheetsWithWaste);
+      const coverageBought = sheetsToBuy * values.sheetSqFt;
+      return { wallArea, netWallArea, ceilingArea, totalArea, sheetsExact, sheetsWithWaste, sheetsToBuy, coverageBought };
+    }
+  },
+  {
+    id: 'brick-calculator',
+    category: 'home',
+    glyph: 'brk',
+    updatedAt: '2026-11-02',
+    aliases: ['how many bricks do i need', 'brick wall calculator', 'bricks per square foot calculator', 'brickwork calculator', 'brick veneer calculator'],
+    related: ['mortar-calculator', 'concrete-calculator', 'sand-calculator', 'tile-calculator'],
+    title: 'Brick Calculator',
+    description: 'Find how many bricks a wall needs from its length and height, using the standard modular brick size and a waste allowance for cuts and breakage.',
+    example: 'An 18x8 ft wall built with standard modular brick (6.75 bricks per sq ft) needs 972 bricks exactly, or 1,021 with a 5% waste allowance.',
+    breakdown: {
+      headline: 'bricksToBuy',
+      headlineLabel: 'Bricks to buy',
+      outputs: [
+        { id: 'bricksToBuy', label: 'Bricks to buy', format: 'integer' },
+        { id: 'bricksWithWaste', label: 'Bricks needed, with waste', format: 'number' },
+        { id: 'bricksExact', label: 'Bricks needed, exact', format: 'number' },
+        { id: 'wallArea', label: 'Wall area', format: 'number', dimension: 'area', unit: 'ft2' }
+      ],
+      groups: [
+        { title: 'Wall', inputs: ['wallLength', 'wallHeight'] },
+        { title: 'Brick size & waste', inputs: ['bricksPerSqFt', 'wastePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'bricksExact', label: 'Exact bricks' },
+          { from: 'bricksToBuy', label: 'Bricks to buy' }
+        ],
+        title: 'Bricks needed, exact vs. to buy'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-02',
+      concept: {
+        title: 'How many bricks a wall needs',
+        paragraphs: [
+          'The Brick Industry Association’s (BIA) Technical Notes on Brick Construction 10, the standard estimating reference for the industry, uses a “wall-area” method: multiply the net wall area (length × height, minus openings) by a known quantity of brick per square foot. That quantity depends on the brick’s size and its mortar joint, because both set how many bricks fit in a square foot. BIA’s own Table 4 gives modular brick — nominal 4 in. × 2⅔ in. × 8 in. (specified 3⅝ × 2¼ × 7⅝ in.) laid with a standard ⅜ in. mortar joint — at 675 bricks per 100 sq ft, exactly 6.75 bricks per square foot, and that is this calculator’s default.',
+          'Modular brick is the most common size used in North America, per BIA’s own Technical Note, which is why it is the default here, but the reference covers many other named sizes and joint widths — a closure modular brick (4 in. tall) needs only 450 per 100 sq ft, a king-size non-modular brick 455, a Roman brick 600 — each with its own bricks-per-square-foot figure in BIA’s Table 4. The bricks-per-square-foot field here is editable for exactly that reason: swap in the figure for whatever brick size and joint you are actually laying.',
+          'BIA’s own Table 4 figures are the net count, before any waste — the same technical note separately recommends adding at least 5% to the net brick quantity for breakage and waste on the jobsite, more for a job with unusual conditions or a less experienced crew. Since bricks are sold and delivered by the unit (often palletized in round numbers), the final step rounds the brick count with waste up to a whole number.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the wall, then the bricks-per-square-foot figure for your brick and joint size, then a waste allowance.',
+        steps: [
+          { name: 'Enter the wall length and height', text: 'Measure the net area you are building — subtract any large openings like doors or windows first if the wall has them.' },
+          { name: 'Set bricks per square foot', text: 'Keep 6.75 for standard modular brick with a ⅜ in. mortar joint, or use the figure from BIA’s Technical Note 10 (or your brick supplier) for a different size or joint.' },
+          { name: 'Set the waste allowance', text: 'Keep the 5% default — BIA’s own recommended minimum — or raise it for a job with a lot of cuts, corners or an inexperienced crew.' },
+          { name: 'Read the result', text: 'The headline is the bricks to buy; the rows below show the exact brick count and the wall area.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Wall area times a bricks-per-square-foot figure gives the exact count; a waste factor sets what you actually buy.',
+        expression: 'wall area = L × H\nbricks = wall area × bricks/sq ft\nbricks(waste) = bricks × (1 + waste%)\nbuy = ⌈ bricks(waste) ⌉',
+        terms: [
+          { symbol: 'L, H', meaning: 'Wall length and height, in feet (net of any large openings).' },
+          { symbol: 'bricks/sq ft', meaning: 'Bricks needed per square foot of wall for your brick size and joint — 6.75 for standard modular brick with a ⅜ in. joint, per BIA Technical Note 10, Table 4.' },
+          { symbol: 'waste%', meaning: 'Extra percent for breakage and cuts; BIA recommends at least 5%.' }
+        ],
+        note: 'An estimate for a single-wythe running-bond wall. A bond pattern with headers (English, Flemish) needs more brick per square foot — BIA’s Table 6 gives correction factors — and this figure does not include mortar, covered separately by this site’s mortar calculator.'
+      },
+      workedExample: {
+        intro: 'You are building an 18 ft long, 8 ft tall wall with standard modular brick (6.75 bricks per sq ft) and a 5% waste allowance.',
+        rows: [
+          { label: 'Wall area (18 × 8)', value: '144.00 sq ft' },
+          { label: 'Bricks, exact (144.00 × 6.75)', value: '972.00' },
+          { label: 'With 5% waste (972.00 × 1.05)', value: '1,020.60' },
+          { label: 'Bricks to buy (rounded up)', value: '1,021 bricks' }
+        ],
+        result: '1,021 bricks',
+        explanation: 'The same wall built with closure modular brick instead (4.50 bricks per sq ft, per BIA’s Table 4) would need only 648 bricks exact, 681 with the same 5% waste — 340 fewer bricks, because each closure modular brick is taller and covers more wall per unit.'
+      },
+      watchOut: [
+        { title: 'Brick size changes the count a lot', body: 'BIA’s Table 4 lists very different bricks-per-square-foot figures by size — 6.75 for standard modular, 4.50 for closure modular, 6.00 for Roman brick — so using the wrong figure for your actual brick can be off by a large margin.' },
+        { title: 'This covers brick only, not mortar', body: 'Use this site’s mortar calculator alongside it — mortar quantity depends on the same brick size and joint, but is estimated separately because it is bought in bags, not units.' },
+        { title: 'A bond pattern with headers needs more brick', body: 'The 6.75-per-sq-ft figure assumes a running or stack bond. A pattern with headers every few courses (English, Flemish) uses BIA’s own correction factors — for example, full headers every fifth course adds a net ⅕ more brick.' },
+        { title: 'Measure the net wall area', body: 'Subtract any door, window or other large opening from the wall’s gross length × height before entering it here — this calculator does not deduct openings for you.' },
+        { title: 'BIA’s 5% waste is a minimum, not a universal figure', body: 'BIA’s own Technical Note calls 5% “a general rule” and notes that “particular job conditions or experience may warrant using a higher percentage” — an inexperienced crew or an intricate pattern justifies more.' }
+      ],
+      references: [
+        { label: 'Brick Industry Association, Technical Notes on Brick Construction 10 — Dimensioning and Estimating Brick Masonry (Table 4: brick and mortar quantities; brick breakage and waste)', url: 'https://www.gobrick.com/media/file/10-dimensioning-and-estimating-brick-masonry.pdf' }
+      ]
+    },
+    inputs: [
+      { id: 'wallLength', label: 'Wall length (ft)', type: 'number', placeholder: '18', defaultValue: 18, step: 0.5, min: 1 },
+      { id: 'wallHeight', label: 'Wall height (ft)', type: 'number', placeholder: '8', defaultValue: 8, step: 0.5, min: 1 },
+      { id: 'bricksPerSqFt', label: 'Bricks per sq ft (standard modular, ⅜ in. joint = 6.75)', type: 'number', placeholder: '6.75', defaultValue: 6.75, step: 0.05, min: 0.1 },
+      { id: 'wastePercent', label: 'Waste allowance (%)', type: 'percent', placeholder: '5', defaultValue: 5, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Brick Calculator – Bricks Needed for a Wall',
+      description: 'Free brick calculator: how many bricks a wall needs from its length and height, using standard modular brick (6.75 per sq ft) and a waste allowance.',
+      faq: [
+        { question: 'How many bricks do I need for a wall?', answer: 'Multiply the wall’s net area (length × height) by the bricks-per-square-foot figure for your brick size, then add a waste allowance. An 18×8 ft wall in standard modular brick (6.75 per sq ft) needs 972 bricks exact, 1,021 with 5% waste.' },
+        { question: 'How many bricks are in a square foot?', answer: 'For standard US modular brick (3⅝ × 2¼ × 7⅝ in.) with a ⅜ in. mortar joint, the Brick Industry Association’s Technical Note 10 gives 675 bricks per 100 sq ft — 6.75 per square foot — in a single-wythe running-bond wall.' },
+        { question: 'How much extra brick should I buy for waste?', answer: 'The Brick Industry Association’s own estimating guide recommends adding at least 5% to the net brick count for breakage and cuts, more for an intricate pattern or a less experienced crew.' },
+        { question: 'Does brick size change how many I need?', answer: 'Yes, substantially. BIA’s Table 4 lists 6.75 bricks per sq ft for standard modular brick, but only 4.50 for the taller closure modular size and 6.00 for Roman brick — the same wall needs a very different brick count depending on the size.' },
+        { question: 'Does this calculator include mortar?', answer: 'No. Mortar is estimated separately, by bag, using this site’s mortar calculator — brick count and mortar both depend on the same brick size and joint but are bought in different units.' },
+        { question: 'What if my wall uses a pattern with headers, like English or Flemish bond?', answer: 'A header bond uses more brick than a plain running bond. BIA’s correction factors add a fraction on top — for example, full headers every fifth course add a net ⅕ more brick than the running-bond figure.' },
+        { question: 'How do I count bricks for a wall with doors or windows?', answer: 'Subtract the door and window area from the wall’s gross length × height first, then enter that net area’s length and height (or an equivalent length for the same net area) here.' }
+      ]
+    },
+    compute(values) {
+      const wallArea = values.wallLength * values.wallHeight;
+      const bricksExact = wallArea * values.bricksPerSqFt;
+      const bricksWithWaste = bricksExact * (1 + values.wastePercent / 100);
+      const bricksToBuy = Math.ceil(bricksWithWaste);
+      return { wallArea, bricksExact, bricksWithWaste, bricksToBuy };
+    }
+  },
+  {
+    id: 'gravel-calculator',
+    category: 'home',
+    glyph: 'grv',
+    updatedAt: '2026-11-02',
+    aliases: ['how much gravel do i need', 'gravel tons calculator', 'crushed stone calculator', 'gravel yards calculator', 'driveway gravel calculator'],
+    related: ['sand-calculator', 'concrete-calculator', 'brick-calculator'],
+    title: 'Gravel Calculator',
+    description: 'Find the volume (cubic feet and cubic yards) and weight (tons) of gravel a driveway, path or bed needs from its area and depth, with an editable density for your gravel type and a waste allowance.',
+    example: 'A 50x10 ft driveway base, 4 inches deep in gravel at 1.4 tons per cubic yard, needs 6.17 cubic yards (8.64 tons), or 6.79 cubic yards (9.51 tons) with a 10% waste allowance.',
+    breakdown: {
+      headline: 'tonsWithWaste',
+      headlineLabel: 'Tons to buy',
+      outputs: [
+        { id: 'tonsWithWaste', label: 'Tons to buy', format: 'number' },
+        { id: 'tonsExact', label: 'Tons needed, exact', format: 'number' },
+        { id: 'cubicYardsWithWaste', label: 'Cubic yards to buy', format: 'number' },
+        { id: 'cubicYards', label: 'Cubic yards, exact', format: 'number' },
+        { id: 'cubicFeet', label: 'Cubic feet, exact', format: 'number' }
+      ],
+      groups: [
+        { title: 'Area & depth', inputs: ['areaLength', 'areaWidth', 'depthInches'] },
+        { title: 'Density & waste', inputs: ['densityTonsPerCubicYard', 'wastePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'tonsExact', label: 'Exact tons' },
+          { from: 'tonsWithWaste', label: 'Tons to buy' }
+        ],
+        title: 'Gravel needed, exact vs. to buy'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-02',
+      concept: {
+        title: 'How much gravel a driveway or path needs',
+        paragraphs: [
+          'Gravel is bought and delivered by weight (tons), but it is spread by volume — area times depth. Convert between the two with the material’s density: cubic yards times tons per cubic yard gives the tons to order. The area-times-depth part is straightforward (a 50 ft by 10 ft driveway base, 4 inches deep, is 166.67 cubic feet, or 6.17 cubic yards), but the density varies by gravel type, which is why it is an editable field here rather than a fixed constant.',
+          'Mulch Pros Landscape Supply, a real aggregate yard, publishes figures measured on its own scale: #57, #34, #5 and #6 crushed stone and mason/river sand run about 2,700 lb (1.35 tons) per cubic yard, #89 stone and pea gravel about 2,800 lb (1.4 tons), crush & run about 2,900 lb (1.45 tons), and river rock or slate chips about 2,600 lb (1.3 tons). A second landscape supplier, EarthStone Rock, puts general landscape and pea gravel at about 1.35 tons per cubic yard too — the two suppliers broadly agree gravel runs roughly 1.3 to 1.45 tons per cubic yard depending on the specific stone, which is why this calculator defaults to 1.4 (the #89/pea-gravel figure) but lets you type in your own supplier’s number.',
+          'Moisture also changes the real weight a delivery truck carries, since wet gravel weighs more than the same volume dry — EarthStone Rock notes this directly. None of that changes how much volume you need to cover your area at your chosen depth, only how many tons that volume weighs, so entering your supplier’s quoted density (dry or as-delivered) gives the most accurate order weight.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the area and depth, then your gravel’s density and a waste allowance.',
+        steps: [
+          { name: 'Enter the area', text: 'Type the length and width of the driveway, path or bed in feet.' },
+          { name: 'Enter the depth', text: 'Use the thickness in inches — a gravel driveway base is commonly 4 to 6 inches, a path topping 2 to 3 inches.' },
+          { name: 'Set the density', text: 'Keep 1.4 tons per cubic yard for a typical crushed stone or pea gravel, or use your supplier’s own figure — it can run from about 1.3 to 1.45 depending on the stone.' },
+          { name: 'Set the waste allowance', text: 'Keep 10% for settling and an uneven subgrade, or raise it for a larger or less even job.' },
+          { name: 'Read the result', text: 'The headline is the tons to buy; the rows below show the exact cubic feet, cubic yards and tons before waste.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Area times depth gives the volume; volume times density gives the weight, and a waste factor sets what you actually buy.',
+        expression: 'cu ft = L × W × (depth ÷ 12)\ncu yd = cu ft ÷ 27\ntons = cu yd × density\nbuy = cu yd × (1 + waste%) × density',
+        terms: [
+          { symbol: 'L, W', meaning: 'Area length and width, in feet.' },
+          { symbol: 'depth', meaning: 'Depth of gravel, in inches — divide by 12 to get feet.' },
+          { symbol: 'density', meaning: 'Tons per cubic yard for your gravel type; about 1.3–1.45 for most crushed stone and pea gravel, per supplier-measured figures.' },
+          { symbol: 'waste%', meaning: 'Extra percent for settling, compaction and an uneven subgrade; 10% is a common starting point.' }
+        ],
+        note: 'An estimate. Gravel suppliers sell by the ton, and a yard will usually round a delivery up to its nearest standard load size — confirm minimums before ordering.'
+      },
+      workedExample: {
+        intro: 'You are building a 50 ft by 10 ft gravel driveway base, 4 inches deep, using gravel at 1.4 tons per cubic yard with a 10% waste allowance.',
+        rows: [
+          { label: 'Area (50 × 10)', value: '500.00 sq ft' },
+          { label: 'Depth in feet (4 ÷ 12)', value: '0.3333 ft' },
+          { label: 'Cubic feet (500.00 × 0.3333)', value: '166.67 ft³' },
+          { label: 'Cubic yards (166.67 ÷ 27)', value: '6.17 yd³' },
+          { label: 'Tons, exact (6.17 × 1.4)', value: '8.64 tons' },
+          { label: 'Cubic yards with 10% waste (6.17 × 1.10)', value: '6.79 yd³' },
+          { label: 'Tons to buy (6.79 × 1.4)', value: '9.51 tons' }
+        ],
+        result: '9.51 tons to order (8.64 tons exact)',
+        explanation: 'The same area in a denser crush & run (1.45 tons per cubic yard, per Mulch Pros’ own figures) instead of 1.4 would need 9.85 tons with the same 10% waste — about 3.6% more weight for the identical volume, purely from the denser material.'
+      },
+      watchOut: [
+        { title: 'Density varies by gravel type', body: 'Supplier-measured figures put most crushed stone and pea gravel at about 1.3 to 1.45 tons per cubic yard — use your own supplier’s number when you have it instead of the 1.4 default.' },
+        { title: 'Wet gravel weighs more than dry', body: 'A delivery weighed after rain, or stockpiled gravel that has absorbed moisture, weighs more per cubic yard than the same dry volume — ask your supplier whether their quoted density is dry or as-delivered.' },
+        { title: 'Depth drives weight directly', body: 'Volume scales linearly with depth for a fixed area, so doubling the depth (say, from 4 to 8 inches for a heavier-duty base) doubles the tons needed.' },
+        { title: 'Order a little extra for settling', body: 'Loose gravel compacts under traffic and rain, and an uneven subgrade collects more material at low spots than a flat one — the 10% default covers typical settling, more for a rougher site.' },
+        { title: 'Suppliers sell and deliver by the ton, often with a minimum', body: 'Most aggregate yards price and haul by the ton, and many have a minimum delivery size — a small job may cost close to the same as a somewhat larger one once delivery is included.' }
+      ],
+      references: [
+        { label: 'Mulch Pros Landscape Supply, Material Weight and Coverage (own-scale measured tons per cubic yard by stone type)', url: 'https://mulchpros.com/material-weight-and-coverage/' },
+        { label: 'EarthStone Rock, Cubic Yards vs. Tons for Landscape Rock (density range, moisture note)', url: 'https://earthstonerock.com/blogs/landscaping-guides/cubic-yards-vs-tons' }
+      ]
+    },
+    inputs: [
+      { id: 'areaLength', label: 'Area length (ft)', type: 'number', placeholder: '50', defaultValue: 50, step: 0.5, min: 0.5 },
+      { id: 'areaWidth', label: 'Area width (ft)', type: 'number', placeholder: '10', defaultValue: 10, step: 0.5, min: 0.5 },
+      { id: 'depthInches', label: 'Depth (inches)', type: 'number', placeholder: '4', defaultValue: 4, step: 0.5, min: 0.5 },
+      { id: 'densityTonsPerCubicYard', label: 'Density (tons per cubic yard, typical = 1.4)', type: 'number', placeholder: '1.4', defaultValue: 1.4, step: 0.05, min: 0.5 },
+      { id: 'wastePercent', label: 'Waste allowance (%)', type: 'percent', placeholder: '10', defaultValue: 10, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Gravel Calculator – Cubic Yards and Tons Needed',
+      description: 'Free gravel calculator: cubic feet, cubic yards and tons of gravel needed from area and depth, with an editable density for your gravel type and a waste factor.',
+      faq: [
+        { question: 'How much gravel do I need?', answer: 'Multiply the area by the depth to get volume, convert to cubic yards, then multiply by the gravel’s density in tons per cubic yard. A 50×10 ft base, 4 inches deep, at 1.4 tons/yd³ needs 6.17 cubic yards, 8.64 tons, before waste.' },
+        { question: 'How many tons of gravel are in a cubic yard?', answer: 'It depends on the stone. Supplier-measured figures (Mulch Pros, Earthstone Rock) put most crushed stone and pea gravel at about 1.3 to 1.45 tons per cubic yard — this calculator defaults to 1.4, the #89/pea-gravel figure, but the density field is editable for your own supplier’s number.' },
+        { question: 'Does gravel type really change the weight much?', answer: 'Yes. River rock and slate chips run closer to 1.3 tons per cubic yard in Mulch Pros’ own measurements, while crush & run runs closer to 1.45 — about a 10% difference in weight for the identical volume.' },
+        { question: 'Should I order extra gravel for waste?', answer: 'Yes, a 10% allowance is a common starting point for settling, compaction and an uneven subgrade — more for a larger or rougher job.' },
+        { question: 'How deep should a gravel driveway base be?', answer: 'A gravel driveway base is commonly built 4 to 6 inches deep; a thinner 2 to 3 inch layer is more typical for topping a path, not supporting vehicle loads.' },
+        { question: 'Does wet gravel weigh the same as dry gravel?', answer: 'No — wet gravel weighs more per cubic yard than the same dry volume. If your supplier’s quoted density is a dry figure but the delivery is weighed after rain, the real tonnage can run higher than this estimate.' },
+        { question: 'How do I convert the depth from inches into the formula?', answer: 'Divide the inches by 12 to get feet before multiplying by the area — a 4-inch depth is 4 ÷ 12 = 0.3333 ft.' }
+      ]
+    },
+    compute(values) {
+      const areaSqFt = values.areaLength * values.areaWidth;
+      const depthFt = values.depthInches / 12;
+      const cubicFeet = areaSqFt * depthFt;
+      const cubicYards = cubicFeet / 27;
+      const tonsExact = cubicYards * values.densityTonsPerCubicYard;
+      const cubicYardsWithWaste = cubicYards * (1 + values.wastePercent / 100);
+      const tonsWithWaste = cubicYardsWithWaste * values.densityTonsPerCubicYard;
+      return { cubicFeet, cubicYards, tonsExact, cubicYardsWithWaste, tonsWithWaste };
+    }
+  },
+  {
+    id: 'sand-calculator',
+    category: 'home',
+    glyph: 'snd',
+    updatedAt: '2026-11-02',
+    aliases: ['how much sand do i need', 'sand tons calculator', 'sandbox sand calculator', 'paver sand calculator', 'play sand calculator'],
+    related: ['gravel-calculator', 'concrete-calculator', 'brick-calculator'],
+    title: 'Sand Calculator',
+    description: 'Find the volume (cubic feet and cubic yards) and weight (tons) of sand a sandbox, paver base or bedding layer needs from its area and depth, with an editable density for your sand type.',
+    example: 'A 6x4 ft sandbox filled 12 inches deep in sand at 1.3 tons per cubic yard needs 0.89 cubic yards (1.16 tons), or 0.98 cubic yards (1.27 tons) with a 10% waste allowance.',
+    breakdown: {
+      headline: 'tonsWithWaste',
+      headlineLabel: 'Tons to buy',
+      outputs: [
+        { id: 'tonsWithWaste', label: 'Tons to buy', format: 'number' },
+        { id: 'tonsExact', label: 'Tons needed, exact', format: 'number' },
+        { id: 'cubicYardsWithWaste', label: 'Cubic yards to buy', format: 'number' },
+        { id: 'cubicYards', label: 'Cubic yards, exact', format: 'number' },
+        { id: 'cubicFeet', label: 'Cubic feet, exact', format: 'number' }
+      ],
+      groups: [
+        { title: 'Area & depth', inputs: ['areaLength', 'areaWidth', 'depthInches'] },
+        { title: 'Density & waste', inputs: ['densityTonsPerCubicYard', 'wastePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'tonsExact', label: 'Exact tons' },
+          { from: 'tonsWithWaste', label: 'Tons to buy' }
+        ],
+        title: 'Sand needed, exact vs. to buy'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-02',
+      concept: {
+        title: 'How much sand a sandbox or paver base needs',
+        paragraphs: [
+          'Sand is sold and delivered by weight (tons), the same way gravel is, so the calculation follows the same two steps: find the volume from area times depth, then convert to weight with the sand’s density. A 6 ft by 4 ft sandbox filled a full 12 inches deep is 24 cubic feet, or 0.89 cubic yards — a small, but real, example of how a seemingly modest footprint adds up once there’s real depth behind it.',
+          'Density varies by sand type more than most people expect. Mulch Pros Landscape Supply’s own-scale measurements put mason and river sand — the common bedding and paver-base sands — at about 2,600 lb (1.3 tons) per cubic yard, which is this calculator’s default. A second supplier, EarthStone Rock, states a general “sand” figure of about 3,000 lb (1.5 tons) per cubic yard — a real, bounded disagreement between two real suppliers, not a typo on either side, most likely reflecting a damper or coarser sand than Mulch Pros’ own dry mason/river sand. That roughly 1.3-to-1.5 ton-per-cubic-yard range is why the density field here is editable: use your own supplier’s figure whenever you have it.',
+          'Moisture is the biggest single reason two suppliers’ sand figures can differ for what is nominally the same material — damp sand weighs noticeably more per cubic yard than the same sand bone dry, which both suppliers note affects their own weigh scales. None of that changes the volume you need to fill your sandbox or bed to the depth you want; it only changes how many tons that volume weighs when you go to buy it.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the area and depth, then your sand’s density and a waste allowance.',
+        steps: [
+          { name: 'Enter the area', text: 'Type the length and width of the sandbox, patio base or bedding layer in feet.' },
+          { name: 'Enter the depth', text: 'Use the thickness in inches — a full sandbox fill is commonly 12 inches, a paver bedding layer just 1 to 2 inches.' },
+          { name: 'Set the density', text: 'Keep 1.3 tons per cubic yard for a typical dry mason or river sand, or use your supplier’s own figure — it can run higher, toward 1.5, for a damper or coarser sand.' },
+          { name: 'Set the waste allowance', text: 'Keep 10% for settling and spillage, or raise it for a larger or less even job.' },
+          { name: 'Read the result', text: 'The headline is the tons to buy; the rows below show the exact cubic feet, cubic yards and tons before waste.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Area times depth gives the volume; volume times density gives the weight, and a waste factor sets what you actually buy.',
+        expression: 'cu ft = L × W × (depth ÷ 12)\ncu yd = cu ft ÷ 27\ntons = cu yd × density\nbuy = cu yd × (1 + waste%) × density',
+        terms: [
+          { symbol: 'L, W', meaning: 'Area length and width, in feet.' },
+          { symbol: 'depth', meaning: 'Depth of sand, in inches — divide by 12 to get feet.' },
+          { symbol: 'density', meaning: 'Tons per cubic yard for your sand type; supplier-measured figures range from about 1.3 (dry mason/river sand) to 1.5 (a damper or coarser sand).' },
+          { symbol: 'waste%', meaning: 'Extra percent for settling and spillage; 10% is a common starting point.' }
+        ],
+        note: 'An estimate. Sand suppliers sell by the ton, and a wetter load weighs more than the same dry volume — confirm whether a quoted density is dry or as-delivered before ordering a tight amount.'
+      },
+      workedExample: {
+        intro: 'You are filling a 6 ft by 4 ft sandbox a full 12 inches deep, using sand at 1.3 tons per cubic yard with a 10% waste allowance.',
+        rows: [
+          { label: 'Area (6 × 4)', value: '24.00 sq ft' },
+          { label: 'Depth in feet (12 ÷ 12)', value: '1.0000 ft' },
+          { label: 'Cubic feet (24.00 × 1.0000)', value: '24.00 ft³' },
+          { label: 'Cubic yards (24.00 ÷ 27)', value: '0.89 yd³' },
+          { label: 'Tons, exact (0.89 × 1.3)', value: '1.16 tons' },
+          { label: 'Cubic yards with 10% waste (0.89 × 1.10)', value: '0.98 yd³' },
+          { label: 'Tons to buy (0.98 × 1.3)', value: '1.27 tons' }
+        ],
+        result: '1.27 tons to order (1.16 tons exact)',
+        explanation: 'The same sandbox filled with a damper sand at 1.5 tons per cubic yard instead of 1.3 would need 1.47 tons with the same 10% waste — about 15.4% more weight for the identical volume, entirely from the heavier sand.'
+      },
+      watchOut: [
+        { title: 'Density varies a lot by sand type and moisture', body: 'Supplier-measured figures range from about 1.3 tons per cubic yard for dry mason/river sand to about 1.5 for a damper or coarser sand — use your own supplier’s number when you have it instead of the 1.3 default.' },
+        { title: 'A full sandbox needs more sand than it looks like', body: 'A modest 6×4 ft sandbox filled a full 12 inches deep is still 24 cubic feet — almost a full cubic yard — because depth multiplies the area, not just adds to it.' },
+        { title: 'Paver and patio bedding layers are shallow on purpose', body: 'A bedding or leveling layer of sand under pavers or a patio is typically just 1 to 2 inches, far less than a play sandbox fill — enter the thin depth your specific project actually calls for.' },
+        { title: 'Order a little extra for settling and spillage', body: 'Sand compacts and settles once in place, and some is lost to spillage during handling — the 10% default covers typical loss, more for a rougher or larger job.' },
+        { title: 'Children’s play sand has its own safety standard', body: 'Play sand sold for sandboxes is commonly required to meet ASTM F1951 or similar playground-surfacing standards in addition to a density figure — check the bag’s labeling, not just this calculator, before buying sand a child will play in.' }
+      ],
+      references: [
+        { label: 'Mulch Pros Landscape Supply, Material Weight and Coverage (own-scale measured tons per cubic yard by sand type)', url: 'https://mulchpros.com/material-weight-and-coverage/' },
+        { label: 'EarthStone Rock, Cubic Yards vs. Tons for Landscape Rock (sand density figure, moisture note)', url: 'https://earthstonerock.com/blogs/landscaping-guides/cubic-yards-vs-tons' }
+      ]
+    },
+    inputs: [
+      { id: 'areaLength', label: 'Area length (ft)', type: 'number', placeholder: '6', defaultValue: 6, step: 0.5, min: 0.5 },
+      { id: 'areaWidth', label: 'Area width (ft)', type: 'number', placeholder: '4', defaultValue: 4, step: 0.5, min: 0.5 },
+      { id: 'depthInches', label: 'Depth (inches)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.5, min: 0.5 },
+      { id: 'densityTonsPerCubicYard', label: 'Density (tons per cubic yard, typical = 1.3)', type: 'number', placeholder: '1.3', defaultValue: 1.3, step: 0.05, min: 0.5 },
+      { id: 'wastePercent', label: 'Waste allowance (%)', type: 'percent', placeholder: '10', defaultValue: 10, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Sand Calculator – Cubic Yards and Tons Needed',
+      description: 'Free sand calculator: cubic feet, cubic yards and tons of sand needed from area and depth, with an editable density for your sand type and a waste allowance.',
+      faq: [
+        { question: 'How much sand do I need?', answer: 'Multiply the area by the depth to get volume, convert to cubic yards, then multiply by the sand’s density in tons per cubic yard. A 6×4 ft sandbox, 12 inches deep, at 1.3 tons/yd³ needs 0.89 cubic yards, 1.16 tons, before waste.' },
+        { question: 'How many tons of sand are in a cubic yard?', answer: 'It depends on the sand type and moisture. Mulch Pros Landscape Supply’s own-scale figures put dry mason/river sand at about 1.3 tons per cubic yard; EarthStone Rock states a general sand figure closer to 1.5 — this calculator defaults to 1.3 but the density field is editable.' },
+        { question: 'Why do different suppliers give different sand weights?', answer: 'Mostly moisture and sand type. A damper or coarser sand weighs more per cubic yard than a dry, fine mason sand — both suppliers cited here note moisture changes the real weigh-scale figure.' },
+        { question: 'How deep should sand be for a sandbox?', answer: 'A full play sandbox fill is commonly built to about 12 inches deep; a bedding or leveling layer under pavers or a patio is typically only 1 to 2 inches.' },
+        { question: 'Should I order extra sand for waste?', answer: 'Yes, a 10% allowance is a common starting point for settling and spillage during handling — more for a larger or rougher job.' },
+        { question: 'Is play sand for a sandbox different from regular sand?', answer: 'It can be. Play sand sold for sandboxes is commonly required to meet ASTM F1951 or a similar playground-surfacing standard, on top of whatever density figure applies — check the bag’s own labeling for that.' },
+        { question: 'How do I convert the depth from inches into the formula?', answer: 'Divide the inches by 12 to get feet before multiplying by the area — a 12-inch depth is 12 ÷ 12 = 1.00 ft.' }
+      ]
+    },
+    compute(values) {
+      const areaSqFt = values.areaLength * values.areaWidth;
+      const depthFt = values.depthInches / 12;
+      const cubicFeet = areaSqFt * depthFt;
+      const cubicYards = cubicFeet / 27;
+      const tonsExact = cubicYards * values.densityTonsPerCubicYard;
+      const cubicYardsWithWaste = cubicYards * (1 + values.wastePercent / 100);
+      const tonsWithWaste = cubicYardsWithWaste * values.densityTonsPerCubicYard;
+      return { cubicFeet, cubicYards, tonsExact, cubicYardsWithWaste, tonsWithWaste };
+    }
+  },
+  {
+    id: 'mortar-calculator',
+    category: 'home',
+    glyph: 'bag',
+    updatedAt: '2026-11-02',
+    aliases: ['how many bags of mortar do i need', 'mortar bags calculator', 'mortar mix calculator', 'brick mortar calculator', 'masonry mortar calculator'],
+    related: ['brick-calculator', 'concrete-calculator', 'sand-calculator'],
+    title: 'Mortar Calculator',
+    description: 'Find how many bags of mortar mix a brick wall needs from its length and height, using the same bricks-per-square-foot figure as this site’s brick calculator and a waste allowance, in bags needed.',
+    example: 'An 18x8 ft wall (972 bricks at 6.75 bricks per sq ft) needs 26.27 bags of mortar at 37 bricks per 80 lb bag, or 31 bags with a 15% waste allowance.',
+    breakdown: {
+      headline: 'bagsToBuy',
+      headlineLabel: 'Bags to buy',
+      outputs: [
+        { id: 'bagsToBuy', label: 'Bags to buy', format: 'integer' },
+        { id: 'bagsWithWaste', label: 'Bags needed, with waste', format: 'number' },
+        { id: 'bagsExact', label: 'Bags needed, exact', format: 'number' },
+        { id: 'bricksNeeded', label: 'Bricks this wall needs', format: 'number' },
+        { id: 'wallArea', label: 'Wall area', format: 'number', dimension: 'area', unit: 'ft2' }
+      ],
+      groups: [
+        { title: 'Wall', inputs: ['wallLength', 'wallHeight'] },
+        { title: 'Brick size, bag yield & waste', inputs: ['bricksPerSqFt', 'bricksPerBag', 'wastePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'bagsExact', label: 'Exact bags' },
+          { from: 'bagsToBuy', label: 'Bags to buy' }
+        ],
+        title: 'Mortar bags needed, exact vs. to buy'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-02',
+      concept: {
+        title: 'How many bags of mortar a brick wall needs',
+        paragraphs: [
+          'Mortar is bought by the bag, but how many bags a wall needs follows from the same brick count this site’s brick calculator works out — wall area times a bricks-per-square-foot figure — because more bricks means more joints to fill with mortar. QUIKRETE’s own data sheet for its Mortar Mix (Product No. 1102) states plainly: “Each 80 lb bag of QUIKRETE Mortar Mix will lay up to 37 standard bricks.” Divide the brick count by 37 and you have the bags needed, before any waste.',
+          'The Brick Industry Association’s (BIA) Technical Notes on Brick Construction 10 covers mortar quantity estimating too, and separately from brick waste, it calls for adding more to the net mortar figure: “as a general rule, add 15 to 25 percent to the net mortar quantities” for waste — a wider range than the 5% BIA recommends for brick itself, because mortar is also lost to the mixer, the mortarboard and the tooling of joints, not just to cuts. This calculator defaults to 15%, the low end of BIA’s own range.',
+          'Because both this page and the brick calculator start from the same wall-area-times-bricks-per-square-foot step, they agree on bricks for the same wall, inputs and all — this page just carries that brick count one step further, into bags. Use them side by side: brick-calculator for the units, this one for the mortar that holds them together.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the wall, then the same bricks-per-square-foot figure you used on the brick calculator, the bag yield, and a waste allowance.',
+        steps: [
+          { name: 'Enter the wall length and height', text: 'Measure the net area you are building — the same figure you would use on the brick calculator.' },
+          { name: 'Set bricks per square foot', text: 'Keep 6.75 for standard modular brick with a ⅜ in. mortar joint, matching this site’s brick calculator default.' },
+          { name: 'Set the bag yield', text: 'Keep 37 bricks per 80 lb bag, QUIKRETE’s own published figure for its Mortar Mix, or use your product’s own data sheet.' },
+          { name: 'Set the waste allowance', text: 'Keep the 15% default — the low end of BIA’s 15-to-25-percent recommended range — or raise it toward 25% for a messier job.' },
+          { name: 'Read the result', text: 'The headline is the bags to buy; the rows below show the exact bag count and the bricks this wall needs.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Wall area times bricks-per-square-foot gives the brick count; bricks divided by bag yield gives bags, and a waste factor sets what you actually buy.',
+        expression: 'wall area = L × H\nbricks = wall area × bricks/sq ft\nbags = bricks ÷ bricks/bag\nbags(waste) = bags × (1 + waste%)\nbuy = ⌈ bags(waste) ⌉',
+        terms: [
+          { symbol: 'L, H', meaning: 'Wall length and height, in feet.' },
+          { symbol: 'bricks/sq ft', meaning: 'Bricks needed per square foot of wall; 6.75 for standard modular brick, matching the brick calculator.' },
+          { symbol: 'bricks/bag', meaning: 'Standard bricks one 80 lb bag of mortar mix lays; 37, per QUIKRETE’s own data sheet.' },
+          { symbol: 'waste%', meaning: 'Extra percent for mixing, board and tooling loss; BIA recommends 15–25%, this defaults to the 15% low end.' }
+        ],
+        note: 'An estimate for standard-size bricks laid in a running or stack bond with a ⅜ in. joint. A different brick size, a thicker or thinner joint, or a bonded pattern with headers changes the bricks-per-square-foot figure and therefore the mortar needed — adjust that field to match, the same way the brick calculator does.'
+      },
+      workedExample: {
+        intro: 'You are laying mortar for an 18 ft long, 8 ft tall wall in standard modular brick (6.75 bricks per sq ft), using 80 lb bags that lay 37 bricks each, with a 15% waste allowance.',
+        rows: [
+          { label: 'Wall area (18 × 8)', value: '144.00 sq ft' },
+          { label: 'Bricks needed (144.00 × 6.75)', value: '972.00' },
+          { label: 'Bags, exact (972.00 ÷ 37)', value: '26.27' },
+          { label: 'With 15% waste (26.27 × 1.15)', value: '30.21' },
+          { label: 'Bags to buy (rounded up)', value: '31 bags' }
+        ],
+        result: '31 bags of 80 lb mortar mix',
+        explanation: 'Raising the waste allowance to BIA’s upper 25% instead of 15% pushes the same job to 33 bags exact-before-rounding (26.27 × 1.25 = 32.84, so still 33 after rounding up) — 2 more bags, the cost of planning for a messier job.'
+      },
+      watchOut: [
+        { title: 'Mortar waste runs higher than brick waste', body: 'BIA recommends at least 5% waste for brick itself but 15 to 25% for mortar — mortar is lost to the mixer, the mortarboard and tooling the joints, not just to cuts, so it needs a bigger allowance.' },
+        { title: 'Keep the brick figure consistent with your brick order', body: 'This page’s bricks-per-square-foot field should match whatever you used on the brick calculator for the same wall — they are meant to be used together, not independently guessed.' },
+        { title: 'Bag yield is specific to one product', body: 'The 37-bricks-per-80-lb-bag figure is QUIKRETE’s own published yield for its Mortar Mix; other brands or bag sizes (40 lb, 60 lb) lay a different number — check your product’s data sheet.' },
+        { title: 'A thicker or thinner joint changes both bricks and mortar', body: 'BIA’s own Table 4 lists a different bricks-per-square-foot and mortar-per-brick figure for a ½ in. joint than for the standard ⅜ in. — adjust the bricks-per-square-foot field to match your actual joint if it is not ⅜ in.' },
+        { title: 'Blocks are not bricks', body: 'QUIKRETE’s data sheet separately states the same 80 lb bag lays only 13 standard 8×8×16 in. concrete blocks, far fewer than 37 bricks, because each block covers much more wall per unit — this calculator is for brick, not block, walls.' }
+      ],
+      references: [
+        { label: 'QUIKRETE, Mortar Mix (Product No. 1102) Data Sheet — bag yield in standard bricks and blocks', url: 'https://www.quikrete.com/pdfs/data_sheet-mortar%20mix%201102.pdf' },
+        { label: 'Brick Industry Association, Technical Notes on Brick Construction 10 — Dimensioning and Estimating Brick Masonry (Table 4 mortar quantities; mortar waste recommendation)', url: 'https://www.gobrick.com/media/file/10-dimensioning-and-estimating-brick-masonry.pdf' }
+      ]
+    },
+    inputs: [
+      { id: 'wallLength', label: 'Wall length (ft)', type: 'number', placeholder: '18', defaultValue: 18, step: 0.5, min: 1 },
+      { id: 'wallHeight', label: 'Wall height (ft)', type: 'number', placeholder: '8', defaultValue: 8, step: 0.5, min: 1 },
+      { id: 'bricksPerSqFt', label: 'Bricks per sq ft (standard modular, ⅜ in. joint = 6.75)', type: 'number', placeholder: '6.75', defaultValue: 6.75, step: 0.05, min: 0.1 },
+      { id: 'bricksPerBag', label: 'Bricks laid per 80 lb bag (Quikrete = 37)', type: 'number', placeholder: '37', defaultValue: 37, step: 1, min: 1 },
+      { id: 'wastePercent', label: 'Waste allowance (%)', type: 'percent', placeholder: '15', defaultValue: 15, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Mortar Calculator – Bags Needed for a Brick Wall',
+      description: 'Free mortar calculator: how many bags of mortar mix a brick wall needs, using 37 bricks per 80 lb bag (QUIKRETE) and a 15% waste allowance.',
+      faq: [
+        { question: 'How many bags of mortar do I need?', answer: 'Find the brick count (wall area × bricks per sq ft), divide by the bricks one bag lays, then add a waste allowance. An 18×8 ft wall (972 bricks at 6.75 per sq ft) needs 26.27 bags at 37 bricks per 80 lb bag, 31 bags with 15% waste.' },
+        { question: 'How many bricks does one bag of mortar lay?', answer: 'QUIKRETE’s own data sheet for its Mortar Mix (Product No. 1102) states an 80 lb bag lays up to 37 standard bricks, or 13 standard 8×8×16 in. concrete blocks.' },
+        { question: 'How much waste allowance should I use for mortar?', answer: 'The Brick Industry Association recommends adding 15 to 25 percent to the net mortar quantity for waste — more than the 5% minimum it recommends for brick itself, since mortar is also lost to mixing, the board and tooling joints.' },
+        { question: 'Why does this use the same bricks-per-square-foot figure as the brick calculator?', answer: 'Because mortar quantity depends on how many bricks — and therefore how many joints — the wall has, the same figure that determines the brick count. Keep the two calculators’ settings consistent for the same wall.' },
+        { question: 'Does a different brick size change how much mortar I need?', answer: 'Yes. A different brick size or mortar joint thickness changes both the bricks-per-square-foot figure and the mortar-per-brick quantity — the Brick Industry Association’s Table 4 lists separate figures for each named brick size and joint.' },
+        { question: 'Is mortar the same as concrete?', answer: 'No. Mortar bonds brick or block together in thin joints; concrete is poured in bulk for slabs, footings and foundations. This site’s concrete calculator covers slab volume and concrete bag counts separately.' },
+        { question: 'Can I use this for a concrete block wall instead of brick?', answer: 'Not directly — QUIKRETE’s own figures differ by unit type (37 bricks vs. 13 standard 8×8×16 in. blocks per 80 lb bag), so a block wall needs its own bricks-per-square-foot-equivalent and bag-yield figures, not this page’s brick defaults.' }
+      ]
+    },
+    compute(values) {
+      const wallArea = values.wallLength * values.wallHeight;
+      const bricksNeeded = wallArea * values.bricksPerSqFt;
+      const bagsExact = bricksNeeded / values.bricksPerBag;
+      const bagsWithWaste = bagsExact * (1 + values.wastePercent / 100);
+      const bagsToBuy = Math.ceil(bagsWithWaste);
+      return { wallArea, bricksNeeded, bagsExact, bagsWithWaste, bagsToBuy };
+    }
   }
 ];

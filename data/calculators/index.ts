@@ -183,7 +183,12 @@ export const calculatorOrder: string[] = [
   'womens-shoe-size-chart',
   'kids-shoe-size-chart',
   'ring-size-converter',
-  'us-to-uk-ring-size-chart'
+  'us-to-uk-ring-size-chart',
+  'drywall-calculator',
+  'brick-calculator',
+  'gravel-calculator',
+  'sand-calculator',
+  'mortar-calculator'
 ];
 
 const rank = (id: string) => {

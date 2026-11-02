@@ -4868,6 +4868,97 @@ exports[`compute() snapshots > ring-size-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > roof-pitch-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "riseIn": 6,
+      "runFt": 12
+    },
+    "outputs": {
+      "pitchMultiplier": 1.118033989,
+      "angleDeg": 26.56505118,
+      "rafterLengthFt": 13.41640786
+    }
+  },
+  "typical": {
+    "inputs": {
+      "riseIn": 9,
+      "runFt": 18
+    },
+    "outputs": {
+      "pitchMultiplier": 1.25,
+      "angleDeg": 36.86989765,
+      "rafterLengthFt": 22.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "riseIn": 0,
+      "runFt": 0.1
+    },
+    "outputs": {
+      "pitchMultiplier": 1,
+      "angleDeg": 0,
+      "rafterLengthFt": 0.1
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > roofing-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "footprintLength": 40,
+      "footprintWidth": 30,
+      "roofPitchRise": 6,
+      "wastePercent": 10,
+      "bundlesPerSquare": 3
+    },
+    "outputs": {
+      "footprintArea": 1200,
+      "roofArea": 1341.640786,
+      "roofAreaWithWaste": 1475.804865,
+      "squaresNeeded": 14.75804865,
+      "bundlesNeeded": 45
+    }
+  },
+  "typical": {
+    "inputs": {
+      "footprintLength": 60,
+      "footprintWidth": 45,
+      "roofPitchRise": 9,
+      "wastePercent": 15,
+      "bundlesPerSquare": 5
+    },
+    "outputs": {
+      "footprintArea": 2700,
+      "roofArea": 3375,
+      "roofAreaWithWaste": 3881.25,
+      "squaresNeeded": 38.8125,
+      "bundlesNeeded": 195
+    }
+  },
+  "edge": {
+    "inputs": {
+      "footprintLength": 1,
+      "footprintWidth": 1,
+      "roofPitchRise": 0,
+      "wastePercent": 0,
+      "bundlesPerSquare": 1
+    },
+    "outputs": {
+      "footprintArea": 1,
+      "roofArea": 1,
+      "roofAreaWithWaste": 1,
+      "squaresNeeded": 0.01,
+      "bundlesNeeded": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > rounding-calculator 1`] = `
 {
   "default": {

@@ -83,18 +83,18 @@ add one if so (home.ts entries currently have no `group` field at all).
 
 - [x] Dedupe check (ids + aliases, programmatic) — no collisions
 - [x] Sources fetched directly and independently verified (scratch script) before writing copy
-- [x] `fence-calculator`
-- [x] `decking-calculator`
-- [x] `roofing-calculator`
-- [x] `roof-pitch-calculator`
-- [x] `paver-calculator`
-- [x] Append all 5 ids to `calculatorOrder` in `data/calculators/index.ts`
-- [x] `npm test` (snapshots picked up generically; `npm run test:update` run, diff checked)
-- [x] `npm run build` and `npm run lint` clean
-- [x] Programmatic dataset check: ids unique, no self-reference in `related`, no alias collisions,
+- [x] `fence-calculator` (committed)
+- [x] `decking-calculator` (committed)
+- [ ] `roofing-calculator`
+- [ ] `roof-pitch-calculator`
+- [ ] `paver-calculator`
+- [ ] Append remaining 3 ids to `calculatorOrder` in `data/calculators/index.ts`
+- [ ] `npm test` (snapshots picked up generically; `npm run test:update` run, diff checked)
+- [ ] `npm run build` and `npm run lint` clean
+- [ ] Programmatic dataset check: ids unique, no self-reference in `related`, no alias collisions,
   `seo.title`/`seo.description` within budget, 4+ aliases, 5-8 FAQ entries, glyph uniqueness
-- [x] Visual check: desktop screenshots of all 5 pages, one dark-mode pass, `/categories/home`
+- [ ] Visual check: desktop screenshots of all 5 pages, one dark-mode pass, `/categories/home`
   listing all 16 with correct glyph badges; dev server stopped after
-- [x] Update `mdFiles/STATUS.md` and tick "Construction batch 2" in
+- [ ] Update `mdFiles/STATUS.md` and tick "Construction batch 2" in
   `mdFiles/steps/43-45-wave-2-construction-food-sports.md`
-- [x] `gh pr ready`
+- [ ] `gh pr ready`

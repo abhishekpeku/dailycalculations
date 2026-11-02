@@ -1624,5 +1624,238 @@ export const homeCalculators: CalculatorConfig[] = [
       const deckArea = values.deckWidth * values.deckLength;
       return { rowsNeeded, boardsPerRow, boardsExact, boardsWithWaste, deckArea };
     }
+  },
+  {
+    id: 'roofing-calculator',
+    category: 'home',
+    glyph: 'sq',
+    updatedAt: '2026-11-02',
+    aliases: ['roof shingles calculator', 'roofing squares calculator', 'how many bundles of shingles do i need', 'shingle calculator', 'roof square footage calculator'],
+    related: ['roof-pitch-calculator', 'fence-calculator', 'decking-calculator'],
+    title: 'Roofing Calculator',
+    description: 'Find how many roofing squares and shingle bundles a roof needs from its footprint and pitch, with a waste allowance and GAF’s own published bundles-per-square figure.',
+    example: 'A 40x30 ft footprint (1,200 sq ft) at a 6-in-12 pitch has an actual roof area of 1,341.64 sq ft, or about 14.76 squares with a 10% waste allowance — 45 bundles at GAF’s 3 bundles per square.',
+    breakdown: {
+      headline: 'bundlesNeeded',
+      headlineLabel: 'Bundles to buy',
+      outputs: [
+        { id: 'bundlesNeeded', label: 'Bundles to buy', format: 'integer' },
+        { id: 'squaresNeeded', label: 'Roofing squares, with waste', format: 'number' },
+        { id: 'roofAreaWithWaste', label: 'Roof area, with waste', format: 'number', dimension: 'area', unit: 'ft2' },
+        { id: 'roofArea', label: 'Actual roof area (sloped)', format: 'number', dimension: 'area', unit: 'ft2' },
+        { id: 'footprintArea', label: 'Footprint area (flat)', format: 'number', dimension: 'area', unit: 'ft2' }
+      ],
+      groups: [
+        { title: 'Roof footprint', inputs: ['footprintLength', 'footprintWidth'] },
+        { title: 'Pitch & waste', inputs: ['roofPitchRise', 'wastePercent'] },
+        { title: 'Shingle coverage', inputs: ['bundlesPerSquare'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'footprintArea', label: 'Flat footprint' },
+          { from: 'roofArea', label: 'Actual sloped roof area' }
+        ],
+        title: 'Footprint area vs. actual sloped roof area'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-02',
+      concept: {
+        title: 'How many squares and bundles of shingles a roof needs',
+        paragraphs: [
+          'A sloped roof always covers more actual surface than the flat footprint of the house underneath it, because the roof plane is tilted. The ratio between the two — the pitch multiplier — follows directly from the Pythagorean theorem applied to the standard way roof pitch is expressed: a rise of some number of inches for every 12 inches of horizontal run. For a 6-in-12 roof, the multiplier is √(1 + (6÷12)²) = √1.25 ≈ 1.118, meaning the real roof surface is about 11.8% more than the flat footprint. Multiply footprint area by this figure to get the actual area to be shingled.',
+          'Roofing is bought and measured in "squares," a roofing-trade unit equal to 100 square feet of actual roof surface — a convention that has nothing to do with the shape of the roof and everything to do with making material estimates comparable across jobs of any size. Shingles themselves are bundled into smaller, liftable packages: GAF’s own product data sheet for its Timberline HDZ shingles, the best-selling shingle in the US, states "Bundles/Square: 3" and "Pieces/Square: 64," meaning each bundle covers about 33.3 square feet. Other product lines bundle differently — some thicker, heavier shingles use 4 or 5 bundles per square — so this figure is editable.',
+          'A waste allowance on top of the squares figure covers the cuts at hips, valleys, ridges and rake edges that a real roof always has, which a simple length-times-width footprint calculation does not account for. The final bundle count rounds up, since a partial bundle still has to be bought whole.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the roof’s footprint, its pitch, a waste allowance, and the shingle’s bundles-per-square figure.',
+        steps: [
+          { name: 'Enter the roof footprint', text: 'The length and width of the building’s footprint (or one roof plane at a time, for a complex roof), in feet.' },
+          { name: 'Enter the pitch', text: 'The rise in inches for every 12 inches of horizontal run — 6 is a common moderate pitch.' },
+          { name: 'Set the waste allowance', text: 'Keep 10% for a simple gable roof; raise it toward 15–20% for a roof with hips, valleys or dormers that create more cuts.' },
+          { name: 'Enter the bundles per square', text: 'Check the shingle’s own packaging; GAF’s Timberline HDZ uses 3, but heavier or specialty shingles can use 4 or 5.' },
+          { name: 'Read the result', text: 'The headline is the bundles to buy; the rows below show the squares needed and the actual sloped roof area against the flat footprint.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The pitch multiplier scales the flat footprint up to the actual sloped roof area; squares and bundles follow by division and multiplication.',
+        expression: 'multiplier = √(1 + (rise ÷ 12)²)\nroof area = footprint area × multiplier\narea(waste) = roof area × (1 + waste%)\nsquares = area(waste) ÷ 100\nbundles = ⌈ squares × bundles/square ⌉',
+        terms: [
+          { symbol: 'footprint area', meaning: 'Length × width of the roof’s flat footprint, in square feet.' },
+          { symbol: 'rise', meaning: 'Vertical rise, in inches, for every 12 inches of horizontal run — the standard way US roof pitch is expressed.' },
+          { symbol: 'multiplier', meaning: 'The ratio of actual sloped roof area to flat footprint area, from the Pythagorean theorem.' },
+          { symbol: 'waste%', meaning: 'Extra percent for cuts at hips, valleys, ridges and rake edges.' },
+          { symbol: 'bundles/square', meaning: 'Bundles that make up one 100 sq ft square; 3 for GAF Timberline HDZ, per its own product data sheet.' }
+        ],
+        note: 'An estimate. A roof with multiple planes at different pitches, or a complex hip-and-valley layout, needs each plane measured and summed separately for an exact figure.'
+      },
+      workedExample: {
+        intro: 'A house has a 40 ft by 30 ft footprint, a roof pitch of 6-in-12, a 10% waste allowance, and GAF Timberline HDZ shingles at 3 bundles per square.',
+        rows: [
+          { label: 'Footprint area (40 × 30)', value: '1,200.00 sq ft' },
+          { label: 'Pitch multiplier (√(1 + (6÷12)²))', value: '1.1180' },
+          { label: 'Actual roof area (1,200.00 × 1.1180)', value: '1,341.64 sq ft' },
+          { label: 'With 10% waste (1,341.64 × 1.10)', value: '1,475.80 sq ft' },
+          { label: 'Squares (1,475.80 ÷ 100)', value: '14.76 squares' },
+          { label: 'Bundles (14.76 × 3, rounded up)', value: '45 bundles' }
+        ],
+        result: '14.76 squares, 45 bundles',
+        explanation: 'A steeper 12-in-12 pitch on the same footprint has a multiplier of 1.4142 instead of 1.1180 — a 26.5% larger actual roof area for the identical footprint, which is why a steep roof always needs noticeably more shingle than a shallow one covering the same house.'
+      },
+      watchOut: [
+        { title: 'Pitch changes the real roof area more than it looks', body: 'Going from a 6-in-12 to a 12-in-12 pitch on the same footprint raises the multiplier from 1.118 to 1.414, about 26.5% more actual roof area — a steeper roof is not just a cosmetic choice, it is noticeably more material.' },
+        { title: 'Bundles per square is specific to the product', body: 'GAF’s Timberline HDZ uses 3 bundles per square; its own Woodland-style shingles use 4. Always check the bundle you are actually buying rather than assuming 3.' },
+        { title: 'A hip-and-valley roof wastes more than a simple gable', body: 'More hips, valleys and dormers mean more angled cuts that cannot be reused elsewhere — raise the waste allowance well above 10% for a complex roof shape.' },
+        { title: 'Low-slope roofs need a different system entirely', body: 'Asphalt shingles are a steep-slope product; building codes commonly set 2-in-12 as a minimum slope for them, and the National Roofing Contractors Association recommends 4-in-12 or more as best practice. A flatter roof needs a membrane roofing system, not shingles.' },
+        { title: 'Multiple roof planes need to be measured separately', body: 'This calculator treats the roof as one footprint at one pitch; a roof with wings or additions at different pitches needs each plane’s own footprint and pitch run through separately and the squares added together.' }
+      ],
+      references: [
+        { label: 'GAF, Timberline HDZ Shingles (bundles and pieces per square)', url: 'https://www.gaf.com/en-us/roofing-materials/residential-roofing-materials/shingles/timberline-hdz' },
+        { label: 'National Roofing Contractors Association, "Roof slope guidelines," Professional Roofing, August 2018 (code minimum and NRCA-recommended minimum slope for asphalt shingles)', url: 'https://www.professionalroofing.net/Articles/Roof-slope-guidelines--08-01-2018/4284' }
+      ]
+    },
+    inputs: [
+      { id: 'footprintLength', label: 'Roof footprint length (ft)', type: 'number', placeholder: '40', defaultValue: 40, step: 1, min: 1 },
+      { id: 'footprintWidth', label: 'Roof footprint width (ft)', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1 },
+      { id: 'roofPitchRise', label: 'Pitch — rise per 12 in. of run (in)', type: 'number', placeholder: '6', defaultValue: 6, step: 0.5, min: 0 },
+      { id: 'wastePercent', label: 'Waste allowance (%)', type: 'percent', placeholder: '10', defaultValue: 10, step: 1, min: 0 },
+      { id: 'bundlesPerSquare', label: 'Bundles per square (GAF Timberline HDZ = 3)', type: 'number', placeholder: '3', defaultValue: 3, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Roofing Calculator – Squares and Shingle Bundles Needed',
+      description: 'Free roofing calculator: squares and shingle bundles needed from the roof footprint and pitch, with a waste allowance and GAF’s bundles-per-square figure.',
+      faq: [
+        { question: 'How many squares of shingles do I need?', answer: 'Multiply the footprint area by the pitch multiplier (√(1+(rise÷12)²)) to get the actual roof area, add a waste allowance, then divide by 100. A 1,200 sq ft footprint at 6-in-12 needs about 14.76 squares with 10% waste.' },
+        { question: 'How many bundles of shingles are in a square?', answer: 'It depends on the product. GAF’s Timberline HDZ, a common architectural shingle, uses 3 bundles per 100 sq ft square (64 pieces per square), per GAF’s own product data.' },
+        { question: 'What is a roofing "square"?', answer: 'A roofing-trade unit equal to 100 square feet of actual roof surface — not a shape, just a standard measure used to estimate and price roofing jobs of any size.' },
+        { question: 'How does roof pitch affect how much shingle I need?', answer: 'A steeper pitch means more actual roof surface for the same footprint. A 12-in-12 roof has about 26.5% more surface area than the same footprint at 6-in-12, because the multiplier rises from 1.118 to 1.414.' },
+        { question: 'How much extra shingle should I order for waste?', answer: '10% is a common starting point for a simple gable roof; raise it toward 15–20% for a roof with more hips, valleys or dormers, which create more angled cuts.' },
+        { question: 'What is the minimum roof pitch for asphalt shingles?', answer: 'Building codes commonly allow asphalt shingles down to a 2-in-12 slope, but the National Roofing Contractors Association recommends 4-in-12 or steeper as best practice; flatter roofs need a membrane system instead.' },
+        { question: 'Do all shingle brands use the same bundles-per-square figure?', answer: 'No. GAF’s Timberline HDZ uses 3; some heavier or specialty shingle lines use 4 or 5 bundles per square because each bundle is kept light enough to lift onto the roof.' }
+      ]
+    },
+    compute(values) {
+      const footprintArea = values.footprintLength * values.footprintWidth;
+      const pitchMultiplier = Math.sqrt(1 + (values.roofPitchRise / 12) ** 2);
+      const roofArea = footprintArea * pitchMultiplier;
+      const roofAreaWithWaste = roofArea * (1 + values.wastePercent / 100);
+      const squaresNeeded = roofAreaWithWaste / 100;
+      const bundlesNeeded = Math.ceil(squaresNeeded * values.bundlesPerSquare);
+      return { footprintArea, roofArea, roofAreaWithWaste, squaresNeeded, bundlesNeeded };
+    }
+  },
+  {
+    id: 'roof-pitch-calculator',
+    category: 'home',
+    glyph: 'X12',
+    updatedAt: '2026-11-02',
+    aliases: ['roof pitch to degrees calculator', 'rafter length calculator', 'roof angle calculator', 'roof slope calculator', 'pitch calculator'],
+    related: ['roofing-calculator', 'decking-calculator', 'fence-calculator'],
+    title: 'Roof Pitch Calculator',
+    description: 'Find a roof’s angle in degrees and its rafter length from the pitch (rise per 12 inches of run) and the horizontal run, using the Pythagorean theorem.',
+    example: 'A 6-in-12 pitch over a 12 ft horizontal run has a roof angle of about 26.57° and a rafter length of about 13.42 ft.',
+    breakdown: {
+      headline: 'angleDeg',
+      headlineLabel: 'Roof angle',
+      outputs: [
+        { id: 'angleDeg', label: 'Roof angle (degrees)', format: 'number' },
+        { id: 'pitchMultiplier', label: 'Pitch multiplier (rafter length per ft of run)', format: 'number' },
+        { id: 'rafterLengthFt', label: 'Rafter length', format: 'number', dimension: 'length', unit: 'ft' }
+      ],
+      groups: [
+        { title: 'Pitch', inputs: ['riseIn'] },
+        { title: 'Rafter run', inputs: ['runFt'] }
+      ],
+      visual: {
+        type: 'rangeBar',
+        value: 'angleDeg',
+        title: 'Roof angle against code and NRCA shingle-slope guidance',
+        bands: [
+          { label: 'Below code minimum for shingles (under 2-in-12)', min: 0, max: 9.46 },
+          { label: 'Code minimum, below NRCA’s recommendation', min: 9.46, max: 18.43 },
+          { label: 'Meets NRCA’s recommended minimum (4-in-12+)', min: 18.43, max: 90 }
+        ]
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-02',
+      concept: {
+        title: 'Roof pitch, angle and rafter length',
+        paragraphs: [
+          'US roofing and carpentry express a roof’s steepness as a pitch: the rise in inches for every 12 inches of horizontal run, written as "X in 12" or X:12. Wikipedia’s entry on roof pitch states the convention plainly: "a roof that rises 6 inches for every 12 inches of horizontal run has a slope of 6:12." That ratio is really a tangent — rise over run — so the angle in degrees follows directly from trigonometry: angle = arctan(rise ÷ 12).',
+          'The same rise-and-run triangle gives the rafter length through the Pythagorean theorem. For every 12 inches of run, the rafter covers a hypotenuse of √(12² + rise²) inches — or, as a multiplier per foot of run, √(1 + (rise÷12)²). Multiply that multiplier by the actual horizontal run (commonly half the building’s width, for a common rafter running from the ridge to the wall plate) to get the rafter’s true length, longer than the run itself because it travels up the slope rather than straight across.',
+          'Traditionally, carpenters laid this out on a framing square using the rise-per-12-inches figure directly, without ever computing the angle in degrees at all — Wikipedia notes that framing squares provide "rise-per-unit-run information, which is essential for calculating rafter lengths." The degree figure this calculator shows is useful for a miter saw or an angle finder, but the rise-over-run ratio itself is the older and still most common way the trade measures pitch.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the pitch as a rise per 12 inches of run, then the actual horizontal run the rafter covers.',
+        steps: [
+          { name: 'Enter the rise', text: 'The vertical rise, in inches, for every 12 inches of horizontal run — 6 is a common moderate pitch, written 6-in-12.' },
+          { name: 'Enter the horizontal run', text: 'The actual horizontal distance the rafter spans, in feet — commonly half the building’s width for a simple gable roof.' },
+          { name: 'Read the angle', text: 'The headline figure, in degrees, useful for setting a miter saw or angle finder.' },
+          { name: 'Read the rafter length', text: 'The true sloped length of the rafter, always longer than the horizontal run itself.' },
+          { name: 'Check the slope-guidance band', text: 'The chart shows where the angle falls against the code minimum and NRCA’s recommended minimum for asphalt shingles.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The angle comes from the arctangent of rise over a 12-inch run; the rafter length comes from the Pythagorean theorem applied to the same triangle.',
+        expression: 'multiplier = √(1 + (rise ÷ 12)²)\nangle = arctan(rise ÷ 12)\nrafter length = run × multiplier',
+        terms: [
+          { symbol: 'rise', meaning: 'Vertical rise, in inches, for every 12 inches of horizontal run.' },
+          { symbol: 'run', meaning: 'The actual horizontal distance the rafter spans, in feet.' },
+          { symbol: 'multiplier', meaning: 'Rafter length per foot of horizontal run — also the roof’s area multiplier over its flat footprint.' },
+          { symbol: 'angle', meaning: 'The roof’s slope, in degrees from horizontal.' }
+        ],
+        note: 'An estimate for a simple common rafter with no overhang. A real rafter also needs a small overhang added at the eave and a seat/plumb cut allowance, which a carpenter adds on top of this bare triangle length.'
+      },
+      workedExample: {
+        intro: 'A roof has a 6-in-12 pitch, and the common rafter spans a 12 ft horizontal run from ridge to wall plate.',
+        rows: [
+          { label: 'Multiplier (√(1 + (6÷12)²))', value: '1.1180' },
+          { label: 'Angle (arctan(6÷12))', value: '26.57°' },
+          { label: 'Rafter length (12 × 1.1180)', value: '13.42 ft' }
+        ],
+        result: 'Angle ≈ 26.57°, rafter length ≈ 13.42 ft',
+        explanation: 'A shallower 4-in-12 pitch over a 15 ft run gives an angle of 18.43° and a rafter length of about 15.81 ft — exactly the code-vs-NRCA boundary this calculator’s chart marks, since 4-in-12 is the National Roofing Contractors Association’s own recommended minimum slope for asphalt shingles.'
+      },
+      watchOut: [
+        { title: 'The run is the rafter’s run, not the whole building width', body: 'For a simple gable roof, the common rafter’s horizontal run is normally half the building’s width (ridge to wall), not the full width — use the half-width figure, not the whole span.' },
+        { title: 'This is the bare triangle, not a cut list', body: 'Real rafters need an added eave overhang and the angled plumb and seat cuts at each end; a carpenter adds those on top of this calculator’s raw rafter length.' },
+        { title: 'Degrees and X-in-12 describe the same slope two ways', body: 'A 6-in-12 pitch and a 26.57° angle are the identical slope; carpentry has historically used the rise-per-12-inches figure directly on a framing square, while degrees are more useful for a digital angle finder or miter saw.' },
+        { title: 'Shingles have a recommended minimum slope', body: 'Building codes commonly allow asphalt shingles as low as 2-in-12 (about 9.46°), but the National Roofing Contractors Association recommends 4-in-12 (about 18.43°) or steeper as best practice — this calculator’s chart marks both thresholds.' },
+        { title: 'A hip or valley rafter is a different, steeper calculation', body: 'This calculator covers a common rafter, running straight up the slope. A hip or valley rafter runs at a diagonal across two roof planes and needs its own, longer formula.' }
+      ],
+      references: [
+        { label: 'Wikipedia, "Roof pitch" (the rise/run "X in 12" convention; framing squares)', url: 'https://en.wikipedia.org/wiki/Roof_pitch' },
+        { label: 'National Roofing Contractors Association, "Roof slope guidelines," Professional Roofing, August 2018 (code minimum and recommended minimum slope for asphalt shingles)', url: 'https://www.professionalroofing.net/Articles/Roof-slope-guidelines--08-01-2018/4284' }
+      ]
+    },
+    inputs: [
+      { id: 'riseIn', label: 'Rise (inches per 12 in. of run)', type: 'number', placeholder: '6', defaultValue: 6, step: 0.5, min: 0 },
+      { id: 'runFt', label: 'Horizontal run (ft)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.5, min: 0.1 }
+    ],
+    seo: {
+      title: 'Roof Pitch Calculator – Angle and Rafter Length',
+      description: 'Free roof pitch calculator: find the angle in degrees and the rafter length from a rise-per-12-inch pitch and the horizontal run, using the Pythagorean theorem.',
+      faq: [
+        { question: 'How do I convert roof pitch to degrees?', answer: 'Take the arctangent of the rise divided by 12. A 6-in-12 pitch is arctan(6÷12) ≈ 26.57°.' },
+        { question: 'How do I find rafter length from roof pitch?', answer: 'Multiply the horizontal run by the pitch multiplier, √(1 + (rise÷12)²). A 6-in-12 pitch over a 12 ft run gives a rafter length of about 13.42 ft.' },
+        { question: 'What does "6 in 12" roof pitch mean?', answer: 'The roof rises 6 inches for every 12 inches of horizontal run — the standard US way of expressing roof steepness, also written 6:12.' },
+        { question: 'What is the minimum roof pitch for shingles?', answer: 'Building codes commonly allow asphalt shingles down to 2-in-12 (about 9.46°), but the National Roofing Contractors Association recommends 4-in-12 (about 18.43°) or steeper as best practice.' },
+        { question: 'Is the rafter run the same as half the building width?', answer: 'For a simple gable roof with a common rafter, yes — the horizontal run is normally half the building’s width, from the outside wall to the center ridge.' },
+        { question: 'Why is the rafter longer than the horizontal run?', answer: 'Because the rafter travels up the slope, not straight across. The Pythagorean theorem relates the two: rafter length = run × √(1 + (rise÷12)²), always longer than the run itself for any positive pitch.' },
+        { question: 'Does this calculator add an overhang or cut allowances?', answer: 'No, it gives the bare rise-run-rafter triangle. A real cut list adds an eave overhang and the plumb and seat cuts a carpenter makes at each end of the rafter.' }
+      ]
+    },
+    compute(values) {
+      const pitchMultiplier = Math.sqrt(1 + (values.riseIn / 12) ** 2);
+      const angleDeg = Math.atan(values.riseIn / 12) * (180 / Math.PI);
+      const rafterLengthFt = values.runFt * pitchMultiplier;
+      return { pitchMultiplier, angleDeg, rafterLengthFt };
+    }
   }
 ];

@@ -3951,6 +3951,65 @@ exports[`compute() snapshots > paint-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > paver-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "areaLength": 12,
+      "areaWidth": 10,
+      "paverLengthIn": 8,
+      "paverWidthIn": 4,
+      "wastePercent": 5,
+      "baseDepthIn": 4,
+      "sandDepthIn": 1
+    },
+    "outputs": {
+      "areaSqFt": 120,
+      "paversExact": 540,
+      "paversWithWaste": 567,
+      "baseVolumeCuYd": 1.481481481,
+      "sandVolumeCuYd": 0.3703703704
+    }
+  },
+  "typical": {
+    "inputs": {
+      "areaLength": 18,
+      "areaWidth": 15,
+      "paverLengthIn": 12,
+      "paverWidthIn": 6,
+      "wastePercent": 8,
+      "baseDepthIn": 6,
+      "sandDepthIn": 1.5
+    },
+    "outputs": {
+      "areaSqFt": 270,
+      "paversExact": 540,
+      "paversWithWaste": 584,
+      "baseVolumeCuYd": 5,
+      "sandVolumeCuYd": 1.25
+    }
+  },
+  "edge": {
+    "inputs": {
+      "areaLength": 0.5,
+      "areaWidth": 0.5,
+      "paverLengthIn": 1,
+      "paverWidthIn": 1,
+      "wastePercent": 0,
+      "baseDepthIn": 1,
+      "sandDepthIn": 0.5
+    },
+    "outputs": {
+      "areaSqFt": 0.25,
+      "paversExact": 36,
+      "paversWithWaste": 36,
+      "baseVolumeCuYd": 0.0007716049383,
+      "sandVolumeCuYd": 0.0003858024691
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > paycheck-calculator 1`] = `
 {
   "default": {

@@ -1041,7 +1041,7 @@ export const homeCalculators: CalculatorConfig[] = [
     glyph: 'grv',
     updatedAt: '2026-11-02',
     aliases: ['how much gravel do i need', 'gravel tons calculator', 'crushed stone calculator', 'gravel yards calculator', 'driveway gravel calculator'],
-    related: ['sand-calculator', 'concrete-calculator', 'brick-calculator'],
+    related: ['sand-calculator', 'concrete-calculator', 'brick-calculator', 'paver-calculator'],
     title: 'Gravel Calculator',
     description: 'Find the volume (cubic feet and cubic yards) and weight (tons) of gravel a driveway, path or bed needs from its area and depth, with an editable density for your gravel type and a waste allowance.',
     example: 'A 50x10 ft driveway base, 4 inches deep in gravel at 1.4 tons per cubic yard, needs 6.17 cubic yards (8.64 tons), or 6.79 cubic yards (9.51 tons) with a 10% waste allowance.',
@@ -1163,7 +1163,7 @@ export const homeCalculators: CalculatorConfig[] = [
     glyph: 'snd',
     updatedAt: '2026-11-02',
     aliases: ['how much sand do i need', 'sand tons calculator', 'sandbox sand calculator', 'paver sand calculator', 'play sand calculator'],
-    related: ['gravel-calculator', 'concrete-calculator', 'brick-calculator'],
+    related: ['gravel-calculator', 'concrete-calculator', 'brick-calculator', 'paver-calculator'],
     title: 'Sand Calculator',
     description: 'Find the volume (cubic feet and cubic yards) and weight (tons) of sand a sandbox, paver base or bedding layer needs from its area and depth, with an editable density for your sand type.',
     example: 'A 6x4 ft sandbox filled 12 inches deep in sand at 1.3 tons per cubic yard needs 0.89 cubic yards (1.16 tons), or 0.98 cubic yards (1.27 tons) with a 10% waste allowance.',
@@ -1856,6 +1856,130 @@ export const homeCalculators: CalculatorConfig[] = [
       const angleDeg = Math.atan(values.riseIn / 12) * (180 / Math.PI);
       const rafterLengthFt = values.runFt * pitchMultiplier;
       return { pitchMultiplier, angleDeg, rafterLengthFt };
+    }
+  },
+  {
+    id: 'paver-calculator',
+    category: 'home',
+    glyph: 'pvr',
+    updatedAt: '2026-11-02',
+    aliases: ['how many pavers do i need', 'patio paver calculator', 'paver patio calculator', 'hardscape paver calculator', 'paver base calculator'],
+    related: ['gravel-calculator', 'sand-calculator', 'concrete-calculator'],
+    title: 'Paver Calculator',
+    description: 'Find how many pavers a patio or walkway needs from its area and paver size, with a waste allowance, plus the base gravel and bedding sand volumes from ICPI’s own installation standard.',
+    example: 'A 12x10 ft (120 sq ft) patio laid with 8x4 in pavers needs 540 pavers exactly, or 567 with a 5% waste allowance — plus 1.48 cubic yards of base gravel and 0.37 cubic yards of bedding sand.',
+    breakdown: {
+      headline: 'paversWithWaste',
+      headlineLabel: 'Pavers to buy',
+      outputs: [
+        { id: 'paversWithWaste', label: 'Pavers to buy', format: 'integer' },
+        { id: 'paversExact', label: 'Pavers needed, exact', format: 'number' },
+        { id: 'areaSqFt', label: 'Patio area', format: 'number', dimension: 'area', unit: 'ft2' },
+        { id: 'baseVolumeCuYd', label: 'Base gravel needed', format: 'number' },
+        { id: 'sandVolumeCuYd', label: 'Bedding sand needed', format: 'number' }
+      ],
+      groups: [
+        { title: 'Patio area', inputs: ['areaLength', 'areaWidth'] },
+        { title: 'Paver size & waste', inputs: ['paverLengthIn', 'paverWidthIn', 'wastePercent'] },
+        { title: 'Base & bedding sand depth', inputs: ['baseDepthIn', 'sandDepthIn'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'paversExact', label: 'Exact pavers' },
+          { from: 'paversWithWaste', label: 'Pavers to buy' }
+        ],
+        title: 'Pavers needed, exact vs. to buy'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-02',
+      concept: {
+        title: 'How many pavers, and how much base, a patio needs',
+        paragraphs: [
+          'Pavers are bought by the piece but measured by area, so the first step divides the patio or walkway’s area by the footprint of one paver. A 12 ft by 10 ft patio (120 sq ft) laid with 8 in by 4 in pavers — a common concrete paver size — needs exactly 540 pavers before any waste, since each paver covers 8×4÷144 = 0.2222 square feet. Oregon State University Extension’s own published installation guide puts the waste allowance plainly: "You should always add 5% to this figure, to allow for the pavers that will be cut to fit curves and odd spaces. If you know that you will be cutting a lot of pavers, you should add 10%."',
+          'A paver patio is not just the pavers themselves — it sits on a compacted base and a thin bedding sand layer underneath. The Interlocking Concrete Pavement Institute (ICPI), the trade association for the segmental paving industry, states in its Tech Spec 10 installation guide that "Minimum aggregate base thickness for walks should be 4 to 6 in." and that pavers are set on "Bedding sand nominal 1 in. (25 mm) thick." Oregon State’s extension guide independently confirms both figures, giving the same 4–6 in base range and a 1 in sand layer in its own step-by-step instructions.',
+          'Both the base gravel and the bedding sand are bought by volume — the same area times a depth calculation this site’s gravel and sand calculators already use — so this page converts the patio’s area at the chosen base and sand depths into cubic feet and cubic yards, ready to compare against a supplier’s delivered-by-the-yard pricing.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the patio area, the paver size and a waste allowance, then the base and bedding sand depths.',
+        steps: [
+          { name: 'Enter the patio area', text: 'Type the length and width of the patio or walkway, in feet. For an irregular shape, measure it as a few rectangles and add the areas.' },
+          { name: 'Enter the paver size', text: 'Type the paver’s length and width in inches, as printed on the pack — 8 by 4 in is a common concrete paver size.' },
+          { name: 'Set the waste allowance', text: 'Keep 5% for a simple rectangular layout, per Oregon State Extension’s guide, or raise it to 10% for a lot of cuts, curves or a diagonal pattern.' },
+          { name: 'Set the base and bedding sand depth', text: 'Keep ICPI’s own 4 in base and 1 in bedding sand figures for a pedestrian patio or walkway, or raise the base toward 6–8 in if the area will see vehicle traffic.' },
+          { name: 'Read the result', text: 'The headline is the pavers to buy; the rows below show the exact paver count, the area, and the base gravel and bedding sand volumes.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Area divided by one paver’s footprint gives the exact paver count; the same area times each depth gives the base and sand volumes.',
+        expression: 'paver area = (Lp ÷ 12) × (Wp ÷ 12)\npavers = ⌈ (area ÷ paver area) × (1 + waste%) ⌉\nbase volume = area × (base depth ÷ 12) ÷ 27\nsand volume = area × (sand depth ÷ 12) ÷ 27',
+        terms: [
+          { symbol: 'area', meaning: 'Patio or walkway area to cover, in square feet.' },
+          { symbol: 'Lp, Wp', meaning: 'Paver length and width, in inches.' },
+          { symbol: 'waste%', meaning: 'Extra percent for cuts at curves and edges; 5% for a simple layout, 10% for heavy cutting, per Oregon State Extension.' },
+          { symbol: 'base depth', meaning: 'Compacted aggregate base thickness, in inches; ICPI recommends 4–6 in for walks and patios.' },
+          { symbol: 'sand depth', meaning: 'Bedding sand thickness, in inches; ICPI’s own standard is a nominal 1 in.' }
+        ],
+        note: 'An estimate. Base depth should increase for vehicle traffic or a soft/clay subgrade, per ICPI’s own guidance; always compact the base and screed the bedding sand to a consistent depth before laying pavers.'
+      },
+      workedExample: {
+        intro: 'You are laying a 12 ft by 10 ft patio with 8 in by 4 in pavers, a 5% waste allowance, a 4 in base and a 1 in bedding sand layer.',
+        rows: [
+          { label: 'Area (12 × 10)', value: '120.00 sq ft' },
+          { label: 'Paver footprint ((8÷12) × (4÷12))', value: '0.2222 sq ft' },
+          { label: 'Exact pavers (120.00 ÷ 0.2222)', value: '540.00' },
+          { label: 'With 5% waste (540.00 × 1.05)', value: '567.00' },
+          { label: 'Base volume (120.00 × (4÷12) ÷ 27)', value: '1.48 cu yd' },
+          { label: 'Sand volume (120.00 × (1÷12) ÷ 27)', value: '0.37 cu yd' }
+        ],
+        result: '567 pavers, 1.48 cu yd base gravel, 0.37 cu yd bedding sand',
+        explanation: 'Raising the base depth to ICPI’s 6 in upper figure for the same 120 sq ft patio needs 2.22 cu yd of base instead of 1.48 — 50% more — while the paver and sand figures stay the same, since only the base layer’s thickness changed.'
+      },
+      watchOut: [
+        { title: 'Base depth depends on use, not just the ICPI minimum', body: 'ICPI’s 4–6 in figure is for walks and patios; its own Tech Spec 10 calls for 6–8 in for driveways carrying vehicles, and more over soft or clay subgrades.' },
+        { title: 'Pavers round up in whole units, base and sand round up in whole deliveries', body: 'You cannot buy a fraction of a paver, and most suppliers sell base and sand by the cubic yard or by the bag — check your supplier’s own minimum order and unit size against the calculated volumes.' },
+        { title: 'Bedding sand is not joint sand', body: 'The 1 in bedding sand this calculator computes goes under the pavers, screeded flat before they are laid; sand swept into the joints afterward is a separate, much smaller quantity not covered here.' },
+        { title: 'A complex pattern wastes more than a simple one', body: 'Oregon State Extension’s 5% default suits a straightforward rectangular layout; a 45° or herringbone pattern, or a curved edge, cuts more pavers and should use a higher waste allowance.' },
+        { title: 'Paver size varies widely by product', body: '8 by 4 in is one common size, but concrete pavers are sold in many shapes and sizes from small cobbles to large-format slabs — always use your own product’s printed dimensions.' }
+      ],
+      references: [
+        { label: 'Interlocking Concrete Pavement Institute, Tech Spec 10 — Application Guide for Interlocking Concrete Pavements (base depth, bedding sand thickness)', url: 'https://www.cmha.org/wp-content/uploads/2023/12/TechSpec10-ApplicationGuide2022.pdf' },
+        { label: 'Oregon State University Extension Service, "10-Step Guide to Installing Pavers" (waste allowance, base and bedding sand depth)', url: 'https://extension.oregonstate.edu/sites/extd8/files/documents/1/howtoinstallpavers.pdf' }
+      ]
+    },
+    inputs: [
+      { id: 'areaLength', label: 'Patio length (ft)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.5, min: 0.5 },
+      { id: 'areaWidth', label: 'Patio width (ft)', type: 'number', placeholder: '10', defaultValue: 10, step: 0.5, min: 0.5 },
+      { id: 'paverLengthIn', label: 'Paver length (in)', type: 'number', placeholder: '8', defaultValue: 8, step: 0.5, min: 1 },
+      { id: 'paverWidthIn', label: 'Paver width (in)', type: 'number', placeholder: '4', defaultValue: 4, step: 0.5, min: 1 },
+      { id: 'wastePercent', label: 'Waste allowance (%)', type: 'percent', placeholder: '5', defaultValue: 5, step: 1, min: 0 },
+      { id: 'baseDepthIn', label: 'Base gravel depth (in, ICPI walks/patios = 4–6)', type: 'number', placeholder: '4', defaultValue: 4, step: 0.5, min: 1 },
+      { id: 'sandDepthIn', label: 'Bedding sand depth (in, ICPI nominal = 1)', type: 'number', placeholder: '1', defaultValue: 1, step: 0.25, min: 0.5 }
+    ],
+    seo: {
+      title: 'Paver Calculator – Pavers, Base and Bedding Sand Needed',
+      description: 'Free paver calculator: pavers needed for a patio or walkway, with a waste allowance, plus base gravel and bedding sand volumes from ICPI’s own standard.',
+      faq: [
+        { question: 'How many pavers do I need for a patio?', answer: 'Divide the patio area by one paver’s footprint, then add a waste allowance. A 12×10 ft (120 sq ft) patio with 8×4 in pavers needs 540 pavers exactly, 567 with a 5% waste allowance.' },
+        { question: 'How much extra should I order for cut pavers?', answer: 'Oregon State University Extension’s installation guide recommends adding 5% for a simple layout, or 10% if you know you will be cutting a lot of pavers for curves or odd spaces.' },
+        { question: 'How deep should the base be under pavers?', answer: 'The Interlocking Concrete Pavement Institute’s Tech Spec 10 recommends a 4 to 6 in compacted aggregate base for walks and patios, and 6 to 8 in for driveways carrying vehicles.' },
+        { question: 'How thick should the bedding sand layer be?', answer: 'ICPI’s own standard calls for a nominal 1 in bedding sand layer under the pavers, screeded flat before laying — not used to fill depressions in the base.' },
+        { question: 'How much base gravel and sand do I need in cubic yards?', answer: 'Multiply the patio area by the depth (in feet) and divide by 27. The 120 sq ft worked example needs 1.48 cu yd of base gravel at 4 in deep and 0.37 cu yd of bedding sand at 1 in deep.' },
+        { question: 'Is bedding sand the same as the sand swept into the joints?', answer: 'No. Bedding sand is the 1 in layer the pavers sit on, screeded flat; joint sand is swept into the gaps between pavers afterward, a separate and much smaller quantity.' },
+        { question: 'What paver size does this calculator assume?', answer: '8 by 4 in by default, a common concrete paver size, but the length and width fields work for any rectangular paver — use your own product’s printed dimensions.' }
+      ]
+    },
+    compute(values) {
+      const areaSqFt = values.areaLength * values.areaWidth;
+      const paverSqFt = (values.paverLengthIn / 12) * (values.paverWidthIn / 12);
+      const paversExact = areaSqFt / paverSqFt;
+      const paversWithWaste = Math.ceil(paversExact * (1 + values.wastePercent / 100));
+      const baseVolumeCuYd = (areaSqFt * (values.baseDepthIn / 12)) / 27;
+      const sandVolumeCuYd = (areaSqFt * (values.sandDepthIn / 12)) / 27;
+      return { areaSqFt, paversExact, paversWithWaste, baseVolumeCuYd, sandVolumeCuYd };
     }
   }
 ];

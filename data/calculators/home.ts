@@ -2082,7 +2082,7 @@ export const homeCalculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Mulch Calculator – Bags and Cubic Yards Needed',
-      description: 'Free mulch calculator: bags or cubic yards of mulch needed for a bed from its area and depth, with Virginia Cooperative Extension’s depth guidance and a waste allowance.',
+      description: 'Free mulch calculator: bags or cubic yards needed for a bed from its area and depth, with extension-recommended depth guidance and a waste allowance.',
       faq: [
         { question: 'How much mulch do I need?', answer: 'Multiply the bed’s area by the depth to get the volume, then add a waste allowance. A 20×10 ft bed, 3 inches deep, needs 50.00 cubic feet (1.85 cubic yards) before waste, or 28 bags of 2 cubic feet each with a 10% waste allowance.' },
         { question: 'How deep should I spread mulch?', answer: 'Virginia Cooperative Extension recommends generally 2 to 4 inches, and never building mulch up past 4 inches. Use 2–3 inches around trees and shrubs, and 1–2 inches for fine or double-shredded mulch.' },
@@ -2448,7 +2448,7 @@ export const homeCalculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Board Foot Calculator – Lumber Volume and Cost',
-      description: 'Free board foot calculator: total board feet and estimated cost for a stack of lumber from nominal thickness, width and length, with the nominal-vs-actual sizing trap explained.',
+      description: 'Free board foot calculator: total board feet and cost for lumber from nominal thickness, width and length, with the nominal-vs-actual sizing trap explained.',
       faq: [
         { question: 'How do I calculate board feet?', answer: 'Multiply the nominal thickness by the nominal width (both in inches) by the length (in feet), then divide by 12. One board 1 in thick, 6 in wide, 8 ft long is 4.00 board feet.' },
         { question: 'What is a board foot?', answer: 'A board foot is a volume of wood: 144 cubic inches, the same as a board 1 inch thick, 12 inches wide and 12 inches long. It is the standard unit lumber is bought and sold by.' },

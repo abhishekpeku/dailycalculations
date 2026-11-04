@@ -1981,5 +1981,646 @@ export const homeCalculators: CalculatorConfig[] = [
       const sandVolumeCuYd = (areaSqFt * (values.sandDepthIn / 12)) / 27;
       return { areaSqFt, paversExact, paversWithWaste, baseVolumeCuYd, sandVolumeCuYd };
     }
+  },
+  {
+    id: 'mulch-calculator',
+    category: 'home',
+    glyph: 'mul',
+    updatedAt: '2026-11-04',
+    aliases: ['how much mulch do i need', 'mulch calculator bags', 'mulch cubic yards calculator', 'garden bed mulch calculator', 'mulch coverage calculator'],
+    related: ['topsoil-calculator', 'gravel-calculator', 'sand-calculator', 'paver-calculator'],
+    title: 'Mulch Calculator',
+    description: 'Find how many bags or cubic yards of mulch a flower bed, tree ring or landscape bed needs from its area and depth, with a waste allowance.',
+    example: 'A 20x10 ft bed mulched 3 inches deep needs 50.00 cubic feet (1.85 cubic yards), or 55.00 cubic feet (2.04 cubic yards) with a 10% waste allowance — 28 bags at 2 cubic feet per bag.',
+    breakdown: {
+      headline: 'bagsToBuy',
+      headlineLabel: 'Bags to buy (2 cu ft bags)',
+      outputs: [
+        { id: 'bagsToBuy', label: 'Bags to buy', format: 'integer' },
+        { id: 'cubicYardsWithWaste', label: 'Cubic yards to buy (bulk order)', format: 'number' },
+        { id: 'cubicYardsExact', label: 'Cubic yards needed, exact', format: 'number' },
+        { id: 'cubicFeetExact', label: 'Cubic feet needed, exact', format: 'number' },
+        { id: 'areaSqFt', label: 'Bed area', format: 'number', dimension: 'area', unit: 'ft2' }
+      ],
+      groups: [
+        { title: 'Bed area & depth', inputs: ['areaLength', 'areaWidth', 'depthInches'] },
+        { title: 'Bag size & waste', inputs: ['bagSizeCuFt', 'wastePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'cubicFeetExact', label: 'Exact cu ft' },
+          { from: 'cubicFeetWithWaste', label: 'Cu ft to buy' }
+        ],
+        title: 'Mulch needed, exact vs. to buy'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-04',
+      concept: {
+        title: 'How much mulch a bed really needs',
+        paragraphs: [
+          'Mulch is spread by depth over an area, so the math is the same geometry this site’s gravel and sand calculators use: length times width gives the bed’s area, and area times depth gives the volume. A 20 ft by 10 ft bed mulched 3 inches deep comes to 200 square feet times 0.25 feet, or 50 cubic feet — 1.85 cubic yards before any waste allowance.',
+          'How deep to spread it is a real horticultural question, not just a style choice. Virginia Cooperative Extension’s 2025 guide to mulching puts the recommended depth at "generally 2-4 inches" and warns against letting mulch "build up to a depth greater than 4 inches." It recommends a shallower 2 to 3 inches around trees and shrubs, and just 1 to 2 inches for fine or double-shredded mulch — a layer that is too thick starves roots of oxygen and can smother the very plants it is meant to protect.',
+          'Mulch is sold two ways: in bags, usually 2 cubic feet each at US home centers, for smaller beds, or in bulk by the cubic yard for larger jobs. Mulch Pros Landscape Supply, a real aggregate and mulch yard, publishes coverage figures of about 162 square feet per cubic yard at 2 inches deep and 108 square feet at 3 inches — both of which match this calculator’s own area-divided-by-depth arithmetic exactly, confirming it is the same math a yard uses to quote a delivery.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the bed, then the depth, bag size and a waste allowance.',
+        steps: [
+          { name: 'Enter the bed dimensions', text: 'Type the length and width of the bed or tree ring in feet.' },
+          { name: 'Enter the mulch depth', text: 'Virginia Cooperative Extension recommends 2 to 4 inches generally, never more than 4; use 2–3 in for trees and shrubs, 1–2 in for fine or double-shredded mulch.' },
+          { name: 'Set the bag size', text: 'Keep 2 cubic feet for a standard US retail bag, or type the cubic feet printed on your own bag.' },
+          { name: 'Set the waste allowance', text: 'Keep 10% for spillage and an uneven bed surface, or raise it for a larger or more irregular bed.' },
+          { name: 'Read the result', text: 'The headline is the bags to buy; the rows below show the cubic yards for a bulk order and the exact volume before waste.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Area times depth gives the volume; convert to cubic yards for a bulk order, or divide by the bag size for bagged mulch.',
+        expression: 'cu ft = L × W × (depth ÷ 12)\ncu yd = cu ft ÷ 27\nbags = ⌈(cu ft × (1 + waste%)) ÷ bag size⌉',
+        terms: [
+          { symbol: 'L, W', meaning: 'Bed length and width, in feet.' },
+          { symbol: 'depth', meaning: 'Mulch depth, in inches — Virginia Cooperative Extension recommends 2–4 in, never more than 4.' },
+          { symbol: 'bag size', meaning: 'Cubic feet per bag; 2 cu ft is the standard US retail bag size.' },
+          { symbol: 'waste%', meaning: 'Extra percent for spillage and an uneven bed surface; 10% is a common starting point.' }
+        ],
+        note: 'An estimate. Settled mulch depth is less than freshly spread depth, so beds often need topping up after the first season as organic mulch decomposes.'
+      },
+      workedExample: {
+        intro: 'You are mulching a 20 ft by 10 ft bed 3 inches deep, with 2 cubic foot bags and a 10% waste allowance.',
+        rows: [
+          { label: 'Area (20 × 10)', value: '200.00 sq ft' },
+          { label: 'Depth in feet (3 ÷ 12)', value: '0.25 ft' },
+          { label: 'Cubic feet, exact (200.00 × 0.25)', value: '50.00 ft³' },
+          { label: 'Cubic yards, exact (50.00 ÷ 27)', value: '1.85 yd³' },
+          { label: 'Cubic feet with 10% waste (50.00 × 1.10)', value: '55.00 ft³' },
+          { label: 'Cubic yards with waste (55.00 ÷ 27)', value: '2.04 yd³' },
+          { label: 'Bags to buy (55.00 ÷ 2, rounded up)', value: '28 bags' }
+        ],
+        result: '28 bags (2.04 cubic yards) to buy',
+        explanation: 'Spreading the same bed at Virginia Cooperative Extension’s 4-inch maximum instead of 3 inches needs 66.67 cubic feet before waste — about 33.3% more than the 50.00 cubic feet at 3 inches, since volume scales directly with depth.'
+      },
+      watchOut: [
+        { title: 'Depth affects volume directly', body: 'Doubling the depth doubles the mulch needed for the same bed — stay within Virginia Cooperative Extension’s 2–4 in range rather than over-ordering for a thicker-than-needed layer.' },
+        { title: 'Settled depth is less than freshly spread depth', body: 'Organic mulch compacts and decomposes over a season, so beds often need topping up — this calculator computes the freshly spread volume, not a maintenance top-up amount.' },
+        { title: 'Keep mulch off tree trunks and plant stems', body: 'Virginia Cooperative Extension warns against "mulch volcanoes" piled against a trunk; keep mulch 3–4 inches back from the trunk so the root flare stays visible.' },
+        { title: 'Bag size varies by brand', body: 'This calculator defaults to the common 2 cubic foot bag, but always check the cubic feet printed on your specific product before buying.' },
+        { title: 'Bulk mulch is usually cheaper for larger beds', body: 'Compare the bagged total above against a landscape yard’s price per cubic yard before buying many bags for a large bed.' }
+      ],
+      references: [
+        { label: 'Virginia Cooperative Extension, SPES-661P, "Mulching: Purpose, Benefits, and Essential Information" (Garrity & Tierney, 2025) — recommended depth, trunk clearance', url: 'https://www.pubs.ext.vt.edu/content/dam/pubs_ext_vt_edu/spes/spes-661/SPES-661.pdf' },
+        { label: 'Mulch Pros Landscape Supply, Material Weight and Coverage (cubic-yard coverage by depth)', url: 'https://mulchpros.com/material-weight-and-coverage/' }
+      ]
+    },
+    inputs: [
+      { id: 'areaLength', label: 'Bed length (ft)', type: 'number', placeholder: '20', defaultValue: 20, step: 0.5, min: 0.5 },
+      { id: 'areaWidth', label: 'Bed width (ft)', type: 'number', placeholder: '10', defaultValue: 10, step: 0.5, min: 0.5 },
+      { id: 'depthInches', label: 'Mulch depth (in, Virginia Cooperative Extension recommends 2–4)', type: 'number', placeholder: '3', defaultValue: 3, step: 0.5, min: 0.5 },
+      { id: 'bagSizeCuFt', label: 'Bag size (cu ft, standard retail bag = 2)', type: 'number', placeholder: '2', defaultValue: 2, step: 0.5, min: 0.5 },
+      { id: 'wastePercent', label: 'Waste allowance (%)', type: 'percent', placeholder: '10', defaultValue: 10, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Mulch Calculator – Bags and Cubic Yards Needed',
+      description: 'Free mulch calculator: bags or cubic yards needed for a bed from its area and depth, with extension-recommended depth guidance and a waste allowance.',
+      faq: [
+        { question: 'How much mulch do I need?', answer: 'Multiply the bed’s area by the depth to get the volume, then add a waste allowance. A 20×10 ft bed, 3 inches deep, needs 50.00 cubic feet (1.85 cubic yards) before waste, or 28 bags of 2 cubic feet each with a 10% waste allowance.' },
+        { question: 'How deep should I spread mulch?', answer: 'Virginia Cooperative Extension recommends generally 2 to 4 inches, and never building mulch up past 4 inches. Use 2–3 inches around trees and shrubs, and 1–2 inches for fine or double-shredded mulch.' },
+        { question: 'How many bags of mulch do I need?', answer: 'Divide the total cubic feet (with waste) by the bag’s cubic feet. At the standard 2 cubic foot bag size, a 200 sq ft bed at 3 inches deep with 10% waste needs 28 bags.' },
+        { question: 'Is bagged or bulk mulch cheaper?', answer: 'It depends on bed size. Bagged mulch is convenient for small beds, but bulk mulch delivered by the cubic yard is usually cheaper per cubic foot for larger jobs — compare this calculator’s cubic-yard row against a local yard’s bulk price.' },
+        { question: 'Should mulch touch the tree trunk?', answer: 'No. Virginia Cooperative Extension specifically warns against piling mulch against a trunk ("mulch volcanoes"), which keeps bark moist and invites insects and disease — keep mulch 3–4 inches back from the trunk.' },
+        { question: 'Does mulch depth really change how much I need?', answer: 'Yes, directly. The same 200 sq ft bed needs 66.67 cubic feet at a 4-inch depth versus 50.00 cubic feet at 3 inches — about 33.3% more mulch for that extra inch.' },
+        { question: 'How much does a cubic yard of mulch cover?', answer: 'Per Mulch Pros Landscape Supply’s own published figures, about 162 square feet at a 2-inch depth, or 108 square feet at 3 inches — both match this calculator’s area ÷ depth ÷ 27 formula exactly.' }
+      ]
+    },
+    compute(values) {
+      const areaSqFt = values.areaLength * values.areaWidth;
+      const depthFt = values.depthInches / 12;
+      const cubicFeetExact = areaSqFt * depthFt;
+      const cubicYardsExact = cubicFeetExact / 27;
+      const cubicFeetWithWaste = cubicFeetExact * (1 + values.wastePercent / 100);
+      const cubicYardsWithWaste = cubicFeetWithWaste / 27;
+      const bagsToBuy = Math.ceil(cubicFeetWithWaste / values.bagSizeCuFt);
+      return { areaSqFt, cubicFeetExact, cubicYardsExact, cubicFeetWithWaste, cubicYardsWithWaste, bagsToBuy };
+    }
+  },
+  {
+    id: 'topsoil-calculator',
+    category: 'home',
+    glyph: 'soil',
+    updatedAt: '2026-11-04',
+    aliases: ['how much topsoil do i need', 'topsoil cubic yards calculator', 'topsoil tons calculator', 'garden bed topsoil calculator', 'fill dirt calculator'],
+    related: ['mulch-calculator', 'gravel-calculator', 'sand-calculator', 'concrete-calculator'],
+    title: 'Topsoil Calculator',
+    description: 'Find the volume (cubic feet and cubic yards) and weight (tons) of topsoil a garden bed, lawn patch or fill area needs from its area and depth, with an editable density and a waste allowance.',
+    example: 'A 20x10 ft bed filled 4 inches deep in topsoil at 1.0 tons per cubic yard needs 2.47 cubic yards (2.47 tons), or 2.72 cubic yards (2.72 tons) with a 10% waste allowance.',
+    breakdown: {
+      headline: 'tonsWithWaste',
+      headlineLabel: 'Tons to buy',
+      outputs: [
+        { id: 'tonsWithWaste', label: 'Tons to buy', format: 'number' },
+        { id: 'tonsExact', label: 'Tons needed, exact', format: 'number' },
+        { id: 'cubicYardsWithWaste', label: 'Cubic yards to buy', format: 'number' },
+        { id: 'cubicYards', label: 'Cubic yards, exact', format: 'number' },
+        { id: 'cubicFeet', label: 'Cubic feet, exact', format: 'number' }
+      ],
+      groups: [
+        { title: 'Area & depth', inputs: ['areaLength', 'areaWidth', 'depthInches'] },
+        { title: 'Density & waste', inputs: ['densityTonsPerCubicYard', 'wastePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'tonsExact', label: 'Exact tons' },
+          { from: 'tonsWithWaste', label: 'Tons to buy' }
+        ],
+        title: 'Topsoil needed, exact vs. to buy'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-04',
+      concept: {
+        title: 'How much topsoil a bed or lawn patch needs',
+        paragraphs: [
+          'Topsoil is delivered by weight (tons) but spread by volume, so the calculation follows the same two steps as this site’s gravel and sand calculators: area times depth gives the volume, and volume times density converts that to a weight. A 20 ft by 10 ft bed filled 4 inches deep comes to 200 square feet times 0.333 feet, or 66.67 cubic feet — 2.47 cubic yards before any waste allowance.',
+          'Topsoil is lighter than gravel or sand for the same volume, because it is mostly broken-down organic and mineral particles rather than dense stone. EarthStone Rock, a real landscape-material supplier, puts a cubic yard of topsoil at "about 2,000 lb" dry — roughly 1.0 ton — and notes directly that "material that has absorbed rain weighs noticeably more per cubic yard than the same material dry," the same moisture effect that changes gravel and sand deliveries. This calculator defaults to 1.0 tons per cubic yard but leaves the density editable for your own supplier’s figure.',
+          'Because topsoil is loose and settles once spread, watered and walked on, ordering only the exact volume calculated often leaves a bed visibly lower than its neighbors within a season — which is why a waste allowance belongs in the order, not just in the math.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the area and depth, then your topsoil’s density and a waste allowance.',
+        steps: [
+          { name: 'Enter the area', text: 'Type the length and width of the bed, lawn patch or fill area in feet.' },
+          { name: 'Enter the depth', text: 'Use the thickness in inches you plan to add — commonly 2 to 4 inches for topping a lawn, more for a new bed or raised area.' },
+          { name: 'Set the density', text: 'Keep 1.0 tons per cubic yard for a typical dry topsoil, per EarthStone Rock’s own figures, or use your supplier’s quoted number — wetter soil weighs more.' },
+          { name: 'Set the waste allowance', text: 'Keep 10% for settling once the soil is spread, watered and walked on, or raise it for a larger or less even job.' },
+          { name: 'Read the result', text: 'The headline is the tons to buy; the rows below show the exact cubic feet, cubic yards and tons before waste.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Area times depth gives the volume; volume times density gives the weight, and a waste factor sets what you actually buy.',
+        expression: 'cu ft = L × W × (depth ÷ 12)\ncu yd = cu ft ÷ 27\ntons = cu yd × density\nbuy = cu yd × (1 + waste%) × density',
+        terms: [
+          { symbol: 'L, W', meaning: 'Area length and width, in feet.' },
+          { symbol: 'depth', meaning: 'Depth of topsoil, in inches — divide by 12 to get feet.' },
+          { symbol: 'density', meaning: 'Tons per cubic yard for your topsoil; about 1.0 ton per cubic yard dry, per EarthStone Rock’s published figures, more when wet.' },
+          { symbol: 'waste%', meaning: 'Extra percent for settling once the soil is spread, watered and walked on; 10% is a common starting point.' }
+        ],
+        note: 'An estimate. Topsoil suppliers sell by the ton or the cubic yard and often round a delivery up to a standard load size — confirm minimums before ordering.'
+      },
+      workedExample: {
+        intro: 'You are filling a 20 ft by 10 ft bed 4 inches deep, using topsoil at 1.0 tons per cubic yard with a 10% waste allowance.',
+        rows: [
+          { label: 'Area (20 × 10)', value: '200.00 sq ft' },
+          { label: 'Depth in feet (4 ÷ 12)', value: '0.3333 ft' },
+          { label: 'Cubic feet (200.00 × 0.3333)', value: '66.67 ft³' },
+          { label: 'Cubic yards (66.67 ÷ 27)', value: '2.47 yd³' },
+          { label: 'Tons, exact (2.47 × 1.0)', value: '2.47 tons' },
+          { label: 'Cubic yards with 10% waste (2.47 × 1.10)', value: '2.72 yd³' },
+          { label: 'Tons to buy (2.72 × 1.0)', value: '2.72 tons' }
+        ],
+        result: '2.72 tons to order (2.47 tons exact)',
+        explanation: 'The same volume at a wetter 1.3 tons per cubic yard — near the upper end of the moisture-driven range EarthStone Rock describes — would weigh 3.53 tons instead of 2.72, about 30.0% more, purely from the moisture content, not from needing any more soil.'
+      },
+      watchOut: [
+        { title: 'Moisture changes the weight, not the volume', body: 'EarthStone Rock notes wet soil weighs noticeably more per cubic yard than dry soil of the same volume — a supplier’s dry-weight quote can understate the tons a rain-soaked delivery actually weighs.' },
+        { title: 'Topsoil settles after spreading', body: 'Loose soil compacts once watered and walked on, so a bed filled to the exact calculated volume often sits lower than expected within a season — the 10% default covers typical settling.' },
+        { title: 'Depth drives weight directly', body: 'Volume scales linearly with depth for a fixed area, so doubling the depth doubles the tons needed for the same footprint.' },
+        { title: 'Topsoil quality varies by supplier', body: 'Screened, weed-free topsoil costs more than unscreened fill dirt — confirm what grade your supplier is quoting, since this calculator only estimates quantity, not quality.' },
+        { title: 'Suppliers often have delivery minimums', body: 'Many landscape yards price and haul topsoil with a minimum load size — a small job may cost close to the same as a somewhat larger one once delivery is included.' }
+      ],
+      references: [
+        { label: 'EarthStone Rock, Cubic Yards vs. Tons for Landscape Rock (topsoil weight per cubic yard, moisture note)', url: 'https://earthstonerock.com/blogs/landscaping-guides/cubic-yards-vs-tons' },
+        { label: 'Virginia Cooperative Extension, SPES-725P, "Soil Sampling for Residential Areas" (Hunnings, Donohue & Heckendorn, 2025)', url: 'https://www.pubs.ext.vt.edu/452/452-129/452-129.html' }
+      ]
+    },
+    inputs: [
+      { id: 'areaLength', label: 'Area length (ft)', type: 'number', placeholder: '20', defaultValue: 20, step: 0.5, min: 0.5 },
+      { id: 'areaWidth', label: 'Area width (ft)', type: 'number', placeholder: '10', defaultValue: 10, step: 0.5, min: 0.5 },
+      { id: 'depthInches', label: 'Depth (inches)', type: 'number', placeholder: '4', defaultValue: 4, step: 0.5, min: 0.5 },
+      { id: 'densityTonsPerCubicYard', label: 'Density (tons per cubic yard, typical dry = 1.0)', type: 'number', placeholder: '1', defaultValue: 1, step: 0.05, min: 0.5 },
+      { id: 'wastePercent', label: 'Waste allowance (%)', type: 'percent', placeholder: '10', defaultValue: 10, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Topsoil Calculator – Cubic Yards and Tons Needed',
+      description: 'Free topsoil calculator: cubic feet, cubic yards and tons of topsoil needed from area and depth, with an editable density and a waste factor.',
+      faq: [
+        { question: 'How much topsoil do I need?', answer: 'Multiply the area by the depth to get volume, convert to cubic yards, then multiply by density. A 20×10 ft bed, 4 inches deep, at 1.0 tons/yd³ needs 2.47 cubic yards, 2.47 tons, before waste.' },
+        { question: 'How many tons of topsoil are in a cubic yard?', answer: 'EarthStone Rock, a landscape-material supplier, puts dry topsoil at about 2,000 lb — roughly 1.0 ton — per cubic yard, which is this calculator’s default. Wetter soil weighs more for the same volume.' },
+        { question: 'Does wet topsoil weigh more than dry topsoil?', answer: 'Yes. EarthStone Rock notes that material which has absorbed rain weighs noticeably more per cubic yard than the same material dry — a density near 1.3 tons/yd³ for wetter soil would weigh about 30% more than the 1.0 default for the identical volume.' },
+        { question: 'Should I order extra topsoil for settling?', answer: 'Yes, a 10% allowance is a common starting point — loose soil compacts once it is spread, watered and walked on, so the exact calculated volume often falls short within a season.' },
+        { question: 'How deep should I add topsoil to a lawn or bed?', answer: 'It depends on the goal: topping an existing lawn is commonly 2 to 4 inches, while filling a new raised bed can be much deeper — enter whatever depth your project calls for.' },
+        { question: 'Is topsoil the same as fill dirt?', answer: 'No. Fill dirt is typically subsoil used to raise grade and does not support plant growth well; topsoil is the nutrient-rich upper layer used for planting. This calculator estimates quantity for either, but quality and price differ.' },
+        { question: 'How do I convert the depth from inches into the formula?', answer: 'Divide the inches by 12 to get feet before multiplying by the area — a 4-inch depth is 4 ÷ 12 = 0.3333 ft.' }
+      ]
+    },
+    compute(values) {
+      const areaSqFt = values.areaLength * values.areaWidth;
+      const depthFt = values.depthInches / 12;
+      const cubicFeet = areaSqFt * depthFt;
+      const cubicYards = cubicFeet / 27;
+      const tonsExact = cubicYards * values.densityTonsPerCubicYard;
+      const cubicYardsWithWaste = cubicYards * (1 + values.wastePercent / 100);
+      const tonsWithWaste = cubicYardsWithWaste * values.densityTonsPerCubicYard;
+      return { cubicFeet, cubicYards, tonsExact, cubicYardsWithWaste, tonsWithWaste };
+    }
+  },
+  {
+    id: 'retaining-wall-calculator',
+    category: 'home',
+    glyph: 'wall',
+    updatedAt: '2026-11-04',
+    aliases: ['retaining wall block calculator', 'how many blocks for a retaining wall', 'retaining wall calculator', 'landscape block wall calculator', 'retaining wall base gravel calculator'],
+    related: ['gravel-calculator', 'brick-calculator', 'paver-calculator', 'concrete-calculator'],
+    title: 'Retaining Wall Calculator',
+    description: 'Find how many retaining wall blocks a wall needs from its length and height and the block size, plus the compacted base gravel trench it sits on, using a manufacturer’s own installation formula.',
+    example: 'A 20 ft long, 3 ft tall wall built with 18x8 in blocks needs 60 blocks exactly, 63 with a 5% waste allowance, over a 9 in deep, 24 in wide base trench — 1.11 cubic yards of base gravel.',
+    breakdown: {
+      headline: 'blocksToBuy',
+      headlineLabel: 'Blocks to buy',
+      outputs: [
+        { id: 'blocksToBuy', label: 'Blocks to buy', format: 'integer' },
+        { id: 'blocksExact', label: 'Blocks needed, exact', format: 'number' },
+        { id: 'coursesNeeded', label: 'Courses (rows) needed', format: 'integer' },
+        { id: 'wallAreaSqFt', label: 'Wall face area', format: 'number', dimension: 'area', unit: 'ft2' },
+        { id: 'baseGravelVolumeCuYd', label: 'Base gravel needed (cu yd)', format: 'number' }
+      ],
+      groups: [
+        { title: 'Wall length & height', inputs: ['wallLength', 'wallHeight'] },
+        { title: 'Block size & waste', inputs: ['blockWidthIn', 'blockHeightIn', 'wastePercent'] },
+        { title: 'Base trench width', inputs: ['trenchWidthIn'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'blocksExact', label: 'Exact blocks' },
+          { from: 'blocksToBuy', label: 'Blocks to buy' }
+        ],
+        title: 'Blocks needed, exact vs. to buy'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-04',
+      concept: {
+        title: 'How many blocks a retaining wall needs, and what it sits on',
+        paragraphs: [
+          'A segmental retaining wall block covers a fixed rectangle of wall face, so the block count comes from dividing the wall’s face area by that rectangle, the same way the brick calculator on this site works a brick wall. A common block size — Allan Block’s Classic unit, as listed by building-materials retailer SiteOne — is 18 in long by 8 in exposed per course, which happens to be exactly 144 square inches, or 1 square foot, of wall face per block. A 20 ft long, 3 ft tall wall (60 sq ft of face) built from that block size therefore needs exactly 60 blocks before any waste allowance — a convenient round number from a real product size, not a coincidence this calculator relies on for other block sizes.',
+          'A retaining wall is not just stacked blocks — the first course sits buried in a compacted gravel trench below grade, which is what actually keeps the wall from shifting or heaving. Allan Block’s own installation guide states the base trench depth as "6 in. (150 mm) plus an additional 1 in. (25 mm) for each 1 ft. (300 mm) of wall height," with a standard trench 24 in. wide and a minimum of 6 in. of compacted wall rock. A 3 ft tall wall therefore needs a 9 in deep trench (6 + 1×3); a 6 ft wall would need 12 in.',
+          'That trench is filled with the same crushed-stone base material this site’s gravel calculator prices by the cubic yard, so this page computes the trench’s volume directly from the wall’s length, the standard 24 in trench width, and the height-dependent depth — ready to cross-check against a gravel delivery.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the wall’s length and height, then the block size and a waste allowance.',
+        steps: [
+          { name: 'Enter the wall length and height', text: 'Measure the finished wall face in feet — length along the wall, height from the base trench to the top course.' },
+          { name: 'Enter the block size', text: 'Type the block’s face width and exposed height in inches, as printed on the product — 18 by 8 in is a common segmental block size.' },
+          { name: 'Set the waste allowance', text: 'Keep 5% for corner cuts, breakage and a non-exact course count, or raise it for a wall with many corners or curves.' },
+          { name: 'Set the base trench width', text: 'Keep Allan Block’s standard 24 in trench width, or narrow it to 18 in for a short wall under 4 ft, per the same guide.' },
+          { name: 'Read the result', text: 'The headline is the blocks to buy; the rows below show the exact block count, the courses needed, the wall area and the base gravel volume.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Wall area divided by one block’s face gives the block count; the manufacturer’s own height-based formula gives the base trench depth and, with it, the base gravel volume.',
+        expression: 'blocks = ⌈ ((L × H) ÷ (Wb × Hb)) × (1 + waste%) ⌉\ntrench depth (in) = 6 + 1 × H\nbase gravel (cu yd) = L × (trench width ÷ 12) × (trench depth ÷ 12) ÷ 27',
+        terms: [
+          { symbol: 'L, H', meaning: 'Wall length and height, in feet.' },
+          { symbol: 'Wb, Hb', meaning: 'Block face width and exposed height, in inches.' },
+          { symbol: 'waste%', meaning: 'Extra percent for corner cuts and breakage; 5% is a common starting point.' },
+          { symbol: 'trench depth', meaning: 'Base trench depth in inches, per Allan Block’s own installation guide: 6 in. plus 1 in. for each foot of wall height.' }
+        ],
+        note: 'An estimate, and only for a straight, level wall. Allan Block’s own guide uses a shallower 4 in. base for short walls under 4 ft; taller walls, walls on a slope, or walls holding back more than a couple of feet of soil need an engineered design, not this calculator.'
+      },
+      workedExample: {
+        intro: 'You are building a 20 ft long, 3 ft tall wall from 18 by 8 in blocks, with a 5% waste allowance and the standard 24 in base trench.',
+        rows: [
+          { label: 'Wall area (20 × 3)', value: '60.00 sq ft' },
+          { label: 'Blocks per course (20 ft × 12 ÷ 18 in)', value: '13.33' },
+          { label: 'Courses (3 ft × 12 ÷ 8 in)', value: '4.50' },
+          { label: 'Blocks, exact (13.33 × 4.50)', value: '60.00' },
+          { label: 'Courses needed, rounded up', value: '5' },
+          { label: 'Blocks to buy (60.00 × 1.05, rounded up)', value: '63' },
+          { label: 'Base trench depth (6 + 1 × 3)', value: '9 in' },
+          { label: 'Base gravel (20 × (24÷12) × (9÷12) ÷ 27)', value: '1.111 cu yd' }
+        ],
+        result: '63 blocks, 1.11 cubic yards of base gravel',
+        explanation: 'A taller 4 ft version of the same 30 ft wall needs a 10 in trench instead of 9 (6 + 1×4) and 120.00 blocks exact instead of 60.00 — exactly double, since both the wall’s length and its height-driven course count grew.'
+      },
+      watchOut: [
+        { title: 'This is a straight-wall estimate, not an engineered design', body: 'Taller walls, walls holding back significant soil or slope, or walls with curves and corners need site-specific engineering — consult a professional for anything beyond a low garden wall.' },
+        { title: 'Short walls use a shallower base per Allan Block’s own guide', body: 'Walls under 4 ft can use an 18 in wide, 4 in deep trench plus the buried-block allowance, rather than the 24 in / height-based formula this calculator applies to the general case.' },
+        { title: 'Block face size varies by product', body: '18 by 8 in is one common segmental block size, but products vary — always use your own block’s printed face dimensions.' },
+        { title: 'Base rock must be compacted, not just placed', body: 'Allan Block’s guide calls for a minimum of two passes with a plate compactor over the base rock; an uncompacted base settles unevenly and the wall above it will too.' },
+        { title: 'Drainage matters as much as the base', body: 'A retaining wall also needs drainage behind it (gravel backfill and sometimes a drain pipe) to relieve water pressure — this calculator covers the blocks and base trench only.' }
+      ],
+      references: [
+        { label: 'Allan Block, "How to Install a Retaining Wall" — basic installation guide (base trench depth and width, compaction)', url: 'https://allanblock.com/installation/residential-installation/basic-installation' },
+        { label: 'SiteOne Landscape Supply, Allan Block Classic Wall product listing (block face dimensions)', url: 'https://www.siteone.com/en/ab-classic-app-allan-block-classic-wall-appalachian-18-in-x-12-in-x-8-in-40-pcpallet/p/286366' }
+      ]
+    },
+    inputs: [
+      { id: 'wallLength', label: 'Wall length (ft)', type: 'number', placeholder: '20', defaultValue: 20, step: 0.5, min: 1 },
+      { id: 'wallHeight', label: 'Wall height (ft)', type: 'number', placeholder: '3', defaultValue: 3, step: 0.5, min: 0.5 },
+      { id: 'blockWidthIn', label: 'Block face width (in, Allan Block Classic = 18)', type: 'number', placeholder: '18', defaultValue: 18, step: 0.5, min: 1 },
+      { id: 'blockHeightIn', label: 'Block exposed height (in, Allan Block Classic = 8)', type: 'number', placeholder: '8', defaultValue: 8, step: 0.5, min: 1 },
+      { id: 'wastePercent', label: 'Waste allowance (%)', type: 'percent', placeholder: '5', defaultValue: 5, step: 1, min: 0 },
+      { id: 'trenchWidthIn', label: 'Base trench width (in, Allan Block standard = 24)', type: 'number', placeholder: '24', defaultValue: 24, step: 1, min: 12 }
+    ],
+    seo: {
+      title: 'Retaining Wall Calculator – Blocks and Base Gravel',
+      description: 'Free retaining wall calculator: blocks needed from wall length and height, plus the base gravel trench volume from Allan Block’s own installation formula.',
+      faq: [
+        { question: 'How many blocks do I need for a retaining wall?', answer: 'Divide the wall’s area (length × height) by one block’s face area, then add a waste allowance. A 20×3 ft wall built with 18×8 in blocks needs 60 blocks exactly, 63 with a 5% waste allowance.' },
+        { question: 'How deep should the base trench be?', answer: 'Allan Block’s own installation guide gives the formula as 6 inches plus 1 inch for each foot of wall height. A 3 ft wall needs a 9 in deep trench; a 6 ft wall needs 12 in.' },
+        { question: 'How wide should the base trench be?', answer: 'Allan Block’s standard trench is 24 inches wide for walls 4 ft and taller; walls under 4 ft can use an 18 in wide trench with a shallower, fixed 4 in depth plus buried-block allowance.' },
+        { question: 'How much base gravel do I need?', answer: 'Multiply the wall length by the trench width and depth (all in feet), then divide by 27. The 20 ft, 9 in deep, 24 in wide example needs 1.11 cubic yards.' },
+        { question: 'Can I build a tall retaining wall with this calculator?', answer: 'This calculator estimates blocks and base material for a low, straight garden wall. Taller walls, walls on a slope, or walls holding back significant soil need an engineered design — consult a professional.' },
+        { question: 'Does the base rock need to be compacted?', answer: 'Yes. Allan Block’s guide calls for a minimum of two passes with a plate compactor over the base rock before the first course is set — an uncompacted base settles unevenly.' },
+        { question: 'What block size does this calculator assume?', answer: '18 by 8 in by default, matching Allan Block’s Classic unit (per SiteOne’s product listing), but the width and height fields work for any rectangular block face — use your own product’s printed dimensions.' }
+      ]
+    },
+    compute(values) {
+      const wallLengthIn = values.wallLength * 12;
+      const wallHeightIn = values.wallHeight * 12;
+      const blocksPerCourse = wallLengthIn / values.blockWidthIn;
+      const courseCountExact = wallHeightIn / values.blockHeightIn;
+      const blocksExact = blocksPerCourse * courseCountExact;
+      const coursesNeeded = Math.ceil(courseCountExact);
+      const blocksToBuy = Math.ceil(blocksExact * (1 + values.wastePercent / 100));
+      const wallAreaSqFt = values.wallLength * values.wallHeight;
+      const baseTrenchDepthIn = 6 + 1 * values.wallHeight;
+      const baseGravelVolumeCuYd = (values.wallLength * (values.trenchWidthIn / 12) * (baseTrenchDepthIn / 12)) / 27;
+      return { blocksExact, coursesNeeded, blocksToBuy, wallAreaSqFt, baseTrenchDepthIn, baseGravelVolumeCuYd };
+    }
+  },
+  {
+    id: 'board-foot-calculator',
+    category: 'home',
+    glyph: 'bft',
+    updatedAt: '2026-11-04',
+    aliases: ['board foot calculator', 'how to calculate board feet', 'lumber board feet calculator', 'board footage calculator', 'bf calculator wood'],
+    related: ['decking-calculator', 'fence-calculator', 'drywall-calculator', 'paver-calculator'],
+    title: 'Board Foot Calculator',
+    description: 'Find how many board feet a piece or stack of lumber contains from its nominal thickness, width and length, plus an estimated cost — the standard unit lumber is bought and sold by.',
+    example: '10 boards at 1 in thick, 6 in wide and 8 ft long (4/4 nominal stock) total 40.00 board feet — $200.00 at $5.00 per board foot.',
+    breakdown: {
+      headline: 'totalBoardFeet',
+      headlineLabel: 'Total board feet',
+      outputs: [
+        { id: 'totalBoardFeet', label: 'Total board feet', format: 'number' },
+        { id: 'boardFeetPerBoard', label: 'Board feet per board', format: 'number' },
+        { id: 'estimatedCost', label: 'Estimated cost', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Board size', inputs: ['thicknessIn', 'widthIn', 'lengthFt'] },
+        { title: 'Quantity & price', inputs: ['quantity', 'pricePerBoardFoot'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'boardFeetPerBoard', label: 'Per board' },
+          { from: 'totalBoardFeet', label: 'Total order' }
+        ],
+        title: 'Board feet, one board vs. the whole order'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-04',
+      concept: {
+        title: 'What a board foot is, and the trap in measuring one',
+        paragraphs: [
+          'A board foot is a volume: one board foot is 144 cubic inches of wood, the same volume as a board 1 inch thick, 12 inches wide and 12 inches long. Lumber yards sell by this unit because it prices wood fairly regardless of whether it is cut as one wide, short board or several narrow, long ones — a stack of ten boards each 1 in thick, 6 in wide and 8 ft long totals 40.00 board feet (1 × 6 × 8 ÷ 12 × 10), whatever price per board foot the species commands.',
+          'The trap is that lumber is bought and sold by its nominal, not actual, size. The U.S. Forest Service’s Forest Products Laboratory states it plainly in its Wood Handbook: "Lumber length is recorded in actual dimensions, whereas width and thickness are traditionally recorded in \'nominal\' dimensions — actual dimensions are somewhat less." A board sold as "4/4" (one inch) hardwood is measured as a full 1 in thick for pricing even after it is surfaced down to roughly 13/16 in; a nominal 2×6, likewise, prices as a full 2 in by 6 in even though the actual surfaced board measures only 1-1/2 by 5-1/2 in, per the Wood Handbook’s own standard-size table.',
+          'That difference is not small. The same nominal 2×6, 8 ft long board prices out at 8.00 board feet using its nominal 2×6 size, but only 5.50 board feet if someone mistakenly measures the actual dressed dimensions instead — a 31.25% undercount for the identical physical board. Always key in the size printed on the price tag or the stamp on the end of the board, not a tape measure reading of the surfaced wood.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter one board’s nominal thickness, width and length, then the quantity and a price per board foot.',
+        steps: [
+          { name: 'Enter the thickness', text: 'Use the nominal thickness in inches, as sold — 1 in (called "4/4", or "four-quarter") is common for hardwood boards; 2 in for construction dimension lumber.' },
+          { name: 'Enter the width', text: 'Use the nominal width in inches, as printed on the price tag or stamped on the board — not the actual, slightly narrower dressed width.' },
+          { name: 'Enter the length', text: 'Length is recorded in actual feet, unlike thickness and width — measure the board’s real length.' },
+          { name: 'Enter the quantity and price', text: 'Set how many identical boards you are buying, and your supplier’s price per board foot.' },
+          { name: 'Read the result', text: 'The headline is the total board feet for the whole order; the rows below show the board feet for one piece and the estimated cost.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Thickness times width times length, divided by 12, gives one board’s board feet; multiply by quantity for the order, and by price for an estimated cost.',
+        expression: 'bf (one board) = (T × W × L) ÷ 12\nbf (order) = bf (one board) × quantity\ncost = bf (order) × price per bf',
+        terms: [
+          { symbol: 'T', meaning: 'Nominal thickness, in inches.' },
+          { symbol: 'W', meaning: 'Nominal width, in inches.' },
+          { symbol: 'L', meaning: 'Actual length, in feet — length, unlike thickness and width, is not nominal.' },
+          { symbol: 'quantity', meaning: 'Number of identical boards.' },
+          { symbol: 'price per bf', meaning: 'Your supplier’s price per board foot; varies enormously by species and market, so there is no default beyond a placeholder.' }
+        ],
+        note: 'An estimate. Lumber graded with defects, waney edges or non-rectangular cross-sections is measured by a grading association’s own rules (e.g. the National Hardwood Lumber Association’s), which this simple rectangular formula approximates but does not replace for grading purposes.'
+      },
+      workedExample: {
+        intro: 'You are buying 10 boards, each nominal 1 in thick, 6 in wide and 8 ft long, at $5.00 per board foot.',
+        rows: [
+          { label: 'Board feet, one board (1 × 6 × 8 ÷ 12)', value: '4.00 bf' },
+          { label: 'Total board feet (4.00 × 10)', value: '40.00 bf' },
+          { label: 'Estimated cost (40.00 × $5.00)', value: '$200.00' }
+        ],
+        result: '40.00 board feet, about $200.00',
+        explanation: 'If the same 10 boards were nominal 2×6 instead of 1×6, the order would be 80.00 board feet (2 × 6 × 8 ÷ 12 × 10) — exactly double, since board feet scale directly with thickness. Measuring that 2×6 by its actual 1-1/2 by 5-1/2 in dressed size instead of its nominal 2×6 size would undercount it at 55.00 board feet, 31.25% low, per the Wood Handbook’s own standard dressed-size table.'
+      },
+      watchOut: [
+        { title: 'Always use nominal size, not a tape measure on the actual board', body: 'A nominal 2×6 dresses down to an actual 1-1/2 by 5-1/2 in — measuring the real board instead of using its nominal size undercounts the board feet by over 30%, per the Wood Handbook.' },
+        { title: 'Length is the exception', body: 'Unlike thickness and width, lumber length is recorded as the actual length, not a nominal one — measure the board’s real length.' },
+        { title: 'Price per board foot varies enormously by species', body: 'Construction-grade softwood can run a few dollars per board foot while figured hardwoods can run well into double digits — always use your own supplier’s quoted price.' },
+        { title: 'This is a rectangular estimate, not a grading-rule measurement', body: 'Hardwood graded for furniture-grade cuttings follows the National Hardwood Lumber Association’s own surface-measure rules, which can differ from a simple thickness × width × length calculation for an irregular or waney board.' },
+        { title: 'Rough (ungraded) lumber may be priced differently', body: 'Rough-sawn lumber straight from a sawmill is sometimes priced by actual (not nominal) thickness — confirm which convention your specific supplier uses before ordering.' }
+      ],
+      references: [
+        { label: 'USDA Forest Service, Forest Products Laboratory, Wood Handbook: Wood as an Engineering Material (Centennial Edition, General Technical Report FPL-GTR-190), Chapter 6 (Kretschmann) — nominal vs. actual lumber dimensions, Table 6-6 standard sizes', url: 'https://research.fs.usda.gov/download/treesearch/37426.pdf' }
+      ]
+    },
+    inputs: [
+      { id: 'thicknessIn', label: 'Nominal thickness (in, 1 in = 4/4 hardwood)', type: 'number', placeholder: '1', defaultValue: 1, step: 0.25, min: 0.25 },
+      { id: 'widthIn', label: 'Nominal width (in)', type: 'number', placeholder: '6', defaultValue: 6, step: 0.5, min: 1 },
+      { id: 'lengthFt', label: 'Length (ft, actual)', type: 'number', placeholder: '8', defaultValue: 8, step: 0.5, min: 1 },
+      { id: 'quantity', label: 'Number of boards', type: 'number', placeholder: '10', defaultValue: 10, step: 1, min: 1 },
+      { id: 'pricePerBoardFoot', label: 'Price per board foot (placeholder — enter your own)', type: 'currency', placeholder: '5.00', defaultValue: 5, step: 0.25, min: 0 }
+    ],
+    seo: {
+      title: 'Board Foot Calculator – Lumber Volume and Cost',
+      description: 'Free board foot calculator: total board feet and cost for lumber from nominal thickness, width and length, with the nominal-vs-actual sizing trap explained.',
+      faq: [
+        { question: 'How do I calculate board feet?', answer: 'Multiply the nominal thickness by the nominal width (both in inches) by the length (in feet), then divide by 12. One board 1 in thick, 6 in wide, 8 ft long is 4.00 board feet.' },
+        { question: 'What is a board foot?', answer: 'A board foot is a volume of wood: 144 cubic inches, the same as a board 1 inch thick, 12 inches wide and 12 inches long. It is the standard unit lumber is bought and sold by.' },
+        { question: 'Should I use the nominal or actual size of a board?', answer: 'Nominal. The Wood Handbook states that lumber width and thickness are traditionally recorded in nominal dimensions, with the actual dressed size somewhat less — a nominal 2×6 is priced and measured as 2 by 6 in even though it dresses down to an actual 1-1/2 by 5-1/2 in.' },
+        { question: 'How much does measuring actual instead of nominal size undercount a board?', answer: 'For a nominal 2×6, 8 ft board, using the actual 1-1/2 by 5-1/2 in dressed size instead of the nominal 2×6 size gives 55.00 board feet instead of the correct 80.00 — about 31.25% low.' },
+        { question: 'Is length also measured as nominal?', answer: 'No. Lumber length is recorded as the actual length; only width and thickness follow the nominal convention.' },
+        { question: 'How many board feet are in a 1×8, 10 ft board?', answer: 'Using the formula (1 × 8 × 10) ÷ 12, that board is 6.67 board feet.' },
+        { question: 'Does this calculator work for hardwood and softwood lumber?', answer: 'Yes, for a simple rectangular estimate of either. Hardwood graded for furniture cuttings follows the National Hardwood Lumber Association’s own surface-measure rules for irregular boards, which this formula approximates but does not replace.' }
+      ]
+    },
+    compute(values) {
+      const boardFeetPerBoard = (values.thicknessIn * values.widthIn * values.lengthFt) / 12;
+      const totalBoardFeet = boardFeetPerBoard * values.quantity;
+      const estimatedCost = totalBoardFeet * values.pricePerBoardFoot;
+      return { boardFeetPerBoard, totalBoardFeet, estimatedCost };
+    }
+  },
+  {
+    id: 'ac-tonnage-btu-calculator',
+    category: 'home',
+    glyph: 'btu',
+    updatedAt: '2026-11-04',
+    aliases: ['what size air conditioner do i need', 'ac btu calculator', 'air conditioner tonnage calculator', 'ac size calculator by square footage', 'room air conditioner btu calculator'],
+    related: ['electricity-bill-calculator', 'paint-calculator', 'furniture-fit-calculator'],
+    title: 'AC Tonnage / BTU Calculator',
+    description: 'Find what size room air conditioner a space needs, in BTU per hour and tons, from its square footage, using ENERGY STAR’s own official sizing chart and adjustment rules.',
+    example: 'A 525 sq ft room, with average sun, no kitchen use and no extra occupants, needs 14,000 BTU/hr (1.17 tons) per ENERGY STAR’s own worked example.',
+    breakdown: {
+      headline: 'totalBtu',
+      headlineLabel: 'Cooling capacity needed (BTU/hr)',
+      outputs: [
+        { id: 'totalBtu', label: 'Cooling capacity needed (BTU/hr)', format: 'integer' },
+        { id: 'tons', label: 'Equivalent in tons (12,000 BTU/hr = 1 ton)', format: 'number' },
+        { id: 'baseBtu', label: 'Base capacity from room size, before adjustments', format: 'integer' },
+        { id: 'roomAreaSqFt', label: 'Room area', format: 'number', dimension: 'area', unit: 'ft2' }
+      ],
+      groups: [
+        { title: 'Room size', inputs: ['roomAreaSqFt'] },
+        { title: 'Sun exposure, kitchen & occupants', inputs: ['roomCondition', 'isKitchen', 'occupantsOver2'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'baseBtu', label: 'Base (room size only)' },
+          { from: 'totalBtu', label: 'Adjusted total' }
+        ],
+        title: 'BTU/hr, before vs. after adjustments'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-04',
+      concept: {
+        title: 'What size air conditioner a room really needs',
+        paragraphs: [
+          'The U.S. EPA and Department of Energy’s ENERGY STAR program publishes an official sizing chart for room (window and portable) air conditioners, keyed directly to square footage: 100–150 sq ft calls for 5,000 Btu/hr, climbing in steps up to 18,000 Btu/hr for 700–1,000 sq ft. ENERGY STAR’s own fact sheet gives a worked example matching this chart directly: "if the room measures 525 square feet, look for an ENERGY STAR qualified room air conditioner with a capacity of 14,000 Btu/hr." This calculator uses that same published table rather than a smooth formula, because the chart — not a theoretical rule — is what the sizing guidance people actually use is built on.',
+          'Room size is the starting point, but ENERGY STAR lists four "Special Considerations" that adjust it: reduce the base capacity by 10% for a heavily shaded room, increase it by 10% for a very sunny one, add a flat 4,000 Btu/hr if the unit will be used in a kitchen, and add 600 Btu/hr for each occupant beyond two who regularly use the room. All four apply on top of the base figure from the table, not on top of each other.',
+          'An oversized unit is not simply "extra cooling for free." ENERGY STAR’s own guidance warns that a unit bigger than the room needs "will cool a room quickly, but some of the humidity will stick around, leaving the room feeling cold and clammy" — because a too-large unit cycles off before it runs long enough to pull real moisture out of the air, and it wastes energy doing it. Sizing to the chart, not above it, is the point.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the room’s square footage, then its sun exposure, whether it is a kitchen, and any occupants beyond two.',
+        steps: [
+          { name: 'Enter the room area', text: 'Type the room’s floor area in square feet — length times width for a rectangular room.' },
+          { name: 'Set the sun exposure', text: 'Choose average, heavily shaded (−10%), or very sunny (+10%), per ENERGY STAR’s own adjustment.' },
+          { name: 'Flag kitchen use', text: 'Choose yes if the unit will cool a kitchen — ENERGY STAR adds a flat 4,000 Btu/hr for the extra heat load.' },
+          { name: 'Enter extra occupants', text: 'Count only the people beyond two who regularly use the room; each adds 600 Btu/hr.' },
+          { name: 'Read the result', text: 'The headline is the BTU/hr capacity to look for; the rows below show the equivalent in tons and the unadjusted base figure from the chart.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored. This sizes a room (window or portable) air conditioner; a central system is sized by a contractor’s load calculation, not this chart.'
+      },
+      formula: {
+        intro: 'Look up the base BTU/hr from ENERGY STAR’s own table by square footage, then apply its adjustments and convert to tons.',
+        expression: 'base = ENERGY STAR table lookup (by sq ft)\nadjusted = base × (1 + sun%) + kitchen add + (extra occupants × 600)\ntons = adjusted ÷ 12,000',
+        terms: [
+          { symbol: 'base', meaning: 'BTU/hr from ENERGY STAR’s published area-to-capacity table.' },
+          { symbol: 'sun%', meaning: '−10% heavily shaded, 0% average, +10% very sunny, per ENERGY STAR.' },
+          { symbol: 'kitchen add', meaning: 'A flat 4,000 Btu/hr if the unit cools a kitchen.' },
+          { symbol: 'extra occupants', meaning: 'People beyond two who regularly use the room, at 600 Btu/hr each.' },
+          { symbol: 'ton', meaning: 'A standard HVAC unit of cooling capacity equal to 12,000 Btu/hr.' }
+        ],
+        note: 'An estimate for sizing a room air conditioner, not a substitute for a contractor’s Manual J load calculation, which accounts for insulation, window area and local climate in far more detail. Outside the chart’s 100–1,000 sq ft range, the result is clamped to the nearest end of the table and the room likely needs a central system or multiple units instead.'
+      },
+      workedExample: {
+        intro: 'A 525 sq ft room, very sunny, used as a kitchen, with 2 occupants beyond the first two.',
+        rows: [
+          { label: 'Base BTU/hr (ENERGY STAR table, 500–700 sq ft)', value: '14,000 BTU/hr' },
+          { label: 'Sun adjustment, +10% (14,000 × 1.10)', value: '15,400 BTU/hr' },
+          { label: 'Kitchen adjustment', value: '+4,000 BTU/hr' },
+          { label: 'Occupant adjustment (2 × 600)', value: '+1,200 BTU/hr' },
+          { label: 'Total (15,400 + 4,000 + 1,200)', value: '20,600 BTU/hr' },
+          { label: 'In tons (20,600 ÷ 12,000)', value: '1.72 tons' }
+        ],
+        result: '20,600 BTU/hr (about 1.72 tons)',
+        explanation: 'The same 525 sq ft room with average sun, no kitchen use and no extra occupants — ENERGY STAR’s own plain worked example — needs only the unadjusted 14,000 BTU/hr (1.17 tons), 47.1% less capacity than the sunny, kitchen, extra-occupant version above.'
+      },
+      watchOut: [
+        { title: 'Bigger is not better', body: 'ENERGY STAR’s own guidance warns an oversized unit cools quickly but leaves the room "cold and clammy" because it cycles off before removing enough humidity, and it wastes energy doing so.' },
+        { title: 'This chart is for room units, not central air', body: 'Central (whole-house) air conditioning is sized by a contractor’s Manual J load calculation, which weighs insulation, windows, orientation and local climate — a much more detailed process than a square-footage table.' },
+        { title: 'The adjustments apply to the base figure, not to each other', body: 'The sun percentage multiplies the table’s base BTU/hr; the kitchen and occupant additions are flat amounts added afterward, not compounded on top of the sun adjustment.' },
+        { title: 'Outside 100–1,000 sq ft, this chart does not apply', body: 'ENERGY STAR’s published table stops at 1,000 sq ft for a single room unit — a larger open space needs a central system, a ducted mini-split, or more than one unit.' },
+        { title: 'A kitchen adjustment assumes typical cooking heat', body: 'The flat 4,000 Btu/hr kitchen addition is ENERGY STAR’s own rule of thumb for an ordinary home kitchen, not a commercial kitchen with heavy equipment.' }
+      ],
+      references: [
+        { label: 'U.S. EPA / DOE ENERGY STAR, "ENERGY STAR Qualified Room Air Conditioners" fact sheet (sizing chart and special considerations)', url: 'https://www.energystar.gov/ia/partners/manuf_res/marketing_res/ROOM_AIRCONDITIONER.pdf' }
+      ]
+    },
+    inputs: [
+      { id: 'roomAreaSqFt', label: 'Room area (sq ft)', type: 'number', placeholder: '525', defaultValue: 525, step: 5, min: 50 },
+      {
+        id: 'roomCondition',
+        label: 'Sun exposure',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 10,
+        min: -10,
+        options: [
+          { value: -10, label: 'Heavily shaded (−10%)' },
+          { value: 0, label: 'Average' },
+          { value: 10, label: 'Very sunny (+10%)' }
+        ]
+      },
+      {
+        id: 'isKitchen',
+        label: 'Used as a kitchen?',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'No' },
+          { value: 1, label: 'Yes (+4,000 BTU/hr)' }
+        ]
+      },
+      { id: 'occupantsOver2', label: 'Occupants beyond 2 (+600 BTU/hr each)', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'AC Tonnage / BTU Calculator – What Size AC Do I Need?',
+      description: 'Free AC size calculator: BTU/hr and tons for a room air conditioner from square footage, using ENERGY STAR’s own official sizing chart and adjustments.',
+      faq: [
+        { question: 'What size air conditioner do I need?', answer: 'Look up your room’s square footage on ENERGY STAR’s official chart. A 525 sq ft room needs 14,000 BTU/hr (about 1.17 tons) with average sun exposure, per ENERGY STAR’s own worked example.' },
+        { question: 'How many BTU per square foot does an AC need?', answer: 'It is not a flat rate — ENERGY STAR’s own chart runs in steps, from 5,000 BTU/hr for 100–150 sq ft up to 18,000 BTU/hr for 700–1,000 sq ft, not a constant BTU-per-square-foot multiplier.' },
+        { question: 'How many BTU is a ton of air conditioning?', answer: '12,000 BTU/hr equals 1 ton of cooling capacity — a standard HVAC unit, most often used for central air conditioners.' },
+        { question: 'Does a sunny room need a bigger air conditioner?', answer: 'Yes. ENERGY STAR’s guidance adds 10% capacity for a very sunny room and subtracts 10% for a heavily shaded one, applied to the base BTU/hr from the square-footage chart.' },
+        { question: 'Why does a kitchen need a bigger air conditioner?', answer: 'Cooking adds heat to a room beyond what its square footage alone accounts for — ENERGY STAR’s guidance adds a flat 4,000 BTU/hr if the unit will cool a kitchen.' },
+        { question: 'Is it bad to buy an air conditioner that is too big?', answer: 'Yes. ENERGY STAR explains that an oversized unit cools the air quickly but cycles off before removing enough humidity, leaving the room feeling "cold and clammy," and it wastes energy doing so.' },
+        { question: 'Does this calculator work for central air conditioning?', answer: 'No. This chart is ENERGY STAR’s own sizing guide for room (window or portable) units. Central air conditioning needs a contractor’s Manual J load calculation, which accounts for insulation, windows and climate in much more detail.' }
+      ]
+    },
+    compute(values) {
+      const bands = [
+        { min: 100, max: 150, btu: 5000 },
+        { min: 150, max: 250, btu: 6000 },
+        { min: 250, max: 300, btu: 7000 },
+        { min: 300, max: 350, btu: 8000 },
+        { min: 350, max: 400, btu: 9000 },
+        { min: 400, max: 450, btu: 10000 },
+        { min: 450, max: 500, btu: 12000 },
+        { min: 500, max: 700, btu: 14000 },
+        { min: 700, max: 1000, btu: 18000 }
+      ];
+      const clampedArea = Math.max(100, Math.min(1000, values.roomAreaSqFt));
+      const band = bands.find((b) => clampedArea >= b.min && clampedArea < b.max) ?? bands[bands.length - 1];
+      const baseBtu = band.btu;
+      const shadeAdjustedBtu = baseBtu * (1 + values.roomCondition / 100);
+      const kitchenAdd = values.isKitchen ? 4000 : 0;
+      const occupantAdd = values.occupantsOver2 * 600;
+      const totalBtu = shadeAdjustedBtu + kitchenAdd + occupantAdd;
+      const tons = totalBtu / 12000;
+      const roomAreaSqFt = values.roomAreaSqFt;
+      return { baseBtu, totalBtu, tons, roomAreaSqFt };
+    }
   }
 ];

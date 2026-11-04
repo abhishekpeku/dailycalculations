@@ -2117,6 +2117,53 @@ exports[`compute() snapshots > fence-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > flooring-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "roomLength": 14,
+      "roomWidth": 12,
+      "coveragePerBoxSqFt": 20,
+      "wastePercent": 5
+    },
+    "outputs": {
+      "boxesToBuy": 9,
+      "boxesExact": 8.82,
+      "coverageBought": 180,
+      "roomAreaSqFt": 168
+    }
+  },
+  "typical": {
+    "inputs": {
+      "roomLength": 21,
+      "roomWidth": 18,
+      "coveragePerBoxSqFt": 30,
+      "wastePercent": 8
+    },
+    "outputs": {
+      "boxesToBuy": 14,
+      "boxesExact": 13.608,
+      "coverageBought": 420,
+      "roomAreaSqFt": 378
+    }
+  },
+  "edge": {
+    "inputs": {
+      "roomLength": 1,
+      "roomWidth": 1,
+      "coveragePerBoxSqFt": 1,
+      "wastePercent": 0
+    },
+    "outputs": {
+      "boxesToBuy": 1,
+      "boxesExact": 1,
+      "coverageBought": 1,
+      "roomAreaSqFt": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > force-calculator 1`] = `
 {
   "default": {

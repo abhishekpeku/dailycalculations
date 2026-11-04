@@ -203,7 +203,8 @@ export const calculatorOrder: string[] = [
   'stair-calculator',
   'rebar-calculator',
   'pool-volume-calculator',
-  'carpet-calculator'
+  'carpet-calculator',
+  'flooring-calculator'
 ];
 
 const rank = (id: string) => {

@@ -3243,5 +3243,116 @@ export const homeCalculators: CalculatorConfig[] = [
       const seamNeeded = Math.min(values.roomLength, values.roomWidth) > values.rollWidthFt ? 1 : 0;
       return { carpetSqYdToBuy, padSqYdToBuy, carpetSqYdExact, roomAreaSqFt, seamNeeded };
     }
+  },
+  {
+    id: 'flooring-calculator',
+    category: 'home',
+    glyph: 'flr',
+    updatedAt: '2026-11-05',
+    aliases: ['flooring calculator', 'how much flooring do i need calculator', 'laminate flooring calculator', 'vinyl plank flooring calculator', 'flooring boxes calculator'],
+    related: ['tile-calculator', 'carpet-calculator', 'board-foot-calculator', 'decking-calculator'],
+    title: 'Flooring Calculator',
+    description: 'Find how many boxes of laminate, vinyl plank or engineered wood flooring a room needs from its dimensions, using the National Wood Flooring Association’s cutting allowance.',
+    example: 'A 14×12 ft room, at 20 sq ft of coverage per box and a 5% cutting allowance, needs 9 boxes — 180 sq ft of flooring.',
+    breakdown: {
+      headline: 'boxesToBuy',
+      headlineLabel: 'Boxes to buy',
+      outputs: [
+        { id: 'boxesToBuy', label: 'Boxes to buy', format: 'integer' },
+        { id: 'boxesExact', label: 'Boxes needed, exact', format: 'number' },
+        { id: 'coverageBought', label: 'Coverage bought', format: 'number', dimension: 'area', unit: 'ft2' },
+        { id: 'roomAreaSqFt', label: 'Room area', format: 'number', dimension: 'area', unit: 'ft2' }
+      ],
+      groups: [
+        { title: 'Room', inputs: ['roomLength', 'roomWidth'] },
+        { title: 'Flooring product', inputs: ['coveragePerBoxSqFt', 'wastePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'roomAreaSqFt', label: 'Room area' },
+          { from: 'coverageBought', label: 'Coverage bought' }
+        ],
+        title: 'Room area vs. flooring coverage bought'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'How many boxes of flooring a room needs',
+        paragraphs: [
+          'Laminate, vinyl plank (LVP) and engineered wood flooring are sold by the box, each covering a fixed area printed on the label — a different buying unit from tile (sold per piece) or carpet (sold per square yard off a roll). The starting math is simple: multiply the room’s length by its width for the area, then divide by how much one box covers.',
+          'The National Wood Flooring Association, the trade association for the wood flooring industry, publishes a standard cutting allowance in its own installation guidelines: "Minimum material requirements should equal actual square footage of installed area plus 5% cutting allowance for standard installations." This calculator uses that same 5% as its default waste allowance for a straight, standard installation.',
+          'Because coverage per box varies by product — not just by brand, but by plank size and thickness within the same brand’s line — there is no single universal number. Always check the specific box you are buying rather than assuming a generic figure, then round the result up to a whole box, since flooring isn’t sold by the partial box.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the room’s length and width, then your flooring product’s coverage per box and a cutting allowance.',
+        steps: [
+          { name: 'Enter the room dimensions', text: 'Type the room’s length and width in feet.' },
+          { name: 'Enter your box’s coverage', text: 'Check the box label for its coverage area in square feet — this varies by product.' },
+          { name: 'Set a cutting allowance', text: '5% is the National Wood Flooring Association’s own minimum for a standard, straight installation; diagonal or complex layouts commonly need more.' },
+          { name: 'Read the result', text: 'The headline is the boxes to buy; the rows below show the exact figure before rounding and the coverage you’ll end up with.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Add a cutting allowance to the room’s area, then divide by the coverage one box provides and round up to a whole box.',
+        expression: 'area (sq ft) = length × width\nboxes = ⌈(area × (1 + waste%)) ÷ coverage per box⌉',
+        terms: [
+          { symbol: 'length, width', meaning: 'The room’s dimensions, in feet.' },
+          { symbol: 'waste%', meaning: 'The cutting allowance; the NWFA’s own minimum for a standard installation is 5%.' },
+          { symbol: 'coverage per box', meaning: 'Square feet one box covers, printed on the product label — varies by product, so there is no universal default.' }
+        ],
+        note: 'An estimate for a single rectangular room and a standard, straight-lay installation. Diagonal layouts, herringbone or chevron patterns, and irregularly shaped rooms commonly need a larger allowance than the 5% minimum used here by default.'
+      },
+      workedExample: {
+        intro: 'A 14 ft × 12 ft room, flooring that covers 20 sq ft per box, and the NWFA’s 5% standard cutting allowance.',
+        rows: [
+          { label: 'Room area (14 × 12)', value: '168 sq ft' },
+          { label: 'With a 5% cutting allowance (168 × 1.05)', value: '176.4 sq ft' },
+          { label: 'Boxes needed, exact (176.4 ÷ 20)', value: '8.82 boxes' },
+          { label: 'Boxes to buy, rounded up', value: '9 boxes' },
+          { label: 'Coverage bought (9 × 20)', value: '180 sq ft' }
+        ],
+        result: '9 boxes (180 sq ft)',
+        explanation: 'The National Wood Flooring Association’s own installation guidelines state that minimum material should equal the actual area plus "5% cutting allowance for standard installations" — this calculator uses that same 5% as its default, though diagonal layouts, herringbone patterns and irregularly shaped rooms commonly need more.'
+      },
+      watchOut: [
+        { title: '5% is the NWFA’s minimum for a standard, straight installation', body: 'Diagonal layouts, herringbone or chevron patterns, and rooms with lots of cuts (closets, hallways, jogs) commonly need a larger allowance than this calculator’s 5% default.' },
+        { title: 'Coverage per box varies by product', body: 'Always use the figure printed on your specific box — it varies by brand, plank size and thickness, even within the same product line.' },
+        { title: 'Buy from the same production lot', body: 'Flooring color and finish can vary slightly between manufacturing runs, so buying all boxes from the same lot avoids a visible mismatch partway through the room.' },
+        { title: 'Underlayment and transition strips are separate', body: 'This calculator covers only the flooring material itself, not underlayment, moisture barriers or transition strips between rooms.' }
+      ],
+      references: [
+        { label: 'National Wood Flooring Association, Installation Guidelines — Wood Flooring, Section I Chapter 2 "Jobsite Checklist" (rev. June 2002) — minimum material plus 5% cutting allowance', url: 'https://www.floorreports.com/images/technotes_files/54.pdf' }
+      ]
+    },
+    inputs: [
+      { id: 'roomLength', label: 'Room length (ft)', type: 'number', placeholder: '14', defaultValue: 14, step: 0.5, min: 1 },
+      { id: 'roomWidth', label: 'Room width (ft)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.5, min: 1 },
+      { id: 'coveragePerBoxSqFt', label: 'Coverage per box (sq ft, check your product’s label)', type: 'number', placeholder: '20', defaultValue: 20, step: 0.5, min: 1 },
+      { id: 'wastePercent', label: 'Cutting allowance (%, NWFA standard-installation minimum = 5)', type: 'percent', placeholder: '5', defaultValue: 5, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Flooring Calculator – Boxes Needed by Room Size',
+      description: 'Free flooring calculator: how many boxes of laminate, vinyl plank or engineered wood flooring a room needs, using the NWFA’s own cutting allowance.',
+      faq: [
+        { question: 'How much extra flooring should I buy?', answer: 'The National Wood Flooring Association’s own installation guidelines call for actual square footage plus a 5% cutting allowance for standard installations — this calculator uses that as its default.' },
+        { question: 'How do I calculate how many boxes of flooring I need?', answer: 'Multiply the room’s square footage by (1 + your waste allowance), divide by the coverage one box provides, and round up to a whole box.' },
+        { question: 'Does coverage per box vary by product?', answer: 'Yes. It varies by brand, plank size and thickness, even within the same product line — always check the figure printed on your specific box.' },
+        { question: 'Should I buy more flooring for a diagonal layout?', answer: 'Yes. The NWFA’s 5% figure is its minimum for a standard, straight installation; diagonal, herringbone or chevron patterns commonly need a larger allowance.' },
+        { question: 'What is a cutting allowance?', answer: 'The NWFA’s own term for the extra material ordered beyond the exact floor area, to cover trimming, waste and mistakes during installation.' },
+        { question: 'Is this the same as a tile calculator?', answer: 'No, though the math is similar. This calculator covers flooring sold by the box — laminate, vinyl plank and engineered wood — rather than tile sold by the piece.' },
+        { question: 'Should all my flooring boxes be from the same batch?', answer: 'Yes, where possible. Color and finish can vary slightly between production runs, so matching lot numbers avoids a visible mismatch partway through a room.' }
+      ]
+    },
+    compute(values) {
+      const roomAreaSqFt = values.roomLength * values.roomWidth;
+      const boxesExact = (roomAreaSqFt * (1 + values.wastePercent / 100)) / values.coveragePerBoxSqFt;
+      const boxesToBuy = Math.ceil(boxesExact);
+      const coverageBought = boxesToBuy * values.coveragePerBoxSqFt;
+      return { boxesToBuy, boxesExact, coverageBought, roomAreaSqFt };
+    }
   }
 ];

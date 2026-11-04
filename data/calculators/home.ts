@@ -3109,5 +3109,139 @@ export const homeCalculators: CalculatorConfig[] = [
       const gallons = cubicFeet * 7.5;
       return { gallons, cubicFeet };
     }
+  },
+  {
+    id: 'carpet-calculator',
+    category: 'home',
+    glyph: 'crpt',
+    updatedAt: '2026-11-05',
+    aliases: ['carpet calculator', 'how much carpet do i need calculator', 'carpet square yards calculator', 'carpet and padding calculator', 'carpet yardage calculator'],
+    related: ['flooring-calculator', 'tile-calculator', 'stair-calculator'],
+    title: 'Carpet Calculator',
+    description: 'Find how many square yards of carpet and padding a room needs from its dimensions, plus whether it fits a standard roll width without a seam.',
+    example: 'A 14×12 ft room needs 21 sq yd of carpet (with a 10% waste allowance) and 19 sq yd of padding, and fits within a 12 ft roll width with no seam.',
+    breakdown: {
+      headline: 'carpetSqYdToBuy',
+      headlineLabel: 'Carpet to buy (sq yd)',
+      outputs: [
+        { id: 'carpetSqYdToBuy', label: 'Carpet to buy (sq yd)', format: 'integer' },
+        { id: 'padSqYdToBuy', label: 'Padding to buy (sq yd)', format: 'integer' },
+        { id: 'carpetSqYdExact', label: 'Carpet needed, exact (sq yd)', format: 'number' },
+        { id: 'roomAreaSqFt', label: 'Room area', format: 'number', dimension: 'area', unit: 'ft2' },
+        {
+          id: 'seamNeeded',
+          label: 'Fits roll width with no seam?',
+          format: 'number',
+          labels: [
+            { value: 0, label: 'No seam needed' },
+            { value: 1, label: 'Seam needed' }
+          ]
+        }
+      ],
+      groups: [
+        { title: 'Room', inputs: ['roomLength', 'roomWidth'] },
+        { title: 'Roll width & waste', inputs: ['rollWidthFt', 'wastePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'carpetSqYdExact', label: 'Carpet needed, exact' },
+          { from: 'carpetSqYdToBuy', label: 'Carpet to buy' }
+        ],
+        title: 'Carpet needed vs. whole square yards to buy'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'How much carpet and padding a room needs',
+        paragraphs: [
+          'Carpet is priced and sold by the square yard in the US, so the starting math is simple: multiply a room’s length by its width for the area in square feet, then divide by 9 to get square yards. A 14×12 ft room is 168 sq ft, or 18.67 sq yd.',
+          'But carpet itself is cut from a continuous roll of a fixed width — the Carpet and Rug Institute, the industry’s own trade association, states that "Broadloom carpet can be 12 feet, 13.5 feet, or 15 feet in width." A room narrower than the roll in at least one direction, like a 12 ft room with a 12 ft roll, needs no seam at all; a room wider than the roll in both directions needs at least one seam, and seams commonly need extra carpet to match the pattern and pile direction across the join.',
+          'A waste allowance on top of the exact square yardage covers ordinary cutting around doorways, closets and fixtures, plus any pattern matching. Padding, by contrast, has no pattern to match, so this calculator applies the waste allowance to the carpet only, rounding padding up from the room’s plain area.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the room’s length and width, then your carpet’s roll width and a waste allowance.',
+        steps: [
+          { name: 'Enter the room dimensions', text: 'Type the room’s length and width in feet.' },
+          { name: 'Choose the roll width', text: '12 ft is the most common broadloom width; 13.5 and 15 ft are also made.' },
+          { name: 'Set a waste allowance', text: '10% is reasonable for a simple rectangular room; complex layouts or seams commonly need more.' },
+          { name: 'Read the result', text: 'The headline is the carpet to buy in whole square yards; the rows below show padding and the exact figure before rounding.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Convert the room’s area to square yards, add a waste allowance, and round up to a whole square yard for carpet; round the plain area up for padding.',
+        expression: 'area (sq ft) = length × width\ncarpet (sq yd) = ⌈(area ÷ 9) × (1 + waste%)⌉\npadding (sq yd) = ⌈area ÷ 9⌉',
+        terms: [
+          { symbol: 'length, width', meaning: 'The room’s dimensions, in feet.' },
+          { symbol: 'waste%', meaning: 'An allowance for cutting, seams and pattern matching; 10% is a reasonable default for a simple room.' }
+        ],
+        note: 'An estimate for a single rectangular room. L-shaped rooms, closets, stairs and hallways need their own measurements added separately, and your installer’s actual cut length may round up further to avoid an awkward partial-width piece.'
+      },
+      workedExample: {
+        intro: 'A 14 ft × 12 ft room, a 12 ft roll width, and a 10% waste allowance.',
+        rows: [
+          { label: 'Room area (14 × 12)', value: '168 sq ft' },
+          { label: 'Carpet needed, exact (168 ÷ 9)', value: '18.67 sq yd' },
+          { label: 'With a 10% waste allowance (18.67 × 1.10)', value: '20.53 sq yd' },
+          { label: 'Carpet to buy, rounded up', value: '21 sq yd' },
+          { label: 'Padding to buy (168 ÷ 9, rounded up)', value: '19 sq yd' }
+        ],
+        result: '21 sq yd of carpet, 19 sq yd of padding',
+        explanation: 'The room’s narrower dimension, 12 ft, fits exactly within a standard 12 ft carpet roll (one of the Carpet and Rug Institute’s own three width options), so this room needs no seam — only the usual cutting waste. A room wider than 12 ft in both directions would need a seam, which commonly calls for extra carpet to match pattern and direction across the join.'
+      },
+      watchOut: [
+        { title: 'Padding doesn’t need the same waste allowance as carpet', body: 'Padding has no pattern to match and its seams don’t need to line up with the carpet’s, so this calculator applies the waste allowance only to the carpet, not the pad.' },
+        { title: 'A room wider than the roll in both directions needs a seam', body: 'Carpet is cut from continuous rolls in the widths the Carpet and Rug Institute lists — 12, 13.5 or 15 ft; a room exceeding the roll width in both directions needs at least one seam, which commonly needs extra carpet for pattern matching.' },
+        { title: 'This is a simple rectangular estimate', body: 'L-shaped rooms, closets, stairs and hallways need their own measurements added on top of this calculator’s single-rectangle math, and complex layouts often need more than a 10% allowance.' },
+        { title: 'Carpet is quoted per square yard but cut from a roll', body: 'Your installer’s actual cut length may round up further than this estimate to avoid an awkward partial-width piece.' }
+      ],
+      references: [
+        { label: 'The Carpet and Rug Institute, "Specifying the Right Carpet" — standard broadloom carpet widths', url: 'https://carpet-rug.org/carpet-for-business/specifying-the-right-carpet/' },
+        { label: 'The Carpet and Rug Institute, CRI 105 — Standard for Installation of Residential Carpet (2019)', url: 'https://carpet-rug.org/wp-content/uploads/2019/03/CRI-105-STANDARD-For-INSTALLATION-of-RESIDENTIAL-CARPET.pdf' }
+      ]
+    },
+    inputs: [
+      { id: 'roomLength', label: 'Room length (ft)', type: 'number', placeholder: '14', defaultValue: 14, step: 0.5, min: 1 },
+      { id: 'roomWidth', label: 'Room width (ft)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.5, min: 1 },
+      {
+        id: 'rollWidthFt',
+        label: 'Carpet roll width (ft)',
+        type: 'number',
+        placeholder: '12',
+        defaultValue: 12,
+        step: 0.5,
+        min: 6,
+        options: [
+          { value: 12, label: '12 ft (most common)' },
+          { value: 13.5, label: '13 ft 6 in' },
+          { value: 15, label: '15 ft' }
+        ]
+      },
+      { id: 'wastePercent', label: 'Waste allowance (%, for seams & pattern matching)', type: 'percent', placeholder: '10', defaultValue: 10, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Carpet Calculator – Square Yards & Padding',
+      description: 'Free carpet calculator: square yards of carpet and padding a room needs from its dimensions, plus whether it fits a standard roll width with no seam.',
+      faq: [
+        { question: 'How much carpet do I need for a 14x12 room?', answer: 'About 21 sq yd with a standard 10% waste allowance: 168 sq ft ÷ 9 = 18.67 sq yd exact, rounded up after adding 10%.' },
+        { question: 'How do I convert square feet to square yards of carpet?', answer: 'Divide the square footage by 9, since one square yard is 9 square feet (3 ft × 3 ft).' },
+        { question: 'What is the standard width of a carpet roll?', answer: '12 ft is the most common broadloom width; the Carpet and Rug Institute also lists 13.5 ft and 15 ft as standard widths.' },
+        { question: 'Do I need the same amount of padding as carpet?', answer: 'Essentially yes, by area — but padding doesn’t usually need the same waste allowance as carpet, since it has no pattern or seam to match.' },
+        { question: 'Will my room need a carpet seam?', answer: 'Only if both of the room’s dimensions exceed your roll’s width. A room that fits within the roll width in at least one direction needs no seam.' },
+        { question: 'Why add extra carpet if the room doesn’t need a seam?', answer: 'Rooms are rarely perfectly square, and trimming around doorways, closets and fixtures always uses more carpet than the exact floor area.' },
+        { question: 'Is carpet sold in exact square yards?', answer: 'No. It’s cut from a continuous roll of a fixed width, so an installer typically rounds the order up to avoid an awkward partial-width cut.' }
+      ]
+    },
+    compute(values) {
+      const roomAreaSqFt = values.roomLength * values.roomWidth;
+      const carpetSqYdExact = roomAreaSqFt / 9;
+      const carpetSqYdToBuy = Math.ceil(carpetSqYdExact * (1 + values.wastePercent / 100));
+      const padSqYdToBuy = Math.ceil(carpetSqYdExact);
+      const seamNeeded = Math.min(values.roomLength, values.roomWidth) > values.rollWidthFt ? 1 : 0;
+      return { carpetSqYdToBuy, padSqYdToBuy, carpetSqYdExact, roomAreaSqFt, seamNeeded };
+    }
   }
 ];

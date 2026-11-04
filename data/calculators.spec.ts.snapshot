@@ -543,6 +543,56 @@ exports[`compute() snapshots > car-payment-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > carpet-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "roomLength": 14,
+      "roomWidth": 12,
+      "rollWidthFt": 12,
+      "wastePercent": 10
+    },
+    "outputs": {
+      "carpetSqYdToBuy": 21,
+      "padSqYdToBuy": 19,
+      "carpetSqYdExact": 18.66666667,
+      "roomAreaSqFt": 168,
+      "seamNeeded": 0
+    }
+  },
+  "typical": {
+    "inputs": {
+      "roomLength": 21,
+      "roomWidth": 18,
+      "rollWidthFt": 18,
+      "wastePercent": 15
+    },
+    "outputs": {
+      "carpetSqYdToBuy": 49,
+      "padSqYdToBuy": 42,
+      "carpetSqYdExact": 42,
+      "roomAreaSqFt": 378,
+      "seamNeeded": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "roomLength": 1,
+      "roomWidth": 1,
+      "rollWidthFt": 6,
+      "wastePercent": 0
+    },
+    "outputs": {
+      "carpetSqYdToBuy": 1,
+      "padSqYdToBuy": 1,
+      "carpetSqYdExact": 0.1111111111,
+      "roomAreaSqFt": 1,
+      "seamNeeded": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > cashback-calculator 1`] = `
 {
   "default": {

@@ -43,11 +43,21 @@ top-level folder. When moving or renaming one, keep it inside `mdFiles/`.
 ```
 mdFiles/
   instructions.md      # full spec + rationale for the SEO / region / format project
-  STATUS.md            # development tracker — decisions, 28 steps, session log
+  STATUS.md            # development tracker — decisions, step index, RECENT session log only
+  STATUS-archive.md    # older session-log entries trimmed out of STATUS.md (append-only)
   steps/NN-<name>.md   # one self-contained work order per step
   design.md            # original design & architecture document
   memory/              # project memory notes
 ```
+
+**`STATUS.md` session log stays trimmed to roughly the last day of work.** The step index table,
+decisions, order rules, Pending-on-user and Parked sections always stay in `STATUS.md` in full —
+only the chronological **Session log** entries get archived. When you finish a step and the log
+section has entries older than ~1 day, cut them from `STATUS.md` and append them to
+`STATUS-archive.md` (oldest-first, never reordered), leaving a one-line pointer in `STATUS.md`
+("older entries in `STATUS-archive.md`, covers steps X–Y"). This is a token-cost rule, not a
+historical one: the point is keeping `STATUS.md` small enough to read in one pass every session —
+`STATUS-archive.md` is write-mostly and only opened when a specific old step needs to be looked up.
 
 **Two exceptions, both at the repo root — do not move these into `mdFiles/`:**
 
@@ -88,6 +98,16 @@ the sections a step references, not the whole file.
 - Develop in the background by default. Hand calculator builds to the **`calculator-builder`**
   agent (`.claude/agents/`), each on its own branch, and run `npm run build` / `npm run dev` with
   `run_in_background`, so the main session stays free. Always kill the dev server when done.
+- **Browser visual QA runs once per ~50 new calculators, not once per batch.** `npm test` +
+  `npm run lint` + `npm run build` still gate every batch — those are cheap and catch real breakage.
+  Chrome-automation spot-checks (desktop/dark-mode/phone screenshots) are expensive and the pages
+  share a template, so skip them per-batch; batch the visual pass across ~10 batches (~50
+  calculators) at once, covering a representative sample rather than every page. Track the running
+  count toward 50 in the relevant step file's Progress checklist so it's obvious when a visual pass
+  is due.
+- When reading existing calculators as a pattern reference, read **one representative example**,
+  not the whole category file — `data/calculators/*.ts` files grow past 1,500 lines and most of
+  that is irrelevant to the pattern being matched.
 
 ## Conventions
 

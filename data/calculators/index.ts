@@ -193,7 +193,12 @@ export const calculatorOrder: string[] = [
   'decking-calculator',
   'roofing-calculator',
   'roof-pitch-calculator',
-  'paver-calculator'
+  'paver-calculator',
+  'mulch-calculator',
+  'topsoil-calculator',
+  'retaining-wall-calculator',
+  'board-foot-calculator',
+  'ac-tonnage-btu-calculator'
 ];
 
 const rank = (id: string) => {

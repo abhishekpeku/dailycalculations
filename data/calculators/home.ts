@@ -2980,5 +2980,134 @@ export const homeCalculators: CalculatorConfig[] = [
       const slabAreaSqFt = values.slabLength * values.slabWidth;
       return { sticksNeeded, totalLinearFeetWithWaste, totalLinearFeetExact, slabAreaSqFt };
     }
+  },
+  {
+    id: 'pool-volume-calculator',
+    category: 'home',
+    glyph: 'pool',
+    updatedAt: '2026-11-05',
+    aliases: ['pool volume calculator', 'swimming pool gallons calculator', 'how many gallons is my pool', 'hot tub volume calculator', 'tank volume calculator gallons'],
+    related: ['gravel-calculator', 'paver-calculator', 'concrete-calculator'],
+    title: 'Pool / Tank Volume Calculator',
+    description: 'Find how many gallons a rectangular, circular or oval pool or tank holds from its dimensions and average depth, using the pool industry’s standard formulas.',
+    example: 'A rectangular pool 32×16 ft with a 5.5 ft average depth (midway between a 3 ft shallow end and an 8 ft deep end) holds about 21,120 gallons.',
+    breakdown: {
+      headline: 'gallons',
+      headlineLabel: 'Volume (US gallons)',
+      outputs: [
+        { id: 'gallons', label: 'Volume (US gallons)', format: 'integer' },
+        { id: 'cubicFeet', label: 'Volume (cubic feet)', format: 'number' }
+      ],
+      groups: [
+        { title: 'Shape & dimensions', inputs: ['shape', 'lengthFt', 'widthFt', 'diameterFt'] },
+        { title: 'Average depth', inputs: ['avgDepthFt'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'cubicFeet', label: 'Cubic feet' },
+          { from: 'gallons', label: 'US gallons' }
+        ],
+        title: 'Volume, cubic feet vs. gallons'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'How a pool or tank’s gallons are calculated',
+        paragraphs: [
+          'A pool or tank’s volume starts as a simple geometric calculation — length times width times depth for a rectangle, or the equivalent for a circle or oval — which gives a volume in cubic feet. Leslie’s Pool Supplies, one of the largest U.S. pool-supply retailers, publishes this exact approach for all three common shapes: "Length x Width x Average Depth x 7.5" for rectangular or square pools, the circle-area formula for round pools, and an oval-area formula for oval pools, each multiplied by the same 7.5 figure at the end.',
+          'That 7.5 is the pool industry’s standard shortcut for "approximately how many gallons are in a cubic foot," as Leslie’s own guidance describes it. The exact conversion, from NIST’s own published conversion factors, is 7.48052 US gallons per cubic foot — so 7.5 runs about 0.26% high. That is close enough for everyday pool-chemical dosing and far easier to calculate by hand, which is why it is the number the industry itself publishes and uses.',
+          'Most pools are not a single, uniform depth — there is a shallow end and a deep end, or a consistent slope between them. Leslie’s own method for that case is averaging: add the shallow and deep measurements and divide by two, then use that average depth in the volume formula, the same way this calculator does.'
+        ]
+      },
+      howTo: {
+        intro: 'Choose your pool or tank’s shape, enter its dimensions, then its average depth.',
+        steps: [
+          { name: 'Choose the shape', text: 'Pick rectangular/square, circular, or oval — each uses its own area formula.' },
+          { name: 'Enter the dimensions', text: 'For rectangular or oval, enter length and width; for circular, enter diameter.' },
+          { name: 'Enter the average depth', text: 'If the pool has a shallow and deep end, add the two depths and divide by two; use a single depth if it is uniform.' },
+          { name: 'Read the result', text: 'The headline is the volume in US gallons; the row below shows it in cubic feet.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Find the volume in cubic feet from the shape’s area times average depth, then multiply by 7.5 to convert to US gallons.',
+        expression: 'rectangular: cu ft = L × W × avg depth\ncircular: cu ft = π × (diameter ÷ 2)² × avg depth\noval: cu ft = π × (L ÷ 2) × (W ÷ 2) × avg depth\ngallons = cu ft × 7.5',
+        terms: [
+          { symbol: 'L, W', meaning: 'Length and width, in feet (rectangular/oval) or diameter (circular).' },
+          { symbol: 'avg depth', meaning: 'Average water depth: (shallow end + deep end) ÷ 2, or a single value if the depth is uniform.' },
+          { symbol: '7.5', meaning: 'The pool industry’s standard rounding of cubic feet to US gallons (exact: 7.48052, per NIST).' }
+        ],
+        note: 'An estimate. Steps, benches, rounded corners and a sloped (not flat) transition between shallow and deep ends all make the real volume differ somewhat from this simple geometric formula. Freeform or kidney-shaped pools are not covered by any of these three shapes.'
+      },
+      workedExample: {
+        intro: 'A rectangular pool, 32 ft long and 16 ft wide, with a 3 ft shallow end and an 8 ft deep end.',
+        rows: [
+          { label: 'Average depth ((3 + 8) ÷ 2)', value: '5.5 ft' },
+          { label: 'Volume (32 × 16 × 5.5)', value: '2,816 cu ft' },
+          { label: 'Gallons (2,816 × 7.5)', value: '21,120 gal' }
+        ],
+        result: '21,120 gallons',
+        explanation: 'The pool industry’s 7.5 gallons-per-cubic-foot figure is a rounding of the exact NIST conversion, 7.48052 US gallons per cubic foot — about 0.26% higher than the exact figure, close enough for dosing pool chemicals and far simpler to calculate by hand.'
+      },
+      watchOut: [
+        { title: 'Use average depth, not just one measurement', body: 'A pool with a shallow and deep end needs the two averaged together — (shallow + deep) ÷ 2 — not just the deep end’s number, which would overstate the volume.' },
+        { title: 'This is an estimate, not an exact fill volume', body: 'Steps, benches, rounded corners and a sloped (not flat) transition between depths all make a real pool’s volume differ somewhat from this simple geometric formula.' },
+        { title: 'The oval formula assumes a true ellipse', body: 'An oval or "radius" pool whose ends are not a true mathematical ellipse will vary somewhat from this estimate.' },
+        { title: 'Freeform and kidney-shaped pools need a different approach', body: 'These three shapes don’t cover an irregular freeform pool — a pool professional or a more detailed, per-section calculation is needed for those.' },
+        { title: 'For precise chemical dosing, confirm against a metered fill', body: 'Many pool professionals confirm a pool’s volume against the actual metered fill amount rather than relying only on a geometric estimate.' }
+      ],
+      references: [
+        { label: 'Leslie’s Pool Supplies, "How To Calculate Pool Volume" — rectangular, circular and oval pool-volume formulas', url: 'https://lesliespool.com/blog/calculating-pool-volume.html' },
+        { label: 'NIST Special Publication 811, Appendix B: Conversion Factors (US gallon)', url: 'https://www.nist.gov/pml/special-publication-811/nist-guide-si-appendix-b-conversion-factors' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'shape',
+        label: 'Shape',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Rectangular or square' },
+          { value: 1, label: 'Circular' },
+          { value: 2, label: 'Oval' }
+        ]
+      },
+      { id: 'lengthFt', label: 'Length (ft) — rectangular or oval', type: 'number', placeholder: '32', defaultValue: 32, step: 1, min: 1 },
+      { id: 'widthFt', label: 'Width (ft) — rectangular or oval', type: 'number', placeholder: '16', defaultValue: 16, step: 1, min: 1 },
+      { id: 'diameterFt', label: 'Diameter (ft) — circular', type: 'number', placeholder: '24', defaultValue: 24, step: 1, min: 1 },
+      { id: 'avgDepthFt', label: 'Average depth (ft, (shallow + deep) ÷ 2)', type: 'number', placeholder: '5.5', defaultValue: 5.5, step: 0.25, min: 0.5 }
+    ],
+    seo: {
+      title: 'Pool / Tank Volume Calculator – Gallons by Shape',
+      description: 'Free pool volume calculator: find gallons for rectangular, circular and oval pools or tanks from dimensions and average depth, per the pool industry’s own formulas.',
+      faq: [
+        { question: 'How do I calculate how many gallons are in my pool?', answer: 'Find the volume in cubic feet (length × width × average depth for a rectangle), then multiply by 7.5 — the pool industry’s standard cubic-feet-to-gallons conversion. A 32×16 ft pool with a 5.5 ft average depth holds 2,816 cu ft, or 21,120 gallons.' },
+        { question: 'How do I find a pool’s average depth?', answer: 'Add the shallow end’s depth and the deep end’s depth, then divide by two. A pool with a 3 ft shallow end and an 8 ft deep end has a 5.5 ft average depth.' },
+        { question: 'How many gallons are in a cubic foot of water?', answer: 'The pool industry rounds this to 7.5 gallons per cubic foot for easy hand calculation; the exact NIST conversion is 7.48052, about 0.26% lower.' },
+        { question: 'How do I calculate volume for a round pool?', answer: 'Multiply π by the radius squared (diameter ÷ 2, squared) by the average depth to get cubic feet, then by 7.5 for gallons.' },
+        { question: 'How do I calculate volume for an oval pool?', answer: 'Multiply π by half the length, by half the width, by the average depth to get cubic feet, then by 7.5 for gallons — the same approach Leslie’s Pool Supplies publishes.' },
+        { question: 'Does this work for a hot tub or a water tank?', answer: 'Yes, for a rectangular, circular or oval shape — the same geometry applies to any container, not only in-ground or above-ground swimming pools.' },
+        { question: 'Does this calculator cover freeform or kidney-shaped pools?', answer: 'No. Freeform and kidney-shaped pools don’t fit any of these three geometric shapes well; a pool professional or a more detailed, per-section calculation gives a more accurate figure for those.' }
+      ]
+    },
+    compute(values) {
+      let cubicFeet;
+      if (values.shape === 1) {
+        const radius = values.diameterFt / 2;
+        cubicFeet = Math.PI * radius * radius * values.avgDepthFt;
+      } else if (values.shape === 2) {
+        cubicFeet = Math.PI * (values.lengthFt / 2) * (values.widthFt / 2) * values.avgDepthFt;
+      } else {
+        cubicFeet = values.lengthFt * values.widthFt * values.avgDepthFt;
+      }
+      const gallons = cubicFeet * 7.5;
+      return { gallons, cubicFeet };
+    }
   }
 ];

@@ -201,7 +201,8 @@ export const calculatorOrder: string[] = [
   'ac-tonnage-btu-calculator',
   'insulation-calculator',
   'stair-calculator',
-  'rebar-calculator'
+  'rebar-calculator',
+  'pool-volume-calculator'
 ];
 
 const rank = (id: string) => {

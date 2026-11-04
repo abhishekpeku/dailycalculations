@@ -4508,6 +4508,50 @@ exports[`compute() snapshots > permutation-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > pool-volume-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "shape": 0,
+      "lengthFt": 32,
+      "widthFt": 16,
+      "diameterFt": 24,
+      "avgDepthFt": 5.5
+    },
+    "outputs": {
+      "gallons": 21120,
+      "cubicFeet": 2816
+    }
+  },
+  "typical": {
+    "inputs": {
+      "shape": 0,
+      "lengthFt": 48,
+      "widthFt": 24,
+      "diameterFt": 36,
+      "avgDepthFt": 8.25
+    },
+    "outputs": {
+      "gallons": 71280,
+      "cubicFeet": 9504
+    }
+  },
+  "edge": {
+    "inputs": {
+      "shape": 0,
+      "lengthFt": 1,
+      "widthFt": 1,
+      "diameterFt": 1,
+      "avgDepthFt": 0.5
+    },
+    "outputs": {
+      "gallons": 3.75,
+      "cubicFeet": 0.5
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > pounds-to-kilograms-converter 1`] = `
 {
   "default": {

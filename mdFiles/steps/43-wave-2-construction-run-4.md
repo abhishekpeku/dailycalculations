@@ -136,8 +136,18 @@ sources were dropped mid-research for failing this bar, which shaped the final d
 - [x] Page check: `curl` every new `/calculators/<id>` page — H1, JSON-LD and every content section
   present
 - [x] Dev server confirmed stopped (port 3000 free)
+- [x] Cross-checked the actual shipped `compute()` functions against every worked-example/FAQ
+  number (21/21 checks passed, see PR description)
 - [ ] Update `mdFiles/STATUS.md` — left to the main session per the task instructions
-- [ ] `gh pr ready`
+- [x] `gh pr ready`
+
+## Pre-existing issue found, not fixed (out of scope for this batch)
+
+`check_run4.mjs`'s alias-collision sweep (run against the whole dataset, not just these 6) found
+one pre-existing collision unrelated to this batch: the alias `"house loan emi calculator"` is
+used by both `mortgage-calculator` (finance) and `emi-calculator` (finance). Per this task's scope
+("build only the calculators you were asked for... put anything else on the Parked list"), this
+was left alone and is called out here for the main session to add to `STATUS.md`'s Parked list.
 
 ## Visual-QA threshold note
 

@@ -102,7 +102,10 @@ and merges.
 - [x] Construction batch 3 (5): DONE 2026-11-05 — mulch, topsoil, retaining wall, board foot, AC
   tonnage/BTU calculators. Branch `step/43-wave-2-construction-run-3`, PR #54. Details:
   `mdFiles/steps/43-wave-2-construction-run-3.md`. `home` category now 21 calculators.
-- [ ] Construction batch 4+ : TODO — remaining candidates (insulation, flooring, carpet, stair,
-  rebar, pool/tank volume, siding, framing/stud), final cut still the build agent's call
-- [ ] Food batches: TODO
+- [x] Construction batch 4 (6): DONE 2026-11-05 — insulation, stair, rebar, pool/tank volume,
+  carpet, flooring calculators. Branch `step/43-wave-2-construction-run-4`, PR #55. Details:
+  `mdFiles/steps/43-wave-2-construction-run-4.md`. `home` category now 27 calculators. Siding and
+  framing/stud were judged too niche/thin relative to the other 6 and parked (not built) — see the
+  run-4 step file's "Picks and why" section. **This closes out Wave 2 Construction.**
+- [ ] Food batches: TODO (next sector per this doc's ordering)
 - [ ] Sports batches: TODO

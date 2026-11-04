@@ -543,6 +543,56 @@ exports[`compute() snapshots > car-payment-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > carpet-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "roomLength": 14,
+      "roomWidth": 12,
+      "rollWidthFt": 12,
+      "wastePercent": 10
+    },
+    "outputs": {
+      "carpetSqYdToBuy": 21,
+      "padSqYdToBuy": 19,
+      "carpetSqYdExact": 18.66666667,
+      "roomAreaSqFt": 168,
+      "seamNeeded": 0
+    }
+  },
+  "typical": {
+    "inputs": {
+      "roomLength": 21,
+      "roomWidth": 18,
+      "rollWidthFt": 18,
+      "wastePercent": 15
+    },
+    "outputs": {
+      "carpetSqYdToBuy": 49,
+      "padSqYdToBuy": 42,
+      "carpetSqYdExact": 42,
+      "roomAreaSqFt": 378,
+      "seamNeeded": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "roomLength": 1,
+      "roomWidth": 1,
+      "rollWidthFt": 6,
+      "wastePercent": 0
+    },
+    "outputs": {
+      "carpetSqYdToBuy": 1,
+      "padSqYdToBuy": 1,
+      "carpetSqYdExact": 0.1111111111,
+      "roomAreaSqFt": 1,
+      "seamNeeded": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > cashback-calculator 1`] = `
 {
   "default": {
@@ -2067,6 +2117,53 @@ exports[`compute() snapshots > fence-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > flooring-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "roomLength": 14,
+      "roomWidth": 12,
+      "coveragePerBoxSqFt": 20,
+      "wastePercent": 5
+    },
+    "outputs": {
+      "boxesToBuy": 9,
+      "boxesExact": 8.82,
+      "coverageBought": 180,
+      "roomAreaSqFt": 168
+    }
+  },
+  "typical": {
+    "inputs": {
+      "roomLength": 21,
+      "roomWidth": 18,
+      "coveragePerBoxSqFt": 30,
+      "wastePercent": 8
+    },
+    "outputs": {
+      "boxesToBuy": 14,
+      "boxesExact": 13.608,
+      "coverageBought": 420,
+      "roomAreaSqFt": 378
+    }
+  },
+  "edge": {
+    "inputs": {
+      "roomLength": 1,
+      "roomWidth": 1,
+      "coveragePerBoxSqFt": 1,
+      "wastePercent": 0
+    },
+    "outputs": {
+      "boxesToBuy": 1,
+      "boxesExact": 1,
+      "coverageBought": 1,
+      "roomAreaSqFt": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > force-calculator 1`] = `
 {
   "default": {
@@ -2690,6 +2787,53 @@ exports[`compute() snapshots > instagram-engagement-calculator 1`] = `
       "engagementRate": 0,
       "estimatedPostValue": 1,
       "cpm": 10
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > insulation-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "areaSqFt": 1000,
+      "climateZone": 60,
+      "coveragePerBag": 40,
+      "wastePercent": 10
+    },
+    "outputs": {
+      "bagsNeeded": 28,
+      "targetRValue": 60,
+      "areaSqFt": 1000,
+      "coverageBought": 1120
+    }
+  },
+  "typical": {
+    "inputs": {
+      "areaSqFt": 1500,
+      "climateZone": 90,
+      "coveragePerBag": 60,
+      "wastePercent": 15
+    },
+    "outputs": {
+      "bagsNeeded": 29,
+      "targetRValue": 90,
+      "areaSqFt": 1500,
+      "coverageBought": 1740
+    }
+  },
+  "edge": {
+    "inputs": {
+      "areaSqFt": 50,
+      "climateZone": 30,
+      "coveragePerBag": 5,
+      "wastePercent": 0
+    },
+    "outputs": {
+      "bagsNeeded": 10,
+      "targetRValue": 30,
+      "areaSqFt": 50,
+      "coverageBought": 50
     }
   }
 }
@@ -4461,6 +4605,50 @@ exports[`compute() snapshots > permutation-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > pool-volume-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "shape": 0,
+      "lengthFt": 32,
+      "widthFt": 16,
+      "diameterFt": 24,
+      "avgDepthFt": 5.5
+    },
+    "outputs": {
+      "gallons": 21120,
+      "cubicFeet": 2816
+    }
+  },
+  "typical": {
+    "inputs": {
+      "shape": 0,
+      "lengthFt": 48,
+      "widthFt": 24,
+      "diameterFt": 36,
+      "avgDepthFt": 8.25
+    },
+    "outputs": {
+      "gallons": 71280,
+      "cubicFeet": 9504
+    }
+  },
+  "edge": {
+    "inputs": {
+      "shape": 0,
+      "lengthFt": 1,
+      "widthFt": 1,
+      "diameterFt": 1,
+      "avgDepthFt": 0.5
+    },
+    "outputs": {
+      "gallons": 3.75,
+      "cubicFeet": 0.5
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > pounds-to-kilograms-converter 1`] = `
 {
   "default": {
@@ -4972,6 +5160,56 @@ exports[`compute() snapshots > ratio-calculator 1`] = `
       "d": "NaN",
       "simplifiedA": 0,
       "simplifiedB": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > rebar-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "slabLength": 12,
+      "slabWidth": 10,
+      "barSpacingIn": 12,
+      "stickLengthFt": 20,
+      "wastePercent": 10
+    },
+    "outputs": {
+      "sticksNeeded": 15,
+      "totalLinearFeetWithWaste": 288.2,
+      "totalLinearFeetExact": 262,
+      "slabAreaSqFt": 120
+    }
+  },
+  "typical": {
+    "inputs": {
+      "slabLength": 18,
+      "slabWidth": 15,
+      "barSpacingIn": 18,
+      "stickLengthFt": 30,
+      "wastePercent": 15
+    },
+    "outputs": {
+      "sticksNeeded": 16,
+      "totalLinearFeetWithWaste": 451.95,
+      "totalLinearFeetExact": 393,
+      "slabAreaSqFt": 270
+    }
+  },
+  "edge": {
+    "inputs": {
+      "slabLength": 1,
+      "slabWidth": 1,
+      "barSpacingIn": 4,
+      "stickLengthFt": 2,
+      "wastePercent": 0
+    },
+    "outputs": {
+      "sticksNeeded": 4,
+      "totalLinearFeetWithWaste": 8,
+      "totalLinearFeetExact": 8,
+      "slabAreaSqFt": 1
     }
   }
 }
@@ -5788,6 +6026,47 @@ exports[`compute() snapshots > square-root-calculator 1`] = `
     },
     "outputs": {
       "squareRoot": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > stair-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "totalRiseIn": 108,
+      "treadDepthIn": 10.5
+    },
+    "outputs": {
+      "numRisers": 14,
+      "actualRiserIn": 7.714285714,
+      "numTreads": 13,
+      "totalRunFt": 11.375
+    }
+  },
+  "typical": {
+    "inputs": {
+      "totalRiseIn": 162,
+      "treadDepthIn": 15.75
+    },
+    "outputs": {
+      "numRisers": 21,
+      "actualRiserIn": 7.714285714,
+      "numTreads": 20,
+      "totalRunFt": 26.25
+    }
+  },
+  "edge": {
+    "inputs": {
+      "totalRiseIn": 10,
+      "treadDepthIn": 10
+    },
+    "outputs": {
+      "numRisers": 2,
+      "actualRiserIn": 5,
+      "numTreads": 1,
+      "totalRunFt": 0.8333333333
     }
   }
 }

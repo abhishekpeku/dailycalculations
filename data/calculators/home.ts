@@ -260,7 +260,7 @@ export const homeCalculators: CalculatorConfig[] = [
     glyph: 'yd³',
     updatedAt: '2026-10-21',
     aliases: ['cubic yards of concrete calculator', 'cement calculator', 'slab concrete calculator', 'how many bags of concrete do i need', 'concrete bag calculator'],
-    related: ['tile-calculator', 'paint-calculator', 'wallpaper-calculator', 'gallons-to-liters-converter'],
+    related: ['tile-calculator', 'paint-calculator', 'wallpaper-calculator', 'rebar-calculator', 'gallons-to-liters-converter'],
     title: 'Concrete Calculator',
     description: 'Find the volume of concrete a slab, footing or post hole needs from its length, width and depth, or work backward from a target volume, in cubic feet or cubic yards, with the number of 60 lb and 80 lb bags.',
     example: 'A 10x12 ft patio slab, 4 inches thick, needs 40 cubic feet (1.48 cubic yards) of concrete, or about 1.63 cubic yards with a 10% waste allowance — roughly 74 bags of 80 lb mix or 98 bags of 60 lb mix.',
@@ -2621,6 +2621,738 @@ export const homeCalculators: CalculatorConfig[] = [
       const tons = totalBtu / 12000;
       const roomAreaSqFt = values.roomAreaSqFt;
       return { baseBtu, totalBtu, tons, roomAreaSqFt };
+    }
+  },
+  {
+    id: 'insulation-calculator',
+    category: 'home',
+    glyph: 'ins',
+    updatedAt: '2026-11-05',
+    aliases: ['how much insulation do i need calculator', 'attic insulation calculator', 'insulation r value calculator', 'blown in insulation bags calculator', 'batt insulation calculator'],
+    related: ['ac-tonnage-btu-calculator', 'electricity-bill-calculator', 'drywall-calculator', 'paint-calculator'],
+    title: 'Insulation Calculator',
+    description: 'Find the attic R-value ENERGY STAR recommends for your climate zone, and how many bags or rolls of insulation that area needs, with a waste allowance.',
+    example: 'A 1,000 sq ft Zone 5 attic needs R-60 insulation per ENERGY STAR; at 40 sq ft of coverage per bag and a 10% waste allowance, that is 28 bags.',
+    breakdown: {
+      headline: 'bagsNeeded',
+      headlineLabel: 'Bags or rolls to buy',
+      outputs: [
+        { id: 'bagsNeeded', label: 'Bags or rolls to buy', format: 'integer' },
+        { id: 'targetRValue', label: 'Recommended R-value for your zone', format: 'integer' },
+        { id: 'areaSqFt', label: 'Area to insulate', format: 'number', dimension: 'area', unit: 'ft2' },
+        { id: 'coverageBought', label: 'Coverage bought', format: 'number', dimension: 'area', unit: 'ft2' }
+      ],
+      groups: [
+        { title: 'Attic or area', inputs: ['areaSqFt', 'climateZone'] },
+        { title: 'Insulation product', inputs: ['coveragePerBag', 'wastePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'areaSqFt', label: 'Area to insulate' },
+          { from: 'coverageBought', label: 'Coverage bought' }
+        ],
+        title: 'Area to insulate vs. coverage bought'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'How much insulation an attic really needs',
+        paragraphs: [
+          'The U.S. EPA and Department of Energy’s ENERGY STAR program publishes a recommended insulation R-value for every U.S. climate zone, based on the 2021 International Energy Conservation Code. For an uninsulated attic, Zone 1 (the warmest, e.g. southern Florida) needs R-30; Zones 2 and 3 need R-49; and Zones 4A/4B, 4C/5/6 and 7/8 (most of the northern two-thirds of the country) all need R-60 — the coldest zones need the same top-tier R-value as the moderately cold ones because attic heat loss matters most where winters are long, not just where they are extreme.',
+          'R-value measures resistance to heat flow, and it adds up: stacking more insulation on top of existing insulation raises the total R-value, which is why ENERGY STAR publishes a second, lower target for an attic that already has 3–4 inches in place. This calculator uses the uninsulated-attic target, since that is the figure most people adding insulation for the first time are working from.',
+          'Once you know the target R-value, how many bags or rolls you need depends entirely on the product: a bag of blown-in insulation or a roll of batts states its coverage area at a given R-value right on the label, and that coverage shrinks as the R-value (and therefore the installed thickness) goes up. There is no single number that works across brands and R-values, so this calculator asks for your own product’s coverage figure rather than assuming one.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the area to insulate and your climate zone, then your insulation product’s coverage and a waste allowance.',
+        steps: [
+          { name: 'Enter the area', text: 'Type the attic or wall area in square feet.' },
+          { name: 'Choose your climate zone', text: 'Pick the zone group that matches your location; this sets the ENERGY STAR-recommended R-value for an uninsulated attic.' },
+          { name: 'Enter your product’s coverage', text: 'Check the bag or roll label for its coverage area in square feet at your target R-value — this varies by brand and by R-value.' },
+          { name: 'Set a waste allowance', text: 'A 10% allowance covers uneven joists, obstructions and minor overlaps.' },
+          { name: 'Read the result', text: 'The headline is the bags or rolls to buy; the rows below show the recommended R-value and the coverage bought.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Look up the target R-value from ENERGY STAR’s own climate-zone table, then divide the area (with waste) by your product’s coverage per bag.',
+        expression: 'target R-value = ENERGY STAR climate-zone table\nbags needed = ⌈(area × (1 + waste%)) ÷ coverage per bag⌉',
+        terms: [
+          { symbol: 'target R-value', meaning: 'ENERGY STAR’s recommended R-value for an uninsulated attic in your climate zone.' },
+          { symbol: 'area', meaning: 'The square footage you are insulating.' },
+          { symbol: 'waste%', meaning: 'An allowance for uneven framing, obstructions and overlap; 10% is a reasonable default.' },
+          { symbol: 'coverage per bag', meaning: 'Square feet one bag or roll covers at your target R-value, printed on the product label — this varies by brand and R-value, so there is no universal default.' }
+        ],
+        note: 'An estimate. Coverage per bag varies enormously by product and by R-value; always use the figure on your own insulation’s label, not a generic number.'
+      },
+      workedExample: {
+        intro: 'A 1,000 sq ft attic in climate Zone 5, with insulation that covers 40 sq ft per bag at its R-60 setting, and a 10% waste allowance.',
+        rows: [
+          { label: 'Target R-value (Zone 4C/5/6, ENERGY STAR)', value: 'R-60' },
+          { label: 'Area with waste (1,000 × 1.10)', value: '1,100 sq ft' },
+          { label: 'Bags needed (1,100 ÷ 40)', value: '27.5 bags' },
+          { label: 'Bags to buy, rounded up', value: '28 bags' },
+          { label: 'Coverage bought (28 × 40)', value: '1,120 sq ft' }
+        ],
+        result: '28 bags, R-60',
+        explanation: 'The same 1,000 sq ft attic in the warmer Zone 1 only needs R-30 — roughly half the installed thickness of R-60 — which typically means a bag covers noticeably more area at that lower R-value, so fewer bags are needed for the same floor space. Always re-check the coverage figure on the specific product and R-value you are buying rather than assuming it scales evenly.'
+      },
+      watchOut: [
+        { title: 'Coverage per bag is specific to one product and one R-value', body: 'The same brand’s bag covers far less area at R-60 than at R-30, because reaching a higher R-value means installing it thicker — always read the coverage figure for the R-value you are actually installing.' },
+        { title: 'Adding over existing insulation uses a lower target', body: 'ENERGY STAR publishes a separate, lower R-value target for an attic that already has 3–4 inches in place; this calculator uses the uninsulated-attic target.' },
+        { title: 'Air seal first', body: 'ENERGY STAR recommends sealing attic air leaks (around recessed lights, plumbing stacks, attic hatches) before adding insulation — insulation slows heat flow, but it does not stop air leaks.' },
+        { title: 'Don’t compress insulation to make it fit', body: 'Compressing batts or blown-in material into too little depth reduces its real R-value below what the package states.' },
+        { title: 'This is a quantity estimate, not an energy audit', body: 'A full energy assessment accounts for walls, floors, ducts and air sealing together — this calculator covers one area’s insulation quantity only.' }
+      ],
+      references: [
+        { label: 'U.S. EPA/DOE ENERGY STAR, "Recommended Home Insulation R-Values" — climate-zone R-value table', url: 'https://www.energystar.gov/saveathome/seal_insulate/identify-problems-you-want-fix/diy-checks-inspections/insulation-r-values' }
+      ]
+    },
+    inputs: [
+      { id: 'areaSqFt', label: 'Area to insulate (sq ft)', type: 'number', placeholder: '1000', defaultValue: 1000, step: 50, min: 50 },
+      {
+        id: 'climateZone',
+        label: 'Climate zone (ENERGY STAR / 2021 IECC)',
+        type: 'number',
+        placeholder: '60',
+        defaultValue: 60,
+        step: 1,
+        min: 30,
+        options: [
+          { value: 30, label: 'Zone 1 (R-30)' },
+          { value: 49, label: 'Zone 2 or 3 (R-49)' },
+          { value: 60, label: 'Zone 4A/4B, 4C/5/6 or 7/8 (R-60)' }
+        ]
+      },
+      { id: 'coveragePerBag', label: 'Coverage per bag/roll at your target R-value (sq ft, check the label)', type: 'number', placeholder: '40', defaultValue: 40, step: 5, min: 5 },
+      { id: 'wastePercent', label: 'Waste allowance (%)', type: 'percent', placeholder: '10', defaultValue: 10, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Insulation Calculator – Attic R-Value & Bags Needed',
+      description: 'Free insulation calculator: find your climate zone’s ENERGY STAR-recommended attic R-value and how many bags or rolls of insulation your area needs.',
+      faq: [
+        { question: 'How much insulation do I need for my attic?', answer: 'It depends on your climate zone and product. ENERGY STAR recommends R-30 for Zone 1, R-49 for Zones 2–3, and R-60 for Zones 4A/4B, 4C/5/6 and 7/8 in an uninsulated attic; how many bags that takes depends on your product’s coverage at that R-value.' },
+        { question: 'What R-value do I need for my climate zone?', answer: 'Per ENERGY STAR’s own table for an uninsulated attic: R-30 in Zone 1, R-49 in Zones 2 and 3, and R-60 in Zones 4A/4B, 4C/5/6, and 7/8.' },
+        { question: 'Does the R-value target change if I already have some insulation?', answer: 'Yes. ENERGY STAR publishes a lower target for an attic with 3–4 inches already in place, since the existing insulation already contributes some R-value. This calculator uses the higher, uninsulated-attic target.' },
+        { question: 'How do I know how much area one bag of insulation covers?', answer: 'Check the bag or roll label — coverage per bag is printed there and varies by brand and by the R-value (thickness) you are installing. A bag covers noticeably less area at a higher R-value.' },
+        { question: 'Should I seal air leaks before adding insulation?', answer: 'Yes. ENERGY STAR recommends sealing attic air leaks, such as around recessed lights and plumbing stacks, before adding insulation, since insulation slows heat flow but does not stop air leaks.' },
+        { question: 'Can I compress insulation to fit a shallow space?', answer: 'No. Compressing batts or blown-in insulation into too little depth reduces its real R-value below what the package states.' },
+        { question: 'Does this calculator work for wall insulation too?', answer: 'It can estimate bags/rolls for any area if you enter the right target R-value and your product’s coverage at that R-value — ENERGY STAR’s table used here is specifically for attics, so check a wall-specific recommendation separately.' }
+      ]
+    },
+    compute(values) {
+      const targetRValue = values.climateZone;
+      const areaSqFt = values.areaSqFt;
+      const areaWithWaste = areaSqFt * (1 + values.wastePercent / 100);
+      const bagsNeeded = Math.ceil(areaWithWaste / values.coveragePerBag);
+      const coverageBought = bagsNeeded * values.coveragePerBag;
+      return { bagsNeeded, targetRValue, areaSqFt, coverageBought };
+    }
+  },
+  {
+    id: 'stair-calculator',
+    category: 'home',
+    glyph: 'str',
+    updatedAt: '2026-11-05',
+    aliases: ['stair calculator', 'how many stairs do i need calculator', 'stair rise and run calculator', 'stringer calculator', 'deck stair calculator'],
+    related: ['decking-calculator', 'roof-pitch-calculator', 'board-foot-calculator'],
+    title: 'Stair Calculator',
+    description: 'Find how many risers and treads a staircase needs from its total rise, plus the actual riser height and total run, using the IRC’s maximum riser and minimum tread rules.',
+    example: 'A 108 in (9 ft) floor-to-floor rise with a 10.5 in tread needs 14 risers at 7.71 in each and 13 treads — a total run of 11.38 ft.',
+    breakdown: {
+      headline: 'numRisers',
+      headlineLabel: 'Risers needed',
+      outputs: [
+        { id: 'numRisers', label: 'Risers needed', format: 'integer' },
+        { id: 'actualRiserIn', label: 'Actual riser height (in)', format: 'number' },
+        { id: 'numTreads', label: 'Treads needed', format: 'integer' },
+        { id: 'totalRunFt', label: 'Total run (ft)', format: 'number' }
+      ],
+      groups: [
+        { title: 'Total rise', inputs: ['totalRiseIn'] },
+        { title: 'Tread depth', inputs: ['treadDepthIn'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'actualRiserIn', label: 'Riser height' },
+          { from: 'treadDepthIn', label: 'Tread depth' }
+        ],
+        title: 'Riser height vs. tread depth (inches)'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'How a staircase’s rise and run are figured',
+        paragraphs: [
+          'A stairway’s total rise is the full vertical floor-to-floor height it needs to climb. The International Residential Code, Section R311.7.5.1, caps how tall any one riser can be: "The riser height shall be not more than 7¾ inches." Dividing the total rise by that maximum, and rounding up, gives the fewest risers the stair can legally use — any fewer and each riser would exceed the limit.',
+          'Once the number of risers is set, the actual riser height is simply the total rise divided evenly across them, which the IRC also requires: the tallest riser in a flight cannot exceed the shortest by more than 3/8 inch, so equal risers are the only way to stay compliant by design, not just by convention. A straight flight has one fewer tread than it has risers, since the top riser lands you on the floor above without a tread.',
+          'Tread depth works the other way: the IRC sets a minimum, not a maximum. Section R311.7.5.2 requires "not less than 10 inches," measured horizontally, and Section R311.7.5.3 only waives the tread-nosing requirement when the tread is at least 11 inches deep. Multiplying the number of treads by the tread depth gives the stair’s total horizontal run — the floor space the whole staircase needs.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the total floor-to-floor rise, then your desired tread depth.',
+        steps: [
+          { name: 'Measure the total rise', text: 'Measure the full vertical distance, in inches, from the lower finished floor to the upper finished floor.' },
+          { name: 'Choose a tread depth', text: 'Pick a tread depth of at least 10 in (the IRC minimum); 11 in or more avoids needing a tread nosing.' },
+          { name: 'Read the riser count and height', text: 'The headline is the number of risers; the actual riser height (always ≤ 7¾ in) is shown below it.' },
+          { name: 'Read the run', text: 'The number of treads and the total horizontal run tell you how much floor space the staircase needs.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored. This estimates a single straight flight — winders, landings and spiral stairs follow separate IRC sections.'
+      },
+      formula: {
+        intro: 'Round the total rise up to the fewest risers that keep each one under the IRC maximum, divide evenly for the actual riser height, then multiply one fewer tread by the tread depth for the total run.',
+        expression: 'risers = ⌈total rise ÷ 7.75 in⌉\nactual riser = total rise ÷ risers\ntreads = risers − 1\ntotal run = treads × tread depth',
+        terms: [
+          { symbol: 'total rise', meaning: 'The full vertical floor-to-floor height, in inches.' },
+          { symbol: '7.75 in', meaning: 'The IRC’s maximum riser height (Section R311.7.5.1).' },
+          { symbol: 'tread depth', meaning: 'The horizontal depth of each tread you choose, at least 10 in per the IRC (Section R311.7.5.2).' }
+        ],
+        note: 'An estimate for a single straight flight with uniform risers and treads, measured to the IRC’s residential minimums/maximums. Winders, spiral stairs, landings and local code amendments follow different rules — check with your local building department before building.'
+      },
+      workedExample: {
+        intro: 'A 108 in (9 ft) total floor-to-floor rise, with a chosen tread depth of 10.5 in.',
+        rows: [
+          { label: 'Risers (⌈108 ÷ 7.75⌉)', value: '14 risers' },
+          { label: 'Actual riser height (108 ÷ 14)', value: '7.71 in' },
+          { label: 'Treads (14 − 1)', value: '13 treads' },
+          { label: 'Total run (13 × 10.5)', value: '136.5 in' },
+          { label: 'Total run, in feet (136.5 ÷ 12)', value: '11.38 ft' }
+        ],
+        result: '14 risers at 7.71 in, 13 treads, 11.38 ft total run',
+        explanation: 'For a shorter 96 in (8 ft) rise, the same math gives ⌈96 ÷ 7.75⌉ = 13 risers at 96 ÷ 13 = 7.38 in each — fewer risers because there is less total height to climb, but still kept under the IRC’s 7.75 in maximum by the same rounding-up rule.'
+      },
+      watchOut: [
+        { title: 'Treads under 11 in need a nosing', body: 'The IRC requires a tread nosing (a small rounded or beveled overhang) on any stairway unless the tread depth is at least 11 inches — this calculator’s 10.5 in example would need one.' },
+        { title: 'Minimum headroom is 6 ft 8 in', body: 'Beyond riser and tread sizing, the IRC’s own stairway diagram also requires at least 6 ft 8 in of clear headroom measured vertically from the tread nosing.' },
+        { title: 'This covers a single straight flight only', body: 'Winder treads (IRC Section R311.7.5.2.1) and spiral stairways (Section R311.7.10.1) follow their own separate rules, not this calculator’s formula.' },
+        { title: 'Risers must be equal within 3/8 inch', body: 'The IRC requires the tallest riser in a flight to be within 3/8 inch of the shortest — this calculator’s even division satisfies that by design, but a site condition (an uneven floor, for example) can still throw it off in practice.' },
+        { title: 'Local amendments vary', body: 'Many jurisdictions adopt the IRC with local amendments; always confirm current requirements with your local building department before finalizing a design.' }
+      ],
+      references: [
+        { label: 'International Residential Code, Section R311.7.5 (Stair Treads and Risers), as reproduced in the City of Boise, Idaho Planning and Development Services’ IRC Code Handout #437 (Feb. 2022)', url: 'https://www.cityofboise.org/media/14405/437-treads-risers_march-2022.pdf' }
+      ]
+    },
+    inputs: [
+      { id: 'totalRiseIn', label: 'Total floor-to-floor rise (in)', type: 'number', placeholder: '108', defaultValue: 108, step: 0.5, min: 10 },
+      { id: 'treadDepthIn', label: 'Tread depth (in, IRC minimum = 10, 11+ avoids a nosing)', type: 'number', placeholder: '10.5', defaultValue: 10.5, step: 0.25, min: 10 }
+    ],
+    seo: {
+      title: 'Stair Calculator – Risers, Treads, Rise & Run',
+      description: 'Free stair calculator: number of risers, actual riser height, treads and total run from a staircase’s total rise, using the IRC’s riser and tread rules.',
+      faq: [
+        { question: 'How do I calculate the number of stairs I need?', answer: 'Divide the total floor-to-floor rise by the maximum riser height, 7.75 inches (the IRC limit), and round up. A 108 in rise needs ⌈108 ÷ 7.75⌉ = 14 risers.' },
+        { question: 'What is the maximum riser height allowed by code?', answer: '7¾ inches (7.75 in), per IRC Section R311.7.5.1. There is no minimum riser height in the IRC.' },
+        { question: 'What is the minimum tread depth?', answer: '10 inches, measured horizontally, per IRC Section R311.7.5.2. A tread of at least 11 inches also avoids needing a nosing, per Section R311.7.5.3.' },
+        { question: 'How many stairs do I need for an 8 ft rise?', answer: 'For a 96 in rise: ⌈96 ÷ 7.75⌉ = 13 risers, each 96 ÷ 13 = 7.38 in, with 12 treads.' },
+        { question: 'Do all the risers on a staircase have to be the same height?', answer: 'Within 3/8 inch of each other, per the IRC — dividing the total rise evenly across the number of risers, as this calculator does, meets that by design.' },
+        { question: 'What is the minimum headroom for a stairway?', answer: '6 ft 8 in, measured vertically from the tread nosing, per the IRC’s own stairway diagram.' },
+        { question: 'Does this calculator handle winder stairs or landings?', answer: 'No. This is a single straight flight with uniform risers and treads. Winder treads and spiral stairways follow their own separate IRC sections.' }
+      ]
+    },
+    compute(values) {
+      const MAX_RISER_IN = 7.75;
+      const numRisers = Math.ceil(values.totalRiseIn / MAX_RISER_IN);
+      const actualRiserIn = values.totalRiseIn / numRisers;
+      const numTreads = numRisers - 1;
+      const totalRunIn = numTreads * values.treadDepthIn;
+      const totalRunFt = totalRunIn / 12;
+      return { numRisers, actualRiserIn, numTreads, totalRunFt };
+    }
+  },
+  {
+    id: 'rebar-calculator',
+    category: 'home',
+    glyph: 'reb',
+    updatedAt: '2026-11-05',
+    aliases: ['rebar calculator', 'how much rebar do i need calculator', 'rebar for concrete slab calculator', 'rebar grid calculator', 'concrete slab reinforcement calculator'],
+    related: ['concrete-calculator', 'retaining-wall-calculator', 'gravel-calculator'],
+    title: 'Rebar Calculator',
+    description: 'Find how many rebar sticks a concrete slab or footing’s reinforcing grid needs from its dimensions and bar spacing, with a waste allowance for cutting and overlap.',
+    example: 'A 12×10 ft slab with rebar on a 12 in grid, using 20 ft sticks and a 10% waste allowance, needs 15 sticks — 288.2 linear feet of rebar.',
+    breakdown: {
+      headline: 'sticksNeeded',
+      headlineLabel: 'Rebar sticks to buy',
+      outputs: [
+        { id: 'sticksNeeded', label: 'Rebar sticks to buy', format: 'integer' },
+        { id: 'totalLinearFeetWithWaste', label: 'Total rebar length, with waste (ft)', format: 'number' },
+        { id: 'totalLinearFeetExact', label: 'Total rebar length, exact (ft)', format: 'number' },
+        { id: 'slabAreaSqFt', label: 'Slab area', format: 'number', dimension: 'area', unit: 'ft2' }
+      ],
+      groups: [
+        { title: 'Slab or footing', inputs: ['slabLength', 'slabWidth'] },
+        { title: 'Rebar grid', inputs: ['barSpacingIn', 'stickLengthFt', 'wastePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'totalLinearFeetExact', label: 'Rebar needed, exact' },
+          { from: 'totalLinearFeetWithWaste', label: 'With waste allowance' }
+        ],
+        title: 'Rebar length, exact vs. with waste allowance'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'How a rebar grid is sized for a slab or footing',
+        paragraphs: [
+          'Concrete is strong in compression but weak in tension — it resists being crushed far better than it resists being pulled apart or flexed. Rebar (reinforcing steel bar) is embedded in the concrete to carry that tension, so a slab or footing can flex slightly without cracking all the way through.',
+          'A common way to reinforce a residential slab is a two-way grid: bars running in both directions, spaced an even distance apart. This calculator lays out that grid from the slab’s length and width and your chosen spacing — a common residential convention is 12 inches on center in both directions, though the right spacing for a given slab depends on its thickness, the load it carries and the soil underneath, and should follow an engineer’s plan wherever one exists.',
+          'Rebar itself is sold in fixed stick lengths, not cut to order at checkout — both The Home Depot and Lowe’s stock 1/2 in (#4) rebar in 20 ft sticks as their standard length. Once the grid’s total linear footage is known, dividing by the stick length (after adding a waste allowance for trimming and the overlap where two sticks meet) gives the number of sticks to buy.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the slab or footing’s length and width, then your bar spacing, stick length and a waste allowance.',
+        steps: [
+          { name: 'Enter the slab dimensions', text: 'Type the length and width of the area to reinforce, in feet.' },
+          { name: 'Set the bar spacing', text: '12 inches on center is a common residential convention; follow your plans or an engineer’s spec for structural work.' },
+          { name: 'Enter your stick length', text: '20 ft is the standard U.S. retail length; some suppliers also carry 10, 30, 40 or 60 ft sticks.' },
+          { name: 'Set a waste allowance', text: 'Covers trimming and the overlap where two sticks meet end to end.' },
+          { name: 'Read the result', text: 'The headline is the sticks to buy; the rows below show the total rebar length, exact and with waste.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored. This is a quantity estimate, not a structural design.'
+      },
+      formula: {
+        intro: 'Count the bars needed in each direction from the spacing, multiply each by its run length, add waste, then divide by the stick length.',
+        expression: 'bars one way = ⌈(perpendicular dimension × 12) ÷ spacing⌉ + 1\ntotal length = Σ (bars × their run length), both directions\nsticks = ⌈(total length × (1 + waste%)) ÷ stick length⌉',
+        terms: [
+          { symbol: 'perpendicular dimension', meaning: 'The slab dimension the bars are spaced across (e.g. the width, for bars running the length).' },
+          { symbol: 'spacing', meaning: 'The on-center distance between parallel bars, in inches.' },
+          { symbol: 'stick length', meaning: 'The length of rebar you are buying per piece, in feet.' },
+          { symbol: 'waste%', meaning: 'An allowance for trimming and the overlap at splices; 10% is a reasonable default.' }
+        ],
+        note: 'An estimate for a simple two-way grid in one slab or footing. Bar size, exact spacing, splice length and whether reinforcement is needed at all should follow an engineer’s plan or your local code for any load-bearing or structural work.'
+      },
+      workedExample: {
+        intro: 'A 12 ft × 10 ft slab, rebar on a 12 in grid, 20 ft sticks, and a 10% waste allowance.',
+        rows: [
+          { label: 'Bars running the 12 ft length, spaced across the 10 ft width (⌈120 ÷ 12⌉ + 1)', value: '11 bars × 12 ft = 132 ft' },
+          { label: 'Bars running the 10 ft width, spaced across the 12 ft length (⌈144 ÷ 12⌉ + 1)', value: '13 bars × 10 ft = 130 ft' },
+          { label: 'Total rebar, exact (132 + 130)', value: '262 ft' },
+          { label: 'With a 10% waste allowance (262 × 1.10)', value: '288.2 ft' },
+          { label: 'Sticks needed (⌈288.2 ÷ 20⌉)', value: '15 sticks' }
+        ],
+        result: '15 rebar sticks (288.2 linear feet)',
+        explanation: 'Spacing the same slab’s grid at 18 inches on center instead of 12 needs only 11 sticks — 4 fewer, about 26.7% less rebar — which is why spacing (set by a plan or engineer for structural work) matters as much as the slab’s size.'
+      },
+      watchOut: [
+        { title: '12 inches on center is a common convention, not a universal requirement', body: 'Spacing for a structural slab, footing, or anywhere soil conditions are poor should be set by an engineer or the project’s plans, not assumed.' },
+        { title: 'Sticks need real overlap where they meet, not a butt joint', body: 'Two bars meeting end to end should overlap by a meaningful length — commonly at least 12 inches for light residential reinforcement, more for larger bar sizes or engineered work — rather than simply touching end to end.' },
+        { title: 'Rebar needs concrete cover on every side', body: 'Rebar should sit on chairs above the subgrade, with concrete fully surrounding it, not resting directly on the ground.' },
+        { title: 'Retail stick length varies by supplier', body: 'Home centers commonly stock 20 ft sticks, but some suppliers offer 10, 30, 40 or 60 ft lengths — use what you can actually buy or have delivered.' },
+        { title: 'This sizes a simple flat, two-way grid only', body: 'Thickened edges, multiple bar layers, footings or an engineered design need a structural plan, not this calculator.' }
+      ],
+      references: [
+        { label: 'The Home Depot, 1/2 in. x 20 ft. #4 Rebar product listing (standard U.S. retail stick length)', url: 'https://www.homedepot.com/p/1-2-in-x-20-ft-4-Rebar-PAR602004/205370252' },
+        { label: 'Lowe’s, 1/2-in x 20-ft Steel #4 Rebar product listing', url: 'https://www.lowes.com/pd/Steel-Rebar-Common-0-5-in-x-20-ft-Actual-0-5-in-x-19-9167-ft/3010016' }
+      ]
+    },
+    inputs: [
+      { id: 'slabLength', label: 'Slab or footing length (ft)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.5, min: 1 },
+      { id: 'slabWidth', label: 'Slab or footing width (ft)', type: 'number', placeholder: '10', defaultValue: 10, step: 0.5, min: 1 },
+      { id: 'barSpacingIn', label: 'Bar spacing, both directions (in, common residential = 12)', type: 'number', placeholder: '12', defaultValue: 12, step: 1, min: 4 },
+      { id: 'stickLengthFt', label: 'Rebar stick length (ft, retail standard = 20)', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 2 },
+      { id: 'wastePercent', label: 'Waste allowance (%, for trimming and overlap)', type: 'percent', placeholder: '10', defaultValue: 10, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Rebar Calculator – Sticks Needed for a Slab Grid',
+      description: 'Free rebar calculator: how many rebar sticks a concrete slab or footing’s two-way grid needs from its dimensions, bar spacing and a waste allowance.',
+      faq: [
+        { question: 'How much rebar do I need for a concrete slab?', answer: 'It depends on the slab’s size and bar spacing. A 12×10 ft slab on a 12 in grid, with 20 ft sticks and 10% waste, needs 15 sticks (288.2 linear feet).' },
+        { question: 'What spacing should rebar be for a slab?', answer: '12 inches on center in both directions is a common convention for residential slabs, but the right spacing depends on the slab’s thickness, load and soil — follow your plans or an engineer’s spec where one exists.' },
+        { question: 'How long is a standard piece of rebar?', answer: '20 ft is the most common U.S. retail stick length, confirmed by both The Home Depot’s and Lowe’s own product listings; 10, 30, 40 and 60 ft lengths are also available from some suppliers.' },
+        { question: 'Do rebar sticks need to overlap where they meet?', answer: 'Yes. Two sticks meeting end to end should overlap by a meaningful length — commonly at least 12 inches for light residential work, more for larger bars or engineered projects — not just butt together.' },
+        { question: 'Does every concrete slab need rebar?', answer: 'Not necessarily. Many small, unreinforced slabs get by with wire mesh or no reinforcement, while driveways, footings and anything load-bearing commonly need rebar — check your local code or an engineer for anything structural.' },
+        { question: 'How much rebar do I save by spacing it wider?', answer: 'For the 12×10 ft example above, going from 12 in to 18 in spacing cuts the sticks needed from 15 to 11 — about 26.7% less rebar for the same slab.' },
+        { question: 'What size rebar should I use?', answer: 'Bar size (such as #3 or #4) is chosen separately from spacing, based on the slab’s load and thickness. This calculator assumes you already know the size and length you are buying and focuses on how many sticks the grid needs.' }
+      ]
+    },
+    compute(values) {
+      const barsAcrossWidth = Math.ceil((values.slabWidth * 12) / values.barSpacingIn) + 1;
+      const barsAcrossLength = Math.ceil((values.slabLength * 12) / values.barSpacingIn) + 1;
+      const totalLinearFeetExact = barsAcrossWidth * values.slabLength + barsAcrossLength * values.slabWidth;
+      const totalLinearFeetWithWaste = totalLinearFeetExact * (1 + values.wastePercent / 100);
+      const sticksNeeded = Math.ceil(totalLinearFeetWithWaste / values.stickLengthFt);
+      const slabAreaSqFt = values.slabLength * values.slabWidth;
+      return { sticksNeeded, totalLinearFeetWithWaste, totalLinearFeetExact, slabAreaSqFt };
+    }
+  },
+  {
+    id: 'pool-volume-calculator',
+    category: 'home',
+    glyph: 'pool',
+    updatedAt: '2026-11-05',
+    aliases: ['pool volume calculator', 'swimming pool gallons calculator', 'how many gallons is my pool', 'hot tub volume calculator', 'tank volume calculator gallons'],
+    related: ['gravel-calculator', 'paver-calculator', 'concrete-calculator'],
+    title: 'Pool / Tank Volume Calculator',
+    description: 'Find how many gallons a rectangular, circular or oval pool or tank holds from its dimensions and average depth, using the pool industry’s standard formulas.',
+    example: 'A rectangular pool 32×16 ft with a 5.5 ft average depth (midway between a 3 ft shallow end and an 8 ft deep end) holds about 21,120 gallons.',
+    breakdown: {
+      headline: 'gallons',
+      headlineLabel: 'Volume (US gallons)',
+      outputs: [
+        { id: 'gallons', label: 'Volume (US gallons)', format: 'integer' },
+        { id: 'cubicFeet', label: 'Volume (cubic feet)', format: 'number' }
+      ],
+      groups: [
+        { title: 'Shape & dimensions', inputs: ['shape', 'lengthFt', 'widthFt', 'diameterFt'] },
+        { title: 'Average depth', inputs: ['avgDepthFt'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'cubicFeet', label: 'Cubic feet' },
+          { from: 'gallons', label: 'US gallons' }
+        ],
+        title: 'Volume, cubic feet vs. gallons'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'How a pool or tank’s gallons are calculated',
+        paragraphs: [
+          'A pool or tank’s volume starts as a simple geometric calculation — length times width times depth for a rectangle, or the equivalent for a circle or oval — which gives a volume in cubic feet. Leslie’s Pool Supplies, one of the largest U.S. pool-supply retailers, publishes this exact approach for all three common shapes: "Length x Width x Average Depth x 7.5" for rectangular or square pools, the circle-area formula for round pools, and an oval-area formula for oval pools, each multiplied by the same 7.5 figure at the end.',
+          'That 7.5 is the pool industry’s standard shortcut for "approximately how many gallons are in a cubic foot," as Leslie’s own guidance describes it. The exact conversion, from NIST’s own published conversion factors, is 7.48052 US gallons per cubic foot — so 7.5 runs about 0.26% high. That is close enough for everyday pool-chemical dosing and far easier to calculate by hand, which is why it is the number the industry itself publishes and uses.',
+          'Most pools are not a single, uniform depth — there is a shallow end and a deep end, or a consistent slope between them. Leslie’s own method for that case is averaging: add the shallow and deep measurements and divide by two, then use that average depth in the volume formula, the same way this calculator does.'
+        ]
+      },
+      howTo: {
+        intro: 'Choose your pool or tank’s shape, enter its dimensions, then its average depth.',
+        steps: [
+          { name: 'Choose the shape', text: 'Pick rectangular/square, circular, or oval — each uses its own area formula.' },
+          { name: 'Enter the dimensions', text: 'For rectangular or oval, enter length and width; for circular, enter diameter.' },
+          { name: 'Enter the average depth', text: 'If the pool has a shallow and deep end, add the two depths and divide by two; use a single depth if it is uniform.' },
+          { name: 'Read the result', text: 'The headline is the volume in US gallons; the row below shows it in cubic feet.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Find the volume in cubic feet from the shape’s area times average depth, then multiply by 7.5 to convert to US gallons.',
+        expression: 'rectangular: cu ft = L × W × avg depth\ncircular: cu ft = π × (diameter ÷ 2)² × avg depth\noval: cu ft = π × (L ÷ 2) × (W ÷ 2) × avg depth\ngallons = cu ft × 7.5',
+        terms: [
+          { symbol: 'L, W', meaning: 'Length and width, in feet (rectangular/oval) or diameter (circular).' },
+          { symbol: 'avg depth', meaning: 'Average water depth: (shallow end + deep end) ÷ 2, or a single value if the depth is uniform.' },
+          { symbol: '7.5', meaning: 'The pool industry’s standard rounding of cubic feet to US gallons (exact: 7.48052, per NIST).' }
+        ],
+        note: 'An estimate. Steps, benches, rounded corners and a sloped (not flat) transition between shallow and deep ends all make the real volume differ somewhat from this simple geometric formula. Freeform or kidney-shaped pools are not covered by any of these three shapes.'
+      },
+      workedExample: {
+        intro: 'A rectangular pool, 32 ft long and 16 ft wide, with a 3 ft shallow end and an 8 ft deep end.',
+        rows: [
+          { label: 'Average depth ((3 + 8) ÷ 2)', value: '5.5 ft' },
+          { label: 'Volume (32 × 16 × 5.5)', value: '2,816 cu ft' },
+          { label: 'Gallons (2,816 × 7.5)', value: '21,120 gal' }
+        ],
+        result: '21,120 gallons',
+        explanation: 'The pool industry’s 7.5 gallons-per-cubic-foot figure is a rounding of the exact NIST conversion, 7.48052 US gallons per cubic foot — about 0.26% higher than the exact figure, close enough for dosing pool chemicals and far simpler to calculate by hand.'
+      },
+      watchOut: [
+        { title: 'Use average depth, not just one measurement', body: 'A pool with a shallow and deep end needs the two averaged together — (shallow + deep) ÷ 2 — not just the deep end’s number, which would overstate the volume.' },
+        { title: 'This is an estimate, not an exact fill volume', body: 'Steps, benches, rounded corners and a sloped (not flat) transition between depths all make a real pool’s volume differ somewhat from this simple geometric formula.' },
+        { title: 'The oval formula assumes a true ellipse', body: 'An oval or "radius" pool whose ends are not a true mathematical ellipse will vary somewhat from this estimate.' },
+        { title: 'Freeform and kidney-shaped pools need a different approach', body: 'These three shapes don’t cover an irregular freeform pool — a pool professional or a more detailed, per-section calculation is needed for those.' },
+        { title: 'For precise chemical dosing, confirm against a metered fill', body: 'Many pool professionals confirm a pool’s volume against the actual metered fill amount rather than relying only on a geometric estimate.' }
+      ],
+      references: [
+        { label: 'Leslie’s Pool Supplies, "How To Calculate Pool Volume" — rectangular, circular and oval pool-volume formulas', url: 'https://lesliespool.com/blog/calculating-pool-volume.html' },
+        { label: 'NIST Special Publication 811, Appendix B: Conversion Factors (US gallon)', url: 'https://www.nist.gov/pml/special-publication-811/nist-guide-si-appendix-b-conversion-factors' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'shape',
+        label: 'Shape',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Rectangular or square' },
+          { value: 1, label: 'Circular' },
+          { value: 2, label: 'Oval' }
+        ]
+      },
+      { id: 'lengthFt', label: 'Length (ft) — rectangular or oval', type: 'number', placeholder: '32', defaultValue: 32, step: 1, min: 1 },
+      { id: 'widthFt', label: 'Width (ft) — rectangular or oval', type: 'number', placeholder: '16', defaultValue: 16, step: 1, min: 1 },
+      { id: 'diameterFt', label: 'Diameter (ft) — circular', type: 'number', placeholder: '24', defaultValue: 24, step: 1, min: 1 },
+      { id: 'avgDepthFt', label: 'Average depth (ft, (shallow + deep) ÷ 2)', type: 'number', placeholder: '5.5', defaultValue: 5.5, step: 0.25, min: 0.5 }
+    ],
+    seo: {
+      title: 'Pool / Tank Volume Calculator – Gallons by Shape',
+      description: 'Free pool volume calculator: find gallons for rectangular, circular and oval pools or tanks from dimensions and depth, using the pool industry’s own formulas.',
+      faq: [
+        { question: 'How do I calculate how many gallons are in my pool?', answer: 'Find the volume in cubic feet (length × width × average depth for a rectangle), then multiply by 7.5 — the pool industry’s standard cubic-feet-to-gallons conversion. A 32×16 ft pool with a 5.5 ft average depth holds 2,816 cu ft, or 21,120 gallons.' },
+        { question: 'How do I find a pool’s average depth?', answer: 'Add the shallow end’s depth and the deep end’s depth, then divide by two. A pool with a 3 ft shallow end and an 8 ft deep end has a 5.5 ft average depth.' },
+        { question: 'How many gallons are in a cubic foot of water?', answer: 'The pool industry rounds this to 7.5 gallons per cubic foot for easy hand calculation; the exact NIST conversion is 7.48052, about 0.26% lower.' },
+        { question: 'How do I calculate volume for a round pool?', answer: 'Multiply π by the radius squared (diameter ÷ 2, squared) by the average depth to get cubic feet, then by 7.5 for gallons.' },
+        { question: 'How do I calculate volume for an oval pool?', answer: 'Multiply π by half the length, by half the width, by the average depth to get cubic feet, then by 7.5 for gallons — the same approach Leslie’s Pool Supplies publishes.' },
+        { question: 'Does this work for a hot tub or a water tank?', answer: 'Yes, for a rectangular, circular or oval shape — the same geometry applies to any container, not only in-ground or above-ground swimming pools.' },
+        { question: 'Does this calculator cover freeform or kidney-shaped pools?', answer: 'No. Freeform and kidney-shaped pools don’t fit any of these three geometric shapes well; a pool professional or a more detailed, per-section calculation gives a more accurate figure for those.' }
+      ]
+    },
+    compute(values) {
+      let cubicFeet;
+      if (values.shape === 1) {
+        const radius = values.diameterFt / 2;
+        cubicFeet = Math.PI * radius * radius * values.avgDepthFt;
+      } else if (values.shape === 2) {
+        cubicFeet = Math.PI * (values.lengthFt / 2) * (values.widthFt / 2) * values.avgDepthFt;
+      } else {
+        cubicFeet = values.lengthFt * values.widthFt * values.avgDepthFt;
+      }
+      const gallons = cubicFeet * 7.5;
+      return { gallons, cubicFeet };
+    }
+  },
+  {
+    id: 'carpet-calculator',
+    category: 'home',
+    glyph: 'crpt',
+    updatedAt: '2026-11-05',
+    aliases: ['carpet calculator', 'how much carpet do i need calculator', 'carpet square yards calculator', 'carpet and padding calculator', 'carpet yardage calculator'],
+    related: ['flooring-calculator', 'tile-calculator', 'stair-calculator'],
+    title: 'Carpet Calculator',
+    description: 'Find how many square yards of carpet and padding a room needs from its dimensions, plus whether it fits a standard roll width without a seam.',
+    example: 'A 14×12 ft room needs 21 sq yd of carpet (with a 10% waste allowance) and 19 sq yd of padding, and fits within a 12 ft roll width with no seam.',
+    breakdown: {
+      headline: 'carpetSqYdToBuy',
+      headlineLabel: 'Carpet to buy (sq yd)',
+      outputs: [
+        { id: 'carpetSqYdToBuy', label: 'Carpet to buy (sq yd)', format: 'integer' },
+        { id: 'padSqYdToBuy', label: 'Padding to buy (sq yd)', format: 'integer' },
+        { id: 'carpetSqYdExact', label: 'Carpet needed, exact (sq yd)', format: 'number' },
+        { id: 'roomAreaSqFt', label: 'Room area', format: 'number', dimension: 'area', unit: 'ft2' },
+        {
+          id: 'seamNeeded',
+          label: 'Fits roll width with no seam?',
+          format: 'number',
+          labels: [
+            { value: 0, label: 'No seam needed' },
+            { value: 1, label: 'Seam needed' }
+          ]
+        }
+      ],
+      groups: [
+        { title: 'Room', inputs: ['roomLength', 'roomWidth'] },
+        { title: 'Roll width & waste', inputs: ['rollWidthFt', 'wastePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'carpetSqYdExact', label: 'Carpet needed, exact' },
+          { from: 'carpetSqYdToBuy', label: 'Carpet to buy' }
+        ],
+        title: 'Carpet needed vs. whole square yards to buy'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'How much carpet and padding a room needs',
+        paragraphs: [
+          'Carpet is priced and sold by the square yard in the US, so the starting math is simple: multiply a room’s length by its width for the area in square feet, then divide by 9 to get square yards. A 14×12 ft room is 168 sq ft, or 18.67 sq yd.',
+          'But carpet itself is cut from a continuous roll of a fixed width — the Carpet and Rug Institute, the industry’s own trade association, states that "Broadloom carpet can be 12 feet, 13.5 feet, or 15 feet in width." A room narrower than the roll in at least one direction, like a 12 ft room with a 12 ft roll, needs no seam at all; a room wider than the roll in both directions needs at least one seam, and seams commonly need extra carpet to match the pattern and pile direction across the join.',
+          'A waste allowance on top of the exact square yardage covers ordinary cutting around doorways, closets and fixtures, plus any pattern matching. Padding, by contrast, has no pattern to match, so this calculator applies the waste allowance to the carpet only, rounding padding up from the room’s plain area.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the room’s length and width, then your carpet’s roll width and a waste allowance.',
+        steps: [
+          { name: 'Enter the room dimensions', text: 'Type the room’s length and width in feet.' },
+          { name: 'Choose the roll width', text: '12 ft is the most common broadloom width; 13.5 and 15 ft are also made.' },
+          { name: 'Set a waste allowance', text: '10% is reasonable for a simple rectangular room; complex layouts or seams commonly need more.' },
+          { name: 'Read the result', text: 'The headline is the carpet to buy in whole square yards; the rows below show padding and the exact figure before rounding.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Convert the room’s area to square yards, add a waste allowance, and round up to a whole square yard for carpet; round the plain area up for padding.',
+        expression: 'area (sq ft) = length × width\ncarpet (sq yd) = ⌈(area ÷ 9) × (1 + waste%)⌉\npadding (sq yd) = ⌈area ÷ 9⌉',
+        terms: [
+          { symbol: 'length, width', meaning: 'The room’s dimensions, in feet.' },
+          { symbol: 'waste%', meaning: 'An allowance for cutting, seams and pattern matching; 10% is a reasonable default for a simple room.' }
+        ],
+        note: 'An estimate for a single rectangular room. L-shaped rooms, closets, stairs and hallways need their own measurements added separately, and your installer’s actual cut length may round up further to avoid an awkward partial-width piece.'
+      },
+      workedExample: {
+        intro: 'A 14 ft × 12 ft room, a 12 ft roll width, and a 10% waste allowance.',
+        rows: [
+          { label: 'Room area (14 × 12)', value: '168 sq ft' },
+          { label: 'Carpet needed, exact (168 ÷ 9)', value: '18.67 sq yd' },
+          { label: 'With a 10% waste allowance (18.67 × 1.10)', value: '20.53 sq yd' },
+          { label: 'Carpet to buy, rounded up', value: '21 sq yd' },
+          { label: 'Padding to buy (168 ÷ 9, rounded up)', value: '19 sq yd' }
+        ],
+        result: '21 sq yd of carpet, 19 sq yd of padding',
+        explanation: 'The room’s narrower dimension, 12 ft, fits exactly within a standard 12 ft carpet roll (one of the Carpet and Rug Institute’s own three width options), so this room needs no seam — only the usual cutting waste. A room wider than 12 ft in both directions would need a seam, which commonly calls for extra carpet to match pattern and direction across the join.'
+      },
+      watchOut: [
+        { title: 'Padding doesn’t need the same waste allowance as carpet', body: 'Padding has no pattern to match and its seams don’t need to line up with the carpet’s, so this calculator applies the waste allowance only to the carpet, not the pad.' },
+        { title: 'A room wider than the roll in both directions needs a seam', body: 'Carpet is cut from continuous rolls in the widths the Carpet and Rug Institute lists — 12, 13.5 or 15 ft; a room exceeding the roll width in both directions needs at least one seam, which commonly needs extra carpet for pattern matching.' },
+        { title: 'This is a simple rectangular estimate', body: 'L-shaped rooms, closets, stairs and hallways need their own measurements added on top of this calculator’s single-rectangle math, and complex layouts often need more than a 10% allowance.' },
+        { title: 'Carpet is quoted per square yard but cut from a roll', body: 'Your installer’s actual cut length may round up further than this estimate to avoid an awkward partial-width piece.' }
+      ],
+      references: [
+        { label: 'The Carpet and Rug Institute, "Specifying the Right Carpet" — standard broadloom carpet widths', url: 'https://carpet-rug.org/carpet-for-business/specifying-the-right-carpet/' },
+        { label: 'The Carpet and Rug Institute, CRI 105 — Standard for Installation of Residential Carpet (2019)', url: 'https://carpet-rug.org/wp-content/uploads/2019/03/CRI-105-STANDARD-For-INSTALLATION-of-RESIDENTIAL-CARPET.pdf' }
+      ]
+    },
+    inputs: [
+      { id: 'roomLength', label: 'Room length (ft)', type: 'number', placeholder: '14', defaultValue: 14, step: 0.5, min: 1 },
+      { id: 'roomWidth', label: 'Room width (ft)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.5, min: 1 },
+      {
+        id: 'rollWidthFt',
+        label: 'Carpet roll width (ft)',
+        type: 'number',
+        placeholder: '12',
+        defaultValue: 12,
+        step: 0.5,
+        min: 6,
+        options: [
+          { value: 12, label: '12 ft (most common)' },
+          { value: 13.5, label: '13 ft 6 in' },
+          { value: 15, label: '15 ft' }
+        ]
+      },
+      { id: 'wastePercent', label: 'Waste allowance (%, for seams & pattern matching)', type: 'percent', placeholder: '10', defaultValue: 10, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Carpet Calculator – Square Yards & Padding',
+      description: 'Free carpet calculator: square yards of carpet and padding a room needs from its dimensions, plus whether it fits a standard roll width with no seam.',
+      faq: [
+        { question: 'How much carpet do I need for a 14x12 room?', answer: 'About 21 sq yd with a standard 10% waste allowance: 168 sq ft ÷ 9 = 18.67 sq yd exact, rounded up after adding 10%.' },
+        { question: 'How do I convert square feet to square yards of carpet?', answer: 'Divide the square footage by 9, since one square yard is 9 square feet (3 ft × 3 ft).' },
+        { question: 'What is the standard width of a carpet roll?', answer: '12 ft is the most common broadloom width; the Carpet and Rug Institute also lists 13.5 ft and 15 ft as standard widths.' },
+        { question: 'Do I need the same amount of padding as carpet?', answer: 'Essentially yes, by area — but padding doesn’t usually need the same waste allowance as carpet, since it has no pattern or seam to match.' },
+        { question: 'Will my room need a carpet seam?', answer: 'Only if both of the room’s dimensions exceed your roll’s width. A room that fits within the roll width in at least one direction needs no seam.' },
+        { question: 'Why add extra carpet if the room doesn’t need a seam?', answer: 'Rooms are rarely perfectly square, and trimming around doorways, closets and fixtures always uses more carpet than the exact floor area.' },
+        { question: 'Is carpet sold in exact square yards?', answer: 'No. It’s cut from a continuous roll of a fixed width, so an installer typically rounds the order up to avoid an awkward partial-width cut.' }
+      ]
+    },
+    compute(values) {
+      const roomAreaSqFt = values.roomLength * values.roomWidth;
+      const carpetSqYdExact = roomAreaSqFt / 9;
+      const carpetSqYdToBuy = Math.ceil(carpetSqYdExact * (1 + values.wastePercent / 100));
+      const padSqYdToBuy = Math.ceil(carpetSqYdExact);
+      const seamNeeded = Math.min(values.roomLength, values.roomWidth) > values.rollWidthFt ? 1 : 0;
+      return { carpetSqYdToBuy, padSqYdToBuy, carpetSqYdExact, roomAreaSqFt, seamNeeded };
+    }
+  },
+  {
+    id: 'flooring-calculator',
+    category: 'home',
+    glyph: 'flr',
+    updatedAt: '2026-11-05',
+    aliases: ['flooring calculator', 'how much flooring do i need calculator', 'laminate flooring calculator', 'vinyl plank flooring calculator', 'flooring boxes calculator'],
+    related: ['tile-calculator', 'carpet-calculator', 'board-foot-calculator', 'decking-calculator'],
+    title: 'Flooring Calculator',
+    description: 'Find how many boxes of laminate, vinyl plank or engineered wood flooring a room needs from its dimensions, using the National Wood Flooring Association’s cutting allowance.',
+    example: 'A 14×12 ft room, at 20 sq ft of coverage per box and a 5% cutting allowance, needs 9 boxes — 180 sq ft of flooring.',
+    breakdown: {
+      headline: 'boxesToBuy',
+      headlineLabel: 'Boxes to buy',
+      outputs: [
+        { id: 'boxesToBuy', label: 'Boxes to buy', format: 'integer' },
+        { id: 'boxesExact', label: 'Boxes needed, exact', format: 'number' },
+        { id: 'coverageBought', label: 'Coverage bought', format: 'number', dimension: 'area', unit: 'ft2' },
+        { id: 'roomAreaSqFt', label: 'Room area', format: 'number', dimension: 'area', unit: 'ft2' }
+      ],
+      groups: [
+        { title: 'Room', inputs: ['roomLength', 'roomWidth'] },
+        { title: 'Flooring product', inputs: ['coveragePerBoxSqFt', 'wastePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'roomAreaSqFt', label: 'Room area' },
+          { from: 'coverageBought', label: 'Coverage bought' }
+        ],
+        title: 'Room area vs. flooring coverage bought'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'How many boxes of flooring a room needs',
+        paragraphs: [
+          'Laminate, vinyl plank (LVP) and engineered wood flooring are sold by the box, each covering a fixed area printed on the label — a different buying unit from tile (sold per piece) or carpet (sold per square yard off a roll). The starting math is simple: multiply the room’s length by its width for the area, then divide by how much one box covers.',
+          'The National Wood Flooring Association, the trade association for the wood flooring industry, publishes a standard cutting allowance in its own installation guidelines: "Minimum material requirements should equal actual square footage of installed area plus 5% cutting allowance for standard installations." This calculator uses that same 5% as its default waste allowance for a straight, standard installation.',
+          'Because coverage per box varies by product — not just by brand, but by plank size and thickness within the same brand’s line — there is no single universal number. Always check the specific box you are buying rather than assuming a generic figure, then round the result up to a whole box, since flooring isn’t sold by the partial box.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the room’s length and width, then your flooring product’s coverage per box and a cutting allowance.',
+        steps: [
+          { name: 'Enter the room dimensions', text: 'Type the room’s length and width in feet.' },
+          { name: 'Enter your box’s coverage', text: 'Check the box label for its coverage area in square feet — this varies by product.' },
+          { name: 'Set a cutting allowance', text: '5% is the National Wood Flooring Association’s own minimum for a standard, straight installation; diagonal or complex layouts commonly need more.' },
+          { name: 'Read the result', text: 'The headline is the boxes to buy; the rows below show the exact figure before rounding and the coverage you’ll end up with.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Add a cutting allowance to the room’s area, then divide by the coverage one box provides and round up to a whole box.',
+        expression: 'area (sq ft) = length × width\nboxes = ⌈(area × (1 + waste%)) ÷ coverage per box⌉',
+        terms: [
+          { symbol: 'length, width', meaning: 'The room’s dimensions, in feet.' },
+          { symbol: 'waste%', meaning: 'The cutting allowance; the NWFA’s own minimum for a standard installation is 5%.' },
+          { symbol: 'coverage per box', meaning: 'Square feet one box covers, printed on the product label — varies by product, so there is no universal default.' }
+        ],
+        note: 'An estimate for a single rectangular room and a standard, straight-lay installation. Diagonal layouts, herringbone or chevron patterns, and irregularly shaped rooms commonly need a larger allowance than the 5% minimum used here by default.'
+      },
+      workedExample: {
+        intro: 'A 14 ft × 12 ft room, flooring that covers 20 sq ft per box, and the NWFA’s 5% standard cutting allowance.',
+        rows: [
+          { label: 'Room area (14 × 12)', value: '168 sq ft' },
+          { label: 'With a 5% cutting allowance (168 × 1.05)', value: '176.4 sq ft' },
+          { label: 'Boxes needed, exact (176.4 ÷ 20)', value: '8.82 boxes' },
+          { label: 'Boxes to buy, rounded up', value: '9 boxes' },
+          { label: 'Coverage bought (9 × 20)', value: '180 sq ft' }
+        ],
+        result: '9 boxes (180 sq ft)',
+        explanation: 'The National Wood Flooring Association’s own installation guidelines state that minimum material should equal the actual area plus "5% cutting allowance for standard installations" — this calculator uses that same 5% as its default, though diagonal layouts, herringbone patterns and irregularly shaped rooms commonly need more.'
+      },
+      watchOut: [
+        { title: '5% is the NWFA’s minimum for a standard, straight installation', body: 'Diagonal layouts, herringbone or chevron patterns, and rooms with lots of cuts (closets, hallways, jogs) commonly need a larger allowance than this calculator’s 5% default.' },
+        { title: 'Coverage per box varies by product', body: 'Always use the figure printed on your specific box — it varies by brand, plank size and thickness, even within the same product line.' },
+        { title: 'Buy from the same production lot', body: 'Flooring color and finish can vary slightly between manufacturing runs, so buying all boxes from the same lot avoids a visible mismatch partway through the room.' },
+        { title: 'Underlayment and transition strips are separate', body: 'This calculator covers only the flooring material itself, not underlayment, moisture barriers or transition strips between rooms.' }
+      ],
+      references: [
+        { label: 'National Wood Flooring Association, Installation Guidelines — Wood Flooring, Section I Chapter 2 "Jobsite Checklist" (rev. June 2002) — minimum material plus 5% cutting allowance', url: 'https://www.floorreports.com/images/technotes_files/54.pdf' }
+      ]
+    },
+    inputs: [
+      { id: 'roomLength', label: 'Room length (ft)', type: 'number', placeholder: '14', defaultValue: 14, step: 0.5, min: 1 },
+      { id: 'roomWidth', label: 'Room width (ft)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.5, min: 1 },
+      { id: 'coveragePerBoxSqFt', label: 'Coverage per box (sq ft, check your product’s label)', type: 'number', placeholder: '20', defaultValue: 20, step: 0.5, min: 1 },
+      { id: 'wastePercent', label: 'Cutting allowance (%, NWFA standard-installation minimum = 5)', type: 'percent', placeholder: '5', defaultValue: 5, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Flooring Calculator – Boxes Needed by Room Size',
+      description: 'Free flooring calculator: how many boxes of laminate, vinyl plank or engineered wood flooring a room needs, using the NWFA’s own cutting allowance.',
+      faq: [
+        { question: 'How much extra flooring should I buy?', answer: 'The National Wood Flooring Association’s own installation guidelines call for actual square footage plus a 5% cutting allowance for standard installations — this calculator uses that as its default.' },
+        { question: 'How do I calculate how many boxes of flooring I need?', answer: 'Multiply the room’s square footage by (1 + your waste allowance), divide by the coverage one box provides, and round up to a whole box.' },
+        { question: 'Does coverage per box vary by product?', answer: 'Yes. It varies by brand, plank size and thickness, even within the same product line — always check the figure printed on your specific box.' },
+        { question: 'Should I buy more flooring for a diagonal layout?', answer: 'Yes. The NWFA’s 5% figure is its minimum for a standard, straight installation; diagonal, herringbone or chevron patterns commonly need a larger allowance.' },
+        { question: 'What is a cutting allowance?', answer: 'The NWFA’s own term for the extra material ordered beyond the exact floor area, to cover trimming, waste and mistakes during installation.' },
+        { question: 'Is this the same as a tile calculator?', answer: 'No, though the math is similar. This calculator covers flooring sold by the box — laminate, vinyl plank and engineered wood — rather than tile sold by the piece.' },
+        { question: 'Should all my flooring boxes be from the same batch?', answer: 'Yes, where possible. Color and finish can vary slightly between production runs, so matching lot numbers avoids a visible mismatch partway through a room.' }
+      ]
+    },
+    compute(values) {
+      const roomAreaSqFt = values.roomLength * values.roomWidth;
+      const boxesExact = (roomAreaSqFt * (1 + values.wastePercent / 100)) / values.coveragePerBoxSqFt;
+      const boxesToBuy = Math.ceil(boxesExact);
+      const coverageBought = boxesToBuy * values.coveragePerBoxSqFt;
+      return { boxesToBuy, boxesExact, coverageBought, roomAreaSqFt };
     }
   }
 ];

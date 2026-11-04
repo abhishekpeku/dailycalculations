@@ -99,9 +99,9 @@ and merges.
   paver calculators. Branch `step/43-wave-2-construction-run-2`, PR #52. Details:
   `mdFiles/steps/43-wave-2-construction-run-2.md`, `mdFiles/STATUS.md` session log. `home` category
   now 16 calculators (crosses `SEARCH_THRESHOLD` 15 — search box now shown automatically).
-- [ ] Construction batch 3 (5): IN PROGRESS — mulch, topsoil, retaining wall, board foot, AC
-  tonnage/BTU calculators. Branch `step/43-wave-2-construction-run-3`. Details:
-  `mdFiles/steps/43-wave-2-construction-run-3.md`.
+- [x] Construction batch 3 (5): DONE 2026-11-05 — mulch, topsoil, retaining wall, board foot, AC
+  tonnage/BTU calculators. Branch `step/43-wave-2-construction-run-3`, PR #54. Details:
+  `mdFiles/steps/43-wave-2-construction-run-3.md`. `home` category now 21 calculators.
 - [ ] Construction batch 4+ : TODO — remaining candidates (insulation, flooring, carpet, stair,
   rebar, pool/tank volume, siding, framing/stud), final cut still the build agent's call
 - [ ] Food batches: TODO

@@ -81,20 +81,42 @@ framing/stud — left for a later batch (`43-45` Progress list updated below).
 - [x] Dedupe check (ids + aliases, programmatic grep) — no collisions
 - [x] Sources fetched directly and independently verified (scratch script `verify_run3.mjs`)
   before writing copy
-- [ ] `mulch-calculator` (committed)
-- [ ] `topsoil-calculator` (committed)
-- [ ] `retaining-wall-calculator` (committed; cross-linked `gravel-calculator`/`brick-calculator`
+- [x] `mulch-calculator` (committed)
+- [x] `topsoil-calculator` (committed)
+- [x] `retaining-wall-calculator` (committed; cross-linked `gravel-calculator`/`brick-calculator`
   to it)
-- [ ] `board-foot-calculator` (committed)
-- [ ] `ac-tonnage-btu-calculator` (committed)
-- [ ] Append all 5 ids to `calculatorOrder` in `data/calculators/index.ts`
-- [ ] `npm test`
-- [ ] `npm run build`
-- [ ] `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"`
-- [ ] Programmatic dataset check (`check_run3.mjs`): ids unique, no self-reference in `related`,
-  no alias collisions, `seo.title`/`seo.description` within budget, 4+ aliases, 5–8 FAQ entries,
-  glyph uniqueness within `home`
-- [ ] Visual check: desktop + dark mode, `/categories/home` showing the updated count
-- [ ] Dev server confirmed stopped (port 3000 free)
+- [x] `board-foot-calculator` (committed)
+- [x] `ac-tonnage-btu-calculator` (committed)
+- [x] Append all 5 ids to `calculatorOrder` in `data/calculators/index.ts`
+- [x] `npm test` (770/770; `npm run test:update` run once after all 5 were added, diff touched
+  only the 5 new ids' snapshots)
+- [x] `npm run build` (187 static pages, +5 as expected)
+- [x] `npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` (clean)
+- [x] Programmatic dataset check (`check_run3.mjs`): ids unique, no self-reference in `related`,
+  no alias collisions, `seo.title`/`seo.description` within budget (caught and fixed two
+  over-160-char descriptions — `mulch-calculator`, `board-foot-calculator`), 4+ aliases, 5–8 FAQ
+  entries, glyph uniqueness within `home` (21 calculators, all distinct: `gal ft² yd³ roll fit
+  kWh sht brk grv snd bag fnc dek sq X12 pvr mul soil wall bft btu`)
+- [x] Page check: `curl` every new `/calculators/<id>` page — H1, JSON-LD and every content
+  section (`worked-example`, `formula`, `faq`, `references`) present on all 5; `/categories/home`
+  shows "21 calculators". Per the CLAUDE.md update mid-run (batch Chrome/dark-mode visual QA
+  across ~50 calculators instead of per-batch), a full desktop+dark-mode Chrome pass was **not**
+  run for this batch — noted as deferred, not skipped. Running total toward the next ~50-calculator
+  visual pass: this run brings Wave 2 Construction to 21 `home` calculators (16 pre-run-3 + 5 here);
+  no Chrome visual pass has been done since Wave 2 batch 2 (16 calculators) — next pass should
+  cover drywall through ac-tonnage-btu (batches 1–3, 21 calculators) once a later batch pushes the
+  total meaningfully past 50 combined with other sectors.
+- [x] Dev server confirmed stopped (port 3000 free)
 - [ ] Update `mdFiles/STATUS.md` — left to the main session per the task instructions
 - [ ] `gh pr ready`
+
+## Note: concurrent CLAUDE.md change mid-run
+
+Partway through this run, a commit titled "strategy change" (`87e1322`, authored by the repo
+owner) landed on this same branch, updating `CLAUDE.md` with two new rules: (1) batch Chrome
+visual QA across ~50 new calculators instead of once per batch, and (2) read one representative
+calculator as a pattern reference instead of a whole category file. That same commit also carried
+this run's in-progress `home.ts`/`index.ts` edits (made just before it landed) verbatim — nothing
+was lost or overwritten. This run's remaining steps (snapshot update, build, lint, dataset check,
+page check) follow the updated policy, in particular skipping the per-batch Chrome/dark-mode pass
+as noted above.

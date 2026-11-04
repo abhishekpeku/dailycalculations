@@ -199,7 +199,8 @@ export const calculatorOrder: string[] = [
   'retaining-wall-calculator',
   'board-foot-calculator',
   'ac-tonnage-btu-calculator',
-  'insulation-calculator'
+  'insulation-calculator',
+  'stair-calculator'
 ];
 
 const rank = (id: string) => {

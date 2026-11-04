@@ -5840,6 +5840,47 @@ exports[`compute() snapshots > square-root-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > stair-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "totalRiseIn": 108,
+      "treadDepthIn": 10.5
+    },
+    "outputs": {
+      "numRisers": 14,
+      "actualRiserIn": 7.714285714,
+      "numTreads": 13,
+      "totalRunFt": 11.375
+    }
+  },
+  "typical": {
+    "inputs": {
+      "totalRiseIn": 162,
+      "treadDepthIn": 15.75
+    },
+    "outputs": {
+      "numRisers": 21,
+      "actualRiserIn": 7.714285714,
+      "numTreads": 20,
+      "totalRunFt": 26.25
+    }
+  },
+  "edge": {
+    "inputs": {
+      "totalRiseIn": 10,
+      "treadDepthIn": 10
+    },
+    "outputs": {
+      "numRisers": 2,
+      "actualRiserIn": 5,
+      "numTreads": 1,
+      "totalRunFt": 0.8333333333
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > standard-deviation-calculator 1`] = `
 {
   "default": {

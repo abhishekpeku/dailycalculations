@@ -2750,5 +2750,117 @@ export const homeCalculators: CalculatorConfig[] = [
       const coverageBought = bagsNeeded * values.coveragePerBag;
       return { bagsNeeded, targetRValue, areaSqFt, coverageBought };
     }
+  },
+  {
+    id: 'stair-calculator',
+    category: 'home',
+    glyph: 'str',
+    updatedAt: '2026-11-05',
+    aliases: ['stair calculator', 'how many stairs do i need calculator', 'stair rise and run calculator', 'stringer calculator', 'deck stair calculator'],
+    related: ['decking-calculator', 'roof-pitch-calculator', 'board-foot-calculator'],
+    title: 'Stair Calculator',
+    description: 'Find how many risers and treads a staircase needs from its total rise, plus the actual riser height and total run, using the IRC’s maximum riser and minimum tread rules.',
+    example: 'A 108 in (9 ft) floor-to-floor rise with a 10.5 in tread needs 14 risers at 7.71 in each and 13 treads — a total run of 11.38 ft.',
+    breakdown: {
+      headline: 'numRisers',
+      headlineLabel: 'Risers needed',
+      outputs: [
+        { id: 'numRisers', label: 'Risers needed', format: 'integer' },
+        { id: 'actualRiserIn', label: 'Actual riser height (in)', format: 'number' },
+        { id: 'numTreads', label: 'Treads needed', format: 'integer' },
+        { id: 'totalRunFt', label: 'Total run (ft)', format: 'number' }
+      ],
+      groups: [
+        { title: 'Total rise', inputs: ['totalRiseIn'] },
+        { title: 'Tread depth', inputs: ['treadDepthIn'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'actualRiserIn', label: 'Riser height' },
+          { from: 'treadDepthIn', label: 'Tread depth' }
+        ],
+        title: 'Riser height vs. tread depth (inches)'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'How a staircase’s rise and run are figured',
+        paragraphs: [
+          'A stairway’s total rise is the full vertical floor-to-floor height it needs to climb. The International Residential Code, Section R311.7.5.1, caps how tall any one riser can be: "The riser height shall be not more than 7¾ inches." Dividing the total rise by that maximum, and rounding up, gives the fewest risers the stair can legally use — any fewer and each riser would exceed the limit.',
+          'Once the number of risers is set, the actual riser height is simply the total rise divided evenly across them, which the IRC also requires: the tallest riser in a flight cannot exceed the shortest by more than 3/8 inch, so equal risers are the only way to stay compliant by design, not just by convention. A straight flight has one fewer tread than it has risers, since the top riser lands you on the floor above without a tread.',
+          'Tread depth works the other way: the IRC sets a minimum, not a maximum. Section R311.7.5.2 requires "not less than 10 inches," measured horizontally, and Section R311.7.5.3 only waives the tread-nosing requirement when the tread is at least 11 inches deep. Multiplying the number of treads by the tread depth gives the stair’s total horizontal run — the floor space the whole staircase needs.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the total floor-to-floor rise, then your desired tread depth.',
+        steps: [
+          { name: 'Measure the total rise', text: 'Measure the full vertical distance, in inches, from the lower finished floor to the upper finished floor.' },
+          { name: 'Choose a tread depth', text: 'Pick a tread depth of at least 10 in (the IRC minimum); 11 in or more avoids needing a tread nosing.' },
+          { name: 'Read the riser count and height', text: 'The headline is the number of risers; the actual riser height (always ≤ 7¾ in) is shown below it.' },
+          { name: 'Read the run', text: 'The number of treads and the total horizontal run tell you how much floor space the staircase needs.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored. This estimates a single straight flight — winders, landings and spiral stairs follow separate IRC sections.'
+      },
+      formula: {
+        intro: 'Round the total rise up to the fewest risers that keep each one under the IRC maximum, divide evenly for the actual riser height, then multiply one fewer tread by the tread depth for the total run.',
+        expression: 'risers = ⌈total rise ÷ 7.75 in⌉\nactual riser = total rise ÷ risers\ntreads = risers − 1\ntotal run = treads × tread depth',
+        terms: [
+          { symbol: 'total rise', meaning: 'The full vertical floor-to-floor height, in inches.' },
+          { symbol: '7.75 in', meaning: 'The IRC’s maximum riser height (Section R311.7.5.1).' },
+          { symbol: 'tread depth', meaning: 'The horizontal depth of each tread you choose, at least 10 in per the IRC (Section R311.7.5.2).' }
+        ],
+        note: 'An estimate for a single straight flight with uniform risers and treads, measured to the IRC’s residential minimums/maximums. Winders, spiral stairs, landings and local code amendments follow different rules — check with your local building department before building.'
+      },
+      workedExample: {
+        intro: 'A 108 in (9 ft) total floor-to-floor rise, with a chosen tread depth of 10.5 in.',
+        rows: [
+          { label: 'Risers (⌈108 ÷ 7.75⌉)', value: '14 risers' },
+          { label: 'Actual riser height (108 ÷ 14)', value: '7.71 in' },
+          { label: 'Treads (14 − 1)', value: '13 treads' },
+          { label: 'Total run (13 × 10.5)', value: '136.5 in' },
+          { label: 'Total run, in feet (136.5 ÷ 12)', value: '11.38 ft' }
+        ],
+        result: '14 risers at 7.71 in, 13 treads, 11.38 ft total run',
+        explanation: 'For a shorter 96 in (8 ft) rise, the same math gives ⌈96 ÷ 7.75⌉ = 13 risers at 96 ÷ 13 = 7.38 in each — fewer risers because there is less total height to climb, but still kept under the IRC’s 7.75 in maximum by the same rounding-up rule.'
+      },
+      watchOut: [
+        { title: 'Treads under 11 in need a nosing', body: 'The IRC requires a tread nosing (a small rounded or beveled overhang) on any stairway unless the tread depth is at least 11 inches — this calculator’s 10.5 in example would need one.' },
+        { title: 'Minimum headroom is 6 ft 8 in', body: 'Beyond riser and tread sizing, the IRC’s own stairway diagram also requires at least 6 ft 8 in of clear headroom measured vertically from the tread nosing.' },
+        { title: 'This covers a single straight flight only', body: 'Winder treads (IRC Section R311.7.5.2.1) and spiral stairways (Section R311.7.10.1) follow their own separate rules, not this calculator’s formula.' },
+        { title: 'Risers must be equal within 3/8 inch', body: 'The IRC requires the tallest riser in a flight to be within 3/8 inch of the shortest — this calculator’s even division satisfies that by design, but a site condition (an uneven floor, for example) can still throw it off in practice.' },
+        { title: 'Local amendments vary', body: 'Many jurisdictions adopt the IRC with local amendments; always confirm current requirements with your local building department before finalizing a design.' }
+      ],
+      references: [
+        { label: 'International Residential Code, Section R311.7.5 (Stair Treads and Risers), as reproduced in the City of Boise, Idaho Planning and Development Services’ IRC Code Handout #437 (Feb. 2022)', url: 'https://www.cityofboise.org/media/14405/437-treads-risers_march-2022.pdf' }
+      ]
+    },
+    inputs: [
+      { id: 'totalRiseIn', label: 'Total floor-to-floor rise (in)', type: 'number', placeholder: '108', defaultValue: 108, step: 0.5, min: 10 },
+      { id: 'treadDepthIn', label: 'Tread depth (in, IRC minimum = 10, 11+ avoids a nosing)', type: 'number', placeholder: '10.5', defaultValue: 10.5, step: 0.25, min: 10 }
+    ],
+    seo: {
+      title: 'Stair Calculator – Risers, Treads, Rise & Run',
+      description: 'Free stair calculator: number of risers, actual riser height, treads and total run from a staircase’s total rise, using the IRC’s riser and tread rules.',
+      faq: [
+        { question: 'How do I calculate the number of stairs I need?', answer: 'Divide the total floor-to-floor rise by the maximum riser height, 7.75 inches (the IRC limit), and round up. A 108 in rise needs ⌈108 ÷ 7.75⌉ = 14 risers.' },
+        { question: 'What is the maximum riser height allowed by code?', answer: '7¾ inches (7.75 in), per IRC Section R311.7.5.1. There is no minimum riser height in the IRC.' },
+        { question: 'What is the minimum tread depth?', answer: '10 inches, measured horizontally, per IRC Section R311.7.5.2. A tread of at least 11 inches also avoids needing a nosing, per Section R311.7.5.3.' },
+        { question: 'How many stairs do I need for an 8 ft rise?', answer: 'For a 96 in rise: ⌈96 ÷ 7.75⌉ = 13 risers, each 96 ÷ 13 = 7.38 in, with 12 treads.' },
+        { question: 'Do all the risers on a staircase have to be the same height?', answer: 'Within 3/8 inch of each other, per the IRC — dividing the total rise evenly across the number of risers, as this calculator does, meets that by design.' },
+        { question: 'What is the minimum headroom for a stairway?', answer: '6 ft 8 in, measured vertically from the tread nosing, per the IRC’s own stairway diagram.' },
+        { question: 'Does this calculator handle winder stairs or landings?', answer: 'No. This is a single straight flight with uniform risers and treads. Winder treads and spiral stairways follow their own separate IRC sections.' }
+      ]
+    },
+    compute(values) {
+      const MAX_RISER_IN = 7.75;
+      const numRisers = Math.ceil(values.totalRiseIn / MAX_RISER_IN);
+      const actualRiserIn = values.totalRiseIn / numRisers;
+      const numTreads = numRisers - 1;
+      const totalRunIn = numTreads * values.treadDepthIn;
+      const totalRunFt = totalRunIn / 12;
+      return { numRisers, actualRiserIn, numTreads, totalRunFt };
+    }
   }
 ];

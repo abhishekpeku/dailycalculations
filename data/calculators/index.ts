@@ -198,7 +198,8 @@ export const calculatorOrder: string[] = [
   'topsoil-calculator',
   'retaining-wall-calculator',
   'board-foot-calculator',
-  'ac-tonnage-btu-calculator'
+  'ac-tonnage-btu-calculator',
+  'insulation-calculator'
 ];
 
 const rank = (id: string) => {

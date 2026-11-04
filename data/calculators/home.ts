@@ -2622,5 +2622,133 @@ export const homeCalculators: CalculatorConfig[] = [
       const roomAreaSqFt = values.roomAreaSqFt;
       return { baseBtu, totalBtu, tons, roomAreaSqFt };
     }
+  },
+  {
+    id: 'insulation-calculator',
+    category: 'home',
+    glyph: 'ins',
+    updatedAt: '2026-11-05',
+    aliases: ['how much insulation do i need calculator', 'attic insulation calculator', 'insulation r value calculator', 'blown in insulation bags calculator', 'batt insulation calculator'],
+    related: ['ac-tonnage-btu-calculator', 'electricity-bill-calculator', 'drywall-calculator', 'paint-calculator'],
+    title: 'Insulation Calculator',
+    description: 'Find the attic R-value ENERGY STAR recommends for your climate zone, and how many bags or rolls of insulation that area needs, with a waste allowance.',
+    example: 'A 1,000 sq ft Zone 5 attic needs R-60 insulation per ENERGY STAR; at 40 sq ft of coverage per bag and a 10% waste allowance, that is 28 bags.',
+    breakdown: {
+      headline: 'bagsNeeded',
+      headlineLabel: 'Bags or rolls to buy',
+      outputs: [
+        { id: 'bagsNeeded', label: 'Bags or rolls to buy', format: 'integer' },
+        { id: 'targetRValue', label: 'Recommended R-value for your zone', format: 'integer' },
+        { id: 'areaSqFt', label: 'Area to insulate', format: 'number', dimension: 'area', unit: 'ft2' },
+        { id: 'coverageBought', label: 'Coverage bought', format: 'number', dimension: 'area', unit: 'ft2' }
+      ],
+      groups: [
+        { title: 'Attic or area', inputs: ['areaSqFt', 'climateZone'] },
+        { title: 'Insulation product', inputs: ['coveragePerBag', 'wastePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'areaSqFt', label: 'Area to insulate' },
+          { from: 'coverageBought', label: 'Coverage bought' }
+        ],
+        title: 'Area to insulate vs. coverage bought'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'How much insulation an attic really needs',
+        paragraphs: [
+          'The U.S. EPA and Department of Energy’s ENERGY STAR program publishes a recommended insulation R-value for every U.S. climate zone, based on the 2021 International Energy Conservation Code. For an uninsulated attic, Zone 1 (the warmest, e.g. southern Florida) needs R-30; Zones 2 and 3 need R-49; and Zones 4A/4B, 4C/5/6 and 7/8 (most of the northern two-thirds of the country) all need R-60 — the coldest zones need the same top-tier R-value as the moderately cold ones because attic heat loss matters most where winters are long, not just where they are extreme.',
+          'R-value measures resistance to heat flow, and it adds up: stacking more insulation on top of existing insulation raises the total R-value, which is why ENERGY STAR publishes a second, lower target for an attic that already has 3–4 inches in place. This calculator uses the uninsulated-attic target, since that is the figure most people adding insulation for the first time are working from.',
+          'Once you know the target R-value, how many bags or rolls you need depends entirely on the product: a bag of blown-in insulation or a roll of batts states its coverage area at a given R-value right on the label, and that coverage shrinks as the R-value (and therefore the installed thickness) goes up. There is no single number that works across brands and R-values, so this calculator asks for your own product’s coverage figure rather than assuming one.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the area to insulate and your climate zone, then your insulation product’s coverage and a waste allowance.',
+        steps: [
+          { name: 'Enter the area', text: 'Type the attic or wall area in square feet.' },
+          { name: 'Choose your climate zone', text: 'Pick the zone group that matches your location; this sets the ENERGY STAR-recommended R-value for an uninsulated attic.' },
+          { name: 'Enter your product’s coverage', text: 'Check the bag or roll label for its coverage area in square feet at your target R-value — this varies by brand and by R-value.' },
+          { name: 'Set a waste allowance', text: 'A 10% allowance covers uneven joists, obstructions and minor overlaps.' },
+          { name: 'Read the result', text: 'The headline is the bags or rolls to buy; the rows below show the recommended R-value and the coverage bought.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Look up the target R-value from ENERGY STAR’s own climate-zone table, then divide the area (with waste) by your product’s coverage per bag.',
+        expression: 'target R-value = ENERGY STAR climate-zone table\nbags needed = ⌈(area × (1 + waste%)) ÷ coverage per bag⌉',
+        terms: [
+          { symbol: 'target R-value', meaning: 'ENERGY STAR’s recommended R-value for an uninsulated attic in your climate zone.' },
+          { symbol: 'area', meaning: 'The square footage you are insulating.' },
+          { symbol: 'waste%', meaning: 'An allowance for uneven framing, obstructions and overlap; 10% is a reasonable default.' },
+          { symbol: 'coverage per bag', meaning: 'Square feet one bag or roll covers at your target R-value, printed on the product label — this varies by brand and R-value, so there is no universal default.' }
+        ],
+        note: 'An estimate. Coverage per bag varies enormously by product and by R-value; always use the figure on your own insulation’s label, not a generic number.'
+      },
+      workedExample: {
+        intro: 'A 1,000 sq ft attic in climate Zone 5, with insulation that covers 40 sq ft per bag at its R-60 setting, and a 10% waste allowance.',
+        rows: [
+          { label: 'Target R-value (Zone 4C/5/6, ENERGY STAR)', value: 'R-60' },
+          { label: 'Area with waste (1,000 × 1.10)', value: '1,100 sq ft' },
+          { label: 'Bags needed (1,100 ÷ 40)', value: '27.5 bags' },
+          { label: 'Bags to buy, rounded up', value: '28 bags' },
+          { label: 'Coverage bought (28 × 40)', value: '1,120 sq ft' }
+        ],
+        result: '28 bags, R-60',
+        explanation: 'The same 1,000 sq ft attic in the warmer Zone 1 only needs R-30 — roughly half the installed thickness of R-60 — which typically means a bag covers noticeably more area at that lower R-value, so fewer bags are needed for the same floor space. Always re-check the coverage figure on the specific product and R-value you are buying rather than assuming it scales evenly.'
+      },
+      watchOut: [
+        { title: 'Coverage per bag is specific to one product and one R-value', body: 'The same brand’s bag covers far less area at R-60 than at R-30, because reaching a higher R-value means installing it thicker — always read the coverage figure for the R-value you are actually installing.' },
+        { title: 'Adding over existing insulation uses a lower target', body: 'ENERGY STAR publishes a separate, lower R-value target for an attic that already has 3–4 inches in place; this calculator uses the uninsulated-attic target.' },
+        { title: 'Air seal first', body: 'ENERGY STAR recommends sealing attic air leaks (around recessed lights, plumbing stacks, attic hatches) before adding insulation — insulation slows heat flow, but it does not stop air leaks.' },
+        { title: 'Don’t compress insulation to make it fit', body: 'Compressing batts or blown-in material into too little depth reduces its real R-value below what the package states.' },
+        { title: 'This is a quantity estimate, not an energy audit', body: 'A full energy assessment accounts for walls, floors, ducts and air sealing together — this calculator covers one area’s insulation quantity only.' }
+      ],
+      references: [
+        { label: 'U.S. EPA/DOE ENERGY STAR, "Recommended Home Insulation R-Values" — climate-zone R-value table', url: 'https://www.energystar.gov/saveathome/seal_insulate/identify-problems-you-want-fix/diy-checks-inspections/insulation-r-values' }
+      ]
+    },
+    inputs: [
+      { id: 'areaSqFt', label: 'Area to insulate (sq ft)', type: 'number', placeholder: '1000', defaultValue: 1000, step: 50, min: 50 },
+      {
+        id: 'climateZone',
+        label: 'Climate zone (ENERGY STAR / 2021 IECC)',
+        type: 'number',
+        placeholder: '60',
+        defaultValue: 60,
+        step: 1,
+        min: 30,
+        options: [
+          { value: 30, label: 'Zone 1 (R-30)' },
+          { value: 49, label: 'Zone 2 or 3 (R-49)' },
+          { value: 60, label: 'Zone 4A/4B, 4C/5/6 or 7/8 (R-60)' }
+        ]
+      },
+      { id: 'coveragePerBag', label: 'Coverage per bag/roll at your target R-value (sq ft, check the label)', type: 'number', placeholder: '40', defaultValue: 40, step: 5, min: 5 },
+      { id: 'wastePercent', label: 'Waste allowance (%)', type: 'percent', placeholder: '10', defaultValue: 10, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Insulation Calculator – Attic R-Value & Bags Needed',
+      description: 'Free insulation calculator: find your climate zone’s ENERGY STAR-recommended attic R-value and how many bags or rolls of insulation your area needs.',
+      faq: [
+        { question: 'How much insulation do I need for my attic?', answer: 'It depends on your climate zone and product. ENERGY STAR recommends R-30 for Zone 1, R-49 for Zones 2–3, and R-60 for Zones 4A/4B, 4C/5/6 and 7/8 in an uninsulated attic; how many bags that takes depends on your product’s coverage at that R-value.' },
+        { question: 'What R-value do I need for my climate zone?', answer: 'Per ENERGY STAR’s own table for an uninsulated attic: R-30 in Zone 1, R-49 in Zones 2 and 3, and R-60 in Zones 4A/4B, 4C/5/6, and 7/8.' },
+        { question: 'Does the R-value target change if I already have some insulation?', answer: 'Yes. ENERGY STAR publishes a lower target for an attic with 3–4 inches already in place, since the existing insulation already contributes some R-value. This calculator uses the higher, uninsulated-attic target.' },
+        { question: 'How do I know how much area one bag of insulation covers?', answer: 'Check the bag or roll label — coverage per bag is printed there and varies by brand and by the R-value (thickness) you are installing. A bag covers noticeably less area at a higher R-value.' },
+        { question: 'Should I seal air leaks before adding insulation?', answer: 'Yes. ENERGY STAR recommends sealing attic air leaks, such as around recessed lights and plumbing stacks, before adding insulation, since insulation slows heat flow but does not stop air leaks.' },
+        { question: 'Can I compress insulation to fit a shallow space?', answer: 'No. Compressing batts or blown-in insulation into too little depth reduces its real R-value below what the package states.' },
+        { question: 'Does this calculator work for wall insulation too?', answer: 'It can estimate bags/rolls for any area if you enter the right target R-value and your product’s coverage at that R-value — ENERGY STAR’s table used here is specifically for attics, so check a wall-specific recommendation separately.' }
+      ]
+    },
+    compute(values) {
+      const targetRValue = values.climateZone;
+      const areaSqFt = values.areaSqFt;
+      const areaWithWaste = areaSqFt * (1 + values.wastePercent / 100);
+      const bagsNeeded = Math.ceil(areaWithWaste / values.coveragePerBag);
+      const coverageBought = bagsNeeded * values.coveragePerBag;
+      return { bagsNeeded, targetRValue, areaSqFt, coverageBought };
+    }
   }
 ];

@@ -2695,6 +2695,53 @@ exports[`compute() snapshots > instagram-engagement-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > insulation-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "areaSqFt": 1000,
+      "climateZone": 60,
+      "coveragePerBag": 40,
+      "wastePercent": 10
+    },
+    "outputs": {
+      "bagsNeeded": 28,
+      "targetRValue": 60,
+      "areaSqFt": 1000,
+      "coverageBought": 1120
+    }
+  },
+  "typical": {
+    "inputs": {
+      "areaSqFt": 1500,
+      "climateZone": 90,
+      "coveragePerBag": 60,
+      "wastePercent": 15
+    },
+    "outputs": {
+      "bagsNeeded": 29,
+      "targetRValue": 90,
+      "areaSqFt": 1500,
+      "coverageBought": 1740
+    }
+  },
+  "edge": {
+    "inputs": {
+      "areaSqFt": 50,
+      "climateZone": 30,
+      "coveragePerBag": 5,
+      "wastePercent": 0
+    },
+    "outputs": {
+      "bagsNeeded": 10,
+      "targetRValue": 30,
+      "areaSqFt": 50,
+      "coverageBought": 50
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > investment-calculator 1`] = `
 {
   "default": {

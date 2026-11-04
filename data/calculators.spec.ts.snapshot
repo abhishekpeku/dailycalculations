@@ -247,6 +247,59 @@ exports[`compute() snapshots > average-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > bakers-percentage-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "flourWeight": 500,
+      "hydrationPercent": 65,
+      "saltPercent": 2,
+      "yeastPercent": 1,
+      "otherPercent": 0
+    },
+    "outputs": {
+      "totalDoughWeight": 840,
+      "waterWeight": 325,
+      "saltWeight": 10,
+      "yeastWeight": 5,
+      "otherWeight": 0
+    }
+  },
+  "typical": {
+    "inputs": {
+      "flourWeight": 750,
+      "hydrationPercent": 98,
+      "saltPercent": 3,
+      "yeastPercent": 1.5,
+      "otherPercent": 0
+    },
+    "outputs": {
+      "totalDoughWeight": 1518.75,
+      "waterWeight": 735,
+      "saltWeight": 22.5,
+      "yeastWeight": 11.25,
+      "otherWeight": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "flourWeight": 0,
+      "hydrationPercent": 0,
+      "saltPercent": 0,
+      "yeastPercent": 0,
+      "otherPercent": 0
+    },
+    "outputs": {
+      "totalDoughWeight": 0,
+      "waterWeight": 0,
+      "saltWeight": 0,
+      "yeastWeight": 0,
+      "otherWeight": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > bar-to-psi-converter 1`] = `
 {
   "default": {
@@ -4605,6 +4658,59 @@ exports[`compute() snapshots > permutation-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > pizza-dough-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "numberOfPizzas": 2,
+      "doughBallWeight": 205,
+      "hydrationPercent": 73.3,
+      "saltPercent": 3.45,
+      "yeastPercent": 0.16
+    },
+    "outputs": {
+      "flourWeight": 231.7562602,
+      "waterWeight": 169.8773388,
+      "saltWeight": 7.995590978,
+      "yeastWeight": 0.3708100164,
+      "totalDoughWeight": 410
+    }
+  },
+  "typical": {
+    "inputs": {
+      "numberOfPizzas": 3,
+      "doughBallWeight": 310,
+      "hydrationPercent": 109.9,
+      "saltPercent": 5.2,
+      "yeastPercent": 0.24
+    },
+    "outputs": {
+      "flourWeight": 431.8751741,
+      "waterWeight": 474.6308164,
+      "saltWeight": 22.45750906,
+      "yeastWeight": 1.036500418,
+      "totalDoughWeight": 930
+    }
+  },
+  "edge": {
+    "inputs": {
+      "numberOfPizzas": 1,
+      "doughBallWeight": 50,
+      "hydrationPercent": 0,
+      "saltPercent": 0,
+      "yeastPercent": 0
+    },
+    "outputs": {
+      "flourWeight": 50,
+      "waterWeight": 0,
+      "saltWeight": 0,
+      "yeastWeight": 0,
+      "totalDoughWeight": 50
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > pool-volume-calculator 1`] = `
 {
   "default": {
@@ -5215,6 +5321,41 @@ exports[`compute() snapshots > rebar-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > recipe-scaling-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "originalServings": 4,
+      "desiredServings": 6,
+      "originalAmount": 2
+    },
+    "outputs": {
+      "scaledAmount": 3
+    }
+  },
+  "typical": {
+    "inputs": {
+      "originalServings": 6,
+      "desiredServings": 9,
+      "originalAmount": 3
+    },
+    "outputs": {
+      "scaledAmount": 4.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "originalServings": 1,
+      "desiredServings": 1,
+      "originalAmount": 0
+    },
+    "outputs": {
+      "scaledAmount": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > relative-risk-calculator 1`] = `
 {
   "default": {
@@ -5325,6 +5466,41 @@ exports[`compute() snapshots > retaining-wall-calculator 1`] = `
       "wallAreaSqFt": 0.5,
       "baseTrenchDepthIn": 6.5,
       "baseGravelVolumeCuYd": 0.0200617284
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > rice-to-water-ratio-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "riceAmount": 1,
+      "riceType": 0
+    },
+    "outputs": {
+      "waterCups": 1.5,
+      "ratio": 1.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "riceAmount": 1.5,
+      "riceType": 0
+    },
+    "outputs": {
+      "waterCups": 2.25,
+      "ratio": 1.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "riceAmount": 0.25,
+      "riceType": 0
+    },
+    "outputs": {
+      "waterCups": 0.375,
+      "ratio": 1.5
     }
   }
 }
@@ -6714,6 +6890,50 @@ exports[`compute() snapshots > triangle-calculator 1`] = `
       "angleC": "NaN",
       "perimeter": "NaN",
       "area": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > turkey-cook-time-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "turkeyWeightLb": 16,
+      "stuffed": 0
+    },
+    "outputs": {
+      "roastTimeLowHours": 3.75,
+      "roastTimeHighHours": 4.25,
+      "roastTimeMidHours": 4,
+      "safeInternalTempF": 165,
+      "standTimeMinutes": 20
+    }
+  },
+  "typical": {
+    "inputs": {
+      "turkeyWeightLb": 24,
+      "stuffed": 0
+    },
+    "outputs": {
+      "roastTimeLowHours": 4.5,
+      "roastTimeHighHours": 5,
+      "roastTimeMidHours": 4.75,
+      "safeInternalTempF": 165,
+      "standTimeMinutes": 20
+    }
+  },
+  "edge": {
+    "inputs": {
+      "turkeyWeightLb": 4,
+      "stuffed": 0
+    },
+    "outputs": {
+      "roastTimeLowHours": 1.5,
+      "roastTimeHighHours": 3.25,
+      "roastTimeMidHours": 2.375,
+      "safeInternalTempF": 165,
+      "standTimeMinutes": 20
     }
   }
 }

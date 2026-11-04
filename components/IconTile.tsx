@@ -37,7 +37,9 @@ const ICONS = {
   play: 'M5 4h14v16H5zM10 9l5 3-5 3V9z',
   text: 'M5 6h14M12 6v13M8 19h8',
   cap: 'M2 9l10-5 10 5-10 5L2 9zM6 11v5c0 1 2.7 3 6 3s6-2 6-3v-5',
-  chart: 'M4 20h16M7 20V13M12 20V9M17 20V16'
+  chart: 'M4 20h16M7 20V13M12 20V9M17 20V16',
+  // A bowl of food with steam: the food category (recipes, ratios, cook times — not unit conversion).
+  bowl: 'M4 13h16a1 1 0 0 1 1 1 7 7 0 0 1-7 7h-4a7 7 0 0 1-7-7 1 1 0 0 1 1-1zM8 13v-2a4 4 0 0 1 8 0v2M12 3.5v2.5'
 } as const;
 
 export type IconName = keyof typeof ICONS;

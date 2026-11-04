@@ -260,7 +260,7 @@ export const homeCalculators: CalculatorConfig[] = [
     glyph: 'yd³',
     updatedAt: '2026-10-21',
     aliases: ['cubic yards of concrete calculator', 'cement calculator', 'slab concrete calculator', 'how many bags of concrete do i need', 'concrete bag calculator'],
-    related: ['tile-calculator', 'paint-calculator', 'wallpaper-calculator', 'gallons-to-liters-converter'],
+    related: ['tile-calculator', 'paint-calculator', 'wallpaper-calculator', 'rebar-calculator', 'gallons-to-liters-converter'],
     title: 'Concrete Calculator',
     description: 'Find the volume of concrete a slab, footing or post hole needs from its length, width and depth, or work backward from a target volume, in cubic feet or cubic yards, with the number of 60 lb and 80 lb bags.',
     example: 'A 10x12 ft patio slab, 4 inches thick, needs 40 cubic feet (1.48 cubic yards) of concrete, or about 1.63 cubic yards with a 10% waste allowance — roughly 74 bags of 80 lb mix or 98 bags of 60 lb mix.',
@@ -2861,6 +2861,124 @@ export const homeCalculators: CalculatorConfig[] = [
       const totalRunIn = numTreads * values.treadDepthIn;
       const totalRunFt = totalRunIn / 12;
       return { numRisers, actualRiserIn, numTreads, totalRunFt };
+    }
+  },
+  {
+    id: 'rebar-calculator',
+    category: 'home',
+    glyph: 'reb',
+    updatedAt: '2026-11-05',
+    aliases: ['rebar calculator', 'how much rebar do i need calculator', 'rebar for concrete slab calculator', 'rebar grid calculator', 'concrete slab reinforcement calculator'],
+    related: ['concrete-calculator', 'retaining-wall-calculator', 'gravel-calculator'],
+    title: 'Rebar Calculator',
+    description: 'Find how many rebar sticks a concrete slab or footing’s reinforcing grid needs from its dimensions and bar spacing, with a waste allowance for cutting and overlap.',
+    example: 'A 12×10 ft slab with rebar on a 12 in grid, using 20 ft sticks and a 10% waste allowance, needs 15 sticks — 288.2 linear feet of rebar.',
+    breakdown: {
+      headline: 'sticksNeeded',
+      headlineLabel: 'Rebar sticks to buy',
+      outputs: [
+        { id: 'sticksNeeded', label: 'Rebar sticks to buy', format: 'integer' },
+        { id: 'totalLinearFeetWithWaste', label: 'Total rebar length, with waste (ft)', format: 'number' },
+        { id: 'totalLinearFeetExact', label: 'Total rebar length, exact (ft)', format: 'number' },
+        { id: 'slabAreaSqFt', label: 'Slab area', format: 'number', dimension: 'area', unit: 'ft2' }
+      ],
+      groups: [
+        { title: 'Slab or footing', inputs: ['slabLength', 'slabWidth'] },
+        { title: 'Rebar grid', inputs: ['barSpacingIn', 'stickLengthFt', 'wastePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'totalLinearFeetExact', label: 'Rebar needed, exact' },
+          { from: 'totalLinearFeetWithWaste', label: 'With waste allowance' }
+        ],
+        title: 'Rebar length, exact vs. with waste allowance'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'How a rebar grid is sized for a slab or footing',
+        paragraphs: [
+          'Concrete is strong in compression but weak in tension — it resists being crushed far better than it resists being pulled apart or flexed. Rebar (reinforcing steel bar) is embedded in the concrete to carry that tension, so a slab or footing can flex slightly without cracking all the way through.',
+          'A common way to reinforce a residential slab is a two-way grid: bars running in both directions, spaced an even distance apart. This calculator lays out that grid from the slab’s length and width and your chosen spacing — a common residential convention is 12 inches on center in both directions, though the right spacing for a given slab depends on its thickness, the load it carries and the soil underneath, and should follow an engineer’s plan wherever one exists.',
+          'Rebar itself is sold in fixed stick lengths, not cut to order at checkout — both The Home Depot and Lowe’s stock 1/2 in (#4) rebar in 20 ft sticks as their standard length. Once the grid’s total linear footage is known, dividing by the stick length (after adding a waste allowance for trimming and the overlap where two sticks meet) gives the number of sticks to buy.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the slab or footing’s length and width, then your bar spacing, stick length and a waste allowance.',
+        steps: [
+          { name: 'Enter the slab dimensions', text: 'Type the length and width of the area to reinforce, in feet.' },
+          { name: 'Set the bar spacing', text: '12 inches on center is a common residential convention; follow your plans or an engineer’s spec for structural work.' },
+          { name: 'Enter your stick length', text: '20 ft is the standard U.S. retail length; some suppliers also carry 10, 30, 40 or 60 ft sticks.' },
+          { name: 'Set a waste allowance', text: 'Covers trimming and the overlap where two sticks meet end to end.' },
+          { name: 'Read the result', text: 'The headline is the sticks to buy; the rows below show the total rebar length, exact and with waste.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored. This is a quantity estimate, not a structural design.'
+      },
+      formula: {
+        intro: 'Count the bars needed in each direction from the spacing, multiply each by its run length, add waste, then divide by the stick length.',
+        expression: 'bars one way = ⌈(perpendicular dimension × 12) ÷ spacing⌉ + 1\ntotal length = Σ (bars × their run length), both directions\nsticks = ⌈(total length × (1 + waste%)) ÷ stick length⌉',
+        terms: [
+          { symbol: 'perpendicular dimension', meaning: 'The slab dimension the bars are spaced across (e.g. the width, for bars running the length).' },
+          { symbol: 'spacing', meaning: 'The on-center distance between parallel bars, in inches.' },
+          { symbol: 'stick length', meaning: 'The length of rebar you are buying per piece, in feet.' },
+          { symbol: 'waste%', meaning: 'An allowance for trimming and the overlap at splices; 10% is a reasonable default.' }
+        ],
+        note: 'An estimate for a simple two-way grid in one slab or footing. Bar size, exact spacing, splice length and whether reinforcement is needed at all should follow an engineer’s plan or your local code for any load-bearing or structural work.'
+      },
+      workedExample: {
+        intro: 'A 12 ft × 10 ft slab, rebar on a 12 in grid, 20 ft sticks, and a 10% waste allowance.',
+        rows: [
+          { label: 'Bars running the 12 ft length, spaced across the 10 ft width (⌈120 ÷ 12⌉ + 1)', value: '11 bars × 12 ft = 132 ft' },
+          { label: 'Bars running the 10 ft width, spaced across the 12 ft length (⌈144 ÷ 12⌉ + 1)', value: '13 bars × 10 ft = 130 ft' },
+          { label: 'Total rebar, exact (132 + 130)', value: '262 ft' },
+          { label: 'With a 10% waste allowance (262 × 1.10)', value: '288.2 ft' },
+          { label: 'Sticks needed (⌈288.2 ÷ 20⌉)', value: '15 sticks' }
+        ],
+        result: '15 rebar sticks (288.2 linear feet)',
+        explanation: 'Spacing the same slab’s grid at 18 inches on center instead of 12 needs only 11 sticks — 4 fewer, about 26.7% less rebar — which is why spacing (set by a plan or engineer for structural work) matters as much as the slab’s size.'
+      },
+      watchOut: [
+        { title: '12 inches on center is a common convention, not a universal requirement', body: 'Spacing for a structural slab, footing, or anywhere soil conditions are poor should be set by an engineer or the project’s plans, not assumed.' },
+        { title: 'Sticks need real overlap where they meet, not a butt joint', body: 'Two bars meeting end to end should overlap by a meaningful length — commonly at least 12 inches for light residential reinforcement, more for larger bar sizes or engineered work — rather than simply touching end to end.' },
+        { title: 'Rebar needs concrete cover on every side', body: 'Rebar should sit on chairs above the subgrade, with concrete fully surrounding it, not resting directly on the ground.' },
+        { title: 'Retail stick length varies by supplier', body: 'Home centers commonly stock 20 ft sticks, but some suppliers offer 10, 30, 40 or 60 ft lengths — use what you can actually buy or have delivered.' },
+        { title: 'This sizes a simple flat, two-way grid only', body: 'Thickened edges, multiple bar layers, footings or an engineered design need a structural plan, not this calculator.' }
+      ],
+      references: [
+        { label: 'The Home Depot, 1/2 in. x 20 ft. #4 Rebar product listing (standard U.S. retail stick length)', url: 'https://www.homedepot.com/p/1-2-in-x-20-ft-4-Rebar-PAR602004/205370252' },
+        { label: 'Lowe’s, 1/2-in x 20-ft Steel #4 Rebar product listing', url: 'https://www.lowes.com/pd/Steel-Rebar-Common-0-5-in-x-20-ft-Actual-0-5-in-x-19-9167-ft/3010016' }
+      ]
+    },
+    inputs: [
+      { id: 'slabLength', label: 'Slab or footing length (ft)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.5, min: 1 },
+      { id: 'slabWidth', label: 'Slab or footing width (ft)', type: 'number', placeholder: '10', defaultValue: 10, step: 0.5, min: 1 },
+      { id: 'barSpacingIn', label: 'Bar spacing, both directions (in, common residential = 12)', type: 'number', placeholder: '12', defaultValue: 12, step: 1, min: 4 },
+      { id: 'stickLengthFt', label: 'Rebar stick length (ft, retail standard = 20)', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 2 },
+      { id: 'wastePercent', label: 'Waste allowance (%, for trimming and overlap)', type: 'percent', placeholder: '10', defaultValue: 10, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Rebar Calculator – Sticks Needed for a Slab Grid',
+      description: 'Free rebar calculator: how many rebar sticks a concrete slab or footing’s two-way grid needs from its dimensions, bar spacing and a waste allowance.',
+      faq: [
+        { question: 'How much rebar do I need for a concrete slab?', answer: 'It depends on the slab’s size and bar spacing. A 12×10 ft slab on a 12 in grid, with 20 ft sticks and 10% waste, needs 15 sticks (288.2 linear feet).' },
+        { question: 'What spacing should rebar be for a slab?', answer: '12 inches on center in both directions is a common convention for residential slabs, but the right spacing depends on the slab’s thickness, load and soil — follow your plans or an engineer’s spec where one exists.' },
+        { question: 'How long is a standard piece of rebar?', answer: '20 ft is the most common U.S. retail stick length, confirmed by both The Home Depot’s and Lowe’s own product listings; 10, 30, 40 and 60 ft lengths are also available from some suppliers.' },
+        { question: 'Do rebar sticks need to overlap where they meet?', answer: 'Yes. Two sticks meeting end to end should overlap by a meaningful length — commonly at least 12 inches for light residential work, more for larger bars or engineered projects — not just butt together.' },
+        { question: 'Does every concrete slab need rebar?', answer: 'Not necessarily. Many small, unreinforced slabs get by with wire mesh or no reinforcement, while driveways, footings and anything load-bearing commonly need rebar — check your local code or an engineer for anything structural.' },
+        { question: 'How much rebar do I save by spacing it wider?', answer: 'For the 12×10 ft example above, going from 12 in to 18 in spacing cuts the sticks needed from 15 to 11 — about 26.7% less rebar for the same slab.' },
+        { question: 'What size rebar should I use?', answer: 'Bar size (such as #3 or #4) is chosen separately from spacing, based on the slab’s load and thickness. This calculator assumes you already know the size and length you are buying and focuses on how many sticks the grid needs.' }
+      ]
+    },
+    compute(values) {
+      const barsAcrossWidth = Math.ceil((values.slabWidth * 12) / values.barSpacingIn) + 1;
+      const barsAcrossLength = Math.ceil((values.slabLength * 12) / values.barSpacingIn) + 1;
+      const totalLinearFeetExact = barsAcrossWidth * values.slabLength + barsAcrossLength * values.slabWidth;
+      const totalLinearFeetWithWaste = totalLinearFeetExact * (1 + values.wastePercent / 100);
+      const sticksNeeded = Math.ceil(totalLinearFeetWithWaste / values.stickLengthFt);
+      const slabAreaSqFt = values.slabLength * values.slabWidth;
+      return { sticksNeeded, totalLinearFeetWithWaste, totalLinearFeetExact, slabAreaSqFt };
     }
   }
 ];

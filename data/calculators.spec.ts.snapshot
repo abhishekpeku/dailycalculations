@@ -5024,6 +5024,56 @@ exports[`compute() snapshots > ratio-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > rebar-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "slabLength": 12,
+      "slabWidth": 10,
+      "barSpacingIn": 12,
+      "stickLengthFt": 20,
+      "wastePercent": 10
+    },
+    "outputs": {
+      "sticksNeeded": 15,
+      "totalLinearFeetWithWaste": 288.2,
+      "totalLinearFeetExact": 262,
+      "slabAreaSqFt": 120
+    }
+  },
+  "typical": {
+    "inputs": {
+      "slabLength": 18,
+      "slabWidth": 15,
+      "barSpacingIn": 18,
+      "stickLengthFt": 30,
+      "wastePercent": 15
+    },
+    "outputs": {
+      "sticksNeeded": 16,
+      "totalLinearFeetWithWaste": 451.95,
+      "totalLinearFeetExact": 393,
+      "slabAreaSqFt": 270
+    }
+  },
+  "edge": {
+    "inputs": {
+      "slabLength": 1,
+      "slabWidth": 1,
+      "barSpacingIn": 4,
+      "stickLengthFt": 2,
+      "wastePercent": 0
+    },
+    "outputs": {
+      "sticksNeeded": 4,
+      "totalLinearFeetWithWaste": 8,
+      "totalLinearFeetExact": 8,
+      "slabAreaSqFt": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > relative-risk-calculator 1`] = `
 {
   "default": {

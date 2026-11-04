@@ -1,3 +1,50 @@
+exports[`compute() snapshots > ac-tonnage-btu-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "roomAreaSqFt": 525,
+      "roomCondition": 0,
+      "isKitchen": 0,
+      "occupantsOver2": 0
+    },
+    "outputs": {
+      "baseBtu": 14000,
+      "totalBtu": 14000,
+      "tons": 1.166666667,
+      "roomAreaSqFt": 525
+    }
+  },
+  "typical": {
+    "inputs": {
+      "roomAreaSqFt": 790,
+      "roomCondition": 0,
+      "isKitchen": 0,
+      "occupantsOver2": 0
+    },
+    "outputs": {
+      "baseBtu": 18000,
+      "totalBtu": 18000,
+      "tons": 1.5,
+      "roomAreaSqFt": 790
+    }
+  },
+  "edge": {
+    "inputs": {
+      "roomAreaSqFt": 50,
+      "roomCondition": -10,
+      "isKitchen": 0,
+      "occupantsOver2": 0
+    },
+    "outputs": {
+      "baseBtu": 5000,
+      "totalBtu": 4500,
+      "tons": 0.375,
+      "roomAreaSqFt": 50
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > acres-to-hectares-converter 1`] = `
 {
   "default": {
@@ -303,6 +350,53 @@ exports[`compute() snapshots > bmi-calculator 1`] = `
     },
     "outputs": {
       "bmi": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > board-foot-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "thicknessIn": 1,
+      "widthIn": 6,
+      "lengthFt": 8,
+      "quantity": 10,
+      "pricePerBoardFoot": 5
+    },
+    "outputs": {
+      "boardFeetPerBoard": 4,
+      "totalBoardFeet": 40,
+      "estimatedCost": 200
+    }
+  },
+  "typical": {
+    "inputs": {
+      "thicknessIn": 1.5,
+      "widthIn": 9,
+      "lengthFt": 12,
+      "quantity": 15,
+      "pricePerBoardFoot": 7.5
+    },
+    "outputs": {
+      "boardFeetPerBoard": 13.5,
+      "totalBoardFeet": 202.5,
+      "estimatedCost": 1518.75
+    }
+  },
+  "edge": {
+    "inputs": {
+      "thicknessIn": 0.25,
+      "widthIn": 1,
+      "lengthFt": 1,
+      "quantity": 1,
+      "pricePerBoardFoot": 0
+    },
+    "outputs": {
+      "boardFeetPerBoard": 0.02083333333,
+      "totalBoardFeet": 0.02083333333,
+      "estimatedCost": 0
     }
   }
 }
@@ -3618,6 +3712,62 @@ exports[`compute() snapshots > mph-to-kph-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > mulch-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "areaLength": 20,
+      "areaWidth": 10,
+      "depthInches": 3,
+      "bagSizeCuFt": 2,
+      "wastePercent": 10
+    },
+    "outputs": {
+      "areaSqFt": 200,
+      "cubicFeetExact": 50,
+      "cubicYardsExact": 1.851851852,
+      "cubicFeetWithWaste": 55,
+      "cubicYardsWithWaste": 2.037037037,
+      "bagsToBuy": 28
+    }
+  },
+  "typical": {
+    "inputs": {
+      "areaLength": 30,
+      "areaWidth": 15,
+      "depthInches": 4.5,
+      "bagSizeCuFt": 3,
+      "wastePercent": 15
+    },
+    "outputs": {
+      "areaSqFt": 450,
+      "cubicFeetExact": 168.75,
+      "cubicYardsExact": 6.25,
+      "cubicFeetWithWaste": 194.0625,
+      "cubicYardsWithWaste": 7.1875,
+      "bagsToBuy": 65
+    }
+  },
+  "edge": {
+    "inputs": {
+      "areaLength": 0.5,
+      "areaWidth": 0.5,
+      "depthInches": 0.5,
+      "bagSizeCuFt": 0.5,
+      "wastePercent": 0
+    },
+    "outputs": {
+      "areaSqFt": 0.25,
+      "cubicFeetExact": 0.01041666667,
+      "cubicYardsExact": 0.0003858024691,
+      "cubicFeetWithWaste": 0.01041666667,
+      "cubicYardsWithWaste": 0.0003858024691,
+      "bagsToBuy": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > normal-distribution-calculator 1`] = `
 {
   "default": {
@@ -4883,6 +5033,65 @@ exports[`compute() snapshots > relative-risk-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > retaining-wall-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "wallLength": 20,
+      "wallHeight": 3,
+      "blockWidthIn": 18,
+      "blockHeightIn": 8,
+      "wastePercent": 5,
+      "trenchWidthIn": 24
+    },
+    "outputs": {
+      "blocksExact": 60,
+      "coursesNeeded": 5,
+      "blocksToBuy": 63,
+      "wallAreaSqFt": 60,
+      "baseTrenchDepthIn": 9,
+      "baseGravelVolumeCuYd": 1.111111111
+    }
+  },
+  "typical": {
+    "inputs": {
+      "wallLength": 30,
+      "wallHeight": 4.5,
+      "blockWidthIn": 27,
+      "blockHeightIn": 12,
+      "wastePercent": 8,
+      "trenchWidthIn": 36
+    },
+    "outputs": {
+      "blocksExact": 60,
+      "coursesNeeded": 5,
+      "blocksToBuy": 65,
+      "wallAreaSqFt": 135,
+      "baseTrenchDepthIn": 10.5,
+      "baseGravelVolumeCuYd": 2.916666667
+    }
+  },
+  "edge": {
+    "inputs": {
+      "wallLength": 1,
+      "wallHeight": 0.5,
+      "blockWidthIn": 1,
+      "blockHeightIn": 1,
+      "wastePercent": 0,
+      "trenchWidthIn": 12
+    },
+    "outputs": {
+      "blocksExact": 72,
+      "coursesNeeded": 6,
+      "blocksToBuy": 72,
+      "wallAreaSqFt": 0.5,
+      "baseTrenchDepthIn": 6.5,
+      "baseGravelVolumeCuYd": 0.0200617284
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > ring-size-converter 1`] = `
 {
   "default": {
@@ -6037,6 +6246,59 @@ exports[`compute() snapshots > toll-cost-calculator 1`] = `
       "monthlyWithEzpass": 0,
       "annualWithEzpass": 0,
       "annualSavings": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > topsoil-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "areaLength": 20,
+      "areaWidth": 10,
+      "depthInches": 4,
+      "densityTonsPerCubicYard": 1,
+      "wastePercent": 10
+    },
+    "outputs": {
+      "cubicFeet": 66.66666667,
+      "cubicYards": 2.469135802,
+      "tonsExact": 2.469135802,
+      "cubicYardsWithWaste": 2.716049383,
+      "tonsWithWaste": 2.716049383
+    }
+  },
+  "typical": {
+    "inputs": {
+      "areaLength": 30,
+      "areaWidth": 15,
+      "depthInches": 6,
+      "densityTonsPerCubicYard": 1.5,
+      "wastePercent": 15
+    },
+    "outputs": {
+      "cubicFeet": 225,
+      "cubicYards": 8.333333333,
+      "tonsExact": 12.5,
+      "cubicYardsWithWaste": 9.583333333,
+      "tonsWithWaste": 14.375
+    }
+  },
+  "edge": {
+    "inputs": {
+      "areaLength": 0.5,
+      "areaWidth": 0.5,
+      "depthInches": 0.5,
+      "densityTonsPerCubicYard": 0.5,
+      "wastePercent": 0
+    },
+    "outputs": {
+      "cubicFeet": 0.01041666667,
+      "cubicYards": 0.0003858024691,
+      "tonsExact": 0.0001929012346,
+      "cubicYardsWithWaste": 0.0003858024691,
+      "tonsWithWaste": 0.0001929012346
     }
   }
 }

@@ -2155,3 +2155,22 @@ Association's 6.75 bricks/sq ft figure from batch 1 while re-checking this batch
 `npm test`/`npm run build`/lint all re-run clean by the main session before merging. Branch
 `step/43-wave-2-construction-run-2`, PR #52 (marked ready). Full writeup:
 `mdFiles/steps/43-wave-2-construction-run-2.md`.
+
+**2026-11-04/05 — Step 43-45, Wave 2 Construction batch 3/~4+ (PR #54, merged)**: added
+`mulch-calculator`, `topsoil-calculator`, `retaining-wall-calculator`, `board-foot-calculator`,
+`ac-tonnage-btu-calculator` to `home` (now **21 calculators**, 159 total on the site). Same type-B
+`compareBars` shape as batches 1–2. Sources fetched directly: ENERGY STAR/EPA-DOE's room-AC sizing
+fact sheet, Allan Block's installation guide + SiteOne's block spec, Virginia Cooperative Extension
+SPES-661P (mulch depth), USDA Forest Products Lab Wood Handbook Ch. 6 (board-foot/nominal-vs-actual
+lumber sizes). Every worked-example/FAQ number independently re-verified in a scratchpad script
+before committing. `npm test` 770/770, lint clean, `npm run build` 187/187 static pages — all
+re-confirmed by the main session before merging (not just the agent's own report). **Process note**:
+the `CLAUDE.md`/`STATUS.md` archive-split + visual-QA-cadence change (see `CLAUDE.md`'s "Building
+calculators" section) was committed directly onto this same feature branch mid-run, since the main
+session and the build agent shared one working-directory checkout — both sets of changes merged
+together cleanly, nothing lost, but worth giving the next calculator-builder run its own git
+worktree to avoid this overlap recurring. Per the new visual-QA cadence, no Chrome/dark-mode pass
+was run for this batch alone (deferred to the next ~50-calculator checkpoint); a `curl`-based
+structural check (200s, correct H1/JSON-LD/content sections) substituted. Remaining Wave 2
+Construction candidates (insulation, flooring, carpet, stair, rebar, pool/tank volume, siding,
+framing/stud) are next. Full writeup: `mdFiles/steps/43-wave-2-construction-run-3.md`.

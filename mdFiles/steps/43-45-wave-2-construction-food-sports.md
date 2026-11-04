@@ -107,5 +107,12 @@ and merges.
   `mdFiles/steps/43-wave-2-construction-run-4.md`. `home` category now 27 calculators. Siding and
   framing/stud were judged too niche/thin relative to the other 6 and parked (not built) — see the
   run-4 step file's "Picks and why" section. **This closes out Wave 2 Construction.**
-- [ ] Food batches: TODO (next sector per this doc's ordering)
+- [x] Food batch 1 (5): DONE 2026-11-05 — new `food` category created (id, theme `red`/`bowl` icon,
+  `data/calculators/food.ts`, wired into `data/calculators/index.ts`). recipe-scaling,
+  bakers-percentage, pizza-dough, turkey-cook-time, rice-to-water-ratio calculators. Branch
+  `step/46-wave-2-food-run-1`. Details: `mdFiles/steps/46-wave-2-food-run-1.md`. `food` category
+  now 5 calculators. Remaining ~14 of the ~19 first-pass candidates (bread, sourdough, coffee
+  ratio, cold brew ratio, brine, turkey thaw time, egg boiling, steak cook time, BBQ/party
+  quantities, party drinks/alcohol quantity, ABV, cake servings, popcorn-for-a-party, yeast
+  conversion, self-rising flour substitution) are untouched for a later Food batch.
 - [ ] Sports batches: TODO

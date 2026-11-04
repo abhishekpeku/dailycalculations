@@ -3085,7 +3085,7 @@ export const homeCalculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Pool / Tank Volume Calculator – Gallons by Shape',
-      description: 'Free pool volume calculator: find gallons for rectangular, circular and oval pools or tanks from dimensions and average depth, per the pool industry’s own formulas.',
+      description: 'Free pool volume calculator: find gallons for rectangular, circular and oval pools or tanks from dimensions and depth, using the pool industry’s own formulas.',
       faq: [
         { question: 'How do I calculate how many gallons are in my pool?', answer: 'Find the volume in cubic feet (length × width × average depth for a rectangle), then multiply by 7.5 — the pool industry’s standard cubic-feet-to-gallons conversion. A 32×16 ft pool with a 5.5 ft average depth holds 2,816 cu ft, or 21,120 gallons.' },
         { question: 'How do I find a pool’s average depth?', answer: 'Add the shallow end’s depth and the deep end’s depth, then divide by two. A pool with a 3 ft shallow end and an 8 ft deep end has a 5.5 ft average depth.' },

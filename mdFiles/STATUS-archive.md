@@ -2083,3 +2083,75 @@ screenshot) on mortgage-calculator, bmi-calculator, miles-to-kilometers-converte
 standard-deviation-calculator, freelancer-rate-calculator and currency-converter (the special-widget
 fallback). Full writeup and Progress checklist: `mdFiles/steps/ux-02-calculator-intro-diagram.md`.
 
+
+**2026-11-02 — Step 43-45, Wave 2 Construction batch 1/~4 (PR #51)**: widened the existing `home`
+category with 5 new calculators — `drywall-calculator`, `brick-calculator`, `gravel-calculator`,
+`sand-calculator`, `mortar-calculator` — following the v2 template and `paint-calculator`/
+`tile-calculator`/`concrete-calculator`'s own "materials from room/area dimensions, a waste-factor
+convention, a `compareBars` exact-vs-to-buy visual" shape. All five are type-B breakdown widgets; none
+needed a solver since nothing in this batch has a natural backward direction. Sources fetched directly
+(PDFs and live pages, not recalled from memory or taken from another calculator site): USG's own
+Sheetrock Brand Installation and Finishing Guide and The Home Depot's drywall buying guide (panel
+sizes 4×8=32/4×10=40/4×12=48 sq ft, the measuring method); the Brick Industry Association's Technical
+Notes on Brick Construction 10 (Table 4: 6.75 bricks per sq ft for standard modular brick with a ⅜ in.
+joint; ≥5% brick waste; 15–25% mortar waste); QUIKRETE's Mortar Mix (Product No. 1102) data sheet (37
+standard bricks per 80 lb bag); Mulch Pros Landscape Supply's own-scale-measured tons-per-cubic-yard
+figures by stone/sand type, cross-checked against EarthStone Rock's own published range and moisture
+note. Two real decisions worth remembering: (1) gravel/sand density is an **editable input**
+(`densityTonsPerCubicYard`, defaults 1.4/1.3) rather than one fixed constant, because the two real
+supplier sources genuinely disagree by material type and moisture — named rather than silently picked,
+the same precedent as earlier shoe/ring-size source disagreements; (2) the drywall waste allowance
+(10%, rising to 15% for complex rooms) is stated as common contractor practice, not attributed to
+Gypsum Association GA-216, which every secondary calculator-site source cites but which is paywalled
+and was never actually read — per template §3's "read sources directly" rule. `mortar-calculator`
+deliberately reuses `brick-calculator`'s own wall-area × bricks-per-sq-ft step so the two pages' brick
+counts always agree for the same wall, and is cross-linked both ways via `related`. 149 total
+calculators (144 + 5), 16 categories (unchanged), 11 calculators now in `home` — still under the
+`SEARCH_THRESHOLD = 15` sub-grouping cutoff, no `group` field needed. Every id/alias checked
+programmatically against the whole dataset before building (no collisions); every worked-example and
+FAQ figure (including two "% more/less" shortcut comparisons) independently recomputed in a scratchpad
+script (`verify_run1.mjs`) before committing, and a second script (`check_run1.mjs`) checked
+`related`/alias/seo-length rules, catching two `seo.description`s over the 160-char budget (drywall,
+gravel — fixed before the final commit). `npm test` 759/759 (snapshot diff adds only the 5 new ids),
+lint clean, `npm run build` passes (177 static pages). Spot-checked all 5 pages plus `/categories/home`
+(now listing all 11 calculators with correct glyph badges) on a local dev server at desktop width and
+in dark mode (both clean, numbers matching the verification script exactly); a true phone-width
+screenshot wasn't captured due to a sandbox tooling limitation (see Parked). Two pre-existing issues
+noticed and parked, not fixed (see Parked): a duplicate "Home" breadcrumb crumb on every `home`-category
+page (reproduced on `paint-calculator` too, so not introduced here), and a stale-`.next`-after-webpack-
+build artifact that made every `/categories/<id>` page 404 until `.next` was deleted and `next dev`
+restarted fresh. Branch `step/43-wave-2-construction-run-1`, PR #51 (marked ready). Full writeup:
+`mdFiles/steps/43-wave-2-construction-run-1.md`.
+
+**2026-11-02 — Step 43-45, Wave 2 Construction batch 2/~4 (PR #52)**: widened `home` further with
+5 more calculators — `fence-calculator`, `decking-calculator`, `roofing-calculator`,
+`roof-pitch-calculator`, `paver-calculator` — same type-B breakdown + `compareBars` shape as batch 1.
+`home` now has 16 calculators, past `SEARCH_THRESHOLD = 15`, so `/categories/home` shows a search box
+automatically; no `group` field was added, so UX-06's sub-grouped layout doesn't trigger yet (a
+reasonable later batch could add groups to `home.ts` the same way measurements/math/statistics got
+them). Sources fetched directly: The Home Depot's "How to Build a Fence" guide (post spacing, the
+panels-plus-two-posts rule); Trex Company's 2022 Decking Installation Guide (board width, gapping,
+joist spanning); GAF's Timberline HDZ product data sheet (3 bundles/64 pieces per square); the
+Pythagorean-theorem pitch multiplier `√(1+(rise/12)²)` for sloped-vs-footprint roof area, standard
+roofing-trade math; Wikipedia's "Roof pitch" article plus the National Roofing Contractors
+Association's "Roof slope guidelines" (Professional Roofing, Aug 2018) for the rise/run "X in 12"
+convention and code-minimum slope; the Interlocking Concrete Pavement Institute's Tech Spec 10 and
+Oregon State University Extension's paver installation guide (base depth, bedding sand thickness,
+waste allowance). Cross-linked batch 1's `gravel-calculator`/`sand-calculator` to `paver-calculator`.
+154 total calculators (149 + 5), 16 categories (unchanged). `npm test` 765/765 (759 + batch 1's new
+same-category glyph-uniqueness test — this batch's own glyphs came out distinct on the first try:
+`fnc dek sq X12 pvr`, no repeat of batch 1's `'ton'`/`'ton'` mistake), lint clean, `npm run build`
+passes (182 static pages). A programmatic check caught one 161-char `paver-calculator`
+`seo.description` over budget, fixed before the final commit, and re-confirmed (without touching) the
+known pre-existing "house loan emi calculator" alias collision. Spot-checked all 5 pages plus
+`/categories/home` (16 calculators, correct glyph badges, search box now present) at desktop width and
+in dark mode, numbers matching the agent's own verification script. **Interrupted by the build agent's
+session usage limit** right after all 5 calculators were committed and pushed, before this STATUS.md
+entry was written — no code was lost. The main session finished the docs and, before merging,
+independently re-verified the two most load-bearing citations against their actual primary sources
+rather than trusting the agent's citations alone: fetched GAF's Timberline HDZ data sheet directly
+(confirmed "3 bundles per square, 64 pieces per square" exactly) and re-confirmed the Brick Industry
+Association's 6.75 bricks/sq ft figure from batch 1 while re-checking this batch's cross-links.
+`npm test`/`npm run build`/lint all re-run clean by the main session before merging. Branch
+`step/43-wave-2-construction-run-2`, PR #52 (marked ready). Full writeup:
+`mdFiles/steps/43-wave-2-construction-run-2.md`.

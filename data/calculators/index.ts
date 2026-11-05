@@ -230,7 +230,14 @@ export const calculatorOrder: string[] = [
   'heart-rate-zones-calculator',
   'vo2-max-calculator',
   'race-time-predictor-calculator',
-  'swim-pace-calculator'
+  'swim-pace-calculator',
+  'steps-to-miles-calculator',
+  'baseball-batting-average-calculator',
+  'cricket-bowling-figures-calculator',
+  'cricket-net-run-rate-calculator',
+  'nfl-passer-rating-calculator',
+  'elo-rating-calculator',
+  'golf-course-handicap-calculator'
 ];
 
 const rank = (id: string) => {

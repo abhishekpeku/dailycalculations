@@ -642,5 +642,121 @@ export const sportsCalculators: CalculatorConfig[] = [
       const speedMph = speedMps / 0.44704;
       return { pace100mSec, pace100ydSec, speedKmh, speedMph };
     }
+  },
+  {
+    id: 'steps-to-miles-calculator',
+    category: 'sports',
+    glyph: 'step',
+    updatedAt: '2026-11-05',
+    aliases: ['steps to miles calculator', 'steps to km calculator', 'how many steps in a mile calculator', 'stride length calculator', 'pedometer steps to distance calculator', 'steps to distance converter'],
+    related: ['running-pace-calculator', 'swim-pace-calculator', 'calorie-calculator', 'miles-to-kilometers-converter'],
+    title: 'Steps to Miles Calculator',
+    description: 'Convert a step count to a distance (or back) using your own step length, plus work out the step length itself from a known distance and step count — any two fields solve the third.',
+    example: '10,000 steps at an average step length of 2.5 ft (0.762 m) covers about 4.73 miles (7.62 km).',
+    solver: {
+      defaultTarget: 'distance',
+      variables: [
+        { id: 'distance', label: 'Distance', symbol: 'd', dimension: 'length', defaultValue: 4.734848, defaultUnit: 'mi' },
+        { id: 'steps', label: 'Steps', symbol: 'n', dimension: 'count', defaultValue: 10000, defaultUnit: 'count' },
+        { id: 'stepLength', label: 'Step length', symbol: 'L', dimension: 'length', defaultValue: 2.5, defaultUnit: 'ft' }
+      ],
+      // SI: distance in meters, steps dimensionless (count's base factor is 1), stepLength in meters.
+      solve: {
+        distance: ({ steps, stepLength }) => steps * stepLength,
+        steps: ({ distance, stepLength }) => (stepLength > 0 ? distance / stepLength : NaN),
+        stepLength: ({ distance, steps }) => (steps > 0 ? distance / steps : NaN)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'Converting steps to a real distance',
+        paragraphs: [
+          "A step counter only ever counts steps — it has no idea how far you actually walked or ran unless it also knows (or estimates) how long each step is. Multiply the two together and you get distance: distance = steps × step length. This calculator runs that relationship in all three directions: find a distance from a step count, find how many steps a distance would take, or work out your own step length from a distance and step count you already know (the most accurate way to personalize the conversion, for example by counting your steps across a measured quarter-mile).",
+          "\"Step length\" here means the distance covered by one single step (one foot-strike to the next), which is what a step count actually accumulates. Gait researchers reserve the word \"stride\" for a full stride — both feet, left and right — which covers roughly double that distance; everyday pedometer and fitness-app copy often blurs the two terms together, so this calculator is explicit: enter your per-step distance, not a full left-right stride.",
+          'Without a personal measurement, published averages are commonly cited: a meta-analysis of 23,111 adults by Bohannon and Andrews (2011) found average walking speeds and step/stride patterns vary by height and age, and one often-cited rule of thumb from CDC- and Mayo Clinic-sourced figures uses about 2.5 ft (0.762 m) for men and 2.2 ft (0.67 m) for women as an average adult step length — figures that assume a casual walking pace, not a run, and vary a lot with a person\'s actual height.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of distance, steps and step length. The third, marked auto, is calculated as you type.',
+        steps: [
+          { name: 'Convert a step count to distance', text: 'Type your steps and a step length (your own measured value if you have one, or an average like 2.5 ft), and distance is calculated.' },
+          { name: 'Find out how many steps a walk will take', text: 'Type a target distance and your step length, then leave steps alone: it becomes the auto field.' },
+          { name: 'Measure your own step length', text: 'Walk a known distance (a measured 100 ft, or one lap of a track), count your steps, then type both in: step length is calculated and will be more accurate than any average.' },
+          { name: 'Switch units freely', text: 'Distance accepts miles, kilometers, meters or feet from its unit menu; step length accepts feet, meters, inches or centimeters.' },
+          { name: 'Use your own number going forward', text: 'A step length measured on flat ground at your normal pace is good for everyday walking distances; a run uses longer steps, so measure separately if you want to convert running step counts.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Steps, step length and distance are related by one multiplication. Rearranging it gives a formula for each.',
+        expression: 'distance = steps × L\nsteps = distance ÷ L\nL = distance ÷ steps',
+        terms: [
+          { symbol: 'distance', meaning: 'Total distance covered.' },
+          { symbol: 'steps', meaning: 'Total number of individual steps (not full left-right strides).' },
+          { symbol: 'L', meaning: 'Step length: the distance covered by one single step.' }
+        ],
+        note: 'This is exact arithmetic once step length is known. The uncertainty in any steps-to-distance conversion is almost always in the step length, not the formula.'
+      },
+      workedExample: {
+        intro: 'Someone walks 10,000 steps at an average step length of 2.5 ft. How far did they go?',
+        rows: [
+          { label: 'Steps', value: '10,000' },
+          { label: 'Step length (L)', value: '2.5 ft (0.762 m)' },
+          { label: 'Distance = 10,000 × 2.5 ft', value: '25,000 ft' },
+          { label: 'In miles (25,000 ÷ 5,280)', value: '4.7348 mi' },
+          { label: 'In kilometers (10,000 × 0.762 m)', value: '7,620 m = 7.62 km' }
+        ],
+        result: '10,000 steps ≈ 4.73 miles (7.62 km) at a 2.5 ft step length',
+        explanation: 'The often-repeated "10,000 steps is about 5 miles" rule of thumb assumes a slightly shorter step length than this (around 2.11-2.2 ft per step, closer to 2,117 steps per mile); at 2.5 ft per step this same step count comes out a bit short of 5 miles instead.'
+      },
+      watchOut: [
+        {
+          title: 'Step length is not stride length',
+          body: 'Gait researchers define a full "stride" as two steps (one left, one right), covering roughly double the distance of a single step. This calculator\'s "step length" is deliberately the shorter, single-step figure, since that is what a step counter actually counts.'
+        },
+        {
+          title: 'Running steps are longer than walking steps',
+          body: "The same person's step length stretches noticeably when running versus walking. Reusing a walking step length to convert a run's step count will underestimate the real distance covered."
+        },
+        {
+          title: 'Average step-length figures are population averages, not your number',
+          body: 'Height is the biggest driver of step length (one commonly cited estimate is close to 0.41-0.415 times height), but terrain, fatigue, age and walking speed all shift it too. A step length measured on your own walk is always more accurate than any published average.'
+        },
+        {
+          title: '"Steps per mile" figures you see elsewhere assume one specific step length',
+          body: 'Figures like "2,000 steps per mile" or "2,117 steps per mile" are only correct for whatever step length they assumed when computed; change the step length and the steps-per-mile figure changes right along with it.'
+        },
+        {
+          title: 'A phone or wearable step count has its own measurement error',
+          body: 'This calculator converts whatever step count you already have; it cannot correct for a device under- or over-counting actual steps, which is a separate source of error from the step-length conversion itself.'
+        }
+      ],
+      references: [
+        { label: 'Bohannon, R.W., Andrews, A.W., "Normal Walking Speed: A Descriptive Meta-Analysis," Physiotherapy 97, no. 3 (2011): 182-189', url: 'https://pubmed.ncbi.nlm.nih.gov/21820535/' },
+        { label: 'Bohannon, R.W., "Comfortable and Maximum Walking Speed of Adults Aged 20-79 Years: Reference Values and Determinants," Age and Ageing 26, no. 1 (1997): 15-19', url: 'https://pubmed.ncbi.nlm.nih.gov/9143432/' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, the exact foot and mile)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'steps', label: 'Steps', type: 'number', placeholder: '10000', defaultValue: 10000, step: 100, min: 1 },
+      { id: 'stepLengthFt', label: 'Step length (ft)', type: 'number', placeholder: '2.5', defaultValue: 2.5, step: 0.1, min: 0.1 }
+    ],
+    seo: {
+      title: 'Steps to Miles Calculator – Step Length & Distance',
+      description: 'Convert steps to miles or kilometers using your step length, or solve backwards for steps or step length from a known distance.',
+      faq: [
+        { question: 'How many miles is 10,000 steps?', answer: 'It depends on your step length. At an average 2.5 ft step, 10,000 steps is about 4.73 miles (7.62 km); at a shorter, commonly cited 2.2 ft step it is closer to 4.17 miles.' },
+        { question: 'How many steps are in a mile?', answer: 'At a 2.5 ft step length, a mile (5,280 ft) takes 2,112 steps. Commonly cited CDC- and Mayo Clinic-sourced averages (around 76 cm, or about 2.5 ft) put it near 2,117 steps per mile; shorter steps mean more steps per mile.' },
+        { question: 'What is the difference between step length and stride length?', answer: 'A step is one footfall; a stride is two steps (left and right), so a full stride covers roughly double the distance of one step. This calculator asks for step length, the shorter, single-step figure.' },
+        { question: 'How do I find my own step length?', answer: 'Walk a measured distance, such as 100 feet or one lap of a track, counting your steps, then divide the distance by the step count. That is more accurate than any published average.' },
+        { question: 'Is step length the same for walking and running?', answer: "No. The same person's steps lengthen noticeably when running, so a walking step length will underestimate distance if applied to a running step count." },
+        { question: 'Does height affect step length?', answer: 'Yes — height is the strongest predictor of step length. One widely cited estimate puts step length at roughly 0.41 to 0.415 times a person\'s height, though individual gait varies.' }
+      ]
+    },
+    compute(values) {
+      const distanceMiles = (values.steps * values.stepLengthFt) / 5280;
+      return { distanceMiles };
+    }
   }
 ];

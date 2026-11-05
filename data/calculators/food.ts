@@ -1808,5 +1808,254 @@ export const foodCalculators: CalculatorConfig[] = [
         waterHighG: coffeeAmount * COLD_BREW_RATIO.high
       };
     }
+  },
+  {
+    id: 'self-rising-flour-substitute-calculator',
+    category: 'food',
+    glyph: 'srf',
+    updatedAt: '2026-11-05',
+    aliases: ['self rising flour substitute calculator', 'self raising flour substitute calculator', 'how to make self rising flour', 'self rising flour from all purpose flour', 'self rising flour converter', 'baking powder and salt for self rising flour'],
+    related: ['bakers-percentage-calculator', 'pizza-dough-calculator', 'recipe-scaling-calculator'],
+    title: 'Self-Rising Flour Substitute Calculator',
+    description: 'How much baking powder and salt to add to all-purpose flour to substitute for self-rising flour, using King Arthur Baking’s own ratio.',
+    example: 'For 120 g (1 cup) of all-purpose flour, whisk in 1½ tsp baking powder and ¼ tsp salt to substitute for self-rising flour, per King Arthur Baking.',
+    breakdown: {
+      headline: 'bakingPowderTsp',
+      headlineLabel: 'Baking powder to add',
+      outputs: [
+        { id: 'bakingPowderTsp', label: 'Baking powder', format: 'number', dimension: 'volume', unit: 'tsp' },
+        { id: 'saltTsp', label: 'Table salt', format: 'number', dimension: 'volume', unit: 'tsp' }
+      ],
+      groups: [
+        { title: 'All-purpose flour', inputs: ['flourAmount'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'bakingPowderTsp', label: 'Baking powder' },
+          { from: 'saltTsp', label: 'Salt' }
+        ],
+        title: 'Added per batch (teaspoons)'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'What self-rising flour actually is',
+        paragraphs: [
+          "Self-rising flour is just all-purpose (or, commercially, a softer low-protein) flour pre-mixed with baking powder and salt, so a recipe built around it doesn't need those two ingredients measured separately. King Arthur Baking's own substitute recipe is 1 cup (120 g) of all-purpose flour whisked with 1½ teaspoons of baking powder and ¼ teaspoon of table salt, substituted 1:1 by weight or volume for however much self-rising flour a recipe calls for.",
+          "Commercial self-rising flour is usually milled from softer, lower-protein wheat than standard all-purpose flour, which is part of why King Arthur's own article notes the AP-flour version bakes slightly less tender than the real thing — it's a close substitute, not an identical ingredient.",
+          "This calculator scales King Arthur's own per-cup ratio to any amount of flour, by weight, so you can mix exactly as much as a recipe needs."
+        ]
+      },
+      howTo: {
+        intro: 'Enter how much all-purpose flour your recipe calls for — the calculator scales King Arthur Baking’s own per-120 g ratio.',
+        steps: [
+          { name: 'Check your recipe’s flour amount', text: 'The amount of self-rising flour the recipe calls for, since you’re substituting 1:1 by weight.' },
+          { name: 'Enter the flour amount', text: 'In grams, or switch the unit to cups.' },
+          { name: 'Read the baking powder and salt amounts', text: 'Scaled from King Arthur’s 1½ tsp baking powder + ¼ tsp salt per 120 g (1 cup).' },
+          { name: 'Whisk together before using', text: 'Combine all three dry ingredients thoroughly so the leavening is evenly distributed.' },
+          { name: 'Use in place of self-rising flour', text: 'Substitute the mixture 1:1 for the self-rising flour amount the recipe calls for.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Baking powder and salt both scale with the flour amount, at King Arthur Baking’s own per-120 g ratio.',
+        expression: 'baking powder (tsp) = flour (g) ÷ 120 × 1.5\nsalt (tsp) = flour (g) ÷ 120 × 0.25',
+        terms: [
+          { symbol: 'flour (g)', meaning: 'All-purpose flour, by weight.' },
+          { symbol: '120', meaning: 'King Arthur Baking’s own reference amount: 1 US cup of all-purpose flour.' },
+          { symbol: '1.5, 0.25', meaning: 'Teaspoons of baking powder and salt per 120 g of flour, per King Arthur Baking.' }
+        ],
+        note: 'This is a substitute, not an identical ingredient — see the watch-outs for how it differs from commercial self-rising flour.'
+      },
+      workedExample: {
+        intro: '240 g of all-purpose flour (2 cups).',
+        rows: [
+          { label: 'Flour amount', value: '240 g' },
+          { label: 'Baking powder (240 ÷ 120 × 1.5)', value: '3 tsp' },
+          { label: 'Salt (240 ÷ 120 × 0.25)', value: '0.5 tsp' }
+        ],
+        result: '3 tsp baking powder and ½ tsp salt for 240 g of flour',
+        explanation: 'Doubling the flour from King Arthur’s 120 g reference amount doubles both the baking powder and salt — the ratio to flour stays fixed.'
+      },
+      watchOut: [
+        {
+          title: 'Not quite the same as commercial self-rising flour',
+          body: 'Commercial self-rising flour is usually milled from softer, lower-protein wheat. King Arthur Baking’s own article notes this all-purpose-flour version bakes "slightly less tender" as a result — a close substitute, not an identical ingredient.'
+        },
+        {
+          title: 'Check your baking powder’s freshness',
+          body: 'Baking powder loses leavening power over time. If a recipe using this substitute doesn’t rise as expected, stale baking powder is a common cause — not the ratio itself.'
+        },
+        {
+          title: 'Whisk thoroughly before using',
+          body: 'Baking powder and salt need to be evenly distributed through the flour, not just dumped on top — an uneven mix can leave some bites of the finished bake over- or under-leavened.'
+        },
+        {
+          title: 'Don’t also add the recipe’s own baking powder or salt',
+          body: 'If a recipe written specifically for self-rising flour also lists separate baking powder or salt, follow the recipe as written — those recipes typically assume the self-rising flour’s leavening already covers most of the rise.'
+        }
+      ],
+      references: [
+        { label: 'King Arthur Baking, "Self-rising flour: What is it, and how do I bake with it?"', url: 'https://www.kingarthurbaking.com/blog/2024/01/18/self-rising-flour' }
+      ]
+    },
+    inputs: [
+      { id: 'flourAmount', label: 'All-purpose flour', type: 'number', placeholder: '120', defaultValue: 120, step: 10, min: 1, dimension: 'mass', unit: 'g' }
+    ],
+    seo: {
+      title: 'Self-Rising Flour Substitute Calculator',
+      description: 'Free self-rising flour substitute calculator: baking powder and salt to add to all-purpose flour, from King Arthur Baking’s own ratio.',
+      faq: [
+        { question: 'How do I make self-rising flour from all-purpose flour?', answer: 'King Arthur Baking’s own ratio: whisk 1½ teaspoons of baking powder and ¼ teaspoon of table salt into 1 cup (120 g) of all-purpose flour, then substitute 1:1 for self-rising flour.' },
+        { question: 'Can I substitute this 1:1 for self-rising flour in any recipe?', answer: 'Yes, by weight or volume, per King Arthur Baking’s own guidance — this mixture is meant as a direct swap for however much self-rising flour a recipe calls for.' },
+        { question: 'Does homemade self-rising flour taste the same as the commercial kind?', answer: 'Close, but not identical — commercial self-rising flour is usually milled from softer, lower-protein wheat, which King Arthur Baking notes gives a slightly more tender result than the all-purpose-flour version.' },
+        { question: 'How much baking powder do I need for 2 cups of flour?', answer: '3 teaspoons of baking powder and ½ teaspoon of salt for 240 g (2 cups) of all-purpose flour — double King Arthur’s per-cup ratio.' },
+        { question: 'Is self-rising flour the same as all-purpose flour plus baking powder?', answer: 'Self-rising flour is all-purpose (or a softer) flour already mixed with both baking powder and salt — this calculator reproduces that mix from plain all-purpose flour.' },
+        { question: 'Why does my self-rising flour substitute recipe not rise well?', answer: 'Stale baking powder is the most common cause — it loses leavening power over time, regardless of how accurate the ratio is.' }
+      ]
+    },
+    compute(values) {
+      const factor = values.flourAmount / 120;
+      return {
+        bakingPowderTsp: SELF_RISING_PER_120G_FLOUR.bakingPowderTsp * factor,
+        saltTsp: SELF_RISING_PER_120G_FLOUR.saltTsp * factor
+      };
+    }
+  },
+  {
+    id: 'cake-servings-calculator',
+    category: 'food',
+    glyph: 'cak',
+    updatedAt: '2026-11-05',
+    aliases: ['cake servings calculator', 'cake serving size calculator', 'how many servings in a cake', 'wedding cake serving calculator', 'cake slice calculator', 'cake portion calculator'],
+    related: ['party-food-calculator', 'party-drinks-calculator', 'recipe-scaling-calculator'],
+    title: 'Cake Servings Calculator',
+    description: 'How many servings a round or square cake makes, by pan size, from Wilton’s own Ultimate Cake Serving Chart.',
+    example: 'A 9-inch round cake, cut into party-size slices, serves about 24 people — per Wilton’s own serving chart.',
+    breakdown: {
+      headline: 'servings',
+      headlineLabel: 'Servings',
+      outputs: [
+        { id: 'servings', label: 'Servings', format: 'integer' },
+        { id: 'partyServings', label: 'Party servings (larger slices)', format: 'integer' },
+        { id: 'weddingServings', label: 'Wedding servings (smaller slices)', format: 'integer' }
+      ],
+      groups: [
+        { title: 'Cake', inputs: ['cakeSize', 'servingStyle'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'partyServings', label: 'Party servings' },
+          { from: 'weddingServings', label: 'Wedding servings' }
+        ],
+        title: 'Servings by slice size'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'Where these serving counts come from',
+        paragraphs: [
+          "Wilton — the cake-pan and decorating brand behind most of the pans home bakers actually buy — publishes its own Ultimate Cake Serving Chart for 4-inch-tall round and square cakes, and this calculator reproduces that chart directly rather than deriving servings from a pan's area with an assumed slice size.",
+          "The chart gives two serving counts per pan size, based on two different slice sizes: a \"party serving,\" cut about 1½ x 2 inches, and a smaller \"wedding serving,\" cut about 1 x 2 inches — the thinner slice standard for a multi-course event where cake is one of several desserts.",
+          "A square cake of the same width as a round one yields noticeably more servings — a 10-inch square gives 30 party servings against a 10-inch round's 28, and the gap widens further for wedding-size slices (50 versus 38) — simply because a square pan has more area than a circle inscribed in the same width."
+        ]
+      },
+      howTo: {
+        intro: 'Pick your pan’s shape and size, then the slice style — the calculator reads straight off Wilton’s own serving chart.',
+        steps: [
+          { name: 'Pick a pan size', text: 'Choose your cake’s shape and diameter (or side length) for a round or square pan.' },
+          { name: 'Pick a serving style', text: 'Party servings (bigger slices) for a casual gathering, wedding servings (smaller slices) for a formal multi-dessert event.' },
+          { name: 'Read the serving count', text: 'Both serving styles are shown side by side for comparison.' },
+          { name: 'Scale up for tiered cakes', text: 'For a multi-tier cake, look up each tier separately and add the totals together.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'This is a lookup, not a formula — each pan size and serving style reads directly from Wilton’s own published chart.',
+        expression: 'servings = Wilton’s chart[pan shape][pan size][serving style]',
+        terms: [
+          { symbol: 'pan shape, size', meaning: 'Round or square, by diameter or side length in inches, for a standard 4-inch-tall pan.' },
+          { symbol: 'serving style', meaning: 'Party (~1½ x 2 in slices) or wedding (~1 x 2 in slices), Wilton’s own two slice-size standards.' }
+        ],
+        note: 'Wilton’s own caveat: "Number of servings are intended as a guide only. Actual results may vary."'
+      },
+      workedExample: {
+        intro: 'A 9-inch round cake.',
+        rows: [
+          { label: 'Pan size', value: '9 in round' },
+          { label: 'Party servings', value: '24' },
+          { label: 'Wedding servings', value: '32' }
+        ],
+        result: '24 party servings or 32 wedding servings for a 9-inch round cake',
+        explanation: 'Both figures come straight from Wilton’s own chart for a 9-inch round, 4-inch-tall cake — the smaller wedding slices yield more total servings from the same cake.'
+      },
+      watchOut: [
+        {
+          title: 'This is Wilton’s own "guide only," not a guarantee',
+          body: 'Wilton’s own chart states these figures are "intended as a guide only" and that "actual results may vary" — actual slice count depends on how evenly a cake is cut and how much filling or frosting is between layers.'
+        },
+        {
+          title: 'These are 4-inch-tall cakes',
+          body: 'Wilton’s chart assumes a standard 4-inch-tall finished cake. A shorter single-layer cake yields noticeably fewer servings at the same footprint.'
+        },
+        {
+          title: 'Tiered cakes need each tier added separately',
+          body: 'For a multi-tier wedding cake, look up each tier’s size individually and add the totals — this calculator covers one tier (or one single-layer cake) at a time.'
+        },
+        {
+          title: 'Party and wedding aren’t about the event name',
+          body: 'The two serving styles are about slice size, not what kind of event you’re hosting — a birthday party cut into smaller "wedding" slices will serve more people than the same cake cut into "party" slices.'
+        }
+      ],
+      references: [
+        { label: 'Wilton, "Ultimate Cake Serving Chart"', url: 'https://www.wilton.com/baking-inspiration/cake-baking-serving-guide/' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'cakeSize',
+        label: 'Pan shape and size',
+        type: 'number',
+        placeholder: '2',
+        defaultValue: 2,
+        step: 1,
+        min: 0,
+        options: WILTON_CAKE_CHART.map((c, i) => ({ value: i, label: `${c.label} (${c.party} party / ${c.wedding} wedding)` }))
+      },
+      {
+        id: 'servingStyle',
+        label: 'Serving style',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Party servings (larger slices)' },
+          { value: 1, label: 'Wedding servings (smaller slices)' }
+        ]
+      }
+    ],
+    seo: {
+      title: 'Cake Servings Calculator – By Pan Size',
+      description: 'Free cake servings calculator for round and square cakes, by pan size and slice style, from Wilton’s own Ultimate Cake Serving Chart.',
+      faq: [
+        { question: 'How many servings does a 9-inch round cake make?', answer: '24 party servings or 32 wedding servings, per Wilton’s own Ultimate Cake Serving Chart for a 4-inch-tall cake.' },
+        { question: 'How many servings does a 10-inch square cake make?', answer: '30 party servings or 50 wedding servings, per Wilton’s chart — more than a 10-inch round cake (28 party / 38 wedding) because a square pan has more area.' },
+        { question: 'What’s the difference between a party serving and a wedding serving?', answer: 'Wilton defines a party serving as about 1½ x 2 inches and a wedding serving as about 1 x 2 inches — the smaller wedding slice is the standard for a multi-course event with several desserts.' },
+        { question: 'Does a square cake serve more people than a round one?', answer: 'Yes, at the same width — a square pan has more area than a circle inscribed in it, so it yields more servings. Wilton’s own chart shows this gap at every matching size.' },
+        { question: 'How many servings does a wedding cake need per tier?', answer: 'Look up each tier’s size separately using this calculator and add the totals — Wilton’s chart gives servings per tier, not for a stacked multi-tier cake as a whole.' },
+        { question: 'Are these serving counts exact?', answer: 'No — Wilton’s own chart describes them as "a guide only," since actual results depend on how evenly the cake is cut.' }
+      ]
+    },
+    compute(values) {
+      const row = WILTON_CAKE_CHART[values.cakeSize];
+      const servings = values.servingStyle === 1 ? row.wedding : row.party;
+      return { servings, partyServings: row.party, weddingServings: row.wedding };
+    }
   }
 ];

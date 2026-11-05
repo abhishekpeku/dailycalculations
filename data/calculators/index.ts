@@ -211,7 +211,12 @@ export const calculatorOrder: string[] = [
   'bakers-percentage-calculator',
   'pizza-dough-calculator',
   'turkey-cook-time-calculator',
-  'rice-to-water-ratio-calculator'
+  'rice-to-water-ratio-calculator',
+  'turkey-thaw-time-calculator',
+  'boiled-egg-calculator',
+  'steak-doneness-calculator',
+  'party-food-calculator',
+  'yeast-conversion-calculator'
 ];
 
 const rank = (id: string) => {

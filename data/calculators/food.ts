@@ -35,6 +35,62 @@ function turkeyBand(weightLb: number, stuffed: boolean) {
   return bands.find((band) => clamped <= band.maxLb) ?? bands[bands.length - 1];
 }
 
+// USDA FSIS "Turkey Basics: Safe Thawing" (revised September 2011) — refrigerator and cold-water
+// thaw times by weight. Bands share boundary weights exactly as USDA publishes them ("4 to 12 lb",
+// "12 to 16 lb", ...); a weight exactly on a shared boundary is matched to the HIGHER band
+// (minLb inclusive), the more conservative, longer-thaw-time reading.
+const TURKEY_THAW_BANDS = {
+  refrigerator: [
+    { minLb: 4, maxLb: 12, loDays: 1, hiDays: 3 },
+    { minLb: 12, maxLb: 16, loDays: 3, hiDays: 4 },
+    { minLb: 16, maxLb: 20, loDays: 4, hiDays: 5 },
+    { minLb: 20, maxLb: 24, loDays: 5, hiDays: 6 }
+  ],
+  coldWater: [
+    { minLb: 4, maxLb: 12, loHr: 2, hiHr: 6 },
+    { minLb: 12, maxLb: 16, loHr: 6, hiHr: 8 },
+    { minLb: 16, maxLb: 20, loHr: 8, hiHr: 10 },
+    { minLb: 20, maxLb: 24, loHr: 10, hiHr: 12 }
+  ]
+};
+function turkeyThawBand<T extends { minLb: number; maxLb: number }>(weightLb: number, bands: T[]): T {
+  const clamped = Math.min(Math.max(weightLb, 4), bands[bands.length - 1].maxLb);
+  for (let i = bands.length - 1; i >= 0; i--) {
+    if (clamped >= bands[i].minLb) return bands[i];
+  }
+  return bands[0];
+}
+
+// America's Test Kitchen's steam method (½-1" boiling water, covered, large cold eggs) — cook time
+// by doneness. See each calculator's references for the three separate articles this comes from.
+const EGG_STEAM_MINUTES = [6.5, 8, 13]; // soft-cooked, jammy, hard-cooked
+// American Egg Board's cold-start method (cover with water, bring to boil, remove from heat, let
+// stand covered) — hard-cooked standing time by egg size.
+const EGG_STAND_MINUTES = [9, 12, 15]; // medium, large, extra-large
+
+// Beef Checkoff (beefitswhatsfordinner.com / beeflovingtexans.com) doneness temperatures and
+// carryover-cooking guidance. USDA/FDA's own whole-muscle beef minimum (145°F + 3-min rest)
+// equals the industry's own "medium-rare" figure.
+const STEAK_TARGET_F = [145, 160, 170]; // medium-rare, medium, well-done
+const STEAK_CARRYOVER_F = { low: 10, high: 5 }; // remove from heat 5-10°F below target
+const STEAK_REST_MIN = { low: 5, high: 10 };
+const USDA_BEEF_MIN_F = 145;
+
+// The Old Farmer's Almanac, "Party Planner Serving-Size Calculator" (Food Quantity Chart) —
+// per-person quantities for a full sit-down meal, not a light appetizer spread.
+const PARTY_FOOD_PER_PERSON = {
+  proteinLb: 0.5,
+  potatoesLbLow: 1 / 3,
+  potatoesLbHigh: 0.5,
+  rolls: 2,
+  dessertSlices: 1
+};
+
+// King Arthur Baking, Professional Baker's Reference, "Yeast" — weight ratios relative to fresh
+// (cake) yeast.
+const YEAST_FRESH_TO_ACTIVE_DRY = 0.4;
+const YEAST_FRESH_TO_INSTANT = 0.33;
+
 export const foodCalculators: CalculatorConfig[] = [
   {
     id: 'recipe-scaling-calculator',
@@ -421,7 +477,7 @@ export const foodCalculators: CalculatorConfig[] = [
     glyph: 'tky',
     updatedAt: '2026-11-05',
     aliases: ['turkey cooking time calculator', 'turkey roasting time calculator', 'how long to cook a turkey', 'turkey cook time by weight', 'turkey roasting chart', 'how long to roast a turkey per pound'],
-    related: ['rice-to-water-ratio-calculator', 'recipe-scaling-calculator', 'pizza-dough-calculator'],
+    related: ['turkey-thaw-time-calculator', 'rice-to-water-ratio-calculator', 'recipe-scaling-calculator', 'pizza-dough-calculator'],
     title: 'Turkey Cooking Time Calculator',
     description: "USDA's own roasting timetable for a whole turkey at 325°F, unstuffed or stuffed, by weight — plus the safe minimum internal temperature and standing time.",
     example: 'A 16 lb unstuffed turkey at 325°F takes about 3 hours 45 minutes to 4 hours 15 minutes, per USDA’s roasting timetable — always finish by thermometer, not the clock.',
@@ -675,6 +731,659 @@ export const foodCalculators: CalculatorConfig[] = [
       const ratio = RICE_WATER_RATIO[values.riceType];
       const waterCups = values.riceAmount * ratio;
       return { waterCups, ratio };
+    }
+  },
+  {
+    id: 'turkey-thaw-time-calculator',
+    category: 'food',
+    glyph: 'thaw',
+    updatedAt: '2026-11-05',
+    aliases: ['turkey thawing time calculator', 'how long to thaw a turkey', 'turkey defrost time calculator', 'refrigerator thaw time turkey', 'cold water thawing time turkey', 'how many days to thaw a turkey'],
+    related: ['turkey-cook-time-calculator', 'recipe-scaling-calculator', 'rice-to-water-ratio-calculator'],
+    title: 'Turkey Thaw Time Calculator',
+    description: "USDA's own thawing timetable for a whole frozen turkey, by weight — refrigerator and cold-water methods side by side, straight from USDA's \"Turkey Basics: Safe Thawing.\"",
+    example: 'A 16 lb frozen turkey needs about 4 to 5 days in the refrigerator, or 8 to 10 hours in cold water (changed every 30 minutes) — per USDA’s published thawing times.',
+    breakdown: {
+      headline: 'refrigeratorDaysMid',
+      headlineLabel: 'Refrigerator thaw time (recommended)',
+      outputs: [
+        { id: 'refrigeratorDaysMid', label: 'Refrigerator thaw time, midpoint', format: 'number', dimension: 'time', unit: 'd' },
+        { id: 'refrigeratorDaysLow', label: 'Refrigerator thaw time, low', format: 'number', dimension: 'time', unit: 'd' },
+        { id: 'refrigeratorDaysHigh', label: 'Refrigerator thaw time, high', format: 'number', dimension: 'time', unit: 'd' },
+        { id: 'coldWaterHoursMid', label: 'Cold water thaw time, midpoint', format: 'number', dimension: 'time', unit: 'h' },
+        { id: 'coldWaterHoursLow', label: 'Cold water thaw time, low', format: 'number', dimension: 'time', unit: 'h' },
+        { id: 'coldWaterHoursHigh', label: 'Cold water thaw time, high', format: 'number', dimension: 'time', unit: 'h' }
+      ],
+      groups: [
+        { title: 'Turkey', inputs: ['turkeyWeightLb'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'refrigeratorDaysLow', label: 'Refrigerator, low' },
+          { from: 'refrigeratorDaysHigh', label: 'Refrigerator, high' }
+        ],
+        title: 'Refrigerator thaw time range (days)'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'The three safe ways to thaw a turkey',
+        paragraphs: [
+          'USDA’s Food Safety and Inspection Service names three safe ways to thaw a frozen turkey: in the refrigerator, in cold water, or in the microwave. A turkey left thawing on the counter is not safe once more than 2 hours pass — even if the center is still frozen, the outer layer sits in the "danger zone" between 40°F and 140°F, where bacteria multiply quickly. A fully frozen turkey, by contrast, is safe indefinitely in the freezer; the clock only starts once thawing begins.',
+          "This calculator reads USDA's own published refrigerator and cold-water thawing tables directly, matched to your turkey's weight. The refrigerator method is the one USDA lists first and the one that needs the least hands-on attention — plan roughly 24 hours for every 4 to 5 pounds, at 40°F or below. The cold-water method is faster (roughly 30 minutes per pound) but needs the water changed every 30 minutes and the turkey cooked immediately once it's thawed.",
+          'Microwave thawing is USDA’s third method, but it has no weight-based time table — follow the microwave’s own manufacturer instructions, and because parts of the turkey can begin to cook during microwaving, cook it immediately afterward rather than holding it.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the turkey’s weight — the calculator returns USDA’s published thaw time range for both the refrigerator and cold-water methods.',
+        steps: [
+          { name: 'Weigh the turkey', text: 'Use the weight on the packaging, or your own kitchen scale, in pounds.' },
+          { name: 'Pick a method', text: 'Refrigerator thawing needs the least attention; cold-water thawing is faster but needs active monitoring.' },
+          { name: 'Read the time range', text: 'The result shows USDA’s low and high estimate for your weight band, for both methods, plus a midpoint.' },
+          { name: 'Keep the refrigerator at 40°F or below', text: 'Place the turkey in a container or on a tray to catch any drips, away from other food.' },
+          { name: 'For cold water, change it every 30 minutes', text: 'Keep the turkey in a leak-proof bag, fully submerged, and cook it immediately once it’s thawed.' },
+          { name: 'Plan backward from your cooking day', text: 'Count back from when you want to start roasting to find your thaw start date.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "This is a lookup against USDA's own published weight bands, not a formula — the calculator matches your weight to USDA's band for each method and shows that band's own low and high time directly.",
+        expression: 'refrigerator band = USDA’s weight range containing your turkey’s weight, in days\ncold water band = USDA’s weight range containing your turkey’s weight, in hours\nmidpoint = (low + high) ÷ 2',
+        terms: [
+          { symbol: 'band', meaning: 'One row of USDA’s thawing timetable, e.g. "16 to 20 lb" — bands differ between the refrigerator and cold-water methods.' },
+          { symbol: 'low, high', meaning: 'USDA’s own published time range for that weight band.' }
+        ],
+        note: 'USDA’s thawing tables cover 4 to 24 lb. Outside that range, these figures extrapolate from the nearest band — a bigger turkey needs proportionally more time either way.'
+      },
+      workedExample: {
+        intro: 'A 16 lb frozen turkey.',
+        rows: [
+          { label: 'Weight', value: '16 lb' },
+          { label: 'USDA refrigerator band', value: '16 to 20 lb → 4 to 5 days' },
+          { label: 'Refrigerator midpoint ((4 + 5) ÷ 2)', value: '4.5 days' },
+          { label: 'USDA cold water band', value: '16 to 20 lb → 8 to 10 hours' },
+          { label: 'Cold water midpoint ((8 + 10) ÷ 2)', value: '9 hours' }
+        ],
+        result: '4 to 5 days in the refrigerator, or 8 to 10 hours in cold water',
+        explanation: 'The cold-water method’s low end (8 hours) matches the simple "30 minutes per pound" rule of thumb exactly: 16 lb × 30 minutes = 480 minutes = 8 hours — the published band’s high end allows margin beyond that estimate.'
+      },
+      watchOut: [
+        {
+          title: 'Only refrigerator-thawed turkey can wait before cooking',
+          body: 'USDA says a turkey thawed in the refrigerator can stay there 1 to 2 more days before cooking. A turkey thawed by cold water or microwave has no such buffer — USDA says to cook it immediately after thawing.'
+        },
+        {
+          title: 'Cold water must be changed every 30 minutes',
+          body: 'The turkey needs to stay in a leak-proof bag, fully submerged in cold tap water that gets replaced every 30 minutes, both to keep the water cold enough and to prevent the turkey from absorbing water.'
+        },
+        {
+          title: 'More than 2 hours at room temperature is not safe',
+          body: 'USDA’s "danger zone" (40°F to 140°F) applies to the outer layer of the turkey even while the center is still frozen — a turkey left out on the counter, porch or car trunk for more than 2 hours while thawing is not at a safe temperature.'
+        },
+        {
+          title: 'Frozen turkey is safe indefinitely — but takes much longer to cook',
+          body: 'There’s no food-safety reason to rush the thaw: a fully frozen turkey keeps safely in the freezer. If time runs out, USDA notes a turkey roasted from frozen takes at least 50% longer than a thawed one — see the turkey cooking time calculator.'
+        }
+      ],
+      references: [
+        { label: 'USDA Food Safety and Inspection Service, "Turkey Basics: Safe Thawing" (refrigerator and cold-water thawing times by weight, danger-zone and microwave guidance)', url: 'https://www.fsis.usda.gov/food-safety/safe-food-handling-and-preparation/poultry/turkey-basics-safe-thawing' },
+        { label: 'USDA Food Safety and Inspection Service, "Let’s Talk Turkey — A Consumer Guide to Safely Roasting a Turkey"', url: 'https://www.fsis.usda.gov/food-safety/safe-food-handling-and-preparation/poultry/lets-talk-turkey-roasting' }
+      ]
+    },
+    inputs: [
+      { id: 'turkeyWeightLb', label: 'Turkey weight (lb)', type: 'number', placeholder: '16', defaultValue: 16, step: 1, min: 4 }
+    ],
+    seo: {
+      title: 'Turkey Thaw Time Calculator – USDA Thawing Chart',
+      description: "Free turkey thaw time calculator from USDA's own thawing timetable, by weight — refrigerator and cold-water methods, side by side.",
+      faq: [
+        { question: 'How long does it take to thaw a turkey in the refrigerator?', answer: 'USDA’s rule is about 24 hours for every 4 to 5 pounds, at 40°F or below. A 16 lb turkey falls in USDA’s "16 to 20 lb" band, which is 4 to 5 days.' },
+        { question: 'How long does it take to thaw a turkey in cold water?', answer: 'About 30 minutes per pound, with the water changed every 30 minutes. A 16 lb turkey falls in USDA’s "16 to 20 lb" cold-water band, which is 8 to 10 hours — and it must be cooked immediately once thawed.' },
+        { question: 'Can I thaw a turkey on the counter?', answer: 'No. USDA says a turkey left thawing at room temperature for more than 2 hours is not at a safe temperature, since its outer layer sits in the 40–140°F "danger zone" where bacteria multiply rapidly, even while the center is still frozen.' },
+        { question: 'Do I need to cook a turkey right after thawing it?', answer: 'It depends on the method. A refrigerator-thawed turkey can wait 1 to 2 more days in the fridge. A turkey thawed in cold water or the microwave has to be cooked immediately, per USDA.' },
+        { question: 'How long does it take to thaw a turkey in the microwave?', answer: 'USDA gives no weight-based time table for microwave thawing — follow your microwave’s own manufacturer instructions, and cook the turkey immediately afterward, since some areas may begin to cook during microwaving.' },
+        { question: 'Is a frozen turkey still safe to eat?', answer: 'Yes — USDA says a fully frozen turkey is safe indefinitely. Safety only becomes time-sensitive once thawing begins. If you run out of time to thaw it, you can roast it from frozen, but USDA says to plan on at least 50% longer cooking time.' }
+      ]
+    },
+    compute(values) {
+      const refBand = turkeyThawBand(values.turkeyWeightLb, TURKEY_THAW_BANDS.refrigerator);
+      const cwBand = turkeyThawBand(values.turkeyWeightLb, TURKEY_THAW_BANDS.coldWater);
+      return {
+        refrigeratorDaysLow: refBand.loDays,
+        refrigeratorDaysHigh: refBand.hiDays,
+        refrigeratorDaysMid: (refBand.loDays + refBand.hiDays) / 2,
+        coldWaterHoursLow: cwBand.loHr,
+        coldWaterHoursHigh: cwBand.hiHr,
+        coldWaterHoursMid: (cwBand.loHr + cwBand.hiHr) / 2
+      };
+    }
+  },
+  {
+    id: 'boiled-egg-calculator',
+    category: 'food',
+    glyph: 'egg',
+    updatedAt: '2026-11-05',
+    aliases: ['boiled egg calculator', 'how long to boil an egg', 'soft boiled egg timer', 'hard boiled egg time calculator', 'jammy egg timer', 'egg boiling time by size'],
+    related: ['turkey-cook-time-calculator', 'steak-doneness-calculator', 'recipe-scaling-calculator'],
+    title: 'Boiled Egg Calculator',
+    description: 'Egg cook time by doneness (soft-cooked, jammy or hard-cooked) from America’s Test Kitchen’s steam method, plus the classic cold-start standing time by egg size from the American Egg Board.',
+    example: 'A jammy egg — steamed over ½ inch of boiling water, covered — takes 8 minutes, per America’s Test Kitchen; a large egg cooked the classic cold-start way needs 12 minutes of standing time, per the American Egg Board.',
+    breakdown: {
+      headline: 'steamedCookTimeMinutes',
+      headlineLabel: 'Steamed cook time (by doneness)',
+      outputs: [
+        { id: 'steamedCookTimeMinutes', label: 'Steamed cook time', format: 'number', dimension: 'time', unit: 'min' },
+        { id: 'classicStandTimeMinutes', label: 'Classic cold-start standing time (hard-cooked, by size)', format: 'number', dimension: 'time', unit: 'min' }
+      ],
+      groups: [
+        { title: 'Egg', inputs: ['doneness', 'eggSize'] }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'Two tested methods, not one universal number',
+        paragraphs: [
+          "\"How long to boil an egg\" depends on which method you're actually using, because the starting point changes everything. America's Test Kitchen's steam method lowers eggs into a covered pot over ½ to 1 inch of already-boiling water — not submerged, just steamed — and times from there: 6½ minutes for a soft-cooked egg with a runny yolk, 8 minutes for a jammy, spreadable yolk, and 13 minutes for a fully set hard-cooked egg. All three figures come from large, refrigerator-cold eggs.",
+          "The American Egg Board's classic method starts differently: cover the eggs with cold water, bring it to a boil, then take the pan off the heat entirely and let the eggs stand, covered, in the hot water. That standing time is sized to the egg itself — 9 minutes for medium eggs, 12 for large, 15 for extra-large — and it's a hard-cooked-only method; the Egg Board doesn't publish a cold-start time for a softer yolk.",
+          "These two methods aren't interchangeable readings of the same number. Steaming holds a more consistent temperature regardless of how many eggs are in the pot — America's Test Kitchen found the same steam times work equally well for anywhere from 1 to 6 eggs — while the cold-start method's standing time is specifically calibrated to how long a column of hot water takes to finish cooking through an egg of a given size."
+        ]
+      },
+      howTo: {
+        intro: 'Pick a doneness level for the steamed method and an egg size for the classic cold-start method — the calculator returns both.',
+        steps: [
+          { name: 'Choose doneness', text: 'Soft-cooked (runny yolk), jammy (soft-set yolk) or hard-cooked, for the steamed method.' },
+          { name: 'Choose egg size', text: 'Medium, large or extra-large, for the classic cold-start, hard-cooked-only method.' },
+          { name: 'For steaming', text: 'Bring ½ to 1 inch of water to a boil, lower in cold eggs with tongs, cover, and start timing immediately.' },
+          { name: 'For the classic method', text: 'Cover eggs with cold water, bring to a boil, remove from the burner, cover, and let stand for the time shown.' },
+          { name: 'Cool immediately', text: 'Transfer to an ice bath (or run under cold water) as soon as the time is up to stop the cooking and make peeling easier.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Both figures are lookups against tested timing charts, not a formula — cook time for eggs doesn’t scale linearly with a single variable, so each method’s own chart is used directly.',
+        expression: 'steamed cook time = America’s Test Kitchen’s own minutes for the chosen doneness\nclassic standing time = American Egg Board’s own minutes for the chosen size',
+        terms: [
+          { symbol: 'doneness', meaning: 'Soft-cooked, jammy or hard-cooked — how set the yolk is.' },
+          { symbol: 'size', meaning: 'Medium, large or extra-large — the carton’s printed egg size.' }
+        ],
+        note: 'Neither chart publishes numbers for every combination (the steamed chart is large-egg-only; the classic chart is hard-cooked-only), so the two results are independent facts, not two readings of the same underlying number.'
+      },
+      workedExample: {
+        intro: 'A jammy egg (steamed) and a large egg cooked the classic way (cold-start, hard-cooked).',
+        rows: [
+          { label: 'Doneness', value: 'Jammy' },
+          { label: 'Steamed cook time', value: '8 minutes' },
+          { label: 'Egg size', value: 'Large' },
+          { label: 'Classic standing time', value: '12 minutes' }
+        ],
+        result: '8 minutes steamed for a jammy yolk; 12 minutes standing time for a large hard-cooked egg the classic way',
+        explanation: 'These are two separate answers to two separate questions — not a jammy version of the classic method, since the Egg Board doesn’t publish one.'
+      },
+      watchOut: [
+        {
+          title: 'A soft or jammy yolk isn’t "firm" by FDA’s own standard',
+          body: 'The FDA’s safe minimum temperature chart lists eggs as "cook until yolk & white are firm." A runny or jammy yolk doesn’t meet that standard, which matters most for anyone at higher risk from foodborne illness — young children, older adults, pregnant people, or anyone with a weakened immune system.'
+        },
+        {
+          title: 'Egg count doesn’t change the steamed cook time',
+          body: 'America’s Test Kitchen tested the steam method with batches from 1 to 6 eggs at the exact same timing — steaming holds its temperature far more consistently than a pot of water does, so more eggs in a single layer don’t need more time.'
+        },
+        {
+          title: 'The two methods start from different points',
+          body: 'Steaming starts the clock once the water is already boiling; the classic method starts timing from a cold pot and includes the time it takes to reach a boil as "off the clock," since the stand time only begins after the burner is turned off.'
+        },
+        {
+          title: 'Cool the eggs right away',
+          body: 'The American Egg Board’s hard-cooked recipe calls for a 15-minute ice bath; America’s Test Kitchen’s jammy-egg method calls for 30 seconds of cold running water. Either way, cooling promptly stops the yolk from overcooking and helps prevent the greenish ring that can form around an overcooked yolk.'
+        }
+      ],
+      references: [
+        { label: "America's Test Kitchen, \"Foolproof Soft-Cooked Eggs\" (steam method, 6½ minutes, large cold eggs, 1-6 eggs)", url: 'https://www.americastestkitchen.com/articles/77-foolproof-soft-cooked-eggs' },
+        { label: "America's Test Kitchen, \"How to Make Perfect Jammy Eggs\" (steam method, 8 minutes)", url: 'https://www.americastestkitchen.com/how_tos/13345-how-to-make-perfect-jammy-egg' },
+        { label: "America's Test Kitchen, \"Easy-Peel Hard-Cooked Eggs\" (steam method, 13 minutes, large eggs, 15-minute ice bath)", url: 'https://www.americastestkitchen.com/recipes/8712-easy-peel-hard-cooked-eggs' },
+        { label: 'American Egg Board (incredibleegg.org), "How to Make Hard-Boiled Eggs" (cold-start method, standing time by size)', url: 'https://www.incredibleegg.org/recipes/cooking-school/how-to-hard-boil-eggs/' },
+        { label: 'U.S. Food and Drug Administration, "Safe Minimum Internal Temperatures" chart', url: 'https://www.fda.gov/media/107000/download' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'doneness',
+        label: 'Doneness (steamed method)',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Soft-cooked — runny yolk (6½ min)' },
+          { value: 1, label: 'Jammy — soft-set yolk (8 min)' },
+          { value: 2, label: 'Hard-cooked — fully set (13 min)' }
+        ]
+      },
+      {
+        id: 'eggSize',
+        label: 'Egg size (classic method)',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Medium (9 min)' },
+          { value: 1, label: 'Large (12 min)' },
+          { value: 2, label: 'Extra-large (15 min)' }
+        ]
+      }
+    ],
+    seo: {
+      title: 'Boiled Egg Calculator – Soft, Jammy & Hard-Cooked',
+      description: 'Free boiled egg calculator: steamed cook time by doneness (America’s Test Kitchen) and classic cold-start standing time by size (American Egg Board).',
+      faq: [
+        { question: 'How long do you boil an egg for a soft yolk?', answer: '6½ minutes using America’s Test Kitchen’s steam method: eggs lowered into ½ inch of already-boiling water, covered, large eggs straight from the fridge.' },
+        { question: 'How long do you boil an egg for a jammy yolk?', answer: '8 minutes using the same steam method — 2 minutes longer than soft-cooked, giving a softly set, spreadable yolk instead of a fully runny one.' },
+        { question: 'How long do you hard boil an egg?', answer: '13 minutes using America’s Test Kitchen’s steam method, or by the classic cold-start method (cover with water, bring to a boil, remove from heat, cover and let stand): 9 minutes for medium eggs, 12 for large, 15 for extra-large, per the American Egg Board.' },
+        { question: 'Does egg size change the steamed cook time?', answer: 'America’s Test Kitchen’s steam timings (6½, 8 and 13 minutes) were tested with large eggs specifically — they don’t publish separate times for other sizes. The classic cold-start method is the one with size-specific standing times.' },
+        { question: 'Why does more than one egg not need more time?', answer: 'Both tested methods hold their timing across batch sizes within reason — America’s Test Kitchen confirmed its steam timings work the same for 1 to 6 eggs, since the egg itself, not the water volume, is what limits how fast heat reaches the yolk.' },
+        { question: 'Are soft-boiled eggs safe to eat?', answer: 'The FDA’s own safe-temperature guidance for eggs is to cook until the yolk and white are both firm — a runny or jammy yolk doesn’t meet that standard, which is worth knowing especially for young children, older adults, pregnant people or anyone with a weakened immune system.' }
+      ]
+    },
+    compute(values) {
+      const steamedCookTimeMinutes = EGG_STEAM_MINUTES[values.doneness];
+      const classicStandTimeMinutes = EGG_STAND_MINUTES[values.eggSize];
+      return { steamedCookTimeMinutes, classicStandTimeMinutes };
+    }
+  },
+  {
+    id: 'steak-doneness-calculator',
+    category: 'food',
+    glyph: 'stk',
+    updatedAt: '2026-11-05',
+    aliases: ['steak doneness calculator', 'steak temperature chart', 'steak internal temperature calculator', 'how long to cook a steak', 'medium rare steak temperature', 'steak pull temperature calculator'],
+    related: ['turkey-cook-time-calculator', 'boiled-egg-calculator', 'turkey-thaw-time-calculator'],
+    title: 'Steak Doneness Calculator',
+    description: 'Target internal temperature by doneness — medium-rare, medium or well-done — from the Beef Checkoff’s own chart, plus the remove-from-heat "pull" temperature range that accounts for carryover cooking.',
+    example: 'Medium-rare steak finishes at 145°F, per the Beef Checkoff — pull it off the heat at 135–140°F and let carryover cooking and a 5-10 minute rest carry it the rest of the way.',
+    breakdown: {
+      headline: 'targetTempF',
+      headlineLabel: 'Doneness target temperature',
+      outputs: [
+        { id: 'targetTempF', label: 'Target temperature, after resting (°F)', format: 'integer' },
+        { id: 'pullTempLowF', label: 'Remove from heat at, low (°F)', format: 'integer' },
+        { id: 'pullTempHighF', label: 'Remove from heat at, high (°F)', format: 'integer' },
+        { id: 'restTimeLowMin', label: 'Rest time, low (minutes)', format: 'integer' },
+        { id: 'restTimeHighMin', label: 'Rest time, high (minutes)', format: 'integer' },
+        { id: 'usdaSafeMinF', label: 'USDA/FDA safe minimum, whole cuts (°F)', format: 'integer' }
+      ],
+      groups: [
+        { title: 'Steak', inputs: ['doneness'] }
+      ],
+      visual: {
+        type: 'rangeBar',
+        value: 'targetTempF',
+        bands: [
+          { label: 'Below USDA minimum', min: 0, max: 145 },
+          { label: 'Medium-rare', min: 145, max: 160 },
+          { label: 'Medium', min: 160, max: 170 },
+          { label: 'Well-done', min: 170, max: 200 }
+        ],
+        title: 'Where your target temperature falls'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'Doneness temperature, carryover cooking, and the USDA minimum',
+        paragraphs: [
+          "The Beef Checkoff's own doneness guide gives three target internal temperatures for steaks, roasts and chops: 145°F for medium-rare, 160°F for medium, and 170°F for well-done. Those are the temperatures the meat should read once it's done resting — not the moment it comes off the heat.",
+          "That distinction matters because of carryover cooking: a steak's internal temperature keeps climbing for several minutes after it leaves direct heat, as heat already in the outer layers keeps moving toward the center. The Beef Checkoff's own guidance is to pull steaks and burgers off the heat 5 to 10°F below the target and let them rest 5 to 10 minutes — the calculator applies that range to whichever doneness you pick.",
+          "It's worth noticing that 145°F — the industry's own \"medium-rare\" figure — is also exactly USDA and FDA's published safe minimum internal temperature for whole cuts of beef, pork, veal and lamb (steaks, chops, roasts), with its own 3-minute rest requirement. A steak cooked to any of these three targets, rested the recommended way, clears that food-safety floor; a steak pulled and served well below 145°F (the common meaning of \"rare\") does not — a choice some diners make knowingly, but one the Beef Checkoff's own published chart doesn't include a number for."
+        ]
+      },
+      howTo: {
+        intro: 'Pick a doneness level — the calculator returns the target temperature, the remove-from-heat range, and the recommended rest time.',
+        steps: [
+          { name: 'Choose doneness', text: 'Medium-rare, medium or well-done.' },
+          { name: 'Read the target temperature', text: 'The internal temperature the steak should read once it’s finished resting.' },
+          { name: 'Read the pull range', text: 'Remove the steak from the heat once an instant-read thermometer hits this range — carryover cooking covers the rest.' },
+          { name: 'Insert the thermometer correctly', text: 'Through the side, into the thickest part of the steak, avoiding bone and fat for an accurate reading.' },
+          { name: 'Rest before cutting', text: 'Tent loosely with foil and let the temperature finish climbing to the target over the rest window shown.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The target temperature is a lookup against the Beef Checkoff’s own three-point chart; the pull range is that target minus a published carryover-cooking allowance.',
+        expression: 'target = Beef Checkoff’s published temperature for the chosen doneness\npull range = target − 10°F to target − 5°F',
+        terms: [
+          { symbol: 'target', meaning: 'The internal temperature the steak should read after resting, per the Beef Checkoff.' },
+          { symbol: 'pull range', meaning: 'The internal temperature to remove the steak from heat at, so carryover cooking finishes the job.' }
+        ],
+        note: 'This covers whole cuts (steaks, chops, roasts) only. Ground beef needs its own, higher 160°F minimum regardless of how you like it cooked — carryover and resting don’t change that requirement.'
+      },
+      workedExample: {
+        intro: 'A medium-rare steak.',
+        rows: [
+          { label: 'Doneness', value: 'Medium-rare' },
+          { label: 'Target temperature', value: '145°F' },
+          { label: 'Pull range (145 − 10 to 145 − 5)', value: '135–140°F' },
+          { label: 'Rest time', value: '5–10 minutes' }
+        ],
+        result: 'Pull at 135–140°F, rest 5–10 minutes, finish at 145°F',
+        explanation: '145°F also happens to be USDA and FDA’s own published safe minimum for whole-muscle beef — a medium-rare steak, rested the recommended way, clears that floor exactly.'
+      },
+      watchOut: [
+        {
+          title: 'The target is the rested temperature, not the pull temperature',
+          body: 'Pulling a steak at the final target and skipping the rest means it finishes several degrees past where you meant to stop, since carryover cooking keeps raising the internal temperature after the heat is removed.'
+        },
+        {
+          title: '"Rare" isn’t on the Beef Checkoff’s own chart',
+          body: 'The published chart starts at medium-rare (145°F). A steak served at the lower temperature commonly called "rare" falls below USDA and FDA’s safe minimum for whole cuts — a personal choice some diners make, not a food-safety recommendation.'
+        },
+        {
+          title: 'This is for whole cuts only',
+          body: 'Ground beef — burgers, meatballs, anything where the surface has been mixed through the interior — needs a flat 160°F minimum, no carryover allowance and no doneness choice below that, per USDA and FDA.'
+        },
+        {
+          title: 'Thermometer placement affects the reading',
+          body: 'Insert an instant-read thermometer through the side into the thickest part of the steak, avoiding bone and fat, which both read differently than the meat itself and can throw off the number.'
+        }
+      ],
+      references: [
+        { label: 'Beef Checkoff (beefitswhatsfordinner.com), "Determining Doneness" (145°F medium-rare, 160°F medium, 170°F well-done)', url: 'https://www.beefitswhatsfordinner.com/cooking/determining-doneness' },
+        { label: 'Beef Loving Texans (Texas Beef Council, Beef Checkoff), "Determining Doneness" (carryover cooking, pull temperature, thermometer placement)', url: 'https://beeflovingtexans.com/cooking/determining-doneness/' },
+        { label: 'U.S. Food and Drug Administration, "Safe Minimum Internal Temperatures" chart (145°F + 3-minute rest, whole cuts; 160°F, ground meat)', url: 'https://www.fda.gov/media/107000/download' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'doneness',
+        label: 'Doneness',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Medium-rare (145°F)' },
+          { value: 1, label: 'Medium (160°F)' },
+          { value: 2, label: 'Well-done (170°F)' }
+        ]
+      }
+    ],
+    seo: {
+      title: 'Steak Doneness Calculator – Temperature & Pull Chart',
+      description: 'Free steak doneness calculator: target temperature by doneness from the Beef Checkoff, plus the pull-temperature range for carryover cooking.',
+      faq: [
+        { question: 'What temperature is medium-rare steak?', answer: '145°F, per the Beef Checkoff’s own doneness chart — which is also USDA and FDA’s published safe minimum internal temperature for whole cuts of beef.' },
+        { question: 'What temperature is medium steak?', answer: '160°F, per the Beef Checkoff. Pull it from the heat around 150–155°F and let it rest 5 to 10 minutes to reach that target.' },
+        { question: 'What temperature is well-done steak?', answer: '170°F, per the Beef Checkoff — pull around 160–165°F and rest 5 to 10 minutes.' },
+        { question: 'Why do you pull steak off the heat before it hits the target temperature?', answer: 'Carryover cooking: heat already absorbed into the outer layers keeps moving toward the center for several minutes after the steak leaves direct heat, raising the internal temperature further. The Beef Checkoff’s own guidance is to pull 5 to 10°F below target.' },
+        { question: 'Is a 145°F steak safe to eat?', answer: 'Yes — 145°F with a 3-minute rest is USDA and FDA’s own published safe minimum internal temperature for whole cuts of beef, pork, veal and lamb (steaks, chops, roasts).' },
+        { question: 'Is rare steak safe?', answer: 'The Beef Checkoff’s published doneness chart starts at medium-rare (145°F) and doesn’t list a "rare" figure. A steak served below USDA and FDA’s 145°F minimum for whole cuts is a personal choice, not a food-safety-endorsed doneness level.' }
+      ]
+    },
+    compute(values) {
+      const targetTempF = STEAK_TARGET_F[values.doneness];
+      return {
+        targetTempF,
+        pullTempLowF: targetTempF - STEAK_CARRYOVER_F.low,
+        pullTempHighF: targetTempF - STEAK_CARRYOVER_F.high,
+        restTimeLowMin: STEAK_REST_MIN.low,
+        restTimeHighMin: STEAK_REST_MIN.high,
+        usdaSafeMinF: USDA_BEEF_MIN_F
+      };
+    }
+  },
+  {
+    id: 'party-food-calculator',
+    category: 'food',
+    glyph: 'pty',
+    updatedAt: '2026-11-05',
+    aliases: ['party food calculator', 'how much food for a party', 'food quantity calculator for a party', 'how much food per person', 'party planning food calculator', 'catering quantity calculator'],
+    related: ['recipe-scaling-calculator', 'turkey-cook-time-calculator', 'rice-to-water-ratio-calculator'],
+    title: 'Party Food Calculator',
+    description: 'How much protein, potatoes, rolls and dessert to plan for a sit-down party meal, by guest count — from The Old Farmer’s Almanac’s own food quantity chart.',
+    example: 'For 20 guests at a full sit-down meal, plan on about 10 lb of protein, 6⅔ to 10 lb of potatoes, 40 rolls and 20 dessert slices — per The Old Farmer’s Almanac’s own per-person figures.',
+    breakdown: {
+      headline: 'proteinLb',
+      headlineLabel: 'Protein (beef, pork, chicken, fish or ham)',
+      outputs: [
+        { id: 'proteinLb', label: 'Protein', format: 'number', dimension: 'mass', unit: 'lb' },
+        { id: 'potatoesLbLow', label: 'Potatoes, low', format: 'number', dimension: 'mass', unit: 'lb' },
+        { id: 'potatoesLbHigh', label: 'Potatoes, high', format: 'number', dimension: 'mass', unit: 'lb' },
+        { id: 'rollsCount', label: 'Rolls', format: 'integer' },
+        { id: 'dessertSlices', label: 'Dessert (cake or pie slices)', format: 'integer' }
+      ],
+      groups: [
+        { title: 'Party', inputs: ['guestCount'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'proteinLb', label: 'Protein' },
+          { from: 'potatoesLbHigh', label: 'Potatoes (high end)' }
+        ],
+        title: 'Pounds needed, by category'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'Where these per-person figures come from',
+        paragraphs: [
+          "The Old Farmer's Almanac publishes its own food quantity chart for planning a party or gathering, with per-person amounts for a full sit-down meal: ½ lb of protein (beef, pork, chicken, fish fillets or ham), ⅓ to ½ lb of potatoes, 2 dinner rolls, and one slice of cake or pie. This calculator multiplies those figures by your guest count.",
+          "These are full-meal quantities, not a lighter appetizers-and-snacks spread — the Almanac's own chart doesn't distinguish between the two, and assumes an average dinner-sized serving per person. A cocktail party or an appetizer table needs meaningfully less food per guest than a sit-down dinner does.",
+          "The chart also lists burgers and sausage separately, at ⅓ to ½ lb per person — the same range as potatoes and essentially the same figure as the general protein number, just acknowledging that ground and link meats run a little lighter per serving than a solid cut."
+        ]
+      },
+      howTo: {
+        intro: 'Enter your guest count — the calculator multiplies it by The Old Farmer’s Almanac’s own per-person figures.',
+        steps: [
+          { name: 'Enter guest count', text: 'The number of people you’re feeding a full sit-down meal to.' },
+          { name: 'Read the protein amount', text: 'At ½ lb per person, covering beef, pork, chicken, fish fillets or ham.' },
+          { name: 'Read the potato range', text: 'A ⅓ to ½ lb per person range — plan toward the high end for bigger appetites.' },
+          { name: 'Read the rolls and dessert counts', text: '2 rolls and 1 dessert slice per person.' },
+          { name: 'Adjust for your crowd', text: 'Scale up for big eaters or a meal with few side dishes; scale down for a lighter gathering or a menu with many other items.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Each quantity is the guest count multiplied by The Old Farmer’s Almanac’s own per-person figure for that category.',
+        expression: 'protein = guests × 0.5 lb\npotatoes = guests × (⅓ lb to ½ lb)\nrolls = guests × 2\ndessert slices = guests × 1',
+        terms: [
+          { symbol: 'guests', meaning: 'The number of people at the meal.' },
+          { symbol: '0.5 lb, ⅓–½ lb, 2, 1', meaning: 'The Almanac’s own per-person quantities for protein, potatoes, rolls and dessert.' }
+        ],
+        note: 'These are planning estimates for a typical mixed group of adults at a full meal — not a precise catering order. The Almanac itself notes to adjust for bigger appetites or a higher share of children, without giving an exact multiplier for either.'
+      },
+      workedExample: {
+        intro: '20 guests at a sit-down dinner.',
+        rows: [
+          { label: 'Guest count', value: '20' },
+          { label: 'Protein (20 × 0.5 lb)', value: '10 lb' },
+          { label: 'Potatoes (20 × ⅓ lb to 20 × ½ lb)', value: '6⅔ to 10 lb' },
+          { label: 'Rolls (20 × 2)', value: '40 rolls' },
+          { label: 'Dessert (20 × 1)', value: '20 slices' }
+        ],
+        result: '10 lb protein, 6⅔–10 lb potatoes, 40 rolls, 20 dessert slices',
+        explanation: 'Every figure is the Almanac’s own per-person amount multiplied straight through by the guest count — no rounding beyond the ingredient’s own natural units (whole rolls, whole slices).'
+      },
+      watchOut: [
+        {
+          title: 'This is a full-meal guide, not an appetizer party',
+          body: 'The Almanac’s chart assumes an average sit-down dinner serving. A cocktail party, open house or appetizers-only gathering needs meaningfully less food per person — these figures will over-estimate badly for that kind of event.'
+        },
+        {
+          title: 'No exact adjustment for kids or big appetites',
+          body: 'The Almanac notes to scale up for big eaters and down for children, but doesn’t publish a specific percentage for either — use your own judgment about your particular guest list rather than a formula.'
+        },
+        {
+          title: 'Drinks aren’t included',
+          body: 'This calculator covers food only. Non-alcoholic and alcoholic beverages need their own separate planning and aren’t part of the Almanac’s food quantity chart used here.'
+        },
+        {
+          title: 'More side dishes mean less of each one',
+          body: 'These figures assume protein, potatoes, rolls and dessert as the core of the meal. Adding several more side dishes to the spread means guests naturally eat somewhat less of any single item.'
+        }
+      ],
+      references: [
+        { label: "The Old Farmer's Almanac, \"Party Planner Serving-Size Calculator\" (food quantity chart)", url: 'https://www.almanac.com/party-planner-cooking-crowd' }
+      ]
+    },
+    inputs: [
+      { id: 'guestCount', label: 'Guest count', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Party Food Calculator – How Much Food Per Person',
+      description: 'Free party food calculator: protein, potatoes, rolls and dessert by guest count, from The Old Farmer’s Almanac’s own food quantity chart.',
+      faq: [
+        { question: 'How much food do I need per person for a party?', answer: "For a full sit-down meal, The Old Farmer's Almanac's own chart suggests ½ lb of protein, ⅓ to ½ lb of potatoes, 2 rolls and 1 dessert slice per guest." },
+        { question: 'How much meat do I need for a party of 20?', answer: '10 lb of protein (beef, pork, chicken, fish or ham), at the Almanac’s ½ lb per person figure — 20 × 0.5 lb = 10 lb.' },
+        { question: 'How many dinner rolls per person should I plan?', answer: '2 rolls per person, per the Almanac’s chart — 40 rolls for 20 guests.' },
+        { question: 'Does this work for an appetizer-only party?', answer: 'Not well — these are full sit-down meal quantities. A cocktail party or appetizer spread needs noticeably less food per person; the Almanac’s chart doesn’t publish separate lighter-event figures.' },
+        { question: 'How much food should I plan for kids at a party?', answer: "The Almanac notes to adjust downward for children but doesn't give an exact fraction — use your own judgment about your guest list rather than a fixed multiplier." },
+        { question: 'Does this calculator include drinks?', answer: 'No — it covers food only. Plan beverages separately.' }
+      ]
+    },
+    compute(values) {
+      const guestCount = values.guestCount;
+      return {
+        proteinLb: guestCount * PARTY_FOOD_PER_PERSON.proteinLb,
+        potatoesLbLow: guestCount * PARTY_FOOD_PER_PERSON.potatoesLbLow,
+        potatoesLbHigh: guestCount * PARTY_FOOD_PER_PERSON.potatoesLbHigh,
+        rollsCount: guestCount * PARTY_FOOD_PER_PERSON.rolls,
+        dessertSlices: guestCount * PARTY_FOOD_PER_PERSON.dessertSlices
+      };
+    }
+  },
+  {
+    id: 'yeast-conversion-calculator',
+    category: 'food',
+    glyph: 'yst',
+    updatedAt: '2026-11-05',
+    aliases: ['yeast conversion calculator', 'active dry to instant yeast conversion', 'fresh yeast to dry yeast calculator', 'instant yeast to active dry yeast', 'cake yeast conversion calculator', 'how much instant yeast equals active dry'],
+    related: ['bakers-percentage-calculator', 'pizza-dough-calculator', 'recipe-scaling-calculator'],
+    title: 'Yeast Conversion Calculator',
+    description: 'Convert a yeast amount between fresh (cake), active dry and instant yeast, using King Arthur Baking’s own Professional Baker’s Reference weight ratios.',
+    example: '30 g of fresh yeast converts to 12 g of active dry yeast or 9.9 g of instant yeast, per King Arthur Baking’s Professional Baker’s Reference.',
+    breakdown: {
+      headline: 'instantEquivalentG',
+      headlineLabel: 'Instant yeast equivalent',
+      outputs: [
+        { id: 'instantEquivalentG', label: 'Instant yeast', format: 'number', dimension: 'mass', unit: 'g' },
+        { id: 'activeDryEquivalentG', label: 'Active dry yeast', format: 'number', dimension: 'mass', unit: 'g' },
+        { id: 'freshEquivalentG', label: 'Fresh (cake) yeast', format: 'number', dimension: 'mass', unit: 'g' }
+      ],
+      groups: [
+        { title: 'Yeast', inputs: ['yeastType', 'amount'] }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'Three forms of yeast, one weight ratio',
+        paragraphs: [
+          "King Arthur Baking's Professional Baker's Reference gives a precise weight ratio between the three common forms of baker's yeast: active dry yeast is fresh (cake) yeast's weight × 0.4, and instant yeast is fresh yeast's weight × 0.33. This calculator converts whichever amount you enter into the other two forms using that same ratio.",
+          "King Arthur's own consumer-facing guidance simplifies this further for active dry and instant specifically: \"substitute instant yeast 1:1 by weight or volume for any active dry yeast called for in your recipe.\" That's a genuinely different number from the precise professional ratio — by the 0.4 / 0.33 figures, instant yeast is about 17.5% lighter than the same recipe's active dry amount, gram for gram. Most home recipes have enough margin that the difference doesn't matter; a professional formula weighed to the gram is where the precise ratio earns its keep.",
+          'The two dry forms also differ in how they’re used, not just how much: active dry yeast needs to be hydrated in warm water before going into the dough, while instant yeast can be mixed directly into the flour. King Arthur also notes a timing difference — active dry is a little slower to get a dough rising, so a recipe written for instant may need roughly 15 to 20 extra minutes of rise time if you substitute active dry.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the yeast form you have and the amount — the calculator returns the equivalent amount in the other two forms.',
+        steps: [
+          { name: 'Choose your yeast form', text: 'Fresh (cake), active dry, or instant.' },
+          { name: 'Enter the amount', text: 'In grams, from your recipe or a kitchen scale.' },
+          { name: 'Read the other two amounts', text: 'The equivalent weight in each of the other two yeast forms, using King Arthur’s professional ratio.' },
+          { name: 'Adjust for hydration if using active dry', text: 'Dissolve it in warm water first, rather than mixing it directly into the flour the way instant yeast allows.' },
+          { name: 'Add rise time if substituting active dry for instant', text: 'About 15 to 20 minutes longer for a roughly 1-hour rise, per King Arthur.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Every amount is converted through fresh yeast as the common reference point, using King Arthur’s own published weight ratios.',
+        expression: 'active dry = fresh × 0.4\ninstant = fresh × 0.33\nfresh = active dry ÷ 0.4 = instant ÷ 0.33',
+        terms: [
+          { symbol: 'fresh', meaning: 'Fresh (cake) yeast, by weight.' },
+          { symbol: '0.4, 0.33', meaning: 'King Arthur Baking’s Professional Baker’s Reference ratios of active dry and instant yeast, respectively, to the same weight of fresh yeast.' }
+        ],
+        note: 'Fresh yeast is uncommon at most U.S. grocery stores and is highly perishable — active dry and instant are the two forms most home bakers actually choose between.'
+      },
+      workedExample: {
+        intro: '30 g of fresh yeast, converted to the other two forms.',
+        rows: [
+          { label: 'Fresh yeast', value: '30 g' },
+          { label: 'Active dry (30 × 0.4)', value: '12 g' },
+          { label: 'Instant (30 × 0.33)', value: '9.9 g' }
+        ],
+        result: '30 g fresh ≈ 12 g active dry ≈ 9.9 g instant',
+        explanation: 'By the precise ratio, that same 12 g of active dry converts to 9.9 g of instant — about 17.5% less by weight — even though King Arthur’s everyday guidance says to simply swap the two 1:1 in most home recipes.'
+      },
+      watchOut: [
+        {
+          title: 'The precise ratio and the "1:1" home rule are both real, for different audiences',
+          body: 'King Arthur’s professional ratio (0.4 vs. 0.33 relative to fresh) makes instant about 17.5% lighter than active dry, gram for gram. Their own consumer blog still recommends swapping active dry and instant 1:1 by weight or volume in ordinary home baking — the gap is usually within a recipe’s normal tolerance.'
+        },
+        {
+          title: 'Active dry needs to be hydrated first',
+          body: 'Dissolve active dry yeast in warm water before adding it to a dough. Instant yeast can go straight into the dry ingredients — no proofing step needed.'
+        },
+        {
+          title: 'Active dry runs slower, not just different in form',
+          body: 'King Arthur notes that in a long rise, active dry eventually catches up to instant, but for a roughly 1-hour rise written for instant yeast, expect to add about 15 to 20 minutes if substituting active dry.'
+        },
+        {
+          title: 'This converts yeast form, not recipe-wide baker’s percentage',
+          body: 'For scaling an entire formula—flour, water, salt and yeast together by percentage—use the baker’s percentage calculator instead; this page only converts one yeast amount between its three forms.'
+        }
+      ],
+      references: [
+        { label: "King Arthur Baking, Professional Baker's Reference, \"Yeast\" (weight ratios: active dry × 0.4, instant × 0.33, relative to fresh)", url: 'https://www.kingarthurbaking.com/pro/reference/yeast' },
+        { label: 'King Arthur Baking, "Active dry vs. instant yeast: Why we prefer instant" (1:1 substitution guidance, hydration, rise-time adjustment)', url: 'https://www.kingarthurbaking.com/blog/2022/08/15/active-dry-versus-instant-yeast' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'yeastType',
+        label: 'Yeast form',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Fresh (cake) yeast' },
+          { value: 1, label: 'Active dry yeast' },
+          { value: 2, label: 'Instant yeast' }
+        ]
+      },
+      { id: 'amount', label: 'Amount', type: 'number', placeholder: '7', defaultValue: 7, step: 0.5, min: 0.1, dimension: 'mass', unit: 'g' }
+    ],
+    seo: {
+      title: 'Yeast Conversion Calculator – Fresh, Dry & Instant',
+      description: 'Free yeast conversion calculator between fresh (cake), active dry and instant yeast, using King Arthur Baking’s own professional weight ratios.',
+      faq: [
+        { question: 'How much active dry yeast equals fresh yeast?', answer: 'Multiply the fresh yeast weight by 0.4, per King Arthur Baking’s Professional Baker’s Reference — 30 g of fresh yeast equals about 12 g of active dry.' },
+        { question: 'How much instant yeast equals fresh yeast?', answer: 'Multiply the fresh yeast weight by 0.33, per King Arthur Baking — 30 g of fresh yeast equals about 9.9 g of instant yeast.' },
+        { question: 'Can I substitute instant yeast for active dry yeast 1:1?', answer: 'Yes, for ordinary home baking — King Arthur Baking’s own guidance is to substitute instant yeast 1:1 by weight or volume for active dry. By the precise professional ratio instant is about 17.5% lighter, a gap most home recipes tolerate fine.' },
+        { question: 'Do I need to proof active dry yeast before using it?', answer: 'Dissolving it in warm water first is standard practice, though King Arthur notes modern active dry yeast can also be mixed in dry. Instant yeast never needs this step.' },
+        { question: 'Does substituting active dry for instant yeast change the rise time?', answer: 'Yes — King Arthur recommends adding roughly 15 to 20 minutes to a dough’s rise time if you’re using active dry yeast in place of instant for a recipe timed around a 1-hour rise.' },
+        { question: 'Why is fresh yeast hard to find?', answer: "It's highly perishable and most U.S. grocery stores don't stock it, which is why active dry and instant — both shelf-stable — are the two forms most home bakers actually choose between." }
+      ]
+    },
+    compute(values) {
+      const amount = values.amount;
+      let freshEquivalentG: number;
+      if (values.yeastType === 0) freshEquivalentG = amount;
+      else if (values.yeastType === 1) freshEquivalentG = amount / YEAST_FRESH_TO_ACTIVE_DRY;
+      else freshEquivalentG = amount / YEAST_FRESH_TO_INSTANT;
+      return {
+        freshEquivalentG,
+        activeDryEquivalentG: freshEquivalentG * YEAST_FRESH_TO_ACTIVE_DRY,
+        instantEquivalentG: freshEquivalentG * YEAST_FRESH_TO_INSTANT
+      };
     }
   }
 ];

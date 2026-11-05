@@ -115,4 +115,10 @@ and merges.
   ratio, cold brew ratio, brine, turkey thaw time, egg boiling, steak cook time, BBQ/party
   quantities, party drinks/alcohol quantity, ABV, cake servings, popcorn-for-a-party, yeast
   conversion, self-rising flour substitution) are untouched for a later Food batch.
+- [x] Food batch 2 (5): DONE 2026-11-05 — turkey-thaw-time, boiled-egg, steak-doneness,
+  party-food, yeast-conversion calculators (cross-linked turkey-thaw-time ↔ turkey-cook-time).
+  Branch `step/46-wave-2-food-run-2`, PR #57. Details: `mdFiles/steps/46-wave-2-food-run-2.md`.
+  `food` category now 10 calculators. Not built this run (left for a later batch): ABV, party
+  drinks/alcohol quantity, cake servings, popcorn-for-a-party, coffee ratio, cold brew ratio,
+  brine, bread, sourdough, self-rising flour substitution.
 - [ ] Sports batches: TODO

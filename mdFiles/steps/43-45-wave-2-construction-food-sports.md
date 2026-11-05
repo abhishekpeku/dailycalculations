@@ -121,4 +121,11 @@ and merges.
   `food` category now 10 calculators. Not built this run (left for a later batch): ABV, party
   drinks/alcohol quantity, cake servings, popcorn-for-a-party, coffee ratio, cold brew ratio,
   brine, bread, sourdough, self-rising flour substitution.
+- [ ] Food batch 3 (7): IN PROGRESS 2026-11-05 — abv, coffee-ratio, cold-brew-ratio,
+  self-rising-flour-substitute, cake-servings, party-drinks, brine calculators. Branch
+  `step/46-wave-2-food-run-3`. Details: `mdFiles/steps/46-wave-2-food-run-3.md`. Parked and not
+  built (closing out Food): popcorn-for-a-party (no authoritative primary source — published
+  per-person and kernel-yield figures vary 2x across sites with no cited methodology), bread and
+  sourdough (both would just be `bakers-percentage-calculator` or `pizza-dough-calculator` under a
+  different name — no distinct formula or search intent found).
 - [ ] Sports batches: TODO

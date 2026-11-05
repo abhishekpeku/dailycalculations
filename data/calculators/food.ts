@@ -91,6 +91,58 @@ const PARTY_FOOD_PER_PERSON = {
 const YEAST_FRESH_TO_ACTIVE_DRY = 0.4;
 const YEAST_FRESH_TO_INSTANT = 0.33;
 
+// Brew Your Own magazine ("Calculating Alcohol, Attenuation, Extract and Calories" by Bill Pierce)
+// — the precise alcohol-by-weight/alcohol-by-volume formulas from original and final gravity.
+function abvFromGravity(og: number, fg: number) {
+  const abw = (76.08 * (og - fg)) / (1.775 - og);
+  const abv = abw * (fg / 0.794);
+  return { abw, abv };
+}
+// The same article's "quick" approximation, in gravity points (digits after the decimal, x1000).
+function abvQuickFromGravity(og: number, fg: number) {
+  const points = (og - 1) * 1000 - (fg - 1) * 1000;
+  return points * 0.132;
+}
+
+// SCA Standard 310-2021, "Home Coffee Brewers: Specifications and Test Methods" — standard brew
+// ratio 55 g coffee per 1.000 kg water, with a +/-10% tolerance (49.5-60.5 g/L) still producing an
+// acceptable cup.
+const SCA_BREW_RATIOS_G_PER_L = [49.5, 55, 60.5]; // light end, Golden Cup standard, strong end
+
+// National Coffee Association (aboutcoffee.org), "Cold brew coffee" — 1 g coffee to 4-5 g water,
+// coarse grind, about 12 hours of contact time.
+const COLD_BREW_RATIO = { low: 4, high: 5 };
+
+// King Arthur Baking, "Self-rising flour: what is it, and how do I bake with it?" — per 1 cup
+// (120 g) all-purpose flour: 1 1/2 tsp baking powder, 1/4 tsp table salt.
+const SELF_RISING_PER_120G_FLOUR = { bakingPowderTsp: 1.5, saltTsp: 0.25 };
+
+// Wilton, "Ultimate Cake Serving Chart" — 4-inch-tall pans, party servings (~1.5 x 2 in slices) and
+// wedding servings (~1 x 2 in slices).
+const WILTON_CAKE_CHART = [
+  { label: '6 in round', party: 12, wedding: 12 },
+  { label: '8 in round', party: 20, wedding: 24 },
+  { label: '9 in round', party: 24, wedding: 32 },
+  { label: '10 in round', party: 28, wedding: 38 },
+  { label: '12 in round', party: 40, wedding: 56 },
+  { label: '14 in round', party: 63, wedding: 78 },
+  { label: '16 in round', party: 77, wedding: 100 },
+  { label: '6 in square', party: 12, wedding: 18 },
+  { label: '8 in square', party: 20, wedding: 32 },
+  { label: '10 in square', party: 30, wedding: 50 },
+  { label: '12 in square', party: 48, wedding: 72 },
+  { label: '14 in square', party: 63, wedding: 98 },
+  { label: '16 in square', party: 80, wedding: 128 }
+];
+
+// America's Test Kitchen, "How Much Alcohol Should I Buy for a Party?" — Drinks = Guests x
+// (Hours + 1), plus the magazine's own servings-per-bottle figures.
+const PARTY_DRINKS_PER_BOTTLE = { beer: 1, wine: 5, spirits: 12 }; // 750 mL bottles for wine/spirits
+
+// Morton Salt, "A Guide to Brining" — Morton Coarse Kosher Salt per gallon of water, by brining
+// duration.
+const BRINE_CUPS_PER_GALLON = { short: 1, long: 0.5 }; // short: 4-5 hr; long: overnight, up to 14 hr
+
 export const foodCalculators: CalculatorConfig[] = [
   {
     id: 'recipe-scaling-calculator',

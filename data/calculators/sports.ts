@@ -277,7 +277,7 @@ export const sportsCalculators: CalculatorConfig[] = [
           { value: 1, label: 'Tanaka: 208 − 0.7 × age' }
         ]
       },
-      { id: 'targetIntensityPercent', label: 'Target intensity (% of heart rate reserve)', type: 'number', placeholder: '70', defaultValue: 70, step: 1, min: 50, max: 100 }
+      { id: 'targetIntensityPercent', label: 'Target intensity (% of heart rate reserve)', type: 'number', placeholder: '70', defaultValue: 70, step: 1, min: 50 }
     ],
     seo: {
       title: 'Heart Rate Zones Calculator – Max HR, Zones & Karvonen',

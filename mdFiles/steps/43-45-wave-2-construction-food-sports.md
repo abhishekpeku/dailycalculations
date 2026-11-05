@@ -131,9 +131,15 @@ and merges.
   formula or search intent found). **This closes out Wave 2 Food.** Running total since the last
   visual-QA pass: 38 calculators (Construction 21 + Food 5+5+7) — not yet at the ~50 checkpoint,
   but close; flag for the next Sports batch or the one after it.
-- [ ] Sports batches: TODO — next up. See `mdFiles/steps/43-45-wave-2-construction-food-sports.md`'s
-  "Sports" section above for the candidate list (~15 calculators: one-rep max, target/max heart
-  rate, heart rate zones, VO2 max, race time predictor, swim pace, cycling pace, steps to miles,
-  baseball hitting stats, cricket bowling average/net run rate, NFL passer rating, winning
-  percentage, Elo rating, golf handicap). New category `sports` needs scaffolding (id, theme,
-  icon, `data/calculators/sports.ts`) in its first batch, same as `food` did in run 1.
+- [x] Sports batch 1 (5): DONE 2026-11-05 — new `sports` category created (id, theme `green`/`trophy`
+  icon, `data/calculators/sports.ts`, wired into `data/calculators/index.ts`). one-rep-max-calculator,
+  heart-rate-zones-calculator (combines max-HR + target-HR + zones onto one page, per the task's
+  guardrail), vo2-max-calculator, race-time-predictor-calculator (confirmed genuinely distinct from
+  `running-pace-calculator` — see the step file's dedicated "Dedupe check" section), swim-pace-calculator.
+  Branch `step/59-wave-2-sports-run-1`, PR #59. Details: `mdFiles/steps/59-wave-2-sports-run-1.md`.
+  `sports` category now 5 calculators. Remaining ~10 of the ~15 first-pass candidates (steps to
+  miles + stride length, baseball hitting stats, cricket bowling average, cricket net run rate, NFL
+  passer rating, winning percentage, Elo rating, cycling pace, golf handicap — the last one still
+  unconfirmed for a real citable formula) are untouched for a later Sports batch. Running total
+  since the last Chrome visual-QA pass: 43 calculators (Construction 21 + Food 17 + Sports 5) — not
+  yet at the ~50 threshold, but the next Sports batch will very likely cross it.

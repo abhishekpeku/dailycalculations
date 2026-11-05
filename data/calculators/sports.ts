@@ -1153,5 +1153,131 @@ export const sportsCalculators: CalculatorConfig[] = [
       const netRunRate = runRateFor - runRateAgainst;
       return { netRunRate, runRateFor, runRateAgainst };
     }
+  },
+  {
+    id: 'nfl-passer-rating-calculator',
+    category: 'sports',
+    glyph: 'RTG',
+    updatedAt: '2026-11-05',
+    aliases: ['nfl passer rating calculator', 'qb rating calculator', 'quarterback rating calculator', 'passer rating formula calculator', 'nfl qb rating calculator'],
+    related: ['elo-rating-calculator', 'baseball-batting-average-calculator', 'cricket-bowling-figures-calculator'],
+    title: 'NFL Passer Rating Calculator',
+    description: "Calculate the NFL's official passer rating from completions, attempts, yards, touchdowns and interceptions, using the league's 1973 formula and its 0-2.375 clamp on each component.",
+    example: '20-of-30 passing for 275 yards, 2 touchdowns and 1 interception produces a passer rating of about 104.2.',
+    breakdown: {
+      headline: 'passerRating',
+      headlineLabel: 'Passer rating',
+      outputs: [
+        { id: 'passerRating', label: 'Passer rating', format: 'number' },
+        { id: 'completionPercentage', label: 'Completion percentage', format: 'number' },
+        { id: 'yardsPerAttempt', label: 'Yards per attempt', format: 'number' },
+        { id: 'touchdownPercentage', label: 'Touchdown percentage', format: 'number' },
+        { id: 'interceptionPercentage', label: 'Interception percentage', format: 'number' }
+      ],
+      groups: [{ title: 'Passing line', inputs: ['completions', 'attempts', 'yards', 'touchdowns', 'interceptions'] }]
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: "The NFL's official passing formula",
+        paragraphs: [
+          'Passer rating has been the NFL\'s official formula for ranking its passing leaders since 1973. It was developed by a committee headed by Don Smith of the Pro Football Hall of Fame and Seymour Siwoff of the Elias Sports Bureau, commissioned by Commissioner Pete Rozelle to settle years of disagreement over how to rank passers using different, incompatible methods. The committee built it from four per-attempt rates — completion percentage, yards per attempt, touchdown percentage and interception percentage — each converted onto the same 0-to-2.375 scale, then averaged and multiplied by 100 so the result reads on a familiar 0-to-158.3 scale.',
+          "Because the formula caps each of the four components at 2.375 on the high end and 0 on the low end, a quarterback cannot be penalized below a certain floor for one bad stat, and cannot be rewarded indefinitely for one spectacular one — the 158.3 \"perfect\" rating is simply what you get when all four components hit their maximum at once. That ceiling is also why passer rating has aged somewhat strangely against the modern passing game: a quarterback who completes a very high percentage of short passes can max out two components (completions and interceptions) while a more aggressive, higher-risk passer rarely does, even if the aggressive passer's team scores more.",
+          'Passer rating is sometimes casually called "QB rating," but that phrase is also used informally for ESPN\'s separate, proprietary Total QBR, a different statistic built from play-by-play data and win probability, not from the four counting-stat rates this formula uses. The two numbers are not interchangeable and often disagree noticeably for the same game.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter a passing line: completions, attempts, yards, touchdowns and interceptions.',
+        steps: [
+          { name: 'Enter completions and attempts', text: 'Used for the completion-percentage component and as the denominator for every other component.' },
+          { name: 'Enter passing yards', text: 'Total passing yards for the attempts entered, used for the yards-per-attempt component.' },
+          { name: 'Enter touchdowns and interceptions', text: 'Passing touchdowns and interceptions thrown, for the touchdown- and interception-percentage components.' },
+          { name: 'Read the rating', text: 'The passer rating and its four underlying per-attempt rates are all shown together.' },
+          { name: 'Compare across different attempt counts', text: 'Because every component is a rate (per attempt), passer rating can meaningfully compare a 15-attempt relief appearance to a 40-attempt full game, unlike a raw yardage or touchdown total.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Four components, each clamped to between 0 and 2.375, are averaged and rescaled to 0-158.3.',
+        expression: 'a = (Cmp÷Att − 0.3) × 5\nb = (Yds÷Att − 3) × 0.25\nc = (TD÷Att) × 20\nd = 2.375 − (Int÷Att × 25)\nRating = ((a + b + c + d) ÷ 6) × 100',
+        terms: [
+          { symbol: 'Cmp, Att', meaning: 'Completions and pass attempts.' },
+          { symbol: 'Yds, TD, Int', meaning: 'Passing yards, touchdowns and interceptions.' },
+          { symbol: 'a, b, c, d', meaning: 'The four component scores, each clamped: capped at 2.375 if higher, floored at 0 if negative.' }
+        ],
+        note: 'All four of a, b, c and d are capped between 0 and 2.375 before averaging, which is what keeps a single very good or very bad game from pushing the final rating past 158.3 or below 0.'
+      },
+      workedExample: {
+        intro: 'A quarterback completes 20 of 30 passes for 275 yards, 2 touchdowns and 1 interception. What is their passer rating?',
+        rows: [
+          { label: 'a = (20÷30 − 0.3) × 5', value: '(0.6667 − 0.3) × 5 = 1.8333' },
+          { label: 'b = (275÷30 − 3) × 0.25', value: '(9.1667 − 3) × 0.25 = 1.5417' },
+          { label: 'c = (2÷30) × 20', value: '0.0667 × 20 = 1.3333' },
+          { label: 'd = 2.375 − (1÷30 × 25)', value: '2.375 − 0.8333 = 1.5417' },
+          { label: 'Sum ÷ 6', value: '(1.8333 + 1.5417 + 1.3333 + 1.5417) ÷ 6 = 1.0417' },
+          { label: 'Rating = 1.0417 × 100', value: '≈ 104.2' }
+        ],
+        result: 'Passer rating ≈ 104.2',
+        explanation: 'None of the four components hit their 0 or 2.375 clamp in this example, so the full, uncapped formula applies directly — a rating around 100-110 is a solidly above-average game by modern NFL standards.'
+      },
+      watchOut: [
+        {
+          title: 'Passer rating is not the same stat as ESPN\'s Total QBR',
+          body: '"QB rating" is often used loosely for both. The NFL\'s official passer rating (this page) uses only completions, attempts, yards, touchdowns and interceptions; ESPN\'s separate Total QBR is built from play-by-play win-probability data and includes rushing and sacks, on a 0-100 scale. The two numbers measure different things and routinely disagree.'
+        },
+        {
+          title: 'Each component is capped at 2.375 — being spectacular in one area has a ceiling',
+          body: 'A quarterback who throws for 0 interceptions and completes every pass still cannot push the interception or completion component above 2.375, which is part of why a perfect 158.3 game is rare but not impossibly so — all four components simply need to reach their own cap at once.'
+        },
+        {
+          title: 'The formula rewards a particular style of play',
+          body: 'High-percentage, low-risk passing (short, safe throws) tends to score well on this formula\'s completion-percentage and interception-percentage components, while a more aggressive downfield passing style can produce more winning football without necessarily producing a higher passer rating.'
+        },
+        {
+          title: 'Sacks, fumbles and rushing are not part of this formula at all',
+          body: "Passer rating only looks at passing attempts. A quarterback who takes several costly sacks or loses fumbles will not see that reflected here, even though it clearly affected the game's outcome."
+        },
+        {
+          title: 'Small sample sizes produce extreme, misleading ratings',
+          body: 'A handful of pass attempts can easily produce a rating near 0 or near 158.3 that would never hold up over a full game or season. Passer rating is far more meaningful over a large number of attempts.'
+        }
+      ],
+      references: [
+        { label: "NFL.com, \"NFL Quarterback Rating Formula\" (cited directly in the formula's Wikipedia article, with its four-component breakdown and clamping rule)", url: 'https://en.wikipedia.org/wiki/Passer_rating' },
+        { label: 'Pro-Football-Reference, "NFL Passer Rating Calculator" (formula explainer)', url: 'https://www.pro-football-reference.com/about/qb-rating.htm' }
+      ]
+    },
+    inputs: [
+      { id: 'completions', label: 'Completions', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 0 },
+      { id: 'attempts', label: 'Attempts', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1 },
+      { id: 'yards', label: 'Passing yards', type: 'number', placeholder: '275', defaultValue: 275, step: 1, min: 0 },
+      { id: 'touchdowns', label: 'Touchdowns', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0 },
+      { id: 'interceptions', label: 'Interceptions', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'NFL Passer Rating Calculator – Official QB Formula',
+      description: "Calculate the NFL's official passer rating from completions, attempts, yards, touchdowns and interceptions, with the 0-2.375 clamp on each component.",
+      faq: [
+        { question: 'How do you calculate NFL passer rating?', answer: 'Combine four clamped components: a = (Cmp/Att − 0.3) × 5, b = (Yds/Att − 3) × 0.25, c = (TD/Att) × 20, d = 2.375 − (Int/Att × 25), each capped between 0 and 2.375, then Rating = ((a+b+c+d) ÷ 6) × 100.' },
+        { question: 'What is a perfect passer rating?', answer: 'A perfect rating is 158.3, which happens when all four components (completion percentage, yards per attempt, touchdown percentage and interception percentage) hit their maximum clamp of 2.375 at the same time.' },
+        { question: 'Is passer rating the same as QBR?', answer: 'No. Passer rating is the NFL\'s official formula using only completions, attempts, yards, touchdowns and interceptions. ESPN\'s Total QBR is a separate, proprietary 0-100 stat built from play-by-play win-probability data that also accounts for rushing and sacks.' },
+        { question: 'What is a good passer rating?', answer: 'Roughly: above 100 is a very good game, 90-100 is solidly above average, and below 70 is a poor one by modern NFL standards, though the scale has drifted upward as league-wide passing efficiency has improved since 1973.' },
+        { question: 'Why is passer rating capped at 158.3?', answer: "Each of the formula's four components is capped at 2.375 before averaging, so no combination of stats can push the final result above 158.3 — that ceiling is a direct consequence of the clamping rule, not an arbitrary round number." },
+        { question: 'Does passer rating include rushing yards or sacks?', answer: 'No — it is calculated purely from passing attempts, completions, yards, touchdowns and interceptions. Rushing production, sacks and fumbles are not part of the formula at all.' }
+      ]
+    },
+    compute(values) {
+      const clamp = (v: number) => Math.min(Math.max(v, 0), 2.375);
+      const a = clamp((values.completions / values.attempts - 0.3) * 5);
+      const b = clamp((values.yards / values.attempts - 3) * 0.25);
+      const c = clamp((values.touchdowns / values.attempts) * 20);
+      const d = clamp(2.375 - (values.interceptions / values.attempts) * 25);
+      const passerRating = ((a + b + c + d) / 6) * 100;
+      const completionPercentage = (values.completions / values.attempts) * 100;
+      const yardsPerAttempt = values.yards / values.attempts;
+      const touchdownPercentage = (values.touchdowns / values.attempts) * 100;
+      const interceptionPercentage = (values.interceptions / values.attempts) * 100;
+      return { passerRating, completionPercentage, yardsPerAttempt, touchdownPercentage, interceptionPercentage };
+    }
   }
 ];

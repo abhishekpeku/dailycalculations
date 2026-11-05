@@ -2222,3 +2222,22 @@ ratios already covered by bakers-percentage so no separate bread/sourdough page 
 widens; turkey-thaw-time, egg-boiling, steak-cook-time, BBQ/party quantities, party drinks/alcohol
 quantity, ABV, cake servings, popcorn-for-a-party, yeast conversion, self-rising flour substitution,
 coffee ratio, cold brew ratio, brine are next. Full writeup: `mdFiles/steps/46-wave-2-food-run-1.md`.
+
+**2026-11-05 — Step 46, Wave 2 Food run 2 (PR #57, merged)**: added `turkey-thaw-time-calculator`
+(USDA FSIS, cross-linked both ways with `turkey-cook-time-calculator`), `boiled-egg-calculator`
+(America's Test Kitchen + American Egg Board), `steak-doneness-calculator` (Beef Checkoff
+temperatures + carryover range + USDA/FDA safety minimum), `party-food-calculator` (Old Farmer's
+Almanac per-person quantities), `yeast-conversion-calculator` (King Arthur weight ratios) to `food`
+(now **10 calculators**, 175 total on the site). turkey-thaw-time and steak-doneness are YMYL-
+adjacent, cite USDA FSIS/FDA directly (PDFs read directly when the live pages 403'd `WebFetch`,
+same pattern as run 1's turkey-cook-time). Verification script caught a real bug pre-ship: the
+turkey-thaw-time weight-band lookup picked the lower of two overlapping USDA bands at a shared
+boundary (e.g. 16 lb matched both "12–16" and "16–20") — fixed to the higher, more conservative
+band. A WebSearch-claimed King Arthur "reduce instant yeast 25% in a bread machine" rule was
+checked against the actual article, found absent, and dropped rather than shipped unverified.
+`npm test` 789/789, lint clean, `npm run build` 204/204 static pages — re-confirmed by the main
+session in the agent's own worktree before merging; this time the worktree removed and the branch
+deleted cleanly (no file-lock issue, unlike run 1). Remaining Food candidates (~10 of the original
+~19): ABV, party drinks/alcohol quantity, cake servings, popcorn-for-a-party, coffee ratio, cold
+brew ratio, brine, bread, sourdough, self-rising flour substitution. Full writeup:
+`mdFiles/steps/46-wave-2-food-run-2.md`.

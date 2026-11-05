@@ -2174,3 +2174,24 @@ was run for this batch alone (deferred to the next ~50-calculator checkpoint); a
 structural check (200s, correct H1/JSON-LD/content sections) substituted. Remaining Wave 2
 Construction candidates (insulation, flooring, carpet, stair, rebar, pool/tank volume, siding,
 framing/stud) are next. Full writeup: `mdFiles/steps/43-wave-2-construction-run-3.md`.
+
+**2026-11-04 — Step 43-45, Wave 2 Construction batch 4/4 (PR #55, merged) — Construction closed out**:
+added `insulation-calculator`, `stair-calculator`, `rebar-calculator`, `pool-volume-calculator`,
+`carpet-calculator`, `flooring-calculator` to `home` (now **27 calculators**, 165 total on the
+site). Picked 6 of the remaining 8 candidates; parked `siding` (too close in shape to the already-
+shipped `roofing-calculator`) and `framing/stud` (narrower, more contractor-facing search) — not
+built. This closes out Wave 2 Construction; **Food is next** per `mdFiles/steps/43-45-wave-2-construction-food-sports.md`.
+Sources fetched directly (PDFs via `curl` + `pdftotext` where `WebFetch`'s summarizer proved
+unreliable on image-heavy PDFs): ENERGY STAR climate-zone R-value table (insulation), IRC R311.7.5
+riser/tread rules (stair), 12-in-o.c. residential rebar convention + retail 20 ft stick length
+(rebar — ACI 318's lap-splice rule was dropped, paywalled/unreadable), NWFA's real "5% cutting
+allowance" line read via `pdftotext` (flooring; confirmed CRI-105 itself states no waste %, so it
+isn't misattributed). Two independent verification passes: a from-scratch formula re-derivation,
+then a second pass that imported the actual shipped `compute()` functions and checked worked-example
+inputs against them (21/21 matched). `npm test` 776/776, lint clean, `npm run build` 193/193 static
+pages — all re-confirmed by the main session in the agent's own git worktree before merging. Built
+in an isolated worktree this time (per batch 3's note) — no file-sharing collision with the main
+session. No Chrome visual-QA pass run per the new ~50-calculator cadence; a `curl`-based structural
+check substituted. Added a proper Parked entry for the pre-existing `mortgage-calculator`/
+`emi-calculator` alias collision (re-noticed three batches running, never formally tracked before).
+Full writeup: `mdFiles/steps/43-wave-2-construction-run-4.md`.

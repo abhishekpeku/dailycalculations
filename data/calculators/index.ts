@@ -16,6 +16,7 @@ import { educationCalculators } from './education.ts';
 import { physicsCalculators } from './physics.ts';
 import { mathCalculators } from './math.ts';
 import { statisticsCalculators } from './statistics.ts';
+import { foodCalculators } from './food.ts';
 
 export type * from './types.ts';
 
@@ -34,7 +35,8 @@ export const categories: CalculatorCategory[] = [
   { id: 'education', title: 'Education', description: 'GPA, grade, and academic calculators.' },
   { id: 'physics', title: 'Physics', description: 'Force, motion, energy, and other physics formulas solved for any variable.' },
   { id: 'math', title: 'Math', description: 'Percentages, fractions, ratios, and everyday math calculators.' },
-  { id: 'statistics', title: 'Statistics', description: 'Mean, median, mode, standard deviation, variance, z-scores, and percentiles.' }
+  { id: 'statistics', title: 'Statistics', description: 'Mean, median, mode, standard deviation, variance, z-scores, and percentiles.' },
+  { id: 'food', title: 'Food', description: 'Recipe scaling, baking ratios, cook times, and other recipe calculators.' }
 ];
 
 // Display order for listings, the sitemap and search; the old single array's order, kept exactly.
@@ -204,7 +206,12 @@ export const calculatorOrder: string[] = [
   'rebar-calculator',
   'pool-volume-calculator',
   'carpet-calculator',
-  'flooring-calculator'
+  'flooring-calculator',
+  'recipe-scaling-calculator',
+  'bakers-percentage-calculator',
+  'pizza-dough-calculator',
+  'turkey-cook-time-calculator',
+  'rice-to-water-ratio-calculator'
 ];
 
 const rank = (id: string) => {
@@ -227,7 +234,8 @@ export const calculators: CalculatorConfig[] = [
   ...educationCalculators,
   ...physicsCalculators,
   ...mathCalculators,
-  ...statisticsCalculators
+  ...statisticsCalculators,
+  ...foodCalculators
 ].sort((a, b) => rank(a.id) - rank(b.id));
 
 export function findCalculator(slug: string) {

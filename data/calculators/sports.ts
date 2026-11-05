@@ -130,7 +130,7 @@ export const sportsCalculators: CalculatorConfig[] = [
       ]
     },
     inputs: [
-      { id: 'weight', label: 'Weight lifted', type: 'number', placeholder: '185', defaultValue: 185, step: 1, min: 0, dimension: 'mass', unit: 'lb' },
+      { id: 'weight', label: 'Weight lifted (lb)', type: 'number', placeholder: '185', defaultValue: 185, step: 1, min: 0 },
       { id: 'reps', label: 'Reps completed', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 1 }
     ],
     seo: {
@@ -411,7 +411,7 @@ export const sportsCalculators: CalculatorConfig[] = [
     category: 'sports',
     glyph: 'race',
     updatedAt: '2026-11-05',
-    aliases: ['race time predictor', 'race pace predictor calculator', 'riegel formula calculator', 'predict marathon time from 10k', 'cross distance race predictor', '5k to marathon predictor'],
+    aliases: ['race pace predictor calculator', 'riegel formula calculator', 'predict marathon time from 10k', 'cross distance race predictor', '5k to marathon predictor'],
     related: ['running-pace-calculator', 'vo2-max-calculator', 'heart-rate-zones-calculator', 'swim-pace-calculator'],
     title: 'Race Time Predictor',
     description: "Predict a race time at any distance from a time you've already run at a different distance, using Peter Riegel's endurance formula — in either direction, and between any two distances you choose.",
@@ -617,8 +617,8 @@ export const sportsCalculators: CalculatorConfig[] = [
       ]
     },
     inputs: [
-      { id: 'distance', label: 'Total distance', type: 'number', placeholder: '1500', defaultValue: 1500, step: 1, min: 0, dimension: 'length', unit: 'm' },
-      { id: 'time', label: 'Total time', type: 'number', placeholder: '30', defaultValue: 30, step: 0.5, min: 0, dimension: 'time', unit: 'min' }
+      { id: 'distance', label: 'Total distance', type: 'number', placeholder: '1500', defaultValue: 1500, step: 1, min: 1, dimension: 'length', unit: 'm' },
+      { id: 'time', label: 'Total time', type: 'number', placeholder: '30', defaultValue: 30, step: 0.5, min: 0.1, dimension: 'time', unit: 'min' }
     ],
     seo: {
       title: 'Swim Pace Calculator – Pace per 100m & 100yd',

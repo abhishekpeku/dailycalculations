@@ -1003,5 +1003,155 @@ export const sportsCalculators: CalculatorConfig[] = [
       const strikeRate = values.wicketsTaken > 0 ? values.ballsBowled / values.wicketsTaken : NaN;
       return { bowlingAverage, economyRate, strikeRate };
     }
+  },
+  {
+    id: 'cricket-net-run-rate-calculator',
+    category: 'sports',
+    glyph: 'NRR',
+    updatedAt: '2026-11-05',
+    aliases: ['net run rate calculator', 'nrr calculator', 'cricket nrr calculator', 'run rate calculator cricket', 'icc net run rate calculator', 'tournament run rate calculator'],
+    related: ['cricket-bowling-figures-calculator', 'baseball-batting-average-calculator', 'elo-rating-calculator'],
+    title: 'Cricket Net Run Rate Calculator',
+    description: "Calculate a team's net run rate (NRR) for one match using the ICC's official formula, including the rule that a team bowled out is credited with its full quota of overs, not the overs it actually used.",
+    example: 'Bowled out for 180 in a 50-over match (so credited with all 50 overs) while restricting the chasing team to 182 off 40 overs gives a net run rate of −0.95.',
+    breakdown: {
+      headline: 'netRunRate',
+      headlineLabel: 'Net run rate (NRR)',
+      outputs: [
+        { id: 'netRunRate', label: 'Net run rate (NRR)', format: 'significant' },
+        { id: 'runRateFor', label: 'Run rate scored (runs per over)', format: 'significant' },
+        { id: 'runRateAgainst', label: 'Run rate conceded (runs per over)', format: 'significant' }
+      ],
+      groups: [
+        { title: 'Match format', inputs: ['allottedOvers'] },
+        { title: 'Your innings (batting)', inputs: ['runsScored', 'ballsFaced', 'teamAllOut'] },
+        { title: 'Opponent\'s innings (you bowling)', inputs: ['runsConceded', 'ballsBowled', 'opponentAllOut'] }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'Why net run rate needs more than just the final score',
+        paragraphs: [
+          "Net run rate is the tiebreaker the ICC uses to separate teams level on points in a limited-overs group stage: per the ICC's playing conditions (clause 16.10.2), it's the average runs a team scores per over across the whole competition, minus the average runs it concedes per over across the whole competition. A single match's NRR contribution works the same way: (runs scored ÷ overs faced) − (runs conceded ÷ overs bowled).",
+          'The detail that trips people up is what counts as "overs faced" or "overs bowled" when an innings ends early. If a team is bowled out — all out — before using its full quota of overs, the rule credits that team with having faced (or bowled) the entire allotted overs for the match, not the fewer overs it actually took to lose all its wickets. A team bowled out for 80 in just 15 overs of a 20-over match is still credited with 20 overs faced for the run-rate calculation, giving a scoring rate of 80 ÷ 20 = 4.00 per over, not the faster-looking 80 ÷ 15 = 5.33 it actually scored at before losing its last wicket.',
+          "This calculator applies that rule automatically: mark either innings as \"all out\" and it switches that side's overs to the match's full allotted overs, exactly as the ICC's own tournament tables do."
+        ]
+      },
+      howTo: {
+        intro: 'Enter the match\'s allotted overs per innings, then both innings: your runs scored and balls faced batting, and runs conceded and balls bowled fielding, marking either side "all out" if that innings ended early.',
+        steps: [
+          { name: 'Enter the allotted overs', text: 'The overs per innings for the format: 50 for an ODI, 20 for a T20.' },
+          { name: 'Enter your batting line', text: 'Runs scored and balls faced. If your team was bowled out before the overs ran out, mark it "all out."' },
+          { name: 'Enter your bowling line', text: 'Runs conceded and balls bowled against the opposition. If the opposition was bowled out, mark it "all out" too.' },
+          { name: 'Read the net run rate', text: 'The run rate scored and conceded are shown separately, along with the net run rate (the difference) for this one match.' },
+          { name: 'Remember it is competition-wide, not per match', text: 'A real tournament NRR sums every match\'s runs and overs across the whole competition before dividing, rather than averaging each match\'s own NRR; use this calculator one match at a time and combine the raw totals yourself for a multi-match figure.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "The ICC's formula is one subtraction, but the overs on each side depend on whether that innings was bowled out.",
+        expression: 'Run rate scored = runs scored ÷ overs faced\nRun rate conceded = runs conceded ÷ overs bowled\nNRR = run rate scored − run rate conceded\novers faced (or bowled) = allotted overs, if that side was all out; otherwise the overs actually used',
+        terms: [
+          { symbol: 'overs faced', meaning: 'Overs your team batted, unless bowled out — then the full allotted overs for the match.' },
+          { symbol: 'overs bowled', meaning: 'Overs your team bowled, unless the opposition was bowled out — then the full allotted overs for the match.' },
+          { symbol: 'allotted overs', meaning: 'The overs per innings set by the match format (50 for an ODI, 20 for a T20).' }
+        ],
+        note: 'This computes one match\'s contribution to net run rate. A tournament standings table sums runs and overs across every completed match in the competition, then divides once — it does not average each match\'s own NRR.'
+      },
+      workedExample: {
+        intro: 'In a 50-over match, your team is bowled out for 180 (using only 42.4 overs, or 256 balls, before losing all 10 wickets). Chasing, you restrict the opposition to 182 for 4 off 40.0 overs (240 balls) — they are not bowled out. What is the net run rate for this match?',
+        rows: [
+          { label: 'Allotted overs', value: '50' },
+          { label: 'Your team: all out for 180 (actual 42.4 overs, 256 balls)', value: 'Credited with all 50 overs (300 balls), not 42.4' },
+          { label: 'Run rate scored = 180 ÷ 50', value: '3.60' },
+          { label: 'Opponent: 182 for 4, not all out, 40.0 overs (240 balls)', value: 'Uses actual overs bowled: 240 balls = 40 overs' },
+          { label: 'Run rate conceded = 182 ÷ 40', value: '4.55' },
+          { label: 'NRR = 3.60 − 4.55', value: '−0.95' }
+        ],
+        result: 'Net run rate ≈ −0.95 for this match',
+        explanation: 'Being bowled out worked against this team twice over: not only did they score fewer runs, but the "all out → full quota of overs" rule also caps their run rate at 180 ÷ 50 = 3.60, lower than the 180 ÷ 42.667 ≈ 4.22 their actual batting pace would otherwise suggest.'
+      },
+      watchOut: [
+        {
+          title: 'A team bowled out is credited with the FULL allotted overs, not the overs it actually used',
+          body: 'This is the rule most net run rate calculators get wrong by skipping it. Losing all your wickets early does not give you a faster-looking run rate for the overs you did use — it locks in the full match-length overs as the denominator instead.'
+        },
+        {
+          title: 'NRR is competition-wide, not an average of each match\'s own NRR',
+          body: 'A standings table sums every completed match\'s runs scored, runs conceded, overs faced and overs bowled across the whole competition, then does one subtraction at the end — it does not average several matches\' individual NRR figures.'
+        },
+        {
+          title: 'Overs are not decimal numbers',
+          body: '"42.4 overs" means 42 complete overs plus 4 balls (256 balls total), not 42.4 overs as a decimal fraction. This calculator asks for balls, converted from overs × 6 + extra balls, to avoid that trap.'
+        },
+        {
+          title: 'NRR only uses completed matches',
+          body: "Abandoned matches with no result typically don't contribute to net run rate at all under most tournament playing conditions, and matches decided by other methods can have their own special rules this calculator doesn't attempt to model."
+        },
+        {
+          title: 'A single big match can swing NRR much more than a points table position suggests',
+          body: 'Because NRR sums raw runs and overs rather than game-by-game results, one very large win or loss can move a team\'s net run rate dramatically — which is exactly why it is used only as a tiebreaker between teams level on points, not as the primary ranking.'
+        }
+      ],
+      references: [
+        { label: 'ICC Men\'s Standard One-Day International Playing Conditions, Clause 16.10.2 (net run rate)', url: 'https://documents.bcci.tv/bcci/documents/Mens_Standard_ODI_Playing_Conditions-Effective_December_2023.pdf' },
+        { label: 'Net run rate — overview of the ICC formula and the "bowled out" rule, citing ICC Playing Handbook 2013/14 §21.9.2', url: 'https://en.wikipedia.org/wiki/Net_run_rate' }
+      ]
+    },
+    inputs: [
+      { id: 'allottedOvers', label: 'Allotted overs per innings', type: 'number', placeholder: '50', defaultValue: 50, step: 1, min: 1 },
+      { id: 'runsScored', label: 'Runs scored (your team)', type: 'number', placeholder: '180', defaultValue: 180, step: 1, min: 0 },
+      { id: 'ballsFaced', label: 'Balls faced (your team)', type: 'number', placeholder: '256', defaultValue: 256, step: 1, min: 1 },
+      {
+        id: 'teamAllOut',
+        label: 'Was your team all out?',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'No — closed the innings with wickets in hand' },
+          { value: 1, label: 'Yes — bowled out before using all the overs' }
+        ]
+      },
+      { id: 'runsConceded', label: 'Runs conceded (opponent)', type: 'number', placeholder: '182', defaultValue: 182, step: 1, min: 0 },
+      { id: 'ballsBowled', label: 'Balls bowled (against opponent)', type: 'number', placeholder: '240', defaultValue: 240, step: 1, min: 1 },
+      {
+        id: 'opponentAllOut',
+        label: 'Was the opponent all out?',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'No — closed the innings with wickets in hand' },
+          { value: 1, label: 'Yes — bowled out before using all the overs' }
+        ]
+      }
+    ],
+    seo: {
+      title: 'Cricket Net Run Rate Calculator – ICC NRR Formula',
+      description: "Calculate a team's net run rate for one match using the ICC's official formula, including the all-out → full overs rule.",
+      faq: [
+        { question: 'How do you calculate net run rate?', answer: 'NRR = (runs scored ÷ overs faced) − (runs conceded ÷ overs bowled), per ICC playing conditions clause 16.10.2. Across a tournament, the runs and overs are totaled across every match first, then divided once.' },
+        { question: 'What happens to net run rate if a team is bowled out?', answer: "A team that is bowled out is credited with the full allotted overs for the match (50 for an ODI, 20 for a T20), not the fewer overs it actually used before losing its last wicket — this usually lowers that team's run rate." },
+        { question: 'Is net run rate calculated per match or for the whole tournament?', answer: 'Both: this calculator computes one match\'s contribution, but a tournament standings table sums every completed match\'s runs and overs across the whole competition and divides once, rather than averaging each match\'s own figure.' },
+        { question: 'Can net run rate be negative?', answer: 'Yes. A negative NRR simply means a team has conceded runs faster, on average, than it has scored them — it is common for a team near the bottom of a group table.' },
+        { question: 'Why does NRR use overs instead of wickets?', answer: 'Net run rate is purely about scoring pace (runs per over), which is why the "bowled out" rule exists — without it, a team that collapsed quickly could look like it scored at a faster rate than it actually sustained.' },
+        { question: 'Do abandoned matches count toward net run rate?', answer: 'Typically not — most tournament playing conditions only count completed matches with a result toward net run rate, though exact rules can vary by competition.' }
+      ]
+    },
+    compute(values) {
+      const allottedBalls = values.allottedOvers * 6;
+      const ballsFacedForCalc = values.teamAllOut === 1 ? allottedBalls : values.ballsFaced;
+      const ballsBowledForCalc = values.opponentAllOut === 1 ? allottedBalls : values.ballsBowled;
+      const runRateFor = ballsFacedForCalc > 0 ? values.runsScored / (ballsFacedForCalc / 6) : NaN;
+      const runRateAgainst = ballsBowledForCalc > 0 ? values.runsConceded / (ballsBowledForCalc / 6) : NaN;
+      const netRunRate = runRateFor - runRateAgainst;
+      return { netRunRate, runRateFor, runRateAgainst };
+    }
   }
 ];

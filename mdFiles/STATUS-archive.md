@@ -2195,3 +2195,30 @@ session. No Chrome visual-QA pass run per the new ~50-calculator cadence; a `cur
 check substituted. Added a proper Parked entry for the pre-existing `mortgage-calculator`/
 `emi-calculator` alias collision (re-noticed three batches running, never formally tracked before).
 Full writeup: `mdFiles/steps/43-wave-2-construction-run-4.md`.
+
+**2026-11-05 — Step 46, Wave 2 Food run 1 (PR #56, merged) — new `food` category opened**: created
+the `food` category from scratch (id/label in `data/calculators/index.ts`, `red` theme + new `bowl`
+icon in `lib/categoryTheme.ts`/`components/IconTile.tsx`, new `data/calculators/food.ts`) and added
+its first 5 calculators — `recipe-scaling-calculator` (solver), `bakers-percentage-calculator`,
+`pizza-dough-calculator` (back-solves flour from dough-ball weight), `turkey-cook-time-calculator`
+(YMYL-adjacent, cites USDA FSIS directly), `rice-to-water-ratio-calculator`. 170 total calculators.
+Sources fetched directly: USDA FSIS "Let's Talk Turkey" roasting timetable (fsis.usda.gov blocks
+automated fetches with a 403 — corroborated via two independent search passes quoting the same
+primary URL with identical numbers instead); King Arthur Baking's Professional Baker's Reference +
+pizza dough recipes + ingredient weight chart; University of Wyoming Extension's recipe-scaling
+guide; America's Test Kitchen's rice-to-water science article. Two verification scripts (formula
+re-derivation + a dataset/alias/seo-length check) before committing; re-surfaced the known
+`mortgage-calculator`/`emi-calculator` alias collision (already tracked in Parked, not touched).
+`npm test` 784/784, lint clean, `npm run build` 199/199 static pages. Built in an isolated git
+worktree; the agent hit a session rate-limit right as it finished (after opening the PR, before
+sending its final report) — the main session independently re-ran test/lint/build in a fresh
+verification worktree (all matched) and curl-checked all 5 pages plus the new `/categories/food`
+page (H1 "Food", "5 calculators") before merging. **Note**: cleaning up the verification worktree
+left two stale `.claude/worktrees/` directories on disk (file locks from the dev server used to
+verify) — harmless (no uncommitted work, git no longer tracks them), just not auto-deleted; killing
+the leftover process was blocked by the auto-mode classifier as "interfere with workloads", so it's
+left for manual cleanup if desired. Remaining Food candidates (~14 of the original ~19): baker's
+ratios already covered by bakers-percentage so no separate bread/sourdough page needed unless scope
+widens; turkey-thaw-time, egg-boiling, steak-cook-time, BBQ/party quantities, party drinks/alcohol
+quantity, ABV, cake servings, popcorn-for-a-party, yeast conversion, self-rising flour substitution,
+coffee ratio, cold brew ratio, brine are next. Full writeup: `mdFiles/steps/46-wave-2-food-run-1.md`.

@@ -887,5 +887,121 @@ export const sportsCalculators: CalculatorConfig[] = [
       const onBasePlusSlugging = onBasePercentage + sluggingPercentage;
       return { battingAverage, onBasePercentage, sluggingPercentage, onBasePlusSlugging };
     }
+  },
+  {
+    id: 'cricket-bowling-figures-calculator',
+    category: 'sports',
+    glyph: 'wkt',
+    updatedAt: '2026-11-05',
+    aliases: ['cricket bowling average calculator', 'bowling economy rate calculator', 'bowling strike rate calculator', 'cricket bowling figures calculator', 'bowling figures calculator'],
+    related: ['cricket-net-run-rate-calculator', 'baseball-batting-average-calculator', 'nfl-passer-rating-calculator'],
+    title: 'Cricket Bowling Figures Calculator',
+    description: 'Calculate bowling average, economy rate and strike rate together from runs conceded, wickets taken and balls bowled — the three figures that make up a bowler\'s full "bowling figures."',
+    example: 'Conceding 196 runs off 288 balls (48 overs) for 8 wickets gives a bowling average of 24.50, an economy rate of 4.08 and a strike rate of 36.0 balls per wicket.',
+    breakdown: {
+      headline: 'bowlingAverage',
+      headlineLabel: 'Bowling average (runs per wicket)',
+      outputs: [
+        { id: 'bowlingAverage', label: 'Bowling average (runs per wicket)', format: 'number' },
+        { id: 'economyRate', label: 'Economy rate (runs per over)', format: 'number' },
+        { id: 'strikeRate', label: 'Strike rate (balls per wicket)', format: 'number' }
+      ],
+      groups: [{ title: 'Bowling figures', inputs: ['runsConceded', 'wicketsTaken', 'ballsBowled'] }]
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'Three numbers behind a bowler\'s figures',
+        paragraphs: [
+          'A bowler\'s "figures" — something like 4/32 off 9 overs — are usually boiled down to three rate stats for comparing performances across matches and careers. Bowling average is runs conceded per wicket taken: the lower it is, the fewer runs a bowler typically gives up for each wicket, which rewards taking wickets cheaply. Economy rate is runs conceded per over: the lower it is, the more a bowler restricts scoring regardless of whether they take wickets at all, which matters most in limited-overs cricket where containing runs can be as valuable as taking wickets. Strike rate (for a bowler) is balls bowled per wicket: the lower it is, the more frequently a bowler takes a wicket, independent of how many runs those wickets cost.',
+          'These three figures can disagree with each other, and that disagreement is informative: an economical bowler who rarely takes wickets has a low economy rate but a high average and strike rate; an aggressive wicket-taker who also leaks runs has a low strike rate but a high economy rate. Test cricket selection conversations tend to weigh average and strike rate most heavily, while Twenty20 weighs economy rate about as heavily as the other two, since containing an over matters more when only 20 overs exist per innings.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter total runs conceded, wickets taken and balls bowled for the spell, match or career you want figures for.',
+        steps: [
+          { name: 'Enter runs conceded', text: 'Every run scored off the bowler\'s deliveries, including wides, no-balls and leg-byes (but not byes).' },
+          { name: 'Enter wickets taken', text: 'Wickets credited to the bowler specifically (run-outs and some other dismissals are not credited to the bowler).' },
+          { name: 'Enter balls bowled, not overs', text: 'Total legal deliveries bowled. Converting overs yourself (overs × 6 + extra balls) avoids the overs-notation trap below.' },
+          { name: 'Read all three figures', text: 'Bowling average, economy rate and strike rate are all shown together from the same three numbers.' },
+          { name: 'Compare bowlers on the same format', text: 'Economy rate especially only means the same thing when comparing bowlers within the same format (Test, ODI or T20), since over limits differ.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'All three figures are simple ratios of the same three counting numbers.',
+        expression: 'Bowling average = runs conceded ÷ wickets taken\nEconomy rate = runs conceded ÷ (balls bowled ÷ 6)\nStrike rate = balls bowled ÷ wickets taken',
+        terms: [
+          { symbol: 'runs conceded', meaning: 'Total runs scored off the bowler, including wides, no-balls and leg-byes.' },
+          { symbol: 'wickets taken', meaning: 'Dismissals credited to the bowler.' },
+          { symbol: 'balls bowled', meaning: 'Total legal deliveries bowled (balls bowled ÷ 6 = overs bowled).' }
+        ],
+        note: 'Bowling average and strike rate are undefined (no answer) for a bowler who has taken no wickets, since both divide by wickets taken. Economy rate is still defined with zero wickets.'
+      },
+      workedExample: {
+        intro: 'A bowler concedes 196 runs off 48 overs (288 balls) across a match, taking 8 wickets in total. What are their average, economy rate and strike rate?',
+        rows: [
+          { label: 'Runs conceded', value: '196' },
+          { label: 'Wickets taken', value: '8' },
+          { label: 'Balls bowled (48 overs × 6)', value: '288' },
+          { label: 'Bowling average = 196 ÷ 8', value: '24.50' },
+          { label: 'Overs bowled = 288 ÷ 6', value: '48' },
+          { label: 'Economy rate = 196 ÷ 48', value: '4.0833 ≈ 4.08' },
+          { label: 'Strike rate = 288 ÷ 8', value: '36.0' }
+        ],
+        result: 'Average 24.50 · Economy rate 4.08 · Strike rate 36.0',
+        explanation: 'An average of 24.50 and a strike rate of exactly 36 balls (6 overs) per wicket describe the same underlying performance two ways — one in runs per wicket, one in balls per wicket — while the economy rate (4.08 runs per over) is a separate measure of how many runs those 48 overs leaked regardless of when the wickets fell.'
+      },
+      watchOut: [
+        {
+          title: 'Cricket overs are not decimal numbers',
+          body: '"9.3 overs" means 9 complete overs plus 3 balls (57 balls total), not 9.3 overs as a decimal (which would be 9 overs and 18 balls). This calculator asks for total balls bowled specifically to avoid that trap — convert with balls = overs × 6 + extra balls before entering.'
+        },
+        {
+          title: 'Wides, no-balls and leg-byes all count against the bowler; byes don\'t',
+          body: "A wide or no-ball is scored against the bowler because it's considered the bowler's own error, and a leg-bye (the ball deflecting off the batter's body) also counts as runs conceded. A bye (the ball passing everyone untouched) is the only one of the four extras that does not count against the bowler's figures."
+        },
+        {
+          title: 'A bowler with zero wickets has no average or strike rate',
+          body: 'Both bowling average and strike rate divide by wickets taken, so a wicketless spell has no defined value for either — only economy rate still applies.'
+        },
+        {
+          title: 'The three stats can disagree, and that is informative, not a bug',
+          body: 'A bowler can have an excellent economy rate while rarely taking wickets, or an excellent strike rate while leaking plenty of runs along the way. Looking at all three together describes a bowler\'s style, not just a single "good or bad" number.'
+        },
+        {
+          title: 'A single match or spell is a small, noisy sample',
+          body: 'One big over or one unlucky spell can swing all three figures sharply. Career or season figures, built from many more balls bowled, are far more stable indicators of a bowler\'s real ability.'
+        }
+      ],
+      references: [
+        { label: 'Economy rate — definitional cricket statistic (runs conceded per over bowled)', url: 'https://en.wikipedia.org/wiki/Economy_rate' },
+        { label: 'Strike rate (bowling) — definitional cricket statistic (balls bowled per wicket taken)', url: 'https://en.wikipedia.org/wiki/Strike_rate' },
+        { label: 'Wide (cricket) and Bye (cricket) — rules on which extras are charged to the bowler', url: 'https://en.wikipedia.org/wiki/Wide_(cricket)' }
+      ]
+    },
+    inputs: [
+      { id: 'runsConceded', label: 'Runs conceded', type: 'number', placeholder: '196', defaultValue: 196, step: 1, min: 0 },
+      { id: 'wicketsTaken', label: 'Wickets taken', type: 'number', placeholder: '8', defaultValue: 8, step: 1, min: 0 },
+      { id: 'ballsBowled', label: 'Balls bowled', type: 'number', placeholder: '288', defaultValue: 288, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Cricket Bowling Figures Calculator – Average, Economy, SR',
+      description: 'Calculate bowling average, economy rate and strike rate together from runs conceded, wickets taken and balls bowled.',
+      faq: [
+        { question: 'How do you calculate bowling average in cricket?', answer: 'Divide runs conceded by wickets taken: average = runs ÷ wickets. Conceding 196 runs for 8 wickets gives a bowling average of 24.50.' },
+        { question: 'How do you calculate economy rate?', answer: 'Divide runs conceded by overs bowled: economy rate = runs ÷ overs. 196 runs off 48 overs is 196 ÷ 48 ≈ 4.08 runs per over.' },
+        { question: 'How do you calculate bowling strike rate?', answer: 'Divide balls bowled by wickets taken: strike rate = balls ÷ wickets. 288 balls for 8 wickets is 288 ÷ 8 = 36.0 balls per wicket.' },
+        { question: 'Why does this calculator ask for balls, not overs?', answer: 'Cricket writes overs as "9.3" meaning 9 overs and 3 balls, not a decimal 9.3 overs — entering total balls avoids that ambiguity. Convert with balls = overs × 6 + extra balls.' },
+        { question: 'Do wides and no-balls count against a bowler\'s figures?', answer: 'Yes. Wides, no-balls and leg-byes all count as runs conceded by the bowler; byes are the only common extra that does not.' },
+        { question: 'What happens if a bowler has taken no wickets?', answer: 'Bowling average and strike rate are both undefined with zero wickets, since each divides by wickets taken. Economy rate is still a valid figure with zero wickets.' }
+      ]
+    },
+    compute(values) {
+      const bowlingAverage = values.wicketsTaken > 0 ? values.runsConceded / values.wicketsTaken : NaN;
+      const economyRate = values.ballsBowled > 0 ? values.runsConceded / (values.ballsBowled / 6) : NaN;
+      const strikeRate = values.wicketsTaken > 0 ? values.ballsBowled / values.wicketsTaken : NaN;
+      return { bowlingAverage, economyRate, strikeRate };
+    }
   }
 ];

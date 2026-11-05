@@ -455,6 +455,41 @@ exports[`compute() snapshots > board-foot-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > boiled-egg-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "doneness": 1,
+      "eggSize": 1
+    },
+    "outputs": {
+      "steamedCookTimeMinutes": 8,
+      "classicStandTimeMinutes": 12
+    }
+  },
+  "typical": {
+    "inputs": {
+      "doneness": 2,
+      "eggSize": 2
+    },
+    "outputs": {
+      "steamedCookTimeMinutes": 13,
+      "classicStandTimeMinutes": 15
+    }
+  },
+  "edge": {
+    "inputs": {
+      "doneness": 0,
+      "eggSize": 0
+    },
+    "outputs": {
+      "steamedCookTimeMinutes": 6.5,
+      "classicStandTimeMinutes": 9
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > brick-calculator 1`] = `
 {
   "default": {
@@ -4298,6 +4333,47 @@ exports[`compute() snapshots > paint-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > party-food-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "guestCount": 20
+    },
+    "outputs": {
+      "proteinLb": 10,
+      "potatoesLbLow": 6.666666667,
+      "potatoesLbHigh": 10,
+      "rollsCount": 40,
+      "dessertSlices": 20
+    }
+  },
+  "typical": {
+    "inputs": {
+      "guestCount": 30
+    },
+    "outputs": {
+      "proteinLb": 15,
+      "potatoesLbLow": 10,
+      "potatoesLbHigh": 15,
+      "rollsCount": 60,
+      "dessertSlices": 30
+    }
+  },
+  "edge": {
+    "inputs": {
+      "guestCount": 1
+    },
+    "outputs": {
+      "proteinLb": 0.5,
+      "potatoesLbLow": 0.3333333333,
+      "potatoesLbHigh": 0.5,
+      "rollsCount": 2,
+      "dessertSlices": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > paver-calculator 1`] = `
 {
   "default": {
@@ -6380,6 +6456,50 @@ exports[`compute() snapshots > standard-error-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > steak-doneness-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "doneness": 0
+    },
+    "outputs": {
+      "targetTempF": 145,
+      "pullTempLowF": 135,
+      "pullTempHighF": 140,
+      "restTimeLowMin": 5,
+      "restTimeHighMin": 10,
+      "usdaSafeMinF": 145
+    }
+  },
+  "typical": {
+    "inputs": {
+      "doneness": 0
+    },
+    "outputs": {
+      "targetTempF": 145,
+      "pullTempLowF": 135,
+      "pullTempHighF": 140,
+      "restTimeLowMin": 5,
+      "restTimeHighMin": 10,
+      "usdaSafeMinF": 145
+    }
+  },
+  "edge": {
+    "inputs": {
+      "doneness": 0
+    },
+    "outputs": {
+      "targetTempF": 145,
+      "pullTempLowF": 135,
+      "pullTempHighF": 140,
+      "restTimeLowMin": 5,
+      "restTimeHighMin": 10,
+      "usdaSafeMinF": 145
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > surface-area-calculator 1`] = `
 {
   "default": {
@@ -6939,6 +7059,50 @@ exports[`compute() snapshots > turkey-cook-time-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > turkey-thaw-time-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "turkeyWeightLb": 16
+    },
+    "outputs": {
+      "refrigeratorDaysLow": 4,
+      "refrigeratorDaysHigh": 5,
+      "refrigeratorDaysMid": 4.5,
+      "coldWaterHoursLow": 8,
+      "coldWaterHoursHigh": 10,
+      "coldWaterHoursMid": 9
+    }
+  },
+  "typical": {
+    "inputs": {
+      "turkeyWeightLb": 24
+    },
+    "outputs": {
+      "refrigeratorDaysLow": 5,
+      "refrigeratorDaysHigh": 6,
+      "refrigeratorDaysMid": 5.5,
+      "coldWaterHoursLow": 10,
+      "coldWaterHoursHigh": 12,
+      "coldWaterHoursMid": 11
+    }
+  },
+  "edge": {
+    "inputs": {
+      "turkeyWeightLb": 4
+    },
+    "outputs": {
+      "refrigeratorDaysLow": 1,
+      "refrigeratorDaysHigh": 3,
+      "refrigeratorDaysMid": 2,
+      "coldWaterHoursLow": 2,
+      "coldWaterHoursHigh": 6,
+      "coldWaterHoursMid": 4
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > unit-price-calculator 1`] = `
 {
   "default": {
@@ -7461,6 +7625,44 @@ exports[`compute() snapshots > work-hours-calculator 1`] = `
       "overtimePay": 0,
       "grossPay": 0,
       "annualEstimate": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > yeast-conversion-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "yeastType": 1,
+      "amount": 7
+    },
+    "outputs": {
+      "freshEquivalentG": 17.5,
+      "activeDryEquivalentG": 7,
+      "instantEquivalentG": 5.775
+    }
+  },
+  "typical": {
+    "inputs": {
+      "yeastType": 2,
+      "amount": 10.5
+    },
+    "outputs": {
+      "freshEquivalentG": 31.81818182,
+      "activeDryEquivalentG": 12.72727273,
+      "instantEquivalentG": 10.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "yeastType": 0,
+      "amount": 0.1
+    },
+    "outputs": {
+      "freshEquivalentG": 0.1,
+      "activeDryEquivalentG": 0.04,
+      "instantEquivalentG": 0.033
     }
   }
 }

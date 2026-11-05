@@ -1409,5 +1409,118 @@ export const sportsCalculators: CalculatorConfig[] = [
       const newRating = values.playerRating + ratingChange;
       return { ratingChange, expectedScore, newRating };
     }
+  },
+  {
+    id: 'golf-course-handicap-calculator',
+    category: 'sports',
+    glyph: 'CH',
+    updatedAt: '2026-11-05',
+    aliases: ['golf handicap calculator', 'course handicap calculator', 'golf course handicap calculator', 'handicap index to course handicap calculator', 'whs course handicap calculator'],
+    related: ['one-rep-max-calculator', 'vo2-max-calculator', 'elo-rating-calculator'],
+    title: 'Golf Course Handicap Calculator',
+    description: "Convert your Handicap Index to a Course Handicap for a specific course and tee, using the World Handicap System's official formula.",
+    example: 'A 12.3 Handicap Index at a course with a 128 Slope Rating, 70.5 Course Rating and par 71 converts to a Course Handicap of 13.',
+    breakdown: {
+      headline: 'courseHandicap',
+      headlineLabel: 'Course Handicap',
+      outputs: [
+        { id: 'courseHandicap', label: 'Course Handicap (rounded)', format: 'integer' },
+        { id: 'courseHandicapExact', label: 'Exact value before rounding', format: 'number' }
+      ],
+      groups: [{ title: 'Handicap Index and tee information', inputs: ['handicapIndex', 'slopeRating', 'courseRating', 'par'] }]
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'Converting a Handicap Index to a Course Handicap',
+        paragraphs: [
+          "A golfer's Handicap Index is a single, portable number — it's the same wherever they go. But the number of strokes that index is worth changes from course to course, and even from tee to tee on the same course, because courses differ in both overall difficulty (Course Rating) and how much harder they get for a higher-handicap player specifically (Slope Rating). The World Handicap System (WHS), used worldwide since 2020, converts a Handicap Index into a Course Handicap for the specific tee being played with one formula: Course Handicap = Handicap Index × (Slope Rating ÷ 113) + (Course Rating − Par).",
+          'The 113 in that formula is the Slope Rating of a course of "standard" difficulty — Slope Ratings themselves range from 55 (easiest) to 155 (hardest) by design, so dividing by 113 scales a golfer\'s index up for a harder-than-standard tee and down for an easier one. The (Course Rating − Par) term then adjusts for the course\'s overall scoring difficulty for a scratch (zero-handicap) golfer, on top of the slope adjustment.',
+          "This calculator converts a Handicap Index you already have — the index itself is calculated separately, by your golf association, from your own scoring history (specifically, the average of your best 8 score differentials out of your most recent 20 rounds). This page covers only the course-to-course conversion step, which is the part a golfer actually needs to do before almost every round at an unfamiliar course or tee."
+        ]
+      },
+      howTo: {
+        intro: "Enter your Handicap Index and the specific tee's Slope Rating, Course Rating and par.",
+        steps: [
+          { name: 'Enter your Handicap Index', text: 'The number issued by your golf association or handicapping body, based on your own scoring history.' },
+          { name: 'Enter the Slope Rating', text: "The specific tee's Slope Rating, from 55 to 155, found on the scorecard or the course's rating plaque." },
+          { name: 'Enter the Course Rating and par', text: "Both specific to the same tee — a different set of tees on the same course has its own Course Rating, Slope Rating and sometimes a different par." },
+          { name: 'Read your Course Handicap', text: "The rounded whole-number Course Handicap is the figure used for play; the exact value before rounding is shown underneath for reference." },
+          { name: 'Check the format\'s own allowance, if any', text: "Some competitions apply their own percentage allowance on top of Course Handicap (a \"Playing Handicap\") depending on the format — check your event's rules." }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "The WHS's Rule 6.1 formula converts Handicap Index to Course Handicap for one specific tee.",
+        expression: 'Course Handicap = Handicap Index × (Slope Rating ÷ 113) + (Course Rating − Par)',
+        terms: [
+          { symbol: 'Handicap Index', meaning: 'A golfer\'s portable, course-independent number, calculated separately from their scoring history.' },
+          { symbol: 'Slope Rating', meaning: "A specific tee's relative difficulty for a higher-handicap player compared with a scratch player, from 55 to 155; 113 is the standard-difficulty value." },
+          { symbol: 'Course Rating, Par', meaning: 'The same tee\'s expected score for a scratch golfer, and its par.' }
+        ],
+        note: "Course Handicap is rounded to the nearest whole number for play. It is not the same as a Handicap Index — it changes from tee to tee even for the same golfer."
+      },
+      workedExample: {
+        intro: 'A golfer with a 12.3 Handicap Index plays a tee with a 128 Slope Rating, a 70.5 Course Rating and a par of 71. What is their Course Handicap?',
+        rows: [
+          { label: 'Slope ratio (128 ÷ 113)', value: '1.1327' },
+          { label: 'Handicap Index × slope ratio (12.3 × 1.1327)', value: '13.9327' },
+          { label: 'Course Rating − Par (70.5 − 71)', value: '−0.5' },
+          { label: 'Course Handicap (exact) = 13.9327 − 0.5', value: '13.4327' },
+          { label: 'Rounded to the nearest whole number', value: '13' }
+        ],
+        result: 'Course Handicap = 13',
+        explanation: "This tee's Course Rating (70.5) is below its par (71), meaning it plays slightly easier than par for a scratch golfer, which trims a little off the index-based figure before rounding."
+      },
+      watchOut: [
+        {
+          title: 'This converts an existing Handicap Index — it does not calculate one',
+          body: "A real Handicap Index comes from a golfer's own scoring history: the average of their best 8 score differentials out of their most recent 20 rounds, under WHS Rule 5. That requires an ongoing scoring record this single-formula page doesn't track — enter the index you already have from your golf association."
+        },
+        {
+          title: 'Course Handicap is not automatically your Playing Handicap',
+          body: 'Many competitions apply their own percentage handicap allowance on top of Course Handicap, depending on the format (stroke play, match play, better-ball, and so on) — that allowance is set by the competition committee and varies, so this calculator does not guess at it.'
+        },
+        {
+          title: 'Slope Rating only runs from 55 to 155',
+          body: '113 represents a course of standard difficulty by definition. A number outside the 55-155 range is not a valid WHS Slope Rating and usually means the wrong figure was entered.'
+        },
+        {
+          title: 'A negative Course Handicap ("plus" handicap) is normal for a strong player on an easy tee',
+          body: "It means that golfer is expected to shoot under par at that tee rather than receive strokes — not an error in the calculation."
+        },
+        {
+          title: 'Always use the rating for the specific tee being played',
+          body: "A course's forward, middle and back tees each have their own Course Rating and Slope Rating, and sometimes a different par. Using one tee's figures while actually playing another will give the wrong Course Handicap."
+        }
+      ],
+      references: [
+        { label: 'USGA, Rules of Handicapping (2024 revision), Rule 6.1 — Course Handicap calculation', url: 'https://en.wikipedia.org/wiki/Handicap_(golf)' },
+        { label: 'USGA, "FAQs for USGA Implementation of the World Handicap System"', url: 'https://www.usga.org/content/usga/home-page/handicapping/world-handicap-system/world-handicap-system-usga-golf-faqs.html' }
+      ]
+    },
+    inputs: [
+      { id: 'handicapIndex', label: 'Handicap Index', type: 'number', placeholder: '12.3', defaultValue: 12.3, step: 0.1, min: -10 },
+      { id: 'slopeRating', label: 'Slope Rating', type: 'number', placeholder: '128', defaultValue: 128, step: 1, min: 55 },
+      { id: 'courseRating', label: 'Course Rating', type: 'number', placeholder: '70.5', defaultValue: 70.5, step: 0.1, min: 50 },
+      { id: 'par', label: 'Par', type: 'number', placeholder: '71', defaultValue: 71, step: 1, min: 27 }
+    ],
+    seo: {
+      title: 'Golf Course Handicap Calculator – WHS Formula',
+      description: "Convert a Handicap Index to a Course Handicap for a specific tee using the World Handicap System's official Rule 6.1 formula.",
+      faq: [
+        { question: 'How do you calculate a golf Course Handicap?', answer: 'Course Handicap = Handicap Index × (Slope Rating ÷ 113) + (Course Rating − Par), per the World Handicap System\'s Rule 6.1, then rounded to the nearest whole number.' },
+        { question: 'What is the difference between Handicap Index and Course Handicap?', answer: "Handicap Index is a single, portable number based on a golfer's scoring history. Course Handicap is that index converted to strokes for one specific tee, and it changes from course to course and tee to tee even for the same golfer." },
+        { question: 'What does a Slope Rating of 113 mean?', answer: "113 is defined as a course of standard difficulty. Slope Ratings range from 55 (easiest) to 155 (hardest); dividing by 113 in the formula scales a golfer's index up for harder-than-standard tees and down for easier ones." },
+        { question: 'Is Course Handicap the same as Playing Handicap?', answer: 'Not necessarily. Many competition formats apply their own percentage handicap allowance on top of Course Handicap, set by the event\'s committee, to get a Playing Handicap — that allowance varies by format and is not part of the Course Handicap formula itself.' },
+        { question: 'Can a Course Handicap be negative?', answer: "Yes — a negative result (a \"plus\" handicap) means a skilled golfer is expected to shoot under par at that tee, and simply plays off strokes given to the course rather than receiving them." },
+        { question: 'How do I find my Handicap Index?', answer: "Your Handicap Index is issued by your golf association or handicapping body from your own scoring history — it averages your best 8 score differentials from your most recent 20 rounds. This calculator starts from that already-known number." }
+      ]
+    },
+    compute(values) {
+      const courseHandicapExact = values.handicapIndex * (values.slopeRating / 113) + (values.courseRating - values.par);
+      const courseHandicap = Math.round(courseHandicapExact);
+      return { courseHandicap, courseHandicapExact };
+    }
   }
 ];

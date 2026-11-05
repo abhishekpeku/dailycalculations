@@ -16,7 +16,8 @@ Third batch of the `food` category. Adding more calculators to the existing
 - [x] `party-drinks-calculator` — breakdown, America's Test Kitchen Drinks = Guests x (Hours+1)
 - [x] `brine-calculator` — breakdown, Morton Salt cup-per-gallon ratio by brining duration
 
-Branch `step/46-wave-2-food-run-3`, PR TBD.
+Branch `step/46-wave-2-food-run-3`, PR #58. All 7 built, verified, `npm test` (796 tests, 0
+failures), `npm run lint` and `npm run build` passing.
 
 ## Picks and why (7 of the 10 remaining candidates)
 
@@ -160,9 +161,14 @@ any `redirectFrom`, no `related`-id self-reference, every `related` id (both the
 own lists and the existing calculators updated to cross-link back) exists, and
 `seo.title`/`seo.description` within their character limits.
 
-`npm test`: see PR description for pass count after `npm run test:update`.
+`npm test`: 796 tests, 0 failures, after `npm run test:update` generated the 7 new `compute()`
+snapshots. `git diff --stat data/calculators.spec.ts.snapshot` showed 263 insertions, 0 deletions —
+confirming no existing calculator's snapshot moved; the 7 new ids are the only ones touched.
 
-`npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"`: see PR description.
+`npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"`: clean, no output.
+
+`npm run build`: passed. 211 static paths generated (204 before this batch + 7 new pages), no
+TypeScript errors.
 
 ## Cross-links
 
@@ -184,11 +190,23 @@ per batch. Running total toward the next visual-QA pass going into this run: Wav
 pass. This run adds 7 more, bringing the running total to **38** — getting close to, but not yet
 at, the ~50 checkpoint. **Flagging explicitly per the batch brief: the next Food/Sports batch (or
 the batch after it) should trigger the visual-QA pass**, since Sports batches will likely push the
-total past 50 before that sector is done. curl-based structural checks against the dev server
-confirmed H1, JSON-LD and every content section for all 7 new pages — see the PR description for
-the exact pass/fail summary.
+total past 50 before that sector is done.
+
+curl-based structural checks against the dev server (`http://localhost:3000/en/calculators/<id>`,
+following the 301 locale redirect) confirmed, for all 7 new pages: HTTP 200, the correct `<h1>`
+(matching each calculator's `title`), exactly one `application/ld+json` script tag, and every
+required `<h2>` section (concept, "How to use this calculator," "The formula," "Worked example,"
+"Things to watch out for," the FAQ heading, "References," plus the "Related calculators" panel and
+table of contents). Also spot-checked: the ABV calculator's default-input result renders as
+"5.34%" server-side, matching the verify script's 5.339% exactly; every planned cross-link
+(`coffee-ratio-calculator` to `cold-brew-ratio-calculator` and back, `party-drinks-calculator` to
+`party-food-calculator`, `brine-calculator` to `turkey-thaw-time-calculator` and
+`turkey-cook-time-calculator`) renders as a working `<a href>` on both sides, including the
+updated `related` lists on the 3 pre-existing calculators.
 
 ## Dev server
 
-Started with `run_in_background`; confirmed killed (no process left listening on the port used)
-before finishing — see the PR description for the exact check.
+Started with `run_in_background`, confirmed ready, used for the curl checks above, then killed via
+`taskkill /PID <pid> /F` after finding the PID with `netstat -ano | findstr :3000`. Re-checked with
+`netstat -ano | grep ":3000" | grep LISTENING` afterward — no match (exit code 1), confirming
+nothing is left listening on port 3000.

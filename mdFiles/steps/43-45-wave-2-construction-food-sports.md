@@ -121,11 +121,19 @@ and merges.
   `food` category now 10 calculators. Not built this run (left for a later batch): ABV, party
   drinks/alcohol quantity, cake servings, popcorn-for-a-party, coffee ratio, cold brew ratio,
   brine, bread, sourdough, self-rising flour substitution.
-- [ ] Food batch 3 (7): IN PROGRESS 2026-11-05 — abv, coffee-ratio, cold-brew-ratio,
+- [x] Food batch 3 (7): DONE 2026-11-05 — abv, coffee-ratio, cold-brew-ratio,
   self-rising-flour-substitute, cake-servings, party-drinks, brine calculators. Branch
-  `step/46-wave-2-food-run-3`. Details: `mdFiles/steps/46-wave-2-food-run-3.md`. Parked and not
-  built (closing out Food): popcorn-for-a-party (no authoritative primary source — published
-  per-person and kernel-yield figures vary 2x across sites with no cited methodology), bread and
-  sourdough (both would just be `bakers-percentage-calculator` or `pizza-dough-calculator` under a
-  different name — no distinct formula or search intent found).
-- [ ] Sports batches: TODO
+  `step/46-wave-2-food-run-3`, PR #58. Details: `mdFiles/steps/46-wave-2-food-run-3.md`. `food`
+  category now 17 calculators. Parked and not built (closing out Food): popcorn-for-a-party (no
+  authoritative primary source — published per-person and kernel-yield figures vary 2x across
+  sites with no cited methodology), bread and sourdough (both would just be
+  `bakers-percentage-calculator` or `pizza-dough-calculator` under a different name — no distinct
+  formula or search intent found). **This closes out Wave 2 Food.** Running total since the last
+  visual-QA pass: 38 calculators (Construction 21 + Food 5+5+7) — not yet at the ~50 checkpoint,
+  but close; flag for the next Sports batch or the one after it.
+- [ ] Sports batches: TODO — next up. See `mdFiles/steps/43-45-wave-2-construction-food-sports.md`'s
+  "Sports" section above for the candidate list (~15 calculators: one-rep max, target/max heart
+  rate, heart rate zones, VO2 max, race time predictor, swim pace, cycling pace, steps to miles,
+  baseball hitting stats, cricket bowling average/net run rate, NFL passer rating, winning
+  percentage, Elo rating, golf handicap). New category `sports` needs scaffolding (id, theme,
+  icon, `data/calculators/sports.ts`) in its first batch, same as `food` did in run 1.

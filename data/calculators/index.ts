@@ -17,6 +17,7 @@ import { physicsCalculators } from './physics.ts';
 import { mathCalculators } from './math.ts';
 import { statisticsCalculators } from './statistics.ts';
 import { foodCalculators } from './food.ts';
+import { sportsCalculators } from './sports.ts';
 
 export type * from './types.ts';
 
@@ -36,7 +37,8 @@ export const categories: CalculatorCategory[] = [
   { id: 'physics', title: 'Physics', description: 'Force, motion, energy, and other physics formulas solved for any variable.' },
   { id: 'math', title: 'Math', description: 'Percentages, fractions, ratios, and everyday math calculators.' },
   { id: 'statistics', title: 'Statistics', description: 'Mean, median, mode, standard deviation, variance, z-scores, and percentiles.' },
-  { id: 'food', title: 'Food', description: 'Recipe scaling, baking ratios, cook times, and other recipe calculators.' }
+  { id: 'food', title: 'Food', description: 'Recipe scaling, baking ratios, cook times, and other recipe calculators.' },
+  { id: 'sports', title: 'Sports', description: 'One-rep max, heart rate zones, VO2 max, race prediction, and swim pace calculators for athletes.' }
 ];
 
 // Display order for listings, the sitemap and search; the old single array's order, kept exactly.
@@ -223,7 +225,12 @@ export const calculatorOrder: string[] = [
   'self-rising-flour-substitute-calculator',
   'cake-servings-calculator',
   'party-drinks-calculator',
-  'brine-calculator'
+  'brine-calculator',
+  'one-rep-max-calculator',
+  'heart-rate-zones-calculator',
+  'vo2-max-calculator',
+  'race-time-predictor-calculator',
+  'swim-pace-calculator'
 ];
 
 const rank = (id: string) => {
@@ -247,7 +254,8 @@ export const calculators: CalculatorConfig[] = [
   ...physicsCalculators,
   ...mathCalculators,
   ...statisticsCalculators,
-  ...foodCalculators
+  ...foodCalculators,
+  ...sportsCalculators
 ].sort((a, b) => rank(a.id) - rank(b.id));
 
 export function findCalculator(slug: string) {

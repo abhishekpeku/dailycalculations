@@ -2953,6 +2953,62 @@ exports[`compute() snapshots > gravel-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > heart-rate-zones-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "age": 30,
+      "restingHeartRate": 65,
+      "maxHRFormula": 0,
+      "targetIntensityPercent": 70
+    },
+    "outputs": {
+      "maxHeartRate": 190,
+      "zone1High": 114,
+      "zone2High": 133,
+      "zone3High": 152,
+      "zone4High": 171,
+      "zone5High": 190,
+      "karvonenTargetBpm": 152.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "age": 45,
+      "restingHeartRate": 98,
+      "maxHRFormula": 0,
+      "targetIntensityPercent": 105
+    },
+    "outputs": {
+      "maxHeartRate": 175,
+      "zone1High": 105,
+      "zone2High": 122.5,
+      "zone3High": 140,
+      "zone4High": 157.5,
+      "zone5High": 175,
+      "karvonenTargetBpm": 178.85
+    }
+  },
+  "edge": {
+    "inputs": {
+      "age": 1,
+      "restingHeartRate": 30,
+      "maxHRFormula": 0,
+      "targetIntensityPercent": 50
+    },
+    "outputs": {
+      "maxHeartRate": 219,
+      "zone1High": 131.4,
+      "zone2High": 153.3,
+      "zone3High": 175.2,
+      "zone4High": 197.1,
+      "zone5High": 219,
+      "karvonenTargetBpm": 124.5
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > horsepower-to-kilowatts-converter 1`] = `
 {
   "default": {
@@ -4302,6 +4358,38 @@ exports[`compute() snapshots > odds-ratio-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > one-rep-max-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "weight": 185,
+      "reps": 5
+    },
+    "outputs": {
+      "oneRepMax": 215.8333333
+    }
+  },
+  "typical": {
+    "inputs": {
+      "weight": 278,
+      "reps": 8
+    },
+    "outputs": {
+      "oneRepMax": 352.1333333
+    }
+  },
+  "edge": {
+    "inputs": {
+      "weight": 0,
+      "reps": 1
+    },
+    "outputs": {
+      "oneRepMax": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > ounces-to-milliliters-converter 1`] = `
 {
   "default": {
@@ -5532,6 +5620,41 @@ exports[`compute() snapshots > quartile-calculator 1`] = `
       "upperFence": 0,
       "outlierCount": 0,
       "count": 1
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > race-time-predictor-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "distanceMiles": 3.1,
+      "totalMinutes": 25,
+      "targetMiles": 6.2
+    },
+    "outputs": {
+      "predictedMinutes": 52.12328804
+    }
+  },
+  "typical": {
+    "inputs": {
+      "distanceMiles": 4.7,
+      "totalMinutes": 37.5,
+      "targetMiles": 9.3
+    },
+    "outputs": {
+      "predictedMinutes": 77.30355451
+    }
+  },
+  "edge": {
+    "inputs": {
+      "distanceMiles": 0.1,
+      "totalMinutes": 0.5,
+      "targetMiles": 0.1
+    },
+    "outputs": {
+      "predictedMinutes": 0.5
     }
   }
 }
@@ -6801,6 +6924,47 @@ exports[`compute() snapshots > surface-area-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > swim-pace-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "distance": 1500,
+      "time": 30
+    },
+    "outputs": {
+      "pace100mSec": 120,
+      "pace100ydSec": 109.728,
+      "speedKmh": 3,
+      "speedMph": 1.864113577
+    }
+  },
+  "typical": {
+    "inputs": {
+      "distance": 2250,
+      "time": 45
+    },
+    "outputs": {
+      "pace100mSec": 120,
+      "pace100ydSec": 109.728,
+      "speedKmh": 3,
+      "speedMph": 1.864113577
+    }
+  },
+  "edge": {
+    "inputs": {
+      "distance": 1,
+      "time": 0.1
+    },
+    "outputs": {
+      "pace100mSec": 600,
+      "pace100ydSec": 548.64,
+      "speedKmh": 0.6,
+      "speedMph": 0.3728227153
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > t-test-calculator 1`] = `
 {
   "default": {
@@ -7542,6 +7706,35 @@ exports[`compute() snapshots > visa-stay-days-calculator 1`] = `
       "canStay": 1,
       "overstayDays": 0,
       "usagePercent": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > vo2-max-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "distance": 1.5
+    },
+    "outputs": {
+      "vo2Max": 42.68088531
+    }
+  },
+  "typical": {
+    "inputs": {
+      "distance": 2.25
+    },
+    "outputs": {
+      "vo2Max": 69.66519115
+    }
+  },
+  "edge": {
+    "inputs": {
+      "distance": 0.1
+    },
+    "outputs": {
+      "vo2Max": -7.689818913
     }
   }
 }

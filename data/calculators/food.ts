@@ -1437,5 +1437,376 @@ export const foodCalculators: CalculatorConfig[] = [
         instantEquivalentG: freshEquivalentG * YEAST_FRESH_TO_INSTANT
       };
     }
+  },
+  {
+    id: 'abv-calculator',
+    category: 'food',
+    glyph: 'abv',
+    updatedAt: '2026-11-05',
+    aliases: ['abv calculator', 'alcohol by volume calculator', 'homebrew abv calculator', 'original gravity final gravity calculator', 'beer abv calculator', 'wine abv calculator from gravity'],
+    related: ['yeast-conversion-calculator', 'party-drinks-calculator', 'cake-servings-calculator'],
+    title: 'ABV Calculator',
+    description: 'Alcohol by volume for homebrew beer, wine, mead or cider from original and final gravity readings, using Brew Your Own magazine’s own precise and quick formulas.',
+    example: 'Original gravity 1.050, final gravity 1.010, gives about 5.3% ABV by the precise formula — close to, but not identical to, the quick 5.28% estimate from the same source.',
+    breakdown: {
+      headline: 'abvPercent',
+      headlineLabel: 'Alcohol by volume (ABV), precise formula',
+      outputs: [
+        { id: 'abvPercent', label: 'Alcohol by volume (ABV)', format: 'percent' },
+        { id: 'abwPercent', label: 'Alcohol by weight (ABW)', format: 'percent' },
+        { id: 'quickEstimateAbvPercent', label: 'Quick-estimate ABV (same source’s simple formula)', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Gravity readings', inputs: ['originalGravity', 'finalGravity'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'quickEstimateAbvPercent', label: 'Quick estimate' },
+          { from: 'abvPercent', label: 'Precise formula' }
+        ],
+        title: 'Quick estimate vs. the precise formula'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'What a gravity reading measures',
+        paragraphs: [
+          "A hydrometer measures specific gravity — how dense a liquid is compared with plain water (1.000). Unfermented wort, must or cider starts denser than water because it's full of dissolved sugar: that's the original gravity (OG). As yeast eats the sugar and produces alcohol and carbon dioxide, the liquid gets less dense, so the final gravity (FG), measured once fermentation is done, is lower than the OG.",
+          "The gap between OG and FG is a direct stand-in for how much sugar the yeast actually converted, which is why it's the basis for estimating alcohol content without any lab equipment. Brew Your Own magazine publishes both a precise formula, which accounts for how alcohol's own lower density affects the final reading, and a simpler quick-estimate formula meant for fast mental math.",
+          "Neither formula replaces a lab test. Homebrewers, home winemakers and home cidermakers use gravity-based ABV as a close estimate for their own batches — it's not accurate enough for a label on anything sold commercially, which in the US requires TTB-certified lab analysis."
+        ]
+      },
+      howTo: {
+        intro: 'Enter the original gravity (OG) you measured before fermentation and the final gravity (FG) you measured once fermentation finished.',
+        steps: [
+          { name: 'Measure original gravity', text: 'Take a hydrometer (or refractometer) reading of the wort, must or juice before pitching yeast.' },
+          { name: 'Ferment to completion', text: 'Wait until gravity stops dropping over 2-3 consecutive days — fermentation isn’t done until then.' },
+          { name: 'Measure final gravity', text: 'Take a second reading once fermentation is finished.' },
+          { name: 'Enter both readings', text: 'Type OG and FG as decimals, e.g. 1.050 and 1.010.' },
+          { name: 'Read the ABV', text: 'The precise formula is the headline figure; the quick estimate is shown alongside it for comparison.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Brew Your Own magazine publishes two formulas: a precise one that corrects for alcohol’s lower density, and a quick one for mental math using gravity points (the digits after the decimal, as a whole number).',
+        expression: 'ABW = 76.08 × (OG − FG) ÷ (1.775 − OG)\nABV = ABW × (FG ÷ 0.794)\n\nQuick estimate: ABV ≈ (OG points − FG points) × 0.132',
+        terms: [
+          { symbol: 'OG, FG', meaning: 'Original and final specific gravity, e.g. 1.050 and 1.010.' },
+          { symbol: 'OG points, FG points', meaning: 'The digits after the decimal point, as a whole number — 1.050 is 50 points.' },
+          { symbol: 'ABW', meaning: 'Alcohol by weight, an intermediate figure in the precise formula.' },
+          { symbol: '76.08, 1.775, 0.794, 0.132', meaning: 'Brew Your Own’s own published constants for these formulas.' }
+        ],
+        note: 'This is an estimate for home use, not a certified alcohol-content test. The quick formula’s own constant (0.132, from Brew Your Own) is close to, but not the same as, the uncredited "×131.25" shortcut repeated on many sites with no stated source.'
+      },
+      workedExample: {
+        intro: 'A batch with OG 1.050 and FG 1.010 — a typical session beer.',
+        rows: [
+          { label: 'Original gravity (OG)', value: '1.050' },
+          { label: 'Final gravity (FG)', value: '1.010' },
+          { label: 'ABW = 76.08 × (1.050 − 1.010) ÷ (1.775 − 1.050)', value: '76.08 × 0.040 ÷ 0.725 = 4.20%' },
+          { label: 'ABV = 4.20% × (1.010 ÷ 0.794)', value: '5.34%' },
+          { label: 'Quick estimate: (50−10) × 0.132', value: '5.28%' }
+        ],
+        result: 'About 5.3% ABV by the precise formula, 5.28% by the quick estimate',
+        explanation: 'The two formulas agree closely at typical beer strengths — the gap widens at higher-gravity beers, wines and meads, which is exactly why Brew Your Own publishes the more precise version for those batches.'
+      },
+      watchOut: [
+        {
+          title: 'This isn’t a lab-certified reading',
+          body: 'Gravity-based ABV is a close estimate for home use. Anything brewed or fermented for commercial sale in the US needs TTB-certified lab testing for its labeled alcohol content, not a hydrometer calculation.'
+        },
+        {
+          title: 'The gap between formulas grows at higher ABV',
+          body: 'For an ordinary beer the quick and precise formulas land within a few tenths of a percent of each other. For a strong beer, wine or mead — higher OG, bigger drop to FG — the gap widens, which is why the precise formula exists.'
+        },
+        {
+          title: 'A refractometer needs a correction, a hydrometer doesn’t',
+          body: 'This calculator assumes both readings came from a hydrometer (or were already corrected to hydrometer-equivalent gravity). A refractometer reads alcohol-containing liquid inaccurately after fermentation starts and needs its own correction formula first.'
+        },
+        {
+          title: 'Temperature affects a hydrometer reading',
+          body: 'Most hydrometers are calibrated for a specific sample temperature (commonly 60°F/15.6°C). A reading taken from a hot or cold sample needs a temperature correction before it’s accurate.'
+        }
+      ],
+      references: [
+        { label: 'Brew Your Own magazine, "Calculating Alcohol Content, Attenuation, Extract, and Calories" by Bill Pierce', url: 'https://byo.com/article/calculating-alcohol/' },
+        { label: 'Alcohol and Tobacco Tax and Trade Bureau (TTB), beverage alcohol labeling requirements', url: 'https://www.ttb.gov/' }
+      ]
+    },
+    inputs: [
+      { id: 'originalGravity', label: 'Original gravity (OG)', type: 'number', placeholder: '1.050', defaultValue: 1.05, step: 0.001, min: 1 },
+      { id: 'finalGravity', label: 'Final gravity (FG)', type: 'number', placeholder: '1.010', defaultValue: 1.01, step: 0.001, min: 0.98 }
+    ],
+    seo: {
+      title: 'ABV Calculator – Alcohol by Volume from Gravity',
+      description: 'Free ABV calculator from original and final gravity, using Brew Your Own magazine’s precise and quick formulas for homebrew beer, wine, mead or cider.',
+      faq: [
+        { question: 'How do I calculate ABV from original and final gravity?', answer: 'Brew Your Own’s precise formula: ABW = 76.08 × (OG − FG) ÷ (1.775 − OG), then ABV = ABW × (FG ÷ 0.794). For OG 1.050 and FG 1.010, that’s about 5.3%.' },
+        { question: 'Is there a quick way to estimate ABV?', answer: 'Yes — Brew Your Own’s quick formula multiplies the gravity-point difference by 0.132: (OG points − FG points) × 0.132. For 1.050 to 1.010 (a 40-point drop), that’s 5.28%, close to the precise formula’s 5.34%.' },
+        { question: 'Is the "×131.25" ABV formula the same as this one?', answer: 'It’s a similar quick shortcut, but Brew Your Own’s own published quick-formula constant is 0.132 (equivalent to ×132 on gravity points), not 131.25 — close, but not identical, and the 131.25 figure is widely repeated without an original citation.' },
+        { question: 'Why are there two different ABV formulas?', answer: 'The quick formula is fast mental math that works well for ordinary-strength beers. The precise formula corrects for alcohol’s lower density, which matters more as OG and the resulting ABV climb.' },
+        { question: 'Can I use this for wine or mead, not just beer?', answer: 'Yes — the gravity-based formula works the same way for any fermented beverage measured with a hydrometer. Wines and meads often start at a higher OG, which is exactly where the precise formula and the quick formula diverge the most.' },
+        { question: 'Does this calculator work with refractometer readings?', answer: 'Only if the refractometer reading has already been corrected to a hydrometer-equivalent final gravity — a refractometer alone reads inaccurately once alcohol is present, and needs its own correction formula first.' },
+        { question: 'Is this ABV figure accurate enough for a beer or wine label?', answer: 'No — commercial alcohol labeling in the US requires TTB-certified lab testing. This is a home-use estimate only.' }
+      ]
+    },
+    compute(values) {
+      const og = values.originalGravity;
+      const fg = values.finalGravity;
+      const abwPercent = (76.08 * (og - fg)) / (1.775 - og);
+      const abvPercent = abwPercent * (fg / 0.794);
+      const quickEstimateAbvPercent = ((og - 1) * 1000 - (fg - 1) * 1000) * 0.132;
+      return { abvPercent, abwPercent, quickEstimateAbvPercent };
+    }
+  },
+  {
+    id: 'coffee-ratio-calculator',
+    category: 'food',
+    glyph: 'cof',
+    updatedAt: '2026-11-05',
+    aliases: ['coffee to water ratio calculator', 'coffee ratio calculator', 'how much coffee per cup of water', 'coffee brewing ratio calculator', 'golden ratio coffee calculator', 'drip coffee ratio calculator'],
+    related: ['cold-brew-ratio-calculator', 'rice-to-water-ratio-calculator', 'recipe-scaling-calculator'],
+    title: 'Coffee to Water Ratio Calculator',
+    description: 'How much coffee to use for a given amount of water, by brewing strength, using the Specialty Coffee Association’s own official brew-ratio standard.',
+    example: 'For 500 mL of water at the SCA’s Golden Cup standard (55 g coffee per 1,000 g water), use about 27.5 g of coffee — a ratio of roughly 1:18.',
+    breakdown: {
+      headline: 'coffeeGrams',
+      headlineLabel: 'Coffee needed',
+      outputs: [
+        { id: 'coffeeGrams', label: 'Coffee needed', format: 'number', dimension: 'mass', unit: 'g' },
+        { id: 'ratioToOne', label: 'Ratio (parts water per part coffee)', format: 'number' }
+      ],
+      groups: [
+        { title: 'Brew', inputs: ['waterAmount', 'strengthOption'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'lightGrams', label: 'Light end' },
+          { from: 'goldenGrams', label: 'Golden Cup standard' },
+          { from: 'strongGrams', label: 'Strong end' }
+        ],
+        title: 'Coffee needed across the SCA’s standard range',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'Where the SCA’s brew ratio comes from',
+        paragraphs: [
+          "The Specialty Coffee Association (SCA) publishes an official standard for home coffee brewers, SCA Standard 310-2021, which defines the industry's reference \"brew ratio\": grams of coffee per 1.000 kg of fresh water. The standard states its own brew ratio used for testing is 55 g of coffee per 1.000 kg of water — commonly called the \"Golden Cup\" ratio, roughly 1 part coffee to 18 parts water by weight.",
+          "The same standard treats a +/-10% range around that figure (49.5 to 60.5 g per liter) as the acceptable band for producing a good cup under typical home-brewing conditions, which is why this calculator offers a light end, the standard itself, and a strong end rather than a single fixed number.",
+          "This is a filter/drip-coffee standard specifically — SCA Standard 310-2021 explicitly excludes pour-over devices, French press, espresso machines and pod brewers from its scope, though the same brew-ratio concept is commonly applied across methods by home coffee drinkers."
+        ]
+      },
+      howTo: {
+        intro: 'Enter how much water you’re brewing with and pick a strength — the calculator multiplies by the SCA’s own brew-ratio figures.',
+        steps: [
+          { name: 'Enter your water amount', text: 'The total water your brewer will use, in milliliters, cups or liters.' },
+          { name: 'Pick a strength', text: 'Light end, the SCA’s Golden Cup standard, or the strong end of its published range.' },
+          { name: 'Read the coffee amount', text: 'Weigh your coffee on a kitchen scale for accuracy — volume scoops vary by grind and roast.' },
+          { name: 'Check the ratio', text: 'The "parts water per part coffee" figure helps you scale to any pot size by eye.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Coffee needed is the water amount (in kilograms, since 1 L of water weighs 1 kg) multiplied by the chosen brew ratio in grams per liter.',
+        expression: 'coffee (g) = water (L) × ratio (g/L)\nratio (parts) = 1000 ÷ ratio (g/L)',
+        terms: [
+          { symbol: 'water (L)', meaning: 'Your brew water amount, converted to liters.' },
+          { symbol: 'ratio (g/L)', meaning: 'SCA Standard 310-2021’s brew ratio: 55 g/L at the Golden Cup standard, 49.5-60.5 g/L across its published +/-10% range.' }
+        ],
+        note: 'This covers filter/drip coffee. Espresso, French press and cold brew each use a different ratio and method — see the related calculators for cold brew specifically.'
+      },
+      workedExample: {
+        intro: '500 mL of water at the Golden Cup standard.',
+        rows: [
+          { label: 'Water amount', value: '500 mL = 0.5 L' },
+          { label: 'Ratio (Golden Cup standard)', value: '55 g/L' },
+          { label: 'Coffee (0.5 × 55)', value: '27.5 g' },
+          { label: 'Ratio, as parts', value: '1000 ÷ 55 ≈ 1:18.18' }
+        ],
+        result: 'About 27.5 g of coffee for 500 mL of water',
+        explanation: 'Doubling the water amount to 1 L doubles the coffee to 55 g — the ratio itself doesn’t change, only the total quantity.'
+      },
+      watchOut: [
+        {
+          title: 'Weigh, don’t scoop',
+          body: 'A tablespoon or scoop of coffee varies in weight by roast and grind size — a kitchen scale is the only way to hit a specific ratio reliably.'
+        },
+        {
+          title: 'This is a filter-coffee standard',
+          body: 'SCA Standard 310-2021 is written specifically for electric drip/filter brewers and explicitly excludes pour-over, French press, espresso and pod brewers from its scope, even though many home brewers apply a similar ratio across methods.'
+        },
+        {
+          title: 'Taste preference beats any standard',
+          body: 'The SCA’s own +/-10% range exists because brewing water, roast level, grind size and personal taste all shift the ideal ratio — treat the Golden Cup figure as a starting point, not a rule.'
+        },
+        {
+          title: 'Grind size has to match your brewer',
+          body: 'The right ratio still tastes off with the wrong grind size for your brewing method — a drip machine, pour-over and French press each need a different grind.'
+        }
+      ],
+      references: [
+        { label: 'Specialty Coffee Association, SCA Standard 310-2021, "Home Coffee Brewers: Specifications and Test Methods"', url: 'https://sca.coffee/research/coffee-standards' }
+      ]
+    },
+    inputs: [
+      { id: 'waterAmount', label: 'Water amount', type: 'number', placeholder: '500', defaultValue: 500, step: 50, min: 10, dimension: 'volume', unit: 'mL' },
+      {
+        id: 'strengthOption',
+        label: 'Strength',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 1,
+        min: 0,
+        options: SCA_BREW_RATIOS_G_PER_L.map((ratio, i) => ({
+          value: i,
+          label: i === 0 ? `Light end (${ratio} g/L)` : i === 1 ? `Golden Cup standard (${ratio} g/L)` : `Strong end (${ratio} g/L)`
+        }))
+      }
+    ],
+    seo: {
+      title: 'Coffee to Water Ratio Calculator – SCA Standard',
+      description: 'Free coffee to water ratio calculator using the Specialty Coffee Association’s own Golden Cup brew-ratio standard, from light to strong.',
+      faq: [
+        { question: 'What is the ideal coffee to water ratio?', answer: 'The Specialty Coffee Association’s Golden Cup standard is 55 g of coffee per 1,000 g (1 L) of water — about a 1:18 ratio by weight — with an acceptable range of 49.5 to 60.5 g/L.' },
+        { question: 'How much coffee do I use per cup of water?', answer: 'A US cup of water is about 237 mL. At the SCA’s 55 g/L standard, that’s about 13 g of coffee per cup — roughly 1.5 level tablespoons, though weighing is more accurate than scooping.' },
+        { question: 'Is the coffee to water ratio the same for every brewing method?', answer: 'No — SCA Standard 310-2021 is written specifically for filter/drip coffee makers. Cold brew uses a very different ratio (around 1:4 to 1:5) because it’s steeped as a concentrate, not brewed to drinking strength directly.' },
+        { question: 'Why does the SCA give a range instead of one number?', answer: 'The standard’s own +/-10% tolerance (49.5-60.5 g/L) reflects that brewing water, roast and personal taste shift the ideal ratio — 55 g/L is the center of that range, not a single correct answer.' },
+        { question: 'Should I weigh my coffee or use scoops?', answer: 'Weighing is more accurate. A scoop or tablespoon of coffee varies in weight depending on roast level and grind size, which throws off the ratio even when the volume looks the same.' },
+        { question: 'Is a stronger ratio the same as a darker roast?', answer: 'No — ratio is about quantity of coffee per water, while roast level is about how long the beans were roasted. A light roast brewed at the strong end of this range is still a "light roast," just a more concentrated cup of it.' }
+      ]
+    },
+    compute(values) {
+      const ratio = SCA_BREW_RATIOS_G_PER_L[values.strengthOption];
+      const coffeeGrams = (values.waterAmount / 1000) * ratio;
+      const ratioToOne = 1000 / ratio;
+      return {
+        coffeeGrams,
+        ratioToOne,
+        lightGrams: (values.waterAmount / 1000) * SCA_BREW_RATIOS_G_PER_L[0],
+        goldenGrams: (values.waterAmount / 1000) * SCA_BREW_RATIOS_G_PER_L[1],
+        strongGrams: (values.waterAmount / 1000) * SCA_BREW_RATIOS_G_PER_L[2]
+      };
+    }
+  },
+  {
+    id: 'cold-brew-ratio-calculator',
+    category: 'food',
+    glyph: 'cbr',
+    updatedAt: '2026-11-05',
+    aliases: ['cold brew ratio calculator', 'cold brew coffee calculator', 'cold brew concentrate ratio', 'how much coffee for cold brew', 'cold brew coffee to water ratio', 'cold brew recipe calculator'],
+    related: ['coffee-ratio-calculator', 'rice-to-water-ratio-calculator', 'party-drinks-calculator'],
+    title: 'Cold Brew Ratio Calculator',
+    description: 'How much water to use for a given amount of coffee when making cold brew concentrate, using the National Coffee Association’s own 1:4 to 1:5 ratio.',
+    example: '100 g of coarsely ground coffee needs 400 to 500 g of cold water — a 1:4 to 1:5 ratio, per the National Coffee Association’s own cold brew guidance.',
+    breakdown: {
+      headline: 'waterLowG',
+      headlineLabel: 'Water needed (1:4, stronger concentrate)',
+      outputs: [
+        { id: 'waterLowG', label: 'Water, 1:4 (stronger)', format: 'number', dimension: 'mass', unit: 'g' },
+        { id: 'waterHighG', label: 'Water, 1:5 (milder)', format: 'number', dimension: 'mass', unit: 'g' }
+      ],
+      groups: [
+        { title: 'Cold brew', inputs: ['coffeeAmount'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'waterLowG', label: '1:4 (stronger)' },
+          { from: 'waterHighG', label: '1:5 (milder)' }
+        ],
+        title: 'Water needed across the NCA’s ratio range'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'Why cold brew uses such a different ratio',
+        paragraphs: [
+          "Cold brew isn't just iced hot coffee — it's a concentrate, steeped with far more coffee relative to water than a drip pot, then usually diluted before drinking. The National Coffee Association's own cold brew guidance gives a ratio of 1 gram of coffee to 4-5 grams of water (1:4 to 1:5 by weight), roughly four times as much coffee per gram of water as the Specialty Coffee Association's hot-brew Golden Cup standard (about 1:18).",
+          "That concentrated ratio is steeped cold for an extended period — the NCA's own guidance says about 12 hours of contact time — rather than brewed hot and fast, which is what lets a coarse grind fully extract without turning bitter the way it would in a quick hot brew.",
+          "The result is a strong, low-acid concentrate meant to be cut with water, milk or ice before drinking, not consumed at full strength straight from the steeping vessel."
+        ]
+      },
+      howTo: {
+        intro: 'Enter how much ground coffee you’re using — the calculator gives the water range for the National Coffee Association’s 1:4 to 1:5 ratio.',
+        steps: [
+          { name: 'Enter your coffee amount', text: 'Coarsely ground coffee, weighed on a kitchen scale.' },
+          { name: 'Read the water range', text: 'Use the lower figure for a stronger concentrate, the higher figure for a milder one.' },
+          { name: 'Combine and steep', text: 'Stir coarse grounds into cold or room-temperature water in a jar or pitcher.' },
+          { name: 'Steep about 12 hours', text: 'The National Coffee Association’s own guidance; many home recipes extend this to 16-24 hours for a stronger result.' },
+          { name: 'Strain and dilute to taste', text: 'The concentrate is meant to be cut with water, milk or ice before drinking — see the watch-outs below.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Water needed is the coffee amount multiplied by the ratio’s low end (4) and high end (5).',
+        expression: 'water, low (g) = coffee (g) × 4\nwater, high (g) = coffee (g) × 5',
+        terms: [
+          { symbol: 'coffee (g)', meaning: 'Coarsely ground coffee, by weight.' },
+          { symbol: '4, 5', meaning: 'The National Coffee Association’s own published ratio range (1:4 to 1:5, coffee to water by weight).' }
+        ],
+        note: 'This is the ratio for the steeped concentrate itself, before any dilution for serving.'
+      },
+      workedExample: {
+        intro: '100 g of coarsely ground coffee.',
+        rows: [
+          { label: 'Coffee amount', value: '100 g' },
+          { label: 'Water, 1:4 (100 × 4)', value: '400 g' },
+          { label: 'Water, 1:5 (100 × 5)', value: '500 g' }
+        ],
+        result: '400 to 500 g of water for 100 g of coffee',
+        explanation: 'Since water’s density is close enough to 1 g per mL for kitchen purposes, 400-500 g of water is also about 400-500 mL.'
+      },
+      watchOut: [
+        {
+          title: 'This is concentrate, not a ready-to-drink ratio',
+          body: 'The National Coffee Association’s own page doesn’t give a specific dilution ratio for serving — it describes the concentrate as "designed to be diluted with water or enjoyed with ice" without a fixed number. Start around 1:1 concentrate to water and adjust to taste.'
+        },
+        {
+          title: 'Use a coarse grind, not your drip-coffee grind',
+          body: 'The NCA describes the right grind as "coarse," like rock salt. A finer grind over a 12-hour steep tends to over-extract and turn bitter or cloudy.'
+        },
+        {
+          title: 'Steep time varies more than the ratio does',
+          body: 'The NCA’s own figure is about 12 hours, but many published home recipes steep 16 to 24 hours for a stronger result — if you extend the steep time, consider moving toward the 1:5 end of the ratio to avoid over-extraction.'
+        },
+        {
+          title: 'Not the same ratio as hot-brewed coffee',
+          body: 'Don’t reuse this ratio for a drip machine or pour-over — see the coffee-to-water ratio calculator for the much more dilute ratio hot brewing uses.'
+        }
+      ],
+      references: [
+        { label: 'National Coffee Association (aboutcoffee.org), "Cold brew coffee"', url: 'https://www.aboutcoffee.org/brewing/cold-brew-coffee/' }
+      ]
+    },
+    inputs: [
+      { id: 'coffeeAmount', label: 'Coffee amount', type: 'number', placeholder: '100', defaultValue: 100, step: 10, min: 1, dimension: 'mass', unit: 'g' }
+    ],
+    seo: {
+      title: 'Cold Brew Ratio Calculator – Coffee to Water',
+      description: 'Free cold brew ratio calculator: water needed for a 1:4 to 1:5 cold brew concentrate, from the National Coffee Association’s own guidance.',
+      faq: [
+        { question: 'What is the ratio for cold brew coffee?', answer: 'The National Coffee Association’s own guidance is 1 gram of coffee to 4-5 grams of water (1:4 to 1:5 by weight) for the steeped concentrate.' },
+        { question: 'How much coffee do I need for cold brew?', answer: 'For 500 g (about 500 mL) of water at a 1:5 ratio, use 100 g of coarsely ground coffee. Use the calculator above for any amount.' },
+        { question: 'How long should I steep cold brew?', answer: 'About 12 hours, per the National Coffee Association’s own figure — many home recipes extend this to 16-24 hours for a stronger concentrate.' },
+        { question: 'Do I drink cold brew concentrate straight?', answer: 'Usually not — it’s a concentrate meant to be diluted with water, milk or ice. The National Coffee Association doesn’t publish an exact dilution ratio, so start around equal parts and adjust to taste.' },
+        { question: 'Is cold brew ratio the same as hot coffee ratio?', answer: 'No — hot drip coffee uses a much more dilute ratio, around 1:18 (the Specialty Coffee Association’s Golden Cup standard). Cold brew concentrate is roughly four times as strong per gram of water.' },
+        { question: 'What grind size should I use for cold brew?', answer: 'Coarse — the National Coffee Association describes it as similar to rock salt. A finer grind over such a long steep time tends to over-extract and taste bitter or come out cloudy.' }
+      ]
+    },
+    compute(values) {
+      const coffeeAmount = values.coffeeAmount;
+      return {
+        waterLowG: coffeeAmount * COLD_BREW_RATIO.low,
+        waterHighG: coffeeAmount * COLD_BREW_RATIO.high
+      };
+    }
   }
 ];

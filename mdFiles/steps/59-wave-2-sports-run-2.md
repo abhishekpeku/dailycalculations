@@ -130,20 +130,50 @@ page converts an existing Handicap Index, it does not compute one from scratch.
 ## Verification
 
 Independent scratch script (re-implements every formula from scratch, no app imports):
-`verify_sports_run2.mjs` (scratchpad). See the PR description for the full output.
+`verify_sports_run2.mjs` (scratchpad). Every check passed — distance/steps/stride round-trips,
+all four baseball stats, all three bowling figures, both net-run-rate sides (with and without the
+all-out rule, confirming the worked example's "~4.22 without the rule" contrast claim), the
+passer-rating worked example plus a theoretical-perfect-158.3 sanity check, the Elo worked example
+plus the 400-point rating-gap cap, and the golf course handicap worked example. See the PR
+description for the full console output.
+
+A second script, `check_sports_run2.mjs`, ran the programmatic checks the skill requires (dynamic
+`import()` of the real `data/calculators/index.ts`): all 7 new ids unique and present exactly once
+in both `calculators` and `calculatorOrder`, no `redirectFrom` collision, every `related` id exists
+(3-4 per calculator, no self-reference), `seo.title` ≤ 60 and `seo.description` ≤ 160 characters,
+5-8 FAQ entries and ≥ 4 aliases each. It found **one real alias collision — but it predates this
+run**: `"house loan emi calculator"` is an alias on both `emi-calculator` and `mortgage-calculator`,
+neither of which this batch touched. Flagging it on `STATUS.md`'s Parked list for a future cleanup
+step rather than fixing it here, per the task's "build only what you were asked for" scope rule.
+
+While building, `npm test`'s own edge-case input set (every scalar input at its `min`) surfaced one
+real issue, the same kind run 1 caught: `cricket-bowling-figures-calculator`'s `wicketsTaken` input
+has `min: 0`, and a wicketless bowler genuinely has no defined bowling average or strike rate
+(both divide by wickets taken) — not a bug, but an honest no-answer the test suite needs to know
+about explicitly. Added `cricket-bowling-figures-calculator: ['bowlingAverage', 'strikeRate']` to
+`data/calculators.spec.ts`'s `KNOWN_NON_FINITE` map, alongside the site's other documented
+honest-no-answer cases (`z-score-calculator`, `relative-risk-calculator`, etc.).
+
+`npm test` (817 tests, 0 failures) after `npm run test:update` generated the 7 new `compute()`
+snapshots; `git diff --stat data/calculators.spec.ts.snapshot` showed 323 insertions, 0 deletions —
+confirming no existing calculator's snapshot moved.
 
 ## Build, lint, structural checks
 
-`npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"`, `npm test`,
-`npm run build` — see the PR description for the full pass/fail summary.
+`npm run lint -- --ignore-pattern ".open-next/**" --ignore-pattern ".claude/**"` — clean, no output.
+`npm run build` — passed, 194 calculator pages generated (191 shown individually plus "+191 more
+paths" in the route summary, consistent with 187 pre-existing + 7 new).
 
 Per the task's instruction, no Chrome/dark-mode visual pass this batch (and per `CLAUDE.md`'s own
 cadence note, the visual pass is due once the running count reaches ~50 — this run lands at exactly
-50 — flagged above). Curl-based structural checks against a backgrounded `npm run dev` instead,
-covering all 7 new calculator pages: 200 status, H1, JSON-LD, every content section id present.
-See the PR description for the exact check output.
+50 — flagged above). Curl-based structural checks against a backgrounded `npm run dev` instead:
+all 7 new calculator pages returned 200, the correct `<h1>`, exactly one JSON-LD script containing
+`WebApplication`, `BreadcrumbList`, `HowTo` and `FAQPage`, and every content section id (`concept`,
+`how-to-use`, `formula`, `worked-example`, `watch-out`, `faq`, `references`, `related`, plus each
+page's own widget-input anchors). `/categories/sports` also returned 200 and links all 7 new ids.
 
 ## Dev server
 
-Started with `run_in_background`, confirmed killed (port 3000 clear via `netstat`) before
-finishing — see the PR description for the exact check.
+Started with `run_in_background`, confirmed the listening PID via `netstat -ano | findstr
+LISTENING | findstr :3000`, killed it with `taskkill /PID <pid> /F`, then re-checked `netstat` —
+port 3000 clear before finishing.

@@ -758,5 +758,134 @@ export const sportsCalculators: CalculatorConfig[] = [
       const distanceMiles = (values.steps * values.stepLengthFt) / 5280;
       return { distanceMiles };
     }
+  },
+  {
+    id: 'baseball-batting-average-calculator',
+    category: 'sports',
+    glyph: 'AVG',
+    updatedAt: '2026-11-05',
+    aliases: ['batting average calculator', 'on base percentage calculator', 'slugging percentage calculator', 'ops calculator baseball', 'obp calculator', 'baseball hitting stats calculator'],
+    related: ['nfl-passer-rating-calculator', 'cricket-bowling-figures-calculator', 'elo-rating-calculator'],
+    title: 'Baseball Batting Stats Calculator',
+    description: 'Calculate batting average (AVG), on-base percentage (OBP), slugging percentage (SLG) and OPS together from a batting line, using the official MLB formulas.',
+    example: 'A hitter who goes 139-for-500 with 55 walks, 5 hit-by-pitches, 5 sacrifice flies, 28 doubles, 3 triples and 20 home runs has a .278 average, a .352 OBP, a .466 SLG and an .818 OPS.',
+    breakdown: {
+      headline: 'battingAverage',
+      headlineLabel: 'Batting average (AVG)',
+      outputs: [
+        { id: 'battingAverage', label: 'Batting average (AVG)', format: 'significant' },
+        { id: 'onBasePercentage', label: 'On-base percentage (OBP)', format: 'significant' },
+        { id: 'sluggingPercentage', label: 'Slugging percentage (SLG)', format: 'significant' },
+        { id: 'onBasePlusSlugging', label: 'On-base plus slugging (OPS)', format: 'significant' }
+      ],
+      groups: [
+        { title: 'Plate appearances', inputs: ['atBats', 'hits', 'walks', 'hitByPitch', 'sacrificeFlies'] },
+        { title: 'Extra-base hits (within those hits)', inputs: ['doubles', 'triples', 'homeRuns'] }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'Four stats, one batting line',
+        paragraphs: [
+          "Batting average (AVG), on-base percentage (OBP), slugging percentage (SLG) and OPS are the four most commonly cited hitting stats in baseball, and all four come from the same handful of numbers on a batting line: at-bats, hits, walks, hit-by-pitches, sacrifice flies and the breakdown of those hits into singles, doubles, triples and home runs. Rather than build four separate single-stat pages, this calculator takes one batting line and returns all four at once, the way a broadcast graphic or a stat site would.",
+          "Batting average, per MLB's own glossary, is simply hits divided by at-bats — it answers \"how often does a ball in play become a hit,\" but it treats every hit the same and ignores walks entirely. On-base percentage widens the lens to how often a batter reaches base by any means that counts (hits, walks, hit-by-pitches), out of every plate appearance that could have put them on base. Slugging percentage swings the other way, weighting hits by how many bases they're worth (a double counts double a single, a home run counts quadruple) to capture power rather than just contact. OPS is simply OBP plus SLG added together — a quick single number that rewards both getting on base and hitting for power, without needing a full stat line to compare two hitters."
+        ]
+      },
+      howTo: {
+        intro: 'Enter the batting line: at-bats, hits, walks, hit-by-pitches and sacrifice flies, then break the hits down into doubles, triples and home runs (singles are worked out automatically).',
+        steps: [
+          { name: 'Enter at-bats and hits', text: 'At-bats (AB) and total hits (H) drive batting average on their own.' },
+          { name: 'Add walks, hit-by-pitches and sacrifice flies', text: 'These widen the on-base percentage calculation beyond at-bats alone to the batter\'s full plate appearances.' },
+          { name: 'Break hits into doubles, triples and home runs', text: 'Singles are calculated as whatever is left over from total hits, so just enter the extra-base hits.' },
+          { name: 'Read all four stats', text: 'Batting average, OBP, SLG and OPS are all shown together, computed from the same line.' },
+          { name: 'Compare hitters on the same basis', text: 'Enter a second player\'s line separately to compare; OPS in particular is a quick single number for that comparison.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "MLB's own glossary defines each stat from counting numbers on a batting line.",
+        expression: 'AVG = H ÷ AB\nOBP = (H + BB + HBP) ÷ (AB + BB + HBP + SF)\nSLG = (1B + 2×2B + 3×3B + 4×HR) ÷ AB\nOPS = OBP + SLG',
+        terms: [
+          { symbol: 'AB', meaning: 'At-bats — plate appearances that count toward batting average (excludes walks, hit-by-pitches, sacrifices and a few other cases).' },
+          { symbol: 'H, 1B, 2B, 3B, HR', meaning: 'Total hits, and hits broken down by type: singles, doubles, triples, home runs.' },
+          { symbol: 'BB, HBP, SF', meaning: 'Walks (bases on balls), hit-by-pitches, and sacrifice flies.' }
+        ],
+        note: 'Singles (1B) are not entered directly: this calculator works them out as total hits minus doubles, triples and home runs.'
+      },
+      workedExample: {
+        intro: 'A hitter finishes a season 139-for-500 (28 doubles, 3 triples, 20 home runs), with 55 walks, 5 hit-by-pitches and 5 sacrifice flies. What are their AVG, OBP, SLG and OPS?',
+        rows: [
+          { label: 'Singles (139 − 28 − 3 − 20)', value: '88' },
+          { label: 'AVG = 139 ÷ 500', value: '0.278' },
+          { label: 'OBP = (139 + 55 + 5) ÷ (500 + 55 + 5 + 5)', value: '199 ÷ 565 = 0.352' },
+          { label: 'Total bases = 88×1 + 28×2 + 3×3 + 20×4', value: '88 + 56 + 9 + 80 = 233' },
+          { label: 'SLG = 233 ÷ 500', value: '0.466' },
+          { label: 'OPS = 0.352 + 0.466', value: '0.818' }
+        ],
+        result: '.278 AVG · .352 OBP · .466 SLG · .818 OPS',
+        explanation: 'The OBP (.352) sits well above the AVG (.278) because 60 of the 565 plate appearances (walks and hit-by-pitches) reach base without counting as an at-bat; the SLG (.466) sits well above AVG too, because 51 of the 139 hits are doubles, triples or home runs worth more than one base each.'
+      },
+      watchOut: [
+        {
+          title: 'At-bats and plate appearances are not the same thing',
+          body: 'Walks, hit-by-pitches, sacrifice bunts and sacrifice flies are plate appearances but not at-bats, which is exactly why OBP uses a wider denominator than AVG. Mixing up the two totals will throw off every stat on this page.'
+        },
+        {
+          title: 'OPS adds two differently-scaled numbers together',
+          body: "OBP and SLG are not measuring quite the same thing before they're added — OBP is a rate of getting on base at all, SLG is bases per at-bat, which can exceed 1.000 for a true power hitter. OPS is a useful quick summary, but it is a convenience stat, not a probability or a percentage of anything."
+        },
+        {
+          title: 'Reached-on-error and fielder\'s-choice hits don\'t count',
+          body: "MLB's official hit (H) total only includes a batted ball that's officially ruled a hit; reaching base on a fielding error or a fielder's choice counts as an at-bat but not a hit, which lowers AVG even though the batter is on base."
+        },
+        {
+          title: 'Small sample sizes swing all four stats wildly',
+          body: 'Early in a season, a handful of at-bats either way can move batting average by dozens of points. Season or career totals are far more stable and meaningful than a single week or month.'
+        },
+        {
+          title: 'These stats are not park- or league-adjusted',
+          body: 'None of AVG, OBP, SLG or OPS account for the ballpark a hitter plays in or the era they played in, both of which shift raw offensive numbers a lot. Advanced stats like OPS+ or wRC+ adjust for those factors; this page intentionally sticks to the classic, unadjusted formulas.'
+        }
+      ],
+      references: [
+        { label: 'MLB.com Glossary, "Batting Average"', url: 'https://www.mlb.com/glossary/standard-stats/batting-average' },
+        { label: 'MLB.com Glossary, "On-base Percentage (OBP)"', url: 'https://www.mlb.com/glossary/standard-stats/on-base-percentage' },
+        { label: 'MLB.com Glossary, "Slugging Percentage (SLG)"', url: 'https://www.mlb.com/glossary/standard-stats/slugging-percentage' },
+        { label: 'MLB.com Glossary, "OPS"', url: 'https://www.mlb.com/glossary/standard-stats/ops' }
+      ]
+    },
+    inputs: [
+      { id: 'atBats', label: 'At-bats (AB)', type: 'number', placeholder: '500', defaultValue: 500, step: 1, min: 1 },
+      { id: 'hits', label: 'Hits (H)', type: 'number', placeholder: '139', defaultValue: 139, step: 1, min: 0 },
+      { id: 'walks', label: 'Walks (BB)', type: 'number', placeholder: '55', defaultValue: 55, step: 1, min: 0 },
+      { id: 'hitByPitch', label: 'Hit by pitch (HBP)', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 0 },
+      { id: 'sacrificeFlies', label: 'Sacrifice flies (SF)', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 0 },
+      { id: 'doubles', label: 'Doubles (2B)', type: 'number', placeholder: '28', defaultValue: 28, step: 1, min: 0 },
+      { id: 'triples', label: 'Triples (3B)', type: 'number', placeholder: '3', defaultValue: 3, step: 1, min: 0 },
+      { id: 'homeRuns', label: 'Home runs (HR)', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Baseball Batting Stats Calculator – AVG, OBP, SLG, OPS',
+      description: 'Calculate batting average, on-base percentage, slugging percentage and OPS together from a batting line, using the official MLB formulas.',
+      faq: [
+        { question: 'How do you calculate batting average?', answer: 'Divide hits by at-bats: AVG = H ÷ AB. 139 hits in 500 at-bats is 139 ÷ 500 = .278.' },
+        { question: 'How do you calculate on-base percentage?', answer: 'OBP = (hits + walks + hit-by-pitches) ÷ (at-bats + walks + hit-by-pitches + sacrifice flies). It widens the denominator to every plate appearance that could put you on base, not just at-bats.' },
+        { question: 'How do you calculate slugging percentage?', answer: 'SLG = total bases ÷ at-bats, where a single counts 1 base, a double 2, a triple 3 and a home run 4. It rewards hitting for extra bases, not just making contact.' },
+        { question: 'What is OPS and what counts as good?', answer: 'OPS is on-base percentage plus slugging percentage (OBP + SLG). As a rough guide, an OPS above .800 is a strong everyday hitter, and above .900 is typically an All-Star-caliber season, though context (era, ballpark) always matters.' },
+        { question: 'Why is OBP usually higher than batting average?', answer: 'OBP credits walks and hit-by-pitches as reaching base, while batting average only counts hits out of at-bats. Any batter who draws walks will have an OBP noticeably above their batting average.' },
+        { question: 'Do singles need to be entered separately?', answer: 'No — this calculator works out singles automatically as total hits minus doubles, triples and home runs, so you only need to enter the extra-base hit totals.' }
+      ]
+    },
+    compute(values) {
+      const singles = Math.max(values.hits - values.doubles - values.triples - values.homeRuns, 0);
+      const plateAppearancesOnBase = values.atBats + values.walks + values.hitByPitch + values.sacrificeFlies;
+      const battingAverage = values.atBats > 0 ? values.hits / values.atBats : NaN;
+      const onBasePercentage = plateAppearancesOnBase > 0 ? (values.hits + values.walks + values.hitByPitch) / plateAppearancesOnBase : NaN;
+      const totalBases = singles + 2 * values.doubles + 3 * values.triples + 4 * values.homeRuns;
+      const sluggingPercentage = values.atBats > 0 ? totalBases / values.atBats : NaN;
+      const onBasePlusSlugging = onBasePercentage + sluggingPercentage;
+      return { battingAverage, onBasePercentage, sluggingPercentage, onBasePlusSlugging };
+    }
   }
 ];

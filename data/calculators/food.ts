@@ -791,7 +791,7 @@ export const foodCalculators: CalculatorConfig[] = [
     glyph: 'thaw',
     updatedAt: '2026-11-05',
     aliases: ['turkey thawing time calculator', 'how long to thaw a turkey', 'turkey defrost time calculator', 'refrigerator thaw time turkey', 'cold water thawing time turkey', 'how many days to thaw a turkey'],
-    related: ['turkey-cook-time-calculator', 'recipe-scaling-calculator', 'rice-to-water-ratio-calculator'],
+    related: ['turkey-cook-time-calculator', 'recipe-scaling-calculator', 'rice-to-water-ratio-calculator', 'brine-calculator'],
     title: 'Turkey Thaw Time Calculator',
     description: "USDA's own thawing timetable for a whole frozen turkey, by weight — refrigerator and cold-water methods side by side, straight from USDA's \"Turkey Basics: Safe Thawing.\"",
     example: 'A 16 lb frozen turkey needs about 4 to 5 days in the refrigerator, or 8 to 10 hours in cold water (changed every 30 minutes) — per USDA’s published thawing times.',
@@ -1195,7 +1195,7 @@ export const foodCalculators: CalculatorConfig[] = [
     glyph: 'pty',
     updatedAt: '2026-11-05',
     aliases: ['party food calculator', 'how much food for a party', 'food quantity calculator for a party', 'how much food per person', 'party planning food calculator', 'catering quantity calculator'],
-    related: ['recipe-scaling-calculator', 'turkey-cook-time-calculator', 'rice-to-water-ratio-calculator'],
+    related: ['recipe-scaling-calculator', 'turkey-cook-time-calculator', 'rice-to-water-ratio-calculator', 'party-drinks-calculator'],
     title: 'Party Food Calculator',
     description: 'How much protein, potatoes, rolls and dessert to plan for a sit-down party meal, by guest count — from The Old Farmer’s Almanac’s own food quantity chart.',
     example: 'For 20 guests at a full sit-down meal, plan on about 10 lb of protein, 6⅔ to 10 lb of potatoes, 40 rolls and 20 dessert slices — per The Old Farmer’s Almanac’s own per-person figures.',
@@ -1317,7 +1317,7 @@ export const foodCalculators: CalculatorConfig[] = [
     glyph: 'yst',
     updatedAt: '2026-11-05',
     aliases: ['yeast conversion calculator', 'active dry to instant yeast conversion', 'fresh yeast to dry yeast calculator', 'instant yeast to active dry yeast', 'cake yeast conversion calculator', 'how much instant yeast equals active dry'],
-    related: ['bakers-percentage-calculator', 'pizza-dough-calculator', 'recipe-scaling-calculator'],
+    related: ['bakers-percentage-calculator', 'pizza-dough-calculator', 'recipe-scaling-calculator', 'abv-calculator'],
     title: 'Yeast Conversion Calculator',
     description: 'Convert a yeast amount between fresh (cake), active dry and instant yeast, using King Arthur Baking’s own Professional Baker’s Reference weight ratios.',
     example: '30 g of fresh yeast converts to 12 g of active dry yeast or 9.9 g of instant yeast, per King Arthur Baking’s Professional Baker’s Reference.',
@@ -2056,6 +2056,265 @@ export const foodCalculators: CalculatorConfig[] = [
       const row = WILTON_CAKE_CHART[values.cakeSize];
       const servings = values.servingStyle === 1 ? row.wedding : row.party;
       return { servings, partyServings: row.party, weddingServings: row.wedding };
+    }
+  },
+  {
+    id: 'party-drinks-calculator',
+    category: 'food',
+    glyph: 'pdr',
+    updatedAt: '2026-11-05',
+    aliases: ['party drinks calculator', 'how much alcohol for a party', 'party alcohol calculator', 'how many drinks per person at a party', 'bar calculator for a party', 'party bar planning calculator'],
+    related: ['party-food-calculator', 'abv-calculator', 'cake-servings-calculator'],
+    title: 'Party Drinks Calculator',
+    description: 'How much alcohol to buy for a party, by guest count and length, using America’s Test Kitchen’s own Drinks = Guests × (Hours + 1) formula.',
+    example: 'For 20 guests at a 3-hour party, plan on about 80 drinks total — per America’s Test Kitchen’s own formula.',
+    breakdown: {
+      headline: 'totalDrinks',
+      headlineLabel: 'Total drinks needed',
+      outputs: [
+        { id: 'totalDrinks', label: 'Total drinks needed', format: 'integer' },
+        { id: 'beerBottles', label: 'Beer bottles, if beer only', format: 'number' },
+        { id: 'wineBottles', label: 'Wine bottles (750 mL), if wine only', format: 'number' },
+        { id: 'spiritsBottles', label: 'Spirits bottles (750 mL), if spirits only', format: 'number' }
+      ],
+      groups: [
+        { title: 'Party', inputs: ['guestCount', 'hours'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'beerBottles', label: 'Beer bottles' },
+          { from: 'wineBottles', label: 'Wine bottles' },
+          { from: 'spiritsBottles', label: 'Spirits bottles' }
+        ],
+        title: 'Bottles needed, if that’s your only beverage'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'Where this formula comes from',
+        paragraphs: [
+          "America's Test Kitchen publishes its own formula for how much alcohol to buy for a party: Drinks = Guests × (Hours + 1). The \"+1\" builds in a cushion for guests drinking a bit faster in the first hour and for the odd misplaced or abandoned drink — not a literal extra hour of consumption.",
+          "This calculator covers alcohol only, the same way `party-food-calculator` on this site covers food only — plan the two separately and combine them when you're shopping.",
+          "The three bottle counts below (beer, wine, spirits) each assume that beverage is your only drink at the party. If you're serving a mix, America's Test Kitchen's own guidance is to split the total drinks evenly between the types you're offering, then add roughly a quarter more to each as a buying cushion."
+        ]
+      },
+      howTo: {
+        intro: 'Enter your guest count and how many hours the party runs — the calculator applies America’s Test Kitchen’s own formula.',
+        steps: [
+          { name: 'Enter guest count', text: 'The number of guests who will be drinking alcohol.' },
+          { name: 'Enter party length', text: 'How many hours the party runs, in half-hour steps.' },
+          { name: 'Read the total drinks', text: 'Guests × (hours + 1), America’s Test Kitchen’s own formula.' },
+          { name: 'Pick a bottle count', text: 'Each of the three figures assumes that beverage alone covers every drink.' },
+          { name: 'Split for a mixed bar', text: 'If serving more than one beverage type, divide the total drinks between them and add about a quarter more to each as a cushion.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Total drinks is guests multiplied by hours plus one. Bottle counts divide that total by each beverage’s own servings-per-bottle figure.',
+        expression: 'drinks = guests × (hours + 1)\nbeer bottles = drinks ÷ 1\nwine bottles = drinks ÷ 5\nspirits bottles = drinks ÷ 12',
+        terms: [
+          { symbol: 'guests', meaning: 'Number of guests drinking alcohol.' },
+          { symbol: 'hours', meaning: 'Length of the party, in hours.' },
+          { symbol: '1, 5, 12', meaning: 'America’s Test Kitchen’s own servings-per-bottle figures: 1 drink per beer bottle, 5 per 750 mL wine bottle, 12 per 750 mL spirits bottle at a 2 fl oz pour.' }
+        ],
+        note: 'Estimates only — actual consumption varies by guest list, event type and what else is being served. This isn’t a substitute for your own judgment or local alcohol-service guidelines.'
+      },
+      workedExample: {
+        intro: '15 guests at a 3-hour party, served wine only — America’s Test Kitchen’s own worked example.',
+        rows: [
+          { label: 'Guests', value: '15' },
+          { label: 'Hours', value: '3' },
+          { label: 'Drinks (15 × (3+1))', value: '60' },
+          { label: 'Wine bottles (60 ÷ 5)', value: '12' }
+        ],
+        result: '60 total drinks, 12 bottles of wine',
+        explanation: 'This matches America’s Test Kitchen’s own published example exactly — the formula and bottle conversion are reproduced here, not altered.'
+      },
+      watchOut: [
+        {
+          title: 'The "+1" is a cushion, not a literal extra hour',
+          body: 'America’s Test Kitchen adds one hour’s worth of drinks to account for faster early drinking and the inevitable abandoned or spilled drink — it’s a planning buffer, not a claim that guests drink for one hour longer than the party runs.'
+        },
+        {
+          title: 'This assumes drinking guests only',
+          body: 'Count only the guests likely to drink alcohol — designated drivers, children and non-drinkers shouldn’t be counted toward the total.'
+        },
+        {
+          title: 'Mixing beverages needs its own math',
+          body: 'Each bottle figure above assumes that beverage alone covers every drink. For a mixed bar, split the total between beverage types and add about a quarter more to each, per America’s Test Kitchen’s own guidance — this calculator doesn’t do that split automatically.'
+        },
+        {
+          title: 'Food isn’t included',
+          body: 'This covers alcohol only. See `party-food-calculator` for food quantities — plan the two separately.'
+        },
+        {
+          title: 'Follow local alcohol-service laws',
+          body: 'Serving alcohol at a gathering may carry legal obligations (minimum age, host liability, service limits) that vary by location — this calculator doesn’t account for any of that.'
+        }
+      ],
+      references: [
+        { label: 'America’s Test Kitchen, "How Much Alcohol Should I Buy for a Party?"', url: 'https://www.americastestkitchen.com/articles/6701-how-much-alcohol-should-i-buy-for-a-party' }
+      ]
+    },
+    inputs: [
+      { id: 'guestCount', label: 'Guest count', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 1 },
+      { id: 'hours', label: 'Party length (hours)', type: 'number', placeholder: '3', defaultValue: 3, step: 0.5, min: 0.5 }
+    ],
+    seo: {
+      title: 'Party Drinks Calculator – How Much Alcohol to Buy',
+      description: 'Free party drinks calculator: total drinks and bottles of beer, wine or spirits, from America’s Test Kitchen’s own Guests × (Hours+1) formula.',
+      faq: [
+        { question: 'How much alcohol should I buy for a party?', answer: 'America’s Test Kitchen’s own formula: Drinks = Guests × (Hours + 1). For 20 guests at a 3-hour party, that’s 80 drinks total.' },
+        { question: 'How many bottles of wine do I need for a party?', answer: 'Divide total drinks by 5 (one 750 mL bottle of wine pours about 5 glasses). For 60 total drinks, that’s 12 bottles — America’s Test Kitchen’s own worked example.' },
+        { question: 'How many drinks per person should I plan for a party?', answer: 'About one drink per hour, plus one extra as a buffer — America’s Test Kitchen’s formula is Guests × (Hours + 1) total drinks, which works out to roughly (Hours + 1) drinks per guest.' },
+        { question: 'How much liquor do I need for a party of 50?', answer: 'For a 4-hour party, that’s 50 × (4+1) = 250 total drinks. If spirits are the only beverage, that’s about 20.8 bottles of 750 mL spirits at a 2 fl oz pour per drink.' },
+        { question: 'What if I’m serving beer, wine and spirits together?', answer: 'America’s Test Kitchen’s own guidance is to split the total drinks evenly between the beverage types you’re offering, then add roughly a quarter more to each as a buying cushion.' },
+        { question: 'Does this calculator include food?', answer: 'No — it covers alcohol only. See the party food calculator on this site for food quantities.' }
+      ]
+    },
+    compute(values) {
+      const totalDrinks = values.guestCount * (values.hours + 1);
+      return {
+        totalDrinks,
+        beerBottles: totalDrinks / PARTY_DRINKS_PER_BOTTLE.beer,
+        wineBottles: totalDrinks / PARTY_DRINKS_PER_BOTTLE.wine,
+        spiritsBottles: totalDrinks / PARTY_DRINKS_PER_BOTTLE.spirits
+      };
+    }
+  },
+  {
+    id: 'brine-calculator',
+    category: 'food',
+    glyph: 'brn',
+    updatedAt: '2026-11-05',
+    aliases: ['brine calculator', 'turkey brine calculator', 'how much salt for brine', 'brine ratio calculator', 'chicken brine calculator', 'wet brine calculator'],
+    related: ['turkey-thaw-time-calculator', 'turkey-cook-time-calculator', 'steak-doneness-calculator'],
+    title: 'Brine Calculator',
+    description: 'How much Morton Coarse Kosher Salt to use for a wet brine, by water amount and brining time, using Morton Salt’s own ratios.',
+    example: 'For 2 gallons of water brined overnight (up to 14 hours), use 1 cup of Morton Coarse Kosher Salt — Morton’s own ½ cup per gallon ratio.',
+    breakdown: {
+      headline: 'saltCups',
+      headlineLabel: 'Morton Coarse Kosher Salt needed',
+      outputs: [
+        { id: 'saltCups', label: 'Kosher salt', format: 'number', dimension: 'volume', unit: 'cup' }
+      ],
+      groups: [
+        { title: 'Brine', inputs: ['waterAmount', 'brineDuration'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'shortBrineSaltCups', label: 'Short brine (4-5 hr)' },
+          { from: 'longBrineSaltCups', label: 'Long brine (overnight)' }
+        ],
+        title: 'Salt needed by brining time',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'Why brining time changes the salt amount',
+        paragraphs: [
+          "A wet brine works by letting salt and water diffuse into meat over time, which is also why a longer brine needs less salt in the water: the meat has more time to reach the same level of seasoning at a gentler concentration. Morton Salt's own guide gives two ratios for its Coarse Kosher Salt — 1 cup per gallon of water for a shorter 4-5 hour brine, or ½ cup per gallon for an overnight brine of up to 14 hours.",
+          "This calculator uses Morton's own figures directly rather than a single generic \"salt per gallon\" rule, since the right concentration genuinely depends on how long the meat will sit in it.",
+          "The ratio is specific to Morton Coarse Kosher Salt. Kosher salt brands vary in crystal size and how densely they pack into a measuring cup, so a cup of a different brand's kosher salt isn't necessarily the same weight of salt as a cup of Morton's — see the watch-outs."
+        ]
+      },
+      howTo: {
+        intro: 'Enter how much water your brine needs and how long you plan to brine — the calculator applies Morton Salt’s own ratio.',
+        steps: [
+          { name: 'Enter your water amount', text: 'Enough cold water to fully submerge whatever you’re brining.' },
+          { name: 'Pick a brining time', text: 'Short (4-5 hours) or long (overnight, up to 14 hours) — Morton publishes a different ratio for each.' },
+          { name: 'Read the salt amount', text: 'Morton Coarse Kosher Salt, by volume.' },
+          { name: 'Dissolve fully and chill', text: 'Stir until the salt dissolves, then keep the brine below 40°F — refrigerated or in an ice-packed cooler.' },
+          { name: 'Submerge fully for the full time', text: 'Keep whatever you’re brining completely covered in brine for the full duration.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Salt needed is the water amount in gallons multiplied by Morton’s own cups-per-gallon figure for the chosen brining time.',
+        expression: 'salt (cups) = water (gal) × 1, for a 4-5 hour brine\nsalt (cups) = water (gal) × 0.5, for an overnight (up to 14 hour) brine',
+        terms: [
+          { symbol: 'water (gal)', meaning: 'Cold water, enough to fully submerge the item being brined.' },
+          { symbol: '1, 0.5', meaning: 'Cups of Morton Coarse Kosher Salt per gallon of water, per Morton Salt’s own guide, for the two brining-time bands.' }
+        ],
+        note: 'Food safety: keep the brine and the item being brined below 40°F throughout, and never brine something that will be deep-fried or that’s already labeled "basted," "enhanced" or "marinated" — see the watch-outs.'
+      },
+      workedExample: {
+        intro: '2 gallons of water, brined overnight (up to 14 hours).',
+        rows: [
+          { label: 'Water amount', value: '2 gal' },
+          { label: 'Ratio (overnight brine)', value: '0.5 cup per gal' },
+          { label: 'Salt (2 × 0.5)', value: '1 cup' }
+        ],
+        result: '1 cup of Morton Coarse Kosher Salt for a 2-gallon overnight brine',
+        explanation: 'The same 2 gallons brined for the shorter 4-5 hour window would need twice as much salt — 2 cups — since there’s less time for the salt to diffuse through the meat.'
+      },
+      watchOut: [
+        {
+          title: 'This ratio is specific to Morton Coarse Kosher Salt',
+          body: 'Kosher salt brands vary in crystal size and how densely they pack into a cup. Morton’s guide gives this ratio for its own Coarse Kosher Salt — don’t assume a cup of a different brand’s kosher salt, or of table salt, weighs the same.'
+        },
+        {
+          title: 'Keep the brine cold throughout',
+          body: 'Morton’s guide notes keeping the water below 40°F when brining in a cooler rather than a refrigerator — brining at room temperature is a food-safety risk, not just a flavor issue.'
+        },
+        {
+          title: 'Don’t brine certain already-treated meats',
+          body: 'Morton’s own guidance says not to brine meat already labeled "basted," "enhanced," "marinated" or Kosher — those products are already salted, and brining them again can make the result unpleasantly salty.'
+        },
+        {
+          title: 'Skip brining if you plan to deep-fry',
+          body: 'Morton’s guide specifically advises against brining a turkey that will be deep-fried — the extra moisture a brine adds increases the risk of dangerous oil splatter.'
+        },
+        {
+          title: 'Full submersion for the full time',
+          body: 'Any part of the meat that isn’t covered by brine won’t pick up the seasoning or moisture evenly — weigh it down with a plate if it floats.'
+        }
+      ],
+      references: [
+        { label: 'Morton Salt, "A Guide to Brining"', url: 'https://www.mortonsalt.com/article/a-guide-to-brining/' }
+      ]
+    },
+    inputs: [
+      { id: 'waterAmount', label: 'Water amount', type: 'number', placeholder: '2', defaultValue: 2, step: 0.5, min: 0.5, dimension: 'volume', unit: 'gal' },
+      {
+        id: 'brineDuration',
+        label: 'Brining time',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Short brine (4-5 hours)' },
+          { value: 1, label: 'Long brine (overnight, up to 14 hours)' }
+        ]
+      }
+    ],
+    seo: {
+      title: 'Brine Calculator – Salt per Gallon of Water',
+      description: 'Free brine calculator: Morton Coarse Kosher Salt per gallon of water, by brining time, from Morton Salt’s own guide to brining.',
+      faq: [
+        { question: 'How much salt do I need to brine a turkey?', answer: 'Morton Salt’s own guide: 1 cup of Morton Coarse Kosher Salt per gallon of water for a 4-5 hour brine, or ½ cup per gallon for an overnight brine up to 14 hours.' },
+        { question: 'Why does a longer brine use less salt?', answer: 'A wet brine works by diffusion over time — a longer brine lets the meat reach the same seasoning level at a gentler, safer concentration, which is why Morton’s own guide halves the ratio for an overnight brine.' },
+        { question: 'Can I use table salt instead of kosher salt for a brine?', answer: 'Not at the same volume — table salt is denser than Morton Coarse Kosher Salt, so a cup of table salt contains considerably more actual salt. Morton’s ratio is specific to its own Coarse Kosher Salt by volume.' },
+        { question: 'How long can I safely brine a turkey?', answer: 'Morton’s own guide covers brining up to 14 hours at its overnight ratio (½ cup salt per gallon) — it doesn’t publish guidance for longer than that.' },
+        { question: 'Should I brine a turkey I’m going to deep-fry?', answer: 'No — Morton’s own guide specifically advises against brining a turkey that will be deep-fried, since the added moisture increases the risk of dangerous oil splatter.' },
+        { question: 'Does kosher salt brand matter for brining?', answer: 'Yes — kosher salt brands differ in crystal size and how densely they pack into a measuring cup, so this ratio is accurate for Morton Coarse Kosher Salt specifically, not for kosher salt in general.' }
+      ]
+    },
+    compute(values) {
+      const cupsPerGallon = values.brineDuration === 0 ? BRINE_CUPS_PER_GALLON.short : BRINE_CUPS_PER_GALLON.long;
+      const saltCups = values.waterAmount * cupsPerGallon;
+      return {
+        saltCups,
+        shortBrineSaltCups: values.waterAmount * BRINE_CUPS_PER_GALLON.short,
+        longBrineSaltCups: values.waterAmount * BRINE_CUPS_PER_GALLON.long
+      };
     }
   }
 ];

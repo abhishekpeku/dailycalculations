@@ -52,7 +52,8 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   // usSize 0 (its min) -> circumferenceMm 36.5, inside the valid (>0) range but below the UK A/Z
   // window (37.5-68.75mm) -> ukIndex has no answer; usSize isn't an output here (headline is
   // ukIndex), euSize/diameterMm/circumferenceMm stay finite.
-  'us-to-uk-ring-size-chart': ['ukIndex']
+  'us-to-uk-ring-size-chart': ['ukIndex'],
+  'cricket-bowling-figures-calculator': ['bowlingAverage', 'strikeRate'] // wicketsTaken 0 (its min) -> both divide by wickets taken, honest no-answer
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

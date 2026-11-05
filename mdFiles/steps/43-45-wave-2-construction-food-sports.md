@@ -143,3 +143,16 @@ and merges.
   unconfirmed for a real citable formula) are untouched for a later Sports batch. Running total
   since the last Chrome visual-QA pass: 43 calculators (Construction 21 + Food 17 + Sports 5) — not
   yet at the ~50 threshold, but the next Sports batch will very likely cross it.
+- [x] Sports batch 2 (7): DONE 2026-11-05 — steps-to-miles-calculator, baseball-batting-average-calculator
+  (combines AVG/OBP/SLG/OPS on one page), cricket-bowling-figures-calculator (combines bowling
+  average/economy rate/strike rate), cricket-net-run-rate-calculator (ICC formula, including the
+  "bowled out → full quota of overs" rule), nfl-passer-rating-calculator, elo-rating-calculator,
+  golf-course-handicap-calculator. Branch `step/59-wave-2-sports-run-2`, PR #60. Details:
+  `mdFiles/steps/59-wave-2-sports-run-2.md`. `sports` category now 12 calculators. Golf handicap was
+  investigated per run 1's flag: the full WHS Handicap Index needs a 20-round scoring history (not a
+  single-formula page), but the Course Handicap conversion is a clean, citable WHS formula, built
+  scoped explicitly to that conversion. Parked (not built): winning percentage (most generic of the
+  remaining candidates) and cycling pace (same reasoning run 1 gave for picking swim pace over it —
+  no distinct unit convention from `running-pace-calculator`). **This closes out Wave 2 Sports, and
+  therefore all of Wave 2 (construction + food + sports).** Running total since the last Chrome
+  visual-QA pass: 43 + 7 = **50 — exactly at the `CLAUDE.md` threshold; a visual-QA pass is due.**

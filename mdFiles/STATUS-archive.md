@@ -2262,3 +2262,25 @@ branch cleanup clean. **Visual-QA checkpoint**: running total since the last rea
 pass is 38 calculators (Construction 21 + Food 17) — not yet at the ~50 threshold flagged in
 `CLAUDE.md`, but the next Sports batch will likely cross it; plan a visual-QA pass once it does.
 Full writeup: `mdFiles/steps/46-wave-2-food-run-3.md`.
+
+**2026-11-05 — Step 59, Wave 2 Sports run 1 (PR #59, merged) — new `sports` category opened**:
+created `sports` from scratch (`green` theme, new `trophy` icon, `data/calculators/sports.ts`) with
+5 calculators — `one-rep-max-calculator` (Epley), `heart-rate-zones-calculator` (combines classic +
+Tanaka max-HR, 5 zones, and Karvonen HRR target onto one page rather than splitting them, per the
+"combine, don't split" guardrail), `vo2-max-calculator` (Cooper 1968), `race-time-predictor-calculator`
+(Riegel, any two distances in either direction — confirmed genuinely distinct from the existing
+`running-pace-calculator`, which only applies Riegel one-way to 4 fixed distances), `swim-pace-
+calculator`. **187 calculators total.** **Process note**: this agent hit a session rate-limit mid-
+task (right after drafting all 5 calculators + the category theme/icon, before wiring `index.ts` or
+running any verification) — resumed the *same* agent via `SendMessage` rather than restarting, so it
+kept its research context; it then finished wiring, re-verified every formula against a primary
+source, and caught three real bugs before shipping: a duplicate alias ("race time predictor" already
+used by `running-pace-calculator`), a divide-by-zero in `swim-pace-calculator` from a `min: 0` input,
+and an invalid `CalculatorInput` field (`max`) that `npm run build`'s type check flagged. `npm test`
+807/807, lint clean, `npm run build` 217/217 static pages — re-confirmed by the main session before
+merging. **Visual-QA checkpoint**: 43 calculators since the last Chrome visual pass (Construction 21
++ Food 17 + Sports 5) — still under the ~50 threshold, but the next Sports batch will almost
+certainly cross it; plan the visual-QA pass then. ~10 of the ~15 first-pass Sports candidates remain
+(steps-to-miles+stride, baseball hitting stats, cricket bowling average/net run rate, NFL passer
+rating, winning percentage, Elo rating, cycling pace, golf handicap — still unconfirmed formula).
+Full writeup: `mdFiles/steps/59-wave-2-sports-run-1.md`.

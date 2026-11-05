@@ -2241,3 +2241,24 @@ deleted cleanly (no file-lock issue, unlike run 1). Remaining Food candidates (~
 ~19): ABV, party drinks/alcohol quantity, cake servings, popcorn-for-a-party, coffee ratio, cold
 brew ratio, brine, bread, sourdough, self-rising flour substitution. Full writeup:
 `mdFiles/steps/46-wave-2-food-run-2.md`.
+
+**2026-11-05 — Step 46, Wave 2 Food run 3 (PR #58, merged) — Food closed out**: added
+`abv-calculator` (Brew Your Own's precise ABW/ABV formula, explicitly flagging the widely-repeated
+uncredited "×131.25" shortcut as not BYO's own constant), `coffee-ratio-calculator` (SCA Standard
+310-2021), `cold-brew-ratio-calculator` (National Coffee Association, cross-linked with coffee-
+ratio), `self-rising-flour-substitute-calculator` (King Arthur), `cake-servings-calculator` (Wilton's
+13-row lookup chart), `party-drinks-calculator` (America's Test Kitchen, cross-linked with
+`party-food-calculator`), `brine-calculator` (Morton Salt, cross-linked with the turkey calculators)
+to `food` (now **17 calculators**, 182 total on the site). Parked popcorn-for-a-party (no
+authoritative primary source, figures vary ~2× across sites with no cited methodology) and
+bread/sourdough (would duplicate `bakers-percentage-calculator`/`pizza-dough-calculator` under a
+different name) — **this closes out Wave 2 Food; Sports is next** (needs new category scaffolding,
+same as Food run 1). One caught error: a WebSearch-claimed Morton Salt "Diamond Crystal cup is
+roughly half a Morton cup" figure was checked against Morton's actual page, found absent, dropped
+rather than shipped unverified (third straight batch where a web-search summary didn't survive a
+direct-source re-check — this discipline is earning its keep). `npm test` 796/796, lint clean,
+`npm run build` 211/211 static pages — re-confirmed by the main session before merging; worktree/
+branch cleanup clean. **Visual-QA checkpoint**: running total since the last real Chrome visual
+pass is 38 calculators (Construction 21 + Food 17) — not yet at the ~50 threshold flagged in
+`CLAUDE.md`, but the next Sports batch will likely cross it; plan a visual-QA pass once it does.
+Full writeup: `mdFiles/steps/46-wave-2-food-run-3.md`.

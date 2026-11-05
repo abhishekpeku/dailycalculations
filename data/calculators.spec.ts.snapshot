@@ -1,3 +1,41 @@
+exports[`compute() snapshots > abv-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "originalGravity": 1.05,
+      "finalGravity": 1.01
+    },
+    "outputs": {
+      "abvPercent": 5.3394111,
+      "abwPercent": 4.197517241,
+      "quickEstimateAbvPercent": 5.28
+    }
+  },
+  "typical": {
+    "inputs": {
+      "originalGravity": 1.575,
+      "finalGravity": 1.515
+    },
+    "outputs": {
+      "abvPercent": 43.54957179,
+      "abwPercent": 22.824,
+      "quickEstimateAbvPercent": 7.92
+    }
+  },
+  "edge": {
+    "inputs": {
+      "originalGravity": 1,
+      "finalGravity": 0.98
+    },
+    "outputs": {
+      "abvPercent": 2.42328431,
+      "abwPercent": 1.963354839,
+      "quickEstimateAbvPercent": 2.64
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > ac-tonnage-btu-calculator 1`] = `
 {
   "default": {
@@ -537,6 +575,82 @@ exports[`compute() snapshots > brick-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > brine-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "waterAmount": 2,
+      "brineDuration": 1
+    },
+    "outputs": {
+      "saltCups": 1,
+      "shortBrineSaltCups": 2,
+      "longBrineSaltCups": 1
+    }
+  },
+  "typical": {
+    "inputs": {
+      "waterAmount": 3,
+      "brineDuration": 2
+    },
+    "outputs": {
+      "saltCups": 1.5,
+      "shortBrineSaltCups": 3,
+      "longBrineSaltCups": 1.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "waterAmount": 0.5,
+      "brineDuration": 0
+    },
+    "outputs": {
+      "saltCups": 0.5,
+      "shortBrineSaltCups": 0.5,
+      "longBrineSaltCups": 0.25
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > cake-servings-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "cakeSize": 2,
+      "servingStyle": 0
+    },
+    "outputs": {
+      "servings": 24,
+      "partyServings": 24,
+      "weddingServings": 32
+    }
+  },
+  "typical": {
+    "inputs": {
+      "cakeSize": 3,
+      "servingStyle": 0
+    },
+    "outputs": {
+      "servings": 28,
+      "partyServings": 28,
+      "weddingServings": 38
+    }
+  },
+  "edge": {
+    "inputs": {
+      "cakeSize": 0,
+      "servingStyle": 0
+    },
+    "outputs": {
+      "servings": 12,
+      "partyServings": 12,
+      "weddingServings": 12
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > calorie-calculator 1`] = `
 {
   "default": {
@@ -953,6 +1067,82 @@ exports[`compute() snapshots > coefficient-of-variation-calculator 1`] = `
       "meanUsed": 0,
       "sampleStdDevUsed": "NaN",
       "populationStdDevUsed": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > coffee-ratio-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "waterAmount": 500,
+      "strengthOption": 1
+    },
+    "outputs": {
+      "coffeeGrams": 27.5,
+      "ratioToOne": 18.18181818,
+      "lightGrams": 24.75,
+      "goldenGrams": 27.5,
+      "strongGrams": 30.25
+    }
+  },
+  "typical": {
+    "inputs": {
+      "waterAmount": 750,
+      "strengthOption": 2
+    },
+    "outputs": {
+      "coffeeGrams": 45.375,
+      "ratioToOne": 16.52892562,
+      "lightGrams": 37.125,
+      "goldenGrams": 41.25,
+      "strongGrams": 45.375
+    }
+  },
+  "edge": {
+    "inputs": {
+      "waterAmount": 10,
+      "strengthOption": 0
+    },
+    "outputs": {
+      "coffeeGrams": 0.495,
+      "ratioToOne": 20.2020202,
+      "lightGrams": 0.495,
+      "goldenGrams": 0.55,
+      "strongGrams": 0.605
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > cold-brew-ratio-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "coffeeAmount": 100
+    },
+    "outputs": {
+      "waterLowG": 400,
+      "waterHighG": 500
+    }
+  },
+  "typical": {
+    "inputs": {
+      "coffeeAmount": 150
+    },
+    "outputs": {
+      "waterLowG": 600,
+      "waterHighG": 750
+    }
+  },
+  "edge": {
+    "inputs": {
+      "coffeeAmount": 1
+    },
+    "outputs": {
+      "waterLowG": 4,
+      "waterHighG": 5
     }
   }
 }
@@ -4333,6 +4523,47 @@ exports[`compute() snapshots > paint-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > party-drinks-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "guestCount": 20,
+      "hours": 3
+    },
+    "outputs": {
+      "totalDrinks": 80,
+      "beerBottles": 80,
+      "wineBottles": 16,
+      "spiritsBottles": 6.666666667
+    }
+  },
+  "typical": {
+    "inputs": {
+      "guestCount": 30,
+      "hours": 4.5
+    },
+    "outputs": {
+      "totalDrinks": 165,
+      "beerBottles": 165,
+      "wineBottles": 33,
+      "spiritsBottles": 13.75
+    }
+  },
+  "edge": {
+    "inputs": {
+      "guestCount": 1,
+      "hours": 0.5
+    },
+    "outputs": {
+      "totalDrinks": 1.5,
+      "beerBottles": 1.5,
+      "wineBottles": 0.3,
+      "spiritsBottles": 0.125
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > party-food-calculator 1`] = `
 {
   "default": {
@@ -6050,6 +6281,38 @@ exports[`compute() snapshots > scientific-notation-calculator 1`] = `
       "resultCoefficient": 0,
       "resultExponent": 0,
       "resultPlain": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > self-rising-flour-substitute-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "flourAmount": 120
+    },
+    "outputs": {
+      "bakingPowderTsp": 1.5,
+      "saltTsp": 0.25
+    }
+  },
+  "typical": {
+    "inputs": {
+      "flourAmount": 180
+    },
+    "outputs": {
+      "bakingPowderTsp": 2.25,
+      "saltTsp": 0.375
+    }
+  },
+  "edge": {
+    "inputs": {
+      "flourAmount": 1
+    },
+    "outputs": {
+      "bakingPowderTsp": 0.0125,
+      "saltTsp": 0.002083333333
     }
   }
 }

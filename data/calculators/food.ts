@@ -91,6 +91,58 @@ const PARTY_FOOD_PER_PERSON = {
 const YEAST_FRESH_TO_ACTIVE_DRY = 0.4;
 const YEAST_FRESH_TO_INSTANT = 0.33;
 
+// Brew Your Own magazine ("Calculating Alcohol, Attenuation, Extract and Calories" by Bill Pierce)
+// — the precise alcohol-by-weight/alcohol-by-volume formulas from original and final gravity.
+function abvFromGravity(og: number, fg: number) {
+  const abw = (76.08 * (og - fg)) / (1.775 - og);
+  const abv = abw * (fg / 0.794);
+  return { abw, abv };
+}
+// The same article's "quick" approximation, in gravity points (digits after the decimal, x1000).
+function abvQuickFromGravity(og: number, fg: number) {
+  const points = (og - 1) * 1000 - (fg - 1) * 1000;
+  return points * 0.132;
+}
+
+// SCA Standard 310-2021, "Home Coffee Brewers: Specifications and Test Methods" — standard brew
+// ratio 55 g coffee per 1.000 kg water, with a +/-10% tolerance (49.5-60.5 g/L) still producing an
+// acceptable cup.
+const SCA_BREW_RATIOS_G_PER_L = [49.5, 55, 60.5]; // light end, Golden Cup standard, strong end
+
+// National Coffee Association (aboutcoffee.org), "Cold brew coffee" — 1 g coffee to 4-5 g water,
+// coarse grind, about 12 hours of contact time.
+const COLD_BREW_RATIO = { low: 4, high: 5 };
+
+// King Arthur Baking, "Self-rising flour: what is it, and how do I bake with it?" — per 1 cup
+// (120 g) all-purpose flour: 1 1/2 tsp baking powder, 1/4 tsp table salt.
+const SELF_RISING_PER_120G_FLOUR = { bakingPowderTsp: 1.5, saltTsp: 0.25 };
+
+// Wilton, "Ultimate Cake Serving Chart" — 4-inch-tall pans, party servings (~1.5 x 2 in slices) and
+// wedding servings (~1 x 2 in slices).
+const WILTON_CAKE_CHART = [
+  { label: '6 in round', party: 12, wedding: 12 },
+  { label: '8 in round', party: 20, wedding: 24 },
+  { label: '9 in round', party: 24, wedding: 32 },
+  { label: '10 in round', party: 28, wedding: 38 },
+  { label: '12 in round', party: 40, wedding: 56 },
+  { label: '14 in round', party: 63, wedding: 78 },
+  { label: '16 in round', party: 77, wedding: 100 },
+  { label: '6 in square', party: 12, wedding: 18 },
+  { label: '8 in square', party: 20, wedding: 32 },
+  { label: '10 in square', party: 30, wedding: 50 },
+  { label: '12 in square', party: 48, wedding: 72 },
+  { label: '14 in square', party: 63, wedding: 98 },
+  { label: '16 in square', party: 80, wedding: 128 }
+];
+
+// America's Test Kitchen, "How Much Alcohol Should I Buy for a Party?" — Drinks = Guests x
+// (Hours + 1), plus the magazine's own servings-per-bottle figures.
+const PARTY_DRINKS_PER_BOTTLE = { beer: 1, wine: 5, spirits: 12 }; // 750 mL bottles for wine/spirits
+
+// Morton Salt, "A Guide to Brining" — Morton Coarse Kosher Salt per gallon of water, by brining
+// duration.
+const BRINE_CUPS_PER_GALLON = { short: 1, long: 0.5 }; // short: 4-5 hr; long: overnight, up to 14 hr
+
 export const foodCalculators: CalculatorConfig[] = [
   {
     id: 'recipe-scaling-calculator',
@@ -739,7 +791,7 @@ export const foodCalculators: CalculatorConfig[] = [
     glyph: 'thaw',
     updatedAt: '2026-11-05',
     aliases: ['turkey thawing time calculator', 'how long to thaw a turkey', 'turkey defrost time calculator', 'refrigerator thaw time turkey', 'cold water thawing time turkey', 'how many days to thaw a turkey'],
-    related: ['turkey-cook-time-calculator', 'recipe-scaling-calculator', 'rice-to-water-ratio-calculator'],
+    related: ['turkey-cook-time-calculator', 'recipe-scaling-calculator', 'rice-to-water-ratio-calculator', 'brine-calculator'],
     title: 'Turkey Thaw Time Calculator',
     description: "USDA's own thawing timetable for a whole frozen turkey, by weight — refrigerator and cold-water methods side by side, straight from USDA's \"Turkey Basics: Safe Thawing.\"",
     example: 'A 16 lb frozen turkey needs about 4 to 5 days in the refrigerator, or 8 to 10 hours in cold water (changed every 30 minutes) — per USDA’s published thawing times.',
@@ -1143,7 +1195,7 @@ export const foodCalculators: CalculatorConfig[] = [
     glyph: 'pty',
     updatedAt: '2026-11-05',
     aliases: ['party food calculator', 'how much food for a party', 'food quantity calculator for a party', 'how much food per person', 'party planning food calculator', 'catering quantity calculator'],
-    related: ['recipe-scaling-calculator', 'turkey-cook-time-calculator', 'rice-to-water-ratio-calculator'],
+    related: ['recipe-scaling-calculator', 'turkey-cook-time-calculator', 'rice-to-water-ratio-calculator', 'party-drinks-calculator'],
     title: 'Party Food Calculator',
     description: 'How much protein, potatoes, rolls and dessert to plan for a sit-down party meal, by guest count — from The Old Farmer’s Almanac’s own food quantity chart.',
     example: 'For 20 guests at a full sit-down meal, plan on about 10 lb of protein, 6⅔ to 10 lb of potatoes, 40 rolls and 20 dessert slices — per The Old Farmer’s Almanac’s own per-person figures.',
@@ -1265,7 +1317,7 @@ export const foodCalculators: CalculatorConfig[] = [
     glyph: 'yst',
     updatedAt: '2026-11-05',
     aliases: ['yeast conversion calculator', 'active dry to instant yeast conversion', 'fresh yeast to dry yeast calculator', 'instant yeast to active dry yeast', 'cake yeast conversion calculator', 'how much instant yeast equals active dry'],
-    related: ['bakers-percentage-calculator', 'pizza-dough-calculator', 'recipe-scaling-calculator'],
+    related: ['bakers-percentage-calculator', 'pizza-dough-calculator', 'recipe-scaling-calculator', 'abv-calculator'],
     title: 'Yeast Conversion Calculator',
     description: 'Convert a yeast amount between fresh (cake), active dry and instant yeast, using King Arthur Baking’s own Professional Baker’s Reference weight ratios.',
     example: '30 g of fresh yeast converts to 12 g of active dry yeast or 9.9 g of instant yeast, per King Arthur Baking’s Professional Baker’s Reference.',
@@ -1383,6 +1435,885 @@ export const foodCalculators: CalculatorConfig[] = [
         freshEquivalentG,
         activeDryEquivalentG: freshEquivalentG * YEAST_FRESH_TO_ACTIVE_DRY,
         instantEquivalentG: freshEquivalentG * YEAST_FRESH_TO_INSTANT
+      };
+    }
+  },
+  {
+    id: 'abv-calculator',
+    category: 'food',
+    glyph: 'abv',
+    updatedAt: '2026-11-05',
+    aliases: ['abv calculator', 'alcohol by volume calculator', 'homebrew abv calculator', 'original gravity final gravity calculator', 'beer abv calculator', 'wine abv calculator from gravity'],
+    related: ['yeast-conversion-calculator', 'party-drinks-calculator', 'cake-servings-calculator'],
+    title: 'ABV Calculator',
+    description: 'Alcohol by volume for homebrew beer, wine, mead or cider from original and final gravity readings, using Brew Your Own magazine’s own precise and quick formulas.',
+    example: 'Original gravity 1.050, final gravity 1.010, gives about 5.3% ABV by the precise formula — close to, but not identical to, the quick 5.28% estimate from the same source.',
+    breakdown: {
+      headline: 'abvPercent',
+      headlineLabel: 'Alcohol by volume (ABV), precise formula',
+      outputs: [
+        { id: 'abvPercent', label: 'Alcohol by volume (ABV)', format: 'percent' },
+        { id: 'abwPercent', label: 'Alcohol by weight (ABW)', format: 'percent' },
+        { id: 'quickEstimateAbvPercent', label: 'Quick-estimate ABV (same source’s simple formula)', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Gravity readings', inputs: ['originalGravity', 'finalGravity'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'quickEstimateAbvPercent', label: 'Quick estimate' },
+          { from: 'abvPercent', label: 'Precise formula' }
+        ],
+        title: 'Quick estimate vs. the precise formula'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'What a gravity reading measures',
+        paragraphs: [
+          "A hydrometer measures specific gravity — how dense a liquid is compared with plain water (1.000). Unfermented wort, must or cider starts denser than water because it's full of dissolved sugar: that's the original gravity (OG). As yeast eats the sugar and produces alcohol and carbon dioxide, the liquid gets less dense, so the final gravity (FG), measured once fermentation is done, is lower than the OG.",
+          "The gap between OG and FG is a direct stand-in for how much sugar the yeast actually converted, which is why it's the basis for estimating alcohol content without any lab equipment. Brew Your Own magazine publishes both a precise formula, which accounts for how alcohol's own lower density affects the final reading, and a simpler quick-estimate formula meant for fast mental math.",
+          "Neither formula replaces a lab test. Homebrewers, home winemakers and home cidermakers use gravity-based ABV as a close estimate for their own batches — it's not accurate enough for a label on anything sold commercially, which in the US requires TTB-certified lab analysis."
+        ]
+      },
+      howTo: {
+        intro: 'Enter the original gravity (OG) you measured before fermentation and the final gravity (FG) you measured once fermentation finished.',
+        steps: [
+          { name: 'Measure original gravity', text: 'Take a hydrometer (or refractometer) reading of the wort, must or juice before pitching yeast.' },
+          { name: 'Ferment to completion', text: 'Wait until gravity stops dropping over 2-3 consecutive days — fermentation isn’t done until then.' },
+          { name: 'Measure final gravity', text: 'Take a second reading once fermentation is finished.' },
+          { name: 'Enter both readings', text: 'Type OG and FG as decimals, e.g. 1.050 and 1.010.' },
+          { name: 'Read the ABV', text: 'The precise formula is the headline figure; the quick estimate is shown alongside it for comparison.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Brew Your Own magazine publishes two formulas: a precise one that corrects for alcohol’s lower density, and a quick one for mental math using gravity points (the digits after the decimal, as a whole number).',
+        expression: 'ABW = 76.08 × (OG − FG) ÷ (1.775 − OG)\nABV = ABW × (FG ÷ 0.794)\n\nQuick estimate: ABV ≈ (OG points − FG points) × 0.132',
+        terms: [
+          { symbol: 'OG, FG', meaning: 'Original and final specific gravity, e.g. 1.050 and 1.010.' },
+          { symbol: 'OG points, FG points', meaning: 'The digits after the decimal point, as a whole number — 1.050 is 50 points.' },
+          { symbol: 'ABW', meaning: 'Alcohol by weight, an intermediate figure in the precise formula.' },
+          { symbol: '76.08, 1.775, 0.794, 0.132', meaning: 'Brew Your Own’s own published constants for these formulas.' }
+        ],
+        note: 'This is an estimate for home use, not a certified alcohol-content test. The quick formula’s own constant (0.132, from Brew Your Own) is close to, but not the same as, the uncredited "×131.25" shortcut repeated on many sites with no stated source.'
+      },
+      workedExample: {
+        intro: 'A batch with OG 1.050 and FG 1.010 — a typical session beer.',
+        rows: [
+          { label: 'Original gravity (OG)', value: '1.050' },
+          { label: 'Final gravity (FG)', value: '1.010' },
+          { label: 'ABW = 76.08 × (1.050 − 1.010) ÷ (1.775 − 1.050)', value: '76.08 × 0.040 ÷ 0.725 = 4.20%' },
+          { label: 'ABV = 4.20% × (1.010 ÷ 0.794)', value: '5.34%' },
+          { label: 'Quick estimate: (50−10) × 0.132', value: '5.28%' }
+        ],
+        result: 'About 5.3% ABV by the precise formula, 5.28% by the quick estimate',
+        explanation: 'The two formulas agree closely at typical beer strengths — the gap widens at higher-gravity beers, wines and meads, which is exactly why Brew Your Own publishes the more precise version for those batches.'
+      },
+      watchOut: [
+        {
+          title: 'This isn’t a lab-certified reading',
+          body: 'Gravity-based ABV is a close estimate for home use. Anything brewed or fermented for commercial sale in the US needs TTB-certified lab testing for its labeled alcohol content, not a hydrometer calculation.'
+        },
+        {
+          title: 'The gap between formulas grows at higher ABV',
+          body: 'For an ordinary beer the quick and precise formulas land within a few tenths of a percent of each other. For a strong beer, wine or mead — higher OG, bigger drop to FG — the gap widens, which is why the precise formula exists.'
+        },
+        {
+          title: 'A refractometer needs a correction, a hydrometer doesn’t',
+          body: 'This calculator assumes both readings came from a hydrometer (or were already corrected to hydrometer-equivalent gravity). A refractometer reads alcohol-containing liquid inaccurately after fermentation starts and needs its own correction formula first.'
+        },
+        {
+          title: 'Temperature affects a hydrometer reading',
+          body: 'Most hydrometers are calibrated for a specific sample temperature (commonly 60°F/15.6°C). A reading taken from a hot or cold sample needs a temperature correction before it’s accurate.'
+        }
+      ],
+      references: [
+        { label: 'Brew Your Own magazine, "Calculating Alcohol Content, Attenuation, Extract, and Calories" by Bill Pierce', url: 'https://byo.com/article/calculating-alcohol/' },
+        { label: 'Alcohol and Tobacco Tax and Trade Bureau (TTB), beverage alcohol labeling requirements', url: 'https://www.ttb.gov/' }
+      ]
+    },
+    inputs: [
+      { id: 'originalGravity', label: 'Original gravity (OG)', type: 'number', placeholder: '1.050', defaultValue: 1.05, step: 0.001, min: 1 },
+      { id: 'finalGravity', label: 'Final gravity (FG)', type: 'number', placeholder: '1.010', defaultValue: 1.01, step: 0.001, min: 0.98 }
+    ],
+    seo: {
+      title: 'ABV Calculator – Alcohol by Volume from Gravity',
+      description: 'Free ABV calculator from original and final gravity, using Brew Your Own magazine’s precise and quick formulas for homebrew beer, wine, mead or cider.',
+      faq: [
+        { question: 'How do I calculate ABV from original and final gravity?', answer: 'Brew Your Own’s precise formula: ABW = 76.08 × (OG − FG) ÷ (1.775 − OG), then ABV = ABW × (FG ÷ 0.794). For OG 1.050 and FG 1.010, that’s about 5.3%.' },
+        { question: 'Is there a quick way to estimate ABV?', answer: 'Yes — Brew Your Own’s quick formula multiplies the gravity-point difference by 0.132: (OG points − FG points) × 0.132. For 1.050 to 1.010 (a 40-point drop), that’s 5.28%, close to the precise formula’s 5.34%.' },
+        { question: 'Is the "×131.25" ABV formula the same as this one?', answer: 'It’s a similar quick shortcut, but Brew Your Own’s own published quick-formula constant is 0.132 (equivalent to ×132 on gravity points), not 131.25 — close, but not identical, and the 131.25 figure is widely repeated without an original citation.' },
+        { question: 'Why are there two different ABV formulas?', answer: 'The quick formula is fast mental math that works well for ordinary-strength beers. The precise formula corrects for alcohol’s lower density, which matters more as OG and the resulting ABV climb.' },
+        { question: 'Can I use this for wine or mead, not just beer?', answer: 'Yes — the gravity-based formula works the same way for any fermented beverage measured with a hydrometer. Wines and meads often start at a higher OG, which is exactly where the precise formula and the quick formula diverge the most.' },
+        { question: 'Does this calculator work with refractometer readings?', answer: 'Only if the refractometer reading has already been corrected to a hydrometer-equivalent final gravity — a refractometer alone reads inaccurately once alcohol is present, and needs its own correction formula first.' },
+        { question: 'Is this ABV figure accurate enough for a beer or wine label?', answer: 'No — commercial alcohol labeling in the US requires TTB-certified lab testing. This is a home-use estimate only.' }
+      ]
+    },
+    compute(values) {
+      const og = values.originalGravity;
+      const fg = values.finalGravity;
+      const abwPercent = (76.08 * (og - fg)) / (1.775 - og);
+      const abvPercent = abwPercent * (fg / 0.794);
+      const quickEstimateAbvPercent = ((og - 1) * 1000 - (fg - 1) * 1000) * 0.132;
+      return { abvPercent, abwPercent, quickEstimateAbvPercent };
+    }
+  },
+  {
+    id: 'coffee-ratio-calculator',
+    category: 'food',
+    glyph: 'cof',
+    updatedAt: '2026-11-05',
+    aliases: ['coffee to water ratio calculator', 'coffee ratio calculator', 'how much coffee per cup of water', 'coffee brewing ratio calculator', 'golden ratio coffee calculator', 'drip coffee ratio calculator'],
+    related: ['cold-brew-ratio-calculator', 'rice-to-water-ratio-calculator', 'recipe-scaling-calculator'],
+    title: 'Coffee to Water Ratio Calculator',
+    description: 'How much coffee to use for a given amount of water, by brewing strength, using the Specialty Coffee Association’s own official brew-ratio standard.',
+    example: 'For 500 mL of water at the SCA’s Golden Cup standard (55 g coffee per 1,000 g water), use about 27.5 g of coffee — a ratio of roughly 1:18.',
+    breakdown: {
+      headline: 'coffeeGrams',
+      headlineLabel: 'Coffee needed',
+      outputs: [
+        { id: 'coffeeGrams', label: 'Coffee needed', format: 'number', dimension: 'mass', unit: 'g' },
+        { id: 'ratioToOne', label: 'Ratio (parts water per part coffee)', format: 'number' }
+      ],
+      groups: [
+        { title: 'Brew', inputs: ['waterAmount', 'strengthOption'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'lightGrams', label: 'Light end' },
+          { from: 'goldenGrams', label: 'Golden Cup standard' },
+          { from: 'strongGrams', label: 'Strong end' }
+        ],
+        title: 'Coffee needed across the SCA’s standard range',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'Where the SCA’s brew ratio comes from',
+        paragraphs: [
+          "The Specialty Coffee Association (SCA) publishes an official standard for home coffee brewers, SCA Standard 310-2021, which defines the industry's reference \"brew ratio\": grams of coffee per 1.000 kg of fresh water. The standard states its own brew ratio used for testing is 55 g of coffee per 1.000 kg of water — commonly called the \"Golden Cup\" ratio, roughly 1 part coffee to 18 parts water by weight.",
+          "The same standard treats a +/-10% range around that figure (49.5 to 60.5 g per liter) as the acceptable band for producing a good cup under typical home-brewing conditions, which is why this calculator offers a light end, the standard itself, and a strong end rather than a single fixed number.",
+          "This is a filter/drip-coffee standard specifically — SCA Standard 310-2021 explicitly excludes pour-over devices, French press, espresso machines and pod brewers from its scope, though the same brew-ratio concept is commonly applied across methods by home coffee drinkers."
+        ]
+      },
+      howTo: {
+        intro: 'Enter how much water you’re brewing with and pick a strength — the calculator multiplies by the SCA’s own brew-ratio figures.',
+        steps: [
+          { name: 'Enter your water amount', text: 'The total water your brewer will use, in milliliters, cups or liters.' },
+          { name: 'Pick a strength', text: 'Light end, the SCA’s Golden Cup standard, or the strong end of its published range.' },
+          { name: 'Read the coffee amount', text: 'Weigh your coffee on a kitchen scale for accuracy — volume scoops vary by grind and roast.' },
+          { name: 'Check the ratio', text: 'The "parts water per part coffee" figure helps you scale to any pot size by eye.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Coffee needed is the water amount (in kilograms, since 1 L of water weighs 1 kg) multiplied by the chosen brew ratio in grams per liter.',
+        expression: 'coffee (g) = water (L) × ratio (g/L)\nratio (parts) = 1000 ÷ ratio (g/L)',
+        terms: [
+          { symbol: 'water (L)', meaning: 'Your brew water amount, converted to liters.' },
+          { symbol: 'ratio (g/L)', meaning: 'SCA Standard 310-2021’s brew ratio: 55 g/L at the Golden Cup standard, 49.5-60.5 g/L across its published +/-10% range.' }
+        ],
+        note: 'This covers filter/drip coffee. Espresso, French press and cold brew each use a different ratio and method — see the related calculators for cold brew specifically.'
+      },
+      workedExample: {
+        intro: '500 mL of water at the Golden Cup standard.',
+        rows: [
+          { label: 'Water amount', value: '500 mL = 0.5 L' },
+          { label: 'Ratio (Golden Cup standard)', value: '55 g/L' },
+          { label: 'Coffee (0.5 × 55)', value: '27.5 g' },
+          { label: 'Ratio, as parts', value: '1000 ÷ 55 ≈ 1:18.18' }
+        ],
+        result: 'About 27.5 g of coffee for 500 mL of water',
+        explanation: 'Doubling the water amount to 1 L doubles the coffee to 55 g — the ratio itself doesn’t change, only the total quantity.'
+      },
+      watchOut: [
+        {
+          title: 'Weigh, don’t scoop',
+          body: 'A tablespoon or scoop of coffee varies in weight by roast and grind size — a kitchen scale is the only way to hit a specific ratio reliably.'
+        },
+        {
+          title: 'This is a filter-coffee standard',
+          body: 'SCA Standard 310-2021 is written specifically for electric drip/filter brewers and explicitly excludes pour-over, French press, espresso and pod brewers from its scope, even though many home brewers apply a similar ratio across methods.'
+        },
+        {
+          title: 'Taste preference beats any standard',
+          body: 'The SCA’s own +/-10% range exists because brewing water, roast level, grind size and personal taste all shift the ideal ratio — treat the Golden Cup figure as a starting point, not a rule.'
+        },
+        {
+          title: 'Grind size has to match your brewer',
+          body: 'The right ratio still tastes off with the wrong grind size for your brewing method — a drip machine, pour-over and French press each need a different grind.'
+        }
+      ],
+      references: [
+        { label: 'Specialty Coffee Association, SCA Standard 310-2021, "Home Coffee Brewers: Specifications and Test Methods"', url: 'https://sca.coffee/research/coffee-standards' }
+      ]
+    },
+    inputs: [
+      { id: 'waterAmount', label: 'Water amount', type: 'number', placeholder: '500', defaultValue: 500, step: 50, min: 10, dimension: 'volume', unit: 'mL' },
+      {
+        id: 'strengthOption',
+        label: 'Strength',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 1,
+        min: 0,
+        options: SCA_BREW_RATIOS_G_PER_L.map((ratio, i) => ({
+          value: i,
+          label: i === 0 ? `Light end (${ratio} g/L)` : i === 1 ? `Golden Cup standard (${ratio} g/L)` : `Strong end (${ratio} g/L)`
+        }))
+      }
+    ],
+    seo: {
+      title: 'Coffee to Water Ratio Calculator – SCA Standard',
+      description: 'Free coffee to water ratio calculator using the Specialty Coffee Association’s own Golden Cup brew-ratio standard, from light to strong.',
+      faq: [
+        { question: 'What is the ideal coffee to water ratio?', answer: 'The Specialty Coffee Association’s Golden Cup standard is 55 g of coffee per 1,000 g (1 L) of water — about a 1:18 ratio by weight — with an acceptable range of 49.5 to 60.5 g/L.' },
+        { question: 'How much coffee do I use per cup of water?', answer: 'A US cup of water is about 237 mL. At the SCA’s 55 g/L standard, that’s about 13 g of coffee per cup — roughly 1.5 level tablespoons, though weighing is more accurate than scooping.' },
+        { question: 'Is the coffee to water ratio the same for every brewing method?', answer: 'No — SCA Standard 310-2021 is written specifically for filter/drip coffee makers. Cold brew uses a very different ratio (around 1:4 to 1:5) because it’s steeped as a concentrate, not brewed to drinking strength directly.' },
+        { question: 'Why does the SCA give a range instead of one number?', answer: 'The standard’s own +/-10% tolerance (49.5-60.5 g/L) reflects that brewing water, roast and personal taste shift the ideal ratio — 55 g/L is the center of that range, not a single correct answer.' },
+        { question: 'Should I weigh my coffee or use scoops?', answer: 'Weighing is more accurate. A scoop or tablespoon of coffee varies in weight depending on roast level and grind size, which throws off the ratio even when the volume looks the same.' },
+        { question: 'Is a stronger ratio the same as a darker roast?', answer: 'No — ratio is about quantity of coffee per water, while roast level is about how long the beans were roasted. A light roast brewed at the strong end of this range is still a "light roast," just a more concentrated cup of it.' }
+      ]
+    },
+    compute(values) {
+      const ratio = SCA_BREW_RATIOS_G_PER_L[values.strengthOption];
+      const coffeeGrams = (values.waterAmount / 1000) * ratio;
+      const ratioToOne = 1000 / ratio;
+      return {
+        coffeeGrams,
+        ratioToOne,
+        lightGrams: (values.waterAmount / 1000) * SCA_BREW_RATIOS_G_PER_L[0],
+        goldenGrams: (values.waterAmount / 1000) * SCA_BREW_RATIOS_G_PER_L[1],
+        strongGrams: (values.waterAmount / 1000) * SCA_BREW_RATIOS_G_PER_L[2]
+      };
+    }
+  },
+  {
+    id: 'cold-brew-ratio-calculator',
+    category: 'food',
+    glyph: 'cbr',
+    updatedAt: '2026-11-05',
+    aliases: ['cold brew ratio calculator', 'cold brew coffee calculator', 'cold brew concentrate ratio', 'how much coffee for cold brew', 'cold brew coffee to water ratio', 'cold brew recipe calculator'],
+    related: ['coffee-ratio-calculator', 'rice-to-water-ratio-calculator', 'party-drinks-calculator'],
+    title: 'Cold Brew Ratio Calculator',
+    description: 'How much water to use for a given amount of coffee when making cold brew concentrate, using the National Coffee Association’s own 1:4 to 1:5 ratio.',
+    example: '100 g of coarsely ground coffee needs 400 to 500 g of cold water — a 1:4 to 1:5 ratio, per the National Coffee Association’s own cold brew guidance.',
+    breakdown: {
+      headline: 'waterLowG',
+      headlineLabel: 'Water needed (1:4, stronger concentrate)',
+      outputs: [
+        { id: 'waterLowG', label: 'Water, 1:4 (stronger)', format: 'number', dimension: 'mass', unit: 'g' },
+        { id: 'waterHighG', label: 'Water, 1:5 (milder)', format: 'number', dimension: 'mass', unit: 'g' }
+      ],
+      groups: [
+        { title: 'Cold brew', inputs: ['coffeeAmount'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'waterLowG', label: '1:4 (stronger)' },
+          { from: 'waterHighG', label: '1:5 (milder)' }
+        ],
+        title: 'Water needed across the NCA’s ratio range'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'Why cold brew uses such a different ratio',
+        paragraphs: [
+          "Cold brew isn't just iced hot coffee — it's a concentrate, steeped with far more coffee relative to water than a drip pot, then usually diluted before drinking. The National Coffee Association's own cold brew guidance gives a ratio of 1 gram of coffee to 4-5 grams of water (1:4 to 1:5 by weight), roughly four times as much coffee per gram of water as the Specialty Coffee Association's hot-brew Golden Cup standard (about 1:18).",
+          "That concentrated ratio is steeped cold for an extended period — the NCA's own guidance says about 12 hours of contact time — rather than brewed hot and fast, which is what lets a coarse grind fully extract without turning bitter the way it would in a quick hot brew.",
+          "The result is a strong, low-acid concentrate meant to be cut with water, milk or ice before drinking, not consumed at full strength straight from the steeping vessel."
+        ]
+      },
+      howTo: {
+        intro: 'Enter how much ground coffee you’re using — the calculator gives the water range for the National Coffee Association’s 1:4 to 1:5 ratio.',
+        steps: [
+          { name: 'Enter your coffee amount', text: 'Coarsely ground coffee, weighed on a kitchen scale.' },
+          { name: 'Read the water range', text: 'Use the lower figure for a stronger concentrate, the higher figure for a milder one.' },
+          { name: 'Combine and steep', text: 'Stir coarse grounds into cold or room-temperature water in a jar or pitcher.' },
+          { name: 'Steep about 12 hours', text: 'The National Coffee Association’s own guidance; many home recipes extend this to 16-24 hours for a stronger result.' },
+          { name: 'Strain and dilute to taste', text: 'The concentrate is meant to be cut with water, milk or ice before drinking — see the watch-outs below.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Water needed is the coffee amount multiplied by the ratio’s low end (4) and high end (5).',
+        expression: 'water, low (g) = coffee (g) × 4\nwater, high (g) = coffee (g) × 5',
+        terms: [
+          { symbol: 'coffee (g)', meaning: 'Coarsely ground coffee, by weight.' },
+          { symbol: '4, 5', meaning: 'The National Coffee Association’s own published ratio range (1:4 to 1:5, coffee to water by weight).' }
+        ],
+        note: 'This is the ratio for the steeped concentrate itself, before any dilution for serving.'
+      },
+      workedExample: {
+        intro: '100 g of coarsely ground coffee.',
+        rows: [
+          { label: 'Coffee amount', value: '100 g' },
+          { label: 'Water, 1:4 (100 × 4)', value: '400 g' },
+          { label: 'Water, 1:5 (100 × 5)', value: '500 g' }
+        ],
+        result: '400 to 500 g of water for 100 g of coffee',
+        explanation: 'Since water’s density is close enough to 1 g per mL for kitchen purposes, 400-500 g of water is also about 400-500 mL.'
+      },
+      watchOut: [
+        {
+          title: 'This is concentrate, not a ready-to-drink ratio',
+          body: 'The National Coffee Association’s own page doesn’t give a specific dilution ratio for serving — it describes the concentrate as "designed to be diluted with water or enjoyed with ice" without a fixed number. Start around 1:1 concentrate to water and adjust to taste.'
+        },
+        {
+          title: 'Use a coarse grind, not your drip-coffee grind',
+          body: 'The NCA describes the right grind as "coarse," like rock salt. A finer grind over a 12-hour steep tends to over-extract and turn bitter or cloudy.'
+        },
+        {
+          title: 'Steep time varies more than the ratio does',
+          body: 'The NCA’s own figure is about 12 hours, but many published home recipes steep 16 to 24 hours for a stronger result — if you extend the steep time, consider moving toward the 1:5 end of the ratio to avoid over-extraction.'
+        },
+        {
+          title: 'Not the same ratio as hot-brewed coffee',
+          body: 'Don’t reuse this ratio for a drip machine or pour-over — see the coffee-to-water ratio calculator for the much more dilute ratio hot brewing uses.'
+        }
+      ],
+      references: [
+        { label: 'National Coffee Association (aboutcoffee.org), "Cold brew coffee"', url: 'https://www.aboutcoffee.org/brewing/cold-brew-coffee/' }
+      ]
+    },
+    inputs: [
+      { id: 'coffeeAmount', label: 'Coffee amount', type: 'number', placeholder: '100', defaultValue: 100, step: 10, min: 1, dimension: 'mass', unit: 'g' }
+    ],
+    seo: {
+      title: 'Cold Brew Ratio Calculator – Coffee to Water',
+      description: 'Free cold brew ratio calculator: water needed for a 1:4 to 1:5 cold brew concentrate, from the National Coffee Association’s own guidance.',
+      faq: [
+        { question: 'What is the ratio for cold brew coffee?', answer: 'The National Coffee Association’s own guidance is 1 gram of coffee to 4-5 grams of water (1:4 to 1:5 by weight) for the steeped concentrate.' },
+        { question: 'How much coffee do I need for cold brew?', answer: 'For 500 g (about 500 mL) of water at a 1:5 ratio, use 100 g of coarsely ground coffee. Use the calculator above for any amount.' },
+        { question: 'How long should I steep cold brew?', answer: 'About 12 hours, per the National Coffee Association’s own figure — many home recipes extend this to 16-24 hours for a stronger concentrate.' },
+        { question: 'Do I drink cold brew concentrate straight?', answer: 'Usually not — it’s a concentrate meant to be diluted with water, milk or ice. The National Coffee Association doesn’t publish an exact dilution ratio, so start around equal parts and adjust to taste.' },
+        { question: 'Is cold brew ratio the same as hot coffee ratio?', answer: 'No — hot drip coffee uses a much more dilute ratio, around 1:18 (the Specialty Coffee Association’s Golden Cup standard). Cold brew concentrate is roughly four times as strong per gram of water.' },
+        { question: 'What grind size should I use for cold brew?', answer: 'Coarse — the National Coffee Association describes it as similar to rock salt. A finer grind over such a long steep time tends to over-extract and taste bitter or come out cloudy.' }
+      ]
+    },
+    compute(values) {
+      const coffeeAmount = values.coffeeAmount;
+      return {
+        waterLowG: coffeeAmount * COLD_BREW_RATIO.low,
+        waterHighG: coffeeAmount * COLD_BREW_RATIO.high
+      };
+    }
+  },
+  {
+    id: 'self-rising-flour-substitute-calculator',
+    category: 'food',
+    glyph: 'srf',
+    updatedAt: '2026-11-05',
+    aliases: ['self rising flour substitute calculator', 'self raising flour substitute calculator', 'how to make self rising flour', 'self rising flour from all purpose flour', 'self rising flour converter', 'baking powder and salt for self rising flour'],
+    related: ['bakers-percentage-calculator', 'pizza-dough-calculator', 'recipe-scaling-calculator'],
+    title: 'Self-Rising Flour Substitute Calculator',
+    description: 'How much baking powder and salt to add to all-purpose flour to substitute for self-rising flour, using King Arthur Baking’s own ratio.',
+    example: 'For 120 g (1 cup) of all-purpose flour, whisk in 1½ tsp baking powder and ¼ tsp salt to substitute for self-rising flour, per King Arthur Baking.',
+    breakdown: {
+      headline: 'bakingPowderTsp',
+      headlineLabel: 'Baking powder to add',
+      outputs: [
+        { id: 'bakingPowderTsp', label: 'Baking powder', format: 'number', dimension: 'volume', unit: 'tsp' },
+        { id: 'saltTsp', label: 'Table salt', format: 'number', dimension: 'volume', unit: 'tsp' }
+      ],
+      groups: [
+        { title: 'All-purpose flour', inputs: ['flourAmount'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'bakingPowderTsp', label: 'Baking powder' },
+          { from: 'saltTsp', label: 'Salt' }
+        ],
+        title: 'Added per batch (teaspoons)'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'What self-rising flour actually is',
+        paragraphs: [
+          "Self-rising flour is just all-purpose (or, commercially, a softer low-protein) flour pre-mixed with baking powder and salt, so a recipe built around it doesn't need those two ingredients measured separately. King Arthur Baking's own substitute recipe is 1 cup (120 g) of all-purpose flour whisked with 1½ teaspoons of baking powder and ¼ teaspoon of table salt, substituted 1:1 by weight or volume for however much self-rising flour a recipe calls for.",
+          "Commercial self-rising flour is usually milled from softer, lower-protein wheat than standard all-purpose flour, which is part of why King Arthur's own article notes the AP-flour version bakes slightly less tender than the real thing — it's a close substitute, not an identical ingredient.",
+          "This calculator scales King Arthur's own per-cup ratio to any amount of flour, by weight, so you can mix exactly as much as a recipe needs."
+        ]
+      },
+      howTo: {
+        intro: 'Enter how much all-purpose flour your recipe calls for — the calculator scales King Arthur Baking’s own per-120 g ratio.',
+        steps: [
+          { name: 'Check your recipe’s flour amount', text: 'The amount of self-rising flour the recipe calls for, since you’re substituting 1:1 by weight.' },
+          { name: 'Enter the flour amount', text: 'In grams, or switch the unit to cups.' },
+          { name: 'Read the baking powder and salt amounts', text: 'Scaled from King Arthur’s 1½ tsp baking powder + ¼ tsp salt per 120 g (1 cup).' },
+          { name: 'Whisk together before using', text: 'Combine all three dry ingredients thoroughly so the leavening is evenly distributed.' },
+          { name: 'Use in place of self-rising flour', text: 'Substitute the mixture 1:1 for the self-rising flour amount the recipe calls for.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Baking powder and salt both scale with the flour amount, at King Arthur Baking’s own per-120 g ratio.',
+        expression: 'baking powder (tsp) = flour (g) ÷ 120 × 1.5\nsalt (tsp) = flour (g) ÷ 120 × 0.25',
+        terms: [
+          { symbol: 'flour (g)', meaning: 'All-purpose flour, by weight.' },
+          { symbol: '120', meaning: 'King Arthur Baking’s own reference amount: 1 US cup of all-purpose flour.' },
+          { symbol: '1.5, 0.25', meaning: 'Teaspoons of baking powder and salt per 120 g of flour, per King Arthur Baking.' }
+        ],
+        note: 'This is a substitute, not an identical ingredient — see the watch-outs for how it differs from commercial self-rising flour.'
+      },
+      workedExample: {
+        intro: '240 g of all-purpose flour (2 cups).',
+        rows: [
+          { label: 'Flour amount', value: '240 g' },
+          { label: 'Baking powder (240 ÷ 120 × 1.5)', value: '3 tsp' },
+          { label: 'Salt (240 ÷ 120 × 0.25)', value: '0.5 tsp' }
+        ],
+        result: '3 tsp baking powder and ½ tsp salt for 240 g of flour',
+        explanation: 'Doubling the flour from King Arthur’s 120 g reference amount doubles both the baking powder and salt — the ratio to flour stays fixed.'
+      },
+      watchOut: [
+        {
+          title: 'Not quite the same as commercial self-rising flour',
+          body: 'Commercial self-rising flour is usually milled from softer, lower-protein wheat. King Arthur Baking’s own article notes this all-purpose-flour version bakes "slightly less tender" as a result — a close substitute, not an identical ingredient.'
+        },
+        {
+          title: 'Check your baking powder’s freshness',
+          body: 'Baking powder loses leavening power over time. If a recipe using this substitute doesn’t rise as expected, stale baking powder is a common cause — not the ratio itself.'
+        },
+        {
+          title: 'Whisk thoroughly before using',
+          body: 'Baking powder and salt need to be evenly distributed through the flour, not just dumped on top — an uneven mix can leave some bites of the finished bake over- or under-leavened.'
+        },
+        {
+          title: 'Don’t also add the recipe’s own baking powder or salt',
+          body: 'If a recipe written specifically for self-rising flour also lists separate baking powder or salt, follow the recipe as written — those recipes typically assume the self-rising flour’s leavening already covers most of the rise.'
+        }
+      ],
+      references: [
+        { label: 'King Arthur Baking, "Self-rising flour: What is it, and how do I bake with it?"', url: 'https://www.kingarthurbaking.com/blog/2024/01/18/self-rising-flour' }
+      ]
+    },
+    inputs: [
+      { id: 'flourAmount', label: 'All-purpose flour', type: 'number', placeholder: '120', defaultValue: 120, step: 10, min: 1, dimension: 'mass', unit: 'g' }
+    ],
+    seo: {
+      title: 'Self-Rising Flour Substitute Calculator',
+      description: 'Free self-rising flour substitute calculator: baking powder and salt to add to all-purpose flour, from King Arthur Baking’s own ratio.',
+      faq: [
+        { question: 'How do I make self-rising flour from all-purpose flour?', answer: 'King Arthur Baking’s own ratio: whisk 1½ teaspoons of baking powder and ¼ teaspoon of table salt into 1 cup (120 g) of all-purpose flour, then substitute 1:1 for self-rising flour.' },
+        { question: 'Can I substitute this 1:1 for self-rising flour in any recipe?', answer: 'Yes, by weight or volume, per King Arthur Baking’s own guidance — this mixture is meant as a direct swap for however much self-rising flour a recipe calls for.' },
+        { question: 'Does homemade self-rising flour taste the same as the commercial kind?', answer: 'Close, but not identical — commercial self-rising flour is usually milled from softer, lower-protein wheat, which King Arthur Baking notes gives a slightly more tender result than the all-purpose-flour version.' },
+        { question: 'How much baking powder do I need for 2 cups of flour?', answer: '3 teaspoons of baking powder and ½ teaspoon of salt for 240 g (2 cups) of all-purpose flour — double King Arthur’s per-cup ratio.' },
+        { question: 'Is self-rising flour the same as all-purpose flour plus baking powder?', answer: 'Self-rising flour is all-purpose (or a softer) flour already mixed with both baking powder and salt — this calculator reproduces that mix from plain all-purpose flour.' },
+        { question: 'Why does my self-rising flour substitute recipe not rise well?', answer: 'Stale baking powder is the most common cause — it loses leavening power over time, regardless of how accurate the ratio is.' }
+      ]
+    },
+    compute(values) {
+      const factor = values.flourAmount / 120;
+      return {
+        bakingPowderTsp: SELF_RISING_PER_120G_FLOUR.bakingPowderTsp * factor,
+        saltTsp: SELF_RISING_PER_120G_FLOUR.saltTsp * factor
+      };
+    }
+  },
+  {
+    id: 'cake-servings-calculator',
+    category: 'food',
+    glyph: 'cak',
+    updatedAt: '2026-11-05',
+    aliases: ['cake servings calculator', 'cake serving size calculator', 'how many servings in a cake', 'wedding cake serving calculator', 'cake slice calculator', 'cake portion calculator'],
+    related: ['party-food-calculator', 'party-drinks-calculator', 'recipe-scaling-calculator'],
+    title: 'Cake Servings Calculator',
+    description: 'How many servings a round or square cake makes, by pan size, from Wilton’s own Ultimate Cake Serving Chart.',
+    example: 'A 9-inch round cake, cut into party-size slices, serves about 24 people — per Wilton’s own serving chart.',
+    breakdown: {
+      headline: 'servings',
+      headlineLabel: 'Servings',
+      outputs: [
+        { id: 'servings', label: 'Servings', format: 'integer' },
+        { id: 'partyServings', label: 'Party servings (larger slices)', format: 'integer' },
+        { id: 'weddingServings', label: 'Wedding servings (smaller slices)', format: 'integer' }
+      ],
+      groups: [
+        { title: 'Cake', inputs: ['cakeSize', 'servingStyle'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'partyServings', label: 'Party servings' },
+          { from: 'weddingServings', label: 'Wedding servings' }
+        ],
+        title: 'Servings by slice size'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'Where these serving counts come from',
+        paragraphs: [
+          "Wilton — the cake-pan and decorating brand behind most of the pans home bakers actually buy — publishes its own Ultimate Cake Serving Chart for 4-inch-tall round and square cakes, and this calculator reproduces that chart directly rather than deriving servings from a pan's area with an assumed slice size.",
+          "The chart gives two serving counts per pan size, based on two different slice sizes: a \"party serving,\" cut about 1½ x 2 inches, and a smaller \"wedding serving,\" cut about 1 x 2 inches — the thinner slice standard for a multi-course event where cake is one of several desserts.",
+          "A square cake of the same width as a round one yields noticeably more servings — a 10-inch square gives 30 party servings against a 10-inch round's 28, and the gap widens further for wedding-size slices (50 versus 38) — simply because a square pan has more area than a circle inscribed in the same width."
+        ]
+      },
+      howTo: {
+        intro: 'Pick your pan’s shape and size, then the slice style — the calculator reads straight off Wilton’s own serving chart.',
+        steps: [
+          { name: 'Pick a pan size', text: 'Choose your cake’s shape and diameter (or side length) for a round or square pan.' },
+          { name: 'Pick a serving style', text: 'Party servings (bigger slices) for a casual gathering, wedding servings (smaller slices) for a formal multi-dessert event.' },
+          { name: 'Read the serving count', text: 'Both serving styles are shown side by side for comparison.' },
+          { name: 'Scale up for tiered cakes', text: 'For a multi-tier cake, look up each tier separately and add the totals together.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'This is a lookup, not a formula — each pan size and serving style reads directly from Wilton’s own published chart.',
+        expression: 'servings = Wilton’s chart[pan shape][pan size][serving style]',
+        terms: [
+          { symbol: 'pan shape, size', meaning: 'Round or square, by diameter or side length in inches, for a standard 4-inch-tall pan.' },
+          { symbol: 'serving style', meaning: 'Party (~1½ x 2 in slices) or wedding (~1 x 2 in slices), Wilton’s own two slice-size standards.' }
+        ],
+        note: 'Wilton’s own caveat: "Number of servings are intended as a guide only. Actual results may vary."'
+      },
+      workedExample: {
+        intro: 'A 9-inch round cake.',
+        rows: [
+          { label: 'Pan size', value: '9 in round' },
+          { label: 'Party servings', value: '24' },
+          { label: 'Wedding servings', value: '32' }
+        ],
+        result: '24 party servings or 32 wedding servings for a 9-inch round cake',
+        explanation: 'Both figures come straight from Wilton’s own chart for a 9-inch round, 4-inch-tall cake — the smaller wedding slices yield more total servings from the same cake.'
+      },
+      watchOut: [
+        {
+          title: 'This is Wilton’s own "guide only," not a guarantee',
+          body: 'Wilton’s own chart states these figures are "intended as a guide only" and that "actual results may vary" — actual slice count depends on how evenly a cake is cut and how much filling or frosting is between layers.'
+        },
+        {
+          title: 'These are 4-inch-tall cakes',
+          body: 'Wilton’s chart assumes a standard 4-inch-tall finished cake. A shorter single-layer cake yields noticeably fewer servings at the same footprint.'
+        },
+        {
+          title: 'Tiered cakes need each tier added separately',
+          body: 'For a multi-tier wedding cake, look up each tier’s size individually and add the totals — this calculator covers one tier (or one single-layer cake) at a time.'
+        },
+        {
+          title: 'Party and wedding aren’t about the event name',
+          body: 'The two serving styles are about slice size, not what kind of event you’re hosting — a birthday party cut into smaller "wedding" slices will serve more people than the same cake cut into "party" slices.'
+        }
+      ],
+      references: [
+        { label: 'Wilton, "Ultimate Cake Serving Chart"', url: 'https://www.wilton.com/baking-inspiration/cake-baking-serving-guide/' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'cakeSize',
+        label: 'Pan shape and size',
+        type: 'number',
+        placeholder: '2',
+        defaultValue: 2,
+        step: 1,
+        min: 0,
+        options: WILTON_CAKE_CHART.map((c, i) => ({ value: i, label: `${c.label} (${c.party} party / ${c.wedding} wedding)` }))
+      },
+      {
+        id: 'servingStyle',
+        label: 'Serving style',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Party servings (larger slices)' },
+          { value: 1, label: 'Wedding servings (smaller slices)' }
+        ]
+      }
+    ],
+    seo: {
+      title: 'Cake Servings Calculator – By Pan Size',
+      description: 'Free cake servings calculator for round and square cakes, by pan size and slice style, from Wilton’s own Ultimate Cake Serving Chart.',
+      faq: [
+        { question: 'How many servings does a 9-inch round cake make?', answer: '24 party servings or 32 wedding servings, per Wilton’s own Ultimate Cake Serving Chart for a 4-inch-tall cake.' },
+        { question: 'How many servings does a 10-inch square cake make?', answer: '30 party servings or 50 wedding servings, per Wilton’s chart — more than a 10-inch round cake (28 party / 38 wedding) because a square pan has more area.' },
+        { question: 'What’s the difference between a party serving and a wedding serving?', answer: 'Wilton defines a party serving as about 1½ x 2 inches and a wedding serving as about 1 x 2 inches — the smaller wedding slice is the standard for a multi-course event with several desserts.' },
+        { question: 'Does a square cake serve more people than a round one?', answer: 'Yes, at the same width — a square pan has more area than a circle inscribed in it, so it yields more servings. Wilton’s own chart shows this gap at every matching size.' },
+        { question: 'How many servings does a wedding cake need per tier?', answer: 'Look up each tier’s size separately using this calculator and add the totals — Wilton’s chart gives servings per tier, not for a stacked multi-tier cake as a whole.' },
+        { question: 'Are these serving counts exact?', answer: 'No — Wilton’s own chart describes them as "a guide only," since actual results depend on how evenly the cake is cut.' }
+      ]
+    },
+    compute(values) {
+      const row = WILTON_CAKE_CHART[values.cakeSize];
+      const servings = values.servingStyle === 1 ? row.wedding : row.party;
+      return { servings, partyServings: row.party, weddingServings: row.wedding };
+    }
+  },
+  {
+    id: 'party-drinks-calculator',
+    category: 'food',
+    glyph: 'pdr',
+    updatedAt: '2026-11-05',
+    aliases: ['party drinks calculator', 'how much alcohol for a party', 'party alcohol calculator', 'how many drinks per person at a party', 'bar calculator for a party', 'party bar planning calculator'],
+    related: ['party-food-calculator', 'abv-calculator', 'cake-servings-calculator'],
+    title: 'Party Drinks Calculator',
+    description: 'How much alcohol to buy for a party, by guest count and length, using America’s Test Kitchen’s own Drinks = Guests × (Hours + 1) formula.',
+    example: 'For 20 guests at a 3-hour party, plan on about 80 drinks total — per America’s Test Kitchen’s own formula.',
+    breakdown: {
+      headline: 'totalDrinks',
+      headlineLabel: 'Total drinks needed',
+      outputs: [
+        { id: 'totalDrinks', label: 'Total drinks needed', format: 'integer' },
+        { id: 'beerBottles', label: 'Beer bottles, if beer only', format: 'number' },
+        { id: 'wineBottles', label: 'Wine bottles (750 mL), if wine only', format: 'number' },
+        { id: 'spiritsBottles', label: 'Spirits bottles (750 mL), if spirits only', format: 'number' }
+      ],
+      groups: [
+        { title: 'Party', inputs: ['guestCount', 'hours'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'beerBottles', label: 'Beer bottles' },
+          { from: 'wineBottles', label: 'Wine bottles' },
+          { from: 'spiritsBottles', label: 'Spirits bottles' }
+        ],
+        title: 'Bottles needed, if that’s your only beverage'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'Where this formula comes from',
+        paragraphs: [
+          "America's Test Kitchen publishes its own formula for how much alcohol to buy for a party: Drinks = Guests × (Hours + 1). The \"+1\" builds in a cushion for guests drinking a bit faster in the first hour and for the odd misplaced or abandoned drink — not a literal extra hour of consumption.",
+          "This calculator covers alcohol only, the same way `party-food-calculator` on this site covers food only — plan the two separately and combine them when you're shopping.",
+          "The three bottle counts below (beer, wine, spirits) each assume that beverage is your only drink at the party. If you're serving a mix, America's Test Kitchen's own guidance is to split the total drinks evenly between the types you're offering, then add roughly a quarter more to each as a buying cushion."
+        ]
+      },
+      howTo: {
+        intro: 'Enter your guest count and how many hours the party runs — the calculator applies America’s Test Kitchen’s own formula.',
+        steps: [
+          { name: 'Enter guest count', text: 'The number of guests who will be drinking alcohol.' },
+          { name: 'Enter party length', text: 'How many hours the party runs, in half-hour steps.' },
+          { name: 'Read the total drinks', text: 'Guests × (hours + 1), America’s Test Kitchen’s own formula.' },
+          { name: 'Pick a bottle count', text: 'Each of the three figures assumes that beverage alone covers every drink.' },
+          { name: 'Split for a mixed bar', text: 'If serving more than one beverage type, divide the total drinks between them and add about a quarter more to each as a cushion.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Total drinks is guests multiplied by hours plus one. Bottle counts divide that total by each beverage’s own servings-per-bottle figure.',
+        expression: 'drinks = guests × (hours + 1)\nbeer bottles = drinks ÷ 1\nwine bottles = drinks ÷ 5\nspirits bottles = drinks ÷ 12',
+        terms: [
+          { symbol: 'guests', meaning: 'Number of guests drinking alcohol.' },
+          { symbol: 'hours', meaning: 'Length of the party, in hours.' },
+          { symbol: '1, 5, 12', meaning: 'America’s Test Kitchen’s own servings-per-bottle figures: 1 drink per beer bottle, 5 per 750 mL wine bottle, 12 per 750 mL spirits bottle at a 2 fl oz pour.' }
+        ],
+        note: 'Estimates only — actual consumption varies by guest list, event type and what else is being served. This isn’t a substitute for your own judgment or local alcohol-service guidelines.'
+      },
+      workedExample: {
+        intro: '15 guests at a 3-hour party, served wine only — America’s Test Kitchen’s own worked example.',
+        rows: [
+          { label: 'Guests', value: '15' },
+          { label: 'Hours', value: '3' },
+          { label: 'Drinks (15 × (3+1))', value: '60' },
+          { label: 'Wine bottles (60 ÷ 5)', value: '12' }
+        ],
+        result: '60 total drinks, 12 bottles of wine',
+        explanation: 'This matches America’s Test Kitchen’s own published example exactly — the formula and bottle conversion are reproduced here, not altered.'
+      },
+      watchOut: [
+        {
+          title: 'The "+1" is a cushion, not a literal extra hour',
+          body: 'America’s Test Kitchen adds one hour’s worth of drinks to account for faster early drinking and the inevitable abandoned or spilled drink — it’s a planning buffer, not a claim that guests drink for one hour longer than the party runs.'
+        },
+        {
+          title: 'This assumes drinking guests only',
+          body: 'Count only the guests likely to drink alcohol — designated drivers, children and non-drinkers shouldn’t be counted toward the total.'
+        },
+        {
+          title: 'Mixing beverages needs its own math',
+          body: 'Each bottle figure above assumes that beverage alone covers every drink. For a mixed bar, split the total between beverage types and add about a quarter more to each, per America’s Test Kitchen’s own guidance — this calculator doesn’t do that split automatically.'
+        },
+        {
+          title: 'Food isn’t included',
+          body: 'This covers alcohol only. See `party-food-calculator` for food quantities — plan the two separately.'
+        },
+        {
+          title: 'Follow local alcohol-service laws',
+          body: 'Serving alcohol at a gathering may carry legal obligations (minimum age, host liability, service limits) that vary by location — this calculator doesn’t account for any of that.'
+        }
+      ],
+      references: [
+        { label: 'America’s Test Kitchen, "How Much Alcohol Should I Buy for a Party?"', url: 'https://www.americastestkitchen.com/articles/6701-how-much-alcohol-should-i-buy-for-a-party' }
+      ]
+    },
+    inputs: [
+      { id: 'guestCount', label: 'Guest count', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 1 },
+      { id: 'hours', label: 'Party length (hours)', type: 'number', placeholder: '3', defaultValue: 3, step: 0.5, min: 0.5 }
+    ],
+    seo: {
+      title: 'Party Drinks Calculator – How Much Alcohol to Buy',
+      description: 'Free party drinks calculator: total drinks and bottles of beer, wine or spirits, from America’s Test Kitchen’s own Guests × (Hours+1) formula.',
+      faq: [
+        { question: 'How much alcohol should I buy for a party?', answer: 'America’s Test Kitchen’s own formula: Drinks = Guests × (Hours + 1). For 20 guests at a 3-hour party, that’s 80 drinks total.' },
+        { question: 'How many bottles of wine do I need for a party?', answer: 'Divide total drinks by 5 (one 750 mL bottle of wine pours about 5 glasses). For 60 total drinks, that’s 12 bottles — America’s Test Kitchen’s own worked example.' },
+        { question: 'How many drinks per person should I plan for a party?', answer: 'About one drink per hour, plus one extra as a buffer — America’s Test Kitchen’s formula is Guests × (Hours + 1) total drinks, which works out to roughly (Hours + 1) drinks per guest.' },
+        { question: 'How much liquor do I need for a party of 50?', answer: 'For a 4-hour party, that’s 50 × (4+1) = 250 total drinks. If spirits are the only beverage, that’s about 20.8 bottles of 750 mL spirits at a 2 fl oz pour per drink.' },
+        { question: 'What if I’m serving beer, wine and spirits together?', answer: 'America’s Test Kitchen’s own guidance is to split the total drinks evenly between the beverage types you’re offering, then add roughly a quarter more to each as a buying cushion.' },
+        { question: 'Does this calculator include food?', answer: 'No — it covers alcohol only. See the party food calculator on this site for food quantities.' }
+      ]
+    },
+    compute(values) {
+      const totalDrinks = values.guestCount * (values.hours + 1);
+      return {
+        totalDrinks,
+        beerBottles: totalDrinks / PARTY_DRINKS_PER_BOTTLE.beer,
+        wineBottles: totalDrinks / PARTY_DRINKS_PER_BOTTLE.wine,
+        spiritsBottles: totalDrinks / PARTY_DRINKS_PER_BOTTLE.spirits
+      };
+    }
+  },
+  {
+    id: 'brine-calculator',
+    category: 'food',
+    glyph: 'brn',
+    updatedAt: '2026-11-05',
+    aliases: ['brine calculator', 'turkey brine calculator', 'how much salt for brine', 'brine ratio calculator', 'chicken brine calculator', 'wet brine calculator'],
+    related: ['turkey-thaw-time-calculator', 'turkey-cook-time-calculator', 'steak-doneness-calculator'],
+    title: 'Brine Calculator',
+    description: 'How much Morton Coarse Kosher Salt to use for a wet brine, by water amount and brining time, using Morton Salt’s own ratios.',
+    example: 'For 2 gallons of water brined overnight (up to 14 hours), use 1 cup of Morton Coarse Kosher Salt — Morton’s own ½ cup per gallon ratio.',
+    breakdown: {
+      headline: 'saltCups',
+      headlineLabel: 'Morton Coarse Kosher Salt needed',
+      outputs: [
+        { id: 'saltCups', label: 'Kosher salt', format: 'number', dimension: 'volume', unit: 'cup' }
+      ],
+      groups: [
+        { title: 'Brine', inputs: ['waterAmount', 'brineDuration'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'shortBrineSaltCups', label: 'Short brine (4-5 hr)' },
+          { from: 'longBrineSaltCups', label: 'Long brine (overnight)' }
+        ],
+        title: 'Salt needed by brining time',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'Why brining time changes the salt amount',
+        paragraphs: [
+          "A wet brine works by letting salt and water diffuse into meat over time, which is also why a longer brine needs less salt in the water: the meat has more time to reach the same level of seasoning at a gentler concentration. Morton Salt's own guide gives two ratios for its Coarse Kosher Salt — 1 cup per gallon of water for a shorter 4-5 hour brine, or ½ cup per gallon for an overnight brine of up to 14 hours.",
+          "This calculator uses Morton's own figures directly rather than a single generic \"salt per gallon\" rule, since the right concentration genuinely depends on how long the meat will sit in it.",
+          "The ratio is specific to Morton Coarse Kosher Salt. Kosher salt brands vary in crystal size and how densely they pack into a measuring cup, so a cup of a different brand's kosher salt isn't necessarily the same weight of salt as a cup of Morton's — see the watch-outs."
+        ]
+      },
+      howTo: {
+        intro: 'Enter how much water your brine needs and how long you plan to brine — the calculator applies Morton Salt’s own ratio.',
+        steps: [
+          { name: 'Enter your water amount', text: 'Enough cold water to fully submerge whatever you’re brining.' },
+          { name: 'Pick a brining time', text: 'Short (4-5 hours) or long (overnight, up to 14 hours) — Morton publishes a different ratio for each.' },
+          { name: 'Read the salt amount', text: 'Morton Coarse Kosher Salt, by volume.' },
+          { name: 'Dissolve fully and chill', text: 'Stir until the salt dissolves, then keep the brine below 40°F — refrigerated or in an ice-packed cooler.' },
+          { name: 'Submerge fully for the full time', text: 'Keep whatever you’re brining completely covered in brine for the full duration.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Salt needed is the water amount in gallons multiplied by Morton’s own cups-per-gallon figure for the chosen brining time.',
+        expression: 'salt (cups) = water (gal) × 1, for a 4-5 hour brine\nsalt (cups) = water (gal) × 0.5, for an overnight (up to 14 hour) brine',
+        terms: [
+          { symbol: 'water (gal)', meaning: 'Cold water, enough to fully submerge the item being brined.' },
+          { symbol: '1, 0.5', meaning: 'Cups of Morton Coarse Kosher Salt per gallon of water, per Morton Salt’s own guide, for the two brining-time bands.' }
+        ],
+        note: 'Food safety: keep the brine and the item being brined below 40°F throughout, and never brine something that will be deep-fried or that’s already labeled "basted," "enhanced" or "marinated" — see the watch-outs.'
+      },
+      workedExample: {
+        intro: '2 gallons of water, brined overnight (up to 14 hours).',
+        rows: [
+          { label: 'Water amount', value: '2 gal' },
+          { label: 'Ratio (overnight brine)', value: '0.5 cup per gal' },
+          { label: 'Salt (2 × 0.5)', value: '1 cup' }
+        ],
+        result: '1 cup of Morton Coarse Kosher Salt for a 2-gallon overnight brine',
+        explanation: 'The same 2 gallons brined for the shorter 4-5 hour window would need twice as much salt — 2 cups — since there’s less time for the salt to diffuse through the meat.'
+      },
+      watchOut: [
+        {
+          title: 'This ratio is specific to Morton Coarse Kosher Salt',
+          body: 'Kosher salt brands vary in crystal size and how densely they pack into a cup. Morton’s guide gives this ratio for its own Coarse Kosher Salt — don’t assume a cup of a different brand’s kosher salt, or of table salt, weighs the same.'
+        },
+        {
+          title: 'Keep the brine cold throughout',
+          body: 'Morton’s guide notes keeping the water below 40°F when brining in a cooler rather than a refrigerator — brining at room temperature is a food-safety risk, not just a flavor issue.'
+        },
+        {
+          title: 'Don’t brine certain already-treated meats',
+          body: 'Morton’s own guidance says not to brine meat already labeled "basted," "enhanced," "marinated" or Kosher — those products are already salted, and brining them again can make the result unpleasantly salty.'
+        },
+        {
+          title: 'Skip brining if you plan to deep-fry',
+          body: 'Morton’s guide specifically advises against brining a turkey that will be deep-fried — the extra moisture a brine adds increases the risk of dangerous oil splatter.'
+        },
+        {
+          title: 'Full submersion for the full time',
+          body: 'Any part of the meat that isn’t covered by brine won’t pick up the seasoning or moisture evenly — weigh it down with a plate if it floats.'
+        }
+      ],
+      references: [
+        { label: 'Morton Salt, "A Guide to Brining"', url: 'https://www.mortonsalt.com/article/a-guide-to-brining/' }
+      ]
+    },
+    inputs: [
+      { id: 'waterAmount', label: 'Water amount', type: 'number', placeholder: '2', defaultValue: 2, step: 0.5, min: 0.5, dimension: 'volume', unit: 'gal' },
+      {
+        id: 'brineDuration',
+        label: 'Brining time',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Short brine (4-5 hours)' },
+          { value: 1, label: 'Long brine (overnight, up to 14 hours)' }
+        ]
+      }
+    ],
+    seo: {
+      title: 'Brine Calculator – Salt per Gallon of Water',
+      description: 'Free brine calculator: Morton Coarse Kosher Salt per gallon of water, by brining time, from Morton Salt’s own guide to brining.',
+      faq: [
+        { question: 'How much salt do I need to brine a turkey?', answer: 'Morton Salt’s own guide: 1 cup of Morton Coarse Kosher Salt per gallon of water for a 4-5 hour brine, or ½ cup per gallon for an overnight brine up to 14 hours.' },
+        { question: 'Why does a longer brine use less salt?', answer: 'A wet brine works by diffusion over time — a longer brine lets the meat reach the same seasoning level at a gentler, safer concentration, which is why Morton’s own guide halves the ratio for an overnight brine.' },
+        { question: 'Can I use table salt instead of kosher salt for a brine?', answer: 'Not at the same volume — table salt is denser than Morton Coarse Kosher Salt, so a cup of table salt contains considerably more actual salt. Morton’s ratio is specific to its own Coarse Kosher Salt by volume.' },
+        { question: 'How long can I safely brine a turkey?', answer: 'Morton’s own guide covers brining up to 14 hours at its overnight ratio (½ cup salt per gallon) — it doesn’t publish guidance for longer than that.' },
+        { question: 'Should I brine a turkey I’m going to deep-fry?', answer: 'No — Morton’s own guide specifically advises against brining a turkey that will be deep-fried, since the added moisture increases the risk of dangerous oil splatter.' },
+        { question: 'Does kosher salt brand matter for brining?', answer: 'Yes — kosher salt brands differ in crystal size and how densely they pack into a measuring cup, so this ratio is accurate for Morton Coarse Kosher Salt specifically, not for kosher salt in general.' }
+      ]
+    },
+    compute(values) {
+      const cupsPerGallon = values.brineDuration === 0 ? BRINE_CUPS_PER_GALLON.short : BRINE_CUPS_PER_GALLON.long;
+      const saltCups = values.waterAmount * cupsPerGallon;
+      return {
+        saltCups,
+        shortBrineSaltCups: values.waterAmount * BRINE_CUPS_PER_GALLON.short,
+        longBrineSaltCups: values.waterAmount * BRINE_CUPS_PER_GALLON.long
       };
     }
   }

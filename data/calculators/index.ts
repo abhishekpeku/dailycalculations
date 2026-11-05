@@ -216,7 +216,14 @@ export const calculatorOrder: string[] = [
   'boiled-egg-calculator',
   'steak-doneness-calculator',
   'party-food-calculator',
-  'yeast-conversion-calculator'
+  'yeast-conversion-calculator',
+  'abv-calculator',
+  'coffee-ratio-calculator',
+  'cold-brew-ratio-calculator',
+  'self-rising-flour-substitute-calculator',
+  'cake-servings-calculator',
+  'party-drinks-calculator',
+  'brine-calculator'
 ];
 
 const rank = (id: string) => {

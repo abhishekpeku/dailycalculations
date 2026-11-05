@@ -1279,5 +1279,135 @@ export const sportsCalculators: CalculatorConfig[] = [
       const interceptionPercentage = (values.interceptions / values.attempts) * 100;
       return { passerRating, completionPercentage, yardsPerAttempt, touchdownPercentage, interceptionPercentage };
     }
+  },
+  {
+    id: 'elo-rating-calculator',
+    category: 'sports',
+    glyph: 'Elo',
+    updatedAt: '2026-11-05',
+    aliases: ['elo rating calculator', 'chess elo calculator', 'elo rating change calculator', 'expected score calculator', 'fide rating calculator'],
+    related: ['nfl-passer-rating-calculator', 'baseball-batting-average-calculator', 'cricket-bowling-figures-calculator'],
+    title: 'Elo Rating Calculator',
+    description: "Calculate the expected score and rating change for a single game between two Elo-rated players, using Arpad Elo's formula and FIDE's current K-factor table.",
+    example: 'A 1500-rated player who beats a 1600-rated opponent (K = 20) gains about 12.8 rating points.',
+    breakdown: {
+      headline: 'ratingChange',
+      headlineLabel: 'Rating change',
+      outputs: [
+        { id: 'ratingChange', label: 'Rating change', format: 'number' },
+        { id: 'expectedScore', label: 'Expected score (win probability)', format: 'significant' },
+        { id: 'newRating', label: 'New rating', format: 'number' }
+      ],
+      groups: [{ title: 'Game', inputs: ['playerRating', 'opponentRating', 'result', 'kFactor'] }]
+    },
+    content: {
+      lastReviewed: '2026-11-05',
+      concept: {
+        title: 'How Elo ratings move after one game',
+        paragraphs: [
+          "The Elo rating system, designed by physics professor Arpad Elo for chess and still FIDE's official method, starts from one idea: the ratings gap between two players should predict how likely either one is to win. A 400-point gap, under the formula, makes the higher-rated player roughly ten times as likely to score the win as the lower-rated one. Every game then nudges each player's rating toward the result that actually happened, by an amount that depends on how surprising the result was and a sensitivity constant called the K-factor.",
+          "If the favorite wins, as expected, ratings barely move. If the underdog wins, ratings move a lot, because that result was far more informative about the players' true relative strength than the system had assumed. The same mechanism works in any one-on-one competitive setting with a comparable result (win, draw, loss), which is why Elo and its many variants have spread well beyond chess into video games, other sports and competitive rankings generally.",
+          "FIDE's current K-factor table weights new information differently by experience: a player with fewer than 30 rated games, or any player under 18 whose rating is still below 2300, uses K = 40, so their rating reacts quickly as the system learns their true strength. Players rated below 2400 use K = 20, and players who have ever reached 2400 use K = 10 — and stay at K = 10 even if their rating later drops, since an experienced player's true strength is assumed to already be well established."
+        ]
+      },
+      howTo: {
+        intro: 'Enter both players\' current ratings, the result from the first player\'s point of view, and a K-factor.',
+        steps: [
+          { name: 'Enter both ratings', text: 'Your own rating and your opponent\'s, before this game.' },
+          { name: 'Enter the result', text: 'Win, draw or loss, from your perspective — a win scores 1, a draw 0.5, a loss 0.' },
+          { name: 'Choose a K-factor', text: "FIDE's current table: K = 40 for players with under 30 rated games (or under 18 and below 2300), K = 20 below 2400, K = 10 at 2400 and above." },
+          { name: 'Read the rating change and new rating', text: 'The expected score (your pre-game win probability) and the resulting rating change and new rating are all shown together.' },
+          { name: 'Remember this is a single-game simplification', text: 'Official FIDE ratings are updated once per rating period across every game played in it, not game by game — see the note below.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "Elo's original formula computes an expected score from the ratings gap, then moves the rating toward the actual result.",
+        expression: 'E = 1 ÷ (1 + 10^((Ropponent − Rplayer) ÷ 400))\nRating change = K × (S − E)\nNew rating = R + rating change',
+        terms: [
+          { symbol: 'E', meaning: 'Expected score: the probability of winning, from 0 to 1, based only on the ratings gap.' },
+          { symbol: 'S', meaning: 'Actual score: 1 for a win, 0.5 for a draw, 0 for a loss.' },
+          { symbol: 'K', meaning: 'The K-factor: how many rating points are at stake for this game.' }
+        ],
+        note: "Since October 2025, FIDE caps the ratings gap fed into the expected-score formula at 400 points for any player rated below 2650 — a 600-point mismatch is treated the same as a 400-point one for that player's own calculation."
+      },
+      workedExample: {
+        intro: 'A 1500-rated player beats a 1600-rated opponent, using K = 20. What is the rating change?',
+        rows: [
+          { label: 'Ratings gap (Ropponent − Rplayer)', value: '1600 − 1500 = 100' },
+          { label: 'E = 1 ÷ (1 + 10^(100 ÷ 400))', value: '1 ÷ (1 + 10^0.25) = 1 ÷ 2.7783 ≈ 0.3599' },
+          { label: 'S (win)', value: '1' },
+          { label: 'Rating change = 20 × (1 − 0.3599)', value: '20 × 0.6401 ≈ 12.80' },
+          { label: 'New rating = 1500 + 12.80', value: '1512.80' }
+        ],
+        result: 'Expected score ≈ 0.36 · Rating change ≈ +12.8 · New rating ≈ 1512.8',
+        explanation: "Beating a 100-point-higher opponent was a somewhat better-than-even-money result against the system's own pre-game expectation (about 36% likely), so the rating gain (about 12.8 of the available 20 K-factor points) reflects most, but not all, of a maximum possible swing."
+      },
+      watchOut: [
+        {
+          title: 'FIDE applies K across a whole rating period, not one game at a time',
+          body: 'Officially, FIDE sums (actual score − expected score) over every game a player completes in a rating period, multiplies that total by K once, and rounds. This calculator shows the simpler, widely used single-game version of the same formula, which gives the same result when there is only one game in the period.'
+        },
+        {
+          title: 'Your opponent\'s rating moves too, by the mirrored amount',
+          body: "Elo is zero-sum within a single result between two rated players: whatever points one player gains, the other loses, computed with the same formula from the opponent's own perspective (their K-factor may differ from yours)."
+        },
+        {
+          title: 'K-factor depends on experience and rating level, not personal preference',
+          body: "FIDE's table (K = 40 under 30 games, or under 18 below 2300; K = 20 below 2400; K = 10 at 2400+) is a fixed rule, not a free choice — a casual or non-FIDE rating system can use different K-factors entirely, so check which rules apply to the specific rating list you care about."
+        },
+        {
+          title: 'Ratings on different time controls or lists are not directly comparable',
+          body: "FIDE keeps separate rating lists for classical, rapid and blitz chess. A player's rapid rating and classical rating are not the same number and were not earned against the same pool of results, so don't compare across lists as if they were one scale."
+        },
+        {
+          title: 'A new, unrated player needs special provisional handling',
+          body: "This calculator assumes both players already have an established rating. A player's very first few rated games typically follow separate provisional rules (before a stable initial rating is assigned) that this simple formula doesn't model."
+        }
+      ],
+      references: [
+        { label: 'Elo, A., The Rating of Chessplayers, Past and Present, 2nd ed. (New York: Arco, 1986; 1st pub. 1978)', url: 'https://en.wikipedia.org/wiki/Elo_rating_system' },
+        { label: 'FIDE Handbook, B.02 Rating Regulations, effective 1 March 2024 (K-factor table)', url: 'https://handbook.fide.com/chapter/B022024' }
+      ]
+    },
+    inputs: [
+      { id: 'playerRating', label: 'Your rating', type: 'number', placeholder: '1500', defaultValue: 1500, step: 1, min: 100 },
+      { id: 'opponentRating', label: 'Opponent rating', type: 'number', placeholder: '1600', defaultValue: 1600, step: 1, min: 100 },
+      {
+        id: 'result',
+        label: 'Result (yours)',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 0.5,
+        min: 0,
+        options: [
+          { value: 1, label: 'Win' },
+          { value: 0.5, label: 'Draw' },
+          { value: 0, label: 'Loss' }
+        ]
+      },
+      { id: 'kFactor', label: 'K-factor', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Elo Rating Calculator – Expected Score & Rating Change',
+      description: "Calculate the expected score and rating change for one game between two Elo-rated players, using FIDE's current K-factor table.",
+      faq: [
+        { question: 'How do you calculate an Elo rating change?', answer: 'First find the expected score, E = 1 ÷ (1 + 10^((opponent rating − your rating) ÷ 400)), then rating change = K × (actual score − E), where actual score is 1 for a win, 0.5 for a draw, 0 for a loss.' },
+        { question: 'What K-factor should I use?', answer: "FIDE's current table: K = 40 for players with under 30 rated games or players under 18 rated below 2300; K = 20 for ratings below 2400; K = 10 for any player who has reached 2400, even if their rating later drops." },
+        { question: 'What does expected score mean?', answer: 'It is the probability, from 0 to 1, that the Elo formula assigns to winning based purely on the ratings gap — a 1500 player facing a 1600 player has an expected score of about 0.36, meaning roughly a 36% win probability before the game is played.' },
+        { question: 'Does beating a much higher-rated opponent gain more points?', answer: 'Yes. The rating change is K × (actual score − expected score), and a win against a much higher-rated opponent has a low expected score, so the gap (and therefore the rating gain) is larger than beating an opponent of similar rating.' },
+        { question: 'Can my rating go down after a draw?', answer: 'Yes, if you were expected to win. A draw against a much lower-rated opponent scores less than that opponent\'s expected score predicted, so your rating drops even though you did not lose.' },
+        { question: 'Is this exactly how FIDE updates ratings?', answer: 'It is the same formula, applied one game at a time for clarity. Officially, FIDE sums the (score − expected) difference across every game in a rating period before multiplying by K once and rounding, which gives an identical result only when there is exactly one game in that period.' }
+      ]
+    },
+    compute(values) {
+      const diff = values.opponentRating - values.playerRating;
+      const cappedDiff = values.playerRating < 2650 ? Math.max(-400, Math.min(400, diff)) : diff;
+      const expectedScore = 1 / (1 + 10 ** (cappedDiff / 400));
+      const ratingChange = values.kFactor * (values.result - expectedScore);
+      const newRating = values.playerRating + ratingChange;
+      return { ratingChange, expectedScore, newRating };
+    }
   }
 ];

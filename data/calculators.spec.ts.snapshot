@@ -367,6 +367,65 @@ exports[`compute() snapshots > bar-to-psi-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > baseball-batting-average-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "atBats": 500,
+      "hits": 139,
+      "walks": 55,
+      "hitByPitch": 5,
+      "sacrificeFlies": 5,
+      "doubles": 28,
+      "triples": 3,
+      "homeRuns": 20
+    },
+    "outputs": {
+      "battingAverage": 0.278,
+      "onBasePercentage": 0.3522123894,
+      "sluggingPercentage": 0.466,
+      "onBasePlusSlugging": 0.8182123894
+    }
+  },
+  "typical": {
+    "inputs": {
+      "atBats": 750,
+      "hits": 209,
+      "walks": 83,
+      "hitByPitch": 8,
+      "sacrificeFlies": 8,
+      "doubles": 42,
+      "triples": 5,
+      "homeRuns": 30
+    },
+    "outputs": {
+      "battingAverage": 0.2786666667,
+      "onBasePercentage": 0.3533568905,
+      "sluggingPercentage": 0.468,
+      "onBasePlusSlugging": 0.8213568905
+    }
+  },
+  "edge": {
+    "inputs": {
+      "atBats": 1,
+      "hits": 0,
+      "walks": 0,
+      "hitByPitch": 0,
+      "sacrificeFlies": 0,
+      "doubles": 0,
+      "triples": 0,
+      "homeRuns": 0
+    },
+    "outputs": {
+      "battingAverage": 0,
+      "onBasePercentage": 0,
+      "sluggingPercentage": 0,
+      "onBasePlusSlugging": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > binomial-distribution-calculator 1`] = `
 {
   "default": {
@@ -1485,6 +1544,100 @@ exports[`compute() snapshots > correlation-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > cricket-bowling-figures-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "runsConceded": 196,
+      "wicketsTaken": 8,
+      "ballsBowled": 288
+    },
+    "outputs": {
+      "bowlingAverage": 24.5,
+      "economyRate": 4.083333333,
+      "strikeRate": 36
+    }
+  },
+  "typical": {
+    "inputs": {
+      "runsConceded": 294,
+      "wicketsTaken": 12,
+      "ballsBowled": 432
+    },
+    "outputs": {
+      "bowlingAverage": 24.5,
+      "economyRate": 4.083333333,
+      "strikeRate": 36
+    }
+  },
+  "edge": {
+    "inputs": {
+      "runsConceded": 0,
+      "wicketsTaken": 0,
+      "ballsBowled": 1
+    },
+    "outputs": {
+      "bowlingAverage": "NaN",
+      "economyRate": 0,
+      "strikeRate": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > cricket-net-run-rate-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "allottedOvers": 50,
+      "runsScored": 180,
+      "ballsFaced": 256,
+      "teamAllOut": 1,
+      "runsConceded": 182,
+      "ballsBowled": 240,
+      "opponentAllOut": 0
+    },
+    "outputs": {
+      "netRunRate": -0.95,
+      "runRateFor": 3.6,
+      "runRateAgainst": 4.55
+    }
+  },
+  "typical": {
+    "inputs": {
+      "allottedOvers": 75,
+      "runsScored": 270,
+      "ballsFaced": 384,
+      "teamAllOut": 2,
+      "runsConceded": 273,
+      "ballsBowled": 360,
+      "opponentAllOut": 0
+    },
+    "outputs": {
+      "netRunRate": -0.33125,
+      "runRateFor": 4.21875,
+      "runRateAgainst": 4.55
+    }
+  },
+  "edge": {
+    "inputs": {
+      "allottedOvers": 1,
+      "runsScored": 0,
+      "ballsFaced": 1,
+      "teamAllOut": 0,
+      "runsConceded": 0,
+      "ballsBowled": 1,
+      "opponentAllOut": 0
+    },
+    "outputs": {
+      "netRunRate": 0,
+      "runRateFor": 0,
+      "runRateAgainst": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > cube-root-calculator 1`] = `
 {
   "default": {
@@ -2016,6 +2169,50 @@ exports[`compute() snapshots > electricity-bill-calculator 1`] = `
       "costPerDay": 0,
       "annualBill": 0,
       "effectiveRatePerKwh": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > elo-rating-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "playerRating": 1500,
+      "opponentRating": 1600,
+      "result": 1,
+      "kFactor": 20
+    },
+    "outputs": {
+      "ratingChange": 12.8013,
+      "expectedScore": 0.3599350002,
+      "newRating": 1512.8013
+    }
+  },
+  "typical": {
+    "inputs": {
+      "playerRating": 2250,
+      "opponentRating": 2400,
+      "result": 1.5,
+      "kFactor": 30
+    },
+    "outputs": {
+      "ratingChange": 36.1015501,
+      "expectedScore": 0.2966149965,
+      "newRating": 2286.10155
+    }
+  },
+  "edge": {
+    "inputs": {
+      "playerRating": 100,
+      "opponentRating": 100,
+      "result": 0,
+      "kFactor": 1
+    },
+    "outputs": {
+      "ratingChange": -0.5,
+      "expectedScore": 0.5,
+      "newRating": 99.5
     }
   }
 }
@@ -2798,6 +2995,47 @@ exports[`compute() snapshots > gcf-calculator 1`] = `
     "outputs": {
       "gcf": 0,
       "numbersUsed": 2
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > golf-course-handicap-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "handicapIndex": 12.3,
+      "slopeRating": 128,
+      "courseRating": 70.5,
+      "par": 71
+    },
+    "outputs": {
+      "courseHandicap": 13,
+      "courseHandicapExact": 13.43274336
+    }
+  },
+  "typical": {
+    "inputs": {
+      "handicapIndex": 18.5,
+      "slopeRating": 192,
+      "courseRating": 105.8,
+      "par": 107
+    },
+    "outputs": {
+      "courseHandicap": 30,
+      "courseHandicapExact": 30.23362832
+    }
+  },
+  "edge": {
+    "inputs": {
+      "handicapIndex": -10,
+      "slopeRating": 55,
+      "courseRating": 50,
+      "par": 27
+    },
+    "outputs": {
+      "courseHandicap": 18,
+      "courseHandicapExact": 18.13274336
     }
   }
 }
@@ -4241,6 +4479,59 @@ exports[`compute() snapshots > mulch-calculator 1`] = `
       "cubicFeetWithWaste": 0.01041666667,
       "cubicYardsWithWaste": 0.0003858024691,
       "bagsToBuy": 1
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > nfl-passer-rating-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "completions": 20,
+      "attempts": 30,
+      "yards": 275,
+      "touchdowns": 2,
+      "interceptions": 1
+    },
+    "outputs": {
+      "passerRating": 104.1666667,
+      "completionPercentage": 66.66666667,
+      "yardsPerAttempt": 9.166666667,
+      "touchdownPercentage": 6.666666667,
+      "interceptionPercentage": 3.333333333
+    }
+  },
+  "typical": {
+    "inputs": {
+      "completions": 30,
+      "attempts": 45,
+      "yards": 413,
+      "touchdowns": 3,
+      "interceptions": 2
+    },
+    "outputs": {
+      "passerRating": 99.58333333,
+      "completionPercentage": 66.66666667,
+      "yardsPerAttempt": 9.177777778,
+      "touchdownPercentage": 6.666666667,
+      "interceptionPercentage": 4.444444444
+    }
+  },
+  "edge": {
+    "inputs": {
+      "completions": 0,
+      "attempts": 1,
+      "yards": 0,
+      "touchdowns": 0,
+      "interceptions": 0
+    },
+    "outputs": {
+      "passerRating": 39.58333333,
+      "completionPercentage": 0,
+      "yardsPerAttempt": 0,
+      "touchdownPercentage": 0,
+      "interceptionPercentage": 0
     }
   }
 }
@@ -6881,6 +7172,38 @@ exports[`compute() snapshots > steak-doneness-calculator 1`] = `
       "restTimeLowMin": 5,
       "restTimeHighMin": 10,
       "usdaSafeMinF": 145
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > steps-to-miles-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "steps": 10000,
+      "stepLengthFt": 2.5
+    },
+    "outputs": {
+      "distanceMiles": 4.734848485
+    }
+  },
+  "typical": {
+    "inputs": {
+      "steps": 15000,
+      "stepLengthFt": 3.8
+    },
+    "outputs": {
+      "distanceMiles": 10.79545455
+    }
+  },
+  "edge": {
+    "inputs": {
+      "steps": 1,
+      "stepLengthFt": 0.1
+    },
+    "outputs": {
+      "distanceMiles": 0.00001893939394
     }
   }
 }

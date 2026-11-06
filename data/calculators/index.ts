@@ -18,6 +18,7 @@ import { mathCalculators } from './math.ts';
 import { statisticsCalculators } from './statistics.ts';
 import { foodCalculators } from './food.ts';
 import { sportsCalculators } from './sports.ts';
+import { chemistryCalculators } from './chemistry.ts';
 
 export type * from './types.ts';
 
@@ -38,7 +39,8 @@ export const categories: CalculatorCategory[] = [
   { id: 'math', title: 'Math', description: 'Percentages, fractions, ratios, and everyday math calculators.' },
   { id: 'statistics', title: 'Statistics', description: 'Mean, median, mode, standard deviation, variance, z-scores, and percentiles.' },
   { id: 'food', title: 'Food', description: 'Recipe scaling, baking ratios, cook times, and other recipe calculators.' },
-  { id: 'sports', title: 'Sports', description: 'One-rep max, heart rate zones, VO2 max, race prediction, and swim pace calculators for athletes.' }
+  { id: 'sports', title: 'Sports', description: 'One-rep max, heart rate zones, VO2 max, race prediction, and swim pace calculators for athletes.' },
+  { id: 'chemistry', title: 'Chemistry', description: 'Molar mass, molarity, dilution, and other solution-chemistry calculators.' }
 ];
 
 // Display order for listings, the sitemap and search; the old single array's order, kept exactly.
@@ -257,7 +259,8 @@ export const calculatorOrder: string[] = [
   'cricket-net-run-rate-calculator',
   'nfl-passer-rating-calculator',
   'elo-rating-calculator',
-  'golf-course-handicap-calculator'
+  'golf-course-handicap-calculator',
+  'molar-mass-calculator'
 ];
 
 const rank = (id: string) => {
@@ -282,7 +285,8 @@ export const calculators: CalculatorConfig[] = [
   ...mathCalculators,
   ...statisticsCalculators,
   ...foodCalculators,
-  ...sportsCalculators
+  ...sportsCalculators,
+  ...chemistryCalculators
 ].sort((a, b) => rank(a.id) - rank(b.id));
 
 export function findCalculator(slug: string) {

@@ -4529,6 +4529,68 @@ exports[`compute() snapshots > millimeters-to-inches-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > molar-mass-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "element1": 1.008,
+      "count1": 2,
+      "element2": 15.999,
+      "count2": 1,
+      "element3": 0,
+      "count3": 0,
+      "element4": 0,
+      "count4": 0
+    },
+    "outputs": {
+      "molarMass": 18.015,
+      "contribution1": 2.016,
+      "contribution2": 15.999,
+      "contribution3": 0,
+      "contribution4": 0
+    }
+  },
+  "typical": {
+    "inputs": {
+      "element1": 1.512,
+      "count1": 3,
+      "element2": 23.999,
+      "count2": 2,
+      "element3": 0,
+      "count3": 0,
+      "element4": 0,
+      "count4": 0
+    },
+    "outputs": {
+      "molarMass": 52.534,
+      "contribution1": 4.536,
+      "contribution2": 47.998,
+      "contribution3": 0,
+      "contribution4": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "element1": 0,
+      "count1": 0,
+      "element2": 0,
+      "count2": 0,
+      "element3": 0,
+      "count3": 0,
+      "element4": 0,
+      "count4": 0
+    },
+    "outputs": {
+      "molarMass": 0,
+      "contribution1": 0,
+      "contribution2": 0,
+      "contribution3": 0,
+      "contribution4": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > momentum-calculator 1`] = `
 {
   "default": {

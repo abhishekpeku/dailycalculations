@@ -28,6 +28,9 @@ export type UnitDimension =
   | 'decibel'
   | 'specificHeat'
   | 'temperatureDelta'
+  | 'amountOfSubstance'
+  | 'concentration'
+  | 'molarMass'
   | 'data'
   | 'fuelEconomy'
   | 'fuelPrice'
@@ -283,6 +286,30 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
     { id: 'K', label: 'K', factor: 1 },
     { id: 'C', label: '°C', factor: 1 },
     { id: 'F', label: '°F', factor: 5 / 9 }
+  ],
+  // The mole, SI base unit of amount of substance since the 2019 redefinition (BIPM SI Brochure) —
+  // one mole is exactly 6.02214076e23 elementary entities, same precedent as `current`'s comment.
+  amountOfSubstance: [
+    { id: 'mol', label: 'mol', factor: 1 },
+    { id: 'mmol', label: 'mmol', factor: 1e-3 },
+    { id: 'umol', label: 'µmol', factor: 1e-6 }
+  ],
+  // SI-coherent derived unit mol/m³ (amountOfSubstance / volume, both already SI base above), same
+  // pattern as `density` (kg/m³). Chemists report concentration (molarity) in mol/L ("M") almost
+  // exclusively, so that is the practical display unit even though it is not this dimension's base:
+  // 1 mol/L = 1 mol / 1e-3 m³ = 1000 mol/m³ (NIST SP 811 Appendix B, the liter is exactly 1e-3 m³).
+  concentration: [
+    { id: 'mol/m3', label: 'mol/m³', factor: 1 },
+    { id: 'mol/L', label: 'mol/L (M)', factor: 1000 },
+    { id: 'mmol/L', label: 'mmol/L', factor: 1 },
+    { id: 'umol/L', label: 'µmol/L', factor: 1e-3 }
+  ],
+  // SI-coherent derived unit kg/mol (mass / amountOfSubstance, both SI base above), so n = m/M stays
+  // a plain division with no stray unit factor. Molar mass is conventionally reported in g/mol —
+  // 1 g/mol = 1e-3 kg/mol, exact (the gram is exactly 1e-3 kg).
+  molarMass: [
+    { id: 'kg/mol', label: 'kg/mol', factor: 1 },
+    { id: 'g/mol', label: 'g/mol', factor: 1e-3 }
   ],
   // IEC 80000-13: decimal prefixes are powers of 1000 (KB = 1000 B), binary prefixes powers of 1024 (KiB).
   data: [

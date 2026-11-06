@@ -657,5 +657,150 @@ export const physicsCalculators: CalculatorConfig[] = [
     compute(values) {
       return { energy: values.mass * STANDARD_GRAVITY * values.height };
     }
+  },
+  {
+    id: 'work-calculator',
+    category: 'physics',
+    glyph: 'Fd',
+    updatedAt: '2026-11-06',
+    aliases: ['w = fd cos theta calculator', 'force times distance calculator', 'mechanical work calculator', 'work done calculator', 'work physics calculator'],
+    related: ['kinetic-energy-calculator', 'potential-energy-calculator', 'force-calculator', 'energy-converter'],
+    title: 'Work Calculator (W = Fd cos θ)',
+    description: 'Calculate mechanical work from force, distance, and the angle between them — W = F × d × cos θ — or solve backward for force, distance, or angle.',
+    example: 'Pulling a sled with 50 N of force at 30° above horizontal over 20 m does about 866 J of work — less than the 1,000 J a straight-line pull would do.',
+    solver: {
+      defaultTarget: 'work',
+      variables: [
+        { id: 'work', label: 'Work', symbol: 'W', dimension: 'energy', defaultValue: 866.03, defaultUnit: 'J' },
+        { id: 'force', label: 'Force', symbol: 'F', dimension: 'force', defaultValue: 50, defaultUnit: 'N' },
+        { id: 'distance', label: 'Distance', symbol: 'd', dimension: 'length', defaultValue: 20, defaultUnit: 'm' },
+        { id: 'angle', label: 'Angle', symbol: 'θ', dimension: 'angle', defaultValue: 30, defaultUnit: 'deg' }
+      ],
+      solve: {
+        work: ({ force, distance, angle }) => force * distance * Math.cos(angle),
+        force: ({ work, distance, angle }) => {
+          const c = Math.cos(angle);
+          return distance === 0 || c === 0 ? NaN : work / (distance * c);
+        },
+        distance: ({ work, force, angle }) => {
+          const c = Math.cos(angle);
+          return force === 0 || c === 0 ? NaN : work / (force * c);
+        },
+        angle: ({ work, force, distance }) => {
+          if (force === 0 || distance === 0) return NaN;
+          const c = work / (force * distance);
+          return c < -1 || c > 1 ? NaN : Math.acos(c);
+        }
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'work',
+          min: -1,
+          max: 7,
+          ticks: ['0.1 J', '10 J', '1 kJ', '100 kJ', '10 MJ'],
+          benchmarks: [
+            { label: 'Lifting a 102 g apple 1 meter', value: 1.0003 },
+            { label: 'A 100 mph fastball (0.145 kg baseball)', value: 144.9 },
+            { label: 'A 100 W bulb, running for 1 minute', value: 6000 },
+            { label: 'A 1,500 kg car at 100 km/h', value: 578700 }
+          ],
+          title: 'How big is that work?',
+          valueLabel: 'Your work'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'What is work in physics?',
+        paragraphs: [
+          'Work is the physics term for energy transferred by a force acting through a distance. Pushing a box across a floor does work on the box; holding a heavy box perfectly still, no matter how tiring, does none — because nothing moved.',
+          'Only the part of the force that points along the direction of motion actually does work. That is what the cos θ term captures: θ is the angle between the force and the displacement. When force and motion point the same way (θ = 0°), cos θ = 1 and every bit of the force counts. As the angle widens toward 90°, cos θ shrinks toward zero, and a force acting exactly perpendicular to the motion does no work at all.',
+          'Work can also come out negative. If a force acts opposite to the direction of motion — friction slowing down a sliding box, for instance — the angle between force and motion exceeds 90°, cos θ is negative, and the force removes energy from the motion rather than adding it.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of work, force, distance and angle; the fourth fills in automatically — set the angle to 0° for a force pulling straight along the direction of motion.',
+        steps: [
+          { name: 'Enter the three values you know', text: 'Type each value and pick its unit. The remaining field, marked auto, calculates as you type.' },
+          { name: 'Measure the angle correctly', text: 'The angle is between the force and the direction of motion — not from vertical, not from the ground. A force pulling exactly along the motion is 0°; a sideways push is 90°.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 50 N becomes 11.24 lbf instead of silently turning into 50 lbf.' },
+          { name: 'Read the result and the scale', text: 'The answer shows in your chosen energy unit, with the scale below placing it among a few everyday reference points.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The work formula rearranges to solve for force, distance or angle as well as work.',
+        expression: 'W = F × d × cos θ\nF = W ÷ (d × cos θ)\nd = W ÷ (F × cos θ)\nθ = cos⁻¹(W ÷ (F × d))',
+        terms: [
+          { symbol: 'W', meaning: 'Work done, in joules (J). 1 J = 1 N·m.' },
+          { symbol: 'F', meaning: 'Magnitude of the applied force, in newtons (N).' },
+          { symbol: 'd', meaning: 'Distance the object moves (displacement), in meters (m).' },
+          { symbol: 'θ', meaning: 'Angle between the force and the direction of motion. 0° is fully aligned; 90° does zero work; past 90° the work is negative.' }
+        ],
+        note: 'Every input is converted to SI units (N, m, rad) before solving and converted back afterward, so entering the angle in degrees works exactly as expected.'
+      },
+      workedExample: {
+        intro: 'Someone pulls a sled with 50 N of force at 30° above horizontal, moving it 20 m. How much work is done?',
+        rows: [
+          { label: 'Force (F)', value: '50 N' },
+          { label: 'Distance (d)', value: '20 m' },
+          { label: 'Angle (θ)', value: '30°, cos 30° = 0.8660' },
+          { label: 'Work (W = 50 × 20 × 0.8660)', value: '866.03 J' }
+        ],
+        result: 'W ≈ 866.03 J',
+        explanation: 'cos 30° ≈ 0.8660, so W = 50 × 20 × 0.8660 ≈ 866.03 J. Pulling the same sled the same 20 m with the force aimed exactly along the direction of motion (θ = 0°) would do 50 × 20 × 1 = 1,000 J — so the 30° angle "wastes" about 13.4% of the possible work, since 866.03 ÷ 1,000 ≈ 86.6%.'
+      },
+      watchOut: [
+        {
+          title: 'The angle is between force and motion, not from vertical or the ground',
+          body: 'θ in this formula is specifically the angle between the direction of the applied force and the direction the object actually moves. Measuring from the wrong reference line is the most common mistake with this formula.'
+        },
+        {
+          title: 'A perpendicular force does zero work',
+          body: 'At θ = 90°, cos θ = 0, so the work is zero no matter how large the force is. Carrying a bag of groceries at a constant height does no work against gravity, even though your arms get tired — the force you apply (upward, against gravity) is perpendicular to your motion (forward).'
+        },
+        {
+          title: 'Work can be negative',
+          body: 'When a force acts against the direction of motion — friction decelerating a sliding box, for example — the angle is more than 90° and cos θ is negative, making the work negative. Negative work removes kinetic energy rather than adding it.'
+        },
+        {
+          title: 'At exactly 60°, you only get half the work of a straight pull',
+          body: 'Because cos 60° = 0.5 exactly, angling a pull at 60° from the direction of motion does exactly half the work that pulling straight (0°) would, for the same force and distance — a useful rule of thumb for quick estimates.'
+        },
+        {
+          title: '"Work" here is the physics quantity, not a job or a workout',
+          body: 'This page calculates mechanical work in joules — energy transferred by a force — not hours worked or exercise intensity.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §7.1 Work', url: 'https://openstax.org/books/university-physics-volume-1/pages/7-1-work' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'BIPM, The International System of Units (SI Brochure)', url: 'https://www.bipm.org/en/publications/si-brochure' }
+      ]
+    },
+    inputs: [
+      { id: 'force', label: 'Force (N)', type: 'number', placeholder: '50', defaultValue: 50, step: 0.1, min: 0 },
+      { id: 'distance', label: 'Distance (m)', type: 'number', placeholder: '20', defaultValue: 20, step: 0.1, min: 0 },
+      { id: 'angle', label: 'Angle (rad)', type: 'number', placeholder: '0.5236', defaultValue: Math.PI / 6, step: 0.01 }
+    ],
+    seo: {
+      title: 'Work Calculator (W = Fd cos θ) – Force, Distance or Angle',
+      description: 'Free mechanical work calculator. Solve W = F × d × cos θ for work, force, distance or angle in joules, newtons and meters, with a worked example.',
+      faq: [
+        { question: 'What is the formula for work in physics?', answer: 'W = F × d × cos θ, where F is the applied force, d is the distance moved, and θ is the angle between the force and the direction of motion.' },
+        { question: 'How do you calculate work when the force is at an angle?', answer: 'Multiply force by distance by the cosine of the angle between them: W = F × d × cos θ. Pulling with 50 N over 20 m at 30° does 50 × 20 × cos 30° ≈ 866 J.' },
+        { question: 'What happens to work when the angle is 90 degrees?', answer: 'It drops to zero. cos 90° = 0, so a force acting exactly perpendicular to the motion does no work at all, regardless of its size.' },
+        { question: 'Can work be negative?', answer: 'Yes. When a force acts opposite to the direction of motion (angle greater than 90°), cos θ is negative, making the work negative — the force removes energy rather than adding it.' },
+        { question: 'How much work does pulling at 30° do compared to pulling straight?', answer: 'cos 30° ≈ 0.8660, so a 30° pull does about 86.6% of the work a straight-line (0°) pull of the same force and distance would do.' },
+        { question: 'What are the SI units of work?', answer: 'The joule (J), the same unit used for energy — 1 J equals 1 newton-meter (N·m).' },
+        { question: 'How is work different from power?', answer: 'Work has no time component — it only depends on force, distance and angle. Power is the rate at which work is done, work divided by the time it takes.' }
+      ]
+    },
+    compute(values) {
+      return { work: values.force * values.distance * Math.cos(values.angle) };
+    }
   }
 ];

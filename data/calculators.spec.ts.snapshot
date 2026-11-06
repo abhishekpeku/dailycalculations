@@ -8487,6 +8487,41 @@ exports[`compute() snapshots > womens-shoe-size-chart 1`] = `
 }
 `;
 
+exports[`compute() snapshots > work-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "force": 50,
+      "distance": 20,
+      "angle": 0.5235987755982988
+    },
+    "outputs": {
+      "work": 866.0254038
+    }
+  },
+  "typical": {
+    "inputs": {
+      "force": 75,
+      "distance": 30,
+      "angle": 0.79
+    },
+    "outputs": {
+      "work": 1583.65196
+    }
+  },
+  "edge": {
+    "inputs": {
+      "force": 0,
+      "distance": 0,
+      "angle": 0
+    },
+    "outputs": {
+      "work": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > work-hours-calculator 1`] = `
 {
   "default": {

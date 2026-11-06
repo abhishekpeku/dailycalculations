@@ -115,15 +115,22 @@ a locked spec.
 
 ## Progress checklist
 
-- [ ] Physics run 1 (5), branch `step/46-wave-3-physics-run-1`:
+- [x] Physics run 1 (5), branch `step/46-wave-3-physics-run-1`, PR #61 — **DONE** 2026-11-06:
   - [x] speed-distance-time-calculator
   - [x] weight-calculator
   - [x] kinetic-energy-calculator
   - [x] potential-energy-calculator
-  - [ ] work-calculator
+  - [x] work-calculator
   - New `lib/units.ts` dimension added this run: `angle` (base radian, `deg` = π/180 rad — BIPM SI
     Brochure §2.3.3), needed for work-calculator's F·d·cos θ. Round-trip + anchor test in
     `lib/units.spec.ts`.
+  - No other new dimensions — mass/force/length/energy/speed/acceleration all reused from
+    force-calculator and the Wave-1 converters, as the dedupe section anticipated.
+  - `work-calculator`'s glyph had to change from `W` to `Fd`: `glyph.spec.ts` enforces unique
+    glyphs per category, and `weight-calculator` already used `W` in physics.
+  - `npm test` (839 tests), `npm run lint` and `npm run build` all pass. Curl-checked all 5 pages
+    (200, correct H1, JSON-LD, every section id present).
+  - 199 calculators total after this run (194 + 5).
 - [ ] Physics run 2+ (mechanics continued)
 - [ ] Physics electricity/circuits run
 - [ ] Physics waves/optics run

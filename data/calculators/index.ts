@@ -102,6 +102,7 @@ export const calculatorOrder: string[] = [
   'weight-calculator',
   'kinetic-energy-calculator',
   'potential-energy-calculator',
+  'work-calculator',
   'percentage-calculator',
   'percent-change-calculator',
   'percent-difference-calculator',

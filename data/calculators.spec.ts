@@ -54,7 +54,10 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   // ukIndex), euSize/diameterMm/circumferenceMm stay finite.
   'us-to-uk-ring-size-chart': ['ukIndex'],
   'cricket-bowling-figures-calculator': ['bowlingAverage', 'strikeRate'], // wicketsTaken 0 (its min) -> both divide by wickets taken, honest no-answer
-  'speed-distance-time-calculator': ['speed'] // distance and time both 0 (their min) -> 0/0
+  'speed-distance-time-calculator': ['speed'], // distance and time both 0 (their min) -> 0/0
+  'power-calculator': ['power'], // work and time both 0 (their min) -> 0/0
+  'density-calculator': ['density'], // mass and volume both 0 (their min) -> 0/0
+  'pressure-calculator': ['pressure'] // force and area both 0 (their min) -> 0/0
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

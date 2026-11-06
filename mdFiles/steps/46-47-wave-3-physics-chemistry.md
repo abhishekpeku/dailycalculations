@@ -131,7 +131,27 @@ a locked spec.
   - `npm test` (839 tests), `npm run lint` and `npm run build` all pass. Curl-checked all 5 pages
     (200, correct H1, JSON-LD, every section id present).
   - 199 calculators total after this run (194 + 5).
-- [ ] Physics run 2+ (mechanics continued)
+- [x] Physics run 2 (5), branch `step/46-wave-3-physics-run-2`, PR #62 — **DONE** 2026-11-06:
+  - [x] momentum-calculator
+  - [x] impulse-calculator
+  - [x] power-calculator
+  - [x] density-calculator
+  - [x] pressure-calculator
+  - New `lib/units.ts` dimensions this run: `momentum` (base `kg·m/s`, alt `N·s` — numerically
+    identical since N = kg·m/s² by definition, BIPM SI Brochure; shared by momentum-calculator and
+    impulse-calculator) and `density` (base `kg/m³`, alts `g/cm³` and `lb/ft³` — NIST SP 811
+    Appendix B). Round-trip + anchor tests added to `lib/units.spec.ts`.
+  - mass/force/energy/time/speed/pressure/area/power all reused, as the dedupe section anticipated.
+  - The build agent was interrupted by a session rate limit right as it started pressure-calculator
+    (4/5 committed and pushed; momentum/impulse/power/density). The main session finished
+    pressure-calculator from the agent's own in-progress draft (fully written, just not committed —
+    content, solver, verification figures all already correct), added it to `calculatorOrder` in
+    `data/calculators/index.ts` (easy to miss since it's a separate file from `physics.ts`), added
+    the matching `KNOWN_NON_FINITE` entry in `data/calculators.spec.ts` (`force`/`area` both at
+    their 0 min -> 0/0, same pattern as power-calculator/density-calculator two lines above it),
+    and regenerated the snapshot (additive-only, 32 lines for the one new calculator).
+  - `npm test` (863 tests), `npm run lint` and `npm run build` all pass, re-confirmed by the main
+    session. 204 calculators total after this run (199 + 5).
 - [ ] Physics electricity/circuits run
 - [ ] Physics waves/optics run
 - [ ] Chemistry category opened + run 1 (5): molar-mass, molarity, dilution, mass-percent, moles-grams

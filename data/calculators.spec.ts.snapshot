@@ -1953,6 +1953,38 @@ exports[`compute() snapshots > decking-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > density-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass": 0.965,
+      "volume": 0.00005
+    },
+    "outputs": {
+      "density": 19300
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass": 1.448,
+      "volume": 0.00008
+    },
+    "outputs": {
+      "density": 18100
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass": 0,
+      "volume": 0
+    },
+    "outputs": {
+      "density": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > discount-calculator 1`] = `
 {
   "default": {
@@ -3276,6 +3308,38 @@ exports[`compute() snapshots > horsepower-to-kilowatts-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > impulse-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "force": 50,
+      "time": 0.6
+    },
+    "outputs": {
+      "impulse": 30
+    }
+  },
+  "typical": {
+    "inputs": {
+      "force": 75,
+      "time": 0.9
+    },
+    "outputs": {
+      "impulse": 67.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "force": 0,
+      "time": 0
+    },
+    "outputs": {
+      "impulse": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > inflation-calculator 1`] = `
 {
   "default": {
@@ -4297,6 +4361,38 @@ exports[`compute() snapshots > millimeters-to-inches-converter 1`] = `
     },
     "outputs": {
       "inches": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > momentum-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass": 1500,
+      "velocity": 20
+    },
+    "outputs": {
+      "momentum": 30000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass": 2250,
+      "velocity": 30
+    },
+    "outputs": {
+      "momentum": 67500
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass": 0,
+      "velocity": 0
+    },
+    "outputs": {
+      "momentum": 0
     }
   }
 }
@@ -5534,6 +5630,38 @@ exports[`compute() snapshots > pounds-to-kilograms-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > power-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "work": 150000,
+      "time": 12
+    },
+    "outputs": {
+      "power": 12500
+    }
+  },
+  "typical": {
+    "inputs": {
+      "work": 225000,
+      "time": 18
+    },
+    "outputs": {
+      "power": 12500
+    }
+  },
+  "edge": {
+    "inputs": {
+      "work": 0,
+      "time": 0
+    },
+    "outputs": {
+      "power": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > power-converter 1`] = `
 {
   "default": {
@@ -5605,6 +5733,38 @@ exports[`compute() snapshots > pregnancy-due-date-calculator 1`] = `
       "daysRemaining": 0,
       "trimester": 3,
       "gestationalDays": 2359
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > pressure-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "force": 3677.49375,
+      "area": 0.02
+    },
+    "outputs": {
+      "pressure": 183874.6875
+    }
+  },
+  "typical": {
+    "inputs": {
+      "force": 5516.24,
+      "area": 0.03
+    },
+    "outputs": {
+      "pressure": 183874.6667
+    }
+  },
+  "edge": {
+    "inputs": {
+      "force": 0,
+      "area": 0
+    },
+    "outputs": {
+      "pressure": "NaN"
     }
   }
 }

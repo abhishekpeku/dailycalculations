@@ -152,7 +152,17 @@ a locked spec.
     and regenerated the snapshot (additive-only, 32 lines for the one new calculator).
   - `npm test` (863 tests), `npm run lint` and `npm run build` all pass, re-confirmed by the main
     session. 204 calculators total after this run (199 + 5).
-- [ ] Physics electricity/circuits run
+- [ ] Physics electricity/circuits run, branch `step/46-wave-3-physics-run-3` (in progress):
+  - [ ] ohms-law-calculator
+  - [ ] electrical-power-calculator
+  - [ ] series-parallel-resistor-calculator
+  - [ ] resistor-color-code-calculator
+  - [ ] capacitor-charge-calculator
+  - New `lib/units.ts` dimensions: `voltage`, `current`, `resistance`, `capacitance` (staged before
+    this run started, reused here) and `charge` (coulomb, added this run for
+    capacitor-charge-calculator's Q = CV). Round-trip + anchor tests in `lib/units.spec.ts`.
+  - `lib/resistorColors.ts` (staged before this run started): IEC 60062 color-code lookup tables
+    used by resistor-color-code-calculator.
 - [ ] Physics waves/optics run
 - [ ] Chemistry category opened + run 1 (5): molar-mass, molarity, dilution, mass-percent, moles-grams
 - [ ] Chemistry run 2+ (gas laws, pH/pOH, pKa)

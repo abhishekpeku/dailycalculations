@@ -3857,6 +3857,38 @@ exports[`compute() snapshots > length-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > lens-mirror-equation-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "focalLength": 10,
+      "objectDistance": 30
+    },
+    "outputs": {
+      "imageDistance": 15
+    }
+  },
+  "typical": {
+    "inputs": {
+      "focalLength": 15,
+      "objectDistance": 45
+    },
+    "outputs": {
+      "imageDistance": 22.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "focalLength": 0,
+      "objectDistance": 0
+    },
+    "outputs": {
+      "imageDistance": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > linear-regression-calculator 1`] = `
 {
   "default": {

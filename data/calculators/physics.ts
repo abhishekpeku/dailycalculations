@@ -2552,5 +2552,115 @@ export const physicsCalculators: CalculatorConfig[] = [
     compute(values) {
       return { heat: values.mass * values.specificHeat * values.deltaT };
     }
+  },
+  {
+    id: 'lens-mirror-equation-calculator',
+    category: 'physics',
+    glyph: '1/f',
+    updatedAt: '2026-11-06',
+    aliases: ['lens equation calculator', 'mirror equation calculator', 'thin lens calculator', 'focal length calculator', 'image distance calculator', 'object distance calculator'],
+    related: ['wavelength-frequency-calculator', 'decibel-calculator', 'length-converter', 'heat-calculator'],
+    title: 'Lens and Mirror Equation Calculator',
+    description: 'Solve 1/f = 1/dₒ + 1/dᵢ for focal length, object distance, or image distance — the same formula describes both converging lenses and curved mirrors.',
+    example: 'A lens with a 10 cm focal length and an object 30 cm away forms a real, inverted image 15 cm away, at half size.',
+    solver: {
+      defaultTarget: 'imageDistance',
+      variables: [
+        { id: 'focalLength', label: 'Focal length', symbol: 'f', dimension: 'length', defaultValue: 10, defaultUnit: 'cm' },
+        { id: 'objectDistance', label: 'Object distance', symbol: 'dₒ', dimension: 'length', defaultValue: 30, defaultUnit: 'cm' },
+        { id: 'imageDistance', label: 'Image distance', symbol: 'dᵢ', dimension: 'length', defaultValue: 15, defaultUnit: 'cm' }
+      ],
+      solve: {
+        imageDistance: ({ focalLength, objectDistance }) => (objectDistance - focalLength === 0 ? NaN : (focalLength * objectDistance) / (objectDistance - focalLength)),
+        objectDistance: ({ focalLength, imageDistance }) => (imageDistance - focalLength === 0 ? NaN : (focalLength * imageDistance) / (imageDistance - focalLength)),
+        focalLength: ({ objectDistance, imageDistance }) => (objectDistance + imageDistance === 0 ? NaN : (objectDistance * imageDistance) / (objectDistance + imageDistance))
+      },
+      outputs: [{ id: 'magnification', label: 'Magnification (m)', dimension: 'count', compute: (si) => (si.objectDistance === 0 ? NaN : -si.imageDistance / si.objectDistance) }]
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'What is the lens and mirror equation?',
+        paragraphs: [
+          'A thin converging lens and a curved spherical mirror both focus light according to the exact same formula: 1/f = 1/dₒ + 1/dᵢ. f is the focal length (how strongly the lens or mirror bends light), dₒ is how far the object sits from it, and dᵢ is how far away the image forms. Both distances are measured from the center of the lens or mirror, using the standard convention that a real object or image gives a positive distance.',
+          "The result's sign tells you what kind of image forms. A positive dᵢ means a real image — one light rays actually converge to form, which could be projected onto a screen. A negative dᵢ means a virtual image: light only appears to come from that point, the way a magnifying glass makes text look larger without rays actually crossing there. Magnification, m = −dᵢ ÷ dₒ, adds the rest of the picture: a negative m means the image is upside down (inverted), and |m| above or below 1 says whether it is enlarged or shrunk.",
+          "Whether the object sits closer than or farther than the focal length changes everything. An object farther than f (as in a camera or the human eye) forms a real, inverted image on the far side. An object closer than f — exactly how a magnifying glass is used — forms a virtual, upright, enlarged image on the same side as the object instead, which is why dᵢ comes out negative in that case."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of focal length, object distance, and image distance; the third fills in automatically.',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 10 cm becomes 100 mm instead of silently turning into 10 mm.' },
+          { name: 'Read the result and the magnification', text: 'The distance appears in your chosen unit. A negative value means a virtual image. The magnification underneath shows whether the image is upright or inverted, and enlarged or reduced.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The lens and mirror equation rearranges three ways, one for each distance you might be solving for.',
+        expression: '1/f = 1/dₒ + 1/dᵢ\ndᵢ = (f × dₒ) ÷ (dₒ − f)\ndₒ = (f × dᵢ) ÷ (dᵢ − f)\nf = (dₒ × dᵢ) ÷ (dₒ + dᵢ)',
+        terms: [
+          { symbol: 'f', meaning: 'Focal length — positive for a converging lens or concave mirror, negative for a diverging lens or convex mirror.' },
+          { symbol: 'dₒ', meaning: 'Object distance from the lens or mirror, conventionally positive for a real object in front of it.' },
+          { symbol: 'dᵢ', meaning: 'Image distance. Positive is a real image; negative is a virtual image.' },
+          { symbol: 'm = −dᵢ ÷ dₒ', meaning: 'Magnification, shown as a bonus output: negative means inverted, positive means upright; a magnitude above 1 means enlarged.' }
+        ],
+        note: 'All three distances are converted to the same SI unit (meters) before solving and converted back afterward, so mixing centimeters and millimeters is handled automatically.'
+      },
+      workedExample: {
+        intro: 'A converging lens has a 10 cm focal length. An object sits 30 cm in front of it. Where does the image form, and what does it look like?',
+        rows: [
+          { label: 'Focal length (f)', value: '10 cm' },
+          { label: 'Object distance (dₒ)', value: '30 cm' },
+          { label: 'Image distance (dᵢ = (10 × 30) ÷ (30 − 10))', value: '300 ÷ 20 = 15 cm' },
+          { label: 'Magnification (m = −15 ÷ 30)', value: '−0.5' }
+        ],
+        result: 'dᵢ = 15 cm · m = −0.5 (real, inverted, half size)',
+        explanation: 'The image forms 15 cm on the far side of the lens — a positive distance, so it is real. The magnification works out to −0.5: negative means inverted (upside down), and a magnitude of 0.5 means it is half the size of the object. Had the object instead been placed only 5 cm away (inside the focal length), the same formula gives dᵢ = (10 × 5) ÷ (5 − 10) = −10 cm — a virtual, upright image, the way a magnifying glass works.'
+      },
+      watchOut: [
+        {
+          title: 'A negative result is not an error — it means a virtual image',
+          body: "This equation uses a sign convention: a negative image distance (or a negative focal length) is a legitimate answer describing a virtual image or a diverging lens/mirror, not a mistake to be corrected to positive."
+        },
+        {
+          title: 'An object exactly at the focal length has no finite image distance',
+          body: "Placing an object exactly at f sends light out parallel on the other side — the image forms at infinity, not at some large-but-finite distance. The formula's denominator (dₒ − f) becomes 0, which this calculator reports as no answer rather than a wrong number."
+        },
+        {
+          title: 'This is the thin-lens, paraxial approximation',
+          body: "The formula assumes a lens thin enough that its own thickness doesn't matter, and light rays close to the central axis (small angles). Thick lenses, wide-aperture mirrors, and rays far from the axis need more advanced optics to describe accurately."
+        },
+        {
+          title: 'The same equation works for mirrors, with f tied to the radius of curvature',
+          body: 'For a spherical mirror, f = R ÷ 2, where R is the mirror\'s radius of curvature. A concave mirror has a positive f (like a converging lens); a convex mirror has a negative f (like a diverging lens) — enter whichever one applies and the rest of the formula is identical.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 3, §2.2 Spherical Mirrors', url: 'https://openstax.org/books/university-physics-volume-3/pages/2-2-spherical-mirrors' },
+        { label: 'OpenStax, University Physics Volume 3, §2.4 Thin Lenses', url: 'https://openstax.org/books/university-physics-volume-3/pages/2-4-thin-lenses' }
+      ]
+    },
+    inputs: [
+      { id: 'focalLength', label: 'Focal length (cm)', type: 'number', placeholder: '10', defaultValue: 10, step: 0.1 },
+      { id: 'objectDistance', label: 'Object distance (cm)', type: 'number', placeholder: '30', defaultValue: 30, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Lens & Mirror Equation Calculator (1/f = 1/dₒ + 1/dᵢ)',
+      description: 'Free lens and mirror equation calculator. Solve 1/f = 1/dₒ + 1/dᵢ for focal length, object distance, or image distance, with magnification and a worked example.',
+      faq: [
+        { question: 'What is the lens and mirror equation?', answer: '1/f = 1/dₒ + 1/dᵢ, where f is the focal length, dₒ is the object distance, and dᵢ is the image distance. The identical formula describes thin lenses and curved mirrors.' },
+        { question: 'How do I find image distance from focal length and object distance?', answer: 'dᵢ = (f × dₒ) ÷ (dₒ − f). A 10 cm focal length with an object 30 cm away gives dᵢ = (10 × 30) ÷ (30 − 10) = 15 cm.' },
+        { question: 'What does a negative image distance mean?', answer: 'A virtual image — one that only appears to be at that location, the way a magnifying glass makes text look bigger without light rays actually converging there.' },
+        { question: 'How do I calculate magnification?', answer: 'm = −dᵢ ÷ dₒ. With dᵢ = 15 cm and dₒ = 30 cm, m = −15 ÷ 30 = −0.5: the image is inverted (negative sign) and half the size (magnitude 0.5).' },
+        { question: 'Does the lens equation also work for mirrors?', answer: 'Yes. A spherical mirror uses the identical equation, with its focal length related to its radius of curvature by f = R ÷ 2.' },
+        { question: 'What happens when the object is exactly at the focal length?', answer: "There is no finite image distance — the equation's denominator becomes zero, because light leaving the lens or mirror comes out parallel, forming an image only at infinity." },
+        { question: 'How do I find the object distance from focal length and image distance?', answer: 'dₒ = (f × dᵢ) ÷ (dᵢ − f), the same equation rearranged for the other distance.' }
+      ]
+    },
+    compute(values) {
+      return { imageDistance: values.objectDistance - values.focalLength === 0 ? NaN : (values.focalLength * values.objectDistance) / (values.objectDistance - values.focalLength) };
+    }
   }
 ];

@@ -117,6 +117,7 @@ export const calculatorOrder: string[] = [
   'decibel-calculator',
   'radioactive-half-life-calculator',
   'heat-calculator',
+  'lens-mirror-equation-calculator',
   'percentage-calculator',
   'percent-change-calculator',
   'percent-difference-calculator',

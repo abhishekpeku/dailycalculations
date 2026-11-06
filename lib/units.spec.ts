@@ -40,8 +40,8 @@ describe('unit tables', () => {
 
   test('covers the dimensions the v2 rollout needs', () => {
     assert.deepEqual([...dimensions].sort(), [
-      'acceleration', 'angle', 'area', 'count', 'currency', 'data', 'energy', 'evEfficiency', 'force', 'fuelEconomy', 'fuelPrice', 'length',
-      'mass', 'pace', 'percent', 'power', 'pressure', 'speed', 'temperature', 'term', 'time', 'volume'
+      'acceleration', 'angle', 'area', 'count', 'currency', 'data', 'density', 'energy', 'evEfficiency', 'force', 'fuelEconomy', 'fuelPrice',
+      'length', 'mass', 'momentum', 'pace', 'percent', 'power', 'pressure', 'speed', 'temperature', 'term', 'time', 'volume'
     ]);
   });
 
@@ -187,6 +187,17 @@ describe('anchor values', () => {
     assert.equal(UNITS.term[0].id, 'mo');
     assert.equal(toBase(30, 'term', 'yr'), 360);
     assert.equal(fromBase(60, 'term', 'yr'), 5);
+  });
+  test('momentum: kg·m/s and N·s are numerically identical (N = kg·m/s²)', () => {
+    assert.equal(UNITS.momentum[0].id, 'kgm/s');
+    close(toBase(1, 'momentum', 'Ns'), 1);
+    close(convert(30, 'momentum', 'kgm/s', 'Ns'), 30);
+  });
+  test('density: 1 g/cm3 = 1000 kg/m3, 1 lb/ft3 ≈ 16.0185 kg/m3', () => {
+    assert.equal(UNITS.density[0].id, 'kg/m3');
+    close(toBase(1, 'density', 'g/cm3'), 1000);
+    close(toBase(1, 'density', 'lb/ft3'), 16.018463373960138, 1e-9);
+    close(convert(19.3, 'density', 'g/cm3', 'kg/m3'), 19300);
   });
 });
 

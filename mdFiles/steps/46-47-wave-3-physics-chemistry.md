@@ -131,7 +131,17 @@ a locked spec.
   - `npm test` (839 tests), `npm run lint` and `npm run build` all pass. Curl-checked all 5 pages
     (200, correct H1, JSON-LD, every section id present).
   - 199 calculators total after this run (194 + 5).
-- [ ] Physics run 2+ (mechanics continued)
+- [ ] Physics run 2 (5), branch `step/46-wave-3-physics-run-2`, PR TBD — **IN PROGRESS** 2026-11-06:
+  - [x] momentum-calculator
+  - [ ] impulse-calculator
+  - [ ] power-calculator
+  - [ ] density-calculator
+  - [ ] pressure-calculator
+  - New `lib/units.ts` dimensions this run: `momentum` (base `kg·m/s`, alt `N·s` — numerically
+    identical since N = kg·m/s² by definition, BIPM SI Brochure; shared by momentum-calculator and
+    impulse-calculator) and `density` (base `kg/m³`, alts `g/cm³` and `lb/ft³` — NIST SP 811
+    Appendix B). Round-trip + anchor tests added to `lib/units.spec.ts`.
+  - mass/force/energy/time/speed/pressure/area/power all reused, as the dedupe section anticipated.
 - [ ] Physics electricity/circuits run
 - [ ] Physics waves/optics run
 - [ ] Chemistry category opened + run 1 (5): molar-mass, molarity, dilution, mass-percent, moles-grams

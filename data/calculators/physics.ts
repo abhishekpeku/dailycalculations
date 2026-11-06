@@ -802,5 +802,132 @@ export const physicsCalculators: CalculatorConfig[] = [
     compute(values) {
       return { work: values.force * values.distance * Math.cos(values.angle) };
     }
+  },
+  {
+    id: 'momentum-calculator',
+    category: 'physics',
+    glyph: 'p',
+    updatedAt: '2026-11-06',
+    aliases: ['p = mv calculator', 'linear momentum calculator', 'momentum formula calculator', 'mass velocity momentum calculator', 'momentum of an object calculator'],
+    related: ['impulse-calculator', 'kinetic-energy-calculator', 'force-calculator', 'speed-distance-time-calculator'],
+    title: 'Momentum Calculator (p = mv)',
+    description: 'Calculate linear momentum from mass and velocity — p = m × v — or solve backward for mass or velocity, in kg·m/s or N·s.',
+    example: 'A 1,500 kg car traveling at 20 m/s (72 km/h) has a momentum of 30,000 kg·m/s — the same as 30,000 N·s.',
+    solver: {
+      defaultTarget: 'momentum',
+      variables: [
+        { id: 'momentum', label: 'Momentum', symbol: 'p', dimension: 'momentum', defaultValue: 30000, defaultUnit: 'kgm/s' },
+        { id: 'mass', label: 'Mass', symbol: 'm', dimension: 'mass', defaultValue: 1500, defaultUnit: 'kg' },
+        { id: 'velocity', label: 'Velocity', symbol: 'v', dimension: 'speed', defaultValue: 20, defaultUnit: 'm/s' }
+      ],
+      solve: {
+        momentum: ({ mass, velocity }) => mass * velocity,
+        mass: ({ momentum, velocity }) => (velocity === 0 ? NaN : momentum / velocity),
+        velocity: ({ momentum, mass }) => (mass === 0 ? NaN : momentum / mass)
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'momentum',
+          min: 0,
+          max: 8,
+          ticks: ['1 kg·m/s', '100 kg·m/s', '10,000 kg·m/s', '1,000,000 kg·m/s', '100,000,000 kg·m/s'],
+          benchmarks: [
+            { label: 'A pitched baseball', value: 5.8 },
+            { label: 'A walking adult', value: 98 },
+            { label: 'A car at highway speed', value: 40500 },
+            { label: 'A freight train', value: 3e7 }
+          ],
+          title: 'How does that compare?',
+          valueLabel: 'Your momentum'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'What is momentum?',
+        paragraphs: [
+          'Momentum is a measure of how hard it is to stop something that is moving — it combines how much mass an object has with how fast it is going. A bowling ball rolling slowly and a baseball thrown fast can have similar momentum even though their masses are wildly different, because momentum weighs mass and speed equally: p = m × v.',
+          'Unlike kinetic energy, momentum is a vector — it points in the direction the object is moving, and momentum in opposite directions can cancel out. Two identical cars approaching each other at the same speed have equal and opposite momentum, so their combined momentum is zero even though neither car has stopped moving.',
+          'Momentum matters most through its conservation law: in a system with no outside forces, total momentum before a collision equals total momentum after it. That single idea explains everything from how a cue ball transfers motion to another ball, to why a rocket accelerates forward by throwing exhaust gas backward.',
+          'Momentum and impulse — the subject of the related calculator on this site — share the same physical unit. A newton is defined as the force that gives 1 kg of mass an acceleration of 1 m/s² (1 N = 1 kg·m/s²), so a newton-second (N·s) and a kilogram-meter-per-second (kg·m/s) are the same unit under two conventional names: N·s for impulse, kg·m/s for momentum.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of momentum, mass and velocity; the third fills in automatically, so the same page answers "how much momentum", "how heavy" and "how fast".',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 1,500 kg becomes 3,306.9 lb instead of silently turning into 1,500 lb.' },
+          { name: 'Read the result and the scale', text: 'The answer shows in your chosen unit, with the scale below placing it among a few everyday moving objects.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The momentum formula rearranges to solve for mass or velocity as well as momentum.',
+        expression: 'p = m × v\nm = p ÷ v\nv = p ÷ m',
+        terms: [
+          { symbol: 'p', meaning: 'Linear momentum, in kilogram-meters per second (kg·m/s), identical in size to the newton-second (N·s) used for impulse.' },
+          { symbol: 'm', meaning: 'Mass of the object, in kilograms (kg).' },
+          { symbol: 'v', meaning: 'Velocity of the object, in meters per second (m/s) — its magnitude and direction both matter, though this calculator works with magnitude along one line.' }
+        ],
+        note: 'Every input is converted to SI units (kg, m/s) before solving and converted back afterward, so mixed units cannot produce a wrong result.'
+      },
+      workedExample: {
+        intro: 'A 1,500 kg car is traveling at 20 m/s (72 km/h). What is its momentum?',
+        rows: [
+          { label: 'Mass (m)', value: '1,500 kg' },
+          { label: 'Velocity (v)', value: '20 m/s' },
+          { label: 'Momentum (p = 1,500 × 20)', value: '30,000 kg·m/s' }
+        ],
+        result: 'p = 30,000 kg·m/s = 30,000 N·s',
+        explanation: '1,500 × 20 = 30,000, so the car has a momentum of 30,000 kg·m/s. Because a newton is defined as 1 kg·m/s², that same amount of momentum is also exactly 30,000 N·s — the two units describe the identical physical quantity.'
+      },
+      watchOut: [
+        {
+          title: 'Momentum has a direction; kinetic energy does not',
+          body: 'Momentum is a vector. Two cars of equal mass heading toward each other at the same speed have momenta that point opposite ways and sum to zero, even though both are clearly moving and both carry real kinetic energy.'
+        },
+        {
+          title: 'kg·m/s and N·s are the same unit, not a coincidence',
+          body: 'A newton is defined so that 1 N = 1 kg·m/s². Multiplying by seconds gives N·s = kg·m/s — so a result in kg·m/s and the same result in N·s are always identical numbers, which is why impulse and momentum can be compared directly (the impulse-momentum theorem, J = Δp).'
+        },
+        {
+          title: 'Doubling velocity only doubles momentum, unlike kinetic energy',
+          body: 'Momentum scales linearly with velocity (p = m × v), while kinetic energy scales with velocity squared (KE = ½mv²). A car going twice as fast has twice the momentum, but four times the kinetic energy — two different quantities that respond differently to the same change in speed.'
+        },
+        {
+          title: 'Total momentum is conserved only without outside forces',
+          body: 'The conservation of momentum applies to a closed system — no net outside force acting on it. A rolling ball slows down because friction and air resistance are outside forces removing momentum from the ball (and transferring it to the Earth), not because momentum itself has disappeared.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §9.1 Linear Momentum', url: 'https://openstax.org/books/university-physics-volume-1/pages/9-1-linear-momentum' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'BIPM, The International System of Units (SI Brochure)', url: 'https://www.bipm.org/en/publications/si-brochure' }
+      ]
+    },
+    inputs: [
+      { id: 'mass', label: 'Mass (kg)', type: 'number', placeholder: '1500', defaultValue: 1500, step: 1, min: 0 },
+      { id: 'velocity', label: 'Velocity (m/s)', type: 'number', placeholder: '20', defaultValue: 20, step: 0.1 }
+    ],
+    seo: {
+      title: 'Momentum Calculator (p = mv) – Mass, Velocity, Momentum',
+      description: 'Free momentum calculator. Solve p = m × v for momentum, mass or velocity in kg·m/s or N·s, with a worked example and the impulse-momentum link.',
+      faq: [
+        { question: 'What is the formula for momentum?', answer: 'Momentum equals mass times velocity: p = m × v. With mass in kilograms and velocity in meters per second, the result is in kg·m/s.' },
+        { question: 'How much momentum does a 1,500 kg car at 20 m/s have?', answer: '1,500 × 20 = 30,000 kg·m/s, which is the same as 30,000 N·s.' },
+        { question: 'Are kg·m/s and N·s the same unit?', answer: 'Yes, exactly. A newton is defined as 1 kg·m/s², so N·s = kg·m/s²·s = kg·m/s. Momentum is conventionally reported in kg·m/s and impulse in N·s, but they are the same unit.' },
+        { question: 'Is momentum a vector or a scalar?', answer: 'A vector — it has both a size and a direction. Two equal masses moving toward each other at the same speed have momenta that point opposite ways and add to zero.' },
+        { question: 'How do I find mass from momentum and velocity?', answer: 'Divide momentum by velocity: m = p ÷ v. An object with 500 kg·m/s of momentum moving at 10 m/s has a mass of 50 kg.' },
+        { question: 'Does doubling velocity double momentum?', answer: 'Yes. Momentum is proportional to velocity (p = m × v), so doubling velocity exactly doubles momentum — unlike kinetic energy, which quadruples.' },
+        { question: 'What is the relationship between momentum and impulse?', answer: 'The impulse-momentum theorem states that the impulse delivered to an object equals its change in momentum, J = Δp. See the impulse calculator for the force-and-time side of that relationship.' }
+      ]
+    },
+    compute(values) {
+      return { momentum: values.mass * values.velocity };
+    }
   }
 ];

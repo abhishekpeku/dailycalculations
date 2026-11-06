@@ -17,6 +17,8 @@ export type UnitDimension =
   | 'energy'
   | 'power'
   | 'pressure'
+  | 'momentum'
+  | 'density'
   | 'data'
   | 'fuelEconomy'
   | 'fuelPrice'
@@ -198,6 +200,19 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
     { id: 'mmHg', label: 'mmHg', factor: MM_HG },
     { id: 'inHg', label: 'inHg', factor: MM_HG * 25.4 },
     { id: 'Torr', label: 'Torr', factor: 101325 / 760 }
+  ],
+  // SI derived unit kg·m/s. A newton is defined as 1 kg·m/s² (BIPM SI Brochure), so N·s = kg·m/s²·s
+  // = kg·m/s exactly — the same unit under the name conventionally used for impulse rather than momentum.
+  momentum: [
+    { id: 'kgm/s', label: 'kg·m/s', factor: 1 },
+    { id: 'Ns', label: 'N·s', factor: 1 }
+  ],
+  // SI derived unit kg/m³. 1 g/cm³ = 1000 kg/m³ exactly (cm³ is 1e-6 m³, g is 1e-3 kg); lb/ft³ from
+  // the exact pound and foot above (NIST SP 811 Appendix B).
+  density: [
+    { id: 'kg/m3', label: 'kg/m³', factor: 1 },
+    { id: 'g/cm3', label: 'g/cm³', factor: 1000 },
+    { id: 'lb/ft3', label: 'lb/ft³', factor: POUND / FOOT ** 3 }
   ],
   // IEC 80000-13: decimal prefixes are powers of 1000 (KB = 1000 B), binary prefixes powers of 1024 (KiB).
   data: [

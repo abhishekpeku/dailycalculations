@@ -4302,6 +4302,38 @@ exports[`compute() snapshots > millimeters-to-inches-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > momentum-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass": 1500,
+      "velocity": 20
+    },
+    "outputs": {
+      "momentum": 30000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass": 2250,
+      "velocity": 30
+    },
+    "outputs": {
+      "momentum": 67500
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass": 0,
+      "velocity": 0
+    },
+    "outputs": {
+      "momentum": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > mortar-calculator 1`] = `
 {
   "default": {

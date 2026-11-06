@@ -19,6 +19,11 @@ export type UnitDimension =
   | 'pressure'
   | 'momentum'
   | 'density'
+  | 'voltage'
+  | 'current'
+  | 'resistance'
+  | 'capacitance'
+  | 'charge'
   | 'data'
   | 'fuelEconomy'
   | 'fuelPrice'
@@ -213,6 +218,43 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
     { id: 'kg/m3', label: 'kg/m³', factor: 1 },
     { id: 'g/cm3', label: 'g/cm³', factor: 1000 },
     { id: 'lb/ft3', label: 'lb/ft³', factor: POUND / FOOT ** 3 }
+  ],
+  // SI derived unit (BIPM SI Brochure): 1 V = 1 W/A. Decimal multiples per NIST SP 811 §4.
+  voltage: [
+    { id: 'V', label: 'V', factor: 1 },
+    { id: 'mV', label: 'mV', factor: 1e-3 },
+    { id: 'kV', label: 'kV', factor: 1e3 }
+  ],
+  // SI base unit since the 2019 redefinition (BIPM SI Brochure, via the elementary charge).
+  current: [
+    { id: 'A', label: 'A', factor: 1 },
+    { id: 'mA', label: 'mA', factor: 1e-3 },
+    { id: 'uA', label: 'µA', factor: 1e-6 },
+    { id: 'kA', label: 'kA', factor: 1e3 }
+  ],
+  // SI derived unit (BIPM SI Brochure): 1 Ω = 1 V/A.
+  resistance: [
+    { id: 'ohm', label: 'Ω', factor: 1 },
+    { id: 'mohm', label: 'mΩ', factor: 1e-3 },
+    { id: 'kohm', label: 'kΩ', factor: 1e3 },
+    { id: 'Mohm', label: 'MΩ', factor: 1e6 }
+  ],
+  // SI derived unit (BIPM SI Brochure): 1 F = 1 C/V. Real capacitors mostly sit at mF and below.
+  capacitance: [
+    { id: 'F', label: 'F', factor: 1 },
+    { id: 'mF', label: 'mF', factor: 1e-3 },
+    { id: 'uF', label: 'µF', factor: 1e-6 },
+    { id: 'nF', label: 'nF', factor: 1e-9 },
+    { id: 'pF', label: 'pF', factor: 1e-12 }
+  ],
+  // SI derived unit (BIPM SI Brochure): 1 C = 1 A·s. A capacitor's stored charge (Q = CV) is
+  // conventionally reported in µC or mC, since typical capacitor/voltage combinations give
+  // sub-coulomb answers.
+  charge: [
+    { id: 'C', label: 'C', factor: 1 },
+    { id: 'mC', label: 'mC', factor: 1e-3 },
+    { id: 'uC', label: 'µC', factor: 1e-6 },
+    { id: 'nC', label: 'nC', factor: 1e-9 }
   ],
   // IEC 80000-13: decimal prefixes are powers of 1000 (KB = 1000 B), binary prefixes powers of 1024 (KiB).
   data: [

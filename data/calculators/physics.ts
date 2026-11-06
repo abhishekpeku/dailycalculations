@@ -1,4 +1,5 @@
 import type { CalculatorConfig } from './types.ts';
+import { DIGIT_COLORS, MULTIPLIER_COLORS, TOLERANCE_COLORS, resistanceFromColorBands } from '../../lib/resistorColors.ts';
 
 // 3rd CGPM (1901) fixed standard gravity at this value; see NIST SP 811 Appendix B and the BIPM SI
 // Brochure. Shared by weight-calculator and potential-energy-calculator's forward compute() below
@@ -1436,6 +1437,646 @@ export const physicsCalculators: CalculatorConfig[] = [
     },
     compute(values) {
       return { pressure: values.force / values.area };
+    }
+  },
+  {
+    id: 'ohms-law-calculator',
+    category: 'physics',
+    glyph: 'V=IR',
+    updatedAt: '2026-11-06',
+    aliases: ["ohm's law calculator", 'v = ir calculator', 'voltage current resistance calculator', 'ohms law solver', 'current from voltage and resistance calculator', 'resistance from voltage and current calculator'],
+    related: ['electrical-power-calculator', 'resistor-color-code-calculator', 'series-parallel-resistor-calculator', 'electricity-bill-calculator'],
+    title: "Ohm's Law Calculator (V = IR)",
+    description: "Solve Ohm's law, V = I × R, for voltage, current, or resistance — enter any two and the third fills in, with the power it dissipates shown alongside.",
+    example: 'A circuit with 3 A flowing through a 4 Ω resistor has 12 V across it, and dissipates 36 W.',
+    solver: {
+      defaultTarget: 'voltage',
+      variables: [
+        { id: 'voltage', label: 'Voltage', symbol: 'V', dimension: 'voltage', defaultValue: 12, defaultUnit: 'V' },
+        { id: 'current', label: 'Current', symbol: 'I', dimension: 'current', defaultValue: 3, defaultUnit: 'A' },
+        { id: 'resistance', label: 'Resistance', symbol: 'R', dimension: 'resistance', defaultValue: 4, defaultUnit: 'ohm' }
+      ],
+      solve: {
+        voltage: ({ current, resistance }) => current * resistance,
+        current: ({ voltage, resistance }) => (resistance === 0 ? NaN : voltage / resistance),
+        resistance: ({ voltage, current }) => (current === 0 ? NaN : voltage / current)
+      },
+      outputs: [{ id: 'power', label: 'Power dissipated', dimension: 'power', unit: 'W', compute: (si) => si.voltage * si.current }],
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'resistance',
+          min: 0,
+          max: 8,
+          ticks: ['1 Ω', '100 Ω', '10 kΩ', '1 MΩ', '100 MΩ'],
+          benchmarks: [
+            { label: 'A standard LED current-limiting resistor', value: 220 },
+            { label: 'Wet human skin (OSHA electrical-safety training figure)', value: 1000 },
+            { label: 'Dry human skin (OSHA electrical-safety training figure)', value: 100000 },
+            { label: "A digital multimeter's voltage-input impedance", value: 1e7 }
+          ],
+          title: 'How does that compare?',
+          valueLabel: 'Your resistance'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: "What is Ohm's law?",
+        paragraphs: [
+          "Ohm's law links the three basic quantities of a simple electrical circuit: voltage, current, and resistance. German physicist Georg Ohm published the relationship in 1827 after measuring how current through a wire changed with the voltage driving it. For a resistor, the law is strikingly simple: V = I × R. Double the voltage across a resistor and the current through it doubles too, as long as the resistance stays the same.",
+          'A common way to picture it: voltage is like water pressure pushing a flow, current is the flow itself, and resistance is how narrow the pipe is. More pressure (voltage) pushes more flow (current) through the same pipe; a narrower pipe (more resistance) needs more pressure to push the same flow through it. The analogy is not exact physics, but it is the reason textbooks keep reaching for it.',
+          "Ohm's law is specifically a statement about resistors and other \"ohmic\" devices, where resistance stays constant regardless of the voltage or current applied. Plenty of real components are not ohmic — a light-emitting diode, an incandescent filament that heats up as current flows, and a transistor all have a resistance that changes with the conditions, so V = I × R only approximates their behavior, if that."
+        ]
+      },
+      howTo: {
+        intro: "Fill in any two of voltage, current and resistance; the third fills in automatically, so the same page answers \"what's the voltage\", \"how much current\" and \"what resistance\".",
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit from the menu beside it. The third field, marked auto, calculates as you type. Volts, milliamps and kilohms can all be mixed freely.' },
+          { name: 'Switch which one is calculated', text: 'To solve for a different quantity, type into the auto field. It becomes an input, and whichever field you have left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 3 A becomes 3,000 mA instead of silently turning into 3 mA.' },
+          { name: 'Read the result and the power', text: 'The answer appears in your chosen unit. Underneath it, the power the resistor dissipates (P = V × I) is shown as a bonus figure — no separate calculation needed.' },
+          { name: 'Share or copy', text: 'Share result copies a link that reopens the calculator with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: "Ohm's law rearranges three ways, one for each quantity you might be solving for.",
+        expression: 'V = I × R\nI = V ÷ R\nR = V ÷ I',
+        terms: [
+          { symbol: 'V', meaning: 'Voltage across the resistor, in volts (V). One volt drives one amp of current through one ohm of resistance.' },
+          { symbol: 'I', meaning: 'Current flowing through it, in amperes (A).' },
+          { symbol: 'R', meaning: 'Resistance, in ohms (Ω). One ohm is defined as one volt per amp (1 Ω = 1 V/A).' },
+          { symbol: 'P = V × I', meaning: "The power the resistor dissipates as heat, in watts — shown as a bonus output since it follows directly from the same two solved values." }
+        ],
+        note: 'Every input is converted to SI units (V, A, Ω) before solving and converted back afterward, so entering current in milliamps or resistance in kilohms is handled automatically.'
+      },
+      workedExample: {
+        intro: 'A resistor in a circuit carries a current of 3 A and has a resistance of 4 Ω. What voltage is across it, and how much power does it dissipate?',
+        rows: [
+          { label: 'Current (I)', value: '3 A' },
+          { label: 'Resistance (R)', value: '4 Ω' },
+          { label: 'Voltage (V = 3 × 4)', value: '12 V' },
+          { label: 'Power (P = V × I = 12 × 3)', value: '36 W' }
+        ],
+        result: 'V = 12 V · P = 36 W',
+        explanation: '3 × 4 = 12, so 12 V is across the resistor. Multiplying that voltage by the 3 A flowing through it gives 36 W — the rate the resistor converts electrical energy into heat. Had the question instead given 12 V and 4 Ω, the same law finds the current: I = 12 ÷ 4 = 3 A.'
+      },
+      watchOut: [
+        {
+          title: "Ohm's law only holds for ohmic components",
+          body: 'Plain resistors keep a constant resistance across a wide range of voltages and currents, which is what makes V = I × R reliable for them. LEDs, diodes, incandescent filaments and transistors are "non-ohmic" — their resistance shifts with current, temperature or voltage, so this formula only roughly describes them, if at all.'
+        },
+        {
+          title: 'A real battery is not a perfect voltage source',
+          body: "The V in this formula is the voltage actually across the resistor, not necessarily a battery's labeled voltage. A real battery has its own small internal resistance, so under load some of its voltage is dropped internally and never reaches the external circuit."
+        },
+        {
+          title: 'Power rises with the square of current or voltage',
+          body: 'Combining V = I × R with P = V × I gives two more forms: P = I²R and P = V² ÷ R. Doubling the current through a fixed resistance quadruples the power it dissipates, not just doubles it — a big part of why thin wires overheat under high current.'
+        },
+        {
+          title: 'Resistance cannot be negative, and current needs a resistance to flow against',
+          body: 'If a resistance of 0 Ω is entered while solving for current, there is no finite answer — a 0 Ω path is a short circuit, where current is limited only by whatever (small) resistance is actually in the wire, not by this formula.'
+        }
+      ],
+      references: [
+        { label: "OpenStax, University Physics Volume 2, §9.4 Ohm's Law", url: 'https://openstax.org/books/university-physics-volume-2/pages/9-4-ohms-law' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'BIPM, The International System of Units (SI Brochure)', url: 'https://www.bipm.org/en/publications/si-brochure' }
+      ]
+    },
+    inputs: [
+      { id: 'current', label: 'Current (A)', type: 'number', placeholder: '3', defaultValue: 3, step: 0.01, min: 0 },
+      { id: 'resistance', label: 'Resistance (Ω)', type: 'number', placeholder: '4', defaultValue: 4, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: "Ohm's Law Calculator (V = IR) – Voltage, Current, Resistance",
+      description: "Free Ohm's law calculator. Solve V = I × R for voltage, current or resistance in V, mV, A, mA, Ω or kΩ, with power shown as a bonus and a worked example.",
+      faq: [
+        { question: "What is Ohm's law?", answer: "Ohm's law states that the voltage across a resistor equals the current through it times its resistance: V = I × R. It only applies reliably to resistors and other \"ohmic\" components, whose resistance stays constant." },
+        { question: 'How do I calculate voltage from current and resistance?', answer: 'Multiply them: V = I × R. A current of 3 A through a 4 Ω resistor produces 3 × 4 = 12 V across it.' },
+        { question: 'How do I calculate current from voltage and resistance?', answer: 'Divide voltage by resistance: I = V ÷ R. A 12 V source across a 4 Ω resistor drives 12 ÷ 4 = 3 A.' },
+        { question: 'How do I calculate resistance from voltage and current?', answer: 'Divide voltage by current: R = V ÷ I. 12 V producing a 3 A current implies a resistance of 12 ÷ 3 = 4 Ω.' },
+        { question: "Does Ohm's law apply to LEDs and diodes?", answer: 'Not reliably. Ohm\'s law describes "ohmic" components like resistors, whose resistance is constant. LEDs, diodes and incandescent filaments are non-ohmic — their effective resistance changes with voltage, current or temperature.' },
+        { question: 'How is power related to voltage, current and resistance?', answer: 'Power is P = V × I, which combines with Ohm\'s law to give two more forms: P = I²R and P = V² ÷ R. This calculator shows P = V × I as a bonus result alongside whichever quantity you solve for.' },
+        { question: 'What is the SI unit of resistance?', answer: 'The ohm (Ω), defined as one volt per ampere (1 Ω = 1 V/A). Milliohms, kilohms and megohms are common alternatives for small and large resistances.' }
+      ]
+    },
+    compute(values) {
+      return { voltage: values.current * values.resistance };
+    }
+  },
+  {
+    id: 'electrical-power-calculator',
+    category: 'physics',
+    glyph: 'P=VI',
+    updatedAt: '2026-11-06',
+    aliases: ['electrical power calculator', 'p = vi calculator', 'power from voltage and current calculator', 'watts from volts and amps calculator', 'electric power formula calculator', 'watts volts amps calculator'],
+    related: ['ohms-law-calculator', 'power-calculator', 'electricity-bill-calculator', 'power-converter'],
+    title: 'Electrical Power Calculator (P = VI)',
+    description: 'Calculate electrical power from voltage and current — P = V × I — or solve backward for voltage or current, with the equivalent resistance shown via Ohm\'s law.',
+    example: 'A 120 V appliance drawing 5 A uses 600 W, with an effective resistance of 24 Ω.',
+    solver: {
+      defaultTarget: 'power',
+      variables: [
+        { id: 'power', label: 'Power', symbol: 'P', dimension: 'power', defaultValue: 600, defaultUnit: 'W' },
+        { id: 'voltage', label: 'Voltage', symbol: 'V', dimension: 'voltage', defaultValue: 120, defaultUnit: 'V' },
+        { id: 'current', label: 'Current', symbol: 'I', dimension: 'current', defaultValue: 5, defaultUnit: 'A' }
+      ],
+      solve: {
+        power: ({ voltage, current }) => voltage * current,
+        voltage: ({ power, current }) => (current === 0 ? NaN : power / current),
+        current: ({ power, voltage }) => (voltage === 0 ? NaN : power / voltage)
+      },
+      outputs: [{ id: 'resistance', label: 'Equivalent resistance', dimension: 'resistance', unit: 'ohm', compute: (si) => (si.current === 0 ? NaN : si.voltage / si.current) }],
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'power',
+          min: 0,
+          max: 4,
+          ticks: ['1 W', '10 W', '100 W', '1 kW', '10 kW'],
+          benchmarks: [
+            { label: 'A 60-watt-equivalent LED light bulb', value: 9 },
+            { label: 'A laptop charger', value: 65 },
+            { label: 'A microwave oven', value: 1100 },
+            { label: 'A home Level 2 EV charger (240 V × 30 A)', value: 7200 }
+          ],
+          title: 'How does that compare?',
+          valueLabel: 'Your power'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'What is electrical power?',
+        paragraphs: [
+          'Electrical power measures how fast a device converts electrical energy into another form — heat in a toaster, light in a bulb, motion in a motor. The formula is P = V × I: power equals the voltage across a device times the current flowing through it. A device pulling more current at the same voltage, or needing more voltage at the same current, uses power faster.',
+          "This is the same watt used everywhere else in physics (1 W = 1 J/s), because it is the same underlying idea of energy per time — electrical power just expresses it in terms of the voltage and current that are easy to measure in a circuit. A 600 W appliance converts 600 joules of electrical energy into another form every second it runs.",
+          "Because electrical devices are built around a resistance, P = V × I combines with Ohm's law (V = I × R) to give two more useful forms: P = I²R and P = V² ÷ R. This calculator's bonus output uses the Ohm's law relationship directly — once voltage and current are known, V ÷ I gives the device's effective resistance, no separate calculation needed."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of power, voltage and current; the third fills in automatically, so the same page answers "how many watts", "what voltage" and "how much current".',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 600 W becomes 0.6 kW instead of silently turning into 600 kW.' },
+          { name: 'Read the result and the resistance', text: 'The answer shows in your chosen power unit. Underneath it, the equivalent resistance (R = V ÷ I, from Ohm\'s law) appears as a bonus figure.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The power formula rearranges to solve for voltage or current as well as power.',
+        expression: 'P = V × I\nV = P ÷ I\nI = P ÷ V',
+        terms: [
+          { symbol: 'P', meaning: 'Electrical power, in watts (W). 1 W = 1 J/s = 1 V·A.' },
+          { symbol: 'V', meaning: 'Voltage across the device, in volts (V).' },
+          { symbol: 'I', meaning: 'Current flowing through it, in amperes (A).' },
+          { symbol: 'R = V ÷ I', meaning: "The device's effective resistance, from Ohm's law — shown as a bonus output, since V and I are already known once power is solved." }
+        ],
+        note: 'Every input is converted to SI units (W, V, A) before solving and converted back afterward, so entering current in milliamps or power in kilowatts is handled automatically.'
+      },
+      workedExample: {
+        intro: 'An appliance is rated at 120 V and draws 5 A. How much power does it use, and what is its effective resistance?',
+        rows: [
+          { label: 'Voltage (V)', value: '120 V' },
+          { label: 'Current (I)', value: '5 A' },
+          { label: 'Power (P = 120 × 5)', value: '600 W' },
+          { label: 'Equivalent resistance (R = 120 ÷ 5)', value: '24 Ω' }
+        ],
+        result: 'P = 600 W · R = 24 Ω',
+        explanation: '120 × 5 = 600, so the appliance uses 600 W. Dividing the same voltage by the same current the other way, 120 ÷ 5 = 24, gives the effective resistance of 24 Ω by Ohm\'s law — this is the resistance a plain resistor would need to draw the same current at the same voltage.'
+      },
+      watchOut: [
+        {
+          title: 'This page computes power, not converts it',
+          body: 'If you already know a power value and want it in different units (W to kW, W to BTU/h), use the power converter instead. This calculator is for finding electrical power from the voltage and current that produce it.'
+        },
+        {
+          title: 'Household current ratings are often a maximum, not a constant draw',
+          body: 'A circuit breaker rated for 30 A limits the current it allows, but a device plugged into it may draw far less under normal use. Use the device\'s actual measured or rated current, not the circuit\'s maximum rating, for a true power figure.'
+        },
+        {
+          title: '"Equivalent resistance" is not always a real, fixed resistor',
+          body: 'For a plain resistor, V ÷ I is literally its resistance. For a motor, a compressor or any device with moving parts, V ÷ I just gives the same ratio at that instant — it does not describe a physical, constant-value resistor the way Ohm\'s law assumes.'
+        },
+        {
+          title: 'Doubling voltage can more than double power, if current also rises',
+          body: 'For a fixed resistance, power scales with the square of voltage (P = V² ÷ R), so doubling voltage alone would quadruple power. This calculator takes voltage and current as independent inputs, so the result always reflects whatever two values you actually enter.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 2, §9.5 Electrical Energy and Power', url: 'https://openstax.org/books/university-physics-volume-2/pages/9-5-electrical-energy-and-power' },
+        { label: "OpenStax, University Physics Volume 2, §9.4 Ohm's Law", url: 'https://openstax.org/books/university-physics-volume-2/pages/9-4-ohms-law' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'voltage', label: 'Voltage (V)', type: 'number', placeholder: '120', defaultValue: 120, step: 0.1, min: 0 },
+      { id: 'current', label: 'Current (A)', type: 'number', placeholder: '5', defaultValue: 5, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Electrical Power Calculator (P = VI) – Watts, Volts, Amps',
+      description: 'Free electrical power calculator. Solve P = V × I for power, voltage or current in W, kW, V or A, with equivalent resistance shown and a worked example.',
+      faq: [
+        { question: 'What is the formula for electrical power?', answer: 'Power equals voltage times current: P = V × I. With voltage in volts and current in amps, the result is in watts.' },
+        { question: 'How many watts does a 120 V appliance drawing 5 A use?', answer: '120 × 5 = 600 W.' },
+        { question: 'How do I find current from power and voltage?', answer: 'Divide power by voltage: I = P ÷ V. A 1,200 W appliance on a 120 V circuit draws 1,200 ÷ 120 = 10 A.' },
+        { question: 'How do I find voltage from power and current?', answer: 'Divide power by current: V = P ÷ I. A 600 W device drawing 5 A is running on 600 ÷ 5 = 120 V.' },
+        { question: 'How is electrical power related to resistance?', answer: 'Through Ohm\'s law: once voltage and current are known, the equivalent resistance is R = V ÷ I. Combining that with P = V × I also gives P = I²R and P = V² ÷ R.' },
+        { question: 'What is the difference between this calculator and the power converter?', answer: 'This page computes power from voltage and current (P = V × I). The power converter just changes a power value you already have between units like W, kW and hp — it does not involve voltage or current at all.' },
+        { question: 'What is the SI unit of electrical power?', answer: 'The watt (W), the same unit used for mechanical power — 1 W = 1 J/s, and also equal to 1 volt-ampere (1 V·A) for electrical power specifically.' }
+      ]
+    },
+    compute(values) {
+      return { power: values.voltage * values.current };
+    }
+  },
+  {
+    id: 'series-parallel-resistor-calculator',
+    category: 'physics',
+    glyph: 'ΣR',
+    updatedAt: '2026-11-06',
+    aliases: ['resistors in series calculator', 'resistors in parallel calculator', 'equivalent resistance calculator', 'total resistance calculator', 'series parallel resistance calculator', 'combined resistance calculator'],
+    related: ['ohms-law-calculator', 'resistor-color-code-calculator', 'electrical-power-calculator', 'capacitor-charge-calculator'],
+    title: 'Series and Parallel Resistor Calculator',
+    description: 'Find the total resistance of a list of resistors wired in series (they simply add) and in parallel (they combine by reciprocals) — both totals, side by side.',
+    example: '100 Ω, 220 Ω and 330 Ω in series total 650 Ω; the same three resistors in parallel total only about 56.90 Ω.',
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'How do resistors combine in series and in parallel?',
+        paragraphs: [
+          'Resistors in series sit one after another along a single path, so the same current has to pass through every one of them in turn. Each resistor adds its own resistance to the total, the same way adding more cars to a one-lane traffic queue adds to the total delay: R_total = R₁ + R₂ + ... + Rₙ. A series total is always larger than its largest individual resistor.',
+          'Resistors in parallel instead sit side by side, each forming its own path between the same two points, so they all share the same voltage while the current splits across the paths. Adding another parallel path always gives current another way through, which can only lower the overall resistance — so a parallel combination is always smaller than its smallest individual resistor. The formula adds reciprocals instead of the resistances themselves: 1 ÷ R_total = 1 ÷ R₁ + 1 ÷ R₂ + ... + 1 ÷ Rₙ.',
+          'Both wiring patterns show up constantly in real circuits: old-style string lights wired in series dim as a group if one bulb fails (and used to go dark entirely); household outlets and most modern fixtures are wired in parallel so one failing device does not cut power to the rest. Combining standard resistor values in series or parallel is also a common way to build a resistance that is not sold off the shelf.'
+        ]
+      },
+      howTo: {
+        intro: 'Paste or type each resistor value in ohms; the calculator adds them as a series combination and combines them as a parallel one, side by side.',
+        steps: [
+          { name: 'Enter your resistor values', text: 'Paste or type each resistor\'s value in ohms, separated by commas, spaces or new lines — at least two values.' },
+          { name: 'Check the count', text: 'The box shows a live count of how many values it understood, so a stray label or unit does not silently throw off the total.' },
+          { name: 'Read the series total', text: 'The headline is the series total — what the resistance would be if every resistor sat one after another along a single path.' },
+          { name: 'Read the parallel total', text: 'The row below shows the same resistors combined side by side instead — always a smaller number than any one resistor in the list.' },
+          { name: 'Compare on the chart', text: 'The series and parallel totals are plotted side by side, so the size of the difference is easy to see at a glance.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Series resistances add directly; parallel resistances add as reciprocals.',
+        expression: 'Series: R_total = R₁ + R₂ + ... + Rₙ\nParallel: 1 ÷ R_total = 1 ÷ R₁ + 1 ÷ R₂ + ... + 1 ÷ Rₙ',
+        terms: [
+          { symbol: 'R₁, R₂, ..., Rₙ', meaning: 'Each resistor\'s value, in ohms (Ω).' },
+          { symbol: 'Series R_total', meaning: 'Always larger than the single largest resistor — each resistance simply adds onto the others along the one path the current takes.' },
+          { symbol: 'Parallel R_total', meaning: 'Always smaller than the single smallest resistor — an extra path for current to flow through can only lower the overall resistance, never raise it.' }
+        ],
+        note: 'With exactly two resistors, the parallel formula simplifies to R_total = (R₁ × R₂) ÷ (R₁ + R₂) — the same answer the reciprocal formula gives, without inverting three or more separate fractions by hand.'
+      },
+      workedExample: {
+        intro: 'Three resistors — 100 Ω, 220 Ω and 330 Ω — are combined first in series, then in parallel. What is the total resistance each way?',
+        rows: [
+          { label: 'Series total (100 + 220 + 330)', value: '650 Ω' },
+          { label: 'Sum of reciprocals (1/100 + 1/220 + 1/330)', value: '0.017576 Ω⁻¹' },
+          { label: 'Parallel total (1 ÷ 0.017576)', value: '56.90 Ω' }
+        ],
+        result: 'Series = 650 Ω · Parallel ≈ 56.90 Ω',
+        explanation: 'In series, the three values simply add to 650 Ω. In parallel, each resistor gives current an extra path, so the combined resistance — about 56.90 Ω — ends up lower than even the smallest individual resistor, 100 Ω, which is a hallmark of any parallel combination.'
+      },
+      watchOut: [
+        {
+          title: 'Parallel resistance is always less than the smallest resistor',
+          body: 'Adding a parallel path can only make it easier for current to flow, never harder, so the combined resistance drops below every individual value in the list — including the smallest one. If a parallel total comes out higher than one of the resistors you entered, double-check the values.'
+        },
+        {
+          title: 'Series resistance is always more than the largest resistor',
+          body: 'Since every resistor in series shares the same single current path, each one simply adds its own resistance on top of the rest. The combined total is always bigger than the single largest value in the list.'
+        },
+        {
+          title: 'A 0 Ω resistor in a parallel combination shorts the whole group to 0 Ω',
+          body: 'Current always takes the path of least resistance. A single 0 Ω branch (a short circuit) in parallel with anything else carries effectively all the current, so the overall combination drops to 0 Ω regardless of the other values.'
+        },
+        {
+          title: 'This handles one list treated as all-series or all-parallel, not a mixed network',
+          body: 'Many real circuits combine series and parallel sections together in the same network (some resistors in parallel, that group then in series with another resistor, and so on). This calculator computes both pure cases for the same list of values; a mixed network needs to be worked out stage by stage.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 2, §10.2 Resistors in Series and Parallel', url: 'https://openstax.org/books/university-physics-volume-2/pages/10-2-resistors-in-series-and-parallel' },
+        { label: "OpenStax, University Physics Volume 2, §9.4 Ohm's Law", url: 'https://openstax.org/books/university-physics-volume-2/pages/9-4-ohms-law' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'resistors',
+        label: 'Resistor values (Ω)',
+        type: 'list',
+        placeholder: 'Paste or type resistor values in ohms — commas, spaces or new lines between them.',
+        defaultValue: 0,
+        listDefault: [100, 220, 330],
+        listMin: 2
+      }
+    ],
+    breakdown: {
+      headline: 'seriesTotal',
+      headlineLabel: 'Total resistance in series (Ω)',
+      outputs: [
+        { id: 'seriesTotal', label: 'Total resistance in series (Ω)', format: 'number' },
+        { id: 'parallelTotal', label: 'Total resistance in parallel (Ω)', format: 'number' },
+        { id: 'count', label: 'Resistors entered', format: 'integer' },
+        { id: 'smallestResistor', label: 'Smallest resistor in the list (Ω)', format: 'number' }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'seriesTotal', label: 'Series' }, { from: 'parallelTotal', label: 'Parallel' }],
+        title: 'Series vs. parallel total',
+        highlight: 1
+      }
+    },
+    seo: {
+      title: 'Series & Parallel Resistor Calculator – Total Resistance',
+      description: 'Free resistor calculator. Find the total resistance of a list of resistors in series (they add) and in parallel (reciprocals add), side by side.',
+      faq: [
+        { question: 'How do you calculate total resistance in series?', answer: 'Add every resistor value together: R_total = R₁ + R₂ + ... + Rₙ. Three resistors of 100 Ω, 220 Ω and 330 Ω in series total 100 + 220 + 330 = 650 Ω.' },
+        { question: 'How do you calculate total resistance in parallel?', answer: 'Add the reciprocals of every resistor, then take the reciprocal of that sum: 1 ÷ R_total = 1 ÷ R₁ + 1 ÷ R₂ + ... + 1 ÷ Rₙ. For 100 Ω, 220 Ω and 330 Ω, that works out to about 56.90 Ω.' },
+        { question: 'Why is parallel resistance always lower than any individual resistor?', answer: 'Each parallel resistor gives current an additional path, and more paths can only make it easier for current to flow overall — never harder. So the combined resistance always ends up below the smallest resistor in the group.' },
+        { question: 'Is there a shortcut for two resistors in parallel?', answer: 'Yes: R_total = (R₁ × R₂) ÷ (R₁ + R₂). For 100 Ω and 220 Ω, that is (100 × 220) ÷ (100 + 220) = 68.75 Ω, the same answer the full reciprocal formula gives.' },
+        { question: 'What happens if one resistor in a parallel group is 0 Ω?', answer: 'The whole combination drops to 0 Ω. A 0 Ω branch is a short circuit, and current always takes the path of least resistance, so it effectively bypasses every other resistor in the group.' },
+        { question: 'Can I mix series and parallel in the same circuit?', answer: 'Yes, and many real circuits do — some resistors in parallel, with that group then in series with another resistor, and so on. This calculator computes the pure series total and the pure parallel total for one list of values; a mixed network needs to be broken into stages and solved one at a time.' },
+        { question: 'How many resistors can I enter?', answer: 'At least two, and as many as you can paste in — separated by commas, spaces, semicolons or new lines, the same list format used across this site\'s other list-based calculators.' }
+      ]
+    },
+    compute(values, lists) {
+      const resistors = lists.resistors;
+      const seriesTotal = resistors.reduce((sum, r) => sum + r, 0);
+      const parallelTotal = 1 / resistors.reduce((sum, r) => sum + 1 / r, 0);
+      return {
+        seriesTotal,
+        parallelTotal,
+        count: resistors.length,
+        smallestResistor: Math.min(...resistors)
+      };
+    }
+  },
+  {
+    id: 'resistor-color-code-calculator',
+    category: 'physics',
+    glyph: 'Ω',
+    updatedAt: '2026-11-06',
+    aliases: ['resistor color code calculator', 'resistor color chart', 'decode resistor colors', 'resistor band calculator', '4 band resistor calculator', '5 band resistor calculator'],
+    related: ['ohms-law-calculator', 'series-parallel-resistor-calculator', 'electrical-power-calculator', 'capacitor-charge-calculator'],
+    title: 'Resistor Color Code Calculator',
+    description: "Decode a 4-band or 5-band resistor's color bands into its resistance and tolerance range, using the standard IEC 60062 digit, multiplier and tolerance tables.",
+    example: 'Red-red-brown-gold bands decode to 220 Ω ±5% — between 209 Ω and 231 Ω — one of the most common resistor values.',
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'How does the resistor color code work?',
+        paragraphs: [
+          'Resistors are too small to print a value on in text that stays readable, so manufacturers paint a sequence of colored bands around the body instead, each one standing for a digit, from black (0) through white (9). This system is standardized internationally as IEC 60062, so a resistor coded in one factory reads the same way anywhere else in the world. Reading the first two or three bands as significant digits, and the next band as a power-of-ten multiplier, gives the resistor\'s nominal value without measuring it directly.',
+          'The final band states tolerance — how far the actual resistance is allowed to vary from that nominal value. Gold (±5%) is by far the most common tolerance on ordinary resistors; silver (±10%) and a scatter of other colors cover tighter or looser precision grades, and historically, a resistor with no tolerance band at all was understood to mean ±20%, the widest and least precise class.',
+          "A 4-band resistor encodes two significant digits before the multiplier band; a 5-band resistor — more common on precision parts — adds a third significant digit for a finer value before its own multiplier and tolerance bands. Bands are always read in one direction, starting from the end farthest from the tolerance band (usually gold or silver, and often set slightly apart from the others)."
+        ]
+      },
+      howTo: {
+        intro: 'Match each band\'s color to the chart below, in order, starting from the band nearest the resistor\'s one end.',
+        steps: [
+          { name: 'Count the bands', text: 'Four bands or five — select the matching mode. A 5-band resistor has one extra significant-digit band before the multiplier.' },
+          { name: 'Read the 1st digit band', text: 'Match its color to the digit chart (black = 0 through white = 9) and select it.' },
+          { name: 'Read the 2nd (and 3rd, on a 5-band resistor) digit band', text: 'Same chart, same order. The 3rd digit is ignored automatically when 4-band mode is selected.' },
+          { name: 'Read the multiplier band', text: 'Usually one of the same ten colors (as a power of ten), or gold (×0.1) and silver (×0.01) for fractional multipliers.' },
+          { name: 'Read the tolerance band', text: 'The final band — almost always gold or silver, or "None" if there is no fourth (or sixth) band at all.' },
+          { name: 'Read the result', text: 'The nominal resistance appears immediately, along with the ± range the tolerance band guarantees.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: "A resistor's color-coded value comes from a lookup table, not an equation — each band stands for a fixed digit, multiplier or tolerance percentage defined by IEC 60062.",
+        expression: '4-band: value = (10 × digit₁ + digit₂) × multiplier\n5-band: value = (100 × digit₁ + 10 × digit₂ + digit₃) × multiplier',
+        terms: [
+          { symbol: 'digit₁, digit₂, digit₃', meaning: 'The significant-digit bands, each 0-9, read left to right (digit₃ exists only on a 5-band resistor).' },
+          { symbol: 'multiplier', meaning: 'A power of ten (×1 through ×1,000,000,000 across the ten digit colors), or ×0.1 (gold) / ×0.01 (silver) for small values.' },
+          { symbol: 'tolerance', meaning: 'The guaranteed ± percentage, from the final band: commonly ±5% (gold) or ±10% (silver); ±20% if no band is present at all.' }
+        ],
+        note: "This is a lookup table, not a formula you would rearrange — there is no way to go backward from a resistance value to a unique set of colors, since many digit-and-multiplier combinations can produce the same nominal value (27 × 10 and 270 × 1 both give 270)."
+      },
+      workedExample: {
+        intro: 'A 4-band resistor has bands, in order, of red, violet, green and gold. What is its resistance, and what range does the tolerance allow?',
+        rows: [
+          { label: '1st digit (red)', value: '2' },
+          { label: '2nd digit (violet)', value: '7' },
+          { label: 'Significant digits (2 and 7 together)', value: '27' },
+          { label: 'Multiplier (green = ×10⁵)', value: '×100,000' },
+          { label: 'Nominal value (27 × 100,000)', value: '2,700,000 Ω' },
+          { label: 'Tolerance range (gold = ±5% of 2,700,000 Ω)', value: '±135,000 Ω' }
+        ],
+        result: '2,700,000 Ω ±5% (2,565,000-2,835,000 Ω)',
+        explanation: "The two significant-digit bands, red (2) and violet (7), read together as 27. Multiplying by green's ×100,000 gives a nominal value of 2,700,000 Ω (2.7 MΩ). The gold tolerance band means the actual resistance is guaranteed to fall within ±5% of that figure — between 2,565,000 Ω and 2,835,000 Ω."
+      },
+      watchOut: [
+        {
+          title: 'Reading direction matters',
+          body: "Bands must be read starting from the end farthest from the tolerance band, not whichever end happens to face you first. Reading a resistor backward swaps which bands are digits and which is the multiplier, giving a completely different — and wrong — value."
+        },
+        {
+          title: '4-band and 5-band resistors use their bands differently',
+          body: "A 5-band resistor's third band is a significant digit, not the multiplier — the multiplier and tolerance bands both shift one position to the right compared with a 4-band resistor. Selecting the wrong mode for a given resistor decodes it incorrectly even if every color is matched correctly."
+        },
+        {
+          title: 'Tolerance is a guarantee, not a measurement',
+          body: "The tolerance band states the range the manufacturer guarantees the actual resistance falls within — it is not a measured value. Two resistors with identical color bands are not guaranteed to measure exactly the same; they are only guaranteed to both fall somewhere inside that ± range."
+        },
+        {
+          title: 'No tolerance band at all means ±20%, not 0%',
+          body: 'IEC 60062 defines a completely missing tolerance band as its own class, ±20% — the widest and least precise. This calculator\'s "None" tolerance option represents that case explicitly; it should be selected deliberately, not left as a stand-in for "unknown."'
+        }
+      ],
+      references: [
+        { label: 'Wikipedia, "Electronic color code" (IEC 60062 digit, multiplier and tolerance tables, and the red-violet-green-gold worked example reproduced above)', url: 'https://en.wikipedia.org/wiki/Electronic_color_code' },
+        { label: 'BIPM, The International System of Units (SI Brochure) — the ohm, defined as 1 Ω = 1 V/A', url: 'https://www.bipm.org/en/publications/si-brochure' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'bandCount',
+        label: 'Number of bands',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: [{ value: 0, label: '4-band' }, { value: 1, label: '5-band' }]
+      },
+      { id: 'digit1', label: '1st band (1st digit)', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0, options: DIGIT_COLORS },
+      { id: 'digit2', label: '2nd band (2nd digit)', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0, options: DIGIT_COLORS },
+      { id: 'digit3', label: '3rd band (3rd digit, 5-band only)', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0, options: DIGIT_COLORS },
+      { id: 'multiplier', label: 'Multiplier band', type: 'number', placeholder: '10', defaultValue: 10, step: 0.01, min: 0.01, options: MULTIPLIER_COLORS },
+      { id: 'tolerance', label: 'Tolerance band', type: 'number', placeholder: '5', defaultValue: 5, step: 0.01, min: 0.01, options: TOLERANCE_COLORS }
+    ],
+    breakdown: {
+      headline: 'resistance',
+      headlineLabel: 'Resistance (Ω)',
+      outputs: [
+        { id: 'resistance', label: 'Resistance (Ω)', format: 'significant' },
+        { id: 'minResistance', label: 'Minimum, tolerance low (Ω)', format: 'significant' },
+        { id: 'maxResistance', label: 'Maximum, tolerance high (Ω)', format: 'significant' },
+        { id: 'tolerancePercent', label: 'Tolerance', format: 'percent' }
+      ],
+      groups: [{ inputs: ['bandCount', 'digit1', 'digit2', 'digit3', 'multiplier', 'tolerance'] }],
+      visual: {
+        type: 'rangeBar',
+        value: 'resistance',
+        title: 'Where this value sits',
+        valueLabel: 'Resistance',
+        bands: [
+          { label: 'Very low (< 10 Ω)', min: 0, max: 10 },
+          { label: 'Low (10 Ω-1 kΩ)', min: 10, max: 1000 },
+          { label: 'Typical electronics (1 kΩ-100 kΩ)', min: 1000, max: 100000 },
+          { label: 'High (100 kΩ-1 MΩ)', min: 100000, max: 1000000 },
+          { label: 'Very high (≥ 1 MΩ)', min: 1000000, max: 1e12 }
+        ]
+      }
+    },
+    seo: {
+      title: 'Resistor Color Code Calculator – 4-Band & 5-Band',
+      description: 'Free resistor color code calculator. Decode 4-band or 5-band resistor colors into resistance and tolerance range, per the IEC 60062 standard.',
+      faq: [
+        { question: 'How do I read a resistor color code?', answer: 'Read the bands left to right starting from the end farthest from the tolerance band. The first two (or three, on a 5-band resistor) bands are significant digits, the next band is a power-of-ten multiplier, and the last band is the tolerance.' },
+        { question: 'What does red-red-brown-gold mean on a resistor?', answer: 'Red (2), red (2) and brown\'s ×10 multiplier give 22 × 10 = 220 Ω, with a gold ±5% tolerance — one of the most common resistor values, ranging from 209 Ω to 231 Ω.' },
+        { question: 'What does red-violet-green-gold mean on a resistor?', answer: 'Red (2) and violet (7) give the digits 27; green\'s ×100,000 multiplier gives 27 × 100,000 = 2,700,000 Ω (2.7 MΩ), with a gold ±5% tolerance, or 2,565,000 to 2,835,000 Ω.' },
+        { question: "What is the difference between a 4-band and a 5-band resistor?", answer: 'A 4-band resistor has two significant-digit bands; a 5-band resistor has three, for a more precise value, before its own multiplier and tolerance bands. Both encode the same kind of information, just with different precision.' },
+        { question: 'What does it mean if a resistor has no tolerance band?', answer: 'Under IEC 60062, no tolerance band at all means ±20% — the widest, least precise tolerance class historically sold, wider than silver (±10%) or gold (±5%).' },
+        { question: 'What do gold and silver mean on a resistor?', answer: 'As the last (tolerance) band, gold means ±5% and silver means ±10%. As the multiplier band instead, gold means ×0.1 and silver means ×0.01 — the same two colors mean something different depending on which band they appear in.' },
+        { question: 'Can two different color combinations give the same resistance?', answer: 'Yes. Because the value is digits × a power-of-ten multiplier, combinations like "27 × 10" and "270 × 1" both equal 270 — a reason the color code is read from fixed band positions, not inferred from the final number alone.' }
+      ]
+    },
+    compute(values) {
+      const resistance = resistanceFromColorBands(values.digit1, values.digit2, values.digit3, values.multiplier, values.bandCount);
+      const toleranceFraction = values.tolerance / 100;
+      return {
+        resistance,
+        minResistance: resistance * (1 - toleranceFraction),
+        maxResistance: resistance * (1 + toleranceFraction),
+        tolerancePercent: values.tolerance
+      };
+    }
+  },
+  {
+    id: 'capacitor-charge-calculator',
+    category: 'physics',
+    glyph: 'Q=CV',
+    updatedAt: '2026-11-06',
+    aliases: ['capacitor charge calculator', 'q = cv calculator', 'capacitance charge calculator', 'capacitor energy calculator', 'charge on a capacitor calculator', 'energy stored in a capacitor calculator'],
+    related: ['ohms-law-calculator', 'electrical-power-calculator', 'series-parallel-resistor-calculator', 'resistor-color-code-calculator'],
+    title: 'Capacitor Charge Calculator (Q = CV)',
+    description: 'Calculate the charge stored on a capacitor from its capacitance and voltage — Q = C × V — or solve backward for capacitance or voltage, with the stored energy shown alongside.',
+    example: 'A 100 µF capacitor charged to 12 V stores 1,200 µC of charge and 7.2 mJ of energy.',
+    solver: {
+      defaultTarget: 'charge',
+      variables: [
+        { id: 'charge', label: 'Charge', symbol: 'Q', dimension: 'charge', defaultValue: 1200, defaultUnit: 'uC' },
+        { id: 'capacitance', label: 'Capacitance', symbol: 'C', dimension: 'capacitance', defaultValue: 100, defaultUnit: 'uF' },
+        { id: 'voltage', label: 'Voltage', symbol: 'V', dimension: 'voltage', defaultValue: 12, defaultUnit: 'V' }
+      ],
+      solve: {
+        charge: ({ capacitance, voltage }) => capacitance * voltage,
+        capacitance: ({ charge, voltage }) => (voltage === 0 ? NaN : charge / voltage),
+        voltage: ({ charge, capacitance }) => (capacitance === 0 ? NaN : charge / capacitance)
+      },
+      outputs: [{ id: 'storedEnergy', label: 'Stored energy', dimension: 'energy', unit: 'mJ', compute: (si) => 0.5 * si.charge * si.voltage }]
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'What is capacitor charge, and how is it related to energy?',
+        paragraphs: [
+          'A capacitor stores electrical charge on two conductive plates separated by an insulator. Its defining property, capacitance, is the ratio between how much charge it holds and the voltage across it: Q = C × V. A capacitor with more capacitance holds more charge at the same voltage — in the same sense that a wider bucket holds more water at the same water level, even though "level" (voltage) and "amount" (charge) are different things.',
+          "The farad, capacitance's SI unit, is defined as the capacitance that stores one coulomb of charge per volt (1 F = 1 C/V) — and it turns out to be an enormous unit in practice. Ordinary capacitors on a circuit board are sized in microfarads, nanofarads or even picofarads; only specialized supercapacitors reach whole farads.",
+          "Charging a capacitor does not dump all of Q × V worth of energy into it, which is a common trip-up. Since the voltage climbs from 0 up to its final value as charge is added, the average voltage during charging is only half the final voltage — so the energy actually stored works out to E = ½ × Q × V (equivalently ½ × C × V²), not the full Q × V. The other half of the work done charging it is dissipated as heat in whatever resistance did the charging."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of charge, capacitance and voltage; the third fills in automatically, so the same page answers "how much charge", "what capacitance" and "what voltage".',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type. Microfarads, millivolts and microcoulombs can all be mixed freely.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 100 µF becomes 0.0001 F instead of silently turning into 100 F.' },
+          { name: 'Read the result and the energy', text: 'The answer shows in your chosen unit. Underneath it, the energy stored (E = ½QV) appears as a bonus figure — no separate calculation needed.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The charge formula rearranges to solve for capacitance or voltage as well as charge; the stored energy follows from the same two values.',
+        expression: 'Q = C × V\nC = Q ÷ V\nV = Q ÷ C\nStored energy: E = ½ × Q × V = ½ × C × V²',
+        terms: [
+          { symbol: 'Q', meaning: 'Charge stored on the capacitor, in coulombs (C) — commonly microcoulombs (µC) or millicoulombs (mC) for real capacitors.' },
+          { symbol: 'C', meaning: 'Capacitance, in farads (F). One farad is defined as one coulomb per volt (1 F = 1 C/V).' },
+          { symbol: 'V', meaning: 'Voltage across the capacitor, in volts (V).' },
+          { symbol: 'E', meaning: "The energy stored, in joules (J) — half of Q × V, not the full amount, because the voltage climbed from 0 while charging." }
+        ],
+        note: 'Every input is converted to SI units (C, F, V) before solving and converted back afterward, so entering capacitance in nanofarads or charge in microcoulombs is handled automatically.'
+      },
+      workedExample: {
+        intro: 'A 100 µF capacitor is charged to 12 V. How much charge does it store, and how much energy?',
+        rows: [
+          { label: 'Capacitance (C)', value: '100 µF (0.0001 F)' },
+          { label: 'Voltage (V)', value: '12 V' },
+          { label: 'Charge (Q = 0.0001 × 12)', value: '0.0012 C' },
+          { label: 'Stored energy (E = ½ × 0.0012 × 12)', value: '0.0072 J' }
+        ],
+        result: 'Q = 1,200 µC (1.2 mC) · E = 7.2 mJ',
+        explanation: '0.0001 × 12 = 0.0012 C, which is 1,200 µC or 1.2 mC of stored charge. The stored energy is half of Q × V, not all of it: ½ × 0.0012 × 12 = 0.0072 J, or 7.2 mJ — the other half of the work done charging the capacitor was dissipated as heat elsewhere in the circuit.'
+      },
+      watchOut: [
+        {
+          title: 'Charge and current are not the same thing',
+          body: "A capacitor's charge, Q, is a fixed amount stored at any instant (in coulombs). Current (in amperes) is charge flowing per second. The same final charge can be reached quickly with a large current or slowly with a small one — this calculator computes the stored charge itself, not the current used to put it there."
+        },
+        {
+          title: 'The stored energy is half of Q × V, not all of it',
+          body: 'It is tempting to multiply charge by voltage directly, but that overstates the stored energy by exactly double. Because voltage rises from 0 to its final value while charging, the correct figure is E = ½ × Q × V — the other half of the work done by the charging circuit is lost as heat.'
+        },
+        {
+          title: 'This calculator does not check a voltage rating',
+          body: "Real capacitors have a maximum rated voltage; exceeding it risks breaking down the insulating layer between the plates and permanently damaging the part. This page computes Q = C × V for whatever voltage is entered — it has no information about any specific capacitor's safe operating limit."
+        },
+        {
+          title: "Capacitance is a property of the capacitor, not of the charge or voltage you happen to use",
+          body: "The same capacitor holds proportionally more charge at a higher voltage, but its capacitance — the ratio Q ÷ V — stays the same. Capacitance describes the component itself, similar to how a container's volume does not depend on how much it is currently filled."
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 2, §8.1 Capacitors and Capacitance', url: 'https://openstax.org/books/university-physics-volume-2/pages/8-1-capacitors-and-capacitance' },
+        { label: 'OpenStax, University Physics Volume 2, §8.3 Energy Stored in a Capacitor', url: 'https://openstax.org/books/university-physics-volume-2/pages/8-3-energy-stored-in-a-capacitor' },
+        { label: 'BIPM, The International System of Units (SI Brochure) — the farad and coulomb', url: 'https://www.bipm.org/en/publications/si-brochure' }
+      ]
+    },
+    inputs: [
+      { id: 'capacitance', label: 'Capacitance (F)', type: 'number', placeholder: '0.0001', defaultValue: 0.0001, step: 0.000001, min: 0 },
+      { id: 'voltage', label: 'Voltage (V)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Capacitor Charge Calculator (Q = CV) – Charge & Energy',
+      description: "Free capacitor charge calculator. Solve Q = C × V for charge, capacitance or voltage in C, µF or V, with stored energy shown and a worked example.",
+      faq: [
+        { question: 'What is the formula for capacitor charge?', answer: 'Charge equals capacitance times voltage: Q = C × V. With capacitance in farads and voltage in volts, the result is in coulombs.' },
+        { question: 'How much charge does a 100 µF capacitor store at 12 V?', answer: '100 µF × 12 V = 0.0012 C, equal to 1,200 µC or 1.2 mC.' },
+        { question: 'How do I find the energy stored in a capacitor?', answer: 'E = ½ × Q × V, equivalently ½ × C × V². A 100 µF capacitor at 12 V stores ½ × 0.0012 × 12 = 0.0072 J (7.2 mJ) — half of Q × V, not the full amount.' },
+        { question: 'Why is stored energy only half of Q times V?', answer: 'Because the voltage across the capacitor climbs from 0 up to its final value while it charges, not instantly. The average voltage during charging is half the final voltage, so the total energy delivered to the capacitor works out to half of Q × V.' },
+        { question: 'How do I find capacitance from charge and voltage?', answer: 'Divide charge by voltage: C = Q ÷ V. A capacitor holding 0.0012 C at 12 V has a capacitance of 0.0012 ÷ 12 = 0.0001 F (100 µF).' },
+        { question: 'What is the SI unit of capacitance?', answer: 'The farad (F), defined as one coulomb per volt (1 F = 1 C/V). It is a large unit in practice — most real capacitors are rated in microfarads, nanofarads or picofarads.' },
+        { question: 'Is charge the same as current?', answer: 'No. Charge (coulombs) is a stored amount; current (amperes) is charge flowing per second. A capacitor can reach the same final charge through a large current applied briefly or a small current applied for longer.' }
+      ]
+    },
+    compute(values) {
+      return { charge: values.capacitance * values.voltage };
     }
   }
 ];

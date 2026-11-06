@@ -757,6 +757,38 @@ exports[`compute() snapshots > calorie-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > capacitor-charge-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "capacitance": 0.0001,
+      "voltage": 12
+    },
+    "outputs": {
+      "charge": 0.0012
+    }
+  },
+  "typical": {
+    "inputs": {
+      "capacitance": 0.00015,
+      "voltage": 18
+    },
+    "outputs": {
+      "charge": 0.0027
+    }
+  },
+  "edge": {
+    "inputs": {
+      "capacitance": 0,
+      "voltage": 0
+    },
+    "outputs": {
+      "charge": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > car-payment-calculator 1`] = `
 {
   "default": {
@@ -2148,6 +2180,38 @@ exports[`compute() snapshots > drywall-calculator 1`] = `
       "sheetsWithWaste": 0.75,
       "sheetsToBuy": 1,
       "coverageBought": 32
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > electrical-power-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "voltage": 120,
+      "current": 5
+    },
+    "outputs": {
+      "power": 600
+    }
+  },
+  "typical": {
+    "inputs": {
+      "voltage": 180,
+      "current": 7.5
+    },
+    "outputs": {
+      "power": 1350
+    }
+  },
+  "edge": {
+    "inputs": {
+      "voltage": 0,
+      "current": 0
+    },
+    "outputs": {
+      "power": 0
     }
   }
 }
@@ -4777,6 +4841,38 @@ exports[`compute() snapshots > odds-ratio-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > ohms-law-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "current": 3,
+      "resistance": 4
+    },
+    "outputs": {
+      "voltage": 12
+    }
+  },
+  "typical": {
+    "inputs": {
+      "current": 4.5,
+      "resistance": 6
+    },
+    "outputs": {
+      "voltage": 27
+    }
+  },
+  "edge": {
+    "inputs": {
+      "current": 0,
+      "resistance": 0
+    },
+    "outputs": {
+      "voltage": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > one-rep-max-calculator 1`] = `
 {
   "default": {
@@ -6357,6 +6453,59 @@ exports[`compute() snapshots > relative-risk-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > resistor-color-code-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "bandCount": 0,
+      "digit1": 2,
+      "digit2": 2,
+      "digit3": 0,
+      "multiplier": 10,
+      "tolerance": 5
+    },
+    "outputs": {
+      "resistance": 220,
+      "minResistance": 209,
+      "maxResistance": 231,
+      "tolerancePercent": 5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "bandCount": 0,
+      "digit1": 3,
+      "digit2": 3,
+      "digit3": 0,
+      "multiplier": 15,
+      "tolerance": 7.5
+    },
+    "outputs": {
+      "resistance": 495,
+      "minResistance": 457.875,
+      "maxResistance": 532.125,
+      "tolerancePercent": 7.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "bandCount": 0,
+      "digit1": 0,
+      "digit2": 0,
+      "digit3": 0,
+      "multiplier": 0.01,
+      "tolerance": 0.01
+    },
+    "outputs": {
+      "resistance": 0,
+      "minResistance": 0,
+      "maxResistance": 0,
+      "tolerancePercent": 0.01
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > retaining-wall-calculator 1`] = `
 {
   "default": {
@@ -6951,6 +7100,61 @@ exports[`compute() snapshots > self-rising-flour-substitute-calculator 1`] = `
     "outputs": {
       "bakingPowderTsp": 0.0125,
       "saltTsp": 0.002083333333
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > series-parallel-resistor-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "lists": {
+        "resistors": [
+          100,
+          220,
+          330
+        ]
+      }
+    },
+    "outputs": {
+      "seriesTotal": 650,
+      "parallelTotal": 56.89655172,
+      "count": 3,
+      "smallestResistor": 100
+    }
+  },
+  "typical": {
+    "inputs": {
+      "lists": {
+        "resistors": [
+          150,
+          330,
+          495
+        ]
+      }
+    },
+    "outputs": {
+      "seriesTotal": 975,
+      "parallelTotal": 85.34482759,
+      "count": 3,
+      "smallestResistor": 150
+    }
+  },
+  "edge": {
+    "inputs": {
+      "lists": {
+        "resistors": [
+          0,
+          0
+        ]
+      }
+    },
+    "outputs": {
+      "seriesTotal": 0,
+      "parallelTotal": 0,
+      "count": 2,
+      "smallestResistor": 0
     }
   }
 }

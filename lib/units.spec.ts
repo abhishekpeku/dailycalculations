@@ -40,8 +40,9 @@ describe('unit tables', () => {
 
   test('covers the dimensions the v2 rollout needs', () => {
     assert.deepEqual([...dimensions].sort(), [
-      'acceleration', 'angle', 'area', 'count', 'currency', 'data', 'density', 'energy', 'evEfficiency', 'force', 'fuelEconomy', 'fuelPrice',
-      'length', 'mass', 'momentum', 'pace', 'percent', 'power', 'pressure', 'speed', 'temperature', 'term', 'time', 'volume'
+      'acceleration', 'angle', 'area', 'capacitance', 'charge', 'count', 'currency', 'current', 'data', 'density', 'energy', 'evEfficiency', 'force',
+      'fuelEconomy', 'fuelPrice', 'length', 'mass', 'momentum', 'pace', 'percent', 'power', 'pressure', 'resistance', 'speed', 'temperature',
+      'term', 'time', 'voltage', 'volume'
     ]);
   });
 
@@ -198,6 +199,35 @@ describe('anchor values', () => {
     close(toBase(1, 'density', 'g/cm3'), 1000);
     close(toBase(1, 'density', 'lb/ft3'), 16.018463373960138, 1e-9);
     close(convert(19.3, 'density', 'g/cm3', 'kg/m3'), 19300);
+  });
+  test('voltage: 1 kV = 1000 V = 1,000,000 mV', () => {
+    assert.equal(UNITS.voltage[0].id, 'V');
+    close(toBase(1, 'voltage', 'kV'), 1000);
+    close(convert(1, 'voltage', 'kV', 'mV'), 1e6);
+  });
+  test('current: 1 A = 1000 mA = 1,000,000 µA, 1 kA = 1000 A', () => {
+    assert.equal(UNITS.current[0].id, 'A');
+    close(convert(1, 'current', 'A', 'mA'), 1000);
+    close(convert(1, 'current', 'A', 'uA'), 1e6);
+    close(toBase(1, 'current', 'kA'), 1000);
+  });
+  test('resistance: 1 kΩ = 1000 Ω, 1 MΩ = 1,000,000 Ω, 1 Ω = 1000 mΩ', () => {
+    assert.equal(UNITS.resistance[0].id, 'ohm');
+    close(toBase(1, 'resistance', 'kohm'), 1000);
+    close(toBase(1, 'resistance', 'Mohm'), 1e6);
+    close(convert(1, 'resistance', 'ohm', 'mohm'), 1000);
+  });
+  test('capacitance: 1 F = 1e6 µF = 1e12 pF, 1 µF = 1000 nF', () => {
+    assert.equal(UNITS.capacitance[0].id, 'F');
+    close(convert(1, 'capacitance', 'F', 'uF'), 1e6);
+    close(convert(1, 'capacitance', 'F', 'pF'), 1e12);
+    close(convert(1, 'capacitance', 'uF', 'nF'), 1000);
+  });
+  test('charge: 1 C = 1000 mC = 1,000,000 µC, 1 mC = 1,000,000 nC', () => {
+    assert.equal(UNITS.charge[0].id, 'C');
+    close(convert(1, 'charge', 'C', 'mC'), 1000);
+    close(convert(1, 'charge', 'C', 'uC'), 1e6);
+    close(convert(1, 'charge', 'mC', 'nC'), 1e6);
   });
 });
 

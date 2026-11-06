@@ -1184,5 +1184,131 @@ export const physicsCalculators: CalculatorConfig[] = [
     compute(values) {
       return { power: values.work / values.time };
     }
+  },
+  {
+    id: 'density-calculator',
+    category: 'physics',
+    glyph: 'ρ',
+    updatedAt: '2026-11-06',
+    aliases: ['density formula calculator', 'mass volume density calculator', 'rho = m/v calculator', 'specific density calculator', 'density of a substance calculator'],
+    related: ['pressure-calculator', 'weight-converter', 'volume-converter', 'weight-calculator'],
+    title: 'Density Calculator (ρ = m/V)',
+    description: 'Calculate density from mass and volume — ρ = m ÷ V — or solve backward for mass or volume, in kg/m³, g/cm³, or lb/ft³.',
+    example: 'A sample weighing 965 g with a volume of 50 cm³ has a density of 19.3 g/cm³ — a close match for pure gold.',
+    solver: {
+      defaultTarget: 'density',
+      variables: [
+        { id: 'density', label: 'Density', symbol: 'ρ', dimension: 'density', defaultValue: 19.3, defaultUnit: 'g/cm3' },
+        { id: 'mass', label: 'Mass', symbol: 'm', dimension: 'mass', defaultValue: 965, defaultUnit: 'g' },
+        { id: 'volume', label: 'Volume', symbol: 'V', dimension: 'volume', defaultValue: 50, defaultUnit: 'mL' }
+      ],
+      solve: {
+        density: ({ mass, volume }) => (volume === 0 ? NaN : mass / volume),
+        mass: ({ density, volume }) => density * volume,
+        volume: ({ density, mass }) => (density === 0 ? NaN : mass / density)
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'density',
+          min: -2,
+          max: 6,
+          ticks: ['0.01 kg/m³', '1 kg/m³', '100 kg/m³', '10,000 kg/m³', '1,000,000 kg/m³'],
+          benchmarks: [
+            { label: 'Air at sea level', value: 1.225 },
+            { label: 'Water', value: 1000 },
+            { label: 'Aluminum', value: 2700 },
+            { label: 'Gold', value: 19300 }
+          ],
+          title: 'How does that compare?',
+          valueLabel: 'Your density'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'What is density?',
+        paragraphs: [
+          'Density measures how much mass is packed into a given amount of space: ρ = m ÷ V. It is why a shoebox of lead feels impossibly heavy while the same size box of feathers feels almost empty — both can occupy exactly the same volume, but lead has far more mass crammed into it.',
+          'Density is an intensive property — it does not depend on how much of a substance you have. A teaspoon of water and a swimming pool of water have the same density, about 1,000 kg/m³ (1 g/cm³), even though their masses and volumes are wildly different. That is what makes density useful for identifying a material, regardless of the size of the sample.',
+          "Density is also why things float or sink. An object placed in a fluid floats if its density is lower than the fluid's and sinks if its density is higher — a steel ship floats because its overall shape displaces enough water to support its weight, even though solid steel itself is far denser than water."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of density, mass and volume; the third fills in automatically, so the same page answers "how dense", "how much mass" and "how much space".',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 965 g becomes 0.965 kg instead of silently turning into 965 kg.' },
+          { name: 'Read the result and the scale', text: 'The answer shows in your chosen density unit, with the scale below placing it among a few common materials.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The density formula rearranges to solve for mass or volume as well as density.',
+        expression: 'ρ = m ÷ V\nm = ρ × V\nV = m ÷ ρ',
+        terms: [
+          { symbol: 'ρ', meaning: 'Density (the Greek letter rho), in kilograms per cubic meter (kg/m³) or grams per cubic centimeter (g/cm³).' },
+          { symbol: 'm', meaning: 'Mass of the sample, in kilograms (kg) or grams (g).' },
+          { symbol: 'V', meaning: 'Volume the sample occupies, in cubic meters (m³), milliliters, or any volume unit.' }
+        ],
+        note: 'Every input is converted to SI units (kg, m³) before solving and converted back afterward, so entering mass in grams and volume in milliliters is handled automatically.'
+      },
+      workedExample: {
+        intro: 'A sample has a mass of 965 g and a volume of 50 cm³ (50 mL). What is its density?',
+        rows: [
+          { label: 'Mass (m)', value: '965 g' },
+          { label: 'Volume (V)', value: '50 cm³ (50 mL)' },
+          { label: 'Density (ρ = 965 ÷ 50)', value: '19.3 g/cm³' }
+        ],
+        result: 'ρ = 19.3 g/cm³ = 19,300 kg/m³',
+        explanation: '965 ÷ 50 = 19.3, so the density is 19.3 g/cm³, equal to 19,300 kg/m³ after converting grams to kilograms and cubic centimeters to cubic meters. That figure matches the accepted density of pure gold, about 19.3 g/cm³.'
+      },
+      watchOut: [
+        {
+          title: 'Density does not depend on how much you have',
+          body: 'A small nugget and a large bar of the same pure metal have the same density, even though their masses and volumes are completely different. Density describes the material, not the sample size.'
+        },
+        {
+          title: '1 g/cm³ and 1,000 kg/m³ are the same density',
+          body: 'Grams per cubic centimeter and kilograms per cubic meter are both common ways to report density, related by an exact factor of 1,000 (because 1 cm³ = 1e-6 m³ and 1 g = 1e-3 kg). Water is "1 g/cm³" and "1,000 kg/m³" at the same time.'
+        },
+        {
+          title: 'A material floats or sinks by comparing densities, not weights',
+          body: 'Whether an object floats in a fluid depends on comparing its density to the density of the fluid, not on the object\'s absolute weight. A massive steel ship floats because its shape and air-filled hull give it a lower average density than water, not because the steel itself is light.'
+        },
+        {
+          title: 'Temperature and pressure change density, especially for gases',
+          body: "A material's volume - and so its density - can shift noticeably with temperature and, for gases, with pressure. The air density benchmark here (about 1.225 kg/m³) is specifically for sea level at 15°C; air at altitude or higher temperature is measurably less dense."
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §14.1 Fluids, Density, and Pressure', url: 'https://openstax.org/books/university-physics-volume-1/pages/14-1-fluids-density-and-pressure' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'Royal Society of Chemistry, Periodic Table (density data for the elements)', url: 'https://www.rsc.org/periodic-table' }
+      ]
+    },
+    inputs: [
+      { id: 'mass', label: 'Mass (kg)', type: 'number', placeholder: '0.965', defaultValue: 0.965, step: 0.001, min: 0 },
+      { id: 'volume', label: 'Volume (m³)', type: 'number', placeholder: '0.00005', defaultValue: 0.00005, step: 0.00001, min: 0 }
+    ],
+    seo: {
+      title: 'Density Calculator (ρ = m/V) – Mass, Volume, Density',
+      description: 'Free density calculator. Solve ρ = m ÷ V for density, mass or volume in kg/m³, g/cm³ or lb/ft³, with a worked example.',
+      faq: [
+        { question: 'What is the formula for density?', answer: 'Density equals mass divided by volume: ρ = m ÷ V. With mass in grams and volume in cubic centimeters, the result is in g/cm³.' },
+        { question: 'How do I find the density of a 965 g sample with a volume of 50 cm³?', answer: '965 ÷ 50 = 19.3 g/cm³, equal to 19,300 kg/m³.' },
+        { question: 'Are g/cm³ and kg/m³ the same thing?', answer: 'They measure the same quantity but differ by an exact factor of 1,000: 1 g/cm³ = 1,000 kg/m³. Water is 1 g/cm³, or equivalently 1,000 kg/m³.' },
+        { question: 'How do I find mass from density and volume?', answer: 'Multiply density by volume: m = ρ × V. A material with a density of 2.7 g/cm³ and a volume of 100 cm³ has a mass of 270 g.' },
+        { question: 'Why do some objects float and others sink?', answer: 'An object floats in a fluid if its overall density is lower than the fluid\'s, and sinks if it is higher. This compares densities, not weights — a large, hollow object can have a lower average density than a small, solid one.' },
+        { question: 'Does density change with temperature?', answer: 'Yes. Most materials expand slightly when heated, which lowers density, and gases are especially sensitive to both temperature and pressure. The density of a solid or liquid usually changes only slightly over normal temperature ranges.' },
+        { question: 'What is a typical density value for water?', answer: 'About 1,000 kg/m³, or 1 g/cm³, used as a standard reference value. The exact density of water varies slightly with temperature, peaking near 4°C.' }
+      ]
+    },
+    compute(values) {
+      return { density: values.mass / values.volume };
+    }
   }
 ];

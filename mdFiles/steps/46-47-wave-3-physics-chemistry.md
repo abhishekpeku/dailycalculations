@@ -135,7 +135,7 @@ a locked spec.
   - [x] momentum-calculator
   - [x] impulse-calculator
   - [x] power-calculator
-  - [ ] density-calculator
+  - [x] density-calculator
   - [ ] pressure-calculator
   - New `lib/units.ts` dimensions this run: `momentum` (base `kg·m/s`, alt `N·s` — numerically
     identical since N = kg·m/s² by definition, BIPM SI Brochure; shared by momentum-calculator and

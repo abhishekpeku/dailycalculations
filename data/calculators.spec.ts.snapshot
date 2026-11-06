@@ -1953,6 +1953,38 @@ exports[`compute() snapshots > decking-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > density-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass": 0.965,
+      "volume": 0.00005
+    },
+    "outputs": {
+      "density": 19300
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass": 1.448,
+      "volume": 0.00008
+    },
+    "outputs": {
+      "density": 18100
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass": 0,
+      "volume": 0
+    },
+    "outputs": {
+      "density": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > discount-calculator 1`] = `
 {
   "default": {

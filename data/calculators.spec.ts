@@ -58,7 +58,8 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'power-calculator': ['power'], // work and time both 0 (their min) -> 0/0
   'density-calculator': ['density'], // mass and volume both 0 (their min) -> 0/0
   'pressure-calculator': ['pressure'], // force and area both 0 (their min) -> 0/0
-  'wavelength-frequency-calculator': ['wavelength'] // speed and frequency both 0 (their min) -> 0/0
+  'wavelength-frequency-calculator': ['wavelength'], // speed and frequency both 0 (their min) -> 0/0
+  'decibel-calculator': ['decibels'] // inputPower and outputPower both 0 (their min) -> log of 0, undefined
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

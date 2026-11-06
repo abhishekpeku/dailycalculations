@@ -1929,6 +1929,38 @@ exports[`compute() snapshots > date-difference-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > decibel-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "inputPower": 1,
+      "outputPower": 10
+    },
+    "outputs": {
+      "decibels": 10
+    }
+  },
+  "typical": {
+    "inputs": {
+      "inputPower": 1.5,
+      "outputPower": 15
+    },
+    "outputs": {
+      "decibels": 10
+    }
+  },
+  "edge": {
+    "inputs": {
+      "inputPower": 0,
+      "outputPower": 0
+    },
+    "outputs": {
+      "decibels": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > decking-calculator 1`] = `
 {
   "default": {

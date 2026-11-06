@@ -2210,5 +2210,119 @@ export const physicsCalculators: CalculatorConfig[] = [
     compute(values) {
       return { wavelength: values.frequency === 0 ? NaN : values.speed / values.frequency };
     }
+  },
+  {
+    id: 'decibel-calculator',
+    category: 'physics',
+    glyph: 'dB',
+    updatedAt: '2026-11-06',
+    aliases: ['decibel calculator', 'db calculator', 'power ratio to db calculator', 'db gain calculator', 'decibel formula calculator', 'sound intensity level calculator'],
+    related: ['wavelength-frequency-calculator', 'power-calculator', 'electrical-power-calculator', 'power-converter'],
+    title: 'Decibel Calculator (dB From a Power Ratio)',
+    description: 'Solve dB = 10 × log₁₀(P₂ ÷ P₁) for the decibel difference between two power levels, or work backward for either power — the same formula behind amplifier gain and sound intensity.',
+    example: 'An amplifier with 1 W in and 10 W out has a gain of exactly 10 dB.',
+    solver: {
+      defaultTarget: 'decibels',
+      variables: [
+        { id: 'decibels', label: 'Level difference', symbol: 'dB', dimension: 'decibel', defaultValue: 10, defaultUnit: 'dB' },
+        { id: 'inputPower', label: 'Reference power (P₁)', symbol: 'P₁', dimension: 'power', defaultValue: 1, defaultUnit: 'W' },
+        { id: 'outputPower', label: 'Measured power (P₂)', symbol: 'P₂', dimension: 'power', defaultValue: 10, defaultUnit: 'W' }
+      ],
+      solve: {
+        decibels: ({ inputPower, outputPower }) => (inputPower <= 0 || outputPower <= 0 ? NaN : 10 * Math.log10(outputPower / inputPower)),
+        outputPower: ({ inputPower, decibels }) => (inputPower <= 0 ? NaN : inputPower * 10 ** (decibels / 10)),
+        inputPower: ({ outputPower, decibels }) => (outputPower <= 0 ? NaN : outputPower / 10 ** (decibels / 10))
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'What is a decibel?',
+        paragraphs: [
+          'A decibel (dB) is a logarithmic way of expressing the ratio between two power levels: dB = 10 × log₁₀(P₂ ÷ P₁). It is one tenth of a bel, a unit named for Alexander Graham Bell and first used by telephone engineers to describe how much a signal weakened over a long line. Power ratios in the real world span an enormous range — the sound intensity of a jet engine is roughly a trillion times that of a whisper — and a logarithmic scale compresses that range into manageable, additive numbers.',
+          "That additive property is the main reason decibels are so widely used: every extra 10 dB represents another 10× in power, no matter where you start, and gains or losses through a chain of amplifiers, cables, and filters simply add in dB instead of multiplying as raw ratios. A +10 dB amplifier followed by a −3 dB cable loss gives a net +7 dB, a much easier calculation than multiplying by 10 and then by roughly 0.501.",
+          'The same formula underlies two common uses that look different on the surface. Audio and RF engineers use it directly as a power ratio — an amplifier\'s "gain" or a cable\'s "loss" in dB. Acoustics uses it to express sound intensity level relative to a fixed reference, the standard threshold of human hearing, I₀ = 1 × 10⁻¹² W/m² (ANSI/ASA acoustical terminology). A typical conversation, at roughly 1 µW/m², works out to exactly 10 × log₁₀(10⁻⁶ ÷ 10⁻¹²) = 60 dB above that reference — the same math as an amplifier\'s gain, just with the "reference power" fixed to the hearing threshold instead of an amplifier\'s input.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of the reference power, the measured power, and the decibel difference; the third fills in automatically.',
+        steps: [
+          { name: 'Decide which power is the reference', text: "For an amplifier's gain, P₁ is the input power and P₂ is the output. For a sound intensity level, P₁ is the fixed reference intensity (1 × 10⁻¹² W/m²) and P₂ is the measured intensity." },
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a power unit converts the number already there, so 1 W becomes 1,000 mW instead of silently turning into 1 mW.' },
+          { name: 'Read the result', text: 'The decibel field shows how many dB higher (positive) or lower (negative) the measured power is than the reference.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The decibel formula rearranges to solve for either power as well as the dB difference itself.',
+        expression: 'dB = 10 × log₁₀(P₂ ÷ P₁)\nP₂ = P₁ × 10^(dB ÷ 10)\nP₁ = P₂ ÷ 10^(dB ÷ 10)',
+        terms: [
+          { symbol: 'P₁', meaning: 'The reference power — an amplifier\'s input, or a fixed reference intensity for sound level, in watts (W).' },
+          { symbol: 'P₂', meaning: 'The measured power being compared to it, in watts (W).' },
+          { symbol: 'dB', meaning: 'The level difference in decibels. Positive means P₂ is larger than P₁; negative means it is smaller.' },
+          { symbol: '20 × log₁₀', meaning: 'The form to use instead when comparing voltage or amplitude ratios rather than power, since power is proportional to amplitude squared.' }
+        ],
+        note: "P₁ and P₂ are converted to the same SI unit (watts) before dividing, so the ratio is unaffected by whichever unit you typed each one in."
+      },
+      workedExample: {
+        intro: 'An amplifier is fed 1 W and puts out 10 W. What is its gain in decibels?',
+        rows: [
+          { label: 'Input power (P₁)', value: '1 W' },
+          { label: 'Output power (P₂)', value: '10 W' },
+          { label: 'Ratio (P₂ ÷ P₁)', value: '10' },
+          { label: 'Gain (dB = 10 × log₁₀(10))', value: '10 × 1 = 10 dB' }
+        ],
+        result: 'dB = 10.00 dB',
+        explanation: "log₁₀(10) is exactly 1, so the gain is exactly 10 dB — a convenient round number because the power ratio is a clean power of 10. A 2× power increase instead works out to 10 × log₁₀(2) ≈ 3.01 dB, the commonly cited 'doubling is about +3 dB' rule, computed exactly rather than rounded to a flat 3."
+      },
+      watchOut: [
+        {
+          title: 'Voltage and amplitude ratios use 20 × log, not 10 × log',
+          body: 'Power is proportional to amplitude squared, so a power ratio of (V₂ ÷ V₁)² becomes 10 × log₁₀((V₂ ÷ V₁)²) = 20 × log₁₀(V₂ ÷ V₁). Using 10× instead of 20× on a voltage or sound-pressure ratio understates the decibel figure by half.'
+        },
+        {
+          title: 'A decibel value means nothing without knowing what it is relative to',
+          body: "10 dB by itself could be an amplifier's gain over its own input, a cable's loss, or a sound level above the standard hearing-threshold reference — the number only means something once you know what P₁ represents."
+        },
+        {
+          title: 'Every +10 dB is another 10× in power, at any starting level',
+          body: 'This holds regardless of where you start: going from 1 W to 10 W is +10 dB, and going from 100 W to 1,000 W is also +10 dB. The decibel scale is about the ratio, not the absolute wattage.'
+        },
+        {
+          title: 'Zero or negative power has no decibel value',
+          body: 'The logarithm of zero or a negative number is undefined, so a reference or measured power of 0 W (or less) gives no answer here — not a 0 dB or an error value that could be mistaken for a real result.'
+        },
+        {
+          title: '0 dB does not mean zero power',
+          body: 'It means the two powers are equal: log₁₀(1) = 0. A 0 dB amplifier passes its input through unchanged; it is not an amplifier that outputs no power at all.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §17.3 Sound Intensity', url: 'https://openstax.org/books/university-physics-volume-1/pages/17-3-sound-intensity' },
+        { label: 'BIPM, The International System of Units (SI Brochure) — the decibel as a unit for logarithmic ratio quantities', url: 'https://www.bipm.org/en/publications/si-brochure' }
+      ]
+    },
+    inputs: [
+      { id: 'inputPower', label: 'Reference power (W)', type: 'number', placeholder: '1', defaultValue: 1, step: 0.01, min: 0 },
+      { id: 'outputPower', label: 'Measured power (W)', type: 'number', placeholder: '10', defaultValue: 10, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Decibel Calculator (dB) – Power Ratio, Gain & Loss',
+      description: 'Free decibel calculator. Solve dB = 10 × log₁₀(P₂ ÷ P₁) for gain, loss or either power in W, mW or kW, with a worked example and sound-level comparisons.',
+      faq: [
+        { question: 'What is a decibel?', answer: 'A decibel (dB) is a logarithmic measure of the ratio between two power levels: dB = 10 × log₁₀(P₂ ÷ P₁). It compresses huge power ratios into small, additive numbers.' },
+        { question: 'How do I calculate decibels from two power values?', answer: 'Divide the measured power by the reference power, then take 10 times the base-10 logarithm: dB = 10 × log₁₀(P₂ ÷ P₁). 1 W in and 10 W out gives 10 × log₁₀(10) = 10 dB.' },
+        { question: 'What does +3 dB mean?', answer: 'Roughly a doubling of power. Exactly, 10 × log₁₀(2) ≈ 3.01 dB, so a true power doubling rounds to the commonly cited "+3 dB".' },
+        { question: 'What does −10 dB mean?', answer: 'The power has dropped to one tenth of what it was: 10 × log₁₀(0.1) = −10 dB.' },
+        { question: 'Why do some decibel formulas use 20 × log instead of 10 × log?', answer: 'Use 20 × log₁₀ when comparing voltage, current, or sound pressure (amplitude quantities) rather than power directly, since power is proportional to amplitude squared.' },
+        { question: 'What does 0 dB mean?', answer: 'The two powers are equal — a ratio of 1, and log₁₀(1) = 0. It does not mean zero power.' },
+        { question: 'How many decibels is a normal conversation?', answer: 'About 60 dB, measured against the standard reference intensity for sound, 1 × 10⁻¹² W/m². A conversation at roughly 1 µW/m² gives 10 × log₁₀(10⁻⁶ ÷ 10⁻¹²) = 60 dB exactly.' }
+      ]
+    },
+    compute(values) {
+      return { decibels: values.inputPower <= 0 || values.outputPower <= 0 ? NaN : 10 * Math.log10(values.outputPower / values.inputPower) };
+    }
   }
 ];

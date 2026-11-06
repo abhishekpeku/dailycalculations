@@ -3557,6 +3557,38 @@ exports[`compute() snapshots > kilograms-to-stone-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > kinetic-energy-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass": 1200,
+      "velocity": 20
+    },
+    "outputs": {
+      "energy": 240000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass": 1800,
+      "velocity": 30
+    },
+    "outputs": {
+      "energy": 810000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass": 0,
+      "velocity": 0
+    },
+    "outputs": {
+      "energy": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > lcm-calculator 1`] = `
 {
   "default": {
@@ -5441,6 +5473,38 @@ exports[`compute() snapshots > pool-volume-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > potential-energy-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass": 65,
+      "height": 250
+    },
+    "outputs": {
+      "energy": 159358.0625
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass": 97.5,
+      "height": 375
+    },
+    "outputs": {
+      "energy": 358555.6406
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass": 0,
+      "height": 0
+    },
+    "outputs": {
+      "energy": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > pounds-to-kilograms-converter 1`] = `
 {
   "default": {
@@ -6902,6 +6966,38 @@ exports[`compute() snapshots > speed-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > speed-distance-time-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "distance": 434523.136,
+      "time": 16200
+    },
+    "outputs": {
+      "speed": 26.8224158
+    }
+  },
+  "typical": {
+    "inputs": {
+      "distance": 651785,
+      "time": 24300
+    },
+    "outputs": {
+      "speed": 26.82242798
+    }
+  },
+  "edge": {
+    "inputs": {
+      "distance": 0,
+      "time": 0
+    },
+    "outputs": {
+      "speed": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > square-feet-to-square-meters-converter 1`] = `
 {
   "default": {
@@ -8218,6 +8314,38 @@ exports[`compute() snapshots > water-intake-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > weight-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass": 70,
+      "gravity": 9.80665
+    },
+    "outputs": {
+      "weight": 686.4655
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass": 105,
+      "gravity": 14.71
+    },
+    "outputs": {
+      "weight": 1544.55
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass": 0,
+      "gravity": 0
+    },
+    "outputs": {
+      "weight": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > weight-converter 1`] = `
 {
   "default": {
@@ -8354,6 +8482,41 @@ exports[`compute() snapshots > womens-shoe-size-chart 1`] = `
       "mondopoint": 0,
       "footCm": 0,
       "footIn": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > work-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "force": 50,
+      "distance": 20,
+      "angle": 0.5235987755982988
+    },
+    "outputs": {
+      "work": 866.0254038
+    }
+  },
+  "typical": {
+    "inputs": {
+      "force": 75,
+      "distance": 30,
+      "angle": 0.79
+    },
+    "outputs": {
+      "work": 1583.65196
+    }
+  },
+  "edge": {
+    "inputs": {
+      "force": 0,
+      "distance": 0,
+      "angle": 0
+    },
+    "outputs": {
+      "work": 0
     }
   }
 }

@@ -6,6 +6,7 @@ export type UnitDimension =
   | 'mass'
   | 'acceleration'
   | 'force'
+  | 'angle'
   | 'length'
   | 'area'
   | 'volume'
@@ -78,6 +79,11 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
     { id: 'lbf', label: 'lbf', factor: POUND_FORCE },
     { id: 'kgf', label: 'kgf', factor: STANDARD_GRAVITY },
     { id: 'dyn', label: 'dyn', factor: 1e-5 }
+  ],
+  // SI derived unit is the radian; degree = pi/180 rad exactly, by definition (BIPM SI Brochure §2.3.3).
+  angle: [
+    { id: 'rad', label: 'rad', factor: 1 },
+    { id: 'deg', label: '°', factor: Math.PI / 180 }
   ],
   // International yard and pound agreement (1959): exact. Nautical mile: exact (1852 m).
   length: [

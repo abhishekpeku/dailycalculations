@@ -53,7 +53,8 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   // window (37.5-68.75mm) -> ukIndex has no answer; usSize isn't an output here (headline is
   // ukIndex), euSize/diameterMm/circumferenceMm stay finite.
   'us-to-uk-ring-size-chart': ['ukIndex'],
-  'cricket-bowling-figures-calculator': ['bowlingAverage', 'strikeRate'] // wicketsTaken 0 (its min) -> both divide by wickets taken, honest no-answer
+  'cricket-bowling-figures-calculator': ['bowlingAverage', 'strikeRate'], // wicketsTaken 0 (its min) -> both divide by wickets taken, honest no-answer
+  'speed-distance-time-calculator': ['speed'] // distance and time both 0 (their min) -> 0/0
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

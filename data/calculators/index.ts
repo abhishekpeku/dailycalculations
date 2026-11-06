@@ -98,6 +98,7 @@ export const calculatorOrder: string[] = [
   'pomodoro-timer',
   'timezone-meeting-planner',
   'force-calculator',
+  'speed-distance-time-calculator',
   'percentage-calculator',
   'percent-change-calculator',
   'percent-difference-calculator',

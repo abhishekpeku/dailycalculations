@@ -6902,6 +6902,38 @@ exports[`compute() snapshots > speed-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > speed-distance-time-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "distance": 434523.136,
+      "time": 16200
+    },
+    "outputs": {
+      "speed": 26.8224158
+    }
+  },
+  "typical": {
+    "inputs": {
+      "distance": 651785,
+      "time": 24300
+    },
+    "outputs": {
+      "speed": 26.82242798
+    }
+  },
+  "edge": {
+    "inputs": {
+      "distance": 0,
+      "time": 0
+    },
+    "outputs": {
+      "speed": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > square-feet-to-square-meters-converter 1`] = `
 {
   "default": {

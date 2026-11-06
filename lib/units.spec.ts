@@ -40,7 +40,7 @@ describe('unit tables', () => {
 
   test('covers the dimensions the v2 rollout needs', () => {
     assert.deepEqual([...dimensions].sort(), [
-      'acceleration', 'area', 'count', 'currency', 'data', 'energy', 'evEfficiency', 'force', 'fuelEconomy', 'fuelPrice', 'length',
+      'acceleration', 'angle', 'area', 'count', 'currency', 'data', 'energy', 'evEfficiency', 'force', 'fuelEconomy', 'fuelPrice', 'length',
       'mass', 'pace', 'percent', 'power', 'pressure', 'speed', 'temperature', 'term', 'time', 'volume'
     ]);
   });
@@ -176,6 +176,12 @@ describe('anchor values', () => {
   test('currency label is the real symbol from lib/calculator.ts, never the ¤ placeholder', () => {
     assert.equal(UNITS.currency[0].label, currencySymbol());
     for (const units of Object.values(UNITS)) for (const unit of units) assert.ok(!unit.label.includes('¤'), unit.id);
+  });
+  test('angle: base is radians, 180° = pi rad, 90° = pi/2 rad', () => {
+    assert.equal(UNITS.angle[0].id, 'rad');
+    close(toBase(180, 'angle', 'deg'), Math.PI);
+    close(convert(90, 'angle', 'deg', 'rad'), Math.PI / 2);
+    close(convert(1, 'angle', 'rad', 'deg'), 180 / Math.PI);
   });
   test('term: base is months, 30 years = 360 months', () => {
     assert.equal(UNITS.term[0].id, 'mo');

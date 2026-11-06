@@ -261,7 +261,8 @@ export const calculatorOrder: string[] = [
   'elo-rating-calculator',
   'golf-course-handicap-calculator',
   'molar-mass-calculator',
-  'molarity-calculator'
+  'molarity-calculator',
+  'dilution-calculator'
 ];
 
 const rank = (id: string) => {

@@ -2049,6 +2049,41 @@ exports[`compute() snapshots > density-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > dilution-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "concentration1": 3000,
+      "volume1": 0.00005,
+      "volume2": 0.0003
+    },
+    "outputs": {
+      "concentration2": 500
+    }
+  },
+  "typical": {
+    "inputs": {
+      "concentration1": 4500,
+      "volume1": 0.00008,
+      "volume2": 0.00045
+    },
+    "outputs": {
+      "concentration2": 800
+    }
+  },
+  "edge": {
+    "inputs": {
+      "concentration1": 0,
+      "volume1": 0,
+      "volume2": 0
+    },
+    "outputs": {
+      "concentration2": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > discount-calculator 1`] = `
 {
   "default": {

@@ -4234,6 +4234,38 @@ exports[`compute() snapshots > margin-of-error-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > mass-percent-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "soluteMass": 0.015,
+      "solutionMass": 0.2
+    },
+    "outputs": {
+      "massPercent": 7.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "soluteMass": 0.023,
+      "solutionMass": 0.3
+    },
+    "outputs": {
+      "massPercent": 7.666666667
+    }
+  },
+  "edge": {
+    "inputs": {
+      "soluteMass": 0,
+      "solutionMass": 0
+    },
+    "outputs": {
+      "massPercent": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > mean-median-mode-calculator 1`] = `
 {
   "default": {

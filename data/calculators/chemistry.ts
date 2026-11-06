@@ -385,5 +385,126 @@ export const chemistryCalculators: CalculatorConfig[] = [
     compute(values) {
       return { concentration2: (values.concentration1 * values.volume1) / values.volume2 };
     }
+  },
+  {
+    id: 'mass-percent-calculator',
+    category: 'chemistry',
+    glyph: 'm%',
+    updatedAt: '2026-11-06',
+    aliases: ['mass percent calculator', 'percent by mass calculator', 'mass concentration percent calculator', 'weight percent calculator', 'percent composition by mass calculator'],
+    related: ['molarity-calculator', 'molar-mass-calculator', 'dilution-calculator', 'moles-to-grams-calculator'],
+    title: 'Mass Percent Calculator',
+    description: 'Solve for mass percent, mass of solute, or mass of solution — mass percent = (solute mass ÷ solution mass) × 100.',
+    example: '15 g of salt dissolved in a solution totaling 200 g (15 g salt plus 185 g water) is a 7.5% mass percent solution.',
+    solver: {
+      defaultTarget: 'massPercent',
+      variables: [
+        { id: 'massPercent', label: 'Mass percent', symbol: 'w%', dimension: 'percent', defaultValue: 7.5, defaultUnit: '%' },
+        { id: 'soluteMass', label: 'Mass of solute', symbol: 'mₘ', dimension: 'mass', defaultValue: 15, defaultUnit: 'g' },
+        { id: 'solutionMass', label: 'Mass of solution', symbol: 'mₛ', dimension: 'mass', defaultValue: 200, defaultUnit: 'g' }
+      ],
+      solve: {
+        massPercent: ({ soluteMass, solutionMass }) => (solutionMass === 0 ? NaN : (soluteMass / solutionMass) * 100),
+        soluteMass: ({ massPercent, solutionMass }) => (massPercent / 100) * solutionMass,
+        solutionMass: ({ massPercent, soluteMass }) => (massPercent === 0 ? NaN : soluteMass / (massPercent / 100))
+      },
+      derive: (si) => ({ solventMass: si.solutionMass - si.soluteMass }),
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'soluteMass', label: 'Solute' },
+            { from: 'solventMass', label: 'Solvent' }
+          ],
+          center: 'solutionMass',
+          centerSub: 'total mass'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'What is mass percent?',
+        paragraphs: [
+          'Mass percent (also called percent by mass or weight percent) states how much of a solution’s total mass is the dissolved solute: mass percent = (mass of solute ÷ mass of solution) × 100. A "10% saline solution" means 10% of the total weighed mass is salt — 10 g of salt in every 100 g of solution.',
+          'The denominator is the mass of the whole solution — solute plus solvent together — not just the solvent. 15 g of salt dissolved into 185 g of water makes 200 g of solution, so the mass percent is 15 ÷ 200 × 100 = 7.5%, not 15 ÷ 185.',
+          'Mass percent is one of several ways to state concentration by mass rather than by moles. It needs nothing beyond a scale — no molar mass, no volumetric glassware — which makes it a common way commercial products (bleach, battery acid, saline solutions) and food labels state concentration.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of mass percent, mass of solute, and mass of solution; the third fills in automatically.',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit — mass percent is unitless, and the two masses can use any mass unit.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a mass unit converts the number already there, so 15 g becomes 0.015 kg instead of silently turning into 15 kg.' },
+          { name: 'Read the result', text: 'The answer appears immediately, with the solute and solvent shares of the total mass shown side by side.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The mass percent formula rearranges to solve for the mass of solute or the mass of solution as well.',
+        expression: 'mass % = (mₘ ÷ mₛ) × 100\nmₘ = (mass % ÷ 100) × mₛ\nmₛ = mₘ ÷ (mass % ÷ 100)',
+        terms: [
+          { symbol: 'mass %', meaning: 'Mass percent (percent by mass) of the solute in the solution.' },
+          { symbol: 'mₘ', meaning: 'Mass of the solute — the substance being dissolved.' },
+          { symbol: 'mₛ', meaning: 'Mass of the whole solution — solute plus solvent, measured together after mixing.' }
+        ],
+        note: 'Mass percent is a ratio of masses, so it works out the same regardless of which consistent mass unit (g, kg, oz, lb) both mₘ and mₛ are measured in.'
+      },
+      workedExample: {
+        intro: '15 g of salt is dissolved in water to make a total solution mass of 200 g. What is the mass percent?',
+        rows: [
+          { label: 'Mass of solute (mₘ)', value: '15 g' },
+          { label: 'Mass of solution (mₛ)', value: '200 g' },
+          { label: 'Mass of solvent (200 − 15)', value: '185 g' },
+          { label: 'Mass percent (15 ÷ 200 × 100)', value: '7.5%' }
+        ],
+        result: 'mass % = 7.5%',
+        explanation: 'The solution’s total mass is 200 g: 15 g of salt plus 185 g of water. Dividing the solute’s mass by the total, 15 ÷ 200 = 0.075, and multiplying by 100 gives 7.5% — 7.5 g of salt in every 100 g of this solution.'
+      },
+      watchOut: [
+        {
+          title: 'Divide by the solution’s mass, not the solvent’s',
+          body: 'A common mistake is dividing by the mass of water alone (185 g here) instead of the total mass (200 g), which gives 8.1% instead of the correct 7.5%. The denominator is always solute plus solvent together.'
+        },
+        {
+          title: 'Mass percent is not volume percent',
+          body: 'Mass percent compares masses; volume percent (common for alcohol content, "5% ABV") compares volumes. The two give different numbers for the same mixture whenever the solute and solvent have different densities, which is almost always.'
+        },
+        {
+          title: 'Mass percent is not molarity',
+          body: 'Converting between mass percent and molarity needs two more pieces of information: the solute’s molar mass and the solution’s density. Mass percent alone does not tell you how many moles of solute are present.'
+        },
+        {
+          title: 'Mixing volumes does not generally give additive masses or volumes',
+          body: 'Dissolving a solid changes the solution’s total volume slightly, and mixing two liquids does not always give a volume exactly equal to the sum of the two starting volumes. Mass percent avoids that problem entirely by working with mass, which is additive, rather than volume.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §3.3 "Other Units for Solution Concentrations" (mass percent, ppm, ppb)', url: 'https://openstax.org/books/chemistry-2e/pages/3-3-molarity' },
+        { label: 'IUPAC Gold Book, "mass fraction"', url: 'https://goldbook.iupac.org/terms/view/M03709' }
+      ]
+    },
+    inputs: [
+      { id: 'soluteMass', label: 'Mass of solute (kg)', type: 'number', placeholder: '0.015', defaultValue: 0.015, step: 0.001, min: 0 },
+      { id: 'solutionMass', label: 'Mass of solution (kg)', type: 'number', placeholder: '0.2', defaultValue: 0.2, step: 0.001, min: 0 }
+    ],
+    seo: {
+      title: 'Mass Percent Calculator – Percent by Mass',
+      description: 'Free mass percent calculator. Solve (solute mass ÷ solution mass) × 100 for mass percent, solute mass, or solution mass, with a worked example.',
+      faq: [
+        { question: 'How do I calculate mass percent?', answer: 'Divide the mass of solute by the mass of the whole solution, then multiply by 100: mass % = (mₘ ÷ mₛ) × 100. 15 g of solute in a 200 g solution is 15 ÷ 200 × 100 = 7.5%.' },
+        { question: 'How do I find the mass of solute from a mass percent?', answer: 'Multiply the mass percent (divided by 100) by the total solution mass: mₘ = (mass % ÷ 100) × mₛ. A 7.5% solution with a total mass of 200 g contains 0.075 × 200 = 15 g of solute.' },
+        { question: 'How do I find the mass of solution from a mass percent and solute mass?', answer: 'Divide the solute mass by the mass percent (as a decimal): mₛ = mₘ ÷ (mass % ÷ 100). 15 g of solute at 7.5% needs a total solution mass of 15 ÷ 0.075 = 200 g.' },
+        { question: 'Is mass percent the same as concentration?', answer: 'Mass percent is one specific way of expressing concentration — by comparing masses. Molarity (moles per liter) and volume percent are other common concentration units, and none of them convert to each other without extra information like density or molar mass.' },
+        { question: 'How do I find the mass of solvent from mass percent?', answer: 'Subtract the solute’s mass from the total solution mass: mₛ − mₘ. A 200 g solution containing 15 g of solute has 200 − 15 = 185 g of solvent.' },
+        { question: 'Can mass percent be over 100%?', answer: 'No — the solute’s mass can never exceed the solution’s total mass, since the solution’s mass already includes the solute. Mass percent always falls between 0% and 100%.' },
+        { question: 'Is mass percent the same as weight percent?', answer: 'Yes, "weight percent" and "percent by mass" are older but still common names for the same quantity, mass percent.' }
+      ]
+    },
+    compute(values) {
+      return { massPercent: (values.soluteMass / values.solutionMass) * 100 };
+    }
   }
 ];

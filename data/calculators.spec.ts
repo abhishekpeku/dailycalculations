@@ -63,7 +63,8 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'radioactive-half-life-calculator': ['remainingAmount'], // elapsedTime and halfLife both 0 (their min) -> 0/0 exponent, 0 * NaN
   'lens-mirror-equation-calculator': ['imageDistance'], // focalLength and objectDistance both 0 (their min) -> 0/0
   'molarity-calculator': ['molarity'], // moles and volume both 0 (their min) -> 0/0
-  'dilution-calculator': ['concentration2'] // concentration1, volume1 and volume2 all 0 (their min) -> 0/0
+  'dilution-calculator': ['concentration2'], // concentration1, volume1 and volume2 all 0 (their min) -> 0/0
+  'mass-percent-calculator': ['massPercent'] // soluteMass and solutionMass both 0 (their min) -> 0/0
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

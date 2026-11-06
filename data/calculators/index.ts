@@ -262,7 +262,8 @@ export const calculatorOrder: string[] = [
   'golf-course-handicap-calculator',
   'molar-mass-calculator',
   'molarity-calculator',
-  'dilution-calculator'
+  'dilution-calculator',
+  'mass-percent-calculator'
 ];
 
 const rank = (id: string) => {

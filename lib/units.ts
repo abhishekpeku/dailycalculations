@@ -24,6 +24,10 @@ export type UnitDimension =
   | 'resistance'
   | 'capacitance'
   | 'charge'
+  | 'frequency'
+  | 'decibel'
+  | 'specificHeat'
+  | 'temperatureDelta'
   | 'data'
   | 'fuelEconomy'
   | 'fuelPrice'
@@ -255,6 +259,30 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
     { id: 'mC', label: 'mC', factor: 1e-3 },
     { id: 'uC', label: 'µC', factor: 1e-6 },
     { id: 'nC', label: 'nC', factor: 1e-9 }
+  ],
+  // SI derived unit (BIPM SI Brochure): 1 Hz = 1 cycle per second = 1 s⁻¹.
+  frequency: [
+    { id: 'Hz', label: 'Hz', factor: 1 },
+    { id: 'kHz', label: 'kHz', factor: 1e3 },
+    { id: 'MHz', label: 'MHz', factor: 1e6 },
+    { id: 'GHz', label: 'GHz', factor: 1e9 }
+  ],
+  // Unitless logarithmic ratio (IEC 60027-3 / ISO 80000-3: the bel is log10 of a power ratio, the
+  // decibel is one tenth of a bel). The base value is the dB number itself, like percent/count.
+  decibel: [{ id: 'dB', label: 'dB', factor: 1 }],
+  // SI derived unit J/(kg·K). 1 J/(g·K) = 1000 J/(kg·K) exactly; 1 cal/(g·°C) = 4184 J/(kg·K) exactly
+  // (thermochemical calorie × 1000, since 1 g = 0.001 kg and a 1°C interval equals a 1 K interval).
+  specificHeat: [
+    { id: 'J/kgK', label: 'J/(kg·K)', factor: 1 },
+    { id: 'J/gK', label: 'J/(g·K)', factor: 1000 },
+    { id: 'cal/gC', label: 'cal/(g·°C)', factor: CALORIE * 1000 }
+  ],
+  // A temperature INTERVAL, not an absolute reading — no offset, unlike `temperature` above. A 1°C
+  // change equals a 1 K change exactly; a 1°F change is 5/9 of a K change exactly (NIST SP 811 §B.9).
+  temperatureDelta: [
+    { id: 'K', label: 'K', factor: 1 },
+    { id: 'C', label: '°C', factor: 1 },
+    { id: 'F', label: '°F', factor: 5 / 9 }
   ],
   // IEC 80000-13: decimal prefixes are powers of 1000 (KB = 1000 B), binary prefixes powers of 1024 (KiB).
   data: [

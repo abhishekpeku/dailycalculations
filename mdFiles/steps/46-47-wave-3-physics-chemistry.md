@@ -187,7 +187,12 @@ a locked spec.
     (200, correct H1, JSON-LD, every section id present — concept/how-to-use/formula/worked-example/
     watch-out/faq/references/related).
   - 209 calculators total after this run (204 + 5).
-- [ ] Physics waves/optics run
+- [ ] Physics waves/optics run (5), branch `step/46-wave-3-physics-run-4`:
+  - [ ] wavelength-frequency-calculator
+  - [ ] decibel-calculator
+  - [ ] radioactive-half-life-calculator
+  - [ ] heat-calculator
+  - [ ] lens-mirror-equation-calculator
 - [ ] Chemistry category opened + run 1 (5): molar-mass, molarity, dilution, mass-percent, moles-grams
 - [ ] Chemistry run 2+ (gas laws, pH/pOH, pKa)
 - [ ] Chemistry run 3+ (yield, stoichiometry — scope carefully per the warning above)

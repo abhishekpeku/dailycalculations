@@ -1058,5 +1058,131 @@ export const physicsCalculators: CalculatorConfig[] = [
     compute(values) {
       return { impulse: values.force * values.time };
     }
+  },
+  {
+    id: 'power-calculator',
+    category: 'physics',
+    glyph: 'P',
+    updatedAt: '2026-11-06',
+    aliases: ['p = w/t calculator', 'work over time calculator', 'mechanical power calculator', 'power from work and time calculator', 'power physics formula calculator'],
+    related: ['power-converter', 'work-calculator', 'kinetic-energy-calculator', 'force-calculator'],
+    title: 'Power Calculator (P = W/t)',
+    description: 'Calculate power from work (or energy) and the time it takes — P = W ÷ t — or solve backward for work or time, in watts, kilowatts, or horsepower.',
+    example: 'Doing 150,000 J of work in 12 seconds averages 12,500 W — 12.5 kW, or about 16.76 hp.',
+    solver: {
+      defaultTarget: 'power',
+      variables: [
+        { id: 'power', label: 'Power', symbol: 'P', dimension: 'power', defaultValue: 12.5, defaultUnit: 'kW' },
+        { id: 'work', label: 'Work (energy)', symbol: 'W', dimension: 'energy', defaultValue: 150, defaultUnit: 'kJ' },
+        { id: 'time', label: 'Time', symbol: 't', dimension: 'time', defaultValue: 12, defaultUnit: 's' }
+      ],
+      solve: {
+        power: ({ work, time }) => (time === 0 ? NaN : work / time),
+        work: ({ power, time }) => power * time,
+        time: ({ work, power }) => (power === 0 ? NaN : work / power)
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'power',
+          min: 0,
+          max: 8,
+          ticks: ['1 W', '100 W', '10 kW', '1 MW', '100 MW'],
+          benchmarks: [
+            { label: 'Resting human metabolism', value: 100 },
+            { label: 'A microwave oven', value: 1100 },
+            { label: 'A car cruising on the highway', value: 60000 },
+            { label: 'A small wind turbine', value: 2000000 }
+          ],
+          title: 'How does that compare?',
+          valueLabel: 'Your power'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'What is power in physics?',
+        paragraphs: [
+          'Power is the rate at which work is done or energy is transferred: P = W ÷ t. Two people can do the exact same amount of work — lifting the same box to the same shelf — but the one who does it faster is more powerful, even though they transferred the same total energy.',
+          'The SI unit of power is the watt (W), defined as one joule of work or energy transferred per second (1 W = 1 J/s). A 100 W light bulb converts 100 joules of electrical energy into light and heat every second it is lit.',
+          'This calculator finds power the way it is defined in mechanics — from an amount of work (or energy) and the time it took. If you already have a power figure in one unit and just want it in another (watts to horsepower, kW to BTU/h), the power converter on this site handles that unit conversion directly; this page is for computing power from the work and time behind it.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of power, work and time; the third fills in automatically, so the same page answers "how powerful", "how much work" and "how long".',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 150 kJ becomes 41.67 Wh instead of silently turning into 150 Wh.' },
+          { name: 'Read the result and the scale', text: 'The answer shows in your chosen power unit, with the scale below placing it among a few everyday devices.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The power formula rearranges to solve for work or time as well as power.',
+        expression: 'P = W ÷ t\nW = P × t\nt = W ÷ P',
+        terms: [
+          { symbol: 'P', meaning: 'Power, in watts (W). 1 W = 1 J/s.' },
+          { symbol: 'W', meaning: 'Work done, or energy transferred, in joules (J).' },
+          { symbol: 't', meaning: 'Time taken, in seconds (s).' }
+        ],
+        note: 'Every input is converted to SI units (W, J, s) before solving and converted back afterward, so entering work in kWh or power in horsepower is handled automatically.'
+      },
+      workedExample: {
+        intro: 'A machine does 150,000 J of work in 12 seconds. What is its average power?',
+        rows: [
+          { label: 'Work (W)', value: '150,000 J' },
+          { label: 'Time (t)', value: '12 s' },
+          { label: 'Power (P = 150,000 ÷ 12)', value: '12,500 W' }
+        ],
+        result: 'P = 12,500 W = 12.5 kW ≈ 16.76 hp',
+        explanation: '150,000 ÷ 12 = 12,500, so the average power is 12,500 W, which is 12.5 kW. Converting to mechanical horsepower (1 hp ≈ 745.7 W): 12,500 ÷ 745.7 ≈ 16.76 hp.'
+      },
+      watchOut: [
+        {
+          title: 'This page computes power, not converts it',
+          body: 'If you already know a power value and want it in different units (kW to hp, W to BTU/h), use the power converter instead. This calculator is for finding power from the work and time that produced it.'
+        },
+        {
+          title: 'This is average power, not instantaneous power',
+          body: 'P = W ÷ t gives the average rate over the whole interval. A sprinter\'s power output is far higher during the initial burst off the blocks than during the rest of the race, even though the average over the whole sprint is one number.'
+        },
+        {
+          title: "Energy and work use the same unit, the joule",
+          body: 'This formula works whether "W" in your head means mechanical work or any other form of energy — electrical, thermal, chemical. Power is always energy transferred divided by the time it took, regardless of the kind of energy.'
+        },
+        {
+          title: 'A watt is small; everyday devices use kilowatts',
+          body: 'A single watt is a tiny amount of power — about what a USB phone charger idling uses. Household appliances are usually hundreds to thousands of watts, which is why kilowatts (1,000 W) are the more common everyday unit.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §7.4 Power', url: 'https://openstax.org/books/university-physics-volume-1/pages/7-4-power' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'BIPM, The International System of Units (SI Brochure)', url: 'https://www.bipm.org/en/publications/si-brochure' }
+      ]
+    },
+    inputs: [
+      { id: 'work', label: 'Work (J)', type: 'number', placeholder: '150000', defaultValue: 150000, step: 1, min: 0 },
+      { id: 'time', label: 'Time (s)', type: 'number', placeholder: '12', defaultValue: 12, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Power Calculator (P = W/t) – Work, Time, Power',
+      description: 'Free power calculator. Solve P = W ÷ t for power, work or time in watts, kW or horsepower, with a worked example — not a unit-only converter.',
+      faq: [
+        { question: 'What is the formula for power?', answer: 'Power equals work (or energy) divided by time: P = W ÷ t. With work in joules and time in seconds, the result is in watts.' },
+        { question: 'How much power is 150,000 J of work done in 12 seconds?', answer: '150,000 ÷ 12 = 12,500 W, which is 12.5 kW, or about 16.76 hp.' },
+        { question: 'What is the difference between this calculator and the power converter?', answer: 'This page computes power from work and time (P = W ÷ t). The power converter just changes a power value you already have between units like W, kW and hp — it does not involve work or time at all.' },
+        { question: 'How do I find the work done if I know power and time?', answer: 'Multiply power by time: W = P × t. A 2,000 W appliance running for 30 s does 2,000 × 30 = 60,000 J of work.' },
+        { question: 'What is the SI unit of power?', answer: 'The watt (W), equal to one joule per second (1 W = 1 J/s). Kilowatts and horsepower are common alternatives.' },
+        { question: 'Is power the same as energy?', answer: 'No. Energy (or work) is a total amount, measured in joules. Power is the rate that energy is used or transferred, measured in watts — energy divided by the time it took.' },
+        { question: 'How do I convert watts to horsepower?', answer: 'Divide by about 745.7 (1 mechanical horsepower ≈ 745.7 W). A result of 12,500 W is about 12,500 ÷ 745.7 ≈ 16.76 hp.' }
+      ]
+    },
+    compute(values) {
+      return { power: values.work / values.time };
+    }
   }
 ];

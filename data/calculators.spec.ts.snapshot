@@ -5598,6 +5598,38 @@ exports[`compute() snapshots > pounds-to-kilograms-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > power-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "work": 150000,
+      "time": 12
+    },
+    "outputs": {
+      "power": 12500
+    }
+  },
+  "typical": {
+    "inputs": {
+      "work": 225000,
+      "time": 18
+    },
+    "outputs": {
+      "power": 12500
+    }
+  },
+  "edge": {
+    "inputs": {
+      "work": 0,
+      "time": 0
+    },
+    "outputs": {
+      "power": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > power-converter 1`] = `
 {
   "default": {

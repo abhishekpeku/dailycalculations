@@ -3375,6 +3375,41 @@ exports[`compute() snapshots > heart-rate-zones-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > heat-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass": 2,
+      "specificHeat": 4186,
+      "deltaT": 20
+    },
+    "outputs": {
+      "heat": 167440
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass": 3,
+      "specificHeat": 6279,
+      "deltaT": 30
+    },
+    "outputs": {
+      "heat": 565110
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass": 0,
+      "specificHeat": 0,
+      "deltaT": 0
+    },
+    "outputs": {
+      "heat": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > horsepower-to-kilowatts-converter 1`] = `
 {
   "default": {

@@ -2439,5 +2439,118 @@ export const physicsCalculators: CalculatorConfig[] = [
     compute(values) {
       return { remainingAmount: values.initialAmount * Math.pow(0.5, values.elapsedTime / values.halfLife) };
     }
+  },
+  {
+    id: 'heat-calculator',
+    category: 'physics',
+    glyph: 'Q',
+    updatedAt: '2026-11-06',
+    aliases: ['heat calculator', 'specific heat calculator', 'q = mc delta t calculator', 'heat energy calculator', 'thermal energy calculator', 'heat transfer calculator'],
+    related: ['energy-converter', 'ac-tonnage-btu-calculator', 'kinetic-energy-calculator', 'radioactive-half-life-calculator'],
+    title: 'Heat Calculator (Q = mcΔT)',
+    description: "Solve Q = m × c × ΔT for the heat energy needed to change a substance's temperature, or solve backward for mass, specific heat, or temperature change.",
+    example: "Heating 2 kg of water by 20°C takes about 167.4 kJ, using water's specific heat of 4,186 J/(kg·K).",
+    solver: {
+      defaultTarget: 'heat',
+      variables: [
+        { id: 'heat', label: 'Heat energy', symbol: 'Q', dimension: 'energy', defaultValue: 167440, defaultUnit: 'J' },
+        { id: 'mass', label: 'Mass', symbol: 'm', dimension: 'mass', defaultValue: 2, defaultUnit: 'kg' },
+        { id: 'specificHeat', label: 'Specific heat', symbol: 'c', dimension: 'specificHeat', defaultValue: 4186, defaultUnit: 'J/kgK' },
+        { id: 'deltaT', label: 'Temperature change', symbol: 'ΔT', dimension: 'temperatureDelta', defaultValue: 20, defaultUnit: 'C' }
+      ],
+      solve: {
+        heat: ({ mass, specificHeat, deltaT }) => mass * specificHeat * deltaT,
+        mass: ({ heat, specificHeat, deltaT }) => (specificHeat * deltaT === 0 ? NaN : heat / (specificHeat * deltaT)),
+        specificHeat: ({ heat, mass, deltaT }) => (mass * deltaT === 0 ? NaN : heat / (mass * deltaT)),
+        deltaT: ({ heat, mass, specificHeat }) => (mass * specificHeat === 0 ? NaN : heat / (mass * specificHeat))
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'What is heat (Q = mcΔT)?',
+        paragraphs: [
+          'Heat is energy transferred into or out of something, and raising a temperature always takes energy. How much depends on three things: how much substance there is (mass, m), what it is made of (specific heat capacity, c), and how big a temperature change is wanted (ΔT). The formula Q = m × c × ΔT ties all three together — more mass, a bigger temperature swing, or a substance that resists warming each demand more heat energy.',
+          "Specific heat capacity is a property of the material itself: how many joules it takes to raise one kilogram of it by one kelvin. Water has an unusually high specific heat, about 4,186 J/(kg·K) — compare that to aluminum, around 897 J/(kg·K), which takes less than a quarter as much energy to warm by the same amount. This is the reason water heats up and cools down slowly compared to metal, and part of why coastal climates are milder than inland ones at the same latitude.",
+          'This formula only holds while the substance stays in one phase — solid, liquid, or gas — and simply gets warmer or cooler. Melting ice or boiling water takes a different kind of energy entirely, latent heat, which goes into changing phase rather than changing temperature, and needs its own formula (Q = mL) rather than this one.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of heat energy, mass, specific heat, and temperature change; the fourth fills in automatically.',
+        steps: [
+          { name: "Look up the substance's specific heat", text: "Specific heat varies by material — water is 4,186 J/(kg·K), common values for metals, rocks and other substances are listed in standard physics references. Use the right one for what's being heated." },
+          { name: 'Enter the three values you know', text: 'Type each value and pick its unit. The field left over, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 167,440 J becomes 167.44 kJ instead of silently turning into 167,440 kJ.' },
+          { name: 'Read the result', text: 'The heat energy appears in your chosen unit — joules, kilojoules, kilocalories, or BTU.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The heat formula rearranges three ways, one for each quantity you might be solving for.',
+        expression: 'Q = m × c × ΔT\nm = Q ÷ (c × ΔT)\nc = Q ÷ (m × ΔT)\nΔT = Q ÷ (m × c)',
+        terms: [
+          { symbol: 'Q', meaning: 'Heat energy transferred, in joules (J). Also commonly shown in kilojoules, kilocalories, or BTU.' },
+          { symbol: 'm', meaning: 'The mass of the substance being heated or cooled, in kilograms (kg).' },
+          { symbol: 'c', meaning: "The substance's specific heat capacity, in joules per kilogram-kelvin (J/(kg·K)) — how much energy it takes to raise 1 kg of it by 1 K." },
+          { symbol: 'ΔT', meaning: 'The temperature CHANGE, not a temperature reading — the difference between the final and starting temperature, in kelvin or °C (the two are the same size as a change, unlike °F).' }
+        ],
+        note: 'Mass, specific heat, and heat energy are converted to SI (kg, J/(kg·K), J) before solving; ΔT is converted as an interval, not an absolute reading, since a temperature change has no offset to apply.'
+      },
+      workedExample: {
+        intro: 'How much heat does it take to warm 2 kg of water by 20°C?',
+        rows: [
+          { label: 'Mass (m)', value: '2 kg' },
+          { label: "Specific heat of water (c)", value: '4,186 J/(kg·K)' },
+          { label: 'Temperature change (ΔT)', value: '20°C (= 20 K)' },
+          { label: 'Heat (Q = 2 × 4,186 × 20)', value: '167,440 J' }
+        ],
+        result: 'Q ≈ 167.44 kJ (≈ 40.0 kcal, ≈ 158.7 BTU)',
+        explanation: '2 × 4,186 × 20 = 167,440 J, or 167.44 kJ. In food Calories (kcal), that is 167,440 ÷ 4,184 ≈ 40.0 kcal — about the energy in a small snack. In BTU, 167,440 ÷ 1,055.06 ≈ 158.7 BTU.'
+      },
+      watchOut: [
+        {
+          title: 'ΔT is a change, not a reading',
+          body: "Heating water from 20°C to 40°C gives ΔT = 20, not 40. Plugging in a final temperature instead of the difference between two temperatures overstates the heat needed by a lot."
+        },
+        {
+          title: 'This formula only applies within one phase',
+          body: "Q = mcΔT describes a substance warming or cooling as a solid, liquid, or gas. The energy needed to melt ice or boil water (latent heat) is a separate quantity entirely, given by Q = mL with a substance-specific latent heat L, not by raising the temperature further."
+        },
+        {
+          title: 'Specific heat is different for every substance',
+          body: "Water's specific heat, 4,186 J/(kg·K), is unusually high — most metals are well under a quarter of that (aluminum is about 897 J/(kg·K)). Using the wrong c for the material gives a heat figure that can be off by several times."
+        },
+        {
+          title: 'A 1°C change equals a 1 K change — a 1°F change does not',
+          body: 'This is a temperature interval, not an absolute reading: 1°C and 1 K describe the same-sized step, but 1°F is only 5/9 of that step. An 18°F change converts to exactly 10°C (or 10 K) of change — a different conversion from converting an absolute temperature reading, which also shifts by an offset.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 2, §1.3 Heat, Specific Heat, and Heat Transfer', url: 'https://openstax.org/books/university-physics-volume-2/pages/1-3-heat-specific-heat-and-heat-transfer' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'mass', label: 'Mass (kg)', type: 'number', placeholder: '2', defaultValue: 2, step: 0.1, min: 0 },
+      { id: 'specificHeat', label: 'Specific heat (J/(kg·K))', type: 'number', placeholder: '4186', defaultValue: 4186, step: 1, min: 0 },
+      { id: 'deltaT', label: 'Temperature change (°C)', type: 'number', placeholder: '20', defaultValue: 20, step: 0.1 }
+    ],
+    seo: {
+      title: 'Heat Calculator (Q = mcΔT) – Specific Heat Formula',
+      description: 'Free heat calculator. Solve Q = m × c × ΔT for heat energy, mass, specific heat, or temperature change in J, kJ, kcal or BTU, with a worked example.',
+      faq: [
+        { question: 'What is the heat formula Q = mcΔT?', answer: 'It calculates the heat energy (Q) needed to change a substance\'s temperature: mass (m) times specific heat capacity (c) times the temperature change (ΔT).' },
+        { question: 'How much heat does it take to warm 2 kg of water by 20°C?', answer: '2 × 4,186 × 20 = 167,440 J, or about 167.44 kJ (roughly 40.0 kcal).' },
+        { question: 'What is specific heat capacity?', answer: "A material property: how much energy (in J) it takes to raise 1 kg of that substance by 1 K. Water's is unusually high, about 4,186 J/(kg·K); most metals are well under a quarter of that." },
+        { question: 'How do I find mass from heat, specific heat, and temperature change?', answer: 'Divide heat by the product of specific heat and temperature change: m = Q ÷ (c × ΔT).' },
+        { question: 'Does Q = mcΔT work for melting ice or boiling water?', answer: 'No. Melting and boiling are phase changes that take latent heat (Q = mL), a different formula — Q = mcΔT only applies while the substance stays solid, liquid, or gas without changing phase.' },
+        { question: 'Why does water have such a high specific heat?', answer: "It takes about 4,186 J to raise 1 kg of water by 1 K, versus about 897 J for the same mass of aluminum — more than four times as much. That's why large bodies of water heat up and cool down slowly, moderating nearby climates." },
+        { question: 'Is a temperature change of 1°C the same as 1 kelvin?', answer: 'Yes — a 1°C change and a 1 K change are the exact same size. A 1°F change is smaller, exactly 5/9 of a kelvin, since the Fahrenheit scale divides the same range into more degrees.' }
+      ]
+    },
+    compute(values) {
+      return { heat: values.mass * values.specificHeat * values.deltaT };
+    }
   }
 ];

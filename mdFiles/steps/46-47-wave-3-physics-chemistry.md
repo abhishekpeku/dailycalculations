@@ -152,17 +152,41 @@ a locked spec.
     and regenerated the snapshot (additive-only, 32 lines for the one new calculator).
   - `npm test` (863 tests), `npm run lint` and `npm run build` all pass, re-confirmed by the main
     session. 204 calculators total after this run (199 + 5).
-- [ ] Physics electricity/circuits run, branch `step/46-wave-3-physics-run-3` (in progress):
-  - [ ] ohms-law-calculator
-  - [ ] electrical-power-calculator
-  - [ ] series-parallel-resistor-calculator
-  - [ ] resistor-color-code-calculator
-  - [ ] capacitor-charge-calculator
+- [x] Physics electricity/circuits run (5), branch `step/46-wave-3-physics-run-3`, PR #63 — **DONE** 2026-11-06:
+  - [x] ohms-law-calculator
+  - [x] electrical-power-calculator
+  - [x] series-parallel-resistor-calculator
+  - [x] resistor-color-code-calculator
+  - [x] capacitor-charge-calculator
   - New `lib/units.ts` dimensions: `voltage`, `current`, `resistance`, `capacitance` (staged before
     this run started, reused here) and `charge` (coulomb, added this run for
-    capacitor-charge-calculator's Q = CV). Round-trip + anchor tests in `lib/units.spec.ts`.
+    capacitor-charge-calculator's Q = CV, base C with mC/µC/nC — BIPM SI Brochure, 1 C = 1 A·s).
+    Round-trip + anchor tests in `lib/units.spec.ts`.
   - `lib/resistorColors.ts` (staged before this run started): IEC 60062 color-code lookup tables
-    used by resistor-color-code-calculator.
+    (via Wikipedia's sourced data template), used by resistor-color-code-calculator's
+    `resistanceFromColorBands()`.
+  - Multi-relationship precedent followed for two pages, same pattern as the finance calculators'
+    `solver.outputs`: ohms-law-calculator's bonus output is power (P = VI); electrical-power-calculator's
+    bonus output is the equivalent resistance (R = V ÷ I, from Ohm's law). capacitor-charge-calculator
+    similarly adds stored energy (E = ½QV) as a bonus output alongside Q = CV.
+  - series-parallel-resistor-calculator is a type-B (breakdown) calculator with a `type: 'list'`
+    input (reused the average-calculator/weighted-average-calculator list pattern) rather than a
+    solver, since series and parallel combination isn't a single invertible formula for an
+    arbitrary-length list — it shows both the series total (sum) and the parallel total (reciprocal
+    sum) for the same list at once, compared on a `compareBars` visual.
+  - resistor-color-code-calculator is a lookup-table (breakdown) widget, not a solver, per the
+    shoe-size/ring-size precedent — `options` on each band input carry the color's digit/multiplier/
+    tolerance value directly (no numeric code lookup needed, since every value within each band's
+    own list is already distinct). Worked example (red-violet-green-gold = 2,700,000 Ω, ±5%) matches
+    `lib/resistorColors.spec.ts`'s own Wikipedia-sourced test exactly.
+  - No KNOWN_NON_FINITE entries needed this run: every edge case (zero inputs) resolves to a finite
+    0 for all 5 calculators, including the parallel-resistor reciprocal sum (1 ÷ Infinity = 0 in
+    JS, not NaN) and the resistor color code lookup (black/black/black/silver bands decode to a
+    legitimate 0 Ω).
+  - `npm test` (894 tests), `npm run lint` and `npm run build` all pass. Curl-checked all 5 pages
+    (200, correct H1, JSON-LD, every section id present — concept/how-to-use/formula/worked-example/
+    watch-out/faq/references/related).
+  - 209 calculators total after this run (204 + 5).
 - [ ] Physics waves/optics run
 - [ ] Chemistry category opened + run 1 (5): molar-mass, molarity, dilution, mass-percent, moles-grams
 - [ ] Chemistry run 2+ (gas laws, pH/pOH, pKa)

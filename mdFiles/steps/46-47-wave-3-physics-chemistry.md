@@ -187,7 +187,46 @@ a locked spec.
     (200, correct H1, JSON-LD, every section id present — concept/how-to-use/formula/worked-example/
     watch-out/faq/references/related).
   - 209 calculators total after this run (204 + 5).
-- [ ] Physics waves/optics run
+- [x] Physics waves/optics run (5), branch `step/46-wave-3-physics-run-4`, PR #64 — **DONE** 2026-11-06:
+  - [x] wavelength-frequency-calculator
+  - [x] decibel-calculator
+  - [x] radioactive-half-life-calculator
+  - [x] heat-calculator
+  - [x] lens-mirror-equation-calculator
+  - New `lib/units.ts` dimensions this run: `frequency` (base Hz, alts kHz/MHz/GHz — used by
+    wavelength-frequency-calculator's f and, as the decay-constant bonus output's unit, by
+    radioactive-half-life-calculator too), `decibel` (single-unit, like percent/count/currency —
+    the dB number itself), `specificHeat` (base J/(kg·K), alts J/(g·K) and cal/(g·°C)) and
+    `temperatureDelta` (a temperature INTERVAL — K/°C both factor 1, °F factor 5/9, no offset,
+    unlike the existing `temperature` dimension which is an absolute reading). Round-trip + anchor
+    tests in `lib/units.spec.ts`; also extended the "percent, count and currency are identity" test
+    to cover `decibel` and inserted the four new dimensions into the sorted dimensions-list test.
+  - decibel-calculator is framed as a general power-ratio calculator (dB = 10 log₁₀(P₂/P₁), e.g.
+    amplifier gain) rather than requiring a fixed reference intensity input — reuses the `power`
+    dimension twice instead of adding a new W/m² intensity dimension. The standard sound-intensity-
+    level special case (I₀ = 1×10⁻¹² W/m² → 60 dB for a normal conversation) is covered as a worked
+    FAQ example with the same underlying formula, not as a separate input.
+  - radioactive-half-life-calculator is the nuclear-decay half-life (N = N₀·(½)^(t/t½), half-life
+    entered directly) — explicitly NOT the chemistry reaction-kinetics half-life (t½ = ln2/k) that
+    will ship in a later chemistry run, per this file's dedupe note. Both the concept section and a
+    watch-out item call out the distinction. Reuses `mass` (N₀/N) and `time` (t/t½) — no new
+    dimension needed for the core formula; only the bonus decay-constant output needed `frequency`.
+  - heat-calculator (Q = mcΔT) is the first real use of `specificHeat` and `temperatureDelta`.
+    `specificHeat` and `heat` for identical reasons stayed off the `temperature` dimension (which
+    has a °C/°F offset that would corrupt a temperature *difference*).
+  - lens-mirror-equation-calculator (1/f = 1/dₒ + 1/dᵢ) reuses `length` for all three variables —
+    no new dimension needed. Its bonus magnification output (m = −dᵢ/dₒ) reuses the dimensionless
+    `count` dimension. Framed as a shared lens/mirror formula per OpenStax (mirrors use f = R/2),
+    with inputs left unrestricted on sign (negative f/dᵢ are legitimate virtual-image/diverging
+    answers, not errors) except objectDistance, which keeps `min: 0`.
+  - `horsepower`, `rpm-to-speed` and `gear-ratio` from the original waves/optics list were left for
+    a later run (not part of this 5) — this run focused on the wave/optics/decay/thermal cluster;
+    the drivetrain-formula trio reads as a better fit alongside a future mechanics-adjacent batch
+    and wasn't needed to fill this run's 5 slots.
+  - `npm test` (921 tests), `npm run lint` and `npm run build` all pass. Curl-checked all 5 pages
+    (200, correct H1, JSON-LD, every section id present — concept/how-to-use/formula/worked-example/
+    watch-out/faq/references/related — note the real id is `how-to-use`, not `how-to`).
+  - 214 calculators total after this run (209 + 5).
 - [ ] Chemistry category opened + run 1 (5): molar-mass, molarity, dilution, mass-percent, moles-grams
 - [ ] Chemistry run 2+ (gas laws, pH/pOH, pKa)
 - [ ] Chemistry run 3+ (yield, stoichiometry — scope carefully per the warning above)

@@ -2078,5 +2078,589 @@ export const physicsCalculators: CalculatorConfig[] = [
     compute(values) {
       return { charge: values.capacitance * values.voltage };
     }
+  },
+  {
+    id: 'wavelength-frequency-calculator',
+    category: 'physics',
+    glyph: 'fλ',
+    updatedAt: '2026-11-06',
+    aliases: ['wavelength calculator', 'frequency to wavelength calculator', 'wavelength to frequency calculator', 'wave speed equation calculator', 'v = f lambda calculator', 'speed of light wavelength calculator'],
+    related: ['speed-distance-time-calculator', 'speed-converter', 'length-converter', 'decibel-calculator'],
+    title: 'Wavelength Calculator (v = fλ)',
+    description: 'Solve the wave equation, v = f × λ, for wave speed, frequency, or wavelength — works for light, radio waves, sound, or any periodic wave.',
+    example: 'An FM radio wave at 100 MHz, traveling at the speed of light, has a wavelength of about 3.00 m.',
+    solver: {
+      defaultTarget: 'wavelength',
+      variables: [
+        { id: 'speed', label: 'Wave speed', symbol: 'v', dimension: 'speed', defaultValue: 299792458, defaultUnit: 'm/s' },
+        { id: 'frequency', label: 'Frequency', symbol: 'f', dimension: 'frequency', defaultValue: 100, defaultUnit: 'MHz' },
+        { id: 'wavelength', label: 'Wavelength', symbol: 'λ', dimension: 'length', defaultValue: 2.99792458, defaultUnit: 'm' }
+      ],
+      solve: {
+        wavelength: ({ speed, frequency }) => (frequency === 0 ? NaN : speed / frequency),
+        frequency: ({ speed, wavelength }) => (wavelength === 0 ? NaN : speed / wavelength),
+        speed: ({ frequency, wavelength }) => frequency * wavelength
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'frequency',
+          min: 6,
+          max: 18,
+          ticks: ['1 MHz', '1 GHz', '1 THz', '1 PHz', '1 EHz'],
+          benchmarks: [
+            { label: 'AM radio broadcast band', value: 1e6 },
+            { label: 'FM radio broadcast band', value: 1e8 },
+            { label: 'Wi-Fi (2.4 GHz band)', value: 2.4e9 },
+            { label: 'Visible light (green, ~550 nm)', value: 5.45e14 },
+            { label: 'Diagnostic X-rays (typical)', value: 3e18 }
+          ],
+          title: 'How does that compare?',
+          valueLabel: 'Your frequency'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'What is the wave equation?',
+        paragraphs: [
+          "Every traveling wave — light, sound, water ripples, radio signals — links the same three quantities: how fast it moves, how often it repeats, and how long each repeat is. The wave equation, v = f × λ, says a wave's speed equals its frequency times its wavelength. It holds for any periodic wave, not just light, because it is really just a restatement of speed = distance ÷ time: in one period, a wave moves forward exactly one wavelength, and frequency is the number of periods per second.",
+          'Frequency and wavelength trade off against each other at a fixed speed. A radio station broadcasting at a higher frequency packs more wave crests into each second, so each individual crest-to-crest distance — the wavelength — must be shorter. This is why AM radio, with frequencies around 1 MHz, uses enormous antennas (its wavelength is hundreds of meters), while Wi-Fi, at a few GHz, fits its much shorter wavelength onto a small antenna inside a phone.',
+          "For light and all other electromagnetic waves traveling through a vacuum, v is a universal constant: the speed of light, c = 299,792,458 m/s exactly. It is exact because the metre has been defined since 1983 as the distance light travels in 1 ⁄ 299,792,458 of a second — the speed is fixed by definition, not measured. Sound is a completely different kind of wave; it needs this calculator's speed field set to the actual speed of sound in whatever it's traveling through (about 343 m/s in dry air at 20 °C), which is nowhere near the speed of light."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of wave speed, frequency and wavelength; the third fills in automatically — so the same page answers "what wavelength", "what frequency" and "how fast".',
+        steps: [
+          { name: 'Pick the right wave speed', text: "Leave the speed at the speed of light for radio, microwaves, light or any other electromagnetic wave in a vacuum or air. Replace it with the speed of sound (or another wave's actual speed) for non-electromagnetic waves." },
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit from the menu beside it. The third field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'To solve for a different quantity, type into the auto field. It becomes an input, and the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 100 MHz becomes 100,000,000 Hz instead of silently turning into 100 Hz.' },
+          { name: 'Read the result and the scale', text: 'The answer appears in your chosen unit. The scale shows where your frequency sits among the radio, Wi-Fi, visible-light and X-ray bands.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The wave equation rearranges three ways, one for each quantity you might be solving for.',
+        expression: 'v = f × λ\nf = v ÷ λ\nλ = v ÷ f',
+        terms: [
+          { symbol: 'v', meaning: 'Wave speed, in meters per second (m/s) — the speed of light (c) for electromagnetic waves, or the actual speed of sound, water or another medium otherwise.' },
+          { symbol: 'f', meaning: 'Frequency, in hertz (Hz) — the number of complete wave cycles passing a point each second. 1 Hz = 1 cycle/s.' },
+          { symbol: 'λ', meaning: 'Wavelength (the Greek letter lambda), in meters (m) — the distance between two consecutive identical points on the wave, such as crest to crest.' },
+          { symbol: 'T = 1 ÷ f', meaning: 'The period: the time for one full cycle. Frequency and period are reciprocals of each other.' }
+        ],
+        note: 'Every input is converted to SI units (m/s, Hz, m) before solving and converted back afterward, so entering frequency in MHz or wavelength in nanometers is handled automatically.'
+      },
+      workedExample: {
+        intro: 'An FM radio station broadcasts at 100 MHz. Radio waves are electromagnetic, so they travel at the speed of light. What is the wavelength?',
+        rows: [
+          { label: 'Wave speed (v = c)', value: '299,792,458 m/s' },
+          { label: 'Frequency (f)', value: '100 MHz = 100,000,000 Hz' },
+          { label: 'Wavelength (λ = v ÷ f)', value: '299,792,458 ÷ 100,000,000 = 2.9979 m' }
+        ],
+        result: 'λ ≈ 3.00 m',
+        explanation: "Dividing the speed of light by the frequency gives 2.9979 m, which rounds to about 3.00 m — roughly the length of a small car. This is also why FM antennas are commonly cut to a quarter or half of that wavelength, around 0.75–1.5 m, a practical length for a car or rooftop antenna."
+      },
+      watchOut: [
+        {
+          title: "v isn't always the speed of light",
+          body: "Only electromagnetic waves (light, radio, microwaves, X-rays) travel at c in a vacuum. Sound, water waves, and vibrations in a solid each have their own, usually far slower, speed — plug in that wave's actual speed, not c, or the frequency and wavelength will both come out wrong."
+        },
+        {
+          title: 'The speed of sound depends on the medium and temperature',
+          body: "343 m/s is a commonly cited value for dry air at 20 °C, but sound travels faster in warmer air, and much faster in water (~1,480 m/s) or steel (~5,000 m/s). There is no single 'speed of sound' the way there is a single speed of light."
+        },
+        {
+          title: 'Higher frequency means shorter wavelength, not longer',
+          body: 'Because v = f × λ holds the product of frequency and wavelength fixed at a given speed, the two move in opposite directions. Gamma rays have far higher frequency — and far shorter wavelength — than radio waves, even though both travel at c.'
+        },
+        {
+          title: 'Frequency and period are reciprocals, not the same number',
+          body: 'If a problem gives you the period (the time per cycle) instead of frequency, invert it first: f = 1 ÷ T. Plugging a period directly into the frequency field will give a wavelength that is off by a large factor.'
+        },
+        {
+          title: "A wave's speed can change when it enters a new medium",
+          body: 'Light slows down when it passes from air into glass or water, which is exactly what bends it (refraction). Its frequency stays the same, so its wavelength inside the new medium must shrink to match the slower speed — the wave equation still holds, just with a different v.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §16.2 Mathematics of Waves', url: 'https://openstax.org/books/university-physics-volume-1/pages/16-2-mathematics-of-waves' },
+        { label: 'OpenStax, University Physics Volume 2, §16.5 The Electromagnetic Spectrum', url: 'https://openstax.org/books/university-physics-volume-2/pages/16-5-the-electromagnetic-spectrum' },
+        { label: 'NIST, Fundamental Physical Constants — speed of light in vacuum (exact, by SI definition)', url: 'https://physics.nist.gov/cgi-bin/cuu/Value?c' }
+      ]
+    },
+    inputs: [
+      { id: 'speed', label: 'Wave speed (m/s)', type: 'number', placeholder: '299792458', defaultValue: 299792458, step: 1, min: 0 },
+      { id: 'frequency', label: 'Frequency (Hz)', type: 'number', placeholder: '100000000', defaultValue: 1e8, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Wavelength Calculator (v = fλ) – Frequency & Speed',
+      description: 'Free wavelength calculator. Solve v = f × λ for wave speed, frequency or wavelength in m/s, Hz, MHz or m, for light, radio or sound, with a worked example.',
+      faq: [
+        { question: 'What is the wave equation, v = fλ?', answer: "It says a wave's speed equals its frequency times its wavelength: v = f × λ. It holds for any traveling wave — light, sound, water, radio — because in one period a wave moves forward exactly one wavelength." },
+        { question: 'How do I calculate wavelength from frequency?', answer: 'Divide the wave speed by the frequency: λ = v ÷ f. A 100 MHz radio wave traveling at the speed of light has a wavelength of 299,792,458 ÷ 100,000,000 ≈ 3.00 m.' },
+        { question: 'How do I calculate frequency from wavelength?', answer: 'Divide the wave speed by the wavelength: f = v ÷ λ. A wave 3 m long traveling at the speed of light has a frequency of 299,792,458 ÷ 3 ≈ 100 MHz.' },
+        { question: 'Does this calculator work for sound waves?', answer: "Yes — enter the actual speed of sound (about 343 m/s in dry air at 20 °C) in the wave speed field instead of the speed of light. The same v = f × λ relationship applies to any wave." },
+        { question: 'What is the exact speed of light?', answer: '299,792,458 meters per second, exactly. Since 1983 the metre has been defined as the distance light travels in 1 ⁄ 299,792,458 of a second, which fixes this value by definition rather than by measurement.' },
+        { question: 'Why do higher-frequency waves have shorter wavelengths?', answer: "Because speed is fixed for a given medium, frequency and wavelength must trade off to keep their product constant. Gamma rays have an extremely high frequency and a correspondingly tiny wavelength; AM radio waves have a low frequency and a wavelength hundreds of meters long." },
+        { question: 'How are frequency and period related?', answer: 'They are reciprocals: f = 1 ÷ T. A wave with a period of 0.01 seconds has a frequency of 1 ÷ 0.01 = 100 Hz.' }
+      ]
+    },
+    compute(values) {
+      return { wavelength: values.frequency === 0 ? NaN : values.speed / values.frequency };
+    }
+  },
+  {
+    id: 'decibel-calculator',
+    category: 'physics',
+    glyph: 'dB',
+    updatedAt: '2026-11-06',
+    aliases: ['decibel calculator', 'db calculator', 'power ratio to db calculator', 'db gain calculator', 'decibel formula calculator', 'sound intensity level calculator'],
+    related: ['wavelength-frequency-calculator', 'power-calculator', 'electrical-power-calculator', 'power-converter'],
+    title: 'Decibel Calculator (dB From a Power Ratio)',
+    description: 'Solve dB = 10 × log₁₀(P₂ ÷ P₁) for the decibel difference between two power levels, or work backward for either power — the same formula behind amplifier gain and sound intensity.',
+    example: 'An amplifier with 1 W in and 10 W out has a gain of exactly 10 dB.',
+    solver: {
+      defaultTarget: 'decibels',
+      variables: [
+        { id: 'decibels', label: 'Level difference', symbol: 'dB', dimension: 'decibel', defaultValue: 10, defaultUnit: 'dB' },
+        { id: 'inputPower', label: 'Reference power (P₁)', symbol: 'P₁', dimension: 'power', defaultValue: 1, defaultUnit: 'W' },
+        { id: 'outputPower', label: 'Measured power (P₂)', symbol: 'P₂', dimension: 'power', defaultValue: 10, defaultUnit: 'W' }
+      ],
+      solve: {
+        decibels: ({ inputPower, outputPower }) => (inputPower <= 0 || outputPower <= 0 ? NaN : 10 * Math.log10(outputPower / inputPower)),
+        outputPower: ({ inputPower, decibels }) => (inputPower <= 0 ? NaN : inputPower * 10 ** (decibels / 10)),
+        inputPower: ({ outputPower, decibels }) => (outputPower <= 0 ? NaN : outputPower / 10 ** (decibels / 10))
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'What is a decibel?',
+        paragraphs: [
+          'A decibel (dB) is a logarithmic way of expressing the ratio between two power levels: dB = 10 × log₁₀(P₂ ÷ P₁). It is one tenth of a bel, a unit named for Alexander Graham Bell and first used by telephone engineers to describe how much a signal weakened over a long line. Power ratios in the real world span an enormous range — the sound intensity of a jet engine is roughly a trillion times that of a whisper — and a logarithmic scale compresses that range into manageable, additive numbers.',
+          "That additive property is the main reason decibels are so widely used: every extra 10 dB represents another 10× in power, no matter where you start, and gains or losses through a chain of amplifiers, cables, and filters simply add in dB instead of multiplying as raw ratios. A +10 dB amplifier followed by a −3 dB cable loss gives a net +7 dB, a much easier calculation than multiplying by 10 and then by roughly 0.501.",
+          'The same formula underlies two common uses that look different on the surface. Audio and RF engineers use it directly as a power ratio — an amplifier\'s "gain" or a cable\'s "loss" in dB. Acoustics uses it to express sound intensity level relative to a fixed reference, the standard threshold of human hearing, I₀ = 1 × 10⁻¹² W/m² (ANSI/ASA acoustical terminology). A typical conversation, at roughly 1 µW/m², works out to exactly 10 × log₁₀(10⁻⁶ ÷ 10⁻¹²) = 60 dB above that reference — the same math as an amplifier\'s gain, just with the "reference power" fixed to the hearing threshold instead of an amplifier\'s input.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of the reference power, the measured power, and the decibel difference; the third fills in automatically.',
+        steps: [
+          { name: 'Decide which power is the reference', text: "For an amplifier's gain, P₁ is the input power and P₂ is the output. For a sound intensity level, P₁ is the fixed reference intensity (1 × 10⁻¹² W/m²) and P₂ is the measured intensity." },
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a power unit converts the number already there, so 1 W becomes 1,000 mW instead of silently turning into 1 mW.' },
+          { name: 'Read the result', text: 'The decibel field shows how many dB higher (positive) or lower (negative) the measured power is than the reference.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The decibel formula rearranges to solve for either power as well as the dB difference itself.',
+        expression: 'dB = 10 × log₁₀(P₂ ÷ P₁)\nP₂ = P₁ × 10^(dB ÷ 10)\nP₁ = P₂ ÷ 10^(dB ÷ 10)',
+        terms: [
+          { symbol: 'P₁', meaning: 'The reference power — an amplifier\'s input, or a fixed reference intensity for sound level, in watts (W).' },
+          { symbol: 'P₂', meaning: 'The measured power being compared to it, in watts (W).' },
+          { symbol: 'dB', meaning: 'The level difference in decibels. Positive means P₂ is larger than P₁; negative means it is smaller.' },
+          { symbol: '20 × log₁₀', meaning: 'The form to use instead when comparing voltage or amplitude ratios rather than power, since power is proportional to amplitude squared.' }
+        ],
+        note: "P₁ and P₂ are converted to the same SI unit (watts) before dividing, so the ratio is unaffected by whichever unit you typed each one in."
+      },
+      workedExample: {
+        intro: 'An amplifier is fed 1 W and puts out 10 W. What is its gain in decibels?',
+        rows: [
+          { label: 'Input power (P₁)', value: '1 W' },
+          { label: 'Output power (P₂)', value: '10 W' },
+          { label: 'Ratio (P₂ ÷ P₁)', value: '10' },
+          { label: 'Gain (dB = 10 × log₁₀(10))', value: '10 × 1 = 10 dB' }
+        ],
+        result: 'dB = 10.00 dB',
+        explanation: "log₁₀(10) is exactly 1, so the gain is exactly 10 dB — a convenient round number because the power ratio is a clean power of 10. A 2× power increase instead works out to 10 × log₁₀(2) ≈ 3.01 dB, the commonly cited 'doubling is about +3 dB' rule, computed exactly rather than rounded to a flat 3."
+      },
+      watchOut: [
+        {
+          title: 'Voltage and amplitude ratios use 20 × log, not 10 × log',
+          body: 'Power is proportional to amplitude squared, so a power ratio of (V₂ ÷ V₁)² becomes 10 × log₁₀((V₂ ÷ V₁)²) = 20 × log₁₀(V₂ ÷ V₁). Using 10× instead of 20× on a voltage or sound-pressure ratio understates the decibel figure by half.'
+        },
+        {
+          title: 'A decibel value means nothing without knowing what it is relative to',
+          body: "10 dB by itself could be an amplifier's gain over its own input, a cable's loss, or a sound level above the standard hearing-threshold reference — the number only means something once you know what P₁ represents."
+        },
+        {
+          title: 'Every +10 dB is another 10× in power, at any starting level',
+          body: 'This holds regardless of where you start: going from 1 W to 10 W is +10 dB, and going from 100 W to 1,000 W is also +10 dB. The decibel scale is about the ratio, not the absolute wattage.'
+        },
+        {
+          title: 'Zero or negative power has no decibel value',
+          body: 'The logarithm of zero or a negative number is undefined, so a reference or measured power of 0 W (or less) gives no answer here — not a 0 dB or an error value that could be mistaken for a real result.'
+        },
+        {
+          title: '0 dB does not mean zero power',
+          body: 'It means the two powers are equal: log₁₀(1) = 0. A 0 dB amplifier passes its input through unchanged; it is not an amplifier that outputs no power at all.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §17.3 Sound Intensity', url: 'https://openstax.org/books/university-physics-volume-1/pages/17-3-sound-intensity' },
+        { label: 'BIPM, The International System of Units (SI Brochure) — the decibel as a unit for logarithmic ratio quantities', url: 'https://www.bipm.org/en/publications/si-brochure' }
+      ]
+    },
+    inputs: [
+      { id: 'inputPower', label: 'Reference power (W)', type: 'number', placeholder: '1', defaultValue: 1, step: 0.01, min: 0 },
+      { id: 'outputPower', label: 'Measured power (W)', type: 'number', placeholder: '10', defaultValue: 10, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Decibel Calculator (dB) – Power Ratio, Gain & Loss',
+      description: 'Free decibel calculator. Solve dB = 10 × log₁₀(P₂ ÷ P₁) for gain, loss or either power in W, mW or kW, with a worked example and sound-level comparisons.',
+      faq: [
+        { question: 'What is a decibel?', answer: 'A decibel (dB) is a logarithmic measure of the ratio between two power levels: dB = 10 × log₁₀(P₂ ÷ P₁). It compresses huge power ratios into small, additive numbers.' },
+        { question: 'How do I calculate decibels from two power values?', answer: 'Divide the measured power by the reference power, then take 10 times the base-10 logarithm: dB = 10 × log₁₀(P₂ ÷ P₁). 1 W in and 10 W out gives 10 × log₁₀(10) = 10 dB.' },
+        { question: 'What does +3 dB mean?', answer: 'Roughly a doubling of power. Exactly, 10 × log₁₀(2) ≈ 3.01 dB, so a true power doubling rounds to the commonly cited "+3 dB".' },
+        { question: 'What does −10 dB mean?', answer: 'The power has dropped to one tenth of what it was: 10 × log₁₀(0.1) = −10 dB.' },
+        { question: 'Why do some decibel formulas use 20 × log instead of 10 × log?', answer: 'Use 20 × log₁₀ when comparing voltage, current, or sound pressure (amplitude quantities) rather than power directly, since power is proportional to amplitude squared.' },
+        { question: 'What does 0 dB mean?', answer: 'The two powers are equal — a ratio of 1, and log₁₀(1) = 0. It does not mean zero power.' },
+        { question: 'How many decibels is a normal conversation?', answer: 'About 60 dB, measured against the standard reference intensity for sound, 1 × 10⁻¹² W/m². A conversation at roughly 1 µW/m² gives 10 × log₁₀(10⁻⁶ ÷ 10⁻¹²) = 60 dB exactly.' }
+      ]
+    },
+    compute(values) {
+      return { decibels: values.inputPower <= 0 || values.outputPower <= 0 ? NaN : 10 * Math.log10(values.outputPower / values.inputPower) };
+    }
+  },
+  {
+    id: 'radioactive-half-life-calculator',
+    category: 'physics',
+    glyph: 't½',
+    updatedAt: '2026-11-06',
+    aliases: ['half life calculator', 'radioactive decay calculator', 'half-life formula calculator', 'decay calculator', 'carbon dating calculator', 'exponential decay calculator'],
+    related: ['exponent-calculator', 'logarithm-calculator', 'compound-interest-calculator', 'heat-calculator'],
+    title: 'Radioactive Half-Life Calculator',
+    description: 'Solve the radioactive decay equation, N = N₀ × (½)^(t ÷ t½), for the amount remaining, the starting amount, elapsed time, or the half-life itself.',
+    example: 'A 100 g sample of carbon-14 (half-life 5,730 years) decays to exactly 50 g after one half-life.',
+    solver: {
+      defaultTarget: 'remainingAmount',
+      variables: [
+        { id: 'initialAmount', label: 'Starting amount', symbol: 'N₀', dimension: 'mass', defaultValue: 100, defaultUnit: 'g' },
+        { id: 'remainingAmount', label: 'Amount remaining', symbol: 'N', dimension: 'mass', defaultValue: 50, defaultUnit: 'g' },
+        { id: 'elapsedTime', label: 'Elapsed time', symbol: 't', dimension: 'time', defaultValue: 5730, defaultUnit: 'yr' },
+        { id: 'halfLife', label: 'Half-life', symbol: 't½', dimension: 'time', defaultValue: 5730, defaultUnit: 'yr' }
+      ],
+      solve: {
+        remainingAmount: ({ initialAmount, elapsedTime, halfLife }) => initialAmount * Math.pow(0.5, elapsedTime / halfLife),
+        initialAmount: ({ remainingAmount, elapsedTime, halfLife }) => remainingAmount / Math.pow(0.5, elapsedTime / halfLife),
+        elapsedTime: ({ initialAmount, remainingAmount, halfLife }) => (initialAmount <= 0 || remainingAmount <= 0 ? NaN : halfLife * Math.log2(initialAmount / remainingAmount)),
+        halfLife: ({ initialAmount, remainingAmount, elapsedTime }) => (initialAmount <= 0 || remainingAmount <= 0 ? NaN : elapsedTime / Math.log2(initialAmount / remainingAmount))
+      },
+      outputs: [{ id: 'decayConstant', label: 'Decay constant (λ)', dimension: 'frequency', unit: 'Hz', compute: (si) => (si.halfLife === 0 ? Infinity : Math.LN2 / si.halfLife) }]
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'What is radioactive half-life?',
+        paragraphs: [
+          "Unstable atomic nuclei break apart at random, and a sample's radioactivity fades exponentially, not in a straight line. Half-life is the time it takes for half of any sample to decay — whether you start with a gram or a kilogram, the same fraction, one half, is gone after one half-life. The formula N = N₀ × (½)^(t ÷ t½) captures this: N₀ is what you started with, t½ is the isotope's own fixed half-life, t is how long has passed, and N is what's left.",
+          "Half-life is a property of the specific isotope's nucleus, fixed by nuclear physics, not by temperature, pressure, or chemical form. It varies enormously between isotopes: carbon-14 has a half-life of about 5,730 years, the medical isotope technetium-99m decays with a half-life of about 6 hours, and uranium-238 takes about 4.5 billion years. None of these change no matter what compound the atom is part of.",
+          "This is specifically nuclear decay, and it is a different formula from a chemistry reaction's half-life. A first-order chemical reaction's half-life is derived from its rate constant k, as t½ = ln(2) ÷ k, and changes if you change the reaction's conditions. Radioactive half-life is entered directly, as a fixed, measured constant for the isotope — don't reach for a rate constant here, and don't plug a nuclear half-life into a chemical-kinetics formula expecting a k."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of the starting amount, the amount remaining, the elapsed time, and the half-life; the fourth fills in automatically.',
+        steps: [
+          { name: 'Look up the isotope\'s half-life', text: "Each radioactive isotope has its own fixed half-life — 5,730 years for carbon-14, about 6 hours for technetium-99m, and so on. Use the correct value for the isotope in your problem." },
+          { name: 'Enter the three values you know', text: 'Type each value and pick its unit. The field left over, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a time unit converts the number already there, so 5,730 years becomes the equivalent number of days instead of silently turning into 5,730 days.' },
+          { name: 'Read the result and the decay constant', text: "The answer appears in your chosen unit. Underneath it, the decay constant (λ = ln(2) ÷ t½) shows the isotope's per-second probability of decay." }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The decay equation rearranges to solve for any of the four quantities.',
+        expression: 'N = N₀ × (½)^(t ÷ t½)\nN₀ = N ÷ (½)^(t ÷ t½)\nt = t½ × log₂(N₀ ÷ N)\nt½ = t ÷ log₂(N₀ ÷ N)',
+        terms: [
+          { symbol: 'N₀', meaning: 'The starting amount of the radioactive substance (mass, activity, or atom count — any proportional quantity works, since only the ratio N₀ ÷ N matters).' },
+          { symbol: 'N', meaning: 'The amount remaining after time t.' },
+          { symbol: 't', meaning: 'The elapsed time, in the same kind of units as the half-life once converted.' },
+          { symbol: 't½', meaning: "The isotope's half-life — the fixed time for any amount of it to fall to half." },
+          { symbol: 'λ = ln(2) ÷ t½', meaning: 'The decay constant: the fraction of remaining atoms that decay per unit time. Shown as a bonus output in Hz (per second).' }
+        ],
+        note: 'Every time input is converted to SI seconds before solving and converted back afterward, so mixing years and hours is handled automatically.'
+      },
+      workedExample: {
+        intro: 'A 100 g sample of carbon-14 (half-life 5,730 years) is left for exactly one half-life. How much is left, and how slowly does an individual atom of it decay?',
+        rows: [
+          { label: 'Starting amount (N₀)', value: '100 g' },
+          { label: 'Half-life (t½)', value: '5,730 years' },
+          { label: 'Elapsed time (t)', value: '5,730 years (1 half-life)' },
+          { label: 'Remaining (N = 100 × (½)^(5730 ÷ 5730))', value: '100 × 0.5 = 50 g' }
+        ],
+        result: 'N = 50 g · λ ≈ 3.83 × 10⁻¹² Hz',
+        explanation: "After exactly one half-life, half of the sample remains — 50 g, no logarithms needed since the exponent is 1. The decay constant, λ = ln(2) ÷ 5,730 years, converts to about 3.83 × 10⁻¹² per second: an extremely small per-second decay probability for any one atom, which is exactly why a long-lived isotope's radioactivity fades so gradually. After 2,000 years instead of a full half-life, the same sample would have about 78.5 g left — most of it, since 2,000 years is only about a third of carbon-14's half-life."
+      },
+      watchOut: [
+        {
+          title: "This is nuclear half-life, not a chemistry reaction's half-life",
+          body: "A radioactive isotope's half-life is a fixed, measured constant you enter directly. A first-order chemical reaction's half-life (t½ = ln(2) ÷ k) is calculated from a rate constant and changes with the reaction's own conditions — a completely different formula with a different kind of input, even though both describe something falling to half its value."
+        },
+        {
+          title: 'Half-life describes a large sample on average, not one atom',
+          body: "No single atom has a 'half-life' of its own — each one decays at a random moment. Half-life is a statistical statement about huge numbers of atoms: with enough of them, almost exactly half decay in one half-life, the same way a fair coin flipped a million times lands close to half heads."
+        },
+        {
+          title: 'Decay approaches zero but never mathematically reaches it',
+          body: 'After 10 half-lives, about 0.0977% of the original sample is still left — vanishingly little, but never a true zero in this formula. In practice, a sample is usually considered "gone" after 7–10 half-lives.'
+        },
+        {
+          title: 'Different isotopes have wildly different half-lives — use the right one',
+          body: "Carbon-14's half-life (about 5,730 years) is useless for dating a medical tracer that decays in hours, and vice versa. Double-check both the isotope's half-life and that your elapsed-time unit matches the scale of the problem — years for geological or archaeological dating, hours or days for most medical isotopes."
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 3, §10.3 Radioactive Decay', url: 'https://openstax.org/books/university-physics-volume-3/pages/10-3-radioactive-decay' },
+        { label: 'NIST Physical Measurement Laboratory, Radiation Physics', url: 'https://www.nist.gov/pml/radiation-physics' }
+      ]
+    },
+    inputs: [
+      { id: 'initialAmount', label: 'Starting amount (g)', type: 'number', placeholder: '100', defaultValue: 100, step: 0.1, min: 0 },
+      { id: 'elapsedTime', label: 'Elapsed time (years)', type: 'number', placeholder: '5730', defaultValue: 5730, step: 1, min: 0 },
+      { id: 'halfLife', label: 'Half-life (years)', type: 'number', placeholder: '5730', defaultValue: 5730, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Radioactive Half-Life Calculator – Decay Formula',
+      description: 'Free half-life calculator. Solve N = N₀ × (½)^(t/t½) for the amount remaining, starting amount, time, or half-life, with a carbon-14 worked example.',
+      faq: [
+        { question: 'What is the half-life formula?', answer: 'N = N₀ × (½)^(t ÷ t½), where N₀ is the starting amount, t½ is the half-life, t is elapsed time, and N is the amount remaining.' },
+        { question: 'How much of a 100 g sample of carbon-14 is left after 5,730 years?', answer: '50 g — exactly half, since 5,730 years is carbon-14\'s half-life. After two half-lives (11,460 years), 25 g would remain.' },
+        { question: 'How do I calculate elapsed time from the amount remaining?', answer: 't = t½ × log₂(N₀ ÷ N). If 100 g decays to 25 g with a 5,730-year half-life, t = 5,730 × log₂(4) = 5,730 × 2 = 11,460 years.' },
+        { question: 'Is radioactive half-life the same as a chemical reaction\'s half-life?', answer: 'No. Radioactive half-life is a fixed constant for an isotope\'s nucleus, entered directly. A chemical reaction\'s half-life (t½ = ln(2) ÷ k) comes from a rate constant k and depends on the reaction\'s conditions — a different formula for a different kind of process.' },
+        { question: 'What is the decay constant?', answer: 'λ = ln(2) ÷ t½, the fraction of a sample that decays per unit time. Carbon-14, with a 5,730-year half-life, has a decay constant of about 3.83 × 10⁻¹² per second — a tiny per-second decay probability for any one atom.' },
+        { question: 'Does a radioactive sample ever fully decay to zero?', answer: 'Not mathematically — the formula only approaches zero. After 10 half-lives, about 0.0977% of the original amount is still technically present, though in practice the sample is usually treated as gone by then.' },
+        { question: 'What is the half-life of carbon-14?', answer: 'About 5,730 years, the basis for radiocarbon dating of organic material. Other isotopes vary enormously: technetium-99m (used in medical imaging) has a half-life of about 6 hours, while uranium-238 has one of about 4.5 billion years.' }
+      ]
+    },
+    compute(values) {
+      return { remainingAmount: values.initialAmount * Math.pow(0.5, values.elapsedTime / values.halfLife) };
+    }
+  },
+  {
+    id: 'heat-calculator',
+    category: 'physics',
+    glyph: 'Q',
+    updatedAt: '2026-11-06',
+    aliases: ['heat calculator', 'specific heat calculator', 'q = mc delta t calculator', 'heat energy calculator', 'thermal energy calculator', 'heat transfer calculator'],
+    related: ['energy-converter', 'ac-tonnage-btu-calculator', 'kinetic-energy-calculator', 'radioactive-half-life-calculator'],
+    title: 'Heat Calculator (Q = mcΔT)',
+    description: "Solve Q = m × c × ΔT for the heat energy needed to change a substance's temperature, or solve backward for mass, specific heat, or temperature change.",
+    example: "Heating 2 kg of water by 20°C takes about 167.4 kJ, using water's specific heat of 4,186 J/(kg·K).",
+    solver: {
+      defaultTarget: 'heat',
+      variables: [
+        { id: 'heat', label: 'Heat energy', symbol: 'Q', dimension: 'energy', defaultValue: 167440, defaultUnit: 'J' },
+        { id: 'mass', label: 'Mass', symbol: 'm', dimension: 'mass', defaultValue: 2, defaultUnit: 'kg' },
+        { id: 'specificHeat', label: 'Specific heat', symbol: 'c', dimension: 'specificHeat', defaultValue: 4186, defaultUnit: 'J/kgK' },
+        { id: 'deltaT', label: 'Temperature change', symbol: 'ΔT', dimension: 'temperatureDelta', defaultValue: 20, defaultUnit: 'C' }
+      ],
+      solve: {
+        heat: ({ mass, specificHeat, deltaT }) => mass * specificHeat * deltaT,
+        mass: ({ heat, specificHeat, deltaT }) => (specificHeat * deltaT === 0 ? NaN : heat / (specificHeat * deltaT)),
+        specificHeat: ({ heat, mass, deltaT }) => (mass * deltaT === 0 ? NaN : heat / (mass * deltaT)),
+        deltaT: ({ heat, mass, specificHeat }) => (mass * specificHeat === 0 ? NaN : heat / (mass * specificHeat))
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'What is heat (Q = mcΔT)?',
+        paragraphs: [
+          'Heat is energy transferred into or out of something, and raising a temperature always takes energy. How much depends on three things: how much substance there is (mass, m), what it is made of (specific heat capacity, c), and how big a temperature change is wanted (ΔT). The formula Q = m × c × ΔT ties all three together — more mass, a bigger temperature swing, or a substance that resists warming each demand more heat energy.',
+          "Specific heat capacity is a property of the material itself: how many joules it takes to raise one kilogram of it by one kelvin. Water has an unusually high specific heat, about 4,186 J/(kg·K) — compare that to aluminum, around 897 J/(kg·K), which takes less than a quarter as much energy to warm by the same amount. This is the reason water heats up and cools down slowly compared to metal, and part of why coastal climates are milder than inland ones at the same latitude.",
+          'This formula only holds while the substance stays in one phase — solid, liquid, or gas — and simply gets warmer or cooler. Melting ice or boiling water takes a different kind of energy entirely, latent heat, which goes into changing phase rather than changing temperature, and needs its own formula (Q = mL) rather than this one.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of heat energy, mass, specific heat, and temperature change; the fourth fills in automatically.',
+        steps: [
+          { name: "Look up the substance's specific heat", text: "Specific heat varies by material — water is 4,186 J/(kg·K), common values for metals, rocks and other substances are listed in standard physics references. Use the right one for what's being heated." },
+          { name: 'Enter the three values you know', text: 'Type each value and pick its unit. The field left over, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 167,440 J becomes 167.44 kJ instead of silently turning into 167,440 kJ.' },
+          { name: 'Read the result', text: 'The heat energy appears in your chosen unit — joules, kilojoules, kilocalories, or BTU.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The heat formula rearranges three ways, one for each quantity you might be solving for.',
+        expression: 'Q = m × c × ΔT\nm = Q ÷ (c × ΔT)\nc = Q ÷ (m × ΔT)\nΔT = Q ÷ (m × c)',
+        terms: [
+          { symbol: 'Q', meaning: 'Heat energy transferred, in joules (J). Also commonly shown in kilojoules, kilocalories, or BTU.' },
+          { symbol: 'm', meaning: 'The mass of the substance being heated or cooled, in kilograms (kg).' },
+          { symbol: 'c', meaning: "The substance's specific heat capacity, in joules per kilogram-kelvin (J/(kg·K)) — how much energy it takes to raise 1 kg of it by 1 K." },
+          { symbol: 'ΔT', meaning: 'The temperature CHANGE, not a temperature reading — the difference between the final and starting temperature, in kelvin or °C (the two are the same size as a change, unlike °F).' }
+        ],
+        note: 'Mass, specific heat, and heat energy are converted to SI (kg, J/(kg·K), J) before solving; ΔT is converted as an interval, not an absolute reading, since a temperature change has no offset to apply.'
+      },
+      workedExample: {
+        intro: 'How much heat does it take to warm 2 kg of water by 20°C?',
+        rows: [
+          { label: 'Mass (m)', value: '2 kg' },
+          { label: "Specific heat of water (c)", value: '4,186 J/(kg·K)' },
+          { label: 'Temperature change (ΔT)', value: '20°C (= 20 K)' },
+          { label: 'Heat (Q = 2 × 4,186 × 20)', value: '167,440 J' }
+        ],
+        result: 'Q ≈ 167.44 kJ (≈ 40.0 kcal, ≈ 158.7 BTU)',
+        explanation: '2 × 4,186 × 20 = 167,440 J, or 167.44 kJ. In food Calories (kcal), that is 167,440 ÷ 4,184 ≈ 40.0 kcal — about the energy in a small snack. In BTU, 167,440 ÷ 1,055.06 ≈ 158.7 BTU.'
+      },
+      watchOut: [
+        {
+          title: 'ΔT is a change, not a reading',
+          body: "Heating water from 20°C to 40°C gives ΔT = 20, not 40. Plugging in a final temperature instead of the difference between two temperatures overstates the heat needed by a lot."
+        },
+        {
+          title: 'This formula only applies within one phase',
+          body: "Q = mcΔT describes a substance warming or cooling as a solid, liquid, or gas. The energy needed to melt ice or boil water (latent heat) is a separate quantity entirely, given by Q = mL with a substance-specific latent heat L, not by raising the temperature further."
+        },
+        {
+          title: 'Specific heat is different for every substance',
+          body: "Water's specific heat, 4,186 J/(kg·K), is unusually high — most metals are well under a quarter of that (aluminum is about 897 J/(kg·K)). Using the wrong c for the material gives a heat figure that can be off by several times."
+        },
+        {
+          title: 'A 1°C change equals a 1 K change — a 1°F change does not',
+          body: 'This is a temperature interval, not an absolute reading: 1°C and 1 K describe the same-sized step, but 1°F is only 5/9 of that step. An 18°F change converts to exactly 10°C (or 10 K) of change — a different conversion from converting an absolute temperature reading, which also shifts by an offset.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 2, §1.3 Heat, Specific Heat, and Heat Transfer', url: 'https://openstax.org/books/university-physics-volume-2/pages/1-3-heat-specific-heat-and-heat-transfer' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'mass', label: 'Mass (kg)', type: 'number', placeholder: '2', defaultValue: 2, step: 0.1, min: 0 },
+      { id: 'specificHeat', label: 'Specific heat (J/(kg·K))', type: 'number', placeholder: '4186', defaultValue: 4186, step: 1, min: 0 },
+      { id: 'deltaT', label: 'Temperature change (°C)', type: 'number', placeholder: '20', defaultValue: 20, step: 0.1 }
+    ],
+    seo: {
+      title: 'Heat Calculator (Q = mcΔT) – Specific Heat Formula',
+      description: 'Free heat calculator. Solve Q = m × c × ΔT for heat energy, mass, specific heat, or temperature change in J, kJ, kcal or BTU, with a worked example.',
+      faq: [
+        { question: 'What is the heat formula Q = mcΔT?', answer: 'It calculates the heat energy (Q) needed to change a substance\'s temperature: mass (m) times specific heat capacity (c) times the temperature change (ΔT).' },
+        { question: 'How much heat does it take to warm 2 kg of water by 20°C?', answer: '2 × 4,186 × 20 = 167,440 J, or about 167.44 kJ (roughly 40.0 kcal).' },
+        { question: 'What is specific heat capacity?', answer: "A material property: how much energy (in J) it takes to raise 1 kg of that substance by 1 K. Water's is unusually high, about 4,186 J/(kg·K); most metals are well under a quarter of that." },
+        { question: 'How do I find mass from heat, specific heat, and temperature change?', answer: 'Divide heat by the product of specific heat and temperature change: m = Q ÷ (c × ΔT).' },
+        { question: 'Does Q = mcΔT work for melting ice or boiling water?', answer: 'No. Melting and boiling are phase changes that take latent heat (Q = mL), a different formula — Q = mcΔT only applies while the substance stays solid, liquid, or gas without changing phase.' },
+        { question: 'Why does water have such a high specific heat?', answer: "It takes about 4,186 J to raise 1 kg of water by 1 K, versus about 897 J for the same mass of aluminum — more than four times as much. That's why large bodies of water heat up and cool down slowly, moderating nearby climates." },
+        { question: 'Is a temperature change of 1°C the same as 1 kelvin?', answer: 'Yes — a 1°C change and a 1 K change are the exact same size. A 1°F change is smaller, exactly 5/9 of a kelvin, since the Fahrenheit scale divides the same range into more degrees.' }
+      ]
+    },
+    compute(values) {
+      return { heat: values.mass * values.specificHeat * values.deltaT };
+    }
+  },
+  {
+    id: 'lens-mirror-equation-calculator',
+    category: 'physics',
+    glyph: '1/f',
+    updatedAt: '2026-11-06',
+    aliases: ['lens equation calculator', 'mirror equation calculator', 'thin lens calculator', 'focal length calculator', 'image distance calculator', 'object distance calculator'],
+    related: ['wavelength-frequency-calculator', 'decibel-calculator', 'length-converter', 'heat-calculator'],
+    title: 'Lens and Mirror Equation Calculator',
+    description: 'Solve 1/f = 1/dₒ + 1/dᵢ for focal length, object distance, or image distance — the same formula describes both converging lenses and curved mirrors.',
+    example: 'A lens with a 10 cm focal length and an object 30 cm away forms a real, inverted image 15 cm away, at half size.',
+    solver: {
+      defaultTarget: 'imageDistance',
+      variables: [
+        { id: 'focalLength', label: 'Focal length', symbol: 'f', dimension: 'length', defaultValue: 10, defaultUnit: 'cm' },
+        { id: 'objectDistance', label: 'Object distance', symbol: 'dₒ', dimension: 'length', defaultValue: 30, defaultUnit: 'cm' },
+        { id: 'imageDistance', label: 'Image distance', symbol: 'dᵢ', dimension: 'length', defaultValue: 15, defaultUnit: 'cm' }
+      ],
+      solve: {
+        imageDistance: ({ focalLength, objectDistance }) => (objectDistance - focalLength === 0 ? NaN : (focalLength * objectDistance) / (objectDistance - focalLength)),
+        objectDistance: ({ focalLength, imageDistance }) => (imageDistance - focalLength === 0 ? NaN : (focalLength * imageDistance) / (imageDistance - focalLength)),
+        focalLength: ({ objectDistance, imageDistance }) => (objectDistance + imageDistance === 0 ? NaN : (objectDistance * imageDistance) / (objectDistance + imageDistance))
+      },
+      outputs: [{ id: 'magnification', label: 'Magnification (m)', dimension: 'count', compute: (si) => (si.objectDistance === 0 ? NaN : -si.imageDistance / si.objectDistance) }]
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'What is the lens and mirror equation?',
+        paragraphs: [
+          'A thin converging lens and a curved spherical mirror both focus light according to the exact same formula: 1/f = 1/dₒ + 1/dᵢ. f is the focal length (how strongly the lens or mirror bends light), dₒ is how far the object sits from it, and dᵢ is how far away the image forms. Both distances are measured from the center of the lens or mirror, using the standard convention that a real object or image gives a positive distance.',
+          "The result's sign tells you what kind of image forms. A positive dᵢ means a real image — one light rays actually converge to form, which could be projected onto a screen. A negative dᵢ means a virtual image: light only appears to come from that point, the way a magnifying glass makes text look larger without rays actually crossing there. Magnification, m = −dᵢ ÷ dₒ, adds the rest of the picture: a negative m means the image is upside down (inverted), and |m| above or below 1 says whether it is enlarged or shrunk.",
+          "Whether the object sits closer than or farther than the focal length changes everything. An object farther than f (as in a camera or the human eye) forms a real, inverted image on the far side. An object closer than f — exactly how a magnifying glass is used — forms a virtual, upright, enlarged image on the same side as the object instead, which is why dᵢ comes out negative in that case."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of focal length, object distance, and image distance; the third fills in automatically.',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 10 cm becomes 100 mm instead of silently turning into 10 mm.' },
+          { name: 'Read the result and the magnification', text: 'The distance appears in your chosen unit. A negative value means a virtual image. The magnification underneath shows whether the image is upright or inverted, and enlarged or reduced.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The lens and mirror equation rearranges three ways, one for each distance you might be solving for.',
+        expression: '1/f = 1/dₒ + 1/dᵢ\ndᵢ = (f × dₒ) ÷ (dₒ − f)\ndₒ = (f × dᵢ) ÷ (dᵢ − f)\nf = (dₒ × dᵢ) ÷ (dₒ + dᵢ)',
+        terms: [
+          { symbol: 'f', meaning: 'Focal length — positive for a converging lens or concave mirror, negative for a diverging lens or convex mirror.' },
+          { symbol: 'dₒ', meaning: 'Object distance from the lens or mirror, conventionally positive for a real object in front of it.' },
+          { symbol: 'dᵢ', meaning: 'Image distance. Positive is a real image; negative is a virtual image.' },
+          { symbol: 'm = −dᵢ ÷ dₒ', meaning: 'Magnification, shown as a bonus output: negative means inverted, positive means upright; a magnitude above 1 means enlarged.' }
+        ],
+        note: 'All three distances are converted to the same SI unit (meters) before solving and converted back afterward, so mixing centimeters and millimeters is handled automatically.'
+      },
+      workedExample: {
+        intro: 'A converging lens has a 10 cm focal length. An object sits 30 cm in front of it. Where does the image form, and what does it look like?',
+        rows: [
+          { label: 'Focal length (f)', value: '10 cm' },
+          { label: 'Object distance (dₒ)', value: '30 cm' },
+          { label: 'Image distance (dᵢ = (10 × 30) ÷ (30 − 10))', value: '300 ÷ 20 = 15 cm' },
+          { label: 'Magnification (m = −15 ÷ 30)', value: '−0.5' }
+        ],
+        result: 'dᵢ = 15 cm · m = −0.5 (real, inverted, half size)',
+        explanation: 'The image forms 15 cm on the far side of the lens — a positive distance, so it is real. The magnification works out to −0.5: negative means inverted (upside down), and a magnitude of 0.5 means it is half the size of the object. Had the object instead been placed only 5 cm away (inside the focal length), the same formula gives dᵢ = (10 × 5) ÷ (5 − 10) = −10 cm — a virtual, upright image, the way a magnifying glass works.'
+      },
+      watchOut: [
+        {
+          title: 'A negative result is not an error — it means a virtual image',
+          body: "This equation uses a sign convention: a negative image distance (or a negative focal length) is a legitimate answer describing a virtual image or a diverging lens/mirror, not a mistake to be corrected to positive."
+        },
+        {
+          title: 'An object exactly at the focal length has no finite image distance',
+          body: "Placing an object exactly at f sends light out parallel on the other side — the image forms at infinity, not at some large-but-finite distance. The formula's denominator (dₒ − f) becomes 0, which this calculator reports as no answer rather than a wrong number."
+        },
+        {
+          title: 'This is the thin-lens, paraxial approximation',
+          body: "The formula assumes a lens thin enough that its own thickness doesn't matter, and light rays close to the central axis (small angles). Thick lenses, wide-aperture mirrors, and rays far from the axis need more advanced optics to describe accurately."
+        },
+        {
+          title: 'The same equation works for mirrors, with f tied to the radius of curvature',
+          body: 'For a spherical mirror, f = R ÷ 2, where R is the mirror\'s radius of curvature. A concave mirror has a positive f (like a converging lens); a convex mirror has a negative f (like a diverging lens) — enter whichever one applies and the rest of the formula is identical.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 3, §2.2 Spherical Mirrors', url: 'https://openstax.org/books/university-physics-volume-3/pages/2-2-spherical-mirrors' },
+        { label: 'OpenStax, University Physics Volume 3, §2.4 Thin Lenses', url: 'https://openstax.org/books/university-physics-volume-3/pages/2-4-thin-lenses' }
+      ]
+    },
+    inputs: [
+      { id: 'focalLength', label: 'Focal length (cm)', type: 'number', placeholder: '10', defaultValue: 10, step: 0.1 },
+      { id: 'objectDistance', label: 'Object distance (cm)', type: 'number', placeholder: '30', defaultValue: 30, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Lens & Mirror Equation Calculator (1/f = 1/dₒ + 1/dᵢ)',
+      description: 'Free lens and mirror equation calculator. Solve 1/f = 1/dₒ + 1/dᵢ for focal length, object distance, or image distance, with magnification and a worked example.',
+      faq: [
+        { question: 'What is the lens and mirror equation?', answer: '1/f = 1/dₒ + 1/dᵢ, where f is the focal length, dₒ is the object distance, and dᵢ is the image distance. The identical formula describes thin lenses and curved mirrors.' },
+        { question: 'How do I find image distance from focal length and object distance?', answer: 'dᵢ = (f × dₒ) ÷ (dₒ − f). A 10 cm focal length with an object 30 cm away gives dᵢ = (10 × 30) ÷ (30 − 10) = 15 cm.' },
+        { question: 'What does a negative image distance mean?', answer: 'A virtual image — one that only appears to be at that location, the way a magnifying glass makes text look bigger without light rays actually converging there.' },
+        { question: 'How do I calculate magnification?', answer: 'm = −dᵢ ÷ dₒ. With dᵢ = 15 cm and dₒ = 30 cm, m = −15 ÷ 30 = −0.5: the image is inverted (negative sign) and half the size (magnitude 0.5).' },
+        { question: 'Does the lens equation also work for mirrors?', answer: 'Yes. A spherical mirror uses the identical equation, with its focal length related to its radius of curvature by f = R ÷ 2.' },
+        { question: 'What happens when the object is exactly at the focal length?', answer: "There is no finite image distance — the equation's denominator becomes zero, because light leaving the lens or mirror comes out parallel, forming an image only at infinity." },
+        { question: 'How do I find the object distance from focal length and image distance?', answer: 'dₒ = (f × dᵢ) ÷ (dᵢ − f), the same equation rearranged for the other distance.' }
+      ]
+    },
+    compute(values) {
+      return { imageDistance: values.objectDistance - values.focalLength === 0 ? NaN : (values.focalLength * values.objectDistance) / (values.objectDistance - values.focalLength) };
+    }
   }
 ];

@@ -1929,6 +1929,38 @@ exports[`compute() snapshots > date-difference-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > decibel-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "inputPower": 1,
+      "outputPower": 10
+    },
+    "outputs": {
+      "decibels": 10
+    }
+  },
+  "typical": {
+    "inputs": {
+      "inputPower": 1.5,
+      "outputPower": 15
+    },
+    "outputs": {
+      "decibels": 10
+    }
+  },
+  "edge": {
+    "inputs": {
+      "inputPower": 0,
+      "outputPower": 0
+    },
+    "outputs": {
+      "decibels": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > decking-calculator 1`] = `
 {
   "default": {
@@ -3343,6 +3375,41 @@ exports[`compute() snapshots > heart-rate-zones-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > heat-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass": 2,
+      "specificHeat": 4186,
+      "deltaT": 20
+    },
+    "outputs": {
+      "heat": 167440
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass": 3,
+      "specificHeat": 6279,
+      "deltaT": 30
+    },
+    "outputs": {
+      "heat": 565110
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass": 0,
+      "specificHeat": 0,
+      "deltaT": 0
+    },
+    "outputs": {
+      "heat": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > horsepower-to-kilowatts-converter 1`] = `
 {
   "default": {
@@ -3785,6 +3852,38 @@ exports[`compute() snapshots > length-converter 1`] = `
     },
     "outputs": {
       "feet": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > lens-mirror-equation-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "focalLength": 10,
+      "objectDistance": 30
+    },
+    "outputs": {
+      "imageDistance": 15
+    }
+  },
+  "typical": {
+    "inputs": {
+      "focalLength": 15,
+      "objectDistance": 45
+    },
+    "outputs": {
+      "imageDistance": 22.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "focalLength": 0,
+      "objectDistance": 0
+    },
+    "outputs": {
+      "imageDistance": "NaN"
     }
   }
 }
@@ -6271,6 +6370,41 @@ exports[`compute() snapshots > race-time-predictor-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > radioactive-half-life-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "initialAmount": 100,
+      "elapsedTime": 5730,
+      "halfLife": 5730
+    },
+    "outputs": {
+      "remainingAmount": 50
+    }
+  },
+  "typical": {
+    "inputs": {
+      "initialAmount": 150,
+      "elapsedTime": 8595,
+      "halfLife": 8595
+    },
+    "outputs": {
+      "remainingAmount": 75
+    }
+  },
+  "edge": {
+    "inputs": {
+      "initialAmount": 0,
+      "elapsedTime": 0,
+      "halfLife": 0
+    },
+    "outputs": {
+      "remainingAmount": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > ratio-calculator 1`] = `
 {
   "default": {
@@ -8673,6 +8807,38 @@ exports[`compute() snapshots > water-intake-calculator 1`] = `
     "outputs": {
       "dailyOunces": 0,
       "dailyLiters": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > wavelength-frequency-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "speed": 299792458,
+      "frequency": 100000000
+    },
+    "outputs": {
+      "wavelength": 2.99792458
+    }
+  },
+  "typical": {
+    "inputs": {
+      "speed": 449688687,
+      "frequency": 150000000
+    },
+    "outputs": {
+      "wavelength": 2.99792458
+    }
+  },
+  "edge": {
+    "inputs": {
+      "speed": 0,
+      "frequency": 0
+    },
+    "outputs": {
+      "wavelength": "NaN"
     }
   }
 }

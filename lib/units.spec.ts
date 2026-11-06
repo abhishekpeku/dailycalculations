@@ -40,9 +40,9 @@ describe('unit tables', () => {
 
   test('covers the dimensions the v2 rollout needs', () => {
     assert.deepEqual([...dimensions].sort(), [
-      'acceleration', 'angle', 'area', 'capacitance', 'charge', 'count', 'currency', 'current', 'data', 'density', 'energy', 'evEfficiency', 'force',
-      'fuelEconomy', 'fuelPrice', 'length', 'mass', 'momentum', 'pace', 'percent', 'power', 'pressure', 'resistance', 'speed', 'temperature',
-      'term', 'time', 'voltage', 'volume'
+      'acceleration', 'angle', 'area', 'capacitance', 'charge', 'count', 'currency', 'current', 'data', 'decibel', 'density', 'energy',
+      'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'length', 'mass', 'momentum', 'pace', 'percent', 'power', 'pressure',
+      'resistance', 'specificHeat', 'speed', 'temperature', 'temperatureDelta', 'term', 'time', 'voltage', 'volume'
     ]);
   });
 
@@ -161,8 +161,8 @@ describe('anchor values', () => {
     close(convert(10, 'evEfficiency', 'km/kWh', 'kWh/100km'), 10);
     assert.ok(toBase(5, 'evEfficiency', 'mi/kWh') < toBase(3, 'evEfficiency', 'mi/kWh'));
   });
-  test('percent, count and currency are identity', () => {
-    for (const dimension of ['percent', 'count', 'currency'] as const) {
+  test('percent, count, currency and decibel are identity', () => {
+    for (const dimension of ['percent', 'count', 'currency', 'decibel'] as const) {
       assert.equal(UNITS[dimension].length, 1, dimension);
       assert.equal(toBase(7.5, dimension, UNITS[dimension][0].id), 7.5);
     }
@@ -228,6 +228,22 @@ describe('anchor values', () => {
     close(convert(1, 'charge', 'C', 'mC'), 1000);
     close(convert(1, 'charge', 'C', 'uC'), 1e6);
     close(convert(1, 'charge', 'mC', 'nC'), 1e6);
+  });
+  test('frequency: 1 MHz = 1,000,000 Hz, 1 GHz = 1000 MHz', () => {
+    assert.equal(UNITS.frequency[0].id, 'Hz');
+    close(toBase(1, 'frequency', 'MHz'), 1e6);
+    close(convert(1, 'frequency', 'GHz', 'MHz'), 1000);
+  });
+  test('specific heat: 1 J/(g·K) = 1000 J/(kg·K), 1 cal/(g·°C) = 4184 J/(kg·K) (water’s specific heat)', () => {
+    assert.equal(UNITS.specificHeat[0].id, 'J/kgK');
+    close(toBase(1, 'specificHeat', 'J/gK'), 1000);
+    close(toBase(1, 'specificHeat', 'cal/gC'), 4184);
+  });
+  test('temperature delta is an interval, not a reading: 1°C change = 1 K change, 1°F change = 5/9 K change', () => {
+    assert.equal(UNITS.temperatureDelta[0].id, 'K');
+    close(toBase(1, 'temperatureDelta', 'C'), 1);
+    close(toBase(1, 'temperatureDelta', 'F'), 5 / 9);
+    close(convert(18, 'temperatureDelta', 'F', 'C'), 10); // an 18°F swing is the same as a 10°C swing
   });
 });
 

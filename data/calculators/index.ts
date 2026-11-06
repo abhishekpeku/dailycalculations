@@ -113,6 +113,7 @@ export const calculatorOrder: string[] = [
   'series-parallel-resistor-calculator',
   'resistor-color-code-calculator',
   'capacitor-charge-calculator',
+  'wavelength-frequency-calculator',
   'percentage-calculator',
   'percent-change-calculator',
   'percent-difference-calculator',

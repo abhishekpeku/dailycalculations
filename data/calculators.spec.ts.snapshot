@@ -8678,6 +8678,38 @@ exports[`compute() snapshots > water-intake-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > wavelength-frequency-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "speed": 299792458,
+      "frequency": 100000000
+    },
+    "outputs": {
+      "wavelength": 2.99792458
+    }
+  },
+  "typical": {
+    "inputs": {
+      "speed": 449688687,
+      "frequency": 150000000
+    },
+    "outputs": {
+      "wavelength": 2.99792458
+    }
+  },
+  "edge": {
+    "inputs": {
+      "speed": 0,
+      "frequency": 0
+    },
+    "outputs": {
+      "wavelength": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > weight-calculator 1`] = `
 {
   "default": {

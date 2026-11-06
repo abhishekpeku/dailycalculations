@@ -2078,5 +2078,137 @@ export const physicsCalculators: CalculatorConfig[] = [
     compute(values) {
       return { charge: values.capacitance * values.voltage };
     }
+  },
+  {
+    id: 'wavelength-frequency-calculator',
+    category: 'physics',
+    glyph: 'fλ',
+    updatedAt: '2026-11-06',
+    aliases: ['wavelength calculator', 'frequency to wavelength calculator', 'wavelength to frequency calculator', 'wave speed equation calculator', 'v = f lambda calculator', 'speed of light wavelength calculator'],
+    related: ['speed-distance-time-calculator', 'speed-converter', 'length-converter', 'decibel-calculator'],
+    title: 'Wavelength Calculator (v = fλ)',
+    description: 'Solve the wave equation, v = f × λ, for wave speed, frequency, or wavelength — works for light, radio waves, sound, or any periodic wave.',
+    example: 'An FM radio wave at 100 MHz, traveling at the speed of light, has a wavelength of about 3.00 m.',
+    solver: {
+      defaultTarget: 'wavelength',
+      variables: [
+        { id: 'speed', label: 'Wave speed', symbol: 'v', dimension: 'speed', defaultValue: 299792458, defaultUnit: 'm/s' },
+        { id: 'frequency', label: 'Frequency', symbol: 'f', dimension: 'frequency', defaultValue: 100, defaultUnit: 'MHz' },
+        { id: 'wavelength', label: 'Wavelength', symbol: 'λ', dimension: 'length', defaultValue: 2.99792458, defaultUnit: 'm' }
+      ],
+      solve: {
+        wavelength: ({ speed, frequency }) => (frequency === 0 ? NaN : speed / frequency),
+        frequency: ({ speed, wavelength }) => (wavelength === 0 ? NaN : speed / wavelength),
+        speed: ({ frequency, wavelength }) => frequency * wavelength
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'frequency',
+          min: 6,
+          max: 18,
+          ticks: ['1 MHz', '1 GHz', '1 THz', '1 PHz', '1 EHz'],
+          benchmarks: [
+            { label: 'AM radio broadcast band', value: 1e6 },
+            { label: 'FM radio broadcast band', value: 1e8 },
+            { label: 'Wi-Fi (2.4 GHz band)', value: 2.4e9 },
+            { label: 'Visible light (green, ~550 nm)', value: 5.45e14 },
+            { label: 'Diagnostic X-rays (typical)', value: 3e18 }
+          ],
+          title: 'How does that compare?',
+          valueLabel: 'Your frequency'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'What is the wave equation?',
+        paragraphs: [
+          "Every traveling wave — light, sound, water ripples, radio signals — links the same three quantities: how fast it moves, how often it repeats, and how long each repeat is. The wave equation, v = f × λ, says a wave's speed equals its frequency times its wavelength. It holds for any periodic wave, not just light, because it is really just a restatement of speed = distance ÷ time: in one period, a wave moves forward exactly one wavelength, and frequency is the number of periods per second.",
+          'Frequency and wavelength trade off against each other at a fixed speed. A radio station broadcasting at a higher frequency packs more wave crests into each second, so each individual crest-to-crest distance — the wavelength — must be shorter. This is why AM radio, with frequencies around 1 MHz, uses enormous antennas (its wavelength is hundreds of meters), while Wi-Fi, at a few GHz, fits its much shorter wavelength onto a small antenna inside a phone.',
+          "For light and all other electromagnetic waves traveling through a vacuum, v is a universal constant: the speed of light, c = 299,792,458 m/s exactly. It is exact because the metre has been defined since 1983 as the distance light travels in 1 ⁄ 299,792,458 of a second — the speed is fixed by definition, not measured. Sound is a completely different kind of wave; it needs this calculator's speed field set to the actual speed of sound in whatever it's traveling through (about 343 m/s in dry air at 20 °C), which is nowhere near the speed of light."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of wave speed, frequency and wavelength; the third fills in automatically — so the same page answers "what wavelength", "what frequency" and "how fast".',
+        steps: [
+          { name: 'Pick the right wave speed', text: "Leave the speed at the speed of light for radio, microwaves, light or any other electromagnetic wave in a vacuum or air. Replace it with the speed of sound (or another wave's actual speed) for non-electromagnetic waves." },
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit from the menu beside it. The third field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'To solve for a different quantity, type into the auto field. It becomes an input, and the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 100 MHz becomes 100,000,000 Hz instead of silently turning into 100 Hz.' },
+          { name: 'Read the result and the scale', text: 'The answer appears in your chosen unit. The scale shows where your frequency sits among the radio, Wi-Fi, visible-light and X-ray bands.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The wave equation rearranges three ways, one for each quantity you might be solving for.',
+        expression: 'v = f × λ\nf = v ÷ λ\nλ = v ÷ f',
+        terms: [
+          { symbol: 'v', meaning: 'Wave speed, in meters per second (m/s) — the speed of light (c) for electromagnetic waves, or the actual speed of sound, water or another medium otherwise.' },
+          { symbol: 'f', meaning: 'Frequency, in hertz (Hz) — the number of complete wave cycles passing a point each second. 1 Hz = 1 cycle/s.' },
+          { symbol: 'λ', meaning: 'Wavelength (the Greek letter lambda), in meters (m) — the distance between two consecutive identical points on the wave, such as crest to crest.' },
+          { symbol: 'T = 1 ÷ f', meaning: 'The period: the time for one full cycle. Frequency and period are reciprocals of each other.' }
+        ],
+        note: 'Every input is converted to SI units (m/s, Hz, m) before solving and converted back afterward, so entering frequency in MHz or wavelength in nanometers is handled automatically.'
+      },
+      workedExample: {
+        intro: 'An FM radio station broadcasts at 100 MHz. Radio waves are electromagnetic, so they travel at the speed of light. What is the wavelength?',
+        rows: [
+          { label: 'Wave speed (v = c)', value: '299,792,458 m/s' },
+          { label: 'Frequency (f)', value: '100 MHz = 100,000,000 Hz' },
+          { label: 'Wavelength (λ = v ÷ f)', value: '299,792,458 ÷ 100,000,000 = 2.9979 m' }
+        ],
+        result: 'λ ≈ 3.00 m',
+        explanation: "Dividing the speed of light by the frequency gives 2.9979 m, which rounds to about 3.00 m — roughly the length of a small car. This is also why FM antennas are commonly cut to a quarter or half of that wavelength, around 0.75–1.5 m, a practical length for a car or rooftop antenna."
+      },
+      watchOut: [
+        {
+          title: "v isn't always the speed of light",
+          body: "Only electromagnetic waves (light, radio, microwaves, X-rays) travel at c in a vacuum. Sound, water waves, and vibrations in a solid each have their own, usually far slower, speed — plug in that wave's actual speed, not c, or the frequency and wavelength will both come out wrong."
+        },
+        {
+          title: 'The speed of sound depends on the medium and temperature',
+          body: "343 m/s is a commonly cited value for dry air at 20 °C, but sound travels faster in warmer air, and much faster in water (~1,480 m/s) or steel (~5,000 m/s). There is no single 'speed of sound' the way there is a single speed of light."
+        },
+        {
+          title: 'Higher frequency means shorter wavelength, not longer',
+          body: 'Because v = f × λ holds the product of frequency and wavelength fixed at a given speed, the two move in opposite directions. Gamma rays have far higher frequency — and far shorter wavelength — than radio waves, even though both travel at c.'
+        },
+        {
+          title: 'Frequency and period are reciprocals, not the same number',
+          body: 'If a problem gives you the period (the time per cycle) instead of frequency, invert it first: f = 1 ÷ T. Plugging a period directly into the frequency field will give a wavelength that is off by a large factor.'
+        },
+        {
+          title: "A wave's speed can change when it enters a new medium",
+          body: 'Light slows down when it passes from air into glass or water, which is exactly what bends it (refraction). Its frequency stays the same, so its wavelength inside the new medium must shrink to match the slower speed — the wave equation still holds, just with a different v.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §16.2 Mathematics of Waves', url: 'https://openstax.org/books/university-physics-volume-1/pages/16-2-mathematics-of-waves' },
+        { label: 'OpenStax, University Physics Volume 2, §16.5 The Electromagnetic Spectrum', url: 'https://openstax.org/books/university-physics-volume-2/pages/16-5-the-electromagnetic-spectrum' },
+        { label: 'NIST, Fundamental Physical Constants — speed of light in vacuum (exact, by SI definition)', url: 'https://physics.nist.gov/cgi-bin/cuu/Value?c' }
+      ]
+    },
+    inputs: [
+      { id: 'speed', label: 'Wave speed (m/s)', type: 'number', placeholder: '299792458', defaultValue: 299792458, step: 1, min: 0 },
+      { id: 'frequency', label: 'Frequency (Hz)', type: 'number', placeholder: '100000000', defaultValue: 1e8, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Wavelength Calculator (v = fλ) – Frequency & Speed',
+      description: 'Free wavelength calculator. Solve v = f × λ for wave speed, frequency or wavelength in m/s, Hz, MHz or m, for light, radio or sound, with a worked example.',
+      faq: [
+        { question: 'What is the wave equation, v = fλ?', answer: "It says a wave's speed equals its frequency times its wavelength: v = f × λ. It holds for any traveling wave — light, sound, water, radio — because in one period a wave moves forward exactly one wavelength." },
+        { question: 'How do I calculate wavelength from frequency?', answer: 'Divide the wave speed by the frequency: λ = v ÷ f. A 100 MHz radio wave traveling at the speed of light has a wavelength of 299,792,458 ÷ 100,000,000 ≈ 3.00 m.' },
+        { question: 'How do I calculate frequency from wavelength?', answer: 'Divide the wave speed by the wavelength: f = v ÷ λ. A wave 3 m long traveling at the speed of light has a frequency of 299,792,458 ÷ 3 ≈ 100 MHz.' },
+        { question: 'Does this calculator work for sound waves?', answer: "Yes — enter the actual speed of sound (about 343 m/s in dry air at 20 °C) in the wave speed field instead of the speed of light. The same v = f × λ relationship applies to any wave." },
+        { question: 'What is the exact speed of light?', answer: '299,792,458 meters per second, exactly. Since 1983 the metre has been defined as the distance light travels in 1 ⁄ 299,792,458 of a second, which fixes this value by definition rather than by measurement.' },
+        { question: 'Why do higher-frequency waves have shorter wavelengths?', answer: "Because speed is fixed for a given medium, frequency and wavelength must trade off to keep their product constant. Gamma rays have an extremely high frequency and a correspondingly tiny wavelength; AM radio waves have a low frequency and a wavelength hundreds of meters long." },
+        { question: 'How are frequency and period related?', answer: 'They are reciprocals: f = 1 ÷ T. A wave with a period of 0.01 seconds has a frequency of 1 ÷ 0.01 = 100 Hz.' }
+      ]
+    },
+    compute(values) {
+      return { wavelength: values.frequency === 0 ? NaN : values.speed / values.frequency };
+    }
   }
 ];

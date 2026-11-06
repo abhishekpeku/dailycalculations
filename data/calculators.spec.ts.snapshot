@@ -6303,6 +6303,41 @@ exports[`compute() snapshots > race-time-predictor-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > radioactive-half-life-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "initialAmount": 100,
+      "elapsedTime": 5730,
+      "halfLife": 5730
+    },
+    "outputs": {
+      "remainingAmount": 50
+    }
+  },
+  "typical": {
+    "inputs": {
+      "initialAmount": 150,
+      "elapsedTime": 8595,
+      "halfLife": 8595
+    },
+    "outputs": {
+      "remainingAmount": 75
+    }
+  },
+  "edge": {
+    "inputs": {
+      "initialAmount": 0,
+      "elapsedTime": 0,
+      "halfLife": 0
+    },
+    "outputs": {
+      "remainingAmount": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > ratio-calculator 1`] = `
 {
   "default": {

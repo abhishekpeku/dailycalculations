@@ -115,6 +115,7 @@ export const calculatorOrder: string[] = [
   'capacitor-charge-calculator',
   'wavelength-frequency-calculator',
   'decibel-calculator',
+  'radioactive-half-life-calculator',
   'percentage-calculator',
   'percent-change-calculator',
   'percent-difference-calculator',

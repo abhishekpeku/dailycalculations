@@ -2324,5 +2324,120 @@ export const physicsCalculators: CalculatorConfig[] = [
     compute(values) {
       return { decibels: values.inputPower <= 0 || values.outputPower <= 0 ? NaN : 10 * Math.log10(values.outputPower / values.inputPower) };
     }
+  },
+  {
+    id: 'radioactive-half-life-calculator',
+    category: 'physics',
+    glyph: 't½',
+    updatedAt: '2026-11-06',
+    aliases: ['half life calculator', 'radioactive decay calculator', 'half-life formula calculator', 'decay calculator', 'carbon dating calculator', 'exponential decay calculator'],
+    related: ['exponent-calculator', 'logarithm-calculator', 'compound-interest-calculator', 'heat-calculator'],
+    title: 'Radioactive Half-Life Calculator',
+    description: 'Solve the radioactive decay equation, N = N₀ × (½)^(t ÷ t½), for the amount remaining, the starting amount, elapsed time, or the half-life itself.',
+    example: 'A 100 g sample of carbon-14 (half-life 5,730 years) decays to exactly 50 g after one half-life.',
+    solver: {
+      defaultTarget: 'remainingAmount',
+      variables: [
+        { id: 'initialAmount', label: 'Starting amount', symbol: 'N₀', dimension: 'mass', defaultValue: 100, defaultUnit: 'g' },
+        { id: 'remainingAmount', label: 'Amount remaining', symbol: 'N', dimension: 'mass', defaultValue: 50, defaultUnit: 'g' },
+        { id: 'elapsedTime', label: 'Elapsed time', symbol: 't', dimension: 'time', defaultValue: 5730, defaultUnit: 'yr' },
+        { id: 'halfLife', label: 'Half-life', symbol: 't½', dimension: 'time', defaultValue: 5730, defaultUnit: 'yr' }
+      ],
+      solve: {
+        remainingAmount: ({ initialAmount, elapsedTime, halfLife }) => initialAmount * Math.pow(0.5, elapsedTime / halfLife),
+        initialAmount: ({ remainingAmount, elapsedTime, halfLife }) => remainingAmount / Math.pow(0.5, elapsedTime / halfLife),
+        elapsedTime: ({ initialAmount, remainingAmount, halfLife }) => (initialAmount <= 0 || remainingAmount <= 0 ? NaN : halfLife * Math.log2(initialAmount / remainingAmount)),
+        halfLife: ({ initialAmount, remainingAmount, elapsedTime }) => (initialAmount <= 0 || remainingAmount <= 0 ? NaN : elapsedTime / Math.log2(initialAmount / remainingAmount))
+      },
+      outputs: [{ id: 'decayConstant', label: 'Decay constant (λ)', dimension: 'frequency', unit: 'Hz', compute: (si) => (si.halfLife === 0 ? Infinity : Math.LN2 / si.halfLife) }]
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'What is radioactive half-life?',
+        paragraphs: [
+          "Unstable atomic nuclei break apart at random, and a sample's radioactivity fades exponentially, not in a straight line. Half-life is the time it takes for half of any sample to decay — whether you start with a gram or a kilogram, the same fraction, one half, is gone after one half-life. The formula N = N₀ × (½)^(t ÷ t½) captures this: N₀ is what you started with, t½ is the isotope's own fixed half-life, t is how long has passed, and N is what's left.",
+          "Half-life is a property of the specific isotope's nucleus, fixed by nuclear physics, not by temperature, pressure, or chemical form. It varies enormously between isotopes: carbon-14 has a half-life of about 5,730 years, the medical isotope technetium-99m decays with a half-life of about 6 hours, and uranium-238 takes about 4.5 billion years. None of these change no matter what compound the atom is part of.",
+          "This is specifically nuclear decay, and it is a different formula from a chemistry reaction's half-life. A first-order chemical reaction's half-life is derived from its rate constant k, as t½ = ln(2) ÷ k, and changes if you change the reaction's conditions. Radioactive half-life is entered directly, as a fixed, measured constant for the isotope — don't reach for a rate constant here, and don't plug a nuclear half-life into a chemical-kinetics formula expecting a k."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of the starting amount, the amount remaining, the elapsed time, and the half-life; the fourth fills in automatically.',
+        steps: [
+          { name: 'Look up the isotope\'s half-life', text: "Each radioactive isotope has its own fixed half-life — 5,730 years for carbon-14, about 6 hours for technetium-99m, and so on. Use the correct value for the isotope in your problem." },
+          { name: 'Enter the three values you know', text: 'Type each value and pick its unit. The field left over, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a time unit converts the number already there, so 5,730 years becomes the equivalent number of days instead of silently turning into 5,730 days.' },
+          { name: 'Read the result and the decay constant', text: "The answer appears in your chosen unit. Underneath it, the decay constant (λ = ln(2) ÷ t½) shows the isotope's per-second probability of decay." }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The decay equation rearranges to solve for any of the four quantities.',
+        expression: 'N = N₀ × (½)^(t ÷ t½)\nN₀ = N ÷ (½)^(t ÷ t½)\nt = t½ × log₂(N₀ ÷ N)\nt½ = t ÷ log₂(N₀ ÷ N)',
+        terms: [
+          { symbol: 'N₀', meaning: 'The starting amount of the radioactive substance (mass, activity, or atom count — any proportional quantity works, since only the ratio N₀ ÷ N matters).' },
+          { symbol: 'N', meaning: 'The amount remaining after time t.' },
+          { symbol: 't', meaning: 'The elapsed time, in the same kind of units as the half-life once converted.' },
+          { symbol: 't½', meaning: "The isotope's half-life — the fixed time for any amount of it to fall to half." },
+          { symbol: 'λ = ln(2) ÷ t½', meaning: 'The decay constant: the fraction of remaining atoms that decay per unit time. Shown as a bonus output in Hz (per second).' }
+        ],
+        note: 'Every time input is converted to SI seconds before solving and converted back afterward, so mixing years and hours is handled automatically.'
+      },
+      workedExample: {
+        intro: 'A 100 g sample of carbon-14 (half-life 5,730 years) is left for exactly one half-life. How much is left, and how slowly does an individual atom of it decay?',
+        rows: [
+          { label: 'Starting amount (N₀)', value: '100 g' },
+          { label: 'Half-life (t½)', value: '5,730 years' },
+          { label: 'Elapsed time (t)', value: '5,730 years (1 half-life)' },
+          { label: 'Remaining (N = 100 × (½)^(5730 ÷ 5730))', value: '100 × 0.5 = 50 g' }
+        ],
+        result: 'N = 50 g · λ ≈ 3.83 × 10⁻¹² Hz',
+        explanation: "After exactly one half-life, half of the sample remains — 50 g, no logarithms needed since the exponent is 1. The decay constant, λ = ln(2) ÷ 5,730 years, converts to about 3.83 × 10⁻¹² per second: an extremely small per-second decay probability for any one atom, which is exactly why a long-lived isotope's radioactivity fades so gradually. After 2,000 years instead of a full half-life, the same sample would have about 78.5 g left — most of it, since 2,000 years is only about a third of carbon-14's half-life."
+      },
+      watchOut: [
+        {
+          title: "This is nuclear half-life, not a chemistry reaction's half-life",
+          body: "A radioactive isotope's half-life is a fixed, measured constant you enter directly. A first-order chemical reaction's half-life (t½ = ln(2) ÷ k) is calculated from a rate constant and changes with the reaction's own conditions — a completely different formula with a different kind of input, even though both describe something falling to half its value."
+        },
+        {
+          title: 'Half-life describes a large sample on average, not one atom',
+          body: "No single atom has a 'half-life' of its own — each one decays at a random moment. Half-life is a statistical statement about huge numbers of atoms: with enough of them, almost exactly half decay in one half-life, the same way a fair coin flipped a million times lands close to half heads."
+        },
+        {
+          title: 'Decay approaches zero but never mathematically reaches it',
+          body: 'After 10 half-lives, about 0.0977% of the original sample is still left — vanishingly little, but never a true zero in this formula. In practice, a sample is usually considered "gone" after 7–10 half-lives.'
+        },
+        {
+          title: 'Different isotopes have wildly different half-lives — use the right one',
+          body: "Carbon-14's half-life (about 5,730 years) is useless for dating a medical tracer that decays in hours, and vice versa. Double-check both the isotope's half-life and that your elapsed-time unit matches the scale of the problem — years for geological or archaeological dating, hours or days for most medical isotopes."
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 3, §10.3 Radioactive Decay', url: 'https://openstax.org/books/university-physics-volume-3/pages/10-3-radioactive-decay' },
+        { label: 'NIST Physical Measurement Laboratory, Radiation Physics', url: 'https://www.nist.gov/pml/radiation-physics' }
+      ]
+    },
+    inputs: [
+      { id: 'initialAmount', label: 'Starting amount (g)', type: 'number', placeholder: '100', defaultValue: 100, step: 0.1, min: 0 },
+      { id: 'elapsedTime', label: 'Elapsed time (years)', type: 'number', placeholder: '5730', defaultValue: 5730, step: 1, min: 0 },
+      { id: 'halfLife', label: 'Half-life (years)', type: 'number', placeholder: '5730', defaultValue: 5730, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Radioactive Half-Life Calculator – Decay Formula',
+      description: 'Free half-life calculator. Solve N = N₀ × (½)^(t/t½) for the amount remaining, starting amount, time, or half-life, with a carbon-14 worked example.',
+      faq: [
+        { question: 'What is the half-life formula?', answer: 'N = N₀ × (½)^(t ÷ t½), where N₀ is the starting amount, t½ is the half-life, t is elapsed time, and N is the amount remaining.' },
+        { question: 'How much of a 100 g sample of carbon-14 is left after 5,730 years?', answer: '50 g — exactly half, since 5,730 years is carbon-14\'s half-life. After two half-lives (11,460 years), 25 g would remain.' },
+        { question: 'How do I calculate elapsed time from the amount remaining?', answer: 't = t½ × log₂(N₀ ÷ N). If 100 g decays to 25 g with a 5,730-year half-life, t = 5,730 × log₂(4) = 5,730 × 2 = 11,460 years.' },
+        { question: 'Is radioactive half-life the same as a chemical reaction\'s half-life?', answer: 'No. Radioactive half-life is a fixed constant for an isotope\'s nucleus, entered directly. A chemical reaction\'s half-life (t½ = ln(2) ÷ k) comes from a rate constant k and depends on the reaction\'s conditions — a different formula for a different kind of process.' },
+        { question: 'What is the decay constant?', answer: 'λ = ln(2) ÷ t½, the fraction of a sample that decays per unit time. Carbon-14, with a 5,730-year half-life, has a decay constant of about 3.83 × 10⁻¹² per second — a tiny per-second decay probability for any one atom.' },
+        { question: 'Does a radioactive sample ever fully decay to zero?', answer: 'Not mathematically — the formula only approaches zero. After 10 half-lives, about 0.0977% of the original amount is still technically present, though in practice the sample is usually treated as gone by then.' },
+        { question: 'What is the half-life of carbon-14?', answer: 'About 5,730 years, the basis for radiocarbon dating of organic material. Other isotopes vary enormously: technetium-99m (used in medical imaging) has a half-life of about 6 hours, while uranium-238 has one of about 4.5 billion years.' }
+      ]
+    },
+    compute(values) {
+      return { remainingAmount: values.initialAmount * Math.pow(0.5, values.elapsedTime / values.halfLife) };
+    }
   }
 ];

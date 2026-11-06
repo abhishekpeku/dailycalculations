@@ -525,5 +525,137 @@ export const physicsCalculators: CalculatorConfig[] = [
     compute(values) {
       return { energy: 0.5 * values.mass * values.velocity * values.velocity };
     }
+  },
+  {
+    id: 'potential-energy-calculator',
+    category: 'physics',
+    glyph: 'PE',
+    updatedAt: '2026-11-06',
+    aliases: ['gravitational potential energy calculator', 'pe = mgh calculator', 'height energy calculator', 'stored energy calculator', 'mgh calculator'],
+    related: ['kinetic-energy-calculator', 'work-calculator', 'energy-converter', 'force-calculator'],
+    title: 'Potential Energy Calculator (PE = mgh)',
+    description: 'Calculate gravitational potential energy from mass and height above a reference point — PE = m × g × h — or solve backward for mass or height.',
+    example: 'A 65 kg hiker standing 250 m above the trailhead carries about 159,358 J (159.4 kJ) of gravitational potential energy relative to the start.',
+    solver: {
+      defaultTarget: 'energy',
+      variables: [
+        { id: 'energy', label: 'Potential energy', symbol: 'PE', dimension: 'energy', defaultValue: 159.4, defaultUnit: 'kJ' },
+        { id: 'mass', label: 'Mass', symbol: 'm', dimension: 'mass', defaultValue: 65, defaultUnit: 'kg' },
+        { id: 'height', label: 'Height', symbol: 'h', dimension: 'length', defaultValue: 250, defaultUnit: 'm' }
+      ],
+      solve: {
+        energy: ({ mass, height }) => mass * STANDARD_GRAVITY * height,
+        mass: ({ energy, height }) => (height === 0 ? NaN : energy / (STANDARD_GRAVITY * height)),
+        height: ({ energy, mass }) => (mass === 0 ? NaN : energy / (STANDARD_GRAVITY * mass))
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'energy',
+          min: -1,
+          max: 7,
+          ticks: ['0.1 J', '10 J', '1 kJ', '100 kJ', '10 MJ'],
+          benchmarks: [
+            { label: 'Lifting a 102 g apple 1 meter', value: 1.0003 },
+            { label: 'A 100 mph fastball (0.145 kg baseball)', value: 144.9 },
+            { label: 'A 100 W bulb, running for 1 minute', value: 6000 },
+            { label: 'A 1,500 kg car at 100 km/h', value: 578700 }
+          ],
+          title: 'How big is that energy?',
+          valueLabel: 'Your potential energy'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'What is gravitational potential energy?',
+        paragraphs: [
+          'Gravitational potential energy is energy an object has because of its height above some reference point, stored there by whatever lifted it against gravity. A book on a shelf, water behind a dam, and a hiker partway up a hill all carry potential energy that can convert into motion (kinetic energy) the moment something lets them fall.',
+          'The formula PE = mgh only holds near a planet\'s surface, where gravitational acceleration g is close to constant over the height involved. OpenStax writes this gravitational potential energy as U(y) = mgy, measuring height as y from a chosen zero point — the same relationship this calculator uses, with h for height.',
+          "Potential energy is always relative. Choosing the ground floor as height zero gives a different number than choosing sea level, but the *difference* in potential energy between two heights — which is what actually matters for energy conservation — comes out the same regardless of where you set zero."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of potential energy, mass and height; the third fills in automatically — gravity is held at the standard 9.80665 m/s² used throughout this calculator.',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type.' },
+          { name: 'Set height from a clear reference point', text: 'Measure height straight up from whatever you are calling "zero" — the ground, a table top, or sea level — not along a slope or path.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 250 m becomes 820.2 ft instead of silently turning into 250 ft.' },
+          { name: 'Read the result and the scale', text: 'The answer shows in your chosen energy unit, with the scale below placing it among a few everyday reference points.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The potential energy formula rearranges to solve for mass or height as well as energy.',
+        expression: 'PE = m × g × h\nm = PE ÷ (g × h)\nh = PE ÷ (m × g)',
+        terms: [
+          { symbol: 'PE', meaning: 'Gravitational potential energy, in joules (J), relative to the height you measure from.' },
+          { symbol: 'm', meaning: 'Mass of the object, in kilograms (kg).' },
+          { symbol: 'g', meaning: 'Gravitational acceleration, fixed here at standard gravity, 9.80665 m/s².' },
+          { symbol: 'h', meaning: 'Height above the reference point, in meters (m), measured vertically.' }
+        ],
+        note: "This formula assumes roughly constant gravity, which holds near a planet's surface. It is not accurate for heights large enough that gravity itself changes meaningfully, such as a satellite's orbit."
+      },
+      workedExample: {
+        intro: 'A 65 kg hiker climbs to a point 250 m above the trailhead. How much potential energy has the hiker gained, relative to the start?',
+        rows: [
+          { label: 'Mass (m)', value: '65 kg' },
+          { label: 'Gravity (g)', value: '9.80665 m/s²' },
+          { label: 'Height (h)', value: '250 m' },
+          { label: 'Potential energy (PE = 65 × 9.80665 × 250)', value: '159,358.06 J' }
+        ],
+        result: 'PE ≈ 159.4 kJ · 44.27 Wh · 38.09 kcal',
+        explanation: '65 × 9.80665 = 637.43, and 637.43 × 250 = 159,358.06 J. That is about 159.4 kJ, or about 44.3 Wh — roughly the energy a hiker would release as heat and sound if they fell straight back down to the trailhead, ignoring air resistance.'
+      },
+      watchOut: [
+        {
+          title: 'Potential energy is relative to a reference point',
+          body: 'Moving the "zero" height up or down changes the number you calculate, but not the physics — only differences in potential energy between two points actually affect motion. Always be clear about what height you are measuring from.'
+        },
+        {
+          title: 'Height means vertical rise, not distance traveled',
+          body: 'A hiker who switchbacks up a long, gentle trail covers far more ground distance than the straight-line vertical height they gain. Use the net vertical height for h, not the length of the path.'
+        },
+        {
+          title: 'PE = mgh assumes gravity is roughly constant',
+          body: "This formula is only accurate near a planet's surface, where g barely changes with height. For heights comparable to a planet's radius — satellites and orbits, for instance — a different, non-linear form of gravitational potential energy applies."
+        },
+        {
+          title: "It's gravitational potential energy specifically",
+          body: 'Other forms of potential energy exist — a stretched spring stores elastic potential energy, a charged battery stores electrical potential energy — and none of them use mgh. This formula only applies to height in a gravity field.'
+        },
+        {
+          title: 'The path taken does not matter, only the net height',
+          body: "Because gravity is a conservative force, the potential energy gained depends only on the net change in height, not on the route taken to get there. A hiker gains the same potential energy walking straight up a cliff or zigzagging up a gentle trail to the same final height."
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §8.1 Potential Energy of a System', url: 'https://openstax.org/books/university-physics-volume-1/pages/8-1-potential-energy-of-a-system' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'BIPM, The International System of Units (SI Brochure)', url: 'https://www.bipm.org/en/publications/si-brochure' }
+      ]
+    },
+    inputs: [
+      { id: 'mass', label: 'Mass (kg)', type: 'number', placeholder: '65', defaultValue: 65, step: 0.1, min: 0 },
+      { id: 'height', label: 'Height (m)', type: 'number', placeholder: '250', defaultValue: 250, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Potential Energy Calculator (PE = mgh)',
+      description: 'Free gravitational potential energy calculator. Solve PE = mgh for energy, mass or height in joules, kJ, kWh or kcal, with a worked hiking example.',
+      faq: [
+        { question: 'What is the formula for gravitational potential energy?', answer: 'PE = m × g × h, where m is mass in kilograms, g is gravitational acceleration (9.80665 m/s² near Earth\'s surface), and h is height in meters. The result is in joules.' },
+        { question: 'How much potential energy does a 65 kg hiker have 250 m up a hill?', answer: 'PE = 65 × 9.80665 × 250 ≈ 159,358 J, about 159.4 kJ, relative to the base of the hill.' },
+        { question: 'Why does potential energy depend on the reference point?', answer: 'Height, and therefore PE, is always measured relative to a chosen zero point. Changing where "zero" is shifts every PE value by the same amount, but the difference in PE between two heights — the figure that actually matters physically — stays the same.' },
+        { question: 'What is g in the potential energy formula?', answer: 'Standard gravitational acceleration, fixed at 9.80665 m/s² near Earth\'s surface. This calculator uses that value throughout.' },
+        { question: 'How is potential energy different from kinetic energy?', answer: 'Potential energy is stored energy due to position (height in a gravity field); kinetic energy is the energy of motion (depends on mass and speed). A falling object converts potential energy into kinetic energy as it drops.' },
+        { question: 'Does potential energy depend on the path taken to reach a height?', answer: 'No. Gravity is a conservative force, so potential energy depends only on the net vertical height gained, not on the route taken to get there.' },
+        { question: 'How do I convert joules of potential energy to kilowatt-hours?', answer: 'Divide by 3,600,000. A potential energy of 159,358 J is 159,358 ÷ 3,600,000 ≈ 0.0443 kWh.' }
+      ]
+    },
+    compute(values) {
+      return { energy: values.mass * STANDARD_GRAVITY * values.height };
+    }
   }
 ];

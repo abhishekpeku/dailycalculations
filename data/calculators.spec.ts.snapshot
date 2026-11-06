@@ -5473,6 +5473,38 @@ exports[`compute() snapshots > pool-volume-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > potential-energy-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass": 65,
+      "height": 250
+    },
+    "outputs": {
+      "energy": 159358.0625
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass": 97.5,
+      "height": 375
+    },
+    "outputs": {
+      "energy": 358555.6406
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass": 0,
+      "height": 0
+    },
+    "outputs": {
+      "energy": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > pounds-to-kilograms-converter 1`] = `
 {
   "default": {

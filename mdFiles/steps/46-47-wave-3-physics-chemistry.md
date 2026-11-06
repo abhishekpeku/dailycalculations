@@ -119,7 +119,7 @@ a locked spec.
   - [x] speed-distance-time-calculator
   - [x] weight-calculator
   - [x] kinetic-energy-calculator
-  - [ ] potential-energy-calculator
+  - [x] potential-energy-calculator
   - [ ] work-calculator
   - New `lib/units.ts` dimension added this run: `angle` (base radian, `deg` = π/180 rad — BIPM SI
     Brochure §2.3.3), needed for work-calculator's F·d·cos θ. Round-trip + anchor test in

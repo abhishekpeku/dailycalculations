@@ -227,7 +227,50 @@ a locked spec.
     (200, correct H1, JSON-LD, every section id present — concept/how-to-use/formula/worked-example/
     watch-out/faq/references/related — note the real id is `how-to-use`, not `how-to`).
   - 214 calculators total after this run (209 + 5).
-- [ ] Chemistry category opened + run 1 (5): molar-mass, molarity, dilution, mass-percent, moles-grams
+- [x] Chemistry category opened + run 1 (5), branch `step/46-wave-3-chemistry-run-1`, PR #65 — **DONE** 2026-11-07:
+  - [x] molar-mass-calculator
+  - [x] molarity-calculator
+  - [x] dilution-calculator
+  - [x] mass-percent-calculator
+  - [x] moles-to-grams-calculator
+  - New `chemistry` category opened the same way `food`/`sports` were in Wave 2: `data/calculators/chemistry.ts`,
+    registered in `data/calculators/index.ts`'s `categories` array and spread list. Theme: `teal`/`flask` in
+    `lib/categoryTheme.ts` (physics already has `indigo`; `teal` was otherwise only used by `travel`, but no
+    category repeats an exact color+icon pair). Added a new `flask` icon (an Erlenmeyer flask with a liquid
+    line) to `components/IconTile.tsx`'s hand-rolled icon set — no icon library in use, matches the project's
+    existing SVG-path convention.
+  - New `lib/atomicMasses.ts`: IUPAC/CIAAW standard atomic weights for 34 common elements (H through U, the
+    ones that actually show up in general-chemistry formulas), sourced from Wikipedia's "List of elements"
+    table (fetched directly). Same lookup-table-plus-spec pattern as `lib/resistorColors.ts`/`lib/ingredients.ts`.
+    `molar-mass-calculator` uses it as a breakdown-type (type-B) widget with 4 element+count slots (`options`
+    carry the atomic mass value directly, plus a "None" = 0 slot for unused positions) rather than a free-text
+    formula parser, per the step file's own scope note.
+  - New `lib/units.ts` dimensions: `amountOfSubstance` (mol, SI base, used by `molarity-calculator` and
+    `moles-to-grams-calculator`), `concentration` (mol/m³ base — SI-coherent with `amountOfSubstance`/`volume`,
+    same precedent as `density`'s kg/m³ — mol/L is the practical display unit) and `molarMass` (kg/mol base,
+    g/mol display). All three chosen so solver formulas (`M = n/V`, `n = m/M`) stay a plain division with no
+    stray unit factor, same discipline as every physics dimension this wave. Round-trip + anchor tests in
+    `lib/units.spec.ts`, including one cross-dimension anchor each for `concentration` and `molarMass` (e.g.
+    water: mass(g)/amountOfSubstance(mol) = molarMass(g/mol) exactly).
+  - `dilution-calculator` is a 4-variable solver (`C1`, `V1`, `C2`, `V2`), all four closed-form — no `equation`/
+    `bounds` needed, following the template's loan-example precedent for >3-variable solvers. Bonus output:
+    dilution factor (V2÷V1).
+  - `mass-percent-calculator` reuses the existing `mass` and `percent` dimensions (no new dimension needed) and
+    adds a `derive`d solvent mass (solutionMass − soluteMass) feeding a donut visual.
+  - `moles-to-grams-calculator` reuses `mass`/`amountOfSubstance`/`molarMass`; bonus output is particle count via
+    Avogadro's number (exact, 6.02214076×10²³, BIPM SI Brochure). Its logScale visual benchmarks (water, CO2,
+    NaCl, glucose) are the same four molar masses `molar-mass-calculator`'s FAQ cites, kept numerically
+    consistent across both pages.
+  - No formula needed an `equation`/numeric-solve path — every variable in all 5 calculators has a closed form,
+    same as most of physics wave 3.
+  - `npm test` (952 tests), `npm run lint` and `npm run build` all pass. `KNOWN_NON_FINITE` entries added for
+    all 5 (each is a straightforward 0/0 at every input's own min). Curl-checked all 5 pages plus the new
+    `/categories/chemistry` page (200, correct H1, JSON-LD, every section id present — concept/how-to-use/
+    formula/worked-example/watch-out/faq/references/related).
+  - Every number in the copy (molar masses, the worked examples, every FAQ figure, and the molarity/molar-mass
+    benchmark figures: seawater ≈0.6 mol/L, concentrated HCl ≈12 mol/L, pure water ≈55.5 mol/L) was recomputed
+    independently in a scratch script before committing each calculator.
+  - 219 calculators total after this run (214 + 5).
 - [ ] Chemistry run 2+ (gas laws, pH/pOH, pKa)
 - [ ] Chemistry run 3+ (yield, stoichiometry — scope carefully per the warning above)
 - [ ] Chemistry run 4+ (equilibrium, thermo, concentration units)

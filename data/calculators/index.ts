@@ -107,6 +107,7 @@ export const calculatorOrder: string[] = [
   'impulse-calculator',
   'power-calculator',
   'density-calculator',
+  'pressure-calculator',
   'percentage-calculator',
   'percent-change-calculator',
   'percent-difference-calculator',

@@ -1310,5 +1310,132 @@ export const physicsCalculators: CalculatorConfig[] = [
     compute(values) {
       return { density: values.mass / values.volume };
     }
+  },
+  {
+    id: 'pressure-calculator',
+    category: 'physics',
+    glyph: 'F/A',
+    updatedAt: '2026-11-06',
+    aliases: ['p = f/a calculator', 'force per area calculator', 'pressure formula calculator', 'pressure from force and area calculator', 'mechanical pressure calculator'],
+    related: ['pressure-converter', 'force-calculator', 'density-calculator', 'weight-calculator'],
+    title: 'Pressure Calculator (P = F/A)',
+    description: 'Calculate pressure from force and the area it acts over — P = F ÷ A — or solve backward for force or area, in Pa, kPa, psi, or atm.',
+    example: "One tire supporting a quarter of a 1,500 kg car's weight over a 0.02 m² contact patch bears about 183,875 Pa — roughly 26.67 psi.",
+    solver: {
+      defaultTarget: 'pressure',
+      variables: [
+        { id: 'pressure', label: 'Pressure', symbol: 'P', dimension: 'pressure', defaultValue: 183874.6875, defaultUnit: 'Pa' },
+        { id: 'force', label: 'Force', symbol: 'F', dimension: 'force', defaultValue: 3677.49375, defaultUnit: 'N' },
+        { id: 'area', label: 'Area', symbol: 'A', dimension: 'area', defaultValue: 0.02, defaultUnit: 'm2' }
+      ],
+      solve: {
+        pressure: ({ force, area }) => (area === 0 ? NaN : force / area),
+        force: ({ pressure, area }) => pressure * area,
+        area: ({ pressure, force }) => (pressure === 0 ? NaN : force / pressure)
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'pressure',
+          min: 4,
+          max: 9,
+          ticks: ['10 kPa', '100 kPa', '1 MPa', '10 MPa', '100 MPa', '1 GPa'],
+          benchmarks: [
+            { label: 'Average blood pressure (100 mmHg)', value: 13332 },
+            { label: 'Standard atmosphere', value: 101325 },
+            { label: 'A car tire, inflated (32 psi)', value: 220632 },
+            { label: 'The bottom of the Mariana Trench', value: 108600000 }
+          ],
+          title: 'How does that compare?',
+          valueLabel: 'Your pressure'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'What is pressure?',
+        paragraphs: [
+          'Pressure is force spread over an area: P = F ÷ A. The same force can feel completely different depending on how concentrated it is — stepping on a wide board distributes your weight harmlessly, but stepping on a narrow nail concentrates that same weight onto a tiny area, producing enough pressure to puncture skin.',
+          'The SI unit of pressure is the pascal (Pa), defined as one newton of force spread over one square meter (1 Pa = 1 N/m²). Because a pascal is a small amount of pressure, everyday pressures — tire inflation, atmospheric pressure, blood pressure — are usually reported in kilopascals, pounds per square inch (psi), or atmospheres instead.',
+          "For a given force, shrinking the area increases pressure and enlarging the area decreases it. That is the whole idea behind snowshoes (spreading weight over more area to avoid sinking), knife blades (concentrating force onto a thin edge to cut), and this calculator's tire example (the same car weight spread over a wider contact patch means lower pressure on the road)."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of pressure, force and area; the third fills in automatically, so the same page answers "how much pressure", "how much force" and "how large an area".',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 0.02 m² becomes 200 cm² instead of silently turning into 0.02 cm².' },
+          { name: 'Read the result and the scale', text: 'The answer shows in your chosen pressure unit, with the scale below placing it among a few everyday pressures.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The pressure formula rearranges to solve for force or area as well as pressure.',
+        expression: 'P = F ÷ A\nF = P × A\nA = F ÷ P',
+        terms: [
+          { symbol: 'P', meaning: 'Pressure, in pascals (Pa). 1 Pa = 1 N/m².' },
+          { symbol: 'F', meaning: 'Force acting perpendicular to the surface, in newtons (N).' },
+          { symbol: 'A', meaning: 'The area the force is spread over, in square meters (m²) or any area unit.' }
+        ],
+        note: 'Every input is converted to SI units (Pa, N, m²) before solving and converted back afterward, so entering pressure in psi or area in square inches is handled automatically. For converting an existing pressure value between units with no force or area involved, use the pressure converter instead.'
+      },
+      workedExample: {
+        intro: "A 1,500 kg car's weight rests on four tires. Each tire's contact patch with the road is about 0.02 m² (200 cm²). What pressure does each tire exert on the road?",
+        rows: [
+          { label: "Car's total weight (1,500 kg × 9.80665 m/s²)", value: '14,709.975 N' },
+          { label: 'Force per tire (weight ÷ 4)', value: '3,677.49375 N' },
+          { label: 'Contact area per tire (A)', value: '0.02 m²' },
+          { label: 'Pressure (P = 3,677.49375 ÷ 0.02)', value: '183,874.6875 Pa' }
+        ],
+        result: 'P ≈ 183,874.69 Pa = 183.87 kPa ≈ 26.67 psi',
+        explanation: "Dividing the car's weight evenly across four tires gives 3,677.49375 N per tire. Dividing that by the 0.02 m² contact patch gives 183,874.6875 Pa, about 183.87 kPa or 26.67 psi. Real tire placards typically call for somewhat higher pressure (around 30-35 psi) because real contact patches, weight distribution front-to-back, and tread design all vary from this simplified, evenly split estimate."
+      },
+      watchOut: [
+        {
+          title: 'Force must act perpendicular to the area',
+          body: 'P = F ÷ A assumes the force pushes straight into the surface. A force applied at an angle only has its perpendicular component contributing to pressure on that surface — the same idea behind the cos θ term in the work formula.'
+        },
+        {
+          title: 'Smaller area means higher pressure, for the same force',
+          body: "Pressure and area are inversely related when force is fixed. A hand pressing on a bed of nails spread over a wide area feels fine; the same hand pressing on a single nail concentrates all that force onto a tiny area, producing far higher pressure at that one point."
+        },
+        {
+          title: "This calculator finds pressure from force and area, not a unit conversion",
+          body: 'If you already have a pressure value and just want it in a different unit (Pa to psi, atm to bar), use the pressure converter. This page is for computing pressure from the force and area that produce it.'
+        },
+        {
+          title: 'Standard atmospheric pressure is a fixed reference value',
+          body: 'One standard atmosphere is defined as exactly 101,325 Pa. Real atmospheric pressure varies with altitude and weather, but "1 atm" always refers to this fixed reference value, used for unit conversions and standard conditions.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §14.1 Fluids, Density, and Pressure', url: 'https://openstax.org/books/university-physics-volume-1/pages/14-1-fluids-density-and-pressure' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'BIPM, The International System of Units (SI Brochure)', url: 'https://www.bipm.org/en/publications/si-brochure' }
+      ]
+    },
+    inputs: [
+      { id: 'force', label: 'Force (N)', type: 'number', placeholder: '3677.49', defaultValue: 3677.49375, step: 0.01, min: 0 },
+      { id: 'area', label: 'Area (m²)', type: 'number', placeholder: '0.02', defaultValue: 0.02, step: 0.001, min: 0 }
+    ],
+    seo: {
+      title: 'Pressure Calculator (P = F/A) – Force, Area, Pressure',
+      description: 'Free pressure calculator. Solve P = F ÷ A for pressure, force or area in Pa, kPa, psi or atm, with a worked tire-pressure example.',
+      faq: [
+        { question: 'What is the formula for pressure?', answer: 'Pressure equals force divided by area: P = F ÷ A. With force in newtons and area in square meters, the result is in pascals.' },
+        { question: 'How much pressure does 3,677.49 N spread over 0.02 m² produce?', answer: '3,677.49 ÷ 0.02 ≈ 183,875 Pa, about 183.87 kPa or 26.67 psi.' },
+        { question: 'How do I find force from pressure and area?', answer: 'Multiply pressure by area: F = P × A. A pressure of 100,000 Pa over 0.5 m² corresponds to a force of 50,000 N.' },
+        { question: 'What is the difference between this calculator and the pressure converter?', answer: 'This page computes pressure from a force and an area (P = F ÷ A). The pressure converter just changes a pressure value you already have between units like Pa, psi and atm — no force or area involved.' },
+        { question: 'Why does a smaller area increase pressure for the same force?', answer: 'Because P = F ÷ A, dividing by a smaller number gives a larger result. The same force concentrated onto a smaller area produces higher pressure, which is why a sharp point punctures more easily than a flat surface under the same push.' },
+        { question: 'What is standard atmospheric pressure?', answer: 'Exactly 101,325 Pa (1 atm) by definition — about 14.7 psi. Real atmospheric pressure fluctuates with altitude and weather, but 1 atm is the fixed reference value used in unit conversions.' },
+        { question: 'What are the SI units of pressure?', answer: 'The pascal (Pa), equal to one newton per square meter (1 Pa = 1 N/m²). Kilopascals, psi, bar and atmospheres are common alternatives.' }
+      ]
+    },
+    compute(values) {
+      return { pressure: values.force / values.area };
+    }
   }
 ];

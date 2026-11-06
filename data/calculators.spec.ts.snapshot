@@ -5738,6 +5738,38 @@ exports[`compute() snapshots > pregnancy-due-date-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > pressure-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "force": 3677.49375,
+      "area": 0.02
+    },
+    "outputs": {
+      "pressure": 183874.6875
+    }
+  },
+  "typical": {
+    "inputs": {
+      "force": 5516.24,
+      "area": 0.03
+    },
+    "outputs": {
+      "pressure": 183874.6667
+    }
+  },
+  "edge": {
+    "inputs": {
+      "force": 0,
+      "area": 0
+    },
+    "outputs": {
+      "pressure": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > pressure-converter 1`] = `
 {
   "default": {

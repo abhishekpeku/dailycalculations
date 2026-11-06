@@ -506,5 +506,132 @@ export const chemistryCalculators: CalculatorConfig[] = [
     compute(values) {
       return { massPercent: (values.soluteMass / values.solutionMass) * 100 };
     }
+  },
+  {
+    id: 'moles-to-grams-calculator',
+    category: 'chemistry',
+    glyph: 'm/M',
+    updatedAt: '2026-11-06',
+    aliases: ['moles to grams calculator', 'grams to moles calculator', 'n = m/m calculator', 'mole conversion calculator', 'convert moles to mass calculator', 'mass to moles calculator'],
+    related: ['molar-mass-calculator', 'molarity-calculator', 'dilution-calculator', 'mass-percent-calculator'],
+    title: 'Moles to Grams Calculator (n = m ÷ M)',
+    description: 'Convert between a substance’s mass, its molar mass, and the number of moles that mass represents — n = m ÷ M, solved for any of the three.',
+    example: '29.22 g of sodium chloride (molar mass 58.44 g/mol) is 0.5 mol.',
+    solver: {
+      defaultTarget: 'moles',
+      variables: [
+        { id: 'moles', label: 'Amount of substance', symbol: 'n', dimension: 'amountOfSubstance', defaultValue: 0.5, defaultUnit: 'mol' },
+        { id: 'mass', label: 'Mass', symbol: 'm', dimension: 'mass', defaultValue: 29.22, defaultUnit: 'g' },
+        { id: 'molarMass', label: 'Molar mass', symbol: 'M', dimension: 'molarMass', defaultValue: 58.44, defaultUnit: 'g/mol' }
+      ],
+      solve: {
+        moles: ({ mass, molarMass }) => (molarMass === 0 ? NaN : mass / molarMass),
+        mass: ({ moles, molarMass }) => moles * molarMass,
+        molarMass: ({ mass, moles }) => (moles === 0 ? NaN : mass / moles)
+      },
+      outputs: [{ id: 'particleCount', label: 'Number of particles (atoms or molecules)', dimension: 'count', compute: (si) => si.moles * 6.02214076e23 }],
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'molarMass',
+          min: -3,
+          max: 1,
+          ticks: ['1 g/mol', '10 g/mol', '100 g/mol', '1,000 g/mol', '10,000 g/mol'],
+          benchmarks: [
+            { label: 'Water, H₂O', value: 0.018015 },
+            { label: 'Carbon dioxide, CO₂', value: 0.044009 },
+            { label: 'Table salt, NaCl', value: 0.05844 },
+            { label: 'Glucose, C₆H₁₂O₆', value: 0.180156 }
+          ],
+          title: 'How does that compare?',
+          valueLabel: 'Your molar mass'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'Converting between mass and moles',
+        paragraphs: [
+          'Chemical equations are written in moles — they balance numbers of particles, not grams — but a lab balance only measures mass. The molar mass bridges the two: n = m ÷ M, where m is the mass you weighed out and M is that substance’s molar mass in grams per mole (see the molar mass calculator above for finding M from a chemical formula).',
+          'This is the same equation as the molar mass calculator’s formula, rearranged for a different unknown. There, you know the formula and solve for M; here, you know M (and a mass) and solve for how many moles that mass represents — or the reverse, how much mass a target number of moles requires.',
+          'Because a mole is a fixed, enormous number of particles (Avogadro’s number, exactly 6.02214076×10²³), converting to moles is also the step that connects a weighed mass to an actual particle count, shown as a bonus figure below the main result.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of mass, molar mass, and amount of substance (moles); the third fills in automatically.',
+        steps: [
+          { name: 'Find the substance’s molar mass', text: 'Look it up, or use the molar mass calculator above to add up its formula’s atomic masses.' },
+          { name: 'Enter the molar mass and one other value', text: 'Either the mass you have (or need), or the number of moles you have (or need).' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Read the result', text: 'The missing value appears immediately, along with how many individual particles that many moles represents.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'n = m ÷ M rearranges to solve for mass or molar mass as well as moles.',
+        expression: 'n = m ÷ M\nm = n × M\nM = m ÷ n',
+        terms: [
+          { symbol: 'n', meaning: 'Amount of substance, in moles (mol) — the SI base unit for counting particles.' },
+          { symbol: 'm', meaning: 'Mass of the sample, in grams (g) or kilograms (kg).' },
+          { symbol: 'M', meaning: 'Molar mass of the substance, in grams per mole (g/mol) — see the molar mass calculator to find it from a formula.' }
+        ],
+        note: 'Every input is converted to a common base (mol, kg, kg/mol) before solving and converted back afterward, so entering a mass in grams and a molar mass in kg/mol is handled automatically.'
+      },
+      workedExample: {
+        intro: 'How many moles are in 29.22 g of sodium chloride (NaCl, molar mass 58.44 g/mol)?',
+        rows: [
+          { label: 'Mass (m)', value: '29.22 g' },
+          { label: 'Molar mass (M)', value: '58.44 g/mol' },
+          { label: 'Moles (n = 29.22 ÷ 58.44)', value: '0.5 mol' },
+          { label: 'Particle count (0.5 × 6.022×10²³)', value: '≈ 3.011×10²³ formula units' }
+        ],
+        result: 'n = 0.5 mol',
+        explanation: '29.22 g divided by NaCl’s molar mass of 58.44 g/mol gives 0.5 mol — half a mole, or about 3.011×10²³ individual NaCl formula units, using Avogadro’s number.'
+      },
+      watchOut: [
+        {
+          title: 'Moles and grams are not interchangeable without the molar mass',
+          body: 'A mole of a light substance (hydrogen gas, about 2 g/mol) weighs far less than a mole of a heavy one (lead, about 207 g/mol), even though both contain the same number of particles. There is no way to convert mass to moles, or back, without knowing the specific substance’s molar mass.'
+        },
+        {
+          title: 'Check the formula before you look up a molar mass',
+          body: 'A substance’s molar mass depends on its full chemical formula, including any water of hydration or the exact ionic formula of a salt. Using the wrong formula — or the atomic mass of just one element instead of the whole compound — gives a wrong molar mass and, from it, a wrong mole count.'
+        },
+        {
+          title: 'This gives moles of formula units, not moles of individual ions',
+          body: 'One mole of NaCl is one mole of Na⁺ ions together with one mole of Cl⁻ ions — two moles of ions in total, even though it is "one mole of NaCl." Be clear about which particle you mean when a formula breaks apart in solution.'
+        },
+        {
+          title: 'Moles do not measure mass or volume directly',
+          body: 'Equal moles of a gas, a liquid, and a solid occupy very different volumes and have very different masses. Moles only count particles — converting to a mass or a volume always needs one more piece of information (molar mass, or density and volume).'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §3.1 "Formula Mass and the Mole Concept"', url: 'https://openstax.org/books/chemistry-2e/pages/3-1-formula-mass-and-the-mole-concept' },
+        { label: 'BIPM, The International System of Units (SI Brochure) — the mole and the exact value of the Avogadro constant', url: 'https://www.bipm.org/en/publications/si-brochure' }
+      ]
+    },
+    inputs: [
+      { id: 'mass', label: 'Mass (kg)', type: 'number', placeholder: '0.02922', defaultValue: 0.02922, step: 0.00001, min: 0 },
+      { id: 'molarMass', label: 'Molar mass (kg/mol)', type: 'number', placeholder: '0.05844', defaultValue: 0.05844, step: 0.00001, min: 0 }
+    ],
+    seo: {
+      title: 'Moles to Grams Calculator (n = m/M)',
+      description: 'Free moles-grams calculator. Solve n = m ÷ M for amount of substance, mass, or molar mass, with a worked example and particle count.',
+      faq: [
+        { question: 'How do I convert grams to moles?', answer: 'Divide the mass by the substance’s molar mass: n = m ÷ M. 29.22 g of NaCl (molar mass 58.44 g/mol) is 29.22 ÷ 58.44 = 0.5 mol.' },
+        { question: 'How do I convert moles to grams?', answer: 'Multiply the number of moles by the molar mass: m = n × M. 0.5 mol of NaCl is 0.5 × 58.44 = 29.22 g.' },
+        { question: 'How do I find the molar mass from a mass and a mole count?', answer: 'Divide mass by moles: M = m ÷ n. A sample weighing 29.22 g that contains 0.5 mol has a molar mass of 29.22 ÷ 0.5 = 58.44 g/mol.' },
+        { question: 'How many particles are in a mole?', answer: 'Exactly 6.02214076×10²³ (Avogadro’s number) — atoms, molecules, or formula units, whichever the substance is made of.' },
+        { question: 'Where do I find a substance’s molar mass?', answer: 'Add up the atomic masses of every element in its formula, each multiplied by how many atoms it has — the molar mass calculator above does this for up to four elements.' },
+        { question: 'Is the mole an SI unit?', answer: 'Yes. The mole is one of the seven SI base units, used specifically for counting amount of substance, defined since 2019 by fixing the exact value of the Avogadro constant.' },
+        { question: 'How many moles are in 180.156 g of glucose?', answer: 'Exactly 1 mol — 180.156 g/mol is glucose’s (C₆H₁₂O₆) molar mass, so that mass is, by definition, one mole of it.' }
+      ]
+    },
+    compute(values) {
+      return { moles: values.mass / values.molarMass };
+    }
   }
 ];

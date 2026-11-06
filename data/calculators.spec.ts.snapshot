@@ -4690,6 +4690,38 @@ exports[`compute() snapshots > molarity-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > moles-to-grams-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass": 0.02922,
+      "molarMass": 0.05844
+    },
+    "outputs": {
+      "moles": 0.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass": 0.04383,
+      "molarMass": 0.08766
+    },
+    "outputs": {
+      "moles": 0.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass": 0,
+      "molarMass": 0
+    },
+    "outputs": {
+      "moles": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > momentum-calculator 1`] = `
 {
   "default": {

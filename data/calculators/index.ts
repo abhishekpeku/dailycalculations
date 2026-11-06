@@ -263,7 +263,8 @@ export const calculatorOrder: string[] = [
   'molar-mass-calculator',
   'molarity-calculator',
   'dilution-calculator',
-  'mass-percent-calculator'
+  'mass-percent-calculator',
+  'moles-to-grams-calculator'
 ];
 
 const rank = (id: string) => {

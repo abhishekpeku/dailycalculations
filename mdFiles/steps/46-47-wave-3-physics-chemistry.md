@@ -271,8 +271,61 @@ a locked spec.
     benchmark figures: seawater ≈0.6 mol/L, concentrated HCl ≈12 mol/L, pure water ≈55.5 mol/L) was recomputed
     independently in a scratch script before committing each calculator.
   - 219 calculators total after this run (214 + 5).
-- [ ] Chemistry run 2+ (gas laws, pH/pOH, pKa)
-- [ ] Chemistry run 3+ (yield, stoichiometry — scope carefully per the warning above)
-- [ ] Chemistry run 4+ (equilibrium, thermo, concentration units)
+## Planned remaining runs (not started — see STATUS.md decision D13 for category order)
+
+Physics is at 21/~61 target, chemistry at 5/~60 target. The seed lists in this file's "proposed
+additions" sections only cover part of the remaining count in each case — the rest is intentionally
+unscoped (per the "Final cut" note: exact formula selection per run is the build agent's call).
+Runs below are grouped logically but **the exact 5-calculator split within a run is still the
+build agent's judgment**, same as every run so far.
+
+- [ ] Physics mechanics-remainder run A (5): acceleration (a = Δv ÷ t), free-fall (h = ½gt²),
+  projectile motion (range/height/time of flight), friction (f = μN), spring/Hooke's law (F = kx)
+- [ ] Physics mechanics-remainder run B (5): centripetal force (F = mv²/r), gravitational force
+  (Newton's law, F = Gm₁m₂/r² — distinct from weight-calculator's local gravity), torque (τ = F·r),
+  buoyancy (Archimedes), pendulum period (T = 2π√(L/g))
+- [ ] Physics waves/other-remainder run (5): Doppler effect, Snell's law (refraction), E = mc²
+  (mass-energy equivalence), thermal expansion, escape velocity — closes out every named seed-list
+  item from "Physics — proposed additions" above
+- [ ] Physics drivetrain/efficiency run (5): horsepower (deferred from run 4 — check it isn't a
+  straight unit conversion already covered by `power-converter` before building; frame from
+  torque+RPM if so), RPM-to-speed (wheel RPM → linear speed given wheel diameter), gear ratio
+  (driven teeth ÷ drive teeth), efficiency (output/input %), + 1 more TBD by the build agent
+  (candidates: angular velocity, Coulomb's law, specific gravity, terminal velocity)
+- [ ] Physics runs 9+ (as many 5-calculator runs as needed to close the gap toward ~61 total — no
+  seed list left at this point; build agent picks standard-physics formulas not yet covered,
+  e.g. angular momentum, moment of inertia (simple shapes), rotational kinetic energy, electric
+  field strength, magnetic force on a current, simple harmonic motion period, Young's modulus /
+  stress-strain, orbital velocity — verify each against a primary source same as every prior run)
+- [ ] Chemistry run 2 (5): ideal-gas-law, combined-gas-law, ph-poh-calculator (solves both
+  directions, one page per the dedupe-style precedent), pka-henderson-hasselbalch-calculator,
+  percent-yield-calculator
+- [ ] Chemistry run 3 (5): limiting-reagent, theoretical-yield, empirical-formula,
+  stoichiometry (**scope narrowly to simple mole-ratio problems, not equation balancing** — see
+  the Scope warning above), solution-concentration (ppm/mg/L)
+- [ ] Chemistry run 4 (5): reaction-half-life (t½ = ln2/k — explicitly distinct from physics'
+  radioactive-half-life-calculator, cross-link and restate the distinction), rate-constant,
+  arrhenius-equation, molality, mole-fraction (molality/mole-fraction substituted in for
+  specific-heat, which the dedupe note says likely shares physics' heat-calculator rather than
+  getting its own page — confirm that's still true before building either way)
+- [ ] Chemistry run 5 (5): osmolarity, normality, titration, equilibrium-constant (Keq),
+  gibbs-free-energy (ΔG = ΔH − TΔS)
+- [ ] Chemistry run 6 (5): density-of-solutions, serial-dilution, electron-configuration,
+  buffer-capacity, beer-lambert-law (absorbance ↔ concentration)
+- [ ] Chemistry runs 7+ (as many 5-calculator runs as needed toward ~60 total — candidates:
+  freezing-point depression, boiling-point elevation, van't Hoff osmotic pressure, percent
+  composition by formula, Nernst equation, Faraday's law of electrolysis, molar volume at STP,
+  vapor pressure (Clausius-Clapeyron, simplified), significant-figures / dimensional-analysis
+  helper, isotope-weighted average atomic mass)
 - [ ] Visual-QA checkpoint: due again once ~50 more calculators land after this wave (last pass was
   at 194 calculators, 2026-11-05 — see STATUS.md header)
+
+**After physics and chemistry both close out (~121 calculators added this wave, ~440 site-wide):**
+Wave 4 opens next, in this fixed order — **biology, then ecology, then fun/other** (per
+`mdFiles/omni-strategy.md` §4.2 and STATUS.md decision D13) — followed by the small standalone
+`tech` category (step 25, ~3 calculators: `ip-subnet-calculator`, `iban-calculator`,
+`password-strength-checker` — `data-storage-converter` already shipped under measurements).
+Per the working protocol, the Wave 4 step file gets written just-in-time when that step actually
+starts, not now — see `mdFiles/calculator-rollout-plan.md` §4 "Wave 4" and
+`mdFiles/omni-strategy.md`'s biology/ecology/fun-other candidate lists for the seed material when
+that time comes.

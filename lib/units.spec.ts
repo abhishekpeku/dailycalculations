@@ -40,9 +40,10 @@ describe('unit tables', () => {
 
   test('covers the dimensions the v2 rollout needs', () => {
     assert.deepEqual([...dimensions].sort(), [
-      'acceleration', 'angle', 'area', 'capacitance', 'charge', 'count', 'currency', 'current', 'data', 'decibel', 'density', 'energy',
-      'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'length', 'mass', 'momentum', 'pace', 'percent', 'power', 'pressure',
-      'resistance', 'specificHeat', 'speed', 'temperature', 'temperatureDelta', 'term', 'time', 'voltage', 'volume'
+      'acceleration', 'amountOfSubstance', 'angle', 'area', 'capacitance', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
+      'decibel', 'density', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'length', 'mass', 'molarMass', 'momentum',
+      'pace', 'percent', 'power', 'pressure', 'resistance', 'specificHeat', 'speed', 'temperature', 'temperatureDelta', 'term', 'time', 'voltage',
+      'volume'
     ]);
   });
 
@@ -244,6 +245,26 @@ describe('anchor values', () => {
     close(toBase(1, 'temperatureDelta', 'C'), 1);
     close(toBase(1, 'temperatureDelta', 'F'), 5 / 9);
     close(convert(18, 'temperatureDelta', 'F', 'C'), 10); // an 18°F swing is the same as a 10°C swing
+  });
+  test('amount of substance: 1 mol = 1000 mmol = 1,000,000 µmol', () => {
+    assert.equal(UNITS.amountOfSubstance[0].id, 'mol');
+    close(convert(1, 'amountOfSubstance', 'mol', 'mmol'), 1000);
+    close(convert(1, 'amountOfSubstance', 'mol', 'umol'), 1e6);
+  });
+  test('concentration: 1 mol/L = 1000 mol/m³ = 1000 mmol/L, molarity (M) is the common unit', () => {
+    assert.equal(UNITS.concentration[0].id, 'mol/m3');
+    close(toBase(1, 'concentration', 'mol/L'), 1000);
+    close(convert(1, 'concentration', 'mol/L', 'mmol/L'), 1000);
+    close(convert(1, 'concentration', 'mmol/L', 'umol/L'), 1000);
+    // moles / volume, both already SI base above, gives mol/m3 with no stray conversion factor.
+    close(toBase(2, 'amountOfSubstance', 'mol') / toBase(1, 'volume', 'L'), toBase(2, 'concentration', 'mol/L'));
+  });
+  test('molar mass: 1 g/mol = 0.001 kg/mol; mass / amount of substance = molar mass with no stray factor', () => {
+    assert.equal(UNITS.molarMass[0].id, 'kg/mol');
+    close(toBase(1, 'molarMass', 'g/mol'), 0.001);
+    close(convert(18.015, 'molarMass', 'g/mol', 'kg/mol'), 0.018015);
+    // water: 18.015 g of H2O is 1 mol, so mass(kg) / moles(mol) = molarMass(kg/mol) must equal 18.015 g/mol.
+    close(toBase(18.015, 'mass', 'g') / toBase(1, 'amountOfSubstance', 'mol'), toBase(18.015, 'molarMass', 'g/mol'));
   });
 });
 

@@ -41,7 +41,9 @@ const ICONS = {
   // A bowl of food with steam: the food category (recipes, ratios, cook times — not unit conversion).
   bowl: 'M4 13h16a1 1 0 0 1 1 1 7 7 0 0 1-7 7h-4a7 7 0 0 1-7-7 1 1 0 0 1 1-1zM8 13v-2a4 4 0 0 1 8 0v2M12 3.5v2.5',
   // A trophy cup: the sports category (strength, heart rate, pace and race calculators).
-  trophy: 'M7 3h10v4a5 5 0 0 1-10 0V3zM7 5H4.5a2.5 2.5 0 0 0 2.5 3M17 5h2.5a2.5 2.5 0 0 1-2.5 3M12 12v3M9 20h6M9.5 20v-1a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1'
+  trophy: 'M7 3h10v4a5 5 0 0 1-10 0V3zM7 5H4.5a2.5 2.5 0 0 0 2.5 3M17 5h2.5a2.5 2.5 0 0 1-2.5 3M12 12v3M9 20h6M9.5 20v-1a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1',
+  // An Erlenmeyer flask with a liquid line: the chemistry category (molarity, dilution, molar mass).
+  flask: 'M9 3h6M9 3v5.5L4.8 17a2.5 2.5 0 0 0 2.2 3.7h10a2.5 2.5 0 0 0 2.2-3.7L15 8.5V3M6 15h12'
 } as const;
 
 export type IconName = keyof typeof ICONS;

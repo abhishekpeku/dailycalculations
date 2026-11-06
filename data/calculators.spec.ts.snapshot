@@ -2049,6 +2049,41 @@ exports[`compute() snapshots > density-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > dilution-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "concentration1": 3000,
+      "volume1": 0.00005,
+      "volume2": 0.0003
+    },
+    "outputs": {
+      "concentration2": 500
+    }
+  },
+  "typical": {
+    "inputs": {
+      "concentration1": 4500,
+      "volume1": 0.00008,
+      "volume2": 0.00045
+    },
+    "outputs": {
+      "concentration2": 800
+    }
+  },
+  "edge": {
+    "inputs": {
+      "concentration1": 0,
+      "volume1": 0,
+      "volume2": 0
+    },
+    "outputs": {
+      "concentration2": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > discount-calculator 1`] = `
 {
   "default": {
@@ -4199,6 +4234,38 @@ exports[`compute() snapshots > margin-of-error-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > mass-percent-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "soluteMass": 0.015,
+      "solutionMass": 0.2
+    },
+    "outputs": {
+      "massPercent": 7.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "soluteMass": 0.023,
+      "solutionMass": 0.3
+    },
+    "outputs": {
+      "massPercent": 7.666666667
+    }
+  },
+  "edge": {
+    "inputs": {
+      "soluteMass": 0,
+      "solutionMass": 0
+    },
+    "outputs": {
+      "massPercent": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > mean-median-mode-calculator 1`] = `
 {
   "default": {
@@ -4524,6 +4591,132 @@ exports[`compute() snapshots > millimeters-to-inches-converter 1`] = `
     },
     "outputs": {
       "inches": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > molar-mass-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "element1": 1.008,
+      "count1": 2,
+      "element2": 15.999,
+      "count2": 1,
+      "element3": 0,
+      "count3": 0,
+      "element4": 0,
+      "count4": 0
+    },
+    "outputs": {
+      "molarMass": 18.015,
+      "contribution1": 2.016,
+      "contribution2": 15.999,
+      "contribution3": 0,
+      "contribution4": 0
+    }
+  },
+  "typical": {
+    "inputs": {
+      "element1": 1.512,
+      "count1": 3,
+      "element2": 23.999,
+      "count2": 2,
+      "element3": 0,
+      "count3": 0,
+      "element4": 0,
+      "count4": 0
+    },
+    "outputs": {
+      "molarMass": 52.534,
+      "contribution1": 4.536,
+      "contribution2": 47.998,
+      "contribution3": 0,
+      "contribution4": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "element1": 0,
+      "count1": 0,
+      "element2": 0,
+      "count2": 0,
+      "element3": 0,
+      "count3": 0,
+      "element4": 0,
+      "count4": 0
+    },
+    "outputs": {
+      "molarMass": 0,
+      "contribution1": 0,
+      "contribution2": 0,
+      "contribution3": 0,
+      "contribution4": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > molarity-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "moles": 2,
+      "volume": 0.004
+    },
+    "outputs": {
+      "molarity": 500
+    }
+  },
+  "typical": {
+    "inputs": {
+      "moles": 3,
+      "volume": 0.006
+    },
+    "outputs": {
+      "molarity": 500
+    }
+  },
+  "edge": {
+    "inputs": {
+      "moles": 0,
+      "volume": 0
+    },
+    "outputs": {
+      "molarity": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > moles-to-grams-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass": 0.02922,
+      "molarMass": 0.05844
+    },
+    "outputs": {
+      "moles": 0.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass": 0.04383,
+      "molarMass": 0.08766
+    },
+    "outputs": {
+      "moles": 0.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass": 0,
+      "molarMass": 0
+    },
+    "outputs": {
+      "moles": "NaN"
     }
   }
 }

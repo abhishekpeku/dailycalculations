@@ -391,5 +391,139 @@ export const physicsCalculators: CalculatorConfig[] = [
     compute(values) {
       return { weight: values.mass * values.gravity };
     }
+  },
+  {
+    id: 'kinetic-energy-calculator',
+    category: 'physics',
+    glyph: 'KE',
+    updatedAt: '2026-11-06',
+    aliases: ['ke = 1/2 mv2 calculator', 'kinetic energy formula calculator', 'energy of motion calculator', '1/2 mv^2 calculator', 'moving object energy calculator'],
+    related: ['potential-energy-calculator', 'work-calculator', 'energy-converter', 'force-calculator'],
+    title: 'Kinetic Energy Calculator (KE = ½mv²)',
+    description: 'Calculate the kinetic energy of a moving object from its mass and velocity — KE = ½ × m × v² — or solve backward for mass or velocity, in joules, kilojoules, calories, or kWh.',
+    example: 'A 1,200 kg car traveling at 72 km/h (20 m/s) carries about 240,000 J of kinetic energy — 240 kJ, or about 66.7 Wh.',
+    solver: {
+      defaultTarget: 'energy',
+      variables: [
+        { id: 'energy', label: 'Kinetic energy', symbol: 'KE', dimension: 'energy', defaultValue: 240, defaultUnit: 'kJ' },
+        { id: 'mass', label: 'Mass', symbol: 'm', dimension: 'mass', defaultValue: 1200, defaultUnit: 'kg' },
+        { id: 'velocity', label: 'Velocity', symbol: 'v', dimension: 'speed', defaultValue: 72, defaultUnit: 'km/h' }
+      ],
+      solve: {
+        energy: ({ mass, velocity }) => 0.5 * mass * velocity * velocity,
+        mass: ({ energy, velocity }) => (velocity === 0 ? NaN : (2 * energy) / (velocity * velocity)),
+        velocity: ({ energy, mass }) => {
+          if (mass <= 0) return NaN;
+          const vSquared = (2 * energy) / mass;
+          return vSquared < 0 ? NaN : Math.sqrt(vSquared);
+        }
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'energy',
+          min: -1,
+          max: 7,
+          ticks: ['0.1 J', '10 J', '1 kJ', '100 kJ', '10 MJ'],
+          benchmarks: [
+            { label: 'Lifting a 102 g apple 1 meter', value: 1.0003 },
+            { label: 'A 100 mph fastball (0.145 kg baseball)', value: 144.9 },
+            { label: 'A 100 W bulb, running for 1 minute', value: 6000 },
+            { label: 'A 1,500 kg car at 100 km/h', value: 578700 }
+          ],
+          title: 'How big is that energy?',
+          valueLabel: 'Your kinetic energy'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'What is kinetic energy?',
+        paragraphs: [
+          'Kinetic energy is the energy an object has because it is moving. A parked car has none; the same car rolling down the highway has a great deal, and that energy has to go somewhere when the car slows down — into heat in the brakes, into a crumpled fender, or back into motion going the other way.',
+          'The formula, KE = ½mv², depends on mass directly but on velocity squared. That squared term matters: a car going twice as fast does not have twice the kinetic energy, it has four times as much. Doubling the mass only doubles the energy, but doubling the speed quadruples it — which is a large part of why faster collisions are so much more damaging than slower ones.',
+          "Kinetic energy, like all energy, is measured in joules (J) in SI units. It is also always zero or positive — mass and the square of speed can never be negative — unlike momentum, which can point in different directions and cancel out."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of kinetic energy, mass and velocity; the third fills in automatically, so the same page finds energy from mass and speed, or the mass or speed behind a known amount of energy.',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there — 1,200 kg becomes 2,645 lb, not a different mass with the same digits.' },
+          { name: 'Read the result and the scale', text: 'The answer shows in your chosen energy unit, with the scale below placing it among a few everyday reference points.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The kinetic energy formula rearranges to solve for mass or velocity as well as energy.',
+        expression: 'KE = ½ × m × v²\nm = 2 × KE ÷ v²\nv = √(2 × KE ÷ m)',
+        terms: [
+          { symbol: 'KE', meaning: 'Kinetic energy, in joules (J). 1 J = 1 kg·m²/s².' },
+          { symbol: 'm', meaning: 'Mass of the moving object, in kilograms (kg).' },
+          { symbol: 'v', meaning: 'Speed of the object, in meters per second (m/s) — its magnitude only; direction does not matter for kinetic energy.' }
+        ],
+        note: 'Every input is converted to SI units (kg, m/s) before solving, so entering velocity in km/h or mph is handled automatically — just be careful with the arithmetic if you ever compute it by hand, since plugging in km/h directly gives the wrong number of joules.'
+      },
+      workedExample: {
+        intro: 'A 1,200 kg car is traveling at 72 km/h. How much kinetic energy does it have?',
+        rows: [
+          { label: 'Mass (m)', value: '1,200 kg' },
+          { label: 'Velocity, converted (v = 72 km/h ÷ 3.6)', value: '20 m/s' },
+          { label: 'Kinetic energy (KE = 0.5 × 1,200 × 20²)', value: '240,000 J' }
+        ],
+        result: 'KE = 240,000 J · 240 kJ · 66.67 Wh · 57.36 kcal',
+        explanation: '72 km/h converts to 20 m/s (72 ÷ 3.6). Squaring 20 gives 400, and 0.5 × 1,200 × 400 = 240,000 J. In other units, that is 240 kJ, about 66.7 Wh, or about 57.4 kcal — all the same amount of energy, just expressed differently.'
+      },
+      watchOut: [
+        {
+          title: 'Convert speed to m/s before computing by hand',
+          body: 'The formula is only correct in SI units. Plugging km/h or mph directly into ½mv² without converting first gives a number with the wrong units entirely, not just a slightly wrong answer. This calculator converts for you automatically.'
+        },
+        {
+          title: 'Doubling speed quadruples kinetic energy, not doubles it',
+          body: 'Because velocity is squared, a car at 60 mph has four times the kinetic energy of the same car at 30 mph, not twice. That squared relationship is a major reason higher-speed impacts are disproportionately more severe.'
+        },
+        {
+          title: 'Kinetic energy depends on speed, not direction',
+          body: 'Unlike momentum, kinetic energy only cares about how fast something is moving, not which way. Two identical cars heading toward each other at 50 mph each have kinetic energy as individuals, but their momenta can cancel at the moment of collision while their combined kinetic energy does not.'
+        },
+        {
+          title: 'Kinetic energy is relative to a reference frame',
+          body: "A passenger's kinetic energy relative to the inside of a moving train is zero if they are sitting still, but is substantial relative to the ground outside. Always be clear about what the velocity is measured against."
+        },
+        {
+          title: 'Kinetic energy is not potential energy or work',
+          body: 'All three are measured in joules, but they describe different things: kinetic energy is energy of motion, potential energy is stored energy due to position, and work is energy transferred by a force. Converting between them (as in a falling object) is a separate calculation from any one of them alone.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §7.2 Kinetic Energy', url: 'https://openstax.org/books/university-physics-volume-1/pages/7-2-kinetic-energy' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'BIPM, The International System of Units (SI Brochure)', url: 'https://www.bipm.org/en/publications/si-brochure' }
+      ]
+    },
+    inputs: [
+      { id: 'mass', label: 'Mass (kg)', type: 'number', placeholder: '1200', defaultValue: 1200, step: 1, min: 0 },
+      { id: 'velocity', label: 'Velocity (m/s)', type: 'number', placeholder: '20', defaultValue: 20, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Kinetic Energy Calculator (KE = ½mv²)',
+      description: 'Free kinetic energy calculator. Solve KE = ½mv² for energy, mass or velocity in joules, kJ, kWh or kcal, with a worked car example.',
+      faq: [
+        { question: 'What is the formula for kinetic energy?', answer: 'KE = ½ × m × v², where m is mass in kilograms and v is speed in meters per second. The result is in joules.' },
+        { question: 'How much kinetic energy does a 1,200 kg car at 72 km/h have?', answer: '72 km/h is 20 m/s, so KE = 0.5 × 1,200 × 20² = 240,000 J, which is 240 kJ.' },
+        { question: 'Does doubling speed double kinetic energy?', answer: 'No — it quadruples it, because velocity is squared in the formula. A car at 60 mph has four times the kinetic energy of the same car at 30 mph, not twice.' },
+        { question: 'What are the SI units of kinetic energy?', answer: 'The joule (J), equal to 1 kg·m²/s². Kinetic energy is also commonly shown in kilojoules, watt-hours, or kilocalories.' },
+        { question: 'How is kinetic energy different from potential energy?', answer: 'Kinetic energy is the energy of motion (depends on mass and speed). Potential energy is stored energy due to position, such as height above the ground. Both are measured in joules but come from different formulas.' },
+        { question: 'Can kinetic energy be negative?', answer: 'No. Mass is never negative and velocity is squared, so ½mv² is always zero or positive.' },
+        { question: 'How do I convert joules of kinetic energy to kilowatt-hours?', answer: 'Divide by 3,600,000 (since 1 kWh = 3.6 million J). A 240,000 J kinetic energy is 240,000 ÷ 3,600,000 ≈ 0.0667 kWh.' }
+      ]
+    },
+    compute(values) {
+      return { energy: 0.5 * values.mass * values.velocity * values.velocity };
+    }
   }
 ];

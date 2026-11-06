@@ -118,7 +118,7 @@ a locked spec.
 - [ ] Physics run 1 (5), branch `step/46-wave-3-physics-run-1`:
   - [x] speed-distance-time-calculator
   - [x] weight-calculator
-  - [ ] kinetic-energy-calculator
+  - [x] kinetic-energy-calculator
   - [ ] potential-energy-calculator
   - [ ] work-calculator
   - New `lib/units.ts` dimension added this run: `angle` (base radian, `deg` = π/180 rad — BIPM SI

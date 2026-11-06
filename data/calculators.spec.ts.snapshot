@@ -3557,6 +3557,38 @@ exports[`compute() snapshots > kilograms-to-stone-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > kinetic-energy-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass": 1200,
+      "velocity": 20
+    },
+    "outputs": {
+      "energy": 240000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass": 1800,
+      "velocity": 30
+    },
+    "outputs": {
+      "energy": 810000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass": 0,
+      "velocity": 0
+    },
+    "outputs": {
+      "energy": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > lcm-calculator 1`] = `
 {
   "default": {

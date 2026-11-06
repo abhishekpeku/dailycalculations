@@ -99,6 +99,7 @@ export const calculatorOrder: string[] = [
   'timezone-meeting-planner',
   'force-calculator',
   'speed-distance-time-calculator',
+  'weight-calculator',
   'percentage-calculator',
   'percent-change-calculator',
   'percent-difference-calculator',

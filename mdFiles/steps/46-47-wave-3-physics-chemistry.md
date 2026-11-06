@@ -117,7 +117,7 @@ a locked spec.
 
 - [ ] Physics run 1 (5), branch `step/46-wave-3-physics-run-1`:
   - [x] speed-distance-time-calculator
-  - [ ] weight-calculator
+  - [x] weight-calculator
   - [ ] kinetic-energy-calculator
   - [ ] potential-energy-calculator
   - [ ] work-calculator

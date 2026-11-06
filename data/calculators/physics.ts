@@ -259,5 +259,137 @@ export const physicsCalculators: CalculatorConfig[] = [
     compute(values) {
       return { speed: values.distance / values.time };
     }
+  },
+  {
+    id: 'weight-calculator',
+    category: 'physics',
+    glyph: 'W',
+    updatedAt: '2026-11-06',
+    aliases: ['mass to weight calculator', 'w = mg calculator', 'weight in newtons calculator', 'gravity weight calculator', 'weight on other planets calculator'],
+    related: ['force-calculator', 'pounds-to-kilograms-converter', 'kilograms-to-stone-converter', 'weight-converter'],
+    title: 'Weight Calculator (W = mg)',
+    description: 'Calculate weight from mass and gravity — W = m × g — or work backward to mass or local gravity, in newtons, pounds-force, kilograms, or pounds.',
+    example: 'A 70 kg person weighs about 686.5 N on Earth (154.3 lbf) but only about 113.4 N on the Moon, where gravity is weaker.',
+    solver: {
+      defaultTarget: 'weight',
+      variables: [
+        { id: 'weight', label: 'Weight', symbol: 'W', dimension: 'force', defaultValue: 686.5, defaultUnit: 'N' },
+        { id: 'mass', label: 'Mass', symbol: 'm', dimension: 'mass', defaultValue: 70, defaultUnit: 'kg' },
+        { id: 'gravity', label: 'Gravity', symbol: 'g', dimension: 'acceleration', defaultValue: 9.80665, defaultUnit: 'm/s2' }
+      ],
+      solve: {
+        weight: ({ mass, gravity }) => mass * gravity,
+        mass: ({ weight, gravity }) => (gravity === 0 ? NaN : weight / gravity),
+        gravity: ({ weight, mass }) => (mass === 0 ? NaN : weight / mass)
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'weight',
+          min: -2,
+          max: 9,
+          ticks: ['0.01 N', '1 N', '1 kN', '1 MN', '1 GN'],
+          benchmarks: [
+            { label: 'Weight of a small apple', value: 1 },
+            { label: 'Weight of a 70 kg adult', value: 686 },
+            { label: 'Net force to accelerate a car 0–100 km/h in 10 s', value: 4167 },
+            { label: 'Saturn V rocket at liftoff', value: 3.5e7 }
+          ],
+          title: 'How does that compare?',
+          valueLabel: 'Your weight'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'What is weight?',
+        paragraphs: [
+          'Weight is the force gravity exerts on a mass. It is not the same thing as mass itself: mass is how much matter an object contains, and it stays the same everywhere — on Earth, on the Moon, or floating in orbit. Weight changes depending on how strong the local gravity is, because weight is mass multiplied by that local gravitational acceleration, W = m × g.',
+          'On Earth, "standard gravity" is fixed at exactly 9.80665 m/s² by international agreement — a single reference value used for calculations and unit definitions, even though the true local value varies slightly from place to place. A 1 kg object weighs 9.80665 N under that reference value, which is why kilograms and newtons differ by that same factor throughout this calculator.',
+          "A bathroom scale actually measures a force — how hard your feet push down on its sensor — but displays the result as a mass by quietly assuming Earth-standard gravity. Take that same scale to the Moon and it would under-report your mass, because it would still be dividing the (much smaller) force it measures by the same Earth value of g."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of weight, mass and gravity; the third fills in automatically — the same page converts mass to weight, finds mass from a known weight, or works out what gravity would produce a given weight.',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and choose its unit. The third field, marked auto, calculates as you type. To find weight on Earth, leave gravity at 9.80665 m/s².' },
+          { name: 'Change gravity to try another world', text: "Replace 9.80665 m/s² with another body's surface gravity — 1.62 m/s² for the Moon, for example — to see how the same mass weighs differently elsewhere." },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field you have left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 70 kg becomes 154.3 lb instead of silently turning into 70 lb.' },
+          { name: 'Read the result and the scale', text: 'The answer appears in your chosen unit, with the scale below showing where it sits against a few everyday forces.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: "Newton's second law, applied to gravity alone, links weight, mass and the local gravitational acceleration.",
+        expression: 'W = m × g\nm = W ÷ g\ng = W ÷ m',
+        terms: [
+          { symbol: 'W', meaning: 'Weight, a force, in newtons (N) or pounds-force (lbf).' },
+          { symbol: 'm', meaning: 'Mass, in kilograms (kg) or pounds (lb). The same everywhere, regardless of gravity.' },
+          { symbol: 'g', meaning: 'Local gravitational acceleration, in m/s². Standard gravity on Earth is exactly 9.80665 m/s² by definition.' }
+        ],
+        note: 'Every input is converted to SI units (N, kg, m/s²) before solving and converted back afterward, so mixed units cannot produce a wrong result.'
+      },
+      workedExample: {
+        intro: "How much does a 70 kg person weigh on Earth, and how much would they weigh on the Moon?",
+        rows: [
+          { label: 'Mass (m)', value: '70 kg' },
+          { label: 'Earth gravity (g)', value: '9.80665 m/s²' },
+          { label: 'Weight on Earth (W = 70 × 9.80665)', value: '686.5 N' },
+          { label: 'Moon gravity', value: '1.62 m/s² (NASA)' },
+          { label: 'Weight on Moon (W = 70 × 1.62)', value: '113.4 N' }
+        ],
+        result: 'W(Earth) ≈ 686.5 N · 154.3 lbf  —  W(Moon) ≈ 113.4 N',
+        explanation: "70 kg × 9.80665 m/s² = 686.47 N, which rounds to about 686.5 N, or 154.3 lbf. The Moon's gravity is about 1.62 m/s², roughly a sixth of Earth's — so the same 70 kg mass weighs only about 113.4 N there, even though the person's mass has not changed at all."
+      },
+      watchOut: [
+        {
+          title: 'Mass stays fixed; weight does not',
+          body: "A 70 kg astronaut has exactly 70 kg of mass on Earth, on the Moon, and in orbit. Their weight, however, drops from about 686.5 N on Earth to about 113.4 N on the Moon, and to effectively zero in freefall — because weight depends on local gravity, not on the astronaut."
+        },
+        {
+          title: '"lb" and "lbf" are not interchangeable',
+          body: 'In US customary units, the pound (lb) is a unit of mass, and the pound-force (lbf) is a unit of weight. A 70 kg mass is 154.3 lb, but its weight is 154.3 lbf — the numbers look alike only because pounds and pounds-force are defined to agree exactly under standard gravity.'
+        },
+        {
+          title: 'Standard gravity is a fixed reference, not the exact local value',
+          body: 'Real gravitational acceleration varies slightly across Earth — from about 9.78 m/s² near the equator to about 9.83 m/s² near the poles, and slightly less at altitude. The 9.80665 m/s² default is the internationally adopted reference value used for everyday calculations, not a promise that a scale in any one city will read it exactly.'
+        },
+        {
+          title: "A scale calibrated for Earth misreads mass elsewhere",
+          body: "A spring or digital bathroom scale senses a force and divides by Earth's g to display a mass. Carried to the Moon without recalibration, it would still divide by Earth's g — so it would report a mass about six times too small, even though the force it measured was perfectly real."
+        },
+        {
+          title: "Don't confuse this g with a rollercoaster's g-force",
+          body: 'The g in W = mg is gravitational acceleration. The "g-force" used to describe a rollercoaster drop or a fighter jet turn is a ratio of total acceleration to standard gravity, a different (though related) use of the same symbol.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §5.4 Mass and Weight', url: 'https://openstax.org/books/university-physics-volume-1/pages/5-4-mass-and-weight' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'NASA, Moon Fact Sheet (surface gravity)', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html' }
+      ]
+    },
+    inputs: [
+      { id: 'mass', label: 'Mass (kg)', type: 'number', placeholder: '70', defaultValue: 70, step: 0.1, min: 0 },
+      { id: 'gravity', label: 'Gravity (m/s²)', type: 'number', placeholder: '9.80665', defaultValue: STANDARD_GRAVITY, step: 0.01 }
+    ],
+    seo: {
+      title: 'Weight Calculator (W = mg) – Weight, Mass or Gravity',
+      description: 'Free weight calculator using W = m × g. Solve for weight, mass or local gravity in N, lbf, kg or lb, with a worked Earth-vs-Moon example.',
+      faq: [
+        { question: 'What is the formula for weight?', answer: 'Weight equals mass times gravitational acceleration: W = m × g. On Earth, using standard gravity (9.80665 m/s²), a 70 kg mass weighs about 686.5 N.' },
+        { question: 'How much does a 70 kg person weigh in newtons?', answer: '70 × 9.80665 = 686.47 N, about 686.5 N — or about 154.3 lbf in pound-force.' },
+        { question: 'Is weight the same as mass?', answer: 'No. Mass is how much matter an object has and never changes. Weight is the force gravity exerts on that mass, and it changes with location — a 70 kg person weighs about 686.5 N on Earth but only about 113.4 N on the Moon.' },
+        { question: 'Why would I weigh less on the Moon?', answer: "The Moon's surface gravity is about 1.62 m/s², roughly a sixth of Earth's 9.80665 m/s². Since weight is mass times gravity, the same 70 kg mass produces only about 113.4 N of weight there, versus about 686.5 N on Earth." },
+        { question: 'How do I convert kilograms to pounds-force?', answer: 'Multiply the mass in kilograms by standard gravity to get newtons, then divide by 4.448 to get pounds-force. A 70 kg mass is about 686.5 N, or about 154.3 lbf.' },
+        { question: 'What is "standard gravity"?', answer: "Standard gravity, g = 9.80665 m/s², is a fixed reference value for Earth's gravitational acceleration, used for calculations and unit definitions even though the real local value varies slightly by latitude and altitude." },
+        { question: 'How do I find mass if I know the weight?', answer: 'Divide weight by gravity: m = W ÷ g. A 500 N weight under standard gravity corresponds to a mass of about 51.0 kg.' }
+      ]
+    },
+    compute(values) {
+      return { weight: values.mass * values.gravity };
+    }
   }
 ];

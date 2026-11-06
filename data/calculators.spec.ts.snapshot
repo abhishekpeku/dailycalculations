@@ -8250,6 +8250,38 @@ exports[`compute() snapshots > water-intake-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > weight-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass": 70,
+      "gravity": 9.80665
+    },
+    "outputs": {
+      "weight": 686.4655
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass": 105,
+      "gravity": 14.71
+    },
+    "outputs": {
+      "weight": 1544.55
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass": 0,
+      "gravity": 0
+    },
+    "outputs": {
+      "weight": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > weight-converter 1`] = `
 {
   "default": {

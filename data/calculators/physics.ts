@@ -929,5 +929,134 @@ export const physicsCalculators: CalculatorConfig[] = [
     compute(values) {
       return { momentum: values.mass * values.velocity };
     }
+  },
+  {
+    id: 'impulse-calculator',
+    category: 'physics',
+    glyph: 'J',
+    updatedAt: '2026-11-06',
+    aliases: ['j = f delta t calculator', 'impulse momentum theorem calculator', 'impulse formula calculator', 'force time impulse calculator', 'change in momentum calculator'],
+    related: ['momentum-calculator', 'force-calculator', 'kinetic-energy-calculator', 'speed-distance-time-calculator'],
+    title: 'Impulse Calculator (J = FΔt)',
+    description: 'Calculate impulse from force and the time it acts — J = F × Δt — or solve backward for force or time, in N·s (the same unit as momentum, kg·m/s).',
+    example: 'A 50 N force applied for 0.6 seconds delivers an impulse of 30 N·s — the same 30 kg·m/s of momentum it would add to any object it acted on.',
+    solver: {
+      defaultTarget: 'impulse',
+      variables: [
+        { id: 'impulse', label: 'Impulse', symbol: 'J', dimension: 'momentum', defaultValue: 30, defaultUnit: 'Ns' },
+        { id: 'force', label: 'Force', symbol: 'F', dimension: 'force', defaultValue: 50, defaultUnit: 'N' },
+        { id: 'time', label: 'Time', symbol: 'Δt', dimension: 'time', defaultValue: 0.6, defaultUnit: 's' }
+      ],
+      solve: {
+        impulse: ({ force, time }) => force * time,
+        force: ({ impulse, time }) => (time === 0 ? NaN : impulse / time),
+        time: ({ impulse, force }) => (force === 0 ? NaN : impulse / force)
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'impulse',
+          min: 0,
+          max: 8,
+          ticks: ['1 N·s', '100 N·s', '10,000 N·s', '1,000,000 N·s', '100,000,000 N·s'],
+          benchmarks: [
+            { label: 'A pitched baseball', value: 5.8 },
+            { label: 'A walking adult', value: 98 },
+            { label: 'A car at highway speed', value: 40500 },
+            { label: 'A freight train', value: 3e7 }
+          ],
+          title: 'How does that compare?',
+          valueLabel: 'Your impulse'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-06',
+      concept: {
+        title: 'What is impulse?',
+        paragraphs: [
+          'Impulse is a measure of how much a force changes an object\'s motion, accounting for both how strong the force is and how long it acts: J = F × Δt. A gentle push sustained for a long time can deliver the same impulse as a hard shove applied briefly — a catcher\'s mitt and a bare hand can stop the same baseball, but the mitt spreads the impulse over more time, which (as the formula below shows) means less peak force.',
+          'The impulse-momentum theorem ties this directly to the momentum calculator on this site: the impulse delivered to an object equals its change in momentum, J = Δp. That is not a coincidence of similar formulas — it follows directly from Newton\'s second law, since force is the rate of change of momentum (F = Δp ÷ Δt), so force multiplied by time is exactly the momentum change.',
+          'Because of that theorem, impulse and momentum are measured in the same physical unit. A newton is defined as 1 kg·m/s² (1 N = 1 kg·m/s²), so a newton-second works out to N·s = kg·m/s²·s = kg·m/s — identical to the unit used for momentum. This calculator uses N·s as the default display because that is the conventional unit for impulse specifically, but the number means the same thing either way.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of impulse, force and time; the third fills in automatically, so the same page answers "how much impulse", "how much force" and "for how long".',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 50 N becomes 11.24 lbf instead of silently turning into 50 lbf.' },
+          { name: 'Read the result and the scale', text: 'The answer shows in your chosen unit, with the scale below placing it among a few everyday moving objects — the same scale the momentum calculator uses, since the units match.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The impulse formula rearranges to solve for force or time as well as impulse.',
+        expression: 'J = F × Δt\nF = J ÷ Δt\nΔt = J ÷ F',
+        terms: [
+          { symbol: 'J', meaning: 'Impulse, in newton-seconds (N·s) — the same unit as momentum, kg·m/s.' },
+          { symbol: 'F', meaning: 'The (assumed constant) force acting on the object, in newtons (N). Real forces often vary during contact; this is the average force.' },
+          { symbol: 'Δt', meaning: 'The duration the force acts, in seconds (s).' },
+          { symbol: 'J = Δp', meaning: "The impulse-momentum theorem: impulse equals the resulting change in the object's momentum." }
+        ],
+        note: 'Every input is converted to SI units (N, s) before solving and converted back afterward, so mixed units cannot produce a wrong result.'
+      },
+      workedExample: {
+        intro: 'A constant 50 N force acts on an object for 0.6 seconds. How much impulse does it deliver, and what does that do to a 10 kg object starting at rest?',
+        rows: [
+          { label: 'Force (F)', value: '50 N' },
+          { label: 'Time (Δt)', value: '0.6 s' },
+          { label: 'Impulse (J = 50 × 0.6)', value: '30 N·s' },
+          { label: 'Mass of the object', value: '10 kg' },
+          { label: 'Velocity change (Δv = J ÷ m = 30 ÷ 10)', value: '3 m/s' }
+        ],
+        result: 'J = 30 N·s = 30 kg·m/s',
+        explanation: '50 × 0.6 = 30, so the impulse is 30 N·s. By the impulse-momentum theorem, that 30 N·s equals the change in momentum it causes. Applied to a 10 kg object starting at rest, the momentum change of 30 kg·m/s means a velocity change of 30 ÷ 10 = 3 m/s — the object speeds up by 3 m/s.'
+      },
+      watchOut: [
+        {
+          title: 'Impulse and momentum are literally the same unit',
+          body: 'N·s and kg·m/s are not just equal in this case — they are the same unit by definition, since 1 N = 1 kg·m/s². The impulse-momentum theorem, J = Δp, means a result in N·s can be compared directly to a momentum in kg·m/s with no conversion at all.'
+        },
+        {
+          title: 'This assumes a constant force',
+          body: 'J = F × Δt uses a single force value for the whole time interval. Real impacts — a bat hitting a ball, a crash test — involve a force that spikes and fades. In those cases, F here represents the average force over Δt, not the peak force.'
+        },
+        {
+          title: 'The same impulse over more time means less peak force',
+          body: "Airbags, catcher's mitts and crumple zones all work by stretching Δt out: delivering the same impulse (the same momentum change) over a longer time means a smaller average force, which is why those design choices reduce injury and damage for the same change in motion."
+        },
+        {
+          title: 'Impulse is a vector, like force and momentum',
+          body: 'A force and the impulse it delivers point in the same direction. If a second force acts in the opposite direction during the same interval, the net impulse is the difference, not the sum, of the two.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §9.2 Impulse and Collisions', url: 'https://openstax.org/books/university-physics-volume-1/pages/9-2-impulse-and-collisions' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'BIPM, The International System of Units (SI Brochure)', url: 'https://www.bipm.org/en/publications/si-brochure' }
+      ]
+    },
+    inputs: [
+      { id: 'force', label: 'Force (N)', type: 'number', placeholder: '50', defaultValue: 50, step: 0.1 },
+      { id: 'time', label: 'Time (s)', type: 'number', placeholder: '0.6', defaultValue: 0.6, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Impulse Calculator (J = FΔt) – Force, Time, Impulse',
+      description: 'Free impulse calculator. Solve J = F × Δt for impulse, force or time in N·s, with a worked example and the impulse-momentum theorem explained.',
+      faq: [
+        { question: 'What is the formula for impulse?', answer: 'Impulse equals force times the time it acts: J = F × Δt. With force in newtons and time in seconds, the result is in newton-seconds (N·s).' },
+        { question: 'What is the impulse-momentum theorem?', answer: "It states that the impulse delivered to an object equals its change in momentum, J = Δp. It follows from Newton's second law, since force is the rate of change of momentum." },
+        { question: 'Are impulse and momentum measured in the same unit?', answer: 'Yes — N·s and kg·m/s are the same unit, because a newton is defined as 1 kg·m/s². Impulse is conventionally reported in N·s and momentum in kg·m/s, but the numbers are directly comparable.' },
+        { question: 'How much impulse does a 50 N force delivered for 0.6 s produce?', answer: '50 × 0.6 = 30 N·s.' },
+        { question: 'Why do airbags and crumple zones reduce injury?', answer: 'They extend the time (Δt) over which a crash delivers its impulse. Since the impulse (the momentum change) is fixed by the crash itself, stretching out Δt lowers the average force F = J ÷ Δt needed to produce it.' },
+        { question: 'How do I find the force from impulse and time?', answer: 'Divide impulse by time: F = J ÷ Δt. An impulse of 30 N·s delivered over 0.6 s corresponds to an average force of 50 N.' },
+        { question: 'Does impulse assume the force is constant?', answer: 'The formula J = F × Δt uses a single force value. For a force that varies with time, F represents the average force over the interval, not any instantaneous peak.' }
+      ]
+    },
+    compute(values) {
+      return { impulse: values.force * values.time };
+    }
   }
 ];

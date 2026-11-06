@@ -3276,6 +3276,38 @@ exports[`compute() snapshots > horsepower-to-kilowatts-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > impulse-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "force": 50,
+      "time": 0.6
+    },
+    "outputs": {
+      "impulse": 30
+    }
+  },
+  "typical": {
+    "inputs": {
+      "force": 75,
+      "time": 0.9
+    },
+    "outputs": {
+      "impulse": 67.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "force": 0,
+      "time": 0
+    },
+    "outputs": {
+      "impulse": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > inflation-calculator 1`] = `
 {
   "default": {

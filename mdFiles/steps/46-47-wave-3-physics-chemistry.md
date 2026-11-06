@@ -133,7 +133,7 @@ a locked spec.
   - 199 calculators total after this run (194 + 5).
 - [ ] Physics run 2 (5), branch `step/46-wave-3-physics-run-2`, PR TBD — **IN PROGRESS** 2026-11-06:
   - [x] momentum-calculator
-  - [ ] impulse-calculator
+  - [x] impulse-calculator
   - [ ] power-calculator
   - [ ] density-calculator
   - [ ] pressure-calculator

@@ -260,7 +260,8 @@ export const calculatorOrder: string[] = [
   'nfl-passer-rating-calculator',
   'elo-rating-calculator',
   'golf-course-handicap-calculator',
-  'molar-mass-calculator'
+  'molar-mass-calculator',
+  'molarity-calculator'
 ];
 
 const rank = (id: string) => {

@@ -61,7 +61,8 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'wavelength-frequency-calculator': ['wavelength'], // speed and frequency both 0 (their min) -> 0/0
   'decibel-calculator': ['decibels'], // inputPower and outputPower both 0 (their min) -> log of 0, undefined
   'radioactive-half-life-calculator': ['remainingAmount'], // elapsedTime and halfLife both 0 (their min) -> 0/0 exponent, 0 * NaN
-  'lens-mirror-equation-calculator': ['imageDistance'] // focalLength and objectDistance both 0 (their min) -> 0/0
+  'lens-mirror-equation-calculator': ['imageDistance'], // focalLength and objectDistance both 0 (their min) -> 0/0
+  'molarity-calculator': ['molarity'] // moles and volume both 0 (their min) -> 0/0
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

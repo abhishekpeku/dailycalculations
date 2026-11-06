@@ -4591,6 +4591,38 @@ exports[`compute() snapshots > molar-mass-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > molarity-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "moles": 2,
+      "volume": 0.004
+    },
+    "outputs": {
+      "molarity": 500
+    }
+  },
+  "typical": {
+    "inputs": {
+      "moles": 3,
+      "volume": 0.006
+    },
+    "outputs": {
+      "molarity": 500
+    }
+  },
+  "edge": {
+    "inputs": {
+      "moles": 0,
+      "volume": 0
+    },
+    "outputs": {
+      "molarity": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > momentum-calculator 1`] = `
 {
   "default": {

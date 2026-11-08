@@ -264,7 +264,12 @@ export const calculatorOrder: string[] = [
   'molarity-calculator',
   'dilution-calculator',
   'mass-percent-calculator',
-  'moles-to-grams-calculator'
+  'moles-to-grams-calculator',
+  'ideal-gas-law-calculator',
+  'combined-gas-law-calculator',
+  'ph-poh-calculator',
+  'pka-henderson-hasselbalch-calculator',
+  'percent-yield-calculator'
 ];
 
 const rank = (id: string) => {

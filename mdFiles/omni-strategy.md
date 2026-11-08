@@ -219,9 +219,20 @@ other wave.
 **Money-hub expansion** (on top of the existing `finance` category — mortgage/loan/compound-
 interest/paycheck/investment/loan-prepayment/inflation/EMI already exist, don't rebuild): home-
 affordability, mortgage-refinance, mortgage-amortization-schedule, down-payment-savings, closing-
-cost-estimator, rent-vs-buy, debt-payoff/snowball, credit-card-minimum-payment, balance-transfer-
-savings, emergency-fund, retirement-savings (distinct from the existing generic `investment-
-calculator`), 401k-employer-match, roth-ira-growth, goal-based-investment, IRR, NPV.
+cost-estimator, rent-vs-buy, debt-to-income-calculator, debt-payoff/snowball, credit-card-minimum-
+payment, balance-transfer-savings, emergency-fund, retirement-savings (distinct from the existing
+generic `investment-calculator`), 401k-employer-match, roth-ira-growth, goal-based-investment,
+IRR, NPV.
+
+**`home-affordability-calculator` spec note** (added 2026-11-08, from an external AI tool's review
+of the Guide mockup — see `guide-content-plan.md`'s provenance caveat on that review; its feature
+ideas are sound even though it misread the mockup as the calculator itself): this should be a real
+type-B breakdown calculator distinct from the Guide, with inputs for gross income, existing debt,
+down payment, rate, term, and property tax/insurance/HOA estimates; outputs a **three-tier result**
+(conservative/balanced/maximum affordability, not one number), a full PITI breakdown (principal,
+interest, tax, insurance, PMI if under 20% down, HOA), and the DTI check against both the 28% and
+36% thresholds. This is meaningfully richer than the existing `mortgage-calculator` and is the
+calculator the Guide mockup's "Run your own numbers" CTA should point to once both exist.
 
 **Solar & home energy** (new category; `home`'s `electricity-bill-calculator` and `auto`'s `ev-
 charging-calculator` already exist — cross-link, don't duplicate): solar-panel-system-size, solar-

@@ -407,11 +407,13 @@ build agent's judgment**, same as every run so far.
     numbers were still independently recomputed in a scratch script and individually checked before
     moving to the next, same discipline as run 2.
   - 229 calculators total after this run (224 + 5).
-- [ ] Chemistry run 4 (5): reaction-half-life (t½ = ln2/k — explicitly distinct from physics'
-  radioactive-half-life-calculator, cross-link and restate the distinction), rate-constant,
-  arrhenius-equation, molality, mole-fraction (molality/mole-fraction substituted in for
-  specific-heat, which the dedupe note says likely shares physics' heat-calculator rather than
-  getting its own page — confirm that's still true before building either way)
+- [ ] Chemistry run 4 (5), branch `step/46-wave-3-chemistry-run-4` — **IN PROGRESS**:
+  ## Progress
+  - [ ] reaction-half-life-calculator
+  - [ ] rate-constant-calculator
+  - [ ] arrhenius-equation-calculator
+  - [ ] molality-calculator
+  - [ ] mole-fraction-calculator
 - [ ] Chemistry run 5 (5): osmolarity, normality, titration, equilibrium-constant (Keq),
   gibbs-free-energy (ΔG = ΔH − TΔS)
 - [ ] Chemistry run 6 (5): density-of-solutions, serial-dilution, electron-configuration,

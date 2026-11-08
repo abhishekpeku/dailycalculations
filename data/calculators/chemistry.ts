@@ -2435,5 +2435,620 @@ export const chemistryCalculators: CalculatorConfig[] = [
         totalMoles: total
       };
     }
+  },
+  {
+    id: 'osmolarity-calculator',
+    category: 'chemistry',
+    glyph: 'Osm',
+    updatedAt: '2026-11-08',
+    aliases: ['osmolarity calculator', 'osmolarity formula calculator', 'osmotic concentration calculator', 'mosm/l calculator', 'van’t hoff factor calculator', 'total particle concentration calculator'],
+    related: ['molarity-calculator', 'molality-calculator', 'dilution-calculator', 'mole-fraction-calculator'],
+    title: 'Osmolarity Calculator',
+    description: 'Find a solution’s total dissolved-particle concentration — osmolarity = molarity × the number of particles each formula unit splits into — solved for any of the three.',
+    example: 'A 0.154 mol/L sodium chloride solution splits into 2 particles per formula unit (Na⁺ and Cl⁻), for an osmolarity of 308 mOsm/L — the figure behind 0.9% "normal" saline.',
+    solver: {
+      defaultTarget: 'osmolarity',
+      variables: [
+        { id: 'osmolarity', label: 'Osmolarity', symbol: 'Osm', dimension: 'osmolarity', defaultValue: 308, defaultUnit: 'mOsm/L' },
+        { id: 'molarity', label: 'Molarity', symbol: 'M', dimension: 'concentration', defaultValue: 0.154, defaultUnit: 'mol/L' },
+        { id: 'particles', label: 'Particles per formula unit', symbol: 'i', dimension: 'count', defaultValue: 2, defaultUnit: 'count' }
+      ],
+      solve: {
+        osmolarity: ({ molarity, particles }) => molarity * particles,
+        molarity: ({ osmolarity, particles }) => (particles === 0 ? NaN : osmolarity / particles),
+        particles: ({ osmolarity, molarity }) => (molarity === 0 ? NaN : osmolarity / molarity)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-08',
+      concept: {
+        title: 'What is osmolarity?',
+        paragraphs: [
+          'Molarity counts moles of a specific formula unit — one mole of NaCl is one mole of NaCl, full stop. But once that formula unit is dissolved in water, it can split apart: NaCl separates into a sodium ion and a chloride ion, so one mole of dissolved NaCl actually becomes two moles of separate particles floating in solution. Osmolarity counts those particles directly, regardless of what they came from or whether they carry a charge.',
+          'The link between the two is the van’t Hoff factor, i: the number of particles one formula unit becomes once dissolved. OpenStax’s Chemistry 2e defines i as the ratio of moles of particles in solution to moles of formula units dissolved, and it is also the factor that scales a solute’s molarity into its contribution to the solution’s osmotic pressure. Osmolarity is that same particle count expressed as a concentration: osmolarity = molarity × i, in osmoles (Osm) or, far more commonly, milliosmoles (mOsm) per litre.',
+          'A nonelectrolyte that stays intact in solution — glucose, for example — has i = 1, so its osmolarity equals its molarity. An ionic compound that fully dissociates has i equal to however many ions its formula produces: 2 for NaCl (Na⁺ and Cl⁻), 3 for CaCl₂ (one Ca²⁺ and two Cl⁻). Osmolarity adds up across every dissolved solute in a mixture, which is what makes it the quantity that actually governs osmosis — water moving across a membrane responds to the total particle count on each side, not to any one solute’s molarity on its own.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of osmolarity, molarity, and particles per formula unit; the third fills in automatically.',
+        steps: [
+          { name: 'Find the solute’s molarity', text: 'How many moles of the dissolved formula unit per litre of solution — use the molarity calculator above if you only have a mass and a volume.' },
+          { name: 'Determine the particles per formula unit (i)', text: 'How many separate pieces one formula unit becomes in solution: 1 for a nonelectrolyte like glucose, 2 for NaCl, 3 for CaCl₂, and so on.' },
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit; osmolarity reads in Osm/L or mOsm/L, molarity in mol/L, and particles is a plain count.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Read the result', text: 'The missing value appears immediately in your chosen unit.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Osmolarity = molarity × i rearranges to solve for molarity or i as well.',
+        expression: 'Osm = M × i\nM = Osm ÷ i\ni = Osm ÷ M',
+        terms: [
+          { symbol: 'Osm', meaning: 'Osmolarity — total concentration of dissolved particles, in osmoles (or milliosmoles) per litre of solution.' },
+          { symbol: 'M', meaning: 'Molarity of the solute, in moles of formula units per litre of solution.' },
+          { symbol: 'i', meaning: 'The van’t Hoff factor — particles each formula unit splits into once dissolved. 1 for a nonelectrolyte, 2 or more for an electrolyte that dissociates into ions.' }
+        ],
+        note: 'This treats dissociation as complete, which is accurate for dilute solutions of strong electrolytes (table salt, for instance). A weak electrolyte that only partially dissociates has an effective i between 1 and its fully-dissociated value.'
+      },
+      workedExample: {
+        intro: 'A 0.9% sodium chloride solution (physiological "normal saline") is 0.154 mol/L of NaCl. NaCl fully dissociates into Na⁺ and Cl⁻, so i = 2. What is its osmolarity?',
+        rows: [
+          { label: 'Molarity (M)', value: '0.154 mol/L' },
+          { label: 'Particles per formula unit (i)', value: '2 (Na⁺ and Cl⁻)' },
+          { label: 'Osmolarity (Osm = 0.154 × 2)', value: '0.308 Osm/L' },
+          { label: 'In milliosmoles', value: '308 mOsm/L' }
+        ],
+        result: 'Osm = 308 mOsm/L',
+        explanation: 'Multiplying the 0.154 mol/L molarity by the van’t Hoff factor of 2 gives 0.308 Osm/L, or 308 mOsm/L — the published osmolarity of 0.9% sodium chloride injection, USP (StatPearls, "Normal Saline"), and the reason this concentration is used for intravenous fluids: it is close to blood plasma’s own osmolarity, so it does not shift water into or out of blood cells.'
+      },
+      watchOut: [
+        {
+          title: 'Osmolarity is not the same quantity as osmolality',
+          body: 'Osmolarity is particles per litre of solution; osmolality is particles per kilogram of solvent — the same distinction as molarity versus molality (see the molality calculator). The two are numerically close for dilute water-based solutions but are not identical, and clinical lab reports almost always mean osmolality even when they informally say "osmolarity."'
+        },
+        {
+          title: 'The van’t Hoff factor assumes complete dissociation',
+          body: 'i = 2 for NaCl assumes every formula unit splits into separate ions. That holds well for a dilute strong electrolyte, but weak electrolytes (which only partly ionize) and more concentrated solutions (where ion pairing becomes significant) have an effective i lower than the fully-dissociated count.'
+        },
+        {
+          title: 'A nonelectrolyte’s osmolarity equals its molarity',
+          body: 'Glucose, urea, and other molecules that dissolve without splitting apart have i = 1, so their osmolarity and molarity are the same number — no separate calculation is needed for those.'
+        },
+        {
+          title: 'Osmolarity from a mixture adds across every solute',
+          body: 'A solution with more than one dissolved substance has a total osmolarity equal to the sum of each solute’s own molarity × i. This calculator handles one solute at a time; add the results for a mixture.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §11.4 "Colligative Properties" (the van’t Hoff factor, i)', url: 'https://openstax.org/books/chemistry-2e/pages/11-4-colligative-properties' },
+        { label: 'StatPearls [Internet] (NCBI Bookshelf, NIH), "Normal Saline" — 0.9% NaCl composition and osmolarity', url: 'https://www.ncbi.nlm.nih.gov/sites/books/NBK545210/' }
+      ]
+    },
+    inputs: [
+      { id: 'molarity', label: 'Molarity (mol/m³)', type: 'number', placeholder: '154', defaultValue: 154, step: 1, min: 0 },
+      { id: 'particles', label: 'Particles per formula unit', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Osmolarity Calculator – Osm = Molarity × i',
+      description: 'Free osmolarity calculator. Solve osmolarity = molarity × particles per formula unit (the van’t Hoff factor) for any of the three, with a worked example.',
+      faq: [
+        { question: 'How do I calculate osmolarity?', answer: 'Multiply the solute’s molarity by its van’t Hoff factor (i), the number of particles each formula unit splits into: Osm = M × i. 0.154 mol/L of NaCl (i = 2) gives 0.154 × 2 = 0.308 Osm/L, or 308 mOsm/L.' },
+        { question: 'What is the van’t Hoff factor?', answer: 'The number of separate particles one formula unit of a solute becomes once dissolved — 1 for a nonelectrolyte like glucose, 2 for NaCl (Na⁺ and Cl⁻), 3 for CaCl₂ (Ca²⁺ and two Cl⁻).' },
+        { question: 'What is the osmolarity of normal saline?', answer: '308 mOsm/L. 0.9% sodium chloride injection is 0.154 mol/L of NaCl; since NaCl dissociates into 2 ions, 0.154 × 2 = 0.308 Osm/L.' },
+        { question: 'Is osmolarity the same as molarity?', answer: 'Only when i = 1 — a solute that does not dissociate, like glucose. For an electrolyte that splits into ions, osmolarity is always higher than molarity by a factor of i.' },
+        { question: 'Is osmolarity the same as osmolality?', answer: 'No. Osmolarity is particles per litre of solution; osmolality is particles per kilogram of solvent. They are close for dilute aqueous solutions but not identical, the same distinction as molarity versus molality.' },
+        { question: 'What is the osmolarity of a glucose solution?', answer: 'The same number as its molarity, since glucose does not dissociate (i = 1). A 0.2 mol/L glucose solution has an osmolarity of 0.2 Osm/L (200 mOsm/L).' },
+        { question: 'How do I find the van’t Hoff factor if I know the osmolarity and molarity?', answer: 'Divide osmolarity by molarity: i = Osm ÷ M. An osmolarity of 0.3 Osm/L from a 0.1 mol/L solution gives i = 0.3 ÷ 0.1 = 3.' }
+      ]
+    },
+    compute(values) {
+      return { osmolarity: values.molarity * values.particles };
+    }
+  },
+  {
+    id: 'normality-calculator',
+    category: 'chemistry',
+    glyph: 'N',
+    updatedAt: '2026-11-08',
+    aliases: ['normality calculator', 'normality formula calculator', 'equivalent concentration calculator', 'n = m x n calculator', 'eq/l calculator', 'gram equivalent weight calculator'],
+    related: ['molarity-calculator', 'titration-calculator', 'dilution-calculator', 'solution-concentration-calculator'],
+    title: 'Normality Calculator (N = M × n)',
+    description: 'Solve for normality, molarity, or the equivalence factor — normality equals molarity multiplied by n, the number of equivalents (reacting units) each mole provides.',
+    example: '0.1 mol/L sulfuric acid (H₂SO₄, a diprotic acid with n = 2) has a normality of 0.2 N.',
+    solver: {
+      defaultTarget: 'normality',
+      variables: [
+        { id: 'normality', label: 'Normality', symbol: 'N', dimension: 'normality', defaultValue: 0.2, defaultUnit: 'eq/L' },
+        { id: 'molarity', label: 'Molarity', symbol: 'M', dimension: 'concentration', defaultValue: 0.1, defaultUnit: 'mol/L' },
+        { id: 'equivalenceFactor', label: 'Equivalence factor', symbol: 'n', dimension: 'count', defaultValue: 2, defaultUnit: 'count' }
+      ],
+      solve: {
+        normality: ({ molarity, equivalenceFactor }) => molarity * equivalenceFactor,
+        molarity: ({ normality, equivalenceFactor }) => (equivalenceFactor === 0 ? NaN : normality / equivalenceFactor),
+        equivalenceFactor: ({ normality, molarity }) => (molarity === 0 ? NaN : normality / molarity)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-08',
+      concept: {
+        title: 'What is normality?',
+        paragraphs: [
+          'Normality measures concentration in equivalents per litre rather than moles per litre. An "equivalent" is however much of a substance reacts with (or supplies) one mole of a specified reference particle — a H⁺ ion in an acid-base reaction, or one electron in a redox reaction. Normality scales up a solute’s molarity by n, the number of those equivalents each mole of the solute provides: N = M × n.',
+          'The equivalence factor depends entirely on the reaction a solution is being used for, which is what makes normality different from molarity — the same solution can have more than one normality depending on context. Sulfuric acid, H₂SO₄, can donate 2 protons per molecule, so as an acid it is n = 2 and its normality is twice its molarity. Potassium permanganate, KMnO₄, accepts 5 electrons per formula unit in an acidic redox titration, so as that specific oxidizer it is n = 5.',
+          'Normality is a legacy unit. NIST’s own guide to the SI (NIST SP 811) calls the term "normality" and the symbol N obsolete, recommending amount-of-substance concentration (molarity) instead. In practice, though, it remains the standard way analytical and clinical laboratories report titrant strength, precisely because it lets an acid-base or redox titration’s equivalence point be read directly as "equal normalities, equal volumes" without separately tracking each reaction’s stoichiometry — see the titration calculator for that calculation.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of normality, molarity, and the equivalence factor; the third fills in automatically.',
+        steps: [
+          { name: 'Find the solute’s molarity', text: 'Moles of the solute per litre of solution — use the molarity calculator above if you only have a mass and a volume.' },
+          { name: 'Determine the equivalence factor, n', text: 'How many equivalents (H⁺ ions, electrons, or charges) one mole of this solute provides for the specific reaction in question.' },
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit; normality reads in eq/L (often just written "N") or meq/L, molarity in mol/L, and n is a plain count.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Read the result', text: 'The missing value appears immediately in your chosen unit.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'N = M × n rearranges to solve for molarity or the equivalence factor as well.',
+        expression: 'N = M × n\nM = N ÷ n\nn = N ÷ M',
+        terms: [
+          { symbol: 'N', meaning: 'Normality — concentration in equivalents per litre of solution.' },
+          { symbol: 'M', meaning: 'Molarity of the solute, in moles of formula units per litre of solution.' },
+          { symbol: 'n', meaning: 'Equivalence factor — equivalents (reacting units) each mole of the solute provides for a specific reaction. A fixed property of the reaction, not something the calculator derives on its own.' }
+        ],
+        note: 'n is reaction-specific: the same compound can have a different equivalence factor as an acid, a base, or an oxidizer in different reactions, so it must be looked up or worked out from the actual reaction, not assumed from the formula alone.'
+      },
+      workedExample: {
+        intro: 'Sulfuric acid, H₂SO₄, is prepared at 0.1 mol/L. As a diprotic acid it donates 2 protons per molecule (n = 2). What is its normality?',
+        rows: [
+          { label: 'Molarity (M)', value: '0.1 mol/L' },
+          { label: 'Equivalence factor (n)', value: '2 (diprotic acid)' },
+          { label: 'Normality (N = 0.1 × 2)', value: '0.2 N (0.2 eq/L)' }
+        ],
+        result: 'N = 0.2 N',
+        explanation: 'Each mole of H₂SO₄ supplies 2 moles of reactive H⁺, so a 0.1 mol/L solution supplies equivalents at twice that rate: 0.1 × 2 = 0.2 eq/L, written 0.2 N.'
+      },
+      watchOut: [
+        {
+          title: 'The equivalence factor is not automatic — it depends on the reaction',
+          body: 'This calculator takes n as a given input; it does not look up or derive it from a formula. The same substance can have different n values in different roles: H₃PO₄ is n = 1, 2, or 3 depending on how many of its three protons actually react in a given reaction.'
+        },
+        {
+          title: 'Normality is explicitly molarity scaled by a reaction-dependent factor, not a separate measurement',
+          body: 'Normality always equals molarity × n for the reaction being used — see the molarity calculator for finding M in the first place. There is no way to state a solution’s normality without first knowing both its molarity and the specific reaction’s equivalence factor.'
+        },
+        {
+          title: 'NIST and IUPAC consider "normality" an obsolete term',
+          body: 'Modern SI-based practice (NIST SP 811) recommends amount-of-substance concentration (molarity) instead of normality. It remains in common use in titrimetric analytical chemistry because it simplifies titration arithmetic, not because standards bodies endorse it.'
+        },
+        {
+          title: 'Mixing up normality and molarity gives an answer off by exactly n',
+          body: 'Reading a "0.2 N" sulfuric acid solution as 0.2 mol/L (instead of the correct 0.1 mol/L) is a factor-of-2 error that propagates into anything calculated from it — always check whether a labeled concentration is N or M before using it.'
+        }
+      ],
+      references: [
+        { label: 'NIST SP 811, "Guide for the Use of the International System of Units (SI)", Chapter 8, §8.6.5 (normality and molarity as obsolete terms)', url: 'https://www.nist.gov/pml/special-publication-811/nist-guide-si-chapter-8' },
+        { label: 'IUPAC Compendium of Chemical Terminology (Gold Book), "equivalent entity" (E02192)', url: 'https://goldbook.iupac.org/terms/view/E02192' }
+      ]
+    },
+    inputs: [
+      { id: 'molarity', label: 'Molarity (mol/m³)', type: 'number', placeholder: '100', defaultValue: 100, step: 1, min: 0 },
+      { id: 'equivalenceFactor', label: 'Equivalence factor (n)', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Normality Calculator (N = M × n)',
+      description: 'Free normality calculator. Solve N = M × n for normality, molarity, or the equivalence factor, with a worked example comparing normality and molarity.',
+      faq: [
+        { question: 'How do I calculate normality?', answer: 'Multiply molarity by the equivalence factor n: N = M × n. A 0.1 mol/L solution of a diprotic acid (n = 2) has a normality of 0.1 × 2 = 0.2 N.' },
+        { question: 'What is the difference between normality and molarity?', answer: 'Molarity counts moles of a formula unit; normality counts equivalents (reacting units — H⁺ ions, electrons) of it, which is molarity scaled by the equivalence factor n. The two are equal only when n = 1.' },
+        { question: 'How do I find the equivalence factor, n?', answer: 'It depends on the specific reaction: for an acid or base, count the protons (H⁺) it actually donates or accepts in that reaction; for a redox reagent, count the electrons transferred per formula unit.' },
+        { question: 'What is the normality of 0.1 M H₂SO₄?', answer: '0.2 N. Sulfuric acid is diprotic (n = 2) as a full acid, so N = 0.1 × 2 = 0.2.' },
+        { question: 'How is normality used in titration?', answer: 'At a titration’s equivalence point, equivalents of titrant equal equivalents of analyte: N₁V₁ = N₂V₂. Because normality already accounts for stoichiometry, this holds even when the acid and base react in other than a 1:1 mole ratio. The titration calculator above instead works directly from molarity and the balanced equation’s coefficients.' },
+        { question: 'Is normality still used?', answer: 'Yes, especially in titrimetric analytical and clinical chemistry, even though NIST’s guide to the SI calls the term obsolete in favor of molar (amount-of-substance) concentration.' },
+        { question: 'Can normality be lower than molarity?', answer: 'No — n is always 1 or more (it counts how many equivalents a mole provides), so normality is always greater than or equal to molarity for the same solution.' }
+      ]
+    },
+    compute(values) {
+      return { normality: values.molarity * values.equivalenceFactor };
+    }
+  },
+  {
+    id: 'titration-calculator',
+    category: 'chemistry',
+    glyph: 'Ti',
+    updatedAt: '2026-11-08',
+    aliases: ['titration calculator', 'acid base titration calculator', 'titration formula calculator', 'equivalence point calculator', 'titrant concentration calculator', 'molarity from titration calculator'],
+    related: ['dilution-calculator', 'molarity-calculator', 'normality-calculator', 'ph-poh-calculator'],
+    title: 'Titration Calculator',
+    description: 'Find the unknown concentration or volume at a titration’s equivalence point, scaling C₁V₁ = C₂V₂ by each species’ coefficient from the balanced equation.',
+    example: 'Titrating 25.00 mL of unknown H₂SO₄ with 0.100 mol/L NaOH (H₂SO₄ + 2NaOH → Na₂SO₄ + 2H₂O) takes 30.00 mL of titrant to reach the endpoint, for an H₂SO₄ concentration of 0.06 mol/L.',
+    solver: {
+      defaultTarget: 'concentration2',
+      variables: [
+        { id: 'concentration1', label: 'Titrant concentration', symbol: 'C₁', dimension: 'concentration', defaultValue: 0.1, defaultUnit: 'mol/L' },
+        { id: 'volume1', label: 'Titrant volume used', symbol: 'V₁', dimension: 'volume', defaultValue: 30, defaultUnit: 'mL' },
+        { id: 'coefficient1', label: 'Titrant’s coefficient', symbol: 'a', dimension: 'count', defaultValue: 2, defaultUnit: 'count', fixed: true },
+        { id: 'concentration2', label: 'Analyte concentration', symbol: 'C₂', dimension: 'concentration', defaultValue: 0.06, defaultUnit: 'mol/L' },
+        { id: 'volume2', label: 'Analyte volume', symbol: 'V₂', dimension: 'volume', defaultValue: 25, defaultUnit: 'mL' },
+        { id: 'coefficient2', label: 'Analyte’s coefficient', symbol: 'b', dimension: 'count', defaultValue: 1, defaultUnit: 'count', fixed: true }
+      ],
+      solve: {
+        concentration1: ({ concentration2, volume1, volume2, coefficient1, coefficient2 }) =>
+          volume1 === 0 || coefficient2 === 0 ? NaN : (concentration2 * volume2 * coefficient1) / (volume1 * coefficient2),
+        volume1: ({ concentration1, concentration2, volume2, coefficient1, coefficient2 }) =>
+          concentration1 === 0 || coefficient2 === 0 ? NaN : (concentration2 * volume2 * coefficient1) / (concentration1 * coefficient2),
+        concentration2: ({ concentration1, volume1, volume2, coefficient1, coefficient2 }) =>
+          volume2 === 0 || coefficient1 === 0 ? NaN : (concentration1 * volume1 * coefficient2) / (volume2 * coefficient1),
+        volume2: ({ concentration1, volume1, concentration2, coefficient1, coefficient2 }) =>
+          concentration2 === 0 || coefficient1 === 0 ? NaN : (concentration1 * volume1 * coefficient2) / (concentration2 * coefficient1)
+      },
+      outputs: [
+        { id: 'molesAnalyte', label: 'Moles of analyte at equivalence', dimension: 'amountOfSubstance', unit: 'mmol', compute: (si) => si.concentration2 * si.volume2 }
+      ],
+      visuals: [
+        {
+          type: 'compareBars',
+          bars: [
+            { from: 'volume1', label: 'Titrant volume used' },
+            { from: 'volume2', label: 'Analyte volume' }
+          ],
+          title: 'Volumes at the equivalence point'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-08',
+      concept: {
+        title: 'What is a titration?',
+        paragraphs: [
+          'A titration finds an unknown solution’s concentration by reacting it, drop by drop, with a second solution of precisely known concentration (the titrant) until the reaction is exactly complete — the equivalence point. OpenStax’s Chemistry 2e introduces acid-base titration this way: a measured volume of titrant of known concentration is added until an indicator (or a pH meter) signals that a stoichiometric amount has reacted with the analyte, the solution being measured.',
+          'For a simple 1:1 reaction, that balance is C₁V₁ = C₂V₂ — the same shape as the dilution equation, just interpreted differently (see the watch-out item below for exactly how they differ). Many real titrations are not 1:1, though: when two moles of titrant are needed for every one mole of analyte (sodium hydroxide neutralizing sulfuric acid, for instance), the balance has to account for that ratio, which is where each species’ coefficient from the balanced equation comes in.',
+          'Generalized, the condition at the equivalence point is that moles of titrant divided by its own coefficient equals moles of analyte divided by its own coefficient: (C₁V₁) ÷ a = (C₂V₂) ÷ b, which rearranges to C₁V₁ × b = C₂V₂ × a. Setting both coefficients to 1 recovers the familiar 1:1 case.'
+        ]
+      },
+      howTo: {
+        intro: 'Write and balance the reaction between the titrant and the analyte first — the two coefficients come directly from it.',
+        steps: [
+          { name: 'Balance the reaction', text: 'Write the balanced equation between the titrant and the analyte, and read off each one’s coefficient. H₂SO₄ + 2NaOH → Na₂SO₄ + 2H₂O gives NaOH a coefficient of 2 and H₂SO₄ a coefficient of 1.' },
+          { name: 'Enter the titrant’s known concentration and coefficient', text: 'C₁ is the titrant’s concentration (what is in the burette); a is its coefficient from the balanced equation.' },
+          { name: 'Enter the analyte’s coefficient and known volume', text: 'b is the analyte’s coefficient; V₂ is the volume of the solution being analyzed.' },
+          { name: 'Enter whichever of V₁ or C₂ you measured', text: 'If you titrated to find the volume of titrant needed, enter V₁ and solve for C₂. If you want to know how much titrant a target concentration needs, enter C₂ and solve for V₁.' },
+          { name: 'Read the result', text: 'The missing value appears immediately, alongside the moles of analyte present at the equivalence point.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'C₁V₁ × b = C₂V₂ × a rearranges to solve for any one of the two concentrations or two volumes, given the coefficients and the other two.',
+        expression: 'C₁V₁ × b = C₂V₂ × a\nC₁ = (C₂V₂ × a) ÷ (V₁ × b)\nV₁ = (C₂V₂ × a) ÷ (C₁ × b)\nC₂ = (C₁V₁ × b) ÷ (V₂ × a)\nV₂ = (C₁V₁ × b) ÷ (C₂ × a)',
+        terms: [
+          { symbol: 'C₁, V₁', meaning: 'Concentration and volume of the titrant — the solution of known concentration added from the burette.' },
+          { symbol: 'C₂, V₂', meaning: 'Concentration and volume of the analyte — the solution being measured.' },
+          { symbol: 'a, b', meaning: 'The titrant’s and the analyte’s coefficients in the balanced reaction between them. Both equal 1 for a 1:1 reaction, which reduces the formula to the familiar C₁V₁ = C₂V₂.' }
+        ],
+        note: 'The two coefficients are fixed inputs, not something the calculator solves for — they come from writing and balancing the actual chemical equation, the same discipline the limiting reagent and stoichiometry calculators rely on.'
+      },
+      workedExample: {
+        intro: '25.00 mL of a sulfuric acid solution of unknown concentration is titrated with 0.100 mol/L sodium hydroxide: H₂SO₄ + 2NaOH → Na₂SO₄ + 2H₂O. The endpoint is reached after adding 30.00 mL of the NaOH titrant.',
+        rows: [
+          { label: 'Titrant concentration (C₁, NaOH)', value: '0.100 mol/L' },
+          { label: 'Titrant volume used (V₁)', value: '30.00 mL' },
+          { label: 'Titrant’s coefficient (a, NaOH)', value: '2' },
+          { label: 'Analyte volume (V₂, H₂SO₄)', value: '25.00 mL' },
+          { label: 'Analyte’s coefficient (b, H₂SO₄)', value: '1' },
+          { label: 'Analyte concentration (C₂ = (C₁V₁ × b) ÷ (V₂ × a))', value: '(0.100 × 30.00 × 1) ÷ (25.00 × 2) = 0.06 mol/L' }
+        ],
+        result: 'C₂ = 0.06 mol/L',
+        explanation: '30.00 mL of 0.100 mol/L NaOH is 3.00 mmol of NaOH, which at a 2:1 NaOH-to-acid ratio reacts with exactly 1.50 mmol of H₂SO₄. Spread through the 25.00 mL analyte sample, that is 1.50 ÷ 25.00 = 0.06 mol/L.'
+      },
+      watchOut: [
+        {
+          title: 'Titration is not the same calculation as dilution',
+          body: 'Both use a C₁V₁-shaped equation, but dilution (see the dilution calculator) adds solvent to the same solute, conserving its moles — nothing reacts. Titration reacts a known solution against a different, unknown one until a stoichiometric endpoint is reached; the two solutions are chemically different species related by a balanced equation, not the same solute before and after.'
+        },
+        {
+          title: 'The coefficients are not optional for anything but a 1:1 reaction',
+          body: 'Leaving both coefficients at 1 when the real reaction is not 1:1 (as with H₂SO₄ and NaOH above) gives an answer off by exactly the ratio between the two coefficients — 0.03 mol/L instead of the correct 0.06 mol/L in the worked example, a factor-of-2 error.'
+        },
+        {
+          title: 'This assumes the reaction goes to completion with no side reactions',
+          body: 'The equivalence point calculation only holds when the titrant reacts cleanly and completely with the analyte according to the written equation — a side reaction, an indicator error, or a titrant that has partially degraded all throw off the result without showing up as an error here.'
+        },
+        {
+          title: 'The equivalence point is a different point from the pH equivalence shown by an indicator',
+          body: 'An indicator changes color at its own color-change range, which is chosen to be close to the true equivalence point but is not mathematically identical to it — see the pH/pOH calculator for the chemistry of why a strong acid/strong base equivalence point sits at pH 7 while a weak acid/strong base one does not.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §14.7 "Acid-Base Titrations" (equivalence point, worked titration example)', url: 'https://openstax.org/books/chemistry-2e/pages/14-7-acid-base-titrations' },
+        { label: 'OpenStax, Chemistry 2e, §4.3 "Reaction Stoichiometry" (mole-ratio calculations from a balanced equation)', url: 'https://openstax.org/books/chemistry-2e/pages/4-3-reaction-stoichiometry' }
+      ]
+    },
+    inputs: [
+      { id: 'concentration1', label: 'Titrant concentration (mol/m³)', type: 'number', placeholder: '100', defaultValue: 100, step: 1, min: 0 },
+      { id: 'volume1', label: 'Titrant volume used (m³)', type: 'number', placeholder: '0.00003', defaultValue: 0.00003, step: 0.000001, min: 0 },
+      { id: 'coefficient1', label: 'Titrant’s coefficient', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 1 },
+      { id: 'volume2', label: 'Analyte volume (m³)', type: 'number', placeholder: '0.000025', defaultValue: 0.000025, step: 0.000001, min: 0 },
+      { id: 'coefficient2', label: 'Analyte’s coefficient', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Titration Calculator – Acid-Base Equivalence Point',
+      description: 'Free titration calculator. Solve for the unknown concentration or volume at a titration’s equivalence point, scaled by each species’ coefficient.',
+      faq: [
+        { question: 'What is the titration formula?', answer: 'C₁V₁ × b = C₂V₂ × a, where C₁/V₁ and a are the titrant’s concentration, volume, and coefficient, and C₂/V₂ and b are the analyte’s. For a 1:1 reaction (a = b = 1) this is the familiar C₁V₁ = C₂V₂.' },
+        { question: 'How do I find an unknown concentration from a titration?', answer: 'Solve for C₂: C₂ = (C₁V₁ × b) ÷ (V₂ × a). Titrating 25.00 mL of unknown H₂SO₄ (b = 1) with 30.00 mL of 0.100 mol/L NaOH (a = 2) gives C₂ = (0.100 × 30.00 × 1) ÷ (25.00 × 2) = 0.06 mol/L.' },
+        { question: 'What is the equivalence point?', answer: 'The point in a titration where the titrant has reacted with exactly a stoichiometric amount of the analyte — neither is left over, according to the balanced equation between them.' },
+        { question: 'How is titration different from dilution?', answer: 'Dilution adds solvent to one solute, keeping its moles constant (see the dilution calculator). Titration reacts a known solution against a chemically different unknown one until a stoichiometric endpoint — two different species are involved, related by a balanced equation, not a before-and-after of the same solute.' },
+        { question: 'What if the titrant and analyte react 1:1?', answer: 'Set both coefficients to 1, which reduces the formula to C₁V₁ = C₂V₂ — the simplest case, such as a strong monoprotic acid titrated with a strong monoprotic base.' },
+        { question: 'How do I find the volume of titrant needed for a target concentration?', answer: 'Solve for V₁: V₁ = (C₂V₂ × a) ÷ (C₁ × b). This tells you how much titrant to add before you start, rather than reading off how much was actually used.' },
+        { question: 'Does this calculator balance the chemical equation for me?', answer: 'No — it takes the two coefficients as given. Balance the equation between the titrant and analyte first (see the stoichiometry calculator), then enter those coefficients here.' }
+      ]
+    },
+    compute(values) {
+      return {
+        concentration2: (values.concentration1 * values.volume1 * values.coefficient2) / (values.volume2 * values.coefficient1)
+      };
+    }
+  },
+  {
+    id: 'equilibrium-constant-calculator',
+    category: 'chemistry',
+    glyph: 'Keq',
+    updatedAt: '2026-11-08',
+    aliases: ['equilibrium constant calculator', 'keq calculator', 'kc calculator', 'reaction quotient calculator', 'law of mass action calculator', 'chemical equilibrium calculator'],
+    related: ['stoichiometry-calculator', 'ph-poh-calculator', 'rate-constant-calculator', 'gibbs-free-energy-calculator'],
+    title: 'Equilibrium Constant Calculator (Kc)',
+    description: 'Find the equilibrium constant Kc for a reaction aA + bB ⇌ cC + dD from the equilibrium concentrations and coefficients of up to two reactants and two products.',
+    example: 'For 2NO₂(g) ⇌ N₂O₄(g) at equilibrium concentrations [NO₂] = 0.016 mol/L and [N₂O₄] = 0.042 mol/L, Kc = 0.042 ÷ 0.016² ≈ 1.6 × 10².',
+    content: {
+      lastReviewed: '2026-11-08',
+      concept: {
+        title: 'What is the equilibrium constant?',
+        paragraphs: [
+          'A reversible reaction, aA + bB ⇌ cC + dD, reaches equilibrium when the forward and reverse reaction rates become equal — concentrations stop changing, even though both reactions keep happening. OpenStax’s Chemistry 2e Section 13.2 defines the equilibrium constant, Kc, as the value the reaction quotient settles to once that balance is reached: Kc = [C]ᶜ[D]ᵏ ÷ ([A]ᵃ[B]ᵇ), using equilibrium molar concentrations raised to each species’ coefficient from the balanced equation.',
+          'Kc is a single number that characterizes how far a reaction proceeds toward products before equilibrium sets in, at a given temperature. A large Kc (much greater than 1) means the equilibrium mixture favors products; a small Kc (much less than 1) means it favors reactants. Kc changes only with temperature — not with the starting concentrations, which is exactly what makes it a useful constant rather than just another measurement.',
+          'This calculator covers the general small-molecule case directly: up to two reactants and two products, each with its own equilibrium concentration and coefficient. It does not predict how a shift in conditions moves the equilibrium (Le Chatelier’s principle) — it only computes Kc from concentrations you already know are at equilibrium.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter each species’ equilibrium concentration and its coefficient from the balanced equation; leave a species at 0/0 to drop it when there is only one reactant or one product.',
+        steps: [
+          { name: 'Write and balance the equilibrium', text: 'Confirm the balanced equation and read off each species’ coefficient. 2NO₂(g) ⇌ N₂O₄(g) gives NO₂ a coefficient of 2 and N₂O₄ a coefficient of 1.' },
+          { name: 'Enter Reactant A (and B, if there is one)', text: 'Its equilibrium concentration and coefficient. Leave Reactant B’s coefficient at 0 if the reaction only has one reactant.' },
+          { name: 'Enter Product C (and D, if there is one)', text: 'Its equilibrium concentration and coefficient. Leave Product D’s coefficient at 0 if the reaction only has one product.' },
+          { name: 'Read Kc', text: 'The calculator raises each concentration to its own coefficient, multiplies the products’ terms together and the reactants’ terms together, and divides.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The law of mass action: at equilibrium, the reaction quotient equals the constant Kc.',
+        expression: 'aA + bB ⇌ cC + dD\nKc = ([C]ᶜ × [D]ᵏ) ÷ ([A]ᵃ × [B]ᵏ)',
+        terms: [
+          { symbol: '[A], [B]', meaning: 'Equilibrium molar concentrations of the two reactants (mol/L).' },
+          { symbol: '[C], [D]', meaning: 'Equilibrium molar concentrations of the two products (mol/L).' },
+          { symbol: 'a, b, c, d', meaning: 'Each species’ coefficient in the balanced equilibrium equation.' }
+        ],
+        note: 'A species left at coefficient 0 contributes a factor of 1 to its side of the expression (any value raised to the power 0 is 1), which is what lets a single-reactant or single-product reaction use the same general formula.'
+      },
+      workedExample: {
+        intro: 'Nitrogen dioxide and dinitrogen tetroxide reach equilibrium: 2NO₂(g) ⇌ N₂O₄(g). At a given temperature, [NO₂] = 0.016 mol/L and [N₂O₄] = 0.042 mol/L at equilibrium.',
+        rows: [
+          { label: '[NO₂] (reactant, coefficient 2)', value: '0.016 mol/L' },
+          { label: '[N₂O₄] (product, coefficient 1)', value: '0.042 mol/L' },
+          { label: 'Denominator, [NO₂]²', value: '0.016² = 2.56 × 10⁻⁴' },
+          { label: 'Kc = [N₂O₄] ÷ [NO₂]²', value: '0.042 ÷ 2.56 × 10⁻⁴ ≈ 164' }
+        ],
+        result: 'Kc ≈ 1.6 × 10² (164, to the two significant figures the concentrations support, matching OpenStax’s own published 1.6 × 10²)',
+        explanation: 'Squaring [NO₂] gives 2.56 × 10⁻⁴, and dividing [N₂O₄] by that gives 0.042 ÷ 2.56 × 10⁻⁴ ≈ 164. Both input concentrations carry two significant figures, so the properly rounded answer is 1.6 × 10² (160) — the figure OpenStax itself reports for this example.'
+      },
+      watchOut: [
+        {
+          title: 'Only equilibrium concentrations go into Kc',
+          body: 'Plugging in starting (initial) concentrations instead of the concentrations actually present once the reaction has reached equilibrium gives the reaction quotient Q at that moment, not Kc — the two are equal only once the system has actually reached equilibrium.'
+        },
+        {
+          title: 'The coefficients must come from a correctly balanced equation',
+          body: 'Kc is extremely sensitive to the exponents — squaring a concentration instead of using it to the first power, because the coefficient was copied wrong, changes the result by orders of magnitude for anything but a concentration of exactly 1.'
+        },
+        {
+          title: 'Kc depends on temperature, not on starting concentrations',
+          body: 'The same reaction has a different Kc at a different temperature, but the same Kc regardless of what concentrations the reaction started from — only the equilibrium concentrations themselves change with the starting point, not the constant they satisfy.'
+        },
+        {
+          title: 'This calculator does not predict which way an equilibrium shifts',
+          body: 'Adding more of a reactant, changing volume, or changing temperature shifts where the equilibrium concentrations land (Le Chatelier’s principle), which is a separate question from computing Kc once those new equilibrium concentrations are known.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §13.2 "Equilibrium Constants" (Kc formula and the 2NO₂ ⇌ N₂O₄ worked example)', url: 'https://openstax.org/books/chemistry-2e/pages/13-2-equilibrium-constants' },
+        { label: 'OpenStax, Chemistry 2e, §13.1 "Chemical Equilibria" (dynamic equilibrium, forward and reverse rates)', url: 'https://openstax.org/books/chemistry-2e/pages/13-1-chemical-equilibria' }
+      ]
+    },
+    inputs: [
+      { id: 'concA', label: 'Reactant A concentration (mol/L)', type: 'number', placeholder: '0.016', defaultValue: 0.016, step: 0.001, min: 0 },
+      { id: 'coeffA', label: 'Reactant A coefficient', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0 },
+      { id: 'concB', label: 'Reactant B concentration (mol/L)', type: 'number', placeholder: '0', defaultValue: 0, step: 0.001, min: 0 },
+      { id: 'coeffB', label: 'Reactant B coefficient', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0 },
+      { id: 'concC', label: 'Product C concentration (mol/L)', type: 'number', placeholder: '0.042', defaultValue: 0.042, step: 0.001, min: 0 },
+      { id: 'coeffC', label: 'Product C coefficient', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0 },
+      { id: 'concD', label: 'Product D concentration (mol/L)', type: 'number', placeholder: '0', defaultValue: 0, step: 0.001, min: 0 },
+      { id: 'coeffD', label: 'Product D coefficient', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'keq',
+      headlineLabel: 'Equilibrium constant, Kc',
+      outputs: [
+        { id: 'keq', label: 'Equilibrium constant (Kc)', format: 'significant' },
+        { id: 'numerator', label: 'Products side, [C]ᶜ[D]ᵏ', format: 'significant' },
+        { id: 'denominator', label: 'Reactants side, [A]ᵃ[B]ᵏ', format: 'significant' }
+      ],
+      groups: [
+        { title: 'Reactants', inputs: ['concA', 'coeffA', 'concB', 'coeffB'] },
+        { title: 'Products', inputs: ['concC', 'coeffC', 'concD', 'coeffD'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'denominator', label: 'Reactants side' },
+          { from: 'numerator', label: 'Products side' }
+        ],
+        title: 'Which side does the equilibrium favor?',
+        highlight: 1
+      }
+    },
+    seo: {
+      title: 'Equilibrium Constant Calculator (Kc)',
+      description: 'Free equilibrium constant calculator. Find Kc = [C]^c[D]^d ÷ ([A]^a[B]^b) from equilibrium concentrations and coefficients, with a worked OpenStax example.',
+      faq: [
+        { question: 'How do I calculate the equilibrium constant, Kc?', answer: 'Raise each product’s equilibrium concentration to its coefficient and multiply them together, do the same for the reactants, then divide: Kc = [C]ᶜ[D]ᵏ ÷ ([A]ᵃ[B]ᵏ). For 2NO₂ ⇌ N₂O₄ with [NO₂] = 0.016 M and [N₂O₄] = 0.042 M, Kc = 0.042 ÷ 0.016² ≈ 1.6 × 10².' },
+        { question: 'What does a large Kc mean?', answer: 'A Kc much greater than 1 means that at equilibrium, the products dominate the mixture — the forward reaction goes nearly to completion. A Kc much less than 1 means the reactants dominate instead.' },
+        { question: 'What is the difference between Kc and Q, the reaction quotient?', answer: 'They use the identical formula, but Q is calculated from whatever concentrations exist at any moment, while Kc is specifically Q evaluated once the system has reached equilibrium. Comparing Q to Kc predicts which direction a reaction will shift to reach equilibrium.' },
+        { question: 'Does Kc depend on the starting concentrations?', answer: 'No. Kc depends only on the reaction and the temperature. Different starting concentrations reach different equilibrium concentrations, but those equilibrium concentrations always satisfy the same Kc at a fixed temperature.' },
+        { question: 'What if my reaction only has one reactant or one product?', answer: 'Leave the unused species’ coefficient (and concentration) at 0 — a coefficient of 0 contributes a factor of 1 to that side of the expression, which has no effect on the result.' },
+        { question: 'How do coefficients affect Kc?', answer: 'Each concentration is raised to the power of its own coefficient before multiplying, so doubling a coefficient squares that species’ contribution — a copying mistake in a coefficient changes Kc far more than the same mistake in a concentration.' },
+        { question: 'Does Kc have units?', answer: 'Technically yes (depending on the coefficients), but chemists conventionally report it as a dimensionless number, treating each concentration as a ratio to a 1 mol/L standard state — this calculator follows that same convention.' }
+      ]
+    },
+    compute(values) {
+      const numerator = values.concC ** values.coeffC * values.concD ** values.coeffD;
+      const denominator = values.concA ** values.coeffA * values.concB ** values.coeffB;
+      return {
+        keq: numerator / denominator,
+        numerator,
+        denominator
+      };
+    }
+  },
+  {
+    id: 'gibbs-free-energy-calculator',
+    category: 'chemistry',
+    glyph: 'ΔG',
+    updatedAt: '2026-11-08',
+    aliases: ['gibbs free energy calculator', 'gibbs energy calculator', 'delta g calculator', 'free energy calculator', 'spontaneity calculator', 'dg = dh - tds calculator'],
+    related: ['equilibrium-constant-calculator', 'arrhenius-equation-calculator', 'ideal-gas-law-calculator', 'rate-constant-calculator'],
+    title: 'Gibbs Free Energy Calculator (ΔG = ΔH − TΔS)',
+    description: 'Solve ΔG = ΔH − TΔS for the Gibbs free energy change, enthalpy change, absolute temperature, or entropy change, and read off whether a process is spontaneous.',
+    example: 'Vaporizing water at 298 K (ΔH = 44.01 kJ/mol, ΔS = 118.8 J/(mol·K)) gives ΔG = 44.01 − 298 × 0.1188 ≈ 8.6 kJ/mol — positive, so boiling is not spontaneous at room temperature.',
+    solver: {
+      defaultTarget: 'gibbs',
+      variables: [
+        { id: 'gibbs', label: 'Gibbs free energy change', symbol: 'ΔG', dimension: 'molarEnergy', defaultValue: 8608, defaultUnit: 'J/mol' },
+        { id: 'enthalpy', label: 'Enthalpy change', symbol: 'ΔH', dimension: 'molarEnergy', defaultValue: 44010, defaultUnit: 'J/mol' },
+        { id: 'temperature', label: 'Temperature', symbol: 'T', dimension: 'temperature', defaultValue: 298, defaultUnit: 'K' },
+        { id: 'entropy', label: 'Entropy change', symbol: 'ΔS', dimension: 'molarEntropy', defaultValue: 118.8, defaultUnit: 'J/molK' }
+      ],
+      solve: {
+        gibbs: ({ enthalpy, temperature, entropy }) => enthalpy - temperature * entropy,
+        enthalpy: ({ gibbs, temperature, entropy }) => gibbs + temperature * entropy,
+        temperature: ({ gibbs, enthalpy, entropy }) => (entropy === 0 ? NaN : (enthalpy - gibbs) / entropy),
+        entropy: ({ gibbs, enthalpy, temperature }) => (temperature === 0 ? NaN : (enthalpy - gibbs) / temperature)
+      },
+      outputs: [
+        { id: 'crossoverTemperature', label: 'Temperature where ΔG = 0', dimension: 'temperature', compute: (si) => (si.entropy === 0 ? NaN : si.enthalpy / si.entropy) }
+      ],
+      derive: (si) => ({ entropyTerm: si.temperature * si.entropy }),
+      visuals: [
+        {
+          type: 'compareBars',
+          bars: [
+            { from: 'enthalpy', label: 'ΔH' },
+            { from: 'entropyTerm', label: 'T × ΔS' }
+          ],
+          title: 'What ΔG is made of',
+          highlight: 0
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-08',
+      concept: {
+        title: 'What is Gibbs free energy?',
+        paragraphs: [
+          'Gibbs free energy change, ΔG, combines a reaction’s enthalpy change (ΔH, the heat released or absorbed) and its entropy change (ΔS, how much more or less disordered the system becomes) into a single number that predicts whether a process happens on its own at a given temperature. OpenStax’s Chemistry 2e, Section 16.4, gives the relationship as ΔG = ΔH − TΔS, with T the absolute (kelvin) temperature.',
+          'The sign of ΔG is the whole point: a negative ΔG means the process is spontaneous — it proceeds in the forward direction without outside help, though not necessarily quickly. A positive ΔG means the reverse is true, the process is non-spontaneous as written, and a zero ΔG means the system sits exactly at equilibrium, perfectly balanced between the forward and reverse directions.',
+          'Because ΔG depends on temperature through the TΔS term, a process can flip from non-spontaneous to spontaneous (or back) as temperature changes, as long as ΔH and ΔS have opposite effects — exactly what happens at a boiling point, melting point, or any other phase transition. Water vaporizing is endothermic (ΔH positive, heat must be put in) and increases disorder (ΔS positive, gas is far less ordered than liquid), so TΔS grows with temperature until it outweighs ΔH and vaporization becomes spontaneous — which is, physically, what a boiling point is.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of ΔG, ΔH, T, and ΔS; the fourth fills in automatically.',
+        steps: [
+          { name: 'Find ΔH and ΔS for the process', text: 'From tabulated standard thermodynamic values, a calorimetry measurement, or another calculation — both are properties of the specific reaction or phase change.' },
+          { name: 'Enter the temperature in an absolute scale', text: 'T must be a positive, absolute temperature. Entering °C or °F is fine — the calculator converts it to kelvin automatically — but a temperature of 0 K or below has no physical meaning here.' },
+          { name: 'Enter the three values you know', text: 'Type each value and pick its unit; ΔH and ΔG read in J/mol or kJ/mol, ΔS in J/(mol·K), and T in K, °C, or °F.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Read ΔG and its sign', text: 'A negative ΔG means the process is spontaneous at that temperature; a positive ΔG means it is not. The crossover temperature below shows where that sign would flip.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'ΔG = ΔH − TΔS rearranges to solve for any one of the four quantities, given the other three.',
+        expression: 'ΔG = ΔH − TΔS\nΔH = ΔG + TΔS\nT = (ΔH − ΔG) ÷ ΔS\nΔS = (ΔH − ΔG) ÷ T',
+        terms: [
+          { symbol: 'ΔG', meaning: 'Gibbs free energy change. Negative means spontaneous; positive means non-spontaneous; zero means equilibrium.' },
+          { symbol: 'ΔH', meaning: 'Enthalpy change — heat absorbed (positive, endothermic) or released (negative, exothermic) by the process.' },
+          { symbol: 'T', meaning: 'Absolute temperature, which must be in kelvin (or converted from °C/°F) — it can only take positive values.' },
+          { symbol: 'ΔS', meaning: 'Entropy change — how much the system’s disorder increases (positive) or decreases (negative).' }
+        ],
+        note: 'This uses one fixed ΔH and ΔS, as if neither changed with temperature — the standard simplifying assumption for a modest temperature range, the same one behind the "crossover temperature" bonus figure below.'
+      },
+      workedExample: {
+        intro: 'Water vaporizes at 298 K with ΔH = 44.01 kJ/mol and ΔS = 118.8 J/(mol·K) (both standard values for the liquid-to-gas phase change). Is vaporization spontaneous at this temperature?',
+        rows: [
+          { label: 'Enthalpy change (ΔH)', value: '44.01 kJ/mol = 44,010 J/mol' },
+          { label: 'Temperature (T)', value: '298 K' },
+          { label: 'Entropy change (ΔS)', value: '118.8 J/(mol·K)' },
+          { label: 'TΔS (298 × 118.8)', value: '35,402.4 J/mol ≈ 35.40 kJ/mol' },
+          { label: 'ΔG = ΔH − TΔS (44,010 − 35,402.4)', value: '8,607.6 J/mol ≈ 8.6 kJ/mol' }
+        ],
+        result: 'ΔG ≈ +8.6 kJ/mol',
+        explanation: 'ΔG comes out positive, so vaporizing water is not spontaneous at 298 K (25 °C) — matching everyday experience, since water left at room temperature does not spontaneously boil away. Dividing ΔH by ΔS gives the temperature where ΔG would reach exactly 0 (44,010 ÷ 118.8 ≈ 370.5 K, or about 97.3 °C) — close to water’s real 373.15 K (100 °C) boiling point, though not identical to it, since ΔH and ΔS both shift somewhat with temperature in reality.'
+      },
+      watchOut: [
+        {
+          title: 'Temperature must be absolute (kelvin), never °C or °F directly in the formula',
+          body: 'ΔG = ΔH − TΔS only works with an absolute temperature scale, because T can only take positive values in this equation — the same requirement as the ideal gas law and combined gas law. The calculator converts any unit you type into kelvin before solving, but a hand calculation using 25 instead of 298 gives a badly wrong ΔG.'
+        },
+        {
+          title: 'A negative ΔG means spontaneous, not necessarily fast',
+          body: 'Spontaneity is a statement about which direction a process favors thermodynamically, with no information about speed — rusting iron has a negative ΔG but takes years, while some explosive reactions with a less negative ΔG happen in milliseconds. Reaction rate is a separate question from spontaneity (see the rate constant and Arrhenius equation calculators).'
+        },
+        {
+          title: 'ΔH and ΔS are treated as constant with temperature here',
+          body: 'In reality both shift somewhat as temperature changes, so the "crossover temperature" (where ΔG = 0) computed from room-temperature ΔH and ΔS values is only an approximation of where a real phase transition or reaction actually flips spontaneity — close for a modest temperature range, less reliable far from where ΔH and ΔS were measured.'
+        },
+        {
+          title: 'ΔG = 0 at equilibrium, not at every temperature',
+          body: 'A process only sits exactly at equilibrium at one specific temperature (for fixed ΔH and ΔS) — the crossover temperature this calculator shows as a bonus figure. Away from that temperature, ΔG is either clearly positive or clearly negative, not close to zero.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §16.4 "Free Energy" (ΔG = ΔH − TΔS, spontaneity, worked water-vaporization example)', url: 'https://openstax.org/books/chemistry-2e/pages/16-4-free-energy' }
+      ]
+    },
+    inputs: [
+      { id: 'enthalpy', label: 'Enthalpy change (J/mol)', type: 'number', placeholder: '44010', defaultValue: 44010, step: 1 },
+      { id: 'temperature', label: 'Temperature (K)', type: 'number', placeholder: '298', defaultValue: 298, step: 0.01, min: 0 },
+      { id: 'entropy', label: 'Entropy change (J/(mol·K))', type: 'number', placeholder: '118.8', defaultValue: 118.8, step: 0.1 }
+    ],
+    seo: {
+      title: 'Gibbs Free Energy Calculator (ΔG = ΔH − TΔS)',
+      description: 'Free Gibbs free energy calculator. Solve ΔG = ΔH − TΔS for ΔG, ΔH, T, or ΔS, with a worked example and the spontaneity convention explained.',
+      faq: [
+        { question: 'How do I calculate Gibbs free energy?', answer: 'ΔG = ΔH − TΔS, with T in kelvin. Vaporizing water at 298 K with ΔH = 44,010 J/mol and ΔS = 118.8 J/(mol·K) gives ΔG = 44,010 − (298 × 118.8) ≈ 8,608 J/mol.' },
+        { question: 'What does a negative ΔG mean?', answer: 'The process is spontaneous — it proceeds in the forward direction on its own at that temperature, with no statement about how fast.' },
+        { question: 'What does a positive ΔG mean?', answer: 'The process is non-spontaneous as written at that temperature; the reverse process is the spontaneous one instead.' },
+        { question: 'What does ΔG = 0 mean?', answer: 'The system is at equilibrium — the forward and reverse processes are exactly balanced, with no net driving force either way.' },
+        { question: 'Why does temperature matter so much for spontaneity?', answer: 'Because ΔG depends on temperature through the TΔS term while ΔH stays roughly fixed, a process with ΔH and ΔS of opposite-favoring signs can switch from non-spontaneous to spontaneous (or back) as temperature changes — exactly what happens at a melting or boiling point.' },
+        { question: 'What temperature unit does this formula need?', answer: 'An absolute scale — kelvin. T can only be positive in this equation, so °C or °F must be converted to kelvin first; this calculator does that conversion automatically.' },
+        { question: 'How do I find the temperature where a reaction becomes spontaneous?', answer: 'Solve T = (ΔH − ΔG) ÷ ΔS with ΔG set to 0, which gives the "crossover" temperature — shown automatically as a bonus figure, T = ΔH ÷ ΔS, under the main result.' }
+      ]
+    },
+    compute(values) {
+      return { gibbs: values.enthalpy - values.temperature * values.entropy };
+    }
   }
 ];

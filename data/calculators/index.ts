@@ -279,7 +279,12 @@ export const calculatorOrder: string[] = [
   'rate-constant-calculator',
   'arrhenius-equation-calculator',
   'molality-calculator',
-  'mole-fraction-calculator'
+  'mole-fraction-calculator',
+  'osmolarity-calculator',
+  'normality-calculator',
+  'titration-calculator',
+  'equilibrium-constant-calculator',
+  'gibbs-free-energy-calculator'
 ];
 
 const rank = (id: string) => {

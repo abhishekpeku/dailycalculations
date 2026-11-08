@@ -41,8 +41,8 @@ describe('unit tables', () => {
   test('covers the dimensions the v2 rollout needs', () => {
     assert.deepEqual([...dimensions].sort(), [
       'acceleration', 'amountOfSubstance', 'angle', 'area', 'capacitance', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
-      'decibel', 'density', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'length', 'mass', 'massConcentration', 'molality', 'molarEnergy', 'molarMass', 'momentum',
-      'pH', 'pace', 'percent', 'power', 'pressure', 'rateConstant', 'resistance', 'specificHeat', 'speed', 'temperature', 'temperatureDelta', 'term', 'time',
+      'decibel', 'density', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'length', 'mass', 'massConcentration', 'molality', 'molarEnergy', 'molarEntropy', 'molarMass', 'momentum',
+      'normality', 'osmolarity', 'pH', 'pace', 'percent', 'power', 'pressure', 'rateConstant', 'resistance', 'specificHeat', 'speed', 'temperature', 'temperatureDelta', 'term', 'time',
       'voltage', 'volume'
     ]);
   });
@@ -259,6 +259,19 @@ describe('anchor values', () => {
     // moles / volume, both already SI base above, gives mol/m3 with no stray conversion factor.
     close(toBase(2, 'amountOfSubstance', 'mol') / toBase(1, 'volume', 'L'), toBase(2, 'concentration', 'mol/L'));
   });
+  test('osmolarity: 1 Osm/L = 1000 mOsm/L; molarity × particles per formula unit = osmolarity with no stray factor', () => {
+    assert.equal(UNITS.osmolarity[0].id, 'mOsm/L');
+    close(toBase(1, 'osmolarity', 'Osm/L'), 1000);
+    // 0.154 mol/L NaCl (i = 2, Na+ and Cl-) is 308 mOsm/L — StatPearls (NCBI Bookshelf NBK545210),
+    // "Normal Saline": 154 mEq/L Na+ and 154 mEq/L Cl-, osmolarity 308 mOsm/L.
+    close(toBase(0.154, 'concentration', 'mol/L') * 2, toBase(308, 'osmolarity', 'mOsm/L'));
+  });
+  test('normality: 1 eq/L = 1000 meq/L; molarity × equivalents per mole = normality with no stray factor', () => {
+    assert.equal(UNITS.normality[0].id, 'meq/L');
+    close(toBase(1, 'normality', 'eq/L'), 1000);
+    // 0.1 mol/L H2SO4 (n = 2, diprotic) is 0.2 N.
+    close(toBase(0.1, 'concentration', 'mol/L') * 2, toBase(0.2, 'normality', 'eq/L'));
+  });
   test('molar mass: 1 g/mol = 0.001 kg/mol; mass / amount of substance = molar mass with no stray factor', () => {
     assert.equal(UNITS.molarMass[0].id, 'kg/mol');
     close(toBase(1, 'molarMass', 'g/mol'), 0.001);
@@ -276,6 +289,11 @@ describe('anchor values', () => {
     assert.equal(UNITS.molarEnergy[0].id, 'J/mol');
     close(toBase(1, 'molarEnergy', 'kJ/mol'), 1000);
     close(toBase(1, 'molarEnergy', 'kcal/mol'), 4184);
+  });
+  test('molar entropy: 1 kJ/(mol·K) = 1000 J/(mol·K), 1 cal/(mol·K) = 4.184 J/(mol·K)', () => {
+    assert.equal(UNITS.molarEntropy[0].id, 'J/molK');
+    close(toBase(1, 'molarEntropy', 'kJ/molK'), 1000);
+    close(toBase(1, 'molarEntropy', 'cal/molK'), 4.184);
   });
   test('molality: 1 mol/kg = 1000 mmol/kg; moles of solute ÷ kg of solvent = molality with no stray factor', () => {
     assert.equal(UNITS.molality[0].id, 'mol/kg');

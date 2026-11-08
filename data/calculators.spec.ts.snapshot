@@ -1280,6 +1280,47 @@ exports[`compute() snapshots > combination-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > combined-gas-law-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "pressure1": 101325,
+      "volume1": 0.002,
+      "temperature1": 293.15,
+      "pressure2": 101325,
+      "temperature2": 323.15
+    },
+    "outputs": {
+      "volume2": 0.002204673375
+    }
+  },
+  "typical": {
+    "inputs": {
+      "pressure1": 151988,
+      "volume1": 0.003,
+      "temperature1": 439.72,
+      "pressure2": 151988,
+      "temperature2": 484.72
+    },
+    "outputs": {
+      "volume2": 0.003307013554
+    }
+  },
+  "edge": {
+    "inputs": {
+      "pressure1": 0,
+      "volume1": 0,
+      "temperature1": 0,
+      "pressure2": 0,
+      "temperature2": 0
+    },
+    "outputs": {
+      "volume2": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > commute-cost-calculator 1`] = `
 {
   "default": {
@@ -3469,6 +3510,41 @@ exports[`compute() snapshots > horsepower-to-kilowatts-converter 1`] = `
     },
     "outputs": {
       "kilowatts": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > ideal-gas-law-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "pressure": 101325,
+      "moles": 1,
+      "temperature": 273.15
+    },
+    "outputs": {
+      "volume": 0.02241396955
+    }
+  },
+  "typical": {
+    "inputs": {
+      "pressure": 151988,
+      "moles": 1.5,
+      "temperature": 409.72
+    },
+    "outputs": {
+      "volume": 0.03362043343
+    }
+  },
+  "edge": {
+    "inputs": {
+      "pressure": 0,
+      "moles": 0,
+      "temperature": 0
+    },
+    "outputs": {
+      "volume": "NaN"
     }
   }
 }
@@ -5712,6 +5788,38 @@ exports[`compute() snapshots > percent-difference-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > percent-yield-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "actualYield": 38.7,
+      "theoreticalYield": 45
+    },
+    "outputs": {
+      "percentYield": 86
+    }
+  },
+  "typical": {
+    "inputs": {
+      "actualYield": 58.05,
+      "theoreticalYield": 67.5
+    },
+    "outputs": {
+      "percentYield": 86
+    }
+  },
+  "edge": {
+    "inputs": {
+      "actualYield": 0,
+      "theoreticalYield": 0
+    },
+    "outputs": {
+      "percentYield": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > percentage-calculator 1`] = `
 {
   "default": {
@@ -5860,6 +5968,35 @@ exports[`compute() snapshots > permutation-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > ph-poh-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "pH": 4
+    },
+    "outputs": {
+      "pOH": 10
+    }
+  },
+  "typical": {
+    "inputs": {
+      "pH": 6
+    },
+    "outputs": {
+      "pOH": 8
+    }
+  },
+  "edge": {
+    "inputs": {
+      "pH": 0
+    },
+    "outputs": {
+      "pOH": 14
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > pizza-dough-calculator 1`] = `
 {
   "default": {
@@ -5908,6 +6045,41 @@ exports[`compute() snapshots > pizza-dough-calculator 1`] = `
       "saltWeight": 0,
       "yeastWeight": 0,
       "totalDoughWeight": 50
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > pka-henderson-hasselbalch-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "pKa": 4.76,
+      "baseConcentration": 300,
+      "acidConcentration": 200
+    },
+    "outputs": {
+      "pH": 4.936091259
+    }
+  },
+  "typical": {
+    "inputs": {
+      "pKa": 7.14,
+      "baseConcentration": 450,
+      "acidConcentration": 300
+    },
+    "outputs": {
+      "pH": 7.316091259
+    }
+  },
+  "edge": {
+    "inputs": {
+      "pKa": 0,
+      "baseConcentration": 0,
+      "acidConcentration": 0
+    },
+    "outputs": {
+      "pH": "NaN"
     }
   }
 }

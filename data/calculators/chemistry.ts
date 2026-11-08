@@ -633,5 +633,581 @@ export const chemistryCalculators: CalculatorConfig[] = [
     compute(values) {
       return { moles: values.mass / values.molarMass };
     }
+  },
+  {
+    id: 'ideal-gas-law-calculator',
+    category: 'chemistry',
+    glyph: 'PV',
+    updatedAt: '2026-11-08',
+    aliases: ['ideal gas law calculator', 'pv=nrt calculator', 'ideal gas equation calculator', 'gas law calculator', 'solve for pressure volume calculator', 'molar volume at stp calculator'],
+    related: ['combined-gas-law-calculator', 'molarity-calculator', 'moles-to-grams-calculator', 'pressure-converter'],
+    title: 'Ideal Gas Law Calculator (PV = nRT)',
+    description: 'Solve the ideal gas law, PV = nRT, for pressure, volume, amount of gas, or temperature — the single equation behind the "molar volume at STP" figure and most gas-law problems.',
+    example: '1 mol of an ideal gas at 0°C (273.15 K) and 1 atm occupies about 22.41 L — the classic "molar volume at STP" figure.',
+    solver: {
+      defaultTarget: 'volume',
+      variables: [
+        { id: 'pressure', label: 'Pressure', symbol: 'P', dimension: 'pressure', defaultValue: 1, defaultUnit: 'atm' },
+        { id: 'volume', label: 'Volume', symbol: 'V', dimension: 'volume', defaultValue: 22.414, defaultUnit: 'L' },
+        { id: 'moles', label: 'Amount of gas', symbol: 'n', dimension: 'amountOfSubstance', defaultValue: 1, defaultUnit: 'mol' },
+        { id: 'temperature', label: 'Temperature', symbol: 'T', dimension: 'temperature', defaultValue: 273.15, defaultUnit: 'K' }
+      ],
+      solve: {
+        pressure: ({ volume, moles, temperature }) => (volume === 0 ? NaN : (moles * 8.31446261815324 * temperature) / volume),
+        volume: ({ pressure, moles, temperature }) => (pressure === 0 ? NaN : (moles * 8.31446261815324 * temperature) / pressure),
+        moles: ({ pressure, volume, temperature }) => (temperature === 0 ? NaN : (pressure * volume) / (8.31446261815324 * temperature)),
+        temperature: ({ pressure, volume, moles }) => (moles === 0 ? NaN : (pressure * volume) / (moles * 8.31446261815324))
+      },
+      outputs: [{ id: 'concentration', label: 'Concentration (n ÷ V)', dimension: 'concentration', unit: 'mol/L', compute: (si) => (si.volume === 0 ? NaN : si.moles / si.volume) }]
+    },
+    content: {
+      lastReviewed: '2026-11-08',
+      concept: {
+        title: 'What is the ideal gas law?',
+        paragraphs: [
+          'The ideal gas law, PV = nRT, ties together the four measurable properties of a gas: its pressure (P), the volume it occupies (V), how much of it there is in moles (n), and its absolute temperature (T). R is the molar gas constant, a fixed number (8.31446261815324 J/(mol·K), exact since the 2019 SI redefinition fixed the Avogadro and Boltzmann constants) that makes the units on both sides match.',
+          'An "ideal" gas is a simplified model: its molecules are treated as point particles with no volume of their own and no attraction or repulsion between them, colliding only elastically. Real gases — oxygen, nitrogen, carbon dioxide, and most gases you would meet in a general chemistry course — follow this law closely at ordinary temperatures and pressures, which is why it is the default starting point for gas calculations rather than a special case.',
+          'The law breaks down at very high pressure or very low temperature, where real molecules do take up measurable space and do attract each other — conditions close to where a gas is about to condense into a liquid. Under typical lab or classroom conditions (room temperature, pressure near 1 atm), the ideal gas law is accurate to within a percent or so for common gases.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of pressure, volume, amount of gas, and temperature; the fourth fills in automatically.',
+        steps: [
+          { name: 'Enter the three values you know', text: 'Type each value and pick its unit — atm, kPa, bar, psi or others for pressure; L, mL or m³ for volume; mol or mmol for amount of gas; and K, °C or °F for temperature.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 1 atm becomes 101.325 kPa instead of silently turning into 1 kPa.' },
+          { name: 'Read the result and the concentration', text: 'The missing value appears in your chosen unit, with the gas’s concentration (n ÷ V, the same quantity as molarity) shown underneath.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'PV = nRT rearranges to solve for any one of the four quantities, given the other three.',
+        expression: 'PV = nRT\nP = (nRT) ÷ V\nV = (nRT) ÷ P\nn = (PV) ÷ (RT)\nT = (PV) ÷ (nR)',
+        terms: [
+          { symbol: 'P', meaning: 'Absolute pressure of the gas (not gauge pressure — the reading relative to a vacuum, not relative to atmospheric pressure).' },
+          { symbol: 'V', meaning: 'Volume the gas occupies.' },
+          { symbol: 'n', meaning: 'Amount of gas, in moles.' },
+          { symbol: 'T', meaning: 'Absolute temperature, in kelvin — never a Celsius or Fahrenheit reading used directly in the formula, since those scales have an offset zero.' },
+          { symbol: 'R', meaning: 'The molar gas constant, 8.31446261815324 J/(mol·K), exact.' }
+        ],
+        note: 'Every input is converted to SI (Pa, m³, mol, K) before solving and converted back afterward, so mixing atm with liters or °C with kPa is handled automatically.'
+      },
+      workedExample: {
+        intro: 'What volume does 1 mol of an ideal gas occupy at 0°C (273.15 K) and 1 atm?',
+        rows: [
+          { label: 'Amount of gas (n)', value: '1 mol' },
+          { label: 'Temperature (T)', value: '273.15 K (0°C)' },
+          { label: 'Pressure (P)', value: '1 atm = 101,325 Pa' },
+          { label: 'Volume (V = nRT ÷ P)', value: '(1 × 8.31446261815324 × 273.15) ÷ 101,325' }
+        ],
+        result: 'V ≈ 0.022414 m³ = 22.414 L',
+        explanation: 'This is the "molar volume" of an ideal gas at 0°C and 1 atm — about 22.414 L for any ideal gas, regardless of what it is made of, since the ideal gas law never refers to a specific substance. Raising the amount of gas to 2 mol at the same temperature and pressure would double the volume to about 44.83 L, since V is directly proportional to n when P and T are held fixed.'
+      },
+      watchOut: [
+        {
+          title: 'Temperature must be absolute (kelvin), not Celsius or Fahrenheit',
+          body: 'PV = nRT only works with an absolute temperature scale, because kelvin has no offset — 0 K really means zero thermal motion. Plugging in a Celsius or Fahrenheit reading directly (rather than converting first) gives a wrong answer that can even come out negative. This calculator converts for you, but watch for this if you ever work the formula by hand.'
+        },
+        {
+          title: '"STP" has two different conventions, with two different molar volumes',
+          body: 'The traditional STP used in most general-chemistry courses (0°C, 1 atm) gives a molar volume of about 22.414 L/mol, the figure in the worked example above. IUPAC’s current definition of standard conditions (0°C, 100 kPa) gives about 22.711 L/mol instead, since 100 kPa is very slightly below 1 atm (101.325 kPa). Check which convention a textbook or problem set is using before quoting "22.4 L" as if it always applies.'
+        },
+        {
+          title: 'Pressure must be absolute, not gauge pressure',
+          body: 'A tire gauge or many industrial pressure readings are "gauge pressure" — relative to atmospheric pressure, not to a vacuum. The ideal gas law needs absolute pressure (gauge pressure plus atmospheric pressure, about 101.325 kPa at sea level), or the result will be off by a full atmosphere.'
+        },
+        {
+          title: 'This models one single gas or a fixed gas mixture, not a chemical reaction',
+          body: 'PV = nRT treats n as a fixed amount of gas particles. If a reaction is producing or consuming gas, the ideal gas law describes the gas at one moment, not the reaction itself — pair it with stoichiometry for how n changes over the course of a reaction.'
+        },
+        {
+          title: 'Real gases deviate from this law at high pressure or low temperature',
+          body: 'The ideal gas law assumes molecules have no volume and no attraction to each other. Near the conditions where a gas would condense into a liquid, real molecules take up measurable space and do attract each other, and the ideal gas law becomes noticeably less accurate — the Van der Waals equation corrects for both effects.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §9.3 "Stoichiometry of Gaseous Substances, Mixtures, and Reactions" (the ideal gas law)', url: 'https://openstax.org/books/chemistry-2e/pages/9-3-stoichiometry-of-gaseous-substances-mixtures-and-reactions' },
+        { label: 'NIST CODATA, Molar Gas Constant', url: 'https://physics.nist.gov/cgi-bin/cuu/Value?r' },
+        { label: 'IUPAC Gold Book, "standard conditions for gases" (STP)', url: 'https://goldbook.iupac.org/terms/view/S05925' }
+      ]
+    },
+    inputs: [
+      { id: 'pressure', label: 'Pressure (Pa)', type: 'number', placeholder: '101325', defaultValue: 101325, step: 1, min: 0 },
+      { id: 'moles', label: 'Amount of gas (mol)', type: 'number', placeholder: '1', defaultValue: 1, step: 0.01, min: 0 },
+      { id: 'temperature', label: 'Temperature (K)', type: 'number', placeholder: '273.15', defaultValue: 273.15, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Ideal Gas Law Calculator (PV = nRT) – Solve for Any Value',
+      description: 'Free ideal gas law calculator. Solve PV = nRT for pressure, volume, moles, or temperature, in atm, kPa, L, mol, K and more, with a worked example.',
+      faq: [
+        { question: 'What is the ideal gas law formula?', answer: 'PV = nRT, where P is absolute pressure, V is volume, n is the amount of gas in moles, T is absolute temperature in kelvin, and R is the molar gas constant, 8.31446261815324 J/(mol·K).' },
+        { question: 'What volume does 1 mole of gas occupy at STP?', answer: 'About 22.414 L at the traditional STP (0°C, 1 atm) used in most general-chemistry courses, or about 22.711 L at IUPAC’s current standard conditions (0°C, 100 kPa) — check which convention applies before using "22.4 L" as a shortcut.' },
+        { question: 'How do I find the pressure of a gas from its volume, moles, and temperature?', answer: 'P = (nRT) ÷ V. 2 mol of gas in a 5 L container at 300 K has a pressure of (2 × 8.31446261815324 × 300) ÷ 0.005 ≈ 997,736 Pa, about 9.85 atm.' },
+        { question: 'Why does the formula need kelvin instead of Celsius?', answer: 'Kelvin is an absolute scale with no offset, starting at true zero thermal motion. Celsius and Fahrenheit have an arbitrary zero point, so using them directly in PV = nRT (instead of converting to kelvin first) gives an incorrect, sometimes negative, result.' },
+        { question: 'What is the value of the gas constant, R?', answer: '8.31446261815324 J/(mol·K) in SI units — an exact value since 2019, when the Avogadro and Boltzmann constants that define it were themselves fixed by definition.' },
+        { question: 'Does the ideal gas law work for any gas?', answer: 'It is a good approximation for most common gases (air, oxygen, nitrogen, carbon dioxide) at ordinary temperatures and pressures. It becomes less accurate at very high pressure or very low temperature, where real molecular size and intermolecular attraction start to matter.' },
+        { question: 'How is concentration related to the ideal gas law?', answer: 'Dividing both sides by V gives n ÷ V = P ÷ (RT) — the gas’s concentration in moles per unit volume, shown as a bonus result above. It is the same quantity as molarity, just applied to a gas rather than a solution.' }
+      ]
+    },
+    compute(values) {
+      return { volume: (values.moles * 8.31446261815324 * values.temperature) / values.pressure };
+    }
+  },
+  {
+    id: 'combined-gas-law-calculator',
+    category: 'chemistry',
+    glyph: 'PVT',
+    updatedAt: '2026-11-08',
+    aliases: ['combined gas law calculator', 'p1v1/t1 = p2v2/t2 calculator', 'combined gas law formula calculator', 'gas law two states calculator'],
+    related: ['ideal-gas-law-calculator', 'molarity-calculator', 'pressure-converter'],
+    title: 'Combined Gas Law Calculator (P₁V₁ ÷ T₁ = P₂V₂ ÷ T₂)',
+    description: 'Solve the combined gas law for a fixed amount of gas moving between two states — any one of pressure, volume, or temperature, before or after, given the other five.',
+    example: 'A 2.0 L balloon at 1.0 atm and 20°C (293.15 K), heated to 50°C (323.15 K) at the same 1.0 atm, expands to about 2.20 L.',
+    solver: {
+      defaultTarget: 'volume2',
+      variables: [
+        { id: 'pressure1', label: 'Initial pressure', symbol: 'P₁', dimension: 'pressure', defaultValue: 1, defaultUnit: 'atm' },
+        { id: 'volume1', label: 'Initial volume', symbol: 'V₁', dimension: 'volume', defaultValue: 2, defaultUnit: 'L' },
+        { id: 'temperature1', label: 'Initial temperature', symbol: 'T₁', dimension: 'temperature', defaultValue: 293.15, defaultUnit: 'K' },
+        { id: 'pressure2', label: 'Final pressure', symbol: 'P₂', dimension: 'pressure', defaultValue: 1, defaultUnit: 'atm' },
+        { id: 'volume2', label: 'Final volume', symbol: 'V₂', dimension: 'volume', defaultValue: 2.205, defaultUnit: 'L' },
+        { id: 'temperature2', label: 'Final temperature', symbol: 'T₂', dimension: 'temperature', defaultValue: 323.15, defaultUnit: 'K' }
+      ],
+      solve: {
+        pressure1: ({ pressure2, volume1, volume2, temperature1, temperature2 }) =>
+          volume1 === 0 || temperature2 === 0 ? NaN : (pressure2 * volume2 * temperature1) / (temperature2 * volume1),
+        volume1: ({ pressure1, pressure2, volume2, temperature1, temperature2 }) =>
+          pressure1 === 0 || temperature2 === 0 ? NaN : (pressure2 * volume2 * temperature1) / (temperature2 * pressure1),
+        temperature1: ({ pressure1, pressure2, volume1, volume2, temperature2 }) =>
+          pressure2 === 0 || volume2 === 0 ? NaN : (pressure1 * volume1 * temperature2) / (pressure2 * volume2),
+        pressure2: ({ pressure1, volume1, volume2, temperature1, temperature2 }) =>
+          volume2 === 0 || temperature1 === 0 ? NaN : (pressure1 * volume1 * temperature2) / (temperature1 * volume2),
+        volume2: ({ pressure1, pressure2, volume1, temperature1, temperature2 }) =>
+          pressure2 === 0 || temperature1 === 0 ? NaN : (pressure1 * volume1 * temperature2) / (temperature1 * pressure2),
+        temperature2: ({ pressure1, pressure2, volume1, volume2, temperature1 }) =>
+          pressure1 === 0 || volume1 === 0 ? NaN : (pressure2 * volume2 * temperature1) / (pressure1 * volume1)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-08',
+      concept: {
+        title: 'What is the combined gas law?',
+        paragraphs: [
+          'The combined gas law, P₁V₁ ÷ T₁ = P₂V₂ ÷ T₂, describes what happens to a fixed amount of gas as its pressure, volume, and temperature all change together — from one state (subscript 1) to another (subscript 2). It merges three simpler relationships that each hold one variable fixed: Boyle’s law (pressure and volume, at constant temperature), Charles’s law (volume and temperature, at constant pressure), and Gay-Lussac’s law (pressure and temperature, at constant volume).',
+          'It follows directly from the ideal gas law, PV = nRT: since n and R do not change for a fixed sample of gas, PV ÷ T must equal the same constant (nR) in both states, which is exactly what the combined gas law says. Unlike the ideal gas law, it never needs to know n or R at all — only the ratio between the two states — which makes it convenient whenever a problem gives a "before" and "after" without mentioning the amount of gas.',
+          'A classic use is predicting how a sealed container of gas responds to a change in conditions: a balloon that is heated, a scuba tank brought up from depth, or a sealed bag of chips carried to a higher altitude. As long as no gas is added, removed, or leaked out, the same fixed amount of gas obeys this one equation across the change.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any five of the six values — the three "before" and three "after" conditions; the sixth fills in automatically.',
+        steps: [
+          { name: 'Identify the two states', text: 'State 1 is the starting pressure, volume, and temperature; state 2 is the same gas after whatever changed — heating, compressing, or moving it.' },
+          { name: 'Enter five of the six values', text: 'Any five, mixing "before" and "after" as needed. Pick a unit for each; pressure in atm, kPa, bar or psi, volume in L, mL or m³, and temperature in K, °C or °F all work.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 20°C becomes 293.15 K instead of silently turning into 20 K.' },
+          { name: 'Read the result', text: 'The missing value appears immediately in your chosen unit.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'P₁V₁ ÷ T₁ = P₂V₂ ÷ T₂ rearranges to solve for any one of the six quantities, given the other five.',
+        expression: 'P₁V₁ ÷ T₁ = P₂V₂ ÷ T₂\nV₂ = (P₁V₁T₂) ÷ (T₁P₂)\nP₂ = (P₁V₁T₂) ÷ (T₁V₂)\nT₂ = (P₂V₂T₁) ÷ (P₁V₁)',
+        terms: [
+          { symbol: 'P₁, V₁, T₁', meaning: 'Pressure, volume, and absolute temperature of the gas in its starting state.' },
+          { symbol: 'P₂, V₂, T₂', meaning: 'Pressure, volume, and absolute temperature of the same, fixed amount of gas in its final state.' }
+        ],
+        note: 'Temperature must be absolute (kelvin) for the same reason as the ideal gas law — this calculator converts automatically, but a hand calculation using Celsius or Fahrenheit directly gives a wrong answer.'
+      },
+      workedExample: {
+        intro: 'A 2.0 L balloon at 1.0 atm and 20°C (293.15 K) is warmed to 50°C (323.15 K), with the pressure unchanged at 1.0 atm. What is its new volume?',
+        rows: [
+          { label: 'Initial state (P₁, V₁, T₁)', value: '1.0 atm, 2.0 L, 293.15 K' },
+          { label: 'Final state (P₂, T₂)', value: '1.0 atm, 323.15 K' },
+          { label: 'Final volume (V₂ = P₁V₁T₂ ÷ (T₁P₂))', value: '(1.0 × 2.0 × 323.15) ÷ (293.15 × 1.0)' }
+        ],
+        result: 'V₂ ≈ 2.205 L',
+        explanation: 'Because the pressure does not change (P₁ = P₂), the two pressures cancel and this reduces to Charles’s law: the volume grows in direct proportion to the absolute temperature. 323.15 ÷ 293.15 ≈ 1.1023, so the final volume is about 1.1023 × 2.0 ≈ 2.205 L — roughly a 10.2% increase for a 30°C rise, not the much larger change it would be if read directly off the Celsius numbers.'
+      },
+      watchOut: [
+        {
+          title: 'This assumes the amount of gas does not change',
+          body: 'The combined gas law describes a fixed, sealed sample of gas moving from one set of conditions to another. If gas is added, leaks out, or reacts with something along the way, n is no longer constant and this single equation no longer applies — use the ideal gas law separately for each state instead.'
+        },
+        {
+          title: 'Temperature must be absolute (kelvin), not Celsius or Fahrenheit',
+          body: 'Just like the ideal gas law, this formula needs an absolute temperature scale. A 30°C rise is not "30 K out of nothing" — it has to be read as a change from 293.15 K to 323.15 K, a change of only about 10%, not treated as if Celsius itself started at zero.'
+        },
+        {
+          title: 'If one quantity is held constant, the formula simplifies — but still needs the constant value entered',
+          body: 'When pressure does not change (P₁ = P₂), the law reduces to Charles’s law; when temperature does not change, it reduces to Boyle’s law. Even then, enter the unchanged value on both sides rather than leaving a field blank — the calculator needs all five known values to solve the sixth.'
+        },
+        {
+          title: 'This is not the same equation as the ideal gas law',
+          body: 'The ideal gas law (PV = nRT) needs to know the actual amount of gas, n, and gives an absolute volume, pressure, or temperature for one state. The combined gas law skips n entirely and only compares two states of the same fixed sample — use whichever one the problem actually gives you enough information for.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §9.2 "Relating Pressure, Volume, Amount, and Temperature: The Ideal Gas Law" (derivation from Boyle’s, Charles’s, and Gay-Lussac’s laws)', url: 'https://openstax.org/books/chemistry-2e/pages/9-2-relating-pressure-volume-amount-and-temperature-the-ideal-gas-law' },
+        { label: 'IUPAC Gold Book, "standard conditions for gases" (STP)', url: 'https://goldbook.iupac.org/terms/view/S05925' }
+      ]
+    },
+    inputs: [
+      { id: 'pressure1', label: 'Initial pressure (Pa)', type: 'number', placeholder: '101325', defaultValue: 101325, step: 1, min: 0 },
+      { id: 'volume1', label: 'Initial volume (m³)', type: 'number', placeholder: '0.002', defaultValue: 0.002, step: 0.0001, min: 0 },
+      { id: 'temperature1', label: 'Initial temperature (K)', type: 'number', placeholder: '293.15', defaultValue: 293.15, step: 0.01, min: 0 },
+      { id: 'pressure2', label: 'Final pressure (Pa)', type: 'number', placeholder: '101325', defaultValue: 101325, step: 1, min: 0 },
+      { id: 'temperature2', label: 'Final temperature (K)', type: 'number', placeholder: '323.15', defaultValue: 323.15, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Combined Gas Law Calculator – P₁V₁/T₁ = P₂V₂/T₂',
+      description: 'Free combined gas law calculator. Solve P₁V₁÷T₁ = P₂V₂÷T₂ for any of the six pressure, volume, and temperature values, with a worked example.',
+      faq: [
+        { question: 'What is the combined gas law formula?', answer: 'P₁V₁ ÷ T₁ = P₂V₂ ÷ T₂, where the subscript 1 is the gas’s starting pressure, volume, and absolute temperature, and subscript 2 is the same fixed amount of gas after a change in conditions.' },
+        { question: 'How is the combined gas law different from the ideal gas law?', answer: 'The ideal gas law, PV = nRT, needs the actual amount of gas (n) and solves for one absolute state. The combined gas law compares two states of the same fixed amount of gas and never needs to know n at all.' },
+        { question: 'How do I find a gas’s new volume after heating it?', answer: 'V₂ = (P₁V₁T₂) ÷ (T₁P₂). A 2.0 L balloon at 1.0 atm and 293.15 K (20°C), heated to 323.15 K (50°C) at the same pressure, reaches (1.0 × 2.0 × 323.15) ÷ (293.15 × 1.0) ≈ 2.205 L.' },
+        { question: 'Does the combined gas law reduce to Boyle’s law or Charles’s law?', answer: 'Yes. Holding temperature constant (T₁ = T₂) leaves P₁V₁ = P₂V₂, Boyle’s law. Holding pressure constant (P₁ = P₂) leaves V₁ ÷ T₁ = V₂ ÷ T₂, Charles’s law.' },
+        { question: 'Why must temperature be in kelvin?', answer: 'Kelvin has no offset zero, so ratios like T₂ ÷ T₁ are only meaningful on that scale. Using Celsius or Fahrenheit directly in the ratio gives an incorrect answer, since those scales start at an arbitrary point rather than true zero.' },
+        { question: 'Does this formula work if the amount of gas changes?', answer: 'No. It assumes a sealed, fixed amount of gas moving between two states. If gas is added, removed, or produced or consumed by a reaction, use the ideal gas law for each state separately instead.' }
+      ]
+    },
+    compute(values) {
+      return { volume2: (values.pressure1 * values.volume1 * values.temperature2) / (values.temperature1 * values.pressure2) };
+    }
+  },
+  {
+    id: 'ph-poh-calculator',
+    category: 'chemistry',
+    glyph: 'pH',
+    updatedAt: '2026-11-08',
+    aliases: ['ph calculator', 'poh calculator', 'ph to poh calculator', 'ph to hydrogen ion concentration calculator', 'ph poh converter', 'hydrogen ion concentration calculator'],
+    related: ['pka-henderson-hasselbalch-calculator', 'molarity-calculator', 'dilution-calculator'],
+    title: 'pH / pOH Calculator',
+    description: 'Convert between pH and pOH (pH + pOH = 14.00 at 25°C), with the hydrogen-ion and hydroxide-ion concentrations each one implies, in mol/L.',
+    example: 'A solution with a pH of 4.00 has a pOH of 10.00, a hydrogen-ion concentration of 1 × 10⁻⁴ mol/L, and a hydroxide-ion concentration of 1 × 10⁻¹⁰ mol/L.',
+    solver: {
+      defaultTarget: 'pOH',
+      variables: [
+        { id: 'pH', label: 'pH', symbol: 'pH', dimension: 'pH', defaultValue: 4, defaultUnit: 'pH' },
+        { id: 'pOH', label: 'pOH', symbol: 'pOH', dimension: 'pH', defaultValue: 10, defaultUnit: 'pH' }
+      ],
+      solve: {
+        pOH: ({ pH }) => 14 - pH,
+        pH: ({ pOH }) => 14 - pOH
+      },
+      outputs: [
+        { id: 'hConcentration', label: 'Hydrogen-ion concentration [H⁺]', dimension: 'concentration', unit: 'mol/L', compute: (si) => 10 ** -si.pH * 1000 },
+        { id: 'ohConcentration', label: 'Hydroxide-ion concentration [OH⁻]', dimension: 'concentration', unit: 'mol/L', compute: (si) => 10 ** -si.pOH * 1000 }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-08',
+      concept: {
+        title: 'What are pH and pOH?',
+        paragraphs: [
+          'pH measures how acidic or basic a water-based solution is, defined as pH = −log₁₀[H⁺], where [H⁺] is the hydrogen-ion (more precisely, hydronium-ion) concentration in moles per liter. Because it is a logarithmic scale, each whole step in pH is a 10-fold change in [H⁺] — a solution with pH 3 has ten times the hydrogen-ion concentration of one with pH 4, and a hundred times that of pH 5.',
+          'pOH is the same idea applied to the hydroxide ion: pOH = −log₁₀[OH⁻]. In pure water at 25°C, water molecules dissociate into H⁺ and OH⁻ just enough that [H⁺][OH⁻] = 1.0 × 10⁻¹⁴ (the water dissociation constant, Kw). Taking −log₁₀ of both sides gives pH + pOH = 14.00 at that same temperature — so knowing either one tells you the other, and both ion concentrations, without any further measurement.',
+          'A pH of exactly 7.00 (and a matching pOH of 7.00) is neutral at 25°C — equal concentrations of H⁺ and OH⁻. Below 7 is acidic (more H⁺ than OH⁻), and above 7 is basic, or alkaline (more OH⁻ than H⁺). The common 0–14 range is a convenience, not a hard limit: very strong acids and bases can have a pH below 0 or above 14.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter either pH or pOH; the other, and both ion concentrations, fill in automatically.',
+        steps: [
+          { name: 'Enter the value you know', text: 'Type a pH or a pOH reading — from a meter, a test strip, or a textbook problem.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input instead; the other field becomes the calculated one.' },
+          { name: 'Read the result', text: 'The other of pH/pOH appears immediately, with the hydrogen-ion and hydroxide-ion concentrations it implies shown underneath, in mol/L.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact value. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'pH and pOH are related through water’s dissociation constant at 25°C, and each converts directly to its own ion concentration.',
+        expression: 'pH = −log₁₀[H⁺]\npOH = −log₁₀[OH⁻]\npH + pOH = 14.00 (at 25°C)\n[H⁺] = 10⁻ᵖᴴ\n[OH⁻] = 10⁻ᵖᴼᴴ',
+        terms: [
+          { symbol: 'pH', meaning: 'The negative base-10 logarithm of the hydrogen-ion concentration, in mol/L.' },
+          { symbol: 'pOH', meaning: 'The negative base-10 logarithm of the hydroxide-ion concentration, in mol/L.' },
+          { symbol: '[H⁺], [OH⁻]', meaning: 'Hydrogen-ion and hydroxide-ion concentrations, in moles per liter (mol/L).' },
+          { symbol: '14.00', meaning: 'pKw, the negative log of water’s dissociation constant (Kw = 1.0 × 10⁻¹⁴) at 25°C. This value shifts slightly at other temperatures.' }
+        ],
+        note: 'pH + pOH = 14.00 assumes 25°C, the standard reference temperature for Kw. At other temperatures, Kw (and therefore this sum) is slightly different.'
+      },
+      workedExample: {
+        intro: 'A solution has a pH of 4.00. What is its pOH, and what are the hydrogen-ion and hydroxide-ion concentrations?',
+        rows: [
+          { label: 'pH', value: '4.00' },
+          { label: 'pOH (14.00 − 4.00)', value: '10.00' },
+          { label: 'Hydrogen-ion concentration ([H⁺] = 10⁻⁴·⁰⁰)', value: '1 × 10⁻⁴ mol/L' },
+          { label: 'Hydroxide-ion concentration ([OH⁻] = 10⁻¹⁰·⁰⁰)', value: '1 × 10⁻¹⁰ mol/L' }
+        ],
+        result: 'pOH = 10.00 · [H⁺] = 1 × 10⁻⁴ mol/L · [OH⁻] = 1 × 10⁻¹⁰ mol/L',
+        explanation: 'A pH of 4.00 is firmly acidic (well below the neutral 7.00), matching a hydrogen-ion concentration of exactly 1 × 10⁻⁴ mol/L — ten thousand times higher than pure water’s 1 × 10⁻⁷ mol/L. As a check, multiplying the two ion concentrations gives (1 × 10⁻⁴) × (1 × 10⁻¹⁰) = 1 × 10⁻¹⁴, matching Kw exactly.'
+      },
+      watchOut: [
+        {
+          title: 'pH + pOH = 14 only holds at 25°C',
+          body: 'That 14.00 figure is −log₁₀(Kw) specifically at 25°C. Kw increases with temperature (water dissociates more as it warms), so a hot solution’s neutral point is actually slightly below pH 7, even though pH + pOH still equals pKw at whatever temperature Kw is measured at.'
+        },
+        {
+          title: 'pH is not bounded to 0–14 in principle',
+          body: 'The 0–14 range covers most dilute aqueous solutions encountered in a lab, but concentrated strong acids and bases can fall outside it — a pH below 0 or above 14 is unusual but not mathematically impossible.'
+        },
+        {
+          title: 'A small pH difference is a large concentration difference',
+          body: 'Because the scale is logarithmic, a "small" change from pH 4 to pH 3 is a 10-fold jump in hydrogen-ion concentration, not a 25% one. Comparing pH values by simple subtraction can understate how different two solutions’ actual acidity is.'
+        },
+        {
+          title: 'This calculator assumes a dilute, ideal aqueous solution',
+          body: 'At high concentrations, ion activity (the "effective" concentration that actually governs chemical behavior) diverges from the simple mol/L figure used here. The formulas above are the standard introductory-chemistry treatment, accurate for the dilute solutions most coursework and lab work deals with.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §14.3 "Relative Strengths of Acids and Bases" (pH, pOH, and Kw)', url: 'https://openstax.org/books/chemistry-2e/pages/14-3-relative-strengths-of-acids-and-bases' },
+        { label: 'IUPAC Gold Book, "pH"', url: 'https://goldbook.iupac.org/terms/view/P04524' },
+        { label: 'NIST Chemistry WebBook — ionization constant of water (Kw) and its temperature dependence', url: 'https://webbook.nist.gov/' }
+      ]
+    },
+    inputs: [{ id: 'pH', label: 'pH', type: 'number', placeholder: '4', defaultValue: 4, step: 0.01 }],
+    seo: {
+      title: 'pH / pOH Calculator – Convert pH, pOH, [H⁺] and [OH⁻]',
+      description: 'Free pH to pOH calculator. Convert between pH and pOH (pH + pOH = 14 at 25°C) and find the hydrogen-ion and hydroxide-ion concentrations, in mol/L.',
+      faq: [
+        { question: 'How do I convert pH to pOH?', answer: 'Subtract from 14.00 (at 25°C): pOH = 14.00 − pH. A pH of 4.00 gives a pOH of 10.00.' },
+        { question: 'How do I convert pOH to pH?', answer: 'The same subtraction works both ways: pH = 14.00 − pOH. A pOH of 10.00 gives a pH of 4.00.' },
+        { question: 'How do I find [H⁺] from pH?', answer: '[H⁺] = 10⁻ᵖᴴ, in mol/L. A pH of 4.00 gives [H⁺] = 10⁻⁴·⁰⁰ = 1 × 10⁻⁴ mol/L.' },
+        { question: 'How do I find [OH⁻] from pOH?', answer: '[OH⁻] = 10⁻ᵖᴼᴴ, in mol/L. A pOH of 10.00 gives [OH⁻] = 10⁻¹⁰·⁰⁰ = 1 × 10⁻¹⁰ mol/L.' },
+        { question: 'Why does pH + pOH equal 14?', answer: 'Because [H⁺][OH⁻] = Kw = 1.0 × 10⁻¹⁴ at 25°C. Taking −log₁₀ of both sides turns that product into a sum: pH + pOH = −log₁₀(Kw) = 14.00, at that same temperature.' },
+        { question: 'What pH is neutral?', answer: '7.00 at 25°C, where [H⁺] = [OH⁻] = 1 × 10⁻⁷ mol/L. Below 7 is acidic; above 7 is basic (alkaline).' },
+        { question: 'Does pH + pOH = 14 at every temperature?', answer: 'No — only at 25°C, the temperature Kw = 1.0 × 10⁻¹⁴ is defined for. Kw rises as water gets warmer, so the pH+pOH sum (and the neutral pH) shifts slightly at other temperatures.' }
+      ]
+    },
+    compute(values) {
+      return { pOH: 14 - values.pH };
+    }
+  },
+  {
+    id: 'pka-henderson-hasselbalch-calculator',
+    category: 'chemistry',
+    glyph: 'pKa',
+    updatedAt: '2026-11-08',
+    aliases: ['henderson-hasselbalch calculator', 'pka calculator', 'buffer ph calculator', 'henderson hasselbalch equation calculator', 'pka from ph calculator'],
+    related: ['ph-poh-calculator', 'molarity-calculator', 'dilution-calculator'],
+    title: 'pKa Calculator (Henderson-Hasselbalch Equation)',
+    description: 'Solve the Henderson-Hasselbalch equation, pH = pKa + log₁₀([A⁻] ÷ [HA]), for pH, pKa, or either concentration in an acid-base buffer.',
+    example: 'An acetic acid buffer (pKa 4.76) with 0.30 mol/L acetate (A⁻) and 0.20 mol/L acetic acid (HA) has a pH of about 4.94.',
+    solver: {
+      defaultTarget: 'pH',
+      variables: [
+        { id: 'pH', label: 'pH', symbol: 'pH', dimension: 'pH', defaultValue: 4.94, defaultUnit: 'pH' },
+        { id: 'pKa', label: 'pKa', symbol: 'pKₐ', dimension: 'pH', defaultValue: 4.76, defaultUnit: 'pH' },
+        { id: 'baseConcentration', label: 'Conjugate base concentration [A⁻]', symbol: '[A⁻]', dimension: 'concentration', defaultValue: 0.3, defaultUnit: 'mol/L' },
+        { id: 'acidConcentration', label: 'Weak acid concentration [HA]', symbol: '[HA]', dimension: 'concentration', defaultValue: 0.2, defaultUnit: 'mol/L' }
+      ],
+      solve: {
+        pH: ({ pKa, baseConcentration, acidConcentration }) =>
+          baseConcentration <= 0 || acidConcentration <= 0 ? NaN : pKa + Math.log10(baseConcentration / acidConcentration),
+        pKa: ({ pH, baseConcentration, acidConcentration }) =>
+          baseConcentration <= 0 || acidConcentration <= 0 ? NaN : pH - Math.log10(baseConcentration / acidConcentration),
+        baseConcentration: ({ pH, pKa, acidConcentration }) => (acidConcentration <= 0 ? NaN : acidConcentration * 10 ** (pH - pKa)),
+        acidConcentration: ({ pH, pKa, baseConcentration }) => (baseConcentration <= 0 ? NaN : baseConcentration / 10 ** (pH - pKa))
+      },
+      outputs: [{ id: 'ratio', label: 'Ratio [A⁻] ÷ [HA]', dimension: 'count', compute: (si) => (si.acidConcentration <= 0 ? NaN : si.baseConcentration / si.acidConcentration) }]
+    },
+    content: {
+      lastReviewed: '2026-11-08',
+      concept: {
+        title: 'What is the Henderson-Hasselbalch equation?',
+        paragraphs: [
+          'The Henderson-Hasselbalch equation, pH = pKa + log₁₀([A⁻] ÷ [HA]), gives the pH of a buffer solution — a mixture of a weak acid (HA) and its conjugate base (A⁻) — from the acid’s own pKa and the ratio of the two concentrations. pKa is a fixed property of the weak acid itself, the pH at which it is exactly half dissociated into H⁺ and its conjugate base.',
+          'The equation is a rearrangement of the weak acid’s equilibrium expression, Ka = [H⁺][A⁻] ÷ [HA], solved for pH after taking −log₁₀ of both sides. It is named after biochemist Lawrence Joseph Henderson, who first derived the underlying relationship, and chemist Karl Albert Hasselbalch, who recast it in terms of pH.',
+          'Its single most useful consequence is what happens when the two concentrations are equal: log₁₀(1) = 0, so pH = pKa exactly. That is why pKa is reported as "the pH where the acid is half-dissociated" — and why buffers are typically prepared with a weak acid whose pKa sits close to the target pH, since that keeps the [A⁻] ÷ [HA] ratio, and therefore the buffer’s resistance to pH change in either direction, close to balanced.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of pH, pKa, the base concentration, and the acid concentration; the fourth fills in automatically.',
+        steps: [
+          { name: 'Look up the weak acid’s pKa', text: 'Each weak acid has its own fixed pKa — about 4.76 for acetic acid, for example. Use the value for the specific acid in your buffer.' },
+          { name: 'Enter the three values you know', text: 'pH, pKa, and either concentration — or both concentrations and pKa, to find pH.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Read the result and the ratio', text: 'The missing value appears immediately, with the concentration ratio [A⁻] ÷ [HA] shown underneath.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'pH = pKa + log₁₀([A⁻] ÷ [HA]) rearranges to solve for pKa or either concentration as well.',
+        expression: 'pH = pKa + log₁₀([A⁻] ÷ [HA])\npKa = pH − log₁₀([A⁻] ÷ [HA])\n[A⁻] = [HA] × 10^(pH − pKa)\n[HA] = [A⁻] ÷ 10^(pH − pKa)',
+        terms: [
+          { symbol: 'pKa', meaning: 'The negative base-10 logarithm of the weak acid’s dissociation constant, Ka — a fixed property of that acid.' },
+          { symbol: '[A⁻]', meaning: 'Concentration of the conjugate base (the deprotonated, "A minus" form), in mol/L.' },
+          { symbol: '[HA]', meaning: 'Concentration of the undissociated weak acid, in mol/L.' },
+          { symbol: '[A⁻] ÷ [HA]', meaning: 'The buffer ratio. Only this ratio matters, not the absolute concentrations — doubling both leaves pH unchanged.' }
+        ],
+        note: 'Because only the ratio of the two concentrations matters, they can be entered in any consistent concentration unit (mol/L, mmol/L, and so on) as long as both use the same one.'
+      },
+      workedExample: {
+        intro: 'An acetic acid buffer has a pKa of 4.76, with 0.30 mol/L of acetate (A⁻) and 0.20 mol/L of acetic acid (HA). What is its pH?',
+        rows: [
+          { label: 'pKa', value: '4.76' },
+          { label: 'Conjugate base [A⁻]', value: '0.30 mol/L' },
+          { label: 'Weak acid [HA]', value: '0.20 mol/L' },
+          { label: 'Ratio ([A⁻] ÷ [HA])', value: '0.30 ÷ 0.20 = 1.5' },
+          { label: 'pH (4.76 + log₁₀(1.5))', value: '4.76 + 0.176 = 4.936' }
+        ],
+        result: 'pH ≈ 4.94',
+        explanation: 'log₁₀(1.5) ≈ 0.176, so the pH sits a little above the acid’s pKa of 4.76 — consistent with there being more of the conjugate base than the acid form. If the two concentrations were instead equal (a 1:1 ratio), the pH would land exactly on 4.76, since log₁₀(1) = 0.'
+      },
+      watchOut: [
+        {
+          title: 'pH = pKa only when the two concentrations are equal',
+          body: 'This is the most useful single fact from the equation: log₁₀(1) = 0 when [A⁻] = [HA], so the pH exactly equals the acid’s pKa at that point — the basis for picking a buffer whose pKa is close to a target pH.'
+        },
+        {
+          title: 'Only the ratio of the two concentrations matters, not their absolute size',
+          body: 'A buffer with 0.30 mol/L A⁻ and 0.20 mol/L HA has the same pH as one with 3.0 mol/L A⁻ and 2.0 mol/L HA — both are a 1.5:1 ratio. The absolute concentrations instead determine the buffer’s capacity: how much acid or base it can absorb before its pH changes substantially.'
+        },
+        {
+          title: 'This equation assumes a true buffer — a mix, not a pure acid or pure base',
+          body: 'If either concentration is zero, the ratio is undefined (division by zero or the log of zero), and there is no buffer to speak of — just a solution of the acid or the base alone, whose pH comes from a separate weak-acid or weak-base equilibrium calculation instead.'
+        },
+        {
+          title: 'pKa is specific to one weak acid — look up the correct value',
+          body: 'Different weak acids have very different pKa values (acetic acid ≈ 4.76, carbonic acid’s first pKa ≈ 6.35, ammonium ≈ 9.25). Using the wrong acid’s pKa gives a pH for a buffer that is not actually the one being described.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §14.7 "Buffers" (the Henderson-Hasselbalch equation)', url: 'https://openstax.org/books/chemistry-2e/pages/14-7-buffers' },
+        { label: 'IUPAC Gold Book, "Henderson-Hasselbalch equation"', url: 'https://goldbook.iupac.org/terms/view/H02777' }
+      ]
+    },
+    inputs: [
+      { id: 'pKa', label: 'pKa', type: 'number', placeholder: '4.76', defaultValue: 4.76, step: 0.01 },
+      { id: 'baseConcentration', label: 'Conjugate base concentration (mol/m³)', type: 'number', placeholder: '300', defaultValue: 300, step: 1, min: 0 },
+      { id: 'acidConcentration', label: 'Weak acid concentration (mol/m³)', type: 'number', placeholder: '200', defaultValue: 200, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'pKa Calculator (Henderson-Hasselbalch Equation)',
+      description: 'Free Henderson-Hasselbalch calculator. Solve pH = pKa + log₁₀([A⁻]/[HA]) for pH, pKa, or either buffer concentration, with a worked example.',
+      faq: [
+        { question: 'What is the Henderson-Hasselbalch equation?', answer: 'pH = pKa + log₁₀([A⁻] ÷ [HA]), where pKa is the weak acid’s own dissociation constant (as −log₁₀Ka), [A⁻] is the conjugate base concentration, and [HA] is the weak acid concentration.' },
+        { question: 'How do I find the pH of a buffer?', answer: 'Add the acid’s pKa to the base-10 log of the conjugate base-to-acid concentration ratio: pH = pKa + log₁₀([A⁻]÷[HA]). A pKa of 4.76 with a 1.5:1 ratio gives 4.76 + log₁₀(1.5) ≈ 4.94.' },
+        { question: 'What does it mean when pH equals pKa?', answer: 'The weak acid is exactly half dissociated — [A⁻] equals [HA], so their ratio is 1 and log₁₀(1) = 0, leaving pH = pKa exactly.' },
+        { question: 'How do I find pKa from a measured pH?', answer: 'Rearrange to pKa = pH − log₁₀([A⁻]÷[HA]). A measured pH of 4.94 with a 1.5:1 buffer ratio gives pKa = 4.94 − log₁₀(1.5) ≈ 4.76.' },
+        { question: 'Does the Henderson-Hasselbalch equation work for any acid-base pair?', answer: 'It applies specifically to a weak acid and its own conjugate base in solution together — a true buffer. It does not apply to a strong acid or strong base, which dissociate essentially completely rather than reaching the kind of equilibrium this equation describes.' },
+        { question: 'What is the pKa of acetic acid?', answer: 'About 4.76 at 25°C, a commonly cited value for the weak acid used in acetate buffers.' },
+        { question: 'Why do only the ratio of concentrations matter, not their absolute values?', answer: 'The equation only has a log of the ratio [A⁻]÷[HA] in it — doubling both concentrations leaves that ratio, and therefore the pH, unchanged. The absolute concentrations instead affect the buffer’s capacity, not its pH.' }
+      ]
+    },
+    compute(values) {
+      return { pH: values.pKa + Math.log10(values.baseConcentration / values.acidConcentration) };
+    }
+  },
+  {
+    id: 'percent-yield-calculator',
+    category: 'chemistry',
+    glyph: 'Y%',
+    updatedAt: '2026-11-08',
+    aliases: ['percent yield calculator', 'percentage yield calculator', 'actual vs theoretical yield calculator', 'reaction yield calculator', 'percent yield formula calculator'],
+    related: ['mass-percent-calculator', 'molar-mass-calculator', 'moles-to-grams-calculator'],
+    title: 'Percent Yield Calculator',
+    description: 'Solve percent yield = (actual yield ÷ theoretical yield) × 100 for percent yield, actual yield, or theoretical yield in a chemical reaction.',
+    example: 'A reaction with a theoretical yield of 45.0 g that actually produces 38.7 g of product has a percent yield of about 86.0%.',
+    solver: {
+      defaultTarget: 'percentYield',
+      variables: [
+        { id: 'percentYield', label: 'Percent yield', symbol: 'Y%', dimension: 'percent', defaultValue: 86, defaultUnit: '%' },
+        { id: 'actualYield', label: 'Actual yield', symbol: 'mₐ', dimension: 'mass', defaultValue: 38.7, defaultUnit: 'g' },
+        { id: 'theoreticalYield', label: 'Theoretical yield', symbol: 'mₜ', dimension: 'mass', defaultValue: 45, defaultUnit: 'g' }
+      ],
+      solve: {
+        percentYield: ({ actualYield, theoreticalYield }) => (theoreticalYield === 0 ? NaN : (actualYield / theoreticalYield) * 100),
+        actualYield: ({ percentYield, theoreticalYield }) => (percentYield / 100) * theoreticalYield,
+        theoreticalYield: ({ percentYield, actualYield }) => (percentYield === 0 ? NaN : actualYield / (percentYield / 100))
+      },
+      outputs: [{ id: 'massLost', label: 'Mass not recovered', dimension: 'mass', unit: 'g', compute: (si) => si.theoreticalYield - si.actualYield }]
+    },
+    content: {
+      lastReviewed: '2026-11-08',
+      concept: {
+        title: 'What is percent yield?',
+        paragraphs: [
+          'Percent yield compares how much product a reaction actually produced (the actual yield, measured on a lab balance) to how much it should have produced if every bit of limiting reagent converted perfectly into product (the theoretical yield, calculated from stoichiometry). It is written as percent yield = (actual yield ÷ theoretical yield) × 100.',
+          'Real reactions almost never hit 100%. Some product is lost during transfer between containers, some side reaction consumes a bit of the starting material, a purification step (recrystallization, filtration) leaves some product behind, or the reaction simply does not go to completion. Percent yield is the standard way chemists report how efficient a given run of a reaction actually was.',
+          'Theoretical yield itself comes from the reaction’s stoichiometry: the moles of limiting reagent, converted through the mole ratio in the balanced equation, then multiplied by the product’s molar mass. Percent yield is calculated after that figure is already known, as a simple ratio against what was actually isolated.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of percent yield, actual yield, and theoretical yield; the third fills in automatically.',
+        steps: [
+          { name: 'Find the theoretical yield', text: 'Calculate this from the reaction’s stoichiometry first (moles of limiting reagent × mole ratio × product’s molar mass) — it is not something this calculator derives on its own.' },
+          { name: 'Weigh the actual yield', text: 'The mass of product actually isolated at the end of the experiment, after any purification.' },
+          { name: 'Enter the two values you know', text: 'Any two of the three — often actual and theoretical yield, to find percent yield.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Read the result', text: 'The missing value appears immediately, with the mass not recovered (theoretical minus actual) shown underneath.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Percent yield rearranges to solve for actual or theoretical yield as well.',
+        expression: 'Percent yield = (actual yield ÷ theoretical yield) × 100\nActual yield = (percent yield ÷ 100) × theoretical yield\nTheoretical yield = actual yield ÷ (percent yield ÷ 100)',
+        terms: [
+          { symbol: 'Actual yield', meaning: 'The mass of product actually obtained from the reaction, measured directly.' },
+          { symbol: 'Theoretical yield', meaning: 'The maximum possible mass of product, calculated from the limiting reagent’s stoichiometry, assuming the reaction goes to completion with no losses.' },
+          { symbol: 'Percent yield', meaning: 'What fraction of the theoretical maximum was actually obtained, as a percentage.' }
+        ],
+        note: 'Theoretical yield must be worked out separately from the balanced equation and the limiting reagent — this calculator takes it as a given input, the same way a lab report would.'
+      },
+      workedExample: {
+        intro: 'A reaction has a theoretical yield of 45.0 g. The chemist actually isolates 38.7 g of product. What is the percent yield?',
+        rows: [
+          { label: 'Theoretical yield', value: '45.0 g' },
+          { label: 'Actual yield', value: '38.7 g' },
+          { label: 'Percent yield (38.7 ÷ 45.0 × 100)', value: '86.0%' },
+          { label: 'Mass not recovered (45.0 − 38.7)', value: '6.3 g' }
+        ],
+        result: 'Percent yield = 86.0%',
+        explanation: '38.7 divided by 45.0 is 0.86, or 86.0% once multiplied by 100 — a solid yield for a typical undergraduate lab synthesis. The remaining 6.3 g (14.0% of the theoretical maximum) was lost somewhere along the way: transfer losses, a side reaction, or material left behind during purification.'
+      },
+      watchOut: [
+        {
+          title: 'Percent yield should not exceed 100% — if it does, check for impurities or measurement error',
+          body: 'A result over 100% usually means the isolated "product" still contains leftover solvent, unreacted starting material, or another impurity adding extra mass, rather than the reaction genuinely outperforming its own stoichiometric limit. It can also mean the theoretical yield itself was miscalculated.'
+        },
+        {
+          title: 'Theoretical yield comes from the limiting reagent, not just any reactant',
+          body: 'If a reaction has two reactants, the theoretical yield is based on whichever one runs out first (the limiting reagent) — not the one present in the largest amount. Basing the calculation on the wrong reactant gives a theoretical yield, and therefore a percent yield, that does not reflect the actual reaction.'
+        },
+        {
+          title: 'Percent yield measures efficiency, not purity',
+          body: 'A high percent yield says a lot of mass was recovered, but says nothing about whether that mass is pure product. A reaction could have a high percent yield and still need further purification, or a lower percent yield of very pure material.'
+        },
+        {
+          title: 'Keep actual and theoretical yield in the same mass unit',
+          body: 'The ratio only makes sense if both yields are measured in the same substance and the same unit — grams compared to grams, not grams compared to moles, and not the mass of a different compound (a byproduct, say) compared to the intended product.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §4.4 "Reaction Yields" (actual, theoretical, and percent yield)', url: 'https://openstax.org/books/chemistry-2e/pages/4-4-reaction-yields' },
+        { label: 'IUPAC Gold Book, "yield" (chemical reaction)', url: 'https://goldbook.iupac.org/terms/view/Y00001' }
+      ]
+    },
+    inputs: [
+      { id: 'actualYield', label: 'Actual yield (g)', type: 'number', placeholder: '38.7', defaultValue: 38.7, step: 0.01, min: 0 },
+      { id: 'theoreticalYield', label: 'Theoretical yield (g)', type: 'number', placeholder: '45', defaultValue: 45, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Percent Yield Calculator – Actual ÷ Theoretical × 100',
+      description: 'Free percent yield calculator. Solve (actual ÷ theoretical) × 100 for percent yield, actual yield, or theoretical yield, with a worked example.',
+      faq: [
+        { question: 'What is the percent yield formula?', answer: 'Percent yield = (actual yield ÷ theoretical yield) × 100. An actual yield of 38.7 g against a theoretical yield of 45.0 g gives (38.7 ÷ 45.0) × 100 = 86.0%.' },
+        { question: 'How do I find actual yield from a percent yield?', answer: 'Multiply: actual yield = (percent yield ÷ 100) × theoretical yield. An 86.0% yield from a 45.0 g theoretical yield gives 0.86 × 45.0 = 38.7 g.' },
+        { question: 'How do I find theoretical yield from a percent yield?', answer: 'Divide: theoretical yield = actual yield ÷ (percent yield ÷ 100). An actual yield of 38.7 g at 86.0% gives 38.7 ÷ 0.86 = 45.0 g.' },
+        { question: 'Can percent yield be over 100%?', answer: 'Not genuinely — a result over 100% almost always points to impurities, leftover solvent, or unreacted starting material adding extra mass to what was weighed as "product," or an error in the theoretical yield calculation.' },
+        { question: 'What counts as a good percent yield?', answer: 'It depends on the reaction, but 90%+ is considered excellent, 70–90% good, and below 50% often prompts a look at the procedure — multi-step syntheses in particular tend to have lower overall yields since losses compound at each step.' },
+        { question: 'How is theoretical yield calculated?', answer: 'From the balanced equation: convert the limiting reagent’s mass to moles, use the mole ratio in the equation to find moles of product, then multiply by the product’s molar mass. This calculator takes that result as a given input.' },
+        { question: 'Why is percent yield usually less than 100%?', answer: 'Real reactions lose some material to side reactions, incomplete conversion, or losses during transfer and purification (filtration, recrystallization) — few lab procedures recover every last bit of theoretically possible product.' }
+      ]
+    },
+    compute(values) {
+      return { percentYield: (values.actualYield / values.theoreticalYield) * 100 };
+    }
   }
 ];

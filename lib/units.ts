@@ -31,6 +31,7 @@ export type UnitDimension =
   | 'amountOfSubstance'
   | 'concentration'
   | 'molarMass'
+  | 'pH'
   | 'data'
   | 'fuelEconomy'
   | 'fuelPrice'
@@ -311,6 +312,9 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
     { id: 'kg/mol', label: 'kg/mol', factor: 1 },
     { id: 'g/mol', label: 'g/mol', factor: 1e-3 }
   ],
+  // Unitless logarithmic scale (IUPAC Gold Book, "pH"): pH = −log₁₀[H⁺], pOH = −log₁₀[OH⁻]. The base
+  // value is the pH/pOH number itself, same single-unit precedent as `decibel` and `percent`.
+  pH: [{ id: 'pH', label: 'pH', factor: 1 }],
   // IEC 80000-13: decimal prefixes are powers of 1000 (KB = 1000 B), binary prefixes powers of 1024 (KiB).
   data: [
     { id: 'bit', label: 'bit', factor: 1 },

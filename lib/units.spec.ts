@@ -42,8 +42,8 @@ describe('unit tables', () => {
     assert.deepEqual([...dimensions].sort(), [
       'acceleration', 'amountOfSubstance', 'angle', 'area', 'capacitance', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
       'decibel', 'density', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'length', 'mass', 'molarMass', 'momentum',
-      'pace', 'percent', 'power', 'pressure', 'resistance', 'specificHeat', 'speed', 'temperature', 'temperatureDelta', 'term', 'time', 'voltage',
-      'volume'
+      'pH', 'pace', 'percent', 'power', 'pressure', 'resistance', 'specificHeat', 'speed', 'temperature', 'temperatureDelta', 'term', 'time',
+      'voltage', 'volume'
     ]);
   });
 
@@ -162,8 +162,8 @@ describe('anchor values', () => {
     close(convert(10, 'evEfficiency', 'km/kWh', 'kWh/100km'), 10);
     assert.ok(toBase(5, 'evEfficiency', 'mi/kWh') < toBase(3, 'evEfficiency', 'mi/kWh'));
   });
-  test('percent, count, currency and decibel are identity', () => {
-    for (const dimension of ['percent', 'count', 'currency', 'decibel'] as const) {
+  test('percent, count, currency, decibel and pH are identity', () => {
+    for (const dimension of ['percent', 'count', 'currency', 'decibel', 'pH'] as const) {
       assert.equal(UNITS[dimension].length, 1, dimension);
       assert.equal(toBase(7.5, dimension, UNITS[dimension][0].id), 7.5);
     }

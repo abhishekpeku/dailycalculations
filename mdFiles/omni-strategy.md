@@ -158,6 +158,7 @@ A sector opens only when we can ship it with **≥ 25 calculators on the v2 temp
 | **2** | **construction, food, sports** | Everyday-adjacent, so they fit the brand. Construction has strong ad revenue (contractors, DIY) | +100 → ~320 |
 | **3** | **physics, chemistry** | Huge student volume and attracts links from schools and universities, but lower ad revenue (students). Needs §4.3 first | +120 → ~440 |
 | **4** | **biology, ecology, fun/other** | Long tail, PR-friendly (ecology and fun pages get press) | +80 → ~520 |
+| **5** | **money-hub expansion, solar/home-energy, insurance, business/tax, crypto** | Not from Omni — from a 2026-11-08 competitive-positioning report on calculator sites generally (see §4.5). Highest monetization potential of any wave, but queued **after** Wave 4 finishes — decided 2026-11-08, see STATUS.md decision D14 | +~90–120 → ~610–640 |
 
 **Throughput:** we're one person, so the content pipeline is what sets the timeline. At 10
 calculators/week (AI draft, then a human check of formula, worked-example arithmetic and
@@ -202,6 +203,50 @@ building a wave. Treat it as one extra planning task per wave, not a separate st
   verified, because students check them.
 - **Construction / food / sports:** cite manufacturer or industry standards (e.g. concrete mix
   ratios, USDA cooking temperatures).
+
+### 4.5 Wave 5 — money hub, solar/home-energy, insurance, business/tax, crypto (queued after Wave 4)
+
+Source: a competitive-positioning report on calculator sites in general (2026-11-08, describes a
+*different* domain, `dailycalculators.com` — not this site — and its "existing tools" inventory
+didn't match ours when checked against `data/calculators/*.ts`; treat it as idea-generation only,
+not as ground truth about this repo). Cross-checked against our actual 224-calculator inventory
+before any of this was written, to avoid proposing things we already have. **Decided 2026-11-08
+(STATUS.md D14): finish the committed Wave 3/4 sequence (physics → chemistry → biology → ecology →
+fun/other → tech) first; this wave opens only after tech (step 25) closes out.** Seed lists below,
+not a locked spec — final cut is the build agent's call per calculator, same discipline as every
+other wave.
+
+**Money-hub expansion** (on top of the existing `finance` category — mortgage/loan/compound-
+interest/paycheck/investment/loan-prepayment/inflation/EMI already exist, don't rebuild): home-
+affordability, mortgage-refinance, mortgage-amortization-schedule, down-payment-savings, closing-
+cost-estimator, rent-vs-buy, debt-payoff/snowball, credit-card-minimum-payment, balance-transfer-
+savings, emergency-fund, retirement-savings (distinct from the existing generic `investment-
+calculator`), 401k-employer-match, roth-ira-growth, goal-based-investment, IRR, NPV.
+
+**Solar & home energy** (new category; `home`'s `electricity-bill-calculator` and `auto`'s `ev-
+charging-calculator` already exist — cross-link, don't duplicate): solar-panel-system-size, solar-
+savings, solar-payback-period, battery-backup-sizing, off-grid-solar, home-electricity-consumption,
+heat-pump-savings, appliance-energy-cost, net-metering-savings, solar-loan-payment.
+
+**Insurance** (new category, zero overlap with anything existing): term-life-coverage, human-life-
+value, health-insurance-coverage-estimator, out-of-pocket-maximum, car-insurance-coverage, gap-
+insurance, renters-insurance-contents-value, home-insurance-rebuild-cost. **Educational framing
+only** — "estimate," never implies buying a policy through the site; same disclaimer discipline as
+finance/health (§4.4).
+
+**Business & tax** (new category; `shopping`'s `sales-tax-calculator` and `work`'s `freelancer-
+rate-calculator`/`paycheck-calculator` and `travel`'s `currency-converter` already exist — cross-
+link, don't duplicate): GST/VAT (distinct from US sales tax), invoice-calculator, profit-margin,
+markup, break-even, project-profitability, depreciation, self-employment-tax-estimator, 1099-
+contractor-rate, LLC-cost-estimator.
+
+**Crypto** (new category, zero overlap with anything existing — this is what prompted the whole
+review): crypto-dca (dollar-cost-averaging), crypto-compound-growth, staking-rewards, portfolio-
+allocation, crypto-profit-loss/break-even, crypto-tax-estimate.
+
+**Order within the wave** is not yet decided — propose money-hub expansion first (builds on
+existing pages, highest monetization per the source report) when this wave actually starts, but
+that's a call for whoever opens it, informed by whatever Search Console data exists by then.
 
 ---
 
@@ -264,9 +309,13 @@ Revised order:
 ```
 28a (GSC verify) → 11 gate verdict → 30 → 31 → 32 → 12–15 (Wave 0 rollout on v2 template)
                                          ↘ 17 → 18 → 19–22 (region layer)
-17 → 39 → 40 → 41 → 42 → 43 → 44 → Wave 1 → gate → Wave 2 → gate → Wave 3 → gate → Wave 4
+17 → 39 → 40 → 41 → 42 → 43 → 44 → Wave 1 → gate → Wave 2 → gate → Wave 3 → gate → Wave 4 → gate → Wave 5
 23–26 fold into Wave 0 / Wave 1 · 33, 35–37 any time after 32 · 38 (ads) once ~100 deep pages
 ```
+
+Wave 5 (§4.5) wasn't part of this document's original Omni-based plan — added 2026-11-08 from a
+separate competitive-positioning report. See `mdFiles/guide-content-plan.md` for the related
+"Guide" content-type scoping decided the same day.
 
 ---
 

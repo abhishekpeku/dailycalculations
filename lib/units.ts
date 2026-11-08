@@ -30,9 +30,12 @@ export type UnitDimension =
   | 'temperatureDelta'
   | 'amountOfSubstance'
   | 'concentration'
+  | 'osmolarity'
+  | 'normality'
   | 'molarMass'
   | 'rateConstant'
   | 'molarEnergy'
+  | 'molarEntropy'
   | 'molality'
   | 'massConcentration'
   | 'pH'
@@ -309,6 +312,31 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
     { id: 'mmol/L', label: 'mmol/L', factor: 1 },
     { id: 'umol/L', label: 'µmol/L', factor: 1e-3 }
   ],
+  // Osmolarity: total concentration of dissolved particles (a formula unit counted once per piece
+  // it actually splits into in solution), the same per-volume counting convention as
+  // `concentration` but tracking particles rather than specific formula units. OpenStax Chemistry
+  // 2e Section 11.4 "Colligative Properties" defines the van't Hoff factor i (moles of particles in
+  // solution ÷ moles of formula units dissolved) that scales a molarity into this quantity. Kept as
+  // its own dimension (not folded into `concentration`) so a plain molarity field's unit menu never
+  // offers "Osm/L" — same reasoning as `massConcentration` being kept separate from `density`. Base
+  // mOsm/L, factor 1 — numerically identical to `concentration`'s mmol/L (both are "per-thousandth-
+  // of-base per litre"), which is what keeps osmolarity = molarity × i a plain multiplication with
+  // no stray factor between the two dimensions' SI values.
+  osmolarity: [
+    { id: 'mOsm/L', label: 'mOsm/L', factor: 1 },
+    { id: 'Osm/L', label: 'Osm/L', factor: 1000 }
+  ],
+  // Normality: equivalents of solute per litre, N = molarity × n (n = equivalents per mole — an
+  // acid or base's valence, or a redox couple's electron count). NIST SP 811, "Guide for the Use of
+  // the International System of Units", Chapter 8 Section 8.6.5 calls the term "normality" and the
+  // symbol N obsolete in favor of amount-of-substance concentration, but the unit remains standard
+  // in titrimetric analytical chemistry, which is why it is kept as its own dimension rather than
+  // folded into `concentration` (same reasoning as `osmolarity` above). Base meq/L, factor 1 — same
+  // numeric-scale reasoning as `osmolarity`, so N = M × n stays a plain multiplication.
+  normality: [
+    { id: 'meq/L', label: 'meq/L', factor: 1 },
+    { id: 'eq/L', label: 'eq/L (N)', factor: 1000 }
+  ],
   // SI-coherent derived unit kg/mol (mass / amountOfSubstance, both SI base above), so n = m/M stays
   // a plain division with no stray unit factor. Molar mass is conventionally reported in g/mol —
   // 1 g/mol = 1e-3 kg/mol, exact (the gram is exactly 1e-3 kg).
@@ -335,6 +363,15 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
     { id: 'kJ/mol', label: 'kJ/mol', factor: 1000 },
     { id: 'cal/mol', label: 'cal/mol', factor: CALORIE },
     { id: 'kcal/mol', label: 'kcal/mol', factor: CALORIE * 1000 }
+  ],
+  // SI-coherent derived unit J/(mol·K) (molarEnergy ÷ temperature, both SI base above) — molar
+  // entropy, the unit Gibbs free energy's TΔS term needs. kJ/(mol·K) and cal/(mol·K) follow the
+  // same factors as `molarEnergy`'s own kJ/mol and cal/mol, since dividing both by the same
+  // kelvin leaves the ratio between them unchanged.
+  molarEntropy: [
+    { id: 'J/molK', label: 'J/(mol·K)', factor: 1 },
+    { id: 'kJ/molK', label: 'kJ/(mol·K)', factor: 1000 },
+    { id: 'cal/molK', label: 'cal/(mol·K)', factor: CALORIE }
   ],
   // Molality, SI-coherent derived unit mol/kg (amountOfSubstance / mass, both SI base above), same
   // pattern as `concentration` (mol/m³) and `molarMass` (kg/mol): b = n ÷ m stays a plain division

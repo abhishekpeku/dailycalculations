@@ -271,6 +271,49 @@ a locked spec.
     benchmark figures: seawater ≈0.6 mol/L, concentrated HCl ≈12 mol/L, pure water ≈55.5 mol/L) was recomputed
     independently in a scratch script before committing each calculator.
   - 219 calculators total after this run (214 + 5).
+- [x] Chemistry run 2 (5), branch `step/46-wave-3-chemistry-run-2`, PR #66 — **DONE** 2026-11-08:
+  - [x] ideal-gas-law-calculator
+  - [x] combined-gas-law-calculator
+  - [x] ph-poh-calculator
+  - [x] pka-henderson-hasselbalch-calculator
+  - [x] percent-yield-calculator
+  - `ideal-gas-law-calculator` is a 4-variable closed-form solver (PV = nRT); bonus output is
+    concentration (n÷V), reusing chemistry run 1's `concentration` dimension. R = 8.31446261815324
+    J/(mol·K), NIST CODATA exact value.
+  - `combined-gas-law-calculator` is a 6-variable closed-form solver (P₁V₁/T₁ = P₂V₂/T₂, two gas
+    states). No new dimension.
+  - `ph-poh-calculator`: pH/pOH/[H⁺]/[OH⁻] form a system with only **one** independent degree of
+    freedom, not the solver widget's usual "N knowns → 1 unknown" shape — making all four full
+    solver variables would leave two stale after any edit. Shipped as a clean 2-variable solver
+    (pH ⇄ pOH) with [H⁺]/[OH⁻] as always-fresh derived `outputs`.
+  - `pka-henderson-hasselbalch-calculator` (pH = pKa + log₁₀([A⁻]/[HA])) has no such degeneracy —
+    genuinely 3 independent degrees of freedom across 4 variables, same shape as the ideal gas law
+    — ordinary 4-variable solver.
+  - `percent-yield-calculator`: (actual÷theoretical)×100, 3-variable solver, bonus output "mass not
+    recovered".
+  - New `lib/units.ts` dimension: `pH` — single-unit, dimensionless log scale (factor 1), same
+    precedent as `decibel`/`percent`/`count`. Source: IUPAC Gold Book "pH". Added to the sorted-
+    dimensions and identity tests in `lib/units.spec.ts`. No other new dimensions needed —
+    pressure/amountOfSubstance/concentration/volume/temperature/mass all reused as the step file's
+    dedupe section anticipated.
+  - Independent scratch script (`verify_run2.mjs`) recomputed every formula before the copy was
+    written: ideal gas molar volume at both STP conventions (22.414 L/mol at 1 atm vs 22.711 L/mol
+    at IUPAC's 100 kPa, cited precisely, not conflated), combined gas law round-trips, pH/pOH/
+    [H⁺]/[OH⁻] consistency ([H⁺]×[OH⁻] = 1.0×10⁻¹⁴ check), Henderson-Hasselbalch worked example, and
+    percent-yield round-trips.
+  - `npm test` (973 tests), `npm run lint` and `npm run build` all pass. `KNOWN_NON_FINITE` entries
+    added for `ideal-gas-law-calculator` (volume), `combined-gas-law-calculator` (volume2),
+    `pka-henderson-hasselbalch-calculator` (pH) and `percent-yield-calculator` (percentYield) — each
+    an honest 0/0 or log-of-zero at the input's own 0 min; `ph-poh-calculator` needed none (pOH =
+    14 − pH is defined everywhere). Curl-checked all 5 pages plus `/categories/chemistry` (200,
+    correct H1, JSON-LD, every section id present).
+  - Commits were 2, not 5 (all 5 calculators were written to `data/calculators/chemistry.ts`
+    sequentially before the first test run, producing one contiguous diff that couldn't be split
+    into 5 clean commits after the fact) — each calculator was still built/verified/tested
+    individually per the scratch script's per-section output before moving to the next. Draft PR
+    was still opened early, before any calculator content existed, per the resumability rule.
+  - 224 calculators total after this run (219 + 5).
+
 ## Planned remaining runs (not started — see STATUS.md decision D13 for category order)
 
 Physics is at 21/~61 target, chemistry at 5/~60 target. The seed lists in this file's "proposed
@@ -297,9 +340,6 @@ build agent's judgment**, same as every run so far.
   e.g. angular momentum, moment of inertia (simple shapes), rotational kinetic energy, electric
   field strength, magnetic force on a current, simple harmonic motion period, Young's modulus /
   stress-strain, orbital velocity — verify each against a primary source same as every prior run)
-- [ ] Chemistry run 2 (5): ideal-gas-law, combined-gas-law, ph-poh-calculator (solves both
-  directions, one page per the dedupe-style precedent), pka-henderson-hasselbalch-calculator,
-  percent-yield-calculator
 - [ ] Chemistry run 3 (5): limiting-reagent, theoretical-yield, empirical-formula,
   stoichiometry (**scope narrowly to simple mole-ratio problems, not equation balancing** — see
   the Scope warning above), solution-concentration (ppm/mg/L)

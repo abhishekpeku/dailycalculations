@@ -1106,7 +1106,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
     glyph: 'Y%',
     updatedAt: '2026-11-08',
     aliases: ['percent yield calculator', 'percentage yield calculator', 'actual vs theoretical yield calculator', 'reaction yield calculator', 'percent yield formula calculator'],
-    related: ['mass-percent-calculator', 'molar-mass-calculator', 'moles-to-grams-calculator'],
+    related: ['theoretical-yield-calculator', 'mass-percent-calculator', 'molar-mass-calculator', 'moles-to-grams-calculator'],
     title: 'Percent Yield Calculator',
     description: 'Solve percent yield = (actual yield ÷ theoretical yield) × 100 for percent yield, actual yield, or theoretical yield in a chemical reaction.',
     example: 'A reaction with a theoretical yield of 45.0 g that actually produces 38.7 g of product has a percent yield of about 86.0%.',
@@ -1202,12 +1202,647 @@ export const chemistryCalculators: CalculatorConfig[] = [
         { question: 'How do I find theoretical yield from a percent yield?', answer: 'Divide: theoretical yield = actual yield ÷ (percent yield ÷ 100). An actual yield of 38.7 g at 86.0% gives 38.7 ÷ 0.86 = 45.0 g.' },
         { question: 'Can percent yield be over 100%?', answer: 'Not genuinely — a result over 100% almost always points to impurities, leftover solvent, or unreacted starting material adding extra mass to what was weighed as "product," or an error in the theoretical yield calculation.' },
         { question: 'What counts as a good percent yield?', answer: 'It depends on the reaction, but 90%+ is considered excellent, 70–90% good, and below 50% often prompts a look at the procedure — multi-step syntheses in particular tend to have lower overall yields since losses compound at each step.' },
-        { question: 'How is theoretical yield calculated?', answer: 'From the balanced equation: convert the limiting reagent’s mass to moles, use the mole ratio in the equation to find moles of product, then multiply by the product’s molar mass. This calculator takes that result as a given input.' },
+        { question: 'How is theoretical yield calculated?', answer: 'From the balanced equation: convert the limiting reagent’s mass to moles, use the mole ratio in the equation to find moles of product, then multiply by the product’s molar mass. This calculator takes that result as a given input — the theoretical yield calculator does that conversion directly.' },
         { question: 'Why is percent yield usually less than 100%?', answer: 'Real reactions lose some material to side reactions, incomplete conversion, or losses during transfer and purification (filtration, recrystallization) — few lab procedures recover every last bit of theoretically possible product.' }
       ]
     },
     compute(values) {
       return { percentYield: (values.actualYield / values.theoreticalYield) * 100 };
+    }
+  },
+  {
+    id: 'limiting-reagent-calculator',
+    category: 'chemistry',
+    glyph: 'LR',
+    updatedAt: '2026-11-08',
+    aliases: ['limiting reagent calculator', 'limiting reactant calculator', 'excess reagent calculator', 'which reactant is limiting calculator', 'limiting reagent problems calculator'],
+    related: ['theoretical-yield-calculator', 'stoichiometry-calculator', 'percent-yield-calculator', 'molar-mass-calculator'],
+    title: 'Limiting Reagent Calculator',
+    description: 'Compare two reactants’ available moles against a balanced equation’s coefficients to find which one runs out first (the limiting reagent) and how much of the other is left over.',
+    example: 'Reacting 3 mol of N₂ with 6 mol of H₂ in N₂ + 3H₂ → 2NH₃ makes H₂ the limiting reagent — only 2 of the 3 mol of N₂ actually reacts, leaving 1 mol unreacted.',
+    content: {
+      lastReviewed: '2026-11-08',
+      concept: {
+        title: 'What is a limiting reagent?',
+        paragraphs: [
+          'A balanced chemical equation sets a fixed ratio between reactants — N₂ + 3H₂ → 2NH₃ always consumes 3 mol of H₂ for every 1 mol of N₂. Real reactants are rarely mixed in exactly that ratio, so one of them runs out first. That reactant is the limiting reagent: it determines how much product can form, and the reaction stops (or slows to whatever is left) once it is gone.',
+          'The other reactant is in excess — some of it is left over, unreacted, once the limiting reagent is used up. Figuring out which is which means more than comparing the raw mole counts of the two reactants; it means comparing each one’s moles divided by its own coefficient in the balanced equation, since a reaction that needs 3 mol of H₂ per 1 mol of N₂ treats those two reactants very differently.',
+          'This is normally the first step in a longer calculation: once the limiting reagent is identified, its moles feed into the theoretical yield calculation (see the theoretical yield calculator) to find the maximum possible mass of product.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter each reactant’s available moles and its coefficient from the balanced equation.',
+        steps: [
+          { name: 'Write and balance the chemical equation', text: 'The coefficients only mean anything once the equation is balanced — N₂ + 3H₂ → 2NH₃ has coefficients 1 and 3 for the two reactants.' },
+          { name: 'Enter Reactant A’s available moles and coefficient', text: 'How much of it you actually have, in moles, and its coefficient in the balanced equation.' },
+          { name: 'Enter Reactant B’s available moles and coefficient', text: 'The same two numbers for the other reactant.' },
+          { name: 'Read which reagent is limiting', text: 'The result names the limiting reagent and shows how much of each reactant is actually consumed and how much of the excess one is left over.' },
+          { name: 'Carry the limiting reagent’s moles forward', text: 'Use its full available amount (now shown as fully consumed) as the input to the theoretical yield calculator.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Divide each reactant’s available moles by its own coefficient; whichever result is smaller names the limiting reagent.',
+        expression: 'nᴬ ÷ cᴬ vs. nᴮ ÷ cᴮ\n(smaller value = limiting reagent)\nextent = min(nᴬ ÷ cᴬ, nᴮ ÷ cᴮ)\nused = extent × coefficient',
+        terms: [
+          { symbol: 'nᴬ, nᴮ', meaning: 'Moles of Reactant A and Reactant B actually available before the reaction.' },
+          { symbol: 'cᴬ, cᴮ', meaning: 'Each reactant’s coefficient in the balanced equation.' },
+          { symbol: 'extent', meaning: 'How many “sets” of the balanced equation can run to completion — the smaller of the two per-coefficient ratios.' }
+        ],
+        note: 'A tie (nᴬ ÷ cᴬ = nᴮ ÷ cᴮ) means both reactants run out at exactly the same point, with nothing left over on either side.'
+      },
+      workedExample: {
+        intro: 'The Haber process makes ammonia from nitrogen and hydrogen: N₂ + 3H₂ → 2NH₃. Starting with 3 mol of N₂ and 6 mol of H₂, which reactant is limiting?',
+        rows: [
+          { label: 'N₂ available ÷ its coefficient (3 ÷ 1)', value: '3' },
+          { label: 'H₂ available ÷ its coefficient (6 ÷ 3)', value: '2' },
+          { label: 'Smaller value → limiting reagent', value: 'H₂ (2 < 3)' },
+          { label: 'N₂ actually consumed (extent 2 × coefficient 1)', value: '2 mol' },
+          { label: 'N₂ left over (3 − 2)', value: '1 mol' },
+          { label: 'H₂ actually consumed (extent 2 × coefficient 3)', value: '6 mol (all of it)' }
+        ],
+        result: 'H₂ is the limiting reagent; 1 mol of N₂ is left over.',
+        explanation: 'Dividing each reactant’s available moles by its coefficient gives 3 for N₂ and 2 for H₂. The smaller number, H₂’s, means H₂ runs out first — all 6 mol of it reacts. That only consumes 2 mol of the 3 mol of N₂ available (since the ratio is 1 N₂ to 3 H₂), leaving 1 mol of N₂ unreacted.'
+      },
+      watchOut: [
+        {
+          title: 'Compare moles divided by coefficient, not raw moles',
+          body: 'Having more moles of a reactant does not mean it is in excess. 6 mol of H₂ is more than 3 mol of N₂, but H₂ is still the limiting reagent here, because the equation needs 3 mol of H₂ for every 1 mol of N₂ — dividing by the coefficient is what makes the comparison fair.'
+        },
+        {
+          title: 'Coefficients must come from a correctly balanced equation',
+          body: 'This calculator takes the coefficients as given; it does not balance the equation for itself. An unbalanced or mis-copied equation (wrong coefficients) gives a confidently wrong answer about which reactant is limiting.'
+        },
+        {
+          title: 'Leftover amount is in moles of that reactant, not a mass',
+          body: 'The “left over” figure is moles of the excess reactant that never reacted — converting it to a mass needs that reactant’s own molar mass (see the moles-to-grams calculator), a separate step from identifying the limiting reagent.'
+        },
+        {
+          title: 'This compares exactly two reactants',
+          body: 'Many real reactions have more than two reactants. Extending this method to three or more means computing moles-available ÷ coefficient for every reactant and taking the smallest of all of them, not just a pairwise comparison.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §4.4 "Reaction Yields" (limiting reactant and theoretical yield)', url: 'https://openstax.org/books/chemistry-2e/pages/4-4-reaction-yields' },
+        { label: 'OpenStax, Chemistry 2e, §4.3 "Reaction Stoichiometry" (mole-ratio calculations from a balanced equation)', url: 'https://openstax.org/books/chemistry-2e/pages/4-3-reaction-stoichiometry' }
+      ]
+    },
+    inputs: [
+      { id: 'molesA', label: 'Reactant A available (mol)', type: 'number', placeholder: '3', defaultValue: 3, step: 0.01, min: 0 },
+      { id: 'coeffA', label: 'Reactant A coefficient', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 1 },
+      { id: 'molesB', label: 'Reactant B available (mol)', type: 'number', placeholder: '6', defaultValue: 6, step: 0.01, min: 0 },
+      { id: 'coeffB', label: 'Reactant B coefficient', type: 'number', placeholder: '3', defaultValue: 3, step: 1, min: 1 }
+    ],
+    breakdown: {
+      headline: 'limitingReagent',
+      headlineLabel: 'Limiting reagent',
+      outputs: [
+        { id: 'limitingReagent', label: 'Limiting reagent', labels: [{ value: 0, label: 'Reactant A' }, { value: 1, label: 'Reactant B' }] },
+        { id: 'usedA', label: 'Reactant A consumed (mol)', format: 'significant' },
+        { id: 'leftoverA', label: 'Reactant A left over (mol)', format: 'significant' },
+        { id: 'usedB', label: 'Reactant B consumed (mol)', format: 'significant' },
+        { id: 'leftoverB', label: 'Reactant B left over (mol)', format: 'significant' }
+      ],
+      groups: [{ inputs: ['molesA', 'coeffA', 'molesB', 'coeffB'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'perCoeffA', label: 'Reactant A, moles ÷ coefficient' },
+          { from: 'perCoeffB', label: 'Reactant B, moles ÷ coefficient' }
+        ],
+        title: 'Which one runs out first?'
+      }
+    },
+    seo: {
+      title: 'Limiting Reagent Calculator – Find the Limiting Reactant',
+      description: 'Free limiting reagent calculator. Compare two reactants’ moles against a balanced equation’s coefficients to find the limiting reagent and leftover excess.',
+      faq: [
+        { question: 'How do I find the limiting reagent?', answer: 'Divide each reactant’s available moles by its coefficient in the balanced equation. Whichever reactant gives the smaller result is the limiting reagent — it runs out first.' },
+        { question: 'What is the limiting reagent in N₂ + 3H₂ → 2NH₃ with 3 mol N₂ and 6 mol H₂?', answer: 'H₂. N₂’s moles ÷ coefficient is 3 ÷ 1 = 3; H₂’s is 6 ÷ 3 = 2. The smaller value, H₂’s, makes it the limiting reagent, leaving 1 mol of N₂ unreacted.' },
+        { question: 'What does "excess reagent" mean?', answer: 'The reactant that is not limiting — some of it remains unreacted once the limiting reagent is fully consumed. "Leftover" in this calculator is that excess reagent’s remaining moles.' },
+        { question: 'Why can’t I just compare the two reactants’ raw mole amounts?', answer: 'Because the balanced equation rarely needs them in a 1:1 ratio. 2H₂ + O₂ → 2H₂O needs twice as much H₂ as O₂, so 5 mol of H₂ and 2 mol of O₂ actually makes O₂ limiting (2 ÷ 1 = 2, versus H₂’s 5 ÷ 2 = 2.5) even though O₂’s mole count looks smaller either way — the coefficient, not the raw number, decides it.' },
+        { question: 'What if a reaction has more than two reactants?', answer: 'Divide every reactant’s available moles by its own coefficient, and the smallest of all those results identifies the limiting one — the same rule extended from two reactants to any number.' },
+        { question: 'Does the limiting reagent calculator tell me how much product forms?', answer: 'Not directly — it identifies which reactant runs out and how much of it reacts. Feed that reactant’s moles into the theoretical yield calculator, along with the product’s coefficient and molar mass, to find the maximum mass of product.' },
+        { question: 'What if both reactants give the same moles ÷ coefficient?', answer: 'They run out at exactly the same point — neither is in excess, and nothing is left over from either reactant.' }
+      ]
+    },
+    compute(values) {
+      const perCoeffA = values.coeffA === 0 ? NaN : values.molesA / values.coeffA;
+      const perCoeffB = values.coeffB === 0 ? NaN : values.molesB / values.coeffB;
+      const extent = Math.min(perCoeffA, perCoeffB);
+      const usedA = extent * values.coeffA;
+      const usedB = extent * values.coeffB;
+      return {
+        limitingReagent: perCoeffA <= perCoeffB ? 0 : 1,
+        perCoeffA,
+        perCoeffB,
+        usedA,
+        leftoverA: values.molesA - usedA,
+        usedB,
+        leftoverB: values.molesB - usedB
+      };
+    }
+  },
+  {
+    id: 'theoretical-yield-calculator',
+    category: 'chemistry',
+    glyph: 'Yth',
+    updatedAt: '2026-11-08',
+    aliases: ['theoretical yield calculator', 'maximum yield calculator', 'theoretical yield formula calculator', 'theoretical yield from moles calculator', 'predicted yield calculator'],
+    related: ['percent-yield-calculator', 'limiting-reagent-calculator', 'stoichiometry-calculator', 'molar-mass-calculator'],
+    title: 'Theoretical Yield Calculator',
+    description: 'Find the maximum possible mass of product from a balanced equation: the limiting reagent’s moles, the mole ratio between it and the product, and the product’s molar mass.',
+    example: '6 mol of H₂ (the limiting reagent, coefficient 3) reacting in N₂ + 3H₂ → 2NH₃ (coefficient 2, molar mass 17.031 g/mol) has a theoretical yield of 68.124 g of NH₃.',
+    solver: {
+      defaultTarget: 'theoreticalYield',
+      variables: [
+        { id: 'reactantMoles', label: 'Limiting reagent’s moles', symbol: 'n', dimension: 'amountOfSubstance', defaultValue: 6, defaultUnit: 'mol' },
+        { id: 'reactantCoeff', label: 'Reactant’s coefficient', symbol: 'cᵣ', dimension: 'count', defaultValue: 3, defaultUnit: 'count' },
+        { id: 'productCoeff', label: 'Product’s coefficient', symbol: 'cₚ', dimension: 'count', defaultValue: 2, defaultUnit: 'count' },
+        { id: 'productMolarMass', label: 'Product’s molar mass', symbol: 'M', dimension: 'molarMass', defaultValue: 17.031, defaultUnit: 'g/mol' },
+        { id: 'theoreticalYield', label: 'Theoretical yield', symbol: 'mₜ', dimension: 'mass', defaultValue: 68.124, defaultUnit: 'g' }
+      ],
+      solve: {
+        theoreticalYield: ({ reactantMoles, reactantCoeff, productCoeff, productMolarMass }) =>
+          reactantCoeff === 0 ? NaN : reactantMoles * (productCoeff / reactantCoeff) * productMolarMass,
+        reactantMoles: ({ theoreticalYield, reactantCoeff, productCoeff, productMolarMass }) =>
+          productCoeff === 0 || productMolarMass === 0 ? NaN : (theoreticalYield * reactantCoeff) / (productCoeff * productMolarMass),
+        reactantCoeff: ({ theoreticalYield, reactantMoles, productCoeff, productMolarMass }) =>
+          theoreticalYield === 0 ? NaN : (reactantMoles * productCoeff * productMolarMass) / theoreticalYield,
+        productCoeff: ({ theoreticalYield, reactantMoles, reactantCoeff, productMolarMass }) =>
+          reactantMoles === 0 || productMolarMass === 0 ? NaN : (theoreticalYield * reactantCoeff) / (reactantMoles * productMolarMass),
+        productMolarMass: ({ theoreticalYield, reactantMoles, reactantCoeff, productCoeff }) =>
+          reactantMoles === 0 || productCoeff === 0 ? NaN : (theoreticalYield * reactantCoeff) / (reactantMoles * productCoeff)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-08',
+      concept: {
+        title: 'What is theoretical yield?',
+        paragraphs: [
+          'Theoretical yield is the maximum mass of product a reaction could possibly make, assuming every bit of the limiting reagent converts perfectly into product with no losses. It comes straight from the balanced equation: once you know how many moles of the limiting reagent you have, the equation’s mole ratio tells you how many moles of product that makes, and the product’s molar mass converts that mole count into a mass.',
+          'This is a theoretical ceiling, not a prediction of what a real experiment will produce — real reactions lose some yield to side reactions, incomplete conversion, and handling losses. Comparing an actual, measured yield against this theoretical one is exactly what the percent yield calculator does.',
+          'Theoretical yield only means anything once the limiting reagent has already been identified — see the limiting reagent calculator if that is still an open question. Plugging in a reactant that is not actually the limiting one overstates how much product the reaction can really make.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the limiting reagent’s moles, both coefficients from the balanced equation, and the product’s molar mass.',
+        steps: [
+          { name: 'Identify the limiting reagent and its available moles', text: 'Use the limiting reagent calculator above if that is not already known — theoretical yield is only valid for the reactant that actually runs out first.' },
+          { name: 'Enter that reactant’s coefficient', text: 'Its number in the balanced equation, e.g. the 3 in front of H₂ in N₂ + 3H₂ → 2NH₃.' },
+          { name: 'Enter the product’s coefficient', text: 'Its number in the balanced equation, e.g. the 2 in front of NH₃.' },
+          { name: 'Enter the product’s molar mass', text: 'Grams per mole — use the molar mass calculator above to find it from the product’s formula if needed.' },
+          { name: 'Read the theoretical yield', text: 'The maximum possible mass of product, in grams, appears immediately.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Convert the limiting reagent’s moles to moles of product using the mole ratio, then convert moles of product to a mass using its molar mass.',
+        expression: 'mₜ = n × (cₚ ÷ cᵣ) × M',
+        terms: [
+          { symbol: 'mₜ', meaning: 'Theoretical yield — the maximum possible mass of product, in grams.' },
+          { symbol: 'n', meaning: 'Moles of the limiting reagent actually available.' },
+          { symbol: 'cᵣ, cₚ', meaning: 'The limiting reagent’s and the product’s coefficients in the balanced equation.' },
+          { symbol: 'M', meaning: 'The product’s molar mass, in grams per mole.' }
+        ],
+        note: 'cₚ ÷ cᵣ is the mole ratio between product and reactant straight from the balanced equation — it is not always 1, so skipping it (treating moles of reactant as equal to moles of product) is a common source of error.'
+      },
+      workedExample: {
+        intro: 'N₂ + 3H₂ → 2NH₃. Starting with 6 mol of H₂ as the limiting reagent, what is the theoretical yield of ammonia, NH₃ (molar mass 14.007 + 3 × 1.008 = 17.031 g/mol)?',
+        rows: [
+          { label: 'Limiting reagent’s moles (n, H₂)', value: '6 mol' },
+          { label: 'Mole ratio (product ÷ reactant: cₚ ÷ cᵣ = 2 ÷ 3)', value: '0.6667' },
+          { label: 'Moles of NH₃ produced (6 × 0.6667)', value: '4 mol' },
+          { label: 'Theoretical yield (4 mol × 17.031 g/mol)', value: '68.124 g' }
+        ],
+        result: 'mₜ = 68.124 g of NH₃',
+        explanation: 'Every 3 mol of H₂ that reacts makes 2 mol of NH₃, so 6 mol of H₂ makes 6 × (2 ÷ 3) = 4 mol of NH₃. Multiplying by ammonia’s molar mass, 17.031 g/mol, gives a theoretical yield of 4 × 17.031 = 68.124 g — the most ammonia this reaction could possibly produce from that much hydrogen.'
+      },
+      watchOut: [
+        {
+          title: 'The reactant’s moles must be the limiting reagent’s, not just any reactant’s',
+          body: 'Using a reactant that is actually in excess overstates the result, because some of that reactant would be left over unreacted rather than all of it converting to product. Confirm the limiting reagent first.'
+        },
+        {
+          title: 'Do not skip the mole ratio',
+          body: 'Moles of reactant are not automatically equal to moles of product — only when both coefficients happen to match. N₂ + 3H₂ → 2NH₃ makes 2 mol of product for every 3 mol of H₂ consumed, a ratio of 2÷3, not 1.'
+        },
+        {
+          title: 'Theoretical yield assumes perfect conversion',
+          body: 'It is a ceiling, not a forecast. Side reactions, incomplete conversion, and losses during transfer or purification mean a real actual yield is almost always lower — see the percent yield calculator for comparing the two.'
+        },
+        {
+          title: 'Use the correct product’s molar mass, not the reactant’s',
+          body: 'The molar mass in this formula belongs to the product being formed, not to the limiting reagent — mixing the two gives a result in the wrong units entirely.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §4.4 "Reaction Yields" (theoretical and percent yield)', url: 'https://openstax.org/books/chemistry-2e/pages/4-4-reaction-yields' },
+        { label: 'OpenStax, Chemistry 2e, §4.3 "Reaction Stoichiometry" (mole-ratio calculations)', url: 'https://openstax.org/books/chemistry-2e/pages/4-3-reaction-stoichiometry' }
+      ]
+    },
+    inputs: [
+      { id: 'reactantMoles', label: 'Limiting reagent’s moles (mol)', type: 'number', placeholder: '6', defaultValue: 6, step: 0.01, min: 0 },
+      { id: 'reactantCoeff', label: 'Reactant’s coefficient', type: 'number', placeholder: '3', defaultValue: 3, step: 1, min: 0.0001 },
+      { id: 'productCoeff', label: 'Product’s coefficient', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0.0001 },
+      { id: 'productMolarMass', label: 'Product’s molar mass (g/mol)', type: 'number', placeholder: '17.031', defaultValue: 17.031, step: 0.001, min: 0 }
+    ],
+    seo: {
+      title: 'Theoretical Yield Calculator – Max Product from Stoichiometry',
+      description: 'Free theoretical yield calculator. From a limiting reagent’s moles, the balanced equation’s coefficients, and the product’s molar mass, find the maximum possible yield.',
+      faq: [
+        { question: 'How do I calculate theoretical yield?', answer: 'Multiply the limiting reagent’s moles by the mole ratio of product to reactant from the balanced equation, then multiply by the product’s molar mass: mₜ = n × (cₚ ÷ cᵣ) × M.' },
+        { question: 'What is the theoretical yield of NH₃ from 6 mol of H₂ in N₂ + 3H₂ → 2NH₃?', answer: '68.124 g. 6 mol of H₂ makes 6 × (2 ÷ 3) = 4 mol of NH₃, and 4 mol × 17.031 g/mol (NH₃’s molar mass) = 68.124 g.' },
+        { question: 'What is the theoretical yield of H₂O from 4 mol of H₂ in 2H₂ + O₂ → 2H₂O?', answer: '72.06 g. The mole ratio of product to reactant is 2 ÷ 2 = 1, so 4 mol of H₂ makes 4 mol of H₂O, and 4 × 18.015 g/mol (H₂O’s molar mass) = 72.06 g.' },
+        { question: 'Do I use the limiting reagent’s moles or its mass?', answer: 'This calculator takes moles directly. Starting from a mass instead, convert it to moles first with the moles-to-grams calculator, using the reactant’s own molar mass.' },
+        { question: 'Is theoretical yield the same as actual yield?', answer: 'No. Theoretical yield is the maximum possible under perfect conditions; actual yield is what a real experiment actually produces, almost always somewhat less. Their ratio, as a percentage, is the percent yield.' },
+        { question: 'Why does the mole ratio matter if the two coefficients are different?', answer: 'Because a balanced equation’s coefficients set how many moles of product form per mole of reactant consumed. N₂ + 3H₂ → 2NH₃ makes only 2 mol of NH₃ for every 3 mol of H₂ used, not a 1-to-1 swap.' },
+        { question: 'What if I don’t know which reactant is limiting yet?', answer: 'Work that out first with the limiting reagent calculator, which compares both reactants’ available moles against the balanced equation and tells you which one to use here.' }
+      ]
+    },
+    compute(values) {
+      return { theoreticalYield: values.reactantMoles * (values.productCoeff / values.reactantCoeff) * values.productMolarMass };
+    }
+  },
+  {
+    id: 'empirical-formula-calculator',
+    category: 'chemistry',
+    glyph: 'EF',
+    updatedAt: '2026-11-08',
+    aliases: ['empirical formula calculator', 'empirical formula from percent composition calculator', 'simplest formula calculator', 'empirical formula from mass calculator', 'percent composition to formula calculator'],
+    related: ['molar-mass-calculator', 'moles-to-grams-calculator', 'stoichiometry-calculator', 'mass-percent-calculator'],
+    title: 'Empirical Formula Calculator',
+    description: 'Find a compound’s empirical formula — the simplest whole-number ratio of its elements — from its percent composition by mass.',
+    example: 'A compound found to be 40.9% carbon, 4.58% hydrogen, and 54.5% oxygen by mass has the empirical formula C₃H₄O₃.',
+    content: {
+      lastReviewed: '2026-11-08',
+      concept: {
+        title: 'What is an empirical formula?',
+        paragraphs: [
+          'An empirical formula gives the simplest whole-number ratio of atoms of each element in a compound — it is not always the same as the true molecular formula. Ascorbic acid (vitamin C) has the molecular formula C₆H₈O₆, but its atoms are in a 6:8:6 ratio that simplifies to 3:4:3, so its empirical formula is C₃H₄O₃.',
+          'The empirical formula is found from a compound’s percent composition by mass, which a combustion analysis or similar lab measurement provides directly. Assuming a convenient 100 g sample makes each element’s mass percent numerically equal to its mass in grams, which converts to moles using that element’s atomic mass.',
+          'Dividing every element’s moles by whichever is smallest gives a ratio where the smallest element is exactly 1. If every other ratio already lands close to a whole number, that is the empirical formula. If not — a ratio like 1.33 or 1.5 — multiplying every ratio by the same small whole number (2, 3, or 4) clears the fraction, since a ratio is unchanged by scaling every part of it equally.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter up to three elements’ mass percent and pick each one from the periodic table list; leave an unused slot set to "None".',
+        steps: [
+          { name: 'Confirm the percentages', text: 'A percent composition from a lab report or a textbook problem, one entry per element.' },
+          { name: 'Pick each element', text: 'Selecting an element fills in its standard atomic weight automatically.' },
+          { name: 'Repeat for every element in the compound', text: 'Up to three elements, which covers the large majority of general-chemistry empirical formula problems.' },
+          { name: 'Read the subscripts', text: 'Each element’s whole-number subscript in the empirical formula appears below, along with the multiplier used to reach whole numbers.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Convert each element’s percent to moles (assuming a 100 g sample), divide by the smallest, then clear any remaining fraction by multiplying every ratio by the same small whole number.',
+        expression: 'moles of element = mass % ÷ atomic mass\nratio = moles ÷ (smallest element’s moles)\nsubscript = round(ratio × multiplier)',
+        terms: [
+          { symbol: 'mass %', meaning: 'That element’s percent of the compound’s total mass.' },
+          { symbol: 'atomic mass', meaning: 'The element’s standard atomic weight, in g/mol (IUPAC/CIAAW).' },
+          { symbol: 'multiplier', meaning: 'The smallest whole number (checked from 1 up to 6) that brings every element’s ratio within about 6% of a whole number — real lab-measured percentages rarely land on an exact fraction.' }
+        ],
+        note: 'This calculator supports up to three elements, which covers most general-chemistry problems. A compound with more than three distinct elements needs the same method done by hand with an extra term.'
+      },
+      workedExample: {
+        intro: 'A compound is 40.9% carbon, 4.58% hydrogen, and 54.5% oxygen by mass. What is its empirical formula? (Percentages here don’t sum to exactly 100.00 — a few hundredths of a percent of normal rounding in the three separate measurements.)',
+        rows: [
+          { label: 'Moles of C (40.9 ÷ 12.011)', value: '3.4052 mol' },
+          { label: 'Moles of H (4.58 ÷ 1.008)', value: '4.5437 mol' },
+          { label: 'Moles of O (54.5 ÷ 15.999)', value: '3.4065 mol' },
+          { label: 'Ratios (divide by the smallest, C’s 3.4052)', value: 'C: 1, H: 1.334, O: 1.0004' },
+          { label: 'Multiply every ratio by 3 to clear the 1.334', value: 'C: 3, H: 4.00, O: 3.00' }
+        ],
+        result: 'Empirical formula: C₃H₄O₃',
+        explanation: 'Carbon has the fewest moles, so every ratio is measured against it. Hydrogen’s ratio, 1.334, is not close to a whole number on its own — but 1.334 × 3 = 4.00, and the other two ratios stay at whole numbers when multiplied by 3 as well (1 × 3 = 3, 1.0004 × 3 ≈ 3.00). That gives whole-number subscripts of 3, 4, and 3 — C₃H₄O₃, which is also the real empirical formula of ascorbic acid (vitamin C), whose molecular formula C₆H₈O₆ is exactly twice that ratio.'
+      },
+      watchOut: [
+        {
+          title: 'An empirical formula is not always the molecular formula',
+          body: 'Percent composition alone can only ever give the simplest ratio. Telling C₃H₄O₃ apart from the true molecular formula C₆H₈O₆ (or C₉H₁₂O₉, or any other multiple) needs one more piece of information: the compound’s actual molar mass.'
+        },
+        {
+          title: 'A ratio close to a whole number may still need a multiplier',
+          body: 'A ratio of 1.334 is not "close enough" to 1 to round it — it is close to 4⁄3. Rounding every non-whole ratio too eagerly to the nearest integer, instead of checking whether a small multiplier clears the fraction cleanly, is the most common mistake in this calculation.'
+        },
+        {
+          title: 'Real percentages rarely sum to exactly 100%',
+          body: 'Measurement and rounding error in each separately reported percentage usually leaves the total a few tenths of a percent away from 100% — that alone is not a sign of an error in the data.'
+        },
+        {
+          title: 'This method assumes the percentages are by mass',
+          body: 'Percent composition by mass (what a combustion analysis reports) is what this calculator expects. A percent given by mole or by volume would need to be converted first, or the mole calculation below is meaningless.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §3.2 "Determining Empirical and Molecular Formulas"', url: 'https://openstax.org/books/chemistry-2e/pages/3-2-determining-empirical-and-molecular-formulas' },
+        { label: 'CIAAW (IUPAC Commission on Isotopic Abundances and Atomic Weights), Standard Atomic Weights', url: 'https://ciaaw.org/atomic-weights.htm' }
+      ]
+    },
+    inputs: [
+      { id: 'percent1', label: 'Element 1 mass percent', type: 'number', placeholder: '40.9', defaultValue: 40.9, step: 0.01, min: 0 },
+      { id: 'element1', label: 'Element 1', type: 'number', placeholder: '12.011', defaultValue: 12.011, step: 0.001, min: 0, options: ELEMENT_OPTIONS },
+      { id: 'percent2', label: 'Element 2 mass percent', type: 'number', placeholder: '4.58', defaultValue: 4.58, step: 0.01, min: 0 },
+      { id: 'element2', label: 'Element 2', type: 'number', placeholder: '1.008', defaultValue: 1.008, step: 0.001, min: 0, options: ELEMENT_OPTIONS },
+      { id: 'percent3', label: 'Element 3 mass percent', type: 'number', placeholder: '54.5', defaultValue: 54.5, step: 0.01, min: 0 },
+      { id: 'element3', label: 'Element 3', type: 'number', placeholder: '15.999', defaultValue: 15.999, step: 0.001, min: 0, options: ELEMENT_OPTIONS }
+    ],
+    breakdown: {
+      headline: 'subscript1',
+      headlineLabel: 'Element 1 subscript',
+      outputs: [
+        { id: 'subscript1', label: 'Element 1 subscript', format: 'integer' },
+        { id: 'subscript2', label: 'Element 2 subscript', format: 'integer' },
+        { id: 'subscript3', label: 'Element 3 subscript', format: 'integer' },
+        { id: 'multiplier', label: 'Multiplier used to clear fractions', format: 'integer' }
+      ],
+      groups: [{ inputs: ['percent1', 'element1', 'percent2', 'element2', 'percent3', 'element3'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'ratio1', label: 'Element 1 ratio' },
+          { from: 'ratio2', label: 'Element 2 ratio' },
+          { from: 'ratio3', label: 'Element 3 ratio' }
+        ],
+        title: 'Mole ratio, before clearing fractions'
+      }
+    },
+    seo: {
+      title: 'Empirical Formula Calculator – From Percent Composition',
+      description: 'Free empirical formula calculator. Enter up to three elements’ mass percent to find a compound’s simplest whole-number formula, with a worked example.',
+      faq: [
+        { question: 'How do I find an empirical formula from percent composition?', answer: 'Treat each percent as grams in a 100 g sample, divide by the element’s atomic mass to get moles, divide every result by the smallest one, then multiply all the ratios by the same small whole number if needed to reach whole numbers.' },
+        { question: 'What is the empirical formula of a compound that is 40.9% C, 4.58% H, and 54.5% O?', answer: 'C₃H₄O₃. The mole ratio comes out to 1 : 1.334 : 1.0004, and multiplying every ratio by 3 clears the 1.334 into a whole number, giving subscripts 3, 4, and 3.' },
+        { question: 'What is the empirical formula of a compound that is 40.0% C, 6.7% H, and 53.3% O?', answer: 'CH₂O. The mole ratio already comes out to whole numbers (1 : 2 : 1) with no multiplier needed — this is formaldehyde’s composition.' },
+        { question: 'Is the empirical formula always the same as the molecular formula?', answer: 'No. The empirical formula is only the simplest ratio. The actual molecular formula could be that same ratio, or any whole-number multiple of it — telling them apart needs the compound’s real molar mass as well.' },
+        { question: 'Why do I need to try multiplying by 2, 3, or more?', answer: 'Because the smallest element’s ratio is fixed at exactly 1, but another element’s true ratio might be a fraction like 4⁄3 or 3⁄2 that never rounds cleanly to a whole number on its own — only after scaling every ratio up together.' },
+        { question: 'Can I use masses instead of percentages?', answer: 'Yes — as long as all the masses were measured from the same sample, the ratio between them works out identically to using percentages, since percentages are just those same masses scaled to a 100 g basis.' },
+        { question: 'What if my compound has more than three elements?', answer: 'This calculator covers up to three, the most common case. A fourth element needs the same calculation done by hand: moles for every element, divide all of them by the smallest, then clear fractions with a shared multiplier.' }
+      ]
+    },
+    compute(values) {
+      const slots = [
+        { percent: values.percent1, mass: values.element1 },
+        { percent: values.percent2, mass: values.element2 },
+        { percent: values.percent3, mass: values.element3 }
+      ];
+      const moles = slots.map((slot) => (slot.mass > 0 ? slot.percent / slot.mass : 0));
+      const activeMoles = moles.filter((m, i) => slots[i].mass > 0 && m > 0);
+      const smallest = activeMoles.length ? Math.min(...activeMoles) : NaN;
+      const ratios = moles.map((m, i) => (slots[i].mass > 0 && smallest > 0 ? m / smallest : 0));
+      let multiplier = 1;
+      for (let m = 1; m <= 6; m++) {
+        const ok = ratios.every((r, i) => slots[i].mass === 0 || Math.abs(r * m - Math.round(r * m)) < 0.06);
+        if (ok) {
+          multiplier = m;
+          break;
+        }
+      }
+      const subscripts = ratios.map((r) => Math.round(r * multiplier));
+      return {
+        subscript1: subscripts[0],
+        subscript2: subscripts[1],
+        subscript3: subscripts[2],
+        ratio1: ratios[0],
+        ratio2: ratios[1],
+        ratio3: ratios[2],
+        multiplier
+      };
+    }
+  },
+  {
+    id: 'stoichiometry-calculator',
+    category: 'chemistry',
+    glyph: 'n:n',
+    updatedAt: '2026-11-08',
+    aliases: ['stoichiometry calculator', 'mole ratio calculator', 'mole to mole calculator', 'stoichiometric ratio calculator', 'balanced equation mole calculator'],
+    related: ['limiting-reagent-calculator', 'theoretical-yield-calculator', 'moles-to-grams-calculator', 'molar-mass-calculator'],
+    title: 'Stoichiometry Calculator (Mole Ratio)',
+    description: 'Convert moles of one species in a balanced equation to moles of another, using the mole ratio between their coefficients — the core move behind every stoichiometry problem.',
+    example: '2Al + 3I₂ → 2AlI₃: 2 mol of Al, reacted with excess I₂, corresponds to 2 × (3 ÷ 2) = 3 mol of I₂ consumed.',
+    solver: {
+      defaultTarget: 'speciesBMoles',
+      variables: [
+        { id: 'speciesAMoles', label: 'Species A, moles', symbol: 'nᴬ', dimension: 'amountOfSubstance', defaultValue: 2, defaultUnit: 'mol' },
+        { id: 'speciesACoeff', label: 'Species A coefficient', symbol: 'cᴬ', dimension: 'count', defaultValue: 1, defaultUnit: 'count' },
+        { id: 'speciesBCoeff', label: 'Species B coefficient', symbol: 'cᴮ', dimension: 'count', defaultValue: 3, defaultUnit: 'count' },
+        { id: 'speciesBMoles', label: 'Species B, moles', symbol: 'nᴮ', dimension: 'amountOfSubstance', defaultValue: 6, defaultUnit: 'mol' }
+      ],
+      solve: {
+        speciesBMoles: ({ speciesAMoles, speciesACoeff, speciesBCoeff }) => (speciesACoeff === 0 ? NaN : speciesAMoles * (speciesBCoeff / speciesACoeff)),
+        speciesAMoles: ({ speciesBMoles, speciesACoeff, speciesBCoeff }) => (speciesBCoeff === 0 ? NaN : speciesBMoles * (speciesACoeff / speciesBCoeff)),
+        speciesACoeff: ({ speciesAMoles, speciesBMoles, speciesBCoeff }) => (speciesBMoles === 0 ? NaN : (speciesAMoles * speciesBCoeff) / speciesBMoles),
+        speciesBCoeff: ({ speciesAMoles, speciesBMoles, speciesACoeff }) => (speciesAMoles === 0 ? NaN : (speciesBMoles * speciesACoeff) / speciesAMoles)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-08',
+      concept: {
+        title: 'What is a mole-ratio stoichiometry problem?',
+        paragraphs: [
+          'A balanced chemical equation is a statement about ratios: 2Al + 3I₂ → 2AlI₃ says that however much aluminum reacts, it reacts with 1.5 times as many moles of iodine (3 ÷ 2), and produces an equal number of moles of AlI₃ as the aluminum it came from (2 ÷ 2 = 1). Those coefficient ratios, called mole ratios or stoichiometric factors, are the bridge between "moles of one substance" and "moles of any other substance in the same equation."',
+          'This calculator covers that one core conversion — moles of a known species to moles of another, via the ratio of their coefficients — which is the building block every other stoichiometry calculation (theoretical yield, limiting reagent, titration) is made from. It deliberately does not balance equations: it takes the coefficients as already known, the same way a textbook stoichiometry problem gives you a balanced equation to start from.',
+          'Converting a mole amount to a mass, or starting from a mass instead of moles, is one extra step beyond this core ratio — see the moles-to-grams calculator for that half of the problem.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the known species’ moles and both coefficients from the balanced equation.',
+        steps: [
+          { name: 'Start from a balanced equation', text: 'The coefficients only give a correct mole ratio once the equation is balanced.' },
+          { name: 'Enter Species A’s known amount, in moles', text: 'Whatever quantity the problem already gives you.' },
+          { name: 'Enter both coefficients', text: 'Species A’s and Species B’s numbers in the balanced equation.' },
+          { name: 'Read Species B’s moles', text: 'The amount of the other species that corresponds to Species A’s amount, under this reaction’s ratio.' },
+          { name: 'Convert to a mass if needed', text: 'Multiply the resulting moles by that species’ molar mass (the moles-to-grams calculator) to get a mass instead.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The mole ratio between any two species in a balanced equation is simply the ratio of their coefficients.',
+        expression: 'nᴮ = nᴬ × (cᴮ ÷ cᴬ)',
+        terms: [
+          { symbol: 'nᴬ', meaning: 'Moles of the species whose amount is already known.' },
+          { symbol: 'nᴮ', meaning: 'Moles of the species being solved for.' },
+          { symbol: 'cᴬ, cᴮ', meaning: 'Species A’s and Species B’s coefficients in the balanced equation.' }
+        ],
+        note: 'This ratio holds regardless of whether A and B are both reactants, both products, or one of each — the balanced equation’s coefficients are what fix the ratio, not which side of the arrow a species is on.'
+      },
+      workedExample: {
+        intro: 'Aluminum reacts with iodine: 2Al + 3I₂ → 2AlI₃. Starting with 2 mol of Al (and plenty of iodine available), how many moles of I₂ react?',
+        rows: [
+          { label: 'Known amount (Al, nᴬ)', value: '2 mol' },
+          { label: 'Mole ratio (I₂ ÷ Al coefficients, cᴮ ÷ cᴬ = 3 ÷ 2)', value: '1.5' },
+          { label: 'Moles of I₂ (2 × 1.5)', value: '3 mol' }
+        ],
+        result: 'nᴮ = 3 mol of I₂',
+        explanation: 'The balanced equation needs 3 mol of I₂ for every 2 mol of Al. Scaling that ratio to the 2 mol of Al actually reacting gives 2 × (3 ÷ 2) = 3 mol of I₂ consumed.'
+      },
+      watchOut: [
+        {
+          title: 'The mole ratio only holds for a correctly balanced equation',
+          body: 'This calculator uses the coefficients exactly as entered; it does not check or balance the equation. A wrong coefficient (unbalanced equation) produces a confidently wrong mole ratio.'
+        },
+        {
+          title: 'This is moles to moles, not mass to mass',
+          body: 'Starting from a mass, convert to moles first with that species’ own molar mass (moles-to-grams calculator); after finding the answer in moles here, convert back to a mass with the other species’ molar mass if that is what the problem asks for.'
+        },
+        {
+          title: 'This does not check whether Species A is actually available in that amount',
+          body: 'If Species A is a reactant and the question is really "which reactant runs out first," that is a limiting reagent problem (see the limiting reagent calculator), not a plain mole-ratio conversion — this calculator assumes Species A’s full amount does react.'
+        },
+        {
+          title: 'Scoped to simple mole-ratio problems, not equation balancing',
+          body: 'Finding the coefficients themselves — balancing an unbalanced equation — is a separate skill this calculator does not perform. It expects a balanced equation’s coefficients as a given input.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §4.3 "Reaction Stoichiometry" (mole-to-mole calculations from a balanced equation)', url: 'https://openstax.org/books/chemistry-2e/pages/4-3-reaction-stoichiometry' },
+        { label: 'IUPAC Gold Book, "stoichiometry"', url: 'https://goldbook.iupac.org/terms/view/S06025' }
+      ]
+    },
+    inputs: [
+      { id: 'speciesAMoles', label: 'Species A moles (mol)', type: 'number', placeholder: '2', defaultValue: 2, step: 0.01, min: 0 },
+      { id: 'speciesACoeff', label: 'Species A coefficient', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0.0001 },
+      { id: 'speciesBCoeff', label: 'Species B coefficient', type: 'number', placeholder: '3', defaultValue: 3, step: 1, min: 0.0001 }
+    ],
+    seo: {
+      title: 'Stoichiometry Calculator – Mole-to-Mole Ratio',
+      description: 'Free stoichiometry calculator. Convert moles of one species to moles of another using a balanced equation’s coefficient ratio, with a worked example.',
+      faq: [
+        { question: 'How do I do a mole-to-mole stoichiometry calculation?', answer: 'Multiply the known species’ moles by the ratio of the other species’ coefficient to the known one’s: nᴮ = nᴬ × (cᴮ ÷ cᴬ). 2 mol of Al in 2Al + 3I₂ → 2AlI₃ gives 2 × (3 ÷ 2) = 3 mol of I₂.' },
+        { question: 'How many moles of O₂ react with 2 mol of C₃H₈ in C₃H₈ + 5O₂ → 3CO₂ + 4H₂O?', answer: '10 mol. The mole ratio of O₂ to C₃H₈ is 5 ÷ 1 = 5, so 2 mol of C₃H₈ needs 2 × 5 = 10 mol of O₂.' },
+        { question: 'How many moles of CO₂ form from 2 mol of C₃H₈ in the same reaction?', answer: '6 mol. The mole ratio of CO₂ to C₃H₈ is 3 ÷ 1 = 3, so 2 mol of C₃H₈ makes 2 × 3 = 6 mol of CO₂.' },
+        { question: 'Does this calculator balance chemical equations?', answer: 'No — it takes the coefficients of an already-balanced equation as a given input and converts between moles of two species using their ratio. Balancing the equation itself is a separate step done beforehand.' },
+        { question: 'Can I use this for two products, or two reactants, not just reactant-to-product?', answer: 'Yes. The mole ratio works between any two species in the same balanced equation — both reactants, both products, or one of each — as long as you use their correct coefficients.' },
+        { question: 'How do I convert the resulting moles to a mass?', answer: 'Multiply by that species’ molar mass. The moles-to-grams calculator does that conversion, and the molar mass calculator finds a molar mass from a chemical formula.' },
+        { question: 'Is this the same as finding a limiting reagent?', answer: 'No. This calculator assumes the known species’ full amount reacts and finds the matching amount of the other species. Finding out which of two reactants runs out first is the limiting reagent calculator’s job.' }
+      ]
+    },
+    compute(values) {
+      return { speciesBMoles: values.speciesAMoles * (values.speciesBCoeff / values.speciesACoeff) };
+    }
+  },
+  {
+    id: 'solution-concentration-calculator',
+    category: 'chemistry',
+    glyph: 'ppm',
+    updatedAt: '2026-11-08',
+    aliases: ['solution concentration calculator', 'ppm calculator', 'mg/l calculator', 'parts per million calculator', 'ppm to mg/l calculator', 'dilute solution concentration calculator'],
+    related: ['molarity-calculator', 'mass-percent-calculator', 'dilution-calculator', 'moles-to-grams-calculator'],
+    title: 'Solution Concentration Calculator (mg/L, ppm)',
+    description: 'Solve for a dilute solution’s mass concentration, the mass of solute, or the solution volume — concentration = mass of solute ÷ volume of solution, in mg/L or ppm.',
+    example: 'Dissolving 5 mg of a substance in 2 L of water gives a concentration of 2.5 mg/L — about 2.5 ppm, for a dilute water-based solution.',
+    solver: {
+      defaultTarget: 'concentration',
+      variables: [
+        { id: 'concentration', label: 'Concentration', symbol: 'ρ', dimension: 'massConcentration', defaultValue: 2.5, defaultUnit: 'mg/L' },
+        { id: 'soluteMass', label: 'Mass of solute', symbol: 'm', dimension: 'mass', defaultValue: 5, defaultUnit: 'mg' },
+        { id: 'volume', label: 'Solution volume', symbol: 'V', dimension: 'volume', defaultValue: 2, defaultUnit: 'L' }
+      ],
+      solve: {
+        concentration: ({ soluteMass, volume }) => (volume === 0 ? NaN : soluteMass / volume),
+        soluteMass: ({ concentration, volume }) => concentration * volume,
+        volume: ({ concentration, soluteMass }) => (concentration === 0 ? NaN : soluteMass / concentration)
+      },
+      visuals: [
+        {
+          type: 'logScale',
+          value: 'concentration',
+          min: -3,
+          max: 1,
+          ticks: ['0.001 mg/L', '0.01 mg/L', '0.1 mg/L', '1 mg/L', '10 mg/L'],
+          benchmarks: [
+            { label: 'EPA lead action level, drinking water', value: 0.015 },
+            { label: 'EPA nitrate limit, drinking water', value: 10 }
+          ],
+          title: 'How does that compare?',
+          valueLabel: 'Your concentration'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-08',
+      concept: {
+        title: 'Solution concentration in mg/L and ppm',
+        paragraphs: [
+          'This is mass concentration: how much mass of solute is dissolved per unit volume of solution, most often reported in milligrams per liter (mg/L) for dilute solutions such as drinking water, wastewater, and trace contaminants. It is a different way of expressing "how concentrated" than either molarity (moles per liter — see the molarity calculator) or mass percent (mass of solute ÷ mass of the whole solution — see the mass percent calculator); all three answer the same everyday question with a different unit, and converting between them needs extra information the others don’t.',
+          'Parts per million (ppm) is formally a mass fraction: mass of solute ÷ mass of solution, × 1,000,000 (the same shape as mass percent, just scaled by a million instead of a hundred). For a dilute, water-based solution, though, the solution’s density is so close to pure water’s 1.00 g/mL that its mass in grams and its volume in milliliters are numerically almost the same — which is exactly why the EPA’s drinking-water regulations state outright that "milligrams per liter are equivalent to parts per million" for its purposes, and this calculator follows that same convention.',
+          'That convention is specific to dilute aqueous solutions. It stops being reliable for a solution whose density notably differs from water’s — seawater, syrups, concentrated brines — where true mass-fraction ppm and mg/L start to diverge from each other.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of concentration, mass of solute, and solution volume; the third fills in automatically.',
+        steps: [
+          { name: 'Enter the mass of solute', text: 'Pick a mass unit — milligrams is typical for trace concentrations.' },
+          { name: 'Enter the solution’s volume', text: 'The total volume of the solution, not just the solvent added to it.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Read the concentration', text: 'Shown in mg/L by default; switch its unit to ppm for a dilute, water-based solution (the two read the same number).' },
+          { name: 'Compare against a benchmark', text: 'The scale below the result places your concentration against a couple of real EPA drinking-water limits.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Mass concentration rearranges to solve for mass of solute or solution volume as well.',
+        expression: 'ρ = m ÷ V\nm = ρ × V\nV = m ÷ ρ',
+        terms: [
+          { symbol: 'ρ', meaning: 'Mass concentration of the solute, typically in mg/L (numerically the same as ppm for a dilute aqueous solution).' },
+          { symbol: 'm', meaning: 'Mass of the solute dissolved.' },
+          { symbol: 'V', meaning: 'Volume of the whole solution.' }
+        ],
+        note: 'This is a mass-per-volume quantity, not a mass-per-mass one — unlike mass percent, it needs a volume measurement (a graduated cylinder or volumetric flask), not just two masses on a scale.'
+      },
+      workedExample: {
+        intro: '5 mg of a trace substance is dissolved into enough water to make 2 L of solution. What is its concentration?',
+        rows: [
+          { label: 'Mass of solute (m)', value: '5 mg' },
+          { label: 'Solution volume (V)', value: '2 L' },
+          { label: 'Concentration (ρ = 5 ÷ 2)', value: '2.5 mg/L' }
+        ],
+        result: 'ρ = 2.5 mg/L (≈ 2.5 ppm)',
+        explanation: 'Dividing the 5 mg of solute by the 2 L of solution gives 2.5 mg of solute per liter. Because this is a dilute water-based solution, that figure is also read directly as about 2.5 ppm by mass, the EPA drinking-water convention.'
+      },
+      watchOut: [
+        {
+          title: 'mg/L and ppm are only the same number for a dilute, water-based solution',
+          body: 'The equivalence relies on the solution’s density being close to 1.00 g/mL, true of water-based solutions. A dense solution — seawater, syrup, brine — has a mass-per-volume reading that is no longer the same number as its true mass-fraction ppm.'
+        },
+        {
+          title: 'This is a different concentration unit from molarity',
+          body: 'Molarity (mol/L) counts particles; mass concentration (mg/L) weighs them. Converting between the two needs the solute’s molar mass — a 2.5 mg/L solution of two different substances represents two different molarities, because they have different molar masses.'
+        },
+        {
+          title: 'This is also different from mass percent',
+          body: 'Mass percent compares the solute’s mass to the whole solution’s mass; mg/L compares it to the solution’s volume. The two only convert into each other if you also know the solution’s density — for anything other than a dilute water-based solution, don’t assume they’re numerically close.'
+        },
+        {
+          title: 'Use the solution’s total volume, not the solvent added',
+          body: 'Dissolving a solid changes a solution’s total volume slightly from the solvent volume poured in — V here is the volume of the finished solution, measured after mixing, the same convention the molarity and dilution calculators use.'
+        }
+      ],
+      references: [
+        { label: 'EPA, National Primary Drinking Water Regulations (states "milligrams per liter are equivalent to parts per million"; lead action level and nitrate limit)', url: 'https://www.epa.gov/ground-water-and-drinking-water/national-primary-drinking-water-regulations' },
+        { label: 'OpenStax, Chemistry 2e, §3.4 "Other Units for Solution Concentrations" (ppm and ppb defined as mass fractions)', url: 'https://openstax.org/books/chemistry-2e/pages/3-4-other-units-for-solution-concentrations' }
+      ]
+    },
+    inputs: [
+      { id: 'soluteMass', label: 'Mass of solute (mg)', type: 'number', placeholder: '5', defaultValue: 5, step: 0.001, min: 0 },
+      { id: 'volume', label: 'Solution volume (L)', type: 'number', placeholder: '2', defaultValue: 2, step: 0.001, min: 0 }
+    ],
+    seo: {
+      title: 'Solution Concentration Calculator (mg/L, ppm)',
+      description: 'Free solution concentration calculator. Solve concentration = mass of solute ÷ volume for mg/L or ppm, with EPA drinking-water benchmarks.',
+      faq: [
+        { question: 'How do I calculate solution concentration in mg/L?', answer: 'Divide the mass of solute, in milligrams, by the solution’s volume, in liters: ρ = m ÷ V. 5 mg dissolved into 2 L gives 5 ÷ 2 = 2.5 mg/L.' },
+        { question: 'Is 1 ppm the same as 1 mg/L?', answer: 'For a dilute, water-based solution, yes — the EPA’s own drinking-water regulations state they are equivalent, since water’s density (close to 1.00 g/mL) makes a milligram-per-liter reading and a true mass-fraction ppm come out to almost the same number. That equivalence does not hold for denser solutions, like seawater.' },
+        { question: 'What is the EPA’s action level for lead in drinking water?', answer: '0.015 mg/L (15 ppb) under the current Lead and Copper Rule; EPA’s revised rule lowers that to 0.010 mg/L starting November 2027.' },
+        { question: 'What is the EPA’s limit for nitrate in drinking water?', answer: '10 mg/L, measured as nitrogen — one of the National Primary Drinking Water Regulations’ maximum contaminant levels.' },
+        { question: 'How is mg/L different from molarity?', answer: 'Molarity (mol/L) measures moles of solute — a particle count. mg/L measures mass of solute directly. Converting between them needs the solute’s molar mass, since a milligram of one substance is a very different number of moles than a milligram of another.' },
+        { question: 'How is mg/L different from mass percent?', answer: 'Mass percent compares solute mass to total solution mass (both weighed on a scale); mg/L compares solute mass to solution volume (measured with glassware). They only convert into each other with the solution’s density as an extra input.' },
+        { question: 'What is ppb, and how does it relate to ppm?', answer: 'Parts per billion — 1,000 times smaller than ppm, used for trace concentrations too small to conveniently state in ppm. 1 ppm = 1,000 ppb, the same way 1 mg/L = 1,000 µg/L.' },
+        { question: 'Can concentration in mg/L ever be higher than the solute would weigh in the pure solvent alone?', answer: 'Not for a true solution — mg/L measures how much solute is dissolved per liter of the finished solution, which already accounts for both the solute and solvent together, the same convention molarity and mass percent use.' }
+      ]
+    },
+    compute(values) {
+      return { concentration: values.volume === 0 ? NaN : values.soluteMass / values.volume };
     }
   }
 ];

@@ -70,7 +70,8 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'combined-gas-law-calculator': ['volume2'], // pressure1, volume1 and temperature2 all 0 (their min) -> 0/0
   // baseConcentration and acidConcentration both 0 (their min) -> log10(0/0), undefined
   'pka-henderson-hasselbalch-calculator': ['pH'],
-  'percent-yield-calculator': ['percentYield'] // actualYield and theoreticalYield both 0 (their min) -> 0/0
+  'percent-yield-calculator': ['percentYield'], // actualYield and theoreticalYield both 0 (their min) -> 0/0
+  'solution-concentration-calculator': ['concentration'] // soluteMass and volume both 0 (their min) -> 0/0
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

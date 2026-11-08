@@ -407,13 +407,87 @@ build agent's judgment**, same as every run so far.
     numbers were still independently recomputed in a scratch script and individually checked before
     moving to the next, same discipline as run 2.
   - 229 calculators total after this run (224 + 5).
-- [ ] Chemistry run 4 (5), branch `step/46-wave-3-chemistry-run-4` — **IN PROGRESS**:
-  ## Progress
-  - [ ] reaction-half-life-calculator
-  - [ ] rate-constant-calculator
-  - [ ] arrhenius-equation-calculator
-  - [ ] molality-calculator
-  - [ ] mole-fraction-calculator
+- [x] Chemistry run 4 (5), branch `step/46-wave-3-chemistry-run-4`, PR #68 — **DONE** 2026-11-08:
+  - [x] reaction-half-life-calculator
+  - [x] rate-constant-calculator
+  - [x] arrhenius-equation-calculator
+  - [x] molality-calculator
+  - [x] mole-fraction-calculator
+  - Specific-heat sanity check (per this run's scope note): confirmed physics' `heat-calculator`
+    (Q = mcΔT, shipped in physics run 4) already serves a chemistry audience adequately — specific
+    heat is a single formula with no chemistry-specific variant, so no duplicate chemistry page was
+    built. Molality and mole fraction filled those two slots instead, as the plan anticipated.
+  - `reaction-half-life-calculator` (t½ = ln2 ÷ k, first-order kinetics) is a 2-variable solver,
+    explicitly distinct from physics' `radioactive-half-life-calculator` (nuclear decay, half-life
+    entered directly) per this file's dedupe note — both the concept section and a watch-out item
+    state the distinction, and the two pages are cross-linked both ways (added
+    `reaction-half-life-calculator` to `radioactive-half-life-calculator`'s `related` array in
+    `data/calculators/physics.ts`, swapping out `compound-interest-calculator` to keep it at 4).
+  - `rate-constant-calculator` is scoped to the first-order integrated rate law only
+    (k = ln([A]₀÷[A]) ÷ t), per the task's "keep scope tight" instruction — deriving k from a
+    measured half-life is already `reaction-half-life-calculator`'s job (solved in reverse), so
+    this calculator's distinct value is the concentration-vs-time direction instead. 4-variable
+    closed-form solver (initial concentration, concentration at t, time, k), with the implied
+    half-life as a bonus output tying the two calculators together.
+  - `arrhenius-equation-calculator` (k = A·e^(−Ea/RT)) is a 4-variable closed-form solver (k, A,
+    Ea, T). Reuses the exact R constant (8.31446261815324 J/(mol·K)) already used in
+    `ideal-gas-law-calculator`. Bonus output: the Boltzmann collision fraction, e^(−Ea÷RT).
+  - `molality-calculator` (b = mol ÷ kg solvent) is a 3-variable closed-form solver, explicitly
+    distinguished in content from molarity (mol/L of solution) and mass percent/solution
+    concentration (both use total solution mass) — content explains molality's temperature
+    independence (mass doesn't expand/contract with temperature, unlike volume), which is why it
+    underlies colligative-property formulas.
+  - `mole-fraction-calculator` (χ = mol component ÷ total mol) is a type-B breakdown widget with
+    three component-mole slots (the third defaulting to 0/unused for a two-component mixture),
+    not a solver — with 2 or 3 independent raw inputs feeding 3-4 derived fractions, there is no
+    single invertible equation to solve, the same reasoning that made `limiting-reagent-calculator`
+    and `empirical-formula-calculator` breakdown widgets in earlier runs. Donut visual shows each
+    component's share of the total.
+  - New `lib/units.ts` dimensions this run: `rateConstant` (base s⁻¹, alts min⁻¹/h⁻¹ — numerically
+    identical to `frequency`'s Hz but kept separate since chemists report rate constants in s⁻¹/
+    min⁻¹/h⁻¹, never Hz/kHz/MHz; also used for the Arrhenius equation's pre-exponential factor A,
+    which shares k's units for a first-order reaction), `molarEnergy` (base J/mol, alts kJ/mol,
+    cal/mol, kcal/mol — backs the Arrhenius equation's activation energy), and `molality` (base
+    mol/kg, alt mmol/kg — SI-coherent, same pattern as `concentration`/`molarMass`). Round-trip +
+    anchor tests added to `lib/units.spec.ts`, including a cross-dimension anchor for molality
+    (35.8 mol ÷ 2.00 kg = 17.9 mol/kg, OpenStax Example 11.3) matching `concentration`/`molarMass`'s
+    own precedent. `concentration`, `amountOfSubstance`, `mass` and `time` all reused elsewhere,
+    as the step file's dedupe section anticipated.
+  - Independent scratch script (`verify_run4.mjs`, scratchpad) recomputed every number before the
+    copy was written, including: reaction half-life forward/reverse round-trips; the rate-constant
+    calculator's k from the same real OpenStax H₂O₂ decomposition data table (Example 12.7) used
+    for the half-life worked example, confirming both calculators agree on k ≈ 0.1155 h⁻¹ (≈
+    3.21×10⁻⁵ s⁻¹) and t½ ≈ 6.00 h independently; the Arrhenius equation's forward computation and
+    all three reverse solves (Ea, A, T) at T = 298.15 K; the 10 K "roughly doubles" rate-of-reaction
+    rule-of-thumb figure (computed exactly: ×1.92, a 92.4% increase, not rounded to "doubles"); the
+    molality worked example (OpenStax Example 11.3, ethylene glycol/water); and the mole-fraction
+    worked example (OpenStax Example 9.15, O₂/N₂O gas mixture, χ(O₂) = 0.2518).
+  - Formulas verified directly against OpenStax Chemistry 2e (fetched, not recalled from memory):
+    §12.4 "Integrated Rate Laws" (first-order half-life and integrated rate law, plus the H₂O₂
+    data table from Example 12.7 and the half-life figure from Example 12.11), §12.5 "Collision
+    Theory" (the Arrhenius equation and R = 8.314 J/(mol·K)), §11.4 "Colligative Properties"
+    (molality's definition and Example 11.3), and §9.3 "Stoichiometry of Gaseous Substances,
+    Mixtures, and Reactions" (mole fraction and Example 9.15). Confirmed each page's exact
+    section title/number by a direct fetch before citing it, per run 3's parked-citation lesson.
+  - `npm test` (1,012 tests), `npm run lint` and `npm run build` all pass. New `KNOWN_NON_FINITE`
+    entries: `reaction-half-life-calculator` (`halfLife`, rateConstant 0 → infinite half-life, an
+    honest no-answer rather than NaN, same reasoning as `radioactive-half-life-calculator`'s own
+    decay-constant bonus output), `rate-constant-calculator` (`rateConstant`, all three inputs 0 →
+    log(0÷0)÷0), `arrhenius-equation-calculator` (`rateConstant`, all three inputs 0 → 0×e^(NaN)),
+    `molality-calculator` (`molality`, 0/0) and `mole-fraction-calculator` (all three mole
+    fractions, 0/0). Snapshot diff is additive-only (175 new lines, 0 removed, confirmed with
+    `git diff --stat`).
+  - Deviation from the usual curl-check: a pre-existing `next dev` process was already running on
+    port 3000 for this project directory (not started by this run), and Next.js refuses to run a
+    second dev server against the same project directory regardless of port — killing that PID was
+    correctly blocked by the permission system as "interfere with workloads," so it was left alone
+    rather than killed. Verified the 5 new pages instead by inspecting the static HTML
+    `next build` already produced (`.next/server/app/en/calculators/<id>.html`): H1, exactly one
+    JSON-LD script, and all eight section ids (concept/how-to-use/formula/worked-example/
+    watch-out/faq/references/related) present on every page, plus all 5 ids linked correctly from
+    the `/en/categories/chemistry` page and no "application error" text in any of the 5 files. No
+    new dev server was left running by this run.
+  - 234 calculators total after this run (229 + 5).
 - [ ] Chemistry run 5 (5): osmolarity, normality, titration, equilibrium-constant (Keq),
   gibbs-free-energy (ΔG = ΔH − TΔS)
 - [ ] Chemistry run 6 (5): density-of-solutions, serial-dilution, electron-configuration,

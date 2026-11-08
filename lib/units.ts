@@ -31,6 +31,9 @@ export type UnitDimension =
   | 'amountOfSubstance'
   | 'concentration'
   | 'molarMass'
+  | 'rateConstant'
+  | 'molarEnergy'
+  | 'molality'
   | 'massConcentration'
   | 'pH'
   | 'data'
@@ -312,6 +315,34 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
   molarMass: [
     { id: 'kg/mol', label: 'kg/mol', factor: 1 },
     { id: 'g/mol', label: 'g/mol', factor: 1e-3 }
+  ],
+  // A first-order rate constant, dimension 1/time (BIPM SI Brochure: 1 Hz = 1 s⁻¹, the same
+  // physical unit as `frequency` above) — kept as its own dimension because chemists report rate
+  // constants in s⁻¹, min⁻¹ or h⁻¹, never Hz/kHz/MHz. The min⁻¹/h⁻¹ factors are the reciprocals of
+  // `time`'s own minute (60 s) and hour (3600 s) factors. Also used for the Arrhenius equation's
+  // pre-exponential factor A, which shares k's units for a first-order reaction.
+  rateConstant: [
+    { id: 's-1', label: 's⁻¹', factor: 1 },
+    { id: 'min-1', label: 'min⁻¹', factor: 1 / 60 },
+    { id: 'h-1', label: 'h⁻¹', factor: 1 / 3600 }
+  ],
+  // SI-coherent derived unit J/mol (energy / amountOfSubstance, both SI base above) — the unit
+  // molar quantities like the Arrhenius equation's activation energy are reported in. kJ/mol is
+  // the practical display unit in general chemistry; cal/mol and kcal/mol use the same
+  // thermochemical calorie (CALORIE) as the `energy` dimension above.
+  molarEnergy: [
+    { id: 'J/mol', label: 'J/mol', factor: 1 },
+    { id: 'kJ/mol', label: 'kJ/mol', factor: 1000 },
+    { id: 'cal/mol', label: 'cal/mol', factor: CALORIE },
+    { id: 'kcal/mol', label: 'kcal/mol', factor: CALORIE * 1000 }
+  ],
+  // Molality, SI-coherent derived unit mol/kg (amountOfSubstance / mass, both SI base above), same
+  // pattern as `concentration` (mol/m³) and `molarMass` (kg/mol): b = n ÷ m stays a plain division
+  // with no stray unit factor. "Molal" is the common shorthand name for this unit (IUPAC symbol b,
+  // often written m in US general-chemistry texts).
+  molality: [
+    { id: 'mol/kg', label: 'mol/kg (molal)', factor: 1 },
+    { id: 'mmol/kg', label: 'mmol/kg', factor: 1e-3 }
   ],
   // Mass of solute per volume of solution, SI-coherent derived unit kg/m³ — the same physical
   // dimension as `density` above, but kept separate because its practical units (mg/L, ppm) are

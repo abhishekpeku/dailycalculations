@@ -41,8 +41,8 @@ describe('unit tables', () => {
   test('covers the dimensions the v2 rollout needs', () => {
     assert.deepEqual([...dimensions].sort(), [
       'acceleration', 'amountOfSubstance', 'angle', 'area', 'capacitance', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
-      'decibel', 'density', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'length', 'mass', 'massConcentration', 'molarMass', 'momentum',
-      'pH', 'pace', 'percent', 'power', 'pressure', 'resistance', 'specificHeat', 'speed', 'temperature', 'temperatureDelta', 'term', 'time',
+      'decibel', 'density', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'length', 'mass', 'massConcentration', 'molality', 'molarEnergy', 'molarMass', 'momentum',
+      'pH', 'pace', 'percent', 'power', 'pressure', 'rateConstant', 'resistance', 'specificHeat', 'speed', 'temperature', 'temperatureDelta', 'term', 'time',
       'voltage', 'volume'
     ]);
   });
@@ -265,6 +265,23 @@ describe('anchor values', () => {
     close(convert(18.015, 'molarMass', 'g/mol', 'kg/mol'), 0.018015);
     // water: 18.015 g of H2O is 1 mol, so mass(kg) / moles(mol) = molarMass(kg/mol) must equal 18.015 g/mol.
     close(toBase(18.015, 'mass', 'g') / toBase(1, 'amountOfSubstance', 'mol'), toBase(18.015, 'molarMass', 'g/mol'));
+  });
+  test('rate constant: 1 h⁻¹ = 1/3600 s⁻¹, 1 min⁻¹ = 1/60 s⁻¹ (reciprocals of time’s own hour/minute factors)', () => {
+    assert.equal(UNITS.rateConstant[0].id, 's-1');
+    close(toBase(3600, 'rateConstant', 'h-1'), 1);
+    close(toBase(60, 'rateConstant', 'min-1'), 1);
+    close(convert(60, 'rateConstant', 'min-1', 'h-1'), 3600);
+  });
+  test('molar energy: 1 kJ/mol = 1000 J/mol, 1 kcal/mol = 4184 J/mol', () => {
+    assert.equal(UNITS.molarEnergy[0].id, 'J/mol');
+    close(toBase(1, 'molarEnergy', 'kJ/mol'), 1000);
+    close(toBase(1, 'molarEnergy', 'kcal/mol'), 4184);
+  });
+  test('molality: 1 mol/kg = 1000 mmol/kg; moles of solute ÷ kg of solvent = molality with no stray factor', () => {
+    assert.equal(UNITS.molality[0].id, 'mol/kg');
+    close(convert(1, 'molality', 'mol/kg', 'mmol/kg'), 1000);
+    // 35.8 mol of solute in 2.00 kg of solvent is 17.9 mol/kg (OpenStax Chemistry 2e Example 11.3).
+    close(toBase(35.8, 'amountOfSubstance', 'mol') / toBase(2, 'mass', 'kg'), toBase(17.9, 'molality', 'mol/kg'));
   });
   test('mass concentration: mg/L and ppm are numerically identical (dilute-aqueous convention), 1 g/L = 1000 mg/L, 1 ppb = 1 µg/L', () => {
     assert.equal(UNITS.massConcentration[0].id, 'mg/L');

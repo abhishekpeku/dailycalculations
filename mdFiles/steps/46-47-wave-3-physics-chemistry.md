@@ -488,8 +488,94 @@ build agent's judgment**, same as every run so far.
     the `/en/categories/chemistry` page and no "application error" text in any of the 5 files. No
     new dev server was left running by this run.
   - 234 calculators total after this run (229 + 5).
-- [ ] Chemistry run 5 (5): osmolarity, normality, titration, equilibrium-constant (Keq),
-  gibbs-free-energy (ΔG = ΔH − TΔS)
+- [x] Chemistry run 5 (5), branch `step/46-wave-3-chemistry-run-5`, PR #69 — **DONE (open, awaiting merge)** 2026-11-08:
+  - [x] osmolarity-calculator
+  - [x] normality-calculator
+  - [x] titration-calculator
+  - [x] equilibrium-constant-calculator
+  - [x] gibbs-free-energy-calculator
+  - `osmolarity-calculator` (Osm = M × i) and `normality-calculator` (N = M × n) are both 3-variable
+    closed-form solvers with the identical "molarity × a dimensionless multiplier" shape as
+    `mass-percent-calculator`. Cross-linked both ways: normality's content explicitly frames itself
+    as "molarity scaled by a reaction-dependent factor" per the task's instruction, and osmolarity
+    cross-links to `molality-calculator` for the osmolarity-vs-osmolality distinction (same
+    molarity-vs-molality shape, stated as a watch-out item on both pages).
+  - `titration-calculator` is a 6-variable solver (2 concentrations, 2 volumes, 2 `fixed: true`
+    stoichiometric-coefficient inputs) generalizing C₁V₁ = C₂V₂ to C₁V₁×b = C₂V₂×a so a non-1:1
+    titration (H₂SO₄ + 2NaOH) scales correctly. Cross-linked to `dilution-calculator` both ways with
+    an explicit watch-out item on each page stating the distinction the task asked for: titration
+    reacts two different species to a stoichiometric endpoint; dilution adds solvent to the same
+    solute and conserves its moles.
+  - `equilibrium-constant-calculator` is a type-B breakdown widget (4 concentration+coefficient
+    slots — 2 reactants, 2 products — raised to their own coefficients and divided), not a solver,
+    since Kc = [C]^c[D]^d ÷ ([A]^a[B]^b) has no single invertible unknown the way the task's scope
+    note anticipated. An unused slot (e.g. a single-reactant reaction) defaults to coefficient 0,
+    contributing a factor of 1 (x^0 = 1, including 0^0 = 1 in JS) with no special-casing needed.
+    Kept to a general small-molecule equilibrium expression exactly as scoped — no Le Chatelier
+    shift-prediction was built.
+  - `gibbs-free-energy-calculator` (ΔG = ΔH − TΔS) is a 4-variable closed-form solver reusing
+    `molarEnergy` (run 4's dimension, shared with the Arrhenius equation's Eₐ) for ΔH and ΔG, plus a
+    new `molarEntropy` dimension for ΔS. T uses the existing `temperature` dimension, with the same
+    "must be absolute kelvin" watch-out pattern already used on `ideal-gas-law-calculator`/
+    `combined-gas-law-calculator`. A bonus output computes the "crossover temperature" (T where
+    ΔG = 0, T = ΔH ÷ ΔS) — content is careful to note this is an approximation from fixed-ΔH/ΔS
+    standard-state data, not the same thing as a substance's real measured phase-transition
+    temperature (worked example: water's computed crossover is 370.5 K / 97.3 °C, close to but not
+    373.15 K / 100 °C, and the content explains why they differ rather than conflating them).
+  - New `lib/units.ts` dimensions this run: `osmolarity` (base mOsm/L, alt Osm/L) and `normality`
+    (base meq/L, alt eq/L) — both kept separate from `concentration` rather than adding units to it,
+    so a plain molarity field's own unit menu never offers "Osm/L" or "eq/L" (same reasoning as
+    `massConcentration` being kept separate from `density` in an earlier run); and `molarEntropy`
+    (base J/(mol·K), alts kJ/(mol·K) and cal/(mol·K)), SI-coherent with `molarEnergy` ÷ `temperature`.
+    All three chosen so their defining formulas (Osm = M×i, N = M×n, ΔG = ΔH−TΔS) stay plain
+    arithmetic with no stray conversion factor — confirmed with a dedicated anchor test for each in
+    `lib/units.spec.ts` (e.g. 0.154 mol/L NaCl × i=2 = 308 mOsm/L; 0.1 mol/L H₂SO₄ × n=2 = 0.2 N).
+    `concentration`, `amountOfSubstance`, `volume`, `temperature` and `molarEnergy` all reused
+    elsewhere in this run, as the task's dimension-reuse hints anticipated.
+  - Citation note, in the same spirit as run 3's parked-citation lesson: OpenStax Chemistry 2e does
+    not use the term "osmolarity" or cover "normality" at all (confirmed by direct fetch of §11.4
+    "Colligative Properties," which gives Π = MRT and the van't Hoff factor i but never the word
+    "osmolarity," and of §4.3 "Reaction Stoichiometry," which has no titration content). For those
+    two pages, the primary sources are: StatPearls [Internet] (NCBI Bookshelf, NIH) "Normal Saline"
+    for the real-world 308 mOsm/L osmolarity figure (fetched directly, confirms 154 mEq/L Na⁺ and
+    154 mEq/L Cl⁻); NIST SP 811 Chapter 8 §8.6.5 (fetched directly) for normality's legacy/obsolete
+    status and the N symbol; and IUPAC's Gold Book "equivalent entity" (E02192) for the n-factor
+    definition — the Gold Book's own site returned HTTP 403 to a direct fetch for every URL tried
+    (including two URLs cited successfully in run 1), so that one citation's exact wording was
+    confirmed via a search-engine snippet of the indexed page rather than a live fetch; flagged here
+    rather than silently treated as fully fetch-verified. Titration and equilibrium constant are
+    both grounded in direct OpenStax fetches: §14.7 "Acid-Base Titrations" (confirmed exact title,
+    equivalence-point definition, and the Example 14.21 25.00 mL/0.100 M HCl-NaOH titration) and
+    §13.2 "Equilibrium Constants" (confirmed the Kc formula and the 2NO₂⇌N₂O₄ worked example, [NO₂]
+    = 0.016 M, [N₂O₄] = 0.042 M). Gibbs free energy is grounded in §16.4 "Free Energy" (confirmed
+    title, formula, spontaneity convention, and the water-vaporization worked example, ΔH = 44.01
+    kJ/mol, ΔS = 118.8 J/(mol·K), T = 298 K → ΔG ≈ 8.6 kJ/mol).
+  - Independent scratch script (`verify_run5.mjs`, scratchpad) recomputed every number before the
+    copy was written, including: the 0.9% NaCl → 308 mOsm/L osmolarity figure from first principles
+    (9 g/L ÷ 58.44 g/mol × 2 × 1000 = 307.99 ≈ 308, matching StatPearls' published figure exactly);
+    the H₂SO₄/KMnO₄/H₃PO₄ normality figures; the 1:1 titration check against OpenStax's own
+    Example 14.21 numbers and the H₂SO₄/NaOH 2:1 worked example (both directions, forward and
+    solving back for V₂); the 2NO₂⇌N₂O₄ Kc calculation (164.06, which rounds to OpenStax's published
+    1.6×10² at the two significant figures the 0.016/0.042 inputs actually support — not a
+    discrepancy, a correctly-propagated rounding, and the copy says so explicitly rather than
+    quietly picking one number); and the Gibbs free energy worked example and all three reverse
+    solves (ΔH, T, ΔS), plus the crossover-temperature figure.
+  - `npm test` (1,035 tests), `npm run lint` and `npm run build` all pass. New `KNOWN_NON_FINITE`
+    entry: `titration-calculator` (`concentration2`, analyte volume 0 at its own min → divide by
+    zero). Snapshot diff is additive-only (196 new lines, 0 removed, confirmed with `git diff
+    --stat`). No other calculator's edge case needed a new entry.
+  - Deviation from the usual curl-check, same root cause flagged in run 4's report: a pre-existing
+    `next dev` process (PID on port 3000, not started by this run) was already running against this
+    project directory, and `next build` crashed once with a corrupted `.next/dev/types/routes.d.ts`
+    type-check error, consistent with that leftover process writing to `.next` concurrently.
+    Deleting `.next` and rebuilding fixed it (same remedy noted in STATUS.md's existing Parked
+    note). Killing the PID itself was not attempted, per instruction. Verified the 5 new pages from
+    the static HTML `next build` produced (`.next/server/app/en/calculators/<id>.html`) instead: H1,
+    exactly one JSON-LD script, and all eight section ids (concept/how-to-use/formula/
+    worked-example/watch-out/faq/references/related) present on every page, all 5 ids linked
+    correctly from `/en/categories/chemistry`, and no "application error" text in any of the 5
+    files. No new dev server was left running by this run.
+  - 239 calculators total after this run (234 + 5).
 - [ ] Chemistry run 6 (5): density-of-solutions, serial-dilution, electron-configuration,
   buffer-capacity, beer-lambert-law (absorbance ↔ concentration)
 - [ ] Chemistry runs 7+ (as many 5-calculator runs as needed toward ~60 total — candidates:

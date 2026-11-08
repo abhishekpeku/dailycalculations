@@ -32,35 +32,64 @@ byline/trust row — all pulled directly from the real `lib/categoryTheme.ts` to
   chip) — the report's own content-cluster idea only works if a reader (and Google) can tell a
   guide from a calculator at a glance.
 
-## Open questions from the mockup's review box — not yet resolved
+## Second opinion (2026-11-08) — grounded in the real, live `mortgage-calculator` page
 
-The user approved the mockup's overall direction ("looks good") without going through each item
-individually. These stay open until a step file is actually written for this:
+A second external AI response (unlike the first, this one accurately quoted our actual live
+content — the exact FAQ figure "$2,000 a month at 6.5% over 30 years with $70,000 down supports
+about $386,422" is verbatim from `data/calculators/finance.ts`'s `mortgage-calculator` FAQ, and its
+description of the watch-out section is accurate — so this one is grounded, not generic) was asked
+specifically about this Guide and independently converged on the same architecture:
+
+- **Confirms question 5: build it as a separate page.** Its reasoning matches ours — the mortgage
+  calculator's job is "what will my payment be," the guide's job is "what can I afford," and a
+  shared page would blur both search intents. Treat question 5 as **resolved**: separate page.
+- **Resolves question 2 (CTA placement):** put the "jump to the calculator" CTA in **two** spots,
+  not one — the top quick-answer box (as the mockup already has) **and** inline right at the
+  "convert your target payment into a home price" step, the exact moment a reader has a number
+  ready to hand to the calculator. The mockup currently only has the top one; add the inline one
+  when this is actually built.
+- **Content structure refinement** for when a real spec gets written: quick answer → build the
+  monthly budget (take-home pay, existing debts, savings) → the 28/36 rule, framed explicitly as "a
+  common screening guideline, not a universal rule" (lenders vary by program/credit/compensating
+  factors — the mockup's FAQ already hedges this; keep that hedge) → subtract taxes/insurance/PMI/
+  HOA/maintenance to isolate the P&I budget → convert to a price (CTA here) → upfront cash needed
+  (down payment, closing costs, inspection, moving, reserve — the mockup's worked example skips
+  this; add it) → **three** worked examples (conservative/moderate/stretch, not just one) → FAQ
+  scoped to budgeting/DTI/reserves/upfront-cash, deliberately *not* payment mechanics (that FAQ
+  already lives on `mortgage-calculator`, don't duplicate it).
+- **Splits "home-affordability" into two things, which matches what we already have:** a guide
+  (budgeting framework, no numbers-crunching of its own) *and* a distinct calculator (income/debts/
+  down payment/rate/tax/insurance/PMI in, a price range out) — this is exactly the
+  `home-affordability-calculator` already added to `omni-strategy.md` §4.5's money-hub seed list.
+  No change needed there, just confirmation the split is right.
+- **Suggests a content cluster beyond just this one guide:** mortgage-calculator ↔ this guide ↔
+  home-affordability-calculator ↔ future PMI/escrow/closing-cost guides. The mockup's "related
+  guides — coming soon" placeholders (refinance, down-payment, rent-vs-buy) already anticipate
+  this; add **PMI explainer** and **how to read a Loan Estimate / closing-cost guide** as two more
+  candidate future guides when this category gets built out.
+
+## Open questions — still not resolved
 
 1. Is the "Guide" vs "Calculator" badge distinction loud enough, or does it need to show in the
    nav/breadcrumb too, not just a pill?
-2. Is the in-article "jump to the calculator" CTA placement right (in the quick-answer box), or
-   does it convert better inline inside the worked example?
-3. Ad slot count/placement for a widget-less content page — the mockup used 2 (same as
+2. Ad slot count/placement for a widget-less content page — the mockup used 2 (same as
    `omni-strategy.md` §5's calculator-page rule: one after the "result"-equivalent moment, one
    mid-article). Confirm that's still right once this is closer to actually shipping.
-4. **URL shape — the one decision that's hardest to reverse once pages are indexed:**
-   - `/guides/<slug>` (flat, own top-level section) — **proposed default**, matches D1–D6's "keep
-     URLs flat" precedent (`omni-strategy.md` §4.3's "URLs" row) and needs no relationship to any
-     one calculator (a guide like "Rent vs. buy" touches several).
-   - nested under a hub/calculator (`/calculators/mortgage-calculator/guides/<slug>`) — rejected
-     as a default: most guides aren't owned by exactly one calculator, and nesting creates a
-     canonical-ownership problem for e.g. a refinance guide that links to three different
-     calculators equally.
-5. Is a separate page even the right call, or should guide-depth content instead live as an
-   expandable section directly on the relevant calculator page(s)? **Proposed default: separate
-   page**, for two reasons — (a) a guide like "rent vs. buy" doesn't have one owning calculator to
-   attach to, and (b) a dedicated URL is what actually ranks for the "how much house can I afford"
-   style query, which is a different search intent than "mortgage calculator."
-
-Items 4 and 5 are marked **proposed default**, not decided — worth a quick explicit confirmation
-before the first real Guide page gets built, since URL shape in particular is expensive to change
-once indexed (same caution as every other D1–D6 URL decision).
+3. **URL shape — the one decision that's hardest to reverse once pages are indexed.** Now three
+   candidates on the table, not two:
+   - `/guides/<slug>` (flat, own top-level section) — **still the proposed default**, matches
+     D1–D6's "keep URLs flat" precedent (`omni-strategy.md` §4.3's "URLs" row) and needs no
+     relationship to any one calculator (a guide like "Rent vs. buy" touches several).
+   - nested under a hub/calculator (`/calculators/mortgage-calculator/guides/<slug>`) — still
+     rejected as a default: most guides aren't owned by exactly one calculator.
+   - **new, from the second opinion:** nested under the *category*, not a specific calculator
+     (`/calculators/finance/how-much-house-can-i-afford/`). This avoids the single-owning-calculator
+     problem (a hub can own several guides) but mixes a non-calculator content type into the
+     `/calculators/` path space that `data/calculators/`'s "one object = one page, one sitemap
+     entry" discipline currently owns exclusively — would need a clear rule for how
+     `generateStaticParams`/the sitemap tells calculators and guides apart under the same prefix.
+   Worth an explicit decision before the first real Guide page ships; not urgent while this stays
+   queued behind Wave 4 and the start of Wave 5.
 
 ## Architecture sketch (not started — for when this is scheduled)
 

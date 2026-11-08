@@ -226,6 +226,41 @@ exports[`compute() snapshots > area-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > arrhenius-equation-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "preExponentialFactor": 50000000000000,
+      "activationEnergy": 50000,
+      "temperature": 298.15
+    },
+    "outputs": {
+      "rateConstant": 86965.89844
+    }
+  },
+  "typical": {
+    "inputs": {
+      "preExponentialFactor": 75000000000000,
+      "activationEnergy": 75000,
+      "temperature": 447.22
+    },
+    "outputs": {
+      "rateConstant": 130419.4345
+    }
+  },
+  "edge": {
+    "inputs": {
+      "preExponentialFactor": 0,
+      "activationEnergy": 0,
+      "temperature": 0
+    },
+    "outputs": {
+      "rateConstant": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > average-calculator 1`] = `
 {
   "default": {
@@ -4790,6 +4825,38 @@ exports[`compute() snapshots > millimeters-to-inches-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > molality-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "molesSolute": 35.8,
+      "massSolvent": 2
+    },
+    "outputs": {
+      "molality": 17.9
+    }
+  },
+  "typical": {
+    "inputs": {
+      "molesSolute": 53.7,
+      "massSolvent": 3
+    },
+    "outputs": {
+      "molality": 17.9
+    }
+  },
+  "edge": {
+    "inputs": {
+      "molesSolute": 0,
+      "massSolvent": 0
+    },
+    "outputs": {
+      "molality": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > molar-mass-calculator 1`] = `
 {
   "default": {
@@ -4879,6 +4946,50 @@ exports[`compute() snapshots > molarity-calculator 1`] = `
     },
     "outputs": {
       "molarity": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > mole-fraction-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "componentAMoles": 2.83,
+      "componentBMoles": 8.41,
+      "componentCMoles": 0
+    },
+    "outputs": {
+      "moleFractionA": 0.2517793594,
+      "moleFractionB": 0.7482206406,
+      "moleFractionC": 0,
+      "totalMoles": 11.24
+    }
+  },
+  "typical": {
+    "inputs": {
+      "componentAMoles": 4.25,
+      "componentBMoles": 12.62,
+      "componentCMoles": 0
+    },
+    "outputs": {
+      "moleFractionA": 0.2519264967,
+      "moleFractionB": 0.7480735033,
+      "moleFractionC": 0,
+      "totalMoles": 16.87
+    }
+  },
+  "edge": {
+    "inputs": {
+      "componentAMoles": 0,
+      "componentBMoles": 0,
+      "componentCMoles": 0
+    },
+    "outputs": {
+      "moleFractionA": "NaN",
+      "moleFractionB": "NaN",
+      "moleFractionC": "NaN",
+      "totalMoles": 0
     }
   }
 }
@@ -6888,6 +6999,41 @@ exports[`compute() snapshots > radioactive-half-life-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > rate-constant-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "initialConcentration": 1000,
+      "concentration": 62.5,
+      "time": 86400
+    },
+    "outputs": {
+      "rateConstant": 0.00003209014725
+    }
+  },
+  "typical": {
+    "inputs": {
+      "initialConcentration": 1500,
+      "concentration": 93.8,
+      "time": 129600
+    },
+    "outputs": {
+      "rateConstant": 0.00002138931737
+    }
+  },
+  "edge": {
+    "inputs": {
+      "initialConcentration": 0,
+      "concentration": 0,
+      "time": 0
+    },
+    "outputs": {
+      "rateConstant": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > ratio-calculator 1`] = `
 {
   "default": {
@@ -6924,6 +7070,35 @@ exports[`compute() snapshots > ratio-calculator 1`] = `
       "d": "NaN",
       "simplifiedA": 0,
       "simplifiedB": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > reaction-half-life-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "rateConstant": 0.0000321
+    },
+    "outputs": {
+      "halfLife": 21593.37011
+    }
+  },
+  "typical": {
+    "inputs": {
+      "rateConstant": 0.0000482
+    },
+    "outputs": {
+      "halfLife": 14380.6469
+    }
+  },
+  "edge": {
+    "inputs": {
+      "rateConstant": 0
+    },
+    "outputs": {
+      "halfLife": "Infinity"
     }
   }
 }

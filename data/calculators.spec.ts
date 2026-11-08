@@ -71,7 +71,12 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   // baseConcentration and acidConcentration both 0 (their min) -> log10(0/0), undefined
   'pka-henderson-hasselbalch-calculator': ['pH'],
   'percent-yield-calculator': ['percentYield'], // actualYield and theoreticalYield both 0 (their min) -> 0/0
-  'solution-concentration-calculator': ['concentration'] // soluteMass and volume both 0 (their min) -> 0/0
+  'solution-concentration-calculator': ['concentration'], // soluteMass and volume both 0 (their min) -> 0/0
+  'reaction-half-life-calculator': ['halfLife'], // rateConstant 0 (its min) -> infinite half-life, honest no-answer
+  'rate-constant-calculator': ['rateConstant'], // initialConcentration, concentration and time all 0 (their min) -> log(0/0)/0, undefined
+  'arrhenius-equation-calculator': ['rateConstant'], // preExponentialFactor, activationEnergy and temperature all 0 (their min) -> 0 × e^(NaN) (0/0 inside the exponent), undefined
+  'molality-calculator': ['molality'], // molesSolute and massSolvent both 0 (their min) -> 0/0
+  'mole-fraction-calculator': ['moleFractionA', 'moleFractionB', 'moleFractionC'] // all three components' moles 0 (their min) -> 0/0
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

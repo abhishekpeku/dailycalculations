@@ -274,7 +274,12 @@ export const calculatorOrder: string[] = [
   'theoretical-yield-calculator',
   'empirical-formula-calculator',
   'stoichiometry-calculator',
-  'solution-concentration-calculator'
+  'solution-concentration-calculator',
+  'reaction-half-life-calculator',
+  'rate-constant-calculator',
+  'arrhenius-equation-calculator',
+  'molality-calculator',
+  'mole-fraction-calculator'
 ];
 
 const rank = (id: string) => {

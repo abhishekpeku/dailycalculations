@@ -2595,6 +2595,62 @@ exports[`compute() snapshots > energy-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > equilibrium-constant-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "concA": 0.016,
+      "coeffA": 2,
+      "concB": 0,
+      "coeffB": 0,
+      "concC": 0.042,
+      "coeffC": 1,
+      "concD": 0,
+      "coeffD": 0
+    },
+    "outputs": {
+      "keq": 164.0625,
+      "numerator": 0.042,
+      "denominator": 0.000256
+    }
+  },
+  "typical": {
+    "inputs": {
+      "concA": 0.024,
+      "coeffA": 3,
+      "concB": 0,
+      "coeffB": 0,
+      "concC": 0.063,
+      "coeffC": 2,
+      "concD": 0,
+      "coeffD": 0
+    },
+    "outputs": {
+      "keq": 287.109375,
+      "numerator": 0.003969,
+      "denominator": 0.000013824
+    }
+  },
+  "edge": {
+    "inputs": {
+      "concA": 0,
+      "coeffA": 0,
+      "concB": 0,
+      "coeffB": 0,
+      "concC": 0,
+      "coeffC": 0,
+      "concD": 0,
+      "coeffD": 0
+    },
+    "outputs": {
+      "keq": 1,
+      "numerator": 1,
+      "denominator": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > ev-charging-calculator 1`] = `
 {
   "default": {
@@ -3296,6 +3352,41 @@ exports[`compute() snapshots > gcf-calculator 1`] = `
     "outputs": {
       "gcf": 0,
       "numbersUsed": 2
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > gibbs-free-energy-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "enthalpy": 44010,
+      "temperature": 298,
+      "entropy": 118.8
+    },
+    "outputs": {
+      "gibbs": 8607.6
+    }
+  },
+  "typical": {
+    "inputs": {
+      "enthalpy": 66015,
+      "temperature": 447,
+      "entropy": 178.2
+    },
+    "outputs": {
+      "gibbs": -13640.4
+    }
+  },
+  "edge": {
+    "inputs": {
+      "enthalpy": 0,
+      "temperature": 0,
+      "entropy": 0
+    },
+    "outputs": {
+      "gibbs": 0
     }
   }
 }
@@ -5382,6 +5473,38 @@ exports[`compute() snapshots > normal-distribution-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > normality-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "molarity": 100,
+      "equivalenceFactor": 2
+    },
+    "outputs": {
+      "normality": 200
+    }
+  },
+  "typical": {
+    "inputs": {
+      "molarity": 150,
+      "equivalenceFactor": 3
+    },
+    "outputs": {
+      "normality": 450
+    }
+  },
+  "edge": {
+    "inputs": {
+      "molarity": 0,
+      "equivalenceFactor": 1
+    },
+    "outputs": {
+      "normality": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > odds-ratio-calculator 1`] = `
 {
   "default": {
@@ -5497,6 +5620,38 @@ exports[`compute() snapshots > one-rep-max-calculator 1`] = `
     },
     "outputs": {
       "oneRepMax": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > osmolarity-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "molarity": 154,
+      "particles": 2
+    },
+    "outputs": {
+      "osmolarity": 308
+    }
+  },
+  "typical": {
+    "inputs": {
+      "molarity": 231,
+      "particles": 3
+    },
+    "outputs": {
+      "osmolarity": 693
+    }
+  },
+  "edge": {
+    "inputs": {
+      "molarity": 0,
+      "particles": 1
+    },
+    "outputs": {
+      "osmolarity": 0
     }
   }
 }
@@ -8875,6 +9030,47 @@ exports[`compute() snapshots > tip-calculator 1`] = `
       "tipAmount": 0,
       "totalAmount": 0,
       "perPerson": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > titration-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "concentration1": 100,
+      "volume1": 0.00003,
+      "coefficient1": 2,
+      "volume2": 0.000025,
+      "coefficient2": 1
+    },
+    "outputs": {
+      "concentration2": 60
+    }
+  },
+  "typical": {
+    "inputs": {
+      "concentration1": 150,
+      "volume1": 0.000045,
+      "coefficient1": 3,
+      "volume2": 0.000038,
+      "coefficient2": 2
+    },
+    "outputs": {
+      "concentration2": 118.4210526
+    }
+  },
+  "edge": {
+    "inputs": {
+      "concentration1": 0,
+      "volume1": 0,
+      "coefficient1": 1,
+      "volume2": 0,
+      "coefficient2": 1
+    },
+    "outputs": {
+      "concentration2": "NaN"
     }
   }
 }

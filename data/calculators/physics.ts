@@ -2331,7 +2331,7 @@ export const physicsCalculators: CalculatorConfig[] = [
     glyph: 't½',
     updatedAt: '2026-11-06',
     aliases: ['half life calculator', 'radioactive decay calculator', 'half-life formula calculator', 'decay calculator', 'carbon dating calculator', 'exponential decay calculator'],
-    related: ['exponent-calculator', 'logarithm-calculator', 'compound-interest-calculator', 'heat-calculator'],
+    related: ['reaction-half-life-calculator', 'exponent-calculator', 'logarithm-calculator', 'heat-calculator'],
     title: 'Radioactive Half-Life Calculator',
     description: 'Solve the radioactive decay equation, N = N₀ × (½)^(t ÷ t½), for the amount remaining, the starting amount, elapsed time, or the half-life itself.',
     example: 'A 100 g sample of carbon-14 (half-life 5,730 years) decays to exactly 50 g after one half-life.',

@@ -1844,5 +1844,596 @@ export const chemistryCalculators: CalculatorConfig[] = [
     compute(values) {
       return { concentration: values.volume === 0 ? NaN : values.soluteMass / values.volume };
     }
+  },
+  {
+    id: 'reaction-half-life-calculator',
+    category: 'chemistry',
+    glyph: 't½',
+    updatedAt: '2026-11-08',
+    aliases: ['reaction half-life calculator', 'first order half life calculator', 'half life of a reaction calculator', 't1/2 = ln2/k calculator', 'chemical kinetics half-life calculator', 'rate constant to half life calculator'],
+    related: ['rate-constant-calculator', 'arrhenius-equation-calculator', 'radioactive-half-life-calculator', 'molarity-calculator'],
+    title: 'Reaction Half-Life Calculator (t½ = ln 2 ÷ k)',
+    description: 'Solve a first-order reaction’s half-life from its rate constant k, or the other way around — t½ = ln 2 ÷ k. Not the same formula as radioactive (nuclear) half-life.',
+    example: 'A first-order reaction with a rate constant of 3.21×10⁻⁵ s⁻¹ (hydrogen peroxide’s decomposition) has a half-life of about 6.00 hours.',
+    solver: {
+      defaultTarget: 'halfLife',
+      variables: [
+        { id: 'rateConstant', label: 'Rate constant', symbol: 'k', dimension: 'rateConstant', defaultValue: 3.21e-5, defaultUnit: 's-1' },
+        { id: 'halfLife', label: 'Half-life', symbol: 't½', dimension: 'time', defaultValue: 6, defaultUnit: 'h' }
+      ],
+      solve: {
+        halfLife: ({ rateConstant }) => (rateConstant === 0 ? Infinity : Math.LN2 / rateConstant),
+        rateConstant: ({ halfLife }) => (halfLife === 0 ? Infinity : Math.LN2 / halfLife)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-08',
+      concept: {
+        title: 'What is a reaction’s half-life?',
+        paragraphs: [
+          'For a first-order reaction, half-life is the time it takes for a reactant’s concentration to fall to half of whatever it started at — and that time is always the same, no matter how much (or little) you started with. That property is unique to first-order kinetics: t½ = ln(2) ÷ k depends only on the rate constant k, not on the starting concentration at all, which is why a single half-life value describes the whole reaction rather than just one run of it.',
+          'This is a completely different formula from radioactive (nuclear) half-life, even though both describe something falling to half its value and even share the same t½ = ln(2) ÷ k shape in reverse. Radioactive half-life is a fixed physical constant of an isotope’s nucleus, entered directly into the decay equation N = N₀ × (½)^(t ÷ t½) — see the radioactive half-life calculator. A reaction’s half-life is calculated from a measured rate constant k, and it changes whenever the reaction’s conditions (temperature, catalyst, solvent) change, because k itself changes with those conditions. Don’t carry a chemical kinetics half-life over to a nuclear decay problem, or vice versa.',
+          'Only first-order reactions have a half-life this simple. A second-order reaction’s half-life (t½ = 1 ÷ (k[A]₀)) does depend on the starting concentration, and a zero-order reaction’s half-life ([A]₀ ÷ 2k) does too — this calculator is specifically for the first-order case, by far the most common one covered in general chemistry.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in either the rate constant k or the half-life; the other fills in automatically.',
+        steps: [
+          { name: 'Know your reaction order', text: 'This formula only holds for a first-order reaction — one whose rate depends on a single reactant’s concentration to the first power.' },
+          { name: 'Enter the value you know', text: 'Type the rate constant (in s⁻¹, min⁻¹ or h⁻¹) or the half-life (in any time unit), and pick its unit.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 0.1155 h⁻¹ becomes 3.209×10⁻⁵ s⁻¹ instead of silently turning into 0.1155 s⁻¹.' },
+          { name: 'Read the result', text: 'The missing value appears in your chosen unit.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The first-order half-life formula rearranges to solve for either quantity.',
+        expression: 't½ = ln(2) ÷ k\nk = ln(2) ÷ t½',
+        terms: [
+          { symbol: 't½', meaning: 'Half-life: the time for the reactant’s concentration to fall by half.' },
+          { symbol: 'k', meaning: 'The reaction’s first-order rate constant, with units of 1 ÷ time (s⁻¹, min⁻¹ or h⁻¹).' },
+          { symbol: 'ln(2)', meaning: 'The natural logarithm of 2, about 0.6931 — fixed, not a measured quantity.' }
+        ],
+        note: 'This formula only applies to a first-order reaction. A different reaction order needs a different half-life formula — see the watch-out section below.'
+      },
+      workedExample: {
+        intro: 'Hydrogen peroxide decomposes in a first-order reaction with a rate constant of 3.21×10⁻⁵ s⁻¹ at a given temperature (the same figure OpenStax’s own kinetics chapter arrives at for this reaction). What is its half-life?',
+        rows: [
+          { label: 'Rate constant (k)', value: '3.21 × 10⁻⁵ s⁻¹' },
+          { label: 'Half-life (t½ = ln(2) ÷ k)', value: '0.693147 ÷ 0.0000321' }
+        ],
+        result: 't½ ≈ 21,593 s ≈ 5.998 h ≈ 6.00 hours',
+        explanation: 'Dividing ln(2) by the rate constant gives about 21,593 seconds, or roughly 5.998 hours — which rounds to the clean 6.00-hour figure this same hydrogen peroxide decomposition is normally quoted at once k is kept to three significant figures. Halving the rate constant to 1.605×10⁻⁵ s⁻¹ (a slower reaction, perhaps at a lower temperature) would double the half-life to about 12.0 hours, since t½ and k are inversely proportional.'
+      },
+      watchOut: [
+        {
+          title: 'This is not radioactive (nuclear) half-life',
+          body: 'Radioactive half-life is a fixed, measured property of an isotope’s nucleus, entered directly into N = N₀ × (½)^(t ÷ t½) — see the radioactive half-life calculator. A chemical reaction’s half-life is calculated from a rate constant k instead, and unlike a nuclear half-life, it changes whenever the reaction’s own conditions change. Don’t plug a nuclear half-life in here expecting a rate constant, and don’t plug this calculator’s t½ into the decay equation expecting it to behave like an isotope’s.'
+        },
+        {
+          title: 'Only valid for a first-order reaction',
+          body: 'This specific, simple formula — half-life independent of starting concentration — is a special property of first-order kinetics. Second-order and zero-order reactions have their own half-life formulas that do depend on the starting concentration, and plugging their rate constant into t½ = ln(2) ÷ k gives a wrong answer.'
+        },
+        {
+          title: 'A reaction’s half-life is not one fixed number the way an isotope’s is',
+          body: 'Changing the temperature, adding a catalyst, or switching solvents changes the rate constant k, which changes the half-life too (see the Arrhenius equation calculator for how k depends on temperature). Quoting a reaction’s half-life without its conditions is incomplete.'
+        },
+        {
+          title: 'Check the rate constant’s unit before converting',
+          body: 'A rate constant given in min⁻¹ or h⁻¹ needs its own matching time unit for t½, or a unit conversion first — mixing k in s⁻¹ with an assumed half-life in hours (or vice versa) without converting is the most common source of an answer that is off by a factor of 60 or 3,600.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §12.4 "Integrated Rate Laws" (first-order half-life, t½ = 0.693 ÷ k, and the hydrogen peroxide worked examples)', url: 'https://openstax.org/books/chemistry-2e/pages/12-4-integrated-rate-laws' },
+        { label: 'IUPAC Gold Book, "half-life"', url: 'https://goldbook.iupac.org/terms/view/H02732' }
+      ]
+    },
+    inputs: [{ id: 'rateConstant', label: 'Rate constant (s⁻¹)', type: 'number', placeholder: '0.0000321', defaultValue: 0.0000321, step: 0.0000001, min: 0 }],
+    seo: {
+      title: 'Reaction Half-Life Calculator – First-Order Kinetics',
+      description: 'Free reaction half-life calculator. Solve t½ = ln(2) ÷ k for a first-order reaction’s half-life or rate constant, with a worked example.',
+      faq: [
+        { question: 'What is the formula for a reaction’s half-life?', answer: 'For a first-order reaction, t½ = ln(2) ÷ k, where k is the rate constant. Unlike other reaction orders, this half-life does not depend on the starting concentration.' },
+        { question: 'What is the half-life of a first-order reaction with k = 3.21×10⁻⁵ s⁻¹?', answer: 'About 21,593 seconds, or roughly 5.998 hours (about 6.00 hours) — t½ = ln(2) ÷ 3.21×10⁻⁵.' },
+        { question: 'How do I find the rate constant from a half-life?', answer: 'k = ln(2) ÷ t½. A reaction with a 6.00-hour half-life has a rate constant of 0.693147 ÷ 6.00 ≈ 0.1155 h⁻¹, which is about 3.21×10⁻⁵ s⁻¹.' },
+        { question: 'Is a reaction’s half-life the same as radioactive half-life?', answer: 'No. Radioactive half-life is a fixed nuclear constant, entered directly. A chemical reaction’s half-life is calculated from a rate constant k and changes if the reaction’s conditions (temperature, catalyst) change — a different formula for a different kind of process, even though the shape t½ = ln(2) ÷ k is the same.' },
+        { question: 'Does this formula work for any reaction order?', answer: 'No — only first-order. Second-order half-life is t½ = 1 ÷ (k[A]₀) and zero-order half-life is [A]₀ ÷ 2k, both of which depend on the starting concentration unlike the first-order case.' },
+        { question: 'What happens to the half-life if the rate constant doubles?', answer: 'The half-life is cut in half, since t½ and k are inversely proportional — a reaction that happens twice as fast reaches half its starting concentration in half the time.' },
+        { question: 'How is the rate constant k related to the Arrhenius equation?', answer: 'The Arrhenius equation (k = A·e^(−Ea/RT)) describes how a rate constant itself depends on temperature. Combining the two means a reaction’s half-life shortens as temperature rises, since a higher k lowers t½.' }
+      ]
+    },
+    compute(values) {
+      return { halfLife: Math.LN2 / values.rateConstant };
+    }
+  },
+  {
+    id: 'rate-constant-calculator',
+    category: 'chemistry',
+    glyph: 'k',
+    updatedAt: '2026-11-08',
+    aliases: ['rate constant calculator', 'first order rate constant calculator', 'integrated rate law calculator', 'k = ln(a0/a)/t calculator', 'find rate constant from concentration calculator'],
+    related: ['reaction-half-life-calculator', 'arrhenius-equation-calculator', 'molarity-calculator', 'dilution-calculator'],
+    title: 'Rate Constant Calculator (First-Order)',
+    description: 'Find a first-order reaction’s rate constant k from the integrated rate law, ln([A]₀ ÷ [A]) = kt — or solve for concentration or time instead.',
+    example: 'Hydrogen peroxide falling from 1.000 M to 0.0625 M over 24.00 hours gives a rate constant of about 0.1155 h⁻¹.',
+    solver: {
+      defaultTarget: 'rateConstant',
+      variables: [
+        { id: 'initialConcentration', label: 'Initial concentration', symbol: '[A]₀', dimension: 'concentration', defaultValue: 1, defaultUnit: 'mol/L' },
+        { id: 'concentration', label: 'Concentration at time t', symbol: '[A]', dimension: 'concentration', defaultValue: 0.0625, defaultUnit: 'mol/L' },
+        { id: 'time', label: 'Elapsed time', symbol: 't', dimension: 'time', defaultValue: 24, defaultUnit: 'h' },
+        { id: 'rateConstant', label: 'Rate constant', symbol: 'k', dimension: 'rateConstant', defaultValue: 0.1155, defaultUnit: 'h-1' }
+      ],
+      solve: {
+        rateConstant: ({ initialConcentration, concentration, time }) =>
+          initialConcentration <= 0 || concentration <= 0 || time === 0 ? NaN : Math.log(initialConcentration / concentration) / time,
+        time: ({ initialConcentration, concentration, rateConstant }) =>
+          initialConcentration <= 0 || concentration <= 0 || rateConstant === 0 ? NaN : Math.log(initialConcentration / concentration) / rateConstant,
+        concentration: ({ initialConcentration, rateConstant, time }) => initialConcentration * Math.exp(-rateConstant * time),
+        initialConcentration: ({ concentration, rateConstant, time }) => concentration * Math.exp(rateConstant * time)
+      },
+      outputs: [
+        {
+          id: 'impliedHalfLife',
+          label: 'Implied half-life (t½ = ln 2 ÷ k)',
+          dimension: 'time',
+          unit: 'h',
+          compute: (si) => (si.rateConstant === 0 ? Infinity : Math.LN2 / si.rateConstant)
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-08',
+      concept: {
+        title: 'Finding a rate constant from concentration data',
+        paragraphs: [
+          'A first-order reaction’s integrated rate law, ln([A]₀ ÷ [A]) = kt, connects how a reactant’s concentration falls over time to the reaction’s rate constant k. Rearranged, k = ln([A]₀ ÷ [A]) ÷ t — given a starting concentration, a concentration measured at some later time, and how much time passed, the rate constant follows directly, with no calculus or graphing required for a single data pair.',
+          'This is scoped to first-order reactions specifically, the most common case in general chemistry and the one needed for the reaction half-life and Arrhenius equation calculators elsewhere on this site. Other reaction orders have their own integrated rate laws with different forms (second order: 1 ÷ [A] = kt + 1 ÷ [A]₀; zero order: [A] = −kt + [A]₀), each giving k a different physical shape and different units — don’t reuse this formula for a reaction that is not first order.',
+          'In a real lab setting, chemists usually plot ln[A] versus time across many measurements and read k off the slope, since that averages out measurement noise better than any single pair of points. This calculator instead takes exactly two concentration readings and the time between them — the quickest way to estimate k when a full data set and graph aren’t available, or to check a single textbook-style data pair by hand.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of initial concentration, concentration at time t, and elapsed time; the rate constant fills in automatically (or solve for any one of the four).',
+        steps: [
+          { name: 'Confirm the reaction is first order', text: 'This integrated rate law only applies to a reaction whose rate depends on one reactant’s concentration to the first power.' },
+          { name: 'Enter the two concentrations', text: 'The starting concentration [A]₀ and the concentration [A] measured after some time has passed, in any concentration unit.' },
+          { name: 'Enter the elapsed time', text: 'How long passed between the two concentration readings.' },
+          { name: 'Read the rate constant', text: 'k appears in your chosen unit (s⁻¹, min⁻¹ or h⁻¹), along with the half-life that rate constant implies.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one — useful for predicting a future concentration instead.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The first-order integrated rate law rearranges to solve for any of the four quantities.',
+        expression: 'ln([A]₀ ÷ [A]) = kt\nk = ln([A]₀ ÷ [A]) ÷ t\n[A] = [A]₀ × e^(−kt)\n[A]₀ = [A] × e^(kt)',
+        terms: [
+          { symbol: '[A]₀', meaning: 'The reactant’s concentration at the start (t = 0).' },
+          { symbol: '[A]', meaning: 'The reactant’s concentration at elapsed time t.' },
+          { symbol: 't', meaning: 'The time elapsed between the two concentration readings.' },
+          { symbol: 'k', meaning: 'The first-order rate constant, in 1 ÷ time (s⁻¹, min⁻¹ or h⁻¹).' }
+        ],
+        note: 'All four quantities are converted to a common time and concentration unit before solving and converted back afterward.'
+      },
+      workedExample: {
+        intro: 'Hydrogen peroxide’s concentration falls from 1.000 M to 0.0625 M over 24.00 hours (the same data OpenStax’s kinetics chapter uses to find this reaction’s rate constant graphically). What is k?',
+        rows: [
+          { label: 'Initial concentration ([A]₀)', value: '1.000 M' },
+          { label: 'Concentration at t = 24.00 h ([A])', value: '0.0625 M' },
+          { label: 'Ratio ([A]₀ ÷ [A])', value: '1.000 ÷ 0.0625 = 16.00' },
+          { label: 'Rate constant (k = ln(16.00) ÷ 24.00)', value: '2.7726 ÷ 24.00' }
+        ],
+        result: 'k ≈ 0.1155 h⁻¹ (about 3.21 × 10⁻⁵ s⁻¹)',
+        explanation: 'ln(16.00) ≈ 2.7726, and dividing by 24.00 hours gives k ≈ 0.1155 h⁻¹ — matching, to the rounding OpenStax itself uses, the 0.116 h⁻¹ the textbook finds by plotting ln[H₂O₂] against time and reading the slope across all five of its data points. That same k implies a half-life of ln(2) ÷ 0.1155 ≈ 6.00 hours, consistent with the concentration visibly halving every 6 hours in that same data (1.000 → 0.500 → 0.250 → 0.125 → 0.0625 M at 0, 6, 12, 18 and 24 hours).'
+      },
+      watchOut: [
+        {
+          title: 'Scoped to first-order reactions only',
+          body: 'This calculator’s formula, k = ln([A]₀ ÷ [A]) ÷ t, is specific to first-order kinetics. A second-order or zero-order reaction has a different integrated rate law, giving k different units and a different formula entirely — using this one on data from a reaction of a different order gives a confidently wrong k.'
+        },
+        {
+          title: 'A single pair of readings is less reliable than a full data set',
+          body: 'Any two real concentration measurements carry some experimental noise. A genuine lab determination of k plots ln[A] against time across many points and uses the line’s slope, which averages out that noise far better than picking just one "before" and "after" pair, as this calculator does.'
+        },
+        {
+          title: 'k’s units depend on this being first order — the pre-exponential factor A does too',
+          body: 'A first-order k (and the Arrhenius equation’s pre-exponential factor A, which shares k’s units for a first-order reaction) is a plain 1 ÷ time. For any other order, k’s units include a concentration term as well, and A’s units would need to match that different k — don’t assume a rate constant from one order carries over to another.'
+        },
+        {
+          title: 'This finds k from data — it does not predict k from temperature',
+          body: 'This calculator works backward from measured concentrations to a rate constant at whatever (fixed) temperature the data was collected at. Predicting how k itself changes with temperature is a separate relationship — see the Arrhenius equation calculator.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §12.4 "Integrated Rate Laws" (first-order integrated rate law and the hydrogen peroxide data table)', url: 'https://openstax.org/books/chemistry-2e/pages/12-4-integrated-rate-laws' },
+        { label: 'IUPAC Gold Book, "rate constant"', url: 'https://goldbook.iupac.org/terms/view/R05156' }
+      ]
+    },
+    inputs: [
+      { id: 'initialConcentration', label: 'Initial concentration (mol/m³)', type: 'number', placeholder: '1000', defaultValue: 1000, step: 0.1, min: 0 },
+      { id: 'concentration', label: 'Concentration at time t (mol/m³)', type: 'number', placeholder: '62.5', defaultValue: 62.5, step: 0.1, min: 0 },
+      { id: 'time', label: 'Elapsed time (s)', type: 'number', placeholder: '86400', defaultValue: 86400, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Rate Constant Calculator – First-Order Kinetics',
+      description: 'Free rate constant calculator. Find a first-order reaction’s k from two concentration readings using k = ln([A]₀÷[A])÷t, with a worked example.',
+      faq: [
+        { question: 'How do I find a rate constant from concentration data?', answer: 'For a first-order reaction, k = ln([A]₀ ÷ [A]) ÷ t. Concentration falling from 1.000 M to 0.0625 M over 24.00 hours gives k = ln(16.00) ÷ 24.00 ≈ 0.1155 h⁻¹.' },
+        { question: 'What are the units of a first-order rate constant?', answer: '1 ÷ time — commonly s⁻¹, min⁻¹ or h⁻¹. This is specific to first-order reactions; other orders give k different units.' },
+        { question: 'How do I predict a concentration at a future time?', answer: '[A] = [A]₀ × e^(−kt). With k ≈ 0.1155 h⁻¹ and a starting concentration of 1.000 M, the concentration after 10 hours would be about 1.000 × e^(−1.155) ≈ 0.315 M.' },
+        { question: 'Does this work for second-order or zero-order reactions?', answer: 'No. This calculator’s formula is specific to first-order kinetics. Second-order and zero-order reactions have different integrated rate laws, and using this formula on their data gives an incorrect rate constant.' },
+        { question: 'How is the rate constant related to half-life?', answer: 'For a first-order reaction, t½ = ln(2) ÷ k — shown as a bonus result above. A rate constant of 0.1155 h⁻¹ implies a half-life of about 6.00 hours.' },
+        { question: 'Is one pair of concentration readings as accurate as a full kinetics experiment?', answer: 'No — a real determination of k uses many data points plotted as ln[A] versus time and reads k from the line’s slope, which is more reliable than any single pair. This calculator is meant for a quick estimate or a textbook-style problem with only two readings given.' },
+        { question: 'Why does the pre-exponential factor A in the Arrhenius equation use the same units as k?', answer: 'Only because this calculator and the Arrhenius equation calculator both assume a first-order reaction. For a first-order process, A (the Arrhenius equation’s pre-exponential factor) and k share the same 1 ÷ time units; for any other reaction order, their units would need to match that order’s own k instead.' }
+      ]
+    },
+    compute(values) {
+      return { rateConstant: Math.log(values.initialConcentration / values.concentration) / values.time };
+    }
+  },
+  {
+    id: 'arrhenius-equation-calculator',
+    category: 'chemistry',
+    glyph: 'Ea',
+    updatedAt: '2026-11-08',
+    aliases: ['arrhenius equation calculator', 'k = ae^(-ea/rt) calculator', 'activation energy calculator', 'pre-exponential factor calculator', 'arrhenius plot calculator', 'temperature dependence of rate constant calculator'],
+    related: ['rate-constant-calculator', 'reaction-half-life-calculator', 'ideal-gas-law-calculator', 'molarity-calculator'],
+    title: 'Arrhenius Equation Calculator (k = Ae^(−Ea/RT))',
+    description: 'Solve the Arrhenius equation, k = A·e^(−Ea/RT), for the rate constant, pre-exponential factor, activation energy, or absolute temperature — given the other three.',
+    example: 'A reaction with Ea = 50.0 kJ/mol and A = 5.00×10¹³ s⁻¹ has a rate constant of about 8.70×10⁴ s⁻¹ at 25.00°C (298.15 K).',
+    solver: {
+      defaultTarget: 'rateConstant',
+      variables: [
+        { id: 'rateConstant', label: 'Rate constant', symbol: 'k', dimension: 'rateConstant', defaultValue: 8.6966e4, defaultUnit: 's-1' },
+        { id: 'preExponentialFactor', label: 'Pre-exponential factor', symbol: 'A', dimension: 'rateConstant', defaultValue: 5e13, defaultUnit: 's-1' },
+        { id: 'activationEnergy', label: 'Activation energy', symbol: 'Eₐ', dimension: 'molarEnergy', defaultValue: 50, defaultUnit: 'kJ/mol' },
+        { id: 'temperature', label: 'Temperature', symbol: 'T', dimension: 'temperature', defaultValue: 298.15, defaultUnit: 'K' }
+      ],
+      solve: {
+        rateConstant: ({ preExponentialFactor, activationEnergy, temperature }) =>
+          preExponentialFactor * Math.exp(-activationEnergy / (8.31446261815324 * temperature)),
+        preExponentialFactor: ({ rateConstant, activationEnergy, temperature }) =>
+          rateConstant <= 0 ? NaN : rateConstant * Math.exp(activationEnergy / (8.31446261815324 * temperature)),
+        activationEnergy: ({ rateConstant, preExponentialFactor, temperature }) =>
+          rateConstant <= 0 || preExponentialFactor <= 0 ? NaN : 8.31446261815324 * temperature * Math.log(preExponentialFactor / rateConstant),
+        temperature: ({ rateConstant, preExponentialFactor, activationEnergy }) => {
+          if (rateConstant <= 0 || preExponentialFactor <= 0) return NaN;
+          const ratio = Math.log(preExponentialFactor / rateConstant);
+          return ratio === 0 ? NaN : activationEnergy / (8.31446261815324 * ratio);
+        }
+      },
+      outputs: [
+        {
+          id: 'collisionFraction',
+          label: 'Fraction of collisions with enough energy (e^(−Ea÷RT))',
+          dimension: 'count',
+          unit: 'count',
+          compute: (si) => Math.exp(-si.activationEnergy / (8.31446261815324 * si.temperature))
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-08',
+      concept: {
+        title: 'What is the Arrhenius equation?',
+        paragraphs: [
+          'The Arrhenius equation, k = A·e^(−Ea/RT), describes why reaction rates are so sensitive to temperature. R is the molar gas constant (8.31446261815324 J/(mol·K), the same exact value used on the ideal gas law calculator), T is the absolute temperature, Ea is the activation energy — the minimum energy colliding molecules need to actually react — and A, the pre-exponential factor, accounts for how often molecules collide in the right orientation to react at all, even with enough energy.',
+          'The exponential term, e^(−Ea/RT), is the fraction of molecular collisions energetic enough to clear the activation-energy barrier at a given temperature — collision theory’s Boltzmann-distribution argument. Because Ea sits in the exponent, even a modest rise in temperature noticeably increases that fraction, which is the real reason reaction rates often roughly double for every 10°C rise, a common rule of thumb rather than an exact law.',
+          'A, the pre-exponential factor, is often treated as roughly constant across a modest temperature range for a given reaction, which is what lets chemists plot ln(k) against 1 ÷ T across several temperatures and read Ea off the resulting straight line’s slope — the standard lab method for measuring an activation energy, distinct from this calculator’s direct, single-point use of the equation.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of rate constant, pre-exponential factor, activation energy, and temperature; the fourth fills in automatically.',
+        steps: [
+          { name: 'Enter the three values you know', text: 'Rate constant and pre-exponential factor share a unit (s⁻¹, min⁻¹ or h⁻¹, for a first-order reaction); activation energy is typically in kJ/mol; temperature must be absolute.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 50 kJ/mol becomes 50,000 J/mol instead of silently turning into 50 J/mol.' },
+          { name: 'Read the result and the collision fraction', text: 'The missing value appears in your chosen unit, with the fraction of sufficiently energetic collisions shown underneath.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'k = A·e^(−Ea/RT) rearranges to solve for any one of the four quantities, given the other three.',
+        expression: 'k = A·e^(−Ea ÷ RT)\nA = k·e^(Ea ÷ RT)\nEa = RT·ln(A ÷ k)\nT = Ea ÷ (R·ln(A ÷ k))',
+        terms: [
+          { symbol: 'k', meaning: 'The rate constant at temperature T.' },
+          { symbol: 'A', meaning: 'The pre-exponential (frequency) factor — shares k’s units for a first-order reaction.' },
+          { symbol: 'Eₐ', meaning: 'Activation energy, the minimum energy a collision needs to react, in energy per mole (J/mol or kJ/mol).' },
+          { symbol: 'T', meaning: 'Absolute temperature, in kelvin — never a Celsius or Fahrenheit reading used directly.' },
+          { symbol: 'R', meaning: 'The molar gas constant, 8.31446261815324 J/(mol·K), exact.' }
+        ],
+        note: 'Every input is converted to SI (s⁻¹, J/mol, K) before solving and converted back afterward, so mixing kJ/mol with °C is handled automatically.'
+      },
+      workedExample: {
+        intro: 'A reaction has an activation energy of 50.0 kJ/mol and a pre-exponential factor of 5.00×10¹³ s⁻¹. What is its rate constant at 25.00°C (298.15 K)?',
+        rows: [
+          { label: 'Activation energy (Ea)', value: '50.0 kJ/mol = 50,000 J/mol' },
+          { label: 'Pre-exponential factor (A)', value: '5.00 × 10¹³ s⁻¹' },
+          { label: 'Temperature (T)', value: '298.15 K (25.00°C)' },
+          { label: 'Exponent (−Ea ÷ RT)', value: '−50,000 ÷ (8.31446261815324 × 298.15) = −20.1698' },
+          { label: 'Rate constant (k = A × e^(−20.1698))', value: '5.00 × 10¹³ × 1.739 × 10⁻⁹' }
+        ],
+        result: 'k ≈ 8.70 × 10⁴ s⁻¹',
+        explanation: 'Only about 1.74 × 10⁻⁹ — less than two in a billion — of collisions clear this reaction’s 50.0 kJ/mol barrier at 298.15 K, but multiplying that tiny fraction by the very large collision frequency (5.00 × 10¹³ s⁻¹) still gives a sizeable rate constant of about 8.70 × 10⁴ s⁻¹. Raising the temperature by just 10 K, to 308.15 K, increases k to about 1.67 × 10⁵ s⁻¹ — roughly 1.92 times faster, close to the common "rate roughly doubles for every 10°C" rule of thumb, for exactly this reaction’s activation energy.'
+      },
+      watchOut: [
+        {
+          title: 'Temperature must be absolute (kelvin), not Celsius or Fahrenheit',
+          body: 'Just like the ideal gas law, T in the Arrhenius equation must be an absolute temperature. Using a Celsius or Fahrenheit number directly in the exponent — instead of converting to kelvin first — gives a badly wrong answer, since the exponential term is extremely sensitive to T.'
+        },
+        {
+          title: 'Activation energy and R must use matching energy units',
+          body: 'R is defined in J/(mol·K). Plugging in Ea in kJ/mol without converting to J/mol first (or vice versa) throws the exponent off by a factor of 1,000, which — because it is inside an exponential — changes the resulting k by many orders of magnitude, not just a thousandfold. This calculator converts automatically.'
+        },
+        {
+          title: 'A and k share units only for a first-order reaction',
+          body: 'The pre-exponential factor A has the same units as the rate constant k, which is only a plain 1 ÷ time for a first-order reaction. For a reaction of a different order, k’s units include a concentration term, and A’s units change to match — don’t assume A is directly comparable in s⁻¹ across reactions of different orders.'
+        },
+        {
+          title: 'The Arrhenius equation is an empirical fit, not an exact physical law',
+          body: 'It describes most reactions well over a moderate temperature range, but A is not perfectly temperature-independent in every case, and some reactions (especially ones involving a change in mechanism, or very low temperatures) deviate from a straight-line Arrhenius plot. Treat results from a very wide temperature extrapolation with caution.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §12.5 "Collision Theory" (the Arrhenius equation, R = 8.314 J/(mol·K), and activation energy)', url: 'https://openstax.org/books/chemistry-2e/pages/12-5-collision-theory' },
+        { label: 'NIST CODATA, Molar Gas Constant', url: 'https://physics.nist.gov/cgi-bin/cuu/Value?r' },
+        { label: 'IUPAC Gold Book, "Arrhenius equation"', url: 'https://goldbook.iupac.org/terms/view/A00446' }
+      ]
+    },
+    inputs: [
+      { id: 'preExponentialFactor', label: 'Pre-exponential factor (s⁻¹)', type: 'number', placeholder: '5e13', defaultValue: 5e13, step: 1, min: 0 },
+      { id: 'activationEnergy', label: 'Activation energy (J/mol)', type: 'number', placeholder: '50000', defaultValue: 50000, step: 1, min: 0 },
+      { id: 'temperature', label: 'Temperature (K)', type: 'number', placeholder: '298.15', defaultValue: 298.15, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Arrhenius Equation Calculator – Solve for k, A, Ea, or T',
+      description: 'Free Arrhenius equation calculator. Solve k = A·e^(−Ea/RT) for rate constant, pre-exponential factor, activation energy, or temperature.',
+      faq: [
+        { question: 'What is the Arrhenius equation?', answer: 'k = A·e^(−Ea/RT), where k is the rate constant, A is the pre-exponential factor, Ea is the activation energy, R is the molar gas constant (8.31446261815324 J/(mol·K)), and T is the absolute temperature.' },
+        { question: 'How do I find the rate constant from activation energy and temperature?', answer: 'k = A·e^(−Ea÷RT). With Ea = 50.0 kJ/mol, A = 5.00×10¹³ s⁻¹ and T = 298.15 K, k ≈ 8.70×10⁴ s⁻¹.' },
+        { question: 'How do I find activation energy from two rate constants and temperatures?', answer: 'This calculator solves the single-point form, Ea = RT·ln(A÷k), given A directly. Finding Ea from two separate (k, T) pairs without knowing A uses a slightly different two-point form of the same equation — plotting ln(k) against 1÷T and reading Ea off the slope is the standard lab method.' },
+        { question: 'Why does rate roughly double for every 10°C?', answer: 'Because Ea sits in an exponent, a fixed temperature rise multiplies k by a factor that depends on Ea — for many common activation energies, that factor works out close to 2 across a 10°C span, though the exact figure varies by reaction (this calculator’s own worked example gives about 1.92×).' },
+        { question: 'Why must temperature be in kelvin?', answer: 'The exponential term is extremely sensitive to T, and kelvin is the only scale with a true zero. Using Celsius or Fahrenheit directly in the exponent — rather than converting to kelvin first — gives a badly wrong rate constant.' },
+        { question: 'What are typical pre-exponential factors?', answer: 'For a simple first-order gas-phase reaction, A is often in the 10¹²–10¹⁴ s⁻¹ range, roughly the frequency of molecular bond vibrations — the collision theory reasoning behind why A represents "how often, in the right orientation," separately from "how energetically," which Ea and the exponential term capture.' },
+        { question: 'What does the "fraction of collisions with enough energy" mean?', answer: 'It is e^(−Ea÷RT), the Boltzmann-distribution share of collisions energetic enough to clear the activation-energy barrier at that temperature. In the worked example, only about 1.74×10⁻⁹ of collisions qualify, yet the reaction still proceeds at a measurable rate because collisions themselves are extremely frequent.' }
+      ]
+    },
+    compute(values) {
+      return { rateConstant: values.preExponentialFactor * Math.exp(-values.activationEnergy / (8.31446261815324 * values.temperature)) };
+    }
+  },
+  {
+    id: 'molality-calculator',
+    category: 'chemistry',
+    glyph: 'b',
+    updatedAt: '2026-11-08',
+    aliases: ['molality calculator', 'molal concentration calculator', 'mol/kg calculator', 'moles per kg solvent calculator', 'b = mol/kg calculator'],
+    related: ['molarity-calculator', 'mass-percent-calculator', 'solution-concentration-calculator', 'mole-fraction-calculator'],
+    title: 'Molality Calculator (b = mol ÷ kg)',
+    description: 'Solve for molality, moles of solute, or mass of solvent — b = mol solute ÷ kg solvent — the concentration unit that doesn’t change with temperature.',
+    example: 'Dissolving 35.8 mol of ethylene glycol in 2.00 kg of water gives a molality of about 17.9 mol/kg (17.9 m).',
+    solver: {
+      defaultTarget: 'molality',
+      variables: [
+        { id: 'molality', label: 'Molality', symbol: 'b', dimension: 'molality', defaultValue: 17.9, defaultUnit: 'mol/kg' },
+        { id: 'molesSolute', label: 'Moles of solute', symbol: 'n', dimension: 'amountOfSubstance', defaultValue: 35.8, defaultUnit: 'mol' },
+        { id: 'massSolvent', label: 'Mass of solvent', symbol: 'mₛₒₗᵥ', dimension: 'mass', defaultValue: 2, defaultUnit: 'kg' }
+      ],
+      solve: {
+        molality: ({ molesSolute, massSolvent }) => (massSolvent === 0 ? NaN : molesSolute / massSolvent),
+        molesSolute: ({ molality, massSolvent }) => molality * massSolvent,
+        massSolvent: ({ molality, molesSolute }) => (molality === 0 ? NaN : molesSolute / molality)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-08',
+      concept: {
+        title: 'What is molality?',
+        paragraphs: [
+          'Molality is the number of moles of solute dissolved per kilogram of solvent: b = n ÷ m. It is written in mol/kg, often shortened to "m" (a lowercase, italic m, not to be confused with mass) and read as "molal" — a "0.5 m" solution has 0.5 mol of solute in every kilogram of solvent. The IUPAC symbol for molality is b, used on this page’s formula to avoid clashing with mass, m, in the same equation.',
+          'The key difference from molarity (moles per liter of solution, M = n ÷ V) is the denominator: molality divides by the mass of solvent alone, while molarity divides by the volume of the whole solution. Mass does not expand or contract with temperature, but volume does — so a solution’s molarity drifts very slightly as it warms or cools (the same amount of solute in a now-larger or now-smaller volume), while its molality stays exactly the same, since the solvent’s mass never changes. That temperature-independence is why molality, not molarity, is the concentration unit behind colligative-property calculations like freezing-point depression and boiling-point elevation.',
+          'Molality also only needs a mass of solvent, which is simpler to measure directly on a scale than preparing a solution to an exact final volume in a volumetric flask — though for that same reason, it is less common than molarity for everyday lab work where a specific total volume usually matters more.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of molality, moles of solute, and mass of solvent; the third fills in automatically.',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit — mol/kg or mmol/kg for molality; mol, mmol or µmol for moles of solute; any mass unit for the solvent.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 35.8 mol becomes 35,800 mmol instead of silently turning into 35.8 mmol.' },
+          { name: 'Read the result', text: 'The missing value appears immediately in your chosen unit.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The molality formula rearranges to solve for moles of solute or mass of solvent as well.',
+        expression: 'b = n ÷ mₛₒₗᵥ\nn = b × mₛₒₗᵥ\nmₛₒₗᵥ = n ÷ b',
+        terms: [
+          { symbol: 'b', meaning: 'Molality, in moles of solute per kilogram of solvent (mol/kg, "molal").' },
+          { symbol: 'n', meaning: 'Amount of solute, in moles — use the moles-to-grams calculator to convert from a measured mass.' },
+          { symbol: 'mₛₒₗᵥ', meaning: 'Mass of the solvent alone, in kilograms — not the mass of the whole solution.' }
+        ],
+        note: 'Molality uses only the solvent’s mass, measured before the solute is added — a different convention from molarity (solution volume) and mass percent (total solution mass).'
+      },
+      workedExample: {
+        intro: 'Automotive antifreeze is prepared from 2.22×10³ g of ethylene glycol (molar mass 62.07 g/mol) dissolved in 2.00×10³ g of water. What is the molality of ethylene glycol? (OpenStax Chemistry 2e, Example 11.3.)',
+        rows: [
+          { label: 'Mass of ethylene glycol', value: '2.22 × 10³ g' },
+          { label: 'Moles of ethylene glycol (n = 2,220 ÷ 62.07)', value: '35.8 mol' },
+          { label: 'Mass of water (solvent)', value: '2.00 × 10³ g = 2.00 kg' },
+          { label: 'Molality (b = 35.8 ÷ 2.00)', value: '17.9 mol/kg' }
+        ],
+        result: 'b ≈ 17.9 mol/kg (17.9 m)',
+        explanation: '2,220 g of ethylene glycol divided by its 62.07 g/mol molar mass gives about 35.8 mol. Dividing that by the 2.00 kg of water it is dissolved in gives a molality of 17.9 mol/kg — meaning every kilogram of water in this antifreeze mixture carries 17.9 mol of ethylene glycol, a figure that would stay exactly 17.9 m whether the antifreeze were measured at a cold garage floor or a hot engine bay, unlike its molarity.'
+      },
+      watchOut: [
+        {
+          title: 'Molality divides by solvent mass, not solution mass',
+          body: 'This is the opposite convention from mass percent and the solution concentration calculator, which both divide by the total solution’s mass (or volume). Using the combined solute-plus-solvent mass here instead of the solvent alone gives a molality that is too low.'
+        },
+        {
+          title: 'Molality is not molarity',
+          body: 'Molality (mol/kg of solvent) and molarity (mol/L of solution) are numerically close only for a dilute, water-based solution at room temperature, where a kilogram of water occupies very close to a liter. They diverge for a concentrated solution, a dense solvent, or any temperature where volume and mass no longer line up as closely.'
+        },
+        {
+          title: 'This is why molality is used for freezing-point depression and boiling-point elevation',
+          body: 'Those formulas rely on a concentration unit that doesn’t drift with temperature as the solution itself heats up or cools down and its volume changes slightly — molality, based on mass, holds steady where molarity would not.'
+        },
+        {
+          title: 'Converting mass of solute to moles needs the solute’s molar mass',
+          body: 'If a problem gives a mass of solute rather than moles directly, convert first with n = mass ÷ molar mass (the moles-to-grams calculator or molar mass calculator). Entering a mass of solute directly into the "moles of solute" field gives a number with the wrong units entirely.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §11.4 "Colligative Properties" (molality’s definition and the ethylene glycol worked example)', url: 'https://openstax.org/books/chemistry-2e/pages/11-4-colligative-properties' },
+        { label: 'IUPAC Gold Book, "molality"', url: 'https://goldbook.iupac.org/terms/view/M03970' }
+      ]
+    },
+    inputs: [
+      { id: 'molesSolute', label: 'Moles of solute (mol)', type: 'number', placeholder: '35.8', defaultValue: 35.8, step: 0.01, min: 0 },
+      { id: 'massSolvent', label: 'Mass of solvent (kg)', type: 'number', placeholder: '2', defaultValue: 2, step: 0.001, min: 0 }
+    ],
+    seo: {
+      title: 'Molality Calculator (b = mol ÷ kg Solvent)',
+      description: 'Free molality calculator. Solve b = mol solute ÷ kg solvent for molality, moles of solute, or mass of solvent, with a worked example.',
+      faq: [
+        { question: 'How do I calculate molality?', answer: 'Divide the moles of solute by the mass of solvent in kilograms: b = n ÷ mₛₒₗᵥ. 35.8 mol dissolved in 2.00 kg of solvent gives 35.8 ÷ 2.00 = 17.9 mol/kg.' },
+        { question: 'What is the difference between molality and molarity?', answer: 'Molality (b) divides moles of solute by the mass of solvent alone, in kg. Molarity (M) divides moles of solute by the volume of the whole solution, in L. Because mass doesn’t change with temperature but volume does, molality stays constant as a solution warms or cools, while molarity drifts slightly.' },
+        { question: 'How do I find moles of solute from molality?', answer: 'n = b × mₛₒₗᵥ. A 17.9 mol/kg (molal) solution in 2.00 kg of solvent contains 17.9 × 2.00 = 35.8 mol of solute.' },
+        { question: 'How do I find the mass of solvent from molality?', answer: 'mₛₒₗᵥ = n ÷ b. 35.8 mol of solute at a molality of 17.9 mol/kg needs 35.8 ÷ 17.9 = 2.00 kg of solvent.' },
+        { question: 'Why is molality used for freezing-point depression?', answer: 'Because it is based on mass rather than volume, molality does not change as a solution’s temperature (and therefore its volume) changes — exactly the stability colligative-property formulas like freezing-point depression and boiling-point elevation need.' },
+        { question: 'Is molality the same as "molal concentration"?', answer: 'Yes — "molal" is simply the adjective form of molality, and "m" (lowercase) is its common shorthand unit symbol, read as "molal," not to be confused with mass (m) or molarity (M).' },
+        { question: 'Does molality use the mass of the whole solution or just the solvent?', answer: 'Just the solvent, measured before the solute is added — a different convention from mass percent or solution concentration (mg/L), both of which use the total solution’s mass or volume.' }
+      ]
+    },
+    compute(values) {
+      return { molality: values.molesSolute / values.massSolvent };
+    }
+  },
+  {
+    id: 'mole-fraction-calculator',
+    category: 'chemistry',
+    glyph: 'χ',
+    updatedAt: '2026-11-08',
+    aliases: ['mole fraction calculator', 'molar fraction calculator', 'x = n/ntotal calculator', 'mole percent calculator', 'mole fraction of a mixture calculator'],
+    related: ['molality-calculator', 'molarity-calculator', 'ideal-gas-law-calculator', 'mass-percent-calculator'],
+    title: 'Mole Fraction Calculator',
+    description: 'Find each component’s mole fraction in a 2- or 3-component mixture — χ = moles of that component ÷ total moles of every component.',
+    example: 'A gas mixture of 2.83 mol O₂ and 8.41 mol N₂O has a mole fraction of 0.252 for the oxygen.',
+    content: {
+      lastReviewed: '2026-11-08',
+      concept: {
+        title: 'What is mole fraction?',
+        paragraphs: [
+          'Mole fraction (χ) states how much of a mixture’s total moles belong to one particular component: χ_A = moles of A ÷ total moles of every component. Unlike molarity or mass percent, it is a pure ratio of particle counts with no units at all, and every component’s mole fraction in a mixture always adds up to exactly 1 (or 100%, as a mole percent).',
+          'Mole fraction works the same way whether the mixture is a solution or a gas. For gases specifically, it is directly tied to partial pressure through Dalton’s law: a component’s partial pressure equals its mole fraction times the total pressure, which is why mole fraction shows up constantly in gas-mixture problems. For solutions, mole fraction is the concentration unit behind Raoult’s law (vapor-pressure lowering) and is also how the mole fractions of solvent and solute in a mixture relate to each other.',
+          'This calculator covers the common 2- and 3-component cases directly: enter each component’s moles, and every component’s mole fraction is computed at once. A mixture with more than three components follows the exact same formula with more terms, just beyond what this page’s three input slots cover.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the moles of each component in the mixture; leave Component C at 0 for a two-component mixture.',
+        steps: [
+          { name: 'Identify every component', text: 'List every distinct substance present in the mixture — up to three for this calculator.' },
+          { name: 'Enter each component’s moles', text: 'In mol, for every component present. Leave "Component C" at 0 if the mixture only has two components.' },
+          { name: 'Read each mole fraction', text: 'Every component’s mole fraction appears at once, along with the mixture’s total moles.' },
+          { name: 'Check they add up to 1', text: 'Every mole fraction in the mixture should sum to exactly 1 (or 100%) — a useful check on the inputs.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Each component’s mole fraction is its own moles divided by the total moles of every component present.',
+        expression: 'χ_A = n_A ÷ n_total\nn_total = n_A + n_B + n_C\nχ_A + χ_B + χ_C = 1',
+        terms: [
+          { symbol: 'χ_A', meaning: 'The mole fraction of component A — a plain ratio, always between 0 and 1.' },
+          { symbol: 'n_A', meaning: 'Moles of component A present in the mixture.' },
+          { symbol: 'n_total', meaning: 'The sum of every component’s moles in the mixture.' }
+        ],
+        note: 'For a two-component mixture, simply leave the third component’s moles at 0 — it drops out of the total and its own mole fraction comes out to exactly 0.'
+      },
+      workedExample: {
+        intro: 'A gas mixture contains 2.83 mol of O₂ and 8.41 mol of N₂O (nitrous oxide), with no third component. What is the mole fraction of each gas? (OpenStax Chemistry 2e, Example 9.15.)',
+        rows: [
+          { label: 'Moles of O₂', value: '2.83 mol' },
+          { label: 'Moles of N₂O', value: '8.41 mol' },
+          { label: 'Total moles (2.83 + 8.41)', value: '11.24 mol' },
+          { label: 'Mole fraction of O₂ (2.83 ÷ 11.24)', value: '0.2518' },
+          { label: 'Mole fraction of N₂O (8.41 ÷ 11.24)', value: '0.7482' }
+        ],
+        result: 'χ(O₂) ≈ 0.252, χ(N₂O) ≈ 0.748',
+        explanation: 'Dividing each gas’s own moles by the mixture’s total of 11.24 mol gives a mole fraction of about 0.252 for O₂ and 0.748 for N₂O — matching OpenStax’s own rounding for this partial-pressure example. The two mole fractions add to exactly 1, as they always must for a mixture with no missing components. Under Dalton’s law, O₂ would then supply 25.2% of this mixture’s total pressure.'
+      },
+      watchOut: [
+        {
+          title: 'Mole fraction is unitless, unlike molarity or molality',
+          body: 'Mole fraction is a plain ratio of particle counts (moles to moles), with no liter, kilogram, or gram anywhere in it — it is not interchangeable with molarity (mol/L) or molality (mol/kg) without extra information like density or molar mass.'
+        },
+        {
+          title: 'Every component’s mole fraction must sum to 1',
+          body: 'If the mole fractions in a finished calculation don’t add up to exactly 1 (allowing for rounding), a component’s moles were likely missed or mistyped — this is the fastest way to catch an input error.'
+        },
+        {
+          title: 'This is moles of particles, not mass',
+          body: 'A mixture that is 50% O₂ and 50% N₂O by mole is not 50% by mass, since the two gases have different molar masses. Converting a mole fraction to a mass percent needs each component’s molar mass as an extra step.'
+        },
+        {
+          title: 'This calculator covers up to three components',
+          body: 'A mixture with a fourth distinct component needs the same formula extended with one more term (n_D added to the total, and χ_D = n_D ÷ n_total) — the arithmetic beyond this page’s three input slots, but not a different method.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §9.3 "Stoichiometry of Gaseous Substances, Mixtures, and Reactions" (mole fraction and the O₂/N₂O worked example)', url: 'https://openstax.org/books/chemistry-2e/pages/9-3-stoichiometry-of-gaseous-substances-mixtures-and-reactions' },
+        { label: 'IUPAC Gold Book, "mole fraction"', url: 'https://goldbook.iupac.org/terms/view/M03986' }
+      ]
+    },
+    inputs: [
+      { id: 'componentAMoles', label: 'Component A, moles (mol)', type: 'number', placeholder: '2.83', defaultValue: 2.83, step: 0.01, min: 0 },
+      { id: 'componentBMoles', label: 'Component B, moles (mol)', type: 'number', placeholder: '8.41', defaultValue: 8.41, step: 0.01, min: 0 },
+      { id: 'componentCMoles', label: 'Component C, moles (mol) — leave at 0 for a two-component mixture', type: 'number', placeholder: '0', defaultValue: 0, step: 0.01, min: 0 }
+    ],
+    breakdown: {
+      headline: 'moleFractionA',
+      headlineLabel: 'Mole fraction of Component A',
+      outputs: [
+        { id: 'moleFractionA', label: 'Mole fraction of Component A', format: 'significant' },
+        { id: 'moleFractionB', label: 'Mole fraction of Component B', format: 'significant' },
+        { id: 'moleFractionC', label: 'Mole fraction of Component C', format: 'significant' },
+        { id: 'totalMoles', label: 'Total moles', format: 'significant' }
+      ],
+      groups: [{ inputs: ['componentAMoles', 'componentBMoles', 'componentCMoles'] }],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'componentAMoles', label: 'Component A' },
+          { from: 'componentBMoles', label: 'Component B' },
+          { from: 'componentCMoles', label: 'Component C' }
+        ],
+        center: 'totalMoles',
+        centerSub: 'total moles'
+      }
+    },
+    seo: {
+      title: 'Mole Fraction Calculator – 2- or 3-Component Mixture',
+      description: 'Free mole fraction calculator. Find χ = moles of a component ÷ total moles for a 2- or 3-component mixture, with a worked example.',
+      faq: [
+        { question: 'How do I calculate mole fraction?', answer: 'Divide one component’s moles by the total moles of every component: χ_A = n_A ÷ n_total. 2.83 mol of O₂ in a mixture totaling 11.24 mol gives a mole fraction of 2.83 ÷ 11.24 ≈ 0.252.' },
+        { question: 'What is the mole fraction of 2.83 mol O₂ mixed with 8.41 mol N₂O?', answer: 'About 0.252 for O₂ and 0.748 for N₂O. The total is 2.83 + 8.41 = 11.24 mol, so χ(O₂) = 2.83 ÷ 11.24 ≈ 0.252 and χ(N₂O) = 8.41 ÷ 11.24 ≈ 0.748.' },
+        { question: 'Do mole fractions always add up to 1?', answer: 'Yes, as long as every component in the mixture is accounted for — it is a direct consequence of dividing each component’s moles by the same total.' },
+        { question: 'How is mole fraction related to partial pressure?', answer: 'By Dalton’s law, a gas’s partial pressure equals its mole fraction times the mixture’s total pressure. A component with a mole fraction of 0.252 in a 10 atm mixture would have a partial pressure of 0.252 × 10 = 2.52 atm.' },
+        { question: 'Can mole fraction be converted to mass percent?', answer: 'Only with each component’s molar mass as extra information — mole fraction counts particles, mass percent weighs them, and the two only agree numerically if every component happens to share the same molar mass.' },
+        { question: 'What if my mixture has only two components?', answer: 'Leave "Component C" at 0 — it drops out of the total automatically, and its own mole fraction comes out to exactly 0, leaving a standard two-component result.' },
+        { question: 'What if my mixture has more than three components?', answer: 'The same formula extends with one more term per extra component (add its moles to the total, then divide as usual) — this calculator’s three input slots cover the common two- and three-component cases directly.' }
+      ]
+    },
+    compute(values) {
+      const total = values.componentAMoles + values.componentBMoles + values.componentCMoles;
+      return {
+        moleFractionA: values.componentAMoles / total,
+        moleFractionB: values.componentBMoles / total,
+        moleFractionC: values.componentCMoles / total,
+        totalMoles: total
+      };
+    }
   }
 ];

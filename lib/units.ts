@@ -31,6 +31,7 @@ export type UnitDimension =
   | 'amountOfSubstance'
   | 'concentration'
   | 'molarMass'
+  | 'massConcentration'
   | 'pH'
   | 'data'
   | 'fuelEconomy'
@@ -311,6 +312,21 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
   molarMass: [
     { id: 'kg/mol', label: 'kg/mol', factor: 1 },
     { id: 'g/mol', label: 'g/mol', factor: 1e-3 }
+  ],
+  // Mass of solute per volume of solution, SI-coherent derived unit kg/m³ — the same physical
+  // dimension as `density` above, but kept separate because its practical units (mg/L, ppm) are
+  // dilute-solution concentration units, not bulk densities. Base mg/L, factor 1. "ppm" and "ppb"
+  // here are the EPA/USGS water-quality convention: for a dilute AQUEOUS solution, whose density is
+  // within a fraction of a percent of pure water's 1.00 g/mL, 1 ppm by mass is numerically the same
+  // as 1 mg per liter of solution — so ppm and mg/L share a factor here, the same way `momentum`'s
+  // kg·m/s and N·s share one (two conventional names for one identical number), not an independent
+  // unit conversion. See content.watchOut on solution-concentration-calculator for the condition.
+  massConcentration: [
+    { id: 'mg/L', label: 'mg/L', factor: 1 },
+    { id: 'ppm', label: 'ppm (≈ mg/L, dilute aqueous)', factor: 1 },
+    { id: 'g/L', label: 'g/L', factor: 1000 },
+    { id: 'ug/L', label: 'µg/L', factor: 0.001 },
+    { id: 'ppb', label: 'ppb (≈ µg/L, dilute aqueous)', factor: 0.001 }
   ],
   // Unitless logarithmic scale (IUPAC Gold Book, "pH"): pH = −log₁₀[H⁺], pOH = −log₁₀[OH⁻]. The base
   // value is the pH/pOH number itself, same single-unit precedent as `decibel` and `percent`.

@@ -269,7 +269,12 @@ export const calculatorOrder: string[] = [
   'combined-gas-law-calculator',
   'ph-poh-calculator',
   'pka-henderson-hasselbalch-calculator',
-  'percent-yield-calculator'
+  'percent-yield-calculator',
+  'limiting-reagent-calculator',
+  'theoretical-yield-calculator',
+  'empirical-formula-calculator',
+  'stoichiometry-calculator',
+  'solution-concentration-calculator'
 ];
 
 const rank = (id: string) => {

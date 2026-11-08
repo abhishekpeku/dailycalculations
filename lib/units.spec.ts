@@ -41,7 +41,7 @@ describe('unit tables', () => {
   test('covers the dimensions the v2 rollout needs', () => {
     assert.deepEqual([...dimensions].sort(), [
       'acceleration', 'amountOfSubstance', 'angle', 'area', 'capacitance', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
-      'decibel', 'density', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'length', 'mass', 'molarMass', 'momentum',
+      'decibel', 'density', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'length', 'mass', 'massConcentration', 'molarMass', 'momentum',
       'pH', 'pace', 'percent', 'power', 'pressure', 'resistance', 'specificHeat', 'speed', 'temperature', 'temperatureDelta', 'term', 'time',
       'voltage', 'volume'
     ]);
@@ -265,6 +265,14 @@ describe('anchor values', () => {
     close(convert(18.015, 'molarMass', 'g/mol', 'kg/mol'), 0.018015);
     // water: 18.015 g of H2O is 1 mol, so mass(kg) / moles(mol) = molarMass(kg/mol) must equal 18.015 g/mol.
     close(toBase(18.015, 'mass', 'g') / toBase(1, 'amountOfSubstance', 'mol'), toBase(18.015, 'molarMass', 'g/mol'));
+  });
+  test('mass concentration: mg/L and ppm are numerically identical (dilute-aqueous convention), 1 g/L = 1000 mg/L, 1 ppb = 1 µg/L', () => {
+    assert.equal(UNITS.massConcentration[0].id, 'mg/L');
+    close(toBase(1, 'massConcentration', 'ppm'), 1);
+    close(convert(5, 'massConcentration', 'mg/L', 'ppm'), 5);
+    close(toBase(1, 'massConcentration', 'g/L'), 1000);
+    close(convert(1, 'massConcentration', 'ppb', 'ug/L'), 1);
+    close(convert(1000, 'massConcentration', 'ppb', 'ppm'), 1);
   });
 });
 

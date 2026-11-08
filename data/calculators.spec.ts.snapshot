@@ -2469,6 +2469,68 @@ exports[`compute() snapshots > emi-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > empirical-formula-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "percent1": 40.9,
+      "element1": 12.011,
+      "percent2": 4.58,
+      "element2": 1.008,
+      "percent3": 54.5,
+      "element3": 15.999
+    },
+    "outputs": {
+      "subscript1": 3,
+      "subscript2": 4,
+      "subscript3": 3,
+      "ratio1": 1,
+      "ratio2": 1.334322486,
+      "ratio3": 1.000367382,
+      "multiplier": 3
+    }
+  },
+  "typical": {
+    "inputs": {
+      "percent1": 61.35,
+      "element1": 18.017,
+      "percent2": 6.87,
+      "element2": 1.512,
+      "percent3": 81.75,
+      "element3": 23.999
+    },
+    "outputs": {
+      "subscript1": 3,
+      "subscript2": 4,
+      "subscript3": 3,
+      "ratio1": 1,
+      "ratio2": 1.334359517,
+      "ratio3": 1.000374302,
+      "multiplier": 3
+    }
+  },
+  "edge": {
+    "inputs": {
+      "percent1": 0,
+      "element1": 0,
+      "percent2": 0,
+      "element2": 0,
+      "percent3": 0,
+      "element3": 0
+    },
+    "outputs": {
+      "subscript1": 0,
+      "subscript2": 0,
+      "subscript3": 0,
+      "ratio1": 0,
+      "ratio2": 0,
+      "ratio3": 0,
+      "multiplier": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > energy-converter 1`] = `
 {
   "default": {
@@ -3995,6 +4057,62 @@ exports[`compute() snapshots > lens-mirror-equation-calculator 1`] = `
     },
     "outputs": {
       "imageDistance": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > limiting-reagent-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "molesA": 3,
+      "coeffA": 1,
+      "molesB": 6,
+      "coeffB": 3
+    },
+    "outputs": {
+      "limitingReagent": 1,
+      "perCoeffA": 3,
+      "perCoeffB": 2,
+      "usedA": 2,
+      "leftoverA": 1,
+      "usedB": 6,
+      "leftoverB": 0
+    }
+  },
+  "typical": {
+    "inputs": {
+      "molesA": 4.5,
+      "coeffA": 2,
+      "molesB": 9,
+      "coeffB": 5
+    },
+    "outputs": {
+      "limitingReagent": 1,
+      "perCoeffA": 2.25,
+      "perCoeffB": 1.8,
+      "usedA": 3.6,
+      "leftoverA": 0.9,
+      "usedB": 9,
+      "leftoverB": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "molesA": 0,
+      "coeffA": 1,
+      "molesB": 0,
+      "coeffB": 1
+    },
+    "outputs": {
+      "limitingReagent": 0,
+      "perCoeffA": 0,
+      "perCoeffB": 0,
+      "usedA": 0,
+      "leftoverA": 0,
+      "usedB": 0,
+      "leftoverB": 0
     }
   }
 }
@@ -7800,6 +7918,38 @@ exports[`compute() snapshots > slope-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > solution-concentration-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "soluteMass": 5,
+      "volume": 2
+    },
+    "outputs": {
+      "concentration": 2.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "soluteMass": 7.5,
+      "volume": 3
+    },
+    "outputs": {
+      "concentration": 2.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "soluteMass": 0,
+      "volume": 0
+    },
+    "outputs": {
+      "concentration": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > speed-converter 1`] = `
 {
   "default": {
@@ -8168,6 +8318,41 @@ exports[`compute() snapshots > steps-to-miles-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > stoichiometry-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "speciesAMoles": 2,
+      "speciesACoeff": 1,
+      "speciesBCoeff": 3
+    },
+    "outputs": {
+      "speciesBMoles": 6
+    }
+  },
+  "typical": {
+    "inputs": {
+      "speciesAMoles": 3,
+      "speciesACoeff": 2,
+      "speciesBCoeff": 5
+    },
+    "outputs": {
+      "speciesBMoles": 7.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "speciesAMoles": 0,
+      "speciesACoeff": 0.0001,
+      "speciesBCoeff": 0.0001
+    },
+    "outputs": {
+      "speciesBMoles": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > surface-area-calculator 1`] = `
 {
   "default": {
@@ -8354,6 +8539,44 @@ exports[`compute() snapshots > tdee-calculator 1`] = `
       "bmr": 0,
       "cuttingCalories": -500,
       "bulkingCalories": 300
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > theoretical-yield-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "reactantMoles": 6,
+      "reactantCoeff": 3,
+      "productCoeff": 2,
+      "productMolarMass": 17.031
+    },
+    "outputs": {
+      "theoreticalYield": 68.124
+    }
+  },
+  "typical": {
+    "inputs": {
+      "reactantMoles": 9,
+      "reactantCoeff": 5,
+      "productCoeff": 3,
+      "productMolarMass": 25.546
+    },
+    "outputs": {
+      "theoreticalYield": 137.9484
+    }
+  },
+  "edge": {
+    "inputs": {
+      "reactantMoles": 0,
+      "reactantCoeff": 0.0001,
+      "productCoeff": 0.0001,
+      "productMolarMass": 0
+    },
+    "outputs": {
+      "theoreticalYield": 0
     }
   }
 }

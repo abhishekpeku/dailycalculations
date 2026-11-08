@@ -340,9 +340,13 @@ build agent's judgment**, same as every run so far.
   e.g. angular momentum, moment of inertia (simple shapes), rotational kinetic energy, electric
   field strength, magnetic force on a current, simple harmonic motion period, Young's modulus /
   stress-strain, orbital velocity — verify each against a primary source same as every prior run)
-- [ ] Chemistry run 3 (5): limiting-reagent, theoretical-yield, empirical-formula,
-  stoichiometry (**scope narrowly to simple mole-ratio problems, not equation balancing** — see
-  the Scope warning above), solution-concentration (ppm/mg/L)
+- [ ] Chemistry run 3 (5), branch `step/46-wave-3-chemistry-run-3` — IN PROGRESS:
+  ## Progress
+  - [ ] limiting-reagent-calculator
+  - [ ] theoretical-yield-calculator
+  - [ ] empirical-formula-calculator
+  - [ ] stoichiometry-calculator (scope narrowly to simple mole-ratio problems, not equation balancing)
+  - [ ] solution-concentration-calculator (ppm/mg/L)
 - [ ] Chemistry run 4 (5): reaction-half-life (t½ = ln2/k — explicitly distinct from physics'
   radioactive-half-life-calculator, cross-link and restate the distinction), rate-constant,
   arrhenius-equation, molality, mole-fraction (molality/mole-fraction substituted in for

@@ -340,13 +340,73 @@ build agent's judgment**, same as every run so far.
   e.g. angular momentum, moment of inertia (simple shapes), rotational kinetic energy, electric
   field strength, magnetic force on a current, simple harmonic motion period, Young's modulus /
   stress-strain, orbital velocity — verify each against a primary source same as every prior run)
-- [ ] Chemistry run 3 (5), branch `step/46-wave-3-chemistry-run-3` — IN PROGRESS:
-  ## Progress
-  - [ ] limiting-reagent-calculator
-  - [ ] theoretical-yield-calculator
-  - [ ] empirical-formula-calculator
-  - [ ] stoichiometry-calculator (scope narrowly to simple mole-ratio problems, not equation balancing)
-  - [ ] solution-concentration-calculator (ppm/mg/L)
+- [x] Chemistry run 3 (5), branch `step/46-wave-3-chemistry-run-3`, PR #67 — **DONE** 2026-11-08:
+  - [x] limiting-reagent-calculator
+  - [x] theoretical-yield-calculator
+  - [x] empirical-formula-calculator
+  - [x] stoichiometry-calculator
+  - [x] solution-concentration-calculator
+  - `limiting-reagent-calculator` is a type-B breakdown widget (comparing two reactants' moles ÷
+    coefficient isn't a single invertible equation), same precedent as series-parallel-resistor-
+    calculator. Worked example: N₂ + 3H₂ → 2NH₃, 3 mol N₂ + 6 mol H₂ → H₂ limiting, 1 mol N₂ left
+    over. Uses `BreakdownOutput.labels` (headline is "Reactant A"/"Reactant B", a fixed lookup from
+    a 0/1 code, same precedent as the UK ring-size letter).
+  - `theoretical-yield-calculator` is a clean 5-variable closed-form solver (mₜ = n × (cₚ÷cᵣ) × M) —
+    every variable invertible given the other 4, same shape as combined-gas-law-calculator's 6
+    variables. Cross-linked both ways with `percent-yield-calculator` (added to its `related` and
+    referenced in its "How is theoretical yield calculated?" FAQ answer) per the task's instruction,
+    since percent-yield already takes theoretical yield as a given input and this calculator derives
+    it from stoichiometry instead.
+  - `empirical-formula-calculator` is a breakdown widget reusing `lib/atomicMasses.ts`'s
+    `ELEMENT_OPTIONS` (same pattern as `molar-mass-calculator`), up to 3 elements. Implements
+    OpenStax's own 3-step method (percent → moles via 100 g basis → divide by smallest → multiply by
+    a small whole number, 1-6, to clear a remaining fraction within a disclosed ~6% rounding
+    tolerance) as a single `compute()` — confirmed this is one self-contained step, not a
+    multi-step chain requiring a second page. Worked example (C 40.9%/H 4.58%/O 54.5% → C₃H₄O₃,
+    multiplier 3) double-checked against the real mass fractions of ascorbic acid (C₆H₈O₆).
+  - `stoichiometry-calculator` scoped exactly as instructed: a 4-variable closed-form mole-ratio
+    solver (nᴮ = nᴬ × cᴮ÷cᴬ), explicitly not equation balancing. **Scope-overlap note, not a
+    scope-creep problem**: this calculator's math is a strict subset of
+    `theoretical-yield-calculator`'s (which also converts to a mass via molar mass) — differentiated
+    by framing and inputs (plain mole-to-mole between any two species in an equation, reactant or
+    product, vs. specifically the limiting reagent's moles to a product's mass) and cross-linked to
+    both `moles-to-grams-calculator` (for the mass step) and `theoretical-yield-calculator`/
+    `limiting-reagent-calculator` (for the yield-specific framing) rather than duplicating either.
+    No equation-balancing, multi-step solve, or chaining was needed — confirmed in the final report.
+  - `solution-concentration-calculator` (ρ = m ÷ V, mg/L) needed a new `lib/units.ts` dimension,
+    `massConcentration` (base mg/L; g/L, µg/L, ppm, ppb as its other units) — `concentration`
+    (mol/L) and `percent` didn't fit, since this is mass-per-volume, not moles or a mass fraction.
+    `ppm`/`ppb` share mg/L's and µg/L's factors on the EPA drinking-water convention ("milligrams
+    per liter are equivalent to parts per million," confirmed by direct fetch of EPA's National
+    Primary Drinking Water Regulations page), stated as a convention specific to dilute aqueous
+    solutions in content, not as a universal unit identity — same discipline as the `momentum`
+    dimension's kg·m/s = N·s precedent. Benchmarks (EPA lead action level 0.015 mg/L, nitrate limit
+    10 mg/L) are both from that same EPA page, fetched directly. Cross-linked to `molarity-calculator`
+    and `mass-percent-calculator` both ways, with content explaining which unit fits which question.
+  - All formulas verified against OpenStax Chemistry 2e directly (fetched, not recalled from
+    memory): §4.3 "Reaction Stoichiometry" (mole-ratio method, confirms the 2Al+3I₂→2AlI₃-style
+    example), §4.4 "Reaction Yields" (limiting reactant and theoretical yield definitions), §3.2
+    "Determining Empirical and Molecular Formulas" (the 100 g basis / smallest-mole-ratio / clear-
+    the-fraction method), §3.4 "Other Units for Solution Concentrations" (ppm/ppb defined as mass
+    fractions ×10⁶/10⁹).
+  - **Found and parked** (pre-existing, not touched): two citations shipped in chemistry run 1
+    mismatch their section title and URL — `mass-percent-calculator`'s reference labels url
+    `.../3-3-molarity` as "§3.3 'Other Units for Solution Concentrations'" (that page is actually
+    §3.3 "Molarity"; "Other Units" is §3.4, url `.../3-4-other-units-for-solution-concentrations`),
+    and `dilution-calculator`'s reference labels that same `.../3-4-other-units-for-solution-
+    concentrations` url as "§3.4 'Dilutions and Titrations'" (confirmed by direct fetch: that page
+    is "Other Units for Solution Concentrations," not "Dilutions and Titrations" — the real
+    "Dilutions and Titrations" section's URL wasn't located). Added to STATUS.md's Parked list.
+  - `npm test` (989 tests), `npm run lint` and `npm run build` all pass. New `KNOWN_NON_FINITE` entry
+    for `solution-concentration-calculator` (`concentration`, soluteMass and volume both 0 -> 0/0).
+    Snapshot diff is additive-only (5 new entries). Curl-checked all 5 pages plus
+    `/categories/chemistry` (200, correct H1, JSON-LD, every section id present — concept/
+    how-to-use/formula/worked-example/watch-out/faq/references/related).
+  - Commits were 2, not 5 (progress-checklist commit, then all 5 calculators plus the units/test
+    changes written and verified together before the first full test run) — each calculator's
+    numbers were still independently recomputed in a scratch script and individually checked before
+    moving to the next, same discipline as run 2.
+  - 229 calculators total after this run (224 + 5).
 - [ ] Chemistry run 4 (5): reaction-half-life (t½ = ln2/k — explicitly distinct from physics'
   radioactive-half-life-calculator, cross-link and restate the distinction), rate-constant,
   arrhenius-equation, molality, mole-fraction (molality/mole-fraction substituted in for

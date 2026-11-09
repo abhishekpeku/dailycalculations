@@ -1,5 +1,12 @@
 import type { CalculatorConfig } from './types.ts';
 import { ELEMENT_OPTIONS } from '../../lib/atomicMasses.ts';
+import { ELECTRON_CONFIGS, ELEMENT_CONFIG_OPTIONS, findElementConfig } from '../../lib/electronConfigurations.ts';
+
+// Labels for electron-configuration-calculator's two text outputs: compute() returns the atomic
+// number as a numeric "code", and these lookups (BreakdownOutput.labels, same mechanism as a UK
+// ring-size letter) print the real configuration string instead of formatting it as a number.
+const FULL_CONFIG_LABELS = ELECTRON_CONFIGS.map((element) => ({ value: element.z, label: element.fullConfig }));
+const SHORTHAND_LABELS = ELECTRON_CONFIGS.map((element) => ({ value: element.z, label: element.shorthand }));
 
 export const chemistryCalculators: CalculatorConfig[] = [
   {
@@ -3049,6 +3056,609 @@ export const chemistryCalculators: CalculatorConfig[] = [
     },
     compute(values) {
       return { gibbs: values.enthalpy - values.temperature * values.entropy };
+    }
+  },
+  {
+    id: 'density-of-solutions-calculator',
+    category: 'chemistry',
+    glyph: 'ρ',
+    updatedAt: '2026-11-09',
+    aliases: ['density of solution calculator', 'solution density calculator', 'specific gravity calculator', 'density and specific gravity of a solution', 'mass percent from density calculator'],
+    related: ['density-calculator', 'mass-percent-calculator', 'molarity-calculator', 'dilution-calculator'],
+    title: 'Density of a Solution Calculator',
+    description: 'Find a solution’s density and specific gravity from the solute and solvent masses you combined and the solution’s actual measured volume — mixing is not perfectly volume-additive.',
+    example: 'Dissolving 10.00 g of NaCl into 90.00 g of water gives a 100.00 g solution that measures 93.4 mL, for a density of 1.0707 g/mL — a specific gravity of about 1.073.',
+    content: {
+      lastReviewed: '2026-11-09',
+      concept: {
+        title: 'What is the density of a solution?',
+        paragraphs: [
+          'Density is the ratio of a sample’s mass to its volume, ρ = m ÷ V (OpenStax Chemistry 2e §1.4). For a pure substance that is a fixed property; for a solution, it depends on exactly what was dissolved and how much — a sports drink, seawater, and plain tap water all have slightly different densities because they are different mixtures, even though each one is mostly water.',
+          'Specific gravity (also called relative density) is a solution’s density divided by the density of pure water at a reference temperature — a unitless ratio that says how much denser (or lighter) the solution is than water itself. A specific gravity of 1.07 means the solution is 7% denser than water; it is widely used in brewing, winemaking, battery-acid testing, and urinalysis precisely because it is easy to measure with a hydrometer and needs no units.',
+          'The one detail that trips people up: dissolving a solute in a solvent almost never gives a final volume equal to the solvent’s original volume plus the solute’s own volume. Molecules pack differently once mixed — sometimes the solution is denser and more compact than a simple sum would predict, sometimes less so. That is exactly why this calculator asks for the solution’s actually measured final volume, not a volume you would get by adding up the ingredients’ separate volumes.'
+        ]
+      },
+      howTo: {
+        intro: 'Weigh what you dissolved, weigh what you dissolved it in, then measure the finished solution’s actual volume.',
+        steps: [
+          { name: 'Weigh the solute', text: 'The mass of whatever was dissolved (salt, sugar, any solid or liquid solute), in grams.' },
+          { name: 'Weigh the solvent', text: 'The mass of the liquid it was dissolved into, before mixing, also in grams.' },
+          { name: 'Measure the final solution’s volume', text: 'After mixing, read the actual volume from a graduated cylinder or volumetric flask — not a calculation, a real measurement, since mixing changes volume.' },
+          { name: 'Read the density and specific gravity', text: 'Density (mass ÷ volume) and specific gravity (density ÷ water’s density) both appear immediately, along with the solute’s mass percent of the whole solution.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Density comes straight from the definition; specific gravity and mass percent are two more ratios built from the same three measurements.',
+        expression: 'ρ = (m_solute + m_solvent) ÷ V_solution\nSG = ρ ÷ ρ_water\nmass % = m_solute ÷ (m_solute + m_solvent) × 100',
+        terms: [
+          { symbol: 'ρ', meaning: 'The solution’s density, in grams per milliliter (g/mL) or kilograms per cubic meter (kg/m³).' },
+          { symbol: 'm_solute, m_solvent', meaning: 'The masses actually weighed out before mixing.' },
+          { symbol: 'V_solution', meaning: 'The final solution’s measured volume — not the solvent’s original volume.' },
+          { symbol: 'SG', meaning: 'Specific gravity: this density divided by pure water’s density (about 0.998 g/mL at 20°C, NIST Chemistry WebBook).' }
+        ],
+        note: 'There is no formula that predicts V_solution from the two masses alone — real mixtures are not perfectly volume-additive, which is the whole reason this calculator asks you to measure it rather than add up separate volumes.'
+      },
+      workedExample: {
+        intro: 'Dissolving 10.00 g of table salt (NaCl) into 90.00 g of water gives a solution whose final volume measures 93.4 mL. What is its density, mass percent, and specific gravity?',
+        rows: [
+          { label: 'Total mass (10.00 + 90.00)', value: '100.00 g' },
+          { label: 'Measured volume', value: '93.4 mL' },
+          { label: 'Density (100.00 ÷ 93.4)', value: '1.0707 g/mL' },
+          { label: 'Mass percent (10.00 ÷ 100.00 × 100)', value: '10.00%' },
+          { label: 'Specific gravity (1.0707 ÷ 0.99821)', value: '1.073' }
+        ],
+        result: 'ρ ≈ 1.0707 g/mL · SG ≈ 1.073',
+        explanation: 'The total mass (100.00 g) divided by the measured volume (93.4 mL) gives a density of 1.0707 g/mL — close to the CRC Handbook’s own published figure for a 10% w/w sodium chloride solution at 20°C. Dividing that by pure water’s own density (0.99821 g/mL at 20°C) shows the solution is about 7.3% denser than plain water.'
+      },
+      watchOut: [
+        {
+          title: 'Mixing is not volume-additive',
+          body: 'Combining 90.0 mL of water with however much volume the solute itself would occupy almost never gives the real final volume. Always measure the finished solution directly; this calculator deliberately has no field for "solvent volume" plus "solute volume" added together.'
+        },
+        {
+          title: 'Specific gravity needs a reference temperature',
+          body: 'Water’s density changes slightly with temperature (about 0.998 g/mL at 20°C versus 1.000 g/mL at 4°C, its maximum), so a specific gravity is technically only exact at the temperature its reference density was measured at. The difference is small for everyday use but matters for precise lab work.'
+        },
+        {
+          title: 'This is not the same question as molarity',
+          body: 'Density tells you mass per volume of the whole solution; molarity tells you moles of solute per volume. Converting between them needs the solute’s molar mass too — see the molarity calculator.'
+        },
+        {
+          title: 'A denser solution is not automatically more concentrated',
+          body: 'Density depends on what is dissolved, not just how much. A small amount of a very dense solute can raise density more than a larger amount of a lighter one — mass percent and density do not always move in lockstep across different solutes.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §1.4 "Measurements" (density = mass ÷ volume)', url: 'https://openstax.org/books/chemistry-2e/pages/1-4-measurements' },
+        { label: 'NIST Chemistry WebBook, Thermophysical Properties of Fluid Systems — water density at 20°C, 1 atm (0.99821 g/mL)', url: 'https://webbook.nist.gov/chemistry/fluid/' },
+        { label: 'CRC Handbook of Chemistry and Physics, aqueous NaCl density table — 10% w/w at 20°C is 1.0707 g/mL (CRC itself is not freely fetchable; confirmed via its EngineeringToolbox.com and Sigma-Aldrich reproductions, flagged here the same way run 5 flagged an IUPAC Gold Book page that also 403’d a direct fetch)', url: 'https://www.engineeringtoolbox.com/density-aqueous-solution-inorganic-chlorides-salt-concentration-d_1955.html' }
+      ]
+    },
+    inputs: [
+      { id: 'soluteMass', label: 'Solute mass (g)', type: 'number', placeholder: '10', defaultValue: 10, step: 0.01, min: 0 },
+      { id: 'solventMass', label: 'Solvent mass (g)', type: 'number', placeholder: '90', defaultValue: 90, step: 0.01, min: 0 },
+      { id: 'volume', label: 'Measured solution volume (mL)', type: 'number', placeholder: '93.4', defaultValue: 93.4, step: 0.1, min: 0.001 }
+    ],
+    breakdown: {
+      headline: 'density',
+      headlineLabel: 'Density (g/mL)',
+      outputs: [
+        { id: 'density', label: 'Density (g/mL)', format: 'significant' },
+        { id: 'massPercent', label: 'Mass percent of solute', format: 'percent' },
+        { id: 'specificGravity', label: 'Specific gravity (vs. water at 20°C)', format: 'significant' }
+      ],
+      groups: [{ inputs: ['soluteMass', 'solventMass', 'volume'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'waterDensityForChart', label: 'Pure water (20°C)' },
+          { from: 'density', label: 'This solution' }
+        ],
+        title: 'Denser or lighter than water?',
+        highlight: 1
+      },
+      derive: (values) => ({ waterDensityForChart: 0.99821 })
+    },
+    seo: {
+      title: 'Density of a Solution Calculator – Specific Gravity',
+      description: 'Free solution density calculator. Find density, mass percent, and specific gravity from the solute and solvent masses and the measured solution volume.',
+      faq: [
+        { question: 'How do I calculate the density of a solution?', answer: 'Add the solute and solvent masses together, then divide by the solution’s actual measured volume: ρ = (m_solute + m_solvent) ÷ V. Mixing is not perfectly volume-additive, so the volume must be measured, not calculated.' },
+        { question: 'What is specific gravity?', answer: 'A solution’s density divided by pure water’s density at a reference temperature (about 0.998 g/mL at 20°C) — a unitless number showing how much denser or lighter the solution is than water.' },
+        { question: 'What is the density of 10% salt water?', answer: 'About 1.0707 g/mL at 20°C (CRC Handbook), meaning a solution that is 10% sodium chloride by mass is about 7.1% denser than plain water.' },
+        { question: 'Why isn’t solution volume just solvent volume plus solute volume?', answer: 'Dissolved particles pack differently among the solvent’s own molecules than either substance does alone, so the mixture’s volume is almost never exactly the sum of the two separate volumes — sometimes smaller, sometimes larger, depending on the substances involved.' },
+        { question: 'Is a higher density always a more concentrated solution?', answer: 'Not necessarily. Density depends on which solute is dissolved as well as how much — a small amount of a very dense solute can raise density more than a larger amount of a less dense one, so density and mass percent do not track every solute the same way.' },
+        { question: 'How is this different from the density calculator?', answer: 'The general density calculator solves ρ = m ÷ V directly for any one of the three. This page is built around the specific lab workflow of combining a solute and solvent by mass and then measuring the result — and adds the mass percent and specific gravity a chemist actually wants from that workflow.' }
+      ]
+    },
+    compute(values) {
+      const totalMass = values.soluteMass + values.solventMass;
+      const density = totalMass / values.volume;
+      return {
+        density,
+        massPercent: totalMass === 0 ? NaN : (values.soluteMass / totalMass) * 100,
+        specificGravity: density / 0.99821
+      };
+    }
+  },
+  {
+    id: 'serial-dilution-calculator',
+    category: 'chemistry',
+    glyph: 'Cₙ',
+    updatedAt: '2026-11-09',
+    aliases: ['dilution series calculator', 'repeated dilution calculator', '1:10 serial dilution calculator', 'cfu dilution calculator', 'cumulative dilution factor calculator'],
+    related: ['dilution-calculator', 'molarity-calculator', 'solution-concentration-calculator', 'mass-percent-calculator'],
+    title: 'Serial Dilution Calculator',
+    description: 'Find the concentration left after a series of repeated dilutions — each one cutting the concentration by the same factor — the technique behind microbiology plate counts and standard-curve preparation.',
+    example: 'Four serial 1:10 dilutions in a row (an overall 1:10,000 dilution) cut a 5,000,000 CFU/mL culture down to 500 CFU/mL.',
+    content: {
+      lastReviewed: '2026-11-09',
+      concept: {
+        title: 'What is a serial dilution?',
+        paragraphs: [
+          'A serial dilution is a sequence of dilutions performed one after another, each one diluting what came out of the step before it by the same factor — rather than one single large dilution. OpenStax Microbiology describes the standard version directly: mixing 1.0 mL of a culture into 9.0 mL of sterile broth is "a dilution factor of 10, or 1:10," and withdrawing 1.0 mL from that tube into a fresh 9.0 mL of broth repeats the same 1:10 step again.',
+          'Repeating a dilution step is how extremely concentrated samples — a dense bacterial culture, a concentrated stock solution, an undiluted standard for a calibration curve — get down into a range that is actually measurable. A single 1:10,000 dilution and four stacked 1:10 dilutions reach the exact same final concentration (since 10⁴ = 10,000), but pipetting four small, accurate 1:10 steps is far easier to do precisely than trying to measure one tiny fraction of a milliliter directly.',
+          'This calculator is deliberately unit-agnostic: the "concentration" can be a molarity, a mass concentration, or a cell count such as CFU/mL (colony-forming units per milliliter) — the geometric math behind a serial dilution series is exactly the same no matter what is being counted.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the starting concentration, the dilution factor used at each step, and how many times that step was repeated.',
+        steps: [
+          { name: 'Enter the starting concentration', text: 'The concentration before any dilution — in whatever unit you are tracking (mol/L, mg/mL, CFU/mL, and so on).' },
+          { name: 'Enter the dilution factor per step', text: 'How many times each step dilutes the previous one. A standard "1:10" dilution (1 part sample into 9 parts diluent, 10 total parts) is a factor of 10.' },
+          { name: 'Enter the number of steps', text: 'How many times that same dilution was repeated in a row.' },
+          { name: 'Read the final concentration', text: 'The concentration after every step, along with the overall (cumulative) dilution factor and what percent of the original concentration remains.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Each step divides by the same factor, so n repeated steps divide by that factor raised to the nth power.',
+        expression: 'Cumulative factor = DF ⁿ\nC_final = C₀ ÷ DF ⁿ',
+        terms: [
+          { symbol: 'C₀', meaning: 'The starting concentration, before any dilution.' },
+          { symbol: 'DF', meaning: 'The dilution factor used at each step (10 for a standard 1:10 dilution).' },
+          { symbol: 'n', meaning: 'How many times that dilution step was repeated.' },
+          { symbol: 'C_final', meaning: 'The concentration remaining after all n steps.' }
+        ],
+        note: 'This assumes every step uses the same dilution factor. A series that mixes different factors at different steps instead multiplies each step’s own factor together one at a time rather than raising one factor to a power.'
+      },
+      workedExample: {
+        intro: 'OpenStax Microbiology’s own worked example: a lab counts an average of 50 colonies on a plate from a sample that went through four 1:10 dilutions in a row. What was the original concentration, and what does each step look like going forward?',
+        rows: [
+          { label: 'Starting concentration (worked backward from the plate count)', value: '5,000,000 CFU/mL' },
+          { label: 'After dilution 1 (÷10)', value: '500,000 CFU/mL' },
+          { label: 'After dilution 2 (÷10)', value: '50,000 CFU/mL' },
+          { label: 'After dilution 3 (÷10)', value: '5,000 CFU/mL' },
+          { label: 'After dilution 4 (÷10)', value: '500 CFU/mL' },
+          { label: 'Cumulative dilution factor (10⁴)', value: '10,000 (a 1:10,000 dilution)' }
+        ],
+        result: 'C_final = 500 CFU/mL · cumulative factor = 10,000',
+        explanation: 'Each 1:10 step divides the running concentration by 10, so after four steps the total division is 10⁴ = 10,000 — exactly OpenStax’s own figure (it runs the calculation the other direction, multiplying the 50 colonies it actually counted by 10 × 10,000 to reconstruct the original 5,000,000 CFU/mL). Only 1 ÷ 10,000, or 0.01%, of the original concentration remains in the final tube.'
+      },
+      watchOut: [
+        {
+          title: 'The dilution factor is the total parts, not the diluent’s parts alone',
+          body: 'A standard "1:10" dilution mixes 1 part sample into 9 parts diluent — 10 total parts — so the dilution factor is 10, not 9. Mixing up "parts added" with "total parts" is a common source of an off-by-one error in the exponent.'
+        },
+        {
+          title: 'Every step must use a fresh, well-mixed sample',
+          body: 'Each step dilutes the previous tube, not the original sample — so any pipetting error in an early step carries forward and gets compounded by every later step, unlike a single one-step dilution where a mistake only affects that one result.'
+        },
+        {
+          title: 'Only countable plates reconstruct an accurate CFU/mL',
+          body: 'OpenStax Microbiology notes that reliable plate counts need 30–300 colonies per plate — too few (statistically unreliable) or too many (overcrowded, hard to count) both make the back-calculated original concentration less trustworthy, however precise the dilution math itself is.'
+        },
+        {
+          title: 'This is a different calculator from a single dilution',
+          body: 'For one single dilution step — mixing a stock solution down to one target concentration — see the dilution calculator (C₁V₁ = C₂V₂) instead. This page is specifically for a repeated chain of the same dilution.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Microbiology, §9.1 "How Microbes Grow" (serial dilution procedure, the 1.0 mL into 9.0 mL 1:10 step, the 50-colonies-at-1:10,000 worked example, and the 30–300 countable-colony range)', url: 'https://openstax.org/books/microbiology/pages/9-1-how-microbes-grow' }
+      ]
+    },
+    inputs: [
+      { id: 'initialConcentration', label: 'Starting concentration (any consistent unit)', type: 'number', placeholder: '5000000', defaultValue: 5000000, step: 1, min: 0 },
+      { id: 'dilutionFactor', label: 'Dilution factor per step (10 for a 1:10 dilution)', type: 'number', placeholder: '10', defaultValue: 10, step: 0.1, min: 1.0001 },
+      { id: 'steps', label: 'Number of dilution steps', type: 'number', placeholder: '4', defaultValue: 4, step: 1, min: 1 }
+    ],
+    breakdown: {
+      headline: 'finalConcentration',
+      headlineLabel: 'Final concentration',
+      outputs: [
+        { id: 'finalConcentration', label: 'Final concentration', format: 'significant' },
+        { id: 'cumulativeFactor', label: 'Cumulative (overall) dilution factor', format: 'significant' },
+        { id: 'percentRemaining', label: 'Percent of original remaining', format: 'percent' }
+      ],
+      groups: [{ inputs: ['initialConcentration', 'dilutionFactor', 'steps'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'initialConcentration', label: 'Starting concentration' },
+          { from: 'finalConcentration', label: 'Final concentration' }
+        ],
+        title: 'Before and after the dilution series',
+        highlight: 1
+      }
+    },
+    seo: {
+      title: 'Serial Dilution Calculator – Dilution Series',
+      description: 'Free serial dilution calculator. Find the concentration remaining after repeated dilutions, plus the overall dilution factor and percent of the original left.',
+      faq: [
+        { question: 'How do you calculate a serial dilution?', answer: 'Raise the per-step dilution factor to the power of the number of steps to get the cumulative factor, then divide the starting concentration by that cumulative factor: C_final = C₀ ÷ DFⁿ.' },
+        { question: 'What is a 1:10 serial dilution?', answer: 'Mixing 1 part of a sample into 9 parts of diluent (10 total parts), so each step divides the concentration by 10. Repeating that step n times divides the original concentration by 10ⁿ overall.' },
+        { question: 'What is the dilution factor of four 1:10 dilutions?', answer: '10,000 (10⁴) — each of the four steps multiplies the previous overall factor by another 10.' },
+        { question: 'How do I calculate CFU/mL from a diluted plate count?', answer: 'Multiply the colonies counted by the reciprocal of the volume plated and by the dilution factor of the plate you counted — OpenStax Microbiology’s own example counts 50 colonies from a 1:10,000 dilution with 0.1 mL plated, giving 50 × 10 × 10,000 = 5,000,000 CFU/mL.' },
+        { question: 'Why use several small dilution steps instead of one big one?', answer: 'Each individual step stays within a pipette’s accurate, easily measured range (mixing 1 mL into 9 mL, say), which is far more precise in practice than trying to measure one tiny fraction of a milliliter directly for a single huge dilution.' },
+        { question: 'What if different steps use different dilution factors?', answer: 'This calculator assumes every step uses the same factor. A mixed series instead multiplies each step’s own factor together one at a time (DF₁ × DF₂ × DF₃...) rather than raising a single factor to a power.' }
+      ]
+    },
+    compute(values) {
+      const cumulativeFactor = values.dilutionFactor ** values.steps;
+      const finalConcentration = values.initialConcentration / cumulativeFactor;
+      return {
+        finalConcentration,
+        cumulativeFactor,
+        percentRemaining: cumulativeFactor === 0 ? NaN : 100 / cumulativeFactor
+      };
+    }
+  },
+  {
+    id: 'electron-configuration-calculator',
+    category: 'chemistry',
+    glyph: 'e⁻',
+    updatedAt: '2026-11-09',
+    aliases: ['electron configuration calculator', 'electron configuration finder', 'ground state electron configuration calculator', 'noble gas configuration calculator', 'periodic table electron configuration'],
+    related: ['molar-mass-calculator', 'empirical-formula-calculator', 'mole-fraction-calculator', 'ph-poh-calculator'],
+    title: 'Electron Configuration Calculator',
+    description: 'Look up any element’s ground-state electron configuration (elements 1-108), in both full and noble-gas-shorthand form, straight from NIST’s own measured data.',
+    example: 'Chromium (Z = 24) is [Ar]3d⁵4s¹ — not the [Ar]3d⁴4s² the simple filling order would predict, one of about 20 known exceptions.',
+    content: {
+      lastReviewed: '2026-11-09',
+      concept: {
+        title: 'What is an electron configuration?',
+        paragraphs: [
+          'An atom’s electron configuration lists how its electrons are distributed among shells and subshells (1s, 2s, 2p, and so on) in its lowest-energy, most stable arrangement — the "ground state." The Aufbau ("building-up") principle says electrons fill the lowest-energy subshells first, which correctly predicts the configuration of most elements straight from the periodic table.',
+          'That simple filling order is not perfectly exact, though. For roughly twenty elements — chromium and copper being the two taught in almost every general chemistry course — the real, experimentally measured ground state differs from what the naive filling order predicts, because a half-filled or completely filled subshell (like chromium’s 3d⁵) is slightly more stable than the "expected" arrangement. This calculator reports the actual measured configuration for every element from hydrogen (1) through hassium (108), taken directly from NIST’s own Atomic Spectra Database rather than generated from the filling-order rule alone — so the Cr/Cu-style exceptions are automatically correct, not a special case to detect.',
+          'Elements 109 and up are left off this page entirely: they are so short-lived that NIST’s database has no measured ground-state configuration for them at all, only for element 108 (hassium) and below.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick an element by its atomic number, symbol, or name.',
+        steps: [
+          { name: 'Choose the element', text: 'Select it from the list, by atomic number, symbol, or name — covers hydrogen (1) through hassium (108).' },
+          { name: 'Read the full configuration', text: 'Every subshell, written out in full, from 1s up.' },
+          { name: 'Read the noble-gas shorthand', text: 'The same configuration, written as the nearest preceding noble gas in brackets plus whatever comes after it — the shorter form most textbooks actually use.' },
+          { name: 'Check the core and outer electron counts', text: 'How many electrons sit in that noble-gas core versus outside it, shown as a number and in the donut chart below.' }
+        ],
+        outro: 'Everything here is a lookup, calculated in your browser. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'There is no formula to solve here — this is a lookup table of measured ground states, not a value you calculate from an equation.',
+        expression: 'Configuration = [noble-gas core] + remaining subshells, in order of increasing n, then s < p < d < f',
+        terms: [
+          { symbol: 'n', meaning: 'Principal quantum number — the shell number (1, 2, 3...).' },
+          { symbol: 's, p, d, f', meaning: 'Subshell types, each holding a fixed maximum: 2 electrons (s), 6 (p), 10 (d), or 14 (f).' },
+          { symbol: '[noble gas]', meaning: 'A shorthand for every subshell up through the nearest earlier noble gas (He, Ne, Ar, Kr, Xe, or Rn) — writing out helium’s 1s² ten times over would be tedious.' }
+        ],
+        note: 'Subshells are written in order of increasing n, then s before p before d before f within the same n — which is why chromium’s configuration is written "3d⁵4s¹" with 3d first, confirmed directly against NIST’s own printed data, even though the 4s subshell happens to fill before 3d for most elements in that row. A lanthanide or actinide’s f subshell is threaded in at the row where it actually fills (after that period’s own s and p subshells), not forced to the front by its lower n — see the watch-out below.'
+      },
+      workedExample: {
+        intro: 'What is chromium’s (Z = 24) ground-state electron configuration, and why is it an exception?',
+        rows: [
+          { label: 'Naive filling order would predict', value: '[Ar]3d⁴4s² (4 + 2 = 6 outer electrons)' },
+          { label: 'Actual measured configuration (NIST)', value: '[Ar]3d⁵4s¹ (5 + 1 = 6 outer electrons)' },
+          { label: 'Full configuration', value: '1s² 2s² 2p⁶ 3s² 3p⁶ 3d⁵ 4s¹' },
+          { label: 'Core electrons (argon’s own 18)', value: '18' },
+          { label: 'Outer electrons (24 − 18)', value: '6' }
+        ],
+        result: '[Ar]3d⁵4s¹',
+        explanation: 'Both the naive prediction and the real configuration put 6 electrons outside the argon core — the only question is how those 6 are split between 3d and 4s. A half-filled 3d subshell (5 electrons, one in each of the five 3d orbitals, all spins aligned) turns out to be slightly more stable than a 3d⁴4s² arrangement, so one electron moves from 4s into 3d. Copper (Z = 29) is the same story one row later: [Ar]3d¹⁰4s¹ instead of the naively predicted [Ar]3d⁹4s², this time because a completely filled 3d¹⁰ is the more stable option.'
+      },
+      watchOut: [
+        {
+          title: 'Textbooks don’t all write the exceptions in the same order',
+          body: 'This page always writes subshells by increasing principal quantum number (3d before 4s), matching NIST’s own printed data exactly. Some general-chemistry textbooks instead write transition-metal configurations in the order electrons were historically described as filling (4s before 3d), specifically to highlight which electron moved for an exception like chromium. Both orderings name the exact same configuration — only the printed order differs.'
+        },
+        {
+          title: 'About twenty elements are genuine exceptions, not just Cr and Cu',
+          body: 'Niobium, molybdenum, ruthenium, rhodium, palladium, and silver are every bit as irregular as chromium and copper (several of them, like palladium, do not even have a single 5s electron). Lanthanum, cerium, gadolinium, platinum, gold, and several actinides (actinium, thorium, protactinium, uranium, neptunium, curium) are exceptions too — this calculator reports the real value for every one of them automatically.'
+        },
+        {
+          title: '"Valence electrons" gets complicated past the s- and p-blocks',
+          body: 'For a main-group element, the outer-shell electron count shown here is the same thing chemists usually mean by "valence electrons." For a transition metal, chemists sometimes also count outer d electrons as valence electrons for bonding purposes and sometimes don’t, depending on context — so this calculator reports the unambiguous "electrons outside the noble-gas core" figure rather than taking a side on that convention.'
+        },
+        {
+          title: 'Elements 109 and up are out of scope',
+          body: 'NIST’s Atomic Spectra Database returns no data for elements past hassium (108) — they decay far too quickly to have ever had their ground-state configuration directly measured, so this calculator stops there rather than guessing.'
+        }
+      ],
+      references: [
+        { label: 'NIST Atomic Spectra Database, Ionization Energies tool — ground-configuration column for every element, fetched directly for hydrogen through hassium (elements 109+ returned "No data are available")', url: 'https://physics.nist.gov/PhysRefData/ASD/ionEnergy.html' },
+        { label: 'OpenStax, Chemistry 2e, §6.4 "Electronic Structure of Atoms (Electron Configurations)" (the Aufbau principle and the Cr/Cu exceptions)', url: 'https://openstax.org/books/chemistry-2e/pages/6-4-electronic-structure-of-atoms-electron-configurations' }
+      ]
+    },
+    inputs: [{ id: 'atomicNumber', label: 'Element', type: 'number', placeholder: '24', defaultValue: 24, step: 1, min: 1, options: ELEMENT_CONFIG_OPTIONS }],
+    breakdown: {
+      headline: 'shorthandIndex',
+      headlineLabel: 'Ground-state configuration (shorthand)',
+      outputs: [
+        { id: 'shorthandIndex', label: 'Ground-state configuration (shorthand)', labels: SHORTHAND_LABELS },
+        { id: 'fullConfigIndex', label: 'Full configuration', labels: FULL_CONFIG_LABELS },
+        { id: 'coreElectrons', label: 'Core electrons (noble-gas shorthand)', format: 'integer' },
+        { id: 'outerElectrons', label: 'Electrons outside the core', format: 'integer' }
+      ],
+      groups: [{ inputs: ['atomicNumber'] }],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'coreElectrons', label: 'Core electrons' },
+          { from: 'outerElectrons', label: 'Outside the core' }
+        ],
+        center: 'atomicNumber',
+        centerSub: 'total electrons'
+      }
+    },
+    seo: {
+      title: 'Electron Configuration Calculator',
+      description: 'Free electron configuration calculator. Look up any element’s ground-state electron configuration (1-108), full and noble-gas shorthand, from NIST’s own data.',
+      faq: [
+        { question: 'What is the electron configuration of chromium?', answer: '[Ar]3d⁵4s¹ — not [Ar]3d⁴4s², which the simple Aufbau filling order would predict. A half-filled 3d⁵ subshell is slightly more stable, so one electron shifts out of 4s.' },
+        { question: 'What is the electron configuration of copper?', answer: '[Ar]3d¹⁰4s¹ — a completely filled 3d¹⁰, one electron short of the naively predicted [Ar]3d⁹4s², for the same stability reason as chromium.' },
+        { question: 'Is 3d written before or after 4s?', answer: 'Before, in this calculator and in NIST’s own data — subshells are ordered by increasing principal quantum number (3, then 4), not by which one happens to fill first. Some textbooks instead write 4s before 3d to emphasize the fill order; both describe the same configuration.' },
+        { question: 'Why does palladium have no 5s electrons?', answer: 'Its real ground state is [Kr]4d¹⁰, not the naively predicted [Kr]4d⁸5s². A completely filled 4d¹⁰ subshell is more stable than keeping two electrons in 5s — the most extreme of the d-block exceptions.' },
+        { question: 'How many electron configuration exceptions are there?', answer: 'About twenty among elements 1-108, including chromium, copper, niobium, molybdenum, ruthenium, rhodium, palladium, silver, lanthanum, cerium, gadolinium, platinum, gold, actinium, thorium, protactinium, uranium, neptunium, and curium.' },
+        { question: 'Why does this calculator stop at element 108?', answer: 'NIST’s Atomic Spectra Database has no measured ground-state configuration for elements 109 and up — they are too short-lived and radioactive to have ever had one directly measured.' }
+      ]
+    },
+    compute(values) {
+      const element = findElementConfig(values.atomicNumber);
+      if (!element) return { shorthandIndex: NaN, fullConfigIndex: NaN, coreElectrons: NaN, outerElectrons: NaN };
+      return {
+        shorthandIndex: element.z,
+        fullConfigIndex: element.z,
+        coreElectrons: element.coreElectrons,
+        outerElectrons: element.outerElectrons
+      };
+    }
+  },
+  {
+    id: 'buffer-capacity-calculator',
+    category: 'chemistry',
+    glyph: 'β',
+    updatedAt: '2026-11-09',
+    aliases: ['buffer capacity calculator', 'buffer value calculator', 'van slyke equation calculator', 'buffer index calculator', 'how strong is a buffer calculator'],
+    related: ['pka-henderson-hasselbalch-calculator', 'ph-poh-calculator', 'titration-calculator', 'molarity-calculator'],
+    title: 'Buffer Capacity Calculator',
+    description: 'Find how strongly a buffer resists a pH change — its buffer capacity (β) — from the buffer’s total concentration, its pKa, and the pH it is held at.',
+    example: 'A 0.50 mol/L acetic acid/acetate buffer (pKa 4.76) held at pH 4.94 has a buffer capacity of about 0.276 mol/(L·pH unit) — about 96% of the maximum capacity that concentration can reach.',
+    content: {
+      lastReviewed: '2026-11-09',
+      concept: {
+        title: 'What is buffer capacity?',
+        paragraphs: [
+          'A buffer resists changing pH when a small amount of acid or base is added to it, but "resists" is not all-or-nothing — some buffers push back harder than others. Buffer capacity (symbol β, sometimes called buffer value or buffer index) is the number that quantifies exactly how hard: how many moles of strong acid or base per liter it takes to shift the pH by one unit, at the pH the buffer currently sits at.',
+          'Biochemist Donald D. Van Slyke gave this idea its standard mathematical form in 1922, showing that buffer capacity depends on two things: how much total buffer is present (the combined concentration of the weak acid and its conjugate base), and how close the current pH sits to the buffer’s own pKa. The same total concentration of buffer gives dramatically different resistance to pH change depending on where in its range it is being used.',
+          'The practical consequence is the reason every buffer recipe says to pick an acid whose pKa is close to the target pH: capacity peaks exactly at pH = pKa and falls off on either side, so a buffer prepared far from its own pKa gives up most of its resistance to pH change even if the total concentration is high.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the buffer’s total concentration, the weak acid’s pKa, and the pH the buffer is held at.',
+        steps: [
+          { name: 'Enter the total buffer concentration', text: 'The combined concentration of the weak acid and its conjugate base together (not just one of them).' },
+          { name: 'Enter the weak acid’s pKa', text: 'A fixed property of the specific acid used — acetic acid is about 4.76, for example.' },
+          { name: 'Enter the pH the buffer is held at', text: 'The actual pH of the working buffer solution, which does not have to equal the pKa.' },
+          { name: 'Read the buffer capacity', text: 'β appears immediately, alongside the maximum capacity that same concentration could reach (at pH = pKa exactly) and what percent of that maximum the current pH is actually achieving.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The Van Slyke equation gives buffer capacity directly from the total concentration, the acid dissociation constant, and the hydrogen ion concentration.',
+        expression: 'β = 2.303 × C × (Ka × [H⁺]) ÷ (Ka + [H⁺])²\nβ_max = 2.303 × C ÷ 4  (at pH = pKa)',
+        terms: [
+          { symbol: 'β', meaning: 'Buffer capacity, in moles per liter per pH unit — how much strong acid or base it takes to shift the pH by 1.' },
+          { symbol: 'C', meaning: 'The total buffer concentration, [HA] + [A⁻] together.' },
+          { symbol: 'Ka', meaning: 'The weak acid’s dissociation constant, 10^(−pKa).' },
+          { symbol: '[H⁺]', meaning: 'The hydrogen ion concentration at the working pH, 10^(−pH).' },
+          { symbol: '2.303', meaning: 'ln(10) rounded to four figures — it appears because pH is a base-10 logarithm while the underlying calculus is done in natural log.' }
+        ],
+        note: 'This is the simplified, commonly quoted form of the Van Slyke equation, which drops two extra terms (for [H⁺] and [OH⁻] themselves) that only matter at very low or very high pH — accurate for ordinary buffers held within a couple of pH units of neutral-to-mild-acid/base territory, which covers the great majority of real lab and biological buffers.'
+      },
+      workedExample: {
+        intro: 'An acetic acid buffer (pKa 4.76) is made with 0.20 mol/L acetic acid and 0.30 mol/L acetate — the exact same buffer worked through on the pKa calculator’s own page, where it comes out to pH 4.94. What is its buffer capacity?',
+        rows: [
+          { label: 'Total concentration (0.20 + 0.30)', value: '0.50 mol/L' },
+          { label: 'pKa', value: '4.76' },
+          { label: 'pH', value: '4.94' },
+          { label: 'Ka = 10⁻⁴·⁷⁶', value: '1.738 × 10⁻⁵' },
+          { label: '[H⁺] = 10⁻⁴·⁹⁴', value: '1.148 × 10⁻⁵' },
+          { label: 'β = 2.303 × 0.50 × (Ka×[H⁺]) ÷ (Ka+[H⁺])²', value: '≈ 0.276 mol/(L·pH)' },
+          { label: 'β_max = 2.303 × 0.50 ÷ 4 (at pH = pKa)', value: '≈ 0.288 mol/(L·pH)' }
+        ],
+        result: 'β ≈ 0.276 mol/(L·pH) · about 95.8% of maximum',
+        explanation: 'Because this buffer’s working pH (4.94) sits very close to its own pKa (4.76), it is operating near its strongest point — about 95.8% of the absolute maximum capacity that 0.50 mol/L of total buffer could ever reach. Moving the pH another full unit away from the pKa would drop that percentage sharply, which is exactly why buffer recipes pick an acid whose pKa is close to the target pH.'
+      },
+      watchOut: [
+        {
+          title: 'Buffer capacity depends on both concentration and position, not either alone',
+          body: 'Doubling the total concentration doubles β at any given pH, but moving the pH away from the pKa can easily cost far more capacity than concentration gains back — the two effects are independent, and a dilute buffer held exactly at its pKa can out-perform a concentrated one held a full pH unit away.'
+        },
+        {
+          title: 'This is the instantaneous capacity at one specific pH, not a range',
+          body: 'β is a derivative — the resistance to change right at the pH entered, not an average over some pH "buffer range." The commonly cited ±1 pH unit around pKa rule of thumb is a related but separate convention about where a buffer is still considered useful at all, not this number.'
+        },
+        {
+          title: 'The simplified formula assumes a near-neutral pH',
+          body: 'Very strong acid or very strong base solutions have their own large intrinsic buffer capacity from [H⁺] or [OH⁻] directly, which the simplified Van Slyke formula used here leaves out. It is accurate for ordinary weak-acid/weak-base buffers, not for a solution that is already strongly acidic or strongly basic on its own.'
+        }
+      ],
+      references: [
+        { label: 'Van Slyke, D.D. (1922), "On the Measurement of Buffer Values...", Journal of Biological Chemistry 52, 525-570 (the original buffer-capacity equation; a direct fetch of jbc.org returned HTTP 403, so this formula was independently re-derived from the acid-dissociation and mass-balance equations rather than copied from the paper itself — see the step file for the derivation)', url: 'https://www.jbc.org/article/S0021-9258(18)85843-5/abstract' },
+        { label: 'OpenStax, Chemistry 2e, §14.7 "Buffers" (buffer composition and the role of pKa)', url: 'https://openstax.org/books/chemistry-2e/pages/14-7-buffers' }
+      ]
+    },
+    inputs: [
+      { id: 'totalConcentration', label: 'Total buffer concentration', type: 'number', dimension: 'concentration', unit: 'mol/L', placeholder: '0.5', defaultValue: 0.5, step: 0.01, min: 0 },
+      { id: 'pKa', label: 'Weak acid pKa', type: 'number', placeholder: '4.76', defaultValue: 4.76, step: 0.01 },
+      { id: 'pH', label: 'Buffer pH', type: 'number', placeholder: '4.94', defaultValue: 4.94, step: 0.01 }
+    ],
+    breakdown: {
+      headline: 'bufferCapacity',
+      headlineLabel: 'Buffer capacity, β (mol/(L·pH))',
+      outputs: [
+        { id: 'bufferCapacity', label: 'Buffer capacity, β (mol/(L·pH))', format: 'significant' },
+        { id: 'maxCapacity', label: 'Maximum capacity at this concentration (mol/(L·pH))', format: 'significant' },
+        { id: 'percentOfMax', label: 'Percent of maximum capacity', format: 'percent' }
+      ],
+      groups: [{ inputs: ['totalConcentration', 'pKa', 'pH'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'maxCapacity', label: 'Maximum possible (at pH = pKa)' },
+          { from: 'bufferCapacity', label: 'At this pH' }
+        ],
+        title: 'How close to maximum buffering strength?',
+        highlight: 1
+      }
+    },
+    seo: {
+      title: 'Buffer Capacity Calculator (Van Slyke Equation)',
+      description: 'Free buffer capacity calculator. Find β from total buffer concentration, pKa, and pH using the Van Slyke equation, plus the maximum capacity possible.',
+      faq: [
+        { question: 'How do I calculate buffer capacity?', answer: 'β = 2.303 × C × (Ka × [H⁺]) ÷ (Ka + [H⁺])², using the buffer’s total concentration C, its acid dissociation constant Ka (10^−pKa), and the hydrogen ion concentration at the working pH (10^−pH).' },
+        { question: 'What is the maximum possible buffer capacity?', answer: 'β peaks at pH = pKa exactly, where the formula simplifies to β_max = 2.303 × C ÷ 4 — the highest resistance to pH change that a given total concentration can ever provide.' },
+        { question: 'Why does buffer capacity depend on pH if the concentration stays the same?', answer: 'Because the ratio of weak acid to conjugate base shifts as pH moves away from pKa, and that ratio — not just the total amount present — is what determines how effectively added acid or base gets absorbed.' },
+        { question: 'Why pick a buffer whose pKa is close to the target pH?', answer: 'Buffer capacity is highest exactly at pH = pKa and falls off on either side, so choosing an acid whose pKa sits near the pH you need keeps the buffer operating near its strongest point instead of a weaker one far from the peak.' },
+        { question: 'What units does buffer capacity have?', answer: 'Moles per liter per pH unit, mol/(L·pH) — how many moles of strong acid or base, per liter of buffer, it takes to shift the pH by exactly one unit at that point.' },
+        { question: 'Is a higher buffer capacity always better?', answer: 'For resisting pH change, yes — but a very high capacity also needs a correspondingly large total concentration of buffer chemicals, which may not be practical or desirable for every application (cost, ionic strength, or biological compatibility can all matter too).' }
+      ]
+    },
+    compute(values) {
+      const Ka = 10 ** -values.pKa;
+      const H = 10 ** -values.pH;
+      const bufferCapacity = 2.303 * values.totalConcentration * ((Ka * H) / (Ka + H) ** 2);
+      const maxCapacity = (2.303 * values.totalConcentration) / 4;
+      return {
+        bufferCapacity,
+        maxCapacity,
+        percentOfMax: maxCapacity === 0 ? NaN : (bufferCapacity / maxCapacity) * 100
+      };
+    }
+  },
+  {
+    id: 'beer-lambert-law-calculator',
+    category: 'chemistry',
+    glyph: 'A',
+    updatedAt: '2026-11-09',
+    aliases: ['beer-lambert law calculator', "beer's law calculator", 'absorbance calculator', 'molar absorptivity calculator', 'spectrophotometry calculator'],
+    related: ['molarity-calculator', 'molar-mass-calculator', 'solution-concentration-calculator', 'dilution-calculator'],
+    title: 'Beer-Lambert Law Calculator (A = εlc)',
+    description: 'Solve the Beer-Lambert law, A = εlc, for absorbance, molar absorptivity, path length, or concentration — the equation behind every spectrophotometer reading.',
+    example: 'A solution with a molar absorptivity of 13,000 L/(mol·cm), a 1.00 cm path length, and a concentration of 5.00 × 10⁻⁵ mol/L has an absorbance of 0.650.',
+    solver: {
+      defaultTarget: 'absorbance',
+      variables: [
+        { id: 'absorbance', label: 'Absorbance', symbol: 'A', dimension: 'absorbance', defaultValue: 0.65, defaultUnit: 'AU' },
+        { id: 'molarAbsorptivity', label: 'Molar absorptivity', symbol: 'ε', dimension: 'molarAbsorptivity', defaultValue: 13000, defaultUnit: 'L/molcm' },
+        { id: 'pathLength', label: 'Path length', symbol: 'l', dimension: 'length', defaultValue: 1, defaultUnit: 'cm' },
+        { id: 'concentration', label: 'Concentration', symbol: 'c', dimension: 'concentration', defaultValue: 0.05, defaultUnit: 'mmol/L' }
+      ],
+      solve: {
+        absorbance: ({ molarAbsorptivity, pathLength, concentration }) => molarAbsorptivity * pathLength * concentration,
+        molarAbsorptivity: ({ absorbance, pathLength, concentration }) =>
+          pathLength * concentration === 0 ? NaN : absorbance / (pathLength * concentration),
+        pathLength: ({ absorbance, molarAbsorptivity, concentration }) =>
+          molarAbsorptivity * concentration === 0 ? NaN : absorbance / (molarAbsorptivity * concentration),
+        concentration: ({ absorbance, molarAbsorptivity, pathLength }) =>
+          molarAbsorptivity * pathLength === 0 ? NaN : absorbance / (molarAbsorptivity * pathLength)
+      },
+      outputs: [{ id: 'transmittancePercent', label: 'Transmittance (%T)', dimension: 'percent', compute: (si) => 100 * 10 ** -si.absorbance }]
+    },
+    content: {
+      lastReviewed: '2026-11-09',
+      concept: {
+        title: 'What is the Beer-Lambert law?',
+        paragraphs: [
+          'The Beer-Lambert law (often just "Beer\'s law") relates how much light a solution absorbs to how concentrated it is. The IUPAC Gold Book states it directly: absorbance is proportional to both the path length light travels through the sample and the sample\'s concentration, A = εlc. It is the equation that makes a spectrophotometer — a near-universal lab instrument — actually useful for measuring concentration, not just color.',
+          'Absorbance (A) itself is a logarithmic ratio of how much light went in versus how much came out the other side, A = log₁₀(P₀ ÷ P). A higher absorbance means less light got through. Molar absorptivity (ε, also called the molar extinction coefficient) is a property of the specific substance and wavelength being measured — how strongly it absorbs light, independent of how much of it is present or how far the light travels through it.',
+          'Because A = εlc is a straightforward multiplication of three quantities, it rearranges just as easily to solve for any one of them: measure absorbance in a known cuvette (fixed path length) with a known molar absorptivity, and the concentration drops straight out — the basis of every colorimetric and spectrophotometric concentration assay.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of absorbance, molar absorptivity, path length, and concentration; the fourth fills in automatically.',
+        steps: [
+          { name: 'Enter the values you know', text: 'Most often that is a measured absorbance, a known or looked-up molar absorptivity, and the cuvette’s path length — leaving concentration as the one being solved for.' },
+          { name: 'Switch which one is calculated', text: 'Type into any other field instead, and whichever value you have left untouched the longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching path length to mm, or molar absorptivity to m²/mol, converts the number already there instead of changing the underlying value.' },
+          { name: 'Read the result, and the transmittance', text: 'The solved value appears in your chosen unit, with the percent transmittance (%T) — how much light actually got through — shown as a bonus figure underneath.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'A = εlc rearranges three more ways, one for each quantity you might be solving for.',
+        expression: 'A = ε × l × c\nε = A ÷ (l × c)\nl = A ÷ (ε × c)\nc = A ÷ (ε × l)',
+        terms: [
+          { symbol: 'A', meaning: 'Absorbance — unitless, A = log₁₀(P₀ ÷ P), the ratio of light intensity in to light intensity out.' },
+          { symbol: 'ε', meaning: 'Molar absorptivity (molar extinction coefficient), conventionally in L mol⁻¹ cm⁻¹ (M⁻¹cm⁻¹); the IUPAC SI unit is m² mol⁻¹, equal to 0.1 L mol⁻¹ cm⁻¹.' },
+          { symbol: 'l', meaning: 'Path length — the distance light travels through the sample, almost always 1.00 cm for a standard cuvette.' },
+          { symbol: 'c', meaning: 'Concentration, typically molarity (mol/L).' }
+        ],
+        note: 'The law holds only for dilute solutions of a single absorbing species at one wavelength; at high concentration, real solutions start to deviate from this simple straight-line relationship (template §3’s "don’t overgeneralize" warning applies here too — this page covers the ideal, dilute-solution case the formula actually describes).'
+      },
+      workedExample: {
+        intro: 'A solution has a molar absorptivity of 13,000 L/(mol·cm) at its measured wavelength, sits in a standard 1.00 cm cuvette, and has a concentration of 5.00 × 10⁻⁵ mol/L. What is its absorbance, and what percent of the light gets through?',
+        rows: [
+          { label: 'Molar absorptivity (ε)', value: '13,000 L/(mol·cm)' },
+          { label: 'Path length (l)', value: '1.00 cm' },
+          { label: 'Concentration (c)', value: '5.00 × 10⁻⁵ mol/L' },
+          { label: 'Absorbance (A = 13,000 × 1.00 × 0.00005)', value: '0.650' },
+          { label: 'Transmittance (%T = 10⁻⁰·⁶⁵⁰ × 100)', value: '≈ 22.39%' }
+        ],
+        result: 'A = 0.650 · %T ≈ 22.39%',
+        explanation: 'Multiplying the three quantities together gives 13,000 × 1.00 × 0.00005 = 0.650. Converting that to transmittance, 10⁻⁰·⁶⁵⁰ × 100 ≈ 22.39%, meaning about 22.4% of the light that entered the sample made it through to the detector — the rest was absorbed. Given any three of the four quantities, the same equation solves for whichever one is missing.'
+      },
+      watchOut: [
+        {
+          title: 'Molar absorptivity is specific to one substance at one wavelength',
+          body: 'ε is not a universal constant — it is a property of the particular absorbing species, measured at a particular wavelength (usually the wavelength of maximum absorbance, λmax). Using a substance’s ε from one wavelength to analyze data taken at a different wavelength gives a meaningless answer.'
+        },
+        {
+          title: 'Watch which unit convention a published ε is given in',
+          body: 'Chemists almost always report molar absorptivity in L mol⁻¹ cm⁻¹ (equivalently M⁻¹cm⁻¹); the SI-coherent unit is m² mol⁻¹, equal to one-tenth of that. Mixing the two without converting gives an answer 10 times too large or too small.'
+        },
+        {
+          title: 'The law breaks down at high concentration',
+          body: 'Beer-Lambert is a good approximation only in dilute solution. At higher concentrations, interactions between absorbing molecules and stray-light effects in real instruments both cause absorbance to deviate from a straight line against concentration — real calibration curves are checked for linearity, not assumed.'
+        },
+        {
+          title: 'Absorbance and transmittance move in opposite directions',
+          body: 'A higher absorbance means a lower percent transmittance, and the relationship is logarithmic, not linear — doubling the concentration does not halve the transmittance, it multiplies absorbance (not transmittance) by a bit more than double, once path length and ε are held fixed.'
+        }
+      ],
+      references: [
+        { label: 'IUPAC Gold Book, "Beer-Lambert law" (B00626) — A = εlc, SI unit of ε stated as m² mol⁻¹ (goldbook.iupac.org returned HTTP 403 to a direct fetch, the same outcome run 5 hit on a different Gold Book page; confirmed via a search-engine-indexed snippet of the page instead, flagged here rather than treated as fully fetch-verified)', url: 'https://goldbook.iupac.org/terms/view/B00626' }
+      ]
+    },
+    inputs: [
+      { id: 'molarAbsorptivity', label: 'Molar absorptivity ε (L/(mol·cm))', type: 'number', placeholder: '13000', defaultValue: 13000, step: 1, min: 0 },
+      { id: 'pathLength', label: 'Path length (cm)', type: 'number', placeholder: '1', defaultValue: 1, step: 0.01, min: 0 },
+      { id: 'concentration', label: 'Concentration (mol/L)', type: 'number', placeholder: '0.00005', defaultValue: 0.00005, step: 0.000001, min: 0 }
+    ],
+    seo: {
+      title: 'Beer-Lambert Law Calculator (A = εlc)',
+      description: 'Free Beer-Lambert law calculator. Solve A = εlc for absorbance, molar absorptivity, path length, or concentration, with transmittance shown too.',
+      faq: [
+        { question: 'What is the Beer-Lambert law formula?', answer: 'A = εlc, where A is absorbance, ε is the molar absorptivity (molar extinction coefficient), l is the path length light travels through the sample, and c is the concentration.' },
+        { question: 'How do I calculate concentration from absorbance?', answer: 'c = A ÷ (ε × l) — divide the measured absorbance by the molar absorptivity and the path length multiplied together.' },
+        { question: 'What are the units of molar absorptivity?', answer: 'Conventionally L mol⁻¹ cm⁻¹ (written M⁻¹cm⁻¹). The SI-coherent unit is m² mol⁻¹, equal to exactly one-tenth of that (1 L mol⁻¹ cm⁻¹ = 0.1 m² mol⁻¹).' },
+        { question: 'What is the relationship between absorbance and transmittance?', answer: 'A = log₁₀(P₀ ÷ P) and %T = 10⁻ᴬ × 100 — absorbance and percent transmittance describe the same light loss, just on a logarithmic versus linear scale, so they always move in opposite directions.' },
+        { question: 'What is a standard cuvette path length?', answer: '1.00 cm, for almost every standard spectrophotometer cuvette — which is why molar absorptivity values are often quoted assuming that path length, even though the formula itself works for any path length.' },
+        { question: 'Does the Beer-Lambert law work at any concentration?', answer: 'No — it is an approximation that holds well for dilute solutions of a single absorbing species at one wavelength. At higher concentrations, real solutions deviate from the simple straight-line relationship between absorbance and concentration.' }
+      ]
+    },
+    compute(values) {
+      return { absorbance: values.molarAbsorptivity * values.pathLength * values.concentration };
     }
   }
 ];

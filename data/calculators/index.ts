@@ -284,7 +284,12 @@ export const calculatorOrder: string[] = [
   'normality-calculator',
   'titration-calculator',
   'equilibrium-constant-calculator',
-  'gibbs-free-energy-calculator'
+  'gibbs-free-energy-calculator',
+  'density-of-solutions-calculator',
+  'serial-dilution-calculator',
+  'electron-configuration-calculator',
+  'buffer-capacity-calculator',
+  'beer-lambert-law-calculator'
 ];
 
 const rank = (id: string) => {

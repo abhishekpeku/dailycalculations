@@ -461,6 +461,41 @@ exports[`compute() snapshots > baseball-batting-average-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > beer-lambert-law-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "molarAbsorptivity": 13000,
+      "pathLength": 1,
+      "concentration": 0.00005
+    },
+    "outputs": {
+      "absorbance": 0.65
+    }
+  },
+  "typical": {
+    "inputs": {
+      "molarAbsorptivity": 19500,
+      "pathLength": 1.5,
+      "concentration": 0.000075
+    },
+    "outputs": {
+      "absorbance": 2.19375
+    }
+  },
+  "edge": {
+    "inputs": {
+      "molarAbsorptivity": 0,
+      "pathLength": 0,
+      "concentration": 0
+    },
+    "outputs": {
+      "absorbance": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > binomial-distribution-calculator 1`] = `
 {
   "default": {
@@ -702,6 +737,47 @@ exports[`compute() snapshots > brine-calculator 1`] = `
       "saltCups": 0.5,
       "shortBrineSaltCups": 0.5,
       "longBrineSaltCups": 0.25
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > buffer-capacity-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "totalConcentration": 0.5,
+      "pKa": 4.76,
+      "pH": 4.94
+    },
+    "outputs": {
+      "bufferCapacity": 0.2758576282,
+      "maxCapacity": 0.287875,
+      "percentOfMax": 95.8254896
+    }
+  },
+  "typical": {
+    "inputs": {
+      "totalConcentration": 0.75,
+      "pKa": 7.14,
+      "pH": 7.41
+    },
+    "outputs": {
+      "bufferCapacity": 0.3926354405,
+      "maxCapacity": 0.4318125,
+      "percentOfMax": 90.92729842
+    }
+  },
+  "edge": {
+    "inputs": {
+      "totalConcentration": 0,
+      "pKa": 0,
+      "pH": 0
+    },
+    "outputs": {
+      "bufferCapacity": 0,
+      "maxCapacity": 0,
+      "percentOfMax": "NaN"
     }
   }
 }
@@ -2125,6 +2201,47 @@ exports[`compute() snapshots > density-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > density-of-solutions-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "soluteMass": 10,
+      "solventMass": 90,
+      "volume": 93.4
+    },
+    "outputs": {
+      "density": 1.070663812,
+      "massPercent": 10,
+      "specificGravity": 1.072583736
+    }
+  },
+  "typical": {
+    "inputs": {
+      "soluteMass": 15,
+      "solventMass": 135,
+      "volume": 140.1
+    },
+    "outputs": {
+      "density": 1.070663812,
+      "massPercent": 10,
+      "specificGravity": 1.072583736
+    }
+  },
+  "edge": {
+    "inputs": {
+      "soluteMass": 0,
+      "solventMass": 0,
+      "volume": 0.001
+    },
+    "outputs": {
+      "density": 0,
+      "massPercent": "NaN",
+      "specificGravity": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > dilution-calculator 1`] = `
 {
   "default": {
@@ -2408,6 +2525,44 @@ exports[`compute() snapshots > electricity-bill-calculator 1`] = `
       "costPerDay": 0,
       "annualBill": 0,
       "effectiveRatePerKwh": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > electron-configuration-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "atomicNumber": 24
+    },
+    "outputs": {
+      "shorthandIndex": 24,
+      "fullConfigIndex": 24,
+      "coreElectrons": 18,
+      "outerElectrons": 6
+    }
+  },
+  "typical": {
+    "inputs": {
+      "atomicNumber": 36
+    },
+    "outputs": {
+      "shorthandIndex": 36,
+      "fullConfigIndex": 36,
+      "coreElectrons": 18,
+      "outerElectrons": 18
+    }
+  },
+  "edge": {
+    "inputs": {
+      "atomicNumber": 1
+    },
+    "outputs": {
+      "shorthandIndex": 1,
+      "fullConfigIndex": 1,
+      "coreElectrons": 0,
+      "outerElectrons": 1
     }
   }
 }
@@ -8047,6 +8202,47 @@ exports[`compute() snapshots > self-rising-flour-substitute-calculator 1`] = `
     "outputs": {
       "bakingPowderTsp": 0.0125,
       "saltTsp": 0.002083333333
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > serial-dilution-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "initialConcentration": 5000000,
+      "dilutionFactor": 10,
+      "steps": 4
+    },
+    "outputs": {
+      "finalConcentration": 500,
+      "cumulativeFactor": 10000,
+      "percentRemaining": 0.01
+    }
+  },
+  "typical": {
+    "inputs": {
+      "initialConcentration": 7500000,
+      "dilutionFactor": 15,
+      "steps": 6
+    },
+    "outputs": {
+      "finalConcentration": 0.658436214,
+      "cumulativeFactor": 11390625,
+      "percentRemaining": 0.00000877914952
+    }
+  },
+  "edge": {
+    "inputs": {
+      "initialConcentration": 0,
+      "dilutionFactor": 1.0001,
+      "steps": 1
+    },
+    "outputs": {
+      "finalConcentration": 0,
+      "cumulativeFactor": 1.0001,
+      "percentRemaining": 99.990001
     }
   }
 }

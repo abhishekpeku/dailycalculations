@@ -3660,5 +3660,628 @@ export const chemistryCalculators: CalculatorConfig[] = [
     compute(values) {
       return { absorbance: values.molarAbsorptivity * values.pathLength * values.concentration };
     }
+  },
+  {
+    id: 'freezing-point-depression-calculator',
+    category: 'chemistry',
+    glyph: 'ΔTf',
+    updatedAt: '2026-11-09',
+    aliases: ['freezing point depression calculator', 'delta tf calculator', 'kf x m calculator', 'freezing-point depression formula calculator', 'cryoscopic constant calculator', 'how much salt lowers freezing point calculator'],
+    related: ['boiling-point-elevation-calculator', 'molality-calculator', 'vant-hoff-osmotic-pressure-calculator', 'osmolarity-calculator'],
+    title: 'Freezing-Point Depression Calculator (ΔTf = Kf × m × i)',
+    description: 'Find how much a dissolved solute lowers a solvent’s freezing point — ΔTf = Kf × molality × the van’t Hoff factor — solved for any of the four.',
+    example: 'A 0.33 mol/kg nonelectrolyte solution in benzene (Kf = 5.12 °C·kg/mol) lowers benzene’s freezing point from 5.5°C to about 3.8°C, a depression of 1.7°C.',
+    solver: {
+      defaultTarget: 'deltaTf',
+      variables: [
+        { id: 'deltaTf', label: 'Freezing-point depression', symbol: 'ΔTf', dimension: 'temperatureDelta', defaultValue: 1.7, defaultUnit: 'C' },
+        { id: 'kf', label: 'Cryoscopic constant', symbol: 'Kf', dimension: 'molalConstant', defaultValue: 5.12, defaultUnit: 'Ckgmol' },
+        { id: 'molality', label: 'Molality', symbol: 'm', dimension: 'molality', defaultValue: 0.33, defaultUnit: 'mol/kg' },
+        { id: 'particles', label: 'Particles per formula unit', symbol: 'i', dimension: 'count', defaultValue: 1, defaultUnit: 'count' }
+      ],
+      solve: {
+        deltaTf: ({ kf, molality, particles }) => kf * molality * particles,
+        kf: ({ deltaTf, molality, particles }) => (molality === 0 || particles === 0 ? NaN : deltaTf / (molality * particles)),
+        molality: ({ deltaTf, kf, particles }) => (kf === 0 || particles === 0 ? NaN : deltaTf / (kf * particles)),
+        particles: ({ deltaTf, kf, molality }) => (kf === 0 || molality === 0 ? NaN : deltaTf / (kf * molality))
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-09',
+      concept: {
+        title: 'What is freezing-point depression?',
+        paragraphs: [
+          'Dissolving almost any solute in a solvent lowers the temperature at which the mixture freezes compared to the pure solvent alone. OpenStax’s Chemistry 2e calls this freezing-point depression, ΔTf, and states it as directly proportional to the molal concentration of the solute: ΔTf = Kf × m. It is a colligative property — one that depends only on how many solute particles are dissolved, not on what the solute actually is.',
+          'Kf, the cryoscopic constant, is a property of the solvent alone: water’s is 1.86 °C·kg/mol, benzene’s is 5.12 °C·kg/mol, and every solvent has its own value. A solute that splits into more than one particle when it dissolves — an ionic compound like NaCl, which separates into Na⁺ and Cl⁻ — depresses the freezing point more than a nonelectrolyte at the same molality, which is why the full formula carries the van’t Hoff factor i: ΔTf = Kf × m × i. i is the number of particles one formula unit becomes in solution (1 for a nonelectrolyte such as sugar or ethylene glycol, approaching 2 for NaCl, approaching 3 for CaCl₂).',
+          'This is the chemistry behind salting icy roads and antifreeze in a car’s radiator: both work by lowering the solvent’s freezing point enough that it stays liquid at a temperature where the pure solvent would have already frozen solid.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of the freezing-point depression, the cryoscopic constant, the molality, and the particles per formula unit; the fourth fills in automatically.',
+        steps: [
+          { name: 'Look up the solvent’s cryoscopic constant, Kf', text: 'A property of the solvent only — 1.86 °C·kg/mol for water, 5.12 °C·kg/mol for benzene, and so on. It does not depend on the solute dissolved in it.' },
+          { name: 'Find the solute’s molality', text: 'Moles of solute per kilogram of solvent — use the molality calculator above if you have a mass and a molar mass instead of molality directly.' },
+          { name: 'Set the particles per formula unit, i', text: 'Use 1 for a nonelectrolyte (sugar, ethylene glycol). For an ionic compound, use the number of ions its formula produces as an ideal upper estimate — 2 for NaCl, 3 for CaCl₂.' },
+          { name: 'Enter the three values you know', text: 'Type each value and pick its unit; the missing one is highlighted and fills in automatically.' },
+          { name: 'Read the result', text: 'ΔTf is how much the freezing point drops below the pure solvent’s own freezing point — subtract it yourself to get the solution’s actual freezing point.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'ΔTf = Kf × m × i rearranges to solve for any one of the four quantities, given the other three.',
+        expression: 'ΔTf = Kf × m × i\nKf = ΔTf ÷ (m × i)\nm = ΔTf ÷ (Kf × i)\ni = ΔTf ÷ (Kf × m)',
+        terms: [
+          { symbol: 'ΔTf', meaning: 'Freezing-point depression — how much lower the solution freezes compared to the pure solvent, in °C or K (the two are the same size for a temperature difference).' },
+          { symbol: 'Kf', meaning: 'The solvent’s cryoscopic constant, in °C·kg/mol — a fixed property of the solvent, not the solute.' },
+          { symbol: 'm', meaning: 'Molality of the solute, in mol/kg of solvent.' },
+          { symbol: 'i', meaning: 'The van’t Hoff factor — particles the solute becomes per formula unit dissolved. 1 for a nonelectrolyte.' }
+        ],
+        note: 'This gives the size of the depression, not the solution’s final freezing point — subtract ΔTf from the pure solvent’s own freezing point to get that.'
+      },
+      workedExample: {
+        intro: 'A nonelectrolyte solute is dissolved in benzene (normal freezing point 5.5°C) to a molality of 0.33 mol/kg. What is the freezing point of the solution? (OpenStax Chemistry 2e, Example 11.9.)',
+        rows: [
+          { label: 'Cryoscopic constant of benzene (Kf)', value: '5.12 °C·kg/mol' },
+          { label: 'Molality (m)', value: '0.33 mol/kg' },
+          { label: 'Particles per formula unit (i, nonelectrolyte)', value: '1' },
+          { label: 'Freezing-point depression (ΔTf = Kf × m × i)', value: '5.12 × 0.33 × 1 = 1.7°C' },
+          { label: 'Solution’s freezing point (5.5°C − 1.7°C)', value: '3.8°C' }
+        ],
+        result: 'ΔTf ≈ 1.7°C; the solution freezes at about 3.8°C',
+        explanation: '5.12 × 0.33 gives a depression of 1.6896°C, which rounds to 1.7°C. Subtracting that from benzene’s own 5.5°C freezing point gives a solution freezing point of about 3.8°C — benzene has to cool 1.7°C further than usual before this particular mixture turns solid.'
+      },
+      watchOut: [
+        {
+          title: 'Kf depends on the solvent, never the solute',
+          body: 'The same solvent’s Kf applies no matter what is dissolved in it — only the molality and the van’t Hoff factor change from solute to solute. Looking up a solute’s own property here instead of the solvent’s is a common mix-up.'
+        },
+        {
+          title: 'This uses molality, not molarity',
+          body: 'Molality (mol/kg of solvent) is used specifically because it does not drift with temperature the way molarity (mol/L of solution) does — see the molality calculator if a problem gives a mass of solute and a mass of solvent instead of molality directly.'
+        },
+        {
+          title: 'Boiling-point elevation is the same shape, opposite direction',
+          body: 'ΔTb = Kb × m × i uses the identical mathematical form, but a different solvent-specific constant (Kb, not Kf) and raises the boiling point rather than lowering the freezing point — see the boiling-point elevation calculator.'
+        },
+        {
+          title: 'i = 2 (or 3) for an electrolyte is an ideal upper limit',
+          body: 'A real ionic solution’s effective van’t Hoff factor is usually a little below the "every ion fully separate" ideal, especially as concentration rises, because oppositely charged ions briefly pair back up in solution. Treat an integer i as the textbook ideal case, not a guaranteed measurement.'
+        },
+        {
+          title: 'This assumes an ideal, dilute solution',
+          body: 'The ΔTf = Kf × m × i relationship holds well at the molalities seen in general chemistry problems, but real, concentrated solutions deviate from it, the same limitation every colligative-property formula on this site carries.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §11.4 "Colligative Properties" (freezing-point depression, the Kf table, and Example 11.9)', url: 'https://openstax.org/books/chemistry-2e/pages/11-4-colligative-properties' },
+        { label: 'NIST, Chemistry WebBook (freezing/melting point data used to check solvent values)', url: 'https://webbook.nist.gov/chemistry/' }
+      ]
+    },
+    inputs: [
+      { id: 'kf', label: 'Cryoscopic constant, Kf (°C·kg/mol)', type: 'number', placeholder: '5.12', defaultValue: 5.12, step: 0.01, min: 0 },
+      { id: 'molality', label: 'Molality (mol/kg)', type: 'number', placeholder: '0.33', defaultValue: 0.33, step: 0.01, min: 0 },
+      { id: 'particles', label: 'Particles per formula unit, i', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Freezing-Point Depression Calculator (ΔTf = Kf × m × i)',
+      description: 'Free freezing-point depression calculator. Solve ΔTf = Kf × molality × i for any value, with the benzene worked example and a watch-out on molality vs molarity.',
+      faq: [
+        { question: 'What is the freezing-point depression formula?', answer: 'ΔTf = Kf × m × i, where Kf is the solvent’s cryoscopic constant, m is the solute’s molality, and i is the van’t Hoff factor (particles per dissolved formula unit).' },
+        { question: 'What is water’s cryoscopic constant?', answer: '1.86 °C·kg/mol (OpenStax Chemistry 2e). Every solvent has its own Kf — benzene’s is 5.12 °C·kg/mol, much larger than water’s.' },
+        { question: 'Why does salt lower the freezing point of water more than sugar at the same molality?', answer: 'Salt (NaCl) splits into two ions, Na⁺ and Cl⁻, when it dissolves, so its van’t Hoff factor i is close to 2. Sugar stays as one intact molecule, with i = 1. At the same molality, a van’t Hoff factor of 2 roughly doubles the depression compared to i = 1.' },
+        { question: 'How much does 0.100 mol/kg of NaCl lower water’s freezing point?', answer: 'About 0.37°C, using water’s Kf of 1.86 °C·kg/mol and i ≈ 2: ΔTf = 1.86 × 0.100 × 2 = 0.372°C, so the solution freezes at about −0.37°C instead of 0°C.' },
+        { question: 'Is freezing-point depression the same thing as boiling-point elevation?', answer: 'They share the identical formula shape (a solvent-specific constant times molality times i), but freezing-point depression lowers the freezing point using Kf, while boiling-point elevation raises the boiling point using a different constant, Kb — see the boiling-point elevation calculator.' },
+        { question: 'Does freezing-point depression depend on what the solute is?', answer: 'Only through how many particles it splits into (i) and how much of it is dissolved (m) — not through any other property of the solute. That is what makes it a "colligative" property.' },
+        { question: 'Can I use molarity instead of molality in this formula?', answer: 'No — freezing-point depression specifically needs molality (moles of solute per kilogram of solvent), because it stays constant as the solution cools, unlike molarity, which drifts slightly as volume changes with temperature.' }
+      ]
+    },
+    compute(values) {
+      return { deltaTf: values.kf * values.molality * values.particles };
+    }
+  },
+  {
+    id: 'boiling-point-elevation-calculator',
+    category: 'chemistry',
+    glyph: 'ΔTb',
+    updatedAt: '2026-11-09',
+    aliases: ['boiling point elevation calculator', 'delta tb calculator', 'kb x m calculator', 'boiling-point elevation formula calculator', 'ebullioscopic constant calculator', 'antifreeze boiling point calculator'],
+    related: ['freezing-point-depression-calculator', 'molality-calculator', 'vant-hoff-osmotic-pressure-calculator', 'osmolarity-calculator'],
+    title: 'Boiling-Point Elevation Calculator (ΔTb = Kb × m × i)',
+    description: 'Find how much a dissolved solute raises a solvent’s boiling point — ΔTb = Kb × molality × the van’t Hoff factor — solved for any of the four.',
+    example: 'The same 0.33 mol/kg nonelectrolyte solution in benzene (Kb = 2.53 °C·kg/mol) raises benzene’s boiling point from 80.1°C to about 80.9°C, a rise of 0.83°C.',
+    solver: {
+      defaultTarget: 'deltaTb',
+      variables: [
+        { id: 'deltaTb', label: 'Boiling-point elevation', symbol: 'ΔTb', dimension: 'temperatureDelta', defaultValue: 0.83, defaultUnit: 'C' },
+        { id: 'kb', label: 'Ebullioscopic constant', symbol: 'Kb', dimension: 'molalConstant', defaultValue: 2.53, defaultUnit: 'Ckgmol' },
+        { id: 'molality', label: 'Molality', symbol: 'm', dimension: 'molality', defaultValue: 0.33, defaultUnit: 'mol/kg' },
+        { id: 'particles', label: 'Particles per formula unit', symbol: 'i', dimension: 'count', defaultValue: 1, defaultUnit: 'count' }
+      ],
+      solve: {
+        deltaTb: ({ kb, molality, particles }) => kb * molality * particles,
+        kb: ({ deltaTb, molality, particles }) => (molality === 0 || particles === 0 ? NaN : deltaTb / (molality * particles)),
+        molality: ({ deltaTb, kb, particles }) => (kb === 0 || particles === 0 ? NaN : deltaTb / (kb * particles)),
+        particles: ({ deltaTb, kb, molality }) => (kb === 0 || molality === 0 ? NaN : deltaTb / (kb * molality))
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-09',
+      concept: {
+        title: 'What is boiling-point elevation?',
+        paragraphs: [
+          'Dissolving a nonvolatile solute in a solvent raises the temperature at which the mixture boils compared to the pure solvent. OpenStax’s Chemistry 2e calls this boiling-point elevation, ΔTb, and gives it the same mathematical shape as freezing-point depression: ΔTb = Kb × m × i, directly proportional to the solute’s molal concentration.',
+          'Kb, the ebullioscopic constant, is a property of the solvent alone — water’s is 0.512 °C·kg/mol, benzene’s is 2.53 °C·kg/mol — and i is the van’t Hoff factor, the number of particles one dissolved formula unit becomes (1 for a nonelectrolyte, closer to 2 for a salt like NaCl). The formula is identical in structure to freezing-point depression, just with a different, solvent-specific constant and the opposite effect on the solvent’s phase-change temperature.',
+          'Both effects come from the same underlying cause: adding solute particles lowers the solvent’s vapor pressure and disrupts the solid-liquid equilibrium, which is why a solution needs to be colder before it freezes and hotter before it boils than the pure solvent alone. This is the same reason adding salt to cooking water raises its boiling point very slightly, and why antifreeze in a car radiator both protects against freezing in winter and raises the boiling point in summer.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of the boiling-point elevation, the ebullioscopic constant, the molality, and the particles per formula unit; the fourth fills in automatically.',
+        steps: [
+          { name: 'Look up the solvent’s ebullioscopic constant, Kb', text: 'A property of the solvent only — 0.512 °C·kg/mol for water, 2.53 °C·kg/mol for benzene, and so on.' },
+          { name: 'Find the solute’s molality', text: 'Moles of solute per kilogram of solvent — use the molality calculator above if you have a mass and a molar mass instead.' },
+          { name: 'Set the particles per formula unit, i', text: 'Use 1 for a nonelectrolyte. For an ionic compound, use the number of ions its formula produces as an ideal upper estimate.' },
+          { name: 'Enter the three values you know', text: 'Type each value and pick its unit; the missing one is highlighted and fills in automatically.' },
+          { name: 'Read the result', text: 'ΔTb is how much the boiling point rises above the pure solvent’s own boiling point — add it yourself to get the solution’s actual boiling point.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'ΔTb = Kb × m × i rearranges to solve for any one of the four quantities, given the other three.',
+        expression: 'ΔTb = Kb × m × i\nKb = ΔTb ÷ (m × i)\nm = ΔTb ÷ (Kb × i)\ni = ΔTb ÷ (Kb × m)',
+        terms: [
+          { symbol: 'ΔTb', meaning: 'Boiling-point elevation — how much higher the solution boils compared to the pure solvent, in °C or K.' },
+          { symbol: 'Kb', meaning: 'The solvent’s ebullioscopic constant, in °C·kg/mol — a fixed property of the solvent, not the solute.' },
+          { symbol: 'm', meaning: 'Molality of the solute, in mol/kg of solvent.' },
+          { symbol: 'i', meaning: 'The van’t Hoff factor — particles the solute becomes per formula unit dissolved. 1 for a nonelectrolyte.' }
+        ],
+        note: 'This gives the size of the rise, not the solution’s final boiling point — add ΔTb to the pure solvent’s own boiling point to get that.'
+      },
+      workedExample: {
+        intro: 'The same nonelectrolyte solute from the freezing-point depression page is dissolved in benzene (normal boiling point 80.1°C) to a molality of 0.33 mol/kg. What is the boiling point of the solution? (OpenStax Chemistry 2e, Example 11.7.)',
+        rows: [
+          { label: 'Ebullioscopic constant of benzene (Kb)', value: '2.53 °C·kg/mol' },
+          { label: 'Molality (m)', value: '0.33 mol/kg' },
+          { label: 'Particles per formula unit (i, nonelectrolyte)', value: '1' },
+          { label: 'Boiling-point elevation (ΔTb = Kb × m × i)', value: '2.53 × 0.33 × 1 = 0.83°C' },
+          { label: 'Solution’s boiling point (80.1°C + 0.83°C)', value: '80.93°C' }
+        ],
+        result: 'ΔTb ≈ 0.83°C; the solution boils at about 80.93°C',
+        explanation: '2.53 × 0.33 gives a rise of 0.8349°C, which rounds to 0.83°C — matching OpenStax’s own worked answer. Adding that to benzene’s own 80.1°C boiling point gives a solution boiling point of about 80.93°C. Notice this is the exact same solute, at the exact same molality, used on the freezing-point depression page — only the constant and the direction of the effect differ.'
+      },
+      watchOut: [
+        {
+          title: 'Kb depends on the solvent, never the solute',
+          body: 'The same solvent’s Kb applies no matter what is dissolved in it. It is also a different number from that same solvent’s Kf — do not reuse one constant for the other calculation.'
+        },
+        {
+          title: 'This uses molality, not molarity',
+          body: 'Molality is used because it does not drift with temperature as a solution heats toward its boiling point, the way molarity (based on volume) would. A mass of solute and a mass of solvent convert to molality on the molality calculator.'
+        },
+        {
+          title: 'Freezing-point depression is the same shape, opposite direction',
+          body: 'ΔTf = Kf × m × i uses the identical mathematical form, but a different solvent-specific constant and the opposite effect — see the freezing-point depression calculator. A 17.9 mol/kg ethylene glycol antifreeze solution in water, for example, raises water’s boiling point to about 109.2°C using Kb, the same molality this site’s molality calculator computes from a 2,220 g dose of ethylene glycol in 2.00 kg of water.'
+        },
+        {
+          title: 'This assumes a nonvolatile solute',
+          body: 'The formula applies to a solute that does not itself evaporate, like salt or sugar. A volatile solute (one with its own vapor pressure, like ethanol in water) changes the solution’s boiling behavior through Raoult’s law instead, and this simple formula does not apply.'
+        },
+        {
+          title: 'i = 2 (or more) for an electrolyte is an ideal upper limit',
+          body: 'As with freezing-point depression, a real solution’s effective van’t Hoff factor is usually a little below the "fully separated ions" ideal, especially at higher concentration.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §11.4 "Colligative Properties" (boiling-point elevation, the Kb table, and Example 11.7)', url: 'https://openstax.org/books/chemistry-2e/pages/11-4-colligative-properties' },
+        { label: 'NIST, Chemistry WebBook (boiling-point data used to check solvent values)', url: 'https://webbook.nist.gov/chemistry/' }
+      ]
+    },
+    inputs: [
+      { id: 'kb', label: 'Ebullioscopic constant, Kb (°C·kg/mol)', type: 'number', placeholder: '2.53', defaultValue: 2.53, step: 0.01, min: 0 },
+      { id: 'molality', label: 'Molality (mol/kg)', type: 'number', placeholder: '0.33', defaultValue: 0.33, step: 0.01, min: 0 },
+      { id: 'particles', label: 'Particles per formula unit, i', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Boiling-Point Elevation Calculator (ΔTb = Kb × m × i)',
+      description: 'Free boiling-point elevation calculator. Solve ΔTb = Kb × molality × i for any value, with a worked example and a freezing-point depression cross-link.',
+      faq: [
+        { question: 'What is the boiling-point elevation formula?', answer: 'ΔTb = Kb × m × i, where Kb is the solvent’s ebullioscopic constant, m is the solute’s molality, and i is the van’t Hoff factor.' },
+        { question: 'What is water’s ebullioscopic constant?', answer: '0.512 °C·kg/mol (OpenStax Chemistry 2e). Benzene’s is much larger, 2.53 °C·kg/mol — every solvent has its own Kb.' },
+        { question: 'What is the boiling point of a 17.9 mol/kg ethylene glycol antifreeze solution in water?', answer: 'About 109.2°C: ΔTb = 0.512 × 17.9 × 1 ≈ 9.16°C, added to water’s 100.0°C boiling point. The 17.9 mol/kg molality is the same figure this site’s molality calculator computes from 2,220 g of ethylene glycol dissolved in 2.00 kg of water (OpenStax Chemistry 2e, Example 11.3).' },
+        { question: 'Is boiling-point elevation the same as freezing-point depression?', answer: 'They share the identical formula shape (constant × molality × i), but boiling-point elevation raises the boiling point with Kb, while freezing-point depression lowers the freezing point with a different constant, Kf — see the freezing-point depression calculator.' },
+        { question: 'Does a volatile solute also elevate the boiling point this way?', answer: 'No — this formula assumes a nonvolatile solute. A volatile solute has its own vapor pressure and changes the solution’s boiling behavior through Raoult’s law instead.' },
+        { question: 'Why does salt water boil at a higher temperature than fresh water?', answer: 'Dissolved salt ions (i ≈ 2 for NaCl) raise the boiling point very slightly through this exact formula — though at typical cooking concentrations the rise is usually well under 1°C, much smaller than most people assume.' },
+        { question: 'Can I use molarity instead of molality here?', answer: 'No — the formula specifically needs molality, since it stays constant as the solution’s temperature (and volume) changes on the way to boiling, unlike molarity.' }
+      ]
+    },
+    compute(values) {
+      return { deltaTb: values.kb * values.molality * values.particles };
+    }
+  },
+  {
+    id: 'vant-hoff-osmotic-pressure-calculator',
+    category: 'chemistry',
+    glyph: 'Π',
+    updatedAt: '2026-11-09',
+    aliases: ['osmotic pressure calculator', 'van’t hoff equation calculator', 'pi = imrt calculator', 'osmotic pressure formula calculator', 'osmotic pressure of a solution calculator', 'reverse osmosis pressure calculator'],
+    related: ['molarity-calculator', 'osmolarity-calculator', 'ideal-gas-law-calculator', 'freezing-point-depression-calculator'],
+    title: 'Van’t Hoff Osmotic Pressure Calculator (Π = iMRT)',
+    description: 'Find the osmotic pressure of a solution from its molarity, van’t Hoff factor, and absolute temperature — Π = iMRT — solved for any of the four.',
+    example: 'A 0.30 mol/L glucose solution at body temperature (37°C, 310.15 K) has an osmotic pressure of about 7.6 atm.',
+    solver: {
+      defaultTarget: 'pressure',
+      variables: [
+        { id: 'pressure', label: 'Osmotic pressure', symbol: 'Π', dimension: 'pressure', defaultValue: 7.635, defaultUnit: 'atm' },
+        { id: 'particles', label: 'Van’t Hoff factor', symbol: 'i', dimension: 'count', defaultValue: 1, defaultUnit: 'count' },
+        { id: 'molarity', label: 'Molarity', symbol: 'M', dimension: 'concentration', defaultValue: 0.3, defaultUnit: 'mol/L' },
+        { id: 'temperature', label: 'Absolute temperature', symbol: 'T', dimension: 'temperature', defaultValue: 37, defaultUnit: 'C' }
+      ],
+      solve: {
+        pressure: ({ particles, molarity, temperature }) => particles * molarity * 8.31446261815324 * temperature,
+        particles: ({ pressure, molarity, temperature }) => (molarity === 0 || temperature === 0 ? NaN : pressure / (molarity * 8.31446261815324 * temperature)),
+        molarity: ({ pressure, particles, temperature }) => (particles === 0 || temperature === 0 ? NaN : pressure / (particles * 8.31446261815324 * temperature)),
+        temperature: ({ pressure, particles, molarity }) => (particles === 0 || molarity === 0 ? NaN : pressure / (particles * molarity * 8.31446261815324))
+      },
+      outputs: [
+        { id: 'osmolarity', label: 'Equivalent osmolarity (i × M)', dimension: 'osmolarity', unit: 'mOsm/L', compute: (si) => si.molarity * si.particles }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-09',
+      concept: {
+        title: 'What is osmotic pressure?',
+        paragraphs: [
+          'Osmotic pressure is the pressure that must be applied to a solution to stop water (or any solvent) from flowing into it across a semipermeable membrane from the pure solvent side. OpenStax’s Chemistry 2e gives it the formula Π = MRT for a nonelectrolyte, directly parallel to the ideal gas law — the same R and the same role for an absolute temperature T, just with a solution’s molarity standing in for a gas’s moles-per-volume.',
+          'For a solute that splits into more than one particle in solution, the formula gains the van’t Hoff factor i, exactly as freezing-point depression and boiling-point elevation do: Π = iMRT. i is the number of particles one formula unit becomes once dissolved — 1 for a nonelectrolyte like glucose, closer to 2 for NaCl. Osmotic pressure is a colligative property for the same reason those two are: it depends on the total concentration of dissolved particles, not on what they are.',
+          'Because iM is exactly a solution’s osmolarity (see the osmolarity calculator), Π = iMRT can equally be written Π = (osmolarity) × R × T — the same equation, just read through the lens of total particle concentration instead of molarity and a separate particle-count factor. Osmotic pressure is also the principle behind reverse osmosis water purification, which works by applying a pressure greater than Π to push pure water back out of a salty solution.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of the osmotic pressure, the van’t Hoff factor, the molarity, and the absolute temperature; the fourth fills in automatically.',
+        steps: [
+          { name: 'Find the solute’s molarity', text: 'Moles of dissolved formula unit per litre of solution — use the molarity calculator above if you only have a mass and a volume.' },
+          { name: 'Set the van’t Hoff factor, i', text: 'Use 1 for a nonelectrolyte (glucose, sucrose). For an ionic compound, use the number of ions its formula produces as an ideal estimate — 2 for NaCl.' },
+          { name: 'Enter the temperature', text: 'Any Celsius, Fahrenheit, or kelvin reading works; the calculator converts it to an absolute scale before solving.' },
+          { name: 'Enter the three values you know', text: 'Type each value and pick its unit; the missing one is highlighted and fills in automatically.' },
+          { name: 'Read the result', text: 'Osmotic pressure appears in your chosen unit, with the solution’s equivalent osmolarity shown underneath.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Π = iMRT rearranges to solve for any one of the four quantities, given the other three.',
+        expression: 'Π = iMRT\ni = Π ÷ (MRT)\nM = Π ÷ (iRT)\nT = Π ÷ (iMR)',
+        terms: [
+          { symbol: 'Π', meaning: 'Osmotic pressure of the solution.' },
+          { symbol: 'i', meaning: 'The van’t Hoff factor — particles the solute becomes per formula unit dissolved. 1 for a nonelectrolyte.' },
+          { symbol: 'M', meaning: 'Molarity of the solute, in moles of formula unit per litre of solution.' },
+          { symbol: 'R', meaning: 'The molar gas constant, 8.31446261815324 J/(mol·K), exact — the same constant the ideal gas law calculator uses.' },
+          { symbol: 'T', meaning: 'Absolute temperature, in kelvin.' }
+        ],
+        note: 'Every input is converted to SI before solving and converted back afterward, so mixing mol/L with atm or °C with kPa is handled automatically.'
+      },
+      workedExample: {
+        intro: 'What is the osmotic pressure of a 0.30 mol/L glucose solution in water at body temperature, 37°C? (OpenStax Chemistry 2e, Example 11.10.)',
+        rows: [
+          { label: 'Molarity (M)', value: '0.30 mol/L' },
+          { label: 'Van’t Hoff factor (i, glucose is a nonelectrolyte)', value: '1' },
+          { label: 'Absolute temperature (T = 37°C + 273.15)', value: '310.15 K' },
+          { label: 'Osmotic pressure (Π = iMRT)', value: '1 × 0.30 × 0.08206 × 310 ≈ 7.6 atm' }
+        ],
+        result: 'Π ≈ 7.6 atm',
+        explanation: 'OpenStax’s own worked solution uses R in L·atm/(mol·K) (0.08206) with T rounded to 310 K, giving 7.6 atm. Recomputed in full SI (R = 8.31446261815324 J/(mol·K), T = 310.15 K, M converted to 300 mol/m³) gives Π = 773,619 Pa ≈ 7.635 atm — the same 7.6 atm to the precision OpenStax’s own rounding supports. This solution’s equivalent osmolarity is 1 × 0.30 = 0.30 Osm/L (300 mOsm/L), since glucose does not dissociate.'
+      },
+      watchOut: [
+        {
+          title: 'Temperature must be absolute (kelvin), not Celsius or Fahrenheit',
+          body: 'Π = iMRT only works with an absolute temperature scale, the same requirement as the ideal gas law. This calculator converts for you, but a hand calculation using a Celsius reading directly gives a wrong answer.'
+        },
+        {
+          title: 'i = 2 (or more) for an electrolyte is an ideal upper limit',
+          body: 'As with freezing-point depression and boiling-point elevation, a real electrolyte solution’s effective van’t Hoff factor usually sits a little below the "fully dissociated" integer value, especially at higher concentration.'
+        },
+        {
+          title: 'This gives osmotic pressure, not osmolarity directly',
+          body: 'Osmolarity (iM) and osmotic pressure (iMRT) are related by one extra factor, RT — they are not the same quantity or the same units. See the osmolarity calculator for iM on its own, in mOsm/L.'
+        },
+        {
+          title: 'Finding a macromolecule’s molar mass from osmotic pressure needs an extra step',
+          body: 'A dilute protein solution’s measured osmotic pressure gives its molarity via M = Π ÷ (iRT); dividing the known mass dissolved by that molarity (using the moles-to-grams calculator in reverse) then gives the molar mass — the technique OpenStax uses to find hemoglobin’s molar mass from a 5.9 torr reading at 22°C.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §11.4 "Colligative Properties" (osmotic pressure and Example 11.10)', url: 'https://openstax.org/books/chemistry-2e/pages/11-4-colligative-properties' },
+        { label: 'NIST CODATA, Molar Gas Constant', url: 'https://physics.nist.gov/cgi-bin/cuu/Value?r' }
+      ]
+    },
+    inputs: [
+      { id: 'molarity', label: 'Molarity (mol/m³)', type: 'number', placeholder: '300', defaultValue: 300, step: 1, min: 0 },
+      { id: 'particles', label: 'Van’t Hoff factor, i', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0 },
+      { id: 'temperature', label: 'Absolute temperature (K)', type: 'number', placeholder: '310.15', defaultValue: 310.15, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Van’t Hoff Osmotic Pressure Calculator (Π = iMRT)',
+      description: 'Free osmotic pressure calculator. Solve Π = iMRT for pressure, molarity, van’t Hoff factor, or temperature, with a worked glucose example.',
+      faq: [
+        { question: 'What is the osmotic pressure formula?', answer: 'Π = iMRT, where i is the van’t Hoff factor, M is molarity, R is the molar gas constant, and T is absolute temperature in kelvin.' },
+        { question: 'What is the osmotic pressure of a 0.30 mol/L glucose solution at body temperature?', answer: 'About 7.6 atm, using i = 1 (glucose does not dissociate), M = 0.30 mol/L, and T = 310.15 K (37°C).' },
+        { question: 'How is osmotic pressure related to osmolarity?', answer: 'Osmolarity is iM (in mOsm/L); osmotic pressure is that same quantity multiplied by RT: Π = (osmolarity) × R × T. They describe the same dissolved-particle concentration, just scaled differently.' },
+        { question: 'Why does the formula need kelvin instead of Celsius?', answer: 'Like the ideal gas law, Π = iMRT only works on an absolute temperature scale with no offset zero. This calculator converts any Celsius or Fahrenheit input to kelvin automatically.' },
+        { question: 'Does osmotic pressure depend on what the solute is?', answer: 'Only through its molarity and how many particles it splits into (i), not through any other property — the same colligative-property pattern as freezing-point depression and boiling-point elevation.' },
+        { question: 'What is the value of R used here?', answer: '8.31446261815324 J/(mol·K) in SI units, the same exact molar gas constant the ideal gas law calculator uses. OpenStax’s own worked examples instead use R = 0.08206 L·atm/(mol·K), convenient when pressure is wanted directly in atm.' },
+        { question: 'How is osmotic pressure used in reverse osmosis?', answer: 'Reverse osmosis applies a pressure greater than a solution’s osmotic pressure Π, pushing pure solvent back across the membrane against its natural flow — the opposite of the passive osmosis this formula describes.' }
+      ]
+    },
+    compute(values) {
+      return { pressure: values.particles * values.molarity * 8.31446261815324 * values.temperature };
+    }
+  },
+  {
+    id: 'percent-composition-calculator',
+    category: 'chemistry',
+    glyph: 'w%',
+    updatedAt: '2026-11-09',
+    aliases: ['percent composition calculator', 'elemental percent composition calculator', 'mass percent of elements calculator', 'percentage composition of a compound calculator', 'percent of each element in a compound calculator', '% composition calculator'],
+    related: ['molar-mass-calculator', 'empirical-formula-calculator', 'mass-percent-calculator', 'moles-to-grams-calculator'],
+    title: 'Percent Composition Calculator',
+    description: 'Find each element’s percent by mass in a chemical formula — every element’s contribution to the molar mass, divided by the total, times 100.',
+    example: 'Vitamin C, C₆H₈O₆, is 40.92% carbon, 4.58% hydrogen, and 54.50% oxygen by mass.',
+    content: {
+      lastReviewed: '2026-11-09',
+      concept: {
+        title: 'What is percent composition?',
+        paragraphs: [
+          'Percent composition breaks a compound’s molar mass down by element: what fraction of the total mass each element contributes. For element i, that is w_i = (atomic mass_i × count_i) ÷ (molar mass) × 100 — the same atomic-mass-times-count contributions the molar mass calculator adds together, just divided by the total and expressed as a percentage instead of left as a sum.',
+          'It is the forward direction of a question the empirical formula calculator answers in reverse: given a formula, percent composition tells you the mass percentages; given mass percentages (usually from lab analysis — burning a sample and measuring what comes off), the empirical formula calculator works backward to a formula. Both use exactly the same atomic-mass table and the same arithmetic, just starting from opposite ends.',
+          'Percent composition is also how a food or supplement label’s elemental breakdown, a mineral’s composition, or a fertilizer’s nitrogen content are usually reported — a compound’s formula fixes its percent composition exactly, since both numerator and denominator come from the same fixed atomic masses.'
+        ]
+      },
+      howTo: {
+        intro: 'Build the formula one element at a time, the same way as the molar mass calculator: pick each element and how many atoms of it appear.',
+        steps: [
+          { name: 'Identify every distinct element in the formula', text: 'Vitamin C, C₆H₈O₆, has three: carbon, hydrogen, and oxygen. Leave unused element slots set to "None".' },
+          { name: 'Enter each element’s atom count', text: 'The subscript in the formula — the "6" in both C₆ and O₆, the "8" in H₈.' },
+          { name: 'Repeat for every element in the formula', text: 'Up to four element slots, covering the large majority of formulas seen in a general chemistry course.' },
+          { name: 'Read each element’s percent by mass', text: 'Every element’s share of the total molar mass appears at once, along with the compound’s molar mass itself.' },
+          { name: 'Check they add up to 100%', text: 'Every element’s percent composition in a formula should sum to 100% (allowing for rounding) — a useful check on the inputs.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Percent composition divides each element’s contribution to the molar mass by the molar mass itself.',
+        expression: 'M = Σ (atomic massᵢ × countᵢ)\n%ᵢ = (atomic massᵢ × countᵢ ÷ M) × 100',
+        terms: [
+          { symbol: 'M', meaning: 'The compound’s molar mass, in grams per mole — the sum of every element’s contribution.' },
+          { symbol: 'atomic massᵢ', meaning: 'The standard atomic weight of element i, from the IUPAC/CIAAW table.' },
+          { symbol: 'countᵢ', meaning: 'How many atoms of element i the formula contains.' },
+          { symbol: '%ᵢ', meaning: 'Element i’s percent of the compound’s total mass.' }
+        ],
+        note: 'Every formula with the same element-and-count combination has exactly one percent composition — it never depends on how much of the compound you actually have.'
+      },
+      workedExample: {
+        intro: 'What is the percent composition of vitamin C (ascorbic acid), C₆H₈O₆? This is the same compound the empirical formula calculator’s own worked example starts from, run in the opposite direction.',
+        rows: [
+          { label: 'Carbon (6 × 12.011 g/mol)', value: '72.066 g/mol' },
+          { label: 'Hydrogen (8 × 1.008 g/mol)', value: '8.064 g/mol' },
+          { label: 'Oxygen (6 × 15.999 g/mol)', value: '95.994 g/mol' },
+          { label: 'Molar mass (72.066 + 8.064 + 95.994)', value: '176.124 g/mol' },
+          { label: '%C (72.066 ÷ 176.124 × 100)', value: '40.92%' },
+          { label: '%H (8.064 ÷ 176.124 × 100)', value: '4.58%' },
+          { label: '%O (95.994 ÷ 176.124 × 100)', value: '54.50%' }
+        ],
+        result: '40.92% C, 4.58% H, 54.50% O',
+        explanation: 'Dividing each element’s contribution by the compound’s 176.124 g/mol total and multiplying by 100 gives 40.92% carbon, 4.58% hydrogen, and 54.50% oxygen, which add to almost exactly 100% (rounding accounts for the rest). These figures match the empirical formula calculator’s own cited percentages for this exact compound (C 40.9%, H 4.58%, O 54.5%, rounded to one fewer decimal place there).'
+      },
+      watchOut: [
+        {
+          title: 'The subscript is an atom count, not a multiplier on the whole formula',
+          body: 'In C₆H₈O₆, the 6 next to carbon is carbon’s own count only — enter each element’s own subscript as it is written in the formula.'
+        },
+        {
+          title: 'Parenthesized groups multiply everything inside them',
+          body: 'A formula like Ca(OH)₂ needs the subscript outside the parentheses multiplied into every element inside first — enter the already-multiplied totals (O: 2, H: 2), the same rule the molar mass calculator uses.'
+        },
+        {
+          title: 'This is the reverse of the empirical formula calculator',
+          body: 'Percent composition goes from a known formula to mass percentages. The empirical formula calculator goes the other way, from measured mass percentages back to a formula — use whichever one matches the information you actually have.'
+        },
+        {
+          title: 'Percent composition is not the same as mass percent of a solution',
+          body: 'This page’s percentages describe one pure compound’s own elemental makeup. The mass percent calculator instead describes how much of a solute is dissolved in a solution — a completely different question using a different formula.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §3.2 "Determining Empirical and Molecular Formulas" (percent composition and its relationship to empirical formulas)', url: 'https://openstax.org/books/chemistry-2e/pages/3-2-determining-empirical-and-molecular-formulas' },
+        { label: 'CIAAW (IUPAC Commission on Isotopic Abundances and Atomic Weights), Standard Atomic Weights', url: 'https://ciaaw.org/atomic-weights.htm' }
+      ]
+    },
+    inputs: [
+      { id: 'element1', label: 'Element 1', type: 'number', placeholder: '12.011', defaultValue: 12.011, step: 0.001, min: 0, options: ELEMENT_OPTIONS },
+      { id: 'count1', label: 'Element 1 atom count', type: 'number', placeholder: '6', defaultValue: 6, step: 1, min: 0 },
+      { id: 'element2', label: 'Element 2', type: 'number', placeholder: '1.008', defaultValue: 1.008, step: 0.001, min: 0, options: ELEMENT_OPTIONS },
+      { id: 'count2', label: 'Element 2 atom count', type: 'number', placeholder: '8', defaultValue: 8, step: 1, min: 0 },
+      { id: 'element3', label: 'Element 3', type: 'number', placeholder: '15.999', defaultValue: 15.999, step: 0.001, min: 0, options: ELEMENT_OPTIONS },
+      { id: 'count3', label: 'Element 3 atom count', type: 'number', placeholder: '6', defaultValue: 6, step: 1, min: 0 },
+      { id: 'element4', label: 'Element 4', type: 'number', placeholder: '0', defaultValue: 0, step: 0.001, min: 0, options: ELEMENT_OPTIONS },
+      { id: 'count4', label: 'Element 4 atom count', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'percent1',
+      headlineLabel: 'Element 1, percent by mass',
+      outputs: [
+        { id: 'percent1', label: 'Element 1, percent by mass', format: 'significant' },
+        { id: 'percent2', label: 'Element 2, percent by mass', format: 'significant' },
+        { id: 'percent3', label: 'Element 3, percent by mass', format: 'significant' },
+        { id: 'percent4', label: 'Element 4, percent by mass', format: 'significant' },
+        { id: 'molarMass', label: 'Molar mass (g/mol)', format: 'significant' }
+      ],
+      groups: [{ inputs: ['element1', 'count1', 'element2', 'count2', 'element3', 'count3', 'element4', 'count4'] }],
+      derive: (values) => ({
+        contribution1: values.element1 * values.count1,
+        contribution2: values.element2 * values.count2,
+        contribution3: values.element3 * values.count3,
+        contribution4: values.element4 * values.count4
+      }),
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'contribution1', label: 'Element 1' },
+          { from: 'contribution2', label: 'Element 2' },
+          { from: 'contribution3', label: 'Element 3' },
+          { from: 'contribution4', label: 'Element 4' }
+        ],
+        center: 'molarMass',
+        centerSub: 'g/mol'
+      }
+    },
+    seo: {
+      title: 'Percent Composition Calculator – Mass % by Element',
+      description: 'Free percent composition calculator. Find each element’s percent by mass in a formula (up to 4 elements), with a worked vitamin C example.',
+      faq: [
+        { question: 'How do I calculate percent composition?', answer: 'Multiply each element’s atomic mass by its atom count to get its contribution, add every element’s contribution for the molar mass, then divide each contribution by that total and multiply by 100.' },
+        { question: 'What is the percent composition of vitamin C, C₆H₈O₆?', answer: '40.92% carbon, 4.58% hydrogen, and 54.50% oxygen by mass, from a total molar mass of 176.124 g/mol.' },
+        { question: 'What is the percent composition of water, H₂O?', answer: '11.19% hydrogen and 88.81% oxygen by mass — water’s 18.015 g/mol total is almost entirely oxygen’s own 15.999 g/mol.' },
+        { question: 'What is the percent composition of glucose, C₆H₁₂O₆?', answer: '40.00% carbon, 6.71% hydrogen, and 53.28% oxygen, from the 180.156 g/mol molar mass the molar mass calculator’s own glucose example computes.' },
+        { question: 'Do percent composition figures always add up to 100%?', answer: 'Yes, as long as every element in the formula is entered — each element’s contribution is divided by the same total, so the percentages are guaranteed to sum to 100% (allowing for rounding).' },
+        { question: 'How is percent composition different from the empirical formula calculator?', answer: 'This page goes from a known formula to mass percentages. The empirical formula calculator runs the identical relationship in reverse, from measured mass percentages back to a formula.' },
+        { question: 'How do I handle a formula with parentheses, like Ca(OH)₂?', answer: 'Multiply the subscript outside the parentheses into every element inside it first, then enter those already-multiplied totals as the per-element counts — the same rule the molar mass calculator uses.' }
+      ]
+    },
+    compute(values) {
+      const contribution1 = values.element1 * values.count1;
+      const contribution2 = values.element2 * values.count2;
+      const contribution3 = values.element3 * values.count3;
+      const contribution4 = values.element4 * values.count4;
+      const total = contribution1 + contribution2 + contribution3 + contribution4;
+      return {
+        molarMass: total,
+        percent1: (contribution1 / total) * 100,
+        percent2: (contribution2 / total) * 100,
+        percent3: (contribution3 / total) * 100,
+        percent4: (contribution4 / total) * 100
+      };
+    }
+  },
+  {
+    id: 'faradays-law-electrolysis-calculator',
+    category: 'chemistry',
+    glyph: 'F',
+    updatedAt: '2026-11-09',
+    aliases: ['faraday’s law of electrolysis calculator', 'electrolysis mass calculator', 'faraday constant calculator', 'moles of electrons calculator', 'electroplating calculator', 'm = itm/nf calculator'],
+    related: ['molar-mass-calculator', 'moles-to-grams-calculator', 'ideal-gas-law-calculator', 'molarity-calculator'],
+    title: 'Faraday’s Law of Electrolysis Calculator (m = ItM ÷ nF)',
+    description: 'Find the mass deposited or produced during electrolysis from the current, time, molar mass, and electrons transferred — solved for any of the three measurable quantities.',
+    example: 'A current of 10.23 A run for exactly 1 hour deposits about 41.17 g of silver (Ag⁺ + e⁻ → Ag) at a cathode.',
+    solver: {
+      defaultTarget: 'mass',
+      variables: [
+        { id: 'mass', label: 'Mass deposited or produced', symbol: 'm', dimension: 'mass', defaultValue: 41.17, defaultUnit: 'g' },
+        { id: 'current', label: 'Current', symbol: 'I', dimension: 'current', defaultValue: 10.23, defaultUnit: 'A' },
+        { id: 'time', label: 'Time', symbol: 't', dimension: 'time', defaultValue: 1, defaultUnit: 'h' },
+        { id: 'molarMass', label: 'Molar mass of the element', symbol: 'M', dimension: 'molarMass', defaultValue: 107.87, defaultUnit: 'g/mol', fixed: true },
+        { id: 'electrons', label: 'Electrons transferred per ion', symbol: 'n', dimension: 'count', defaultValue: 1, defaultUnit: 'count', fixed: true }
+      ],
+      solve: {
+        mass: ({ current, time, molarMass, electrons }) => (current * time * molarMass) / (electrons * 96485.33212331001),
+        current: ({ mass, time, molarMass, electrons }) =>
+          time === 0 || molarMass === 0 ? NaN : (mass * electrons * 96485.33212331001) / (time * molarMass),
+        time: ({ mass, current, molarMass, electrons }) =>
+          current === 0 || molarMass === 0 ? NaN : (mass * electrons * 96485.33212331001) / (current * molarMass)
+      },
+      outputs: [
+        { id: 'charge', label: 'Charge passed (Q = I × t)', dimension: 'charge', unit: 'C', compute: (si) => si.current * si.time },
+        { id: 'molesElectrons', label: 'Moles of electrons (Q ÷ F)', dimension: 'amountOfSubstance', unit: 'mol', compute: (si) => (si.current * si.time) / 96485.33212331001 }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-09',
+      concept: {
+        title: 'What is Faraday’s law of electrolysis?',
+        paragraphs: [
+          'Electrolysis uses electrical current to force a chemical reaction that would not happen on its own — plating a metal onto a cathode, for instance. Faraday’s law of electrolysis ties the amount of current passed, and how long it flows, to exactly how much of a substance gets produced or deposited: m = (I × t × M) ÷ (n × F).',
+          'I × t is the total electric charge passed, in coulombs. Dividing that charge by the Faraday constant, F — the charge carried by one mole of electrons, 96,485.332123... C/mol, exact since the 2019 SI redefinition fixed both the Avogadro constant and the elementary charge — converts the charge into moles of electrons. n, the number of electrons each ion needs to gain or lose (1 for Ag⁺ → Ag, 2 for Cu²⁺ → Cu), then converts moles of electrons into moles of the element itself, and multiplying by the molar mass M finally converts that to a mass.',
+          'This is the same stoichiometric logic as any other mole-based calculation — just with "moles of electrons passed through a circuit" standing in for "moles of a reagent," computed from an electrical measurement (current and time) instead of a scale or a volumetric flask.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in current and time, plus the fixed molar mass and electron count for the element being deposited; mass fills in automatically — or enter a known mass to solve for current or time instead.',
+        steps: [
+          { name: 'Identify the half-reaction at the electrode', text: 'Write the reduction (or oxidation) that deposits or releases the substance, e.g. Ag⁺ + e⁻ → Ag, and read off n, the electrons per ion — 1 here.' },
+          { name: 'Enter the element’s molar mass, M', text: 'From the molar mass calculator or a periodic table — 107.87 g/mol for silver.' },
+          { name: 'Enter the current and time the cell actually ran', text: 'Current in amps, time in seconds, minutes, or hours.' },
+          { name: 'Read the result', text: 'Mass deposited appears immediately, along with the total charge passed and the moles of electrons that charge represents.' },
+          { name: 'Or work backward', text: 'Type a target mass instead, and the calculator solves for the current or the time needed to reach it (whichever field is left to auto-calculate).' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'm = (I × t × M) ÷ (n × F) rearranges to solve for current or time, given the mass and the other quantities.',
+        expression: 'm = (I × t × M) ÷ (n × F)\nI = (m × n × F) ÷ (t × M)\nt = (m × n × F) ÷ (I × M)',
+        terms: [
+          { symbol: 'm', meaning: 'Mass of the substance deposited or produced.' },
+          { symbol: 'I', meaning: 'Current through the electrolytic cell, in amps.' },
+          { symbol: 't', meaning: 'Time the current flows.' },
+          { symbol: 'M', meaning: 'Molar mass of the element being deposited or produced — a fixed property of that element, not something this calculator solves for.' },
+          { symbol: 'n', meaning: 'Electrons transferred per ion in the half-reaction — a fixed property of that reaction, read off the balanced half-equation.' },
+          { symbol: 'F', meaning: 'The Faraday constant, 96,485.332123... C/mol, exact.' }
+        ],
+        note: 'M and n come from the specific element and half-reaction involved, not from a measurement — they are entered as fixed inputs here, the same way a titration’s reaction coefficients are.'
+      },
+      workedExample: {
+        intro: 'A current of 10.23 A is run through a silver-plating cell for exactly 1 hour. How much silver (Ag⁺ + e⁻ → Ag, n = 1) is deposited? (OpenStax Chemistry 2e, Example 17.9.)',
+        rows: [
+          { label: 'Current (I)', value: '10.23 A' },
+          { label: 'Time (t)', value: '1 hour = 3,600 s' },
+          { label: 'Charge passed (Q = I × t)', value: '10.23 × 3,600 = 36,828 C' },
+          { label: 'Moles of electrons (Q ÷ F)', value: '36,828 ÷ 96,485.33 ≈ 0.38170 mol e⁻' },
+          { label: 'Molar mass of silver (M)', value: '107.87 g/mol' },
+          { label: 'Mass of silver (moles e⁻ × M ÷ n)', value: '0.38170 × 107.87 ÷ 1 ≈ 41.17 g' }
+        ],
+        result: 'm ≈ 41.17 g of silver',
+        explanation: 'Recomputed without rounding any intermediate step, 36,828 C of charge is 0.381695 mol of electrons, which at n = 1 for Ag⁺ is also 0.381695 mol of silver, for a mass of 0.381695 × 107.87 ≈ 41.17 g. OpenStax’s own worked solution states 41.19 g, using a rounded intermediate value (0.3817 mol) and the slightly different atomic weight 107.9 g/mol it quotes — rounding 0.3817 × 107.9 gives 41.19, while carrying full precision through gives 41.17–41.18 g. The two-hundredths-of-a-gram gap is rounding, not a disagreement over the formula.'
+      },
+      watchOut: [
+        {
+          title: 'n comes from the half-reaction, not the ion’s charge magnitude alone',
+          body: 'n is the number of electrons that specific half-reaction transfers per ion or atom — 1 for Ag⁺ → Ag, 2 for Cu²⁺ → Cu, 3 for Al³⁺ → Al. It usually (but not always) matches the ion’s charge; always check the balanced half-equation rather than assuming.'
+        },
+        {
+          title: 'Current must be steady over the whole time, or use an average',
+          body: 'This formula assumes a constant current for the full duration. A current that varies needs either a steady average over the period or an integral of current over time — this calculator covers the constant-current case most general-chemistry problems use.'
+        },
+        {
+          title: 'Rounding an intermediate value shifts the final answer slightly',
+          body: 'As the worked example above shows, rounding moles of electrons to four significant figures before multiplying by the molar mass can shift the final mass by a few hundredths of a gram. Carry full precision through every step when it matters, and only round the final answer.'
+        },
+        {
+          title: 'This is mass produced at one electrode, not total cell efficiency',
+          body: 'Real electrolytic cells lose some current to side reactions or heat, so an industrial process typically needs more charge than this ideal formula predicts to deposit the same mass — current efficiency is a separate, equipment-specific figure not covered here.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §17.7 "Electrolysis" (Faraday’s law and Example 17.9)', url: 'https://openstax.org/books/chemistry-2e/pages/17-7-electrolysis' },
+        { label: 'NIST CODATA, Faraday Constant', url: 'https://physics.nist.gov/cgi-bin/cuu/Value?fday' }
+      ]
+    },
+    inputs: [
+      { id: 'current', label: 'Current (A)', type: 'number', placeholder: '10.23', defaultValue: 10.23, step: 0.01, min: 0 },
+      { id: 'time', label: 'Time (s)', type: 'number', placeholder: '3600', defaultValue: 3600, step: 1, min: 0 },
+      { id: 'molarMass', label: 'Molar mass of the element (kg/mol)', type: 'number', placeholder: '0.10787', defaultValue: 0.10787, step: 0.00001, min: 0 },
+      { id: 'electrons', label: 'Electrons transferred per ion, n', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Faraday’s Law of Electrolysis Calculator',
+      description: 'Free Faraday’s law calculator. Solve m = ItM ÷ nF for mass, current, or time during electrolysis, with a silver-plating worked example.',
+      faq: [
+        { question: 'What is Faraday’s law of electrolysis?', answer: 'm = (I × t × M) ÷ (n × F): the mass deposited or produced equals the current times time (the charge passed) times the molar mass, divided by the electrons transferred per ion times the Faraday constant.' },
+        { question: 'What is the Faraday constant?', answer: '96,485.332123... C/mol — the electric charge carried by exactly one mole of electrons, exact since the 2019 SI redefinition fixed the Avogadro constant and the elementary charge.' },
+        { question: 'How much silver is deposited by 10.23 A for 1 hour?', answer: 'About 41.17 g, using n = 1 for Ag⁺ + e⁻ → Ag and silver’s 107.87 g/mol molar mass.' },
+        { question: 'How do I find the moles of electrons passed in electrolysis?', answer: 'Divide the total charge (current × time, in coulombs) by the Faraday constant: moles of electrons = (I × t) ÷ F.' },
+        { question: 'Why does copper deposition use n = 2 but silver uses n = 1?', answer: 'n is the number of electrons each ion gains in its half-reaction: Cu²⁺ + 2e⁻ → Cu needs 2 electrons per copper atom, while Ag⁺ + e⁻ → Ag needs only 1 — read n directly off the balanced half-equation.' },
+        { question: 'Can this calculator solve for the current or time instead of the mass?', answer: 'Yes — enter a target mass and leave current or time as the field to auto-calculate, and the formula solves for whichever one is missing.' },
+        { question: 'Does this account for real-world electrolysis losses?', answer: 'No — it gives the ideal, 100%-efficient result. Real cells typically need somewhat more charge than this to deposit the same mass, due to side reactions and other losses specific to the equipment.' }
+      ]
+    },
+    compute(values) {
+      return { mass: (values.current * values.time * values.molarMass) / (values.electrons * 96485.33212331001) };
+    }
   }
 ];

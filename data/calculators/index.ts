@@ -289,7 +289,12 @@ export const calculatorOrder: string[] = [
   'serial-dilution-calculator',
   'electron-configuration-calculator',
   'buffer-capacity-calculator',
-  'beer-lambert-law-calculator'
+  'beer-lambert-law-calculator',
+  'freezing-point-depression-calculator',
+  'boiling-point-elevation-calculator',
+  'vant-hoff-osmotic-pressure-calculator',
+  'percent-composition-calculator',
+  'faradays-law-electrolysis-calculator'
 ];
 
 const rank = (id: string) => {

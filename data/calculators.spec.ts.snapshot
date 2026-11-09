@@ -657,6 +657,41 @@ exports[`compute() snapshots > boiled-egg-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > boiling-point-elevation-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "kb": 2.53,
+      "molality": 0.33,
+      "particles": 1
+    },
+    "outputs": {
+      "deltaTb": 0.8349
+    }
+  },
+  "typical": {
+    "inputs": {
+      "kb": 3.8,
+      "molality": 0.5,
+      "particles": 2
+    },
+    "outputs": {
+      "deltaTb": 3.8
+    }
+  },
+  "edge": {
+    "inputs": {
+      "kb": 0,
+      "molality": 0,
+      "particles": 0
+    },
+    "outputs": {
+      "deltaTb": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > brick-calculator 1`] = `
 {
   "default": {
@@ -3037,6 +3072,44 @@ exports[`compute() snapshots > fahrenheit-to-celsius-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > faradays-law-electrolysis-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "current": 10.23,
+      "time": 3600,
+      "molarMass": 0.10787,
+      "electrons": 1
+    },
+    "outputs": {
+      "mass": 0.04117347448
+    }
+  },
+  "typical": {
+    "inputs": {
+      "current": 15.35,
+      "time": 5400,
+      "molarMass": 0.1618,
+      "electrons": 2
+    },
+    "outputs": {
+      "mass": 0.06950072983
+    }
+  },
+  "edge": {
+    "inputs": {
+      "current": 0,
+      "time": 0,
+      "molarMass": 0,
+      "electrons": 1
+    },
+    "outputs": {
+      "mass": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > feet-to-meters-converter 1`] = `
 {
   "default": {
@@ -3284,6 +3357,41 @@ exports[`compute() snapshots > freelancer-rate-calculator 1`] = `
       "annualGrossRevenue": 0,
       "taxBurden": 0,
       "totalBillableHours": 1
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > freezing-point-depression-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "kf": 5.12,
+      "molality": 0.33,
+      "particles": 1
+    },
+    "outputs": {
+      "deltaTf": 1.6896
+    }
+  },
+  "typical": {
+    "inputs": {
+      "kf": 7.68,
+      "molality": 0.5,
+      "particles": 2
+    },
+    "outputs": {
+      "deltaTf": 7.68
+    }
+  },
+  "edge": {
+    "inputs": {
+      "kf": 0,
+      "molality": 0,
+      "particles": 0
+    },
+    "outputs": {
+      "deltaTf": 0
     }
   }
 }
@@ -6284,6 +6392,68 @@ exports[`compute() snapshots > percent-change-calculator 1`] = `
     "outputs": {
       "percentChange": "NaN",
       "absoluteChange": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > percent-composition-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "element1": 12.011,
+      "count1": 6,
+      "element2": 1.008,
+      "count2": 8,
+      "element3": 15.999,
+      "count3": 6,
+      "element4": 0,
+      "count4": 0
+    },
+    "outputs": {
+      "molarMass": 176.124,
+      "percent1": 40.91776249,
+      "percent2": 4.578592355,
+      "percent3": 54.50364516,
+      "percent4": 0
+    }
+  },
+  "typical": {
+    "inputs": {
+      "element1": 18.017,
+      "count1": 9,
+      "element2": 1.512,
+      "count2": 12,
+      "element3": 23.999,
+      "count3": 9,
+      "element4": 0,
+      "count4": 0
+    },
+    "outputs": {
+      "molarMass": 396.288,
+      "percent1": 40.91796875,
+      "percent2": 4.578488372,
+      "percent3": 54.50354288,
+      "percent4": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "element1": 0,
+      "count1": 0,
+      "element2": 0,
+      "count2": 0,
+      "element3": 0,
+      "count3": 0,
+      "element4": 0,
+      "count4": 0
+    },
+    "outputs": {
+      "molarMass": 0,
+      "percent1": "NaN",
+      "percent2": "NaN",
+      "percent3": "NaN",
+      "percent4": "NaN"
     }
   }
 }
@@ -9667,6 +9837,41 @@ exports[`compute() snapshots > us-to-uk-ring-size-chart 1`] = `
       "euSize": 37,
       "diameterMm": 11.61831085,
       "circumferenceMm": 36.5
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > vant-hoff-osmotic-pressure-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "molarity": 300,
+      "particles": 1,
+      "temperature": 310.15
+    },
+    "outputs": {
+      "pressure": 773619.1743
+    }
+  },
+  "typical": {
+    "inputs": {
+      "molarity": 450,
+      "particles": 2,
+      "temperature": 465.22
+    },
+    "outputs": {
+      "pressure": 3481248.869
+    }
+  },
+  "edge": {
+    "inputs": {
+      "molarity": 0,
+      "particles": 0,
+      "temperature": 0
+    },
+    "outputs": {
+      "pressure": 0
     }
   }
 }

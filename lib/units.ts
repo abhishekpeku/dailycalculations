@@ -3,6 +3,8 @@ import { currencySymbol } from './calculator.ts';
 // Unit conversions to the base unit of each dimension (the first unit listed, factor 1). Exact where
 // the definition is exact; otherwise NIST SP 811 Appendix B. See mdFiles/steps/30-units-v2.md.
 export type UnitDimension =
+  | 'absorbance'
+  | 'molarAbsorptivity'
   | 'mass'
   | 'acceleration'
   | 'force'
@@ -79,6 +81,16 @@ const BYTE = 8;
 const inverse = (k: number): FunctionConversion => ({ toBase: (value) => k / value, fromBase: (value) => k / value });
 
 export const UNITS: Record<UnitDimension, Unit[]> = {
+  // Unitless (IUPAC Gold Book, "Beer-Lambert law": A = log10(P0/P) = εlc). "AU" (absorbance unit) is
+  // the informal label instruments use; same single-unit precedent as pH/decibel above.
+  absorbance: [{ id: 'AU', label: 'AU', factor: 1 }],
+  // Molar (decadic) absorption coefficient ε. IUPAC Gold Book states its SI unit as m² mol⁻¹ (base
+  // here); chemists almost always report it in L mol⁻¹ cm⁻¹ (= M⁻¹cm⁻¹) instead: 1 L mol⁻¹ cm⁻¹ =
+  // (1e-3 m³ mol⁻¹) × (100 m⁻¹) = 0.1 m² mol⁻¹, exact from the liter and centimeter definitions.
+  molarAbsorptivity: [
+    { id: 'm2/mol', label: 'm²/mol', factor: 1 },
+    { id: 'L/molcm', label: 'L/(mol·cm)', factor: 0.1 }
+  ],
   mass: [
     { id: 'kg', label: 'kg', factor: 1 },
     { id: 'g', label: 'g', factor: 0.001 },

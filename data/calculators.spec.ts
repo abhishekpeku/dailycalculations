@@ -77,7 +77,9 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'arrhenius-equation-calculator': ['rateConstant'], // preExponentialFactor, activationEnergy and temperature all 0 (their min) -> 0 × e^(NaN) (0/0 inside the exponent), undefined
   'molality-calculator': ['molality'], // molesSolute and massSolvent both 0 (their min) -> 0/0
   'mole-fraction-calculator': ['moleFractionA', 'moleFractionB', 'moleFractionC'], // all three components' moles 0 (their min) -> 0/0
-  'titration-calculator': ['concentration2'] // analyte volume 0 (its min) -> divide by zero
+  'titration-calculator': ['concentration2'], // analyte volume 0 (its min) -> divide by zero
+  'density-of-solutions-calculator': ['massPercent'], // soluteMass and solventMass both 0 (their min) -> 0/0
+  'buffer-capacity-calculator': ['percentOfMax'] // totalConcentration 0 (its min) -> maxCapacity 0 -> 0/0
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

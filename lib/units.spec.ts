@@ -40,8 +40,8 @@ describe('unit tables', () => {
 
   test('covers the dimensions the v2 rollout needs', () => {
     assert.deepEqual([...dimensions].sort(), [
-      'acceleration', 'amountOfSubstance', 'angle', 'area', 'capacitance', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
-      'decibel', 'density', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'length', 'mass', 'massConcentration', 'molality', 'molarEnergy', 'molarEntropy', 'molarMass', 'momentum',
+      'absorbance', 'acceleration', 'amountOfSubstance', 'angle', 'area', 'capacitance', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
+      'decibel', 'density', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'length', 'mass', 'massConcentration', 'molality', 'molarAbsorptivity', 'molarEnergy', 'molarEntropy', 'molarMass', 'momentum',
       'normality', 'osmolarity', 'pH', 'pace', 'percent', 'power', 'pressure', 'rateConstant', 'resistance', 'specificHeat', 'speed', 'temperature', 'temperatureDelta', 'term', 'time',
       'voltage', 'volume'
     ]);
@@ -284,6 +284,16 @@ describe('anchor values', () => {
     close(toBase(3600, 'rateConstant', 'h-1'), 1);
     close(toBase(60, 'rateConstant', 'min-1'), 1);
     close(convert(60, 'rateConstant', 'min-1', 'h-1'), 3600);
+  });
+  test('molar absorptivity: 1 L/(mol·cm) = 0.1 m²/mol (IUPAC Gold Book)', () => {
+    assert.equal(UNITS.molarAbsorptivity[0].id, 'm2/mol');
+    close(toBase(1, 'molarAbsorptivity', 'L/molcm'), 0.1);
+    close(convert(10, 'molarAbsorptivity', 'L/molcm', 'm2/mol'), 1);
+  });
+  test('absorbance is a single-unit (unitless) dimension, like pH and decibel', () => {
+    assert.equal(UNITS.absorbance.length, 1);
+    assert.equal(UNITS.absorbance[0].id, 'AU');
+    close(toBase(0.3, 'absorbance', 'AU'), 0.3);
   });
   test('molar energy: 1 kJ/mol = 1000 J/mol, 1 kcal/mol = 4184 J/mol', () => {
     assert.equal(UNITS.molarEnergy[0].id, 'J/mol');

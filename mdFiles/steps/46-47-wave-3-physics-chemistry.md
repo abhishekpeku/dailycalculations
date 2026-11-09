@@ -576,12 +576,80 @@ build agent's judgment**, same as every run so far.
     correctly from `/en/categories/chemistry`, and no "application error" text in any of the 5
     files. No new dev server was left running by this run.
   - 239 calculators total after this run (234 + 5).
-- [ ] Chemistry run 6 (5), branch `step/46-wave-3-chemistry-run-6` — **IN PROGRESS**:
-  - [ ] density-of-solutions-calculator
-  - [ ] serial-dilution-calculator
-  - [ ] electron-configuration-calculator
-  - [ ] buffer-capacity-calculator
-  - [ ] beer-lambert-law-calculator
+- [x] Chemistry run 6 (5), branch `step/46-wave-3-chemistry-run-6`, PR #70 — **DONE** 2026-11-09:
+  - [x] density-of-solutions-calculator
+  - [x] serial-dilution-calculator
+  - [x] electron-configuration-calculator
+  - [x] buffer-capacity-calculator
+  - [x] beer-lambert-law-calculator
+  - New `lib/electronConfigurations.ts` (new, separate from `lib/atomicMasses.ts`): ground-state
+    electron configurations for all 108 elements NIST's Atomic Spectra Database has a measured value
+    for (hydrogen through hassium), fetched directly from NIST's own Ionization Energies tool —
+    elements 109+ return "No data are available" at NIST, so the calculator stops at 108 rather than
+    guessing. Self-check in `lib/electronConfigurations.spec.ts`: every element's shell counts sum to
+    its own Z exactly (the actual guard against a transcription typo across 108 rows).
+  - **Cr/Cu written-order convention, resolved** (this was the exact question the prior session got
+    cut off mid-verifying): fetched NIST's own printed ground-configuration strings directly
+    (`physics.nist.gov/cgi-bin/ASD/ie.pl`) for chromium and copper — both show **3d before 4s**
+    ("[Ar]3d54s", "[Ar]3d104s"), i.e. subshells ordered by increasing principal quantum number, not
+    by Aufbau fill order. Adopted that as this calculator's convention; `content.watchOut` names the
+    alternative (some textbooks write 4s before 3d to highlight which electron moved) as an
+    equivalent, differently-ordered description of the same configuration, not a disagreement.
+  - New `lib/units.ts` dimensions: `absorbance` (single-unit, like pH/decibel — base "AU") and
+    `molarAbsorptivity` (base m²/mol per the IUPAC Gold Book, alt L/(mol·cm) at factor 0.1, both for
+    beer-lambert-law-calculator).
+  - **Scope decisions**: `density-of-solutions-calculator` is NOT a duplicate of physics'
+    `density-calculator` (ρ = m/V) despite sharing the formula — it is built around the specific
+    lab workflow of combining a solute and solvent by mass and then measuring the resulting
+    solution's actual volume (mixing is not volume-additive), adding mass percent and specific
+    gravity on top, the same "don't duplicate, differentiate by real use case" call made for
+    specific-heat in run 4. `serial-dilution-calculator` is deliberately unit-agnostic (plain number
+    inputs, no `concentration` dimension) so the same page serves molarity, mass concentration, and
+    CFU/mL dilution series alike; content ties its worked example directly to OpenStax Microbiology's
+    own CFU plate-count example (50 colonies × a 1:10,000 dilution → 5,000,000 CFU/mL, run the other
+    direction). `buffer-capacity-calculator` is a type-B breakdown, not a solver — the Van Slyke
+    equation's inverse (pH or pKa from a target β) has no clean closed form, and per the run's own
+    scope warning this was not worth a numeric `equation` solve for a first cut.
+  - **Citation gaps, flagged rather than silently treated as fetch-verified** (same precedent as run
+    5's Gold Book 403): the IUPAC Gold Book's Beer-Lambert law page (B00626) and Van Slyke's original
+    1922 JBC paper (52:525-570) both returned HTTP 403 to a direct fetch. The Gold Book's formula was
+    confirmed via a search-engine-indexed snippet; the Van Slyke buffer-capacity formula was instead
+    independently re-derived from the acid-dissociation and mass-balance equations from scratch
+    (`verify_run6.mjs`, scratchpad) — that derivation reproduces the formula's `2.303` constant
+    exactly as `ln(10)` rounded to four figures, a stronger check than trusting the secondary
+    citation. The CRC Handbook's own NaCl-solution density table (used for
+    `density-of-solutions-calculator`'s worked example) is paywalled; confirmed via two independent
+    secondary reproductions (EngineeringToolbox, Sigma-Aldrich) instead, flagged in that
+    calculator's own references entry.
+  - Independent scratch script (`verify_run6.mjs`, scratchpad) recomputed every number before the
+    copy was written: the density/mass-percent/specific-gravity figures (volume backed out from the
+    cited 1.0707 g/mL CRC figure so the worked example matches a real published number exactly); the
+    serial-dilution cumulative-factor and final-concentration figures against OpenStax's own
+    5,000,000/50/10,000 numbers, plus a second non-round-number check; the electron-configuration
+    Cr/Cu/Pd/La/U outer-electron-count arithmetic; the buffer-capacity β/β_max/percent-of-max figures
+    for the acetic-acid-buffer worked example (reusing the exact 0.20/0.30 mol/L, pKa 4.76 scenario
+    already on `pka-henderson-hasselbalch-calculator`'s own page) plus the from-scratch Van Slyke
+    derivation; and the Beer-Lambert absorbance/transmittance worked example and all three reverse
+    solves, plus a full SI-unit recomputation confirming the dimensionless result is unit-independent.
+  - `npm test` (1,057 tests, up from 1,035), `npm run lint` clean, `npm run build` passes (275 static
+    pages, up from 265). Two new `KNOWN_NON_FINITE` entries: `density-of-solutions-calculator`
+    (`massPercent`, both masses 0 at their own min → 0/0) and `buffer-capacity-calculator`
+    (`percentOfMax`, concentration 0 at its own min → 0/0). Snapshot diff is additive-only (196 new
+    lines, 0 removed, confirmed with `git diff --stat`).
+  - Fixed, before committing: two of `serial-dilution-calculator`'s own draft aliases ("serial
+    dilution calculator", "dilution factor calculator") collided with aliases `dilution-calculator`
+    already shipped in an earlier run — caught by a manual duplicate-alias sweep across every
+    calculator (no automated test covers this), replaced with non-colliding phrasings before commit.
+    That same sweep found two **pre-existing** collisions this run did not touch (`emi-calculator`/
+    `mortgage-calculator`'s "house loan emi calculator", `solution-concentration-calculator`/
+    `molarity-calculator`'s "solution concentration calculator") — not fixed, added to Parked.
+  - Verified all 5 pages via the static HTML `next build` produced rather than curl: a pre-existing
+    `next dev` process (PID on port 3000, not started by this run) was already running against this
+    project directory when this run started, same recurring issue flagged in runs 4 and 5 — H1,
+    exactly one JSON-LD script, and all eight section ids present on every page, all 5 ids linked
+    correctly from `/en/categories/chemistry`, no "application error" text. No new dev server was
+    started or left running by this run.
+  - `chemistry` now 30 calculators, **244 total**.
 - [ ] Chemistry runs 7+ (as many 5-calculator runs as needed toward ~60 total — candidates:
   freezing-point depression, boiling-point elevation, van't Hoff osmotic pressure, percent
   composition by formula, Nernst equation, Faraday's law of electrolysis, molar volume at STP,

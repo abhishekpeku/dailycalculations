@@ -576,8 +576,12 @@ build agent's judgment**, same as every run so far.
     correctly from `/en/categories/chemistry`, and no "application error" text in any of the 5
     files. No new dev server was left running by this run.
   - 239 calculators total after this run (234 + 5).
-- [ ] Chemistry run 6 (5): density-of-solutions, serial-dilution, electron-configuration,
-  buffer-capacity, beer-lambert-law (absorbance ↔ concentration)
+- [ ] Chemistry run 6 (5), branch `step/46-wave-3-chemistry-run-6` — **IN PROGRESS**:
+  - [ ] density-of-solutions-calculator
+  - [ ] serial-dilution-calculator
+  - [ ] electron-configuration-calculator
+  - [ ] buffer-capacity-calculator
+  - [ ] beer-lambert-law-calculator
 - [ ] Chemistry runs 7+ (as many 5-calculator runs as needed toward ~60 total — candidates:
   freezing-point depression, boiling-point elevation, van't Hoff osmotic pressure, percent
   composition by formula, Nernst equation, Faraday's law of electrolysis, molar volume at STP,

@@ -650,11 +650,94 @@ build agent's judgment**, same as every run so far.
     correctly from `/en/categories/chemistry`, no "application error" text. No new dev server was
     started or left running by this run.
   - `chemistry` now 30 calculators, **244 total**.
-- [ ] Chemistry runs 7+ (as many 5-calculator runs as needed toward ~60 total — candidates:
-  freezing-point depression, boiling-point elevation, van't Hoff osmotic pressure, percent
-  composition by formula, Nernst equation, Faraday's law of electrolysis, molar volume at STP,
-  vapor pressure (Clausius-Clapeyron, simplified), significant-figures / dimensional-analysis
-  helper, isotope-weighted average atomic mass)
+- [x] Chemistry run 7 (5), branch `step/46-wave-3-chemistry-run-7`, PR #71 — **DONE (open, awaiting merge)** 2026-11-09:
+  - [x] freezing-point-depression-calculator
+  - [x] boiling-point-elevation-calculator
+  - [x] vant-hoff-osmotic-pressure-calculator
+  - [x] percent-composition-calculator
+  - [x] faradays-law-electrolysis-calculator (swapped in for `molar-volume-stp-calculator` — see note below)
+  - **Swap note**: `molar-volume-stp-calculator` was dropped per this file's own instruction to check
+    for a near-duplicate first. `ideal-gas-law-calculator` (run 2) already ships the exact 22.414 L/mol
+    (1 atm) vs 22.711 L/mol (IUPAC 100 kPa) distinction in its own content, AND already carries the
+    alias `'molar volume at stp calculator'` — building a second page would collide on search intent
+    and nearly on the alias itself. Faraday's law of electrolysis (m = ItM ÷ nF) was built instead,
+    from this file's own candidate list.
+  - `freezing-point-depression-calculator` and `boiling-point-elevation-calculator` (ΔT = K × m × i,
+    4-variable closed-form solvers) deliberately reuse the exact same OpenStax benzene solution
+    (0.33 mol/kg nonelectrolyte, Examples 11.9 and 11.7) as their primary worked examples, so both
+    pages show the identical solute at the identical molality producing opposite effects (ΔTf = 1.7°C
+    down vs ΔTb = 0.83°C up) with different solvent constants (Kf = 5.12 vs Kb = 2.53 °C·kg/mol) — the
+    "same mathematical form, different constant and direction" framing the task asked for, shown with
+    real numbers rather than just stated. Each page's FAQ/watch-out also cross-links to
+    `molality-calculator` via the 17.9 mol/kg ethylene glycol antifreeze figure already on that page
+    (OpenStax Example 11.3): boiling-point-elevation-calculator reuses OpenStax's own stated 109.2°C
+    answer for that antifreeze's boiling point (Example 11.7's Check Your Learning) as a second,
+    real-world-sourced figure.
+  - `vant-hoff-osmotic-pressure-calculator` (Π = iMRT, 4-variable closed-form solver) reuses the exact
+    R constant (8.31446261815324 J/(mol·K)) already used in `ideal-gas-law-calculator`/
+    `arrhenius-equation-calculator`/`gibbs-free-energy-calculator`. Worked example is OpenStax's own
+    0.30 mol/L glucose at body temperature (Example 11.10, 7.6 atm) — recomputed in full SI (R in
+    J/(mol·K), T = 310.15 K exactly rather than OpenStax's own rounded 310 K) to confirm the same 7.6
+    atm to the precision their own rounding supports. Bonus output: equivalent osmolarity (i × M, same
+    SI-scale-aligned arithmetic `osmolarity-calculator` itself uses — no stray conversion factor),
+    cross-linking to that calculator and to `molarity-calculator` per the task's instruction, with
+    content stating the Π = osmolarity × R × T equivalent framing explicitly.
+  - `percent-composition-calculator` is a type-B breakdown widget, same 4-element-slot pattern and
+    `lib/atomicMasses.ts` reuse as `molar-mass-calculator`. Deliberately uses vitamin C (ascorbic acid,
+    C₆H₈O₆) as its worked example — the exact compound `empirical-formula-calculator`'s own worked
+    example starts from, run in the opposite direction (percent-composition-calculator: formula → mass
+    percentages; empirical-formula-calculator: mass percentages → formula), with the two pages'
+    numbers cross-checked against each other (40.92/4.58/54.50% here vs the cited 40.9/4.58/54.5%
+    there). Cross-linked both ways with `molar-mass-calculator` and `empirical-formula-calculator`.
+  - `faradays-law-electrolysis-calculator` (m = ItM ÷ nF) needed no new dimension — current, time,
+    mass, molarMass, amountOfSubstance (bonus output), charge (bonus output), and count (the fixed
+    electrons-per-ion input) all reused. `electrons` is a `fixed: true` solver variable with
+    `min: 1` on its plain input (same device `titration-calculator`'s reaction coefficients use),
+    which keeps the division always well-defined and avoids a 0/0 edge case entirely — no
+    `KNOWN_NON_FINITE` entry was needed for this calculator. Worked example is OpenStax's own silver-
+    plating problem (Example 17.9, 10.23 A for 1 hour, n = 1, 0.3817 mol e⁻). Recomputing at full
+    precision (no intermediate rounding) gives 41.17 g rather than OpenStax's own stated 41.19 g — the
+    two-hundredths-of-a-gram gap traced exactly to OpenStax rounding moles of electrons to 0.3817
+    before multiplying (0.3817 × 107.9 = 41.185, which rounds up to 41.19; the unrounded calculation,
+    0.381695 × 107.9 = 41.185 as well, rounds to 41.18–41.19 depending on precision carried, while this
+    site's own 107.87 g/mol atomic-mass value gives 41.17) — stated explicitly in the page's own
+    worked-example explanation as a rounding artifact, not a formula disagreement, same transparency
+    precedent as run 5's Kc rounding note.
+  - Osmotic pressure's `vant-hoff-osmotic-pressure-calculator`, the two colligative-property
+    calculators, and Faraday's law all needed no `KNOWN_NON_FINITE` entry — every forward `compute()`
+    is a pure product (no division), so it is always finite. `percent-composition-calculator` did need
+    one (`percent1`-`percent4`, all four elements' contributions 0 at their own min → 0/0), the same
+    `mole-fraction-calculator`/`molar-mass-calculator`-sibling pattern from earlier runs.
+  - New `lib/units.ts` dimension: `molalConstant` (°C·kg/mol / K·kg/mol, factor 1 both — shares one
+    dimension between Kf and Kb the same way `momentum` is shared by momentum-calculator and
+    impulse-calculator). Round-trip + anchor test added to `lib/units.spec.ts` (water's Kf applied to
+    the site's own 17.9 mol/kg antifreeze molality).
+  - **Alias collision found and fixed before committing** (same manual sweep run 6 established):
+    `percent-composition-calculator`'s draft aliases `'percent composition by mass calculator'` and
+    `'percent by mass calculator'` both collided with aliases `mass-percent-calculator` already
+    shipped in run 1. Replaced with `'elemental percent composition calculator'` and `'percent of each
+    element in a compound calculator'` before commit. The sweep also re-confirmed run 6's two
+    **pre-existing** collisions (`emi-calculator`/`mortgage-calculator`, `solution-concentration-
+    calculator`/`molarity-calculator`) are untouched by this run — still on STATUS.md's Parked list.
+  - Verification script: `verify_run7.mjs` (scratchpad) recomputed every number before the copy was
+    written — both colligative-property worked examples, the osmotic-pressure glucose and hemoglobin
+    examples, ascorbic-acid and glucose percent compositions, and the Faraday's-law silver and copper
+    examples, including the Faraday constant itself (N_A × e = 96485.33212331001 C/mol, recomputed from
+    the two exact 2019-redefinition constants, matching NIST CODATA's listed exact value).
+  - `npm test` (1,076 tests, up from 1,057), `npm run lint` clean, `npm run build` passes (280 static
+    pages, up from 275). No new `KNOWN_NON_FINITE` entries needed except `percent-composition-
+    calculator` (see above). Snapshot diff is additive-only (205 new lines, 0 removed, confirmed with
+    `git diff --stat`).
+  - A pre-existing `next dev` process (PID on port 3000, not started by this run) was already running
+    against this project directory, same recurring issue flagged in runs 4-6. Verified all 5 pages via
+    the static HTML `next build` produced (`.next/server/app/en/calculators/<id>.html`) instead of
+    curl: H1, exactly one JSON-LD script, and all eight section ids present on every page, all 5 ids
+    linked correctly from `/en/categories/chemistry`, no "application error" text. No new dev server
+    was started or left running by this run.
+  - `chemistry` now 35 calculators, **249 total** once this PR merges.
+  - **Visual-QA checkpoint note**: the site crossed 244 after run 6 — exactly 50 calculators past the
+    last Chrome visual pass (194 calculators, 2026-11-05). The threshold is now hit; flagged for the
+    main session to schedule, not run as part of this batch per the usual cadence (every ~10 batches).
 - [ ] Visual-QA checkpoint: due again once ~50 more calculators land after this wave (last pass was
   at 194 calculators, 2026-11-05 — see STATUS.md header)
 

@@ -35,6 +35,7 @@ export type UnitDimension =
   | 'osmolarity'
   | 'normality'
   | 'molarMass'
+  | 'molalConstant'
   | 'rateConstant'
   | 'molarEnergy'
   | 'molarEntropy'
@@ -355,6 +356,17 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
   molarMass: [
     { id: 'kg/mol', label: 'kg/mol', factor: 1 },
     { id: 'g/mol', label: 'g/mol', factor: 1e-3 }
+  ],
+  // The proportionality constant in a colligative-property formula (OpenStax Chemistry 2e §11.4
+  // "Colligative Properties"): ΔT = K × molality × i, where K is the solvent's cryoscopic constant
+  // Kf (freezing-point depression) or ebullioscopic constant Kb (boiling-point elevation). Both
+  // constants share the exact same unit, temperatureDelta ÷ molality, so one dimension serves both
+  // calculators — the same "one real unit, two conventional names" reasoning as `momentum` (shared
+  // by momentum-calculator and impulse-calculator). A 1°C change equals a 1 K change exactly (no
+  // offset, since this is a delta), so °C·kg/mol and K·kg/mol are the same number under two labels.
+  molalConstant: [
+    { id: 'Ckgmol', label: '°C·kg/mol', factor: 1 },
+    { id: 'Kkgmol', label: 'K·kg/mol', factor: 1 }
   ],
   // A first-order rate constant, dimension 1/time (BIPM SI Brochure: 1 Hz = 1 s⁻¹, the same
   // physical unit as `frequency` above) — kept as its own dimension because chemists report rate

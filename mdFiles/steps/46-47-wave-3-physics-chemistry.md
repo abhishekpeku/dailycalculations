@@ -650,11 +650,26 @@ build agent's judgment**, same as every run so far.
     correctly from `/en/categories/chemistry`, no "application error" text. No new dev server was
     started or left running by this run.
   - `chemistry` now 30 calculators, **244 total**.
-- [ ] Chemistry runs 7+ (as many 5-calculator runs as needed toward ~60 total — candidates:
-  freezing-point depression, boiling-point elevation, van't Hoff osmotic pressure, percent
-  composition by formula, Nernst equation, Faraday's law of electrolysis, molar volume at STP,
-  vapor pressure (Clausius-Clapeyron, simplified), significant-figures / dimensional-analysis
-  helper, isotope-weighted average atomic mass)
+- [x] Chemistry run 7 (5), branch `step/46-wave-3-chemistry-run-7` — **IN PROGRESS** 2026-11-09:
+  - [ ] freezing-point-depression-calculator
+  - [ ] boiling-point-elevation-calculator
+  - [ ] vant-hoff-osmotic-pressure-calculator
+  - [ ] percent-composition-calculator
+  - [ ] faradays-law-electrolysis-calculator (swapped in for `molar-volume-stp-calculator` — see note below)
+  - **Swap note**: `molar-volume-stp-calculator` was dropped per this file's own instruction to check
+    for a near-duplicate first. `ideal-gas-law-calculator` (run 2) already ships the exact 22.414 L/mol
+    (1 atm) vs 22.711 L/mol (IUPAC 100 kPa) distinction in its own content, AND already carries the
+    alias `'molar volume at stp calculator'` — building a second page would collide on search intent
+    and nearly on the alias itself. Faraday's law of electrolysis (m = ItM ÷ nF) was built instead,
+    from this file's own candidate list.
+  - New `lib/units.ts` dimension: `molalConstant` (°C·kg/mol / K·kg/mol, factor 1 both — shares one
+    dimension between Kf and Kb the same way `momentum` is shared by momentum-calculator and
+    impulse-calculator). Round-trip + anchor test added to `lib/units.spec.ts`.
+  - Faraday's law needed no new dimension (current, time, mass, molarMass, amountOfSubstance, charge,
+    count all reused). Osmotic pressure needed no new dimension (pressure, concentration, temperature,
+    count, osmolarity-as-bonus-output all reused). Percent composition needed no new dimension
+    (reuses `lib/atomicMasses.ts` and the `percent` dimension).
+  - Verification script: `verify_run7.mjs` (scratchpad), recomputed before writing copy.
 - [ ] Visual-QA checkpoint: due again once ~50 more calculators land after this wave (last pass was
   at 194 calculators, 2026-11-05 — see STATUS.md header)
 

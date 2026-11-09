@@ -41,7 +41,7 @@ describe('unit tables', () => {
   test('covers the dimensions the v2 rollout needs', () => {
     assert.deepEqual([...dimensions].sort(), [
       'absorbance', 'acceleration', 'amountOfSubstance', 'angle', 'area', 'capacitance', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
-      'decibel', 'density', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'length', 'mass', 'massConcentration', 'molality', 'molarAbsorptivity', 'molarEnergy', 'molarEntropy', 'molarMass', 'momentum',
+      'decibel', 'density', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'length', 'mass', 'massConcentration', 'molalConstant', 'molality', 'molarAbsorptivity', 'molarEnergy', 'molarEntropy', 'molarMass', 'momentum',
       'normality', 'osmolarity', 'pH', 'pace', 'percent', 'power', 'pressure', 'rateConstant', 'resistance', 'specificHeat', 'speed', 'temperature', 'temperatureDelta', 'term', 'time',
       'voltage', 'volume'
     ]);
@@ -310,6 +310,14 @@ describe('anchor values', () => {
     close(convert(1, 'molality', 'mol/kg', 'mmol/kg'), 1000);
     // 35.8 mol of solute in 2.00 kg of solvent is 17.9 mol/kg (OpenStax Chemistry 2e Example 11.3).
     close(toBase(35.8, 'amountOfSubstance', 'mol') / toBase(2, 'mass', 'kg'), toBase(17.9, 'molality', 'mol/kg'));
+  });
+  test('molal constant: 1 K·kg/mol = 1 °C·kg/mol; constant × molality = a temperature delta with no stray factor', () => {
+    assert.equal(UNITS.molalConstant[0].id, 'Ckgmol');
+    close(toBase(1, 'molalConstant', 'Kkgmol'), 1);
+    // Water's Kf (1.86 °C·kg/mol, OpenStax Chemistry 2e §11.4) applied to the 17.9 mol/kg antifreeze
+    // from Example 11.3 (the same figure molality-calculator's own worked example uses) gives a
+    // freezing-point depression of 33.294°C.
+    close(toBase(1.86, 'molalConstant', 'Ckgmol') * toBase(17.9, 'molality', 'mol/kg'), toBase(33.294, 'temperatureDelta', 'C'));
   });
   test('mass concentration: mg/L and ppm are numerically identical (dilute-aqueous convention), 1 g/L = 1000 mg/L, 1 ppb = 1 µg/L', () => {
     assert.equal(UNITS.massConcentration[0].id, 'mg/L');

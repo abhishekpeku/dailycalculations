@@ -853,12 +853,128 @@ build agent's judgment**, same as every run so far.
     this run (`npm run dev` was not needed — `next build`'s own static output was sufficient for
     verification), and port 3000 was confirmed free at the end.
   - `chemistry` now 40 calculators, **254 total** once this PR merges.
-- [ ] Chemistry run 9 (5), branch `step/46-wave-3-chemistry-run-9`, PR TBD — **IN PROGRESS** 2026-11-13:
-  - [ ] ksp-molar-solubility-calculator
-  - [ ] isotope-notation-calculator
-  - [ ] molecular-geometry-calculator
-  - [ ] common-ion-effect-calculator
-  - [ ] specific-heat-by-mixing-calculator
+- [x] Chemistry run 9 (5), branch `step/46-wave-3-chemistry-run-9`, PR #73 — **DONE (open, awaiting merge)** 2026-11-13:
+  - [x] ksp-molar-solubility-calculator
+  - [x] common-ion-effect-calculator
+  - [x] isotope-notation-calculator
+  - [x] molecular-geometry-calculator
+  - [x] specific-heat-by-mixing-calculator
+  - **Scope decisions, before picking the 5**: of the task's candidate list, `reaction half-life` and
+    `rate constant / Arrhenius` were confirmed already shipped (run 4), and `specific heat via
+    mixing` was confirmed genuinely distinct from both physics' `heat-calculator` (single substance,
+    Q = mcΔT only) and this wave's own `calorimetry-enthalpy-calculator` (run 8, reaction heat ÷
+    moles) — a two-substance energy balance solving for an unknown property, usually specific heat.
+    `equivalent weight` was considered and dropped: its only real content (EW = M ÷ n) is a strict
+    subset of `normality-calculator`'s own n-factor framing from run 5, too thin to justify a
+    separate page. The final 5 (Ksp/molar solubility, common-ion effect, isotope notation, VSEPR
+    molecular geometry, specific heat by mixing) were picked as standard general-chemistry topics
+    with zero prior coverage, confirmed by grepping the full `chemistry.ts` file for "Ksp",
+    "solubility", "isotope", "VSEPR", "geometry", and "mixing" before writing any content.
+  - `ksp-molar-solubility-calculator` (Ksp = (p×s)ᵖ(q×s)ᵠ, solved for s) is a type-B breakdown (one
+    direction: Ksp + two dissociation coefficients → molar solubility and each ion's own
+    concentration), not a solver — going the other direction (s → Ksp) uses the identical formula
+    directly with s already known, so a second input direction would not add anything, the same
+    reasoning run 5 used for `equilibrium-constant-calculator`. Needed no new `lib/units.ts`
+    dimension: inputs are plain numbers (no `dimension` field), the same convention
+    `equilibrium-constant-calculator` established for Ksp/Kc-style constants whose units vary with
+    stoichiometry. Worked examples are OpenStax's own Example 15.3 (CuBr, 1:1, Ksp = 6.3×10⁻⁹ → s =
+    7.9×10⁻⁵ M) and Example 15.4 (Ca(OH)₂, 1:2, Ksp = 1.3×10⁻⁶ → s = 6.9×10⁻³ M), both fetched
+    directly — the second specifically chosen to exercise and verify the general p:q-coefficient
+    formula, not just the simple square-root 1:1 case.
+  - `common-ion-effect-calculator` (Ksp = (s + [X])×s, solved for s or [X]) is a solver — unlike the
+    plain Ksp calculator, both directions (find s given a common-ion concentration, or find the
+    common-ion concentration that would produce a given s) are genuinely useful, and both have a
+    closed form. `ksp` is `dimension: 'count'` and `fixed: true` (a property of the salt, not solved
+    for), the same device `faradays-law-electrolysis-calculator`'s `electrons` and
+    `molarity-molality-conversion-calculator`'s `molarMass` use for a fixed input on a solver.
+    **Numerical-stability finding**: the textbook quadratic-formula root, s = (−[X] +
+    √([X]²+4Ksp))÷2, catastrophically cancels in double precision whenever [X] ≫ √Ksp — exactly the
+    regime the common-ion effect describes (confirmed directly in the verification script: it
+    returns exactly 0 instead of ≈1.0×10⁻²⁶ for the worked example's own numbers). Used the
+    algebraically equivalent, numerically stable rationalized form instead, s = 2Ksp ÷ ([X] +
+    √([X]²+4Ksp)), which has no subtraction of near-equal numbers. Worked example is OpenStax's own
+    Example 15.13 (CdS, Ksp = 1.0×10⁻²⁸, in 0.010 M CdBr₂ → s ≈ 1.0×10⁻²⁶ M), fetched directly, with
+    the plain-water comparison (√Ksp ≈ 1.0×10⁻¹⁴ M) computed independently to quantify the
+    suppression. No new dimension needed — reuses `concentration` and `count`.
+  - `isotope-notation-calculator` (protons = Z, neutrons = A − Z, electrons = Z − charge) reuses
+    `lib/electronConfigurations.ts`'s existing `ELEMENT_CONFIG_OPTIONS`/element-by-atomic-number
+    data (built for run 6's `electron-configuration-calculator`) for its element dropdown — no new
+    lookup table needed, since that file already keys every element 1-108 by atomic number. A
+    type-B breakdown (protons/neutrons/electrons from three independent inputs, not a single
+    invertible equation). Worked example is the chloride ion, Cl-35⁻ (17 protons, 18 neutrons, 18
+    electrons), chosen specifically to exercise the charge-sign convention the watch-out section
+    warns about; carbon-14 (the `example` line) and uranium-238 were both independently checked in
+    the verification script as well. Cross-linked to `radioactive-half-life-calculator` (physics)
+    with an explicit watch-out item noting this page does not determine which isotopes are
+    radioactive, mirroring the reaction-half-life/radioactive-half-life cross-link precedent from
+    run 4.
+  - `molecular-geometry-calculator` (VSEPR, a pure lookup from bonding-pair and lone-pair counts) is
+    a type-B breakdown using the exact same multi-`labels`-array-on-one-numeric-code device
+    `electron-configuration-calculator` established (one `code` = bondingPairs×10+lonePairs,
+    4 separate `BreakdownOutput.labels` arrays all keyed by that same code: molecular shape,
+    electron-pair geometry, bond angle, and example molecules). New `lib/molecularGeometry.ts` (12
+    rows, domains 2-6) plus `lib/molecularGeometry.spec.ts`, sourced from OpenStax Chemistry 2e
+    §7.6's Figure 7.19, fetched directly in two passes (the first pass's AI-summarized table missed
+    exact wording; the second, quote-verbatim fetch confirmed OpenStax states precise numeric angles
+    only for 180°/120°/109.5°/104.5°(water)/90°/"90° and 120°" — every other combination is left as
+    OpenStax's own qualitative wording ("slightly less than 109.5°," "less than 90°"), deliberately
+    not inventing a precise decimal (e.g. a specific NH₃ angle) the source itself does not give).
+    One rare combination (5 domains, 3 lone pairs, linear) is explicitly out of scope, stated in
+    content and the spec file. No new `lib/units.ts` dimension — inputs are plain option-keyed
+    numbers (bonding/lone pair counts), same convention as `equilibrium-constant-calculator`'s
+    coefficients.
+  - `specific-heat-by-mixing-calculator` (mᵦcᵦ(T_f−T_Bi) = −mₐcₐ(T_f−T_Ai)) is a 7-variable solver
+    (6 rotating + `specificHeatKnown` fixed, the same "known reference constant" device
+    `calorimetry-enthalpy-calculator` and `molarity-molality-conversion-calculator` use) — every one
+    of the 6 rotating variables, including the final-temperature mixing formula itself (T_f =
+    weighted average of both starting temperatures by heat capacity), has a closed form, derived and
+    verified independently before writing any `solve` entry. Reuses `mass`, `specificHeat`,
+    `temperature`, and `energy` (bonus output) — no new dimension. Worked example is OpenStax's own
+    Example 5.4 (identifying copper by measuring its specific heat via mixing with water, 59.7 g
+    metal 100.0°C → 28.5°C in 60.0 g water 22.0°C, c ≈ 0.38 J/(g·°C)), fetched directly; the content
+    notes the small, fully-explained gap between OpenStax's own 4.18 J/(g·°C) water constant and this
+    site's usual 4.184 default (0.3819 vs. 0.3823, same two-sig-fig answer), the same rounding-
+    transparency precedent runs 5, 7, and 8 established for Kc, Faraday's law, and calorimetry
+    enthalpy.
+  - All formulas fetched directly from OpenStax Chemistry 2e before writing any copy (never recalled
+    from memory): §15.1 "Precipitation and Dissolution" (Ksp, Examples 15.3, 15.4, 15.13, and the
+    common-ion effect definition), §7.6 "Molecular Structure and Polarity" (VSEPR, Figure 7.19,
+    fetched twice — a summary pass and then a verbatim-quote pass for exact bond-angle wording),
+    §2.3 "Atomic Structure and Symbolism" (isotope notation), and §5.2 "Calorimetry" (the heat-
+    balance equation and Example 5.4).
+  - Independent scratch script (`verify_run9.mjs`, scratchpad) recomputed every number before the
+    copy was written: both Ksp worked examples (CuBr and Ca(OH)₂) forward and round-tripped back to
+    the original Ksp; the common-ion CdS example with both the stable and the (deliberately broken)
+    naive formula side by side, demonstrating the cancellation bug directly; four isotope/ion
+    examples (C-14, Cl-35⁻, U-238, Na⁺); and the specific-heat-by-mixing worked example with both
+    water-constant conventions (4.18 vs. 4.184) plus a full round-trip solving back for the final
+    temperature and the metal's own starting temperature.
+  - `npm test` (1,108 tests, up from 1,090), `npm run lint` clean, `npm run build` passes (290 static
+    pages, up from 285). Two new `KNOWN_NON_FINITE` entries: `common-ion-effect-calculator`
+    (`molarSolubility`, Ksp and commonIonConcentration both 0 at their own min → 0/0) and
+    `specific-heat-by-mixing-calculator` (`specificHeatUnknown`, every input 0 → 0/0).
+    `ksp-molar-solubility-calculator`, `isotope-notation-calculator`, and
+    `molecular-geometry-calculator` needed none — every edge case (inputs at their own min) stays
+    finite for all three. Snapshot diff is additive-only (202 new lines, 0 removed, confirmed with
+    `git diff --stat`).
+  - `seo.description` was initially over the 160-character limit on 2 of the 5 pages
+    (`ksp-molar-solubility-calculator` at 166, `common-ion-effect-calculator` at 169) — caught by a
+    programmatic length check across all 5 pages before committing, and shortened to 135 and 141
+    characters respectively.
+  - Manual alias-collision sweep (same discipline as runs 6-8) checked every one of this run's 22 new
+    aliases against every alias already shipped site-wide via a script: zero new collisions. The
+    sweep also re-confirmed runs 6-8's two pre-existing, untouched collisions (`emi-calculator`/
+    `mortgage-calculator`'s "house loan emi calculator" and `solution-concentration-calculator`/
+    `molarity-calculator`'s "solution concentration calculator") are still unresolved and still on
+    STATUS.md's Parked list — not touched by this run. Also confirmed programmatically: no duplicate
+    calculator ids, every `related` id exists and is not a self-reference, no `redirectFrom`
+    collisions.
+  - Verified all 5 pages from the static HTML `next build` produced
+    (`.next/server/app/en/calculators/<id>.html`): H1, exactly 2 JSON-LD scripts, and all eight
+    section ids (concept/how-to-use/formula/worked-example/watch-out/faq/references/related) present
+    on every page; all 5 ids linked correctly from `/en/categories/chemistry` (3 occurrences each).
+    No dev server was started by this run, and port 3000 was confirmed free at the end.
+  - `chemistry` now 45 calculators, **259 total** once this PR merges.
 - [ ] Visual-QA checkpoint: due again once ~50 more calculators land after this wave (last pass was
   at 194 calculators, 2026-11-05 — see STATUS.md header; chemistry crossed the 244-calculator
   threshold after run 6, flagged for the main session to schedule — still not run as of this run)

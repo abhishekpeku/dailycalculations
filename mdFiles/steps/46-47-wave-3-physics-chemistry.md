@@ -853,6 +853,12 @@ build agent's judgment**, same as every run so far.
     this run (`npm run dev` was not needed — `next build`'s own static output was sufficient for
     verification), and port 3000 was confirmed free at the end.
   - `chemistry` now 40 calculators, **254 total** once this PR merges.
+- [ ] Chemistry run 9 (5), branch `step/46-wave-3-chemistry-run-9`, PR TBD — **IN PROGRESS** 2026-11-13:
+  - [ ] ksp-molar-solubility-calculator
+  - [ ] isotope-notation-calculator
+  - [ ] molecular-geometry-calculator
+  - [ ] common-ion-effect-calculator
+  - [ ] specific-heat-by-mixing-calculator
 - [ ] Visual-QA checkpoint: due again once ~50 more calculators land after this wave (last pass was
   at 194 calculators, 2026-11-05 — see STATUS.md header; chemistry crossed the 244-calculator
   threshold after run 6, flagged for the main session to schedule — still not run as of this run)

@@ -738,14 +738,124 @@ build agent's judgment**, same as every run so far.
   - **Visual-QA checkpoint note**: the site crossed 244 after run 6 — exactly 50 calculators past the
     last Chrome visual pass (194 calculators, 2026-11-05). The threshold is now hit; flagged for the
     main session to schedule, not run as part of this batch per the usual cadence (every ~10 batches).
-- [ ] Chemistry run 8 (5), branch `step/46-wave-3-chemistry-run-8`, PR TBD — **IN PROGRESS** 2026-11-13:
-  - [ ] vapor-pressure-calculator
-  - [ ] rate-law-calculator
-  - [ ] oxidation-number-calculator
-  - [ ] molarity-molality-conversion-calculator
-  - [ ] calorimetry-enthalpy-calculator
+- [x] Chemistry run 8 (5), branch `step/46-wave-3-chemistry-run-8`, PR #72 — **DONE (open, awaiting merge)** 2026-11-13:
+  - [x] vapor-pressure-calculator
+  - [x] rate-law-calculator
+  - [x] oxidation-number-calculator
+  - [x] molarity-molality-conversion-calculator
+  - [x] calorimetry-enthalpy-calculator
+  - **Scope decisions, before picking the 5**: confirmed `specific-gravity-calculator` would be a
+    near-duplicate — `density-of-solutions-calculator` (run 6) already computes and shows specific
+    gravity as a bonus figure, and already carries the alias `'specific gravity calculator'`, so it
+    was dropped from consideration entirely rather than built and then collided. Electronegativity /
+    bond-polarity was also considered but dropped: a real Pauling-scale lookup table has genuine value
+    collisions (e.g. Si and Cu are both 1.90), which breaks this project's "select options keyed by
+    the lookup value itself" pattern (`lib/atomicMasses.ts`'s `ELEMENT_OPTIONS`) — fixing that would
+    need an index-keyed options redesign, judged not worth it for one calculator this run. The final 5
+    (vapor pressure, rate law, oxidation number, molarity<->molality conversion, calorimetry) were all
+    chosen because each reuses existing `lib/units.ts` dimensions with zero new lookup-table infra.
+  - `vapor-pressure-calculator` (Clausius-Clapeyron, ln(P₂/P₁) = (ΔHvap/R)(1/T₁−1/T₂)) is a genuinely
+    new formula shape for this wave — pressures inside a logarithm, solved for any of the 5 quantities
+    (2 pressures, 2 temperatures, ΔHvap) with full closed forms for all five (even the two
+    temperatures, since the log/reciprocal-temperature relationship rearranges cleanly). No new
+    dimension needed: reuses `pressure`, `temperature`, and `molarEnergy` (the same dimension the
+    Arrhenius equation and Gibbs free energy calculators use for Eₐ/ΔH). Cross-linked to
+    `boiling-point-elevation-calculator` and `gibbs-free-energy-calculator` with a watch-out item
+    distinguishing it from the ideal gas law (both use R and absolute T, different physical question).
+  - `rate-law-calculator` (rate = k[A]ᵘ[B]ᵛ, the differential rate law) is explicitly distinct from
+    `rate-constant-calculator`/`reaction-half-life-calculator` (both use the *integrated* first-order
+    rate law) — content and a watch-out item state this on both sides, cross-linked both ways. Built
+    as a type-B breakdown, not a solver, because k's physical units depend on the overall reaction
+    order (u+v) — a fixed `dimension` field on k would be wrong for some orders and right for others,
+    the same reasoning that made `equilibrium-constant-calculator` a breakdown rather than a solver.
+    Reaction orders (u, v) are plain, unitless number inputs, following that exact precedent (plain
+    `concA`/`coeffA`-style inputs, no `dimension` field). Its `compareBars` visual (current rate vs.
+    rate if [A] doubles vs. rate if [B] doubles) directly demonstrates what each order means — a
+    deliberate pedagogical addition beyond the equilibrium-constant precedent's own reactants/products
+    framing. Worked example is OpenStax's own trial-1 row from Example 12.4's NO+O₃ initial-rates data
+    table (fetched directly): rate = 2.20×10⁷ × 1.00×10⁻⁶ × 3.00×10⁻⁶ = 6.60×10⁻⁵ mol/(L·s), confirmed
+    against the table's trial-4 row too (3.96×10⁻⁴) as an independent cross-check.
+  - `oxidation-number-calculator` is a type-B breakdown applying OpenStax §17.1's own stated rule
+    directly (fetched: "the sum of oxidation numbers for all atoms in a molecule is equal to the
+    charge on the molecule") — up to 3 known elements' oxidation number × count, plus one unknown
+    element's count, solved by isolating the unknown term. `unknownCount` is `min: 1` (never 0, so the
+    division is always well-defined — same guard device as Faraday's law's `electrons` input), which
+    is why this calculator needed no `KNOWN_NON_FINITE` entry at all. Worked example is OpenStax's own
+    NO₃⁻ example (N = +5, fetched directly from §17.1); KMnO₄ (Mn = +7) and Cr₂O₇²⁻ (Cr = +6) were
+    independently re-derived from the same rule in the verification script as FAQ cross-checks, not
+    cited to a second source, since they are direct applications of the one already-cited rule.
+  - `molarity-molality-conversion-calculator` (b = M ÷ (ρ − M×Mr)) bridges `molarity-calculator` and
+    `molality-calculator` using a solution's density — a genuinely different question from either
+    (re-expressing one known concentration in the other unit, not computing either from raw mass/
+    volume). 4-variable closed-form solver reusing `concentration`, `molality`, `density`, and
+    `molarMass` — zero new dimensions. `molarMass` is `fixed: true` (a property of the compound, not
+    something being solved for), the same device Faraday's law uses for its own molar-mass input.
+    Worked example is OpenStax's own Example 11.5 (glucose, 0.556 mol/L, density 1.04 g/mL, molar mass
+    180.16 g/mol → 0.59 mol/kg, fetched directly) — confirmed both directions round-trip exactly in
+    the verification script, including solving back for density and for molar mass.
+  - `calorimetry-enthalpy-calculator` (ΔH = −(mcΔT) ÷ n) takes OpenStax's own q = mcΔT calorimetry
+    equation (§5.2, fetched directly) one step further than the physics `heat-calculator` already on
+    this site: flips the sign for the reaction (q_reaction = −q_solution) and divides by moles reacted
+    to get a reusable, per-mole enthalpy figure — explicitly distinguished from `heat-calculator` in
+    content and a watch-out item, since that page stops at q = mcΔT itself. 5-variable closed-form
+    solver reusing `mass`, `specificHeat`, `temperatureDelta`, `amountOfSubstance`, and `molarEnergy` —
+    zero new dimensions. Worked example is OpenStax's own Example 5.5 (HCl+NaOH neutralization, 100 g
+    combined solution, ΔT = 6.9°C, 0.0500 mol reacted, fetched directly): carrying full precision gives
+    ΔH ≈ −57.7 kJ/mol, while OpenStax's own answer of −58 kJ/mol comes from rounding q to 2.9×10³ J
+    before dividing — stated explicitly in the worked-example explanation as a rounding artifact, the
+    same transparency precedent as prior runs' Kc and Faraday's-law rounding notes.
+  - All five formulas were fetched directly from OpenStax Chemistry 2e before writing any copy (never
+    recalled from memory, per the project's "read sources directly" rule): §10.3 "Phase Transitions"
+    (Clausius-Clapeyron, Examples 10.7 and 10.8), §12.3 "Rate Laws" (differential rate law and
+    Example 12.4's full data table), §17.1 "Review of Redox Chemistry" (oxidation number rules and the
+    NO₃⁻ example), §11.4 "Colligative Properties" (Example 11.5, molarity-to-molality via density —
+    confirmed on the same page as the molality/osmotic-pressure content from earlier runs), and §5.2
+    "Calorimetry" (q = mcΔT and Example 5.5). One minor cross-check gap, flagged rather than silently
+    treated as fully verified: the independently recomputed benzene boiling point in Example 10.8
+    (73.66°C) differs from OpenStax's own stated 73.8°C by about 0.1°C, traced to their own
+    intermediate rounding — Example 10.8 is referenced only in passing in this page's content, with
+    Example 10.7 (which round-trips to the exact published figure) as the actual worked example.
+  - Independent scratch script (`verify_run8.mjs`, scratchpad) recomputed every number before the copy
+    was written: the isooctane ΔHvap calculation and its P₂/T₁ round-trips; the benzene Example 10.8
+    cross-check (flagged above); the NO+O₃ rate law trial-1 and trial-4 data points, plus the
+    doubling-sensitivity figures for the compareBars visual; the NO₃⁻/KMnO₄/Cr₂O₇²⁻ oxidation-number
+    checks; the glucose molarity<->molality conversion (both the step-by-step method and the closed-
+    form SI equation, cross-checked against each other) and all three reverse solves; and the HCl+NaOH
+    calorimetry ΔH calculation with all four reverse solves.
+  - Manual alias-collision sweep (same discipline as runs 6-7) ran a script matching every one of this
+    run's 25 new aliases against every alias already shipped site-wide: zero collisions found. The
+    sweep also re-confirmed runs 6-7's two pre-existing, untouched collisions (`emi-calculator`/
+    `mortgage-calculator`'s "house loan emi calculator" and `solution-concentration-calculator`/
+    `molarity-calculator`'s "solution concentration calculator") are still unresolved and still on
+    STATUS.md's Parked list — not touched by this run.
+  - All 5 calculators' `compute()` returns only their solver's `defaultTarget` variable (or, for the
+    two breakdown calculators, every declared output) — matching the established pattern that a
+    solver's bonus `outputs` (here: vapor pressure has none; molarity<->molality's mass-percent bonus;
+    calorimetry's heat-released bonus) are rendered by the live widget only, never duplicated into the
+    snapshot-tested `compute()` return (confirmed against `ohms-law-calculator` and
+    `ideal-gas-law-calculator` as precedent before writing the other three).
+  - `npm test` (1,090 tests, up from 1,057 — note run 7's own count in this file, 1,076, was mid-review
+    at the time it was written; 1,057 was the last confirmed-merged count going into this run),
+    `npm run lint` clean, `npm run build` passes (285 static pages, up from 280). Three new
+    `KNOWN_NON_FINITE` entries: `vapor-pressure-calculator` (`enthalpyVap`, all five inputs 0 at their
+    own min → log(0/0) over Infinity−Infinity), `molarity-molality-conversion-calculator` (`molality`,
+    molarity/density/molarMass all 0 → 0/0), and `calorimetry-enthalpy-calculator` (`enthalpy`, moles 0
+    → divide by zero). `rate-law-calculator` and `oxidation-number-calculator` needed none — rate's
+    0 × 0⁰ × 0⁰ = 0 × 1 × 1 = 0 stays finite (JS's `0 ** 0 === 1`), and oxidation number's unknownCount
+    floor of 1 keeps that division always defined. Snapshot diff is additive-only (217 new lines, 0
+    removed, confirmed with `git diff --stat`).
+  - Verified all 5 pages from the static HTML `next build` produced
+    (`.next/server/app/en/calculators/<id>.html`): H1, exactly 2 JSON-LD scripts (the site-wide norm,
+    confirmed against `faradays-law-electrolysis-calculator` as a baseline), and all eight section ids
+    (concept/how-to-use/formula/worked-example/watch-out/faq/references/related) present on every
+    page; all 5 ids linked correctly from `/en/categories/chemistry` (3 occurrences each — nav card,
+    related-calculator slot, and sitemap/internal link). No dev server was started or left running by
+    this run (`npm run dev` was not needed — `next build`'s own static output was sufficient for
+    verification), and port 3000 was confirmed free at the end.
+  - `chemistry` now 40 calculators, **254 total** once this PR merges.
 - [ ] Visual-QA checkpoint: due again once ~50 more calculators land after this wave (last pass was
-  at 194 calculators, 2026-11-05 — see STATUS.md header)
+  at 194 calculators, 2026-11-05 — see STATUS.md header; chemistry crossed the 244-calculator
+  threshold after run 6, flagged for the main session to schedule — still not run as of this run)
 
 **After physics and chemistry both close out (~121 calculators added this wave, ~440 site-wide):**
 Wave 4 opens next, in this fixed order — **biology, then ecology, then fun/other** (per

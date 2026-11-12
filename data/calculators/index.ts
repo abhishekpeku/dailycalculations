@@ -294,7 +294,12 @@ export const calculatorOrder: string[] = [
   'boiling-point-elevation-calculator',
   'vant-hoff-osmotic-pressure-calculator',
   'percent-composition-calculator',
-  'faradays-law-electrolysis-calculator'
+  'faradays-law-electrolysis-calculator',
+  'vapor-pressure-calculator',
+  'rate-law-calculator',
+  'oxidation-number-calculator',
+  'molarity-molality-conversion-calculator',
+  'calorimetry-enthalpy-calculator'
 ];
 
 const rank = (id: string) => {

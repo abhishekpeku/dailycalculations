@@ -4283,5 +4283,631 @@ export const chemistryCalculators: CalculatorConfig[] = [
     compute(values) {
       return { mass: (values.current * values.time * values.molarMass) / (values.electrons * 96485.33212331001) };
     }
+  },
+  {
+    id: 'vapor-pressure-calculator',
+    category: 'chemistry',
+    glyph: 'Pv',
+    updatedAt: '2026-11-13',
+    aliases: ['vapor pressure calculator', 'clausius-clapeyron calculator', 'clausius clapeyron equation calculator', 'enthalpy of vaporization calculator', 'boiling point at altitude calculator'],
+    related: ['ideal-gas-law-calculator', 'arrhenius-equation-calculator', 'boiling-point-elevation-calculator', 'gibbs-free-energy-calculator'],
+    title: 'Vapor Pressure Calculator (Clausius-Clapeyron Equation)',
+    description: 'Relate a liquid’s vapor pressure at two temperatures using the Clausius-Clapeyron equation — solve for either pressure, either temperature, or the enthalpy of vaporization.',
+    example: 'Isooctane’s vapor pressure rises from 10.0 kPa at 34.0°C to 100.0 kPa at 98.8°C, giving an enthalpy of vaporization of about 33.8 kJ/mol.',
+    solver: {
+      defaultTarget: 'enthalpyVap',
+      variables: [
+        { id: 'pressure1', label: 'Vapor pressure at T₁', symbol: 'P₁', dimension: 'pressure', defaultValue: 10.0, defaultUnit: 'kPa' },
+        { id: 'temperature1', label: 'Temperature 1', symbol: 'T₁', dimension: 'temperature', defaultValue: 34.0, defaultUnit: 'C' },
+        { id: 'pressure2', label: 'Vapor pressure at T₂', symbol: 'P₂', dimension: 'pressure', defaultValue: 100.0, defaultUnit: 'kPa' },
+        { id: 'temperature2', label: 'Temperature 2', symbol: 'T₂', dimension: 'temperature', defaultValue: 98.8, defaultUnit: 'C' },
+        { id: 'enthalpyVap', label: 'Enthalpy of vaporization', symbol: 'ΔHvap', dimension: 'molarEnergy', defaultValue: 33.75, defaultUnit: 'kJ/mol' }
+      ],
+      solve: {
+        enthalpyVap: ({ pressure1, temperature1, pressure2, temperature2 }) =>
+          (8.31446261815324 * Math.log(pressure2 / pressure1)) / (1 / temperature1 - 1 / temperature2),
+        pressure2: ({ pressure1, temperature1, temperature2, enthalpyVap }) =>
+          pressure1 * Math.exp((enthalpyVap / 8.31446261815324) * (1 / temperature1 - 1 / temperature2)),
+        pressure1: ({ pressure2, temperature1, temperature2, enthalpyVap }) =>
+          pressure2 / Math.exp((enthalpyVap / 8.31446261815324) * (1 / temperature1 - 1 / temperature2)),
+        temperature1: ({ pressure1, pressure2, temperature2, enthalpyVap }) =>
+          1 / (Math.log(pressure2 / pressure1) * (8.31446261815324 / enthalpyVap) + 1 / temperature2),
+        temperature2: ({ pressure1, pressure2, temperature1, enthalpyVap }) =>
+          1 / (1 / temperature1 - Math.log(pressure2 / pressure1) * (8.31446261815324 / enthalpyVap))
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-13',
+      concept: {
+        title: 'What is the Clausius-Clapeyron equation?',
+        paragraphs: [
+          'A liquid’s vapor pressure is not a single fixed number — it rises with temperature, because more molecules gain enough kinetic energy to escape into the gas phase as the liquid gets warmer. The Clausius-Clapeyron equation ties that rise to the liquid’s enthalpy of vaporization, ΔHvap, the energy needed to pull one mole of molecules out of the liquid entirely: ln(P₂/P₁) = (ΔHvap/R) × (1/T₁ − 1/T₂), using two vapor-pressure/temperature pairs for the same substance.',
+          'The equation comes from integrating the Clausius-Clapeyron relation (d(lnP)/dT = ΔHvap/RT²) between two temperatures, assuming ΔHvap stays roughly constant over that range — a good approximation away from the critical point. Because the pressures appear inside a logarithm, this is a genuinely different shape from most of this site’s other chemistry formulas, and it is also the formula behind the common observation that water boils at a lower temperature at high altitude: a lower atmospheric pressure means the liquid reaches its boiling point — where vapor pressure equals the surrounding pressure — at a lower temperature.',
+          'OpenStax Chemistry 2e uses it two ways: given a substance’s vapor pressure at two known temperatures, solve for ΔHvap (Example 10.7); or given ΔHvap and one known boiling point, predict the temperature at which the liquid boils under a different pressure (Example 10.8, useful for estimating a boiling point at altitude or under vacuum).'
+        ]
+      },
+      howTo: {
+        intro: 'Enter any four of the five quantities — two pressures, their matching temperatures, and the enthalpy of vaporization — and the fifth fills in automatically.',
+        steps: [
+          { name: 'Pick two temperature/pressure pairs', text: 'Either two measured (pressure, temperature) points for the same liquid, or one known point plus a target temperature or pressure.' },
+          { name: 'Enter P₁ and T₁', text: 'The first vapor pressure and its matching temperature.' },
+          { name: 'Enter P₂ and T₂', text: 'The second vapor pressure and its matching temperature — or leave one of these two blank-equivalent (the auto field) if that is what you are solving for.' },
+          { name: 'Enter ΔHvap if you know it', text: 'From a reference table, or leave it as the auto field to calculate it from the two (P, T) points instead.' },
+          { name: 'Read the result', text: 'Whichever field was least recently edited fills in automatically, highlighted with the "auto" badge.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'ln(P₂/P₁) = (ΔHvap/R)(1/T₁ − 1/T₂) rearranges to solve for any one of the five quantities, given the other four.',
+        expression: 'ln(P₂/P₁) = (ΔHvap/R)(1/T₁ − 1/T₂)\nP₂ = P₁ × e^[(ΔHvap/R)(1/T₁−1/T₂)]\nΔHvap = R × ln(P₂/P₁) ÷ (1/T₁ − 1/T₂)',
+        terms: [
+          { symbol: 'P₁, P₂', meaning: 'The liquid’s vapor pressure at temperature T₁ and T₂.' },
+          { symbol: 'T₁, T₂', meaning: 'Absolute temperature (kelvin) matching each vapor pressure.' },
+          { symbol: 'ΔHvap', meaning: 'Enthalpy of vaporization — energy needed to vaporize one mole of the liquid, assumed constant between T₁ and T₂.' },
+          { symbol: 'R', meaning: 'The molar gas constant, 8.31446261815324 J/(mol·K), exact — the same constant the ideal gas law calculator uses.' }
+        ],
+        note: 'Every input is converted to SI (pascals, kelvin, J/mol) before solving and converted back afterward, so mixing kPa with atm or °C with K is handled automatically.'
+      },
+      workedExample: {
+        intro: 'Isooctane’s vapor pressure is 10.0 kPa at 34.0°C and 100.0 kPa at 98.8°C. What is its enthalpy of vaporization? (OpenStax Chemistry 2e, Example 10.7.)',
+        rows: [
+          { label: 'T₁ (34.0°C + 273.15)', value: '307.15 K' },
+          { label: 'T₂ (98.8°C + 273.15)', value: '371.95 K' },
+          { label: 'ln(P₂/P₁) = ln(100.0/10.0)', value: 'ln(10) ≈ 2.3026' },
+          { label: '1/T₁ − 1/T₂', value: '0.0032552 − 0.0026885 ≈ 5.667 × 10⁻⁴ K⁻¹' },
+          { label: 'ΔHvap = R × ln(P₂/P₁) ÷ (1/T₁ − 1/T₂)', value: '8.3145 × 2.3026 ÷ 5.667 × 10⁻⁴ ≈ 33,750 J/mol' }
+        ],
+        result: 'ΔHvap ≈ 33.8 kJ/mol',
+        explanation: 'Carrying full precision through every step gives 33.75 kJ/mol, which rounds to the same 33.8 kJ/mol OpenStax’s own worked solution states. Running the same two (P, T) points the other way around — given ΔHvap, solve for P₂ at T₂ — reproduces 100.0 kPa exactly, confirming the calculator’s forward and reverse solves agree.'
+      },
+      watchOut: [
+        {
+          title: 'Temperature must be absolute (kelvin), not Celsius or Fahrenheit',
+          body: 'The 1/T terms only make sense on an absolute scale with no offset zero — this calculator converts any Celsius or Fahrenheit input automatically, but a hand calculation using a Celsius reading directly gives a wrong answer.'
+        },
+        {
+          title: 'ΔHvap is treated as constant, which is only an approximation',
+          body: 'A real liquid’s enthalpy of vaporization decreases somewhat as temperature rises toward the critical point. The Clausius-Clapeyron equation assumes it stays fixed between T₁ and T₂, which is accurate enough for most general-chemistry problems over a moderate temperature range but is not exact.'
+        },
+        {
+          title: 'The boiling point is where vapor pressure equals the surrounding pressure',
+          body: 'A liquid boils at whatever temperature its vapor pressure reaches the ambient atmospheric pressure — not at a single fixed number. That is why water boils below 100°C at high altitude, where atmospheric pressure is lower: use this calculator with the local pressure as P₂ to estimate the boiling point there.'
+        },
+        {
+          title: 'This is not the same equation as the ideal gas law',
+          body: 'Both involve pressure and absolute temperature, but the ideal gas law (PV = nRT) describes a gas’s bulk behavior, while the Clausius-Clapeyron equation describes how a liquid’s own equilibrium vapor pressure changes with temperature — don’t mix the two formulas up.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §10.3 "Phase Transitions" (Clausius-Clapeyron equation and Example 10.7)', url: 'https://openstax.org/books/chemistry-2e/pages/10-3-phase-transitions' },
+        { label: 'NIST CODATA, Molar Gas Constant', url: 'https://physics.nist.gov/cgi-bin/cuu/Value?r' }
+      ]
+    },
+    inputs: [
+      { id: 'pressure1', label: 'Vapor pressure at T₁ (Pa)', type: 'number', placeholder: '10000', defaultValue: 10000, step: 1, min: 0 },
+      { id: 'temperature1', label: 'Temperature 1 (K)', type: 'number', placeholder: '307.15', defaultValue: 307.15, step: 0.01, min: 0 },
+      { id: 'pressure2', label: 'Vapor pressure at T₂ (Pa)', type: 'number', placeholder: '100000', defaultValue: 100000, step: 1, min: 0 },
+      { id: 'temperature2', label: 'Temperature 2 (K)', type: 'number', placeholder: '371.95', defaultValue: 371.95, step: 0.01, min: 0 },
+      { id: 'enthalpyVap', label: 'Enthalpy of vaporization (J/mol)', type: 'number', placeholder: '33750', defaultValue: 33750, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Vapor Pressure Calculator (Clausius-Clapeyron)',
+      description: 'Free Clausius-Clapeyron calculator. Solve ln(P2/P1) = (ΔHvap/R)(1/T1 − 1/T2) for pressure, temperature, or enthalpy of vaporization.',
+      faq: [
+        { question: 'What is the Clausius-Clapeyron equation?', answer: 'ln(P₂/P₁) = (ΔHvap/R)(1/T₁ − 1/T₂), relating a liquid’s vapor pressure at two temperatures to its enthalpy of vaporization, ΔHvap, and the molar gas constant R.' },
+        { question: 'What is isooctane’s enthalpy of vaporization?', answer: 'About 33.8 kJ/mol, computed from its vapor pressure rising from 10.0 kPa at 34.0°C to 100.0 kPa at 98.8°C.' },
+        { question: 'Why does water boil at a lower temperature at high altitude?', answer: 'A liquid boils once its vapor pressure equals the surrounding pressure. Atmospheric pressure drops with altitude, so water’s vapor pressure reaches that lower value — and the liquid boils — at a temperature below 100°C.' },
+        { question: 'Why does the formula need kelvin instead of Celsius?', answer: 'Because the equation uses 1/T directly, it only gives a correct ratio on an absolute temperature scale. This calculator converts any Celsius or Fahrenheit input to kelvin automatically.' },
+        { question: 'Can I use this to predict a boiling point at a different pressure?', answer: 'Yes — enter a known boiling point (T₁ at P₁ = 1 atm, for example) and ΔHvap, then leave the temperature at the new pressure (T₂) as the auto field to solve for it.' },
+        { question: 'Is ΔHvap exactly constant across all temperatures?', answer: 'No — it decreases somewhat as temperature rises toward a substance’s critical point. The Clausius-Clapeyron equation treats it as constant between the two temperatures used, which is a good approximation over a moderate range, not an exact law.' },
+        { question: 'How is this different from the ideal gas law calculator?', answer: 'The ideal gas law relates a gas’s own pressure, volume, temperature, and amount. This calculator instead describes how a liquid’s equilibrium vapor pressure above its own surface changes with temperature — a different physical relationship that happens to also involve R and absolute temperature.' }
+      ]
+    },
+    compute(values) {
+      return {
+        enthalpyVap:
+          (8.31446261815324 * Math.log(values.pressure2 / values.pressure1)) / (1 / values.temperature1 - 1 / values.temperature2)
+      };
+    }
+  },
+  {
+    id: 'rate-law-calculator',
+    category: 'chemistry',
+    glyph: 'rate',
+    updatedAt: '2026-11-13',
+    aliases: ['rate law calculator', 'reaction rate calculator', 'rate = k[a]^m[b]^n calculator', 'reaction order calculator', 'differential rate law calculator'],
+    related: ['rate-constant-calculator', 'reaction-half-life-calculator', 'arrhenius-equation-calculator', 'equilibrium-constant-calculator'],
+    title: 'Rate Law Calculator (rate = k[A]ᵘ[B]ᵛ)',
+    description: 'Find a reaction’s instantaneous rate from its rate constant, reactant concentrations, and each reactant’s experimentally determined order.',
+    example: 'For NO(g) + O₃(g) → NO₂(g) + O₂(g), with k = 2.20 × 10⁷ L/(mol·s) and both reactants first order, [NO] = 1.00 × 10⁻⁶ mol/L and [O₃] = 3.00 × 10⁻⁶ mol/L give a rate of 6.60 × 10⁻⁵ mol/(L·s).',
+    content: {
+      lastReviewed: '2026-11-13',
+      concept: {
+        title: 'What is a rate law?',
+        paragraphs: [
+          'A rate law is an experimentally determined equation that says how fast a reaction proceeds at any instant, given the concentrations present at that moment: rate = k[A]ᵘ[B]ᵛ. k is the rate constant (a fixed number at a given temperature, the same k the rate constant and Arrhenius equation calculators find or use), and u and v are the reaction orders in A and B — how sensitive the rate is to each reactant’s concentration. Orders are determined experimentally (OpenStax Chemistry 2e calls this "the method of initial rates") and are not simply read off the balanced equation’s coefficients.',
+          'An order of 1 means doubling that reactant’s concentration doubles the rate; an order of 2 means doubling it quadruples the rate (2² = 4); an order of 0 means that reactant does not affect the rate at all once it is present. The overall reaction order is u + v. This calculator covers up to two reactants raised to their own orders and multiplied together — the general shape of most rate laws taught in a first general-chemistry course.',
+          'This is a genuinely different question from the reaction half-life and rate constant calculators on this site: those use the integrated rate law, which describes how a concentration changes over time for a specific reaction order (first order, in both cases). This page instead uses the differential rate law — the instantaneous rate at one moment, from the concentrations present right then, for whatever order each reactant actually has.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the rate constant, each reactant’s concentration, and each reactant’s order (determined experimentally, not assumed from the equation’s coefficients).',
+        steps: [
+          { name: 'Find the rate constant, k, and each order', text: 'From an experiment (the method of initial rates) or a textbook problem that already states them.' },
+          { name: 'Enter Reactant A’s concentration and order', text: '[A] in mol/L, and its order u.' },
+          { name: 'Enter Reactant B’s concentration and order, if there is one', text: 'Leave B’s order at 0 for a reaction with only one reactant — a 0 order contributes a factor of 1 and drops it out.' },
+          { name: 'Read the rate', text: 'rate = k[A]ᵘ[B]ᵛ appears immediately, along with the overall reaction order (u + v).' },
+          { name: 'Check the sensitivity', text: 'The chart below shows how the rate changes if either reactant’s concentration doubles — a direct illustration of what each order actually means.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The rate law multiplies the rate constant by each reactant’s concentration raised to its own experimentally determined order.',
+        expression: 'rate = k[A]ᵘ[B]ᵛ\noverall order = u + v',
+        terms: [
+          { symbol: 'rate', meaning: 'The reaction’s instantaneous rate at the given concentrations, in mol/(L·s) (or matching time unit).' },
+          { symbol: 'k', meaning: 'The rate constant at a fixed temperature — its own units depend on the overall order, so no fixed unit menu is attached here.' },
+          { symbol: '[A], [B]', meaning: 'Molar concentrations of up to two reactants, in mol/L.' },
+          { symbol: 'u, v', meaning: 'The experimentally determined reaction order in A and B — typically a small positive integer, but can be 0, a fraction, or (rarely) negative.' }
+        ],
+        note: 'A reactant’s order is not necessarily its coefficient in the balanced equation — it must be measured, usually by seeing how the rate responds when that reactant’s starting concentration is changed while the others are held fixed.'
+      },
+      workedExample: {
+        intro: 'NO(g) + O₃(g) → NO₂(g) + O₂(g) was found experimentally to be first order in both NO and O₃, with k = 2.20 × 10⁷ L/(mol·s). What is the rate when [NO] = 1.00 × 10⁻⁶ mol/L and [O₃] = 3.00 × 10⁻⁶ mol/L? (OpenStax Chemistry 2e, Example 12.4.)',
+        rows: [
+          { label: 'Rate law', value: 'rate = k[NO][O₃]' },
+          { label: 'k', value: '2.20 × 10⁷ L/(mol·s)' },
+          { label: '[NO]¹', value: '1.00 × 10⁻⁶ mol/L' },
+          { label: '[O₃]¹', value: '3.00 × 10⁻⁶ mol/L' },
+          { label: 'rate = 2.20×10⁷ × 1.00×10⁻⁶ × 3.00×10⁻⁶', value: '6.60 × 10⁻⁵ mol/(L·s)' }
+        ],
+        result: 'rate ≈ 6.60 × 10⁻⁵ mol/(L·s)',
+        explanation: 'Multiplying the three numbers directly reproduces OpenStax’s own trial-1 data point exactly. Because both orders are 1 here, doubling either [NO] or [O₃] alone doubles the rate — the calculator’s own sensitivity chart shows this for the entered concentrations.'
+      },
+      watchOut: [
+        {
+          title: 'Reaction order is measured, not assumed from the coefficients',
+          body: 'For NO + O₃ → NO₂ + O₂, both coefficients are 1 and both orders also happen to be 1 — but that is a coincidence of this particular reaction, not a general rule. Many real rate laws have orders that do not match their coefficients at all.'
+        },
+        {
+          title: 'This is the differential rate law, not the integrated one',
+          body: 'This page answers "how fast is the reaction right now, given these concentrations?" The reaction half-life and rate constant calculators instead answer "how does concentration change over time?" for a first-order reaction — a related but different question, using a different formula (one with time in it, not just concentration).'
+        },
+        {
+          title: 'k’s units change with the overall reaction order',
+          body: 'A first-order-overall reaction has k in s⁻¹; this second-order-overall example has k in L/(mol·s); a third-order-overall reaction needs L²/(mol²·s). Always check that k’s stated units match the orders you are using — plugging in a k with the wrong units gives a wrong rate.'
+        },
+        {
+          title: 'A zero-order reactant still needs to be present',
+          body: 'An order of 0 means the rate does not depend on that reactant’s concentration over the range studied — not that the reactant is irrelevant to the reaction. Zero order commonly shows up when a catalyst or enzyme is already saturated.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §12.3 "Rate Laws" (differential rate law, reaction order, and Example 12.4)', url: 'https://openstax.org/books/chemistry-2e/pages/12-3-rate-laws' }
+      ]
+    },
+    inputs: [
+      { id: 'rateConstant', label: 'Rate constant, k', type: 'number', placeholder: '22000000', defaultValue: 22000000, step: 1, min: 0 },
+      { id: 'concentrationA', label: 'Reactant A concentration (mol/L)', type: 'number', placeholder: '0.000001', defaultValue: 0.000001, step: 0.0000001, min: 0 },
+      { id: 'orderA', label: 'Reactant A order, u', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0 },
+      { id: 'concentrationB', label: 'Reactant B concentration (mol/L)', type: 'number', placeholder: '0.000003', defaultValue: 0.000003, step: 0.0000001, min: 0 },
+      { id: 'orderB', label: 'Reactant B order, v', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'rate',
+      headlineLabel: 'Reaction rate',
+      outputs: [
+        { id: 'rate', label: 'Reaction rate', format: 'significant' },
+        { id: 'overallOrder', label: 'Overall reaction order (u + v)', format: 'number' }
+      ],
+      groups: [
+        { title: 'Rate constant', inputs: ['rateConstant'] },
+        { title: 'Reactant A', inputs: ['concentrationA', 'orderA'] },
+        { title: 'Reactant B', inputs: ['concentrationB', 'orderB'] }
+      ],
+      derive: (values) => ({
+        rateIfADoubled: values.rateConstant * (2 * values.concentrationA) ** values.orderA * values.concentrationB ** values.orderB,
+        rateIfBDoubled: values.rateConstant * values.concentrationA ** values.orderA * (2 * values.concentrationB) ** values.orderB
+      }),
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'rate', label: 'Current rate' },
+          { from: 'rateIfADoubled', label: 'If [A] doubles' },
+          { from: 'rateIfBDoubled', label: 'If [B] doubles' }
+        ],
+        title: 'How doubling each reactant changes the rate',
+        highlight: 0
+      }
+    },
+    seo: {
+      title: 'Rate Law Calculator (rate = k[A]ᵘ[B]ᵛ)',
+      description: 'Free rate law calculator. Find a reaction’s instantaneous rate from its rate constant, reactant concentrations, and orders, with a worked OpenStax example.',
+      faq: [
+        { question: 'How do I calculate a reaction’s rate from a rate law?', answer: 'Multiply the rate constant k by each reactant’s concentration raised to its own experimentally determined order: rate = k[A]ᵘ[B]ᵛ.' },
+        { question: 'What is the rate for NO + O₃ → NO₂ + O₂ at [NO] = 1.00×10⁻⁶ M and [O₃] = 3.00×10⁻⁶ M?', answer: 'About 6.60 × 10⁻⁵ mol/(L·s), using k = 2.20 × 10⁷ L/(mol·s) and first order in each reactant.' },
+        { question: 'How is reaction order determined?', answer: 'Experimentally — by measuring how the initial rate changes when one reactant’s starting concentration is varied while the others are held constant (the "method of initial rates"), not by reading the balanced equation’s coefficients.' },
+        { question: 'What does a reaction order of 2 mean?', answer: 'Doubling that reactant’s concentration quadruples the rate (because 2² = 4), tripling it multiplies the rate by 9, and so on — the rate scales with the concentration raised to that power.' },
+        { question: 'What is the difference between this and the rate constant calculator?', answer: 'This page uses the differential rate law to find the instantaneous rate from current concentrations. The rate constant calculator uses the integrated, first-order rate law instead, which relates concentration to elapsed time.' },
+        { question: 'Can a reaction have more than two reactants?', answer: 'Yes, but this calculator covers the common two-reactant case. For a single-reactant reaction, leave Reactant B’s order at 0 so it contributes a factor of 1 and drops out.' },
+        { question: 'Does k have the same units in every rate law?', answer: 'No — k’s units depend on the overall reaction order (u + v). A first-order-overall reaction uses s⁻¹; this example’s second-order-overall reaction uses L/(mol·s); higher overall orders need higher powers of L/mol.' }
+      ]
+    },
+    compute(values) {
+      return {
+        rate: values.rateConstant * values.concentrationA ** values.orderA * values.concentrationB ** values.orderB,
+        overallOrder: values.orderA + values.orderB
+      };
+    }
+  },
+  {
+    id: 'oxidation-number-calculator',
+    category: 'chemistry',
+    glyph: 'ox',
+    updatedAt: '2026-11-13',
+    aliases: ['oxidation number calculator', 'oxidation state calculator', 'find the oxidation number calculator', 'oxidation number of an element calculator', 'redox oxidation state calculator'],
+    related: ['faradays-law-electrolysis-calculator', 'equilibrium-constant-calculator', 'stoichiometry-calculator', 'empirical-formula-calculator'],
+    title: 'Oxidation Number Calculator',
+    description: 'Find an unknown element’s oxidation number in a compound or polyatomic ion from the known oxidation numbers of its other elements and the overall charge.',
+    example: 'In the nitrate ion, NO₃⁻, oxygen is −2 and the overall charge is −1, so nitrogen’s oxidation number is +5.',
+    content: {
+      lastReviewed: '2026-11-13',
+      concept: {
+        title: 'What is an oxidation number?',
+        paragraphs: [
+          'An oxidation number (or oxidation state) is the charge an atom would have if every bond to a different element were treated as fully ionic — a bookkeeping device, not a real, measurable charge, but an extremely useful one for tracking which atoms gain or lose electron density in a reaction. OpenStax Chemistry 2e’s Section 17.1 states the central rule this calculator uses directly: the sum of every atom’s oxidation number, each multiplied by how many of that atom are present, equals the overall charge on the molecule or ion.',
+          'A handful of elements have oxidation numbers fixed by convention in almost every compound — oxygen is −2 (except in peroxides), hydrogen is +1 when bonded to a nonmetal, and group 1/2 metals are always +1/+2 — which is exactly what makes the method work: knowing those fixed values lets the one remaining, unknown element be found by simple subtraction.',
+          'This calculator covers up to three elements with already-known oxidation numbers (entered directly) plus one unknown element, and solves charge = Σ(known oxidation number × count) + (unknown oxidation number × count) for the unknown.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the overall charge on the species (0 for a neutral compound), the oxidation number and atom count of each already-known element, and the atom count of the unknown element.',
+        steps: [
+          { name: 'Write the formula and its overall charge', text: 'A neutral compound has charge 0; a polyatomic ion uses its own charge, e.g. −1 for NO₃⁻.' },
+          { name: 'Identify every element whose oxidation number you already know', text: 'Usually from the fixed conventions: O is −2, H is +1 with a nonmetal, group 1 metals are +1.' },
+          { name: 'Enter each known element’s oxidation number and atom count', text: 'Leave an unused slot’s count at 0 if there are fewer than three known elements.' },
+          { name: 'Enter the unknown element’s atom count', text: 'How many atoms of the element you are solving for appear in the formula.' },
+          { name: 'Read the unknown’s oxidation number', text: 'It fills in immediately, solved so every atom’s contribution sums to the overall charge.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The sum of every atom’s oxidation number times its count equals the species’ overall charge; isolating the unknown term gives its oxidation number.',
+        expression: 'charge = Σ(known oxidation numberᵢ × countᵢ) + (unknown oxidation number × unknown count)\nunknown oxidation number = [charge − Σ(known oxidation numberᵢ × countᵢ)] ÷ unknown count',
+        terms: [
+          { symbol: 'charge', meaning: 'The overall charge on the molecule or ion — 0 for a neutral compound.' },
+          { symbol: 'known oxidation numberᵢ, countᵢ', meaning: 'An already-known element’s oxidation number and how many atoms of it appear.' },
+          { symbol: 'unknown oxidation number, unknown count', meaning: 'The element being solved for, and its own atom count in the formula.' }
+        ],
+        note: 'A slot left at count 0 contributes nothing to the sum, which is what lets a formula with fewer than three known elements use the same general calculator.'
+      },
+      workedExample: {
+        intro: 'What is nitrogen’s oxidation number in the nitrate ion, NO₃⁻? (OpenStax Chemistry 2e, §17.1 "Review of Redox Chemistry.")',
+        rows: [
+          { label: 'Overall charge', value: '−1' },
+          { label: 'Oxygen’s oxidation number × count', value: '−2 × 3 = −6' },
+          { label: 'Nitrogen’s count', value: '1' },
+          { label: 'Nitrogen’s oxidation number = (−1 − (−6)) ÷ 1', value: '(−1 + 6) ÷ 1 = +5' }
+        ],
+        result: 'Nitrogen’s oxidation number = +5',
+        explanation: 'Oxygen contributes −6 total (3 atoms at −2 each); the ion’s charge is −1, so nitrogen’s own contribution must be −1 − (−6) = +5, and since there is only one nitrogen atom, its oxidation number is +5 — exactly OpenStax’s own stated value for this ion.'
+      },
+      watchOut: [
+        {
+          title: 'Oxygen is −2 almost always, but not in peroxides',
+          body: 'In peroxides (like H₂O₂) and superoxides, oxygen’s oxidation number is −1 or −½ instead of the usual −2 — check for those special cases before assuming −2.'
+        },
+        {
+          title: 'An oxidation number can be a fraction when it is really an average',
+          body: 'Some formulas (like Fe₃O₄, magnetite) contain the same element in two genuinely different oxidation states at once. This calculator’s result is then the average oxidation number across all atoms of that element, not the state of any one specific atom.'
+        },
+        {
+          title: 'Count every atom of the unknown element, not just one',
+          body: 'If the unknown element appears twice in the formula (like chromium in Cr₂O₇²⁻), its count must be 2 — using 1 by mistake doubles the resulting oxidation number.'
+        },
+        {
+          title: 'This is not the same as an atom’s real formal charge or ionic charge',
+          body: 'Oxidation number is a bookkeeping convention that treats every bond to a different element as fully ionic, even in compounds that are mostly covalent. It is extremely useful for balancing redox reactions, but it does not describe the atom’s actual measured charge.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §17.1 "Review of Redox Chemistry" (oxidation number rules and the NO₃⁻ example)', url: 'https://openstax.org/books/chemistry-2e/pages/17-1-review-of-redox-chemistry' }
+      ]
+    },
+    inputs: [
+      { id: 'overallCharge', label: 'Overall charge on the ion or molecule', type: 'number', placeholder: '-1', defaultValue: -1, step: 1 },
+      { id: 'element1Oxidation', label: 'Known element 1, oxidation number', type: 'number', placeholder: '-2', defaultValue: -2, step: 1 },
+      { id: 'element1Count', label: 'Known element 1, atom count', type: 'number', placeholder: '3', defaultValue: 3, step: 1, min: 0 },
+      { id: 'element2Oxidation', label: 'Known element 2, oxidation number', type: 'number', placeholder: '0', defaultValue: 0, step: 1 },
+      { id: 'element2Count', label: 'Known element 2, atom count', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0 },
+      { id: 'element3Oxidation', label: 'Known element 3, oxidation number', type: 'number', placeholder: '0', defaultValue: 0, step: 1 },
+      { id: 'element3Count', label: 'Known element 3, atom count', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0 },
+      { id: 'unknownCount', label: 'Unknown element, atom count', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 1 }
+    ],
+    breakdown: {
+      headline: 'unknownOxidation',
+      headlineLabel: 'Unknown element’s oxidation number',
+      outputs: [
+        { id: 'unknownOxidation', label: 'Unknown element’s oxidation number', format: 'number' },
+        { id: 'knownSum', label: 'Known elements’ total contribution', format: 'number' },
+        { id: 'unknownContribution', label: 'Unknown element’s total contribution', format: 'number' }
+      ],
+      groups: [
+        { title: 'Overall charge', inputs: ['overallCharge'] },
+        { title: 'Known elements', inputs: ['element1Oxidation', 'element1Count', 'element2Oxidation', 'element2Count', 'element3Oxidation', 'element3Count'] },
+        { title: 'Unknown element', inputs: ['unknownCount'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'knownSum', label: 'Known elements’ total' },
+          { from: 'unknownContribution', label: 'Unknown element’s total' },
+          { from: 'overallCharge', label: 'Overall charge' }
+        ],
+        title: 'Charge balance check',
+        highlight: 1
+      }
+    },
+    seo: {
+      title: 'Oxidation Number Calculator',
+      description: 'Free oxidation number calculator. Find an unknown element’s oxidation state from the known elements’ oxidation numbers and the overall charge.',
+      faq: [
+        { question: 'How do I find an unknown element’s oxidation number?', answer: 'Multiply each known element’s oxidation number by its atom count, add them up, subtract that sum from the overall charge, then divide by the unknown element’s own atom count.' },
+        { question: 'What is nitrogen’s oxidation number in NO₃⁻?', answer: '+5. Oxygen contributes 3 × (−2) = −6, and the ion’s charge is −1, so nitrogen’s contribution is −1 − (−6) = +5.' },
+        { question: 'What is manganese’s oxidation number in KMnO₄?', answer: '+7. Potassium is +1 and oxygen is −2 × 4 = −8, so for the neutral compound (charge 0), manganese must contribute 0 − (1 − 8) = +7.' },
+        { question: 'What is chromium’s oxidation number in Cr₂O₇²⁻?', answer: '+6. Oxygen contributes 7 × (−2) = −14; the ion’s charge is −2, so the two chromium atoms together contribute −2 − (−14) = +12, or +6 each.' },
+        { question: 'What is the oxidation number of an atom in its elemental form?', answer: 'Always 0 — by convention, an atom in a pure element (O₂, Fe metal, Na metal) has no oxidation number assigned, since there is no other element present to compare it to.' },
+        { question: 'Is oxygen always −2?', answer: 'Almost always, except in peroxides (like H₂O₂, where it is −1) and superoxides (−½) — those are the standard exceptions general chemistry courses flag.' },
+        { question: 'Can an oxidation number be a fraction?', answer: 'Yes, when a formula contains the same element in more than one real oxidation state at once (like Fe₃O₄) — the calculator then returns the average across all atoms of that element, not any single atom’s actual state.' }
+      ]
+    },
+    compute(values) {
+      const knownSum = values.element1Oxidation * values.element1Count + values.element2Oxidation * values.element2Count + values.element3Oxidation * values.element3Count;
+      const unknownOxidation = (values.overallCharge - knownSum) / values.unknownCount;
+      return {
+        unknownOxidation,
+        knownSum,
+        unknownContribution: unknownOxidation * values.unknownCount
+      };
+    }
+  },
+  {
+    id: 'molarity-molality-conversion-calculator',
+    category: 'chemistry',
+    glyph: 'M⇄b',
+    updatedAt: '2026-11-13',
+    aliases: ['molarity to molality calculator', 'molality to molarity calculator', 'convert molarity to molality calculator', 'molarity molality conversion calculator', 'concentration unit conversion calculator'],
+    related: ['molarity-calculator', 'molality-calculator', 'mass-percent-calculator', 'density-of-solutions-calculator'],
+    title: 'Molarity to Molality Conversion Calculator',
+    description: 'Convert between molarity (mol per liter of solution) and molality (mol per kilogram of solvent) using the solution’s density and the solute’s molar mass.',
+    example: 'A 0.556 mol/L glucose solution with a density of 1.04 g/mL and a molar mass of 180.16 g/mol works out to a molality of about 0.59 mol/kg.',
+    solver: {
+      defaultTarget: 'molality',
+      variables: [
+        { id: 'molarity', label: 'Molarity', symbol: 'M', dimension: 'concentration', defaultValue: 556, defaultUnit: 'mol/L' },
+        { id: 'molality', label: 'Molality', symbol: 'b', dimension: 'molality', defaultValue: 0.5916, defaultUnit: 'mol/kg' },
+        { id: 'density', label: 'Solution density', symbol: 'ρ', dimension: 'density', defaultValue: 1040, defaultUnit: 'g/cm3' },
+        { id: 'molarMass', label: 'Solute molar mass', symbol: 'M_r', dimension: 'molarMass', defaultValue: 0.18016, defaultUnit: 'g/mol', fixed: true }
+      ],
+      solve: {
+        molality: ({ molarity, density, molarMass }) =>
+          density - molarity * molarMass === 0 ? NaN : molarity / (density - molarity * molarMass),
+        molarity: ({ molality, density, molarMass }) => (molality * density) / (1 + molality * molarMass),
+        density: ({ molarity, molality, molarMass }) => (molality === 0 ? NaN : molarity / molality + molarity * molarMass)
+      },
+      outputs: [
+        { id: 'massPercent', label: 'Mass percent of solute', dimension: 'percent', unit: '%', compute: (si) => (si.molarity * si.molarMass * 100) / si.density }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-13',
+      concept: {
+        title: 'Why convert between molarity and molality?',
+        paragraphs: [
+          'Molarity (M, mol of solute per liter of solution) and molality (b, mol of solute per kilogram of solvent) answer closely related but genuinely different questions, and lab data often arrives in whichever one a particular instrument or method reports. Converting between them needs one extra piece of information neither concentration unit carries on its own: the solution’s density, which ties "per liter of solution" to "per kilogram of solvent" by way of the solute’s own molar mass.',
+          'The idea, following OpenStax Chemistry 2e’s own method (Example 11.5): take exactly one liter of solution. Its total mass comes from the density; the mass of solute in that liter comes from the molarity and molar mass; subtracting the two leaves the mass of solvent, and dividing the same mole count by that solvent mass (in kilograms) gives the molality.',
+          'This calculator rearranges that same relationship, b = M ÷ (ρ − M×M_r), into a four-variable solver, so it can also go the other direction — convert a known molality back to molarity, or find the density a particular pair of concentration readings implies.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the solute’s molar mass (fixed, since it depends only on which compound you have), plus any two of molarity, molality, and density — the third fills in automatically.',
+        steps: [
+          { name: 'Enter the solute’s molar mass', text: 'From the molar mass calculator or a periodic table — this stays fixed, since it is a property of the compound, not a measurement being solved for.' },
+          { name: 'Enter the solution’s density', text: 'Measured with a hydrometer or density meter, usually in g/mL (numerically the same as g/cm³).' },
+          { name: 'Enter the known concentration', text: 'Molarity (mol/L) if that is what you measured, or molality (mol/kg) if that is what you measured.' },
+          { name: 'Read the converted concentration', text: 'The other concentration unit fills in automatically, along with the solute’s mass percent of the whole solution.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Per liter of solution, mass of solution minus mass of solute leaves the solvent mass that molality is measured against.',
+        expression: 'b = M ÷ (ρ − M×M_r)\nM = b×ρ ÷ (1 + b×M_r)\nρ = M÷b + M×M_r',
+        terms: [
+          { symbol: 'M', meaning: 'Molarity: moles of solute per liter of solution.' },
+          { symbol: 'b', meaning: 'Molality: moles of solute per kilogram of solvent.' },
+          { symbol: 'ρ', meaning: 'The solution’s density (mass per volume).' },
+          { symbol: 'M_r', meaning: 'The solute’s molar mass — a fixed property of the compound, entered here rather than solved for.' }
+        ],
+        note: 'All four quantities are converted to consistent SI units before solving (mol/m³, mol/kg, kg/m³, kg/mol) and converted back to your chosen display units afterward.'
+      },
+      workedExample: {
+        intro: 'A glucose solution is 0.556 mol/L and has a density of 1.04 g/mL. Glucose’s molar mass is 180.16 g/mol. What is the solution’s molality? (OpenStax Chemistry 2e, Example 11.5.)',
+        rows: [
+          { label: 'Mass of 1 L of solution (1.04 g/mL × 1000 mL)', value: '1040 g' },
+          { label: 'Moles of glucose in that liter', value: '0.556 mol' },
+          { label: 'Mass of that glucose (0.556 × 180.16)', value: '100.2 g' },
+          { label: 'Mass of water/solvent (1040 − 100.2)', value: '939.8 g = 0.9398 kg' },
+          { label: 'Molality = 0.556 mol ÷ 0.9398 kg', value: '≈ 0.592 mol/kg' }
+        ],
+        result: 'Molality ≈ 0.59 mol/kg',
+        explanation: 'Carrying full precision through every step gives 0.5916 mol/kg, which rounds to OpenStax’s own stated 0.59 m. Solving the same relationship back the other direction — given this molality, density, and molar mass — reproduces the original 0.556 mol/L exactly, confirming the conversion is reversible.'
+      },
+      watchOut: [
+        {
+          title: 'Molality’s denominator is solvent mass, not solution mass',
+          body: 'Molarity divides by the whole solution’s volume; molality divides by only the solvent’s mass, with the solute’s own mass already subtracted out — mixing the two denominators up is the most common mistake in this conversion.'
+        },
+        {
+          title: 'This needs the solution’s actual density, not pure solvent’s density',
+          body: 'Using pure water’s density (about 1.00 g/mL) instead of the actual solution’s measured density (1.04 g/mL here) gives a noticeably wrong answer once the solute makes up more than a trivial fraction of the mass.'
+        },
+        {
+          title: 'Molality does not change with temperature; molarity does',
+          body: 'Because molality is defined by mass, not volume, it stays constant as a solution expands or contracts with temperature — one reason it is the concentration unit used in colligative-property formulas (freezing-point depression, boiling-point elevation). Molarity shifts slightly with temperature because volume does.'
+        },
+        {
+          title: 'This is a different question from the mass percent calculator',
+          body: 'Mass percent describes solute mass as a share of total solution mass directly. This page instead converts between two mole-based concentration units using density as the bridge — related, but not the same calculation.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §11.4 "Colligative Properties" (molality definition and Example 11.5, molarity-to-molality via density)', url: 'https://openstax.org/books/chemistry-2e/pages/11-4-colligative-properties' }
+      ]
+    },
+    inputs: [
+      { id: 'molarity', label: 'Molarity (mol/m³)', type: 'number', placeholder: '556', defaultValue: 556, step: 1, min: 0 },
+      { id: 'molality', label: 'Molality (mol/kg)', type: 'number', placeholder: '0.5916', defaultValue: 0.5916, step: 0.0001, min: 0 },
+      { id: 'density', label: 'Solution density (kg/m³)', type: 'number', placeholder: '1040', defaultValue: 1040, step: 1, min: 0 },
+      { id: 'molarMass', label: 'Solute molar mass (kg/mol)', type: 'number', placeholder: '0.18016', defaultValue: 0.18016, step: 0.00001, min: 0 }
+    ],
+    seo: {
+      title: 'Molarity to Molality Conversion Calculator',
+      description: 'Free molarity-molality converter. Convert between mol/L and mol/kg using a solution’s density and molar mass, with a worked OpenStax glucose example.',
+      faq: [
+        { question: 'How do I convert molarity to molality?', answer: 'Find the mass of solute and solvent in exactly 1 liter of solution using the density and molar mass, then divide the moles of solute by the solvent’s mass in kilograms: b = M ÷ (ρ − M×M_r).' },
+        { question: 'What is the molality of a 0.556 mol/L glucose solution with density 1.04 g/mL?', answer: 'About 0.59 mol/kg, using glucose’s 180.16 g/mol molar mass.' },
+        { question: 'Why isn’t molarity just equal to molality?', answer: 'Molarity divides by the solution’s volume; molality divides by only the solvent’s mass. The two match closely only in a very dilute aqueous solution, where solution mass and volume both track pure water’s almost exactly.' },
+        { question: 'Do I need the solute’s molar mass to convert between molarity and molality?', answer: 'Yes — it is what lets the calculator work out how much of the solution’s total mass is solute versus solvent, which is the step the conversion depends on.' },
+        { question: 'Does this conversion depend on temperature?', answer: 'Molarity does (since volume expands slightly with temperature); molality does not (since it is mass-based). The solution’s density used here should match the temperature at which the molarity was measured.' },
+        { question: 'What if I only know the mass percent of solute, not molarity or molality?', answer: 'Use the mass percent calculator or the molality calculator directly from mass figures instead — this page specifically bridges molarity and molality using density, not mass percent.' },
+        { question: 'Is this the same as dilution?', answer: 'No — dilution (C₁V₁ = C₂V₂) describes adding solvent to change one solution’s concentration into a new one. This calculator instead re-expresses one fixed solution’s existing concentration in a different unit.' }
+      ]
+    },
+    compute(values) {
+      const denominator = values.density - values.molarity * values.molarMass;
+      return { molality: denominator === 0 ? NaN : values.molarity / denominator };
+    }
+  },
+  {
+    id: 'calorimetry-enthalpy-calculator',
+    category: 'chemistry',
+    glyph: 'ΔH',
+    updatedAt: '2026-11-13',
+    aliases: ['calorimetry calculator', 'enthalpy of reaction calculator', 'heat of reaction calculator', 'molar enthalpy calculator', 'calorimeter heat calculator'],
+    related: ['gibbs-free-energy-calculator', 'molarity-calculator', 'arrhenius-equation-calculator', 'moles-to-grams-calculator'],
+    title: 'Calorimetry Enthalpy Calculator (ΔH from q = mcΔT)',
+    description: 'Find a reaction’s molar enthalpy change from calorimetry data — the solution’s mass, specific heat, and temperature change, divided by the moles of limiting reactant.',
+    example: 'Mixing 50.0 mL of 1.00 M HCl with 50.0 mL of 1.00 M NaOH raises 100 g of combined solution from 22.0°C to 28.9°C, giving an enthalpy of neutralization of about −57.7 kJ/mol.',
+    solver: {
+      defaultTarget: 'enthalpy',
+      variables: [
+        { id: 'mass', label: 'Mass of solution', symbol: 'm', dimension: 'mass', defaultValue: 100, defaultUnit: 'g' },
+        { id: 'specificHeat', label: 'Specific heat of solution', symbol: 'c', dimension: 'specificHeat', defaultValue: 4.184, defaultUnit: 'J/gK' },
+        { id: 'deltaT', label: 'Temperature change', symbol: 'ΔT', dimension: 'temperatureDelta', defaultValue: 6.9, defaultUnit: 'C' },
+        { id: 'moles', label: 'Moles of limiting reactant', symbol: 'n', dimension: 'amountOfSubstance', defaultValue: 0.05, defaultUnit: 'mol' },
+        { id: 'enthalpy', label: 'Molar enthalpy change', symbol: 'ΔH', dimension: 'molarEnergy', defaultValue: -57.74, defaultUnit: 'kJ/mol' }
+      ],
+      solve: {
+        enthalpy: ({ mass, specificHeat, deltaT, moles }) => (moles === 0 ? NaN : -(mass * specificHeat * deltaT) / moles),
+        mass: ({ enthalpy, specificHeat, deltaT, moles }) => (specificHeat === 0 || deltaT === 0 ? NaN : -(moles * enthalpy) / (specificHeat * deltaT)),
+        specificHeat: ({ enthalpy, mass, deltaT, moles }) => (mass === 0 || deltaT === 0 ? NaN : -(moles * enthalpy) / (mass * deltaT)),
+        deltaT: ({ enthalpy, mass, specificHeat, moles }) => (mass === 0 || specificHeat === 0 ? NaN : -(moles * enthalpy) / (mass * specificHeat)),
+        moles: ({ enthalpy, mass, specificHeat, deltaT }) => (enthalpy === 0 ? NaN : -(mass * specificHeat * deltaT) / enthalpy)
+      },
+      outputs: [
+        { id: 'heatReleased', label: 'Heat released by the reaction', dimension: 'energy', unit: 'kJ', compute: (si) => -(si.mass * si.specificHeat * si.deltaT) }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-13',
+      concept: {
+        title: 'What is calorimetry, and how does it give a molar enthalpy?',
+        paragraphs: [
+          'Calorimetry measures a reaction’s heat indirectly, by watching its effect on the temperature of the solution it happens in. For a reaction run in a simple insulated container, OpenStax Chemistry 2e’s §5.2 "Calorimetry" gives the heat gained by the solution as q = mcΔT (mass, specific heat, and temperature change). Because the container is assumed to exchange no heat with the outside world, the heat the reaction itself released or absorbed is the negative of that: q_reaction = −q_solution — an exothermic reaction heats the solution up, so it releases heat while the solution gains it.',
+          'That heat, on its own, describes only the specific amount of reactant actually used in the experiment. Dividing q_reaction by the moles of the limiting reactant converts it into an intensive, per-mole quantity — the molar enthalpy of reaction, ΔH — that describes the reaction itself, independent of how much was mixed. This is the same calorimetry-to-ΔH pipeline used to measure a neutralization, a dissolution, or a combustion’s enthalpy in an undergraduate lab.',
+          'This calculator is distinct from the heat calculator elsewhere on this site, which only computes q = mcΔT itself (a specific amount of heat for a specific sample). This page takes that same relationship one step further, dividing by moles reacted to get a reusable, per-mole enthalpy figure — and it carries the sign (negative for exothermic, positive for endothermic) that convention attaches to ΔH.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the solution’s mass, its specific heat, the temperature change it underwent, and the moles of the limiting reactant that caused that change.',
+        steps: [
+          { name: 'Measure or compute the moles of limiting reactant', text: 'From the volume and molarity of the smaller or limiting solution — 50.0 mL × 1.00 mol/L = 0.0500 mol, for example.' },
+          { name: 'Measure the combined solution’s mass', text: 'Often approximated as the combined volume times water’s density (1 g/mL), when the solutions are dilute.' },
+          { name: 'Enter the specific heat', text: 'Dilute aqueous solutions are commonly approximated as water’s own specific heat, 4.184 J/(g·°C).' },
+          { name: 'Enter the temperature change, ΔT', text: 'Final temperature minus initial temperature — positive for a temperature rise (exothermic reaction).' },
+          { name: 'Read the molar enthalpy, ΔH', text: 'Negative means the reaction released heat (exothermic); positive means it absorbed heat (endothermic). The heat actually released or absorbed in the experiment appears as a bonus figure.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The solution’s measured temperature change gives the heat it absorbed; the reaction released (or absorbed) the opposite amount, which is then divided by moles reacted.',
+        expression: 'q_solution = m × c × ΔT\nq_reaction = −q_solution\nΔH = q_reaction ÷ n = −(m × c × ΔT) ÷ n',
+        terms: [
+          { symbol: 'm', meaning: 'Mass of the solution undergoing the temperature change (often the combined mass of two mixed solutions).' },
+          { symbol: 'c', meaning: 'Specific heat of the solution — commonly approximated as water’s, 4.184 J/(g·°C), for dilute aqueous solutions.' },
+          { symbol: 'ΔT', meaning: 'Final temperature minus initial temperature.' },
+          { symbol: 'n', meaning: 'Moles of the limiting reactant that reacted.' },
+          { symbol: 'ΔH', meaning: 'The reaction’s molar enthalpy change — negative (exothermic) or positive (endothermic).' }
+        ],
+        note: 'This calculator assumes the calorimeter itself absorbs no significant heat (a bare-bones "coffee cup" calorimeter) — a real bomb or flame calorimeter needs its own heat capacity added into the balance, which this simplified formula does not include.'
+      },
+      workedExample: {
+        intro: '50.0 mL of 1.00 M HCl and 50.0 mL of 1.00 M NaOH, both at 22.0°C, are mixed; the combined solution’s temperature rises to 28.9°C. What is the molar enthalpy of neutralization? (OpenStax Chemistry 2e, Example 5.5.)',
+        rows: [
+          { label: 'Combined mass (two 50.0 mL portions, ≈1.00 g/mL)', value: '≈ 100 g' },
+          { label: 'Specific heat (dilute aqueous solution ≈ water)', value: '4.184 J/(g·°C)' },
+          { label: 'ΔT (28.9 − 22.0)', value: '6.9°C' },
+          { label: 'q_solution = 100 × 4.184 × 6.9', value: '≈ 2887 J ≈ 2.9 kJ' },
+          { label: 'q_reaction = −q_solution', value: '≈ −2.9 kJ' },
+          { label: 'Moles reacted (50.0 mL × 1.00 mol/L)', value: '0.0500 mol' },
+          { label: 'ΔH = q_reaction ÷ n = −2.887 kJ ÷ 0.0500 mol', value: '≈ −57.7 kJ/mol' }
+        ],
+        result: 'ΔH ≈ −57.7 kJ/mol (exothermic)',
+        explanation: 'Carrying full precision through every step gives −57.7 kJ/mol. OpenStax’s own worked solution rounds q_solution to 2.9 × 10³ J before stating q_reaction as −2.9 kJ; dividing that already-rounded figure by 0.0500 mol gives −58 kJ/mol — the two-tenths-of-a-kJ gap is an intermediate-rounding artifact, not a disagreement over the formula.'
+      },
+      watchOut: [
+        {
+          title: 'The sign convention matters: negative means exothermic',
+          body: 'A temperature rise (solution gains heat) means the reaction released heat, so ΔH comes out negative. A temperature drop gives a positive ΔH, for an endothermic reaction that absorbs heat from the solution.'
+        },
+        {
+          title: 'Divide by moles of the limiting reactant, not the total moles mixed',
+          body: 'When two reactants are mixed in a 1:1 stoichiometric ratio with equal moles (as in this worked example), it does not matter which one you call "limiting" — but for an unequal mixture, using the wrong reactant’s mole count gives a wrong per-mole answer.'
+        },
+        {
+          title: 'This simplified formula assumes the calorimeter itself absorbs no heat',
+          body: 'A real calorimeter (the cup, the thermometer, a stirrer) has some heat capacity of its own. For a simple coffee-cup calorimeter with dilute aqueous solutions, that is usually small enough to ignore, but a bomb calorimeter’s own heat capacity is a measured, necessary correction this basic formula skips.'
+        },
+        {
+          title: 'This is not the same calculation as the physics heat calculator',
+          body: 'The heat calculator elsewhere on this site stops at q = mcΔT — the actual heat for a specific sample. This page takes that result one step further, dividing by moles reacted to get a reusable, per-mole enthalpy figure with a sign convention attached.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §5.2 "Calorimetry" (q = mcΔT and Example 5.5, HCl-NaOH neutralization)', url: 'https://openstax.org/books/chemistry-2e/pages/5-2-calorimetry' }
+      ]
+    },
+    inputs: [
+      { id: 'mass', label: 'Mass of solution (g)', type: 'number', placeholder: '100', defaultValue: 100, step: 0.1, min: 0 },
+      { id: 'specificHeat', label: 'Specific heat of solution (J/(g·°C))', type: 'number', placeholder: '4.184', defaultValue: 4.184, step: 0.001, min: 0 },
+      { id: 'deltaT', label: 'Temperature change (°C)', type: 'number', placeholder: '6.9', defaultValue: 6.9, step: 0.1, min: 0 },
+      { id: 'moles', label: 'Moles of limiting reactant (mol)', type: 'number', placeholder: '0.05', defaultValue: 0.05, step: 0.001, min: 0 }
+    ],
+    seo: {
+      title: 'Calorimetry Enthalpy Calculator (ΔH = -mcΔT/n)',
+      description: 'Free calorimetry calculator. Find a reaction’s molar enthalpy change from mass, specific heat, temperature change, and moles reacted.',
+      faq: [
+        { question: 'How do I find enthalpy of reaction from calorimetry data?', answer: 'Compute q = mcΔT for the heat the solution gained, flip its sign to get the heat the reaction released or absorbed, then divide by the moles of limiting reactant: ΔH = −(mcΔT) ÷ n.' },
+        { question: 'What is the enthalpy of neutralization for HCl + NaOH?', answer: 'About −57.7 kJ/mol, from 100 g of combined solution rising 6.9°C after mixing 0.0500 mol of each reactant.' },
+        { question: 'Why is ΔH negative for this reaction?', answer: 'Because the solution’s temperature rose, meaning the reaction released heat into it — an exothermic reaction, which by convention gets a negative ΔH.' },
+        { question: 'What specific heat should I use for a dilute aqueous solution?', answer: '4.184 J/(g·°C), the specific heat of water, is the standard approximation when the solution is mostly water — the same value OpenStax’s own worked example uses.' },
+        { question: 'Does this calculator account for the calorimeter’s own heat capacity?', answer: 'No — it assumes a simple, well-insulated container (like a foam cup) that absorbs a negligible amount of heat itself. A bomb calorimeter needs its own heat-capacity correction added separately.' },
+        { question: 'How is this different from the heat calculator (Q = mcΔT)?', answer: 'The heat calculator finds the actual heat for one specific sample. This page goes one step further, flipping the sign for the reaction and dividing by moles reacted to get a reusable molar enthalpy figure.' },
+        { question: 'Can this calculator solve for mass, specific heat, temperature change, or moles instead?', answer: 'Yes — enter a known ΔH and leave any one of the other four fields as the auto-calculated one, and the same formula solves for it.' }
+      ]
+    },
+    compute(values) {
+      return { enthalpy: values.moles === 0 ? NaN : -(values.mass * values.specificHeat * values.deltaT) / values.moles };
+    }
   }
 ];

@@ -903,6 +903,44 @@ exports[`compute() snapshots > calorie-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > calorimetry-enthalpy-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass": 100,
+      "specificHeat": 4.184,
+      "deltaT": 6.9,
+      "moles": 0.05
+    },
+    "outputs": {
+      "enthalpy": -57739.2
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass": 150,
+      "specificHeat": 6.276,
+      "deltaT": 10.4,
+      "moles": 0.075
+    },
+    "outputs": {
+      "enthalpy": -130540.8
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass": 0,
+      "specificHeat": 0,
+      "deltaT": 0,
+      "moles": 0
+    },
+    "outputs": {
+      "enthalpy": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > capacitor-charge-calculator 1`] = `
 {
   "default": {
@@ -5305,6 +5343,44 @@ exports[`compute() snapshots > molarity-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > molarity-molality-conversion-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "molarity": 556,
+      "molality": 0.5916,
+      "density": 1040,
+      "molarMass": 0.18016
+    },
+    "outputs": {
+      "molality": 0.5915956979
+    }
+  },
+  "typical": {
+    "inputs": {
+      "molarity": 834,
+      "molality": 0.8874,
+      "density": 1560,
+      "molarMass": 0.27024
+    },
+    "outputs": {
+      "molality": 0.6248970493
+    }
+  },
+  "edge": {
+    "inputs": {
+      "molarity": 0,
+      "molality": 0,
+      "density": 0,
+      "molarMass": 0
+    },
+    "outputs": {
+      "molality": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > mole-fraction-calculator 1`] = `
 {
   "default": {
@@ -6036,6 +6112,62 @@ exports[`compute() snapshots > outlier-calculator 1`] = `
       "stdDevUsed": 0,
       "lowestValue": 0,
       "highestValue": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > oxidation-number-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "overallCharge": -1,
+      "element1Oxidation": -2,
+      "element1Count": 3,
+      "element2Oxidation": 0,
+      "element2Count": 0,
+      "element3Oxidation": 0,
+      "element3Count": 0,
+      "unknownCount": 1
+    },
+    "outputs": {
+      "unknownOxidation": 5,
+      "knownSum": -6,
+      "unknownContribution": 5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "overallCharge": -1,
+      "element1Oxidation": -3,
+      "element1Count": 5,
+      "element2Oxidation": 0,
+      "element2Count": 0,
+      "element3Oxidation": 0,
+      "element3Count": 0,
+      "unknownCount": 2
+    },
+    "outputs": {
+      "unknownOxidation": 7,
+      "knownSum": -15,
+      "unknownContribution": 14
+    }
+  },
+  "edge": {
+    "inputs": {
+      "overallCharge": 0,
+      "element1Oxidation": 0,
+      "element1Count": 0,
+      "element2Oxidation": 0,
+      "element2Count": 0,
+      "element3Oxidation": 0,
+      "element3Count": 0,
+      "unknownCount": 1
+    },
+    "outputs": {
+      "unknownOxidation": 0,
+      "knownSum": 0,
+      "unknownContribution": 0
     }
   }
 }
@@ -7509,6 +7641,50 @@ exports[`compute() snapshots > rate-constant-calculator 1`] = `
     },
     "outputs": {
       "rateConstant": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > rate-law-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "rateConstant": 22000000,
+      "concentrationA": 0.000001,
+      "orderA": 1,
+      "concentrationB": 0.000003,
+      "orderB": 1
+    },
+    "outputs": {
+      "rate": 0.000066,
+      "overallOrder": 2
+    }
+  },
+  "typical": {
+    "inputs": {
+      "rateConstant": 33000000,
+      "concentrationA": 0.0000015,
+      "orderA": 2,
+      "concentrationB": 0.0000045,
+      "orderB": 2
+    },
+    "outputs": {
+      "rate": 1.5035625e-15,
+      "overallOrder": 4
+    }
+  },
+  "edge": {
+    "inputs": {
+      "rateConstant": 0,
+      "concentrationA": 0,
+      "orderA": 0,
+      "concentrationB": 0,
+      "orderB": 0
+    },
+    "outputs": {
+      "rate": 0,
+      "overallOrder": 0
     }
   }
 }
@@ -9872,6 +10048,47 @@ exports[`compute() snapshots > vant-hoff-osmotic-pressure-calculator 1`] = `
     },
     "outputs": {
       "pressure": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > vapor-pressure-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "pressure1": 10000,
+      "temperature1": 307.15,
+      "pressure2": 100000,
+      "temperature2": 371.95,
+      "enthalpyVap": 33750
+    },
+    "outputs": {
+      "enthalpyVap": 33752.81124
+    }
+  },
+  "typical": {
+    "inputs": {
+      "pressure1": 15000,
+      "temperature1": 460.72,
+      "pressure2": 150000,
+      "temperature2": 557.92,
+      "enthalpyVap": 50625
+    },
+    "outputs": {
+      "enthalpyVap": 50628.21368
+    }
+  },
+  "edge": {
+    "inputs": {
+      "pressure1": 0,
+      "temperature1": 0,
+      "pressure2": 0,
+      "temperature2": 0,
+      "enthalpyVap": 0
+    },
+    "outputs": {
+      "enthalpyVap": "NaN"
     }
   }
 }

@@ -299,7 +299,12 @@ export const calculatorOrder: string[] = [
   'rate-law-calculator',
   'oxidation-number-calculator',
   'molarity-molality-conversion-calculator',
-  'calorimetry-enthalpy-calculator'
+  'calorimetry-enthalpy-calculator',
+  'ksp-molar-solubility-calculator',
+  'common-ion-effect-calculator',
+  'isotope-notation-calculator',
+  'molecular-geometry-calculator',
+  'specific-heat-by-mixing-calculator'
 ];
 
 const rank = (id: string) => {

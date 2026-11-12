@@ -1505,6 +1505,38 @@ exports[`compute() snapshots > combined-gas-law-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > common-ion-effect-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "ksp": 1e-28,
+      "commonIonConcentration": 0.01
+    },
+    "outputs": {
+      "molarSolubility": 1e-26
+    }
+  },
+  "typical": {
+    "inputs": {
+      "ksp": 1.5e-28,
+      "commonIonConcentration": 0.015
+    },
+    "outputs": {
+      "molarSolubility": 1e-26
+    }
+  },
+  "edge": {
+    "inputs": {
+      "ksp": 0,
+      "commonIonConcentration": 0
+    },
+    "outputs": {
+      "molarSolubility": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > commute-cost-calculator 1`] = `
 {
   "default": {
@@ -4250,6 +4282,47 @@ exports[`compute() snapshots > investment-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > isotope-notation-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "atomicNumber": 6,
+      "massNumber": 14,
+      "charge": 0
+    },
+    "outputs": {
+      "protons": 6,
+      "neutrons": 8,
+      "electrons": 6
+    }
+  },
+  "typical": {
+    "inputs": {
+      "atomicNumber": 9,
+      "massNumber": 21,
+      "charge": 0
+    },
+    "outputs": {
+      "protons": 9,
+      "neutrons": 12,
+      "electrons": 9
+    }
+  },
+  "edge": {
+    "inputs": {
+      "atomicNumber": 1,
+      "massNumber": 1,
+      "charge": 0
+    },
+    "outputs": {
+      "protons": 1,
+      "neutrons": 0,
+      "electrons": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > kids-shoe-size-chart 1`] = `
 {
   "default": {
@@ -4379,6 +4452,47 @@ exports[`compute() snapshots > kinetic-energy-calculator 1`] = `
     },
     "outputs": {
       "energy": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > ksp-molar-solubility-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "ksp": 6.3e-9,
+      "coefficientCation": 1,
+      "coefficientAnion": 1
+    },
+    "outputs": {
+      "molarSolubility": 0.00007937253933,
+      "cationConcentration": 0.00007937253933,
+      "anionConcentration": 0.00007937253933
+    }
+  },
+  "typical": {
+    "inputs": {
+      "ksp": 9.5e-9,
+      "coefficientCation": 2,
+      "coefficientAnion": 2
+    },
+    "outputs": {
+      "molarSolubility": 0.004936292725,
+      "cationConcentration": 0.009872585449,
+      "anionConcentration": 0.009872585449
+    }
+  },
+  "edge": {
+    "inputs": {
+      "ksp": 0,
+      "coefficientCation": 1,
+      "coefficientAnion": 1
+    },
+    "outputs": {
+      "molarSolubility": 0,
+      "cationConcentration": 0,
+      "anionConcentration": 0
     }
   }
 }
@@ -5420,6 +5534,50 @@ exports[`compute() snapshots > mole-fraction-calculator 1`] = `
       "moleFractionB": "NaN",
       "moleFractionC": "NaN",
       "totalMoles": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > molecular-geometry-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "bondingPairs": 4,
+      "lonePairs": 0
+    },
+    "outputs": {
+      "domains": 4,
+      "molecularShapeIndex": 40,
+      "electronGeometryIndex": 40,
+      "bondAngleIndex": 40,
+      "exampleIndex": 40
+    }
+  },
+  "typical": {
+    "inputs": {
+      "bondingPairs": 6,
+      "lonePairs": 0
+    },
+    "outputs": {
+      "domains": 6,
+      "molecularShapeIndex": 60,
+      "electronGeometryIndex": 60,
+      "bondAngleIndex": 60,
+      "exampleIndex": 60
+    }
+  },
+  "edge": {
+    "inputs": {
+      "bondingPairs": 2,
+      "lonePairs": 0
+    },
+    "outputs": {
+      "domains": 2,
+      "molecularShapeIndex": 20,
+      "electronGeometryIndex": 20,
+      "bondAngleIndex": 20,
+      "exampleIndex": 20
     }
   }
 }
@@ -8817,6 +8975,50 @@ exports[`compute() snapshots > solution-concentration-calculator 1`] = `
     },
     "outputs": {
       "concentration": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > specific-heat-by-mixing-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "massUnknown": 59.7,
+      "initialTempUnknown": 100,
+      "massKnown": 60,
+      "specificHeatKnown": 4.184,
+      "initialTempKnown": 22,
+      "finalTemp": 28.5
+    },
+    "outputs": {
+      "specificHeatUnknown": 0.3822750114
+    }
+  },
+  "typical": {
+    "inputs": {
+      "massUnknown": 89.6,
+      "initialTempUnknown": 150,
+      "massKnown": 90,
+      "specificHeatKnown": 6.276,
+      "initialTempKnown": 33,
+      "finalTemp": 42.8
+    },
+    "outputs": {
+      "specificHeatUnknown": 0.5763001399
+    }
+  },
+  "edge": {
+    "inputs": {
+      "massUnknown": 0,
+      "initialTempUnknown": 0,
+      "massKnown": 0,
+      "specificHeatKnown": 0,
+      "initialTempKnown": 0,
+      "finalTemp": 0
+    },
+    "outputs": {
+      "specificHeatUnknown": "NaN"
     }
   }
 }

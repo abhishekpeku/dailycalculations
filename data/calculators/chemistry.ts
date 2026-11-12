@@ -1,6 +1,15 @@
 import type { CalculatorConfig } from './types.ts';
 import { ELEMENT_OPTIONS } from '../../lib/atomicMasses.ts';
 import { ELECTRON_CONFIGS, ELEMENT_CONFIG_OPTIONS, findElementConfig } from '../../lib/electronConfigurations.ts';
+import {
+  BONDING_PAIR_OPTIONS,
+  LONE_PAIR_OPTIONS,
+  MOLECULAR_SHAPE_LABELS,
+  ELECTRON_GEOMETRY_LABELS,
+  BOND_ANGLE_LABELS,
+  EXAMPLE_LABELS,
+  findGeometry
+} from '../../lib/molecularGeometry.ts';
 
 // Labels for electron-configuration-calculator's two text outputs: compute() returns the atomic
 // number as a numeric "code", and these lookups (BreakdownOutput.labels, same mechanism as a UK
@@ -4908,6 +4917,623 @@ export const chemistryCalculators: CalculatorConfig[] = [
     },
     compute(values) {
       return { enthalpy: values.moles === 0 ? NaN : -(values.mass * values.specificHeat * values.deltaT) / values.moles };
+    }
+  },
+  {
+    id: 'ksp-molar-solubility-calculator',
+    category: 'chemistry',
+    glyph: 'Ksp',
+    updatedAt: '2026-11-13',
+    aliases: ['ksp calculator', 'solubility product calculator', 'molar solubility calculator', 'ksp to molar solubility calculator', 'solubility product constant calculator'],
+    related: ['common-ion-effect-calculator', 'equilibrium-constant-calculator', 'molarity-calculator', 'solution-concentration-calculator'],
+    title: 'Ksp (Solubility Product) Calculator',
+    description: 'Find a slightly soluble salt’s molar solubility from its solubility product constant (Ksp) and its cation-to-anion dissociation ratio — works for any stoichiometry, not just 1:1 salts.',
+    example: 'Copper(I) bromide, CuBr, dissociates 1:1 (CuBr ⇌ Cu⁺ + Br⁻) and has Ksp = 6.3 × 10⁻⁹, so its molar solubility is √(6.3 × 10⁻⁹) ≈ 7.9 × 10⁻⁵ mol/L.',
+    content: {
+      lastReviewed: '2026-11-13',
+      concept: {
+        title: 'What is the solubility product constant, Ksp?',
+        paragraphs: [
+          'Most ionic compounds dissolve in water to some extent, but "slightly soluble" salts like AgCl or CaF₂ reach an equilibrium where only a tiny, fixed concentration of dissolved ions coexists with the undissolved solid. OpenStax Chemistry 2e’s §15.1 "Precipitation and Dissolution" calls the equilibrium constant for that balance the solubility product, Ksp — for CuBr(s) ⇌ Cu⁺(aq) + Br⁻(aq), Ksp = [Cu⁺][Br⁻], and more generally, for MₚXᵧ(s) ⇌ p Mⁿ⁺(aq) + q Xᵏ⁻(aq), Ksp = [Mⁿ⁺]ᵖ[Xᵏ⁻]ᵠ.',
+          'Because every ion in that equilibrium comes from the same dissolving salt, both ion concentrations are tied to a single unknown: the molar solubility, s — the number of moles of the salt that dissolve per liter before the solution saturates. For a salt that dissociates into p cations and q anions, [Mⁿ⁺] = p×s and [Xᵏ⁻] = q×s, which turns Ksp = (p×s)ᵖ(q×s)ᵠ into a closed-form equation for s: s = (Ksp ÷ (pᵖqᵠ))^(1 ÷ (p+q)).',
+          'This calculator solves that equation for any cation-to-anion ratio, not just the simplest 1:1 case — enter Ksp plus the two coefficients from the salt’s own dissociation equation, and it returns the molar solubility along with each ion’s own equilibrium concentration.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the salt’s Ksp value and its dissociation coefficients; the molar solubility and each ion’s concentration fill in automatically.',
+        steps: [
+          { name: 'Look up or write down the Ksp value', text: 'From a textbook’s Ksp table or a given problem, e.g. 6.3 × 10⁻⁹ for CuBr.' },
+          { name: 'Write the dissociation equation', text: 'MₚXᵧ(s) ⇌ p Mⁿ⁺(aq) + q Xᵏ⁻(aq) — read off p (the cation’s coefficient) and q (the anion’s coefficient). CuBr is 1 and 1; Ca(OH)₂ is 1 and 2.' },
+          { name: 'Enter both coefficients', text: 'Most salts in a general-chemistry course use small whole numbers, usually 1, 2, or 3.' },
+          { name: 'Read the molar solubility and ion concentrations', text: 'The molar solubility, s, is how many moles of the whole salt dissolve per liter; the ion concentrations show how that splits between the cation and anion once the coefficients are applied.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Each ion’s equilibrium concentration is its coefficient times the molar solubility, so Ksp reduces to one equation in one unknown, s.',
+        expression: 'MₚXᵧ(s) ⇌ p Mⁿ⁺(aq) + q Xᵏ⁻(aq)\nKsp = (p×s)ᵖ × (q×s)ᵠ\ns = (Ksp ÷ (pᵖ × qᵠ))^(1 ÷ (p+q))',
+        terms: [
+          { symbol: 'Ksp', meaning: 'The solubility product constant for the salt, at a given temperature.' },
+          { symbol: 's', meaning: 'Molar solubility: moles of the salt that dissolve per liter of solution.' },
+          { symbol: 'p, q', meaning: 'The cation’s and anion’s coefficients in the balanced dissociation equation.' }
+        ],
+        note: 'Going the other direction — finding Ksp from a measured molar solubility — uses the same relationship directly: Ksp = (p×s)ᵖ(q×s)ᵠ, with s already known instead of solved for.'
+      },
+      workedExample: {
+        intro: 'Calcium hydroxide, Ca(OH)₂, has Ksp = 1.3 × 10⁻⁶ and dissociates as Ca(OH)₂(s) ⇌ Ca²⁺(aq) + 2OH⁻(aq) — an unequal, 1:2 ratio. What is its molar solubility? (OpenStax Chemistry 2e, Example 15.4.)',
+        rows: [
+          { label: 'Coefficients', value: 'p = 1 (Ca²⁺), q = 2 (OH⁻)' },
+          { label: 'Denominator, pᵖ × qᵠ = 1¹ × 2²', value: '4' },
+          { label: 's = (1.3 × 10⁻⁶ ÷ 4)^(1/3)', value: '≈ 6.9 × 10⁻³ mol/L' },
+          { label: '[Ca²⁺] = s', value: '≈ 6.9 × 10⁻³ mol/L' },
+          { label: '[OH⁻] = 2s', value: '≈ 1.4 × 10⁻² mol/L' }
+        ],
+        result: 's ≈ 6.9 × 10⁻³ mol/L',
+        explanation: 'Carrying full precision gives s = 6.875 × 10⁻³ mol/L, which rounds to OpenStax’s own stated 6.9 × 10⁻³ M — confirmed independently in a scratch script, including the round-trip check that (s)¹×(2s)² reproduces the original 1.3 × 10⁻⁶ Ksp.'
+      },
+      watchOut: [
+        {
+          title: 'A coefficient of 2 squares that ion’s contribution, not doubles it',
+          body: 'Ca(OH)₂’s hydroxide concentration is 2s, but it enters Ksp as (2s)² — a factor of 4, not 2. Forgetting to raise the coefficient’s own multiple to the power, not just the concentration, is the most common mistake with multi-ion salts.'
+        },
+        {
+          title: 'Molar solubility is not the same number as Ksp',
+          body: 'Ksp is a constant for the salt; molar solubility, s, is a concentration you compute from it (and it has ordinary mol/L units, unlike Ksp, which chemists usually leave unitless by convention). A larger Ksp does mean a more soluble salt, but only among salts with the same p:q ratio — comparing a 1:1 salt’s Ksp directly to a 1:2 salt’s Ksp does not rank their actual solubilities correctly.'
+        },
+        {
+          title: 'This calculator assumes pure water, with no other ions already present',
+          body: 'Adding a salt that shares one of the same ions (a "common ion") suppresses the solubility below this calculator’s plain Ksp answer — see the common-ion effect calculator for that specific case.'
+        },
+        {
+          title: 'Ksp changes with temperature',
+          body: 'Like any equilibrium constant, Ksp is only valid at the temperature it was measured at — most published tables give a 25°C value, which may not match a solubility measured at a different temperature.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §15.1 "Precipitation and Dissolution" (Ksp definition, Example 15.3 — CuBr, and Example 15.4 — Ca(OH)₂)', url: 'https://openstax.org/books/chemistry-2e/pages/15-1-precipitation-and-dissolution' }
+      ]
+    },
+    inputs: [
+      { id: 'ksp', label: 'Solubility product, Ksp', type: 'number', placeholder: '6.3e-9', defaultValue: 6.3e-9, step: 1e-10, min: 0 },
+      { id: 'coefficientCation', label: 'Cation coefficient (p)', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 1 },
+      { id: 'coefficientAnion', label: 'Anion coefficient (q)', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 1 }
+    ],
+    breakdown: {
+      headline: 'molarSolubility',
+      headlineLabel: 'Molar solubility (mol/L)',
+      outputs: [
+        { id: 'molarSolubility', label: 'Molar solubility, s (mol/L)', format: 'significant' },
+        { id: 'cationConcentration', label: 'Cation concentration at equilibrium (mol/L)', format: 'significant' },
+        { id: 'anionConcentration', label: 'Anion concentration at equilibrium (mol/L)', format: 'significant' }
+      ],
+      groups: [{ inputs: ['ksp', 'coefficientCation', 'coefficientAnion'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'cationConcentration', label: 'Cation' },
+          { from: 'anionConcentration', label: 'Anion' }
+        ],
+        title: 'Ion concentrations at equilibrium'
+      }
+    },
+    seo: {
+      title: 'Ksp (Solubility Product) Calculator',
+      description: 'Free Ksp calculator. Find a salt’s molar solubility from its solubility product constant and dissociation ratio, for any stoichiometry.',
+      faq: [
+        { question: 'How do I calculate molar solubility from Ksp?', answer: 'Write the dissociation equation to get the cation and anion coefficients p and q, then solve s = (Ksp ÷ (pᵖqᵠ))^(1/(p+q)). For a simple 1:1 salt, this reduces to s = √Ksp.' },
+        { question: 'What is the molar solubility of CuBr?', answer: 'About 7.9 × 10⁻⁵ mol/L, from Ksp = 6.3 × 10⁻⁹ and its 1:1 dissociation (CuBr ⇌ Cu⁺ + Br⁻), so s = √(6.3 × 10⁻⁹).' },
+        { question: 'Why does Ca(OH)₂’s formula use 4 in the denominator?', answer: 'Because its hydroxide coefficient is 2, and Ksp = (s)¹ × (2s)² = 4s³ — the 4 comes from squaring the coefficient 2, not from the stoichiometry alone.' },
+        { question: 'How do I find Ksp from a measured molar solubility instead?', answer: 'Use the same relationship in reverse: Ksp = (p×s)ᵖ × (q×s)ᵠ, plugging in the measured s and the salt’s own coefficients.' },
+        { question: 'Does a bigger Ksp always mean a more soluble salt?', answer: 'Only when comparing salts with the same cation:anion ratio. Across different ratios (a 1:1 salt versus a 1:2 salt, say), Ksp values are not directly comparable — convert both to molar solubility first.' },
+        { question: 'Is Ksp affected by adding a common ion?', answer: 'Ksp itself stays the same at a given temperature, but the actual molar solubility drops once a common ion is already present in solution — see the common-ion effect calculator for that calculation.' },
+        { question: 'What units does Ksp have?', answer: 'Technically it varies with p+q, but chemists conventionally report it as a dimensionless number, the same convention used for Kc elsewhere on this site.' }
+      ]
+    },
+    compute(values) {
+      const denominator = values.coefficientCation ** values.coefficientCation * values.coefficientAnion ** values.coefficientAnion;
+      const molarSolubility = (values.ksp / denominator) ** (1 / (values.coefficientCation + values.coefficientAnion));
+      return {
+        molarSolubility,
+        cationConcentration: molarSolubility * values.coefficientCation,
+        anionConcentration: molarSolubility * values.coefficientAnion
+      };
+    }
+  },
+  {
+    id: 'common-ion-effect-calculator',
+    category: 'chemistry',
+    glyph: 'CIE',
+    updatedAt: '2026-11-13',
+    aliases: ['common ion effect calculator', 'solubility with common ion calculator', 'common ion solubility calculator', 'ksp common ion calculator'],
+    related: ['ksp-molar-solubility-calculator', 'equilibrium-constant-calculator', 'molarity-calculator', 'dilution-calculator'],
+    title: 'Common-Ion Effect Calculator',
+    description: 'Find how much a 1:1 salt’s molar solubility drops when a solution already contains one of its own ions, from Ksp and the common ion’s concentration.',
+    example: 'CdS (Ksp = 1.0 × 10⁻²⁸) dissolved in 0.010 M CdBr₂ — which already supplies Cd²⁺, a common ion — has a molar solubility of only about 1.0 × 10⁻²⁶ mol/L, far below its solubility in pure water.',
+    solver: {
+      defaultTarget: 'molarSolubility',
+      variables: [
+        { id: 'ksp', label: 'Solubility product, Ksp', symbol: 'Ksp', dimension: 'count', defaultValue: 1e-28, defaultUnit: 'count', fixed: true },
+        { id: 'commonIonConcentration', label: 'Common-ion concentration already present', symbol: '[X]', dimension: 'concentration', defaultValue: 0.01, defaultUnit: 'mol/L' },
+        { id: 'molarSolubility', label: 'Molar solubility in that solution', symbol: 's', dimension: 'concentration', defaultValue: 1e-26, defaultUnit: 'mol/L' }
+      ],
+      solve: {
+        molarSolubility: ({ ksp, commonIonConcentration }) => (2 * ksp) / (commonIonConcentration + Math.sqrt(commonIonConcentration ** 2 + 4 * ksp)),
+        commonIonConcentration: ({ ksp, molarSolubility }) => (molarSolubility === 0 ? NaN : ksp / molarSolubility - molarSolubility)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-13',
+      concept: {
+        title: 'What is the common-ion effect?',
+        paragraphs: [
+          'The Ksp calculator on this site assumes a slightly soluble salt is dissolving into otherwise pure water. OpenStax Chemistry 2e’s §15.1 describes a related, very practical scenario: what happens when that same salt dissolves into a solution that already contains one of its own ions, supplied by a second, more soluble compound. "The solubility of an ionic compound is less in aqueous solutions containing a common ion," OpenStax states — this is the common-ion effect.',
+          'The reason follows directly from Ksp itself: for a 1:1 salt MX(s) ⇌ Mⁿ⁺(aq) + Xᵏ⁻(aq), Ksp = [Mⁿ⁺][Xᵏ⁻] has to stay fixed at a given temperature. If some [Mⁿ⁺] is already supplied by another source, less of the salt itself needs to dissolve to use up the "budget" Ksp allows — so the new molar solubility, s, comes out lower than √Ksp, the plain-water answer.',
+          'Writing [Mⁿ⁺] = s + [X] (the common ion already there, plus whatever the salt itself contributes) and [Xᵏ⁻] = s turns Ksp = (s + [X])×s into a quadratic in s, which this calculator solves directly rather than relying on the common simplifying assumption that s is negligible next to [X].'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the salt’s Ksp (fixed, since it is a property of the salt) and the common ion’s existing concentration; the resulting molar solubility fills in automatically.',
+        steps: [
+          { name: 'Enter the salt’s Ksp', text: 'From a table or a given problem — this stays fixed, since it does not change with what else is dissolved.' },
+          { name: 'Enter the common ion’s concentration', text: 'The concentration already supplied by the other, more soluble compound (e.g. 0.010 mol/L Cd²⁺ from CdBr₂).' },
+          { name: 'Read the reduced molar solubility', text: 'How much of the original salt will dissolve into that solution — almost always far less than √Ksp, its solubility in pure water.' },
+          { name: 'Or work backward', text: 'Enter a measured molar solubility instead, and solve for the common-ion concentration that would produce it.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The common ion adds directly to the salt’s own contribution, turning Ksp into a quadratic in the molar solubility, s.',
+        expression: 'Ksp = (s + [X]) × s\ns = 2Ksp ÷ ([X] + √([X]² + 4Ksp))\n[X] = Ksp ÷ s − s',
+        terms: [
+          { symbol: 'Ksp', meaning: 'The dissolving salt’s own solubility product constant.' },
+          { symbol: '[X]', meaning: 'The concentration of the common ion already present, from a different, more soluble source.' },
+          { symbol: 's', meaning: 'The salt’s molar solubility in that solution — lower than its plain-water value.' }
+        ],
+        note: 'This calculator covers the simplest, most commonly taught case: a 1:1 salt where the common ion is supplied by a fully dissociated, more soluble compound. It solves the exact quadratic, in a numerically stable rearranged form, rather than the "s is negligible next to [X]" shortcut some textbooks use — which matters because for a very small Ksp, the shortcut and the exact answer agree to many decimal places anyway, but computing the shortcut by direct subtraction of two nearly-equal numbers can lose that precision entirely to rounding error.'
+      },
+      workedExample: {
+        intro: 'Cadmium sulfide, CdS (Ksp = 1.0 × 10⁻²⁸), is placed in 0.010 M CdBr₂ solution, which fully dissociates to supply 0.010 M Cd²⁺ — the ion CdS shares with it. What is CdS’s molar solubility here? (OpenStax Chemistry 2e, Example 15.13.)',
+        rows: [
+          { label: 'Common ion already present, [Cd²⁺] = [X]', value: '0.010 mol/L' },
+          { label: 'Ksp', value: '1.0 × 10⁻²⁸' },
+          { label: 's = 2Ksp ÷ ([X] + √([X]² + 4Ksp))', value: '≈ 1.0 × 10⁻²⁶ mol/L' }
+        ],
+        result: 's ≈ 1.0 × 10⁻²⁶ mol/L',
+        explanation: 'Because [X] (0.010) is enormously larger than √Ksp (about 1.0 × 10⁻¹⁴), nearly all of the "budget" Ksp allows is already used up by the common ion, leaving a tiny s — matching OpenStax’s own stated 1.0 × 10⁻²⁶ M. For comparison, CdS in plain water would have a molar solubility of √Ksp ≈ 1.0 × 10⁻¹⁴ mol/L — the common ion suppresses it by a further twelve orders of magnitude.'
+      },
+      watchOut: [
+        {
+          title: 'This is a different, lower number than the plain Ksp answer',
+          body: 'Looking up a salt’s molar solubility with the plain Ksp calculator and then expecting the same number once a common ion is added will overstate how much actually dissolves — sometimes by many orders of magnitude, as in the worked example.'
+        },
+        {
+          title: 'The common ion must come from somewhere else and fully dissociate',
+          body: 'This calculator assumes the common-ion concentration you enter is already established by a separate, more soluble compound before the slightly soluble salt is added — not a leftover amount from the same salt dissolving on its own.'
+        },
+        {
+          title: 'Scoped to 1:1 salts',
+          body: 'For a salt with unequal coefficients (like Ca(OH)₂), the common-ion equilibrium expression has extra powers on one side and no longer reduces to a simple quadratic — this calculator does not cover that general case.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §15.1 "Precipitation and Dissolution" (the common-ion effect and Example 15.13, CdS in CdBr₂ solution)', url: 'https://openstax.org/books/chemistry-2e/pages/15-1-precipitation-and-dissolution' }
+      ]
+    },
+    inputs: [
+      { id: 'ksp', label: 'Solubility product, Ksp', type: 'number', placeholder: '1e-28', defaultValue: 1e-28, step: 1e-29, min: 0 },
+      { id: 'commonIonConcentration', label: 'Common-ion concentration (mol/L)', type: 'number', placeholder: '0.01', defaultValue: 0.01, step: 0.001, min: 0 }
+    ],
+    seo: {
+      title: 'Common-Ion Effect Calculator',
+      description: 'Free common-ion effect calculator. Find how much a 1:1 salt’s molar solubility drops in a solution that already contains one of its own ions.',
+      faq: [
+        { question: 'What is the common-ion effect?', answer: 'A slightly soluble salt dissolves less in a solution that already contains one of its own ions than it would in pure water, because both ions still have to satisfy the same fixed Ksp.' },
+        { question: 'How do I calculate solubility with a common ion?', answer: 'Solve the quadratic Ksp = (s + [X])×s for s, where [X] is the common ion’s existing concentration: s = 2Ksp ÷ ([X] + √([X]² + 4Ksp)).' },
+        { question: 'What is CdS’s solubility in 0.010 M CdBr₂?', answer: 'About 1.0 × 10⁻²⁶ mol/L — far below its roughly 1.0 × 10⁻¹⁴ mol/L solubility in pure water, since Ksp = 1.0 × 10⁻²⁸.' },
+        { question: 'Why is the common-ion solubility so much lower than in pure water?', answer: 'Because the common ion already supplies most of what Ksp allows for that ion’s concentration, leaving very little "room" for the salt itself to dissolve before the product of the two ion concentrations hits Ksp.' },
+        { question: 'Can I use this for a salt with unequal coefficients, like Ca(OH)₂?', answer: 'No — this calculator is scoped to simple 1:1 salts. A salt like Ca(OH)₂ needs extra powers in its common-ion equilibrium expression that this quadratic does not cover.' },
+        { question: 'Is this the same as the dilution calculator?', answer: 'No — dilution describes adding solvent to lower one existing solution’s concentration. This calculator instead describes a solubility equilibrium being suppressed by an ion already present from a different source.' }
+      ]
+    },
+    compute(values) {
+      return {
+        molarSolubility: (2 * values.ksp) / (values.commonIonConcentration + Math.sqrt(values.commonIonConcentration ** 2 + 4 * values.ksp))
+      };
+    }
+  },
+  {
+    id: 'isotope-notation-calculator',
+    category: 'chemistry',
+    glyph: 'AZX',
+    updatedAt: '2026-11-13',
+    aliases: ['isotope calculator', 'isotope notation calculator', 'protons neutrons electrons calculator', 'atomic number and mass number calculator', 'ion electron count calculator'],
+    related: ['molar-mass-calculator', 'electron-configuration-calculator', 'radioactive-half-life-calculator', 'oxidation-number-calculator'],
+    title: 'Isotope Notation Calculator (Protons, Neutrons, Electrons)',
+    description: 'Find the number of protons, neutrons, and electrons in any isotope or ion from its element, mass number, and charge.',
+    example: 'Carbon-14, a neutral atom (Z = 6, mass number 14), has 6 protons, 8 neutrons, and 6 electrons — the extra 2 neutrons compared to the far more common carbon-12 are what make it radioactive.',
+    content: {
+      lastReviewed: '2026-11-13',
+      concept: {
+        title: 'What do isotope notation and ion charge tell you?',
+        paragraphs: [
+          'Every atom of a given element has the same number of protons — its atomic number, Z, which is what defines the element and fixes its position on the periodic table. Isotope notation, written ᴬᵤX or "element-A" (carbon-14, uranium-238), adds one more piece of information: A, the mass number, the total count of protons plus neutrons in that specific atom’s nucleus. Two isotopes of the same element share the same Z but have different A, because they have different numbers of neutrons — carbon-12 and carbon-14 both have 6 protons, but 6 and 8 neutrons respectively.',
+          'A neutral atom has exactly as many electrons as protons, since the positive and negative charges must balance. An ion has lost or gained electrons without changing its nucleus at all — a cation (positive charge) has fewer electrons than protons, and an anion (negative charge) has more. The chloride ion, Cl⁻, still has 17 protons (it is still chlorine), but 18 electrons, one more than a neutral chlorine atom.',
+          'This calculator reads off Z automatically once you pick an element, then applies the two definitions directly: neutrons = mass number − Z, and electrons = Z − charge (using the convention that a cation’s charge is a positive number and an anion’s is negative).'
+        ]
+      },
+      howTo: {
+        intro: 'Pick the element, enter the isotope’s mass number, and enter the ion’s charge (0 for a neutral atom).',
+        steps: [
+          { name: 'Choose the element', text: 'Its atomic number, Z, and proton count are read off automatically.' },
+          { name: 'Enter the mass number, A', text: 'The total of protons plus neutrons for this specific isotope — for carbon-14, that is 14.' },
+          { name: 'Enter the charge', text: 'Positive for a cation, negative for an anion, 0 for a neutral atom — for Cl⁻, enter −1.' },
+          { name: 'Read protons, neutrons, and electrons', text: 'Protons always equal Z; neutrons and electrons are calculated from the mass number and charge you entered.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Protons are fixed by the element; neutrons come from the mass number, and electrons come from the charge.',
+        expression: 'protons = Z\nneutrons = A − Z\nelectrons = Z − charge',
+        terms: [
+          { symbol: 'Z', meaning: 'Atomic number — the element’s fixed proton count.' },
+          { symbol: 'A', meaning: 'Mass number — protons plus neutrons in this specific isotope.' },
+          { symbol: 'charge', meaning: 'The ion’s overall charge: positive for a cation (fewer electrons), negative for an anion (more electrons), 0 for a neutral atom.' }
+        ],
+        note: 'Mass number, A, is always a whole number close to (but not exactly equal to) the element’s standard atomic weight shown on a periodic table — that weight is a natural-abundance-weighted average across all of an element’s stable isotopes, not any one isotope’s actual mass number.'
+      },
+      workedExample: {
+        intro: 'How many protons, neutrons, and electrons does the chloride ion, written as the chlorine-35 isotope with a −1 charge, have?',
+        rows: [
+          { label: 'Element', value: 'Chlorine, Z = 17' },
+          { label: 'Mass number, A', value: '35' },
+          { label: 'Charge', value: '−1 (an anion)' },
+          { label: 'Protons = Z', value: '17' },
+          { label: 'Neutrons = A − Z = 35 − 17', value: '18' },
+          { label: 'Electrons = Z − charge = 17 − (−1)', value: '18' }
+        ],
+        result: '17 protons, 18 neutrons, 18 electrons',
+        explanation: 'The extra electron (18 instead of the 17 a neutral chlorine-35 atom would have) is exactly what gives the ion its −1 charge; the proton and neutron counts, which come only from the nucleus, are unaffected by the ion’s charge.'
+      },
+      watchOut: [
+        {
+          title: 'Charge changes electrons only, never protons or neutrons',
+          body: 'Forming an ion is a purely electronic process — electrons are gained or lost from the outer shells, while the nucleus (and so the element and the isotope) stays exactly the same.'
+        },
+        {
+          title: 'A cation’s charge is entered as a positive number',
+          body: 'Mg²⁺ has a charge of +2 (enter 2), which means 2 fewer electrons than protons — it is easy to accidentally flip the sign and compute an anion’s electron count instead.'
+        },
+        {
+          title: 'Mass number is not the same as standard atomic weight',
+          body: 'A periodic table’s listed atomic weight (12.011 for carbon) is a weighted average across every naturally occurring isotope. A specific isotope’s mass number (12, 13, or 14 for carbon) is always a whole number, and most elements’ most abundant isotope has a mass number close to, but not identical to, that averaged weight.'
+        },
+        {
+          title: 'This calculator does not determine whether an isotope is radioactive',
+          body: 'Some isotopes (like carbon-14) are unstable and decay over time; others (like carbon-12) are stable indefinitely. Knowing the proton and neutron counts alone does not tell you which — see the radioactive half-life calculator for the decay side of the picture, once you know an isotope decays.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §2.3 "Atomic Structure and Symbolism" (isotope notation, mass number, and atomic number)', url: 'https://openstax.org/books/chemistry-2e/pages/2-3-atomic-structure-and-symbolism' }
+      ]
+    },
+    inputs: [
+      { id: 'atomicNumber', label: 'Element', type: 'number', placeholder: '6', defaultValue: 6, step: 1, min: 1, options: ELEMENT_CONFIG_OPTIONS },
+      { id: 'massNumber', label: 'Mass number, A', type: 'number', placeholder: '14', defaultValue: 14, step: 1, min: 1 },
+      { id: 'charge', label: 'Charge (0 for a neutral atom)', type: 'number', placeholder: '0', defaultValue: 0, step: 1 }
+    ],
+    breakdown: {
+      headline: 'neutrons',
+      headlineLabel: 'Neutrons',
+      outputs: [
+        { id: 'protons', label: 'Protons', format: 'integer' },
+        { id: 'neutrons', label: 'Neutrons', format: 'integer' },
+        { id: 'electrons', label: 'Electrons', format: 'integer' }
+      ],
+      groups: [{ inputs: ['atomicNumber', 'massNumber', 'charge'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'protons', label: 'Protons' },
+          { from: 'neutrons', label: 'Neutrons' },
+          { from: 'electrons', label: 'Electrons' }
+        ],
+        title: 'Protons, neutrons, and electrons',
+        highlight: 1
+      }
+    },
+    seo: {
+      title: 'Isotope Notation Calculator (Protons, Neutrons, Electrons)',
+      description: 'Free isotope calculator. Find protons, neutrons, and electrons for any isotope or ion from its element, mass number, and charge.',
+      faq: [
+        { question: 'How do I find the number of neutrons in an isotope?', answer: 'Subtract the atomic number (protons) from the mass number: neutrons = A − Z. Carbon-14 has 14 − 6 = 8 neutrons.' },
+        { question: 'How do I find the number of electrons in an ion?', answer: 'Subtract the charge from the atomic number: electrons = Z − charge. A +2 cation has 2 fewer electrons than protons; a −1 anion has 1 more.' },
+        { question: 'Do isotopes of the same element have the same number of protons?', answer: 'Yes — isotopes share the same atomic number (protons) by definition. They differ only in neutron count, which is why they have different mass numbers.' },
+        { question: 'How many protons, neutrons, and electrons does Cl⁻ have?', answer: 'For chlorine-35: 17 protons, 18 neutrons, and 18 electrons — one more electron than a neutral atom, which is what gives it its −1 charge.' },
+        { question: 'Why is carbon’s atomic weight 12.011 if carbon-12 has mass number 12?', answer: 'The periodic table’s 12.011 is a natural-abundance-weighted average across carbon’s stable isotopes (mostly carbon-12, with a small amount of carbon-13), not any single isotope’s own mass number.' },
+        { question: 'Does charge affect the number of protons?', answer: 'No. Forming an ion only adds or removes electrons; the number of protons (and neutrons) in the nucleus never changes, since that would make it a different element or isotope entirely.' },
+        { question: 'What is the difference between mass number and atomic mass?', answer: 'Mass number (A) is a whole-number count of protons plus neutrons in one specific atom. Atomic mass (used in the molar mass calculator) is the actual measured mass of that isotope, in atomic mass units, which is close to but not exactly equal to A.' }
+      ]
+    },
+    compute(values) {
+      return {
+        protons: values.atomicNumber,
+        neutrons: values.massNumber - values.atomicNumber,
+        electrons: values.atomicNumber - values.charge
+      };
+    }
+  },
+  {
+    id: 'molecular-geometry-calculator',
+    category: 'chemistry',
+    glyph: 'AXE',
+    updatedAt: '2026-11-13',
+    aliases: ['molecular geometry calculator', 'vsepr calculator', 'electron geometry calculator', 'molecular shape calculator', 'bond angle calculator'],
+    related: ['electron-configuration-calculator', 'oxidation-number-calculator', 'molar-mass-calculator', 'empirical-formula-calculator'],
+    title: 'Molecular Geometry Calculator (VSEPR)',
+    description: 'Look up a molecule’s electron-pair geometry, molecular shape, and ideal bond angle from the number of bonding pairs and lone pairs on its central atom.',
+    example: 'Water’s central oxygen has 2 bonding pairs and 2 lone pairs — a tetrahedral electron-pair geometry, but a bent molecular shape, with a measured bond angle of 104.5°.',
+    content: {
+      lastReviewed: '2026-11-13',
+      concept: {
+        title: 'What is VSEPR theory?',
+        paragraphs: [
+          'Valence Shell Electron Pair Repulsion (VSEPR) theory predicts a molecule’s 3D shape from one simple idea: electron pairs around a central atom, whether they are shared in a bond or sitting alone as a lone pair, repel each other and spread out as far apart as possible. OpenStax Chemistry 2e’s §7.6 "Molecular Structure and Polarity" works through the resulting geometries directly from the total number of electron pairs (bonding pairs plus lone pairs) around the central atom.',
+          'The electron-pair geometry describes how all of those electron pairs — bonding and lone — arrange themselves in space; the molecular shape (or molecular structure) describes only where the atoms themselves end up, ignoring the lone pairs even though they still influence the shape by pushing the bonded atoms closer together. A central atom with 4 electron pairs always has a tetrahedral electron-pair geometry, but its molecular shape is tetrahedral only if all 4 pairs are bonds (CH₄); with 1 lone pair it becomes trigonal pyramidal (NH₃), and with 2 lone pairs it becomes bent (H₂O).',
+          'Lone pairs take up more space than bonding pairs (they are held by only one nucleus, not stretched between two), which is why a bond angle next to a lone pair is always somewhat smaller than the perfectly symmetric, lone-pair-free version of the same electron-pair geometry — tetrahedral’s ideal 109.5° becomes "slightly smaller" once even one lone pair is present.'
+        ]
+      },
+      howTo: {
+        intro: 'Count the central atom’s bonding pairs (atoms directly attached to it) and lone pairs, and enter both.',
+        steps: [
+          { name: 'Draw the Lewis structure', text: 'Identify the central atom and count how many other atoms are directly bonded to it (bonding pairs) and how many lone pairs of electrons sit on it.' },
+          { name: 'Enter the bonding-pair count', text: 'A double or triple bond to one atom still counts as one bonding pair for VSEPR purposes — it is the number of attached atoms that matters, not the number of shared electron pairs.' },
+          { name: 'Enter the lone-pair count', text: 'Electron pairs on the central atom that are not shared with any other atom.' },
+          { name: 'Read the geometry, shape, and bond angle', text: 'The electron-pair geometry covers every pair; the molecular shape and bond angle describe only where the bonded atoms end up.' }
+        ],
+        outro: 'Everything here is a lookup, calculated in your browser. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'There is no equation to solve — VSEPR is a direct lookup from the total electron-domain count and how those domains split between bonds and lone pairs.',
+        expression: 'Electron domains = bonding pairs + lone pairs\nGeometry, shape, and bond angle = f(bonding pairs, lone pairs)',
+        terms: [
+          { symbol: 'Bonding pairs', meaning: 'The number of atoms directly bonded to the central atom (a double or triple bond still counts once).' },
+          { symbol: 'Lone pairs', meaning: 'Electron pairs on the central atom not shared with any other atom.' },
+          { symbol: 'Electron domains', meaning: 'The total count of bonding pairs plus lone pairs — this number alone fixes the electron-pair geometry.' }
+        ],
+        note: 'This calculator covers the twelve standard combinations taught in general chemistry, up through 6 electron domains. One rarely-taught combination (5 domains, 3 lone pairs) is left out — see the watch-out item below.'
+      },
+      workedExample: {
+        intro: 'Water’s central oxygen atom has 2 bonds (to each hydrogen) and 2 lone pairs. What is its molecular shape and bond angle?',
+        rows: [
+          { label: 'Bonding pairs', value: '2' },
+          { label: 'Lone pairs', value: '2' },
+          { label: 'Electron domains (2 + 2)', value: '4' },
+          { label: 'Electron-pair geometry', value: 'Tetrahedral' },
+          { label: 'Molecular shape', value: 'Bent' },
+          { label: 'Bond angle', value: 'Slightly less than 109.5° — measured at 104.5° in water' }
+        ],
+        result: 'Bent, with a bond angle of 104.5°',
+        explanation: 'All 4 electron domains (2 bonds, 2 lone pairs) still arrange tetrahedrally, so the electron-pair geometry is tetrahedral — but because the molecular shape only tracks the 3 atoms (O and 2 H), it looks bent rather than tetrahedral. The 2 lone pairs push the 2 O–H bonds closer together than the ideal 109.5°, down to water’s own measured 104.5°, confirmed directly in OpenStax §7.6.'
+      },
+      watchOut: [
+        {
+          title: 'Electron-pair geometry and molecular shape are not always the same name',
+          body: 'They match only when every electron domain is a bonding pair (no lone pairs). The moment any lone pairs are present, the molecular shape gets its own, different name — trigonal pyramidal and bent are both "hiding" a tetrahedral electron-pair geometry.'
+        },
+        {
+          title: 'A double or triple bond still counts as one bonding pair',
+          body: 'CO₂’s central carbon has 2 double bonds, which is still only 2 bonding "domains" for VSEPR purposes (plus 0 lone pairs) — it is linear, the same geometry as a molecule with 2 single bonds and no lone pairs.'
+        },
+        {
+          title: 'This gives the ideal, unstrained geometry, not every real molecule’s exact angle',
+          body: 'Different atoms, bond polarities, and multiple bonds all shift a real molecule’s measured angle slightly away from the textbook-ideal value shown here — water’s 104.5° versus a perfect tetrahedron’s 109.5° is itself an example of that.'
+        },
+        {
+          title: 'One rare combination is out of scope',
+          body: '5 electron domains with 3 lone pairs (2 bonding pairs, a linear molecular shape) is left out of this calculator — it is rarely covered in a general-chemistry course and uncommon in practice.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §7.6 "Molecular Structure and Polarity" (VSEPR theory, Figure 7.19’s electron-pair geometry table, and water’s 104.5° bond angle)', url: 'https://openstax.org/books/chemistry-2e/pages/7-6-molecular-structure-and-polarity' }
+      ]
+    },
+    inputs: [
+      { id: 'bondingPairs', label: 'Bonding pairs', type: 'number', placeholder: '4', defaultValue: 4, step: 1, min: 2, options: BONDING_PAIR_OPTIONS },
+      { id: 'lonePairs', label: 'Lone pairs', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0, options: LONE_PAIR_OPTIONS }
+    ],
+    breakdown: {
+      headline: 'molecularShapeIndex',
+      headlineLabel: 'Molecular shape',
+      outputs: [
+        { id: 'molecularShapeIndex', label: 'Molecular shape', labels: MOLECULAR_SHAPE_LABELS },
+        { id: 'electronGeometryIndex', label: 'Electron-pair geometry', labels: ELECTRON_GEOMETRY_LABELS },
+        { id: 'bondAngleIndex', label: 'Bond angle', labels: BOND_ANGLE_LABELS },
+        { id: 'exampleIndex', label: 'Example molecules', labels: EXAMPLE_LABELS },
+        { id: 'domains', label: 'Total electron domains', format: 'integer' }
+      ],
+      groups: [{ inputs: ['bondingPairs', 'lonePairs'] }],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'bondingPairs', label: 'Bonding pairs' },
+          { from: 'lonePairs', label: 'Lone pairs' }
+        ],
+        center: 'domains',
+        centerSub: 'electron domains'
+      }
+    },
+    seo: {
+      title: 'Molecular Geometry Calculator (VSEPR)',
+      description: 'Free VSEPR calculator. Look up electron-pair geometry, molecular shape, and ideal bond angle from a central atom’s bonding and lone pairs.',
+      faq: [
+        { question: 'How do I determine molecular geometry using VSEPR?', answer: 'Count the central atom’s bonding pairs and lone pairs. Their sum (electron domains) fixes the electron-pair geometry; how they split between bonds and lone pairs fixes the molecular shape and bond angle.' },
+        { question: 'What is the molecular shape of water?', answer: 'Bent — 2 bonding pairs and 2 lone pairs on oxygen, from a tetrahedral electron-pair geometry, with a measured bond angle of 104.5°.' },
+        { question: 'What is the difference between electron geometry and molecular geometry?', answer: 'Electron-pair geometry counts every electron domain, including lone pairs. Molecular geometry (or molecular shape) describes only where the bonded atoms end up, ignoring the lone pairs themselves even though they still affect the shape.' },
+        { question: 'Why is ammonia (NH₃) trigonal pyramidal and not tetrahedral?', answer: 'Its nitrogen has 3 bonding pairs and 1 lone pair — 4 electron domains total, so the electron-pair geometry is tetrahedral, but with only 3 atoms attached, the molecular shape (trigonal pyramidal) leaves the lone pair out of the shape’s name.' },
+        { question: 'Does a double or triple bond count as more than one bonding pair?', answer: 'No — for VSEPR, a double or triple bond to one atom still counts as a single bonding domain, since it is the number of attached atoms (not the number of shared electron pairs) that determines the geometry.' },
+        { question: 'Why are bond angles next to a lone pair smaller than the ideal angle?', answer: 'A lone pair is held by only one nucleus and spreads out more than a bonding pair, which is stretched between two nuclei — that extra space pushes the neighboring bonding pairs slightly closer together than the perfectly symmetric, lone-pair-free angle.' },
+        { question: 'What shape has 6 electron domains with 2 lone pairs?', answer: 'Square planar (e.g. XeF₄) — an octahedral electron-pair geometry with the 2 lone pairs positioned opposite each other, leaving the 4 bonded atoms in a flat square around the central atom.' }
+      ]
+    },
+    compute(values) {
+      const entry = findGeometry(values.bondingPairs, values.lonePairs);
+      const domains = values.bondingPairs + values.lonePairs;
+      if (!entry) return { domains, molecularShapeIndex: NaN, electronGeometryIndex: NaN, bondAngleIndex: NaN, exampleIndex: NaN };
+      return {
+        domains,
+        molecularShapeIndex: entry.code,
+        electronGeometryIndex: entry.code,
+        bondAngleIndex: entry.code,
+        exampleIndex: entry.code
+      };
+    }
+  },
+  {
+    id: 'specific-heat-by-mixing-calculator',
+    category: 'chemistry',
+    glyph: 'cmix',
+    updatedAt: '2026-11-13',
+    aliases: ['specific heat by mixing calculator', 'calorimetry mixing calculator', 'specific heat of a metal calculator', 'measure specific heat calculator', 'heat transfer between substances calculator'],
+    related: ['calorimetry-enthalpy-calculator', 'molarity-calculator', 'density-of-solutions-calculator', 'vapor-pressure-calculator'],
+    title: 'Specific Heat by Mixing Calculator (Calorimetry)',
+    description: 'Find an unknown substance’s specific heat by mixing it with a known one (usually water) and measuring the final equilibrium temperature — or solve for any other quantity in the same energy balance.',
+    example: 'A 59.7 g piece of metal at 100.0°C dropped into 60.0 g of water at 22.0°C settles at 28.5°C, giving the metal a specific heat of about 0.38 J/(g·°C) — close enough to identify it as copper.',
+    solver: {
+      defaultTarget: 'specificHeatUnknown',
+      variables: [
+        { id: 'massUnknown', label: 'Mass of unknown substance', symbol: 'm_A', dimension: 'mass', defaultValue: 59.7, defaultUnit: 'g' },
+        { id: 'specificHeatUnknown', label: 'Specific heat of unknown substance', symbol: 'c_A', dimension: 'specificHeat', defaultValue: 0.3822, defaultUnit: 'J/gK' },
+        { id: 'initialTempUnknown', label: 'Initial temperature of unknown substance', symbol: 'T_Ai', dimension: 'temperature', defaultValue: 100, defaultUnit: 'C' },
+        { id: 'massKnown', label: 'Mass of known substance (usually water)', symbol: 'm_B', dimension: 'mass', defaultValue: 60, defaultUnit: 'g' },
+        { id: 'specificHeatKnown', label: 'Specific heat of known substance', symbol: 'c_B', dimension: 'specificHeat', defaultValue: 4.184, defaultUnit: 'J/gK', fixed: true },
+        { id: 'initialTempKnown', label: 'Initial temperature of known substance', symbol: 'T_Bi', dimension: 'temperature', defaultValue: 22, defaultUnit: 'C' },
+        { id: 'finalTemp', label: 'Final equilibrium temperature', symbol: 'T_f', dimension: 'temperature', defaultValue: 28.5, defaultUnit: 'C' }
+      ],
+      solve: {
+        specificHeatUnknown: ({ massUnknown, initialTempUnknown, massKnown, specificHeatKnown, initialTempKnown, finalTemp }) =>
+          massUnknown === 0 || finalTemp === initialTempUnknown
+            ? NaN
+            : -(massKnown * specificHeatKnown * (finalTemp - initialTempKnown)) / (massUnknown * (finalTemp - initialTempUnknown)),
+        massUnknown: ({ specificHeatUnknown, initialTempUnknown, massKnown, specificHeatKnown, initialTempKnown, finalTemp }) =>
+          specificHeatUnknown === 0 || finalTemp === initialTempUnknown
+            ? NaN
+            : -(massKnown * specificHeatKnown * (finalTemp - initialTempKnown)) / (specificHeatUnknown * (finalTemp - initialTempUnknown)),
+        initialTempUnknown: ({ massUnknown, specificHeatUnknown, massKnown, specificHeatKnown, initialTempKnown, finalTemp }) =>
+          massUnknown === 0 || specificHeatUnknown === 0
+            ? NaN
+            : finalTemp + (massKnown * specificHeatKnown * (finalTemp - initialTempKnown)) / (massUnknown * specificHeatUnknown),
+        massKnown: ({ massUnknown, specificHeatUnknown, initialTempUnknown, specificHeatKnown, initialTempKnown, finalTemp }) =>
+          specificHeatKnown === 0 || finalTemp === initialTempKnown
+            ? NaN
+            : -(massUnknown * specificHeatUnknown * (finalTemp - initialTempUnknown)) / (specificHeatKnown * (finalTemp - initialTempKnown)),
+        initialTempKnown: ({ massUnknown, specificHeatUnknown, initialTempUnknown, massKnown, specificHeatKnown, finalTemp }) =>
+          massKnown === 0 || specificHeatKnown === 0
+            ? NaN
+            : finalTemp + (massUnknown * specificHeatUnknown * (finalTemp - initialTempUnknown)) / (massKnown * specificHeatKnown),
+        finalTemp: ({ massUnknown, specificHeatUnknown, initialTempUnknown, massKnown, specificHeatKnown, initialTempKnown }) =>
+          massKnown * specificHeatKnown + massUnknown * specificHeatUnknown === 0
+            ? NaN
+            : (massKnown * specificHeatKnown * initialTempKnown + massUnknown * specificHeatUnknown * initialTempUnknown) /
+              (massKnown * specificHeatKnown + massUnknown * specificHeatUnknown)
+      },
+      outputs: [
+        {
+          id: 'heatTransferred',
+          label: 'Heat transferred between the two substances',
+          dimension: 'energy',
+          unit: 'J',
+          compute: (si) => Math.abs(si.massKnown * si.specificHeatKnown * (si.finalTemp - si.initialTempKnown))
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-13',
+      concept: {
+        title: 'How do you measure specific heat by mixing two substances?',
+        paragraphs: [
+          'A substance’s specific heat (how much energy it takes to raise 1 gram of it by 1°C) usually has to be measured, not calculated from first principles. One standard lab method, worked through directly in OpenStax Chemistry 2e’s §5.2 "Calorimetry," mixes the unknown substance with a substance of known specific heat (almost always water) and tracks the final, shared equilibrium temperature they settle at.',
+          'In a well-insulated container, any heat the cooler substance gains has to come from the warmer substance losing exactly that much — "heat gained by one equals heat lost by the other," expressed as mᵦcᵦ(T_f − T_Bi) = −mₐcₐ(T_f − T_Ai). Every term here is something you can directly measure (a mass, a thermometer reading) except one unknown, which this equation then pins down exactly.',
+          'This calculator is distinct from both the heat calculator elsewhere on this site, which computes Q = mcΔT for one single substance in isolation, and the calorimetry enthalpy calculator, which uses a temperature change to find a reaction’s molar enthalpy. This page specifically balances two different substances against each other to solve for an unknown property of the energy-balance equation itself — most often, the unknown substance’s own specific heat.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter both substances’ masses and starting temperatures, plus the final temperature they both settle at together; the unknown specific heat fills in automatically.',
+        steps: [
+          { name: 'Weigh the unknown substance and the known one', text: 'Usually a solid dropped into a known mass of water.' },
+          { name: 'Record both starting temperatures', text: 'The unknown substance is usually the hotter one (just removed from boiling water, say); the known substance (water) starts at room temperature.' },
+          { name: 'Record the final, shared temperature', text: 'Once both substances reach thermal equilibrium together.' },
+          { name: 'Enter the known substance’s specific heat', text: 'Water’s is 4.184 J/(g·°C); this field stays fixed, since it is a known physical constant, not something being solved for.' },
+          { name: 'Read the unknown substance’s specific heat', text: 'Compare it to a reference table (like OpenStax’s own Table 5.1) to identify what the unknown substance might be.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Heat gained by the known substance equals heat lost by the unknown one — an energy balance that rearranges to solve for any one quantity, given the other six.',
+        expression: 'm_B × c_B × (T_f − T_Bi) = −m_A × c_A × (T_f − T_Ai)\nc_A = −[m_B × c_B × (T_f − T_Bi)] ÷ [m_A × (T_f − T_Ai)]',
+        terms: [
+          { symbol: 'm_A, c_A, T_Ai', meaning: 'Mass, specific heat, and starting temperature of the unknown substance.' },
+          { symbol: 'm_B, c_B, T_Bi', meaning: 'Mass, specific heat, and starting temperature of the known substance (usually water).' },
+          { symbol: 'T_f', meaning: 'The final temperature both substances share once they reach thermal equilibrium.' }
+        ],
+        note: 'This assumes a well-insulated system that exchanges no heat with anything outside the two substances themselves (no calorimeter heat capacity of its own) — the same simplifying assumption the calorimetry enthalpy calculator makes.'
+      },
+      workedExample: {
+        intro: 'A 59.7 g piece of metal, heated to 100.0°C, is dropped into 60.0 g of water at 22.0°C. The mixture settles at 28.5°C. What is the metal’s specific heat? (OpenStax Chemistry 2e, Example 5.4.)',
+        rows: [
+          { label: 'Heat gained by the water: m_B × c_B × (T_f − T_Bi)', value: '60.0 × 4.18 × (28.5 − 22.0) ≈ 1632 J' },
+          { label: 'Heat lost by the metal (equal and opposite)', value: '≈ −1632 J' },
+          { label: 'c_A = 1632 ÷ [59.7 × (100.0 − 28.5)]', value: '≈ 0.38 J/(g·°C)' }
+        ],
+        result: 'c_A ≈ 0.38 J/(g·°C)',
+        explanation: 'OpenStax compares this experimental value with a reference table and identifies the metal as copper (listed there at 0.39 J/(g·°C)) — close enough, given typical experimental uncertainty in a calorimetry measurement, to make the identification. Using this site’s own default water specific heat, 4.184 instead of OpenStax’s rounded 4.18 J/(g·°C), gives 0.3823 J/(g·°C), the same answer to two significant figures.'
+      },
+      watchOut: [
+        {
+          title: 'The unknown substance always loses what the known substance gains — never the same sign',
+          body: 'If the "unknown" started cooler than the final temperature and the "known" substance started warmer, swap which one you call A and which you call B, or the calculator’s solved specific heat will come out negative, which has no physical meaning.'
+        },
+        {
+          title: 'This assumes no heat escapes to the surroundings or the container itself',
+          body: 'A simple insulated cup is a reasonable approximation for a classroom measurement, but any heat that leaks out (or that the thermometer or container itself absorbs) makes the computed specific heat somewhat inaccurate — a more careful experiment accounts for the calorimeter’s own heat capacity separately.'
+        },
+        {
+          title: 'This is not the same question as the calorimetry enthalpy calculator',
+          body: 'That calculator takes a known specific heat and temperature change and divides by moles reacted to find a reaction’s molar enthalpy. This calculator instead balances two substances against each other to find an unknown physical property — usually specific heat — with no reaction or moles involved at all.'
+        },
+        {
+          title: 'A computed specific heat only narrows down the substance; it does not uniquely identify it',
+          body: 'Several substances can have close to the same specific heat. Treat a calorimetry result as a match against a reference table, not as absolute proof, especially with ordinary classroom-lab measurement precision.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §5.2 "Calorimetry" (the heat-balance equation and Example 5.4, identifying copper by its measured specific heat)', url: 'https://openstax.org/books/chemistry-2e/pages/5-2-calorimetry' }
+      ]
+    },
+    inputs: [
+      { id: 'massUnknown', label: 'Mass of unknown substance (g)', type: 'number', placeholder: '59.7', defaultValue: 59.7, step: 0.1, min: 0 },
+      { id: 'initialTempUnknown', label: 'Initial temperature of unknown substance (°C)', type: 'number', placeholder: '100', defaultValue: 100, step: 0.1 },
+      { id: 'massKnown', label: 'Mass of known substance (g)', type: 'number', placeholder: '60', defaultValue: 60, step: 0.1, min: 0 },
+      { id: 'specificHeatKnown', label: 'Specific heat of known substance (J/(g·°C))', type: 'number', placeholder: '4.184', defaultValue: 4.184, step: 0.001, min: 0 },
+      { id: 'initialTempKnown', label: 'Initial temperature of known substance (°C)', type: 'number', placeholder: '22', defaultValue: 22, step: 0.1 },
+      { id: 'finalTemp', label: 'Final equilibrium temperature (°C)', type: 'number', placeholder: '28.5', defaultValue: 28.5, step: 0.1 }
+    ],
+    seo: {
+      title: 'Specific Heat by Mixing Calculator (Calorimetry)',
+      description: 'Free specific heat calculator. Find an unknown substance’s specific heat from a calorimetry mixing experiment, with a worked OpenStax copper example.',
+      faq: [
+        { question: 'How do you calculate specific heat using calorimetry?', answer: 'Mix the unknown substance with a known one (usually water), measure the final shared temperature, and solve the heat balance m_Bc_B(T_f−T_Bi) = −m_Ac_A(T_f−T_Ai) for the unknown specific heat, c_A.' },
+        { question: 'What is the specific heat of the metal in the copper identification example?', answer: 'About 0.38 J/(g·°C), from a 59.7 g metal sample cooling from 100.0°C to 28.5°C in 60.0 g of water that warmed from 22.0°C — close to copper’s known 0.39 J/(g·°C).' },
+        { question: 'Why does the water’s temperature change need to be known precisely?', answer: 'Because the heat transferred (and so the unknown specific heat) is directly proportional to that temperature change — a small reading error in the final or initial water temperature propagates directly into the computed specific heat.' },
+        { question: 'Can this calculator solve for something other than specific heat?', answer: 'Yes — enter a known specific heat for the unknown substance and leave any other field (a mass, a starting temperature, or the final temperature) as the one calculated automatically; the same energy balance solves for it.' },
+        { question: 'How is this different from the heat calculator (Q = mcΔT)?', answer: 'The heat calculator computes the heat for one single substance on its own. This page balances two different substances against each other and solves for one unknown quantity in that balance — most often an unknown specific heat.' },
+        { question: 'Does the calorimeter itself affect the result?', answer: 'In a real experiment, yes — a container, stirrer, or thermometer that absorbs some heat itself introduces error. This calculator assumes an idealized, well-insulated system with no heat capacity of its own, the same simplifying assumption used throughout introductory calorimetry.' },
+        { question: 'Why is the specific heat of water usually used as the known value?', answer: 'Water’s specific heat, 4.184 J/(g·°C), is extremely well established and water is cheap, safe, and easy to measure a mass and temperature for — which is why nearly every introductory calorimetry experiment uses it as the known substance.' }
+      ]
+    },
+    compute(values) {
+      const denominator = values.massUnknown * (values.finalTemp - values.initialTempUnknown);
+      const specificHeatUnknown = denominator === 0 ? NaN : -(values.massKnown * values.specificHeatKnown * (values.finalTemp - values.initialTempKnown)) / denominator;
+      return { specificHeatUnknown };
     }
   }
 ];

@@ -83,7 +83,9 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'percent-composition-calculator': ['percent1', 'percent2', 'percent3', 'percent4'], // all four elements' contributions 0 (their min) -> total 0 -> 0/0
   'vapor-pressure-calculator': ['enthalpyVap'], // all five inputs 0 (their min) -> log(0/0) over (Infinity - Infinity), undefined
   'molarity-molality-conversion-calculator': ['molality'], // molarity, density and molarMass all 0 (their min) -> 0/0
-  'calorimetry-enthalpy-calculator': ['enthalpy'] // moles 0 (its min) -> divide by zero
+  'calorimetry-enthalpy-calculator': ['enthalpy'], // moles 0 (its min) -> divide by zero
+  'common-ion-effect-calculator': ['molarSolubility'], // ksp and commonIonConcentration both 0 (their min) -> 0/0
+  'specific-heat-by-mixing-calculator': ['specificHeatUnknown'] // every input 0 (min, or 0 for unbounded fields) -> 0/0
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

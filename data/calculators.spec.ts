@@ -80,7 +80,10 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'titration-calculator': ['concentration2'], // analyte volume 0 (its min) -> divide by zero
   'density-of-solutions-calculator': ['massPercent'], // soluteMass and solventMass both 0 (their min) -> 0/0
   'buffer-capacity-calculator': ['percentOfMax'], // totalConcentration 0 (its min) -> maxCapacity 0 -> 0/0
-  'percent-composition-calculator': ['percent1', 'percent2', 'percent3', 'percent4'] // all four elements' contributions 0 (their min) -> total 0 -> 0/0
+  'percent-composition-calculator': ['percent1', 'percent2', 'percent3', 'percent4'], // all four elements' contributions 0 (their min) -> total 0 -> 0/0
+  'vapor-pressure-calculator': ['enthalpyVap'], // all five inputs 0 (their min) -> log(0/0) over (Infinity - Infinity), undefined
+  'molarity-molality-conversion-calculator': ['molality'], // molarity, density and molarMass all 0 (their min) -> 0/0
+  'calorimetry-enthalpy-calculator': ['enthalpy'] // moles 0 (its min) -> divide by zero
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

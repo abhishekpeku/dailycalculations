@@ -738,6 +738,12 @@ build agent's judgment**, same as every run so far.
   - **Visual-QA checkpoint note**: the site crossed 244 after run 6 — exactly 50 calculators past the
     last Chrome visual pass (194 calculators, 2026-11-05). The threshold is now hit; flagged for the
     main session to schedule, not run as part of this batch per the usual cadence (every ~10 batches).
+- [ ] Chemistry run 8 (5), branch `step/46-wave-3-chemistry-run-8`, PR TBD — **IN PROGRESS** 2026-11-13:
+  - [ ] vapor-pressure-calculator
+  - [ ] rate-law-calculator
+  - [ ] oxidation-number-calculator
+  - [ ] molarity-molality-conversion-calculator
+  - [ ] calorimetry-enthalpy-calculator
 - [ ] Visual-QA checkpoint: due again once ~50 more calculators land after this wave (last pass was
   at 194 calculators, 2026-11-05 — see STATUS.md header)
 

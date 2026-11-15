@@ -90,6 +90,46 @@ const affordableHomePrice = (
   };
 };
 
+// Illustrative graduated repayment: starts at the interest-only payment and steps up by a fixed
+// growth factor every `stepMonths`, solved by bisection so the balance reaches exactly 0 at
+// `totalMonths` (student-loan-calculator). This is a simplified model of the *shape* studentaid.gov
+// describes ("payments are lower at first and then increase, usually every two years") — it does not
+// reproduce a loan servicer's exact cent-by-cent amounts or any regulatory cap on the size of each step.
+const graduatedSchedule = (principal: number, apr: number, totalMonths: number, stepMonths: number) => {
+  const r = apr / 100 / 12;
+  const steps = totalMonths / stepMonths;
+  if (r === 0) {
+    const level = principal / totalMonths;
+    return { initialPayment: level, finalPayment: level, totalInterest: 0 };
+  }
+  const initialPayment = principal * r; // interest-only first step
+
+  const simulate = (g: number) => {
+    let balance = principal;
+    let payment = initialPayment;
+    let totalPaid = 0;
+    for (let step = 0; step < steps; step++) {
+      for (let m = 0; m < stepMonths; m++) {
+        balance = balance + balance * r - payment;
+        totalPaid += payment;
+      }
+      payment *= g;
+    }
+    return { finalBalance: balance, totalPaid, lastPayment: payment / g };
+  };
+
+  let lo = 1;
+  let hi = 10;
+  while (simulate(hi).finalBalance > 0 && hi < 1e5) hi *= 2;
+  for (let i = 0; i < 100; i++) {
+    const mid = (lo + hi) / 2;
+    if (simulate(mid).finalBalance > 0) lo = mid;
+    else hi = mid;
+  }
+  const final = simulate((lo + hi) / 2);
+  return { initialPayment, finalPayment: final.lastPayment, totalInterest: final.totalPaid - principal };
+};
+
 export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'mortgage-calculator',
@@ -1973,6 +2013,129 @@ export const financeCalculators: CalculatorConfig[] = [
         netSaleProceeds,
         monthlyPI
       };
+    }
+  },
+  {
+    id: 'debt-to-income-calculator',
+    category: 'finance',
+    group: 'Debt',
+    glyph: 'DTI',
+    updatedAt: '2026-11-15',
+    aliases: ['dti calculator', 'debt to income ratio calculator', 'front end back end ratio calculator', 'dti ratio calculator'],
+    related: ['home-affordability-calculator', 'debt-payoff-calculator', 'credit-card-minimum-payment-calculator', 'loan-calculator'],
+    title: 'Debt-to-Income (DTI) Ratio Calculator',
+    description: 'Calculate your front-end and back-end debt-to-income ratio from gross income and monthly debt payments, checked against the classic 28% / 36% lending guideline.',
+    example: 'A household earning $8,000 a month with a $1,940 housing payment and $1,500 of other debt has a 24.25% front-end ratio and a 43.00% back-end ratio — $560 a month over the classic 36% guideline, though within the wider range lenders actually use.',
+    breakdown: {
+      headline: 'backEndRatio',
+      headlineLabel: 'Back-end debt-to-income ratio',
+      outputs: [
+        { id: 'backEndRatio', label: 'Back-end ratio (housing + other debt ÷ income)', format: 'percent' },
+        { id: 'frontEndRatio', label: 'Front-end ratio (housing ÷ income)', format: 'percent' },
+        { id: 'totalMonthlyDebt', label: 'Total monthly debt payments', format: 'currency' },
+        { id: 'maxHousingAt28', label: 'Max housing payment at the 28% guideline', format: 'currency' },
+        { id: 'maxTotalAt36', label: 'Max total debt at the 36% guideline', format: 'currency' },
+        { id: 'roomUnder36', label: 'Room left under the 36% guideline (negative = over)', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Income', inputs: ['grossMonthlyIncome'] },
+        { title: 'Monthly debt payments', inputs: ['housingPayment', 'otherMonthlyDebt'] }
+      ],
+      visual: {
+        type: 'rangeBar',
+        value: 'backEndRatio',
+        title: 'Back-end ratio against lender guidelines',
+        bands: [
+          { label: 'Within the classic 36% guideline', min: 0, max: 36 },
+          { label: 'Within the 43% Qualified Mortgage cap', min: 36, max: 43 },
+          { label: 'Within the 50% automated-underwriting ceiling', min: 43, max: 50 },
+          { label: 'Above typical lending limits', min: 50, max: 150 }
+        ]
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-15',
+      concept: {
+        title: 'Front-end vs. back-end: the two DTI ratios lenders check',
+        paragraphs: [
+          'Your debt-to-income (DTI) ratio is the share of your gross (pre-tax) monthly income that goes to debt payments. Lenders check it two ways: the front-end (or housing) ratio is your housing payment alone divided by gross monthly income; the back-end (or total) ratio adds every other debt payment — car loans, student loans, credit card minimums, personal loans — on top of housing, divided by the same income.',
+          'The long-standing 28/36 guideline caps the front-end ratio at 28% and the back-end ratio at 36%. Real underwriting is looser: the Consumer Financial Protection Bureau\'s Qualified Mortgage rule generally allows up to a 43% back-end ratio, and Fannie Mae\'s automated underwriting can approve up to 50%. home-affordability-calculator uses this exact same range (36% / 43% / 50%) to build its conservative, balanced and maximum home-price tiers — this calculator checks the ratios directly from payments you already have, rather than solving for a home price.',
+          'DTI matters beyond mortgages. Lenders use it for auto loans, personal loans and credit line increases, and it is one of the clearest single numbers for your own sense of how stretched your income is — unlike a credit score, it is something you can calculate yourself from your own pay stub and statements at any time.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your gross monthly income, then your housing payment and every other monthly debt payment separately.',
+        steps: [
+          { name: 'Enter your gross monthly income', text: 'Income before tax and other deductions. If you only know your annual salary, divide it by 12.' },
+          { name: 'Enter your housing payment', text: 'Rent, or the full mortgage payment (principal, interest, tax, insurance, PMI and HOA if it applies) — not just principal and interest.' },
+          { name: 'Enter your other monthly debt', text: 'Every other required debt payment: car loans, student loans, personal loans and minimum credit card payments. Leave out groceries, utilities, insurance premiums and subscriptions — DTI only counts debt.' },
+          { name: 'Read both ratios', text: 'The headline is your back-end ratio; the front-end ratio sits just below it. The bar shows where your back-end ratio falls against the lending guidelines.' },
+          { name: 'Check the dollar room', text: 'The last two rows show the maximum housing payment and total debt the classic 28/36 guideline allows at your income, and how much room (or overage) you have under the 36% line.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Both ratios divide a sum of monthly payments by the same gross monthly income.',
+        expression: 'Front-end ratio = housing payment ÷ gross monthly income × 100\nBack-end ratio = (housing payment + other monthly debt) ÷ gross monthly income × 100',
+        terms: [
+          { symbol: 'housing payment', meaning: 'Rent, or the full mortgage payment including tax, insurance, PMI and HOA.' },
+          { symbol: 'other monthly debt', meaning: 'Every other required debt payment, excluding housing.' },
+          { symbol: 'gross monthly income', meaning: 'Income before tax and other deductions, for every borrower on the loan.' }
+        ],
+        note: 'Estimates only, not a lending decision or pre-qualification. Lenders can define "income" and "debt" slightly differently (for example, some count a lease but not a phone installment plan), so your lender\'s own figure may differ a little from this one.'
+      },
+      workedExample: {
+        intro: 'A household has $8,000 of gross monthly income, a $1,940 monthly housing payment, and $1,500 of other monthly debt. What are its DTI ratios?',
+        rows: [
+          { label: 'Front-end ratio (1,940 ÷ 8,000 × 100)', value: '24.25%' },
+          { label: 'Total monthly debt (1,940 + 1,500)', value: '$3,440' },
+          { label: 'Back-end ratio (3,440 ÷ 8,000 × 100)', value: '43.00%' },
+          { label: 'Max housing at the 28% guideline (0.28 × 8,000)', value: '$2,240 — current payment is $300 under' },
+          { label: 'Max total debt at the 36% guideline (0.36 × 8,000)', value: '$2,880 — current debt is $560 over' }
+        ],
+        result: 'Front-end 24.25% · back-end 43.00%',
+        explanation: 'The front-end ratio is comfortably under the classic 28% cap. The back-end ratio, at 43.00%, is $560 a month over the classic 36% guideline, but it lands exactly at the edge of the CFPB\'s 43% Qualified Mortgage cap and well inside Fannie Mae\'s 50% automated-underwriting ceiling — the same housing payment home-affordability-calculator\'s own balanced-tier example produces from the same income and other debt.'
+      },
+      watchOut: [
+        { title: 'Lenders don\'t all count debt the same way', body: 'Most count every required loan and minimum credit card payment, but treatment of things like a 0%-interest buy-now-pay-later plan or a co-signed loan can vary. Ask your specific lender what they include.' },
+        { title: 'Gross income, not take-home pay', body: 'DTI always uses gross (pre-tax) income, which is higher than what actually lands in your bank account — don\'t substitute your net paycheck.' },
+        { title: 'DTI is one factor, not the whole decision', body: 'Credit score, down payment, cash reserves and employment history all matter too. A borrower with a high DTI but strong credit and reserves can still qualify; a low-DTI borrower with poor credit may not.' },
+        { title: 'Self-employment income needs more care', body: 'Lenders typically average two years of net (after-expenses) self-employment income, which is usually lower than gross revenue — plug in that averaged, after-expenses figure, not top-line sales.' },
+        { title: 'Paying down a small balance can help more than it looks', body: 'Because back-end DTI is a ratio, paying off or paying down a loan with a disproportionately large minimum payment relative to its balance can lower your ratio faster than its dollar size suggests.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, What is a debt-to-income ratio?', url: 'https://www.consumerfinance.gov/ask-cfpb/what-is-a-debt-to-income-ratio-en-1791/' },
+        { label: 'Consumer Financial Protection Bureau, Regulation Z §1026.43, Minimum standards for transactions secured by a dwelling (Qualified Mortgage, 43% DTI)', url: 'https://www.consumerfinance.gov/rules-policy/regulations/1026/43/' },
+        { label: 'Fannie Mae Selling Guide, B3-6-02, Debt-to-Income Ratios', url: 'https://selling-guide.fanniemae.com/sel/b3-6-02/debt-income-ratios' },
+        { label: 'Bankrate, What is the 28/36 rule?', url: 'https://www.bankrate.com/real-estate/what-is-the-28-36-rule/' }
+      ]
+    },
+    inputs: [
+      { id: 'grossMonthlyIncome', label: 'Gross monthly income', type: 'currency', placeholder: '8000', defaultValue: 8000, step: 100, min: 0 },
+      { id: 'housingPayment', label: 'Housing payment (rent or full mortgage PITI)', type: 'currency', placeholder: '1940', defaultValue: 1940, step: 25, min: 0 },
+      { id: 'otherMonthlyDebt', label: 'Other monthly debt payments', type: 'currency', placeholder: '1500', defaultValue: 1500, step: 25, min: 0 }
+    ],
+    seo: {
+      title: 'DTI Calculator – Front-End & Back-End Ratio',
+      description: 'Calculate your front-end and back-end debt-to-income (DTI) ratio from income and monthly debt, checked against the classic 28% / 36% lending guideline.',
+      faq: [
+        { question: 'What is a good DTI ratio?', answer: 'Under the classic guideline, 28% or less front-end and 36% or less back-end is considered comfortable. Many lenders approve higher: up to 43% back-end under the CFPB\'s Qualified Mortgage rule, and up to 50% through Fannie Mae\'s automated underwriting.' },
+        { question: 'What is the difference between front-end and back-end DTI?', answer: 'Front-end counts only your housing payment against your income. Back-end adds every other monthly debt payment (car, student loans, credit cards) on top of housing. Lenders check both; back-end is usually the stricter limit.' },
+        { question: 'Does DTI include property tax and insurance for a mortgage?', answer: 'Yes. The housing payment used in DTI is the full PITI figure — principal, interest, property tax, homeowners insurance, PMI if it applies, and HOA dues — not just principal and interest.' },
+        { question: 'What is not counted as debt in a DTI calculation?', answer: 'Groceries, utilities, insurance premiums, subscriptions and other living expenses are not debt and are left out, even though they are real monthly costs. Only required loan and credit payments count.' },
+        { question: 'How can I lower my DTI ratio?', answer: 'Pay down or pay off a loan (even a small one with a disproportionately large minimum payment), increase income, or refinance a high-payment debt into a lower monthly payment. Avoiding new debt before a big loan application also helps.' },
+        { question: 'Is DTI the same as credit utilization?', answer: 'No. Credit utilization is the share of your available credit limit you are using on revolving accounts. DTI compares your required monthly debt payments to your income and does not look at credit limits at all.' },
+        { question: 'How does this differ from home-affordability-calculator?', answer: 'This calculator checks the DTI ratios from a housing payment and other debt you already have. Home-affordability-calculator works the other way: it starts from your income and debt and solves for the home price those same 28/36-based limits would support.' }
+      ]
+    },
+    compute(values) {
+      const totalMonthlyDebt = values.housingPayment + values.otherMonthlyDebt;
+      const frontEndRatio = (values.housingPayment / values.grossMonthlyIncome) * 100;
+      const backEndRatio = (totalMonthlyDebt / values.grossMonthlyIncome) * 100;
+      const maxHousingAt28 = 0.28 * values.grossMonthlyIncome;
+      const maxTotalAt36 = 0.36 * values.grossMonthlyIncome;
+      const roomUnder36 = maxTotalAt36 - totalMonthlyDebt;
+      return { backEndRatio, frontEndRatio, totalMonthlyDebt, maxHousingAt28, maxTotalAt36, roomUnder36 };
     }
   }
 ];

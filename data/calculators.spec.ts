@@ -30,6 +30,8 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'variance-calculator': ['sampleVariance', 'sampleStdDev'], // howMany=1 (its min) -> sample divides by n-1=0
   'z-score-calculator': ['zScore'], // standard deviation 0 (no min set) -> divide by zero
   'normal-distribution-calculator': ['pLessThanX', 'pGreaterThanX', 'zScore', 'pBetween', 'xAtPercentile'], // standard deviation 0 (its min) -> honest no-answer
+  'debt-to-income-calculator': ['backEndRatio', 'frontEndRatio'], // gross monthly income 0 (its min) -> divide by zero
+  'credit-card-minimum-payment-calculator': ['interestCostOfMinimumOnly', 'monthsCostOfMinimumOnly', 'firstMinPayment', 'fixedMonths', 'fixedTotalInterest'], // balance, APR and fixed payment all 0 -> fixed payment never exceeds 0 interest, no comparison possible
   'correlation-calculator': ['r', 'rSquared', 'tStatistic', 'pValue'], // xData/yData both [0,0] (listMin) -> zero variance, 0/0
   'linear-regression-calculator': ['slope', 'intercept', 'rSquared', 'standardError', 'predictedY'], // xData/yData both [0,0] (listMin) -> zero variance, 0/0
   't-test-calculator': ['tStatistic', 'pValue'], // mode's own min selects one-sample mode; sampleStdDev 0 and sampleMean=popMean=0 -> 0/0

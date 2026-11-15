@@ -309,7 +309,8 @@ export const calculatorOrder: string[] = [
   'mortgage-refinance-calculator',
   'down-payment-savings-calculator',
   'closing-cost-estimator-calculator',
-  'rent-vs-buy-calculator'
+  'rent-vs-buy-calculator',
+  'debt-to-income-calculator'
 ];
 
 const rank = (id: string) => {

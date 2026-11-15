@@ -1277,6 +1277,59 @@ exports[`compute() snapshots > circle-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > closing-cost-estimator-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "homePrice": 350000,
+      "loanAmount": 280000
+    },
+    "outputs": {
+      "midEstimate": 12250,
+      "overallLow": 7000,
+      "overallHigh": 17500,
+      "originationLow": 1400,
+      "originationHigh": 2800,
+      "otherLow": 5600,
+      "otherHigh": 14700,
+      "midPercentOfPrice": 3.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "homePrice": 525000,
+      "loanAmount": 420000
+    },
+    "outputs": {
+      "midEstimate": 18375,
+      "overallLow": 10500,
+      "overallHigh": 26250,
+      "originationLow": 2100,
+      "originationHigh": 4200,
+      "otherLow": 8400,
+      "otherHigh": 22050,
+      "midPercentOfPrice": 3.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "homePrice": 0,
+      "loanAmount": 0
+    },
+    "outputs": {
+      "midEstimate": 0,
+      "overallLow": 0,
+      "overallHigh": 0,
+      "originationLow": 0,
+      "originationHigh": 0,
+      "otherLow": 0,
+      "otherHigh": 0,
+      "midPercentOfPrice": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > coefficient-of-variation-calculator 1`] = `
 {
   "default": {

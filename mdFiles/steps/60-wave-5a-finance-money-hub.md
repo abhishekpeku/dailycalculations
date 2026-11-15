@@ -182,7 +182,7 @@ prior wave's convention.
   - [x] `home-affordability-calculator`
   - [x] `mortgage-refinance-calculator`
   - [x] `down-payment-savings-calculator`
-  - [ ] `closing-cost-estimator-calculator`
+  - [x] `closing-cost-estimator-calculator`
   - [ ] `rent-vs-buy-calculator`
 - [ ] Batch 2 (debt, 5)
 - [ ] Batch 3 (retirement pt.1, 5)

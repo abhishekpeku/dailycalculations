@@ -1668,5 +1668,131 @@ export const financeCalculators: CalculatorConfig[] = [
       const totalInterest = values.targetDownPayment - values.currentSavings - totalContributions;
       return { years: months / 12, totalContributions, totalInterest };
     }
+  },
+  {
+    id: 'closing-cost-estimator-calculator',
+    category: 'finance',
+    glyph: 'CC',
+    updatedAt: '2026-11-15',
+    aliases: ['closing costs calculator', 'home closing cost calculator', 'mortgage closing costs estimator', 'closing cost estimator'],
+    related: ['mortgage-calculator', 'home-affordability-calculator', 'down-payment-savings-calculator'],
+    title: 'Closing Cost Estimator',
+    description: 'Estimate total closing costs on a home purchase from a cited percentage range of the price and loan amount, split into the loan origination fee and everything else: title, appraisal, recording and more.',
+    example: 'On a $350,000 home with a $280,000 loan, closing costs typically run about $7,000 to $17,500 (2%-5% of the price), around $12,250 in the middle, including roughly $1,400-$2,800 of loan origination fees.',
+    breakdown: {
+      headline: 'midEstimate',
+      headlineLabel: 'Estimated total closing costs',
+      outputs: [
+        { id: 'midEstimate', label: 'Estimated total (midpoint)', format: 'currency' },
+        { id: 'overallLow', label: 'Low end (2% of home price)', format: 'currency' },
+        { id: 'overallHigh', label: 'High end (5% of home price)', format: 'currency' },
+        { id: 'originationLow', label: 'Loan origination fee, low (0.5% of loan)', format: 'currency' },
+        { id: 'originationHigh', label: 'Loan origination fee, high (1% of loan)', format: 'currency' },
+        { id: 'otherLow', label: 'Everything else, low', format: 'currency' },
+        { id: 'otherHigh', label: 'Everything else, high', format: 'currency' },
+        { id: 'midPercentOfPrice', label: 'Midpoint as % of home price', format: 'percent' }
+      ],
+      groups: [{ title: 'Your purchase', inputs: ['homePrice', 'loanAmount'] }],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'originationMid', label: 'Loan origination fee' },
+          { from: 'otherMid', label: 'Everything else' }
+        ],
+        center: 'midEstimate',
+        centerSub: 'estimated total'
+      },
+      derive: (v) => ({
+        originationMid: (v.originationLow + v.originationHigh) / 2,
+        otherMid: v.midEstimate - (v.originationLow + v.originationHigh) / 2
+      })
+    },
+    content: {
+      lastReviewed: '2026-11-15',
+      concept: {
+        title: 'What closing costs actually are',
+        paragraphs: [
+          'Closing costs are the fees paid at closing on top of the down payment: lender charges, third-party services, government recording charges, and prepaid items like the first year of homeowners insurance. Both the Consumer Financial Protection Bureau and Freddie Mac\'s My Home guide put the typical total at 2% to 5% of the home purchase price, which is the range this estimator uses.',
+          'Only one piece of that total comes with its own widely cited percentage: the loan origination fee, which Freddie Mac\'s guide puts at "typically between 0.5% and 1% of the total loan amount." Everything else — appraisal, title search and insurance, government recording costs, credit report and underwriting fees, a home inspection, an attorney, a survey — does not have one standard percentage, because it depends heavily on your state, your lender and the property. This calculator estimates the origination fee on its own cited range and groups the rest into "everything else," the remainder of the overall 2-5% band once origination is taken out, rather than inventing a percentage for each individual line item.',
+          'Closing costs are separate money from the down payment. A buyer needs both at the closing table; down-payment-savings-calculator and home-affordability-calculator size the down payment itself, and this estimator covers the additional cash the closing table requires on top of it.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the home price and the amount you expect to finance.',
+        steps: [
+          { name: 'Enter the home price', text: 'The overall closing-cost range is a percentage of this figure.' },
+          { name: 'Enter the loan amount', text: 'The home price minus your planned down payment. The loan origination fee range is a percentage of this figure specifically, not the home price.' },
+          { name: 'Read the overall range', text: 'The headline is the midpoint of the cited 2%-5% range; the low and high ends below it show the full range.' },
+          { name: 'Check the origination vs. everything-else split', text: 'The chart and rows separate the one line item with its own cited percentage (origination) from every other fee, grouped together.' },
+          { name: 'Get a real number', text: 'Ask any lender you are seriously considering for a Loan Estimate. It lists every actual fee for your specific loan, which this estimator cannot know in advance.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Two cited ranges drive the estimate: the overall total is a percentage of the home price, and the loan origination fee specifically is a percentage of the loan amount.',
+        expression: 'Total closing costs = 2% to 5% × home price\nLoan origination fee = 0.5% to 1% × loan amount\nEverything else = Total − origination, at each end of the range',
+        terms: [
+          { symbol: 'home price', meaning: 'The purchase price. The overall 2%-5% range is a percentage of this.' },
+          { symbol: 'loan amount', meaning: 'What you plan to finance (home price minus down payment). The origination-fee range is a percentage of this.' },
+          { symbol: 'midpoint', meaning: 'The average of the low (2%) and high (5%) ends, shown as the headline estimate.' }
+        ],
+        note: 'Estimates only, not a Loan Estimate or a quote. Real closing costs vary by state, lender, loan type and property, and some items (owner\'s title insurance, attorney fees, transfer taxes) are not charged everywhere.'
+      },
+      workedExample: {
+        intro: 'You are buying a $350,000 home and financing $280,000. What should you expect to pay in closing costs?',
+        rows: [
+          { label: 'Low end (2% × 350,000)', value: '$7,000' },
+          { label: 'High end (5% × 350,000)', value: '$17,500' },
+          { label: 'Midpoint estimate', value: '$12,250' },
+          { label: 'Origination fee, low (0.5% × 280,000)', value: '$1,400' },
+          { label: 'Origination fee, high (1% × 280,000)', value: '$2,800' },
+          { label: 'Origination fee, midpoint', value: '$2,100' },
+          { label: 'Everything else, midpoint (12,250 − 2,100)', value: '$10,150' },
+          { label: 'Midpoint as % of home price (12,250 ÷ 350,000)', value: '3.5%' }
+        ],
+        result: 'Estimated total ≈ $12,250 (range $7,000-$17,500), about $2,100 of it the loan origination fee',
+        explanation: 'The origination fee is a comparatively small, well-defined slice of the total. The much larger "everything else" category — title insurance, appraisal, recording, credit report, inspection and prepaid items — is where most of the dollar range comes from, which is exactly why this calculator does not try to assign it a single invented percentage.'
+      },
+      watchOut: [
+        { title: 'Location moves the number a lot', body: 'Transfer taxes, attorney-involvement requirements and title insurance rules vary by state and even by county, so the real total can sit anywhere in, or occasionally outside, the cited 2%-5% range.' },
+        { title: 'Some fees are shoppable, some are not', body: 'You can often shop for title insurance, a survey or a home inspection. Government recording charges and transfer taxes are fixed by law.' },
+        { title: 'This is the buyer\'s side only', body: 'Sellers pay their own closing costs, commonly including the real estate commission, which are not part of this estimate.' },
+        { title: 'Costs can be rolled into the loan', body: 'Some lenders let you finance part of the closing costs instead of paying them upfront, which changes your loan amount and the figures here; see mortgage-refinance-calculator\'s own closing-cost watch-out for the same trade-off on a refinance.' },
+        { title: 'Your Loan Estimate is the real figure', body: 'Within three business days of applying, lenders must send a Loan Estimate itemizing every actual fee. Compare it against this estimate, not the other way around.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, Determine your down payment (2-5% closing-cost range)', url: 'https://www.consumerfinance.gov/owning-a-home/prepare/determine-your-down-payment/' },
+        { label: 'Freddie Mac, My Home: What Are Closing Costs and How Much Will I Pay? (loan origination fee range)', url: 'https://myhome.freddiemac.com/blog/homebuying/what-are-closing-costs-and-how-much-will-i-pay' },
+        { label: 'Consumer Financial Protection Bureau, Loan Estimate Explainer', url: 'https://www.consumerfinance.gov/owning-a-home/loan-estimate/' }
+      ]
+    },
+    inputs: [
+      { id: 'homePrice', label: 'Home price', type: 'currency', placeholder: '350000', defaultValue: 350000, step: 1000, min: 0 },
+      { id: 'loanAmount', label: 'Loan amount', type: 'currency', placeholder: '280000', defaultValue: 280000, step: 1000, min: 0 }
+    ],
+    seo: {
+      title: 'Closing Cost Estimator – Home Buying Cost Range',
+      description: 'Free closing cost estimator: a CFPB/Freddie Mac-cited percentage range of the home price and loan amount, split into the origination fee and everything else.',
+      faq: [
+        { question: 'How much are closing costs on a house?', answer: 'Typically 2% to 5% of the home purchase price, per the CFPB and Freddie Mac. On a $350,000 home that is $7,000 to $17,500, about $12,250 in the middle.' },
+        { question: 'What is the loan origination fee?', answer: 'A lender charge for processing, underwriting and funding the loan, typically 0.5% to 1% of the loan amount per Freddie Mac\'s own guide. On a $280,000 loan that is $1,400 to $2,800.' },
+        { question: 'What else is included in closing costs besides origination?', answer: 'Appraisal, title search and insurance, government recording charges, credit report and underwriting fees, a home inspection, an attorney and sometimes a survey, plus prepaid items such as the first year of homeowners insurance. None of these has one standard percentage, so this calculator groups them as the remainder of the overall 2%-5% range.' },
+        { question: 'Are closing costs the same as the down payment?', answer: 'No, they are separate cash needs at the closing table. Use down-payment-savings-calculator or home-affordability-calculator for the down payment itself, and this estimator for the costs on top of it.' },
+        { question: 'Do closing costs vary by state?', answer: 'Yes, significantly. Transfer taxes, attorney requirements and title insurance rules differ by state and county, which is why this is a range, not a single number.' },
+        { question: 'Can I avoid paying closing costs upfront?', answer: 'Some lenders let you roll part of the closing costs into the loan balance instead of paying cash at closing, which raises the amount you finance and the total interest you pay over time.' },
+        { question: 'Where do I get the real number?', answer: 'Your Loan Estimate, which lenders must provide within three business days of a mortgage application, itemizes every actual fee for your specific loan.' }
+      ]
+    },
+    compute(values) {
+      const overallLow = values.homePrice * 0.02;
+      const overallHigh = values.homePrice * 0.05;
+      const originationLow = values.loanAmount * 0.005;
+      const originationHigh = values.loanAmount * 0.01;
+      const otherLow = overallLow - originationLow;
+      const otherHigh = overallHigh - originationHigh;
+      const midEstimate = (overallLow + overallHigh) / 2;
+      const midPercentOfPrice = (midEstimate / values.homePrice) * 100;
+      return { midEstimate, overallLow, overallHigh, originationLow, originationHigh, otherLow, otherHigh, midPercentOfPrice };
+    }
   }
 ];

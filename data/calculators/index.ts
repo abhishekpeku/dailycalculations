@@ -307,7 +307,8 @@ export const calculatorOrder: string[] = [
   'specific-heat-by-mixing-calculator',
   'home-affordability-calculator',
   'mortgage-refinance-calculator',
-  'down-payment-savings-calculator'
+  'down-payment-savings-calculator',
+  'closing-cost-estimator-calculator'
 ];
 
 const rank = (id: string) => {

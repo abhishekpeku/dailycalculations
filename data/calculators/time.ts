@@ -4,6 +4,7 @@ export const timeCalculators: CalculatorConfig[] = [
   {
     id: 'age-calculator',
     category: 'time',
+    group: 'Ages & Dates',
     glyph: 'yrs',
     updatedAt: '2026-10-21',
     aliases: ['how old am i calculator', 'date of birth calculator', 'age in days calculator', 'birthday calculator', 'chronological age calculator'],
@@ -149,6 +150,7 @@ export const timeCalculators: CalculatorConfig[] = [
   {
     id: 'work-hours-calculator',
     category: 'time',
+    group: 'Work & Focus',
     glyph: 'hrs',
     updatedAt: '2026-10-21',
     aliases: ['timesheet calculator', 'hours worked calculator', 'time card calculator', 'shift hours calculator'],
@@ -268,6 +270,7 @@ export const timeCalculators: CalculatorConfig[] = [
   {
     id: 'date-difference-calculator',
     category: 'time',
+    group: 'Ages & Dates',
     glyph: 'Δd',
     updatedAt: '2026-10-21',
     aliases: ['days between dates calculator', 'date duration calculator', 'countdown calculator', 'weeks between dates', 'days until date'],
@@ -449,6 +452,7 @@ export const timeCalculators: CalculatorConfig[] = [
   {
     id: 'sleep-time-calculator',
     category: 'time',
+    group: 'Sleep',
     glyph: 'zzz',
     updatedAt: '2026-10-21',
     aliases: ['bedtime calculator', 'sleep cycle calculator', 'wake up time calculator', 'when should i sleep'],
@@ -579,6 +583,7 @@ export const timeCalculators: CalculatorConfig[] = [
   {
     id: 'pomodoro-timer',
     category: 'time',
+    group: 'Work & Focus',
     glyph: '25',
     updatedAt: '2026-10-21',
     aliases: ['focus timer', 'study timer', '25 minute timer', 'productivity timer', 'tomato timer'],

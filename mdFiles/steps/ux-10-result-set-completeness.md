@@ -100,8 +100,17 @@ items each may need splitting into 2 sub-batches of ~10-15 — use judgment, don
 
 ## Progress
 
-- [ ] Step file written
+- [x] Step file written
 - [ ] Batch 1: chemistry (28, likely 2 sub-batches)
+  - [x] Sub-batch 1a (14, branch `ux/result-sets-chemistry-1`): molarity-calculator (no change),
+    dilution-calculator (added soluteAmount), mass-percent-calculator (added solventMass),
+    moles-to-grams-calculator (no change), ideal-gas-law-calculator (no change),
+    combined-gas-law-calculator (added amountOfGas), pka-henderson-hasselbalch-calculator
+    (added percentBase), percent-yield-calculator (no change), theoretical-yield-calculator
+    (added productMoles), stoichiometry-calculator (no change), solution-concentration-calculator
+    (no change), reaction-half-life-calculator (no change), rate-constant-calculator (no change),
+    arrhenius-equation-calculator (added impliedHalfLife). 6 real additions, 8 "no change needed."
+  - [ ] Sub-batch 1b (remaining 14 chemistry calculators with ≤1 output)
 - [ ] Batch 2: physics (19, likely 2 sub-batches)
 - [ ] Batch 3: measurements (34)
 - [ ] Batch 4: math (10)

@@ -168,7 +168,8 @@ export const foodCalculators: CalculatorConfig[] = [
         originalAmount: ({ scaledAmount, originalServings, desiredServings }) => (desiredServings === 0 ? NaN : (scaledAmount * originalServings) / desiredServings),
         desiredServings: ({ scaledAmount, originalServings, originalAmount }) => (originalAmount === 0 ? NaN : (scaledAmount * originalServings) / originalAmount),
         originalServings: ({ originalAmount, desiredServings, scaledAmount }) => (scaledAmount === 0 ? NaN : (originalAmount * desiredServings) / scaledAmount)
-      }
+      },
+      outputs: [{ id: 'scalingFactor', label: 'Scaling factor (S₂ ÷ S₁)', dimension: 'count', compute: (si) => (si.originalServings === 0 ? NaN : si.desiredServings / si.originalServings) }]
     },
     content: {
       lastReviewed: '2026-11-05',

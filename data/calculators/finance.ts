@@ -2499,5 +2499,132 @@ export const financeCalculators: CalculatorConfig[] = [
         fixedTotalInterest
       };
     }
+  },
+  {
+    id: 'balance-transfer-savings-calculator',
+    category: 'finance',
+    group: 'Debt',
+    glyph: '⇄',
+    updatedAt: '2026-11-15',
+    aliases: ['balance transfer calculator', '0% apr balance transfer calculator', 'credit card balance transfer savings calculator', 'balance transfer fee calculator'],
+    related: ['credit-card-minimum-payment-calculator', 'debt-payoff-calculator', 'loan-calculator', 'compound-interest-calculator'],
+    title: 'Balance Transfer Savings Calculator',
+    description: 'See the net interest saved by transferring a credit card balance to a promotional-APR card, after the balance transfer fee, assuming you pay it off within the promo period.',
+    example: 'A $6,000 balance at 22% APR, paid off over a 15-month 0% APR balance transfer offer with a 3% ($180) transfer fee, saves about $737.26 in net interest versus paying it off on the original card.',
+    breakdown: {
+      headline: 'netSavings',
+      headlineLabel: 'Net savings from transferring',
+      outputs: [
+        { id: 'netSavings', label: 'Net savings from transferring', format: 'currency' },
+        { id: 'transferFee', label: 'Balance transfer fee', format: 'currency' },
+        { id: 'costIfStay', label: 'Interest if you stay and pay it off in the same time', format: 'currency' },
+        { id: 'costIfTransfer', label: 'Interest + fee if you transfer', format: 'currency' },
+        { id: 'stayMonthlyPayment', label: 'Payment needed to clear it by staying', format: 'currency' },
+        { id: 'transferMonthlyPayment', label: 'Payment needed to clear it after transferring', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Current balance', inputs: ['balance', 'currentAPR'] },
+        { title: 'The transfer offer', inputs: ['promoAPR', 'promoMonths', 'transferFeePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'costIfStay', label: 'Stay on current card' },
+          { from: 'costIfTransfer', label: 'Transfer (interest + fee)' }
+        ],
+        title: 'Total cost to pay off the balance',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-15',
+      concept: {
+        title: 'A transfer only helps once the fee is netted out',
+        paragraphs: [
+          'A balance transfer moves what you owe from one card to another, usually one offering a promotional APR — often 0% — for a limited introductory period. The Consumer Financial Protection Bureau is explicit that this is not free: "a credit card company is permitted to charge you a balance transfer fee on a zero percent rate offer," and that fee is typically "a certain percentage of the amount you transfer or a fixed amount, whichever is more."',
+          'The fee is usually added to the new card\'s balance, so you are financing a slightly larger amount at the new, lower rate. Whether the move is worth it comes down to one comparison: the interest the promotional rate avoids, minus that upfront fee. This calculator assumes you pay the balance off in full within the promotional period, with the same level monthly payment either way, since that is the only way to compare the two cleanly — and the only way a transfer is reliably worth it.',
+          'If the promotional APR is not 0%, the same math still applies; it just saves less, since the transferred balance keeps accruing some interest at the lower promotional rate instead of none.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your current balance and APR, then the terms of the balance transfer offer you are considering.',
+        steps: [
+          { name: 'Enter your balance and current APR', text: 'The amount you currently owe and the APR it is charged at today.' },
+          { name: 'Enter the promotional APR and its length', text: 'The rate the new card charges on the transferred balance, and how many months that rate lasts.' },
+          { name: 'Enter the transfer fee', text: 'As a percentage of the balance transferred — check your specific offer, as this varies by issuer and promotion.' },
+          { name: 'Read the net savings', text: 'The headline is the net savings after the fee. Below it are the interest cost and required monthly payment on each path, assuming full payoff within the promotional period.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Both paths assume the balance is paid off in full, with a level monthly payment, within the promotional number of months.',
+        expression: 'Transfer fee = balance × fee %\nStay: payment to clear the balance in N months at the current APR; interest = payment × N − balance\nTransfer: payment to clear (balance + fee) in N months at the promo APR; interest = payment × N − (balance + fee)\nNet savings = interest(stay) − interest(transfer) − fee',
+        terms: [
+          { symbol: 'N', meaning: 'The number of months in the promotional period.' },
+          { symbol: 'fee', meaning: 'The balance transfer fee, charged once, usually added to the new card\'s balance.' },
+          { symbol: 'interest(transfer)', meaning: 'Zero when the promotional APR is 0%, since a level payment to a 0% balance is pure principal.' }
+        ],
+        note: 'Estimates only. Assumes the full balance (plus the fee) is paid off within the promotional period at a level monthly payment, with no new charges. Any balance left over when the promo ends reverts to the new card\'s regular APR, which can be higher than your original rate — only transfer an amount you can realistically clear in time.'
+      },
+      workedExample: {
+        intro: 'A $6,000 balance at 22% APR, and a balance transfer offer: 0% APR for 15 months, with a 3% transfer fee. Is it worth it if you pay it off within the 15 months?',
+        rows: [
+          { label: 'Transfer fee (3% × 6,000)', value: '$180' },
+          { label: 'Payment to clear $6,000 in 15 months at 22% APR', value: '$461.15/month, $917.26 total interest' },
+          { label: 'Payment to clear $6,180 in 15 months at 0% APR', value: '$412.00/month, $0 interest' },
+          { label: 'Net savings (917.26 − 0 − 180)', value: '$737.26' }
+        ],
+        result: 'Transferring saves about $737.26 over the 15-month promotional period',
+        explanation: 'Staying on the original card costs $917.26 in interest to clear the balance in 15 months. Transferring costs only the $180 fee, since the 0% rate means no interest accrues on the (slightly larger, fee-inclusive) new balance — a net saving of $737.26.'
+      },
+      watchOut: [
+        { title: 'The fee applies even to a 0% offer', body: 'Per the CFPB, issuers are allowed to charge a balance transfer fee on a zero-percent promotional offer. A "free" 0% rate is not necessarily a free transfer.' },
+        { title: 'You have to actually clear it in time', body: 'This calculator assumes full payoff within the promotional period. A balance left over when the promo ends is charged the card\'s regular ongoing APR, which is often higher than your original rate.' },
+        { title: 'New purchases usually do not get the promo rate', body: 'Many balance transfer offers apply the promotional rate only to the transferred balance, not to new purchases on the same card, which can accrue interest from day one.' },
+        { title: 'A transfer does not reduce what you owe', body: 'It moves the same debt to a different lender. Combine it with a real payoff plan — see debt-payoff-calculator — rather than treating the lower rate alone as progress.' },
+        { title: 'Check for a maximum transfer amount', body: 'Card issuers typically cap how much can be transferred, often to a percentage of your new credit limit, which may be less than your full existing balance.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, What is a balance transfer fee? Can a balance transfer fee be charged on a zero percent interest rate offer?', url: 'https://www.consumerfinance.gov/ask-cfpb/what-is-a-balance-transfer-fee-can-a-balance-transfer-fee-be-charged-on-a-zero-percent-interest-rate-offer-en-53/' },
+        { label: 'Consumer Financial Protection Bureau, Credit cards key terms', url: 'https://www.consumerfinance.gov/consumer-tools/credit-cards/answers/key-terms/' }
+      ]
+    },
+    inputs: [
+      { id: 'balance', label: 'Current balance', type: 'currency', placeholder: '6000', defaultValue: 6000, step: 100, min: 0 },
+      { id: 'currentAPR', label: 'Current card APR', type: 'percent', placeholder: '22', defaultValue: 22, step: 0.1, min: 0 },
+      { id: 'promoAPR', label: 'Promotional APR on the new card', type: 'percent', placeholder: '0', defaultValue: 0, step: 0.1, min: 0 },
+      { id: 'promoMonths', label: 'Promotional period', type: 'number', placeholder: '15', defaultValue: 15, step: 1, min: 1, dimension: 'term', unit: 'mo' },
+      { id: 'transferFeePercent', label: 'Balance transfer fee', type: 'percent', placeholder: '3', defaultValue: 3, step: 0.5, min: 0 }
+    ],
+    seo: {
+      title: 'Balance Transfer Savings Calculator',
+      description: 'See the net interest saved by a credit card balance transfer to a promotional-APR card after the transfer fee, assuming payoff within the promo period.',
+      faq: [
+        { question: 'Is a balance transfer worth the fee?', answer: 'It depends on the numbers. A $6,000 balance at 22% APR moved to a 0% offer for 15 months with a 3% fee saves about $737.26 net in this calculator\'s example. A shorter promo period, a higher fee, or a lower current APR can shrink or erase the savings.' },
+        { question: 'Can a card charge a transfer fee on a 0% APR offer?', answer: 'Yes. The CFPB confirms issuers are permitted to charge a balance transfer fee even when the promotional APR is 0%, so the fee has to be weighed against the interest the 0% rate avoids.' },
+        { question: 'What happens if I do not pay off the balance before the promo ends?', answer: 'Whatever is left is charged the card\'s regular ongoing APR from that point, which is often higher than your original card\'s rate — this calculator assumes full payoff within the promotional period and does not model a leftover balance.' },
+        { question: 'How is the transfer fee usually charged?', answer: 'It is typically a percentage of the amount transferred (commonly in the 3%-5% range on many offers) and is usually added to the new card\'s balance rather than billed separately, so check your specific offer\'s terms.' },
+        { question: 'Does a 0% APR mean zero interest during the promo?', answer: 'Yes, on the transferred balance, for the length of the promotional period only. This calculator reflects that by showing $0 of interest on the transfer side when the promotional APR is 0%.' },
+        { question: 'Do new purchases get the same promotional rate?', answer: 'Often not. Many issuers apply the promotional rate only to the transferred balance, while new purchases on the same card accrue interest at the regular purchase APR from the start — check your card\'s terms.' },
+        { question: 'How is this different from the credit card minimum payment calculator?', answer: 'That calculator looks at one card\'s minimum-only payments versus a fixed payment, with no transfer involved. This one compares staying on your current card with moving the balance to a different card and rate.' }
+      ]
+    },
+    compute(values) {
+      const transferFee = values.balance * (values.transferFeePercent / 100);
+      const stayMonthlyPayment = loanPayment(values.balance, values.promoMonths, values.currentAPR);
+      const costIfStay = stayMonthlyPayment * values.promoMonths - values.balance;
+      const transferPrincipal = values.balance + transferFee;
+      const transferMonthlyPayment = loanPayment(transferPrincipal, values.promoMonths, values.promoAPR);
+      const transferInterest = transferMonthlyPayment * values.promoMonths - transferPrincipal;
+      const costIfTransfer = transferInterest + transferFee;
+      return {
+        netSavings: costIfStay - costIfTransfer,
+        transferFee,
+        costIfStay,
+        costIfTransfer,
+        stayMonthlyPayment,
+        transferMonthlyPayment
+      };
+    }
   }
 ];

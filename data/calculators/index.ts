@@ -312,7 +312,8 @@ export const calculatorOrder: string[] = [
   'rent-vs-buy-calculator',
   'debt-to-income-calculator',
   'debt-payoff-calculator',
-  'credit-card-minimum-payment-calculator'
+  'credit-card-minimum-payment-calculator',
+  'balance-transfer-savings-calculator'
 ];
 
 const rank = (id: string) => {

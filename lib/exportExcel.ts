@@ -305,9 +305,10 @@ function buildScheduleSheet(workbook: ExcelJS.Workbook, payload: ExportPayload) 
   const colCount = payload.table.columns.length;
   ws.columns = payload.table.columns.map((col, index) => ({ width: index === 0 ? 10 : 16 }));
 
+  const hasCurrency = payload.table.columns.some((col) => col.kind === 'currency');
   ws.getCell(1, 1).value = `${payload.title} — full schedule`;
   ws.getCell(1, 1).font = { name: FONT, bold: true, size: 13, color: { argb: INK } };
-  ws.getCell(2, 1).value = `${payload.title} · ${payload.table.rows.length} rows · Amounts in USD`;
+  ws.getCell(2, 1).value = `${payload.title} · ${payload.table.rows.length} rows${hasCurrency ? ' · Amounts in USD' : ''}`;
   ws.getCell(2, 1).font = { name: FONT, size: 9, color: { argb: MUTED } };
 
   const headerRow = 4;
@@ -331,18 +332,24 @@ function buildScheduleSheet(workbook: ExcelJS.Workbook, payload: ExportPayload) 
   // number formats, bottom hairline rule), and the totals row (bold, top+double-bottom rule).
   const lastDataRow = headerRow + payload.table.rows.length;
   const totalsRow = lastDataRow + 1;
+  // Text columns (e.g. TimeZonePlanner's Zone/Status) read left-aligned, like any ordinary table
+  // of labels — only numeric/period columns get the financial-table right/center alignment.
+  const alignFor = (index: number, kind: typeof payload.table.columns[number]['kind']) =>
+    index === 0 ? 'center' : kind === 'text' ? 'left' : 'right';
+
   payload.table.columns.forEach((col, index) => {
     const c = index + 1;
+    const halign = alignFor(index, col.kind);
     const headerCell = ws.getCell(headerRow, c);
     headerCell.font = { name: FONT, bold: true, size: 10, color: { argb: WHITE } };
     headerCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: ACCENT } };
-    headerCell.alignment = { horizontal: index === 0 ? 'center' : 'right', vertical: 'middle', wrapText: true };
+    headerCell.alignment = { horizontal: halign, vertical: 'middle', wrapText: true };
     ws.getRow(headerRow).height = 24;
 
     for (let r = headerRow + 1; r <= lastDataRow; r++) {
       const cell = ws.getCell(r, c);
       cell.font = { name: FONT, size: 10, color: { argb: BODY } };
-      cell.alignment = { horizontal: index === 0 ? 'center' : 'right' };
+      cell.alignment = { horizontal: halign };
       const fmt = numFmtForKind(col.kind);
       if (fmt) cell.numFmt = fmt;
       cell.border = { bottom: thin(RULE_LIGHT) };
@@ -350,7 +357,7 @@ function buildScheduleSheet(workbook: ExcelJS.Workbook, payload: ExportPayload) 
 
     const totalsCell = ws.getCell(totalsRow, c);
     totalsCell.font = { name: FONT, bold: true, size: 10, color: { argb: BODY } };
-    totalsCell.alignment = { horizontal: index === 0 ? 'center' : 'right' };
+    totalsCell.alignment = { horizontal: halign };
     if (index !== 0 && col.kind === 'currency') totalsCell.numFmt = CURRENCY_FMT;
     totalsCell.border = { top: thin(TOTAL_RULE), bottom: double(TOTAL_RULE) };
   });

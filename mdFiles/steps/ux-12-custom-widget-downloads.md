@@ -68,15 +68,56 @@ existing layout — insert only the download control.
 - Every other (non-custom) calculator's download control is unaffected — this step only touches the
   5 custom components + the one `DownloadMenu` export change in `CalculatorWidget.tsx`.
 
-## Progress
+## Progress — DONE 2026-11-15
 
-- [ ] Step file written
-- [ ] `DownloadMenu` exported from `CalculatorWidget.tsx`
-- [ ] `CurrencyConverter.tsx` — download wired
-- [ ] `TextToolsCalculator.tsx` — download wired (both character/hashtag modes)
-- [ ] `ScientificCalculator.tsx` — download wired
-- [ ] `TimeZonePlanner.tsx` — download wired (table export)
-- [ ] `PomodoroTimer.tsx` — confirmed untouched, documented as deliberate
-- [ ] `npm test` / `npm run lint` / `npm run build` pass
-- [ ] Manual verification on all 5 applicable pages, reading actual generated files
-- [ ] STATUS.md updated
+- [x] Step file written
+- [x] `DownloadMenu` exported from `CalculatorWidget.tsx`
+- [x] `CurrencyConverter.tsx` — download wired (PDF + Excel, no table)
+- [x] `TextToolsCalculator.tsx` — download wired (both character/hashtag modes)
+- [x] `ScientificCalculator.tsx` — download wired (expression + result, no outputs/table)
+- [x] `TimeZonePlanner.tsx` — download wired (table export: Zone/Local time/Status)
+- [x] `PomodoroTimer.tsx` — confirmed untouched, documented as deliberate (running timer, no
+      exportable result)
+- [x] `npm test` 1123/1123, `npm run lint` clean, `npx tsc --noEmit` clean, `npm run build` passes
+- [x] Manual verification, reading actual generated files (not just screenshots):
+      `character-counter`/`hashtag-counter`/`scientific-calculator` PDF summaries,
+      `currency-converter`/`timezone-meeting-planner` Excel workbooks round-tripped through
+      `exceljs` to confirm real content (not just that the click didn't throw).
+- [x] STATUS.md updated
+
+### Two real bugs found during the main session's own verification pass (agent died mid-task
+before finishing its own checks — see below) and fixed before merge
+
+The build agent (calculator-builder, Sonnet) implemented and committed all 5 widgets correctly,
+opened the draft PR, but hit a session rate limit while still mid-way through its own manual
+verification pass (it had generated and apparently inspected PDFs for 4/5 widgets, but never
+`currency-converter`, and never tested any Excel export at all). The main session finished that
+verification and found two real issues, both introduced because `TimeZonePlanner`'s table is the
+*first* schedule table with zero numeric columns (Zone/Local time/Status are all `kind: 'text'`) —
+every prior table (amortization) was all-currency/integer, so these paths were never exercised:
+
+1. **`lib/exportExcel.ts`'s Schedule sheet always said "Amounts in USD"** in its subtitle line,
+   even for a table with no money in it at all. Fixed: that suffix only appears when at least one
+   column is `kind: 'currency'`.
+2. **Text columns were right-aligned** in both the Excel native table and the PDF schedule table —
+   both were hard-coded to right-align every column after the first (a sound assumption when every
+   table was financial data, wrong once a table of plain labels like "Outside hours"/"Business
+   hours" showed up). Fixed in both `lib/exportExcel.ts` and `lib/exportPdf.ts`: `kind: 'text'`
+   columns now align left; numeric/period columns keep the original right/center alignment.
+
+### User feedback, same session: PDF schedule table was spread across the whole page
+
+While verifying the above, the user separately flagged (on the *existing*, already-merged UX-09
+mortgage-calculator schedule PDF, not anything UX-12 touched): "i dont want anything which like a
+table to be spread over the whole page it can be better." This directly contradicts the Opus PDF
+spec's explicit "use full content width" recommendation from the UX-09 third follow-up — the user's
+own preference wins. Fixed in `lib/exportPdf.ts`'s `downloadFullPdf`: each column now gets a fixed
+width by kind (currency 30mm, percent 20mm, decimal 26mm, integer 20mm, period column 16mm, text
+32mm), the table is sized to the sum of those (capped at the page's content width) rather than
+stretched to fill it, and centered in the remaining space. A 4-column amortization table now spans
+~106mm of a 174mm content width instead of all 174mm. Verified via `pdftotext -layout` on a
+regenerated `mortgage-calculator` schedule PDF plus the width arithmetic by hand (confirmed in the
+PR, not just eyeballed).
+
+Re-verified after all fixes: `npm test` 1123/1123, lint clean, `npx tsc --noEmit` clean, build
+passes (295 pages). Branch `ux/custom-widget-downloads`, PR #82.

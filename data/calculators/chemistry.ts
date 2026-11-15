@@ -21,6 +21,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'molar-mass-calculator',
     category: 'chemistry',
+    group: 'Moles & Molar Mass',
     glyph: 'Mr',
     updatedAt: '2026-11-06',
     aliases: ['molar mass calculator', 'molecular weight calculator', 'molecular mass calculator', 'formula mass calculator', 'grams per mole calculator', 'molar mass of a compound calculator'],
@@ -155,6 +156,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'molarity-calculator',
     category: 'chemistry',
+    group: 'Concentration Units',
     glyph: 'M',
     updatedAt: '2026-11-06',
     aliases: ['molarity calculator', 'molar concentration calculator', 'm = mol/l calculator', 'moles per liter calculator', 'solution concentration calculator'],
@@ -280,6 +282,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'dilution-calculator',
     category: 'chemistry',
+    group: 'Dilutions & Solution Properties',
     glyph: 'CV',
     updatedAt: '2026-11-06',
     aliases: ['dilution calculator', 'c1v1=c2v2 calculator', 'dilution formula calculator', 'stock solution dilution calculator', 'dilution factor calculator', 'serial dilution calculator'],
@@ -409,6 +412,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'mass-percent-calculator',
     category: 'chemistry',
+    group: 'Moles & Molar Mass',
     glyph: 'm%',
     updatedAt: '2026-11-06',
     aliases: ['mass percent calculator', 'percent by mass calculator', 'mass concentration percent calculator', 'weight percent calculator', 'percent composition by mass calculator'],
@@ -530,6 +534,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'moles-to-grams-calculator',
     category: 'chemistry',
+    group: 'Moles & Molar Mass',
     glyph: 'm/M',
     updatedAt: '2026-11-06',
     aliases: ['moles to grams calculator', 'grams to moles calculator', 'n = m/m calculator', 'mole conversion calculator', 'convert moles to mass calculator', 'mass to moles calculator'],
@@ -657,6 +662,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'ideal-gas-law-calculator',
     category: 'chemistry',
+    group: 'Gas Laws',
     glyph: 'PV',
     updatedAt: '2026-11-08',
     aliases: ['ideal gas law calculator', 'pv=nrt calculator', 'ideal gas equation calculator', 'gas law calculator', 'solve for pressure volume calculator', 'molar volume at stp calculator'],
@@ -777,6 +783,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'combined-gas-law-calculator',
     category: 'chemistry',
+    group: 'Gas Laws',
     glyph: 'PVT',
     updatedAt: '2026-11-08',
     aliases: ['combined gas law calculator', 'p1v1/t1 = p2v2/t2 calculator', 'combined gas law formula calculator', 'gas law two states calculator'],
@@ -908,6 +915,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'ph-poh-calculator',
     category: 'chemistry',
+    group: 'Acid-Base Chemistry',
     glyph: 'pH',
     updatedAt: '2026-11-08',
     aliases: ['ph calculator', 'poh calculator', 'ph to poh calculator', 'ph to hydrogen ion concentration calculator', 'ph poh converter', 'hydrogen ion concentration calculator'],
@@ -1017,6 +1025,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'pka-henderson-hasselbalch-calculator',
     category: 'chemistry',
+    group: 'Acid-Base Chemistry',
     glyph: 'pKa',
     updatedAt: '2026-11-08',
     aliases: ['henderson-hasselbalch calculator', 'pka calculator', 'buffer ph calculator', 'henderson hasselbalch equation calculator', 'pka from ph calculator'],
@@ -1142,6 +1151,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'percent-yield-calculator',
     category: 'chemistry',
+    group: 'Reaction Stoichiometry & Yield',
     glyph: 'Y%',
     updatedAt: '2026-11-08',
     aliases: ['percent yield calculator', 'percentage yield calculator', 'actual vs theoretical yield calculator', 'reaction yield calculator', 'percent yield formula calculator'],
@@ -1252,6 +1262,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'limiting-reagent-calculator',
     category: 'chemistry',
+    group: 'Reaction Stoichiometry & Yield',
     glyph: 'LR',
     updatedAt: '2026-11-08',
     aliases: ['limiting reagent calculator', 'limiting reactant calculator', 'excess reagent calculator', 'which reactant is limiting calculator', 'limiting reagent problems calculator'],
@@ -1385,6 +1396,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'theoretical-yield-calculator',
     category: 'chemistry',
+    group: 'Reaction Stoichiometry & Yield',
     glyph: 'Yth',
     updatedAt: '2026-11-08',
     aliases: ['theoretical yield calculator', 'maximum yield calculator', 'theoretical yield formula calculator', 'theoretical yield from moles calculator', 'predicted yield calculator'],
@@ -1516,6 +1528,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'empirical-formula-calculator',
     category: 'chemistry',
+    group: 'Moles & Molar Mass',
     glyph: 'EF',
     updatedAt: '2026-11-08',
     aliases: ['empirical formula calculator', 'empirical formula from percent composition calculator', 'simplest formula calculator', 'empirical formula from mass calculator', 'percent composition to formula calculator'],
@@ -1662,6 +1675,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'stoichiometry-calculator',
     category: 'chemistry',
+    group: 'Reaction Stoichiometry & Yield',
     glyph: 'n:n',
     updatedAt: '2026-11-08',
     aliases: ['stoichiometry calculator', 'mole ratio calculator', 'mole to mole calculator', 'stoichiometric ratio calculator', 'balanced equation mole calculator'],
@@ -1773,6 +1787,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'solution-concentration-calculator',
     category: 'chemistry',
+    group: 'Dilutions & Solution Properties',
     glyph: 'ppm',
     updatedAt: '2026-11-08',
     aliases: ['solution concentration calculator', 'ppm calculator', 'mg/l calculator', 'parts per million calculator', 'ppm to mg/l calculator', 'dilute solution concentration calculator'],
@@ -1897,6 +1912,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'reaction-half-life-calculator',
     category: 'chemistry',
+    group: 'Chemical Kinetics',
     glyph: 't½',
     updatedAt: '2026-11-08',
     aliases: ['reaction half-life calculator', 'first order half life calculator', 'half life of a reaction calculator', 't1/2 = ln2/k calculator', 'chemical kinetics half-life calculator', 'rate constant to half life calculator'],
@@ -1999,6 +2015,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'rate-constant-calculator',
     category: 'chemistry',
+    group: 'Chemical Kinetics',
     glyph: 'k',
     updatedAt: '2026-11-08',
     aliases: ['rate constant calculator', 'first order rate constant calculator', 'integrated rate law calculator', 'k = ln(a0/a)/t calculator', 'find rate constant from concentration calculator'],
@@ -2123,6 +2140,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'arrhenius-equation-calculator',
     category: 'chemistry',
+    group: 'Chemical Kinetics',
     glyph: 'Ea',
     updatedAt: '2026-11-08',
     aliases: ['arrhenius equation calculator', 'k = ae^(-ea/rt) calculator', 'activation energy calculator', 'pre-exponential factor calculator', 'arrhenius plot calculator', 'temperature dependence of rate constant calculator'],
@@ -2263,6 +2281,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'molality-calculator',
     category: 'chemistry',
+    group: 'Concentration Units',
     glyph: 'b',
     updatedAt: '2026-11-08',
     aliases: ['molality calculator', 'molal concentration calculator', 'mol/kg calculator', 'moles per kg solvent calculator', 'b = mol/kg calculator'],
@@ -2372,6 +2391,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'mole-fraction-calculator',
     category: 'chemistry',
+    group: 'Concentration Units',
     glyph: 'χ',
     updatedAt: '2026-11-08',
     aliases: ['mole fraction calculator', 'molar fraction calculator', 'x = n/ntotal calculator', 'mole percent calculator', 'mole fraction of a mixture calculator'],
@@ -2496,6 +2516,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'osmolarity-calculator',
     category: 'chemistry',
+    group: 'Concentration Units',
     glyph: 'Osm',
     updatedAt: '2026-11-08',
     aliases: ['osmolarity calculator', 'osmolarity formula calculator', 'osmotic concentration calculator', 'mosm/l calculator', 'van’t hoff factor calculator', 'total particle concentration calculator'],
@@ -2606,6 +2627,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'normality-calculator',
     category: 'chemistry',
+    group: 'Concentration Units',
     glyph: 'N',
     updatedAt: '2026-11-08',
     aliases: ['normality calculator', 'normality formula calculator', 'equivalent concentration calculator', 'n = m x n calculator', 'eq/l calculator', 'gram equivalent weight calculator'],
@@ -2715,6 +2737,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'titration-calculator',
     category: 'chemistry',
+    group: 'Acid-Base Chemistry',
     glyph: 'Ti',
     updatedAt: '2026-11-08',
     aliases: ['titration calculator', 'acid base titration calculator', 'titration formula calculator', 'equivalence point calculator', 'titrant concentration calculator', 'molarity from titration calculator'],
@@ -2856,6 +2879,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'equilibrium-constant-calculator',
     category: 'chemistry',
+    group: 'Equilibrium & Thermodynamics',
     glyph: 'Keq',
     updatedAt: '2026-11-08',
     aliases: ['equilibrium constant calculator', 'keq calculator', 'kc calculator', 'reaction quotient calculator', 'law of mass action calculator', 'chemical equilibrium calculator'],
@@ -2985,6 +3009,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'gibbs-free-energy-calculator',
     category: 'chemistry',
+    group: 'Equilibrium & Thermodynamics',
     glyph: 'ΔG',
     updatedAt: '2026-11-08',
     aliases: ['gibbs free energy calculator', 'gibbs energy calculator', 'delta g calculator', 'free energy calculator', 'spontaneity calculator', 'dg = dh - tds calculator'],
@@ -3114,6 +3139,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'density-of-solutions-calculator',
     category: 'chemistry',
+    group: 'Dilutions & Solution Properties',
     glyph: 'ρ',
     updatedAt: '2026-11-09',
     aliases: ['density of solution calculator', 'solution density calculator', 'specific gravity calculator', 'density and specific gravity of a solution', 'mass percent from density calculator'],
@@ -3238,6 +3264,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'serial-dilution-calculator',
     category: 'chemistry',
+    group: 'Dilutions & Solution Properties',
     glyph: 'Cₙ',
     updatedAt: '2026-11-09',
     aliases: ['dilution series calculator', 'repeated dilution calculator', '1:10 serial dilution calculator', 'cfu dilution calculator', 'cumulative dilution factor calculator'],
@@ -3360,6 +3387,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'electron-configuration-calculator',
     category: 'chemistry',
+    group: 'Atomic & Molecular Structure',
     glyph: 'e⁻',
     updatedAt: '2026-11-09',
     aliases: ['electron configuration calculator', 'electron configuration finder', 'ground state electron configuration calculator', 'noble gas configuration calculator', 'periodic table electron configuration'],
@@ -3479,6 +3507,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'buffer-capacity-calculator',
     category: 'chemistry',
+    group: 'Acid-Base Chemistry',
     glyph: 'β',
     updatedAt: '2026-11-09',
     aliases: ['buffer capacity calculator', 'buffer value calculator', 'van slyke equation calculator', 'buffer index calculator', 'how strong is a buffer calculator'],
@@ -3602,6 +3631,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'beer-lambert-law-calculator',
     category: 'chemistry',
+    group: 'Spectroscopy',
     glyph: 'A',
     updatedAt: '2026-11-09',
     aliases: ['beer-lambert law calculator', "beer's law calculator", 'absorbance calculator', 'molar absorptivity calculator', 'spectrophotometry calculator'],
@@ -3717,6 +3747,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'freezing-point-depression-calculator',
     category: 'chemistry',
+    group: 'Colligative Properties',
     glyph: 'ΔTf',
     updatedAt: '2026-11-09',
     aliases: ['freezing point depression calculator', 'delta tf calculator', 'kf x m calculator', 'freezing-point depression formula calculator', 'cryoscopic constant calculator', 'how much salt lowers freezing point calculator'],
@@ -3835,6 +3866,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'boiling-point-elevation-calculator',
     category: 'chemistry',
+    group: 'Colligative Properties',
     glyph: 'ΔTb',
     updatedAt: '2026-11-09',
     aliases: ['boiling point elevation calculator', 'delta tb calculator', 'kb x m calculator', 'boiling-point elevation formula calculator', 'ebullioscopic constant calculator', 'antifreeze boiling point calculator'],
@@ -3953,6 +3985,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'vant-hoff-osmotic-pressure-calculator',
     category: 'chemistry',
+    group: 'Colligative Properties',
     glyph: 'Π',
     updatedAt: '2026-11-09',
     aliases: ['osmotic pressure calculator', 'van’t hoff equation calculator', 'pi = imrt calculator', 'osmotic pressure formula calculator', 'osmotic pressure of a solution calculator', 'reverse osmosis pressure calculator'],
@@ -4070,6 +4103,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'percent-composition-calculator',
     category: 'chemistry',
+    group: 'Moles & Molar Mass',
     glyph: 'w%',
     updatedAt: '2026-11-09',
     aliases: ['percent composition calculator', 'elemental percent composition calculator', 'mass percent of elements calculator', 'percentage composition of a compound calculator', 'percent of each element in a compound calculator', '% composition calculator'],
@@ -4216,6 +4250,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'faradays-law-electrolysis-calculator',
     category: 'chemistry',
+    group: 'Redox & Electrochemistry',
     glyph: 'F',
     updatedAt: '2026-11-09',
     aliases: ['faraday’s law of electrolysis calculator', 'electrolysis mass calculator', 'faraday constant calculator', 'moles of electrons calculator', 'electroplating calculator', 'm = itm/nf calculator'],
@@ -4340,6 +4375,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'vapor-pressure-calculator',
     category: 'chemistry',
+    group: 'Gas Laws',
     glyph: 'Pv',
     updatedAt: '2026-11-13',
     aliases: ['vapor pressure calculator', 'clausius-clapeyron calculator', 'clausius clapeyron equation calculator', 'enthalpy of vaporization calculator', 'boiling point at altitude calculator'],
@@ -4466,6 +4502,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'rate-law-calculator',
     category: 'chemistry',
+    group: 'Chemical Kinetics',
     glyph: 'rate',
     updatedAt: '2026-11-13',
     aliases: ['rate law calculator', 'reaction rate calculator', 'rate = k[a]^m[b]^n calculator', 'reaction order calculator', 'differential rate law calculator'],
@@ -4596,6 +4633,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'oxidation-number-calculator',
     category: 'chemistry',
+    group: 'Redox & Electrochemistry',
     glyph: 'ox',
     updatedAt: '2026-11-13',
     aliases: ['oxidation number calculator', 'oxidation state calculator', 'find the oxidation number calculator', 'oxidation number of an element calculator', 'redox oxidation state calculator'],
@@ -4727,6 +4765,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'molarity-molality-conversion-calculator',
     category: 'chemistry',
+    group: 'Concentration Units',
     glyph: 'M⇄b',
     updatedAt: '2026-11-13',
     aliases: ['molarity to molality calculator', 'molality to molarity calculator', 'convert molarity to molality calculator', 'molarity molality conversion calculator', 'concentration unit conversion calculator'],
@@ -4844,6 +4883,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'calorimetry-enthalpy-calculator',
     category: 'chemistry',
+    group: 'Thermochemistry',
     glyph: 'ΔH',
     updatedAt: '2026-11-13',
     aliases: ['calorimetry calculator', 'enthalpy of reaction calculator', 'heat of reaction calculator', 'molar enthalpy calculator', 'calorimeter heat calculator'],
@@ -4966,6 +5006,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'ksp-molar-solubility-calculator',
     category: 'chemistry',
+    group: 'Equilibrium & Thermodynamics',
     glyph: 'Ksp',
     updatedAt: '2026-11-13',
     aliases: ['ksp calculator', 'solubility product calculator', 'molar solubility calculator', 'ksp to molar solubility calculator', 'solubility product constant calculator'],
@@ -5086,6 +5127,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'common-ion-effect-calculator',
     category: 'chemistry',
+    group: 'Acid-Base Chemistry',
     glyph: 'CIE',
     updatedAt: '2026-11-13',
     aliases: ['common ion effect calculator', 'solubility with common ion calculator', 'common ion solubility calculator', 'ksp common ion calculator'],
@@ -5193,6 +5235,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'isotope-notation-calculator',
     category: 'chemistry',
+    group: 'Atomic & Molecular Structure',
     glyph: 'AZX',
     updatedAt: '2026-11-13',
     aliases: ['isotope calculator', 'isotope notation calculator', 'protons neutrons electrons calculator', 'atomic number and mass number calculator', 'ion electron count calculator'],
@@ -5314,6 +5357,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'molecular-geometry-calculator',
     category: 'chemistry',
+    group: 'Atomic & Molecular Structure',
     glyph: 'AXE',
     updatedAt: '2026-11-13',
     aliases: ['molecular geometry calculator', 'vsepr calculator', 'electron geometry calculator', 'molecular shape calculator', 'bond angle calculator'],
@@ -5440,6 +5484,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
   {
     id: 'specific-heat-by-mixing-calculator',
     category: 'chemistry',
+    group: 'Thermochemistry',
     glyph: 'cmix',
     updatedAt: '2026-11-13',
     aliases: ['specific heat by mixing calculator', 'calorimetry mixing calculator', 'specific heat of a metal calculator', 'measure specific heat calculator', 'heat transfer between substances calculator'],

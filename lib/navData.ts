@@ -10,6 +10,8 @@ export type NavCalculator = {
   category: string;
   glyph: string;
   aliases: string[];
+  /** Sub-grouping label (UX-06/UX-08), mirrored from CalculatorConfig.group. */
+  group?: string;
 };
 
 export type NavCategory = {
@@ -31,7 +33,8 @@ export function buildNavData(): NavData {
     description: calculator.description,
     category: calculator.category,
     glyph: calculator.glyph,
-    aliases: calculator.aliases
+    aliases: calculator.aliases,
+    group: calculator.group
   }));
 
   const navCategories: NavCategory[] = categories.map((category) => ({

@@ -8,7 +8,12 @@ import CategoryMenuRow from './CategoryMenuRow';
 import CalculatorMenuItem from './CalculatorMenuItem';
 import { categoryTheme } from '@/lib/categoryTheme';
 import { matchesQuery } from '@/lib/search';
+import { buildGroups } from '@/lib/groupCalculators';
 import type { NavData } from '@/lib/navData';
+
+// Reuses CategoryCalculatorFilter.tsx's section-eyebrow style so the dropdown's grouped sections
+// match the category page's (UX-08).
+const GROUP_HEADING = 'text-[12px] font-semibold uppercase tracking-wide text-[#6E6E73] dark:text-slate-400';
 
 // A handful of well-known calculators, shown in the right pane's footer row regardless of the
 // selected category — a fast path to the site's most-opened tools.
@@ -37,6 +42,9 @@ export default function CategoriesMenu({ nav, onNavigate }: Props) {
     () => (activeCategory ? nav.calculators.filter((calculator) => calculator.category === activeCategory.id) : []),
     [nav.calculators, activeCategory]
   );
+  // Same "every calculator has a group, or fall back to one flat grid" rule as the category page
+  // (UX-08) — not per-category special-casing, buildGroups() itself decides.
+  const categoryGroups = useMemo(() => buildGroups(categoryCalculators), [categoryCalculators]);
   const activeTheme = activeCategory ? categoryTheme(activeCategory.id) : categoryTheme('');
   const popular = POPULAR_IDS.map((id) => nav.calculators.find((calculator) => calculator.id === id)).filter(
     (calculator): calculator is NonNullable<typeof calculator> => Boolean(calculator)
@@ -119,11 +127,28 @@ export default function CategoriesMenu({ nav, onNavigate }: Props) {
               </div>
             </div>
 
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-1">
-              {categoryCalculators.map((calculator) => (
-                <CalculatorMenuItem key={calculator.id} calculator={calculator} onNavigate={onNavigate} />
-              ))}
-            </div>
+            {categoryGroups ? (
+              <div className="space-y-4">
+                {categoryGroups.map((section) => (
+                  <div key={section.label} className="space-y-1.5">
+                    <p className={GROUP_HEADING}>
+                      {section.label} ({section.items.length})
+                    </p>
+                    <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-1">
+                      {section.items.map((calculator) => (
+                        <CalculatorMenuItem key={calculator.id} calculator={calculator} onNavigate={onNavigate} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-1">
+                {categoryCalculators.map((calculator) => (
+                  <CalculatorMenuItem key={calculator.id} calculator={calculator} onNavigate={onNavigate} />
+                ))}
+              </div>
+            )}
 
             <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4 text-sm dark:border-slate-800">
               <p className="text-[#6E6E73] dark:text-slate-400">

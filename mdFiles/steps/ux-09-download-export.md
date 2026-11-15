@@ -241,3 +241,39 @@ Re-verified end-to-end the same way as the first pass (reading the regenerated f
 screenshots): `mortgage-calculator`'s summary PDF, 12-page schedule PDF (brand band on page 2,
 "Page 12 of 12" correct on the last page, 360 months ending at exactly $0.00 balance). `npm test`
 1123/1123, lint clean, `npx tsc --noEmit` clean, `npm run build` passes.
+
+### Second follow-up (2026-11-15, same session — layout + chart captions)
+
+**Layout, asked for explicitly**: inputs and the chart now sit side by side as two bordered,
+rounded-corner cards (mirroring the on-screen inputs|result split), with the result underneath as
+its own highlighted card holding the headline plus its supporting outputs as the explanation
+beneath it. A missing chart gives the inputs card the full width rather than an empty box. The
+schedule table (`downloadFullPdf`) no longer stretches edge-to-edge — sized to
+`min(contentWidth, columns × 34mm)` and centered, with `theme: 'grid'` for a fully bordered look
+and a blue header row matching the brand band.
+
+**Chart captions, asked for explicitly ("something written for the graphs and charts explaining
+them")**: every visual component (`Donut`, `RangeBar`, `CompareBars`, `LogScale`, `Timeline`)
+already carries a complete, human-readable summary in an `aria-label` — built for screen readers,
+on the `<svg>` itself for `Donut` or on a wrapping `[role="img"]` element for the other four. Read
+generically via `document.querySelector('[data-export-chart] [aria-label]')`, wrapped with
+`doc.splitTextToSize` and centered under the chart image in small gray text. No new data plumbing
+needed — this is the same accessibility string every visual already had, just surfaced into the
+PDF.
+
+**Known limitation, not fixed**: `RangeBar`'s floating value marker/pointer (the "BMI 23.4" badge
+with its triangle, e.g. on `bmi-calculator`) is absolutely-positioned HTML layered over the `<svg>`
+bar, not part of the SVG itself, so `svgToPngDataUrl` (which only rasterizes the `<svg>`) doesn't
+capture it — the bar renders in the PDF with no marker. The caption text still correctly states the
+value and which band it falls in, so the information isn't lost, just the visual indicator. A real
+fix needs either a DOM-screenshot library (html2canvas-class dependency, against the "no new
+infra" intent of the original chart-export design) or hand-duplicating `RangeBar`'s own marker
+position math directly in `lib/exportPdf.ts`. Worth doing if/when `RangeBar`-based calculator PDFs
+turn out to matter — not done now since the user's actual ask (explanatory text) is fully met by
+the caption alone.
+
+Re-verified again: `mortgage-calculator` (Donut — chart card shows "CHART" label, donut image, and
+the full caption "$541,116.20 total paid: Principal $280,000.00 (52%), Interest $261,116.20 (48%)."
+wrapped and centered) and `bmi-calculator` (RangeBar — caption "WHO adult BMI categories: 25.1
+falls in the Overweight band." correct, marker-rendering gap noted above). `npm test` 1123/1123,
+lint clean, `npx tsc --noEmit` clean, `npm run build` passes.

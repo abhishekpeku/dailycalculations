@@ -4,6 +4,7 @@ export const creatorCalculators: CalculatorConfig[] = [
   {
     id: 'youtube-earnings-calculator',
     category: 'creator',
+    group: 'Monetization & Engagement',
     glyph: '$',
     updatedAt: '2026-10-21',
     aliases: ['youtube money calculator', 'cpm revenue calculator', 'adsense earnings estimator', 'rpm calculator'],
@@ -110,6 +111,7 @@ export const creatorCalculators: CalculatorConfig[] = [
   {
     id: 'instagram-engagement-calculator',
     category: 'creator',
+    group: 'Monetization & Engagement',
     glyph: '%',
     updatedAt: '2026-10-21',
     aliases: ['engagement rate calculator', 'social media engagement calculator', 'influencer rate calculator'],

@@ -4,6 +4,7 @@ export const travelCalculators: CalculatorConfig[] = [
   {
     id: 'travel-budget-calculator',
     category: 'travel',
+    group: 'Trip Planning',
     glyph: '$',
     updatedAt: '2026-10-21',
     aliases: ['trip cost calculator', 'holiday budget calculator', 'vacation cost estimator', 'how much does a trip cost'],
@@ -134,6 +135,7 @@ export const travelCalculators: CalculatorConfig[] = [
   {
     id: 'visa-stay-days-calculator',
     category: 'travel',
+    group: 'Trip Planning',
     glyph: 'days',
     updatedAt: '2026-10-21',
     aliases: ['schengen calculator', '90/180 day calculator', 'visa days remaining calculator', 'overstay calculator'],
@@ -253,6 +255,7 @@ export const travelCalculators: CalculatorConfig[] = [
   {
     id: 'currency-converter',
     category: 'travel',
+    group: 'Currency & Time Zones',
     glyph: 'FX',
     updatedAt: '2026-10-21',
     aliases: ['exchange rate calculator', 'money converter', 'forex converter', 'foreign currency calculator'],
@@ -334,6 +337,7 @@ export const travelCalculators: CalculatorConfig[] = [
   {
     id: 'timezone-meeting-planner',
     category: 'travel',
+    group: 'Currency & Time Zones',
     glyph: 'TZ',
     updatedAt: '2026-10-21',
     aliases: ['time zone converter', 'world clock meeting planner', 'meeting time across time zones', 'utc converter'],

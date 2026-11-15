@@ -301,7 +301,10 @@ export const chemistryCalculators: CalculatorConfig[] = [
         concentration2: ({ concentration1, volume1, volume2 }) => (volume2 === 0 ? NaN : (concentration1 * volume1) / volume2),
         volume2: ({ concentration1, volume1, concentration2 }) => (concentration2 === 0 ? NaN : (concentration1 * volume1) / concentration2)
       },
-      outputs: [{ id: 'dilutionFactor', label: 'Dilution factor (V₂ ÷ V₁)', dimension: 'count', compute: (si) => (si.volume1 === 0 ? NaN : si.volume2 / si.volume1) }],
+      outputs: [
+        { id: 'dilutionFactor', label: 'Dilution factor (V₂ ÷ V₁)', dimension: 'count', compute: (si) => (si.volume1 === 0 ? NaN : si.volume2 / si.volume1) },
+        { id: 'soluteAmount', label: 'Amount of solute (C₁ × V₁)', dimension: 'amountOfSubstance', unit: 'mol', compute: (si) => si.concentration1 * si.volume1 }
+      ],
       visuals: [
         {
           type: 'compareBars',
@@ -395,7 +398,8 @@ export const chemistryCalculators: CalculatorConfig[] = [
         { question: 'What is a dilution factor?', answer: 'The ratio of the final volume to the starting volume, V₂ ÷ Vᵢ. A "1:10 dilution" means the final volume is 10× the starting volume, so the concentration drops to 1/10 of what it was.' },
         { question: 'Does dilution change the amount of solute?', answer: 'No. Dilution only adds solvent; the total amount of solute (moles, or whatever unit the concentration uses) stays exactly the same — that is the whole premise behind C₁V₁ = C₂V₂.' },
         { question: 'What is serial dilution?', answer: 'Repeating the same dilution step multiple times in a row, each time diluting the previous result by the same factor, to reach concentrations far lower than one dilution step could measure out accurately — common in microbiology and drug-concentration experiments.' },
-        { question: 'Can I use this formula with units other than molarity?', answer: 'Yes. C₁V₁ = C₂V₂ holds for any concentration unit (mass percent, mg/mL, and so on), as long as C₁ and C₂ are expressed in the same unit as each other.' }
+        { question: 'Can I use this formula with units other than molarity?', answer: 'Yes. C₁V₁ = C₂V₂ holds for any concentration unit (mass percent, mg/mL, and so on), as long as C₁ and C₂ are expressed in the same unit as each other.' },
+        { question: 'How many moles of solute does a dilution actually contain?', answer: 'C₁ × V₁ (equivalently C₂ × V₂, since the two are equal) — shown as a bonus figure above when the concentrations are molarity. A 50 mL portion of a 3 mol/L stock contains 3 × 0.05 = 0.15 mol of solute, the same 0.15 mol present after dilution to 300 mL.' }
       ]
     },
     compute(values) {
@@ -424,7 +428,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
         soluteMass: ({ massPercent, solutionMass }) => (massPercent / 100) * solutionMass,
         solutionMass: ({ massPercent, soluteMass }) => (massPercent === 0 ? NaN : soluteMass / (massPercent / 100))
       },
-      derive: (si) => ({ solventMass: si.solutionMass - si.soluteMass }),
+      outputs: [{ id: 'solventMass', label: 'Mass of solvent (solution − solute)', dimension: 'mass', unit: 'g', compute: (si) => si.solutionMass - si.soluteMass }],
       visuals: [
         {
           type: 'donut',
@@ -803,7 +807,16 @@ export const chemistryCalculators: CalculatorConfig[] = [
           pressure2 === 0 || temperature1 === 0 ? NaN : (pressure1 * volume1 * temperature2) / (temperature1 * pressure2),
         temperature2: ({ pressure1, pressure2, volume1, volume2, temperature1 }) =>
           pressure1 === 0 || volume1 === 0 ? NaN : (pressure2 * volume2 * temperature1) / (pressure1 * volume1)
-      }
+      },
+      outputs: [
+        {
+          id: 'amountOfGas',
+          label: 'Amount of gas (from the ideal gas law, PV = nRT)',
+          dimension: 'amountOfSubstance',
+          unit: 'mol',
+          compute: (si) => (si.temperature1 === 0 ? NaN : (si.pressure1 * si.volume1) / (8.31446261815324 * si.temperature1))
+        }
+      ]
     },
     content: {
       lastReviewed: '2026-11-08',
@@ -822,7 +835,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
           { name: 'Enter five of the six values', text: 'Any five, mixing "before" and "after" as needed. Pick a unit for each; pressure in atm, kPa, bar or psi, volume in L, mL or m³, and temperature in K, °C or °F all work.' },
           { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
           { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 20°C becomes 293.15 K instead of silently turning into 20 K.' },
-          { name: 'Read the result', text: 'The missing value appears immediately in your chosen unit.' }
+          { name: 'Read the result', text: 'The missing value appears immediately in your chosen unit, with the amount of gas implied by all six values (via PV = nRT) shown underneath.' }
         ],
         outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
       },
@@ -884,7 +897,8 @@ export const chemistryCalculators: CalculatorConfig[] = [
         { question: 'How do I find a gas’s new volume after heating it?', answer: 'V₂ = (P₁V₁T₂) ÷ (T₁P₂). A 2.0 L balloon at 1.0 atm and 293.15 K (20°C), heated to 323.15 K (50°C) at the same pressure, reaches (1.0 × 2.0 × 323.15) ÷ (293.15 × 1.0) ≈ 2.205 L.' },
         { question: 'Does the combined gas law reduce to Boyle’s law or Charles’s law?', answer: 'Yes. Holding temperature constant (T₁ = T₂) leaves P₁V₁ = P₂V₂, Boyle’s law. Holding pressure constant (P₁ = P₂) leaves V₁ ÷ T₁ = V₂ ÷ T₂, Charles’s law.' },
         { question: 'Why must temperature be in kelvin?', answer: 'Kelvin has no offset zero, so ratios like T₂ ÷ T₁ are only meaningful on that scale. Using Celsius or Fahrenheit directly in the ratio gives an incorrect answer, since those scales start at an arbitrary point rather than true zero.' },
-        { question: 'Does this formula work if the amount of gas changes?', answer: 'No. It assumes a sealed, fixed amount of gas moving between two states. If gas is added, removed, or produced or consumed by a reaction, use the ideal gas law for each state separately instead.' }
+        { question: 'Does this formula work if the amount of gas changes?', answer: 'No. It assumes a sealed, fixed amount of gas moving between two states. If gas is added, removed, or produced or consumed by a reaction, use the ideal gas law for each state separately instead.' },
+        { question: 'Can I find out how much gas (in moles) this is, even though the combined gas law doesn’t use n?', answer: 'Yes — as a bonus figure. Since all six values are known once the equation is solved, the ideal gas law (n = PV ÷ RT) applied to the starting state gives the fixed amount of gas, shown underneath the main result.' }
       ]
     },
     compute(values) {
@@ -1026,7 +1040,15 @@ export const chemistryCalculators: CalculatorConfig[] = [
         baseConcentration: ({ pH, pKa, acidConcentration }) => (acidConcentration <= 0 ? NaN : acidConcentration * 10 ** (pH - pKa)),
         acidConcentration: ({ pH, pKa, baseConcentration }) => (baseConcentration <= 0 ? NaN : baseConcentration / 10 ** (pH - pKa))
       },
-      outputs: [{ id: 'ratio', label: 'Ratio [A⁻] ÷ [HA]', dimension: 'count', compute: (si) => (si.acidConcentration <= 0 ? NaN : si.baseConcentration / si.acidConcentration) }]
+      outputs: [
+        { id: 'ratio', label: 'Ratio [A⁻] ÷ [HA]', dimension: 'count', compute: (si) => (si.acidConcentration <= 0 ? NaN : si.baseConcentration / si.acidConcentration) },
+        {
+          id: 'percentBase',
+          label: 'Percent in the conjugate-base form ([A⁻] ÷ ([A⁻] + [HA]) × 100)',
+          dimension: 'percent',
+          compute: (si) => (si.baseConcentration + si.acidConcentration <= 0 ? NaN : (si.baseConcentration / (si.baseConcentration + si.acidConcentration)) * 100)
+        }
+      ]
     },
     content: {
       lastReviewed: '2026-11-08',
@@ -1044,7 +1066,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
           { name: 'Look up the weak acid’s pKa', text: 'Each weak acid has its own fixed pKa — about 4.76 for acetic acid, for example. Use the value for the specific acid in your buffer.' },
           { name: 'Enter the three values you know', text: 'pH, pKa, and either concentration — or both concentrations and pKa, to find pH.' },
           { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
-          { name: 'Read the result and the ratio', text: 'The missing value appears immediately, with the concentration ratio [A⁻] ÷ [HA] shown underneath.' }
+          { name: 'Read the result and the ratio', text: 'The missing value appears immediately, with the concentration ratio [A⁻] ÷ [HA] and the percent of the acid sitting in its conjugate-base form shown underneath.' }
         ],
         outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
       },
@@ -1109,7 +1131,8 @@ export const chemistryCalculators: CalculatorConfig[] = [
         { question: 'How do I find pKa from a measured pH?', answer: 'Rearrange to pKa = pH − log₁₀([A⁻]÷[HA]). A measured pH of 4.94 with a 1.5:1 buffer ratio gives pKa = 4.94 − log₁₀(1.5) ≈ 4.76.' },
         { question: 'Does the Henderson-Hasselbalch equation work for any acid-base pair?', answer: 'It applies specifically to a weak acid and its own conjugate base in solution together — a true buffer. It does not apply to a strong acid or strong base, which dissociate essentially completely rather than reaching the kind of equilibrium this equation describes.' },
         { question: 'What is the pKa of acetic acid?', answer: 'About 4.76 at 25°C, a commonly cited value for the weak acid used in acetate buffers.' },
-        { question: 'Why do only the ratio of concentrations matter, not their absolute values?', answer: 'The equation only has a log of the ratio [A⁻]÷[HA] in it — doubling both concentrations leaves that ratio, and therefore the pH, unchanged. The absolute concentrations instead affect the buffer’s capacity, not its pH.' }
+        { question: 'Why do only the ratio of concentrations matter, not their absolute values?', answer: 'The equation only has a log of the ratio [A⁻]÷[HA] in it — doubling both concentrations leaves that ratio, and therefore the pH, unchanged. The absolute concentrations instead affect the buffer’s capacity, not its pH.' },
+        { question: 'What percent of a weak acid is in its conjugate-base form at a given pH?', answer: 'Divide the base concentration by the sum of both: [A⁻] ÷ ([A⁻] + [HA]) × 100, shown as a bonus figure above. A 1.5:1 ratio of [A⁻] to [HA] means 1.5 ÷ 2.5 × 100 = 60% of the acid is in its deprotonated (A⁻) form.' }
       ]
     },
     compute(values) {
@@ -1389,7 +1412,16 @@ export const chemistryCalculators: CalculatorConfig[] = [
           reactantMoles === 0 || productMolarMass === 0 ? NaN : (theoreticalYield * reactantCoeff) / (reactantMoles * productMolarMass),
         productMolarMass: ({ theoreticalYield, reactantMoles, reactantCoeff, productCoeff }) =>
           reactantMoles === 0 || productCoeff === 0 ? NaN : (theoreticalYield * reactantCoeff) / (reactantMoles * productCoeff)
-      }
+      },
+      outputs: [
+        {
+          id: 'productMoles',
+          label: 'Moles of product (n × cₚ ÷ cᵣ)',
+          dimension: 'amountOfSubstance',
+          unit: 'mol',
+          compute: (si) => (si.reactantCoeff === 0 ? NaN : si.reactantMoles * (si.productCoeff / si.reactantCoeff))
+        }
+      ]
     },
     content: {
       lastReviewed: '2026-11-08',
@@ -1408,7 +1440,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
           { name: 'Enter that reactant’s coefficient', text: 'Its number in the balanced equation, e.g. the 3 in front of H₂ in N₂ + 3H₂ → 2NH₃.' },
           { name: 'Enter the product’s coefficient', text: 'Its number in the balanced equation, e.g. the 2 in front of NH₃.' },
           { name: 'Enter the product’s molar mass', text: 'Grams per mole — use the molar mass calculator above to find it from the product’s formula if needed.' },
-          { name: 'Read the theoretical yield', text: 'The maximum possible mass of product, in grams, appears immediately.' }
+          { name: 'Read the theoretical yield', text: 'The maximum possible mass of product, in grams, appears immediately, with the matching moles of product shown underneath.' }
         ],
         outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
       },
@@ -1473,7 +1505,8 @@ export const chemistryCalculators: CalculatorConfig[] = [
         { question: 'Do I use the limiting reagent’s moles or its mass?', answer: 'This calculator takes moles directly. Starting from a mass instead, convert it to moles first with the moles-to-grams calculator, using the reactant’s own molar mass.' },
         { question: 'Is theoretical yield the same as actual yield?', answer: 'No. Theoretical yield is the maximum possible under perfect conditions; actual yield is what a real experiment actually produces, almost always somewhat less. Their ratio, as a percentage, is the percent yield.' },
         { question: 'Why does the mole ratio matter if the two coefficients are different?', answer: 'Because a balanced equation’s coefficients set how many moles of product form per mole of reactant consumed. N₂ + 3H₂ → 2NH₃ makes only 2 mol of NH₃ for every 3 mol of H₂ used, not a 1-to-1 swap.' },
-        { question: 'What if I don’t know which reactant is limiting yet?', answer: 'Work that out first with the limiting reagent calculator, which compares both reactants’ available moles against the balanced equation and tells you which one to use here.' }
+        { question: 'What if I don’t know which reactant is limiting yet?', answer: 'Work that out first with the limiting reagent calculator, which compares both reactants’ available moles against the balanced equation and tells you which one to use here.' },
+        { question: 'How many moles of product does this reaction actually form?', answer: 'Moles of product = moles of limiting reagent × (product’s coefficient ÷ reagent’s coefficient), shown as a bonus figure above — the intermediate step before multiplying by the molar mass to get a mass.' }
       ]
     },
     compute(values) {
@@ -2125,6 +2158,13 @@ export const chemistryCalculators: CalculatorConfig[] = [
           dimension: 'count',
           unit: 'count',
           compute: (si) => Math.exp(-si.activationEnergy / (8.31446261815324 * si.temperature))
+        },
+        {
+          id: 'impliedHalfLife',
+          label: 'Implied half-life (t½ = ln 2 ÷ k, first-order)',
+          dimension: 'time',
+          unit: 's',
+          compute: (si) => (si.rateConstant === 0 ? Infinity : Math.LN2 / si.rateConstant)
         }
       ]
     },
@@ -2144,7 +2184,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
           { name: 'Enter the three values you know', text: 'Rate constant and pre-exponential factor share a unit (s⁻¹, min⁻¹ or h⁻¹, for a first-order reaction); activation energy is typically in kJ/mol; temperature must be absolute.' },
           { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
           { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 50 kJ/mol becomes 50,000 J/mol instead of silently turning into 50 J/mol.' },
-          { name: 'Read the result and the collision fraction', text: 'The missing value appears in your chosen unit, with the fraction of sufficiently energetic collisions shown underneath.' },
+          { name: 'Read the result and the collision fraction', text: 'The missing value appears in your chosen unit, with the fraction of sufficiently energetic collisions and the half-life that rate constant implies (for a first-order reaction) shown underneath.' },
           { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
         ],
         outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
@@ -2212,7 +2252,8 @@ export const chemistryCalculators: CalculatorConfig[] = [
         { question: 'Why does rate roughly double for every 10°C?', answer: 'Because Ea sits in an exponent, a fixed temperature rise multiplies k by a factor that depends on Ea — for many common activation energies, that factor works out close to 2 across a 10°C span, though the exact figure varies by reaction (this calculator’s own worked example gives about 1.92×).' },
         { question: 'Why must temperature be in kelvin?', answer: 'The exponential term is extremely sensitive to T, and kelvin is the only scale with a true zero. Using Celsius or Fahrenheit directly in the exponent — rather than converting to kelvin first — gives a badly wrong rate constant.' },
         { question: 'What are typical pre-exponential factors?', answer: 'For a simple first-order gas-phase reaction, A is often in the 10¹²–10¹⁴ s⁻¹ range, roughly the frequency of molecular bond vibrations — the collision theory reasoning behind why A represents "how often, in the right orientation," separately from "how energetically," which Ea and the exponential term capture.' },
-        { question: 'What does the "fraction of collisions with enough energy" mean?', answer: 'It is e^(−Ea÷RT), the Boltzmann-distribution share of collisions energetic enough to clear the activation-energy barrier at that temperature. In the worked example, only about 1.74×10⁻⁹ of collisions qualify, yet the reaction still proceeds at a measurable rate because collisions themselves are extremely frequent.' }
+        { question: 'What does the "fraction of collisions with enough energy" mean?', answer: 'It is e^(−Ea÷RT), the Boltzmann-distribution share of collisions energetic enough to clear the activation-energy barrier at that temperature. In the worked example, only about 1.74×10⁻⁹ of collisions qualify, yet the reaction still proceeds at a measurable rate because collisions themselves are extremely frequent.' },
+        { question: 'What half-life does this rate constant imply?', answer: 'For a first-order reaction, t½ = ln(2) ÷ k, shown as a bonus figure above. The worked example’s k ≈ 8.70×10⁴ s⁻¹ implies a half-life of about 7.97×10⁻⁶ s (roughly 8 microseconds) — a very fast reaction, consistent with such a large rate constant.' }
       ]
     },
     compute(values) {

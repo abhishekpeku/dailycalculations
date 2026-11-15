@@ -8301,6 +8301,92 @@ exports[`compute() snapshots > relative-risk-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > rent-vs-buy-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "monthlyRent": 1800,
+      "rentGrowthRate": 3,
+      "homePrice": 350000,
+      "downPayment": 70000,
+      "mortgageRate": 6.5,
+      "termYears": 30,
+      "propertyTaxRate": 1.1,
+      "annualInsurance": 2110,
+      "maintenanceRate": 1,
+      "homeAppreciationRate": 3,
+      "investmentReturnRate": 6,
+      "sellingCostRate": 6,
+      "years": 10
+    },
+    "outputs": {
+      "cheaperOption": 1,
+      "amountSaved": 20060.93346,
+      "netCostBuying": 172199.5209,
+      "netCostRenting": 192260.4544,
+      "totalRent": 247619.7931,
+      "investmentGrowth": 55359.33876,
+      "netSaleProceeds": 204775.335,
+      "monthlyPI": 1769.790466
+    }
+  },
+  "typical": {
+    "inputs": {
+      "monthlyRent": 2700,
+      "rentGrowthRate": 4.5,
+      "homePrice": 525000,
+      "downPayment": 105000,
+      "mortgageRate": 9.75,
+      "termYears": 45,
+      "propertyTaxRate": 1.65,
+      "annualInsurance": 3150,
+      "maintenanceRate": 1.5,
+      "homeAppreciationRate": 4.5,
+      "investmentReturnRate": 9,
+      "sellingCostRate": 9,
+      "years": 15
+    },
+    "outputs": {
+      "cheaperOption": 0,
+      "amountSaved": 104194.4373,
+      "netCostBuying": 500137.1381,
+      "netCostRenting": 395942.7008,
+      "totalRent": 673403.359,
+      "investmentGrowth": 277460.6583,
+      "netSaleProceeds": 522297.779,
+      "monthlyPI": 3456.23565
+    }
+  },
+  "edge": {
+    "inputs": {
+      "monthlyRent": 0,
+      "rentGrowthRate": 0,
+      "homePrice": 0,
+      "downPayment": 0,
+      "mortgageRate": 0,
+      "termYears": 1,
+      "propertyTaxRate": 0,
+      "annualInsurance": 0,
+      "maintenanceRate": 0,
+      "homeAppreciationRate": 0,
+      "investmentReturnRate": 0,
+      "sellingCostRate": 0,
+      "years": 1
+    },
+    "outputs": {
+      "cheaperOption": 0,
+      "amountSaved": 0,
+      "netCostBuying": 0,
+      "netCostRenting": 0,
+      "totalRent": 0,
+      "investmentGrowth": 0,
+      "netSaleProceeds": 0,
+      "monthlyPI": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > resistor-color-code-calculator 1`] = `
 {
   "default": {

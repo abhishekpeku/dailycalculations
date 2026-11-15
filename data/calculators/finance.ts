@@ -1234,7 +1234,7 @@ export const financeCalculators: CalculatorConfig[] = [
     glyph: 'Aff',
     updatedAt: '2026-11-15',
     aliases: ['how much house can i afford calculator', 'home buying budget calculator', 'house affordability calculator', 'affordability calculator'],
-    related: ['mortgage-calculator', 'loan-prepayment-calculator', 'paycheck-calculator'],
+    related: ['mortgage-calculator', 'down-payment-savings-calculator', 'closing-cost-estimator-calculator', 'rent-vs-buy-calculator'],
     title: 'Home Affordability Calculator',
     description: 'Find how much house you can afford at three levels — conservative, balanced and maximum — from your income, debt and down payment, with a full PITI breakdown and a 28% front-end / back-end debt-to-income check.',
     example: 'A household earning $96,000 a year with $1,500 of other monthly debt and $40,000 down can afford roughly $190,900 (conservative) to $302,000 (maximum) at 6.5% over 30 years, with a balanced estimate of about $263,300.',
@@ -1347,7 +1347,7 @@ export const financeCalculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Home Affordability Calculator – How Much House?',
-      description: 'See how much house you can afford at conservative, balanced and maximum levels, with a full PITI breakdown and the 28% front-end / back-end debt-to-income check.',
+      description: 'See how much house you can afford at conservative, balanced and maximum levels, with a full PITI breakdown and a 28% front-end / back-end debt-to-income check.',
       faq: [
         { question: 'How much house can I afford?', answer: 'It depends which lending ceiling you use. With $8,000 a month in gross income, $1,500 of other debt and $40,000 down at 6.5% over 30 years, this calculator gives about $190,900 conservatively, $263,300 on a balanced basis and $302,000 at the loosest ceiling lenders use.' },
         { question: 'What is the 28/36 rule?', answer: 'A long-standing guideline: keep your housing payment at or under 28% of gross monthly income (the front-end ratio) and all debt payments combined at or under 36% (the back-end ratio). This calculator\'s conservative tier uses exactly those two caps.' },
@@ -1399,7 +1399,7 @@ export const financeCalculators: CalculatorConfig[] = [
     glyph: 'Refi',
     updatedAt: '2026-11-15',
     aliases: ['refinance calculator', 'mortgage refinance break-even calculator', 'should i refinance calculator', 'refi savings calculator'],
-    related: ['mortgage-calculator', 'loan-prepayment-calculator', 'home-affordability-calculator'],
+    related: ['mortgage-calculator', 'loan-prepayment-calculator', 'home-affordability-calculator', 'closing-cost-estimator-calculator'],
     title: 'Mortgage Refinance Calculator',
     description: 'Find the monthly savings from refinancing your mortgage, the break-even point on the closing costs, and how the lifetime interest on the new loan compares with staying on your current one.',
     example: 'Refinancing a $280,000 balance with 25 years left at 6.5% into a new 30-year loan at 5.5% saves about $300.77 a month and breaks even on $5,000 of closing costs in about 16.6 months — but costs about $5,157 more in total interest, because the term resets to 30 years.',
@@ -1535,7 +1535,7 @@ export const financeCalculators: CalculatorConfig[] = [
     glyph: 'DP',
     updatedAt: '2026-11-15',
     aliases: ['down payment calculator', 'home down payment savings calculator', 'save for a down payment calculator', 'down payment goal calculator'],
-    related: ['compound-interest-calculator', 'home-affordability-calculator', 'mortgage-calculator'],
+    related: ['compound-interest-calculator', 'home-affordability-calculator', 'mortgage-calculator', 'closing-cost-estimator-calculator'],
     title: 'Down Payment Savings Calculator',
     description: 'Find how long it will take to save a down payment goal from your current savings, a monthly contribution and an interest rate, or work back to the contribution, start or rate you need.',
     example: 'Starting with $5,000, adding $500 a month at 3.5% a year, reaching a $60,000 down payment takes about 93.2 months, or 7.8 years.',
@@ -1675,7 +1675,7 @@ export const financeCalculators: CalculatorConfig[] = [
     glyph: 'CC',
     updatedAt: '2026-11-15',
     aliases: ['closing costs calculator', 'home closing cost calculator', 'mortgage closing costs estimator', 'closing cost estimator'],
-    related: ['mortgage-calculator', 'home-affordability-calculator', 'down-payment-savings-calculator'],
+    related: ['mortgage-calculator', 'home-affordability-calculator', 'down-payment-savings-calculator', 'mortgage-refinance-calculator'],
     title: 'Closing Cost Estimator',
     description: 'Estimate total closing costs on a home purchase from a cited percentage range of the price and loan amount, split into the loan origination fee and everything else: title, appraisal, recording and more.',
     example: 'On a $350,000 home with a $280,000 loan, closing costs typically run about $7,000 to $17,500 (2%-5% of the price), around $12,250 in the middle, including roughly $1,400-$2,800 of loan origination fees.',
@@ -1793,6 +1793,173 @@ export const financeCalculators: CalculatorConfig[] = [
       const midEstimate = (overallLow + overallHigh) / 2;
       const midPercentOfPrice = (midEstimate / values.homePrice) * 100;
       return { midEstimate, overallLow, overallHigh, originationLow, originationHigh, otherLow, otherHigh, midPercentOfPrice };
+    }
+  },
+  {
+    id: 'rent-vs-buy-calculator',
+    category: 'finance',
+    glyph: 'R/B',
+    updatedAt: '2026-11-15',
+    aliases: ['rent or buy calculator', 'should i rent or buy calculator', 'renting vs buying calculator', 'rent versus buy calculator'],
+    related: ['home-affordability-calculator', 'mortgage-calculator', 'closing-cost-estimator-calculator', 'down-payment-savings-calculator'],
+    title: 'Rent vs. Buy Calculator',
+    description: 'Compare the net cost of renting against buying over a chosen number of years, including ongoing ownership costs, home-sale proceeds, and the opportunity cost of the down payment.',
+    example: 'Renting a $1,800-a-month apartment versus buying a $350,000 home with $70,000 down at 6.5%: over 10 years, buying costs about $172,200 net versus about $192,260 for renting — buying comes out about $20,061 cheaper under these assumptions.',
+    breakdown: {
+      headline: 'cheaperOption',
+      headlineLabel: 'Cheaper option over the comparison period',
+      outputs: [
+        { id: 'cheaperOption', label: 'Cheaper option', labels: [{ value: 0, label: 'Renting' }, { value: 1, label: 'Buying' }] },
+        { id: 'amountSaved', label: 'Amount saved by the cheaper option', format: 'currency' },
+        { id: 'netCostBuying', label: 'Net cost of buying', format: 'currency' },
+        { id: 'netCostRenting', label: 'Net cost of renting', format: 'currency' },
+        { id: 'totalRent', label: 'Total rent paid', format: 'currency' },
+        { id: 'investmentGrowth', label: 'Opportunity cost of the down payment', format: 'currency' },
+        { id: 'netSaleProceeds', label: 'Buyer\'s equity if sold at the end', format: 'currency' },
+        { id: 'monthlyPI', label: 'Mortgage principal & interest', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Renting', inputs: ['monthlyRent', 'rentGrowthRate'] },
+        { title: 'Buying', inputs: ['homePrice', 'downPayment', 'mortgageRate', 'termYears'] },
+        { title: 'Ongoing ownership costs', inputs: ['propertyTaxRate', 'annualInsurance', 'maintenanceRate'], optional: true },
+        { title: 'Assumptions', inputs: ['homeAppreciationRate', 'investmentReturnRate', 'sellingCostRate'], optional: true },
+        { title: 'Comparison period', inputs: ['years'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'netCostRenting', label: 'Renting' },
+          { from: 'netCostBuying', label: 'Buying' }
+        ],
+        title: 'Net cost over the comparison period',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-15',
+      concept: {
+        title: 'A different question from "can I afford it" or "should I refinance"',
+        paragraphs: [
+          'Home-affordability-calculator asks what price you can afford, and mortgage-refinance-calculator asks whether refinancing an existing loan pays off. This calculator asks a third, separate question: over a number of years you choose, is it cheaper in total to rent or to buy? "Net cost" on the buying side is everything you would spend — mortgage principal and interest, property tax, insurance, maintenance, and the down payment itself — minus what you would get back if you sold at the end (the home\'s value after it appreciates, less the remaining loan balance and selling costs). "Net cost" on the renting side is the total rent paid, minus the investment growth you give up by buying: if you rent, the money that would have gone to a down payment can stay invested instead, so what it would have earned is credited back to renting as the opportunity cost of that down payment.',
+          'The time horizon usually matters more than the headline mortgage rate. Buying carries real fixed costs — the down payment\'s opportunity cost, closing costs, and selling costs when you eventually sell — that are spread over however many years you stay. Over a short horizon those fixed costs dominate and tilt the answer toward renting; over a long horizon, home-price appreciation and the fact that a mortgage payment partly builds equity (while rent never does) usually tilt it toward buying.',
+          'Every rate here — rent growth, home-price appreciation, investment return — is an assumption you set, not a forecast. Run the comparison with a cautious and an optimistic set of assumptions and look at the range, the same way investment-calculator recommends for a return rate. This model also holds property tax, insurance and maintenance flat on the home\'s original price for every year of the comparison, rather than growing them each year, which is a simplification worth keeping in mind over a long comparison period.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the rent you are comparing against, the home you are considering buying, your ongoing cost estimates, your assumptions, and how many years you want to compare.',
+        steps: [
+          { name: 'Enter your rent', text: 'The monthly rent you would otherwise pay, and how much you expect it to rise each year.' },
+          { name: 'Enter the home you are considering', text: 'Price, down payment, mortgage rate and loan term.' },
+          { name: 'Add ongoing ownership costs', text: 'Property tax rate, an annual homeowners insurance estimate, and a maintenance rate (a percent of the home\'s value set aside each year for upkeep).' },
+          { name: 'Set your assumptions', text: 'An assumed annual home-price appreciation rate, the return you could earn by investing the down payment instead, and the selling costs (commission and other fees) you would pay when you eventually sell.' },
+          { name: 'Choose the comparison period', text: 'How many years you plan to stay before selling, moving, or refinancing.' },
+          { name: 'Read the result', text: 'The headline names the cheaper option under your assumptions and by how much; the rows below break out both sides.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Buying\'s net cost is cash spent minus the equity recovered at a sale; renting\'s net cost is rent paid minus the growth the down payment would have earned if invested instead.',
+        expression: 'Buying: cashOut = ΣP&I + ΣTax + ΣInsurance + ΣMaintenance + downPayment\nequity = homePrice × (1 + appreciation)^years − remaining loan balance − sellingCosts\nnetCostBuying = cashOut − equity\n\nRenting: totalRent = Σ rent, growing each year at the rent-growth rate\nopportunityCost = downPayment × ((1 + investmentReturn)^years − 1)\nnetCostRenting = totalRent − opportunityCost',
+        terms: [
+          { symbol: 'ΣP&I, ΣTax, ΣInsurance, ΣMaintenance', meaning: 'Each cost summed over every year of the comparison period; property tax, insurance and maintenance are held flat on the home\'s original price.' },
+          { symbol: 'remaining loan balance', meaning: 'What is still owed on the mortgage at the end of the comparison period, from the standard amortization formula.' },
+          { symbol: 'opportunityCost', meaning: 'What the down payment would have grown to if invested at the assumed return, minus the down payment itself — credited to renting, since a renter keeps that money invested instead of putting it into a house.' }
+        ],
+        note: 'Estimates only, not financial advice. Real appreciation, investment returns and rent growth are never steady, taxes and specific loan fees are not modeled, and a true comparison depends heavily on your own local market and plans.'
+      },
+      workedExample: {
+        intro: 'Rent is $1,800 a month, rising 3% a year. The alternative is a $350,000 home with $70,000 (20%) down, a 30-year loan at 6.5%, 1.1% property tax, $2,110 annual insurance, and 1% of the home\'s value a year for maintenance. Assume 3% annual appreciation, a 6% return on invested cash, and 6% selling costs. Compare over 10 years.',
+        rows: [
+          { label: 'Monthly P&I (280,000 loan, 6.5%, 30 years)', value: '$1,769.79' },
+          { label: 'Total P&I over 10 years', value: '≈ $212,375' },
+          { label: 'Remaining loan balance after 10 years', value: '≈ $237,373' },
+          { label: 'Total property tax + insurance + maintenance (10 years)', value: '≈ $94,600' },
+          { label: 'Home value after 10 years (350,000 × 1.03^10)', value: '≈ $470,371' },
+          { label: 'Selling costs (6% of home value)', value: '≈ $28,222' },
+          { label: 'Equity at sale (470,371 − 237,373 − 28,222)', value: '≈ $204,775' },
+          { label: 'Net cost of buying (212,375 + 94,600 + 70,000 − 204,775)', value: '≈ $172,200' },
+          { label: 'Total rent over 10 years (growing 3% a year)', value: '≈ $247,620' },
+          { label: 'Opportunity cost of the $70,000 down payment at 6%', value: '≈ $55,359' },
+          { label: 'Net cost of renting (247,620 − 55,359)', value: '≈ $192,260' }
+        ],
+        result: 'Buying ≈ $172,200 net vs. renting ≈ $192,260 net — buying is cheaper by ≈ $20,061 over 10 years',
+        explanation: 'Most of buying\'s advantage here comes from home-price appreciation building equity that renting has no equivalent to. Shorten the comparison to 3 years and buying\'s selling costs and closing costs have much less time to be earned back, which typically narrows or reverses the gap — rerun the numbers at your own expected time horizon.'
+      },
+      watchOut: [
+        { title: 'Every rate is an assumption, not a forecast', body: 'Home-price appreciation, investment returns and rent growth all vary year to year and are never known in advance. Run the comparison with a cautious and an optimistic set of numbers.' },
+        { title: 'A shorter stay usually favors renting', body: 'Buying and selling both carry one-time costs (closing costs, selling costs) that are spread over however long you stay. The fewer years you stay, the less time those costs have to be earned back.' },
+        { title: 'Ongoing costs are held flat here', body: 'Property tax, insurance and maintenance are calculated on the home\'s original price for every year of the comparison, not grown year by year, which understates them somewhat on a long comparison period.' },
+        { title: 'Tax effects are not modeled', body: 'Mortgage interest and property tax can be deductible for some itemizing filers, which this calculator does not account for. It also does not model rent being tax-free to the renter either way.' },
+        { title: 'Selling costs are a real drag', body: 'Commission and other selling costs apply to the full future home value, not just the gain, which is why they can meaningfully narrow buying\'s advantage over a shorter comparison period.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, Determine your down payment (closing-cost range used elsewhere in this calculator\'s sibling pages)', url: 'https://www.consumerfinance.gov/owning-a-home/prepare/determine-your-down-payment/' },
+        { label: 'Redfin, How to Budget for Home Maintenance (1%-4% of home value a year)', url: 'https://www.redfin.com/blog/how-to-budget-for-home-maintenance/' },
+        { label: 'Redfin News, Buyer\'s Agent Commissions Tick Up to Pre-NAR Settlement Levels (Q2 2025 average buyer\'s-agent commission)', url: 'https://www.redfin.com/news/commissions-q2-2025/' },
+        { label: 'U.S. Bureau of Labor Statistics, Consumer Price Index news release (Rent of primary residence, 12-month change)', url: 'https://www.bls.gov/news.release/archives/cpi_01132026.htm' },
+        { label: 'Freddie Mac, My Home: What Are Closing Costs and How Much Will I Pay? (average homeowners insurance premium)', url: 'https://myhome.freddiemac.com/blog/homebuying/what-are-closing-costs-and-how-much-will-i-pay' }
+      ]
+    },
+    inputs: [
+      { id: 'monthlyRent', label: 'Monthly rent', type: 'currency', placeholder: '1800', defaultValue: 1800, step: 50, min: 0 },
+      { id: 'rentGrowthRate', label: 'Annual rent growth', type: 'percent', placeholder: '3', defaultValue: 3, step: 0.1, min: 0 },
+      { id: 'homePrice', label: 'Home price', type: 'currency', placeholder: '350000', defaultValue: 350000, step: 1000, min: 0 },
+      { id: 'downPayment', label: 'Down payment', type: 'currency', placeholder: '70000', defaultValue: 70000, step: 1000, min: 0 },
+      { id: 'mortgageRate', label: 'Mortgage rate (APR)', type: 'percent', placeholder: '6.5', defaultValue: 6.5, step: 0.01, min: 0 },
+      { id: 'termYears', label: 'Mortgage term', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1, dimension: 'term', unit: 'yr' },
+      { id: 'propertyTaxRate', label: 'Property tax rate (annual, % of price)', type: 'percent', placeholder: '1.1', defaultValue: 1.1, step: 0.05, min: 0 },
+      { id: 'annualInsurance', label: 'Homeowners insurance (annual)', type: 'currency', placeholder: '2110', defaultValue: 2110, step: 50, min: 0 },
+      { id: 'maintenanceRate', label: 'Maintenance (annual, % of price)', type: 'percent', placeholder: '1', defaultValue: 1, step: 0.1, min: 0 },
+      { id: 'homeAppreciationRate', label: 'Assumed home-price appreciation', type: 'percent', placeholder: '3', defaultValue: 3, step: 0.1, min: 0 },
+      { id: 'investmentReturnRate', label: 'Assumed return on invested cash', type: 'percent', placeholder: '6', defaultValue: 6, step: 0.1, min: 0 },
+      { id: 'sellingCostRate', label: 'Selling costs (% of sale price)', type: 'percent', placeholder: '6', defaultValue: 6, step: 0.5, min: 0 },
+      { id: 'years', label: 'Years to compare', type: 'number', placeholder: '10', defaultValue: 10, step: 1, min: 1, dimension: 'term', unit: 'yr' }
+    ],
+    seo: {
+      title: 'Rent vs. Buy Calculator – Net Cost Comparison',
+      description: 'Compare the net cost of renting vs. buying over N years, including ownership costs, sale proceeds, and the down payment\'s opportunity cost.',
+      faq: [
+        { question: 'Is it cheaper to rent or buy?', answer: 'It depends on your numbers and time horizon. In this calculator\'s example — a $1,800 rent versus a $350,000 home with $70,000 down at 6.5% over 10 years — buying comes out about $20,061 cheaper, but a shorter stay or different assumptions can flip the answer.' },
+        { question: 'What does "opportunity cost of the down payment" mean?', answer: 'The investment growth you give up by putting cash into a down payment instead of keeping it invested. This calculator credits that growth to renting, since a renter keeps the down payment amount invested instead.' },
+        { question: 'Why does the number of years matter so much?', answer: 'Buying and selling both carry one-time costs (closing costs, selling costs) that only pay off the longer you stay. A 3-year comparison and a 10-year comparison with the same home can give very different answers.' },
+        { question: 'How is the equity at sale calculated?', answer: 'The home\'s price grown at the assumed appreciation rate for the comparison period, minus the mortgage balance still owed at that point and minus selling costs (commission and other fees) on the sale price.' },
+        { question: 'Does this account for the mortgage interest deduction?', answer: 'No. Tax effects are not modeled, on either the buying or the renting side.' },
+        { question: 'Why might my real numbers differ from the example?', answer: 'Property tax rates, insurance, maintenance, appreciation and rent growth all vary enormously by location and over time. Use your own local estimates rather than the defaults for a meaningful comparison.' },
+        { question: 'How does this differ from home-affordability-calculator?', answer: 'Home-affordability-calculator asks what price you can afford from your income and debt. This calculator assumes you already have a specific home and rent in mind and asks which one costs less in total over the years you choose.' }
+      ]
+    },
+    compute(values) {
+      const loanAmount = Math.max(0, values.homePrice - values.downPayment);
+      const termMonths = Math.max(1, values.termYears * 12);
+      const monthlyPI = loanPayment(loanAmount, termMonths, values.mortgageRate);
+      const monthsPaid = Math.min(values.years * 12, termMonths);
+      const totalPI = monthlyPI * monthsPaid;
+      const remainingBalance = monthsPaid < termMonths
+        ? loanAmount * growthFactor(values.mortgageRate, 12, monthsPaid) - monthlyPI * annuityFactor(values.mortgageRate, 12, monthsPaid)
+        : 0;
+      const annualPropertyTax = (values.propertyTaxRate / 100) * values.homePrice;
+      const annualMaintenance = (values.maintenanceRate / 100) * values.homePrice;
+      const totalOwnershipCosts = (annualPropertyTax + annualMaintenance) * values.years + values.annualInsurance * values.years;
+      const homeValueAtN = values.homePrice * growthFactor(values.homeAppreciationRate, 1, values.years);
+      const sellingCosts = homeValueAtN * (values.sellingCostRate / 100);
+      const netSaleProceeds = homeValueAtN - remainingBalance - sellingCosts;
+      const buyingCashOut = totalPI + totalOwnershipCosts + values.downPayment;
+      const netCostBuying = buyingCashOut - netSaleProceeds;
+
+      const totalRent = values.monthlyRent * 12 * annuityFactor(values.rentGrowthRate, 1, values.years);
+      const investmentGrowth = values.downPayment * (growthFactor(values.investmentReturnRate, 1, values.years) - 1);
+      const netCostRenting = totalRent - investmentGrowth;
+
+      return {
+        cheaperOption: netCostBuying < netCostRenting ? 1 : 0,
+        amountSaved: Math.abs(netCostRenting - netCostBuying),
+        netCostBuying,
+        netCostRenting,
+        totalRent,
+        investmentGrowth,
+        netSaleProceeds,
+        monthlyPI
+      };
     }
   }
 ];

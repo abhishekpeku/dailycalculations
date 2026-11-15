@@ -178,12 +178,12 @@ prior wave's convention.
 ## Progress
 
 - [x] Step file written
-- [ ] Batch 1 (real estate/affordability, 5) — branch `step/60-wave-5a-finance-run-1`, draft PR, committed/pushed per calculator
+- [x] Batch 1 (real estate/affordability, 5) — branch `step/60-wave-5a-finance-run-1`, PR #75, DONE 2026-11-15
   - [x] `home-affordability-calculator`
   - [x] `mortgage-refinance-calculator`
   - [x] `down-payment-savings-calculator`
   - [x] `closing-cost-estimator-calculator`
-  - [ ] `rent-vs-buy-calculator`
+  - [x] `rent-vs-buy-calculator`
 - [ ] Batch 2 (debt, 5)
 - [ ] Batch 3 (retirement pt.1, 5)
 - [ ] Batch 4 (retirement pt.2 + goal investing, 5)

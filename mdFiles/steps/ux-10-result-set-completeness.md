@@ -289,8 +289,73 @@ items each may need splitting into 2 sub-batches of ~10-15 — use judgment, don
     test:update` regenerated the one changed snapshot — `pythagorean-theorem-calculator`'s
     three compute() fixtures, diff-checked to confirm only the new `perimeter` key was added),
     `npm run lint` (clean), `npm run build` (passes, 295 static pages).
-- [ ] Batch 5: remainder (11: food/sports/text/travel/shopping/statistics/time)
-- [ ] STATUS.md updated with a summary (count of real additions vs. "no change needed" calls)
+- [x] Batch 5: remainder (11: food/sports/text/travel/shopping/statistics/time, branch
+  `ux/result-sets-remainder` — 3 real additions, 8 "no change needed", all 11 reviewed):
+  - **Real additions (3):**
+    - `recipe-scaling-calculator` (food) — added `scalingFactor` (S₂ ÷ S₁): the page's own glyph
+      ("x1.5") and concept/formula/workedExample prose already center on this exact ratio, but
+      the live solver result never surfaced it as a labeled output. Reuses the already-solved
+      `originalServings`/`desiredServings`, same pattern as chemistry's `dilutionFactor` and
+      physics's `powerRatio`/`magnification`. Verified: 4→6 servings → 1.5 (matches the page's
+      own worked example exactly); 6→2 → 0.3333; originalServings=0 → NaN.
+    - `race-time-predictor-calculator` (sports) — added `knownPace` (T₁ ÷ D₁), paired with the
+      existing `targetPace` output so both sides of the Riegel comparison show side by side —
+      same "paired comparison" reasoning as the chemistry batch's `titration-calculator`
+      (`molesTitrant` alongside the existing `molesAnalyte`). Verified against the page's own
+      25-min-5K worked example: knownPace → 5.00 min/km, targetPace → 5.2123 min/km (both
+      independently recomputed and cross-checked that targetPace > knownPace, the expected
+      Riegel slowdown).
+    - `steps-to-miles-calculator` (sports) — added `stepsPerMile` (mile length ÷ step length):
+      the page's own FAQ already states this exact number in prose ("a mile takes 2,112 steps"
+      at a 2.5 ft step) but it was never exposed as a live result for whatever step length the
+      user actually enters. Verified: 2.5 ft (0.762 m) step → 2112.0 steps/mile, matching the
+      FAQ figure exactly.
+  - **No change needed (8):**
+    - `sales-tax-calculator` (shopping) — no change: already has a real bonus output (`tax`);
+      T=P(1+r) is a fully cross-solvable 3-variable relation, same pattern as
+      force-calculator/speed-distance-time-calculator, nothing else derivable without a new input.
+    - `z-score-calculator` (statistics) — no change: z=(x−μ)÷σ is a fully cross-solvable
+      4-variable relation. The one plausible second output, converting the z-score to a
+      percentile/probability, was considered and rejected — the page's own FAQ explicitly states
+      "converting that to a percentile additionally requires assuming a specific distribution
+      shape (typically the normal distribution)," and this calculator deliberately treats
+      x/mean/sd/z generically for any distribution, not just normal. Adding a percentile output
+      would silently assume normality the page's own copy says it doesn't assume.
+    - `brine-calculator` (food) — no change: the one real comparison across brining times (short
+      vs. long) is already exposed live via the `compareBars` chart, which pulls
+      `shortBrineSaltCups`/`longBrineSaltCups` directly from `compute()`. A salt-weight (grams)
+      conversion was considered and rejected — it would need a new, uncited cups-to-grams density
+      specific to Morton Coarse Kosher Salt, and the page's own watchOut already warns that kosher
+      salt brands "vary in crystal size and how densely they pack into a cup," so no such figure
+      is established anywhere in this codebase to reuse without fabricating one.
+    - `currency-converter`, `character-counter`, `hashtag-counter`, `pomodoro-timer`,
+      `timezone-meeting-planner` — no change, all 5: false positives of the audit's counting
+      heuristic, same as `scientific-calculator` in the math batch. All 5 are custom-component
+      stubs (`inputs: []`, `compute() { return {}; }`, rendered by a dedicated client component
+      per UX-12's notes) — not solve-for-a-value or breakdown pages at all, so there is no
+      `solver.outputs`/`breakdown.outputs` concept that applies to them.
+  - Acceptance checks run for this batch: `npm test` (1123/1123 pass, no snapshot changes needed
+    — these are new `solver.outputs` entries, not `compute()` changes), `npm run lint` (clean),
+    `npm run build` (passes, 295 static pages, unchanged since these are output additions on
+    existing calculators, not new pages).
+- [x] STATUS.md updated with a summary (count of real additions vs. "no change needed" calls)
+
+## Batch 5 numbers regenerated at run time (counts had not shifted from the step file's original
+table — all 11 ids matched exactly): `sales-tax-calculator` (1), `currency-converter` (0),
+`character-counter` (0), `hashtag-counter` (0), `pomodoro-timer` (0), `timezone-meeting-planner`
+(0), `z-score-calculator` (0), `recipe-scaling-calculator` (0), `brine-calculator` (1),
+`race-time-predictor-calculator` (1), `steps-to-miles-calculator` (0).
+
+## All 5 batches combined — final totals (closes out UX-10)
+
+| Batch | Category | Reviewed | Real additions | No change needed |
+|---|---|---|---|---|
+| 1 | Chemistry | 28 | 8 | 20 |
+| 2 | Physics | 19 | 6 | 13 |
+| 3 | Measurements | 34 | 4 | 30 |
+| 4 | Math | 10 | 2 | 8 |
+| 5 | Remainder (food/sports/text/travel/shopping/statistics/time) | 11 | 3 | 8 |
+| **Total** | | **102** | **23** | **79** |
 
 ## Order after this step (user-confirmed 2026-11-15)
 

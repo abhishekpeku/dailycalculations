@@ -1383,6 +1383,7 @@ export const mathCalculators: CalculatorConfig[] = [
         squareRoot: ({ radicand }) => (radicand < 0 ? NaN : Math.sqrt(radicand)),
         radicand: ({ squareRoot }) => squareRoot ** 2
       },
+      outputs: [{ id: 'negativeRoot', label: 'Other square root (−r)', dimension: 'count', compute: (si) => -si.squareRoot }],
       visuals: [{ type: 'compareBars', bars: [{ from: 'radicand', label: 'Your number' }, { from: 'squareRoot', label: 'Its square root' }], title: 'Your number vs its square root' }]
     },
     content: {
@@ -1402,6 +1403,7 @@ export const mathCalculators: CalculatorConfig[] = [
           { name: 'Work backward', text: 'Type into the square root field instead, and the radicand updates to that value squared.' },
           { name: 'Switch which field is calculated', text: 'Typing into the auto field hands "auto" back to the other one.' },
           { name: 'Read a non-perfect-square result', text: 'If the number is not a perfect square, the result is a rounded decimal approximation of an irrational number, not an exact value.' },
+          { name: 'Check the other square root', text: 'Underneath the main result, the negative counterpart (−r) is shown too — the second, non-principal square root every positive number has.' },
           { name: 'Compare the two values', text: 'The chart shows your number next to its square root, so the size of the gap between them is visible at a glance.' }
         ],
         outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
@@ -1447,7 +1449,7 @@ export const mathCalculators: CalculatorConfig[] = [
         { question: 'What is the square root of a negative number?', answer: 'There is no real-number answer, since no real number squared is negative. This needs complex numbers (multiples of the imaginary unit i), which this calculator does not compute.' },
         { question: 'How do you estimate a square root that is not a perfect square?', answer: 'Find the two nearest perfect squares. √50 sits between 7² = 49 and 8² = 64, so √50 is between 7 and 8 — closer to 7, about 7.0711.' },
         { question: 'What is the difference between a square root and an exponent of 1/2?', answer: 'Nothing — they mean the same thing: x^(1/2) = √x. The exponent calculator on this site handles the general case for any power.' },
-        { question: 'Can a square root be negative?', answer: 'A positive number has two square roots, +r and −r, but the radical sign √ by convention always refers to the nonnegative (principal) one.' },
+        { question: 'Can a square root be negative?', answer: 'A positive number has two square roots, +r and −r, but the radical sign √ by convention always refers to the nonnegative (principal) one. This calculator shows that negative counterpart as a bonus figure underneath the main result — the square root of 144 is 12, with −12 shown alongside it, since (−12)² = 144 too.' },
         { question: 'Is 0 a perfect square?', answer: 'Yes. √0 = 0, since 0 × 0 = 0.' },
         { question: 'What is a perfect square?', answer: 'The square of a whole number — 1, 4, 9, 16, 25 and so on — whose square root is itself a whole number.' }
       ]
@@ -2477,7 +2479,10 @@ export const mathCalculators: CalculatorConfig[] = [
         legA: ({ legB, hypotenuse }) => (hypotenuse > legB ? Math.sqrt(hypotenuse ** 2 - legB ** 2) : NaN),
         legB: ({ legA, hypotenuse }) => (hypotenuse > legA ? Math.sqrt(hypotenuse ** 2 - legA ** 2) : NaN)
       },
-      outputs: [{ id: 'area', label: 'Triangle area', dimension: 'area', compute: (si) => (si.legA * si.legB) / 2 }],
+      outputs: [
+        { id: 'area', label: 'Triangle area', dimension: 'area', compute: (si) => (si.legA * si.legB) / 2 },
+        { id: 'perimeter', label: 'Triangle perimeter', dimension: 'length', compute: (si) => si.legA + si.legB + si.hypotenuse }
+      ],
       visuals: [{ type: 'compareBars', bars: [{ from: 'legA', label: 'Leg a' }, { from: 'legB', label: 'Leg b' }, { from: 'hypotenuse', label: 'Hypotenuse c' }], title: 'The three sides' }]
     },
     content: {
@@ -2497,7 +2502,7 @@ export const mathCalculators: CalculatorConfig[] = [
           { name: 'Find a missing leg', text: 'Enter the hypotenuse and the other leg instead. The missing leg is found by rearranging the formula — it requires the hypotenuse to be longer than that other leg.' },
           { name: 'Switch which field is calculated', text: 'Type into the auto field and it becomes an input again; the field left alone the longest becomes the new calculated one.' },
           { name: 'Check the units', text: 'Switch the unit menu on any side (feet, meters, inches...) and the other two convert automatically to match.' },
-          { name: 'Read the triangle area', text: 'The area (½ × leg a × leg b) is shown underneath, a free bonus from already knowing both legs.' }
+          { name: 'Read the triangle area and perimeter', text: 'The area (½ × leg a × leg b) and the perimeter (a + b + c) are both shown underneath, a free bonus from already knowing all three sides.' }
         ],
         outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
       },
@@ -2508,7 +2513,7 @@ export const mathCalculators: CalculatorConfig[] = [
           { symbol: 'a, b (legs)', meaning: 'The two sides that meet at the right angle.' },
           { symbol: 'c (hypotenuse)', meaning: 'The longest side, opposite the right angle. Always longer than either leg individually.' }
         ],
-        note: 'Area = ½ × a × b, since the two legs form the base and height of the triangle (they meet at a right angle).'
+        note: 'Area = ½ × a × b, since the two legs form the base and height of the triangle (they meet at a right angle). Perimeter = a + b + c, the plain sum of all three sides once the hypotenuse is known.'
       },
       workedExample: {
         intro: "A 6-foot ladder problem, scaled up from the classic 3-4-5 triangle: a ladder's foot sits 6 ft from a wall, and the ladder reaches 8 ft up the wall. How long is the ladder?",
@@ -2516,10 +2521,11 @@ export const mathCalculators: CalculatorConfig[] = [
           { label: 'Square each leg', value: '6² = 36, 8² = 64' },
           { label: 'Add them', value: '36 + 64 = 100' },
           { label: 'Take the square root', value: '√100 = 10' },
-          { label: 'Area, as a bonus', value: '½ × 6 × 8 = 24 ft²' }
+          { label: 'Area, as a bonus', value: '½ × 6 × 8 = 24 ft²' },
+          { label: 'Perimeter, as a bonus', value: '6 + 8 + 10 = 24 ft' }
         ],
-        result: 'Hypotenuse = 10 ft, area = 24 ft²',
-        explanation: 'This is the 3-4-5 triangle scaled up by a factor of 2 (6 = 3×2, 8 = 4×2, 10 = 5×2) — any multiple of 3-4-5 is automatically a right triangle, which is why it shows up so often as a quick way to check a corner is square on a job site.'
+        result: 'Hypotenuse = 10 ft, area = 24 ft², perimeter = 24 ft',
+        explanation: 'This is the 3-4-5 triangle scaled up by a factor of 2 (6 = 3×2, 8 = 4×2, 10 = 5×2) — any multiple of 3-4-5 is automatically a right triangle, which is why it shows up so often as a quick way to check a corner is square on a job site. The area and perimeter both happen to come out to 24 here, purely a coincidence of this particular triangle, not a general rule.'
       },
       watchOut: [
         { title: 'The hypotenuse must be longer than each leg', body: 'Solving for a leg given the hypotenuse and the other leg requires the hypotenuse to be the strictly longest side. Entering a hypotenuse of 5 and a leg of 6 has no answer — 6 could not be a leg of a triangle whose longest side is only 5 — and this calculator reports no result rather than a misleading negative-under-the-root value.' },
@@ -2547,12 +2553,14 @@ export const mathCalculators: CalculatorConfig[] = [
         { question: 'Does the Pythagorean theorem work for any triangle?', answer: 'No, only right triangles (one 90° angle). Other triangles need the Law of Cosines, a more general formula that reduces to the Pythagorean theorem when one angle is 90°.' },
         { question: 'Can the hypotenuse be shorter than a leg?', answer: 'No. The hypotenuse is always the longest side of a right triangle, since it is opposite the largest (90°) angle.' },
         { question: 'How is the Pythagorean theorem used in real life?', answer: 'Finding a straight-line distance from two perpendicular measurements — a diagonal screen size, a ladder\'s reach, a TV stand\'s fit, or the distance between two points on a map.' },
-        { question: 'What units does this calculator use?', answer: 'Any length unit — feet, meters, inches and more are available from the unit menu on each field, and converting one updates the others automatically.' }
+        { question: 'What units does this calculator use?', answer: 'Any length unit — feet, meters, inches and more are available from the unit menu on each field, and converting one updates the others automatically.' },
+        { question: 'How do I find the perimeter of a right triangle?', answer: 'Add up all three sides: a + b + c. For legs of 6 ft and 8 ft and a hypotenuse of 10 ft, the perimeter is 6 + 8 + 10 = 24 ft — shown as a bonus figure alongside the area, since all three sides are already known once the hypotenuse is solved.' }
       ]
     },
     compute(values) {
       const { legA, legB } = values;
-      return { hypotenuse: Math.sqrt(legA ** 2 + legB ** 2), area: (legA * legB) / 2 };
+      const hypotenuse = Math.sqrt(legA ** 2 + legB ** 2);
+      return { hypotenuse, area: (legA * legB) / 2, perimeter: legA + legB + hypotenuse };
     }
   },
   {

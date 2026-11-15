@@ -237,7 +237,58 @@ items each may need splitting into 2 sub-batches of ~10-15 — use judgment, don
       `cups-to-grams-sugar` (already lets you pick any of 3 sugar types and compares all 3 side by
       side in its own referenceTable), `cups-to-grams-butter` (no second citable density to compare
       against).
-- [ ] Batch 4: math (10)
+- [x] Batch 4: math (10, done in one batch, branch `ux/result-sets-math` — 2 real additions, 8
+  "no change needed", confirming the step file's own prediction that this category would come
+  back mostly "no change needed"):
+  - **Real additions (2):**
+    - `square-root-calculator` — added `negativeRoot` (= −squareRoot): the page's own concept
+      and watchOut copy already states "every positive number has two square roots, +r and −r"
+      as the central caveat of the page, but the live solver result only ever showed the
+      principal (nonnegative) one. Reuses the same solved `squareRoot` variable (just negated),
+      so it can never disagree with the headline. Verified: √144 → 12 / −12, √50 → 7.0711 /
+      −7.0711 (and (−7.0711)² ≈ 50), √(−9) → NaN / NaN.
+    - `pythagorean-theorem-calculator` — added `perimeter` (= legA + legB + hypotenuse),
+      alongside the page's existing `area` bonus output, mirroring the sibling
+      `triangle-calculator`'s own area+perimeter pairing. Reuses the already-solved three sides,
+      no new input needed. Verified: 3-4-5 → area 6, perimeter 12; 5-6-7.810249676 → area 15,
+      perimeter 18.81024968; 0-0-0 → area 0, perimeter 0 (matches the updated
+      `calculators.spec.ts.snapshot` exactly, via `npm run test:update`).
+  - **No change needed (8):**
+    - `percentage-calculator` — no change: the four modes (X% of Y, X is what % of Y, percent
+      change X→Y, increase/decrease Y by X%) produce fundamentally different kinds of answers
+      (an amount in modes 1/4, a percentage in modes 2/3); no single second `breakdown.outputs`
+      entry applies meaningfully across all four without going blank ("—") for half of them or
+      just duplicating the existing compareBars chart that already shows X vs Y.
+    - `percent-change-calculator` — no change: already has a real bonus output, `absoluteChange`
+      (B−A). The only other candidate considered, a "growth multiplier" (1 + %Δ÷100), was
+      rejected as just `percentChange` itself re-expressed in a different form, not a new fact.
+    - `exponent-calculator` — no change: base/exponent/result is a fully cross-solvable
+      3-variable relation (same pattern as force-calculator/speed-distance-time-calculator in
+      the physics batch); nothing else genuinely derivable without a new input.
+    - `cube-root-calculator` — no change: the page's own watchOut explicitly states a cube root
+      is unique among the reals ("exactly one real cube root, always... no principal-vs-other
+      ambiguity"), unlike a square root — so unlike square-root-calculator, there is no second
+      real root to surface.
+    - `area-calculator` — no change: the page's own formula note and watchOut explicitly scope
+      it to area only ("this calculator finds area only, not perimeter") and explain why — a
+      triangle's perimeter needs all three sides but this page only takes a base and height, and
+      a trapezoid's non-parallel legs aren't given either. A perimeter output would only resolve
+      for 2 of 5 shapes (square, rectangle) and go blank for the rest, contradicting the page's
+      own stated scope.
+    - `volume-calculator` — no change: explicitly cross-links to the Surface Area Calculator as
+      a deliberate "companion figure" ("volume and surface area are different questions... see
+      the Surface Area Calculator for the companion figure"), i.e. the site's own design keeps
+      these as separate single-purpose calculators rather than merging them.
+    - `surface-area-calculator` — no change: same deliberate companion-calculator split as
+      volume-calculator, in the other direction.
+    - `scientific-calculator` — no change: not a solve-for-a-value or breakdown page at all — a
+      free-text expression evaluator (`inputs: []`, custom keypad widget, `compute()` returns
+      `{}`). The outputCount-0 flag is a false positive of the audit's counting heuristic for
+      this calculator type, not a thin result set.
+  - Acceptance checks run for this batch: `npm test` (1123/1123 pass, after `npm run
+    test:update` regenerated the one changed snapshot — `pythagorean-theorem-calculator`'s
+    three compute() fixtures, diff-checked to confirm only the new `perimeter` key was added),
+    `npm run lint` (clean), `npm run build` (passes, 295 static pages).
 - [ ] Batch 5: remainder (11: food/sports/text/travel/shopping/statistics/time)
 - [ ] STATUS.md updated with a summary (count of real additions vs. "no change needed" calls)
 

@@ -1528,5 +1528,145 @@ export const financeCalculators: CalculatorConfig[] = [
         lifetimeInterestChange: lifetimeInterestNew - lifetimeInterestOld
       };
     }
+  },
+  {
+    id: 'down-payment-savings-calculator',
+    category: 'finance',
+    glyph: 'DP',
+    updatedAt: '2026-11-15',
+    aliases: ['down payment calculator', 'home down payment savings calculator', 'save for a down payment calculator', 'down payment goal calculator'],
+    related: ['compound-interest-calculator', 'home-affordability-calculator', 'mortgage-calculator'],
+    title: 'Down Payment Savings Calculator',
+    description: 'Find how long it will take to save a down payment goal from your current savings, a monthly contribution and an interest rate, or work back to the contribution, start or rate you need.',
+    example: 'Starting with $5,000, adding $500 a month at 3.5% a year, reaching a $60,000 down payment takes about 93.2 months, or 7.8 years.',
+    solver: {
+      defaultTarget: 'years',
+      variables: [
+        { id: 'targetDownPayment', label: 'Down payment goal', symbol: 'G', dimension: 'currency', defaultValue: 60000, defaultUnit: 'currency' },
+        { id: 'currentSavings', label: 'Current savings', symbol: 'P', dimension: 'currency', defaultValue: 5000, defaultUnit: 'currency' },
+        { id: 'monthlyContribution', label: 'Monthly contribution', symbol: 'C', dimension: 'currency', defaultValue: 500, defaultUnit: 'currency', fixed: true },
+        { id: 'years', label: 'Time to reach the goal', symbol: 't', dimension: 'term', defaultValue: 7.76, defaultUnit: 'yr', bounds: [0, 100] },
+        { id: 'annualRate', label: 'Annual interest rate', symbol: 'r', dimension: 'percent', defaultValue: 3.5, defaultUnit: '%', bounds: [0, 100] }
+      ],
+      // `years` arrives in months (the term dimension's base); compounding is monthly, same convention as compound-interest-calculator.
+      solve: {
+        years: ({ targetDownPayment, currentSavings, monthlyContribution, annualRate }) => {
+          const i = annualRate / 100 / 12;
+          if (i === 0) return monthlyContribution > 0 ? (targetDownPayment - currentSavings) / monthlyContribution : NaN;
+          const months = Math.log((targetDownPayment * i + monthlyContribution) / (currentSavings * i + monthlyContribution)) / Math.log(1 + i);
+          return months >= 0 ? months : NaN;
+        },
+        targetDownPayment: ({ currentSavings, monthlyContribution, years, annualRate }) =>
+          currentSavings * growthFactor(annualRate, 12, years) + monthlyContribution * annuityFactor(annualRate, 12, years),
+        currentSavings: ({ targetDownPayment, monthlyContribution, years, annualRate }) => {
+          const start = (targetDownPayment - monthlyContribution * annuityFactor(annualRate, 12, years)) / growthFactor(annualRate, 12, years);
+          return years >= 0 && start >= 0 ? start : NaN;
+        }
+      },
+      // The rate has no closed form: the widget finds it numerically.
+      equation: (si) =>
+        si.targetDownPayment - (si.currentSavings * growthFactor(si.annualRate, 12, si.years) + si.monthlyContribution * annuityFactor(si.annualRate, 12, si.years)),
+      outputs: [
+        { id: 'totalContributions', label: 'Total you contribute', dimension: 'currency', compute: (si) => si.monthlyContribution * si.years },
+        { id: 'totalInterest', label: 'Interest earned', dimension: 'currency', compute: (si) => si.targetDownPayment - si.currentSavings - si.monthlyContribution * si.years }
+      ],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'currentSavings', label: 'Current savings' },
+            { from: 'totalContributions', label: 'Contributions' },
+            { from: 'totalInterest', label: 'Interest' }
+          ],
+          center: 'targetDownPayment',
+          centerSub: 'down payment goal'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-15',
+      concept: {
+        title: 'Saving for a down payment is a short-term goal',
+        paragraphs: [
+          'The math here is the same future-value-with-contributions formula as compound-interest-calculator — a starting balance plus a monthly deposit, growing at a monthly rate. The difference is what you solve for: compound-interest-calculator usually asks "how much will this grow to," while this calculator is built around "how long will it take to reach a specific dollar goal," the question a down payment actually poses.',
+          'A down payment is usually needed in a few years, not decades, which changes where the money should sit. Growth that might make sense for a retirement account can mean real losses right when you need the cash for a closing, so down payment savings are commonly kept in a high-yield savings account, a money-market account or a short certificate of deposit rather than invested in stocks. Keep the rate you enter modest and realistic for a cash account, not a long-run market return.',
+          'The goal itself should be the down payment alone, not the whole cost of buying. Closing costs are a separate cash need on top of it, and a down payment under 20% of the home price usually adds private mortgage insurance to the monthly payment — home-affordability-calculator and mortgage-calculator both take the down payment you land on here as their own input.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your monthly contribution (always an input), then any three of the other four fields. The one you have left alone longest, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter your monthly contribution', text: 'How much you plan to set aside each month toward the down payment.' },
+          { name: 'Find the time to your goal', text: 'Type the down payment goal, your current savings and the rate the account earns. The time to reach the goal is calculated.' },
+          { name: 'Solve for a different field', text: 'Type into the time field to make it an input instead, and leave the start or the goal alone to solve for one of those.' },
+          { name: 'Find the rate you need', text: 'With the goal, start, contribution and time filled in, leaving the rate alone longest makes the calculator search for the rate that gets you there on schedule.' },
+          { name: 'Read the breakdown', text: 'Below the result, see how much of the goal comes from your own contributions versus interest earned.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The goal is the current savings grown for t months, plus the future value of a deposit made at the end of every month — the same formula compound-interest-calculator uses, solved here for the time, t.',
+        expression: 'G = P × (1 + i)^t + C × ((1 + i)^t − 1) ÷ i\ni = r ÷ 100 ÷ 12\nt = ln((G × i + C) ÷ (P × i + C)) ÷ ln(1 + i)',
+        terms: [
+          { symbol: 'G', meaning: 'Down payment goal.' },
+          { symbol: 'P', meaning: 'Current savings already set aside.' },
+          { symbol: 'C', meaning: 'Contribution added at the end of each month.' },
+          { symbol: 'r, i', meaning: 'Annual interest rate, and the monthly rate as a decimal: 3.5% a year is 0.0029167 a month.' },
+          { symbol: 't', meaning: 'Months until the goal is reached. With i = 0, t = (G − P) ÷ C.' }
+        ],
+        note: 'Estimates only, not financial advice. Rates on savings accounts and CDs change over time, and this assumes a constant rate and a contribution that never varies.'
+      },
+      workedExample: {
+        intro: 'You have $5,000 saved toward a $60,000 down payment, add $500 at the end of every month, and the account earns 3.5% a year. How long until you reach the goal?',
+        rows: [
+          { label: 'Monthly rate (i = 3.5% ÷ 12)', value: '0.0029167' },
+          { label: 't = ln((60,000 × i + 500) ÷ (5,000 × i + 500)) ÷ ln(1 + i)', value: '93.17 months' },
+          { label: 'In years (93.17 ÷ 12)', value: '≈ 7.76 years' },
+          { label: 'Total contributions (500 × 93.17)', value: '≈ $46,585.84' },
+          { label: 'Interest earned (60,000 − 5,000 − 46,585.84)', value: '≈ $8,414.16' }
+        ],
+        result: 'About 93.2 months (≈ 7.8 years) to reach the $60,000 goal',
+        explanation: 'Contributions alone (500 × 93.17 ≈ $46,586) make up most of the goal; interest adds the remaining ≈ $8,414. At a 0% rate the same goal would take (60,000 − 5,000) ÷ 500 = 110 months, about 17 months longer, since no interest would be doing any of the work.'
+      },
+      watchOut: [
+        { title: 'The down payment is not the whole cash you need', body: 'Closing costs are a separate expense on top of the down payment, commonly 2% to 5% of the home price. Budget for both, not just the figure this calculator solves for.' },
+        { title: 'Keep the assumed rate realistic for cash', body: 'A high-yield savings account or CD rate, not a long-run stock-market return, belongs here. A short-term goal invested in the market can lose value right when you need it.' },
+        { title: '20% down avoids mortgage insurance', body: 'A down payment under 20% of the home price usually adds PMI to the monthly payment (see home-affordability-calculator and mortgage-calculator). Decide whether your goal targets 20% or a smaller, faster-to-reach down payment.' },
+        { title: 'A fixed contribution is a simplification', body: 'Real savings plans rarely stay perfectly level: a bonus, a raise or a lean month all change the real payoff date. Rerun the numbers whenever your monthly contribution changes meaningfully.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, Determine your down payment', url: 'https://www.consumerfinance.gov/owning-a-home/prepare/determine-your-down-payment/' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.4 Compound Interest', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-4-compound-interest' },
+        { label: 'U.S. Securities and Exchange Commission, Investor.gov glossary: Compound interest', url: 'https://www.investor.gov/introduction-investing/investing-basics/glossary/compound-interest' }
+      ]
+    },
+    inputs: [
+      { id: 'targetDownPayment', label: 'Down payment goal', type: 'currency', placeholder: '60000', defaultValue: 60000, step: 1000, min: 0 },
+      { id: 'currentSavings', label: 'Current savings', type: 'currency', placeholder: '5000', defaultValue: 5000, step: 500, min: 0 },
+      { id: 'monthlyContribution', label: 'Monthly contribution', type: 'currency', placeholder: '500', defaultValue: 500, step: 25, min: 0 },
+      { id: 'annualRate', label: 'Annual interest rate', type: 'percent', placeholder: '3.5', defaultValue: 3.5, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Down Payment Savings Calculator – Time to Goal',
+      description: 'Free down payment savings calculator: how long it takes to reach a down payment goal, or the contribution, start or rate you need, with interest broken out.',
+      faq: [
+        { question: 'How long will it take to save a down payment?', answer: 'Starting with $5,000, adding $500 a month at 3.5% a year, reaching $60,000 takes about 93.2 months, or 7.8 years. Enter your own numbers to solve for your timeline.' },
+        { question: 'How is the time to a savings goal calculated?', answer: 't = ln((G × i + C) ÷ (P × i + C)) ÷ ln(1 + i), where G is the goal, P the current savings, C the monthly contribution and i the monthly rate. It is the same formula compound-interest-calculator uses, solved for time instead of future value.' },
+        { question: 'How much faster does a higher contribution get me there?', answer: 'Significantly. In the example, raising the contribution from $500 to $700 a month cuts the time from about 93.2 months to about 65.4 months, nearly two years sooner.' },
+        { question: 'What interest rate should I use?', answer: 'A rate that matches where the money actually sits, usually a high-yield savings account, money-market account or CD, not a long-run stock-market return. A short-term goal should not be exposed to market swings.' },
+        { question: 'Does this include closing costs?', answer: 'No. The goal here is the down payment only. Closing costs are a separate cash need on top of it; see the closing cost estimator for a breakdown by category.' },
+        { question: 'What contribution do I need to reach my goal by a certain date?', answer: 'Fill in the goal, your current savings, the rate and the time you have, and leave the monthly contribution alone longest: the calculator finds the contribution that gets you there on schedule.' },
+        { question: 'How does a bigger down payment change my mortgage?', answer: 'A larger down payment lowers the loan amount and the monthly payment, and reaching 20% of the home price typically removes the need for private mortgage insurance. See mortgage-calculator and home-affordability-calculator.' }
+      ]
+    },
+    compute(values) {
+      const i = values.annualRate / 100 / 12;
+      const months = i === 0
+        ? (values.monthlyContribution > 0 ? (values.targetDownPayment - values.currentSavings) / values.monthlyContribution : NaN)
+        : Math.log((values.targetDownPayment * i + values.monthlyContribution) / (values.currentSavings * i + values.monthlyContribution)) / Math.log(1 + i);
+      const totalContributions = values.monthlyContribution * months;
+      const totalInterest = values.targetDownPayment - values.currentSavings - totalContributions;
+      return { years: months / 12, totalContributions, totalInterest };
+    }
   }
 ];

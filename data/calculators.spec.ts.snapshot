@@ -2479,6 +2479,50 @@ exports[`compute() snapshots > distance-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > down-payment-savings-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "targetDownPayment": 60000,
+      "currentSavings": 5000,
+      "monthlyContribution": 500,
+      "annualRate": 3.5
+    },
+    "outputs": {
+      "years": 7.764306097,
+      "totalContributions": 46585.83658,
+      "totalInterest": 8414.163421
+    }
+  },
+  "typical": {
+    "inputs": {
+      "targetDownPayment": 90000,
+      "currentSavings": 7500,
+      "monthlyContribution": 750,
+      "annualRate": 5.3
+    },
+    "outputs": {
+      "years": 7.224371458,
+      "totalContributions": 65019.34313,
+      "totalInterest": 17480.65687
+    }
+  },
+  "edge": {
+    "inputs": {
+      "targetDownPayment": 0,
+      "currentSavings": 0,
+      "monthlyContribution": 0,
+      "annualRate": 0
+    },
+    "outputs": {
+      "years": "NaN",
+      "totalContributions": "NaN",
+      "totalInterest": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > drywall-calculator 1`] = `
 {
   "default": {

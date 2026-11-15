@@ -181,7 +181,7 @@ prior wave's convention.
 - [ ] Batch 1 (real estate/affordability, 5) — branch `step/60-wave-5a-finance-run-1`, draft PR, committed/pushed per calculator
   - [x] `home-affordability-calculator`
   - [x] `mortgage-refinance-calculator`
-  - [ ] `down-payment-savings-calculator`
+  - [x] `down-payment-savings-calculator`
   - [ ] `closing-cost-estimator-calculator`
   - [ ] `rent-vs-buy-calculator`
 - [ ] Batch 2 (debt, 5)

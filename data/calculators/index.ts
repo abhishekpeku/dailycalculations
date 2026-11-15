@@ -306,7 +306,8 @@ export const calculatorOrder: string[] = [
   'molecular-geometry-calculator',
   'specific-heat-by-mixing-calculator',
   'home-affordability-calculator',
-  'mortgage-refinance-calculator'
+  'mortgage-refinance-calculator',
+  'down-payment-savings-calculator'
 ];
 
 const rank = (id: string) => {

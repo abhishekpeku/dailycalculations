@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { findCalculator } from '@/data/calculators';
 import type { SolverOutput } from '@/data/calculators';
 import { formatMoney, formatSignificant } from '@/lib/calculator';
 import { UNITS, findUnit, fromBase, toBase, type UnitDimension } from '@/lib/units';
 import { editOrder, initialState, isSingleUnit, parse, plain, readShareParams, shareParams, solveState, type SolverState } from '@/lib/solverState';
-import { AlsoIn, FIELD_GROUP, FieldRow, Headline, OutputItem, OutputList, ResultPanel, WidgetActions, WidgetCard, widgetAccent } from '@/components/CalculatorWidget';
+import { AlsoIn, ELEVATED_CARD, FIELD_GROUP, FieldRow, Headline, OutputItem, OutputList, ResultPanel, WidgetActions, WIDGET_SPLIT, widgetAccent } from '@/components/CalculatorWidget';
 import LogScale from '@/components/visuals/LogScale';
 import BreakdownVisual from '@/components/BreakdownVisual';
 import { describeSolverKey, solverVisualValues } from '@/lib/breakdown';
@@ -40,7 +40,15 @@ function OutputRow({ output, value }: { output: SolverOutput; value: number }) {
 // The force scale: 0.01 N to 1 GN, the range of the force-calculator benchmarks.
 const FORCE_SCALE = { min: -2, max: 9, ticks: ['0.01 N', '1 N', '1 kN', '1 MN', '1 GN'] };
 
-export default function SolverCalculator({ calculatorId }: { calculatorId: string }) {
+type SolverCalculatorProps = {
+  calculatorId: string;
+  /** Rendered under the inputs card, in the same (independent-height) left column — e.g. HowItWorksCard. */
+  belowInputs?: ReactNode;
+  /** Rendered under the result card, in the same (independent-height) right column — e.g. TableOfContents. */
+  belowResult?: ReactNode;
+};
+
+export default function SolverCalculator({ calculatorId, belowInputs, belowResult }: SolverCalculatorProps) {
   const calculator = findCalculator(calculatorId);
   const solver = calculator?.solver;
   const accent = widgetAccent(calculator?.category ?? '');
@@ -93,11 +101,14 @@ export default function SolverCalculator({ calculatorId }: { calculatorId: strin
   };
 
   return (
-    <WidgetCard>
+    <div className="space-y-4">
       <p className="text-sm text-slate-600 dark:text-slate-300">
         Enter any {NUMBER_WORDS[solver.variables.length - 1] ?? solver.variables.length - 1} values. The last one is calculated automatically.
       </p>
 
+      <div className={WIDGET_SPLIT}>
+      <div className="space-y-4">
+      <div className={ELEVATED_CARD}>
       <div className={FIELD_GROUP}>
         {solver.variables.map((variable) => {
           const isTarget = variable.id === target;
@@ -131,7 +142,21 @@ export default function SolverCalculator({ calculatorId }: { calculatorId: strin
           );
         })}
       </div>
+      </div>
 
+      <WidgetActions
+        accent={accent}
+        shareQuery={() => shareParams(solver, state)}
+        copyText={resultText}
+        onReset={() => {
+          if (defaults) setState(defaults);
+        }}
+      />
+      {belowInputs}
+      </div>
+
+      <div className="space-y-4">
+      <div className={ELEVATED_CARD}>
       <ResultPanel
         accent={accent}
         kicker="Result"
@@ -178,15 +203,10 @@ export default function SolverCalculator({ calculatorId }: { calculatorId: strin
           </p>
         )}
       </ResultPanel>
-
-      <WidgetActions
-        accent={accent}
-        shareQuery={() => shareParams(solver, state)}
-        copyText={resultText}
-        onReset={() => {
-          if (defaults) setState(defaults);
-        }}
-      />
-    </WidgetCard>
+      </div>
+      {belowResult}
+      </div>
+      </div>
+    </div>
   );
 }

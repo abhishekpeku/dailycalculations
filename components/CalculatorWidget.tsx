@@ -12,6 +12,18 @@ export const widgetAccent = (category: string) => TILE_COLORS[categoryTheme(cate
 
 export const FIELD_GROUP = 'divide-y divide-slate-200 overflow-hidden rounded-2xl bg-white dark:divide-slate-800 dark:bg-slate-950';
 
+// Inputs beside the result at desktop width, stacked on mobile. Same responsive pattern the
+// page's own outer grid uses. A near-even split: a FieldRow's label needs enough room not to wrap
+// onto 2-3 lines (it shares its row with a ~300px-wide fixed value box + unit selector), but the
+// result side holds charts/breakdowns that also want real width — neither side should dominate.
+export const WIDGET_SPLIT = 'grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start lg:gap-6';
+
+// Shadow + ring only (no background/padding of its own) — wraps an already-rounded-2xl,
+// already-backgrounded block (FIELD_GROUP, ResultPanel) so it reads as its own elevated card,
+// the same visual weight as HowItWorksCard/TableOfContents, instead of living inside one shared
+// card with everything else.
+export const ELEVATED_CARD = 'overflow-hidden rounded-[22px] shadow-[0_1px_2px_rgba(15,23,42,0.04),0_10px_30px_rgba(15,23,42,0.08)] ring-1 ring-slate-900/5 dark:ring-white/10';
+
 export function WidgetCard({ children }: { children: ReactNode }) {
   return (
     <div className="overflow-hidden rounded-[22px] bg-[#F2F2F7] shadow-[0_1px_2px_rgba(15,23,42,0.04),0_10px_30px_rgba(15,23,42,0.08)] ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10">
@@ -39,7 +51,7 @@ type FieldRowProps = {
 // One inset row: label left, value and unit right.
 export function FieldRow({ id, label, value, onChange, placeholder, autoAccent, unitLabel, unitOptions, unitValue, onUnitChange, unitAriaLabel }: FieldRowProps) {
   return (
-    <div className="flex items-center gap-3 px-4 py-3" style={autoAccent ? { backgroundColor: `${autoAccent}0F` } : undefined}>
+    <div className="flex items-center gap-3 px-4 py-2" style={autoAccent ? { backgroundColor: `${autoAccent}0F` } : undefined}>
       <label htmlFor={id} className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 text-sm text-slate-900 dark:text-slate-100">
         {label}
       </label>

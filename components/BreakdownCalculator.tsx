@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { findCalculator } from '@/data/calculators';
 import type { CalculatorInput } from '@/data/calculators';
 import { UNITS } from '@/lib/units';
@@ -17,14 +17,22 @@ import {
   resolveBreakdown,
   type BreakdownState
 } from '@/lib/breakdown';
-import { AlsoIn, ChoiceRow, FIELD_GROUP, FieldRow, Headline, ListFieldRow, OutputItem, OutputList, ResultPanel, WidgetActions, WidgetCard, widgetAccent } from '@/components/CalculatorWidget';
+import { AlsoIn, ChoiceRow, ELEVATED_CARD, FIELD_GROUP, FieldRow, Headline, ListFieldRow, OutputItem, OutputList, ResultPanel, WidgetActions, WIDGET_SPLIT, widgetAccent } from '@/components/CalculatorWidget';
 import BreakdownVisual from '@/components/BreakdownVisual';
 
 // Type B: inputs flow forward into a headline, a breakdown and one visual. The logic lives in lib/breakdown.ts.
 
 const KICKER = 'text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400';
 
-export default function BreakdownCalculator({ calculatorId }: { calculatorId: string }) {
+type BreakdownCalculatorProps = {
+  calculatorId: string;
+  /** Rendered under the inputs card, in the same (independent-height) left column — e.g. HowItWorksCard. */
+  belowInputs?: ReactNode;
+  /** Rendered under the result card, in the same (independent-height) right column — e.g. TableOfContents. */
+  belowResult?: ReactNode;
+};
+
+export default function BreakdownCalculator({ calculatorId, belowInputs, belowResult }: BreakdownCalculatorProps) {
   const calculator = findCalculator(calculatorId);
   const inputs = useMemo(() => calculator?.inputs ?? [], [calculator]);
   const accent = widgetAccent(calculator?.category ?? '');
@@ -95,21 +103,38 @@ export default function BreakdownCalculator({ calculatorId }: { calculatorId: st
   );
 
   return (
-    <WidgetCard>
-      {resolved.groups.map((group, index) =>
-        group.optional ? (
-          <details key={group.title ?? index}>
-            <summary className={`cursor-pointer select-none px-1 pb-2 ${KICKER}`}>{group.title ?? 'More options'}</summary>
-            <div className={FIELD_GROUP}>{group.inputs.map(renderField)}</div>
-          </details>
-        ) : (
-          <div key={group.title ?? index}>
-            {group.title ? <p className={`px-1 pb-2 ${KICKER}`}>{group.title}</p> : null}
-            <div className={FIELD_GROUP}>{group.inputs.map(renderField)}</div>
-          </div>
-        )
-      )}
+    <div className="space-y-4">
+      <div className={WIDGET_SPLIT}>
+      <div className="space-y-4">
+      <div className={`${ELEVATED_CARD} bg-white p-5 dark:bg-slate-950`}>
+      <div className="space-y-5">
+        {resolved.groups.map((group, index) =>
+          group.optional ? (
+            <details key={group.title ?? index}>
+              <summary className={`cursor-pointer select-none px-1 pb-2 ${KICKER}`}>{group.title ?? 'More options'}</summary>
+              <div className={FIELD_GROUP}>{group.inputs.map(renderField)}</div>
+            </details>
+          ) : (
+            <div key={group.title ?? index}>
+              {group.title ? <p className={`px-1 pb-2 ${KICKER}`}>{group.title}</p> : null}
+              <div className={FIELD_GROUP}>{group.inputs.map(renderField)}</div>
+            </div>
+          )
+        )}
+      </div>
+      </div>
 
+      <WidgetActions
+        accent={accent}
+        shareQuery={() => breakdownShareParams(inputs, state)}
+        copyText={answered ? `${resolved.headline.label}: ${headlineText}` : ''}
+        onReset={() => setState(defaults)}
+      />
+      {belowInputs}
+      </div>
+
+      <div className="space-y-4">
+      <div className={ELEVATED_CARD}>
       <ResultPanel
         accent={accent}
         kicker={resolved.headline.label}
@@ -141,13 +166,10 @@ export default function BreakdownCalculator({ calculatorId }: { calculatorId: st
           </OutputList>
         ) : null}
       </ResultPanel>
-
-      <WidgetActions
-        accent={accent}
-        shareQuery={() => breakdownShareParams(inputs, state)}
-        copyText={answered ? `${resolved.headline.label}: ${headlineText}` : ''}
-        onReset={() => setState(defaults)}
-      />
-    </WidgetCard>
+      </div>
+      {belowResult}
+      </div>
+      </div>
+    </div>
   );
 }

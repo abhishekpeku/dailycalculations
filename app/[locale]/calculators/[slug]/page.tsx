@@ -97,14 +97,39 @@ export default async function CalculatorPage({
     ...(sourceCount > 0 ? [{ icon: 'book' as const, text: t('sources', { count: sourceCount }), href: '#references' }] : [])
   ];
 
-  const widget = solver ? <SolverCalculator calculatorId={calculator.id} /> :
-    slug === 'currency-converter' ? <CurrencyConverter /> :
+  // The hand-built (type C) widgets render as one box, not the inputs/result split — "How it
+  // works"/contents go in a plain row below them (see the tocItems render below), not into the
+  // belowInputs/belowResult slots SolverCalculator/BreakdownCalculator accept.
+  const isCustomWidget = ['currency-converter', 'character-counter', 'hashtag-counter', 'pomodoro-timer', 'timezone-meeting-planner', 'scientific-calculator'].includes(slug);
+
+  const howItWorksCard = (
+    <HowItWorksCard
+      category={calculator.category}
+      flow={flow}
+      description={calculator.description}
+      aliases={aliases}
+      diagramSummary={diagramSummary}
+      howItWorksLabel={t('howItWorksLabel')}
+      orSolveAnyLabel={t('orSolveAnyField')}
+      moreInputsLabel={moreInputsLabel}
+      alsoCalledLabel={t('alsoCalledLabel')}
+      trust={trust}
+    />
+  );
+  const tableOfContents = tocItems ? <TableOfContents title={t('contentsTitle')} items={tocItems} /> : null;
+
+  // Split widgets (Solver/Breakdown) get "How it works"/contents passed straight into their own
+  // independent-height columns — directly under the calculator and under the result respectively
+  // — rather than a separate row pinned to start below whichever column is taller.
+  const widget = solver ? (
+    <SolverCalculator calculatorId={calculator.id} belowInputs={tocItems ? howItWorksCard : undefined} belowResult={tocItems ? tableOfContents : undefined} />
+  ) : slug === 'currency-converter' ? <CurrencyConverter /> :
     slug === 'character-counter' ? <TextToolsCalculator mode="character" /> :
     slug === 'hashtag-counter' ? <TextToolsCalculator mode="hashtag" /> :
     slug === 'pomodoro-timer' ? <PomodoroTimer /> :
     slug === 'timezone-meeting-planner' ? <TimeZonePlanner /> :
     slug === 'scientific-calculator' ? <ScientificCalculator /> :
-    <BreakdownCalculator calculatorId={calculator.id} />;
+    <BreakdownCalculator calculatorId={calculator.id} belowInputs={tocItems ? howItWorksCard : undefined} belowResult={tocItems ? tableOfContents : undefined} />;
   const categoryTitle = categories.find((category) => category.id === calculator.category)?.title ?? '';
   const related = (
     <RelatedCalculators
@@ -134,41 +159,34 @@ export default async function CalculatorPage({
     <div className={`mx-auto w-full px-4 py-8 sm:px-6 lg:px-8 ${tocItems ? 'max-w-6xl' : 'max-w-5xl'}`}>
       <div className="space-y-8">
         {/* Deliberately not a card: the hero is compressed so the widget stays above the fold. */}
-        <header className="space-y-3">
+        <header className="space-y-2">
           <Breadcrumb items={breadcrumbs} />
-          <div className="flex items-center gap-4">
-            <IconTile icon={categoryTheme(calculator.category).icon} color={categoryTheme(calculator.category).color} size="lg" />
+          <div className="flex items-center gap-3">
+            <IconTile icon={categoryTheme(calculator.category).icon} color={categoryTheme(calculator.category).color} size="md" />
             <h1 className="text-3xl font-bold tracking-tight text-slate-950 dark:text-white sm:text-4xl">{calculator.title}</h1>
           </div>
           {tocItems ? null : <div className="max-w-3xl space-y-3">{intro}</div>}
         </header>
 
         {tocItems ? (
-          // v2 pages: calculator in the wide column; intro + table of contents in a narrower panel beside it.
-          // grid-cols-1 (Tailwind's minmax(0,1fr)) matters below lg: without it, a grid item has no
-          // width ceiling, and the diagram's non-wrapping pill labels (e.g. freelancer-rate-calculator's
-          // "Self-employment + income tax rate") push the whole page into horizontal overflow at phone width.
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
-            <div className="space-y-4">
-              {widget}
+          // v2 pages: SolverCalculator/BreakdownCalculator already render "How it works"/contents
+          // inside their own belowInputs/belowResult slots — directly under the calculator and
+          // under the result, each column free to be a different height (see WIDGET_SPLIT and the
+          // belowInputs/belowResult props in CalculatorWidget.tsx / SolverCalculator.tsx /
+          // BreakdownCalculator.tsx). The hand-built (type C) widgets render as one box with no
+          // such slots, so only for those does this still render an explicit row below.
+          <div>
+            {widget}
+            {isCustomWidget ? (
+              <div className="mt-3 grid grid-cols-1 gap-6 lg:grid-cols-2">
+                {howItWorksCard}
+                {tableOfContents}
+              </div>
+            ) : null}
+            <div className="mt-8 space-y-4">
               {example}
               {related}
             </div>
-            <aside className="space-y-6 lg:sticky lg:top-6">
-              <HowItWorksCard
-                category={calculator.category}
-                flow={flow}
-                description={calculator.description}
-                aliases={aliases}
-                diagramSummary={diagramSummary}
-                howItWorksLabel={t('howItWorksLabel')}
-                orSolveAnyLabel={t('orSolveAnyField')}
-                moreInputsLabel={moreInputsLabel}
-                alsoCalledLabel={t('alsoCalledLabel')}
-                trust={trust}
-              />
-              <TableOfContents title={t('contentsTitle')} items={tocItems} />
-            </aside>
           </div>
         ) : (
           <>

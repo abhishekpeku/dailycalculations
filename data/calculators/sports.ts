@@ -436,7 +436,10 @@ export const sportsCalculators: CalculatorConfig[] = [
         distance2: ({ time1, distance1, time2 }) => (time1 > 0 && time2 >= 0 ? distance1 * (time2 / time1) ** (1 / 1.06) : NaN),
         distance1: ({ time1, time2, distance2 }) => (time2 > 0 && time1 >= 0 ? distance2 * (time1 / time2) ** (1 / 1.06) : NaN)
       },
-      outputs: [{ id: 'targetPace', label: 'Pace needed at the target distance', dimension: 'pace', unit: 'min/km', compute: (si) => (si.distance2 > 0 ? si.time2 / si.distance2 : NaN) }]
+      outputs: [
+        { id: 'targetPace', label: 'Pace needed at the target distance', dimension: 'pace', unit: 'min/km', compute: (si) => (si.distance2 > 0 ? si.time2 / si.distance2 : NaN) },
+        { id: 'knownPace', label: 'Pace at the known distance', dimension: 'pace', unit: 'min/km', compute: (si) => (si.distance1 > 0 ? si.time1 / si.distance1 : NaN) }
+      ]
     },
     content: {
       lastReviewed: '2026-11-05',
@@ -671,7 +674,8 @@ export const sportsCalculators: CalculatorConfig[] = [
         distance: ({ steps, stepLength }) => steps * stepLength,
         steps: ({ distance, stepLength }) => (stepLength > 0 ? distance / stepLength : NaN),
         stepLength: ({ distance, steps }) => (steps > 0 ? distance / steps : NaN)
-      }
+      },
+      outputs: [{ id: 'stepsPerMile', label: 'Steps per mile at this step length', dimension: 'count', compute: (si) => (si.stepLength > 0 ? 1609.344 / si.stepLength : NaN) }]
     },
     content: {
       lastReviewed: '2026-11-05',

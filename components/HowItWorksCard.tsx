@@ -105,7 +105,7 @@ export default function HowItWorksCard({
   const pillCount = pills.length + (moreCount > 0 ? 1 : 0);
 
   return (
-    <div className={`${CARD} space-y-5`}>
+    <div className={`${CARD} space-y-5 print:hidden`}>
       {flow ? (
         <div className="space-y-3">
           <p className="text-[12px] font-semibold uppercase tracking-wide text-[#6E6E73] dark:text-slate-400">{howItWorksLabel}</p>

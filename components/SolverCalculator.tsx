@@ -10,6 +10,7 @@ import { AlsoIn, ELEVATED_CARD, FIELD_GROUP, FieldRow, Headline, OutputItem, Out
 import LogScale from '@/components/visuals/LogScale';
 import BreakdownVisual from '@/components/BreakdownVisual';
 import { describeSolverKey, solverVisualValues } from '@/lib/breakdown';
+import { exportTableForVisual, type ExportPayload } from '@/lib/export';
 
 // Fill any fields and the remaining one is calculated. The state logic lives in lib/solverState.ts.
 
@@ -83,6 +84,25 @@ export default function SolverCalculator({ calculatorId, belowInputs, belowResul
       ? result
       : toBase(parse(state.values[forceVariable.id]), 'force', state.units[forceVariable.id]);
 
+  const hasVisual = Boolean(answered && solution && solver.visuals?.length) || Boolean(solver.benchmarks && forceVariable);
+  const exportData: ExportPayload | null = !answered
+    ? null
+    : {
+        title: calculator?.title ?? '',
+        url: typeof window === 'undefined' ? '' : window.location.href,
+        inputs: solver.variables
+          .filter((v) => v.id !== target)
+          .map((v) => ({ label: v.label, value: withUnit(formatValue(parse(state.values[v.id]), v.dimension), v.dimension, state.units[v.id]) })),
+        result: { label: 'Result', value: resultText },
+        outputs: (solver.outputs ?? []).map((output) => {
+          const unit = output.unit ?? UNITS[output.dimension][0].id;
+          const shown = fromBase(solution?.outputs[output.id] ?? NaN, output.dimension, unit);
+          return { label: output.label, value: Number.isFinite(shown) ? withUnit(formatValue(shown, output.dimension), output.dimension, unit) : '—' };
+        }),
+        table: solution ? exportTableForVisual(solver.visuals?.find((v) => v.type === 'amortization'), solverVisualValues(solver, solution)) : undefined,
+        chartSelector: hasVisual ? '[data-export-chart]' : undefined
+      };
+
   const editValue = (id: string, raw: string) => {
     const order = editOrder(state.order, id);
     // Typing into the calculated field makes it an input; the least recently edited field takes over.
@@ -146,11 +166,13 @@ export default function SolverCalculator({ calculatorId, belowInputs, belowResul
 
       <WidgetActions
         accent={accent}
+        calculatorId={calculatorId}
         shareQuery={() => shareParams(solver, state)}
         copyText={resultText}
         onReset={() => {
           if (defaults) setState(defaults);
         }}
+        exportData={exportData}
       />
       {belowInputs}
       </div>

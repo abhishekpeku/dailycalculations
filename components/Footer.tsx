@@ -11,7 +11,7 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="bg-[#0B2545] text-[#C9D6EA]">
+    <footer className="bg-[#0B2545] text-[#C9D6EA] print:hidden">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 rounded-2xl bg-[#0066CC] p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
           <div>

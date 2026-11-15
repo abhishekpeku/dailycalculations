@@ -5,7 +5,7 @@ export default function Breadcrumb({ items }: { items: BreadcrumbItem[] }) {
   if (items.length === 0) return null;
 
   return (
-    <nav aria-label="Breadcrumb">
+    <nav aria-label="Breadcrumb" className="print:hidden">
       <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500 dark:text-slate-400">
         {items.map((item, index) => (
           <li key={item.name} className="flex items-center gap-x-2">

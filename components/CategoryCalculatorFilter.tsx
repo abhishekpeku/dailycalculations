@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import GlyphCalculatorCard from '@/components/GlyphCalculatorCard';
 import { matchesQuery, type SearchableCalculator } from '@/lib/search';
+import { buildGroups } from '@/lib/groupCalculators';
 
 type Item = SearchableCalculator & { category: string; glyph: string; group?: string };
 
@@ -15,25 +16,6 @@ const GRID = 'grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2.5';
 // Reuses HowItWorksCard's section-eyebrow classes so the two "small uppercase label" spots on the
 // site stay visually identical.
 const GROUP_HEADING = 'text-[12px] font-semibold uppercase tracking-wide text-[#6E6E73] dark:text-slate-400';
-
-// Splits into labeled sections (UX-06) in the order each `group` is first seen in `items` — i.e.
-// the category's own data-file order, not alphabetical. Returns null (no sections, fall back to
-// one flat grid) unless every item has a non-empty `group` — a category that hasn't been tagged
-// yet, or only partly tagged, should never silently drop a card into nowhere.
-function buildGroups(items: Item[]) {
-  if (items.length === 0 || items.some((item) => !item.group)) return null;
-  const order: string[] = [];
-  const byLabel = new Map<string, Item[]>();
-  for (const item of items) {
-    const label = item.group as string;
-    if (!byLabel.has(label)) {
-      byLabel.set(label, []);
-      order.push(label);
-    }
-    byLabel.get(label)!.push(item);
-  }
-  return order.map((label) => ({ label, items: byLabel.get(label)! }));
-}
 
 // Search box shown only on the big category pages (today: measurements/math/statistics — see
 // the threshold in categories/[category]/page.tsx). Narrows the same category's own grid.

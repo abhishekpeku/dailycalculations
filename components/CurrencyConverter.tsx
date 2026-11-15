@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { WidgetCard, ResultPanel, Headline, AlsoIn, widgetAccent } from '@/components/CalculatorWidget';
+import { WidgetCard, ResultPanel, Headline, AlsoIn, widgetAccent, DownloadMenu } from '@/components/CalculatorWidget';
+import { findCalculator } from '@/data/calculators';
+import type { ExportPayload } from '@/lib/export';
 
 // Static rates relative to USD — fixed reference values, not live. Update RATES_AS_OF when revised.
 // Live FX via KV is tracked separately (STATUS.md step 22); until then this table must read as
@@ -70,6 +72,25 @@ export default function CurrencyConverter() {
     return { converted, rate, inverseRate };
   }, [amount, from, to]);
 
+  // Every row is `kind: 'text'` here, not 'currency'/'decimal' — the target currency changes per
+  // conversion (never fixed to USD, per CLAUDE.md), and numFmtForKind('currency') always renders a
+  // literal "$". A typed number would either show the wrong symbol or silently drop the currency
+  // code, so the already-formatted "<value> <code>" string is exported as-is.
+  const exportData: ExportPayload | null = !result ? null : {
+    title: findCalculator('currency-converter')?.title ?? 'Currency Converter',
+    url: typeof window === 'undefined' ? '' : window.location.href,
+    inputs: [
+      { label: 'Amount', value: `${amount} ${from}`, kind: 'text' },
+      { label: 'From currency', value: `${from} – ${CURRENCY_NAMES[from]}`, kind: 'text' },
+      { label: 'To currency', value: `${to} – ${CURRENCY_NAMES[to]}`, kind: 'text' }
+    ],
+    result: { label: `${amount} ${from} converts to`, value: `${fmt(result.converted, to)} ${to}`, kind: 'text' },
+    outputs: [
+      { label: `1 ${from} =`, value: `${fmt(result.rate, to)} ${to}`, kind: 'text' },
+      { label: `1 ${to} =`, value: `${fmt(result.inverseRate, from)} ${from}`, kind: 'text' }
+    ]
+  };
+
   const swap = () => { setFrom(to); setTo(from); };
 
   // Popular conversions relative to current `from`
@@ -137,6 +158,9 @@ export default function CurrencyConverter() {
             <span className="tabular-nums">1 {from} = {fmt(result.rate, to)} {to}</span>
             <span className="tabular-nums">1 {to} = {fmt(result.inverseRate, from)} {from}</span>
           </AlsoIn>
+          <div className="mt-3">
+            <DownloadMenu calculatorId="currency-converter" exportData={exportData} />
+          </div>
         </ResultPanel>
       )}
 

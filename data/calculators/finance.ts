@@ -2626,5 +2626,139 @@ export const financeCalculators: CalculatorConfig[] = [
         transferMonthlyPayment
       };
     }
+  },
+  {
+    id: 'student-loan-calculator',
+    category: 'finance',
+    group: 'Debt',
+    glyph: 'SL',
+    updatedAt: '2026-11-15',
+    aliases: ['student loan payment calculator', 'student loan repayment calculator', 'federal student loan calculator', 'student loan amortization calculator'],
+    related: ['loan-calculator', 'debt-payoff-calculator', 'loan-prepayment-calculator', 'debt-to-income-calculator'],
+    title: 'Student Loan Repayment Calculator',
+    description: 'Compare the federal Standard, Graduated and Extended student loan repayment plans side by side: monthly payment and total interest on each.',
+    example: 'A $35,000 federal student loan at 6% APR costs $388.57/month and $11,628.61 total interest on the 10-year Standard plan, versus a graduated plan starting at $175 and ending at $781.40 ($15,835.16 total interest), or $225.51/month over 25 years on Extended ($32,651.65 total interest).',
+    breakdown: {
+      headline: 'standardPayment',
+      headlineLabel: 'Standard plan (10 years): monthly payment',
+      outputs: [
+        { id: 'standardPayment', label: 'Standard plan: monthly payment', format: 'currency' },
+        { id: 'standardTotalInterest', label: 'Standard plan: total interest', format: 'currency' },
+        { id: 'graduatedInitialPayment', label: 'Graduated plan: starting payment', format: 'currency' },
+        { id: 'graduatedFinalPayment', label: 'Graduated plan: final payment', format: 'currency' },
+        { id: 'graduatedTotalInterest', label: 'Graduated plan: total interest', format: 'currency' },
+        { id: 'extendedPayment', label: 'Extended plan (25 years): monthly payment', format: 'currency' },
+        { id: 'extendedTotalInterest', label: 'Extended plan: total interest', format: 'currency' },
+        { id: 'extraInterestGraduatedVsStandard', label: 'Extra interest, Graduated vs. Standard', format: 'currency' },
+        { id: 'extraInterestExtendedVsStandard', label: 'Extra interest, Extended vs. Standard', format: 'currency' }
+      ],
+      groups: [{ title: 'Your loan', inputs: ['loanAmount', 'apr'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'standardTotalInterest', label: 'Standard (10 yr)' },
+          { from: 'graduatedTotalInterest', label: 'Graduated (10 yr)' },
+          { from: 'extendedTotalInterest', label: 'Extended (25 yr)' }
+        ],
+        title: 'Total interest paid by plan',
+        highlight: 0
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-15',
+      concept: {
+        title: 'Three plan shapes, the same loan',
+        paragraphs: [
+          'Federal Direct Loan borrowers can repay the same balance on plans with very different payment shapes. The Standard plan is a fixed payment over 10 years — the shortest term and the least total interest. The Graduated plan keeps the same 10-year term but starts with a lower payment that increases, usually every two years, to a larger final payment that still fully repays the loan by year 10. The Extended plan stretches the term to 25 years with a fixed (or, if chosen, graduated) payment, which lowers the monthly payment but adds years of extra interest.',
+          'The Extended plan has a real eligibility rule: a borrower needs more than $30,000 in outstanding Direct Loans to use it. Both Graduated and Extended are also time-limited by when the loan was first disbursed — per the Department of Education\'s own loan servicers, they are available only for loans first disbursed before July 1, 2026. Loans disbursed on or after that date instead use a new Tiered Standard plan (a 10-to-25-year term set by balance), which is not modeled on this page.',
+          'None of this changes the interest rate itself. A lower monthly payment on Graduated or Extended simply means the balance takes longer to fall, so more total interest accrues over the life of the loan — the trade-off this calculator is built to show side by side.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the loan balance and its interest rate. All three plans are calculated from the same two numbers.',
+        steps: [
+          { name: 'Enter your loan balance', text: 'The total amount owed on the loan (or loans, if consolidated) you are comparing plans for.' },
+          { name: 'Enter the interest rate', text: 'Your loan\'s own fixed APR, from your loan documents or studentaid.gov account — federal loan rates are fixed for the life of the loan but vary by loan type and year.' },
+          { name: 'Compare the three plans', text: 'The headline shows the Standard plan\'s payment. The rows below show the Graduated plan\'s starting and final payment and the Extended plan\'s payment, each with its own total interest.' },
+          { name: 'Check the extra interest rows', text: 'These show exactly how much more interest Graduated and Extended cost compared with Standard, for the lower payment each provides.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Standard and Extended are both level-payment amortized loans, just over different terms. Graduated starts at the interest-only payment and steps up by a fixed growth factor every two years, solved so the balance reaches exactly zero at year 10.',
+        expression: 'Standard payment = amortized payment over 120 months\nExtended payment = amortized payment over 300 months\nGraduated: payment₀ = balance × (APR ÷ 12); paymentₖ = payment₀ × gᵏ every 24 months, g solved so balance = 0 at month 120',
+        terms: [
+          { symbol: 'payment₀', meaning: 'The Graduated plan\'s starting payment, equal to interest-only on the original balance.' },
+          { symbol: 'g', meaning: 'The fixed growth factor applied to the payment every 24 months, solved numerically for each loan.' },
+          { symbol: 'APR', meaning: 'The loan\'s fixed annual percentage rate.' }
+        ],
+        note: 'Estimates only, and a simplified illustration of the Graduated plan\'s shape — your loan servicer\'s real calculation follows additional federal rules and rounding this model does not reproduce, so your actual year-by-year amounts will differ somewhat. Extended requires more than $30,000 in outstanding Direct Loans and, per the Department of Education\'s loan servicers, is available only for loans first disbursed before July 1, 2026.'
+      },
+      workedExample: {
+        intro: 'A $35,000 federal student loan balance at 6% APR. How do the three plans compare?',
+        rows: [
+          { label: 'Standard (10 years): payment', value: '$388.57/month' },
+          { label: 'Standard: total interest', value: '$11,628.61' },
+          { label: 'Graduated (10 years): starting payment', value: '$175.00/month' },
+          { label: 'Graduated: final payment', value: '$781.40/month' },
+          { label: 'Graduated: total interest', value: '$15,835.16' },
+          { label: 'Extended (25 years): payment', value: '$225.51/month' },
+          { label: 'Extended: total interest', value: '$32,651.65' },
+          { label: 'Extra interest, Graduated vs. Standard (15,835.16 − 11,628.61)', value: '$4,206.55' },
+          { label: 'Extra interest, Extended vs. Standard (32,651.65 − 11,628.61)', value: '$21,023.04' }
+        ],
+        result: 'Standard $388.57/mo · Graduated $175→$781.40/mo · Extended $225.51/mo',
+        explanation: 'Extended\'s payment is little more than half of Standard\'s, but spreading the same balance over 25 instead of 10 years nearly triples the total interest. Graduated costs much less extra ($4,206.55) because it still fully repays by year 10 — it only delays when the money is paid, not how long the loan runs.'
+      },
+      watchOut: [
+        { title: 'This is a simplified Graduated model', body: 'It shows the plan\'s real shape — low start, step up every two years, done in 10 years — but not your servicer\'s exact cent-by-cent amounts or any regulatory cap on how large each step can be.' },
+        { title: 'Extended has a real eligibility floor', body: 'You need more than $30,000 in outstanding Direct Loans to choose Extended. Below that, Standard and Graduated are your only options on this page\'s three plans.' },
+        { title: 'Graduated and Extended are not available to every borrower', body: 'Per the Department of Education\'s loan servicers, both are limited to loans first disbursed before July 1, 2026. Newer loans use a Tiered Standard plan instead, which is not modeled here.' },
+        { title: 'A lower payment is not a lower rate', body: 'The APR is identical across all three plans in this comparison. A smaller payment only means a smaller share of each month goes to principal, which is why total interest rises as the term lengthens.' },
+        { title: 'Most borrowers have more than one loan', body: 'Federal borrowers often hold several loans serviced together, which can change the real minimum payment math slightly from a single-loan estimate like this one.' }
+      ],
+      references: [
+        { label: 'Edfinancial (U.S. Department of Education federal loan servicer), Lower Payment Options', url: 'https://edfinancial.studentaid.gov/lower-payment-options' },
+        { label: 'MOHELA (U.S. Department of Education federal loan servicer), Repayment Plans', url: 'https://mohela.studentaid.gov/DL/ResourceCenter/RepaymentPlans.aspx' }
+      ]
+    },
+    inputs: [
+      { id: 'loanAmount', label: 'Student loan balance', type: 'currency', placeholder: '35000', defaultValue: 35000, step: 500, min: 0 },
+      { id: 'apr', label: 'Interest rate (APR)', type: 'percent', placeholder: '6', defaultValue: 6, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Student Loan Repayment Calculator',
+      description: 'Compare the federal Standard, Graduated and Extended student loan repayment plans: monthly payment and total interest on each, side by side.',
+      faq: [
+        { question: 'What is the difference between Standard, Graduated and Extended repayment?', answer: 'Standard is a fixed payment over 10 years with the least total interest. Graduated keeps the 10-year term but starts lower and increases roughly every two years. Extended stretches the term to 25 years for a lower fixed payment but more total interest.' },
+        { question: 'How much extra does Extended repayment cost?', answer: 'On a $35,000 loan at 6% APR, this calculator finds Extended costs $21,023.04 more in total interest than Standard, in exchange for a payment that is a little more than half as large.' },
+        { question: 'Am I eligible for the Extended plan?', answer: 'You need more than $30,000 in outstanding Direct Loan balances, and per the Department of Education\'s loan servicers, your loans must have been first disbursed before July 1, 2026.' },
+        { question: 'Are Graduated and Extended repayment still available?', answer: 'Only for loans first disbursed before July 1, 2026, per the Department of Education\'s loan servicers. Loans disbursed on or after that date use a new Tiered Standard plan instead, which is not modeled on this page.' },
+        { question: 'Does a lower monthly payment mean a lower interest rate?', answer: 'No. All three plans in this calculator use the same APR. A lower payment just means a longer repayment term, so more total interest accrues before the loan is paid off.' },
+        { question: 'How does this differ from the general loan calculator?', answer: 'Loan-calculator finds the payment for one fixed-term loan. This calculator is built specifically to compare three named federal student loan repayment plans — including Graduated\'s increasing-payment shape — on the same balance side by side.' },
+        { question: 'Can I use this for a private student loan?', answer: 'Only loosely. Standard and Extended are ordinary fixed-term amortized loans and will work for any fixed-rate loan, but Graduated and Extended as named plans, and the $30,000 eligibility rule, are specific to federal Direct Loans.' }
+      ]
+    },
+    compute(values) {
+      const standardPayment = loanPayment(values.loanAmount, 120, values.apr);
+      const standardTotalInterest = standardPayment * 120 - values.loanAmount;
+
+      const extendedPayment = loanPayment(values.loanAmount, 300, values.apr);
+      const extendedTotalInterest = extendedPayment * 300 - values.loanAmount;
+
+      const graduated = graduatedSchedule(values.loanAmount, values.apr, 120, 24);
+
+      return {
+        standardPayment,
+        standardTotalInterest,
+        graduatedInitialPayment: graduated.initialPayment,
+        graduatedFinalPayment: graduated.finalPayment,
+        graduatedTotalInterest: graduated.totalInterest,
+        extendedPayment,
+        extendedTotalInterest,
+        extraInterestGraduatedVsStandard: graduated.totalInterest - standardTotalInterest,
+        extraInterestExtendedVsStandard: extendedTotalInterest - standardTotalInterest
+      };
+    }
   }
 ];

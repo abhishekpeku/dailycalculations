@@ -222,7 +222,14 @@ affordability, mortgage-refinance, mortgage-amortization-schedule, down-payment-
 cost-estimator, rent-vs-buy, debt-to-income-calculator, debt-payoff/snowball, credit-card-minimum-
 payment, balance-transfer-savings, emergency-fund, retirement-savings (distinct from the existing
 generic `investment-calculator`), 401k-employer-match, roth-ira-growth, goal-based-investment,
-IRR, NPV.
+IRR, NPV. **Pulled forward as step 60, 2026-11-15 (STATUS.md D16)** — ahead of the D13 remainder,
+only this piece of Wave 5. **Added from the 2026-11-15 calculator.net gap analysis** (per D17,
+"more calculators, never fewer"): traditional-ira, rmd, pension, social-security, annuity,
+annuity-payout, cd-calculator, student-loan, college-savings, simple-interest, mutual-fund,
+business-loan, commission, income-tax (US federal only — see the step file's batch 7 for scope
+limits). Full batch breakdown, sourcing requirements and dedupe checklist in
+`mdFiles/steps/60-wave-5a-finance-money-hub.md` — this paragraph is the seed list, that file is
+the spec.
 
 **`home-affordability-calculator` spec note** (added 2026-11-08, from an external AI tool's review
 of the Guide mockup — see `guide-content-plan.md`'s provenance caveat on that review; its feature

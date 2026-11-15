@@ -19,6 +19,7 @@ import {
 } from '@/lib/breakdown';
 import { AlsoIn, ChoiceRow, ELEVATED_CARD, FIELD_GROUP, FieldRow, Headline, ListFieldRow, OutputItem, OutputList, ResultPanel, WidgetActions, WIDGET_SPLIT, widgetAccent } from '@/components/CalculatorWidget';
 import BreakdownVisual from '@/components/BreakdownVisual';
+import { exportTableForVisual, type ExportPayload } from '@/lib/export';
 
 // Type B: inputs flow forward into a headline, a breakdown and one visual. The logic lives in lib/breakdown.ts.
 
@@ -65,6 +66,21 @@ export default function BreakdownCalculator({ calculatorId, belowInputs, belowRe
   const answered = mounted && complete && Number.isFinite(headlineValue);
   const headlineText = show(resolved.headline.id);
   const visual = calculator.breakdown?.visual;
+
+  const exportData: ExportPayload | null = !answered
+    ? null
+    : {
+        title: calculator.title,
+        url: typeof window === 'undefined' ? '' : window.location.href,
+        inputs: inputs.map((input) => ({
+          label: input.label,
+          value: input.type === 'list' ? (state.values[input.id] ?? '') : `${state.values[input.id] ?? ''} ${inputUnitLabel(input, state.units[input.id])}`.trim()
+        })),
+        result: { label: resolved.headline.label, value: headlineText },
+        outputs: resolved.rows.map((row) => ({ label: row.label, value: show(row.id) })),
+        table: exportTableForVisual(visual, all),
+        chartSelector: visual ? '[data-export-chart]' : undefined
+      };
 
   const renderField = (input: CalculatorInput) => input.type === 'list' ? (
     <ListFieldRow
@@ -126,9 +142,11 @@ export default function BreakdownCalculator({ calculatorId, belowInputs, belowRe
 
       <WidgetActions
         accent={accent}
+        calculatorId={calculatorId}
         shareQuery={() => breakdownShareParams(inputs, state)}
         copyText={answered ? `${resolved.headline.label}: ${headlineText}` : ''}
         onReset={() => setState(defaults)}
+        exportData={exportData}
       />
       {belowInputs}
       </div>

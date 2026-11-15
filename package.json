@@ -18,6 +18,8 @@
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.19.11",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.9",
     "next": "^16.2.0",
     "next-intl": "^4.13.0",
     "react": "^19.0.0",

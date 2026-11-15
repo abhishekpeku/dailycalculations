@@ -107,7 +107,7 @@ export default function Header({ nav }: { nav: NavData }) {
   };
 
   return (
-    <header className="relative z-30 border-b border-slate-200 bg-white/95 backdrop-blur dark:border-slate-800 dark:bg-slate-950/95">
+    <header className="relative z-30 border-b border-slate-200 bg-white/95 backdrop-blur print:hidden dark:border-slate-800 dark:bg-slate-950/95">
       <div className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <Link href="/" className="text-lg font-semibold text-slate-950 dark:text-white">
           Daily Calculations

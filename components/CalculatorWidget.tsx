@@ -3,6 +3,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { TILE_COLORS } from '@/components/IconTile';
 import { categoryTheme } from '@/lib/categoryTheme';
+import type { ExportPayload } from '@/lib/export';
 import { LIST_MAX, parseNumberList } from '@/lib/listParse';
 import type { Unit } from '@/lib/units';
 
@@ -180,7 +181,7 @@ export function ResultPanel({ accent, kicker, children, visual }: { accent: stri
         <p className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: accent }}>{kicker}</p>
         {children}
       </div>
-      {visual ? <div className="px-5 pb-5">{visual}</div> : null}
+      {visual ? <div className="px-5 pb-5" data-export-chart>{visual}</div> : null}
     </div>
   );
 }
@@ -207,17 +208,79 @@ export function OutputItem({ label, children }: { label: ReactNode; children: Re
   );
 }
 
+type DownloadFormat = 'pdf' | 'pdf-table' | 'csv' | 'print';
+
+// Print/PDF/PDF-with-table/CSV, next to Share/Copy/Reset. Null exportData (not answered yet)
+// hides the whole control — nothing useful to export. jsPDF/jspdf-autotable are dynamically
+// imported only on click, so they never add weight to a calculator page's own bundle.
+function DownloadMenu({ calculatorId, exportData }: { calculatorId: string; exportData: ExportPayload | null }) {
+  const [format, setFormat] = useState<DownloadFormat>('pdf');
+  const [busy, setBusy] = useState(false);
+
+  if (!exportData) return null;
+
+  const run = async () => {
+    if (format === 'print') {
+      window.print();
+      return;
+    }
+    setBusy(true);
+    try {
+      if (format === 'csv') {
+        const { downloadCsv } = await import('@/lib/exportCsv');
+        downloadCsv(calculatorId, exportData);
+      } else if (format === 'pdf-table' && exportData.table) {
+        const { downloadFullPdf } = await import('@/lib/exportPdf');
+        await downloadFullPdf(calculatorId, exportData);
+      } else {
+        const { downloadSummaryPdf } = await import('@/lib/exportPdf');
+        await downloadSummaryPdf(calculatorId, exportData);
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="inline-flex items-center gap-1.5">
+      <label htmlFor={`${calculatorId}-download-format`} className="sr-only">Download format</label>
+      <select
+        id={`${calculatorId}-download-format`}
+        value={format}
+        onChange={(event) => setFormat(event.target.value as DownloadFormat)}
+        className="rounded-full border-0 bg-slate-200 py-2 pl-4 pr-8 text-sm font-medium text-slate-800 dark:bg-slate-800 dark:text-slate-100"
+      >
+        <option value="pdf">PDF</option>
+        {exportData.table ? <option value="pdf-table">PDF with table</option> : null}
+        <option value="csv">CSV</option>
+        <option value="print">Print</option>
+      </select>
+      <button
+        type="button"
+        onClick={run}
+        disabled={busy}
+        className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-950 disabled:opacity-50 dark:text-slate-300 dark:hover:text-white"
+      >
+        {busy ? 'Preparing…' : 'Download'}
+      </button>
+    </div>
+  );
+}
+
 type WidgetActionsProps = {
   accent: string;
+  calculatorId: string;
   /** The share link's query string (no `?`), built on click. Empty means the plain page URL. */
   shareQuery: () => string;
   /** Empty disables "Copy result". */
   copyText: string;
   onReset: () => void;
+  /** Null hides the download control — nothing answered yet to export. */
+  exportData: ExportPayload | null;
 };
 
 // Share writes the state into the address bar and copies the link; reset clears it again.
-export function WidgetActions({ accent, shareQuery, copyText, onReset }: WidgetActionsProps) {
+export function WidgetActions({ accent, calculatorId, shareQuery, copyText, onReset, exportData }: WidgetActionsProps) {
   const [notice, setNotice] = useState('');
 
   const flash = (message: string) => {
@@ -262,6 +325,7 @@ export function WidgetActions({ accent, shareQuery, copyText, onReset }: WidgetA
       <button type="button" onClick={reset} className="rounded-full px-4 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-950 dark:text-slate-300 dark:hover:text-white">
         Reset
       </button>
+      <DownloadMenu calculatorId={calculatorId} exportData={exportData} />
       <span aria-live="polite" className="text-sm text-slate-500 dark:text-slate-400">{notice}</span>
     </div>
   );

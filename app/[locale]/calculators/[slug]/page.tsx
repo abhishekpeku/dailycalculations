@@ -178,58 +178,57 @@ export default async function CalculatorPage({
           <div>
             {widget}
             {isCustomWidget ? (
-              <div className="mt-3 grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <div className="mt-3 grid grid-cols-1 gap-6 lg:grid-cols-2 print:hidden">
                 {howItWorksCard}
                 {tableOfContents}
               </div>
             ) : null}
-            <div className="mt-8 space-y-4">
-              {example}
-              {related}
-            </div>
           </div>
         ) : (
-          <>
-            {widget}
-            {example}
-            {related}
-          </>
+          widget
         )}
 
-        {content?.concept ? <ConceptSection concept={content.concept} /> : null}
+        {/* Print shows only the header above and the widget (inputs/result) — everything below
+            is long-form content a printed result doesn't need. */}
+        <div className="space-y-8 print:hidden">
+          {example}
+          {related}
 
-        <section id="how-to-use" className={CARD}>
-          <SectionHeading section="how-to-use" title={t('howToUse')} />
-          <div className="mt-5 space-y-5 text-base leading-7 text-slate-600 dark:text-slate-300">
-            <p>{content ? content.howTo.intro : t('howToUseDesc1')}</p>
-            <ol className="divide-y divide-slate-100 overflow-hidden rounded-2xl bg-slate-50 dark:divide-slate-800 dark:bg-slate-950/60">
-              {howToSteps.map((step, index) => (
-                <li key={step.name} className="flex gap-4 px-4 py-3.5">
-                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#28A745] text-xs font-bold text-white">{index + 1}</span>
-                  <p className="text-sm leading-6">
-                    <span className="font-semibold text-slate-900 dark:text-white">{step.name}.</span>{' '}
-                    {step.text}
-                  </p>
-                </li>
-              ))}
-            </ol>
-            <p>{content ? content.howTo.outro ?? t('howToUseDesc2') : t('howToUseDesc2')}</p>
-          </div>
-        </section>
+          {content?.concept ? <ConceptSection concept={content.concept} /> : null}
 
-        {content ? <FormulaSection title={t('formulaTitle')} formula={content.formula} /> : null}
-        {content ? <WorkedExampleSection title={t('workedExampleTitle')} example={content.workedExample} /> : null}
-        {content?.commonValues ? <CommonValuesSection title={content.commonValues.title} commonValues={content.commonValues} /> : null}
-        {content?.referenceTable ? <ReferenceTableSection title={content.referenceTable.title} referenceTable={content.referenceTable} /> : null}
-        {content ? <WatchOutSection title={t('watchOutTitle')} items={content.watchOut} /> : null}
+          <section id="how-to-use" className={CARD}>
+            <SectionHeading section="how-to-use" title={t('howToUse')} />
+            <div className="mt-5 space-y-5 text-base leading-7 text-slate-600 dark:text-slate-300">
+              <p>{content ? content.howTo.intro : t('howToUseDesc1')}</p>
+              <ol className="divide-y divide-slate-100 overflow-hidden rounded-2xl bg-slate-50 dark:divide-slate-800 dark:bg-slate-950/60">
+                {howToSteps.map((step, index) => (
+                  <li key={step.name} className="flex gap-4 px-4 py-3.5">
+                    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#28A745] text-xs font-bold text-white">{index + 1}</span>
+                    <p className="text-sm leading-6">
+                      <span className="font-semibold text-slate-900 dark:text-white">{step.name}.</span>{' '}
+                      {step.text}
+                    </p>
+                  </li>
+                ))}
+              </ol>
+              <p>{content ? content.howTo.outro ?? t('howToUseDesc2') : t('howToUseDesc2')}</p>
+            </div>
+          </section>
 
-        <FaqSection
-          title={faqTitle}
-          description={`Common questions about using the ${calculator.title.toLowerCase()} and understanding the results.`}
-          items={calculator.seo.faq}
-        />
+          {content ? <FormulaSection title={t('formulaTitle')} formula={content.formula} /> : null}
+          {content ? <WorkedExampleSection title={t('workedExampleTitle')} example={content.workedExample} /> : null}
+          {content?.commonValues ? <CommonValuesSection title={content.commonValues.title} commonValues={content.commonValues} /> : null}
+          {content?.referenceTable ? <ReferenceTableSection title={content.referenceTable.title} referenceTable={content.referenceTable} /> : null}
+          {content ? <WatchOutSection title={t('watchOutTitle')} items={content.watchOut} /> : null}
 
-        {content?.references ? <ReferencesSection title={t('referencesTitle')} references={content.references} /> : null}
+          <FaqSection
+            title={faqTitle}
+            description={`Common questions about using the ${calculator.title.toLowerCase()} and understanding the results.`}
+            items={calculator.seo.faq}
+          />
+
+          {content?.references ? <ReferencesSection title={t('referencesTitle')} references={content.references} /> : null}
+        </div>
 
       </div>
       {jsonLd ? <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} /> : null}

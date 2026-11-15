@@ -157,12 +157,16 @@ Both already compute everything needed; this is assembly, not new calculation:
 
 ## Part 5 — print stylesheet
 
-Add a `@media print` block to `app/globals.css`: hide `header`, `footer`, the breadcrumb, the
-"Related calculators" block, any ad slot, and the categories dropdown/mobile menu; show only the
-page's `<h1>`, the calculator widget, and the result. Keep it simple — this doesn't need a
-dedicated print-only layout component, just visibility rules keyed off existing component class
-names/structure (read `app/[locale]/calculators/[slug]/page.tsx` to see what wraps what before
-writing the selectors). `window.print()` is the trigger, no new component needed for "Print" itself.
+**Shipped differently than originally planned, for the better**: rather than one `@media print`
+block of hand-written selectors in `app/globals.css`, each component that should disappear when
+printing got Tailwind's built-in `print:hidden` utility added directly to its own root element —
+`Header.tsx`, `Footer.tsx`, `Breadcrumb.tsx`, `RelatedCalculators.tsx`, `HowItWorksCard.tsx`,
+`TableOfContents.tsx`, plus a wrapping `<div className="... print:hidden">` in
+`app/[locale]/calculators/[slug]/page.tsx` around everything from `{example}`/`{related}` through
+the `ReferencesSection` (concept, how-to-use, formula, worked example, common values, reference
+table, watch-out, FAQ, references — all of it). No global CSS needed; each component owns its own
+print visibility, which is more maintainable than one selector list elsewhere that has to be kept
+in sync by hand. `window.print()` remains the trigger, called directly from `DownloadMenu`.
 
 ## Acceptance checks
 
@@ -184,17 +188,36 @@ writing the selectors). `window.print()` is the trigger, no new component needed
 - A live browser check (Claude in Chrome, if connected) of at least the mortgage-calculator PDF
   download is worth doing before merge — this is new user-facing functionality, not a copy change.
 
-## Progress
+## Progress — DONE 2026-11-15
 
-- [ ] Step file written, branch created
-- [ ] `jspdf` + `jspdf-autotable` added, noted in STATUS.md
-- [ ] `lib/export.ts` (payload type + `exportTableForVisual`)
-- [ ] `lib/exportCsv.ts`
-- [ ] `lib/exportPdf.ts` (summary + full variants, chart rasterization)
-- [ ] `WidgetActions` / `DownloadMenu` wired in `CalculatorWidget.tsx`
-- [ ] `SolverCalculator.tsx` builds and passes `exportData`
-- [ ] `BreakdownCalculator.tsx` builds and passes `exportData`
-- [ ] Print stylesheet in `app/globals.css`
-- [ ] `npm test` / `npm run lint` / `npm run build` all pass
-- [ ] Manual verification across the 4 calculator types above
-- [ ] STATUS.md updated (including the new-dependency note), PR opened
+- [x] Step file written
+- [x] `jspdf` ^4.2.1 + `jspdf-autotable` ^5.0.9 added — audited: the 33 pre-existing npm audit
+      findings (wrangler/next/eslint toolchain) are unaffected, zero new vulnerabilities from
+      either package (verified by diffing `npm audit` with/without the install)
+- [x] `lib/export.ts` (`ExportPayload` type + `exportTableForVisual`, reuses UX-07's
+      `amortizationMonthlySchedule` directly — full schedule, not whatever the on-screen table
+      happens to be expanded to)
+- [x] `lib/exportCsv.ts` (hand-rolled CSV escaping, `downloadBlob` helper)
+- [x] `lib/exportPdf.ts` (`downloadSummaryPdf`, `downloadFullPdf`, `svgToPngDataUrl` chart
+      rasterization — all dynamic-imported, confirmed jsPDF (~330KB) lands in its own build chunk,
+      not the shared page bundle)
+- [x] `WidgetActions` / `DownloadMenu` wired in `CalculatorWidget.tsx` — a `<select>` + "Download"
+      button, "Preparing…" state while a dynamic import resolves
+- [x] `SolverCalculator.tsx` builds and passes `exportData`
+- [x] `BreakdownCalculator.tsx` builds and passes `exportData`
+- [x] Print visibility via `print:hidden` on individual components (see Part 5 — shipped
+      differently than planned)
+- [x] `npm test` 1123/1123, `npm run lint` clean, `npx tsc --noEmit` clean, `npm run build` passes
+- [x] Manual, end-to-end verification (not just visual) on 3 calculators, reading the actual
+      downloaded files:
+  - `mortgage-calculator` (amortization + donut chart): PDF summary (inputs/result/outputs/chart
+    all correct), PDF with table (full 360-month schedule, paginated, headers repeat per page via
+    jspdf-autotable), CSV (full schedule, correctly quoted). Verified via `pdftotext -layout` and
+    `cat`, not just a screenshot.
+  - `bmi-calculator` (RangeBar visual, no table): dropdown correctly omits "PDF with table" (only
+    3 options). PDF and CSV both correct (`Field,Value` two-column fallback for CSV).
+  - Print CSS confirmed via DOM inspection (`header`/`footer`/breadcrumb all carry `print:hidden`)
+    rather than actually invoking `window.print()`, to avoid a blocking native OS dialog in this
+    session.
+- [x] STATUS.md updated
+- [ ] PR opened (next)

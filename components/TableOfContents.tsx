@@ -9,7 +9,7 @@ type Props = {
 // Settings-app style list: colored tile, label, chevron.
 export default function TableOfContents({ title, items }: Props) {
   return (
-    <nav aria-label={title} className={`${CARD} !p-0 overflow-hidden`}>
+    <nav aria-label={title} className={`${CARD} !p-0 overflow-hidden print:hidden`}>
       <h2 className="px-5 pb-2 pt-5 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{title}</h2>
       <ol>
         {items.map((item) => {

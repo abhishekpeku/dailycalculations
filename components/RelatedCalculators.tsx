@@ -16,7 +16,7 @@ export default function RelatedCalculators({ title, items, allLabel, allHref }: 
   if (items.length === 0) return null;
 
   return (
-    <section id="related" className={`${CARD} space-y-4`}>
+    <section id="related" className={`${CARD} space-y-4 print:hidden`}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-bold text-slate-950 dark:text-white">{title}</h2>
         <Link href={allHref} className="text-sm font-medium text-[#0066CC] transition hover:underline dark:text-brand-300">

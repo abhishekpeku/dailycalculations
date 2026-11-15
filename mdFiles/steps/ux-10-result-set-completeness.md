@@ -135,7 +135,8 @@ items each may need splitting into 2 sub-batches of ~10-15 — use judgment, don
     in the page's own worked-example prose), specific-heat-by-mixing-calculator (no change —
     already has a real bonus output, heat transferred). 2 real additions, 12 "no change
     needed."
-- [ ] Batch 2: physics (19, split into 2 sub-batches of ~10 and ~9)
+- [x] Batch 2: physics (19, done in 2 sub-batches, both on branch `ux/result-sets-physics-1` —
+  6 real additions, 13 "no change needed")
   - [ ] Sub-batch 2a (10, branch `ux/result-sets-physics-1`): force-calculator (no change —
     F=ma is a fully cross-solvable 3-variable relation; acceleration can already be displayed
     in g via the existing 'g0' unit, so nothing new to derive), speed-distance-time-calculator
@@ -155,6 +156,27 @@ items each may need splitting into 2 sub-batches of ~10-15 — use judgment, don
     specific gravity, i.e. density÷1000 kg/m³, would be numerically identical to the g/cm³
     conversion the page already auto-displays in its "Also in" row, so it would duplicate an
     existing number rather than add new information). 4 real additions, 6 "no change needed."
+  - [x] Sub-batch 2b (9, branch `ux/result-sets-physics-1`, same branch as 2a): pressure-calculator
+    (no change — P=F/A fully cross-solvable 3-variable relation; a fluid-column-height
+    equivalent would need a new density input, out of scope), ohms-law-calculator (no change
+    — already has a real bonus output, power dissipated; an energy-over-time figure would need
+    a time input this solver doesn't have), electrical-power-calculator (no change — already
+    has a real bonus output, equivalent resistance; same time-input gap for an energy figure),
+    capacitor-charge-calculator (no change — already has a real bonus output, stored energy;
+    a time-constant figure would need a resistance input), wavelength-frequency-calculator
+    (added period, T=1/f — always valid regardless of wave type, unlike photon energy E=hf
+    which was considered and rejected since this page's speed field is deliberately general
+    for sound/light/radio/water waves, not just electromagnetic ones), decibel-calculator
+    (added powerRatio, P₂÷P₁ — a genuinely different, linear-scale figure alongside the
+    logarithmic dB value, not a duplicate of either input), radioactive-half-life-calculator
+    (no change — already has a real bonus output, decay constant; a "half-lives elapsed"
+    figure was considered and rejected as just the ratio of two already-visible inputs,
+    elapsedTime ÷ halfLife, with no new derived insight), heat-calculator (no change — Q=mcΔT
+    fully cross-solvable across 4 variables; a final-temperature figure would need an absolute
+    starting temperature input this solver only has as a delta), lens-mirror-equation-calculator
+    (no change — already has a real bonus output, magnification; nothing else derivable from
+    the two distances without an object-height input). 2 real additions, 7 "no change needed."
+  - **Batch 2 (physics) totals: 6 real additions, 13 "no change needed," across both sub-batches.**
 - [ ] Batch 3: measurements (34)
 - [ ] Batch 4: math (10)
 - [ ] Batch 5: remainder (11: food/sports/text/travel/shopping/statistics/time)

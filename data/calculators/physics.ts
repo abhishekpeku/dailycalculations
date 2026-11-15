@@ -2121,6 +2121,7 @@ export const physicsCalculators: CalculatorConfig[] = [
         frequency: ({ speed, wavelength }) => (wavelength === 0 ? NaN : speed / wavelength),
         speed: ({ frequency, wavelength }) => frequency * wavelength
       },
+      outputs: [{ id: 'period', label: 'Period (T = 1 ÷ f)', dimension: 'time', unit: 's', compute: (si) => (si.frequency === 0 ? NaN : 1 / si.frequency) }],
       visuals: [
         {
           type: 'logScale',
@@ -2157,7 +2158,7 @@ export const physicsCalculators: CalculatorConfig[] = [
           { name: 'Enter the two values you know', text: 'Type each value and pick its unit from the menu beside it. The third field, marked auto, calculates as you type.' },
           { name: 'Switch which one is calculated', text: 'To solve for a different quantity, type into the auto field. It becomes an input, and the field left alone longest becomes the new calculated one.' },
           { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 100 MHz becomes 100,000,000 Hz instead of silently turning into 100 Hz.' },
-          { name: 'Read the result and the scale', text: 'The answer appears in your chosen unit. The scale shows where your frequency sits among the radio, Wi-Fi, visible-light and X-ray bands.' }
+          { name: 'Read the result and the scale', text: 'The answer appears in your chosen unit, alongside the period (the time for one full cycle). The scale shows where your frequency sits among the radio, Wi-Fi, visible-light and X-ray bands.' }
         ],
         outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
       },
@@ -2224,7 +2225,8 @@ export const physicsCalculators: CalculatorConfig[] = [
         { question: 'Does this calculator work for sound waves?', answer: "Yes — enter the actual speed of sound (about 343 m/s in dry air at 20 °C) in the wave speed field instead of the speed of light. The same v = f × λ relationship applies to any wave." },
         { question: 'What is the exact speed of light?', answer: '299,792,458 meters per second, exactly. Since 1983 the metre has been defined as the distance light travels in 1 ⁄ 299,792,458 of a second, which fixes this value by definition rather than by measurement.' },
         { question: 'Why do higher-frequency waves have shorter wavelengths?', answer: "Because speed is fixed for a given medium, frequency and wavelength must trade off to keep their product constant. Gamma rays have an extremely high frequency and a correspondingly tiny wavelength; AM radio waves have a low frequency and a wavelength hundreds of meters long." },
-        { question: 'How are frequency and period related?', answer: 'They are reciprocals: f = 1 ÷ T. A wave with a period of 0.01 seconds has a frequency of 1 ÷ 0.01 = 100 Hz.' }
+        { question: 'How are frequency and period related?', answer: 'They are reciprocals: f = 1 ÷ T. A wave with a period of 0.01 seconds has a frequency of 1 ÷ 0.01 = 100 Hz.' },
+        { question: 'What is the period of a 100 MHz radio wave?', answer: 'T = 1 ÷ f = 1 ÷ 100,000,000 = 1 × 10⁻⁸ s (10 nanoseconds) — shown as a bonus figure next to the wavelength, since it follows directly from the frequency already solved.' }
       ]
     },
     compute(values) {
@@ -2252,7 +2254,8 @@ export const physicsCalculators: CalculatorConfig[] = [
         decibels: ({ inputPower, outputPower }) => (inputPower <= 0 || outputPower <= 0 ? NaN : 10 * Math.log10(outputPower / inputPower)),
         outputPower: ({ inputPower, decibels }) => (inputPower <= 0 ? NaN : inputPower * 10 ** (decibels / 10)),
         inputPower: ({ outputPower, decibels }) => (outputPower <= 0 ? NaN : outputPower / 10 ** (decibels / 10))
-      }
+      },
+      outputs: [{ id: 'powerRatio', label: 'Power ratio (P₂ ÷ P₁)', dimension: 'count', compute: (si) => (si.inputPower <= 0 ? NaN : si.outputPower / si.inputPower) }]
     },
     content: {
       lastReviewed: '2026-11-06',
@@ -2271,7 +2274,7 @@ export const physicsCalculators: CalculatorConfig[] = [
           { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type.' },
           { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
           { name: 'Change units at any time', text: 'Switching a power unit converts the number already there, so 1 W becomes 1,000 mW instead of silently turning into 1 mW.' },
-          { name: 'Read the result', text: 'The decibel field shows how many dB higher (positive) or lower (negative) the measured power is than the reference.' }
+          { name: 'Read the result', text: 'The decibel field shows how many dB higher (positive) or lower (negative) the measured power is than the reference, alongside the plain power ratio (P₂ ÷ P₁) that same dB figure represents.' }
         ],
         outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
       },
@@ -2338,7 +2341,8 @@ export const physicsCalculators: CalculatorConfig[] = [
         { question: 'What does −10 dB mean?', answer: 'The power has dropped to one tenth of what it was: 10 × log₁₀(0.1) = −10 dB.' },
         { question: 'Why do some decibel formulas use 20 × log instead of 10 × log?', answer: 'Use 20 × log₁₀ when comparing voltage, current, or sound pressure (amplitude quantities) rather than power directly, since power is proportional to amplitude squared.' },
         { question: 'What does 0 dB mean?', answer: 'The two powers are equal — a ratio of 1, and log₁₀(1) = 0. It does not mean zero power.' },
-        { question: 'How many decibels is a normal conversation?', answer: 'About 60 dB, measured against the standard reference intensity for sound, 1 × 10⁻¹² W/m². A conversation at roughly 1 µW/m² gives 10 × log₁₀(10⁻⁶ ÷ 10⁻¹²) = 60 dB exactly.' }
+        { question: 'How many decibels is a normal conversation?', answer: 'About 60 dB, measured against the standard reference intensity for sound, 1 × 10⁻¹² W/m². A conversation at roughly 1 µW/m² gives 10 × log₁₀(10⁻⁶ ÷ 10⁻¹²) = 60 dB exactly.' },
+        { question: 'What plain power ratio does 10 dB represent?', answer: 'Ratio = 10^(dB ÷ 10). For the 10 dB worked example, that is 10^1 = 10 — the output power is exactly 10 times the reference, shown as a bonus figure next to the dB value.' }
       ]
     },
     compute(values) {

@@ -91,9 +91,28 @@ they will have shifted from other in-flight work like step 60/UX-10)
 
 ## Progress
 
-- [ ] Step file written
-- [ ] Batch 1: `CategoriesMenu.tsx` dropdown grouping (shared `lib/groupCalculators.ts` helper,
-      `NavCalculator.group`) + `chemistry` + `physics` tagged
+- [x] Step file written
+- [x] Batch 1: `CategoriesMenu.tsx` dropdown grouping (shared `lib/groupCalculators.ts` helper,
+      `NavCalculator.group`) + `chemistry` + `physics` tagged — PR #83, branch
+      `ux/category-groups-batch1`
+  - `lib/groupCalculators.ts` extracted from `CategoryCalculatorFilter.tsx`'s `buildGroups()`
+    (pure extraction — verified unchanged render for measurements/math/statistics)
+  - `lib/navData.ts`'s `NavCalculator.group` added, populated in `buildNavData()`
+  - `CategoriesMenu.tsx` right pane renders grouped sections when every calculator in the
+    selected category has a `group`, flat grid otherwise; search results stay one flat list
+  - `chemistry.ts`: 45/45 tagged, 13 groups (Moles & Molar Mass 5, Concentration Units 6,
+    Dilutions & Solution Properties 4, Gas Laws 3, Acid-Base Chemistry 5, Reaction
+    Stoichiometry & Yield 4, Chemical Kinetics 4, Equilibrium & Thermodynamics 3, Atomic &
+    Molecular Structure 3, Spectroscopy 1, Colligative Properties 3, Redox & Electrochemistry
+    2, Thermochemistry 2)
+  - `physics.ts`: 21/21 tagged, 6 groups (Motion & Forces 5, Energy & Work 4, Fluids & Matter
+    2, Electricity & Circuits 5, Waves & Light 3, Thermal & Nuclear 2)
+  - `categories.spec.ts`'s `GROUPED_CATEGORIES` now includes `chemistry`/`physics`
+  - `npm test` 1123/1123, lint clean, `npm run build` 295/295 pages. Manually verified in a
+    dev server: `/categories/chemistry` and `/categories/physics` show labeled sections; the
+    Categories dropdown mirrors the same sections for both; `/categories/finance` (ungrouped)
+    still shows a flat grid in both the category page and the dropdown; typing in the
+    dropdown's search box still returns one flat list across categories.
 - [ ] Batch 2: `home` + `food`
 - [ ] Batch 3: `sports` + `finance`
 - [ ] Batch 4: `work` + `shopping` + `health` + `auto`

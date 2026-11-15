@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { TILE_COLORS } from '@/components/IconTile';
 import { categoryTheme } from '@/lib/categoryTheme';
 import type { ExportPayload } from '@/lib/export';
@@ -176,12 +176,12 @@ export function ChoiceRow({ id, label, value, options, onChange }: { id: string;
 // The result card: accent wash, a kicker, the figures, and an optional visual underneath.
 export function ResultPanel({ accent, kicker, children, visual }: { accent: string; kicker: string; children: ReactNode; visual?: ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-2xl bg-white dark:bg-slate-950">
-      <div className="p-5" style={{ backgroundImage: `linear-gradient(135deg, ${accent}1F, ${accent}08)` }}>
+    <div className="print-exact overflow-hidden rounded-2xl border border-transparent bg-white print:border-[#0066CC] dark:bg-slate-950">
+      <div className="p-5" style={{ backgroundImage: `linear-gradient(135deg, ${accent}1F, ${accent}08)`, borderLeft: `3pt solid ${accent}` }}>
         <p className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: accent }}>{kicker}</p>
         {children}
       </div>
-      {visual ? <div className="px-5 pb-5" data-export-chart>{visual}</div> : null}
+      {visual ? <div className="print-exact px-5 pb-5" data-export-chart>{visual}</div> : null}
     </div>
   );
 }
@@ -208,11 +208,15 @@ export function OutputItem({ label, children }: { label: ReactNode; children: Re
   );
 }
 
-type DownloadFormat = 'pdf' | 'pdf-table' | 'csv' | 'print';
+type DownloadFormat = 'pdf' | 'pdf-table' | 'excel';
 
-// Print/PDF/PDF-with-table/CSV, next to Share/Copy/Reset. Null exportData (not answered yet)
-// hides the whole control — nothing useful to export. jsPDF/jspdf-autotable are dynamically
-// imported only on click, so they never add weight to a calculator page's own bundle.
+// PDF/PDF-with-table/Excel, next to Share/Copy/Reset. Null exportData (not answered yet) hides the
+// whole control — nothing useful to export. jsPDF/jspdf-autotable/exceljs are dynamically imported
+// only on click, so they never add weight to a calculator page's own bundle. Excel, not CSV — a
+// corporate-grade formatted workbook (white background, the chart image with its colored legend, a
+// highlighted result block, a real bordered table) needs real cell styling and embedded images,
+// neither of which plain CSV can do. No "Print" option — a visitor can print an already-downloaded
+// PDF themselves; a dedicated in-app print path was redundant.
 function DownloadMenu({ calculatorId, exportData }: { calculatorId: string; exportData: ExportPayload | null }) {
   const [format, setFormat] = useState<DownloadFormat>('pdf');
   const [busy, setBusy] = useState(false);
@@ -220,15 +224,11 @@ function DownloadMenu({ calculatorId, exportData }: { calculatorId: string; expo
   if (!exportData) return null;
 
   const run = async () => {
-    if (format === 'print') {
-      window.print();
-      return;
-    }
     setBusy(true);
     try {
-      if (format === 'csv') {
-        const { downloadCsv } = await import('@/lib/exportCsv');
-        downloadCsv(calculatorId, exportData);
+      if (format === 'excel') {
+        const { downloadExcel } = await import('@/lib/exportExcel');
+        await downloadExcel(calculatorId, exportData);
       } else if (format === 'pdf-table' && exportData.table) {
         const { downloadFullPdf } = await import('@/lib/exportPdf');
         await downloadFullPdf(calculatorId, exportData);
@@ -252,8 +252,7 @@ function DownloadMenu({ calculatorId, exportData }: { calculatorId: string; expo
       >
         <option value="pdf">PDF</option>
         {exportData.table ? <option value="pdf-table">PDF with table</option> : null}
-        <option value="csv">CSV</option>
-        <option value="print">Print</option>
+        <option value="excel">Excel</option>
       </select>
       <button
         type="button"
@@ -282,6 +281,38 @@ type WidgetActionsProps = {
 // Share writes the state into the address bar and copies the link; reset clears it again.
 export function WidgetActions({ accent, calculatorId, shareQuery, copyText, onReset, exportData }: WidgetActionsProps) {
   const [notice, setNotice] = useState('');
+
+  // Ctrl+P / the page's own Print button fires these events too. The printed/"Save as PDF"
+  // filename and the browser's printed header both come from document.title, so give it a dated,
+  // human name for the duration of the print — and belt-and-braces, force the dark theme off in
+  // case a browser's print preview still honors the `dark` class rather than the print media query.
+  useEffect(() => {
+    const originalTitle = document.title;
+    const date = new Date().toISOString().slice(0, 10);
+    const beforePrint = () => {
+      document.title = `${originalTitle} – Results – ${date}`;
+      document.documentElement.classList.remove('dark');
+    };
+    const afterPrint = () => {
+      document.title = originalTitle;
+      // Same rule app/layout.tsx's inline script uses on first load: an explicit stored
+      // preference wins, otherwise follow the OS.
+      let stored: string | null = null;
+      try {
+        stored = localStorage.getItem('theme');
+      } catch {
+        /* storage blocked (private window, etc.) — fall back to OS preference below */
+      }
+      const dark = stored === 'dark' || (stored === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.classList.toggle('dark', dark);
+    };
+    window.addEventListener('beforeprint', beforePrint);
+    window.addEventListener('afterprint', afterPrint);
+    return () => {
+      window.removeEventListener('beforeprint', beforePrint);
+      window.removeEventListener('afterprint', afterPrint);
+    };
+  }, []);
 
   const flash = (message: string) => {
     setNotice(message);
@@ -315,7 +346,7 @@ export function WidgetActions({ accent, calculatorId, shareQuery, copyText, onRe
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2 print:hidden">
       <button type="button" onClick={share} className="rounded-full px-4 py-2 text-sm font-medium text-white transition hover:opacity-90" style={{ backgroundColor: accent }}>
         Share result
       </button>

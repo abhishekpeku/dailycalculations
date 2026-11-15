@@ -1,270 +1,390 @@
 // PDF export (UX-09). jsPDF + jspdf-autotable are dynamically imported here, inside each
 // function — never at module top level — so they code-split into their own chunk and only load
 // when a visitor actually clicks download, not on every calculator page's initial bundle.
-// See mdFiles/steps/ux-09-download-export.md.
-import type { ExportPayload } from '@/lib/export';
+// Layout follows a design reviewed with Opus (see mdFiles/steps/ux-09-download-export.md,
+// "Second follow-up: PDF + Print redesign"): top-down full-width blocks (never inputs-beside-
+// chart — two cards of different heights leave a ragged hole), a tinted KPI band instead of a
+// bordered card, the chart's legend as a data table beside it, and a full-width schedule table
+// with no header fill.
+import { formatByKind, type ExportPayload } from '@/lib/export';
+import { resolveChart } from '@/lib/exportChart';
 // Type-only import — erased at compile time, so this doesn't pull jsPDF into the page bundle.
 import type { jsPDF as JsPDF } from 'jspdf';
 
-const MARGIN = 14;
-const BAND_HEIGHT = 14;
-const CARD_GAP = 6;
-const CARD_RADIUS = 3;
-const CARD_PADDING = 6;
-const ROW_HEIGHT = 6.5;
+const MARGIN = 18;
+const ROW_HEIGHT = 7;
 
-// The site's own brand palette (lib/categoryTheme.ts's brand blue, Tailwind's slate scale) —
-// reused here so a downloaded PDF reads as the same product as the page it came from.
-const ACCENT: [number, number, number] = [0, 102, 204];
-const ACCENT_TINT: [number, number, number] = [235, 244, 255];
-const SLATE_900: [number, number, number] = [15, 23, 42];
-const SLATE_500: [number, number, number] = [100, 116, 139];
-const SLATE_200: [number, number, number] = [226, 232, 240];
+// Shared palette (mdFiles/steps/ux-09-download-export.md has the rationale for each token —
+// in short, no large solid fills and no text lighter than ink-2 survive a cheap printer).
+const INK: [number, number, number] = [15, 23, 42];
+const INK_2: [number, number, number] = [71, 85, 105];
+const RULE: [number, number, number] = [203, 213, 225];
+const RULE_SOFT: [number, number, number] = [226, 232, 240];
+const BRAND: [number, number, number] = [0, 102, 204];
+const TINT: [number, number, number] = [243, 247, 252];
+const ZEBRA: [number, number, number] = [244, 246, 249];
 const WHITE: [number, number, number] = [255, 255, 255];
+const HEADER_TEXT: [number, number, number] = [51, 65, 85];
 
-// Rasterizes a live <svg> into a PNG data URL for embedding in the PDF. Not every visual is an
-// SVG (AmortizationTable/Timeline render HTML) — callers only invoke this once they've confirmed
-// a real <svg> element exists. Throws on failure; callers catch and skip the image rather than
-// block the whole download over a missing chart.
-async function svgToPngDataUrl(svg: SVGSVGElement): Promise<string> {
-  const xml = new XMLSerializer().serializeToString(svg);
-  const svgDataUrl = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(xml)))}`;
-  const img = new Image();
-  await new Promise<void>((resolve, reject) => {
-    img.onload = () => resolve();
-    img.onerror = () => reject(new Error('svg failed to rasterize'));
-    img.src = svgDataUrl;
-  });
-  const scale = 2; // crisper than 1:1 in the PDF
-  const width = (svg.clientWidth || img.width || 400) * scale;
-  const height = (svg.clientHeight || img.height || 200) * scale;
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('no 2d context');
-  ctx.scale(scale, scale);
-  ctx.drawImage(img, 0, 0, svg.clientWidth || img.width, svg.clientHeight || img.height);
-  return canvas.toDataURL('image/png');
+function setCharSpace0(doc: JsPDF) {
+  // Character spacing persists on the doc until reset — always clear it right after an
+  // uppercase-tracked label, or it bleeds into the next text drawn.
+  doc.setCharSpace(0);
 }
 
-// The brand band every page opens with: a solid accent bar, the wordmark, and the domain.
-function drawBrandBand(doc: JsPDF, pageWidth: number) {
-  doc.setFillColor(...ACCENT);
-  doc.rect(0, 0, pageWidth, BAND_HEIGHT, 'F');
+function drawMasthead(doc: JsPDF, pageWidth: number) {
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(12);
-  doc.setTextColor(...WHITE);
-  doc.text('Daily Calculations', MARGIN, BAND_HEIGHT / 2 + 3.5);
+  doc.setFontSize(10);
+  doc.setTextColor(...BRAND);
+  doc.text('Daily Calculations', MARGIN, 16);
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
-  doc.text('dailycalculations.com', pageWidth - MARGIN, BAND_HEIGHT / 2 + 3.5, { align: 'right' });
+  doc.setTextColor(...INK_2);
+  doc.text('dailycalculations.com', pageWidth - MARGIN, 16, { align: 'right' });
+  doc.setDrawColor(...BRAND);
+  doc.setLineWidth(0.26);
+  doc.line(MARGIN, 19, pageWidth - MARGIN, 19);
 }
 
-// A light gray footer stamped on every page: download date + page number.
-function drawFooter(doc: JsPDF, pageWidth: number, pageHeight: number) {
+// A slim running header on every page after page 1 — context for a reader flipping through a
+// long schedule, without repeating "continued" text or carried-forward totals.
+function drawRunningHeader(doc: JsPDF, pageWidth: number, title: string) {
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(...INK_2);
+  doc.text(`Daily Calculations · ${title}`, MARGIN, 14);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...BRAND);
+  doc.text('Daily Calculations', pageWidth - MARGIN, 14, { align: 'right' });
+  doc.setDrawColor(...RULE);
+  doc.setLineWidth(0.18);
+  doc.line(MARGIN, 17, pageWidth - MARGIN, 17);
+}
+
+function drawFooter(doc: JsPDF, pageWidth: number, pageHeight: number, title: string, url: string) {
   const page = doc.getCurrentPageInfo().pageNumber;
   const total = doc.getNumberOfPages();
+  doc.setDrawColor(...RULE);
+  doc.setLineWidth(0.18);
+  doc.line(MARGIN, pageHeight - 15, pageWidth - MARGIN, pageHeight - 15);
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8);
-  doc.setTextColor(...SLATE_500);
-  const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-  doc.text(`Downloaded ${date} from dailycalculations.com`, MARGIN, pageHeight - 8);
-  doc.text(`Page ${page} of ${total}`, pageWidth - MARGIN, pageHeight - 8, { align: 'right' });
-}
-
-// A rounded-corner card: a plain bordered box, or (with fill) a tinted+bordered one.
-function drawCard(doc: JsPDF, x: number, y: number, w: number, h: number, fill?: [number, number, number], border: [number, number, number] = SLATE_200) {
-  doc.setDrawColor(...border);
-  doc.setLineWidth(fill ? 0.5 : 0.35);
-  if (fill) {
-    doc.setFillColor(...fill);
-    doc.roundedRect(x, y, w, h, CARD_RADIUS, CARD_RADIUS, 'FD');
+  doc.setFontSize(7);
+  doc.setTextColor(...INK_2);
+  doc.text(`Daily Calculations · ${title}`, MARGIN, pageHeight - 11);
+  doc.text(`Page ${page} of ${total}`, pageWidth - MARGIN, pageHeight - 11, { align: 'right' });
+  const date = new Date();
+  const generated = date.toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  if (url) {
+    doc.setTextColor(...BRAND);
+    doc.textWithLink(`Generated ${generated} · ${url.replace(/^https?:\/\//, '')}`, MARGIN, pageHeight - 7.5, { url });
   } else {
-    doc.roundedRect(x, y, w, h, CARD_RADIUS, CARD_RADIUS, 'S');
+    doc.text(`Generated ${generated}`, MARGIN, pageHeight - 7.5);
   }
 }
 
-function drawSectionLabel(doc: JsPDF, text: string, x: number, y: number) {
+function sectionLabel(doc: JsPDF, text: string, x: number, y: number, width: number) {
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(...ACCENT);
+  doc.setFontSize(7.5);
+  doc.setTextColor(...INK_2);
+  doc.setCharSpace(0.4);
   doc.text(text.toUpperCase(), x, y);
+  setCharSpace0(doc);
+  doc.setDrawColor(...RULE);
+  doc.setLineWidth(0.18);
+  doc.line(x, y + 2, x + width, y + 2);
 }
 
-function drawRows(doc: JsPDF, rows: ExportPayload['inputs'], x: number, width: number, y: number): number {
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  for (const row of rows) {
-    doc.setTextColor(...SLATE_500);
-    doc.text(row.label, x, y);
-    doc.setTextColor(...SLATE_900);
-    doc.text(row.value, x + width, y, { align: 'right' });
-    y += ROW_HEIGHT;
+/** Flowed into up to 2 columns (column-major, so reading order stays top-to-bottom then across). */
+function drawInputsList(doc: JsPDF, rows: ExportPayload['inputs'], x: number, width: number, y: number): number {
+  const columns = rows.length > 3 ? 2 : 1;
+  const colWidth = columns === 2 ? (width - 10) / 2 : width;
+  const perColumn = Math.ceil(rows.length / columns);
+  let maxY = y;
+  for (let col = 0; col < columns; col++) {
+    let rowY = y;
+    const colX = x + col * (colWidth + 10);
+    for (let i = col * perColumn; i < Math.min((col + 1) * perColumn, rows.length); i++) {
+      const row = rows[i];
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(...INK_2);
+      doc.text(row.label, colX, rowY);
+      doc.setFontSize(9.5);
+      doc.setTextColor(...INK);
+      doc.text(row.value, colX + colWidth, rowY, { align: 'right' });
+      doc.setDrawColor(...RULE_SOFT);
+      doc.setLineWidth(0.18);
+      doc.line(colX, rowY + 2, colX + colWidth, rowY + 2);
+      rowY += ROW_HEIGHT;
+    }
+    maxY = Math.max(maxY, rowY);
   }
-  return y;
+  return maxY;
 }
 
-// Brand band, title, url, then a two-column row (inputs card | chart card — whichever exist; a
-// missing chart gives the inputs card the full width rather than leaving an empty box), then the
-// result as its own highlighted card with its supporting outputs as the "explanation" beneath the
-// headline. Shared by both PDF variants; returns the y-position to continue writing from.
+/** Shrinks font size until `text` fits `maxWidth`, down to `min`. */
+function shrinkToFit(doc: JsPDF, text: string, size: number, min: number, maxWidth: number): number {
+  doc.setFontSize(size);
+  while (size > min && doc.getTextWidth(text) > maxWidth) {
+    size -= 2;
+    doc.setFontSize(size);
+  }
+  return size;
+}
+
+// The headline result: a tinted band with a brand accent bar, the number in near-black ink
+// (blue goes gray and loses weight on a grayscale printer), and up to 3 secondary figures in
+// cells to its right.
+function drawKpiBand(doc: JsPDF, payload: ExportPayload, x: number, width: number, y: number): number {
+  const height = 30;
+  doc.setFillColor(...TINT);
+  doc.rect(x, y, width, height, 'F');
+  doc.setFillColor(...BRAND);
+  doc.rect(x, y, 1.5, height, 'F');
+
+  const leftWidth = width * 0.42;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(...BRAND);
+  doc.setCharSpace(0.4);
+  doc.text(payload.result.label.toUpperCase(), x + 6, y + 9);
+  setCharSpace0(doc);
+  doc.setTextColor(...INK);
+  const size = shrinkToFit(doc, payload.result.value, 26, 18, leftWidth - 10);
+  doc.setFontSize(size);
+  doc.text(payload.result.value, x + 6, y + 22);
+
+  const secondary = payload.outputs.slice(0, 3);
+  if (secondary.length) {
+    const rightX = x + leftWidth;
+    const rightWidth = width - leftWidth;
+    const cellWidth = rightWidth / 3;
+    secondary.forEach((output, index) => {
+      const cellX = rightX + index * cellWidth;
+      doc.setDrawColor(...RULE);
+      doc.setLineWidth(0.18);
+      doc.line(cellX, y + 6, cellX, y + 24);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7);
+      doc.setTextColor(...INK_2);
+      doc.setCharSpace(0.3);
+      const label = doc.splitTextToSize(output.label.toUpperCase(), cellWidth - 6)[0] ?? output.label.toUpperCase();
+      doc.text(label, cellX + 4, y + 11);
+      setCharSpace0(doc);
+      doc.setTextColor(...INK);
+      const valueSize = shrinkToFit(doc, output.value, 12, 9, cellWidth - 6);
+      doc.setFontSize(valueSize);
+      doc.text(output.value, cellX + 4, y + 20);
+    });
+  }
+
+  return y + height;
+}
+
+// Donut (or whichever visual) on the left, its legend as a swatch/label/amount/% table on the
+// right, with a Total row when the legend's figures are real numbers.
+async function drawBreakdown(doc: JsPDF, chart: NonNullable<Awaited<ReturnType<typeof resolveChart>>>, x: number, width: number, y: number): Promise<number> {
+  const imgSize = 44;
+  const imgAspected = imgSize * chart.aspect;
+  doc.addImage(chart.dataUrl, 'PNG', x, y, imgSize, imgAspected);
+
+  const numeric = chart.legend.filter((item) => item.value !== null);
+  const legendX = x + imgSize + 12;
+  const legendWidth = Math.min(width - imgSize - 12, 100);
+
+  if (numeric.length) {
+    const total = numeric.reduce((sum, item) => sum + (item.value ?? 0), 0);
+    let rowY = y + 3;
+    const amountColWidth = 28;
+    const pctColWidth = 14;
+    const labelColWidth = legendWidth - amountColWidth - pctColWidth - 6;
+    for (const item of numeric) {
+      const value = item.value as number;
+      doc.setFillColor(...item.color);
+      doc.roundedRect(legendX, rowY - 2.6, 3, 3, 0.5, 0.5, 'F');
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(...INK);
+      const labelLines = doc.splitTextToSize(item.label, labelColWidth - 6);
+      doc.text(labelLines[0] ?? item.label, legendX + 5.5, rowY);
+      doc.text(formatByKind(value, 'currency'), legendX + 5.5 + labelColWidth + amountColWidth, rowY, { align: 'right' });
+      doc.setTextColor(...INK_2);
+      const share = total > 0 ? (value / total) * 100 : 0;
+      doc.text(`${share.toFixed(1)}%`, legendX + 5.5 + labelColWidth + amountColWidth + pctColWidth, rowY, { align: 'right' });
+      doc.setDrawColor(...RULE_SOFT);
+      doc.setLineWidth(0.18);
+      doc.line(legendX, rowY + 2.2, legendX + legendWidth, rowY + 2.2);
+      rowY += 7;
+    }
+    doc.setDrawColor(...INK);
+    doc.setLineWidth(0.26);
+    doc.line(legendX, rowY - 4.5, legendX + legendWidth, rowY - 4.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(...INK);
+    doc.text('Total', legendX + 5.5, rowY);
+    doc.text(formatByKind(total, 'currency'), legendX + 5.5 + labelColWidth + amountColWidth, rowY, { align: 'right' });
+    doc.text('100.0%', legendX + 5.5 + labelColWidth + amountColWidth + pctColWidth, rowY, { align: 'right' });
+    return Math.max(y + imgAspected, rowY + 4);
+  }
+
+  if (chart.caption) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...INK_2);
+    const lines = doc.splitTextToSize(chart.caption, legendWidth);
+    let lineY = y + 4;
+    for (const line of lines) {
+      doc.text(line, legendX, lineY);
+      lineY += 3.8;
+    }
+    return Math.max(y + imgAspected, lineY);
+  }
+
+  return y + imgAspected;
+}
+
+// Masthead, title, meta line, KPI band, inputs, breakdown, notes — top-down, full width.
+// Shared by both PDF variants; returns the y-position to continue writing from.
 async function writeSummary(doc: JsPDF, payload: ExportPayload): Promise<number> {
   const pageWidth = doc.internal.pageSize.getWidth();
   const contentWidth = pageWidth - MARGIN * 2;
-  drawBrandBand(doc, pageWidth);
-  let y = BAND_HEIGHT + 12;
+  drawMasthead(doc, pageWidth);
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(18);
-  doc.setTextColor(...SLATE_900);
-  doc.text(payload.title, MARGIN, y);
-  y += 7;
+  doc.setTextColor(...INK);
+  doc.text(payload.title, MARGIN, 30);
+
+  const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(...INK_2);
+  doc.text(`Results summary · Generated ${date}`, MARGIN, 36);
+
+  let y = drawKpiBand(doc, payload, MARGIN, contentWidth, 42) + 12;
+
+  if (payload.inputs.length) {
+    sectionLabel(doc, 'Inputs', MARGIN, y, contentWidth);
+    y = drawInputsList(doc, payload.inputs, MARGIN, contentWidth, y + 8) + 6;
+  }
+
+  const chart = await resolveChart(payload.chartSelector);
+  if (chart) {
+    sectionLabel(doc, 'Breakdown', MARGIN, y, contentWidth);
+    y = (await drawBreakdown(doc, chart, MARGIN, contentWidth, y + 8)) + 6;
+  }
 
   if (payload.url) {
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(...ACCENT);
-    doc.textWithLink(payload.url, MARGIN, y, { url: payload.url });
-  }
-  y += 10;
-
-  // Resolve the chart image up front so we know whether to lay out one column or two. Every
-  // visual component already carries a complete, human-readable summary in an `aria-label` (on
-  // the <svg> itself for Donut, on a wrapping [role="img"] div for the others) — built for screen
-  // readers, and just as useful here as a caption explaining what the chart shows.
-  let chartDataUrl: string | null = null;
-  let chartAspect = 1;
-  let chartCaption: string | null = null;
-  if (payload.chartSelector) {
-    const svg = document.querySelector<SVGSVGElement>(`${payload.chartSelector} svg`);
-    const labeled = document.querySelector<HTMLElement>(`${payload.chartSelector} [aria-label]`);
-    chartCaption = labeled?.getAttribute('aria-label') ?? null;
-    if (svg) {
-      try {
-        chartDataUrl = await svgToPngDataUrl(svg);
-        chartAspect = (svg.clientHeight || 1) / (svg.clientWidth || 1);
-      } catch {
-        chartDataUrl = null; // a missing/unrasterizable chart should never block the download
-      }
-    }
-  }
-
-  const hasInputs = payload.inputs.length > 0;
-  const twoColumns = hasInputs && chartDataUrl;
-  const colWidth = twoColumns ? (contentWidth - CARD_GAP) / 2 : contentWidth;
-  const inputsCardHeight = hasInputs ? CARD_PADDING * 2 + 7 + payload.inputs.length * ROW_HEIGHT : 0;
-
-  const CAPTION_LINE_HEIGHT = 3.6;
-  let captionLines: string[] = [];
-  if (chartDataUrl && chartCaption) {
+    sectionLabel(doc, 'Notes', MARGIN, y, contentWidth);
+    y += 8;
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
-    captionLines = doc.splitTextToSize(chartCaption, colWidth - CARD_PADDING * 2);
+    doc.setTextColor(...INK_2);
+    doc.text('Estimates for informational purposes only; not financial, tax or legal advice.', MARGIN, y);
+    y += 5;
+    doc.text('Recalculate or adjust these inputs:', MARGIN, y);
+    doc.setTextColor(...BRAND);
+    doc.textWithLink(payload.url, MARGIN + 45, y, { url: payload.url });
+    y += 8;
   }
-  const captionBlockHeight = captionLines.length ? captionLines.length * CAPTION_LINE_HEIGHT + 4 : 0;
-  const CHART_HEADER = 14; // matches the inputs card's own label-to-first-row offset, for symmetry
-  const CHART_MIN_IMAGE_HEIGHT = 40;
-  const chartCardHeight = chartDataUrl ? Math.max(inputsCardHeight, CHART_HEADER + CHART_MIN_IMAGE_HEIGHT + captionBlockHeight + CARD_PADDING) : 0;
-  const topRowHeight = Math.max(inputsCardHeight, chartCardHeight);
-
-  if (hasInputs) {
-    drawCard(doc, MARGIN, y, colWidth, topRowHeight);
-    drawSectionLabel(doc, 'Inputs', MARGIN + CARD_PADDING, y + CARD_PADDING + 3);
-    drawRows(doc, payload.inputs, MARGIN + CARD_PADDING, colWidth - CARD_PADDING * 2, y + CARD_PADDING + 14);
-  }
-
-  if (chartDataUrl) {
-    const chartX = hasInputs ? MARGIN + colWidth + CARD_GAP : MARGIN;
-    drawCard(doc, chartX, y, colWidth, topRowHeight);
-    drawSectionLabel(doc, 'Chart', chartX + CARD_PADDING, y + CARD_PADDING + 3);
-
-    const imgTop = y + CHART_HEADER;
-    const availW = colWidth - CARD_PADDING * 2;
-    const availH = y + topRowHeight - CARD_PADDING - captionBlockHeight - imgTop;
-    let imgWidth = availW;
-    let imgHeight = imgWidth * chartAspect;
-    if (imgHeight > availH) {
-      imgHeight = availH;
-      imgWidth = imgHeight / chartAspect;
-    }
-    const imgX = chartX + (colWidth - imgWidth) / 2;
-    const imgY = imgTop + Math.max(0, (availH - imgHeight) / 2);
-    doc.addImage(chartDataUrl, 'PNG', imgX, imgY, imgWidth, imgHeight);
-
-    if (captionLines.length) {
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      doc.setTextColor(...SLATE_500);
-      let capY = imgY + imgHeight + 5;
-      for (const line of captionLines) {
-        doc.text(line, chartX + colWidth / 2, capY, { align: 'center' });
-        capY += CAPTION_LINE_HEIGHT;
-      }
-    }
-  }
-
-  if (topRowHeight > 0) y += topRowHeight + 8;
-
-  // The result: a highlighted card (echoing the on-screen ResultPanel's accent wash), with the
-  // supporting outputs listed underneath the headline as its explanation.
-  const resultCardHeight = CARD_PADDING * 2 + 18 + (payload.outputs.length ? payload.outputs.length * ROW_HEIGHT + 4 : 0);
-  drawCard(doc, MARGIN, y, contentWidth, resultCardHeight, ACCENT_TINT, ACCENT);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(...ACCENT);
-  doc.text(payload.result.label.toUpperCase(), MARGIN + CARD_PADDING, y + CARD_PADDING + 2);
-  doc.setFontSize(17);
-  doc.text(payload.result.value, MARGIN + CARD_PADDING, y + CARD_PADDING + 11);
-  if (payload.outputs.length) {
-    drawRows(doc, payload.outputs, MARGIN + CARD_PADDING, contentWidth - CARD_PADDING * 2, y + CARD_PADDING + 11 + 7);
-  }
-  y += resultCardHeight + 9;
 
   return y;
 }
 
-/** Inputs/chart row + the result card. Never includes payload.table. */
-export async function downloadSummaryPdf(calculatorId: string, payload: ExportPayload) {
-  const { jsPDF } = await import('jspdf');
-  const doc = new jsPDF();
-  await writeSummary(doc, payload);
-  drawFooter(doc, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight());
-  doc.save(`${calculatorId}-result.pdf`);
+function filename(calculatorId: string, suffix: string) {
+  const date = new Date().toISOString().slice(0, 10);
+  return `dailycalculations-${calculatorId}-${date}${suffix}.pdf`;
 }
 
-/** Everything downloadSummaryPdf does, plus the full schedule, sized to its own content — not
- * stretched edge-to-edge — with a full grid of borders for a clean, bordered-table look. */
+function setDocumentMetadata(doc: JsPDF, payload: ExportPayload) {
+  doc.setProperties({
+    title: `${payload.title} — Results`,
+    subject: `${payload.result.label}: ${payload.result.value}`,
+    author: 'Daily Calculations',
+    creator: 'dailycalculations.com',
+    keywords: payload.title
+  });
+}
+
+/** KPI band + inputs + breakdown + notes. Never includes payload.table. */
+export async function downloadSummaryPdf(calculatorId: string, payload: ExportPayload) {
+  const { jsPDF } = await import('jspdf');
+  const doc = new jsPDF({ compress: true, putOnlyUsedFonts: true });
+  setDocumentMetadata(doc, payload);
+  await writeSummary(doc, payload);
+  drawFooter(doc, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight(), payload.title, payload.url);
+  doc.save(filename(calculatorId, '-result'));
+}
+
+/** Everything downloadSummaryPdf does, plus the full schedule — always starting on its own page,
+ * full content width, with no header fill (a solid blue bar prints as muddy gray and costs toner). */
 export async function downloadFullPdf(calculatorId: string, payload: ExportPayload) {
   if (!payload.table) return;
   const { jsPDF } = await import('jspdf');
   const autoTable = (await import('jspdf-autotable')).default;
-  const doc = new jsPDF();
+  const doc = new jsPDF({ compress: true, putOnlyUsedFonts: true });
+  setDocumentMetadata(doc, payload);
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const y = await writeSummary(doc, payload);
+  await writeSummary(doc, payload);
 
-  drawSectionLabel(doc, 'Schedule', MARGIN, y);
+  doc.addPage();
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.setTextColor(...INK);
+  doc.text('Full schedule', MARGIN, 30);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(...INK_2);
+  doc.text(`${payload.title} · ${payload.table.rows.length} rows`, MARGIN, 36);
 
-  // A sensible width per column rather than stretching across the full page margin-to-margin —
-  // a 4-column numeric table doesn't need 180mm to be readable.
-  const tableWidth = Math.min(pageWidth - MARGIN * 2, payload.table.columns.length * 34);
-  const sideMargin = (pageWidth - tableWidth) / 2;
+  const kinds = payload.table.columns.map((col) => col.kind);
+  // payload.table.rows are raw numbers (so Excel can store real numbers) — the PDF formats each
+  // one for display here, by its column's kind, rather than printing an unformatted "1166.67".
+  const formattedRows = payload.table.rows.map((row) => row.map((value, index) => formatByKind(value, kinds[index])));
+  const periodColumn = payload.table.columns[0]?.header.toLowerCase() === 'month' || payload.table.columns[0]?.kind === 'integer';
 
   autoTable(doc, {
-    startY: y + 6,
-    head: [payload.table.columns],
-    body: payload.table.rows,
-    theme: 'grid',
-    tableWidth,
-    margin: { left: sideMargin, right: sideMargin, top: BAND_HEIGHT + 6, bottom: 14 },
-    styles: { fontSize: 9, textColor: SLATE_900, lineColor: SLATE_200, lineWidth: 0.2 },
-    headStyles: { fillColor: ACCENT, textColor: WHITE, fontStyle: 'bold' },
-    alternateRowStyles: { fillColor: [248, 250, 252] },
-    // Every page after the first (the summary already drew its own band on page 1) still gets the
-    // brand band, so a reader flipping through a long schedule never loses context.
+    startY: 42,
+    margin: { top: 20, bottom: 20, left: MARGIN, right: MARGIN },
+    theme: 'plain',
+    tableWidth: 'auto',
+    showHead: 'everyPage',
+    rowPageBreak: 'avoid',
+    styles: {
+      font: 'helvetica',
+      fontSize: 8,
+      textColor: INK,
+      lineWidth: 0,
+      cellPadding: { top: 1.1, bottom: 1.1, left: 2, right: 2 },
+      valign: 'middle',
+      overflow: 'linebreak'
+    },
+    head: [payload.table.columns.map((col) => col.header)],
+    body: formattedRows,
+    columnStyles: periodColumn ? { 0: { cellWidth: 16, halign: 'right' } } : undefined,
+    headStyles: {
+      fontStyle: 'bold',
+      fontSize: 7.5,
+      textColor: HEADER_TEXT,
+      fillColor: false,
+      valign: 'bottom',
+      halign: 'right',
+      lineWidth: { bottom: 0.26 },
+      lineColor: INK
+    },
+    bodyStyles: { halign: 'right' },
+    didParseCell: (data) => {
+      if (data.section === 'body' && data.row.index % 2 === 1) {
+        data.cell.styles.fillColor = ZEBRA;
+      }
+    },
     didDrawPage: (data) => {
-      if (data.pageNumber > 1) drawBrandBand(doc, pageWidth);
+      // The schedule's own first page already has "Full schedule" + the meta line drawn above
+      // (writeSummary's masthead covers page 1); every page after that gets the slim running
+      // header instead, so context survives a long, flipped-through printout.
+      if (data.pageNumber > 1) drawRunningHeader(doc, pageWidth, payload.title);
     }
   });
 
@@ -273,7 +393,7 @@ export async function downloadFullPdf(calculatorId: string, payload: ExportPaylo
   const totalPages = doc.getNumberOfPages();
   for (let page = 1; page <= totalPages; page++) {
     doc.setPage(page);
-    drawFooter(doc, pageWidth, pageHeight);
+    drawFooter(doc, pageWidth, pageHeight, payload.title, payload.url);
   }
-  doc.save(`${calculatorId}-schedule.pdf`);
+  doc.save(filename(calculatorId, '-schedule'));
 }

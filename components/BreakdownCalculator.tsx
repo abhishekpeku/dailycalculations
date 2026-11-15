@@ -19,7 +19,34 @@ import {
 } from '@/lib/breakdown';
 import { AlsoIn, ChoiceRow, ELEVATED_CARD, FIELD_GROUP, FieldRow, Headline, ListFieldRow, OutputItem, OutputList, ResultPanel, WidgetActions, WIDGET_SPLIT, widgetAccent } from '@/components/CalculatorWidget';
 import BreakdownVisual from '@/components/BreakdownVisual';
-import { exportTableForVisual, type ExportPayload } from '@/lib/export';
+import { exportTableForVisual, type ExportKind, type ExportPayload } from '@/lib/export';
+
+// Excel needs a real number format per value — map this widget's own format vocabularies onto
+// the shared ExportKind. `date` has no typed Excel kind yet, so it falls back to plain text.
+const exportKindForInput = (input: CalculatorInput): ExportKind | undefined => {
+  if (input.type === 'currency') return 'currency';
+  if (input.type === 'percent') return 'percent';
+  if (input.type === 'number') return 'decimal';
+  return undefined; // 'list'
+};
+const exportKindForFormat = (format: string): ExportKind | undefined => {
+  switch (format) {
+    case 'currency':
+      return 'currency';
+    case 'percent':
+      return 'percent';
+    case 'integer':
+      return 'integer';
+    case 'number':
+    case 'significant':
+      return 'decimal';
+    default:
+      return undefined; // 'date'
+  }
+};
+// Excel's `0.00%` number format multiplies the cell by 100 to display it, so a percent value
+// (stored as the bare percent number, e.g. 5 for 5%) must be written as the fraction (0.05).
+const exportRaw = (value: number, kind: ExportKind | undefined) => (kind === 'percent' ? value / 100 : value);
 
 // Type B: inputs flow forward into a headline, a breakdown and one visual. The logic lives in lib/breakdown.ts.
 
@@ -72,12 +99,32 @@ export default function BreakdownCalculator({ calculatorId, belowInputs, belowRe
     : {
         title: calculator.title,
         url: typeof window === 'undefined' ? '' : window.location.href,
-        inputs: inputs.map((input) => ({
-          label: input.label,
-          value: input.type === 'list' ? (state.values[input.id] ?? '') : `${state.values[input.id] ?? ''} ${inputUnitLabel(input, state.units[input.id])}`.trim()
-        })),
-        result: { label: resolved.headline.label, value: headlineText },
-        outputs: resolved.rows.map((row) => ({ label: row.label, value: show(row.id) })),
+        inputs: inputs.map((input) => {
+          const kind = exportKindForInput(input);
+          const raw = kind === undefined ? undefined : Number(state.values[input.id]);
+          return {
+            label: input.label,
+            value: input.type === 'list' ? (state.values[input.id] ?? '') : `${state.values[input.id] ?? ''} ${inputUnitLabel(input, state.units[input.id])}`.trim(),
+            raw: raw !== undefined && Number.isFinite(raw) ? exportRaw(raw, kind) : undefined,
+            kind: raw !== undefined && Number.isFinite(raw) ? kind : undefined
+          };
+        }),
+        result: {
+          label: resolved.headline.label,
+          value: headlineText,
+          raw: exportRaw(headlineValue, exportKindForFormat(resolved.headline.format)),
+          kind: exportKindForFormat(resolved.headline.format)
+        },
+        outputs: resolved.rows.map((row) => {
+          const kind = exportKindForFormat(row.format);
+          const value = all[row.id] ?? NaN;
+          return {
+            label: row.label,
+            value: show(row.id),
+            raw: Number.isFinite(value) ? exportRaw(value, kind) : undefined,
+            kind: Number.isFinite(value) ? kind : undefined
+          };
+        }),
         table: exportTableForVisual(visual, all),
         chartSelector: visual ? '[data-export-chart]' : undefined
       };

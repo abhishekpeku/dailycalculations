@@ -63,3 +63,55 @@ html.dark {
 html.dark body {
   background: radial-gradient(circle at top, rgba(168, 85, 247, 0.14), transparent 35%), #020617;
 }
+
+/* Printing a calculator result (Ctrl+P / the page's own Print button) — see
+   mdFiles/steps/ux-09-download-export.md "Second follow-up: PDF + Print redesign" for the
+   full design this follows. Dark mode must never reach paper: the site's dark theme is driven
+   by both the OS media query and the `dark` class, and either can still be active when the
+   print dialog opens, so both are forced back to light here. */
+@media print {
+  :root,
+  html.dark {
+    color-scheme: light;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #0f172a !important;
+  }
+
+  /* Tailwind strips background colors on print by default; this class opts specific elements
+     back in (result card, chart + legend, schedule table zebra/totals) without doing it globally,
+     which would also restore decorative page backgrounds nobody wants printed. */
+  .print-exact,
+  .print-exact * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    backdrop-filter: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .min-h-screen {
+    min-height: 0 !important;
+  }
+
+  [data-print="hide"] {
+    display: none !important;
+  }
+
+  /* Inputs/selects print as native form controls (border, dropdown arrow, unformatted value)
+     otherwise — flatten them to plain text so a printed page reads as a document, not a form. */
+  input,
+  select {
+    border: none !important;
+    background: transparent !important;
+    appearance: none !important;
+  }
+}

@@ -277,3 +277,120 @@ the full caption "$541,116.20 total paid: Principal $280,000.00 (52%), Interest 
 wrapped and centered) and `bmi-calculator` (RangeBar — caption "WHO adult BMI categories: 25.1
 falls in the Overweight band." correct, marker-rendering gap noted above). `npm test` 1123/1123,
 lint clean, `npx tsc --noEmit` clean, `npm run build` passes.
+
+### Third follow-up (2026-11-15, same session — CSV→Excel pivot, PDF/Print redesign)
+
+User kept pushing on output quality ("production ready for a corporate employee, not a basic
+structure") and the literal request — colors, embedded images, white background — is impossible
+for a real CSV (plain text, can't carry fills or images). Asked the user via `AskUserQuestion`;
+answer: **replace CSV entirely with Excel (.xlsx)**. `lib/exportCsv.ts` deleted, `exceljs` ^4.4.0
+added (new dependency — see below). A first `lib/exportExcel.ts` draft had a real, confirmed bug
+(found independently two ways: my own round-trip read-back script, and the user's screenshot of
+the actual output) — the "Inputs" and "Chart" sections both wrote into column 1, so the donut image
+visually overlapped the input values, and numeric cells were pre-formatted strings, triggering
+Excel's native "number stored as text" warning. Rather than keep patching, consulted an Opus
+subagent for a proper corporate-spreadsheet design spec (two separate consultations: one for Excel,
+one — "get the design patterns for all option of download" — for PDF + Print), then rewrote all
+three against those specs.
+
+**`lib/export.ts`**: `ExportRow` gained optional `raw: number` + `kind: ExportKind` ('currency' |
+'percent' | 'integer' | 'decimal' | 'text') alongside the existing display `value: string` — Excel
+needs a real typed number to apply a real number format; PDF keeps using the display string.
+`ExportTable.columns` is now `{header, kind}[]` and `rows` are raw `number[][]` (previously
+pre-formatted `(string|number)[][]`) — `formatByKind()` does the PDF-side formatting from the raw
+numbers at render time. `SolverCalculator.tsx`/`BreakdownCalculator.tsx` both updated to populate
+`raw`/`kind` on every input/result/output row (mapping each widget's own unit-dimension or
+output-format vocabulary onto `ExportKind`; percent values are stored as the Excel-expected
+fraction, e.g. 0.065 for 6.5%, not 6.5).
+
+**`lib/exportChart.ts`** (new, factored out of `lib/exportPdf.ts` so Excel can reuse the same DOM
+chart-reading logic): `ChartLegendItem` now carries `label`/`value: number | null` alongside the
+existing `text`/`color`, split from the legend `<li>`'s per-child text nodes rather than regexed
+off the joined string — Donut's row is exactly `[label, formatted amount, share %]` as three
+separate DOM children, and regexing the *last* number off the joined text was grabbing the share
+percentage ("52%") instead of the dollar amount in the middle. Verified against the live DOM in
+Chrome: `["Principal", "$280,000.00", "52%"]` → `{label: "Principal", value: 280000}`.
+
+**`lib/exportExcel.ts`** (full rewrite): two sheets — **Summary** (brand header, a tinted KPI card
+for the result, key figures, inputs, the chart image with a real colored-swatch-bullet legend table
+with Amount/Share columns and a `SUM()`-formula total row, notes) and **Schedule** (just the big
+table) — because freeze panes apply to a whole sheet, and a 360-row table under the summary would
+need its header frozen ~30 rows down. Inputs live in columns B:C, the chart/legend in E:H, with
+column D as a deliberately-unwritten "hard wall" between them — the direct fix for the original
+overlap bug. All numbers are real (`cell.value = 280000`, not `"$280,000.00"`) with Excel `numFmt`
+strings applied per `ExportKind`. The Schedule sheet uses a native `ws.addTable()` (not manual
+borders/fills) for sort/filter/structured totals, with conditional-formatting zebra striping
+(`MOD(SUBTOTAL(3,...),2)=0`, not a static fill, so it survives sorting/filtering) and frozen panes
+at the header row. Workbook metadata (creator/title/subject), tab colors, page setup and footers
+set; no sheet protection (spec's words: "corporate users will annotate, extend and paste;
+protection is hostile"). Verified via a round-trip read-back (`exceljs` reading the generated file
+back and dumping every cell's value/numFmt) — confirmed real numbers with correct formats
+throughout, the legend's Amount/Share columns showing real dollar figures (not the share-percent
+bug), and the native table + image anchored with no column overlap.
+
+**`lib/exportPdf.ts`** (full rewrite): dropped the "inputs card beside chart card" layout — Opus's
+review called this out specifically (two cards of different height leave a ragged hole, and the
+eye has to zig-zag between them) in favor of top-down full-width blocks matching how real summary
+documents (loan estimates, bank statements) are laid out: masthead → title/meta → a tinted KPI band
+(accent bar + the result in near-black ink, not blue — blue goes gray and loses weight on a
+grayscale printer; drops the `M =` variable symbol in favor of the output's plain name) with up to
+3 secondary figures as cells to its right → inputs flowed into 2 columns → the chart with its
+legend as a real amount/share table beside it (not a caption paragraph below) → notes → the
+schedule, which now always starts on its own page. The schedule table lost its blue header fill
+(a solid fill prints as muddy gray and costs toner) for bold slate text on white with a rule
+underneath, and got a slim running header on every page after the first for context during a long
+printout. Added `doc.setProperties()` metadata and a dated, slugged filename
+(`dailycalculations-{slug}-{date}.pdf`, matching the new Excel convention).
+
+**Print (`app/globals.css`, `components/CalculatorWidget.tsx`)**: added a `@media print` block —
+forces the site's dark theme back to light on paper (both the `dark` class and the OS
+`prefers-color-scheme` query can still be active when the print dialog opens), a `.print-exact`
+class (`print-color-adjust: exact`) on the result card and chart so their backgrounds/swatches
+survive Chrome's default "strip backgrounds on print," removes shadows/backdrop-filter/animation,
+collapses `.min-h-screen` (otherwise a trailing blank page), and flattens `<input>`/`<select>`
+borders for print. `WidgetActions` now listens for `beforeprint`/`afterprint` to give the printed
+page/"Save as PDF" a dated document title and force dark mode off (belt-and-braces alongside the
+CSS fix), restoring both afterward. The whole Share/Copy/Reset/Download actions bar is
+`print:hidden` — all meaningless on paper.
+
+**Not implemented from the Opus specs** (time-boxed; real structural/correctness fixes took
+priority over full pixel-fidelity) — revisit only if the user asks:
+- PDF: the donut is still a rasterized PNG, not hand-drawn vector arcs; no year-subtotal grouping
+  in the schedule table; no PDF outline/bookmarks; no landscape auto-switch for wide tables; no
+  region-aware Letter-vs-A4 paper size (would need the region profile plumbed into `ExportPayload`).
+- Print: inputs still render as native `<input>`/flattened-border fields rather than printed-only
+  formatted `<span>` text (the input's raw unformatted value shows, e.g. `350000` not
+  `$350,000.00`) — a real fix needs separately plumbing a formatted display string into `FieldRow`
+  for both widget types.
+
+Verified: `npm test` 1123/1123, `npm run lint` clean, `npx tsc --noEmit` clean (pre-existing,
+unrelated failures in `data/calculators.spec.ts`/`lib/breakdown.spec.ts` untouched by this work),
+`npm run build` passes. Live-tested in Chrome on `mortgage-calculator`: downloaded Excel's blob
+captured and round-tripped through `exceljs` (not just a screenshot) confirming the two-sheet
+layout, real numbers/formats, native table, and the legend fix above; the PDF-with-table path runs
+without console errors; print CSS rules confirmed compiled and applied via DOM/stylesheet
+inspection. Two stale dev-server processes left running from earlier in the session (one serving a
+corrupted `.next` build) were found and killed while setting up this verification — unrelated to
+the code changes, just session hygiene.
+
+**New dependency**: `exceljs` ^4.4.0, replacing the removed `lib/exportCsv.ts`'s hand-rolled CSV.
+Audited earlier in this session: adds exactly 2 new `npm audit` findings (`exceljs` + transitive
+`uuid`, both moderate, "missing buffer bounds check when `buf` is provided") — assessed as low
+real-world risk since this codebase never passes attacker-controlled input to the affected code
+path, and no newer `exceljs` version fixes it.
+
+### Fourth follow-up (2026-11-15, same session — dropped the Print option)
+
+User's call: "when i say print it should actually print the pdf, actually we should remove the
+print option because a person can prints its already downloaded pdf." The in-app `Print` dropdown
+entry (`window.print()`) was redundant once PDF download exists — a visitor who wants a paper copy
+can open the downloaded PDF and print that, which prints exactly what's in the file rather than
+whatever happens to be on screen. Removed: `DownloadFormat` is now `'pdf' | 'pdf-table' | 'excel'`
+(dropped `'print'`), the `<option value="print">` and its `window.print()` branch in
+`DownloadMenu` (`components/CalculatorWidget.tsx`) are gone. **Not reverted**: the `@media print`
+CSS added in the third follow-up (`app/globals.css`'s dark-mode-on-paper fix, `.print-exact`,
+page-break rules; `WidgetActions`'s `beforeprint`/`afterprint` title/theme handling) — a visitor
+can always hit Ctrl+P natively regardless of whether the app exposes a button for it, so that CSS
+still has defensive value and costs nothing to keep. `npm test` 1123/1123, lint clean,
+`npx tsc --noEmit` clean, `npm run build` passes. Verified live in Chrome: the download dropdown
+now shows exactly `PDF` / `PDF with table` (when a schedule exists) / `Excel`, no `Print` entry.

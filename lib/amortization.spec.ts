@@ -1,7 +1,7 @@
 // Amortization schedule. See mdFiles/steps/32-visuals-kit.md. Run: npm test
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { amortizationSchedule, monthlyPayment } from './amortization.ts';
+import { amortizationSchedule, amortizationMonthlySchedule, monthlyPayment } from './amortization.ts';
 
 const close = (actual: number, expected: number, tolerance: number) =>
   assert.ok(Math.abs(actual - expected) <= tolerance, `${actual} ≈ ${expected}`);
@@ -78,5 +78,69 @@ describe('amortizationSchedule', () => {
     assert.deepEqual(amortizationSchedule(200000, NaN, 360), []);
     // $1,000 a month never covers $1,000 of monthly interest.
     assert.deepEqual(amortizationSchedule(200000, 6, 360, 1000), []);
+  });
+});
+
+describe('amortizationMonthlySchedule', () => {
+  const rows = amortizationMonthlySchedule(200000, 6, 360);
+
+  test('$200,000 at 6% for 30 years: 360 monthly rows', () => {
+    assert.equal(rows.length, 360);
+    assert.deepEqual(rows.map((row) => row.month), Array.from({ length: 360 }, (_, i) => i + 1));
+    // Overall month number, not reset per year.
+    assert.equal(rows[11].year, 1);
+    assert.equal(rows[12].year, 2);
+    assert.equal(rows[12].month, 13);
+  });
+
+  test('ends at a balance of 0, and the principal sums to the loan', () => {
+    assert.equal(rows[rows.length - 1].balance, 0);
+    close(sum(rows.map((row) => row.principal)), 200000, 1e-6);
+  });
+
+  test('a partial last year: $10,000 at 5% for 18 months is 18 monthly rows, not 2', () => {
+    const short = amortizationMonthlySchedule(10000, 5, 18);
+    assert.equal(short.length, 18);
+    assert.equal(short[short.length - 1].balance, 0);
+    close(sum(short.map((row) => row.principal)), 10000, 1e-6);
+  });
+
+  test('0% interest', () => {
+    const flat = amortizationMonthlySchedule(12000, 0, 24);
+    assert.equal(flat.length, 24);
+    assert.equal(flat[0].interest, 0);
+    close(flat[0].principal, 500, 1e-9);
+    assert.equal(flat[flat.length - 1].balance, 0);
+  });
+
+  test('a larger payment pays off early', () => {
+    const fast = amortizationMonthlySchedule(200000, 6, 360, 2000);
+    assert.ok(fast.length < 360);
+    assert.equal(fast[fast.length - 1].balance, 0);
+    close(sum(fast.map((row) => row.principal)), 200000, 1e-6);
+  });
+
+  test('unusable inputs give no rows', () => {
+    assert.deepEqual(amortizationMonthlySchedule(0, 6, 360), []);
+    assert.deepEqual(amortizationMonthlySchedule(200000, 6, 0), []);
+    assert.deepEqual(amortizationMonthlySchedule(200000, NaN, 360), []);
+    assert.deepEqual(amortizationMonthlySchedule(200000, 6, 360, 1000), []);
+  });
+
+  test('summing monthly rows by year reproduces amortizationSchedule exactly (regression guard)', () => {
+    const sumByYear = (monthly: ReturnType<typeof amortizationMonthlySchedule>) => {
+      const years: { year: number; interest: number; principal: number; balance: number }[] = [];
+      for (const m of monthly) {
+        if (years.length < m.year) years.push({ year: m.year, interest: 0, principal: 0, balance: 0 });
+        const row = years[m.year - 1];
+        row.interest += m.interest;
+        row.principal += m.principal;
+        row.balance = m.balance;
+      }
+      return years;
+    };
+
+    assert.deepEqual(sumByYear(amortizationMonthlySchedule(200000, 6, 360)), amortizationSchedule(200000, 6, 360));
+    assert.deepEqual(sumByYear(amortizationMonthlySchedule(10000, 5, 18)), amortizationSchedule(10000, 5, 18));
   });
 });

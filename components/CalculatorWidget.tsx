@@ -217,7 +217,7 @@ type DownloadFormat = 'pdf' | 'pdf-table' | 'excel';
 // highlighted result block, a real bordered table) needs real cell styling and embedded images,
 // neither of which plain CSV can do. No "Print" option — a visitor can print an already-downloaded
 // PDF themselves; a dedicated in-app print path was redundant.
-function DownloadMenu({ calculatorId, exportData }: { calculatorId: string; exportData: ExportPayload | null }) {
+export function DownloadMenu({ calculatorId, exportData }: { calculatorId: string; exportData: ExportPayload | null }) {
   const [format, setFormat] = useState<DownloadFormat>('pdf');
   const [busy, setBusy] = useState(false);
 

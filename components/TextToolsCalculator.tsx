@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { WidgetCard, widgetAccent } from '@/components/CalculatorWidget';
+import { WidgetCard, widgetAccent, DownloadMenu } from '@/components/CalculatorWidget';
+import { findCalculator } from '@/data/calculators';
+import type { ExportPayload } from '@/lib/export';
 
 type Mode = 'character' | 'hashtag';
 
@@ -61,6 +63,40 @@ export default function TextToolsCalculator({ mode }: { mode?: Mode }) {
   }, [text]);
 
   const accent = widgetAccent('text');
+
+  // Shared by two different calculator pages -- derive the id/title from the already-known mode
+  // rather than hardcoding one slug or adding a prop page.tsx doesn't need to pass.
+  const calculatorId = activeMode === 'hashtag' ? 'hashtag-counter' : 'character-counter';
+  const calculatorTitle = findCalculator(calculatorId)?.title ?? (activeMode === 'hashtag' ? 'Hashtag Counter' : 'Character Counter');
+
+  const exportData: ExportPayload | null = text.trim() === '' ? null : activeMode === 'character' ? {
+    title: calculatorTitle,
+    url: typeof window === 'undefined' ? '' : window.location.href,
+    inputs: [],
+    result: { label: 'Characters', value: stats.chars.toLocaleString('en-US'), raw: stats.chars, kind: 'integer' },
+    outputs: [
+      { label: 'Characters (no spaces)', value: stats.charsNoSpaces.toLocaleString('en-US'), raw: stats.charsNoSpaces, kind: 'integer' },
+      { label: 'Words', value: stats.words.toLocaleString('en-US'), raw: stats.words, kind: 'integer' },
+      { label: 'Sentences', value: stats.sentences.toLocaleString('en-US'), raw: stats.sentences, kind: 'integer' },
+      { label: 'Paragraphs', value: stats.paragraphs.toLocaleString('en-US'), raw: stats.paragraphs, kind: 'integer' },
+      { label: 'Lines', value: stats.lines.toLocaleString('en-US'), raw: stats.lines, kind: 'integer' },
+      { label: 'Reading time', value: readingTime(stats.words), kind: 'text' }
+    ]
+  } : {
+    title: calculatorTitle,
+    url: typeof window === 'undefined' ? '' : window.location.href,
+    inputs: [],
+    result: { label: 'Unique hashtags', value: stats.uniqueHashtags.toLocaleString('en-US'), raw: stats.uniqueHashtags, kind: 'integer' },
+    outputs: [
+      { label: 'Characters', value: stats.chars.toLocaleString('en-US'), raw: stats.chars, kind: 'integer' },
+      { label: 'Words', value: stats.words.toLocaleString('en-US'), raw: stats.words, kind: 'integer' },
+      {
+        label: 'Instagram limit (30)',
+        value: stats.instagramHashtagOk ? `OK — ${stats.uniqueHashtags}/30` : `Exceeded — ${stats.uniqueHashtags}/30`,
+        kind: 'text'
+      }
+    ]
+  };
 
   return (
     <WidgetCard>
@@ -171,6 +207,10 @@ export default function TextToolsCalculator({ mode }: { mode?: Mode }) {
           )}
         </div>
       )}
+
+      <div className="flex justify-end">
+        <DownloadMenu calculatorId={calculatorId} exportData={exportData} />
+      </div>
     </WidgetCard>
   );
 }

@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { WidgetCard } from '@/components/CalculatorWidget';
+import { WidgetCard, DownloadMenu } from '@/components/CalculatorWidget';
+import { findCalculator } from '@/data/calculators';
+import type { ExportPayload } from '@/lib/export';
 
 type Zone = {
   label: string;
@@ -93,6 +95,29 @@ export default function TimeZonePlanner() {
 
   const regions = [...new Set(ZONES.map((z) => z.region))];
 
+  const baseZoneLabel = ZONES.find((z) => z.iana === baseZone)?.label ?? baseZone;
+
+  // Every column is kind: 'text' -- there's no currency/percent/decimal value in a zone/local-time/
+  // status table. Hidden until at least one comparison zone is picked, same as the results grid below.
+  const exportData: ExportPayload | null = selected.length === 0 ? null : {
+    title: findCalculator('timezone-meeting-planner')?.title ?? 'Time Zone Meeting Planner',
+    url: typeof window === 'undefined' ? '' : window.location.href,
+    inputs: [{ label: 'Your time zone', value: baseZoneLabel, kind: 'text' }],
+    result: { label: 'Meeting time', value: formatTime(baseDate, baseZone), kind: 'text' },
+    outputs: [],
+    table: {
+      columns: [
+        { header: 'Zone', kind: 'text' },
+        { header: 'Local time', kind: 'text' },
+        { header: 'Status', kind: 'text' }
+      ],
+      rows: selected
+        .map((iana) => ZONES.find((z) => z.iana === iana))
+        .filter((zone): zone is Zone => Boolean(zone))
+        .map((zone) => [zone.label, formatTime(baseDate, zone.iana), workingLabel(getHour(baseDate, zone.iana))])
+    }
+  };
+
   return (
     <WidgetCard>
       {/* Base time picker */}
@@ -152,6 +177,9 @@ export default function TimeZonePlanner() {
                 </div>
               );
             })}
+          </div>
+          <div className="flex justify-end">
+            <DownloadMenu calculatorId="timezone-meeting-planner" exportData={exportData} />
           </div>
         </div>
       )}

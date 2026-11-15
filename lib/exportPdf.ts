@@ -4,8 +4,10 @@
 // Layout follows a design reviewed with Opus (see mdFiles/steps/ux-09-download-export.md,
 // "Second follow-up: PDF + Print redesign"): top-down full-width blocks (never inputs-beside-
 // chart — two cards of different heights leave a ragged hole), a tinted KPI band instead of a
-// bordered card, the chart's legend as a data table beside it, and a full-width schedule table
-// with no header fill.
+// bordered card, the chart's legend as a data table beside it. The schedule table itself is
+// deliberately NOT stretched to the full page width (user feedback, 2026-11-15, overriding the
+// Opus spec's "use full content width" recommendation) — it's sized to what its columns actually
+// need and centered, same as the pre-redesign table.
 import { formatByKind, type ExportPayload } from '@/lib/export';
 import { resolveChart } from '@/lib/exportChart';
 // Type-only import — erased at compile time, so this doesn't pull jsPDF into the page bundle.
@@ -318,7 +320,8 @@ export async function downloadSummaryPdf(calculatorId: string, payload: ExportPa
 }
 
 /** Everything downloadSummaryPdf does, plus the full schedule — always starting on its own page,
- * full content width, with no header fill (a solid blue bar prints as muddy gray and costs toner). */
+ * sized to its columns and centered (not stretched edge-to-edge), with no header fill (a solid
+ * blue bar prints as muddy gray and costs toner). */
 export async function downloadFullPdf(calculatorId: string, payload: ExportPayload) {
   if (!payload.table) return;
   const { jsPDF } = await import('jspdf');
@@ -345,11 +348,30 @@ export async function downloadFullPdf(calculatorId: string, payload: ExportPaylo
   const formattedRows = payload.table.rows.map((row) => row.map((value, index) => formatByKind(value, kinds[index])));
   const periodColumn = payload.table.columns[0]?.header.toLowerCase() === 'month' || payload.table.columns[0]?.kind === 'integer';
 
+  // Size the table to what its columns actually need, not the full page width — a 4-column
+  // numeric schedule stretched edge-to-edge across a 174mm page reads as thin, sparse rows with
+  // huge gaps between numbers. Each column gets a sensible fixed width by kind, and the table is
+  // centered in the remaining space rather than stretched to fill it.
+  const colWidthForKind = (index: number, kind: typeof kinds[number]) =>
+    index === 0 && periodColumn ? 16 : kind === 'currency' ? 30 : kind === 'percent' ? 20 : kind === 'decimal' ? 26 : kind === 'integer' ? 20 : 32;
+  // Text columns (e.g. TimeZonePlanner's Zone/Status) read left-aligned, like any ordinary table
+  // of labels — only numeric/period columns get the financial-table right alignment below.
+  const columnStyles = Object.fromEntries(
+    payload.table.columns.map((col, index) => [
+      index,
+      { cellWidth: colWidthForKind(index, col.kind), halign: col.kind === 'text' ? ('left' as const) : ('right' as const) }
+    ])
+  );
+  const contentWidth = pageWidth - MARGIN * 2;
+  const naturalWidth = payload.table.columns.reduce((sum, col, index) => sum + colWidthForKind(index, col.kind), 0);
+  const tableWidth = Math.min(contentWidth, naturalWidth);
+  const sideMargin = MARGIN + Math.max(0, (contentWidth - tableWidth) / 2);
+
   autoTable(doc, {
     startY: 42,
-    margin: { top: 20, bottom: 20, left: MARGIN, right: MARGIN },
+    margin: { top: 20, bottom: 20, left: sideMargin, right: sideMargin },
     theme: 'plain',
-    tableWidth: 'auto',
+    tableWidth,
     showHead: 'everyPage',
     rowPageBreak: 'avoid',
     styles: {
@@ -363,7 +385,7 @@ export async function downloadFullPdf(calculatorId: string, payload: ExportPaylo
     },
     head: [payload.table.columns.map((col) => col.header)],
     body: formattedRows,
-    columnStyles: periodColumn ? { 0: { cellWidth: 16, halign: 'right' } } : undefined,
+    columnStyles,
     headStyles: {
       fontStyle: 'bold',
       fontSize: 7.5,

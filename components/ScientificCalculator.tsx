@@ -1,7 +1,9 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { WidgetCard, widgetAccent } from '@/components/CalculatorWidget';
+import { WidgetCard, widgetAccent, DownloadMenu } from '@/components/CalculatorWidget';
+import { findCalculator } from '@/data/calculators';
+import type { ExportPayload } from '@/lib/export';
 import { evaluateExpression, type AngleMode } from '@/lib/scientificCalc';
 
 // Buttons that insert text into the expression. Function keys append "name(" so the parser's
@@ -53,6 +55,17 @@ export default function ScientificCalculator() {
     }
   }, [expression, angleMode]);
 
+  // The current expression as the "input" and its evaluated value as the result -- the same
+  // "formula = answer" shape the solver widgets export. There's no history (only the current
+  // expression is live state), so nothing beyond this single pair is exported.
+  const exportData: ExportPayload | null = expression.trim() === '' || preview === null ? null : {
+    title: findCalculator('scientific-calculator')?.title ?? 'Scientific Calculator',
+    url: typeof window === 'undefined' ? '' : window.location.href,
+    inputs: [{ label: 'Expression', value: expression, kind: 'text' }],
+    result: { label: 'Answer', value: preview, raw: Number(preview), kind: 'decimal' },
+    outputs: []
+  };
+
   // After an "Error" result, typing anything should start a fresh expression rather than
   // literally appending onto the word "Error" (post-review fix, pre-merge review of PR #20).
   const insert = (text: string) => setExpression((prev) => (prev === 'Error' ? text : prev + text));
@@ -99,6 +112,10 @@ export default function ScientificCalculator() {
         <p className="mt-1 h-6 text-right text-sm text-slate-400 dark:text-slate-500">
           {expression.trim() !== '' && preview !== null ? `= ${preview}` : ' '}
         </p>
+      </div>
+
+      <div className="flex justify-end">
+        <DownloadMenu calculatorId="scientific-calculator" exportData={exportData} />
       </div>
 
       <div className="grid grid-cols-5 gap-2">

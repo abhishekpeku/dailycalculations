@@ -10,7 +10,16 @@ import { AlsoIn, ELEVATED_CARD, FIELD_GROUP, FieldRow, Headline, OutputItem, Out
 import LogScale from '@/components/visuals/LogScale';
 import BreakdownVisual from '@/components/BreakdownVisual';
 import { describeSolverKey, solverVisualValues } from '@/lib/breakdown';
-import { exportTableForVisual, type ExportPayload } from '@/lib/export';
+import { exportTableForVisual, type ExportKind, type ExportPayload } from '@/lib/export';
+
+// Excel needs a real number format per value; everything that isn't money or a rate is a plain
+// decimal quantity (its unit already reads in the label/value text shown elsewhere).
+const exportKind = (dimension: UnitDimension): ExportKind =>
+  dimension === 'currency' ? 'currency' : dimension === 'percent' ? 'percent' : 'decimal';
+
+// Excel's `0.00%` number format multiplies the cell by 100 to display it, so a percent dimension
+// (stored as the bare percent number, e.g. 5 for 5%) must be written as the fraction (0.05).
+const exportRaw = (shown: number, dimension: UnitDimension) => (dimension === 'percent' ? shown / 100 : shown);
 
 // Fill any fields and the remaining one is calculated. The state logic lives in lib/solverState.ts.
 
@@ -92,12 +101,30 @@ export default function SolverCalculator({ calculatorId, belowInputs, belowResul
         url: typeof window === 'undefined' ? '' : window.location.href,
         inputs: solver.variables
           .filter((v) => v.id !== target)
-          .map((v) => ({ label: v.label, value: withUnit(formatValue(parse(state.values[v.id]), v.dimension), v.dimension, state.units[v.id]) })),
-        result: { label: 'Result', value: resultText },
+          .map((v) => {
+            const shown = parse(state.values[v.id]);
+            return {
+              label: v.label,
+              value: withUnit(formatValue(shown, v.dimension), v.dimension, state.units[v.id]),
+              raw: exportRaw(shown, v.dimension),
+              kind: exportKind(v.dimension)
+            };
+          }),
+        result: {
+          label: targetVariable.label,
+          value: resultText,
+          raw: exportRaw(fromBase(result, targetVariable.dimension, state.units[target]), targetVariable.dimension),
+          kind: exportKind(targetVariable.dimension)
+        },
         outputs: (solver.outputs ?? []).map((output) => {
           const unit = output.unit ?? UNITS[output.dimension][0].id;
           const shown = fromBase(solution?.outputs[output.id] ?? NaN, output.dimension, unit);
-          return { label: output.label, value: Number.isFinite(shown) ? withUnit(formatValue(shown, output.dimension), output.dimension, unit) : '—' };
+          return {
+            label: output.label,
+            value: Number.isFinite(shown) ? withUnit(formatValue(shown, output.dimension), output.dimension, unit) : '—',
+            raw: exportRaw(shown, output.dimension),
+            kind: exportKind(output.dimension)
+          };
         }),
         table: solution ? exportTableForVisual(solver.visuals?.find((v) => v.type === 'amortization'), solverVisualValues(solver, solution)) : undefined,
         chartSelector: hasVisual ? '[data-export-chart]' : undefined

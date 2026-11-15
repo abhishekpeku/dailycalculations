@@ -7,6 +7,17 @@ User asked for a download feature (2026-11-15), citing: PDF (jsPDF), PDF tables
 export), file download (browser download API). Scoped down to a concrete design via two
 clarifying questions — answers below are final, not open questions.
 
+**Placement confirmed 2026-11-15 (after UX-11 landed)**: the download control sits in
+`WidgetActions`, in the same row as `Share result`/`Copy result`/`Reset`, directly under the
+calculator's inputs card (left column) — not beside the result. A non-functional placeholder
+button (dashed border, chevron icon, flashes "Download coming soon" on click) was built live in a
+dev server to confirm the spot with the user, then **deliberately not committed** — shipping a
+"coming soon" button to real visitors isn't acceptable, so this step builds the real thing at that
+exact spot rather than wiring up the placeholder. When this step starts: replace that placeholder
+(if it's still sitting as an uncommitted local change — check `git status` on
+`components/CalculatorWidget.tsx` first) with the real `DownloadMenu` described in Part 3 below, at
+the same position in `WidgetActions`'s returned JSX (right after the `Reset` button).
+
 ## Scope decisions (confirmed with the user, do not relitigate)
 
 - **Every calculator gets the download control** — built once into the shared

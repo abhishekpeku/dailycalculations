@@ -11,7 +11,11 @@ import { formatMoney, formatSignificant } from '@/lib/calculator';
 // still works everywhere, just as plain text in Excel too.
 export type ExportKind = 'currency' | 'percent' | 'integer' | 'decimal' | 'text';
 export type ExportRow = { label: string; value: string; raw?: number; kind?: ExportKind };
-export type ExportTable = { columns: { header: string; kind: ExportKind }[]; rows: number[][] };
+// Rows are usually raw numbers (so Excel can store a real number with a real number format), but
+// a table can be all `kind: 'text'` columns (e.g. TimeZonePlanner's zone/local-time/status table)
+// where there's no number to store — those rows carry plain strings instead. formatByKind below
+// passes a string straight through.
+export type ExportTable = { columns: { header: string; kind: ExportKind }[]; rows: (number | string)[][] };
 export type ExportPayload = {
   title: string;
   url: string;
@@ -43,8 +47,10 @@ export function numFmtForKind(kind: ExportKind): string | undefined {
   }
 }
 
-/** The same figure, formatted for display (used by the PDF, which just draws text). */
-export function formatByKind(value: number, kind: ExportKind): string {
+/** The same figure, formatted for display (used by the PDF, which just draws text). A string
+ * value (a text-kind table cell) passes straight through — there's no number to format. */
+export function formatByKind(value: number | string, kind: ExportKind): string {
+  if (typeof value === 'string') return value;
   if (!Number.isFinite(value)) return 'n/a';
   switch (kind) {
     case 'currency':

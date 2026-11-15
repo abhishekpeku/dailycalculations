@@ -419,6 +419,7 @@ export const physicsCalculators: CalculatorConfig[] = [
           return vSquared < 0 ? NaN : Math.sqrt(vSquared);
         }
       },
+      outputs: [{ id: 'momentum', label: 'Momentum (p = mv)', dimension: 'momentum', unit: 'kgm/s', compute: (si) => si.mass * si.velocity }],
       visuals: [
         {
           type: 'logScale',
@@ -453,7 +454,7 @@ export const physicsCalculators: CalculatorConfig[] = [
           { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type.' },
           { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
           { name: 'Change units at any time', text: 'Switching a unit converts the number already there — 1,200 kg becomes 2,645 lb, not a different mass with the same digits.' },
-          { name: 'Read the result and the scale', text: 'The answer shows in your chosen energy unit, with the scale below placing it among a few everyday reference points.' },
+          { name: 'Read the result and the scale', text: 'The answer shows in your chosen energy unit, alongside the momentum (p = mv) that same mass and velocity produce, with the scale below placing the energy among a few everyday reference points.' },
           { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
         ],
         outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
@@ -520,7 +521,8 @@ export const physicsCalculators: CalculatorConfig[] = [
         { question: 'What are the SI units of kinetic energy?', answer: 'The joule (J), equal to 1 kg·m²/s². Kinetic energy is also commonly shown in kilojoules, watt-hours, or kilocalories.' },
         { question: 'How is kinetic energy different from potential energy?', answer: 'Kinetic energy is the energy of motion (depends on mass and speed). Potential energy is stored energy due to position, such as height above the ground. Both are measured in joules but come from different formulas.' },
         { question: 'Can kinetic energy be negative?', answer: 'No. Mass is never negative and velocity is squared, so ½mv² is always zero or positive.' },
-        { question: 'How do I convert joules of kinetic energy to kilowatt-hours?', answer: 'Divide by 3,600,000 (since 1 kWh = 3.6 million J). A 240,000 J kinetic energy is 240,000 ÷ 3,600,000 ≈ 0.0667 kWh.' }
+        { question: 'How do I convert joules of kinetic energy to kilowatt-hours?', answer: 'Divide by 3,600,000 (since 1 kWh = 3.6 million J). A 240,000 J kinetic energy is 240,000 ÷ 3,600,000 ≈ 0.0667 kWh.' },
+        { question: 'What momentum does a 1,200 kg car at 20 m/s have, alongside its kinetic energy?', answer: 'Momentum is p = m × v = 1,200 × 20 = 24,000 kg·m/s — shown as a bonus figure next to the 240,000 J of kinetic energy, since both come from the same mass and velocity but scale differently (energy with v², momentum with v alone).' }
       ]
     },
     compute(values) {
@@ -549,6 +551,15 @@ export const physicsCalculators: CalculatorConfig[] = [
         mass: ({ energy, height }) => (height === 0 ? NaN : energy / (STANDARD_GRAVITY * height)),
         height: ({ energy, mass }) => (mass === 0 ? NaN : energy / (STANDARD_GRAVITY * mass))
       },
+      outputs: [
+        {
+          id: 'impactVelocity',
+          label: 'Speed if it fell freely from that height (v = √(2gh))',
+          dimension: 'speed',
+          unit: 'm/s',
+          compute: (si) => (si.height < 0 ? NaN : Math.sqrt(2 * STANDARD_GRAVITY * si.height))
+        }
+      ],
       visuals: [
         {
           type: 'logScale',
@@ -584,7 +595,7 @@ export const physicsCalculators: CalculatorConfig[] = [
           { name: 'Set height from a clear reference point', text: 'Measure height straight up from whatever you are calling "zero" — the ground, a table top, or sea level — not along a slope or path.' },
           { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
           { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 250 m becomes 820.2 ft instead of silently turning into 250 ft.' },
-          { name: 'Read the result and the scale', text: 'The answer shows in your chosen energy unit, with the scale below placing it among a few everyday reference points.' }
+          { name: 'Read the result and the scale', text: 'The answer shows in your chosen energy unit, alongside the speed a free fall from that same height would reach, with the scale below placing the energy among a few everyday reference points.' }
         ],
         outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
       },
@@ -630,6 +641,10 @@ export const physicsCalculators: CalculatorConfig[] = [
         {
           title: 'The path taken does not matter, only the net height',
           body: "Because gravity is a conservative force, the potential energy gained depends only on the net change in height, not on the route taken to get there. A hiker gains the same potential energy walking straight up a cliff or zigzagging up a gentle trail to the same final height."
+        },
+        {
+          title: "The free-fall speed bonus figure ignores air resistance",
+          body: 'The speed shown (v = √(2gh)) assumes every bit of potential energy converts to kinetic energy on the way down, with nothing lost to drag — the same assumption behind setting PE = KE. A real falling object, especially a light or large one, reaches a lower actual speed because air resistance removes some of that energy as heat.'
         }
       ],
       references: [
@@ -652,7 +667,8 @@ export const physicsCalculators: CalculatorConfig[] = [
         { question: 'What is g in the potential energy formula?', answer: 'Standard gravitational acceleration, fixed at 9.80665 m/s² near Earth\'s surface. This calculator uses that value throughout.' },
         { question: 'How is potential energy different from kinetic energy?', answer: 'Potential energy is stored energy due to position (height in a gravity field); kinetic energy is the energy of motion (depends on mass and speed). A falling object converts potential energy into kinetic energy as it drops.' },
         { question: 'Does potential energy depend on the path taken to reach a height?', answer: 'No. Gravity is a conservative force, so potential energy depends only on the net vertical height gained, not on the route taken to get there.' },
-        { question: 'How do I convert joules of potential energy to kilowatt-hours?', answer: 'Divide by 3,600,000. A potential energy of 159,358 J is 159,358 ÷ 3,600,000 ≈ 0.0443 kWh.' }
+        { question: 'How do I convert joules of potential energy to kilowatt-hours?', answer: 'Divide by 3,600,000. A potential energy of 159,358 J is 159,358 ÷ 3,600,000 ≈ 0.0443 kWh.' },
+        { question: 'How fast would something be moving if it fell from that height?', answer: 'Setting potential and kinetic energy equal (mgh = ½mv²) and canceling mass gives v = √(2gh) — shown as a bonus figure next to the energy. Falling freely from 250 m, ignoring air resistance, reaches about 70.0 m/s (√(2 × 9.80665 × 250)).' }
       ]
     },
     compute(values) {
@@ -693,6 +709,7 @@ export const physicsCalculators: CalculatorConfig[] = [
           return c < -1 || c > 1 ? NaN : Math.acos(c);
         }
       },
+      outputs: [{ id: 'effectiveForce', label: 'Effective force along the motion (F cos θ)', dimension: 'force', unit: 'N', compute: (si) => si.force * Math.cos(si.angle) }],
       visuals: [
         {
           type: 'logScale',
@@ -728,7 +745,7 @@ export const physicsCalculators: CalculatorConfig[] = [
           { name: 'Measure the angle correctly', text: 'The angle is between the force and the direction of motion — not from vertical, not from the ground. A force pulling exactly along the motion is 0°; a sideways push is 90°.' },
           { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
           { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 50 N becomes 11.24 lbf instead of silently turning into 50 lbf.' },
-          { name: 'Read the result and the scale', text: 'The answer shows in your chosen energy unit, with the scale below placing it among a few everyday reference points.' }
+          { name: 'Read the result and the scale', text: 'The answer shows in your chosen energy unit, alongside the effective force (F cos θ) that actually acts along the direction of motion, with the scale below placing the work among a few everyday reference points.' }
         ],
         outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
       },
@@ -797,7 +814,8 @@ export const physicsCalculators: CalculatorConfig[] = [
         { question: 'Can work be negative?', answer: 'Yes. When a force acts opposite to the direction of motion (angle greater than 90°), cos θ is negative, making the work negative — the force removes energy rather than adding it.' },
         { question: 'How much work does pulling at 30° do compared to pulling straight?', answer: 'cos 30° ≈ 0.8660, so a 30° pull does about 86.6% of the work a straight-line (0°) pull of the same force and distance would do.' },
         { question: 'What are the SI units of work?', answer: 'The joule (J), the same unit used for energy — 1 J equals 1 newton-meter (N·m).' },
-        { question: 'How is work different from power?', answer: 'Work has no time component — it only depends on force, distance and angle. Power is the rate at which work is done, work divided by the time it takes.' }
+        { question: 'How is work different from power?', answer: 'Work has no time component — it only depends on force, distance and angle. Power is the rate at which work is done, work divided by the time it takes.' },
+        { question: 'How much of a 50 N pull at 30° actually acts along the motion?', answer: 'The effective force is F cos θ = 50 × cos 30° ≈ 43.3 N — shown as a bonus figure next to the work. It is this smaller, aligned force that the work formula actually multiplies by distance; the rest of the 50 N pulls uselessly up out of the direction of travel.' }
       ]
     },
     compute(values) {
@@ -826,6 +844,7 @@ export const physicsCalculators: CalculatorConfig[] = [
         mass: ({ momentum, velocity }) => (velocity === 0 ? NaN : momentum / velocity),
         velocity: ({ momentum, mass }) => (mass === 0 ? NaN : momentum / mass)
       },
+      outputs: [{ id: 'kineticEnergy', label: 'Kinetic energy (KE = ½mv²)', dimension: 'energy', unit: 'J', compute: (si) => 0.5 * si.mass * si.velocity * si.velocity }],
       visuals: [
         {
           type: 'logScale',
@@ -861,7 +880,7 @@ export const physicsCalculators: CalculatorConfig[] = [
           { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type.' },
           { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
           { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 1,500 kg becomes 3,306.9 lb instead of silently turning into 1,500 lb.' },
-          { name: 'Read the result and the scale', text: 'The answer shows in your chosen unit, with the scale below placing it among a few everyday moving objects.' },
+          { name: 'Read the result and the scale', text: 'The answer shows in your chosen unit, alongside the kinetic energy that same mass and velocity carry, with the scale below placing the momentum among a few everyday moving objects.' },
           { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
         ],
         outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
@@ -924,7 +943,8 @@ export const physicsCalculators: CalculatorConfig[] = [
         { question: 'Is momentum a vector or a scalar?', answer: 'A vector — it has both a size and a direction. Two equal masses moving toward each other at the same speed have momenta that point opposite ways and add to zero.' },
         { question: 'How do I find mass from momentum and velocity?', answer: 'Divide momentum by velocity: m = p ÷ v. An object with 500 kg·m/s of momentum moving at 10 m/s has a mass of 50 kg.' },
         { question: 'Does doubling velocity double momentum?', answer: 'Yes. Momentum is proportional to velocity (p = m × v), so doubling velocity exactly doubles momentum — unlike kinetic energy, which quadruples.' },
-        { question: 'What is the relationship between momentum and impulse?', answer: 'The impulse-momentum theorem states that the impulse delivered to an object equals its change in momentum, J = Δp. See the impulse calculator for the force-and-time side of that relationship.' }
+        { question: 'What is the relationship between momentum and impulse?', answer: 'The impulse-momentum theorem states that the impulse delivered to an object equals its change in momentum, J = Δp. See the impulse calculator for the force-and-time side of that relationship.' },
+        { question: 'What kinetic energy does a 1,500 kg car at 20 m/s have, alongside its momentum?', answer: 'KE = ½ × m × v² = 0.5 × 1,500 × 20² = 300,000 J — shown as a bonus figure next to the 30,000 kg·m/s of momentum. The two describe the same motion differently: momentum scales with speed, kinetic energy with speed squared.' }
       ]
     },
     compute(values) {
@@ -2101,6 +2121,7 @@ export const physicsCalculators: CalculatorConfig[] = [
         frequency: ({ speed, wavelength }) => (wavelength === 0 ? NaN : speed / wavelength),
         speed: ({ frequency, wavelength }) => frequency * wavelength
       },
+      outputs: [{ id: 'period', label: 'Period (T = 1 ÷ f)', dimension: 'time', unit: 's', compute: (si) => (si.frequency === 0 ? NaN : 1 / si.frequency) }],
       visuals: [
         {
           type: 'logScale',
@@ -2137,7 +2158,7 @@ export const physicsCalculators: CalculatorConfig[] = [
           { name: 'Enter the two values you know', text: 'Type each value and pick its unit from the menu beside it. The third field, marked auto, calculates as you type.' },
           { name: 'Switch which one is calculated', text: 'To solve for a different quantity, type into the auto field. It becomes an input, and the field left alone longest becomes the new calculated one.' },
           { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 100 MHz becomes 100,000,000 Hz instead of silently turning into 100 Hz.' },
-          { name: 'Read the result and the scale', text: 'The answer appears in your chosen unit. The scale shows where your frequency sits among the radio, Wi-Fi, visible-light and X-ray bands.' }
+          { name: 'Read the result and the scale', text: 'The answer appears in your chosen unit, alongside the period (the time for one full cycle). The scale shows where your frequency sits among the radio, Wi-Fi, visible-light and X-ray bands.' }
         ],
         outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
       },
@@ -2204,7 +2225,8 @@ export const physicsCalculators: CalculatorConfig[] = [
         { question: 'Does this calculator work for sound waves?', answer: "Yes — enter the actual speed of sound (about 343 m/s in dry air at 20 °C) in the wave speed field instead of the speed of light. The same v = f × λ relationship applies to any wave." },
         { question: 'What is the exact speed of light?', answer: '299,792,458 meters per second, exactly. Since 1983 the metre has been defined as the distance light travels in 1 ⁄ 299,792,458 of a second, which fixes this value by definition rather than by measurement.' },
         { question: 'Why do higher-frequency waves have shorter wavelengths?', answer: "Because speed is fixed for a given medium, frequency and wavelength must trade off to keep their product constant. Gamma rays have an extremely high frequency and a correspondingly tiny wavelength; AM radio waves have a low frequency and a wavelength hundreds of meters long." },
-        { question: 'How are frequency and period related?', answer: 'They are reciprocals: f = 1 ÷ T. A wave with a period of 0.01 seconds has a frequency of 1 ÷ 0.01 = 100 Hz.' }
+        { question: 'How are frequency and period related?', answer: 'They are reciprocals: f = 1 ÷ T. A wave with a period of 0.01 seconds has a frequency of 1 ÷ 0.01 = 100 Hz.' },
+        { question: 'What is the period of a 100 MHz radio wave?', answer: 'T = 1 ÷ f = 1 ÷ 100,000,000 = 1 × 10⁻⁸ s (10 nanoseconds) — shown as a bonus figure next to the wavelength, since it follows directly from the frequency already solved.' }
       ]
     },
     compute(values) {
@@ -2232,7 +2254,8 @@ export const physicsCalculators: CalculatorConfig[] = [
         decibels: ({ inputPower, outputPower }) => (inputPower <= 0 || outputPower <= 0 ? NaN : 10 * Math.log10(outputPower / inputPower)),
         outputPower: ({ inputPower, decibels }) => (inputPower <= 0 ? NaN : inputPower * 10 ** (decibels / 10)),
         inputPower: ({ outputPower, decibels }) => (outputPower <= 0 ? NaN : outputPower / 10 ** (decibels / 10))
-      }
+      },
+      outputs: [{ id: 'powerRatio', label: 'Power ratio (P₂ ÷ P₁)', dimension: 'count', compute: (si) => (si.inputPower <= 0 ? NaN : si.outputPower / si.inputPower) }]
     },
     content: {
       lastReviewed: '2026-11-06',
@@ -2251,7 +2274,7 @@ export const physicsCalculators: CalculatorConfig[] = [
           { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type.' },
           { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
           { name: 'Change units at any time', text: 'Switching a power unit converts the number already there, so 1 W becomes 1,000 mW instead of silently turning into 1 mW.' },
-          { name: 'Read the result', text: 'The decibel field shows how many dB higher (positive) or lower (negative) the measured power is than the reference.' }
+          { name: 'Read the result', text: 'The decibel field shows how many dB higher (positive) or lower (negative) the measured power is than the reference, alongside the plain power ratio (P₂ ÷ P₁) that same dB figure represents.' }
         ],
         outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
       },
@@ -2318,7 +2341,8 @@ export const physicsCalculators: CalculatorConfig[] = [
         { question: 'What does −10 dB mean?', answer: 'The power has dropped to one tenth of what it was: 10 × log₁₀(0.1) = −10 dB.' },
         { question: 'Why do some decibel formulas use 20 × log instead of 10 × log?', answer: 'Use 20 × log₁₀ when comparing voltage, current, or sound pressure (amplitude quantities) rather than power directly, since power is proportional to amplitude squared.' },
         { question: 'What does 0 dB mean?', answer: 'The two powers are equal — a ratio of 1, and log₁₀(1) = 0. It does not mean zero power.' },
-        { question: 'How many decibels is a normal conversation?', answer: 'About 60 dB, measured against the standard reference intensity for sound, 1 × 10⁻¹² W/m². A conversation at roughly 1 µW/m² gives 10 × log₁₀(10⁻⁶ ÷ 10⁻¹²) = 60 dB exactly.' }
+        { question: 'How many decibels is a normal conversation?', answer: 'About 60 dB, measured against the standard reference intensity for sound, 1 × 10⁻¹² W/m². A conversation at roughly 1 µW/m² gives 10 × log₁₀(10⁻⁶ ÷ 10⁻¹²) = 60 dB exactly.' },
+        { question: 'What plain power ratio does 10 dB represent?', answer: 'Ratio = 10^(dB ÷ 10). For the 10 dB worked example, that is 10^1 = 10 — the output power is exactly 10 times the reference, shown as a bonus figure next to the dB value.' }
       ]
     },
     compute(values) {

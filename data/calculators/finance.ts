@@ -54,6 +54,42 @@ const federalIncomeTax = (taxable: number, status: number) => {
   return tax;
 };
 
+// Freddie Mac, "Breaking down PMI": about $30-$70 a month per $100,000 borrowed. The midpoint, $50
+// a month per $100,000, is 0.6% of the loan a year — used as the assumed PMI rate below 20% down.
+const PMI_RATE_ANNUAL_PERCENT = 0.6;
+
+// Home-affordability tiers (home-affordability-calculator): the home price that keeps a monthly
+// housing payment (P&I + tax + insurance + PMI + HOA) at or under `maxHousingPayment`. `k` is the
+// payment per $1 of loan (loanPayment(1, months, apr)), so the payment is linear in the loan
+// amount and the price solves in closed form. PMI applies only when the resulting down payment
+// would be under 20% of the price, which can change which of the two closed forms is the answer.
+const affordableHomePrice = (
+  maxHousingPayment: number,
+  downPayment: number,
+  k: number,
+  taxRateMonthly: number,
+  insuranceMonthly: number,
+  hoaMonthly: number,
+  pmiRateMonthly: number
+) => {
+  const noPmiPrice = (maxHousingPayment - insuranceMonthly - hoaMonthly + k * downPayment) / (k + taxRateMonthly);
+  const pmiApplies = !(noPmiPrice > 0 && downPayment >= 0.2 * noPmiPrice);
+  const homePrice = Math.max(
+    0,
+    pmiApplies
+      ? (maxHousingPayment - insuranceMonthly - hoaMonthly + downPayment * (k + pmiRateMonthly)) / (k + taxRateMonthly + pmiRateMonthly)
+      : noPmiPrice
+  );
+  const loanAmount = Math.max(0, homePrice - downPayment);
+  return {
+    homePrice,
+    loanAmount,
+    monthlyPI: k * loanAmount,
+    monthlyTax: taxRateMonthly * homePrice,
+    monthlyPMI: pmiApplies ? pmiRateMonthly * loanAmount : 0
+  };
+};
+
 export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'mortgage-calculator',
@@ -1190,6 +1226,171 @@ export const financeCalculators: CalculatorConfig[] = [
       const totalPayment = emi * values.months;
       const totalInterest = totalPayment - principal;
       return { emi, totalPayment, totalInterest, principal };
+    }
+  },
+  {
+    id: 'home-affordability-calculator',
+    category: 'finance',
+    glyph: 'Aff',
+    updatedAt: '2026-11-15',
+    aliases: ['how much house can i afford calculator', 'home buying budget calculator', 'house affordability calculator', 'affordability calculator'],
+    related: ['mortgage-calculator', 'loan-prepayment-calculator', 'paycheck-calculator'],
+    title: 'Home Affordability Calculator',
+    description: 'Find how much house you can afford at three levels — conservative, balanced and maximum — from your income, debt and down payment, with a full PITI breakdown and a 28% front-end / back-end debt-to-income check.',
+    example: 'A household earning $96,000 a year with $1,500 of other monthly debt and $40,000 down can afford roughly $190,900 (conservative) to $302,000 (maximum) at 6.5% over 30 years, with a balanced estimate of about $263,300.',
+    breakdown: {
+      headline: 'balancedHomePrice',
+      headlineLabel: 'Balanced affordable home price',
+      outputs: [
+        { id: 'balancedHomePrice', label: 'Balanced affordable home price', format: 'currency' },
+        { id: 'conservativeHomePrice', label: 'Conservative (lower) estimate', format: 'currency' },
+        { id: 'maximumHomePrice', label: 'Maximum (upper) estimate', format: 'currency' },
+        { id: 'loanAmount', label: 'Loan amount at the balanced price', format: 'currency' },
+        { id: 'monthlyPI', label: 'Principal & interest', format: 'currency' },
+        { id: 'monthlyPropertyTax', label: 'Property tax', format: 'currency' },
+        { id: 'monthlyInsurance', label: 'Homeowners insurance', format: 'currency' },
+        { id: 'monthlyPMI', label: 'Mortgage insurance (PMI)', format: 'currency' },
+        { id: 'monthlyHOA', label: 'HOA dues', format: 'currency' },
+        { id: 'totalMonthlyPayment', label: 'Total monthly housing payment', format: 'currency' },
+        { id: 'frontEndRatio', label: 'Front-end ratio (housing ÷ income)', format: 'percent' },
+        { id: 'backEndRatio', label: 'Back-end ratio (housing + other debt ÷ income)', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Income & debt', inputs: ['grossAnnualIncome', 'existingMonthlyDebt'] },
+        { title: 'Loan', inputs: ['downPayment', 'interestRate', 'termYears'] },
+        { title: 'Ongoing housing costs', inputs: ['propertyTaxRate', 'annualInsurance', 'hoaMonthly'], optional: true }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'conservativeHomePrice', label: 'Conservative' },
+          { from: 'balancedHomePrice', label: 'Balanced' },
+          { from: 'maximumHomePrice', label: 'Maximum' }
+        ],
+        title: 'Affordable home price by tier',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-15',
+      concept: {
+        title: '"How much house can I afford" is three numbers, not one',
+        paragraphs: [
+          'Affordability is the home price your income, debt and down payment support at a monthly housing payment lenders consider acceptable. That payment is checked two ways: the front-end (or housing) ratio, your housing payment alone divided by your gross monthly income, and the back-end (or total) ratio, your housing payment plus every other debt payment divided by the same income. A long-standing lending convention, often called the 28/36 rule, caps the front-end ratio at 28% and the back-end ratio at 36%. Actual underwriting is looser: Fannie Mae\'s own manual-underwriting limit is a 36% back-end ratio (stretchable to 45% with strong credit and reserves), the Consumer Financial Protection Bureau\'s Qualified Mortgage rule generally caps back-end debt at 43%, and loans run through Fannie Mae\'s automated underwriting system can be approved up to a 50% back-end ratio.',
+          'This calculator turns that range into three concrete prices: conservative (36% back-end), balanced (43%) and maximum (50%), every tier still capped at the classic 28% front-end ratio. A higher tier is a looser lending ceiling, not a recommendation — carrying debt all the way up to 50% of your income leaves very little room for a job loss, a medical bill or a repair, which is exactly why the conservative tier exists.',
+          'The housing payment itself is more than the loan payment. Lenders total PITI: Principal, Interest, property Taxes and homeowners Insurance, plus private mortgage insurance (PMI) if the down payment is under 20% of the price, plus any HOA dues. This calculator builds the full PITI stack for each tier, not just the principal-and-interest figure mortgage-calculator gives for a home price you already have in mind.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your income, other debt and down payment, then the loan terms and your estimated ongoing costs. All three tiers update together.',
+        steps: [
+          { name: 'Enter your income and other debt', text: 'Gross annual income before tax, and the total of every other monthly debt payment: car loans, student loans, credit card minimums and the like. Do not include rent or the mortgage you are solving for.' },
+          { name: 'Enter your down payment, rate and term', text: 'The down payment is the same across all three tiers; only the maximum monthly housing payment each tier allows changes, which changes the home price that payment supports.' },
+          { name: 'Add your ongoing costs', text: 'Property tax rate (a percent of the home price per year), an annual homeowners insurance estimate, and any HOA dues. These come straight off the top of the housing payment each tier allows, before PMI, so a higher property tax rate or HOA lowers every tier\'s price.' },
+          { name: 'Read the three tiers', text: 'The chart and the headline show the conservative, balanced and maximum home price. The breakdown below is the balanced tier\'s full PITI stack.' },
+          { name: 'Check the ratios', text: 'The front-end and back-end ratios at the bottom confirm which constraint is binding at the balanced tier: 28% front-end, or the tier\'s own back-end cap.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Each tier caps the monthly housing payment at the lower of 28% of gross income and the tier\'s back-end cap minus other debt, then solves for the home price whose PITI equals that payment.',
+        expression: 'Max housing payment = min(0.28 × income, backEndCap × income − otherDebt)\nPITI = P&I + (taxRate ÷ 12) × price + insurance ÷ 12 + PMI + HOA\nP&I = k × (price − down payment), k = the payment on a $1 loan\nPMI applies only if down payment < 20% of price',
+        terms: [
+          { symbol: 'income', meaning: 'Gross monthly income (annual income ÷ 12).' },
+          { symbol: 'otherDebt', meaning: 'Every other monthly debt payment, excluding the housing payment being solved for.' },
+          { symbol: 'backEndCap', meaning: '36% (conservative), 43% (balanced) or 50% (maximum) — see the concept section for where each comes from.' },
+          { symbol: 'k', meaning: 'The standard amortized-loan payment factor: k = r ÷ (1 − (1 + r)^−n), r the monthly rate, n the number of payments.' },
+          { symbol: 'PMI', meaning: 'Assumed at 0.6% of the loan a year below 20% down — the midpoint of Freddie Mac\'s published $30–$70-a-month-per-$100,000 PMI range.' }
+        ],
+        note: 'Estimates only, not a pre-approval or a promise of credit. A lender also checks your credit score, assets, employment history and the specific loan program, any of which can move the real number in either direction.'
+      },
+      workedExample: {
+        intro: 'A household earns $96,000 a year ($8,000 a month) and pays $1,500 a month toward other debt. They plan a $40,000 down payment, a 6.5% 30-year mortgage, 1.1% annual property tax and $2,110 of annual homeowners insurance, no HOA. What can they afford?',
+        rows: [
+          { label: '28% front-end cap (0.28 × 8,000)', value: '$2,240 a month' },
+          { label: 'Conservative 36% back-end cap (0.36 × 8,000 − 1,500)', value: '$1,380 a month (binding)' },
+          { label: 'Balanced 43% back-end cap (0.43 × 8,000 − 1,500)', value: '$1,940 a month (binding)' },
+          { label: 'Maximum 50% back-end cap (0.50 × 8,000 − 1,500)', value: '$2,500 a month, capped at the $2,240 front-end limit' },
+          { label: 'Conservative home price', value: '≈ $190,892' },
+          { label: 'Balanced home price', value: '≈ $263,268' },
+          { label: 'Maximum home price', value: '≈ $302,041' },
+          { label: 'Balanced PITI: P&I $1,411.20 + tax $241.33 + insurance $175.83 + PMI $111.63', value: '≈ $1,940 a month' }
+        ],
+        result: 'Affordable price ≈ $190,900–$302,000, balanced estimate ≈ $263,300',
+        explanation: 'At the conservative and balanced tiers, the back-end ratio (all debt against income) is the binding limit, which is why extra monthly debt shrinks those two prices directly. At the maximum tier, the back-end cap (50%) is loose enough that the classic 28% front-end limit binds instead, which is why the maximum tier\'s own back-end ratio works out to only 46.75%, not the full 50%.'
+      },
+      watchOut: [
+        { title: 'The maximum tier is a ceiling, not a target', body: 'Lenders can approve up to roughly a 50% back-end ratio through automated underwriting, but that leaves little slack for a rate increase, a repair bill or a job change. Many buyers are more comfortable well below it.' },
+        { title: 'Property tax and insurance vary a lot by location', body: 'Both are entered as your own estimates. A county with a 2% property tax rate or a coastal home with a much higher insurance premium can cut the affordable price noticeably versus this calculator\'s defaults.' },
+        { title: 'PMI is an assumption, not your quote', body: 'Real PMI depends on your credit score, loan type and down payment and commonly runs from about 0.3% to 1.5% of the loan a year. This calculator uses a 0.6% midpoint; your actual quote can be higher or lower.' },
+        { title: 'Other debt matters more than it looks', body: 'Because the back-end cap is shared between housing and other debt, every extra $100 of other monthly debt payments lowers the conservative and balanced home prices by roughly the amount a $100 smaller housing payment would support.' },
+        { title: 'Not a pre-approval', body: 'A real lender checks your credit score, assets, employment history, and the specific loan program\'s own rules, any of which can move the real approved amount up or down from this estimate.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, What is a debt-to-income ratio?', url: 'https://www.consumerfinance.gov/ask-cfpb/what-is-a-debt-to-income-ratio-en-1791/' },
+        { label: 'Consumer Financial Protection Bureau, Regulation Z §1026.43, Minimum standards for transactions secured by a dwelling (Qualified Mortgage, 43% DTI)', url: 'https://www.consumerfinance.gov/rules-policy/regulations/1026/43/' },
+        { label: 'Fannie Mae Selling Guide, B3-6-02, Debt-to-Income Ratios', url: 'https://selling-guide.fanniemae.com/sel/b3-6-02/debt-income-ratios' },
+        { label: 'Freddie Mac, My Home: Breaking down PMI', url: 'https://myhome.freddiemac.com/buying/breaking-down-pmi' },
+        { label: 'Freddie Mac, My Home: What Are Closing Costs and How Much Will I Pay? (national average homeowners insurance premium)', url: 'https://myhome.freddiemac.com/blog/homebuying/what-are-closing-costs-and-how-much-will-i-pay' },
+        { label: 'Bankrate, What is the 28/36 rule?', url: 'https://www.bankrate.com/real-estate/what-is-the-28-36-rule/' }
+      ]
+    },
+    inputs: [
+      { id: 'grossAnnualIncome', label: 'Gross annual income', type: 'currency', placeholder: '96000', defaultValue: 96000, step: 1000, min: 0 },
+      { id: 'existingMonthlyDebt', label: 'Other monthly debt payments', type: 'currency', placeholder: '1500', defaultValue: 1500, step: 50, min: 0 },
+      { id: 'downPayment', label: 'Down payment', type: 'currency', placeholder: '40000', defaultValue: 40000, step: 1000, min: 0 },
+      { id: 'interestRate', label: 'Interest rate (APR)', type: 'percent', placeholder: '6.5', defaultValue: 6.5, step: 0.01, min: 0 },
+      { id: 'termYears', label: 'Loan term', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1, dimension: 'term', unit: 'yr' },
+      { id: 'propertyTaxRate', label: 'Property tax rate (annual, % of price)', type: 'percent', placeholder: '1.1', defaultValue: 1.1, step: 0.05, min: 0 },
+      { id: 'annualInsurance', label: 'Homeowners insurance (annual estimate)', type: 'currency', placeholder: '2110', defaultValue: 2110, step: 50, min: 0 },
+      { id: 'hoaMonthly', label: 'HOA dues (monthly)', type: 'currency', placeholder: '0', defaultValue: 0, step: 25, min: 0 }
+    ],
+    seo: {
+      title: 'Home Affordability Calculator – How Much House?',
+      description: 'See how much house you can afford at conservative, balanced and maximum levels, with a full PITI breakdown and the 28% front-end / back-end debt-to-income check.',
+      faq: [
+        { question: 'How much house can I afford?', answer: 'It depends which lending ceiling you use. With $8,000 a month in gross income, $1,500 of other debt and $40,000 down at 6.5% over 30 years, this calculator gives about $190,900 conservatively, $263,300 on a balanced basis and $302,000 at the loosest ceiling lenders use.' },
+        { question: 'What is the 28/36 rule?', answer: 'A long-standing guideline: keep your housing payment at or under 28% of gross monthly income (the front-end ratio) and all debt payments combined at or under 36% (the back-end ratio). This calculator\'s conservative tier uses exactly those two caps.' },
+        { question: 'Why does this calculator show three different numbers?', answer: 'Because real lending limits span a range: Fannie Mae\'s manual-underwriting back-end cap is 36%, the CFPB\'s Qualified Mortgage rule generally allows up to 43%, and loans approved through automated underwriting can go to 50%. The front-end ratio stays capped at 28% in all three.' },
+        { question: 'Does the result include taxes and insurance?', answer: 'Yes. Unlike a plain loan-payment calculation, this result is the full PITI stack: principal, interest, property tax, homeowners insurance, PMI below 20% down, and any HOA dues, all added up to the monthly payment each tier allows.' },
+        { question: 'When do I need mortgage insurance (PMI)?', answer: 'Generally when your down payment is under 20% of the home price. This calculator checks that automatically for each tier and adds an assumed PMI cost (0.6% of the loan a year) when it applies.' },
+        { question: 'Does more other debt really lower how much house I can afford?', answer: 'Yes, directly, at the conservative and balanced tiers, because the back-end cap is a shared budget between housing and every other debt payment. In the example, raising other debt by $300 a month lowers the balanced home price by tens of thousands of dollars.' },
+        { question: 'Should I borrow up to the maximum tier?', answer: 'Not necessarily. The maximum tier shows what an automated underwriting system can approve, not what is comfortable. A back-end ratio near 50% leaves little room for a rate reset, a repair, or a drop in income.' },
+        { question: 'How does this differ from the mortgage calculator?', answer: 'Mortgage-calculator finds the payment (or price) for a home you already have in mind. This calculator works the other direction, starting from income and debt to find what price range is realistic in the first place, with the full PITI and DTI check mortgage-calculator does not do.' }
+      ]
+    },
+    compute(values) {
+      const grossMonthlyIncome = values.grossAnnualIncome / 12;
+      const k = loanPayment(1, Math.max(1, values.termYears * 12), values.interestRate);
+      const taxRateMonthly = values.propertyTaxRate / 100 / 12;
+      const insuranceMonthly = values.annualInsurance / 12;
+      const pmiRateMonthly = PMI_RATE_ANNUAL_PERCENT / 100 / 12;
+
+      const tierFor = (backEndCap: number) => {
+        const maxFrontEnd = 0.28 * grossMonthlyIncome;
+        const maxBackEnd = backEndCap * grossMonthlyIncome - values.existingMonthlyDebt;
+        const maxHousingPayment = Math.max(0, Math.min(maxFrontEnd, maxBackEnd));
+        return { maxHousingPayment, ...affordableHomePrice(maxHousingPayment, values.downPayment, k, taxRateMonthly, insuranceMonthly, values.hoaMonthly, pmiRateMonthly) };
+      };
+
+      const conservative = tierFor(0.36);
+      const balanced = tierFor(0.43);
+      const maximum = tierFor(0.5);
+
+      return {
+        conservativeHomePrice: conservative.homePrice,
+        balancedHomePrice: balanced.homePrice,
+        maximumHomePrice: maximum.homePrice,
+        loanAmount: balanced.loanAmount,
+        monthlyPI: balanced.monthlyPI,
+        monthlyPropertyTax: balanced.monthlyTax,
+        monthlyInsurance: insuranceMonthly,
+        monthlyPMI: balanced.monthlyPMI,
+        monthlyHOA: values.hoaMonthly,
+        totalMonthlyPayment: balanced.maxHousingPayment,
+        frontEndRatio: (balanced.maxHousingPayment / grossMonthlyIncome) * 100,
+        backEndRatio: ((balanced.maxHousingPayment + values.existingMonthlyDebt) / grossMonthlyIncome) * 100
+      };
     }
   }
 ];

@@ -4007,6 +4007,89 @@ exports[`compute() snapshots > heat-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > home-affordability-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "grossAnnualIncome": 96000,
+      "existingMonthlyDebt": 1500,
+      "downPayment": 40000,
+      "interestRate": 6.5,
+      "termYears": 30,
+      "propertyTaxRate": 1.1,
+      "annualInsurance": 2110,
+      "hoaMonthly": 0
+    },
+    "outputs": {
+      "conservativeHomePrice": 190891.5155,
+      "balancedHomePrice": 263267.7456,
+      "maximumHomePrice": 302040.7261,
+      "loanAmount": 223267.7456,
+      "monthlyPI": 1411.204027,
+      "monthlyPropertyTax": 241.3287668,
+      "monthlyInsurance": 175.8333333,
+      "monthlyPMI": 111.6338728,
+      "monthlyHOA": 0,
+      "totalMonthlyPayment": 1940,
+      "frontEndRatio": 24.25,
+      "backEndRatio": 43
+    }
+  },
+  "typical": {
+    "inputs": {
+      "grossAnnualIncome": 144000,
+      "existingMonthlyDebt": 2250,
+      "downPayment": 60000,
+      "interestRate": 9.75,
+      "termYears": 45,
+      "propertyTaxRate": 1.65,
+      "annualInsurance": 3150,
+      "hoaMonthly": 0
+    },
+    "outputs": {
+      "conservativeHomePrice": 239610.1834,
+      "balancedHomePrice": 313856.5285,
+      "maximumHomePrice": 358392.7615,
+      "loanAmount": 253856.5285,
+      "monthlyPI": 2089.019009,
+      "monthlyPropertyTax": 431.5527267,
+      "monthlyInsurance": 262.5,
+      "monthlyPMI": 126.9282642,
+      "monthlyHOA": 0,
+      "totalMonthlyPayment": 2910,
+      "frontEndRatio": 24.25,
+      "backEndRatio": 43
+    }
+  },
+  "edge": {
+    "inputs": {
+      "grossAnnualIncome": 0,
+      "existingMonthlyDebt": 0,
+      "downPayment": 0,
+      "interestRate": 0,
+      "termYears": 1,
+      "propertyTaxRate": 0,
+      "annualInsurance": 0,
+      "hoaMonthly": 0
+    },
+    "outputs": {
+      "conservativeHomePrice": 0,
+      "balancedHomePrice": 0,
+      "maximumHomePrice": 0,
+      "loanAmount": 0,
+      "monthlyPI": 0,
+      "monthlyPropertyTax": 0,
+      "monthlyInsurance": 0,
+      "monthlyPMI": 0,
+      "monthlyHOA": 0,
+      "totalMonthlyPayment": 0,
+      "frontEndRatio": "NaN",
+      "backEndRatio": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > horsepower-to-kilowatts-converter 1`] = `
 {
   "default": {

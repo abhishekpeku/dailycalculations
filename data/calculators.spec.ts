@@ -85,7 +85,8 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'molarity-molality-conversion-calculator': ['molality'], // molarity, density and molarMass all 0 (their min) -> 0/0
   'calorimetry-enthalpy-calculator': ['enthalpy'], // moles 0 (its min) -> divide by zero
   'common-ion-effect-calculator': ['molarSolubility'], // ksp and commonIonConcentration both 0 (their min) -> 0/0
-  'specific-heat-by-mixing-calculator': ['specificHeatUnknown'] // every input 0 (min, or 0 for unbounded fields) -> 0/0
+  'specific-heat-by-mixing-calculator': ['specificHeatUnknown'], // every input 0 (min, or 0 for unbounded fields) -> 0/0
+  'home-affordability-calculator': ['frontEndRatio', 'backEndRatio'] // grossAnnualIncome 0 (its min) -> gross monthly income 0 -> both ratios are 0/0
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

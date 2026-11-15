@@ -174,5 +174,27 @@ they will have shifted from other in-flight work like step 60/UX-10)
   - `npm test` 1123/1123, lint clean, `npm run build` passing. Manually verified in a dev
     server: all 4 category pages show labeled sections; the Categories dropdown mirrors the
     same grouped sections for all 4.
-- [ ] Batch 5: `time` + `travel` + `text` + `creator` + `education`
-- [ ] STATUS.md updated with a final summary (every category's group count)
+- [x] Batch 5: `time` + `travel` + `text` + `creator` + `education` — PR #91, branch
+      `ux/category-groups-batch5`
+  - `time.ts`: 5/5 tagged, 3 groups (Ages & Dates 2: age-calculator, date-difference-calculator;
+    Work & Focus 2: work-hours-calculator, pomodoro-timer; Sleep 1: sleep-time-calculator)
+  - `travel.ts`: 4/4 tagged, 2 groups (Trip Planning 2: travel-budget-calculator,
+    visa-stay-days-calculator; Currency & Time Zones 2: currency-converter,
+    timezone-meeting-planner)
+  - `text.ts`: 2/2 tagged, 1 group (Social Media Text Tools 2: character-counter,
+    hashtag-counter)
+  - `creator.ts`: 2/2 tagged, 1 group (Monetization & Engagement 2: youtube-earnings-calculator,
+    instagram-engagement-calculator)
+  - `education.ts`: 1/1 tagged, 1 group (Grades & GPA 1: gpa-calculator) — per the "no
+    exceptions" rule, the three 1-2-calculator categories (text, creator, education) each got
+    one group covering every calculator rather than being skipped
+  - `categories.spec.ts`'s `GROUPED_CATEGORIES` now includes all five, completing the set —
+    every category on the site is grouped
+  - No component code changes needed — batch 1's dropdown/helper work and batch 3's
+    size-threshold fix were already generic and sufficient
+  - `npm test` 1123/1123, lint clean, `npm run build` 295/295 pages. Manually verified in a dev
+    server (curl against the server-rendered `<!-- -->`-separated text nodes React emits between
+    a group's label and its count) and interactively in the Chrome extension: all 5 category
+    pages and all 5 dropdown rows show the exact labeled sections/counts above; the dropdown's
+    cross-category search (typing "time") stays one flat, ungrouped list.
+- [x] STATUS.md updated with a final summary (every category's group count) — UX-08 marked DONE

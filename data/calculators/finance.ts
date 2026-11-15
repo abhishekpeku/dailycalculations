@@ -93,6 +93,7 @@ const affordableHomePrice = (
 export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'mortgage-calculator',
+    group: 'Mortgages & Loans',
     category: 'finance',
     glyph: 'M',
     updatedAt: '2026-10-19',
@@ -229,6 +230,7 @@ export const financeCalculators: CalculatorConfig[] = [
   },
   {
     id: 'loan-calculator',
+    group: 'Mortgages & Loans',
     category: 'finance',
     glyph: 'L',
     updatedAt: '2026-10-19',
@@ -356,6 +358,7 @@ export const financeCalculators: CalculatorConfig[] = [
   },
   {
     id: 'compound-interest-calculator',
+    group: 'Savings & Growth',
     category: 'finance',
     glyph: 'FV',
     updatedAt: '2026-10-19',
@@ -501,6 +504,7 @@ export const financeCalculators: CalculatorConfig[] = [
   },
   {
     id: 'paycheck-calculator',
+    group: 'Income & Pay',
     category: 'finance',
     glyph: '$',
     updatedAt: '2026-10-19',
@@ -695,6 +699,7 @@ export const financeCalculators: CalculatorConfig[] = [
   },
   {
     id: 'investment-calculator',
+    group: 'Savings & Growth',
     category: 'finance',
     glyph: 'Inv',
     updatedAt: '2026-10-19',
@@ -841,6 +846,7 @@ export const financeCalculators: CalculatorConfig[] = [
   },
   {
     id: 'loan-prepayment-calculator',
+    group: 'Mortgages & Loans',
     category: 'finance',
     glyph: 'L↓',
     updatedAt: '2026-10-19',
@@ -978,6 +984,7 @@ export const financeCalculators: CalculatorConfig[] = [
   },
   {
     id: 'inflation-calculator',
+    group: 'Savings & Growth',
     category: 'finance',
     glyph: 'CPI',
     updatedAt: '2026-10-19',
@@ -1101,6 +1108,7 @@ export const financeCalculators: CalculatorConfig[] = [
   },
   {
     id: 'emi-calculator',
+    group: 'Mortgages & Loans',
     category: 'finance',
     glyph: 'EMI',
     updatedAt: '2026-10-19',
@@ -1231,6 +1239,7 @@ export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'home-affordability-calculator',
     category: 'finance',
+    group: 'Home Buying',
     glyph: 'Aff',
     updatedAt: '2026-11-15',
     aliases: ['how much house can i afford calculator', 'home buying budget calculator', 'house affordability calculator', 'affordability calculator'],
@@ -1396,6 +1405,7 @@ export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'mortgage-refinance-calculator',
     category: 'finance',
+    group: 'Mortgages & Loans',
     glyph: 'Refi',
     updatedAt: '2026-11-15',
     aliases: ['refinance calculator', 'mortgage refinance break-even calculator', 'should i refinance calculator', 'refi savings calculator'],
@@ -1532,6 +1542,7 @@ export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'down-payment-savings-calculator',
     category: 'finance',
+    group: 'Home Buying',
     glyph: 'DP',
     updatedAt: '2026-11-15',
     aliases: ['down payment calculator', 'home down payment savings calculator', 'save for a down payment calculator', 'down payment goal calculator'],
@@ -1672,6 +1683,7 @@ export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'closing-cost-estimator-calculator',
     category: 'finance',
+    group: 'Home Buying',
     glyph: 'CC',
     updatedAt: '2026-11-15',
     aliases: ['closing costs calculator', 'home closing cost calculator', 'mortgage closing costs estimator', 'closing cost estimator'],
@@ -1798,6 +1810,7 @@ export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'rent-vs-buy-calculator',
     category: 'finance',
+    group: 'Home Buying',
     glyph: 'R/B',
     updatedAt: '2026-11-15',
     aliases: ['rent or buy calculator', 'should i rent or buy calculator', 'renting vs buying calculator', 'rent versus buy calculator'],

@@ -134,9 +134,26 @@ they will have shifted from other in-flight work like step 60/UX-10)
   - Found and parked (not fixed, out of scope for this batch): `/categories/home` throws a
     React "two children with the same key, `Home`" console error from `components/Breadcrumb.tsx`
     — the category is literally titled "Home", which collides with the breadcrumb's own root
-    "Home" crumb. Pre-existing, unrelated to group tagging (confirmed `/categories/food` has no
-    such error); added to STATUS.md's Parked list.
-- [ ] Batch 3: `sports` + `finance`
+    "Home" crumb. Pre-existing (already in STATUS.md's Parked list from the original 2026-11-02
+    construction build), not reintroduced by this batch — `/categories/food` has no such error.
+- [x] Batch 3: `sports` + `finance` tagged — PR #87, branch `ux/category-groups-batch3`
+  - `sports.ts`: 12/12 tagged, 4 groups (Strength & Fitness Testing 3, Pace & Distance 3,
+    Baseball & Cricket Stats 3, Ratings & Scoring 3)
+  - `finance.ts`: 13/13 tagged, 4 groups (Mortgages & Loans 5, Home Buying 4, Savings &
+    Growth 3, Income & Pay 1) — includes the 5 Wave 5a calculators (home-affordability,
+    mortgage-refinance, down-payment-savings, closing-cost-estimator, rent-vs-buy)
+  - `categories.spec.ts`'s `GROUPED_CATEGORIES` now includes `sports`/`finance`
+  - **Found and fixed a real bug this batch exposed**: `app/[locale]/categories/[category]/page.tsx`
+    gates `CategoryCalculatorFilter` (the component that actually renders grouped sections) behind
+    `categoryCalculators.length > SEARCH_THRESHOLD` (15) — a size check with no awareness of
+    `group`. Every category grouped before this batch (chemistry 45, physics 21, home 27, food 17)
+    happened to be above that threshold, so the gate never mattered. `sports` (12) and `finance`
+    (13) are both at or under it, so despite being fully tagged, the page kept rendering the old
+    flat grid. Fixed by widening the condition to
+    `categoryCalculators.length > SEARCH_THRESHOLD || buildGroups(browseItems) !== null` — any
+    fully-grouped category now gets the sectioned view regardless of size, which batches 4 and 5
+    (several categories as small as 1-2 calculators, per this step's explicit "no exceptions" rule)
+    will also depend on. No change for already-grouped or ungrouped categories (verified below).
 - [ ] Batch 4: `work` + `shopping` + `health` + `auto`
 - [ ] Batch 5: `time` + `travel` + `text` + `creator` + `education`
 - [ ] STATUS.md updated with a final summary (every category's group count)

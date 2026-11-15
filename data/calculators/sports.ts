@@ -15,6 +15,7 @@ export const sportsCalculators: CalculatorConfig[] = [
   {
     id: 'one-rep-max-calculator',
     category: 'sports',
+    group: 'Strength & Fitness Testing',
     glyph: '1RM',
     updatedAt: '2026-11-05',
     aliases: ['1rm calculator', 'one rep max calculator', 'epley formula calculator', 'max bench press calculator', 'how much can i lift calculator', 'one rep max bench calculator'],
@@ -152,6 +153,7 @@ export const sportsCalculators: CalculatorConfig[] = [
   {
     id: 'heart-rate-zones-calculator',
     category: 'sports',
+    group: 'Strength & Fitness Testing',
     glyph: 'bpm',
     updatedAt: '2026-11-05',
     aliases: ['heart rate zone calculator', 'max heart rate calculator', 'target heart rate calculator', 'karvonen formula calculator', 'cardio zone calculator', 'heart rate reserve calculator'],
@@ -305,6 +307,7 @@ export const sportsCalculators: CalculatorConfig[] = [
   {
     id: 'vo2-max-calculator',
     category: 'sports',
+    group: 'Strength & Fitness Testing',
     glyph: 'VO2',
     updatedAt: '2026-11-05',
     aliases: ['vo2 max calculator', 'cooper test calculator', '12 minute run test calculator', 'vo2max estimate calculator', 'aerobic fitness calculator'],
@@ -409,6 +412,7 @@ export const sportsCalculators: CalculatorConfig[] = [
   {
     id: 'race-time-predictor-calculator',
     category: 'sports',
+    group: 'Pace & Distance',
     glyph: 'race',
     updatedAt: '2026-11-05',
     aliases: ['race pace predictor calculator', 'riegel formula calculator', 'predict marathon time from 10k', 'cross distance race predictor', '5k to marathon predictor'],
@@ -530,6 +534,7 @@ export const sportsCalculators: CalculatorConfig[] = [
   {
     id: 'swim-pace-calculator',
     category: 'sports',
+    group: 'Pace & Distance',
     glyph: 'lap',
     updatedAt: '2026-11-05',
     aliases: ['swim pace calculator', 'pace per 100m calculator', 'swim pace per 100 yards', 'swimming speed calculator', 'swim split calculator'],
@@ -645,6 +650,7 @@ export const sportsCalculators: CalculatorConfig[] = [
   },
   {
     id: 'steps-to-miles-calculator',
+    group: 'Pace & Distance',
     category: 'sports',
     glyph: 'step',
     updatedAt: '2026-11-05',
@@ -761,6 +767,7 @@ export const sportsCalculators: CalculatorConfig[] = [
   },
   {
     id: 'baseball-batting-average-calculator',
+    group: 'Baseball & Cricket Stats',
     category: 'sports',
     glyph: 'AVG',
     updatedAt: '2026-11-05',
@@ -890,6 +897,7 @@ export const sportsCalculators: CalculatorConfig[] = [
   },
   {
     id: 'cricket-bowling-figures-calculator',
+    group: 'Baseball & Cricket Stats',
     category: 'sports',
     glyph: 'wkt',
     updatedAt: '2026-11-05',
@@ -1006,6 +1014,7 @@ export const sportsCalculators: CalculatorConfig[] = [
   },
   {
     id: 'cricket-net-run-rate-calculator',
+    group: 'Baseball & Cricket Stats',
     category: 'sports',
     glyph: 'NRR',
     updatedAt: '2026-11-05',
@@ -1156,6 +1165,7 @@ export const sportsCalculators: CalculatorConfig[] = [
   },
   {
     id: 'nfl-passer-rating-calculator',
+    group: 'Ratings & Scoring',
     category: 'sports',
     glyph: 'RTG',
     updatedAt: '2026-11-05',
@@ -1282,6 +1292,7 @@ export const sportsCalculators: CalculatorConfig[] = [
   },
   {
     id: 'elo-rating-calculator',
+    group: 'Ratings & Scoring',
     category: 'sports',
     glyph: 'Elo',
     updatedAt: '2026-11-05',
@@ -1412,6 +1423,7 @@ export const sportsCalculators: CalculatorConfig[] = [
   },
   {
     id: 'golf-course-handicap-calculator',
+    group: 'Ratings & Scoring',
     category: 'sports',
     glyph: 'CH',
     updatedAt: '2026-11-05',

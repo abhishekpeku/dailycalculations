@@ -10,6 +10,7 @@ export const physicsCalculators: CalculatorConfig[] = [
   {
     id: 'force-calculator',
     category: 'physics',
+    group: 'Motion & Forces',
     glyph: 'F',
     updatedAt: '2026-10-12',
     aliases: ["newton's second law calculator", 'f = ma calculator', 'net force calculator', 'mass and acceleration calculator', 'newton calculator'],
@@ -151,6 +152,7 @@ export const physicsCalculators: CalculatorConfig[] = [
   {
     id: 'speed-distance-time-calculator',
     category: 'physics',
+    group: 'Motion & Forces',
     glyph: 'v',
     updatedAt: '2026-11-06',
     aliases: ['velocity calculator', 'distance = rate x time calculator', 'd = rt calculator', 'rate time distance calculator', 'how fast calculator', 'average speed calculator'],
@@ -264,6 +266,7 @@ export const physicsCalculators: CalculatorConfig[] = [
   {
     id: 'weight-calculator',
     category: 'physics',
+    group: 'Motion & Forces',
     glyph: 'W',
     updatedAt: '2026-11-06',
     aliases: ['mass to weight calculator', 'w = mg calculator', 'weight in newtons calculator', 'gravity weight calculator', 'weight on other planets calculator'],
@@ -396,6 +399,7 @@ export const physicsCalculators: CalculatorConfig[] = [
   {
     id: 'kinetic-energy-calculator',
     category: 'physics',
+    group: 'Energy & Work',
     glyph: 'KE',
     updatedAt: '2026-11-06',
     aliases: ['ke = 1/2 mv2 calculator', 'kinetic energy formula calculator', 'energy of motion calculator', '1/2 mv^2 calculator', 'moving object energy calculator'],
@@ -530,6 +534,7 @@ export const physicsCalculators: CalculatorConfig[] = [
   {
     id: 'potential-energy-calculator',
     category: 'physics',
+    group: 'Energy & Work',
     glyph: 'PE',
     updatedAt: '2026-11-06',
     aliases: ['gravitational potential energy calculator', 'pe = mgh calculator', 'height energy calculator', 'stored energy calculator', 'mgh calculator'],
@@ -662,6 +667,7 @@ export const physicsCalculators: CalculatorConfig[] = [
   {
     id: 'work-calculator',
     category: 'physics',
+    group: 'Energy & Work',
     glyph: 'Fd',
     updatedAt: '2026-11-06',
     aliases: ['w = fd cos theta calculator', 'force times distance calculator', 'mechanical work calculator', 'work done calculator', 'work physics calculator'],
@@ -807,6 +813,7 @@ export const physicsCalculators: CalculatorConfig[] = [
   {
     id: 'momentum-calculator',
     category: 'physics',
+    group: 'Motion & Forces',
     glyph: 'p',
     updatedAt: '2026-11-06',
     aliases: ['p = mv calculator', 'linear momentum calculator', 'momentum formula calculator', 'mass velocity momentum calculator', 'momentum of an object calculator'],
@@ -934,6 +941,7 @@ export const physicsCalculators: CalculatorConfig[] = [
   {
     id: 'impulse-calculator',
     category: 'physics',
+    group: 'Motion & Forces',
     glyph: 'J',
     updatedAt: '2026-11-06',
     aliases: ['j = f delta t calculator', 'impulse momentum theorem calculator', 'impulse formula calculator', 'force time impulse calculator', 'change in momentum calculator'],
@@ -1063,6 +1071,7 @@ export const physicsCalculators: CalculatorConfig[] = [
   {
     id: 'power-calculator',
     category: 'physics',
+    group: 'Energy & Work',
     glyph: 'P',
     updatedAt: '2026-11-06',
     aliases: ['p = w/t calculator', 'work over time calculator', 'mechanical power calculator', 'power from work and time calculator', 'power physics formula calculator'],
@@ -1189,6 +1198,7 @@ export const physicsCalculators: CalculatorConfig[] = [
   {
     id: 'density-calculator',
     category: 'physics',
+    group: 'Fluids & Matter',
     glyph: 'ρ',
     updatedAt: '2026-11-06',
     aliases: ['density formula calculator', 'mass volume density calculator', 'rho = m/v calculator', 'specific density calculator', 'density of a substance calculator'],
@@ -1315,6 +1325,7 @@ export const physicsCalculators: CalculatorConfig[] = [
   {
     id: 'pressure-calculator',
     category: 'physics',
+    group: 'Fluids & Matter',
     glyph: 'F/A',
     updatedAt: '2026-11-06',
     aliases: ['p = f/a calculator', 'force per area calculator', 'pressure formula calculator', 'pressure from force and area calculator', 'mechanical pressure calculator'],
@@ -1442,6 +1453,7 @@ export const physicsCalculators: CalculatorConfig[] = [
   {
     id: 'ohms-law-calculator',
     category: 'physics',
+    group: 'Electricity & Circuits',
     glyph: 'V=IR',
     updatedAt: '2026-11-06',
     aliases: ["ohm's law calculator", 'v = ir calculator', 'voltage current resistance calculator', 'ohms law solver', 'current from voltage and resistance calculator', 'resistance from voltage and current calculator'],
@@ -1571,6 +1583,7 @@ export const physicsCalculators: CalculatorConfig[] = [
   {
     id: 'electrical-power-calculator',
     category: 'physics',
+    group: 'Electricity & Circuits',
     glyph: 'P=VI',
     updatedAt: '2026-11-06',
     aliases: ['electrical power calculator', 'p = vi calculator', 'power from voltage and current calculator', 'watts from volts and amps calculator', 'electric power formula calculator', 'watts volts amps calculator'],
@@ -1700,6 +1713,7 @@ export const physicsCalculators: CalculatorConfig[] = [
   {
     id: 'series-parallel-resistor-calculator',
     category: 'physics',
+    group: 'Electricity & Circuits',
     glyph: 'ΣR',
     updatedAt: '2026-11-06',
     aliases: ['resistors in series calculator', 'resistors in parallel calculator', 'equivalent resistance calculator', 'total resistance calculator', 'series parallel resistance calculator', 'combined resistance calculator'],
@@ -1827,6 +1841,7 @@ export const physicsCalculators: CalculatorConfig[] = [
   {
     id: 'resistor-color-code-calculator',
     category: 'physics',
+    group: 'Electricity & Circuits',
     glyph: 'Ω',
     updatedAt: '2026-11-06',
     aliases: ['resistor color code calculator', 'resistor color chart', 'decode resistor colors', 'resistor band calculator', '4 band resistor calculator', '5 band resistor calculator'],
@@ -1970,6 +1985,7 @@ export const physicsCalculators: CalculatorConfig[] = [
   {
     id: 'capacitor-charge-calculator',
     category: 'physics',
+    group: 'Electricity & Circuits',
     glyph: 'Q=CV',
     updatedAt: '2026-11-06',
     aliases: ['capacitor charge calculator', 'q = cv calculator', 'capacitance charge calculator', 'capacitor energy calculator', 'charge on a capacitor calculator', 'energy stored in a capacitor calculator'],
@@ -2082,6 +2098,7 @@ export const physicsCalculators: CalculatorConfig[] = [
   {
     id: 'wavelength-frequency-calculator',
     category: 'physics',
+    group: 'Waves & Light',
     glyph: 'fλ',
     updatedAt: '2026-11-06',
     aliases: ['wavelength calculator', 'frequency to wavelength calculator', 'wavelength to frequency calculator', 'wave speed equation calculator', 'v = f lambda calculator', 'speed of light wavelength calculator'],
@@ -2214,6 +2231,7 @@ export const physicsCalculators: CalculatorConfig[] = [
   {
     id: 'decibel-calculator',
     category: 'physics',
+    group: 'Waves & Light',
     glyph: 'dB',
     updatedAt: '2026-11-06',
     aliases: ['decibel calculator', 'db calculator', 'power ratio to db calculator', 'db gain calculator', 'decibel formula calculator', 'sound intensity level calculator'],
@@ -2328,6 +2346,7 @@ export const physicsCalculators: CalculatorConfig[] = [
   {
     id: 'radioactive-half-life-calculator',
     category: 'physics',
+    group: 'Thermal & Nuclear',
     glyph: 't½',
     updatedAt: '2026-11-06',
     aliases: ['half life calculator', 'radioactive decay calculator', 'half-life formula calculator', 'decay calculator', 'carbon dating calculator', 'exponential decay calculator'],
@@ -2443,6 +2462,7 @@ export const physicsCalculators: CalculatorConfig[] = [
   {
     id: 'heat-calculator',
     category: 'physics',
+    group: 'Thermal & Nuclear',
     glyph: 'Q',
     updatedAt: '2026-11-06',
     aliases: ['heat calculator', 'specific heat calculator', 'q = mc delta t calculator', 'heat energy calculator', 'thermal energy calculator', 'heat transfer calculator'],
@@ -2556,6 +2576,7 @@ export const physicsCalculators: CalculatorConfig[] = [
   {
     id: 'lens-mirror-equation-calculator',
     category: 'physics',
+    group: 'Waves & Light',
     glyph: '1/f',
     updatedAt: '2026-11-06',
     aliases: ['lens equation calculator', 'mirror equation calculator', 'thin lens calculator', 'focal length calculator', 'image distance calculator', 'object distance calculator'],

@@ -9,6 +9,7 @@ import { categories, findCategoryCalculators } from '@/data/calculators';
 import { buildCategoryMetadata } from '@/lib/seo';
 import type { Breadcrumb as BreadcrumbItem } from '@/lib/seo';
 import { categoryTheme, CARD } from '@/lib/categoryTheme';
+import { buildGroups } from '@/lib/groupCalculators';
 import { routing } from '@/i18n/routing';
 
 export const dynamic = 'force-static';
@@ -16,7 +17,9 @@ export const dynamicParams = false;
 
 // Categories past this size get their own search box (today: measurements 40, math 29,
 // statistics 25 — everything else tops out at 8). A threshold, not a hand-picked id list, so a
-// category that grows past it in a later wave gets the filter for free.
+// category that grows past it in a later wave gets the filter for free. A category that is fully
+// grouped (UX-08) also gets the filter regardless of size, so a small, labeled category (sports,
+// finance, and any later 1-2-calculator category) still shows its sections instead of a flat grid.
 const SEARCH_THRESHOLD = 15;
 
 export async function generateStaticParams() {
@@ -82,7 +85,7 @@ export default async function CategoryPage({
           </div>
 
           <div className={CARD}>
-            {categoryCalculators.length > SEARCH_THRESHOLD ? (
+            {categoryCalculators.length > SEARCH_THRESHOLD || buildGroups(browseItems) !== null ? (
               <CategoryCalculatorFilter calculators={browseItems} />
             ) : (
               <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2.5">

@@ -2743,7 +2743,8 @@ export const chemistryCalculators: CalculatorConfig[] = [
           concentration2 === 0 || coefficient1 === 0 ? NaN : (concentration1 * volume1 * coefficient2) / (concentration2 * coefficient1)
       },
       outputs: [
-        { id: 'molesAnalyte', label: 'Moles of analyte at equivalence', dimension: 'amountOfSubstance', unit: 'mmol', compute: (si) => si.concentration2 * si.volume2 }
+        { id: 'molesAnalyte', label: 'Moles of analyte at equivalence', dimension: 'amountOfSubstance', unit: 'mmol', compute: (si) => si.concentration2 * si.volume2 },
+        { id: 'molesTitrant', label: 'Moles of titrant delivered', dimension: 'amountOfSubstance', unit: 'mmol', compute: (si) => si.concentration1 * si.volume1 }
       ],
       visuals: [
         {
@@ -2773,7 +2774,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
           { name: 'Enter the titrant’s known concentration and coefficient', text: 'C₁ is the titrant’s concentration (what is in the burette); a is its coefficient from the balanced equation.' },
           { name: 'Enter the analyte’s coefficient and known volume', text: 'b is the analyte’s coefficient; V₂ is the volume of the solution being analyzed.' },
           { name: 'Enter whichever of V₁ or C₂ you measured', text: 'If you titrated to find the volume of titrant needed, enter V₁ and solve for C₂. If you want to know how much titrant a target concentration needs, enter C₂ and solve for V₁.' },
-          { name: 'Read the result', text: 'The missing value appears immediately, alongside the moles of analyte present at the equivalence point.' },
+          { name: 'Read the result', text: 'The missing value appears immediately, alongside the moles of titrant delivered and the moles of analyte present at the equivalence point — the two should scale by the ratio of a to b.' },
           { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
         ],
         outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
@@ -2796,7 +2797,8 @@ export const chemistryCalculators: CalculatorConfig[] = [
           { label: 'Titrant’s coefficient (a, NaOH)', value: '2' },
           { label: 'Analyte volume (V₂, H₂SO₄)', value: '25.00 mL' },
           { label: 'Analyte’s coefficient (b, H₂SO₄)', value: '1' },
-          { label: 'Analyte concentration (C₂ = (C₁V₁ × b) ÷ (V₂ × a))', value: '(0.100 × 30.00 × 1) ÷ (25.00 × 2) = 0.06 mol/L' }
+          { label: 'Analyte concentration (C₂ = (C₁V₁ × b) ÷ (V₂ × a))', value: '(0.100 × 30.00 × 1) ÷ (25.00 × 2) = 0.06 mol/L' },
+          { label: 'Moles of titrant delivered (C₁ × V₁ = 0.100 × 30.00)', value: '3.00 mmol' }
         ],
         result: 'C₂ = 0.06 mol/L',
         explanation: '30.00 mL of 0.100 mol/L NaOH is 3.00 mmol of NaOH, which at a 2:1 NaOH-to-acid ratio reacts with exactly 1.50 mmol of H₂SO₄. Spread through the 25.00 mL analyte sample, that is 1.50 ÷ 25.00 = 0.06 mol/L.'
@@ -2841,7 +2843,8 @@ export const chemistryCalculators: CalculatorConfig[] = [
         { question: 'How is titration different from dilution?', answer: 'Dilution adds solvent to one solute, keeping its moles constant (see the dilution calculator). Titration reacts a known solution against a chemically different unknown one until a stoichiometric endpoint — two different species are involved, related by a balanced equation, not a before-and-after of the same solute.' },
         { question: 'What if the titrant and analyte react 1:1?', answer: 'Set both coefficients to 1, which reduces the formula to C₁V₁ = C₂V₂ — the simplest case, such as a strong monoprotic acid titrated with a strong monoprotic base.' },
         { question: 'How do I find the volume of titrant needed for a target concentration?', answer: 'Solve for V₁: V₁ = (C₂V₂ × a) ÷ (C₁ × b). This tells you how much titrant to add before you start, rather than reading off how much was actually used.' },
-        { question: 'Does this calculator balance the chemical equation for me?', answer: 'No — it takes the two coefficients as given. Balance the equation between the titrant and analyte first (see the stoichiometry calculator), then enter those coefficients here.' }
+        { question: 'Does this calculator balance the chemical equation for me?', answer: 'No — it takes the two coefficients as given. Balance the equation between the titrant and analyte first (see the stoichiometry calculator), then enter those coefficients here.' },
+        { question: 'How many moles of titrant were actually delivered?', answer: 'C₁ × V₁ — the titrant’s concentration times the volume used, shown as a bonus figure next to the moles of analyte. In the worked example, 0.100 mol/L × 30.00 mL gives 3.00 mmol of NaOH delivered, twice the 1.50 mmol of H₂SO₄ it reacted with, matching the 2:1 coefficient ratio between them.' }
       ]
     },
     compute(values) {
@@ -5100,7 +5103,10 @@ export const chemistryCalculators: CalculatorConfig[] = [
       solve: {
         molarSolubility: ({ ksp, commonIonConcentration }) => (2 * ksp) / (commonIonConcentration + Math.sqrt(commonIonConcentration ** 2 + 4 * ksp)),
         commonIonConcentration: ({ ksp, molarSolubility }) => (molarSolubility === 0 ? NaN : ksp / molarSolubility - molarSolubility)
-      }
+      },
+      outputs: [
+        { id: 'plainWaterSolubility', label: 'Solubility in plain water (√Ksp)', dimension: 'concentration', unit: 'mol/L', compute: (si) => Math.sqrt(si.ksp) }
+      ]
     },
     content: {
       lastReviewed: '2026-11-13',
@@ -5117,7 +5123,7 @@ export const chemistryCalculators: CalculatorConfig[] = [
         steps: [
           { name: 'Enter the salt’s Ksp', text: 'From a table or a given problem — this stays fixed, since it does not change with what else is dissolved.' },
           { name: 'Enter the common ion’s concentration', text: 'The concentration already supplied by the other, more soluble compound (e.g. 0.010 mol/L Cd²⁺ from CdBr₂).' },
-          { name: 'Read the reduced molar solubility', text: 'How much of the original salt will dissolve into that solution — almost always far less than √Ksp, its solubility in pure water.' },
+          { name: 'Read the reduced molar solubility', text: 'How much of the original salt will dissolve into that solution — almost always far less than √Ksp, its solubility in pure water, which is shown alongside it as a bonus figure for direct comparison.' },
           { name: 'Or work backward', text: 'Enter a measured molar solubility instead, and solve for the common-ion concentration that would produce it.' }
         ],
         outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
@@ -5137,7 +5143,8 @@ export const chemistryCalculators: CalculatorConfig[] = [
         rows: [
           { label: 'Common ion already present, [Cd²⁺] = [X]', value: '0.010 mol/L' },
           { label: 'Ksp', value: '1.0 × 10⁻²⁸' },
-          { label: 's = 2Ksp ÷ ([X] + √([X]² + 4Ksp))', value: '≈ 1.0 × 10⁻²⁶ mol/L' }
+          { label: 's = 2Ksp ÷ ([X] + √([X]² + 4Ksp))', value: '≈ 1.0 × 10⁻²⁶ mol/L' },
+          { label: 'Solubility in plain water (√Ksp)', value: '√(1.0 × 10⁻²⁸) ≈ 1.0 × 10⁻¹⁴ mol/L' }
         ],
         result: 's ≈ 1.0 × 10⁻²⁶ mol/L',
         explanation: 'Because [X] (0.010) is enormously larger than √Ksp (about 1.0 × 10⁻¹⁴), nearly all of the "budget" Ksp allows is already used up by the common ion, leaving a tiny s — matching OpenStax’s own stated 1.0 × 10⁻²⁶ M. For comparison, CdS in plain water would have a molar solubility of √Ksp ≈ 1.0 × 10⁻¹⁴ mol/L — the common ion suppresses it by a further twelve orders of magnitude.'
@@ -5173,7 +5180,8 @@ export const chemistryCalculators: CalculatorConfig[] = [
         { question: 'What is CdS’s solubility in 0.010 M CdBr₂?', answer: 'About 1.0 × 10⁻²⁶ mol/L — far below its roughly 1.0 × 10⁻¹⁴ mol/L solubility in pure water, since Ksp = 1.0 × 10⁻²⁸.' },
         { question: 'Why is the common-ion solubility so much lower than in pure water?', answer: 'Because the common ion already supplies most of what Ksp allows for that ion’s concentration, leaving very little "room" for the salt itself to dissolve before the product of the two ion concentrations hits Ksp.' },
         { question: 'Can I use this for a salt with unequal coefficients, like Ca(OH)₂?', answer: 'No — this calculator is scoped to simple 1:1 salts. A salt like Ca(OH)₂ needs extra powers in its common-ion equilibrium expression that this quadratic does not cover.' },
-        { question: 'Is this the same as the dilution calculator?', answer: 'No — dilution describes adding solvent to lower one existing solution’s concentration. This calculator instead describes a solubility equilibrium being suppressed by an ion already present from a different source.' }
+        { question: 'Is this the same as the dilution calculator?', answer: 'No — dilution describes adding solvent to lower one existing solution’s concentration. This calculator instead describes a solubility equilibrium being suppressed by an ion already present from a different source.' },
+        { question: 'How do I find a salt’s solubility in plain water for comparison?', answer: 'Take the square root of its Ksp, s = √Ksp — shown automatically as a bonus figure alongside the common-ion-suppressed result. For CdS (Ksp = 1.0 × 10⁻²⁸), that is √(1.0 × 10⁻²⁸) ≈ 1.0 × 10⁻¹⁴ mol/L, about twelve orders of magnitude higher than its 1.0 × 10⁻²⁶ mol/L solubility in 0.010 M CdBr₂.' }
       ]
     },
     compute(values) {

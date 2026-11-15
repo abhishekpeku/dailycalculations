@@ -135,7 +135,26 @@ items each may need splitting into 2 sub-batches of ~10-15 — use judgment, don
     in the page's own worked-example prose), specific-heat-by-mixing-calculator (no change —
     already has a real bonus output, heat transferred). 2 real additions, 12 "no change
     needed."
-- [ ] Batch 2: physics (19, likely 2 sub-batches)
+- [ ] Batch 2: physics (19, split into 2 sub-batches of ~10 and ~9)
+  - [ ] Sub-batch 2a (10, branch `ux/result-sets-physics-1`): force-calculator (no change —
+    F=ma is a fully cross-solvable 3-variable relation; acceleration can already be displayed
+    in g via the existing 'g0' unit, so nothing new to derive), speed-distance-time-calculator
+    (no change — v=d/t, same fully-solved 3-variable pattern, nothing derivable without a new
+    input), weight-calculator (no change — W=mg, same pattern; lb/lbf are already automatic
+    unit conversions, not a new fact), kinetic-energy-calculator (added momentum, p=mv, from
+    the same mass and velocity already in the solve), potential-energy-calculator (added
+    impactVelocity, v=√(2gh), the free-fall speed equivalent to that height — flagged with a
+    new watchOut item noting it ignores air resistance), work-calculator (added effectiveForce,
+    F cos θ, the force component actually acting along the motion — distinct from the plain
+    force value), momentum-calculator (added kineticEnergy, KE=½mv², mirroring the
+    kinetic-energy-calculator addition so both pages cross-reference the same motion two ways),
+    impulse-calculator (no change — J=FΔt only has force/time/impulse; the velocity change a
+    given impulse produces needs a mass input this solver doesn't have, out of scope for an
+    output-only audit), power-calculator (no change — P=W/t fully solved, nothing else
+    derivable without a new input like distance or force), density-calculator (no change —
+    specific gravity, i.e. density÷1000 kg/m³, would be numerically identical to the g/cm³
+    conversion the page already auto-displays in its "Also in" row, so it would duplicate an
+    existing number rather than add new information). 4 real additions, 6 "no change needed."
 - [ ] Batch 3: measurements (34)
 - [ ] Batch 4: math (10)
 - [ ] Batch 5: remainder (11: food/sports/text/travel/shopping/statistics/time)

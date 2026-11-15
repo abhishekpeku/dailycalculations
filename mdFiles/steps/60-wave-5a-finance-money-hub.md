@@ -184,12 +184,12 @@ prior wave's convention.
   - [x] `down-payment-savings-calculator`
   - [x] `closing-cost-estimator-calculator`
   - [x] `rent-vs-buy-calculator`
-- [ ] Batch 2 (debt, 5) — branch `step/60-wave-5a-finance-run-2`, IN PROGRESS 2026-11-15
-  - [ ] `debt-to-income-calculator`
-  - [ ] `debt-payoff-calculator`
-  - [ ] `credit-card-minimum-payment-calculator`
-  - [ ] `balance-transfer-savings-calculator`
-  - [ ] `student-loan-calculator`
+- [x] Batch 2 (debt, 5) — branch `step/60-wave-5a-finance-run-2`, PR #92, DONE 2026-11-15
+  - [x] `debt-to-income-calculator`
+  - [x] `debt-payoff-calculator`
+  - [x] `credit-card-minimum-payment-calculator`
+  - [x] `balance-transfer-savings-calculator`
+  - [x] `student-loan-calculator`
 - [ ] Batch 3 (retirement pt.1, 5)
 - [ ] Batch 4 (retirement pt.2 + goal investing, 5)
 - [ ] Batch 5 (investment analysis + simple-interest cluster, 5)

@@ -3,6 +3,7 @@ import type { CalculatorConfig } from './types.ts';
 export const workCalculators: CalculatorConfig[] = [
   {
     id: 'salary-raise-calculator',
+    group: 'Pay & Rates',
     category: 'work',
     glyph: 'S′',
     updatedAt: '2026-10-21',
@@ -130,6 +131,7 @@ export const workCalculators: CalculatorConfig[] = [
   },
   {
     id: 'meeting-cost-calculator',
+    group: 'Time & Benefits',
     category: 'work',
     glyph: '$',
     updatedAt: '2026-10-21',
@@ -247,6 +249,7 @@ export const workCalculators: CalculatorConfig[] = [
   },
   {
     id: 'freelancer-rate-calculator',
+    group: 'Pay & Rates',
     category: 'work',
     glyph: '$/h',
     updatedAt: '2026-10-21',
@@ -402,6 +405,7 @@ export const workCalculators: CalculatorConfig[] = [
   },
   {
     id: 'pto-calculator',
+    group: 'Time & Benefits',
     category: 'work',
     glyph: 'PTO',
     updatedAt: '2026-10-21',

@@ -18,6 +18,7 @@ const SEX_OPTIONS = [
 export const healthCalculators: CalculatorConfig[] = [
   {
     id: 'bmi-calculator',
+    group: 'Body & Nutrition',
     category: 'health',
     glyph: 'BMI',
     updatedAt: '2026-10-20',
@@ -143,6 +144,7 @@ export const healthCalculators: CalculatorConfig[] = [
   },
   {
     id: 'water-intake-calculator',
+    group: 'Body & Nutrition',
     category: 'health',
     glyph: 'H₂O',
     updatedAt: '2026-10-20',
@@ -261,6 +263,7 @@ export const healthCalculators: CalculatorConfig[] = [
   },
   {
     id: 'calorie-calculator',
+    group: 'Body & Nutrition',
     category: 'health',
     glyph: 'kcal',
     updatedAt: '2026-10-20',
@@ -388,6 +391,7 @@ export const healthCalculators: CalculatorConfig[] = [
   },
   {
     id: 'tdee-calculator',
+    group: 'Body & Nutrition',
     category: 'health',
     glyph: 'TDEE',
     updatedAt: '2026-10-20',
@@ -516,6 +520,7 @@ export const healthCalculators: CalculatorConfig[] = [
   },
   {
     id: 'running-pace-calculator',
+    group: 'Fitness Performance',
     category: 'health',
     glyph: 'pace',
     updatedAt: '2026-10-20',
@@ -648,6 +653,7 @@ export const healthCalculators: CalculatorConfig[] = [
   },
   {
     id: 'pregnancy-due-date-calculator',
+    group: 'Pregnancy',
     category: 'health',
     glyph: 'EDD',
     updatedAt: '2026-10-20',

@@ -5,6 +5,7 @@ import { toBase } from '../../lib/units.ts';
 export const autoCalculators: CalculatorConfig[] = [
   {
     id: 'car-payment-calculator',
+    group: 'Financing',
     category: 'auto',
     glyph: 'M',
     updatedAt: '2026-10-21',
@@ -141,6 +142,7 @@ export const autoCalculators: CalculatorConfig[] = [
   },
   {
     id: 'gas-cost-calculator',
+    group: 'Fuel & Energy Costs',
     category: 'auto',
     glyph: 'gal',
     updatedAt: '2026-10-21',
@@ -265,6 +267,7 @@ export const autoCalculators: CalculatorConfig[] = [
   },
   {
     id: 'ev-charging-calculator',
+    group: 'Fuel & Energy Costs',
     category: 'auto',
     glyph: 'kWh',
     updatedAt: '2026-10-21',
@@ -395,6 +398,7 @@ export const autoCalculators: CalculatorConfig[] = [
   },
   {
     id: 'toll-cost-calculator',
+    group: 'Commuting Costs',
     category: 'auto',
     glyph: 'toll',
     updatedAt: '2026-10-21',
@@ -518,6 +522,7 @@ export const autoCalculators: CalculatorConfig[] = [
   },
   {
     id: 'commute-cost-calculator',
+    group: 'Commuting Costs',
     category: 'auto',
     glyph: 'mi',
     updatedAt: '2026-10-21',
@@ -650,6 +655,7 @@ export const autoCalculators: CalculatorConfig[] = [
   },
   {
     id: 'fuel-cost-calculator',
+    group: 'Fuel & Energy Costs',
     category: 'auto',
     glyph: '$',
     updatedAt: '2026-10-21',

@@ -3,6 +3,7 @@ import type { CalculatorConfig } from './types.ts';
 export const shoppingCalculators: CalculatorConfig[] = [
   {
     id: 'sales-tax-calculator',
+    group: 'Taxes & Tips',
     category: 'shopping',
     glyph: 'tax',
     updatedAt: '2026-10-19',
@@ -116,6 +117,7 @@ export const shoppingCalculators: CalculatorConfig[] = [
   },
   {
     id: 'tip-calculator',
+    group: 'Taxes & Tips',
     category: 'shopping',
     glyph: 'tip',
     updatedAt: '2026-10-19',
@@ -235,6 +237,7 @@ export const shoppingCalculators: CalculatorConfig[] = [
   },
   {
     id: 'unit-price-calculator',
+    group: 'Price Comparison',
     category: 'shopping',
     glyph: '$/u',
     updatedAt: '2026-10-19',
@@ -354,6 +357,7 @@ export const shoppingCalculators: CalculatorConfig[] = [
   },
   {
     id: 'discount-calculator',
+    group: 'Discounts & Rewards',
     category: 'shopping',
     glyph: '-%',
     updatedAt: '2026-10-19',
@@ -488,6 +492,7 @@ export const shoppingCalculators: CalculatorConfig[] = [
   },
   {
     id: 'cashback-calculator',
+    group: 'Discounts & Rewards',
     category: 'shopping',
     glyph: 'cb',
     updatedAt: '2026-10-19',

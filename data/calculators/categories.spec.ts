@@ -1,12 +1,12 @@
-// Guards the `group` field (UX-06, mdFiles/steps/ux-06-category-groups.md): the three categories
-// past categories/[category]/page.tsx's SEARCH_THRESHOLD (measurements, math, statistics) must
-// group every calculator — no stragglers left out of a section. Every other category must leave
-// `group` undefined, since its page never renders grouped sections.
+// Guards the `group` field (UX-06/UX-08, mdFiles/steps/ux-08-category-groups-everywhere.md): every
+// category listed in GROUPED_CATEGORIES must group every one of its calculators — no stragglers
+// left out of a section, since components/CategoryCalculatorFilter.tsx's buildGroups() is
+// all-or-nothing. Every other (not-yet-tagged) category must leave `group` undefined.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { calculators } from './index.ts';
 
-const GROUPED_CATEGORIES = new Set(['measurements', 'math', 'statistics', 'chemistry', 'physics', 'sports', 'finance']);
+const GROUPED_CATEGORIES = new Set(['measurements', 'math', 'statistics', 'chemistry', 'physics', 'home', 'food', 'sports', 'finance']);
 
 test('every calculator in a grouped category has a non-empty group', () => {
   for (const calculator of calculators) {

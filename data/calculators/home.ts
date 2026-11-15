@@ -9,6 +9,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'paint-calculator',
     category: 'home',
+    group: 'Walls & Paint',
     glyph: 'gal',
     updatedAt: '2026-10-21',
     aliases: ['how much paint do i need', 'wall paint coverage calculator', 'paint gallons calculator', 'room paint estimator', 'paint cans needed calculator'],
@@ -137,6 +138,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'tile-calculator',
     category: 'home',
+    group: 'Flooring & Tiling',
     glyph: 'ft²',
     updatedAt: '2026-10-21',
     aliases: ['how many tiles do i need', 'floor tile calculator', 'tile area calculator', 'tile boxes calculator', 'bathroom tile estimator'],
@@ -257,6 +259,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'concrete-calculator',
     category: 'home',
+    group: 'Concrete & Masonry',
     glyph: 'yd³',
     updatedAt: '2026-10-21',
     aliases: ['cubic yards of concrete calculator', 'cement calculator', 'slab concrete calculator', 'how many bags of concrete do i need', 'concrete bag calculator'],
@@ -386,6 +389,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'wallpaper-calculator',
     category: 'home',
+    group: 'Walls & Paint',
     glyph: 'roll',
     updatedAt: '2026-10-21',
     aliases: ['wallpaper rolls calculator', 'how much wallpaper do i need', 'wall covering calculator', 'double roll calculator', 'wallpaper pattern repeat calculator'],
@@ -510,6 +514,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'furniture-fit-calculator',
     category: 'home',
+    group: 'Carpentry & Layout',
     glyph: 'fit',
     updatedAt: '2026-10-21',
     aliases: ['will it fit calculator', 'room layout calculator', 'doorway fit calculator', 'furniture clearance calculator'],
@@ -644,6 +649,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'electricity-bill-calculator',
     category: 'home',
+    group: 'HVAC & Energy',
     glyph: 'kWh',
     updatedAt: '2026-10-21',
     aliases: ['power bill estimator', 'kwh cost calculator', 'appliance running cost calculator', 'energy bill calculator', 'tiered electricity rate calculator'],
@@ -774,6 +780,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'drywall-calculator',
     category: 'home',
+    group: 'Walls & Paint',
     glyph: 'sht',
     updatedAt: '2026-11-02',
     aliases: ['how many sheets of drywall do i need', 'sheetrock calculator', 'gypsum board calculator', 'drywall sheets calculator', 'how much drywall do i need'],
@@ -927,6 +934,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'brick-calculator',
     category: 'home',
+    group: 'Concrete & Masonry',
     glyph: 'brk',
     updatedAt: '2026-11-02',
     aliases: ['how many bricks do i need', 'brick wall calculator', 'bricks per square foot calculator', 'brickwork calculator', 'brick veneer calculator'],
@@ -1038,6 +1046,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'gravel-calculator',
     category: 'home',
+    group: 'Landscaping Materials',
     glyph: 'grv',
     updatedAt: '2026-11-02',
     aliases: ['how much gravel do i need', 'gravel tons calculator', 'crushed stone calculator', 'gravel yards calculator', 'driveway gravel calculator'],
@@ -1160,6 +1169,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'sand-calculator',
     category: 'home',
+    group: 'Landscaping Materials',
     glyph: 'snd',
     updatedAt: '2026-11-02',
     aliases: ['how much sand do i need', 'sand tons calculator', 'sandbox sand calculator', 'paver sand calculator', 'play sand calculator'],
@@ -1282,6 +1292,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'mortar-calculator',
     category: 'home',
+    group: 'Concrete & Masonry',
     glyph: 'bag',
     updatedAt: '2026-11-02',
     aliases: ['how many bags of mortar do i need', 'mortar bags calculator', 'mortar mix calculator', 'brick mortar calculator', 'masonry mortar calculator'],
@@ -1400,6 +1411,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'fence-calculator',
     category: 'home',
+    group: 'Outdoor Structures',
     glyph: 'fnc',
     updatedAt: '2026-11-02',
     aliases: ['how much fencing do i need', 'how many fence posts do i need', 'fence panel calculator', 'fence material calculator', 'fence post calculator'],
@@ -1507,6 +1519,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'decking-calculator',
     category: 'home',
+    group: 'Outdoor Structures',
     glyph: 'dek',
     updatedAt: '2026-11-02',
     aliases: ['how many deck boards do i need', 'deck board calculator', 'composite decking calculator', 'deck material calculator', 'decking board spacing calculator'],
@@ -1628,6 +1641,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'roofing-calculator',
     category: 'home',
+    group: 'Roofing',
     glyph: 'sq',
     updatedAt: '2026-11-02',
     aliases: ['roof shingles calculator', 'roofing squares calculator', 'how many bundles of shingles do i need', 'shingle calculator', 'roof square footage calculator'],
@@ -1750,6 +1764,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'roof-pitch-calculator',
     category: 'home',
+    group: 'Roofing',
     glyph: 'X12',
     updatedAt: '2026-11-02',
     aliases: ['roof pitch to degrees calculator', 'rafter length calculator', 'roof angle calculator', 'roof slope calculator', 'pitch calculator'],
@@ -1861,6 +1876,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'paver-calculator',
     category: 'home',
+    group: 'Landscaping Materials',
     glyph: 'pvr',
     updatedAt: '2026-11-02',
     aliases: ['how many pavers do i need', 'patio paver calculator', 'paver patio calculator', 'hardscape paver calculator', 'paver base calculator'],
@@ -1985,6 +2001,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'mulch-calculator',
     category: 'home',
+    group: 'Landscaping Materials',
     glyph: 'mul',
     updatedAt: '2026-11-04',
     aliases: ['how much mulch do i need', 'mulch calculator bags', 'mulch cubic yards calculator', 'garden bed mulch calculator', 'mulch coverage calculator'],
@@ -2107,6 +2124,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'topsoil-calculator',
     category: 'home',
+    group: 'Landscaping Materials',
     glyph: 'soil',
     updatedAt: '2026-11-04',
     aliases: ['how much topsoil do i need', 'topsoil cubic yards calculator', 'topsoil tons calculator', 'garden bed topsoil calculator', 'fill dirt calculator'],
@@ -2229,6 +2247,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'retaining-wall-calculator',
     category: 'home',
+    group: 'Concrete & Masonry',
     glyph: 'wall',
     updatedAt: '2026-11-04',
     aliases: ['retaining wall block calculator', 'how many blocks for a retaining wall', 'retaining wall calculator', 'landscape block wall calculator', 'retaining wall base gravel calculator'],
@@ -2357,6 +2376,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'board-foot-calculator',
     category: 'home',
+    group: 'Carpentry & Layout',
     glyph: 'bft',
     updatedAt: '2026-11-04',
     aliases: ['board foot calculator', 'how to calculate board feet', 'lumber board feet calculator', 'board footage calculator', 'bf calculator wood'],
@@ -2469,6 +2489,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'ac-tonnage-btu-calculator',
     category: 'home',
+    group: 'HVAC & Energy',
     glyph: 'btu',
     updatedAt: '2026-11-04',
     aliases: ['what size air conditioner do i need', 'ac btu calculator', 'air conditioner tonnage calculator', 'ac size calculator by square footage', 'room air conditioner btu calculator'],
@@ -2626,6 +2647,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'insulation-calculator',
     category: 'home',
+    group: 'HVAC & Energy',
     glyph: 'ins',
     updatedAt: '2026-11-05',
     aliases: ['how much insulation do i need calculator', 'attic insulation calculator', 'insulation r value calculator', 'blown in insulation bags calculator', 'batt insulation calculator'],
@@ -2754,6 +2776,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'stair-calculator',
     category: 'home',
+    group: 'Carpentry & Layout',
     glyph: 'str',
     updatedAt: '2026-11-05',
     aliases: ['stair calculator', 'how many stairs do i need calculator', 'stair rise and run calculator', 'stringer calculator', 'deck stair calculator'],
@@ -2866,6 +2889,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'rebar-calculator',
     category: 'home',
+    group: 'Concrete & Masonry',
     glyph: 'reb',
     updatedAt: '2026-11-05',
     aliases: ['rebar calculator', 'how much rebar do i need calculator', 'rebar for concrete slab calculator', 'rebar grid calculator', 'concrete slab reinforcement calculator'],
@@ -2984,6 +3008,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'pool-volume-calculator',
     category: 'home',
+    group: 'Outdoor Structures',
     glyph: 'pool',
     updatedAt: '2026-11-05',
     aliases: ['pool volume calculator', 'swimming pool gallons calculator', 'how many gallons is my pool', 'hot tub volume calculator', 'tank volume calculator gallons'],
@@ -3113,6 +3138,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'carpet-calculator',
     category: 'home',
+    group: 'Flooring & Tiling',
     glyph: 'crpt',
     updatedAt: '2026-11-05',
     aliases: ['carpet calculator', 'how much carpet do i need calculator', 'carpet square yards calculator', 'carpet and padding calculator', 'carpet yardage calculator'],
@@ -3247,6 +3273,7 @@ export const homeCalculators: CalculatorConfig[] = [
   {
     id: 'flooring-calculator',
     category: 'home',
+    group: 'Flooring & Tiling',
     glyph: 'flr',
     updatedAt: '2026-11-05',
     aliases: ['flooring calculator', 'how much flooring do i need calculator', 'laminate flooring calculator', 'vinyl plank flooring calculator', 'flooring boxes calculator'],

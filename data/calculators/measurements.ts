@@ -2394,6 +2394,10 @@ export const measurementsCalculators: CalculatorConfig[] = [
         gigabytes: ({ megabytes }) => (megabytes >= 0 ? megabytes : NaN),
         megabytes: ({ gigabytes }) => (gigabytes >= 0 ? gigabytes : NaN)
       },
+      // Decimal-vs-binary is the whole point of this page (see concept/workedExample/watchOut
+      // below) — expose the same amount in binary GiB live, instead of only at the static 1 TB
+      // example. si.gigabytes is already bits (data's SI base), so this just picks GiB on render.
+      outputs: [{ id: 'binaryEquivalent', label: 'Same amount, binary (GiB)', dimension: 'data', unit: 'GiB', compute: (si) => si.gigabytes }],
       derive: (si) => ({ mbShown: si.gigabytes / (8 * 1e6) }),
       visuals: [
         {
@@ -2766,6 +2770,21 @@ export const measurementsCalculators: CalculatorConfig[] = [
         kilograms: ({ stone }) => (stone >= 0 ? stone : NaN),
         stone: ({ kilograms }) => (kilograms >= 0 ? kilograms : NaN)
       },
+      // This page's own description promises "11 st 4 lb"-style results, and the worked example
+      // already splits the total pounds that way for its default value — expose it live as two
+      // numbers (a solver output renders one number, not a composite string), rounding the TOTAL
+      // pounds first then splitting, same algorithm as lib/commonValues.ts's formatStoneLbs (used
+      // in this page's own commonValues table below) so the two never disagree.
+      outputs: [
+        { id: 'wholeStone', label: 'Whole stone', dimension: 'count', compute: (si) => Math.floor(Math.round(fromBase(si.kilograms, 'mass', 'lb')) / 14) },
+        {
+          id: 'remainderPounds',
+          label: 'Remaining pounds',
+          dimension: 'mass',
+          unit: 'lb',
+          compute: (si) => toBase(Math.round(fromBase(si.kilograms, 'mass', 'lb')) % 14, 'mass', 'lb')
+        }
+      ],
       visuals: [
         {
           type: 'logScale',
@@ -3518,6 +3537,9 @@ export const measurementsCalculators: CalculatorConfig[] = [
         megabytes: ({ gigabytes }) => (gigabytes >= 0 ? gigabytes : NaN),
         gigabytes: ({ megabytes }) => (megabytes >= 0 ? megabytes : NaN)
       },
+      // Same binary-equivalent fact as the general data storage converter, scaled to this page's
+      // MB range (MiB rather than GiB) — see the "476.84 MiB" figure already in workedExample.
+      outputs: [{ id: 'binaryEquivalent', label: 'Same amount, binary (MiB)', dimension: 'data', unit: 'MiB', compute: (si) => si.megabytes }],
       visuals: [
         {
           type: 'logScale',
@@ -4236,7 +4258,13 @@ export const measurementsCalculators: CalculatorConfig[] = [
     breakdown: {
       headline: 'grams',
       headlineLabel: 'Rice weight',
-      outputs: [{ id: 'grams', label: 'Rice weight', format: 'number', dimension: 'mass', unit: 'g', alsoIn: ['oz'] }],
+      // cookedWeight reuses the same cups × density formula with the already-cited 'riceCooked'
+      // density (lib/ingredients.ts, USDA #168878) — the exact comparison the page's own
+      // workedExample and watchOut already make for the default amount, now live for any amount.
+      outputs: [
+        { id: 'grams', label: 'Rice weight', format: 'number', dimension: 'mass', unit: 'g', alsoIn: ['oz'] },
+        { id: 'cookedWeight', label: 'Same amount, cooked rice', format: 'number', dimension: 'mass', unit: 'g', alsoIn: ['oz'] }
+      ],
       visual: {
         type: 'logScale',
         value: 'grams',
@@ -4328,7 +4356,8 @@ export const measurementsCalculators: CalculatorConfig[] = [
     },
     compute(values) {
       const grams = values.amount * gramsPerCup('rice');
-      return { grams };
+      const cookedWeight = values.amount * gramsPerCup('riceCooked');
+      return { grams, cookedWeight };
     }
   },
   {

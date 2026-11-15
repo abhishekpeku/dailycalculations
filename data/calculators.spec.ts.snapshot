@@ -2106,7 +2106,8 @@ exports[`compute() snapshots > cups-to-grams-rice 1`] = `
       "amount": 1
     },
     "outputs": {
-      "grams": 185
+      "grams": 185,
+      "cookedWeight": 158
     }
   },
   "typical": {
@@ -2114,7 +2115,8 @@ exports[`compute() snapshots > cups-to-grams-rice 1`] = `
       "amount": 1.5
     },
     "outputs": {
-      "grams": 277.5
+      "grams": 277.5,
+      "cookedWeight": 237
     }
   },
   "edge": {
@@ -2122,7 +2124,8 @@ exports[`compute() snapshots > cups-to-grams-rice 1`] = `
       "amount": 0
     },
     "outputs": {
-      "grams": 0
+      "grams": 0,
+      "cookedWeight": 0
     }
   }
 }

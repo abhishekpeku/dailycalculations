@@ -2137,5 +2137,199 @@ export const financeCalculators: CalculatorConfig[] = [
       const roomUnder36 = maxTotalAt36 - totalMonthlyDebt;
       return { backEndRatio, frontEndRatio, totalMonthlyDebt, maxHousingAt28, maxTotalAt36, roomUnder36 };
     }
+  },
+  {
+    id: 'debt-payoff-calculator',
+    category: 'finance',
+    group: 'Debt',
+    glyph: 'D↓',
+    updatedAt: '2026-11-15',
+    aliases: ['debt snowball calculator', 'debt avalanche calculator', 'snowball vs avalanche calculator', 'multiple debt payoff calculator'],
+    related: ['debt-to-income-calculator', 'credit-card-minimum-payment-calculator', 'balance-transfer-savings-calculator', 'loan-prepayment-calculator'],
+    title: 'Debt Payoff Calculator (Snowball vs. Avalanche)',
+    description: 'Compare the debt snowball (smallest balance first) and debt avalanche (highest rate first) methods side by side for a list of debts and an extra monthly payment.',
+    example: 'Three debts of $5,000 at 22%, $3,000 at 18% and $2,000 at 9%, paid with their minimums plus an extra $200 a month, take 26 months and $2,326.08 of interest by snowball versus 25 months and $1,880.11 by avalanche — avalanche saves $445.97.',
+    breakdown: {
+      headline: 'interestSavedWithAvalanche',
+      headlineLabel: 'Interest avalanche saves vs. snowball',
+      outputs: [
+        { id: 'interestSavedWithAvalanche', label: 'Interest avalanche saves vs. snowball', format: 'currency' },
+        { id: 'monthsSavedWithAvalanche', label: 'Months avalanche saves vs. snowball', format: 'integer' },
+        { id: 'snowballMonths', label: 'Snowball: months to debt-free', format: 'integer' },
+        { id: 'snowballTotalInterest', label: 'Snowball: total interest paid', format: 'currency' },
+        { id: 'avalancheMonths', label: 'Avalanche: months to debt-free', format: 'integer' },
+        { id: 'avalancheTotalInterest', label: 'Avalanche: total interest paid', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your debts', inputs: ['balances', 'rates', 'minPayments'] },
+        { title: 'Extra payment', inputs: ['extraPayment'] }
+      ],
+      pairedLists: ['balances', 'rates'],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'snowballTotalInterest', label: 'Snowball' },
+          { from: 'avalancheTotalInterest', label: 'Avalanche' }
+        ],
+        title: 'Total interest paid by method',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-15',
+      concept: {
+        title: 'Snowball and avalanche: same budget, different order',
+        paragraphs: [
+          'Both methods pay the minimum on every debt except one "target" debt, which gets every extra dollar in your budget. When the target is paid off, its old minimum payment joins the extra amount and rolls onto the next target — the total you pay every month never changes, only which debt it attacks first.',
+          'The debt snowball orders debts smallest balance to largest, regardless of rate. The debt avalanche orders them highest interest rate to lowest. The Consumer Financial Protection Bureau describes the trade-off plainly: with the snowball method "you may see progress quickly — but you may pay more in the long run," while with the highest-rate (avalanche) method "you may not feel like you\'re making progress quickly" despite it generally costing less overall.',
+          'The math nearly always favors avalanche, because it shrinks the balance accruing the most interest first. But a 2012 Journal of Marketing Research study of over 5,900 debt-settlement clients found that closing out individual accounts — the small, fast wins the snowball method is built around — predicted actually getting out of debt, regardless of the dollar size of the account closed. Which method you will actually stick with matters as much as which one is cheaper on paper.'
+        ]
+      },
+      howTo: {
+        intro: 'List every debt\'s balance, interest rate and minimum payment, in the same order, then add the extra amount you can put toward debt each month.',
+        steps: [
+          { name: 'List your balances', text: 'Paste or type each debt\'s current balance, one per line or separated by commas.' },
+          { name: 'List the matching rates', text: 'Each debt\'s own APR, in the same order as the balances.' },
+          { name: 'List the matching minimum payments', text: 'Each debt\'s required minimum payment, in the same order again. All three lists must have the same number of entries.' },
+          { name: 'Enter your extra payment', text: 'Any amount beyond the minimums you can put toward debt every month. It goes entirely to whichever debt is the current target.' },
+          { name: 'Compare the two methods', text: 'The result shows months to debt-free and total interest paid for snowball and avalanche side by side, and how much avalanche saves.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Each month, every active debt accrues interest on its balance. The minimum is paid on every debt except the current target, and the rest of the fixed monthly budget — every freed-up minimum payment from an already-paid-off debt, plus your extra amount — goes to the target.',
+        expression: 'Monthly budget = Σ(minimum payments) + extra payment, held fixed every month\nSnowball target order: smallest balance → largest\nAvalanche target order: highest APR → lowest\nEach debt\'s interest: balance × (APR ÷ 12)',
+        terms: [
+          { symbol: 'target', meaning: 'The one debt (per the method\'s order) that receives every dollar of the budget beyond the other debts\' minimums.' },
+          { symbol: 'Σ(minimum payments)', meaning: 'The sum of every debt\'s own minimum payment, using the original list even after some debts are paid off — this is what keeps the monthly budget constant.' },
+          { symbol: 'APR', meaning: 'Each debt\'s own annual percentage rate, applied monthly as APR ÷ 12.' }
+        ],
+        note: 'Estimates only. Assumes every rate stays fixed, the monthly budget never changes, and no new charges are added. A surplus payment that fully pays off the target debt mid-month rolls onto the next target starting the following month, not within the same month.'
+      },
+      workedExample: {
+        intro: 'Three debts: $5,000 at 22% APR (min $150), $3,000 at 18% APR (min $90) and $2,000 at 9% APR (min $60). You can add $200 a month beyond the minimums — a $500 total monthly budget. How do the two methods compare?',
+        rows: [
+          { label: 'Total monthly budget (150 + 90 + 60 + 200)', value: '$500' },
+          { label: 'Snowball order (smallest balance first)', value: '$2,000 debt → $3,000 debt → $5,000 debt' },
+          { label: 'Avalanche order (highest rate first)', value: '22% debt → 18% debt → 9% debt' },
+          { label: 'Snowball result', value: '26 months, $2,326.08 total interest' },
+          { label: 'Avalanche result', value: '25 months, $1,880.11 total interest' },
+          { label: 'Interest avalanche saves (2,326.08 − 1,880.11)', value: '$445.97' }
+        ],
+        result: 'Avalanche saves about $445.97 and finishes 1 month sooner',
+        explanation: 'Avalanche attacks the 22% debt first, so the largest balance stops accruing the most expensive interest as early as possible. Snowball attacks the smallest ($2,000, at only 9%) first instead, so that 22% debt keeps accruing interest on a large balance for longer — which is exactly why avalanche comes out ahead here.'
+      },
+      watchOut: [
+        { title: 'All three lists must line up', body: 'The balance, rate and minimum-payment lists must have the same number of entries, listed in the same debt order — entry 2 in each list must describe the same debt.' },
+        { title: 'The extra rolls over, it does not vanish', body: 'Once the current target is paid off, its old minimum payment permanently joins the extra amount for the next target. The total monthly budget never shrinks.' },
+        { title: 'Promotional and variable rates are not modeled', body: 'If a card\'s rate is a temporary promotional APR or your rates can change, use your current rate and recheck the numbers after it changes.' },
+        { title: 'New charges reset the clock', body: 'This assumes no new purchases on any account. Continuing to charge a credit card you are paying down will extend every result shown here.' },
+        { title: 'Cheaper on paper is not always cheaper in practice', body: 'Avalanche almost always costs less interest, but research on real debt-settlement clients found that closing individual accounts — snowball\'s strength — predicted actually finishing. Pick the one you will stick with.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, Resolve to take control of your debt in the new year', url: 'https://www.consumerfinance.gov/archive/blog/resolve-take-control-your-debt-new-year/' },
+        { label: 'Gal, D. & McShane, B., "Can Small Victories Help Win the War? Evidence from Consumer Debt Management," Journal of Marketing Research, 2012', url: 'https://www.semanticscholar.org/paper/Can-Small-Victories-Help-Win-the-War-Evidence-from-Gal-McShane/591f5dfc53b372dd5e76a8d563f2b05a64f99353' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'balances',
+        label: 'Balances',
+        type: 'list',
+        placeholder: 'Paste or type each debt\'s balance — commas, spaces or new lines between them.',
+        defaultValue: 0,
+        listDefault: [5000, 3000, 2000],
+        listMin: 1
+      },
+      {
+        id: 'rates',
+        label: 'Interest rates (APR, %)',
+        type: 'list',
+        placeholder: 'Each debt\'s own APR, in the same order as the balances above.',
+        defaultValue: 0,
+        listDefault: [22, 18, 9],
+        listMin: 1
+      },
+      {
+        id: 'minPayments',
+        label: 'Minimum payments',
+        type: 'list',
+        placeholder: 'Each debt\'s required minimum payment, in the same order again.',
+        defaultValue: 0,
+        listDefault: [150, 90, 60],
+        listMin: 1
+      },
+      { id: 'extraPayment', label: 'Extra monthly payment (beyond the minimums)', type: 'currency', placeholder: '200', defaultValue: 200, step: 25, min: 0 }
+    ],
+    seo: {
+      title: 'Debt Payoff Calculator – Snowball vs. Avalanche',
+      description: 'Compare the debt snowball and debt avalanche methods side by side: months to debt-free and total interest for a list of debts plus an extra payment.',
+      faq: [
+        { question: 'Which saves more money, snowball or avalanche?', answer: 'Avalanche (highest rate first) almost always costs less total interest, because it shrinks the most expensive balance first. In this calculator\'s example, avalanche saves $445.97 and finishes a month sooner than snowball on the same debts and budget.' },
+        { question: 'Why would anyone use snowball if avalanche saves more?', answer: 'A widely-cited 2012 study of real debt-settlement clients found that closing individual accounts — snowball\'s focus on small, fast wins — predicted actually getting out of debt. The cheapest method on paper is not useful if you do not stick with it.' },
+        { question: 'Do I still pay the minimum on every debt?', answer: 'Yes, on every debt except the current target. The target gets its own minimum plus your whole extra payment, plus the old minimum payments of any debts already paid off.' },
+        { question: 'What happens to a paid-off debt\'s minimum payment?', answer: 'It rolls permanently into the budget for the next target debt. Your total monthly debt payment amount never goes down until every debt is paid off.' },
+        { question: 'Does the order matter if two debts have the same balance or rate?', answer: 'Only in a tie. If two balances (for snowball) or two rates (for avalanche) are equal, either order produces the same total months and interest.' },
+        { question: 'Can I use this for any kind of debt?', answer: 'Yes — credit cards, personal loans, car loans and private student loans all work, as long as you know each one\'s balance, rate and minimum payment. It assumes a fixed rate throughout.' },
+        { question: 'How is this different from the credit card minimum payment calculator?', answer: 'That calculator looks at one card paid at the minimum only, with no extra payment. This one compares two strategies for paying off several debts at once with minimums plus a shared extra amount.' }
+      ]
+    },
+    compute(values, lists) {
+      const balances = lists.balances ?? [];
+      const rates = lists.rates ?? [];
+      const minPayments = lists.minPayments ?? [];
+      const n = balances.length;
+      const bad = { snowballMonths: NaN, snowballTotalInterest: NaN, avalancheMonths: NaN, avalancheTotalInterest: NaN, interestSavedWithAvalanche: NaN, monthsSavedWithAvalanche: NaN };
+      if (n === 0 || rates.length !== n || minPayments.length !== n) return bad;
+
+      const simulate = (orderIndices: number[]) => {
+        const bals = balances.slice();
+        const totalBudget = minPayments.reduce((sum, m) => sum + m, 0) + values.extraPayment;
+        let totalInterest = 0;
+        let months = 0;
+        while (bals.some((b) => b > 1e-6) && months < 600) {
+          months++;
+          for (let i = 0; i < n; i++) {
+            if (bals[i] > 1e-6) {
+              const interest = bals[i] * (rates[i] / 100 / 12);
+              totalInterest += interest;
+              bals[i] += interest;
+            }
+          }
+          const targetIdx = orderIndices.find((i) => bals[i] > 1e-6);
+          let budgetUsed = 0;
+          for (let i = 0; i < n; i++) {
+            if (i === targetIdx || !(bals[i] > 1e-6)) continue;
+            const pay = Math.min(bals[i], minPayments[i]);
+            bals[i] -= pay;
+            budgetUsed += pay;
+            if (bals[i] < 1e-6) bals[i] = 0;
+          }
+          if (targetIdx !== undefined) {
+            const forTarget = Math.max(0, totalBudget - budgetUsed);
+            const pay = Math.min(bals[targetIdx], forTarget);
+            bals[targetIdx] -= pay;
+            if (bals[targetIdx] < 1e-6) bals[targetIdx] = 0;
+          }
+        }
+        return { months, totalInterest };
+      };
+
+      const byValue = (arr: number[]) => arr.map((value, index) => ({ value, index }));
+      const snowballOrder = byValue(balances).sort((a, b) => a.value - b.value).map((p) => p.index);
+      const avalancheOrder = byValue(rates).sort((a, b) => b.value - a.value).map((p) => p.index);
+
+      const snowball = simulate(snowballOrder);
+      const avalanche = simulate(avalancheOrder);
+
+      return {
+        snowballMonths: snowball.months,
+        snowballTotalInterest: snowball.totalInterest,
+        avalancheMonths: avalanche.months,
+        avalancheTotalInterest: avalanche.totalInterest,
+        interestSavedWithAvalanche: snowball.totalInterest - avalanche.totalInterest,
+        monthsSavedWithAvalanche: snowball.months - avalanche.months
+      };
+    }
   }
 ];

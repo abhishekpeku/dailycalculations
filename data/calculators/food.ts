@@ -147,6 +147,7 @@ export const foodCalculators: CalculatorConfig[] = [
   {
     id: 'recipe-scaling-calculator',
     category: 'food',
+    group: 'Baking & Cakes',
     glyph: 'x1.5',
     updatedAt: '2026-11-05',
     aliases: ['recipe scaling calculator', 'recipe converter calculator', 'scale a recipe up or down', 'recipe yield calculator', 'how to double a recipe', 'recipe multiplier calculator'],
@@ -261,6 +262,7 @@ export const foodCalculators: CalculatorConfig[] = [
   {
     id: 'bakers-percentage-calculator',
     category: 'food',
+    group: 'Baking & Cakes',
     glyph: 'bp%',
     updatedAt: '2026-11-05',
     aliases: ["baker's percentage calculator", 'baker percentage calculator', 'bread formula percentage calculator', "baker's math calculator", 'bread hydration percentage calculator', 'flour weight percentage calculator'],
@@ -393,6 +395,7 @@ export const foodCalculators: CalculatorConfig[] = [
   {
     id: 'pizza-dough-calculator',
     category: 'food',
+    group: 'Baking & Cakes',
     glyph: 'dgh',
     updatedAt: '2026-11-05',
     aliases: ['pizza dough calculator', 'pizza dough recipe calculator', 'pizza hydration calculator', 'pizza dough ball weight calculator', 'how much flour for pizza dough', 'pizza dough ingredients by weight'],
@@ -526,6 +529,7 @@ export const foodCalculators: CalculatorConfig[] = [
   {
     id: 'turkey-cook-time-calculator',
     category: 'food',
+    group: 'Meat & Poultry',
     glyph: 'tky',
     updatedAt: '2026-11-05',
     aliases: ['turkey cooking time calculator', 'turkey roasting time calculator', 'how long to cook a turkey', 'turkey cook time by weight', 'turkey roasting chart', 'how long to roast a turkey per pound'],
@@ -665,6 +669,7 @@ export const foodCalculators: CalculatorConfig[] = [
   {
     id: 'rice-to-water-ratio-calculator',
     category: 'food',
+    group: 'Eggs & Grains',
     glyph: 'rice',
     updatedAt: '2026-11-05',
     aliases: ['rice to water ratio calculator', 'rice water ratio calculator', 'how much water for rice', 'rice cooking ratio calculator', 'basmati rice water ratio', 'how much water for jasmine rice'],
@@ -788,6 +793,7 @@ export const foodCalculators: CalculatorConfig[] = [
   {
     id: 'turkey-thaw-time-calculator',
     category: 'food',
+    group: 'Meat & Poultry',
     glyph: 'thaw',
     updatedAt: '2026-11-05',
     aliases: ['turkey thawing time calculator', 'how long to thaw a turkey', 'turkey defrost time calculator', 'refrigerator thaw time turkey', 'cold water thawing time turkey', 'how many days to thaw a turkey'],
@@ -915,6 +921,7 @@ export const foodCalculators: CalculatorConfig[] = [
   {
     id: 'boiled-egg-calculator',
     category: 'food',
+    group: 'Eggs & Grains',
     glyph: 'egg',
     updatedAt: '2026-11-05',
     aliases: ['boiled egg calculator', 'how long to boil an egg', 'soft boiled egg timer', 'hard boiled egg time calculator', 'jammy egg timer', 'egg boiling time by size'],
@@ -1051,6 +1058,7 @@ export const foodCalculators: CalculatorConfig[] = [
   {
     id: 'steak-doneness-calculator',
     category: 'food',
+    group: 'Meat & Poultry',
     glyph: 'stk',
     updatedAt: '2026-11-05',
     aliases: ['steak doneness calculator', 'steak temperature chart', 'steak internal temperature calculator', 'how long to cook a steak', 'medium rare steak temperature', 'steak pull temperature calculator'],
@@ -1192,6 +1200,7 @@ export const foodCalculators: CalculatorConfig[] = [
   {
     id: 'party-food-calculator',
     category: 'food',
+    group: 'Party Planning',
     glyph: 'pty',
     updatedAt: '2026-11-05',
     aliases: ['party food calculator', 'how much food for a party', 'food quantity calculator for a party', 'how much food per person', 'party planning food calculator', 'catering quantity calculator'],
@@ -1314,6 +1323,7 @@ export const foodCalculators: CalculatorConfig[] = [
   {
     id: 'yeast-conversion-calculator',
     category: 'food',
+    group: 'Baking & Cakes',
     glyph: 'yst',
     updatedAt: '2026-11-05',
     aliases: ['yeast conversion calculator', 'active dry to instant yeast conversion', 'fresh yeast to dry yeast calculator', 'instant yeast to active dry yeast', 'cake yeast conversion calculator', 'how much instant yeast equals active dry'],
@@ -1441,6 +1451,7 @@ export const foodCalculators: CalculatorConfig[] = [
   {
     id: 'abv-calculator',
     category: 'food',
+    group: 'Drinks & Brewing',
     glyph: 'abv',
     updatedAt: '2026-11-05',
     aliases: ['abv calculator', 'alcohol by volume calculator', 'homebrew abv calculator', 'original gravity final gravity calculator', 'beer abv calculator', 'wine abv calculator from gravity'],
@@ -1564,6 +1575,7 @@ export const foodCalculators: CalculatorConfig[] = [
   {
     id: 'coffee-ratio-calculator',
     category: 'food',
+    group: 'Drinks & Brewing',
     glyph: 'cof',
     updatedAt: '2026-11-05',
     aliases: ['coffee to water ratio calculator', 'coffee ratio calculator', 'how much coffee per cup of water', 'coffee brewing ratio calculator', 'golden ratio coffee calculator', 'drip coffee ratio calculator'],
@@ -1698,6 +1710,7 @@ export const foodCalculators: CalculatorConfig[] = [
   {
     id: 'cold-brew-ratio-calculator',
     category: 'food',
+    group: 'Drinks & Brewing',
     glyph: 'cbr',
     updatedAt: '2026-11-05',
     aliases: ['cold brew ratio calculator', 'cold brew coffee calculator', 'cold brew concentrate ratio', 'how much coffee for cold brew', 'cold brew coffee to water ratio', 'cold brew recipe calculator'],
@@ -1812,6 +1825,7 @@ export const foodCalculators: CalculatorConfig[] = [
   {
     id: 'self-rising-flour-substitute-calculator',
     category: 'food',
+    group: 'Baking & Cakes',
     glyph: 'srf',
     updatedAt: '2026-11-05',
     aliases: ['self rising flour substitute calculator', 'self raising flour substitute calculator', 'how to make self rising flour', 'self rising flour from all purpose flour', 'self rising flour converter', 'baking powder and salt for self rising flour'],
@@ -1927,6 +1941,7 @@ export const foodCalculators: CalculatorConfig[] = [
   {
     id: 'cake-servings-calculator',
     category: 'food',
+    group: 'Baking & Cakes',
     glyph: 'cak',
     updatedAt: '2026-11-05',
     aliases: ['cake servings calculator', 'cake serving size calculator', 'how many servings in a cake', 'wedding cake serving calculator', 'cake slice calculator', 'cake portion calculator'],
@@ -2061,6 +2076,7 @@ export const foodCalculators: CalculatorConfig[] = [
   {
     id: 'party-drinks-calculator',
     category: 'food',
+    group: 'Party Planning',
     glyph: 'pdr',
     updatedAt: '2026-11-05',
     aliases: ['party drinks calculator', 'how much alcohol for a party', 'party alcohol calculator', 'how many drinks per person at a party', 'bar calculator for a party', 'party bar planning calculator'],
@@ -2187,6 +2203,7 @@ export const foodCalculators: CalculatorConfig[] = [
   {
     id: 'brine-calculator',
     category: 'food',
+    group: 'Meat & Poultry',
     glyph: 'brn',
     updatedAt: '2026-11-05',
     aliases: ['brine calculator', 'turkey brine calculator', 'how much salt for brine', 'brine ratio calculator', 'chicken brine calculator', 'wet brine calculator'],

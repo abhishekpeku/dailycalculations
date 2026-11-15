@@ -113,7 +113,29 @@ they will have shifted from other in-flight work like step 60/UX-10)
     Categories dropdown mirrors the same sections for both; `/categories/finance` (ungrouped)
     still shows a flat grid in both the category page and the dropdown; typing in the
     dropdown's search box still returns one flat list across categories.
-- [ ] Batch 2: `home` + `food`
+- [x] Batch 2: `home` + `food` — PR #85, branch `ux/category-groups-batch2`
+  - `home.ts`: 27/27 tagged, 8 groups (Walls & Paint 3, Flooring & Tiling 3, Concrete & Masonry
+    5, Landscaping Materials 5, Outdoor Structures 3, Roofing 2, HVAC & Energy 3, Carpentry &
+    Layout 3)
+  - `food.ts`: 17/17 tagged, 5 groups (Baking & Cakes 6, Meat & Poultry 4, Eggs & Grains 2,
+    Drinks & Brewing 3, Party Planning 2) — actual calculator counts for both categories came in
+    lower than this file's earlier ~35/~27 estimates, as the "regenerate before trusting" note
+    above anticipated
+  - `categories.spec.ts`'s `GROUPED_CATEGORIES` now includes `home`/`food`
+  - `npm test` 1123/1123, lint clean on every file this batch touched (a repo-wide `npm run
+    lint` also reports 144 errors from an unrelated, concurrently-running agent's
+    `.claude/worktrees/*` directories being swept into the glob — pre-existing noise, not from
+    this branch; confirmed by linting with `.claude/**` excluded, which is clean), `npm run
+    build` 295/295 pages. Manually verified in a dev server (desktop + the Chrome extension):
+    `/categories/home` and `/categories/food` show labeled sections matching the group/count
+    plan exactly; the Categories dropdown mirrors the same grouped sections for both; the
+    dropdown's Finance row (still ungrouped) stays a flat grid; typing a search query in the
+    dropdown returns one flat, ungrouped list.
+  - Found and parked (not fixed, out of scope for this batch): `/categories/home` throws a
+    React "two children with the same key, `Home`" console error from `components/Breadcrumb.tsx`
+    — the category is literally titled "Home", which collides with the breadcrumb's own root
+    "Home" crumb. Pre-existing, unrelated to group tagging (confirmed `/categories/food` has no
+    such error); added to STATUS.md's Parked list.
 - [ ] Batch 3: `sports` + `finance`
 - [ ] Batch 4: `work` + `shopping` + `health` + `auto`
 - [ ] Batch 5: `time` + `travel` + `text` + `creator` + `education`

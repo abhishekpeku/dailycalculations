@@ -154,6 +154,25 @@ they will have shifted from other in-flight work like step 60/UX-10)
     fully-grouped category now gets the sectioned view regardless of size, which batches 4 and 5
     (several categories as small as 1-2 calculators, per this step's explicit "no exceptions" rule)
     will also depend on. No change for already-grouped or ungrouped categories (verified below).
-- [ ] Batch 4: `work` + `shopping` + `health` + `auto`
+- [x] Batch 4: `work` + `shopping` + `health` + `auto` tagged — PR #89, branch
+      `ux/category-groups-batch4`
+  - `work.ts`: 4/4 tagged, 2 groups (Pay & Rates 2: salary-raise-calculator,
+    freelancer-rate-calculator; Time & Benefits 2: meeting-cost-calculator, pto-calculator)
+  - `shopping.ts`: 5/5 tagged, 3 groups (Taxes & Tips 2: sales-tax-calculator, tip-calculator;
+    Discounts & Rewards 2: discount-calculator, cashback-calculator; Price Comparison 1:
+    unit-price-calculator)
+  - `health.ts`: 6/6 tagged, 3 groups (Body & Nutrition 4: bmi-calculator,
+    water-intake-calculator, calorie-calculator, tdee-calculator; Fitness Performance 1:
+    running-pace-calculator; Pregnancy 1: pregnancy-due-date-calculator)
+  - `auto.ts`: 6/6 tagged, 3 groups (Financing 1: car-payment-calculator; Fuel & Energy Costs
+    3: gas-cost-calculator, ev-charging-calculator, fuel-cost-calculator; Commuting Costs 2:
+    toll-cost-calculator, commute-cost-calculator)
+  - All four categories came in at the exact estimates from this step file's batch plan (4,
+    5, 6, 6) rather than the ~7/~6/~6/~6 placeholders — small enough that several groups are
+    size 1-2, per the "no artificial subdivisions" guidance.
+  - `categories.spec.ts`'s `GROUPED_CATEGORIES` now includes `work`/`shopping`/`health`/`auto`
+  - `npm test` 1123/1123, lint clean, `npm run build` passing. Manually verified in a dev
+    server: all 4 category pages show labeled sections; the Categories dropdown mirrors the
+    same grouped sections for all 4.
 - [ ] Batch 5: `time` + `travel` + `text` + `creator` + `education`
 - [ ] STATUS.md updated with a final summary (every category's group count)

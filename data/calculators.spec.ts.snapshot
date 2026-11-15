@@ -7789,7 +7789,8 @@ exports[`compute() snapshots > pythagorean-theorem-calculator 1`] = `
     },
     "outputs": {
       "hypotenuse": 5,
-      "area": 6
+      "area": 6,
+      "perimeter": 12
     }
   },
   "typical": {
@@ -7799,7 +7800,8 @@ exports[`compute() snapshots > pythagorean-theorem-calculator 1`] = `
     },
     "outputs": {
       "hypotenuse": 7.810249676,
-      "area": 15
+      "area": 15,
+      "perimeter": 18.81024968
     }
   },
   "edge": {
@@ -7809,7 +7811,8 @@ exports[`compute() snapshots > pythagorean-theorem-calculator 1`] = `
     },
     "outputs": {
       "hypotenuse": 0,
-      "area": 0
+      "area": 0,
+      "perimeter": 0
     }
   }
 }

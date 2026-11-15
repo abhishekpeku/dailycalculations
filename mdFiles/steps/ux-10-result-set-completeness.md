@@ -101,7 +101,7 @@ items each may need splitting into 2 sub-batches of ~10-15 — use judgment, don
 ## Progress
 
 - [x] Step file written
-- [ ] Batch 1: chemistry (28, likely 2 sub-batches)
+- [x] Batch 1: chemistry (28, done in 2 sub-batches — 8 real additions, 20 "no change needed")
   - [x] Sub-batch 1a (14, branch `ux/result-sets-chemistry-1`): molarity-calculator (no change),
     dilution-calculator (added soluteAmount), mass-percent-calculator (added solventMass),
     moles-to-grams-calculator (no change), ideal-gas-law-calculator (no change),
@@ -110,7 +110,31 @@ items each may need splitting into 2 sub-batches of ~10-15 — use judgment, don
     (added productMoles), stoichiometry-calculator (no change), solution-concentration-calculator
     (no change), reaction-half-life-calculator (no change), rate-constant-calculator (no change),
     arrhenius-equation-calculator (added impliedHalfLife). 6 real additions, 8 "no change needed."
-  - [ ] Sub-batch 1b (remaining 14 chemistry calculators with ≤1 output)
+  - [x] Sub-batch 1b (14, branch `ux/result-sets-chemistry-1b`): molality-calculator (no
+    change — same n/mass two-variable relationship as molarity, already ruled no-change in 1a),
+    osmolarity-calculator (no change — same 3-variable Osm=M×i pattern as molarity),
+    normality-calculator (no change — same 3-variable N=M×n pattern), titration-calculator
+    (added molesTitrant, C₁×V₁, paired with the existing molesAnalyte so both sides of the
+    equivalence-point mole balance are visible), gibbs-free-energy-calculator (no change —
+    already has a real bonus output, crossoverTemperature; adding ΔG=-RTlnK would conflate
+    standard-state ΔG° with this page's general process ΔG), beer-lambert-law-calculator (no
+    change — already has transmittancePercent; percent-absorbed would just be its arithmetic
+    complement, filler not a new fact), freezing-point-depression-calculator (no change —
+    the solution's actual freezing point needs the pure solvent's own freezing point, which
+    isn't one of this solver's four inputs; adding it needs a new input field, out of scope
+    for an output-only audit), boiling-point-elevation-calculator (no change — same reasoning,
+    structurally identical to freezing-point-depression), vant-hoff-osmotic-pressure-calculator
+    (no change — already has a real bonus output, equivalent osmolarity),
+    vapor-pressure-calculator (no change — the five-variable Clausius-Clapeyron solve already
+    covers every quantity in the equation; ΔSvap would need the pressures to be at a reference
+    like 1 atm, which isn't guaranteed by the inputs), molarity-molality-conversion-calculator
+    (no change — already has a real bonus output, mass percent of solute),
+    calorimetry-enthalpy-calculator (no change — already has a real bonus output, heat
+    released), common-ion-effect-calculator (added plainWaterSolubility, √Ksp, as a direct
+    comparison figure against the common-ion-suppressed solubility — a number already stated
+    in the page's own worked-example prose), specific-heat-by-mixing-calculator (no change —
+    already has a real bonus output, heat transferred). 2 real additions, 12 "no change
+    needed."
 - [ ] Batch 2: physics (19, likely 2 sub-batches)
 - [ ] Batch 3: measurements (34)
 - [ ] Batch 4: math (10)

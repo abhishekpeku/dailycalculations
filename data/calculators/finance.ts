@@ -2331,5 +2331,173 @@ export const financeCalculators: CalculatorConfig[] = [
         monthsSavedWithAvalanche: snowball.months - avalanche.months
       };
     }
+  },
+  {
+    id: 'credit-card-minimum-payment-calculator',
+    category: 'finance',
+    group: 'Debt',
+    glyph: 'Min',
+    updatedAt: '2026-11-15',
+    aliases: ['minimum payment calculator', 'credit card payoff calculator', 'minimum payment interest calculator', 'how long to pay off credit card calculator'],
+    related: ['debt-payoff-calculator', 'balance-transfer-savings-calculator', 'debt-to-income-calculator', 'loan-calculator'],
+    title: 'Credit Card Minimum Payment Calculator',
+    description: 'See how long it takes and how much interest a minimum-only credit card payment costs, versus a fixed payment amount, using the common 1%-of-balance-plus-interest formula.',
+    example: 'A $5,000 balance at 22% APR paid at the minimum only (1% of balance plus that month\'s interest, $25 floor) takes about 230 months (19 years 2 months) and $8,099.77 of interest — a fixed $200 a month instead pays it off in 34 months for $1,749.88, a $6,349.89 difference.',
+    breakdown: {
+      headline: 'interestCostOfMinimumOnly',
+      headlineLabel: 'Extra interest from paying only the minimum',
+      outputs: [
+        { id: 'interestCostOfMinimumOnly', label: 'Extra interest from paying only the minimum', format: 'currency' },
+        { id: 'monthsCostOfMinimumOnly', label: 'Extra months from paying only the minimum', format: 'integer' },
+        { id: 'firstMinPayment', label: 'First month\'s minimum payment', format: 'currency' },
+        { id: 'minMonths', label: 'Minimum-only: months to pay off', format: 'integer' },
+        { id: 'minTotalInterest', label: 'Minimum-only: total interest paid', format: 'currency' },
+        { id: 'fixedMonths', label: 'Fixed payment: months to pay off', format: 'integer' },
+        { id: 'fixedTotalInterest', label: 'Fixed payment: total interest paid', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your card', inputs: ['balance', 'apr'] },
+        { title: 'Compare to a fixed payment', inputs: ['fixedPayment'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'minTotalInterest', label: 'Minimum only' },
+          { from: 'fixedTotalInterest', label: 'Fixed payment' }
+        ],
+        title: 'Total interest paid',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-15',
+      concept: {
+        title: 'Why "just the minimum" can take decades',
+        paragraphs: [
+          'A credit card minimum payment is not a fixed dollar amount — for most large issuers it is recalculated every month as a percentage of your current balance plus that month\'s interest charge, with a fixed dollar floor. This calculator uses the formula the Consumer Financial Protection Bureau\'s 2015 Consumer Credit Card Market Report found "almost all" large issuers use for this style of calculation: 1% of the balance (excluding finance charges), plus the finance charge itself, with a $25 floor — the floor the same report found was the most common among large card issuers.',
+          'Because the minimum is a percentage of a shrinking balance, it shrinks right along with it. Early on, most of a 1%-plus-interest minimum payment is just covering that month\'s interest, so the balance barely moves; as the balance slowly falls, the required minimum falls too, which is what stretches payoff out for years rather than months.',
+          'Paying a fixed amount above the minimum breaks this cycle: a level payment keeps shrinking the balance at a steady, accelerating rate (the interest portion keeps falling while the payment does not), the same mechanics behind any amortized loan.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your card balance and APR, then a fixed monthly amount you want to compare against paying only the minimum.',
+        steps: [
+          { name: 'Enter your balance', text: 'Your current credit card balance.' },
+          { name: 'Enter your APR', text: 'Your card\'s annual percentage rate on purchases or on this balance, as shown on your statement.' },
+          { name: 'Enter a fixed comparison payment', text: 'An amount you could pay every month instead of letting the minimum shrink over time.' },
+          { name: 'Read both payoff paths', text: 'The headline shows the extra interest the minimum-only path costs versus your fixed amount, with months and total interest for each shown below.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The minimum payment is recalculated every month from the balance that remains after the previous payment.',
+        expression: 'Monthly interest = balance × (APR ÷ 12)\nMinimum payment = max(1% × balance + monthly interest, $25)\nNew balance = balance + monthly interest − payment',
+        terms: [
+          { symbol: 'balance', meaning: 'The balance owed at the start of that month.' },
+          { symbol: 'APR', meaning: 'Annual percentage rate, applied monthly as APR ÷ 12.' },
+          { symbol: '$25 floor', meaning: 'The fixed minimum dollar payment, which the CFPB\'s 2015 report found was the most common floor among large card issuers, used once 1% of the balance plus interest drops below it.' }
+        ],
+        note: 'Estimates only. Formulas vary by issuer — some use 2% or more of the balance including finance charges (common among credit unions and subprime issuers), and floors above $25 are common at subprime issuers. Check your card\'s cardholder agreement for its exact formula.'
+      },
+      workedExample: {
+        intro: 'A $5,000 balance at 22% APR. How does paying only the minimum (1% of balance plus interest, $25 floor) compare with paying a fixed $200 a month?',
+        rows: [
+          { label: 'First month\'s minimum (1% × 5,000 + 5,000 × 22% ÷ 12)', value: '$141.67' },
+          { label: 'Paying only the minimum', value: '230 months (about 19 years, 2 months), $8,099.77 total interest' },
+          { label: 'Paying a fixed $200 a month', value: '34 months (about 2 years, 10 months), $1,749.88 total interest' },
+          { label: 'Extra interest from the minimum path (8,099.77 − 1,749.88)', value: '$6,349.89' },
+          { label: 'Extra time (230 − 34 months)', value: '196 months' }
+        ],
+        result: 'Paying only the minimum costs about $6,349.89 more and takes 196 months longer than a fixed $200 a month',
+        explanation: 'Because the minimum shrinks along with the balance, the payment keeps getting smaller and the interest keeps compounding on a balance that barely moves for a long stretch. A fixed $200 payment never shrinks, so it eats into principal faster every single month.'
+      },
+      watchOut: [
+        { title: 'Your card\'s formula may differ', body: 'Check your cardholder agreement. Some issuers use 2% or more of the balance (including finance charges), use a different floor, or exclude fees from the formula differently than assumed here.' },
+        { title: 'New charges extend everything', body: 'This assumes no new purchases on the card. Continuing to charge it while paying it down will push out the months and interest shown here.' },
+        { title: 'Your statement has your real minimum payment warning', body: 'The CARD Act requires every statement to show how long payoff would take and the total cost at the minimum payment, using your card\'s actual formula — treat that figure as more authoritative than this estimate.' },
+        { title: 'A high utilization hurts your credit regardless', body: 'Carrying a large balance relative to your credit limit can lower your credit score even while you are current on payments, separate from the interest cost shown here.' },
+        { title: 'This is not the same question as a payoff strategy', body: 'If you are juggling several cards or loans, see debt-payoff-calculator, which compares snowball and avalanche strategies across multiple debts at once.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, The Consumer Credit Card Market (2015 report), §5.2.5 Minimum payments', url: 'https://files.consumerfinance.gov/f/201512_cfpb_report-the-consumer-credit-card-market.pdf' },
+        { label: 'Consumer Financial Protection Bureau, Regulation Z Appendix M1, Repayment Disclosures', url: 'https://www.consumerfinance.gov/rules-policy/regulations/1026/m1/' }
+      ]
+    },
+    inputs: [
+      { id: 'balance', label: 'Credit card balance', type: 'currency', placeholder: '5000', defaultValue: 5000, step: 100, min: 0 },
+      { id: 'apr', label: 'Annual percentage rate (APR)', type: 'percent', placeholder: '22', defaultValue: 22, step: 0.1, min: 0 },
+      { id: 'fixedPayment', label: 'Fixed monthly payment to compare', type: 'currency', placeholder: '200', defaultValue: 200, step: 10, min: 0 }
+    ],
+    seo: {
+      title: 'Credit Card Minimum Payment Calculator',
+      description: 'See how long a minimum-only credit card payment takes and how much interest it costs, versus a fixed payment, using the common 1%-plus-interest formula.',
+      faq: [
+        { question: 'How is a credit card minimum payment calculated?', answer: 'Most large issuers use 1% of the current balance plus that month\'s interest charge, with a $25 floor, per the CFPB\'s 2015 Consumer Credit Card Market Report. Some issuers use 2% or more instead, so check your own cardholder agreement.' },
+        { question: 'Why does the minimum payment keep shrinking?', answer: 'Because it is a percentage of the balance. As the balance falls, 1% of it falls too, so later minimum payments are smaller in dollar terms than earlier ones — which is exactly why minimum-only payoff stretches out for years.' },
+        { question: 'How much does paying only the minimum really cost?', answer: 'On a $5,000 balance at 22% APR, this calculator finds paying only the minimum takes about 230 months (19 years, 2 months) and $8,099.77 of interest, versus 34 months and $1,749.88 at a fixed $200 a month — $6,349.89 more and 196 months longer.' },
+        { question: 'Is the $25 minimum floor the same at every card issuer?', answer: 'No. $25 is the most common floor among large issuers per the CFPB\'s own 2015 study, but subprime issuers often set a higher floor and credit unions often use a different percentage-based formula entirely.' },
+        { question: 'How can I pay off my card faster than the minimum?', answer: 'Pay a fixed amount above the minimum every month instead of letting the required payment shrink with the balance — even a modest fixed amount cuts years and a large share of the interest, as shown in the example above.' },
+        { question: 'How is this different from debt-payoff-calculator?', answer: 'This calculator looks at one card and compares minimum-only payments with a fixed amount you choose. Debt-payoff-calculator compares two payoff strategies (snowball and avalanche) across several debts at once with a shared extra payment.' },
+        { question: 'How is this different from balance-transfer-savings-calculator?', answer: 'This calculator keeps the same card and rate throughout. Balance-transfer-savings-calculator looks at moving the balance to a different card with a promotional rate and a transfer fee instead.' }
+      ]
+    },
+    compute(values) {
+      const capMonths = 1200;
+      const r = values.apr / 100 / 12;
+
+      let bal = values.balance;
+      let minTotalInterest = 0;
+      let minMonths = 0;
+      let firstMinPayment = NaN;
+      while (bal > 1e-6 && minMonths < capMonths) {
+        minMonths++;
+        const interest = bal * r;
+        minTotalInterest += interest;
+        bal += interest;
+        const payment = Math.min(bal, Math.max(0.01 * (bal - interest) + interest, 25));
+        if (minMonths === 1) firstMinPayment = payment;
+        bal -= payment;
+        if (bal < 1e-6) bal = 0;
+      }
+      const minPaidOff = bal <= 1e-6;
+
+      let fixedMonths = NaN;
+      let fixedTotalInterest = NaN;
+      if (values.fixedPayment > values.balance * r) {
+        let fixedBal = values.balance;
+        fixedTotalInterest = 0;
+        fixedMonths = 0;
+        while (fixedBal > 1e-6 && fixedMonths < capMonths) {
+          fixedMonths++;
+          const interest = fixedBal * r;
+          fixedTotalInterest += interest;
+          const principal = Math.min(fixedBal, values.fixedPayment - interest);
+          fixedBal -= principal;
+          if (fixedBal < 1e-6) fixedBal = 0;
+        }
+      }
+
+      if (!minPaidOff || !Number.isFinite(fixedTotalInterest)) {
+        return {
+          interestCostOfMinimumOnly: NaN,
+          monthsCostOfMinimumOnly: NaN,
+          firstMinPayment,
+          minMonths: minPaidOff ? minMonths : NaN,
+          minTotalInterest: minPaidOff ? minTotalInterest : NaN,
+          fixedMonths,
+          fixedTotalInterest
+        };
+      }
+
+      return {
+        interestCostOfMinimumOnly: minTotalInterest - fixedTotalInterest,
+        monthsCostOfMinimumOnly: minMonths - fixedMonths,
+        firstMinPayment,
+        minMonths,
+        minTotalInterest,
+        fixedMonths,
+        fixedTotalInterest
+      };
+    }
   }
 ];

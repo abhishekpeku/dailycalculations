@@ -305,7 +305,8 @@ export const calculatorOrder: string[] = [
   'isotope-notation-calculator',
   'molecular-geometry-calculator',
   'specific-heat-by-mixing-calculator',
-  'home-affordability-calculator'
+  'home-affordability-calculator',
+  'mortgage-refinance-calculator'
 ];
 
 const rank = (id: string) => {

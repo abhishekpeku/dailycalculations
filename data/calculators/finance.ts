@@ -1392,5 +1392,141 @@ export const financeCalculators: CalculatorConfig[] = [
         backEndRatio: ((balanced.maxHousingPayment + values.existingMonthlyDebt) / grossMonthlyIncome) * 100
       };
     }
+  },
+  {
+    id: 'mortgage-refinance-calculator',
+    category: 'finance',
+    glyph: 'Refi',
+    updatedAt: '2026-11-15',
+    aliases: ['refinance calculator', 'mortgage refinance break-even calculator', 'should i refinance calculator', 'refi savings calculator'],
+    related: ['mortgage-calculator', 'loan-prepayment-calculator', 'home-affordability-calculator'],
+    title: 'Mortgage Refinance Calculator',
+    description: 'Find the monthly savings from refinancing your mortgage, the break-even point on the closing costs, and how the lifetime interest on the new loan compares with staying on your current one.',
+    example: 'Refinancing a $280,000 balance with 25 years left at 6.5% into a new 30-year loan at 5.5% saves about $300.77 a month and breaks even on $5,000 of closing costs in about 16.6 months — but costs about $5,157 more in total interest, because the term resets to 30 years.',
+    breakdown: {
+      headline: 'breakEvenMonths',
+      headlineLabel: 'Break-even time',
+      outputs: [
+        { id: 'breakEvenMonths', label: 'Break-even time', format: 'number', dimension: 'term', unit: 'mo' },
+        { id: 'currentPayment', label: 'Current monthly payment', format: 'currency' },
+        { id: 'newPayment', label: 'New monthly payment', format: 'currency' },
+        { id: 'monthlySavings', label: 'Monthly savings', format: 'currency' },
+        { id: 'lifetimeInterestOld', label: 'Remaining lifetime interest, current loan', format: 'currency' },
+        { id: 'lifetimeInterestNew', label: 'Lifetime interest, new loan', format: 'currency' },
+        { id: 'lifetimeInterestChange', label: 'Lifetime interest change (new − current)', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Current loan', inputs: ['currentLoanBalance', 'currentRate', 'currentRemainingYears'] },
+        { title: 'New loan offer', inputs: ['newRate', 'newTermYears', 'closingCosts'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'currentPayment', label: 'Current payment' },
+          { from: 'newPayment', label: 'New payment' }
+        ],
+        title: 'Monthly payment, current vs. refinanced',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-15',
+      concept: {
+        title: 'When refinancing actually pays off',
+        paragraphs: [
+          'Refinancing replaces your current mortgage with a new one, usually to get a lower rate, a shorter term, or both. The new loan is not free: it carries its own closing costs (appraisal, title, origination and the like), so the real question is not just "is the new rate lower" but "do the monthly savings earn back those closing costs before I sell the home or refinance again." The break-even point is the number of months it takes: closing costs divided by the monthly savings, a formula the Federal Reserve Board\'s own consumer guide to refinancing uses directly.',
+          'A lower rate does not automatically mean a better deal. If the new loan resets the term — say, from 25 years left on the current loan to a fresh 30-year term — you finance the same balance over more total months. That can lower the monthly payment and still raise the total interest paid over the life of the loan. This calculator shows both the monthly savings and the lifetime interest on each loan side by side, so a payment drop that quietly costs more overall does not go unnoticed.',
+          'Compare the break-even point with how long you actually expect to stay in the home or keep the loan. A 16-month break-even is an easy call if you plan to stay 10 more years; it is a much closer call if you might move or refinance again within two.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your current loan, then the new loan you are being offered.',
+        steps: [
+          { name: 'Enter your current loan', text: 'The remaining balance, the current rate, and how many years are left on it (not the original term).' },
+          { name: 'Enter the new loan', text: 'The new rate, the new loan\'s term in years, and the closing costs you would pay to refinance. This calculator assumes the same balance is refinanced, with no cash taken out.' },
+          { name: 'Read the monthly savings', text: 'The current and new payments are compared directly; the difference is your monthly savings (or cost, if the new payment is higher).' },
+          { name: 'Check the break-even point', text: 'Closing costs divided by the monthly savings. Compare it with how long you plan to keep the loan.' },
+          { name: 'Check the lifetime interest', text: 'The two lifetime-interest figures show whether the new loan costs more or less in total, which a monthly-payment comparison alone can miss when the term changes.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Both payments use the standard amortized-loan formula on the same balance, at each loan\'s own rate and remaining term.',
+        expression: 'currentPayment = M(balance, currentRate, remainingMonths)\nnewPayment = M(balance, newRate, newMonths)\nmonthlySavings = currentPayment − newPayment\nbreakEvenMonths = closingCosts ÷ monthlySavings\nlifetimeInterest = payment × months − balance',
+        terms: [
+          { symbol: 'M(...)', meaning: 'The loan-calculator payment formula: M = P × r ÷ (1 − (1 + r)^−n).' },
+          { symbol: 'balance', meaning: 'The current remaining loan balance, refinanced in full, with no cash taken out.' },
+          { symbol: 'remainingMonths, newMonths', meaning: 'Months left on the current loan, and the new loan\'s own term in months.' },
+          { symbol: 'breakEvenMonths', meaning: 'How long the monthly savings take to repay the closing costs. No answer if the new payment is not actually lower.' }
+        ],
+        note: 'Estimates only, not a loan offer. A cash-out refinance, a rate buy-down with points, or rolling the closing costs into the new balance changes these numbers and is not modeled here; the Federal Reserve\'s own worked example also applies an after-tax adjustment to the monthly savings, which this calculator does not.'
+      },
+      workedExample: {
+        intro: 'You owe $280,000 with 25 years left at 6.5%. A lender offers a new 30-year loan at 5.5%, with $5,000 in closing costs. Is it worth it?',
+        rows: [
+          { label: 'Current payment (280,000, 6.5%, 300 months left)', value: '$1,890.58' },
+          { label: 'New payment (280,000, 5.5%, 360 months)', value: '$1,589.81' },
+          { label: 'Monthly savings', value: '$300.77' },
+          { label: 'Break-even (5,000 ÷ 300.77)', value: '≈ 16.6 months' },
+          { label: 'Remaining lifetime interest, current loan (1,890.58 × 300 − 280,000)', value: '≈ $287,174' },
+          { label: 'Lifetime interest, new loan (1,589.81 × 360 − 280,000)', value: '≈ $292,331' },
+          { label: 'Lifetime interest change', value: '≈ +$5,157' }
+        ],
+        result: 'Breaks even in ≈ 16.6 months, but costs ≈ $5,157 more in total interest',
+        explanation: 'The lower rate saves $300.77 a month and earns back the $5,000 closing cost in under a year and a half — a clear win if you plan to stay in the home. But resetting the clock from 25 remaining years to a fresh 30-year term adds five more years of payments, which is why the new loan\'s lifetime interest is higher even though every individual payment is smaller.'
+      },
+      watchOut: [
+        { title: 'The clock resets', body: 'A new loan usually starts its amortization over. Refinancing into the same term you have left, rather than a fresh 30 years, avoids the lifetime-interest increase this example shows.' },
+        { title: 'Break-even versus how long you will stay', body: 'A fast break-even is a weak reason to refinance if you plan to sell or refinance again before reaching it. A slow break-even can still be worth it if you are certain you are staying for decades.' },
+        { title: 'Closing costs can be rolled in', body: 'Some lenders let you add the closing costs to the new loan balance instead of paying them upfront. That raises the balance being financed, which this calculator does not model — if you roll costs in, your real break-even and lifetime interest both shift.' },
+        { title: 'Cash-out refinancing is different', body: 'Taking extra cash out increases the balance beyond what this calculator assumes, raising both the new payment and the lifetime interest.' },
+        { title: 'Rates change daily', body: 'Shop more than one lender close together; mortgage rates move daily and lender fees vary.' }
+      ],
+      references: [
+        { label: 'Federal Reserve Board, A Consumer\'s Guide to Mortgage Refinancings', url: 'https://www.federalreserve.gov/pubs/refinancings' },
+        { label: 'Consumer Financial Protection Bureau, Loan Estimate Explainer', url: 'https://www.consumerfinance.gov/owning-a-home/loan-estimate/' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.8 The Basics of Loans', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-8-the-basics-of-loans' }
+      ]
+    },
+    inputs: [
+      { id: 'currentLoanBalance', label: 'Current loan balance', type: 'currency', placeholder: '280000', defaultValue: 280000, step: 1000, min: 0 },
+      { id: 'currentRate', label: 'Current interest rate (APR)', type: 'percent', placeholder: '6.5', defaultValue: 6.5, step: 0.01, min: 0 },
+      { id: 'currentRemainingYears', label: 'Years remaining on current loan', type: 'number', placeholder: '25', defaultValue: 25, step: 1, min: 1, dimension: 'term', unit: 'yr' },
+      { id: 'newRate', label: 'New interest rate (APR)', type: 'percent', placeholder: '5.5', defaultValue: 5.5, step: 0.01, min: 0 },
+      { id: 'newTermYears', label: 'New loan term', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1, dimension: 'term', unit: 'yr' },
+      { id: 'closingCosts', label: 'Closing costs to refinance', type: 'currency', placeholder: '5000', defaultValue: 5000, step: 100, min: 0 }
+    ],
+    seo: {
+      title: 'Mortgage Refinance Calculator – Break-Even Point',
+      description: 'Free mortgage refinance calculator: monthly savings, the break-even point on closing costs, and how the lifetime interest compares to your current loan.',
+      faq: [
+        { question: 'How do I calculate the break-even point on a refinance?', answer: 'Divide the closing costs by the monthly savings. The Federal Reserve Board\'s own refinancing guide uses this formula. $5,000 in closing costs against $300.77 in monthly savings breaks even in about 16.6 months.' },
+        { question: 'Can refinancing cost more even if my payment goes down?', answer: 'Yes. If the new loan resets the amortization to a longer term than you had left, you can pay less each month but more in total interest, exactly as in this calculator\'s worked example.' },
+        { question: 'How much are typical refinance closing costs?', answer: 'Similar to a purchase loan, commonly 2% to 5% of the loan amount; the closing cost estimator breaks that down by category.' },
+        { question: 'Should I refinance into the same remaining term?', answer: 'It avoids the "resetting the clock" effect. Refinancing a 25-year remaining balance into a new 25-year loan (instead of a fresh 30) keeps the lifetime interest comparison closer to apples-to-apples.' },
+        { question: 'Is a shorter break-even always better?', answer: 'It is better, but not the only factor. Compare it against how long you expect to stay in the home; a long break-even can still be worth it if you are certain you will keep the loan for many years.' },
+        { question: 'Does this calculator include a cash-out refinance?', answer: 'No. It assumes the same balance is refinanced with no extra cash taken out, and that closing costs are paid upfront rather than added to the new balance.' },
+        { question: 'Does it account for taxes?', answer: 'No. The Federal Reserve\'s own example applies an after-tax adjustment to the monthly savings for some borrowers; this calculator compares pre-tax payments.' }
+      ]
+    },
+    compute(values) {
+      const currentMonths = Math.max(1, values.currentRemainingYears * 12);
+      const newMonths = Math.max(1, values.newTermYears * 12);
+      const currentPayment = loanPayment(values.currentLoanBalance, currentMonths, values.currentRate);
+      const newPayment = loanPayment(values.currentLoanBalance, newMonths, values.newRate);
+      const monthlySavings = currentPayment - newPayment;
+      const breakEvenMonths = monthlySavings > 0 ? values.closingCosts / monthlySavings : Infinity;
+      const lifetimeInterestOld = currentPayment * currentMonths - values.currentLoanBalance;
+      const lifetimeInterestNew = newPayment * newMonths - values.currentLoanBalance;
+      return {
+        breakEvenMonths,
+        currentPayment,
+        newPayment,
+        monthlySavings,
+        lifetimeInterestOld,
+        lifetimeInterestNew,
+        lifetimeInterestChange: lifetimeInterestNew - lifetimeInterestOld
+      };
+    }
   }
 ];

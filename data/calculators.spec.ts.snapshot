@@ -5830,6 +5830,68 @@ exports[`compute() snapshots > mortgage-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > mortgage-refinance-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "currentLoanBalance": 280000,
+      "currentRate": 6.5,
+      "currentRemainingYears": 25,
+      "newRate": 5.5,
+      "newTermYears": 30,
+      "closingCosts": 5000
+    },
+    "outputs": {
+      "breakEvenMonths": 16.62395153,
+      "currentPayment": 1890.580052,
+      "newPayment": 1589.809204,
+      "monthlySavings": 300.770848,
+      "lifetimeInterestOld": 287174.0155,
+      "lifetimeInterestNew": 292331.3134,
+      "lifetimeInterestChange": 5157.297826
+    }
+  },
+  "typical": {
+    "inputs": {
+      "currentLoanBalance": 420000,
+      "currentRate": 9.75,
+      "currentRemainingYears": 38,
+      "newRate": 8.25,
+      "newTermYears": 45,
+      "closingCosts": 7500
+    },
+    "outputs": {
+      "breakEvenMonths": 13.90994287,
+      "currentPayment": 3499.896856,
+      "newPayment": 2960.714195,
+      "monthlySavings": 539.1826602,
+      "lifetimeInterestOld": 1175952.966,
+      "lifetimeInterestNew": 1178785.665,
+      "lifetimeInterestChange": 2832.699379
+    }
+  },
+  "edge": {
+    "inputs": {
+      "currentLoanBalance": 0,
+      "currentRate": 0,
+      "currentRemainingYears": 1,
+      "newRate": 0,
+      "newTermYears": 1,
+      "closingCosts": 0
+    },
+    "outputs": {
+      "breakEvenMonths": "Infinity",
+      "currentPayment": 0,
+      "newPayment": 0,
+      "monthlySavings": 0,
+      "lifetimeInterestOld": 0,
+      "lifetimeInterestNew": 0,
+      "lifetimeInterestChange": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > mpg-to-l-100km-converter 1`] = `
 {
   "default": {

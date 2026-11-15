@@ -177,7 +177,66 @@ items each may need splitting into 2 sub-batches of ~10-15 — use judgment, don
     (no change — already has a real bonus output, magnification; nothing else derivable from
     the two distances without an object-height input). 2 real additions, 7 "no change needed."
   - **Batch 2 (physics) totals: 6 real additions, 13 "no change needed," across both sub-batches.**
-- [ ] Batch 3: measurements (34)
+- [x] Batch 3: measurements (34, done in one batch, branch `ux/result-sets-measurements` — 4 real
+  additions, 30 "no change needed", confirming the step file's own prediction that this batch would
+  come back mostly "no change needed"):
+  - **Real additions (4):**
+    - `data-storage-converter` — added `binaryEquivalent` (GiB): the page's own concept/workedExample/
+      watchOut already compute "1 TB ≈ 931.32 GiB" as a static example of the decimal-vs-binary
+      difference, the whole point of the page; this exposes the same fact live for whatever the user
+      types, reusing the dimension's own SI base (bits) and the already-cited NIST binary-prefixes
+      reference. Verified: 1 GB → 0.9313 GiB, 1 TB → 931.3226 GiB (matches the page's own figure).
+    - `megabytes-to-gigabytes-converter` — added `binaryEquivalent` (MiB), the dedicated pair's own
+      version of the same fact ("500 MB ≈ 476.84 MiB" already in its workedExample). Verified:
+      500 MB → 476.8372 MiB (matches).
+    - `kilograms-to-stone-converter` — added `wholeStone` (count) + `remainderPounds` (mass, lb):
+      the page's own description promises "results show stone and pounds together, like '11 st 4
+      lb'" and the worked example already splits the total pounds that way for its default value,
+      but the live solver result only showed the bare decimal stone number. A solver output renders
+      one number, not a composite string, so this is two linked outputs rather than one, using the
+      exact same round-total-pounds-then-split algorithm as `lib/commonValues.ts`'s `formatStoneLbs`
+      (already used in this page's own commonValues table) so the two can never disagree. Verified:
+      70 kg → 11 st 0 lb, 158 lb (11 st 4 lb) → 71.6676 kg → splits back to 11 st 4 lb; checked the
+      0–13 lb remainder bound with a rounding-edge case (97.99 kg → 15 st 6 lb).
+    - `cups-to-grams-rice` — added `cookedWeight` output: the page's own watchOut/FAQ/workedExample
+      already state the USDA cooked-rice figure (158 g/cup, USDA #168878) as a comparison for the
+      same cup amount, and `lib/ingredients.ts` already carries this exact density as `riceCooked`
+      (used elsewhere only in the general `cups-to-grams-converter`'s picker) — reusing it live
+      needed no new citation. Verified: 0.75 cup → 138.75 g uncooked / 118.5 g cooked-equivalent,
+      matching the page's own worked-example "compare" row exactly.
+  - **No change needed (30)** — all of the following already expose every alternate figure the
+    page's own prose discusses through the existing unit-menu (pick a different unit on the same
+    field) or an existing `commonValues`/`referenceTable`, so a second `solver.outputs`/
+    `breakdown.outputs` entry would duplicate, not add, information:
+    - 17 pair converters (of the batch's 19; the other 2, `megabytes-to-gigabytes-converter` and
+      `kilograms-to-stone-converter`, got real additions above): `miles-to-kilometers-converter`,
+      `fahrenheit-to-celsius-converter`, `pounds-to-kilograms-converter` (stone already selectable;
+      the "11 st 4 lb" split is the dedicated `kilograms-to-stone-converter`'s job, not this page's),
+      `gallons-to-liters-converter` (US/UK gallon both in the menu), `centimeters-to-inches-
+      converter`, `feet-to-meters-converter`, `ounces-to-milliliters-converter` (US/UK fl oz both in
+      the menu), `grams-to-ounces-converter` (troy ounce is a different, uncited precious-metals
+      unit, not this page's everyday ounce), `mph-to-kph-converter`, `millimeters-to-inches-
+      converter` (fractional-inch table already present), `milliliters-to-cups-converter` (metric
+      cup already selectable), `acres-to-hectares-converter`, `square-feet-to-square-meters-
+      converter`, `horsepower-to-kilowatts-converter` (PS already selectable; the hp/PS breakdown is
+      the general `power-converter`'s job), `bar-to-psi-converter` (gauge-vs-absolute is explained
+      in prose but the page explicitly treats every typed number as absolute by design — computing
+      a "gauge equivalent" would require assuming the input is gauge, contradicting that stated
+      design, not a safe derivation), `kilocalories-to-kilojoules-converter`, `mpg-to-l-100km-
+      converter` (UK mpg and km/L both already selectable).
+    - 9 general converters (of the batch's 10; the 10th, `data-storage-converter`, got the
+      `binaryEquivalent` real addition above): `length-converter`, `weight-converter`,
+      `volume-converter`, `area-converter`, `speed-converter`, `time-converter`,
+      `pressure-converter` (same gauge-vs-absolute reasoning as bar-to-psi), `energy-converter`,
+      `power-converter`.
+    - 4 ingredient-picker converters (of the batch's 5; the 5th, `cups-to-grams-rice`, got the
+      `cookedWeight` real addition above — its `grams` output is untouched): `cups-to-grams-
+      converter`, `cups-to-grams-flour` (the "scooped vs spooned" figure in its own worked example
+      is an illustrative range, "about 140 g/cup," not a precise citable density like `riceCooked`
+      — adding it as a solver output would overstate a precision the source doesn't claim),
+      `cups-to-grams-sugar` (already lets you pick any of 3 sugar types and compares all 3 side by
+      side in its own referenceTable), `cups-to-grams-butter` (no second citable density to compare
+      against).
 - [ ] Batch 4: math (10)
 - [ ] Batch 5: remainder (11: food/sports/text/travel/shopping/statistics/time)
 - [ ] STATUS.md updated with a summary (count of real additions vs. "no change needed" calls)

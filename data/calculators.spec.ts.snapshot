@@ -1277,6 +1277,59 @@ exports[`compute() snapshots > circle-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > closing-cost-estimator-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "homePrice": 350000,
+      "loanAmount": 280000
+    },
+    "outputs": {
+      "midEstimate": 12250,
+      "overallLow": 7000,
+      "overallHigh": 17500,
+      "originationLow": 1400,
+      "originationHigh": 2800,
+      "otherLow": 5600,
+      "otherHigh": 14700,
+      "midPercentOfPrice": 3.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "homePrice": 525000,
+      "loanAmount": 420000
+    },
+    "outputs": {
+      "midEstimate": 18375,
+      "overallLow": 10500,
+      "overallHigh": 26250,
+      "originationLow": 2100,
+      "originationHigh": 4200,
+      "otherLow": 8400,
+      "otherHigh": 22050,
+      "midPercentOfPrice": 3.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "homePrice": 0,
+      "loanAmount": 0
+    },
+    "outputs": {
+      "midEstimate": 0,
+      "overallLow": 0,
+      "overallHigh": 0,
+      "originationLow": 0,
+      "originationHigh": 0,
+      "otherLow": 0,
+      "otherHigh": 0,
+      "midPercentOfPrice": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > coefficient-of-variation-calculator 1`] = `
 {
   "default": {
@@ -2474,6 +2527,50 @@ exports[`compute() snapshots > distance-calculator 1`] = `
       "distance": 0,
       "deltaX": 0,
       "deltaY": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > down-payment-savings-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "targetDownPayment": 60000,
+      "currentSavings": 5000,
+      "monthlyContribution": 500,
+      "annualRate": 3.5
+    },
+    "outputs": {
+      "years": 7.764306097,
+      "totalContributions": 46585.83658,
+      "totalInterest": 8414.163421
+    }
+  },
+  "typical": {
+    "inputs": {
+      "targetDownPayment": 90000,
+      "currentSavings": 7500,
+      "monthlyContribution": 750,
+      "annualRate": 5.3
+    },
+    "outputs": {
+      "years": 7.224371458,
+      "totalContributions": 65019.34313,
+      "totalInterest": 17480.65687
+    }
+  },
+  "edge": {
+    "inputs": {
+      "targetDownPayment": 0,
+      "currentSavings": 0,
+      "monthlyContribution": 0,
+      "annualRate": 0
+    },
+    "outputs": {
+      "years": "NaN",
+      "totalContributions": "NaN",
+      "totalInterest": "NaN"
     }
   }
 }
@@ -4002,6 +4099,89 @@ exports[`compute() snapshots > heat-calculator 1`] = `
     },
     "outputs": {
       "heat": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > home-affordability-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "grossAnnualIncome": 96000,
+      "existingMonthlyDebt": 1500,
+      "downPayment": 40000,
+      "interestRate": 6.5,
+      "termYears": 30,
+      "propertyTaxRate": 1.1,
+      "annualInsurance": 2110,
+      "hoaMonthly": 0
+    },
+    "outputs": {
+      "conservativeHomePrice": 190891.5155,
+      "balancedHomePrice": 263267.7456,
+      "maximumHomePrice": 302040.7261,
+      "loanAmount": 223267.7456,
+      "monthlyPI": 1411.204027,
+      "monthlyPropertyTax": 241.3287668,
+      "monthlyInsurance": 175.8333333,
+      "monthlyPMI": 111.6338728,
+      "monthlyHOA": 0,
+      "totalMonthlyPayment": 1940,
+      "frontEndRatio": 24.25,
+      "backEndRatio": 43
+    }
+  },
+  "typical": {
+    "inputs": {
+      "grossAnnualIncome": 144000,
+      "existingMonthlyDebt": 2250,
+      "downPayment": 60000,
+      "interestRate": 9.75,
+      "termYears": 45,
+      "propertyTaxRate": 1.65,
+      "annualInsurance": 3150,
+      "hoaMonthly": 0
+    },
+    "outputs": {
+      "conservativeHomePrice": 239610.1834,
+      "balancedHomePrice": 313856.5285,
+      "maximumHomePrice": 358392.7615,
+      "loanAmount": 253856.5285,
+      "monthlyPI": 2089.019009,
+      "monthlyPropertyTax": 431.5527267,
+      "monthlyInsurance": 262.5,
+      "monthlyPMI": 126.9282642,
+      "monthlyHOA": 0,
+      "totalMonthlyPayment": 2910,
+      "frontEndRatio": 24.25,
+      "backEndRatio": 43
+    }
+  },
+  "edge": {
+    "inputs": {
+      "grossAnnualIncome": 0,
+      "existingMonthlyDebt": 0,
+      "downPayment": 0,
+      "interestRate": 0,
+      "termYears": 1,
+      "propertyTaxRate": 0,
+      "annualInsurance": 0,
+      "hoaMonthly": 0
+    },
+    "outputs": {
+      "conservativeHomePrice": 0,
+      "balancedHomePrice": 0,
+      "maximumHomePrice": 0,
+      "loanAmount": 0,
+      "monthlyPI": 0,
+      "monthlyPropertyTax": 0,
+      "monthlyInsurance": 0,
+      "monthlyPMI": 0,
+      "monthlyHOA": 0,
+      "totalMonthlyPayment": 0,
+      "frontEndRatio": "NaN",
+      "backEndRatio": "NaN"
     }
   }
 }
@@ -5742,6 +5922,68 @@ exports[`compute() snapshots > mortgage-calculator 1`] = `
       "totalCost": 0,
       "totalInterest": 0,
       "loanPrincipal": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > mortgage-refinance-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "currentLoanBalance": 280000,
+      "currentRate": 6.5,
+      "currentRemainingYears": 25,
+      "newRate": 5.5,
+      "newTermYears": 30,
+      "closingCosts": 5000
+    },
+    "outputs": {
+      "breakEvenMonths": 16.62395153,
+      "currentPayment": 1890.580052,
+      "newPayment": 1589.809204,
+      "monthlySavings": 300.770848,
+      "lifetimeInterestOld": 287174.0155,
+      "lifetimeInterestNew": 292331.3134,
+      "lifetimeInterestChange": 5157.297826
+    }
+  },
+  "typical": {
+    "inputs": {
+      "currentLoanBalance": 420000,
+      "currentRate": 9.75,
+      "currentRemainingYears": 38,
+      "newRate": 8.25,
+      "newTermYears": 45,
+      "closingCosts": 7500
+    },
+    "outputs": {
+      "breakEvenMonths": 13.90994287,
+      "currentPayment": 3499.896856,
+      "newPayment": 2960.714195,
+      "monthlySavings": 539.1826602,
+      "lifetimeInterestOld": 1175952.966,
+      "lifetimeInterestNew": 1178785.665,
+      "lifetimeInterestChange": 2832.699379
+    }
+  },
+  "edge": {
+    "inputs": {
+      "currentLoanBalance": 0,
+      "currentRate": 0,
+      "currentRemainingYears": 1,
+      "newRate": 0,
+      "newTermYears": 1,
+      "closingCosts": 0
+    },
+    "outputs": {
+      "breakEvenMonths": "Infinity",
+      "currentPayment": 0,
+      "newPayment": 0,
+      "monthlySavings": 0,
+      "lifetimeInterestOld": 0,
+      "lifetimeInterestNew": 0,
+      "lifetimeInterestChange": 0
     }
   }
 }
@@ -8054,6 +8296,92 @@ exports[`compute() snapshots > relative-risk-calculator 1`] = `
       "riskExposedPercent": "NaN",
       "riskUnexposedPercent": "NaN",
       "correctionApplied": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > rent-vs-buy-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "monthlyRent": 1800,
+      "rentGrowthRate": 3,
+      "homePrice": 350000,
+      "downPayment": 70000,
+      "mortgageRate": 6.5,
+      "termYears": 30,
+      "propertyTaxRate": 1.1,
+      "annualInsurance": 2110,
+      "maintenanceRate": 1,
+      "homeAppreciationRate": 3,
+      "investmentReturnRate": 6,
+      "sellingCostRate": 6,
+      "years": 10
+    },
+    "outputs": {
+      "cheaperOption": 1,
+      "amountSaved": 20060.93346,
+      "netCostBuying": 172199.5209,
+      "netCostRenting": 192260.4544,
+      "totalRent": 247619.7931,
+      "investmentGrowth": 55359.33876,
+      "netSaleProceeds": 204775.335,
+      "monthlyPI": 1769.790466
+    }
+  },
+  "typical": {
+    "inputs": {
+      "monthlyRent": 2700,
+      "rentGrowthRate": 4.5,
+      "homePrice": 525000,
+      "downPayment": 105000,
+      "mortgageRate": 9.75,
+      "termYears": 45,
+      "propertyTaxRate": 1.65,
+      "annualInsurance": 3150,
+      "maintenanceRate": 1.5,
+      "homeAppreciationRate": 4.5,
+      "investmentReturnRate": 9,
+      "sellingCostRate": 9,
+      "years": 15
+    },
+    "outputs": {
+      "cheaperOption": 0,
+      "amountSaved": 104194.4373,
+      "netCostBuying": 500137.1381,
+      "netCostRenting": 395942.7008,
+      "totalRent": 673403.359,
+      "investmentGrowth": 277460.6583,
+      "netSaleProceeds": 522297.779,
+      "monthlyPI": 3456.23565
+    }
+  },
+  "edge": {
+    "inputs": {
+      "monthlyRent": 0,
+      "rentGrowthRate": 0,
+      "homePrice": 0,
+      "downPayment": 0,
+      "mortgageRate": 0,
+      "termYears": 1,
+      "propertyTaxRate": 0,
+      "annualInsurance": 0,
+      "maintenanceRate": 0,
+      "homeAppreciationRate": 0,
+      "investmentReturnRate": 0,
+      "sellingCostRate": 0,
+      "years": 1
+    },
+    "outputs": {
+      "cheaperOption": 0,
+      "amountSaved": 0,
+      "netCostBuying": 0,
+      "netCostRenting": 0,
+      "totalRent": 0,
+      "investmentGrowth": 0,
+      "netSaleProceeds": 0,
+      "monthlyPI": 0
     }
   }
 }

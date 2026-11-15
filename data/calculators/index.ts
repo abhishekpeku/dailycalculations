@@ -304,7 +304,12 @@ export const calculatorOrder: string[] = [
   'common-ion-effect-calculator',
   'isotope-notation-calculator',
   'molecular-geometry-calculator',
-  'specific-heat-by-mixing-calculator'
+  'specific-heat-by-mixing-calculator',
+  'home-affordability-calculator',
+  'mortgage-refinance-calculator',
+  'down-payment-savings-calculator',
+  'closing-cost-estimator-calculator',
+  'rent-vs-buy-calculator'
 ];
 
 const rank = (id: string) => {

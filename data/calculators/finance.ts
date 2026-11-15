@@ -54,6 +54,42 @@ const federalIncomeTax = (taxable: number, status: number) => {
   return tax;
 };
 
+// Freddie Mac, "Breaking down PMI": about $30-$70 a month per $100,000 borrowed. The midpoint, $50
+// a month per $100,000, is 0.6% of the loan a year — used as the assumed PMI rate below 20% down.
+const PMI_RATE_ANNUAL_PERCENT = 0.6;
+
+// Home-affordability tiers (home-affordability-calculator): the home price that keeps a monthly
+// housing payment (P&I + tax + insurance + PMI + HOA) at or under `maxHousingPayment`. `k` is the
+// payment per $1 of loan (loanPayment(1, months, apr)), so the payment is linear in the loan
+// amount and the price solves in closed form. PMI applies only when the resulting down payment
+// would be under 20% of the price, which can change which of the two closed forms is the answer.
+const affordableHomePrice = (
+  maxHousingPayment: number,
+  downPayment: number,
+  k: number,
+  taxRateMonthly: number,
+  insuranceMonthly: number,
+  hoaMonthly: number,
+  pmiRateMonthly: number
+) => {
+  const noPmiPrice = (maxHousingPayment - insuranceMonthly - hoaMonthly + k * downPayment) / (k + taxRateMonthly);
+  const pmiApplies = !(noPmiPrice > 0 && downPayment >= 0.2 * noPmiPrice);
+  const homePrice = Math.max(
+    0,
+    pmiApplies
+      ? (maxHousingPayment - insuranceMonthly - hoaMonthly + downPayment * (k + pmiRateMonthly)) / (k + taxRateMonthly + pmiRateMonthly)
+      : noPmiPrice
+  );
+  const loanAmount = Math.max(0, homePrice - downPayment);
+  return {
+    homePrice,
+    loanAmount,
+    monthlyPI: k * loanAmount,
+    monthlyTax: taxRateMonthly * homePrice,
+    monthlyPMI: pmiApplies ? pmiRateMonthly * loanAmount : 0
+  };
+};
+
 export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'mortgage-calculator',
@@ -1190,6 +1226,740 @@ export const financeCalculators: CalculatorConfig[] = [
       const totalPayment = emi * values.months;
       const totalInterest = totalPayment - principal;
       return { emi, totalPayment, totalInterest, principal };
+    }
+  },
+  {
+    id: 'home-affordability-calculator',
+    category: 'finance',
+    glyph: 'Aff',
+    updatedAt: '2026-11-15',
+    aliases: ['how much house can i afford calculator', 'home buying budget calculator', 'house affordability calculator', 'affordability calculator'],
+    related: ['mortgage-calculator', 'down-payment-savings-calculator', 'closing-cost-estimator-calculator', 'rent-vs-buy-calculator'],
+    title: 'Home Affordability Calculator',
+    description: 'Find how much house you can afford at three levels — conservative, balanced and maximum — from your income, debt and down payment, with a full PITI breakdown and a 28% front-end / back-end debt-to-income check.',
+    example: 'A household earning $96,000 a year with $1,500 of other monthly debt and $40,000 down can afford roughly $190,900 (conservative) to $302,000 (maximum) at 6.5% over 30 years, with a balanced estimate of about $263,300.',
+    breakdown: {
+      headline: 'balancedHomePrice',
+      headlineLabel: 'Balanced affordable home price',
+      outputs: [
+        { id: 'balancedHomePrice', label: 'Balanced affordable home price', format: 'currency' },
+        { id: 'conservativeHomePrice', label: 'Conservative (lower) estimate', format: 'currency' },
+        { id: 'maximumHomePrice', label: 'Maximum (upper) estimate', format: 'currency' },
+        { id: 'loanAmount', label: 'Loan amount at the balanced price', format: 'currency' },
+        { id: 'monthlyPI', label: 'Principal & interest', format: 'currency' },
+        { id: 'monthlyPropertyTax', label: 'Property tax', format: 'currency' },
+        { id: 'monthlyInsurance', label: 'Homeowners insurance', format: 'currency' },
+        { id: 'monthlyPMI', label: 'Mortgage insurance (PMI)', format: 'currency' },
+        { id: 'monthlyHOA', label: 'HOA dues', format: 'currency' },
+        { id: 'totalMonthlyPayment', label: 'Total monthly housing payment', format: 'currency' },
+        { id: 'frontEndRatio', label: 'Front-end ratio (housing ÷ income)', format: 'percent' },
+        { id: 'backEndRatio', label: 'Back-end ratio (housing + other debt ÷ income)', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Income & debt', inputs: ['grossAnnualIncome', 'existingMonthlyDebt'] },
+        { title: 'Loan', inputs: ['downPayment', 'interestRate', 'termYears'] },
+        { title: 'Ongoing housing costs', inputs: ['propertyTaxRate', 'annualInsurance', 'hoaMonthly'], optional: true }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'conservativeHomePrice', label: 'Conservative' },
+          { from: 'balancedHomePrice', label: 'Balanced' },
+          { from: 'maximumHomePrice', label: 'Maximum' }
+        ],
+        title: 'Affordable home price by tier',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-15',
+      concept: {
+        title: '"How much house can I afford" is three numbers, not one',
+        paragraphs: [
+          'Affordability is the home price your income, debt and down payment support at a monthly housing payment lenders consider acceptable. That payment is checked two ways: the front-end (or housing) ratio, your housing payment alone divided by your gross monthly income, and the back-end (or total) ratio, your housing payment plus every other debt payment divided by the same income. A long-standing lending convention, often called the 28/36 rule, caps the front-end ratio at 28% and the back-end ratio at 36%. Actual underwriting is looser: Fannie Mae\'s own manual-underwriting limit is a 36% back-end ratio (stretchable to 45% with strong credit and reserves), the Consumer Financial Protection Bureau\'s Qualified Mortgage rule generally caps back-end debt at 43%, and loans run through Fannie Mae\'s automated underwriting system can be approved up to a 50% back-end ratio.',
+          'This calculator turns that range into three concrete prices: conservative (36% back-end), balanced (43%) and maximum (50%), every tier still capped at the classic 28% front-end ratio. A higher tier is a looser lending ceiling, not a recommendation — carrying debt all the way up to 50% of your income leaves very little room for a job loss, a medical bill or a repair, which is exactly why the conservative tier exists.',
+          'The housing payment itself is more than the loan payment. Lenders total PITI: Principal, Interest, property Taxes and homeowners Insurance, plus private mortgage insurance (PMI) if the down payment is under 20% of the price, plus any HOA dues. This calculator builds the full PITI stack for each tier, not just the principal-and-interest figure mortgage-calculator gives for a home price you already have in mind.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your income, other debt and down payment, then the loan terms and your estimated ongoing costs. All three tiers update together.',
+        steps: [
+          { name: 'Enter your income and other debt', text: 'Gross annual income before tax, and the total of every other monthly debt payment: car loans, student loans, credit card minimums and the like. Do not include rent or the mortgage you are solving for.' },
+          { name: 'Enter your down payment, rate and term', text: 'The down payment is the same across all three tiers; only the maximum monthly housing payment each tier allows changes, which changes the home price that payment supports.' },
+          { name: 'Add your ongoing costs', text: 'Property tax rate (a percent of the home price per year), an annual homeowners insurance estimate, and any HOA dues. These come straight off the top of the housing payment each tier allows, before PMI, so a higher property tax rate or HOA lowers every tier\'s price.' },
+          { name: 'Read the three tiers', text: 'The chart and the headline show the conservative, balanced and maximum home price. The breakdown below is the balanced tier\'s full PITI stack.' },
+          { name: 'Check the ratios', text: 'The front-end and back-end ratios at the bottom confirm which constraint is binding at the balanced tier: 28% front-end, or the tier\'s own back-end cap.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Each tier caps the monthly housing payment at the lower of 28% of gross income and the tier\'s back-end cap minus other debt, then solves for the home price whose PITI equals that payment.',
+        expression: 'Max housing payment = min(0.28 × income, backEndCap × income − otherDebt)\nPITI = P&I + (taxRate ÷ 12) × price + insurance ÷ 12 + PMI + HOA\nP&I = k × (price − down payment), k = the payment on a $1 loan\nPMI applies only if down payment < 20% of price',
+        terms: [
+          { symbol: 'income', meaning: 'Gross monthly income (annual income ÷ 12).' },
+          { symbol: 'otherDebt', meaning: 'Every other monthly debt payment, excluding the housing payment being solved for.' },
+          { symbol: 'backEndCap', meaning: '36% (conservative), 43% (balanced) or 50% (maximum) — see the concept section for where each comes from.' },
+          { symbol: 'k', meaning: 'The standard amortized-loan payment factor: k = r ÷ (1 − (1 + r)^−n), r the monthly rate, n the number of payments.' },
+          { symbol: 'PMI', meaning: 'Assumed at 0.6% of the loan a year below 20% down — the midpoint of Freddie Mac\'s published $30–$70-a-month-per-$100,000 PMI range.' }
+        ],
+        note: 'Estimates only, not a pre-approval or a promise of credit. A lender also checks your credit score, assets, employment history and the specific loan program, any of which can move the real number in either direction.'
+      },
+      workedExample: {
+        intro: 'A household earns $96,000 a year ($8,000 a month) and pays $1,500 a month toward other debt. They plan a $40,000 down payment, a 6.5% 30-year mortgage, 1.1% annual property tax and $2,110 of annual homeowners insurance, no HOA. What can they afford?',
+        rows: [
+          { label: '28% front-end cap (0.28 × 8,000)', value: '$2,240 a month' },
+          { label: 'Conservative 36% back-end cap (0.36 × 8,000 − 1,500)', value: '$1,380 a month (binding)' },
+          { label: 'Balanced 43% back-end cap (0.43 × 8,000 − 1,500)', value: '$1,940 a month (binding)' },
+          { label: 'Maximum 50% back-end cap (0.50 × 8,000 − 1,500)', value: '$2,500 a month, capped at the $2,240 front-end limit' },
+          { label: 'Conservative home price', value: '≈ $190,892' },
+          { label: 'Balanced home price', value: '≈ $263,268' },
+          { label: 'Maximum home price', value: '≈ $302,041' },
+          { label: 'Balanced PITI: P&I $1,411.20 + tax $241.33 + insurance $175.83 + PMI $111.63', value: '≈ $1,940 a month' }
+        ],
+        result: 'Affordable price ≈ $190,900–$302,000, balanced estimate ≈ $263,300',
+        explanation: 'At the conservative and balanced tiers, the back-end ratio (all debt against income) is the binding limit, which is why extra monthly debt shrinks those two prices directly. At the maximum tier, the back-end cap (50%) is loose enough that the classic 28% front-end limit binds instead, which is why the maximum tier\'s own back-end ratio works out to only 46.75%, not the full 50%.'
+      },
+      watchOut: [
+        { title: 'The maximum tier is a ceiling, not a target', body: 'Lenders can approve up to roughly a 50% back-end ratio through automated underwriting, but that leaves little slack for a rate increase, a repair bill or a job change. Many buyers are more comfortable well below it.' },
+        { title: 'Property tax and insurance vary a lot by location', body: 'Both are entered as your own estimates. A county with a 2% property tax rate or a coastal home with a much higher insurance premium can cut the affordable price noticeably versus this calculator\'s defaults.' },
+        { title: 'PMI is an assumption, not your quote', body: 'Real PMI depends on your credit score, loan type and down payment and commonly runs from about 0.3% to 1.5% of the loan a year. This calculator uses a 0.6% midpoint; your actual quote can be higher or lower.' },
+        { title: 'Other debt matters more than it looks', body: 'Because the back-end cap is shared between housing and other debt, every extra $100 of other monthly debt payments lowers the conservative and balanced home prices by roughly the amount a $100 smaller housing payment would support.' },
+        { title: 'Not a pre-approval', body: 'A real lender checks your credit score, assets, employment history, and the specific loan program\'s own rules, any of which can move the real approved amount up or down from this estimate.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, What is a debt-to-income ratio?', url: 'https://www.consumerfinance.gov/ask-cfpb/what-is-a-debt-to-income-ratio-en-1791/' },
+        { label: 'Consumer Financial Protection Bureau, Regulation Z §1026.43, Minimum standards for transactions secured by a dwelling (Qualified Mortgage, 43% DTI)', url: 'https://www.consumerfinance.gov/rules-policy/regulations/1026/43/' },
+        { label: 'Fannie Mae Selling Guide, B3-6-02, Debt-to-Income Ratios', url: 'https://selling-guide.fanniemae.com/sel/b3-6-02/debt-income-ratios' },
+        { label: 'Freddie Mac, My Home: Breaking down PMI', url: 'https://myhome.freddiemac.com/buying/breaking-down-pmi' },
+        { label: 'Freddie Mac, My Home: What Are Closing Costs and How Much Will I Pay? (national average homeowners insurance premium)', url: 'https://myhome.freddiemac.com/blog/homebuying/what-are-closing-costs-and-how-much-will-i-pay' },
+        { label: 'Bankrate, What is the 28/36 rule?', url: 'https://www.bankrate.com/real-estate/what-is-the-28-36-rule/' }
+      ]
+    },
+    inputs: [
+      { id: 'grossAnnualIncome', label: 'Gross annual income', type: 'currency', placeholder: '96000', defaultValue: 96000, step: 1000, min: 0 },
+      { id: 'existingMonthlyDebt', label: 'Other monthly debt payments', type: 'currency', placeholder: '1500', defaultValue: 1500, step: 50, min: 0 },
+      { id: 'downPayment', label: 'Down payment', type: 'currency', placeholder: '40000', defaultValue: 40000, step: 1000, min: 0 },
+      { id: 'interestRate', label: 'Interest rate (APR)', type: 'percent', placeholder: '6.5', defaultValue: 6.5, step: 0.01, min: 0 },
+      { id: 'termYears', label: 'Loan term', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1, dimension: 'term', unit: 'yr' },
+      { id: 'propertyTaxRate', label: 'Property tax rate (annual, % of price)', type: 'percent', placeholder: '1.1', defaultValue: 1.1, step: 0.05, min: 0 },
+      { id: 'annualInsurance', label: 'Homeowners insurance (annual estimate)', type: 'currency', placeholder: '2110', defaultValue: 2110, step: 50, min: 0 },
+      { id: 'hoaMonthly', label: 'HOA dues (monthly)', type: 'currency', placeholder: '0', defaultValue: 0, step: 25, min: 0 }
+    ],
+    seo: {
+      title: 'Home Affordability Calculator – How Much House?',
+      description: 'See how much house you can afford at conservative, balanced and maximum levels, with a full PITI breakdown and a 28% front-end / back-end debt-to-income check.',
+      faq: [
+        { question: 'How much house can I afford?', answer: 'It depends which lending ceiling you use. With $8,000 a month in gross income, $1,500 of other debt and $40,000 down at 6.5% over 30 years, this calculator gives about $190,900 conservatively, $263,300 on a balanced basis and $302,000 at the loosest ceiling lenders use.' },
+        { question: 'What is the 28/36 rule?', answer: 'A long-standing guideline: keep your housing payment at or under 28% of gross monthly income (the front-end ratio) and all debt payments combined at or under 36% (the back-end ratio). This calculator\'s conservative tier uses exactly those two caps.' },
+        { question: 'Why does this calculator show three different numbers?', answer: 'Because real lending limits span a range: Fannie Mae\'s manual-underwriting back-end cap is 36%, the CFPB\'s Qualified Mortgage rule generally allows up to 43%, and loans approved through automated underwriting can go to 50%. The front-end ratio stays capped at 28% in all three.' },
+        { question: 'Does the result include taxes and insurance?', answer: 'Yes. Unlike a plain loan-payment calculation, this result is the full PITI stack: principal, interest, property tax, homeowners insurance, PMI below 20% down, and any HOA dues, all added up to the monthly payment each tier allows.' },
+        { question: 'When do I need mortgage insurance (PMI)?', answer: 'Generally when your down payment is under 20% of the home price. This calculator checks that automatically for each tier and adds an assumed PMI cost (0.6% of the loan a year) when it applies.' },
+        { question: 'Does more other debt really lower how much house I can afford?', answer: 'Yes, directly, at the conservative and balanced tiers, because the back-end cap is a shared budget between housing and every other debt payment. In the example, raising other debt by $300 a month lowers the balanced home price by tens of thousands of dollars.' },
+        { question: 'Should I borrow up to the maximum tier?', answer: 'Not necessarily. The maximum tier shows what an automated underwriting system can approve, not what is comfortable. A back-end ratio near 50% leaves little room for a rate reset, a repair, or a drop in income.' },
+        { question: 'How does this differ from the mortgage calculator?', answer: 'Mortgage-calculator finds the payment (or price) for a home you already have in mind. This calculator works the other direction, starting from income and debt to find what price range is realistic in the first place, with the full PITI and DTI check mortgage-calculator does not do.' }
+      ]
+    },
+    compute(values) {
+      const grossMonthlyIncome = values.grossAnnualIncome / 12;
+      const k = loanPayment(1, Math.max(1, values.termYears * 12), values.interestRate);
+      const taxRateMonthly = values.propertyTaxRate / 100 / 12;
+      const insuranceMonthly = values.annualInsurance / 12;
+      const pmiRateMonthly = PMI_RATE_ANNUAL_PERCENT / 100 / 12;
+
+      const tierFor = (backEndCap: number) => {
+        const maxFrontEnd = 0.28 * grossMonthlyIncome;
+        const maxBackEnd = backEndCap * grossMonthlyIncome - values.existingMonthlyDebt;
+        const maxHousingPayment = Math.max(0, Math.min(maxFrontEnd, maxBackEnd));
+        return { maxHousingPayment, ...affordableHomePrice(maxHousingPayment, values.downPayment, k, taxRateMonthly, insuranceMonthly, values.hoaMonthly, pmiRateMonthly) };
+      };
+
+      const conservative = tierFor(0.36);
+      const balanced = tierFor(0.43);
+      const maximum = tierFor(0.5);
+
+      return {
+        conservativeHomePrice: conservative.homePrice,
+        balancedHomePrice: balanced.homePrice,
+        maximumHomePrice: maximum.homePrice,
+        loanAmount: balanced.loanAmount,
+        monthlyPI: balanced.monthlyPI,
+        monthlyPropertyTax: balanced.monthlyTax,
+        monthlyInsurance: insuranceMonthly,
+        monthlyPMI: balanced.monthlyPMI,
+        monthlyHOA: values.hoaMonthly,
+        totalMonthlyPayment: balanced.maxHousingPayment,
+        frontEndRatio: (balanced.maxHousingPayment / grossMonthlyIncome) * 100,
+        backEndRatio: ((balanced.maxHousingPayment + values.existingMonthlyDebt) / grossMonthlyIncome) * 100
+      };
+    }
+  },
+  {
+    id: 'mortgage-refinance-calculator',
+    category: 'finance',
+    glyph: 'Refi',
+    updatedAt: '2026-11-15',
+    aliases: ['refinance calculator', 'mortgage refinance break-even calculator', 'should i refinance calculator', 'refi savings calculator'],
+    related: ['mortgage-calculator', 'loan-prepayment-calculator', 'home-affordability-calculator', 'closing-cost-estimator-calculator'],
+    title: 'Mortgage Refinance Calculator',
+    description: 'Find the monthly savings from refinancing your mortgage, the break-even point on the closing costs, and how the lifetime interest on the new loan compares with staying on your current one.',
+    example: 'Refinancing a $280,000 balance with 25 years left at 6.5% into a new 30-year loan at 5.5% saves about $300.77 a month and breaks even on $5,000 of closing costs in about 16.6 months — but costs about $5,157 more in total interest, because the term resets to 30 years.',
+    breakdown: {
+      headline: 'breakEvenMonths',
+      headlineLabel: 'Break-even time',
+      outputs: [
+        { id: 'breakEvenMonths', label: 'Break-even time', format: 'number', dimension: 'term', unit: 'mo' },
+        { id: 'currentPayment', label: 'Current monthly payment', format: 'currency' },
+        { id: 'newPayment', label: 'New monthly payment', format: 'currency' },
+        { id: 'monthlySavings', label: 'Monthly savings', format: 'currency' },
+        { id: 'lifetimeInterestOld', label: 'Remaining lifetime interest, current loan', format: 'currency' },
+        { id: 'lifetimeInterestNew', label: 'Lifetime interest, new loan', format: 'currency' },
+        { id: 'lifetimeInterestChange', label: 'Lifetime interest change (new − current)', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Current loan', inputs: ['currentLoanBalance', 'currentRate', 'currentRemainingYears'] },
+        { title: 'New loan offer', inputs: ['newRate', 'newTermYears', 'closingCosts'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'currentPayment', label: 'Current payment' },
+          { from: 'newPayment', label: 'New payment' }
+        ],
+        title: 'Monthly payment, current vs. refinanced',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-15',
+      concept: {
+        title: 'When refinancing actually pays off',
+        paragraphs: [
+          'Refinancing replaces your current mortgage with a new one, usually to get a lower rate, a shorter term, or both. The new loan is not free: it carries its own closing costs (appraisal, title, origination and the like), so the real question is not just "is the new rate lower" but "do the monthly savings earn back those closing costs before I sell the home or refinance again." The break-even point is the number of months it takes: closing costs divided by the monthly savings, a formula the Federal Reserve Board\'s own consumer guide to refinancing uses directly.',
+          'A lower rate does not automatically mean a better deal. If the new loan resets the term — say, from 25 years left on the current loan to a fresh 30-year term — you finance the same balance over more total months. That can lower the monthly payment and still raise the total interest paid over the life of the loan. This calculator shows both the monthly savings and the lifetime interest on each loan side by side, so a payment drop that quietly costs more overall does not go unnoticed.',
+          'Compare the break-even point with how long you actually expect to stay in the home or keep the loan. A 16-month break-even is an easy call if you plan to stay 10 more years; it is a much closer call if you might move or refinance again within two.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your current loan, then the new loan you are being offered.',
+        steps: [
+          { name: 'Enter your current loan', text: 'The remaining balance, the current rate, and how many years are left on it (not the original term).' },
+          { name: 'Enter the new loan', text: 'The new rate, the new loan\'s term in years, and the closing costs you would pay to refinance. This calculator assumes the same balance is refinanced, with no cash taken out.' },
+          { name: 'Read the monthly savings', text: 'The current and new payments are compared directly; the difference is your monthly savings (or cost, if the new payment is higher).' },
+          { name: 'Check the break-even point', text: 'Closing costs divided by the monthly savings. Compare it with how long you plan to keep the loan.' },
+          { name: 'Check the lifetime interest', text: 'The two lifetime-interest figures show whether the new loan costs more or less in total, which a monthly-payment comparison alone can miss when the term changes.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Both payments use the standard amortized-loan formula on the same balance, at each loan\'s own rate and remaining term.',
+        expression: 'currentPayment = M(balance, currentRate, remainingMonths)\nnewPayment = M(balance, newRate, newMonths)\nmonthlySavings = currentPayment − newPayment\nbreakEvenMonths = closingCosts ÷ monthlySavings\nlifetimeInterest = payment × months − balance',
+        terms: [
+          { symbol: 'M(...)', meaning: 'The loan-calculator payment formula: M = P × r ÷ (1 − (1 + r)^−n).' },
+          { symbol: 'balance', meaning: 'The current remaining loan balance, refinanced in full, with no cash taken out.' },
+          { symbol: 'remainingMonths, newMonths', meaning: 'Months left on the current loan, and the new loan\'s own term in months.' },
+          { symbol: 'breakEvenMonths', meaning: 'How long the monthly savings take to repay the closing costs. No answer if the new payment is not actually lower.' }
+        ],
+        note: 'Estimates only, not a loan offer. A cash-out refinance, a rate buy-down with points, or rolling the closing costs into the new balance changes these numbers and is not modeled here; the Federal Reserve\'s own worked example also applies an after-tax adjustment to the monthly savings, which this calculator does not.'
+      },
+      workedExample: {
+        intro: 'You owe $280,000 with 25 years left at 6.5%. A lender offers a new 30-year loan at 5.5%, with $5,000 in closing costs. Is it worth it?',
+        rows: [
+          { label: 'Current payment (280,000, 6.5%, 300 months left)', value: '$1,890.58' },
+          { label: 'New payment (280,000, 5.5%, 360 months)', value: '$1,589.81' },
+          { label: 'Monthly savings', value: '$300.77' },
+          { label: 'Break-even (5,000 ÷ 300.77)', value: '≈ 16.6 months' },
+          { label: 'Remaining lifetime interest, current loan (1,890.58 × 300 − 280,000)', value: '≈ $287,174' },
+          { label: 'Lifetime interest, new loan (1,589.81 × 360 − 280,000)', value: '≈ $292,331' },
+          { label: 'Lifetime interest change', value: '≈ +$5,157' }
+        ],
+        result: 'Breaks even in ≈ 16.6 months, but costs ≈ $5,157 more in total interest',
+        explanation: 'The lower rate saves $300.77 a month and earns back the $5,000 closing cost in under a year and a half — a clear win if you plan to stay in the home. But resetting the clock from 25 remaining years to a fresh 30-year term adds five more years of payments, which is why the new loan\'s lifetime interest is higher even though every individual payment is smaller.'
+      },
+      watchOut: [
+        { title: 'The clock resets', body: 'A new loan usually starts its amortization over. Refinancing into the same term you have left, rather than a fresh 30 years, avoids the lifetime-interest increase this example shows.' },
+        { title: 'Break-even versus how long you will stay', body: 'A fast break-even is a weak reason to refinance if you plan to sell or refinance again before reaching it. A slow break-even can still be worth it if you are certain you are staying for decades.' },
+        { title: 'Closing costs can be rolled in', body: 'Some lenders let you add the closing costs to the new loan balance instead of paying them upfront. That raises the balance being financed, which this calculator does not model — if you roll costs in, your real break-even and lifetime interest both shift.' },
+        { title: 'Cash-out refinancing is different', body: 'Taking extra cash out increases the balance beyond what this calculator assumes, raising both the new payment and the lifetime interest.' },
+        { title: 'Rates change daily', body: 'Shop more than one lender close together; mortgage rates move daily and lender fees vary.' }
+      ],
+      references: [
+        { label: 'Federal Reserve Board, A Consumer\'s Guide to Mortgage Refinancings', url: 'https://www.federalreserve.gov/pubs/refinancings' },
+        { label: 'Consumer Financial Protection Bureau, Loan Estimate Explainer', url: 'https://www.consumerfinance.gov/owning-a-home/loan-estimate/' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.8 The Basics of Loans', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-8-the-basics-of-loans' }
+      ]
+    },
+    inputs: [
+      { id: 'currentLoanBalance', label: 'Current loan balance', type: 'currency', placeholder: '280000', defaultValue: 280000, step: 1000, min: 0 },
+      { id: 'currentRate', label: 'Current interest rate (APR)', type: 'percent', placeholder: '6.5', defaultValue: 6.5, step: 0.01, min: 0 },
+      { id: 'currentRemainingYears', label: 'Years remaining on current loan', type: 'number', placeholder: '25', defaultValue: 25, step: 1, min: 1, dimension: 'term', unit: 'yr' },
+      { id: 'newRate', label: 'New interest rate (APR)', type: 'percent', placeholder: '5.5', defaultValue: 5.5, step: 0.01, min: 0 },
+      { id: 'newTermYears', label: 'New loan term', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1, dimension: 'term', unit: 'yr' },
+      { id: 'closingCosts', label: 'Closing costs to refinance', type: 'currency', placeholder: '5000', defaultValue: 5000, step: 100, min: 0 }
+    ],
+    seo: {
+      title: 'Mortgage Refinance Calculator – Break-Even Point',
+      description: 'Free mortgage refinance calculator: monthly savings, the break-even point on closing costs, and how the lifetime interest compares to your current loan.',
+      faq: [
+        { question: 'How do I calculate the break-even point on a refinance?', answer: 'Divide the closing costs by the monthly savings. The Federal Reserve Board\'s own refinancing guide uses this formula. $5,000 in closing costs against $300.77 in monthly savings breaks even in about 16.6 months.' },
+        { question: 'Can refinancing cost more even if my payment goes down?', answer: 'Yes. If the new loan resets the amortization to a longer term than you had left, you can pay less each month but more in total interest, exactly as in this calculator\'s worked example.' },
+        { question: 'How much are typical refinance closing costs?', answer: 'Similar to a purchase loan, commonly 2% to 5% of the loan amount; the closing cost estimator breaks that down by category.' },
+        { question: 'Should I refinance into the same remaining term?', answer: 'It avoids the "resetting the clock" effect. Refinancing a 25-year remaining balance into a new 25-year loan (instead of a fresh 30) keeps the lifetime interest comparison closer to apples-to-apples.' },
+        { question: 'Is a shorter break-even always better?', answer: 'It is better, but not the only factor. Compare it against how long you expect to stay in the home; a long break-even can still be worth it if you are certain you will keep the loan for many years.' },
+        { question: 'Does this calculator include a cash-out refinance?', answer: 'No. It assumes the same balance is refinanced with no extra cash taken out, and that closing costs are paid upfront rather than added to the new balance.' },
+        { question: 'Does it account for taxes?', answer: 'No. The Federal Reserve\'s own example applies an after-tax adjustment to the monthly savings for some borrowers; this calculator compares pre-tax payments.' }
+      ]
+    },
+    compute(values) {
+      const currentMonths = Math.max(1, values.currentRemainingYears * 12);
+      const newMonths = Math.max(1, values.newTermYears * 12);
+      const currentPayment = loanPayment(values.currentLoanBalance, currentMonths, values.currentRate);
+      const newPayment = loanPayment(values.currentLoanBalance, newMonths, values.newRate);
+      const monthlySavings = currentPayment - newPayment;
+      const breakEvenMonths = monthlySavings > 0 ? values.closingCosts / monthlySavings : Infinity;
+      const lifetimeInterestOld = currentPayment * currentMonths - values.currentLoanBalance;
+      const lifetimeInterestNew = newPayment * newMonths - values.currentLoanBalance;
+      return {
+        breakEvenMonths,
+        currentPayment,
+        newPayment,
+        monthlySavings,
+        lifetimeInterestOld,
+        lifetimeInterestNew,
+        lifetimeInterestChange: lifetimeInterestNew - lifetimeInterestOld
+      };
+    }
+  },
+  {
+    id: 'down-payment-savings-calculator',
+    category: 'finance',
+    glyph: 'DP',
+    updatedAt: '2026-11-15',
+    aliases: ['down payment calculator', 'home down payment savings calculator', 'save for a down payment calculator', 'down payment goal calculator'],
+    related: ['compound-interest-calculator', 'home-affordability-calculator', 'mortgage-calculator', 'closing-cost-estimator-calculator'],
+    title: 'Down Payment Savings Calculator',
+    description: 'Find how long it will take to save a down payment goal from your current savings, a monthly contribution and an interest rate, or work back to the contribution, start or rate you need.',
+    example: 'Starting with $5,000, adding $500 a month at 3.5% a year, reaching a $60,000 down payment takes about 93.2 months, or 7.8 years.',
+    solver: {
+      defaultTarget: 'years',
+      variables: [
+        { id: 'targetDownPayment', label: 'Down payment goal', symbol: 'G', dimension: 'currency', defaultValue: 60000, defaultUnit: 'currency' },
+        { id: 'currentSavings', label: 'Current savings', symbol: 'P', dimension: 'currency', defaultValue: 5000, defaultUnit: 'currency' },
+        { id: 'monthlyContribution', label: 'Monthly contribution', symbol: 'C', dimension: 'currency', defaultValue: 500, defaultUnit: 'currency', fixed: true },
+        { id: 'years', label: 'Time to reach the goal', symbol: 't', dimension: 'term', defaultValue: 7.76, defaultUnit: 'yr', bounds: [0, 100] },
+        { id: 'annualRate', label: 'Annual interest rate', symbol: 'r', dimension: 'percent', defaultValue: 3.5, defaultUnit: '%', bounds: [0, 100] }
+      ],
+      // `years` arrives in months (the term dimension's base); compounding is monthly, same convention as compound-interest-calculator.
+      solve: {
+        years: ({ targetDownPayment, currentSavings, monthlyContribution, annualRate }) => {
+          const i = annualRate / 100 / 12;
+          if (i === 0) return monthlyContribution > 0 ? (targetDownPayment - currentSavings) / monthlyContribution : NaN;
+          const months = Math.log((targetDownPayment * i + monthlyContribution) / (currentSavings * i + monthlyContribution)) / Math.log(1 + i);
+          return months >= 0 ? months : NaN;
+        },
+        targetDownPayment: ({ currentSavings, monthlyContribution, years, annualRate }) =>
+          currentSavings * growthFactor(annualRate, 12, years) + monthlyContribution * annuityFactor(annualRate, 12, years),
+        currentSavings: ({ targetDownPayment, monthlyContribution, years, annualRate }) => {
+          const start = (targetDownPayment - monthlyContribution * annuityFactor(annualRate, 12, years)) / growthFactor(annualRate, 12, years);
+          return years >= 0 && start >= 0 ? start : NaN;
+        }
+      },
+      // The rate has no closed form: the widget finds it numerically.
+      equation: (si) =>
+        si.targetDownPayment - (si.currentSavings * growthFactor(si.annualRate, 12, si.years) + si.monthlyContribution * annuityFactor(si.annualRate, 12, si.years)),
+      outputs: [
+        { id: 'totalContributions', label: 'Total you contribute', dimension: 'currency', compute: (si) => si.monthlyContribution * si.years },
+        { id: 'totalInterest', label: 'Interest earned', dimension: 'currency', compute: (si) => si.targetDownPayment - si.currentSavings - si.monthlyContribution * si.years }
+      ],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'currentSavings', label: 'Current savings' },
+            { from: 'totalContributions', label: 'Contributions' },
+            { from: 'totalInterest', label: 'Interest' }
+          ],
+          center: 'targetDownPayment',
+          centerSub: 'down payment goal'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-15',
+      concept: {
+        title: 'Saving for a down payment is a short-term goal',
+        paragraphs: [
+          'The math here is the same future-value-with-contributions formula as compound-interest-calculator — a starting balance plus a monthly deposit, growing at a monthly rate. The difference is what you solve for: compound-interest-calculator usually asks "how much will this grow to," while this calculator is built around "how long will it take to reach a specific dollar goal," the question a down payment actually poses.',
+          'A down payment is usually needed in a few years, not decades, which changes where the money should sit. Growth that might make sense for a retirement account can mean real losses right when you need the cash for a closing, so down payment savings are commonly kept in a high-yield savings account, a money-market account or a short certificate of deposit rather than invested in stocks. Keep the rate you enter modest and realistic for a cash account, not a long-run market return.',
+          'The goal itself should be the down payment alone, not the whole cost of buying. Closing costs are a separate cash need on top of it, and a down payment under 20% of the home price usually adds private mortgage insurance to the monthly payment — home-affordability-calculator and mortgage-calculator both take the down payment you land on here as their own input.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your monthly contribution (always an input), then any three of the other four fields. The one you have left alone longest, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter your monthly contribution', text: 'How much you plan to set aside each month toward the down payment.' },
+          { name: 'Find the time to your goal', text: 'Type the down payment goal, your current savings and the rate the account earns. The time to reach the goal is calculated.' },
+          { name: 'Solve for a different field', text: 'Type into the time field to make it an input instead, and leave the start or the goal alone to solve for one of those.' },
+          { name: 'Find the rate you need', text: 'With the goal, start, contribution and time filled in, leaving the rate alone longest makes the calculator search for the rate that gets you there on schedule.' },
+          { name: 'Read the breakdown', text: 'Below the result, see how much of the goal comes from your own contributions versus interest earned.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The goal is the current savings grown for t months, plus the future value of a deposit made at the end of every month — the same formula compound-interest-calculator uses, solved here for the time, t.',
+        expression: 'G = P × (1 + i)^t + C × ((1 + i)^t − 1) ÷ i\ni = r ÷ 100 ÷ 12\nt = ln((G × i + C) ÷ (P × i + C)) ÷ ln(1 + i)',
+        terms: [
+          { symbol: 'G', meaning: 'Down payment goal.' },
+          { symbol: 'P', meaning: 'Current savings already set aside.' },
+          { symbol: 'C', meaning: 'Contribution added at the end of each month.' },
+          { symbol: 'r, i', meaning: 'Annual interest rate, and the monthly rate as a decimal: 3.5% a year is 0.0029167 a month.' },
+          { symbol: 't', meaning: 'Months until the goal is reached. With i = 0, t = (G − P) ÷ C.' }
+        ],
+        note: 'Estimates only, not financial advice. Rates on savings accounts and CDs change over time, and this assumes a constant rate and a contribution that never varies.'
+      },
+      workedExample: {
+        intro: 'You have $5,000 saved toward a $60,000 down payment, add $500 at the end of every month, and the account earns 3.5% a year. How long until you reach the goal?',
+        rows: [
+          { label: 'Monthly rate (i = 3.5% ÷ 12)', value: '0.0029167' },
+          { label: 't = ln((60,000 × i + 500) ÷ (5,000 × i + 500)) ÷ ln(1 + i)', value: '93.17 months' },
+          { label: 'In years (93.17 ÷ 12)', value: '≈ 7.76 years' },
+          { label: 'Total contributions (500 × 93.17)', value: '≈ $46,585.84' },
+          { label: 'Interest earned (60,000 − 5,000 − 46,585.84)', value: '≈ $8,414.16' }
+        ],
+        result: 'About 93.2 months (≈ 7.8 years) to reach the $60,000 goal',
+        explanation: 'Contributions alone (500 × 93.17 ≈ $46,586) make up most of the goal; interest adds the remaining ≈ $8,414. At a 0% rate the same goal would take (60,000 − 5,000) ÷ 500 = 110 months, about 17 months longer, since no interest would be doing any of the work.'
+      },
+      watchOut: [
+        { title: 'The down payment is not the whole cash you need', body: 'Closing costs are a separate expense on top of the down payment, commonly 2% to 5% of the home price. Budget for both, not just the figure this calculator solves for.' },
+        { title: 'Keep the assumed rate realistic for cash', body: 'A high-yield savings account or CD rate, not a long-run stock-market return, belongs here. A short-term goal invested in the market can lose value right when you need it.' },
+        { title: '20% down avoids mortgage insurance', body: 'A down payment under 20% of the home price usually adds PMI to the monthly payment (see home-affordability-calculator and mortgage-calculator). Decide whether your goal targets 20% or a smaller, faster-to-reach down payment.' },
+        { title: 'A fixed contribution is a simplification', body: 'Real savings plans rarely stay perfectly level: a bonus, a raise or a lean month all change the real payoff date. Rerun the numbers whenever your monthly contribution changes meaningfully.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, Determine your down payment', url: 'https://www.consumerfinance.gov/owning-a-home/prepare/determine-your-down-payment/' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.4 Compound Interest', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-4-compound-interest' },
+        { label: 'U.S. Securities and Exchange Commission, Investor.gov glossary: Compound interest', url: 'https://www.investor.gov/introduction-investing/investing-basics/glossary/compound-interest' }
+      ]
+    },
+    inputs: [
+      { id: 'targetDownPayment', label: 'Down payment goal', type: 'currency', placeholder: '60000', defaultValue: 60000, step: 1000, min: 0 },
+      { id: 'currentSavings', label: 'Current savings', type: 'currency', placeholder: '5000', defaultValue: 5000, step: 500, min: 0 },
+      { id: 'monthlyContribution', label: 'Monthly contribution', type: 'currency', placeholder: '500', defaultValue: 500, step: 25, min: 0 },
+      { id: 'annualRate', label: 'Annual interest rate', type: 'percent', placeholder: '3.5', defaultValue: 3.5, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Down Payment Savings Calculator – Time to Goal',
+      description: 'Free down payment savings calculator: how long it takes to reach a down payment goal, or the contribution, start or rate you need, with interest broken out.',
+      faq: [
+        { question: 'How long will it take to save a down payment?', answer: 'Starting with $5,000, adding $500 a month at 3.5% a year, reaching $60,000 takes about 93.2 months, or 7.8 years. Enter your own numbers to solve for your timeline.' },
+        { question: 'How is the time to a savings goal calculated?', answer: 't = ln((G × i + C) ÷ (P × i + C)) ÷ ln(1 + i), where G is the goal, P the current savings, C the monthly contribution and i the monthly rate. It is the same formula compound-interest-calculator uses, solved for time instead of future value.' },
+        { question: 'How much faster does a higher contribution get me there?', answer: 'Significantly. In the example, raising the contribution from $500 to $700 a month cuts the time from about 93.2 months to about 65.4 months, nearly two years sooner.' },
+        { question: 'What interest rate should I use?', answer: 'A rate that matches where the money actually sits, usually a high-yield savings account, money-market account or CD, not a long-run stock-market return. A short-term goal should not be exposed to market swings.' },
+        { question: 'Does this include closing costs?', answer: 'No. The goal here is the down payment only. Closing costs are a separate cash need on top of it; see the closing cost estimator for a breakdown by category.' },
+        { question: 'What contribution do I need to reach my goal by a certain date?', answer: 'Fill in the goal, your current savings, the rate and the time you have, and leave the monthly contribution alone longest: the calculator finds the contribution that gets you there on schedule.' },
+        { question: 'How does a bigger down payment change my mortgage?', answer: 'A larger down payment lowers the loan amount and the monthly payment, and reaching 20% of the home price typically removes the need for private mortgage insurance. See mortgage-calculator and home-affordability-calculator.' }
+      ]
+    },
+    compute(values) {
+      const i = values.annualRate / 100 / 12;
+      const months = i === 0
+        ? (values.monthlyContribution > 0 ? (values.targetDownPayment - values.currentSavings) / values.monthlyContribution : NaN)
+        : Math.log((values.targetDownPayment * i + values.monthlyContribution) / (values.currentSavings * i + values.monthlyContribution)) / Math.log(1 + i);
+      const totalContributions = values.monthlyContribution * months;
+      const totalInterest = values.targetDownPayment - values.currentSavings - totalContributions;
+      return { years: months / 12, totalContributions, totalInterest };
+    }
+  },
+  {
+    id: 'closing-cost-estimator-calculator',
+    category: 'finance',
+    glyph: 'CC',
+    updatedAt: '2026-11-15',
+    aliases: ['closing costs calculator', 'home closing cost calculator', 'mortgage closing costs estimator', 'closing cost estimator'],
+    related: ['mortgage-calculator', 'home-affordability-calculator', 'down-payment-savings-calculator', 'mortgage-refinance-calculator'],
+    title: 'Closing Cost Estimator',
+    description: 'Estimate total closing costs on a home purchase from a cited percentage range of the price and loan amount, split into the loan origination fee and everything else: title, appraisal, recording and more.',
+    example: 'On a $350,000 home with a $280,000 loan, closing costs typically run about $7,000 to $17,500 (2%-5% of the price), around $12,250 in the middle, including roughly $1,400-$2,800 of loan origination fees.',
+    breakdown: {
+      headline: 'midEstimate',
+      headlineLabel: 'Estimated total closing costs',
+      outputs: [
+        { id: 'midEstimate', label: 'Estimated total (midpoint)', format: 'currency' },
+        { id: 'overallLow', label: 'Low end (2% of home price)', format: 'currency' },
+        { id: 'overallHigh', label: 'High end (5% of home price)', format: 'currency' },
+        { id: 'originationLow', label: 'Loan origination fee, low (0.5% of loan)', format: 'currency' },
+        { id: 'originationHigh', label: 'Loan origination fee, high (1% of loan)', format: 'currency' },
+        { id: 'otherLow', label: 'Everything else, low', format: 'currency' },
+        { id: 'otherHigh', label: 'Everything else, high', format: 'currency' },
+        { id: 'midPercentOfPrice', label: 'Midpoint as % of home price', format: 'percent' }
+      ],
+      groups: [{ title: 'Your purchase', inputs: ['homePrice', 'loanAmount'] }],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'originationMid', label: 'Loan origination fee' },
+          { from: 'otherMid', label: 'Everything else' }
+        ],
+        center: 'midEstimate',
+        centerSub: 'estimated total'
+      },
+      derive: (v) => ({
+        originationMid: (v.originationLow + v.originationHigh) / 2,
+        otherMid: v.midEstimate - (v.originationLow + v.originationHigh) / 2
+      })
+    },
+    content: {
+      lastReviewed: '2026-11-15',
+      concept: {
+        title: 'What closing costs actually are',
+        paragraphs: [
+          'Closing costs are the fees paid at closing on top of the down payment: lender charges, third-party services, government recording charges, and prepaid items like the first year of homeowners insurance. Both the Consumer Financial Protection Bureau and Freddie Mac\'s My Home guide put the typical total at 2% to 5% of the home purchase price, which is the range this estimator uses.',
+          'Only one piece of that total comes with its own widely cited percentage: the loan origination fee, which Freddie Mac\'s guide puts at "typically between 0.5% and 1% of the total loan amount." Everything else — appraisal, title search and insurance, government recording costs, credit report and underwriting fees, a home inspection, an attorney, a survey — does not have one standard percentage, because it depends heavily on your state, your lender and the property. This calculator estimates the origination fee on its own cited range and groups the rest into "everything else," the remainder of the overall 2-5% band once origination is taken out, rather than inventing a percentage for each individual line item.',
+          'Closing costs are separate money from the down payment. A buyer needs both at the closing table; down-payment-savings-calculator and home-affordability-calculator size the down payment itself, and this estimator covers the additional cash the closing table requires on top of it.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the home price and the amount you expect to finance.',
+        steps: [
+          { name: 'Enter the home price', text: 'The overall closing-cost range is a percentage of this figure.' },
+          { name: 'Enter the loan amount', text: 'The home price minus your planned down payment. The loan origination fee range is a percentage of this figure specifically, not the home price.' },
+          { name: 'Read the overall range', text: 'The headline is the midpoint of the cited 2%-5% range; the low and high ends below it show the full range.' },
+          { name: 'Check the origination vs. everything-else split', text: 'The chart and rows separate the one line item with its own cited percentage (origination) from every other fee, grouped together.' },
+          { name: 'Get a real number', text: 'Ask any lender you are seriously considering for a Loan Estimate. It lists every actual fee for your specific loan, which this estimator cannot know in advance.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Two cited ranges drive the estimate: the overall total is a percentage of the home price, and the loan origination fee specifically is a percentage of the loan amount.',
+        expression: 'Total closing costs = 2% to 5% × home price\nLoan origination fee = 0.5% to 1% × loan amount\nEverything else = Total − origination, at each end of the range',
+        terms: [
+          { symbol: 'home price', meaning: 'The purchase price. The overall 2%-5% range is a percentage of this.' },
+          { symbol: 'loan amount', meaning: 'What you plan to finance (home price minus down payment). The origination-fee range is a percentage of this.' },
+          { symbol: 'midpoint', meaning: 'The average of the low (2%) and high (5%) ends, shown as the headline estimate.' }
+        ],
+        note: 'Estimates only, not a Loan Estimate or a quote. Real closing costs vary by state, lender, loan type and property, and some items (owner\'s title insurance, attorney fees, transfer taxes) are not charged everywhere.'
+      },
+      workedExample: {
+        intro: 'You are buying a $350,000 home and financing $280,000. What should you expect to pay in closing costs?',
+        rows: [
+          { label: 'Low end (2% × 350,000)', value: '$7,000' },
+          { label: 'High end (5% × 350,000)', value: '$17,500' },
+          { label: 'Midpoint estimate', value: '$12,250' },
+          { label: 'Origination fee, low (0.5% × 280,000)', value: '$1,400' },
+          { label: 'Origination fee, high (1% × 280,000)', value: '$2,800' },
+          { label: 'Origination fee, midpoint', value: '$2,100' },
+          { label: 'Everything else, midpoint (12,250 − 2,100)', value: '$10,150' },
+          { label: 'Midpoint as % of home price (12,250 ÷ 350,000)', value: '3.5%' }
+        ],
+        result: 'Estimated total ≈ $12,250 (range $7,000-$17,500), about $2,100 of it the loan origination fee',
+        explanation: 'The origination fee is a comparatively small, well-defined slice of the total. The much larger "everything else" category — title insurance, appraisal, recording, credit report, inspection and prepaid items — is where most of the dollar range comes from, which is exactly why this calculator does not try to assign it a single invented percentage.'
+      },
+      watchOut: [
+        { title: 'Location moves the number a lot', body: 'Transfer taxes, attorney-involvement requirements and title insurance rules vary by state and even by county, so the real total can sit anywhere in, or occasionally outside, the cited 2%-5% range.' },
+        { title: 'Some fees are shoppable, some are not', body: 'You can often shop for title insurance, a survey or a home inspection. Government recording charges and transfer taxes are fixed by law.' },
+        { title: 'This is the buyer\'s side only', body: 'Sellers pay their own closing costs, commonly including the real estate commission, which are not part of this estimate.' },
+        { title: 'Costs can be rolled into the loan', body: 'Some lenders let you finance part of the closing costs instead of paying them upfront, which changes your loan amount and the figures here; see mortgage-refinance-calculator\'s own closing-cost watch-out for the same trade-off on a refinance.' },
+        { title: 'Your Loan Estimate is the real figure', body: 'Within three business days of applying, lenders must send a Loan Estimate itemizing every actual fee. Compare it against this estimate, not the other way around.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, Determine your down payment (2-5% closing-cost range)', url: 'https://www.consumerfinance.gov/owning-a-home/prepare/determine-your-down-payment/' },
+        { label: 'Freddie Mac, My Home: What Are Closing Costs and How Much Will I Pay? (loan origination fee range)', url: 'https://myhome.freddiemac.com/blog/homebuying/what-are-closing-costs-and-how-much-will-i-pay' },
+        { label: 'Consumer Financial Protection Bureau, Loan Estimate Explainer', url: 'https://www.consumerfinance.gov/owning-a-home/loan-estimate/' }
+      ]
+    },
+    inputs: [
+      { id: 'homePrice', label: 'Home price', type: 'currency', placeholder: '350000', defaultValue: 350000, step: 1000, min: 0 },
+      { id: 'loanAmount', label: 'Loan amount', type: 'currency', placeholder: '280000', defaultValue: 280000, step: 1000, min: 0 }
+    ],
+    seo: {
+      title: 'Closing Cost Estimator – Home Buying Cost Range',
+      description: 'Free closing cost estimator: a CFPB/Freddie Mac-cited percentage range of the home price and loan amount, split into the origination fee and everything else.',
+      faq: [
+        { question: 'How much are closing costs on a house?', answer: 'Typically 2% to 5% of the home purchase price, per the CFPB and Freddie Mac. On a $350,000 home that is $7,000 to $17,500, about $12,250 in the middle.' },
+        { question: 'What is the loan origination fee?', answer: 'A lender charge for processing, underwriting and funding the loan, typically 0.5% to 1% of the loan amount per Freddie Mac\'s own guide. On a $280,000 loan that is $1,400 to $2,800.' },
+        { question: 'What else is included in closing costs besides origination?', answer: 'Appraisal, title search and insurance, government recording charges, credit report and underwriting fees, a home inspection, an attorney and sometimes a survey, plus prepaid items such as the first year of homeowners insurance. None of these has one standard percentage, so this calculator groups them as the remainder of the overall 2%-5% range.' },
+        { question: 'Are closing costs the same as the down payment?', answer: 'No, they are separate cash needs at the closing table. Use down-payment-savings-calculator or home-affordability-calculator for the down payment itself, and this estimator for the costs on top of it.' },
+        { question: 'Do closing costs vary by state?', answer: 'Yes, significantly. Transfer taxes, attorney requirements and title insurance rules differ by state and county, which is why this is a range, not a single number.' },
+        { question: 'Can I avoid paying closing costs upfront?', answer: 'Some lenders let you roll part of the closing costs into the loan balance instead of paying cash at closing, which raises the amount you finance and the total interest you pay over time.' },
+        { question: 'Where do I get the real number?', answer: 'Your Loan Estimate, which lenders must provide within three business days of a mortgage application, itemizes every actual fee for your specific loan.' }
+      ]
+    },
+    compute(values) {
+      const overallLow = values.homePrice * 0.02;
+      const overallHigh = values.homePrice * 0.05;
+      const originationLow = values.loanAmount * 0.005;
+      const originationHigh = values.loanAmount * 0.01;
+      const otherLow = overallLow - originationLow;
+      const otherHigh = overallHigh - originationHigh;
+      const midEstimate = (overallLow + overallHigh) / 2;
+      const midPercentOfPrice = (midEstimate / values.homePrice) * 100;
+      return { midEstimate, overallLow, overallHigh, originationLow, originationHigh, otherLow, otherHigh, midPercentOfPrice };
+    }
+  },
+  {
+    id: 'rent-vs-buy-calculator',
+    category: 'finance',
+    glyph: 'R/B',
+    updatedAt: '2026-11-15',
+    aliases: ['rent or buy calculator', 'should i rent or buy calculator', 'renting vs buying calculator', 'rent versus buy calculator'],
+    related: ['home-affordability-calculator', 'mortgage-calculator', 'closing-cost-estimator-calculator', 'down-payment-savings-calculator'],
+    title: 'Rent vs. Buy Calculator',
+    description: 'Compare the net cost of renting against buying over a chosen number of years, including ongoing ownership costs, home-sale proceeds, and the opportunity cost of the down payment.',
+    example: 'Renting a $1,800-a-month apartment versus buying a $350,000 home with $70,000 down at 6.5%: over 10 years, buying costs about $172,200 net versus about $192,260 for renting — buying comes out about $20,061 cheaper under these assumptions.',
+    breakdown: {
+      headline: 'cheaperOption',
+      headlineLabel: 'Cheaper option over the comparison period',
+      outputs: [
+        { id: 'cheaperOption', label: 'Cheaper option', labels: [{ value: 0, label: 'Renting' }, { value: 1, label: 'Buying' }] },
+        { id: 'amountSaved', label: 'Amount saved by the cheaper option', format: 'currency' },
+        { id: 'netCostBuying', label: 'Net cost of buying', format: 'currency' },
+        { id: 'netCostRenting', label: 'Net cost of renting', format: 'currency' },
+        { id: 'totalRent', label: 'Total rent paid', format: 'currency' },
+        { id: 'investmentGrowth', label: 'Opportunity cost of the down payment', format: 'currency' },
+        { id: 'netSaleProceeds', label: 'Buyer\'s equity if sold at the end', format: 'currency' },
+        { id: 'monthlyPI', label: 'Mortgage principal & interest', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Renting', inputs: ['monthlyRent', 'rentGrowthRate'] },
+        { title: 'Buying', inputs: ['homePrice', 'downPayment', 'mortgageRate', 'termYears'] },
+        { title: 'Ongoing ownership costs', inputs: ['propertyTaxRate', 'annualInsurance', 'maintenanceRate'], optional: true },
+        { title: 'Assumptions', inputs: ['homeAppreciationRate', 'investmentReturnRate', 'sellingCostRate'], optional: true },
+        { title: 'Comparison period', inputs: ['years'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'netCostRenting', label: 'Renting' },
+          { from: 'netCostBuying', label: 'Buying' }
+        ],
+        title: 'Net cost over the comparison period',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-15',
+      concept: {
+        title: 'A different question from "can I afford it" or "should I refinance"',
+        paragraphs: [
+          'Home-affordability-calculator asks what price you can afford, and mortgage-refinance-calculator asks whether refinancing an existing loan pays off. This calculator asks a third, separate question: over a number of years you choose, is it cheaper in total to rent or to buy? "Net cost" on the buying side is everything you would spend — mortgage principal and interest, property tax, insurance, maintenance, and the down payment itself — minus what you would get back if you sold at the end (the home\'s value after it appreciates, less the remaining loan balance and selling costs). "Net cost" on the renting side is the total rent paid, minus the investment growth you give up by buying: if you rent, the money that would have gone to a down payment can stay invested instead, so what it would have earned is credited back to renting as the opportunity cost of that down payment.',
+          'The time horizon usually matters more than the headline mortgage rate. Buying carries real fixed costs — the down payment\'s opportunity cost, closing costs, and selling costs when you eventually sell — that are spread over however many years you stay. Over a short horizon those fixed costs dominate and tilt the answer toward renting; over a long horizon, home-price appreciation and the fact that a mortgage payment partly builds equity (while rent never does) usually tilt it toward buying.',
+          'Every rate here — rent growth, home-price appreciation, investment return — is an assumption you set, not a forecast. Run the comparison with a cautious and an optimistic set of assumptions and look at the range, the same way investment-calculator recommends for a return rate. This model also holds property tax, insurance and maintenance flat on the home\'s original price for every year of the comparison, rather than growing them each year, which is a simplification worth keeping in mind over a long comparison period.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the rent you are comparing against, the home you are considering buying, your ongoing cost estimates, your assumptions, and how many years you want to compare.',
+        steps: [
+          { name: 'Enter your rent', text: 'The monthly rent you would otherwise pay, and how much you expect it to rise each year.' },
+          { name: 'Enter the home you are considering', text: 'Price, down payment, mortgage rate and loan term.' },
+          { name: 'Add ongoing ownership costs', text: 'Property tax rate, an annual homeowners insurance estimate, and a maintenance rate (a percent of the home\'s value set aside each year for upkeep).' },
+          { name: 'Set your assumptions', text: 'An assumed annual home-price appreciation rate, the return you could earn by investing the down payment instead, and the selling costs (commission and other fees) you would pay when you eventually sell.' },
+          { name: 'Choose the comparison period', text: 'How many years you plan to stay before selling, moving, or refinancing.' },
+          { name: 'Read the result', text: 'The headline names the cheaper option under your assumptions and by how much; the rows below break out both sides.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Buying\'s net cost is cash spent minus the equity recovered at a sale; renting\'s net cost is rent paid minus the growth the down payment would have earned if invested instead.',
+        expression: 'Buying: cashOut = ΣP&I + ΣTax + ΣInsurance + ΣMaintenance + downPayment\nequity = homePrice × (1 + appreciation)^years − remaining loan balance − sellingCosts\nnetCostBuying = cashOut − equity\n\nRenting: totalRent = Σ rent, growing each year at the rent-growth rate\nopportunityCost = downPayment × ((1 + investmentReturn)^years − 1)\nnetCostRenting = totalRent − opportunityCost',
+        terms: [
+          { symbol: 'ΣP&I, ΣTax, ΣInsurance, ΣMaintenance', meaning: 'Each cost summed over every year of the comparison period; property tax, insurance and maintenance are held flat on the home\'s original price.' },
+          { symbol: 'remaining loan balance', meaning: 'What is still owed on the mortgage at the end of the comparison period, from the standard amortization formula.' },
+          { symbol: 'opportunityCost', meaning: 'What the down payment would have grown to if invested at the assumed return, minus the down payment itself — credited to renting, since a renter keeps that money invested instead of putting it into a house.' }
+        ],
+        note: 'Estimates only, not financial advice. Real appreciation, investment returns and rent growth are never steady, taxes and specific loan fees are not modeled, and a true comparison depends heavily on your own local market and plans.'
+      },
+      workedExample: {
+        intro: 'Rent is $1,800 a month, rising 3% a year. The alternative is a $350,000 home with $70,000 (20%) down, a 30-year loan at 6.5%, 1.1% property tax, $2,110 annual insurance, and 1% of the home\'s value a year for maintenance. Assume 3% annual appreciation, a 6% return on invested cash, and 6% selling costs. Compare over 10 years.',
+        rows: [
+          { label: 'Monthly P&I (280,000 loan, 6.5%, 30 years)', value: '$1,769.79' },
+          { label: 'Total P&I over 10 years', value: '≈ $212,375' },
+          { label: 'Remaining loan balance after 10 years', value: '≈ $237,373' },
+          { label: 'Total property tax + insurance + maintenance (10 years)', value: '≈ $94,600' },
+          { label: 'Home value after 10 years (350,000 × 1.03^10)', value: '≈ $470,371' },
+          { label: 'Selling costs (6% of home value)', value: '≈ $28,222' },
+          { label: 'Equity at sale (470,371 − 237,373 − 28,222)', value: '≈ $204,775' },
+          { label: 'Net cost of buying (212,375 + 94,600 + 70,000 − 204,775)', value: '≈ $172,200' },
+          { label: 'Total rent over 10 years (growing 3% a year)', value: '≈ $247,620' },
+          { label: 'Opportunity cost of the $70,000 down payment at 6%', value: '≈ $55,359' },
+          { label: 'Net cost of renting (247,620 − 55,359)', value: '≈ $192,260' }
+        ],
+        result: 'Buying ≈ $172,200 net vs. renting ≈ $192,260 net — buying is cheaper by ≈ $20,061 over 10 years',
+        explanation: 'Most of buying\'s advantage here comes from home-price appreciation building equity that renting has no equivalent to. Shorten the comparison to 3 years and buying\'s selling costs and closing costs have much less time to be earned back, which typically narrows or reverses the gap — rerun the numbers at your own expected time horizon.'
+      },
+      watchOut: [
+        { title: 'Every rate is an assumption, not a forecast', body: 'Home-price appreciation, investment returns and rent growth all vary year to year and are never known in advance. Run the comparison with a cautious and an optimistic set of numbers.' },
+        { title: 'A shorter stay usually favors renting', body: 'Buying and selling both carry one-time costs (closing costs, selling costs) that are spread over however long you stay. The fewer years you stay, the less time those costs have to be earned back.' },
+        { title: 'Ongoing costs are held flat here', body: 'Property tax, insurance and maintenance are calculated on the home\'s original price for every year of the comparison, not grown year by year, which understates them somewhat on a long comparison period.' },
+        { title: 'Tax effects are not modeled', body: 'Mortgage interest and property tax can be deductible for some itemizing filers, which this calculator does not account for. It also does not model rent being tax-free to the renter either way.' },
+        { title: 'Selling costs are a real drag', body: 'Commission and other selling costs apply to the full future home value, not just the gain, which is why they can meaningfully narrow buying\'s advantage over a shorter comparison period.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, Determine your down payment (closing-cost range used elsewhere in this calculator\'s sibling pages)', url: 'https://www.consumerfinance.gov/owning-a-home/prepare/determine-your-down-payment/' },
+        { label: 'Redfin, How to Budget for Home Maintenance (1%-4% of home value a year)', url: 'https://www.redfin.com/blog/how-to-budget-for-home-maintenance/' },
+        { label: 'Redfin News, Buyer\'s Agent Commissions Tick Up to Pre-NAR Settlement Levels (Q2 2025 average buyer\'s-agent commission)', url: 'https://www.redfin.com/news/commissions-q2-2025/' },
+        { label: 'U.S. Bureau of Labor Statistics, Consumer Price Index news release (Rent of primary residence, 12-month change)', url: 'https://www.bls.gov/news.release/archives/cpi_01132026.htm' },
+        { label: 'Freddie Mac, My Home: What Are Closing Costs and How Much Will I Pay? (average homeowners insurance premium)', url: 'https://myhome.freddiemac.com/blog/homebuying/what-are-closing-costs-and-how-much-will-i-pay' }
+      ]
+    },
+    inputs: [
+      { id: 'monthlyRent', label: 'Monthly rent', type: 'currency', placeholder: '1800', defaultValue: 1800, step: 50, min: 0 },
+      { id: 'rentGrowthRate', label: 'Annual rent growth', type: 'percent', placeholder: '3', defaultValue: 3, step: 0.1, min: 0 },
+      { id: 'homePrice', label: 'Home price', type: 'currency', placeholder: '350000', defaultValue: 350000, step: 1000, min: 0 },
+      { id: 'downPayment', label: 'Down payment', type: 'currency', placeholder: '70000', defaultValue: 70000, step: 1000, min: 0 },
+      { id: 'mortgageRate', label: 'Mortgage rate (APR)', type: 'percent', placeholder: '6.5', defaultValue: 6.5, step: 0.01, min: 0 },
+      { id: 'termYears', label: 'Mortgage term', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1, dimension: 'term', unit: 'yr' },
+      { id: 'propertyTaxRate', label: 'Property tax rate (annual, % of price)', type: 'percent', placeholder: '1.1', defaultValue: 1.1, step: 0.05, min: 0 },
+      { id: 'annualInsurance', label: 'Homeowners insurance (annual)', type: 'currency', placeholder: '2110', defaultValue: 2110, step: 50, min: 0 },
+      { id: 'maintenanceRate', label: 'Maintenance (annual, % of price)', type: 'percent', placeholder: '1', defaultValue: 1, step: 0.1, min: 0 },
+      { id: 'homeAppreciationRate', label: 'Assumed home-price appreciation', type: 'percent', placeholder: '3', defaultValue: 3, step: 0.1, min: 0 },
+      { id: 'investmentReturnRate', label: 'Assumed return on invested cash', type: 'percent', placeholder: '6', defaultValue: 6, step: 0.1, min: 0 },
+      { id: 'sellingCostRate', label: 'Selling costs (% of sale price)', type: 'percent', placeholder: '6', defaultValue: 6, step: 0.5, min: 0 },
+      { id: 'years', label: 'Years to compare', type: 'number', placeholder: '10', defaultValue: 10, step: 1, min: 1, dimension: 'term', unit: 'yr' }
+    ],
+    seo: {
+      title: 'Rent vs. Buy Calculator – Net Cost Comparison',
+      description: 'Compare the net cost of renting vs. buying over N years, including ownership costs, sale proceeds, and the down payment\'s opportunity cost.',
+      faq: [
+        { question: 'Is it cheaper to rent or buy?', answer: 'It depends on your numbers and time horizon. In this calculator\'s example — a $1,800 rent versus a $350,000 home with $70,000 down at 6.5% over 10 years — buying comes out about $20,061 cheaper, but a shorter stay or different assumptions can flip the answer.' },
+        { question: 'What does "opportunity cost of the down payment" mean?', answer: 'The investment growth you give up by putting cash into a down payment instead of keeping it invested. This calculator credits that growth to renting, since a renter keeps the down payment amount invested instead.' },
+        { question: 'Why does the number of years matter so much?', answer: 'Buying and selling both carry one-time costs (closing costs, selling costs) that only pay off the longer you stay. A 3-year comparison and a 10-year comparison with the same home can give very different answers.' },
+        { question: 'How is the equity at sale calculated?', answer: 'The home\'s price grown at the assumed appreciation rate for the comparison period, minus the mortgage balance still owed at that point and minus selling costs (commission and other fees) on the sale price.' },
+        { question: 'Does this account for the mortgage interest deduction?', answer: 'No. Tax effects are not modeled, on either the buying or the renting side.' },
+        { question: 'Why might my real numbers differ from the example?', answer: 'Property tax rates, insurance, maintenance, appreciation and rent growth all vary enormously by location and over time. Use your own local estimates rather than the defaults for a meaningful comparison.' },
+        { question: 'How does this differ from home-affordability-calculator?', answer: 'Home-affordability-calculator asks what price you can afford from your income and debt. This calculator assumes you already have a specific home and rent in mind and asks which one costs less in total over the years you choose.' }
+      ]
+    },
+    compute(values) {
+      const loanAmount = Math.max(0, values.homePrice - values.downPayment);
+      const termMonths = Math.max(1, values.termYears * 12);
+      const monthlyPI = loanPayment(loanAmount, termMonths, values.mortgageRate);
+      const monthsPaid = Math.min(values.years * 12, termMonths);
+      const totalPI = monthlyPI * monthsPaid;
+      const remainingBalance = monthsPaid < termMonths
+        ? loanAmount * growthFactor(values.mortgageRate, 12, monthsPaid) - monthlyPI * annuityFactor(values.mortgageRate, 12, monthsPaid)
+        : 0;
+      const annualPropertyTax = (values.propertyTaxRate / 100) * values.homePrice;
+      const annualMaintenance = (values.maintenanceRate / 100) * values.homePrice;
+      const totalOwnershipCosts = (annualPropertyTax + annualMaintenance) * values.years + values.annualInsurance * values.years;
+      const homeValueAtN = values.homePrice * growthFactor(values.homeAppreciationRate, 1, values.years);
+      const sellingCosts = homeValueAtN * (values.sellingCostRate / 100);
+      const netSaleProceeds = homeValueAtN - remainingBalance - sellingCosts;
+      const buyingCashOut = totalPI + totalOwnershipCosts + values.downPayment;
+      const netCostBuying = buyingCashOut - netSaleProceeds;
+
+      const totalRent = values.monthlyRent * 12 * annuityFactor(values.rentGrowthRate, 1, values.years);
+      const investmentGrowth = values.downPayment * (growthFactor(values.investmentReturnRate, 1, values.years) - 1);
+      const netCostRenting = totalRent - investmentGrowth;
+
+      return {
+        cheaperOption: netCostBuying < netCostRenting ? 1 : 0,
+        amountSaved: Math.abs(netCostRenting - netCostBuying),
+        netCostBuying,
+        netCostRenting,
+        totalRent,
+        investmentGrowth,
+        netSaleProceeds,
+        monthlyPI
+      };
     }
   }
 ];

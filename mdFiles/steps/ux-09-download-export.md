@@ -220,4 +220,24 @@ in sync by hand. `window.print()` remains the trigger, called directly from `Dow
     rather than actually invoking `window.print()`, to avoid a blocking native OS dialog in this
     session.
 - [x] STATUS.md updated
-- [ ] PR opened (next)
+- [x] PR #78 opened and merged
+
+### Follow-up polish (2026-11-15, after merge — user asked for the PDF/CSV to look "a little better")
+
+PDF (`lib/exportPdf.ts`): added a solid brand-blue band at the top of every page (`Daily
+Calculations` wordmark + `dailycalculations.com`), the clickable source URL via `textWithLink`,
+the result rendered as its own light-blue rounded card (echoing the on-screen `ResultPanel`'s
+accent wash) instead of plain text, light divider lines between input/output rows, and a footer
+stamped on every page (download date + `Page X of Y`). The multi-page schedule variant repeats the
+brand band on every page and gets its page-total right by stamping footers in a second pass after
+`autoTable` finishes adding pages — doing it inside `didDrawPage` would show the wrong total, since
+the final page count isn't known until the table is fully laid out.
+
+CSV (`lib/exportCsv.ts`): added a small identifying header block (title, url, download date, then
+a blank row) before the real data, the same convention most exported bank/report CSVs use — makes
+a file opened later in a spreadsheet self-explanatory without needing the original filename.
+
+Re-verified end-to-end the same way as the first pass (reading the regenerated files, not
+screenshots): `mortgage-calculator`'s summary PDF, 12-page schedule PDF (brand band on page 2,
+"Page 12 of 12" correct on the last page, 360 months ending at exactly $0.00 balance). `npm test`
+1123/1123, lint clean, `npx tsc --noEmit` clean, `npm run build` passes.

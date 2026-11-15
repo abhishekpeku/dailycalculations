@@ -24,7 +24,17 @@ function downloadBlob(blob: Blob, filename: string) {
 
 /** The schedule table if one exists; otherwise a two-column Field,Value summary. */
 export function downloadCsv(calculatorId: string, payload: ExportPayload) {
-  const rows: (string | number)[][] = payload.table
+  const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  // A small identifying header block — who/what/when this export is — ahead of the real data row,
+  // the same convention most exported bank/report CSVs use. The blank row keeps it visually
+  // distinct from the actual table when opened in a spreadsheet.
+  const header: (string | number)[][] = [
+    [`Daily Calculations — ${payload.title}`],
+    [payload.url],
+    [`Downloaded ${date}`],
+    []
+  ];
+  const data: (string | number)[][] = payload.table
     ? [payload.table.columns, ...payload.table.rows]
     : [
         ['Field', 'Value'],
@@ -32,6 +42,6 @@ export function downloadCsv(calculatorId: string, payload: ExportPayload) {
         [payload.result.label, payload.result.value],
         ...payload.outputs.map((row) => [row.label, row.value])
       ];
-  const csv = toCsv(rows);
+  const csv = toCsv([...header, ...data]);
   downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `${calculatorId}${payload.table ? '-schedule' : '-result'}.csv`);
 }

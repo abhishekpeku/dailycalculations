@@ -82,6 +82,7 @@ export const calculatorOrder: string[] = [
   'cost-of-living-comparison-calculator',
   'remote-work-savings-calculator',
   'job-offer-comparison-calculator',
+  'paid-sick-leave-accrual-calculator',
   'ev-charging-calculator',
   'toll-cost-calculator',
   'commute-cost-calculator',

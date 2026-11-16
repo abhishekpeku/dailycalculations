@@ -1111,5 +1111,121 @@ export const workCalculators: CalculatorConfig[] = [
       const percentDifference = totalCompA > 0 ? (difference / totalCompA) * 100 : 0;
       return { totalCompA, totalCompB, difference, percentDifference };
     }
+  },
+  {
+    id: 'paid-sick-leave-accrual-calculator',
+    group: 'Time & Benefits',
+    category: 'work',
+    glyph: 'SL',
+    updatedAt: '2026-11-16',
+    aliases: ['sick leave accrual calculator', 'sick time balance calculator', 'paid sick time calculator', 'sick leave balance calculator', 'accrued sick leave calculator'],
+    related: ['pto-calculator', 'work-hours-calculator', 'paycheck-calculator', 'overtime-pay-calculator'],
+    title: 'Paid Sick Leave Accrual Calculator',
+    description: 'Calculate your accrued paid sick leave balance from hours worked and an accrual rate such as the common "1 hour per 30 hours worked" standard, with an optional annual cap and cash value.',
+    example: 'At 1 hour earned per 30 hours worked, 900 hours worked year-to-date accrues 30 hours; after using 6, 24 hours remain, worth $480.00 at $20/hr.',
+    breakdown: {
+      headline: 'balance',
+      headlineLabel: 'Sick leave balance remaining',
+      outputs: [
+        { id: 'balance', label: 'Sick leave balance remaining', format: 'number' },
+        { id: 'accruedHours', label: 'Total hours accrued', format: 'number' },
+        { id: 'cashValue', label: 'Cash value of remaining balance', format: 'currency' },
+        { id: 'usedCashValue', label: 'Cash value of hours used', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Hours worked & accrual rate', inputs: ['hoursWorkedYTD', 'hoursEarnedPerIncrement', 'hoursWorkedPerIncrement'] },
+        { title: 'Usage & cap', inputs: ['hoursUsedYTD', 'annualAccrualCap'] },
+        { title: 'Pay', inputs: ['hourlyRate'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'balance', label: 'Remaining' },
+          { from: 'usedCashValue', label: 'Used (cash value)' }
+        ],
+        title: 'Sick leave accrued vs. used'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'How paid sick leave accrual works, as distinct from PTO',
+        paragraphs: [
+          'Unlike a PTO policy that often grants a fixed number of days up front for the year (see the PTO / Vacation Calculator on this site), many paid sick leave laws require balances to accrue gradually as you work — a rate of hours earned per hours worked, rather than a lump sum. The most common rate seen across state and local paid sick leave laws is 1 hour earned for every 30 hours worked, sometimes called the "1:30" schedule.',
+          'California\'s paid sick leave law uses exactly that rate — "at least one hour of paid sick leave for each 30 hours of work" — and caps total accrual at 80 hours (10 days), with a separate 40-hour (5-day) annual usage cap employers may set. Virginia and Arizona\'s home health worker and broader paid sick leave statutes use the same 1:30 rate with their own caps, and the federal rule for covered federal contractors under Executive Order 13706 also sets 1 hour per 30 hours worked, with a 56-hour annual accrual cap.',
+          'Because the exact cap varies so much by jurisdiction — 40, 56 or 80 hours depending on the law — this calculator leaves the cap at 0 (uncapped) by default and lets you enter your own employer\'s or state\'s actual cap, rather than assuming one.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter hours worked so far this year, your accrual rate, hours already used, and an optional cap.',
+        steps: [
+          { name: 'Enter hours worked year-to-date', text: 'Total hours worked so far in the accrual year — from pay stubs, or hours per week times weeks worked.' },
+          { name: 'Check the accrual rate', text: 'Defaults to 1 hour earned per 30 hours worked, the most common rate in state and local laws. Change it if your employer or jurisdiction uses a different one.' },
+          { name: 'Enter hours already used', text: 'Sick time you have already taken this year.' },
+          { name: 'Enter a cap, if any', text: 'Many jurisdictions cap total accrual (80 hours in California, 56 for federal contractors). Enter your own cap, or leave at 0 for none.' },
+          { name: 'Read your balance', text: 'The headline is your remaining balance, with total accrued and the cash value of both remaining and used hours shown below.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Accrued hours scale with hours worked at the chosen rate, capped if a cap applies; the balance is what is left after use.',
+        expression: 'accruedHours = min(hoursWorkedYTD × (hoursEarnedPerIncrement ÷ hoursWorkedPerIncrement), annualAccrualCap)\nbalance = accruedHours − hoursUsedYTD\ncashValue = balance × hourlyRate',
+        terms: [
+          { symbol: 'hoursEarnedPerIncrement ÷ hoursWorkedPerIncrement', meaning: 'The accrual rate — 1 ÷ 30 is the most common standard seen in state and local paid sick leave laws.' },
+          { symbol: 'annualAccrualCap', meaning: 'The maximum total hours that can accrue in a year under your jurisdiction or employer\'s policy. Varies by law — 0 means uncapped.' }
+        ],
+        note: 'Estimates only. Your actual balance depends on your employer\'s specific policy and the paid sick leave law that applies to you, if any — check your employee handbook, pay stub accrual statement, or your state\'s labor department.'
+      },
+      workedExample: {
+        intro: 'You have worked 900 hours so far this year, accrue at the standard 1 hour per 30 hours worked, have used 6 hours, have no cap, and earn $20/hr.',
+        rows: [
+          { label: 'Accrued hours (900 × (1 ÷ 30))', value: '30 hours' },
+          { label: 'Balance (30 − 6)', value: '24 hours' },
+          { label: 'Cash value of balance (24 × $20)', value: '$480.00' },
+          { label: 'Cash value of hours used (6 × $20)', value: '$120.00' }
+        ],
+        result: '24 hours remaining, worth about $480.00',
+        explanation: 'Every 30 hours worked earns exactly 1 hour of sick leave, so 900 hours worked accrues 30 hours; after using 6, 24 remain — worth $480.00 at the $20/hr rate, on top of the $120.00 already used.'
+      },
+      watchOut: [
+        { title: 'No federal law requires paid sick leave generally', body: 'Outside of the federal-contractor rule under Executive Order 13706, there is no general federal paid sick leave law. Roughly 19 states plus Washington, DC had their own paid sick leave laws as of 2026 — whether you are covered depends entirely on your state and locality.' },
+        { title: 'Accrual caps vary sharply by jurisdiction', body: 'California caps total accrual at 80 hours; federal contractors under EO 13706 are capped at 56 hours; other states set their own figures. This calculator does not assume one for you — enter your actual cap.' },
+        { title: 'Usage caps are a separate limit from accrual caps', body: 'California also lets employers cap annual usage at 40 hours even if more has accrued — you can accrue above what you are allowed to use in a single year.' },
+        { title: 'This is a simplified hours-based model', body: 'Some employers front-load a full-year grant instead of accruing gradually, or use a different increment than 1:30. Check your own policy\'s actual accrual schedule.' },
+        { title: 'Not the same as PTO', body: 'If your employer grants a fixed annual PTO allotment instead of an accrual-based sick leave balance, use the PTO / Vacation Calculator instead — its model is a fixed yearly grant, not a per-hour accrual rate.' }
+      ],
+      references: [
+        { label: 'California Department of Industrial Relations, Paid Sick Leave FAQs', url: 'https://www.dir.ca.gov/dlse/paid_sick_leave.htm' },
+        { label: 'U.S. Department of Labor, Wage and Hour Division, Paid Sick Leave for Federal Contractors FAQ (Executive Order 13706)', url: 'https://www.dol.gov/agencies/whd/government-contracts/sick-leave/faq' }
+      ]
+    },
+    inputs: [
+      { id: 'hoursWorkedYTD', label: 'Hours worked year-to-date', type: 'number', placeholder: '900', defaultValue: 900, step: 10, min: 0 },
+      { id: 'hoursEarnedPerIncrement', label: 'Hours earned', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0 },
+      { id: 'hoursWorkedPerIncrement', label: 'Per hours worked', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1 },
+      { id: 'hoursUsedYTD', label: 'Hours used so far this year', type: 'number', placeholder: '6', defaultValue: 6, step: 1, min: 0 },
+      { id: 'annualAccrualCap', label: 'Annual accrual cap (0 = no cap)', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0 },
+      { id: 'hourlyRate', label: 'Hourly rate', type: 'currency', placeholder: '20', defaultValue: 20, step: 0.5, min: 0 }
+    ],
+    seo: {
+      title: 'Paid Sick Leave Accrual Calculator – 1:30 Standard',
+      description: 'Calculate your accrued paid sick leave balance from hours worked and an accrual rate such as "1 hour per 30 hours worked," with an optional cap and cash value.',
+      faq: [
+        { question: 'What is the standard sick leave accrual rate?', answer: 'The most common rate in state and local paid sick leave laws, including California\'s, is 1 hour earned for every 30 hours worked, often called the "1:30" schedule.' },
+        { question: 'How do I calculate my accrued sick leave balance?', answer: 'Multiply hours worked by the accrual rate (earned ÷ worked), cap it if your jurisdiction sets one, then subtract hours already used. 900 hours worked at 1:30 accrues 30 hours; minus 6 used leaves 24.' },
+        { question: 'Is paid sick leave required by federal law?', answer: 'Only for covered federal contractors, under Executive Order 13706, which sets a 1-hour-per-30-hours-worked rate with a 56-hour annual accrual cap. There is no general federal paid sick leave law otherwise — coverage depends on your state and locality.' },
+        { question: 'What is California\'s sick leave accrual cap?', answer: 'California caps total accrual at 80 hours (10 days) under the standard accrual method, with employers allowed to separately cap annual usage at 40 hours (5 days).' },
+        { question: 'Is this the same as PTO?', answer: 'No. PTO is often a fixed annual allotment granted up front (see the PTO / Vacation Calculator), while sick leave accrual under these laws builds up gradually as you work, at a fixed rate per hours worked.' },
+        { question: 'What is the cash value of my sick leave balance?', answer: 'Multiply your remaining hours by your hourly rate. 24 remaining hours at $20/hr is worth $480.00.' }
+      ]
+    },
+    compute(values) {
+      const rawAccrued = values.hoursWorkedYTD * (values.hoursEarnedPerIncrement / values.hoursWorkedPerIncrement);
+      const accruedHours = values.annualAccrualCap > 0 ? Math.min(rawAccrued, values.annualAccrualCap) : rawAccrued;
+      const balance = Math.max(0, accruedHours - values.hoursUsedYTD);
+      const cashValue = balance * values.hourlyRate;
+      const usedCashValue = values.hoursUsedYTD * values.hourlyRate;
+      return { accruedHours, balance, cashValue, usedCashValue };
+    }
   }
 ];

@@ -7024,6 +7024,59 @@ exports[`compute() snapshots > p-value-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > paid-sick-leave-accrual-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "hoursWorkedYTD": 900,
+      "hoursEarnedPerIncrement": 1,
+      "hoursWorkedPerIncrement": 30,
+      "hoursUsedYTD": 6,
+      "annualAccrualCap": 0,
+      "hourlyRate": 20
+    },
+    "outputs": {
+      "accruedHours": 30,
+      "balance": 24,
+      "cashValue": 480,
+      "usedCashValue": 120
+    }
+  },
+  "typical": {
+    "inputs": {
+      "hoursWorkedYTD": 1350,
+      "hoursEarnedPerIncrement": 2,
+      "hoursWorkedPerIncrement": 45,
+      "hoursUsedYTD": 9,
+      "annualAccrualCap": 0,
+      "hourlyRate": 30
+    },
+    "outputs": {
+      "accruedHours": 60,
+      "balance": 51,
+      "cashValue": 1530,
+      "usedCashValue": 270
+    }
+  },
+  "edge": {
+    "inputs": {
+      "hoursWorkedYTD": 0,
+      "hoursEarnedPerIncrement": 0,
+      "hoursWorkedPerIncrement": 1,
+      "hoursUsedYTD": 0,
+      "annualAccrualCap": 0,
+      "hourlyRate": 0
+    },
+    "outputs": {
+      "accruedHours": 0,
+      "balance": 0,
+      "cashValue": 0,
+      "usedCashValue": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > paint-calculator 1`] = `
 {
   "default": {

@@ -184,13 +184,13 @@ whole site before writing any id.
 
 - [x] Step file written
 - [ ] Batch 1 — `auto` (5 new)
-- [ ] Batch 2 — `work` (6 new) — in progress
+- [x] Batch 2 — `work` (6 new; done 2026-11-16, branch `step/61-deepen-work`, PR #95)
   - [x] `overtime-pay-calculator`
   - [x] `severance-pay-calculator`
   - [x] `cost-of-living-comparison-calculator`
   - [x] `remote-work-savings-calculator`
   - [x] `job-offer-comparison-calculator`
-  - [ ] `paid-sick-leave-accrual-calculator`
+  - [x] `paid-sick-leave-accrual-calculator`
 - [ ] Batch 3 — `health` (5 new)
 - [ ] Batch 4 — `shopping` (5 new)
 - [ ] Batch 5 — `travel` (6 new)

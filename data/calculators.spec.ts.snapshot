@@ -6554,6 +6554,53 @@ exports[`compute() snapshots > kinetic-energy-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > ksp-from-solubility-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "solubilityGramsPerLiter": 0.0000046,
+      "molarMass": 323.2,
+      "coefficientCation": 1,
+      "coefficientAnion": 1
+    },
+    "outputs": {
+      "ksp": 2.025689883e-16,
+      "molarSolubility": 1.423267327e-8,
+      "cationConcentration": 1.423267327e-8,
+      "anionConcentration": 1.423267327e-8
+    }
+  },
+  "typical": {
+    "inputs": {
+      "solubilityGramsPerLiter": 0.0000069,
+      "molarMass": 484.8,
+      "coefficientCation": 2,
+      "coefficientAnion": 2
+    },
+    "outputs": {
+      "ksp": 6.565471206e-31,
+      "molarSolubility": 1.423267327e-8,
+      "cationConcentration": 2.846534653e-8,
+      "anionConcentration": 2.846534653e-8
+    }
+  },
+  "edge": {
+    "inputs": {
+      "solubilityGramsPerLiter": 0,
+      "molarMass": 0,
+      "coefficientCation": 1,
+      "coefficientAnion": 1
+    },
+    "outputs": {
+      "ksp": "NaN",
+      "molarSolubility": "NaN",
+      "cationConcentration": "NaN",
+      "anionConcentration": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > ksp-molar-solubility-calculator 1`] = `
 {
   "default": {

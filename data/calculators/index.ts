@@ -401,7 +401,8 @@ export const calculatorOrder: string[] = [
   'daylight-hours-calculator',
   'travel-points-value-calculator',
   'points-vs-cash-flight-calculator',
-  'tipping-abroad-calculator'
+  'tipping-abroad-calculator',
+  'ksp-from-solubility-calculator'
 ];
 
 const rank = (id: string) => {

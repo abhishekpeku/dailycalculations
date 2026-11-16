@@ -5125,6 +5125,130 @@ export const chemistryCalculators: CalculatorConfig[] = [
     }
   },
   {
+    id: 'ksp-from-solubility-calculator',
+    category: 'chemistry',
+    group: 'Equilibrium & Thermodynamics',
+    glyph: 'sKsp',
+    updatedAt: '2026-11-17',
+    aliases: ['ksp from solubility calculator', 'solubility to ksp calculator', 'find ksp from solubility calculator', 'solubility product from solubility calculator', 'calculate ksp from grams per liter calculator'],
+    related: ['ksp-molar-solubility-calculator', 'common-ion-effect-calculator', 'molar-mass-calculator', 'molarity-calculator'],
+    title: 'Ksp From Solubility Calculator',
+    description: 'Find a salt’s solubility product constant (Ksp) from its measured solubility in grams per liter and molar mass — the reverse direction of the Ksp-to-solubility calculator.',
+    example: 'Chrome yellow, PbCrO₄, has a measured solubility of 4.6 × 10⁻⁶ g/L. With a molar mass of 323.2 g/mol, that is a molar solubility of about 1.4 × 10⁻⁸ mol/L, and a Ksp of about 2.0 × 10⁻¹⁶.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'How is Ksp found from a measured solubility?',
+        paragraphs: [
+          'The Ksp (solubility product) calculator on this site goes one direction: given a salt’s Ksp and its dissociation ratio, find how much of it dissolves per liter. In practice, Ksp itself usually comes from the opposite direction first — a chemist measures how much of a slightly soluble salt actually dissolves, often reported as a mass per liter rather than a molarity, and works backward to Ksp. OpenStax Chemistry 2e’s §15.1 "Precipitation and Dissolution" walks through exactly that calculation in its own Example 15.5.',
+          'The only extra step compared with the forward calculator is a unit conversion: a measured solubility in grams per liter has to become a molar solubility (mol/L) by dividing by the salt’s molar mass, before the usual Ksp = (p×s)ᵖ(q×s)ᵠ relationship applies, where p and q are the cation’s and anion’s coefficients in the dissociation equation MₚXᵧ(s) ⇌ p Mⁿ⁺(aq) + q Xᵏ⁻(aq).',
+          'This calculator does that conversion and the Ksp calculation in one step: enter the measured solubility in g/L, the salt’s molar mass, and its two dissociation coefficients, and it returns the molar solubility along with Ksp itself.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the measured solubility in grams per liter, the salt’s molar mass, and its dissociation coefficients; the molar solubility and Ksp fill in automatically.',
+        steps: [
+          { name: 'Find the measured solubility', text: 'From a lab measurement or a reference table, in grams of the salt per liter of saturated solution — not milligrams or a percentage.' },
+          { name: 'Look up or calculate the molar mass', text: 'In grams per mole — use the molar mass calculator on this site if needed.' },
+          { name: 'Write the dissociation equation', text: 'MₚXᵧ(s) ⇌ p Mⁿ⁺(aq) + q Xᵏ⁻(aq), and read off p and q. Most general-chemistry salts use 1, 2, or 3.' },
+          { name: 'Enter both coefficients', text: 'A 1:1 salt like PbCrO₄ uses p = 1, q = 1.' },
+          { name: 'Read the molar solubility and Ksp', text: 'The molar solubility is the grams-per-liter value divided by the molar mass; Ksp follows directly from it and the coefficients.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Converting the measured solubility to molarity first lets the same Ksp relationship as the forward calculator apply directly.',
+        expression: 's = solubility (g/L) ÷ molar mass (g/mol)\nKsp = (p × s)ᵖ × (q × s)ᵠ',
+        terms: [
+          { symbol: 'solubility', meaning: 'The measured mass of the salt that dissolves per liter of saturated solution.' },
+          { symbol: 'molar mass', meaning: 'The salt’s molar mass, in grams per mole.' },
+          { symbol: 's', meaning: 'The molar solubility: moles of the salt dissolved per liter.' },
+          { symbol: 'p, q', meaning: 'The cation’s and anion’s coefficients in the balanced dissociation equation.' }
+        ],
+        note: 'This is the exact reverse of the Ksp-to-solubility calculator on this site, which starts from a known Ksp instead and solves for s. Both pages use the identical relationship between Ksp, s, p, and q — only which value is given and which is found differ.'
+      },
+      workedExample: {
+        intro: 'Chrome yellow, lead(II) chromate (PbCrO₄), has a measured solubility of 4.6 × 10⁻⁶ g/L. What is its Ksp? (OpenStax Chemistry 2e, Example 15.5.)',
+        rows: [
+          { label: 'Measured solubility', value: '4.6 × 10⁻⁶ g/L' },
+          { label: 'Molar mass of PbCrO₄', value: '323.2 g/mol' },
+          { label: 's = 4.6 × 10⁻⁶ ÷ 323.2', value: '≈ 1.4 × 10⁻⁸ mol/L' },
+          { label: 'Dissociation: PbCrO₄(s) ⇌ Pb²⁺(aq) + CrO₄²⁻(aq)', value: 'p = 1, q = 1' },
+          { label: 'Ksp = (1×s)¹ × (1×s)¹ = s²', value: '≈ 2.0 × 10⁻¹⁶' }
+        ],
+        result: 'Ksp ≈ 2.0 × 10⁻¹⁶',
+        explanation: 'This matches OpenStax’s own stated result exactly. Carrying full precision gives s ≈ 1.4233 × 10⁻⁸ mol/L and Ksp ≈ 2.026 × 10⁻¹⁶, both of which round to the textbook’s own 1.4 × 10⁻⁸ and 2.0 × 10⁻¹⁶ — confirmed independently in a scratch script.'
+        },
+      watchOut: [
+        {
+          title: 'Solubility must be in grams per liter, not milligrams or a percentage',
+          body: 'A solubility quoted as "1.9 mg/100 mL" has to first become grams per liter (0.019 g/L) before dividing by the molar mass — skipping that conversion gives a molar solubility, and therefore a Ksp, that is off by orders of magnitude.'
+        },
+        {
+          title: 'A coefficient of 2 or more squares (or cubes) that ion’s contribution',
+          body: 'Just like the forward Ksp-to-solubility calculator, a coefficient of 2 means that ion’s concentration is 2×s, but it enters Ksp as (2×s)² — a factor of 4, not 2.'
+        },
+        {
+          title: 'This gives Ksp only at the temperature the solubility was measured at',
+          body: 'Ksp changes with temperature like any equilibrium constant. Most published solubility data is measured at or near 25°C, but always check if a different temperature is specified.'
+        },
+        {
+          title: 'This assumes pure water, with no common ion already present',
+          body: 'If the measured solubility was taken in a solution that already contained one of the salt’s own ions from another source, the resulting Ksp calculation needs the common-ion effect calculator’s own reverse relationship instead, not this plain-water formula.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §15.1 "Precipitation and Dissolution" (Ksp from a measured solubility, Example 15.5, PbCrO₄)', url: 'https://openstax.org/books/chemistry-2e/pages/15-1-precipitation-and-dissolution' }
+      ]
+    },
+    inputs: [
+      { id: 'solubilityGramsPerLiter', label: 'Measured solubility (g/L)', type: 'number', placeholder: '4.6e-6', defaultValue: 4.6e-6, step: 1e-7, min: 0 },
+      { id: 'molarMass', label: 'Molar mass (g/mol)', type: 'number', placeholder: '323.2', defaultValue: 323.2, step: 0.01, min: 0 },
+      { id: 'coefficientCation', label: 'Cation coefficient (p)', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 1 },
+      { id: 'coefficientAnion', label: 'Anion coefficient (q)', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 1 }
+    ],
+    breakdown: {
+      headline: 'ksp',
+      headlineLabel: 'Solubility product, Ksp',
+      outputs: [
+        { id: 'ksp', label: 'Ksp', format: 'significant' },
+        { id: 'molarSolubility', label: 'Molar solubility, s (mol/L)', format: 'significant' },
+        { id: 'cationConcentration', label: 'Cation concentration at equilibrium (mol/L)', format: 'significant' },
+        { id: 'anionConcentration', label: 'Anion concentration at equilibrium (mol/L)', format: 'significant' }
+      ],
+      groups: [{ inputs: ['solubilityGramsPerLiter', 'molarMass', 'coefficientCation', 'coefficientAnion'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'cationConcentration', label: 'Cation' },
+          { from: 'anionConcentration', label: 'Anion' }
+        ],
+        title: 'Ion concentrations at equilibrium'
+      }
+    },
+    seo: {
+      title: 'Ksp From Solubility Calculator',
+      description: 'Free Ksp calculator. Find a salt’s solubility product constant from its measured solubility in g/L and its molar mass.',
+      faq: [
+        { question: 'How do I find Ksp from solubility?', answer: 'Convert the measured solubility from g/L to molarity by dividing by the molar mass, then apply Ksp = (p×s)ᵖ × (q×s)ᵠ using the salt’s dissociation coefficients p and q.' },
+        { question: 'What is PbCrO₄’s Ksp from its measured solubility?', answer: 'About 2.0 × 10⁻¹⁶, from a measured solubility of 4.6 × 10⁻⁶ g/L and a molar mass of 323.2 g/mol, giving a molar solubility of about 1.4 × 10⁻⁸ mol/L.' },
+        { question: 'What if I already have the molar solubility in mol/L, not g/L?', answer: 'Enter it directly as the "solubility" field with molar mass set to 1 g/mol — dividing by 1 leaves it unchanged — or apply Ksp = (p×s)ᵖ × (q×s)ᵠ to that value by hand.' },
+        { question: 'How is this different from the Ksp (solubility product) calculator?', answer: 'That calculator goes forward: known Ksp to predicted solubility. This one goes backward: a measured solubility to the Ksp it implies — the direction actually used to determine a new Ksp value experimentally.' },
+        { question: 'Does the order of the coefficients matter?', answer: 'No — just make sure the cation’s coefficient goes in the cation (p) field and the anion’s in the anion (q) field, matching the salt’s own dissociation equation.' },
+        { question: 'Does a common ion already in the test solution affect this?', answer: 'Yes — if the solubility was measured in a solution that already contained one of the salt’s own ions, use the common-ion effect calculator’s relationship instead, since this formula assumes pure water.' }
+      ]
+    },
+    compute(values) {
+      const molarSolubility = values.solubilityGramsPerLiter / values.molarMass;
+      return {
+        ksp: (values.coefficientCation * molarSolubility) ** values.coefficientCation * (values.coefficientAnion * molarSolubility) ** values.coefficientAnion,
+        molarSolubility,
+        cationConcentration: molarSolubility * values.coefficientCation,
+        anionConcentration: molarSolubility * values.coefficientAnion
+      };
+    }
+  },
+  {
     id: 'common-ion-effect-calculator',
     category: 'chemistry',
     group: 'Acid-Base Chemistry',

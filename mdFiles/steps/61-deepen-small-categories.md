@@ -46,7 +46,12 @@ category into sub-batches if its list is large, same judgment call chemistry/phy
   the speedometer-error % from a size change; real, well-defined geometry formula.
 - `gas-mileage-comparison-calculator` — fuel cost difference between two vehicles over a given
   annual mileage; distinct from the existing single-vehicle `gas-cost-calculator` (comparison, not
-  one trip).
+  one trip). **Skipped 2026-11-16**: the existing `fuel-cost-calculator` (added step 2026-10-21,
+  group "Fuel & Energy Costs") already does exactly this — annual miles, your car's mpg, a
+  "comparison car" mpg field, one shared fuel price, and an `annualSavings` output comparing a
+  year of fuel in each car, with a `compareBars` visual of the two annual costs. A new page built
+  to this spec would be a near-duplicate, not a genuinely distinct calculator, so it was skipped
+  per the step's own discipline ("skip it and say so" beats padding to a count).
 - `parking-cost-calculator` — monthly vs. daily/per-visit parking cost breakeven given visits/week.
 
 ### Batch 2 — `work` (4 → 10)
@@ -184,6 +189,11 @@ whole site before writing any id.
 
 - [x] Step file written
 - [ ] Batch 1 — `auto` (5 new)
+  - [ ] `lease-vs-buy-calculator`
+  - [ ] `car-depreciation-calculator`
+  - [ ] `tire-size-calculator`
+  - [ ] `parking-cost-calculator`
+  - [ ] `gas-mileage-comparison-calculator` — **skip, see note below**
 - [ ] Batch 2 — `work` (6 new)
 - [ ] Batch 3 — `health` (5 new)
 - [ ] Batch 4 — `shopping` (5 new)

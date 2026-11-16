@@ -2524,50 +2524,6 @@ exports[`compute() snapshots > date-difference-calculator 1`] = `
 }
 `;
 
-exports[`compute() snapshots > daylight-hours-calculator 1`] = `
-{
-  "default": {
-    "inputs": {
-      "month": 6,
-      "day": 21,
-      "year": 2026,
-      "latitude": 40.7
-    },
-    "outputs": {
-      "solarDeclination": 23.43913176,
-      "dayLengthHours": 14.91937293,
-      "nightLengthHours": 9.080627074
-    }
-  },
-  "typical": {
-    "inputs": {
-      "month": 9,
-      "day": 32,
-      "year": 3039,
-      "latitude": 61.1
-    },
-    "outputs": {
-      "solarDeclination": -4.511065081,
-      "dayLengthHours": 10.90442078,
-      "nightLengthHours": 13.09557922
-    }
-  },
-  "edge": {
-    "inputs": {
-      "month": 1,
-      "day": 1,
-      "year": 1900,
-      "latitude": -90
-    },
-    "outputs": {
-      "solarDeclination": -23.0210242,
-      "dayLengthHours": 24,
-      "nightLengthHours": 0
-    }
-  }
-}
-`;
-
 exports[`compute() snapshots > debt-payoff-calculator 1`] = `
 {
   "default": {
@@ -3944,6 +3900,59 @@ exports[`compute() snapshots > fraction-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > free-shipping-threshold-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "cartTotal": 42,
+      "freeShippingThreshold": 50,
+      "shippingFee": 6.99,
+      "addedItemCost": 15,
+      "addedItemValueToYou": 5
+    },
+    "outputs": {
+      "netSavingsByAdding": -3.01,
+      "gapToThreshold": 8,
+      "wastedSpend": 10,
+      "totalIfShip": 48.99,
+      "totalIfAdd": 57
+    }
+  },
+  "typical": {
+    "inputs": {
+      "cartTotal": 63,
+      "freeShippingThreshold": 75,
+      "shippingFee": 10.5,
+      "addedItemCost": 23,
+      "addedItemValueToYou": 8
+    },
+    "outputs": {
+      "netSavingsByAdding": -4.5,
+      "gapToThreshold": 12,
+      "wastedSpend": 15,
+      "totalIfShip": 73.5,
+      "totalIfAdd": 86
+    }
+  },
+  "edge": {
+    "inputs": {
+      "cartTotal": 0,
+      "freeShippingThreshold": 0,
+      "shippingFee": 0,
+      "addedItemCost": 0,
+      "addedItemValueToYou": 0
+    },
+    "outputs": {
+      "netSavingsByAdding": 0,
+      "gapToThreshold": 0,
+      "wastedSpend": 0,
+      "totalIfShip": 0,
+      "totalIfAdd": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > freelancer-rate-calculator 1`] = `
 {
   "default": {
@@ -4481,6 +4490,44 @@ exports[`compute() snapshots > gravel-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > grocery-budget-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "householdSize": 4,
+      "planTier": 2
+    },
+    "outputs": {
+      "monthlyBudget": 1324.7,
+      "weeklyBudget": 305.7,
+      "perPersonWeekly": 76.425
+    }
+  },
+  "typical": {
+    "inputs": {
+      "householdSize": 6,
+      "planTier": 3
+    },
+    "outputs": {
+      "monthlyBudget": 2293.395,
+      "weeklyBudget": 529.245,
+      "perPersonWeekly": 92.85
+    }
+  },
+  "edge": {
+    "inputs": {
+      "householdSize": 1,
+      "planTier": 0
+    },
+    "outputs": {
+      "monthlyBudget": 307.45,
+      "weeklyBudget": 70.95,
+      "perPersonWeekly": 59.125
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > heart-rate-zones-calculator 1`] = `
 {
   "default": {
@@ -5012,50 +5059,6 @@ exports[`compute() snapshots > isotope-notation-calculator 1`] = `
 }
 `;
 
-exports[`compute() snapshots > jet-lag-calculator 1`] = `
-{
-  "default": {
-    "inputs": {
-      "timeZonesCrossed": 5,
-      "direction": 1
-    },
-    "outputs": {
-      "recoveryDays": 5,
-      "recoveryDaysRounded": 5,
-      "adjustmentRate": 1,
-      "eastDays": 5,
-      "westDays": 3.333333333
-    }
-  },
-  "typical": {
-    "inputs": {
-      "timeZonesCrossed": 8,
-      "direction": 2
-    },
-    "outputs": {
-      "recoveryDays": 5.333333333,
-      "recoveryDaysRounded": 6,
-      "adjustmentRate": 1.5,
-      "eastDays": 8,
-      "westDays": 5.333333333
-    }
-  },
-  "edge": {
-    "inputs": {
-      "timeZonesCrossed": 0,
-      "direction": 0
-    },
-    "outputs": {
-      "recoveryDays": 0,
-      "recoveryDaysRounded": 0,
-      "adjustmentRate": 1.5,
-      "eastDays": 0,
-      "westDays": 0
-    }
-  }
-}
-`;
-
 exports[`compute() snapshots > job-offer-comparison-calculator 1`] = `
 {
   "default": {
@@ -5279,6 +5282,56 @@ exports[`compute() snapshots > ksp-molar-solubility-calculator 1`] = `
       "molarSolubility": 0,
       "cationConcentration": 0,
       "anionConcentration": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > layaway-payment-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "itemPrice": 150,
+      "downPayment": 30,
+      "serviceFee": 5,
+      "weeksUntilPickup": 4,
+      "paymentFrequencyWeeks": 2
+    },
+    "outputs": {
+      "perPayment": 62.5,
+      "numberOfPayments": 2,
+      "remainingBalance": 120,
+      "totalCost": 155
+    }
+  },
+  "typical": {
+    "inputs": {
+      "itemPrice": 230,
+      "downPayment": 45,
+      "serviceFee": 8,
+      "weeksUntilPickup": 6,
+      "paymentFrequencyWeeks": 3
+    },
+    "outputs": {
+      "perPayment": 96.5,
+      "numberOfPayments": 2,
+      "remainingBalance": 185,
+      "totalCost": 238
+    }
+  },
+  "edge": {
+    "inputs": {
+      "itemPrice": 0,
+      "downPayment": 0,
+      "serviceFee": 0,
+      "weeksUntilPickup": 1,
+      "paymentFrequencyWeeks": 1
+    },
+    "outputs": {
+      "perPayment": 0,
+      "numberOfPayments": 1,
+      "remainingBalance": 0,
+      "totalCost": 0
     }
   }
 }
@@ -5779,57 +5832,42 @@ exports[`compute() snapshots > long-division-calculator 1`] = `
 }
 `;
 
-exports[`compute() snapshots > luggage-fee-calculator 1`] = `
+exports[`compute() snapshots > loyalty-points-value-calculator 1`] = `
 {
   "default": {
     "inputs": {
-      "bagWeight": 58,
-      "bagLinearSize": 65,
-      "weightAllowance": 50,
-      "sizeAllowance": 62,
-      "overweightFee": 100,
-      "oversizeFee": 200
+      "points": 50000,
+      "centsPerPoint": 1,
+      "comparisonCentsPerPoint": 0.7
     },
     "outputs": {
-      "weightOverage": 8,
-      "sizeOverage": 3,
-      "weightFeeCharged": 100,
-      "sizeFeeCharged": 200,
-      "totalExtraFee": 300
+      "value": 500,
+      "comparisonValue": 350,
+      "difference": 150
     }
   },
   "typical": {
     "inputs": {
-      "bagWeight": 87,
-      "bagLinearSize": 98,
-      "weightAllowance": 75,
-      "sizeAllowance": 93,
-      "overweightFee": 150,
-      "oversizeFee": 300
+      "points": 75000,
+      "centsPerPoint": 1.5,
+      "comparisonCentsPerPoint": 1
     },
     "outputs": {
-      "weightOverage": 12,
-      "sizeOverage": 5,
-      "weightFeeCharged": 150,
-      "sizeFeeCharged": 300,
-      "totalExtraFee": 450
+      "value": 1125,
+      "comparisonValue": 750,
+      "difference": 375
     }
   },
   "edge": {
     "inputs": {
-      "bagWeight": 0,
-      "bagLinearSize": 0,
-      "weightAllowance": 0,
-      "sizeAllowance": 0,
-      "overweightFee": 0,
-      "oversizeFee": 0
+      "points": 0,
+      "centsPerPoint": 0,
+      "comparisonCentsPerPoint": 0
     },
     "outputs": {
-      "weightOverage": 0,
-      "sizeOverage": 0,
-      "weightFeeCharged": 0,
-      "sizeFeeCharged": 0,
-      "totalExtraFee": 0
+      "value": 0,
+      "comparisonValue": 0,
+      "difference": 0
     }
   }
 }
@@ -8266,50 +8304,6 @@ exports[`compute() snapshots > pka-henderson-hasselbalch-calculator 1`] = `
     },
     "outputs": {
       "pH": "NaN"
-    }
-  }
-}
-`;
-
-exports[`compute() snapshots > points-vs-cash-flight-calculator 1`] = `
-{
-  "default": {
-    "inputs": {
-      "cashPrice": 450,
-      "pointsRequired": 25000,
-      "awardCashFees": 11.2,
-      "yourPointValue": 1.2
-    },
-    "outputs": {
-      "pointsCostInDollars": 311.2,
-      "savingsUsingPoints": 138.8,
-      "breakevenCentsPerPoint": 1.7552
-    }
-  },
-  "typical": {
-    "inputs": {
-      "cashPrice": 680,
-      "pointsRequired": 38000,
-      "awardCashFees": 17,
-      "yourPointValue": 1.8
-    },
-    "outputs": {
-      "pointsCostInDollars": 701,
-      "savingsUsingPoints": -21,
-      "breakevenCentsPerPoint": 1.744736842
-    }
-  },
-  "edge": {
-    "inputs": {
-      "cashPrice": 0,
-      "pointsRequired": 1,
-      "awardCashFees": 0,
-      "yourPointValue": 0
-    },
-    "outputs": {
-      "pointsCostInDollars": 0,
-      "savingsUsingPoints": 0,
-      "breakevenCentsPerPoint": 0
     }
   }
 }
@@ -11267,47 +11261,6 @@ exports[`compute() snapshots > tip-calculator 1`] = `
 }
 `;
 
-exports[`compute() snapshots > tipping-abroad-calculator 1`] = `
-{
-  "default": {
-    "inputs": {
-      "country": 0,
-      "billAmount": 50
-    },
-    "outputs": {
-      "country": 0,
-      "percent": 17.5,
-      "suggestedTip": 8.75,
-      "totalWithTip": 58.75
-    }
-  },
-  "typical": {
-    "inputs": {
-      "country": 0,
-      "billAmount": 75
-    },
-    "outputs": {
-      "country": 0,
-      "percent": 17.5,
-      "suggestedTip": 13.125,
-      "totalWithTip": 88.125
-    }
-  },
-  "edge": {
-    "inputs": {
-      "country": 0,
-      "billAmount": 0
-    },
-    "outputs": {
-      "country": 0,
-      "percent": 17.5,
-      "suggestedTip": 0,
-      "totalWithTip": 0
-    }
-  }
-}
-`;
-
 exports[`compute() snapshots > tire-size-calculator 1`] = `
 {
   "default": {
@@ -11580,50 +11533,6 @@ exports[`compute() snapshots > travel-budget-calculator 1`] = `
       "perDayCost": 0,
       "buffer": 0,
       "totalWithBuffer": 0
-    }
-  }
-}
-`;
-
-exports[`compute() snapshots > travel-points-value-calculator 1`] = `
-{
-  "default": {
-    "inputs": {
-      "pointsUsed": 60000,
-      "cashPriceAvoided": 900,
-      "cashCopay": 11.2,
-      "comparisonBenchmark": 1.2
-    },
-    "outputs": {
-      "netCashValue": 888.8,
-      "realizedCentsPerPoint": 1.481333333,
-      "vsBenchmarkDiffPercent": 23.44444444
-    }
-  },
-  "typical": {
-    "inputs": {
-      "pointsUsed": 90000,
-      "cashPriceAvoided": 1350,
-      "cashCopay": 17,
-      "comparisonBenchmark": 1.8
-    },
-    "outputs": {
-      "netCashValue": 1333,
-      "realizedCentsPerPoint": 1.481111111,
-      "vsBenchmarkDiffPercent": -17.71604938
-    }
-  },
-  "edge": {
-    "inputs": {
-      "pointsUsed": 1,
-      "cashPriceAvoided": 0,
-      "cashCopay": 0,
-      "comparisonBenchmark": 0
-    },
-    "outputs": {
-      "netCashValue": 0,
-      "realizedCentsPerPoint": 0,
-      "vsBenchmarkDiffPercent": 0
     }
   }
 }
@@ -12224,6 +12133,38 @@ exports[`compute() snapshots > wallpaper-calculator 1`] = `
       "netArea": 24,
       "adjustedArea": 26.4,
       "rollsNeeded": 3
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > warehouse-club-membership-breakeven-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "annualFee": 65,
+      "savingsPerTrip": 8
+    },
+    "outputs": {
+      "breakEvenTrips": 8.125
+    }
+  },
+  "typical": {
+    "inputs": {
+      "annualFee": 100,
+      "savingsPerTrip": 12
+    },
+    "outputs": {
+      "breakEvenTrips": 8.333333333
+    }
+  },
+  "edge": {
+    "inputs": {
+      "annualFee": 0,
+      "savingsPerTrip": 0
+    },
+    "outputs": {
+      "breakEvenTrips": "NaN"
     }
   }
 }

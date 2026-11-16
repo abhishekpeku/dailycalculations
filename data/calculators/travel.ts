@@ -774,7 +774,7 @@ export const travelCalculators: CalculatorConfig[] = [
     glyph: '¢/pt',
     updatedAt: '2026-11-16',
     aliases: ['airline miles value calculator', 'hotel points value calculator', 'what are my miles worth calculator', 'award redemption value calculator', 'cents per mile calculator'],
-    related: ['travel-budget-calculator', 'currency-converter', 'visa-stay-days-calculator'],
+    related: ['loyalty-points-value-calculator', 'travel-budget-calculator', 'currency-converter', 'visa-stay-days-calculator'],
     title: 'Travel Points Value Calculator',
     description: 'Work out the cents-per-point value you actually got from a specific airline miles or hotel points redemption, and compare it against a published benchmark rate.',
     example: "Using 60,000 miles for a $900 flight, after paying $11.20 of taxes in cash, realizes about 1.48 cents per mile — about 23% above a 1.2-cent published benchmark rate for that program.",

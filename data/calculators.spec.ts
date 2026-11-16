@@ -21,6 +21,7 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'ratio-calculator': ['d'], // a (the term being divided by) 0 -> divide by zero
   'weighted-average-calculator': ['weightedAverage'], // all weights 0 -> 0/0
   'parking-cost-calculator': ['breakEvenVisitsPerWeek'], // per-visit cost 0 -> no break-even visit count
+  'warehouse-club-membership-breakeven-calculator': ['breakEvenTrips'], // savings per trip 0 (its min) -> divide by zero
   'car-depreciation-calculator': ['totalDepreciationPercent'], // purchase price 0 -> 0/0
   'body-fat-percentage-calculator': ['bodyFatPercent'], // waist=neck (both at their min 1) -> log10(0), -Infinity; category still finite (falls into the lowest band)
   'logarithm-calculator': ['result', 'naturalLog', 'commonLog'], // base 0 and argument 0 -> invalid log domain

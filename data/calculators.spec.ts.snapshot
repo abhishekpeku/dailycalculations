@@ -6258,6 +6258,56 @@ exports[`compute() snapshots > investment-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > ionic-strength-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "concentration1": 0.1,
+      "charge1": 2,
+      "concentration2": 0.2,
+      "charge2": -1,
+      "concentration3": 0,
+      "charge3": 0,
+      "concentration4": 0,
+      "charge4": 0
+    },
+    "outputs": {
+      "ionicStrength": 0.3
+    }
+  },
+  "typical": {
+    "inputs": {
+      "concentration1": 0.15,
+      "charge1": 3,
+      "concentration2": 0.3,
+      "charge2": -1,
+      "concentration3": 0,
+      "charge3": 0,
+      "concentration4": 0,
+      "charge4": 0
+    },
+    "outputs": {
+      "ionicStrength": 0.825
+    }
+  },
+  "edge": {
+    "inputs": {
+      "concentration1": 0,
+      "charge1": 0,
+      "concentration2": 0,
+      "charge2": 0,
+      "concentration3": 0,
+      "charge3": 0,
+      "concentration4": 0,
+      "charge4": 0
+    },
+    "outputs": {
+      "ionicStrength": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > irr-calculator 1`] = `
 {
   "default": {

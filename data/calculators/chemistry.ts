@@ -2883,6 +2883,146 @@ export const chemistryCalculators: CalculatorConfig[] = [
     }
   },
   {
+    id: 'ionic-strength-calculator',
+    category: 'chemistry',
+    group: 'Concentration Units',
+    glyph: 'μᵢ',
+    updatedAt: '2026-11-17',
+    aliases: ['ionic strength calculator', 'ionic strength formula calculator', 'debye-huckel ionic strength calculator', 'solution ionic strength calculator'],
+    related: ['molarity-calculator', 'normality-calculator', 'common-ion-effect-calculator', 'dilution-calculator'],
+    title: 'Ionic Strength Calculator',
+    description: 'Find a solution’s ionic strength from up to four ions’ concentrations and charges — I = ½ Σ(cᵢ × zᵢ²).',
+    example: 'A 0.1 M MgCl₂ solution (0.1 M Mg²⁺, 0.2 M Cl⁻) has an ionic strength of 0.3 mol/L — three times higher than an equally concentrated 1:1 salt like NaCl.',
+    inputs: [
+      { id: 'concentration1', label: 'Ion 1 concentration (mol/L)', type: 'number', placeholder: '0.1', defaultValue: 0.1, step: 0.001, min: 0 },
+      { id: 'charge1', label: 'Ion 1 charge', type: 'number', placeholder: '2', defaultValue: 2, step: 1 },
+      { id: 'concentration2', label: 'Ion 2 concentration (mol/L)', type: 'number', placeholder: '0.2', defaultValue: 0.2, step: 0.001, min: 0 },
+      { id: 'charge2', label: 'Ion 2 charge', type: 'number', placeholder: '-1', defaultValue: -1, step: 1 },
+      { id: 'concentration3', label: 'Ion 3 concentration (mol/L)', type: 'number', placeholder: '0', defaultValue: 0, step: 0.001, min: 0 },
+      { id: 'charge3', label: 'Ion 3 charge', type: 'number', placeholder: '0', defaultValue: 0, step: 1 },
+      { id: 'concentration4', label: 'Ion 4 concentration (mol/L)', type: 'number', placeholder: '0', defaultValue: 0, step: 0.001, min: 0 },
+      { id: 'charge4', label: 'Ion 4 charge', type: 'number', placeholder: '0', defaultValue: 0, step: 1 }
+    ],
+    breakdown: {
+      headline: 'ionicStrength',
+      headlineLabel: 'Ionic strength, I (mol/L)',
+      outputs: [{ id: 'ionicStrength', label: 'Ionic strength, I (mol/L)', format: 'significant' }],
+      groups: [
+        { title: 'Ion 1', inputs: ['concentration1', 'charge1'] },
+        { title: 'Ion 2', inputs: ['concentration2', 'charge2'] },
+        { title: 'Ion 3 (optional)', inputs: ['concentration3', 'charge3'], optional: true },
+        { title: 'Ion 4 (optional)', inputs: ['concentration4', 'charge4'], optional: true }
+      ],
+      derive(values) {
+        return {
+          term1: 0.5 * values.concentration1 * values.charge1 ** 2,
+          term2: 0.5 * values.concentration2 * values.charge2 ** 2,
+          term3: 0.5 * values.concentration3 * values.charge3 ** 2,
+          term4: 0.5 * values.concentration4 * values.charge4 ** 2
+        };
+      },
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'term1', label: 'Ion 1' },
+          { from: 'term2', label: 'Ion 2' },
+          { from: 'term3', label: 'Ion 3' },
+          { from: 'term4', label: 'Ion 4' }
+        ],
+        title: 'Each ion’s contribution to ionic strength'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is ionic strength?',
+        paragraphs: [
+          'Ionic strength describes how much "ionic traffic" is in a solution, taking into account that a more highly charged ion disrupts a solution’s behavior more than a singly charged one at the same concentration. The formal definition, from IUPAC’s "Quantities, Units and Symbols in Physical Chemistry" (1993), is a half-sum over every ion present: I = ½ Σ(cᵢ × zᵢ²), where cᵢ is each ion’s concentration and zᵢ is its charge number.',
+          'Squaring the charge is what makes ionic strength rise so quickly with charge: a 2+ or 2− ion contributes four times as much as a 1+ or 1− ion at the same concentration, and a 3+ ion contributes nine times as much. That is why 0.1 M MgCl₂ (one Mg²⁺ plus two Cl⁻ per formula unit) has a noticeably higher ionic strength than 0.1 M NaCl, even though both salts supply the identical total 0.1 M of "formula units."',
+          'Ionic strength matters because it governs how strongly ions in solution interact with each other electrostatically — it is the key input to the Debye-Hückel equation, which corrects an ion’s effective (active) concentration for those interactions, and it also shows up directly in the common-ion effect and solubility calculations wherever a solution is not infinitely dilute.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter each distinct ion’s concentration and charge (up to four); the solution’s overall ionic strength fills in automatically.',
+        steps: [
+          { name: 'List every ion in solution', text: 'Including ions from more than one dissolved salt, if there is more than one.' },
+          { name: 'Enter each ion’s concentration', text: 'In mol/L, accounting for how many of that ion each formula unit supplies — 0.1 M MgCl₂ gives 0.1 M Mg²⁺ but 0.2 M Cl⁻, not 0.1 M of each.' },
+          { name: 'Enter each ion’s charge', text: 'As a signed number — +2 for Mg²⁺, −1 for Cl⁻. The formula squares it, so the sign itself does not affect the final result, but keeping it signed avoids confusion when checking the numbers.' },
+          { name: 'Leave unused ion slots at 0', text: 'A concentration of 0 drops that slot out of the sum entirely.' },
+          { name: 'Read the ionic strength', text: 'Along with each ion’s own share of the total, shown on the bar chart underneath.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Each ion contributes its concentration times the square of its charge; the half-sum of all of them is the ionic strength.',
+        expression: 'I = ½ × Σ(cᵢ × zᵢ²)',
+        terms: [
+          { symbol: 'I', meaning: 'Ionic strength, in mol/L (the same units as concentration).' },
+          { symbol: 'cᵢ', meaning: 'The molar concentration of ion i.' },
+          { symbol: 'zᵢ', meaning: 'The charge number of ion i (the sign does not matter, since it is squared).' }
+        ],
+        note: 'This calculator covers up to four distinct ions, computed on a molar-concentration basis (Iᴄ), which is the form most general and analytical chemistry problems use. A small further distinction exists between concentration-based ionic strength and molality-based ionic strength (Iₘ, used in more precise physical-chemistry work), which are numerically close but not identical in anything but a dilute aqueous solution.'
+      },
+      workedExample: {
+        intro: 'What is the ionic strength of a 0.1 M solution of magnesium chloride, MgCl₂, which fully dissociates into Mg²⁺ and Cl⁻?',
+        rows: [
+          { label: 'Mg²⁺ concentration and charge', value: '0.1 mol/L, z = +2' },
+          { label: 'Cl⁻ concentration and charge', value: '0.2 mol/L, z = −1 (twice the Mg²⁺ concentration, from the formula MgCl₂)' },
+          { label: 'Mg²⁺ term: 0.1 × (2)²', value: '0.4' },
+          { label: 'Cl⁻ term: 0.2 × (−1)²', value: '0.2' },
+          { label: 'I = ½ × (0.4 + 0.2)', value: '0.3 mol/L' }
+        ],
+        result: 'I = 0.3 mol/L',
+        explanation: 'For comparison, an equally concentrated 1:1 salt like 0.1 M NaCl has I = ½ × (0.1×1² + 0.1×1²) = 0.1 mol/L — exactly equal to its molar concentration, a general fact for any 1:1 electrolyte. MgCl₂’s ionic strength comes out three times higher, driven mostly by magnesium’s squared 2+ charge. Both figures were confirmed independently in a scratch script.'
+      },
+      watchOut: [
+        {
+          title: 'The charge is squared, so a higher-charge ion dominates the total',
+          body: 'Doubling an ion’s charge quadruples its own contribution to ionic strength at the same concentration — a solution with even a small amount of a 3+ or 3− ion can have most of its ionic strength coming from that one ion alone.'
+        },
+        {
+          title: 'Account for every ion a formula unit actually produces',
+          body: 'A salt like MgCl₂ does not contribute equal concentrations of its cation and anion — one mole of MgCl₂ gives one mole of Mg²⁺ but two moles of Cl⁻, and both need their own, separately entered concentration.'
+        },
+        {
+          title: 'Ionic strength is not the same as total ion concentration',
+          body: 'Simply adding up every ion’s concentration (without squaring the charge) undercounts the effect of multiply charged ions — ionic strength is specifically designed to weight them more heavily, not just tally how many ions are present.'
+        },
+        {
+          title: 'This is a different quantity from molarity or normality',
+          body: 'The molarity and normality calculators on this site describe how much of a substance is dissolved. Ionic strength instead describes how electrostatically "crowded" the resulting ions are — a solution can have a given molarity at many different ionic strengths, depending on how many ions, and of what charge, that molarity actually produces.'
+        }
+      ],
+      references: [
+        {
+          label: 'IUPAC, "Quantities, Units and Symbols in Physical Chemistry" (1993), ionic strength definition, I = ½Σcᵢzᵢ² — the IUPAC Gold Book’s own page for this term returned an HTTP 403 to a direct fetch; independently confirmed via the EPA’s "Ionic Strength" CADDIS reference page, which quotes and cites the same 1993 IUPAC source',
+          url: 'https://www.epa.gov/caddis/ionic-strength'
+        }
+      ]
+    },
+    seo: {
+      title: 'Ionic Strength Calculator (I = ½Σcᵢzᵢ²)',
+      description: 'Free ionic strength calculator. Find a solution’s ionic strength from up to four ions’ concentrations and charges, with a worked MgCl₂ example.',
+      faq: [
+        { question: 'How do I calculate ionic strength?', answer: 'Sum each ion’s concentration times the square of its charge, then take half of the total: I = ½ × Σ(cᵢ × zᵢ²).' },
+        { question: 'What is the ionic strength of 0.1 M MgCl₂?', answer: '0.3 mol/L — from 0.1 M Mg²⁺ (charge +2) and 0.2 M Cl⁻ (charge −1, since each formula unit releases two chloride ions).' },
+        { question: 'Why does ionic strength use the square of the charge?', answer: 'Because a more highly charged ion has a stronger electrostatic effect on its surroundings than its concentration alone would suggest — squaring the charge is how the formula weights that extra influence.' },
+        { question: 'Is ionic strength the same as molarity for a 1:1 salt?', answer: 'Yes — for any fully dissociated 1:1 electrolyte (like NaCl), ionic strength exactly equals the molar concentration, since both ions carry charge 1 and the ½ and the two equal terms cancel out.' },
+        { question: 'What is ionic strength used for?', answer: 'It is the key input to the Debye-Hückel equation, which corrects an ion’s effective concentration for electrostatic interactions with its neighbors — relevant anywhere a solution is not extremely dilute, including some solubility and common-ion-effect calculations.' },
+        { question: 'Does the sign of the charge matter?', answer: 'No — the formula squares every charge, so a +2 and a −2 ion contribute identically. Entering charges with their correct sign is still good practice, just not something the final answer depends on.' }
+      ]
+    },
+    compute(values) {
+      const ionicStrength =
+        0.5 *
+        (values.concentration1 * values.charge1 ** 2 +
+          values.concentration2 * values.charge2 ** 2 +
+          values.concentration3 * values.charge3 ** 2 +
+          values.concentration4 * values.charge4 ** 2);
+      return { ionicStrength };
+    }
+  },
+  {
     id: 'titration-calculator',
     category: 'chemistry',
     group: 'Acid-Base Chemistry',

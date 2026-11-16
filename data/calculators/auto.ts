@@ -777,5 +777,129 @@ export const autoCalculators: CalculatorConfig[] = [
       const annualSavings = Math.max(0, annualCost - comparisonCost);
       return { gallonsPerYear, annualCost, monthlyCost, costPerMile, comparisonCost, annualSavings };
     }
+  },
+  {
+    id: 'parking-cost-calculator',
+    group: 'Ownership Costs',
+    category: 'auto',
+    glyph: 'P',
+    updatedAt: '2026-11-16',
+    aliases: ['monthly parking pass calculator', 'parking pass vs daily rate calculator', 'parking break-even calculator', 'commuter parking cost calculator', 'is a parking pass worth it calculator'],
+    related: ['commute-cost-calculator', 'toll-cost-calculator', 'fuel-cost-calculator'],
+    title: 'Parking Cost Calculator',
+    description: 'Compare a monthly parking pass with paying per visit, and find the break-even number of visits a week where the pass starts saving you money.',
+    example: 'A $150 monthly pass beats a $12 daily rate once you park more than about 2.88 days a week; at 4 days a week the pass saves about $58.00 a month.',
+    breakdown: {
+      headline: 'monthlySavingsWithPass',
+      headlineLabel: 'Monthly savings with the pass',
+      outputs: [
+        { id: 'monthlySavingsWithPass', label: 'Monthly savings with the pass', format: 'currency' },
+        { id: 'monthlyPerVisitCost', label: 'Cost per month, paying per visit', format: 'currency' },
+        { id: 'monthlyPassCost', label: 'Cost per month, with the pass', format: 'currency' },
+        { id: 'breakEvenVisitsPerWeek', label: 'Break-even visits per week', format: 'number' },
+        { id: 'annualSavingsWithPass', label: 'Savings with the pass per year', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Monthly pass', inputs: ['monthlyPassCost'] },
+        { title: 'Paying per visit', inputs: ['perVisitCost', 'visitsPerWeek'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'monthlyPerVisitCost', label: 'Pay per visit' },
+          { from: 'monthlyPassCost', label: 'Monthly pass' }
+        ],
+        title: 'Monthly parking cost'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'Is a monthly parking pass worth it?',
+        paragraphs: [
+          'A parking facility usually offers two prices for the same spot: a daily or per-visit rate, and a flat monthly pass. The pass is a bet that you will park often enough that the flat fee beats paying every time. That bet has a clean break-even point: the number of visits a week where the two options cost the same, scaled to a month using 52 weeks a year.',
+          'Below the break-even number of visits, paying per visit costs less overall, because you are paying for unused days in the pass. Above it, the pass wins, and the gap grows every extra day you park. Occasional drivers, or anyone who works from home part of the week, should check the number before assuming the pass is the better deal.',
+          'Many employers also let staff pay for qualified parking with pre-tax dollars, up to a federal monthly limit, which effectively discounts whichever option you pick by your tax rate on that amount. That benefit does not change the break-even math here, but it is worth checking before you decide, since it can make either option cheaper than the sticker price.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the monthly pass price, then the per-visit rate and how many days a week you expect to park.',
+        steps: [
+          { name: 'Enter the monthly pass price', text: 'Use the flat rate your garage or lot quotes for an unlimited monthly pass.' },
+          { name: 'Enter the per-visit rate', text: 'Use the daily or single-visit rate you would otherwise pay, before any early-bird or event-day surcharge.' },
+          { name: 'Enter how often you park', text: 'Enter the number of days a week you expect to park there, counting only the days you would actually pay.' },
+          { name: 'Read the result', text: 'The headline is how much the pass saves (or costs extra) each month at that frequency, with the monthly cost of each option and the break-even visits a week below it.' },
+          { name: 'Check a pre-tax benefit', text: 'If your employer offers pre-tax parking, apply that discount to whichever option you pick before comparing it with other costs.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Scale a year of paying per visit to a month, and compare it with a year of the pass.',
+        expression: 'Annual pay-per-visit = rate × visits/week × 52\nMonthly pay-per-visit = Annual ÷ 12\nBreak-even visits/week = Monthly pass ÷ (rate × 52 ÷ 12)',
+        terms: [
+          { symbol: 'rate', meaning: 'The per-visit (daily) parking rate.' },
+          { symbol: 'visits/week', meaning: 'How many days a week you expect to pay to park.' },
+          { symbol: '52', meaning: 'Weeks in a year, used to annualize a weekly visit count.' },
+          { symbol: 'Monthly pass', meaning: 'The flat monthly price for unlimited parking.' }
+        ],
+        note: 'An estimate. Real facilities often price daily rates differently by day of week, time of entry or special events, and some bill the pass for a full month regardless of holidays or trips — check your own rate sheet.'
+      },
+      workedExample: {
+        intro: 'A garage near your office charges $12 a visit, or $150 a month for a reserved pass. You park there 4 days a week.',
+        rows: [
+          { label: 'Visits per year (4 × 52)', value: '208 visits' },
+          { label: 'Annual pay-per-visit cost (208 × $12)', value: '$2,496.00' },
+          { label: 'Monthly pay-per-visit cost (2,496 ÷ 12)', value: '$208.00' },
+          { label: 'Monthly pass cost', value: '$150.00' },
+          { label: 'Monthly savings with the pass (208.00 − 150.00)', value: '$58.00' },
+          { label: 'Annual savings with the pass (58.00 × 12)', value: '$696.00' }
+        ],
+        result: 'The pass saves about $58.00 a month, or $696.00 a year, at 4 visits a week.',
+        explanation: 'The break-even point here is 150 ÷ (12 × 52 ÷ 12) = 150 ÷ 52 ≈ 2.88 visits a week. Below about 2.88 days a week, paying per visit would cost less than the pass; this driver, at 4 days a week, is well past it.'
+      },
+      watchOut: [
+        { title: 'Rates change with demand', body: 'Many garages charge more at peak times or on event days. Use the rate you would actually pay on the days you park, not a posted minimum.' },
+        { title: 'A pass does not pause for time off', body: 'Most monthly passes bill the full month whether or not you use every day, including weeks you are on vacation or working from home. Fewer real visits than planned raises your effective break-even.' },
+        { title: 'Check for a pre-tax commuter benefit', body: 'For 2026, the IRS lets employers exclude up to $340 a month in qualified parking from an employee\'s taxable income. Ask whether your employer offers this before comparing out-of-pocket costs.' },
+        { title: 'Passes can require a minimum term', body: 'Some facilities require a deposit or a minimum number of months, which this calculator does not include. Factor in any such requirement before you commit.' }
+      ],
+      references: [
+        { label: 'Internal Revenue Service, Publication 15-B (2026), Employer\'s Tax Guide to Fringe Benefits — qualified parking exclusion', url: 'https://www.irs.gov/publications/p15b' },
+        { label: 'U.S. General Services Administration, Transit Subsidy Program (Executive Order 13150)', url: 'https://www.gsa.gov/directives-library/transit-subsidy-program-1' }
+      ]
+    },
+    inputs: [
+      { id: 'monthlyPassCost', label: 'Monthly parking pass', type: 'currency', placeholder: '150', defaultValue: 150, step: 5, min: 0 },
+      { id: 'perVisitCost', label: 'Cost per visit (daily rate)', type: 'currency', placeholder: '12', defaultValue: 12, step: 0.5, min: 0 },
+      { id: 'visitsPerWeek', label: 'Visits per week', type: 'number', placeholder: '4', defaultValue: 4, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Parking Cost Calculator – Monthly Pass vs. Per-Visit',
+      description: 'Free parking cost calculator: compare a monthly pass with paying per visit, and find the break-even number of visits a week.',
+      faq: [
+        { question: 'How do I know if a monthly parking pass is worth it?', answer: 'Compare the pass price with your per-visit rate times your visits a week, scaled to a month (rate × visits/week × 52 ÷ 12). At $12 a visit, 4 days a week comes to $208.00 a month, more than a $150.00 pass, so the pass is worth it.' },
+        { question: 'How many times a week do I need to park for a pass to pay off?', answer: 'Divide the monthly pass price by the per-visit rate times 52 ÷ 12. A $150 pass against a $15 daily rate breaks even at 150 ÷ (15 × 52 ÷ 12) ≈ 2.31 visits a week.' },
+        { question: 'Does a monthly pass always cost less per visit?', answer: 'Only above the break-even number of visits. Below it, you are paying for days you do not use, so paying per visit costs less overall.' },
+        { question: 'What is the pre-tax parking benefit?', answer: 'For 2026 the IRS lets employers exclude up to $340 a month of qualified parking from taxable income (Publication 15-B). Ask your employer whether this applies before comparing sticker prices.' },
+        { question: 'Does this assume every week of the year?', answer: 'Yes, it annualizes your weekly visits over 52 weeks. If you skip weeks for vacation or remote work, your real per-visit cost is lower and the pass is less likely to be worth it.' },
+        { question: 'Can I use this for a transit pass instead of parking?', answer: 'Yes. The math is the same for any flat monthly fee against a pay-per-use price — just enter the pass price and the per-use rate for whatever you are comparing.' }
+      ]
+    },
+    compute(values) {
+      const weeksPerYear = 52;
+      const annualPerVisitCost = values.perVisitCost * values.visitsPerWeek * weeksPerYear;
+      const monthlyPerVisitCost = annualPerVisitCost / 12;
+      const annualPassCost = values.monthlyPassCost * 12;
+      const monthlySavingsWithPass = monthlyPerVisitCost - values.monthlyPassCost;
+      const annualSavingsWithPass = annualPerVisitCost - annualPassCost;
+      const breakEvenVisitsPerWeek = values.perVisitCost > 0 ? values.monthlyPassCost / (values.perVisitCost * (weeksPerYear / 12)) : NaN;
+      return {
+        monthlySavingsWithPass,
+        monthlyPerVisitCost,
+        monthlyPassCost: values.monthlyPassCost,
+        breakEvenVisitsPerWeek,
+        annualSavingsWithPass
+      };
+    }
   }
 ];

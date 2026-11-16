@@ -6924,6 +6924,53 @@ exports[`compute() snapshots > paint-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > parking-cost-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "monthlyPassCost": 150,
+      "perVisitCost": 12,
+      "visitsPerWeek": 4
+    },
+    "outputs": {
+      "monthlySavingsWithPass": 58,
+      "monthlyPerVisitCost": 208,
+      "monthlyPassCost": 150,
+      "breakEvenVisitsPerWeek": 2.884615385,
+      "annualSavingsWithPass": 696
+    }
+  },
+  "typical": {
+    "inputs": {
+      "monthlyPassCost": 225,
+      "perVisitCost": 18,
+      "visitsPerWeek": 6
+    },
+    "outputs": {
+      "monthlySavingsWithPass": 243,
+      "monthlyPerVisitCost": 468,
+      "monthlyPassCost": 225,
+      "breakEvenVisitsPerWeek": 2.884615385,
+      "annualSavingsWithPass": 2916
+    }
+  },
+  "edge": {
+    "inputs": {
+      "monthlyPassCost": 0,
+      "perVisitCost": 0,
+      "visitsPerWeek": 0
+    },
+    "outputs": {
+      "monthlySavingsWithPass": 0,
+      "monthlyPerVisitCost": 0,
+      "monthlyPassCost": 0,
+      "breakEvenVisitsPerWeek": "NaN",
+      "annualSavingsWithPass": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > party-drinks-calculator 1`] = `
 {
   "default": {

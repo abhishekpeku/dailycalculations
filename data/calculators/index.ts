@@ -94,6 +94,7 @@ export const calculatorOrder: string[] = [
   'instagram-engagement-calculator',
   'electricity-bill-calculator',
   'fuel-cost-calculator',
+  'parking-cost-calculator',
   'currency-converter',
   'character-counter',
   'hashtag-counter',

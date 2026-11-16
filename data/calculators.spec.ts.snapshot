@@ -14885,6 +14885,38 @@ exports[`compute() snapshots > weak-acid-ionization-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > weak-base-ionization-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "kb": 0.000063,
+      "initialConcentration": 0.25
+    },
+    "outputs": {
+      "hydroxideIon": 0.003937251976
+    }
+  },
+  "typical": {
+    "inputs": {
+      "kb": 0.000095,
+      "initialConcentration": 0.375
+    },
+    "outputs": {
+      "hydroxideIon": 0.005921357198
+    }
+  },
+  "edge": {
+    "inputs": {
+      "kb": 0,
+      "initialConcentration": 0
+    },
+    "outputs": {
+      "hydroxideIon": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > weight-calculator 1`] = `
 {
   "default": {

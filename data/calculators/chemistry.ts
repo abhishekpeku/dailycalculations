@@ -5985,6 +5985,127 @@ export const chemistryCalculators: CalculatorConfig[] = [
     }
   },
   {
+    id: 'weak-base-ionization-calculator',
+    category: 'chemistry',
+    group: 'Acid-Base Chemistry',
+    glyph: 'Kb',
+    updatedAt: '2026-11-17',
+    aliases: ['weak base calculator', 'kb calculator', 'weak base ionization calculator', 'poh from kb calculator', 'base ionization constant calculator', 'base dissociation constant calculator'],
+    related: ['weak-acid-ionization-calculator', 'ph-poh-calculator', 'pka-henderson-hasselbalch-calculator', 'molarity-calculator'],
+    title: 'Weak Base Ionization Calculator (Kb, pOH, Percent Ionization)',
+    description: 'Find the pOH, pH, and percent ionization of a weak base solution from its Kb and starting concentration — the base-side mirror of the weak acid ionization calculator.',
+    example: 'A 0.25 M solution of trimethylamine ((CH₃)₃N, Kb = 6.3 × 10⁻⁵) ionizes to [OH⁻] ≈ 0.0039 mol/L, a pOH of about 2.40, and a pH of about 11.60.',
+    solver: {
+      defaultTarget: 'hydroxideIon',
+      variables: [
+        { id: 'kb', label: 'Base dissociation constant, Kb', symbol: 'Kb', dimension: 'count', defaultValue: 6.3e-5, defaultUnit: 'count' },
+        { id: 'initialConcentration', label: 'Initial base concentration (mol/L)', symbol: 'C₀', dimension: 'count', defaultValue: 0.25, defaultUnit: 'count' },
+        { id: 'hydroxideIon', label: 'Hydroxide-ion concentration at equilibrium (mol/L)', symbol: '[OH⁻]', dimension: 'count', defaultValue: 0.003937, defaultUnit: 'count' }
+      ],
+      solve: {
+        hydroxideIon: ({ kb, initialConcentration }) =>
+          kb <= 0 || initialConcentration <= 0 ? NaN : (2 * kb * initialConcentration) / (kb + Math.sqrt(kb ** 2 + 4 * kb * initialConcentration)),
+        kb: ({ initialConcentration, hydroxideIon }) =>
+          initialConcentration === hydroxideIon ? NaN : hydroxideIon ** 2 / (initialConcentration - hydroxideIon),
+        initialConcentration: ({ kb, hydroxideIon }) => (kb === 0 ? NaN : hydroxideIon ** 2 / kb + hydroxideIon)
+      },
+      outputs: [
+        { id: 'pOH', label: 'pOH', dimension: 'pH', unit: 'pH', compute: (si) => -Math.log10(si.hydroxideIon) },
+        { id: 'pH', label: 'pH', dimension: 'pH', unit: 'pH', compute: (si) => 14 + Math.log10(si.hydroxideIon) },
+        { id: 'percentIonization', label: 'Percent ionization', dimension: 'percent', unit: '%', compute: (si) => (si.hydroxideIon / si.initialConcentration) * 100 }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is a weak base’s percent ionization?',
+        paragraphs: [
+          'A weak base (B) only partly reacts with water: B + H₂O ⇌ BH⁺ + OH⁻. OpenStax Chemistry 2e’s §14.3 "Relative Strengths of Acids and Bases" treats weak bases as the direct mirror of weak acids — the same section that works through formic acid’s weak-acid equilibrium also works through a weak base’s own ionization constant, Kb = [BH⁺][OH⁻] ÷ [B], a fixed property of that specific base.',
+          'Starting from an initial concentration C₀ and letting x be how much reacts, [BH⁺] = [OH⁻] = x and [B] = C₀ − x at equilibrium, turning the Kb expression into a quadratic in x: Kb = x² ÷ (C₀ − x) — the identical algebraic shape as the weak-acid ionization calculator on this site, just relabeled for a base instead of an acid.',
+          'Once x — the equilibrium hydroxide-ion concentration — is known, pOH = −log₁₀[OH⁻] follows directly, and pH = 14 − pOH at 25°C (since [H⁺][OH⁻] = Kw = 1.0 × 10⁻¹⁴ there). Percent ionization (x ÷ C₀ × 100) describes what fraction of the original base actually reacted.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the base’s Kb (fixed, since it does not change with concentration) and its starting concentration; the equilibrium hydroxide-ion concentration, pOH, pH, and percent ionization fill in automatically.',
+        steps: [
+          { name: 'Look up or identify the base’s Kb', text: 'From a reference table — for example, 6.3 × 10⁻⁵ for trimethylamine, or 1.8 × 10⁻⁵ for ammonia.' },
+          { name: 'Enter the initial concentration', text: 'The concentration before any ionization happens, in mol/L.' },
+          { name: 'Read the equilibrium hydroxide-ion concentration', text: 'It fills in automatically, solved exactly from the quadratic rather than an approximation.' },
+          { name: 'Read pOH, pH, and percent ionization', text: 'All three appear underneath as bonus figures computed from the same result.' },
+          { name: 'Or work backward', text: 'Enter a measured [OH⁻] (or pOH, converted first) and the concentration, and solve for the base’s own Kb instead.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Kb = x² ÷ (C₀ − x) rearranges into a quadratic solved exactly for x, the equilibrium [OH⁻].',
+        expression: 'Kb = x² ÷ (C₀ − x)\nx = 2Kb·C₀ ÷ (Kb + √(Kb² + 4·Kb·C₀))\npOH = −log₁₀(x)\npH = 14 − pOH\n% ionization = (x ÷ C₀) × 100',
+        terms: [
+          { symbol: 'Kb', meaning: 'The weak base’s own base dissociation constant — a fixed property of that base, not of the solution’s concentration.' },
+          { symbol: 'C₀', meaning: 'The base’s initial (pre-ionization) concentration, in mol/L.' },
+          { symbol: 'x', meaning: 'The equilibrium hydroxide-ion concentration, [OH⁻] — the amount of base that actually reacted with water.' }
+        ],
+        note: 'The rearranged form above avoids subtracting two nearly equal numbers, the same numerically stable technique the weak-acid ionization calculator uses for the parallel acid equilibrium. A base’s Kb and its conjugate acid’s Ka are also related by Ka × Kb = Kw (1.0 × 10⁻¹⁴ at 25°C) — a separate relationship this calculator does not use directly, since it only needs the base’s own Kb.'
+      },
+      workedExample: {
+        intro: 'What is the hydroxide-ion concentration, pOH, and pH of a 0.25 M solution of trimethylamine, (CH₃)₃N (Kb = 6.3 × 10⁻⁵)? (OpenStax Chemistry 2e, Example 14.13.)',
+        rows: [
+          { label: 'Kb', value: '6.3 × 10⁻⁵' },
+          { label: 'C₀', value: '0.25 mol/L' },
+          { label: 'x = 2Kb·C₀ ÷ (Kb + √(Kb² + 4·Kb·C₀))', value: '≈ 0.003937 mol/L' },
+          { label: 'pOH = −log₁₀(0.003937)', value: '≈ 2.405' },
+          { label: 'pH = 14 − 2.405', value: '≈ 11.60' },
+          { label: '% ionization = (0.003937 ÷ 0.25) × 100', value: '≈ 1.57%' }
+        ],
+        result: '[OH⁻] ≈ 0.0039 mol/L, pOH ≈ 2.40, pH ≈ 11.60',
+        explanation: 'This matches OpenStax’s own stated values ([OH⁻] = 4.0 × 10⁻³ M, pOH = 2.40, pH = 11.60) to the precision the textbook reports, confirmed independently in a scratch script. OpenStax does not separately state a percent-ionization figure for this example; the ≈1.57% shown here follows directly from the same exact x.'
+      },
+      watchOut: [
+        {
+          title: 'This finds pOH and pH, not just pOH',
+          body: 'A common mistake is stopping at pOH and forgetting the final pH = 14 − pOH conversion (at 25°C) — this calculator shows both so neither step is skipped.'
+        },
+        {
+          title: 'The "x is negligible" shortcut is an approximation, not a rule',
+          body: 'Many textbooks approximate Kb ≈ x² ÷ C₀ when x is expected to be small compared with C₀. This calculator solves the exact quadratic instead, so it stays accurate even where that shortcut starts to drift.'
+        },
+        {
+          title: 'Percent ionization increases as a solution gets more dilute',
+          body: 'Just like a weak acid, a weak base becomes a larger percentage ionized at lower concentrations, even though [OH⁻] itself goes down.'
+        },
+        {
+          title: 'This is not the same as the weak-acid ionization calculator',
+          body: 'The weak-acid ionization calculator on this site solves the analogous HA ⇌ H⁺ + A⁻ equilibrium for pH directly. This calculator solves the base equilibrium B + H₂O ⇌ BH⁺ + OH⁻ instead, which needs the pOH-to-pH conversion the acid version does not.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §14.3 "Relative Strengths of Acids and Bases" (weak-base equilibrium and Example 14.13, trimethylamine)', url: 'https://openstax.org/books/chemistry-2e/pages/14-3-relative-strengths-of-acids-and-bases' }
+      ]
+    },
+    inputs: [
+      { id: 'kb', label: 'Base dissociation constant, Kb', type: 'number', placeholder: '0.000063', defaultValue: 0.000063, step: 0.000001, min: 0 },
+      { id: 'initialConcentration', label: 'Initial concentration (mol/L)', type: 'number', placeholder: '0.25', defaultValue: 0.25, step: 0.001, min: 0 }
+    ],
+    seo: {
+      title: 'Weak Base Ionization Calculator (Kb, pOH, pH)',
+      description: 'Free weak base calculator. Find pOH, pH, and percent ionization from Kb and concentration, solved exactly with the quadratic equilibrium formula.',
+      faq: [
+        { question: 'How do I find the pOH of a weak base?', answer: 'Solve Kb = x² ÷ (C₀ − x) for x (the equilibrium [OH⁻]), then take pOH = −log₁₀(x). This calculator solves the exact quadratic rather than assuming x is negligible next to C₀.' },
+        { question: 'What is the pH of 0.25 M trimethylamine?', answer: 'About 11.60, using Kb = 6.3 × 10⁻⁵ — found by first solving for [OH⁻] (≈0.0039 M), then pOH (≈2.40), then pH = 14 − pOH.' },
+        { question: 'How do I convert pOH to pH?', answer: 'pH = 14 − pOH at 25°C, since pH + pOH = pKw = 14.00 at that temperature. This calculator applies that conversion automatically.' },
+        { question: 'How is this different from the weak acid ionization calculator?', answer: 'That calculator solves HA ⇌ H⁺ + A⁻ for pH directly. This one solves the base equilibrium B + H₂O ⇌ BH⁺ + OH⁻ for [OH⁻], then converts to pH through pOH, since a base’s equilibrium is naturally expressed in terms of hydroxide, not hydrogen ion.' },
+        { question: 'Can this calculator find a base’s Kb instead?', answer: 'Yes — enter a measured equilibrium [OH⁻] (found from a measured pH or pOH, if that is what you have) along with the known initial concentration, and the calculator solves for Kb.' },
+        { question: 'How are a base’s Kb and its conjugate acid’s Ka related?', answer: 'Ka × Kb = Kw = 1.0 × 10⁻¹⁴ at 25°C, for any conjugate acid-base pair. A stronger base (larger Kb) always has a weaker conjugate acid (smaller Ka), and vice versa.' }
+      ]
+    },
+    compute(values) {
+      const hydroxideIon =
+        values.kb <= 0 || values.initialConcentration <= 0
+          ? NaN
+          : (2 * values.kb * values.initialConcentration) / (values.kb + Math.sqrt(values.kb ** 2 + 4 * values.kb * values.initialConcentration));
+      return { hydroxideIon };
+    }
+  },
+  {
     id: 'current-efficiency-calculator',
     category: 'chemistry',
     group: 'Redox & Electrochemistry',

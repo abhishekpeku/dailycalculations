@@ -5517,6 +5517,62 @@ exports[`compute() snapshots > heat-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > hess-law-enthalpy-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "coeffProduct1": 1,
+      "dHfProduct1": -393.51,
+      "coeffProduct2": 2,
+      "dHfProduct2": -285.83,
+      "coeffReactant1": 1,
+      "dHfReactant1": -74.6,
+      "coeffReactant2": 2,
+      "dHfReactant2": 0
+    },
+    "outputs": {
+      "enthalpyRxn": -890.57,
+      "productsSum": -965.17,
+      "reactantsSum": -74.6
+    }
+  },
+  "typical": {
+    "inputs": {
+      "coeffProduct1": 2,
+      "dHfProduct1": -590.26,
+      "coeffProduct2": 3,
+      "dHfProduct2": -428.74,
+      "coeffReactant1": 2,
+      "dHfReactant1": -111.9,
+      "coeffReactant2": 3,
+      "dHfReactant2": 0
+    },
+    "outputs": {
+      "enthalpyRxn": -2242.94,
+      "productsSum": -2466.74,
+      "reactantsSum": -223.8
+    }
+  },
+  "edge": {
+    "inputs": {
+      "coeffProduct1": 0,
+      "dHfProduct1": 0,
+      "coeffProduct2": 0,
+      "dHfProduct2": 0,
+      "coeffReactant1": 0,
+      "dHfReactant1": 0,
+      "coeffReactant2": 0,
+      "dHfReactant2": 0
+    },
+    "outputs": {
+      "enthalpyRxn": 0,
+      "productsSum": 0,
+      "reactantsSum": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > home-affordability-calculator 1`] = `
 {
   "default": {

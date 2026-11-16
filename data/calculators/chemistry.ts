@@ -5995,5 +5995,131 @@ export const chemistryCalculators: CalculatorConfig[] = [
       const theoreticalMass = values.electrons === 0 ? NaN : (values.current * values.time * values.molarMass) / (values.electrons * 96485.33212331001);
       return { currentEfficiency: Number.isFinite(theoreticalMass) && theoreticalMass !== 0 ? (values.actualMass / theoreticalMass) * 100 : NaN };
     }
+  },
+  {
+    id: 'hess-law-enthalpy-calculator',
+    category: 'chemistry',
+    group: 'Thermochemistry',
+    glyph: 'ΔH°',
+    updatedAt: '2026-11-16',
+    aliases: ['hess’s law calculator', 'standard enthalpy of formation calculator', 'enthalpy of combustion calculator', 'enthalpy of formation calculator'],
+    related: ['calorimetry-enthalpy-calculator', 'gibbs-free-energy-calculator', 'specific-heat-by-mixing-calculator', 'stoichiometry-calculator'],
+    title: 'Hess’s Law / Enthalpy of Reaction Calculator',
+    description: 'Find a reaction’s standard enthalpy from the standard enthalpies of formation of its reactants and products — up to two of each, with their coefficients.',
+    example: 'CH₄(g) + 2O₂(g) → CO₂(g) + 2H₂O(l) releases about 890.6 kJ per mole of methane burned, from the four substances’ standard enthalpies of formation.',
+    inputs: [
+      { id: 'coeffProduct1', label: 'Product 1 coefficient', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0 },
+      { id: 'dHfProduct1', label: 'Product 1 standard enthalpy of formation (kJ/mol)', type: 'number', placeholder: '-393.51', defaultValue: -393.51, step: 0.01 },
+      { id: 'coeffProduct2', label: 'Product 2 coefficient', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0 },
+      { id: 'dHfProduct2', label: 'Product 2 standard enthalpy of formation (kJ/mol)', type: 'number', placeholder: '-285.83', defaultValue: -285.83, step: 0.01 },
+      { id: 'coeffReactant1', label: 'Reactant 1 coefficient', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0 },
+      { id: 'dHfReactant1', label: 'Reactant 1 standard enthalpy of formation (kJ/mol)', type: 'number', placeholder: '-74.6', defaultValue: -74.6, step: 0.01 },
+      { id: 'coeffReactant2', label: 'Reactant 2 coefficient', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0 },
+      { id: 'dHfReactant2', label: 'Reactant 2 standard enthalpy of formation (kJ/mol)', type: 'number', placeholder: '0', defaultValue: 0, step: 0.01 }
+    ],
+    breakdown: {
+      headline: 'enthalpyRxn',
+      headlineLabel: 'Standard enthalpy of reaction, ΔH°rxn',
+      outputs: [
+        { id: 'enthalpyRxn', label: 'ΔH°rxn', format: 'number' },
+        { id: 'productsSum', label: 'Σ n × ΔHf° (products)', format: 'number' },
+        { id: 'reactantsSum', label: 'Σ n × ΔHf° (reactants)', format: 'number' }
+      ],
+      groups: [
+        { title: 'Products', inputs: ['coeffProduct1', 'dHfProduct1', 'coeffProduct2', 'dHfProduct2'] },
+        { title: 'Reactants', inputs: ['coeffReactant1', 'dHfReactant1', 'coeffReactant2', 'dHfReactant2'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'reactantsSum', label: 'Reactants (Σ n × ΔHf°)' },
+          { from: 'productsSum', label: 'Products (Σ n × ΔHf°)' }
+        ],
+        title: 'Enthalpy of formation: reactants vs. products',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is Hess’s law?',
+        paragraphs: [
+          'Enthalpy, like elevation, only depends on where you start and end — not the path taken to get there. OpenStax Chemistry 2e’s §5.3 states Hess’s law directly: "if a process can be written as the sum of several stepwise processes, the enthalpy change of the total process equals the sum of the enthalpy changes of the various steps." Burning carbon straight to CO₂ releases the same total heat as burning it to CO first and then burning that CO to CO₂ — two completely different routes, one identical total.',
+          'That path-independence has a powerful practical consequence: every reaction can be imagined as first tearing every reactant apart into its own elements, then reassembling those elements into the products. The heat absorbed or released forming one mole of a substance from its elements, in their standard states, is that substance’s standard enthalpy of formation, ΔHf° (zero for an element in its own standard state, by definition). Add up the products’ ΔHf° values, subtract the reactants’, and Hess’s law guarantees the difference is the reaction’s own standard enthalpy, ΔH°rxn — without ever needing to actually carry out the two-step detour.',
+          'This calculator applies that shortcut directly, for up to two reactants and two products, each with its own stoichiometric coefficient: ΔH°rxn = Σ(n × ΔHf°, products) − Σ(n × ΔHf°, reactants). An unused reactant or product slot, left at coefficient 0, simply drops out of the sum.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter each product’s and reactant’s coefficient (from the balanced equation) and its standard enthalpy of formation, from a reference table; the reaction’s enthalpy fills in automatically.',
+        steps: [
+          { name: 'Write the balanced equation', text: 'Identify every distinct reactant and product and its coefficient — this calculator covers up to two of each.' },
+          { name: 'Look up each substance’s ΔHf°', text: 'From a standard thermodynamic properties table, in kJ/mol. An element in its standard state (O₂(g), C(s, graphite)) is 0 by definition.' },
+          { name: 'Enter the products', text: 'Each product’s coefficient and ΔHf°. Leave an unused second product slot at coefficient 0.' },
+          { name: 'Enter the reactants', text: 'Each reactant’s coefficient and ΔHf°, the same way.' },
+          { name: 'Read the result', text: 'ΔH°rxn appears immediately, with the products’ and reactants’ own weighted sums shown underneath for comparison.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Hess’s law guarantees that summing stepwise reactions and jumping straight to the products-minus-reactants shortcut give the identical answer.',
+        expression: 'ΔH°rxn = Σ(n × ΔHf°, products) − Σ(n × ΔHf°, reactants)',
+        terms: [
+          { symbol: 'ΔH°rxn', meaning: 'The reaction’s own standard enthalpy change — negative for an exothermic reaction (releases heat), positive for endothermic (absorbs heat).' },
+          { symbol: 'ΔHf°', meaning: 'A substance’s standard enthalpy of formation: the enthalpy change forming one mole of it from its elements in their standard states. Exactly 0 for an element already in its standard state.' },
+          { symbol: 'n', meaning: 'Each substance’s coefficient in the balanced equation.' }
+        ],
+        note: 'This covers up to two reactants and two products. Leave an unused slot’s coefficient at 0 — it contributes nothing to either sum and drops out cleanly.'
+      },
+      workedExample: {
+        intro: 'What is the standard enthalpy of combustion of methane, CH₄(g) + 2O₂(g) → CO₂(g) + 2H₂O(l)? (Standard enthalpies of formation from OpenStax Chemistry 2e, Appendix G: CH₄ −74.6, O₂ 0, CO₂ −393.51, H₂O(l) −285.83 kJ/mol.)',
+        rows: [
+          { label: 'Products: 1×(−393.51) + 2×(−285.83)', value: '−393.51 + (−571.66) = −965.17 kJ' },
+          { label: 'Reactants: 1×(−74.6) + 2×(0)', value: '−74.6 + 0 = −74.6 kJ' },
+          { label: 'ΔH°rxn = −965.17 − (−74.6)', value: '−890.57 kJ' }
+        ],
+        result: 'ΔH°rxn ≈ −890.6 kJ per mole of CH₄ burned',
+        explanation: 'This matches the commonly cited standard enthalpy of combustion of methane, about −890 kJ/mol, to the precision these formation values support. As a separate confirmation of Hess’s law itself: OpenStax’s own two-step worked example for a different reaction (C(s) + O₂(g) → CO₂(g), done directly, versus via CO as an intermediate) gets the identical −393.51 kJ either way — summing the two steps or using the products-minus-reactants shortcut in one line.'
+      },
+      watchOut: [
+        {
+          title: 'This is not the same calculation as the calorimetry enthalpy calculator',
+          body: 'The calorimetry enthalpy calculator on this site measures ΔH experimentally, from a temperature change in a calorimeter (q = mcΔT, divided by moles reacted). This calculator instead computes ΔH from published reference data — each substance’s own standard enthalpy of formation — without running any experiment at all. The two methods can be cross-checked against each other but use entirely different inputs.'
+        },
+        {
+          title: 'An element in its standard state has ΔHf° = 0, by definition — not by coincidence',
+          body: 'O₂(g), N₂(g), C(s, graphite), and similar elements in their most stable form at standard conditions are defined to have a standard enthalpy of formation of exactly zero. This is the reference point the whole scale is built from, not a measured value that happens to be small.'
+        },
+        {
+          title: 'ΔHf° values are tied to a specific physical state',
+          body: 'Water’s ΔHf° is different for H₂O(l) (−285.83 kJ/mol) than for H₂O(g) (−241.82 kJ/mol) — always match the state (solid, liquid, gas, or aqueous) in the actual balanced equation to the correct row of a reference table.'
+        },
+        {
+          title: 'Coefficients come from the balanced equation, not from guesswork',
+          body: 'Every coefficient entered here must match a correctly balanced chemical equation — the same equation-balancing step every other stoichiometry problem on this site needs, done by hand before using this calculator.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §5.3 "Enthalpy" (Hess’s law and the standard-enthalpy-of-formation shortcut)', url: 'https://openstax.org/books/chemistry-2e/pages/5-3-enthalpy' },
+        { label: 'OpenStax, Chemistry 2e, Appendix G "Standard Thermodynamic Properties for Selected Substances" (ΔHf° values used in the worked example)', url: 'https://openstax.org/books/chemistry-2e/pages/g-standard-thermodynamic-properties-for-selected-substances' }
+      ]
+    },
+    seo: {
+      title: 'Hess’s Law / Enthalpy of Reaction Calculator',
+      description: 'Free Hess’s law calculator. Find a reaction’s standard enthalpy from its reactants’ and products’ standard enthalpies of formation.',
+      faq: [
+        { question: 'What is Hess’s law?', answer: 'Enthalpy change only depends on the starting and ending state of a reaction, not the path taken — so the enthalpy of a multi-step process equals the sum of each step’s own enthalpy change, no matter how the steps are divided up.' },
+        { question: 'How do I calculate the enthalpy of a reaction from enthalpies of formation?', answer: 'ΔH°rxn = Σ(n × ΔHf°, products) − Σ(n × ΔHf°, reactants), where n is each substance’s coefficient in the balanced equation and ΔHf° is its standard enthalpy of formation.' },
+        { question: 'What is the enthalpy of combustion of methane?', answer: 'About −890.6 kJ per mole of CH₄ burned, from CH₄(g) + 2O₂(g) → CO₂(g) + 2H₂O(l) and each substance’s standard enthalpy of formation.' },
+        { question: 'Why is an element’s standard enthalpy of formation zero?', answer: 'By definition — an element in its most stable form at standard conditions (O₂(g), C(s, graphite)) is the zero point the entire enthalpy-of-formation scale is measured from, not a coincidentally small measured value.' },
+        { question: 'How is this different from the calorimetry enthalpy calculator?', answer: 'This calculator computes ΔH from published reference data (each substance’s standard enthalpy of formation). The calorimetry enthalpy calculator instead measures ΔH experimentally, from a temperature change in a calorimeter.' },
+        { question: 'Does the physical state of a substance matter?', answer: 'Yes — liquid water and water vapor have different standard enthalpies of formation (−285.83 vs. −241.82 kJ/mol), so always use the ΔHf° value that matches the state written in the balanced equation.' },
+        { question: 'Can this handle more than two reactants or products?', answer: 'This calculator covers up to two of each, the common case for most general-chemistry problems. Leave an unused slot’s coefficient at 0 so it drops out of the sum.' }
+      ]
+    },
+    compute(values) {
+      const productsSum = values.coeffProduct1 * values.dHfProduct1 + values.coeffProduct2 * values.dHfProduct2;
+      const reactantsSum = values.coeffReactant1 * values.dHfReactant1 + values.coeffReactant2 * values.dHfReactant2;
+      return { enthalpyRxn: productsSum - reactantsSum, productsSum, reactantsSum };
+    }
   }
 ];

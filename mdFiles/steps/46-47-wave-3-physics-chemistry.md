@@ -567,27 +567,87 @@ build agent's judgment**, same as every run so far.
   - From this run's own branch point (does not include run B's 5): 326 calculators total (321 + 5).
     `physics` is 31 on this branch; the true post-merge total needs reconciling with run B's PR by
     the main session, since both runs added 5 physics calculators independently to the same file.
-- [ ] Physics drivetrain/efficiency run (5), branch `step/46-wave-3-physics-run-8` — **IN PROGRESS**:
-  ## Progress (run 8)
-  - [ ] horsepower-calculator
-  - [ ] rpm-to-speed-calculator
-  - [ ] gear-ratio-calculator
-  - [ ] efficiency-calculator
-  - [ ] angular-velocity-calculator
-  - New `lib/units.ts` dimension `angularVelocity` (base rad/s; units rad/s, rpm, rev/s, deg/s)
-    already added and tested (round-trip + anchor test in `lib/units.spec.ts`, cross-checked
-    against OpenStax University Physics Volume 1 §10.1 Example 10.2: 250 rpm = 26.2 rad/s). Kept
-    separate from `frequency` (same "one real relationship, two conventional units" reasoning as
-    `torque` vs `energy`), and used by all 5 calculators in this run via the `rpm` unit.
-  - `specific-gravity-calculator` ruled out as the 5th pick: `density-of-solutions-calculator`
-    (chemistry run, already shipped) already covers specific gravity thoroughly, including an
-    explicit `specific gravity calculator` alias — building it again in physics would be a near
-    duplicate. Picked **angular-velocity-calculator** instead (ω = Δθ ÷ Δt), which ties the
-    drivetrain theme together (shares the new `angularVelocity` dimension with horsepower and
-    RPM-to-speed) without repeating either of their formulas (v = rω and P = τω respectively).
-  - Confirmed `horsepower-calculator` is not a duplicate of `power-converter` or
-    `horsepower-to-kilowatts-converter` (both straight W↔hp unit conversions, no torque/RPM
-    input) — framed around P = τω instead, a genuine formula, not a relabeled conversion.
+- [x] Physics drivetrain/efficiency run (5), branch `step/46-wave-3-physics-run-8`, PR #107 —
+  **DONE** 2026-11-16:
+  - [x] horsepower-calculator
+  - [x] rpm-to-speed-calculator
+  - [x] gear-ratio-calculator
+  - [x] efficiency-calculator
+  - [x] angular-velocity-calculator
+  - New `lib/units.ts` dimension `angularVelocity` (base rad/s; units rad/s, rpm, rev/s, deg/s),
+    kept separate from `frequency` even though the two are proportional by exactly 2π — same "one
+    real relationship, two conventional units" reasoning as `torque` being kept separate from
+    `energy`. Round-trip + anchor test in `lib/units.spec.ts`, cross-checked against OpenStax
+    University Physics Volume 1 §10.1 Example 10.2 (250 rpm = 26.2 rad/s). Used by all 5
+    calculators in this run via its `rpm` unit, tying the drivetrain theme together.
+  - `horsepower-calculator` (P = τω) confirmed NOT a duplicate of `power-converter` or
+    `horsepower-to-kilowatts-converter` (both straight W↔hp unit conversions with no torque/RPM
+    input, per the task's own deferral note from run 4) — framed around computing power from
+    torque and rotational speed instead, a genuine formula. 3-variable solver (power, torque,
+    rpm), reusing `power`/`torque`/`angularVelocity`, no new dimension beyond `angularVelocity`
+    itself. Worked example (300 lbf·ft at 4,000 RPM ≈ 228.48 hp) also verifies the classic
+    automotive "divide by 5,252" shortcut, derived exactly from 33,000 ft·lbf/min ÷ 2π = 5,252.113,
+    not assumed from memory.
+  - `rpm-to-speed-calculator` (v = rω, i.e. v = π × D × RPM ÷ 60) is a 3-variable solver (speed,
+    wheel diameter, rpm) reusing `speed`/`length`/`angularVelocity`. Cross-checked against OpenStax
+    University Physics Volume 1 §10.3's own centrifuge example (v = rω) and against the
+    circumference-times-rotation-rate form the task described, confirming both give the identical
+    answer.
+  - `gear-ratio-calculator` (GR = driven teeth ÷ drive teeth) is a 3-variable solver (gearRatio,
+    driveTeeth, drivenTeeth) on the dimensionless `count` dimension, same precedent as
+    `friction-calculator`'s μ. Added a 4th `fixed: true` variable (input RPM, `angularVelocity`
+    dimension) plus a `SolverOutput` (output RPM = input RPM ÷ gearRatio) for the "output RPM given
+    input RPM and the ratio" half of the task, following the Faraday's-law-calculator precedent for
+    a fixed solver variable feeding an `outputs` entry. Cited to UC San Diego's MAE 3 machine-design
+    course (no OpenStax introductory-physics section covers gear trains directly) for the formula
+    and the ωout/ωin = nin/nout relationship.
+  - `efficiency-calculator` (η = output ÷ input × 100%) is a 3-variable solver (efficiency,
+    outputPower, inputPower) on `power`/`percent`, with a bonus `outputs` entry for power lost.
+    Cited to OpenStax College Physics 2e §7.6 "Conservation of Energy" (Eff = Wout/Ein, Eq. 7.68)
+    and its own Table 7.2 published efficiency figures (electric motor ≈98%, gasoline engine ≈30%,
+    coal plant ≈42%), used directly in the FAQ rather than invented numbers.
+  - `angular-velocity-calculator` (ω = Δθ ÷ Δt) is a 3-variable solver (angularVelocity, angle,
+    time) reusing `angle`/`time`/`angularVelocity` — deliberately the rotational-kinematics
+    *definition* of ω (OpenStax University Physics Volume 1 §10.1), not a repeat of
+    `rpm-to-speed-calculator`'s v = rω formula, even though both calculators share the new
+    dimension. This was the 5th-slot pick; `specific-gravity-calculator` was explicitly ruled out
+    first, since `density-of-solutions-calculator` (chemistry run 8) already covers specific
+    gravity thoroughly, including its own `specific gravity calculator` alias — building it again
+    in physics would have been a near duplicate per this file's own dedupe discipline.
+  - Every formula fetched directly from a primary source (not recalled from memory): OpenStax
+    University Physics Volume 1 §10.1 "Rotational Variables" (ω = Δθ/Δt and the rpm↔rad/s factor,
+    cross-checked against its own Example 10.2), §10.3 "Relating Angular and Translational
+    Quantities" (v = rω, cross-checked against its own centrifuge Example 10.7), §10.8 "Work and
+    Power for Rotational Motion" (P = τω, Equation 10.31); OpenStax College Physics 2e §7.6
+    "Conservation of Energy" (efficiency, Equation 7.68, and Table 7.2); UC San Diego MAE 3 "Gear
+    Ratios" course page (gear-train speed relationship, no OpenStax equivalent exists); NIST SP 811
+    Appendix B (foot, pound, pound-force factors reused from `lib/units.ts`'s existing constants).
+  - Independent scratch script (`verify_run8.mjs`, scratchpad, no app imports) recomputed every
+    number before the copy was written: the horsepower worked example (300 lbf·ft at 4,000 RPM →
+    406.7454 N·m, 418.879 rad/s, 170,377 W, 170.38 kW, 228.4795 hp) plus the exact 5,252.113122
+    shortcut constant and its 0.002% difference from the commonly rounded "5252"; the rpm-to-speed
+    worked example (0.65 m wheel at 800 RPM → 83.78 rad/s, 27.227 m/s, 98.02 km/h, 60.91 mph) cross-
+    checked both via v=ωr and via circumference×rotation-rate; the gear-ratio worked example (12 and
+    41 teeth → 3.41667:1, 3,000 RPM in → 878.05 RPM out) in all reverse directions; the efficiency
+    worked example (5.0 kW in, 4.5 kW out → 90%, 0.5 kW lost) in all reverse directions; and the
+    angular-velocity worked example (450° in 3 s → 7.854 rad, 2.618 rad/s, 150°/s, exactly 25 RPM)
+    in all reverse directions, plus a cross-check of the OpenStax 250-rpm-to-rad/s conversion factor
+    (26.1799, matching the textbook's own rounded 26.2).
+  - New `KNOWN_NON_FINITE` entries in `data/calculators.spec.ts`: `gear-ratio-calculator`
+    (`gearRatio`; driveTeeth at its own 0 min → divide by zero), `efficiency-calculator`
+    (`efficiency`; inputPower at its own 0 min → divide by zero), `angular-velocity-calculator`
+    (`angularVelocity`; time at its own 0 min → divide by zero). `horsepower-calculator` and
+    `rpm-to-speed-calculator` needed none (their all-zero edge cases resolve to an honest finite 0).
+    Snapshot diff is additive-only (160 new lines, 0 removed, confirmed with `git diff --stat`).
+  - `npm test` (1,302 tests), `npm run lint` and `npm run build` all pass (367 routes). Verified the
+    5 new pages from the static HTML `next build` produced
+    (`.next/server/app/en/calculators/<id>.html`): H1, exactly two JSON-LD scripts, no "application
+    error" text, and all eight section ids (concept/how-to-use/formula/worked-example/watch-out/
+    faq/references/related) present on every page, all 5 linked correctly from
+    `/en/categories/physics`. A pre-existing process (not started by this run) was already
+    listening on port 3000 — left running, verified via the static HTML output instead, per this
+    run's own instructions.
+  - 336 calculators total after this run (331 + 5). `physics` is now 41.
 - [ ] Physics runs 9+ (as many 5-calculator runs as needed to close the gap toward ~61 total — no
   seed list left at this point; build agent picks standard-physics formulas not yet covered,
   e.g. angular momentum, moment of inertia (simple shapes), rotational kinetic energy, electric

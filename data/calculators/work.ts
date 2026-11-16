@@ -519,5 +519,134 @@ export const workCalculators: CalculatorConfig[] = [
       const usagePercent = values.annualPtoDays > 0 ? (values.daysUsed / values.annualPtoDays) * 100 : 0;
       return { remaining, dailyRate, cashValue, usedCashValue, usagePercent };
     }
+  },
+  {
+    id: 'overtime-pay-calculator',
+    group: 'Pay & Rates',
+    category: 'work',
+    glyph: '1.5×',
+    updatedAt: '2026-11-16',
+    aliases: ['time and a half calculator', 'double time pay calculator', 'overtime calculator', 'FLSA overtime calculator', 'overtime hours pay calculator'],
+    related: ['work-hours-calculator', 'salary-raise-calculator', 'freelancer-rate-calculator', 'paycheck-calculator'],
+    title: 'Overtime Pay Calculator',
+    description: 'Calculate overtime pay from total hours worked, your hourly rate and a weekly overtime threshold, plus an optional double-time tier for states that require one, with the blended effective hourly rate.',
+    example: 'Working 48 hours at $22/hr (40 regular + 8 overtime at 1.5×) plus 2 hours of double time at 2× pays $1,232.00 total — an effective rate of $24.64/hr.',
+    breakdown: {
+      headline: 'overtimePay',
+      headlineLabel: 'Overtime pay',
+      outputs: [
+        { id: 'overtimePay', label: 'Overtime pay', format: 'currency' },
+        { id: 'totalPay', label: 'Total pay (regular + overtime + double time)', format: 'currency' },
+        { id: 'regularPay', label: 'Regular pay', format: 'currency' },
+        { id: 'doubleTimePay', label: 'Double-time pay', format: 'currency' },
+        { id: 'effectiveRate', label: 'Effective hourly rate', format: 'currency' },
+        { id: 'totalHoursPaid', label: 'Total hours paid', format: 'number' }
+      ],
+      groups: [
+        { title: 'Hours & pay', inputs: ['hourlyRate', 'hoursWorked', 'doubleTimeHours'] },
+        { title: 'Overtime & double-time rules', inputs: ['overtimeThreshold', 'otMultiplier', 'doubleTimeMultiplier'], optional: true }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'regularPay', label: 'Regular' },
+          { from: 'overtimePay', label: 'Overtime' },
+          { from: 'doubleTimePay', label: 'Double time' }
+        ],
+        center: 'totalPay',
+        centerSub: 'total pay'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'How overtime and double-time pay are calculated',
+        paragraphs: [
+          'Under the federal Fair Labor Standards Act (FLSA), non-exempt US employees must be paid at least 1.5 times their regular rate — "time and a half" — for every hour worked over 40 in a single workweek, with no federal cap on how much overtime can be worked. The FLSA has no double-time provision at all; it is a 40-hour weekly threshold only.',
+          'Some states go further. California is the one state that requires double-time pay outright: 1.5× after 8 hours in a workday (up to 12) and 2× beyond 12 hours in a day, even in a week that totals under 40 hours. Because those thresholds are daily, not weekly, this calculator — which works from a weekly total — cannot derive double-time hours on its own. Enter them directly if your state requires them; everything else here is computed automatically from the weekly total you enter.',
+          'This calculator is distinct from the general Work Hours Calculator on this site, which also computes regular and overtime pay but requires you to pre-split your hours and has no double-time tier. Use this one when you want hours auto-split by threshold and a double-time tier handled; use the Work Hours Calculator for a simpler weekly gross-pay estimate.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your hourly rate and the total hours you worked this week. Overtime is split out automatically; double time, if any, is entered directly.',
+        steps: [
+          { name: 'Enter your hourly rate', text: 'Your base pay before any overtime or double-time premium.' },
+          { name: 'Enter total hours worked', text: 'The hours worked this week, not including any hours you already know were at a double-time rate.' },
+          { name: 'Enter double-time hours, if any', text: 'Hours already identified as subject to a double-time rule, most commonly California\'s over-12-hours-in-a-day rule. Leave at 0 if none apply.' },
+          { name: 'Check the overtime rules', text: 'The weekly overtime threshold defaults to 40 hours (the FLSA standard) and the multiplier to 1.5. Change them only if your situation differs.' },
+          { name: 'Read the breakdown', text: 'Overtime pay is the headline, with regular pay, double-time pay, total pay and the blended effective hourly rate below, and a chart of where the money comes from.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Regular and overtime hours are split from your weekly total at the threshold; double time is added on top from what you enter directly.',
+        expression:
+          'regularHours = min(hoursWorked, overtimeThreshold)\novertimeHours = max(0, hoursWorked − overtimeThreshold)\nregularPay = regularHours × rate\novertimePay = overtimeHours × rate × otMultiplier\ndoubleTimePay = doubleTimeHours × rate × doubleTimeMultiplier\ntotalPay = regularPay + overtimePay + doubleTimePay\neffectiveRate = totalPay ÷ (hoursWorked + doubleTimeHours)',
+        terms: [
+          { symbol: 'overtimeThreshold', meaning: 'Hours per week before overtime starts — 40 is the federal FLSA default.' },
+          { symbol: 'otMultiplier', meaning: 'How much overtime pays versus regular time — 1.5 ("time and a half") is the federal standard.' },
+          { symbol: 'doubleTimeHours', meaning: 'Hours you have already identified as subject to a double-time rule, entered directly since this calculator works in weekly totals, not day-by-day.' },
+          { symbol: 'effectiveRate', meaning: 'Total pay spread evenly across every hour paid — a single blended rate for comparison.' }
+        ],
+        note: 'Estimates only, based on the FLSA federal floor. State and local rules can require more overtime or double time than this, never less, and this calculator does not apply any state daily-overtime rule automatically.'
+      },
+      workedExample: {
+        intro: 'You work 48 hours this week at $22/hr. Separately, 2 of those hours fell under a double-time rule from a long shift.',
+        rows: [
+          { label: 'Regular hours (min(48, 40))', value: '40' },
+          { label: 'Overtime hours (48 − 40)', value: '8' },
+          { label: 'Regular pay (40 × $22)', value: '$880.00' },
+          { label: 'Overtime pay (8 × $22 × 1.5)', value: '$264.00' },
+          { label: 'Double-time pay (2 × $22 × 2.0)', value: '$88.00' },
+          { label: 'Total pay (880 + 264 + 88)', value: '$1,232.00' },
+          { label: 'Effective rate (1,232 ÷ 50)', value: '$24.64' }
+        ],
+        result: 'Total pay $1,232.00 for 50 hours paid — an effective $24.64/hr',
+        explanation: 'The 8 overtime hours pay $33.00 each (22 × 1.5) and the 2 double-time hours pay $44.00 each (22 × 2.0), both richer than the $22.00 regular rate — which is why 50 hours paid come out to $24.64/hr on average rather than the flat $22.00 base rate.'
+      },
+      watchOut: [
+        { title: 'Federal overtime is weekly, not daily', body: 'The FLSA threshold is 40 hours in a single workweek. Working 10 hours in a day is not automatically overtime under federal rules alone unless the week also tops 40 hours.' },
+        { title: 'Only California requires double time outright', body: 'California requires 1.5× after 8 hours in a workday (up to 12) and 2× beyond 12 hours, even in a week under 40 hours total. No other state has a blanket double-time requirement; check your state labor department for your own rules.' },
+        { title: 'This assumes a non-exempt hourly worker', body: 'Many salaried employees are exempt from FLSA overtime rules entirely, depending on their duties and pay level. This calculator does not determine exempt status.' },
+        { title: 'Double-time hours are entered by hand', body: 'Because this calculator works from a weekly total rather than a day-by-day schedule, it cannot detect which hours crossed a daily double-time threshold — you supply that count directly.' },
+        { title: 'Severance and overtime are different things', body: 'Overtime pay is for hours already worked. If you are instead estimating a payout after a layoff, use the Severance Pay Calculator instead.' }
+      ],
+      references: [
+        { label: 'U.S. Department of Labor, Wage and Hour Division, Overtime Pay', url: 'https://www.dol.gov/agencies/whd/overtime' },
+        { label: 'U.S. Department of Labor, Wage and Hour Division, Fair Labor Standards Act (FLSA)', url: 'https://www.dol.gov/agencies/whd/flsa' },
+        { label: 'California Department of Industrial Relations, DLSE FAQ: Overtime', url: 'https://www.dir.ca.gov/dlse/faq_overtime.htm' }
+      ]
+    },
+    inputs: [
+      { id: 'hourlyRate', label: 'Hourly rate', type: 'currency', placeholder: '22', defaultValue: 22, step: 0.25, min: 0 },
+      { id: 'hoursWorked', label: 'Total hours worked this week', type: 'number', placeholder: '48', defaultValue: 48, step: 0.25, min: 0 },
+      { id: 'doubleTimeHours', label: 'Hours already subject to double time', type: 'number', placeholder: '2', defaultValue: 2, step: 0.25, min: 0 },
+      { id: 'overtimeThreshold', label: 'Weekly overtime threshold (hours)', type: 'number', placeholder: '40', defaultValue: 40, step: 1, min: 0 },
+      { id: 'otMultiplier', label: 'Overtime multiplier', type: 'number', placeholder: '1.5', defaultValue: 1.5, step: 0.25, min: 1 },
+      { id: 'doubleTimeMultiplier', label: 'Double-time multiplier', type: 'number', placeholder: '2', defaultValue: 2, step: 0.25, min: 1 }
+    ],
+    seo: {
+      title: 'Overtime Pay Calculator – Time and a Half & Double Time',
+      description: 'Calculate overtime pay from hours worked and your hourly rate, with an optional double-time tier and your blended effective hourly rate.',
+      faq: [
+        { question: 'How is overtime pay calculated?', answer: 'Hours over the weekly threshold (40 under the federal FLSA) are paid at a multiplier of your regular rate — 1.5× for standard "time and a half." 8 overtime hours at $22/hr and a 1.5× multiplier pay $264.00.' },
+        { question: 'What is double-time pay and who requires it?', answer: 'Double time pays 2× the regular rate. California is the one state that requires it outright — after 12 hours in a workday — while federal law (the FLSA) has no double-time provision at all.' },
+        { question: 'Does the FLSA require overtime after 8 hours in a day?', answer: 'No. The federal threshold is 40 hours in a workweek, not hours in a single day. Some states, including California, add their own daily overtime rules on top of the federal floor.' },
+        { question: 'How is this different from a general work hours or timesheet calculator?', answer: 'This calculator auto-splits a weekly total into regular and overtime hours at a threshold you set, and adds a double-time tier. The Work Hours Calculator on this site instead takes pre-split regular and overtime hours and has no double-time tier.' },
+        { question: 'Are salaried employees entitled to overtime?', answer: 'Many are not. The FLSA exempts salaried employees who meet certain duties and pay-level tests from overtime rules entirely — this calculator assumes a non-exempt hourly worker.' },
+        { question: 'How do I calculate my effective hourly rate with overtime?', answer: 'Divide total pay by total hours paid. $1,232.00 total pay over 50 hours paid (48 worked plus 2 at double time) comes out to about $24.64/hr.' }
+      ]
+    },
+    compute(values) {
+      const regularHours = Math.min(values.hoursWorked, values.overtimeThreshold);
+      const overtimeHours = Math.max(0, values.hoursWorked - values.overtimeThreshold);
+      const regularPay = regularHours * values.hourlyRate;
+      const overtimePay = overtimeHours * values.hourlyRate * values.otMultiplier;
+      const doubleTimePay = values.doubleTimeHours * values.hourlyRate * values.doubleTimeMultiplier;
+      const totalPay = regularPay + overtimePay + doubleTimePay;
+      const totalHoursPaid = values.hoursWorked + values.doubleTimeHours;
+      const effectiveRate = totalHoursPaid > 0 ? totalPay / totalHoursPaid : 0;
+      return { regularHours, overtimeHours, regularPay, overtimePay, doubleTimePay, totalPay, totalHoursPaid, effectiveRate };
+    }
   }
 ];

@@ -6768,6 +6768,71 @@ exports[`compute() snapshots > outlier-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > overtime-pay-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "hourlyRate": 22,
+      "hoursWorked": 48,
+      "doubleTimeHours": 2,
+      "overtimeThreshold": 40,
+      "otMultiplier": 1.5,
+      "doubleTimeMultiplier": 2
+    },
+    "outputs": {
+      "regularHours": 40,
+      "overtimeHours": 8,
+      "regularPay": 880,
+      "overtimePay": 264,
+      "doubleTimePay": 88,
+      "totalPay": 1232,
+      "totalHoursPaid": 50,
+      "effectiveRate": 24.64
+    }
+  },
+  "typical": {
+    "inputs": {
+      "hourlyRate": 33,
+      "hoursWorked": 72,
+      "doubleTimeHours": 3,
+      "overtimeThreshold": 60,
+      "otMultiplier": 2.25,
+      "doubleTimeMultiplier": 3
+    },
+    "outputs": {
+      "regularHours": 60,
+      "overtimeHours": 12,
+      "regularPay": 1980,
+      "overtimePay": 891,
+      "doubleTimePay": 297,
+      "totalPay": 3168,
+      "totalHoursPaid": 75,
+      "effectiveRate": 42.24
+    }
+  },
+  "edge": {
+    "inputs": {
+      "hourlyRate": 0,
+      "hoursWorked": 0,
+      "doubleTimeHours": 0,
+      "overtimeThreshold": 0,
+      "otMultiplier": 1,
+      "doubleTimeMultiplier": 1
+    },
+    "outputs": {
+      "regularHours": 0,
+      "overtimeHours": 0,
+      "regularPay": 0,
+      "overtimePay": 0,
+      "doubleTimePay": 0,
+      "totalPay": 0,
+      "totalHoursPaid": 0,
+      "effectiveRate": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > oxidation-number-calculator 1`] = `
 {
   "default": {

@@ -184,7 +184,13 @@ whole site before writing any id.
 
 - [x] Step file written
 - [ ] Batch 1 — `auto` (5 new)
-- [ ] Batch 2 — `work` (6 new)
+- [ ] Batch 2 — `work` (6 new) — in progress
+  - [x] `overtime-pay-calculator`
+  - [ ] `severance-pay-calculator`
+  - [ ] `cost-of-living-comparison-calculator`
+  - [ ] `remote-work-savings-calculator`
+  - [ ] `job-offer-comparison-calculator`
+  - [ ] `paid-sick-leave-accrual-calculator`
 - [ ] Batch 3 — `health` (5 new)
 - [ ] Batch 4 — `shopping` (5 new)
 - [ ] Batch 5 — `travel` (6 new)

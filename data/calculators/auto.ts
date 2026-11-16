@@ -2,6 +2,26 @@ import type { CalculatorConfig } from './types.ts';
 import { loanMonths, loanPayment, loanPrincipal } from './finance.ts';
 import { toBase } from '../../lib/units.ts';
 
+// car-depreciation-calculator: a declining-balance estimate (20% year 1, then a constant rate per
+// year after) — the rule of thumb cited by Experian/Carfax and Progressive/Kelley Blue Book. `t`
+// may be fractional. Shared by compute() and the reference table so every number comes from one
+// formula.
+const carValueAtYears = (price: number, year1RatePercent: number, afterRatePercent: number, t: number) => {
+  if (t <= 1) return price * (1 - (year1RatePercent / 100) * t);
+  return price * (1 - year1RatePercent / 100) * Math.pow(1 - afterRatePercent / 100, t - 1);
+};
+
+// Reference table rows (years 0-10) on a 100-unit basis, using the default 20%/15% rates, so the
+// table is independent of whatever price/years the reader has typed into the calculator itself.
+const depreciationScheduleRows = () => {
+  const rows: { label: string; values: number[] }[] = [];
+  for (let year = 0; year <= 10; year++) {
+    const retained = carValueAtYears(100, 20, 15, year);
+    rows.push({ label: String(year), values: [Math.round(retained * 100) / 100, Math.round((100 - retained) * 100) / 100] });
+  }
+  return rows;
+};
+
 export const autoCalculators: CalculatorConfig[] = [
   {
     id: 'car-payment-calculator',
@@ -776,6 +796,543 @@ export const autoCalculators: CalculatorConfig[] = [
       const comparisonCost = (values.annualMiles / values.comparisonMpg) * values.gasPricePerGallon;
       const annualSavings = Math.max(0, annualCost - comparisonCost);
       return { gallonsPerYear, annualCost, monthlyCost, costPerMile, comparisonCost, annualSavings };
+    }
+  },
+  {
+    id: 'parking-cost-calculator',
+    group: 'Ownership Costs',
+    category: 'auto',
+    glyph: 'P',
+    updatedAt: '2026-11-16',
+    aliases: ['monthly parking pass calculator', 'parking pass vs daily rate calculator', 'parking break-even calculator', 'commuter parking cost calculator', 'is a parking pass worth it calculator'],
+    related: ['commute-cost-calculator', 'toll-cost-calculator', 'fuel-cost-calculator'],
+    title: 'Parking Cost Calculator',
+    description: 'Compare a monthly parking pass with paying per visit, and find the break-even number of visits a week where the pass starts saving you money.',
+    example: 'A $150 monthly pass beats a $12 daily rate once you park more than about 2.88 days a week; at 4 days a week the pass saves about $58.00 a month.',
+    breakdown: {
+      headline: 'monthlySavingsWithPass',
+      headlineLabel: 'Monthly savings with the pass',
+      outputs: [
+        { id: 'monthlySavingsWithPass', label: 'Monthly savings with the pass', format: 'currency' },
+        { id: 'monthlyPerVisitCost', label: 'Cost per month, paying per visit', format: 'currency' },
+        { id: 'monthlyPassCost', label: 'Cost per month, with the pass', format: 'currency' },
+        { id: 'breakEvenVisitsPerWeek', label: 'Break-even visits per week', format: 'number' },
+        { id: 'annualSavingsWithPass', label: 'Savings with the pass per year', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Monthly pass', inputs: ['monthlyPassCost'] },
+        { title: 'Paying per visit', inputs: ['perVisitCost', 'visitsPerWeek'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'monthlyPerVisitCost', label: 'Pay per visit' },
+          { from: 'monthlyPassCost', label: 'Monthly pass' }
+        ],
+        title: 'Monthly parking cost'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'Is a monthly parking pass worth it?',
+        paragraphs: [
+          'A parking facility usually offers two prices for the same spot: a daily or per-visit rate, and a flat monthly pass. The pass is a bet that you will park often enough that the flat fee beats paying every time. That bet has a clean break-even point: the number of visits a week where the two options cost the same, scaled to a month using 52 weeks a year.',
+          'Below the break-even number of visits, paying per visit costs less overall, because you are paying for unused days in the pass. Above it, the pass wins, and the gap grows every extra day you park. Occasional drivers, or anyone who works from home part of the week, should check the number before assuming the pass is the better deal.',
+          'Many employers also let staff pay for qualified parking with pre-tax dollars, up to a federal monthly limit, which effectively discounts whichever option you pick by your tax rate on that amount. That benefit does not change the break-even math here, but it is worth checking before you decide, since it can make either option cheaper than the sticker price.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the monthly pass price, then the per-visit rate and how many days a week you expect to park.',
+        steps: [
+          { name: 'Enter the monthly pass price', text: 'Use the flat rate your garage or lot quotes for an unlimited monthly pass.' },
+          { name: 'Enter the per-visit rate', text: 'Use the daily or single-visit rate you would otherwise pay, before any early-bird or event-day surcharge.' },
+          { name: 'Enter how often you park', text: 'Enter the number of days a week you expect to park there, counting only the days you would actually pay.' },
+          { name: 'Read the result', text: 'The headline is how much the pass saves (or costs extra) each month at that frequency, with the monthly cost of each option and the break-even visits a week below it.' },
+          { name: 'Check a pre-tax benefit', text: 'If your employer offers pre-tax parking, apply that discount to whichever option you pick before comparing it with other costs.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Scale a year of paying per visit to a month, and compare it with a year of the pass.',
+        expression: 'Annual pay-per-visit = rate × visits/week × 52\nMonthly pay-per-visit = Annual ÷ 12\nBreak-even visits/week = Monthly pass ÷ (rate × 52 ÷ 12)',
+        terms: [
+          { symbol: 'rate', meaning: 'The per-visit (daily) parking rate.' },
+          { symbol: 'visits/week', meaning: 'How many days a week you expect to pay to park.' },
+          { symbol: '52', meaning: 'Weeks in a year, used to annualize a weekly visit count.' },
+          { symbol: 'Monthly pass', meaning: 'The flat monthly price for unlimited parking.' }
+        ],
+        note: 'An estimate. Real facilities often price daily rates differently by day of week, time of entry or special events, and some bill the pass for a full month regardless of holidays or trips — check your own rate sheet.'
+      },
+      workedExample: {
+        intro: 'A garage near your office charges $12 a visit, or $150 a month for a reserved pass. You park there 4 days a week.',
+        rows: [
+          { label: 'Visits per year (4 × 52)', value: '208 visits' },
+          { label: 'Annual pay-per-visit cost (208 × $12)', value: '$2,496.00' },
+          { label: 'Monthly pay-per-visit cost (2,496 ÷ 12)', value: '$208.00' },
+          { label: 'Monthly pass cost', value: '$150.00' },
+          { label: 'Monthly savings with the pass (208.00 − 150.00)', value: '$58.00' },
+          { label: 'Annual savings with the pass (58.00 × 12)', value: '$696.00' }
+        ],
+        result: 'The pass saves about $58.00 a month, or $696.00 a year, at 4 visits a week.',
+        explanation: 'The break-even point here is 150 ÷ (12 × 52 ÷ 12) = 150 ÷ 52 ≈ 2.88 visits a week. Below about 2.88 days a week, paying per visit would cost less than the pass; this driver, at 4 days a week, is well past it.'
+      },
+      watchOut: [
+        { title: 'Rates change with demand', body: 'Many garages charge more at peak times or on event days. Use the rate you would actually pay on the days you park, not a posted minimum.' },
+        { title: 'A pass does not pause for time off', body: 'Most monthly passes bill the full month whether or not you use every day, including weeks you are on vacation or working from home. Fewer real visits than planned raises your effective break-even.' },
+        { title: 'Check for a pre-tax commuter benefit', body: 'For 2026, the IRS lets employers exclude up to $340 a month in qualified parking from an employee\'s taxable income. Ask whether your employer offers this before comparing out-of-pocket costs.' },
+        { title: 'Passes can require a minimum term', body: 'Some facilities require a deposit or a minimum number of months, which this calculator does not include. Factor in any such requirement before you commit.' }
+      ],
+      references: [
+        { label: 'Internal Revenue Service, Publication 15-B (2026), Employer\'s Tax Guide to Fringe Benefits — qualified parking exclusion', url: 'https://www.irs.gov/publications/p15b' },
+        { label: 'U.S. General Services Administration, Transit Subsidy Program (Executive Order 13150)', url: 'https://www.gsa.gov/directives-library/transit-subsidy-program-1' }
+      ]
+    },
+    inputs: [
+      { id: 'monthlyPassCost', label: 'Monthly parking pass', type: 'currency', placeholder: '150', defaultValue: 150, step: 5, min: 0 },
+      { id: 'perVisitCost', label: 'Cost per visit (daily rate)', type: 'currency', placeholder: '12', defaultValue: 12, step: 0.5, min: 0 },
+      { id: 'visitsPerWeek', label: 'Visits per week', type: 'number', placeholder: '4', defaultValue: 4, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Parking Cost Calculator – Monthly Pass vs. Per-Visit',
+      description: 'Free parking cost calculator: compare a monthly pass with paying per visit, and find the break-even number of visits a week.',
+      faq: [
+        { question: 'How do I know if a monthly parking pass is worth it?', answer: 'Compare the pass price with your per-visit rate times your visits a week, scaled to a month (rate × visits/week × 52 ÷ 12). At $12 a visit, 4 days a week comes to $208.00 a month, more than a $150.00 pass, so the pass is worth it.' },
+        { question: 'How many times a week do I need to park for a pass to pay off?', answer: 'Divide the monthly pass price by the per-visit rate times 52 ÷ 12. A $150 pass against a $15 daily rate breaks even at 150 ÷ (15 × 52 ÷ 12) ≈ 2.31 visits a week.' },
+        { question: 'Does a monthly pass always cost less per visit?', answer: 'Only above the break-even number of visits. Below it, you are paying for days you do not use, so paying per visit costs less overall.' },
+        { question: 'What is the pre-tax parking benefit?', answer: 'For 2026 the IRS lets employers exclude up to $340 a month of qualified parking from taxable income (Publication 15-B). Ask your employer whether this applies before comparing sticker prices.' },
+        { question: 'Does this assume every week of the year?', answer: 'Yes, it annualizes your weekly visits over 52 weeks. If you skip weeks for vacation or remote work, your real per-visit cost is lower and the pass is less likely to be worth it.' },
+        { question: 'Can I use this for a transit pass instead of parking?', answer: 'Yes. The math is the same for any flat monthly fee against a pay-per-use price — just enter the pass price and the per-use rate for whatever you are comparing.' }
+      ]
+    },
+    compute(values) {
+      const weeksPerYear = 52;
+      const annualPerVisitCost = values.perVisitCost * values.visitsPerWeek * weeksPerYear;
+      const monthlyPerVisitCost = annualPerVisitCost / 12;
+      const annualPassCost = values.monthlyPassCost * 12;
+      const monthlySavingsWithPass = monthlyPerVisitCost - values.monthlyPassCost;
+      const annualSavingsWithPass = annualPerVisitCost - annualPassCost;
+      const breakEvenVisitsPerWeek = values.perVisitCost > 0 ? values.monthlyPassCost / (values.perVisitCost * (weeksPerYear / 12)) : NaN;
+      return {
+        monthlySavingsWithPass,
+        monthlyPerVisitCost,
+        monthlyPassCost: values.monthlyPassCost,
+        breakEvenVisitsPerWeek,
+        annualSavingsWithPass
+      };
+    }
+  },
+  {
+    id: 'tire-size-calculator',
+    group: 'Ownership Costs',
+    category: 'auto',
+    glyph: '⌀',
+    updatedAt: '2026-11-16',
+    aliases: ['tire diameter calculator', 'tire sidewall size calculator', 'plus size tire calculator', 'speedometer error calculator', 'tire revolutions per mile calculator'],
+    related: ['car-payment-calculator', 'fuel-cost-calculator', 'commute-cost-calculator'],
+    title: 'Tire Size Calculator',
+    description: 'Decode a tire sidewall code into overall diameter, circumference and revolutions per mile, and the speedometer error from fitting a different size.',
+    example: 'A 225/45R17 tire is about 24.97 in across; switching to 235/40R18 adds about 0.43 in (1.72%), so the speedometer reads about 1.72% slow.',
+    breakdown: {
+      headline: 'diameterIn',
+      headlineLabel: 'Overall diameter (original tire)',
+      outputs: [
+        { id: 'diameterIn', label: 'Overall diameter', dimension: 'length', unit: 'in' },
+        { id: 'diameterMm', label: 'Overall diameter', dimension: 'length', unit: 'mm' },
+        { id: 'circumferenceIn', label: 'Circumference', dimension: 'length', unit: 'in' },
+        { id: 'revsPerMile', label: 'Revolutions per mile', format: 'number' },
+        { id: 'diameterIn2', label: 'New tire diameter', dimension: 'length', unit: 'in' },
+        { id: 'revsPerMile2', label: 'New tire revolutions per mile', format: 'number' },
+        { id: 'speedometerErrorPercent', label: 'Speedometer/odometer error', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Original tire', inputs: ['width1', 'aspect1', 'rim1'] },
+        { title: 'New tire', inputs: ['width2', 'aspect2', 'rim2'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'diameterIn', label: 'Original tire' },
+          { from: 'diameterIn2', label: 'New tire' }
+        ],
+        title: 'Overall diameter (in)'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'How a tire size code decodes to a diameter',
+        paragraphs: [
+          'A passenger tire\'s sidewall carries a size code like 225/45R17: the first number is the section width in millimeters, the second is the aspect ratio, the sidewall\'s height as a percentage of that width, "R" marks radial construction, and the last number is the wheel (rim) diameter in inches. The code deliberately mixes units: width and sidewall height in millimeters, rim size in inches.',
+          'Those three numbers are enough to work out the tire\'s overall diameter: double the sidewall height (which is the width times the aspect ratio) and add it to the rim diameter, converted to the same unit. From the diameter you get the circumference, and from the circumference you get revolutions per mile, which is exactly what a vehicle\'s speedometer and odometer are calibrated against.',
+          'Because of that calibration, changing the overall diameter — fitting a different tire size, or putting the same nominal size on a different wheel — changes how fast the speedometer reads relative to your true speed. The tire industry\'s own "plus sizing" convention, going up a wheel size while choosing a lower-profile tire to keep roughly the same overall diameter, exists specifically to keep that error small.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the three numbers from your current tire\'s sidewall, then the tire you are considering.',
+        steps: [
+          { name: 'Find your current tire code', text: 'It is molded into the sidewall, for example 225/45R17: width in mm, aspect ratio in %, rim diameter in inches.' },
+          { name: 'Enter the original tire', text: 'Type the width, aspect ratio and rim diameter into the "Original tire" fields.' },
+          { name: 'Enter the tire you are considering', text: 'Type its three numbers into the "New tire" fields. Use the same numbers as the original if you only want one tire\'s diameter.' },
+          { name: 'Read the diameter and circumference', text: 'The result gives the overall diameter in inches and millimeters, the circumference and the revolutions per mile for each tire.' },
+          { name: 'Check the speedometer error', text: 'A positive percentage means the new tire is taller, so your real speed and distance run ahead of what the speedometer and odometer show.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Overall diameter adds the rim, converted to millimeters, to twice the sidewall height. Circumference and revolutions per mile follow from that diameter.',
+        expression: 'sidewall = width × (aspect ÷ 100)\nD(mm) = rim × 25.4 + 2 × sidewall\nD(in) = D(mm) ÷ 25.4\nC(in) = D(in) × π\nrevs/mile = 63,360 ÷ C(in)\nerror % = (D₂(in) ÷ D₁(in) − 1) × 100',
+        terms: [
+          { symbol: 'width', meaning: 'Section width from the sidewall code, in millimeters.' },
+          { symbol: 'aspect', meaning: 'Aspect ratio from the code: sidewall height as a percent of the width.' },
+          { symbol: 'rim', meaning: 'Wheel diameter from the code, in inches.' },
+          { symbol: 'D, C', meaning: 'Overall diameter and circumference of the inflated tire.' },
+          { symbol: '63,360', meaning: 'Inches in a mile (5,280 ft × 12 in), used to convert circumference to revolutions per mile.' },
+          { symbol: 'error %', meaning: 'How far the new tire\'s diameter (D₂) differs from the original (D₁). Positive means the new tire is taller and the speedometer reads low.' }
+        ],
+        note: 'An estimate from the nominal size code. A real tire\'s measured diameter can vary a little by manufacturer and tread design, and inflation pressure and load change the rolling diameter slightly as well.'
+      },
+      workedExample: {
+        intro: 'A sedan\'s stock tire is 225/45R17. You are considering 235/40R18 on a slightly larger wheel.',
+        rows: [
+          { label: 'Original sidewall height (225 × 45 ÷ 100)', value: '101.25 mm' },
+          { label: 'Original diameter (17 × 25.4 + 2 × 101.25)', value: '634.30 mm (24.97 in)' },
+          { label: 'Original circumference (24.97 × π)', value: '78.45 in' },
+          { label: 'Original revolutions per mile (63,360 ÷ 78.45)', value: '807.6' },
+          { label: 'New sidewall height (235 × 40 ÷ 100)', value: '94.00 mm' },
+          { label: 'New diameter (18 × 25.4 + 2 × 94.00)', value: '645.20 mm (25.40 in)' },
+          { label: 'Speedometer error ((25.40 ÷ 24.97 − 1) × 100)', value: '+1.72%' }
+        ],
+        result: 'The new tire is about 0.43 in (1.72%) taller, so the speedometer under-reads true speed, and the odometer under-counts distance, by about 1.72%.',
+        explanation: 'At a displayed 60 mph you would actually be moving about 61.0 mph (60 × 1.0172). Staying within about 3% of the stock diameter — the usual plus-sizing target — keeps an error this small, which is well below what most drivers would notice.'
+      },
+      watchOut: [
+        { title: 'Not a fitment or safety check', body: 'This is geometry only. The new tire still needs a load index and speed rating at least equal to the original, and enough clearance from the fender and suspension, neither of which this calculator checks.' },
+        { title: 'ABS and traction control read the same signal', body: 'Wheel-speed sensors count revolutions the same way the speedometer does, so a size change that shifts revolutions per mile shifts what those systems "see" too, not just the dashboard reading.' },
+        { title: 'Tread wear shrinks the diameter a little', body: 'A tire\'s rolling diameter is largest when new and shrinks slightly as the tread wears, which this calculator does not model.' },
+        { title: 'The code is nominal, not a guarantee', body: 'Two tires with the same size code from different manufacturers can measure a few millimeters apart in practice. Treat the result as a close estimate.' }
+      ],
+      references: [
+        { label: 'Michelin, Tire Markings Explained', url: 'https://www.michelinman.com/auto/auto-tips-and-advice/tires-101/tire-markings-explained' },
+        { label: 'Wikipedia, Plus sizing', url: 'https://en.wikipedia.org/wiki/Plus_sizing' }
+      ]
+    },
+    inputs: [
+      { id: 'width1', label: 'Section width (mm)', type: 'number', placeholder: '225', defaultValue: 225, step: 1, min: 1 },
+      { id: 'aspect1', label: 'Aspect ratio (%)', type: 'percent', placeholder: '45', defaultValue: 45, step: 1, min: 1 },
+      { id: 'rim1', label: 'Rim diameter (in)', type: 'number', placeholder: '17', defaultValue: 17, step: 0.5, min: 8 },
+      { id: 'width2', label: 'New tire section width (mm)', type: 'number', placeholder: '235', defaultValue: 235, step: 1, min: 1 },
+      { id: 'aspect2', label: 'New tire aspect ratio (%)', type: 'percent', placeholder: '40', defaultValue: 40, step: 1, min: 1 },
+      { id: 'rim2', label: 'New tire rim diameter (in)', type: 'number', placeholder: '18', defaultValue: 18, step: 0.5, min: 8 }
+    ],
+    seo: {
+      title: 'Tire Size Calculator – Diameter & Speedometer Error',
+      description: 'Free tire size calculator: decode a sidewall code into overall diameter, circumference and revolutions per mile, plus the speedometer error from a size change.',
+      faq: [
+        { question: 'How do I read a tire size like 225/45R17?', answer: '225 is the section width in millimeters, 45 is the aspect ratio (sidewall height as a percent of the width), R means radial, and 17 is the rim diameter in inches.' },
+        { question: 'How do I calculate tire diameter from the sidewall code?', answer: 'Multiply the width by the aspect ratio ÷ 100 to get the sidewall height, double it, and add the rim diameter converted to millimeters (rim × 25.4). A 225/45R17 works out to about 634.30 mm, or 24.97 in.' },
+        { question: 'Will a different tire size throw off my speedometer?', answer: 'Yes, if it changes the overall diameter. The error is (new diameter ÷ old diameter − 1) × 100. Going from 225/45R17 to 235/40R18 changes the diameter by about 1.72%, so the speedometer reads about 1.72% slow.' },
+        { question: 'How much bigger can I go before it matters?', answer: 'The tire industry\'s "plus sizing" convention targets roughly the same overall diameter, often citing about 3% as the point where the change becomes noticeable to the speedometer and vehicle electronics. It is an industry rule of thumb, not a legal limit.' },
+        { question: 'What are revolutions per mile and why does it matter?', answer: 'It is how many times the tire turns over one mile: 63,360 ÷ circumference in inches. The speedometer, odometer and anti-lock brake and traction-control sensors are all calibrated around this figure for the tire the vehicle came with.' },
+        { question: 'Does tire wear change the diameter?', answer: 'Slightly. A worn tire has less tread depth, so its rolling diameter is a little smaller than a new tire of the same size code. This calculator uses the nominal new-tire dimensions.' }
+      ]
+    },
+    compute(values) {
+      const geometry = (widthMm: number, aspectPercent: number, rimIn: number) => {
+        const sidewallMm = widthMm * (aspectPercent / 100);
+        const diameterMm = rimIn * 25.4 + 2 * sidewallMm;
+        const diameterIn = diameterMm / 25.4;
+        const circumferenceIn = diameterIn * Math.PI;
+        const revsPerMile = 63360 / circumferenceIn;
+        return { diameterMm, diameterIn, circumferenceIn, revsPerMile };
+      };
+      const original = geometry(values.width1, values.aspect1, values.rim1);
+      const replacement = geometry(values.width2, values.aspect2, values.rim2);
+      const speedometerErrorPercent = original.diameterIn > 0 ? (replacement.diameterIn / original.diameterIn - 1) * 100 : NaN;
+      return {
+        diameterIn: original.diameterIn,
+        diameterMm: original.diameterMm,
+        circumferenceIn: original.circumferenceIn,
+        revsPerMile: original.revsPerMile,
+        diameterIn2: replacement.diameterIn,
+        revsPerMile2: replacement.revsPerMile,
+        speedometerErrorPercent
+      };
+    }
+  },
+  {
+    id: 'car-depreciation-calculator',
+    group: 'Ownership Costs',
+    category: 'auto',
+    glyph: '%',
+    updatedAt: '2026-11-16',
+    aliases: ['car value depreciation calculator', 'vehicle depreciation calculator', 'car resale value estimator', 'how much has my car depreciated calculator', 'car value by year calculator'],
+    related: ['car-payment-calculator', 'fuel-cost-calculator', 'commute-cost-calculator'],
+    title: 'Car Depreciation Calculator',
+    description: 'Estimate what a car is worth today from its original price and age, using a cited year-1 and per-year depreciation rate. An estimate, not an appraisal.',
+    example: 'A $35,000 car depreciated at the common 20% year-1 / 15%-a-year rate is worth about $20,230.00 after 3 years, a loss of about 42.2%.',
+    breakdown: {
+      headline: 'currentValue',
+      headlineLabel: 'Estimated value today',
+      outputs: [
+        { id: 'currentValue', label: 'Estimated value today', format: 'currency' },
+        { id: 'purchasePrice', label: 'Original price', format: 'currency' },
+        { id: 'totalDepreciation', label: 'Total depreciation', format: 'currency' },
+        { id: 'totalDepreciationPercent', label: 'Percent of value lost', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Vehicle', inputs: ['purchasePrice', 'years'] },
+        { title: 'Depreciation rates', inputs: ['year1Rate', 'afterYear1Rate'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'purchasePrice', label: 'Original price' },
+          { from: 'currentValue', label: 'Estimated value today' }
+        ],
+        title: 'Price vs. estimated value'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'How fast do cars lose value?',
+        paragraphs: [
+          'A new car loses value the moment it is driven off the lot, and keeps losing it every year after, just more slowly. The most widely cited rule of thumb, reported by Experian and Progressive among others, is that a new car loses about 20% of its value in the first year and then roughly 15% of whatever it is still worth in each year after that, through about year five.',
+          'Because that second rate applies to a shrinking balance each year, not to the original price, the dollar loss gets smaller even while the vehicle keeps getting a little cheaper every year: a car that drops 20% in year one and 15% a year after loses about 58% of its original value by year five under this model, and keeps approaching, but never quite reaching, zero.',
+          'This is only a rule of thumb, not your specific car\'s curve. Actual five-year depreciation varies a lot by vehicle type: an iSeeCars.com analysis of over 950,000 used vehicles found 2026 five-year depreciation averaging 41.8% overall, from about 34.2% for trucks to 57.2% for electric vehicles. Use this calculator for a quick estimate, not a substitute for an appraisal or a trade-in quote on your specific vehicle.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the price when new and how many years old the car is (or how long you have owned it).',
+        steps: [
+          { name: 'Enter the original price', text: 'Use the price when new, or what you paid for it, including any taxes and fees you consider part of the cost.' },
+          { name: 'Enter the age in years', text: 'Decimals are fine, for example 2.5 for two and a half years.' },
+          { name: 'Check the depreciation rates', text: 'The defaults, 20% in year one and 15% a year after, are the commonly cited rule of thumb. Adjust them if you have a better estimate for your make and model.' },
+          { name: 'Read the result', text: 'The headline is the estimated value today, with the total dollar and percent depreciation below it, and a chart comparing the original price with today\'s estimate.' },
+          { name: 'Check the schedule', text: 'The reference table below shows the same rates applied year by year, so you can see the shape of the curve, not just one point on it.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Year one applies its own rate to the original price; every year after compounds the second rate onto whatever is left.',
+        expression: 'Year 1: V = P × (1 − r₁)\nYear t > 1: V = P × (1 − r₁) × (1 − r₂)^(t − 1)',
+        terms: [
+          { symbol: 'P', meaning: 'Original price (or price when new).' },
+          { symbol: 'r₁', meaning: 'First-year depreciation rate, as a percent (default 20%).' },
+          { symbol: 'r₂', meaning: 'Depreciation rate for every year after the first, as a percent (default 15%).' },
+          { symbol: 'V', meaning: 'Estimated value at age t years.' }
+        ],
+        note: 'An estimate built on a commonly cited rule of thumb, not an appraisal. Mileage, condition, accident history, local demand and the specific model all move the real number, sometimes by a lot.'
+      },
+      workedExample: {
+        intro: 'You bought a car for $35,000. Using the 20% year-1 / 15%-a-year rule of thumb, what is it worth after 3 years?',
+        rows: [
+          { label: 'Value after year 1 (35,000 × (1 − 20%))', value: '$28,000.00' },
+          { label: 'Value after year 2 (28,000 × (1 − 15%))', value: '$23,800.00' },
+          { label: 'Value after year 3 (23,800 × (1 − 15%))', value: '$20,230.00' },
+          { label: 'Total depreciation (35,000 − 20,230)', value: '$14,770.00' },
+          { label: 'Percent of original value lost (14,770 ÷ 35,000)', value: '42.2%' }
+        ],
+        result: 'About $20,230.00 after 3 years — roughly 42.2% of the original price gone.',
+        explanation: 'The first year alone accounts for $7,000.00 of that loss (20% of $35,000). Each year after applies 15% to whatever the car was worth at the start of that year, not to the original price, so the dollar loss shrinks a little every year even as the percent lost keeps climbing.'
+      },
+      watchOut: [
+        { title: 'A rule of thumb, not your car\'s real curve', body: 'Sources disagree on the exact number: Experian cites Carfax data putting five-year depreciation around 60%, while iSeeCars\' 2026 study of actual used-car sales found an average of 41.8%, ranging from 34.2% for trucks to 57.2% for EVs. This calculator\'s default rates land near the higher end of that range; treat the result as a starting estimate, not a precise figure.' },
+        { title: 'Mileage and condition matter more than age alone', body: 'A low-mileage, well-maintained car typically holds value better than this age-only model assumes, and a high-mileage or damaged one holds it worse.' },
+        { title: 'This is not tax depreciation', body: 'Businesses depreciate vehicles for tax purposes using IRS schedules (such as MACRS), which follow fixed accounting rules and have nothing to do with what the vehicle would actually sell for. Do not use this calculator for a tax return.' },
+        { title: 'The curve does not have a floor', body: 'Compounding a percentage loss forever approaches zero but never reaches it, and real cars eventually level off near a scrap or parts value instead. Treat results past about 10-12 years with extra caution.' }
+      ],
+      references: [
+        { label: 'Experian, What Is Depreciation on a Car?', url: 'https://www.experian.com/blogs/ask-experian/what-is-depreciation-on-a-car/' },
+        { label: 'iSeeCars.com, The Top 25 Cars That Hold Their Value Best — and the 25 Worst (2026 study)', url: 'https://www.iseecars.com/cars-that-hold-their-value-study' }
+      ],
+      referenceTable: {
+        title: 'Estimated value retained by year (default 20% year-1, 15%-a-year rates)',
+        columns: ['Year', 'Value retained', 'Cumulative depreciation'],
+        rows: depreciationScheduleRows(),
+        decimals: 2,
+        note: 'Computed from the default 20%/15% rates on a $100 basis, not from your own inputs above — change the rates in the calculator to see your own schedule.'
+      }
+    },
+    inputs: [
+      { id: 'purchasePrice', label: 'Price when new', type: 'currency', placeholder: '35000', defaultValue: 35000, step: 500, min: 0 },
+      { id: 'years', label: 'Age (years)', type: 'number', placeholder: '3', defaultValue: 3, step: 0.5, min: 0 },
+      { id: 'year1Rate', label: 'First-year depreciation rate', type: 'percent', placeholder: '20', defaultValue: 20, step: 1, min: 0 },
+      { id: 'afterYear1Rate', label: 'Rate per year after year 1', type: 'percent', placeholder: '15', defaultValue: 15, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Car Depreciation Calculator – Estimated Value by Year',
+      description: 'Free car depreciation calculator: estimate what your car is worth today from its price, age and a cited year-1 and per-year depreciation rate.',
+      faq: [
+        { question: 'How much does a car depreciate in the first year?', answer: 'The commonly cited rule of thumb, reported by Experian and Progressive, is about 20%. On a $35,000 car that is about $7,000.00 in the first year alone.' },
+        { question: 'How is car depreciation calculated by year?', answer: 'Year 1 applies the first-year rate to the price; every later year applies the after-year-1 rate to whatever is left. At 20%/15% on $35,000, the car is worth $28,000.00 after year 1, $23,800.00 after year 2 and $20,230.00 after year 3.' },
+        { question: 'How much does a car depreciate over 5 years?', answer: 'At the default 20%/15% rates, a car retains about 41.76% of its value after 5 years, a loss of about 58.24%. Real-world studies vary: iSeeCars found a 41.8% average loss in 2026, while Experian cites Carfax data around 60%.' },
+        { question: 'Is the depreciation rate the same for every car?', answer: 'No. iSeeCars\' 2026 study found 5-year depreciation averaging 34.2% for trucks, 44.9% for SUVs and 57.2% for electric vehicles, against an overall average of 41.8%. Adjust the rates here if you have a better estimate for your vehicle type.' },
+        { question: 'Is this the same as tax depreciation?', answer: 'No. This estimates resale value. Tax depreciation for a business vehicle follows IRS accounting rules (such as MACRS) and does not reflect what the car would actually sell for.' },
+        { question: 'Does low mileage slow depreciation?', answer: 'Generally yes, along with good condition and service history, but this calculator only models age, so it will overstate the loss on an unusually low-mileage, well-kept car and understate it on a high-mileage one.' }
+      ]
+    },
+    compute(values) {
+      const currentValue = Math.max(0, carValueAtYears(values.purchasePrice, values.year1Rate, values.afterYear1Rate, values.years));
+      const totalDepreciation = values.purchasePrice - currentValue;
+      const totalDepreciationPercent = values.purchasePrice > 0 ? (totalDepreciation / values.purchasePrice) * 100 : NaN;
+      return { currentValue, purchasePrice: values.purchasePrice, totalDepreciation, totalDepreciationPercent };
+    }
+  },
+  {
+    id: 'lease-vs-buy-calculator',
+    group: 'Financing',
+    category: 'auto',
+    glyph: 'L',
+    updatedAt: '2026-11-16',
+    aliases: ['lease vs finance calculator', 'car lease vs buy calculator', 'should i lease or buy a car calculator', 'lease payment calculator', 'money factor calculator'],
+    related: ['car-payment-calculator', 'loan-calculator', 'car-depreciation-calculator'],
+    title: 'Lease vs. Buy Calculator',
+    description: 'Compare the total cost of leasing and financing the same car over the lease term, using the real money-factor and residual-value lease math, not a rule of thumb.',
+    example: 'Leasing a $35,000 car for 36 months costs about $18,101.25 in total, versus about $18,933.80 to finance and then keep it — leasing comes out about $832.55 cheaper over that span.',
+    breakdown: {
+      headline: 'totalBuyCost',
+      headlineLabel: 'Total cost of buying, over the lease term',
+      outputs: [
+        { id: 'totalBuyCost', label: 'Total cost of buying', format: 'currency' },
+        { id: 'totalLeaseCost', label: 'Total cost of leasing', format: 'currency' },
+        { id: 'leaseAdvantage', label: 'Leasing saves this much (negative = buying saves)', format: 'currency' },
+        { id: 'monthlyLoanPayment', label: 'Monthly loan payment', format: 'currency' },
+        { id: 'monthlyLeasePayment', label: 'Monthly lease payment', format: 'currency' },
+        { id: 'equivalentApr', label: 'Lease money factor as an APR', format: 'percent' },
+        { id: 'remainingBalance', label: 'Loan balance left at lease-end', format: 'currency' },
+        { id: 'equity', label: 'Equity if you bought (resale value − loan balance)', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Vehicle', inputs: ['vehiclePrice'] },
+        { title: 'Financing, if you buy', inputs: ['buyDownPayment', 'buyApr', 'buyTermYears'] },
+        { title: 'Leasing', inputs: ['leaseCapReduction', 'residualPercent', 'moneyFactor', 'leaseTermMonths'] },
+        { title: 'Assumptions', inputs: ['estimatedResaleValue'], optional: true }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'totalBuyCost', label: 'Buying' },
+          { from: 'totalLeaseCost', label: 'Leasing' }
+        ],
+        title: 'Total cost over the lease term'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'Comparing a lease with a loan, on the same terms',
+        paragraphs: [
+          'Leasing and financing price the same car very differently. A lease payment only charges you for the car\'s expected depreciation over the lease, plus a finance charge, because you hand the car back at the end. A loan payment repays the entire price (minus your down payment) with interest, because you keep the car. Comparing the monthly payments alone is misleading: the lease driver has nothing at the end, while the buyer owns a car that is still worth something.',
+          'This calculator prices both honestly over the same span, the length of the lease. For leasing, it uses the real formula lenders use: the depreciation fee (the car\'s agreed value minus its residual value, spread over the term) plus a rent charge (a money factor times the sum of the adjusted capitalized cost and the residual value) — the same terms the Federal Reserve\'s consumer leasing guide defines. For buying, it uses the standard loan payment, then credits the buyer with their equity at the end of the comparison period: the car\'s estimated resale value minus whatever loan balance is still outstanding.',
+          'A lease\'s money factor is usually quoted as a small decimal, like 0.00125, instead of an annual rate. Multiplying it by 2,400 converts it to the roughly equivalent APR, which is easier to compare against a loan\'s quoted rate — a shortcut cited by lenders including Capital One. It is only a rough equivalent: leases are governed by the Consumer Leasing Act and Regulation M, which require the total rent charge to be disclosed but not an APR.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the vehicle price once, then the buy and lease terms you are comparing.',
+        steps: [
+          { name: 'Enter the vehicle price', text: 'Use the same negotiated price for both the loan and the lease, so the comparison is on the same car.' },
+          { name: 'Fill in the buy side', text: 'Enter your down payment, APR and loan term in years from a loan quote.' },
+          { name: 'Fill in the lease side', text: 'Enter the cap cost reduction (lease down payment), the residual value as a percent of the price, the money factor and the lease term in months, all from the lease worksheet.' },
+          { name: 'Estimate the resale value', text: 'Under "Assumptions," enter what you think the car would be worth, if you bought it, after the same number of months as the lease. The car-depreciation-calculator can help with a starting estimate.' },
+          { name: 'Read the result', text: 'The headline is the total cost of buying over the lease term; below it is the total cost of leasing and the difference between them. A positive difference means leasing came out cheaper over that span.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Lease payment follows the Federal Reserve\'s consumer leasing formula. Loan payment is the standard annuity formula, and the buyer is credited with equity at lease-end.',
+        expression: 'Adjusted cap cost = Price − Cap reduction\nResidual value = Price × residual %\nDepreciation fee = (Adjusted cap cost − Residual value) ÷ term\nRent charge = Money factor × (Adjusted cap cost + Residual value)\nLease payment = Depreciation fee + Rent charge\nTotal lease cost = Cap reduction + Lease payment × term\n\nLoan payment = standard amortized payment on (Price − Down payment)\nEquity = max(0, Resale value − remaining loan balance at term)\nTotal buy cost = Down payment + (Loan payment × months paid) − Equity',
+        terms: [
+          { symbol: 'Residual value', meaning: 'The leasing company\'s projected value of the car at lease-end, usually a percent of its price (MSRP).' },
+          { symbol: 'Money factor', meaning: 'The lease\'s financing charge, expressed as a small decimal. × 2,400 gives the roughly equivalent APR.' },
+          { symbol: 'Cap reduction', meaning: 'A lease down payment: cash or trade-in applied to reduce the capitalized cost.' },
+          { symbol: 'Remaining loan balance', meaning: 'What is still owed on the loan at the end of the comparison period; 0 once the loan is fully paid off.' },
+          { symbol: 'Equity', meaning: 'What owning (rather than leasing) would be worth to you at that point: the car\'s resale value minus what you still owe on it.' }
+        ],
+        note: 'Estimates only. Taxes, registration, lease-end fees, excess-mileage charges and maintenance are not included, and the loan assumes simple interest with no early payoff.'
+      },
+      workedExample: {
+        intro: 'A $35,000 car. Leasing: $2,000 cap reduction, a 55% residual, a 0.00125 money factor, 36 months. Buying: $3,500 down, 6% APR, a 5-year (60-month) loan. You estimate the car would be worth $20,230.00 after 3 years if you bought it.',
+        rows: [
+          { label: 'Adjusted cap cost (35,000 − 2,000)', value: '$33,000.00' },
+          { label: 'Residual value (35,000 × 55%)', value: '$19,250.00' },
+          { label: 'Depreciation fee ((33,000 − 19,250) ÷ 36)', value: '$381.94' },
+          { label: 'Rent charge (0.00125 × (33,000 + 19,250))', value: '$65.31' },
+          { label: 'Monthly lease payment (381.94 + 65.31)', value: '$447.26' },
+          { label: 'Total lease cost (2,000 + 447.26 × 36)', value: '$18,101.25' },
+          { label: 'Equivalent APR (0.00125 × 2,400)', value: '3.00%' },
+          { label: 'Monthly loan payment ($31,500 at 6% over 60 months)', value: '$608.98' },
+          { label: 'Loan balance remaining after 36 of 60 months', value: '$13,740.41' },
+          { label: 'Equity if bought (20,230.00 − 13,740.41)', value: '$6,489.59' },
+          { label: 'Total buy cost (3,500 + 608.98 × 36 − 6,489.59)', value: '$18,933.80' }
+        ],
+        result: 'Leasing costs about $18,101.25 over 36 months; buying costs about $18,933.80 net of equity — leasing is about $832.55 cheaper over that span.',
+        explanation: 'The buyer\'s 5-year loan still has 24 months left when the comparison ends, so most of their equity is the car\'s resale value minus a large remaining balance, not a paid-off asset. Compared out to the full 60-month loan term instead (with a lower resale value by then), buying can come out ahead — the result depends heavily on how long you actually keep the car.'
+      },
+      watchOut: [
+        { title: 'The resale value is your own estimate', body: 'This calculator cannot know what your specific car will be worth. A bad guess changes the answer more than almost any other input — use the car-depreciation-calculator or a real pricing guide for a better one.' },
+        { title: 'A lease has mileage and wear limits', body: 'Most leases cap annual mileage and charge a per-mile fee over it, plus "excess wear" charges at turn-in. Buying has no such limits. Neither is included here.' },
+        { title: 'Comparing over the wrong period misleads', body: 'Buying usually looks worse than leasing early in a loan (most of the payment is still interest, and little equity has built up) and better later, once the loan is paid off and you simply own the car. Run the comparison over how long you actually plan to keep the vehicle.' },
+        { title: 'Dealers can mark up the money factor', body: 'Ask for the "buy rate" money factor and compare it with the one you are quoted; some lessors add a markup similar to a dealer reserve on a loan.' },
+        { title: 'Early termination is expensive on both sides', body: 'Ending a lease early usually means paying the remaining depreciation in a lump sum; selling a financed car early means paying off the loan balance, which can exceed the car\'s value. Neither is modeled here.' }
+      ],
+      references: [
+        { label: 'Federal Reserve, A Consumer\'s Guide to Vehicle Leasing — the rent charge formula', url: 'https://www.federalreserve.gov/pubs/leasing/resource/consider/ongoing_info6.htm' },
+        { label: 'Federal Trade Commission, Financing or Leasing a Car', url: 'https://consumer.ftc.gov/articles/financing-or-leasing-car' },
+        { label: 'Capital One, What is the Lease Money Factor?', url: 'https://www.capitalone.com/cars/learn/managing-your-money-wisely/what-is-the-lease-money-factor/1700' }
+      ]
+    },
+    inputs: [
+      { id: 'vehiclePrice', label: 'Vehicle price', type: 'currency', placeholder: '35000', defaultValue: 35000, step: 500, min: 0 },
+      { id: 'buyDownPayment', label: 'Down payment (if buying)', type: 'currency', placeholder: '3500', defaultValue: 3500, step: 100, min: 0 },
+      { id: 'buyApr', label: 'Loan APR', type: 'percent', placeholder: '6', defaultValue: 6, step: 0.1, min: 0 },
+      { id: 'buyTermYears', label: 'Loan term (years)', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 1 },
+      { id: 'leaseCapReduction', label: 'Cap cost reduction (lease down payment)', type: 'currency', placeholder: '2000', defaultValue: 2000, step: 100, min: 0 },
+      { id: 'residualPercent', label: 'Residual value (% of price)', type: 'percent', placeholder: '55', defaultValue: 55, step: 1, min: 1 },
+      { id: 'moneyFactor', label: 'Money factor', type: 'number', placeholder: '0.00125', defaultValue: 0.00125, step: 0.00005, min: 0 },
+      { id: 'leaseTermMonths', label: 'Lease term (months)', type: 'number', placeholder: '36', defaultValue: 36, step: 1, min: 1 },
+      { id: 'estimatedResaleValue', label: 'Estimated resale value at lease-end, if you bought', type: 'currency', placeholder: '20230', defaultValue: 20230, step: 500, min: 0 }
+    ],
+    seo: {
+      title: 'Lease vs. Buy Calculator – Total Cost Comparison',
+      description: 'Free lease vs. buy calculator: compare the total cost of leasing and financing the same car, using the real money-factor and residual-value lease math.',
+      faq: [
+        { question: 'How is a lease payment calculated?', answer: 'Lease payment = depreciation fee + rent charge. Depreciation fee is (adjusted cap cost − residual value) ÷ term; rent charge is the money factor × (adjusted cap cost + residual value). On a $35,000 car with a $2,000 cap reduction, a 55% residual, 0.00125 money factor and 36 months, that is $381.94 + $65.31 = $447.26 a month.' },
+        { question: 'How do I convert a money factor to an APR?', answer: 'Multiply it by 2,400. A 0.00125 money factor is roughly a 3% APR. It is a rough equivalent, since leases disclose a total rent charge, not an APR.' },
+        { question: 'Is leasing or buying cheaper?', answer: 'It depends on how long you keep the car and what it would be worth. In the example here, leasing a $35,000 car for 36 months costs about $18,101.25 total, versus about $18,933.80 to finance over 5 years and own it for the same 36 months, net of the buyer\'s equity — leasing comes out about $832.55 cheaper over that specific span.' },
+        { question: 'Why does buying look worse over just 3 years of a 5-year loan?', answer: 'Because most of the loan is still unpaid. In the example, 24 of the 60 monthly payments are still owed after 3 years, so the buyer\'s equity is the car\'s resale value minus a large remaining balance, not the full value of the car.' },
+        { question: 'What is a residual value?', answer: 'The leasing company\'s projection of what the car will be worth at the end of the lease, usually set as a percent of its price (MSRP). A higher residual means a lower depreciation fee and a lower lease payment.' },
+        { question: 'Does this include taxes, fees or mileage charges?', answer: 'No. Sales tax, registration, acquisition and disposition fees, and any excess-mileage or excess-wear charges at lease-end are not included. Add them separately for a full comparison.' }
+      ]
+    },
+    compute(values) {
+      const adjustedCapCost = values.vehiclePrice - values.leaseCapReduction;
+      const residualValue = values.vehiclePrice * (values.residualPercent / 100);
+      const depreciationFee = values.leaseTermMonths > 0 ? (adjustedCapCost - residualValue) / values.leaseTermMonths : NaN;
+      const rentCharge = values.moneyFactor * (adjustedCapCost + residualValue);
+      const monthlyLeasePayment = depreciationFee + rentCharge;
+      const totalLeaseCost = values.leaseCapReduction + monthlyLeasePayment * values.leaseTermMonths;
+      const equivalentApr = values.moneyFactor * 2400;
+
+      const principal = Math.max(0, values.vehiclePrice - values.buyDownPayment);
+      const months = Math.max(1, values.buyTermYears * 12);
+      const r = values.buyApr / 100 / 12;
+      const monthlyLoanPayment = r === 0 ? principal / months : (principal * r) / (1 - Math.pow(1 + r, -months));
+      const comparisonMonths = values.leaseTermMonths;
+      const paidMonths = Math.min(comparisonMonths, months);
+      const totalBuyPaid = monthlyLoanPayment * paidMonths;
+      const remainingBalance =
+        comparisonMonths >= months
+          ? 0
+          : r === 0
+            ? Math.max(0, principal - monthlyLoanPayment * comparisonMonths)
+            : principal * Math.pow(1 + r, comparisonMonths) - (monthlyLoanPayment * (Math.pow(1 + r, comparisonMonths) - 1)) / r;
+      const equity = Math.max(0, values.estimatedResaleValue - remainingBalance);
+      const totalBuyCost = values.buyDownPayment + totalBuyPaid - equity;
+      const leaseAdvantage = totalBuyCost - totalLeaseCost;
+
+      return { totalBuyCost, totalLeaseCost, leaseAdvantage, monthlyLoanPayment, monthlyLeasePayment, equivalentApr, remainingBalance, equity };
     }
   }
 ];

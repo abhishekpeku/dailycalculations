@@ -197,7 +197,12 @@ prior wave's convention.
   - [x] `roth-ira-growth-calculator`
   - [x] `traditional-ira-calculator`
   - [x] `rmd-calculator`
-- [ ] Batch 4 (retirement pt.2 + goal investing, 5)
+- [ ] Batch 4 (retirement pt.2 + goal investing, 5) — branch `step/60-wave-5a-finance-run-4`, in progress 2026-11-16
+  - [ ] `pension-calculator`
+  - [ ] `social-security-calculator`
+  - [ ] `annuity-calculator`
+  - [ ] `annuity-payout-calculator`
+  - [ ] `goal-based-investment-calculator`
 - [ ] Batch 5 (investment analysis + simple-interest cluster, 5)
 - [ ] Batch 6 (remaining money-hub items, 5-6)
 - [ ] Batch 7 (income-tax-calculator, 1)

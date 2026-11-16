@@ -11,8 +11,14 @@ const STANDARD_GRAVITY = 9.80665;
 const SPEED_OF_LIGHT = 299792458;
 // Newtonian constant of gravitation, CODATA 2022 recommended value (physics.nist.gov/cgi-bin/cuu/Value?bg):
 // 6.674 30(15) x 10^-11 m3 kg^-1 s^-2 — unlike the speed of light, this is measured, not exact.
-// Used by escape-velocity-calculator's v = sqrt(2GM/r).
+// Used by escape-velocity-calculator's v = sqrt(2GM/r) and orbital-velocity-calculator's v = sqrt(GM/r).
 const GRAVITATIONAL_CONSTANT = 6.6743e-11;
+// Vacuum electric permittivity, CODATA 2022 recommended value (physics.nist.gov/cgi-bin/cuu/Value?ep0):
+// 8.854 187 8188(14) x 10^-12 F/m — measured since the 2019 SI redefinition, not exact. Coulomb's
+// constant is derived from it (k = 1/(4*pi*epsilon0)) rather than typed as its own rounded figure,
+// for electric-field-calculator's E = kq/r^2.
+const VACUUM_PERMITTIVITY = 8.8541878188e-12;
+const COULOMB_CONSTANT = 1 / (4 * Math.PI * VACUUM_PERMITTIVITY);
 
 export const physicsCalculators: CalculatorConfig[] = [
   {
@@ -3757,7 +3763,7 @@ export const physicsCalculators: CalculatorConfig[] = [
     glyph: 'vₑ',
     updatedAt: '2026-11-16',
     aliases: ['planetary escape velocity calculator', 'escape speed calculator', 'orbital escape velocity calculator', 'rocket escape velocity calculator', 'how fast to escape gravity calculator'],
-    related: ['weight-calculator', 'kinetic-energy-calculator', 'speed-distance-time-calculator'],
+    related: ['orbital-velocity-calculator', 'weight-calculator', 'kinetic-energy-calculator'],
     title: 'Escape Velocity Calculator',
     description: 'Solve v = √(2GM ÷ r) for the escape velocity, mass, or radius of a planet, moon, or star — the minimum speed needed to break free of its gravity for good.',
     example: "Earth's escape velocity, with a mass of 5.9722 × 10²⁴ kg and a radius of 6,371 km, works out to about 11.19 km/s — roughly 40,270 km/h or 25,023 mph.",
@@ -5005,6 +5011,608 @@ export const physicsCalculators: CalculatorConfig[] = [
     },
     compute(values) {
       return { angularVelocity: values.angle / values.time };
+    }
+  },
+  {
+    id: 'simple-harmonic-motion-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'Tₛ',
+    updatedAt: '2026-11-16',
+    aliases: ['mass spring system period calculator', 'spring oscillation period calculator', 'shm period calculator', 't = 2 pi sqrt(m/k) calculator', 'oscillation frequency calculator'],
+    related: ['spring-hookes-law-calculator', 'pendulum-period-calculator', 'angular-velocity-calculator'],
+    title: 'Simple Harmonic Motion Calculator (Mass-Spring Period)',
+    description: 'Find the period of a mass-spring oscillator — T = 2π√(m ÷ k) — from mass and spring constant, or solve backward for either one, plus the oscillation frequency.',
+    example: 'A 2 kg mass on a 32 N/m spring completes one full oscillation every 1.57 seconds — a frequency of about 0.637 Hz.',
+    solver: {
+      defaultTarget: 'period',
+      variables: [
+        { id: 'period', label: 'Period', symbol: 'T', dimension: 'time', defaultValue: 1.5708, defaultUnit: 's' },
+        { id: 'mass', label: 'Mass', symbol: 'm', dimension: 'mass', defaultValue: 2, defaultUnit: 'kg' },
+        { id: 'springConstant', label: 'Spring constant', symbol: 'k', dimension: 'springConstant', defaultValue: 32, defaultUnit: 'N/m' }
+      ],
+      solve: {
+        period: ({ mass, springConstant }) => (springConstant <= 0 || mass < 0 ? NaN : 2 * Math.PI * Math.sqrt(mass / springConstant)),
+        mass: ({ period, springConstant }) => springConstant * (period / (2 * Math.PI)) ** 2,
+        springConstant: ({ period, mass }) => (period === 0 ? NaN : mass * ((2 * Math.PI) / period) ** 2)
+      },
+      outputs: [{ id: 'frequency', label: 'Oscillation frequency (f = 1 ÷ T)', dimension: 'frequency', compute: (si) => (si.period === 0 ? NaN : 1 / si.period) }]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is simple harmonic motion?',
+        paragraphs: [
+          'A mass attached to a spring, pulled aside and released, oscillates back and forth in a pattern called simple harmonic motion: the restoring force at any moment is proportional to how far the mass has moved from equilibrium, the same proportionality Hooke\'s law describes (F = −kx). That one condition is enough to guarantee the motion repeats at a perfectly steady rate, the period T, regardless of how far the mass was pulled aside to start.',
+          'Combining Hooke\'s law with Newton\'s second law gives the mass-spring system\'s angular frequency, ω = √(k ÷ m), and from there its period, T = 2π ÷ ω = 2π√(m ÷ k). A stiffer spring (higher k) oscillates faster, shortening the period; a heavier mass (higher m) oscillates more slowly, lengthening it — the mirror image of how a stiffer spring exerts more force for the same stretch.',
+          "This is a different formula from a pendulum's period, even though both have the same 2π√(... ÷ ...) shape: a pendulum's period depends on its length and local gravity, with no mass term at all, while a mass-spring system's period depends on mass and stiffness, with no length or gravity term. The two calculators answer genuinely different questions, despite looking alike."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of the period, the mass, and the spring constant; the third fills in automatically, alongside the oscillation frequency.',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 1.57 s becomes about 0.0262 min instead of silently turning into 1.57 min.' },
+          { name: 'Read the result', text: 'The period appears in your chosen unit, alongside the oscillation frequency underneath.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The period formula rearranges to solve for mass or the spring constant as well as period.',
+        expression: 'T = 2π√(m ÷ k)\nm = k × (T ÷ 2π)²\nk = m × (2π ÷ T)²',
+        terms: [
+          { symbol: 'T', meaning: 'Period, in seconds (s) — the time for one complete back-and-forth oscillation.' },
+          { symbol: 'm', meaning: 'Mass attached to the spring, in kilograms (kg).' },
+          { symbol: 'k', meaning: 'Spring constant, in newtons per meter (N/m) — how stiff the spring is.' }
+        ],
+        note: 'This is the ideal, undamped, frictionless case — a massless spring with no air resistance or internal friction. It also assumes Hooke\'s law holds (the spring is not stretched past its elastic limit), which is why the period comes out independent of how far the mass is pulled aside to start.'
+      },
+      workedExample: {
+        intro: 'A 2.00 kg mass hangs on a spring with a spring constant of 32.00 N/m. What is its period of oscillation?',
+        rows: [
+          { label: 'Mass (m)', value: '2.00 kg' },
+          { label: 'Spring constant (k)', value: '32.00 N/m' },
+          { label: 'Angular frequency (ω = √(k ÷ m) = √16)', value: '4.00 rad/s' },
+          { label: 'Period (T = 2π ÷ 4.00)', value: '≈ 1.57 s' }
+        ],
+        result: 'T ≈ 1.57 s · f ≈ 0.637 Hz',
+        explanation: '√(32.00 ÷ 2.00) = √16 = 4.00 rad/s, and 2π ÷ 4.00 ≈ 1.5708 s — OpenStax\'s own worked example for this exact pair of numbers. The frequency, the number of complete oscillations per second, is just the reciprocal: 1 ÷ 1.5708 ≈ 0.637 Hz. Swapping in a lighter 0.50 kg mass on a softer 20 N/m spring instead gives a period of about 0.993 s — slower stiffness and lighter mass pull the period in opposite directions, and here they roughly cancel.'
+      },
+      watchOut: [
+        {
+          title: 'This is the ideal, undamped case',
+          body: 'Real oscillators lose energy to internal friction and air resistance, so the amplitude shrinks over time (damping) even though this formula\'s period stays constant for as long as the oscillation continues within the spring\'s elastic limit.'
+        },
+        {
+          title: 'The period does not depend on amplitude',
+          body: 'Pulling the mass aside twice as far does not change the period at all, as long as Hooke\'s law still holds at that larger stretch — a hallmark of true simple harmonic motion. Stretching far enough to leave the spring\'s elastic range breaks this independence.'
+        },
+        {
+          title: "Not the same formula as a pendulum's period",
+          body: "Both share the 2π√(... ÷ ...) shape, but a pendulum's period (see the pendulum period calculator) depends on length and gravity with no mass term, while this one depends on mass and spring stiffness with no length or gravity term. Mixing the two up gives a nonsensical answer."
+        },
+        {
+          title: 'Hanging vertically does not change the period',
+          body: "A mass hanging from a vertical spring still oscillates with T = 2π√(m ÷ k) exactly — gravity only shifts where the new equilibrium (resting) point sits, stretching the spring a bit further at rest, without changing how fast it oscillates around that point."
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §15.1 Simple Harmonic Motion', url: 'https://openstax.org/books/university-physics-volume-1/pages/15-1-simple-harmonic-motion' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'mass', label: 'Mass (kg)', type: 'number', placeholder: '2', defaultValue: 2, step: 0.01, min: 0 },
+      { id: 'springConstant', label: 'Spring constant (N/m)', type: 'number', placeholder: '32', defaultValue: 32, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Simple Harmonic Motion Calculator – Mass-Spring Period',
+      description: 'Free SHM calculator. Solve T = 2π√(m/k) for the period of a mass-spring oscillator, plus frequency, with a worked example from OpenStax.',
+      faq: [
+        { question: 'What is the formula for the period of a mass-spring system?', answer: 'T = 2π√(m ÷ k), where m is the oscillating mass and k is the spring constant. A 2.00 kg mass on a 32.00 N/m spring has T = 2π√(2 ÷ 32) ≈ 1.57 s.' },
+        { question: 'How do I find the oscillation frequency instead of the period?', answer: 'Frequency is the reciprocal of period, f = 1 ÷ T. A 1.57 s period gives a frequency of about 0.637 Hz (oscillations per second).' },
+        { question: 'Does a heavier mass oscillate faster or slower?', answer: 'Slower — period is proportional to the square root of mass, so a heavier mass on the same spring takes longer to complete each oscillation.' },
+        { question: 'Does a stiffer spring oscillate faster or slower?', answer: 'Faster — period is inversely proportional to the square root of the spring constant, so a stiffer spring (higher k) completes each oscillation more quickly than a softer one with the same mass.' },
+        { question: 'Is this the same formula as a pendulum\'s period?', answer: 'No. Both have the same 2π√(...) shape, but a pendulum\'s period depends on length and gravity, not mass, while a mass-spring system\'s period depends on mass and spring stiffness, not length or gravity. See the pendulum period calculator for that formula.' },
+        { question: 'Does the size of the swing (amplitude) change the period?', answer: 'No, as long as the spring stays within its elastic limit (Hooke\'s law still holds). This is what makes the motion "simple harmonic" — unlike a swinging pendulum at large angles, the period here is exactly independent of amplitude.' }
+      ]
+    },
+    compute(values) {
+      return { period: values.springConstant <= 0 ? NaN : 2 * Math.PI * Math.sqrt(values.mass / values.springConstant) };
+    }
+  },
+  {
+    id: 'orbital-velocity-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'vₒ',
+    updatedAt: '2026-11-16',
+    aliases: ['circular orbital velocity calculator', 'satellite orbital speed calculator', 'v = sqrt(gm/r) calculator', 'low earth orbit speed calculator', 'orbital speed calculator'],
+    related: ['escape-velocity-calculator', 'gravitational-force-calculator', 'centripetal-force-calculator'],
+    title: 'Orbital Velocity Calculator (v = √(GM/r))',
+    description: 'Solve v = √(GM ÷ r) for the speed needed to hold a stable circular orbit around a planet, moon, or star — or solve backward for mass or orbital radius.',
+    example: 'The ISS, orbiting about 400 km above Earth, needs an orbital velocity of roughly 7.67 km/s to stay in a stable circular orbit.',
+    solver: {
+      defaultTarget: 'orbitalVelocity',
+      variables: [
+        { id: 'orbitalVelocity', label: 'Orbital velocity', symbol: 'v', dimension: 'speed', defaultValue: 7.6726, defaultUnit: 'km/s' },
+        { id: 'mass', label: 'Mass of the body', symbol: 'M', dimension: 'mass', defaultValue: 5.9722e24, defaultUnit: 'kg' },
+        { id: 'radius', label: 'Orbital radius', symbol: 'r', dimension: 'length', defaultValue: 6771, defaultUnit: 'km' }
+      ],
+      solve: {
+        orbitalVelocity: ({ mass, radius }) => (radius <= 0 ? NaN : Math.sqrt((GRAVITATIONAL_CONSTANT * mass) / radius)),
+        mass: ({ orbitalVelocity, radius }) => (orbitalVelocity * orbitalVelocity * radius) / GRAVITATIONAL_CONSTANT,
+        radius: ({ orbitalVelocity, mass }) => (orbitalVelocity === 0 ? NaN : (GRAVITATIONAL_CONSTANT * mass) / (orbitalVelocity * orbitalVelocity))
+      },
+      outputs: [
+        {
+          id: 'orbitalPeriod',
+          label: 'Orbital period (T = 2πr ÷ v)',
+          dimension: 'time',
+          unit: 'min',
+          compute: (si) => (si.orbitalVelocity === 0 ? NaN : (2 * Math.PI * si.radius) / si.orbitalVelocity)
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is orbital velocity?',
+        paragraphs: [
+          "Orbital velocity is the speed an object needs, moving horizontally, to stay in a stable circular orbit around a larger body — fast enough that it keeps falling around the body instead of falling into it, but not so fast that it flies off into space. It comes from setting the gravitational force pulling the object inward equal to the centripetal force a circular path requires: GMm ÷ r² = mv² ÷ r, which rearranges to v = √(GM ÷ r) once the orbiting object's own mass m cancels from both sides.",
+          "Like escape velocity, orbital velocity depends only on the body being orbited (its mass M) and the orbital radius r, not on the mass of whatever is orbiting — a tiny cubesat and a fully loaded space station need the identical speed at the same altitude. A smaller radius (closer orbit) needs a higher speed; a larger radius (farther orbit) needs a lower one.",
+          "This calculator is the companion to the escape velocity calculator, and the two speeds are related by an exact factor: escape velocity is always √2 (about 1.41) times the orbital velocity at the same radius, because escaping for good takes exactly twice the kinetic energy that a stable circular orbit does at that distance."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of orbital velocity, mass, and orbital radius; the third fills in automatically, alongside the orbital period.',
+        steps: [
+          { name: 'Enter the mass and radius', text: "Type the body's mass and the orbital radius — measured from the body's center, not its surface — picking sensible units (kilograms for mass, kilometers for radius)." },
+          { name: 'Read the orbital velocity', text: 'The remaining field, marked auto, calculates as you type, alongside the orbital period underneath.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input instead — for example, to find what radius gives a target orbital speed.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 7.67 km/s becomes about 27,616 km/h instead of silently turning into 7.67 km/h.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The orbital velocity formula rearranges three ways, one for each quantity you might be solving for.',
+        expression: 'v = √(GM ÷ r)\nM = v² × r ÷ G\nr = GM ÷ v²',
+        terms: [
+          { symbol: 'v', meaning: 'Orbital velocity, in meters per second (commonly shown in km/s for planetary bodies).' },
+          { symbol: 'G', meaning: 'The Newtonian gravitational constant, 6.6743 × 10⁻¹¹ m³ kg⁻¹ s⁻² (CODATA 2022) — the same measured constant escape-velocity-calculator uses.' },
+          { symbol: 'M', meaning: 'The mass of the body being orbited (a planet, moon, or star), in kilograms.' },
+          { symbol: 'r', meaning: "The orbital radius — distance from the body's center to the orbiting object, not the altitude above its surface." }
+        ],
+        note: 'This formula assumes a circular orbit and ignores atmospheric drag and the gravity of any other nearby body. A real orbit low enough to brush the atmosphere (as the ISS technically does) decays over time; this is the idealized two-body, vacuum result.'
+      },
+      workedExample: {
+        intro: 'The International Space Station orbits about 400 km above Earth\'s surface. What orbital velocity does it need to stay there, and how long does one orbit take?',
+        rows: [
+          { label: "Mass of Earth (M)", value: '5.9722 × 10²⁴ kg' },
+          { label: "Orbital radius (r = 6,371 km surface + 400 km altitude)", value: '6,771 km = 6,771,000 m' },
+          { label: 'Orbital velocity (v = √(6.6743×10⁻¹¹ × 5.9722×10²⁴ ÷ 6,771,000))', value: '≈ 7,672.6 m/s' },
+          { label: 'Orbital period (T = 2π × 6,771,000 ÷ 7,672.6)', value: '≈ 5,545 s ≈ 92.4 min' }
+        ],
+        result: 'v ≈ 7.67 km/s · T ≈ 92.4 min',
+        explanation: "Working through the formula gives about 7,672.6 m/s, or 7.67 km/s — matching OpenStax's own worked example for the ISS (which uses slightly rounder inputs, 5.96 × 10²⁴ kg and 6.76 × 10⁶ m, and arrives at 7.67 × 10³ m/s) to within about 0.02%. The real ISS orbits every roughly 90–93 minutes, consistent with this idealized circular-orbit period of about 92.4 minutes. For comparison: a hypothetical orbit skimming Earth's surface (ignoring the atmosphere entirely) would need about 7.91 km/s, and multiplying that by √2 gives about 11.19 km/s — exactly the escape velocity this site's escape velocity calculator computes for Earth."
+      },
+      watchOut: [
+        {
+          title: 'This is for a circular orbit only',
+          body: 'Many real orbits are elliptical, where speed varies continuously between a faster point closest to the body (perigee) and a slower point farthest away (apogee). This formula gives the single, constant speed a perfectly circular orbit at radius r requires — not an elliptical orbit\'s changing speed.'
+        },
+        {
+          title: 'Independent of the orbiting object\'s own mass',
+          body: "Just like escape velocity, the formula has no term for the orbiting object's mass — a satellite and a crewed spacecraft need the identical orbital velocity at the same radius, even though the heavier one needs far more energy to get there."
+        },
+        {
+          title: 'Orbital velocity is not escape velocity',
+          body: 'Escape velocity at the same radius is always √2 (about 1.41) times larger — about 11.19 km/s versus 7.91 km/s at Earth\'s surface. Reaching a stable orbit and leaving a body\'s gravity entirely are different goals with different speed requirements.'
+        },
+        {
+          title: 'Atmospheric drag is not accounted for',
+          body: 'This is the idealized vacuum, two-body formula. A real orbit low enough to still graze a planet\'s atmosphere loses energy to drag over time and gradually decays — part of why the ISS needs periodic reboosts to stay at its planned altitude.'
+        },
+        {
+          title: 'G is measured, not exact',
+          body: 'The gravitational constant carries a small measurement uncertainty (CODATA 2022: about 22 parts per million) — the same caveat that applies to every calculator on this site using G, including escape-velocity-calculator and gravitational-force-calculator.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §13.4 Satellite Orbits and Energy', url: 'https://openstax.org/books/university-physics-volume-1/pages/13-4-satellite-orbits-and-energy' },
+        { label: 'NIST, Newtonian constant of gravitation G (CODATA 2022)', url: 'https://physics.nist.gov/cgi-bin/cuu/Value?bg' },
+        { label: 'NASA Goddard Space Flight Center, Planetary Fact Sheets', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/' }
+      ]
+    },
+    inputs: [
+      { id: 'mass', label: 'Mass of the body (kg)', type: 'number', placeholder: '5.9722e24', defaultValue: 5.9722e24, step: 1e20, min: 0 },
+      { id: 'radius', label: 'Orbital radius (m)', type: 'number', placeholder: '6771000', defaultValue: 6771000, step: 1000, min: 0 }
+    ],
+    seo: {
+      title: 'Orbital Velocity Calculator – v = √(GM/r)',
+      description: 'Free orbital velocity calculator. Solve v = √(GM/r) for circular orbital speed, mass, or radius, with an ISS worked example and orbital period.',
+      faq: [
+        { question: 'What is the formula for orbital velocity?', answer: 'v = √(GM ÷ r), where G is the gravitational constant, M is the mass of the body being orbited, and r is the orbital radius measured from its center.' },
+        { question: 'What orbital velocity does the ISS need?', answer: 'About 7.67 km/s (roughly 27,600 km/h or 17,150 mph), orbiting about 400 km above Earth\'s surface — matching OpenStax\'s own published worked example to within about 0.02%.' },
+        { question: 'Does orbital velocity depend on the mass of the satellite?', answer: 'No. Like escape velocity, the formula only involves the mass and radius of the body being orbited, not the orbiting object\'s own mass — a cubesat and a space station need the identical speed at the same altitude.' },
+        { question: 'How is orbital velocity different from escape velocity?', answer: 'Escape velocity is always √2 (about 1.41) times larger than orbital velocity at the same radius — about 11.19 km/s versus 7.91 km/s at Earth\'s surface — because escaping entirely takes exactly twice the kinetic energy a stable circular orbit does.' },
+        { question: 'Why does a lower orbit need a higher speed?', answer: 'Because v = √(GM ÷ r) shrinks as r grows — gravity is weaker farther out, so a wider orbit needs less speed to balance it. A satellite skimming Earth\'s surface would need about 7.91 km/s, while the Moon, 384,400 km away, only needs about 1.02 km/s to orbit Earth.' },
+        { question: 'How do I find the orbital period from orbital velocity?', answer: 'Divide the orbit\'s circumference by its speed: T = 2πr ÷ v. The ISS, at 7.67 km/s and a 6,771 km radius, completes one orbit roughly every 92–93 minutes.' }
+      ]
+    },
+    compute(values) {
+      return { orbitalVelocity: values.radius <= 0 ? NaN : Math.sqrt((GRAVITATIONAL_CONSTANT * values.mass) / values.radius) };
+    }
+  },
+  {
+    id: 'youngs-modulus-calculator',
+    category: 'physics',
+    group: 'Fluids & Matter',
+    glyph: 'Y',
+    updatedAt: '2026-11-16',
+    aliases: ["young's modulus calculator", 'stress strain calculator', 'elastic modulus calculator', 'tensile stress calculator', 'modulus of elasticity calculator'],
+    related: ['force-calculator', 'pressure-calculator', 'spring-hookes-law-calculator'],
+    title: "Young's Modulus Calculator (Stress ÷ Strain)",
+    description: "Solve Young's modulus, Y = (F × L₀) ÷ (A × ΔL), for stiffness, force, cross-sectional area, original length, or elongation.",
+    example: 'A 2 m steel rod (0.30 cm² cross-section) stretched by a 5,393.7 N load elongates about 1.8 mm — matching steel\'s published Young\'s modulus of 2.0 × 10¹¹ Pa.',
+    solver: {
+      defaultTarget: 'modulus',
+      variables: [
+        { id: 'modulus', label: "Young's modulus", symbol: 'Y', dimension: 'pressure', defaultValue: 200, defaultUnit: 'GPa' },
+        { id: 'force', label: 'Applied force', symbol: 'F', dimension: 'force', defaultValue: 5393.66, defaultUnit: 'N' },
+        { id: 'area', label: 'Cross-sectional area', symbol: 'A', dimension: 'area', defaultValue: 0.3, defaultUnit: 'cm2' },
+        { id: 'length0', label: 'Original length', symbol: 'L₀', dimension: 'length', defaultValue: 2, defaultUnit: 'm' },
+        { id: 'deltaLength', label: 'Elongation', symbol: 'ΔL', dimension: 'length', defaultValue: 1.8, defaultUnit: 'mm' }
+      ],
+      solve: {
+        modulus: ({ force, area, length0, deltaLength }) => (area === 0 || deltaLength === 0 ? NaN : (force * length0) / (area * deltaLength)),
+        force: ({ modulus, area, length0, deltaLength }) => (length0 === 0 ? NaN : (modulus * area * deltaLength) / length0),
+        area: ({ modulus, force, length0, deltaLength }) => (modulus === 0 || deltaLength === 0 ? NaN : (force * length0) / (modulus * deltaLength)),
+        length0: ({ modulus, force, area, deltaLength }) => (force === 0 ? NaN : (modulus * area * deltaLength) / force),
+        deltaLength: ({ modulus, force, area, length0 }) => (modulus === 0 || area === 0 ? NaN : (force * length0) / (modulus * area))
+      },
+      outputs: [
+        { id: 'stress', label: 'Tensile stress (F ÷ A)', dimension: 'pressure', compute: (si) => (si.area === 0 ? NaN : si.force / si.area) },
+        { id: 'strain', label: 'Tensile strain (ΔL ÷ L₀)', dimension: 'count', compute: (si) => (si.length0 === 0 ? NaN : si.deltaLength / si.length0) }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: "What is Young's modulus?",
+        paragraphs: [
+          "Stretch or compress any solid object along its length and two things can be measured: the stress, how hard it is being pulled per unit of cross-sectional area (F ÷ A, the same unit as pressure), and the strain, how much it stretched as a fraction of its original length (ΔL ÷ L₀, a plain ratio with no units). For most materials, well within their elastic range, stress and strain are directly proportional — pull twice as hard and it stretches twice as far.",
+          "Young's modulus, Y, is that proportionality constant: Y = stress ÷ strain = (F × L₀) ÷ (A × ΔL). It is a property of the specific material, not of any particular object's size — a thick steel rod and a thin steel wire share the same Young's modulus, even though the thin wire visibly stretches more under the same force, because its smaller cross-sectional area concentrates the same force into a higher stress.",
+          "Young's modulus is one of three elastic moduli OpenStax describes for solids under different kinds of deformation — this one specifically for tensile or compressive stress along a single axis. (The other two, the bulk modulus for uniform compression and the shear modulus for sideways-sliding deformation, aren't covered by this calculator.) A higher Young's modulus means a stiffer material: steel's is roughly 2.9 times aluminum's, and about 12.5 times bone's (in tension)."
+        ]
+      },
+      howTo: {
+        intro: "Fill in any four of Young's modulus, the applied force, the cross-sectional area, the original length, and the elongation; the fifth fills in automatically, alongside the underlying stress and strain.",
+        steps: [
+          { name: 'Enter the four values you know', text: 'Type each value and pick its unit. The remaining field, marked auto, calculates as you type.' },
+          { name: 'Measure area and length consistently', text: "Use the object's cross-sectional area perpendicular to the applied force, and its original (unstretched) length — not the stretched length." },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one — useful for predicting the elongation a known material and load will produce.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 200 GPa becomes 200,000 MPa instead of silently turning into 200 MPa.' },
+          { name: 'Read stress and strain', text: "The breakdown underneath shows the stress (force ÷ area) and strain (elongation ÷ original length) your inputs imply." }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: "Young's modulus rearranges to solve for force, area, original length, or elongation as well as the modulus itself.",
+        expression: 'Y = (F × L₀) ÷ (A × ΔL)\nF = (Y × A × ΔL) ÷ L₀\nA = (F × L₀) ÷ (Y × ΔL)\nL₀ = (Y × A × ΔL) ÷ F\nΔL = (F × L₀) ÷ (Y × A)',
+        terms: [
+          { symbol: 'Y', meaning: "Young's modulus, in pascals (Pa) — commonly shown in GPa for solids. A material property, not an object property." },
+          { symbol: 'F', meaning: 'Applied tensile (stretching) or compressive force, in newtons (N), acting along the length.' },
+          { symbol: 'A', meaning: 'Cross-sectional area perpendicular to the force, in square meters (m²) or square centimeters (cm²).' },
+          { symbol: 'L₀', meaning: 'Original, unstretched length, in meters (m).' },
+          { symbol: 'ΔL', meaning: 'Change in length (elongation if stretched, a negative value if compressed), in meters or millimeters.' }
+        ],
+        note: 'This formula only holds within the material\'s elastic (Hookean) region — stretch or compress it far enough and the relationship stops being proportional, eventually reaching permanent (plastic) deformation or fracture, neither of which this linear formula models.'
+      },
+      workedExample: {
+        intro: 'A steel rod 2.0 m long with a 0.30 cm² cross-section supports a 550 kg platform hanging from it. How much does it stretch?',
+        rows: [
+          { label: 'Applied force (F = mg = 550 × 9.80665)', value: '≈ 5,393.7 N' },
+          { label: 'Cross-sectional area (A)', value: '0.30 cm² = 3.0 × 10⁻⁵ m²' },
+          { label: 'Stress (F ÷ A)', value: '≈ 1.8 × 10⁸ Pa' },
+          { label: "Steel's Young's modulus (Y, OpenStax Table 12.1)", value: '2.0 × 10¹¹ Pa' },
+          { label: 'Elongation (ΔL = F × L₀ ÷ (A × Y))', value: '≈ 1.8 mm' }
+        ],
+        result: 'ΔL ≈ 1.8 mm (0.09% strain)',
+        explanation: "The hanging platform's weight creates a stress of about 1.8 × 10⁸ Pa in the rod. Dividing that stress by steel's Young's modulus (2.0 × 10¹¹ Pa) gives a strain of about 0.0009 (0.09%), and multiplying that strain by the rod's 2.0 m length gives an elongation of about 1.8 mm — matching OpenStax's own worked example for this exact rod and load. The same force on an aluminum rod of identical dimensions (Young's modulus about 7.0 × 10¹⁰ Pa, roughly 0.35 times steel's) would stretch about 2.9 times farther, around 5.1 mm, since a lower modulus means more strain for the same stress."
+      },
+      watchOut: [
+        {
+          title: 'Only valid within the elastic limit',
+          body: "This is a straight-line (linear) relationship that holds only up to a material's elastic limit. Push stress past that point and the material deforms permanently (plastic deformation) or fractures — this formula no longer describes what happens beyond it."
+        },
+        {
+          title: "Young's modulus is a material property, not an object property",
+          body: "The same material (say, steel) has one Young's modulus regardless of the specific rod or wire's size — a thinner wire of the same steel just concentrates the same force into a higher stress, and therefore stretches more, not because its modulus changed."
+        },
+        {
+          title: 'Stress has the same units as pressure, but is a different physical idea',
+          body: 'Both are measured in pascals (force per area), which is why this calculator shares the pressure dimension\'s units with the pressure calculator — but stress describes an internal reaction inside a solid to an applied load, not a fluid pushing on a surface.'
+        },
+        {
+          title: "This is tensile/compressive stress only, not shear or bulk stress",
+          body: "OpenStax describes three elastic moduli: Young's modulus for stretching or compressing along one axis (this calculator), the shear modulus for sideways-sliding deformation, and the bulk modulus for uniform compression from all sides. The three use different formulas and are not interchangeable."
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §12.3 Stress, Strain, and Elastic Modulus', url: 'https://openstax.org/books/university-physics-volume-1/pages/12-3-stress-strain-and-elastic-modulus' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'force', label: 'Applied force (N)', type: 'number', placeholder: '5393.66', defaultValue: 5393.66, step: 1, min: 0 },
+      { id: 'area', label: 'Cross-sectional area (m²)', type: 'number', placeholder: '0.00003', defaultValue: 0.00003, step: 0.000001, min: 0 },
+      { id: 'length0', label: 'Original length (m)', type: 'number', placeholder: '2', defaultValue: 2, step: 0.01, min: 0 },
+      { id: 'deltaLength', label: 'Elongation (m)', type: 'number', placeholder: '0.0018', defaultValue: 0.0018, step: 0.0001, min: 0 }
+    ],
+    seo: {
+      title: "Young's Modulus Calculator (Stress ÷ Strain)",
+      description: "Free Young's modulus calculator. Solve Y = (F × L₀) ÷ (A × ΔL) for stiffness, force, area, length, or elongation, with a worked steel-rod example.",
+      faq: [
+        { question: "What is the formula for Young's modulus?", answer: 'Y = stress ÷ strain = (F × L₀) ÷ (A × ΔL), where F is the applied force, A is cross-sectional area, L₀ is original length, and ΔL is the change in length.' },
+        { question: "What is Young's modulus for steel?", answer: "About 2.0 × 10¹¹ Pa (200 GPa), per OpenStax's Table 12.1 of approximate elastic moduli — roughly 2.9 times aluminum's (about 7.0 × 10¹⁰ Pa) and about 12.5 times bone's in tension (about 1.6 × 10¹⁰ Pa)." },
+        { question: 'How do I calculate the elongation of a stretched rod or wire?', answer: 'Rearrange to ΔL = (F × L₀) ÷ (A × Y). A 5,393.7 N force on a 2.0 m steel rod with a 0.30 cm² cross-section stretches it about 1.8 mm.' },
+        { question: 'What is the difference between stress and strain?', answer: "Stress is force per unit area (F ÷ A), measured in pascals, the same unit as pressure. Strain is the fractional change in length (ΔL ÷ L₀), a plain dimensionless ratio with no units at all. Young's modulus is the ratio between the two." },
+        { question: "Does Young's modulus depend on the size of the object?", answer: "No — it is a property of the material itself (steel, aluminum, bone), not of a particular rod or wire's length or thickness. A thinner piece of the same material just experiences more stress for the same force, and therefore stretches more." },
+        { question: "What happens if a material is stretched past its elastic limit?", answer: "This linear stress-strain relationship breaks down. The material deforms permanently (plastic deformation) instead of springing back, and stretched far enough, it eventually fractures — neither outcome is described by Y = stress ÷ strain." }
+      ]
+    },
+    compute(values) {
+      return { modulus: values.area === 0 || values.deltaLength === 0 ? NaN : (values.force * values.length0) / (values.area * values.deltaLength) };
+    }
+  },
+  {
+    id: 'electric-field-calculator',
+    category: 'physics',
+    group: 'Electricity & Circuits',
+    glyph: 'E',
+    updatedAt: '2026-11-16',
+    aliases: ['electric field strength calculator', 'point charge field calculator', 'e = kq/r^2 calculator', 'coulomb field calculator', 'field strength calculator'],
+    related: ['ohms-law-calculator', 'capacitor-charge-calculator', 'gravitational-force-calculator'],
+    title: 'Electric Field Calculator (E = kq/r²)',
+    description: "Solve E = kq ÷ r² for the electric field strength from a point charge, or solve backward for charge or distance, using Coulomb's constant.",
+    example: 'A 1 µC point charge creates an electric field of about 8.99 × 10⁵ N/C at a distance of 10 cm.',
+    solver: {
+      defaultTarget: 'fieldStrength',
+      variables: [
+        { id: 'fieldStrength', label: 'Electric field strength', symbol: 'E', dimension: 'electricField', defaultValue: 898755, defaultUnit: 'N/C' },
+        { id: 'charge', label: 'Source charge', symbol: 'q', dimension: 'charge', defaultValue: 1, defaultUnit: 'uC' },
+        { id: 'radius', label: 'Distance from charge', symbol: 'r', dimension: 'length', defaultValue: 0.1, defaultUnit: 'm' }
+      ],
+      solve: {
+        fieldStrength: ({ charge, radius }) => (radius <= 0 ? NaN : (COULOMB_CONSTANT * charge) / (radius * radius)),
+        charge: ({ fieldStrength, radius }) => (fieldStrength * radius * radius) / COULOMB_CONSTANT,
+        radius: ({ fieldStrength, charge }) => {
+          if (fieldStrength === 0) return NaN;
+          const rSquared = (COULOMB_CONSTANT * charge) / fieldStrength;
+          return rSquared < 0 ? NaN : Math.sqrt(rSquared);
+        }
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is an electric field?',
+        paragraphs: [
+          "An electric field is the influence a charge sets up in the space around it — a property of that location, defined as the force a small positive test charge would feel there, divided by the size of that test charge: E = F ÷ q. Unlike the force itself, the field exists at a point in space whether or not anything is actually there to feel it, which is what makes it a useful way to describe charge's effect independent of any particular test charge.",
+          "For a single point charge, the field strength follows an inverse-square law: E = kq ÷ r², where k (Coulomb's constant, about 8.99 × 10⁹ N·m² ÷ C²) plays a role for electric charge much like the gravitational constant G plays for mass in the gravitational force calculator — both describe how a field weakens with the square of distance from its source.",
+          "Coulomb's constant is derived from a more fundamental quantity, the vacuum permittivity ε₀ (k = 1 ÷ (4πε₀)), a measured constant with a small uncertainty since the 2019 redefinition of the SI — the same kind of measured-not-exact status the gravitational constant has, unlike the exactly defined speed of light."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of electric field strength, the source charge, and the distance; the third fills in automatically.',
+        steps: [
+          { name: 'Enter the charge and distance', text: 'Type the source charge (often in microcoulombs, µC, for everyday static-electricity scales) and the distance from it, then pick units.' },
+          { name: 'Read the field strength', text: 'The remaining field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input instead — for example, to find how far away the field drops to a target strength.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 1 µC becomes 0.001 mC instead of silently turning into 1 mC.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The point-charge field formula rearranges three ways, one for each quantity you might be solving for.',
+        expression: 'E = k × q ÷ r²\nq = E × r² ÷ k\nr = √(k × q ÷ E)',
+        terms: [
+          { symbol: 'E', meaning: 'Electric field strength, in newtons per coulomb (N/C), equivalently volts per meter (V/m).' },
+          { symbol: 'k', meaning: "Coulomb's constant, about 8.99 × 10⁹ N·m² ÷ C² — derived from the vacuum permittivity ε₀ (CODATA 2022), a measured constant with a small uncertainty." },
+          { symbol: 'q', meaning: 'The source charge creating the field, in coulombs (C). This calculator works with its magnitude.' },
+          { symbol: 'r', meaning: 'Distance from the source charge to the point where the field is measured, in meters (m).' }
+        ],
+        note: "This gives the field from a single point charge only. A real configuration with more than one charge needs each charge's field added as a vector (superposition), which this single-charge formula does not do."
+      },
+      workedExample: {
+        intro: 'A 1 µC point charge sits isolated in space. How strong is its electric field 10 cm away?',
+        rows: [
+          { label: 'Source charge (q)', value: '1 µC = 1 × 10⁻⁶ C' },
+          { label: 'Distance (r)', value: '0.10 m' },
+          { label: "Coulomb's constant (k)", value: '≈ 8.9876 × 10⁹ N·m² ÷ C²' },
+          { label: 'Field strength (E = k × q ÷ r²)', value: '≈ 8.99 × 10⁵ N/C' }
+        ],
+        result: 'E ≈ 8.99 × 10⁵ N/C',
+        explanation: "8.9876 × 10⁹ × 1×10⁻⁶ ÷ 0.01 ≈ 898,755 N/C, or about 8.99 × 10⁵ N/C. As an independent check at a very different scale, the same formula applied to a helium nucleus (charge 2e, where e is the elementary charge) at a distance of 26.5 picometers — OpenStax's own Example 5.3 — gives about 4.1 × 10¹² N/C, matching the textbook's published figure. The field drops off fast: doubling the distance to 20 cm would cut this field to a quarter of its value, not half, because of the r² in the denominator."
+      },
+      watchOut: [
+        {
+          title: 'This is the field from a single point charge only',
+          body: 'Real charge configurations — two charges, a charged ring, a charged plate — need each source\'s field added as a vector (superposition of fields), not this one formula applied once.'
+        },
+        {
+          title: "Coulomb's constant is measured, not exact",
+          body: "k is derived from the vacuum permittivity ε₀, which carries a small measurement uncertainty since the 2019 SI redefinition — the same caveat this site's gravitational-force-calculator and escape-velocity-calculator note for G, unlike the exactly defined speed of light."
+        },
+        {
+          title: 'Direction is not modeled — only magnitude',
+          body: "A positive source charge's field points radially away from it; a negative charge's points toward it. This calculator reports the field's size, the same simplification the friction and Snell's law calculators make for their own signed or directional quantities."
+        },
+        {
+          title: 'The point-charge formula assumes exactly that — a point',
+          body: "This is accurate outside a uniformly charged sphere (treating it as a point charge at its center) but does not describe the field inside a charged conductor, near a charged plate, or along a charged line, each of which follows a different formula."
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 2, §5.4 Electric Field', url: 'https://openstax.org/books/university-physics-volume-2/pages/5-4-electric-field' },
+        { label: 'NIST, Vacuum Electric Permittivity (CODATA 2022)', url: 'https://physics.nist.gov/cgi-bin/cuu/Value?ep0' }
+      ]
+    },
+    inputs: [
+      { id: 'charge', label: 'Source charge (C)', type: 'number', placeholder: '0.000001', defaultValue: 0.000001, step: 0.0000001, min: 0 },
+      { id: 'radius', label: 'Distance from charge (m)', type: 'number', placeholder: '0.1', defaultValue: 0.1, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Electric Field Calculator (E = kq/r²)',
+      description: "Free electric field calculator for a point charge. Solve E = kq ÷ r² for field strength, charge, or distance in N/C, with a worked example.",
+      faq: [
+        { question: 'What is the formula for the electric field of a point charge?', answer: "E = kq ÷ r², where k is Coulomb's constant (about 8.99 × 10⁹ N·m²/C²), q is the source charge, and r is the distance from it. A 1 µC charge produces a field of about 8.99 × 10⁵ N/C at 10 cm." },
+        { question: 'What is the value of k, Coulomb\'s constant?', answer: 'About 8.9876 × 10⁹ N·m² ÷ C², derived from the vacuum permittivity ε₀ (CODATA 2022) as k = 1 ÷ (4πε₀) — a measured constant with a small uncertainty, not an exactly defined one.' },
+        { question: 'How is electric field different from electric force?', answer: 'Electric field (E = F ÷ q) is the force per unit charge a test charge would feel at a point in space — a property of that location. Multiply it by an actual charge\'s size to get the force that specific charge would experience there.' },
+        { question: 'Does the electric field depend on the test charge used to measure it?', answer: 'No — dividing the force by the test charge\'s own size cancels it out, leaving a field value that depends only on the source charge and distance, not on whatever charge is used to probe it.' },
+        { question: 'How quickly does electric field strength drop off with distance?', answer: 'With the square of distance (an inverse-square law). Doubling the distance from a point charge cuts the field to one-quarter of its original strength, not one-half.' },
+        { question: 'Can this calculator handle more than one source charge?', answer: "No — it computes the field from a single point charge. Multiple charges require adding each one's field as a vector (superposition), which is a separate calculation this page does not perform." }
+      ]
+    },
+    compute(values) {
+      return { fieldStrength: values.radius <= 0 ? NaN : (COULOMB_CONSTANT * values.charge) / (values.radius * values.radius) };
+    }
+  },
+  {
+    id: 'magnetic-force-calculator',
+    category: 'physics',
+    group: 'Electricity & Circuits',
+    glyph: 'Fm',
+    updatedAt: '2026-11-16',
+    aliases: ['magnetic force on a wire calculator', 'f = bil calculator', 'force on current carrying conductor calculator', 'magnetic field force calculator', 'current carrying wire force calculator'],
+    related: ['ohms-law-calculator', 'torque-calculator', 'electric-field-calculator'],
+    title: 'Magnetic Force Calculator (F = BIL sin θ)',
+    description: 'Solve F = B × I × L × sin θ for the magnetic force on a straight current-carrying wire, or solve backward for field strength, current, length, or angle.',
+    example: 'A 0.5 m wire carrying 5 A, held perpendicular to a 0.5 T magnetic field, feels a magnetic force of 1.25 N.',
+    solver: {
+      defaultTarget: 'force',
+      variables: [
+        { id: 'force', label: 'Magnetic force', symbol: 'F', dimension: 'force', defaultValue: 1.25, defaultUnit: 'N' },
+        { id: 'fluxDensity', label: 'Magnetic flux density', symbol: 'B', dimension: 'magneticFluxDensity', defaultValue: 0.5, defaultUnit: 'T' },
+        { id: 'current', label: 'Current', symbol: 'I', dimension: 'current', defaultValue: 5, defaultUnit: 'A' },
+        { id: 'length', label: 'Wire length', symbol: 'L', dimension: 'length', defaultValue: 0.5, defaultUnit: 'm' },
+        { id: 'angle', label: 'Angle between wire and field', symbol: 'θ', dimension: 'angle', defaultValue: 90, defaultUnit: 'deg' }
+      ],
+      solve: {
+        force: ({ fluxDensity, current, length, angle }) => fluxDensity * current * length * Math.sin(angle),
+        fluxDensity: ({ force, current, length, angle }) => {
+          const s = Math.sin(angle);
+          return current === 0 || length === 0 || s === 0 ? NaN : force / (current * length * s);
+        },
+        current: ({ force, fluxDensity, length, angle }) => {
+          const s = Math.sin(angle);
+          return fluxDensity === 0 || length === 0 || s === 0 ? NaN : force / (fluxDensity * length * s);
+        },
+        length: ({ force, fluxDensity, current, angle }) => {
+          const s = Math.sin(angle);
+          return fluxDensity === 0 || current === 0 || s === 0 ? NaN : force / (fluxDensity * current * s);
+        },
+        angle: ({ force, fluxDensity, current, length }) => {
+          if (fluxDensity === 0 || current === 0 || length === 0) return NaN;
+          const s = force / (fluxDensity * current * length);
+          return s < -1 || s > 1 ? NaN : Math.asin(s);
+        }
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What causes a magnetic force on a current-carrying wire?',
+        paragraphs: [
+          "A wire carrying an electric current sits full of moving charges, and a magnetic field pushes on every moving charge it touches. Add up that push across every charge moving through a straight segment of wire, and the result is a single, clean formula for the force on the wire as a whole: F = BIL sin θ, where B is the magnetic field strength, I is the current, L is the wire's length within the field, and θ is the angle between the wire's direction and the field.",
+          "The sin θ term captures the same geometric idea the torque calculator's F·r·sin θ does: only the component of the wire that runs across the field lines, not along them, experiences a sideways push. A wire running exactly parallel to the field (θ = 0° or 180°) feels no magnetic force at all, however strong the current or field; a wire running perpendicular to the field (θ = 90°) feels the maximum possible force for that current and field strength.",
+          "This formula is the operating principle behind electric motors, loudspeaker voice coils, and galvanometers — any device that converts electric current into mechanical motion using a magnetic field. This calculator gives the force's size only; its direction follows the right-hand rule, perpendicular to both the current and the field, which a single number can't capture."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any four of magnetic force, field strength, current, wire length, and angle; the fifth fills in automatically. Use 90° for a wire running straight across the field, the strongest-force case.',
+        steps: [
+          { name: 'Enter the four values you know', text: 'Type each value and pick its unit. The remaining field, marked auto, calculates as you type.' },
+          { name: 'Measure the angle correctly', text: 'θ is the angle between the direction of current flow along the wire and the magnetic field — not from the ground or any other reference. 90° (perpendicular) gives the maximum force.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 0.5 T becomes 5,000 G instead of silently turning into 0.5 G.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The magnetic force formula rearranges to solve for field strength, current, length, or angle as well as force.',
+        expression: 'F = B × I × L × sin θ\nB = F ÷ (I × L × sin θ)\nI = F ÷ (B × L × sin θ)\nL = F ÷ (B × I × sin θ)\nθ = sin⁻¹(F ÷ (B × I × L))',
+        terms: [
+          { symbol: 'F', meaning: 'Magnitude of the magnetic force on the wire, in newtons (N).' },
+          { symbol: 'B', meaning: 'Magnetic flux density (field strength), in tesla (T) or gauss (G).' },
+          { symbol: 'I', meaning: 'Current flowing through the wire, in amperes (A).' },
+          { symbol: 'L', meaning: 'Length of the wire segment within the magnetic field, in meters (m).' },
+          { symbol: 'θ', meaning: 'Angle between the current\'s direction and the magnetic field. At 90°, sin θ = 1 and the force is maximized; at 0° or 180°, sin θ = 0 and the force vanishes.' }
+        ],
+        note: "This gives the magnitude of the force only. The full vector relationship, F = IL × B, also gives the direction via the right-hand rule (point fingers along the current, curl toward the field, thumb points along the force) — perpendicular to both the wire and the field."
+      },
+      workedExample: {
+        intro: 'A straight wire 0.5 m long carries a 5 A current, held exactly perpendicular to a 0.5 T magnetic field. How much force does it feel?',
+        rows: [
+          { label: 'Magnetic flux density (B)', value: '0.5 T' },
+          { label: 'Current (I)', value: '5 A' },
+          { label: 'Wire length (L)', value: '0.5 m' },
+          { label: 'Angle (θ)', value: '90°, sin 90° = 1' },
+          { label: 'Force (F = 0.5 × 5 × 0.5 × 1)', value: '1.25 N' }
+        ],
+        result: 'F = 1.25 N',
+        explanation: "0.5 × 5 × 0.5 × 1 = 1.25 N. Tilting the same wire to 60° instead of holding it perpendicular would drop the force to 0.5 × 5 × 0.5 × sin 60° ≈ 1.0825 N — about 86.6% as much, the exact sin 60° ratio, the same geometric effect the torque calculator shows for a tilted lever arm. As an independent real-world check, OpenStax's own Example 11.4 uses this same formula to find the current (about 0.39 A) a 0.50 m, 10 g wire needs in a 0.50 T field to produce a magnetic force that exactly balances its own weight — confirming the formula at a very different, much smaller force scale."
+      },
+      watchOut: [
+        {
+          title: 'This is magnitude only — direction needs the right-hand rule',
+          body: 'The force is always perpendicular to both the current and the magnetic field. Point the fingers of a right hand along the current, curl them toward the field direction, and the thumb points along the force — something no single number can show.'
+        },
+        {
+          title: 'A wire parallel to the field feels no magnetic force',
+          body: 'At θ = 0° or 180°, sin θ = 0, so the force is zero no matter how large the current or field strength. Only the component of the wire running across the field lines, not along them, is pushed.'
+        },
+        {
+          title: 'Assumes a straight wire segment in a uniform field',
+          body: 'A curved wire, or a field that varies along the wire\'s length, needs the force worked out piece by piece (or by integration) rather than this single multiplication.'
+        },
+        {
+          title: 'Different from the force on a single moving charge',
+          body: 'This is the wire version, summing the push on every moving charge inside a current-carrying conductor. The single-charge version, F = qvB, uses an individual charge\'s own velocity rather than a wire\'s current and length — related, but not interchangeable inputs.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 2, §11.4 Magnetic Force on a Current-Carrying Conductor', url: 'https://openstax.org/books/university-physics-volume-2/pages/11-4-magnetic-force-on-a-current-carrying-conductor' },
+        { label: 'BIPM, The International System of Units (SI Brochure)', url: 'https://www.bipm.org/en/publications/si-brochure' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'fluxDensity', label: 'Magnetic flux density (T)', type: 'number', placeholder: '0.5', defaultValue: 0.5, step: 0.01, min: 0 },
+      { id: 'current', label: 'Current (A)', type: 'number', placeholder: '5', defaultValue: 5, step: 0.1, min: 0 },
+      { id: 'length', label: 'Wire length (m)', type: 'number', placeholder: '0.5', defaultValue: 0.5, step: 0.01, min: 0 },
+      { id: 'angle', label: 'Angle (rad)', type: 'number', placeholder: '1.5708', defaultValue: Math.PI / 2, step: 0.01 }
+    ],
+    seo: {
+      title: 'Magnetic Force Calculator (F = BIL sin θ)',
+      description: 'Free magnetic force calculator for a current-carrying wire. Solve F = BIL sin θ for force, field strength, current, length, or angle.',
+      faq: [
+        { question: 'What is the formula for the magnetic force on a current-carrying wire?', answer: 'F = B × I × L × sin θ, where B is the magnetic flux density, I is the current, L is the wire\'s length in the field, and θ is the angle between the wire and the field. A 0.5 T field, 5 A current, 0.5 m wire, held perpendicular, gives F = 0.5 × 5 × 0.5 × 1 = 1.25 N.' },
+        { question: 'What angle gives the maximum magnetic force?', answer: '90° (perpendicular) — sin 90° = 1, the largest value sine can take, so a wire running straight across the field feels the most force possible for that current and field strength.' },
+        { question: 'Why does a wire parallel to a magnetic field feel no force?', answer: 'Because sin 0° = 0. Only the component of the wire running across the magnetic field lines gets pushed; a wire running exactly along the field direction has no such component, so it feels zero magnetic force.' },
+        { question: 'How do I find the direction of the magnetic force?', answer: 'Use the right-hand rule: point your fingers along the direction of current flow, curl them toward the magnetic field, and your thumb points along the force direction — always perpendicular to both the current and the field.' },
+        { question: 'What is the difference between tesla and gauss?', answer: 'Both measure magnetic flux density. The tesla (T) is the SI unit; the gauss (G) is an older CGS unit still used on some magnet datasheets. 1 gauss equals exactly 1 × 10⁻⁴ tesla.' },
+        { question: 'Is this the same as the force on a single moving charge?', answer: 'It is the wire version of the same underlying physics. The single-charge formula, F = qvB, uses an individual charge\'s velocity; this formula sums that effect over every charge moving through a wire, using current and length instead.' }
+      ]
+    },
+    compute(values) {
+      return { force: values.fluxDensity * values.current * values.length * Math.sin(values.angle) };
     }
   }
 ];

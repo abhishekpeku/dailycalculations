@@ -7,15 +7,26 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-11-16 · **Step 46 chemistry run 10 DONE** — PR #109, branch
-`step/46-wave-3-chemistry-run-10`, not part of the originally-scoped runs 1-9 (those exhausted the
-seed lists). Added `grahams-law-effusion-calculator`, `weak-acid-ionization-calculator`,
+Last updated: 2026-11-17 · **Step 46 runs 9 + 10 BOTH DONE** (built in parallel, different category
+files, no merge conflict in the data — only this STATUS.md summary needed reconciling). **Run 9
+(physics SHM/orbital/modulus/E&M run, PR #108)** added `simple-harmonic-motion-calculator`
+(T = 2π√(m/k), mass-spring period), `orbital-velocity-calculator` (v = √(GM/r), cross-linked both
+ways with `escape-velocity-calculator`'s exact √2 relationship), `youngs-modulus-calculator`
+(Y = F·L0/(A·ΔL), reuses the `pressure` dimension plus a new `GPa` unit on it),
+`electric-field-calculator` (E = kq/r², point charge) and `magnetic-force-calculator`
+(F = BIL sin θ). New `lib/units.ts` dimensions: `electricField` (N/C, alt V/m) and
+`magneticFluxDensity` (T, alts mT/G). Angular momentum, moment of inertia, and rotational kinetic
+energy were considered and deliberately deferred to a future run as a group — all three need a new
+`momentOfInertia` dimension (angular momentum a second, `angularMomentum`), better built together
+than split across runs. **`physics` 41 → 46.** **Run 10 (chemistry, PR #109)**, not part of the
+originally-scoped runs 1-9 (those exhausted the seed lists), added
+`grahams-law-effusion-calculator`, `weak-acid-ionization-calculator`,
 `current-efficiency-calculator`, `hess-law-enthalpy-calculator`, `conservation-of-mass-calculator`.
 Zero new `lib/units.ts` dimensions — every formula reused `molarMass`/`count`/`mass`/`current`/
 `time`/`percent`/`pH`. Found and parked a pre-existing unit-mismatch bug in `common-ion-effect-
-calculator` (run 9) while designing this run's own weak-acid solver — see Parked. `npm test`
-(1,319), lint and `npm run build` (372 routes) all pass. **`chemistry` now 50 (45 → 50), site-wide
-341.** Full detail in `mdFiles/steps/46-47-wave-3-physics-chemistry.md`.
+calculator` (run 9) while designing this run's own weak-acid solver — see Parked. **`chemistry`
+45 → 50.** Both runs: `npm test`/lint/`npm run build` all pass independently and after merging. **Site-wide
+total after both: 346.** Full detail in `mdFiles/steps/46-47-wave-3-physics-chemistry.md`.
 
 Previous: **Step 46 run 8 (physics drivetrain/efficiency run) DONE** — PR #107,
 branch `step/46-wave-3-physics-run-8`, added `horsepower-calculator`, `rpm-to-speed-calculator`,

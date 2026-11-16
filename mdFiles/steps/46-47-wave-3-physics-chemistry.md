@@ -648,11 +648,117 @@ build agent's judgment**, same as every run so far.
     listening on port 3000 — left running, verified via the static HTML output instead, per this
     run's own instructions.
   - 336 calculators total after this run (331 + 5). `physics` is now 41.
-- [ ] Physics runs 9+ (as many 5-calculator runs as needed to close the gap toward ~61 total — no
-  seed list left at this point; build agent picks standard-physics formulas not yet covered,
-  e.g. angular momentum, moment of inertia (simple shapes), rotational kinetic energy, electric
-  field strength, magnetic force on a current, simple harmonic motion period, Young's modulus /
-  stress-strain, orbital velocity — verify each against a primary source same as every prior run)
+- [x] Physics run 9 (5), branch `step/46-wave-3-physics-run-9`, PR #108 — **DONE** 2026-11-16:
+  - [x] simple-harmonic-motion-calculator (T = 2π√(m/k), mass-spring period)
+  - [x] orbital-velocity-calculator (v = √(GM/r), circular orbit)
+  - [x] youngs-modulus-calculator (Y = stress/strain = F·L0/(A·ΔL))
+  - [x] electric-field-calculator (E = kq/r², point charge)
+  - [x] magnetic-force-calculator (F = BIL sin θ, current-carrying wire)
+  - Picked from this file's own "Physics runs 9+" candidate list. Considered and **rejected** for
+    this run: angular momentum (L = Iω), moment of inertia (lookup/breakdown by shape), and
+    rotational kinetic energy (KE = ½Iω²) — all three would need a new `momentOfInertia`
+    dimension (and angular momentum a second new `angularMomentum` dimension on top of that),
+    so they're grouped together for a future run rather than split across runs with a half-built
+    rotational-dynamics dimension set. Also considered reusing the point-charge field's inverse-
+    square form for a second "two point charges, electric force" calculator, but that is just
+    Coulomb's law itself (F = kq₁q₂/r²) — functionally identical in shape to
+    gravitational-force-calculator, so it was dropped as too thin a variant of an existing page.
+  - `simple-harmonic-motion-calculator` (T = 2π√(m/k), mass-spring oscillator) is a 3-variable
+    closed-form solver (period, mass, springConstant), reusing `mass`/`springConstant`/`time` — no
+    new dimension. Bonus `outputs` entry: oscillation frequency (f = 1/T), the `frequency`
+    dimension already added in physics run 4. Explicitly distinguished from
+    `pendulum-period-calculator` in both the concept section and a watch-out item (same 2π√(.../...)
+    shape, different physics: mass+stiffness here, length+gravity there, no cross-term).
+  - `orbital-velocity-calculator` (v = √(GM/r), circular orbit) is a 3-variable closed-form solver
+    (orbitalVelocity, mass, radius), reusing `mass`/`length`/`speed` and the existing
+    `GRAVITATIONAL_CONSTANT` constant from `escape-velocity-calculator` — no new dimension. Bonus
+    `outputs` entry: orbital period (T = 2πr/v). Cross-linked both ways with
+    `escape-velocity-calculator` as the task required: added `orbital-velocity-calculator` to its
+    `related` (replacing `speed-distance-time-calculator`, keeping 3 entries) and verified the
+    exact √2 relationship numerically (Earth-surface orbital velocity 7.9098 km/s × √2 =
+    11.186 km/s, matching escape-velocity-calculator's own 11.19 km/s/11,186 m/s figure almost
+    exactly). Worked example uses the ISS at 400 km altitude (NASA Earth mass/radius, consistent
+    with escape-velocity-calculator's own constants) — 7.6726 km/s, cross-checked against
+    OpenStax's own rounded-input ISS example (7.67 × 10³ m/s) to within about 0.02%.
+  - `youngs-modulus-calculator` (Y = stress/strain = F·L0/(A·ΔL)) is a 5-variable closed-form
+    solver (modulus, force, area, length0, deltaLength) — every variable invertible given the
+    other 4, same shape as `combined-gas-law-calculator`'s 6 variables. Reuses `force`/`area`/
+    `length` (for both L0 and ΔL, the same reused-dimension-for-different-roles precedent as
+    `momentum`/`impulse`) and, deliberately, the existing `pressure` dimension for the modulus
+    itself — Young's modulus is genuinely reported in pascals (unlike `torque`'s N·m-vs-J
+    situation, there's no separate conventional unit name to preserve), so no new dimension was
+    needed. Added one new unit to the existing `pressure` dimension: `GPa` (factor 1e9, an exact SI
+    multiple), since materials-science figures like Young's modulus are conventionally reported in
+    GPa and that unit was genuinely missing. Bonus `outputs`: stress (F÷A) and strain (ΔL÷L0),
+    surfacing the two intermediate quantities the modulus is a ratio of. Worked example is
+    OpenStax's own Example 12.8 (steel rod, 550 kg platform, 1.8 mm elongation), cross-checked
+    against its Table 12.1 values for steel (2.0×10¹¹ Pa), aluminum (7.0×10¹⁰ Pa) and bone in
+    tension (1.6×10¹⁰ Pa) — the "steel is 2.9× aluminum, 12.5× bone" comparisons in the content are
+    exact ratios of those published figures, not estimates.
+  - `electric-field-calculator` (E = kq/r², point charge) needed a genuinely new dimension:
+    `electricField` (base N/C, alt V/m — numerically identical by definition, the same
+    "one real unit, two conventional names" precedent as `momentum`). Coulomb's constant is
+    *derived* in code from the CODATA 2022 vacuum permittivity (`COULOMB_CONSTANT = 1/(4π·
+    VACUUM_PERMITTIVITY)`), not typed as its own rounded magic number, matching this wave's
+    discipline of deriving constants rather than recalling them. 3-variable solver (fieldStrength,
+    charge, radius), reusing `charge`/`length`. Primary worked example is a relatable 1 µC charge
+    at 10 cm (≈8.99×10⁵ N/C); OpenStax's own Example 5.3 (helium nucleus, charge 2e at 26.5 pm,
+    ≈4.1×10¹² N/C) is cited as an independent cross-check at a very different scale, both
+    recomputed in the verification script.
+  - `magnetic-force-calculator` (F = BIL sin θ) needed a second new dimension:
+    `magneticFluxDensity` (base T, alts mT and G — gauss is exactly 1×10⁻⁴ T by definition). Shipped
+    as a 5-variable solver (force, fluxDensity, current, length, angle) mirroring
+    `torque-calculator`'s F·r·sin θ pattern exactly (`Math.sin`/`Math.asin`, principal-value-only,
+    domain-guarded to [-1, 1]). Reuses `force`/`current`/`length`/`angle`. Worked example (0.5 T,
+    5 A, 0.5 m, 90° → 1.25 N) is independently cross-checked against OpenStax's own Example 11.4
+    (a 0.39 A current balancing a 10 g wire's weight in a 0.50 T field via F = BIL).
+  - Every formula/constant fetched directly from a primary source (not recalled from memory):
+    OpenStax University Physics Volume 1 §15.1 Simple Harmonic Motion and §13.4 Satellite Orbits
+    and Energy; OpenStax University Physics Volume 1 §12.3 Stress, Strain, and Elastic Modulus
+    (including its Table 12.1 and Example 12.8); OpenStax University Physics Volume 2 §5.4 Electric
+    Field (including its Example 5.3) and §11.4 Magnetic Force on a Current-Carrying Conductor
+    (including its Example 11.4); NIST's CODATA 2022 page for the vacuum electric permittivity ε₀
+    (physics.nist.gov/cgi-bin/cuu/Value?ep0), reused from escape-velocity-calculator's existing
+    `GRAVITATIONAL_CONSTANT` (CODATA 2022) for the orbital-velocity formula.
+  - Independent scratch script (`verify_run9.mjs`, scratchpad, no app imports) recomputed every
+    number before the copy was written: the SHM worked example (2 kg/32 N/m → T=1.5708 s,
+    ω=4 rad/s, matching OpenStax's own Example 15.2 exactly) plus a second 0.5 kg/20 N/m case; the
+    orbital-velocity Earth-surface (7909.81 m/s), ISS-altitude (7672.62 m/s, period 92.41 min),
+    OpenStax-ISS cross-check (7671.01 m/s vs OpenStax's 7.67×10³ m/s) and geostationary (3074.67
+    m/s, matching the independently-confirmed published ~3.07 km/s) cases, plus the exact √2
+    relationship to escape velocity; the Young's modulus steel-rod example (F=5393.66 N,
+    stress=1.7979×10⁸ Pa, ΔL=1.7979 mm ≈ OpenStax's 1.8 mm) in all 5 solve directions; the electric
+    field 1 µC/10 cm example (898,755 N/C) and the helium-nucleus cross-check (4.101×10¹² N/C vs
+    OpenStax's 4.1×10¹²); and the magnetic force example (0.5 T/5 A/0.5 m/90° → 1.25 N, 60°
+    comparison ratio exactly sin 60°) plus the OpenStax Example 11.4 cross-check (I=0.392266 A,
+    F=0.0980665 N balancing mg exactly).
+  - New `KNOWN_NON_FINITE` entries in `data/calculators.spec.ts`: `simple-harmonic-motion-calculator`
+    (`period`; springConstant at its own 0 min → explicit guard), `orbital-velocity-calculator`
+    (`orbitalVelocity`; radius at its own 0 min → explicit guard), `youngs-modulus-calculator`
+    (`modulus`; area and deltaLength both at their own 0 min → 0/0 guard), `electric-field-calculator`
+    (`fieldStrength`; radius at its own 0 min → explicit guard). `magnetic-force-calculator` needed
+    none (its all-zero edge case resolves to an honest finite 0, same as `torque-calculator` and
+    `buoyancy-calculator` before it). Snapshot diff is additive-only (172 new lines, 0 removed,
+    confirmed with `git diff --stat`).
+  - `npm test` (1,326 tests), `npm run lint` and `npm run build` all pass (372 routes). Verified the
+    5 new pages from the static HTML `next build` produced
+    (`.next/server/app/en/calculators/<id>.html`): H1, exactly two JSON-LD scripts, no "application
+    error" text, and all eight section ids (concept/how-to-use/formula/worked-example/watch-out/
+    faq/references/related) present on every page, all 5 linked correctly from
+    `/en/categories/physics`. A separate, programmatic site-wide sweep (importing the real
+    `calculators` array, not a fragile regex) confirmed no duplicate top-level ids, every one of
+    this run's 5 `related` ids exists with no self-reference, and no alias collision involving any
+    of this run's 5 new ids (the only 2 alias collisions found site-wide — `emi-calculator`/
+    `mortgage-calculator` and `solution-concentration-calculator`/`molarity-calculator` — are
+    pre-existing and untouched by this run). A pre-existing process was already listening on port
+    3000 (not started by this run) — left running, verified via the static HTML output instead.
+  - 341 calculators total after this run (336 + 5). `physics` is now 46.
+- [ ] Physics runs 10+ (as many 5-calculator runs as needed to close the gap toward ~61 total —
+  no seed list left after run 9; build agent picks standard-physics formulas not yet covered,
+  e.g. angular momentum, moment of inertia (simple shapes, lookup/breakdown), rotational kinetic
+  energy — these three are grouped together on purpose, since all three need a new
+  `momentOfInertia` dimension (and angular momentum a second, `angularMomentum`) — verify each
+  against a primary source same as every prior run)
 - [x] Chemistry run 3 (5), branch `step/46-wave-3-chemistry-run-3`, PR #67 — **DONE** 2026-11-08:
   - [x] limiting-reagent-calculator
   - [x] theoretical-yield-calculator

@@ -54,6 +54,19 @@ const federalIncomeTax = (taxable: number, status: number) => {
   return tax;
 };
 
+// IRS Publication 590-B (2025), Appendix B, Table III (Uniform Lifetime) — the table almost every
+// IRA owner uses to figure a required minimum distribution. Transcribed directly from the published
+// table (rmd-calculator); unchanged since the IRS's 2022 life-expectancy-table update.
+const RMD_UNIFORM_LIFETIME_TABLE: Record<number, number> = {
+  72: 27.4, 73: 26.5, 74: 25.5, 75: 24.6, 76: 23.7, 77: 22.9, 78: 22.0, 79: 21.1, 80: 20.2,
+  81: 19.4, 82: 18.5, 83: 17.7, 84: 16.8, 85: 16.0, 86: 15.2, 87: 14.4, 88: 13.7, 89: 12.9,
+  90: 12.2, 91: 11.5, 92: 10.8, 93: 10.1, 94: 9.5, 95: 8.9, 96: 8.4, 97: 7.8, 98: 7.3, 99: 6.8,
+  100: 6.4, 101: 6.0, 102: 5.6, 103: 5.2, 104: 4.9, 105: 4.6, 106: 4.3, 107: 4.1, 108: 3.9,
+  109: 3.7, 110: 3.5, 111: 3.4, 112: 3.3, 113: 3.1, 114: 3.0, 115: 2.9, 116: 2.8, 117: 2.7,
+  118: 2.5, 119: 2.3, 120: 2.0
+};
+const rmdDenominator = (age: number) => RMD_UNIFORM_LIFETIME_TABLE[Math.min(120, Math.max(72, Math.round(age)))];
+
 // Freddie Mac, "Breaking down PMI": about $30-$70 a month per $100,000 borrowed. The midpoint, $50
 // a month per $100,000, is 0.6% of the loan a year — used as the assumed PMI rate below 20% down.
 const PMI_RATE_ANNUAL_PERCENT = 0.6;
@@ -3342,6 +3355,123 @@ export const financeCalculators: CalculatorConfig[] = [
       const taxOwedAtWithdrawal = futureValue * taxRate;
       const afterTaxValue = futureValue - taxOwedAtWithdrawal;
       return { futureValue, totalContributed, totalGrowth, taxSavingsThisYear, taxOwedAtWithdrawal, afterTaxValue };
+    }
+  },
+  {
+    id: 'rmd-calculator',
+    group: 'Retirement',
+    category: 'finance',
+    glyph: 'RMD',
+    updatedAt: '2026-11-16',
+    aliases: ['rmd calculator', 'required minimum distribution calculator', 'ira rmd calculator', 'ira required minimum distribution calculator', 'ira withdrawal calculator'],
+    related: ['traditional-ira-calculator', 'roth-ira-growth-calculator', 'retirement-savings-calculator', '401k-employer-match-calculator'],
+    title: 'RMD Calculator',
+    description: "Calculate this year's required minimum distribution from a traditional IRA, using the IRS's current Uniform Lifetime Table and your prior year-end balance.",
+    example: 'A $500,000 IRA balance at the end of last year, for someone turning 75 this year, requires a minimum distribution of about $20,325 — about 4.07% of the balance, using the IRS Uniform Lifetime Table denominator of 24.6.',
+    breakdown: {
+      headline: 'requiredMinimumDistribution',
+      headlineLabel: 'Required minimum distribution this year',
+      outputs: [
+        { id: 'requiredMinimumDistribution', label: 'Required minimum distribution', format: 'currency' },
+        { id: 'monthlyEquivalent', label: 'Monthly equivalent', format: 'currency' },
+        { id: 'percentOfBalance', label: 'Percent of the balance withdrawn', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Your IRA', inputs: ['priorYearEndBalance', 'ownerAge'] }
+      ],
+      derive: (values) => ({ remainingBalance: values.priorYearEndBalance - values.requiredMinimumDistribution }),
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'requiredMinimumDistribution', label: 'Required withdrawal this year' },
+          { from: 'remainingBalance', label: 'Remaining balance' }
+        ],
+        center: 'priorYearEndBalance',
+        centerSub: "balance at last year's end"
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'Required Minimum Distributions: what the IRS makes you withdraw',
+        paragraphs: [
+          "A traditional IRA (and most employer retirement plans) can't hold money tax-deferred forever. Starting at the IRS's required beginning date — age 73 for anyone who reached age 72 after December 31, 2022 — the owner must withdraw at least a minimum amount every year, called the required minimum distribution (RMD). The RMD is simple division: the account's balance at the end of the prior year, divided by an \"applicable denominator\" the IRS publishes by age, in Publication 590-B's Uniform Lifetime Table (Table III) — reproduced in full below.",
+          "That one table covers the great majority of IRA owners: anyone unmarried, and anyone married whose spouse either isn't the sole beneficiary or isn't more than 10 years younger. A married owner whose spouse is both the sole beneficiary and more than 10 years younger uses a different, more generous table (Table II) instead, which this calculator does not model — the real RMD is lower in that specific case.",
+          'This is the requirement roth-ira-growth-calculator keeps mentioning: a Roth IRA has no RMDs during the original owner\'s lifetime, while traditional-ira-calculator\'s pretax balance is exactly the kind of balance this table eventually applies to. retirement-savings-calculator and 401k-employer-match-calculator build the balance; this page is about what the IRS requires you to take back out of it.'
+        ]
+      },
+      howTo: {
+        intro: "Enter your IRA's balance at the end of last year and the age you'll turn this year.",
+        steps: [
+          { name: "Enter last year's ending balance", text: "The IRA's value at the close of business on December 31 of the prior year — not today's balance." },
+          { name: "Enter the age you'll turn this year", text: 'This picks your row in the Uniform Lifetime Table below. The required beginning date is 73 for anyone reaching 72 after 2022.' },
+          { name: 'Read the required distribution', text: 'The headline is the dollar amount you must withdraw this year, with the monthly equivalent and the percent of the balance it represents below it.' },
+          { name: 'Check the full table', text: 'Scroll to the reference table to see every age from 72 to 120 and over, and how much the required percentage grows with age.' },
+          { name: 'Confirm which table applies to you', text: "If your sole beneficiary is a spouse more than 10 years younger, your real RMD uses a different, larger denominator than this calculator shows — see Publication 590-B's Table II." }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "The RMD divides last year's ending balance by the IRS's applicable denominator for your age this year, from the Uniform Lifetime Table.",
+        expression: 'RMD = Balance at prior year-end ÷ Denominator(age)\nPercent of balance = 100 ÷ Denominator(age)',
+        terms: [
+          { symbol: 'Balance', meaning: "The IRA's value at the close of business on December 31 of the prior year." },
+          { symbol: 'Denominator(age)', meaning: "The IRS's Uniform Lifetime Table (Table III) factor for the age you turn this year — shown in full below." }
+        ],
+        note: 'Estimates only. This models only the common Uniform Lifetime Table case; a spouse more than 10 years younger as sole beneficiary uses a different table and a different, smaller RMD. Not tax advice — confirm your own figure with your IRA custodian or a tax professional.'
+      },
+      workedExample: {
+        intro: 'An IRA was worth $500,000 at the end of last year. Its owner turns 75 this year. What is the required minimum distribution?',
+        rows: [
+          { label: 'Applicable denominator for age 75 (Table III)', value: '24.6' },
+          { label: 'RMD (500,000 ÷ 24.6)', value: '$20,325.20' },
+          { label: 'Monthly equivalent (20,325.20 ÷ 12)', value: '$1,693.77' },
+          { label: 'Percent of balance withdrawn (100 ÷ 24.6)', value: '4.065%' }
+        ],
+        result: 'RMD ≈ $20,325 this year, about $1,694 a month, about 4.07% of the balance',
+        explanation: "Age alone changes the answer a great deal on the same $500,000 balance: at 73 the denominator is 26.5, for an RMD of about $18,868; at 90 it's 12.2, for an RMD of about $40,984 — a required withdrawal 101.6% higher at 90 than at 75, even though the balance in this example never changed. The required percentage keeps climbing every year because the IRS's denominator keeps shrinking."
+      },
+      watchOut: [
+        { title: 'This models only the common Table III case', body: "If your sole beneficiary is your spouse and they're more than 10 years younger than you, the IRS requires the Joint and Last Survivor Table (Table II) instead, which produces a larger denominator and a smaller RMD than this calculator shows." },
+        { title: 'Missing an RMD is costly', body: 'Per Publication 590-B, an amount not distributed as required is subject to a 25% excise tax, reduced to 10% if you correct the shortfall and file during the IRS\'s correction window.' },
+        { title: 'The required beginning date is age 73', body: 'For anyone reaching age 72 after December 31, 2022. The very first RMD can be delayed to April 1 of the following year, but doing so means taking two RMDs in that second year.' },
+        { title: "Roth IRAs don't have this requirement", body: "A Roth IRA has no required minimum distributions during the original owner's lifetime — see roth-ira-growth-calculator." },
+        { title: 'This is a current-year figure only', body: "The RMD is recalculated every year from that year's own prior-year-end balance and that year's age; this calculator does not project several years of RMDs forward." }
+      ],
+      referenceTable: {
+        title: 'IRS Uniform Lifetime Table (Table III), applicable denominator by age',
+        columns: ['Age', 'Applicable denominator'],
+        rows: Object.entries(RMD_UNIFORM_LIFETIME_TABLE).map(([age, denominator]) => ({ label: age, values: [denominator] })),
+        decimals: 1,
+        note: 'Internal Revenue Service, Publication 590-B (2025), Appendix B, Table III — for unmarried owners, and married owners whose spouse isn\'t the sole beneficiary or isn\'t more than 10 years younger.'
+      },
+      references: [
+        { label: 'Internal Revenue Service, Publication 590-B (2025), Distributions from Individual Retirement Arrangements (IRAs), Appendix B', url: 'https://www.irs.gov/pub/irs-pdf/p590b.pdf' },
+        { label: 'Internal Revenue Service, Retirement Topics – Required Minimum Distributions (RMDs)', url: 'https://www.irs.gov/retirement-plans/plan-participant-employee/retirement-topics-required-minimum-distributions-rmds' }
+      ]
+    },
+    inputs: [
+      { id: 'priorYearEndBalance', label: "IRA balance at last year's end", type: 'currency', placeholder: '500000', defaultValue: 500000, step: 10000, min: 0 },
+      { id: 'ownerAge', label: "Age you'll turn this year", type: 'number', placeholder: '75', defaultValue: 75, step: 1, min: 72 }
+    ],
+    seo: {
+      title: 'RMD Calculator – IRS Required Minimum Distribution',
+      description: "Calculate this year's IRA required minimum distribution from your prior year-end balance using the IRS's current Uniform Lifetime Table.",
+      faq: [
+        { question: 'What is a required minimum distribution (RMD)?', answer: "The minimum amount the IRS requires you to withdraw each year from a traditional IRA (and most employer retirement plans) once you reach the required beginning date, currently age 73 for anyone who turned 72 after 2022." },
+        { question: 'How is my RMD calculated?', answer: "Divide your IRA's balance at the end of last year by the IRS's applicable denominator for your age this year, from the Uniform Lifetime Table. A $500,000 balance at age 75 uses a denominator of 24.6, for an RMD of about $20,325." },
+        { question: 'When do RMDs start?', answer: 'At the required beginning date, age 73 for anyone reaching age 72 after December 31, 2022. The first one can be delayed to April 1 of the following year, but that means taking two RMDs in that second year.' },
+        { question: 'What happens if I miss an RMD?', answer: "The IRS can charge a 25% excise tax on the amount not distributed as required, reduced to 10% if you correct it and file during the correction window described in Publication 590-B." },
+        { question: 'Do Roth IRAs have RMDs?', answer: "No. A Roth IRA has no required minimum distributions during the original owner's lifetime, unlike the traditional IRA balance this calculator models — see roth-ira-growth-calculator and traditional-ira-calculator." },
+        { question: 'Does the required percentage change with age?', answer: 'Yes, every year. On the same balance, the required percentage is about 4.07% at age 75 and about 8.20% at age 90 — the RMD at 90 is about 101.6% higher than at 75 for an identical balance, because the IRS denominator keeps shrinking.' }
+      ]
+    },
+    compute(values) {
+      const denominator = rmdDenominator(values.ownerAge);
+      const requiredMinimumDistribution = values.priorYearEndBalance / denominator;
+      const monthlyEquivalent = requiredMinimumDistribution / 12;
+      const percentOfBalance = 100 / denominator;
+      return { requiredMinimumDistribution, monthlyEquivalent, percentOfBalance };
     }
   },
 ];

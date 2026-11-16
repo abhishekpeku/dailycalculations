@@ -9920,6 +9920,44 @@ exports[`compute() snapshots > ring-size-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > rmd-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "priorYearEndBalance": 500000,
+      "ownerAge": 75
+    },
+    "outputs": {
+      "requiredMinimumDistribution": 20325.20325,
+      "monthlyEquivalent": 1693.766938,
+      "percentOfBalance": 4.06504065
+    }
+  },
+  "typical": {
+    "inputs": {
+      "priorYearEndBalance": 750000,
+      "ownerAge": 113
+    },
+    "outputs": {
+      "requiredMinimumDistribution": 241935.4839,
+      "monthlyEquivalent": 20161.29032,
+      "percentOfBalance": 32.25806452
+    }
+  },
+  "edge": {
+    "inputs": {
+      "priorYearEndBalance": 0,
+      "ownerAge": 72
+    },
+    "outputs": {
+      "requiredMinimumDistribution": 0,
+      "monthlyEquivalent": 0,
+      "percentOfBalance": 3.649635036
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > roof-pitch-calculator 1`] = `
 {
   "default": {

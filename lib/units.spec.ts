@@ -42,7 +42,7 @@ describe('unit tables', () => {
     assert.deepEqual([...dimensions].sort(), [
       'absorbance', 'acceleration', 'amountOfSubstance', 'angle', 'area', 'capacitance', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
       'decibel', 'density', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'length', 'mass', 'massConcentration', 'molalConstant', 'molality', 'molarAbsorptivity', 'molarEnergy', 'molarEntropy', 'molarMass', 'momentum',
-      'normality', 'osmolarity', 'pH', 'pace', 'percent', 'power', 'pressure', 'rateConstant', 'resistance', 'specificHeat', 'speed', 'springConstant', 'temperature', 'temperatureDelta', 'term', 'time',
+      'normality', 'osmolarity', 'pH', 'pace', 'percent', 'power', 'pressure', 'rateConstant', 'resistance', 'specificHeat', 'speed', 'springConstant', 'temperature', 'temperatureDelta', 'term', 'thermalExpansionCoeff', 'time',
       'voltage', 'volume'
     ]);
   });
@@ -110,10 +110,12 @@ describe('anchor values', () => {
     close(convert(1, 'time', 'yr', 'mo'), 12);
     close(convert(1, 'time', 'yr', 'd'), 365.25);
   });
-  test('speed: 60 mph = 96.56064 km/h, 1 kn = 1.852 km/h', () => {
+  test('speed: 60 mph = 96.56064 km/h, 1 kn = 1.852 km/h, 1 km/s = 1000 m/s', () => {
     close(convert(60, 'speed', 'mph', 'km/h'), 96.56064);
     close(convert(1, 'speed', 'kn', 'km/h'), 1.852);
     close(convert(36, 'speed', 'km/h', 'm/s'), 10);
+    close(toBase(1, 'speed', 'km/s'), 1000);
+    close(convert(11.186, 'speed', 'km/s', 'm/s'), 11186);
   });
   test('energy: 1 kWh = 3.6 MJ, 1 kcal = 4184 J, 1 BTU ≈ 1055.056 J', () => {
     close(convert(1, 'energy', 'kWh', 'MJ'), 3.6);
@@ -207,6 +209,17 @@ describe('anchor values', () => {
     close(toBase(1, 'springConstant', 'lbf/in'), 175.12683525, 1e-9);
     // F = k × x: 250 N/m stretched 0.12 m gives 30 N, with no stray conversion factor.
     close(toBase(250, 'springConstant', 'N/m') * toBase(0.12, 'length', 'm'), toBase(30, 'force', 'N'));
+  });
+  test('thermal expansion coefficient: 1/°C = 1/K (interval, no offset), ×10⁻⁶/°C is the practical unit', () => {
+    assert.equal(UNITS.thermalExpansionCoeff[0].id, '1/K');
+    close(toBase(1, 'thermalExpansionCoeff', '1/C'), 1);
+    close(toBase(12, 'thermalExpansionCoeff', 'u/C'), 12e-6);
+    // ΔL = α × L0 × ΔT: steel's 12×10⁻⁶/°C over 50 m and a 30°C rise gives 0.018 m (18 mm), with no
+    // stray conversion factor (OpenStax University Physics Volume 2 §1.3, Table 1.2).
+    close(
+      toBase(12, 'thermalExpansionCoeff', 'u/C') * toBase(50, 'length', 'm') * toBase(30, 'temperatureDelta', 'C'),
+      toBase(0.018, 'length', 'm')
+    );
   });
   test('voltage: 1 kV = 1000 V = 1,000,000 mV', () => {
     assert.equal(UNITS.voltage[0].id, 'V');

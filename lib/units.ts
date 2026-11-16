@@ -22,6 +22,7 @@ export type UnitDimension =
   | 'momentum'
   | 'density'
   | 'springConstant'
+  | 'thermalExpansionCoeff'
   | 'voltage'
   | 'current'
   | 'resistance'
@@ -179,13 +180,16 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
     { id: 'mo', label: 'months', factor: YEAR / 12 },
     { id: 'yr', label: 'years', factor: YEAR }
   ],
-  // Ratios of the exact lengths and times above; knot = 1852 m/h.
+  // Ratios of the exact lengths and times above; knot = 1852 m/h. km/s appended last (an exact SI
+  // multiple, factor 1000) so escape-velocity-calculator's results print at a sane magnitude —
+  // the existing menu order for the other four units is unchanged.
   speed: [
     { id: 'm/s', label: 'm/s', factor: 1 },
     { id: 'km/h', label: 'km/h', factor: 1000 / HOUR },
     { id: 'mph', label: 'mph', factor: MILE / HOUR },
     { id: 'kn', label: 'kn', factor: NAUTICAL_MILE / HOUR },
-    { id: 'ft/s', label: 'ft/s', factor: FOOT }
+    { id: 'ft/s', label: 'ft/s', factor: FOOT },
+    { id: 'km/s', label: 'km/s', factor: 1000 }
   ],
   // Running pace, time per distance (the reciprocal of speed). Exact from the mile and kilometer.
   pace: [
@@ -256,6 +260,16 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
     { id: 'N/mm', label: 'N/mm', factor: 1000 },
     { id: 'N/cm', label: 'N/cm', factor: 100 },
     { id: 'lbf/in', label: 'lbf/in', factor: POUND_FORCE / INCH }
+  ],
+  // Coefficient of linear thermal expansion, SI unit K⁻¹ (OpenStax University Physics Volume 2 §1.3
+  // "Thermal Expansion": ΔL = αL₀ΔT). A 1°C-interval change equals a 1 K change exactly, so '1/°C'
+  // is numerically identical to the base unit, factor 1 — same no-offset reasoning as
+  // `temperatureDelta`. Materials tables (steel 12×10⁻⁶/°C, aluminum 25×10⁻⁶/°C) report this in
+  // millionths, so 'µ/°C' (factor 1e-6) is the practical typing unit.
+  thermalExpansionCoeff: [
+    { id: '1/K', label: '1/K', factor: 1 },
+    { id: '1/C', label: '1/°C', factor: 1 },
+    { id: 'u/C', label: '×10⁻⁶/°C', factor: 1e-6 }
   ],
   // SI derived unit (BIPM SI Brochure): 1 V = 1 W/A. Decimal multiples per NIST SP 811 §4.
   voltage: [

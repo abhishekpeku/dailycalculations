@@ -7,7 +7,9 @@
     "about": "About",
     "contact": "Contact",
     "privacy": "Privacy",
-    "terms": "Terms"
+    "terms": "Terms",
+    "openSearch": "Search calculators",
+    "closeSearch": "Close search"
   },
   "navMenu": {
     "filterLabel": "Filter {count, plural, one {# calculator} other {# calculators}}",

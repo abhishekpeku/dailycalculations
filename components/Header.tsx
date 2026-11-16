@@ -7,7 +7,18 @@ import { Link, usePathname } from '@/i18n/navigation';
 import { useTheme } from './ThemeProvider';
 import CategoriesMenu from './CategoriesMenu';
 import MobileMenu from './MobileMenu';
+import SearchOverlay from './SearchOverlay';
 import type { NavData } from '@/lib/navData';
+
+// Shared by the desktop and mobile search trigger buttons, so both icon buttons stay identical.
+function SearchIcon() {
+  return (
+    <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="7" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  );
+}
 
 // Exported so MobileMenu's bottom row reuses the exact same button, instead of a second copy.
 export function ThemeToggle({ className }: { className?: string }) {
@@ -48,16 +59,48 @@ export default function Header({ nav }: { nav: NavData }) {
   const pathname = usePathname();
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const categoriesButtonRef = useRef<HTMLButtonElement>(null);
   const categoriesPanelRef = useRef<HTMLDivElement>(null);
   const mobileButtonRef = useRef<HTMLButtonElement>(null);
+  const searchTriggerRef = useRef<HTMLButtonElement | null>(null);
   const hoverCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // A route change (a link inside either menu was followed) closes both.
   useEffect(() => {
     setCategoriesOpen(false);
     setMobileOpen(false);
+    setSearchOpen(false);
   }, [pathname]);
+
+  // Opens the search overlay and remembers whichever button (desktop or mobile) triggered it, so
+  // closing returns focus to that same button — same discipline as the Categories/mobile buttons.
+  const openSearch = (event: React.MouseEvent<HTMLButtonElement>) => {
+    searchTriggerRef.current = event.currentTarget;
+    setSearchOpen(true);
+  };
+  const closeSearch = () => {
+    setSearchOpen(false);
+    searchTriggerRef.current?.focus();
+  };
+
+  // `/` opens search from anywhere on the page — but never while the user is typing in an
+  // editable field (a calculator's own number/date inputs must keep their slashes). Always
+  // active, unlike the Escape handler below which only attaches while a menu is open.
+  useEffect(() => {
+    const handleSlash = (event: KeyboardEvent) => {
+      if (event.key !== '/' || event.metaKey || event.ctrlKey || event.altKey) return;
+      if (searchOpen) return;
+      const active = document.activeElement as HTMLElement | null;
+      const tag = active?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || active?.isContentEditable) return;
+      event.preventDefault();
+      searchTriggerRef.current = null;
+      setSearchOpen(true);
+    };
+    document.addEventListener('keydown', handleSlash);
+    return () => document.removeEventListener('keydown', handleSlash);
+  }, [searchOpen]);
 
   // Escape closes whichever menu is open and returns focus to its trigger. Outside click closes
   // the desktop panel only — the phone sheet already covers the whole screen.
@@ -148,11 +191,28 @@ export default function Header({ nav }: { nav: NavData }) {
           <Link href="/calculators" className="transition hover:text-slate-900 dark:hover:text-white">{t('allCalculators')}</Link>
           <Link href="/about" className="transition hover:text-slate-900 dark:hover:text-white">{t('about')}</Link>
           <Link href="/suggestions" className="transition hover:text-slate-900 dark:hover:text-white">{t('suggest')}</Link>
+          <button
+            type="button"
+            onClick={openSearch}
+            aria-label={t('openSearch')}
+            title={`${t('openSearch')} (/)`}
+            className="rounded-md p-2 text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+          >
+            <SearchIcon />
+          </button>
           <ThemeToggle />
         </nav>
 
-        {/* Mobile: theme toggle + hamburger button */}
+        {/* Mobile: search + theme toggle + hamburger button */}
         <div className="flex items-center gap-3 lg:hidden">
+          <button
+            type="button"
+            onClick={openSearch}
+            aria-label={t('openSearch')}
+            className="rounded-md p-2 text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+          >
+            <SearchIcon />
+          </button>
           <ThemeToggle />
           <button
             ref={mobileButtonRef}
@@ -197,6 +257,7 @@ export default function Header({ nav }: { nav: NavData }) {
       )}
 
       <MobileMenu nav={nav} open={mobileOpen} onClose={() => setMobileOpen(false)} />
+      <SearchOverlay nav={nav} open={searchOpen} onClose={closeSearch} />
     </header>
   );
 }

@@ -22,6 +22,7 @@ export type UnitDimension =
   | 'momentum'
   | 'density'
   | 'springConstant'
+  | 'torque'
   | 'voltage'
   | 'current'
   | 'resistance'
@@ -256,6 +257,17 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
     { id: 'N/mm', label: 'N/mm', factor: 1000 },
     { id: 'N/cm', label: 'N/cm', factor: 100 },
     { id: 'lbf/in', label: 'lbf/in', factor: POUND_FORCE / INCH }
+  ],
+  // Torque (OpenStax University Physics Volume 1 §10.6 "Torque", |τ| = rF sinθ): SI derived unit
+  // N·m, numerically the same unit as the joule, but kept as its own dimension (not folded into
+  // `energy`) since torque is never reported in joules — same "one real unit, two conventional
+  // names" reasoning as `momentum` being kept separate from `force`. 1 lbf·ft and 1 lbf·in from the
+  // exact pound-force and foot/inch above (NIST SP 811 Appendix B); lbf·ft is the common US wrench
+  // and bolt-spec unit.
+  torque: [
+    { id: 'Nm', label: 'N·m', factor: 1 },
+    { id: 'lbfft', label: 'lbf·ft', factor: POUND_FORCE * FOOT },
+    { id: 'lbfin', label: 'lbf·in', factor: POUND_FORCE * INCH }
   ],
   // SI derived unit (BIPM SI Brochure): 1 V = 1 W/A. Decimal multiples per NIST SP 811 §4.
   voltage: [

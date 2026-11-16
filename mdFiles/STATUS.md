@@ -7,7 +7,21 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-11-17 · **Step 46 chemistry run 11 DONE** — PR #110, branch
+Last updated: 2026-11-17 · **Step 46 chemistry run 12 DONE** — PR #112, branch
+`step/46-wave-3-chemistry-run-12`. **Fixed the pre-existing `common-ion-effect-calculator`
+unit-dimension bug** (flagged run 10, parked through run 11): `commonIonConcentration`/
+`molarSolubility`/the `plainWaterSolubility` output moved from `dimension: 'concentration'` to
+`dimension: 'count'`, matching `ksp`'s own dimension and the same all-`count` pattern
+`weak-acid-ionization-calculator` already used to avoid this bug — verified with a standalone
+scratch script reproducing both the bug (a ~1,000,000× live-widget error) and the fix. Then added 5
+new calculators: `ksp-from-solubility-calculator`, `weak-base-ionization-calculator`,
+`buffer-ph-after-addition-calculator`, `lattice-energy-calculator` (a Born-Haber cycle solver — no
+new `lib/units.ts` dimension needed, every new variable stayed on `count`/`pH`/`amountOfSubstance`),
+`ionic-strength-calculator`. `npm test` (1,396), lint and `npm run build` all pass. **`chemistry` 55
+→ 60 — at the wave's ~60 target, likely ready to close out.** Site-wide 356 → 361. Full detail in
+`mdFiles/steps/46-47-wave-3-physics-chemistry.md`.
+
+Previous: **Step 46 chemistry run 11 DONE** — PR #110, branch
 `step/46-wave-3-chemistry-run-11` (built in parallel with physics run 10, separate category file).
 Added `formal-charge-calculator`, `latent-heat-calculator`, `raoults-law-calculator`,
 `nuclear-binding-energy-calculator`, `gas-density-calculator`. New `lib/units.ts` dimension:
@@ -687,22 +701,6 @@ before writing copy. `npm test` 1,319/1,319, lint clean, `npm run build` green (
 
 Things noticed but deliberately out of scope. Add here instead of fixing mid-step.
 
-- **`common-ion-effect-calculator` (chemistry run 9) likely gives a wrong live-widget answer for any
-  non-default input** (found building chemistry run 10, 2026-11-16, while designing a similar
-  Ka/concentration solver and tracing through exactly how `lib/solverState.ts`'s `solveState`
-  converts solver variables to SI before calling `solve`): its solver mixes a `dimension: 'count'`
-  variable (`ksp`, passed to `solve` unconverted, factor 1) with two `dimension: 'concentration'`
-  variables (`commonIonConcentration`, `molarSolubility`, both converted to SI mol/m³ — a ×1000
-  factor from the default mol/L unit — before `solve` runs) inside one formula that was derived
-  assuming all values are in mol/L. The page's own content, worked example, and `compute()` (used
-  only for the static snapshot/JSON-LD path) all correctly use raw mol/L numbers and match OpenStax's
-  published figures exactly — only the interactive `SolverCalculator` widget itself is affected,
-  since that is the only code path that runs values through `toBase` first. Not fixed here — out of
-  scope for a run-10 calculator batch on a different run's already-shipped page; flagged with the
-  exact mechanism so whoever fixes it doesn't have to re-derive it. The likely fix is switching
-  `commonIonConcentration`/`molarSolubility` to `dimension: 'count'` as well (matching `ksp`), the
-  same all-`count` pattern this run's own `weak-acid-ionization-calculator` uses specifically to avoid
-  this bug.
 - **Two pre-existing duplicate aliases across categories** (found building chemistry run 6,
   2026-11-09, by a manual duplicate-alias sweep across every calculator — there is no automated
   test for this, it is a skill-step manual check): `emi-calculator` and `mortgage-calculator` both

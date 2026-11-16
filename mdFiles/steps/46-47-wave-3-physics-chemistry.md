@@ -1507,6 +1507,14 @@ build agent's judgment**, same as every run so far.
     pre-existing process (not started by this run) was already listening on port 3000 throughout —
     left running, verified via the static HTML output instead, same precedent as runs 4-9.
   - `chemistry` is now **50** calculators, **341 total** site-wide.
+- [ ] Chemistry run 11 (5), branch `step/46-wave-3-chemistry-run-11`, PR TBD — **IN PROGRESS**:
+  - [ ] formal-charge-calculator
+  - [ ] latent-heat-calculator
+  - [ ] raoults-law-calculator
+  - [ ] nuclear-binding-energy-calculator
+  - [ ] gas-density-calculator
+  - common-ion-effect-calculator bug (run 9, flagged run 10): will attempt a fix after the 5 new
+    calculators if time allows, per this run's own instructions — not blocking.
 - [ ] Visual-QA checkpoint: due again once ~50 more calculators land after this wave (last pass was
   at 194 calculators, 2026-11-05 — see STATUS.md header; chemistry crossed the 244-calculator
   threshold after run 6, flagged for the main session to schedule — still not run as of this run)

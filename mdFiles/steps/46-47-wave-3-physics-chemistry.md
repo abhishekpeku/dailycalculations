@@ -823,13 +823,115 @@ build agent's judgment**, same as every run so far.
     lint clean, `npm run build` green). Only this write-up and the commit/push/PR were finished by
     the main session afterward — no calculator content was redone.
   - 351 calculators total after this run (341 + 5). `physics` is now 51.
-- [ ] Physics runs 11+ (as many 5-calculator runs as needed to close the gap toward ~61 total —
-  ~10 remain; no seed list left; build agent picks standard-physics formulas not yet covered —
-  candidates not yet used: Coulomb's law two-point-charge framing (repeatedly considered and
-  dropped as too thin so far — a future run could try a genuinely different framing, e.g. net
-  force from 3+ charges, if one exists), elastic/inelastic collisions (1D conservation of
-  momentum), center of mass (two-body), kinetic friction on an incline, specific heat at constant
-  pressure vs volume — verify each against a primary source same as every prior run)
+- [x] Physics run 11 (5), branch `step/46-wave-3-physics-run-11`, PR #113 — **DONE** 2026-11-17:
+  - [x] elastic-collision-calculator
+  - [x] inelastic-collision-calculator
+  - [x] center-of-mass-calculator
+  - [x] kinetic-friction-incline-calculator
+  - [x] molar-heat-capacity-calculator
+  - Closed out this file's own candidate list from run 9/10's notes. **Rejected again**: Coulomb's
+    law (two point charges) — reconsidered a third time for a genuinely different framing (net
+    force from 3+ charges was the suggested angle) but no distinct enough framing was found; it
+    remains functionally identical in shape to `gravitational-force-calculator`'s inverse-square
+    formula, so it stays dropped. Specific heat at constant pressure vs. volume shipped as
+    `molar-heat-capacity-calculator` (the molar/Cp-Cv framing) rather than a mass-based specific-heat
+    variant, since the mass-based case is already `heat-calculator`'s job.
+  - `elastic-collision-calculator` (1D, two masses) is a type-B **breakdown** widget, not a solver —
+    4 inputs (two masses, two initial velocities) drive 2 final-velocity outputs with no single
+    invertible equation connecting all of them, the same reasoning that made
+    `projectile-motion-calculator`/`series-parallel-resistor-calculator` breakdown pages. Outputs:
+    both final velocities plus total kinetic energy before/after (always equal, demonstrating
+    conservation), with a `compareBars` visual comparing the two KE values rather than the signed
+    velocities (negative values draw as empty bars in that visual, so KE — always positive — reads
+    more cleanly). Worked example is OpenStax's own Example 9.11 (Ice Hockey 2: 15 g puck at rest,
+    12 g puck at 2.5 m/s → 2.22 m/s and −0.28 m/s), reproduced exactly. Reuses `mass`/`speed`/
+    `energy` — no new dimension.
+  - `inelastic-collision-calculator` (perfectly inelastic, 1D) is a genuine 5-variable closed-form
+    **solver** (final velocity, both masses, both initial velocities) — unlike the elastic case,
+    conservation of momentum alone (one equation, one unknown after the objects merge) inverts
+    cleanly for any of the five. Own worked example: a 20,000 kg loaded rail car coupling with a
+    stationary 15,000 kg car (≈1.71 m/s) — picked over OpenStax's own deuteron example (real, but
+    at a 10⁻²⁷ kg scale that reads as abstract for a default widget value); the deuteron example
+    (proton + neutron → 1.5×10⁶ m/s) is still used as a direct OpenStax cross-check in the
+    verification script. Reuses `mass`/`speed` — no new dimension. Cross-linked to
+    `elastic-collision-calculator` both ways and to `center-of-mass-calculator`.
+  - `center-of-mass-calculator` (two-body) is a 5-variable closed-form **solver** (center of mass,
+    both masses, both positions) — mathematically the same weighted-average shape as the inelastic
+    collision formula, but kept as a separate calculator since the physical quantities (position vs.
+    velocity) and the search intent are genuinely different, same precedent as several other
+    same-shape-different-physics pairs shipped earlier in this wave. Worked example is OpenStax's
+    own Example 9.16 (Earth-Moon system, Appendix D masses) — **found and explained, not fixed**:
+    recomputing OpenStax's own stated inputs (Earth 5.97×10²⁴ kg, Moon 7.36×10²² kg, distance
+    3.82×10⁸ m) exactly gives 4.65×10⁶ m, while OpenStax's own published answer is 4.64×10⁶ m; the
+    ~0.2% gap is explained in the copy as OpenStax's own intermediate rounding (their inputs are
+    already rounded to 3 significant figures), not a different formula or an extraction error —
+    both figures are stated, with the explanation, rather than silently matching one. Reuses
+    `mass`/`length` — no new dimension.
+  - `kinetic-friction-incline-calculator` (f = μmg×cosθ) is a 4-variable closed-form **solver**
+    (friction force, coefficient, mass, angle), explicitly distinct from the flat-ground
+    `friction-calculator` per the task's framing — the normal force is reduced by cosθ instead of
+    equalling the full weight. Bonus `outputs`: acceleration down the slope (a = g(sinθ − μcosθ),
+    notably mass-independent) and the normal force itself. Worked example is OpenStax's own
+    Example 6.11 (Downhill Skier, solving backward for μₖ ≈ 0.082 from a measured 45.0 N friction
+    force), cross-checked against Example 6.14 (Snowboarding, 13°/μₖ=0.20 → a ≈ 0.29 m/s²) and an
+    independently computed Check Your Understanding 6.8 case (10°/μₖ=0.20 → a ≈ −0.23 m/s², a
+    negative result worth a watch-out item of its own). Reuses `force`/`count`/`mass`/`angle`/
+    `acceleration` — no new dimension.
+  - `molar-heat-capacity-calculator` (Cp = Cv + R, Mayer's relation) is a 2-variable closed-form
+    **solver**, the same "two variables, one fixed-constant offset" shape as chemistry's
+    `ph-poh-calculator` (pH ⇄ pOH, offset 14). R is a hardcoded constant
+    (`MOLAR_GAS_CONSTANT = 8.31446261815324`, the same CODATA value chemistry.ts's
+    `ideal-gas-law-calculator`/`arrhenius-equation-calculator` use, re-declared locally since the two
+    category files don't share module constants), not an editable solver variable, same reasoning as
+    `mass-energy-equivalence-calculator`'s speed of light. Bonus `outputs`: heat capacity ratio
+    (γ = Cp÷Cv) on the dimensionless `count` dimension. Needed one new `lib/units.ts` dimension,
+    `molarHeatCapacity` (base J/(mol·K), alts kJ/(mol·K)/cal/(mol·K) — numerically the identical unit
+    as the existing `molarEntropy`, kept as its own dimension per the "one real unit, two
+    conventional names" precedent `torque`/`energy` set). Round-trip + anchor test in
+    `lib/units.spec.ts` (Cp−Cv = R computed from exact fractions of R, not the table's own rounded
+    figures, to avoid a rounding-driven test mismatch). Added a `content.referenceTable` (first use
+    of that field outside measurements/finance/auto/shopping/sports) listing OpenStax's own Table 3.3
+    (monatomic/diatomic/polyatomic Cv, Cp, γ), every cell computed as an expression over
+    `MOLAR_GAS_CONSTANT` rather than a typed-in literal, matching the table's published values to 2
+    decimals exactly. Cross-linked to `heat-calculator` (mass-based specific heat, explicitly
+    distinguished from this molar-based page) and chemistry's `ideal-gas-law-calculator`.
+  - Every formula/constant fetched directly from a primary source, not recalled from memory, by
+    fetching each OpenStax page's own raw HTML and reading its rendered text directly (not an AI
+    summarizing fetch, per this wave's "read sources directly" rule): OpenStax University Physics
+    Volume 1 §9.3 Conservation of Linear Momentum, §9.4 Types of Collisions (including Examples 9.10
+    and 9.11, both reproduced exactly), §9.6 Center of Mass (including Example 9.16 and Equations
+    9.30–9.33), and §6.2 Friction (including Examples 6.11/6.14, Check Your Understanding 6.8, and
+    Table 6.1); OpenStax University Physics Volume 2 §3.5 Heat Capacities of an Ideal Gas (Equation
+    3.10 and Table 3.3); NIST's CODATA page for the molar gas constant R.
+  - Independent scratch script (`verify_run11.mjs`, scratchpad, no app imports) recomputed every
+    number before the copy was written: both elastic-collision directions (2.2222/−0.27778 m/s,
+    momentum and KE conservation checked to 0.03 kg·m/s / 0.0375 J both before and after) and the
+    deuteron cross-check (1.5×10⁶ m/s); the inelastic train-coupling example (1.71429 m/s) and all
+    four round-trip directions; the center-of-mass Earth-Moon figure (4,652,061.685 m) and the
+    OpenStax-stated 4.64×10⁶ m discrepancy explicitly flagged; the incline-friction skier example
+    (μₖ ≈ 0.0817, rounds to OpenStax's 0.082) and both acceleration cross-checks (0.295 m/s² ≈ 0.29;
+    −0.229 m/s²); and the molar heat capacity table for all three molecular shapes plus the Mayer's
+    relation round trip.
+  - New `KNOWN_NON_FINITE` entries in `data/calculators.spec.ts`: `elastic-collision-calculator`
+    (`velocity1Final`, `velocity2Final`, `kineticEnergyAfter`; both masses 0 at their own min →
+    0/0, kineticEnergyBefore stays an honest finite 0), `inelastic-collision-calculator`
+    (`finalVelocity`; same 0/0), `center-of-mass-calculator` (`centerOfMass`; same 0/0).
+    `kinetic-friction-incline-calculator` and `molar-heat-capacity-calculator` needed none (their
+    all-zero edge cases resolve to an honest finite 0). Snapshot diff is additive-only (187 new
+    lines, 0 removed, confirmed with `git diff --stat`).
+  - `npm test` (1,401 tests), `npm run lint` and `npm run build` all pass (392 routes). A
+    programmatic site-wide sweep (importing the real `calculators` array, same method as run 9) found
+    no duplicate ids, every one of this run's 5 `related` ids exists with no self-reference, and no
+    alias collision involving any of this run's 5 new ids (the same 2 pre-existing collisions run 9
+    found — `emi-calculator`/`mortgage-calculator` and `solution-concentration-calculator`/
+    `molarity-calculator` — are the only ones site-wide, untouched by this run). Verified all 5 new
+    pages from the static HTML `next build` produced
+    (`.next/server/app/en/calculators/<id>.html`): H1, exactly 2 JSON-LD scripts, no "application
+    error" text, and all eight section ids present, all 5 linked correctly from
+    `/en/categories/physics`. A pre-existing process was already listening on port 3000 (not started
+    by this run) — left running, verified via the static HTML output instead, per this run's own
+    instructions.
+  - 361 calculators total after this run (356 + 5). `physics` is now 56.
 - [x] Chemistry run 3 (5), branch `step/46-wave-3-chemistry-run-3`, PR #67 — **DONE** 2026-11-08:
   - [x] limiting-reagent-calculator
   - [x] theoretical-yield-calculator

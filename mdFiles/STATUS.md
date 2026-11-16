@@ -7,7 +7,29 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-11-17 · **Step 46 chemistry run 11 DONE** — PR #110, branch
+Last updated: 2026-11-17 · **Step 46 physics run 11 DONE** — PR #113, branch
+`step/46-wave-3-physics-run-11`. Added `elastic-collision-calculator` (1D two-mass elastic
+collision, breakdown widget solving both final velocities at once — not a solver, since two inputs
+can't invert to four), `inelastic-collision-calculator` (perfectly inelastic 1D collision,
+5-variable closed-form solver), `center-of-mass-calculator` (two-body center of mass, 5-variable
+closed-form solver), `kinetic-friction-incline-calculator` (f = μmg×cosθ, distinct from the flat-
+ground `friction-calculator`, with acceleration-down-slope and normal-force bonus outputs), and
+`molar-heat-capacity-calculator` (Cp = Cv + R, Mayer's relation for an ideal gas, with heat-capacity-
+ratio bonus output and a Table-3.3-sourced reference table). New `lib/units.ts` dimension:
+`molarHeatCapacity` (same J/(mol·K) unit as `molarEntropy`, kept separate per the "one real unit,
+two conventional names" precedent). Coulomb's law (two point charges) was reconsidered a third time
+and dropped again as too thin a variant of `gravitational-force-calculator`'s identical inverse-
+square shape — no genuinely distinct framing was found. Every formula fetched directly from OpenStax
+(University Physics Volume 1 §9.3/§9.4/§9.6 for collisions and center of mass, §6.2 for incline
+friction; University Physics Volume 2 §3.5 for molar heat capacities), confirmed by directly fetching
+and reading each page's own text, not an AI summary. Found and explained (not a bug, documented in
+the calculator copy itself): OpenStax's own Example 9.16 (Earth-Moon center of mass) states
+4.64×10⁶ m, but recomputing its own stated inputs exactly gives 4.65×10⁶ m — attributed to OpenStax's
+own intermediate rounding, both figures shown with that explanation. `npm test` (1,401), lint and
+`npm run build` all pass (392 routes). **`physics` 51 → 56, site-wide 356 → 361.** Full detail in
+`mdFiles/steps/46-47-wave-3-physics-chemistry.md`.
+
+Previous: **Step 46 chemistry run 11 DONE** — PR #110, branch
 `step/46-wave-3-chemistry-run-11` (built in parallel with physics run 10, separate category file).
 Added `formal-charge-calculator`, `latent-heat-calculator`, `raoults-law-calculator`,
 `nuclear-binding-energy-calculator`, `gas-density-calculator`. New `lib/units.ts` dimension:

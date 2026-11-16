@@ -19,6 +19,11 @@ const GRAVITATIONAL_CONSTANT = 6.6743e-11;
 // for electric-field-calculator's E = kq/r^2.
 const VACUUM_PERMITTIVITY = 8.8541878188e-12;
 const COULOMB_CONSTANT = 1 / (4 * Math.PI * VACUUM_PERMITTIVITY);
+// Molar gas constant, exact per the 2019 SI redefinition (NIST CODATA, physics.nist.gov/cgi-bin/cuu/Value?r).
+// Same value chemistry.ts's ideal-gas-law-calculator and arrhenius-equation-calculator use, re-declared
+// here since the two category files don't share module-level constants. Used by
+// molar-heat-capacity-calculator's Cp = Cv + R (OpenStax University Physics Volume 2 §3.5 Equation 3.10).
+const MOLAR_GAS_CONSTANT = 8.31446261815324;
 
 // Moment-of-inertia shape lookup (moment-of-inertia-calculator). Formulas are OpenStax University
 // Physics Volume 1 §10.4 Figure 10.20 ("Values of rotational inertia for common shapes of
@@ -6273,6 +6278,632 @@ export const physicsCalculators: CalculatorConfig[] = [
     compute(values) {
       const { inductance, capacitance } = values;
       return { resonantFrequency: inductance <= 0 || capacitance <= 0 ? NaN : 1 / (2 * Math.PI * Math.sqrt(inductance * capacitance)) };
+    }
+  },
+  {
+    id: 'elastic-collision-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'v′',
+    updatedAt: '2026-11-17',
+    aliases: ['elastic collision calculator', 'elastic collision formula calculator', 'final velocity after collision calculator', 'conservation of momentum and kinetic energy calculator', 'two-ball elastic collision calculator'],
+    related: ['momentum-calculator', 'kinetic-energy-calculator', 'inelastic-collision-calculator'],
+    title: 'Elastic Collision Calculator',
+    description: 'Find both objects’ final velocities after a one-dimensional elastic collision, from each object’s mass and initial velocity — conserves momentum and kinetic energy exactly.',
+    example: 'A 12 g puck moving at 2.5 m/s strikes a motionless 15 g puck head-on. After the elastic collision, the first puck bounces back at about −0.28 m/s and the second moves off at about 2.22 m/s.',
+    breakdown: {
+      headline: 'velocity1Final',
+      headlineLabel: "Object 1's final velocity",
+      outputs: [
+        { id: 'velocity1Final', label: "Object 1's final velocity", dimension: 'speed', unit: 'm/s' },
+        { id: 'velocity2Final', label: "Object 2's final velocity", dimension: 'speed', unit: 'm/s' },
+        { id: 'kineticEnergyBefore', label: 'Total kinetic energy before', dimension: 'energy', unit: 'J' },
+        { id: 'kineticEnergyAfter', label: 'Total kinetic energy after', dimension: 'energy', unit: 'J' }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'kineticEnergyBefore', label: 'Total kinetic energy before' },
+          { from: 'kineticEnergyAfter', label: 'Total kinetic energy after' }
+        ],
+        title: 'Kinetic energy before vs. after (equal, since the collision is elastic)',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is an elastic collision?',
+        paragraphs: [
+          'When two objects collide, the total momentum of the system is always conserved, as long as no outside force acts on it. What is not always conserved is kinetic energy — some of it often turns into heat, sound, or permanent deformation. A collision where the total kinetic energy comes out exactly the same after the collision as before it is called elastic.',
+          'No everyday collision between large objects is perfectly elastic — even a "bouncy" collision between two billiard balls loses a small amount of energy to sound and the click of impact. But the elastic model is extremely useful: it is a very close approximation for hard objects that barely deform (billiard balls, steel ball bearings), and it is essentially exact for collisions between individual atoms, molecules, or subatomic particles, which is where the formula is used most rigorously in physics.',
+          'Because an elastic collision conserves two separate quantities — momentum and kinetic energy — a one-dimensional, two-object collision gives two equations in two unknowns (the two final velocities), which can be solved exactly. That is what this calculator does.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter both objects’ masses and their velocities right before the collision; the calculator solves for both final velocities at once.',
+        steps: [
+          { name: 'Enter both masses', text: 'Type each object’s mass and pick its unit. Masses must be positive — use whichever consistent unit is convenient (kg, g, lb); the ratio between the two masses is what matters.' },
+          { name: 'Enter both initial velocities', text: 'Pick one direction as positive and stick with it for both objects. A stationary object gets a velocity of 0; an object moving the opposite way to the other gets a negative value.' },
+          { name: 'Read the final velocities', text: 'The result shows each object’s velocity right after the collision, in the same direction convention you used for the inputs — a negative result means that object is now moving the opposite way from how it started.' },
+          { name: 'Check the kinetic energy row', text: 'The total kinetic energy before and after are shown separately so you can see they match — the signature of a genuinely elastic collision.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Solving the conservation of momentum and conservation of kinetic energy equations together, for a head-on (one-dimensional) elastic collision, gives a closed-form answer for each final velocity.',
+        expression: "v1' = [(m1 − m2)v1 + 2m2v2] ÷ (m1 + m2)\nv2' = [(m2 − m1)v2 + 2m1v1] ÷ (m1 + m2)",
+        terms: [
+          { symbol: 'm1, m2', meaning: 'The masses of object 1 and object 2, in any consistent mass unit.' },
+          { symbol: 'v1, v2', meaning: 'Each object’s velocity right before the collision, signed for direction.' },
+          { symbol: "v1', v2'", meaning: 'Each object’s velocity right after the collision — what the calculator solves for.' }
+        ],
+        note: 'This is the one-dimensional (head-on, along a single line) case only. A glancing or off-center collision needs the same two conservation laws applied separately to each direction component, which this calculator does not cover.'
+      },
+      workedExample: {
+        intro: 'A 12 g hockey puck slides at 2.5 m/s toward a motionless 15 g puck of a different kind, and strikes it head-on. If the collision is perfectly elastic, what is each puck’s velocity afterward? (OpenStax University Physics Volume 1, Example 9.11, with the blue puck’s direction of travel taken as positive.)',
+        rows: [
+          { label: 'Object 1 (red puck): mass, initial velocity', value: '0.015 kg, 0 m/s' },
+          { label: 'Object 2 (blue puck): mass, initial velocity', value: '0.012 kg, 2.5 m/s' },
+          { label: "Object 1's final velocity, v1'", value: '≈ 2.22 m/s' },
+          { label: "Object 2's final velocity, v2'", value: '≈ −0.28 m/s' }
+        ],
+        result: "v1' ≈ 2.22 m/s · v2' ≈ −0.28 m/s",
+        explanation: 'The previously motionless red puck picks up speed in the direction the blue puck was moving, while the lighter blue puck bounces backward (its final velocity comes out negative). Checking the conservation laws confirms the answer: momentum is 0.012 × 2.5 = 0.03 kg·m/s both before and after, and kinetic energy is 0.5 × 0.012 × 2.5² = 0.0375 J both before and after — exactly conserved, as an elastic collision requires.'
+      },
+      watchOut: [
+        {
+          title: 'This is the one-dimensional, head-on case only',
+          body: 'A glancing collision — where the objects move off at an angle to the original line of motion — needs the same conservation laws applied to each direction (x and y) separately. This calculator only covers a collision along a single line.'
+        },
+        {
+          title: 'Pick one positive direction and use it for both objects',
+          body: 'The sign of every velocity has to be relative to the same chosen positive direction. A negative result for a final velocity is a real answer — it means that object ends up moving the opposite way from how it started, not an error.'
+        },
+        {
+          title: 'Equal masses swap velocities exactly',
+          body: 'If m1 = m2, the formula simplifies to v1’ = v2 and v2’ = v1 — the two objects simply trade velocities. This is why a cue ball striking an identical, stationary ball head-on stops dead while the other ball takes off at the cue ball’s original speed.'
+        },
+        {
+          title: 'Truly elastic collisions are rare at everyday scales',
+          body: 'Macroscopic objects always lose a little kinetic energy to heat, sound, or deformation, making real collisions somewhat inelastic. Elastic is an idealization that is most accurate for hard, low-deformation objects, and exact for collisions between individual atoms or subatomic particles.'
+        },
+        {
+          title: 'Not the same as a perfectly inelastic collision',
+          body: 'A perfectly inelastic collision, where the two objects stick together, uses a different, simpler formula (conservation of momentum only — see the inelastic collision calculator) and loses the maximum possible amount of kinetic energy instead of none.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §9.4 Types of Collisions', url: 'https://openstax.org/books/university-physics-volume-1/pages/9-4-types-of-collisions' },
+        { label: 'OpenStax, University Physics Volume 1, §9.3 Conservation of Linear Momentum', url: 'https://openstax.org/books/university-physics-volume-1/pages/9-3-conservation-of-linear-momentum' }
+      ]
+    },
+    inputs: [
+      { id: 'mass1', label: 'Object 1 mass', type: 'number', placeholder: '0.015', defaultValue: 0.015, step: 0.001, min: 0, dimension: 'mass', unit: 'kg' },
+      { id: 'velocity1', label: 'Object 1 initial velocity', type: 'number', placeholder: '0', defaultValue: 0, step: 0.1, dimension: 'speed', unit: 'm/s' },
+      { id: 'mass2', label: 'Object 2 mass', type: 'number', placeholder: '0.012', defaultValue: 0.012, step: 0.001, min: 0, dimension: 'mass', unit: 'kg' },
+      { id: 'velocity2', label: 'Object 2 initial velocity', type: 'number', placeholder: '2.5', defaultValue: 2.5, step: 0.1, dimension: 'speed', unit: 'm/s' }
+    ],
+    seo: {
+      title: 'Elastic Collision Calculator – Final Velocities (1D)',
+      description: 'Free elastic collision calculator. Find both objects’ final velocities after a 1D elastic collision from mass and initial velocity, with a worked example.',
+      faq: [
+        { question: 'What is the formula for an elastic collision?', answer: "v1' = [(m1−m2)v1 + 2m2v2] ÷ (m1+m2) and v2' = [(m2−m1)v2 + 2m1v1] ÷ (m1+m2), where 1 and 2 label the two objects and the primed values are the velocities after the collision." },
+        { question: 'What happens in an elastic collision between equal masses?', answer: 'The two objects simply swap velocities: v1’ = v2 and v2’ = v1. A moving ball striking an identical stationary one head-on stops completely, handing off all its velocity to the other ball.' },
+        { question: 'What is the difference between an elastic and inelastic collision?', answer: 'An elastic collision conserves both momentum and kinetic energy. An inelastic collision still conserves momentum but loses some kinetic energy — a perfectly inelastic collision, where the objects stick together, loses the maximum possible amount.' },
+        { question: 'Is momentum conserved in an elastic collision too?', answer: 'Yes — momentum is conserved in every collision in a closed system, elastic or not. In the worked example, momentum is 0.03 kg·m/s both before and after the collision.' },
+        { question: 'Are any real-world collisions perfectly elastic?', answer: 'Essentially exact ones happen between individual atoms, molecules, and subatomic particles. At everyday scales, hard, low-deformation collisions — like two steel ball bearings, or billiard balls — come very close.' },
+        { question: 'Can this calculator handle a 2D or glancing collision?', answer: 'No. It solves the one-dimensional, head-on case. A glancing collision needs the same two conservation laws applied separately to each direction component, which takes a different, two-dimensional setup.' }
+      ]
+    },
+    compute(values) {
+      const { mass1, velocity1, mass2, velocity2 } = values;
+      const totalMass = mass1 + mass2;
+      const velocity1Final = ((mass1 - mass2) * velocity1 + 2 * mass2 * velocity2) / totalMass;
+      const velocity2Final = ((mass2 - mass1) * velocity2 + 2 * mass1 * velocity1) / totalMass;
+      return {
+        velocity1Final,
+        velocity2Final,
+        kineticEnergyBefore: 0.5 * mass1 * velocity1 ** 2 + 0.5 * mass2 * velocity2 ** 2,
+        kineticEnergyAfter: 0.5 * mass1 * velocity1Final ** 2 + 0.5 * mass2 * velocity2Final ** 2
+      };
+    }
+  },
+  {
+    id: 'inelastic-collision-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'vf',
+    updatedAt: '2026-11-17',
+    aliases: ['perfectly inelastic collision calculator', 'collision final velocity calculator', 'objects stick together collision calculator', 'conservation of momentum calculator', 'coupling velocity calculator'],
+    related: ['momentum-calculator', 'elastic-collision-calculator', 'center-of-mass-calculator'],
+    title: 'Inelastic Collision Calculator',
+    description: 'Find the shared final velocity after a perfectly inelastic, one-dimensional collision — two objects that stick together — or solve backward for either mass or either initial velocity.',
+    example: 'A 20,000 kg rail car moving at 3 m/s couples with a stationary 15,000 kg car; the joined cars move off together at about 1.71 m/s.',
+    solver: {
+      defaultTarget: 'finalVelocity',
+      variables: [
+        { id: 'finalVelocity', label: 'Final velocity (combined)', symbol: "v'", dimension: 'speed', defaultValue: 1.7143, defaultUnit: 'm/s' },
+        { id: 'mass1', label: 'Object 1 mass', symbol: 'm₁', dimension: 'mass', defaultValue: 20000, defaultUnit: 'kg' },
+        { id: 'velocity1', label: 'Object 1 initial velocity', symbol: 'v₁', dimension: 'speed', defaultValue: 3, defaultUnit: 'm/s' },
+        { id: 'mass2', label: 'Object 2 mass', symbol: 'm₂', dimension: 'mass', defaultValue: 15000, defaultUnit: 'kg' },
+        { id: 'velocity2', label: 'Object 2 initial velocity', symbol: 'v₂', dimension: 'speed', defaultValue: 0, defaultUnit: 'm/s' }
+      ],
+      solve: {
+        finalVelocity: ({ mass1, velocity1, mass2, velocity2 }) => (mass1 + mass2 === 0 ? NaN : (mass1 * velocity1 + mass2 * velocity2) / (mass1 + mass2)),
+        mass1: ({ finalVelocity, velocity1, mass2, velocity2 }) => (finalVelocity === velocity1 ? NaN : (mass2 * (velocity2 - finalVelocity)) / (finalVelocity - velocity1)),
+        velocity1: ({ finalVelocity, mass1, mass2, velocity2 }) => (mass1 === 0 ? NaN : (finalVelocity * (mass1 + mass2) - mass2 * velocity2) / mass1),
+        mass2: ({ finalVelocity, mass1, velocity1, velocity2 }) => (finalVelocity === velocity2 ? NaN : (mass1 * (velocity1 - finalVelocity)) / (finalVelocity - velocity2)),
+        velocity2: ({ finalVelocity, mass1, velocity1, mass2 }) => (mass2 === 0 ? NaN : (finalVelocity * (mass1 + mass2) - mass1 * velocity1) / mass2)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is a perfectly inelastic collision?',
+        paragraphs: [
+          'A collision is perfectly inelastic when the two objects stick together afterward and move off as one. Train cars coupling, a dart sticking in a board, and a football tackle are all close to perfectly inelastic. Unlike an elastic collision, kinetic energy is not conserved — a perfectly inelastic collision loses the maximum possible amount of it, with the rest going into deforming the objects, heat, and sound.',
+          'What is still conserved, in this collision as in every collision in a closed system, is momentum. With two objects becoming one, that single conservation law is enough on its own to solve for the shared final velocity — there is no second equation needed, unlike the elastic case, because there is only one unknown.',
+          'The same formula works equally well solving backward: if you know the final velocity and three of the four mass/velocity inputs, the calculator finds the missing one.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any four of the five values — the two masses, the two initial velocities, and the shared final velocity; the fifth fills in automatically.',
+        steps: [
+          { name: 'Enter the two masses', text: 'Type each object’s mass and pick its unit. The formula only needs their ratio, so any consistent mass unit works.' },
+          { name: 'Enter the two initial velocities', text: 'Pick one direction as positive and use it for both objects. A stationary object gets a velocity of 0.' },
+          { name: 'Read the final velocity', text: 'The field marked auto fills in automatically. By default that is the shared final velocity, but typing into it solves for one of the other four instead.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Conservation of momentum, with the two final velocities replaced by a single shared one, rearranges to give a formula for each of the five quantities.',
+        expression: "v' = (m₁v₁ + m₂v₂) ÷ (m₁ + m₂)",
+        terms: [
+          { symbol: 'm₁, m₂', meaning: 'The masses of the two objects before the collision.' },
+          { symbol: 'v₁, v₂', meaning: 'Each object’s velocity right before the collision, signed for direction.' },
+          { symbol: "v'", meaning: 'The single velocity both objects share immediately after they stick together.' }
+        ],
+        note: 'This is the one-dimensional case. Momentum is conserved along each direction separately in a 2D or 3D collision, which needs the same formula applied once per direction.'
+      },
+      workedExample: {
+        intro: 'A 20,000 kg loaded rail car rolls at 3 m/s toward a stationary, empty 15,000 kg car on the same track, and couples to it. How fast do they move off together?',
+        rows: [
+          { label: 'Object 1 (loaded car): mass, initial velocity', value: '20,000 kg, 3 m/s' },
+          { label: 'Object 2 (empty car): mass, initial velocity', value: '15,000 kg, 0 m/s' },
+          { label: 'Combined mass (m₁ + m₂)', value: '35,000 kg' },
+          { label: "Final velocity, v' = (20,000 × 3 + 15,000 × 0) ÷ 35,000", value: '≈ 1.71 m/s' }
+        ],
+        result: "v' ≈ 1.71 m/s",
+        explanation: 'The momentum before the collision belongs entirely to the loaded car: 20,000 × 3 = 60,000 kg·m/s. Spread across the combined 35,000 kg after coupling, that gives 60,000 ÷ 35,000 ≈ 1.714 m/s — slower than the loaded car’s original speed, because it now has to drag the stationary car’s mass along with it.'
+      },
+      watchOut: [
+        {
+          title: '"Perfectly" inelastic means maximum kinetic energy loss, not total loss',
+          body: 'Unless the final combined velocity happens to be zero, the stuck-together objects still carry some kinetic energy afterward. "Perfectly inelastic" describes losing the largest amount of kinetic energy physically possible for that collision, not losing all of it.'
+        },
+        {
+          title: 'Only momentum is conserved — do not also assume kinetic energy matches',
+          body: 'Unlike the elastic collision calculator, the kinetic energy before and after this type of collision are genuinely different. Computing kinetic energy before and after separately (with the kinetic energy calculator) will show a real loss, not a rounding artifact.'
+        },
+        {
+          title: 'Pick one positive direction and use it for both objects',
+          body: 'A head-on collision between two moving objects needs one of the two initial velocities entered as negative, if they are moving toward each other along the chosen positive direction.'
+        },
+        {
+          title: 'Solving for a mass can have no answer',
+          body: 'If an object’s initial velocity already equals the final velocity you entered, there is no finite mass that makes the momentum equation work (division by zero) — the calculator reports no answer rather than a wrong one.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §9.4 Types of Collisions', url: 'https://openstax.org/books/university-physics-volume-1/pages/9-4-types-of-collisions' },
+        { label: 'OpenStax, University Physics Volume 1, §9.3 Conservation of Linear Momentum', url: 'https://openstax.org/books/university-physics-volume-1/pages/9-3-conservation-of-linear-momentum' }
+      ]
+    },
+    inputs: [
+      { id: 'mass1', label: 'Object 1 mass (kg)', type: 'number', placeholder: '20000', defaultValue: 20000, step: 1, min: 0 },
+      { id: 'velocity1', label: 'Object 1 initial velocity (m/s)', type: 'number', placeholder: '3', defaultValue: 3, step: 0.1 },
+      { id: 'mass2', label: 'Object 2 mass (kg)', type: 'number', placeholder: '15000', defaultValue: 15000, step: 1, min: 0 },
+      { id: 'velocity2', label: 'Object 2 initial velocity (m/s)', type: 'number', placeholder: '0', defaultValue: 0, step: 0.1 }
+    ],
+    seo: {
+      title: 'Inelastic Collision Calculator – Final Velocity',
+      description: 'Free perfectly inelastic collision calculator. Solve for the shared final velocity, either mass, or either initial velocity, with a worked example.',
+      faq: [
+        { question: 'What is the formula for a perfectly inelastic collision?', answer: "v' = (m₁v₁ + m₂v₂) ÷ (m₁+m₂), where the two objects share the single final velocity v' after sticking together." },
+        { question: 'How do I find the final velocity after two objects collide and stick together?', answer: 'Multiply each mass by its own initial velocity, add the two results, and divide by the combined mass. A 20,000 kg car at 3 m/s coupling with a stationary 15,000 kg car gives (60,000 + 0) ÷ 35,000 ≈ 1.71 m/s.' },
+        { question: 'Is kinetic energy conserved in a perfectly inelastic collision?', answer: 'No. Momentum is always conserved, but a perfectly inelastic collision loses the maximum possible amount of kinetic energy — the opposite extreme from an elastic collision, which loses none.' },
+        { question: 'What is the difference between inelastic and perfectly inelastic?', answer: 'Perfectly inelastic specifically means the objects stick together and move as one afterward, which loses the most kinetic energy a collision between those two objects can lose. A general inelastic collision loses some kinetic energy but the objects can still separate.' },
+        { question: 'Can the final velocity be negative?', answer: 'Yes — if the heavier or faster object is moving in the negative direction, the combined object can end up moving that way too. The sign simply shows which direction the combined object travels relative to your chosen positive direction.' },
+        { question: 'How is this different from an elastic collision?', answer: 'An elastic collision conserves both momentum and kinetic energy, and the two objects keep separate final velocities. A perfectly inelastic collision only conserves momentum, and the two objects end up moving at one shared final velocity.' }
+      ]
+    },
+    compute(values) {
+      const { mass1, velocity1, mass2, velocity2 } = values;
+      const totalMass = mass1 + mass2;
+      return { finalVelocity: totalMass === 0 ? NaN : (mass1 * velocity1 + mass2 * velocity2) / totalMass };
+    }
+  },
+  {
+    id: 'center-of-mass-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'xcm',
+    updatedAt: '2026-11-17',
+    aliases: ['center of mass calculator', 'centre of mass calculator', 'two body center of mass calculator', 'balance point calculator', 'center of gravity of two masses calculator'],
+    related: ['momentum-calculator', 'gravitational-force-calculator', 'inelastic-collision-calculator'],
+    title: 'Center of Mass Calculator (Two-Body)',
+    description: 'Find the center of mass of a two-object system from each object’s mass and position along a line — or solve backward for a mass or a position.',
+    example: 'Earth (5.97×10²⁴ kg) and the Moon (7.36×10²² kg), 3.82×10⁸ m apart, balance at a center of mass about 4.65×10⁶ m from Earth’s center — roughly 1.72 million meters below the surface.',
+    solver: {
+      defaultTarget: 'centerOfMass',
+      variables: [
+        { id: 'centerOfMass', label: 'Center of mass position', symbol: 'xᴄᴍ', dimension: 'length', defaultValue: 4652062, defaultUnit: 'm' },
+        { id: 'mass1', label: 'Object 1 mass', symbol: 'm₁', dimension: 'mass', defaultValue: 5.97e24, defaultUnit: 'kg' },
+        { id: 'position1', label: 'Object 1 position', symbol: 'x₁', dimension: 'length', defaultValue: 0, defaultUnit: 'm' },
+        { id: 'mass2', label: 'Object 2 mass', symbol: 'm₂', dimension: 'mass', defaultValue: 7.36e22, defaultUnit: 'kg' },
+        { id: 'position2', label: 'Object 2 position', symbol: 'x₂', dimension: 'length', defaultValue: 3.82e8, defaultUnit: 'm' }
+      ],
+      solve: {
+        centerOfMass: ({ mass1, position1, mass2, position2 }) => (mass1 + mass2 === 0 ? NaN : (mass1 * position1 + mass2 * position2) / (mass1 + mass2)),
+        mass1: ({ centerOfMass, position1, mass2, position2 }) => (centerOfMass === position1 ? NaN : (mass2 * (position2 - centerOfMass)) / (centerOfMass - position1)),
+        position1: ({ centerOfMass, mass1, mass2, position2 }) => (mass1 === 0 ? NaN : (centerOfMass * (mass1 + mass2) - mass2 * position2) / mass1),
+        mass2: ({ centerOfMass, mass1, position1, position2 }) => (centerOfMass === position2 ? NaN : (mass1 * (position1 - centerOfMass)) / (centerOfMass - position2)),
+        position2: ({ centerOfMass, mass1, position1, mass2 }) => (mass2 === 0 ? NaN : (centerOfMass * (mass1 + mass2) - mass1 * position1) / mass2)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is the center of mass?',
+        paragraphs: [
+          'The center of mass of a system of objects is the single point that moves exactly as if all the system’s mass were concentrated there. For two objects on a line, it sits closer to whichever object is heavier — pulled toward it in proportion to how much more mass it has.',
+          'It is a weighted average of position, with each object’s position weighted by its own mass. If the two masses are equal, the center of mass sits exactly halfway between them. If one object is far heavier, the center of mass sits very close to that object — which is why the Earth-Moon system’s center of mass, worked out below, actually lies inside Earth rather than out in space between the two bodies.',
+          'The same idea extends to any number of objects in 3D (summing over every object’s mass times its position vector, then dividing by the total mass), but a two-object system along a single line is the simplest case and the one this calculator covers.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any four of the five values — the two masses, the two positions, and the center of mass; the fifth fills in automatically.',
+        steps: [
+          { name: 'Choose an origin and a direction', text: 'Pick any point on the line as position 0, and one direction as positive. Where you put the origin does not change the physical answer, only the number you read it off as.' },
+          { name: 'Enter both masses and positions', text: 'Type each object’s mass and its position along the line you chose. The field marked auto fills in automatically.' },
+          { name: 'Read the center of mass', text: 'By default, that auto field is the center of mass position itself, measured from the same origin you chose for the two objects.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one — useful for finding where a second mass must sit to balance a system at a known point.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The center of mass of two objects is the mass-weighted average of their two positions, which rearranges to give a formula for each of the five quantities.',
+        expression: 'xᴄᴍ = (m₁x₁ + m₂x₂) ÷ (m₁ + m₂)',
+        terms: [
+          { symbol: 'm₁, m₂', meaning: 'The masses of the two objects.' },
+          { symbol: 'x₁, x₂', meaning: 'Each object’s position along the chosen line, measured from the same origin.' },
+          { symbol: 'xᴄᴍ', meaning: 'The center of mass position, measured from that same origin.' }
+        ],
+        note: 'This is the one-dimensional, two-object case. A system on a plane or in 3D needs the same weighted-average formula applied to each coordinate (x, y, z) separately, and a system of more than two objects sums every object’s mass times position before dividing by the total mass.'
+      },
+      workedExample: {
+        intro: 'Where is the center of mass of the Earth-Moon system, measured from the center of Earth? (Based on OpenStax University Physics Volume 1, Example 9.16, using Earth’s mass as the origin.)',
+        rows: [
+          { label: 'Earth: mass, position', value: '5.97×10²⁴ kg, 0 m' },
+          { label: 'Moon: mass, position', value: '7.36×10²² kg, 3.82×10⁸ m' },
+          { label: 'Combined mass (m₁ + m₂)', value: '≈ 6.044×10²⁴ kg' },
+          { label: 'Center of mass, xᴄᴍ', value: '≈ 4.65×10⁶ m from Earth’s center' }
+        ],
+        result: 'xᴄᴍ ≈ 4.65×10⁶ m (4,650 km) from Earth’s center',
+        explanation: 'Earth outweighs the Moon by about 81 to 1, so the center of mass sits far closer to Earth’s center than to the Moon — only about 4.65 million meters out, versus Earth’s own 6.37×10⁶ m radius. That puts it roughly 1.72 million meters (1,720 km) below Earth’s surface: the Earth-Moon system’s balance point is inside Earth itself. OpenStax’s own version of this example, using the same three-significant-figure inputs but rounding at each intermediate step, publishes a very close 4.64×10⁶ m (1,730 km below the surface); the small difference is ordinary rounding carried through the calculation, not a different formula.'
+      },
+      watchOut: [
+        {
+          title: 'The origin you choose does not change the physics',
+          body: 'Moving the zero point changes every position number, including the center of mass, by the same amount — the center of mass always stays the same fixed point relative to the two objects themselves.'
+        },
+        {
+          title: 'The center of mass does not have to sit between the two objects’ surfaces',
+          body: 'For two objects of very different size, like a planet and its moon, the mass-weighted balance point can end up inside the larger object, not floating in the empty space between them.'
+        },
+        {
+          title: 'Equal masses balance exactly halfway',
+          body: 'If m₁ = m₂, the formula reduces to the simple midpoint, xᴄᴍ = (x₁ + x₂) ÷ 2, regardless of how far apart the two objects are.'
+        },
+        {
+          title: 'This is a one-dimensional calculator',
+          body: 'A system spread across two or three dimensions needs this same weighted-average formula applied once per coordinate axis, then combined into a position vector.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §9.6 Center of Mass', url: 'https://openstax.org/books/university-physics-volume-1/pages/9-6-center-of-mass' }
+      ]
+    },
+    inputs: [
+      { id: 'mass1', label: 'Object 1 mass (kg)', type: 'number', placeholder: '5.97e24', defaultValue: 5.97e24, step: 1, min: 0 },
+      { id: 'position1', label: 'Object 1 position (m)', type: 'number', placeholder: '0', defaultValue: 0, step: 1 },
+      { id: 'mass2', label: 'Object 2 mass (kg)', type: 'number', placeholder: '7.36e22', defaultValue: 7.36e22, step: 1, min: 0 },
+      { id: 'position2', label: 'Object 2 position (m)', type: 'number', placeholder: '3.82e8', defaultValue: 3.82e8, step: 1 }
+    ],
+    seo: {
+      title: 'Center of Mass Calculator – Two-Body System',
+      description: 'Free center of mass calculator for a two-object system. Solve for the center of mass, either mass, or either position, with an Earth-Moon worked example.',
+      faq: [
+        { question: 'What is the formula for the center of mass of two objects?', answer: 'xᴄᴍ = (m₁x₁ + m₂x₂) ÷ (m₁+m₂), a mass-weighted average of the two positions, measured from any common origin.' },
+        { question: 'How do I find the center of mass of two objects?', answer: 'Multiply each mass by its own position, add the results, and divide by the total mass. Two equal masses balance exactly halfway between them.' },
+        { question: 'Can the center of mass be inside one of the objects?', answer: 'Yes. When one object is far more massive than the other, like a planet and a small moon, the mass-weighted balance point can end up inside the larger object rather than in the space between them.' },
+        { question: 'Does it matter where I put the origin (position 0)?', answer: 'No — shifting the origin shifts every position, including the calculated center of mass, by the same amount. The center of mass stays fixed relative to the two objects themselves.' },
+        { question: 'What if the two masses are equal?', answer: 'The center of mass sits exactly at the midpoint between them, xᴄᴍ = (x₁+x₂) ÷ 2, no matter how far apart they are.' },
+        { question: 'Does this work for three or more objects?', answer: 'The same weighted-average idea extends to any number of objects — sum every object’s mass times its position, then divide by the total mass — but this calculator is scoped to the common two-object case.' }
+      ]
+    },
+    compute(values) {
+      const { mass1, position1, mass2, position2 } = values;
+      const totalMass = mass1 + mass2;
+      return { centerOfMass: totalMass === 0 ? NaN : (mass1 * position1 + mass2 * position2) / totalMass };
+    }
+  },
+  {
+    id: 'kinetic-friction-incline-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'fθ',
+    updatedAt: '2026-11-17',
+    aliases: ['friction on an inclined plane calculator', 'friction on a ramp calculator', 'incline friction force calculator', 'acceleration down a slope calculator', 'coefficient of kinetic friction on a slope calculator'],
+    related: ['friction-calculator', 'free-fall-calculator', 'weight-calculator'],
+    title: 'Kinetic Friction on an Incline Calculator',
+    description: 'Find the kinetic friction force on a sloped surface — f = μmg×cosθ — or solve backward for the coefficient, mass, or angle, plus the resulting acceleration down the slope.',
+    example: 'A 62 kg skier on a 25° slope with 45.0 N of kinetic friction has a coefficient of kinetic friction of about 0.082.',
+    solver: {
+      defaultTarget: 'frictionForce',
+      variables: [
+        { id: 'frictionForce', label: 'Kinetic friction force', symbol: 'fₖ', dimension: 'force', defaultValue: 45.0, defaultUnit: 'N' },
+        { id: 'coefficient', label: 'Coefficient of kinetic friction', symbol: 'μₖ', dimension: 'count', defaultValue: 0.082, defaultUnit: 'count' },
+        { id: 'mass', label: 'Mass', symbol: 'm', dimension: 'mass', defaultValue: 62, defaultUnit: 'kg' },
+        { id: 'angle', label: 'Slope angle', symbol: 'θ', dimension: 'angle', defaultValue: 25, defaultUnit: 'deg' }
+      ],
+      solve: {
+        frictionForce: ({ coefficient, mass, angle }) => coefficient * mass * STANDARD_GRAVITY * Math.cos(angle),
+        coefficient: ({ frictionForce, mass, angle }) => {
+          const normal = mass * STANDARD_GRAVITY * Math.cos(angle);
+          return normal === 0 ? NaN : frictionForce / normal;
+        },
+        mass: ({ frictionForce, coefficient, angle }) => {
+          const denom = coefficient * STANDARD_GRAVITY * Math.cos(angle);
+          return denom === 0 ? NaN : frictionForce / denom;
+        },
+        angle: ({ frictionForce, coefficient, mass }) => {
+          const denom = coefficient * mass * STANDARD_GRAVITY;
+          if (denom === 0) return NaN;
+          const ratio = frictionForce / denom;
+          return ratio < -1 || ratio > 1 ? NaN : Math.acos(ratio);
+        }
+      },
+      outputs: [
+        {
+          id: 'accelerationDownSlope',
+          label: 'Acceleration down the slope',
+          dimension: 'acceleration',
+          compute: ({ coefficient, angle }) => STANDARD_GRAVITY * (Math.sin(angle) - coefficient * Math.cos(angle))
+        },
+        {
+          id: 'normalForce',
+          label: 'Normal force',
+          dimension: 'force',
+          compute: ({ mass, angle }) => mass * STANDARD_GRAVITY * Math.cos(angle)
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is kinetic friction on an incline?',
+        paragraphs: [
+          'On a flat, horizontal surface, the normal force pressing two surfaces together equals the full weight of the object on top, so friction is simply f = μmg. On a slope, only part of the weight presses straight into the surface — the rest pulls the object down along the slope instead. That changes the normal force, and with it, the friction force.',
+          'Splitting an object’s weight into components parallel and perpendicular to the slope shows that the normal force on an incline is N = mg×cosθ, where θ is the angle of the slope. Kinetic friction, which always equals μₖ times the normal force, becomes fₖ = μₖmg×cosθ — smaller than the flat-ground value by exactly the factor cosθ.',
+          'Because gravity also pulls the object down the slope directly (the mg×sinθ component), the friction force alone is not usually the end of the story: comparing it with that driving component tells you whether the object speeds up, slows down, or stays at a constant speed as it slides, which is why this calculator also reports the resulting acceleration.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of the four values — friction force, coefficient of kinetic friction, mass, and slope angle; the fourth fills in automatically.',
+        steps: [
+          { name: 'Enter the slope angle', text: 'Measured from the horizontal, in degrees — a gentle ramp might be 10–15°, a steep ski slope 25–30°.' },
+          { name: 'Enter the mass and the coefficient of kinetic friction', text: 'The coefficient has no unit and depends on both surfaces in contact — see the friction calculator’s typical values for common pairs.' },
+          { name: 'Read the friction force, or solve backward', text: 'By default the friction force is calculated. Type into it instead to solve for the coefficient, mass, or angle that would produce a friction force you already know.' },
+          { name: 'Check the acceleration down the slope', text: 'Shown underneath the main result, this combines the friction force with the slope’s own gravity component — positive means speeding up going down, negative means slowing down (or not sliding at all without a push).' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The incline friction formula rearranges four ways, one for each quantity you might be solving for.',
+        expression: 'fₖ = μₖ × m × g × cosθ\na = g × (sinθ − μₖ×cosθ)',
+        terms: [
+          { symbol: 'fₖ', meaning: 'Kinetic friction force, in newtons (N), acting up the slope against the sliding motion.' },
+          { symbol: 'μₖ', meaning: 'Coefficient of kinetic friction, a dimensionless number specific to the two surfaces in contact.' },
+          { symbol: 'm', meaning: 'Mass of the sliding object, in kilograms (kg).' },
+          { symbol: 'θ', meaning: 'The slope’s angle, measured from the horizontal.' },
+          { symbol: 'a', meaning: 'The resulting acceleration along the slope (positive means speeding up going downhill); notice mass cancels out of this formula entirely.' }
+        ],
+        note: 'This is kinetic friction — the object is already sliding. It assumes the only forces are gravity, the normal force, and friction (no applied push, air resistance, or rope tension), and that the object is a simple point mass sliding, not rolling.'
+      },
+      workedExample: {
+        intro: 'A 62 kg skier slides down a snowy slope at a constant 25° angle, and the kinetic friction on her is measured at 45.0 N. What is the coefficient of kinetic friction? (OpenStax University Physics Volume 1, Example 6.11.)',
+        rows: [
+          { label: 'Mass (m)', value: '62 kg' },
+          { label: 'Slope angle (θ)', value: '25°' },
+          { label: 'Normal force (N = m×g×cos25°)', value: '≈ 551.0 N' },
+          { label: 'Kinetic friction force (fₖ)', value: '45.0 N' },
+          { label: 'Coefficient (μₖ = fₖ ÷ N)', value: '≈ 0.082' }
+        ],
+        result: 'μₖ ≈ 0.082',
+        explanation: 'The normal force is only the part of the skier’s weight pressing into the slope, mg×cos25° ≈ 551.0 N — noticeably less than her full weight of about 608 N. Dividing the measured friction force by that normal force gives μₖ ≈ 0.082. OpenStax’s own Table 6.1 lists 0.1 for waxed wood on wet snow, the closest listed pair — a little higher than this result, which OpenStax itself notes is still reasonable, since coefficients of friction can vary considerably with real conditions.'
+      },
+      watchOut: [
+        {
+          title: 'The normal force on an incline is less than the full weight',
+          body: 'N = mg only on flat ground. On a slope, N = mg×cosθ, which shrinks as the slope gets steeper — at a 90° vertical wall, cosθ is 0 and there is no normal force (and no friction) at all.'
+        },
+        {
+          title: 'Mass cancels out of the acceleration — but not out of the friction force',
+          body: 'The friction force itself, fₖ = μₖmg×cosθ, scales directly with mass. But the acceleration down the slope, a = g(sinθ − μₖcosθ), does not depend on mass at all — a heavier and lighter object on the same slope with the same μₖ accelerate identically.'
+        },
+        {
+          title: 'A negative acceleration can mean the object will not start sliding on its own',
+          body: 'If μₖ is large enough or θ small enough, sinθ − μₖcosθ comes out negative. On a 10° slope with μₖ = 0.20, for example, the formula gives about −0.23 m/s²: an object already sliding would be slowing down, and one at rest would not start sliding from kinetic friction alone (static friction, typically larger than μₖ, is what actually holds it in place).'
+        },
+        {
+          title: 'This is kinetic friction, not the maximum static friction that starts the motion',
+          body: 'Use the friction calculator’s plain f = μN for a flat surface, or multiply this page’s normal force by μs instead of μₖ to find the maximum static friction on the same slope.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §6.2 Friction', url: 'https://openstax.org/books/university-physics-volume-1/pages/6-2-friction' }
+      ]
+    },
+    inputs: [
+      { id: 'coefficient', label: 'Coefficient of kinetic friction (μₖ)', type: 'number', placeholder: '0.082', defaultValue: 0.082, step: 0.001, min: 0 },
+      { id: 'mass', label: 'Mass (kg)', type: 'number', placeholder: '62', defaultValue: 62, step: 0.1, min: 0 },
+      { id: 'angle', label: 'Slope angle (°)', type: 'number', placeholder: '25', defaultValue: 25, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Kinetic Friction on an Incline Calculator',
+      description: 'Free incline friction calculator. Solve f = μmg×cosθ for friction force, coefficient, mass, or angle, plus the resulting acceleration down the slope.',
+      faq: [
+        { question: 'What is the formula for friction on an incline?', answer: 'fₖ = μₖ × m × g × cosθ, where θ is the slope’s angle from the horizontal. This differs from flat-ground friction (f = μN) only in how the normal force N = mg×cosθ is found.' },
+        { question: 'How do I find the acceleration of an object sliding down a slope with friction?', answer: 'a = g × (sinθ − μₖ×cosθ). Mass does not appear — it cancels out of the equation, so the acceleration only depends on the angle and the coefficient of kinetic friction.' },
+        { question: 'Why is the normal force smaller on a slope?', answer: 'Only the part of an object’s weight pointing directly into the surface counts as the normal force. On a slope, that is mg×cosθ, which is less than the full weight mg because part of the weight (mg×sinθ) instead pulls the object down along the slope.' },
+        { question: 'Can the acceleration down a slope be negative?', answer: 'Yes. If the coefficient of kinetic friction is large enough relative to the slope’s steepness, friction can remove kinetic energy faster than gravity adds it, decelerating an object that is already sliding.' },
+        { question: 'Does a steeper slope always mean more friction?', answer: 'No — the opposite, for the friction force itself. A steeper slope means a smaller cosθ, which means a smaller normal force and so less friction force, even though the object is more likely to slide because gravity’s component along the slope (mg×sinθ) grows at the same time.' },
+        { question: 'How is this different from the main friction calculator?', answer: 'The friction calculator covers the flat-ground case, where the normal force simply equals the weight. This page accounts for an incline, where the normal force is reduced to mg×cosθ, and adds the resulting acceleration down the slope as a bonus result.' }
+      ]
+    },
+    compute(values) {
+      const { coefficient, mass, angle } = values;
+      const angleRad = (angle * Math.PI) / 180;
+      const normalForce = mass * STANDARD_GRAVITY * Math.cos(angleRad);
+      return { frictionForce: coefficient * normalForce };
+    }
+  },
+  {
+    id: 'molar-heat-capacity-calculator',
+    category: 'physics',
+    group: 'Thermal & Nuclear',
+    glyph: 'Cv',
+    updatedAt: '2026-11-17',
+    aliases: ['molar heat capacity calculator', 'heat capacity ratio calculator', 'cp cv calculator', "mayer's relation calculator", 'specific heat of an ideal gas calculator'],
+    related: ['heat-calculator', 'ideal-gas-law-calculator', 'specific-heat-by-mixing-calculator'],
+    title: 'Molar Heat Capacity Calculator (Cp vs. Cv)',
+    description: 'Find an ideal gas’s molar heat capacity at constant pressure or constant volume from Mayer’s relation, Cp = Cv + R, plus the resulting heat capacity ratio γ.',
+    example: 'A monatomic ideal gas has Cv = 12.47 J/(mol·K); adding the gas constant R gives Cp = 20.79 J/(mol·K), a heat capacity ratio of about 1.67.',
+    solver: {
+      defaultTarget: 'molarCp',
+      variables: [
+        { id: 'molarCp', label: 'Molar heat capacity at constant pressure', symbol: 'Cp', dimension: 'molarHeatCapacity', defaultValue: 20.79, defaultUnit: 'J/molK' },
+        { id: 'molarCv', label: 'Molar heat capacity at constant volume', symbol: 'Cv', dimension: 'molarHeatCapacity', defaultValue: 12.47, defaultUnit: 'J/molK' }
+      ],
+      solve: {
+        molarCp: ({ molarCv }) => molarCv + MOLAR_GAS_CONSTANT,
+        molarCv: ({ molarCp }) => molarCp - MOLAR_GAS_CONSTANT
+      },
+      outputs: [
+        { id: 'heatCapacityRatio', label: 'Heat capacity ratio (γ = Cp ÷ Cv)', dimension: 'count', compute: (si) => (si.molarCv === 0 ? NaN : si.molarCp / si.molarCv) }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is molar heat capacity, and why are there two of them?',
+        paragraphs: [
+          'Molar heat capacity is how much heat it takes to raise one mole of a substance by one kelvin. For a gas, that number depends on whether the gas is held at constant volume (a sealed, rigid container) or constant pressure (a container with a piston free to expand). At constant volume, every bit of added heat goes straight into raising the gas’s internal energy and temperature. At constant pressure, the gas also expands and does work pushing against its surroundings, so some of the added heat goes into that work instead — meaning it takes more heat to raise the temperature by the same one kelvin.',
+          'That difference turns out to be exactly the molar gas constant, R: Cp = Cv + R, a relationship known as Mayer’s relation. It follows directly from the ideal gas law and the first law of thermodynamics, and holds, at least approximately, for any dilute gas — monatomic, diatomic, or polyatomic.',
+          'The ratio of the two, γ = Cp ÷ Cv, is called the heat capacity ratio (or adiabatic index). It shows up constantly in thermodynamics — in the speed of sound through a gas, in how a gas heats up when compressed quickly, and in engine-cycle efficiency calculations — and depends only on how many ways a gas molecule can store energy (its degrees of freedom), not on the specific gas, within each molecular-shape category.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter either molar heat capacity; the calculator fills in the other using Mayer’s relation, plus the heat capacity ratio.',
+        steps: [
+          { name: 'Enter Cv or Cp', text: 'Type the molar heat capacity you know — at constant volume (Cv) or constant pressure (Cp) — in J/(mol·K), kJ/(mol·K), or cal/(mol·K).' },
+          { name: 'Read the other one', text: 'The field marked auto fills in automatically, always exactly R = 8.314 J/(mol·K) higher than Cv.' },
+          { name: 'Check the heat capacity ratio', text: 'Shown underneath, γ = Cp ÷ Cv is dimensionless and the same for every gas that shares the same molecular shape (monatomic, diatomic, or polyatomic), at least in the ideal-gas approximation.' },
+          { name: 'Compare against the reference table', text: 'The table below lists the ideal values for each molecular shape, so you can sanity-check a measured or looked-up Cv or Cp against the category it should fall into.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Mayer’s relation connects the two molar heat capacities with a single additive constant.',
+        expression: 'Cp = Cv + R\nCv = Cp − R\nγ = Cp ÷ Cv',
+        terms: [
+          { symbol: 'Cv', meaning: 'Molar heat capacity at constant volume, in J/(mol·K).' },
+          { symbol: 'Cp', meaning: 'Molar heat capacity at constant pressure, in J/(mol·K).' },
+          { symbol: 'R', meaning: 'The molar gas constant, 8.31446261815324 J/(mol·K) — exact, not editable, since it is a fixed physical constant.' },
+          { symbol: 'γ', meaning: 'The heat capacity ratio, Cp ÷ Cv — always greater than 1, since Cp is always the larger of the two.' }
+        ],
+        note: 'This relationship comes from the ideal gas law and holds only approximately for real gases. It also assumes classical (equipartition) heat capacities; at very low or very high temperatures, quantum effects on vibrational and rotational modes make a real gas’s Cv and Cp drift from the ideal values below.'
+      },
+      workedExample: {
+        intro: 'Nitrogen (N₂) is a diatomic gas. Using the ideal diatomic value for Cv, what is its molar heat capacity at constant pressure, and its heat capacity ratio?',
+        rows: [
+          { label: 'Molar heat capacity at constant volume (Cv), diatomic ideal gas', value: '5/2 × R ≈ 20.79 J/(mol·K)' },
+          { label: 'Molar gas constant (R)', value: '8.314 J/(mol·K)' },
+          { label: 'Molar heat capacity at constant pressure (Cp = Cv + R)', value: '≈ 29.10 J/(mol·K)' },
+          { label: 'Heat capacity ratio (γ = Cp ÷ Cv)', value: '≈ 1.40' }
+        ],
+        result: 'Cp ≈ 29.10 J/(mol·K) · γ ≈ 1.40',
+        explanation: 'A diatomic gas like nitrogen has two more ways to store energy than a monatomic one (rotating end-over-end around two axes), giving it a larger ideal Cv of 5/2 R instead of 3/2 R. Adding R gives Cp = 7/2 R ≈ 29.10 J/(mol·K), and the ratio of the two, γ = (7/2 R) ÷ (5/2 R) = 7/5 = 1.40 exactly — the textbook value used throughout thermodynamics for diatomic gases like N₂, O₂, and air.'
+      },
+      watchOut: [
+        {
+          title: 'Cp is always bigger than Cv for a gas',
+          body: 'Since Cp = Cv + R and R is a positive constant, Cp is always the larger value. If a measured pair comes out the other way around, double-check which one was measured at constant pressure and which at constant volume.'
+        },
+        {
+          title: 'The ideal values depend on molecular shape, not the specific gas',
+          body: 'Every monatomic gas (helium, argon, neon…) shares the same ideal Cv = 3/2 R and Cp = 5/2 R; every (rigid) diatomic gas shares 5/2 R and 7/2 R, regardless of which specific gas it is. What changes the numbers is the molecule’s shape and how many ways it can store energy, not its chemical identity.'
+        },
+        {
+          title: 'Real gases run a little higher than the ideal table values',
+          body: 'The ideal values below ignore vibrational motion within the molecule, which becomes significant even at room temperature for many real polyatomic gases. Measured heat capacities for real gases are typically a bit higher than the simple table predicts, even though Cp − Cv still comes out very close to R.'
+        },
+        {
+          title: 'This is the molar (per-mole) heat capacity, not the specific (per-mass) one',
+          body: 'The heat-calculator’s Q = mcΔT uses specific heat, in J/(kg·K) — per kilogram, not per mole. Converting between the two needs the gas’s molar mass: specific heat = molar heat capacity ÷ molar mass.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 2, §3.5 Heat Capacities of an Ideal Gas', url: 'https://openstax.org/books/university-physics-volume-2/pages/3-5-heat-capacities-of-an-ideal-gas' },
+        { label: 'NIST, CODATA Value: molar gas constant', url: 'https://physics.nist.gov/cgi-bin/cuu/Value?r' }
+      ],
+      referenceTable: {
+        title: 'Ideal molar heat capacities by molecular shape (OpenStax Table 3.3)',
+        columns: ['Molecular shape', 'Cv (J/(mol·K))', 'Cp (J/(mol·K))', 'γ = Cp ÷ Cv'],
+        rows: [
+          { label: 'Monatomic (He, Ar, Ne)', values: [1.5 * MOLAR_GAS_CONSTANT, 2.5 * MOLAR_GAS_CONSTANT, 2.5 / 1.5] },
+          { label: 'Diatomic (O₂, N₂, H₂, air)', values: [2.5 * MOLAR_GAS_CONSTANT, 3.5 * MOLAR_GAS_CONSTANT, 3.5 / 2.5] },
+          { label: 'Polyatomic (CO₂, NH₃)', values: [3 * MOLAR_GAS_CONSTANT, 4 * MOLAR_GAS_CONSTANT, 4 / 3] }
+        ],
+        decimals: 2,
+        note: 'Ideal (equipartition) values for a dilute gas at room temperature. Real gases run somewhat higher, especially polyatomic ones, because vibrational motion adds more ways to store energy than this simple model counts.'
+      }
+    },
+    inputs: [
+      { id: 'molarCv', label: 'Molar heat capacity at constant volume (J/(mol·K))', type: 'number', placeholder: '12.47', defaultValue: 12.47, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Molar Heat Capacity Calculator (Cp vs. Cv)',
+      description: 'Free molar heat capacity calculator. Solve Cp = Cv + R for an ideal gas, plus the heat capacity ratio γ, with a worked example and a reference table.',
+      faq: [
+        { question: 'What is the formula relating Cp and Cv?', answer: "Mayer's relation: Cp = Cv + R, where R is the molar gas constant, about 8.314 J/(mol·K). A gas with Cv = 12.47 J/(mol·K) has Cp ≈ 20.79 J/(mol·K)." },
+        { question: 'What is the heat capacity ratio?', answer: 'γ = Cp ÷ Cv, a dimensionless number always greater than 1. It is about 1.67 for a monatomic ideal gas, 1.40 for a diatomic one, and 1.33 for a polyatomic one.' },
+        { question: 'Why is Cp always bigger than Cv?', answer: 'At constant pressure, a heated gas expands and does work pushing against its surroundings, so some of the added heat goes into that work instead of raising the temperature — it takes more total heat to get the same one-kelvin rise, which is exactly the extra R.' },
+        { question: 'What are the ideal Cv and Cp for a monatomic gas?', answer: 'Cv = 3/2 R ≈ 12.47 J/(mol·K) and Cp = 5/2 R ≈ 20.79 J/(mol·K), for any monatomic ideal gas such as helium, argon, or neon.' },
+        { question: 'Is this the same as specific heat?', answer: 'No — specific heat (used by the heat calculator’s Q = mcΔT) is per unit mass, in J/(kg·K). Molar heat capacity is per mole, in J/(mol·K). Dividing molar heat capacity by the gas’s molar mass converts one into the other.' },
+        { question: 'Why do real gases differ from the table values?', answer: 'The ideal table values only count translational and rotational motion. Real molecules, especially polyatomic ones, also vibrate internally, which stores extra energy and raises both Cv and Cp above the simple ideal prediction, even though their difference still stays very close to R.' }
+      ]
+    },
+    compute(values) {
+      return { molarCp: values.molarCv + MOLAR_GAS_CONSTANT };
     }
   }
 ];

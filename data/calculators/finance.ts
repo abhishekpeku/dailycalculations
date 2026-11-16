@@ -3474,4 +3474,626 @@ export const financeCalculators: CalculatorConfig[] = [
       return { requiredMinimumDistribution, monthlyEquivalent, percentOfBalance };
     }
   },
+  {
+    id: 'pension-calculator',
+    group: 'Retirement',
+    category: 'finance',
+    glyph: 'Pen',
+    updatedAt: '2026-11-16',
+    aliases: ['pension calculator', 'defined benefit pension calculator', 'final salary pension calculator', 'retirement pension estimator', 'pension benefit calculator'],
+    related: ['retirement-savings-calculator', 'social-security-calculator', '401k-employer-match-calculator', 'annuity-calculator'],
+    title: 'Pension Calculator',
+    description: 'Estimate a defined-benefit pension from years of service, final average salary and a benefit multiplier — an illustrative formula, since real plans vary widely.',
+    example: '30 years of service at a $70,000 final average salary with a 2% multiplier gives an estimated pension of $42,000 a year, about 60% of final salary.',
+    breakdown: {
+      headline: 'annualPension',
+      headlineLabel: 'Estimated annual pension',
+      outputs: [
+        { id: 'annualPension', label: 'Estimated annual pension', format: 'currency' },
+        { id: 'monthlyPension', label: 'Estimated monthly pension', format: 'currency' },
+        { id: 'incomeReplacementPercent', label: 'Percent of final salary replaced', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Your pension plan', inputs: ['yearsOfService', 'finalAverageSalary', 'multiplierPercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'finalAverageSalary', label: 'Final average salary' },
+          { from: 'annualPension', label: 'Estimated annual pension' }
+        ],
+        title: 'Pension vs. final salary',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'The three-factor pension formula',
+        paragraphs: [
+          'Most defined-benefit pensions — the kind that pay a fixed amount for life rather than depending on investment markets — use the same three-factor formula: years of service, multiplied by a "formula multiplier," multiplied by the final average salary. The Wisconsin Legislative Council\'s biennial survey of 87 major U.S. state and local public retirement systems describes this as the standard shape: "Years of Service × Formula Multiplier × Final Average Salary = Retirement Annuity." This calculator applies that same formula directly to whatever years, salary and multiplier you enter.',
+          "The multiplier is the one number that varies enormously by plan, and it is what makes a pension estimate impossible to generalize. The same Wisconsin survey found that, for 2017-18, public plans coordinated with Social Security typically used a multiplier between 1.5% and 2.5% per year of service, while plans not coordinated with Social Security — which have to replace more income on their own — typically used a higher 2% to 2.5%. A well-documented federal example is the U.S. government's own FERS basic annuity: the Office of Personnel Management's published formula is 1% of the highest-3-year average salary per year of service, rising to 1.1% for anyone retiring at age 62 or older with at least 20 years of service. This calculator defaults to a round 2% purely as an illustration — it is not any specific plan's real rate, including FERS's own.",
+          "\"Final average salary\" is also plan-specific: it is usually the highest-paid 3 to 5 consecutive years, not necessarily the years right before retirement. In the Wisconsin survey, 52% of the 87 plans averaged the highest 5 years and 26% averaged the highest 3. Your plan's own summary describes which years it uses and whether they must be consecutive."
+        ]
+      },
+      howTo: {
+        intro: 'Enter your years of service, your plan\'s final average salary figure, and a benefit multiplier.',
+        steps: [
+          { name: 'Enter years of service', text: 'Total years credited under the plan, including any partial years your plan counts.' },
+          { name: 'Enter final average salary', text: 'Use your plan\'s own averaging period — often the highest 3 or 5 consecutive years, not necessarily your most recent salary.' },
+          { name: 'Set the multiplier', text: 'Replace the 2% illustration with your plan\'s real formula multiplier from its summary plan description, if you know it.' },
+          { name: 'Read the estimate', text: 'The annual and monthly pension appear, with the percent of final salary the pension would replace.' },
+          { name: 'Compare multipliers', text: 'Try your plan\'s real multiplier alongside a couple of others — the spread shows how much this one number changes the result.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The pension is years of service multiplied by the formula multiplier (as a decimal) multiplied by the final average salary.',
+        expression: 'Annual pension = Years of service × Multiplier × Final average salary\nMonthly pension = Annual pension ÷ 12\nPercent of salary replaced = Annual pension ÷ Final average salary × 100',
+        terms: [
+          { symbol: 'Years of service', meaning: 'Total years credited under the plan.' },
+          { symbol: 'Multiplier', meaning: "The plan's formula multiplier: the percent of final average salary earned as annual pension for each year of service. Typically 1% to 2.5% depending on the plan." },
+          { symbol: 'Final average salary', meaning: "The plan's own averaging period — commonly the highest 3 or 5 consecutive years of salary." }
+        ],
+        note: "Estimates only. Formula multipliers, averaging periods, early-retirement reductions, benefit caps and cost-of-living adjustments vary enormously by plan. This is not an official benefit estimate — check your plan's summary plan description or contact its administrator. Not financial or tax advice."
+      },
+      workedExample: {
+        intro: 'Someone retires with 30 years of service, a $70,000 final average salary, and a plan multiplier of 2%. What pension does the formula estimate?',
+        rows: [
+          { label: 'Annual pension (30 × 2% × $70,000)', value: '$42,000.00' },
+          { label: 'Monthly pension (42,000 ÷ 12)', value: '$3,500.00' },
+          { label: 'Percent of final salary replaced (42,000 ÷ 70,000)', value: '60%' }
+        ],
+        result: 'Estimated pension ≈ $42,000 a year, about $3,500 a month, replacing about 60% of final salary',
+        explanation: "The multiplier alone moves this a great deal on the identical 30 years and $70,000 salary: at FERS's 1.1% rate it is $23,100 a year (33% of salary); at 2.5% it is $52,500 a year (75% of salary). Years of service matter just as much — at the same 2% multiplier and salary, 20 years gives $28,000 a year, and 40 years gives $56,000 a year, exactly double the 20-year figure, because the formula is linear in years."
+      },
+      watchOut: [
+        { title: 'This varies enormously by plan', body: "The multiplier, the averaging period, any cap on the maximum benefit, and whether the benefit adjusts for inflation are all set by your specific plan, not by a universal rule. The Wisconsin survey found most of its 87 surveyed plans set no maximum benefit cap, with a cap of 100% of final average salary the next most common choice — plans differ even on whether a cap exists at all." },
+        { title: 'Retiring early usually reduces the benefit', body: "Most plans reduce the pension for retiring before the plan's own normal retirement age, commonly by a few percent for each year early, under what plans call an actuarial discount. This calculator does not model that reduction — check your plan's early-retirement provision before assuming today's formula applies at an earlier age." },
+        { title: 'Not an official benefit statement', body: 'This is an illustrative formula, not your plan\'s real benefit estimate. Contact your plan administrator or pension fund for an official calculation.' },
+        { title: 'Social Security, taxes and other income are not included', body: 'Many coordinated plans are designed to work alongside Social Security, not instead of it. See social-security-calculator for a separate estimate of that benefit.' },
+        { title: 'Some plans add a defined-contribution or money-purchase layer', body: 'A number of real plans pay the higher of this formula or a separate account-balance-based benefit, which this calculator does not model.' }
+      ],
+      references: [
+        { label: 'U.S. Office of Personnel Management, FERS Information: Computation', url: 'https://www.opm.gov/retirement-center/fers-information/computation/' },
+        { label: 'Wisconsin Legislative Council, 2017-18 Comparative Study of Major Public Employee Retirement Systems, Part IV', url: 'https://www.nasra.org/files/Topical%20Reports/Plan%20Design/2018_retirement.pdf' }
+      ]
+    },
+    inputs: [
+      { id: 'yearsOfService', label: 'Years of service', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 0 },
+      { id: 'finalAverageSalary', label: 'Final average salary', type: 'currency', placeholder: '70000', defaultValue: 70000, step: 1000, min: 0 },
+      { id: 'multiplierPercent', label: 'Benefit multiplier', type: 'percent', placeholder: '2', defaultValue: 2, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Pension Calculator – Estimate a Defined-Benefit Pension',
+      description: 'Estimate a defined-benefit pension from years of service, final average salary and a benefit multiplier. Illustrative only — real plans vary widely.',
+      faq: [
+        { question: 'How is a pension calculated?', answer: 'Multiply years of service by the plan\'s formula multiplier (as a decimal) by the final average salary. 30 years at a 2% multiplier and a $70,000 final average salary gives $42,000 a year.' },
+        { question: 'What multiplier should I use?', answer: "Use your own plan's published multiplier if you know it — they commonly run 1% to 2.5% per year of service. The U.S. federal FERS plan, for example, uses 1%, or 1.1% for anyone retiring at 62 or older with 20+ years of service." },
+        { question: 'What counts as "final average salary"?', answer: "Whatever averaging period your plan defines — commonly the highest 3 or 5 consecutive years of salary, not necessarily your most recent pay. A 2017-18 survey of 87 public plans found 52% used a 5-year average and 26% used a 3-year average." },
+        { question: 'Does this include Social Security?', answer: 'No. A pension and a Social Security benefit are calculated separately and, for many public employees, received together. See social-security-calculator for a separate benefit estimate.' },
+        { question: 'How does retiring early affect the pension?', answer: "Most plans reduce the benefit for retiring before the plan's normal retirement age, often by a few percent for each year early. This calculator does not model that reduction, so an early-retirement estimate from it alone can overstate the real benefit." },
+        { question: 'Is this an official benefit estimate?', answer: "No. It is an illustrative three-factor formula, not a substitute for your plan's own benefit calculation. Contact your plan administrator for an official figure." }
+      ]
+    },
+    compute(values) {
+      const annualPension = values.yearsOfService * (values.multiplierPercent / 100) * values.finalAverageSalary;
+      const monthlyPension = annualPension / 12;
+      const incomeReplacementPercent = values.finalAverageSalary > 0 ? (annualPension / values.finalAverageSalary) * 100 : NaN;
+      return { annualPension, monthlyPension, incomeReplacementPercent };
+    }
+  },
+  {
+    id: 'social-security-calculator',
+    group: 'Retirement',
+    category: 'finance',
+    glyph: 'SS',
+    updatedAt: '2026-11-16',
+    aliases: ['social security calculator', 'social security benefit calculator', 'ssa benefit estimator', 'pia calculator', 'aime calculator'],
+    related: ['pension-calculator', 'retirement-savings-calculator', 'traditional-ira-calculator', 'annuity-calculator'],
+    title: 'Social Security Calculator',
+    description: "Estimate a Social Security retirement benefit from your average indexed monthly earnings (AIME), using the SSA's own 2026 bend-point formula. An estimate only — not an official benefit statement.",
+    example: 'A $6,500 average indexed monthly earnings (AIME) gives an estimated monthly benefit (PIA) of $2,825.80 — about $33,910 a year, using the Social Security Administration\'s 2026 bend points of $1,286 and $7,749.',
+    breakdown: {
+      headline: 'pia',
+      headlineLabel: 'Estimated monthly benefit (PIA)',
+      outputs: [
+        { id: 'pia', label: 'Estimated monthly benefit (PIA)', format: 'currency' },
+        { id: 'annualBenefit', label: 'Estimated annual benefit', format: 'currency' },
+        { id: 'replacementPercent', label: 'Percent of AIME replaced', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Your earnings', inputs: ['averageIndexedMonthlyEarnings'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'averageIndexedMonthlyEarnings', label: 'Average indexed monthly earnings (AIME)' },
+          { from: 'pia', label: 'Estimated monthly benefit (PIA)' }
+        ],
+        title: 'AIME vs. estimated benefit',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'AIME, bend points and the PIA formula',
+        paragraphs: [
+          "Social Security's retirement benefit is built from two numbers. The first is your average indexed monthly earnings (AIME): the Social Security Administration takes your highest 35 years of earnings, adjusts each year's earnings for wage growth since then, adds them up, and divides by 420 months (35 years). The second is the primary insurance amount (PIA) — your benefit at full retirement age — which the SSA computes from your AIME using a formula with two \"bend points\" that split your AIME into three bands, each paid at a different percentage.",
+          "Under the Social Security Administration's notice for 2026 (published in the Federal Register, 90 FR 49047), the bend points for a worker who first becomes eligible for benefits in 2026 are $1,286 and $7,749. The PIA is 90% of AIME up to $1,286, plus 32% of AIME between $1,286 and $7,749, plus 15% of any AIME above $7,749, rounded down to the next lower $0.10. The bend points themselves change every year, since the SSA indexes them to the national average wage index — a bend point for a different year will give a different estimate for someone who becomes eligible that year.",
+          "This calculator skips the 35-year earnings-indexing step and asks for your AIME directly — either the figure from your own \"my Social Security\" statement at ssa.gov, or a rough stand-in such as your current average monthly earnings. It also shows only the PIA at full retirement age: it does not model the real reduction for claiming as early as 62 or the real increase for delaying up to 70, which are a different, separate adjustment on top of the PIA. For a defined-benefit pension estimate instead of Social Security, see pension-calculator."
+        ]
+      },
+      howTo: {
+        intro: 'Enter your average indexed monthly earnings (AIME) — from your ssa.gov statement if you have it, or a rough estimate otherwise.',
+        steps: [
+          { name: 'Find or estimate your AIME', text: 'Your "my Social Security" statement at ssa.gov shows your real AIME. Without it, your current average monthly earnings is a rough stand-in.' },
+          { name: 'Enter the AIME', text: 'Type it into the one input field.' },
+          { name: 'Read the estimated benefit', text: 'The estimated monthly benefit (PIA) at full retirement age appears, with the annual figure and the percent of AIME it replaces.' },
+          { name: 'Remember what this leaves out', text: 'Claiming before full retirement age reduces the real benefit; claiming after it (up to age 70) increases it. This estimate is the PIA only, before either adjustment.' },
+          { name: 'Confirm with SSA', text: "For your actual benefit at your actual claiming age, use SSA's own calculators and statement at ssa.gov." }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "The PIA sums three percentages of AIME, split at the SSA's 2026 bend points of $1,286 and $7,749.",
+        expression: 'PIA = 90% × min(AIME, $1,286) + 32% × (portion of AIME between $1,286 and $7,749) + 15% × (portion of AIME above $7,749)\nPIA is then rounded down to the next lower $0.10\nAnnual benefit = PIA × 12',
+        terms: [
+          { symbol: 'AIME', meaning: "Average indexed monthly earnings — the highest 35 years of wage-indexed earnings, divided by 420 months." },
+          { symbol: 'Bend points', meaning: "$1,286 and $7,749 for 2026, published by the SSA and adjusted every year for wage growth." }
+        ],
+        note: "Estimates only, not an official Social Security benefit statement. This models the standard PIA formula for someone who first becomes eligible for retirement benefits in 2026, at full retirement age. It does not model claiming age adjustments, spousal or survivor benefits, the earnings test, the Windfall Elimination Provision, or taxation of benefits. Create or check your account at ssa.gov for your real figure."
+      },
+      workedExample: {
+        intro: 'Someone has a $6,500 average indexed monthly earnings (AIME). What is their estimated monthly benefit at full retirement age?',
+        rows: [
+          { label: 'First $1,286 of AIME × 90%', value: '$1,157.40' },
+          { label: 'Next $5,214 of AIME ($6,500 − $1,286) × 32%', value: '$1,668.48' },
+          { label: 'Amount above $7,749 (none, AIME is below the second bend point)', value: '$0.00' },
+          { label: 'Raw PIA (1,157.40 + 1,668.48)', value: '$2,825.88' },
+          { label: 'PIA rounded down to the next lower $0.10', value: '$2,825.80' },
+          { label: 'Annual benefit (2,825.80 × 12)', value: '$33,909.60' }
+        ],
+        result: 'Estimated monthly benefit (PIA) ≈ $2,825.80, about $33,910 a year, replacing about 43.5% of the $6,500 AIME',
+        explanation: "A higher earner with a $10,000 AIME crosses the second bend point: their PIA works out to $3,563.20 a month — about 26.1% more than the $6,500 example, even though that AIME itself is 53.8% higher. Each dollar of AIME above the bend points adds only 15 cents to the benefit, versus 90 cents below the first bend point, which is why Social Security replaces a larger share of a lower earner's pay than a higher earner's."
+      },
+      watchOut: [
+        { title: 'Not an official benefit statement', body: 'This is a simplified estimate from a single AIME figure you provide. Your real benefit comes from your actual 35-year earnings record — check it at ssa.gov.' },
+        { title: 'Claiming age changes the real benefit a great deal', body: 'This shows the PIA at full retirement age only. Claiming as early as 62 permanently reduces it; delaying past full retirement age, up to 70, increases it through delayed retirement credits. Neither adjustment is modeled here.' },
+        { title: "The bend points change every year", body: "$1,286 and $7,749 are the SSA's 2026 figures, indexed to the national average wage index. A worker who becomes eligible in a different year uses that year's own bend points, not these." },
+        { title: 'Entering your salary is not the same as your real AIME', body: "Your real AIME indexes 35 years of earnings for wage growth and divides by 420 months. A single current salary, used as a stand-in, will usually differ from your actual AIME." },
+        { title: 'Other adjustments are not modeled', body: 'Spousal and survivor benefits, the retirement earnings test, the Windfall Elimination Provision for some public pensions, and federal taxation of benefits can all change what you actually receive.' }
+      ],
+      references: [
+        { label: 'Social Security Administration, "Cost-of-Living Increase and Other Determinations for 2026," Federal Register 90 FR 49047 (Nov. 3, 2025)', url: 'https://www.federalregister.gov/documents/2025/11/03/2025-19763/cost-of-living-increase-and-other-determinations-for-2026' },
+        { label: 'Social Security Administration, your official benefit estimate (my Social Security account)', url: 'https://www.ssa.gov/myaccount/' }
+      ]
+    },
+    inputs: [
+      { id: 'averageIndexedMonthlyEarnings', label: 'Average indexed monthly earnings (AIME)', type: 'currency', placeholder: '6500', defaultValue: 6500, step: 100, min: 0 }
+    ],
+    seo: {
+      title: 'Social Security Calculator – Estimate Your PIA',
+      description: "Estimate your Social Security retirement benefit (PIA) from your AIME using the SSA's 2026 bend points. An estimate only — see ssa.gov for your official figure.",
+      faq: [
+        { question: 'How is my Social Security benefit calculated?', answer: 'The SSA applies 90% to the first $1,286 of your AIME, 32% to the portion between $1,286 and $7,749, and 15% above $7,749, then rounds down to the nearest $0.10. A $6,500 AIME gives a $2,825.80 monthly PIA.' },
+        { question: 'What is AIME?', answer: 'Average indexed monthly earnings: your highest 35 years of earnings, each adjusted for wage growth since that year, added up and divided by 420 months. This calculator asks for your AIME directly rather than computing it from a full earnings history.' },
+        { question: 'What are the Social Security "bend points"?', answer: 'The two dollar thresholds that split AIME into three bands paid at 90%, 32% and 15%. For 2026 they are $1,286 and $7,749, published by the SSA and adjusted every year for wage growth.' },
+        { question: 'Does this account for claiming early or late?', answer: "No. This is the primary insurance amount (PIA) at full retirement age only. Claiming as early as 62 reduces it permanently; delaying past full retirement age, up to 70, increases it through delayed retirement credits." },
+        { question: "Why doesn't a much higher AIME give a proportionally higher benefit?", answer: "Because of the bend points: a $10,000 AIME (53.8% higher than $6,500) produces a PIA only 26.1% higher ($3,563.20 vs. $2,825.80), since AIME above the bend points is credited at just 15%, not 90%. Social Security replaces a larger share of a lower earner's pay." },
+        { question: 'Is this an official Social Security estimate?', answer: 'No. For your real, official estimate based on your actual earnings record, create or check your account at ssa.gov.' }
+      ]
+    },
+    compute(values) {
+      const bend1 = 1286;
+      const bend2 = 7749;
+      const aime = values.averageIndexedMonthlyEarnings;
+      const firstPortion = Math.min(aime, bend1);
+      const secondPortion = Math.max(0, Math.min(aime, bend2) - bend1);
+      const thirdPortion = Math.max(0, aime - bend2);
+      const rawPia = 0.9 * firstPortion + 0.32 * secondPortion + 0.15 * thirdPortion;
+      const pia = Math.floor(rawPia * 10) / 10;
+      const annualBenefit = pia * 12;
+      const replacementPercent = aime > 0 ? (pia / aime) * 100 : NaN;
+      return { pia, annualBenefit, replacementPercent };
+    }
+  },
+  {
+    id: 'annuity-calculator',
+    group: 'Savings & Growth',
+    category: 'finance',
+    glyph: 'Ann',
+    updatedAt: '2026-11-16',
+    aliases: ['annuity calculator', 'fixed annuity calculator', 'future value of annuity calculator', 'annuity future value calculator', 'annuity growth calculator'],
+    related: ['annuity-payout-calculator', 'investment-calculator', 'compound-interest-calculator', 'retirement-savings-calculator'],
+    title: 'Annuity Calculator',
+    description: 'Project the future value of a fixed annuity — a series of equal payments earning a fixed rate — from the payment, rate and term. A payment stream, not a lump sum.',
+    example: '$300 a month for 20 years at an average 5% annual rate grows to about $123,310, of which about $51,310 is interest.',
+    solver: {
+      defaultTarget: 'futureValue',
+      variables: [
+        { id: 'futureValue', label: 'Future value', symbol: 'FV', dimension: 'currency', defaultValue: 123310.1, defaultUnit: 'currency' },
+        { id: 'payment', label: 'Payment per month', symbol: 'C', dimension: 'currency', defaultValue: 300, defaultUnit: 'currency', fixed: true },
+        { id: 'years', label: 'Term', symbol: 't', dimension: 'term', defaultValue: 20, defaultUnit: 'yr', bounds: [0, 1200] },
+        { id: 'annualRate', label: 'Annual rate', symbol: 'r', dimension: 'percent', defaultValue: 5, defaultUnit: '%', bounds: [0, 100] }
+      ],
+      // `years` arrives in months (the term dimension's base); this is a pure payment stream, with
+      // no initial lump sum — unlike compound-interest-calculator, which compounds a lump sum.
+      solve: {
+        futureValue: ({ payment, years, annualRate }) => (years >= 0 ? payment * annuityFactor(annualRate, 12, years) : NaN),
+        years: ({ futureValue, payment, annualRate }) => {
+          if (!(payment > 0)) return NaN;
+          const i = annualRate / 100 / 12;
+          if (i === 0) return futureValue / payment;
+          const x = (futureValue * i) / payment + 1;
+          if (!(x > 0)) return NaN;
+          const n = Math.log(x) / Math.log(1 + i);
+          return n >= 0 ? n : NaN;
+        }
+      },
+      // The rate has no closed form: the widget finds it numerically.
+      equation: (si) => si.futureValue - si.payment * annuityFactor(si.annualRate, 12, si.years),
+      outputs: [
+        { id: 'totalContributed', label: 'Total paid in', dimension: 'currency', compute: (si) => si.payment * si.years },
+        { id: 'totalGrowth', label: 'Interest earned', dimension: 'currency', compute: (si) => si.futureValue - si.payment * si.years }
+      ],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [{ from: 'totalContributed', label: 'Total paid in' }, { from: 'totalGrowth', label: 'Interest earned' }],
+          center: 'futureValue',
+          centerSub: 'future value'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'A payment stream, not a lump sum',
+        paragraphs: [
+          'An annuity is a series of equal, regular payments. A fixed annuity earns a set interest rate on whatever has built up so far, so each payment starts compounding from the moment it is made rather than all starting together. That makes its future value the sum of every payment\'s own growth — a genuinely different calculation from compound-interest-calculator, which grows a single lump sum you already have. If you are projecting a lump sum you already hold, use compound-interest-calculator instead; this page is for a regular payment with nothing upfront.',
+          'FINRA describes a deferred fixed annuity as one where "the insurance company agrees to pay you no less than a specified rate of interest during the time that your account is growing" — the accumulation phase this calculator models. Once the contract is annuitized, the insurer instead "pays you a predetermined fixed amount of money, usually on a monthly basis" — the payout phase, modeled separately by annuity-payout-calculator.',
+          'The math itself is the same annuity formula used throughout this site\'s savings calculators (investment-calculator, retirement-savings-calculator), just without any starting lump sum: this page is the pure-payment-stream case.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the monthly payment (always an input), then any two of the other three fields. The third, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter the monthly payment', text: 'This is always an input. For an annual payment, divide it by 12 first.' },
+          { name: 'Project the future value', text: 'Type the rate and the term. The future value appears with the total paid in and the interest earned broken out.' },
+          { name: 'Plan backward from a goal', text: 'Type a target future value. Leave the term alone to see how long it takes at a given rate.' },
+          { name: 'Find the rate you need', text: 'Fill in the goal, the payment and the term so the rate is the field left alone longest, and the calculator searches for it.' },
+          { name: 'Compare a few rates', text: 'Fixed-annuity credited rates are not guaranteed beyond any minimum stated in the contract — run a cautious and an optimistic rate side by side.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'With monthly payments and monthly compounding, the future value sums a growing series of equal payments made at the end of each month — an ordinary annuity.',
+        expression: 'FV = C × ((1 + i)^n − 1) ÷ i, where i = annual rate ÷ 12\nTotal paid in = C × n',
+        terms: [
+          { symbol: 'FV', meaning: 'Projected future value.' },
+          { symbol: 'C', meaning: 'Payment made at the end of each month.' },
+          { symbol: 'i', meaning: 'Monthly rate: the annual rate ÷ 12, as a decimal.' },
+          { symbol: 'n', meaning: 'Number of monthly payments.' }
+        ],
+        note: 'Estimates only. A real fixed annuity\'s credited rate can change over time (subject to any contract minimum), and surrender charges or fees may apply. This is not investment or insurance advice.'
+      },
+      workedExample: {
+        intro: 'You pay $300 a month into a fixed annuity for 20 years at an average 5% annual rate. What is it worth at the end?',
+        rows: [
+          { label: 'Monthly rate (5% ÷ 12)', value: '0.4167%' },
+          { label: 'Annuity factor ((1.0041667)^240 − 1) ÷ 0.0041667', value: '411.033669' },
+          { label: 'Future value (300 × 411.033669)', value: '$123,310.10' },
+          { label: 'Total paid in (300 × 240)', value: '$72,000.00' },
+          { label: 'Interest earned (123,310.10 − 72,000)', value: '$51,310.10' }
+        ],
+        result: 'FV ≈ $123,310 after 20 years, of which about $51,310 is interest',
+        explanation: 'The same $300 a month at 5% is worth only about $46,585 after 10 years — the 20-year total is 164.7% higher, not merely double, because later payments compound on an already-larger balance. At 7% the 20-year total would be about $156,278, and at 3% about $98,491, so the assumed rate matters a great deal.'
+      },
+      watchOut: [
+        { title: 'A payment stream, not a lump sum', body: 'If you already have the full amount in hand today, use compound-interest-calculator instead — this page assumes nothing upfront, only regular payments.' },
+        { title: 'This models the accumulation phase only', body: 'Once a fixed annuity is annuitized, it switches to paying income out instead of growing. See annuity-payout-calculator for that payout phase.' },
+        { title: 'Credited rates are not guaranteed beyond any contract minimum', body: 'An insurer can change the rate it credits year to year, subject to whatever minimum the contract states. A constant rate here is a planning assumption.' },
+        { title: 'Fees and surrender charges are not modeled', body: 'Many annuity contracts charge fees or a surrender charge for withdrawing early, which would reduce the real future value below this estimate.' }
+      ],
+      references: [
+        { label: 'FINRA, Annuities', url: 'https://www.finra.org/investors/investing/investment-products/annuities' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.7 Investments', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-7-investments' }
+      ]
+    },
+    inputs: [
+      { id: 'payment', label: 'Monthly payment', type: 'currency', placeholder: '300', defaultValue: 300, step: 25, min: 0 },
+      { id: 'annualRate', label: 'Annual rate', type: 'percent', placeholder: '5', defaultValue: 5, step: 0.1, min: 0 },
+      { id: 'years', label: 'Term (years)', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Annuity Calculator – Future Value of Fixed Payments',
+      description: 'Free annuity calculator: project the future value of a fixed annuity from the monthly payment, rate and term, or find the rate or term a goal needs.',
+      faq: [
+        { question: 'How do I calculate an annuity\'s future value?', answer: 'Sum the growing series of payments with FV = C × ((1 + i)^n − 1) ÷ i, where i is the monthly rate and n the number of payments. $300 a month at 5% for 20 years comes to about $123,310.' },
+        { question: 'How is this different from the compound interest calculator?', answer: 'Compound-interest-calculator grows a lump sum you already have. This calculator has no lump sum — it is a stream of equal payments, each starting to earn interest from the day it is made.' },
+        { question: 'How long will it take to reach my goal?', answer: 'Enter the goal as the future value and the calculator works out the term. At $300 a month and 5%, reaching $100,000 takes about 17.4 years.' },
+        { question: 'What rate do I need?', answer: 'Fill in the goal, the payment and the term, leaving the rate as the field solved for, and the calculator searches for the rate numerically.' },
+        { question: 'What is the difference between an annuity and an annuity payout?', answer: 'This calculator models the accumulation phase, when payments build up a balance. annuity-payout-calculator models the reverse: a lump sum you already have, paying income out over time.' },
+        { question: 'Is the rate on a fixed annuity guaranteed?', answer: "Only up to whatever minimum rate the insurance contract states. FINRA notes the insurer \"agrees to pay you no less than a specified rate of interest,\" but the actual credited rate can be higher and can change over time." }
+      ]
+    },
+    compute(values) {
+      const months = Math.max(1, values.years * 12);
+      const futureValue = values.payment * annuityFactor(values.annualRate, 12, months);
+      const totalContributed = values.payment * months;
+      const totalGrowth = futureValue - totalContributed;
+      return { futureValue, totalContributed, totalGrowth };
+    }
+  },
+  {
+    id: 'annuity-payout-calculator',
+    group: 'Savings & Growth',
+    category: 'finance',
+    glyph: 'A↓',
+    updatedAt: '2026-11-16',
+    aliases: ['annuity payout calculator', 'annuitization calculator', 'lump sum payout calculator', 'retirement income from savings calculator', 'annuity income calculator'],
+    related: ['annuity-calculator', 'loan-calculator', 'retirement-savings-calculator', 'rmd-calculator'],
+    title: 'Annuity Payout Calculator',
+    description: 'Find the level monthly income a lump sum can pay out over a fixed term at a given rate — the standard loan-payment formula, run in reverse.',
+    example: 'A $200,000 lump sum paid out over 20 years at an average 5% annual rate provides about $1,319.91 a month, a total payout of about $316,779 — about $116,779 more than the original lump sum.',
+    solver: {
+      defaultTarget: 'payout',
+      variables: [
+        { id: 'payout', label: 'Monthly payout', symbol: 'M', dimension: 'currency', defaultValue: 1319.91, defaultUnit: 'currency' },
+        { id: 'lumpSum', label: 'Lump sum', symbol: 'P', dimension: 'currency', defaultValue: 200000, defaultUnit: 'currency', fixed: true },
+        { id: 'years', label: 'Payout term', symbol: 't', dimension: 'term', defaultValue: 20, defaultUnit: 'yr' },
+        { id: 'annualRate', label: 'Annual rate', symbol: 'r', dimension: 'percent', defaultValue: 5, defaultUnit: '%', bounds: [0, 100] }
+      ],
+      // Same math as loan-calculator, read in reverse: a lump sum paying income out instead of a
+      // loan being repaid. `lumpSum` is fixed — the calculator starts from money you already have.
+      solve: {
+        payout: ({ lumpSum, years, annualRate }) => loanPayment(lumpSum, years, annualRate),
+        years: ({ lumpSum, payout, annualRate }) => loanMonths(lumpSum, payout, annualRate)
+      },
+      // The rate has no closed form: the widget finds it numerically.
+      equation: (si) => si.payout - loanPayment(si.lumpSum, si.years, si.annualRate),
+      outputs: [
+        { id: 'totalPayout', label: 'Total paid out', dimension: 'currency', compute: (si) => si.payout * si.years },
+        { id: 'totalInterest', label: 'Interest earned while paid out', dimension: 'currency', compute: (si) => si.payout * si.years - si.lumpSum }
+      ],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [{ from: 'lumpSum', label: 'Lump sum' }, { from: 'totalInterest', label: 'Interest earned while paid out' }],
+          center: 'totalPayout',
+          centerSub: 'total paid out'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'The loan-payment formula, read in reverse',
+        paragraphs: [
+          "This calculator uses the exact same level-payment formula as loan-calculator, applied to the opposite situation. A loan borrower owes a lender a lump sum and repays it with interest; here, the lump sum is money you already have, and the \"payments\" are income paid out to you, with the remaining balance continuing to earn interest the whole time. That is why the monthly payout is larger than simply dividing the lump sum by the number of months — the undrawn balance keeps compounding until it is paid out. FINRA describes this as the payout phase of a fixed annuity contract: once annuitized, \"the insurance company makes income payments\" that are \"a predetermined fixed amount of money, usually on a monthly basis.\"",
+          "This is the reverse of annuity-calculator, which projects a lump sum forward from a stream of payments going in. This page starts from the lump sum and pays a stream of payments going out. It is also a different question from rmd-calculator, which computes a mandated minimum IRS withdrawal from a retirement account — this page models a voluntary, level payout you choose, for a fixed term you choose, not a required minimum."
+        ]
+      },
+      howTo: {
+        intro: 'Enter the lump sum (always an input), then any two of the other three fields. The third, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter the lump sum', text: 'This is always an input — the amount you already have to pay out.' },
+          { name: 'Project the payout', text: 'Type the rate and the payout term. The monthly payout appears, with the total paid out and the interest earned while being paid out.' },
+          { name: 'Find how long it lasts', text: 'Type a target monthly payout and the rate, leaving the term alone, to see how many years that income level lasts.' },
+          { name: 'Find the rate you need', text: 'Type a target payout and the term, leaving the rate alone, and the calculator searches for the rate numerically.' },
+          { name: 'Compare with the accumulation phase', text: "If you're still building toward this lump sum rather than spending it, see annuity-calculator instead." }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "The payout is the standard level-payment formula applied to the lump sum, with the remaining balance earning interest between payments.",
+        expression: 'Payout = LumpSum × r ÷ (1 − (1 + r)^−n), where r = annual rate ÷ 12\nTotal paid out = Payout × n\nInterest earned = Total paid out − LumpSum',
+        terms: [
+          { symbol: 'Payout', meaning: 'Level monthly income.' },
+          { symbol: 'LumpSum', meaning: 'The amount being paid out.' },
+          { symbol: 'r', meaning: 'Monthly rate: the annual rate ÷ 12, as a decimal.' },
+          { symbol: 'n', meaning: 'Number of monthly payouts (the term in months).' }
+        ],
+        note: "Estimates only. This models a fixed-term payout at a constant assumed rate — it does not model a true life annuity (which pays based on life expectancy, not a fixed term), fees, surrender charges or taxes. Not investment, insurance or tax advice."
+      },
+      workedExample: {
+        intro: 'A $200,000 lump sum is paid out over 20 years at an average 5% annual rate. What is the monthly income, and how much comes from interest?',
+        rows: [
+          { label: 'Monthly rate (5% ÷ 12)', value: '0.4167%' },
+          { label: 'Monthly payout (level-payment formula)', value: '$1,319.91' },
+          { label: 'Total paid out (1,319.91 × 240)', value: '$316,778.75' },
+          { label: 'Interest earned (316,778.75 − 200,000)', value: '$116,778.75' }
+        ],
+        result: 'Payout ≈ $1,319.91 a month for 20 years, about $316,779 total — about $116,779 more than the original $200,000',
+        explanation: "Over a shorter 10-year term, the same $200,000 at 5% pays about $2,121.31 a month instead, 60.7% higher, because the balance has fewer years over which to be drawn down. The rate matters just as much: at 7% the 20-year payout would be about $1,550.60 a month, and at 3% about $1,109.20."
+      },
+      watchOut: [
+        { title: 'Same math as a loan, opposite situation', body: "If this formula looks familiar, it should — it is loan-calculator's level-payment formula, read in reverse. A loan is debt you owe; this models income from money you already have." },
+        { title: 'This pays for a fixed term, not for life', body: "A true life annuity pays based on life expectancy using mortality tables, so it can pay longer or shorter than any fixed term. This calculator only models a chosen, fixed number of years." },
+        { title: 'Fees, surrender charges and taxes are not modeled', body: "Withdrawals from a tax-deferred annuity are generally taxable as ordinary income, and may be fully or partially taxable depending on how much you contributed after tax — see IRS Topic no. 410. Insurance fees and surrender charges would also reduce the real payout." },
+        { title: 'Not a required minimum distribution', body: 'This is a voluntary payout you choose, for a term you choose — see rmd-calculator for the IRS-mandated minimum withdrawal from a traditional IRA instead.' },
+        { title: 'Assumes a constant rate', body: 'A real account\'s return is rarely perfectly level, and a fixed annuity contract may guarantee only a minimum credited rate, not the rate used here.' }
+      ],
+      references: [
+        { label: 'FINRA, Annuities', url: 'https://www.finra.org/investors/investing/investment-products/annuities' },
+        { label: 'Internal Revenue Service, Topic no. 410, Pensions and annuities', url: 'https://www.irs.gov/taxtopics/tc410' }
+      ]
+    },
+    inputs: [
+      { id: 'lumpSum', label: 'Lump sum', type: 'currency', placeholder: '200000', defaultValue: 200000, step: 5000, min: 0 },
+      { id: 'annualRate', label: 'Annual rate', type: 'percent', placeholder: '5', defaultValue: 5, step: 0.1, min: 0 },
+      { id: 'years', label: 'Payout term (years)', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Annuity Payout Calculator – Income From a Lump Sum',
+      description: 'Find the monthly income a lump sum can pay out over a fixed term and rate — the loan-payment formula in reverse. Free annuity payout calculator.',
+      faq: [
+        { question: 'How do I calculate an annuity payout?', answer: 'Apply the level-payment formula to the lump sum: Payout = LumpSum × r ÷ (1 − (1 + r)^−n), where r is the monthly rate and n the number of months. A $200,000 lump sum over 20 years at 5% pays about $1,319.91 a month.' },
+        { question: 'Why is this the same formula as a loan calculator?', answer: "Because it is the same math, applied in reverse: a loan pays a lender back from a borrower's money; this pays income to you from your own lump sum, with the undrawn balance earning interest the whole time." },
+        { question: 'How long will my lump sum last at a given payout?', answer: 'Enter the target monthly payout and the rate, leaving the term alone, and the calculator solves for how many years that income level lasts.' },
+        { question: 'Does this model a life annuity?', answer: "No. A true life annuity pays based on life expectancy and mortality tables, so it can run longer or shorter than any fixed term. This calculator only models a chosen, fixed payout term." },
+        { question: 'Is annuity income taxable?', answer: "Generally yes, as ordinary income, though it may be only partially taxable if you contributed after-tax money. See IRS Topic no. 410, Pensions and annuities, for the rules, and consult a tax professional for your situation." },
+        { question: 'How is this different from the annuity calculator?', answer: 'annuity-calculator projects a lump sum forward from a stream of payments going in (the accumulation phase). This calculator starts from a lump sum you already have and pays a stream of payments going out (the payout phase).' }
+      ]
+    },
+    compute(values) {
+      const months = Math.max(1, values.years * 12);
+      const payout = loanPayment(values.lumpSum, months, values.annualRate);
+      const totalPayout = payout * months;
+      const totalInterest = totalPayout - values.lumpSum;
+      return { payout, totalPayout, totalInterest };
+    }
+  },
+  {
+    id: 'goal-based-investment-calculator',
+    group: 'Savings & Growth',
+    category: 'finance',
+    glyph: 'Goal',
+    updatedAt: '2026-11-16',
+    aliases: ['goal based investment calculator', 'savings goal calculator', 'required monthly savings calculator', 'how much do i need to save calculator', 'investment goal calculator'],
+    related: ['investment-calculator', 'retirement-savings-calculator', 'compound-interest-calculator', 'annuity-calculator'],
+    title: 'Goal-Based Investment Calculator',
+    description: "Find the monthly contribution needed to reach a savings goal — investment-calculator's future-value formula, solved backward for the contribution instead.",
+    example: 'Starting with $10,000 and wanting $100,000 in 10 years at an average 7% annual return takes a required contribution of about $461.64 a month.',
+    solver: {
+      defaultTarget: 'monthlyContribution',
+      variables: [
+        { id: 'goalAmount', label: 'Savings goal', symbol: 'G', dimension: 'currency', defaultValue: 100000, defaultUnit: 'currency', fixed: true },
+        { id: 'currentSavings', label: "Today's savings", symbol: 'P', dimension: 'currency', defaultValue: 10000, defaultUnit: 'currency' },
+        { id: 'years', label: 'Time to the goal', symbol: 't', dimension: 'term', defaultValue: 10, defaultUnit: 'yr', bounds: [0, 1200] },
+        { id: 'annualReturn', label: 'Average annual return', symbol: 'r', dimension: 'percent', defaultValue: 7, defaultUnit: '%', bounds: [-50, 100] },
+        { id: 'monthlyContribution', label: 'Required monthly contribution', symbol: 'C', dimension: 'currency', defaultValue: 461.64, defaultUnit: 'currency' }
+      ],
+      // Algebraically the inverse of investment-calculator's own formula, with monthly contributions
+      // and monthly compounding (like retirement-savings-calculator) rather than investment-calculator's
+      // yearly contribution, to match a realistic monthly savings habit.
+      solve: {
+        monthlyContribution: ({ goalAmount, currentSavings, years, annualReturn }) => {
+          const af = annuityFactor(annualReturn, 12, years);
+          if (!(years >= 0) || !(af > 0)) return NaN;
+          const needed = (goalAmount - currentSavings * growthFactor(annualReturn, 12, years)) / af;
+          return needed >= 0 ? needed : NaN;
+        },
+        currentSavings: ({ goalAmount, monthlyContribution, years, annualReturn }) => {
+          const start = (goalAmount - monthlyContribution * annuityFactor(annualReturn, 12, years)) / growthFactor(annualReturn, 12, years);
+          return years >= 0 && start >= 0 ? start : NaN;
+        },
+        years: ({ goalAmount, currentSavings, monthlyContribution, annualReturn }) => {
+          const i = annualReturn / 100 / 12;
+          if (i === 0) return monthlyContribution > 0 ? (goalAmount - currentSavings) / monthlyContribution : NaN;
+          const x = (goalAmount * i + monthlyContribution) / (currentSavings * i + monthlyContribution);
+          if (!(x > 0)) return NaN;
+          const n = Math.log(x) / Math.log(1 + i);
+          return n >= 0 ? n : NaN;
+        }
+      },
+      // The return has no closed form: the widget finds it numerically.
+      equation: (si) =>
+        si.goalAmount - (si.currentSavings * growthFactor(si.annualReturn, 12, si.years) + si.monthlyContribution * annuityFactor(si.annualReturn, 12, si.years)),
+      outputs: [
+        { id: 'totalContributed', label: 'Total you contribute', dimension: 'currency', compute: (si) => si.currentSavings + si.monthlyContribution * si.years },
+        { id: 'totalGrowth', label: 'Growth', dimension: 'currency', compute: (si) => si.goalAmount - si.currentSavings - si.monthlyContribution * si.years }
+      ],
+      derive: (si) => ({ contributions: si.monthlyContribution * si.years }),
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'currentSavings', label: "Today's savings" },
+            { from: 'contributions', label: 'Future contributions' },
+            { from: 'totalGrowth', label: 'Growth' }
+          ],
+          center: 'goalAmount',
+          centerSub: 'your goal'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: "Investment-calculator's formula, solved backward",
+        paragraphs: [
+          'investment-calculator answers "if I invest this much, what will I have?" This calculator answers the opposite, and arguably more common, question: "I need a specific amount by a specific date — how much do I need to save each month to get there?" It is the same compounding formula, algebraically rearranged to solve for the monthly contribution instead of the future value.',
+          "It also switches to a monthly contribution with monthly compounding, the same change retirement-savings-calculator makes to investment-calculator's yearly model, to match a realistic monthly savings habit rather than one lump deposit a year. Today's savings grow on their own for the whole period; the gap left between that grown amount and the goal is what the monthly contributions have to fill, spread across the future value of an ordinary annuity.",
+          'This is deliberately general-purpose: the goal can be a down payment, a wedding, a car, a child\'s education or anything else with a dollar amount and a date. For a lump sum instead of a monthly contribution, use compound-interest-calculator; for retirement specifically, with its own withdrawal estimate, use retirement-savings-calculator.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your savings goal (always an input), then any three of the other four fields. The fourth, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter your goal', text: 'This is always an input — the dollar amount you want to have by a certain date.' },
+          { name: 'Find the required contribution', text: "Type today's savings, the time you have and an expected average return. The required monthly contribution appears." },
+          { name: 'Check how long your current plan takes', text: 'Type a contribution you can actually afford and leave the time alone instead, to see how many years it takes at that pace.' },
+          { name: 'Find the return you would need', text: 'Fill in the goal, savings, contribution and time so the return is the field left alone longest, and the calculator searches for it.' },
+          { name: 'Try a range of returns', text: 'Run a cautious, a middle and an optimistic return — the required contribution changes a great deal between them.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "With monthly compounding, the goal equals today's savings grown for n months plus the future value of the monthly contributions — rearranged here to solve for the contribution.",
+        expression: 'Goal = P × (1 + i)^n + C × ((1 + i)^n − 1) ÷ i\nRequired C = (Goal − P × (1 + i)^n) ÷ (((1 + i)^n − 1) ÷ i), where i = annual return ÷ 12',
+        terms: [
+          { symbol: 'Goal', meaning: 'The target amount.' },
+          { symbol: 'P', meaning: "Today's savings." },
+          { symbol: 'C', meaning: 'Required contribution, added at the end of each month.' },
+          { symbol: 'i', meaning: 'Monthly rate: the average annual return ÷ 12, as a decimal.' },
+          { symbol: 'n', meaning: 'Number of months until the goal date.' }
+        ],
+        note: 'Estimates only. Returns are assumed constant; real returns vary, can be negative, and are reduced by fees, taxes and inflation. This is not investment advice.'
+      },
+      workedExample: {
+        intro: 'You have $10,000 saved, want $100,000 in 10 years, and assume an average 7% annual return. How much do you need to save each month?',
+        rows: [
+          { label: 'Months to the goal (10 × 12)', value: '120' },
+          { label: 'Monthly rate (7% ÷ 12)', value: '0.5833%' },
+          { label: "Today's savings grown (10,000 × 1.005833^120)", value: '$20,096.61' },
+          { label: 'Amount still needed (100,000 − 20,096.61)', value: '$79,903.39' },
+          { label: 'Annuity factor ((1.005833)^120 − 1) ÷ 0.005833', value: '173.084807' },
+          { label: 'Required monthly contribution (79,903.39 ÷ 173.084807)', value: '$461.64' }
+        ],
+        result: 'Required monthly contribution ≈ $461.64 to reach $100,000 in 10 years',
+        explanation: 'The timeline changes the requirement enormously: reaching the same $100,000 in just 5 years needs about $1,198.77 a month — about 431% more — while stretching it to 15 years cuts the requirement to about $225.61 a month. The assumed return matters too: at 5% the 10-year requirement is about $537.92 a month, and at 9% about $390.08.'
+      },
+      watchOut: [
+        { title: "The algebraic inverse of investment-calculator", body: "Same compounding math, solved for a different variable: investment-calculator projects a contribution forward to a future value; this page starts from the future value (your goal) and solves backward for the contribution. It also compounds monthly, not yearly, to match a monthly savings habit." },
+        { title: 'Estimates only: returns are not guaranteed', body: 'A constant average return is a planning assumption, not a forecast. Real returns vary and can be negative, especially over shorter timelines.' },
+        { title: "No answer if you've already saved enough", body: "If today's savings alone are projected to meet or beat the goal by your target date, there is no positive monthly contribution required, and the calculator shows no answer rather than a negative number." },
+        { title: 'Fees and inflation are not modeled', body: 'An expense ratio or advisory fee comes off the assumed return every year, and the goal amount is in future dollars — use inflation-calculator to see what it would be worth in today\'s money.' },
+        { title: 'Taxes are not modeled', body: 'Gains in a taxable account are taxed; a tax-advantaged account such as an IRA or 401(k) defers or exempts the tax. The calculator ignores taxes entirely.' }
+      ],
+      references: [
+        { label: 'OpenStax, Contemporary Mathematics, §6.7 Investments', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-7-investments' },
+        { label: 'U.S. Securities and Exchange Commission, Investor.gov: Save and Invest', url: 'https://www.investor.gov/introduction-investing/investing-basics/save-and-invest' }
+      ]
+    },
+    inputs: [
+      { id: 'goalAmount', label: 'Savings goal', type: 'currency', placeholder: '100000', defaultValue: 100000, step: 1000, min: 0 },
+      { id: 'currentSavings', label: "Today's savings", type: 'currency', placeholder: '10000', defaultValue: 10000, step: 500, min: 0 },
+      { id: 'annualReturn', label: 'Average annual return', type: 'percent', placeholder: '7', defaultValue: 7, step: 0.1, min: 0 },
+      { id: 'years', label: 'Years to the goal', type: 'number', placeholder: '10', defaultValue: 10, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Goal-Based Investment Calculator – Required Savings',
+      description: "Find the monthly contribution needed to reach a savings goal — investment-calculator's formula, solved backward. Free goal-based savings calculator.",
+      faq: [
+        { question: 'How do I calculate the savings needed to reach a goal?', answer: "Grow today's savings by (1 + i)^n, subtract that from the goal, and divide the remainder by the future-value-of-an-annuity factor. $10,000 growing toward a $100,000 goal in 10 years at 7% needs about $461.64 a month." },
+        { question: 'How is this different from the investment calculator?', answer: 'investment-calculator projects a contribution forward to a future value, with a yearly contribution. This calculator starts from the goal (the future value) and solves backward for the required monthly contribution, compounding monthly.' },
+        { question: "What if I've already saved enough?", answer: "If today's savings alone are projected to reach or exceed the goal by your target date, there is no positive contribution required, and the calculator shows no answer." },
+        { question: 'How much does more time help?', answer: 'A great deal. Reaching the same $100,000 goal from $10,000 at 7% needs about $1,198.77 a month over 5 years, about $461.64 a month over 10 years, and about $225.61 a month over 15 years.' },
+        { question: 'What return should I assume?', answer: 'There is no safe single number. Run the calculator with a cautious, a middle and an optimistic return and plan around the range — returns are never guaranteed.' },
+        { question: 'Does this account for inflation or taxes?', answer: "No. The goal amount is in future dollars (see inflation-calculator for what that buys today), and the calculator does not model taxes on investment gains." }
+      ]
+    },
+    compute(values) {
+      const months = Math.max(1, values.years * 12);
+      const grown = values.currentSavings * growthFactor(values.annualReturn, 12, months);
+      const af = annuityFactor(values.annualReturn, 12, months);
+      const monthlyContribution = af > 0 ? (values.goalAmount - grown) / af : NaN;
+      const totalContributed = values.currentSavings + monthlyContribution * months;
+      const totalGrowth = values.goalAmount - totalContributed;
+      return { monthlyContribution, totalContributed, totalGrowth };
+    }
+  },
 ];

@@ -209,6 +209,88 @@ exports[`compute() snapshots > age-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > annuity-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "payment": 300,
+      "annualRate": 5,
+      "years": 20
+    },
+    "outputs": {
+      "futureValue": 123310.1006,
+      "totalContributed": 72000,
+      "totalGrowth": 51310.10055
+    }
+  },
+  "typical": {
+    "inputs": {
+      "payment": 450,
+      "annualRate": 7.5,
+      "years": 30
+    },
+    "outputs": {
+      "futureValue": 606350.4411,
+      "totalContributed": 162000,
+      "totalGrowth": 444350.4411
+    }
+  },
+  "edge": {
+    "inputs": {
+      "payment": 0,
+      "annualRate": 0,
+      "years": 1
+    },
+    "outputs": {
+      "futureValue": 0,
+      "totalContributed": 0,
+      "totalGrowth": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > annuity-payout-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "lumpSum": 200000,
+      "annualRate": 5,
+      "years": 20
+    },
+    "outputs": {
+      "payout": 1319.911478,
+      "totalPayout": 316778.7548,
+      "totalInterest": 116778.7548
+    }
+  },
+  "typical": {
+    "inputs": {
+      "lumpSum": 300000,
+      "annualRate": 7.5,
+      "years": 30
+    },
+    "outputs": {
+      "payout": 2097.643526,
+      "totalPayout": 755151.6692,
+      "totalInterest": 455151.6692
+    }
+  },
+  "edge": {
+    "inputs": {
+      "lumpSum": 0,
+      "annualRate": 0,
+      "years": 1
+    },
+    "outputs": {
+      "payout": 0,
+      "totalPayout": 0,
+      "totalInterest": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > area-calculator 1`] = `
 {
   "default": {
@@ -4393,6 +4475,50 @@ exports[`compute() snapshots > gibbs-free-energy-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > goal-based-investment-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "goalAmount": 100000,
+      "currentSavings": 10000,
+      "annualReturn": 7,
+      "years": 10
+    },
+    "outputs": {
+      "monthlyContribution": 461.6429796,
+      "totalContributed": 65397.15756,
+      "totalGrowth": 34602.84244
+    }
+  },
+  "typical": {
+    "inputs": {
+      "goalAmount": 150000,
+      "currentSavings": 15000,
+      "annualReturn": 10.5,
+      "years": 15
+    },
+    "outputs": {
+      "monthlyContribution": 179.788547,
+      "totalContributed": 47361.93846,
+      "totalGrowth": 102638.0615
+    }
+  },
+  "edge": {
+    "inputs": {
+      "goalAmount": 0,
+      "currentSavings": 0,
+      "annualReturn": 0,
+      "years": 0
+    },
+    "outputs": {
+      "monthlyContribution": 0,
+      "totalContributed": 0,
+      "totalGrowth": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > golf-course-handicap-calculator 1`] = `
 {
   "default": {
@@ -8071,6 +8197,47 @@ exports[`compute() snapshots > paycheck-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > pension-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "yearsOfService": 30,
+      "finalAverageSalary": 70000,
+      "multiplierPercent": 2
+    },
+    "outputs": {
+      "annualPension": 42000,
+      "monthlyPension": 3500,
+      "incomeReplacementPercent": 60
+    }
+  },
+  "typical": {
+    "inputs": {
+      "yearsOfService": 45,
+      "finalAverageSalary": 105000,
+      "multiplierPercent": 3
+    },
+    "outputs": {
+      "annualPension": 141750,
+      "monthlyPension": 11812.5,
+      "incomeReplacementPercent": 135
+    }
+  },
+  "edge": {
+    "inputs": {
+      "yearsOfService": 0,
+      "finalAverageSalary": 0,
+      "multiplierPercent": 0
+    },
+    "outputs": {
+      "annualPension": 0,
+      "monthlyPension": 0,
+      "incomeReplacementPercent": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > percent-change-calculator 1`] = `
 {
   "default": {
@@ -10739,6 +10906,41 @@ exports[`compute() snapshots > slope-calculator 1`] = `
       "angle": "NaN",
       "yIntercept": "NaN",
       "distance": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > social-security-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "averageIndexedMonthlyEarnings": 6500
+    },
+    "outputs": {
+      "pia": 2825.8,
+      "annualBenefit": 33909.6,
+      "replacementPercent": 43.47384615
+    }
+  },
+  "typical": {
+    "inputs": {
+      "averageIndexedMonthlyEarnings": 9800
+    },
+    "outputs": {
+      "pia": 3533.2,
+      "annualBenefit": 42398.4,
+      "replacementPercent": 36.05306122
+    }
+  },
+  "edge": {
+    "inputs": {
+      "averageIndexedMonthlyEarnings": 0
+    },
+    "outputs": {
+      "pia": 0,
+      "annualBenefit": 0,
+      "replacementPercent": "NaN"
     }
   }
 }

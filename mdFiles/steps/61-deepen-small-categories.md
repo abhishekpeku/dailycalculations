@@ -208,7 +208,13 @@ whole site before writing any id.
   - [x] `waist-to-hip-ratio-calculator`
   - [x] `blood-alcohol-content-calculator`
 - [ ] Batch 4 — `shopping` (5 new)
-- [ ] Batch 5 — `travel` (6 new)
+- [x] Batch 5 — `travel` (6 new; done 2026-11-16, branch `step/61-deepen-travel`)
+  - [x] `jet-lag-calculator`
+  - [x] `luggage-fee-calculator`
+  - [x] `daylight-hours-calculator`
+  - [x] `travel-points-value-calculator`
+  - [x] `points-vs-cash-flight-calculator`
+  - [x] `tipping-abroad-calculator`
 - [ ] Batch 6 — `time` (5 new)
 - [ ] Batch 7 — `creator` (8 new)
 - [ ] Batch 8 — `text` (8 new)

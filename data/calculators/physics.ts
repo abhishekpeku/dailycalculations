@@ -5424,7 +5424,7 @@ export const physicsCalculators: CalculatorConfig[] = [
     glyph: 'E',
     updatedAt: '2026-11-16',
     aliases: ['electric field strength calculator', 'point charge field calculator', 'e = kq/r^2 calculator', 'coulomb field calculator', 'field strength calculator'],
-    related: ['ohms-law-calculator', 'capacitor-charge-calculator', 'gravitational-force-calculator'],
+    related: ['electric-potential-calculator', 'ohms-law-calculator', 'capacitor-charge-calculator', 'gravitational-force-calculator'],
     title: 'Electric Field Calculator (E = kq/r²)',
     description: "Solve E = kq ÷ r² for the electric field strength from a point charge, or solve backward for charge or distance, using Coulomb's constant.",
     example: 'A 1 µC point charge creates an electric field of about 8.99 × 10⁵ N/C at a distance of 10 cm.',
@@ -6904,6 +6904,631 @@ export const physicsCalculators: CalculatorConfig[] = [
     },
     compute(values) {
       return { molarCp: values.molarCv + MOLAR_GAS_CONSTANT };
+    }
+  },
+  {
+    id: 'terminal-velocity-calculator',
+    category: 'physics',
+    group: 'Fluids & Matter',
+    glyph: 'vₜ',
+    updatedAt: '2026-11-17',
+    aliases: ['terminal velocity calculator', 'terminal speed calculator', 'falling object terminal velocity calculator', 'skydiver terminal velocity calculator', 'drag force terminal velocity calculator'],
+    related: ['free-fall-calculator', 'density-calculator', 'friction-calculator', 'buoyancy-calculator'],
+    title: 'Terminal Velocity Calculator (v = √(2mg ÷ ρACd))',
+    description: 'Solve v = √(2mg ÷ ρACd) for the terminal velocity of an object falling through a fluid, or solve backward for mass, fluid density, area, or drag coefficient.',
+    example: 'A 75 kg skydiver falling headfirst (0.18 m² cross-section, drag coefficient 0.70, through 1.21 kg/m³ air) reaches a terminal velocity of about 98 m/s, roughly 354 km/h.',
+    solver: {
+      defaultTarget: 'velocity',
+      variables: [
+        { id: 'velocity', label: 'Terminal velocity', symbol: 'vₜ', dimension: 'speed', defaultValue: 98.2264, defaultUnit: 'm/s' },
+        { id: 'mass', label: 'Mass', symbol: 'm', dimension: 'mass', defaultValue: 75, defaultUnit: 'kg' },
+        { id: 'fluidDensity', label: 'Fluid density', symbol: 'ρ', dimension: 'density', defaultValue: 1.21, defaultUnit: 'kg/m3' },
+        { id: 'area', label: 'Cross-sectional area', symbol: 'A', dimension: 'area', defaultValue: 0.18, defaultUnit: 'm2' },
+        { id: 'dragCoefficient', label: 'Drag coefficient', symbol: 'Cd', dimension: 'count', defaultValue: 0.7, defaultUnit: 'count' }
+      ],
+      solve: {
+        velocity: ({ mass, fluidDensity, area, dragCoefficient }) => {
+          const denom = fluidDensity * area * dragCoefficient;
+          return denom <= 0 ? NaN : Math.sqrt((2 * mass * STANDARD_GRAVITY) / denom);
+        },
+        mass: ({ velocity, fluidDensity, area, dragCoefficient }) => (velocity * velocity * fluidDensity * area * dragCoefficient) / (2 * STANDARD_GRAVITY),
+        fluidDensity: ({ velocity, mass, area, dragCoefficient }) => {
+          const denom = velocity * velocity * area * dragCoefficient;
+          return denom <= 0 ? NaN : (2 * mass * STANDARD_GRAVITY) / denom;
+        },
+        area: ({ velocity, mass, fluidDensity, dragCoefficient }) => {
+          const denom = velocity * velocity * fluidDensity * dragCoefficient;
+          return denom <= 0 ? NaN : (2 * mass * STANDARD_GRAVITY) / denom;
+        },
+        dragCoefficient: ({ velocity, mass, fluidDensity, area }) => {
+          const denom = velocity * velocity * fluidDensity * area;
+          return denom <= 0 ? NaN : (2 * mass * STANDARD_GRAVITY) / denom;
+        }
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is terminal velocity?',
+        paragraphs: [
+          "An object falling through a fluid speeds up under gravity, but the fluid pushes back with a drag force that grows as it falls faster. Terminal velocity is the speed where that drag force has grown to exactly match the pull of gravity — the net force reaches zero, acceleration stops, and the object keeps falling at a constant speed from then on.",
+          "For an object moving fast enough that the fluid around it turns turbulent — a skydiver, a dropped ball, a car at highway speed — drag grows with the square of speed, not speed itself. That quadratic relationship is why terminal velocity is reached relatively quickly and then holds steady: doubling speed would quadruple the drag, so the balance point arrives well before the object could keep accelerating indefinitely.",
+          "This calculator assumes exactly that free-fall-calculator does not: real air resistance, modeled as a drag force proportional to v². free-fall-calculator answers what would happen with no air resistance at all — a reasonable approximation for a dense, compact object falling a short distance, but not for a skydiver, a falling leaf, or anything that falls far enough or is light and spread-out enough for drag to matter."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any four of terminal velocity, mass, fluid density, area, and the drag coefficient; the fifth fills in automatically.',
+        steps: [
+          { name: 'Enter the falling object’s mass', text: 'Type the mass of whatever is falling, in kilograms or pounds.' },
+          { name: 'Enter the fluid density, area, and drag coefficient', text: 'The density of the fluid it is falling through (air at sea level is about 1.21 kg/m³), the cross-sectional area it presents to the flow, and its drag coefficient — a dimensionless number describing how streamlined its shape and orientation are.' },
+          { name: 'Read the terminal velocity', text: 'The remaining field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input instead — for example, to find what cross-sectional area would be needed to reach a target terminal velocity.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 1.21 kg/m³ becomes the equivalent in lb/ft³ instead of silently turning into 1.21 lb/ft³.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The terminal-velocity formula rearranges five ways, one for each quantity you might be solving for.',
+        expression: 'v = √(2mg ÷ ρACd)\nm = v²ρACd ÷ 2g\nρ = 2mg ÷ (v²ACd)\nA = 2mg ÷ (v²ρCd)\nCd = 2mg ÷ (v²ρA)',
+        terms: [
+          { symbol: 'v', meaning: 'Terminal velocity, in meters per second (m/s).' },
+          { symbol: 'm', meaning: 'Mass of the falling object, in kilograms (kg).' },
+          { symbol: 'g', meaning: 'Standard gravity, fixed at 9.80665 m/s² — the same reference value this site’s weight-calculator and free-fall-calculator use, not an editable field here.' },
+          { symbol: 'ρ', meaning: 'Density of the fluid being fallen through, in kilograms per cubic meter (kg/m³). About 1.21 kg/m³ for sea-level air.' },
+          { symbol: 'A', meaning: 'Cross-sectional area the object presents to the oncoming flow, in square meters (m²).' },
+          { symbol: 'Cd', meaning: 'Drag coefficient, a dimensionless number that depends on the object’s shape and orientation — a streamlined shape has a low Cd, a flat or tumbling one has a high Cd.' }
+        ],
+        note: "This is the quadratic-drag model — drag force proportional to v² — the regime that applies once an object is moving fast enough to make the air or water around it turbulent. It is a different formula entirely from Stokes' law, which describes the much slower, smooth (laminar) settling of a tiny sphere through a viscous fluid, such as a dust particle in air or a ball bearing in oil."
+      },
+      workedExample: {
+        intro: 'A 75 kg skydiver falls headfirst, presenting a 0.18 m² cross-section with a drag coefficient of 0.70, through sea-level air (density 1.21 kg/m³). What is their terminal velocity?',
+        rows: [
+          { label: 'Mass (m)', value: '75 kg' },
+          { label: 'Air density (ρ)', value: '1.21 kg/m³' },
+          { label: 'Cross-sectional area (A)', value: '0.18 m²' },
+          { label: 'Drag coefficient (Cd)', value: '0.70' },
+          { label: 'Terminal velocity (v = √(2mg ÷ ρACd))', value: '≈ 98.2 m/s ≈ 354 km/h' }
+        ],
+        result: 'v ≈ 98.2 m/s ≈ 354 km/h',
+        explanation: "√((2 × 75 × 9.80665) ÷ (1.21 × 0.18 × 0.70)) ≈ 98.2 m/s. This reproduces OpenStax's own headfirst-skydiver example almost exactly — their textbook rounds gravity to 9.80 m/s² and reports 98 m/s, or 350 km/h. A separate OpenStax example (a different, 85 kg skydiver in a spread-eagle position, presenting a much larger 0.70 m² area with a drag coefficient of 1.0) comes out to about 44 m/s with this same formula — under half the headfirst speed, even with more mass, because the larger area and less streamlined shape raise the denominator far more than the extra mass raises the numerator. That is the same physical idea a parachute uses deliberately: dramatically increasing effective area and drag coefficient to cut terminal velocity down to a safe landing speed."
+      },
+      watchOut: [
+        {
+          title: 'This is the quadratic-drag model, not Stokes’ law',
+          body: "This formula fits objects large and fast enough to create turbulent flow (falling people, balls, vehicles). A tiny particle creeping through a thick fluid at very low speed follows Stokes' law instead, where drag is proportional to velocity, not velocity squared — a genuinely different formula this calculator does not compute."
+        },
+        {
+          title: 'Gravity is fixed at standard gravity',
+          body: 'g is fixed at 9.80665 m/s², the same reference value used throughout this site, and is not an editable field here. A different world’s gravity would need a different value substituted directly into the formula by hand.'
+        },
+        {
+          title: 'The drag coefficient is not a universal constant for an object',
+          body: 'Cd changes with orientation and shape, not just identity — the same skydiver falling headfirst versus spread-eagle, or a car with its windows up versus down, can have noticeably different drag coefficients. Look up a value for the specific shape and orientation in question rather than reusing one from an unrelated case.'
+        },
+        {
+          title: 'This gives the steady-state speed only',
+          body: 'It assumes a single uniform fluid, no wind, and enough falling distance and time to actually reach terminal velocity. It does not model the changing speed during the approach to that limit, or a sudden change such as a parachute opening.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §6.4 Drag Force and Terminal Speed', url: 'https://openstax.org/books/university-physics-volume-1/pages/6-4-drag-force-and-terminal-speed' }
+      ]
+    },
+    inputs: [
+      { id: 'mass', label: 'Mass (kg)', type: 'number', placeholder: '75', defaultValue: 75, step: 0.1, min: 0 },
+      { id: 'fluidDensity', label: 'Fluid density (kg/m³)', type: 'number', placeholder: '1.21', defaultValue: 1.21, step: 0.01, min: 0 },
+      { id: 'area', label: 'Cross-sectional area (m²)', type: 'number', placeholder: '0.18', defaultValue: 0.18, step: 0.01, min: 0 },
+      { id: 'dragCoefficient', label: 'Drag coefficient', type: 'number', placeholder: '0.70', defaultValue: 0.7, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Terminal Velocity Calculator (v = √(2mg ÷ ρACd))',
+      description: 'Free terminal velocity calculator. Solve for terminal speed, mass, fluid density, area, or drag coefficient, with a verified skydiver worked example.',
+      faq: [
+        { question: 'What is the formula for terminal velocity?', answer: 'v = √(2mg ÷ ρACd), where m is mass, g is standard gravity, ρ is fluid density, A is cross-sectional area, and Cd is the drag coefficient. A 75 kg skydiver falling headfirst through air reaches about 98 m/s.' },
+        { question: 'What is a typical terminal velocity for a skydiver?', answer: "About 98 m/s (≈354 km/h, ≈220 mph) falling headfirst, per OpenStax's own worked example. A spread-eagle position, which greatly increases area and drag coefficient, cuts that down to roughly 44 m/s in a separate OpenStax example — which is why skydivers spread out before opening a parachute." },
+        { question: 'Why does a heavier object not always fall faster?', answer: 'Mass only appears once in the numerator, while area and drag coefficient both sit in the denominator. A larger, less streamlined shape can lower terminal velocity more than extra mass raises it — exactly how a parachute works.' },
+        { question: 'How is this different from the free-fall calculator?', answer: 'free-fall-calculator assumes no air resistance at all, which only holds for a short drop or a dense, compact object. This calculator models the drag force that eventually balances gravity and caps the falling speed — the two give very different answers once drag actually matters.' },
+        { question: 'What is a drag coefficient?', answer: 'A dimensionless number describing how much drag a shape generates for its size — low for streamlined shapes (a teardrop, a skydiver diving headfirst), higher for flat or tumbling ones (a skydiver spread-eagled, a flat plate facing the wind).' },
+        { question: 'Does terminal velocity depend on altitude?', answer: 'Yes, indirectly — air density drops at higher altitude, which this formula’s ρ term reflects: lower density means a higher terminal velocity for the same object, which is why skydivers accelerate faster at altitude before thickening air near the ground slows their terminal speed back down.' }
+      ]
+    },
+    compute(values) {
+      const denom = values.fluidDensity * values.area * values.dragCoefficient;
+      return { velocity: denom <= 0 ? NaN : Math.sqrt((2 * values.mass * STANDARD_GRAVITY) / denom) };
+    }
+  },
+  {
+    id: 'electric-potential-calculator',
+    category: 'physics',
+    group: 'Electricity & Circuits',
+    glyph: 'V',
+    updatedAt: '2026-11-17',
+    aliases: ['electric potential calculator', 'voltage of a point charge calculator', 'v = kq/r calculator', 'electric potential due to a point charge calculator', 'point charge voltage calculator'],
+    related: ['electric-field-calculator', 'ohms-law-calculator', 'capacitor-charge-calculator', 'gravitational-force-calculator'],
+    title: 'Electric Potential Calculator (V = kq ÷ r)',
+    description: 'Solve V = kq ÷ r for the electric potential from a point charge, or solve backward for charge or distance, using Coulomb’s constant.',
+    example: 'A +5 nC point charge creates an electric potential of about 449 V at a distance of 10 cm.',
+    solver: {
+      defaultTarget: 'voltage',
+      variables: [
+        { id: 'voltage', label: 'Electric potential', symbol: 'V', dimension: 'voltage', defaultValue: 449.3776, defaultUnit: 'V' },
+        { id: 'charge', label: 'Source charge', symbol: 'q', dimension: 'charge', defaultValue: 5, defaultUnit: 'nC' },
+        { id: 'radius', label: 'Distance from charge', symbol: 'r', dimension: 'length', defaultValue: 0.1, defaultUnit: 'm' }
+      ],
+      solve: {
+        voltage: ({ charge, radius }) => (radius <= 0 ? NaN : (COULOMB_CONSTANT * charge) / radius),
+        charge: ({ voltage, radius }) => (voltage * radius) / COULOMB_CONSTANT,
+        radius: ({ voltage, charge }) => {
+          if (voltage === 0) return NaN;
+          const r = (COULOMB_CONSTANT * charge) / voltage;
+          return r <= 0 ? NaN : r;
+        }
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is electric potential?',
+        paragraphs: [
+          "Electric potential is the potential energy a charge would have at a point in space, divided by the size of that charge — a property of the location itself, in volts (joules per coulomb), independent of whatever charge is actually used to measure it there.",
+          "For a single point charge, potential follows an inverse-distance law rather than the inverse-square law of electric field strength: V = kq ÷ r, where k is Coulomb's constant, the same constant this site's electric-field-calculator uses. Potential falls off more gently with distance than field does, because potential is really an accumulated (integrated) effect of the field over distance, not the field's instantaneous strength at one point.",
+          "Unlike electric field strength, which this site's electric-field-calculator treats as a magnitude only, electric potential is a genuine signed scalar — a positive source charge creates a positive potential everywhere around it, and a negative source charge creates a negative potential, with no direction to speak of either way."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of electric potential, the source charge, and the distance; the third fills in automatically.',
+        steps: [
+          { name: 'Enter the charge and distance', text: 'Type the source charge (often in nanocoulombs, nC, for everyday static-electricity scales — positive or negative) and the distance from it, then pick units.' },
+          { name: 'Read the electric potential', text: 'The remaining field, marked auto, calculates as you type, including its sign.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input instead — for example, to find how far away the potential drops to a target value.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 5 nC becomes 0.005 µC instead of silently turning into 5 µC.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The point-charge potential formula rearranges three ways, one for each quantity you might be solving for.',
+        expression: 'V = k × q ÷ r\nq = V × r ÷ k\nr = k × q ÷ V',
+        terms: [
+          { symbol: 'V', meaning: 'Electric potential, in volts (V), equivalently joules per coulomb (J/C). Can be positive or negative.' },
+          { symbol: 'k', meaning: "Coulomb's constant, about 8.99 × 10⁹ N·m² ÷ C² — the same measured constant (derived from the vacuum permittivity ε₀, CODATA 2022) this site's electric-field-calculator uses." },
+          { symbol: 'q', meaning: 'The source charge creating the potential, in coulombs (C). Its sign carries through directly to the sign of V.' },
+          { symbol: 'r', meaning: 'Distance from the source charge to the point where the potential is evaluated, in meters (m).' }
+        ],
+        note: "This gives the potential from a single point charge only, measured relative to zero at infinite distance. A real configuration with more than one charge needs each charge's potential added as a plain sum (potentials add as scalars, unlike fields, which add as vectors), which this single-charge formula does not do."
+      },
+      workedExample: {
+        intro: 'A +5 nC point charge sits isolated in space. What is its electric potential 10 cm away?',
+        rows: [
+          { label: 'Source charge (q)', value: '+5 nC = 5 × 10⁻⁹ C' },
+          { label: 'Distance (r)', value: '0.10 m' },
+          { label: "Coulomb's constant (k)", value: '≈ 8.9876 × 10⁹ N·m² ÷ C²' },
+          { label: 'Electric potential (V = k × q ÷ r)', value: '≈ 449 V' }
+        ],
+        result: 'V ≈ 449 V',
+        explanation: "8.9876 × 10⁹ × 5×10⁻⁹ ÷ 0.1 ≈ 449.4 V. As an independent check with a negative charge, OpenStax's own Example 7.10 — a −3.00 nC charge 5.00 cm from the center of a small charged sphere — gives V = kq ÷ r ≈ −539 V, matching the textbook's published figure, with the negative sign simply carried through from the negative charge. Doubling the distance from either charge would cut its potential in half, not to a quarter, since potential follows an inverse-distance law rather than field's inverse-square one."
+      },
+      watchOut: [
+        {
+          title: 'Potential can be negative — this is not a magnitude',
+          body: "Unlike this site's electric-field-calculator, which reports field strength as a magnitude only, electric potential keeps the source charge's sign. A negative source charge gives a negative potential everywhere around it, which is the physically correct answer, not an error."
+        },
+        {
+          title: 'This is the potential from a single point charge only',
+          body: 'Real charge configurations — two charges, a charged ring, a charged plate — need each source’s potential added as a plain scalar sum, not this one formula applied once. Scalar addition is simpler than the vector addition electric field requires, but it still is not this single-charge formula.'
+        },
+        {
+          title: "Coulomb's constant is measured, not exact",
+          body: "k is derived from the vacuum permittivity ε₀, which carries a small measurement uncertainty since the 2019 SI redefinition — the same caveat this site's electric-field-calculator, gravitational-force-calculator, and escape-velocity-calculator note for their own constants."
+        },
+        {
+          title: 'Zero potential is set at infinity, not at the ground',
+          body: 'This formula measures potential relative to a reference point infinitely far from the charge, which is the standard physics convention — it is not the same zero point an electrician’s "ground" reference uses in a real circuit.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 2, §7.3 Calculations of Electric Potential', url: 'https://openstax.org/books/university-physics-volume-2/pages/7-3-calculations-of-electric-potential' },
+        { label: 'NIST, Vacuum Electric Permittivity (CODATA 2022)', url: 'https://physics.nist.gov/cgi-bin/cuu/Value?ep0' }
+      ]
+    },
+    inputs: [
+      { id: 'charge', label: 'Source charge (C)', type: 'number', placeholder: '0.000000005', defaultValue: 0.000000005, step: 0.000000001 },
+      { id: 'radius', label: 'Distance from charge (m)', type: 'number', placeholder: '0.1', defaultValue: 0.1, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Electric Potential Calculator (V = kq/r)',
+      description: 'Free electric potential calculator for a point charge. Solve V = kq ÷ r for potential, charge, or distance in volts, with a worked example.',
+      faq: [
+        { question: 'What is the formula for the electric potential of a point charge?', answer: "V = kq ÷ r, where k is Coulomb's constant (about 8.99 × 10⁹ N·m²/C²), q is the source charge, and r is the distance from it. A +5 nC charge produces a potential of about 449 V at 10 cm." },
+        { question: 'Can electric potential be negative?', answer: 'Yes — a negative source charge creates a negative potential everywhere around it. A −3.00 nC charge 5.00 cm away has a potential of about −539 V, the sign carried straight through from the charge.' },
+        { question: 'How is electric potential different from electric potential energy?', answer: 'Electric potential (V = U ÷ q) is potential energy per unit charge — a property of a location. Multiply it by an actual charge’s size to get that specific charge’s potential energy there, U = qV.' },
+        { question: 'How is electric potential different from electric field?', answer: 'Field (E = kq ÷ r²) is a vector that falls off with the square of distance and this site treats as a magnitude; potential (V = kq ÷ r) is a signed scalar that falls off more gently, with plain distance. Potentials from multiple charges add as simple sums; fields add as vectors.' },
+        { question: 'How quickly does electric potential drop off with distance?', answer: 'In proportion to distance (an inverse-distance law). Doubling the distance from a point charge cuts its potential in half, not to a quarter — a gentler fall-off than electric field’s inverse-square law.' },
+        { question: 'Can this calculator handle more than one source charge?', answer: "No — it computes the potential from a single point charge. Multiple charges require adding each one's potential as a plain scalar sum, which is simpler than field's vector sum but is still a separate calculation this page does not perform." }
+      ]
+    },
+    compute(values) {
+      return { voltage: values.radius <= 0 ? NaN : (COULOMB_CONSTANT * values.charge) / values.radius };
+    }
+  },
+  {
+    id: 'magnetic-flux-calculator',
+    category: 'physics',
+    group: 'Electricity & Circuits',
+    glyph: 'Φ',
+    updatedAt: '2026-11-17',
+    aliases: ['magnetic flux calculator', 'flux through a loop calculator', 'phi = ba cos theta calculator', 'magnetic flux through a coil calculator', 'weber calculator'],
+    related: ['electromagnetic-induction-calculator', 'magnetic-force-calculator', 'ohms-law-calculator', 'lc-resonant-frequency-calculator'],
+    title: 'Magnetic Flux Calculator (Φ = BA cos θ)',
+    description: 'Solve Φ = B × A × cos θ for the magnetic flux through a flat loop, or solve backward for field strength, area, or angle.',
+    example: 'A 0.25 m square loop (0.0625 m²) held perpendicular to a 0.8 T magnetic field has a magnetic flux of 0.05 Wb.',
+    solver: {
+      defaultTarget: 'flux',
+      variables: [
+        { id: 'flux', label: 'Magnetic flux', symbol: 'Φ', dimension: 'magneticFlux', defaultValue: 0.08, defaultUnit: 'Wb' },
+        { id: 'fluxDensity', label: 'Magnetic flux density', symbol: 'B', dimension: 'magneticFluxDensity', defaultValue: 0.8, defaultUnit: 'T' },
+        { id: 'area', label: 'Loop area', symbol: 'A', dimension: 'area', defaultValue: 0.1, defaultUnit: 'm2' },
+        { id: 'angle', label: 'Angle from the normal', symbol: 'θ', dimension: 'angle', defaultValue: 0, defaultUnit: 'deg' }
+      ],
+      solve: {
+        flux: ({ fluxDensity, area, angle }) => fluxDensity * area * Math.cos(angle),
+        fluxDensity: ({ flux, area, angle }) => {
+          const denom = area * Math.cos(angle);
+          return denom === 0 ? NaN : flux / denom;
+        },
+        area: ({ flux, fluxDensity, angle }) => {
+          const denom = fluxDensity * Math.cos(angle);
+          return denom === 0 ? NaN : flux / denom;
+        },
+        angle: ({ flux, fluxDensity, area }) => {
+          const denom = fluxDensity * area;
+          if (denom === 0) return NaN;
+          const cosTheta = flux / denom;
+          return cosTheta < -1 || cosTheta > 1 ? NaN : Math.acos(cosTheta);
+        }
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is magnetic flux?',
+        paragraphs: [
+          "Magnetic flux measures how much of a magnetic field passes through a given surface — picture the field as a bundle of lines, and flux as roughly how many of those lines poke through the area in question. It is the quantity that matters for electromagnetic induction: a changing flux through a loop, not just a strong field by itself, is what drives an induced current.",
+          "For a flat surface in a uniform field, flux is Φ = BA cos θ, where θ is the angle between the field direction and the surface's normal (the direction sticking straight out of it, not along it). Flux is greatest when the field passes straight through the surface (θ = 0°, cos θ = 1) and drops to zero when the field grazes edge-on along the surface instead (θ = 90°, cos θ = 0) — the same field, the same area, but none of it actually crosses through.",
+          "This calculator covers a flat loop in a uniform field, the standard introductory case. A curved surface or a non-uniform field needs the full integral definition, Φ = ∫ B⃗ · n̂ dA, which this single-angle formula is a simplified special case of."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of magnetic flux, field strength, area, and angle; the fourth fills in automatically.',
+        steps: [
+          { name: 'Enter the field strength and loop area', text: 'Type the magnetic flux density (field strength) and the flat area of the loop or surface, then pick units.' },
+          { name: 'Enter the angle', text: 'The angle between the field direction and the surface’s normal — 0° if the field passes straight through, 90° if it runs edge-on along the surface.' },
+          { name: 'Read the magnetic flux', text: 'The remaining field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input instead — for example, to find the tilt angle that gives a target flux.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The magnetic flux formula rearranges four ways, one for each quantity you might be solving for.',
+        expression: 'Φ = B × A × cos θ\nB = Φ ÷ (A × cos θ)\nA = Φ ÷ (B × cos θ)\nθ = cos⁻¹(Φ ÷ (B × A))',
+        terms: [
+          { symbol: 'Φ', meaning: 'Magnetic flux, in webers (Wb). 1 Wb = 1 T·m².' },
+          { symbol: 'B', meaning: 'Magnetic flux density (field strength), in teslas (T).' },
+          { symbol: 'A', meaning: 'Area of the flat loop or surface, in square meters (m²).' },
+          { symbol: 'θ', meaning: 'The angle between the field direction and the surface’s normal (the perpendicular to the surface), in degrees.' }
+        ],
+        note: 'This formula assumes a flat surface sitting in a uniform magnetic field — the field strength and direction are the same everywhere across the loop.'
+      },
+      workedExample: {
+        intro: 'A square wire loop, 0.25 m on a side, sits in a uniform 0.8 T magnetic field. What is the flux through it when the loop is perpendicular to the field, and when it is tilted 60° away?',
+        rows: [
+          { label: 'Loop area (A = 0.25 m × 0.25 m)', value: '0.0625 m²' },
+          { label: 'Field strength (B)', value: '0.8 T' },
+          { label: 'Flux, perpendicular (θ = 0°)', value: 'Φ = 0.8 × 0.0625 × cos 0° = 0.05 Wb' },
+          { label: 'Flux, tilted 60° (θ = 60°)', value: 'Φ = 0.8 × 0.0625 × cos 60° = 0.025 Wb' }
+        ],
+        result: 'Φ = 0.05 Wb perpendicular, 0.025 Wb at 60°',
+        explanation: "0.8 × 0.0625 × 1 = 0.05 Wb when the loop faces the field squarely (OpenStax's own 0.25 m square-coil setup from its Faraday's-law example, reused here for the flux itself). Tilting the same loop 60° away from perpendicular cuts the flux exactly in half, to 0.025 Wb, because cos 60° = 0.5 — not because the field or the area changed at all, only how much of the field actually crosses the loop. At a full 90° tilt (edge-on), the flux drops to zero even though the field is just as strong and the loop just as large."
+      },
+      watchOut: [
+        {
+          title: 'The angle is measured from the normal, not from the surface',
+          body: 'θ = 0° means the field points straight through the loop (perpendicular to its face) — not along it. This trips people up because it is the opposite of how the angle is usually pictured against a flat surface.'
+        },
+        {
+          title: 'Flux can be reduced to zero without the field disappearing',
+          body: 'A loop turned edge-on to a strong field still has zero flux through it, because none of the field actually passes through the loop’s face. Flux depends on geometry, not just field strength.'
+        },
+        {
+          title: 'This assumes a flat loop in a uniform field',
+          body: 'A curved surface, or a field that varies in strength or direction across the loop, needs the full integral definition of flux rather than this single multiplication — this calculator does not model either case.'
+        },
+        {
+          title: 'Flux is not the same as field strength',
+          body: 'Flux (Φ, in webers) accounts for area and angle on top of field strength (B, in teslas). A weak field over a large, well-aligned area can produce more flux than a strong field through a tiny or steeply tilted one.'
+        }
+      ],
+      references: [
+        { label: "OpenStax, University Physics Volume 2, §13.1 Faraday's Law", url: 'https://openstax.org/books/university-physics-volume-2/pages/13-1-faradays-law' }
+      ]
+    },
+    inputs: [
+      { id: 'fluxDensity', label: 'Magnetic flux density (T)', type: 'number', placeholder: '0.8', defaultValue: 0.8, step: 0.01, min: 0 },
+      { id: 'area', label: 'Loop area (m²)', type: 'number', placeholder: '0.1', defaultValue: 0.1, step: 0.01, min: 0 },
+      { id: 'angle', label: 'Angle from the normal (degrees)', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Magnetic Flux Calculator (Φ = BA cos θ)',
+      description: 'Free magnetic flux calculator. Solve Φ = B × A × cos θ for flux, field strength, area, or angle in webers, with a worked example.',
+      faq: [
+        { question: 'What is the formula for magnetic flux?', answer: 'Φ = B × A × cos θ, where B is magnetic flux density, A is the surface area, and θ is the angle between the field and the surface’s normal. A 0.0625 m² loop in a 0.8 T field held perpendicular has a flux of 0.05 Wb.' },
+        { question: 'What is the unit of magnetic flux?', answer: 'The weber (Wb). 1 Wb equals 1 tesla times 1 square meter (1 Wb = 1 T·m²), or equivalently 1 volt-second.' },
+        { question: 'What angle gives the maximum magnetic flux?', answer: '0°, measured from the surface’s normal — the field passing straight through the loop. Flux falls off as the cosine of the angle and reaches zero at 90°, when the field runs edge-on along the surface.' },
+        { question: 'Why would magnetic flux be zero even in a strong field?', answer: 'If the loop is turned edge-on to the field (θ = 90°), none of the field lines actually pass through the loop’s face, so the flux is zero regardless of how strong the field is.' },
+        { question: 'Is magnetic flux the same as magnetic field strength?', answer: 'No — field strength (B, in teslas) is a property of the field itself at a point. Flux (Φ, in webers) also accounts for the area the field passes through and the angle at which it does so.' },
+        { question: 'How is magnetic flux used in electromagnetic induction?', answer: 'A changing magnetic flux through a loop induces an EMF, per Faraday’s law — the electromagnetic-induction-calculator on this site takes that change in flux as its own input.' }
+      ]
+    },
+    compute(values) {
+      return { flux: values.fluxDensity * values.area * Math.cos((values.angle * Math.PI) / 180) };
+    }
+  },
+  {
+    id: 'electromagnetic-induction-calculator',
+    category: 'physics',
+    group: 'Electricity & Circuits',
+    glyph: 'ε',
+    updatedAt: '2026-11-17',
+    aliases: ["faraday's law of induction calculator", 'electromagnetic induction calculator', 'induced emf calculator', 'emf calculator', 'change in magnetic flux calculator'],
+    related: ['magnetic-flux-calculator', 'ohms-law-calculator', 'rc-time-constant-calculator', 'lc-resonant-frequency-calculator'],
+    title: "Electromagnetic Induction Calculator (ε = N × ΔΦ ÷ Δt)",
+    description: "Solve Faraday's law of induction, ε = N × ΔΦ ÷ Δt, for the induced EMF, or solve backward for turns, flux change, or time.",
+    example: 'A 200-turn coil experiencing a flux change of 0.0025 Wb over 1 second has an induced EMF of 0.5 V.',
+    solver: {
+      defaultTarget: 'emf',
+      variables: [
+        { id: 'emf', label: 'Induced EMF', symbol: 'ε', dimension: 'voltage', defaultValue: 0.5, defaultUnit: 'V' },
+        { id: 'turns', label: 'Number of turns', symbol: 'N', dimension: 'count', defaultValue: 200, defaultUnit: 'count' },
+        { id: 'fluxChange', label: 'Change in magnetic flux', symbol: 'ΔΦ', dimension: 'magneticFlux', defaultValue: 0.0025, defaultUnit: 'Wb' },
+        { id: 'time', label: 'Time interval', symbol: 'Δt', dimension: 'time', defaultValue: 1, defaultUnit: 's' }
+      ],
+      solve: {
+        emf: ({ turns, fluxChange, time }) => (time === 0 ? NaN : (turns * fluxChange) / time),
+        turns: ({ emf, fluxChange, time }) => (fluxChange === 0 ? NaN : (emf * time) / fluxChange),
+        fluxChange: ({ emf, turns, time }) => (turns === 0 ? NaN : (emf * time) / turns),
+        time: ({ emf, turns, fluxChange }) => (emf === 0 ? NaN : (turns * fluxChange) / emf)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: "What is Faraday's law of induction?",
+        paragraphs: [
+          "Faraday's law of induction says that a changing magnetic flux through a loop of wire creates (induces) an EMF — a voltage — in that loop, even with no battery or other power source anywhere in the circuit. It is the principle behind generators, transformers, and wireless chargers: move a magnet, change a current, or rotate a coil, and whatever flux change results shows up as a voltage.",
+          "The size of that induced EMF depends on how fast the flux changes, not on how much flux there is at any single moment — a flux sitting at a huge, constant value induces nothing at all, while even a small flux changing quickly can induce a sizeable EMF. Wrapping the loop into N turns of wire multiplies the effect by N, since each turn experiences the same changing flux and they add in series.",
+          "This is a genuinely different Faraday's law from the one in this site's chemistry category — that one, Faraday's law of electrolysis, relates electric charge to the mass of a substance produced in a chemical reaction. Both are named for the same 19th-century scientist, Michael Faraday, but they describe unrelated phenomena with unrelated formulas."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of induced EMF, the number of turns, the change in flux, and the time interval; the fourth fills in automatically.',
+        steps: [
+          { name: 'Enter the number of turns', text: 'How many loops of wire the changing flux passes through — use 1 for a single loop.' },
+          { name: 'Enter the change in flux and the time interval', text: 'How much the magnetic flux through one turn changed (this site’s magnetic-flux-calculator can supply that figure), and how long the change took.' },
+          { name: 'Read the induced EMF', text: 'The remaining field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input instead — for example, to find how quickly a flux change would need to happen to induce a target voltage.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: "Faraday's law of induction rearranges four ways, one for each quantity you might be solving for.",
+        expression: 'ε = N × ΔΦ ÷ Δt\nN = ε × Δt ÷ ΔΦ\nΔΦ = ε × Δt ÷ N\nΔt = N × ΔΦ ÷ ε',
+        terms: [
+          { symbol: 'ε', meaning: 'Induced EMF (electromotive force), in volts (V).' },
+          { symbol: 'N', meaning: 'Number of turns in the coil or loop (a plain count, 1 or more).' },
+          { symbol: 'ΔΦ', meaning: 'Change in magnetic flux through one turn over the time interval, in webers (Wb).' },
+          { symbol: 'Δt', meaning: 'Time interval over which the flux changes, in seconds (s).' }
+        ],
+        note: "The full statement of Faraday's law carries a minus sign (ε = −N × ΔΦ ÷ Δt) — Lenz's law, which says the induced EMF always opposes the flux change that created it. This calculator reports the EMF's size; the minus sign is a statement about direction, not magnitude, the same simplification this site's friction-calculator and Snell's-law-calculator make for their own directional quantities."
+      },
+      workedExample: {
+        intro: 'A 200-turn square coil, 0.25 m on a side, sits in a magnetic field that is shrinking at a steady 0.040 T per second. What EMF does the coil develop over 1 second?',
+        rows: [
+          { label: 'Coil area (0.25 m × 0.25 m)', value: '0.0625 m²' },
+          { label: 'Change in flux density over 1 s', value: '0.040 T' },
+          { label: 'Change in flux (ΔΦ = A × ΔB)', value: '0.0625 × 0.040 = 0.0025 Wb' },
+          { label: 'Number of turns (N)', value: '200' },
+          { label: 'Induced EMF (ε = N × ΔΦ ÷ Δt)', value: '200 × 0.0025 ÷ 1 = 0.5 V' }
+        ],
+        result: 'ε = 0.5 V',
+        explanation: "This reproduces OpenStax's own worked example exactly: a 200-turn, 0.25 m square coil in a field shrinking at 0.040 T/s develops an EMF of 0.50 V. Their textbook carries the calculation one step further into a real circuit — with the coil wired to a 5.0 Ω resistor, that 0.50 V drives a current of I = ε ÷ R = 0.50 ÷ 5.0 = 0.10 A, an easy follow-on with this site's own ohms-law-calculator."
+      },
+      watchOut: [
+        {
+          title: "This gives the EMF's size, not its direction",
+          body: "Lenz's law (the minus sign in the full formula) says the induced current always flows in whatever direction opposes the flux change that caused it. This calculator reports the magnitude only, the same simplification several other calculators on this site make for their own signed or directional quantities."
+        },
+        {
+          title: "Don't confuse this with chemistry's Faraday's law of electrolysis",
+          body: "Same scientist, unrelated law. This page is electromagnetic induction (a changing magnetic flux creates a voltage). This site's own faradays-law-electrolysis-calculator, in the chemistry category, relates electric charge to the mass of a substance deposited or produced in a chemical reaction — a completely different formula."
+        },
+        {
+          title: 'A steady, unchanging flux induces nothing',
+          body: 'However large the flux is, if it is not changing (ΔΦ = 0), there is no induced EMF. A magnet sitting motionless next to a coil, however strong, induces no current — only motion, or some other change, does.'
+        },
+        {
+          title: 'ΔΦ is the change through one turn, not the sum across all of them',
+          body: 'Each of the N turns is assumed to experience the same flux change; N then multiplies that single-turn change rather than N separate values being added in by hand.'
+        }
+      ],
+      references: [
+        { label: "OpenStax, University Physics Volume 2, §13.1 Faraday's Law", url: 'https://openstax.org/books/university-physics-volume-2/pages/13-1-faradays-law' }
+      ]
+    },
+    inputs: [
+      { id: 'turns', label: 'Number of turns', type: 'number', placeholder: '200', defaultValue: 200, step: 1, min: 1 },
+      { id: 'fluxChange', label: 'Change in magnetic flux (Wb)', type: 'number', placeholder: '0.0025', defaultValue: 0.0025, step: 0.0001, min: 0 },
+      { id: 'time', label: 'Time interval (s)', type: 'number', placeholder: '1', defaultValue: 1, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: "Electromagnetic Induction Calculator (Faraday's Law)",
+      description: "Free electromagnetic induction calculator. Solve Faraday's law, ε = N × ΔΦ ÷ Δt, for induced EMF, turns, flux change, or time.",
+      faq: [
+        { question: "What is Faraday's law of induction?", answer: 'ε = N × ΔΦ ÷ Δt: the EMF induced in a coil equals the number of turns times the rate of change of magnetic flux through each turn. A 200-turn coil with a flux change of 0.0025 Wb over 1 second develops 0.5 V.' },
+        { question: 'What is EMF?', answer: 'Electromotive force — a voltage, in volts, that can drive a current around a circuit. Here it is produced not by a battery but by a changing magnetic flux, per Faraday’s law.' },
+        { question: 'Why does a steady magnetic field not induce a voltage?', answer: 'Faraday’s law depends on the rate of change of flux, ΔΦ ÷ Δt. A field that is not changing has ΔΦ = 0, so no EMF is induced however strong that steady field is.' },
+        { question: 'How many turns should I enter?', answer: 'The number of loops of wire the changing flux passes through — 1 for a single loop, or however many turns the coil actually has. Each turn adds its own equal share of EMF, so N multiplies the single-turn result directly.' },
+        { question: "Is this the same as chemistry's Faraday's law?", answer: 'No. This is Faraday’s law of induction (electromagnetism — a changing flux creates a voltage). This site’s chemistry category has a separate faradays-law-electrolysis-calculator for Faraday’s law of electrolysis, which relates charge to mass deposited in a chemical reaction — a different law, named after the same scientist.' },
+        { question: 'How do I find the current this EMF would drive?', answer: 'Divide by the circuit’s resistance, using Ohm’s law: I = ε ÷ R. A 0.5 V EMF driving a 5.0 Ω resistor gives a current of 0.1 A — this site’s ohms-law-calculator handles that step.' }
+      ]
+    },
+    compute(values) {
+      return { emf: values.time === 0 ? NaN : (values.turns * values.fluxChange) / values.time };
+    }
+  },
+  {
+    id: 'bernoullis-equation-calculator',
+    category: 'physics',
+    group: 'Fluids & Matter',
+    glyph: 'Be',
+    updatedAt: '2026-11-17',
+    aliases: ["bernoulli's equation calculator", "bernoulli's principle calculator", 'fluid pressure velocity calculator', 'venturi effect calculator', "torricelli's theorem calculator"],
+    related: ['buoyancy-calculator', 'pressure-calculator', 'density-calculator', 'terminal-velocity-calculator'],
+    title: "Bernoulli's Equation Calculator",
+    description: "Solve Bernoulli's equation, p₁ + ½ρv₁² + ρgh₁ = p₂ + ½ρv₂² + ρgh₂, for pressure, speed, or height at either of two points along a streamline.",
+    example: 'Water draining from an open tank, 10 m above the spigot, leaves the spigot at about 14.0 m/s — the same speed as falling freely that same 10 m.',
+    solver: {
+      defaultTarget: 'speed2',
+      variables: [
+        { id: 'pressure1', label: 'Pressure at point 1', symbol: 'p₁', dimension: 'pressure', defaultValue: 101325, defaultUnit: 'atm' },
+        { id: 'speed1', label: 'Speed at point 1', symbol: 'v₁', dimension: 'speed', defaultValue: 0, defaultUnit: 'm/s' },
+        { id: 'height1', label: 'Height at point 1', symbol: 'h₁', dimension: 'length', defaultValue: 10, defaultUnit: 'm' },
+        { id: 'pressure2', label: 'Pressure at point 2', symbol: 'p₂', dimension: 'pressure', defaultValue: 101325, defaultUnit: 'atm' },
+        { id: 'speed2', label: 'Speed at point 2', symbol: 'v₂', dimension: 'speed', defaultValue: 14.0047, defaultUnit: 'm/s' },
+        { id: 'height2', label: 'Height at point 2', symbol: 'h₂', dimension: 'length', defaultValue: 0, defaultUnit: 'm' },
+        { id: 'density', label: 'Fluid density', symbol: 'ρ', dimension: 'density', defaultValue: 1000, defaultUnit: 'kg/m3', fixed: true }
+      ],
+      solve: {
+        pressure1: ({ pressure2, density, speed1, height1, speed2, height2 }) =>
+          pressure2 + 0.5 * density * (speed2 * speed2 - speed1 * speed1) + density * STANDARD_GRAVITY * (height2 - height1),
+        pressure2: ({ pressure1, density, speed1, height1, speed2, height2 }) =>
+          pressure1 + 0.5 * density * (speed1 * speed1 - speed2 * speed2) + density * STANDARD_GRAVITY * (height1 - height2),
+        speed1: ({ pressure1, pressure2, density, height1, speed2, height2 }) => {
+          if (density === 0) return NaN;
+          const inner = speed2 * speed2 + (2 * (pressure2 - pressure1)) / density + 2 * STANDARD_GRAVITY * (height2 - height1);
+          return inner < 0 ? NaN : Math.sqrt(inner);
+        },
+        speed2: ({ pressure1, pressure2, density, speed1, height1, height2 }) => {
+          if (density === 0) return NaN;
+          const inner = speed1 * speed1 + (2 * (pressure1 - pressure2)) / density + 2 * STANDARD_GRAVITY * (height1 - height2);
+          return inner < 0 ? NaN : Math.sqrt(inner);
+        },
+        height1: ({ pressure1, pressure2, density, speed1, speed2, height2 }) => {
+          if (density === 0) return NaN;
+          return height2 + (pressure2 - pressure1) / (density * STANDARD_GRAVITY) + (speed2 * speed2 - speed1 * speed1) / (2 * STANDARD_GRAVITY);
+        },
+        height2: ({ pressure1, pressure2, density, speed1, height1, speed2 }) => {
+          if (density === 0) return NaN;
+          return height1 + (pressure1 - pressure2) / (density * STANDARD_GRAVITY) + (speed1 * speed1 - speed2 * speed2) / (2 * STANDARD_GRAVITY);
+        }
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: "What is Bernoulli's equation?",
+        paragraphs: [
+          "Bernoulli's equation is a statement of energy conservation for a fluid flowing along a streamline: pressure energy, kinetic energy (from its speed), and gravitational potential energy (from its height) trade off against each other, but their sum stays constant from one point to another along the flow. Speed it up, and pressure (or height) has to give something back; raise it up, and pressure (or speed) pays for that too.",
+          "The full equation, p₁ + ½ρv₁² + ρgh₁ = p₂ + ½ρv₂² + ρgh₂, compares any two points along the same streamline. Two everyday special cases fall out of it directly: level flow through a pipe of changing width (heights equal, so pressure trades only against speed — the principle behind an airplane wing's lift and a perfume atomizer) and a fluid draining from a tank through an opening (pressures equal at both open-to-air ends, so height trades only against speed — Torricelli's theorem).",
+          "This is an idealized model: no viscosity (internal fluid friction), no turbulence, and a fluid that does not compress. Real pipes and real tanks lose some energy to friction that this equation does not account for, which is why real measured flow rates run a little below what a pure Bernoulli calculation predicts."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any six of the seven fields — pressure, speed, and height at each of two points, plus the fluid density; the seventh (speed at point 2, by default) fills in automatically.',
+        steps: [
+          { name: 'Set the fluid density', text: 'Water is about 1000 kg/m³; air at sea level is about 1.2 kg/m³. This field stays an input rather than being auto-calculated.' },
+          { name: 'Enter pressure, speed, and height at point 1', text: 'The known conditions at the first point along the streamline.' },
+          { name: 'Enter the two known values at point 2', text: 'Whichever two of pressure, speed, and height you already know at the second point.' },
+          { name: 'Read the missing value at point 2', text: 'The remaining field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into any other auto-eligible field to make it an input instead and solve for a different unknown — point 1’s pressure, speed, or height, or point 2’s pressure or height.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: "Bernoulli's equation rearranges for any one quantity given the other six.",
+        expression:
+          'p₁ + ½ρv₁² + ρgh₁ = p₂ + ½ρv₂² + ρgh₂\nv₂ = √(v₁² + 2(p₁−p₂)÷ρ + 2g(h₁−h₂))\nh₁ = h₂ + (p₂−p₁)÷(ρg) + (v₂²−v₁²)÷(2g)',
+        terms: [
+          { symbol: 'p₁, p₂', meaning: 'Pressure at point 1 and point 2, in pascals (Pa).' },
+          { symbol: 'v₁, v₂', meaning: 'Flow speed at point 1 and point 2, in meters per second (m/s).' },
+          { symbol: 'h₁, h₂', meaning: 'Height (elevation) of point 1 and point 2 above a shared reference level, in meters (m).' },
+          { symbol: 'ρ', meaning: 'Fluid density, in kilograms per cubic meter (kg/m³) — held fixed as an input rather than solved for, since it is a known property of the fluid, not an unknown.' },
+          { symbol: 'g', meaning: 'Standard gravity, fixed at 9.80665 m/s², the same reference value used throughout this site.' }
+        ],
+        note: 'This is the general form, including elevation. Setting h₁ = h₂ (level flow) cancels the gravity terms and leaves only pressure trading against speed; setting p₁ = p₂ (both points open to the same atmosphere) cancels the pressure terms and leaves only height trading against speed.'
+      },
+      workedExample: {
+        intro: 'A large open tank is filled with water to a depth of 10 m above a small spigot near the bottom. Both the water surface and the spigot opening are exposed to the same atmospheric pressure, and the tank is wide enough that the surface itself drops only negligibly slowly. How fast does water leave the spigot?',
+        rows: [
+          { label: 'Point 1: tank surface — pressure, speed, height', value: 'p₁ = 1 atm, v₁ ≈ 0, h₁ = 10 m' },
+          { label: 'Point 2: spigot opening — pressure, height', value: 'p₂ = 1 atm, h₂ = 0 m' },
+          { label: 'Density (water)', value: 'ρ = 1000 kg/m³' },
+          { label: 'Exit speed (v₂ = √(2g × 10))', value: '≈ 14.0 m/s' }
+        ],
+        result: 'v₂ ≈ 14.0 m/s',
+        explanation: "With equal pressures at both open ends and a negligible surface speed, every other term cancels and the equation reduces to v₂ = √(2gh) = √(2 × 9.80665 × 10) ≈ 14.0 m/s — exactly Torricelli's theorem, and exactly the speed a drop of water would reach falling freely through the same 10 m height. As an independent cross-check in the opposite direction (solving for pressure instead of speed), OpenStax's own Example 14.6 — water at 1.96 m/s in a hose narrowing to 25.5 m/s at a nozzle open to the atmosphere (1.01 × 10⁵ Pa), both at the same height — gives a hose pressure of p₁ = 1.01 × 10⁵ + ½(1000)(25.5² − 1.96²) ≈ 4.24 × 10⁵ Pa, matching the textbook's published figure."
+      },
+      watchOut: [
+        {
+          title: 'No viscosity or turbulence — real fluids lose some energy to friction',
+          body: 'This equation assumes an ideal fluid with no internal friction. A real pipe, hose, or tank opening loses some energy to viscosity and turbulence, so measured speeds and pressures run a little below this calculator’s idealized prediction, especially over long pipes or through rough or narrow openings.'
+        },
+        {
+          title: 'Density is held fixed, not solved for',
+          body: 'Fluid density is a known property you set directly (water ≈1000 kg/m³, air ≈1.2 kg/m³), not a value this calculator ever computes for you — unlike the other six fields, it never becomes the auto-calculated one.'
+        },
+        {
+          title: 'Both points must sit on the same streamline, in the same fluid',
+          body: "Bernoulli's equation compares two points along one continuous flow of the same fluid — it does not connect two different pipes, two different fluids, or a point before and after a pump or turbine that adds or removes energy."
+        },
+        {
+          title: 'A negative value under the square root means no real solution',
+          body: 'Solving for a speed can come out requiring a negative number under the square root if the other six values are physically inconsistent (for instance, a pressure or height difference too large for the given speeds) — a reported "no answer" rather than a hidden rounding issue.'
+        }
+      ],
+      references: [
+        { label: "OpenStax, University Physics Volume 1, §14.6 Bernoulli's Equation", url: 'https://openstax.org/books/university-physics-volume-1/pages/14-6-bernoullis-equation' }
+      ]
+    },
+    inputs: [
+      { id: 'pressure1', label: 'Pressure at point 1 (Pa)', type: 'number', placeholder: '101325', defaultValue: 101325, step: 1, min: 0 },
+      { id: 'speed1', label: 'Speed at point 1 (m/s)', type: 'number', placeholder: '0', defaultValue: 0, step: 0.1, min: 0 },
+      { id: 'height1', label: 'Height at point 1 (m)', type: 'number', placeholder: '10', defaultValue: 10, step: 0.1 },
+      { id: 'pressure2', label: 'Pressure at point 2 (Pa)', type: 'number', placeholder: '101325', defaultValue: 101325, step: 1, min: 0 },
+      { id: 'height2', label: 'Height at point 2 (m)', type: 'number', placeholder: '0', defaultValue: 0, step: 0.1 },
+      { id: 'density', label: 'Fluid density (kg/m³)', type: 'number', placeholder: '1000', defaultValue: 1000, step: 1, min: 0 }
+    ],
+    seo: {
+      title: "Bernoulli's Equation Calculator (Pressure, Speed, Height)",
+      description: "Free Bernoulli's equation calculator. Solve p + ½ρv² + ρgh = constant for pressure, speed, or height at two points, with a verified worked example.",
+      faq: [
+        { question: "What is Bernoulli's equation?", answer: 'p₁ + ½ρv₁² + ρgh₁ = p₂ + ½ρv₂² + ρgh₂ — pressure, kinetic energy, and gravitational potential energy trade off along a streamline of flowing fluid, with their sum staying constant.' },
+        { question: "What is Torricelli's theorem?", answer: "A special case of Bernoulli's equation: fluid draining from an opening at depth h below the surface, both open to the same atmosphere, leaves at v = √(2gh) — the same speed a drop would reach falling freely through that same height." },
+        { question: 'What is the Venturi effect?', answer: "Another special case, for level flow (no height change): fluid speeding up through a narrower section of pipe must drop in pressure to keep the sum p + ½ρv² constant, which is why a narrow nozzle or a passing airplane wing creates a pressure drop." },
+        { question: "Does Bernoulli's equation work for air as well as water?", answer: 'Yes, as long as the flow speed stays well below the speed of sound, so the air can be treated as incompressible. At speeds approaching Mach 1, compressibility effects this equation ignores become significant.' },
+        { question: "Why might a real measurement differ from Bernoulli's equation's prediction?", answer: "Because this equation assumes no viscosity (internal friction) and no turbulence. A real pipe or tank opening loses some energy to both, so an actual measured speed or pressure typically comes out a little lower than the idealized value this calculator returns." },
+        { question: 'Can I solve for the fluid density?', answer: 'No — density is held as a fixed input you set directly, since it is a known property of the fluid (water, air, oil) rather than something to solve for from the other variables.' }
+      ]
+    },
+    compute(values) {
+      const inner =
+        values.speed1 * values.speed1 +
+        (2 * (values.pressure1 - values.pressure2)) / values.density +
+        2 * STANDARD_GRAVITY * (values.height1 - values.height2);
+      return { speed2: values.density === 0 || inner < 0 ? NaN : Math.sqrt(inner) };
     }
   }
 ];

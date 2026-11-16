@@ -780,6 +780,50 @@ exports[`compute() snapshots > beer-lambert-law-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > bernoullis-equation-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "pressure1": 101325,
+      "speed1": 0,
+      "height1": 10,
+      "pressure2": 101325,
+      "height2": 0,
+      "density": 1000
+    },
+    "outputs": {
+      "speed2": 14.00474919
+    }
+  },
+  "typical": {
+    "inputs": {
+      "pressure1": 151988,
+      "speed1": 0,
+      "height1": 15,
+      "pressure2": 151988,
+      "height2": 0,
+      "density": 1500
+    },
+    "outputs": {
+      "speed2": 17.15224475
+    }
+  },
+  "edge": {
+    "inputs": {
+      "pressure1": 0,
+      "speed1": 0,
+      "height1": 0,
+      "pressure2": 0,
+      "height2": 0,
+      "density": 0
+    },
+    "outputs": {
+      "speed2": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > binomial-distribution-calculator 1`] = `
 {
   "default": {
@@ -3902,6 +3946,38 @@ exports[`compute() snapshots > electric-field-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > electric-potential-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "charge": 5e-9,
+      "radius": 0.1
+    },
+    "outputs": {
+      "voltage": 449.3775893
+    }
+  },
+  "typical": {
+    "inputs": {
+      "charge": 8e-9,
+      "radius": 0.15
+    },
+    "outputs": {
+      "voltage": 479.3360953
+    }
+  },
+  "edge": {
+    "inputs": {
+      "charge": 0,
+      "radius": 0
+    },
+    "outputs": {
+      "voltage": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > electrical-power-calculator 1`] = `
 {
   "default": {
@@ -3982,6 +4058,41 @@ exports[`compute() snapshots > electricity-bill-calculator 1`] = `
       "costPerDay": 0,
       "annualBill": 0,
       "effectiveRatePerKwh": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > electromagnetic-induction-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "turns": 200,
+      "fluxChange": 0.0025,
+      "time": 1
+    },
+    "outputs": {
+      "emf": 0.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "turns": 300,
+      "fluxChange": 0.0038,
+      "time": 1.5
+    },
+    "outputs": {
+      "emf": 0.76
+    }
+  },
+  "edge": {
+    "inputs": {
+      "turns": 1,
+      "fluxChange": 0,
+      "time": 0
+    },
+    "outputs": {
+      "emf": "NaN"
     }
   }
 }
@@ -7674,6 +7785,41 @@ exports[`compute() snapshots > macro-calculator 1`] = `
       "fatGrams": 0,
       "carbGrams": 0,
       "carbPercent": 100
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > magnetic-flux-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "fluxDensity": 0.8,
+      "area": 0.1,
+      "angle": 0
+    },
+    "outputs": {
+      "flux": 0.08
+    }
+  },
+  "typical": {
+    "inputs": {
+      "fluxDensity": 1.2,
+      "area": 0.15,
+      "angle": 0
+    },
+    "outputs": {
+      "flux": 0.18
+    }
+  },
+  "edge": {
+    "inputs": {
+      "fluxDensity": 0,
+      "area": 0,
+      "angle": 0
+    },
+    "outputs": {
+      "flux": 0
     }
   }
 }
@@ -13816,6 +13962,44 @@ exports[`compute() snapshots > tdee-calculator 1`] = `
       "bmr": 0,
       "cuttingCalories": -500,
       "bulkingCalories": 300
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > terminal-velocity-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass": 75,
+      "fluidDensity": 1.21,
+      "area": 0.18,
+      "dragCoefficient": 0.7
+    },
+    "outputs": {
+      "velocity": 98.22635073
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass": 112.5,
+      "fluidDensity": 1.82,
+      "area": 0.27,
+      "dragCoefficient": 1.05
+    },
+    "outputs": {
+      "velocity": 65.39422109
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass": 0,
+      "fluidDensity": 0,
+      "area": 0,
+      "dragCoefficient": 0
+    },
+    "outputs": {
+      "velocity": "NaN"
     }
   }
 }

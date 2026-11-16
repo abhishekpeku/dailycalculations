@@ -893,5 +893,327 @@ export const shoppingCalculators: CalculatorConfig[] = [
       const monthlyBudget = (weeklyBudget * 52) / 12;
       return { monthlyBudget, weeklyBudget, perPersonWeekly };
     }
+  },
+  {
+    id: 'loyalty-points-value-calculator',
+    group: 'Discounts & Rewards',
+    category: 'shopping',
+    glyph: '¢/pt',
+    updatedAt: '2026-11-16',
+    aliases: ['points to cash calculator', 'miles to dollars calculator', 'credit card points value calculator', 'how much are my points worth calculator', 'rewards points value calculator'],
+    related: ['cashback-calculator', 'warehouse-club-membership-breakeven-calculator', 'discount-calculator', 'unit-price-calculator'],
+    title: 'Loyalty Points Value Calculator',
+    description: 'Convert loyalty, credit card or airline points to a cash value using a cents-per-point rate you supply, and compare it against a second redemption rate.',
+    example: "50,000 points at 1 cent each are worth $500.00. The same points at a 0.7-cent rate are worth $350.00, a $150.00 difference.",
+    breakdown: {
+      headline: 'value',
+      headlineLabel: 'Cash value at your rate',
+      outputs: [
+        { id: 'value', label: 'Cash value at your rate', format: 'currency' },
+        { id: 'comparisonValue', label: 'Cash value at the comparison rate', format: 'currency' },
+        { id: 'difference', label: 'Difference', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your points', inputs: ['points', 'centsPerPoint'] },
+        { title: 'Compare against another rate', inputs: ['comparisonCentsPerPoint'], optional: true }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'value', label: 'At your rate' }, { from: 'comparisonValue', label: 'At the comparison rate' }],
+        title: 'Cash value at each rate'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What are loyalty points actually worth?',
+        paragraphs: [
+          'Credit card, airline and store loyalty points have no single, universal dollar value. What they are worth depends entirely on how you redeem them: a program might pay one rate for a statement credit, a different rate for gift cards, and no fixed rate at all for a flight booked with miles. The standard way the rewards industry quotes value is cents per point: how many cents one point is worth for a given redemption.',
+          'Once you know (or estimate) a cents-per-point rate, the dollar value is a straight multiplication: points times the rate. This calculator also lets you compare a second rate side by side, since the same points often redeem very differently depending on how you cash them in.',
+          "The gap can be real even within one program. American Express states that Membership Rewards points redeemed through Pay with Points at checkout are worth 0.7 to 1 cent each depending on the retailer, while covering a statement charge through \"Cover Your Charges\" is worth only 0.6 cent. Chase, by contrast, pays a flat 1 cent per Ultimate Rewards point for cash back or a statement credit, no matter how you redeem it."
+        ]
+      },
+      howTo: {
+        intro: "Enter how many points you have and the cents-per-point rate for how you plan to redeem them. Add a second rate to compare.",
+        steps: [
+          { name: 'Enter your points balance', text: 'Type the number of points or miles you want to value.' },
+          { name: "Enter your program's rate", text: "Type the cents-per-point value for your planned redemption, from the program's own redemption page." },
+          { name: 'Read the cash value', text: 'The headline is the dollar value at your rate.' },
+          { name: 'Compare a second rate', text: 'Open the optional group and enter another cents-per-point figure, such as a different redemption option, to see the gap.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The value is points multiplied by the per-point rate, converted from cents to dollars.',
+        expression: 'Value = Points × (Cents per point ÷ 100)',
+        terms: [
+          { symbol: 'Points', meaning: 'Your points or miles balance.' },
+          { symbol: 'Cents per point', meaning: 'What one point is worth for your planned redemption, in cents.' }
+        ],
+        note: "An estimate using the rate you supply. Some programs publish a fixed cash-redemption rate; airline and hotel programs increasingly use dynamic pricing with no fixed rate at all, so check your program's own redemption page for the rate that applies to your specific booking."
+      },
+      workedExample: {
+        intro: 'You have 50,000 points. Your card pays 1 cent per point for a statement credit, but you are also considering a checkout redemption at a 0.7-cent rate. How much are the points worth each way?',
+        rows: [
+          { label: 'Value at 1.0 cent (50,000 × 0.01)', value: '$500.00' },
+          { label: 'Value at 0.7 cent (50,000 × 0.007)', value: '$350.00' },
+          { label: 'Difference (500.00 − 350.00)', value: '$150.00' }
+        ],
+        result: 'Worth $500.00 at the 1-cent rate, $150.00 more than the 0.7-cent option.',
+        explanation: 'The points themselves did not change — only the redemption method did. Always check a program\'s stated rate for the specific way you plan to redeem before assuming the best-case value.'
+      },
+      watchOut: [
+        { title: 'No universal point value', body: "A \"typical\" cents-per-point figure you read online is someone else's estimate for one redemption method. Use your own program's published rate for the redemption you actually plan to use." },
+        { title: 'The rate can vary within one program', body: "American Express states a range of 0.6 to 1 cent per Membership Rewards point depending on how you redeem, not a single number." },
+        { title: 'Airline and hotel points often have no fixed rate', body: "Many travel programs price awards dynamically, so the same miles can be worth very different amounts depending on the specific flight or room, with no published per-point rate to multiply by." },
+        { title: 'Minimums and increments', body: 'Some redemptions require a minimum number of points or round to a fixed increment, so the value of a small balance may not scale down perfectly from a larger one.' },
+        { title: 'Expiration and devaluation', body: 'Points can expire or lose value if a program changes its redemption chart. A rate that was accurate last year is not guaranteed to still apply.' }
+      ],
+      references: [
+        { label: 'Chase, How Chase Ultimate Rewards® Works', url: 'https://www.chase.com/personal/credit-cards/education/basics/how-chase-ultimate-rewards-works' },
+        { label: 'American Express, How Much Are American Express Membership Rewards® Points Worth?', url: 'https://www.americanexpress.com/en-us/credit-cards/credit-intel/american-express-points-value/' }
+      ]
+    },
+    inputs: [
+      { id: 'points', label: 'Points balance', type: 'number', placeholder: '50000', defaultValue: 50000, step: 1000, min: 0 },
+      { id: 'centsPerPoint', label: 'Your rate (cents per point)', type: 'number', placeholder: '1', defaultValue: 1, step: 0.1, min: 0 },
+      { id: 'comparisonCentsPerPoint', label: 'Comparison rate (cents per point)', type: 'number', placeholder: '0.7', defaultValue: 0.7, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Loyalty Points Value Calculator – Points to Cash',
+      description: 'Free loyalty points value calculator: convert points or miles to a dollar value from a cents-per-point rate, and compare it against a second rate.',
+      faq: [
+        { question: 'How do I calculate the cash value of my points?', answer: 'Multiply your points by the cents-per-point rate, then divide by 100. At a 1-cent rate, 50,000 points are worth 50,000 × 0.01 = $500.00.' },
+        { question: 'What is a good cents-per-point value?', answer: "It depends entirely on the program and redemption method. Chase pays a flat 1 cent per Ultimate Rewards point for cash back. American Express states 0.6 to 1 cent per Membership Rewards point depending on how you redeem." },
+        { question: 'Why do the same points redeem for different values?', answer: "Many programs pay more for some redemptions (such as a checkout purchase) than others (such as a statement credit). American Express's own redemption guide gives 0.7-1 cent for Pay with Points at checkout versus 0.6 cent for covering a statement charge." },
+        { question: 'How much are 100,000 points worth at 1 cent each?', answer: '100,000 × 0.01 = $1,000.00.' },
+        { question: 'Are airline miles worth a fixed amount?', answer: 'Not usually. Many airlines price award flights dynamically rather than publishing a fixed chart, so the same miles can be worth more or less depending on the specific flight, with no single cents-per-point figure that always applies.' },
+        { question: 'Should I use the best-case or worst-case rate?', answer: "Use the rate for the redemption you actually plan to make. Comparing your planned rate against a program's other options (using the comparison field) shows whether a different redemption would be worth more." }
+      ]
+    },
+    compute(values) {
+      const value = values.points * (values.centsPerPoint / 100);
+      const comparisonValue = values.points * (values.comparisonCentsPerPoint / 100);
+      const difference = value - comparisonValue;
+      return { value, comparisonValue, difference };
+    }
+  },
+  {
+    id: 'layaway-payment-calculator',
+    group: 'Budgeting',
+    category: 'shopping',
+    glyph: 'LAY',
+    updatedAt: '2026-11-16',
+    aliases: ['layaway calculator', 'layaway plan calculator', 'layaway installment calculator', 'layaway payment schedule calculator'],
+    related: ['grocery-budget-calculator', 'discount-calculator', 'sales-tax-calculator', 'warehouse-club-membership-breakeven-calculator'],
+    title: 'Layaway Payment Calculator',
+    description: 'Work out the size and number of installment payments to pay off a layaway balance by your pickup date, from the item price, down payment, service fee and payment schedule.',
+    example: 'A $150 item with a $30 down payment and a $5 service fee, paid off in 2 installments over 4 weeks, costs $62.50 a payment.',
+    breakdown: {
+      headline: 'perPayment',
+      headlineLabel: 'Each installment payment',
+      outputs: [
+        { id: 'perPayment', label: 'Each installment payment', format: 'currency' },
+        { id: 'numberOfPayments', label: 'Number of installments', format: 'integer' },
+        { id: 'remainingBalance', label: 'Balance after the down payment', format: 'currency' },
+        { id: 'totalCost', label: 'Total you pay (item + service fee)', format: 'currency' }
+      ],
+      groups: [
+        { title: 'The item', inputs: ['itemPrice', 'downPayment', 'serviceFee'] },
+        { title: 'Timing', inputs: ['weeksUntilPickup', 'paymentFrequencyWeeks'] }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'downPayment', label: 'Down payment' },
+          { from: 'remainingBalance', label: 'Remaining balance' },
+          { from: 'serviceFee', label: 'Service fee' }
+        ],
+        center: 'totalCost',
+        centerSub: 'Total cost'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'How does a layaway plan work?',
+        paragraphs: [
+          "Layaway reverses the usual order of buying on credit: the store holds your item while you pay it off in installments, and you take it home only once it is fully paid. There is normally no interest, but many stores charge a small, non-refundable service fee, and the item is held only for a fixed window — commonly a few weeks to a month.",
+          "The math is simple division. Subtract your down payment from the item's price to get the remaining balance, add the service fee, and split that total evenly across however many payments fit between now and your pickup deadline at your chosen payment frequency.",
+          "Burlington's own published layaway policy is a real, concrete example of how a plan like this is actually structured: a minimum down payment of $10 or 20% of the price (whichever is greater), a $5 non-refundable service fee, a 30-day hold, and a $10 fee if you cancel or do not complete the purchase in time. Other retailers that still offer layaway set their own terms, so always confirm the specific numbers with the store."
+        ]
+      },
+      howTo: {
+        intro: "Enter the item's price, your down payment and the store's service fee, then how long you have and how often you'll pay.",
+        steps: [
+          { name: 'Enter the price and down payment', text: "Type the item's price and the down payment the store requires or that you plan to put down." },
+          { name: 'Enter the service fee', text: 'Type the non-refundable layaway fee the store charges, if any.' },
+          { name: 'Enter your timeline', text: 'Type how many weeks you have until pickup and how often you plan to pay (for example, every 2 weeks).' },
+          { name: 'Read the payment amount', text: 'The headline is each installment payment. The donut shows how the total splits between your down payment, the remaining balance and the fee.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The remaining balance plus the fee is split evenly across however many payments fit before your pickup date.',
+        expression: 'Remaining balance = Price − Down payment\nPayments = ⌊Weeks until pickup ÷ Weeks per payment⌋\nEach payment = (Remaining balance + Service fee) ÷ Payments',
+        terms: [
+          { symbol: 'Price', meaning: 'The full price of the item.' },
+          { symbol: 'Down payment', meaning: 'What you pay up front to start the layaway.' },
+          { symbol: 'Service fee', meaning: "The store's non-refundable layaway fee, added to what you owe, not to the down payment." }
+        ],
+        note: 'Assumes equal installments and no interest, matching how store layaway plans work (unlike financed credit). Rounds down to a whole number of payments that fit before your pickup date.'
+      },
+      workedExample: {
+        intro: 'A $150 item needs a $30 down payment and carries a $5 service fee. You have 4 weeks until pickup and plan to pay every 2 weeks.',
+        rows: [
+          { label: 'Remaining balance (150 − 30)', value: '$120.00' },
+          { label: 'Number of payments (4 weeks ÷ 2-week schedule)', value: '2 payments' },
+          { label: 'Each payment ((120 + 5) ÷ 2)', value: '$62.50' },
+          { label: 'Total cost (150 + 5)', value: '$155.00' }
+        ],
+        result: '2 payments of $62.50 each, $155.00 total, on top of the $30.00 down payment.',
+        explanation: 'The service fee is spread across the remaining payments along with the balance, not charged separately, so each payment is slightly more than a plain even split of the balance alone.'
+      },
+      watchOut: [
+        { title: 'Service fees are usually non-refundable', body: "Burlington's policy, for example, keeps its $5 service fee ($1 in Maryland) even if you cancel." },
+        { title: 'Cancellation and missed deadlines cost extra', body: "Burlington charges an additional $10 if you cancel or do not complete the layaway by its expiration date. Check your store's specific cancellation terms before committing." },
+        { title: 'The hold period is firm', body: "Burlington holds layaway merchandise for 30 days. Missing the pickup deadline can forfeit your payments beyond the cancellation fee, depending on the store's policy." },
+        { title: 'Layaway does not build credit', body: 'Unlike financing, layaway is not reported to credit bureaus. It helps you budget for a purchase, not establish or improve a credit history.' },
+        { title: 'Terms vary by store', body: 'Down payment percentages, fees and hold periods differ between retailers that still offer layaway. Use your store\'s own terms, not the defaults, for an accurate figure.' }
+      ],
+      references: [
+        { label: "Burlington, Layaway Policy", url: 'https://www.burlington.com/helpcenter/layaway' }
+      ]
+    },
+    inputs: [
+      { id: 'itemPrice', label: 'Item price', type: 'currency', placeholder: '150', defaultValue: 150, step: 10, min: 0 },
+      { id: 'downPayment', label: 'Down payment', type: 'currency', placeholder: '30', defaultValue: 30, step: 5, min: 0 },
+      { id: 'serviceFee', label: 'Service fee', type: 'currency', placeholder: '5', defaultValue: 5, step: 1, min: 0 },
+      { id: 'weeksUntilPickup', label: 'Weeks until pickup', type: 'number', placeholder: '4', defaultValue: 4, step: 1, min: 1 },
+      { id: 'paymentFrequencyWeeks', label: 'Pay every how many weeks', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Layaway Payment Calculator – Installment Schedule',
+      description: 'Free layaway payment calculator: work out each installment amount from the item price, down payment, service fee and your payment schedule.',
+      faq: [
+        { question: 'How do I calculate my layaway payments?', answer: 'Subtract your down payment from the price, add the service fee, then divide by how many payments fit before your pickup date. A $150 item with a $30 down payment, a $5 fee and 2 payments works out to (120 + 5) ÷ 2 = $62.50 each.' },
+        { question: 'How much down payment do stores require for layaway?', answer: "Terms vary by retailer. Burlington requires a minimum of $10 or 20% of the price, whichever is greater, as one real published example." },
+        { question: 'Do layaway plans charge interest?', answer: 'Typically no. Most layaway plans charge a flat, non-refundable service fee instead of interest, since you are paying off the item before taking it home rather than financing it afterward.' },
+        { question: 'What happens if I cancel a layaway plan?', answer: "It depends on the store. Burlington charges an additional $10 cancellation fee on top of keeping its non-refundable $5 service fee." },
+        { question: 'How long do stores hold layaway items?', answer: "Hold periods vary. Burlington holds merchandise for 30 days from when you start the layaway." },
+        { question: 'Does layaway affect my credit score?', answer: 'No. Layaway plans are not reported to credit bureaus, since no credit is extended — you are simply pre-paying for an item the store holds for you.' }
+      ]
+    },
+    compute(values) {
+      const remainingBalance = Math.max(0, values.itemPrice - values.downPayment);
+      const numberOfPayments = Math.max(1, Math.floor(values.weeksUntilPickup / values.paymentFrequencyWeeks));
+      const perPayment = (remainingBalance + values.serviceFee) / numberOfPayments;
+      const totalCost = values.itemPrice + values.serviceFee;
+      return { perPayment, numberOfPayments, remainingBalance, totalCost };
+    }
+  },
+  {
+    id: 'free-shipping-threshold-calculator',
+    group: 'Price Comparison',
+    category: 'shopping',
+    glyph: 'FS',
+    updatedAt: '2026-11-16',
+    aliases: ['free shipping calculator', 'should i add to cart for free shipping calculator', 'free shipping minimum calculator', 'is adding items for free shipping worth it calculator'],
+    related: ['unit-price-calculator', 'discount-calculator', 'loyalty-points-value-calculator', 'layaway-payment-calculator'],
+    title: 'Free Shipping Threshold Calculator',
+    description: "Find out whether adding items to your cart to reach a store's free-shipping minimum actually saves money, or whether paying the shipping fee outright is cheaper.",
+    example: "Padding a $42 cart with a $15 item you'd only use $5 worth of wastes $10 — more than the $6.99 shipping fee it was meant to avoid.",
+    breakdown: {
+      headline: 'netSavingsByAdding',
+      headlineLabel: 'What you save by adding items (negative = pay the shipping fee instead)',
+      outputs: [
+        { id: 'netSavingsByAdding', label: 'What you save by adding items (negative = pay the shipping fee instead)', format: 'currency' },
+        { id: 'gapToThreshold', label: 'Amount needed to reach the free-shipping minimum', format: 'currency' },
+        { id: 'wastedSpend', label: "Cost of the added item beyond what it's worth to you", format: 'currency' },
+        { id: 'totalIfShip', label: 'Total if you check out now and pay shipping', format: 'currency' },
+        { id: 'totalIfAdd', label: 'Total if you add the item instead', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your order', inputs: ['cartTotal', 'freeShippingThreshold', 'shippingFee'] },
+        { title: "The item you'd add", inputs: ['addedItemCost', 'addedItemValueToYou'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'shippingFee', label: 'Cost of paying for shipping' }, { from: 'wastedSpend', label: "Cost of items you don't really want" }],
+        title: 'The real cost of each option'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'Is it cheaper to add items for free shipping?',
+        paragraphs: [
+          "Many stores waive shipping above a spending threshold. The tempting move when a cart falls just short is to add another item to clear the line and avoid the fee. That only actually saves money if the added item is something you fully wanted anyway — otherwise you are trading a shipping fee for the cost of something you don't fully want, and that trade can easily cost more than the fee did.",
+          "The real cost of \"padding\" a cart is not the added item's price. It is the gap between what you paid for it and what it is actually worth to you. If you value the item fully at its price, adding it costs nothing extra beyond the item itself and is a clear win over paying for shipping. If you don't want it at all, the entire price is wasted money.",
+          'Comparing that wasted-spend figure against the shipping fee you were trying to avoid tells you which option is genuinely cheaper, rather than assuming "free" shipping is automatically the better deal.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your cart total, the free-shipping threshold and fee, then the item you are considering adding and what it is really worth to you.',
+        steps: [
+          { name: 'Enter your order details', text: "Type your current cart total, the store's free-shipping minimum, and the shipping fee you'd pay otherwise." },
+          { name: "Enter the item you'd add", text: 'Type its price, and honestly estimate what it is worth to you — its full price if you genuinely want it, less if you are only adding it to hit the minimum.' },
+          { name: 'Read the result', text: 'A positive headline means adding the item saves you money. A negative headline means paying the shipping fee outright is cheaper.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The cost of padding the cart is the part of the added item\'s price that is not matched by its value to you. Compare that against the shipping fee.',
+        expression: "Wasted spend = max(0, Added item's price − Added item's value to you)\nNet savings by adding = Shipping fee − Wasted spend",
+        terms: [
+          { symbol: "Added item's value to you", meaning: "What you would actually pay for the item on its own, if you wanted it regardless of the free-shipping minimum." },
+          { symbol: 'Wasted spend', meaning: "The part of the item's price you would not have chosen to spend otherwise." }
+        ],
+        note: "A positive result means adding the item is the cheaper option; a negative result means paying the shipping fee outright costs you less."
+      },
+      workedExample: {
+        intro: 'Your cart totals $42, free shipping kicks in at $50, and shipping otherwise costs $6.99. You are considering adding a $15 item that you would only really use about $5 of.',
+        rows: [
+          { label: 'Gap to the threshold (50 − 42)', value: '$8.00' },
+          { label: "Wasted spend (15 − 5)", value: '$10.00' },
+          { label: 'Net savings by adding (6.99 − 10.00)', value: '−$3.01' }
+        ],
+        result: 'Adding the item costs $3.01 more than just paying the $6.99 shipping fee.',
+        explanation: 'If the same $15 item were worth $12 to you instead (wasted spend of only $3), adding it would save 6.99 − 3 = $3.99 over paying for shipping — the decision flips purely on how much you actually value the item you\'re adding.'
+      },
+      watchOut: [
+        { title: 'Be honest about what you actually want', body: "It is easy to overstate an added item's value to justify the purchase. If you would not buy it on its own, its real value to you is closer to zero." },
+        { title: 'Returns have their own cost', body: 'Returning an unwanted item to avoid waste takes time and sometimes costs its own return-shipping fee, which this calculator does not model.' },
+        { title: 'Free shipping is not the only reason to hit a threshold', body: 'Some thresholds also unlock a discount, a gift or loyalty points, which can change the math in the item\'s favor beyond what this calculator covers.' },
+        { title: 'Taxes can apply to the added item too', body: 'Sales tax on the extra item adds a small additional cost on top of its price, which this calculator does not include.' }
+      ]
+    },
+    inputs: [
+      { id: 'cartTotal', label: 'Current cart total', type: 'currency', placeholder: '42', defaultValue: 42, step: 1, min: 0 },
+      { id: 'freeShippingThreshold', label: 'Free-shipping minimum', type: 'currency', placeholder: '50', defaultValue: 50, step: 5, min: 0 },
+      { id: 'shippingFee', label: 'Shipping fee you\'d otherwise pay', type: 'currency', placeholder: '6.99', defaultValue: 6.99, step: 0.5, min: 0 },
+      { id: 'addedItemCost', label: "Added item's price", type: 'currency', placeholder: '15', defaultValue: 15, step: 1, min: 0 },
+      { id: 'addedItemValueToYou', label: "What it's actually worth to you", type: 'currency', placeholder: '5', defaultValue: 5, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Free Shipping Threshold Calculator – Add vs. Pay',
+      description: "Free calculator: is adding items to reach a store's free-shipping minimum actually cheaper than paying the shipping fee outright?",
+      faq: [
+        { question: 'Is it worth adding an item to get free shipping?', answer: "Only if the item's price isn't much more than what it's actually worth to you. If a $15 item you'd only use $5 of saves a $6.99 fee, you still lose $3.01 overall, since the $10 of wasted spend outweighs the fee." },
+        { question: 'How do I calculate if free shipping padding is worth it?', answer: "Subtract what the added item is really worth to you from its price to get the wasted spend, then compare that to the shipping fee. If wasted spend is less than the fee, adding the item is cheaper." },
+        { question: "What if I'd buy the added item anyway?", answer: "Then its value to you equals its price, wasted spend is $0, and adding it is always at least as cheap as paying for shipping." },
+        { question: 'Does the free-shipping minimum itself matter to the decision?', answer: "Not directly — once you know the added item's price and what it's worth to you, the comparison is the same regardless of how large the gap to the threshold was." },
+        { question: 'Should I just buy something I don\'t want to avoid a shipping fee?', answer: "Usually not. Unless the unwanted item is nearly free or you can resell it for close to its price, the wasted spend is often larger than a typical shipping fee." },
+        { question: 'Does this account for return shipping if I send the padding item back?', answer: 'No. A return often has its own cost and hassle, which would make padding-and-returning look worse than this calculator shows, not better.' }
+      ]
+    },
+    compute(values) {
+      const gapToThreshold = Math.max(0, values.freeShippingThreshold - values.cartTotal);
+      const wastedSpend = Math.max(0, values.addedItemCost - values.addedItemValueToYou);
+      const netSavingsByAdding = values.shippingFee - wastedSpend;
+      const totalIfShip = values.cartTotal + values.shippingFee;
+      const totalIfAdd = values.cartTotal + values.addedItemCost;
+      return { netSavingsByAdding, gapToThreshold, wastedSpend, totalIfShip, totalIfAdd };
+    }
   }
 ];

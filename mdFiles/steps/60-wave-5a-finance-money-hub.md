@@ -209,7 +209,12 @@ prior wave's convention.
   - [x] `cd-calculator`
   - [x] `simple-interest-calculator`
   - [x] `mutual-fund-calculator`
-- [ ] Batch 6 (remaining money-hub items, 5-6)
+- [ ] Batch 6 (remaining money-hub items, 5-6) — branch `step/60-wave-5a-finance-run-6`, IN PROGRESS
+  - [ ] `emergency-fund-calculator`
+  - [ ] `mortgage-amortization-schedule-calculator` — decision pending (redundancy check vs. mortgage-calculator)
+  - [ ] `business-loan-calculator`
+  - [ ] `commission-calculator`
+  - [ ] `college-savings-calculator`
 - [ ] Batch 7 (income-tax-calculator, 1)
 - [ ] Visual-QA spot-check (desktop/dark-mode at minimum) on `home-affordability-calculator`,
       `income-tax-calculator`, and one retirement-cluster page

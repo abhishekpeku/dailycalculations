@@ -15,6 +15,16 @@ const SEX_OPTIONS = [
   { value: 1, label: 'Female' }
 ];
 
+// ACE (American Council on Exercise) percent-body-fat categories. The five names are shared by
+// both sexes; only the cutoff percentages (in compute()) differ. Step 61 batch 3.
+const BODY_FAT_CATEGORY_LABELS = [
+  { value: 0, label: 'Essential fat' },
+  { value: 1, label: 'Athletes' },
+  { value: 2, label: 'Fitness' },
+  { value: 3, label: 'Acceptable' },
+  { value: 4, label: 'Obesity category' }
+];
+
 export const healthCalculators: CalculatorConfig[] = [
   {
     id: 'bmi-calculator',
@@ -801,6 +811,586 @@ export const healthCalculators: CalculatorConfig[] = [
       // ACOG: 1st trimester to 13 6/7 weeks, 2nd 14 0/7 to 27 6/7, 3rd from 28 0/7 (was ≤ 12 / ≤ 26 before step 37).
       const trimester = gestationalWeeks < 14 ? 1 : gestationalWeeks < 28 ? 2 : 3;
       return { gestationalWeeks, daysRemaining, trimester, gestationalDays };
+    }
+  },
+  {
+    id: 'body-fat-percentage-calculator',
+    group: 'Body & Nutrition',
+    category: 'health',
+    glyph: 'BF%',
+    updatedAt: '2026-11-16',
+    aliases: ['body fat calculator', 'navy body fat calculator', 'body fat percentage calculator', 'body composition calculator', 'us navy body fat method'],
+    related: ['bmi-calculator', 'waist-to-hip-ratio-calculator', 'ideal-weight-calculator', 'tdee-calculator'],
+    title: 'Body Fat Percentage Calculator',
+    description: 'Estimate body fat percentage from neck, waist and (for women) hip circumference with the US Navy method, and see where the result sits on the ACE body-fat categories for your sex.',
+    example: 'A man 5 ft 10 in tall with a 15 in neck and a 36 in waist has about 21.3% body fat by the Navy method, in the "acceptable" category for men.',
+    breakdown: {
+      headline: 'bodyFatPercent',
+      headlineLabel: 'Estimated body fat percentage',
+      outputs: [
+        { id: 'bodyFatPercent', label: 'Estimated body fat percentage', format: 'number' },
+        { id: 'category', label: 'ACE category', labels: BODY_FAT_CATEGORY_LABELS }
+      ],
+      groups: [
+        { title: 'About you', inputs: ['sex', 'height'] },
+        { title: 'Measurements', inputs: ['neck', 'waist'] },
+        { title: 'Hip (women only)', inputs: ['hip'], optional: true }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is the US Navy body fat method?',
+        paragraphs: [
+          'Body fat percentage is the share of total body weight that is fat, as opposed to muscle, bone, organs and water. It is a more direct measure of body composition than BMI, which only compares weight to height and cannot tell a muscular body from a fat one.',
+          'The most accurate ways to measure body fat — underwater weighing, DEXA scans, air-displacement plethysmography — need equipment nobody has at home. In 1984 the Naval Health Research Center (Hodgdon and Beckett) published a cheaper alternative: equations that estimate percent body fat from a tape measure alone, using neck and waist (and, for women, hip) circumference plus height. The US military still uses a version of this circumference method for body composition standards today.',
+          'The equations were built by comparing sailors\' circumferences against their body fat measured by underwater weighing, then fitting a logarithmic regression. The published standard error is about 3 to 4 percentage points, so a result of "21%" really means "about 21%, give or take a few points," not a lab-grade figure.',
+          'This calculator reports the result against the American Council on Exercise (ACE) categories, which run from essential fat (the minimum needed for health) through athletic, fitness, acceptable and obesity ranges. The cutoffs differ for men and women because women carry more essential fat for reproductive and hormonal function.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in your sex, height, neck and waist measurements. Women also enter hip measurement.',
+        steps: [
+          { name: 'Choose your sex', text: 'The formula and the category cutoffs are different for men and women.' },
+          { name: 'Enter your height', text: 'Measure without shoes. 5 ft 10 in is 70 in.' },
+          { name: 'Measure your neck', text: 'Just below the larynx (Adam\'s apple), tape sloping slightly downward at the front.' },
+          { name: 'Measure your waist', text: 'At the navel for the Navy method (not necessarily the narrowest point), standing relaxed, tape snug but not compressing the skin.' },
+          { name: 'Women: measure your hip', text: 'At the widest point around the buttocks. This field is not used for men.' },
+          { name: 'Read the result', text: 'The headline is the estimated body fat percentage; below it is the ACE category it falls into for your sex.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The Hodgdon–Beckett circumference equations, with every length in inches.',
+        expression: 'Men: %BF = 86.010 × log₁₀(waist − neck) − 70.041 × log₁₀(height) + 36.76\nWomen: %BF = 163.205 × log₁₀(waist + hip − neck) − 97.684 × log₁₀(height) − 78.387',
+        terms: [
+          { symbol: 'waist, neck, hip, height', meaning: 'Circumferences and height in inches (1 in = 2.54 cm).' },
+          { symbol: 'log₁₀', meaning: 'Base-10 logarithm.' },
+          { symbol: '%BF', meaning: 'Estimated percent body fat.' }
+        ],
+        note: 'Estimate only, not medical advice. The published standard error is about 3–4 percentage points, and the method was validated on military-age adults, not every body type. See a doctor or a trained professional for a precise measurement (DEXA, hydrostatic weighing or skinfold calipers).'
+      },
+      workedExample: {
+        intro: 'A man is 5 ft 10 in (70 in) tall, with a 15 in neck and a 36 in waist. What is his estimated body fat percentage?',
+        rows: [
+          { label: 'Waist − neck (36 − 15)', value: '21 in' },
+          { label: 'log₁₀(21)', value: '1.32222' },
+          { label: '86.010 × 1.32222', value: '113.775' },
+          { label: 'log₁₀(70)', value: '1.84510' },
+          { label: '70.041 × 1.84510', value: '129.251' },
+          { label: '%BF (113.775 − 129.251 + 36.76)', value: '21.3%' }
+        ],
+        result: 'About 21.3% body fat — the "acceptable" category for men (18–24%)',
+        explanation: 'A woman 5 ft 5 in (65 in) tall with a 12 in neck, 29 in waist and 38 in hip works the same way with the women\'s equation: 163.205 × log₁₀(29+38−12) − 97.684 × log₁₀(65) − 78.387 ≈ 28.6%, also in her "acceptable" category (25–31%). Both examples land mid-band, which is typical: most adults who are not athletes or significantly overweight fall in the acceptable range for their sex.'
+      },
+      watchOut: [
+        { title: 'Measure the same way every time', body: 'A loosely held tape can shift the waist reading by an inch, which moves the result by a few percentage points. Measure at the same time of day, standing, without pulling the tape tight enough to compress the skin.' },
+        { title: 'The categories are fitness labels, not diagnoses', body: 'ACE describes these bands as useful for tracking fitness and comparing with population norms, not as a clinical cutoff for disease risk the way BMI\'s categories are sometimes used.' },
+        { title: 'Built from a military population', body: 'Hodgdon and Beckett\'s sample was active-duty sailors. People with very different builds — bodybuilders, older adults who have lost muscle, or people with a large or small frame — can see the formula over- or under-estimate their true body fat.' },
+        { title: 'Different from BMI', body: 'BMI only needs weight and height and cannot separate muscle from fat. This method measures circumferences instead and responds differently to the same change in weight, so the two numbers will not always move together.' },
+        { title: 'Estimate only, not medical advice', body: 'For a measurement precise enough to guide a medical decision, ask about DEXA scanning, hydrostatic (underwater) weighing or skinfold calipers from a trained professional.' }
+      ],
+      references: [
+        { label: 'Friedl KE et al., Evaluation of a circumference-based prediction equation to assess body composition changes in men (cites Hodgdon & Beckett 1984 equations in full)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC4831679/' },
+        { label: 'Santiago DA et al., Circumference-based predictions of body fat revisited: a US Marine Corps body composition survey', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9008774/' },
+        { label: 'Healthline, reproducing the ACE percent-body-fat norms for men and women', url: 'https://www.healthline.com/health/exercise-fitness/ideal-body-fat-percentage' }
+      ]
+    },
+    inputs: [
+      { id: 'sex', label: 'Sex', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0, options: SEX_OPTIONS },
+      { id: 'height', label: 'Height', type: 'number', placeholder: '70', defaultValue: 70, step: 1, min: 48, dimension: 'length', unit: 'in' },
+      { id: 'neck', label: 'Neck circumference', type: 'number', placeholder: '15', defaultValue: 15, step: 0.5, min: 1, dimension: 'length', unit: 'in' },
+      { id: 'waist', label: 'Waist circumference', type: 'number', placeholder: '36', defaultValue: 36, step: 0.5, min: 1, dimension: 'length', unit: 'in' },
+      { id: 'hip', label: 'Hip circumference', type: 'number', placeholder: '38', defaultValue: 38, step: 0.5, min: 1, dimension: 'length', unit: 'in' }
+    ],
+    seo: {
+      title: 'Body Fat Percentage Calculator – US Navy Method',
+      description: 'Estimate body fat percentage from neck, waist and hip measurements using the US Navy circumference method, with your ACE category for men or women.',
+      faq: [
+        { question: 'How is body fat percentage calculated from measurements?', answer: 'This calculator uses the US Navy (Hodgdon–Beckett) circumference method: for men, 86.010 × log₁₀(waist − neck) − 70.041 × log₁₀(height) + 36.76; for women it adds hip and uses different constants. All lengths are in inches.' },
+        { question: 'How accurate is the Navy body fat method?', answer: 'The original validation reported a standard error of about 3 to 4 percentage points against underwater weighing — reasonably good for a tape measure, but not as precise as a DEXA scan or hydrostatic weighing.' },
+        { question: 'Where do I measure my waist for this calculator?', answer: 'At the navel, standing relaxed, with the tape snug but not pressed into the skin. This is the Navy method\'s own reference point, which may be different from "narrowest point" waist measurements used elsewhere.' },
+        { question: 'Why does the women\'s formula need a hip measurement and the men\'s does not?', answer: 'The original Naval Health Research Center studies found that adding hip circumference improved the prediction for women but not for men, so the two sex-specific equations use different inputs.' },
+        { question: 'What is a healthy body fat percentage?', answer: 'Using the ACE categories, "acceptable" runs 18–24% for men and 25–31% for women; "athletes" is 6–13% (men) and 14–20% (women). Essential fat — the minimum needed for health — is about 2–5% for men and 10–13% for women.' },
+        { question: 'Is this calculator the same as a BMI calculator?', answer: 'No. BMI only uses weight and height and cannot tell muscle from fat. This calculator estimates body composition directly from circumferences, so it can give a very different picture for a muscular or a very lean person than BMI does.' }
+      ]
+    },
+    compute(values) {
+      const isFemale = values.sex === 1;
+      const bodyFatPercent = isFemale
+        ? 163.205 * Math.log10(values.waist + values.hip - values.neck) - 97.684 * Math.log10(values.height) - 78.387
+        : 86.010 * Math.log10(values.waist - values.neck) - 70.041 * Math.log10(values.height) + 36.76;
+      // ACE category upper bounds (percent body fat): essential, athletes, fitness, acceptable; above = obesity.
+      const thresholds = isFemale ? [13, 20, 24, 31] : [5, 13, 17, 24];
+      let category = 4;
+      for (let i = 0; i < thresholds.length; i++) {
+        if (bodyFatPercent <= thresholds[i]) {
+          category = i;
+          break;
+        }
+      }
+      return { bodyFatPercent, category };
+    }
+  },
+  {
+    id: 'ideal-weight-calculator',
+    group: 'Body & Nutrition',
+    category: 'health',
+    glyph: 'IBW',
+    updatedAt: '2026-11-16',
+    aliases: ['ideal body weight calculator', 'ibw calculator', 'devine formula calculator', 'what should i weigh calculator', 'healthy weight for height calculator'],
+    related: ['bmi-calculator', 'body-fat-percentage-calculator', 'calorie-calculator', 'tdee-calculator'],
+    title: 'Ideal Weight Calculator',
+    description: 'Estimate ideal body weight from height and sex using the Devine and Robinson formulas, two of several estimate methods clinicians use for drug dosing, not a target to chase.',
+    example: 'A man 5 ft 10 in (70 in) tall has a Devine ideal weight of about 161 lb and a Robinson estimate of about 157 lb — two formulas giving similar but not identical answers.',
+    breakdown: {
+      headline: 'devineWeight',
+      headlineLabel: 'Ideal weight (Devine formula)',
+      outputs: [
+        { id: 'devineWeight', label: 'Ideal weight (Devine formula)', format: 'number', dimension: 'mass', unit: 'lb' },
+        { id: 'robinsonWeight', label: 'Ideal weight (Robinson formula)', format: 'number', dimension: 'mass', unit: 'lb' },
+        { id: 'currentWeight', label: 'Your current weight', format: 'number', dimension: 'mass', unit: 'lb' }
+      ],
+      groups: [
+        { title: 'About you', inputs: ['sex', 'height'] },
+        { title: 'Compare with your current weight', inputs: ['currentWeight'], optional: true }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'currentWeight', label: 'Current weight' },
+          { from: 'devineWeight', label: 'Devine estimate' },
+          { from: 'robinsonWeight', label: 'Robinson estimate' }
+        ],
+        title: 'Your weight vs two ideal-weight formulas'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is "ideal body weight"?',
+        paragraphs: [
+          '"Ideal body weight" (IBW) is an old pharmacology shorthand, not a clinical goal. In 1974 Ben Devine published a simple formula to estimate lean body size for dosing a drug (gentamicin) whose correct dose depends on body size but should not be based on someone\'s full weight if they carry a lot of fat. The formula caught on because it is easy to compute at a bedside, and hospitals still use versions of it today for dosing certain medications and for mechanical-ventilation settings.',
+          'Devine\'s was not the only such formula. Robinson and colleagues published a different regression in 1983, built from the same underlying height-weight tables Devine had used, and others (Miller, Hamwi) followed. A 2000 review by Pai and Paloucek traced all of them back to the same mid-twentieth-century actuarial height-weight tables, which is why they tend to agree within a few pounds of each other rather than giving wildly different answers.',
+          'None of these formulas measure body fat, muscle, frame size or health. They are a single number derived only from height and sex, originally meant to approximate a "normal" body size for calculating a drug dose — not a weight to aim for by dieting. The healthy-weight range on this site\'s BMI calculator, which gives a range rather than one number, is a better everyday reference for weight than any single IBW formula.',
+          'This page shows two of the most common formulas side by side, Devine and Robinson, so you can see how much they actually differ for the same height.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in your sex and height. Optionally enter your current weight to compare.',
+        steps: [
+          { name: 'Choose your sex', text: 'Both formulas use a different base weight for men and women.' },
+          { name: 'Enter your height', text: 'In inches; 5 ft 10 in is 70 in. Both formulas were built for adult heights of 5 ft (60 in) and up.' },
+          { name: 'Read the two estimates', text: 'The headline is the Devine formula\'s estimate; below it is the Robinson formula\'s estimate for the same height.' },
+          { name: 'Compare with your current weight (optional)', text: 'Enter your weight to see it next to both formulas on the chart. A difference from either number is not a verdict on your health.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Both formulas add a fixed amount per inch of height over 5 feet (60 in) to a sex-specific base weight, in kilograms.',
+        expression: 'Devine: men 50 + 2.3 × (height_in − 60); women 45.5 + 2.3 × (height_in − 60)\nRobinson: men 52 + 1.9 × (height_in − 60); women 49 + 1.7 × (height_in − 60)',
+        terms: [
+          { symbol: 'height_in', meaning: 'Height in inches. 1 in = 2.54 cm.' },
+          { symbol: '50, 45.5, 52, 49', meaning: 'Base weight in kilograms at exactly 5 ft (60 in), by formula and sex.' },
+          { symbol: '2.3, 1.9, 1.7', meaning: 'Kilograms added per inch of height over 60 in.' }
+        ],
+        note: 'Estimate only, not medical advice. These formulas were built for drug-dosing calculations in adults 5 ft and taller, not as a personal weight target. Ask a doctor or registered dietitian about a healthy weight for you.'
+      },
+      workedExample: {
+        intro: 'A man is 5 ft 10 in (70 in) tall. What do the two formulas estimate?',
+        rows: [
+          { label: 'Inches over 60 (70 − 60)', value: '10 in' },
+          { label: 'Devine (50 + 2.3 × 10)', value: '73.0 kg = 160.9 lb' },
+          { label: 'Robinson (52 + 1.9 × 10)', value: '71.0 kg = 156.5 lb' },
+          { label: 'Difference (Devine − Robinson)', value: '2.0 kg ≈ 4.4 lb, about 2.8% higher' }
+        ],
+        result: 'Devine ≈ 161 lb · Robinson ≈ 157 lb for a 5 ft 10 in man',
+        explanation: 'The two formulas land within about 3% of each other here, which is typical: they were built from overlapping height-weight data, so the gap stays small across most adult heights. Neither number is "more correct" than the other — they are two estimates of the same rough idea.'
+      },
+      watchOut: [
+        { title: 'Not a target to chase', body: 'These formulas describe a population average at a given height, not a personal health goal. Trying to diet down (or bulk up) to match one ignores your actual body composition and health status entirely.' },
+        { title: 'Several other formulas exist', body: 'Miller (1983) and the older Hamwi (1964) rule of thumb give slightly different numbers again. All of them agree within a few percent for most adult heights, which is itself a sign that none of them should be treated as precise.' },
+        { title: 'Built for adults 5 ft and taller', body: 'Both formulas were derived from, and are normally applied to, heights of 60 in and up. Below that, the straight-line formula extrapolates beyond the data it was built on and gets less reliable.' },
+        { title: 'Says nothing about muscle or fat', body: 'A bodybuilder and someone who has lost a lot of muscle can have the same height and the same "ideal weight," while having very different body compositions. Pair this with the body-fat-percentage calculator for a more complete picture.' },
+        { title: 'Estimate only, not medical advice', body: 'Clinicians use IBW for specific calculations like drug dosing and ventilator settings, with professional judgment about when it applies. It is not a substitute for a conversation with a doctor or dietitian about your own healthy weight.' }
+      ],
+      references: [
+        { label: 'Peterson CM et al., Ideal body weight: a commentary (states the Devine 1974 and Robinson 1983 formulas with full constants)', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8646317/' },
+        { label: 'Pai MP, Paloucek FP, The origin of the "ideal" body weight equations, Annals of Pharmacotherapy 34 (2000): 1066–1069', url: 'https://pubmed.ncbi.nlm.nih.gov/10981254/' }
+      ]
+    },
+    inputs: [
+      { id: 'sex', label: 'Sex', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0, options: SEX_OPTIONS },
+      { id: 'height', label: 'Height', type: 'number', placeholder: '70', defaultValue: 70, step: 1, min: 48, dimension: 'length', unit: 'in' },
+      { id: 'currentWeight', label: 'Your current weight', type: 'number', placeholder: '180', defaultValue: 180, step: 1, min: 0, dimension: 'mass', unit: 'lb' }
+    ],
+    seo: {
+      title: 'Ideal Weight Calculator – Devine & Robinson Formulas',
+      description: 'Estimate ideal body weight from height and sex with the Devine and Robinson formulas, two of several methods, compared with your own weight.',
+      faq: [
+        { question: 'How is ideal body weight calculated?', answer: 'The Devine formula adds 2.3 kg per inch of height over 5 ft to a base of 50 kg (men) or 45.5 kg (women). A 5 ft 10 in man gets 50 + 2.3 × 10 = 73 kg, about 161 lb.' },
+        { question: 'Is the Devine formula accurate?', answer: 'It was designed to approximate lean body size for drug-dosing calculations, not to measure your true healthy weight. Pai and Paloucek\'s 2000 review found it closely tracks older height-weight insurance tables, which is a reasonable population average but not a personalized figure.' },
+        { question: 'Why do Devine and Robinson give different numbers?', answer: 'They are separate regressions fit to overlapping data decades apart (1974 and 1983). For a 5 ft 10 in man they differ by about 4.4 lb (2.8%) — close, but not identical, which is why this page shows both rather than picking one as "correct."' },
+        { question: 'Should I try to reach my "ideal weight"?', answer: 'No. These formulas were built for clinical dosing calculations and say nothing about your body fat, muscle mass or health. Use the BMI calculator\'s healthy-weight range, or talk to a doctor or dietitian, for a more complete picture.' },
+        { question: 'Does ideal body weight apply to children?', answer: 'No. Both formulas were derived from adult height-weight data. Pediatric growth and weight assessment use age- and sex-specific growth charts instead.' },
+        { question: 'What is ideal body weight actually used for today?', answer: 'Mainly clinical dosing — some antibiotics, chemotherapy agents and ventilator tidal volume settings are calculated from IBW or an adjusted version of it, under a clinician\'s judgment, not as a general wellness target.' }
+      ]
+    },
+    compute(values) {
+      const isFemale = values.sex === 1;
+      const overSixty = values.height - 60;
+      const devineKg = (isFemale ? 45.5 : 50.0) + 2.3 * overSixty;
+      const robinsonKg = (isFemale ? 49.0 : 52.0) + (isFemale ? 1.7 : 1.9) * overSixty;
+      const KG_TO_LB = 2.2046226218;
+      return {
+        devineWeight: devineKg * KG_TO_LB,
+        robinsonWeight: robinsonKg * KG_TO_LB,
+        currentWeight: values.currentWeight
+      };
+    }
+  },
+  {
+    id: 'macro-calculator',
+    group: 'Body & Nutrition',
+    category: 'health',
+    glyph: 'PFC',
+    updatedAt: '2026-11-16',
+    aliases: ['macro calculator', 'macronutrient calculator', 'protein carbs fat calculator', 'iifym calculator', 'macros for weight loss calculator'],
+    related: ['calorie-calculator', 'tdee-calculator', 'bmi-calculator'],
+    title: 'Macro Calculator',
+    description: 'Split a daily calorie target into protein, fat and carbohydrate grams from your own percentages, using the Atwater energy values. Pairs with the calorie and TDEE calculators for the target itself.',
+    example: 'On a 2,000-calorie target split 20% protein / 30% fat / 50% carbohydrate, that is 100 g protein, 67 g fat and 250 g carbohydrate a day.',
+    breakdown: {
+      headline: 'carbGrams',
+      headlineLabel: 'Carbohydrate (grams per day)',
+      outputs: [
+        { id: 'proteinGrams', label: 'Protein (grams per day)', format: 'number' },
+        { id: 'fatGrams', label: 'Fat (grams per day)', format: 'number' },
+        { id: 'carbGrams', label: 'Carbohydrate (grams per day)', format: 'number' },
+        { id: 'carbPercent', label: 'Carbohydrate share (the remainder)', format: 'number' }
+      ],
+      groups: [
+        { title: 'Your target', inputs: ['calories'] },
+        { title: 'Your split', inputs: ['proteinPercent', 'fatPercent'] }
+      ],
+      derive: (values) => ({
+        proteinCalories: values.proteinGrams * 4,
+        fatCalories: values.fatGrams * 9,
+        carbCalories: values.carbGrams * 4
+      }),
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'proteinCalories', label: 'Protein' },
+          { from: 'fatCalories', label: 'Fat' },
+          { from: 'carbCalories', label: 'Carbohydrate' }
+        ],
+        center: 'calories',
+        centerSub: 'calories a day'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What are macros?',
+        paragraphs: [
+          '"Macros" is short for macronutrients: protein, fat and carbohydrate, the three sources of food energy (alcohol is a fourth, usually ignored in diet planning). A calorie target from a calculator like this site\'s calorie or TDEE calculator says how much energy to eat; a macro split says what that energy is made of, in grams you can actually track against food labels.',
+          'Energy per gram is not the same for every macronutrient. The Atwater general factors — 4 kcal per gram of protein, 4 kcal per gram of carbohydrate and 9 kcal per gram of fat — have been the standard conversion since early-twentieth-century calorimetry, confirmed in a 2003 FAO/WHO joint expert consultation as still the practical default for food labels and diet calculations, even though food-specific factors are slightly more accurate for research use.',
+          'US and international nutrition authorities set a broad "Acceptable Macronutrient Distribution Range" (AMDR) for healthy adults: 45–65% of calories from carbohydrate, 20–35% from fat and 10–35% from protein. Diets at the edges of those ranges (very low-carb, very high-protein) can still be nutritionally adequate, but most people do well choosing percentages inside them rather than far outside.',
+          'This calculator does not choose a split for you. Enter your protein and fat percentages — from a nutritionist, a training program, or just a starting guess inside the AMDR — and carbohydrate automatically takes whatever share of calories is left.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in your daily calorie target and your protein and fat percentages. Carbohydrate is whatever share is left over.',
+        steps: [
+          { name: 'Get a calorie target', text: 'Use this site\'s calorie or TDEE calculator to estimate how many calories a day you need, or enter a target your dietitian gave you.' },
+          { name: 'Choose a protein percentage', text: 'The AMDR for adults is 10–35% of calories; many strength and weight-loss plans sit toward the upper half of that range.' },
+          { name: 'Choose a fat percentage', text: 'The AMDR for adults is 20–35% of calories.' },
+          { name: 'Read the grams', text: 'The headline is carbohydrate grams, the share left over once protein and fat are set; the rows above show protein and fat grams and carbohydrate\'s percentage.' },
+          { name: 'Check the chart', text: 'The ring splits your total calories by macro, so you can see the balance at a glance.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Each macro\'s calories come from its percentage of the total; grams come from dividing by its energy value per gram.',
+        expression: 'Carb % = 100 − protein % − fat %\nProtein (g) = calories × protein % ÷ 100 ÷ 4\nFat (g) = calories × fat % ÷ 100 ÷ 9\nCarb (g) = calories × carb % ÷ 100 ÷ 4',
+        terms: [
+          { symbol: 'calories', meaning: 'Daily calorie target, in kcal.' },
+          { symbol: 'protein %, fat %', meaning: 'The share of total calories from each, as whole percentages.' },
+          { symbol: '4, 9', meaning: 'Atwater general energy factors: 4 kcal/g for protein and carbohydrate, 9 kcal/g for fat (FAO/WHO, 2003).' }
+        ],
+        note: 'Estimate only, not medical advice. This calculator does the arithmetic; it does not know your health history. Ask a doctor or registered dietitian before following a diet far outside the AMDR, especially with kidney disease, diabetes or during pregnancy.'
+      },
+      workedExample: {
+        intro: 'A 2,000-calorie target is split 20% protein and 30% fat. How many grams of each macro is that?',
+        rows: [
+          { label: 'Carb % (100 − 20 − 30)', value: '50%' },
+          { label: 'Protein calories (2,000 × 0.20)', value: '400 kcal' },
+          { label: 'Protein grams (400 ÷ 4)', value: '100 g' },
+          { label: 'Fat calories (2,000 × 0.30)', value: '600 kcal' },
+          { label: 'Fat grams (600 ÷ 9)', value: '66.7 g' },
+          { label: 'Carb calories (2,000 × 0.50)', value: '1,000 kcal' },
+          { label: 'Carb grams (1,000 ÷ 4)', value: '250 g' }
+        ],
+        result: '100 g protein · 66.7 g fat · 250 g carbohydrate on a 2,000-calorie target',
+        explanation: 'Checking the total: 100 × 4 + 66.7 × 9 + 250 × 4 = 400 + 600.3 + 1,000 = 2,000.3 kcal, matching the target (the extra 0.3 kcal is rounding fat grams to one decimal). A 2,500-calorie target split 30% protein / 25% fat instead gives 187.5 g protein, 69.4 g fat and 281.3 g carbohydrate (45% of calories) — a higher-protein, slightly higher-carb-percentage split than the first example.'
+      },
+      watchOut: [
+        { title: 'Carbohydrate is always the remainder here', body: 'This calculator fixes protein and fat and lets carbohydrate take what is left. If you would rather fix carbohydrate and protein and let fat be the remainder, swap which percentage you treat as flexible before reading the grams.' },
+        { title: 'Percentages, not a diagnosis', body: 'The AMDR (45–65% carbohydrate, 20–35% fat, 10–35% protein) describes ranges that support adequate nutrient intake for healthy adults, not a required ratio. Athletes, people managing diabetes, and other specific situations often work with a dietitian on a different split.' },
+        { title: 'Fiber and alcohol complicate real labels', body: 'Food labels count fiber inside total carbohydrate even though it contributes little usable energy, and alcohol (7 kcal/g) is a separate, often-ignored energy source. Tracking apps may show grams that do not perfectly match this simple calculation once fiber and alcohol are involved.' },
+        { title: 'Grams, not food choices', body: 'Hitting a protein gram target with candy and soda instead of lean protein and vegetables technically satisfies the macro number while missing the point of eating that way. Macro targets are a budgeting tool, not a quality guarantee.' },
+        { title: 'Estimate only, not medical advice', body: 'This is arithmetic on a number you provide. Get your calorie target and any medically important diet changes reviewed by a doctor or registered dietitian.' }
+      ],
+      references: [
+        { label: 'FAO, Food energy — methods of analysis and conversion factors (2003), chapter 3: energy conversion factors', url: 'https://www.fao.org/4/y5022e/y5022e04.htm' },
+        { label: 'Health Canada, Dietary Reference Intakes: Acceptable Macronutrient Distribution Ranges (based on the Institute of Medicine DRIs)', url: 'https://www.canada.ca/en/health-canada/services/food-nutrition/healthy-eating/dietary-reference-intakes/tables/reference-values-macronutrients.html' }
+      ]
+    },
+    inputs: [
+      { id: 'calories', label: 'Daily calorie target', type: 'number', placeholder: '2000', defaultValue: 2000, step: 50, min: 0, dimension: 'energy', unit: 'kcal' },
+      { id: 'proteinPercent', label: 'Protein (% of calories)', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 0 },
+      { id: 'fatPercent', label: 'Fat (% of calories)', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Macro Calculator – Protein, Fat and Carb Grams',
+      description: 'Split a daily calorie target into protein, fat and carbohydrate grams using your own percentages and the Atwater energy values (4/4/9 kcal per gram).',
+      faq: [
+        { question: 'How do I calculate my macros?', answer: 'Multiply your calorie target by each macro\'s percentage, then divide by its energy value per gram: 4 kcal/g for protein and carbohydrate, 9 kcal/g for fat. A 2,000-calorie target at 20% protein is 2,000 × 0.20 ÷ 4 = 100 g of protein.' },
+        { question: 'What macro split should I use?', answer: 'The Acceptable Macronutrient Distribution Range for healthy adults is 45–65% carbohydrate, 20–35% fat and 10–35% protein. Many weight-training or weight-loss plans sit near the higher end of the protein range; endurance athletes often sit near the higher end of carbohydrate.' },
+        { question: 'How many grams of protein, fat and carbs should I eat to lose weight?', answer: 'Weight loss depends mainly on total calories, not the macro split. A common approach is to set a calorie deficit first (this site\'s calorie calculator), then choose a protein percentage toward the higher end of the AMDR (25–35%) to help preserve muscle, with fat and carbohydrate filling the rest.' },
+        { question: 'Why does carbohydrate show as "the remainder"?', answer: 'Because protein and fat are the two percentages you set, carbohydrate is whatever share of 100% is left: 100 − protein % − fat %. On a 2,000-calorie target at 20% protein and 30% fat, that leaves 50% for carbohydrate, or 250 g.' },
+        { question: 'Does fiber count toward carbohydrate grams here?', answer: 'This calculator does a simple energy-based split and does not separate fiber from other carbohydrate. Nutrition labels count fiber inside total carbohydrate even though it provides less usable energy, so a label\'s carbohydrate grams may not line up exactly with this figure.' },
+        { question: 'What are the Atwater factors?', answer: 'They are standard energy values per gram — 4 kcal for protein, 4 kcal for carbohydrate and 9 kcal for fat — set from early calorimetry studies and reconfirmed by a 2003 FAO/WHO expert consultation as the practical default for everyday diet calculations and food labels.' }
+      ]
+    },
+    compute(values) {
+      const carbPercent = Math.max(0, 100 - values.proteinPercent - values.fatPercent);
+      const proteinGrams = (values.calories * values.proteinPercent / 100) / 4;
+      const fatGrams = (values.calories * values.fatPercent / 100) / 9;
+      const carbGrams = (values.calories * carbPercent / 100) / 4;
+      return { proteinGrams, fatGrams, carbGrams, carbPercent };
+    }
+  },
+  {
+    id: 'waist-to-hip-ratio-calculator',
+    group: 'Body & Nutrition',
+    category: 'health',
+    glyph: 'WHR',
+    updatedAt: '2026-11-16',
+    aliases: ['waist to hip ratio calculator', 'whr calculator', 'waist hip ratio calculator', 'body shape calculator', 'apple vs pear body shape calculator'],
+    related: ['bmi-calculator', 'body-fat-percentage-calculator', 'ideal-weight-calculator'],
+    title: 'Waist-to-Hip Ratio Calculator',
+    description: 'Calculate your waist-to-hip ratio from two tape-measure readings and compare it with the WHO cutoffs for substantially increased risk of metabolic complications: 0.90 for men, 0.85 for women.',
+    example: 'A man with a 38 in waist and a 40 in hip has a waist-to-hip ratio of 0.95, at or above the WHO cutoff of 0.90 for men.',
+    breakdown: {
+      headline: 'whr',
+      headlineLabel: 'Waist-to-hip ratio',
+      outputs: [
+        { id: 'whr', label: 'Waist-to-hip ratio', format: 'number' },
+        { id: 'riskLevel', label: 'WHO risk category', labels: [
+          { value: 0, label: 'Below the WHO cutoff' },
+          { value: 1, label: 'At or above the WHO cutoff (substantially increased risk)' }
+        ] }
+      ],
+      groups: [
+        { title: 'About you', inputs: ['sex'] },
+        { title: 'Measurements', inputs: ['waist', 'hip'] }
+      ],
+      derive: (values) => ({ cutoff: values.sex === 1 ? 0.85 : 0.90 }),
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'whr', label: 'Your ratio' },
+          { from: 'cutoff', label: 'WHO cutoff for your sex' }
+        ],
+        title: 'Your waist-to-hip ratio vs the WHO cutoff'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is waist-to-hip ratio?',
+        paragraphs: [
+          'Waist-to-hip ratio (WHR) is your waist circumference divided by your hip circumference. It is a simple way to describe body shape: a higher ratio means relatively more fat is carried around the waist ("apple" shaped), a lower ratio means relatively more is carried around the hips and thighs ("pear" shaped).',
+          'Where fat is stored matters for health in a way that total weight alone does not capture. Fat around the abdomen (visceral fat, packed around internal organs) is more metabolically active and more strongly linked to type 2 diabetes and cardiovascular disease than fat stored around the hips, even at the same body weight.',
+          'A 2008 WHO expert consultation on waist circumference and waist-to-hip ratio reviewed this evidence and set a single-cutoff standard: a WHR of 0.90 or more for men, or 0.85 or more for women, indicates substantially increased risk of metabolic complications. The same numeric cutoffs appear in the American Heart Association/National Heart, Lung, and Blood Institute\'s 2005 scientific statement on metabolic syndrome, which independently reaches the same figures.',
+          'WHR is distinct from BMI, which only compares weight to height, and distinct from body fat percentage, which estimates how much of your weight is fat without saying where it is carried. The three measurements answer three different questions and are meant to be used together, not interchangeably.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in your sex, waist and hip measurements.',
+        steps: [
+          { name: 'Choose your sex', text: 'The WHO risk cutoff is different for men (0.90) and women (0.85).' },
+          { name: 'Measure your waist', text: 'At the narrowest point of your torso, or at the navel if there is no clear narrowing, standing relaxed.' },
+          { name: 'Measure your hip', text: 'At the widest point around your buttocks.' },
+          { name: 'Read your ratio', text: 'The headline is waist divided by hip. Below it is whether that ratio is below or at/above the WHO cutoff for your sex.' },
+          { name: 'Check the chart', text: 'The bars put your ratio next to the cutoff that applies to you.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Waist-to-hip ratio is a straight division; only the unit needs to match between the two measurements.',
+        expression: 'WHR = waist ÷ hip\nSubstantially increased risk: WHR ≥ 0.90 (men) or WHR ≥ 0.85 (women)',
+        terms: [
+          { symbol: 'waist, hip', meaning: 'Circumferences in the same unit (inches or centimeters both work, as long as they match).' },
+          { symbol: 'WHR', meaning: 'Waist-to-hip ratio, a unitless number.' }
+        ],
+        note: 'Estimate only, not medical advice. WHR is one piece of information among many a doctor would use to assess cardiometabolic risk, alongside blood pressure, blood sugar, cholesterol and family history.'
+      },
+      workedExample: {
+        intro: 'A man measures a 38 in waist and a 40 in hip. What is his waist-to-hip ratio, and where does it sit against the WHO cutoff?',
+        rows: [
+          { label: 'WHR (38 ÷ 40)', value: '0.95' },
+          { label: 'WHO cutoff for men', value: '0.90' },
+          { label: 'Compare (0.95 ≥ 0.90?)', value: 'Yes' }
+        ],
+        result: 'WHR = 0.95 — at or above the WHO cutoff (substantially increased risk) for men',
+        explanation: 'A woman with a 32 in waist and a 40 in hip has a WHR of 32 ÷ 40 = 0.80, below the 0.85 cutoff for women. The same 8-inch waist-to-hip gap reads differently depending on the actual hip size and the sex-specific cutoff, which is why WHR is always compared against a sex-specific threshold rather than one shared number.'
+      },
+      watchOut: [
+        { title: 'Measure the same way every time', body: 'Results depend on exactly where you place the tape. Measuring at the same time of day, over bare skin or thin clothing, without pulling the tape tight, keeps readings comparable over time.' },
+        { title: 'A single cutoff, not a graded scale', body: 'The WHO 2008 consultation defined one threshold per sex for "substantially increased risk," not a multi-band scale like BMI\'s categories. A ratio just under the cutoff is not automatically "safe," and a ratio just over it is not a diagnosis.' },
+        { title: 'Height is not part of this ratio', body: 'WHR does not account for how tall someone is, the way a waist-to-height ratio does. Two people with the same WHR can have very different waist circumferences in absolute terms.' },
+        { title: 'Not validated for every population and life stage', body: 'The WHO report notes the evidence behind these cutoffs comes mostly from adult, non-pregnant populations. It does not apply during pregnancy, and risk associations can vary somewhat by ethnicity.' },
+        { title: 'Estimate only, not medical advice', body: 'WHR is a screening indicator, not a diagnosis. Talk to a doctor about your cardiometabolic risk rather than relying on this ratio alone.' }
+      ],
+      references: [
+        { label: 'World Health Organization, Waist Circumference and Waist-Hip Ratio: Report of a WHO Expert Consultation, Geneva, 8–11 December 2008', url: 'https://iris.who.int/handle/10665/44583' },
+        { label: 'Grundy SM, Cleeman JI, Daniels SR, et al., Diagnosis and management of the metabolic syndrome: an AHA/NHLBI Scientific Statement, Circulation 112 (2005): 2735–2752 (independently states the same 0.90/0.85 WHR cutoffs)', url: 'https://pubmed.ncbi.nlm.nih.gov/16157765/' }
+      ]
+    },
+    inputs: [
+      { id: 'sex', label: 'Sex', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0, options: SEX_OPTIONS },
+      { id: 'waist', label: 'Waist circumference', type: 'number', placeholder: '38', defaultValue: 38, step: 0.5, min: 1, dimension: 'length', unit: 'in' },
+      { id: 'hip', label: 'Hip circumference', type: 'number', placeholder: '40', defaultValue: 40, step: 0.5, min: 1, dimension: 'length', unit: 'in' }
+    ],
+    seo: {
+      title: 'Waist-to-Hip Ratio Calculator – WHO Cutoffs',
+      description: 'Calculate your waist-to-hip ratio and compare it with the WHO cutoffs for substantially increased metabolic risk: 0.90 for men and 0.85 for women.',
+      faq: [
+        { question: 'How do you calculate waist-to-hip ratio?', answer: 'Divide waist circumference by hip circumference, measured in the same unit. A 38 in waist and a 40 in hip give 38 ÷ 40 = 0.95.' },
+        { question: 'What is a healthy waist-to-hip ratio?', answer: 'The World Health Organization\'s 2008 expert consultation treats a WHR of 0.90 or more in men, or 0.85 or more in women, as substantially increased risk of metabolic complications. Ratios below those cutoffs are not classified as high risk by this standard.' },
+        { question: 'Is waist-to-hip ratio better than BMI?', answer: 'They measure different things. BMI compares weight to height and says nothing about where fat is distributed; WHR describes body shape. Some research finds WHR tracks cardiometabolic risk better than BMI at a given weight, but the two are meant to complement each other, not replace one another.' },
+        { question: 'Why does the cutoff differ for men and women?', answer: 'Women naturally carry more fat around the hips and thighs for reproductive and hormonal reasons, so a given ratio does not carry the same risk for both sexes. The WHO set separate cutoffs — 0.90 for men, 0.85 for women — to reflect that.' },
+        { question: 'Where exactly do I measure my waist and hip?', answer: 'Waist at the narrowest point of your torso (or the navel if there is no clear narrowing); hip at the widest point around your buttocks. Measure standing, without pulling the tape tight enough to compress the skin.' },
+        { question: 'Does waist-to-hip ratio apply to everyone?', answer: 'The WHO cutoffs were developed mainly from adult, non-pregnant population data. They are not meant to be applied during pregnancy, and the report itself notes that the strength of the risk association can vary somewhat between ethnic groups.' }
+      ]
+    },
+    compute(values) {
+      const whr = values.waist / values.hip;
+      const cutoff = values.sex === 1 ? 0.85 : 0.90;
+      const riskLevel = whr >= cutoff ? 1 : 0;
+      return { whr, riskLevel };
+    }
+  },
+  {
+    id: 'blood-alcohol-content-calculator',
+    group: 'Body & Nutrition',
+    category: 'health',
+    glyph: 'BAC',
+    updatedAt: '2026-11-16',
+    aliases: ['bac calculator', 'blood alcohol calculator', 'widmark formula calculator', 'how many drinks to 0.08', 'blood alcohol content estimator'],
+    related: ['tdee-calculator', 'water-intake-calculator', 'bmi-calculator'],
+    title: 'Blood Alcohol Content Calculator',
+    description: 'Estimate blood alcohol content from drinks, body weight, sex and time using the Widmark formula. An estimate only — never use it to decide whether it is safe to drive. Call a cab or rideshare instead.',
+    example: 'A 180 lb man who has had 3 standard drinks over 2 hours has an estimated BAC of about 0.05%. This is a rough estimate, not a measurement — it is never a basis for deciding whether to drive.',
+    breakdown: {
+      headline: 'bac',
+      headlineLabel: 'Estimated blood alcohol content',
+      outputs: [
+        { id: 'bac', label: 'Estimated blood alcohol content', format: 'percent' },
+        { id: 'hoursToZero', label: 'Estimated hours until back to 0.00%', format: 'number', dimension: 'time', unit: 'hr' }
+      ],
+      groups: [
+        { title: 'About you', inputs: ['sex', 'weight'] },
+        { title: 'Drinking', inputs: ['drinks', 'hours'] }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'Important: this is an estimate only, never a safety check',
+        paragraphs: [
+          'This calculator gives a rough, formula-based estimate of blood alcohol content (BAC). It cannot measure your actual BAC, it cannot tell you whether you are impaired, and it must never be used to decide whether it is safe to drive, operate machinery, or do anything else that requires sobriety. If you have been drinking, do not drive: call a taxi, use a rideshare app, use public transit, or ask a sober friend for a ride.',
+          'In the 1920s, Swedish physiologist Erik Widmark developed a formula relating the alcohol you drink, your body weight and a "distribution ratio" to an estimated BAC, declining over time as the liver clears it. It remains the basis for most BAC estimators, including this one, and for some forensic calculations, even though it is a simplification of a more complex biological process.',
+          'The formula needs a distribution ratio because alcohol spreads through the water in your body, not through fat. Widmark\'s commonly used average ratios are about 0.68 for men and 0.55 for women, reflecting that women typically have a higher proportion of body fat and less body water than men of the same weight — so the same amount of alcohol produces a higher BAC in a woman than in a man of equal weight. A 1981 update by Watson, Watson and Batt refined the formula by estimating body water more individually, which is why real forensic calculations vary the ratio by height, weight and age rather than using one fixed number per sex.',
+          'The liver removes alcohol at a fairly steady rate once it is in the bloodstream, commonly estimated at about 0.015% BAC per hour on average — but individual rates vary, roughly 0.010% to 0.020% per hour, depending on genetics, liver health, food and other factors this calculator cannot know.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in your sex, weight, number of standard drinks and hours since you started drinking.',
+        steps: [
+          { name: 'Choose your sex', text: 'The formula uses a different distribution ratio for men and women.' },
+          { name: 'Enter your weight', text: 'Body weight affects how diluted the alcohol becomes in your system.' },
+          { name: 'Enter the number of standard drinks', text: 'One US standard drink is 14 g of pure alcohol: a 12 oz regular beer (5% ABV), a 5 oz glass of wine (12% ABV), or 1.5 oz of 80-proof spirits (40% ABV), per NIAAA.' },
+          { name: 'Enter hours since you started drinking', text: 'The formula subtracts an elimination rate for every hour that has passed.' },
+          { name: 'Read the estimate, then act safely', text: 'The headline is a rough BAC estimate. Whatever it shows, if you have had any alcohol, do not drive — arrange another way home.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored. This page cannot and does not assess whether you are fit to drive.'
+      },
+      formula: {
+        intro: 'The Widmark formula estimates peak BAC from alcohol consumed and body weight, then subtracts what the liver has cleared since.',
+        expression: 'BAC (%) = (alcohol in grams × 100) ÷ (body weight in grams × r) − (0.015 × hours)\nr ≈ 0.68 (men), 0.55 (women)\nStandard drink = 14 g pure alcohol (NIAAA)',
+        terms: [
+          { symbol: 'alcohol in grams', meaning: 'Standard drinks × 14 g.' },
+          { symbol: 'r', meaning: 'Widmark distribution ratio: a commonly used average of about 0.68 for men and 0.55 for women.' },
+          { symbol: '0.015', meaning: 'Average alcohol elimination rate, in %BAC per hour; individual rates commonly range from about 0.010 to 0.020.' }
+        ],
+        note: 'ESTIMATE ONLY — NOT A SAFETY OR LEGAL MEASUREMENT. This formula ignores food, medications, genetics, liver health and many other real factors, and can be off by a significant margin in either direction for a given person. Never use this number, or any calculator\'s number, to decide whether it is safe to drive. If you have had any alcohol, arrange a ride instead of driving.'
+      },
+      workedExample: {
+        intro: 'A 180 lb man has 3 standard drinks over 2 hours. What does the Widmark formula estimate?',
+        rows: [
+          { label: 'Alcohol consumed (3 × 14 g)', value: '42 g' },
+          { label: 'Body weight (180 lb × 453.592 g/lb)', value: '81,647 g' },
+          { label: 'Distribution ratio (men)', value: '0.68' },
+          { label: 'Peak estimate (42 × 100 ÷ (81,647 × 0.68))', value: '0.0756%' },
+          { label: 'Eliminated in 2 hours (0.015 × 2)', value: '0.030%' },
+          { label: 'Estimated BAC (0.0756 − 0.030)', value: '0.0456% ≈ 0.05%' }
+        ],
+        result: 'Estimated BAC ≈ 0.05% — a rough estimate, not a measurement, and never a basis for deciding to drive',
+        explanation: 'A woman of 140 lb with the same 3 drinks over 2 hours uses r = 0.55 instead of 0.68 and a smaller body weight, giving a higher estimate of about 0.0903% (≈0.09%) — nearly double the man\'s figure, illustrating why sex and body size change the result so much. A 200 lb man having 4 drinks over 3 hours comes out to about 0.0458% (≈0.05%), a similar headline number reached by a completely different drinking pattern — which is exactly why no single number like this should be trusted as a safety check.'
+      },
+      watchOut: [
+        { title: 'Never use this to decide whether to drive', body: 'This is the single most important thing to take from this page. Any amount of alcohol can impair driving, judgment and reaction time — often before a formula like this shows a "high" number. If you have had any alcohol, call a cab, use a rideshare, take transit, or ask a sober friend. Do not drive, and do not let a calculator talk you into thinking you are fine.' },
+        { title: 'Real BAC varies by far more than this formula knows', body: 'Food in your stomach slows alcohol absorption; medications, liver conditions, genetics, dehydration and how fast you drink all change your real BAC in ways this simple formula cannot see. Breathalyzers and blood tests measure; this calculator only estimates.' },
+        { title: 'The elimination rate is a population average', body: 'Individual rates commonly range from about 0.010 to 0.020 %BAC per hour, a two-fold spread. Someone metabolizing more slowly than average will have a real BAC well above what this calculator shows for the same inputs.' },
+        { title: 'Being "under 0.08%" does not mean "safe to drive"', body: 'In most US states, 0.08% is the legal limit for driving, but measurable impairment of judgment, coordination and reaction time can begin at much lower levels. Legal and safe are not the same thing.' },
+        { title: 'ESTIMATE ONLY, NOT A SAFETY OR MEDICAL TOOL', body: 'If you or someone else has symptoms of alcohol poisoning — confusion, vomiting, seizures, slow or irregular breathing, bluish skin, or being unable to wake up — call emergency services immediately. Do not wait to see what a calculator says.' }
+      ],
+      references: [
+        { label: 'National Institute on Alcohol Abuse and Alcoholism (NIAAA), Alcohol\'s Effects on Health: Drinking Patterns (standard drink = 14 g pure alcohol)', url: 'https://www.niaaa.nih.gov/alcohols-effects-health/alcohol-drinking-patterns' },
+        { label: 'Watson PE, Watson ID, Batt RD, Prediction of blood alcohol concentrations in human subjects: updating the Widmark equation, Journal of Studies on Alcohol 42 (1981): 547–556', url: 'https://pubmed.ncbi.nlm.nih.gov/7289599/' }
+      ]
+    },
+    inputs: [
+      { id: 'sex', label: 'Sex', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0, options: SEX_OPTIONS },
+      { id: 'weight', label: 'Body weight', type: 'number', placeholder: '180', defaultValue: 180, step: 1, min: 1, dimension: 'mass', unit: 'lb' },
+      { id: 'drinks', label: 'Standard drinks', type: 'number', placeholder: '3', defaultValue: 3, step: 0.5, min: 0 },
+      { id: 'hours', label: 'Hours since you started drinking', type: 'number', placeholder: '2', defaultValue: 2, step: 0.25, min: 0, dimension: 'time', unit: 'hr' }
+    ],
+    seo: {
+      title: 'Blood Alcohol Content Calculator – Estimate Only',
+      description: 'Estimate BAC from drinks, weight, sex and time with the Widmark formula. An estimate only — never use it to decide whether it is safe to drive.',
+      faq: [
+        { question: 'Can I use this calculator to decide if I am safe to drive?', answer: 'No. Never. This is a rough formula-based estimate, not a measurement of your actual BAC or your impairment. If you have had any alcohol, do not drive — call a cab, use a rideshare, take transit, or ask a sober friend for a ride, regardless of what any calculator shows.' },
+        { question: 'How is BAC calculated with the Widmark formula?', answer: 'Grams of alcohol consumed (standard drinks × 14 g) divided by body weight in grams times a distribution ratio (about 0.68 for men, 0.55 for women), times 100 for a percentage, minus about 0.015% for every hour since you started drinking.' },
+        { question: 'What counts as one standard drink?', answer: 'In the US, per NIAAA, one standard drink has 14 grams of pure alcohol: a 12 oz regular beer (5% ABV), a 5 oz glass of wine (12% ABV), or 1.5 oz of 80-proof liquor (40% ABV). A strong craft beer or a large pour of wine can be more than one standard drink.' },
+        { question: 'Why do men and women get different estimates for the same number of drinks?', answer: 'The formula uses a different distribution ratio for each sex (about 0.68 for men, 0.55 for women) because women typically have less body water relative to weight, so the same amount of alcohol is less diluted and produces a higher estimated BAC.' },
+        { question: 'How long does it take for BAC to reach zero?', answer: 'At the commonly used average elimination rate of 0.015% per hour, a peak estimate of 0.075% would take about 5 hours to reach zero. Real elimination rates vary roughly between 0.010% and 0.020% per hour between individuals, so this is only a rough guide, not a countdown you can rely on.' },
+        { question: 'Is 0.08% BAC the point where it becomes unsafe to drive?', answer: 'No. 0.08% is the legal limit for driving in most US states, but it is a legal line, not a safety line — measurable impairment to judgment, coordination and reaction time can start at much lower levels, and any amount of alcohol increases crash risk.' }
+      ]
+    },
+    compute(values) {
+      const weightG = values.weight * 453.59237;
+      const r = values.sex === 1 ? 0.55 : 0.68;
+      const alcoholG = values.drinks * 14;
+      const raw = weightG > 0 ? (alcoholG * 100) / (weightG * r) : NaN;
+      const eliminated = 0.015 * values.hours;
+      const bac = Math.max(0, raw - eliminated);
+      const hoursToZero = raw > 0 ? raw / 0.015 : 0;
+      return { bac, hoursToZero };
     }
   }
 ];

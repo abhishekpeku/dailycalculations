@@ -599,6 +599,47 @@ exports[`compute() snapshots > binomial-distribution-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > blood-alcohol-content-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "sex": 0,
+      "weight": 180,
+      "drinks": 3,
+      "hours": 2
+    },
+    "outputs": {
+      "bac": 0.04564881546,
+      "hoursToZero": 5.043254364
+    }
+  },
+  "typical": {
+    "inputs": {
+      "sex": 0,
+      "weight": 270,
+      "drinks": 4.5,
+      "hours": 3
+    },
+    "outputs": {
+      "bac": 0.03064881546,
+      "hoursToZero": 5.043254364
+    }
+  },
+  "edge": {
+    "inputs": {
+      "sex": 0,
+      "weight": 1,
+      "drinks": 0,
+      "hours": 0
+    },
+    "outputs": {
+      "bac": 0,
+      "hoursToZero": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > bmi-calculator 1`] = `
 {
   "default": {
@@ -673,6 +714,50 @@ exports[`compute() snapshots > board-foot-calculator 1`] = `
       "boardFeetPerBoard": 0.02083333333,
       "totalBoardFeet": 0.02083333333,
       "estimatedCost": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > body-fat-percentage-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "sex": 0,
+      "height": 70,
+      "neck": 15,
+      "waist": 36,
+      "hip": 38
+    },
+    "outputs": {
+      "bodyFatPercent": 21.25156972,
+      "category": 3
+    }
+  },
+  "typical": {
+    "inputs": {
+      "sex": 0,
+      "height": 105,
+      "neck": 22.5,
+      "waist": 54,
+      "hip": 57
+    },
+    "outputs": {
+      "bodyFatPercent": 24.06357104,
+      "category": 4
+    }
+  },
+  "edge": {
+    "inputs": {
+      "sex": 0,
+      "height": 48,
+      "neck": 1,
+      "waist": 1,
+      "hip": 1
+    },
+    "outputs": {
+      "bodyFatPercent": "-Infinity",
+      "category": 0
     }
   }
 }
@@ -4590,6 +4675,47 @@ exports[`compute() snapshots > ideal-gas-law-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > ideal-weight-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "sex": 0,
+      "height": 70,
+      "currentWeight": 180
+    },
+    "outputs": {
+      "devineWeight": 160.9374514,
+      "robinsonWeight": 156.5282061,
+      "currentWeight": 180
+    }
+  },
+  "typical": {
+    "inputs": {
+      "sex": 0,
+      "height": 105,
+      "currentWeight": 270
+    },
+    "outputs": {
+      "devineWeight": 338.4095724,
+      "robinsonWeight": 303.1356105,
+      "currentWeight": 270
+    }
+  },
+  "edge": {
+    "inputs": {
+      "sex": 0,
+      "height": 48,
+      "currentWeight": 0
+    },
+    "outputs": {
+      "devineWeight": 49.38354673,
+      "robinsonWeight": 64.37498056,
+      "currentWeight": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > impulse-calculator 1`] = `
 {
   "default": {
@@ -5560,6 +5686,50 @@ exports[`compute() snapshots > long-division-calculator 1`] = `
       "remainder": "NaN",
       "decimalResult": "NaN",
       "check": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > macro-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "calories": 2000,
+      "proteinPercent": 20,
+      "fatPercent": 30
+    },
+    "outputs": {
+      "proteinGrams": 100,
+      "fatGrams": 66.66666667,
+      "carbGrams": 250,
+      "carbPercent": 50
+    }
+  },
+  "typical": {
+    "inputs": {
+      "calories": 3000,
+      "proteinPercent": 30,
+      "fatPercent": 45
+    },
+    "outputs": {
+      "proteinGrams": 225,
+      "fatGrams": 150,
+      "carbGrams": 187.5,
+      "carbPercent": 25
+    }
+  },
+  "edge": {
+    "inputs": {
+      "calories": 0,
+      "proteinPercent": 0,
+      "fatPercent": 0
+    },
+    "outputs": {
+      "proteinGrams": 0,
+      "fatGrams": 0,
+      "carbGrams": 0,
+      "carbPercent": 100
     }
   }
 }
@@ -11690,6 +11860,44 @@ exports[`compute() snapshots > volume-converter 1`] = `
     },
     "outputs": {
       "gallons": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > waist-to-hip-ratio-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "sex": 0,
+      "waist": 38,
+      "hip": 40
+    },
+    "outputs": {
+      "whr": 0.95,
+      "riskLevel": 1
+    }
+  },
+  "typical": {
+    "inputs": {
+      "sex": 0,
+      "waist": 57,
+      "hip": 60
+    },
+    "outputs": {
+      "whr": 0.95,
+      "riskLevel": 1
+    }
+  },
+  "edge": {
+    "inputs": {
+      "sex": 0,
+      "waist": 1,
+      "hip": 1
+    },
+    "outputs": {
+      "whr": 1,
+      "riskLevel": 1
     }
   }
 }

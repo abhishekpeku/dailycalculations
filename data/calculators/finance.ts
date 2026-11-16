@@ -743,8 +743,8 @@ export const financeCalculators: CalculatorConfig[] = [
     category: 'finance',
     glyph: 'Inv',
     updatedAt: '2026-10-19',
-    aliases: ['sip calculator', 'return on investment calculator', 'roi calculator', 'portfolio growth calculator', 'retirement savings calculator'],
-    related: ['compound-interest-calculator', 'inflation-calculator', 'paycheck-calculator', 'currency-converter'],
+    aliases: ['sip calculator', 'return on investment calculator', 'roi calculator', 'portfolio growth calculator'],
+    related: ['compound-interest-calculator', 'retirement-savings-calculator', 'inflation-calculator', 'paycheck-calculator', 'currency-converter'],
     title: 'Investment Calculator',
     description: 'Project what an investment could grow to with yearly contributions, or work back to the starting amount, years or average annual return a goal requires.',
     example: '$10,000 invested at an average 7% a year, plus $1,200 added at the end of each year, grows to about $87,891 in 20 years.',
@@ -801,7 +801,7 @@ export const financeCalculators: CalculatorConfig[] = [
         paragraphs: [
           'An investment grows in two ways: the money you put in, and the returns that money earns. When returns are reinvested they start earning returns of their own, the same compounding that makes a savings account grow, which is why time in the market matters so much.',
           'Unlike a savings account, an investment such as a stock or bond fund has no fixed rate. Prices rise and fall, sometimes sharply, from year to year. The rate you enter here is an assumed average annual return, applied as if every year earned exactly that. Real portfolios never grow in a straight line, and the order of good and bad years affects the result, especially when you are adding or withdrawing money.',
-          'Regular contributions often matter as much as the starting amount. Adding a fixed amount every year, whatever the market is doing, is a simple discipline, and those deposits compound too. This calculator adds your yearly contribution at the end of each year.'
+          'Regular contributions often matter as much as the starting amount. Adding a fixed amount every year, whatever the market is doing, is a simple discipline, and those deposits compound too. This calculator adds your yearly contribution at the end of each year. For a version built specifically around saving for retirement — monthly contributions, monthly compounding to match a payroll deduction, and a clearly caveated estimate of what you could withdraw each year — see retirement-savings-calculator instead.'
         ]
       },
       howTo: {
@@ -2760,5 +2760,156 @@ export const financeCalculators: CalculatorConfig[] = [
         extraInterestExtendedVsStandard: extendedTotalInterest - standardTotalInterest
       };
     }
-  }
+  },
+  {
+    id: 'retirement-savings-calculator',
+    group: 'Retirement',
+    category: 'finance',
+    glyph: 'Ret',
+    updatedAt: '2026-11-16',
+    aliases: ['retirement savings calculator', 'how much do i need to retire calculator', 'retirement nest egg calculator', 'retirement fund calculator', 'years to retirement calculator'],
+    related: ['investment-calculator', 'compound-interest-calculator', '401k-employer-match-calculator', 'roth-ira-growth-calculator'],
+    title: 'Retirement Savings Calculator',
+    description: "Project how your retirement savings could grow from today's balance, years until retirement and a monthly contribution, plus a clearly caveated estimated sustainable withdrawal.",
+    example: '$50,000 saved today plus $500 added every month for 25 years at an average 7% return grows to about $691,307, which a 4% withdrawal guideline would put at roughly $27,652 a year — an illustrative estimate, not a plan.',
+    solver: {
+      defaultTarget: 'futureValue',
+      variables: [
+        { id: 'futureValue', label: 'Projected balance at retirement', symbol: 'FV', dimension: 'currency', defaultValue: 691306.76, defaultUnit: 'currency' },
+        { id: 'currentSavings', label: 'Current retirement savings', symbol: 'P', dimension: 'currency', defaultValue: 50000, defaultUnit: 'currency' },
+        { id: 'monthlyContribution', label: 'Monthly contribution', symbol: 'C', dimension: 'currency', defaultValue: 500, defaultUnit: 'currency', fixed: true },
+        { id: 'yearsToRetirement', label: 'Years until retirement', symbol: 't', dimension: 'term', defaultValue: 25, defaultUnit: 'yr', bounds: [0, 1200] },
+        { id: 'annualReturn', label: 'Average annual return', symbol: 'r', dimension: 'percent', defaultValue: 7, defaultUnit: '%', bounds: [-50, 100] }
+      ],
+      // `yearsToRetirement` arrives already in months (the term dimension's base), and growth and
+      // contributions compound monthly here — a payroll-style deposit, unlike investment-calculator's
+      // yearly contribution and yearly compounding.
+      solve: {
+        futureValue: ({ currentSavings, monthlyContribution, yearsToRetirement, annualReturn }) =>
+          yearsToRetirement >= 0
+            ? currentSavings * growthFactor(annualReturn, 12, yearsToRetirement) + monthlyContribution * annuityFactor(annualReturn, 12, yearsToRetirement)
+            : NaN,
+        currentSavings: ({ futureValue, monthlyContribution, yearsToRetirement, annualReturn }) => {
+          const start = (futureValue - monthlyContribution * annuityFactor(annualReturn, 12, yearsToRetirement)) / growthFactor(annualReturn, 12, yearsToRetirement);
+          return yearsToRetirement >= 0 && start >= 0 ? start : NaN;
+        },
+        yearsToRetirement: ({ futureValue, currentSavings, monthlyContribution, annualReturn }) => {
+          const i = annualReturn / 100 / 12;
+          if (i === 0) return monthlyContribution > 0 ? (futureValue - currentSavings) / monthlyContribution : NaN;
+          const x = (futureValue * i + monthlyContribution) / (currentSavings * i + monthlyContribution);
+          const n = Math.log(x) / Math.log(1 + i);
+          return n >= 0 ? n : NaN;
+        }
+      },
+      // The return has no closed form when there are contributions: the widget finds it numerically.
+      equation: (si) =>
+        si.futureValue - (si.currentSavings * growthFactor(si.annualReturn, 12, si.yearsToRetirement) + si.monthlyContribution * annuityFactor(si.annualReturn, 12, si.yearsToRetirement)),
+      outputs: [
+        { id: 'totalContributed', label: 'Total you contribute', dimension: 'currency', compute: (si) => si.currentSavings + si.monthlyContribution * si.yearsToRetirement },
+        { id: 'totalGrowth', label: 'Investment growth', dimension: 'currency', compute: (si) => si.futureValue - si.currentSavings - si.monthlyContribution * si.yearsToRetirement },
+        { id: 'estimatedAnnualWithdrawal', label: 'Estimated sustainable withdrawal (4% guideline), per year', dimension: 'currency', compute: (si) => si.futureValue * 0.04 },
+        { id: 'estimatedMonthlyWithdrawal', label: 'Estimated sustainable withdrawal (4% guideline), per month', dimension: 'currency', compute: (si) => (si.futureValue * 0.04) / 12 }
+      ],
+      derive: (si) => ({ contributions: si.monthlyContribution * si.yearsToRetirement }),
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'currentSavings', label: "Today's savings" },
+            { from: 'contributions', label: 'Future contributions' },
+            { from: 'totalGrowth', label: 'Growth' }
+          ],
+          center: 'futureValue',
+          centerSub: 'projected balance'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'A retirement-shaped version of compound growth',
+        paragraphs: [
+          "This calculator answers one specific question: if you keep saving a fixed amount every month until retirement, what might the balance be, and what could it support once you stop working? It grows today's balance and every future monthly deposit with monthly compounding, which matches how a 401(k) or IRA actually grows through a payroll or bank deduction — unlike investment-calculator's general model, which adds one lump contribution at the end of each year.",
+          'The second part — the estimated sustainable withdrawal — comes from the "4% rule," a guideline from financial planner William Bengen\'s 1994 study of how different withdrawal rates held up against historical U.S. market returns over 30-year retirements. It is a widely cited starting point, not a guarantee: it was built on a particular slice of market history, assumes a particular mix of stocks and bonds, and many planners today recommend checking it against your own time horizon, spending flexibility and market conditions rather than following it mechanically.',
+          "This is a different question from 401k-employer-match-calculator (how much of your contribution an employer matches) and from roth-ira-growth-calculator or traditional-ira-calculator (growth inside a specific tax-advantaged account, with that account's own contribution limit and tax treatment). This page ignores account type, taxes and contribution limits entirely — it is a plain savings-and-withdrawal model for whichever accounts you're using."
+        ]
+      },
+      howTo: {
+        intro: 'Enter your monthly contribution (always an input), then any three of the other four fields. The fourth, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter your monthly contribution', text: 'This is always an input. Include every retirement account you contribute to regularly.' },
+          { name: 'Project your balance', text: "Type your current savings, the years until retirement and an average annual return. The projected balance appears, split into today's savings, future contributions and growth." },
+          { name: 'Read the estimated withdrawal', text: 'Below the balance, the calculator shows what a 4% annual withdrawal of that balance would be, in both yearly and monthly terms — a rough guideline, not a plan.' },
+          { name: 'Work backward from a target', text: 'Type a target balance as the projected balance. Leave the years alone to see how long it takes, or your current savings to see how much you would need to start with.' },
+          { name: 'Try a range of returns', text: 'Run a cautious, a middle and an optimistic return. The spread matters more than any single number.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'With monthly compounding and a contribution at the end of each month, the projected balance is today\'s savings grown for n months plus an ordinary annuity of the monthly contributions. The estimated withdrawal applies the 4% guideline to that balance.',
+        expression: 'FV = P × (1 + i)^n + C × ((1 + i)^n − 1) ÷ i, where i = r ÷ 12\nEstimated annual withdrawal ≈ FV × 4%',
+        terms: [
+          { symbol: 'FV', meaning: 'Projected balance at retirement.' },
+          { symbol: 'P', meaning: "Today's retirement savings." },
+          { symbol: 'C', meaning: 'Contribution added at the end of each month.' },
+          { symbol: 'i', meaning: 'Monthly rate: the average annual return ÷ 12, as a decimal.' },
+          { symbol: 'n', meaning: 'Number of months until retirement.' }
+        ],
+        note: 'Estimates only, not a retirement plan or financial advice. Returns are assumed constant and are never guaranteed; the 4% guideline is one rule of thumb among several and does not account for your actual spending, other income, taxes or how long you will need the money to last.'
+      },
+      workedExample: {
+        intro: 'You have $50,000 saved, add $500 every month, have 25 years until retirement, and assume an average 7% annual return. What might you have, and what could a 4% withdrawal provide?',
+        rows: [
+          { label: 'Months until retirement (25 × 12)', value: '300' },
+          { label: 'Monthly rate (7% ÷ 12)', value: '0.5833%' },
+          { label: "Today's savings grown (50,000 × 1.005833^300)", value: '$286,270.91' },
+          { label: 'Contributions grown (500 × annuity factor 810.0717)', value: '$405,035.85' },
+          { label: 'Projected balance', value: '$691,306.76' },
+          { label: 'Total contributed (50,000 + 500 × 300)', value: '$200,000' },
+          { label: 'Growth (691,306.76 − 200,000)', value: '$491,306.76' },
+          { label: 'Estimated withdrawal at 4% a year', value: '$27,652.27, or about $2,304.36 a month' }
+        ],
+        result: 'Projected balance ≈ $691,307, suggesting a 4% withdrawal of about $27,652 a year',
+        explanation: 'Time matters enormously here: the same $50,000 plus $500 a month at 7% is worth only about $187,025 after 10 years but about $1,015,810 after 30. The assumed return matters too — at 5% a year the 25-year balance would be about $471,819, and at 9% about $1,030,982, so running a cautious and an optimistic return side by side is worth doing.'
+      },
+      watchOut: [
+        { title: 'Estimates only: returns are not guaranteed', body: 'A constant average return is a planning assumption, not a forecast. Real portfolios rise and fall, and the order of good and bad years matters, especially near retirement.' },
+        { title: 'The 4% guideline is a rule of thumb, not a rule', body: "It comes from one historical study of 30-year U.S. retirement periods (Bengen, 1994) and is debated. It says nothing about your own spending needs, other income (Social Security, a pension), health costs or how long your retirement will actually last." },
+        { title: 'Taxes and required withdrawals are not modeled', body: 'Traditional retirement accounts are taxed on withdrawal and eventually require minimum distributions; this calculator ignores both. See roth-ira-growth-calculator, traditional-ira-calculator and rmd-calculator for that detail.' },
+        { title: 'Fees and inflation reduce real returns', body: 'An expense ratio or advisory fee comes off the return every year, and the projected balance is in future dollars, not today\'s purchasing power.' }
+      ],
+      references: [
+        { label: "William P. Bengen, \"Determining Withdrawal Rates Using Historical Data,\" Journal of Financial Planning (1994)", url: 'https://www.financialplanningassociation.org/sites/default/files/2021-04/MAR04%20Determining%20Withdrawal%20Rates%20Using%20Historical%20Data.pdf' },
+        { label: 'U.S. Securities and Exchange Commission, Investor.gov: Save and Invest', url: 'https://www.investor.gov/introduction-investing/investing-basics/save-and-invest' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.7 Investments', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-7-investments' }
+      ]
+    },
+    inputs: [
+      { id: 'currentSavings', label: 'Current retirement savings', type: 'currency', placeholder: '50000', defaultValue: 50000, step: 1000, min: 0 },
+      { id: 'annualReturn', label: 'Average annual return', type: 'percent', placeholder: '7', defaultValue: 7, step: 0.1, min: 0 },
+      { id: 'yearsToRetirement', label: 'Years until retirement', type: 'number', placeholder: '25', defaultValue: 25, step: 1, min: 0 },
+      { id: 'monthlyContribution', label: 'Monthly contribution', type: 'currency', placeholder: '500', defaultValue: 500, step: 25, min: 0 }
+    ],
+    seo: {
+      title: 'Retirement Savings Calculator – Growth & Withdrawal',
+      description: "Project retirement savings growth from today's balance, years to retirement and a monthly contribution, plus a caveated estimated sustainable withdrawal.",
+      faq: [
+        { question: 'How do I calculate retirement savings growth?', answer: 'Grow your current savings by (1 + i)^n and add the future value of your monthly contributions, where i is the monthly rate and n the number of months. $50,000 plus $500 a month at 7% for 25 years comes to about $691,307.' },
+        { question: 'How much can I safely withdraw in retirement?', answer: 'There is no guaranteed figure. A common guideline, the "4% rule," suggests withdrawing about 4% of the balance in the first year. On a $691,307 balance that is about $27,652 a year, or $2,304 a month — an illustrative estimate, not a plan, and many planners suggest adjusting it to your own situation.' },
+        { question: 'How is this different from the investment calculator?', answer: 'Investment-calculator compounds a single yearly contribution annually. This calculator compounds a monthly contribution monthly, to match a payroll or bank deduction, and adds the estimated withdrawal step that investment-calculator does not include.' },
+        { question: 'How is this different from a 401(k) or Roth IRA calculator?', answer: "401k-employer-match-calculator models an employer's matching formula, and roth-ira-growth-calculator and traditional-ira-calculator model growth inside a specific account's own contribution limit and tax treatment. This calculator ignores account type, taxes and limits entirely." },
+        { question: 'Does this account for taxes or Social Security?', answer: 'No. It is a pre-tax savings and withdrawal model only, and does not include Social Security, a pension, or any other retirement income.' },
+        { question: 'How much does starting earlier help?', answer: 'A great deal. The same $50,000 plus $500 a month at 7% is worth about $187,025 after 10 years, about $691,307 after 25 years and about $1,015,810 after 30 years — most of the growth happens in the final years because the balance it compounds on is so much larger.' }
+      ]
+    },
+    compute(values) {
+      const months = Math.max(1, values.yearsToRetirement * 12);
+      const futureValue = values.currentSavings * growthFactor(values.annualReturn, 12, months) + values.monthlyContribution * annuityFactor(values.annualReturn, 12, months);
+      const totalContributed = values.currentSavings + values.monthlyContribution * months;
+      const totalGrowth = futureValue - totalContributed;
+      const estimatedAnnualWithdrawal = futureValue * 0.04;
+      const estimatedMonthlyWithdrawal = estimatedAnnualWithdrawal / 12;
+      return { futureValue, totalContributed, totalGrowth, estimatedAnnualWithdrawal, estimatedMonthlyWithdrawal };
+    }
+  },
 ];

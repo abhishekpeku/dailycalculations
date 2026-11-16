@@ -93,11 +93,23 @@ usable from any page without navigating anywhere first.
 
 ## Progress
 
-- [ ] Step file written
-- [ ] `SearchOverlay` component built, portaled, reusing `matchesQuery`/`NavData`
-- [ ] Desktop header search icon + `/` keyboard shortcut wired in `Header.tsx`
-- [ ] Mobile header search icon wired
-- [ ] i18n strings added
-- [ ] `npm test` / `npm run lint` / `npm run build` pass
-- [ ] Manual verification on all page types + the `/` shortcut's input-field guard specifically
-- [ ] STATUS.md updated
+- [x] Step file written
+- [x] `SearchOverlay` component built, portaled, reusing `matchesQuery`/`NavData`
+- [x] Desktop header search icon + `/` keyboard shortcut wired in `Header.tsx`
+- [x] Mobile header search icon wired (opens the same `SearchOverlay`, not the full `MobileMenu`
+      sheet — see PR #93 description for why)
+- [x] i18n strings added (`nav.openSearch`/`nav.closeSearch`; reused `search.*`/`navMenu.noMatches`)
+- [x] `npm test` 1123/1123, lint clean, `npm run build` 295/295 pages — all re-run and confirmed by
+      the main session after the build agent hit a session rate limit mid-verification
+- [x] Code-level verification by the main session (the Chrome extension wasn't connected to
+      re-run the agent's own interactive click-through): read `SearchOverlay.tsx` and the full
+      `Header.tsx` diff directly. The `/` guard checks `document.activeElement`'s tag against
+      `INPUT`/`TEXTAREA`/`SELECT` plus `isContentEditable`, and separately no-ops while the
+      overlay is already open — this correctly covers a calculator's own number/text inputs and
+      unit-menu `<select>`s. Confirmed no second, independent keyboard-shortcut implementation
+      was introduced elsewhere. **Still worth a live click-through** (open via icon, open via `/`,
+      confirm `/` does nothing inside a calculator's number field, Escape, Enter-to-top-match) the
+      next time a browser session is available — noted in STATUS.md rather than claimed as done.
+- [x] STATUS.md updated
+
+PR (draft): https://github.com/abhishekpeku/dailycalculations/pull/93

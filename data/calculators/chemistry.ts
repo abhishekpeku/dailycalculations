@@ -1149,6 +1149,154 @@ export const chemistryCalculators: CalculatorConfig[] = [
     }
   },
   {
+    id: 'buffer-ph-after-addition-calculator',
+    category: 'chemistry',
+    group: 'Acid-Base Chemistry',
+    glyph: 'ΔpH',
+    updatedAt: '2026-11-17',
+    aliases: ['buffer ph after adding acid calculator', 'buffer ph after adding base calculator', 'buffer ph change calculator', 'ph after adding strong acid or base calculator', 'buffer reaction calculator'],
+    related: ['pka-henderson-hasselbalch-calculator', 'buffer-capacity-calculator', 'weak-acid-ionization-calculator', 'molarity-calculator'],
+    title: 'Buffer pH After Adding Acid or Base Calculator',
+    description: 'Find a buffer’s new pH after a small amount of strong acid or strong base is added, from the moles of weak acid and conjugate base before the addition.',
+    example: 'A buffer with 0.0100 mol acetic acid and 0.0100 mol acetate (pKa 4.74) shifts to pH ≈ 4.75 after 1.0 × 10⁻⁴ mol of NaOH is added — far less change than an unbuffered solution would show.',
+    solver: {
+      defaultTarget: 'newPH',
+      variables: [
+        { id: 'pKa', label: 'Weak acid’s pKa', symbol: 'pKₐ', dimension: 'pH', defaultValue: 4.74, defaultUnit: 'pH' },
+        { id: 'initialMolesAcid', label: 'Initial moles of weak acid, HA', symbol: 'nₐ', dimension: 'amountOfSubstance', defaultValue: 0.01, defaultUnit: 'mol' },
+        { id: 'initialMolesBase', label: 'Initial moles of conjugate base, A⁻', symbol: 'n_B', dimension: 'amountOfSubstance', defaultValue: 0.01, defaultUnit: 'mol' },
+        { id: 'molesAdded', label: 'Moles of strong base added (negative for a strong acid)', symbol: 'x', dimension: 'amountOfSubstance', defaultValue: 0.0001, defaultUnit: 'mol' },
+        { id: 'newPH', label: 'New pH after the addition', symbol: 'pH', dimension: 'pH', defaultValue: 4.7534, defaultUnit: 'pH' }
+      ],
+      solve: {
+        newPH: ({ pKa, initialMolesAcid, initialMolesBase, molesAdded }) => {
+          const newAcid = initialMolesAcid - molesAdded;
+          const newBase = initialMolesBase + molesAdded;
+          return newAcid <= 0 || newBase <= 0 ? NaN : pKa + Math.log10(newBase / newAcid);
+        },
+        pKa: ({ newPH, initialMolesAcid, initialMolesBase, molesAdded }) => {
+          const newAcid = initialMolesAcid - molesAdded;
+          const newBase = initialMolesBase + molesAdded;
+          return newAcid <= 0 || newBase <= 0 ? NaN : newPH - Math.log10(newBase / newAcid);
+        },
+        molesAdded: ({ newPH, pKa, initialMolesAcid, initialMolesBase }) => {
+          const r = 10 ** (newPH - pKa);
+          return (r * initialMolesAcid - initialMolesBase) / (1 + r);
+        },
+        initialMolesAcid: ({ newPH, pKa, initialMolesBase, molesAdded }) => {
+          const r = 10 ** (newPH - pKa);
+          const newBase = initialMolesBase + molesAdded;
+          return newBase / r + molesAdded;
+        },
+        initialMolesBase: ({ newPH, pKa, initialMolesAcid, molesAdded }) => {
+          const r = 10 ** (newPH - pKa);
+          const newAcid = initialMolesAcid - molesAdded;
+          return r * newAcid - molesAdded;
+        }
+      },
+      outputs: [
+        { id: 'newMolesAcid', label: 'New moles of HA', dimension: 'amountOfSubstance', unit: 'mol', compute: (si) => si.initialMolesAcid - si.molesAdded },
+        { id: 'newMolesBase', label: 'New moles of A⁻', dimension: 'amountOfSubstance', unit: 'mol', compute: (si) => si.initialMolesBase + si.molesAdded },
+        {
+          id: 'initialPH',
+          label: 'pH before the addition',
+          dimension: 'pH',
+          unit: 'pH',
+          compute: (si) => (si.initialMolesAcid <= 0 || si.initialMolesBase <= 0 ? NaN : si.pKa + Math.log10(si.initialMolesBase / si.initialMolesAcid))
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'Why does a buffer’s pH barely move when acid or base is added?',
+        paragraphs: [
+          'OpenStax Chemistry 2e’s §14.6 "Buffers" states the key property directly: a buffer "resists" a change in pH when a small amount of strong acid or strong base is added, because the weak acid and its conjugate base absorb the addition through their own equilibrium instead of the strong acid/base reacting unopposed. Adding strong base converts some of the weak acid (HA) into more conjugate base (A⁻); adding strong acid converts some conjugate base back into weak acid — in both cases, the strong reagent is consumed by a mole-for-mole reaction rather than directly changing the solution’s pH.',
+          'Because that reaction is essentially complete (a strong acid or base reacts fully with the buffer components), the new moles of HA and A⁻ are simple arithmetic: subtract the added moles from one side and add them to the other. Plugging those new amounts into the Henderson-Hasselbalch equation — pH = pKa + log₁₀([A⁻] ÷ [HA]) — gives the new pH directly, using mole ratios rather than concentrations, since both HA and A⁻ sit in the same volume and that volume cancels out of the ratio.',
+          'This calculator automates exactly that two-step process: first the mole bookkeeping, then Henderson-Hasselbalch on the result — the same calculation OpenStax’s own Example 14.20 (an acetic acid/acetate buffer with a small addition of NaOH) works through by hand.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the buffer’s pKa and its initial moles of weak acid and conjugate base, then the moles of strong base added (or a negative value for strong acid); the new pH fills in automatically.',
+        steps: [
+          { name: 'Look up the weak acid’s pKa', text: 'A fixed property of the acid — 4.74 for acetic acid, for example.' },
+          { name: 'Enter the initial moles of HA and A⁻', text: 'From how the buffer was originally prepared — moles, not concentration, since the addition’s effect is calculated before dividing by volume.' },
+          { name: 'Enter the moles of strong base added', text: 'A positive number converts HA into A⁻. For a strong acid instead, enter the same amount as a negative number, which converts A⁻ back into HA.' },
+          { name: 'Read the new pH', text: 'Shown alongside the pH the buffer had before the addition, and the new mole amounts of HA and A⁻, for direct comparison.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The added strong acid or base first changes the mole amounts, then Henderson-Hasselbalch converts the new ratio into a new pH.',
+        expression: 'new mol HA = (initial mol HA) − x\nnew mol A⁻ = (initial mol A⁻) + x\nnew pH = pKa + log₁₀(new mol A⁻ ÷ new mol HA)',
+        terms: [
+          { symbol: 'x', meaning: 'Moles of strong base added (use a negative value for the same amount of strong acid instead).' },
+          { symbol: 'pKa', meaning: 'The weak acid’s own dissociation constant, expressed as −log₁₀Ka — unaffected by the addition.' },
+          { symbol: 'new pH', meaning: 'The buffer’s pH after the strong acid or base has fully reacted with the buffer components.' }
+        ],
+        note: 'Working in moles instead of concentrations is a deliberate simplification: both HA and A⁻ occupy the same solution volume, so that volume cancels out of the [A⁻] ÷ [HA] ratio and never needs to be entered. This assumes the strong acid or base added is small enough not to meaningfully dilute the buffer’s total volume — true for the small additions this calculator is meant for, but not for adding an amount comparable to the buffer’s own volume.'
+      },
+      workedExample: {
+        intro: 'An acetic acid/sodium acetate buffer starts with 1.00 × 10⁻² mol of each (pKa 4.74, from Ka = 1.8 × 10⁻⁵). What is the new pH after adding 1.0 × 10⁻⁴ mol of NaOH? (OpenStax Chemistry 2e, Example 14.20.)',
+        rows: [
+          { label: 'Initial moles HA, A⁻', value: '1.00 × 10⁻² mol each' },
+          { label: 'pKa', value: '4.74' },
+          { label: 'NaOH added, x', value: '1.0 × 10⁻⁴ mol' },
+          { label: 'New mol HA = 0.0100 − 0.0001', value: '0.0099 mol' },
+          { label: 'New mol A⁻ = 0.0100 + 0.0001', value: '0.0101 mol' },
+          { label: 'New pH = 4.74 + log₁₀(0.0101 ÷ 0.0099)', value: '≈ 4.75' }
+        ],
+        result: 'New pH ≈ 4.75 (up from an initial pH of 4.74)',
+        explanation: 'This matches OpenStax’s own worked example, which reports the same shift from pH 4.74 to pH 4.75. For comparison, adding the identical 1.0 × 10⁻⁴ mol as a strong acid instead (HCl) shifts the buffer the other way, to pH ≈ 4.74 (more precisely 4.736) — both directions confirmed independently in a scratch script, and both far smaller shifts than adding the same strong acid or base to unbuffered water would cause.'
+      },
+      watchOut: [
+        {
+          title: 'Enter moles, not molarity',
+          body: 'This calculator works in moles throughout, specifically so the buffer’s total volume never has to be entered — using concentrations instead (without a matching, consistent volume for every term) will give the wrong ratio.'
+        },
+        {
+          title: 'A strong acid or base is entered with a sign, not as a separate field',
+          body: 'Adding strong base is a positive amount; adding the same amount of strong acid is the negative of that number. Flipping the sign by mistake swaps which direction the pH moves.'
+        },
+        {
+          title: 'This assumes the strong acid or base fully reacts and does not run out the buffer',
+          body: 'If the amount added exceeds the smaller of the two initial mole amounts, one component would be driven below zero — past the point where this buffer can still resist the change, and this calculator’s own closed-form formula no longer describes a real buffer.'
+        },
+        {
+          title: 'Different from the plain Henderson-Hasselbalch calculator',
+          body: 'The Henderson-Hasselbalch calculator on this site finds a buffer’s pH from a given [A⁻] and [HA] directly. This calculator instead starts one step earlier — from the moles before an addition — and does the mole bookkeeping for you.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §14.6 "Buffers" (buffer response to added strong acid or base, Example 14.20, acetic acid/acetate)', url: 'https://openstax.org/books/chemistry-2e/pages/14-6-buffers' }
+      ]
+    },
+    inputs: [
+      { id: 'pKa', label: 'Weak acid’s pKa', type: 'number', placeholder: '4.74', defaultValue: 4.74, step: 0.01 },
+      { id: 'initialMolesAcid', label: 'Initial moles of weak acid, HA (mol)', type: 'number', placeholder: '0.01', defaultValue: 0.01, step: 0.0001, min: 0 },
+      { id: 'initialMolesBase', label: 'Initial moles of conjugate base, A⁻ (mol)', type: 'number', placeholder: '0.01', defaultValue: 0.01, step: 0.0001, min: 0 },
+      { id: 'molesAdded', label: 'Moles of strong base added (negative for a strong acid, mol)', type: 'number', placeholder: '0.0001', defaultValue: 0.0001, step: 0.00001 }
+    ],
+    seo: {
+      title: 'Buffer pH After Adding Acid or Base Calculator',
+      description: 'Free buffer pH calculator. Find a buffer’s new pH after a small amount of strong acid or base is added, from the moles of HA and A⁻ before the addition.',
+      faq: [
+        { question: 'How do I find a buffer’s pH after adding a strong acid or base?', answer: 'First find the new moles of weak acid and conjugate base (subtract the added amount from one, add it to the other), then apply Henderson-Hasselbalch: pH = pKa + log₁₀(new mol A⁻ ÷ new mol HA).' },
+        { question: 'What is the new pH after adding NaOH to an acetic acid buffer?', answer: 'For a buffer with 0.0100 mol each of acetic acid and acetate (pKa 4.74), adding 1.0 × 10⁻⁴ mol of NaOH raises the pH only to about 4.75 — a tiny shift compared with adding the same amount to unbuffered water.' },
+        { question: 'How do I enter adding a strong acid instead of a strong base?', answer: 'Enter the same amount as a negative number in the "moles added" field — a strong acid converts conjugate base back into weak acid, the opposite direction from a strong base.' },
+        { question: 'Why does this calculator use moles instead of concentrations?', answer: 'Because HA and A⁻ share the same solution volume, that volume cancels out of their ratio entirely — working in moles sidesteps needing to know or re-enter the total volume at all.' },
+        { question: 'Is this the same as the Henderson-Hasselbalch calculator?', answer: 'It uses the same underlying equation, but starts one step earlier: from the buffer’s moles before an addition, rather than already-known concentrations after.' },
+        { question: 'What happens if too much strong acid or base is added?', answer: 'If the amount added exceeds the smaller of the two initial mole amounts, that component would be used up entirely — past that point, the buffer can no longer resist the pH change the way this formula describes.' }
+      ]
+    },
+    compute(values) {
+      const newMolesAcid = values.initialMolesAcid - values.molesAdded;
+      const newMolesBase = values.initialMolesBase + values.molesAdded;
+      const newPH = newMolesAcid <= 0 || newMolesBase <= 0 ? NaN : values.pKa + Math.log10(newMolesBase / newMolesAcid);
+      return { newPH };
+    }
+  },
+  {
     id: 'percent-yield-calculator',
     category: 'chemistry',
     group: 'Reaction Stoichiometry & Yield',

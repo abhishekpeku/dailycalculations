@@ -1187,6 +1187,44 @@ exports[`compute() snapshots > buffer-capacity-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > buffer-ph-after-addition-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "pKa": 4.74,
+      "initialMolesAcid": 0.01,
+      "initialMolesBase": 0.01,
+      "molesAdded": 0.0001
+    },
+    "outputs": {
+      "newPH": 4.748686179
+    }
+  },
+  "typical": {
+    "inputs": {
+      "pKa": 7.11,
+      "initialMolesAcid": 0.015,
+      "initialMolesBase": 0.015,
+      "molesAdded": 0.00015
+    },
+    "outputs": {
+      "newPH": 7.118686179
+    }
+  },
+  "edge": {
+    "inputs": {
+      "pKa": 0,
+      "initialMolesAcid": 0,
+      "initialMolesBase": 0,
+      "molesAdded": 0
+    },
+    "outputs": {
+      "newPH": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > buoyancy-calculator 1`] = `
 {
   "default": {

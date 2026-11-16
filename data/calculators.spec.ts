@@ -105,6 +105,7 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'gas-density-calculator': ['density'], // pressure and temperature both 0 (their min) -> 0/0
   'ksp-from-solubility-calculator': ['ksp', 'molarSolubility', 'cationConcentration', 'anionConcentration'], // solubilityGramsPerLiter and molarMass both 0 (their min) -> 0/0
   'weak-base-ionization-calculator': ['hydroxideIon'], // kb and initialConcentration both 0 (their min) -> compute()'s own <= 0 guard
+  'buffer-ph-after-addition-calculator': ['newPH'], // initialMolesAcid and initialMolesBase both 0 (their min) -> compute()'s own <= 0 guard
   'home-affordability-calculator': ['frontEndRatio', 'backEndRatio'], // grossAnnualIncome 0 (its min) -> gross monthly income 0 -> both ratios are 0/0
   'mortgage-refinance-calculator': ['breakEvenMonths'], // currentLoanBalance 0 (its min) -> both payments 0 -> no savings -> break-even is Infinity, honestly "never"
   'down-payment-savings-calculator': ['years', 'totalContributions', 'totalInterest'], // rate 0 (its min) and monthlyContribution 0 (its min) -> no contribution and no growth, so a 0 goal is never "reached" -> 0/0

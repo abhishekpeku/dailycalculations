@@ -3032,4 +3032,150 @@ export const financeCalculators: CalculatorConfig[] = [
       return { employerMatch, employeeContribution, totalContribution, freeMoneyLeftOnTable, maxPossibleMatch };
     }
   },
+  {
+    id: 'roth-ira-growth-calculator',
+    group: 'Retirement',
+    category: 'finance',
+    glyph: 'Roth',
+    updatedAt: '2026-11-16',
+    aliases: ['roth ira calculator', 'roth ira growth calculator', 'roth ira contribution calculator', 'roth ira return calculator', 'tax-free retirement calculator'],
+    related: ['traditional-ira-calculator', 'retirement-savings-calculator', 'investment-calculator', '401k-employer-match-calculator'],
+    title: 'Roth IRA Growth Calculator',
+    description: "Project how a Roth IRA could grow from an after-tax contribution each year, with the current IRS annual contribution limit cited, and tax-free qualified withdrawals.",
+    example: "A $20,000 Roth IRA balance plus $7,000 contributed every year for 20 years at an average 7% return grows to about $364,362 — and because it's a Roth, a qualified withdrawal of the entire amount would be tax-free.",
+    solver: {
+      defaultTarget: 'futureValue',
+      variables: [
+        { id: 'futureValue', label: 'Future value', symbol: 'FV', dimension: 'currency', defaultValue: 364362.14, defaultUnit: 'currency' },
+        { id: 'currentBalance', label: 'Current Roth IRA balance', symbol: 'P', dimension: 'currency', defaultValue: 20000, defaultUnit: 'currency' },
+        { id: 'annualContribution', label: 'Annual contribution', symbol: 'C', dimension: 'currency', defaultValue: 7000, defaultUnit: 'currency', fixed: true },
+        { id: 'years', label: 'Years invested', symbol: 't', dimension: 'term', defaultValue: 20, defaultUnit: 'yr', bounds: [0, 1200] },
+        { id: 'annualReturn', label: 'Average annual return', symbol: 'r', dimension: 'percent', defaultValue: 7, defaultUnit: '%', bounds: [-50, 100] }
+      ],
+      // Same yearly-compounding, yearly-contribution model as investment-calculator; `years` arrives
+      // in months (the term dimension's base), so growth and the annuity factor use years / 12.
+      solve: {
+        futureValue: ({ currentBalance, annualContribution, years, annualReturn }) =>
+          years >= 0 ? currentBalance * growthFactor(annualReturn, 1, years / 12) + annualContribution * annuityFactor(annualReturn, 1, years / 12) : NaN,
+        currentBalance: ({ futureValue, annualContribution, years, annualReturn }) => {
+          const start = (futureValue - annualContribution * annuityFactor(annualReturn, 1, years / 12)) / growthFactor(annualReturn, 1, years / 12);
+          return years >= 0 && start >= 0 ? start : NaN;
+        },
+        years: ({ futureValue, currentBalance, annualContribution, annualReturn }) => {
+          const i = annualReturn / 100;
+          if (i === 0) return annualContribution > 0 ? ((futureValue - currentBalance) / annualContribution) * 12 : NaN;
+          const t = Math.log((futureValue * i + annualContribution) / (currentBalance * i + annualContribution)) / Math.log(1 + i);
+          return t >= 0 ? t * 12 : NaN;
+        }
+      },
+      equation: (si) =>
+        si.futureValue - (si.currentBalance * growthFactor(si.annualReturn, 1, si.years / 12) + si.annualContribution * annuityFactor(si.annualReturn, 1, si.years / 12)),
+      outputs: [
+        { id: 'totalContributed', label: 'Total contributed', dimension: 'currency', compute: (si) => si.currentBalance + (si.annualContribution * si.years) / 12 },
+        { id: 'totalGrowth', label: 'Tax-free growth', dimension: 'currency', compute: (si) => si.futureValue - si.currentBalance - (si.annualContribution * si.years) / 12 }
+      ],
+      derive: (si) => ({ contributions: (si.annualContribution * si.years) / 12 }),
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'currentBalance', label: 'Current balance' },
+            { from: 'contributions', label: 'Contributions' },
+            { from: 'totalGrowth', label: 'Growth' }
+          ],
+          center: 'futureValue',
+          centerSub: 'projected balance'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'A Roth IRA: after-tax money in, tax-free growth out',
+        paragraphs: [
+          'A Roth IRA is funded with money you have already paid income tax on — you cannot deduct a Roth contribution. In exchange, the IRS does not tax a "qualified distribution" at all: no tax on the contributions (naturally, since they were already taxed) and none on the growth either, as long as the account has been open at least five years and the withdrawal is made at age 59½ or later (or another qualifying reason). A Roth IRA also has no required minimum distributions during the original owner\'s lifetime, unlike a traditional IRA or most 401(k)s — see rmd-calculator and traditional-ira-calculator.',
+          'The growth math itself is the same yearly-contribution, yearly-compounding model as investment-calculator. What is specific to this page is the Roth IRA\'s own IRS contribution limit: $7,500 for 2026 (or $8,600 including the $1,100 catch-up contribution for those 50 and older), and an income cap — for 2026, the amount you can contribute phases out between $153,000 and $168,000 of modified adjusted gross income for single filers and heads of household, and between $242,000 and $252,000 for married couples filing jointly. This calculator does not enforce those limits; keep your own contribution at or under whatever you are actually eligible for.',
+          'For the same growth model with pre-tax contributions instead — taxed later rather than now — see traditional-ira-calculator. For a monthly, account-agnostic version without a contribution limit, see retirement-savings-calculator.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your annual contribution (0 for a single lump sum), then any three of the other four fields. The fourth, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter your annual contribution', text: 'This is always an input. Keep it at or under your actual 2026 Roth IRA limit: $7,500, or $8,600 if you are 50 or older.' },
+          { name: 'Project the future value', text: 'Type the current balance, the years invested and an average annual return to see the projected balance, with contributions and growth broken out.' },
+          { name: 'Plan backward from a goal', text: 'Type a target future value. Leave the years alone to see how long it takes, or the current balance to see how much you would need to start with.' },
+          { name: 'Find the return you need', text: 'Fill in the goal, start, contribution and years so the return is the field left alone longest, and the calculator searches for the average return required.' },
+          { name: 'Remember the tax treatment', text: 'Whatever the future value turns out to be, a qualified withdrawal of the whole amount is tax-free — unlike a taxable brokerage account or a traditional IRA.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'With yearly compounding and a contribution at the end of each year, the future value is the current balance grown for t years plus an ordinary annuity of the contributions — identical math to investment-calculator, applied to a Roth IRA\'s own contribution limit.',
+        expression: 'FV = P × (1 + r)^t + C × ((1 + r)^t − 1) ÷ r\nTotal contributed = P + C × t',
+        terms: [
+          { symbol: 'FV', meaning: 'Projected balance at the end.' },
+          { symbol: 'P', meaning: 'Current Roth IRA balance.' },
+          { symbol: 'C', meaning: 'Contribution added at the end of each year, capped at your actual IRS limit.' },
+          { symbol: 'r', meaning: 'Average annual return as a decimal (7% = 0.07).' },
+          { symbol: 't', meaning: 'Years invested.' }
+        ],
+        note: 'Estimates only. Returns are assumed constant and are never guaranteed. Contribution eligibility depends on your income and the current IRS limit, which this calculator does not enforce. Not tax advice.'
+      },
+      workedExample: {
+        intro: 'You have $20,000 in a Roth IRA and contribute $7,000 at the end of every year (under the 2026 limit of $7,500) for 20 years, assuming an average 7% annual return. What could it grow to, and how is it taxed?',
+        rows: [
+          { label: 'Growth factor 1.07^20', value: '3.869684' },
+          { label: 'Current balance grown (20,000 × 3.869684)', value: '$77,393.69' },
+          { label: 'Annuity factor (3.869684 − 1) ÷ 0.07', value: '40.995492' },
+          { label: 'Contributions grown (7,000 × 40.995492)', value: '$286,968.45' },
+          { label: 'Future value', value: '$364,362.14' },
+          { label: 'Total contributed (20,000 + 7,000 × 20)', value: '$160,000' },
+          { label: 'Tax-free growth (364,362.14 − 160,000)', value: '$204,362.14' }
+        ],
+        result: 'FV ≈ $364,362 after 20 years, of which about $204,362 is growth',
+        explanation: 'If this account is qualified, the full $364,362 — including the $204,362 that was never taxed — can be withdrawn tax-free. In a taxable account, that $204,362 of growth would ordinarily be taxed when realized; that tax-free treatment is the entire value of using a Roth IRA over a plain brokerage account for the same growth.'
+      },
+      watchOut: [
+        { title: 'Contribution limit and income cap', body: 'The 2026 limit is $7,500 ($8,600 at age 50+), and the amount you can contribute phases out between $153,000–$168,000 of MAGI (single/head of household) or $242,000–$252,000 (married filing jointly). This calculator does not check your eligibility.' },
+        { title: '"Qualified" has specific rules', body: 'Tax-free treatment of earnings requires the account to be open five years and the withdrawal to be made at 59½ or later (or another qualifying reason). Earlier non-qualified withdrawals of earnings can be taxed and penalized.' },
+        { title: 'Estimates only: returns are not guaranteed', body: 'A constant average return is a planning assumption, not a forecast. Fees also reduce the real return.' },
+        { title: 'Not tax advice', body: 'Confirm your own eligibility and contribution limit with the IRS or a tax professional before contributing.' }
+      ],
+      references: [
+        { label: 'Internal Revenue Service, Notice 2025-67: 2026 Amounts Relating to Retirement Plans and IRAs', url: 'https://www.irs.gov/pub/irs-drop/n-25-67.pdf' },
+        { label: 'Internal Revenue Service, Roth IRAs', url: 'https://www.irs.gov/retirement-plans/roth-iras' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.7 Investments', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-7-investments' }
+      ]
+    },
+    inputs: [
+      { id: 'currentBalance', label: 'Current Roth IRA balance', type: 'currency', placeholder: '20000', defaultValue: 20000, step: 1000, min: 0 },
+      { id: 'annualReturn', label: 'Annual return rate', type: 'percent', placeholder: '7', defaultValue: 7, step: 0.1, min: 0 },
+      { id: 'years', label: 'Years invested', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 1 },
+      { id: 'annualContribution', label: 'Annual contribution', type: 'currency', placeholder: '7000', defaultValue: 7000, step: 500, min: 0 }
+    ],
+    seo: {
+      title: 'Roth IRA Growth Calculator – Tax-Free Projection',
+      description: 'Project Roth IRA growth from an after-tax contribution each year, using the current IRS contribution limit, with tax-free qualified withdrawals explained.',
+      faq: [
+        { question: 'How much can I contribute to a Roth IRA in 2026?', answer: 'The IRS limit is $7,500, or $8,600 including the $1,100 catch-up contribution if you are 50 or older, per Notice 2025-67. Contribution room is also reduced or eliminated at higher incomes.' },
+        { question: 'Are Roth IRA withdrawals really tax-free?', answer: 'Yes, if the distribution is "qualified": the account has been open at least five years and you are 59½ or older (or meet another qualifying reason). Both the contributions and all the growth come out tax-free.' },
+        { question: 'What income makes me ineligible for a Roth IRA?', answer: 'For 2026, the amount you can contribute phases out between $153,000 and $168,000 of modified adjusted gross income for single filers and heads of household, and between $242,000 and $252,000 for married couples filing jointly.' },
+        { question: 'How does this differ from traditional-ira-calculator?', answer: 'The growth math is identical. A Roth IRA is funded with after-tax money and comes out tax-free; a traditional IRA is funded with pre-tax money and is taxed on withdrawal. Traditional-ira-calculator models that trade-off directly with the same example numbers.' },
+        { question: 'How does this differ from investment-calculator or retirement-savings-calculator?', answer: 'Investment-calculator is a generic, non-tax-specific version of the same growth math. Retirement-savings-calculator uses monthly contributions and monthly compounding and adds an estimated withdrawal. Neither models the Roth IRA\'s own contribution limit or tax-free treatment.' },
+        { question: 'How much of my Roth IRA balance would be growth versus contributions?', answer: 'In the worked example, $204,362 of the $364,362 projected balance is growth and $160,000 is contributions — and in a qualified Roth IRA, both come out tax-free.' }
+      ]
+    },
+    compute(values) {
+      const r = values.annualReturn / 100;
+      const n = Math.max(1, values.years);
+      const futureValuePrincipal = values.currentBalance * Math.pow(1 + r, n);
+      const futureValueContributions = r === 0
+        ? values.annualContribution * n
+        : values.annualContribution * ((Math.pow(1 + r, n) - 1) / r);
+      const futureValue = futureValuePrincipal + futureValueContributions;
+      const totalContributed = values.currentBalance + values.annualContribution * n;
+      const totalGrowth = futureValue - totalContributed;
+      return { futureValue, totalContributed, totalGrowth };
+    }
+  },
 ];

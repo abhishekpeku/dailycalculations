@@ -337,6 +337,7 @@ export const calculatorOrder: string[] = [
   'student-loan-calculator',
   'retirement-savings-calculator',
   '401k-employer-match-calculator',
+  'roth-ira-growth-calculator',
   'jet-lag-calculator',
   'luggage-fee-calculator',
   'daylight-hours-calculator',

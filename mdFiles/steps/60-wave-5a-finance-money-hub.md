@@ -227,7 +227,22 @@ prior wave's convention.
   - `down-payment-savings-calculator` skipped as instructed (already shipped in batch 1)
   - `finance` 33 → 38 calculators (315 calculators site-wide after this batch)
   - `npm test` 1216/1216, lint clean, `npm run build` 315 pages — all green
-- [ ] Batch 7 (income-tax-calculator, 1)
+- [x] Batch 7 (income-tax-calculator, 1) — branch `step/60-wave-5a-finance-run-7`, PR #103, DONE 2026-11-16
+  - [x] `income-tax-calculator` — US federal-only, filing status (single/MFJ/MFS/HoH), gross or
+        taxable income, effective vs. marginal rate side by side; reuses the shared `PAYROLL_2026`
+        bracket table (IRS Rev. Proc. 2025-32 / IRB 2025-45), extended with a verified MFS entry
+  - `finance` 38 → 39 (315 → 316 site-wide)
+  - `npm test` 1217/1217, lint clean, `npm run build` 347 total routes — all green
 - [ ] Visual-QA spot-check (desktop/dark-mode at minimum) on `home-affordability-calculator`,
-      `income-tax-calculator`, and one retirement-cluster page
-- [ ] STATUS.md updated, `finance` category count recorded
+      `income-tax-calculator`, and one retirement-cluster page — **still pending**, not done by
+      any batch agent in this wave; the main session should pick this up
+- [x] STATUS.md updated, `finance` category count recorded — **Step 60 is now fully DONE, all 7
+      batches complete**
+
+## Wave summary (all 7 batches complete, 2026-11-16)
+
+`finance` grew from 8 to 39 calculators (31 new) across real estate/affordability, debt,
+retirement (×2), investment analysis + simple-interest, remaining money-hub items, and income tax.
+Site-wide total: 285 → 316. Every batch's worked-example numbers were independently re-verified in
+a standalone scratch script before committing, per the wave's YMYL discipline. Only the visual-QA
+spot-check remains open, for the main session to do interactively.

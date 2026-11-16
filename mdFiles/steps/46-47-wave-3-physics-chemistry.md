@@ -385,14 +385,89 @@ build agent's judgment**, same as every run so far.
     listening on port 3000 (not started by this run), same precedent runs 4/5 in this file set, so
     it was left running rather than curled or killed.
   - 321 calculators total after this run (316 + 5). `physics` is now 26.
-- [ ] Physics mechanics-remainder run B (5), branch `step/46-wave-3-physics-run-6`, PR TBD —
-  **IN PROGRESS**:
-  ## Progress
-  - [ ] centripetal-force-calculator
-  - [ ] gravitational-force-calculator
-  - [ ] torque-calculator
-  - [ ] buoyancy-calculator
-  - [ ] pendulum-period-calculator
+- [x] Physics mechanics-remainder run B (5), branch `step/46-wave-3-physics-run-6`, PR #105 —
+  **DONE** 2026-11-16:
+  - [x] centripetal-force-calculator
+  - [x] gravitational-force-calculator
+  - [x] torque-calculator
+  - [x] buoyancy-calculator
+  - [x] pendulum-period-calculator
+  - `centripetal-force-calculator` (F = mv² ÷ r) is a 4-variable solver (force, mass, speed,
+    radius), reusing `force`/`mass`/`speed`/`length` — no new dimension. Solving for speed needs a
+    square root (same sqrt-with-domain-guard pattern as `kinetic-energy-calculator`). No solver
+    `outputs`; cross-linked to `friction-calculator` (cornering friction supplies the centripetal
+    force on a flat road) and to `gravitational-force-calculator` (orbital motion uses gravity as
+    the centripetal force).
+  - `gravitational-force-calculator` (Newton's law, F = Gm₁m₂ ÷ r²) needed the gravitational
+    constant G, fetched directly from NIST's CODATA page (not recalled from memory):
+    6.674 30(15)×10⁻¹¹ m³ kg⁻¹ s⁻² (CODATA 2022 recommended value), added as a new
+    `GRAVITATIONAL_CONSTANT` constant in `physics.ts` alongside the existing `STANDARD_GRAVITY`.
+    4-variable solver (force, mass1, mass2, distance), reusing `force`/`mass`/`length` — no new
+    dimension. **Explicitly distinct from `weight-calculator`**, as the task required: the worked
+    example computes Earth's pull on a 70 kg person using Earth's real mass and radius (NASA Earth
+    Fact Sheet, fetched directly: 5.9722×10²⁴ kg, 6,371.000 km) and gets ≈687.4 N — close to but not
+    identical to `weight-calculator`'s 686.5 N (standard gravity, 9.80665 m/s²), because standard
+    gravity nets out Earth's rotation and oblateness while this formula is the pure two-point-mass
+    calculation. Cross-linked both ways: added to `weight-calculator`'s `related` (replacing
+    `kilograms-to-stone-converter`, keeping 4 entries) plus a new watch-out item on
+    `weight-calculator` pointing here, and a reciprocal watch-out item here pointing back.
+  - `torque-calculator` (τ = F·r·sin θ) needed a genuinely new dimension: `torque` (base N·m, alts
+    lbf·ft and lbf·in — NIST SP 811 Appendix B factors), kept separate from `energy` even though
+    N·m and J are numerically the same unit, same "one real unit, two conventional names" precedent
+    as `momentum`/`force` (N·s vs kg·m/s). Shipped as a 4-variable solver (torque, force, radius,
+    angle) mirroring `work-calculator`'s F·d·cos θ pattern exactly, but with `Math.sin`/`Math.asin`
+    in place of `Math.cos`/`Math.acos` (same principal-value-only precedent — asin domain-guarded to
+    [-1, 1]). Reuses `force`/`length`/`angle`. Round-trip + anchor test in `lib/units.spec.ts`
+    (cross-checked against OpenStax's own Example 10.14: 40 N at 4 m, 90°, gives exactly 160 N·m).
+  - `buoyancy-calculator` (Archimedes' principle, F = ρVg) is a 3-variable solver (buoyant force,
+    fluid density, displaced volume) with gravity fixed at `STANDARD_GRAVITY` rather than an
+    editable variable, per the task's hint and the `potential-energy-calculator` precedent (g not
+    exposed as a solver field). Reuses `force`/`density`/`volume` — no new dimension; confirmed
+    `volume` (m³) already existed in `lib/units.ts` before reaching for a new one. Bonus output:
+    mass of fluid displaced (m = ρV), same "extra derived figure" pattern as
+    `kinetic-energy-calculator`'s momentum output. Grouped under `Fluids & Matter` (with
+    `density-calculator`/`pressure-calculator`), not `Motion & Forces`.
+  - `pendulum-period-calculator` (T = 2π√(L ÷ g), simple pendulum, small-angle approximation) is a
+    3-variable solver (period, length, gravity) with gravity left editable (defaulting to
+    `STANDARD_GRAVITY`), following `free-fall-calculator`'s precedent so the same page answers "how
+    would this pendulum behave on the Moon." All three directions are closed-form (no numeric
+    solve needed). The small-angle assumption (OpenStax: accurate under about 15°) is stated
+    explicitly in `formula.note` and as the first watch-out item, per the task's instruction. Reuses
+    `length`/`time`/`acceleration` — no new dimension.
+  - Every formula fetched directly from a primary source, not recalled from memory: OpenStax
+    University Physics Volume 1 §4.4 "Uniform Circular Motion" (centripetal force), §13.1 "Newton's
+    Law of Universal Gravitation" (including its own Example 13.1, cross-checked), §10.6 "Torque"
+    (including Example 10.14, cross-checked), §14.4 "Archimedes' Principle and Buoyancy" (including
+    its floating-person example, cross-checked: 97.0% submerged → 970 kg/m³), and §15.4 "Pendulums"
+    (including Example 15.3, cross-checked); NIST's CODATA value page for G; NASA's Earth and Moon
+    fact sheets for mass/radius/surface gravity.
+  - Independent scratch script (`verify_run6.mjs`, scratchpad, no app imports) recomputed every
+    number before the copy was written, including: the centripetal-force worked example (1,200 kg,
+    15 m/s, 50 m radius → 5,400 N) in all four directions; the gravitational-force Earth-person
+    example (≈687.42 N, implied g ≈ 9.8203 m/s², contrasted with `weight-calculator`'s 686.47 N) and
+    the everyday-scale example (two 10 kg masses, 1 m apart → 6.674×10⁻⁹ N), both cross-checked
+    against OpenStax's own Example 13.1 (two 9,000 kg Soyuz modules, 10 m apart → 5.406×10⁻⁵ N); the
+    torque worked example (100 N, 0.3 m, 90° → 30 N·m, and the 60° comparison → 25.98 N·m, ratio
+    exactly sin 60°) plus the lbf·ft/lbf·in unit factors, cross-checked against OpenStax's Example
+    10.14; the buoyancy worked example (0.3 m cube, 0.027 m³, fresh water → 264.78 N, 27 kg
+    displaced) plus the seawater comparison (271.40 N, +2.5% exactly) and the OpenStax floating-
+    person cross-check; and the pendulum worked example (L = 1 m → T ≈ 2.0064 s on Earth, ≈4.9365 s
+    on the Moon) plus the "seconds pendulum" length (≈0.9936 m for T = 2 s) and a cross-check against
+    OpenStax's Example 15.3.
+  - `npm test` (1,258 tests), `npm run lint` and `npm run build` all pass (357 routes). New
+    `KNOWN_NON_FINITE` entries: `centripetal-force-calculator` and `gravitational-force-calculator`
+    (both `force`, all-zero inputs → 0/0) and `pendulum-period-calculator` (`period`, length and
+    gravity both 0 → 0/0 under the square root); `torque-calculator` and `buoyancy-calculator`
+    needed none (their all-zero edge cases resolve to an honest finite 0). Snapshot diff is
+    additive-only (169 new lines, 0 removed, confirmed with `git diff --stat`). Verified the 5 new
+    pages from the static HTML `next build` produced
+    (`.next/server/app/en/calculators/<id>.html`): H1, exactly two JSON-LD scripts, and all eight
+    section ids (concept/how-to-use/formula/worked-example/watch-out/faq/references/related)
+    present on every page, all 5 ids linked correctly from `/en/categories/physics`, and no
+    "application error" text in any of the 5 files — a pre-existing process was already listening on
+    port 3000 (not started by this run), so it was left running and the static HTML was inspected
+    instead, same precedent as runs 4/5/A in this file.
+  - 326 calculators total after this run (321 + 5). `physics` is now 31.
 - [ ] Physics waves/other-remainder run (5): Doppler effect, Snell's law (refraction), E = mc²
   (mass-energy equivalence), thermal expansion, escape velocity — closes out every named seed-list
   item from "Physics — proposed additions" above

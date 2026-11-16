@@ -870,5 +870,136 @@ export const workCalculators: CalculatorConfig[] = [
       const percentMore = values.indexA > 0 ? (values.indexB / values.indexA - 1) * 100 : 0;
       return { salaryB, difference, percentMore };
     }
+  },
+  {
+    id: 'remote-work-savings-calculator',
+    group: 'Time & Benefits',
+    category: 'work',
+    glyph: 'WFH',
+    updatedAt: '2026-11-16',
+    aliases: ['work from home savings calculator', 'WFH savings calculator', 'telecommute savings calculator', 'remote work cost savings calculator', 'hybrid work savings calculator'],
+    related: ['commute-cost-calculator', 'pto-calculator', 'freelancer-rate-calculator', 'paycheck-calculator'],
+    title: 'Remote Work Savings Calculator',
+    description: 'Calculate the money and time you save by working from home some days a week, using the same fuel, parking, tolls and wear cost model as the commute cost calculator, plus hours saved.',
+    example: 'Skipping a 25-mile, $26.38-a-day commute 2 days a week saves about $228.58 a month ($2,743 a year) and about 95 hours a year, with a 55-minute round-trip commute.',
+    breakdown: {
+      headline: 'monthlySavings',
+      headlineLabel: 'Money saved per month',
+      outputs: [
+        { id: 'monthlySavings', label: 'Money saved per month', format: 'currency' },
+        { id: 'annualSavings', label: 'Money saved per year', format: 'currency' },
+        { id: 'monthlyHoursSaved', label: 'Hours saved per month', format: 'number' },
+        { id: 'annualHoursSaved', label: 'Hours saved per year', format: 'number' },
+        { id: 'fullTimeMonthlyCost', label: 'Commuting cost if you went in every day', format: 'currency' },
+        { id: 'partialMonthlyCost', label: 'Commuting cost with your work-from-home days', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your schedule', inputs: ['workDaysPerWeek', 'wfhDaysPerWeek'] },
+        { title: 'Your commute cost (same model as the commute cost calculator)', inputs: ['roundTripMiles', 'mpg', 'gasPricePerGallon', 'dailyParking', 'dailyTolls', 'wearCostPerMile'] },
+        { title: 'Your commute time', inputs: ['roundTripCommuteMinutes'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'fullTimeMonthlyCost', label: 'Commuting every day' },
+          { from: 'partialMonthlyCost', label: 'With your WFH days' }
+        ],
+        title: 'Monthly commuting cost: every day vs. with work-from-home days'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What working from home actually saves',
+        paragraphs: [
+          'This calculator reuses the exact per-day commuting cost model from the Commute Cost Calculator on this site: fuel plus parking plus tolls plus a per-mile wear allowance. Every day you work from home instead of driving in, that whole daily cost disappears — so the savings from going remote some days a week are just the days you skip, multiplied by what each of those days was costing.',
+          'It adds one thing the commute cost calculator deliberately leaves out: time. A round trip has a cost in minutes as well as dollars, and the US Census Bureau\'s American Community Survey found the average one-way commute in the United States reached 27.6 minutes in 2019 — meaning a round trip close to an hour is typical. Skipping that commute on a work-from-home day gives back real time, not just money, which this calculator totals separately alongside the dollar savings.',
+          'The result works for any mix: a fully remote switch (all days become work-from-home days), a hybrid schedule (some days in, some at home), or testing how much one more remote day a week would be worth before asking for it.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your work schedule, then the same commute inputs as the commute cost calculator, then your round-trip commute time.',
+        steps: [
+          { name: 'Enter your work schedule', text: 'Total work days a week, and how many of those are now (or would be) worked from home.' },
+          { name: 'Enter your commute cost inputs', text: 'Round-trip distance, fuel economy and price, daily parking and tolls, and a per-mile wear allowance — the same fields as the Commute Cost Calculator.' },
+          { name: 'Enter your round-trip commute time', text: 'How long the drive takes there and back, in minutes.' },
+          { name: 'Read the savings', text: 'Monthly and yearly money saved are the headline figures, with hours saved and the before/after monthly cost shown below.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'One day of commuting costs the same as in the Commute Cost Calculator; savings come from the days you no longer drive.',
+        expression:
+          'dailyCost = (roundTripMiles ÷ mpg × gasPrice) + dailyParking + dailyTolls + (roundTripMiles × wearCostPerMile)\nmonthlySavings = dailyCost × wfhDaysPerWeek × (52 ÷ 12)\nannualSavings = dailyCost × wfhDaysPerWeek × 52\nhoursSaved = roundTripCommuteMinutes × wfhDaysPerWeek × weeks ÷ 60',
+        terms: [
+          { symbol: 'dailyCost', meaning: 'The same fuel + parking + tolls + wear cost as one day in the Commute Cost Calculator.' },
+          { symbol: 'wfhDaysPerWeek', meaning: 'Days per week you work from home instead of commuting.' },
+          { symbol: 'roundTripCommuteMinutes', meaning: 'Total door-to-door commute time, there and back, on a day you do drive in.' }
+        ],
+        note: 'An estimate, inheriting the same caveats as the commute cost calculator: fuel prices and parking rates change, and the wear rate is a chosen allowance, not a measured cost.'
+      },
+      workedExample: {
+        intro: 'A 25-mile round trip at 30 mpg, gas at $3.75/gal, $15/day parking, $3/day tolls, 21 cents/mile wear — the same scenario as the Commute Cost Calculator\'s example, costing $26.38 a day. You work 5 days a week and now work from home 2 of them, with a 55-minute round-trip commute.',
+        rows: [
+          { label: 'Daily commute cost (fuel + parking + tolls + wear)', value: '$26.38' },
+          { label: 'Full-time monthly cost (26.38 × 5 × 52 ÷ 12)', value: '$571.46' },
+          { label: 'With 2 WFH days a week (26.38 × 3 × 52 ÷ 12)', value: '$342.88' },
+          { label: 'Monthly savings (571.46 − 342.88)', value: '$228.58' },
+          { label: 'Annual savings (228.58 × 12)', value: '$2,743.00' },
+          { label: 'Monthly hours saved (55 × 2 × 52 ÷ 12 ÷ 60)', value: '7.94 hours' },
+          { label: 'Annual hours saved (55 × 2 × 52 ÷ 60)', value: '95.33 hours' }
+        ],
+        result: '$228.58 saved a month ($2,743 a year), plus about 95 hours a year',
+        explanation: 'Dropping from 5 commute days to 3 cuts the monthly cost by exactly the 2 skipped days\' worth — $228.58 — and 95.33 hours a year is close to twelve 8-hour workdays of time (11.92) given back by not driving.'
+      },
+      watchOut: [
+        { title: 'Uses the same model as the Commute Cost Calculator', body: 'This is not a different cost formula — it is the Commute Cost Calculator\'s per-day cost applied to the days you skip. Use that calculator directly if you just want today\'s full commuting cost without a work-from-home comparison.' },
+        { title: 'Time saved is not automatically money', body: 'The hours saved figure is a time total, not a dollar value — this calculator does not convert it to income. What that time is worth depends on what you do with it.' },
+        { title: 'Working from home has its own costs', body: 'Higher home electricity and internet use, a dedicated workspace, and potentially more home-cooked meals can offset some of the commuting savings — this calculator only prices the commute side.' },
+        { title: 'Averages hide real variation', body: 'The 27.6-minute national average one-way commute (US Census Bureau, 2019) varies enormously by metro area and route; use your own actual commute time, not the national figure, for an accurate result.' },
+        { title: 'Weeks-per-month uses an average', body: 'Monthly figures use 52 ÷ 12 ≈ 4.33 weeks per month, an average that does not exactly match every calendar month.' }
+      ],
+      references: [
+        { label: 'U.S. Census Bureau, "One-Way Travel Time to Work Rises"', url: 'https://www.census.gov/newsroom/press-releases/2021/one-way-travel-time-to-work-rises.html' },
+        { label: 'Internal Revenue Service, Publication 463: Travel, Gift, and Car Expenses (commuting expenses)', url: 'https://www.irs.gov/publications/p463' }
+      ]
+    },
+    inputs: [
+      { id: 'workDaysPerWeek', label: 'Work days per week', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 1 },
+      { id: 'wfhDaysPerWeek', label: 'Work-from-home days per week', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0 },
+      { id: 'roundTripMiles', label: 'Round-trip commute distance', type: 'number', placeholder: '25', defaultValue: 25, step: 1, min: 0, dimension: 'length', unit: 'mi' },
+      { id: 'mpg', label: 'Vehicle fuel economy', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1, dimension: 'fuelEconomy', unit: 'mpg' },
+      { id: 'gasPricePerGallon', label: 'Fuel price', type: 'currency', placeholder: '3.75', defaultValue: 3.75, step: 0.05, min: 0, dimension: 'fuelPrice', unit: 'cur/gal' },
+      { id: 'dailyParking', label: 'Daily parking cost', type: 'currency', placeholder: '15', defaultValue: 15, step: 1, min: 0 },
+      { id: 'dailyTolls', label: 'Daily tolls', type: 'currency', placeholder: '3', defaultValue: 3, step: 0.25, min: 0 },
+      { id: 'wearCostPerMile', label: 'Vehicle wear per mile', type: 'currency', placeholder: '0.21', defaultValue: 0.21, step: 0.01, min: 0 },
+      { id: 'roundTripCommuteMinutes', label: 'Round-trip commute time (minutes)', type: 'number', placeholder: '55', defaultValue: 55, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Remote Work Savings Calculator – Money & Time Saved',
+      description: 'Calculate the money and time you save working from home some days a week, using the same cost model as the commute cost calculator.',
+      faq: [
+        { question: 'How much money does working from home save?', answer: 'Multiply your daily commute cost by the work-from-home days you add each week, then by about 4.33 weeks a month. Skipping a $26.38 day 2 days a week saves about $228.58 a month, $2,743 a year.' },
+        { question: 'How much time does working from home save?', answer: 'Multiply your round-trip commute time by your work-from-home days per week and the weeks in the period. A 55-minute round trip, 2 days a week, saves about 95 hours a year — close to twelve 8-hour workdays.' },
+        { question: 'How is this different from the commute cost calculator?', answer: 'It uses the exact same per-day cost model, but applies it to the days you skip by working from home, and adds a time-saved figure the commute cost calculator does not include.' },
+        { question: 'What is the average US commute?', answer: 'The US Census Bureau\'s American Community Survey found the average one-way commute reached 27.6 minutes in 2019 — close to an hour round trip, which is why this calculator defaults to 55 minutes.' },
+        { question: 'Does this account for the cost of working from home?', answer: 'No. It only prices the commuting side. Extra home electricity, internet and workspace costs would offset some of the savings, but are not modeled here.' },
+        { question: 'Can I use this for a fully remote job?', answer: 'Yes. Set work-from-home days per week equal to your total work days per week to see the full value of not commuting at all.' }
+      ]
+    },
+    compute(values) {
+      const weeksPerMonth = 52 / 12;
+      const dailyFuelCost = (values.roundTripMiles / values.mpg) * values.gasPricePerGallon;
+      const dailyWear = values.roundTripMiles * values.wearCostPerMile;
+      const dailyCost = dailyFuelCost + values.dailyParking + values.dailyTolls + dailyWear;
+      const commuteDaysPerWeek = Math.max(0, values.workDaysPerWeek - values.wfhDaysPerWeek);
+      const fullTimeMonthlyCost = dailyCost * values.workDaysPerWeek * weeksPerMonth;
+      const partialMonthlyCost = dailyCost * commuteDaysPerWeek * weeksPerMonth;
+      const monthlySavings = fullTimeMonthlyCost - partialMonthlyCost;
+      const annualSavings = monthlySavings * 12;
+      const monthlyHoursSaved = (values.roundTripCommuteMinutes * values.wfhDaysPerWeek * weeksPerMonth) / 60;
+      const annualHoursSaved = (values.roundTripCommuteMinutes * values.wfhDaysPerWeek * 52) / 60;
+      return { fullTimeMonthlyCost, partialMonthlyCost, monthlySavings, annualSavings, monthlyHoursSaved, annualHoursSaved };
+    }
   }
 ];

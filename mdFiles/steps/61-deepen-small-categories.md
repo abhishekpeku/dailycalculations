@@ -188,7 +188,7 @@ whole site before writing any id.
   - [x] `overtime-pay-calculator`
   - [x] `severance-pay-calculator`
   - [x] `cost-of-living-comparison-calculator`
-  - [ ] `remote-work-savings-calculator`
+  - [x] `remote-work-savings-calculator`
   - [ ] `job-offer-comparison-calculator`
   - [ ] `paid-sick-leave-accrual-calculator`
 - [ ] Batch 3 — `health` (5 new)

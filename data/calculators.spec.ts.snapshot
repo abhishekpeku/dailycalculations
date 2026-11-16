@@ -8661,6 +8661,74 @@ exports[`compute() snapshots > relative-risk-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > remote-work-savings-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "workDaysPerWeek": 5,
+      "wfhDaysPerWeek": 2,
+      "roundTripMiles": 25,
+      "mpg": 30,
+      "gasPricePerGallon": 3.75,
+      "dailyParking": 15,
+      "dailyTolls": 3,
+      "wearCostPerMile": 0.21,
+      "roundTripCommuteMinutes": 55
+    },
+    "outputs": {
+      "fullTimeMonthlyCost": 571.4583333,
+      "partialMonthlyCost": 342.875,
+      "monthlySavings": 228.5833333,
+      "annualSavings": 2743,
+      "monthlyHoursSaved": 7.944444444,
+      "annualHoursSaved": 95.33333333
+    }
+  },
+  "typical": {
+    "inputs": {
+      "workDaysPerWeek": 8,
+      "wfhDaysPerWeek": 3,
+      "roundTripMiles": 38,
+      "mpg": 45,
+      "gasPricePerGallon": 5.65,
+      "dailyParking": 23,
+      "dailyTolls": 4.5,
+      "wearCostPerMile": 0.32,
+      "roundTripCommuteMinutes": 83
+    },
+    "outputs": {
+      "fullTimeMonthlyCost": 1540.278519,
+      "partialMonthlyCost": 962.6740741,
+      "monthlySavings": 577.6044444,
+      "annualSavings": 6931.253333,
+      "monthlyHoursSaved": 17.98333333,
+      "annualHoursSaved": 215.8
+    }
+  },
+  "edge": {
+    "inputs": {
+      "workDaysPerWeek": 1,
+      "wfhDaysPerWeek": 0,
+      "roundTripMiles": 0,
+      "mpg": 1,
+      "gasPricePerGallon": 0,
+      "dailyParking": 0,
+      "dailyTolls": 0,
+      "wearCostPerMile": 0,
+      "roundTripCommuteMinutes": 0
+    },
+    "outputs": {
+      "fullTimeMonthlyCost": 0,
+      "partialMonthlyCost": 0,
+      "monthlySavings": 0,
+      "annualSavings": 0,
+      "monthlyHoursSaved": 0,
+      "annualHoursSaved": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > rent-vs-buy-calculator 1`] = `
 {
   "default": {

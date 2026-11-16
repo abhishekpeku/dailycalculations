@@ -79,6 +79,7 @@ export const calculatorOrder: string[] = [
   'pto-calculator',
   'overtime-pay-calculator',
   'severance-pay-calculator',
+  'cost-of-living-comparison-calculator',
   'ev-charging-calculator',
   'toll-cost-calculator',
   'commute-cost-calculator',

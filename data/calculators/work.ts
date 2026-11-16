@@ -761,5 +761,114 @@ export const workCalculators: CalculatorConfig[] = [
       const severancePay = severanceWeeks * weeklyPay;
       return { weeklyPay, severanceWeeks, severancePay };
     }
+  },
+  {
+    id: 'cost-of-living-comparison-calculator',
+    group: 'Offers & Comparisons',
+    category: 'work',
+    glyph: 'COL',
+    updatedAt: '2026-11-16',
+    aliases: ['relocation salary calculator', 'salary equivalent by city calculator', 'cost of living index calculator', 'moving salary comparison calculator', 'city salary comparator'],
+    related: ['salary-raise-calculator', 'inflation-calculator', 'job-offer-comparison-calculator', 'paycheck-calculator'],
+    title: 'Cost of Living Comparison Calculator',
+    description: 'Find the salary you would need in a new city to match your current purchasing power, using a cost-of-living index ratio between two places.',
+    example: 'A $70,000 salary in a city indexed at 100 needs $105,000 in a city indexed at 150 to keep the same purchasing power — $35,000 more, a 50% increase.',
+    solver: {
+      defaultTarget: 'salaryB',
+      variables: [
+        { id: 'salaryA', label: 'Current salary', symbol: 'SA', dimension: 'currency', defaultValue: 70000, defaultUnit: 'currency' },
+        { id: 'indexA', label: 'Current city cost-of-living index', symbol: 'IA', dimension: 'count', defaultValue: 100, defaultUnit: 'count' },
+        { id: 'indexB', label: 'New city cost-of-living index', symbol: 'IB', dimension: 'count', defaultValue: 150, defaultUnit: 'count' },
+        { id: 'salaryB', label: 'Equivalent salary in the new city', symbol: 'SB', dimension: 'currency', defaultValue: 105000, defaultUnit: 'currency' }
+      ],
+      // The relationship is one multiplicative ratio, so every variable has a closed form.
+      solve: {
+        salaryB: ({ salaryA, indexA, indexB }) => (indexA > 0 ? salaryA * (indexB / indexA) : NaN),
+        salaryA: ({ salaryB, indexA, indexB }) => (indexB > 0 ? salaryB * (indexA / indexB) : NaN),
+        indexB: ({ salaryA, salaryB, indexA }) => (salaryA > 0 ? (salaryB * indexA) / salaryA : NaN),
+        indexA: ({ salaryA, salaryB, indexB }) => (salaryB > 0 ? (salaryA * indexB) / salaryB : NaN)
+      },
+      outputs: [
+        { id: 'difference', label: 'Difference needed', dimension: 'currency', compute: (si) => si.salaryB - si.salaryA },
+        { id: 'percentMore', label: 'Percent more (or less) needed', dimension: 'percent', compute: (si) => (si.indexA > 0 ? (si.indexB / si.indexA - 1) * 100 : NaN) }
+      ],
+      visuals: [{ type: 'compareBars', bars: [{ from: 'salaryA', label: 'Current salary' }, { from: 'salaryB', label: 'Equivalent salary' }], title: 'Current salary vs. equivalent salary in the new city' }]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What a cost-of-living index ratio actually compares',
+        paragraphs: [
+          'A cost-of-living index scores a place against a baseline, usually the national average set at 100: an index of 150 means that place is 50% more expensive than average, and 80 means 20% less expensive. The Council for Community and Economic Research (C2ER) publishes the best-known composite index of this kind, covering 60 goods and services across six categories — groceries, housing, utilities, transportation, health care and miscellaneous goods and services — priced quarterly in each participating area.',
+          'Because both index numbers sit on the same scale, the ratio between two cities\' index values tells you how much more (or less) it costs to buy the same basket of goods in one place versus the other. Multiplying your current salary by that ratio gives the salary that would buy the same purchasing power in the new city — the core relocation-salary question.',
+          'The US Bureau of Labor Statistics is explicit that its own Consumer Price Index (CPI) cannot be used this way: "No, an individual area index measures how much prices have changed over a specific period in that particular area; it does not show whether prices or living costs are higher or lower in that area relative to another." The CPI tracks price change over time in one place; a cost-of-living index like C2ER\'s is built specifically to compare price levels between places. This calculator does the ratio arithmetic — it does not supply index numbers for you, so use figures from a published cost-of-living index for the two cities you are comparing.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your current salary and city, then the index numbers for your current and prospective city from a published cost-of-living index.',
+        steps: [
+          { name: 'Enter your current salary', text: 'Always an input — the anchor the comparison is calculated from.' },
+          { name: 'Enter your current city\'s index', text: 'Look it up from a published cost-of-living index (such as C2ER\'s). 100 represents the national average in most indexes.' },
+          { name: 'Enter the new city\'s index', text: 'From the same index source as your current city — mixing sources can give a meaningless ratio.' },
+          { name: 'Read the equivalent salary', text: 'The calculator scales your salary by the ratio of the two index numbers, with the dollar difference and percent change shown below.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The new salary scales the old one by the ratio of the two cities\' index numbers.',
+        expression: 'salaryB = salaryA × (indexB ÷ indexA)\ndifference = salaryB − salaryA\npercentMore = (indexB ÷ indexA − 1) × 100',
+        terms: [
+          { symbol: 'indexA', meaning: 'Cost-of-living index of your current city, on whatever baseline your source uses (typically national average = 100).' },
+          { symbol: 'indexB', meaning: 'Cost-of-living index of the city you are comparing to, from the same source and baseline as indexA.' }
+        ],
+        note: 'Estimates only. A cost-of-living index compares a basket of consumer prices — it does not capture quality of life, climate, state and local income tax differences, or how your own spending differs from the index\'s assumed household.'
+      },
+      workedExample: {
+        intro: 'A $70,000 salary in a city indexed at 100 (the national average). The new city is indexed at 150.',
+        rows: [
+          { label: 'Ratio (150 ÷ 100)', value: '1.50' },
+          { label: 'Equivalent salary (70,000 × 1.50)', value: '$105,000.00' },
+          { label: 'Difference (105,000 − 70,000)', value: '$35,000.00' },
+          { label: 'Percent more needed ((1.50 − 1) × 100)', value: '50.00%' }
+        ],
+        result: 'Equivalent salary $105,000.00 — $35,000.00 more (50% higher)',
+        explanation: 'The new city\'s index is 1.5 times the current city\'s, so it takes 1.5 times the salary — $105,000 instead of $70,000 — to buy the same basket of goods and services that the index tracks.'
+      },
+      watchOut: [
+        { title: 'The CPI cannot be used for this comparison', body: 'The BLS is explicit that an individual area\'s Consumer Price Index measures price change over time in that one area, not price levels relative to another area. Use a cost-of-living index built for cross-area comparison (such as C2ER\'s) instead, not CPI figures.' },
+        { title: 'Index baskets skew toward professional households', body: 'C2ER\'s weights are based on expenditure patterns for professional and executive households, which may not match your own spending — a renter, a large family or someone without a car will experience costs differently than the index basket assumes.' },
+        { title: 'Quality of life is not in the index', body: 'Climate, commute times, school quality, safety and cultural amenities all affect whether a move is worth it, and none of them are priced into a cost-of-living index.' },
+        { title: 'Taxes are not included either', body: 'State and local income, sales and property taxes can differ sharply between cities and are not part of a cost-of-living index\'s basket — layer them on separately.' },
+        { title: 'Use index numbers from the same source', body: 'Different publishers (C2ER, Numbeo, and others) use different baselines, baskets and survey methods. Compare two cities using index numbers from one consistent source, never one city\'s index from one source against another city\'s index from a different one.' }
+      ],
+      references: [
+        { label: 'U.S. Bureau of Labor Statistics, Consumer Price Index Frequently Asked Questions', url: 'https://www.bls.gov/cpi/questions-and-answers.htm' },
+        { label: 'Council for Community and Economic Research (C2ER), What Is the Cost of Living Index?', url: 'https://www.coli.org/about/what-is-coli/' },
+        { label: 'Council for Community and Economic Research (C2ER), Cost of Living Index Methodology', url: 'https://c2c.coli.org/compare.asp?action=methodology' }
+      ]
+    },
+    inputs: [
+      { id: 'salaryA', label: 'Current salary', type: 'currency', placeholder: '70000', defaultValue: 70000, step: 1000, min: 0 },
+      { id: 'indexA', label: 'Current city cost-of-living index', type: 'number', placeholder: '100', defaultValue: 100, step: 1, min: 0 },
+      { id: 'indexB', label: 'New city cost-of-living index', type: 'number', placeholder: '150', defaultValue: 150, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Cost of Living Comparison Calculator – Salary by City',
+      description: 'Find the salary you need in a new city to match your current purchasing power, using a cost-of-living index ratio between two cities.',
+      faq: [
+        { question: 'How do I calculate the salary I need in a new city?', answer: 'Multiply your current salary by the ratio of the two cities\' cost-of-living index numbers. A $70,000 salary at an index of 100, moving to a city indexed at 150, needs 70,000 × (150 ÷ 100) = $105,000.' },
+        { question: 'Can I use the CPI to compare cost of living between cities?', answer: 'No. The Bureau of Labor Statistics states its area CPI figures measure price change over time within one area, not price levels relative to another area. Use a cost-of-living index built for cross-area comparison instead, such as C2ER\'s.' },
+        { question: 'What does a cost-of-living index number mean?', answer: 'Most indexes, including C2ER\'s, set the national average at 100. A score of 150 means 50% more expensive than average; a score of 80 means 20% less expensive.' },
+        { question: 'What goes into a cost-of-living index?', answer: 'C2ER\'s composite index covers 60 goods and services across six categories: groceries, housing, utilities, transportation, health care, and miscellaneous goods and services, priced quarterly in each participating area.' },
+        { question: 'Does this account for state and local taxes?', answer: 'No. Cost-of-living indexes price a basket of consumer goods and services; income, sales and property tax differences between cities are separate and not included.' },
+        { question: 'Why does the index not match my own experience?', answer: 'The weights behind indexes like C2ER\'s are based on expenditure patterns for professional and executive households. Your own spending on housing size, transportation and health care may differ from that assumed basket.' }
+      ]
+    },
+    compute(values) {
+      const salaryB = values.indexA > 0 ? values.salaryA * (values.indexB / values.indexA) : 0;
+      const difference = salaryB - values.salaryA;
+      const percentMore = values.indexA > 0 ? (values.indexB / values.indexA - 1) * 100 : 0;
+      return { salaryB, difference, percentMore };
+    }
   }
 ];

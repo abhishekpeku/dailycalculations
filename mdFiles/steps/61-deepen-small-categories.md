@@ -187,7 +187,7 @@ whole site before writing any id.
 - [ ] Batch 2 — `work` (6 new) — in progress
   - [x] `overtime-pay-calculator`
   - [x] `severance-pay-calculator`
-  - [ ] `cost-of-living-comparison-calculator`
+  - [x] `cost-of-living-comparison-calculator`
   - [ ] `remote-work-savings-calculator`
   - [ ] `job-offer-comparison-calculator`
   - [ ] `paid-sick-leave-accrual-calculator`

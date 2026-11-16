@@ -1942,6 +1942,47 @@ exports[`compute() snapshots > correlation-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > cost-of-living-comparison-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "salaryA": 70000,
+      "indexA": 100,
+      "indexB": 150
+    },
+    "outputs": {
+      "salaryB": 105000,
+      "difference": 35000,
+      "percentMore": 50
+    }
+  },
+  "typical": {
+    "inputs": {
+      "salaryA": 105000,
+      "indexA": 150,
+      "indexB": 225
+    },
+    "outputs": {
+      "salaryB": 157500,
+      "difference": 52500,
+      "percentMore": 50
+    }
+  },
+  "edge": {
+    "inputs": {
+      "salaryA": 0,
+      "indexA": 0,
+      "indexB": 0
+    },
+    "outputs": {
+      "salaryB": 0,
+      "difference": 0,
+      "percentMore": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > credit-card-minimum-payment-calculator 1`] = `
 {
   "default": {

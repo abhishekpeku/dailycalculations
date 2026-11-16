@@ -1876,6 +1876,13 @@ build agent's judgment**, same as every run so far.
     total site-wide** (356 before this run’s branch point + 5 — this run branched from the already-
     merged, reconciled base of physics run 10 + chemistry run 11, so no further reconciliation is
     needed).
+- [ ] Physics run 12 (5, FINAL physics run — closes out the ~61 target), branch
+  `step/46-wave-3-physics-run-12` — **IN PROGRESS** 2026-11-17:
+  - [ ] terminal-velocity-calculator
+  - [ ] electric-potential-calculator
+  - [ ] magnetic-flux-calculator
+  - [ ] electromagnetic-induction-calculator
+  - [ ] bernoullis-equation-calculator
 - [ ] Visual-QA checkpoint: due again once ~50 more calculators land after this wave (last pass was
   at 194 calculators, 2026-11-05 — see STATUS.md header; chemistry crossed the 244-calculator
   threshold after run 6, flagged for the main session to schedule — still not run as of this run)

@@ -2899,6 +2899,47 @@ exports[`compute() snapshots > cups-to-grams-sugar 1`] = `
 }
 `;
 
+exports[`compute() snapshots > current-efficiency-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "actualMass": 39.8,
+      "current": 10.23,
+      "time": 3600,
+      "molarMass": 0.10787,
+      "electrons": 1
+    },
+    "outputs": {
+      "currentEfficiency": 96664.17639
+    }
+  },
+  "typical": {
+    "inputs": {
+      "actualMass": 59.7,
+      "current": 15.35,
+      "time": 5400,
+      "molarMass": 0.1618,
+      "electrons": 2
+    },
+    "outputs": {
+      "currentEfficiency": 85898.37855
+    }
+  },
+  "edge": {
+    "inputs": {
+      "actualMass": 0,
+      "current": 0,
+      "time": 0,
+      "molarMass": 0,
+      "electrons": 1
+    },
+    "outputs": {
+      "currentEfficiency": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > data-storage-converter 1`] = `
 {
   "default": {

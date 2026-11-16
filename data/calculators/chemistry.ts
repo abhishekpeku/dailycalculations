@@ -5859,5 +5859,141 @@ export const chemistryCalculators: CalculatorConfig[] = [
           : (2 * values.ka * values.initialConcentration) / (values.ka + Math.sqrt(values.ka ** 2 + 4 * values.ka * values.initialConcentration));
       return { hydrogenIon };
     }
+  },
+  {
+    id: 'current-efficiency-calculator',
+    category: 'chemistry',
+    group: 'Redox & Electrochemistry',
+    glyph: 'CE',
+    updatedAt: '2026-11-16',
+    aliases: ['current efficiency calculator', 'electrolysis efficiency calculator', 'faradaic efficiency calculator', 'electroplating efficiency calculator'],
+    related: ['faradays-law-electrolysis-calculator', 'percent-yield-calculator', 'molar-mass-calculator', 'moles-to-grams-calculator'],
+    title: 'Current Efficiency Calculator (Electrolysis)',
+    description: 'Compare the actual mass deposited during electrolysis against Faraday’s law’s ideal prediction, to find the current (Faradaic) efficiency of a real cell.',
+    example: 'A silver-plating cell that ideally deposits 41.17 g (Faraday’s law) but actually deposits 39.80 g is running at about 96.7% current efficiency.',
+    solver: {
+      defaultTarget: 'currentEfficiency',
+      variables: [
+        { id: 'currentEfficiency', label: 'Current efficiency', symbol: 'η', dimension: 'percent', defaultValue: 96.67, defaultUnit: '%' },
+        { id: 'actualMass', label: 'Actual mass deposited', symbol: 'mₐ', dimension: 'mass', defaultValue: 39.8, defaultUnit: 'g' },
+        { id: 'current', label: 'Current', symbol: 'I', dimension: 'current', defaultValue: 10.23, defaultUnit: 'A' },
+        { id: 'time', label: 'Time', symbol: 't', dimension: 'time', defaultValue: 1, defaultUnit: 'h' },
+        { id: 'molarMass', label: 'Molar mass of the element', symbol: 'M', dimension: 'molarMass', defaultValue: 107.87, defaultUnit: 'g/mol', fixed: true },
+        { id: 'electrons', label: 'Electrons transferred per ion', symbol: 'n', dimension: 'count', defaultValue: 1, defaultUnit: 'count', fixed: true }
+      ],
+      solve: {
+        currentEfficiency: ({ actualMass, current, time, molarMass, electrons }) =>
+          current === 0 || time === 0 || molarMass === 0 ? NaN : (actualMass * electrons * 96485.33212331001 * 100) / (current * time * molarMass),
+        actualMass: ({ currentEfficiency, current, time, molarMass, electrons }) =>
+          electrons === 0 ? NaN : (currentEfficiency / 100) * ((current * time * molarMass) / (electrons * 96485.33212331001)),
+        current: ({ actualMass, currentEfficiency, time, molarMass, electrons }) =>
+          time === 0 || molarMass === 0 || currentEfficiency === 0 ? NaN : (actualMass * electrons * 96485.33212331001 * 100) / (time * molarMass * currentEfficiency),
+        time: ({ actualMass, currentEfficiency, current, molarMass, electrons }) =>
+          current === 0 || molarMass === 0 || currentEfficiency === 0 ? NaN : (actualMass * electrons * 96485.33212331001 * 100) / (current * molarMass * currentEfficiency)
+      },
+      outputs: [
+        {
+          id: 'theoreticalMass',
+          label: 'Theoretical mass (Faraday’s law)',
+          dimension: 'mass',
+          unit: 'g',
+          compute: (si) => (si.electrons === 0 ? NaN : (si.current * si.time * si.molarMass) / (si.electrons * 96485.33212331001))
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is current efficiency?',
+        paragraphs: [
+          'Faraday’s law of electrolysis (m = ItM ÷ nF, on this site’s own calculator) predicts the ideal, 100%-efficient mass a cell should deposit for a given current and time. Real electrolytic cells rarely hit that ideal number exactly — some of the current gets consumed by side reactions (hydrogen gas evolving alongside a metal, for instance) rather than depositing the intended product. Current efficiency, sometimes called Faradaic efficiency, is the practical measure of how close a real cell comes: the actual mass produced divided by that ideal, theoretical mass, as a percentage.',
+          'This is the same ratio idea as the percent yield calculator already on this site — "how much did I actually get, compared with the maximum the stoichiometry allows" — just applied to an electrochemical cell instead of a beaker reaction, with Faraday’s law standing in for the theoretical yield. The IUPAC Gold Book defines current efficiency more generally, in terms of partial current densities at an electrode where several reactions compete at once, but the practical mass-based ratio used here gives the same answer in the common single-reaction case most general-chemistry and intro-electrochemistry problems describe.',
+          'A current efficiency below 100% means some charge was "wasted" on a side reaction instead of the intended one. (A current efficiency above 100% is possible too, in cells where a second, independent reaction happens to assist the main one — the Gold Book notes this case explicitly — though it is unusual in typical plating and electrolysis setups.)'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the current, time, and the fixed molar mass and electron count for the element being deposited, plus the actual mass measured afterward; current efficiency fills in automatically.',
+        steps: [
+          { name: 'Identify the half-reaction and its fixed properties', text: 'Molar mass M and electrons per ion n, the same two fixed inputs Faraday’s law itself uses — 107.87 g/mol and n = 1 for Ag⁺ + e⁻ → Ag.' },
+          { name: 'Enter the current and time the cell actually ran', text: 'The same measurements Faraday’s law needs to predict the ideal mass.' },
+          { name: 'Enter the actual mass measured afterward', text: 'Weigh the deposited (or consumed) substance once the cell has finished running.' },
+          { name: 'Read the current efficiency', text: 'It fills in automatically, alongside the ideal (Faraday’s-law) mass it is being compared against.' },
+          { name: 'Or work backward', text: 'Enter a target current efficiency instead, and solve for the current or time that would be needed to actually hit a given actual mass.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Current efficiency compares the actual mass against Faraday’s law’s ideal prediction for the same current and time.',
+        expression: 'mₜₕₑₒᵣₑₜᵢcₐₗ = (I × t × M) ÷ (n × F)\nη = (mₐ ÷ mₜₕₑₒᵣₑₜᵢcₐₗ) × 100',
+        terms: [
+          { symbol: 'η', meaning: 'Current (Faradaic) efficiency, as a percentage.' },
+          { symbol: 'mₐ', meaning: 'The actual mass measured, after the cell has run.' },
+          { symbol: 'I, t', meaning: 'Current and time, the same measurements Faraday’s law itself uses.' },
+          { symbol: 'M, n', meaning: 'The element’s molar mass and electrons transferred per ion — fixed properties of the half-reaction, not something this calculator solves for.' },
+          { symbol: 'F', meaning: 'The Faraday constant, 96,485.332123... C/mol, exact.' }
+        ],
+        note: 'mₜₕₑₒᵣₑₜᵢcₐₗ is exactly the same Faraday’s-law figure the dedicated Faraday’s law of electrolysis calculator on this site computes — this page simply adds a real, measured actual mass on top of it.'
+      },
+      workedExample: {
+        intro: 'A silver-plating cell runs at 10.23 A for 1 hour — the same scenario as this site’s own Faraday’s law worked example, which predicts a theoretical mass of about 41.17 g. Weighing the cathode afterward finds 39.80 g was actually deposited. What is the current efficiency?',
+        rows: [
+          { label: 'Theoretical mass (Faraday’s law)', value: '≈ 41.17 g' },
+          { label: 'Actual mass measured', value: '39.80 g' },
+          { label: 'η = (39.80 ÷ 41.17) × 100', value: '≈ 96.7%' },
+          { label: 'Mass "lost" to side reactions', value: '41.17 − 39.80 ≈ 1.37 g' }
+        ],
+        result: 'η ≈ 96.7% current efficiency',
+        explanation: 'About 96.7% of the charge passed went toward depositing silver; the rest was consumed by a side reaction (most commonly, some hydrogen gas evolving at the cathode alongside the silver) rather than appearing as deposited metal. The 39.80 g figure here is an illustrative measurement, built on top of the exact same current, time, and silver half-reaction already cited and verified on this site’s Faraday’s law of electrolysis calculator.'
+      },
+      watchOut: [
+        {
+          title: 'This is not the same figure as Faraday’s law alone',
+          body: 'Faraday’s law of electrolysis calculator gives the ideal, 100%-efficient mass for a given current and time. This calculator needs that ideal figure plus a real, measured actual mass to find how efficient the cell actually was — it cannot be computed from current and time alone.'
+        },
+        {
+          title: 'A side reaction, not a measurement error, usually explains the gap',
+          body: 'A current efficiency below 100% most often means some of the charge passed went into a different reaction at the same electrode (commonly hydrogen or oxygen evolution alongside the intended metal deposition or dissolution), not that the measurement itself was imprecise.'
+        },
+        {
+          title: 'Current efficiency can exceed 100% in rare, multi-reaction setups',
+          body: 'If two independent reactions at the same electrode both contribute to the product being measured, the ratio can come out above 100% — unusual in a typical classroom plating problem, but a real possibility the IUPAC Gold Book’s own general definition accounts for.'
+        },
+        {
+          title: 'Assumes a constant current for the whole time measured',
+          body: 'Like Faraday’s law itself, this calculator treats current as steady over the full duration. A current that varies over the run needs a time-averaged value, or an integral of current over time, for an accurate comparison.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §17.7 "Electrolysis" (Faraday’s law, the ideal basis this calculator compares actual results against)', url: 'https://openstax.org/books/chemistry-2e/pages/17-7-electrolysis' },
+        {
+          label: 'IUPAC Gold Book, "current efficiency" (general definition via partial current densities; the page returned HTTP 403 to a direct fetch, so this citation is based on a search-engine-indexed snippet of the entry rather than a live fetch — flagged per this wave’s own transparency precedent)',
+          url: 'https://goldbook.iupac.org/terms/view/C01458'
+        },
+        { label: 'NIST CODATA, Faraday Constant', url: 'https://physics.nist.gov/cgi-bin/cuu/Value?fday' }
+      ]
+    },
+    inputs: [
+      { id: 'actualMass', label: 'Actual mass deposited (g)', type: 'number', placeholder: '39.8', defaultValue: 39.8, step: 0.01, min: 0 },
+      { id: 'current', label: 'Current (A)', type: 'number', placeholder: '10.23', defaultValue: 10.23, step: 0.01, min: 0 },
+      { id: 'time', label: 'Time (s)', type: 'number', placeholder: '3600', defaultValue: 3600, step: 1, min: 0 },
+      { id: 'molarMass', label: 'Molar mass of the element (kg/mol)', type: 'number', placeholder: '0.10787', defaultValue: 0.10787, step: 0.00001, min: 0 },
+      { id: 'electrons', label: 'Electrons transferred per ion, n', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Current Efficiency Calculator (Electrolysis)',
+      description: 'Free current efficiency calculator. Compare actual mass deposited against Faraday’s law’s ideal prediction, with a worked silver-plating example.',
+      faq: [
+        { question: 'What is current efficiency?', answer: 'The actual mass produced or deposited during electrolysis, divided by the ideal mass Faraday’s law predicts for the same current and time, expressed as a percentage.' },
+        { question: 'How do I calculate current efficiency?', answer: 'Find the theoretical mass from Faraday’s law, m = (I × t × M) ÷ (n × F), then divide the actual measured mass by that theoretical mass and multiply by 100.' },
+        { question: 'Why is current efficiency usually below 100%?', answer: 'A side reaction at the same electrode — commonly hydrogen or oxygen gas evolving alongside the intended metal — consumes some of the charge passed without contributing to the measured product.' },
+        { question: 'Is current efficiency the same as percent yield?', answer: 'It is the same idea (actual ÷ theoretical × 100) applied to an electrochemical cell, with Faraday’s law providing the theoretical figure instead of a stoichiometric calculation from a balanced equation.' },
+        { question: 'Can current efficiency be greater than 100%?', answer: 'In the unusual case where two separate reactions at one electrode both add to the measured product, yes — though for a typical single-reaction plating or electrolysis setup, current efficiency is at or below 100%.' },
+        { question: 'What is the current efficiency of a silver cell that should deposit 41.17 g but only deposits 39.80 g?', answer: 'About 96.7% — (39.80 ÷ 41.17) × 100.' }
+      ]
+    },
+    compute(values) {
+      const theoreticalMass = values.electrons === 0 ? NaN : (values.current * values.time * values.molarMass) / (values.electrons * 96485.33212331001);
+      return { currentEfficiency: Number.isFinite(theoreticalMass) && theoreticalMass !== 0 ? (values.actualMass / theoreticalMass) * 100 : NaN };
+    }
   }
 ];

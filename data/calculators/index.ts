@@ -347,6 +347,7 @@ export const calculatorOrder: string[] = [
   'specific-heat-by-mixing-calculator',
   'grahams-law-effusion-calculator',
   'weak-acid-ionization-calculator',
+  'current-efficiency-calculator',
   'home-affordability-calculator',
   'mortgage-refinance-calculator',
   'down-payment-savings-calculator',

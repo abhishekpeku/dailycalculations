@@ -202,12 +202,12 @@ whole site before writing any id.
   - [x] `job-offer-comparison-calculator`
   - [x] `paid-sick-leave-accrual-calculator`
 - [ ] Batch 3 — `health` (5 new)
-- [ ] Batch 4 — `shopping` (5 new), branch `step/61-deepen-shopping`
-  - [ ] `warehouse-club-membership-breakeven-calculator`
-  - [ ] `grocery-budget-calculator`
-  - [ ] `loyalty-points-value-calculator`
-  - [ ] `layaway-payment-calculator`
-  - [ ] `free-shipping-threshold-calculator`
+- [x] Batch 4 — `shopping` (5 new; done 2026-11-16, branch `step/61-deepen-shopping`, PR #97)
+  - [x] `warehouse-club-membership-breakeven-calculator`
+  - [x] `grocery-budget-calculator`
+  - [x] `loyalty-points-value-calculator`
+  - [x] `layaway-payment-calculator`
+  - [x] `free-shipping-threshold-calculator`
 - [ ] Batch 5 — `travel` (6 new)
 - [ ] Batch 6 — `time` (5 new)
 - [ ] Batch 7 — `creator` (8 new)

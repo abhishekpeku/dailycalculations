@@ -342,6 +342,7 @@ export const calculatorOrder: string[] = [
   'rmd-calculator',
   'pension-calculator',
   'social-security-calculator',
+  'annuity-calculator',
   'jet-lag-calculator',
   'luggage-fee-calculator',
   'daylight-hours-calculator',

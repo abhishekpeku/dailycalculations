@@ -3699,4 +3699,136 @@ export const financeCalculators: CalculatorConfig[] = [
       return { pia, annualBenefit, replacementPercent };
     }
   },
+  {
+    id: 'annuity-calculator',
+    group: 'Savings & Growth',
+    category: 'finance',
+    glyph: 'Ann',
+    updatedAt: '2026-11-16',
+    aliases: ['annuity calculator', 'fixed annuity calculator', 'future value of annuity calculator', 'annuity future value calculator', 'annuity growth calculator'],
+    related: ['annuity-payout-calculator', 'investment-calculator', 'compound-interest-calculator', 'retirement-savings-calculator'],
+    title: 'Annuity Calculator',
+    description: 'Project the future value of a fixed annuity — a series of equal payments earning a fixed rate — from the payment, rate and term. A payment stream, not a lump sum.',
+    example: '$300 a month for 20 years at an average 5% annual rate grows to about $123,310, of which about $51,310 is interest.',
+    solver: {
+      defaultTarget: 'futureValue',
+      variables: [
+        { id: 'futureValue', label: 'Future value', symbol: 'FV', dimension: 'currency', defaultValue: 123310.1, defaultUnit: 'currency' },
+        { id: 'payment', label: 'Payment per month', symbol: 'C', dimension: 'currency', defaultValue: 300, defaultUnit: 'currency', fixed: true },
+        { id: 'years', label: 'Term', symbol: 't', dimension: 'term', defaultValue: 20, defaultUnit: 'yr', bounds: [0, 1200] },
+        { id: 'annualRate', label: 'Annual rate', symbol: 'r', dimension: 'percent', defaultValue: 5, defaultUnit: '%', bounds: [0, 100] }
+      ],
+      // `years` arrives in months (the term dimension's base); this is a pure payment stream, with
+      // no initial lump sum — unlike compound-interest-calculator, which compounds a lump sum.
+      solve: {
+        futureValue: ({ payment, years, annualRate }) => (years >= 0 ? payment * annuityFactor(annualRate, 12, years) : NaN),
+        payment: ({ futureValue, years, annualRate }) => {
+          const af = annuityFactor(annualRate, 12, years);
+          return years > 0 && af > 0 ? futureValue / af : NaN;
+        },
+        years: ({ futureValue, payment, annualRate }) => {
+          if (!(payment > 0)) return NaN;
+          const i = annualRate / 100 / 12;
+          if (i === 0) return futureValue / payment;
+          const x = (futureValue * i) / payment + 1;
+          if (!(x > 0)) return NaN;
+          const n = Math.log(x) / Math.log(1 + i);
+          return n >= 0 ? n : NaN;
+        }
+      },
+      // The rate has no closed form: the widget finds it numerically.
+      equation: (si) => si.futureValue - si.payment * annuityFactor(si.annualRate, 12, si.years),
+      outputs: [
+        { id: 'totalContributed', label: 'Total paid in', dimension: 'currency', compute: (si) => si.payment * si.years },
+        { id: 'totalGrowth', label: 'Interest earned', dimension: 'currency', compute: (si) => si.futureValue - si.payment * si.years }
+      ],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [{ from: 'totalContributed', label: 'Total paid in' }, { from: 'totalGrowth', label: 'Interest earned' }],
+          center: 'futureValue',
+          centerSub: 'future value'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'A payment stream, not a lump sum',
+        paragraphs: [
+          'An annuity is a series of equal, regular payments. A fixed annuity earns a set interest rate on whatever has built up so far, so each payment starts compounding from the moment it is made rather than all starting together. That makes its future value the sum of every payment\'s own growth — a genuinely different calculation from compound-interest-calculator, which grows a single lump sum you already have. If you are projecting a lump sum you already hold, use compound-interest-calculator instead; this page is for a regular payment with nothing upfront.',
+          'FINRA describes a deferred fixed annuity as one where "the insurance company agrees to pay you no less than a specified rate of interest during the time that your account is growing" — the accumulation phase this calculator models. Once the contract is annuitized, the insurer instead "pays you a predetermined fixed amount of money, usually on a monthly basis" — the payout phase, modeled separately by annuity-payout-calculator.',
+          'The math itself is the same annuity formula used throughout this site\'s savings calculators (investment-calculator, retirement-savings-calculator), just without any starting lump sum: this page is the pure-payment-stream case.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the monthly payment (always an input), then any two of the other three fields. The third, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter the monthly payment', text: 'This is always an input. For an annual payment, divide it by 12 first.' },
+          { name: 'Project the future value', text: 'Type the rate and the term. The future value appears with the total paid in and the interest earned broken out.' },
+          { name: 'Plan backward from a goal', text: 'Type a target future value. Leave the term alone to see how long it takes at a given rate.' },
+          { name: 'Find the rate you need', text: 'Fill in the goal, the payment and the term so the rate is the field left alone longest, and the calculator searches for it.' },
+          { name: 'Compare a few rates', text: 'Fixed-annuity credited rates are not guaranteed beyond any minimum stated in the contract — run a cautious and an optimistic rate side by side.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'With monthly payments and monthly compounding, the future value sums a growing series of equal payments made at the end of each month — an ordinary annuity.',
+        expression: 'FV = C × ((1 + i)^n − 1) ÷ i, where i = annual rate ÷ 12\nTotal paid in = C × n',
+        terms: [
+          { symbol: 'FV', meaning: 'Projected future value.' },
+          { symbol: 'C', meaning: 'Payment made at the end of each month.' },
+          { symbol: 'i', meaning: 'Monthly rate: the annual rate ÷ 12, as a decimal.' },
+          { symbol: 'n', meaning: 'Number of monthly payments.' }
+        ],
+        note: 'Estimates only. A real fixed annuity\'s credited rate can change over time (subject to any contract minimum), and surrender charges or fees may apply. This is not investment or insurance advice.'
+      },
+      workedExample: {
+        intro: 'You pay $300 a month into a fixed annuity for 20 years at an average 5% annual rate. What is it worth at the end?',
+        rows: [
+          { label: 'Monthly rate (5% ÷ 12)', value: '0.4167%' },
+          { label: 'Annuity factor ((1.0041667)^240 − 1) ÷ 0.0041667', value: '411.033669' },
+          { label: 'Future value (300 × 411.033669)', value: '$123,310.10' },
+          { label: 'Total paid in (300 × 240)', value: '$72,000.00' },
+          { label: 'Interest earned (123,310.10 − 72,000)', value: '$51,310.10' }
+        ],
+        result: 'FV ≈ $123,310 after 20 years, of which about $51,310 is interest',
+        explanation: 'The same $300 a month at 5% is worth only about $46,585 after 10 years — the 20-year total is 164.7% higher, not merely double, because later payments compound on an already-larger balance. At 7% the 20-year total would be about $156,278, and at 3% about $98,491, so the assumed rate matters a great deal.'
+      },
+      watchOut: [
+        { title: 'A payment stream, not a lump sum', body: 'If you already have the full amount in hand today, use compound-interest-calculator instead — this page assumes nothing upfront, only regular payments.' },
+        { title: 'This models the accumulation phase only', body: 'Once a fixed annuity is annuitized, it switches to paying income out instead of growing. See annuity-payout-calculator for that payout phase.' },
+        { title: 'Credited rates are not guaranteed beyond any contract minimum', body: 'An insurer can change the rate it credits year to year, subject to whatever minimum the contract states. A constant rate here is a planning assumption.' },
+        { title: 'Fees and surrender charges are not modeled', body: 'Many annuity contracts charge fees or a surrender charge for withdrawing early, which would reduce the real future value below this estimate.' }
+      ],
+      references: [
+        { label: 'FINRA, Annuities', url: 'https://www.finra.org/investors/investing/investment-products/annuities' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.7 Investments', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-7-investments' }
+      ]
+    },
+    inputs: [
+      { id: 'payment', label: 'Monthly payment', type: 'currency', placeholder: '300', defaultValue: 300, step: 25, min: 0 },
+      { id: 'annualRate', label: 'Annual rate', type: 'percent', placeholder: '5', defaultValue: 5, step: 0.1, min: 0 },
+      { id: 'years', label: 'Term (years)', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Annuity Calculator – Future Value of Fixed Payments',
+      description: 'Free annuity calculator: project the future value of a fixed annuity from the monthly payment, rate and term, or find the rate or term a goal needs.',
+      faq: [
+        { question: 'How do I calculate an annuity\'s future value?', answer: 'Sum the growing series of payments with FV = C × ((1 + i)^n − 1) ÷ i, where i is the monthly rate and n the number of payments. $300 a month at 5% for 20 years comes to about $123,310.' },
+        { question: 'How is this different from the compound interest calculator?', answer: 'Compound-interest-calculator grows a lump sum you already have. This calculator has no lump sum — it is a stream of equal payments, each starting to earn interest from the day it is made.' },
+        { question: 'How long will it take to reach my goal?', answer: 'Enter the goal as the future value and the calculator works out the term. At $300 a month and 5%, reaching $100,000 takes about 17.4 years.' },
+        { question: 'What rate do I need?', answer: 'Fill in the goal, the payment and the term, leaving the rate as the field solved for, and the calculator searches for the rate numerically.' },
+        { question: 'What is the difference between an annuity and an annuity payout?', answer: 'This calculator models the accumulation phase, when payments build up a balance. annuity-payout-calculator models the reverse: a lump sum you already have, paying income out over time.' },
+        { question: 'Is the rate on a fixed annuity guaranteed?', answer: "Only up to whatever minimum rate the insurance contract states. FINRA notes the insurer \"agrees to pay you no less than a specified rate of interest,\" but the actual credited rate can be higher and can change over time." }
+      ]
+    },
+    compute(values) {
+      const months = Math.max(1, values.years * 12);
+      const futureValue = values.payment * annuityFactor(values.annualRate, 12, months);
+      const totalContributed = values.payment * months;
+      const totalGrowth = futureValue - totalContributed;
+      return { futureValue, totalContributed, totalGrowth };
+    }
+  },
 ];

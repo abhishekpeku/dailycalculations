@@ -209,6 +209,47 @@ exports[`compute() snapshots > age-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > annuity-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "payment": 300,
+      "annualRate": 5,
+      "years": 20
+    },
+    "outputs": {
+      "futureValue": 123310.1006,
+      "totalContributed": 72000,
+      "totalGrowth": 51310.10055
+    }
+  },
+  "typical": {
+    "inputs": {
+      "payment": 450,
+      "annualRate": 7.5,
+      "years": 30
+    },
+    "outputs": {
+      "futureValue": 606350.4411,
+      "totalContributed": 162000,
+      "totalGrowth": 444350.4411
+    }
+  },
+  "edge": {
+    "inputs": {
+      "payment": 0,
+      "annualRate": 0,
+      "years": 1
+    },
+    "outputs": {
+      "futureValue": 0,
+      "totalContributed": 0,
+      "totalGrowth": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > area-calculator 1`] = `
 {
   "default": {

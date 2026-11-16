@@ -1,5 +1,13 @@
 # Step 46-47 — Wave 3: physics, chemistry
 
+## Progress (physics run 10, branch `step/46-wave-3-physics-run-10`)
+
+- [ ] moment-of-inertia-calculator
+- [ ] rotational-kinetic-energy-calculator
+- [ ] angular-momentum-calculator
+- [ ] rc-time-constant-calculator
+- [ ] lc-resonant-frequency-calculator
+
 Per `mdFiles/omni-strategy.md` §4 (priority 3: physics, chemistry — "huge student volume and
 attracts links from schools and universities, but lower ad revenue") and
 `mdFiles/calculator-rollout-plan.md`'s "Wave 3: Physics, Chemistry (~120). Needs E2 + E3." Both

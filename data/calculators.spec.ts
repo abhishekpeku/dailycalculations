@@ -23,6 +23,7 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'parking-cost-calculator': ['breakEvenVisitsPerWeek'], // per-visit cost 0 -> no break-even visit count
   'warehouse-club-membership-breakeven-calculator': ['breakEvenTrips'], // savings per trip 0 (its min) -> divide by zero
   'car-depreciation-calculator': ['totalDepreciationPercent'], // purchase price 0 -> 0/0
+  'body-fat-percentage-calculator': ['bodyFatPercent'], // waist=neck (both at their min 1) -> log10(0), -Infinity; category still finite (falls into the lowest band)
   'logarithm-calculator': ['result', 'naturalLog', 'commonLog'], // base 0 and argument 0 -> invalid log domain
   'long-division-calculator': ['quotient', 'remainder', 'decimalResult', 'check'], // divisor 0 -> divide by zero
   'quadratic-formula-calculator': ['discriminant', 'root1', 'root2', 'realPart', 'imaginaryPart', 'vertexX', 'vertexY'], // a=0, b=0, c=0 -> no single equation (0 = 0)

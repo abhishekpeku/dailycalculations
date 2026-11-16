@@ -201,7 +201,12 @@ whole site before writing any id.
   - [x] `remote-work-savings-calculator`
   - [x] `job-offer-comparison-calculator`
   - [x] `paid-sick-leave-accrual-calculator`
-- [ ] Batch 3 — `health` (5 new)
+- [x] Batch 3 — `health` (5 new; done 2026-11-16, branch `step/61-deepen-health`, PR #96)
+  - [x] `body-fat-percentage-calculator`
+  - [x] `ideal-weight-calculator`
+  - [x] `macro-calculator`
+  - [x] `waist-to-hip-ratio-calculator`
+  - [x] `blood-alcohol-content-calculator`
 - [x] Batch 4 — `shopping` (5 new; done 2026-11-16, branch `step/61-deepen-shopping`, PR #97)
   - [x] `warehouse-club-membership-breakeven-calculator`
   - [x] `grocery-budget-calculator`

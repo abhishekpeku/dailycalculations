@@ -10464,6 +10464,68 @@ exports[`compute() snapshots > tip-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > tire-size-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "width1": 225,
+      "aspect1": 45,
+      "rim1": 17,
+      "width2": 235,
+      "aspect2": 40,
+      "rim2": 18
+    },
+    "outputs": {
+      "diameterIn": 24.97244094,
+      "diameterMm": 634.3,
+      "circumferenceIn": 78.45323701,
+      "revsPerMile": 807.6148596,
+      "diameterIn2": 25.4015748,
+      "revsPerMile2": 793.9710252,
+      "speedometerErrorPercent": 1.718429765
+    }
+  },
+  "typical": {
+    "inputs": {
+      "width1": 338,
+      "aspect1": 68,
+      "rim1": 25.5,
+      "width2": 353,
+      "aspect2": 60,
+      "rim2": 27
+    },
+    "outputs": {
+      "diameterIn": 43.5976378,
+      "diameterMm": 1107.38,
+      "circumferenceIn": 136.9660186,
+      "revsPerMile": 462.596494,
+      "diameterIn2": 43.67716535,
+      "revsPerMile2": 461.7541964,
+      "speedometerErrorPercent": 0.1824125413
+    }
+  },
+  "edge": {
+    "inputs": {
+      "width1": 1,
+      "aspect1": 1,
+      "rim1": 8,
+      "width2": 1,
+      "aspect2": 1,
+      "rim2": 8
+    },
+    "outputs": {
+      "diameterIn": 8.000787402,
+      "diameterMm": 203.22,
+      "circumferenceIn": 25.13521492,
+      "revsPerMile": 2520.766192,
+      "diameterIn2": 8.000787402,
+      "revsPerMile2": 2520.766192,
+      "speedometerErrorPercent": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > titration-calculator 1`] = `
 {
   "default": {

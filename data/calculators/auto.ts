@@ -901,5 +901,143 @@ export const autoCalculators: CalculatorConfig[] = [
         annualSavingsWithPass
       };
     }
+  },
+  {
+    id: 'tire-size-calculator',
+    group: 'Ownership Costs',
+    category: 'auto',
+    glyph: '⌀',
+    updatedAt: '2026-11-16',
+    aliases: ['tire diameter calculator', 'tire sidewall size calculator', 'plus size tire calculator', 'speedometer error calculator', 'tire revolutions per mile calculator'],
+    related: ['car-payment-calculator', 'fuel-cost-calculator', 'commute-cost-calculator'],
+    title: 'Tire Size Calculator',
+    description: 'Decode a tire sidewall code into overall diameter, circumference and revolutions per mile, and the speedometer error from fitting a different size.',
+    example: 'A 225/45R17 tire is about 24.97 in across; switching to 235/40R18 adds about 0.43 in (1.72%), so the speedometer reads about 1.72% slow.',
+    breakdown: {
+      headline: 'diameterIn',
+      headlineLabel: 'Overall diameter (original tire)',
+      outputs: [
+        { id: 'diameterIn', label: 'Overall diameter', dimension: 'length', unit: 'in' },
+        { id: 'diameterMm', label: 'Overall diameter', dimension: 'length', unit: 'mm' },
+        { id: 'circumferenceIn', label: 'Circumference', dimension: 'length', unit: 'in' },
+        { id: 'revsPerMile', label: 'Revolutions per mile', format: 'number' },
+        { id: 'diameterIn2', label: 'New tire diameter', dimension: 'length', unit: 'in' },
+        { id: 'revsPerMile2', label: 'New tire revolutions per mile', format: 'number' },
+        { id: 'speedometerErrorPercent', label: 'Speedometer/odometer error', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Original tire', inputs: ['width1', 'aspect1', 'rim1'] },
+        { title: 'New tire', inputs: ['width2', 'aspect2', 'rim2'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'diameterIn', label: 'Original tire' },
+          { from: 'diameterIn2', label: 'New tire' }
+        ],
+        title: 'Overall diameter (in)'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'How a tire size code decodes to a diameter',
+        paragraphs: [
+          'A passenger tire\'s sidewall carries a size code like 225/45R17: the first number is the section width in millimeters, the second is the aspect ratio, the sidewall\'s height as a percentage of that width, "R" marks radial construction, and the last number is the wheel (rim) diameter in inches. The code deliberately mixes units: width and sidewall height in millimeters, rim size in inches.',
+          'Those three numbers are enough to work out the tire\'s overall diameter: double the sidewall height (which is the width times the aspect ratio) and add it to the rim diameter, converted to the same unit. From the diameter you get the circumference, and from the circumference you get revolutions per mile, which is exactly what a vehicle\'s speedometer and odometer are calibrated against.',
+          'Because of that calibration, changing the overall diameter — fitting a different tire size, or putting the same nominal size on a different wheel — changes how fast the speedometer reads relative to your true speed. The tire industry\'s own "plus sizing" convention, going up a wheel size while choosing a lower-profile tire to keep roughly the same overall diameter, exists specifically to keep that error small.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the three numbers from your current tire\'s sidewall, then the tire you are considering.',
+        steps: [
+          { name: 'Find your current tire code', text: 'It is molded into the sidewall, for example 225/45R17: width in mm, aspect ratio in %, rim diameter in inches.' },
+          { name: 'Enter the original tire', text: 'Type the width, aspect ratio and rim diameter into the "Original tire" fields.' },
+          { name: 'Enter the tire you are considering', text: 'Type its three numbers into the "New tire" fields. Use the same numbers as the original if you only want one tire\'s diameter.' },
+          { name: 'Read the diameter and circumference', text: 'The result gives the overall diameter in inches and millimeters, the circumference and the revolutions per mile for each tire.' },
+          { name: 'Check the speedometer error', text: 'A positive percentage means the new tire is taller, so your real speed and distance run ahead of what the speedometer and odometer show.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Overall diameter adds the rim, converted to millimeters, to twice the sidewall height. Circumference and revolutions per mile follow from that diameter.',
+        expression: 'sidewall = width × (aspect ÷ 100)\nD(mm) = rim × 25.4 + 2 × sidewall\nD(in) = D(mm) ÷ 25.4\nC(in) = D(in) × π\nrevs/mile = 63,360 ÷ C(in)\nerror % = (D₂(in) ÷ D₁(in) − 1) × 100',
+        terms: [
+          { symbol: 'width', meaning: 'Section width from the sidewall code, in millimeters.' },
+          { symbol: 'aspect', meaning: 'Aspect ratio from the code: sidewall height as a percent of the width.' },
+          { symbol: 'rim', meaning: 'Wheel diameter from the code, in inches.' },
+          { symbol: 'D, C', meaning: 'Overall diameter and circumference of the inflated tire.' },
+          { symbol: '63,360', meaning: 'Inches in a mile (5,280 ft × 12 in), used to convert circumference to revolutions per mile.' },
+          { symbol: 'error %', meaning: 'How far the new tire\'s diameter (D₂) differs from the original (D₁). Positive means the new tire is taller and the speedometer reads low.' }
+        ],
+        note: 'An estimate from the nominal size code. A real tire\'s measured diameter can vary a little by manufacturer and tread design, and inflation pressure and load change the rolling diameter slightly as well.'
+      },
+      workedExample: {
+        intro: 'A sedan\'s stock tire is 225/45R17. You are considering 235/40R18 on a slightly larger wheel.',
+        rows: [
+          { label: 'Original sidewall height (225 × 45 ÷ 100)', value: '101.25 mm' },
+          { label: 'Original diameter (17 × 25.4 + 2 × 101.25)', value: '634.30 mm (24.97 in)' },
+          { label: 'Original circumference (24.97 × π)', value: '78.45 in' },
+          { label: 'Original revolutions per mile (63,360 ÷ 78.45)', value: '807.6' },
+          { label: 'New sidewall height (235 × 40 ÷ 100)', value: '94.00 mm' },
+          { label: 'New diameter (18 × 25.4 + 2 × 94.00)', value: '645.20 mm (25.40 in)' },
+          { label: 'Speedometer error ((25.40 ÷ 24.97 − 1) × 100)', value: '+1.72%' }
+        ],
+        result: 'The new tire is about 0.43 in (1.72%) taller, so the speedometer under-reads true speed, and the odometer under-counts distance, by about 1.72%.',
+        explanation: 'At a displayed 60 mph you would actually be moving about 61.0 mph (60 × 1.0172). Staying within about 3% of the stock diameter — the usual plus-sizing target — keeps an error this small, which is well below what most drivers would notice.'
+      },
+      watchOut: [
+        { title: 'Not a fitment or safety check', body: 'This is geometry only. The new tire still needs a load index and speed rating at least equal to the original, and enough clearance from the fender and suspension, neither of which this calculator checks.' },
+        { title: 'ABS and traction control read the same signal', body: 'Wheel-speed sensors count revolutions the same way the speedometer does, so a size change that shifts revolutions per mile shifts what those systems "see" too, not just the dashboard reading.' },
+        { title: 'Tread wear shrinks the diameter a little', body: 'A tire\'s rolling diameter is largest when new and shrinks slightly as the tread wears, which this calculator does not model.' },
+        { title: 'The code is nominal, not a guarantee', body: 'Two tires with the same size code from different manufacturers can measure a few millimeters apart in practice. Treat the result as a close estimate.' }
+      ],
+      references: [
+        { label: 'Michelin, Tire Markings Explained', url: 'https://www.michelinman.com/auto/auto-tips-and-advice/tires-101/tire-markings-explained' },
+        { label: 'Wikipedia, Plus sizing', url: 'https://en.wikipedia.org/wiki/Plus_sizing' }
+      ]
+    },
+    inputs: [
+      { id: 'width1', label: 'Section width (mm)', type: 'number', placeholder: '225', defaultValue: 225, step: 1, min: 1 },
+      { id: 'aspect1', label: 'Aspect ratio (%)', type: 'percent', placeholder: '45', defaultValue: 45, step: 1, min: 1 },
+      { id: 'rim1', label: 'Rim diameter (in)', type: 'number', placeholder: '17', defaultValue: 17, step: 0.5, min: 8 },
+      { id: 'width2', label: 'New tire section width (mm)', type: 'number', placeholder: '235', defaultValue: 235, step: 1, min: 1 },
+      { id: 'aspect2', label: 'New tire aspect ratio (%)', type: 'percent', placeholder: '40', defaultValue: 40, step: 1, min: 1 },
+      { id: 'rim2', label: 'New tire rim diameter (in)', type: 'number', placeholder: '18', defaultValue: 18, step: 0.5, min: 8 }
+    ],
+    seo: {
+      title: 'Tire Size Calculator – Diameter & Speedometer Error',
+      description: 'Free tire size calculator: decode a sidewall code into overall diameter, circumference and revolutions per mile, plus the speedometer error from a size change.',
+      faq: [
+        { question: 'How do I read a tire size like 225/45R17?', answer: '225 is the section width in millimeters, 45 is the aspect ratio (sidewall height as a percent of the width), R means radial, and 17 is the rim diameter in inches.' },
+        { question: 'How do I calculate tire diameter from the sidewall code?', answer: 'Multiply the width by the aspect ratio ÷ 100 to get the sidewall height, double it, and add the rim diameter converted to millimeters (rim × 25.4). A 225/45R17 works out to about 634.30 mm, or 24.97 in.' },
+        { question: 'Will a different tire size throw off my speedometer?', answer: 'Yes, if it changes the overall diameter. The error is (new diameter ÷ old diameter − 1) × 100. Going from 225/45R17 to 235/40R18 changes the diameter by about 1.72%, so the speedometer reads about 1.72% slow.' },
+        { question: 'How much bigger can I go before it matters?', answer: 'The tire industry\'s "plus sizing" convention targets roughly the same overall diameter, often citing about 3% as the point where the change becomes noticeable to the speedometer and vehicle electronics. It is an industry rule of thumb, not a legal limit.' },
+        { question: 'What are revolutions per mile and why does it matter?', answer: 'It is how many times the tire turns over one mile: 63,360 ÷ circumference in inches. The speedometer, odometer and anti-lock brake and traction-control sensors are all calibrated around this figure for the tire the vehicle came with.' },
+        { question: 'Does tire wear change the diameter?', answer: 'Slightly. A worn tire has less tread depth, so its rolling diameter is a little smaller than a new tire of the same size code. This calculator uses the nominal new-tire dimensions.' }
+      ]
+    },
+    compute(values) {
+      const geometry = (widthMm: number, aspectPercent: number, rimIn: number) => {
+        const sidewallMm = widthMm * (aspectPercent / 100);
+        const diameterMm = rimIn * 25.4 + 2 * sidewallMm;
+        const diameterIn = diameterMm / 25.4;
+        const circumferenceIn = diameterIn * Math.PI;
+        const revsPerMile = 63360 / circumferenceIn;
+        return { diameterMm, diameterIn, circumferenceIn, revsPerMile };
+      };
+      const original = geometry(values.width1, values.aspect1, values.rim1);
+      const replacement = geometry(values.width2, values.aspect2, values.rim2);
+      const speedometerErrorPercent = original.diameterIn > 0 ? (replacement.diameterIn / original.diameterIn - 1) * 100 : NaN;
+      return {
+        diameterIn: original.diameterIn,
+        diameterMm: original.diameterMm,
+        circumferenceIn: original.circumferenceIn,
+        revsPerMile: original.revsPerMile,
+        diameterIn2: replacement.diameterIn,
+        revsPerMile2: replacement.revsPerMile,
+        speedometerErrorPercent
+      };
+    }
   }
 ];

@@ -95,6 +95,7 @@ export const calculatorOrder: string[] = [
   'electricity-bill-calculator',
   'fuel-cost-calculator',
   'parking-cost-calculator',
+  'tire-size-calculator',
   'currency-converter',
   'character-counter',
   'hashtag-counter',

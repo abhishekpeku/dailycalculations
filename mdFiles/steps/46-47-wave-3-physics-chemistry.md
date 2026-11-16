@@ -1394,6 +1394,119 @@ build agent's judgment**, same as every run so far.
     on every page; all 5 ids linked correctly from `/en/categories/chemistry` (3 occurrences each).
     No dev server was started by this run, and port 3000 was confirmed free at the end.
   - `chemistry` now 45 calculators, **259 total** once this PR merges.
+- [x] Chemistry run 10 (5), branch `step/46-wave-3-chemistry-run-10`, PR #109 — **DONE** 2026-11-16.
+  Not part of the originally-scoped runs 1-9 (those exhausted the seed lists); picked as standard
+  general-chemistry topics with zero prior coverage, per the task's own instruction to find 5 more.
+  - [x] grahams-law-effusion-calculator
+  - [x] weak-acid-ionization-calculator
+  - [x] current-efficiency-calculator
+  - [x] hess-law-enthalpy-calculator
+  - [x] conservation-of-mass-calculator
+  - Candidates considered and rejected before picking these 5: `molar-volume-stp-calculator` (already
+    dropped as a near-duplicate of `ideal-gas-law-calculator`'s own STP content in run 7 — re-confirmed
+    still true); a generic "specific gravity of a gas" page (too close to `density-of-solutions-
+    calculator`'s own specific-gravity bonus figure and alias, same reasoning run 8 used to drop a
+    plain `specific-gravity-calculator`); "solubility rules / common-ion crossover" (already
+    `common-ion-effect-calculator`, run 9); "radioactive decay dating" (would just be a thin wrapper
+    around physics' own `radioactive-half-life-calculator`, no distinct chemistry content); activity
+    coefficient (judged too advanced/thin for a first cut, per the task's own hedge on this one);
+    percent ionization as a *separate* page from the weak-acid pH calculator (merged into one page
+    instead — pH and percent ionization are two outputs of the identical Ka/C₀ equilibrium, splitting
+    them would have been a thin near-duplicate of each other, not of anything already shipped).
+  - `grahams-law-effusion-calculator` (r₁ ÷ r₂ = √(M₂ ÷ M₁)) is a 4-variable closed-form solver.
+    Reuses the `molarMass` dimension (both molar-mass variables scale together, so the ratio is unit-
+    invariant) and `count` for the dimensionless rate ratio — zero new dimensions. Worked example:
+    H₂ vs. O₂ using each element's precise standard atomic weight (3.984×), explicitly contrasted with
+    OpenStax's own rounded-integer-mass version of the same example (exactly 4×, about 0.4% higher).
+  - `weak-acid-ionization-calculator` (Ka = x² ÷ (C₀ − x), solved for pH and percent ionization) is a
+    3-variable solver. **Deliberately kept every variable on the dimensionless `count` dimension
+    rather than `concentration`**, after finding that an already-shipped calculator in this same file
+    (`common-ion-effect-calculator`, run 9) mixes a `count`-dimension Ksp with `concentration`-
+    dimension variables in the same formula — since the live solver widget converts `concentration`
+    to SI (mol/m³, a ×1000 factor) before calling `solve`, but a `count`-dimension value is passed
+    through unconverted, that combination produces a live-widget result inconsistent with its own
+    `compute()`/worked-example figures (a ~1000× scale error) for any Ksp-style constant mixed with a
+    real `concentration` variable. **Flagged, not fixed** (pre-existing, out of this run's scope) —
+    added to STATUS.md's Parked list with the exact mechanism. This calculator avoids the bug entirely
+    by keeping Ka, C₀, and [H⁺] all on `count` (factor 1 everywhere, same safe pattern `ph-poh-
+    calculator`'s single-dimension `pH` variables already use). Uses the numerically stable
+    rationalized quadratic form (same technique `common-ion-effect-calculator` uses) rather than the
+    textbook's "x is negligible" shortcut. Worked example: OpenStax's own formic acid Example 14.12
+    (0.534 M, Ka = 1.8×10⁻⁴ → [H⁺] ≈ 0.0097 M, pH ≈ 2.01, confirmed the exact quadratic matches
+    OpenStax's approximation to its own stated precision). Explicitly distinguished in content from
+    `pka-henderson-hasselbalch-calculator` (a buffer, not a bare weak acid).
+  - `current-efficiency-calculator` (actual mass ÷ Faraday's-law theoretical mass × 100) is a
+    6-variable closed-form solver reusing `mass`/`current`/`time`/`molarMass`/`count` exactly as
+    `faradays-law-electrolysis-calculator` does — zero new dimensions. Fills the gap that
+    calculator's own watch-out item explicitly flagged as "not covered here." IUPAC Gold Book's
+    "current efficiency" entry (C01458) returned HTTP 403 to a direct fetch (same recurring issue as
+    runs 5/6/8); cited via a search-engine-indexed snippet instead, flagged explicitly in the
+    reference entry per this wave's transparency precedent. Worked example reuses the exact silver-
+    plating current/time/molar-mass numbers already verified on the Faraday's law page (41.17 g
+    theoretical), with an illustrative 39.80 g actual recovery (96.7% efficiency) — not a claimed
+    real published figure.
+  - `hess-law-enthalpy-calculator` (ΔH°rxn = Σ(n×ΔHf°, products) − Σ(n×ΔHf°, reactants)) is a type-B
+    breakdown (plain-number inputs, no `dimension` field, same precedent as `oxidation-number-
+    calculator` and `molar-mass-calculator`'s element slots), up to 2 reactants + 2 products. Worked
+    example is methane combustion using OpenStax Chemistry 2e Appendix G's own ΔHf° values (CH₄
+    −74.6, CO₂ −393.51, H₂O(l) −285.83, O₂ 0 kJ/mol, all fetched directly), giving −890.57 kJ/mol,
+    matching the commonly cited ≈−890 kJ/mol. Separately cross-checked Hess's law itself using
+    OpenStax's own two-step C(s)+O₂→CO₂ example (via CO as an intermediate): the two steps' sum
+    (−393.51 kJ) exactly equals the one-line products-minus-reactants shortcut. Explicitly
+    distinguished in content and a watch-out item from `calorimetry-enthalpy-calculator` (measured
+    experimentally via ΔT, not looked up from reference data) — the two share the "Thermochemistry"
+    group but answer different questions.
+  - `conservation-of-mass-calculator` (mᵣ₁+mᵣ₂ = mₚ₁+mₚ₂) is a 4-variable closed-form solver reusing
+    only `mass` — zero new dimensions, the simplest solver this wave has shipped. Worked example:
+    2Mg + O₂ → 2MgO using magnesium's and oxygen's own CIAAW standard atomic weights (48.61 g + 31.998
+    g = 80.608 g), cross-checked independently from the product side (2 × MgO's own molar mass, 2 ×
+    40.304 = 80.608 g/mol-equivalent) rather than just asserting the two totals match.
+  - Every formula fetched directly from a primary source, not recalled from memory: OpenStax
+    Chemistry 2e §9.4 "Effusion and Diffusion of Gases" (Graham's law, Example 9.20), §14.3 "Relative
+    Strengths of Acids and Bases" (weak-acid equilibrium, Example 14.12), §17.7 "Electrolysis"
+    (Faraday's law, the basis current efficiency compares against), §5.3 "Enthalpy" (Hess's law) and
+    Appendix G "Standard Thermodynamic Properties for Selected Substances" (ΔHf° values), and §1.2
+    "Phases and Classification of Matter" (the law of conservation of mass and Lavoisier); CIAAW
+    standard atomic weights (hydrogen, oxygen, magnesium); NIST CODATA (Faraday constant, already
+    used elsewhere in this file). The IUPAC Gold Book's "current efficiency" entry 403'd to a direct
+    fetch, flagged above as a search-snippet citation rather than a live fetch, same transparency
+    precedent as this wave's runs 5/6/8.
+  - Independent scratch script (`verify_run10.mjs`, scratchpad, no app imports) recomputed every
+    number before the copy was written: both Graham's-law molar-mass figures and the 3.984×/4×
+    comparison (plus a round-trip for all 4 solver directions); the formic-acid exact quadratic vs.
+    OpenStax's approximate answer (and the acetic-acid second example); the current-efficiency
+    worked example and all 3 reverse solves; both Hess's-law checks (the two-step sum and the
+    methane-combustion shortcut); and the magnesium conservation-of-mass example, confirmed exactly
+    conserved to the precision CIAAW's own atomic weights support.
+  - Manual alias-collision sweep (same discipline as every prior run in this file) checked every one
+    of this run's 22 new aliases against every alias already shipped site-wide via a script: zero new
+    collisions. Caught one near-miss before committing: two of `hess-law-enthalpy-calculator`'s draft
+    aliases ("enthalpy of reaction calculator", "heat of reaction calculator") collided with aliases
+    `calorimetry-enthalpy-calculator` already shipped in run 8 — replaced with "standard enthalpy of
+    formation calculator" and "enthalpy of formation calculator" before commit. The sweep also
+    re-confirmed the same two pre-existing, untouched collisions from runs 6-9
+    (`emi-calculator`/`mortgage-calculator`'s "house loan emi calculator" and `solution-concentration-
+    calculator`/`molarity-calculator`'s "solution concentration calculator") are still unresolved and
+    still on STATUS.md's Parked list — not touched by this run. Also confirmed programmatically: no
+    duplicate calculator ids, every `related` id exists and is not a self-reference, no `redirectFrom`
+    collisions, every `seo.title` ≤ 60 and `seo.description` ≤ 160 characters, every new calculator
+    has ≥ 4 aliases and ≥ 6 FAQs.
+  - `npm test` (1,319 tests, up from 1,302), `npm run lint` clean, `npm run build` passes (372 routes).
+    New `KNOWN_NON_FINITE` entries: `grahams-law-effusion-calculator` (`rate1`, molarMass1 at its own
+    0 min → divide by zero), `weak-acid-ionization-calculator` (`hydrogenIon`, ka and
+    initialConcentration both 0 → compute()'s own `<= 0` guard), `current-efficiency-calculator`
+    (`currentEfficiency`, current/time/molarMass all 0 → theoreticalMass 0 → compute()'s own guard).
+    `hess-law-enthalpy-calculator` and `conservation-of-mass-calculator` needed none — both are pure
+    addition/subtraction/multiplication with no division, so every edge case stays an honest finite
+    number. Every snapshot diff was additive-only, confirmed with `git diff --stat` after each
+    calculator.
+  - Verified all 5 new pages from the static HTML `next build` produced
+    (`.next/server/app/en/calculators/<id>.html`): H1, exactly one JSON-LD script, no "application
+    error" text, and all eight section ids (concept/how-to-use/formula/worked-example/watch-out/faq/
+    references/related) present on every page, all 5 ids linked from `/en/categories/chemistry`. A
+    pre-existing process (not started by this run) was already listening on port 3000 throughout —
+    left running, verified via the static HTML output instead, same precedent as runs 4-9.
+  - `chemistry` is now **50** calculators, **341 total** site-wide.
 - [ ] Visual-QA checkpoint: due again once ~50 more calculators land after this wave (last pass was
   at 194 calculators, 2026-11-05 — see STATUS.md header; chemistry crossed the 244-calculator
   threshold after run 6, flagged for the main session to schedule — still not run as of this run)

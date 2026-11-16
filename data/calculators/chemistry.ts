@@ -5629,5 +5629,607 @@ export const chemistryCalculators: CalculatorConfig[] = [
       const specificHeatUnknown = denominator === 0 ? NaN : -(values.massKnown * values.specificHeatKnown * (values.finalTemp - values.initialTempKnown)) / denominator;
       return { specificHeatUnknown };
     }
+  },
+  {
+    id: 'grahams-law-effusion-calculator',
+    category: 'chemistry',
+    group: 'Gas Laws',
+    glyph: 'eff',
+    updatedAt: '2026-11-16',
+    aliases: ['graham’s law calculator', 'graham’s law of effusion calculator', 'rate of effusion calculator', 'effusion rate ratio calculator', 'gas effusion calculator'],
+    related: ['ideal-gas-law-calculator', 'combined-gas-law-calculator', 'molar-mass-calculator', 'vapor-pressure-calculator'],
+    title: 'Graham’s Law of Effusion Calculator (r₁ ÷ r₂ = √(M₂ ÷ M₁))',
+    description: 'Compare how much faster one gas effuses than another from their molar masses alone, or solve for an unknown gas’s molar mass from a measured rate ratio.',
+    example: 'Hydrogen (2.016 g/mol) effuses about 3.98 times as fast as oxygen (31.998 g/mol) at the same temperature and pressure.',
+    solver: {
+      defaultTarget: 'rate1',
+      variables: [
+        { id: 'rate1', label: 'Effusion rate of gas 1', symbol: 'r₁', dimension: 'count', defaultValue: 3.984, defaultUnit: 'count' },
+        { id: 'rate2', label: 'Effusion rate of gas 2', symbol: 'r₂', dimension: 'count', defaultValue: 1, defaultUnit: 'count' },
+        { id: 'molarMass1', label: 'Molar mass of gas 1', symbol: 'M₁', dimension: 'molarMass', defaultValue: 2.016, defaultUnit: 'g/mol' },
+        { id: 'molarMass2', label: 'Molar mass of gas 2', symbol: 'M₂', dimension: 'molarMass', defaultValue: 31.998, defaultUnit: 'g/mol' }
+      ],
+      solve: {
+        rate1: ({ rate2, molarMass1, molarMass2 }) => (molarMass1 === 0 ? NaN : rate2 * Math.sqrt(molarMass2 / molarMass1)),
+        rate2: ({ rate1, molarMass1, molarMass2 }) => (molarMass2 === 0 ? NaN : rate1 * Math.sqrt(molarMass1 / molarMass2)),
+        molarMass1: ({ rate1, rate2, molarMass2 }) => (rate1 === 0 ? NaN : molarMass2 * (rate2 / rate1) ** 2),
+        molarMass2: ({ rate1, rate2, molarMass1 }) => (rate2 === 0 ? NaN : molarMass1 * (rate1 / rate2) ** 2)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is Graham’s law of effusion?',
+        paragraphs: [
+          'Effusion is what happens when gas molecules escape one at a time through a tiny opening into a vacuum or a much larger empty space, without colliding with each other on the way out — a different process from diffusion, which is one gas spreading out through another. OpenStax Chemistry 2e’s §9.4 states Graham’s law directly: "the rate of effusion of a gas is inversely proportional to the square root of its molar mass," so a lighter gas always escapes faster than a heavier one at the same temperature and pressure.',
+          'Comparing two gases side by side turns that proportionality into a ratio where everything except the two molar masses cancels out: r₁ ÷ r₂ = √(M₂ ÷ M₁). A gas with a quarter of another gas’s molar mass effuses exactly twice as fast (√4 = 2), not four times as fast — the relationship is a square root, not a direct one.',
+          'The square root comes from kinetic molecular theory: both gases share the same average kinetic energy at the same temperature, so the lighter molecules must be moving faster on average to make up for their smaller mass. This calculator reuses the exact same molar-mass dimension already used on this site’s molar mass and ideal gas law calculators, since no new unit of measurement is involved — only a ratio of two molar masses.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter any three of the two gases’ effusion rates and molar masses; the fourth fills in automatically.',
+        steps: [
+          { name: 'Identify the two gases being compared', text: 'Graham’s law compares exactly two gases at the same temperature and pressure — keep track of which one is "gas 1" and which is "gas 2."' },
+          { name: 'Enter each gas’s molar mass', text: 'From the molar mass calculator or a periodic table, in g/mol.' },
+          { name: 'Enter one gas’s effusion rate', text: 'A relative number is enough — 1 is a convenient reference rate for whichever gas is being compared against.' },
+          { name: 'Read the other gas’s rate', text: 'It fills in automatically, showing how many times faster (or slower) that gas effuses.' },
+          { name: 'Or solve for a molar mass instead', text: 'Enter both measured rates and one known molar mass, and the calculator solves for the other gas’s molar mass — a classic way to identify an unknown gas.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'r₁ ÷ r₂ = √(M₂ ÷ M₁) rearranges to solve for either rate or either molar mass, given the other three.',
+        expression: 'r₁ ÷ r₂ = √(M₂ ÷ M₁)\nr₁ = r₂ × √(M₂ ÷ M₁)\nM₁ = M₂ × (r₂ ÷ r₁)²',
+        terms: [
+          { symbol: 'r₁, r₂', meaning: 'The effusion rate of gas 1 and gas 2 — any consistent relative unit works, since only their ratio matters.' },
+          { symbol: 'M₁, M₂', meaning: 'The molar mass of gas 1 and gas 2, compared at the same temperature and pressure.' }
+        ],
+        note: 'Because only the ratio of rates and the ratio of molar masses appear in the formula, the actual unit used for rate — moles per second, molecules per second, or just a relative number — cancels out completely.'
+      },
+      workedExample: {
+        intro: 'How much faster does hydrogen gas effuse than oxygen gas at the same temperature and pressure? (OpenStax Chemistry 2e, Example 9.20, reworked here with each gas’s precise standard atomic weight rather than the rounded whole numbers OpenStax uses for the demonstration.)',
+        rows: [
+          { label: 'Molar mass of H₂ (2 × 1.008 g/mol)', value: '2.016 g/mol' },
+          { label: 'Molar mass of O₂ (2 × 15.999 g/mol)', value: '31.998 g/mol' },
+          { label: 'r(H₂) ÷ r(O₂) = √(31.998 ÷ 2.016)', value: '√15.872 ≈ 3.984' }
+        ],
+        result: 'Hydrogen effuses about 3.98 times as fast as oxygen',
+        explanation: 'OpenStax’s own version of this example rounds each molar mass to a whole number (2 g/mol and 32 g/mol) and gets exactly 4 — a clean, memorable number that is nonetheless about 0.4% higher than the precise answer. Using each element’s actual standard atomic weight (1.008 g/mol for hydrogen, 15.999 for oxygen) instead gives 3.984, not 4 — close enough that "about four times as fast" is still a fair summary, but not exactly four.'
+      },
+      watchOut: [
+        {
+          title: 'This compares two gases at the same temperature and pressure',
+          body: 'Graham’s law isolates the effect of molar mass by holding temperature and pressure fixed for both gases being compared. A gas’s effusion rate at one temperature cannot be compared directly against another gas’s rate at a different temperature with this formula alone.'
+        },
+        {
+          title: 'Effusion is through a tiny opening into a vacuum, not ordinary mixing',
+          body: 'Diffusion — one gas gradually spreading through another, like a scent crossing a room — follows a related relationship but is slowed further by collisions with the other gas’s own molecules. Graham’s law describes the idealized effusion case most general-chemistry problems actually use, even when they describe it with diffusion-style wording.'
+        },
+        {
+          title: 'This is a rate ratio, not an absolute molecular speed',
+          body: 'This calculator finds how many times faster one gas effuses than another, not either gas’s actual average molecular speed in meters per second — that comes from a separate calculation based on kinetic molecular theory.'
+        },
+        {
+          title: 'Identifying an unknown gas needs a clean, same-condition comparison',
+          body: 'Solving for an unknown molar mass from two measured rates (or effusion times) assumes both gases were compared under the same temperature and pressure, and that what was measured is effusion rate, not some other quantity like total gas volume escaped.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §9.4 "Effusion and Diffusion of Gases" (Graham’s law and Example 9.20)', url: 'https://openstax.org/books/chemistry-2e/pages/9-4-effusion-and-diffusion-of-gases' },
+        { label: 'CIAAW (IUPAC Commission on Isotopic Abundances and Atomic Weights), Standard Atomic Weights', url: 'https://ciaaw.org/atomic-weights.htm' }
+      ]
+    },
+    inputs: [
+      { id: 'rate2', label: 'Effusion rate of gas 2', type: 'number', placeholder: '1', defaultValue: 1, step: 0.01, min: 0 },
+      { id: 'molarMass1', label: 'Molar mass of gas 1 (kg/mol)', type: 'number', placeholder: '0.002016', defaultValue: 0.002016, step: 0.0001, min: 0 },
+      { id: 'molarMass2', label: 'Molar mass of gas 2 (kg/mol)', type: 'number', placeholder: '0.031998', defaultValue: 0.031998, step: 0.0001, min: 0 }
+    ],
+    seo: {
+      title: 'Graham’s Law of Effusion Calculator',
+      description: 'Free Graham’s law calculator. Solve r1/r2 = √(M2/M1) for either effusion rate or either molar mass, with a worked hydrogen vs. oxygen example.',
+      faq: [
+        { question: 'What is Graham’s law of effusion?', answer: 'r₁ ÷ r₂ = √(M₂ ÷ M₁): the ratio of two gases’ effusion rates equals the square root of the inverse ratio of their molar masses — a lighter gas always effuses faster at the same temperature and pressure.' },
+        { question: 'How much faster does hydrogen effuse than oxygen?', answer: 'About 3.98 times as fast, using hydrogen’s 2.016 g/mol and oxygen’s 31.998 g/mol molar masses. A common textbook shortcut rounds both masses to whole numbers and gets exactly 4.' },
+        { question: 'What is the difference between effusion and diffusion?', answer: 'Effusion is gas escaping one molecule at a time through a tiny opening into an empty space. Diffusion is one gas spreading out through another gas it is mixed with, which is slowed further by molecular collisions. Graham’s law strictly describes effusion, though many textbook problems apply it to diffusion-style setups as well.' },
+        { question: 'Can Graham’s law find an unknown gas’s molar mass?', answer: 'Yes — measure how much faster or slower the unknown gas effuses compared with a known gas under the same conditions, enter both rates and the known molar mass, and the calculator solves for the unknown molar mass.' },
+        { question: 'Why is the relationship a square root instead of a direct ratio?', answer: 'Because both gases have the same average kinetic energy at a given temperature (½mv² is the same for both), and solving that equality for speed introduces a square root of the mass ratio.' },
+        { question: 'Does Graham’s law require the same temperature and pressure for both gases?', answer: 'Yes — the formula only isolates the effect of molar mass by holding temperature and pressure fixed for both gases being compared.' }
+      ]
+    },
+    compute(values) {
+      return { rate1: values.molarMass1 === 0 ? NaN : values.rate2 * Math.sqrt(values.molarMass2 / values.molarMass1) };
+    }
+  },
+  {
+    id: 'weak-acid-ionization-calculator',
+    category: 'chemistry',
+    group: 'Acid-Base Chemistry',
+    glyph: 'Ka',
+    updatedAt: '2026-11-16',
+    aliases: ['weak acid ph calculator', 'percent ionization calculator', 'weak acid dissociation calculator', 'ka to ph calculator', 'degree of ionization calculator'],
+    related: ['ph-poh-calculator', 'pka-henderson-hasselbalch-calculator', 'molarity-calculator', 'buffer-capacity-calculator'],
+    title: 'Weak Acid pH & Percent Ionization Calculator',
+    description: 'Find the pH and percent ionization of a weak acid solution from its Ka and starting concentration — solved exactly, not with the common “x is negligible” shortcut.',
+    example: 'A 0.534 M solution of formic acid (Ka = 1.8 × 10⁻⁴) ionizes to [H⁺] ≈ 0.0097 mol/L, a pH of about 2.01 — only about 1.8% of the acid actually ionizes.',
+    solver: {
+      defaultTarget: 'hydrogenIon',
+      variables: [
+        { id: 'ka', label: 'Acid dissociation constant, Ka', symbol: 'Ka', dimension: 'count', defaultValue: 1.8e-4, defaultUnit: 'count' },
+        { id: 'initialConcentration', label: 'Initial acid concentration (mol/L)', symbol: 'C₀', dimension: 'count', defaultValue: 0.534, defaultUnit: 'count' },
+        { id: 'hydrogenIon', label: 'Hydrogen-ion concentration at equilibrium (mol/L)', symbol: '[H⁺]', dimension: 'count', defaultValue: 0.009714, defaultUnit: 'count' }
+      ],
+      solve: {
+        hydrogenIon: ({ ka, initialConcentration }) =>
+          ka <= 0 || initialConcentration <= 0 ? NaN : (2 * ka * initialConcentration) / (ka + Math.sqrt(ka ** 2 + 4 * ka * initialConcentration)),
+        ka: ({ initialConcentration, hydrogenIon }) =>
+          initialConcentration === hydrogenIon ? NaN : hydrogenIon ** 2 / (initialConcentration - hydrogenIon),
+        initialConcentration: ({ ka, hydrogenIon }) => (ka === 0 ? NaN : hydrogenIon ** 2 / ka + hydrogenIon)
+      },
+      outputs: [
+        { id: 'pH', label: 'pH', dimension: 'pH', unit: 'pH', compute: (si) => -Math.log10(si.hydrogenIon) },
+        { id: 'percentIonization', label: 'Percent ionization', dimension: 'percent', unit: '%', compute: (si) => (si.hydrogenIon / si.initialConcentration) * 100 }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is percent ionization?',
+        paragraphs: [
+          'Unlike a strong acid, which is treated as 100% ionized, a weak acid (HA) only partly ionizes in water: HA + H₂O ⇌ H₃O⁺ + A⁻. How far that equilibrium sits is described by the acid’s own dissociation constant, Ka = [H⁺][A⁻] ÷ [HA] — a fixed property of that specific acid, unrelated to how concentrated the solution is.',
+          'Starting from an initial concentration C₀ and letting x be how much ionizes, [H⁺] = [A⁻] = x and [HA] = C₀ − x at equilibrium, turning the Ka expression into a quadratic in x: Ka = x² ÷ (C₀ − x). Many textbooks simplify this by assuming x is negligible next to C₀ (so Ka ≈ x² ÷ C₀), which is usually close enough when Ka is very small, but this calculator solves the exact quadratic instead — OpenStax Chemistry 2e’s own Example 14.12 checks that very assumption after the fact, exactly because it is only an approximation.',
+          'Once x — the equilibrium hydrogen-ion concentration — is known, pH = −log₁₀[H⁺] follows directly, and percent ionization (x ÷ C₀ × 100) describes what fraction of the original acid actually ionized. Both numbers describe the same equilibrium from two different angles: pH says how acidic the solution is, percent ionization says how "weak" the acid is behaving at that particular concentration.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the acid’s Ka (fixed, since it does not change with concentration) and its starting concentration; the equilibrium hydrogen-ion concentration, pH, and percent ionization fill in automatically.',
+        steps: [
+          { name: 'Look up or identify the acid’s Ka', text: 'From a reference table — for example, 1.8 × 10⁻⁴ for formic acid, or 1.8 × 10⁻⁵ for acetic acid.' },
+          { name: 'Enter the initial concentration', text: 'The concentration before any ionization happens, in mol/L.' },
+          { name: 'Read the equilibrium hydrogen-ion concentration', text: 'It fills in automatically, solved exactly from the quadratic rather than an approximation.' },
+          { name: 'Read pH and percent ionization', text: 'Both appear underneath as bonus figures computed from the same result.' },
+          { name: 'Or work backward', text: 'Enter a measured [H⁺] (or pH, converted first) and the concentration, and solve for the acid’s own Ka instead — a common way to determine Ka experimentally.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Ka = x² ÷ (C₀ − x) rearranges into a quadratic solved exactly for x, the equilibrium [H⁺].',
+        expression: 'Ka = x² ÷ (C₀ − x)\nx = 2Ka·C₀ ÷ (Ka + √(Ka² + 4·Ka·C₀))\npH = −log₁₀(x)\n% ionization = (x ÷ C₀) × 100',
+        terms: [
+          { symbol: 'Ka', meaning: 'The weak acid’s own acid dissociation constant — a fixed property of that acid, not of the solution’s concentration.' },
+          { symbol: 'C₀', meaning: 'The acid’s initial (pre-ionization) concentration, in mol/L.' },
+          { symbol: 'x', meaning: 'The equilibrium hydrogen-ion concentration, [H⁺] — the amount of acid that actually ionized.' }
+        ],
+        note: 'The rearranged form above is algebraically identical to the ordinary quadratic formula applied to x² + Ka·x − Ka·C₀ = 0, but avoids subtracting two nearly equal numbers, which keeps the answer accurate even for a very small Ka — the same numerically stable rearrangement this site’s common-ion effect calculator uses for a related equilibrium.'
+      },
+      workedExample: {
+        intro: 'What is the hydrogen-ion concentration and pH of a 0.534 M solution of formic acid, HCO₂H (Ka = 1.8 × 10⁻⁴)? (OpenStax Chemistry 2e, Example 14.12.)',
+        rows: [
+          { label: 'Ka', value: '1.8 × 10⁻⁴' },
+          { label: 'C₀', value: '0.534 mol/L' },
+          { label: 'x = 2Ka·C₀ ÷ (Ka + √(Ka² + 4·Ka·C₀))', value: '≈ 0.009714 mol/L' },
+          { label: 'pH = −log₁₀(0.009714)', value: '≈ 2.013' },
+          { label: '% ionization = (0.009714 ÷ 0.534) × 100', value: '≈ 1.82%' }
+        ],
+        result: '[H⁺] ≈ 0.0097 mol/L, pH ≈ 2.01, about 1.8% ionized',
+        explanation: 'OpenStax’s own solution uses the simplifying assumption that x is negligible next to 0.534, getting x ≈ 9.8 × 10⁻³ and pH 2.01 — and then separately checks that the assumption was valid (x is only 1.8% of C₀, small enough to trust). Solving the exact quadratic directly, without that assumption, gives the same answer to the precision OpenStax reports (0.009714 rounds to 0.0097), which is exactly what the check was confirming.'
+      },
+      watchOut: [
+        {
+          title: 'This is an unbuffered weak acid, not a buffer',
+          body: 'The pKa / Henderson-Hasselbalch calculator on this site answers a related but different question: the pH of a mixture that already contains both the weak acid and its conjugate base (a buffer). This calculator instead starts from only the weak acid dissolved in water, before any conjugate base is added.'
+        },
+        {
+          title: 'The "x is negligible" shortcut is an approximation, not a rule',
+          body: 'Many textbooks approximate Ka ≈ x² ÷ C₀ when x is expected to be small compared with C₀. It usually works well for a small Ka and a reasonably concentrated solution, but gets noticeably less accurate as the percent ionization rises — a dilute solution of even a fairly weak acid can ionize more than 5%, where the shortcut starts to matter.'
+        },
+        {
+          title: 'Percent ionization increases as a solution gets more dilute',
+          body: 'A weak acid becomes a larger percentage ionized at lower concentrations, even though [H⁺] itself goes down — diluting a weak acid moves it closer to fully ionized, not further away, which can be counterintuitive next to a strong acid’s simple proportional dilution.'
+        },
+        {
+          title: 'This formula assumes water’s own ionization is negligible by comparison',
+          body: 'Pure water supplies its own small [H⁺] (about 1.0 × 10⁻⁷ mol/L at 25°C). For anything but an extremely dilute or extremely weak acid, that contribution is negligible next to the acid’s own ionization — this calculator, like most general-chemistry problems, assumes that is the case.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §14.3 "Relative Strengths of Acids and Bases" (the weak-acid equilibrium and Example 14.12, formic acid)', url: 'https://openstax.org/books/chemistry-2e/pages/14-3-relative-strengths-of-acids-and-bases' }
+      ]
+    },
+    inputs: [
+      { id: 'ka', label: 'Acid dissociation constant, Ka', type: 'number', placeholder: '0.00018', defaultValue: 0.00018, step: 0.00001, min: 0 },
+      { id: 'initialConcentration', label: 'Initial concentration (mol/L)', type: 'number', placeholder: '0.534', defaultValue: 0.534, step: 0.001, min: 0 }
+    ],
+    seo: {
+      title: 'Weak Acid pH & Percent Ionization Calculator',
+      description: 'Free weak acid calculator. Find pH and percent ionization from Ka and concentration, solved exactly — not with the “x is negligible” shortcut.',
+      faq: [
+        { question: 'How do I find the pH of a weak acid?', answer: 'Solve Ka = x² ÷ (C₀ − x) for x (the equilibrium [H⁺]), then take pH = −log₁₀(x). This calculator solves the exact quadratic rather than assuming x is negligible next to C₀.' },
+        { question: 'What is the pH of 0.534 M formic acid?', answer: 'About 2.01, using Ka = 1.8 × 10⁻⁴ — close to, but not exactly, the pH of a strong acid at the same concentration, which would be −log₁₀(0.534) ≈ 0.27.' },
+        { question: 'What is percent ionization?', answer: 'The fraction of a weak acid that actually ionizes, as a percentage: (equilibrium [H⁺] ÷ initial concentration) × 100. Formic acid at 0.534 M is only about 1.8% ionized.' },
+        { question: 'How is this different from the Henderson-Hasselbalch calculator?', answer: 'This calculator finds the pH of a weak acid dissolved alone in water. The Henderson-Hasselbalch calculator finds the pH of a buffer — a mixture that already contains both the weak acid and its conjugate base together.' },
+        { question: 'Does percent ionization change with concentration?', answer: 'Yes — a weak acid becomes a larger percentage ionized as the solution gets more dilute, even though the actual hydrogen-ion concentration decreases. Ka itself stays fixed; only how it distributes between [HA] and [H⁺]/[A⁻] shifts.' },
+        { question: 'Can this calculator find an acid’s Ka instead?', answer: 'Yes — enter a measured equilibrium [H⁺] (found from a measured pH, if that is what you have) along with the known initial concentration, and the calculator solves for Ka.' },
+        { question: 'Is the “x is negligible” shortcut ever wrong enough to matter?', answer: 'For formic acid at 0.534 M, the shortcut and the exact quadratic agree to four significant figures — but for a more dilute solution or a larger Ka, percent ionization rises and the shortcut’s error grows, which is exactly why OpenStax’s own worked example checks it afterward rather than assuming it.' }
+      ]
+    },
+    compute(values) {
+      const hydrogenIon =
+        values.ka <= 0 || values.initialConcentration <= 0
+          ? NaN
+          : (2 * values.ka * values.initialConcentration) / (values.ka + Math.sqrt(values.ka ** 2 + 4 * values.ka * values.initialConcentration));
+      return { hydrogenIon };
+    }
+  },
+  {
+    id: 'current-efficiency-calculator',
+    category: 'chemistry',
+    group: 'Redox & Electrochemistry',
+    glyph: 'CE',
+    updatedAt: '2026-11-16',
+    aliases: ['current efficiency calculator', 'electrolysis efficiency calculator', 'faradaic efficiency calculator', 'electroplating efficiency calculator'],
+    related: ['faradays-law-electrolysis-calculator', 'percent-yield-calculator', 'molar-mass-calculator', 'moles-to-grams-calculator'],
+    title: 'Current Efficiency Calculator (Electrolysis)',
+    description: 'Compare the actual mass deposited during electrolysis against Faraday’s law’s ideal prediction, to find the current (Faradaic) efficiency of a real cell.',
+    example: 'A silver-plating cell that ideally deposits 41.17 g (Faraday’s law) but actually deposits 39.80 g is running at about 96.7% current efficiency.',
+    solver: {
+      defaultTarget: 'currentEfficiency',
+      variables: [
+        { id: 'currentEfficiency', label: 'Current efficiency', symbol: 'η', dimension: 'percent', defaultValue: 96.67, defaultUnit: '%' },
+        { id: 'actualMass', label: 'Actual mass deposited', symbol: 'mₐ', dimension: 'mass', defaultValue: 39.8, defaultUnit: 'g' },
+        { id: 'current', label: 'Current', symbol: 'I', dimension: 'current', defaultValue: 10.23, defaultUnit: 'A' },
+        { id: 'time', label: 'Time', symbol: 't', dimension: 'time', defaultValue: 1, defaultUnit: 'h' },
+        { id: 'molarMass', label: 'Molar mass of the element', symbol: 'M', dimension: 'molarMass', defaultValue: 107.87, defaultUnit: 'g/mol', fixed: true },
+        { id: 'electrons', label: 'Electrons transferred per ion', symbol: 'n', dimension: 'count', defaultValue: 1, defaultUnit: 'count', fixed: true }
+      ],
+      solve: {
+        currentEfficiency: ({ actualMass, current, time, molarMass, electrons }) =>
+          current === 0 || time === 0 || molarMass === 0 ? NaN : (actualMass * electrons * 96485.33212331001 * 100) / (current * time * molarMass),
+        actualMass: ({ currentEfficiency, current, time, molarMass, electrons }) =>
+          electrons === 0 ? NaN : (currentEfficiency / 100) * ((current * time * molarMass) / (electrons * 96485.33212331001)),
+        current: ({ actualMass, currentEfficiency, time, molarMass, electrons }) =>
+          time === 0 || molarMass === 0 || currentEfficiency === 0 ? NaN : (actualMass * electrons * 96485.33212331001 * 100) / (time * molarMass * currentEfficiency),
+        time: ({ actualMass, currentEfficiency, current, molarMass, electrons }) =>
+          current === 0 || molarMass === 0 || currentEfficiency === 0 ? NaN : (actualMass * electrons * 96485.33212331001 * 100) / (current * molarMass * currentEfficiency)
+      },
+      outputs: [
+        {
+          id: 'theoreticalMass',
+          label: 'Theoretical mass (Faraday’s law)',
+          dimension: 'mass',
+          unit: 'g',
+          compute: (si) => (si.electrons === 0 ? NaN : (si.current * si.time * si.molarMass) / (si.electrons * 96485.33212331001))
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is current efficiency?',
+        paragraphs: [
+          'Faraday’s law of electrolysis (m = ItM ÷ nF, on this site’s own calculator) predicts the ideal, 100%-efficient mass a cell should deposit for a given current and time. Real electrolytic cells rarely hit that ideal number exactly — some of the current gets consumed by side reactions (hydrogen gas evolving alongside a metal, for instance) rather than depositing the intended product. Current efficiency, sometimes called Faradaic efficiency, is the practical measure of how close a real cell comes: the actual mass produced divided by that ideal, theoretical mass, as a percentage.',
+          'This is the same ratio idea as the percent yield calculator already on this site — "how much did I actually get, compared with the maximum the stoichiometry allows" — just applied to an electrochemical cell instead of a beaker reaction, with Faraday’s law standing in for the theoretical yield. The IUPAC Gold Book defines current efficiency more generally, in terms of partial current densities at an electrode where several reactions compete at once, but the practical mass-based ratio used here gives the same answer in the common single-reaction case most general-chemistry and intro-electrochemistry problems describe.',
+          'A current efficiency below 100% means some charge was "wasted" on a side reaction instead of the intended one. (A current efficiency above 100% is possible too, in cells where a second, independent reaction happens to assist the main one — the Gold Book notes this case explicitly — though it is unusual in typical plating and electrolysis setups.)'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the current, time, and the fixed molar mass and electron count for the element being deposited, plus the actual mass measured afterward; current efficiency fills in automatically.',
+        steps: [
+          { name: 'Identify the half-reaction and its fixed properties', text: 'Molar mass M and electrons per ion n, the same two fixed inputs Faraday’s law itself uses — 107.87 g/mol and n = 1 for Ag⁺ + e⁻ → Ag.' },
+          { name: 'Enter the current and time the cell actually ran', text: 'The same measurements Faraday’s law needs to predict the ideal mass.' },
+          { name: 'Enter the actual mass measured afterward', text: 'Weigh the deposited (or consumed) substance once the cell has finished running.' },
+          { name: 'Read the current efficiency', text: 'It fills in automatically, alongside the ideal (Faraday’s-law) mass it is being compared against.' },
+          { name: 'Or work backward', text: 'Enter a target current efficiency instead, and solve for the current or time that would be needed to actually hit a given actual mass.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Current efficiency compares the actual mass against Faraday’s law’s ideal prediction for the same current and time.',
+        expression: 'mₜₕₑₒᵣₑₜᵢcₐₗ = (I × t × M) ÷ (n × F)\nη = (mₐ ÷ mₜₕₑₒᵣₑₜᵢcₐₗ) × 100',
+        terms: [
+          { symbol: 'η', meaning: 'Current (Faradaic) efficiency, as a percentage.' },
+          { symbol: 'mₐ', meaning: 'The actual mass measured, after the cell has run.' },
+          { symbol: 'I, t', meaning: 'Current and time, the same measurements Faraday’s law itself uses.' },
+          { symbol: 'M, n', meaning: 'The element’s molar mass and electrons transferred per ion — fixed properties of the half-reaction, not something this calculator solves for.' },
+          { symbol: 'F', meaning: 'The Faraday constant, 96,485.332123... C/mol, exact.' }
+        ],
+        note: 'mₜₕₑₒᵣₑₜᵢcₐₗ is exactly the same Faraday’s-law figure the dedicated Faraday’s law of electrolysis calculator on this site computes — this page simply adds a real, measured actual mass on top of it.'
+      },
+      workedExample: {
+        intro: 'A silver-plating cell runs at 10.23 A for 1 hour — the same scenario as this site’s own Faraday’s law worked example, which predicts a theoretical mass of about 41.17 g. Weighing the cathode afterward finds 39.80 g was actually deposited. What is the current efficiency?',
+        rows: [
+          { label: 'Theoretical mass (Faraday’s law)', value: '≈ 41.17 g' },
+          { label: 'Actual mass measured', value: '39.80 g' },
+          { label: 'η = (39.80 ÷ 41.17) × 100', value: '≈ 96.7%' },
+          { label: 'Mass "lost" to side reactions', value: '41.17 − 39.80 ≈ 1.37 g' }
+        ],
+        result: 'η ≈ 96.7% current efficiency',
+        explanation: 'About 96.7% of the charge passed went toward depositing silver; the rest was consumed by a side reaction (most commonly, some hydrogen gas evolving at the cathode alongside the silver) rather than appearing as deposited metal. The 39.80 g figure here is an illustrative measurement, built on top of the exact same current, time, and silver half-reaction already cited and verified on this site’s Faraday’s law of electrolysis calculator.'
+      },
+      watchOut: [
+        {
+          title: 'This is not the same figure as Faraday’s law alone',
+          body: 'Faraday’s law of electrolysis calculator gives the ideal, 100%-efficient mass for a given current and time. This calculator needs that ideal figure plus a real, measured actual mass to find how efficient the cell actually was — it cannot be computed from current and time alone.'
+        },
+        {
+          title: 'A side reaction, not a measurement error, usually explains the gap',
+          body: 'A current efficiency below 100% most often means some of the charge passed went into a different reaction at the same electrode (commonly hydrogen or oxygen evolution alongside the intended metal deposition or dissolution), not that the measurement itself was imprecise.'
+        },
+        {
+          title: 'Current efficiency can exceed 100% in rare, multi-reaction setups',
+          body: 'If two independent reactions at the same electrode both contribute to the product being measured, the ratio can come out above 100% — unusual in a typical classroom plating problem, but a real possibility the IUPAC Gold Book’s own general definition accounts for.'
+        },
+        {
+          title: 'Assumes a constant current for the whole time measured',
+          body: 'Like Faraday’s law itself, this calculator treats current as steady over the full duration. A current that varies over the run needs a time-averaged value, or an integral of current over time, for an accurate comparison.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §17.7 "Electrolysis" (Faraday’s law, the ideal basis this calculator compares actual results against)', url: 'https://openstax.org/books/chemistry-2e/pages/17-7-electrolysis' },
+        {
+          label: 'IUPAC Gold Book, "current efficiency" (general definition via partial current densities; the page returned HTTP 403 to a direct fetch, so this citation is based on a search-engine-indexed snippet of the entry rather than a live fetch — flagged per this wave’s own transparency precedent)',
+          url: 'https://goldbook.iupac.org/terms/view/C01458'
+        },
+        { label: 'NIST CODATA, Faraday Constant', url: 'https://physics.nist.gov/cgi-bin/cuu/Value?fday' }
+      ]
+    },
+    inputs: [
+      { id: 'actualMass', label: 'Actual mass deposited (g)', type: 'number', placeholder: '39.8', defaultValue: 39.8, step: 0.01, min: 0 },
+      { id: 'current', label: 'Current (A)', type: 'number', placeholder: '10.23', defaultValue: 10.23, step: 0.01, min: 0 },
+      { id: 'time', label: 'Time (s)', type: 'number', placeholder: '3600', defaultValue: 3600, step: 1, min: 0 },
+      { id: 'molarMass', label: 'Molar mass of the element (kg/mol)', type: 'number', placeholder: '0.10787', defaultValue: 0.10787, step: 0.00001, min: 0 },
+      { id: 'electrons', label: 'Electrons transferred per ion, n', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Current Efficiency Calculator (Electrolysis)',
+      description: 'Free current efficiency calculator. Compare actual mass deposited against Faraday’s law’s ideal prediction, with a worked silver-plating example.',
+      faq: [
+        { question: 'What is current efficiency?', answer: 'The actual mass produced or deposited during electrolysis, divided by the ideal mass Faraday’s law predicts for the same current and time, expressed as a percentage.' },
+        { question: 'How do I calculate current efficiency?', answer: 'Find the theoretical mass from Faraday’s law, m = (I × t × M) ÷ (n × F), then divide the actual measured mass by that theoretical mass and multiply by 100.' },
+        { question: 'Why is current efficiency usually below 100%?', answer: 'A side reaction at the same electrode — commonly hydrogen or oxygen gas evolving alongside the intended metal — consumes some of the charge passed without contributing to the measured product.' },
+        { question: 'Is current efficiency the same as percent yield?', answer: 'It is the same idea (actual ÷ theoretical × 100) applied to an electrochemical cell, with Faraday’s law providing the theoretical figure instead of a stoichiometric calculation from a balanced equation.' },
+        { question: 'Can current efficiency be greater than 100%?', answer: 'In the unusual case where two separate reactions at one electrode both add to the measured product, yes — though for a typical single-reaction plating or electrolysis setup, current efficiency is at or below 100%.' },
+        { question: 'What is the current efficiency of a silver cell that should deposit 41.17 g but only deposits 39.80 g?', answer: 'About 96.7% — (39.80 ÷ 41.17) × 100.' }
+      ]
+    },
+    compute(values) {
+      const theoreticalMass = values.electrons === 0 ? NaN : (values.current * values.time * values.molarMass) / (values.electrons * 96485.33212331001);
+      return { currentEfficiency: Number.isFinite(theoreticalMass) && theoreticalMass !== 0 ? (values.actualMass / theoreticalMass) * 100 : NaN };
+    }
+  },
+  {
+    id: 'hess-law-enthalpy-calculator',
+    category: 'chemistry',
+    group: 'Thermochemistry',
+    glyph: 'ΔH°',
+    updatedAt: '2026-11-16',
+    aliases: ['hess’s law calculator', 'standard enthalpy of formation calculator', 'enthalpy of combustion calculator', 'enthalpy of formation calculator'],
+    related: ['calorimetry-enthalpy-calculator', 'gibbs-free-energy-calculator', 'specific-heat-by-mixing-calculator', 'stoichiometry-calculator'],
+    title: 'Hess’s Law / Enthalpy of Reaction Calculator',
+    description: 'Find a reaction’s standard enthalpy from the standard enthalpies of formation of its reactants and products — up to two of each, with their coefficients.',
+    example: 'CH₄(g) + 2O₂(g) → CO₂(g) + 2H₂O(l) releases about 890.6 kJ per mole of methane burned, from the four substances’ standard enthalpies of formation.',
+    inputs: [
+      { id: 'coeffProduct1', label: 'Product 1 coefficient', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0 },
+      { id: 'dHfProduct1', label: 'Product 1 standard enthalpy of formation (kJ/mol)', type: 'number', placeholder: '-393.51', defaultValue: -393.51, step: 0.01 },
+      { id: 'coeffProduct2', label: 'Product 2 coefficient', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0 },
+      { id: 'dHfProduct2', label: 'Product 2 standard enthalpy of formation (kJ/mol)', type: 'number', placeholder: '-285.83', defaultValue: -285.83, step: 0.01 },
+      { id: 'coeffReactant1', label: 'Reactant 1 coefficient', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0 },
+      { id: 'dHfReactant1', label: 'Reactant 1 standard enthalpy of formation (kJ/mol)', type: 'number', placeholder: '-74.6', defaultValue: -74.6, step: 0.01 },
+      { id: 'coeffReactant2', label: 'Reactant 2 coefficient', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0 },
+      { id: 'dHfReactant2', label: 'Reactant 2 standard enthalpy of formation (kJ/mol)', type: 'number', placeholder: '0', defaultValue: 0, step: 0.01 }
+    ],
+    breakdown: {
+      headline: 'enthalpyRxn',
+      headlineLabel: 'Standard enthalpy of reaction, ΔH°rxn',
+      outputs: [
+        { id: 'enthalpyRxn', label: 'ΔH°rxn', format: 'number' },
+        { id: 'productsSum', label: 'Σ n × ΔHf° (products)', format: 'number' },
+        { id: 'reactantsSum', label: 'Σ n × ΔHf° (reactants)', format: 'number' }
+      ],
+      groups: [
+        { title: 'Products', inputs: ['coeffProduct1', 'dHfProduct1', 'coeffProduct2', 'dHfProduct2'] },
+        { title: 'Reactants', inputs: ['coeffReactant1', 'dHfReactant1', 'coeffReactant2', 'dHfReactant2'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'reactantsSum', label: 'Reactants (Σ n × ΔHf°)' },
+          { from: 'productsSum', label: 'Products (Σ n × ΔHf°)' }
+        ],
+        title: 'Enthalpy of formation: reactants vs. products',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is Hess’s law?',
+        paragraphs: [
+          'Enthalpy, like elevation, only depends on where you start and end — not the path taken to get there. OpenStax Chemistry 2e’s §5.3 states Hess’s law directly: "if a process can be written as the sum of several stepwise processes, the enthalpy change of the total process equals the sum of the enthalpy changes of the various steps." Burning carbon straight to CO₂ releases the same total heat as burning it to CO first and then burning that CO to CO₂ — two completely different routes, one identical total.',
+          'That path-independence has a powerful practical consequence: every reaction can be imagined as first tearing every reactant apart into its own elements, then reassembling those elements into the products. The heat absorbed or released forming one mole of a substance from its elements, in their standard states, is that substance’s standard enthalpy of formation, ΔHf° (zero for an element in its own standard state, by definition). Add up the products’ ΔHf° values, subtract the reactants’, and Hess’s law guarantees the difference is the reaction’s own standard enthalpy, ΔH°rxn — without ever needing to actually carry out the two-step detour.',
+          'This calculator applies that shortcut directly, for up to two reactants and two products, each with its own stoichiometric coefficient: ΔH°rxn = Σ(n × ΔHf°, products) − Σ(n × ΔHf°, reactants). An unused reactant or product slot, left at coefficient 0, simply drops out of the sum.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter each product’s and reactant’s coefficient (from the balanced equation) and its standard enthalpy of formation, from a reference table; the reaction’s enthalpy fills in automatically.',
+        steps: [
+          { name: 'Write the balanced equation', text: 'Identify every distinct reactant and product and its coefficient — this calculator covers up to two of each.' },
+          { name: 'Look up each substance’s ΔHf°', text: 'From a standard thermodynamic properties table, in kJ/mol. An element in its standard state (O₂(g), C(s, graphite)) is 0 by definition.' },
+          { name: 'Enter the products', text: 'Each product’s coefficient and ΔHf°. Leave an unused second product slot at coefficient 0.' },
+          { name: 'Enter the reactants', text: 'Each reactant’s coefficient and ΔHf°, the same way.' },
+          { name: 'Read the result', text: 'ΔH°rxn appears immediately, with the products’ and reactants’ own weighted sums shown underneath for comparison.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Hess’s law guarantees that summing stepwise reactions and jumping straight to the products-minus-reactants shortcut give the identical answer.',
+        expression: 'ΔH°rxn = Σ(n × ΔHf°, products) − Σ(n × ΔHf°, reactants)',
+        terms: [
+          { symbol: 'ΔH°rxn', meaning: 'The reaction’s own standard enthalpy change — negative for an exothermic reaction (releases heat), positive for endothermic (absorbs heat).' },
+          { symbol: 'ΔHf°', meaning: 'A substance’s standard enthalpy of formation: the enthalpy change forming one mole of it from its elements in their standard states. Exactly 0 for an element already in its standard state.' },
+          { symbol: 'n', meaning: 'Each substance’s coefficient in the balanced equation.' }
+        ],
+        note: 'This covers up to two reactants and two products. Leave an unused slot’s coefficient at 0 — it contributes nothing to either sum and drops out cleanly.'
+      },
+      workedExample: {
+        intro: 'What is the standard enthalpy of combustion of methane, CH₄(g) + 2O₂(g) → CO₂(g) + 2H₂O(l)? (Standard enthalpies of formation from OpenStax Chemistry 2e, Appendix G: CH₄ −74.6, O₂ 0, CO₂ −393.51, H₂O(l) −285.83 kJ/mol.)',
+        rows: [
+          { label: 'Products: 1×(−393.51) + 2×(−285.83)', value: '−393.51 + (−571.66) = −965.17 kJ' },
+          { label: 'Reactants: 1×(−74.6) + 2×(0)', value: '−74.6 + 0 = −74.6 kJ' },
+          { label: 'ΔH°rxn = −965.17 − (−74.6)', value: '−890.57 kJ' }
+        ],
+        result: 'ΔH°rxn ≈ −890.6 kJ per mole of CH₄ burned',
+        explanation: 'This matches the commonly cited standard enthalpy of combustion of methane, about −890 kJ/mol, to the precision these formation values support. As a separate confirmation of Hess’s law itself: OpenStax’s own two-step worked example for a different reaction (C(s) + O₂(g) → CO₂(g), done directly, versus via CO as an intermediate) gets the identical −393.51 kJ either way — summing the two steps or using the products-minus-reactants shortcut in one line.'
+      },
+      watchOut: [
+        {
+          title: 'This is not the same calculation as the calorimetry enthalpy calculator',
+          body: 'The calorimetry enthalpy calculator on this site measures ΔH experimentally, from a temperature change in a calorimeter (q = mcΔT, divided by moles reacted). This calculator instead computes ΔH from published reference data — each substance’s own standard enthalpy of formation — without running any experiment at all. The two methods can be cross-checked against each other but use entirely different inputs.'
+        },
+        {
+          title: 'An element in its standard state has ΔHf° = 0, by definition — not by coincidence',
+          body: 'O₂(g), N₂(g), C(s, graphite), and similar elements in their most stable form at standard conditions are defined to have a standard enthalpy of formation of exactly zero. This is the reference point the whole scale is built from, not a measured value that happens to be small.'
+        },
+        {
+          title: 'ΔHf° values are tied to a specific physical state',
+          body: 'Water’s ΔHf° is different for H₂O(l) (−285.83 kJ/mol) than for H₂O(g) (−241.82 kJ/mol) — always match the state (solid, liquid, gas, or aqueous) in the actual balanced equation to the correct row of a reference table.'
+        },
+        {
+          title: 'Coefficients come from the balanced equation, not from guesswork',
+          body: 'Every coefficient entered here must match a correctly balanced chemical equation — the same equation-balancing step every other stoichiometry problem on this site needs, done by hand before using this calculator.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §5.3 "Enthalpy" (Hess’s law and the standard-enthalpy-of-formation shortcut)', url: 'https://openstax.org/books/chemistry-2e/pages/5-3-enthalpy' },
+        { label: 'OpenStax, Chemistry 2e, Appendix G "Standard Thermodynamic Properties for Selected Substances" (ΔHf° values used in the worked example)', url: 'https://openstax.org/books/chemistry-2e/pages/g-standard-thermodynamic-properties-for-selected-substances' }
+      ]
+    },
+    seo: {
+      title: 'Hess’s Law / Enthalpy of Reaction Calculator',
+      description: 'Free Hess’s law calculator. Find a reaction’s standard enthalpy from its reactants’ and products’ standard enthalpies of formation.',
+      faq: [
+        { question: 'What is Hess’s law?', answer: 'Enthalpy change only depends on the starting and ending state of a reaction, not the path taken — so the enthalpy of a multi-step process equals the sum of each step’s own enthalpy change, no matter how the steps are divided up.' },
+        { question: 'How do I calculate the enthalpy of a reaction from enthalpies of formation?', answer: 'ΔH°rxn = Σ(n × ΔHf°, products) − Σ(n × ΔHf°, reactants), where n is each substance’s coefficient in the balanced equation and ΔHf° is its standard enthalpy of formation.' },
+        { question: 'What is the enthalpy of combustion of methane?', answer: 'About −890.6 kJ per mole of CH₄ burned, from CH₄(g) + 2O₂(g) → CO₂(g) + 2H₂O(l) and each substance’s standard enthalpy of formation.' },
+        { question: 'Why is an element’s standard enthalpy of formation zero?', answer: 'By definition — an element in its most stable form at standard conditions (O₂(g), C(s, graphite)) is the zero point the entire enthalpy-of-formation scale is measured from, not a coincidentally small measured value.' },
+        { question: 'How is this different from the calorimetry enthalpy calculator?', answer: 'This calculator computes ΔH from published reference data (each substance’s standard enthalpy of formation). The calorimetry enthalpy calculator instead measures ΔH experimentally, from a temperature change in a calorimeter.' },
+        { question: 'Does the physical state of a substance matter?', answer: 'Yes — liquid water and water vapor have different standard enthalpies of formation (−285.83 vs. −241.82 kJ/mol), so always use the ΔHf° value that matches the state written in the balanced equation.' },
+        { question: 'Can this handle more than two reactants or products?', answer: 'This calculator covers up to two of each, the common case for most general-chemistry problems. Leave an unused slot’s coefficient at 0 so it drops out of the sum.' }
+      ]
+    },
+    compute(values) {
+      const productsSum = values.coeffProduct1 * values.dHfProduct1 + values.coeffProduct2 * values.dHfProduct2;
+      const reactantsSum = values.coeffReactant1 * values.dHfReactant1 + values.coeffReactant2 * values.dHfReactant2;
+      return { enthalpyRxn: productsSum - reactantsSum, productsSum, reactantsSum };
+    }
+  },
+  {
+    id: 'conservation-of-mass-calculator',
+    category: 'chemistry',
+    group: 'Reaction Stoichiometry & Yield',
+    glyph: 'Σm',
+    updatedAt: '2026-11-16',
+    aliases: ['law of conservation of mass calculator', 'mass balance calculator', 'conservation of mass calculator', 'reactant and product mass calculator'],
+    related: ['stoichiometry-calculator', 'limiting-reagent-calculator', 'molar-mass-calculator', 'percent-yield-calculator'],
+    title: 'Law of Conservation of Mass Calculator',
+    description: 'Confirm or solve for a missing mass in a chemical reaction using the law of conservation of mass — total reactant mass always equals total product mass.',
+    example: 'Burning 48.61 g of magnesium in 31.998 g of oxygen gas (2Mg + O₂ → 2MgO) produces exactly 80.608 g of magnesium oxide — not a gram more or less.',
+    solver: {
+      defaultTarget: 'productMass2',
+      variables: [
+        { id: 'reactantMass1', label: 'Reactant 1 mass', symbol: 'mᵣ₁', dimension: 'mass', defaultValue: 48.61, defaultUnit: 'g' },
+        { id: 'reactantMass2', label: 'Reactant 2 mass', symbol: 'mᵣ₂', dimension: 'mass', defaultValue: 31.998, defaultUnit: 'g' },
+        { id: 'productMass1', label: 'Product 1 mass', symbol: 'mₚ₁', dimension: 'mass', defaultValue: 80.608, defaultUnit: 'g' },
+        { id: 'productMass2', label: 'Product 2 mass', symbol: 'mₚ₂', dimension: 'mass', defaultValue: 0, defaultUnit: 'g' }
+      ],
+      solve: {
+        productMass2: ({ reactantMass1, reactantMass2, productMass1 }) => reactantMass1 + reactantMass2 - productMass1,
+        productMass1: ({ reactantMass1, reactantMass2, productMass2 }) => reactantMass1 + reactantMass2 - productMass2,
+        reactantMass1: ({ reactantMass2, productMass1, productMass2 }) => productMass1 + productMass2 - reactantMass2,
+        reactantMass2: ({ reactantMass1, productMass1, productMass2 }) => productMass1 + productMass2 - reactantMass1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is the law of conservation of mass?',
+        paragraphs: [
+          'The law of conservation of mass, established by Antoine Lavoisier’s careful combustion experiments in the 1770s, states that matter is neither created nor destroyed in an ordinary chemical reaction — atoms only rearrange into new combinations. Every atom present in the reactants is still present, unchanged in mass, somewhere among the products, so the total mass before the reaction exactly equals the total mass after it.',
+          'This is the physical reason a chemical equation must be balanced in the first place: balancing an equation is really just making sure the same number of each type of atom appears on both sides, which is exactly what guarantees the total mass matches on both sides too. This calculator applies the law directly, covering up to two reactants and two products — add up the reactant masses, add up the product masses, and the two totals must be equal.',
+          'Knowing this lets a missing mass be found without ever doing the full mole-based stoichiometry: if any three of the four masses in a simple reaction are known, the fourth follows immediately from simple addition and subtraction, no molar masses or balanced coefficients required.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter any three of the four masses (up to two reactants, up to two products); the fourth fills in automatically.',
+        steps: [
+          { name: 'Identify every reactant and product mass you know', text: 'Up to two reactants and two products — leave an unused slot at 0.' },
+          { name: 'Enter each known mass', text: 'In the same mass unit for all four, so the comparison is meaningful.' },
+          { name: 'Read the missing mass', text: 'It fills in automatically, so that total reactant mass exactly equals total product mass.' },
+          { name: 'Check the totals', text: 'The reactants’ sum and the products’ sum are shown so the conservation of mass is visible directly, not just assumed.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Total reactant mass always equals total product mass; rearranging isolates whichever single mass is unknown.',
+        expression: 'mᵣ₁ + mᵣ₂ = mₚ₁ + mₚ₂\nmₚ₂ = mᵣ₁ + mᵣ₂ − mₚ₁\nmᵣ₁ = mₚ₁ + mₚ₂ − mᵣ₂',
+        terms: [
+          { symbol: 'mᵣ₁, mᵣ₂', meaning: 'The mass of reactant 1 and reactant 2 (leave the second at 0 for a single-reactant reaction).' },
+          { symbol: 'mₚ₁, mₚ₂', meaning: 'The mass of product 1 and product 2 (leave the second at 0 for a single-product reaction).' }
+        ],
+        note: 'This covers up to two reactants and two products — the common case for most general-chemistry conservation-of-mass problems. A reaction with more substances still conserves mass the same way; it simply needs more terms added to each side.'
+      },
+      workedExample: {
+        intro: 'Burning magnesium ribbon in air, 2Mg(s) + O₂(g) → 2MgO(s): 2 mol of magnesium (48.61 g, using magnesium’s 24.305 g/mol standard atomic weight) reacts with exactly 1 mol of oxygen gas (31.998 g, using oxygen’s 15.999 g/mol). How much magnesium oxide forms?',
+        rows: [
+          { label: 'Reactant: magnesium, 2 × 24.305 g/mol', value: '48.61 g' },
+          { label: 'Reactant: oxygen gas, 2 × 15.999 g/mol', value: '31.998 g' },
+          { label: 'Total reactant mass', value: '48.61 + 31.998 = 80.608 g' },
+          { label: 'Product: magnesium oxide (by conservation of mass)', value: '80.608 g' }
+        ],
+        result: '80.608 g of magnesium oxide forms',
+        explanation: 'Checking this independently from the product side: 2 mol of MgO has a molar mass of 2 × (24.305 + 15.999) = 2 × 40.304 = 80.608 g/mol-equivalent — exactly matching the reactants’ combined mass, confirming the law directly rather than just assuming it.'
+      },
+      watchOut: [
+        {
+          title: 'This applies to ordinary chemical reactions, not nuclear reactions',
+          body: 'In a nuclear reaction, a tiny but measurable amount of mass converts directly to energy (E = mc², covered by this site’s mass-energy equivalence calculator) — the law of conservation of mass as stated here is specific to chemical reactions, where no nucleus changes identity.'
+        },
+        {
+          title: 'An "open" reaction can look like it loses or gains mass',
+          body: 'A reaction that releases a gas into open air (fizzing, burning) can appear to lose mass on a kitchen scale, and one that reacts with oxygen from the air can appear to gain it — the law of conservation of mass still holds exactly, it is just that one reactant or product (often a gas) was not weighed.'
+        },
+        {
+          title: 'Mass balance alone does not confirm a correct reaction',
+          body: 'Any three masses that happen to add up correctly will satisfy this calculator, even for an impossible or unbalanced reaction. This tool checks the one quantity (total mass) that conservation of mass guarantees — it does not check that the chemistry or the balanced equation itself is actually correct.'
+        },
+        {
+          title: 'All masses must use the same unit',
+          body: 'Because this calculator adds raw masses directly rather than converting through moles, mixing grams with kilograms (or any other inconsistent units) across the four fields will silently produce a wrong total.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §1.2 "Phases and Classification of Matter" (the law of conservation of matter and Lavoisier’s combustion experiments)', url: 'https://openstax.org/books/chemistry-2e/pages/1-2-phases-and-classification-of-matter' },
+        { label: 'CIAAW (IUPAC Commission on Isotopic Abundances and Atomic Weights), Standard Atomic Weights (magnesium and oxygen, used in the worked example)', url: 'https://ciaaw.org/atomic-weights.htm' }
+      ]
+    },
+    inputs: [
+      { id: 'reactantMass1', label: 'Reactant 1 mass (kg)', type: 'number', placeholder: '0.04861', defaultValue: 0.04861, step: 0.00001, min: 0 },
+      { id: 'reactantMass2', label: 'Reactant 2 mass (kg)', type: 'number', placeholder: '0.031998', defaultValue: 0.031998, step: 0.00001, min: 0 },
+      { id: 'productMass1', label: 'Product 1 mass (kg)', type: 'number', placeholder: '0.080608', defaultValue: 0.080608, step: 0.00001, min: 0 }
+    ],
+    seo: {
+      title: 'Law of Conservation of Mass Calculator',
+      description: 'Free conservation of mass calculator. Solve for a missing reactant or product mass — total reactant mass always equals total product mass.',
+      faq: [
+        { question: 'What is the law of conservation of mass?', answer: 'In an ordinary chemical reaction, matter is neither created nor destroyed — the total mass of the reactants exactly equals the total mass of the products, since atoms only rearrange rather than disappearing.' },
+        { question: 'How do I find a missing mass using conservation of mass?', answer: 'Add up every known reactant and product mass, then solve mᵣ₁ + mᵣ₂ = mₚ₁ + mₚ₂ for whichever single mass is unknown — it is just addition and subtraction, no molar masses required.' },
+        { question: 'How much magnesium oxide forms from burning 48.61 g of magnesium in 31.998 g of oxygen?', answer: '80.608 g — exactly the sum of the two reactant masses, since mass is conserved.' },
+        { question: 'Why does a burning reaction sometimes seem to lose mass?', answer: 'Usually because a gas escaping into the air was not weighed, not because the law of conservation of mass has an exception — if every reactant and product were captured and weighed, the totals would still match exactly.' },
+        { question: 'Who discovered the law of conservation of mass?', answer: 'Antoine Lavoisier, through careful combustion experiments in the 1770s where he weighed every reactant and product, including gases, rather than just the solids visible to the eye.' },
+        { question: 'Does this law apply to nuclear reactions too?', answer: 'No — in a nuclear reaction, a measurable amount of mass converts directly to energy. The law as used here is specific to ordinary chemical reactions, where no atomic nucleus changes identity.' }
+      ]
+    },
+    compute(values) {
+      return { productMass2: values.reactantMass1 + values.reactantMass2 - values.productMass1 };
+    }
   }
 ];

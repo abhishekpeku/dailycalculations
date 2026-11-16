@@ -98,6 +98,9 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'calorimetry-enthalpy-calculator': ['enthalpy'], // moles 0 (its min) -> divide by zero
   'common-ion-effect-calculator': ['molarSolubility'], // ksp and commonIonConcentration both 0 (their min) -> 0/0
   'specific-heat-by-mixing-calculator': ['specificHeatUnknown'], // every input 0 (min, or 0 for unbounded fields) -> 0/0
+  'grahams-law-effusion-calculator': ['rate1'], // molarMass1 0 (its min) -> divide by zero
+  'weak-acid-ionization-calculator': ['hydrogenIon'], // ka and initialConcentration both 0 (their min) -> compute()'s own <= 0 guard
+  'current-efficiency-calculator': ['currentEfficiency'], // current, time and molarMass all 0 (their min) -> theoreticalMass 0 -> compute()'s own guard
   'home-affordability-calculator': ['frontEndRatio', 'backEndRatio'], // grossAnnualIncome 0 (its min) -> gross monthly income 0 -> both ratios are 0/0
   'mortgage-refinance-calculator': ['breakEvenMonths'], // currentLoanBalance 0 (its min) -> both payments 0 -> no savings -> break-even is Infinity, honestly "never"
   'down-payment-savings-calculator': ['years', 'totalContributions', 'totalInterest'], // rate 0 (its min) and monthlyContribution 0 (its min) -> no contribution and no growth, so a 0 goal is never "reached" -> 0/0

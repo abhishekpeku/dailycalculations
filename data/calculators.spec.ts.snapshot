@@ -8071,6 +8071,47 @@ exports[`compute() snapshots > paycheck-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > pension-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "yearsOfService": 30,
+      "finalAverageSalary": 70000,
+      "multiplierPercent": 2
+    },
+    "outputs": {
+      "annualPension": 42000,
+      "monthlyPension": 3500,
+      "incomeReplacementPercent": 60
+    }
+  },
+  "typical": {
+    "inputs": {
+      "yearsOfService": 45,
+      "finalAverageSalary": 105000,
+      "multiplierPercent": 3
+    },
+    "outputs": {
+      "annualPension": 141750,
+      "monthlyPension": 11812.5,
+      "incomeReplacementPercent": 135
+    }
+  },
+  "edge": {
+    "inputs": {
+      "yearsOfService": 0,
+      "finalAverageSalary": 0,
+      "multiplierPercent": 0
+    },
+    "outputs": {
+      "annualPension": 0,
+      "monthlyPension": 0,
+      "incomeReplacementPercent": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > percent-change-calculator 1`] = `
 {
   "default": {

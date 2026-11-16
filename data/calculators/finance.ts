@@ -3474,4 +3474,113 @@ export const financeCalculators: CalculatorConfig[] = [
       return { requiredMinimumDistribution, monthlyEquivalent, percentOfBalance };
     }
   },
+  {
+    id: 'pension-calculator',
+    group: 'Retirement',
+    category: 'finance',
+    glyph: 'Pen',
+    updatedAt: '2026-11-16',
+    aliases: ['pension calculator', 'defined benefit pension calculator', 'final salary pension calculator', 'retirement pension estimator', 'pension benefit calculator'],
+    related: ['retirement-savings-calculator', 'social-security-calculator', '401k-employer-match-calculator', 'annuity-calculator'],
+    title: 'Pension Calculator',
+    description: 'Estimate a defined-benefit pension from years of service, final average salary and a benefit multiplier — an illustrative formula, since real plans vary widely.',
+    example: '30 years of service at a $70,000 final average salary with a 2% multiplier gives an estimated pension of $42,000 a year, about 60% of final salary.',
+    breakdown: {
+      headline: 'annualPension',
+      headlineLabel: 'Estimated annual pension',
+      outputs: [
+        { id: 'annualPension', label: 'Estimated annual pension', format: 'currency' },
+        { id: 'monthlyPension', label: 'Estimated monthly pension', format: 'currency' },
+        { id: 'incomeReplacementPercent', label: 'Percent of final salary replaced', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Your pension plan', inputs: ['yearsOfService', 'finalAverageSalary', 'multiplierPercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'finalAverageSalary', label: 'Final average salary' },
+          { from: 'annualPension', label: 'Estimated annual pension' }
+        ],
+        title: 'Pension vs. final salary',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'The three-factor pension formula',
+        paragraphs: [
+          'Most defined-benefit pensions — the kind that pay a fixed amount for life rather than depending on investment markets — use the same three-factor formula: years of service, multiplied by a "formula multiplier," multiplied by the final average salary. The Wisconsin Legislative Council\'s biennial survey of 87 major U.S. state and local public retirement systems describes this as the standard shape: "Years of Service × Formula Multiplier × Final Average Salary = Retirement Annuity." This calculator applies that same formula directly to whatever years, salary and multiplier you enter.',
+          "The multiplier is the one number that varies enormously by plan, and it is what makes a pension estimate impossible to generalize. The same Wisconsin survey found that, for 2017-18, public plans coordinated with Social Security typically used a multiplier between 1.5% and 2.5% per year of service, while plans not coordinated with Social Security — which have to replace more income on their own — typically used a higher 2% to 2.5%. A well-documented federal example is the U.S. government's own FERS basic annuity: the Office of Personnel Management's published formula is 1% of the highest-3-year average salary per year of service, rising to 1.1% for anyone retiring at age 62 or older with at least 20 years of service. This calculator defaults to a round 2% purely as an illustration — it is not any specific plan's real rate, including FERS's own.",
+          "\"Final average salary\" is also plan-specific: it is usually the highest-paid 3 to 5 consecutive years, not necessarily the years right before retirement. In the Wisconsin survey, 52% of the 87 plans averaged the highest 5 years and 26% averaged the highest 3. Your plan's own summary describes which years it uses and whether they must be consecutive."
+        ]
+      },
+      howTo: {
+        intro: 'Enter your years of service, your plan\'s final average salary figure, and a benefit multiplier.',
+        steps: [
+          { name: 'Enter years of service', text: 'Total years credited under the plan, including any partial years your plan counts.' },
+          { name: 'Enter final average salary', text: 'Use your plan\'s own averaging period — often the highest 3 or 5 consecutive years, not necessarily your most recent salary.' },
+          { name: 'Set the multiplier', text: 'Replace the 2% illustration with your plan\'s real formula multiplier from its summary plan description, if you know it.' },
+          { name: 'Read the estimate', text: 'The annual and monthly pension appear, with the percent of final salary the pension would replace.' },
+          { name: 'Compare multipliers', text: 'Try your plan\'s real multiplier alongside a couple of others — the spread shows how much this one number changes the result.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The pension is years of service multiplied by the formula multiplier (as a decimal) multiplied by the final average salary.',
+        expression: 'Annual pension = Years of service × Multiplier × Final average salary\nMonthly pension = Annual pension ÷ 12\nPercent of salary replaced = Annual pension ÷ Final average salary × 100',
+        terms: [
+          { symbol: 'Years of service', meaning: 'Total years credited under the plan.' },
+          { symbol: 'Multiplier', meaning: "The plan's formula multiplier: the percent of final average salary earned as annual pension for each year of service. Typically 1% to 2.5% depending on the plan." },
+          { symbol: 'Final average salary', meaning: "The plan's own averaging period — commonly the highest 3 or 5 consecutive years of salary." }
+        ],
+        note: "Estimates only. Formula multipliers, averaging periods, early-retirement reductions, benefit caps and cost-of-living adjustments vary enormously by plan. This is not an official benefit estimate — check your plan's summary plan description or contact its administrator. Not financial or tax advice."
+      },
+      workedExample: {
+        intro: 'Someone retires with 30 years of service, a $70,000 final average salary, and a plan multiplier of 2%. What pension does the formula estimate?',
+        rows: [
+          { label: 'Annual pension (30 × 2% × $70,000)', value: '$42,000.00' },
+          { label: 'Monthly pension (42,000 ÷ 12)', value: '$3,500.00' },
+          { label: 'Percent of final salary replaced (42,000 ÷ 70,000)', value: '60%' }
+        ],
+        result: 'Estimated pension ≈ $42,000 a year, about $3,500 a month, replacing about 60% of final salary',
+        explanation: "The multiplier alone moves this a great deal on the identical 30 years and $70,000 salary: at FERS's 1.1% rate it is $23,100 a year (33% of salary); at 2.5% it is $52,500 a year (75% of salary). Years of service matter just as much — at the same 2% multiplier and salary, 20 years gives $28,000 a year, and 40 years gives $56,000 a year, exactly double the 20-year figure, because the formula is linear in years."
+      },
+      watchOut: [
+        { title: 'This varies enormously by plan', body: "The multiplier, the averaging period, any cap on the maximum benefit, and whether the benefit adjusts for inflation are all set by your specific plan, not by a universal rule. The Wisconsin survey found most of its 87 surveyed plans set no maximum benefit cap, with a cap of 100% of final average salary the next most common choice — plans differ even on whether a cap exists at all." },
+        { title: 'Retiring early usually reduces the benefit', body: "Most plans reduce the pension for retiring before the plan's own normal retirement age, commonly by a few percent for each year early, under what plans call an actuarial discount. This calculator does not model that reduction — check your plan's early-retirement provision before assuming today's formula applies at an earlier age." },
+        { title: 'Not an official benefit statement', body: 'This is an illustrative formula, not your plan\'s real benefit estimate. Contact your plan administrator or pension fund for an official calculation.' },
+        { title: 'Social Security, taxes and other income are not included', body: 'Many coordinated plans are designed to work alongside Social Security, not instead of it. See social-security-calculator for a separate estimate of that benefit.' },
+        { title: 'Some plans add a defined-contribution or money-purchase layer', body: 'A number of real plans pay the higher of this formula or a separate account-balance-based benefit, which this calculator does not model.' }
+      ],
+      references: [
+        { label: 'U.S. Office of Personnel Management, FERS Information: Computation', url: 'https://www.opm.gov/retirement-center/fers-information/computation/' },
+        { label: 'Wisconsin Legislative Council, 2017-18 Comparative Study of Major Public Employee Retirement Systems, Part IV', url: 'https://www.nasra.org/files/Topical%20Reports/Plan%20Design/2018_retirement.pdf' }
+      ]
+    },
+    inputs: [
+      { id: 'yearsOfService', label: 'Years of service', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 0 },
+      { id: 'finalAverageSalary', label: 'Final average salary', type: 'currency', placeholder: '70000', defaultValue: 70000, step: 1000, min: 0 },
+      { id: 'multiplierPercent', label: 'Benefit multiplier', type: 'percent', placeholder: '2', defaultValue: 2, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Pension Calculator – Estimate a Defined-Benefit Pension',
+      description: 'Estimate a defined-benefit pension from years of service, final average salary and a benefit multiplier. Illustrative only — real plans vary widely.',
+      faq: [
+        { question: 'How is a pension calculated?', answer: 'Multiply years of service by the plan\'s formula multiplier (as a decimal) by the final average salary. 30 years at a 2% multiplier and a $70,000 final average salary gives $42,000 a year.' },
+        { question: 'What multiplier should I use?', answer: "Use your own plan's published multiplier if you know it — they commonly run 1% to 2.5% per year of service. The U.S. federal FERS plan, for example, uses 1%, or 1.1% for anyone retiring at 62 or older with 20+ years of service." },
+        { question: 'What counts as "final average salary"?', answer: "Whatever averaging period your plan defines — commonly the highest 3 or 5 consecutive years of salary, not necessarily your most recent pay. A 2017-18 survey of 87 public plans found 52% used a 5-year average and 26% used a 3-year average." },
+        { question: 'Does this include Social Security?', answer: 'No. A pension and a Social Security benefit are calculated separately and, for many public employees, received together. See social-security-calculator for a separate benefit estimate.' },
+        { question: 'How does retiring early affect the pension?', answer: "Most plans reduce the benefit for retiring before the plan's normal retirement age, often by a few percent for each year early. This calculator does not model that reduction, so an early-retirement estimate from it alone can overstate the real benefit." },
+        { question: 'Is this an official benefit estimate?', answer: "No. It is an illustrative three-factor formula, not a substitute for your plan's own benefit calculation. Contact your plan administrator for an official figure." }
+      ]
+    },
+    compute(values) {
+      const annualPension = values.yearsOfService * (values.multiplierPercent / 100) * values.finalAverageSalary;
+      const monthlyPension = annualPension / 12;
+      const incomeReplacementPercent = values.finalAverageSalary > 0 ? (annualPension / values.finalAverageSalary) * 100 : NaN;
+      return { annualPension, monthlyPension, incomeReplacementPercent };
+    }
+  },
 ];

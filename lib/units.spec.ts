@@ -42,7 +42,7 @@ describe('unit tables', () => {
     assert.deepEqual([...dimensions].sort(), [
       'absorbance', 'acceleration', 'amountOfSubstance', 'angle', 'angularMomentum', 'angularVelocity', 'area', 'capacitance', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
       'decibel', 'density', 'electricField', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'inductance', 'length', 'magneticFluxDensity', 'mass', 'massConcentration', 'molalConstant', 'molality', 'molarAbsorptivity', 'molarEnergy', 'molarEntropy', 'molarMass', 'momentOfInertia', 'momentum',
-      'normality', 'osmolarity', 'pH', 'pace', 'percent', 'power', 'pressure', 'rateConstant', 'resistance', 'specificHeat', 'speed', 'springConstant', 'temperature', 'temperatureDelta', 'term', 'thermalExpansionCoeff', 'time',
+      'normality', 'osmolarity', 'pH', 'pace', 'percent', 'power', 'pressure', 'rateConstant', 'resistance', 'specificHeat', 'specificLatentHeat', 'speed', 'springConstant', 'temperature', 'temperatureDelta', 'term', 'thermalExpansionCoeff', 'time',
       'torque', 'voltage', 'volume'
     ]);
   });
@@ -208,11 +208,12 @@ describe('anchor values', () => {
     close(toBase(1, 'momentum', 'Ns'), 1);
     close(convert(30, 'momentum', 'kgm/s', 'Ns'), 30);
   });
-  test('density: 1 g/cm3 = 1000 kg/m3, 1 lb/ft3 ≈ 16.0185 kg/m3', () => {
+  test('density: 1 g/cm3 = 1000 kg/m3, 1 lb/ft3 ≈ 16.0185 kg/m3, 1 g/L = 1 kg/m3 exactly', () => {
     assert.equal(UNITS.density[0].id, 'kg/m3');
     close(toBase(1, 'density', 'g/cm3'), 1000);
     close(toBase(1, 'density', 'lb/ft3'), 16.018463373960138, 1e-9);
     close(convert(19.3, 'density', 'g/cm3', 'kg/m3'), 19300);
+    close(toBase(1.25, 'density', 'g/L'), 1.25); // nitrogen gas at STP, gas-density-calculator
   });
   test('spring constant: 1 N/mm = 1000 N/m, 1 lbf/in ≈ 175.1268 N/m; Hooke\'s law stays a plain multiplication', () => {
     assert.equal(UNITS.springConstant[0].id, 'N/m');
@@ -317,6 +318,12 @@ describe('anchor values', () => {
     assert.equal(UNITS.specificHeat[0].id, 'J/kgK');
     close(toBase(1, 'specificHeat', 'J/gK'), 1000);
     close(toBase(1, 'specificHeat', 'cal/gC'), 4184);
+  });
+  test('specific latent heat: 1 kJ/kg = 1000 J/kg, water’s heat of fusion (≈334 kJ/kg) round-trips', () => {
+    assert.equal(UNITS.specificLatentHeat[0].id, 'J/kg');
+    close(toBase(1, 'specificLatentHeat', 'kJ/kg'), 1000);
+    close(convert(334, 'specificLatentHeat', 'kJ/kg', 'J/kg'), 334000);
+    close(fromBase(toBase(2412, 'specificLatentHeat', 'kJ/kg'), 'specificLatentHeat', 'kJ/kg'), 2412); // round-trip
   });
   test('temperature delta is an interval, not a reading: 1°C change = 1 K change, 1°F change = 5/9 K change', () => {
     assert.equal(UNITS.temperatureDelta[0].id, 'K');

@@ -7,7 +7,16 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-11-17 · **Step 46 physics run 10 DONE** — PR #111, branch
+Last updated: 2026-11-17 · **Step 46 chemistry run 11 DONE** — PR #110, branch
+`step/46-wave-3-chemistry-run-11` (built in parallel with physics run 10, separate category file).
+Added `formal-charge-calculator`, `latent-heat-calculator`, `raoults-law-calculator`,
+`nuclear-binding-energy-calculator`, `gas-density-calculator`. New `lib/units.ts` dimension:
+`specificLatentHeat`; new unit: `g/L` on `density`. `common-ion-effect-calculator`'s pre-existing
+unit-dimension bug (flagged run 10) remains parked, not fixed this run. `npm test` (1,382), lint and
+`npm run build` all pass. **`chemistry` 50 → 55, site-wide 356** (51 physics + 5 → after both runs
+reconciled). Full detail in `mdFiles/steps/46-47-wave-3-physics-chemistry.md`.
+
+Previous: **Step 46 physics run 10 DONE** — PR #111, branch
 `step/46-wave-3-physics-run-10`. Built the rotational-dynamics trio run 9 explicitly deferred
 (`moment-of-inertia-calculator`, `rotational-kinetic-energy-calculator`,
 `angular-momentum-calculator`) plus two electricity/circuits calculators

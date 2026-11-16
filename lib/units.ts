@@ -38,6 +38,7 @@ export type UnitDimension =
   | 'frequency'
   | 'decibel'
   | 'specificHeat'
+  | 'specificLatentHeat'
   | 'temperatureDelta'
   | 'amountOfSubstance'
   | 'concentration'
@@ -272,7 +273,11 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
   density: [
     { id: 'kg/m3', label: 'kg/m³', factor: 1 },
     { id: 'g/cm3', label: 'g/cm³', factor: 1000 },
-    { id: 'lb/ft3', label: 'lb/ft³', factor: POUND / FOOT ** 3 }
+    { id: 'lb/ft3', label: 'lb/ft³', factor: POUND / FOOT ** 3 },
+    // 1 g/L = 1 g / 1e-3 m³ = 1000 g/m³ = 1 kg/m³ exactly — numerically identical to the base unit,
+    // added as its own label (not just a kg/m³ display) since gas density is conventionally reported
+    // in g/L (e.g. nitrogen at STP, "1.25 g/L"), not kg/m³ (gas-density-calculator).
+    { id: 'g/L', label: 'g/L', factor: 1 }
   ],
   // Hooke's law (OpenStax University Physics Volume 1 §15.1 "Simple Harmonic Motion", Fs = −kx):
   // the spring/force constant, SI derived unit N/m. 1 N/mm = 1000 N/m exactly (mm is 1e-3 m); 1
@@ -400,6 +405,16 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
     { id: 'J/kgK', label: 'J/(kg·K)', factor: 1 },
     { id: 'J/gK', label: 'J/(g·K)', factor: 1000 },
     { id: 'cal/gC', label: 'cal/(g·°C)', factor: CALORIE * 1000 }
+  ],
+  // Specific latent heat, Q = mL (OpenStax Chemistry 2e §10.3 "Phase Transitions" presents ΔHfus/
+  // ΔHvap per mole; this is the same phase-change energy per unit MASS instead, needed for
+  // latent-heat-calculator's Q = mL). SI derived unit J/kg. 1 kJ/kg = 1000 J/kg exactly, and is
+  // numerically identical to the commonly tabulated J/g (1 J/g = 1 kJ/kg exactly, since both scale
+  // mass by 1000 the same way) — kJ/kg is the practical typing unit for water's own ≈334 kJ/kg
+  // (fusion) and ≈2260 kJ/kg (vaporization) figures.
+  specificLatentHeat: [
+    { id: 'J/kg', label: 'J/kg', factor: 1 },
+    { id: 'kJ/kg', label: 'kJ/kg', factor: 1000 }
   ],
   // A temperature INTERVAL, not an absolute reading — no offset, unlike `temperature` above. A 1°C
   // change equals a 1 K change exactly; a 1°F change is 5/9 of a K change exactly (NIST SP 811 §B.9).

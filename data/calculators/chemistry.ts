@@ -6231,5 +6231,557 @@ export const chemistryCalculators: CalculatorConfig[] = [
     compute(values) {
       return { productMass2: values.reactantMass1 + values.reactantMass2 - values.productMass1 };
     }
+  },
+  {
+    id: 'formal-charge-calculator',
+    category: 'chemistry',
+    group: 'Atomic & Molecular Structure',
+    glyph: 'FC',
+    updatedAt: '2026-11-17',
+    aliases: ['formal charge calculator', 'formal charge of an atom calculator', 'lewis structure formal charge calculator', 'how to calculate formal charge', 'formal charge formula'],
+    related: ['oxidation-number-calculator', 'molecular-geometry-calculator', 'electron-configuration-calculator', 'empirical-formula-calculator'],
+    title: 'Formal Charge Calculator',
+    description: 'Find an atom’s formal charge in a Lewis structure from its free-atom valence electrons, its lone-pair (nonbonding) electrons, and its bonding electrons.',
+    example: 'In the ICl₄⁻ ion, the central iodine atom (4 single bonds, 2 lone pairs) has a formal charge of −1, while each chlorine atom has a formal charge of 0.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is formal charge?',
+        paragraphs: [
+          'Formal charge is a bookkeeping tool for reading a Lewis structure: it asks what charge an atom would carry if every bonding pair were split exactly evenly between the two atoms sharing it, regardless of which atom actually pulls electron density harder in real life. OpenStax Chemistry 2e’s §7.4 "Formal Charges and Resonance" gives the formula directly: formal charge = (valence electrons the free atom would have) − (its own lone-pair electrons) − (half of its bonding electrons).',
+          'It answers a different question than electronegativity or an atom’s real partial charge. A C–O bond is genuinely polar, with oxygen holding more of the actual electron density — but formal charge ignores that difference on purpose, splitting every bond 50/50, so it can be used consistently across an entire molecule without needing electronegativity data for every atom pair.',
+          'Formal charge’s main job is picking between candidate Lewis structures for the same molecule or ion: OpenStax’s guideline is that the most reasonable structure keeps formal charges as close to zero as possible, and puts any negative formal charge on the more electronegative atom. It is also how resonance structures of the same species are compared and ranked.'
+        ]
+      },
+      howTo: {
+        intro: 'Draw the Lewis structure first, then count three things for the one atom you want the formal charge of.',
+        steps: [
+          { name: 'Find the atom’s valence electron count as a free atom', text: 'This is just its group number on the periodic table — 7 for a halogen like iodine or chlorine, 6 for oxygen, 5 for nitrogen, 4 for carbon.' },
+          { name: 'Count its lone-pair (nonbonding) electrons', text: 'Every unshared pair drawn directly on that atom counts as 2 electrons — a single lone pair is 2, two lone pairs is 4.' },
+          { name: 'Count its bonding electrons', text: 'Every electron the atom shares in a bond, including every bond to every neighbor — a single bond contributes 2, a double bond 4, a triple bond 6.' },
+          { name: 'Enter the three numbers', text: 'Valence electrons, lone-pair electrons, and bonding electrons.' },
+          { name: 'Read the formal charge', text: 'It updates immediately. Repeat for every other atom in the structure if you want to check that the charges sum to the molecule or ion’s overall charge.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Formal charge subtracts an atom’s own nonbonding electrons and half of its shared bonding electrons from the valence electron count it would have as a free, unbonded atom.',
+        expression: 'formal charge = V − L − (B ÷ 2)',
+        terms: [
+          { symbol: 'V', meaning: 'Valence electrons of the free, unbonded atom (its periodic-table group number for main-group elements).' },
+          { symbol: 'L', meaning: 'Lone-pair (nonbonding) electrons drawn directly on that atom in the Lewis structure.' },
+          { symbol: 'B', meaning: 'Bonding electrons that atom shares in every bond it forms (2 per single bond, 4 per double bond, 6 per triple bond).' }
+        ],
+        note: 'This calculates one atom’s formal charge at a time from a Lewis structure you have already drawn — it does not draw the structure itself.'
+      },
+      workedExample: {
+        intro: 'The ICl₄⁻ ion: a central iodine atom single-bonded to four chlorine atoms, with two lone pairs left on iodine. What is iodine’s formal charge? (OpenStax Chemistry 2e, Example 7.6.)',
+        rows: [
+          { label: 'Iodine’s valence electrons (group 17)', value: '7' },
+          { label: 'Iodine’s lone-pair electrons (2 lone pairs × 2)', value: '4' },
+          { label: 'Iodine’s bonding electrons (4 single bonds × 2)', value: '8' },
+          { label: 'Formal charge = 7 − 4 − (8 ÷ 2)', value: '7 − 4 − 4 = −1' }
+        ],
+        result: 'Iodine’s formal charge in ICl₄⁻ = −1',
+        explanation: 'Each chlorine atom (valence 7, one lone-bond’s 2 bonding electrons, 3 lone pairs = 6 nonbonding electrons) works out to 7 − 6 − 1 = 0. Summing one iodine at −1 and four chlorines at 0 gives −1 overall, exactly matching the ion’s actual charge — the check OpenStax’s own example performs.'
+      },
+      watchOut: [
+        {
+          title: 'This is not the same as oxidation number',
+          body: 'Oxidation number treats every bond as fully ionic (100% to the more electronegative atom); formal charge splits every bond exactly in half regardless of electronegativity. The same atom in the same molecule can have a different formal charge and oxidation number at once — this site’s oxidation number calculator covers that separate convention.'
+        },
+        {
+          title: 'Count every bond\'s electrons, not just the number of bonds',
+          body: 'A double bond contributes 4 bonding electrons to the atom\'s count, not 2 — forgetting to double (or triple) that contribution for multiple bonds is the most common formal-charge mistake.'
+        },
+        {
+          title: 'Every atom\'s formal charges should sum to the species\' real overall charge',
+          body: 'For a neutral molecule, every atom\'s formal charge should add up to 0; for an ion, they should add up to that ion\'s actual charge. If they do not, the Lewis structure (or the electron counting) has an error somewhere.'
+        },
+        {
+          title: 'Formal charge does not measure real, physically transferred charge',
+          body: 'It is a structure-comparison convention, not a measured property — like oxidation number, it assumes an idealized electron split that real, mostly-covalent bonds do not actually have.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §7.4 "Formal Charges and Resonance" (the formula and the ICl₄⁻ example)', url: 'https://openstax.org/books/chemistry-2e/pages/7-4-formal-charges-and-resonance' }
+      ]
+    },
+    inputs: [
+      { id: 'valenceElectrons', label: 'Valence electrons (free atom)', type: 'number', placeholder: '7', defaultValue: 7, step: 1, min: 0 },
+      { id: 'lonePairElectrons', label: 'Lone-pair (nonbonding) electrons', type: 'number', placeholder: '4', defaultValue: 4, step: 1, min: 0 },
+      { id: 'bondingElectrons', label: 'Bonding electrons (all bonds, shared)', type: 'number', placeholder: '8', defaultValue: 8, step: 1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'formalCharge',
+      headlineLabel: 'Formal charge',
+      outputs: [{ id: 'formalCharge', label: 'Formal charge', format: 'number' }]
+    },
+    seo: {
+      title: 'Formal Charge Calculator (V − L − B/2)',
+      description: 'Free formal charge calculator. Find an atom’s formal charge from its valence, lone-pair, and bonding electrons, with a worked ICl₄⁻ example.',
+      faq: [
+        { question: 'How do I calculate formal charge?', answer: 'Formal charge = valence electrons (as a free atom) − lone-pair electrons − half of the bonding electrons it shares in every bond.' },
+        { question: 'What is iodine’s formal charge in ICl₄⁻?', answer: '−1. Iodine has 7 valence electrons, 4 lone-pair electrons (2 lone pairs), and 8 bonding electrons (4 single bonds): 7 − 4 − 4 = −1.' },
+        { question: 'What are the formal charges in carbon monoxide, CO?', answer: 'Carbon is −1 and oxygen is +1 (a C≡O triple bond with one lone pair on each atom): carbon = 4 − 2 − 3 = −1, oxygen = 6 − 2 − 3 = +1, summing to 0 for the neutral molecule.' },
+        { question: 'What is the difference between formal charge and oxidation number?', answer: 'Formal charge splits every bond\'s electrons exactly evenly between the two atoms; oxidation number instead assigns every bonding electron entirely to the more electronegative atom. They are two different, independently useful bookkeeping conventions, not two ways of measuring the same thing.' },
+        { question: 'Why does a double or triple bond count as 4 or 6 bonding electrons?', answer: 'Because each bond, no matter its order, is a shared pair (or pairs) of electrons — a double bond is two shared pairs (4 electrons), a triple bond is three shared pairs (6 electrons), and all of them count toward the bonded atom\'s total.' },
+        { question: 'How is formal charge used to pick between resonance structures?', answer: 'The structure with formal charges closest to zero, and with any negative formal charge on the most electronegative atom, is generally considered the most reasonable contributor among the resonance structures.' }
+      ]
+    },
+    compute(values) {
+      return { formalCharge: values.valenceElectrons - values.lonePairElectrons - values.bondingElectrons / 2 };
+    }
+  },
+  {
+    id: 'latent-heat-calculator',
+    category: 'chemistry',
+    group: 'Thermochemistry',
+    glyph: 'L',
+    updatedAt: '2026-11-17',
+    aliases: ['latent heat calculator', 'heat of fusion calculator', 'heat of vaporization calculator', 'phase change energy calculator', 'q = ml calculator'],
+    related: ['calorimetry-enthalpy-calculator', 'vapor-pressure-calculator', 'specific-heat-by-mixing-calculator', 'hess-law-enthalpy-calculator'],
+    title: 'Latent Heat Calculator (Q = mL)',
+    description: 'Find the heat absorbed or released during a phase change — melting, freezing, boiling, or condensing — from a substance’s mass and specific latent heat.',
+    example: 'Evaporating 1.5 kg of sweat at body temperature (37°C, specific latent heat ≈ 2412 kJ/kg) removes about 3620 kJ of heat from the body.',
+    solver: {
+      defaultTarget: 'heat',
+      variables: [
+        { id: 'heat', label: 'Heat absorbed or released', symbol: 'Q', dimension: 'energy', defaultValue: 16680, defaultUnit: 'J' },
+        { id: 'mass', label: 'Mass changing phase', symbol: 'm', dimension: 'mass', defaultValue: 0.05, defaultUnit: 'kg' },
+        { id: 'specificLatentHeat', label: 'Specific latent heat', symbol: 'L', dimension: 'specificLatentHeat', defaultValue: 333.61, defaultUnit: 'kJ/kg' }
+      ],
+      solve: {
+        heat: ({ mass, specificLatentHeat }) => mass * specificLatentHeat,
+        mass: ({ heat, specificLatentHeat }) => (specificLatentHeat === 0 ? NaN : heat / specificLatentHeat),
+        specificLatentHeat: ({ heat, mass }) => (mass === 0 ? NaN : heat / mass)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is latent heat?',
+        paragraphs: [
+          'Latent heat is the energy a substance absorbs or releases while changing phase — melting, freezing, boiling, or condensing — without its temperature changing at all. All of that energy goes into breaking (or forming) the intermolecular attractions holding the solid or liquid together, not into speeding up or slowing down the molecules’ motion, which is why the thermometer holds steady at the melting or boiling point throughout the whole change.',
+          'This is a genuinely different formula from the specific heat relationship (Q = mcΔT) this site’s own heat calculator covers: that formula describes warming or cooling a substance while it stays in one phase, with a temperature change ΔT. Latent heat instead describes energy spent entirely on changing phase, with no temperature change at all — the two formulas apply to two different parts of the same heating curve and are never combined into one equation.',
+          'OpenStax Chemistry 2e’s §10.3 "Phase Transitions" states these heats per mole (ΔHfus for melting, ΔHvap for vaporizing) — water’s is 6.01 kJ/mol melting at 0°C. Dividing by the substance’s molar mass converts that into the per-mass form (L, in kJ/kg or J/g) this calculator uses directly, which is the more convenient form once you are not working mole-by-mole.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter any two of the three quantities — heat, mass, and specific latent heat — and the third fills in automatically.',
+        steps: [
+          { name: 'Identify the phase change', text: 'Melting/freezing uses the substance’s specific heat of fusion; boiling/condensing uses its specific heat of vaporization — they are different numbers for the same substance.' },
+          { name: 'Look up the specific latent heat', text: 'From a reference table, or derive it yourself from a molar ΔHfus/ΔHvap figure divided by the substance’s molar mass.' },
+          { name: 'Enter the mass changing phase', text: 'The amount of substance actually melting, freezing, boiling, or condensing.' },
+          { name: 'Read the heat', text: 'It fills in automatically — positive for heat going into the substance (melting, boiling), with the same magnitude released for the reverse change (freezing, condensing).' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The heat involved in a phase change is simply the mass changing phase times that substance’s own specific latent heat for that particular change.',
+        expression: 'Q = m × L',
+        terms: [
+          { symbol: 'Q', meaning: 'Heat absorbed (melting, boiling) or released (freezing, condensing) during the phase change.' },
+          { symbol: 'm', meaning: 'Mass of the substance undergoing the phase change.' },
+          { symbol: 'L', meaning: 'Specific latent heat for that specific phase change (fusion or vaporization) — a different number for every substance, and a different number for melting versus boiling of the same substance.' }
+        ],
+        note: 'This covers one phase change at a time, at the substance’s own melting or boiling point. A problem that both changes a substance’s temperature AND its phase (ice below 0°C warming into steam above 100°C) needs this formula and the Q = mcΔT specific-heat formula added together in separate steps, one per segment of the heating curve.'
+      },
+      workedExample: {
+        intro: 'The body cools itself by evaporating sweat. How much heat is removed by evaporating 1.5 kg of sweat (treated as water) at normal body temperature, 37°C, where water’s molar heat of vaporization is 43.46 kJ/mol? (OpenStax Chemistry 2e, Example 10.9.)',
+        rows: [
+          { label: 'Molar heat of vaporization at 37°C', value: '43.46 kJ/mol' },
+          { label: 'Water’s molar mass', value: '18.015 g/mol' },
+          { label: 'Specific latent heat, L = 43.46 ÷ 18.015', value: '≈ 2412.4 kJ/kg' },
+          { label: 'Mass evaporated', value: '1.5 kg' },
+          { label: 'Q = m × L = 1.5 × 2412.4', value: '≈ 3618.7 kJ' }
+        ],
+        result: 'Q ≈ 3619 kJ removed by evaporation',
+        explanation: 'OpenStax’s own solution works mole-by-mole (1.5 kg ÷ 18.015 g/mol = 83.26 mol, then × 43.46 kJ/mol) and rounds its final answer to 2 significant figures, "about 3600 kJ" — the same calculation routed through a mass-based specific latent heat instead of moles gives 3618.7 kJ, matching to the precision OpenStax’s own rounding supports (the two-tenths-of-a-percent gap is from OpenStax rounding q_solution to 2 sig figs before stating the final answer, not a disagreement over the physics).'
+      },
+      watchOut: [
+        {
+          title: 'Fusion and vaporization use different L values for the same substance',
+          body: 'Water’s specific heat of fusion (≈334 kJ/kg, melting at 0°C) and its specific heat of vaporization (≈2412 kJ/kg at 37°C, or a somewhat different figure at its 100°C boiling point) are not interchangeable — always match the L value to the specific phase change you are computing.'
+        },
+        {
+          title: 'This is not the Q = mcΔT specific-heat formula',
+          body: 'Specific heat (this site’s heat calculator) describes warming or cooling within one phase, with a temperature change. Latent heat describes the phase change itself, at a fixed temperature, with no ΔT at all — mixing the two formulas into one calculation is a common error.'
+        },
+        {
+          title: 'A substance’s heat of vaporization is not perfectly constant with temperature',
+          body: 'It decreases somewhat as temperature rises (compare water’s 43.46 kJ/mol at 37°C against its 44.01 kJ/mol at 25°C) — always use an L value quoted at, or close to, the temperature the phase change is actually happening at.'
+        },
+        {
+          title: 'Freezing and condensing release exactly as much heat as melting and boiling absorb',
+          body: 'The magnitude of Q is the same for the forward and reverse phase change at the same temperature — only the sign (heat in versus heat out) flips.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §10.3 "Phase Transitions" (heats of fusion and vaporization, and Example 10.9’s sweat-evaporation calculation)', url: 'https://openstax.org/books/chemistry-2e/pages/10-3-phase-transitions' }
+      ]
+    },
+    inputs: [
+      { id: 'mass', label: 'Mass changing phase (kg)', type: 'number', placeholder: '1.5', defaultValue: 1.5, step: 0.01, min: 0 },
+      { id: 'specificLatentHeat', label: 'Specific latent heat (J/kg)', type: 'number', placeholder: '2412434', defaultValue: 2412434, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Latent Heat Calculator (Q = mL)',
+      description: 'Free latent heat calculator. Find the heat absorbed or released melting, freezing, boiling, or condensing, with a worked OpenStax evaporation example.',
+      faq: [
+        { question: 'What is the formula for latent heat?', answer: 'Q = mL, where m is the mass changing phase and L is that substance’s specific latent heat for that particular change (fusion for melting/freezing, vaporization for boiling/condensing).' },
+        { question: 'How much heat does evaporating 1.5 kg of sweat remove at body temperature?', answer: 'About 3619 kJ, using water’s specific heat of vaporization at 37°C (≈2412 kJ/kg, from OpenStax’s own 43.46 kJ/mol figure divided by water’s molar mass).' },
+        { question: 'What is the specific latent heat of fusion for water?', answer: 'About 334 kJ/kg (equivalently 334 J/g), derived from OpenStax’s molar value of 6.01 kJ/mol divided by water’s 18.015 g/mol molar mass — melting 50 g of ice this way takes about 16.7 kJ.' },
+        { question: 'Is latent heat the same as specific heat?', answer: 'No. Specific heat (Q = mcΔT) describes temperature change within one phase; latent heat (Q = mL) describes the energy of the phase change itself, at a constant temperature.' },
+        { question: 'Does latent heat depend on temperature?', answer: 'The heat of vaporization does change somewhat with temperature (water’s is 43.46 kJ/mol at 37°C versus 44.01 kJ/mol at 25°C) — always use a value quoted near the actual temperature of the phase change.' },
+        { question: 'Why doesn’t the temperature change during melting or boiling?', answer: 'Because every joule of heat added is being used to pull molecules apart from each other (breaking intermolecular attractions), not to speed up their motion — temperature (a measure of average kinetic energy) only starts rising again once the phase change is complete.' }
+      ]
+    },
+    compute(values) {
+      return { heat: values.mass * values.specificLatentHeat };
+    }
+  },
+  {
+    id: 'raoults-law-calculator',
+    category: 'chemistry',
+    group: 'Colligative Properties',
+    glyph: 'Pᵢ',
+    updatedAt: '2026-11-17',
+    aliases: ['raoult’s law calculator', 'raoults law calculator', 'vapor pressure of a solution calculator', 'vapor pressure lowering calculator', 'partial vapor pressure calculator'],
+    related: ['vapor-pressure-calculator', 'boiling-point-elevation-calculator', 'freezing-point-depression-calculator', 'mole-fraction-calculator'],
+    title: 'Raoult’s Law Calculator (P = XP°)',
+    description: 'Find the vapor pressure of an ideal solution (or any one component of it) from its mole fraction and the pure component’s vapor pressure.',
+    example: 'A solution that is 80.0% ethanol by mole fraction, with pure ethanol’s own vapor pressure at 0.178 atm, has a vapor pressure of about 0.142 atm.',
+    solver: {
+      defaultTarget: 'solutionPressure',
+      variables: [
+        { id: 'solutionPressure', label: 'Solution’s vapor pressure', symbol: 'P', dimension: 'pressure', defaultValue: 0.1424, defaultUnit: 'atm' },
+        { id: 'moleFraction', label: 'Mole fraction of the component', symbol: 'X', dimension: 'count', defaultValue: 0.8, defaultUnit: 'count' },
+        { id: 'purePressure', label: 'Pure component’s vapor pressure', symbol: 'P°', dimension: 'pressure', defaultValue: 0.178, defaultUnit: 'atm' }
+      ],
+      solve: {
+        solutionPressure: ({ moleFraction, purePressure }) => moleFraction * purePressure,
+        moleFraction: ({ solutionPressure, purePressure }) => (purePressure === 0 ? NaN : solutionPressure / purePressure),
+        purePressure: ({ solutionPressure, moleFraction }) => (moleFraction === 0 ? NaN : solutionPressure / moleFraction)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is Raoult’s law?',
+        paragraphs: [
+          'Raoult’s law, covered in OpenStax Chemistry 2e’s §11.4 "Colligative Properties", states that in an ideal solution, the partial vapor pressure contributed by any one component equals that pure component’s own vapor pressure times its mole fraction in the solution: P = XP°. Dissolving a nonvolatile solute (one with essentially no vapor pressure of its own, like salt or sugar) in a volatile solvent always lowers the solution’s overall vapor pressure below the pure solvent’s, simply because fewer solvent molecules now sit at the liquid’s surface able to escape into the vapor phase.',
+          'This is a genuinely different colligative property from this site’s freezing-point depression and boiling-point elevation calculators — all three come from the same underlying cause (a solute diluting the solvent’s own mole fraction), but vapor pressure lowering is the most direct expression of it, measured at a fixed temperature rather than as a shift in a phase-change temperature.',
+          'The law also applies to a volatile solute with its own measurable vapor pressure, like ethanol dissolved alongside a nonvolatile solute such as glycerin — in that case P = XP° gives the volatile component’s own partial pressure directly, and this is the shape of the worked example below.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter any two of the three quantities — the solution’s vapor pressure, the component’s mole fraction, and that pure component’s own vapor pressure — and the third fills in automatically.',
+        steps: [
+          { name: 'Identify the volatile component', text: 'The substance whose vapor pressure you are finding — usually the solvent, unless a volatile solute is involved.' },
+          { name: 'Find its mole fraction in the solution', text: 'Moles of that component ÷ total moles of everything dissolved (this site’s mole fraction calculator handles that step directly).' },
+          { name: 'Enter the pure component’s vapor pressure', text: 'Its own vapor pressure with no solute present at all, at the same temperature.' },
+          { name: 'Read the solution’s vapor pressure', text: 'It fills in automatically — always lower than the pure component’s own vapor pressure, since the mole fraction is always less than 1 once anything else is dissolved in it.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'A component’s partial vapor pressure in an ideal solution scales directly with its own mole fraction there.',
+        expression: 'P = X × P°',
+        terms: [
+          { symbol: 'P', meaning: 'The vapor pressure actually contributed by that component once it is part of the solution.' },
+          { symbol: 'X', meaning: 'That component’s mole fraction in the solution (between 0 and 1).' },
+          { symbol: 'P°', meaning: 'That same component’s own vapor pressure in its pure form, at the same temperature.' }
+        ],
+        note: 'This assumes an ideal solution, where the solute and solvent molecules interact with each other about as strongly as they interact with their own kind — real solutions deviate somewhat, more so the more concentrated or dissimilar the components are.'
+      },
+      workedExample: {
+        intro: 'A solution of 92.1 g of glycerin, C₃H₅(OH)₃ (a nonvolatile solute), and 184.4 g of ethanol, C₂H₅OH, at 40°C. Pure ethanol’s own vapor pressure at 40°C is 0.178 atm. What is the solution’s vapor pressure? (OpenStax Chemistry 2e, Example 11.6.)',
+        rows: [
+          { label: 'Moles of glycerin (92.1 g ÷ 92.09 g/mol)', value: '≈ 1.00 mol' },
+          { label: 'Moles of ethanol (184.4 g ÷ 46.07 g/mol)', value: '≈ 4.00 mol' },
+          { label: 'Mole fraction of ethanol, X = 4.00 ÷ (4.00 + 1.00)', value: '0.800' },
+          { label: 'Pure ethanol’s vapor pressure, P°', value: '0.178 atm' },
+          { label: 'Solution vapor pressure, P = X × P° = 0.800 × 0.178', value: '≈ 0.142 atm' }
+        ],
+        result: 'P ≈ 0.142 atm (about 80.0% of pure ethanol’s own vapor pressure)',
+        explanation: 'Recomputing the mole counts from the given masses and each compound’s standard molar mass (glycerin 92.094 g/mol, ethanol 46.069 g/mol) gives 1.0001 mol and 4.0027 mol — a mole fraction of 0.8001 and a solution vapor pressure of 0.1424 atm, matching OpenStax’s own stated 0.800 and 0.142 atm to the precision their rounding supports.'
+      },
+      watchOut: [
+        {
+          title: 'This describes an ideal solution — real solutions deviate',
+          body: 'Raoult’s law assumes the solute and solvent attract each other about as strongly as they attract their own kind. A solution where that is not true (strong hydrogen bonding between unlike molecules, for instance) shows a real vapor pressure somewhat above or below this formula’s prediction.'
+        },
+        {
+          title: 'A volatile solute needs its own term, not this solute-is-nonvolatile shortcut',
+          body: 'When every dissolved substance has its own measurable vapor pressure, each one contributes its own P = XP° term, and the solution’s total vapor pressure is the sum of all of them (Dalton’s law of partial pressures) — this calculator finds one component’s own contribution at a time.'
+        },
+        {
+          title: 'Mole fraction, not mass fraction or molarity',
+          body: 'Raoult’s law specifically needs the mole fraction — the same quantity this site’s boiling-point elevation and freezing-point depression calculators build their own colligative-property math on, and a different number from mass percent or molarity for the same solution.'
+        },
+        {
+          title: 'Vapor pressure is temperature-specific',
+          body: 'Both the pure component’s vapor pressure and the resulting solution vapor pressure are only valid at the one temperature they were measured or looked up at — a different temperature needs a different P° value entirely (see this site’s own vapor pressure calculator for how P° itself changes with temperature).'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §11.4 "Colligative Properties" (Raoult’s law and Example 11.6)', url: 'https://openstax.org/books/chemistry-2e/pages/11-4-colligative-properties' }
+      ]
+    },
+    inputs: [
+      { id: 'moleFraction', label: 'Mole fraction of the component', type: 'number', placeholder: '0.8', defaultValue: 0.8, step: 0.001, min: 0 },
+      { id: 'purePressure', label: 'Pure component’s vapor pressure (Pa)', type: 'number', placeholder: '18035.85', defaultValue: 18035.85, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Raoult’s Law Calculator (P = XP°)',
+      description: 'Free Raoult’s law calculator. Find a solution’s vapor pressure from mole fraction and the pure component’s vapor pressure, with a worked OpenStax example.',
+      faq: [
+        { question: 'What is Raoult’s law?', answer: 'P = XP°: a component’s vapor pressure in an ideal solution equals its own pure vapor pressure times its mole fraction in that solution.' },
+        { question: 'What is the vapor pressure of a solution that is 80.0% ethanol by mole fraction?', answer: 'About 0.142 atm, using pure ethanol’s own vapor pressure of 0.178 atm at the same temperature: 0.800 × 0.178 ≈ 0.142 atm.' },
+        { question: 'Why does dissolving a solute lower vapor pressure?', answer: 'Because the solute takes up some of the space at the liquid’s surface, leaving fewer solvent molecules free to escape into the vapor phase — the solvent’s own mole fraction, and so its contribution to vapor pressure, drops below 1.' },
+        { question: 'Does Raoult’s law apply to a volatile solute too?', answer: 'Yes — any component with its own measurable vapor pressure follows P = XP° for its own partial pressure; a solution’s total vapor pressure is then the sum of every volatile component’s own contribution.' },
+        { question: 'What is the difference between Raoult’s law and boiling-point elevation?', answer: 'They are both colligative properties caused by the same thing (a solute diluting the solvent), but Raoult’s law gives the vapor pressure directly at a fixed temperature, while boiling-point elevation (a separate calculator on this site) gives the shift in the temperature at which that vapor pressure reaches 1 atm.' },
+        { question: 'What does "ideal solution" mean here?', answer: 'One where solute and solvent molecules attract each other about as strongly as they attract molecules of their own kind — real solutions, especially concentrated or strongly hydrogen-bonded ones, deviate somewhat from this formula’s prediction.' }
+      ]
+    },
+    compute(values) {
+      return { solutionPressure: values.moleFraction * values.purePressure };
+    }
+  },
+  {
+    id: 'nuclear-binding-energy-calculator',
+    category: 'chemistry',
+    group: 'Atomic & Molecular Structure',
+    glyph: 'Eb',
+    updatedAt: '2026-11-17',
+    aliases: ['nuclear binding energy calculator', 'mass defect calculator', 'binding energy per nucleon calculator', 'nuclear mass defect calculator'],
+    related: ['mass-energy-equivalence-calculator', 'isotope-notation-calculator', 'radioactive-half-life-calculator', 'molar-mass-calculator'],
+    title: 'Nuclear Binding Energy Calculator',
+    description: 'Find a nucleus’s mass defect and nuclear binding energy from its proton count, neutron count, and measured atomic mass, via E = mc².',
+    example: 'Helium-4’s nucleus is about 0.0304 atomic mass units lighter than its separate protons and neutrons, releasing about 28.3 MeV of binding energy — roughly 7.07 MeV per nucleon.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is nuclear binding energy?',
+        paragraphs: [
+          'A nucleus is always measurably lighter than the sum of its separate protons and neutrons would weigh on their own — that missing mass, the mass defect, converts directly into the energy holding the nucleus together, via Einstein’s mass-energy relationship, E = mc². OpenStax Chemistry 2e’s §21.1 "Nuclear Structure and Stability" states the nuclear binding energy as exactly that: the energy released when separate nucleons come together into one nucleus, equal to the mass defect times the speed of light squared.',
+          'Because atomic masses are always measured for the whole neutral atom (nucleus plus its orbiting electrons), this calculator compares against Z hydrogen-1 atoms (each a proton plus one electron) rather than Z bare protons — that way, every electron on both sides of the comparison cancels out exactly, and the result compares cleanly against a nuclide’s actual, tabulated atomic mass.',
+          'This site’s mass-energy equivalence calculator computes the same formula, E = mc², directly from any mass figure. This page is a specialized front end for it: enter a nucleus’s makeup instead of a mass difference you would otherwise have to calculate by hand first.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the nuclide’s proton count, neutron count, and its own measured atomic mass (in atomic mass units, u) — commonly looked up on a nuclide chart or a periodic table\'s isotope data.',
+        steps: [
+          { name: 'Find the proton count (Z)', text: 'The element’s atomic number — the same for every isotope of that element.' },
+          { name: 'Find the neutron count (N)', text: 'The isotope’s mass number minus its proton count — this is what distinguishes different isotopes of the same element.' },
+          { name: 'Look up the nuclide’s measured atomic mass', text: 'In atomic mass units (u), from a nuclide chart or reference table — for example, helium-4’s is 4.002602 u.' },
+          { name: 'Read the mass defect and binding energy', text: 'The mass defect (in u) and the resulting binding energy (in MeV, both total and per nucleon) are shown together.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The expected mass of Z separate hydrogen atoms and N separate neutrons, minus the nuclide\'s own measured atomic mass, is the mass defect — converting that to energy via E = mc² gives the nuclear binding energy.',
+        expression: 'Δm = Z × m(¹H) + N × mₙ − m(atom)\nEb = Δm × c²',
+        terms: [
+          { symbol: 'Z', meaning: 'Number of protons.' },
+          { symbol: 'N', meaning: 'Number of neutrons.' },
+          { symbol: 'm(¹H)', meaning: 'Mass of one hydrogen-1 atom (1.007825 u — a proton plus one electron, CODATA), used as a proxy for a bare proton so the orbital electrons cancel exactly.' },
+          { symbol: 'mₙ', meaning: 'Mass of one neutron (1.008665 u, CODATA).' },
+          { symbol: 'm(atom)', meaning: 'The nuclide’s own real, measured atomic mass.' },
+          { symbol: 'c', meaning: 'The speed of light, 299,792,458 m/s exactly.' }
+        ],
+        note: 'The result is always a positive binding energy for a stable nucleus, since the real nucleus is always lighter (Δm > 0) than its separate, unbound parts would be.'
+      },
+      workedExample: {
+        intro: 'Helium-4’s nucleus (2 protons, 2 neutrons), with a measured atomic mass of 4.002602 u. What is its mass defect and nuclear binding energy? (Compare against OpenStax Chemistry 2e’s own Example 21.2, which uses the same nuclide with slightly rounded input masses.)',
+        rows: [
+          { label: 'Expected mass: 2 × m(¹H) + 2 × mₙ = 2 × 1.007825 + 2 × 1.008665', value: '≈ 4.032980 u' },
+          { label: 'Helium-4’s real atomic mass', value: '4.002602 u' },
+          { label: 'Mass defect, Δm = 4.032980 − 4.002602', value: '≈ 0.030378 u' },
+          { label: 'Converted to kilograms (× 1.660539 × 10⁻²⁷ kg/u)', value: '≈ 5.043 × 10⁻²⁹ kg' },
+          { label: 'Binding energy, Eb = Δm × c²', value: '≈ 4.532 × 10⁻¹² J ≈ 28.3 MeV' },
+          { label: 'Per nucleon (÷ 4 nucleons)', value: '≈ 7.07 MeV/nucleon' }
+        ],
+        result: 'Eb ≈ 28.3 MeV total, ≈ 7.07 MeV per nucleon',
+        explanation: 'OpenStax’s own Example 21.2 uses more rounded input masses (proton 1.0073 u, neutron 1.0087 u, electron 0.00055 u, helium-4 atom 4.0026 u) and gets 28.4 MeV total, 7.10 MeV per nucleon — recomputed here with the more precise CODATA 2022 masses and NIST/CIAAW’s own 4.002602 u helium-4 atomic mass, the two results agree to within about 0.4%, the size of the rounding in OpenStax’s simplified input values.'
+      },
+      watchOut: [
+        {
+          title: 'This uses hydrogen-1 atoms as a proxy for bare protons, on purpose',
+          body: 'Measured atomic masses always include the atom\'s orbital electrons. Comparing against Z hydrogen-1 atoms (each already carrying one electron) instead of Z bare protons makes every electron cancel out of the subtraction exactly, so the comparison is apples-to-apples against the nuclide\'s real, tabulated atomic mass.'
+        },
+        {
+          title: 'The mass defect is tiny compared to the total mass, but very real',
+          body: 'Helium-4\'s own mass defect is only about 0.76% of its total mass — small, but large enough to be measured directly and to release genuinely enormous energy, since the conversion factor c² is so large.'
+        },
+        {
+          title: 'Binding energy PER NUCLEON, not the total, is what determines nuclear stability trends',
+          body: 'A heavier nucleus naturally has a larger total binding energy just from having more nucleons. The per-nucleon figure is what actually peaks around iron and nickel and is used to explain why fusion releases energy for light elements while fission releases energy for heavy ones.'
+        },
+        {
+          title: 'This is a different mass-energy conversion from ordinary chemistry',
+          body: 'This site’s law of conservation of mass calculator describes ordinary chemical reactions, where the mass lost or gained is far too small to ever measure directly. A nuclear reaction\'s mass defect, by contrast, is large enough to measure directly — which is exactly what this calculator computes.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §21.1 "Nuclear Structure and Stability" (mass defect, nuclear binding energy, and Example 21.2)', url: 'https://openstax.org/books/chemistry-2e/pages/21-1-nuclear-structure-and-stability' },
+        { label: 'NIST, CODATA 2022 recommended values — proton, neutron, and electron mass in atomic mass units; the atomic mass constant', url: 'https://physics.nist.gov/cuu/Constants/' }
+      ]
+    },
+    inputs: [
+      { id: 'protons', label: 'Number of protons (Z)', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0 },
+      { id: 'neutrons', label: 'Number of neutrons (N)', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0 },
+      { id: 'atomicMass', label: 'Measured atomic mass (u)', type: 'number', placeholder: '4.002602', defaultValue: 4.002602, step: 0.000001, min: 0 }
+    ],
+    breakdown: {
+      headline: 'bindingEnergyMeV',
+      headlineLabel: 'Nuclear binding energy (MeV)',
+      outputs: [
+        { id: 'massDefect', label: 'Mass defect (u)', format: 'number' },
+        { id: 'bindingEnergyMeV', label: 'Binding energy, total (MeV)', format: 'number' },
+        { id: 'bindingEnergyPerNucleon', label: 'Binding energy per nucleon (MeV)', format: 'number' }
+      ]
+    },
+    seo: {
+      title: 'Nuclear Binding Energy Calculator',
+      description: 'Free nuclear binding energy calculator. Find mass defect and binding energy (total and per nucleon) from proton count, neutron count, and atomic mass.',
+      faq: [
+        { question: 'How do I calculate nuclear binding energy?', answer: 'Find the mass defect (Z hydrogen-1 atoms plus N neutrons, minus the nuclide’s real atomic mass), then multiply that mass defect by the speed of light squared, E = mc².' },
+        { question: 'What is helium-4’s nuclear binding energy?', answer: 'About 28.3 MeV total, or about 7.07 MeV per nucleon, from a mass defect of about 0.0304 atomic mass units.' },
+        { question: 'Why use hydrogen-1 atoms instead of bare protons in the formula?', answer: 'Because measured atomic masses already include orbital electrons — using Z hydrogen-1 atoms (each with its own electron) instead of Z bare protons makes the electrons cancel out of the comparison exactly.' },
+        { question: 'What is the difference between total binding energy and binding energy per nucleon?', answer: 'Total binding energy naturally grows with a nucleus’s size. Binding energy per nucleon is the more useful stability measure — it rises through the light elements, peaks around iron and nickel, then slowly falls, which is why fusing light nuclei and splitting (fission) heavy nuclei both release energy.' },
+        { question: 'How big is a typical mass defect?', answer: 'A small fraction of the total mass — about 0.76% for helium-4 — but large enough to measure directly with a mass spectrometer, unlike the immeasurably tiny mass change in an ordinary chemical reaction.' },
+        { question: 'Is this the same formula as the mass-energy equivalence calculator?', answer: 'Yes, the same E = mc² relationship — this page is specialized to compute the mass difference (the mass defect) for you from a nucleus’s proton and neutron counts, instead of requiring you to already know the mass difference.' }
+      ]
+    },
+    compute(values) {
+      const H1_ATOM_U = 1.007825; // hydrogen-1 atom (proton + electron), CODATA 2022
+      const NEUTRON_U = 1.008665; // CODATA 2022
+      const U_IN_KG = 1.66053906892e-27; // CODATA 2022 atomic mass constant
+      const SPEED_OF_LIGHT = 299792458; // exact
+      const EV_IN_J = 1.602176634e-19; // exact
+      const massDefect = values.protons * H1_ATOM_U + values.neutrons * NEUTRON_U - values.atomicMass;
+      const bindingEnergyJ = massDefect * U_IN_KG * SPEED_OF_LIGHT * SPEED_OF_LIGHT;
+      const bindingEnergyMeV = bindingEnergyJ / EV_IN_J / 1e6;
+      const nucleons = values.protons + values.neutrons;
+      return {
+        massDefect,
+        bindingEnergyMeV,
+        bindingEnergyPerNucleon: nucleons === 0 ? NaN : bindingEnergyMeV / nucleons
+      };
+    }
+  },
+  {
+    id: 'gas-density-calculator',
+    category: 'chemistry',
+    group: 'Gas Laws',
+    glyph: 'ρg',
+    updatedAt: '2026-11-17',
+    aliases: ['gas density calculator', 'density of a gas calculator', 'molar mass from gas density calculator', 'ideal gas density calculator'],
+    related: ['ideal-gas-law-calculator', 'molar-mass-calculator', 'density-calculator', 'combined-gas-law-calculator'],
+    title: 'Gas Density Calculator (ρ = PM ÷ RT)',
+    description: 'Find an ideal gas’s density from its pressure, molar mass, and temperature — or solve for the molar mass of an unknown gas from a measured density.',
+    example: 'Nitrogen gas at STP (1 atm, 273 K) has a density of about 1.25 g/L.',
+    solver: {
+      defaultTarget: 'density',
+      variables: [
+        { id: 'density', label: 'Gas density', symbol: 'ρ', dimension: 'density', defaultValue: 1.2505, defaultUnit: 'g/L' },
+        { id: 'pressure', label: 'Pressure', symbol: 'P', dimension: 'pressure', defaultValue: 1, defaultUnit: 'atm' },
+        { id: 'molarMass', label: 'Molar mass', symbol: 'M', dimension: 'molarMass', defaultValue: 28.014, defaultUnit: 'g/mol' },
+        { id: 'temperature', label: 'Temperature', symbol: 'T', dimension: 'temperature', defaultValue: 273, defaultUnit: 'K' }
+      ],
+      solve: {
+        density: ({ pressure, molarMass, temperature }) => (temperature === 0 ? NaN : (pressure * molarMass) / (8.31446261815324 * temperature)),
+        pressure: ({ density, molarMass, temperature }) => (molarMass === 0 ? NaN : (density * 8.31446261815324 * temperature) / molarMass),
+        molarMass: ({ density, pressure, temperature }) => (pressure === 0 ? NaN : (density * 8.31446261815324 * temperature) / pressure),
+        temperature: ({ density, pressure, molarMass }) => (density === 0 ? NaN : (pressure * molarMass) / (density * 8.31446261815324))
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What determines a gas’s density?',
+        paragraphs: [
+          'Combining the ideal gas law (PV = nRT) with the definition of molar mass (M = m/n) gives a gas’s density directly: ρ = PM/RT. OpenStax Chemistry 2e’s §9.3 "Stoichiometry of Gaseous Substances, Mixtures, and Reactions" (Example 9.11) derives exactly this, showing that — unlike a liquid or solid — a gas’s density depends directly on its pressure and temperature, not just on what it is made of: the same gas is measurably denser when compressed or cooled.',
+          'This is a different application of the ideal gas law from this site’s own ideal gas law calculator, which solves PV = nRT directly for pressure, volume, moles, or temperature. This page instead isolates density (mass per volume) as its own quantity, and — rearranged the other way — lets a measured density reveal an unknown gas’s molar mass, the basis of a classic Dumas-method molar-mass determination (OpenStax Example 9.13).',
+          'Because it comes directly from the ideal gas law, this formula shares that law’s own real-gas limitation: it is most accurate at ordinary pressures and temperatures, away from the gas’s own condensation point, where molecules start interacting with each other more than the ideal-gas assumption allows for.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter any three of the four quantities — density, pressure, molar mass, and temperature — and the fourth fills in automatically.',
+        steps: [
+          { name: 'Identify the gas', text: 'Its molar mass, if known — or leave that as the auto field if you are solving for an unknown gas’s molar mass instead.' },
+          { name: 'Enter the pressure', text: 'The gas’s absolute pressure — 1 atm for standard conditions.' },
+          { name: 'Enter the temperature', text: 'Absolute temperature — the ideal gas law always needs kelvin, which this calculator’s unit menu converts to automatically.' },
+          { name: 'Read the density, or enter a measured one', text: 'Leave density as the auto field to compute it directly, or enter a measured density (and leave molar mass as the auto field) to find an unknown gas’s molar mass instead.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Substituting n = m/M and ρ = m/V into the ideal gas law, PV = nRT, and rearranging for ρ gives density directly in terms of pressure, molar mass, and temperature.',
+        expression: 'PV = nRT, n = m ÷ M, ρ = m ÷ V\nρ = PM ÷ RT\nM = ρRT ÷ P',
+        terms: [
+          { symbol: 'ρ', meaning: 'The gas’s density (mass per volume).' },
+          { symbol: 'P', meaning: 'Absolute pressure.' },
+          { symbol: 'M', meaning: 'Molar mass.' },
+          { symbol: 'R', meaning: 'The molar gas constant, 8.31446261815324 J/(mol·K), exact.' },
+          { symbol: 'T', meaning: 'Absolute temperature, in kelvin.' }
+        ],
+        note: 'This assumes ideal-gas behavior — accurate for most gases at ordinary pressures and temperatures, but it drifts from a real gas’s actual density closer to its condensation point.'
+      },
+      workedExample: {
+        intro: 'What is the density of nitrogen gas, N₂, at standard temperature and pressure (1.00 atm, 273 K)? (OpenStax Chemistry 2e, Example 9.11.)',
+        rows: [
+          { label: 'Molar mass of N₂ (2 × 14.007 g/mol)', value: '28.014 g/mol' },
+          { label: 'Pressure', value: '1.00 atm = 101,325 Pa' },
+          { label: 'Temperature', value: '273 K' },
+          { label: 'ρ = PM ÷ RT = 101,325 × 0.028014 ÷ (8.3145 × 273)', value: '≈ 1.2505 kg/m³' }
+        ],
+        result: 'ρ ≈ 1.25 g/L (since 1 kg/m³ = 1 g/L exactly)',
+        explanation: 'OpenStax’s own solution, using R = 0.0821 L·atm/(mol·K) and M = 28.01 g/mol, gets 1.25 g/L as well — matching exactly to the 3 significant figures their rounding supports. Running the reverse direction on OpenStax’s own Example 9.13 (chloroform vapor, 0.494 g in 129 cm³ at 99.6°C and 742.1 mmHg, giving a measured density of 3.8295 g/L) gives a molar mass of about 119.96 g/mol — close to chloroform’s real 119.37 g/mol, and matching OpenStax’s own rounded "about 120 g/mol" answer.'
+      },
+      watchOut: [
+        {
+          title: 'Temperature must be absolute (kelvin)',
+          body: 'Like every other ideal-gas-law calculation, using a Celsius or Fahrenheit reading directly (instead of converting to kelvin first) gives a meaningless result — this calculator’s unit menu handles that conversion automatically.'
+        },
+        {
+          title: 'This is ideal-gas density, not a real gas’s exact density',
+          body: 'Real gases depart from this formula’s prediction somewhat, especially at high pressure or low temperature, closer to the point where the gas would condense into a liquid.'
+        },
+        {
+          title: 'Solving for molar mass from a measured density assumes the sample really is one pure gas',
+          body: 'A mixture of gases (like air) has an average molar mass this way, not any single, real substance’s molar mass — this reverse calculation is meant for identifying one pure, unknown volatile substance.'
+        },
+        {
+          title: 'This is a different use of PV = nRT from the ideal gas law calculator',
+          body: 'That calculator solves directly for pressure, volume, moles, or temperature. This page isolates density and molar mass instead — the same underlying law, applied to a different pair of unknowns.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §9.3 "Stoichiometry of Gaseous Substances, Mixtures, and Reactions" (gas density, Example 9.11, and the molar-mass-from-density Example 9.13)', url: 'https://openstax.org/books/chemistry-2e/pages/9-3-stoichiometry-of-gaseous-substances-mixtures-and-reactions' }
+      ]
+    },
+    inputs: [
+      { id: 'pressure', label: 'Pressure (Pa)', type: 'number', placeholder: '101325', defaultValue: 101325, step: 1, min: 0 },
+      { id: 'molarMass', label: 'Molar mass (kg/mol)', type: 'number', placeholder: '0.028014', defaultValue: 0.028014, step: 0.000001, min: 0 },
+      { id: 'temperature', label: 'Temperature (K)', type: 'number', placeholder: '273', defaultValue: 273, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Gas Density Calculator (ρ = PM/RT)',
+      description: 'Free gas density calculator. Find an ideal gas’s density, or solve for molar mass from a measured density, with a worked OpenStax nitrogen example.',
+      faq: [
+        { question: 'What is the formula for gas density?', answer: 'ρ = PM ÷ RT, combining the ideal gas law with the definition of molar mass — density rises with pressure and molar mass, and falls as temperature rises.' },
+        { question: 'What is the density of nitrogen gas at STP?', answer: 'About 1.25 g/L, at 1.00 atm and 273 K, using nitrogen’s molar mass of 28.014 g/mol.' },
+        { question: 'How do I find an unknown gas’s molar mass from its density?', answer: 'Rearrange the formula to M = ρRT ÷ P, and plug in the measured density, temperature, and pressure — this is the basis of the classic Dumas-bulb molar-mass method.' },
+        { question: 'Why does gas density depend on pressure and temperature, but a liquid or solid’s density barely does?', answer: 'A gas’s volume itself expands and contracts enormously with pressure and temperature (that is exactly what the ideal gas law describes), while a liquid or solid’s volume changes only very slightly — so only a gas’s density responds strongly to the conditions it is measured under.' },
+        { question: 'Is this the same as the ideal gas law calculator?', answer: 'It uses the same underlying law (PV = nRT), rearranged to isolate density and molar mass specifically, rather than pressure, volume, moles, or temperature directly.' },
+        { question: 'Does this work for a mixture of gases like air?', answer: 'It gives a mixture’s average (apparent) molar mass from its overall density, not any single gas’s real molar mass — useful for some calculations, but not the same as identifying one pure substance.' }
+      ]
+    },
+    compute(values) {
+      return { density: (values.pressure * values.molarMass) / (8.31446261815324 * values.temperature) };
+    }
   }
 ];

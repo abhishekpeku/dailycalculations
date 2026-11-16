@@ -7,18 +7,20 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-11-16 · **Step 46 run 7 (physics waves/other-remainder) DONE** — branch
-`step/46-wave-3-physics-run-7` added `doppler-effect-calculator`, `snells-law-calculator`,
-`mass-energy-equivalence-calculator`, `thermal-expansion-calculator`, `escape-velocity-calculator`.
-This closes out every named item in this step's "Physics — proposed additions" seed lists. New
-`lib/units.ts` dimension: `thermalExpansionCoeff`; new unit: `km/s` on the existing `speed`
-dimension. **Ran in parallel with "Physics mechanics-remainder run B"** (a separate agent, separate
-worktree, branch `step/46-wave-3-physics-run-6`, adding centripetal-force/gravitational-force/
-torque/buoyancy/pendulum-period) — this run never saw run B's work, so its own counts (`physics` 26
-→ 31, site-wide 321 → 326, on this branch alone) will need reconciling against run B's PR by the
-main session at merge time; the two branches both edit `data/calculators/physics.ts` and
-`data/calculators/index.ts` and will conflict, which is expected. `npm test` (1,258), lint and
-`npm run build` (357 routes) all pass on this branch. Full detail in the Session log and
+Last updated: 2026-11-16 · **Step 46 runs 6+7 (physics mechanics-remainder run B + waves/other-
+remainder run) BOTH DONE AND RECONCILED.** Run B (PR #105, branch `step/46-wave-3-physics-run-6`)
+added `centripetal-force-calculator`, `gravitational-force-calculator`, `torque-calculator`,
+`buoyancy-calculator`, `pendulum-period-calculator`. Run C (PR #106, branch
+`step/46-wave-3-physics-run-7`) added `doppler-effect-calculator`, `snells-law-calculator`,
+`mass-energy-equivalence-calculator`, `thermal-expansion-calculator`, `escape-velocity-calculator`
+— closing out every named item in this step's "Physics — proposed additions" seed lists. Both ran
+in parallel (user-approved override of the usual one-agent-at-a-time rule) and independently edited
+`data/calculators/physics.ts`/`data/calculators/index.ts` from the same base, so PR #106 conflicted
+on merge as expected; the main session resolved it by hand-splicing both calculator blocks into one
+file (keeping both new `lib/units.ts` dimensions, `torque` and `thermalExpansionCoeff`, and the new
+`km/s` speed unit), re-verified (`npm test` 1,280/1,280, lint clean, `npm run build` 362 routes), and
+pushed the resolution directly onto PR #106's branch before merging. **`physics` now 36 (21 → 36
+across runs A/B/C), site-wide 331.** Full detail in the Session log and
 `mdFiles/steps/46-47-wave-3-physics-chemistry.md`.
 
 Previous: **Step 46 run 5 (physics mechanics-remainder run A) DONE** — PR #104

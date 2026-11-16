@@ -10979,6 +10979,44 @@ exports[`compute() snapshots > shoe-size-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > simple-interest-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "principal": 4000,
+      "rate": 5.5,
+      "years": 4
+    },
+    "outputs": {
+      "interest": 880,
+      "totalValue": 4880
+    }
+  },
+  "typical": {
+    "inputs": {
+      "principal": 6000,
+      "rate": 8.25,
+      "years": 6
+    },
+    "outputs": {
+      "interest": 2970,
+      "totalValue": 8970
+    }
+  },
+  "edge": {
+    "inputs": {
+      "principal": 0,
+      "rate": 0,
+      "years": 0
+    },
+    "outputs": {
+      "interest": 0,
+      "totalValue": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > sleep-time-calculator 1`] = `
 {
   "default": {

@@ -4491,4 +4491,119 @@ export const financeCalculators: CalculatorConfig[] = [
       return { maturityValue, totalInterest: maturityValue - values.depositAmount };
     }
   },
+  {
+    id: 'simple-interest-calculator',
+    group: 'Savings & Growth',
+    category: 'finance',
+    glyph: 'I',
+    updatedAt: '2026-11-16',
+    aliases: ['simple interest formula calculator', 'basic interest calculator', 'interest without compounding calculator', 'flat rate interest calculator', 'i = prt calculator'],
+    related: ['compound-interest-calculator', 'cd-calculator', 'loan-calculator', 'investment-calculator'],
+    title: 'Simple Interest Calculator',
+    description: 'Calculate simple interest with I = P × r × t — interest on the original principal only, never on interest already earned — or solve for the principal, rate or time.',
+    example: '$4,000 at 5.5% simple interest for 4 years earns $880 in interest, for a total of $4,880.',
+    solver: {
+      defaultTarget: 'interest',
+      variables: [
+        { id: 'interest', label: 'Interest earned', symbol: 'I', dimension: 'currency', defaultValue: 880, defaultUnit: 'currency' },
+        { id: 'principal', label: 'Principal', symbol: 'P', dimension: 'currency', defaultValue: 4000, defaultUnit: 'currency' },
+        { id: 'rate', label: 'Annual interest rate', symbol: 'r', dimension: 'percent', defaultValue: 5.5, defaultUnit: '%', bounds: [0, 100] },
+        { id: 'time', label: 'Time', symbol: 't', dimension: 'term', defaultValue: 4, defaultUnit: 'yr', bounds: [0, 1200] }
+      ],
+      solve: {
+        interest: ({ principal, rate, time }) => principal * (rate / 100) * (time / 12),
+        principal: ({ interest, rate, time }) => (rate > 0 && time > 0 ? interest / ((rate / 100) * (time / 12)) : NaN),
+        rate: ({ interest, principal, time }) => (principal > 0 && time > 0 ? (interest / (principal * (time / 12))) * 100 : NaN),
+        time: ({ interest, principal, rate }) => (principal > 0 && rate > 0 ? (interest / (principal * (rate / 100))) * 12 : NaN)
+      },
+      outputs: [{ id: 'totalValue', label: 'Total value (principal + interest)', dimension: 'currency', compute: (si) => si.principal + si.interest }],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'principal', label: 'Principal' },
+            { from: 'interest', label: 'Interest' }
+          ],
+          center: 'totalValue',
+          centerSub: 'total value'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'Simple interest: interest on the original amount only',
+        paragraphs: [
+          'Simple interest is the most basic way to charge or earn interest: each period, the interest is calculated only on the original principal, never on interest that has already accrued. OpenStax\'s Contemporary Mathematics states the formula directly as I = P × r × t, where the interest earned grows in a straight line over time because the amount it is calculated on never changes.',
+          'This is the opposite assumption from compound-interest-calculator, which earns "interest on interest": every time interest is credited, it joins the balance, so the next period\'s interest is calculated on a larger amount. Over a single period the two give the same answer, but they diverge every period after that — compounding always earns at least as much as simple interest on the same principal, rate and time, and usually earns more. See the worked example below for exactly how much more.',
+          'Simple interest does still show up in practice: some short-term loans, many bonds\' coupon payments, and some add-on-interest auto loans are calculated this way, as are many "days outstanding" calculations lenders use for a single interest period. If your account or loan says it compounds — daily, monthly or any other frequency — it is not using this formula; use compound-interest-calculator instead.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter any three of the four fields below. The fourth, marked auto, is calculated as you type.',
+        steps: [
+          { name: 'Find the interest', text: 'Type the principal, the annual rate and the time. The interest earned is calculated, with the total value shown below it.' },
+          { name: 'Find the principal', text: 'Type a target interest amount, the rate and the time, leaving the principal as the auto field, to see how much you would need to start with.' },
+          { name: 'Find the rate', text: 'Type the principal, the interest and the time, leaving the rate as the auto field, to see what rate produces that result.' },
+          { name: 'Find the time', text: 'Type the principal, the interest and the rate, leaving the time as the auto field, to see how long it takes at that rate.' },
+          { name: 'Switch years and months', text: 'Use the menu beside the time field to enter it in months instead of years.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Simple interest is the principal times the annual rate times the time in years — no compounding, no exponent.',
+        expression: 'I = P × r × t\nTotal value = P + I\nr = I ÷ (P × t)\nt = I ÷ (P × r)',
+        terms: [
+          { symbol: 'I', meaning: 'Simple interest earned (or owed).' },
+          { symbol: 'P', meaning: 'Principal: the original amount deposited or borrowed.' },
+          { symbol: 'r', meaning: 'Annual interest rate, as a decimal (5.5% is 0.055).' },
+          { symbol: 't', meaning: 'Time in years (a 6-month term is t = 0.5).' }
+        ],
+        note: 'Estimates only. Real loans and accounts commonly compound instead — check your agreement before assuming simple interest applies.'
+      },
+      workedExample: {
+        intro: 'You invest $4,000 at a 5.5% annual simple interest rate for 4 years. How much interest do you earn?',
+        rows: [
+          { label: 'I = P × r × t = 4,000 × 0.055 × 4', value: '$880' },
+          { label: 'Total value (4,000 + 880)', value: '$4,880' },
+          { label: 'For comparison, compound interest (annual compounding) on the same $4,000, 5.5%, 4 years', value: '$4,955.30' },
+          { label: 'Compound interest earned (4,955.30 − 4,000)', value: '$955.30' },
+          { label: 'Extra interest compounding earns over simple (955.30 − 880)', value: '$75.30, about 8.56% more' }
+        ],
+        result: 'I = $880 · total value $4,880',
+        explanation: "Both methods start from the same $4,000 at the same 5.5% rate for the same 4 years, but simple interest earns $880 in a straight line while compounding earns $955.30 — 8.56% more — because each year's interest, once added to the balance, itself earns interest in the following years. The gap between the two grows with both the rate and the time."
+      },
+      watchOut: [
+        { title: 'Not the same as compound interest', body: 'This formula never adds interest back into the balance it is calculated on. If your account or loan compounds — most savings accounts, CDs and mortgages do — use compound-interest-calculator for an accurate result instead.' },
+        { title: 'Time must be in years', body: 'A 6-month CD or loan is t = 0.5, not 6. Use the months/years menu on the time field rather than typing a month count directly into a "years" assumption.' },
+        { title: 'Growth is a straight line, not a curve', body: 'Because the principal never changes, interest earned is exactly proportional to time: doubling the time exactly doubles the interest. Compound interest grows faster than this the longer the money sits.' },
+        { title: 'Estimates only', body: 'Real loan agreements can add fees, use a different day-count convention (such as 360 vs. 365 days a year), or round differently. Your lender\'s or bank\'s own disclosure is the binding figure.' }
+      ],
+      references: [
+        { label: 'OpenStax, Contemporary Mathematics, §6.3 Simple Interest', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-3-simple-interest' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.4 Compound Interest', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-4-compound-interest' }
+      ]
+    },
+    inputs: [
+      { id: 'principal', label: 'Principal', type: 'currency', placeholder: '4000', defaultValue: 4000, step: 100, min: 0 },
+      { id: 'rate', label: 'Annual interest rate', type: 'percent', placeholder: '5.5', defaultValue: 5.5, step: 0.01, min: 0 },
+      { id: 'years', label: 'Time (years)', type: 'number', placeholder: '4', defaultValue: 4, step: 0.5, min: 0 }
+    ],
+    seo: {
+      title: 'Simple Interest Calculator – I = P × r × t',
+      description: 'Free simple interest calculator: find the interest, principal, rate or time using I = P × r × t, contrasted directly with compound interest.',
+      faq: [
+        { question: 'What is the simple interest formula?', answer: 'I = P × r × t, where P is the principal, r is the annual rate as a decimal and t is the time in years. $4,000 at 5.5% for 4 years earns $880 in interest.' },
+        { question: 'What is the difference between simple and compound interest?', answer: 'Simple interest is always calculated on the original principal only. Compound interest adds each period\'s interest back into the balance, so later interest is calculated on a larger amount. On $4,000 at 5.5% for 4 years, simple interest earns $880 while annual compounding earns $955.30 — about 8.56% more.' },
+        { question: 'How do I find the principal from the interest, rate and time?', answer: 'Rearrange the formula: P = I ÷ (r × t). To earn $880 at 5.5% over 4 years requires a $4,000 principal.' },
+        { question: 'How do I find the rate from the interest, principal and time?', answer: 'r = I ÷ (P × t). Earning $880 on $4,000 over 4 years requires a 5.5% annual rate.' },
+        { question: 'Does a bank account or CD use simple interest?', answer: 'Usually not — most savings accounts and CDs compound daily or monthly. Check cd-calculator or compound-interest-calculator for those. Simple interest is more common for some bonds, short-term loans and add-on-interest financing.' },
+        { question: 'Can time be less than a year?', answer: 'Yes — switch the time field to months, or enter a fraction of a year directly (a 6-month term is t = 0.5). The formula works the same way for any length of time.' }
+      ]
+    },
+    compute(values) {
+      const interest = values.principal * (values.rate / 100) * values.years;
+      return { interest, totalValue: values.principal + interest };
+    }
+  },
 ];

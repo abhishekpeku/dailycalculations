@@ -348,6 +348,7 @@ export const calculatorOrder: string[] = [
   'irr-calculator',
   'npv-calculator',
   'cd-calculator',
+  'simple-interest-calculator',
   'jet-lag-calculator',
   'luggage-fee-calculator',
   'daylight-hours-calculator',

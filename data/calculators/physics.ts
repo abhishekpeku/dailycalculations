@@ -5,6 +5,9 @@ import { DIGIT_COLORS, MULTIPLIER_COLORS, TOLERANCE_COLORS, resistanceFromColorB
 // Brochure. Shared by weight-calculator and potential-energy-calculator's forward compute() below
 // (the solver pages use lib/units.ts's 'g0' acceleration unit, which carries the same value).
 const STANDARD_GRAVITY = 9.80665;
+// Newtonian constant of gravitation, CODATA 2022 recommended value (NIST, "CODATA Value: Newtonian
+// constant of gravitation"), 6.674 30(15)×10⁻¹¹ m³ kg⁻¹ s⁻². Used only by gravitational-force-calculator.
+const GRAVITATIONAL_CONSTANT = 6.6743e-11;
 
 export const physicsCalculators: CalculatorConfig[] = [
   {
@@ -270,7 +273,7 @@ export const physicsCalculators: CalculatorConfig[] = [
     glyph: 'W',
     updatedAt: '2026-11-06',
     aliases: ['mass to weight calculator', 'w = mg calculator', 'weight in newtons calculator', 'gravity weight calculator', 'weight on other planets calculator'],
-    related: ['force-calculator', 'pounds-to-kilograms-converter', 'kilograms-to-stone-converter', 'weight-converter'],
+    related: ['force-calculator', 'gravitational-force-calculator', 'pounds-to-kilograms-converter', 'weight-converter'],
     title: 'Weight Calculator (W = mg)',
     description: 'Calculate weight from mass and gravity — W = m × g — or work backward to mass or local gravity, in newtons, pounds-force, kilograms, or pounds.',
     example: 'A 70 kg person weighs about 686.5 N on Earth (154.3 lbf) but only about 113.4 N on the Moon, where gravity is weaker.',
@@ -367,6 +370,10 @@ export const physicsCalculators: CalculatorConfig[] = [
         {
           title: "Don't confuse this g with a rollercoaster's g-force",
           body: 'The g in W = mg is gravitational acceleration. The "g-force" used to describe a rollercoaster drop or a fighter jet turn is a ratio of total acceleration to standard gravity, a different (though related) use of the same symbol.'
+        },
+        {
+          title: 'This is not the gravitational force calculator',
+          body: "This page uses a single, fixed local gravity value — convenient for everyday weight questions. For the actual attraction between two specific masses (Newton's law, F = Gm₁m₂ ÷ r²), including at distances other than a planet's surface, see the gravitational force calculator — it is where the g used here ultimately comes from."
         }
       ],
       references: [
@@ -3273,6 +3280,592 @@ export const physicsCalculators: CalculatorConfig[] = [
     },
     compute(values) {
       return { force: values.springConstant * values.displacement };
+    }
+  },
+  {
+    id: 'centripetal-force-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'Fc',
+    updatedAt: '2026-11-16',
+    aliases: ['centripetal force formula calculator', 'f = mv^2/r calculator', 'circular motion force calculator', 'uniform circular motion calculator', 'center-seeking force calculator'],
+    related: ['force-calculator', 'speed-distance-time-calculator', 'friction-calculator', 'gravitational-force-calculator'],
+    title: 'Centripetal Force Calculator (F = mv²/r)',
+    description: 'Calculate the force needed to keep an object moving in a circle — F = m × v² ÷ r — or solve backward for mass, speed, or radius.',
+    example: 'A 1,200 kg car cornering at 15 m/s (54 km/h) around a 50 m radius curve needs about 5,400 N of centripetal force.',
+    solver: {
+      defaultTarget: 'force',
+      variables: [
+        { id: 'force', label: 'Centripetal force', symbol: 'Fc', dimension: 'force', defaultValue: 5400, defaultUnit: 'N' },
+        { id: 'mass', label: 'Mass', symbol: 'm', dimension: 'mass', defaultValue: 1200, defaultUnit: 'kg' },
+        { id: 'speed', label: 'Speed', symbol: 'v', dimension: 'speed', defaultValue: 15, defaultUnit: 'm/s' },
+        { id: 'radius', label: 'Radius', symbol: 'r', dimension: 'length', defaultValue: 50, defaultUnit: 'm' }
+      ],
+      solve: {
+        force: ({ mass, speed, radius }) => (radius === 0 ? NaN : (mass * speed * speed) / radius),
+        mass: ({ force, speed, radius }) => (speed === 0 ? NaN : (force * radius) / (speed * speed)),
+        speed: ({ force, mass, radius }) => {
+          if (mass <= 0) return NaN;
+          const vSquared = (force * radius) / mass;
+          return vSquared < 0 ? NaN : Math.sqrt(vSquared);
+        },
+        radius: ({ force, mass, speed }) => (force === 0 ? NaN : (mass * speed * speed) / force)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is centripetal force?',
+        paragraphs: [
+          'Centripetal force is whatever net force keeps an object moving along a circular path instead of a straight line. It always points toward the center of the circle, which is why "centripetal" (Latin for "center-seeking") describes its direction, not a new kind of force in its own right — it is supplied by something real: the tension in a string, a road\'s friction on tires, gravity on an orbiting satellite, or the normal force from a curved track.',
+          "Newton's first law says an object in motion keeps moving in a straight line unless a force acts on it. Anything moving in a circle is constantly changing direction, so it is constantly accelerating toward the center, even if its speed never changes. F = mv² ÷ r is just Newton's second law, F = ma, applied to that particular acceleration, a = v² ÷ r — the centripetal acceleration of uniform circular motion.",
+          "The formula's v² term means speed matters far more than mass or radius: doubling how fast something goes around a curve quadruples the force needed to hold it on that path, while doubling the mass or the radius only doubles or halves the required force in proportion."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of centripetal force, mass, speed, and radius; the fourth fills in automatically.',
+        steps: [
+          { name: 'Enter the three values you know', text: 'Type each value and pick its unit. The remaining field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 15 m/s becomes 54 km/h instead of silently turning into 15 km/h.' },
+          { name: 'Read the result', text: 'The answer appears in your chosen force unit, alongside the main alternatives underneath.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The centripetal force formula rearranges to solve for mass, speed, or radius as well as force.',
+        expression: 'Fc = m × v² ÷ r\nm = Fc × r ÷ v²\nv = √(Fc × r ÷ m)\nr = m × v² ÷ Fc',
+        terms: [
+          { symbol: 'Fc', meaning: 'Centripetal force, in newtons (N) — the net force directed toward the center of the circular path.' },
+          { symbol: 'm', meaning: 'Mass of the object traveling the circular path, in kilograms (kg).' },
+          { symbol: 'v', meaning: 'Speed along the circular path (tangent to the circle), in meters per second (m/s).' },
+          { symbol: 'r', meaning: 'Radius of the circular path, in meters (m), measured from the center of the circle to the object.' }
+        ],
+        note: 'Every input is converted to SI units (N, kg, m/s, m) before solving and converted back afterward. This is uniform circular motion — constant speed around a fixed-radius circle — not a spiral or changing-radius path.'
+      },
+      workedExample: {
+        intro: 'A 1,200 kg car corners at a steady 15 m/s (54 km/h) around a curve with a 50 m radius. How much centripetal force does it need?',
+        rows: [
+          { label: 'Mass (m)', value: '1,200 kg' },
+          { label: 'Speed (v)', value: '15 m/s (54 km/h)' },
+          { label: 'Radius (r)', value: '50 m' },
+          { label: 'Centripetal force (Fc = 1,200 × 15² ÷ 50)', value: '5,400 N' }
+        ],
+        result: 'Fc = 5,400 N',
+        explanation: '15² = 225, and 1,200 × 225 ÷ 50 = 5,400 N. On a flat road, that force comes entirely from friction between the tires and the pavement — if the required force exceeds the maximum friction available (see the friction calculator, f = μN), the car skids outward instead of holding the curve.'
+      },
+      watchOut: [
+        {
+          title: 'Centripetal force is not an extra force — it is the net result of real ones',
+          body: "There is no separate \"centripetal\" push or pull acting on the object. It is whatever combination of tension, friction, gravity, or normal force already present happens to point toward the center and add up to mv² ÷ r. Identify the real forces first, then check whether their net total matches this formula."
+        },
+        {
+          title: '"Centrifugal force" is not the reaction to this',
+          body: 'The outward-feeling push passengers notice in a turning car is centrifugal force, a fictitious force that only appears when analyzing motion from inside the rotating frame. From outside, viewed in a stationary frame, the only real force is the inward centripetal one — there is no outward partner force pulling back.'
+        },
+        {
+          title: 'Doubling speed quadruples the required force',
+          body: 'Because speed is squared, a car cornering at 60 mph needs four times the centripetal force of the same car cornering at the same radius at 30 mph, not twice — a major reason highway curves post lower speed limits than straight sections.'
+        },
+        {
+          title: 'This is uniform circular motion only',
+          body: 'F = mv² ÷ r assumes constant speed around a fixed radius. An object speeding up or slowing down while turning, or spiraling in or out, has an additional tangential acceleration component that this formula does not capture.'
+        },
+        {
+          title: 'Radius is to the object\'s path, not to an edge or a track width',
+          body: "Use the radius of the circle the object's center of mass actually travels, measured from the true center of rotation — not the width of a track or the distance to a wall."
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §4.4 Uniform Circular Motion', url: 'https://openstax.org/books/university-physics-volume-1/pages/4-4-uniform-circular-motion' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'mass', label: 'Mass (kg)', type: 'number', placeholder: '1200', defaultValue: 1200, step: 1, min: 0 },
+      { id: 'speed', label: 'Speed (m/s)', type: 'number', placeholder: '15', defaultValue: 15, step: 0.1, min: 0 },
+      { id: 'radius', label: 'Radius (m)', type: 'number', placeholder: '50', defaultValue: 50, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Centripetal Force Calculator (F = mv²/r)',
+      description: 'Free centripetal force calculator. Solve F = mv² ÷ r for force, mass, speed, or radius in N, kg, m/s, and m, with a worked cornering example.',
+      faq: [
+        { question: 'What is the formula for centripetal force?', answer: 'Fc = m × v² ÷ r, where m is mass, v is speed along the circular path, and r is the radius of the path. A 1,200 kg car at 15 m/s around a 50 m curve needs Fc = 1,200 × 15² ÷ 50 = 5,400 N.' },
+        { question: 'What provides centripetal force in real situations?', answer: "It is never a separate force of its own — it is supplied by whatever real force happens to point toward the center: friction for a car cornering, tension for a ball on a string, gravity for an orbiting satellite, or the normal force on a banked track." },
+        { question: 'Is centripetal force the same as centrifugal force?', answer: 'No. Centripetal force is the real, inward force that causes circular motion. Centrifugal force is an apparent outward force felt only inside a rotating frame of reference (like a passenger in a turning car) — it does not act on the object from outside that frame.' },
+        { question: 'Does doubling speed double the force needed to corner?', answer: "No — it quadruples it, because speed is squared in the formula. A car cornering at 60 mph needs four times the centripetal force of the same car at 30 mph on the same curve." },
+        { question: 'How do I find the maximum speed a car can corner at without skidding?', answer: 'Set the centripetal force equal to the maximum available friction force (f = μN, from the friction calculator) and solve for speed: v = √(μ × g × r). The exact limit depends on the tire-road coefficient of friction, μ.' },
+        { question: 'What is centripetal acceleration?', answer: 'It is a = v² ÷ r, the acceleration directed toward the center that any object moving at constant speed on a circular path experiences. Multiplying it by mass (Newton\'s second law) gives the centripetal force, F = ma = mv² ÷ r.' }
+      ]
+    },
+    compute(values) {
+      return { force: (values.mass * values.speed * values.speed) / values.radius };
+    }
+  },
+  {
+    id: 'gravitational-force-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'Fg',
+    updatedAt: '2026-11-16',
+    aliases: ["newton's law of gravitation calculator", 'f = gm1m2/r2 calculator', 'gravitational attraction calculator', 'universal gravitation calculator', 'gravity between two masses calculator'],
+    related: ['weight-calculator', 'force-calculator', 'centripetal-force-calculator'],
+    title: 'Gravitational Force Calculator (F = Gm₁m₂/r²)',
+    description: "Calculate the gravitational attraction between two masses using Newton's law of universal gravitation — F = Gm₁m₂ ÷ r² — or solve backward for a mass or the distance.",
+    example: 'Earth (5.9722×10²⁴ kg) pulls a 70 kg person at its surface (6,371 km away from its center) with about 687.4 N of gravitational force.',
+    solver: {
+      defaultTarget: 'force',
+      variables: [
+        { id: 'force', label: 'Gravitational force', symbol: 'Fg', dimension: 'force', defaultValue: 687.42, defaultUnit: 'N' },
+        { id: 'mass1', label: 'Mass 1', symbol: 'm₁', dimension: 'mass', defaultValue: 5.9722e24, defaultUnit: 'kg' },
+        { id: 'mass2', label: 'Mass 2', symbol: 'm₂', dimension: 'mass', defaultValue: 70, defaultUnit: 'kg' },
+        { id: 'distance', label: 'Distance between centers', symbol: 'r', dimension: 'length', defaultValue: 6.371e6, defaultUnit: 'm' }
+      ],
+      solve: {
+        force: ({ mass1, mass2, distance }) => (distance === 0 ? NaN : (GRAVITATIONAL_CONSTANT * mass1 * mass2) / (distance * distance)),
+        mass1: ({ force, mass2, distance }) => (mass2 === 0 ? NaN : (force * distance * distance) / (GRAVITATIONAL_CONSTANT * mass2)),
+        mass2: ({ force, mass1, distance }) => (mass1 === 0 ? NaN : (force * distance * distance) / (GRAVITATIONAL_CONSTANT * mass1)),
+        distance: ({ force, mass1, mass2 }) => {
+          if (force <= 0) return NaN;
+          const rSquared = (GRAVITATIONAL_CONSTANT * mass1 * mass2) / force;
+          return rSquared < 0 ? NaN : Math.sqrt(rSquared);
+        }
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is Newton\'s law of universal gravitation?',
+        paragraphs: [
+          "Every pair of masses in the universe attracts every other pair, with a force that grows with how much mass each one has and shrinks rapidly with the distance between them. Isaac Newton published this law in 1687: F = Gm₁m₂ ÷ r², where G is a fixed constant of nature that sets the overall strength of gravity for any two masses, anywhere.",
+          "G, the gravitational constant, is tiny: 6.6743×10⁻¹¹ m³ kg⁻¹ s⁻² (CODATA 2022 / NIST recommended value). That smallness is why gravity between everyday objects — two people standing near each other, a book and a table — is far too weak to notice. Gravity only becomes a force you can feel when at least one of the masses involved is planet-sized.",
+          "This calculator is distinct from the weight calculator (W = mg). Weight uses a fixed, local value of g that already accounts for a planet's rotation and shape; this page computes the raw gravitational pull between two specific masses at a specific distance from first principles, which is where that local g value actually comes from in the first place."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of gravitational force, the two masses, and the distance between their centers; the fourth fills in automatically.',
+        steps: [
+          { name: 'Enter the three values you know', text: 'Type each value and pick its unit. The remaining field, marked auto, calculates as you type. The Earth-person default shows the force Earth exerts on a 70 kg person at its surface.' },
+          { name: 'Measure distance center to center', text: 'The distance r is between the centers of the two masses, not between their surfaces — for a person standing on Earth, that means Earth\'s radius, not zero.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there without changing the underlying quantity.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: "Newton's law of universal gravitation rearranges to solve for either mass or the distance as well as the force.",
+        expression: 'Fg = G × m₁ × m₂ ÷ r²\nm₁ = Fg × r² ÷ (G × m₂)\nm₂ = Fg × r² ÷ (G × m₁)\nr = √(G × m₁ × m₂ ÷ Fg)',
+        terms: [
+          { symbol: 'Fg', meaning: 'Gravitational force between the two masses, in newtons (N) — the same size on each mass, pulling them together.' },
+          { symbol: 'G', meaning: 'The Newtonian constant of gravitation, 6.6743×10⁻¹¹ m³ kg⁻¹ s⁻² (CODATA 2022 / NIST recommended value). Fixed for any two masses anywhere.' },
+          { symbol: 'm₁, m₂', meaning: 'The two masses, in kilograms (kg).' },
+          { symbol: 'r', meaning: 'Distance between the centers of the two masses, in meters (m) — not the distance between their surfaces.' }
+        ],
+        note: 'Every input is converted to SI units (N, kg, m) before solving and converted back afterward. This treats both masses as point masses (or uniform spheres, which behave the same way at an external point) — valid for planets and everyday objects, but not for extremely close or oddly shaped masses.'
+      },
+      workedExample: {
+        intro: "How hard does Earth's gravity pull on a 70 kg person standing at its surface?",
+        rows: [
+          { label: "Earth's mass (m₁)", value: '5.9722×10²⁴ kg (NASA Earth Fact Sheet)' },
+          { label: 'Person\'s mass (m₂)', value: '70 kg' },
+          { label: "Earth's mean radius (r)", value: '6,371 km = 6.371×10⁶ m (NASA Earth Fact Sheet)' },
+          { label: 'Gravitational force (Fg = G × m₁ × m₂ ÷ r²)', value: '≈ 687.4 N' }
+        ],
+        result: 'Fg ≈ 687.4 N',
+        explanation: "6.6743×10⁻¹¹ × 5.9722×10²⁴ × 70 ÷ (6.371×10⁶)² ≈ 687.4 N. That corresponds to an acceleration of Fg ÷ m₂ ≈ 9.820 m/s² — close to, but not exactly, the 9.80665 m/s² standard gravity used by the weight calculator, because standard gravity nets out small effects from Earth's rotation and slightly flattened shape that this pure two-mass formula does not include."
+      },
+      watchOut: [
+        {
+          title: "This is not the same thing as the weight calculator",
+          body: "Weight (W = mg) uses a single, fixed local gravity value and is simple on purpose. Gravitational force (this page) computes the actual attraction between two specific masses at a specific distance using Newton's law — the two agree closely for an object at Earth's surface, but gravitational force is the more general, first-principles calculation, and the only one that works for other separations, like a satellite in orbit."
+        },
+        {
+          title: 'Distance is between centers, not surfaces',
+          body: "r is measured from the center of one mass to the center of the other. Standing on Earth's surface, r is Earth's radius (about 6,371 km) — not the (meaningless) zero distance to the ground directly underfoot."
+        },
+        {
+          title: 'Gravity between everyday objects is far too weak to feel',
+          body: 'Two 10 kg objects 1 m apart attract each other with only about 6.67×10⁻⁹ N — roughly a billion times weaker than the weight of a dust-sized grain. G is so small that only planet-sized masses produce gravity strong enough to notice.'
+        },
+        {
+          title: 'Halving the distance quadruples the force',
+          body: "Because distance is squared in the denominator, moving two masses to half their original separation makes the gravitational force between them four times stronger, not twice. The same squared relationship works in reverse: doubling the distance cuts the force to a quarter."
+        },
+        {
+          title: 'This formula treats both masses as points (or uniform spheres)',
+          body: "Newton's shell theorem shows a uniform sphere attracts external objects exactly as if all its mass were concentrated at its center, which is why this formula works for planets. It does not hold once two masses are close enough, or irregular enough, that their actual shapes matter."
+        }
+      ],
+      references: [
+        { label: "OpenStax, University Physics Volume 1, §13.1 Newton's Law of Universal Gravitation", url: 'https://openstax.org/books/university-physics-volume-1/pages/13-1-newtons-law-of-universal-gravitation' },
+        { label: 'NIST, CODATA Value: Newtonian constant of gravitation', url: 'https://physics.nist.gov/cgi-bin/cuu/Value?bg' },
+        { label: 'NASA, Earth Fact Sheet (mass and mean radius)', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html' }
+      ]
+    },
+    inputs: [
+      { id: 'mass1', label: 'Mass 1 (kg)', type: 'number', placeholder: '5.9722e24', defaultValue: 5.9722e24, step: 1, min: 0 },
+      { id: 'mass2', label: 'Mass 2 (kg)', type: 'number', placeholder: '70', defaultValue: 70, step: 0.1, min: 0 },
+      { id: 'distance', label: 'Distance (m)', type: 'number', placeholder: '6371000', defaultValue: 6.371e6, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Gravitational Force Calculator (F = Gm₁m₂/r²)',
+      description: "Free gravitational force calculator using Newton's law of universal gravitation. Solve for force, either mass, or distance, with a worked Earth-surface example.",
+      faq: [
+        { question: 'What is the formula for gravitational force?', answer: 'F = G × m₁ × m₂ ÷ r², where G = 6.6743×10⁻¹¹ m³ kg⁻¹ s⁻² (the CODATA/NIST recommended value), m₁ and m₂ are the two masses, and r is the distance between their centers.' },
+        { question: 'What is the value of the gravitational constant G?', answer: 'G = 6.6743×10⁻¹¹ m³ kg⁻¹ s⁻², the CODATA 2022 / NIST recommended value. It is the same for any two masses anywhere in the universe.' },
+        { question: 'How is this different from the weight calculator?', answer: "The weight calculator (W = mg) uses a fixed local gravity value, standard gravity on Earth. This calculator computes the actual gravitational attraction between two specific masses from Newton's law — more general, since it also works for other distances, like a satellite's altitude, not just a planet's surface." },
+        { question: 'Why can\'t I feel the gravity of nearby objects?', answer: 'Because G is extremely small. Two 10 kg objects 1 m apart attract with only about 6.67×10⁻⁹ N, far too weak to detect without sensitive lab equipment. Gravity only becomes noticeable when at least one mass is planet-sized.' },
+        { question: 'Does doubling the distance halve the gravitational force?', answer: 'No — it quarters it, because distance is squared in the denominator. Doubling the distance between two masses reduces the force to one-quarter of its original value; tripling the distance cuts it to one-ninth.' },
+        { question: 'Why is the force on a 70 kg person at Earth\'s surface about 687.4 N, not exactly 686.5 N like the weight calculator gives?', answer: "Both are correct for what they measure. 686.5 N uses standard gravity (9.80665 m/s²), a fixed reference value that already nets out Earth's rotation and slightly flattened shape. 687.4 N is the pure Newtonian gravitational attraction, G × M_Earth × m ÷ r², with no adjustment for those effects — the two differ by less than 0.2%." }
+      ]
+    },
+    compute(values) {
+      return { force: (GRAVITATIONAL_CONSTANT * values.mass1 * values.mass2) / (values.distance * values.distance) };
+    }
+  },
+  {
+    id: 'torque-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'τ',
+    updatedAt: '2026-11-16',
+    aliases: ['torque formula calculator', 'moment of force calculator', 'wrench torque calculator', 'tau = fr sin theta calculator', 'rotational force calculator'],
+    related: ['force-calculator', 'work-calculator', 'spring-hookes-law-calculator'],
+    title: 'Torque Calculator (τ = Fr sin θ)',
+    description: 'Calculate torque from force, lever arm length, and angle — τ = F × r × sin θ — or solve backward for force, radius, or angle, in N·m or lbf·ft.',
+    example: 'A 100 N force applied perpendicular to a 0.3 m wrench produces 30 N·m of torque.',
+    solver: {
+      defaultTarget: 'torque',
+      variables: [
+        { id: 'torque', label: 'Torque', symbol: 'τ', dimension: 'torque', defaultValue: 30, defaultUnit: 'Nm' },
+        { id: 'force', label: 'Force', symbol: 'F', dimension: 'force', defaultValue: 100, defaultUnit: 'N' },
+        { id: 'radius', label: 'Lever arm length', symbol: 'r', dimension: 'length', defaultValue: 0.3, defaultUnit: 'm' },
+        { id: 'angle', label: 'Angle', symbol: 'θ', dimension: 'angle', defaultValue: 90, defaultUnit: 'deg' }
+      ],
+      solve: {
+        torque: ({ force, radius, angle }) => force * radius * Math.sin(angle),
+        force: ({ torque, radius, angle }) => {
+          const s = Math.sin(angle);
+          return radius === 0 || s === 0 ? NaN : torque / (radius * s);
+        },
+        radius: ({ torque, force, angle }) => {
+          const s = Math.sin(angle);
+          return force === 0 || s === 0 ? NaN : torque / (force * s);
+        },
+        angle: ({ torque, force, radius }) => {
+          if (force === 0 || radius === 0) return NaN;
+          const s = torque / (force * radius);
+          return s < -1 || s > 1 ? NaN : Math.asin(s);
+        }
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is torque?',
+        paragraphs: [
+          "Torque is the rotational counterpart to force: it measures how much a force tends to twist or rotate something around a pivot point, rather than push it in a straight line. Pushing on a door far from its hinges swings it open easily; pushing with the same force right next to the hinges barely moves it — same force, very different torque, because torque depends on where and at what angle the force is applied, not just how hard.",
+          "The formula, τ = F × r × sin θ, has three parts: the force F, the distance r from the pivot to where the force is applied (the lever arm), and the angle θ between the force and the lever arm. Only the component of force perpendicular to the lever arm actually causes rotation — a force pulling straight along the lever arm (θ = 0°) produces no torque at all, no matter how strong it is.",
+          'The SI unit of torque, newton-meters (N·m), is the same combination of units as the joule — but torque and energy are different physical quantities measured the same way arithmetically, which is why torque is conventionally always reported in N·m, never in joules, to keep the two straight.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of torque, force, lever arm length, and angle; the fourth fills in automatically. Use 90° for a force applied straight-on (perpendicular), which is the everyday case for a wrench turning a bolt head-on.',
+        steps: [
+          { name: 'Enter the three values you know', text: 'Type each value and pick its unit. The remaining field, marked auto, calculates as you type.' },
+          { name: 'Measure the angle correctly', text: 'θ is the angle between the applied force and the lever arm (the line from the pivot to where the force is applied) — not from the ground or from vertical. 90° (perpendicular) gives the maximum torque for a given force and distance.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 30 N·m becomes about 22.13 lbf·ft instead of silently turning into 30 lbf·ft.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The torque formula rearranges to solve for force, lever arm length, or angle as well as torque.',
+        expression: 'τ = F × r × sin θ\nF = τ ÷ (r × sin θ)\nr = τ ÷ (F × sin θ)\nθ = sin⁻¹(τ ÷ (F × r))',
+        terms: [
+          { symbol: 'τ', meaning: 'Torque, in newton-meters (N·m) — the Greek letter tau.' },
+          { symbol: 'F', meaning: 'Magnitude of the applied force, in newtons (N).' },
+          { symbol: 'r', meaning: 'Lever arm length: the distance from the pivot (axis of rotation) to the point where the force is applied, in meters (m).' },
+          { symbol: 'θ', meaning: 'Angle between the force vector and the lever arm. At 90° (perpendicular), sin θ = 1 and torque is maximized for a given F and r; at 0° or 180° (along the lever arm), sin θ = 0 and torque is zero.' }
+        ],
+        note: 'Every input is converted to SI units (N·m, N, m, rad) before solving and converted back afterward, so entering the angle in degrees works exactly as expected. This is the magnitude of torque about a single, fixed pivot; combining torques from several forces, or about different axes, is a separate calculation.'
+      },
+      workedExample: {
+        intro: 'A mechanic pushes with 100 N of force, perpendicular to a 0.3 m wrench, to loosen a bolt. How much torque does that produce?',
+        rows: [
+          { label: 'Force (F)', value: '100 N' },
+          { label: 'Lever arm length (r)', value: '0.3 m' },
+          { label: 'Angle (θ)', value: '90°, sin 90° = 1' },
+          { label: 'Torque (τ = 100 × 0.3 × 1)', value: '30 N·m' }
+        ],
+        result: 'τ = 30 N·m ≈ 22.13 lbf·ft',
+        explanation: 'sin 90° = 1, so τ = 100 × 0.3 × 1 = 30 N·m. Pushing on the same wrench at 60° to its handle instead of straight-on (90°) would produce only 100 × 0.3 × sin 60° ≈ 25.98 N·m — about 86.6% as much torque — because only the perpendicular component of the push actually twists the bolt.'
+      },
+      watchOut: [
+        {
+          title: 'The angle is between the force and the lever arm, not from the ground',
+          body: 'θ is specifically the angle between the direction of the applied force and the lever arm (the line from the pivot to where the force acts). Pulling or pushing exactly perpendicular to the lever arm (θ = 90°) gives the maximum torque for that force and distance; measuring from the wrong reference line is the most common error.'
+        },
+        {
+          title: 'A force along the lever arm produces zero torque',
+          body: 'At θ = 0° or 180°, sin θ = 0, so the torque is zero no matter how large the force is. Pulling straight out along a wrench handle, instead of swinging it, does not turn the bolt at all.'
+        },
+        {
+          title: 'A longer lever arm multiplies torque for the same force',
+          body: "This is why a longer wrench (or a \"cheater bar\" slipped over one) makes a bolt easier to turn: doubling the lever arm length doubles the torque from the same applied force, which is also the whole principle behind levers."
+        },
+        {
+          title: 'N·m and joules use the same base units but are not interchangeable',
+          body: 'Torque (N·m) and energy (J) both reduce to kg·m²/s² dimensionally, but they describe different physical situations — a twisting effect versus a transferred amount of energy. This page always reports torque in N·m or lbf·ft, never in joules.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §10.6 Torque', url: 'https://openstax.org/books/university-physics-volume-1/pages/10-6-torque' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'force', label: 'Force (N)', type: 'number', placeholder: '100', defaultValue: 100, step: 0.1, min: 0 },
+      { id: 'radius', label: 'Lever arm length (m)', type: 'number', placeholder: '0.3', defaultValue: 0.3, step: 0.01, min: 0 },
+      { id: 'angle', label: 'Angle (rad)', type: 'number', placeholder: '1.5708', defaultValue: Math.PI / 2, step: 0.01 }
+    ],
+    seo: {
+      title: 'Torque Calculator (τ = Fr sin θ) – Force, Radius or Angle',
+      description: 'Free torque calculator. Solve τ = F × r × sin θ for torque, force, lever arm length, or angle in N·m or lbf·ft, with a worked wrench example.',
+      faq: [
+        { question: 'What is the formula for torque?', answer: 'τ = F × r × sin θ, where F is the applied force, r is the lever arm length (distance from the pivot), and θ is the angle between the force and the lever arm. A 100 N force applied perpendicular (90°) to a 0.3 m lever arm gives τ = 100 × 0.3 × 1 = 30 N·m.' },
+        { question: 'What is the difference between torque and force?', answer: 'Force causes straight-line (linear) acceleration; torque causes rotational acceleration around a pivot. The same force produces more torque the farther it is applied from the pivot, and less torque the more it is aimed along the lever arm instead of perpendicular to it.' },
+        { question: 'What angle gives the maximum torque?', answer: '90° (perpendicular) — sin 90° = 1, the largest value sine can take, so a force applied perpendicular to the lever arm produces the most torque possible for that force and distance.' },
+        { question: 'How do I convert newton-meters to pound-feet?', answer: 'Divide by about 1.355818 (1 lbf·ft ≈ 1.355818 N·m). A torque of 30 N·m is about 30 ÷ 1.355818 ≈ 22.13 lbf·ft.' },
+        { question: 'Why does a longer wrench make it easier to loosen a bolt?', answer: 'Torque is proportional to the lever arm length, so lengthening the wrench (or using a pipe as an extension) multiplies the torque produced by the same applied force — the basic principle behind every lever.' },
+        { question: 'Can torque be zero even with a large force?', answer: 'Yes. If the force is applied exactly along the lever arm (θ = 0° or 180°), sin θ = 0, so the torque is zero no matter how strong the force is — all of the force goes into pulling or pushing along the lever rather than twisting it.' }
+      ]
+    },
+    compute(values) {
+      return { torque: values.force * values.radius * Math.sin(values.angle) };
+    }
+  },
+  {
+    id: 'buoyancy-calculator',
+    category: 'physics',
+    group: 'Fluids & Matter',
+    glyph: 'Fb',
+    updatedAt: '2026-11-16',
+    aliases: ["archimedes' principle calculator", 'buoyant force calculator', 'f = rho v g calculator', 'displaced water force calculator', 'floating object calculator'],
+    related: ['density-calculator', 'pressure-calculator', 'weight-calculator'],
+    title: "Buoyancy Calculator (Archimedes' Principle, F = ρVg)",
+    description: "Calculate the buoyant force on a submerged object using Archimedes' principle — F = fluid density × displaced volume × gravity — from the fluid's density and the volume displaced.",
+    example: 'A 0.3 m cube (0.027 m³) fully submerged in fresh water experiences about 264.8 N of buoyant force, equal to the weight of 27 kg of water.',
+    solver: {
+      defaultTarget: 'buoyantForce',
+      variables: [
+        { id: 'buoyantForce', label: 'Buoyant force', symbol: 'Fb', dimension: 'force', defaultValue: 264.78, defaultUnit: 'N' },
+        { id: 'fluidDensity', label: 'Fluid density', symbol: 'ρ', dimension: 'density', defaultValue: 1000, defaultUnit: 'kg/m3' },
+        { id: 'volume', label: 'Displaced volume', symbol: 'V', dimension: 'volume', defaultValue: 0.027, defaultUnit: 'm3' }
+      ],
+      solve: {
+        buoyantForce: ({ fluidDensity, volume }) => fluidDensity * volume * STANDARD_GRAVITY,
+        fluidDensity: ({ buoyantForce, volume }) => (volume === 0 ? NaN : buoyantForce / (volume * STANDARD_GRAVITY)),
+        volume: ({ buoyantForce, fluidDensity }) => (fluidDensity === 0 ? NaN : buoyantForce / (fluidDensity * STANDARD_GRAVITY))
+      },
+      outputs: [{ id: 'massDisplaced', label: 'Mass of fluid displaced (m = ρV)', dimension: 'mass', unit: 'kg', compute: (si) => si.fluidDensity * si.volume }]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: "What is Archimedes' principle?",
+        paragraphs: [
+          "Archimedes' principle, one of the oldest results in physics, says that any object submerged (fully or partly) in a fluid experiences an upward buoyant force equal to the weight of the fluid it pushes out of the way. A ship floats because it displaces a weight of water equal to its own weight; a stone sinks because even displacing its entire volume of water isn't enough weight to match the stone's own.",
+          'Because the weight of the displaced fluid is mass times gravity, and the mass of displaced fluid is density times volume, the buoyant force works out to F = ρ × V × g: fluid density, times the volume actually displaced, times gravitational acceleration. Note that it depends on the fluid\'s density, not the submerged object\'s — the same stone displaces a lighter push from air than from water.',
+          'Whether an object floats or sinks comes down to comparing densities: an object less dense than the fluid floats (and settles at the depth where the weight of fluid it displaces equals its own weight), while an object denser than the fluid sinks, because even full submersion cannot displace enough fluid weight to support it.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of buoyant force, the fluid\'s density, and the displaced volume; the third fills in automatically, alongside the mass of fluid that volume represents.',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type. Gravity is fixed at standard gravity, 9.80665 m/s².' },
+          { name: 'Use the volume actually displaced', text: "For a fully submerged object, that is the object's own volume. For a floating object, it is only the submerged portion's volume — not the whole object." },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 1,000 kg/m³ becomes 1 g/cm³ instead of silently turning into 1,000 g/cm³.' },
+          { name: 'Read the result', text: 'The buoyant force appears in your chosen unit, alongside the mass of fluid that volume of displacement represents.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: "Archimedes' principle rearranges to solve for fluid density or displaced volume as well as buoyant force.",
+        expression: 'F = ρ × V × g\nρ = F ÷ (V × g)\nV = F ÷ (ρ × g)',
+        terms: [
+          { symbol: 'F', meaning: 'Buoyant force, in newtons (N) — the upward push the fluid exerts on the submerged object.' },
+          { symbol: 'ρ', meaning: "The fluid's density, in kilograms per cubic meter (kg/m³) or grams per cubic centimeter (g/cm³) — not the submerged object's density." },
+          { symbol: 'V', meaning: 'Volume of fluid actually displaced, in cubic meters (m³) — the whole object\'s volume if fully submerged, or just the submerged portion if floating.' },
+          { symbol: 'g', meaning: 'Gravitational acceleration, fixed here at standard gravity, 9.80665 m/s².' }
+        ],
+        note: 'Every input is converted to SI units (N, kg/m³, m³) before solving and converted back afterward. This gives the magnitude of the buoyant force; whether an object actually floats depends on comparing this force to the object\'s own weight.'
+      },
+      workedExample: {
+        intro: 'A solid cube with 0.3 m sides (volume 0.027 m³) is fully submerged in fresh water. How much buoyant force does it experience?',
+        rows: [
+          { label: 'Fluid density (ρ, fresh water)', value: '1,000 kg/m³' },
+          { label: 'Displaced volume (V = 0.3³)', value: '0.027 m³' },
+          { label: 'Gravity (g)', value: '9.80665 m/s²' },
+          { label: 'Buoyant force (F = 1,000 × 0.027 × 9.80665)', value: '264.78 N' }
+        ],
+        result: 'F ≈ 264.78 N (mass of water displaced ≈ 27 kg)',
+        explanation: "1,000 × 0.027 = 27 kg of water displaced, and 27 × 9.80665 ≈ 264.78 N of buoyant force pushing up on the cube. The same cube fully submerged in seawater (density about 1,025 kg/m³) would feel about 271.40 N instead — about 2.5% more buoyant force, because seawater is denser than fresh water."
+      },
+      watchOut: [
+        {
+          title: "It's the fluid's density that matters, not the object's",
+          body: "A common mix-up: buoyant force depends on the displacing fluid's density (water, air, oil), not the submerged object's own density. The object's density only matters for working out how much of it submerges, or whether it sinks."
+        },
+        {
+          title: 'Use the submerged volume, not the total volume, for a floating object',
+          body: "A floating object only displaces the volume of fluid below the waterline. Plugging in its full volume instead of just the submerged portion overstates the buoyant force — this formula requires the volume actually displaced."
+        },
+        {
+          title: 'Buoyant force alone does not tell you whether something floats',
+          body: "An object floats only if the buoyant force at full submersion would exceed its own weight; otherwise it sinks and settles on the bottom. Comparing this calculator's output to the object's weight (see the weight calculator, W = mg) answers that question."
+        },
+        {
+          title: 'This gives the magnitude of buoyant force, not net force',
+          body: "The net force on a submerged object is buoyant force minus weight (plus any other forces present). A result here larger than the object's weight means it accelerates upward; smaller means it sinks, not that buoyancy is somehow wrong."
+        }
+      ],
+      references: [
+        { label: "OpenStax, University Physics Volume 1, §14.4 Archimedes' Principle and Buoyancy", url: 'https://openstax.org/books/university-physics-volume-1/pages/14-4-archimedes-principle-and-buoyancy' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'fluidDensity', label: 'Fluid density (kg/m³)', type: 'number', placeholder: '1000', defaultValue: 1000, step: 1, min: 0 },
+      { id: 'volume', label: 'Displaced volume (m³)', type: 'number', placeholder: '0.027', defaultValue: 0.027, step: 0.001, min: 0 }
+    ],
+    seo: {
+      title: "Buoyancy Calculator (Archimedes' Principle, F = ρVg)",
+      description: "Free buoyancy calculator using Archimedes' principle. Solve F = ρ × V × g for buoyant force, fluid density, or displaced volume, with a worked example.",
+      faq: [
+        { question: "What is Archimedes' principle?", answer: 'It states that the buoyant force on a submerged (or partly submerged) object equals the weight of the fluid it displaces: F = ρ × V × g, using the fluid\'s density, the displaced volume, and gravity.' },
+        { question: 'How do I calculate buoyant force?', answer: 'Multiply the fluid\'s density by the displaced volume and by gravity: F = ρ × V × g. A 0.027 m³ object fully submerged in fresh water (1,000 kg/m³) feels 1,000 × 0.027 × 9.80665 ≈ 264.78 N of buoyant force.' },
+        { question: 'Does buoyant force depend on how deep an object is submerged?', answer: 'Not directly — it depends on the volume of fluid displaced, not the depth. A fully submerged object displaces the same volume (and feels the same buoyant force) whether it is just below the surface or far underwater, as long as the fluid\'s density stays roughly constant.' },
+        { question: 'Why do objects float in salt water more easily than fresh water?', answer: 'Salt water is denser (about 1,025 kg/m³ versus 1,000 kg/m³ for fresh water), so the same displaced volume produces a larger buoyant force — about 2.5% more for seawater than fresh water, which is why it is easier to float in the ocean than in a freshwater pool.' },
+        { question: 'What decides whether something floats or sinks?', answer: "Comparing densities: an object less dense than the fluid floats, because it can displace enough fluid weight to equal its own weight before fully submerging. An object denser than the fluid sinks, because even full submersion can't displace enough fluid weight to support it." },
+        { question: 'What volume should I use for a floating object?', answer: 'Only the submerged portion\'s volume, not the object\'s total volume. A floating object displaces just enough fluid, below the waterline, to equal its own weight — the volume above the surface displaces nothing.' }
+      ]
+    },
+    compute(values) {
+      return { buoyantForce: values.fluidDensity * values.volume * STANDARD_GRAVITY };
+    }
+  },
+  {
+    id: 'pendulum-period-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'T',
+    updatedAt: '2026-11-16',
+    aliases: ['simple pendulum calculator', 't = 2 pi sqrt(l/g) calculator', 'pendulum swing time calculator', 'pendulum length calculator', 'period of oscillation calculator'],
+    related: ['free-fall-calculator', 'spring-hookes-law-calculator', 'weight-calculator'],
+    title: 'Pendulum Period Calculator (T = 2π√(L/g))',
+    description: 'Calculate the period of a simple pendulum from its length and local gravity — T = 2π × √(L ÷ g) — or solve backward for length or gravity, for small swing angles.',
+    example: 'A 1 m pendulum on Earth takes about 2.006 seconds to complete one full swing back and forth.',
+    solver: {
+      defaultTarget: 'period',
+      variables: [
+        { id: 'period', label: 'Period', symbol: 'T', dimension: 'time', defaultValue: 2.0064, defaultUnit: 's' },
+        { id: 'length', label: 'Pendulum length', symbol: 'L', dimension: 'length', defaultValue: 1, defaultUnit: 'm' },
+        { id: 'gravity', label: 'Gravity', symbol: 'g', dimension: 'acceleration', defaultValue: STANDARD_GRAVITY, defaultUnit: 'm/s2' }
+      ],
+      solve: {
+        period: ({ length, gravity }) => (gravity <= 0 || length < 0 ? NaN : 2 * Math.PI * Math.sqrt(length / gravity)),
+        length: ({ period, gravity }) => gravity * (period / (2 * Math.PI)) ** 2,
+        gravity: ({ period, length }) => (period === 0 ? NaN : length * (2 * Math.PI / period) ** 2)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is a simple pendulum?',
+        paragraphs: [
+          'A simple pendulum is a mass (the "bob") swinging from a fixed point on a string or rod of length L, light enough and rigid enough that essentially all the swinging mass sits at the bob. For small swings, it takes the same amount of time, the period T, to complete each back-and-forth cycle, no matter how wide (within reason) or how heavy the bob is — a surprising, useful fact first worked out rigorously by Christiaan Huygens in the 17th century, building on Galileo\'s earlier observations.',
+          "The formula, T = 2π√(L ÷ g), depends only on the pendulum's length and the local gravitational acceleration, g. A longer pendulum swings more slowly (a grandfather clock's pendulum is long on purpose, to tick once per second); stronger gravity makes it swing faster, which is why the same pendulum ticks at a different rate on the Moon.",
+          'This independence from mass and (for small angles) amplitude made pendulums the basis of the most accurate clocks for nearly three centuries, from Huygens\' 1656 pendulum clock until quartz and atomic clocks took over in the 20th century.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of the period, the pendulum length, and gravity; the third fills in automatically.',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type. Leave gravity at 9.80665 m/s² for Earth.' },
+          { name: 'Try another world', text: "Replace gravity with another body's surface value — 1.62 m/s² for the Moon, for example — to see how the same pendulum swings elsewhere." },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 1 m becomes 3.28 ft instead of silently turning into 1 ft.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The simple pendulum formula rearranges to solve for length or gravity as well as period.',
+        expression: 'T = 2π × √(L ÷ g)\nL = g × (T ÷ 2π)²\ng = L × (2π ÷ T)²',
+        terms: [
+          { symbol: 'T', meaning: 'Period: the time for one complete back-and-forth swing, in seconds (s).' },
+          { symbol: 'L', meaning: 'Length of the pendulum, from the pivot to the center of the bob, in meters (m).' },
+          { symbol: 'g', meaning: 'Local gravitational acceleration, in m/s². Standard gravity on Earth is exactly 9.80665 m/s² by definition.' }
+        ],
+        note: "This formula is the small-angle approximation: it assumes the maximum swing angle is small, conventionally under about 15° (OpenStax University Physics Volume 1 §15.4), where sin θ and θ (in radians) differ by less than 1%. It also assumes no air resistance or friction at the pivot, and all the mass concentrated at a single point (the bob)."
+      },
+      workedExample: {
+        intro: 'A pendulum is 1 meter long. How long does it take to complete one full swing on Earth?',
+        rows: [
+          { label: 'Length (L)', value: '1 m' },
+          { label: 'Gravity (g)', value: '9.80665 m/s²' },
+          { label: 'Period (T = 2π × √(1 ÷ 9.80665))', value: '≈ 2.006 s' }
+        ],
+        result: 'T ≈ 2.006 s',
+        explanation: "√(1 ÷ 9.80665) ≈ 0.3193, and 2π × 0.3193 ≈ 2.006 s. A pendulum built to tick exactly one full swing every 2 seconds (a classic \"seconds pendulum\") would need to be very slightly shorter, about 0.9936 m. On the Moon, where gravity is about 1.62 m/s², the same 1 m pendulum would take about 4.937 s per swing — more than twice as long, because gravity there is about six times weaker."
+      },
+      watchOut: [
+        {
+          title: 'This only holds for small swing angles',
+          body: "T = 2π√(L ÷ g) is the small-angle approximation, accurate for swings under about 15° from vertical. Swung wider than that, a real pendulum's period starts increasing noticeably beyond what this formula predicts, and the simple formula no longer applies."
+        },
+        {
+          title: "The period doesn't depend on the mass of the bob",
+          body: "A heavier bob and a lighter one, on the same length of string, swing with the same period — a common point of confusion, since heavier objects often seem like they should swing slower. Mass does not appear anywhere in the formula."
+        },
+        {
+          title: "Real pendulums lose energy to friction and air resistance",
+          body: "This formula describes an idealized pendulum with no damping. A real one gradually loses amplitude over time from air drag and friction at the pivot, though — as long as the angle stays small — its period barely changes as it winds down."
+        },
+        {
+          title: 'Length is to the center of the bob, not the string alone',
+          body: "L is measured from the pivot to the pendulum's center of mass, which for a bob of any real size is at its center, not at the point where the string attaches. For a small, dense bob on a light string, the difference is usually negligible."
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §15.4 Pendulums', url: 'https://openstax.org/books/university-physics-volume-1/pages/15-4-pendulums' },
+        { label: 'NASA, Moon Fact Sheet (surface gravity)', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'length', label: 'Pendulum length (m)', type: 'number', placeholder: '1', defaultValue: 1, step: 0.01, min: 0 },
+      { id: 'gravity', label: 'Gravity (m/s²)', type: 'number', placeholder: '9.80665', defaultValue: STANDARD_GRAVITY, step: 0.01 }
+    ],
+    seo: {
+      title: 'Pendulum Period Calculator (T = 2π√(L/g))',
+      description: 'Free pendulum period calculator. Solve T = 2π√(L ÷ g) for period, length, or gravity for a simple pendulum, with a worked example and small-angle notes.',
+      faq: [
+        { question: 'What is the formula for the period of a pendulum?', answer: 'T = 2π × √(L ÷ g), where L is the pendulum\'s length and g is local gravitational acceleration. A 1 m pendulum on Earth (g = 9.80665 m/s²) has a period of about 2.006 seconds.' },
+        { question: 'Does the mass of the pendulum bob affect its period?', answer: "No. The period depends only on the pendulum's length and local gravity — mass does not appear in the formula at all, so a heavy bob and a light one on the same length swing at the same rate." },
+        { question: 'Does the swing angle affect the period?', answer: 'For small angles (under about 15°), barely at all — that is the small-angle approximation this formula uses. Swung much wider than that, the real period increases beyond what T = 2π√(L ÷ g) predicts.' },
+        { question: 'How long should a pendulum be to tick once per second?', answer: 'A "seconds pendulum," with a period of 2 seconds (one tick each way), needs a length of about 0.9936 m on Earth, from L = g × (T ÷ 2π)² with T = 2 s.' },
+        { question: 'How would a pendulum behave on the Moon?', answer: "Slower. With the Moon's gravity of about 1.62 m/s², a 1 m pendulum has a period of about 4.937 s, versus about 2.006 s on Earth — more than twice as long, because weaker gravity gives the pendulum less restoring force to swing back with." },
+        { question: 'How do I find the length of a pendulum from its measured period?', answer: 'Rearrange the formula to L = g × (T ÷ 2π)². A pendulum with a measured period of 1.7357 s, using standard gravity (9.80665 m/s²), works out to a length of about 0.748 m.' }
+      ]
+    },
+    compute(values) {
+      return { period: 2 * Math.PI * Math.sqrt(values.length / values.gravity) };
     }
   }
 ];

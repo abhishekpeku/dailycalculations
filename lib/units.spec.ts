@@ -43,7 +43,7 @@ describe('unit tables', () => {
       'absorbance', 'acceleration', 'amountOfSubstance', 'angle', 'area', 'capacitance', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
       'decibel', 'density', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'length', 'mass', 'massConcentration', 'molalConstant', 'molality', 'molarAbsorptivity', 'molarEnergy', 'molarEntropy', 'molarMass', 'momentum',
       'normality', 'osmolarity', 'pH', 'pace', 'percent', 'power', 'pressure', 'rateConstant', 'resistance', 'specificHeat', 'speed', 'springConstant', 'temperature', 'temperatureDelta', 'term', 'time',
-      'voltage', 'volume'
+      'torque', 'voltage', 'volume'
     ]);
   });
 
@@ -207,6 +207,14 @@ describe('anchor values', () => {
     close(toBase(1, 'springConstant', 'lbf/in'), 175.12683525, 1e-9);
     // F = k × x: 250 N/m stretched 0.12 m gives 30 N, with no stray conversion factor.
     close(toBase(250, 'springConstant', 'N/m') * toBase(0.12, 'length', 'm'), toBase(30, 'force', 'N'));
+  });
+  test('torque: 1 lbf·ft ≈ 1.355818 N·m; τ = Fr sinθ stays a plain multiplication', () => {
+    assert.equal(UNITS.torque[0].id, 'Nm');
+    close(toBase(1, 'torque', 'lbfft'), 1.3558179483314003, 1e-9);
+    close(toBase(1, 'torque', 'lbfin'), 0.11298482902761668, 1e-9);
+    // tau = F x r x sin(theta): 40 N at 4 m, perpendicular (90deg), gives 160 N*m, no stray factor
+    // (OpenStax University Physics Volume 1, Example 10.14).
+    close(toBase(40, 'force', 'N') * toBase(4, 'length', 'm') * Math.sin(Math.PI / 2), toBase(160, 'torque', 'Nm'));
   });
   test('voltage: 1 kV = 1000 V = 1,000,000 mV', () => {
     assert.equal(UNITS.voltage[0].id, 'V');

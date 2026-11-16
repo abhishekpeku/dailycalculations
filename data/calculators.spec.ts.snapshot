@@ -1647,6 +1647,44 @@ exports[`compute() snapshots > cd-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > center-of-mass-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass1": 5.97e+24,
+      "position1": 0,
+      "mass2": 7.36e+22,
+      "position2": 382000000
+    },
+    "outputs": {
+      "centerOfMass": 4652061.685
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass1": 8.955e+24,
+      "position1": 0,
+      "mass2": 1.104e+23,
+      "position2": 573000000
+    },
+    "outputs": {
+      "centerOfMass": 6978092.528
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass1": 0,
+      "position1": 0,
+      "mass2": 0,
+      "position2": 0
+    },
+    "outputs": {
+      "centerOfMass": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > centimeters-to-inches-converter 1`] = `
 {
   "default": {
@@ -3742,6 +3780,53 @@ exports[`compute() snapshots > efficiency-calculator 1`] = `
     },
     "outputs": {
       "efficiency": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > elastic-collision-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass1": 0.015,
+      "velocity1": 0,
+      "mass2": 0.012,
+      "velocity2": 2.5
+    },
+    "outputs": {
+      "velocity1Final": 2.222222222,
+      "velocity2Final": -0.2777777778,
+      "kineticEnergyBefore": 0.0375,
+      "kineticEnergyAfter": 0.0375
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass1": 0.023,
+      "velocity1": 0,
+      "mass2": 0.018,
+      "velocity2": 3.8
+    },
+    "outputs": {
+      "velocity1Final": 3.336585366,
+      "velocity2Final": -0.4634146341,
+      "kineticEnergyBefore": 0.12996,
+      "kineticEnergyAfter": 0.12996
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass1": 0,
+      "velocity1": 0,
+      "mass2": 0,
+      "velocity2": 0
+    },
+    "outputs": {
+      "velocity1Final": "NaN",
+      "velocity2Final": "NaN",
+      "kineticEnergyBefore": 0,
+      "kineticEnergyAfter": "NaN"
     }
   }
 }
@@ -6041,6 +6126,44 @@ exports[`compute() snapshots > income-tax-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > inelastic-collision-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass1": 20000,
+      "velocity1": 3,
+      "mass2": 15000,
+      "velocity2": 0
+    },
+    "outputs": {
+      "finalVelocity": 1.714285714
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass1": 30000,
+      "velocity1": 4.5,
+      "mass2": 22500,
+      "velocity2": 0
+    },
+    "outputs": {
+      "finalVelocity": 2.571428571
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass1": 0,
+      "velocity1": 0,
+      "mass2": 0,
+      "velocity2": 0
+    },
+    "outputs": {
+      "finalVelocity": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > inflation-calculator 1`] = `
 {
   "default": {
@@ -6549,6 +6672,41 @@ exports[`compute() snapshots > kinetic-energy-calculator 1`] = `
     },
     "outputs": {
       "energy": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > kinetic-friction-incline-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "coefficient": 0.082,
+      "mass": 62,
+      "angle": 25
+    },
+    "outputs": {
+      "frictionForce": 45.18579513
+    }
+  },
+  "typical": {
+    "inputs": {
+      "coefficient": 0.123,
+      "mass": 93,
+      "angle": 38
+    },
+    "outputs": {
+      "frictionForce": 88.39768257
+    }
+  },
+  "edge": {
+    "inputs": {
+      "coefficient": 0,
+      "mass": 0,
+      "angle": 0
+    },
+    "outputs": {
+      "frictionForce": 0
     }
   }
 }
@@ -7851,6 +8009,35 @@ exports[`compute() snapshots > molality-calculator 1`] = `
     },
     "outputs": {
       "molality": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > molar-heat-capacity-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "molarCv": 12.47
+    },
+    "outputs": {
+      "molarCp": 20.78446262
+    }
+  },
+  "typical": {
+    "inputs": {
+      "molarCv": 18.71
+    },
+    "outputs": {
+      "molarCp": 27.02446262
+    }
+  },
+  "edge": {
+    "inputs": {
+      "molarCv": 0
+    },
+    "outputs": {
+      "molarCp": 8.314462618
     }
   }
 }

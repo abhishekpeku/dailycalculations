@@ -41,7 +41,7 @@ describe('unit tables', () => {
   test('covers the dimensions the v2 rollout needs', () => {
     assert.deepEqual([...dimensions].sort(), [
       'absorbance', 'acceleration', 'amountOfSubstance', 'angle', 'angularMomentum', 'angularVelocity', 'area', 'capacitance', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
-      'decibel', 'density', 'electricField', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'inductance', 'length', 'magneticFluxDensity', 'mass', 'massConcentration', 'molalConstant', 'molality', 'molarAbsorptivity', 'molarEnergy', 'molarEntropy', 'molarMass', 'momentOfInertia', 'momentum',
+      'decibel', 'density', 'electricField', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'inductance', 'length', 'magneticFluxDensity', 'mass', 'massConcentration', 'molalConstant', 'molality', 'molarAbsorptivity', 'molarEnergy', 'molarEntropy', 'molarHeatCapacity', 'molarMass', 'momentOfInertia', 'momentum',
       'normality', 'osmolarity', 'pH', 'pace', 'percent', 'power', 'pressure', 'rateConstant', 'resistance', 'specificHeat', 'specificLatentHeat', 'speed', 'springConstant', 'temperature', 'temperatureDelta', 'term', 'thermalExpansionCoeff', 'time',
       'torque', 'voltage', 'volume'
     ]);
@@ -389,6 +389,15 @@ describe('anchor values', () => {
     assert.equal(UNITS.molarEntropy[0].id, 'J/molK');
     close(toBase(1, 'molarEntropy', 'kJ/molK'), 1000);
     close(toBase(1, 'molarEntropy', 'cal/molK'), 4.184);
+  });
+  test('molar heat capacity: 1 kJ/(mol·K) = 1000 J/(mol·K), 1 cal/(mol·K) = 4.184 J/(mol·K); Cp - Cv = R', () => {
+    assert.equal(UNITS.molarHeatCapacity[0].id, 'J/molK');
+    close(toBase(1, 'molarHeatCapacity', 'kJ/molK'), 1000);
+    close(toBase(1, 'molarHeatCapacity', 'cal/molK'), 4.184);
+    // OpenStax University Physics Volume 2 §3.5 "Heat Capacities of an Ideal Gas", Equation 3.10
+    // (Cp = Cv + R) and Table 3.3 (a monatomic ideal gas: Cv = 3/2 R, Cp = 5/2 R).
+    const R = 8.31446261815324; // NIST CODATA molar gas constant, exact per the 2019 SI redefinition
+    close(toBase(2.5 * R, 'molarHeatCapacity', 'J/molK') - toBase(1.5 * R, 'molarHeatCapacity', 'J/molK'), R);
   });
   test('molality: 1 mol/kg = 1000 mmol/kg; moles of solute ÷ kg of solvent = molality with no stray factor', () => {
     assert.equal(UNITS.molality[0].id, 'mol/kg');

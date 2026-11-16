@@ -343,6 +343,7 @@ export const calculatorOrder: string[] = [
   'pension-calculator',
   'social-security-calculator',
   'annuity-calculator',
+  'annuity-payout-calculator',
   'jet-lag-calculator',
   'luggage-fee-calculator',
   'daylight-hours-calculator',

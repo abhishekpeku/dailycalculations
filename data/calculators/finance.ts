@@ -3827,4 +3827,123 @@ export const financeCalculators: CalculatorConfig[] = [
       return { futureValue, totalContributed, totalGrowth };
     }
   },
+  {
+    id: 'annuity-payout-calculator',
+    group: 'Savings & Growth',
+    category: 'finance',
+    glyph: 'A↓',
+    updatedAt: '2026-11-16',
+    aliases: ['annuity payout calculator', 'annuitization calculator', 'lump sum payout calculator', 'retirement income from savings calculator', 'annuity income calculator'],
+    related: ['annuity-calculator', 'loan-calculator', 'retirement-savings-calculator', 'rmd-calculator'],
+    title: 'Annuity Payout Calculator',
+    description: 'Find the level monthly income a lump sum can pay out over a fixed term at a given rate — the standard loan-payment formula, run in reverse.',
+    example: 'A $200,000 lump sum paid out over 20 years at an average 5% annual rate provides about $1,319.91 a month, a total payout of about $316,779 — about $116,779 more than the original lump sum.',
+    solver: {
+      defaultTarget: 'payout',
+      variables: [
+        { id: 'payout', label: 'Monthly payout', symbol: 'M', dimension: 'currency', defaultValue: 1319.91, defaultUnit: 'currency' },
+        { id: 'lumpSum', label: 'Lump sum', symbol: 'P', dimension: 'currency', defaultValue: 200000, defaultUnit: 'currency', fixed: true },
+        { id: 'years', label: 'Payout term', symbol: 't', dimension: 'term', defaultValue: 20, defaultUnit: 'yr' },
+        { id: 'annualRate', label: 'Annual rate', symbol: 'r', dimension: 'percent', defaultValue: 5, defaultUnit: '%', bounds: [0, 100] }
+      ],
+      // Same math as loan-calculator, read in reverse: a lump sum paying income out instead of a
+      // loan being repaid. `lumpSum` is fixed — the calculator starts from money you already have.
+      solve: {
+        payout: ({ lumpSum, years, annualRate }) => loanPayment(lumpSum, years, annualRate),
+        years: ({ lumpSum, payout, annualRate }) => loanMonths(lumpSum, payout, annualRate)
+      },
+      // The rate has no closed form: the widget finds it numerically.
+      equation: (si) => si.payout - loanPayment(si.lumpSum, si.years, si.annualRate),
+      outputs: [
+        { id: 'totalPayout', label: 'Total paid out', dimension: 'currency', compute: (si) => si.payout * si.years },
+        { id: 'totalInterest', label: 'Interest earned while paid out', dimension: 'currency', compute: (si) => si.payout * si.years - si.lumpSum }
+      ],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [{ from: 'lumpSum', label: 'Lump sum' }, { from: 'totalInterest', label: 'Interest earned while paid out' }],
+          center: 'totalPayout',
+          centerSub: 'total paid out'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'The loan-payment formula, read in reverse',
+        paragraphs: [
+          "This calculator uses the exact same level-payment formula as loan-calculator, applied to the opposite situation. A loan borrower owes a lender a lump sum and repays it with interest; here, the lump sum is money you already have, and the \"payments\" are income paid out to you, with the remaining balance continuing to earn interest the whole time. That is why the monthly payout is larger than simply dividing the lump sum by the number of months — the undrawn balance keeps compounding until it is paid out. FINRA describes this as the payout phase of a fixed annuity contract: once annuitized, \"the insurance company makes income payments\" that are \"a predetermined fixed amount of money, usually on a monthly basis.\"",
+          "This is the reverse of annuity-calculator, which projects a lump sum forward from a stream of payments going in. This page starts from the lump sum and pays a stream of payments going out. It is also a different question from rmd-calculator, which computes a mandated minimum IRS withdrawal from a retirement account — this page models a voluntary, level payout you choose, for a fixed term you choose, not a required minimum."
+        ]
+      },
+      howTo: {
+        intro: 'Enter the lump sum (always an input), then any two of the other three fields. The third, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter the lump sum', text: 'This is always an input — the amount you already have to pay out.' },
+          { name: 'Project the payout', text: 'Type the rate and the payout term. The monthly payout appears, with the total paid out and the interest earned while being paid out.' },
+          { name: 'Find how long it lasts', text: 'Type a target monthly payout and the rate, leaving the term alone, to see how many years that income level lasts.' },
+          { name: 'Find the rate you need', text: 'Type a target payout and the term, leaving the rate alone, and the calculator searches for the rate numerically.' },
+          { name: 'Compare with the accumulation phase', text: "If you're still building toward this lump sum rather than spending it, see annuity-calculator instead." }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "The payout is the standard level-payment formula applied to the lump sum, with the remaining balance earning interest between payments.",
+        expression: 'Payout = LumpSum × r ÷ (1 − (1 + r)^−n), where r = annual rate ÷ 12\nTotal paid out = Payout × n\nInterest earned = Total paid out − LumpSum',
+        terms: [
+          { symbol: 'Payout', meaning: 'Level monthly income.' },
+          { symbol: 'LumpSum', meaning: 'The amount being paid out.' },
+          { symbol: 'r', meaning: 'Monthly rate: the annual rate ÷ 12, as a decimal.' },
+          { symbol: 'n', meaning: 'Number of monthly payouts (the term in months).' }
+        ],
+        note: "Estimates only. This models a fixed-term payout at a constant assumed rate — it does not model a true life annuity (which pays based on life expectancy, not a fixed term), fees, surrender charges or taxes. Not investment, insurance or tax advice."
+      },
+      workedExample: {
+        intro: 'A $200,000 lump sum is paid out over 20 years at an average 5% annual rate. What is the monthly income, and how much comes from interest?',
+        rows: [
+          { label: 'Monthly rate (5% ÷ 12)', value: '0.4167%' },
+          { label: 'Monthly payout (level-payment formula)', value: '$1,319.91' },
+          { label: 'Total paid out (1,319.91 × 240)', value: '$316,778.75' },
+          { label: 'Interest earned (316,778.75 − 200,000)', value: '$116,778.75' }
+        ],
+        result: 'Payout ≈ $1,319.91 a month for 20 years, about $316,779 total — about $116,779 more than the original $200,000',
+        explanation: "Over a shorter 10-year term, the same $200,000 at 5% pays about $2,121.31 a month instead, 60.7% higher, because the balance has fewer years over which to be drawn down. The rate matters just as much: at 7% the 20-year payout would be about $1,550.60 a month, and at 3% about $1,109.20."
+      },
+      watchOut: [
+        { title: 'Same math as a loan, opposite situation', body: "If this formula looks familiar, it should — it is loan-calculator's level-payment formula, read in reverse. A loan is debt you owe; this models income from money you already have." },
+        { title: 'This pays for a fixed term, not for life', body: "A true life annuity pays based on life expectancy using mortality tables, so it can pay longer or shorter than any fixed term. This calculator only models a chosen, fixed number of years." },
+        { title: 'Fees, surrender charges and taxes are not modeled', body: "Withdrawals from a tax-deferred annuity are generally taxable as ordinary income, and may be fully or partially taxable depending on how much you contributed after tax — see IRS Topic no. 410. Insurance fees and surrender charges would also reduce the real payout." },
+        { title: 'Not a required minimum distribution', body: 'This is a voluntary payout you choose, for a term you choose — see rmd-calculator for the IRS-mandated minimum withdrawal from a traditional IRA instead.' },
+        { title: 'Assumes a constant rate', body: 'A real account\'s return is rarely perfectly level, and a fixed annuity contract may guarantee only a minimum credited rate, not the rate used here.' }
+      ],
+      references: [
+        { label: 'FINRA, Annuities', url: 'https://www.finra.org/investors/investing/investment-products/annuities' },
+        { label: 'Internal Revenue Service, Topic no. 410, Pensions and annuities', url: 'https://www.irs.gov/taxtopics/tc410' }
+      ]
+    },
+    inputs: [
+      { id: 'lumpSum', label: 'Lump sum', type: 'currency', placeholder: '200000', defaultValue: 200000, step: 5000, min: 0 },
+      { id: 'annualRate', label: 'Annual rate', type: 'percent', placeholder: '5', defaultValue: 5, step: 0.1, min: 0 },
+      { id: 'years', label: 'Payout term (years)', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Annuity Payout Calculator – Income From a Lump Sum',
+      description: 'Find the monthly income a lump sum can pay out over a fixed term and rate — the loan-payment formula in reverse. Free annuity payout calculator.',
+      faq: [
+        { question: 'How do I calculate an annuity payout?', answer: 'Apply the level-payment formula to the lump sum: Payout = LumpSum × r ÷ (1 − (1 + r)^−n), where r is the monthly rate and n the number of months. A $200,000 lump sum over 20 years at 5% pays about $1,319.91 a month.' },
+        { question: 'Why is this the same formula as a loan calculator?', answer: "Because it is the same math, applied in reverse: a loan pays a lender back from a borrower's money; this pays income to you from your own lump sum, with the undrawn balance earning interest the whole time." },
+        { question: 'How long will my lump sum last at a given payout?', answer: 'Enter the target monthly payout and the rate, leaving the term alone, and the calculator solves for how many years that income level lasts.' },
+        { question: 'Does this model a life annuity?', answer: "No. A true life annuity pays based on life expectancy and mortality tables, so it can run longer or shorter than any fixed term. This calculator only models a chosen, fixed payout term." },
+        { question: 'Is annuity income taxable?', answer: "Generally yes, as ordinary income, though it may be only partially taxable if you contributed after-tax money. See IRS Topic no. 410, Pensions and annuities, for the rules, and consult a tax professional for your situation." },
+        { question: 'How is this different from the annuity calculator?', answer: 'annuity-calculator projects a lump sum forward from a stream of payments going in (the accumulation phase). This calculator starts from a lump sum you already have and pays a stream of payments going out (the payout phase).' }
+      ]
+    },
+    compute(values) {
+      const months = Math.max(1, values.years * 12);
+      const payout = loanPayment(values.lumpSum, months, values.annualRate);
+      const totalPayout = payout * months;
+      const totalInterest = totalPayout - values.lumpSum;
+      return { payout, totalPayout, totalInterest };
+    }
+  },
 ];

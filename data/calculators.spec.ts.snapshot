@@ -250,6 +250,47 @@ exports[`compute() snapshots > annuity-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > annuity-payout-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "lumpSum": 200000,
+      "annualRate": 5,
+      "years": 20
+    },
+    "outputs": {
+      "payout": 1319.911478,
+      "totalPayout": 316778.7548,
+      "totalInterest": 116778.7548
+    }
+  },
+  "typical": {
+    "inputs": {
+      "lumpSum": 300000,
+      "annualRate": 7.5,
+      "years": 30
+    },
+    "outputs": {
+      "payout": 2097.643526,
+      "totalPayout": 755151.6692,
+      "totalInterest": 455151.6692
+    }
+  },
+  "edge": {
+    "inputs": {
+      "lumpSum": 0,
+      "annualRate": 0,
+      "years": 1
+    },
+    "outputs": {
+      "payout": 0,
+      "totalPayout": 0,
+      "totalInterest": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > area-calculator 1`] = `
 {
   "default": {

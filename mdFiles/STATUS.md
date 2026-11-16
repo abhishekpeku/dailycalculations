@@ -7,7 +7,22 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-11-16 · **Step 46 run 8 (physics drivetrain/efficiency run) DONE** — PR #107,
+Last updated: 2026-11-16 · **Step 46 run 9 (physics SHM/orbital/modulus/E&M run) DONE** — PR #108,
+branch `step/46-wave-3-physics-run-9`, added `simple-harmonic-motion-calculator` (T = 2π√(m/k),
+mass-spring period), `orbital-velocity-calculator` (v = √(GM/r), cross-linked both ways with
+`escape-velocity-calculator`'s exact √2 relationship), `youngs-modulus-calculator` (Y = F·L0/(A·ΔL),
+reuses the `pressure` dimension plus a new `GPa` unit on it), `electric-field-calculator`
+(E = kq/r², point charge) and `magnetic-force-calculator` (F = BIL sin θ). New `lib/units.ts`
+dimensions: `electricField` (N/C, alt V/m) and `magneticFluxDensity` (T, alts mT/G). Angular
+momentum, moment of inertia, and rotational kinetic energy were considered and deliberately
+deferred to a future run as a group — all three need a new `momentOfInertia` dimension (angular
+momentum a second, `angularMomentum`), better built together than split across runs. `npm test`
+(1,326), lint and `npm run build` (372 routes) all pass. A programmatic site-wide sweep (importing
+the real `calculators` array) found zero duplicate ids and zero alias collisions touching this
+run's 5 new ids. **`physics` now 46 (41 → 46), site-wide 341.** Full detail in
+`mdFiles/steps/46-47-wave-3-physics-chemistry.md`.
+
+Previous: **Step 46 run 8 (physics drivetrain/efficiency run) DONE** — PR #107,
 branch `step/46-wave-3-physics-run-8`, added `horsepower-calculator`, `rpm-to-speed-calculator`,
 `gear-ratio-calculator`, `efficiency-calculator`, `angular-velocity-calculator`. New `lib/units.ts`
 dimension: `angularVelocity` (rad/s, rpm, rev/s, deg/s), kept separate from `frequency` despite

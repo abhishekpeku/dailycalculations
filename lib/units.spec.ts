@@ -41,7 +41,7 @@ describe('unit tables', () => {
   test('covers the dimensions the v2 rollout needs', () => {
     assert.deepEqual([...dimensions].sort(), [
       'absorbance', 'acceleration', 'amountOfSubstance', 'angle', 'angularVelocity', 'area', 'capacitance', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
-      'decibel', 'density', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'length', 'mass', 'massConcentration', 'molalConstant', 'molality', 'molarAbsorptivity', 'molarEnergy', 'molarEntropy', 'molarMass', 'momentum',
+      'decibel', 'density', 'electricField', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'length', 'magneticFluxDensity', 'mass', 'massConcentration', 'molalConstant', 'molality', 'molarAbsorptivity', 'molarEnergy', 'molarEntropy', 'molarMass', 'momentum',
       'normality', 'osmolarity', 'pH', 'pace', 'percent', 'power', 'pressure', 'rateConstant', 'resistance', 'specificHeat', 'speed', 'springConstant', 'temperature', 'temperatureDelta', 'term', 'thermalExpansionCoeff', 'time',
       'torque', 'voltage', 'volume'
     ]);
@@ -133,6 +133,8 @@ describe('anchor values', () => {
     close(convert(1, 'pressure', 'atm', 'mmHg'), 760, 1e-5);
     close(convert(1, 'pressure', 'atm', 'inHg'), 29.9213, 1e-5);
     close(convert(1, 'pressure', 'bar', 'kPa'), 100);
+    close(toBase(1, 'pressure', 'GPa'), 1e9);
+    close(convert(200, 'pressure', 'GPa', 'MPa'), 200000); // steel's Young's modulus, OpenStax Table 12.1
   });
   test('data: 1 KiB = 1024 B, 1 KB = 1000 B, 1 B = 8 bit', () => {
     assert.equal(convert(1, 'data', 'KiB', 'B'), 1024);
@@ -237,6 +239,23 @@ describe('anchor values', () => {
     // tau = F x r x sin(theta): 40 N at 4 m, perpendicular (90deg), gives 160 N*m, no stray factor
     // (OpenStax University Physics Volume 1, Example 10.14).
     close(toBase(40, 'force', 'N') * toBase(4, 'length', 'm') * Math.sin(Math.PI / 2), toBase(160, 'torque', 'Nm'));
+  });
+  test('electric field: N/C and V/m are numerically identical (1 V/m = 1 N/C); E = kq/r² stays a plain expression', () => {
+    assert.equal(UNITS.electricField[0].id, 'N/C');
+    close(toBase(1, 'electricField', 'V/m'), 1);
+    close(convert(4.1e12, 'electricField', 'N/C', 'V/m'), 4.1e12);
+  });
+  test('magnetic flux density: 1 mT = 0.001 T, 1 G = 1e-4 T exactly; F = BIL sinθ stays a plain multiplication', () => {
+    assert.equal(UNITS.magneticFluxDensity[0].id, 'T');
+    close(toBase(1, 'magneticFluxDensity', 'mT'), 1e-3);
+    close(toBase(1, 'magneticFluxDensity', 'G'), 1e-4);
+    close(convert(1, 'magneticFluxDensity', 'T', 'G'), 1e4);
+    // OpenStax University Physics Volume 2, Example 11.4: F = BIL (sinθ = 1, perpendicular) with
+    // B = 0.50 T, I = 0.39 A, L = 0.50 m gives 0.0975 N, no stray conversion factor.
+    close(
+      toBase(0.5, 'magneticFluxDensity', 'T') * toBase(0.39, 'current', 'A') * toBase(0.5, 'length', 'm'),
+      toBase(0.0975, 'force', 'N')
+    );
   });
   test('voltage: 1 kV = 1000 V = 1,000,000 mV', () => {
     assert.equal(UNITS.voltage[0].id, 'V');

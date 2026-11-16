@@ -3639,6 +3639,38 @@ exports[`compute() snapshots > efficiency-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > electric-field-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "charge": 0.000001,
+      "radius": 0.1
+    },
+    "outputs": {
+      "fieldStrength": 898755.1786
+    }
+  },
+  "typical": {
+    "inputs": {
+      "charge": 0.0000015,
+      "radius": 0.15
+    },
+    "outputs": {
+      "fieldStrength": 599170.1191
+    }
+  },
+  "edge": {
+    "inputs": {
+      "charge": 0,
+      "radius": 0
+    },
+    "outputs": {
+      "fieldStrength": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > electrical-power-calculator 1`] = `
 {
   "default": {
@@ -6980,6 +7012,44 @@ exports[`compute() snapshots > macro-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > magnetic-force-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "fluxDensity": 0.5,
+      "current": 5,
+      "length": 0.5,
+      "angle": 1.5707963267948966
+    },
+    "outputs": {
+      "force": 1.25
+    }
+  },
+  "typical": {
+    "inputs": {
+      "fluxDensity": 0.75,
+      "current": 7.5,
+      "length": 0.75,
+      "angle": 2.36
+    },
+    "outputs": {
+      "force": 2.971732918
+    }
+  },
+  "edge": {
+    "inputs": {
+      "fluxDensity": 0,
+      "current": 0,
+      "length": 0,
+      "angle": 0
+    },
+    "outputs": {
+      "force": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > margin-of-error-calculator 1`] = `
 {
   "default": {
@@ -8431,6 +8501,38 @@ exports[`compute() snapshots > one-rep-max-calculator 1`] = `
     },
     "outputs": {
       "oneRepMax": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > orbital-velocity-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass": 5.9722e+24,
+      "radius": 6771000
+    },
+    "outputs": {
+      "orbitalVelocity": 7672.618887
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass": 8.9583e+24,
+      "radius": 10157000
+    },
+    "outputs": {
+      "orbitalVelocity": 7672.430034
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass": 0,
+      "radius": 0
+    },
+    "outputs": {
+      "orbitalVelocity": "NaN"
     }
   }
 }
@@ -11853,6 +11955,38 @@ exports[`compute() snapshots > shoe-size-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > simple-harmonic-motion-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass": 2,
+      "springConstant": 32
+    },
+    "outputs": {
+      "period": 1.570796327
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass": 3,
+      "springConstant": 48
+    },
+    "outputs": {
+      "period": 1.570796327
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass": 0,
+      "springConstant": 0
+    },
+    "outputs": {
+      "period": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > simple-interest-calculator 1`] = `
 {
   "default": {
@@ -14452,6 +14586,44 @@ exports[`compute() snapshots > yeast-conversion-calculator 1`] = `
       "freshEquivalentG": 0.1,
       "activeDryEquivalentG": 0.04,
       "instantEquivalentG": 0.033
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > youngs-modulus-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "force": 5393.66,
+      "area": 0.00003,
+      "length0": 2,
+      "deltaLength": 0.0018
+    },
+    "outputs": {
+      "modulus": 199765185200
+    }
+  },
+  "typical": {
+    "inputs": {
+      "force": 8090,
+      "area": 0.000045,
+      "length0": 3,
+      "deltaLength": 0.0027
+    },
+    "outputs": {
+      "modulus": 199753086400
+    }
+  },
+  "edge": {
+    "inputs": {
+      "force": 0,
+      "area": 0,
+      "length0": 0,
+      "deltaLength": 0
+    },
+    "outputs": {
+      "modulus": "NaN"
     }
   }
 }

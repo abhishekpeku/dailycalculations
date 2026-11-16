@@ -25,6 +25,8 @@ export type UnitDimension =
   | 'springConstant'
   | 'thermalExpansionCoeff'
   | 'torque'
+  | 'electricField'
+  | 'magneticFluxDensity'
   | 'voltage'
   | 'current'
   | 'resistance'
@@ -241,10 +243,13 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
     { id: 'BTU/h', label: 'BTU/h', factor: BTU / HOUR }
   ],
   // atm, bar and psi exact from definitions; mmHg/inHg conventional (13.5951 g/cm³ × g0, NIST SP 811 B.8).
+  // GPa (exact SI multiple) appended for materials-science figures like Young's modulus, which are
+  // conventionally reported in GPa (steel is about 200 GPa) rather than Pa or even MPa.
   pressure: [
     { id: 'Pa', label: 'Pa', factor: 1 },
     { id: 'kPa', label: 'kPa', factor: 1000 },
     { id: 'MPa', label: 'MPa', factor: 1e6 },
+    { id: 'GPa', label: 'GPa', factor: 1e9 },
     { id: 'bar', label: 'bar', factor: 1e5 },
     { id: 'mbar', label: 'mbar', factor: 100 },
     { id: 'psi', label: 'psi', factor: POUND_FORCE / (INCH * INCH) },
@@ -295,6 +300,24 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
     { id: 'Nm', label: 'N·m', factor: 1 },
     { id: 'lbfft', label: 'lbf·ft', factor: POUND_FORCE * FOOT },
     { id: 'lbfin', label: 'lbf·in', factor: POUND_FORCE * INCH }
+  ],
+  // Electric field strength (OpenStax University Physics Volume 2 §5.4 "Electric Field": E = F/Q).
+  // SI derived unit is the newton per coulomb; the BIPM SI Brochure gives the equivalent volt per
+  // meter (1 V/m = 1 N/C exactly, since 1 V = 1 J/C and 1 N = 1 J/m) — kept as a second unit under
+  // the same base, the same "one real unit, two conventional names" precedent as `momentum` (N·s vs
+  // kg·m/s). Used by electric-field-calculator's E = kq/r².
+  electricField: [
+    { id: 'N/C', label: 'N/C', factor: 1 },
+    { id: 'V/m', label: 'V/m', factor: 1 }
+  ],
+  // Magnetic flux density (OpenStax University Physics Volume 2 §11.4 "Magnetic Force on a
+  // Current-Carrying Conductor": F = BIL sinθ). SI derived unit is the tesla (BIPM SI Brochure: 1 T
+  // = 1 kg/(A·s²) = 1 Wb/m²). The CGS gauss is exactly 1×10⁻⁴ T by definition (NIST SP 811 Appendix
+  // B) and is still how many permanent-magnet datasheets report field strength.
+  magneticFluxDensity: [
+    { id: 'T', label: 'T', factor: 1 },
+    { id: 'mT', label: 'mT', factor: 1e-3 },
+    { id: 'G', label: 'G', factor: 1e-4 }
   ],
   // SI derived unit (BIPM SI Brochure): 1 V = 1 W/A. Decimal multiples per NIST SP 811 §4.
   voltage: [

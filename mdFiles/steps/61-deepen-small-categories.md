@@ -46,7 +46,12 @@ category into sub-batches if its list is large, same judgment call chemistry/phy
   the speedometer-error % from a size change; real, well-defined geometry formula.
 - `gas-mileage-comparison-calculator` — fuel cost difference between two vehicles over a given
   annual mileage; distinct from the existing single-vehicle `gas-cost-calculator` (comparison, not
-  one trip).
+  one trip). **Skipped 2026-11-16**: the existing `fuel-cost-calculator` (added step 2026-10-21,
+  group "Fuel & Energy Costs") already does exactly this — annual miles, your car's mpg, a
+  "comparison car" mpg field, one shared fuel price, and an `annualSavings` output comparing a
+  year of fuel in each car, with a `compareBars` visual of the two annual costs. A new page built
+  to this spec would be a near-duplicate, not a genuinely distinct calculator, so it was skipped
+  per the step's own discipline ("skip it and say so" beats padding to a count).
 - `parking-cost-calculator` — monthly vs. daily/per-visit parking cost breakeven given visits/week.
 
 ### Batch 2 — `work` (4 → 10)
@@ -183,7 +188,12 @@ whole site before writing any id.
 ## Progress
 
 - [x] Step file written
-- [ ] Batch 1 — `auto` (5 new)
+- [x] Batch 1 — `auto` (4 new + 1 honest skip; done 2026-11-16, PR #94)
+  - [x] `lease-vs-buy-calculator`
+  - [x] `car-depreciation-calculator`
+  - [x] `tire-size-calculator`
+  - [x] `parking-cost-calculator`
+  - [x] `gas-mileage-comparison-calculator` — **skipped, see note below**
 - [x] Batch 2 — `work` (6 new; done 2026-11-16, branch `step/61-deepen-work`, PR #95)
   - [x] `overtime-pay-calculator`
   - [x] `severance-pay-calculator`

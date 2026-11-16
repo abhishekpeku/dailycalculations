@@ -1029,6 +1029,53 @@ exports[`compute() snapshots > capacitor-charge-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > car-depreciation-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "purchasePrice": 35000,
+      "years": 3,
+      "year1Rate": 20,
+      "afterYear1Rate": 15
+    },
+    "outputs": {
+      "currentValue": 20230,
+      "purchasePrice": 35000,
+      "totalDepreciation": 14770,
+      "totalDepreciationPercent": 42.2
+    }
+  },
+  "typical": {
+    "inputs": {
+      "purchasePrice": 52500,
+      "years": 4.5,
+      "year1Rate": 30,
+      "afterYear1Rate": 23
+    },
+    "outputs": {
+      "currentValue": 14722.2735,
+      "purchasePrice": 52500,
+      "totalDepreciation": 37777.7265,
+      "totalDepreciationPercent": 71.95757428
+    }
+  },
+  "edge": {
+    "inputs": {
+      "purchasePrice": 0,
+      "years": 0,
+      "year1Rate": 0,
+      "afterYear1Rate": 0
+    },
+    "outputs": {
+      "currentValue": 0,
+      "purchasePrice": 0,
+      "totalDepreciation": 0,
+      "totalDepreciationPercent": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > car-payment-calculator 1`] = `
 {
   "default": {
@@ -5067,6 +5114,80 @@ exports[`compute() snapshots > lcm-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > lease-vs-buy-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "vehiclePrice": 35000,
+      "buyDownPayment": 3500,
+      "buyApr": 6,
+      "buyTermYears": 5,
+      "leaseCapReduction": 2000,
+      "residualPercent": 55,
+      "moneyFactor": 0.00125,
+      "leaseTermMonths": 36,
+      "estimatedResaleValue": 20230
+    },
+    "outputs": {
+      "totalBuyCost": 18933.80449,
+      "totalLeaseCost": 18101.25,
+      "leaseAdvantage": 832.5544943,
+      "monthlyLoanPayment": 608.9832482,
+      "monthlyLeasePayment": 447.2569444,
+      "equivalentApr": 3,
+      "remainingBalance": 13740.40756,
+      "equity": 6489.59244
+    }
+  },
+  "typical": {
+    "inputs": {
+      "vehiclePrice": 52500,
+      "buyDownPayment": 5300,
+      "buyApr": 9,
+      "buyTermYears": 8,
+      "leaseCapReduction": 3000,
+      "residualPercent": 83,
+      "moneyFactor": 0.0019,
+      "leaseTermMonths": 54,
+      "estimatedResaleValue": 30500
+    },
+    "outputs": {
+      "totalBuyCost": 36974.39667,
+      "totalLeaseCost": 18474.495,
+      "leaseAdvantage": 18499.90167,
+      "monthlyLoanPayment": 691.4895945,
+      "monthlyLeasePayment": 286.5647222,
+      "equivalentApr": 4.56,
+      "remainingBalance": 24833.95857,
+      "equity": 5666.041433
+    }
+  },
+  "edge": {
+    "inputs": {
+      "vehiclePrice": 0,
+      "buyDownPayment": 0,
+      "buyApr": 0,
+      "buyTermYears": 1,
+      "leaseCapReduction": 0,
+      "residualPercent": 1,
+      "moneyFactor": 0,
+      "leaseTermMonths": 1,
+      "estimatedResaleValue": 0
+    },
+    "outputs": {
+      "totalBuyCost": 0,
+      "totalLeaseCost": 0,
+      "leaseAdvantage": 0,
+      "monthlyLoanPayment": 0,
+      "monthlyLeasePayment": 0,
+      "equivalentApr": 0,
+      "remainingBalance": 0,
+      "equity": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > length-converter 1`] = `
 {
   "default": {
@@ -7131,6 +7252,53 @@ exports[`compute() snapshots > paint-calculator 1`] = `
       "gallonsWithBuffer": 0.264,
       "ceilingArea": 1,
       "ceilingGallons": 0.01
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > parking-cost-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "monthlyPassCost": 150,
+      "perVisitCost": 12,
+      "visitsPerWeek": 4
+    },
+    "outputs": {
+      "monthlySavingsWithPass": 58,
+      "monthlyPerVisitCost": 208,
+      "monthlyPassCost": 150,
+      "breakEvenVisitsPerWeek": 2.884615385,
+      "annualSavingsWithPass": 696
+    }
+  },
+  "typical": {
+    "inputs": {
+      "monthlyPassCost": 225,
+      "perVisitCost": 18,
+      "visitsPerWeek": 6
+    },
+    "outputs": {
+      "monthlySavingsWithPass": 243,
+      "monthlyPerVisitCost": 468,
+      "monthlyPassCost": 225,
+      "breakEvenVisitsPerWeek": 2.884615385,
+      "annualSavingsWithPass": 2916
+    }
+  },
+  "edge": {
+    "inputs": {
+      "monthlyPassCost": 0,
+      "perVisitCost": 0,
+      "visitsPerWeek": 0
+    },
+    "outputs": {
+      "monthlySavingsWithPass": 0,
+      "monthlyPerVisitCost": 0,
+      "monthlyPassCost": 0,
+      "breakEvenVisitsPerWeek": "NaN",
+      "annualSavingsWithPass": 0
     }
   }
 }
@@ -10736,6 +10904,68 @@ exports[`compute() snapshots > tip-calculator 1`] = `
       "tipAmount": 0,
       "totalAmount": 0,
       "perPerson": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > tire-size-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "width1": 225,
+      "aspect1": 45,
+      "rim1": 17,
+      "width2": 235,
+      "aspect2": 40,
+      "rim2": 18
+    },
+    "outputs": {
+      "diameterIn": 24.97244094,
+      "diameterMm": 634.3,
+      "circumferenceIn": 78.45323701,
+      "revsPerMile": 807.6148596,
+      "diameterIn2": 25.4015748,
+      "revsPerMile2": 793.9710252,
+      "speedometerErrorPercent": 1.718429765
+    }
+  },
+  "typical": {
+    "inputs": {
+      "width1": 338,
+      "aspect1": 68,
+      "rim1": 25.5,
+      "width2": 353,
+      "aspect2": 60,
+      "rim2": 27
+    },
+    "outputs": {
+      "diameterIn": 43.5976378,
+      "diameterMm": 1107.38,
+      "circumferenceIn": 136.9660186,
+      "revsPerMile": 462.596494,
+      "diameterIn2": 43.67716535,
+      "revsPerMile2": 461.7541964,
+      "speedometerErrorPercent": 0.1824125413
+    }
+  },
+  "edge": {
+    "inputs": {
+      "width1": 1,
+      "aspect1": 1,
+      "rim1": 8,
+      "width2": 1,
+      "aspect2": 1,
+      "rim2": 8
+    },
+    "outputs": {
+      "diameterIn": 8.000787402,
+      "diameterMm": 203.22,
+      "circumferenceIn": 25.13521492,
+      "revsPerMile": 2520.766192,
+      "diameterIn2": 8.000787402,
+      "revsPerMile2": 2520.766192,
+      "speedometerErrorPercent": 0
     }
   }
 }

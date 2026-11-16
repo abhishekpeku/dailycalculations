@@ -126,7 +126,11 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'lc-resonant-frequency-calculator': ['resonantFrequency'], // inductance and capacitance both 0 (their min) -> compute()'s own guard, no resonance at zero L or C
   'elastic-collision-calculator': ['velocity1Final', 'velocity2Final', 'kineticEnergyAfter'], // mass1 and mass2 both 0 (their min) -> totalMass 0 -> 0/0; kineticEnergyBefore stays finite 0
   'inelastic-collision-calculator': ['finalVelocity'], // mass1 and mass2 both 0 (their min) -> totalMass 0 -> 0/0
-  'center-of-mass-calculator': ['centerOfMass'] // mass1 and mass2 both 0 (their min) -> totalMass 0 -> 0/0
+  'center-of-mass-calculator': ['centerOfMass'], // mass1 and mass2 both 0 (their min) -> totalMass 0 -> 0/0
+  'terminal-velocity-calculator': ['velocity'], // fluidDensity, area and dragCoefficient all 0 (their min) -> 0/0 guard
+  'electric-potential-calculator': ['voltage'], // radius 0 (its min) -> explicit guard, potential undefined at zero distance
+  'electromagnetic-induction-calculator': ['emf'], // time 0 (its min) -> compute()'s own guard, no rate of change over zero time
+  'bernoullis-equation-calculator': ['speed2'] // density 0 (its min) -> compute()'s own guard, division by zero density
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

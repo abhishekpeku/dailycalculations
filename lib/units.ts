@@ -30,6 +30,7 @@ export type UnitDimension =
   | 'inductance'
   | 'electricField'
   | 'magneticFluxDensity'
+  | 'magneticFlux'
   | 'voltage'
   | 'current'
   | 'resistance'
@@ -352,6 +353,15 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
     { id: 'T', label: 'T', factor: 1 },
     { id: 'mT', label: 'mT', factor: 1e-3 },
     { id: 'G', label: 'G', factor: 1e-4 }
+  ],
+  // Magnetic flux (OpenStax University Physics Volume 2 §13.1 "Faraday's Law": Φ = BA cos θ). SI
+  // derived unit is the weber (BIPM SI Brochure: 1 Wb = 1 T·m² = 1 V·s). Used by
+  // magnetic-flux-calculator and, as the quantity that changes, by
+  // electromagnetic-induction-calculator's ΔΦ.
+  magneticFlux: [
+    { id: 'Wb', label: 'Wb', factor: 1 },
+    { id: 'mWb', label: 'mWb', factor: 1e-3 },
+    { id: 'uWb', label: 'µWb', factor: 1e-6 }
   ],
   // SI derived unit (BIPM SI Brochure): 1 V = 1 W/A. Decimal multiples per NIST SP 811 §4.
   voltage: [

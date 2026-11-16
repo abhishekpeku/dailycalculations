@@ -41,7 +41,7 @@ describe('unit tables', () => {
   test('covers the dimensions the v2 rollout needs', () => {
     assert.deepEqual([...dimensions].sort(), [
       'absorbance', 'acceleration', 'amountOfSubstance', 'angle', 'angularMomentum', 'angularVelocity', 'area', 'capacitance', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
-      'decibel', 'density', 'electricField', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'inductance', 'length', 'magneticFluxDensity', 'mass', 'massConcentration', 'molalConstant', 'molality', 'molarAbsorptivity', 'molarEnergy', 'molarEntropy', 'molarHeatCapacity', 'molarMass', 'momentOfInertia', 'momentum',
+      'decibel', 'density', 'electricField', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'inductance', 'length', 'magneticFlux', 'magneticFluxDensity', 'mass', 'massConcentration', 'molalConstant', 'molality', 'molarAbsorptivity', 'molarEnergy', 'molarEntropy', 'molarHeatCapacity', 'molarMass', 'momentOfInertia', 'momentum',
       'normality', 'osmolarity', 'pH', 'pace', 'percent', 'power', 'pressure', 'rateConstant', 'resistance', 'specificHeat', 'specificLatentHeat', 'speed', 'springConstant', 'temperature', 'temperatureDelta', 'term', 'thermalExpansionCoeff', 'time',
       'torque', 'voltage', 'volume'
     ]);
@@ -278,6 +278,18 @@ describe('anchor values', () => {
     close(
       toBase(0.5, 'magneticFluxDensity', 'T') * toBase(0.39, 'current', 'A') * toBase(0.5, 'length', 'm'),
       toBase(0.0975, 'force', 'N')
+    );
+  });
+  test('magnetic flux: 1 mWb = 0.001 Wb, 1 µWb = 1e-6 Wb; Φ = BA cos θ stays a plain multiplication', () => {
+    assert.equal(UNITS.magneticFlux[0].id, 'Wb');
+    close(toBase(1, 'magneticFlux', 'mWb'), 1e-3);
+    close(toBase(1, 'magneticFlux', 'uWb'), 1e-6);
+    close(convert(1, 'magneticFlux', 'Wb', 'mWb'), 1000);
+    // OpenStax University Physics Volume 2 §13.1: a 0.25 m square loop (A = 0.0625 m²)
+    // perpendicular to a 0.8 T field has Φ = BA = 0.05 Wb, no stray conversion factor.
+    close(
+      toBase(0.8, 'magneticFluxDensity', 'T') * toBase(0.0625, 'area', 'm2') * Math.cos(0),
+      toBase(0.05, 'magneticFlux', 'Wb')
     );
   });
   test('voltage: 1 kV = 1000 V = 1,000,000 mV', () => {

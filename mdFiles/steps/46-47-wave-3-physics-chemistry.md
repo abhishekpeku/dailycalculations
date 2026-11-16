@@ -1876,9 +1876,134 @@ build agent's judgment**, same as every run so far.
     total site-wide** (356 before this run’s branch point + 5 — this run branched from the already-
     merged, reconciled base of physics run 10 + chemistry run 11, so no further reconciliation is
     needed).
+- [x] Physics run 12 (5, FINAL physics run — closes out the ~61 target), branch
+  `step/46-wave-3-physics-run-12`, PR #114 — **DONE** 2026-11-17:
+  - [x] terminal-velocity-calculator
+  - [x] electric-potential-calculator
+  - [x] magnetic-flux-calculator
+  - [x] electromagnetic-induction-calculator
+  - [x] bernoullis-equation-calculator
+  - Picked from this run's own task candidate list. **Rejected**: a second
+    Stokes'-law-style terminal-velocity calculator (linear drag, tiny sphere in a viscous fluid) —
+    distinguished in content as a genuinely different regime from the quadratic-drag model this
+    run ships, but not built as its own page, since "terminal velocity" search intent would likely
+    collide with the one just shipped; specific gravity — chemistry's `density-of-solutions-calculator`
+    already covers it thoroughly (per run 8's own note, reconfirmed here); a third Coulomb's-law
+    two-point-charge calculator — still functionally identical in shape to
+    `gravitational-force-calculator`'s inverse-square formula, per runs 9-11's repeated rejection of
+    the same idea.
+  - `terminal-velocity-calculator` (v = √(2mg ÷ ρACd), quadratic-drag model) is a 5-variable
+    closed-form solver (velocity, mass, fluidDensity, area, dragCoefficient), with gravity fixed at
+    `STANDARD_GRAVITY` rather than an editable variable, per the task's own hint and the
+    `buoyancy-calculator`/`potential-energy-calculator` precedent. Reuses `speed`/`mass`/`density`/
+    `area`/`count` (for the dimensionless drag coefficient, the same precedent as
+    `friction-calculator`'s μ) — no new dimension. Explicitly distinguished from
+    `free-fall-calculator` (no air resistance at all) in both the concept section and a watch-out
+    item, and from Stokes' law (linear, not quadratic, drag) in the formula note. Worked example and
+    a second cross-check both reproduce OpenStax's own two separate skydiver examples exactly (75 kg
+    headfirst → 98 m/s / 350 km/h at the book's own rounded g; 85 kg spread-eagle → 44 m/s) —
+    deliberately presented as two separate worked examples with their own full input sets, not as
+    "the same skydiver changing position," since the book's two examples actually use different
+    masses, avoiding the overgeneralization trap template §3 warns against.
+  - `electric-potential-calculator` (V = kq ÷ r) is a 3-variable closed-form solver (voltage, charge,
+    radius), reusing `voltage`/`charge`/`length` and the existing `COULOMB_CONSTANT` module constant
+    `electric-field-calculator` already derived from CODATA 2022 vacuum permittivity — no new
+    dimension. Explicitly distinguished from `electric-field-calculator` as a genuine signed scalar
+    (unlike that page's magnitude-only treatment of E) in the concept section and a watch-out item.
+    Cross-linked both ways: added to `electric-field-calculator`'s own `related` (now 4 entries).
+    Worked example (+5 nC at 10 cm → ≈449 V) plus an independent cross-check against OpenStax's own
+    Example 7.10 (−3.00 nC at 5.00 cm → ≈−539 V, confirming the sign carries through correctly).
+  - `magnetic-flux-calculator` (Φ = BA cos θ) needed a genuinely new dimension: `magneticFlux` (base
+    weber Wb, alts mWb/µWb — BIPM SI Brochure, 1 Wb = 1 T·m² = 1 V·s). Round-trip + anchor test in
+    `lib/units.spec.ts`, cross-checked against OpenStax's own 0.25 m square-coil setup (0.8 T
+    perpendicular → 0.05 Wb). 4-variable closed-form solver (flux, fluxDensity, area, angle), reusing
+    `magneticFluxDensity`/`area`/`angle`, with `Math.cos`/`Math.acos` (principal-value-only,
+    domain-guarded to [-1, 1]) for the angle direction — the same pattern `torque-calculator` and
+    `magnetic-force-calculator` set for their own sin/asin pairs.
+  - `electromagnetic-induction-calculator` (Faraday's law of induction, ε = N × ΔΦ ÷ Δt) is a
+    4-variable closed-form solver (emf, turns, fluxChange, time), reusing `voltage`/`count`/
+    `magneticFlux`/`time` — no new dimension beyond `magneticFlux` itself. **Checked the naming
+    doesn't collide**, as the task required: explicitly distinguished in the concept section and a
+    dedicated watch-out item from chemistry's unrelated `faradays-law-electrolysis-calculator` (same
+    19th-century scientist, Michael Faraday, completely unrelated law and formula) — not cross-linked
+    in `related`, since the two aren't actually relevant next-steps for each other, only
+    name-adjacent. Worked example reproduces OpenStax's own 200-turn, 0.25 m square-coil example
+    exactly (0.040 T/s field decay → 0.50 V, then 0.10 A through a cited 5.0 Ω resistor via Ohm's
+    law). States the dropped minus sign (Lenz's law, direction only) as a watch-out item, the same
+    simplification `friction-calculator`/`snells-law-calculator` make for their own directional
+    quantities.
+  - `bernoullis-equation-calculator` (p₁ + ½ρv₁² + ρgh₁ = p₂ + ½ρv₂² + ρgh₂) is the largest solver
+    shipped in this wave: 6 rotating closed-form variables (pressure1, speed1, height1, pressure2,
+    speed2, height2) plus fluid density as a 7th, `fixed: true` input — editable (water ≈1000 kg/m³,
+    air ≈1.2 kg/m³) but never auto-calculated, the same `fixed: true` precedent
+    `gear-ratio-calculator`'s input RPM set, since density is a known fluid property rather than an
+    unknown to solve for. Gravity fixed at `STANDARD_GRAVITY`, not exposed, same reasoning as the
+    other 4 calculators this run. Reuses `pressure`/`speed`/`length`/`density` — no new dimension.
+    Primary worked example is Torricelli's theorem as an emergent special case (both ends open to
+    atmosphere, large-tank surface speed ≈0, 10 m height drop → exit speed ≈14.0 m/s, exactly
+    √(2gh)) rather than an invented generic case, independently cross-checked against OpenStax's own
+    Example 14.6 (level-flow hose-nozzle case, 1.96 m/s → 25.5 m/s → hose pressure ≈4.24×10⁵ Pa) to
+    confirm the general 6-variable implementation collapses correctly to both named textbook special
+    cases (Torricelli and the Venturi-effect-style level-flow case).
+  - Every formula/constant fetched directly from a primary source by fetching each OpenStax page's
+    own rendered text directly (not an AI-summarizing fetch, per this wave's "read sources directly"
+    rule), confirmed with direct URL fetches, not recalled from memory: OpenStax University Physics
+    Volume 1 §6.4 "Drag Force and Terminal Speed" (including its own headfirst-skydiver calculation
+    and Example 6.17's spread-eagle case) and §14.6 "Bernoulli's Equation" (including its own
+    Example 14.6); OpenStax University Physics Volume 2 §7.3 "Calculations of Electric Potential"
+    (including its own Example 7.10) and §13.1 "Faraday's Law" (including its own 200-turn
+    square-coil EMF example); the existing CODATA 2022 vacuum-permittivity-derived
+    `COULOMB_CONSTANT` and `STANDARD_GRAVITY` module constants already established earlier in this
+    wave.
+  - Independent scratch script (`verify_run12.mjs`, scratchpad, no app imports) recomputed every
+    number before the copy was written: both terminal-velocity examples at both the site's own
+    g = 9.80665 and the book's rounded g = 9.80 (98.19-98.23 m/s / 353.5-353.6 km/h headfirst,
+    44.35-44.37 m/s spread-eagle) plus a full 4-direction round-trip; the electric-potential primary
+    example (449.38 V) and the OpenStax Example 7.10 cross-check (−539.25 V) plus a round-trip; the
+    magnetic-flux perpendicular (0.08 Wb), 60°-tilted (0.04 Wb, exactly half) and edge-on
+    (≈0 Wb) cases; the electromagnetic-induction OpenStax coil example (0.5 V EMF, 0.1 A current)
+    plus a full round-trip; and the Bernoulli OpenStax hose-nozzle cross-check (424,204.2 Pa, matching
+    the textbook's published 4.24×10⁵ Pa) and the Torricelli tank example (14.00474919446971 m/s,
+    exactly √(2 × 9.80665 × 10)) plus its own round-trip. All checks printed `OK`, zero `FAIL` lines.
+  - `npm test` (1,437 tests, up from 1,401), `npm run lint` clean, `npm run build` passing (371
+    calculator pages, `physics` now exactly 61). One build-only type error was caught and fixed
+    before committing: `magnetic-flux-calculator`'s angle `input` briefly carried a `max` property
+    that does not exist on the `CalculatorInput` type (TypeScript caught it at `next build` time,
+    not at `npm test` time, since the plain test runner doesn't type-check `data/calculators/*.ts`
+    the way `next build`'s own TypeScript pass does) — removed, no behavior change, since `max` was
+    never read anywhere. New `KNOWN_NON_FINITE` entries in `data/calculators.spec.ts`:
+    `terminal-velocity-calculator` (`velocity`; fluidDensity/area/dragCoefficient all 0 at their own
+    min → 0/0 guard), `electric-potential-calculator` (`voltage`; radius 0 at its own min → explicit
+    guard), `electromagnetic-induction-calculator` (`emf`; time 0 at its own min → explicit guard),
+    `bernoullis-equation-calculator` (`speed2`; density 0 at its own min → explicit guard).
+    `magnetic-flux-calculator` needed none (its all-zero edge case resolves to an honest finite 0).
+    Snapshot diff is additive-only (184 new lines, 0 removed, confirmed with `git diff --stat`).
+  - Verified all 5 new pages from the static HTML `next build` produced
+    (`.next/server/app/en/calculators/<id>.html`): H1, exactly one JSON-LD script, no "application
+    error" text, and all eight section ids (concept/how-to-use/formula/worked-example/watch-out/faq/
+    references/related) present on every page, all 5 linked correctly from
+    `/en/categories/physics`. A pre-existing process (not started by this run) was already listening
+    on port 3000 throughout — left running, verified via the static HTML output instead, same
+    precedent as every prior run in this file.
+  - Also checked programmatically: every `seo.title` ≤ 60 and `seo.description` ≤ 160 characters
+    (39-57 and 126-149 respectively), every new calculator has exactly 5 aliases and exactly 6 FAQs,
+    every `related` id exists site-wide with no self-reference, and no alias collision against any
+    existing calculator site-wide.
+  - **`physics` is now 61 — exactly at the wave's target. 371 calculators total site-wide.** This
+    closes out physics for Wave 3.
 - [ ] Visual-QA checkpoint: due again once ~50 more calculators land after this wave (last pass was
   at 194 calculators, 2026-11-05 — see STATUS.md header; chemistry crossed the 244-calculator
   threshold after run 6, flagged for the main session to schedule — still not run as of this run)
+
+## Wave 3 closing summary — physics + chemistry both DONE (2026-11-17)
+
+**Wave 3 (physics, chemistry) is now fully complete.** physics went from 1 → 61 calculators across
+12 runs (PRs #61-64, #104-108, #111, #113, #114); chemistry opened as a new category and went from
+0 → 60 calculators across 12 runs (PRs #65-67, and the remaining chemistry runs through PR #112).
+Both categories hit their ~60/~61 rollout-plan targets exactly. Per STATUS.md decision D13's locked
+category order (reconfirmed by D22), **biology is next** — a new category, already carrying its own
+go-ahead per D22, but **not started by this run**: the main session should write
+biology's just-in-time step file (per the working protocol) and schedule its first run separately.
 
 **After physics and chemistry both close out (~121 calculators added this wave, ~440 site-wide):**
 Wave 4 opens next, in this fixed order — **biology, then ecology, then fun/other** (per

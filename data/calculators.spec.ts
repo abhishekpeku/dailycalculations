@@ -110,7 +110,11 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'pendulum-period-calculator': ['period'], // length 0 (its min) and gravity 0 (no min, 0) -> 0/0 under the sqrt
   'gear-ratio-calculator': ['gearRatio'], // driveTeeth 0 (its min) -> divide by zero
   'efficiency-calculator': ['efficiency'], // inputPower 0 (its min) -> divide by zero
-  'angular-velocity-calculator': ['angularVelocity'] // time 0 (its min) -> divide by zero
+  'angular-velocity-calculator': ['angularVelocity'], // time 0 (its min) -> divide by zero
+  'simple-harmonic-motion-calculator': ['period'], // springConstant 0 (its min) -> explicit guard, no sqrt(m/0)
+  'orbital-velocity-calculator': ['orbitalVelocity'], // radius 0 (its min) -> explicit guard, no orbit at zero radius
+  'youngs-modulus-calculator': ['modulus'], // area and deltaLength both 0 (their min) -> 0/0 guard
+  'electric-field-calculator': ['fieldStrength'] // radius 0 (its min) -> explicit guard, field undefined at zero distance
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

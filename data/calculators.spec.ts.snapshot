@@ -1440,6 +1440,44 @@ exports[`compute() snapshots > cashback-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > cd-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "depositAmount": 10000,
+      "apy": 4.75,
+      "months": 18
+    },
+    "outputs": {
+      "maturityValue": 10720.89512,
+      "totalInterest": 720.8951206
+    }
+  },
+  "typical": {
+    "inputs": {
+      "depositAmount": 15000,
+      "apy": 7.13,
+      "months": 27
+    },
+    "outputs": {
+      "maturityValue": 17514.23792,
+      "totalInterest": 2514.237923
+    }
+  },
+  "edge": {
+    "inputs": {
+      "depositAmount": 0,
+      "apy": 0,
+      "months": 1
+    },
+    "outputs": {
+      "maturityValue": 0,
+      "totalInterest": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > centimeters-to-inches-converter 1`] = `
 {
   "default": {
@@ -5238,6 +5276,68 @@ exports[`compute() snapshots > investment-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > irr-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "lists": {
+        "cashFlows": [
+          -10000,
+          2500,
+          3500,
+          4500,
+          5000
+        ]
+      }
+    },
+    "outputs": {
+      "irr": 17.77146559,
+      "numberOfPeriods": 4,
+      "totalInflows": 15500,
+      "totalOutflows": 10000,
+      "netCashFlow": 5500
+    }
+  },
+  "typical": {
+    "inputs": {
+      "lists": {
+        "cashFlows": [
+          -15000,
+          3750,
+          5250,
+          6750,
+          7500
+        ]
+      }
+    },
+    "outputs": {
+      "irr": 17.77146559,
+      "numberOfPeriods": 4,
+      "totalInflows": 23250,
+      "totalOutflows": 15000,
+      "netCashFlow": 8250
+    }
+  },
+  "edge": {
+    "inputs": {
+      "lists": {
+        "cashFlows": [
+          0,
+          0
+        ]
+      }
+    },
+    "outputs": {
+      "irr": "NaN",
+      "numberOfPeriods": 1,
+      "totalInflows": 0,
+      "totalOutflows": 0,
+      "netCashFlow": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > isotope-notation-calculator 1`] = `
 {
   "default": {
@@ -7241,6 +7341,56 @@ exports[`compute() snapshots > mulch-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > mutual-fund-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "initialInvestment": 10000,
+      "grossAnnualReturn": 8,
+      "expenseRatio": 0.5,
+      "years": 20,
+      "monthlyContribution": 200
+    },
+    "outputs": {
+      "futureValue": 155354.3153,
+      "totalContributions": 48000,
+      "totalGrowth": 97354.31532,
+      "feeDrag": 11717.79551
+    }
+  },
+  "typical": {
+    "inputs": {
+      "initialInvestment": 15000,
+      "grossAnnualReturn": 12,
+      "expenseRatio": 0.75,
+      "years": 30,
+      "monthlyContribution": 300
+    },
+    "outputs": {
+      "futureValue": 1320115.222,
+      "totalContributions": 108000,
+      "totalGrowth": 1197115.222,
+      "feeDrag": 267618.6381
+    }
+  },
+  "edge": {
+    "inputs": {
+      "initialInvestment": 0,
+      "grossAnnualReturn": 0,
+      "expenseRatio": 0,
+      "years": 0,
+      "monthlyContribution": 0
+    },
+    "outputs": {
+      "futureValue": 0,
+      "totalContributions": 0,
+      "totalGrowth": 0,
+      "feeDrag": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > nfl-passer-rating-calculator 1`] = `
 {
   "default": {
@@ -7377,6 +7527,68 @@ exports[`compute() snapshots > normality-calculator 1`] = `
     },
     "outputs": {
       "normality": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > npv-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "discountRate": 8,
+      "lists": {
+        "cashFlows": [
+          -10000,
+          2500,
+          3500,
+          4500,
+          5000
+        ]
+      }
+    },
+    "outputs": {
+      "npv": 2562.895034,
+      "presentValueOfInflows": 12562.89503,
+      "presentValueOfOutflows": 10000,
+      "numberOfPeriods": 4
+    }
+  },
+  "typical": {
+    "inputs": {
+      "discountRate": 12,
+      "lists": {
+        "cashFlows": [
+          -15000,
+          3750,
+          5250,
+          6750,
+          7500
+        ]
+      }
+    },
+    "outputs": {
+      "npv": 2104.384404,
+      "presentValueOfInflows": 17104.3844,
+      "presentValueOfOutflows": 15000,
+      "numberOfPeriods": 4
+    }
+  },
+  "edge": {
+    "inputs": {
+      "discountRate": 0,
+      "lists": {
+        "cashFlows": [
+          0,
+          0
+        ]
+      }
+    },
+    "outputs": {
+      "npv": 0,
+      "presentValueOfInflows": 0,
+      "presentValueOfOutflows": 0,
+      "numberOfPeriods": 1
     }
   }
 }
@@ -10812,6 +11024,44 @@ exports[`compute() snapshots > shoe-size-converter 1`] = `
       "mondopoint": 0,
       "footCm": 0,
       "footIn": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > simple-interest-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "principal": 4000,
+      "rate": 5.5,
+      "years": 4
+    },
+    "outputs": {
+      "interest": 880,
+      "totalValue": 4880
+    }
+  },
+  "typical": {
+    "inputs": {
+      "principal": 6000,
+      "rate": 8.25,
+      "years": 6
+    },
+    "outputs": {
+      "interest": 2970,
+      "totalValue": 8970
+    }
+  },
+  "edge": {
+    "inputs": {
+      "principal": 0,
+      "rate": 0,
+      "years": 0
+    },
+    "outputs": {
+      "interest": 0,
+      "totalValue": 0
     }
   }
 }

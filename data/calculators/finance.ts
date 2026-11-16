@@ -1,5 +1,6 @@
 import type { CalculatorConfig } from './types.ts';
 import { monthlyPayment } from '../../lib/amortization.ts';
+import { findRoot } from '../../lib/solve.ts';
 
 // Amortized loans (loan, mortgage, EMI). Terms are in months; `apr` is the percent number (6 = 6%).
 // Each returns NaN when there is no answer.
@@ -26,6 +27,35 @@ const growthFactor = (ratePercent: number, periodsPerYear: number, periods: numb
 const annuityFactor = (ratePercent: number, periodsPerYear: number, periods: number) => {
   const i = ratePercent / 100 / periodsPerYear;
   return i === 0 ? periods : ((1 + i) ** periods - 1) / i;
+};
+
+// Net present value of a cash-flow series (irr-calculator, npv-calculator): flows[0] is "now",
+// flows[1] one period later, and so on. `rate` is a decimal (0.08 = 8%) per period.
+const netPresentValue = (flows: number[], rate: number) => flows.reduce((sum, cf, t) => sum + cf / (1 + rate) ** t, 0);
+
+// The discount rate that makes the series' own NPV zero. Needs at least one sign change in the
+// flows (a real investment followed by a real return) — otherwise there is no such rate.
+const internalRateOfReturn = (flows: number[]) => {
+  if (flows.length < 2 || !flows.some((f) => f > 0) || !flows.some((f) => f < 0)) return NaN;
+  return findRoot((rate) => netPresentValue(flows, rate), { bounds: [-0.9999, 10], guess: 0.1 });
+};
+
+// A CD's advertised APY (annual percentage yield) already bakes in its compounding, unlike the
+// nominal rate compound-interest-calculator takes — so the maturity value is just that yield
+// applied over the fractional number of years in the term (cd-calculator).
+const cdMaturityValue = (deposit: number, apyPercent: number, months: number) =>
+  deposit >= 0 && months >= 0 ? deposit * (1 + apyPercent / 100) ** (months / 12) : NaN;
+const cdDepositNeeded = (maturity: number, apyPercent: number, months: number) => {
+  const factor = (1 + apyPercent / 100) ** (months / 12);
+  return maturity >= 0 && months >= 0 && factor > 0 ? maturity / factor : NaN;
+};
+const cdTermMonths = (maturity: number, deposit: number, apyPercent: number) => {
+  if (!(maturity > 0) || !(deposit > 0) || !(apyPercent > 0)) return NaN;
+  return (12 * Math.log(maturity / deposit)) / Math.log(1 + apyPercent / 100);
+};
+const cdApy = (maturity: number, deposit: number, months: number) => {
+  if (!(maturity > 0) || !(deposit > 0) || !(months > 0)) return NaN;
+  return ((maturity / deposit) ** (12 / months) - 1) * 100;
 };
 
 // US payroll figures for 2026, indexed by filing status (0 single, 1 married filing jointly, 2 head of
@@ -4094,6 +4124,650 @@ export const financeCalculators: CalculatorConfig[] = [
       const totalContributed = values.currentSavings + monthlyContribution * months;
       const totalGrowth = values.goalAmount - totalContributed;
       return { monthlyContribution, totalContributed, totalGrowth };
+    }
+  },
+  {
+    id: 'irr-calculator',
+    group: 'Investment Analysis',
+    category: 'finance',
+    glyph: 'IRR',
+    updatedAt: '2026-11-16',
+    aliases: ['internal rate of return calculator', 'irr calculator', 'cash flow irr calculator', 'project irr calculator', 'irr from cash flows calculator'],
+    related: ['npv-calculator', 'investment-calculator', 'mutual-fund-calculator', 'loan-calculator'],
+    title: 'IRR (Internal Rate of Return) Calculator',
+    description: 'Find the internal rate of return of a series of cash flows — the discount rate at which their net present value is exactly zero — by entering the flows as a list.',
+    example: 'An initial $10,000 outflow followed by $2,500, $3,500, $4,500 and $5,000 in the next four years has an IRR of about 17.77%.',
+    breakdown: {
+      headline: 'irr',
+      headlineLabel: 'Internal rate of return (IRR)',
+      outputs: [
+        { id: 'irr', label: 'Internal rate of return (IRR)', format: 'percent' },
+        { id: 'numberOfPeriods', label: 'Number of periods after period 0', format: 'integer' },
+        { id: 'totalOutflows', label: 'Total cash out (periods with a negative flow)', format: 'currency' },
+        { id: 'totalInflows', label: 'Total cash in (periods with a positive flow)', format: 'currency' },
+        { id: 'netCashFlow', label: 'Net cash flow (undiscounted)', format: 'currency' }
+      ],
+      groups: [{ title: 'Cash flows, one per period, starting at period 0', inputs: ['cashFlows'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'totalOutflows', label: 'Cash out' },
+          { from: 'totalInflows', label: 'Cash in' }
+        ],
+        title: 'Cash out vs. cash in (undiscounted)',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What IRR measures',
+        paragraphs: [
+          "The internal rate of return is the discount rate that makes a series of cash flows' own net present value exactly zero. OpenStax's Principles of Finance defines it the same way: \"the discount rate that sets the present value of the cash inflows equal to the present value of the cash outflows.\" Put another way, it is the break-even annual return the cash-flow series itself earns, with no outside discount rate assumed.",
+          'IRR and net present value (npv-calculator) are two views of the same cash-flow series. NPV asks "at a discount rate I choose, is this worth doing?" and answers in dollars. IRR asks "what discount rate would make this exactly break even?" and answers as a percentage, so it can be compared directly against a required return or the cost of borrowing the money, with no discount-rate assumption to argue about.',
+          'This calculator treats each entry in the list as one period\'s total net cash flow, starting with period 0 (usually the upfront, negative outflow) and counting up one period at a time. A real investment analysis almost always needs at least one negative flow (money going out) and at least one positive flow (money coming back) — a series that is all one sign has no break-even rate, so no IRR exists.'
+        ]
+      },
+      howTo: {
+        intro: 'List every period\'s net cash flow in order, starting with period 0. Outflows (money spent) are negative; inflows (money received) are positive.',
+        steps: [
+          { name: 'Enter period 0', text: 'Usually the upfront cost or investment, entered as a negative number — for example -10000 for a $10,000 outlay.' },
+          { name: 'Add each later period', text: 'One entry per period after that, in order, as the net cash flow for that period alone (inflows positive, outflows negative, a mix of both netted together if both happen in the same period).' },
+          { name: 'Read the IRR', text: 'The headline is the rate that makes this series\' net present value zero. Below it are the totals: how much went out, how much came back, and the net of the two.' },
+          { name: 'Compare it to a hurdle rate', text: 'If the IRR is above the return you require (your cost of capital, or what else you could do with the money), the series clears that bar; if it is below, it does not.' },
+          { name: 'Check the same flows\' NPV', text: 'Use npv-calculator with the same list and a discount rate of your choosing — at the IRR shown here, that page\'s NPV comes out to zero.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'IRR is the rate r that solves the net present value equation for zero. There is no closed-form rearrangement for r, so the calculator searches for it numerically.',
+        expression: '0 = Σ (from t=0 to n) CFₜ ÷ (1 + r)^t',
+        terms: [
+          { symbol: 'CFₜ', meaning: 'The net cash flow in period t (negative for money out, positive for money in).' },
+          { symbol: 'r', meaning: 'The internal rate of return per period, as a decimal — shown here as a percentage.' },
+          { symbol: 't', meaning: 'The period number, starting at 0 for the first entry in the list.' },
+          { symbol: 'n', meaning: 'The number of periods after period 0 (one less than the number of entries listed).' }
+        ],
+        note: 'Estimates only, and not investment advice. A series with more than one sign change (e.g. out, in, out, in) can have more than one IRR or none at all; this calculator reports the one nearest a 10% guess rate and shows no answer if it cannot find one.'
+      },
+      workedExample: {
+        intro: 'A project costs $10,000 now and returns $2,500, $3,500, $4,500 and $5,000 at the end of years 1 through 4. What is its IRR?',
+        rows: [
+          { label: 'Period 0 (the investment)', value: '−$10,000' },
+          { label: 'Periods 1–4 (the returns)', value: '$2,500, $3,500, $4,500, $5,000' },
+          { label: 'Total cash in', value: '$15,500' },
+          { label: 'Net cash flow (undiscounted)', value: '$5,500' },
+          { label: 'Rate that zeroes the NPV (solved numerically)', value: 'r ≈ 17.77%' },
+          { label: 'Check: NPV at r = 17.77%', value: '≈ $0' }
+        ],
+        result: 'IRR ≈ 17.77%',
+        explanation: "At any discount rate below 17.77%, this series' NPV is positive (it is worth more than it costs); above 17.77%, the NPV turns negative. 17.77% is the exact crossover — the same series' net present value calculator (npv-calculator), run with an 8% discount rate instead, shows a positive NPV of about $2,562.90, consistent with 8% being well under the 17.77% break-even rate."
+      },
+      watchOut: [
+        { title: 'Needs both a negative and a positive flow', body: 'A series that is all outflows or all inflows has no rate that zeroes its NPV — the calculator shows no answer rather than a misleading one.' },
+        { title: 'Unconventional cash flows can have multiple IRRs, or none', body: 'If the cash flows change sign more than once (for example a mid-project reinvestment), there can be more than one discount rate that zeroes the NPV, or none in a reasonable range. This calculator finds the root nearest a 10% starting guess, not every possible one.' },
+        { title: 'IRR assumes reinvestment at the IRR itself', body: "A well-known limitation: the IRR calculation implicitly assumes every positive cash flow is reinvested at that same rate until the end, which is not always realistic for a high IRR. NPV at your own real reinvestment or discount rate avoids this assumption." },
+        { title: 'Periods must be evenly spaced and in order', body: 'This formula assumes each list entry is one full, equal-length period (commonly a year) after the previous one. Irregular timing between cash flows is not modeled.' }
+      ],
+      references: [
+        { label: 'OpenStax, Principles of Finance, §16.3 Internal Rate of Return (IRR) Method', url: 'https://openstax.org/books/principles-finance/pages/16-3-internal-rate-of-return-irr-method' },
+        { label: 'OpenStax, Principles of Finance, §16.2 Net Present Value (NPV) Method', url: 'https://openstax.org/books/principles-finance/pages/16-2-net-present-value-npv-method' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'cashFlows',
+        label: 'Cash flows (period 0 first)',
+        type: 'list',
+        placeholder: 'One net cash flow per period, starting at period 0 — commas, spaces or new lines between them. Use a negative number for money out.',
+        defaultValue: 0,
+        listDefault: [-10000, 2500, 3500, 4500, 5000],
+        listMin: 2
+      }
+    ],
+    seo: {
+      title: 'IRR Calculator – Internal Rate of Return from Cash Flows',
+      description: 'Free IRR calculator: find the internal rate of return of a list of cash flows, the discount rate at which their net present value equals zero.',
+      faq: [
+        { question: 'What is IRR?', answer: 'The internal rate of return is the discount rate at which a series of cash flows has a net present value of exactly zero — the break-even annual return the series earns on its own.' },
+        { question: 'How is IRR calculated?', answer: 'There is no direct formula, so it is found by searching for the rate r that solves 0 = Σ CFₜ ÷ (1 + r)^t. A $10,000 outflow followed by $2,500, $3,500, $4,500 and $5,000 has an IRR of about 17.77%.' },
+        { question: 'What counts as a good IRR?', answer: 'There is no universal number — compare it to your required return or hurdle rate (often your cost of capital). An IRR above that rate clears the bar; below it, the series does not.' },
+        { question: 'How is IRR different from NPV?', answer: 'NPV is a dollar amount at a discount rate you choose; IRR is the percentage rate that would make that same series\' NPV exactly zero. See npv-calculator for the dollar-amount side of the same cash flows.' },
+        { question: 'Can a cash-flow series have no IRR, or more than one?', answer: 'Yes. A series with no sign change (all outflows or all inflows) has no IRR, and one with more than one sign change can have multiple rates that zero its NPV. This calculator reports the one nearest a 10% starting guess.' },
+        { question: 'Does the order of the cash flows matter?', answer: 'Yes — each entry is discounted by how many periods it sits from period 0, so moving a return earlier always raises the IRR and moving it later always lowers it, holding the totals fixed.' }
+      ]
+    },
+    compute(values, lists) {
+      const flows = lists.cashFlows ?? [];
+      const irr = internalRateOfReturn(flows);
+      const totalInflows = flows.filter((f) => f > 0).reduce((sum, f) => sum + f, 0);
+      const totalOutflows = -flows.filter((f) => f < 0).reduce((sum, f) => sum + f, 0);
+      const netCashFlow = flows.reduce((sum, f) => sum + f, 0);
+      return {
+        irr: Number.isFinite(irr) ? irr * 100 : NaN,
+        numberOfPeriods: flows.length > 0 ? flows.length - 1 : NaN,
+        totalInflows,
+        totalOutflows,
+        netCashFlow
+      };
+    }
+  },
+  {
+    id: 'npv-calculator',
+    group: 'Investment Analysis',
+    category: 'finance',
+    glyph: 'NPV',
+    updatedAt: '2026-11-16',
+    aliases: ['net present value calculator', 'npv calculator', 'discounted cash flow calculator', 'present value of cash flows calculator', 'npv from cash flows calculator'],
+    related: ['irr-calculator', 'investment-calculator', 'compound-interest-calculator', 'mutual-fund-calculator'],
+    title: 'NPV (Net Present Value) Calculator',
+    description: 'Find the net present value of a series of cash flows at a discount rate you choose, by entering the flows as a list — the dollar-amount side of the same math as IRR.',
+    example: 'An initial $10,000 outflow followed by $2,500, $3,500, $4,500 and $5,000 in the next four years, discounted at 8%, has a net present value of about $2,562.90.',
+    breakdown: {
+      headline: 'npv',
+      headlineLabel: 'Net present value (NPV)',
+      outputs: [
+        { id: 'npv', label: 'Net present value (NPV)', format: 'currency' },
+        { id: 'presentValueOfInflows', label: 'Present value of the inflows', format: 'currency' },
+        { id: 'presentValueOfOutflows', label: 'Present value of the outflows', format: 'currency' },
+        { id: 'numberOfPeriods', label: 'Number of periods after period 0', format: 'integer' }
+      ],
+      groups: [
+        { title: 'Cash flows, one per period, starting at period 0', inputs: ['cashFlows'] },
+        { title: 'Discount rate', inputs: ['discountRate'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'presentValueOfOutflows', label: 'PV of cash out' },
+          { from: 'presentValueOfInflows', label: 'PV of cash in' }
+        ],
+        title: 'Present value: cash out vs. cash in',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What net present value measures',
+        paragraphs: [
+          "Net present value discounts every future cash flow back to today's dollars at a rate you choose, then adds them up. OpenStax's Principles of Finance states the decision rule plainly: a project should be accepted if its NPV is positive and rejected if its NPV is negative, because NPV is \"calculated by subtracting the present value of a project's cash outflows from the present value of the project's cash inflows.\" A positive NPV means the series is worth more, in today's dollars, than it costs at that discount rate; a negative one means it is worth less.",
+          'NPV and the internal rate of return (irr-calculator) are two sides of the same cash-flow series. This calculator takes the discount rate as a given input and answers in dollars. irr-calculator instead searches for the one discount rate that makes this same NPV exactly zero and answers in a percentage — the rate at which this page\'s result would read $0.',
+          'The discount rate you choose matters a great deal, and unlike the cash flows themselves, it is a judgment call: a company might use its cost of capital, an individual might use a required return or the interest rate on an alternative use of the money. A low discount rate favors cash flows far in the future; a high one punishes them, since money that arrives later is worth less today the higher the rate used to bring it back.'
+        ]
+      },
+      howTo: {
+        intro: 'List every period\'s net cash flow in order, starting with period 0, then enter the discount rate to value them at.',
+        steps: [
+          { name: 'Enter period 0', text: 'Usually the upfront cost or investment, entered as a negative number — for example -10000 for a $10,000 outlay.' },
+          { name: 'Add each later period', text: 'One entry per period after that, in order, as that period\'s own net cash flow (inflows positive, outflows negative).' },
+          { name: 'Set the discount rate', text: 'The annual rate used to bring every future cash flow back to today\'s value — your cost of capital, required return, or the rate on an alternative use of the money.' },
+          { name: 'Read the NPV', text: 'The headline is the dollar total of every cash flow, discounted back to period 0. Positive means the series is worth more than it costs at that rate; negative means it is worth less.' },
+          { name: 'Try a different rate', text: 'Change the discount rate to see how sensitive the result is — raising it pulls more value out of the later cash flows than the earlier ones.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Each period\'s cash flow is divided by (1 + the discount rate) raised to that period\'s number, and the results are added up.',
+        expression: 'NPV = Σ (from t=0 to n) CFₜ ÷ (1 + i)^t',
+        terms: [
+          { symbol: 'CFₜ', meaning: 'The net cash flow in period t (negative for money out, positive for money in).' },
+          { symbol: 'i', meaning: 'The discount rate per period, as a decimal (8% is 0.08).' },
+          { symbol: 't', meaning: 'The period number, starting at 0 for the first entry in the list (so CF₀ is never discounted).' },
+          { symbol: 'n', meaning: 'The number of periods after period 0 (one less than the number of entries listed).' }
+        ],
+        note: 'Estimates only, and not investment advice. The result is only as good as the discount rate and the cash-flow estimates you supply — both are assumptions, not guarantees.'
+      },
+      workedExample: {
+        intro: 'A project costs $10,000 now and returns $2,500, $3,500, $4,500 and $5,000 at the end of years 1 through 4. Discounted at 8%, what is its NPV?',
+        rows: [
+          { label: 'Period 0 (the investment)', value: '−$10,000 (not discounted)' },
+          { label: 'Year 1: 2,500 ÷ 1.08¹', value: '$2,314.81' },
+          { label: 'Year 2: 3,500 ÷ 1.08²', value: '$3,000.69' },
+          { label: 'Year 3: 4,500 ÷ 1.08³', value: '$3,572.25' },
+          { label: 'Year 4: 5,000 ÷ 1.08⁴', value: '$3,675.15' },
+          { label: 'Present value of the four inflows', value: '$12,562.90' },
+          { label: 'NPV (12,562.90 − 10,000)', value: '$2,562.90' }
+        ],
+        result: 'NPV ≈ $2,562.90 at an 8% discount rate',
+        explanation: "The NPV is positive, so this series is worth about $2,562.90 more, in today's dollars, than it costs at an 8% discount rate — OpenStax's rule says accept it. Raising the discount rate to this same series' own IRR of about 17.77% (see irr-calculator) brings the NPV down to exactly $0; any rate above that turns it negative."
+      },
+      watchOut: [
+        { title: 'The discount rate is a judgment call, not a cash flow', body: 'Unlike the amounts and timing of the cash flows, the discount rate is an assumption you choose. A different reasonable rate can flip the sign of the NPV, especially when the cash flows are spread over many years.' },
+        { title: 'Period 0 is not discounted', body: 'The first entry in the list is treated as happening today, so it is divided by (1 + i)⁰ = 1 — only the entries after it are actually discounted.' },
+        { title: 'NPV answers "is it worth it at this rate," not "what rate makes it worth it"', body: 'If you want the break-even rate itself rather than a dollar figure at a rate you pick, use irr-calculator on the same list of cash flows instead.' },
+        { title: 'Periods must be evenly spaced and in order', body: 'This formula assumes each list entry is one full, equal-length period (commonly a year) after the previous one. Irregular timing between cash flows is not modeled.' }
+      ],
+      references: [
+        { label: 'OpenStax, Principles of Finance, §16.2 Net Present Value (NPV) Method', url: 'https://openstax.org/books/principles-finance/pages/16-2-net-present-value-npv-method' },
+        { label: 'OpenStax, Principles of Finance, §16.3 Internal Rate of Return (IRR) Method', url: 'https://openstax.org/books/principles-finance/pages/16-3-internal-rate-of-return-irr-method' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'cashFlows',
+        label: 'Cash flows (period 0 first)',
+        type: 'list',
+        placeholder: 'One net cash flow per period, starting at period 0 — commas, spaces or new lines between them. Use a negative number for money out.',
+        defaultValue: 0,
+        listDefault: [-10000, 2500, 3500, 4500, 5000],
+        listMin: 2
+      },
+      { id: 'discountRate', label: 'Discount rate', type: 'percent', placeholder: '8', defaultValue: 8, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'NPV Calculator – Net Present Value of Cash Flows',
+      description: 'Free NPV calculator: find the net present value of a list of cash flows at a discount rate you choose, with the present value of the inflows and outflows.',
+      faq: [
+        { question: 'What is NPV?', answer: "Net present value is a cash-flow series' value in today's dollars at a chosen discount rate — the present value of every inflow minus the present value of every outflow. A positive NPV means the series is worth more than it costs at that rate." },
+        { question: 'How is NPV calculated?', answer: 'Each period\'s cash flow is divided by (1 + the discount rate) raised to that period\'s number, then the results are summed: NPV = Σ CFₜ ÷ (1 + i)^t. A $10,000 outflow followed by $2,500, $3,500, $4,500 and $5,000, discounted at 8%, comes to about $2,562.90.' },
+        { question: 'Should I accept a project with a positive NPV?', answer: 'As a rule of thumb, yes — a positive NPV means the cash flows are worth more, at your chosen discount rate, than what they cost. A negative NPV means the opposite. The discount rate you use still has to be a reasonable one.' },
+        { question: 'How is NPV different from IRR?', answer: 'NPV gives a dollar amount at a discount rate you supply. IRR searches for the one discount rate that makes that same series\' NPV exactly zero. See irr-calculator for the percentage-rate side of the same cash flows.' },
+        { question: 'What discount rate should I use?', answer: 'There is no single right answer — a business often uses its cost of capital, while an individual might use a required return or the rate available on an alternative use of the money. Try a few reasonable rates rather than trusting one.' },
+        { question: 'Is cash flow 0 discounted too?', answer: 'No. Period 0 is treated as happening today, so it is divided by (1 + i)⁰ = 1 — the discounting only reduces the value of the periods after it.' }
+      ]
+    },
+    compute(values, lists) {
+      const flows = lists.cashFlows ?? [];
+      const rate = values.discountRate / 100;
+      if (flows.length === 0) return { npv: NaN, presentValueOfInflows: NaN, presentValueOfOutflows: NaN, numberOfPeriods: NaN };
+      const npv = netPresentValue(flows, rate);
+      const presentValueOfInflows = flows.reduce((sum, cf, t) => (cf > 0 ? sum + cf / (1 + rate) ** t : sum), 0);
+      const presentValueOfOutflows = flows.reduce((sum, cf, t) => (cf < 0 ? sum - cf / (1 + rate) ** t : sum), 0);
+      return { npv, presentValueOfInflows, presentValueOfOutflows, numberOfPeriods: flows.length - 1 };
+    }
+  },
+  {
+    id: 'cd-calculator',
+    group: 'Savings & Growth',
+    category: 'finance',
+    glyph: 'CD',
+    updatedAt: '2026-11-16',
+    aliases: ['certificate of deposit calculator', 'cd interest calculator', 'cd maturity calculator', 'cd apy calculator', 'time deposit calculator'],
+    related: ['compound-interest-calculator', 'simple-interest-calculator', 'down-payment-savings-calculator', 'investment-calculator'],
+    title: 'CD (Certificate of Deposit) Calculator',
+    description: 'Find the maturity value of a certificate of deposit from its APY and term, or work back to the deposit, term or APY a goal requires.',
+    example: 'A $10,000 CD at a 4.75% APY for an 18-month term matures to about $10,720.90, including about $720.90 of interest.',
+    solver: {
+      defaultTarget: 'maturityValue',
+      variables: [
+        { id: 'maturityValue', label: 'Maturity value', symbol: 'FV', dimension: 'currency', defaultValue: 10720.9, defaultUnit: 'currency' },
+        { id: 'depositAmount', label: 'Deposit amount', symbol: 'P', dimension: 'currency', defaultValue: 10000, defaultUnit: 'currency' },
+        { id: 'term', label: 'CD term', symbol: 'n', dimension: 'term', defaultValue: 18, defaultUnit: 'mo', bounds: [0, 1200] },
+        { id: 'apy', label: 'Annual percentage yield (APY)', symbol: 'APY', dimension: 'percent', defaultValue: 4.75, defaultUnit: '%', bounds: [0, 100] }
+      ],
+      solve: {
+        maturityValue: ({ depositAmount, term, apy }) => cdMaturityValue(depositAmount, apy, term),
+        depositAmount: ({ maturityValue, term, apy }) => cdDepositNeeded(maturityValue, apy, term),
+        term: ({ maturityValue, depositAmount, apy }) => cdTermMonths(maturityValue, depositAmount, apy),
+        apy: ({ maturityValue, depositAmount, term }) => cdApy(maturityValue, depositAmount, term)
+      },
+      outputs: [{ id: 'totalInterest', label: 'Interest earned', dimension: 'currency', compute: (si) => si.maturityValue - si.depositAmount }],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'depositAmount', label: 'Deposit' },
+            { from: 'totalInterest', label: 'Interest earned' }
+          ],
+          center: 'maturityValue',
+          centerSub: 'maturity value'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'A CD is a locked-in rate for a fixed term',
+        paragraphs: [
+          "A certificate of deposit is a savings product that pays a fixed rate for a fixed term, in exchange for agreeing to leave the money in place. The CFPB's own description is exactly this trade: a CD \"typically offers a higher interest rate than regular savings accounts\" because you give up access to the money and the ability to add to it until the term (the CD's maturity date) ends.",
+          "CDs are advertised by APY (annual percentage yield), not a nominal rate you have to compound yourself. APY already measures the actual yearly return including compounding, so this calculator applies it directly over the fractional number of years in the term — unlike compound-interest-calculator, which takes a nominal annual rate and compounds it monthly on your behalf. If a bank only advertises a nominal rate, convert it to APY first (or use compound-interest-calculator, which performs that compounding step).",
+          "The trade-off for the fixed rate is the early withdrawal penalty: take the money out before maturity and the bank keeps some of the interest, sometimes more than you've earned so far. There is no monthly or lump-sum contribution field here, unlike compound-interest-calculator or investment-calculator, because a standard CD does not accept additional deposits after it is opened — that is the real, structural difference this page models, not just a content callout."
+        ]
+      },
+      howTo: {
+        intro: 'Enter any three of the four fields below. The fourth, marked auto, is calculated as you type.',
+        steps: [
+          { name: 'Find the maturity value', text: "Type the deposit amount, the term and the bank's stated APY. The maturity value is calculated, with the interest earned shown below it." },
+          { name: 'Find the deposit needed', text: 'Type a maturity-value goal, the term and the APY, leaving the deposit amount as the auto field, to see how much you would need to put in today.' },
+          { name: 'Find the term needed', text: 'Type the deposit, a maturity-value goal and the APY, leaving the term as the auto field, to see how long it takes to reach that goal at that rate.' },
+          { name: 'Compare APYs across offers', text: 'With the deposit, a target maturity value and the term fixed, leave the APY as the auto field to see what rate a competing offer would need to match.' },
+          { name: 'Switch months and years', text: 'Use the menu beside the term field to enter it in years instead of months — many CDs are quoted in months (3, 6, 12, 18, 24, 36, 60).' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "Because the APY already reflects a full year's compounding, the maturity value is the deposit grown by that yield for the fractional number of years in the term.",
+        expression: 'FV = P × (1 + APY)^(n ÷ 12)\nP = FV ÷ (1 + APY)^(n ÷ 12)\nn = 12 × ln(FV ÷ P) ÷ ln(1 + APY)\nAPY = (FV ÷ P)^(12 ÷ n) − 1',
+        terms: [
+          { symbol: 'FV', meaning: 'Maturity value: the balance when the CD matures.' },
+          { symbol: 'P', meaning: 'Deposit amount: the lump sum placed into the CD when it is opened.' },
+          { symbol: 'n', meaning: 'Term in months (an 18-month CD is 18; a 1-year CD is 12).' },
+          { symbol: 'APY', meaning: 'Annual percentage yield, as a decimal (4.75% is 0.0475). Already includes the effect of compounding, unlike a nominal rate.' }
+        ],
+        note: 'Estimates only. Real banks may apply APY slightly differently for a term that is not a whole number of years, and an early withdrawal changes the result entirely — see the penalty note below.'
+      },
+      workedExample: {
+        intro: 'You deposit $10,000 into an 18-month CD advertising a 4.75% APY. What will it be worth at maturity?',
+        rows: [
+          { label: 'Term in years (18 ÷ 12)', value: '1.5' },
+          { label: 'Growth factor (1.0475)^1.5', value: '1.072090' },
+          { label: 'Maturity value (10,000 × 1.072090)', value: '$10,720.90' },
+          { label: 'Interest earned (10,720.90 − 10,000)', value: '$720.90' }
+        ],
+        result: 'Maturity value ≈ $10,720.90 · about $720.90 in interest',
+        explanation: 'The same $10,000 at the same 4.75% APY for a 12-month term instead would mature to $10,475.00 (exactly a year of the stated yield, so interest equals the APY times the deposit). The extra 6 months of the 18-month term compounds on top of that first year, which is why the 18-month interest is more than 1.5 times the 12-month interest.'
+      },
+      watchOut: [
+        { title: 'Early withdrawal usually costs you interest, and sometimes principal', body: 'Federal law sets a minimum penalty — withdrawing within the first six days requires at least seven days\' simple interest — but sets no maximum, and most banks charge a fixed number of months\' interest as a penalty instead. On this example\'s 12-month CD, an illustrative penalty of 3 months\' interest (10,000 × 4.75% ÷ 12 × 3) would be about $118.75. If the penalty exceeds what you have earned so far, the difference comes out of your original deposit.' },
+        { title: 'Check your account\'s own disclosure for the real penalty', body: 'The Truth in Savings Act requires your bank to disclose its specific early withdrawal penalty when you open the CD. Penalty schedules vary by bank and by term — this calculator does not know your bank\'s actual policy.' },
+        { title: 'APY, not a nominal rate', body: 'Enter the APY the bank quotes, not a nominal annual rate before compounding. If you only have a nominal rate, use compound-interest-calculator instead, which compounds a nominal rate for you.' },
+        { title: 'FDIC or NCUA insurance has its own limits', body: 'A CD at an FDIC-insured bank or NCUA-insured credit union is typically insured up to $250,000 per depositor, per institution, per ownership category — this calculator does not check that limit for you.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, What is a certificate of deposit (CD)?', url: 'https://www.consumerfinance.gov/ask-cfpb/what-is-a-certificate-of-deposit-cd-en-917/' },
+        { label: 'OCC, HelpWithMyBank.gov: What are the penalties for withdrawing money early from a CD?', url: 'https://www.helpwithmybank.gov/help-topics/bank-accounts/certificates-of-deposit/cd-penalties.html' }
+      ]
+    },
+    inputs: [
+      { id: 'depositAmount', label: 'Deposit amount', type: 'currency', placeholder: '10000', defaultValue: 10000, step: 100, min: 0 },
+      { id: 'apy', label: 'Annual percentage yield (APY)', type: 'percent', placeholder: '4.75', defaultValue: 4.75, step: 0.01, min: 0 },
+      { id: 'months', label: 'Term (months)', type: 'number', placeholder: '18', defaultValue: 18, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'CD Calculator – Certificate of Deposit Maturity Value',
+      description: 'Free CD calculator: find a certificate of deposit\'s maturity value from its APY and term, or the deposit, term or APY a savings goal requires.',
+      faq: [
+        { question: 'How do I calculate CD interest?', answer: 'Apply the stated APY over the fractional number of years in the term: FV = P × (1 + APY)^(months ÷ 12). A $10,000 deposit at a 4.75% APY for 18 months matures to about $10,720.90.' },
+        { question: 'Is CD interest compounded for me automatically?', answer: "Yes — the bank's advertised APY already includes the effect of its compounding, so you don't compound it again yourself. Enter the APY as given." },
+        { question: 'What happens if I withdraw a CD early?', answer: "You generally pay an early withdrawal penalty, commonly a fixed number of months' interest. Federal law sets only a minimum penalty (at least 7 days' interest if withdrawn within 6 days of deposit) and no maximum — your bank's account disclosure states its exact penalty." },
+        { question: 'Can I add money to a CD after opening it?', answer: 'No, not with a standard CD — that is why this calculator has no contribution field, unlike compound-interest-calculator or investment-calculator. A CD is a single lump-sum deposit for a fixed term.' },
+        { question: 'How is this different from the compound interest calculator?', answer: 'compound-interest-calculator takes a nominal rate and compounds it monthly for you, and supports ongoing contributions. This calculator takes the APY banks actually advertise for a CD (which already includes compounding) and has no contribution field, matching how a real CD works.' },
+        { question: 'Is my CD deposit insured?', answer: 'At an FDIC-insured bank or NCUA-insured credit union, yes, typically up to $250,000 per depositor, per institution, per ownership category. This calculator does not check that limit.' }
+      ]
+    },
+    compute(values) {
+      const maturityValue = cdMaturityValue(values.depositAmount, values.apy, values.months);
+      return { maturityValue, totalInterest: maturityValue - values.depositAmount };
+    }
+  },
+  {
+    id: 'simple-interest-calculator',
+    group: 'Savings & Growth',
+    category: 'finance',
+    glyph: 'I',
+    updatedAt: '2026-11-16',
+    aliases: ['simple interest formula calculator', 'basic interest calculator', 'interest without compounding calculator', 'flat rate interest calculator', 'i = prt calculator'],
+    related: ['compound-interest-calculator', 'cd-calculator', 'loan-calculator', 'investment-calculator'],
+    title: 'Simple Interest Calculator',
+    description: 'Calculate simple interest with I = P × r × t — interest on the original principal only, never on interest already earned — or solve for the principal, rate or time.',
+    example: '$4,000 at 5.5% simple interest for 4 years earns $880 in interest, for a total of $4,880.',
+    solver: {
+      defaultTarget: 'interest',
+      variables: [
+        { id: 'interest', label: 'Interest earned', symbol: 'I', dimension: 'currency', defaultValue: 880, defaultUnit: 'currency' },
+        { id: 'principal', label: 'Principal', symbol: 'P', dimension: 'currency', defaultValue: 4000, defaultUnit: 'currency' },
+        { id: 'rate', label: 'Annual interest rate', symbol: 'r', dimension: 'percent', defaultValue: 5.5, defaultUnit: '%', bounds: [0, 100] },
+        { id: 'time', label: 'Time', symbol: 't', dimension: 'term', defaultValue: 4, defaultUnit: 'yr', bounds: [0, 1200] }
+      ],
+      solve: {
+        interest: ({ principal, rate, time }) => principal * (rate / 100) * (time / 12),
+        principal: ({ interest, rate, time }) => (rate > 0 && time > 0 ? interest / ((rate / 100) * (time / 12)) : NaN),
+        rate: ({ interest, principal, time }) => (principal > 0 && time > 0 ? (interest / (principal * (time / 12))) * 100 : NaN),
+        time: ({ interest, principal, rate }) => (principal > 0 && rate > 0 ? (interest / (principal * (rate / 100))) * 12 : NaN)
+      },
+      outputs: [{ id: 'totalValue', label: 'Total value (principal + interest)', dimension: 'currency', compute: (si) => si.principal + si.interest }],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'principal', label: 'Principal' },
+            { from: 'interest', label: 'Interest' }
+          ],
+          center: 'totalValue',
+          centerSub: 'total value'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'Simple interest: interest on the original amount only',
+        paragraphs: [
+          'Simple interest is the most basic way to charge or earn interest: each period, the interest is calculated only on the original principal, never on interest that has already accrued. OpenStax\'s Contemporary Mathematics states the formula directly as I = P × r × t, where the interest earned grows in a straight line over time because the amount it is calculated on never changes.',
+          'This is the opposite assumption from compound-interest-calculator, which earns "interest on interest": every time interest is credited, it joins the balance, so the next period\'s interest is calculated on a larger amount. Over a single period the two give the same answer, but they diverge every period after that — compounding always earns at least as much as simple interest on the same principal, rate and time, and usually earns more. See the worked example below for exactly how much more.',
+          'Simple interest does still show up in practice: some short-term loans, many bonds\' coupon payments, and some add-on-interest auto loans are calculated this way, as are many "days outstanding" calculations lenders use for a single interest period. If your account or loan says it compounds — daily, monthly or any other frequency — it is not using this formula; use compound-interest-calculator instead.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter any three of the four fields below. The fourth, marked auto, is calculated as you type.',
+        steps: [
+          { name: 'Find the interest', text: 'Type the principal, the annual rate and the time. The interest earned is calculated, with the total value shown below it.' },
+          { name: 'Find the principal', text: 'Type a target interest amount, the rate and the time, leaving the principal as the auto field, to see how much you would need to start with.' },
+          { name: 'Find the rate', text: 'Type the principal, the interest and the time, leaving the rate as the auto field, to see what rate produces that result.' },
+          { name: 'Find the time', text: 'Type the principal, the interest and the rate, leaving the time as the auto field, to see how long it takes at that rate.' },
+          { name: 'Switch years and months', text: 'Use the menu beside the time field to enter it in months instead of years.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Simple interest is the principal times the annual rate times the time in years — no compounding, no exponent.',
+        expression: 'I = P × r × t\nTotal value = P + I\nr = I ÷ (P × t)\nt = I ÷ (P × r)',
+        terms: [
+          { symbol: 'I', meaning: 'Simple interest earned (or owed).' },
+          { symbol: 'P', meaning: 'Principal: the original amount deposited or borrowed.' },
+          { symbol: 'r', meaning: 'Annual interest rate, as a decimal (5.5% is 0.055).' },
+          { symbol: 't', meaning: 'Time in years (a 6-month term is t = 0.5).' }
+        ],
+        note: 'Estimates only. Real loans and accounts commonly compound instead — check your agreement before assuming simple interest applies.'
+      },
+      workedExample: {
+        intro: 'You invest $4,000 at a 5.5% annual simple interest rate for 4 years. How much interest do you earn?',
+        rows: [
+          { label: 'I = P × r × t = 4,000 × 0.055 × 4', value: '$880' },
+          { label: 'Total value (4,000 + 880)', value: '$4,880' },
+          { label: 'For comparison, compound interest (annual compounding) on the same $4,000, 5.5%, 4 years', value: '$4,955.30' },
+          { label: 'Compound interest earned (4,955.30 − 4,000)', value: '$955.30' },
+          { label: 'Extra interest compounding earns over simple (955.30 − 880)', value: '$75.30, about 8.56% more' }
+        ],
+        result: 'I = $880 · total value $4,880',
+        explanation: "Both methods start from the same $4,000 at the same 5.5% rate for the same 4 years, but simple interest earns $880 in a straight line while compounding earns $955.30 — 8.56% more — because each year's interest, once added to the balance, itself earns interest in the following years. The gap between the two grows with both the rate and the time."
+      },
+      watchOut: [
+        { title: 'Not the same as compound interest', body: 'This formula never adds interest back into the balance it is calculated on. If your account or loan compounds — most savings accounts, CDs and mortgages do — use compound-interest-calculator for an accurate result instead.' },
+        { title: 'Time must be in years', body: 'A 6-month CD or loan is t = 0.5, not 6. Use the months/years menu on the time field rather than typing a month count directly into a "years" assumption.' },
+        { title: 'Growth is a straight line, not a curve', body: 'Because the principal never changes, interest earned is exactly proportional to time: doubling the time exactly doubles the interest. Compound interest grows faster than this the longer the money sits.' },
+        { title: 'Estimates only', body: 'Real loan agreements can add fees, use a different day-count convention (such as 360 vs. 365 days a year), or round differently. Your lender\'s or bank\'s own disclosure is the binding figure.' }
+      ],
+      references: [
+        { label: 'OpenStax, Contemporary Mathematics, §6.3 Simple Interest', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-3-simple-interest' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.4 Compound Interest', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-4-compound-interest' }
+      ]
+    },
+    inputs: [
+      { id: 'principal', label: 'Principal', type: 'currency', placeholder: '4000', defaultValue: 4000, step: 100, min: 0 },
+      { id: 'rate', label: 'Annual interest rate', type: 'percent', placeholder: '5.5', defaultValue: 5.5, step: 0.01, min: 0 },
+      { id: 'years', label: 'Time (years)', type: 'number', placeholder: '4', defaultValue: 4, step: 0.5, min: 0 }
+    ],
+    seo: {
+      title: 'Simple Interest Calculator – I = P × r × t',
+      description: 'Free simple interest calculator: find the interest, principal, rate or time using I = P × r × t, contrasted directly with compound interest.',
+      faq: [
+        { question: 'What is the simple interest formula?', answer: 'I = P × r × t, where P is the principal, r is the annual rate as a decimal and t is the time in years. $4,000 at 5.5% for 4 years earns $880 in interest.' },
+        { question: 'What is the difference between simple and compound interest?', answer: 'Simple interest is always calculated on the original principal only. Compound interest adds each period\'s interest back into the balance, so later interest is calculated on a larger amount. On $4,000 at 5.5% for 4 years, simple interest earns $880 while annual compounding earns $955.30 — about 8.56% more.' },
+        { question: 'How do I find the principal from the interest, rate and time?', answer: 'Rearrange the formula: P = I ÷ (r × t). To earn $880 at 5.5% over 4 years requires a $4,000 principal.' },
+        { question: 'How do I find the rate from the interest, principal and time?', answer: 'r = I ÷ (P × t). Earning $880 on $4,000 over 4 years requires a 5.5% annual rate.' },
+        { question: 'Does a bank account or CD use simple interest?', answer: 'Usually not — most savings accounts and CDs compound daily or monthly. Check cd-calculator or compound-interest-calculator for those. Simple interest is more common for some bonds, short-term loans and add-on-interest financing.' },
+        { question: 'Can time be less than a year?', answer: 'Yes — switch the time field to months, or enter a fraction of a year directly (a 6-month term is t = 0.5). The formula works the same way for any length of time.' }
+      ]
+    },
+    compute(values) {
+      const interest = values.principal * (values.rate / 100) * values.years;
+      return { interest, totalValue: values.principal + interest };
+    }
+  },
+  {
+    id: 'mutual-fund-calculator',
+    group: 'Savings & Growth',
+    category: 'finance',
+    glyph: 'MF',
+    updatedAt: '2026-11-16',
+    aliases: ['mutual fund growth calculator', 'mutual fund return calculator', 'mutual fund sip calculator', 'mutual fund expense ratio calculator', 'fund fee impact calculator'],
+    related: ['investment-calculator', 'compound-interest-calculator', 'retirement-savings-calculator', 'goal-based-investment-calculator'],
+    title: 'Mutual Fund Calculator',
+    description: 'Project mutual fund growth from a lump sum plus monthly contributions, with the expense ratio modeled as a direct drag on your return — the one thing investment-calculator leaves out.',
+    example: '$10,000 plus $200 a month for 20 years at an assumed 8% gross annual return and a 0.5% expense ratio grows to about $155,354.32 — about $11,717.80 less than the same plan with no fund fees at all.',
+    solver: {
+      defaultTarget: 'futureValue',
+      variables: [
+        { id: 'futureValue', label: 'Future value', symbol: 'FV', dimension: 'currency', defaultValue: 155354.32, defaultUnit: 'currency' },
+        { id: 'initialInvestment', label: 'Initial investment', symbol: 'P', dimension: 'currency', defaultValue: 10000, defaultUnit: 'currency' },
+        { id: 'monthlyContribution', label: 'Monthly contribution', symbol: 'C', dimension: 'currency', defaultValue: 200, defaultUnit: 'currency', fixed: true },
+        { id: 'years', label: 'Time invested', symbol: 't', dimension: 'term', defaultValue: 20, defaultUnit: 'yr', bounds: [0, 1200] },
+        { id: 'grossAnnualReturn', label: "Fund's gross annual return", symbol: 'g', dimension: 'percent', defaultValue: 8, defaultUnit: '%', bounds: [-50, 100] },
+        { id: 'expenseRatio', label: 'Expense ratio', symbol: 'e', dimension: 'percent', defaultValue: 0.5, defaultUnit: '%', fixed: true }
+      ],
+      // `years` arrives in months (the term dimension's base); growth compounds monthly, net of the
+      // expense ratio, which comes straight off the gross return every year the SEC's own way.
+      solve: {
+        futureValue: ({ initialInvestment, monthlyContribution, years, grossAnnualReturn, expenseRatio }) => {
+          const netRate = grossAnnualReturn - expenseRatio;
+          return years >= 0 ? initialInvestment * growthFactor(netRate, 12, years) + monthlyContribution * annuityFactor(netRate, 12, years) : NaN;
+        },
+        initialInvestment: ({ futureValue, monthlyContribution, years, grossAnnualReturn, expenseRatio }) => {
+          const netRate = grossAnnualReturn - expenseRatio;
+          const start = (futureValue - monthlyContribution * annuityFactor(netRate, 12, years)) / growthFactor(netRate, 12, years);
+          return years >= 0 && start >= 0 ? start : NaN;
+        },
+        years: ({ futureValue, initialInvestment, monthlyContribution, grossAnnualReturn, expenseRatio }) => {
+          const netRate = grossAnnualReturn - expenseRatio;
+          const i = netRate / 100 / 12;
+          if (i === 0) return monthlyContribution > 0 ? (futureValue - initialInvestment) / monthlyContribution : NaN;
+          const months = Math.log((futureValue * i + monthlyContribution) / (initialInvestment * i + monthlyContribution)) / Math.log(1 + i);
+          return months >= 0 ? months : NaN;
+        }
+      },
+      // The gross return has no closed form when there are contributions: the widget finds it numerically.
+      equation: (si) => {
+        const netRate = si.grossAnnualReturn - si.expenseRatio;
+        return si.futureValue - (si.initialInvestment * growthFactor(netRate, 12, si.years) + si.monthlyContribution * annuityFactor(netRate, 12, si.years));
+      },
+      outputs: [
+        { id: 'totalContributions', label: 'Total contributions', dimension: 'currency', compute: (si) => si.monthlyContribution * si.years },
+        { id: 'totalGrowth', label: 'Growth after fees', dimension: 'currency', compute: (si) => si.futureValue - si.initialInvestment - si.monthlyContribution * si.years },
+        {
+          id: 'feeDrag',
+          label: 'Cost of the expense ratio (vs. 0% fees)',
+          dimension: 'currency',
+          compute: (si) => {
+            const grossFV = si.initialInvestment * growthFactor(si.grossAnnualReturn, 12, si.years) + si.monthlyContribution * annuityFactor(si.grossAnnualReturn, 12, si.years);
+            return grossFV - si.futureValue;
+          }
+        }
+      ],
+      derive: (si) => ({ contributions: si.monthlyContribution * si.years }),
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'initialInvestment', label: 'Initial investment' },
+            { from: 'contributions', label: 'Monthly contributions' },
+            { from: 'totalGrowth', label: 'Growth after fees' }
+          ],
+          center: 'futureValue',
+          centerSub: 'future value'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What investment-calculator leaves out: the expense ratio',
+        paragraphs: [
+          "A mutual fund charges an ongoing fee to cover its own operating costs — management fees, 12b-1 distribution fees and other expenses — expressed as the expense ratio, a percentage of the fund's assets charged every year. The SEC's Investor Bulletin on fund fees describes it plainly: these are annual fund operating expenses, charged as a percentage of your assets in the fund, year after year, whether or not you ever see a separate bill for them.",
+          "investment-calculator projects growth from a return you assume, with no fee deducted from it at all. This calculator models the one thing that page doesn't: it takes the fund's gross return (what the underlying investments actually earn) and subtracts the expense ratio before compounding, the same treatment compound-interest-calculator's own content already uses for fees — \"a 1% fee on a 7% return leaves 6%.\" The difference between the fee-adjusted result and a hypothetical 0%-fee version is shown directly as a dollar cost, not left as an abstract percentage.",
+          'Unlike investment-calculator\'s yearly contribution and compound-interest-calculator\'s plain savings framing, this calculator compounds monthly with a monthly contribution — matching a systematic monthly mutual fund purchase (sometimes called an SIP, for systematic investment plan, outside the US). For a yearly-contribution model with no fee, use investment-calculator; for the identical monthly model with no fee at all, use compound-interest-calculator.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the monthly contribution and the expense ratio (both always inputs), then any three of the other four fields. The fourth, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter the monthly contribution', text: 'Always an input. Use 0 for a single lump-sum investment with no ongoing contributions.' },
+          { name: 'Enter the expense ratio', text: "Always an input — the fund's annual operating expense percentage, found in its prospectus fee table or fact sheet. Use 0 to see the no-fee comparison directly as the future value." },
+          { name: 'Project the future value', text: "Type the initial investment, the time and the fund's assumed gross annual return (before fees). The future value appears net of the expense ratio, with contributions, growth and the fee's dollar cost broken out." },
+          { name: 'Plan backward from a goal', text: 'Type a target future value. Leave the time alone to see how long it takes, or the initial investment to see how much to start with, net of the same fee.' },
+          { name: 'Find the gross return you need', text: 'Fill in the goal, start, contribution, time and expense ratio so the gross return is the field left alone longest, and the calculator searches for the return required before fees.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "The expense ratio is subtracted from the fund's gross return before the usual monthly-compounding future-value formula is applied.",
+        expression: 'Net rate = Gross return − Expense ratio\nFV = P × (1 + i)^n + C × ((1 + i)^n − 1) ÷ i,  i = Net rate ÷ 100 ÷ 12,  n = 12 × t\nFee cost = FV at 0% expense ratio − FV at the actual expense ratio',
+        terms: [
+          { symbol: 'FV', meaning: 'Future value, net of the expense ratio.' },
+          { symbol: 'P', meaning: 'Initial lump-sum investment.' },
+          { symbol: 'C', meaning: 'Contribution added at the end of each month.' },
+          { symbol: 'Gross return', meaning: "The fund's underlying assumed annual return, before fees." },
+          { symbol: 'Expense ratio', meaning: "The fund's annual operating expense, as a percentage of assets — subtracted directly from the gross return." },
+          { symbol: 'i, n', meaning: 'The net monthly rate as a decimal, and the number of months (n = 12t).' }
+        ],
+        note: 'Estimates only, and not investment advice. Subtracting the expense ratio from the return is a standard simplification; it ignores sales loads, brokerage commissions, taxes and the fact that returns vary year to year rather than staying constant.'
+      },
+      workedExample: {
+        intro: 'You invest $10,000 and add $200 at the end of every month for 20 years, in a fund assumed to return 8% a year gross, with a 0.5% expense ratio. What will it grow to, and what does the fee cost?',
+        rows: [
+          { label: 'Net rate (8% − 0.5%)', value: '7.5%' },
+          { label: 'Monthly net rate (7.5% ÷ 12)', value: '0.625%' },
+          { label: 'Months (20 × 12)', value: '240' },
+          { label: 'Future value at the net rate', value: '$155,354.32' },
+          { label: 'Total contributions (200 × 240)', value: '$48,000' },
+          { label: 'Growth after fees (155,354.32 − 10,000 − 48,000)', value: '$97,354.32' },
+          { label: 'Future value at 0% expense ratio (gross 8% the whole way)', value: '$167,072.11' },
+          { label: 'Cost of the expense ratio (167,072.11 − 155,354.32)', value: '$11,717.80, about 7.54% of the fee-adjusted result' }
+        ],
+        result: 'FV ≈ $155,354.32 after 20 years · the 0.5% expense ratio costs about $11,717.80',
+        explanation: 'Half a percentage point sounds small next to an 8% return, but compounded monthly over 20 years on a growing balance it costs about $11,717.80 — roughly a quarter of the entire $48,000 contributed beyond the initial $10,000. A lower-cost fund with the same gross return and a 0.1% expense ratio instead would grow to about $164,649.64, roughly $9,295.32 more than this 0.5%-ratio example.'
+      },
+      watchOut: [
+        { title: 'Gross return is what you assume, not what you are promised', body: "Fund returns vary year to year and can be negative; a constant assumed gross return is a planning simplification, the same assumption investment-calculator and compound-interest-calculator both make." },
+        { title: 'Fees compound too', body: "An expense ratio taken out every year compounds against you the same way a return compounds for you — the longer the time horizon, the larger its dollar cost, even though the percentage itself never changes." },
+        { title: 'Not every fund cost is in the expense ratio', body: "Sales loads (a one-time purchase or redemption charge) and brokerage commissions are separate from the ongoing expense ratio and are not modeled here. Check a fund's full fee table, not just its expense ratio, before comparing costs." },
+        { title: 'Taxes and inflation are not modeled', body: 'Gains in a taxable account are taxed; the future value shown here is also in future dollars, not adjusted for inflation. See inflation-calculator for what a future amount is worth today.' }
+      ],
+      references: [
+        { label: 'U.S. Securities and Exchange Commission, Investor.gov: Mutual Fund and ETF Fees and Expenses (Investor Bulletin)', url: 'https://www.investor.gov/introduction-investing/general-resources/news-alerts/alerts-bulletins/investor-bulletins/mutual-fund-and-etf-fees-and-expenses-investor-bulletin' },
+        { label: 'U.S. Securities and Exchange Commission, Investor.gov glossary: Total Annual Fund Operating Expenses', url: 'https://www.investor.gov/introduction-investing/investing-basics/glossary/total-annual-fund-operating-expense' }
+      ]
+    },
+    inputs: [
+      { id: 'initialInvestment', label: 'Initial investment', type: 'currency', placeholder: '10000', defaultValue: 10000, step: 500, min: 0 },
+      { id: 'grossAnnualReturn', label: "Fund's gross annual return", type: 'percent', placeholder: '8', defaultValue: 8, step: 0.1, min: 0 },
+      { id: 'expenseRatio', label: 'Expense ratio', type: 'percent', placeholder: '0.5', defaultValue: 0.5, step: 0.01, min: 0 },
+      { id: 'years', label: 'Years invested', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 0 },
+      { id: 'monthlyContribution', label: 'Monthly contribution', type: 'currency', placeholder: '200', defaultValue: 200, step: 10, min: 0 }
+    ],
+    seo: {
+      title: 'Mutual Fund Calculator – Growth Net of Expense Ratio',
+      description: 'Free mutual fund calculator: project growth from a lump sum plus monthly contributions, with the expense ratio modeled as a direct drag on returns.',
+      faq: [
+        { question: 'How does an expense ratio affect mutual fund returns?', answer: "It comes directly off the gross return every year before compounding. A fund assumed to return 8% gross with a 0.5% expense ratio compounds at a 7.5% net rate — on $10,000 plus $200 a month for 20 years, that 0.5% costs about $11,717.80 compared with a 0%-fee version." },
+        { question: 'How is this different from the investment calculator?', answer: "investment-calculator assumes a return with no fee subtracted from it at all, and compounds yearly with a yearly contribution. This calculator subtracts a stated expense ratio from the gross return before compounding, monthly, with a monthly contribution." },
+        { question: 'What is a good expense ratio?', answer: 'There is no single answer, but lower is generally better, all else equal, because it is a guaranteed, permanent drag on the gross return every single year. Compare the same investment plan at a few different expense ratios in this calculator to see the real dollar impact of the difference.' },
+        { question: 'Does the expense ratio include sales loads or trading commissions?', answer: 'No. The expense ratio is the fund\'s ongoing annual operating expense; a one-time sales load or a brokerage commission is separate and is not modeled by this calculator.' },
+        { question: 'Can I model a fund with no fees?', answer: 'Yes — set the expense ratio to 0. The future value then matches investment-calculator\'s or compound-interest-calculator\'s own fee-free result for the same inputs and contribution schedule.' },
+        { question: 'Why does a small expense ratio cost so much over time?', answer: "Because it is taken every single year and compounds against you the same way a return compounds for you. On the $10,000-plus-$200-a-month, 20-year example, a 0.5% expense ratio costs about $11,717.80 — roughly a quarter of the $48,000 contributed beyond the initial deposit." }
+      ]
+    },
+    compute(values) {
+      const netRate = values.grossAnnualReturn - values.expenseRatio;
+      const months = Math.max(0, values.years * 12);
+      const futureValue = values.initialInvestment * growthFactor(netRate, 12, months) + values.monthlyContribution * annuityFactor(netRate, 12, months);
+      const totalContributions = values.monthlyContribution * months;
+      const totalGrowth = futureValue - values.initialInvestment - totalContributions;
+      const grossFutureValue =
+        values.initialInvestment * growthFactor(values.grossAnnualReturn, 12, months) + values.monthlyContribution * annuityFactor(values.grossAnnualReturn, 12, months);
+      const feeDrag = grossFutureValue - futureValue;
+      return { futureValue, totalContributions, totalGrowth, feeDrag };
     }
   },
 ];

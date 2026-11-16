@@ -203,7 +203,12 @@ prior wave's convention.
   - [x] `annuity-calculator`
   - [x] `annuity-payout-calculator`
   - [x] `goal-based-investment-calculator`
-- [ ] Batch 5 (investment analysis + simple-interest cluster, 5)
+- [x] Batch 5 (investment analysis + simple-interest cluster, 5) — branch `step/60-wave-5a-finance-run-5`, PR #101, DONE 2026-11-16
+  - [x] `irr-calculator`
+  - [x] `npv-calculator`
+  - [x] `cd-calculator`
+  - [x] `simple-interest-calculator`
+  - [x] `mutual-fund-calculator`
 - [ ] Batch 6 (remaining money-hub items, 5-6)
 - [ ] Batch 7 (income-tax-calculator, 1)
 - [ ] Visual-QA spot-check (desktop/dark-mode at minimum) on `home-affordability-calculator`,

@@ -2524,6 +2524,50 @@ exports[`compute() snapshots > date-difference-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > daylight-hours-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "month": 6,
+      "day": 21,
+      "year": 2026,
+      "latitude": 40.7
+    },
+    "outputs": {
+      "solarDeclination": 23.43913176,
+      "dayLengthHours": 14.91937293,
+      "nightLengthHours": 9.080627074
+    }
+  },
+  "typical": {
+    "inputs": {
+      "month": 9,
+      "day": 32,
+      "year": 3039,
+      "latitude": 61.1
+    },
+    "outputs": {
+      "solarDeclination": -4.511065081,
+      "dayLengthHours": 10.90442078,
+      "nightLengthHours": 13.09557922
+    }
+  },
+  "edge": {
+    "inputs": {
+      "month": 1,
+      "day": 1,
+      "year": 1900,
+      "latitude": -90
+    },
+    "outputs": {
+      "solarDeclination": -23.0210242,
+      "dayLengthHours": 24,
+      "nightLengthHours": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > debt-payoff-calculator 1`] = `
 {
   "default": {
@@ -5059,6 +5103,50 @@ exports[`compute() snapshots > isotope-notation-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > jet-lag-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "timeZonesCrossed": 5,
+      "direction": 1
+    },
+    "outputs": {
+      "recoveryDays": 5,
+      "recoveryDaysRounded": 5,
+      "adjustmentRate": 1,
+      "eastDays": 5,
+      "westDays": 3.333333333
+    }
+  },
+  "typical": {
+    "inputs": {
+      "timeZonesCrossed": 8,
+      "direction": 2
+    },
+    "outputs": {
+      "recoveryDays": 5.333333333,
+      "recoveryDaysRounded": 6,
+      "adjustmentRate": 1.5,
+      "eastDays": 8,
+      "westDays": 5.333333333
+    }
+  },
+  "edge": {
+    "inputs": {
+      "timeZonesCrossed": 0,
+      "direction": 0
+    },
+    "outputs": {
+      "recoveryDays": 0,
+      "recoveryDaysRounded": 0,
+      "adjustmentRate": 1.5,
+      "eastDays": 0,
+      "westDays": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > job-offer-comparison-calculator 1`] = `
 {
   "default": {
@@ -5868,6 +5956,62 @@ exports[`compute() snapshots > loyalty-points-value-calculator 1`] = `
       "value": 0,
       "comparisonValue": 0,
       "difference": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > luggage-fee-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "bagWeight": 58,
+      "bagLinearSize": 65,
+      "weightAllowance": 50,
+      "sizeAllowance": 62,
+      "overweightFee": 100,
+      "oversizeFee": 200
+    },
+    "outputs": {
+      "weightOverage": 8,
+      "sizeOverage": 3,
+      "weightFeeCharged": 100,
+      "sizeFeeCharged": 200,
+      "totalExtraFee": 300
+    }
+  },
+  "typical": {
+    "inputs": {
+      "bagWeight": 87,
+      "bagLinearSize": 98,
+      "weightAllowance": 75,
+      "sizeAllowance": 93,
+      "overweightFee": 150,
+      "oversizeFee": 300
+    },
+    "outputs": {
+      "weightOverage": 12,
+      "sizeOverage": 5,
+      "weightFeeCharged": 150,
+      "sizeFeeCharged": 300,
+      "totalExtraFee": 450
+    }
+  },
+  "edge": {
+    "inputs": {
+      "bagWeight": 0,
+      "bagLinearSize": 0,
+      "weightAllowance": 0,
+      "sizeAllowance": 0,
+      "overweightFee": 0,
+      "oversizeFee": 0
+    },
+    "outputs": {
+      "weightOverage": 0,
+      "sizeOverage": 0,
+      "weightFeeCharged": 0,
+      "sizeFeeCharged": 0,
+      "totalExtraFee": 0
     }
   }
 }
@@ -8304,6 +8448,50 @@ exports[`compute() snapshots > pka-henderson-hasselbalch-calculator 1`] = `
     },
     "outputs": {
       "pH": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > points-vs-cash-flight-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "cashPrice": 450,
+      "pointsRequired": 25000,
+      "awardCashFees": 11.2,
+      "yourPointValue": 1.2
+    },
+    "outputs": {
+      "pointsCostInDollars": 311.2,
+      "savingsUsingPoints": 138.8,
+      "breakevenCentsPerPoint": 1.7552
+    }
+  },
+  "typical": {
+    "inputs": {
+      "cashPrice": 680,
+      "pointsRequired": 38000,
+      "awardCashFees": 17,
+      "yourPointValue": 1.8
+    },
+    "outputs": {
+      "pointsCostInDollars": 701,
+      "savingsUsingPoints": -21,
+      "breakevenCentsPerPoint": 1.744736842
+    }
+  },
+  "edge": {
+    "inputs": {
+      "cashPrice": 0,
+      "pointsRequired": 1,
+      "awardCashFees": 0,
+      "yourPointValue": 0
+    },
+    "outputs": {
+      "pointsCostInDollars": 0,
+      "savingsUsingPoints": 0,
+      "breakevenCentsPerPoint": 0
     }
   }
 }
@@ -11261,6 +11449,47 @@ exports[`compute() snapshots > tip-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > tipping-abroad-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "country": 0,
+      "billAmount": 50
+    },
+    "outputs": {
+      "country": 0,
+      "percent": 17.5,
+      "suggestedTip": 8.75,
+      "totalWithTip": 58.75
+    }
+  },
+  "typical": {
+    "inputs": {
+      "country": 0,
+      "billAmount": 75
+    },
+    "outputs": {
+      "country": 0,
+      "percent": 17.5,
+      "suggestedTip": 13.125,
+      "totalWithTip": 88.125
+    }
+  },
+  "edge": {
+    "inputs": {
+      "country": 0,
+      "billAmount": 0
+    },
+    "outputs": {
+      "country": 0,
+      "percent": 17.5,
+      "suggestedTip": 0,
+      "totalWithTip": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > tire-size-calculator 1`] = `
 {
   "default": {
@@ -11533,6 +11762,50 @@ exports[`compute() snapshots > travel-budget-calculator 1`] = `
       "perDayCost": 0,
       "buffer": 0,
       "totalWithBuffer": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > travel-points-value-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "pointsUsed": 60000,
+      "cashPriceAvoided": 900,
+      "cashCopay": 11.2,
+      "comparisonBenchmark": 1.2
+    },
+    "outputs": {
+      "netCashValue": 888.8,
+      "realizedCentsPerPoint": 1.481333333,
+      "vsBenchmarkDiffPercent": 23.44444444
+    }
+  },
+  "typical": {
+    "inputs": {
+      "pointsUsed": 90000,
+      "cashPriceAvoided": 1350,
+      "cashCopay": 17,
+      "comparisonBenchmark": 1.8
+    },
+    "outputs": {
+      "netCashValue": 1333,
+      "realizedCentsPerPoint": 1.481111111,
+      "vsBenchmarkDiffPercent": -17.71604938
+    }
+  },
+  "edge": {
+    "inputs": {
+      "pointsUsed": 1,
+      "cashPriceAvoided": 0,
+      "cashCopay": 0,
+      "comparisonBenchmark": 0
+    },
+    "outputs": {
+      "netCashValue": 0,
+      "realizedCentsPerPoint": 0,
+      "vsBenchmarkDiffPercent": 0
     }
   }
 }

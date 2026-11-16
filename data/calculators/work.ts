@@ -1001,5 +1001,115 @@ export const workCalculators: CalculatorConfig[] = [
       const annualHoursSaved = (values.roundTripCommuteMinutes * values.wfhDaysPerWeek * 52) / 60;
       return { fullTimeMonthlyCost, partialMonthlyCost, monthlySavings, annualSavings, monthlyHoursSaved, annualHoursSaved };
     }
+  },
+  {
+    id: 'job-offer-comparison-calculator',
+    group: 'Offers & Comparisons',
+    category: 'work',
+    glyph: 'A/B',
+    updatedAt: '2026-11-16',
+    aliases: ['compare two job offers calculator', 'total compensation comparison calculator', 'offer letter comparison calculator', 'which job offer is better calculator', 'salary offer comparison calculator'],
+    related: ['salary-raise-calculator', 'cost-of-living-comparison-calculator', 'pto-calculator', 'paycheck-calculator'],
+    title: 'Job Offer Comparison Calculator',
+    description: 'Compare two job offers side by side on total compensation: base salary, bonus and the dollar value of benefits, with the full dollar and percent difference between them.',
+    example: 'Offer A ($85,000 base + $5,000 bonus + $10,000 benefits = $100,000 total) vs. Offer B ($90,000 + $4,000 + $9,000 = $103,000) — Offer B is $3,000 (3%) higher in total compensation.',
+    breakdown: {
+      headline: 'difference',
+      headlineLabel: 'Difference in total compensation (B − A)',
+      outputs: [
+        { id: 'difference', label: 'Difference in total compensation (B − A)', format: 'currency' },
+        { id: 'totalCompA', label: 'Offer A total compensation', format: 'currency' },
+        { id: 'totalCompB', label: 'Offer B total compensation', format: 'currency' },
+        { id: 'percentDifference', label: 'Percent difference (vs. Offer A)', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Offer A', inputs: ['baseSalaryA', 'bonusA', 'benefitsValueA'] },
+        { title: 'Offer B', inputs: ['baseSalaryB', 'bonusB', 'benefitsValueB'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'totalCompA', label: 'Offer A' },
+          { from: 'totalCompB', label: 'Offer B' }
+        ],
+        title: 'Total compensation: Offer A vs. Offer B'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'Comparing offers on total compensation, not just salary',
+        paragraphs: [
+          'Base salary is the easiest number to compare between two job offers, but it is rarely the whole picture. A bonus (signing, target annual, or both) and the dollar value of benefits — health insurance, retirement matching, extra PTO, and anything else your employer prices in dollars — all add to what an offer is actually worth. This calculator adds the three together for each offer and compares the totals directly.',
+          'The US Bureau of Labor Statistics\' Employer Costs for Employee Compensation survey found that benefits made up 30.0% of total compensation for private-industry workers in June 2026, with wages and salaries making up the rest — a useful reminder that benefits are not a rounding error on top of salary, but a substantial share of what a job actually pays. If an offer letter does not state a dollar value for benefits, ask your recruiter or HR contact for one rather than leaving it at zero.',
+          'This calculator does not try to value your benefits for you — it takes whatever figure you enter, so the comparison is only as accurate as the benefits values you supply. Use the same estimation approach for both offers so the comparison is apples to apples.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter base salary, bonus and benefits value for each offer. Everything is annual.',
+        steps: [
+          { name: 'Enter Offer A\'s numbers', text: 'Base salary, expected annual bonus (0 if none or unknown), and the dollar value of benefits (health insurance, retirement match, extra PTO, and so on).' },
+          { name: 'Enter Offer B\'s numbers', text: 'The same three figures for the offer you are comparing it to.' },
+          { name: 'Read the comparison', text: 'The headline is the dollar difference between the two totals, with each offer\'s total compensation and the percent difference shown below, and a bar chart comparing them.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Each offer\'s total is just its three parts added together; the comparison is the difference and percent difference between the two totals.',
+        expression: 'totalCompA = baseSalaryA + bonusA + benefitsValueA\ntotalCompB = baseSalaryB + bonusB + benefitsValueB\ndifference = totalCompB − totalCompA\npercentDifference = (difference ÷ totalCompA) × 100',
+        terms: [
+          { symbol: 'benefitsValueA / benefitsValueB', meaning: 'Your own estimate of the annual dollar value of each offer\'s benefits — this calculator does not estimate it for you.' }
+        ],
+        note: 'A straightforward total, not a full financial comparison. It does not account for differing tax treatment of bonus versus salary, vesting schedules on equity, or cost-of-living differences if the two offers are in different cities — use the Cost of Living Comparison Calculator alongside this one if that applies.'
+      },
+      workedExample: {
+        intro: 'Offer A: $85,000 base, $5,000 expected bonus, $10,000 of benefits value. Offer B: $90,000 base, $4,000 expected bonus, $9,000 of benefits value.',
+        rows: [
+          { label: 'Offer A total (85,000 + 5,000 + 10,000)', value: '$100,000.00' },
+          { label: 'Offer B total (90,000 + 4,000 + 9,000)', value: '$103,000.00' },
+          { label: 'Difference (103,000 − 100,000)', value: '$3,000.00' },
+          { label: 'Percent difference (3,000 ÷ 100,000 × 100)', value: '3.00%' }
+        ],
+        result: 'Offer B is $3,000.00 higher in total compensation (3.00% more)',
+        explanation: 'Offer B\'s higher base salary ($5,000 more) more than makes up for its smaller bonus and benefits value (a combined $2,000 less), leaving it $3,000 ahead in total compensation even though neither of its individual components is the largest on its own.'
+      },
+      watchOut: [
+        { title: 'Benefits value is only as good as your estimate', body: 'This calculator does not price benefits for you. Nationally, benefits make up roughly 30% of total compensation for private-industry workers according to the BLS — a useful sanity check if an offer\'s benefits figure looks unusually small or large relative to its base salary.' },
+        { title: 'Bonuses are often not guaranteed', body: 'A "target" annual bonus is typically contingent on company or individual performance, unlike base salary. Treat a bonus figure as an expected value, not a certainty, when comparing offers.' },
+        { title: 'Equity is not modeled here', body: 'Stock options or RSUs have their own vesting schedules and uncertain future value, which this calculator does not attempt to price into the comparison — add your own estimate into benefits value if you want to include it.' },
+        { title: 'Different cities need a cost-of-living adjustment', body: 'A higher total compensation number is not automatically a better offer if it comes with a much higher cost of living. Use the Cost of Living Comparison Calculator to adjust for that before comparing.' },
+        { title: 'Taxes are not applied here', body: 'This compares gross (pre-tax) totals. Bonus income is often withheld at a different supplemental-wage rate than salary, which this calculator does not model.' }
+      ],
+      references: [
+        { label: 'U.S. Bureau of Labor Statistics, Employer Costs for Employee Compensation – June 2026', url: 'https://www.bls.gov/news.release/pdf/ecec.pdf' }
+      ]
+    },
+    inputs: [
+      { id: 'baseSalaryA', label: 'Offer A: base salary', type: 'currency', placeholder: '85000', defaultValue: 85000, step: 1000, min: 0 },
+      { id: 'bonusA', label: 'Offer A: annual bonus', type: 'currency', placeholder: '5000', defaultValue: 5000, step: 500, min: 0 },
+      { id: 'benefitsValueA', label: 'Offer A: annual benefits value', type: 'currency', placeholder: '10000', defaultValue: 10000, step: 500, min: 0 },
+      { id: 'baseSalaryB', label: 'Offer B: base salary', type: 'currency', placeholder: '90000', defaultValue: 90000, step: 1000, min: 0 },
+      { id: 'bonusB', label: 'Offer B: annual bonus', type: 'currency', placeholder: '4000', defaultValue: 4000, step: 500, min: 0 },
+      { id: 'benefitsValueB', label: 'Offer B: annual benefits value', type: 'currency', placeholder: '9000', defaultValue: 9000, step: 500, min: 0 }
+    ],
+    seo: {
+      title: 'Job Offer Comparison Calculator – Total Compensation',
+      description: 'Compare two job offers on total compensation: base salary, bonus and benefits value, with the full dollar and percent difference between them.',
+      faq: [
+        { question: 'How do I compare two job offers fairly?', answer: 'Add base salary, expected bonus and the dollar value of benefits for each offer, then compare the totals. Offer A at $100,000 total vs. Offer B at $103,000 total means B is $3,000 (3%) ahead.' },
+        { question: 'What counts as benefits value?', answer: 'Anything your employer prices in dollars beyond salary and bonus: health insurance, retirement plan matching, extra PTO, and similar. Ask your recruiter or HR contact for a figure if the offer letter does not state one.' },
+        { question: 'How much are benefits usually worth compared to salary?', answer: 'The BLS Employer Costs for Employee Compensation survey found benefits made up 30.0% of total compensation for private-industry workers in June 2026 — a general benchmark, not a figure specific to any one offer.' },
+        { question: 'Should I include a bonus that is not guaranteed?', answer: 'You can, but treat it as an expected value rather than certain income — an offer with a large "target" bonus and a small guaranteed base carries more risk than one weighted toward base salary.' },
+        { question: 'Does this account for cost of living if the offers are in different cities?', answer: 'No. Use the Cost of Living Comparison Calculator alongside this one to adjust either offer for a different city\'s cost of living before comparing totals.' },
+        { question: 'Does this calculator value stock options or RSUs for me?', answer: 'No. Equity has its own vesting schedule and uncertain value. Add your own estimate into the benefits value field if you want to fold it into the comparison.' }
+      ]
+    },
+    compute(values) {
+      const totalCompA = values.baseSalaryA + values.bonusA + values.benefitsValueA;
+      const totalCompB = values.baseSalaryB + values.bonusB + values.benefitsValueB;
+      const difference = totalCompB - totalCompA;
+      const percentDifference = totalCompA > 0 ? (difference / totalCompA) * 100 : 0;
+      return { totalCompA, totalCompB, difference, percentDifference };
+    }
   }
 ];

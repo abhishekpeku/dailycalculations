@@ -4795,6 +4795,59 @@ exports[`compute() snapshots > isotope-notation-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > job-offer-comparison-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "baseSalaryA": 85000,
+      "bonusA": 5000,
+      "benefitsValueA": 10000,
+      "baseSalaryB": 90000,
+      "bonusB": 4000,
+      "benefitsValueB": 9000
+    },
+    "outputs": {
+      "totalCompA": 100000,
+      "totalCompB": 103000,
+      "difference": 3000,
+      "percentDifference": 3
+    }
+  },
+  "typical": {
+    "inputs": {
+      "baseSalaryA": 128000,
+      "bonusA": 7500,
+      "benefitsValueA": 15000,
+      "baseSalaryB": 135000,
+      "bonusB": 6000,
+      "benefitsValueB": 13500
+    },
+    "outputs": {
+      "totalCompA": 150500,
+      "totalCompB": 154500,
+      "difference": 4000,
+      "percentDifference": 2.657807309
+    }
+  },
+  "edge": {
+    "inputs": {
+      "baseSalaryA": 0,
+      "bonusA": 0,
+      "benefitsValueA": 0,
+      "baseSalaryB": 0,
+      "bonusB": 0,
+      "benefitsValueB": 0
+    },
+    "outputs": {
+      "totalCompA": 0,
+      "totalCompB": 0,
+      "difference": 0,
+      "percentDifference": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > kids-shoe-size-chart 1`] = `
 {
   "default": {

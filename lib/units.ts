@@ -39,6 +39,7 @@ export type UnitDimension =
   | 'decibel'
   | 'specificHeat'
   | 'specificLatentHeat'
+  | 'molarHeatCapacity'
   | 'temperatureDelta'
   | 'amountOfSubstance'
   | 'concentration'
@@ -508,6 +509,17 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
   // same factors as `molarEnergy`'s own kJ/mol and cal/mol, since dividing both by the same
   // kelvin leaves the ratio between them unchanged.
   molarEntropy: [
+    { id: 'J/molK', label: 'J/(mol·K)', factor: 1 },
+    { id: 'kJ/molK', label: 'kJ/(mol·K)', factor: 1000 },
+    { id: 'cal/molK', label: 'cal/(mol·K)', factor: CALORIE }
+  ],
+  // Molar heat capacity, SI-coherent derived unit J/(mol·K) — numerically the identical unit as
+  // `molarEntropy` above (OpenStax University Physics Volume 2 §3.5 "Heat Capacities of an Ideal
+  // Gas" reports Cv and Cp in the same J/(mol·K)), but kept as its own dimension since heat
+  // capacity and entropy are physically different quantities, the same "one real unit, two
+  // conventional names" precedent as `torque` being kept separate from `energy`. kJ/(mol·K) and
+  // cal/(mol·K) follow the same factors as `molarEntropy`'s own units for the same reason.
+  molarHeatCapacity: [
     { id: 'J/molK', label: 'J/(mol·K)', factor: 1 },
     { id: 'kJ/molK', label: 'kJ/(mol·K)', factor: 1000 },
     { id: 'cal/molK', label: 'cal/(mol·K)', factor: CALORIE }

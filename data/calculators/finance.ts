@@ -3583,4 +3583,120 @@ export const financeCalculators: CalculatorConfig[] = [
       return { annualPension, monthlyPension, incomeReplacementPercent };
     }
   },
+  {
+    id: 'social-security-calculator',
+    group: 'Retirement',
+    category: 'finance',
+    glyph: 'SS',
+    updatedAt: '2026-11-16',
+    aliases: ['social security calculator', 'social security benefit calculator', 'ssa benefit estimator', 'pia calculator', 'aime calculator'],
+    related: ['pension-calculator', 'retirement-savings-calculator', 'traditional-ira-calculator', 'annuity-calculator'],
+    title: 'Social Security Calculator',
+    description: "Estimate a Social Security retirement benefit from your average indexed monthly earnings (AIME), using the SSA's own 2026 bend-point formula. An estimate only — not an official benefit statement.",
+    example: 'A $6,500 average indexed monthly earnings (AIME) gives an estimated monthly benefit (PIA) of $2,825.80 — about $33,910 a year, using the Social Security Administration\'s 2026 bend points of $1,286 and $7,749.',
+    breakdown: {
+      headline: 'pia',
+      headlineLabel: 'Estimated monthly benefit (PIA)',
+      outputs: [
+        { id: 'pia', label: 'Estimated monthly benefit (PIA)', format: 'currency' },
+        { id: 'annualBenefit', label: 'Estimated annual benefit', format: 'currency' },
+        { id: 'replacementPercent', label: 'Percent of AIME replaced', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Your earnings', inputs: ['averageIndexedMonthlyEarnings'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'averageIndexedMonthlyEarnings', label: 'Average indexed monthly earnings (AIME)' },
+          { from: 'pia', label: 'Estimated monthly benefit (PIA)' }
+        ],
+        title: 'AIME vs. estimated benefit',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'AIME, bend points and the PIA formula',
+        paragraphs: [
+          "Social Security's retirement benefit is built from two numbers. The first is your average indexed monthly earnings (AIME): the Social Security Administration takes your highest 35 years of earnings, adjusts each year's earnings for wage growth since then, adds them up, and divides by 420 months (35 years). The second is the primary insurance amount (PIA) — your benefit at full retirement age — which the SSA computes from your AIME using a formula with two \"bend points\" that split your AIME into three bands, each paid at a different percentage.",
+          "Under the Social Security Administration's notice for 2026 (published in the Federal Register, 90 FR 49047), the bend points for a worker who first becomes eligible for benefits in 2026 are $1,286 and $7,749. The PIA is 90% of AIME up to $1,286, plus 32% of AIME between $1,286 and $7,749, plus 15% of any AIME above $7,749, rounded down to the next lower $0.10. The bend points themselves change every year, since the SSA indexes them to the national average wage index — a bend point for a different year will give a different estimate for someone who becomes eligible that year.",
+          "This calculator skips the 35-year earnings-indexing step and asks for your AIME directly — either the figure from your own \"my Social Security\" statement at ssa.gov, or a rough stand-in such as your current average monthly earnings. It also shows only the PIA at full retirement age: it does not model the real reduction for claiming as early as 62 or the real increase for delaying up to 70, which are a different, separate adjustment on top of the PIA. For a defined-benefit pension estimate instead of Social Security, see pension-calculator."
+        ]
+      },
+      howTo: {
+        intro: 'Enter your average indexed monthly earnings (AIME) — from your ssa.gov statement if you have it, or a rough estimate otherwise.',
+        steps: [
+          { name: 'Find or estimate your AIME', text: 'Your "my Social Security" statement at ssa.gov shows your real AIME. Without it, your current average monthly earnings is a rough stand-in.' },
+          { name: 'Enter the AIME', text: 'Type it into the one input field.' },
+          { name: 'Read the estimated benefit', text: 'The estimated monthly benefit (PIA) at full retirement age appears, with the annual figure and the percent of AIME it replaces.' },
+          { name: 'Remember what this leaves out', text: 'Claiming before full retirement age reduces the real benefit; claiming after it (up to age 70) increases it. This estimate is the PIA only, before either adjustment.' },
+          { name: 'Confirm with SSA', text: "For your actual benefit at your actual claiming age, use SSA's own calculators and statement at ssa.gov." }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "The PIA sums three percentages of AIME, split at the SSA's 2026 bend points of $1,286 and $7,749.",
+        expression: 'PIA = 90% × min(AIME, $1,286) + 32% × (portion of AIME between $1,286 and $7,749) + 15% × (portion of AIME above $7,749)\nPIA is then rounded down to the next lower $0.10\nAnnual benefit = PIA × 12',
+        terms: [
+          { symbol: 'AIME', meaning: "Average indexed monthly earnings — the highest 35 years of wage-indexed earnings, divided by 420 months." },
+          { symbol: 'Bend points', meaning: "$1,286 and $7,749 for 2026, published by the SSA and adjusted every year for wage growth." }
+        ],
+        note: "Estimates only, not an official Social Security benefit statement. This models the standard PIA formula for someone who first becomes eligible for retirement benefits in 2026, at full retirement age. It does not model claiming age adjustments, spousal or survivor benefits, the earnings test, the Windfall Elimination Provision, or taxation of benefits. Create or check your account at ssa.gov for your real figure."
+      },
+      workedExample: {
+        intro: 'Someone has a $6,500 average indexed monthly earnings (AIME). What is their estimated monthly benefit at full retirement age?',
+        rows: [
+          { label: 'First $1,286 of AIME × 90%', value: '$1,157.40' },
+          { label: 'Next $5,214 of AIME ($6,500 − $1,286) × 32%', value: '$1,668.48' },
+          { label: 'Amount above $7,749 (none, AIME is below the second bend point)', value: '$0.00' },
+          { label: 'Raw PIA (1,157.40 + 1,668.48)', value: '$2,825.88' },
+          { label: 'PIA rounded down to the next lower $0.10', value: '$2,825.80' },
+          { label: 'Annual benefit (2,825.80 × 12)', value: '$33,909.60' }
+        ],
+        result: 'Estimated monthly benefit (PIA) ≈ $2,825.80, about $33,910 a year, replacing about 43.5% of the $6,500 AIME',
+        explanation: "A higher earner with a $10,000 AIME crosses the second bend point: their PIA works out to $3,563.20 a month — about 26.1% more than the $6,500 example, even though that AIME itself is 53.8% higher. Each dollar of AIME above the bend points adds only 15 cents to the benefit, versus 90 cents below the first bend point, which is why Social Security replaces a larger share of a lower earner's pay than a higher earner's."
+      },
+      watchOut: [
+        { title: 'Not an official benefit statement', body: 'This is a simplified estimate from a single AIME figure you provide. Your real benefit comes from your actual 35-year earnings record — check it at ssa.gov.' },
+        { title: 'Claiming age changes the real benefit a great deal', body: 'This shows the PIA at full retirement age only. Claiming as early as 62 permanently reduces it; delaying past full retirement age, up to 70, increases it through delayed retirement credits. Neither adjustment is modeled here.' },
+        { title: "The bend points change every year", body: "$1,286 and $7,749 are the SSA's 2026 figures, indexed to the national average wage index. A worker who becomes eligible in a different year uses that year's own bend points, not these." },
+        { title: 'Entering your salary is not the same as your real AIME', body: "Your real AIME indexes 35 years of earnings for wage growth and divides by 420 months. A single current salary, used as a stand-in, will usually differ from your actual AIME." },
+        { title: 'Other adjustments are not modeled', body: 'Spousal and survivor benefits, the retirement earnings test, the Windfall Elimination Provision for some public pensions, and federal taxation of benefits can all change what you actually receive.' }
+      ],
+      references: [
+        { label: 'Social Security Administration, "Cost-of-Living Increase and Other Determinations for 2026," Federal Register 90 FR 49047 (Nov. 3, 2025)', url: 'https://www.federalregister.gov/documents/2025/11/03/2025-19763/cost-of-living-increase-and-other-determinations-for-2026' },
+        { label: 'Social Security Administration, your official benefit estimate (my Social Security account)', url: 'https://www.ssa.gov/myaccount/' }
+      ]
+    },
+    inputs: [
+      { id: 'averageIndexedMonthlyEarnings', label: 'Average indexed monthly earnings (AIME)', type: 'currency', placeholder: '6500', defaultValue: 6500, step: 100, min: 0 }
+    ],
+    seo: {
+      title: 'Social Security Calculator – Estimate Your PIA',
+      description: "Estimate your Social Security retirement benefit (PIA) from your AIME using the SSA's 2026 bend points. An estimate only — see ssa.gov for your official figure.",
+      faq: [
+        { question: 'How is my Social Security benefit calculated?', answer: 'The SSA applies 90% to the first $1,286 of your AIME, 32% to the portion between $1,286 and $7,749, and 15% above $7,749, then rounds down to the nearest $0.10. A $6,500 AIME gives a $2,825.80 monthly PIA.' },
+        { question: 'What is AIME?', answer: 'Average indexed monthly earnings: your highest 35 years of earnings, each adjusted for wage growth since that year, added up and divided by 420 months. This calculator asks for your AIME directly rather than computing it from a full earnings history.' },
+        { question: 'What are the Social Security "bend points"?', answer: 'The two dollar thresholds that split AIME into three bands paid at 90%, 32% and 15%. For 2026 they are $1,286 and $7,749, published by the SSA and adjusted every year for wage growth.' },
+        { question: 'Does this account for claiming early or late?', answer: "No. This is the primary insurance amount (PIA) at full retirement age only. Claiming as early as 62 reduces it permanently; delaying past full retirement age, up to 70, increases it through delayed retirement credits." },
+        { question: "Why doesn't a much higher AIME give a proportionally higher benefit?", answer: "Because of the bend points: a $10,000 AIME (53.8% higher than $6,500) produces a PIA only 26.1% higher ($3,563.20 vs. $2,825.80), since AIME above the bend points is credited at just 15%, not 90%. Social Security replaces a larger share of a lower earner's pay." },
+        { question: 'Is this an official Social Security estimate?', answer: 'No. For your real, official estimate based on your actual earnings record, create or check your account at ssa.gov.' }
+      ]
+    },
+    compute(values) {
+      const bend1 = 1286;
+      const bend2 = 7749;
+      const aime = values.averageIndexedMonthlyEarnings;
+      const firstPortion = Math.min(aime, bend1);
+      const secondPortion = Math.max(0, Math.min(aime, bend2) - bend1);
+      const thirdPortion = Math.max(0, aime - bend2);
+      const rawPia = 0.9 * firstPortion + 0.32 * secondPortion + 0.15 * thirdPortion;
+      const pia = Math.floor(rawPia * 10) / 10;
+      const annualBenefit = pia * 12;
+      const replacementPercent = aime > 0 ? (pia / aime) * 100 : NaN;
+      return { pia, annualBenefit, replacementPercent };
+    }
+  },
 ];

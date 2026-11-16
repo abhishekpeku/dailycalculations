@@ -341,6 +341,7 @@ export const calculatorOrder: string[] = [
   'traditional-ira-calculator',
   'rmd-calculator',
   'pension-calculator',
+  'social-security-calculator',
   'jet-lag-calculator',
   'luggage-fee-calculator',
   'daylight-hours-calculator',

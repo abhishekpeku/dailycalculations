@@ -10785,6 +10785,41 @@ exports[`compute() snapshots > slope-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > social-security-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "averageIndexedMonthlyEarnings": 6500
+    },
+    "outputs": {
+      "pia": 2825.8,
+      "annualBenefit": 33909.6,
+      "replacementPercent": 43.47384615
+    }
+  },
+  "typical": {
+    "inputs": {
+      "averageIndexedMonthlyEarnings": 9800
+    },
+    "outputs": {
+      "pia": 3533.2,
+      "annualBenefit": 42398.4,
+      "replacementPercent": 36.05306122
+    }
+  },
+  "edge": {
+    "inputs": {
+      "averageIndexedMonthlyEarnings": 0
+    },
+    "outputs": {
+      "pia": 0,
+      "annualBenefit": 0,
+      "replacementPercent": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > solution-concentration-calculator 1`] = `
 {
   "default": {

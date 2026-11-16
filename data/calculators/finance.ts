@@ -3946,4 +3946,154 @@ export const financeCalculators: CalculatorConfig[] = [
       return { payout, totalPayout, totalInterest };
     }
   },
+  {
+    id: 'goal-based-investment-calculator',
+    group: 'Savings & Growth',
+    category: 'finance',
+    glyph: 'Goal',
+    updatedAt: '2026-11-16',
+    aliases: ['goal based investment calculator', 'savings goal calculator', 'required monthly savings calculator', 'how much do i need to save calculator', 'investment goal calculator'],
+    related: ['investment-calculator', 'retirement-savings-calculator', 'compound-interest-calculator', 'annuity-calculator'],
+    title: 'Goal-Based Investment Calculator',
+    description: "Find the monthly contribution needed to reach a savings goal — investment-calculator's future-value formula, solved backward for the contribution instead.",
+    example: 'Starting with $10,000 and wanting $100,000 in 10 years at an average 7% annual return takes a required contribution of about $461.64 a month.',
+    solver: {
+      defaultTarget: 'monthlyContribution',
+      variables: [
+        { id: 'goalAmount', label: 'Savings goal', symbol: 'G', dimension: 'currency', defaultValue: 100000, defaultUnit: 'currency', fixed: true },
+        { id: 'currentSavings', label: "Today's savings", symbol: 'P', dimension: 'currency', defaultValue: 10000, defaultUnit: 'currency' },
+        { id: 'years', label: 'Time to the goal', symbol: 't', dimension: 'term', defaultValue: 10, defaultUnit: 'yr', bounds: [0, 1200] },
+        { id: 'annualReturn', label: 'Average annual return', symbol: 'r', dimension: 'percent', defaultValue: 7, defaultUnit: '%', bounds: [-50, 100] },
+        { id: 'monthlyContribution', label: 'Required monthly contribution', symbol: 'C', dimension: 'currency', defaultValue: 461.64, defaultUnit: 'currency' }
+      ],
+      // Algebraically the inverse of investment-calculator's own formula, with monthly contributions
+      // and monthly compounding (like retirement-savings-calculator) rather than investment-calculator's
+      // yearly contribution, to match a realistic monthly savings habit.
+      solve: {
+        monthlyContribution: ({ goalAmount, currentSavings, years, annualReturn }) => {
+          const af = annuityFactor(annualReturn, 12, years);
+          if (!(years >= 0) || !(af > 0)) return NaN;
+          const needed = (goalAmount - currentSavings * growthFactor(annualReturn, 12, years)) / af;
+          return needed >= 0 ? needed : NaN;
+        },
+        currentSavings: ({ goalAmount, monthlyContribution, years, annualReturn }) => {
+          const start = (goalAmount - monthlyContribution * annuityFactor(annualReturn, 12, years)) / growthFactor(annualReturn, 12, years);
+          return years >= 0 && start >= 0 ? start : NaN;
+        },
+        years: ({ goalAmount, currentSavings, monthlyContribution, annualReturn }) => {
+          const i = annualReturn / 100 / 12;
+          if (i === 0) return monthlyContribution > 0 ? (goalAmount - currentSavings) / monthlyContribution : NaN;
+          const x = (goalAmount * i + monthlyContribution) / (currentSavings * i + monthlyContribution);
+          if (!(x > 0)) return NaN;
+          const n = Math.log(x) / Math.log(1 + i);
+          return n >= 0 ? n : NaN;
+        }
+      },
+      // The return has no closed form: the widget finds it numerically.
+      equation: (si) =>
+        si.goalAmount - (si.currentSavings * growthFactor(si.annualReturn, 12, si.years) + si.monthlyContribution * annuityFactor(si.annualReturn, 12, si.years)),
+      outputs: [
+        { id: 'totalContributed', label: 'Total you contribute', dimension: 'currency', compute: (si) => si.currentSavings + si.monthlyContribution * si.years },
+        { id: 'totalGrowth', label: 'Growth', dimension: 'currency', compute: (si) => si.goalAmount - si.currentSavings - si.monthlyContribution * si.years }
+      ],
+      derive: (si) => ({ contributions: si.monthlyContribution * si.years }),
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'currentSavings', label: "Today's savings" },
+            { from: 'contributions', label: 'Future contributions' },
+            { from: 'totalGrowth', label: 'Growth' }
+          ],
+          center: 'goalAmount',
+          centerSub: 'your goal'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: "Investment-calculator's formula, solved backward",
+        paragraphs: [
+          'investment-calculator answers "if I invest this much, what will I have?" This calculator answers the opposite, and arguably more common, question: "I need a specific amount by a specific date — how much do I need to save each month to get there?" It is the same compounding formula, algebraically rearranged to solve for the monthly contribution instead of the future value.',
+          "It also switches to a monthly contribution with monthly compounding, the same change retirement-savings-calculator makes to investment-calculator's yearly model, to match a realistic monthly savings habit rather than one lump deposit a year. Today's savings grow on their own for the whole period; the gap left between that grown amount and the goal is what the monthly contributions have to fill, spread across the future value of an ordinary annuity.",
+          'This is deliberately general-purpose: the goal can be a down payment, a wedding, a car, a child\'s education or anything else with a dollar amount and a date. For a lump sum instead of a monthly contribution, use compound-interest-calculator; for retirement specifically, with its own withdrawal estimate, use retirement-savings-calculator.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your savings goal (always an input), then any three of the other four fields. The fourth, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter your goal', text: 'This is always an input — the dollar amount you want to have by a certain date.' },
+          { name: 'Find the required contribution', text: "Type today's savings, the time you have and an expected average return. The required monthly contribution appears." },
+          { name: 'Check how long your current plan takes', text: 'Type a contribution you can actually afford and leave the time alone instead, to see how many years it takes at that pace.' },
+          { name: 'Find the return you would need', text: 'Fill in the goal, savings, contribution and time so the return is the field left alone longest, and the calculator searches for it.' },
+          { name: 'Try a range of returns', text: 'Run a cautious, a middle and an optimistic return — the required contribution changes a great deal between them.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "With monthly compounding, the goal equals today's savings grown for n months plus the future value of the monthly contributions — rearranged here to solve for the contribution.",
+        expression: 'Goal = P × (1 + i)^n + C × ((1 + i)^n − 1) ÷ i\nRequired C = (Goal − P × (1 + i)^n) ÷ (((1 + i)^n − 1) ÷ i), where i = annual return ÷ 12',
+        terms: [
+          { symbol: 'Goal', meaning: 'The target amount.' },
+          { symbol: 'P', meaning: "Today's savings." },
+          { symbol: 'C', meaning: 'Required contribution, added at the end of each month.' },
+          { symbol: 'i', meaning: 'Monthly rate: the average annual return ÷ 12, as a decimal.' },
+          { symbol: 'n', meaning: 'Number of months until the goal date.' }
+        ],
+        note: 'Estimates only. Returns are assumed constant; real returns vary, can be negative, and are reduced by fees, taxes and inflation. This is not investment advice.'
+      },
+      workedExample: {
+        intro: 'You have $10,000 saved, want $100,000 in 10 years, and assume an average 7% annual return. How much do you need to save each month?',
+        rows: [
+          { label: 'Months to the goal (10 × 12)', value: '120' },
+          { label: 'Monthly rate (7% ÷ 12)', value: '0.5833%' },
+          { label: "Today's savings grown (10,000 × 1.005833^120)", value: '$20,096.61' },
+          { label: 'Amount still needed (100,000 − 20,096.61)', value: '$79,903.39' },
+          { label: 'Annuity factor ((1.005833)^120 − 1) ÷ 0.005833', value: '173.084807' },
+          { label: 'Required monthly contribution (79,903.39 ÷ 173.084807)', value: '$461.64' }
+        ],
+        result: 'Required monthly contribution ≈ $461.64 to reach $100,000 in 10 years',
+        explanation: 'The timeline changes the requirement enormously: reaching the same $100,000 in just 5 years needs about $1,198.77 a month — about 431% more — while stretching it to 15 years cuts the requirement to about $225.61 a month. The assumed return matters too: at 5% the 10-year requirement is about $537.92 a month, and at 9% about $390.08.'
+      },
+      watchOut: [
+        { title: "The algebraic inverse of investment-calculator", body: "Same compounding math, solved for a different variable: investment-calculator projects a contribution forward to a future value; this page starts from the future value (your goal) and solves backward for the contribution. It also compounds monthly, not yearly, to match a monthly savings habit." },
+        { title: 'Estimates only: returns are not guaranteed', body: 'A constant average return is a planning assumption, not a forecast. Real returns vary and can be negative, especially over shorter timelines.' },
+        { title: "No answer if you've already saved enough", body: "If today's savings alone are projected to meet or beat the goal by your target date, there is no positive monthly contribution required, and the calculator shows no answer rather than a negative number." },
+        { title: 'Fees and inflation are not modeled', body: 'An expense ratio or advisory fee comes off the assumed return every year, and the goal amount is in future dollars — use inflation-calculator to see what it would be worth in today\'s money.' },
+        { title: 'Taxes are not modeled', body: 'Gains in a taxable account are taxed; a tax-advantaged account such as an IRA or 401(k) defers or exempts the tax. The calculator ignores taxes entirely.' }
+      ],
+      references: [
+        { label: 'OpenStax, Contemporary Mathematics, §6.7 Investments', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-7-investments' },
+        { label: 'U.S. Securities and Exchange Commission, Investor.gov: Save and Invest', url: 'https://www.investor.gov/introduction-investing/investing-basics/save-and-invest' }
+      ]
+    },
+    inputs: [
+      { id: 'goalAmount', label: 'Savings goal', type: 'currency', placeholder: '100000', defaultValue: 100000, step: 1000, min: 0 },
+      { id: 'currentSavings', label: "Today's savings", type: 'currency', placeholder: '10000', defaultValue: 10000, step: 500, min: 0 },
+      { id: 'annualReturn', label: 'Average annual return', type: 'percent', placeholder: '7', defaultValue: 7, step: 0.1, min: 0 },
+      { id: 'years', label: 'Years to the goal', type: 'number', placeholder: '10', defaultValue: 10, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Goal-Based Investment Calculator – Required Savings',
+      description: "Find the monthly contribution needed to reach a savings goal — investment-calculator's formula, solved backward. Free goal-based savings calculator.",
+      faq: [
+        { question: 'How do I calculate the savings needed to reach a goal?', answer: "Grow today's savings by (1 + i)^n, subtract that from the goal, and divide the remainder by the future-value-of-an-annuity factor. $10,000 growing toward a $100,000 goal in 10 years at 7% needs about $461.64 a month." },
+        { question: 'How is this different from the investment calculator?', answer: 'investment-calculator projects a contribution forward to a future value, with a yearly contribution. This calculator starts from the goal (the future value) and solves backward for the required monthly contribution, compounding monthly.' },
+        { question: "What if I've already saved enough?", answer: "If today's savings alone are projected to reach or exceed the goal by your target date, there is no positive contribution required, and the calculator shows no answer." },
+        { question: 'How much does more time help?', answer: 'A great deal. Reaching the same $100,000 goal from $10,000 at 7% needs about $1,198.77 a month over 5 years, about $461.64 a month over 10 years, and about $225.61 a month over 15 years.' },
+        { question: 'What return should I assume?', answer: 'There is no safe single number. Run the calculator with a cautious, a middle and an optimistic return and plan around the range — returns are never guaranteed.' },
+        { question: 'Does this account for inflation or taxes?', answer: "No. The goal amount is in future dollars (see inflation-calculator for what that buys today), and the calculator does not model taxes on investment gains." }
+      ]
+    },
+    compute(values) {
+      const months = Math.max(1, values.years * 12);
+      const grown = values.currentSavings * growthFactor(values.annualReturn, 12, months);
+      const af = annuityFactor(values.annualReturn, 12, months);
+      const monthlyContribution = af > 0 ? (values.goalAmount - grown) / af : NaN;
+      const totalContributed = values.currentSavings + monthlyContribution * months;
+      const totalGrowth = values.goalAmount - totalContributed;
+      return { monthlyContribution, totalContributed, totalGrowth };
+    }
+  },
 ];

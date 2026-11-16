@@ -4475,6 +4475,50 @@ exports[`compute() snapshots > gibbs-free-energy-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > goal-based-investment-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "goalAmount": 100000,
+      "currentSavings": 10000,
+      "annualReturn": 7,
+      "years": 10
+    },
+    "outputs": {
+      "monthlyContribution": 461.6429796,
+      "totalContributed": 65397.15756,
+      "totalGrowth": 34602.84244
+    }
+  },
+  "typical": {
+    "inputs": {
+      "goalAmount": 150000,
+      "currentSavings": 15000,
+      "annualReturn": 10.5,
+      "years": 15
+    },
+    "outputs": {
+      "monthlyContribution": 179.788547,
+      "totalContributed": 47361.93846,
+      "totalGrowth": 102638.0615
+    }
+  },
+  "edge": {
+    "inputs": {
+      "goalAmount": 0,
+      "currentSavings": 0,
+      "annualReturn": 0,
+      "years": 0
+    },
+    "outputs": {
+      "monthlyContribution": 0,
+      "totalContributed": 0,
+      "totalGrowth": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > golf-course-handicap-calculator 1`] = `
 {
   "default": {

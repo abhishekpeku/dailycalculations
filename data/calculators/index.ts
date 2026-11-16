@@ -344,6 +344,7 @@ export const calculatorOrder: string[] = [
   'social-security-calculator',
   'annuity-calculator',
   'annuity-payout-calculator',
+  'goal-based-investment-calculator',
   'jet-lag-calculator',
   'luggage-fee-calculator',
   'daylight-hours-calculator',

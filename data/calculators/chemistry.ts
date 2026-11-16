@@ -5139,15 +5139,15 @@ export const chemistryCalculators: CalculatorConfig[] = [
       defaultTarget: 'molarSolubility',
       variables: [
         { id: 'ksp', label: 'Solubility product, Ksp', symbol: 'Ksp', dimension: 'count', defaultValue: 1e-28, defaultUnit: 'count', fixed: true },
-        { id: 'commonIonConcentration', label: 'Common-ion concentration already present', symbol: '[X]', dimension: 'concentration', defaultValue: 0.01, defaultUnit: 'mol/L' },
-        { id: 'molarSolubility', label: 'Molar solubility in that solution', symbol: 's', dimension: 'concentration', defaultValue: 1e-26, defaultUnit: 'mol/L' }
+        { id: 'commonIonConcentration', label: 'Common-ion concentration already present (mol/L)', symbol: '[X]', dimension: 'count', defaultValue: 0.01, defaultUnit: 'count' },
+        { id: 'molarSolubility', label: 'Molar solubility in that solution (mol/L)', symbol: 's', dimension: 'count', defaultValue: 1e-26, defaultUnit: 'count' }
       ],
       solve: {
         molarSolubility: ({ ksp, commonIonConcentration }) => (2 * ksp) / (commonIonConcentration + Math.sqrt(commonIonConcentration ** 2 + 4 * ksp)),
         commonIonConcentration: ({ ksp, molarSolubility }) => (molarSolubility === 0 ? NaN : ksp / molarSolubility - molarSolubility)
       },
       outputs: [
-        { id: 'plainWaterSolubility', label: 'Solubility in plain water (√Ksp)', dimension: 'concentration', unit: 'mol/L', compute: (si) => Math.sqrt(si.ksp) }
+        { id: 'plainWaterSolubility', label: 'Solubility in plain water (√Ksp, mol/L)', dimension: 'count', unit: 'count', compute: (si) => Math.sqrt(si.ksp) }
       ]
     },
     content: {

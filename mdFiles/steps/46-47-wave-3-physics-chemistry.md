@@ -567,11 +567,27 @@ build agent's judgment**, same as every run so far.
   - From this run's own branch point (does not include run B's 5): 326 calculators total (321 + 5).
     `physics` is 31 on this branch; the true post-merge total needs reconciling with run B's PR by
     the main session, since both runs added 5 physics calculators independently to the same file.
-- [ ] Physics drivetrain/efficiency run (5): horsepower (deferred from run 4 — check it isn't a
-  straight unit conversion already covered by `power-converter` before building; frame from
-  torque+RPM if so), RPM-to-speed (wheel RPM → linear speed given wheel diameter), gear ratio
-  (driven teeth ÷ drive teeth), efficiency (output/input %), + 1 more TBD by the build agent
-  (candidates: angular velocity, Coulomb's law, specific gravity, terminal velocity)
+- [ ] Physics drivetrain/efficiency run (5), branch `step/46-wave-3-physics-run-8` — **IN PROGRESS**:
+  ## Progress (run 8)
+  - [ ] horsepower-calculator
+  - [ ] rpm-to-speed-calculator
+  - [ ] gear-ratio-calculator
+  - [ ] efficiency-calculator
+  - [ ] angular-velocity-calculator
+  - New `lib/units.ts` dimension `angularVelocity` (base rad/s; units rad/s, rpm, rev/s, deg/s)
+    already added and tested (round-trip + anchor test in `lib/units.spec.ts`, cross-checked
+    against OpenStax University Physics Volume 1 §10.1 Example 10.2: 250 rpm = 26.2 rad/s). Kept
+    separate from `frequency` (same "one real relationship, two conventional units" reasoning as
+    `torque` vs `energy`), and used by all 5 calculators in this run via the `rpm` unit.
+  - `specific-gravity-calculator` ruled out as the 5th pick: `density-of-solutions-calculator`
+    (chemistry run, already shipped) already covers specific gravity thoroughly, including an
+    explicit `specific gravity calculator` alias — building it again in physics would be a near
+    duplicate. Picked **angular-velocity-calculator** instead (ω = Δθ ÷ Δt), which ties the
+    drivetrain theme together (shares the new `angularVelocity` dimension with horsepower and
+    RPM-to-speed) without repeating either of their formulas (v = rω and P = τω respectively).
+  - Confirmed `horsepower-calculator` is not a duplicate of `power-converter` or
+    `horsepower-to-kilowatts-converter` (both straight W↔hp unit conversions, no torque/RPM
+    input) — framed around P = τω instead, a genuine formula, not a relabeled conversion.
 - [ ] Physics runs 9+ (as many 5-calculator runs as needed to close the gap toward ~61 total — no
   seed list left at this point; build agent picks standard-physics formulas not yet covered,
   e.g. angular momentum, moment of inertia (simple shapes), rotational kinetic energy, electric

@@ -6121,5 +6121,115 @@ export const chemistryCalculators: CalculatorConfig[] = [
       const reactantsSum = values.coeffReactant1 * values.dHfReactant1 + values.coeffReactant2 * values.dHfReactant2;
       return { enthalpyRxn: productsSum - reactantsSum, productsSum, reactantsSum };
     }
+  },
+  {
+    id: 'conservation-of-mass-calculator',
+    category: 'chemistry',
+    group: 'Reaction Stoichiometry & Yield',
+    glyph: 'Σm',
+    updatedAt: '2026-11-16',
+    aliases: ['law of conservation of mass calculator', 'mass balance calculator', 'conservation of mass calculator', 'reactant and product mass calculator'],
+    related: ['stoichiometry-calculator', 'limiting-reagent-calculator', 'molar-mass-calculator', 'percent-yield-calculator'],
+    title: 'Law of Conservation of Mass Calculator',
+    description: 'Confirm or solve for a missing mass in a chemical reaction using the law of conservation of mass — total reactant mass always equals total product mass.',
+    example: 'Burning 48.61 g of magnesium in 31.998 g of oxygen gas (2Mg + O₂ → 2MgO) produces exactly 80.608 g of magnesium oxide — not a gram more or less.',
+    solver: {
+      defaultTarget: 'productMass2',
+      variables: [
+        { id: 'reactantMass1', label: 'Reactant 1 mass', symbol: 'mᵣ₁', dimension: 'mass', defaultValue: 48.61, defaultUnit: 'g' },
+        { id: 'reactantMass2', label: 'Reactant 2 mass', symbol: 'mᵣ₂', dimension: 'mass', defaultValue: 31.998, defaultUnit: 'g' },
+        { id: 'productMass1', label: 'Product 1 mass', symbol: 'mₚ₁', dimension: 'mass', defaultValue: 80.608, defaultUnit: 'g' },
+        { id: 'productMass2', label: 'Product 2 mass', symbol: 'mₚ₂', dimension: 'mass', defaultValue: 0, defaultUnit: 'g' }
+      ],
+      solve: {
+        productMass2: ({ reactantMass1, reactantMass2, productMass1 }) => reactantMass1 + reactantMass2 - productMass1,
+        productMass1: ({ reactantMass1, reactantMass2, productMass2 }) => reactantMass1 + reactantMass2 - productMass2,
+        reactantMass1: ({ reactantMass2, productMass1, productMass2 }) => productMass1 + productMass2 - reactantMass2,
+        reactantMass2: ({ reactantMass1, productMass1, productMass2 }) => productMass1 + productMass2 - reactantMass1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is the law of conservation of mass?',
+        paragraphs: [
+          'The law of conservation of mass, established by Antoine Lavoisier’s careful combustion experiments in the 1770s, states that matter is neither created nor destroyed in an ordinary chemical reaction — atoms only rearrange into new combinations. Every atom present in the reactants is still present, unchanged in mass, somewhere among the products, so the total mass before the reaction exactly equals the total mass after it.',
+          'This is the physical reason a chemical equation must be balanced in the first place: balancing an equation is really just making sure the same number of each type of atom appears on both sides, which is exactly what guarantees the total mass matches on both sides too. This calculator applies the law directly, covering up to two reactants and two products — add up the reactant masses, add up the product masses, and the two totals must be equal.',
+          'Knowing this lets a missing mass be found without ever doing the full mole-based stoichiometry: if any three of the four masses in a simple reaction are known, the fourth follows immediately from simple addition and subtraction, no molar masses or balanced coefficients required.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter any three of the four masses (up to two reactants, up to two products); the fourth fills in automatically.',
+        steps: [
+          { name: 'Identify every reactant and product mass you know', text: 'Up to two reactants and two products — leave an unused slot at 0.' },
+          { name: 'Enter each known mass', text: 'In the same mass unit for all four, so the comparison is meaningful.' },
+          { name: 'Read the missing mass', text: 'It fills in automatically, so that total reactant mass exactly equals total product mass.' },
+          { name: 'Check the totals', text: 'The reactants’ sum and the products’ sum are shown so the conservation of mass is visible directly, not just assumed.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Total reactant mass always equals total product mass; rearranging isolates whichever single mass is unknown.',
+        expression: 'mᵣ₁ + mᵣ₂ = mₚ₁ + mₚ₂\nmₚ₂ = mᵣ₁ + mᵣ₂ − mₚ₁\nmᵣ₁ = mₚ₁ + mₚ₂ − mᵣ₂',
+        terms: [
+          { symbol: 'mᵣ₁, mᵣ₂', meaning: 'The mass of reactant 1 and reactant 2 (leave the second at 0 for a single-reactant reaction).' },
+          { symbol: 'mₚ₁, mₚ₂', meaning: 'The mass of product 1 and product 2 (leave the second at 0 for a single-product reaction).' }
+        ],
+        note: 'This covers up to two reactants and two products — the common case for most general-chemistry conservation-of-mass problems. A reaction with more substances still conserves mass the same way; it simply needs more terms added to each side.'
+      },
+      workedExample: {
+        intro: 'Burning magnesium ribbon in air, 2Mg(s) + O₂(g) → 2MgO(s): 2 mol of magnesium (48.61 g, using magnesium’s 24.305 g/mol standard atomic weight) reacts with exactly 1 mol of oxygen gas (31.998 g, using oxygen’s 15.999 g/mol). How much magnesium oxide forms?',
+        rows: [
+          { label: 'Reactant: magnesium, 2 × 24.305 g/mol', value: '48.61 g' },
+          { label: 'Reactant: oxygen gas, 2 × 15.999 g/mol', value: '31.998 g' },
+          { label: 'Total reactant mass', value: '48.61 + 31.998 = 80.608 g' },
+          { label: 'Product: magnesium oxide (by conservation of mass)', value: '80.608 g' }
+        ],
+        result: '80.608 g of magnesium oxide forms',
+        explanation: 'Checking this independently from the product side: 2 mol of MgO has a molar mass of 2 × (24.305 + 15.999) = 2 × 40.304 = 80.608 g/mol-equivalent — exactly matching the reactants’ combined mass, confirming the law directly rather than just assuming it.'
+      },
+      watchOut: [
+        {
+          title: 'This applies to ordinary chemical reactions, not nuclear reactions',
+          body: 'In a nuclear reaction, a tiny but measurable amount of mass converts directly to energy (E = mc², covered by this site’s mass-energy equivalence calculator) — the law of conservation of mass as stated here is specific to chemical reactions, where no nucleus changes identity.'
+        },
+        {
+          title: 'An "open" reaction can look like it loses or gains mass',
+          body: 'A reaction that releases a gas into open air (fizzing, burning) can appear to lose mass on a kitchen scale, and one that reacts with oxygen from the air can appear to gain it — the law of conservation of mass still holds exactly, it is just that one reactant or product (often a gas) was not weighed.'
+        },
+        {
+          title: 'Mass balance alone does not confirm a correct reaction',
+          body: 'Any three masses that happen to add up correctly will satisfy this calculator, even for an impossible or unbalanced reaction. This tool checks the one quantity (total mass) that conservation of mass guarantees — it does not check that the chemistry or the balanced equation itself is actually correct.'
+        },
+        {
+          title: 'All masses must use the same unit',
+          body: 'Because this calculator adds raw masses directly rather than converting through moles, mixing grams with kilograms (or any other inconsistent units) across the four fields will silently produce a wrong total.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §1.2 "Phases and Classification of Matter" (the law of conservation of matter and Lavoisier’s combustion experiments)', url: 'https://openstax.org/books/chemistry-2e/pages/1-2-phases-and-classification-of-matter' },
+        { label: 'CIAAW (IUPAC Commission on Isotopic Abundances and Atomic Weights), Standard Atomic Weights (magnesium and oxygen, used in the worked example)', url: 'https://ciaaw.org/atomic-weights.htm' }
+      ]
+    },
+    inputs: [
+      { id: 'reactantMass1', label: 'Reactant 1 mass (kg)', type: 'number', placeholder: '0.04861', defaultValue: 0.04861, step: 0.00001, min: 0 },
+      { id: 'reactantMass2', label: 'Reactant 2 mass (kg)', type: 'number', placeholder: '0.031998', defaultValue: 0.031998, step: 0.00001, min: 0 },
+      { id: 'productMass1', label: 'Product 1 mass (kg)', type: 'number', placeholder: '0.080608', defaultValue: 0.080608, step: 0.00001, min: 0 }
+    ],
+    seo: {
+      title: 'Law of Conservation of Mass Calculator',
+      description: 'Free conservation of mass calculator. Solve for a missing reactant or product mass — total reactant mass always equals total product mass.',
+      faq: [
+        { question: 'What is the law of conservation of mass?', answer: 'In an ordinary chemical reaction, matter is neither created nor destroyed — the total mass of the reactants exactly equals the total mass of the products, since atoms only rearrange rather than disappearing.' },
+        { question: 'How do I find a missing mass using conservation of mass?', answer: 'Add up every known reactant and product mass, then solve mᵣ₁ + mᵣ₂ = mₚ₁ + mₚ₂ for whichever single mass is unknown — it is just addition and subtraction, no molar masses required.' },
+        { question: 'How much magnesium oxide forms from burning 48.61 g of magnesium in 31.998 g of oxygen?', answer: '80.608 g — exactly the sum of the two reactant masses, since mass is conserved.' },
+        { question: 'Why does a burning reaction sometimes seem to lose mass?', answer: 'Usually because a gas escaping into the air was not weighed, not because the law of conservation of mass has an exception — if every reactant and product were captured and weighed, the totals would still match exactly.' },
+        { question: 'Who discovered the law of conservation of mass?', answer: 'Antoine Lavoisier, through careful combustion experiments in the 1770s where he weighed every reactant and product, including gases, rather than just the solids visible to the eye.' },
+        { question: 'Does this law apply to nuclear reactions too?', answer: 'No — in a nuclear reaction, a measurable amount of mass converts directly to energy. The law as used here is specific to ordinary chemical reactions, where no atomic nucleus changes identity.' }
+      ]
+    },
+    compute(values) {
+      return { productMass2: values.reactantMass1 + values.reactantMass2 - values.productMass1 };
+    }
   }
 ];

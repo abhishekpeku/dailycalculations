@@ -2441,6 +2441,41 @@ exports[`compute() snapshots > confidence-interval-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > conservation-of-mass-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "reactantMass1": 0.04861,
+      "reactantMass2": 0.031998,
+      "productMass1": 0.080608
+    },
+    "outputs": {
+      "productMass2": 0
+    }
+  },
+  "typical": {
+    "inputs": {
+      "reactantMass1": 0.07292,
+      "reactantMass2": 0.048,
+      "productMass1": 0.12091
+    },
+    "outputs": {
+      "productMass2": 0.00001
+    }
+  },
+  "edge": {
+    "inputs": {
+      "reactantMass1": 0,
+      "reactantMass2": 0,
+      "productMass1": 0
+    },
+    "outputs": {
+      "productMass2": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > correlation-calculator 1`] = `
 {
   "default": {

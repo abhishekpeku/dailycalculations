@@ -4450,5 +4450,561 @@ export const physicsCalculators: CalculatorConfig[] = [
     compute(values) {
       return { period: 2 * Math.PI * Math.sqrt(values.length / values.gravity) };
     }
+  },
+  {
+    id: 'horsepower-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'hp',
+    updatedAt: '2026-11-16',
+    aliases: ['horsepower from torque and rpm calculator', 'torque to horsepower calculator', 'engine horsepower calculator', 'torque rpm horsepower calculator', 'dyno horsepower calculator'],
+    related: ['torque-calculator', 'power-calculator', 'power-converter', 'rpm-to-speed-calculator'],
+    title: 'Horsepower Calculator (P = τω)',
+    description: 'Find horsepower from torque and RPM — P = τ × ω — the way a dyno sheet actually reports engine power, or solve backward for torque or RPM.',
+    example: 'An engine making 300 lb-ft of torque at 4,000 RPM produces about 228.5 horsepower (170.4 kW).',
+    solver: {
+      defaultTarget: 'power',
+      variables: [
+        { id: 'power', label: 'Power', symbol: 'P', dimension: 'power', defaultValue: 228.4795, defaultUnit: 'hp' },
+        { id: 'torque', label: 'Torque', symbol: 'τ', dimension: 'torque', defaultValue: 300, defaultUnit: 'lbfft' },
+        { id: 'rpm', label: 'Rotational speed', symbol: 'ω', dimension: 'angularVelocity', defaultValue: 4000, defaultUnit: 'rpm' }
+      ],
+      solve: {
+        power: ({ torque, rpm }) => torque * rpm,
+        torque: ({ power, rpm }) => (rpm === 0 ? NaN : power / rpm),
+        rpm: ({ power, torque }) => (torque === 0 ? NaN : power / torque)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is horsepower, calculated from torque and RPM?',
+        paragraphs: [
+          "An engine, motor or any other rotating machine delivers power by twisting a shaft: it applies some amount of torque while that shaft spins at some rotational speed. Power is the product of the two — P = τ × ω — which is exactly how a dynamometer arrives at the horsepower figure on an engine's spec sheet: it measures torque directly at a range of engine speeds and multiplies by the rotation rate at each point, rather than measuring power on its own.",
+          'This is a genuinely different calculation from simply converting an existing power figure from one unit to another (watts to horsepower, say). If a number is already in kilowatts or BTU/h and the only thing needed is the same power re-expressed in horsepower, the power converter on this site handles that unit conversion directly. This page is for the opposite, more common engineering question: given a torque reading and an engine speed, what power does that combination actually represent?',
+          'Mechanical horsepower itself, 550 foot-pounds-force per second (exactly 745.69987158227 W), traces back to James Watt\'s 18th-century comparison of a steam engine to a draft horse. The formula below produces the same watts regardless of which horsepower-like unit the result is finally displayed in.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of power, torque, and rotational speed; the third fills in automatically, so the same page answers "how much power", "how much torque" and "what RPM" questions.',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit from the menu beside it — torque in N·m or lbf·ft, rotational speed in RPM, rad/s or deg/s. The third field, marked auto, fills in as you type.' },
+          { name: 'Switch which one is calculated', text: 'To solve for a different quantity, type into the auto field. It becomes an input, and the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 300 lbf·ft becomes about 406.75 N·m instead of silently turning into 300 N·m.' },
+          { name: 'Read the result', text: 'Power appears in your chosen unit — watts, kilowatts or horsepower — with the other common units shown underneath.' },
+          { name: 'Share or copy', text: 'Share result copies a link that reopens the calculator with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Power is torque times angular velocity; angular velocity itself comes from RPM through a fixed conversion factor, so the formula rearranges three ways.',
+        expression: 'P = τ × ω\nω = RPM × 2π ÷ 60\nτ = P ÷ ω\nRPM = (P ÷ τ) × 60 ÷ 2π',
+        terms: [
+          { symbol: 'P', meaning: 'Power, in watts (W). The calculator also displays kilowatts and horsepower.' },
+          { symbol: 'τ', meaning: 'Torque, in newton-meters (N·m) or pound-feet (lbf·ft) — the Greek letter tau.' },
+          { symbol: 'ω', meaning: 'Angular velocity, in radians per second (rad/s). RPM (revolutions per minute) converts to rad/s by multiplying by 2π ÷ 60 ≈ 0.10472 (OpenStax University Physics Volume 1 §10.1, confirmed against its own Example 10.2: 250 rev/min = 26.2 rad/s).' },
+          { symbol: '5252', meaning: 'A well-known automotive shortcut: hp = (lbf·ft × RPM) ÷ 5252.113, exact from 33,000 ft·lbf/min ÷ 2π rad/rev — the reason a torque curve in lbf·ft and a horsepower curve numerically cross on a dyno chart at exactly 5,252 RPM.' }
+        ],
+        note: 'Every input is converted to SI units (N·m, rad/s, W) before solving and converted back afterward, so mixing lbf·ft with RPM, or N·m with rad/s, cannot produce a wrong result.'
+      },
+      workedExample: {
+        intro: 'An engine on a dynamometer produces 300 lb-ft of torque at 4,000 RPM. How much power is that?',
+        rows: [
+          { label: 'Torque (τ)', value: '300 lbf·ft = 406.75 N·m' },
+          { label: 'Rotational speed', value: '4,000 RPM = 418.88 rad/s' },
+          { label: 'Power (P = τ × ω)', value: '406.75 × 418.88 ≈ 170,377 W' }
+        ],
+        result: 'P ≈ 170.4 kW ≈ 228.5 hp',
+        explanation: 'Converting 4,000 RPM to rad/s (×2π÷60) gives 418.88 rad/s; multiplying by the torque in N·m gives 170,377 W, which is 170.38 kW or about 228.48 hp. The automotive shortcut gives the same answer directly in horsepower: 300 × 4,000 ÷ 5,252.113 ≈ 228.48 hp — using the commonly rounded constant 5,252 instead gives 228.48 hp too, about 0.002% different, not enough to matter at any normal number of significant figures.'
+      },
+      watchOut: [
+        {
+          title: 'This is a formula, not the power converter\'s unit conversion',
+          body: 'If a power figure is already known in one unit and the only thing needed is the same number in horsepower or kilowatts, use the power converter instead. This calculator exists specifically for the case where only torque and rotational speed are known, and power has not been measured directly.'
+        },
+        {
+          title: 'The 5,252 RPM "crossover point" is a unit artifact, not a physical event',
+          body: 'On a dyno chart plotting lbf·ft and horsepower on the same axis, the two curves always cross at 5,252 RPM, because at that exact speed the conversion factor from lbf·ft to hp equals 1. Nothing physically special happens to the engine there — it is purely a consequence of mixing lbf·ft and horsepower on one chart.'
+        },
+        {
+          title: 'This is power at one instant, not the engine\'s peak rating',
+          body: 'An engine\'s torque and horsepower both vary across its RPM range. A single torque-and-RPM pair gives the power at that one operating point; the number printed on a spec sheet ("300 hp") is usually the highest value across the whole curve, not the value at idle or at redline.'
+        },
+        {
+          title: 'This is the power delivered by the shaft, not what reaches the wheels',
+          body: 'Gearbox, driveline and tire losses mean the power actually delivered to the road is less than the power this formula gives at the engine\'s output shaft — see the efficiency calculator for how to apply a drivetrain loss percentage to this figure.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §10.8 Work and Power for Rotational Motion', url: 'https://openstax.org/books/university-physics-volume-1/pages/10-8-work-and-power-for-rotational-motion' },
+        { label: 'OpenStax, University Physics Volume 1, §10.1 Rotational Variables', url: 'https://openstax.org/books/university-physics-volume-1/pages/10-1-rotational-variables' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'torque', label: 'Torque (N·m)', type: 'number', placeholder: '406.75', defaultValue: 406.7454310743, step: 0.1, min: 0 },
+      { id: 'rpm', label: 'Rotational speed (rad/s)', type: 'number', placeholder: '418.88', defaultValue: 4000 * ((2 * Math.PI) / 60), step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Horsepower Calculator (P = τω) – Torque to HP',
+      description: 'Free horsepower calculator. Find horsepower from torque and RPM (P = τω), or solve for torque or RPM, in hp, kW or N·m, with a worked example.',
+      faq: [
+        { question: 'How do I calculate horsepower from torque and RPM?', answer: 'Multiply torque by angular velocity: P = τ × ω, where ω = RPM × 2π ÷ 60. A 300 lbf·ft (406.75 N·m) torque at 4,000 RPM (418.88 rad/s) gives P ≈ 170,377 W, which is about 228.5 hp.' },
+        { question: 'Is this the same as the power converter?', answer: 'No. The power converter re-expresses an already-known power figure in a different unit (watts to horsepower). This calculator computes power from torque and rotational speed, a different formula entirely — it also solves backward for torque or RPM.' },
+        { question: 'Why does a dyno chart show torque and horsepower crossing at 5,252 RPM?', answer: 'Because hp = (lbf·ft × RPM) ÷ 5,252.113, exact from 33,000 ft·lbf/min ÷ 2π. At exactly 5,252 RPM, that conversion factor equals 1, so the torque number in lbf·ft and the horsepower number become numerically equal — a unit artifact of plotting both on the same axis, not a physical event in the engine.' },
+        { question: 'How many kilowatts is 300 lb-ft of torque at 4,000 RPM?', answer: 'About 170.4 kW (228.5 hp). Convert the torque to N·m (406.75), the speed to rad/s (418.88), and multiply: 406.75 × 418.88 ≈ 170,377 W.' },
+        { question: 'Does horsepower go up with RPM even if torque stays flat?', answer: 'Yes. Since P = τ × ω, power rises in direct proportion to RPM whenever torque is unchanged — doubling the RPM at the same torque exactly doubles the power.' },
+        { question: 'What is the SI formula behind this calculator?', answer: 'P = τω, with torque in newton-meters, angular velocity in radians per second, and power in watts (OpenStax University Physics Volume 1 §10.8). RPM-based and lbf·ft-based figures are converted to this SI form before solving.' }
+      ]
+    },
+    compute(values) {
+      return { power: values.torque * values.rpm };
+    }
+  },
+  {
+    id: 'rpm-to-speed-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'v=rω',
+    updatedAt: '2026-11-16',
+    aliases: ['wheel rpm to speed calculator', 'rpm to mph calculator', 'rotational speed to linear speed calculator', 'wheel speed calculator', 'tire rpm to speed calculator'],
+    related: ['angular-velocity-calculator', 'speed-distance-time-calculator', 'gear-ratio-calculator', 'speed-converter'],
+    title: 'RPM to Speed Calculator (v = rω)',
+    description: 'Convert a wheel\'s rotational speed (RPM) to its linear travel speed, given the wheel\'s diameter — v = ω × r — or solve backward for RPM or diameter.',
+    example: 'A 0.65 m wheel spinning at 800 RPM is moving at about 27.23 m/s — 98.02 km/h, or 60.91 mph.',
+    solver: {
+      defaultTarget: 'speed',
+      variables: [
+        { id: 'speed', label: 'Linear speed', symbol: 'v', dimension: 'speed', defaultValue: 98.0177, defaultUnit: 'km/h' },
+        { id: 'diameter', label: 'Wheel diameter', symbol: 'D', dimension: 'length', defaultValue: 0.65, defaultUnit: 'm' },
+        { id: 'rpm', label: 'Rotational speed', symbol: 'ω', dimension: 'angularVelocity', defaultValue: 800, defaultUnit: 'rpm' }
+      ],
+      solve: {
+        speed: ({ diameter, rpm }) => rpm * (diameter / 2),
+        diameter: ({ speed, rpm }) => (rpm === 0 ? NaN : (speed / rpm) * 2),
+        rpm: ({ speed, diameter }) => (diameter === 0 ? NaN : speed / (diameter / 2))
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is the relationship between RPM and linear speed?',
+        paragraphs: [
+          "A wheel, tire or pulley rotating at some number of revolutions per minute is also moving forward (or feeding material, or spinning a belt) at a linear speed that depends on how big the wheel is. The same rotational speed produces a much higher linear speed on a large wheel than on a small one, because every point on the rim of a bigger wheel has farther to travel to complete one full turn.",
+          'The link between the two is the tangential-velocity formula from rotational kinematics, v = rω (OpenStax University Physics Volume 1 §10.3): linear speed equals the radius times the angular velocity. Converting a rotational speed given in RPM first requires turning it into radians per second (multiplying by 2π ÷ 60), which this calculator does automatically.',
+          "This is exactly the calculation behind a car's speedometer (which infers road speed from wheel RPM and tire size), a conveyor belt's feed rate, or a bicycle's speed from its wheel and cadence — any situation where something known to be spinning at a certain rate needs to be translated into how fast it is actually traveling."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of linear speed, wheel diameter, and rotational speed; the third fills in automatically.',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit — diameter in meters, feet or inches, rotational speed in RPM, rad/s or deg/s. The third field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'To solve for a different quantity, type into the auto field. It becomes an input, and the field left alone longest becomes the new calculated one.' },
+          { name: 'Use the wheel\'s outer diameter', text: 'Measure across the full rolling diameter (including tire tread, if any) — not the radius, and not the rim diameter alone.' },
+          { name: 'Read the result', text: 'Linear speed appears in your chosen unit — m/s, km/h or mph — with the other common units shown underneath.' },
+          { name: 'Share or copy', text: 'Share result copies a link that reopens the calculator with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Linear speed is radius times angular velocity; angular velocity itself comes from RPM through a fixed conversion factor.',
+        expression: 'v = r × ω\nω = RPM × 2π ÷ 60\nr = D ÷ 2\nv = (D ÷ 2) × RPM × 2π ÷ 60 = π × D × (RPM ÷ 60)',
+        terms: [
+          { symbol: 'v', meaning: 'Linear (tangential) speed of a point on the wheel\'s rim, in m/s, km/h or mph.' },
+          { symbol: 'r, D', meaning: 'Radius and diameter of the wheel, D = 2r, in meters, feet or inches.' },
+          { symbol: 'ω', meaning: 'Angular velocity, in radians per second — RPM converts to rad/s by multiplying by 2π ÷ 60.' },
+          { symbol: 'π × D', meaning: 'The wheel\'s circumference: the distance the rim travels in one full revolution. Multiplying by revolutions per second (RPM ÷ 60) gives the same answer as v = rω, just written as "circumference × rotation rate" instead.' }
+        ],
+        note: 'Every input is converted to SI units (m, rad/s, m/s) before solving and converted back afterward, so mixing a diameter in inches with a speed in RPM-derived mph cannot produce a wrong result. This assumes the wheel rolls without slipping; a spinning or skidding wheel\'s rim speed and the vehicle\'s actual travel speed are not the same thing.'
+      },
+      workedExample: {
+        intro: 'A wheel 0.65 m in diameter (about 25.6 inches, a typical passenger-car tire) spins at 800 RPM. How fast is the vehicle moving?',
+        rows: [
+          { label: 'Diameter (D)', value: '0.65 m, so radius r = 0.325 m' },
+          { label: 'Rotational speed', value: '800 RPM = 83.78 rad/s' },
+          { label: 'Linear speed (v = r × ω)', value: '0.325 × 83.78 ≈ 27.23 m/s' }
+        ],
+        result: 'v ≈ 27.23 m/s · 98.02 km/h · 60.91 mph',
+        explanation: '800 RPM converts to 83.78 rad/s (×2π÷60). Multiplying by the 0.325 m radius gives 27.23 m/s, which is 27.23 × 3.6 = 98.02 km/h, or about 60.91 mph. The same answer comes from treating it as circumference times rotation rate: π × 0.65 m × (800 ÷ 60 rev/s) ≈ 27.23 m/s.'
+      },
+      watchOut: [
+        {
+          title: 'Use the rolling (outer) diameter, not the rim diameter',
+          body: 'A tire\'s actual rolling diameter is larger than the bare wheel rim it is mounted on. Using the rim size instead of the full tire-and-rim diameter understates the true linear speed for any given RPM.'
+        },
+        {
+          title: 'This assumes rolling without slipping',
+          body: 'The formula gives the speed of a point on the rim relative to the wheel\'s axle, which only equals the vehicle\'s travel speed if the wheel is rolling on the ground without skidding or spinning in place. Wheelspin or wheel lock-up breaks that link.'
+        },
+        {
+          title: 'RPM here means the wheel\'s own RPM, not the engine\'s',
+          body: 'In a geared vehicle, the engine or motor spins much faster than the wheel. Use the gear ratio calculator first to convert an engine or motor RPM down to the actual wheel RPM before using this page.'
+        },
+        {
+          title: 'Bigger wheels travel faster at the same RPM',
+          body: 'Fitting a larger-diameter wheel or tire without changing anything else increases the linear speed for the same rotational speed — which is also why a speedometer calibrated for one tire size reads slightly wrong after a tire-size change.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §10.3 Relating Angular and Translational Quantities', url: 'https://openstax.org/books/university-physics-volume-1/pages/10-3-relating-angular-and-translational-quantities' },
+        { label: 'OpenStax, University Physics Volume 1, §10.1 Rotational Variables', url: 'https://openstax.org/books/university-physics-volume-1/pages/10-1-rotational-variables' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'diameter', label: 'Wheel diameter (m)', type: 'number', placeholder: '0.65', defaultValue: 0.65, step: 0.01, min: 0 },
+      { id: 'rpm', label: 'Rotational speed (rad/s)', type: 'number', placeholder: '83.78', defaultValue: 800 * ((2 * Math.PI) / 60), step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'RPM to Speed Calculator (v = rω) – Wheel RPM to mph',
+      description: 'Free RPM to speed calculator. Convert a wheel\'s RPM to linear speed given its diameter (v = rω), or solve for RPM or diameter, in m/s, km/h or mph.',
+      faq: [
+        { question: 'How do I convert RPM to linear speed?', answer: 'Multiply the wheel\'s radius by its angular velocity: v = r × ω, where ω = RPM × 2π ÷ 60. A 0.65 m wheel at 800 RPM gives ω ≈ 83.78 rad/s and v ≈ 27.23 m/s (about 98.02 km/h or 60.91 mph).' },
+        { question: 'What is the formula for converting RPM to mph?', answer: 'v = π × D × (RPM ÷ 60), with D the wheel\'s diameter. This gives speed in the same length unit as D per second; convert that to mph afterward (divide m/s by 0.44704, or let the calculator\'s unit menu do it).' },
+        { question: 'Does a bigger wheel go faster at the same RPM?', answer: 'Yes. Linear speed is proportional to the wheel\'s diameter for a fixed RPM, so a larger wheel covers more distance per revolution and therefore travels faster at the same rotational speed.' },
+        { question: 'Is this the wheel\'s RPM or the engine\'s RPM?', answer: 'This calculator uses the wheel\'s own RPM. If only the engine or motor RPM is known, first divide it by the overall gear ratio (the gear ratio calculator) to get the wheel\'s actual RPM.' },
+        { question: 'Does this work for a skidding or spinning wheel?', answer: 'No. The formula assumes the wheel is rolling on the surface without slipping. A wheel that is skidding or spinning in place has a rim speed that no longer matches the vehicle\'s actual travel speed.' },
+        { question: 'How do I find the RPM needed for a target speed?', answer: 'Rearrange the formula to RPM = v ÷ (π × D) × 60. For a target speed of 27.23 m/s on a 0.65 m wheel: 27.23 ÷ (π × 0.65) × 60 ≈ 800 RPM.' }
+      ]
+    },
+    compute(values) {
+      return { speed: values.rpm * (values.diameter / 2) };
+    }
+  },
+  {
+    id: 'gear-ratio-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'GR',
+    updatedAt: '2026-11-16',
+    aliases: ['gear ratio formula calculator', 'driven to drive gear ratio calculator', 'output rpm calculator', 'gear teeth ratio calculator', 'transmission gear ratio calculator'],
+    related: ['rpm-to-speed-calculator', 'torque-calculator', 'horsepower-calculator', 'angular-velocity-calculator'],
+    title: 'Gear Ratio Calculator',
+    description: 'Calculate gear ratio from the driven and drive gears\' tooth counts, and the output RPM that ratio produces from a given input RPM.',
+    example: 'A 41-tooth driven gear turned by a 12-tooth drive gear has a 3.417:1 ratio; feeding in 3,000 RPM gives an output speed of about 878 RPM.',
+    solver: {
+      defaultTarget: 'gearRatio',
+      variables: [
+        { id: 'gearRatio', label: 'Gear ratio', symbol: 'GR', dimension: 'count', defaultValue: 3.416667, defaultUnit: 'count' },
+        { id: 'driveTeeth', label: 'Drive (input) gear teeth', symbol: 'N₁', dimension: 'count', defaultValue: 12, defaultUnit: 'count' },
+        { id: 'drivenTeeth', label: 'Driven (output) gear teeth', symbol: 'N₂', dimension: 'count', defaultValue: 41, defaultUnit: 'count' },
+        { id: 'inputRpm', label: 'Input rotational speed', symbol: 'ωᵢₙ', dimension: 'angularVelocity', defaultValue: 3000, defaultUnit: 'rpm', fixed: true }
+      ],
+      solve: {
+        gearRatio: ({ driveTeeth, drivenTeeth }) => (driveTeeth === 0 ? NaN : drivenTeeth / driveTeeth),
+        drivenTeeth: ({ gearRatio, driveTeeth }) => gearRatio * driveTeeth,
+        driveTeeth: ({ gearRatio, drivenTeeth }) => (gearRatio === 0 ? NaN : drivenTeeth / gearRatio)
+      },
+      outputs: [
+        { id: 'outputRpm', label: 'Output rotational speed', dimension: 'angularVelocity', unit: 'rpm', compute: (si) => (si.gearRatio === 0 ? NaN : si.inputRpm / si.gearRatio) }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is a gear ratio?',
+        paragraphs: [
+          'Two meshing gears always turn at speeds inversely proportional to their tooth counts: a small gear driving a large one slows the output down but multiplies its turning force, and a large gear driving a small one speeds the output up while reducing its turning force. The single number that captures this trade-off is the gear ratio — the driven gear\'s tooth count divided by the drive gear\'s — and it is the same number whether the two gears mesh directly, through a chain, or through a belt and matched pulleys.',
+          'A ratio above 1:1 (more teeth on the driven gear than the drive gear) is a reduction: the output turns slower than the input, which is the normal case for a car\'s final drive or a motor\'s gearbox, trading speed for torque. A ratio below 1:1 is an overdrive: the output spins faster than the input, trading torque for speed.',
+          'Gear trains with more than one pair of gears multiply each stage\'s ratio together for an overall ratio; this calculator covers a single gear pair, the building block every multi-stage gear train is made of.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of gear ratio, drive gear teeth, and driven gear teeth; the third fills in automatically. Separately, enter an input RPM to see the resulting output RPM.',
+        steps: [
+          { name: 'Count (or look up) each gear\'s teeth', text: 'The drive gear is the one receiving power (from an engine, motor or pedals); the driven gear is the one being turned by it.' },
+          { name: 'Enter two of the three ratio values', text: 'Type any two of gear ratio, drive teeth, and driven teeth. The third, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input instead; the field left alone longest becomes the new calculated one.' },
+          { name: 'Enter an input RPM', text: 'Type the drive gear\'s own rotational speed to see the output RPM the driven gear turns at, given the current ratio.' },
+          { name: 'Read the results', text: 'Gear ratio and output RPM both update immediately as any value changes.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The ratio comes straight from the tooth counts; output RPM then follows from dividing the input RPM by that ratio.',
+        expression: 'GR = N₂ ÷ N₁\nN₂ = GR × N₁\nN₁ = N₂ ÷ GR\nωₒᵤₜ = ωᵢₙ ÷ GR',
+        terms: [
+          { symbol: 'GR', meaning: 'Gear ratio, a dimensionless number: driven gear teeth divided by drive gear teeth.' },
+          { symbol: 'N₁', meaning: 'Number of teeth on the drive (input) gear — the one receiving power.' },
+          { symbol: 'N₂', meaning: 'Number of teeth on the driven (output) gear — the one being turned.' },
+          { symbol: 'ωᵢₙ, ωₒᵤₜ', meaning: 'Input and output rotational speed. A gear ratio above 1 reduces speed (and increases torque); below 1, it increases speed (and reduces torque).' }
+        ],
+        note: 'This treats the gears as an idealized, lossless pair with no slipping (true for meshing gear teeth; a belt-and-pulley drive can lose a small amount to slip in practice). Torque scales by the same ratio in the opposite direction — see the torque calculator for the actual torque figures once a ratio is known.'
+      },
+      workedExample: {
+        intro: 'A vehicle\'s differential has a 12-tooth drive pinion turning a 41-tooth ring gear — a common rear-axle setup. With the driveshaft spinning at 3,000 RPM, how fast does the axle turn?',
+        rows: [
+          { label: 'Drive gear teeth (N₁)', value: '12' },
+          { label: 'Driven gear teeth (N₂)', value: '41' },
+          { label: 'Gear ratio (GR = 41 ÷ 12)', value: '3.417 : 1' },
+          { label: 'Input speed', value: '3,000 RPM' },
+          { label: 'Output speed (ωₒᵤₜ = 3,000 ÷ 3.417)', value: '≈ 878.05 RPM' }
+        ],
+        result: 'GR ≈ 3.417 : 1 · output ≈ 878.05 RPM',
+        explanation: '41 divided by 12 is 3.41667, so this is a "3.42" rear end in the shorthand printed on a parts catalog. Dividing the 3,000 RPM input by that ratio gives an output speed of about 878.05 RPM — the axle turns noticeably slower than the driveshaft, trading that speed for roughly 3.417 times the torque at the axle.'
+      },
+      watchOut: [
+        {
+          title: 'A bigger ratio number means a slower (and stronger) output, not a faster one',
+          body: 'It is easy to assume "ratio" scales things up, but a gear ratio above 1:1 always reduces output speed — the number describes how much slower the output turns, trading speed for torque. Check whether a stated ratio means reduction or overdrive before assuming which direction it goes.'
+        },
+        {
+          title: 'This is one gear pair, not a full multi-speed gearbox',
+          body: 'A car transmission or bicycle drivetrain combines several gear pairs (and often a separate final-drive ratio). The overall ratio for a multi-stage system is each stage\'s ratio multiplied together, not this single pair alone.'
+        },
+        {
+          title: 'Torque scales in the opposite direction from speed',
+          body: 'An idealized gear pair conserves power, so whatever factor reduces speed increases torque by the same factor (and vice versa) — a 3.417:1 reduction roughly multiplies torque by 3.417 at the same time it divides speed by 3.417, minus whatever small amount is lost to friction in a real gearset.'
+        },
+        {
+          title: 'Which gear counts as "drive" and which as "driven" depends on the direction of power flow',
+          body: 'In a car coasting downhill with the engine braking, power can momentarily flow from the wheels back toward the engine — but the ratio itself is still defined by which gear is physically receiving power from the engine under normal driving, not by which way torque happens to be flowing at a given instant.'
+        }
+      ],
+      references: [
+        { label: 'UC San Diego, MAE 3 Machine Design — Gear Ratios', url: 'https://mae3.eng.ucsd.edu/machine-design/gear-ratios' },
+        { label: 'OpenStax, University Physics Volume 1, §10.3 Relating Angular and Translational Quantities', url: 'https://openstax.org/books/university-physics-volume-1/pages/10-3-relating-angular-and-translational-quantities' }
+      ]
+    },
+    inputs: [
+      { id: 'driveTeeth', label: 'Drive gear teeth', type: 'number', placeholder: '12', defaultValue: 12, step: 1, min: 0 },
+      { id: 'drivenTeeth', label: 'Driven gear teeth', type: 'number', placeholder: '41', defaultValue: 41, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Gear Ratio Calculator – Teeth Ratio & Output RPM',
+      description: 'Free gear ratio calculator. Find gear ratio from drive and driven gear teeth, or solve for teeth count, plus the output RPM for a given input RPM.',
+      faq: [
+        { question: 'How do I calculate gear ratio?', answer: 'Divide the driven gear\'s tooth count by the drive gear\'s: GR = N₂ ÷ N₁. A 41-tooth driven gear turned by a 12-tooth drive gear gives GR = 41 ÷ 12 ≈ 3.417:1.' },
+        { question: 'How do I find output RPM from a gear ratio?', answer: 'Divide the input RPM by the gear ratio: output RPM = input RPM ÷ GR. At 3,000 input RPM and a 3.417:1 ratio, output RPM ≈ 3,000 ÷ 3.417 ≈ 878.05 RPM.' },
+        { question: 'Does a higher gear ratio mean a faster or slower output?', answer: 'Slower. A gear ratio above 1:1 is a reduction — the driven gear turns slower than the drive gear, in exchange for more torque. A ratio below 1:1 is an overdrive, where the output spins faster than the input.' },
+        { question: 'Which gear is the "drive" gear and which is "driven"?', answer: 'The drive gear is the one receiving power directly, from an engine, motor or pedals. The driven gear is the one being turned by it. Gear ratio is always driven teeth ÷ drive teeth.' },
+        { question: 'How does gear ratio affect torque?', answer: 'In the opposite direction from speed. An idealized gear pair conserves power, so a gear ratio that divides speed by some factor multiplies torque by roughly that same factor.' },
+        { question: 'How do I combine several gear stages into one overall ratio?', answer: 'Multiply each stage\'s individual ratio together. A two-stage gearbox with a 2:1 first stage and a 3:1 second stage has an overall ratio of 2 × 3 = 6:1.' }
+      ]
+    },
+    compute(values) {
+      return { gearRatio: values.drivenTeeth / values.driveTeeth };
+    }
+  },
+  {
+    id: 'efficiency-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'η',
+    updatedAt: '2026-11-16',
+    aliases: ['energy efficiency calculator', 'mechanical efficiency calculator', 'power output over input calculator', 'motor efficiency calculator', 'percent efficiency calculator'],
+    related: ['power-calculator', 'horsepower-calculator', 'gear-ratio-calculator', 'work-calculator'],
+    title: 'Efficiency Calculator (η = output ÷ input)',
+    description: 'Calculate mechanical or energy efficiency as useful output power divided by total input power, times 100% — or solve backward for output or input.',
+    example: 'A motor drawing 5.0 kW of electrical input power and delivering 4.5 kW of mechanical output power is 90% efficient, losing 0.5 kW.',
+    solver: {
+      defaultTarget: 'efficiency',
+      variables: [
+        { id: 'efficiency', label: 'Efficiency', symbol: 'η', dimension: 'percent', defaultValue: 90, defaultUnit: '%' },
+        { id: 'outputPower', label: 'Useful output power', symbol: 'Pₒᵤₜ', dimension: 'power', defaultValue: 4.5, defaultUnit: 'kW' },
+        { id: 'inputPower', label: 'Total input power', symbol: 'Pᵢₙ', dimension: 'power', defaultValue: 5, defaultUnit: 'kW' }
+      ],
+      solve: {
+        efficiency: ({ outputPower, inputPower }) => (inputPower === 0 ? NaN : (outputPower / inputPower) * 100),
+        outputPower: ({ efficiency, inputPower }) => inputPower * (efficiency / 100),
+        inputPower: ({ efficiency, outputPower }) => (efficiency === 0 ? NaN : outputPower / (efficiency / 100))
+      },
+      outputs: [
+        { id: 'powerLost', label: 'Power lost', dimension: 'power', compute: (si) => si.inputPower - si.outputPower }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is efficiency?',
+        paragraphs: [
+          'No real machine delivers as useful output everything it is fed as input — some energy is always lost along the way, usually to heat, friction, vibration or electrical resistance. Efficiency is the fraction that actually makes it through, defined simply as useful output divided by total input, expressed as a percentage: Eff = Wₒᵤₜ ÷ Eᵢₙ (OpenStax College Physics 2e §7.6). Because energy itself is always conserved, the output can never exceed the input — efficiency tops out at 100%, and anything below that represents energy that was converted into some less useful form rather than destroyed outright.',
+          'The same ratio applies whether "output" and "input" are measured as power, energy, or work, as long as both sides use the same units and the same unit of time — a motor\'s instantaneous power efficiency and its energy efficiency over an hour of running come out to the same percentage. OpenStax\'s own published figures (Table 7.2) give a sense of the range real devices span: an electric motor around 98% efficient, a gasoline car engine around 30%, and a coal-fired power plant around 42%.',
+          'Lower efficiency does not necessarily mean a device is poorly made — a gasoline engine is inherently limited by the thermodynamics of turning heat into mechanical work (the same limit behind the efficiency of any heat engine), while an electric motor faces no such ceiling and can approach 100% in principle.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of efficiency, output power, and input power; the third fills in automatically.',
+        steps: [
+          { name: 'Identify input and output consistently', text: 'Input is everything fed into the system (electrical power drawn, fuel\'s chemical power, etc.); output is only the useful part that comes back out as the kind of power actually wanted.' },
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input instead; the field left alone longest becomes the new calculated one.' },
+          { name: 'Read the result', text: 'Efficiency appears as a percentage, with the power lost to inefficiency shown underneath.' },
+          { name: 'Share or copy', text: 'Share result copies a link that reopens the calculator with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Efficiency is the output-to-input ratio, scaled to a percentage; the same equation rearranges to solve for either power if the efficiency is already known.',
+        expression: 'η = (Pₒᵤₜ ÷ Pᵢₙ) × 100%\nPₒᵤₜ = Pᵢₙ × (η ÷ 100)\nPᵢₙ = Pₒᵤₜ ÷ (η ÷ 100)',
+        terms: [
+          { symbol: 'η', meaning: 'Efficiency, as a percentage (the Greek letter eta). 100% would mean no losses at all; real machines are always below that.' },
+          { symbol: 'Pₒᵤₜ', meaning: 'Useful output power — only the portion actually doing the intended job, in watts, kW or hp.' },
+          { symbol: 'Pᵢₙ', meaning: 'Total input power supplied to the system, in the same kind of unit as the output.' }
+        ],
+        note: 'This is an estimate based on whatever output and input figures are entered; it cannot account for losses that were not included in either measurement. Power and energy both work in this formula as long as the same quantity and units are used on both sides.'
+      },
+      workedExample: {
+        intro: 'An electric motor draws 5.0 kW of electrical input power and delivers 4.5 kW of mechanical output power at its shaft. How efficient is it, and how much power is lost?',
+        rows: [
+          { label: 'Input power (Pᵢₙ)', value: '5.0 kW' },
+          { label: 'Output power (Pₒᵤₜ)', value: '4.5 kW' },
+          { label: 'Efficiency (η = 4.5 ÷ 5.0 × 100)', value: '90%' },
+          { label: 'Power lost (5.0 − 4.5)', value: '0.5 kW' }
+        ],
+        result: 'η = 90% · 0.5 kW lost',
+        explanation: '4.5 divided by 5.0 is 0.9, so the motor is 90% efficient — close to the roughly 98% OpenStax\'s own published figure gives for a well-built electric motor, with this example\'s lower number representing extra losses from bearing friction, winding resistance or a less efficient design. The remaining 0.5 kW does not vanish; it leaves the motor as waste heat.'
+      },
+      watchOut: [
+        {
+          title: 'Efficiency can never exceed 100%',
+          body: 'Because energy is conserved, output can never be more than input. A calculation coming out above 100% means the input and output were not measured consistently — most often, some real input (like friction losses already present before the measurement point) was left out.'
+        },
+        {
+          title: '"Output" means useful output, not just any output',
+          body: 'A machine can produce plenty of energy in a form nobody wants — mostly heat, in most real devices — and that waste output does not count toward the efficiency figure, even though it is real energy leaving the system.'
+        },
+        {
+          title: 'Input and output must be measured in the same kind of unit',
+          body: 'Comparing an electrical input in kilowatt-hours against a mechanical output in joules, without converting one to match the other first, produces a meaningless number even though the arithmetic itself runs without error.'
+        },
+        {
+          title: 'A device\'s efficiency can change with how hard it is run',
+          body: 'Most real machines are most efficient only within some particular operating range (a certain load or speed) and lose efficiency at very light or very heavy loads — a single percentage figure describes one specific operating condition, not every condition that device will ever see.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, College Physics 2e, §7.6 Conservation of Energy', url: 'https://openstax.org/books/college-physics-2e/pages/7-6-conservation-of-energy' },
+        { label: 'OpenStax, College Physics 2e, §15.3 Heat Engines and Their Efficiency', url: 'https://openstax.org/books/college-physics-2e/pages/15-3-introduction-to-the-second-law-of-thermodynamics-heat-engines-and-their-efficiency' }
+      ]
+    },
+    inputs: [
+      { id: 'outputPower', label: 'Useful output power (W)', type: 'number', placeholder: '4500', defaultValue: 4500, step: 1, min: 0 },
+      { id: 'inputPower', label: 'Total input power (W)', type: 'number', placeholder: '5000', defaultValue: 5000, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Efficiency Calculator (η = output ÷ input)',
+      description: 'Free efficiency calculator. Find percent efficiency from output and input power, or solve for either one, with a worked motor example and power lost.',
+      faq: [
+        { question: 'How do I calculate efficiency?', answer: 'Divide useful output power by total input power and multiply by 100: η = (Pₒᵤₜ ÷ Pᵢₙ) × 100%. A motor with 4.5 kW output and 5.0 kW input is 90% efficient.' },
+        { question: 'Can efficiency be over 100%?', answer: 'No. Energy is always conserved, so output can never exceed input — a result above 100% means the input and output were not measured on a consistent, complete basis.' },
+        { question: 'How do I find input power from a known efficiency and output?', answer: 'Divide output by the efficiency (as a decimal): Pᵢₙ = Pₒᵤₜ ÷ (η ÷ 100). A device delivering 4.5 kW at 90% efficiency draws 4.5 ÷ 0.9 = 5.0 kW.' },
+        { question: 'What is a typical efficiency for an electric motor versus a gasoline engine?', answer: 'OpenStax\'s own published figures put a typical electric motor around 98% efficient and a gasoline car engine around 30%, reflecting the thermodynamic limits a heat engine faces that an electric motor does not.' },
+        { question: 'Does this work for energy as well as power?', answer: 'Yes. The same ratio applies to energy or work figures, as long as output and input are both measured in the same unit over the same time period.' },
+        { question: 'Where does the lost power or energy actually go?', answer: 'Almost always to heat, released through friction, electrical resistance, or air resistance, plus sometimes vibration or noise — it is not destroyed, just converted into a form the machine was not built to use.' }
+      ]
+    },
+    compute(values) {
+      return { efficiency: (values.outputPower / values.inputPower) * 100 };
+    }
+  },
+  {
+    id: 'angular-velocity-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'ω',
+    updatedAt: '2026-11-16',
+    aliases: ['angular speed calculator', 'omega calculator', 'rotational speed calculator', 'radians per second calculator', 'angular velocity formula calculator'],
+    related: ['rpm-to-speed-calculator', 'horsepower-calculator', 'gear-ratio-calculator', 'speed-distance-time-calculator'],
+    title: 'Angular Velocity Calculator (ω = Δθ ÷ Δt)',
+    description: 'Calculate angular velocity from the angle turned and the time it took — ω = Δθ ÷ Δt — in rad/s, RPM or deg/s, or solve backward for angle or time.',
+    example: 'A wheel that turns through 450° (1.25 revolutions) in 3 seconds has an angular velocity of about 2.618 rad/s — 25 RPM.',
+    solver: {
+      defaultTarget: 'angularVelocity',
+      variables: [
+        { id: 'angularVelocity', label: 'Angular velocity', symbol: 'ω', dimension: 'angularVelocity', defaultValue: 25, defaultUnit: 'rpm' },
+        { id: 'angle', label: 'Angle turned', symbol: 'Δθ', dimension: 'angle', defaultValue: 450, defaultUnit: 'deg' },
+        { id: 'time', label: 'Time taken', symbol: 'Δt', dimension: 'time', defaultValue: 3, defaultUnit: 's' }
+      ],
+      solve: {
+        angularVelocity: ({ angle, time }) => (time === 0 ? NaN : angle / time),
+        angle: ({ angularVelocity, time }) => angularVelocity * time,
+        time: ({ angle, angularVelocity }) => (angularVelocity === 0 ? NaN : angle / angularVelocity)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is angular velocity?',
+        paragraphs: [
+          'Angular velocity measures how quickly something is rotating: the amount of angle it sweeps through per unit of time, the rotational counterpart of ordinary speed (distance per time). OpenStax University Physics Volume 1 §10.1 defines it exactly this way — average angular velocity ω = Δθ ÷ Δt — and reports it in radians per second, though revolutions per minute (RPM) and degrees per second describe the same rotation rate, just in different angle units.',
+          'Every point on a spinning rigid object — a wheel, a turntable, a planet — shares the same angular velocity even though points farther from the axis are physically moving faster in a straight-line sense (that linear speed is v = rω, a separate calculation once ω is known). Angular velocity alone describes the rotation itself, independent of how big the rotating object is.',
+          'Converting between RPM and rad/s is one fixed factor, 2π ÷ 60, confirmed directly against OpenStax\'s own Example 10.2 (250 rev/min = 26.2 rad/s) — this calculator\'s unit menu applies that factor automatically, so a value typed in any of rad/s, RPM, rev/s or deg/s converts correctly into the others.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of angular velocity, angle turned, and time taken; the third fills in automatically.',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit — angle in degrees or radians, time in seconds, minutes or hours. The third field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input instead; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so a result of 2.618 rad/s becomes 25 RPM instead of silently turning into 2.618 RPM.' },
+          { name: 'Read the result', text: 'Angular velocity appears in your chosen unit — rad/s, RPM, rev/s or deg/s — with the other common units shown underneath.' },
+          { name: 'Share or copy', text: 'Share result copies a link that reopens the calculator with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Angular velocity is angle divided by time; the formula rearranges two more ways for angle or time.',
+        expression: 'ω = Δθ ÷ Δt\nΔθ = ω × Δt\nΔt = Δθ ÷ ω',
+        terms: [
+          { symbol: 'ω', meaning: 'Angular velocity, in radians per second (rad/s), RPM, revolutions per second, or degrees per second — the Greek letter omega.' },
+          { symbol: 'Δθ', meaning: 'Angle swept through, in radians or degrees.' },
+          { symbol: 'Δt', meaning: 'Time taken to sweep through that angle, in seconds, minutes or hours.' }
+        ],
+        note: 'Every input is converted to SI units (rad, s, rad/s) before solving and converted back afterward, so entering the angle in degrees or the result in RPM works exactly as expected. This is the average angular velocity over the interval entered, exactly as speed-distance-time gives an average linear speed over its interval — not necessarily the instantaneous rate at any single moment, if the rotation is speeding up or slowing down.'
+      },
+      workedExample: {
+        intro: 'A wheel turns through 450° (1.25 full revolutions) in 3 seconds. What is its angular velocity?',
+        rows: [
+          { label: 'Angle turned (Δθ)', value: '450° = 7.854 rad' },
+          { label: 'Time taken (Δt)', value: '3 s' },
+          { label: 'Angular velocity (ω = 7.854 ÷ 3)', value: '2.618 rad/s' }
+        ],
+        result: 'ω ≈ 2.618 rad/s · 150°/s · 25 RPM',
+        explanation: '450° converts to 450 × π ÷ 180 ≈ 7.854 rad; dividing by 3 s gives 2.618 rad/s. Converting that to RPM (×60÷2π) gives exactly 25 RPM — a clean number because 450° is exactly 1.25 revolutions over 3 seconds, or 0.41667 revolutions per second, times 60 is 25 revolutions per minute.'
+      },
+      watchOut: [
+        {
+          title: 'Angular velocity alone does not give a linear speed',
+          body: 'Every point on a rotating object shares the same ω, but their actual straight-line speeds differ with distance from the axis (v = rω). Use the RPM-to-speed calculator once a radius or diameter is also known.'
+        },
+        {
+          title: 'This is an average over the interval entered',
+          body: 'Just like average linear speed from distance and time, this result is the total angle divided by the total time — it smooths out any speeding up or slowing down that happened within that interval, rather than giving the rotation rate at one exact instant.'
+        },
+        {
+          title: 'Degrees and radians must not be mixed before converting',
+          body: 'Dividing a degree value directly by a time in seconds does not give radians per second — a degree first has to be converted to radians (×π÷180) for the result to be in the standard SI angular velocity unit. This calculator\'s unit menu handles that conversion automatically.'
+        },
+        {
+          title: 'Direction is part of angular velocity, this calculator gives only magnitude',
+          body: 'Angular velocity is technically a vector pointing along the rotation axis (clockwise versus counterclockwise matters for combining rotations). This page works with the magnitude — the speed of rotation — the same simplification speed-distance-time makes for linear motion.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §10.1 Rotational Variables', url: 'https://openstax.org/books/university-physics-volume-1/pages/10-1-rotational-variables' },
+        { label: 'OpenStax, University Physics Volume 1, §10.3 Relating Angular and Translational Quantities', url: 'https://openstax.org/books/university-physics-volume-1/pages/10-3-relating-angular-and-translational-quantities' },
+        { label: 'BIPM, The International System of Units (SI Brochure)', url: 'https://www.bipm.org/en/publications/si-brochure' }
+      ]
+    },
+    inputs: [
+      { id: 'angle', label: 'Angle turned (rad)', type: 'number', placeholder: '7.854', defaultValue: (450 * Math.PI) / 180, step: 0.01, min: 0 },
+      { id: 'time', label: 'Time taken (s)', type: 'number', placeholder: '3', defaultValue: 3, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Angular Velocity Calculator (ω = Δθ/Δt)',
+      description: 'Free angular velocity calculator. Solve ω = Δθ ÷ Δt for angular velocity, angle, or time in rad/s, RPM or deg/s, with a worked example.',
+      faq: [
+        { question: 'How do I calculate angular velocity?', answer: 'Divide the angle turned by the time taken: ω = Δθ ÷ Δt. A wheel turning 450° (7.854 rad) in 3 seconds has ω = 7.854 ÷ 3 ≈ 2.618 rad/s, which is 25 RPM.' },
+        { question: 'How do I convert RPM to rad/s?', answer: 'Multiply by 2π ÷ 60 (about 0.10472). 25 RPM × 0.10472 ≈ 2.618 rad/s, matching OpenStax\'s own worked conversion of 250 rev/min to 26.2 rad/s at ten times this rate.' },
+        { question: 'What is the difference between angular velocity and linear (tangential) speed?', answer: 'Angular velocity (ω) is the same for every point on a rotating rigid object, in radians per second. Linear speed (v = rω) depends on how far that point is from the rotation axis — points farther out move faster in a straight-line sense even though ω is identical.' },
+        { question: 'What is the SI unit of angular velocity?', answer: 'Radians per second (rad/s). RPM (revolutions per minute) and degrees per second are common alternatives for the same physical quantity.' },
+        { question: 'How do I find the time needed to turn through a given angle at a known angular velocity?', answer: 'Rearrange to Δt = Δθ ÷ ω. Turning 450° (7.854 rad) at 2.618 rad/s takes 7.854 ÷ 2.618 = 3 seconds.' },
+        { question: 'Does angular velocity depend on the size of the rotating object?', answer: 'No. A small gear and a large gear mounted on the very same shaft share the same angular velocity — size only matters once converting to a linear speed at some specific radius.' }
+      ]
+    },
+    compute(values) {
+      return { angularVelocity: values.angle / values.time };
+    }
   }
 ];

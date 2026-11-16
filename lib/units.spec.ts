@@ -40,7 +40,7 @@ describe('unit tables', () => {
 
   test('covers the dimensions the v2 rollout needs', () => {
     assert.deepEqual([...dimensions].sort(), [
-      'absorbance', 'acceleration', 'amountOfSubstance', 'angle', 'area', 'capacitance', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
+      'absorbance', 'acceleration', 'amountOfSubstance', 'angle', 'angularVelocity', 'area', 'capacitance', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
       'decibel', 'density', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'length', 'mass', 'massConcentration', 'molalConstant', 'molality', 'molarAbsorptivity', 'molarEnergy', 'molarEntropy', 'molarMass', 'momentum',
       'normality', 'osmolarity', 'pH', 'pace', 'percent', 'power', 'pressure', 'rateConstant', 'resistance', 'specificHeat', 'speed', 'springConstant', 'temperature', 'temperatureDelta', 'term', 'thermalExpansionCoeff', 'time',
       'torque', 'voltage', 'volume'
@@ -186,6 +186,15 @@ describe('anchor values', () => {
     close(toBase(180, 'angle', 'deg'), Math.PI);
     close(convert(90, 'angle', 'deg', 'rad'), Math.PI / 2);
     close(convert(1, 'angle', 'rad', 'deg'), 180 / Math.PI);
+  });
+  test('angular velocity: 1 rpm = 2π/60 rad/s ≈ 0.10472 rad/s, 1 rev/s = 2π rad/s, 250 rpm ≈ 26.18 rad/s', () => {
+    assert.equal(UNITS.angularVelocity[0].id, 'rad/s');
+    close(toBase(1, 'angularVelocity', 'rpm'), (2 * Math.PI) / 60);
+    close(toBase(1, 'angularVelocity', 'rev/s'), 2 * Math.PI);
+    close(convert(90, 'angularVelocity', 'deg/s', 'rad/s'), Math.PI / 2);
+    // Cross-checked against OpenStax University Physics Volume 1 §10.1, Example 10.2 (250 rev/min
+    // converts to 26.2 rad/s).
+    close(toBase(250, 'angularVelocity', 'rpm'), 26.179938779914945, 1e-9);
   });
   test('term: base is months, 30 years = 360 months', () => {
     assert.equal(UNITS.term[0].id, 'mo');

@@ -241,6 +241,38 @@ exports[`compute() snapshots > age-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > angular-velocity-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "angle": 7.853981633974483,
+      "time": 3
+    },
+    "outputs": {
+      "angularVelocity": 2.617993878
+    }
+  },
+  "typical": {
+    "inputs": {
+      "angle": 11.78,
+      "time": 4.5
+    },
+    "outputs": {
+      "angularVelocity": 2.617777778
+    }
+  },
+  "edge": {
+    "inputs": {
+      "angle": 0,
+      "time": 0
+    },
+    "outputs": {
+      "angularVelocity": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > annuity-calculator 1`] = `
 {
   "default": {
@@ -3575,6 +3607,38 @@ exports[`compute() snapshots > drywall-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > efficiency-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "outputPower": 4500,
+      "inputPower": 5000
+    },
+    "outputs": {
+      "efficiency": 90
+    }
+  },
+  "typical": {
+    "inputs": {
+      "outputPower": 6750,
+      "inputPower": 7500
+    },
+    "outputs": {
+      "efficiency": 90
+    }
+  },
+  "edge": {
+    "inputs": {
+      "outputPower": 0,
+      "inputPower": 0
+    },
+    "outputs": {
+      "efficiency": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > electrical-power-calculator 1`] = `
 {
   "default": {
@@ -4911,6 +4975,38 @@ exports[`compute() snapshots > gcf-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > gear-ratio-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "driveTeeth": 12,
+      "drivenTeeth": 41
+    },
+    "outputs": {
+      "gearRatio": 3.416666667
+    }
+  },
+  "typical": {
+    "inputs": {
+      "driveTeeth": 18,
+      "drivenTeeth": 62
+    },
+    "outputs": {
+      "gearRatio": 3.444444444
+    }
+  },
+  "edge": {
+    "inputs": {
+      "driveTeeth": 0,
+      "drivenTeeth": 0
+    },
+    "outputs": {
+      "gearRatio": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > gibbs-free-energy-calculator 1`] = `
 {
   "default": {
@@ -5423,6 +5519,38 @@ exports[`compute() snapshots > home-affordability-calculator 1`] = `
       "totalMonthlyPayment": 0,
       "frontEndRatio": "NaN",
       "backEndRatio": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > horsepower-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "torque": 406.7454310743,
+      "rpm": 418.87902047863906
+    },
+    "outputs": {
+      "power": 170377.1278
+    }
+  },
+  "typical": {
+    "inputs": {
+      "torque": 610.1,
+      "rpm": 628.3
+    },
+    "outputs": {
+      "power": 383325.83
+    }
+  },
+  "edge": {
+    "inputs": {
+      "torque": 0,
+      "rpm": 0
+    },
+    "outputs": {
+      "power": 0
     }
   }
 }
@@ -11172,6 +11300,38 @@ exports[`compute() snapshots > rounding-calculator 1`] = `
     "outputs": {
       "rounded": 0,
       "difference": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > rpm-to-speed-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "diameter": 0.65,
+      "rpm": 83.7758040957278
+    },
+    "outputs": {
+      "speed": 27.22713633
+    }
+  },
+  "typical": {
+    "inputs": {
+      "diameter": 0.98,
+      "rpm": 125.7
+    },
+    "outputs": {
+      "speed": 61.593
+    }
+  },
+  "edge": {
+    "inputs": {
+      "diameter": 0,
+      "rpm": 0
+    },
+    "outputs": {
+      "speed": 0
     }
   }
 }

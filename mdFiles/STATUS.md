@@ -7,7 +7,17 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-11-16 · **Step 46 runs 6+7 (physics mechanics-remainder run B + waves/other-
+Last updated: 2026-11-16 · **Step 46 run 8 (physics drivetrain/efficiency run) DONE** — PR #107,
+branch `step/46-wave-3-physics-run-8`, added `horsepower-calculator`, `rpm-to-speed-calculator`,
+`gear-ratio-calculator`, `efficiency-calculator`, `angular-velocity-calculator`. New `lib/units.ts`
+dimension: `angularVelocity` (rad/s, rpm, rev/s, deg/s), kept separate from `frequency` despite
+being proportional by exactly 2π (same reasoning as `torque` vs `energy`). `specific-gravity-
+calculator` was considered for the 5th slot and ruled out as a near-duplicate of chemistry's
+`density-of-solutions-calculator`; picked `angular-velocity-calculator` (ω = Δθ ÷ Δt) instead.
+`npm test` (1,302), lint and `npm run build` (367 routes) all pass. **`physics` now 41 (36 → 41),
+site-wide 336.** Full detail in `mdFiles/steps/46-47-wave-3-physics-chemistry.md`.
+
+Previous: **Step 46 runs 6+7 (physics mechanics-remainder run B + waves/other-
 remainder run) BOTH DONE AND RECONCILED.** Run B (PR #105, branch `step/46-wave-3-physics-run-6`)
 added `centripetal-force-calculator`, `gravitational-force-calculator`, `torque-calculator`,
 `buoyancy-calculator`, `pendulum-period-calculator`. Run C (PR #106, branch
@@ -559,6 +569,30 @@ additive-only (169 new lines). `npm test` 1258/1258, lint clean, `npm run build`
 Static HTML of all 5 new pages checked directly (same pre-existing port-3000 process left untouched, per
 runs 4/5/A's precedent). Next: physics waves/other-remainder run (Doppler effect, Snell's law, E = mc²,
 thermal expansion, escape velocity) — not started.
+
+**2026-11-16 — Step 46 run 8, physics drivetrain/efficiency run (PR #107, open, not yet merged)**:
+added `horsepower-calculator` (P = τω, from torque + RPM — confirmed distinct from `power-converter`'s
+straight unit conversion), `rpm-to-speed-calculator` (v = rω, wheel RPM → linear speed given
+diameter), `gear-ratio-calculator` (driven ÷ drive teeth, plus an output-RPM `SolverOutput` from a
+`fixed` input-RPM variable), `efficiency-calculator` (η = output ÷ input × 100%, OpenStax College
+Physics 2e §7.6), `angular-velocity-calculator` (ω = Δθ ÷ Δt, the 5th-slot pick after ruling out
+`specific-gravity-calculator` as a near duplicate of chemistry's `density-of-solutions-calculator`).
+New `lib/units.ts` dimension `angularVelocity` (rad/s, rpm, rev/s, deg/s), kept separate from
+`frequency` despite the exact 2π proportionality, same precedent as `torque` vs `energy`; round-trip +
+anchor test added, cross-checked against OpenStax University Physics Volume 1 §10.1's own Example 10.2
+(250 rpm = 26.2 rad/s). Every formula fetched directly from OpenStax University Physics Volume 1
+(§10.1, §10.3, §10.8) and OpenStax College Physics 2e §7.6, plus UC San Diego's MAE 3 machine-design
+course page for the gear-ratio relationship (no OpenStax introductory section covers gear trains).
+Every worked-example and FAQ number (including the 300 lbf·ft/4,000 RPM horsepower example, the exact
+5,252.113 automotive shortcut constant, and the 800 RPM/0.65 m wheel speed example) independently
+recomputed in a standalone scratch script before writing copy. New `KNOWN_NON_FINITE` entries:
+`gear-ratio-calculator`/`efficiency-calculator`/`angular-velocity-calculator` (each an honest divide-
+by-zero at an input's own 0 min); `horsepower-calculator`/`rpm-to-speed-calculator` needed none.
+Snapshot diff additive-only (160 new lines). `npm test` 1,302/1,302, lint clean, `npm run build` green
+(367 routes; `physics` 36 → **41**, site-wide 331 → **336**). Static HTML of all 5 new pages checked
+directly (pre-existing port-3000 process left untouched, same precedent as every prior physics run).
+Next: physics runs 9+ — no seed list left, build agent's own formula choices (angular momentum, moment
+of inertia, rotational kinetic energy, electric field strength, etc.) — not started.
 
 ## Pending on the user — not code
 

@@ -9,6 +9,7 @@ export type UnitDimension =
   | 'acceleration'
   | 'force'
   | 'angle'
+  | 'angularVelocity'
   | 'length'
   | 'area'
   | 'volume'
@@ -122,6 +123,18 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
   angle: [
     { id: 'rad', label: 'rad', factor: 1 },
     { id: 'deg', label: '°', factor: Math.PI / 180 }
+  ],
+  // Angular velocity ω = dθ/dt (OpenStax University Physics Volume 1 §10.1 "Rotational Variables"):
+  // SI derived unit rad/s. Kept as its own dimension rather than folded into `frequency` (Hz = rev/s)
+  // even though the two are proportional by exactly 2π — same "one real relationship, two
+  // conventional units" reasoning as `torque` being kept separate from `energy` (N·m vs J). 1 rpm =
+  // 2π/60 rad/s exactly, confirmed against OpenStax's own Example 10.2 (250 rev/min = 26.2 rad/s);
+  // 1 rev/s = 2π rad/s exactly; 1°/s = π/180 rad/s exactly (BIPM SI Brochure §2.3.3, same as `angle`).
+  angularVelocity: [
+    { id: 'rad/s', label: 'rad/s', factor: 1 },
+    { id: 'rpm', label: 'rpm', factor: (2 * Math.PI) / 60 },
+    { id: 'rev/s', label: 'rev/s', factor: 2 * Math.PI },
+    { id: 'deg/s', label: '°/s', factor: Math.PI / 180 }
   ],
   // International yard and pound agreement (1959): exact. Nautical mile: exact (1852 m).
   length: [

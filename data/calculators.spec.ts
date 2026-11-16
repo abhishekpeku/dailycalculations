@@ -100,7 +100,8 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'down-payment-savings-calculator': ['years', 'totalContributions', 'totalInterest'], // rate 0 (its min) and monthlyContribution 0 (its min) -> no contribution and no growth, so a 0 goal is never "reached" -> 0/0
   'closing-cost-estimator-calculator': ['midPercentOfPrice'], // homePrice 0 (its min) -> midEstimate 0 -> 0/0
   'emergency-fund-calculator': ['monthsToReachGoal', 'monthsCovered'], // monthlyExpenses and monthlySavingsRate both 0 (their min) -> 0/0 and no savings rate to divide by
-  'commission-calculator': ['effectiveTieredRate'] // saleAmount 0 (its min) -> 0/0
+  'commission-calculator': ['effectiveTieredRate'], // saleAmount 0 (its min) -> 0/0
+  'acceleration-calculator': ['acceleration'] // velocityChange (no min, 0) and time 0 (its min) -> 0/0
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

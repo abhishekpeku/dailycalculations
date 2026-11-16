@@ -133,6 +133,38 @@ exports[`compute() snapshots > ac-tonnage-btu-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > acceleration-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "velocityChange": 20,
+      "time": 5
+    },
+    "outputs": {
+      "acceleration": 4
+    }
+  },
+  "typical": {
+    "inputs": {
+      "velocityChange": 30,
+      "time": 7.5
+    },
+    "outputs": {
+      "acceleration": 4
+    }
+  },
+  "edge": {
+    "inputs": {
+      "velocityChange": 0,
+      "time": 0
+    },
+    "outputs": {
+      "acceleration": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > acres-to-hectares-converter 1`] = `
 {
   "default": {
@@ -4314,6 +4346,38 @@ exports[`compute() snapshots > fraction-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > free-fall-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "time": 3,
+      "gravity": 9.80665
+    },
+    "outputs": {
+      "height": 44.129925
+    }
+  },
+  "typical": {
+    "inputs": {
+      "time": 4.5,
+      "gravity": 14.71
+    },
+    "outputs": {
+      "height": 148.93875
+    }
+  },
+  "edge": {
+    "inputs": {
+      "time": 0,
+      "gravity": 0
+    },
+    "outputs": {
+      "height": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > free-shipping-threshold-calculator 1`] = `
 {
   "default": {
@@ -4450,6 +4514,38 @@ exports[`compute() snapshots > freezing-point-depression-calculator 1`] = `
     },
     "outputs": {
       "deltaTf": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > friction-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "coefficient": 0.3,
+      "normalForce": 490.33
+    },
+    "outputs": {
+      "frictionForce": 147.099
+    }
+  },
+  "typical": {
+    "inputs": {
+      "coefficient": 0.45,
+      "normalForce": 735.5
+    },
+    "outputs": {
+      "frictionForce": 330.975
+    }
+  },
+  "edge": {
+    "inputs": {
+      "coefficient": 0,
+      "normalForce": 0
+    },
+    "outputs": {
+      "frictionForce": 0
     }
   }
 }
@@ -9624,6 +9720,44 @@ exports[`compute() snapshots > probability-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > projectile-motion-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "initialVelocity": 20,
+      "launchAngle": 30
+    },
+    "outputs": {
+      "range": 35.3240058,
+      "maxHeight": 5.098581065,
+      "timeOfFlight": 2.039432426
+    }
+  },
+  "typical": {
+    "inputs": {
+      "initialVelocity": 30,
+      "launchAngle": 45
+    },
+    "outputs": {
+      "range": 91.77445917,
+      "maxHeight": 22.94361479,
+      "timeOfFlight": 4.326289494
+    }
+  },
+  "edge": {
+    "inputs": {
+      "initialVelocity": 0,
+      "launchAngle": 0
+    },
+    "outputs": {
+      "range": 0,
+      "maxHeight": 0,
+      "timeOfFlight": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > pto-calculator 1`] = `
 {
   "default": {
@@ -11625,6 +11759,38 @@ exports[`compute() snapshots > speed-distance-time-calculator 1`] = `
     },
     "outputs": {
       "speed": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > spring-hookes-law-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "springConstant": 250,
+      "displacement": 0.12
+    },
+    "outputs": {
+      "force": 30
+    }
+  },
+  "typical": {
+    "inputs": {
+      "springConstant": 375,
+      "displacement": 0.18
+    },
+    "outputs": {
+      "force": 67.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "springConstant": 0,
+      "displacement": 0
+    },
+    "outputs": {
+      "force": 0
     }
   }
 }

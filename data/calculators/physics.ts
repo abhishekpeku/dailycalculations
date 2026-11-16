@@ -2821,5 +2821,458 @@ export const physicsCalculators: CalculatorConfig[] = [
     compute(values) {
       return { acceleration: values.time === 0 ? NaN : values.velocityChange / values.time };
     }
+  },
+  {
+    id: 'free-fall-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'h',
+    updatedAt: '2026-11-16',
+    aliases: ['falling object calculator', 'h = 1/2 gt^2 calculator', 'drop time calculator', 'distance fallen calculator', 'time to hit the ground calculator'],
+    related: ['weight-calculator', 'potential-energy-calculator', 'acceleration-calculator', 'projectile-motion-calculator'],
+    title: 'Free Fall Calculator (h = ½gt²)',
+    description: 'Calculate how far an object falls from rest in a given time — h = ½ × g × t² — or solve backward for the fall time or gravity, with the final speed shown alongside.',
+    example: 'Dropped from rest, an object falls about 44.13 m in 3 seconds on Earth, hitting the ground at about 29.42 m/s.',
+    solver: {
+      defaultTarget: 'height',
+      variables: [
+        { id: 'height', label: 'Distance fallen', symbol: 'h', dimension: 'length', defaultValue: 44.13, defaultUnit: 'm' },
+        { id: 'time', label: 'Fall time', symbol: 't', dimension: 'time', defaultValue: 3, defaultUnit: 's' },
+        { id: 'gravity', label: 'Gravity', symbol: 'g', dimension: 'acceleration', defaultValue: STANDARD_GRAVITY, defaultUnit: 'm/s2' }
+      ],
+      solve: {
+        height: ({ time, gravity }) => 0.5 * gravity * time * time,
+        time: ({ height, gravity }) => (gravity <= 0 ? NaN : Math.sqrt((2 * height) / gravity)),
+        gravity: ({ height, time }) => (time === 0 ? NaN : (2 * height) / (time * time))
+      },
+      outputs: [{ id: 'finalVelocity', label: 'Speed at impact (v = gt)', dimension: 'speed', unit: 'm/s', compute: (si) => si.gravity * si.time }]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is free fall?',
+        paragraphs: [
+          "Free fall is motion under gravity alone, with no air resistance or other force slowing it down. Dropped from rest near Earth's surface, an object picks up speed at a constant rate — about 9.80665 meters per second, every second — so the distance it covers grows with the square of the time, not in a straight line.",
+          'That relationship, h = ½gt², comes directly from the constant-acceleration kinematics used for any object speeding up (or slowing down) at a steady rate, with the initial velocity set to zero because the object starts at rest. The companion formula for the speed it reaches, v = g × t, grows in a straight line with time instead — twice the fall time means twice the final speed, but four times the distance fallen.',
+          "This calculator assumes a vacuum-like fall with no air resistance, which is accurate for dense, compact objects (a dropped wrench, a coin) over the kinds of heights people usually ask about. A feather or a sheet of paper falls far more slowly in real air, because drag becomes significant relative to its weight."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of the distance fallen, the fall time, and gravity; the third fills in automatically, alongside the speed at impact.',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type. Leave gravity at 9.80665 m/s² for Earth.' },
+          { name: 'Try another world', text: "Replace gravity with another body's surface value — 1.62 m/s² for the Moon, for example — to see how the same drop plays out elsewhere." },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Read the result and the impact speed', text: 'The distance appears in your chosen unit, with the speed at impact (v = gt) shown alongside it.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Starting from rest, the fall distance and fall time rearrange both ways; the impact speed follows from the same two quantities.',
+        expression: 'h = ½ × g × t²\nt = √(2h ÷ g)\ng = 2h ÷ t²\nv = g × t',
+        terms: [
+          { symbol: 'h', meaning: 'Distance fallen, in meters (m), starting from rest.' },
+          { symbol: 't', meaning: 'Time spent falling, in seconds (s).' },
+          { symbol: 'g', meaning: 'Gravitational acceleration, in m/s². Standard gravity on Earth is exactly 9.80665 m/s² by definition.' },
+          { symbol: 'v', meaning: 'Speed at the moment of impact, in m/s, shown as a bonus output alongside the distance.' }
+        ],
+        note: 'This assumes the object starts from rest (no initial velocity) and falls with no air resistance. Every input is converted to SI units (m, s, m/s²) before solving and converted back afterward.'
+      },
+      workedExample: {
+        intro: 'An object is dropped from rest and falls for 3 seconds. How far does it fall, and how fast is it moving when it lands?',
+        rows: [
+          { label: 'Fall time (t)', value: '3 s' },
+          { label: 'Gravity (g)', value: '9.80665 m/s²' },
+          { label: 'Distance fallen (h = 0.5 × 9.80665 × 3²)', value: '44.13 m' },
+          { label: 'Impact speed (v = 9.80665 × 3)', value: '29.42 m/s' }
+        ],
+        result: 'h ≈ 44.13 m · v ≈ 29.42 m/s',
+        explanation: '0.5 × 9.80665 × 9 = 44.13 m — about the height of a 13-story building. The impact speed, 9.80665 × 3 = 29.42 m/s, is about 106 km/h. On the Moon, where gravity is about 1.62 m/s², the same 3-second fall covers only about 7.29 m and lands at about 4.86 m/s, because gravity there pulls roughly six times more weakly.'
+      },
+      watchOut: [
+        {
+          title: 'This is "from rest" — a thrown or dropped-with-speed object needs a different formula',
+          body: 'h = ½gt² only applies when the object starts with zero velocity. Something thrown downward (or upward) starts with an initial velocity that has to be added in separately; this calculator does not cover that case.'
+        },
+        {
+          title: 'Real falls include air resistance',
+          body: "A dense, compact object (a stone, a hammer) falls close to this ideal for ordinary heights. A light or spread-out object (a leaf, a sheet of paper, a parachute) reaches a much lower top speed because air drag pushes back hard enough to matter — this formula does not account for that."
+        },
+        {
+          title: "\"g\" is standard gravity, not the exact local value",
+          body: "9.80665 m/s² is the internationally adopted reference value. Real gravity on Earth varies slightly by latitude and altitude, from about 9.78 m/s² to about 9.83 m/s² — close enough for this not to matter for everyday drops."
+        },
+        {
+          title: 'Distance and speed grow at different rates',
+          body: 'Doubling the fall time quadruples the distance fallen (time is squared) but only doubles the impact speed (time appears once). A fall twice as long covers four times the distance but lands only twice as fast.'
+        },
+        {
+          title: 'Not the same as weight or potential energy',
+          body: 'This calculator finds distance and time for a falling object, not the force of gravity on it (see the weight calculator, W = mg) or the energy it has stored by virtue of height (see the potential energy calculator, PE = mgh).'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §3.5 Free Fall', url: 'https://openstax.org/books/university-physics-volume-1/pages/3-5-free-fall' },
+        { label: 'NASA, Moon Fact Sheet (surface gravity)', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'time', label: 'Fall time (s)', type: 'number', placeholder: '3', defaultValue: 3, step: 0.1, min: 0 },
+      { id: 'gravity', label: 'Gravity (m/s²)', type: 'number', placeholder: '9.80665', defaultValue: STANDARD_GRAVITY, step: 0.01 }
+    ],
+    seo: {
+      title: 'Free Fall Calculator (h = ½gt²) – Distance, Time & Speed',
+      description: 'Free fall calculator. Solve h = ½gt² for distance fallen, fall time, or gravity, with the impact speed (v = gt) shown, and a worked example.',
+      faq: [
+        { question: 'What is the formula for free fall distance?', answer: 'h = ½ × g × t², where g is gravitational acceleration and t is the fall time, for an object starting from rest. On Earth (g = 9.80665 m/s²), a 3-second fall covers about 44.13 m.' },
+        { question: 'How do I find how long an object takes to fall a given distance?', answer: 't = √(2h ÷ g). A 44.13 m fall on Earth takes √(2 × 44.13 ÷ 9.80665) = 3 seconds.' },
+        { question: 'How fast is something moving when it hits the ground?', answer: 'v = g × t, for an object dropped from rest. Falling for 3 seconds on Earth reaches about 9.80665 × 3 = 29.42 m/s, roughly 106 km/h.' },
+        { question: 'Does this formula work for something thrown, not just dropped?', answer: 'No. h = ½gt² assumes zero initial velocity. An object thrown downward or upward starts with its own velocity that has to be added separately, which this calculator does not include.' },
+        { question: 'Does air resistance change the answer?', answer: 'Yes, for light or spread-out objects. This formula assumes no air resistance, which is accurate for dense, compact objects over ordinary heights but overestimates the speed of something like a feather or a sheet of paper.' },
+        { question: 'How far would something fall on the Moon in 3 seconds?', answer: "With the Moon's gravity of about 1.62 m/s², h = 0.5 × 1.62 × 3² = 7.29 m — about a sixth of the roughly 44.13 m the same 3-second fall covers on Earth, because the Moon's gravity is about six times weaker." },
+        { question: 'What is the difference between free fall and weight?', answer: 'Free fall (this calculator) finds the distance and speed of a falling object over time. Weight (W = mg, a separate calculator) finds the force gravity exerts on a mass — a different question with a different formula.' }
+      ]
+    },
+    compute(values) {
+      return { height: 0.5 * values.gravity * values.time * values.time };
+    }
+  },
+  {
+    id: 'projectile-motion-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'R',
+    updatedAt: '2026-11-16',
+    aliases: ['range of a projectile calculator', 'trajectory calculator', 'launch angle calculator', 'time of flight calculator', 'projectile range and height calculator'],
+    related: ['free-fall-calculator', 'speed-distance-time-calculator', 'work-calculator'],
+    title: 'Projectile Motion Calculator',
+    description: 'Find the range, maximum height, and time of flight of an object launched at an angle — for level ground with no air resistance — from its launch speed and angle.',
+    example: 'Launched at 20 m/s at a 30° angle, a projectile travels about 35.33 m, rises to about 5.10 m, and stays airborne for about 2.04 s.',
+    breakdown: {
+      headline: 'range',
+      headlineLabel: 'Range',
+      outputs: [
+        { id: 'range', label: 'Range', dimension: 'length', unit: 'm' },
+        { id: 'maxHeight', label: 'Maximum height', dimension: 'length', unit: 'm' },
+        { id: 'timeOfFlight', label: 'Time of flight', dimension: 'time', unit: 's' }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'range', label: 'Range' }, { from: 'maxHeight', label: 'Max height' }],
+        title: 'Range vs. maximum height',
+        highlight: 0
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is projectile motion?',
+        paragraphs: [
+          'A projectile is anything launched into the air and then left to move under gravity alone — a thrown ball, a kicked soccer ball, a cannonball. Its motion splits cleanly into two independent pieces: a constant horizontal velocity (nothing speeds it up or slows it down sideways, in the idealized no-air-resistance case) and a vertical motion that behaves exactly like free fall, slowing on the way up and speeding up on the way down under gravity.',
+          'Launched at speed v₀ and angle θ above the horizontal, that velocity splits into a horizontal part (v₀cos θ) and a vertical part (v₀sin θ). The horizontal part determines how far the projectile travels before landing; the vertical part determines how high it rises and how long it stays in the air, through exactly the same kind of constant-acceleration motion used in free fall.',
+          'For a projectile that lands at the same height it was launched from — level ground — three standard formulas give the range (total horizontal distance), the maximum height, and the total time of flight, all from just the launch speed, the launch angle, and gravity.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the launch speed and the launch angle; the calculator works out the range, the maximum height, and the time of flight at once.',
+        steps: [
+          { name: 'Enter the launch speed', text: 'Type the speed the object leaves the launch point at, and pick its unit.' },
+          { name: 'Enter the launch angle', text: 'Type the angle above the horizontal, in degrees. 0° is straight along the ground; 90° is straight up.' },
+          { name: 'Read the range', text: 'The headline is the horizontal distance the projectile travels before landing back at launch height.' },
+          { name: 'Read the height and time', text: 'The rows below show the highest point the projectile reaches and how long it stays airborne.' },
+          { name: 'Compare on the chart', text: 'The range and maximum height are plotted side by side, so their relative size is easy to see.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'All three results come from the launch speed v₀, the launch angle θ, and gravity g — valid for level ground (same launch and landing height) with no air resistance.',
+        expression: 'Range: R = v₀² × sin(2θ) ÷ g\nMax height: h = v₀² × sin²(θ) ÷ (2g)\nTime of flight: T = 2 × v₀ × sin(θ) ÷ g',
+        terms: [
+          { symbol: 'v₀', meaning: 'Launch speed, in meters per second (m/s).' },
+          { symbol: 'θ', meaning: 'Launch angle above the horizontal.' },
+          { symbol: 'g', meaning: 'Gravitational acceleration, taken as standard gravity, 9.80665 m/s².' },
+          { symbol: 'R, h, T', meaning: 'Range, maximum height, and time of flight — all measured from and back to the launch height.' }
+        ],
+        note: 'These formulas assume no air resistance and a launch and landing at the same height. A launch from a cliff or into a pit at a different height, or a projectile with meaningful drag (a thrown ball in a strong headwind), needs a more general treatment.'
+      },
+      workedExample: {
+        intro: 'A ball is launched at 20 m/s at a 30° angle above the horizontal, over level ground. How far does it go, how high does it rise, and how long is it in the air?',
+        rows: [
+          { label: 'Launch speed (v₀)', value: '20 m/s' },
+          { label: 'Launch angle (θ)', value: '30°' },
+          { label: 'Range (R = 20² × sin(60°) ÷ 9.80665)', value: '35.33 m' },
+          { label: 'Max height (h = 20² × sin²(30°) ÷ (2 × 9.80665))', value: '5.10 m' },
+          { label: 'Time of flight (T = 2 × 20 × sin(30°) ÷ 9.80665)', value: '2.04 s' }
+        ],
+        result: 'R ≈ 35.33 m · h ≈ 5.10 m · T ≈ 2.04 s',
+        explanation: 'sin(60°) ≈ 0.8660, so R = 400 × 0.8660 ÷ 9.80665 ≈ 35.33 m. sin(30°) = 0.5, so h = 400 × 0.25 ÷ 19.6133 ≈ 5.10 m, and T = 2 × 20 × 0.5 ÷ 9.80665 ≈ 2.04 s. For comparison, OpenStax works the same formulas in reverse in its golf-shot example: a 90 m shot at 30° needs a launch speed of about 31.9 m/s.'
+      },
+      watchOut: [
+        {
+          title: 'These formulas assume level ground',
+          body: 'They only hold when the projectile lands at the same height it launched from. Launching off a cliff, into a valley, or over a wall at a different height needs the full vertical-motion equations, not these shortcuts.'
+        },
+        {
+          title: '45° gives the maximum range for a given speed, not the maximum height',
+          body: "For a fixed launch speed, 45° sends the projectile the farthest horizontally. A steeper angle (closer to 90°) trades range for height instead — the same speed launched straight up (90°) has zero range but the greatest possible height."
+        },
+        {
+          title: 'No air resistance is assumed',
+          body: 'A dense, compact object over a short range (a thrown rock, a kicked ball) comes close to this ideal. A light or fast-spinning object — a badminton shuttlecock, a well-struck golf ball with real backspin — can deviate noticeably because of drag and lift.'
+        },
+        {
+          title: 'Angle is measured from the horizontal, not the vertical',
+          body: '0° is launched flat along the ground, 90° is launched straight up. Entering an angle measured from the vertical instead will give the wrong trajectory.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §4.3 Projectile Motion', url: 'https://openstax.org/books/university-physics-volume-1/pages/4-3-projectile-motion' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'initialVelocity', label: 'Launch speed', type: 'number', placeholder: '20', defaultValue: 20, step: 0.1, min: 0, dimension: 'speed', unit: 'm/s' },
+      { id: 'launchAngle', label: 'Launch angle (0–90°)', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 0, dimension: 'angle', unit: 'deg' }
+    ],
+    seo: {
+      title: 'Projectile Motion Calculator – Range, Height & Time',
+      description: 'Free projectile motion calculator. Find the range, maximum height, and time of flight from launch speed and angle, for level ground, with a worked example.',
+      faq: [
+        { question: 'What is the formula for the range of a projectile?', answer: 'R = v₀² × sin(2θ) ÷ g, for level ground with no air resistance. A 20 m/s launch at 30° gives R = 400 × sin(60°) ÷ 9.80665 ≈ 35.33 m.' },
+        { question: 'How do I find the maximum height of a projectile?', answer: 'h = v₀² × sin²(θ) ÷ (2g). The same 20 m/s launch at 30° rises to 400 × sin²(30°) ÷ (2 × 9.80665) ≈ 5.10 m.' },
+        { question: 'How do I find the time of flight?', answer: 'T = 2 × v₀ × sin(θ) ÷ g. A 20 m/s launch at 30° stays airborne for 2 × 20 × sin(30°) ÷ 9.80665 ≈ 2.04 s.' },
+        { question: 'What launch angle gives the maximum range?', answer: '45°, for a given launch speed with no air resistance — sin(2 × 45°) = sin(90°) = 1, the largest the sine term can be.' },
+        { question: 'Do these formulas work for a launch from a height, like a cliff?', answer: 'No. They assume the projectile lands at the same height it launched from (level ground). A different launch and landing height needs the full set of vertical motion equations.' },
+        { question: 'Does air resistance affect the result?', answer: 'Yes, for light or fast-spinning objects, but this calculator assumes none, which is accurate for a dense, compact object over a short range, like a thrown rock or a kicked ball.' }
+      ]
+    },
+    compute(values) {
+      const angle = (values.launchAngle * Math.PI) / 180;
+      const v0 = values.initialVelocity;
+      return {
+        range: (v0 * v0 * Math.sin(2 * angle)) / STANDARD_GRAVITY,
+        maxHeight: (v0 * v0 * Math.sin(angle) * Math.sin(angle)) / (2 * STANDARD_GRAVITY),
+        timeOfFlight: (2 * v0 * Math.sin(angle)) / STANDARD_GRAVITY
+      };
+    }
+  },
+  {
+    id: 'friction-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'f',
+    updatedAt: '2026-11-16',
+    aliases: ['friction force calculator', 'f = mu n calculator', 'coefficient of friction calculator', 'kinetic friction calculator', 'normal force friction calculator'],
+    related: ['force-calculator', 'weight-calculator', 'pressure-calculator'],
+    title: 'Friction Calculator (f = μN)',
+    description: 'Calculate friction force from the coefficient of friction and the normal force — f = μ × N — or solve backward for either one, in newtons, pounds-force, or kilograms-force.',
+    example: 'A 50 kg crate on a wood floor (μ = 0.3) with a normal force of 490.33 N experiences about 147.1 N of kinetic friction.',
+    solver: {
+      defaultTarget: 'frictionForce',
+      variables: [
+        { id: 'frictionForce', label: 'Friction force', symbol: 'f', dimension: 'force', defaultValue: 147.1, defaultUnit: 'N' },
+        { id: 'coefficient', label: 'Coefficient of friction', symbol: 'μ', dimension: 'count', defaultValue: 0.3, defaultUnit: 'count' },
+        { id: 'normalForce', label: 'Normal force', symbol: 'N', dimension: 'force', defaultValue: 490.33, defaultUnit: 'N' }
+      ],
+      solve: {
+        frictionForce: ({ coefficient, normalForce }) => coefficient * normalForce,
+        coefficient: ({ frictionForce, normalForce }) => (normalForce === 0 ? NaN : frictionForce / normalForce),
+        normalForce: ({ frictionForce, coefficient }) => (coefficient === 0 ? NaN : frictionForce / coefficient)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is friction force?',
+        paragraphs: [
+          'Friction is the force that resists two surfaces sliding (or trying to slide) across each other. It always acts opposite to the direction of motion or attempted motion, and its size depends on two things: how hard the surfaces are pressed together (the normal force, N) and how "grippy" the pair of surfaces is (the coefficient of friction, μ): f = μ × N.',
+          'The coefficient of friction is a dimensionless number, usually between 0 and 1, that depends on the two materials in contact — rubber on dry concrete grips far more than steel on steel. There are two coefficients for any pair of surfaces: static friction (μs), which resists getting something moving from a standstill, and kinetic friction (μk), which resists it once it is already sliding. Static friction is almost always the larger of the two, which is why it takes more force to start a heavy crate sliding than to keep it sliding.',
+          'The normal force is not always just an object\'s weight. On a flat, horizontal surface with nothing else pushing vertically, N equals the weight (N = mg). On a ramp, or with another force pressing down or lifting up, N has to be worked out from the actual forces perpendicular to the surface — it can be smaller or larger than the weight.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of friction force, the coefficient of friction, and the normal force; the third fills in automatically.',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit (the coefficient has no unit). The third field, marked auto, calculates as you type.' },
+          { name: 'Find the normal force first, if needed', text: "On flat ground with nothing else pushing vertically, the normal force equals the object's weight, N = m × g." },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a force unit converts the number already there, so 490.33 N becomes 50 kgf instead of silently turning into 490.33 kgf.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The friction formula rearranges three ways, one for each quantity you might be solving for.',
+        expression: 'f = μ × N\nμ = f ÷ N\nN = f ÷ μ',
+        terms: [
+          { symbol: 'f', meaning: 'Friction force, in newtons (N) — the force resisting sliding.' },
+          { symbol: 'μ', meaning: 'Coefficient of friction, a dimensionless number specific to the pair of surfaces in contact. Use μs for the force needed to start motion, μk for the force resisting motion already underway.' },
+          { symbol: 'N', meaning: 'Normal force, in newtons (N) — how hard the two surfaces are pressed together, perpendicular to the contact surface.' }
+        ],
+        note: 'Every force is converted to SI units (newtons) before solving and converted back afterward, so mixing newtons with pounds-force cannot produce a wrong result. This is kinetic friction when the object is already sliding; the maximum static friction before it starts moving uses the same formula with μs in place of μk.'
+      },
+      workedExample: {
+        intro: 'A 50 kg wooden crate sits on a flat wooden floor (coefficient of kinetic friction μk = 0.3, OpenStax Table 6.1). How much friction force resists it once it is sliding?',
+        rows: [
+          { label: 'Mass (m)', value: '50 kg' },
+          { label: 'Normal force (N = m × g = 50 × 9.80665)', value: '490.33 N' },
+          { label: 'Coefficient of kinetic friction (μk)', value: '0.3' },
+          { label: 'Friction force (f = 0.3 × 490.33)', value: '147.10 N' }
+        ],
+        result: 'f ≈ 147.1 N',
+        explanation: 'On flat ground, the normal force equals the weight: 50 × 9.80665 ≈ 490.33 N. Multiplying by the kinetic coefficient, 0.3 × 490.33 ≈ 147.1 N, gives the force resisting the crate once it is sliding. Getting it moving from a standstill takes more: wood-on-wood static friction has μs = 0.5, for a maximum static friction of 0.5 × 490.33 ≈ 245.17 N — anything pushing harder than that starts the crate sliding.'
+      },
+      watchOut: [
+        {
+          title: 'Static friction can take any value up to its maximum',
+          body: "f ≤ μsN describes static friction, not f = μsN exactly. A stationary object only needs just enough friction to balance whatever is pushing it, up to that maximum — above the maximum, it starts to slide, and kinetic friction (usually a smaller coefficient) takes over."
+        },
+        {
+          title: 'The normal force is not always the full weight',
+          body: 'N = mg only holds on flat ground with no other vertical forces. On a slope, N = mg × cos(angle) — smaller than the weight. A force pulling up (a handle, a cable) reduces N further; one pushing down increases it.'
+        },
+        {
+          title: 'Coefficients of friction come from the surfaces, not the object',
+          body: 'μ depends on both materials in contact — the same crate has a different coefficient on tile than on carpet. There is no single "friction coefficient of wood"; it is always a property of a pair of surfaces.'
+        },
+        {
+          title: 'Friction always opposes the direction of sliding (or attempted sliding)',
+          body: 'This calculator finds the magnitude of the friction force. Its direction is always opposite to the way the surfaces move (or are being pushed to move) relative to each other.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §6.2 Friction', url: 'https://openstax.org/books/university-physics-volume-1/pages/6-2-friction' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'coefficient', label: 'Coefficient of friction (μ)', type: 'number', placeholder: '0.3', defaultValue: 0.3, step: 0.01, min: 0 },
+      { id: 'normalForce', label: 'Normal force (N)', type: 'number', placeholder: '490.33', defaultValue: 490.33, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Friction Calculator (f = μN) – Force, Coefficient or Normal Force',
+      description: 'Free friction calculator. Solve f = μ × N for friction force, coefficient of friction, or normal force, in newtons, lbf, or kgf, with a worked example.',
+      faq: [
+        { question: 'What is the formula for friction force?', answer: 'f = μ × N, where μ is the coefficient of friction and N is the normal force. A normal force of 490.33 N with μ = 0.3 gives a friction force of 0.3 × 490.33 ≈ 147.1 N.' },
+        { question: 'How do I find the coefficient of friction?', answer: 'Divide the friction force by the normal force: μ = f ÷ N. A measured friction force of 147.1 N against a 490.33 N normal force gives μ = 147.1 ÷ 490.33 ≈ 0.3.' },
+        { question: 'What is the difference between static and kinetic friction?', answer: 'Static friction resists starting motion from rest and can be as large as μsN before the object slips; kinetic friction resists motion already underway and equals μkN. μs is almost always larger than μk for the same surfaces.' },
+        { question: 'How do I find the normal force on flat ground?', answer: "On a flat, horizontal surface with no other vertical forces, the normal force equals the object's weight: N = m × g. A 50 kg crate has N = 50 × 9.80665 ≈ 490.33 N." },
+        { question: 'What are typical coefficients of friction?', answer: 'OpenStax lists, among others: rubber on dry concrete (μs 1.0, μk 0.7), wood on wood (μs 0.5, μk 0.3), and steel on steel, dry (μs 0.6, μk 0.3). The exact value always depends on both surfaces in contact.' },
+        { question: 'Does a bigger surface area mean more friction?', answer: 'No, not in this simplified model — f = μN depends only on the normal force and the coefficient of friction, not on the contact area. A brick resting on its small face and its large face experiences the same friction force, as long as the normal force and materials are unchanged.' }
+      ]
+    },
+    compute(values) {
+      return { frictionForce: values.coefficient * values.normalForce };
+    }
+  },
+  {
+    id: 'spring-hookes-law-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'kx',
+    updatedAt: '2026-11-16',
+    aliases: ["hooke's law calculator", 'spring force calculator', 'spring constant calculator', 'f = kx calculator', 'spring displacement calculator'],
+    related: ['force-calculator', 'potential-energy-calculator', 'weight-calculator'],
+    title: "Spring Force Calculator (Hooke's Law, F = kx)",
+    description: "Calculate spring force from the spring constant and displacement — Hooke's law, F = k × x — or solve backward for either one, in newtons, pounds-force, N/m, or lbf/in.",
+    example: 'A spring with a constant of 250 N/m stretched 12 cm (0.12 m) pulls back with 30 N of force.',
+    solver: {
+      defaultTarget: 'force',
+      variables: [
+        { id: 'force', label: 'Spring force', symbol: 'F', dimension: 'force', defaultValue: 30, defaultUnit: 'N' },
+        { id: 'springConstant', label: 'Spring constant', symbol: 'k', dimension: 'springConstant', defaultValue: 250, defaultUnit: 'N/m' },
+        { id: 'displacement', label: 'Displacement', symbol: 'x', dimension: 'length', defaultValue: 0.12, defaultUnit: 'm' }
+      ],
+      solve: {
+        force: ({ springConstant, displacement }) => springConstant * displacement,
+        springConstant: ({ force, displacement }) => (displacement === 0 ? NaN : force / displacement),
+        displacement: ({ force, springConstant }) => (springConstant === 0 ? NaN : force / springConstant)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: "What is Hooke's law?",
+        paragraphs: [
+          "Hooke's law describes how an ideal spring pushes or pulls back when it is stretched or compressed: the force is proportional to the displacement from its natural, resting length. Stretch a spring twice as far and it pulls back twice as hard; compress it half as far and it pushes back half as hard.",
+          'The full statement, Fs = −kx, includes a minus sign because the spring force is a restoring force — it always points back toward the resting position, opposite to the direction of the displacement. This calculator works with the magnitude, F = k × x, since the direction follows automatically from which way the spring is stretched or compressed.',
+          'The spring constant, k, measures stiffness: a high k (a stiff suspension spring) takes a large force to stretch even a little, while a low k (a soft rubber band) stretches a long way under a small force. It is a property of the specific spring — its material, thickness, and coil geometry — not a universal number.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of spring force, the spring constant, and the displacement; the third fills in automatically.',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 250 N/m becomes 0.25 N/mm instead of silently turning into 250 N/mm.' },
+          { name: 'Read the result', text: 'The answer appears in your chosen unit, alongside the main alternatives underneath.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: "Hooke's law rearranges three ways, one for each quantity you might be solving for.",
+        expression: 'F = k × x\nk = F ÷ x\nx = F ÷ k',
+        terms: [
+          { symbol: 'F', meaning: 'Spring force, in newtons (N) — the magnitude of the push or pull the spring exerts.' },
+          { symbol: 'k', meaning: 'Spring constant, in newtons per meter (N/m). Higher means stiffer.' },
+          { symbol: 'x', meaning: 'Displacement from the spring\'s natural length, in meters (m) — how far it is stretched or compressed.' }
+        ],
+        note: "Every input is converted to SI units (N, N/m, m) before solving and converted back afterward. This is the ideal, linear form of Hooke's law; real springs stop behaving this way if stretched or compressed far enough (beyond their elastic limit)."
+      },
+      workedExample: {
+        intro: 'A spring has a spring constant of 250 N/m. How much force does it exert when stretched 12 cm?',
+        rows: [
+          { label: 'Spring constant (k)', value: '250 N/m' },
+          { label: 'Displacement, converted (x = 12 cm)', value: '0.12 m' },
+          { label: 'Force (F = 250 × 0.12)', value: '30 N' }
+        ],
+        result: 'F = 30 N',
+        explanation: '12 cm converts to 0.12 m, and 250 × 0.12 = 30 N. That is the size of the pull a 250 N/m spring exerts when stretched that far — about the weight of a 3 kg object. Stretching the same spring twice as far, to 24 cm, would double the force to 60 N.'
+      },
+      watchOut: [
+        {
+          title: "Hooke's law only holds within a spring's elastic limit",
+          body: 'Stretch or compress a real spring too far and it stops being proportional — it can permanently deform or even break. F = kx is accurate only within the range the spring was designed for.'
+        },
+        {
+          title: 'The force is a restoring force, pointing back toward rest',
+          body: "The full law is Fs = −kx: whichever way the spring is displaced, it pushes or pulls back the opposite way, toward its natural length. This calculator reports the magnitude; the direction is always back toward equilibrium."
+        },
+        {
+          title: 'k depends on the specific spring',
+          body: "There is no single universal spring constant. A thick, short coil spring and a thin, long one can have very different stiffness, even made from the same material — k has to be measured or specified for each spring."
+        },
+        {
+          title: 'Not the same as the force stretching it',
+          body: 'At the instant a spring is held stationary at some displacement x, the spring force F = kx exactly balances whatever external force is holding it there. While it is still moving, that is no longer necessarily true.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §15.1 Simple Harmonic Motion', url: 'https://openstax.org/books/university-physics-volume-1/pages/15-1-simple-harmonic-motion' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'springConstant', label: 'Spring constant (N/m)', type: 'number', placeholder: '250', defaultValue: 250, step: 1, min: 0 },
+      { id: 'displacement', label: 'Displacement (m)', type: 'number', placeholder: '0.12', defaultValue: 0.12, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: "Spring Force Calculator (Hooke's Law, F = kx)",
+      description: "Free spring force calculator using Hooke's law. Solve F = k × x for force, spring constant, or displacement in N, lbf, N/m, or lbf/in, with a worked example.",
+      faq: [
+        { question: "What is Hooke's law?", answer: "Hooke's law states that the force a spring exerts is proportional to its displacement from rest: F = k × x, where k is the spring constant. The full form, Fs = −kx, shows the force always points back toward the resting position." },
+        { question: 'How do I calculate spring force?', answer: 'Multiply the spring constant by the displacement: F = k × x. A spring with k = 250 N/m stretched 0.12 m exerts 250 × 0.12 = 30 N.' },
+        { question: 'How do I find the spring constant from a measured force?', answer: 'Divide the force by the displacement: k = F ÷ x. A 30 N force stretching a spring 0.12 m gives k = 30 ÷ 0.12 = 250 N/m.' },
+        { question: 'How do I find displacement from force and spring constant?', answer: 'Divide force by the spring constant: x = F ÷ k. A 30 N force on a 250 N/m spring gives x = 30 ÷ 250 = 0.12 m.' },
+        { question: 'What does a higher spring constant mean?', answer: 'A higher k means a stiffer spring — it takes more force to stretch or compress it by the same amount. A heavy-duty suspension spring has a much higher k than a soft rubber band.' },
+        { question: "Does Hooke's law work for any amount of stretch?", answer: "No. It only holds within a spring's elastic limit. Stretch or compress it too far and the force stops being proportional to displacement, and the spring can deform permanently or break." }
+      ]
+    },
+    compute(values) {
+      return { force: values.springConstant * values.displacement };
+    }
   }
 ];

@@ -101,6 +101,8 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'grahams-law-effusion-calculator': ['rate1'], // molarMass1 0 (its min) -> divide by zero
   'weak-acid-ionization-calculator': ['hydrogenIon'], // ka and initialConcentration both 0 (their min) -> compute()'s own <= 0 guard
   'current-efficiency-calculator': ['currentEfficiency'], // current, time and molarMass all 0 (their min) -> theoreticalMass 0 -> compute()'s own guard
+  'nuclear-binding-energy-calculator': ['bindingEnergyPerNucleon'], // protons and neutrons both 0 (their min) -> nucleons 0 -> 0/0
+  'gas-density-calculator': ['density'], // pressure and temperature both 0 (their min) -> 0/0
   'home-affordability-calculator': ['frontEndRatio', 'backEndRatio'], // grossAnnualIncome 0 (its min) -> gross monthly income 0 -> both ratios are 0/0
   'mortgage-refinance-calculator': ['breakEvenMonths'], // currentLoanBalance 0 (its min) -> both payments 0 -> no savings -> break-even is Infinity, honestly "never"
   'down-payment-savings-calculator': ['years', 'totalContributions', 'totalInterest'], // rate 0 (its min) and monthlyContribution 0 (its min) -> no contribution and no growth, so a 0 goal is never "reached" -> 0/0

@@ -1507,14 +1507,88 @@ build agent's judgment**, same as every run so far.
     pre-existing process (not started by this run) was already listening on port 3000 throughout —
     left running, verified via the static HTML output instead, same precedent as runs 4-9.
   - `chemistry` is now **50** calculators, **341 total** site-wide.
-- [ ] Chemistry run 11 (5), branch `step/46-wave-3-chemistry-run-11`, PR TBD — **IN PROGRESS**:
-  - [ ] formal-charge-calculator
-  - [ ] latent-heat-calculator
-  - [ ] raoults-law-calculator
-  - [ ] nuclear-binding-energy-calculator
-  - [ ] gas-density-calculator
-  - common-ion-effect-calculator bug (run 9, flagged run 10): will attempt a fix after the 5 new
-    calculators if time allows, per this run's own instructions — not blocking.
+- [x] Chemistry run 11 (5), branch `step/46-wave-3-chemistry-run-11`, PR #112 — **DONE** 2026-11-17:
+  - [x] formal-charge-calculator
+  - [x] latent-heat-calculator
+  - [x] raoults-law-calculator
+  - [x] nuclear-binding-energy-calculator
+  - [x] gas-density-calculator
+  - `common-ion-effect-calculator` bug (run 9, flagged run 10): **not fixed this run** — the 5 new
+    calculators took the full run; the bug remains parked in `STATUS.md` for a future run or the
+    main session to pick up. Not blocking this run's own 5 calculators, which don't touch
+    `common-ion-effect-calculator`.
+  - `formal-charge-calculator` (FC = valence electrons − nonbonding electrons − ½ bonding
+    electrons) is a 3-variable closed-form solver, reusing the plain `count` dimension for all
+    three inputs (electron counts are dimensionless integers) — no new dimension. Explicitly
+    distinguished from `oxidation-number-calculator` in content and a watch-out item: oxidation
+    number assumes a fully ionic (100%-electronegativity-difference) split of bonding electrons,
+    formal charge assumes a perfectly even (50/50) split — same underlying idea, opposite
+    simplifying assumption. Worked example is OpenStax's own ICl₄⁻ example (§7.4).
+  - `latent-heat-calculator` (Q = mL) is a 3-variable closed-form solver reusing `energy`/`mass`
+    and a genuinely new `specificLatentHeat` dimension (base J/kg, alt kJ/kg — numerically
+    identical to the commonly tabulated J/g since both scale mass by 1000 the same way; kJ/kg is
+    the practical typing unit for water's own ≈334 kJ/kg fusion / ≈2260 kJ/kg vaporization
+    figures). Explicitly distinguished from `calorimetry-enthalpy-calculator` (reaction heat ÷
+    moles, J/mol) and physics' `heat-calculator` (Q = mcΔT, temperature change with no phase
+    change) — latent heat is specifically the energy absorbed/released at a *constant-temperature*
+    phase change, stated directly in content. Worked example is OpenStax's own Example 10.9
+    (sweat evaporation). The sign convention (same magnitude, opposite sign for the reverse phase
+    change at the same temperature) is a dedicated watch-out item.
+  - `raoults-law-calculator` (P = X·P°) is a 3-variable closed-form solver reusing `pressure` and
+    the dimensionless `count` dimension for the mole fraction (same precedent as `friction-
+    calculator`'s μ and `snells-law-calculator`'s refractive indices). Explicitly distinguished
+    from `vant-hoff-osmotic-pressure-calculator` (a different colligative property, Π = iMRT, not
+    a vapor-pressure relationship) and from `vapor-pressure-calculator` (that page's P° itself
+    changes with temperature via Clausius-Clapeyron; this page takes P° as a given, fixed-
+    temperature input) — both cross-links and the distinction stated directly in a watch-out item.
+    Worked example is OpenStax's own Example 11.6.
+  - `nuclear-binding-energy-calculator` (mass defect Δm = Zmₚ + Nmₙ − M, then E = Δmc²) is a
+    3-variable breakdown/lookup widget (protons, neutrons, measured atomic mass → mass defect,
+    total binding energy in MeV, and binding energy per nucleon) — not a solver, since going
+    "backward" from a target binding energy to an atomic mass isn't a realistic use case the way
+    the three physics-wave E=mc² inputs are. Reuses `mass-energy-equivalence-calculator`'s own
+    `SPEED_OF_LIGHT` constant across the physics/chemistry category boundary rather than
+    redefining it. Explicitly distinguished from this site's own
+    `conservation-of-mass-calculator` (run 10): that page describes ordinary chemical reactions,
+    where mass change is too small to ever measure directly; this page's nuclear mass defect is
+    large enough to measure directly, which is exactly what it computes — stated directly in
+    content. Proton/neutron/electron rest masses and the atomic mass constant are NIST CODATA
+    2022 values (fetched directly, not recalled from memory). Worked example is OpenStax's own
+    Example 21.2 (helium-4 nucleus).
+  - `gas-density-calculator` (ρ = PM/RT, the ideal gas law rearranged for density) is a 4-variable
+    closed-form solver reusing `density`/`pressure`/`molarMass`/`temperature` — no new dimension,
+    but one new unit was added to the existing `density` dimension: `g/L` (factor 1, numerically
+    identical to the base kg/m³ since 1 g/L = 1000 g/m³ = 1 kg/m³ exactly), since gas density is
+    conventionally reported in g/L (e.g. "nitrogen at STP, 1.25 g/L") rather than kg/m³. Explicitly
+    distinguished from `ideal-gas-law-calculator` (that page solves directly for P, V, n, or T;
+    this page isolates density and molar mass instead, the same underlying law applied to a
+    different pair of unknowns) — cross-linked both ways. Worked examples are OpenStax's own
+    Example 9.11 (gas density) and Example 9.13 (molar mass from density).
+  - Every formula/constant fetched directly from a primary source, not recalled from memory:
+    OpenStax Chemistry 2e §7.4 "Formal Charges and Resonance" (ICl₄⁻ example), §10.3 "Phase
+    Transitions" (latent heat, Example 10.9), §11.4 "Colligative Properties" (Raoult's law,
+    Example 11.6), §21.1 "Nuclear Structure and Stability" (mass defect, binding energy,
+    Example 21.2), §9.3 "Stoichiometry of Gaseous Substances, Mixtures, and Reactions" (gas
+    density, Examples 9.11 and 9.13); NIST CODATA 2022 recommended values for the proton, neutron,
+    and electron masses and the atomic mass constant.
+  - `npm test` (1,359 tests), `npm run lint` and `npm run build` all pass. Two new
+    `KNOWN_NON_FINITE` entries: `nuclear-binding-energy-calculator` (`bindingEnergyPerNucleon`;
+    protons and neutrons both 0 at their own min → nucleons 0 → 0/0) and `gas-density-calculator`
+    (`density`; pressure and temperature both 0 at their own min → 0/0). `formal-charge-calculator`,
+    `latent-heat-calculator` and `raoults-law-calculator` needed none. Snapshot diff is
+    additive-only (175 new lines, 0 removed, confirmed with `git diff --stat`).
+  - This run's background agent hit a session rate limit right after finishing the build/lint pass
+    and starting to write this step-file entry — all 5 calculators, the new
+    `specificLatentHeat` dimension, the new `g/L` unit, and the `data/calculators.spec.ts`
+    snapshot were already complete, tested, and linted at that point (confirmed independently by
+    the main session: `npm test` 1,359/1,359, lint clean, `npm run build` green). Only this
+    write-up and the commit/push/PR were finished by the main session afterward — no calculator
+    content was redone.
+  - From this run's own branch point (does not include physics run 10, which built in parallel on
+    a separate category file): `chemistry` 50 → 55, site-wide 341 → 346 on this branch alone. The
+    true post-merge site-wide total needs reconciling with physics run 10's PR by the main
+    session, same "built in parallel, different files" pattern as physics runs 9/10 vs chemistry
+    run 10.
 - [ ] Visual-QA checkpoint: due again once ~50 more calculators land after this wave (last pass was
   at 194 calculators, 2026-11-05 — see STATUS.md header; chemistry crossed the 244-calculator
   threshold after run 6, flagged for the main session to schedule — still not run as of this run)

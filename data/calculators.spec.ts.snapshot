@@ -4602,6 +4602,41 @@ exports[`compute() snapshots > force-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > formal-charge-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "valenceElectrons": 7,
+      "lonePairElectrons": 4,
+      "bondingElectrons": 8
+    },
+    "outputs": {
+      "formalCharge": -1
+    }
+  },
+  "typical": {
+    "inputs": {
+      "valenceElectrons": 11,
+      "lonePairElectrons": 6,
+      "bondingElectrons": 12
+    },
+    "outputs": {
+      "formalCharge": -1
+    }
+  },
+  "edge": {
+    "inputs": {
+      "valenceElectrons": 0,
+      "lonePairElectrons": 0,
+      "bondingElectrons": 0
+    },
+    "outputs": {
+      "formalCharge": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > fraction-calculator 1`] = `
 {
   "default": {
@@ -5034,6 +5069,41 @@ exports[`compute() snapshots > gas-cost-calculator 1`] = `
     "outputs": {
       "gallons": 0,
       "totalCost": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > gas-density-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "pressure": 101325,
+      "molarMass": 0.028014,
+      "temperature": 273
+    },
+    "outputs": {
+      "density": 1.250532274
+    }
+  },
+  "typical": {
+    "inputs": {
+      "pressure": 151988,
+      "molarMass": 0.042021,
+      "temperature": 409.5
+    },
+    "outputs": {
+      "density": 1.875804582
+    }
+  },
+  "edge": {
+    "inputs": {
+      "pressure": 0,
+      "molarMass": 0,
+      "temperature": 0
+    },
+    "outputs": {
+      "density": "NaN"
     }
   }
 }
@@ -6488,6 +6558,38 @@ exports[`compute() snapshots > ksp-molar-solubility-calculator 1`] = `
       "molarSolubility": 0,
       "cationConcentration": 0,
       "anionConcentration": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > latent-heat-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass": 1.5,
+      "specificLatentHeat": 2412434
+    },
+    "outputs": {
+      "heat": 3618651
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass": 2.25,
+      "specificLatentHeat": 3618651
+    },
+    "outputs": {
+      "heat": 8141964.75
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass": 0,
+      "specificLatentHeat": 0
+    },
+    "outputs": {
+      "heat": 0
     }
   }
 }
@@ -8548,6 +8650,47 @@ exports[`compute() snapshots > npv-calculator 1`] = `
       "presentValueOfInflows": 0,
       "presentValueOfOutflows": 0,
       "numberOfPeriods": 1
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > nuclear-binding-energy-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "protons": 2,
+      "neutrons": 2,
+      "atomicMass": 4.002602
+    },
+    "outputs": {
+      "massDefect": 0.030378,
+      "bindingEnergyMeV": 28.29692788,
+      "bindingEnergyPerNucleon": 7.074231971
+    }
+  },
+  "typical": {
+    "inputs": {
+      "protons": 3,
+      "neutrons": 3,
+      "atomicMass": 6.003903
+    },
+    "outputs": {
+      "massDefect": 0.045567,
+      "bindingEnergyMeV": 42.44539182,
+      "bindingEnergyPerNucleon": 7.074231971
+    }
+  },
+  "edge": {
+    "inputs": {
+      "protons": 0,
+      "neutrons": 0,
+      "atomicMass": 0
+    },
+    "outputs": {
+      "massDefect": 0,
+      "bindingEnergyMeV": 0,
+      "bindingEnergyPerNucleon": "NaN"
     }
   }
 }
@@ -10670,6 +10813,38 @@ exports[`compute() snapshots > radioactive-half-life-calculator 1`] = `
     },
     "outputs": {
       "remainingAmount": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > raoults-law-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "moleFraction": 0.8,
+      "purePressure": 18035.85
+    },
+    "outputs": {
+      "solutionPressure": 14428.68
+    }
+  },
+  "typical": {
+    "inputs": {
+      "moleFraction": 1.2,
+      "purePressure": 27054
+    },
+    "outputs": {
+      "solutionPressure": 32464.8
+    }
+  },
+  "edge": {
+    "inputs": {
+      "moleFraction": 0,
+      "purePressure": 0
+    },
+    "outputs": {
+      "solutionPressure": 0
     }
   }
 }

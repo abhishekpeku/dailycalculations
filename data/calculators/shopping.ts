@@ -1,5 +1,27 @@
 import type { CalculatorConfig } from './types.ts';
 
+// USDA Food and Nutrition Service, "Cost of Food at Home" monthly reports, October 2026 edition:
+// [weekly, monthly] cost for the reference family of 4 (two adults 20-50, two children 6-11), by
+// plan tier (0 Thrifty, 1 Low-Cost, 2 Moderate-Cost, 3 Liberal). Source: see grocery-budget-calculator's
+// `content.references`. Used by that calculator's compute(), derive() and referenceTable alike, so
+// the figures are typed once, not copied by hand in three places.
+const GROCERY_FAMILY_OF_4_WEEKLY: [number, number][] = [
+  [236.5, 1024.6],
+  [261.5, 1133.28],
+  [305.7, 1325.07],
+  [371.4, 1609.56]
+];
+
+// USDA's own household-size adjustment to its 4-person reference figures (same source as above).
+function groceryBudgetSizeFactor(householdSize: number): number {
+  if (householdSize <= 1) return 1.2;
+  if (householdSize === 2) return 1.1;
+  if (householdSize === 3) return 1.05;
+  if (householdSize === 4) return 1.0;
+  if (householdSize <= 6) return 0.95;
+  return 0.9;
+}
+
 export const shoppingCalculators: CalculatorConfig[] = [
   {
     id: 'sales-tax-calculator',
@@ -606,6 +628,592 @@ export const shoppingCalculators: CalculatorConfig[] = [
       const netAnnualValue = annualCashback - values.annualFee;
       const effectiveRate = values.monthlySpend > 0 ? (monthlyCashback / values.monthlySpend) * 100 : 0;
       return { monthlyCashback, annualCashback, netAnnualValue, effectiveRate };
+    }
+  },
+  {
+    id: 'warehouse-club-membership-breakeven-calculator',
+    group: 'Discounts & Rewards',
+    category: 'shopping',
+    glyph: 'B/E',
+    updatedAt: '2026-11-16',
+    aliases: ['costco membership worth it calculator', "sam's club membership calculator", 'warehouse club breakeven calculator', 'is a club membership worth it calculator', 'bjs membership calculator'],
+    related: ['cashback-calculator', 'discount-calculator', 'unit-price-calculator', 'loyalty-points-value-calculator'],
+    title: 'Warehouse Club Membership Break-Even Calculator',
+    description: "Work out how many trips a year a warehouse club membership (Costco, Sam's Club, BJ's) needs to pay for itself, from the annual fee and what you typically save per trip.",
+    example: 'A $65 annual fee that saves you $8 a trip pays for itself after 8.125 trips, about one trip every six and a half weeks.',
+    solver: {
+      defaultTarget: 'breakEvenTrips',
+      variables: [
+        { id: 'breakEvenTrips', label: 'Trips to break even', symbol: 'n', dimension: 'count', defaultValue: 8.125, defaultUnit: 'count' },
+        { id: 'annualFee', label: 'Annual membership fee', symbol: 'F', dimension: 'currency', defaultValue: 65, defaultUnit: 'currency' },
+        { id: 'savingsPerTrip', label: 'Savings per trip vs. shopping elsewhere', symbol: 's', dimension: 'currency', defaultValue: 8, defaultUnit: 'currency' },
+        { id: 'yourTripsPerYear', label: 'Trips you actually plan to make a year', symbol: 't', dimension: 'count', defaultValue: 12, defaultUnit: 'count', fixed: true }
+      ],
+      solve: {
+        breakEvenTrips: ({ annualFee, savingsPerTrip }) => (savingsPerTrip > 0 ? annualFee / savingsPerTrip : NaN),
+        annualFee: ({ breakEvenTrips, savingsPerTrip }) => breakEvenTrips * savingsPerTrip,
+        savingsPerTrip: ({ annualFee, breakEvenTrips }) => (breakEvenTrips > 0 ? annualFee / breakEvenTrips : NaN)
+      },
+      outputs: [
+        { id: 'yourAnnualSavings', label: 'Your estimated savings at that many trips', dimension: 'currency', compute: (si) => si.yourTripsPerYear * si.savingsPerTrip },
+        { id: 'netAnnualValue', label: 'Net value after the fee', dimension: 'currency', compute: (si) => si.yourTripsPerYear * si.savingsPerTrip - si.annualFee }
+      ],
+      visuals: [
+        {
+          type: 'compareBars',
+          bars: [{ from: 'annualFee', label: 'Annual fee' }, { from: 'yourAnnualSavings', label: 'Your estimated yearly savings' }],
+          title: 'Fee vs. your estimated savings'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'Is a warehouse club membership worth it?',
+        paragraphs: [
+          "Costco, Sam's Club and BJ's Wholesale all charge an annual fee before you can shop at all. In exchange, many items run below regular retail prices, usually in bulk sizes. Whether that trade pays off depends entirely on how much you personally save on a typical trip and how often you actually go, so \"is it worth it\" has a different answer for every household, not one universal yes or no.",
+          'The break-even point is the number of trips at which your accumulated savings exactly cover the fee. Divide the annual fee by what you save per trip compared with buying the same things elsewhere. Fewer trips than that and the membership cost you money overall; more trips and every additional visit is money ahead.',
+          "As of November 2026, Costco's Gold Star membership is $65 a year and Sam's Club's Club membership is $60 a year, both before the optional cash-back upgrade tier. Those fees are a real, checkable floor for the math: a household that cannot identify at least that much in savings across a year's worth of trips is better off shopping elsewhere."
+        ]
+      },
+      howTo: {
+        intro: 'Enter the membership fee and what you expect to save on a typical trip. The result updates as you type.',
+        steps: [
+          { name: 'Enter the annual fee', text: "Type the club's membership price — the base tier unless you plan to pay for an upgrade." },
+          { name: 'Estimate your savings per trip', text: 'Compare a few items you buy regularly against their price at a regular grocery or big-box store, and estimate the typical gap for a full trip.' },
+          { name: 'Read the break-even point', text: 'The result is how many trips a year make the membership pay for itself.' },
+          { name: 'Enter your planned trips', text: 'Type how many trips you realistically expect to make. The net value line shows whether that puts you ahead or behind.' },
+          { name: 'Compare tiers', text: 'Run the numbers again with an upgraded tier\'s higher fee if you are deciding between the base and cash-back memberships.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Break-even trips is the fee divided by the savings each trip delivers.',
+        expression: 'n = F ÷ s\nYour savings = t × s\nNet value = t × s − F',
+        terms: [
+          { symbol: 'n', meaning: 'Trips needed to break even.' },
+          { symbol: 'F', meaning: 'Annual membership fee.' },
+          { symbol: 's', meaning: 'What you save on a typical trip vs. your next-best option.' },
+          { symbol: 't', meaning: 'Trips you actually plan to make in a year.' }
+        ],
+        note: 'An estimate. It assumes every trip saves the same amount and that you would have spent the same money either way — buying things you would not otherwise have bought erases the savings.'
+      },
+      workedExample: {
+        intro: "A Costco Gold Star membership costs $65 a year. You estimate you save about $8 a trip versus your regular grocery store, and you plan to shop there roughly once every four weeks (about 12 trips a year).",
+        rows: [
+          { label: 'Break-even trips (65 ÷ 8)', value: '8.125 trips' },
+          { label: 'Your estimated savings at 12 trips (12 × 8)', value: '$96.00' },
+          { label: 'Net value after the fee (96 − 65)', value: '$31.00' }
+        ],
+        result: 'You break even after about 8.1 trips, and come out $31.00 ahead over a year of 12 trips.',
+        explanation: "Because the fee is fixed, each trip past break-even is pure savings. At only 6 trips a year (6 × 8 = $48), the same membership would net a $17.00 loss — the math only works if you actually go often enough."
+      },
+      watchOut: [
+        { title: 'Only count savings on things you were buying anyway', body: "A membership that tempts you into buying things you did not need erases its own savings. Count only the gap on your regular grocery list, not the full receipt." },
+        { title: 'Upgrade tiers add a second break-even', body: "Costco's Executive membership, Sam's Club Plus and BJ's Perks Rewards cost more than the base tier and pay a cash-back percentage instead of (or in addition to) lower prices. Run this calculator again using just the extra fee and the extra cash back to judge the upgrade on its own." },
+        { title: 'Gas and travel perks are separate savings', body: 'Warehouse clubs often sell discounted gas and travel bookings. If you use them, fold a realistic estimate of those savings into your per-trip figure rather than ignoring them.' },
+        { title: 'Fees change', body: "Membership fees are reviewed periodically by each retailer and have risen in the past. Check the club's current fee before relying on this calculator's defaults." }
+      ],
+      references: [
+        { label: "Costco Wholesale, Executive Membership & 2% Reward (fee and reward terms)", url: 'https://www.costco.com/f/-/executive-rewards' },
+        { label: "Sam's Club, Membership plans and pricing", url: 'https://www.samsclub.com/membership' }
+      ]
+    },
+    inputs: [
+      { id: 'annualFee', label: 'Annual membership fee', type: 'currency', placeholder: '65', defaultValue: 65, step: 5, min: 0 },
+      { id: 'savingsPerTrip', label: 'Savings per trip vs. shopping elsewhere', type: 'currency', placeholder: '8', defaultValue: 8, step: 0.5, min: 0 }
+    ],
+    seo: {
+      title: 'Warehouse Club Membership Break-Even Calculator',
+      description: "Free calculator: how many trips a Costco, Sam's Club or BJ's membership needs to pay for itself, from the annual fee and your savings per trip.",
+      faq: [
+        { question: 'How do I know if a warehouse club membership is worth it?', answer: "Divide the annual fee by what you save on a typical trip. At $65 a year and $8 saved per trip, you break even after 65 ÷ 8 = 8.125 trips — fewer trips than that and you lose money overall." },
+        { question: "How much do Costco and Sam's Club memberships cost?", answer: "As of November 2026, Costco's Gold Star membership is $65 a year and its Executive upgrade is $130 total. Sam's Club's Club membership is $60 a year and Plus is $120, per each retailer's own membership page." },
+        { question: 'Is the Executive or Plus upgrade worth it?', answer: "Costco's Executive tier costs $65 more than Gold Star and pays a 2% reward, capped at $1,250 a year, on qualifying purchases. The extra fee breaks even at $65 ÷ 2% = $3,250 of qualifying annual spending." },
+        { question: 'What counts as savings per trip?', answer: 'The difference between what you paid at the club and what the same items would have cost at your regular store. It is an estimate you supply, since it depends on what you actually buy.' },
+        { question: 'Does gas count toward the savings?', answer: 'Not automatically. If you regularly use a club\'s discounted gas or travel bookings, add a reasonable estimate of that savings into your per-trip figure.' },
+        { question: 'Does splitting a membership with family change the math?', answer: "No — the fee and the break-even trip count stay the same. Sharing a membership just means more of a household's trips count toward reaching it." }
+      ]
+    },
+    compute(values) {
+      const breakEvenTrips = values.savingsPerTrip > 0 ? values.annualFee / values.savingsPerTrip : NaN;
+      return { breakEvenTrips };
+    }
+  },
+  {
+    id: 'grocery-budget-calculator',
+    group: 'Budgeting',
+    category: 'shopping',
+    glyph: '$/mo',
+    updatedAt: '2026-11-16',
+    aliases: ['food budget calculator', 'weekly grocery budget calculator', 'monthly food budget calculator', 'usda food plan calculator', 'grocery cost calculator by household size'],
+    related: ['unit-price-calculator', 'discount-calculator', 'sales-tax-calculator', 'warehouse-club-membership-breakeven-calculator'],
+    title: 'Grocery Budget Calculator',
+    description: 'Estimate a realistic weekly or monthly grocery budget from your household size, using the USDA\'s own Thrifty, Low-Cost, Moderate-Cost and Liberal food plan figures.',
+    example: "A 3-person household on USDA's Moderate-Cost plan budgets about $240.74 a week, or roughly $1,043.20 a month.",
+    breakdown: {
+      headline: 'monthlyBudget',
+      headlineLabel: 'Estimated monthly grocery budget',
+      outputs: [
+        { id: 'monthlyBudget', label: 'Estimated monthly grocery budget', format: 'currency' },
+        { id: 'weeklyBudget', label: 'Estimated weekly grocery budget', format: 'currency' },
+        { id: 'perPersonWeekly', label: 'Per person, per week', format: 'currency' }
+      ],
+      derive: (values) => {
+        const householdSize = values.householdSize;
+        const factor = groceryBudgetSizeFactor(householdSize);
+        const monthlyByTier = GROCERY_FAMILY_OF_4_WEEKLY.map(([weekly]) => ((weekly / 4) * householdSize * factor * 52) / 12);
+        return {
+          thriftyMonthly: monthlyByTier[0],
+          lowCostMonthly: monthlyByTier[1],
+          moderateMonthly: monthlyByTier[2],
+          liberalMonthly: monthlyByTier[3]
+        };
+      },
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'thriftyMonthly', label: 'Thrifty' },
+          { from: 'lowCostMonthly', label: 'Low-Cost' },
+          { from: 'moderateMonthly', label: 'Moderate-Cost' },
+          { from: 'liberalMonthly', label: 'Liberal' }
+        ],
+        title: 'Monthly budget by USDA plan, at your household size'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: "What's a realistic grocery budget?",
+        paragraphs: [
+          "The U.S. Department of Agriculture publishes four monthly \"food plans\" — Thrifty, Low-Cost, Moderate-Cost and Liberal — that price out a nutritionally adequate diet prepared at home, from the cheapest realistic plan to a more generous one. They are the government's own reference figures for what groceries cost a specific reference family, updated every month for food-price inflation, and they are the basis used to set SNAP (food stamp) benefit levels.",
+          'The published figures are for a reference family of two adults (20-50 years old) and two children (6-11 years old). USDA tells households of other sizes how to adjust: add 20% for a single person, 10% for two people, 5% for three people, no change for four, subtract 5% for five or six, and subtract 10% for seven or more. This calculator applies that same adjustment to an average per-person figure from the reference family, scaled to your own household size.',
+          "No single number is \"the\" grocery budget — a household's real spending depends on diet, local prices and how much cooking from scratch versus convenience food it does. The four tiers give a real, cited range to check your own spending against, from frugal to generous, rather than a number invented for this calculator."
+        ]
+      },
+      howTo: {
+        intro: 'Enter your household size and pick a food plan tier. The budget updates as you type.',
+        steps: [
+          { name: 'Enter your household size', text: 'Type the number of people the grocery budget needs to cover.' },
+          { name: 'Pick a plan tier', text: 'Thrifty is the most frugal; Liberal assumes more convenience foods and variety. Moderate-Cost is a reasonable middle estimate for most households.' },
+          { name: 'Read the weekly and monthly figures', text: 'The headline is the estimated monthly budget; the weekly figure and the per-person figure are shown below it.' },
+          { name: 'Compare tiers', text: 'The chart shows all four tiers at your own household size, so you can see where your actual spending falls.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "Start from the reference family's weekly cost for the chosen plan, divide by 4 for an average per-person figure, scale by household size, then apply USDA's own household-size adjustment.",
+        expression: 'Per person = Family-of-4 weekly ÷ 4\nWeekly budget = Per person × household size × adjustment factor\nMonthly budget ≈ Weekly budget × 52 ÷ 12',
+        terms: [
+          { symbol: 'Family-of-4 weekly', meaning: "USDA's published weekly cost for the chosen plan, for its reference family of two adults and two children." },
+          { symbol: 'adjustment factor', meaning: 'USDA\'s household-size adjustment: 1.20 for 1 person, 1.10 for 2, 1.05 for 3, 1.00 for 4, 0.95 for 5-6, 0.90 for 7+.' }
+        ],
+        note: "An estimate using an average per-person figure, not USDA's full age-and-sex breakdown. USDA's own published monthly figures are also set independently, not simply 52÷12 times its weekly figure, so this calculator's monthly estimate can differ from USDA's published monthly number by up to about $0.40 — the reference table below shows USDA's own weekly and monthly figures side by side."
+      },
+      workedExample: {
+        intro: "A household of 3 people wants a Moderate-Cost budget.",
+        rows: [
+          { label: "Moderate-Cost, family of 4, per week (USDA, Oct. 2026)", value: '$305.70' },
+          { label: 'Per person, per week (305.70 ÷ 4)', value: '$76.43' },
+          { label: '3 people, before adjustment (76.43 × 3)', value: '$229.28' },
+          { label: '3-person adjustment factor', value: '× 1.05' },
+          { label: 'Weekly budget (229.28 × 1.05)', value: '$240.74' },
+          { label: 'Monthly budget (240.74 × 52 ÷ 12)', value: '$1,043.20' }
+        ],
+        result: 'About $240.74 a week, or $1,043.20 a month, for 3 people on the Moderate-Cost plan.',
+        explanation: "A single person on the frugal Thrifty plan budgets far less in total: 59.13 × 1 × 1.20 = $70.95 a week, about $307.45 a month, even though the per-person rate is actually higher to account for less bulk-buying efficiency."
+      },
+      watchOut: [
+        { title: 'These are national averages', body: "USDA's figures are a US national average. Grocery prices vary significantly by region and by store, so treat the result as a starting point, not a local guarantee." },
+        { title: 'Assumes cooking at home', body: 'The food plans price ingredients for meals prepared at home. Restaurant meals, delivery and heavily processed convenience foods cost more and are not included.' },
+        { title: 'The per-person figure is an average, not age-specific', body: "USDA's own tables price food differently by age and sex (for example, teenage boys cost more to feed than toddlers). This calculator uses one average per-person figure, so a household skewed toward teenagers or large adults will likely need more than this estimate, and one with young children less." },
+        { title: 'Updated monthly', body: 'USDA revises all four plans every month for food-price inflation. Figures here reflect the October 2026 report and will drift from the current report over time.' }
+      ],
+      references: [
+        { label: 'USDA Food and Nutrition Service, USDA Food Plans: Cost of Food at Home, October 2026', url: 'https://www.fns.usda.gov/research/cnpp/usda-food-plans/cost-food-monthly-reports' },
+        { label: 'USDA Food and Nutrition Service, Thrifty Food Plan report, October 2026 (reference family and household-size adjustment)', url: 'https://www.fna.usda.gov/sites/default/files/resource-files/CostofFoodOct2026Thrifty.pdf' }
+      ],
+      referenceTable: {
+        title: 'USDA food plans: reference family of 4, October 2026',
+        columns: ['Plan', 'Weekly cost', 'Monthly cost'],
+        rows: [
+          { label: 'Thrifty', values: GROCERY_FAMILY_OF_4_WEEKLY[0] },
+          { label: 'Low-Cost', values: GROCERY_FAMILY_OF_4_WEEKLY[1] },
+          { label: 'Moderate-Cost', values: GROCERY_FAMILY_OF_4_WEEKLY[2] },
+          { label: 'Liberal', values: GROCERY_FAMILY_OF_4_WEEKLY[3] }
+        ],
+        decimals: 2,
+        note: 'Reference family: two adults ages 20-50 and two children ages 6-11. Official USDA national averages for October 2026, updated monthly for food-price inflation.'
+      }
+    },
+    inputs: [
+      {
+        id: 'householdSize',
+        label: 'Household size',
+        type: 'number',
+        placeholder: '4',
+        defaultValue: 4,
+        step: 1,
+        min: 1
+      },
+      {
+        id: 'planTier',
+        label: 'Food plan tier',
+        type: 'number',
+        placeholder: '2',
+        defaultValue: 2,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Thrifty (most frugal)' },
+          { value: 1, label: 'Low-Cost' },
+          { value: 2, label: 'Moderate-Cost (typical)' },
+          { value: 3, label: 'Liberal (most generous)' }
+        ]
+      }
+    ],
+    seo: {
+      title: 'Grocery Budget Calculator – Weekly & Monthly, by USDA Plan',
+      description: "Free grocery budget calculator: a weekly or monthly estimate by household size, based on USDA's own Thrifty, Low-Cost, Moderate-Cost and Liberal food plans.",
+      faq: [
+        { question: 'What is a realistic grocery budget for one person?', answer: "On USDA's Thrifty plan, one person budgets about $70.95 a week (about $307.45 a month) as of October 2026. The Liberal plan for one person runs about $111.42 a week." },
+        { question: 'How much should a family of 4 spend on groceries?', answer: "USDA's October 2026 figures for its reference family of 4 run from $236.50 a week on the Thrifty plan to $371.40 a week on the Liberal plan, with Low-Cost and Moderate-Cost in between." },
+        { question: 'How is the grocery budget adjusted for household size?', answer: "USDA directs smaller households to add a percentage (20% for 1 person, 10% for 2, 5% for 3) and larger ones to subtract one (5% for 5-6 people, 10% for 7+), since buying for one or two people is less efficient per person than buying for a family of four." },
+        { question: 'What is the difference between the Thrifty and Liberal plans?', answer: 'They assume the same nutritional targets but price out different amounts of convenience foods, variety and brand-name items. Thrifty is the most frugal realistic plan and is also used to set SNAP benefit levels; Liberal is the most generous of the four.' },
+        { question: 'Why is my monthly budget not exactly 4.33 times my weekly budget?', answer: 'This calculator multiplies the weekly figure by 52÷12 to get a monthly estimate, which is very close to but not identical to the independently rounded monthly figures USDA itself publishes — the gap is at most about $0.40 a month on these plans.' },
+        { question: 'Do these figures include eating out?', answer: 'No. USDA\'s food plans price groceries for meals made at home only, not restaurant meals, delivery or alcohol.' }
+      ]
+    },
+    compute(values) {
+      const tier = Math.min(3, Math.max(0, Math.round(values.planTier)));
+      const familyOf4Weekly = GROCERY_FAMILY_OF_4_WEEKLY[tier][0];
+      const perPersonWeekly = familyOf4Weekly / 4;
+      const householdSize = values.householdSize;
+      const weeklyBudget = perPersonWeekly * householdSize * groceryBudgetSizeFactor(householdSize);
+      const monthlyBudget = (weeklyBudget * 52) / 12;
+      return { monthlyBudget, weeklyBudget, perPersonWeekly };
+    }
+  },
+  {
+    id: 'loyalty-points-value-calculator',
+    group: 'Discounts & Rewards',
+    category: 'shopping',
+    glyph: '¢/pt',
+    updatedAt: '2026-11-16',
+    aliases: ['points to cash calculator', 'miles to dollars calculator', 'credit card points value calculator', 'how much are my points worth calculator', 'rewards points value calculator'],
+    related: ['cashback-calculator', 'warehouse-club-membership-breakeven-calculator', 'discount-calculator', 'unit-price-calculator'],
+    title: 'Loyalty Points Value Calculator',
+    description: 'Convert loyalty, credit card or airline points to a cash value using a cents-per-point rate you supply, and compare it against a second redemption rate.',
+    example: "50,000 points at 1 cent each are worth $500.00. The same points at a 0.7-cent rate are worth $350.00, a $150.00 difference.",
+    breakdown: {
+      headline: 'value',
+      headlineLabel: 'Cash value at your rate',
+      outputs: [
+        { id: 'value', label: 'Cash value at your rate', format: 'currency' },
+        { id: 'comparisonValue', label: 'Cash value at the comparison rate', format: 'currency' },
+        { id: 'difference', label: 'Difference', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your points', inputs: ['points', 'centsPerPoint'] },
+        { title: 'Compare against another rate', inputs: ['comparisonCentsPerPoint'], optional: true }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'value', label: 'At your rate' }, { from: 'comparisonValue', label: 'At the comparison rate' }],
+        title: 'Cash value at each rate'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What are loyalty points actually worth?',
+        paragraphs: [
+          'Credit card, airline and store loyalty points have no single, universal dollar value. What they are worth depends entirely on how you redeem them: a program might pay one rate for a statement credit, a different rate for gift cards, and no fixed rate at all for a flight booked with miles. The standard way the rewards industry quotes value is cents per point: how many cents one point is worth for a given redemption.',
+          'Once you know (or estimate) a cents-per-point rate, the dollar value is a straight multiplication: points times the rate. This calculator also lets you compare a second rate side by side, since the same points often redeem very differently depending on how you cash them in.',
+          "The gap can be real even within one program. American Express states that Membership Rewards points redeemed through Pay with Points at checkout are worth 0.7 to 1 cent each depending on the retailer, while covering a statement charge through \"Cover Your Charges\" is worth only 0.6 cent. Chase, by contrast, pays a flat 1 cent per Ultimate Rewards point for cash back or a statement credit, no matter how you redeem it."
+        ]
+      },
+      howTo: {
+        intro: "Enter how many points you have and the cents-per-point rate for how you plan to redeem them. Add a second rate to compare.",
+        steps: [
+          { name: 'Enter your points balance', text: 'Type the number of points or miles you want to value.' },
+          { name: "Enter your program's rate", text: "Type the cents-per-point value for your planned redemption, from the program's own redemption page." },
+          { name: 'Read the cash value', text: 'The headline is the dollar value at your rate.' },
+          { name: 'Compare a second rate', text: 'Open the optional group and enter another cents-per-point figure, such as a different redemption option, to see the gap.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The value is points multiplied by the per-point rate, converted from cents to dollars.',
+        expression: 'Value = Points × (Cents per point ÷ 100)',
+        terms: [
+          { symbol: 'Points', meaning: 'Your points or miles balance.' },
+          { symbol: 'Cents per point', meaning: 'What one point is worth for your planned redemption, in cents.' }
+        ],
+        note: "An estimate using the rate you supply. Some programs publish a fixed cash-redemption rate; airline and hotel programs increasingly use dynamic pricing with no fixed rate at all, so check your program's own redemption page for the rate that applies to your specific booking."
+      },
+      workedExample: {
+        intro: 'You have 50,000 points. Your card pays 1 cent per point for a statement credit, but you are also considering a checkout redemption at a 0.7-cent rate. How much are the points worth each way?',
+        rows: [
+          { label: 'Value at 1.0 cent (50,000 × 0.01)', value: '$500.00' },
+          { label: 'Value at 0.7 cent (50,000 × 0.007)', value: '$350.00' },
+          { label: 'Difference (500.00 − 350.00)', value: '$150.00' }
+        ],
+        result: 'Worth $500.00 at the 1-cent rate, $150.00 more than the 0.7-cent option.',
+        explanation: 'The points themselves did not change — only the redemption method did. Always check a program\'s stated rate for the specific way you plan to redeem before assuming the best-case value.'
+      },
+      watchOut: [
+        { title: 'No universal point value', body: "A \"typical\" cents-per-point figure you read online is someone else's estimate for one redemption method. Use your own program's published rate for the redemption you actually plan to use." },
+        { title: 'The rate can vary within one program', body: "American Express states a range of 0.6 to 1 cent per Membership Rewards point depending on how you redeem, not a single number." },
+        { title: 'Airline and hotel points often have no fixed rate', body: "Many travel programs price awards dynamically, so the same miles can be worth very different amounts depending on the specific flight or room, with no published per-point rate to multiply by." },
+        { title: 'Minimums and increments', body: 'Some redemptions require a minimum number of points or round to a fixed increment, so the value of a small balance may not scale down perfectly from a larger one.' },
+        { title: 'Expiration and devaluation', body: 'Points can expire or lose value if a program changes its redemption chart. A rate that was accurate last year is not guaranteed to still apply.' }
+      ],
+      references: [
+        { label: 'Chase, How Chase Ultimate Rewards® Works', url: 'https://www.chase.com/personal/credit-cards/education/basics/how-chase-ultimate-rewards-works' },
+        { label: 'American Express, How Much Are American Express Membership Rewards® Points Worth?', url: 'https://www.americanexpress.com/en-us/credit-cards/credit-intel/american-express-points-value/' }
+      ]
+    },
+    inputs: [
+      { id: 'points', label: 'Points balance', type: 'number', placeholder: '50000', defaultValue: 50000, step: 1000, min: 0 },
+      { id: 'centsPerPoint', label: 'Your rate (cents per point)', type: 'number', placeholder: '1', defaultValue: 1, step: 0.1, min: 0 },
+      { id: 'comparisonCentsPerPoint', label: 'Comparison rate (cents per point)', type: 'number', placeholder: '0.7', defaultValue: 0.7, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Loyalty Points Value Calculator – Points to Cash',
+      description: 'Free loyalty points value calculator: convert points or miles to a dollar value from a cents-per-point rate, and compare it against a second rate.',
+      faq: [
+        { question: 'How do I calculate the cash value of my points?', answer: 'Multiply your points by the cents-per-point rate, then divide by 100. At a 1-cent rate, 50,000 points are worth 50,000 × 0.01 = $500.00.' },
+        { question: 'What is a good cents-per-point value?', answer: "It depends entirely on the program and redemption method. Chase pays a flat 1 cent per Ultimate Rewards point for cash back. American Express states 0.6 to 1 cent per Membership Rewards point depending on how you redeem." },
+        { question: 'Why do the same points redeem for different values?', answer: "Many programs pay more for some redemptions (such as a checkout purchase) than others (such as a statement credit). American Express's own redemption guide gives 0.7-1 cent for Pay with Points at checkout versus 0.6 cent for covering a statement charge." },
+        { question: 'How much are 100,000 points worth at 1 cent each?', answer: '100,000 × 0.01 = $1,000.00.' },
+        { question: 'Are airline miles worth a fixed amount?', answer: 'Not usually. Many airlines price award flights dynamically rather than publishing a fixed chart, so the same miles can be worth more or less depending on the specific flight, with no single cents-per-point figure that always applies.' },
+        { question: 'Should I use the best-case or worst-case rate?', answer: "Use the rate for the redemption you actually plan to make. Comparing your planned rate against a program's other options (using the comparison field) shows whether a different redemption would be worth more." }
+      ]
+    },
+    compute(values) {
+      const value = values.points * (values.centsPerPoint / 100);
+      const comparisonValue = values.points * (values.comparisonCentsPerPoint / 100);
+      const difference = value - comparisonValue;
+      return { value, comparisonValue, difference };
+    }
+  },
+  {
+    id: 'layaway-payment-calculator',
+    group: 'Budgeting',
+    category: 'shopping',
+    glyph: 'LAY',
+    updatedAt: '2026-11-16',
+    aliases: ['layaway calculator', 'layaway plan calculator', 'layaway installment calculator', 'layaway payment schedule calculator'],
+    related: ['grocery-budget-calculator', 'discount-calculator', 'sales-tax-calculator', 'warehouse-club-membership-breakeven-calculator'],
+    title: 'Layaway Payment Calculator',
+    description: 'Work out the size and number of installment payments to pay off a layaway balance by your pickup date, from the item price, down payment, service fee and payment schedule.',
+    example: 'A $150 item with a $30 down payment and a $5 service fee, paid off in 2 installments over 4 weeks, costs $62.50 a payment.',
+    breakdown: {
+      headline: 'perPayment',
+      headlineLabel: 'Each installment payment',
+      outputs: [
+        { id: 'perPayment', label: 'Each installment payment', format: 'currency' },
+        { id: 'numberOfPayments', label: 'Number of installments', format: 'integer' },
+        { id: 'remainingBalance', label: 'Balance after the down payment', format: 'currency' },
+        { id: 'totalCost', label: 'Total you pay (item + service fee)', format: 'currency' }
+      ],
+      groups: [
+        { title: 'The item', inputs: ['itemPrice', 'downPayment', 'serviceFee'] },
+        { title: 'Timing', inputs: ['weeksUntilPickup', 'paymentFrequencyWeeks'] }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'downPayment', label: 'Down payment' },
+          { from: 'remainingBalance', label: 'Remaining balance' },
+          { from: 'serviceFee', label: 'Service fee' }
+        ],
+        center: 'totalCost',
+        centerSub: 'Total cost'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'How does a layaway plan work?',
+        paragraphs: [
+          "Layaway reverses the usual order of buying on credit: the store holds your item while you pay it off in installments, and you take it home only once it is fully paid. There is normally no interest, but many stores charge a small, non-refundable service fee, and the item is held only for a fixed window — commonly a few weeks to a month.",
+          "The math is simple division. Subtract your down payment from the item's price to get the remaining balance, add the service fee, and split that total evenly across however many payments fit between now and your pickup deadline at your chosen payment frequency.",
+          "Burlington's own published layaway policy is a real, concrete example of how a plan like this is actually structured: a minimum down payment of $10 or 20% of the price (whichever is greater), a $5 non-refundable service fee, a 30-day hold, and a $10 fee if you cancel or do not complete the purchase in time. Other retailers that still offer layaway set their own terms, so always confirm the specific numbers with the store."
+        ]
+      },
+      howTo: {
+        intro: "Enter the item's price, your down payment and the store's service fee, then how long you have and how often you'll pay.",
+        steps: [
+          { name: 'Enter the price and down payment', text: "Type the item's price and the down payment the store requires or that you plan to put down." },
+          { name: 'Enter the service fee', text: 'Type the non-refundable layaway fee the store charges, if any.' },
+          { name: 'Enter your timeline', text: 'Type how many weeks you have until pickup and how often you plan to pay (for example, every 2 weeks).' },
+          { name: 'Read the payment amount', text: 'The headline is each installment payment. The donut shows how the total splits between your down payment, the remaining balance and the fee.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The remaining balance plus the fee is split evenly across however many payments fit before your pickup date.',
+        expression: 'Remaining balance = Price − Down payment\nPayments = ⌊Weeks until pickup ÷ Weeks per payment⌋\nEach payment = (Remaining balance + Service fee) ÷ Payments',
+        terms: [
+          { symbol: 'Price', meaning: 'The full price of the item.' },
+          { symbol: 'Down payment', meaning: 'What you pay up front to start the layaway.' },
+          { symbol: 'Service fee', meaning: "The store's non-refundable layaway fee, added to what you owe, not to the down payment." }
+        ],
+        note: 'Assumes equal installments and no interest, matching how store layaway plans work (unlike financed credit). Rounds down to a whole number of payments that fit before your pickup date.'
+      },
+      workedExample: {
+        intro: 'A $150 item needs a $30 down payment and carries a $5 service fee. You have 4 weeks until pickup and plan to pay every 2 weeks.',
+        rows: [
+          { label: 'Remaining balance (150 − 30)', value: '$120.00' },
+          { label: 'Number of payments (4 weeks ÷ 2-week schedule)', value: '2 payments' },
+          { label: 'Each payment ((120 + 5) ÷ 2)', value: '$62.50' },
+          { label: 'Total cost (150 + 5)', value: '$155.00' }
+        ],
+        result: '2 payments of $62.50 each, $155.00 total, on top of the $30.00 down payment.',
+        explanation: 'The service fee is spread across the remaining payments along with the balance, not charged separately, so each payment is slightly more than a plain even split of the balance alone.'
+      },
+      watchOut: [
+        { title: 'Service fees are usually non-refundable', body: "Burlington's policy, for example, keeps its $5 service fee ($1 in Maryland) even if you cancel." },
+        { title: 'Cancellation and missed deadlines cost extra', body: "Burlington charges an additional $10 if you cancel or do not complete the layaway by its expiration date. Check your store's specific cancellation terms before committing." },
+        { title: 'The hold period is firm', body: "Burlington holds layaway merchandise for 30 days. Missing the pickup deadline can forfeit your payments beyond the cancellation fee, depending on the store's policy." },
+        { title: 'Layaway does not build credit', body: 'Unlike financing, layaway is not reported to credit bureaus. It helps you budget for a purchase, not establish or improve a credit history.' },
+        { title: 'Terms vary by store', body: 'Down payment percentages, fees and hold periods differ between retailers that still offer layaway. Use your store\'s own terms, not the defaults, for an accurate figure.' }
+      ],
+      references: [
+        { label: "Burlington, Layaway Policy", url: 'https://www.burlington.com/helpcenter/layaway' }
+      ]
+    },
+    inputs: [
+      { id: 'itemPrice', label: 'Item price', type: 'currency', placeholder: '150', defaultValue: 150, step: 10, min: 0 },
+      { id: 'downPayment', label: 'Down payment', type: 'currency', placeholder: '30', defaultValue: 30, step: 5, min: 0 },
+      { id: 'serviceFee', label: 'Service fee', type: 'currency', placeholder: '5', defaultValue: 5, step: 1, min: 0 },
+      { id: 'weeksUntilPickup', label: 'Weeks until pickup', type: 'number', placeholder: '4', defaultValue: 4, step: 1, min: 1 },
+      { id: 'paymentFrequencyWeeks', label: 'Pay every how many weeks', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Layaway Payment Calculator – Installment Schedule',
+      description: 'Free layaway payment calculator: work out each installment amount from the item price, down payment, service fee and your payment schedule.',
+      faq: [
+        { question: 'How do I calculate my layaway payments?', answer: 'Subtract your down payment from the price, add the service fee, then divide by how many payments fit before your pickup date. A $150 item with a $30 down payment, a $5 fee and 2 payments works out to (120 + 5) ÷ 2 = $62.50 each.' },
+        { question: 'How much down payment do stores require for layaway?', answer: "Terms vary by retailer. Burlington requires a minimum of $10 or 20% of the price, whichever is greater, as one real published example." },
+        { question: 'Do layaway plans charge interest?', answer: 'Typically no. Most layaway plans charge a flat, non-refundable service fee instead of interest, since you are paying off the item before taking it home rather than financing it afterward.' },
+        { question: 'What happens if I cancel a layaway plan?', answer: "It depends on the store. Burlington charges an additional $10 cancellation fee on top of keeping its non-refundable $5 service fee." },
+        { question: 'How long do stores hold layaway items?', answer: "Hold periods vary. Burlington holds merchandise for 30 days from when you start the layaway." },
+        { question: 'Does layaway affect my credit score?', answer: 'No. Layaway plans are not reported to credit bureaus, since no credit is extended — you are simply pre-paying for an item the store holds for you.' }
+      ]
+    },
+    compute(values) {
+      const remainingBalance = Math.max(0, values.itemPrice - values.downPayment);
+      const numberOfPayments = Math.max(1, Math.floor(values.weeksUntilPickup / values.paymentFrequencyWeeks));
+      const perPayment = (remainingBalance + values.serviceFee) / numberOfPayments;
+      const totalCost = values.itemPrice + values.serviceFee;
+      return { perPayment, numberOfPayments, remainingBalance, totalCost };
+    }
+  },
+  {
+    id: 'free-shipping-threshold-calculator',
+    group: 'Price Comparison',
+    category: 'shopping',
+    glyph: 'FS',
+    updatedAt: '2026-11-16',
+    aliases: ['free shipping calculator', 'should i add to cart for free shipping calculator', 'free shipping minimum calculator', 'is adding items for free shipping worth it calculator'],
+    related: ['unit-price-calculator', 'discount-calculator', 'loyalty-points-value-calculator', 'layaway-payment-calculator'],
+    title: 'Free Shipping Threshold Calculator',
+    description: "Find out whether adding items to your cart to reach a store's free-shipping minimum actually saves money, or whether paying the shipping fee outright is cheaper.",
+    example: "Padding a $42 cart with a $15 item you'd only use $5 worth of wastes $10 — more than the $6.99 shipping fee it was meant to avoid.",
+    breakdown: {
+      headline: 'netSavingsByAdding',
+      headlineLabel: 'What you save by adding items (negative = pay the shipping fee instead)',
+      outputs: [
+        { id: 'netSavingsByAdding', label: 'What you save by adding items (negative = pay the shipping fee instead)', format: 'currency' },
+        { id: 'gapToThreshold', label: 'Amount needed to reach the free-shipping minimum', format: 'currency' },
+        { id: 'wastedSpend', label: "Cost of the added item beyond what it's worth to you", format: 'currency' },
+        { id: 'totalIfShip', label: 'Total if you check out now and pay shipping', format: 'currency' },
+        { id: 'totalIfAdd', label: 'Total if you add the item instead', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your order', inputs: ['cartTotal', 'freeShippingThreshold', 'shippingFee'] },
+        { title: "The item you'd add", inputs: ['addedItemCost', 'addedItemValueToYou'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [{ from: 'shippingFee', label: 'Cost of paying for shipping' }, { from: 'wastedSpend', label: "Cost of items you don't really want" }],
+        title: 'The real cost of each option'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'Is it cheaper to add items for free shipping?',
+        paragraphs: [
+          "Many stores waive shipping above a spending threshold. The tempting move when a cart falls just short is to add another item to clear the line and avoid the fee. That only actually saves money if the added item is something you fully wanted anyway — otherwise you are trading a shipping fee for the cost of something you don't fully want, and that trade can easily cost more than the fee did.",
+          "The real cost of \"padding\" a cart is not the added item's price. It is the gap between what you paid for it and what it is actually worth to you. If you value the item fully at its price, adding it costs nothing extra beyond the item itself and is a clear win over paying for shipping. If you don't want it at all, the entire price is wasted money.",
+          'Comparing that wasted-spend figure against the shipping fee you were trying to avoid tells you which option is genuinely cheaper, rather than assuming "free" shipping is automatically the better deal.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your cart total, the free-shipping threshold and fee, then the item you are considering adding and what it is really worth to you.',
+        steps: [
+          { name: 'Enter your order details', text: "Type your current cart total, the store's free-shipping minimum, and the shipping fee you'd pay otherwise." },
+          { name: "Enter the item you'd add", text: 'Type its price, and honestly estimate what it is worth to you — its full price if you genuinely want it, less if you are only adding it to hit the minimum.' },
+          { name: 'Read the result', text: 'A positive headline means adding the item saves you money. A negative headline means paying the shipping fee outright is cheaper.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The cost of padding the cart is the part of the added item\'s price that is not matched by its value to you. Compare that against the shipping fee.',
+        expression: "Wasted spend = max(0, Added item's price − Added item's value to you)\nNet savings by adding = Shipping fee − Wasted spend",
+        terms: [
+          { symbol: "Added item's value to you", meaning: "What you would actually pay for the item on its own, if you wanted it regardless of the free-shipping minimum." },
+          { symbol: 'Wasted spend', meaning: "The part of the item's price you would not have chosen to spend otherwise." }
+        ],
+        note: "A positive result means adding the item is the cheaper option; a negative result means paying the shipping fee outright costs you less."
+      },
+      workedExample: {
+        intro: 'Your cart totals $42, free shipping kicks in at $50, and shipping otherwise costs $6.99. You are considering adding a $15 item that you would only really use about $5 of.',
+        rows: [
+          { label: 'Gap to the threshold (50 − 42)', value: '$8.00' },
+          { label: "Wasted spend (15 − 5)", value: '$10.00' },
+          { label: 'Net savings by adding (6.99 − 10.00)', value: '−$3.01' }
+        ],
+        result: 'Adding the item costs $3.01 more than just paying the $6.99 shipping fee.',
+        explanation: 'If the same $15 item were worth $12 to you instead (wasted spend of only $3), adding it would save 6.99 − 3 = $3.99 over paying for shipping — the decision flips purely on how much you actually value the item you\'re adding.'
+      },
+      watchOut: [
+        { title: 'Be honest about what you actually want', body: "It is easy to overstate an added item's value to justify the purchase. If you would not buy it on its own, its real value to you is closer to zero." },
+        { title: 'Returns have their own cost', body: 'Returning an unwanted item to avoid waste takes time and sometimes costs its own return-shipping fee, which this calculator does not model.' },
+        { title: 'Free shipping is not the only reason to hit a threshold', body: 'Some thresholds also unlock a discount, a gift or loyalty points, which can change the math in the item\'s favor beyond what this calculator covers.' },
+        { title: 'Taxes can apply to the added item too', body: 'Sales tax on the extra item adds a small additional cost on top of its price, which this calculator does not include.' }
+      ]
+    },
+    inputs: [
+      { id: 'cartTotal', label: 'Current cart total', type: 'currency', placeholder: '42', defaultValue: 42, step: 1, min: 0 },
+      { id: 'freeShippingThreshold', label: 'Free-shipping minimum', type: 'currency', placeholder: '50', defaultValue: 50, step: 5, min: 0 },
+      { id: 'shippingFee', label: 'Shipping fee you\'d otherwise pay', type: 'currency', placeholder: '6.99', defaultValue: 6.99, step: 0.5, min: 0 },
+      { id: 'addedItemCost', label: "Added item's price", type: 'currency', placeholder: '15', defaultValue: 15, step: 1, min: 0 },
+      { id: 'addedItemValueToYou', label: "What it's actually worth to you", type: 'currency', placeholder: '5', defaultValue: 5, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Free Shipping Threshold Calculator – Add vs. Pay',
+      description: "Free calculator: is adding items to reach a store's free-shipping minimum actually cheaper than paying the shipping fee outright?",
+      faq: [
+        { question: 'Is it worth adding an item to get free shipping?', answer: "Only if the item's price isn't much more than what it's actually worth to you. If a $15 item you'd only use $5 of saves a $6.99 fee, you still lose $3.01 overall, since the $10 of wasted spend outweighs the fee." },
+        { question: 'How do I calculate if free shipping padding is worth it?', answer: "Subtract what the added item is really worth to you from its price to get the wasted spend, then compare that to the shipping fee. If wasted spend is less than the fee, adding the item is cheaper." },
+        { question: "What if I'd buy the added item anyway?", answer: "Then its value to you equals its price, wasted spend is $0, and adding it is always at least as cheap as paying for shipping." },
+        { question: 'Does the free-shipping minimum itself matter to the decision?', answer: "Not directly — once you know the added item's price and what it's worth to you, the comparison is the same regardless of how large the gap to the threshold was." },
+        { question: 'Should I just buy something I don\'t want to avoid a shipping fee?', answer: "Usually not. Unless the unwanted item is nearly free or you can resell it for close to its price, the wasted spend is often larger than a typical shipping fee." },
+        { question: 'Does this account for return shipping if I send the padding item back?', answer: 'No. A return often has its own cost and hassle, which would make padding-and-returning look worse than this calculator shows, not better.' }
+      ]
+    },
+    compute(values) {
+      const gapToThreshold = Math.max(0, values.freeShippingThreshold - values.cartTotal);
+      const wastedSpend = Math.max(0, values.addedItemCost - values.addedItemValueToYou);
+      const netSavingsByAdding = values.shippingFee - wastedSpend;
+      const totalIfShip = values.cartTotal + values.shippingFee;
+      const totalIfAdd = values.cartTotal + values.addedItemCost;
+      return { netSavingsByAdding, gapToThreshold, wastedSpend, totalIfShip, totalIfAdd };
     }
   }
 ];

@@ -5023,5 +5023,131 @@ export const financeCalculators: CalculatorConfig[] = [
       const monthsSavedBiweekly = months - monthsWithExtra;
       return { interestSavedBiweekly, monthsSavedBiweekly, monthlyPayment, biweeklyHalfPayment, totalInterestMonthly, totalInterestBiweekly };
     }
+  },
+  {
+    id: 'business-loan-calculator',
+    group: 'Mortgages & Loans',
+    category: 'finance',
+    glyph: 'BL',
+    updatedAt: '2026-11-16',
+    aliases: ['small business loan calculator', 'working capital loan calculator', 'equipment financing calculator', 'commercial loan calculator', 'sba loan payment calculator'],
+    related: ['loan-calculator', 'loan-prepayment-calculator', 'npv-calculator', 'irr-calculator'],
+    title: 'Business Loan Calculator',
+    description: 'Find the monthly payment, loan amount, term or rate on a working-capital or equipment business loan. Fill in any three and the fourth is calculated, with total interest.',
+    example: 'A $75,000 working-capital loan at 9% APR over 5 years costs about $1,556.88 a month, or about $18,412.60 in interest over the life of the loan.',
+    solver: {
+      defaultTarget: 'monthlyPayment',
+      variables: [
+        { id: 'monthlyPayment', label: 'Monthly payment', symbol: 'M', dimension: 'currency', defaultValue: 1556.88, defaultUnit: 'currency' },
+        { id: 'loanAmount', label: 'Loan amount', symbol: 'P', dimension: 'currency', defaultValue: 75000, defaultUnit: 'currency' },
+        { id: 'term', label: 'Loan term', symbol: 'n', dimension: 'term', defaultValue: 5, defaultUnit: 'yr' },
+        { id: 'interestRate', label: 'Interest rate (APR)', symbol: 'APR', dimension: 'percent', defaultValue: 9, defaultUnit: '%', bounds: [0, 100] }
+      ],
+      solve: {
+        monthlyPayment: ({ loanAmount, term, interestRate }) => loanPayment(loanAmount, term, interestRate),
+        loanAmount: ({ monthlyPayment: payment, term, interestRate }) => loanPrincipal(payment, term, interestRate),
+        term: ({ loanAmount, monthlyPayment: payment, interestRate }) => loanMonths(loanAmount, payment, interestRate)
+      },
+      // The rate has no closed form: the widget finds it numerically.
+      equation: (si) => si.monthlyPayment - loanPayment(si.loanAmount, si.term, si.interestRate),
+      outputs: [
+        { id: 'totalInterest', label: 'Total interest', dimension: 'currency', compute: (si) => si.monthlyPayment * si.term - si.loanAmount },
+        { id: 'totalPaid', label: 'Total of all payments', dimension: 'currency', compute: (si) => si.monthlyPayment * si.term }
+      ],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [{ from: 'loanAmount', label: 'Principal' }, { from: 'totalInterest', label: 'Interest' }],
+          center: 'totalPaid',
+          centerSub: 'total paid'
+        },
+        { type: 'amortization', principal: 'loanAmount', annualRate: 'interestRate', months: 'term', payment: 'monthlyPayment' }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'The same amortized-loan math, for working capital or equipment',
+        paragraphs: [
+          'A business loan is repaid the same way a personal loan is: equal monthly payments, each covering that month\'s interest first and the rest paying down the principal. loan-calculator already covers that math in general; this page uses the identical formula with the two framings a business owner actually searches for — working capital and equipment financing — and the content that goes with each.',
+          'Working capital covers the day-to-day gaps between paying expenses and collecting revenue: payroll, inventory, rent, a seasonal slow stretch. The U.S. Small Business Administration\'s own 7(a) loan program describes this directly: its Working Capital Pilot and CAPLines programs exist specifically "to help small businesses access the working capital they need to support and grow their business," including against cyclical or seasonal needs.',
+          'Equipment financing instead funds a specific asset — machinery, vehicles, fixtures — and is often secured by the equipment itself. The SBA\'s own materials describe its 504 program as "ideal for financing equipment purchases," while explicitly noting those loans "cannot be used for working capital or inventory" — a real, citable distinction between the two financing purposes this page\'s title covers.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of the four fields. The fourth, marked auto, is calculated as you type.',
+        steps: [
+          { name: 'Enter what you know', text: 'Type the loan amount, the interest rate and the term, and the monthly payment is calculated. Switch the term between years and months with the menu beside it.' },
+          { name: 'Solve for an affordable payment', text: 'Type into the auto field to make it an input. Enter a monthly payment your cash flow can support to see how much you can borrow at a given rate and term.' },
+          { name: 'Find the rate you were quoted', text: 'Type the amount, the term and the payment from a lender\'s quote so the rate is the field left alone longest. The calculator searches for the rate that produces that payment.' },
+          { name: 'Read the breakdown', text: 'Under the result you get the total interest and the total of all payments, a chart of principal against interest, and a year-by-year schedule.' },
+          { name: 'Compare working-capital and equipment terms', text: 'Try a shorter term (common for working capital) and a longer one (common for equipment or real estate) at the same amount and rate to see the payment-versus-interest trade-off.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The level payment that repays a principal P over n months at a monthly rate r is the standard annuity formula, the same one loan-calculator uses. Rearranging it gives the loan amount and the term; the rate has no closed form, so it is found numerically.',
+        expression: 'M = P × r ÷ (1 − (1 + r)^−n)\nP = M × (1 − (1 + r)^−n) ÷ r\nn = −ln(1 − P × r ÷ M) ÷ ln(1 + r)\nr = APR ÷ 100 ÷ 12',
+        terms: [
+          { symbol: 'M', meaning: 'Monthly payment of principal and interest.' },
+          { symbol: 'P', meaning: 'Principal: the amount borrowed.' },
+          { symbol: 'n', meaning: 'Term in months.' },
+          { symbol: 'r', meaning: 'Monthly interest rate: the annual rate divided by 12, as a decimal.' },
+          { symbol: 'APR', meaning: 'Annual percentage rate quoted by the lender.' }
+        ],
+        note: 'Estimates only, not a loan offer or financial advice. Real business loans can add origination fees, guarantee fees (common on SBA-backed loans) or a different day-count convention, and your lender\'s and, if applicable, the SBA\'s own disclosures are the binding figures.'
+      },
+      workedExample: {
+        intro: 'You borrow $75,000 for working capital at 9% APR over 5 years. What is the monthly payment, and how much interest do you pay in total?',
+        rows: [
+          { label: 'Monthly rate (r = 9% ÷ 12)', value: '0.0075' },
+          { label: 'Number of payments (n = 5 × 12)', value: '60' },
+          { label: 'M = 75,000 × 0.0075 ÷ (1 − 1.0075^−60)', value: '$1,556.88' },
+          { label: 'Total paid (1,556.88 × 60)', value: '≈ $93,412.60' },
+          { label: 'Total interest (93,412.60 − 75,000)', value: '≈ $18,412.60' }
+        ],
+        result: 'M ≈ $1,556.88 a month · about $18,412.60 in interest',
+        explanation: 'The same $75,000 at 9% stretched to a 10-year term, more typical of equipment or real estate financing, drops the payment to about $950.07 a month but raises total interest to about $39,008.20 — more than double the 5-year term\'s interest, for a payment about 39% lower.'
+      },
+      watchOut: [
+        { title: 'Estimates only', body: 'The result assumes a fixed rate, equal monthly payments and no fees. Origination fees, SBA guarantee fees and closing costs are common on business loans and are not included here.' },
+        { title: 'An SBA guarantee is not an SBA loan', body: 'SBA-backed loans are made by banks and other approved lenders, not the government directly. The SBA guarantees a portion of the loan if the borrower defaults — up to 85% on 7(a) Small loans of $150,000 or less, and up to 75% above that threshold on standard 7(a) loans over $150,000 — which is why lenders are often willing to approve businesses a conventional loan would turn down.' },
+        { title: 'Working capital and equipment financing are not interchangeable', body: 'Some programs are purpose-restricted: the SBA 504 program, for instance, finances equipment and real estate but explicitly cannot be used for working capital or inventory. Confirm a program covers your actual purpose before applying.' },
+        { title: 'A longer term costs more in total', body: 'Stretching the same $75,000 at 9% from 5 to 10 years cuts the payment from about $1,556.88 to $950.07, a 39% drop, but more than doubles the total interest, from about $18,412.60 to about $39,008.20.' },
+        { title: 'Variable rates change the answer', body: 'Many business lines of credit and some term loans carry a variable rate. This shows the payment only while the current rate holds — rerun it with the new rate after a change.' }
+      ],
+      references: [
+        { label: 'U.S. Small Business Administration, Types of 7(a) loans', url: 'https://www.sba.gov/partners/lenders/7a-loan-program/types-7a-loans' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.8 The Basics of Loans', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-8-the-basics-of-loans' },
+        { label: 'Consumer Financial Protection Bureau, Regulation Z (Truth in Lending), Appendix J: Annual Percentage Rate Computations for Closed-End Credit Transactions', url: 'https://www.consumerfinance.gov/rules-policy/regulations/1026/j/' }
+      ]
+    },
+    inputs: [
+      { id: 'loanAmount', label: 'Loan amount', type: 'currency', placeholder: '75000', defaultValue: 75000, step: 1000, min: 0 },
+      { id: 'interestRate', label: 'Annual interest rate (APR)', type: 'percent', placeholder: '9', defaultValue: 9, step: 0.01, min: 0 },
+      { id: 'years', label: 'Loan term (years)', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Business Loan Calculator – Payment, Amount, Term or Rate',
+      description: 'Free business loan calculator for working capital or equipment financing: find the monthly payment, loan amount, term or rate, with total interest.',
+      faq: [
+        { question: 'How is a business loan payment calculated?', answer: 'With the same annuity formula as any amortized loan: M = P × r ÷ (1 − (1 + r)^−n). A $75,000 working-capital loan at 9% APR over 5 years comes to about $1,556.88 a month.' },
+        { question: 'What is the difference between working capital and equipment financing?', answer: 'Working capital covers day-to-day operating needs like payroll, inventory and seasonal gaps. Equipment financing funds a specific asset and is often secured by that equipment. The SBA\'s own 504 program, for example, finances equipment but explicitly cannot be used for working capital.' },
+        { question: 'Is an SBA loan money from the government?', answer: 'No. SBA loans are originated and funded by banks and other approved lenders; the SBA guarantees a portion of the loan (up to 85% on smaller 7(a) loans, up to 75% on larger ones) rather than lending the money itself.' },
+        { question: 'How much can my business borrow for a given monthly payment?', answer: 'Enter the payment, the rate and the term, and the loan amount is calculated: P = M × (1 − (1 + r)^−n) ÷ r. At 9% over 5 years, a $1,800 monthly payment supports a loan of about $86,712.07.' },
+        { question: 'Is a shorter or longer term better for a business loan?', answer: 'A shorter term costs less in total interest but raises the monthly payment. The same $75,000 at 9% costs about $1,556.88 a month with about $18,412.60 in interest over 5 years, versus about $950.07 a month with about $39,008.20 in interest over 10 years.' },
+        { question: 'Can I use this for an SBA, bank or online business loan?', answer: 'Yes, for any fixed-rate loan repaid in equal monthly installments. It is an estimate: origination fees, guarantee fees and closing costs in your specific loan offer are not included.' }
+      ]
+    },
+    compute(values) {
+      const monthlyRate = values.interestRate / 100 / 12;
+      const months = Math.max(1, values.years * 12);
+      const payment = monthlyRate === 0
+        ? values.loanAmount / months
+        : (values.loanAmount * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -months));
+      const total = payment * months;
+      const interest = total - values.loanAmount;
+      return { monthlyPayment: payment, totalCost: total, totalInterest: interest };
+    }
   }
 ];

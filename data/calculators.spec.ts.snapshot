@@ -1091,6 +1091,47 @@ exports[`compute() snapshots > buffer-capacity-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > business-loan-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "loanAmount": 75000,
+      "interestRate": 9,
+      "years": 5
+    },
+    "outputs": {
+      "monthlyPayment": 1556.876642,
+      "totalCost": 93412.59852,
+      "totalInterest": 18412.59852
+    }
+  },
+  "typical": {
+    "inputs": {
+      "loanAmount": 113000,
+      "interestRate": 13.5,
+      "years": 8
+    },
+    "outputs": {
+      "monthlyPayment": 1930.962046,
+      "totalCost": 185372.3564,
+      "totalInterest": 72372.35639
+    }
+  },
+  "edge": {
+    "inputs": {
+      "loanAmount": 0,
+      "interestRate": 0,
+      "years": 1
+    },
+    "outputs": {
+      "monthlyPayment": 0,
+      "totalCost": 0,
+      "totalInterest": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > cake-servings-calculator 1`] = `
 {
   "default": {

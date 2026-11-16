@@ -59,13 +59,19 @@ const cdApy = (maturity: number, deposit: number, months: number) => {
 };
 
 // US payroll figures for 2026, indexed by filing status (0 single, 1 married filing jointly, 2 head of
-// household). IRS Rev. Proc. 2025-32 (brackets, standard deduction), SSA (wage base), IRS (401(k) limit).
+// household, 3 married filing separately — added for income-tax-calculator). IRS Rev. Proc. 2025-32
+// (brackets, standard deduction), SSA (wage base), IRS (401(k) limit). Status 3 (MFS) is not used by
+// paycheck-calculator or the 401(k) match calculator, only by income-tax-calculator.
 const PAYROLL_2026 = {
-  standardDeduction: [16100, 32200, 24150],
+  standardDeduction: [16100, 32200, 24150, 16100],
   bracketTops: [
     [12400, 50400, 105700, 201775, 256225, 640600],
     [24800, 100800, 211400, 403550, 512450, 768700],
-    [17700, 67450, 105700, 201750, 256200, 640600]
+    [17700, 67450, 105700, 201750, 256200, 640600],
+    // MFS brackets are exactly half of MFJ's at every threshold through Rev. Proc. 2025-32 Table 4 —
+    // identical to single's first five brackets, but the 35% bracket ends (and 37% begins) at half of
+    // MFJ's own threshold rather than single's wider one (768,700 / 2 = 384,350, not 640,600).
+    [12400, 50400, 105700, 201775, 256225, 384350]
   ],
   rates: [0.1, 0.12, 0.22, 0.24, 0.32, 0.35, 0.37],
   socialSecurityWageBase: 184500,
@@ -82,6 +88,16 @@ const federalIncomeTax = (taxable: number, status: number) => {
     previous = tops[index];
   }
   return tax;
+};
+
+// The rate on the next dollar of taxable income: the rate of the first bracket whose top is at or
+// above the taxable income (the last, open-ended bracket's rate above the highest top).
+const marginalTaxRate = (taxable: number, status: number) => {
+  const tops = PAYROLL_2026.bracketTops[status];
+  for (let index = 0; index < tops.length; index++) {
+    if (taxable <= tops[index]) return PAYROLL_2026.rates[index];
+  }
+  return PAYROLL_2026.rates[PAYROLL_2026.rates.length - 1];
 };
 
 // IRS Publication 590-B (2025), Appendix B, Table III (Uniform Lifetime) — the table almost every
@@ -5405,6 +5421,153 @@ export const financeCalculators: CalculatorConfig[] = [
       const totalContributed = values.currentSavings + monthlyContribution * monthsUntil;
       const totalGrowth = totalFutureCost - totalContributed;
       return { monthlyContribution, firstYearCost, totalFutureCost, totalContributed, totalGrowth };
+    }
+  },
+  {
+    id: 'income-tax-calculator',
+    group: 'Income & Pay',
+    category: 'finance',
+    glyph: '1040',
+    updatedAt: '2026-11-16',
+    aliases: ['federal income tax calculator', 'tax bracket calculator', 'how much federal tax do i owe', 'effective tax rate calculator'],
+    related: ['paycheck-calculator', 'salary-raise-calculator', 'retirement-savings-calculator', 'traditional-ira-calculator'],
+    title: 'Income Tax Calculator',
+    description: 'Estimate 2026 US federal income tax owed by filing status, from either your taxable income directly or your gross income with the standard deduction applied, with effective and marginal tax rate shown side by side.',
+    example: 'A single filer with $60,000 of gross income and the 2026 standard deduction applied owes about $5,020 in federal tax: an 11.44% effective rate, even though their marginal (top) bracket is 12%.',
+    breakdown: {
+      headline: 'federalTax',
+      headlineLabel: 'Estimated federal income tax',
+      outputs: [
+        { id: 'federalTax', label: 'Estimated federal income tax', format: 'currency' },
+        { id: 'taxableIncome', label: 'Taxable income', format: 'currency' },
+        { id: 'effectiveRate', label: 'Effective tax rate', format: 'percent' },
+        { id: 'marginalRate', label: 'Marginal tax rate (top bracket)', format: 'percent' },
+        { id: 'afterTaxIncome', label: 'Income after federal tax', format: 'currency' }
+      ],
+      groups: [{ title: 'Your income', inputs: ['filingStatus', 'grossIncome', 'incomeType'] }],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'afterTaxIncome', label: 'After federal tax' },
+          { from: 'federalTax', label: 'Federal income tax' }
+        ],
+        center: 'grossIncome',
+        centerSub: 'gross income'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'Federal income tax: progressive, and only one piece of your total tax bill',
+        paragraphs: [
+          'The US federal income tax is progressive: it is organized into brackets, and each bracket\'s rate applies only to the slice of your taxable income that falls inside it, not to your whole income. Moving into a higher bracket never raises the rate on the dollars you already earned — only on the next dollar and beyond. This calculator works out that bracket math for the 2026 tax year, for whichever of the four common filing statuses you choose.',
+          'This page estimates federal income tax only. It does not add state or local income tax (which paycheck-calculator lets you enter as a flat rate), Social Security or Medicare, or any other payroll tax — so the "income after federal tax" figure here is well above what would actually land in a bank account after every tax. If you want a full per-paycheck take-home estimate with state tax and deductions included, use paycheck-calculator instead; this page is for exploring the federal bracket math on its own, at any income level or filing status.',
+          'A single number for "your tax rate" hides two different, useful questions, which is why the result shows both. The effective tax rate is the tax actually owed divided by taxable income — the average rate paid across every dollar. The marginal tax rate is the rate on the next dollar you would earn — the rate of the bracket your top dollar currently sits in. The marginal rate is always at or above the effective rate for anyone with more than one bracket\'s worth of taxable income, because only part of that income was taxed at the top rate.'
+        ]
+      },
+      howTo: {
+        intro: 'Choose your filing status, then enter either your gross income or your taxable income directly.',
+        steps: [
+          { name: 'Pick your filing status', text: 'Single, married filing jointly, married filing separately, or head of household. Each has its own brackets and standard deduction.' },
+          { name: 'Choose what you are entering', text: 'Gross income applies the 2026 standard deduction for you. Taxable income skips that step, for when you already have the after-deduction figure (for example, from a prior return).' },
+          { name: 'Enter the amount', text: 'Type the dollar figure for the income type you chose.' },
+          { name: 'Read the estimated tax', text: 'The headline is the estimated federal tax. Below it: taxable income, the effective rate, the marginal (top-bracket) rate, and income after this federal tax estimate.' },
+          { name: 'Compare rates, not just the dollar figure', text: 'Look at the effective and marginal rates together — the gap between them is usually the most useful thing this page shows, especially the first time you file in a new bracket.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Taxable income (if not entered directly) subtracts the standard deduction from gross income. Federal tax sums each bracket\'s own rate applied only to the income inside that bracket.',
+        expression: 'Taxable income = gross income − standard deduction (skipped if you entered taxable income directly)\nFederal tax = Σ (income inside each bracket × that bracket\'s rate)\nEffective tax rate = federal tax ÷ taxable income\nMarginal tax rate = the rate of the bracket the last dollar of taxable income falls in',
+        terms: [
+          { symbol: 'Standard deduction (2026)', meaning: '$16,100 single, $32,200 married filing jointly, $16,100 married filing separately, $24,150 head of household.' },
+          { symbol: 'Single / married filing separately brackets (2026)', meaning: '10% to $12,400, 12% to $50,400, 22% to $105,700, 24% to $201,775, 32% to $256,225, then 35% to $640,600 (single) or $384,350 (married filing separately), 37% above.' },
+          { symbol: 'Married filing jointly brackets (2026)', meaning: '10% to $24,800, 12% to $100,800, 22% to $211,400, 24% to $403,550, 32% to $512,450, 35% to $768,700, 37% above.' },
+          { symbol: 'Head of household brackets (2026)', meaning: '10% to $17,700, 12% to $67,450, 22% to $105,700, 24% to $201,750, 32% to $256,200, 35% to $640,600, 37% above.' }
+        ],
+        note: 'Estimates only — not tax advice, and not a substitute for a real tax return. This is federal income tax only: it does not include state or local income tax, Social Security, Medicare, the Net Investment Income Tax, the Additional Medicare Tax, self-employment tax, tax credits, itemized deductions, or any other income. Consult a qualified tax professional or the IRS\'s own tools for your actual return.'
+      },
+      workedExample: {
+        intro: 'A single filer has $60,000 of gross income for 2026 and no other adjustments. What is their estimated federal tax?',
+        rows: [
+          { label: 'Standard deduction (single, 2026)', value: '$16,100' },
+          { label: 'Taxable income (60,000 − 16,100)', value: '$43,900' },
+          { label: '10% bracket (12,400 × 10%)', value: '$1,240.00' },
+          { label: '12% bracket (43,900 − 12,400 = 31,500 × 12%)', value: '$3,780.00' },
+          { label: 'Federal tax (1,240 + 3,780)', value: '$5,020.00' },
+          { label: 'Effective tax rate (5,020 ÷ 43,900)', value: '11.44%' },
+          { label: 'Marginal tax rate (top bracket reached)', value: '12%' },
+          { label: 'Income after federal tax (60,000 − 5,020)', value: '$54,980.00' }
+        ],
+        result: 'Federal tax ≈ $5,020 · effective rate 11.44% · marginal rate 12%',
+        explanation: 'Only $31,500 of the $43,900 taxable income is taxed at 12% — the first $12,400 is taxed at 10% instead — which is why the 11.44% effective rate sits below the 12% marginal rate. The gap grows with income: the same single filer at $150,000 of gross income has $133,900 of taxable income, reaching the 24% bracket, for about $24,734 of federal tax — an 18.47% effective rate, still well under the 24% marginal rate.'
+      },
+      watchOut: [
+        { title: 'Federal tax only — no state or local tax', body: 'This page does not add state or local income tax. Most states levy their own income tax, with their own brackets, deductions and credits, and a handful have none at all — paycheck-calculator lets you add a flat state and local rate to a take-home estimate alongside this same federal math.' },
+        { title: 'Effective vs. marginal: don\'t apply the top rate to your whole income', body: 'A common mistake is assuming your marginal bracket\'s rate applies to all of your income. It only applies to the slice inside that bracket — the effective rate row is the one that reflects your actual overall tax burden.' },
+        { title: 'Not tax advice', body: 'This is a planning estimate, not a filed return. It does not model tax credits (such as the Child Tax Credit or Earned Income Tax Credit), itemized deductions, above-the-line adjustments, self-employment tax, the Net Investment Income Tax, the Additional Medicare Tax, or any income beyond ordinary wages. A tax professional or the IRS\'s own tools can account for your full situation.' },
+        { title: 'Married filing separately has its own restrictions', body: 'Beyond the narrower top brackets modeled here, the IRS restricts or eliminates several credits and deductions for spouses who file separately (for example, the student loan interest deduction and some education credits), per IRS Publication 501. Many married couples owe less filing jointly, but not always — compare both with a real return before deciding.' },
+        { title: 'Brackets and the standard deduction change every year', body: 'The 2026 figures here are set by Rev. Proc. 2025-32 and are adjusted for inflation annually. A bracket or deduction figure from a different tax year will not match this page.' }
+      ],
+      references: [
+        { label: 'Internal Revenue Service, Rev. Proc. 2025-32 (2026 tax brackets and standard deduction), Internal Revenue Bulletin 2025-45', url: 'https://www.irs.gov/irb/2025-45_IRB' },
+        { label: 'Internal Revenue Service, Federal income tax rates and brackets', url: 'https://www.irs.gov/filing/federal-income-tax-rates-and-brackets' },
+        { label: 'Internal Revenue Service, Publication 501, Dependents, Standard Deduction, and Filing Information', url: 'https://www.irs.gov/forms-pubs/about-publication-501' },
+        { label: 'Internal Revenue Service, Tax Withholding Estimator', url: 'https://www.irs.gov/individuals/tax-withholding-estimator' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'filingStatus',
+        label: 'Filing status',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Single' },
+          { value: 1, label: 'Married filing jointly' },
+          { value: 3, label: 'Married filing separately' },
+          { value: 2, label: 'Head of household' }
+        ]
+      },
+      {
+        id: 'incomeType',
+        label: 'What are you entering?',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Gross income (apply the standard deduction)' },
+          { value: 1, label: 'Already my taxable income' }
+        ]
+      },
+      { id: 'grossIncome', label: 'Income', type: 'currency', placeholder: '60000', defaultValue: 60000, step: 1000, min: 0 }
+    ],
+    seo: {
+      title: 'Income Tax Calculator – 2026 Federal Tax Brackets',
+      description: 'Free 2026 federal income tax calculator: estimate tax owed by filing status with current IRS brackets, plus effective vs. marginal tax rate side by side.',
+      faq: [
+        { question: 'What federal tax bracket am I in for 2026?', answer: 'It depends on your taxable income and filing status. A single filer\'s brackets run 10% to $12,400, 12% to $50,400, 22% to $105,700, 24% to $201,775, 32% to $256,225, 35% to $640,600, then 37% above that. Married filing jointly, married filing separately and head of household each have their own thresholds.' },
+        { question: 'What is the difference between effective and marginal tax rate?', answer: 'Marginal is the rate on your next dollar of income — the bracket your top dollar falls in. Effective is your total tax divided by your taxable income — the average rate across all of it. A single filer with $43,900 of taxable income has a 12% marginal rate but only an 11.44% effective rate, because the first $12,400 was taxed at 10%, not 12%.' },
+        { question: 'Does this calculator include state income tax?', answer: 'No. This estimates US federal income tax only. State and local income tax varies by state (some states have none), so it is not included here — paycheck-calculator lets you add a flat state and local rate on top of the same federal bracket math.' },
+        { question: 'What is the 2026 standard deduction?', answer: '$16,100 for single filers and married people filing separately, $32,200 for married couples filing jointly, and $24,150 for heads of household, per IRS Rev. Proc. 2025-32.' },
+        { question: 'Why are the married-filing-separately brackets different from single\'s?', answer: 'The first five brackets (10% through 32%) are identical to single\'s. But the 35% bracket ends, and the 37% bracket begins, at $384,350 for married filing separately versus $640,600 for single — exactly half of married filing jointly\'s $768,700 top-bracket threshold, rather than single\'s wider one.' },
+        { question: 'Is this tax advice?', answer: 'No. This is an estimate of federal income tax under the 2026 brackets only, not a filed return. It does not account for tax credits, itemized deductions, other income, or any taxes besides federal income tax. Consult a qualified tax professional, or the IRS\'s own Tax Withholding Estimator, for your actual return.' }
+      ]
+    },
+    compute(values) {
+      const status = Math.min(3, Math.max(0, Math.round(values.filingStatus)));
+      const standardDeduction = values.incomeType === 1 ? 0 : PAYROLL_2026.standardDeduction[status];
+      const taxableIncome = Math.max(0, values.grossIncome - standardDeduction);
+      const federalTax = federalIncomeTax(taxableIncome, status);
+      const effectiveRate = taxableIncome > 0 ? (federalTax / taxableIncome) * 100 : 0;
+      const marginalRate = marginalTaxRate(taxableIncome, status) * 100;
+      const afterTaxIncome = values.grossIncome - federalTax;
+      return { federalTax, taxableIncome, effectiveRate, marginalRate, afterTaxIncome };
     }
   }
 ];

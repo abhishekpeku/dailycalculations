@@ -95,6 +95,8 @@ export const calculatorOrder: string[] = [
   'furniture-fit-calculator',
   'discount-calculator',
   'cashback-calculator',
+  'warehouse-club-membership-breakeven-calculator',
+  'grocery-budget-calculator',
   'emi-calculator',
   'youtube-earnings-calculator',
   'instagram-engagement-calculator',

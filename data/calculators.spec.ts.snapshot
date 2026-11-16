@@ -4352,6 +4352,44 @@ exports[`compute() snapshots > gravel-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > grocery-budget-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "householdSize": 4,
+      "planTier": 2
+    },
+    "outputs": {
+      "monthlyBudget": 1324.7,
+      "weeklyBudget": 305.7,
+      "perPersonWeekly": 76.425
+    }
+  },
+  "typical": {
+    "inputs": {
+      "householdSize": 6,
+      "planTier": 3
+    },
+    "outputs": {
+      "monthlyBudget": 2293.395,
+      "weeklyBudget": 529.245,
+      "perPersonWeekly": 92.85
+    }
+  },
+  "edge": {
+    "inputs": {
+      "householdSize": 1,
+      "planTier": 0
+    },
+    "outputs": {
+      "monthlyBudget": 307.45,
+      "weeklyBudget": 70.95,
+      "perPersonWeekly": 59.125
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > heart-rate-zones-calculator 1`] = `
 {
   "default": {
@@ -11743,6 +11781,38 @@ exports[`compute() snapshots > wallpaper-calculator 1`] = `
       "netArea": 24,
       "adjustedArea": 26.4,
       "rollsNeeded": 3
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > warehouse-club-membership-breakeven-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "annualFee": 65,
+      "savingsPerTrip": 8
+    },
+    "outputs": {
+      "breakEvenTrips": 8.125
+    }
+  },
+  "typical": {
+    "inputs": {
+      "annualFee": 100,
+      "savingsPerTrip": 12
+    },
+    "outputs": {
+      "breakEvenTrips": 8.333333333
+    }
+  },
+  "edge": {
+    "inputs": {
+      "annualFee": 0,
+      "savingsPerTrip": 0
+    },
+    "outputs": {
+      "breakEvenTrips": "NaN"
     }
   }
 }

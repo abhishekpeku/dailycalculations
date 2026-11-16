@@ -1,5 +1,27 @@
 import type { CalculatorConfig } from './types.ts';
 
+// USDA Food and Nutrition Service, "Cost of Food at Home" monthly reports, October 2026 edition:
+// [weekly, monthly] cost for the reference family of 4 (two adults 20-50, two children 6-11), by
+// plan tier (0 Thrifty, 1 Low-Cost, 2 Moderate-Cost, 3 Liberal). Source: see grocery-budget-calculator's
+// `content.references`. Used by that calculator's compute(), derive() and referenceTable alike, so
+// the figures are typed once, not copied by hand in three places.
+const GROCERY_FAMILY_OF_4_WEEKLY: [number, number][] = [
+  [236.5, 1024.6],
+  [261.5, 1133.28],
+  [305.7, 1325.07],
+  [371.4, 1609.56]
+];
+
+// USDA's own household-size adjustment to its 4-person reference figures (same source as above).
+function groceryBudgetSizeFactor(householdSize: number): number {
+  if (householdSize <= 1) return 1.2;
+  if (householdSize === 2) return 1.1;
+  if (householdSize === 3) return 1.05;
+  if (householdSize === 4) return 1.0;
+  if (householdSize <= 6) return 0.95;
+  return 0.9;
+}
+
 export const shoppingCalculators: CalculatorConfig[] = [
   {
     id: 'sales-tax-calculator',
@@ -606,6 +628,270 @@ export const shoppingCalculators: CalculatorConfig[] = [
       const netAnnualValue = annualCashback - values.annualFee;
       const effectiveRate = values.monthlySpend > 0 ? (monthlyCashback / values.monthlySpend) * 100 : 0;
       return { monthlyCashback, annualCashback, netAnnualValue, effectiveRate };
+    }
+  },
+  {
+    id: 'warehouse-club-membership-breakeven-calculator',
+    group: 'Discounts & Rewards',
+    category: 'shopping',
+    glyph: 'B/E',
+    updatedAt: '2026-11-16',
+    aliases: ['costco membership worth it calculator', "sam's club membership calculator", 'warehouse club breakeven calculator', 'is a club membership worth it calculator', 'bjs membership calculator'],
+    related: ['cashback-calculator', 'discount-calculator', 'unit-price-calculator', 'loyalty-points-value-calculator'],
+    title: 'Warehouse Club Membership Break-Even Calculator',
+    description: "Work out how many trips a year a warehouse club membership (Costco, Sam's Club, BJ's) needs to pay for itself, from the annual fee and what you typically save per trip.",
+    example: 'A $65 annual fee that saves you $8 a trip pays for itself after 8.125 trips, about one trip every six and a half weeks.',
+    solver: {
+      defaultTarget: 'breakEvenTrips',
+      variables: [
+        { id: 'breakEvenTrips', label: 'Trips to break even', symbol: 'n', dimension: 'count', defaultValue: 8.125, defaultUnit: 'count' },
+        { id: 'annualFee', label: 'Annual membership fee', symbol: 'F', dimension: 'currency', defaultValue: 65, defaultUnit: 'currency' },
+        { id: 'savingsPerTrip', label: 'Savings per trip vs. shopping elsewhere', symbol: 's', dimension: 'currency', defaultValue: 8, defaultUnit: 'currency' },
+        { id: 'yourTripsPerYear', label: 'Trips you actually plan to make a year', symbol: 't', dimension: 'count', defaultValue: 12, defaultUnit: 'count', fixed: true }
+      ],
+      solve: {
+        breakEvenTrips: ({ annualFee, savingsPerTrip }) => (savingsPerTrip > 0 ? annualFee / savingsPerTrip : NaN),
+        annualFee: ({ breakEvenTrips, savingsPerTrip }) => breakEvenTrips * savingsPerTrip,
+        savingsPerTrip: ({ annualFee, breakEvenTrips }) => (breakEvenTrips > 0 ? annualFee / breakEvenTrips : NaN)
+      },
+      outputs: [
+        { id: 'yourAnnualSavings', label: 'Your estimated savings at that many trips', dimension: 'currency', compute: (si) => si.yourTripsPerYear * si.savingsPerTrip },
+        { id: 'netAnnualValue', label: 'Net value after the fee', dimension: 'currency', compute: (si) => si.yourTripsPerYear * si.savingsPerTrip - si.annualFee }
+      ],
+      visuals: [
+        {
+          type: 'compareBars',
+          bars: [{ from: 'annualFee', label: 'Annual fee' }, { from: 'yourAnnualSavings', label: 'Your estimated yearly savings' }],
+          title: 'Fee vs. your estimated savings'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'Is a warehouse club membership worth it?',
+        paragraphs: [
+          "Costco, Sam's Club and BJ's Wholesale all charge an annual fee before you can shop at all. In exchange, many items run below regular retail prices, usually in bulk sizes. Whether that trade pays off depends entirely on how much you personally save on a typical trip and how often you actually go, so \"is it worth it\" has a different answer for every household, not one universal yes or no.",
+          'The break-even point is the number of trips at which your accumulated savings exactly cover the fee. Divide the annual fee by what you save per trip compared with buying the same things elsewhere. Fewer trips than that and the membership cost you money overall; more trips and every additional visit is money ahead.',
+          "As of November 2026, Costco's Gold Star membership is $65 a year and Sam's Club's Club membership is $60 a year, both before the optional cash-back upgrade tier. Those fees are a real, checkable floor for the math: a household that cannot identify at least that much in savings across a year's worth of trips is better off shopping elsewhere."
+        ]
+      },
+      howTo: {
+        intro: 'Enter the membership fee and what you expect to save on a typical trip. The result updates as you type.',
+        steps: [
+          { name: 'Enter the annual fee', text: "Type the club's membership price — the base tier unless you plan to pay for an upgrade." },
+          { name: 'Estimate your savings per trip', text: 'Compare a few items you buy regularly against their price at a regular grocery or big-box store, and estimate the typical gap for a full trip.' },
+          { name: 'Read the break-even point', text: 'The result is how many trips a year make the membership pay for itself.' },
+          { name: 'Enter your planned trips', text: 'Type how many trips you realistically expect to make. The net value line shows whether that puts you ahead or behind.' },
+          { name: 'Compare tiers', text: 'Run the numbers again with an upgraded tier\'s higher fee if you are deciding between the base and cash-back memberships.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Break-even trips is the fee divided by the savings each trip delivers.',
+        expression: 'n = F ÷ s\nYour savings = t × s\nNet value = t × s − F',
+        terms: [
+          { symbol: 'n', meaning: 'Trips needed to break even.' },
+          { symbol: 'F', meaning: 'Annual membership fee.' },
+          { symbol: 's', meaning: 'What you save on a typical trip vs. your next-best option.' },
+          { symbol: 't', meaning: 'Trips you actually plan to make in a year.' }
+        ],
+        note: 'An estimate. It assumes every trip saves the same amount and that you would have spent the same money either way — buying things you would not otherwise have bought erases the savings.'
+      },
+      workedExample: {
+        intro: "A Costco Gold Star membership costs $65 a year. You estimate you save about $8 a trip versus your regular grocery store, and you plan to shop there roughly once every four weeks (about 12 trips a year).",
+        rows: [
+          { label: 'Break-even trips (65 ÷ 8)', value: '8.125 trips' },
+          { label: 'Your estimated savings at 12 trips (12 × 8)', value: '$96.00' },
+          { label: 'Net value after the fee (96 − 65)', value: '$31.00' }
+        ],
+        result: 'You break even after about 8.1 trips, and come out $31.00 ahead over a year of 12 trips.',
+        explanation: "Because the fee is fixed, each trip past break-even is pure savings. At only 6 trips a year (6 × 8 = $48), the same membership would net a $17.00 loss — the math only works if you actually go often enough."
+      },
+      watchOut: [
+        { title: 'Only count savings on things you were buying anyway', body: "A membership that tempts you into buying things you did not need erases its own savings. Count only the gap on your regular grocery list, not the full receipt." },
+        { title: 'Upgrade tiers add a second break-even', body: "Costco's Executive membership, Sam's Club Plus and BJ's Perks Rewards cost more than the base tier and pay a cash-back percentage instead of (or in addition to) lower prices. Run this calculator again using just the extra fee and the extra cash back to judge the upgrade on its own." },
+        { title: 'Gas and travel perks are separate savings', body: 'Warehouse clubs often sell discounted gas and travel bookings. If you use them, fold a realistic estimate of those savings into your per-trip figure rather than ignoring them.' },
+        { title: 'Fees change', body: "Membership fees are reviewed periodically by each retailer and have risen in the past. Check the club's current fee before relying on this calculator's defaults." }
+      ],
+      references: [
+        { label: "Costco Wholesale, Executive Membership & 2% Reward (fee and reward terms)", url: 'https://www.costco.com/f/-/executive-rewards' },
+        { label: "Sam's Club, Membership plans and pricing", url: 'https://www.samsclub.com/membership' }
+      ]
+    },
+    inputs: [
+      { id: 'annualFee', label: 'Annual membership fee', type: 'currency', placeholder: '65', defaultValue: 65, step: 5, min: 0 },
+      { id: 'savingsPerTrip', label: 'Savings per trip vs. shopping elsewhere', type: 'currency', placeholder: '8', defaultValue: 8, step: 0.5, min: 0 }
+    ],
+    seo: {
+      title: 'Warehouse Club Membership Break-Even Calculator',
+      description: "Free calculator: how many trips a Costco, Sam's Club or BJ's membership needs to pay for itself, from the annual fee and your savings per trip.",
+      faq: [
+        { question: 'How do I know if a warehouse club membership is worth it?', answer: "Divide the annual fee by what you save on a typical trip. At $65 a year and $8 saved per trip, you break even after 65 ÷ 8 = 8.125 trips — fewer trips than that and you lose money overall." },
+        { question: "How much do Costco and Sam's Club memberships cost?", answer: "As of November 2026, Costco's Gold Star membership is $65 a year and its Executive upgrade is $130 total. Sam's Club's Club membership is $60 a year and Plus is $120, per each retailer's own membership page." },
+        { question: 'Is the Executive or Plus upgrade worth it?', answer: "Costco's Executive tier costs $65 more than Gold Star and pays a 2% reward, capped at $1,250 a year, on qualifying purchases. The extra fee breaks even at $65 ÷ 2% = $3,250 of qualifying annual spending." },
+        { question: 'What counts as savings per trip?', answer: 'The difference between what you paid at the club and what the same items would have cost at your regular store. It is an estimate you supply, since it depends on what you actually buy.' },
+        { question: 'Does gas count toward the savings?', answer: 'Not automatically. If you regularly use a club\'s discounted gas or travel bookings, add a reasonable estimate of that savings into your per-trip figure.' },
+        { question: 'Does splitting a membership with family change the math?', answer: "No — the fee and the break-even trip count stay the same. Sharing a membership just means more of a household's trips count toward reaching it." }
+      ]
+    },
+    compute(values) {
+      const breakEvenTrips = values.savingsPerTrip > 0 ? values.annualFee / values.savingsPerTrip : NaN;
+      return { breakEvenTrips };
+    }
+  },
+  {
+    id: 'grocery-budget-calculator',
+    group: 'Budgeting',
+    category: 'shopping',
+    glyph: '$/mo',
+    updatedAt: '2026-11-16',
+    aliases: ['food budget calculator', 'weekly grocery budget calculator', 'monthly food budget calculator', 'usda food plan calculator', 'grocery cost calculator by household size'],
+    related: ['unit-price-calculator', 'discount-calculator', 'sales-tax-calculator', 'warehouse-club-membership-breakeven-calculator'],
+    title: 'Grocery Budget Calculator',
+    description: 'Estimate a realistic weekly or monthly grocery budget from your household size, using the USDA\'s own Thrifty, Low-Cost, Moderate-Cost and Liberal food plan figures.',
+    example: "A 3-person household on USDA's Moderate-Cost plan budgets about $240.74 a week, or roughly $1,043.20 a month.",
+    breakdown: {
+      headline: 'monthlyBudget',
+      headlineLabel: 'Estimated monthly grocery budget',
+      outputs: [
+        { id: 'monthlyBudget', label: 'Estimated monthly grocery budget', format: 'currency' },
+        { id: 'weeklyBudget', label: 'Estimated weekly grocery budget', format: 'currency' },
+        { id: 'perPersonWeekly', label: 'Per person, per week', format: 'currency' }
+      ],
+      derive: (values) => {
+        const householdSize = values.householdSize;
+        const factor = groceryBudgetSizeFactor(householdSize);
+        const monthlyByTier = GROCERY_FAMILY_OF_4_WEEKLY.map(([weekly]) => ((weekly / 4) * householdSize * factor * 52) / 12);
+        return {
+          thriftyMonthly: monthlyByTier[0],
+          lowCostMonthly: monthlyByTier[1],
+          moderateMonthly: monthlyByTier[2],
+          liberalMonthly: monthlyByTier[3]
+        };
+      },
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'thriftyMonthly', label: 'Thrifty' },
+          { from: 'lowCostMonthly', label: 'Low-Cost' },
+          { from: 'moderateMonthly', label: 'Moderate-Cost' },
+          { from: 'liberalMonthly', label: 'Liberal' }
+        ],
+        title: 'Monthly budget by USDA plan, at your household size'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: "What's a realistic grocery budget?",
+        paragraphs: [
+          "The U.S. Department of Agriculture publishes four monthly \"food plans\" — Thrifty, Low-Cost, Moderate-Cost and Liberal — that price out a nutritionally adequate diet prepared at home, from the cheapest realistic plan to a more generous one. They are the government's own reference figures for what groceries cost a specific reference family, updated every month for food-price inflation, and they are the basis used to set SNAP (food stamp) benefit levels.",
+          'The published figures are for a reference family of two adults (20-50 years old) and two children (6-11 years old). USDA tells households of other sizes how to adjust: add 20% for a single person, 10% for two people, 5% for three people, no change for four, subtract 5% for five or six, and subtract 10% for seven or more. This calculator applies that same adjustment to an average per-person figure from the reference family, scaled to your own household size.',
+          "No single number is \"the\" grocery budget — a household's real spending depends on diet, local prices and how much cooking from scratch versus convenience food it does. The four tiers give a real, cited range to check your own spending against, from frugal to generous, rather than a number invented for this calculator."
+        ]
+      },
+      howTo: {
+        intro: 'Enter your household size and pick a food plan tier. The budget updates as you type.',
+        steps: [
+          { name: 'Enter your household size', text: 'Type the number of people the grocery budget needs to cover.' },
+          { name: 'Pick a plan tier', text: 'Thrifty is the most frugal; Liberal assumes more convenience foods and variety. Moderate-Cost is a reasonable middle estimate for most households.' },
+          { name: 'Read the weekly and monthly figures', text: 'The headline is the estimated monthly budget; the weekly figure and the per-person figure are shown below it.' },
+          { name: 'Compare tiers', text: 'The chart shows all four tiers at your own household size, so you can see where your actual spending falls.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "Start from the reference family's weekly cost for the chosen plan, divide by 4 for an average per-person figure, scale by household size, then apply USDA's own household-size adjustment.",
+        expression: 'Per person = Family-of-4 weekly ÷ 4\nWeekly budget = Per person × household size × adjustment factor\nMonthly budget ≈ Weekly budget × 52 ÷ 12',
+        terms: [
+          { symbol: 'Family-of-4 weekly', meaning: "USDA's published weekly cost for the chosen plan, for its reference family of two adults and two children." },
+          { symbol: 'adjustment factor', meaning: 'USDA\'s household-size adjustment: 1.20 for 1 person, 1.10 for 2, 1.05 for 3, 1.00 for 4, 0.95 for 5-6, 0.90 for 7+.' }
+        ],
+        note: "An estimate using an average per-person figure, not USDA's full age-and-sex breakdown. USDA's own published monthly figures are also set independently, not simply 52÷12 times its weekly figure, so this calculator's monthly estimate can differ from USDA's published monthly number by up to about $0.40 — the reference table below shows USDA's own weekly and monthly figures side by side."
+      },
+      workedExample: {
+        intro: "A household of 3 people wants a Moderate-Cost budget.",
+        rows: [
+          { label: "Moderate-Cost, family of 4, per week (USDA, Oct. 2026)", value: '$305.70' },
+          { label: 'Per person, per week (305.70 ÷ 4)', value: '$76.43' },
+          { label: '3 people, before adjustment (76.43 × 3)', value: '$229.28' },
+          { label: '3-person adjustment factor', value: '× 1.05' },
+          { label: 'Weekly budget (229.28 × 1.05)', value: '$240.74' },
+          { label: 'Monthly budget (240.74 × 52 ÷ 12)', value: '$1,043.20' }
+        ],
+        result: 'About $240.74 a week, or $1,043.20 a month, for 3 people on the Moderate-Cost plan.',
+        explanation: "A single person on the frugal Thrifty plan budgets far less in total: 59.13 × 1 × 1.20 = $70.95 a week, about $307.45 a month, even though the per-person rate is actually higher to account for less bulk-buying efficiency."
+      },
+      watchOut: [
+        { title: 'These are national averages', body: "USDA's figures are a US national average. Grocery prices vary significantly by region and by store, so treat the result as a starting point, not a local guarantee." },
+        { title: 'Assumes cooking at home', body: 'The food plans price ingredients for meals prepared at home. Restaurant meals, delivery and heavily processed convenience foods cost more and are not included.' },
+        { title: 'The per-person figure is an average, not age-specific', body: "USDA's own tables price food differently by age and sex (for example, teenage boys cost more to feed than toddlers). This calculator uses one average per-person figure, so a household skewed toward teenagers or large adults will likely need more than this estimate, and one with young children less." },
+        { title: 'Updated monthly', body: 'USDA revises all four plans every month for food-price inflation. Figures here reflect the October 2026 report and will drift from the current report over time.' }
+      ],
+      references: [
+        { label: 'USDA Food and Nutrition Service, USDA Food Plans: Cost of Food at Home, October 2026', url: 'https://www.fns.usda.gov/research/cnpp/usda-food-plans/cost-food-monthly-reports' },
+        { label: 'USDA Food and Nutrition Service, Thrifty Food Plan report, October 2026 (reference family and household-size adjustment)', url: 'https://www.fna.usda.gov/sites/default/files/resource-files/CostofFoodOct2026Thrifty.pdf' }
+      ],
+      referenceTable: {
+        title: 'USDA food plans: reference family of 4, October 2026',
+        columns: ['Plan', 'Weekly cost', 'Monthly cost'],
+        rows: [
+          { label: 'Thrifty', values: GROCERY_FAMILY_OF_4_WEEKLY[0] },
+          { label: 'Low-Cost', values: GROCERY_FAMILY_OF_4_WEEKLY[1] },
+          { label: 'Moderate-Cost', values: GROCERY_FAMILY_OF_4_WEEKLY[2] },
+          { label: 'Liberal', values: GROCERY_FAMILY_OF_4_WEEKLY[3] }
+        ],
+        decimals: 2,
+        note: 'Reference family: two adults ages 20-50 and two children ages 6-11. Official USDA national averages for October 2026, updated monthly for food-price inflation.'
+      }
+    },
+    inputs: [
+      {
+        id: 'householdSize',
+        label: 'Household size',
+        type: 'number',
+        placeholder: '4',
+        defaultValue: 4,
+        step: 1,
+        min: 1
+      },
+      {
+        id: 'planTier',
+        label: 'Food plan tier',
+        type: 'number',
+        placeholder: '2',
+        defaultValue: 2,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Thrifty (most frugal)' },
+          { value: 1, label: 'Low-Cost' },
+          { value: 2, label: 'Moderate-Cost (typical)' },
+          { value: 3, label: 'Liberal (most generous)' }
+        ]
+      }
+    ],
+    seo: {
+      title: 'Grocery Budget Calculator – Weekly & Monthly, by USDA Plan',
+      description: "Free grocery budget calculator: a weekly or monthly estimate by household size, based on USDA's own Thrifty, Low-Cost, Moderate-Cost and Liberal food plans.",
+      faq: [
+        { question: 'What is a realistic grocery budget for one person?', answer: "On USDA's Thrifty plan, one person budgets about $70.95 a week (about $307.45 a month) as of October 2026. The Liberal plan for one person runs about $111.42 a week." },
+        { question: 'How much should a family of 4 spend on groceries?', answer: "USDA's October 2026 figures for its reference family of 4 run from $236.50 a week on the Thrifty plan to $371.40 a week on the Liberal plan, with Low-Cost and Moderate-Cost in between." },
+        { question: 'How is the grocery budget adjusted for household size?', answer: "USDA directs smaller households to add a percentage (20% for 1 person, 10% for 2, 5% for 3) and larger ones to subtract one (5% for 5-6 people, 10% for 7+), since buying for one or two people is less efficient per person than buying for a family of four." },
+        { question: 'What is the difference between the Thrifty and Liberal plans?', answer: 'They assume the same nutritional targets but price out different amounts of convenience foods, variety and brand-name items. Thrifty is the most frugal realistic plan and is also used to set SNAP benefit levels; Liberal is the most generous of the four.' },
+        { question: 'Why is my monthly budget not exactly 4.33 times my weekly budget?', answer: 'This calculator multiplies the weekly figure by 52÷12 to get a monthly estimate, which is very close to but not identical to the independently rounded monthly figures USDA itself publishes — the gap is at most about $0.40 a month on these plans.' },
+        { question: 'Do these figures include eating out?', answer: 'No. USDA\'s food plans price groceries for meals made at home only, not restaurant meals, delivery or alcohol.' }
+      ]
+    },
+    compute(values) {
+      const tier = Math.min(3, Math.max(0, Math.round(values.planTier)));
+      const familyOf4Weekly = GROCERY_FAMILY_OF_4_WEEKLY[tier][0];
+      const perPersonWeekly = familyOf4Weekly / 4;
+      const householdSize = values.householdSize;
+      const weeklyBudget = perPersonWeekly * householdSize * groceryBudgetSizeFactor(householdSize);
+      const monthlyBudget = (weeklyBudget * 52) / 12;
+      return { monthlyBudget, weeklyBudget, perPersonWeekly };
     }
   }
 ];

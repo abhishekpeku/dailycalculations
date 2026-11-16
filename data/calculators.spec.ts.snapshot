@@ -9920,44 +9920,6 @@ exports[`compute() snapshots > ring-size-converter 1`] = `
 }
 `;
 
-exports[`compute() snapshots > rmd-calculator 1`] = `
-{
-  "default": {
-    "inputs": {
-      "accountBalance": 500000,
-      "age": 75
-    },
-    "outputs": {
-      "rmdAmount": 20325.20325,
-      "distributionPeriod": 24.6,
-      "monthlyEquivalent": 1693.766938
-    }
-  },
-  "typical": {
-    "inputs": {
-      "accountBalance": 750000,
-      "age": 113
-    },
-    "outputs": {
-      "rmdAmount": 241935.4839,
-      "distributionPeriod": 3.1,
-      "monthlyEquivalent": 20161.29032
-    }
-  },
-  "edge": {
-    "inputs": {
-      "accountBalance": 0,
-      "age": 72
-    },
-    "outputs": {
-      "rmdAmount": 0,
-      "distributionPeriod": 27.4,
-      "monthlyEquivalent": 0
-    }
-  }
-}
-`;
-
 exports[`compute() snapshots > roof-pitch-calculator 1`] = `
 {
   "default": {
@@ -11889,13 +11851,15 @@ exports[`compute() snapshots > traditional-ira-calculator 1`] = `
       "annualReturn": 7,
       "years": 20,
       "annualContribution": 7000,
-      "retirementTaxRate": 22
+      "taxRateAtWithdrawal": 22
     },
     "outputs": {
       "futureValue": 364362.1355,
       "totalContributed": 160000,
       "totalGrowth": 204362.1355,
-      "afterTaxFutureValue": 284202.4657
+      "taxSavingsThisYear": 1540,
+      "taxOwedAtWithdrawal": 80159.66981,
+      "afterTaxValue": 284202.4657
     }
   },
   "typical": {
@@ -11904,13 +11868,15 @@ exports[`compute() snapshots > traditional-ira-calculator 1`] = `
       "annualReturn": 10.5,
       "years": 30,
       "annualContribution": 10500,
-      "retirementTaxRate": 33
+      "taxRateAtWithdrawal": 33
     },
     "outputs": {
       "futureValue": 2499032.396,
       "totalContributed": 345000,
       "totalGrowth": 2154032.396,
-      "afterTaxFutureValue": 1674351.706
+      "taxSavingsThisYear": 3465,
+      "taxOwedAtWithdrawal": 824680.6908,
+      "afterTaxValue": 1674351.706
     }
   },
   "edge": {
@@ -11919,13 +11885,15 @@ exports[`compute() snapshots > traditional-ira-calculator 1`] = `
       "annualReturn": 0,
       "years": 1,
       "annualContribution": 0,
-      "retirementTaxRate": 0
+      "taxRateAtWithdrawal": 0
     },
     "outputs": {
       "futureValue": 0,
       "totalContributed": 0,
       "totalGrowth": 0,
-      "afterTaxFutureValue": 0
+      "taxSavingsThisYear": 0,
+      "taxOwedAtWithdrawal": 0,
+      "afterTaxValue": 0
     }
   }
 }

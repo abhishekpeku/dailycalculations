@@ -338,6 +338,7 @@ export const calculatorOrder: string[] = [
   'retirement-savings-calculator',
   '401k-employer-match-calculator',
   'roth-ira-growth-calculator',
+  'traditional-ira-calculator',
   'jet-lag-calculator',
   'luggage-fee-calculator',
   'daylight-hours-calculator',

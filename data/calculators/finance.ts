@@ -3178,4 +3178,170 @@ export const financeCalculators: CalculatorConfig[] = [
       return { futureValue, totalContributed, totalGrowth };
     }
   },
+  {
+    id: 'traditional-ira-calculator',
+    group: 'Retirement',
+    category: 'finance',
+    glyph: 'TIRA',
+    updatedAt: '2026-11-16',
+    aliases: ['traditional ira calculator', 'traditional ira growth calculator', 'traditional ira contribution calculator', 'pre-tax ira calculator', 'deductible ira calculator'],
+    related: ['roth-ira-growth-calculator', 'rmd-calculator', 'retirement-savings-calculator', '401k-employer-match-calculator'],
+    title: 'Traditional IRA Calculator',
+    description: 'Project traditional IRA growth from a pre-tax contribution each year, using the current IRS contribution limit, with the deferred tax on withdrawal shown directly.',
+    example: "A $20,000 traditional IRA balance plus $7,000 contributed every year for 20 years at an average 7% return grows to about $364,362 before tax — the same pretax total as the Roth IRA example — but withdrawing it at a 22% tax rate would owe about $80,160, leaving about $284,202 after tax.",
+    solver: {
+      defaultTarget: 'futureValue',
+      variables: [
+        { id: 'futureValue', label: 'Future value (before tax)', symbol: 'FV', dimension: 'currency', defaultValue: 364362.14, defaultUnit: 'currency' },
+        { id: 'currentBalance', label: 'Current traditional IRA balance', symbol: 'P', dimension: 'currency', defaultValue: 20000, defaultUnit: 'currency' },
+        { id: 'annualContribution', label: 'Annual contribution', symbol: 'C', dimension: 'currency', defaultValue: 7000, defaultUnit: 'currency', fixed: true },
+        { id: 'years', label: 'Years invested', symbol: 't', dimension: 'term', defaultValue: 20, defaultUnit: 'yr', bounds: [0, 1200] },
+        { id: 'annualReturn', label: 'Average annual return', symbol: 'r', dimension: 'percent', defaultValue: 7, defaultUnit: '%', bounds: [-50, 100] },
+        { id: 'taxRateAtWithdrawal', label: 'Assumed tax rate (now and at withdrawal)', symbol: 'τ', dimension: 'percent', defaultValue: 22, defaultUnit: '%', fixed: true }
+      ],
+      // Identical growth math to roth-ira-growth-calculator (yearly contribution, yearly compounding);
+      // `years` arrives in months (the term dimension's base), so growth and the annuity factor use
+      // years / 12. `taxRateAtWithdrawal` never participates in the growth equation — it only feeds
+      // the tax-now/tax-later outputs below, so it stays fixed and out of the auto-field rotation.
+      solve: {
+        futureValue: ({ currentBalance, annualContribution, years, annualReturn }) =>
+          years >= 0 ? currentBalance * growthFactor(annualReturn, 1, years / 12) + annualContribution * annuityFactor(annualReturn, 1, years / 12) : NaN,
+        currentBalance: ({ futureValue, annualContribution, years, annualReturn }) => {
+          const start = (futureValue - annualContribution * annuityFactor(annualReturn, 1, years / 12)) / growthFactor(annualReturn, 1, years / 12);
+          return years >= 0 && start >= 0 ? start : NaN;
+        },
+        years: ({ futureValue, currentBalance, annualContribution, annualReturn }) => {
+          const i = annualReturn / 100;
+          if (i === 0) return annualContribution > 0 ? ((futureValue - currentBalance) / annualContribution) * 12 : NaN;
+          const t = Math.log((futureValue * i + annualContribution) / (currentBalance * i + annualContribution)) / Math.log(1 + i);
+          return t >= 0 ? t * 12 : NaN;
+        }
+      },
+      equation: (si) =>
+        si.futureValue - (si.currentBalance * growthFactor(si.annualReturn, 1, si.years / 12) + si.annualContribution * annuityFactor(si.annualReturn, 1, si.years / 12)),
+      outputs: [
+        { id: 'totalContributed', label: 'Total contributed', dimension: 'currency', compute: (si) => si.currentBalance + (si.annualContribution * si.years) / 12 },
+        { id: 'totalGrowth', label: 'Tax-deferred growth', dimension: 'currency', compute: (si) => si.futureValue - si.currentBalance - (si.annualContribution * si.years) / 12 },
+        { id: 'taxSavingsThisYear', label: "This year's estimated tax savings from the contribution", dimension: 'currency', compute: (si) => si.annualContribution * (si.taxRateAtWithdrawal / 100) },
+        { id: 'taxOwedAtWithdrawal', label: 'Estimated tax owed if withdrawn at the assumed rate', dimension: 'currency', compute: (si) => si.futureValue * (si.taxRateAtWithdrawal / 100) },
+        { id: 'afterTaxValue', label: 'Estimated after-tax value', dimension: 'currency', compute: (si) => si.futureValue - si.futureValue * (si.taxRateAtWithdrawal / 100) }
+      ],
+      derive: (si) => ({ contributions: (si.annualContribution * si.years) / 12 }),
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'currentBalance', label: 'Current balance' },
+            { from: 'contributions', label: 'Contributions' },
+            { from: 'totalGrowth', label: 'Growth' }
+          ],
+          center: 'futureValue',
+          centerSub: 'projected balance, before tax'
+        },
+        {
+          type: 'compareBars',
+          bars: [{ from: 'futureValue', label: 'Before tax' }, { from: 'afterTaxValue', label: 'After tax' }],
+          title: 'What withdrawal tax takes off the top',
+          highlight: 1
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'A traditional IRA: pre-tax money in, taxed on the way out',
+        paragraphs: [
+          'A traditional IRA is funded with money that may be deductible on this year\'s tax return, which is why it is often called "pre-tax." The growth inside the account is tax-deferred — no tax is owed year to year as it compounds — but every dollar of a deductible contribution and its growth is taxed as ordinary income when withdrawn, at whatever tax rate applies then. This is the direct opposite of roth-ira-growth-calculator, which taxes the contribution now and lets qualified growth come out completely tax-free.',
+          "Whether the contribution is fully deductible depends on income and whether you (or your spouse) are also covered by a workplace retirement plan. For 2026, per IRS Notice 2025-67, a single filer or head of household who is an active participant in a workplace plan sees the deduction phase out between $81,000 and $91,000 of modified adjusted gross income; for a married couple filing jointly where the contributor is the active participant, the range is $129,000 to $149,000; and for a contributor who isn't an active participant but whose spouse is, it's $242,000 to $252,000. Below those ranges the full contribution is deductible; above them, none of it is. This calculator assumes full deductibility and does not check your eligibility.",
+          "The growth math itself is identical to roth-ira-growth-calculator and investment-calculator — the same yearly-contribution, yearly-compounding model, applied to the same shared IRS contribution limit. What's specific to this page is the tax layer: an assumed tax rate is used both for this year's estimated deduction savings and for the tax owed on the full pretax balance at withdrawal, so the real trade-off (tax now vs. tax later) shows up as actual dollars instead of a description. Eventually the IRS also requires withdrawals on a schedule — see rmd-calculator — which a Roth IRA does not require during the original owner's lifetime."
+        ]
+      },
+      howTo: {
+        intro: 'Enter your annual contribution (0 for a single lump sum) and an assumed tax rate, then any three of the other four growth fields. The fourth, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter your annual contribution', text: 'This is always an input. Keep it, combined with any Roth IRA contributions in the same year, at or under your actual 2026 limit: $7,500, or $8,600 if you are 50 or older — the limit is shared across both account types.' },
+          { name: 'Project the future value', text: 'Type the current balance, the years invested and an average annual return to see the pretax projected balance, with contributions and growth broken out.' },
+          { name: 'Set the assumed tax rate', text: "Enter the tax rate you expect to pay — both on this year's deduction and on withdrawals later. Using the same rate for both keeps the comparison simple; try a lower retirement-year rate if you expect to be in a lower bracket then." },
+          { name: 'Read the tax-now and tax-later figures', text: "Below the balance, see this year's estimated tax savings from the deduction, the estimated tax owed at withdrawal, and the after-tax value that leaves you with." },
+          { name: 'Compare with the Roth IRA calculator', text: 'Run the same current balance, contribution, years and return through roth-ira-growth-calculator to see the identical pretax balance come out completely tax-free instead.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "The future value uses the same yearly-compounding, yearly-contribution formula as roth-ira-growth-calculator. The tax figures apply one assumed rate to the current year's contribution and to the full pretax future value.",
+        expression: 'FV = P × (1 + r)^t + C × ((1 + r)^t − 1) ÷ r\nTax savings this year ≈ C × τ\nTax owed at withdrawal ≈ FV × τ\nAfter-tax value = FV − (FV × τ)',
+        terms: [
+          { symbol: 'FV', meaning: 'Projected pretax balance at the end.' },
+          { symbol: 'P', meaning: 'Current traditional IRA balance.' },
+          { symbol: 'C', meaning: 'Pre-tax contribution added at the end of each year, capped at your actual IRS limit.' },
+          { symbol: 'r', meaning: 'Average annual return as a decimal (7% = 0.07).' },
+          { symbol: 't', meaning: 'Years invested.' },
+          { symbol: 'τ', meaning: 'Assumed tax rate (as a decimal), used both now and at withdrawal.' }
+        ],
+        note: "Estimates only. Returns are assumed constant and are never guaranteed. Whether a contribution is actually deductible depends on your income and workplace-plan coverage, which this calculator does not check, and your real future tax rate is unknowable today. Not tax advice."
+      },
+      workedExample: {
+        intro: 'You have $20,000 in a traditional IRA and contribute $7,000 at the end of every year for 20 years, assuming an average 7% annual return and a 22% tax rate now and at withdrawal — the same growth inputs as the roth-ira-growth-calculator example.',
+        rows: [
+          { label: 'Growth factor 1.07^20', value: '3.869684' },
+          { label: 'Current balance grown (20,000 × 3.869684)', value: '$77,393.69' },
+          { label: 'Annuity factor (3.869684 − 1) ÷ 0.07', value: '40.995492' },
+          { label: 'Contributions grown (7,000 × 40.995492)', value: '$286,968.45' },
+          { label: 'Future value, before tax', value: '$364,362.14' },
+          { label: "This year's tax savings (7,000 × 22%)", value: '$1,540.00' },
+          { label: 'Tax owed at withdrawal (364,362.14 × 22%)', value: '$80,159.67' },
+          { label: 'After-tax value (364,362.14 − 80,159.67)', value: '$284,202.47' }
+        ],
+        result: 'FV ≈ $364,362 before tax — identical to the Roth IRA example — but about $284,202 after a 22% withdrawal tax',
+        explanation: "That $364,362 is exactly what roth-ira-growth-calculator projects for the same inputs, because the growth math never looks at tax treatment. The difference only shows up at the ends: this $7,000 contribution saves an estimated $1,540 in tax this year, but the entire $364,362 is taxable later, unlike a Roth IRA's tax-free qualified withdrawal. At a higher 32% withdrawal rate instead of 22%, the tax owed would be about $116,595.88 and the after-tax value about $247,766.26 — the assumed rate matters as much as the growth rate."
+      },
+      watchOut: [
+        { title: 'The contribution limit is shared with Roth IRAs', body: 'The 2026 limit is $7,500 ($8,600 at age 50+) across all of your traditional and Roth IRA contributions combined, not $7,500 for each account separately.' },
+        { title: 'The deduction can be reduced or eliminated', body: "If you or your spouse are covered by a workplace retirement plan, the deduction phases out at the income ranges in this page's concept section (Notice 2025-67). This calculator assumes full deductibility." },
+        { title: 'Required minimum distributions apply', body: 'Unlike a Roth IRA, a traditional IRA requires withdrawals on a schedule starting at age 73 — see rmd-calculator. This calculator does not model RMDs.' },
+        { title: 'Early withdrawals are taxed and penalized', body: 'A withdrawal before age 59½ is generally taxed as ordinary income plus a 10% additional tax, with limited exceptions.' },
+        { title: 'The future tax rate is a guess', body: "Nobody knows their tax bracket decades from now. Try both a lower and a higher assumed rate to see how much it changes the after-tax value." }
+      ],
+      references: [
+        { label: 'Internal Revenue Service, Notice 2025-67: 2026 Amounts Relating to Retirement Plans and IRAs', url: 'https://www.irs.gov/pub/irs-drop/n-25-67.pdf' },
+        { label: 'Internal Revenue Service, Traditional IRAs', url: 'https://www.irs.gov/retirement-plans/traditional-iras' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.7 Investments', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-7-investments' }
+      ]
+    },
+    inputs: [
+      { id: 'currentBalance', label: 'Current traditional IRA balance', type: 'currency', placeholder: '20000', defaultValue: 20000, step: 1000, min: 0 },
+      { id: 'annualReturn', label: 'Annual return rate', type: 'percent', placeholder: '7', defaultValue: 7, step: 0.1, min: 0 },
+      { id: 'years', label: 'Years invested', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 1 },
+      { id: 'annualContribution', label: 'Annual contribution', type: 'currency', placeholder: '7000', defaultValue: 7000, step: 500, min: 0 },
+      { id: 'taxRateAtWithdrawal', label: 'Assumed tax rate (now and at withdrawal)', type: 'percent', placeholder: '22', defaultValue: 22, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Traditional IRA Calculator – Growth & Deferred Tax',
+      description: 'Project traditional IRA growth from a pre-tax contribution, using the current IRS limit, with this year\'s tax savings and withdrawal tax shown directly.',
+      faq: [
+        { question: 'How much can I contribute to a traditional IRA in 2026?', answer: 'The IRS limit is $7,500, or $8,600 including the $1,100 catch-up contribution if you are 50 or older, per Notice 2025-67 — the same limit shared with any Roth IRA contributions you make in the same year.' },
+        { question: 'Is my traditional IRA contribution tax-deductible?', answer: "It depends on your income and whether you or your spouse are covered by a workplace retirement plan. For 2026, the deduction phases out between $81,000-$91,000 of MAGI for a single active participant, $129,000-$149,000 for a married active participant filing jointly, and $242,000-$252,000 for a non-active-participant spouse of an active participant." },
+        { question: 'How does this differ from roth-ira-growth-calculator?', answer: 'The growth math is identical — both grow $20,000 plus $7,000 a year at 7% to the same $364,362 over 20 years. A traditional IRA is funded pre-tax and is taxed as ordinary income on withdrawal; a Roth IRA is funded after-tax and comes out tax-free when qualified.' },
+        { question: 'What happens when I withdraw the money?', answer: 'The withdrawal is taxed as ordinary income at whatever rate applies then. In the worked example, a 22% rate turns the $364,362 pretax balance into about $284,202 after tax, and the IRS also requires withdrawals on a schedule starting at age 73 — see rmd-calculator.' },
+        { question: 'What if I withdraw before age 59½?', answer: "Early withdrawals are generally taxed as ordinary income plus a 10% additional tax, with limited exceptions such as disability or a first-time home purchase." },
+        { question: 'How much does the assumed tax rate change the outcome?', answer: 'A lot. On the same $364,362 pretax balance, a 22% withdrawal tax rate leaves about $284,202 after tax, while a 32% rate leaves about $247,766 — the tax-rate assumption matters almost as much as the return assumption.' }
+      ]
+    },
+    compute(values) {
+      const r = values.annualReturn / 100;
+      const n = Math.max(1, values.years);
+      const futureValuePrincipal = values.currentBalance * Math.pow(1 + r, n);
+      const futureValueContributions = r === 0
+        ? values.annualContribution * n
+        : values.annualContribution * ((Math.pow(1 + r, n) - 1) / r);
+      const futureValue = futureValuePrincipal + futureValueContributions;
+      const totalContributed = values.currentBalance + values.annualContribution * n;
+      const totalGrowth = futureValue - totalContributed;
+      const taxRate = values.taxRateAtWithdrawal / 100;
+      const taxSavingsThisYear = values.annualContribution * taxRate;
+      const taxOwedAtWithdrawal = futureValue * taxRate;
+      const afterTaxValue = futureValue - taxOwedAtWithdrawal;
+      return { futureValue, totalContributed, totalGrowth, taxSavingsThisYear, taxOwedAtWithdrawal, afterTaxValue };
+    }
+  },
 ];

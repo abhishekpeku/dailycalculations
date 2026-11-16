@@ -7,7 +7,7 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-11-17 · **Step 46 physics run 11 DONE** — PR TBD, branch
+Last updated: 2026-11-17 · **Step 46 physics run 11 DONE** — PR #113, branch
 `step/46-wave-3-physics-run-11`. Added `elastic-collision-calculator` (1D two-mass elastic
 collision, breakdown widget solving both final velocities at once — not a solver, since two inputs
 can't invert to four), `inelastic-collision-calculator` (perfectly inelastic 1D collision,

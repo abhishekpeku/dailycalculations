@@ -823,7 +823,7 @@ build agent's judgment**, same as every run so far.
     lint clean, `npm run build` green). Only this write-up and the commit/push/PR were finished by
     the main session afterward — no calculator content was redone.
   - 351 calculators total after this run (341 + 5). `physics` is now 51.
-- [x] Physics run 11 (5), branch `step/46-wave-3-physics-run-11`, PR TBD — **DONE** 2026-11-17:
+- [x] Physics run 11 (5), branch `step/46-wave-3-physics-run-11`, PR #113 — **DONE** 2026-11-17:
   - [x] elastic-collision-calculator
   - [x] inelastic-collision-calculator
   - [x] center-of-mass-calculator

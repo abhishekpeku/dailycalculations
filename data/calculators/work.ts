@@ -648,5 +648,118 @@ export const workCalculators: CalculatorConfig[] = [
       const effectiveRate = totalHoursPaid > 0 ? totalPay / totalHoursPaid : 0;
       return { regularHours, overtimeHours, regularPay, overtimePay, doubleTimePay, totalPay, totalHoursPaid, effectiveRate };
     }
+  },
+  {
+    id: 'severance-pay-calculator',
+    group: 'Pay & Rates',
+    category: 'work',
+    glyph: 'wk',
+    updatedAt: '2026-11-16',
+    aliases: ['severance calculator', 'layoff pay calculator', 'weeks of severance calculator', 'termination pay calculator', 'severance package calculator'],
+    related: ['salary-raise-calculator', 'paycheck-calculator', 'pto-calculator', 'overtime-pay-calculator'],
+    title: 'Severance Pay Calculator',
+    description: 'Estimate severance pay from your salary, years of service and a weeks-per-year formula. A typical-practice estimate, not a legal entitlement — federal law does not require severance pay.',
+    example: 'A $78,000 salary ($1,500/week), 6 years of service and a 1.5-week-per-year formula gives an estimated 9 weeks of severance — about $13,500.00.',
+    breakdown: {
+      headline: 'severancePay',
+      headlineLabel: 'Estimated severance pay',
+      outputs: [
+        { id: 'severancePay', label: 'Estimated severance pay', format: 'currency' },
+        { id: 'severanceWeeks', label: 'Severance weeks', format: 'number' },
+        { id: 'weeklyPay', label: 'Weekly pay', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your pay', inputs: ['annualSalary'] },
+        { title: 'Tenure & formula', inputs: ['yearsOfService', 'weeksPerYearOfService', 'maxWeeksCap'] }
+      ],
+      visual: {
+        type: 'rangeBar',
+        value: 'weeksPerYearOfService',
+        bands: [
+          { label: 'Below the most common formulas', min: 0, max: 1 },
+          { label: 'Most common range (1–2 weeks/year)', min: 1, max: 2 },
+          { label: 'Above the most common formulas', min: 2, max: 10 }
+        ],
+        title: 'Your weeks-per-year formula vs. common practice'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'How severance pay is typically estimated',
+        paragraphs: [
+          'There is no federal law requiring severance pay at all. The US Department of Labor is explicit: "There is no requirement in the Fair Labor Standards Act (FLSA) for severance pay" — it is entirely a matter of agreement between an employer and an employee, set out in a policy, offer letter or separation agreement.',
+          'Despite that, many employers do offer severance, and tenure-based formulas are the most common way to size it. A WorldatWork survey reported by SHRM found "one week per year of service" used by 24% of surveyed employers and "two weeks per year of service" by 16%, with years of service factored in by 92% of organizations in some way — making roughly 1 to 2 weeks of pay per year of service the most commonly cited range, though any individual employer\'s actual policy can fall outside it.',
+          'This calculator applies that kind of formula: your weekly pay times your years of service times a multiplier you choose, with an optional overall cap some employers apply regardless of tenure. Treat the result as a starting estimate for a conversation, not a number to expect or demand — your own offer letter, employee handbook or separation agreement is the only authoritative source.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your annual salary and years of service, then the weeks-per-year formula you want to estimate with.',
+        steps: [
+          { name: 'Enter your annual salary', text: 'Used to find your weekly pay (salary ÷ 52).' },
+          { name: 'Enter your years of service', text: 'Fractional years are fine — 6.5 for six and a half years.' },
+          { name: 'Set the weeks-per-year-of-service formula', text: 'Use your employer\'s actual formula if you know it, or the commonly cited 1 to 2 weeks per year if you do not.' },
+          { name: 'Enter a cap, if any', text: 'Some employers cap total severance regardless of tenure. Enter it in weeks, or leave at 0 for no cap.' },
+          { name: 'Read the estimate', text: 'The headline is the estimated severance pay, with the number of weeks and your weekly pay shown below, and a bar comparing your formula to the most commonly cited range.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Weekly pay comes from your annual salary. Severance weeks are tenure times a multiplier, capped if you set one.',
+        expression: 'weeklyPay = annualSalary ÷ 52\nseveranceWeeks = min(yearsOfService × weeksPerYearOfService, maxWeeksCap)\nseverancePay = severanceWeeks × weeklyPay',
+        terms: [
+          { symbol: 'weeksPerYearOfService', meaning: 'Weeks of pay granted per year of service — commonly 1 to 2 in practice, though any individual policy can differ.' },
+          { symbol: 'maxWeeksCap', meaning: 'An overall ceiling on severance weeks regardless of tenure, if your employer sets one. Use 0 for no cap.' }
+        ],
+        note: 'This is a typical-practice estimate, not a legal entitlement. Severance is not required by federal law, and your own offer letter, employee handbook or separation agreement governs the real amount, if any.'
+      },
+      workedExample: {
+        intro: 'A $78,000 salary, 6 years of service, and a 1.5-week-per-year formula with no cap.',
+        rows: [
+          { label: 'Weekly pay (78,000 ÷ 52)', value: '$1,500.00' },
+          { label: 'Severance weeks (6 × 1.5)', value: '9 weeks' },
+          { label: 'Severance pay (9 × $1,500.00)', value: '$13,500.00' }
+        ],
+        result: 'Estimated severance pay $13,500.00 (9 weeks)',
+        explanation: 'At $1,500 a week, each year of service is worth 1.5 weeks under this formula, so 6 years of service comes to 9 weeks — $13,500.00 before tax. A longer tenure or a richer multiplier (up to the cap, if any) both scale the result directly.'
+      },
+      watchOut: [
+        { title: 'Severance is not legally required', body: 'The FLSA does not require severance pay of any amount. It is offered entirely at employer discretion, through a policy, offer letter or separation agreement — there is no federal floor to compare against.' },
+        { title: 'The WARN Act requires notice, not severance', body: 'Employers with 100 or more employees must give 60 calendar days\' advance notice of a qualifying plant closing or mass layoff under the WARN Act — a notice requirement, separate from and not a substitute for severance pay.' },
+        { title: '1 to 2 weeks per year is common, not universal', body: 'The cited WorldatWork/SHRM figures describe the most common formulas among surveyed employers, not a required or average amount. Executives, long-tenured staff and negotiated exits often fall outside this range in either direction.' },
+        { title: 'Severance is taxable income', body: 'Severance pay is generally treated as supplemental wages for federal tax withholding, same as a bonus. This calculator shows a pre-tax figure.' },
+        { title: 'Severance can affect unemployment benefits', body: 'Depending on your state, receiving severance can delay or reduce when unemployment insurance benefits start. Check with your state unemployment agency for your state\'s rule.' }
+      ],
+      references: [
+        { label: 'U.S. Department of Labor, Severance Pay', url: 'https://www.dol.gov/general/topic/wages/severancepay' },
+        { label: 'U.S. Department of Labor, Plant Closings and Layoffs (WARN Act)', url: 'https://www.dol.gov/general/topic/termination/plantclosings' },
+        { label: 'SHRM, "M&A Pickup Puts Focus on Severance Policies" (citing a WorldatWork survey)', url: 'https://www.shrm.org/topics-tools/news/benefits-compensation/ma-pickup-puts-focus-severance-policies' }
+      ]
+    },
+    inputs: [
+      { id: 'annualSalary', label: 'Annual salary', type: 'currency', placeholder: '78000', defaultValue: 78000, step: 1000, min: 0 },
+      { id: 'yearsOfService', label: 'Years of service', type: 'number', placeholder: '6', defaultValue: 6, step: 0.5, min: 0 },
+      { id: 'weeksPerYearOfService', label: 'Weeks of pay per year of service', type: 'number', placeholder: '1.5', defaultValue: 1.5, step: 0.5, min: 0 },
+      { id: 'maxWeeksCap', label: 'Maximum total weeks (0 = no cap)', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Severance Pay Calculator – Weeks Per Year of Service',
+      description: 'Estimate severance pay from your salary, years of service and a weeks-per-year formula — a typical-practice estimate, not a legal entitlement.',
+      faq: [
+        { question: 'Is severance pay required by law?', answer: 'No. The US Department of Labor confirms the FLSA has no severance pay requirement. It is offered entirely at employer discretion, under a policy, offer letter or separation agreement.' },
+        { question: 'How is severance pay usually calculated?', answer: 'The most common approach ties it to tenure: a WorldatWork survey reported by SHRM found "one week per year of service" used by 24% of employers and "two weeks per year of service" by 16%, making roughly 1 to 2 weeks per year the most commonly cited range.' },
+        { question: 'Does the WARN Act require severance pay?', answer: 'No. The WARN Act requires employers with 100+ employees to give 60 calendar days of advance notice before a qualifying plant closing or mass layoff — a notice requirement, not a severance payment.' },
+        { question: 'Is severance pay taxable?', answer: 'Yes. Severance is generally treated as supplemental wages for federal withholding purposes, the same category as a bonus. This calculator shows a pre-tax estimate.' },
+        { question: 'Can severance affect unemployment benefits?', answer: 'In some states, yes — receiving severance can delay or reduce unemployment insurance benefits. Rules vary by state, so check with your state unemployment agency.' },
+        { question: 'What if my employer caps severance?', answer: 'Enter the cap in weeks. For example, 15 years of service at 2 weeks per year would be 30 weeks uncapped, but a 20-week cap would limit the payout to 20 weeks regardless of tenure.' }
+      ]
+    },
+    compute(values) {
+      const weeklyPay = values.annualSalary / 52;
+      let severanceWeeks = values.yearsOfService * values.weeksPerYearOfService;
+      if (values.maxWeeksCap > 0) severanceWeeks = Math.min(severanceWeeks, values.maxWeeksCap);
+      const severancePay = severanceWeeks * weeklyPay;
+      return { weeklyPay, severanceWeeks, severancePay };
+    }
   }
 ];

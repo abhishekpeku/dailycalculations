@@ -9454,6 +9454,50 @@ exports[`compute() snapshots > series-parallel-resistor-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > severance-pay-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "annualSalary": 78000,
+      "yearsOfService": 6,
+      "weeksPerYearOfService": 1.5,
+      "maxWeeksCap": 0
+    },
+    "outputs": {
+      "weeklyPay": 1500,
+      "severanceWeeks": 9,
+      "severancePay": 13500
+    }
+  },
+  "typical": {
+    "inputs": {
+      "annualSalary": 117000,
+      "yearsOfService": 9,
+      "weeksPerYearOfService": 2.5,
+      "maxWeeksCap": 0
+    },
+    "outputs": {
+      "weeklyPay": 2250,
+      "severanceWeeks": 22.5,
+      "severancePay": 50625
+    }
+  },
+  "edge": {
+    "inputs": {
+      "annualSalary": 0,
+      "yearsOfService": 0,
+      "weeksPerYearOfService": 0,
+      "maxWeeksCap": 0
+    },
+    "outputs": {
+      "weeklyPay": 0,
+      "severanceWeeks": 0,
+      "severancePay": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > shoe-size-converter 1`] = `
 {
   "default": {

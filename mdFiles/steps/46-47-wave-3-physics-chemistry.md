@@ -1288,6 +1288,24 @@ build agent's judgment**, same as every run so far.
     on every page; all 5 ids linked correctly from `/en/categories/chemistry` (3 occurrences each).
     No dev server was started by this run, and port 3000 was confirmed free at the end.
   - `chemistry` now 45 calculators, **259 total** once this PR merges.
+- [ ] Chemistry run 10 (5), branch `step/46-wave-3-chemistry-run-10` — **IN PROGRESS** 2026-11-16.
+  Not part of the originally-scoped runs 1-9 (those exhausted the seed lists); picked as standard
+  general-chemistry topics with zero prior coverage, per the task's own instruction to find 5 more.
+  - [ ] grahams-law-effusion-calculator
+  - [ ] weak-acid-ionization-calculator
+  - [ ] current-efficiency-calculator
+  - [ ] hess-law-enthalpy-calculator
+  - [ ] conservation-of-mass-calculator
+  - Candidates considered and rejected before picking these 5: `molar-volume-stp-calculator` (already
+    dropped as a near-duplicate of `ideal-gas-law-calculator`'s own STP content in run 7 — re-confirmed
+    still true); a generic "specific gravity of a gas" page (too close to `density-of-solutions-
+    calculator`'s own specific-gravity bonus figure and alias, same reasoning run 8 used to drop a
+    plain `specific-gravity-calculator`); "solubility rules / common-ion crossover" (already
+    `common-ion-effect-calculator`, run 9); "radioactive decay dating" (would just be a thin wrapper
+    around physics' own `radioactive-half-life-calculator`, no distinct chemistry content); activity
+    coefficient (judged too advanced/thin for a first cut, per the task's own hedge on this one).
+  - [ ] Verify numbers (`verify_run10.mjs`, scratchpad), alias-collision sweep, tests/lint/build
+  - [ ] Update STATUS.md and this file's checklist to DONE
 - [ ] Visual-QA checkpoint: due again once ~50 more calculators land after this wave (last pass was
   at 194 calculators, 2026-11-05 — see STATUS.md header; chemistry crossed the 244-calculator
   threshold after run 6, flagged for the main session to schedule — still not run as of this run)

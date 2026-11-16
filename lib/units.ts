@@ -25,6 +25,9 @@ export type UnitDimension =
   | 'springConstant'
   | 'thermalExpansionCoeff'
   | 'torque'
+  | 'momentOfInertia'
+  | 'angularMomentum'
+  | 'inductance'
   | 'electricField'
   | 'magneticFluxDensity'
   | 'voltage'
@@ -300,6 +303,31 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
     { id: 'Nm', label: 'N·m', factor: 1 },
     { id: 'lbfft', label: 'lbf·ft', factor: POUND_FORCE * FOOT },
     { id: 'lbfin', label: 'lbf·in', factor: POUND_FORCE * INCH }
+  ],
+  // Moment of inertia (OpenStax University Physics Volume 1 §10.4 "Moment of Inertia and
+  // Rotational Kinetic Energy": I = Σmᵢrᵢ²). SI derived unit kg·m². 1 lb·ft² from the exact pound
+  // and foot above (NIST SP 811 Appendix B) — the US customary unit engineering datasheets
+  // (flywheels, motor rotors) report it in.
+  momentOfInertia: [
+    { id: 'kgm2', label: 'kg·m²', factor: 1 },
+    { id: 'lbft2', label: 'lb·ft²', factor: POUND * FOOT * FOOT }
+  ],
+  // Angular momentum (OpenStax University Physics Volume 1 §11.2 "Angular Momentum": L = Iω, a
+  // moment of inertia times an angular velocity). SI derived unit kg·m²/s. The lb·ft²/s factor is
+  // numerically identical to momentOfInertia's own lb·ft² factor, since the extra ÷s on both sides
+  // of the kg·m² vs lb·ft² ratio cancels — the same "shared factor across dimensions" precedent as
+  // concentration/molarMass.
+  angularMomentum: [
+    { id: 'kgm2/s', label: 'kg·m²/s', factor: 1 },
+    { id: 'lbft2/s', label: 'lb·ft²/s', factor: POUND * FOOT * FOOT }
+  ],
+  // Inductance (OpenStax University Physics Volume 2 §14.5 "Oscillations in an LC Circuit": the
+  // LC circuit's resonant angular frequency ω = 1/√(LC)). SI derived unit the henry (BIPM SI
+  // Brochure: 1 H = 1 Wb/A = 1 V·s/A). Real inductors mostly sit at mH and µH.
+  inductance: [
+    { id: 'H', label: 'H', factor: 1 },
+    { id: 'mH', label: 'mH', factor: 1e-3 },
+    { id: 'uH', label: 'µH', factor: 1e-6 }
   ],
   // Electric field strength (OpenStax University Physics Volume 2 §5.4 "Electric Field": E = F/Q).
   // SI derived unit is the newton per coulomb; the BIPM SI Brochure gives the equivalent volt per

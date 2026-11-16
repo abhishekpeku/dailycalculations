@@ -1,13 +1,5 @@
 # Step 46-47 — Wave 3: physics, chemistry
 
-## Progress (physics run 10, branch `step/46-wave-3-physics-run-10`)
-
-- [ ] moment-of-inertia-calculator
-- [ ] rotational-kinetic-energy-calculator
-- [ ] angular-momentum-calculator
-- [ ] rc-time-constant-calculator
-- [ ] lc-resonant-frequency-calculator
-
 Per `mdFiles/omni-strategy.md` §4 (priority 3: physics, chemistry — "huge student volume and
 attracts links from schools and universities, but lower ad revenue") and
 `mdFiles/calculator-rollout-plan.md`'s "Wave 3: Physics, Chemistry (~120). Needs E2 + E3." Both
@@ -761,12 +753,83 @@ build agent's judgment**, same as every run so far.
     pre-existing and untouched by this run). A pre-existing process was already listening on port
     3000 (not started by this run) — left running, verified via the static HTML output instead.
   - 341 calculators total after this run (336 + 5). `physics` is now 46.
-- [ ] Physics runs 10+ (as many 5-calculator runs as needed to close the gap toward ~61 total —
-  no seed list left after run 9; build agent picks standard-physics formulas not yet covered,
-  e.g. angular momentum, moment of inertia (simple shapes, lookup/breakdown), rotational kinetic
-  energy — these three are grouped together on purpose, since all three need a new
-  `momentOfInertia` dimension (and angular momentum a second, `angularMomentum`) — verify each
-  against a primary source same as every prior run)
+- [x] Physics run 10 (5), branch `step/46-wave-3-physics-run-10`, PR #111 — **DONE** 2026-11-17:
+  - [x] moment-of-inertia-calculator
+  - [x] rotational-kinetic-energy-calculator
+  - [x] angular-momentum-calculator
+  - [x] rc-time-constant-calculator
+  - [x] lc-resonant-frequency-calculator
+  - Built the rotational-dynamics trio run 9 explicitly deferred as a group, plus two
+    electricity/circuits calculators to fill the run out to 5. Coulomb's law (two point charges)
+    was reconsidered for one of the two remaining slots and dropped again as too thin a variant of
+    `gravitational-force-calculator`'s identical inverse-square shape, per run 9's own note —
+    picked RC/LC circuits instead, both standard intro-circuits topics with zero existing coverage.
+  - `moment-of-inertia-calculator` (I for 7 simple shapes — point mass mr², rod about center
+    (1/12)mL², rod about end (1/3)mL², solid disk/cylinder (1/2)mr², solid sphere (2/5)mr², hollow
+    sphere (2/3)mr², thin hoop/ring mr²) is a type-B breakdown/lookup widget (shape selector +
+    mass + radius/length, following `molecular-geometry-calculator`'s shape-lookup precedent) —
+    not a solver, since the formula genuinely depends on which shape is selected. A `derive`d
+    `compareBars` visual holds mass/radius fixed and shows all 4 radius-only shapes side by side
+    (hoop > disk > solid sphere > hollow sphere, in that order, for the same m/r), making the
+    "shape changes the answer" point visually rather than just in prose. Needed a new
+    `momentOfInertia` dimension (base kg·m², alt lb·ft² — NIST SP 811 Appendix B factor). Source:
+    OpenStax University Physics Volume 1 §10.4's own Figure 10.20 (fetched as the source image
+    directly, since the page text references the figure's table without transcribing every row),
+    cross-checked against §10.5's derivations.
+  - `rotational-kinetic-energy-calculator` (KE_rot = ½Iω²) is a 3-variable closed-form solver
+    (rotationalKE, momentOfInertia, angularVelocity), reusing the new `momentOfInertia` dimension
+    plus the existing `angularVelocity`/`energy` dimensions — no second new dimension. Cross-linked
+    both ways with `moment-of-inertia-calculator` (use its computed I as this one's input) and with
+    `kinetic-energy-calculator` (the translational analog, ½mv² vs ½Iω²). Worked example from
+    OpenStax's own Example 10.9.
+  - `angular-momentum-calculator` (L = Iω) is a 3-variable closed-form solver reusing
+    `momentOfInertia`/`angularVelocity`. Needed a second new dimension: `angularMomentum` (base
+    kg·m²/s, alt lb·ft²/s — shares `momentOfInertia`'s unit factor, same "reused conversion factor
+    across a related dimension" pattern used elsewhere in this wave). Cross-linked both ways with
+    `moment-of-inertia-calculator` and with `momentum-calculator` (the translational analog, p = mv
+    vs L = Iω). Source: OpenStax University Physics Volume 1 §11.2 Angular Momentum (Equation 11.9)
+    and §11.3 Conservation of Angular Momentum.
+  - `rc-time-constant-calculator` (τ = RC) is a 3-variable closed-form solver (timeConstant,
+    resistance, capacitance), reusing the existing `resistance`/`capacitance`/`time` dimensions —
+    no new dimension. Bonus `outputs`: percent charged after 1τ (1 − e⁻¹ ≈ 63.2%) and after 5τ
+    (1 − e⁻⁵ ≈ 99.3%), the two standard reference points every intro-circuits treatment gives.
+    Source: OpenStax University Physics Volume 2 §10.5 RC Circuits (Example 10.8) and §8.1
+    Capacitors and Capacitance.
+  - `lc-resonant-frequency-calculator` (f = 1/(2π√(LC))) is a 3-variable closed-form solver
+    (resonantFrequency, inductance, capacitance). Needed a new `inductance` dimension (base H, alts
+    mH/µH — BIPM SI Brochure, the henry). Source: OpenStax University Physics Volume 2 §14.5
+    Oscillations in an LC Circuit (Equation 14.41, Example 14.6).
+  - Every formula/constant fetched directly from a primary source, not recalled from memory:
+    OpenStax University Physics Volume 1 §10.4/§10.5 (moment of inertia, Figure 10.20) and
+    §11.2/§11.3 (angular momentum); OpenStax University Physics Volume 2 §8.1/§10.5 (RC circuits)
+    and §14.5 (LC circuits); NIST SP 811 Appendix B (lb·ft²/lb·ft²·s⁻¹ conversion factors); BIPM SI
+    Brochure (the henry and the hertz).
+  - Independent scratch script (`verify_run10.mjs`, scratchpad, no app imports) recomputed every
+    worked example and FAQ figure before any copy was written, including all 7
+    moment-of-inertia shape formulas at the same m/r for the comparison visual, the
+    rotational-KE/angular-momentum round-trips against OpenStax's Example 10.9/§11.2 figures, the
+    RC time-constant 63.2%/99.3% charge fractions, and the LC resonant-frequency worked example.
+  - `npm test` (1,366 tests), `npm run lint` and `npm run build` all pass. One new
+    `KNOWN_NON_FINITE` entry: `lc-resonant-frequency-calculator` (`resonantFrequency`; inductance
+    and capacitance both 0 at their own min → `compute()`'s own guard, no resonance at zero L or C).
+    `moment-of-inertia-calculator`, `rotational-kinetic-energy-calculator` and
+    `angular-momentum-calculator` needed none (their all-zero edge cases resolve to an honest
+    finite 0). Snapshot diff is additive-only (169 new lines, 0 removed, confirmed with
+    `git diff --stat`).
+  - This run's background agent hit a session rate limit right after finishing the build/lint pass
+    and starting to write this very step-file entry — all 5 calculators, the `lib/units.ts`
+    dimensions, and the `data/calculators.spec.ts` snapshot were already complete, tested, and
+    linted at that point (confirmed independently by the main session: `npm test` 1,366/1,366,
+    lint clean, `npm run build` green). Only this write-up and the commit/push/PR were finished by
+    the main session afterward — no calculator content was redone.
+  - 351 calculators total after this run (341 + 5). `physics` is now 51.
+- [ ] Physics runs 11+ (as many 5-calculator runs as needed to close the gap toward ~61 total —
+  ~10 remain; no seed list left; build agent picks standard-physics formulas not yet covered —
+  candidates not yet used: Coulomb's law two-point-charge framing (repeatedly considered and
+  dropped as too thin so far — a future run could try a genuinely different framing, e.g. net
+  force from 3+ charges, if one exists), elastic/inelastic collisions (1D conservation of
+  momentum), center of mass (two-body), kinetic friction on an incline, specific heat at constant
+  pressure vs volume — verify each against a primary source same as every prior run)
 - [x] Chemistry run 3 (5), branch `step/46-wave-3-chemistry-run-3`, PR #67 — **DONE** 2026-11-08:
   - [x] limiting-reagent-calculator
   - [x] theoretical-yield-calculator

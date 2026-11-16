@@ -5297,6 +5297,53 @@ exports[`compute() snapshots > impulse-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > income-tax-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "filingStatus": 0,
+      "incomeType": 0,
+      "grossIncome": 60000
+    },
+    "outputs": {
+      "federalTax": 5020,
+      "taxableIncome": 43900,
+      "effectiveRate": 11.43507973,
+      "marginalRate": 12,
+      "afterTaxIncome": 54980
+    }
+  },
+  "typical": {
+    "inputs": {
+      "filingStatus": 0,
+      "incomeType": 0,
+      "grossIncome": 90000
+    },
+    "outputs": {
+      "federalTax": 10970,
+      "taxableIncome": 73900,
+      "effectiveRate": 14.8443843,
+      "marginalRate": 22,
+      "afterTaxIncome": 79030
+    }
+  },
+  "edge": {
+    "inputs": {
+      "filingStatus": 0,
+      "incomeType": 0,
+      "grossIncome": 0
+    },
+    "outputs": {
+      "federalTax": 0,
+      "taxableIncome": 0,
+      "effectiveRate": 0,
+      "marginalRate": 10,
+      "afterTaxIncome": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > inflation-calculator 1`] = `
 {
   "default": {

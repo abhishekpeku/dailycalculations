@@ -194,7 +194,13 @@ whole site before writing any id.
   - [x] `tire-size-calculator`
   - [x] `parking-cost-calculator`
   - [x] `gas-mileage-comparison-calculator` — **skipped, see note below**
-- [ ] Batch 2 — `work` (6 new)
+- [x] Batch 2 — `work` (6 new; done 2026-11-16, branch `step/61-deepen-work`, PR #95)
+  - [x] `overtime-pay-calculator`
+  - [x] `severance-pay-calculator`
+  - [x] `cost-of-living-comparison-calculator`
+  - [x] `remote-work-savings-calculator`
+  - [x] `job-offer-comparison-calculator`
+  - [x] `paid-sick-leave-accrual-calculator`
 - [ ] Batch 3 — `health` (5 new)
 - [ ] Batch 4 — `shopping` (5 new)
 - [ ] Batch 5 — `travel` (6 new)

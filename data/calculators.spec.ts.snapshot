@@ -1989,6 +1989,47 @@ exports[`compute() snapshots > correlation-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > cost-of-living-comparison-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "salaryA": 70000,
+      "indexA": 100,
+      "indexB": 150
+    },
+    "outputs": {
+      "salaryB": 105000,
+      "difference": 35000,
+      "percentMore": 50
+    }
+  },
+  "typical": {
+    "inputs": {
+      "salaryA": 105000,
+      "indexA": 150,
+      "indexB": 225
+    },
+    "outputs": {
+      "salaryB": 157500,
+      "difference": 52500,
+      "percentMore": 50
+    }
+  },
+  "edge": {
+    "inputs": {
+      "salaryA": 0,
+      "indexA": 0,
+      "indexB": 0
+    },
+    "outputs": {
+      "salaryB": 0,
+      "difference": 0,
+      "percentMore": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > credit-card-minimum-payment-calculator 1`] = `
 {
   "default": {
@@ -4801,6 +4842,59 @@ exports[`compute() snapshots > isotope-notation-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > job-offer-comparison-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "baseSalaryA": 85000,
+      "bonusA": 5000,
+      "benefitsValueA": 10000,
+      "baseSalaryB": 90000,
+      "bonusB": 4000,
+      "benefitsValueB": 9000
+    },
+    "outputs": {
+      "totalCompA": 100000,
+      "totalCompB": 103000,
+      "difference": 3000,
+      "percentDifference": 3
+    }
+  },
+  "typical": {
+    "inputs": {
+      "baseSalaryA": 128000,
+      "bonusA": 7500,
+      "benefitsValueA": 15000,
+      "baseSalaryB": 135000,
+      "bonusB": 6000,
+      "benefitsValueB": 13500
+    },
+    "outputs": {
+      "totalCompA": 150500,
+      "totalCompB": 154500,
+      "difference": 4000,
+      "percentDifference": 2.657807309
+    }
+  },
+  "edge": {
+    "inputs": {
+      "baseSalaryA": 0,
+      "bonusA": 0,
+      "benefitsValueA": 0,
+      "baseSalaryB": 0,
+      "bonusB": 0,
+      "benefitsValueB": 0
+    },
+    "outputs": {
+      "totalCompA": 0,
+      "totalCompB": 0,
+      "difference": 0,
+      "percentDifference": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > kids-shoe-size-chart 1`] = `
 {
   "default": {
@@ -6889,6 +6983,71 @@ exports[`compute() snapshots > outlier-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > overtime-pay-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "hourlyRate": 22,
+      "hoursWorked": 48,
+      "doubleTimeHours": 2,
+      "overtimeThreshold": 40,
+      "otMultiplier": 1.5,
+      "doubleTimeMultiplier": 2
+    },
+    "outputs": {
+      "regularHours": 40,
+      "overtimeHours": 8,
+      "regularPay": 880,
+      "overtimePay": 264,
+      "doubleTimePay": 88,
+      "totalPay": 1232,
+      "totalHoursPaid": 50,
+      "effectiveRate": 24.64
+    }
+  },
+  "typical": {
+    "inputs": {
+      "hourlyRate": 33,
+      "hoursWorked": 72,
+      "doubleTimeHours": 3,
+      "overtimeThreshold": 60,
+      "otMultiplier": 2.25,
+      "doubleTimeMultiplier": 3
+    },
+    "outputs": {
+      "regularHours": 60,
+      "overtimeHours": 12,
+      "regularPay": 1980,
+      "overtimePay": 891,
+      "doubleTimePay": 297,
+      "totalPay": 3168,
+      "totalHoursPaid": 75,
+      "effectiveRate": 42.24
+    }
+  },
+  "edge": {
+    "inputs": {
+      "hourlyRate": 0,
+      "hoursWorked": 0,
+      "doubleTimeHours": 0,
+      "overtimeThreshold": 0,
+      "otMultiplier": 1,
+      "doubleTimeMultiplier": 1
+    },
+    "outputs": {
+      "regularHours": 0,
+      "overtimeHours": 0,
+      "regularPay": 0,
+      "overtimePay": 0,
+      "doubleTimePay": 0,
+      "totalPay": 0,
+      "totalHoursPaid": 0,
+      "effectiveRate": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > oxidation-number-calculator 1`] = `
 {
   "default": {
@@ -6981,6 +7140,59 @@ exports[`compute() snapshots > p-value-calculator 1`] = `
     "outputs": {
       "pValue": 1,
       "cdfValue": 0.5
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > paid-sick-leave-accrual-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "hoursWorkedYTD": 900,
+      "hoursEarnedPerIncrement": 1,
+      "hoursWorkedPerIncrement": 30,
+      "hoursUsedYTD": 6,
+      "annualAccrualCap": 0,
+      "hourlyRate": 20
+    },
+    "outputs": {
+      "accruedHours": 30,
+      "balance": 24,
+      "cashValue": 480,
+      "usedCashValue": 120
+    }
+  },
+  "typical": {
+    "inputs": {
+      "hoursWorkedYTD": 1350,
+      "hoursEarnedPerIncrement": 2,
+      "hoursWorkedPerIncrement": 45,
+      "hoursUsedYTD": 9,
+      "annualAccrualCap": 0,
+      "hourlyRate": 30
+    },
+    "outputs": {
+      "accruedHours": 60,
+      "balance": 51,
+      "cashValue": 1530,
+      "usedCashValue": 270
+    }
+  },
+  "edge": {
+    "inputs": {
+      "hoursWorkedYTD": 0,
+      "hoursEarnedPerIncrement": 0,
+      "hoursWorkedPerIncrement": 1,
+      "hoursUsedYTD": 0,
+      "annualAccrualCap": 0,
+      "hourlyRate": 0
+    },
+    "outputs": {
+      "accruedHours": 0,
+      "balance": 0,
+      "cashValue": 0,
+      "usedCashValue": 0
     }
   }
 }
@@ -8723,6 +8935,74 @@ exports[`compute() snapshots > relative-risk-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > remote-work-savings-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "workDaysPerWeek": 5,
+      "wfhDaysPerWeek": 2,
+      "roundTripMiles": 25,
+      "mpg": 30,
+      "gasPricePerGallon": 3.75,
+      "dailyParking": 15,
+      "dailyTolls": 3,
+      "wearCostPerMile": 0.21,
+      "roundTripCommuteMinutes": 55
+    },
+    "outputs": {
+      "fullTimeMonthlyCost": 571.4583333,
+      "partialMonthlyCost": 342.875,
+      "monthlySavings": 228.5833333,
+      "annualSavings": 2743,
+      "monthlyHoursSaved": 7.944444444,
+      "annualHoursSaved": 95.33333333
+    }
+  },
+  "typical": {
+    "inputs": {
+      "workDaysPerWeek": 8,
+      "wfhDaysPerWeek": 3,
+      "roundTripMiles": 38,
+      "mpg": 45,
+      "gasPricePerGallon": 5.65,
+      "dailyParking": 23,
+      "dailyTolls": 4.5,
+      "wearCostPerMile": 0.32,
+      "roundTripCommuteMinutes": 83
+    },
+    "outputs": {
+      "fullTimeMonthlyCost": 1540.278519,
+      "partialMonthlyCost": 962.6740741,
+      "monthlySavings": 577.6044444,
+      "annualSavings": 6931.253333,
+      "monthlyHoursSaved": 17.98333333,
+      "annualHoursSaved": 215.8
+    }
+  },
+  "edge": {
+    "inputs": {
+      "workDaysPerWeek": 1,
+      "wfhDaysPerWeek": 0,
+      "roundTripMiles": 0,
+      "mpg": 1,
+      "gasPricePerGallon": 0,
+      "dailyParking": 0,
+      "dailyTolls": 0,
+      "wearCostPerMile": 0,
+      "roundTripCommuteMinutes": 0
+    },
+    "outputs": {
+      "fullTimeMonthlyCost": 0,
+      "partialMonthlyCost": 0,
+      "monthlySavings": 0,
+      "annualSavings": 0,
+      "monthlyHoursSaved": 0,
+      "annualHoursSaved": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > rent-vs-buy-calculator 1`] = `
 {
   "default": {
@@ -9552,6 +9832,50 @@ exports[`compute() snapshots > series-parallel-resistor-calculator 1`] = `
       "parallelTotal": 0,
       "count": 2,
       "smallestResistor": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > severance-pay-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "annualSalary": 78000,
+      "yearsOfService": 6,
+      "weeksPerYearOfService": 1.5,
+      "maxWeeksCap": 0
+    },
+    "outputs": {
+      "weeklyPay": 1500,
+      "severanceWeeks": 9,
+      "severancePay": 13500
+    }
+  },
+  "typical": {
+    "inputs": {
+      "annualSalary": 117000,
+      "yearsOfService": 9,
+      "weeksPerYearOfService": 2.5,
+      "maxWeeksCap": 0
+    },
+    "outputs": {
+      "weeklyPay": 2250,
+      "severanceWeeks": 22.5,
+      "severancePay": 50625
+    }
+  },
+  "edge": {
+    "inputs": {
+      "annualSalary": 0,
+      "yearsOfService": 0,
+      "weeksPerYearOfService": 0,
+      "maxWeeksCap": 0
+    },
+    "outputs": {
+      "weeklyPay": 0,
+      "severanceWeeks": 0,
+      "severancePay": 0
     }
   }
 }

@@ -519,5 +519,713 @@ export const workCalculators: CalculatorConfig[] = [
       const usagePercent = values.annualPtoDays > 0 ? (values.daysUsed / values.annualPtoDays) * 100 : 0;
       return { remaining, dailyRate, cashValue, usedCashValue, usagePercent };
     }
+  },
+  {
+    id: 'overtime-pay-calculator',
+    group: 'Pay & Rates',
+    category: 'work',
+    glyph: '1.5×',
+    updatedAt: '2026-11-16',
+    aliases: ['time and a half calculator', 'double time pay calculator', 'overtime calculator', 'FLSA overtime calculator', 'overtime hours pay calculator'],
+    related: ['work-hours-calculator', 'salary-raise-calculator', 'freelancer-rate-calculator', 'paycheck-calculator'],
+    title: 'Overtime Pay Calculator',
+    description: 'Calculate overtime pay from total hours worked, your hourly rate and a weekly overtime threshold, plus an optional double-time tier for states that require one, with the blended effective hourly rate.',
+    example: 'Working 48 hours at $22/hr (40 regular + 8 overtime at 1.5×) plus 2 hours of double time at 2× pays $1,232.00 total — an effective rate of $24.64/hr.',
+    breakdown: {
+      headline: 'overtimePay',
+      headlineLabel: 'Overtime pay',
+      outputs: [
+        { id: 'overtimePay', label: 'Overtime pay', format: 'currency' },
+        { id: 'totalPay', label: 'Total pay (regular + overtime + double time)', format: 'currency' },
+        { id: 'regularPay', label: 'Regular pay', format: 'currency' },
+        { id: 'doubleTimePay', label: 'Double-time pay', format: 'currency' },
+        { id: 'effectiveRate', label: 'Effective hourly rate', format: 'currency' },
+        { id: 'totalHoursPaid', label: 'Total hours paid', format: 'number' }
+      ],
+      groups: [
+        { title: 'Hours & pay', inputs: ['hourlyRate', 'hoursWorked', 'doubleTimeHours'] },
+        { title: 'Overtime & double-time rules', inputs: ['overtimeThreshold', 'otMultiplier', 'doubleTimeMultiplier'], optional: true }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'regularPay', label: 'Regular' },
+          { from: 'overtimePay', label: 'Overtime' },
+          { from: 'doubleTimePay', label: 'Double time' }
+        ],
+        center: 'totalPay',
+        centerSub: 'total pay'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'How overtime and double-time pay are calculated',
+        paragraphs: [
+          'Under the federal Fair Labor Standards Act (FLSA), non-exempt US employees must be paid at least 1.5 times their regular rate — "time and a half" — for every hour worked over 40 in a single workweek, with no federal cap on how much overtime can be worked. The FLSA has no double-time provision at all; it is a 40-hour weekly threshold only.',
+          'Some states go further. California is the one state that requires double-time pay outright: 1.5× after 8 hours in a workday (up to 12) and 2× beyond 12 hours in a day, even in a week that totals under 40 hours. Because those thresholds are daily, not weekly, this calculator — which works from a weekly total — cannot derive double-time hours on its own. Enter them directly if your state requires them; everything else here is computed automatically from the weekly total you enter.',
+          'This calculator is distinct from the general Work Hours Calculator on this site, which also computes regular and overtime pay but requires you to pre-split your hours and has no double-time tier. Use this one when you want hours auto-split by threshold and a double-time tier handled; use the Work Hours Calculator for a simpler weekly gross-pay estimate.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your hourly rate and the total hours you worked this week. Overtime is split out automatically; double time, if any, is entered directly.',
+        steps: [
+          { name: 'Enter your hourly rate', text: 'Your base pay before any overtime or double-time premium.' },
+          { name: 'Enter total hours worked', text: 'The hours worked this week, not including any hours you already know were at a double-time rate.' },
+          { name: 'Enter double-time hours, if any', text: 'Hours already identified as subject to a double-time rule, most commonly California\'s over-12-hours-in-a-day rule. Leave at 0 if none apply.' },
+          { name: 'Check the overtime rules', text: 'The weekly overtime threshold defaults to 40 hours (the FLSA standard) and the multiplier to 1.5. Change them only if your situation differs.' },
+          { name: 'Read the breakdown', text: 'Overtime pay is the headline, with regular pay, double-time pay, total pay and the blended effective hourly rate below, and a chart of where the money comes from.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Regular and overtime hours are split from your weekly total at the threshold; double time is added on top from what you enter directly.',
+        expression:
+          'regularHours = min(hoursWorked, overtimeThreshold)\novertimeHours = max(0, hoursWorked − overtimeThreshold)\nregularPay = regularHours × rate\novertimePay = overtimeHours × rate × otMultiplier\ndoubleTimePay = doubleTimeHours × rate × doubleTimeMultiplier\ntotalPay = regularPay + overtimePay + doubleTimePay\neffectiveRate = totalPay ÷ (hoursWorked + doubleTimeHours)',
+        terms: [
+          { symbol: 'overtimeThreshold', meaning: 'Hours per week before overtime starts — 40 is the federal FLSA default.' },
+          { symbol: 'otMultiplier', meaning: 'How much overtime pays versus regular time — 1.5 ("time and a half") is the federal standard.' },
+          { symbol: 'doubleTimeHours', meaning: 'Hours you have already identified as subject to a double-time rule, entered directly since this calculator works in weekly totals, not day-by-day.' },
+          { symbol: 'effectiveRate', meaning: 'Total pay spread evenly across every hour paid — a single blended rate for comparison.' }
+        ],
+        note: 'Estimates only, based on the FLSA federal floor. State and local rules can require more overtime or double time than this, never less, and this calculator does not apply any state daily-overtime rule automatically.'
+      },
+      workedExample: {
+        intro: 'You work 48 hours this week at $22/hr. Separately, 2 of those hours fell under a double-time rule from a long shift.',
+        rows: [
+          { label: 'Regular hours (min(48, 40))', value: '40' },
+          { label: 'Overtime hours (48 − 40)', value: '8' },
+          { label: 'Regular pay (40 × $22)', value: '$880.00' },
+          { label: 'Overtime pay (8 × $22 × 1.5)', value: '$264.00' },
+          { label: 'Double-time pay (2 × $22 × 2.0)', value: '$88.00' },
+          { label: 'Total pay (880 + 264 + 88)', value: '$1,232.00' },
+          { label: 'Effective rate (1,232 ÷ 50)', value: '$24.64' }
+        ],
+        result: 'Total pay $1,232.00 for 50 hours paid — an effective $24.64/hr',
+        explanation: 'The 8 overtime hours pay $33.00 each (22 × 1.5) and the 2 double-time hours pay $44.00 each (22 × 2.0), both richer than the $22.00 regular rate — which is why 50 hours paid come out to $24.64/hr on average rather than the flat $22.00 base rate.'
+      },
+      watchOut: [
+        { title: 'Federal overtime is weekly, not daily', body: 'The FLSA threshold is 40 hours in a single workweek. Working 10 hours in a day is not automatically overtime under federal rules alone unless the week also tops 40 hours.' },
+        { title: 'Only California requires double time outright', body: 'California requires 1.5× after 8 hours in a workday (up to 12) and 2× beyond 12 hours, even in a week under 40 hours total. No other state has a blanket double-time requirement; check your state labor department for your own rules.' },
+        { title: 'This assumes a non-exempt hourly worker', body: 'Many salaried employees are exempt from FLSA overtime rules entirely, depending on their duties and pay level. This calculator does not determine exempt status.' },
+        { title: 'Double-time hours are entered by hand', body: 'Because this calculator works from a weekly total rather than a day-by-day schedule, it cannot detect which hours crossed a daily double-time threshold — you supply that count directly.' },
+        { title: 'Severance and overtime are different things', body: 'Overtime pay is for hours already worked. If you are instead estimating a payout after a layoff, use the Severance Pay Calculator instead.' }
+      ],
+      references: [
+        { label: 'U.S. Department of Labor, Wage and Hour Division, Overtime Pay', url: 'https://www.dol.gov/agencies/whd/overtime' },
+        { label: 'U.S. Department of Labor, Wage and Hour Division, Fair Labor Standards Act (FLSA)', url: 'https://www.dol.gov/agencies/whd/flsa' },
+        { label: 'California Department of Industrial Relations, DLSE FAQ: Overtime', url: 'https://www.dir.ca.gov/dlse/faq_overtime.htm' }
+      ]
+    },
+    inputs: [
+      { id: 'hourlyRate', label: 'Hourly rate', type: 'currency', placeholder: '22', defaultValue: 22, step: 0.25, min: 0 },
+      { id: 'hoursWorked', label: 'Total hours worked this week', type: 'number', placeholder: '48', defaultValue: 48, step: 0.25, min: 0 },
+      { id: 'doubleTimeHours', label: 'Hours already subject to double time', type: 'number', placeholder: '2', defaultValue: 2, step: 0.25, min: 0 },
+      { id: 'overtimeThreshold', label: 'Weekly overtime threshold (hours)', type: 'number', placeholder: '40', defaultValue: 40, step: 1, min: 0 },
+      { id: 'otMultiplier', label: 'Overtime multiplier', type: 'number', placeholder: '1.5', defaultValue: 1.5, step: 0.25, min: 1 },
+      { id: 'doubleTimeMultiplier', label: 'Double-time multiplier', type: 'number', placeholder: '2', defaultValue: 2, step: 0.25, min: 1 }
+    ],
+    seo: {
+      title: 'Overtime Pay Calculator – Time and a Half & Double Time',
+      description: 'Calculate overtime pay from hours worked and your hourly rate, with an optional double-time tier and your blended effective hourly rate.',
+      faq: [
+        { question: 'How is overtime pay calculated?', answer: 'Hours over the weekly threshold (40 under the federal FLSA) are paid at a multiplier of your regular rate — 1.5× for standard "time and a half." 8 overtime hours at $22/hr and a 1.5× multiplier pay $264.00.' },
+        { question: 'What is double-time pay and who requires it?', answer: 'Double time pays 2× the regular rate. California is the one state that requires it outright — after 12 hours in a workday — while federal law (the FLSA) has no double-time provision at all.' },
+        { question: 'Does the FLSA require overtime after 8 hours in a day?', answer: 'No. The federal threshold is 40 hours in a workweek, not hours in a single day. Some states, including California, add their own daily overtime rules on top of the federal floor.' },
+        { question: 'How is this different from a general work hours or timesheet calculator?', answer: 'This calculator auto-splits a weekly total into regular and overtime hours at a threshold you set, and adds a double-time tier. The Work Hours Calculator on this site instead takes pre-split regular and overtime hours and has no double-time tier.' },
+        { question: 'Are salaried employees entitled to overtime?', answer: 'Many are not. The FLSA exempts salaried employees who meet certain duties and pay-level tests from overtime rules entirely — this calculator assumes a non-exempt hourly worker.' },
+        { question: 'How do I calculate my effective hourly rate with overtime?', answer: 'Divide total pay by total hours paid. $1,232.00 total pay over 50 hours paid (48 worked plus 2 at double time) comes out to about $24.64/hr.' }
+      ]
+    },
+    compute(values) {
+      const regularHours = Math.min(values.hoursWorked, values.overtimeThreshold);
+      const overtimeHours = Math.max(0, values.hoursWorked - values.overtimeThreshold);
+      const regularPay = regularHours * values.hourlyRate;
+      const overtimePay = overtimeHours * values.hourlyRate * values.otMultiplier;
+      const doubleTimePay = values.doubleTimeHours * values.hourlyRate * values.doubleTimeMultiplier;
+      const totalPay = regularPay + overtimePay + doubleTimePay;
+      const totalHoursPaid = values.hoursWorked + values.doubleTimeHours;
+      const effectiveRate = totalHoursPaid > 0 ? totalPay / totalHoursPaid : 0;
+      return { regularHours, overtimeHours, regularPay, overtimePay, doubleTimePay, totalPay, totalHoursPaid, effectiveRate };
+    }
+  },
+  {
+    id: 'severance-pay-calculator',
+    group: 'Pay & Rates',
+    category: 'work',
+    glyph: 'wk',
+    updatedAt: '2026-11-16',
+    aliases: ['severance calculator', 'layoff pay calculator', 'weeks of severance calculator', 'termination pay calculator', 'severance package calculator'],
+    related: ['salary-raise-calculator', 'paycheck-calculator', 'pto-calculator', 'overtime-pay-calculator'],
+    title: 'Severance Pay Calculator',
+    description: 'Estimate severance pay from your salary, years of service and a weeks-per-year formula. A typical-practice estimate, not a legal entitlement — federal law does not require severance pay.',
+    example: 'A $78,000 salary ($1,500/week), 6 years of service and a 1.5-week-per-year formula gives an estimated 9 weeks of severance — about $13,500.00.',
+    breakdown: {
+      headline: 'severancePay',
+      headlineLabel: 'Estimated severance pay',
+      outputs: [
+        { id: 'severancePay', label: 'Estimated severance pay', format: 'currency' },
+        { id: 'severanceWeeks', label: 'Severance weeks', format: 'number' },
+        { id: 'weeklyPay', label: 'Weekly pay', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your pay', inputs: ['annualSalary'] },
+        { title: 'Tenure & formula', inputs: ['yearsOfService', 'weeksPerYearOfService', 'maxWeeksCap'] }
+      ],
+      visual: {
+        type: 'rangeBar',
+        value: 'weeksPerYearOfService',
+        bands: [
+          { label: 'Below the most common formulas', min: 0, max: 1 },
+          { label: 'Most common range (1–2 weeks/year)', min: 1, max: 2 },
+          { label: 'Above the most common formulas', min: 2, max: 10 }
+        ],
+        title: 'Your weeks-per-year formula vs. common practice'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'How severance pay is typically estimated',
+        paragraphs: [
+          'There is no federal law requiring severance pay at all. The US Department of Labor is explicit: "There is no requirement in the Fair Labor Standards Act (FLSA) for severance pay" — it is entirely a matter of agreement between an employer and an employee, set out in a policy, offer letter or separation agreement.',
+          'Despite that, many employers do offer severance, and tenure-based formulas are the most common way to size it. A WorldatWork survey reported by SHRM found "one week per year of service" used by 24% of surveyed employers and "two weeks per year of service" by 16%, with years of service factored in by 92% of organizations in some way — making roughly 1 to 2 weeks of pay per year of service the most commonly cited range, though any individual employer\'s actual policy can fall outside it.',
+          'This calculator applies that kind of formula: your weekly pay times your years of service times a multiplier you choose, with an optional overall cap some employers apply regardless of tenure. Treat the result as a starting estimate for a conversation, not a number to expect or demand — your own offer letter, employee handbook or separation agreement is the only authoritative source.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your annual salary and years of service, then the weeks-per-year formula you want to estimate with.',
+        steps: [
+          { name: 'Enter your annual salary', text: 'Used to find your weekly pay (salary ÷ 52).' },
+          { name: 'Enter your years of service', text: 'Fractional years are fine — 6.5 for six and a half years.' },
+          { name: 'Set the weeks-per-year-of-service formula', text: 'Use your employer\'s actual formula if you know it, or the commonly cited 1 to 2 weeks per year if you do not.' },
+          { name: 'Enter a cap, if any', text: 'Some employers cap total severance regardless of tenure. Enter it in weeks, or leave at 0 for no cap.' },
+          { name: 'Read the estimate', text: 'The headline is the estimated severance pay, with the number of weeks and your weekly pay shown below, and a bar comparing your formula to the most commonly cited range.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Weekly pay comes from your annual salary. Severance weeks are tenure times a multiplier, capped if you set one.',
+        expression: 'weeklyPay = annualSalary ÷ 52\nseveranceWeeks = min(yearsOfService × weeksPerYearOfService, maxWeeksCap)\nseverancePay = severanceWeeks × weeklyPay',
+        terms: [
+          { symbol: 'weeksPerYearOfService', meaning: 'Weeks of pay granted per year of service — commonly 1 to 2 in practice, though any individual policy can differ.' },
+          { symbol: 'maxWeeksCap', meaning: 'An overall ceiling on severance weeks regardless of tenure, if your employer sets one. Use 0 for no cap.' }
+        ],
+        note: 'This is a typical-practice estimate, not a legal entitlement. Severance is not required by federal law, and your own offer letter, employee handbook or separation agreement governs the real amount, if any.'
+      },
+      workedExample: {
+        intro: 'A $78,000 salary, 6 years of service, and a 1.5-week-per-year formula with no cap.',
+        rows: [
+          { label: 'Weekly pay (78,000 ÷ 52)', value: '$1,500.00' },
+          { label: 'Severance weeks (6 × 1.5)', value: '9 weeks' },
+          { label: 'Severance pay (9 × $1,500.00)', value: '$13,500.00' }
+        ],
+        result: 'Estimated severance pay $13,500.00 (9 weeks)',
+        explanation: 'At $1,500 a week, each year of service is worth 1.5 weeks under this formula, so 6 years of service comes to 9 weeks — $13,500.00 before tax. A longer tenure or a richer multiplier (up to the cap, if any) both scale the result directly.'
+      },
+      watchOut: [
+        { title: 'Severance is not legally required', body: 'The FLSA does not require severance pay of any amount. It is offered entirely at employer discretion, through a policy, offer letter or separation agreement — there is no federal floor to compare against.' },
+        { title: 'The WARN Act requires notice, not severance', body: 'Employers with 100 or more employees must give 60 calendar days\' advance notice of a qualifying plant closing or mass layoff under the WARN Act — a notice requirement, separate from and not a substitute for severance pay.' },
+        { title: '1 to 2 weeks per year is common, not universal', body: 'The cited WorldatWork/SHRM figures describe the most common formulas among surveyed employers, not a required or average amount. Executives, long-tenured staff and negotiated exits often fall outside this range in either direction.' },
+        { title: 'Severance is taxable income', body: 'Severance pay is generally treated as supplemental wages for federal tax withholding, same as a bonus. This calculator shows a pre-tax figure.' },
+        { title: 'Severance can affect unemployment benefits', body: 'Depending on your state, receiving severance can delay or reduce when unemployment insurance benefits start. Check with your state unemployment agency for your state\'s rule.' }
+      ],
+      references: [
+        { label: 'U.S. Department of Labor, Severance Pay', url: 'https://www.dol.gov/general/topic/wages/severancepay' },
+        { label: 'U.S. Department of Labor, Plant Closings and Layoffs (WARN Act)', url: 'https://www.dol.gov/general/topic/termination/plantclosings' },
+        { label: 'SHRM, "M&A Pickup Puts Focus on Severance Policies" (citing a WorldatWork survey)', url: 'https://www.shrm.org/topics-tools/news/benefits-compensation/ma-pickup-puts-focus-severance-policies' }
+      ]
+    },
+    inputs: [
+      { id: 'annualSalary', label: 'Annual salary', type: 'currency', placeholder: '78000', defaultValue: 78000, step: 1000, min: 0 },
+      { id: 'yearsOfService', label: 'Years of service', type: 'number', placeholder: '6', defaultValue: 6, step: 0.5, min: 0 },
+      { id: 'weeksPerYearOfService', label: 'Weeks of pay per year of service', type: 'number', placeholder: '1.5', defaultValue: 1.5, step: 0.5, min: 0 },
+      { id: 'maxWeeksCap', label: 'Maximum total weeks (0 = no cap)', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Severance Pay Calculator – Weeks Per Year of Service',
+      description: 'Estimate severance pay from your salary, years of service and a weeks-per-year formula — a typical-practice estimate, not a legal entitlement.',
+      faq: [
+        { question: 'Is severance pay required by law?', answer: 'No. The US Department of Labor confirms the FLSA has no severance pay requirement. It is offered entirely at employer discretion, under a policy, offer letter or separation agreement.' },
+        { question: 'How is severance pay usually calculated?', answer: 'The most common approach ties it to tenure: a WorldatWork survey reported by SHRM found "one week per year of service" used by 24% of employers and "two weeks per year of service" by 16%, making roughly 1 to 2 weeks per year the most commonly cited range.' },
+        { question: 'Does the WARN Act require severance pay?', answer: 'No. The WARN Act requires employers with 100+ employees to give 60 calendar days of advance notice before a qualifying plant closing or mass layoff — a notice requirement, not a severance payment.' },
+        { question: 'Is severance pay taxable?', answer: 'Yes. Severance is generally treated as supplemental wages for federal withholding purposes, the same category as a bonus. This calculator shows a pre-tax estimate.' },
+        { question: 'Can severance affect unemployment benefits?', answer: 'In some states, yes — receiving severance can delay or reduce unemployment insurance benefits. Rules vary by state, so check with your state unemployment agency.' },
+        { question: 'What if my employer caps severance?', answer: 'Enter the cap in weeks. For example, 15 years of service at 2 weeks per year would be 30 weeks uncapped, but a 20-week cap would limit the payout to 20 weeks regardless of tenure.' }
+      ]
+    },
+    compute(values) {
+      const weeklyPay = values.annualSalary / 52;
+      let severanceWeeks = values.yearsOfService * values.weeksPerYearOfService;
+      if (values.maxWeeksCap > 0) severanceWeeks = Math.min(severanceWeeks, values.maxWeeksCap);
+      const severancePay = severanceWeeks * weeklyPay;
+      return { weeklyPay, severanceWeeks, severancePay };
+    }
+  },
+  {
+    id: 'cost-of-living-comparison-calculator',
+    group: 'Offers & Comparisons',
+    category: 'work',
+    glyph: 'COL',
+    updatedAt: '2026-11-16',
+    aliases: ['relocation salary calculator', 'salary equivalent by city calculator', 'cost of living index calculator', 'moving salary comparison calculator', 'city salary comparator'],
+    related: ['salary-raise-calculator', 'inflation-calculator', 'job-offer-comparison-calculator', 'paycheck-calculator'],
+    title: 'Cost of Living Comparison Calculator',
+    description: 'Find the salary you would need in a new city to match your current purchasing power, using a cost-of-living index ratio between two places.',
+    example: 'A $70,000 salary in a city indexed at 100 needs $105,000 in a city indexed at 150 to keep the same purchasing power — $35,000 more, a 50% increase.',
+    solver: {
+      defaultTarget: 'salaryB',
+      variables: [
+        { id: 'salaryA', label: 'Current salary', symbol: 'SA', dimension: 'currency', defaultValue: 70000, defaultUnit: 'currency' },
+        { id: 'indexA', label: 'Current city cost-of-living index', symbol: 'IA', dimension: 'count', defaultValue: 100, defaultUnit: 'count' },
+        { id: 'indexB', label: 'New city cost-of-living index', symbol: 'IB', dimension: 'count', defaultValue: 150, defaultUnit: 'count' },
+        { id: 'salaryB', label: 'Equivalent salary in the new city', symbol: 'SB', dimension: 'currency', defaultValue: 105000, defaultUnit: 'currency' }
+      ],
+      // The relationship is one multiplicative ratio, so every variable has a closed form.
+      solve: {
+        salaryB: ({ salaryA, indexA, indexB }) => (indexA > 0 ? salaryA * (indexB / indexA) : NaN),
+        salaryA: ({ salaryB, indexA, indexB }) => (indexB > 0 ? salaryB * (indexA / indexB) : NaN),
+        indexB: ({ salaryA, salaryB, indexA }) => (salaryA > 0 ? (salaryB * indexA) / salaryA : NaN),
+        indexA: ({ salaryA, salaryB, indexB }) => (salaryB > 0 ? (salaryA * indexB) / salaryB : NaN)
+      },
+      outputs: [
+        { id: 'difference', label: 'Difference needed', dimension: 'currency', compute: (si) => si.salaryB - si.salaryA },
+        { id: 'percentMore', label: 'Percent more (or less) needed', dimension: 'percent', compute: (si) => (si.indexA > 0 ? (si.indexB / si.indexA - 1) * 100 : NaN) }
+      ],
+      visuals: [{ type: 'compareBars', bars: [{ from: 'salaryA', label: 'Current salary' }, { from: 'salaryB', label: 'Equivalent salary' }], title: 'Current salary vs. equivalent salary in the new city' }]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What a cost-of-living index ratio actually compares',
+        paragraphs: [
+          'A cost-of-living index scores a place against a baseline, usually the national average set at 100: an index of 150 means that place is 50% more expensive than average, and 80 means 20% less expensive. The Council for Community and Economic Research (C2ER) publishes the best-known composite index of this kind, covering 60 goods and services across six categories — groceries, housing, utilities, transportation, health care and miscellaneous goods and services — priced quarterly in each participating area.',
+          'Because both index numbers sit on the same scale, the ratio between two cities\' index values tells you how much more (or less) it costs to buy the same basket of goods in one place versus the other. Multiplying your current salary by that ratio gives the salary that would buy the same purchasing power in the new city — the core relocation-salary question.',
+          'The US Bureau of Labor Statistics is explicit that its own Consumer Price Index (CPI) cannot be used this way: "No, an individual area index measures how much prices have changed over a specific period in that particular area; it does not show whether prices or living costs are higher or lower in that area relative to another." The CPI tracks price change over time in one place; a cost-of-living index like C2ER\'s is built specifically to compare price levels between places. This calculator does the ratio arithmetic — it does not supply index numbers for you, so use figures from a published cost-of-living index for the two cities you are comparing.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your current salary and city, then the index numbers for your current and prospective city from a published cost-of-living index.',
+        steps: [
+          { name: 'Enter your current salary', text: 'Always an input — the anchor the comparison is calculated from.' },
+          { name: 'Enter your current city\'s index', text: 'Look it up from a published cost-of-living index (such as C2ER\'s). 100 represents the national average in most indexes.' },
+          { name: 'Enter the new city\'s index', text: 'From the same index source as your current city — mixing sources can give a meaningless ratio.' },
+          { name: 'Read the equivalent salary', text: 'The calculator scales your salary by the ratio of the two index numbers, with the dollar difference and percent change shown below.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The new salary scales the old one by the ratio of the two cities\' index numbers.',
+        expression: 'salaryB = salaryA × (indexB ÷ indexA)\ndifference = salaryB − salaryA\npercentMore = (indexB ÷ indexA − 1) × 100',
+        terms: [
+          { symbol: 'indexA', meaning: 'Cost-of-living index of your current city, on whatever baseline your source uses (typically national average = 100).' },
+          { symbol: 'indexB', meaning: 'Cost-of-living index of the city you are comparing to, from the same source and baseline as indexA.' }
+        ],
+        note: 'Estimates only. A cost-of-living index compares a basket of consumer prices — it does not capture quality of life, climate, state and local income tax differences, or how your own spending differs from the index\'s assumed household.'
+      },
+      workedExample: {
+        intro: 'A $70,000 salary in a city indexed at 100 (the national average). The new city is indexed at 150.',
+        rows: [
+          { label: 'Ratio (150 ÷ 100)', value: '1.50' },
+          { label: 'Equivalent salary (70,000 × 1.50)', value: '$105,000.00' },
+          { label: 'Difference (105,000 − 70,000)', value: '$35,000.00' },
+          { label: 'Percent more needed ((1.50 − 1) × 100)', value: '50.00%' }
+        ],
+        result: 'Equivalent salary $105,000.00 — $35,000.00 more (50% higher)',
+        explanation: 'The new city\'s index is 1.5 times the current city\'s, so it takes 1.5 times the salary — $105,000 instead of $70,000 — to buy the same basket of goods and services that the index tracks.'
+      },
+      watchOut: [
+        { title: 'The CPI cannot be used for this comparison', body: 'The BLS is explicit that an individual area\'s Consumer Price Index measures price change over time in that one area, not price levels relative to another area. Use a cost-of-living index built for cross-area comparison (such as C2ER\'s) instead, not CPI figures.' },
+        { title: 'Index baskets skew toward professional households', body: 'C2ER\'s weights are based on expenditure patterns for professional and executive households, which may not match your own spending — a renter, a large family or someone without a car will experience costs differently than the index basket assumes.' },
+        { title: 'Quality of life is not in the index', body: 'Climate, commute times, school quality, safety and cultural amenities all affect whether a move is worth it, and none of them are priced into a cost-of-living index.' },
+        { title: 'Taxes are not included either', body: 'State and local income, sales and property taxes can differ sharply between cities and are not part of a cost-of-living index\'s basket — layer them on separately.' },
+        { title: 'Use index numbers from the same source', body: 'Different publishers (C2ER, Numbeo, and others) use different baselines, baskets and survey methods. Compare two cities using index numbers from one consistent source, never one city\'s index from one source against another city\'s index from a different one.' }
+      ],
+      references: [
+        { label: 'U.S. Bureau of Labor Statistics, Consumer Price Index Frequently Asked Questions', url: 'https://www.bls.gov/cpi/questions-and-answers.htm' },
+        { label: 'Council for Community and Economic Research (C2ER), What Is the Cost of Living Index?', url: 'https://www.coli.org/about/what-is-coli/' },
+        { label: 'Council for Community and Economic Research (C2ER), Cost of Living Index Methodology', url: 'https://c2c.coli.org/compare.asp?action=methodology' }
+      ]
+    },
+    inputs: [
+      { id: 'salaryA', label: 'Current salary', type: 'currency', placeholder: '70000', defaultValue: 70000, step: 1000, min: 0 },
+      { id: 'indexA', label: 'Current city cost-of-living index', type: 'number', placeholder: '100', defaultValue: 100, step: 1, min: 0 },
+      { id: 'indexB', label: 'New city cost-of-living index', type: 'number', placeholder: '150', defaultValue: 150, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Cost of Living Comparison Calculator – Salary by City',
+      description: 'Find the salary you need in a new city to match your current purchasing power, using a cost-of-living index ratio between two cities.',
+      faq: [
+        { question: 'How do I calculate the salary I need in a new city?', answer: 'Multiply your current salary by the ratio of the two cities\' cost-of-living index numbers. A $70,000 salary at an index of 100, moving to a city indexed at 150, needs 70,000 × (150 ÷ 100) = $105,000.' },
+        { question: 'Can I use the CPI to compare cost of living between cities?', answer: 'No. The Bureau of Labor Statistics states its area CPI figures measure price change over time within one area, not price levels relative to another area. Use a cost-of-living index built for cross-area comparison instead, such as C2ER\'s.' },
+        { question: 'What does a cost-of-living index number mean?', answer: 'Most indexes, including C2ER\'s, set the national average at 100. A score of 150 means 50% more expensive than average; a score of 80 means 20% less expensive.' },
+        { question: 'What goes into a cost-of-living index?', answer: 'C2ER\'s composite index covers 60 goods and services across six categories: groceries, housing, utilities, transportation, health care, and miscellaneous goods and services, priced quarterly in each participating area.' },
+        { question: 'Does this account for state and local taxes?', answer: 'No. Cost-of-living indexes price a basket of consumer goods and services; income, sales and property tax differences between cities are separate and not included.' },
+        { question: 'Why does the index not match my own experience?', answer: 'The weights behind indexes like C2ER\'s are based on expenditure patterns for professional and executive households. Your own spending on housing size, transportation and health care may differ from that assumed basket.' }
+      ]
+    },
+    compute(values) {
+      const salaryB = values.indexA > 0 ? values.salaryA * (values.indexB / values.indexA) : 0;
+      const difference = salaryB - values.salaryA;
+      const percentMore = values.indexA > 0 ? (values.indexB / values.indexA - 1) * 100 : 0;
+      return { salaryB, difference, percentMore };
+    }
+  },
+  {
+    id: 'remote-work-savings-calculator',
+    group: 'Time & Benefits',
+    category: 'work',
+    glyph: 'WFH',
+    updatedAt: '2026-11-16',
+    aliases: ['work from home savings calculator', 'WFH savings calculator', 'telecommute savings calculator', 'remote work cost savings calculator', 'hybrid work savings calculator'],
+    related: ['commute-cost-calculator', 'pto-calculator', 'freelancer-rate-calculator', 'paycheck-calculator'],
+    title: 'Remote Work Savings Calculator',
+    description: 'Calculate the money and time you save by working from home some days a week, using the same fuel, parking, tolls and wear cost model as the commute cost calculator, plus hours saved.',
+    example: 'Skipping a 25-mile, $26.38-a-day commute 2 days a week saves about $228.58 a month ($2,743 a year) and about 95 hours a year, with a 55-minute round-trip commute.',
+    breakdown: {
+      headline: 'monthlySavings',
+      headlineLabel: 'Money saved per month',
+      outputs: [
+        { id: 'monthlySavings', label: 'Money saved per month', format: 'currency' },
+        { id: 'annualSavings', label: 'Money saved per year', format: 'currency' },
+        { id: 'monthlyHoursSaved', label: 'Hours saved per month', format: 'number' },
+        { id: 'annualHoursSaved', label: 'Hours saved per year', format: 'number' },
+        { id: 'fullTimeMonthlyCost', label: 'Commuting cost if you went in every day', format: 'currency' },
+        { id: 'partialMonthlyCost', label: 'Commuting cost with your work-from-home days', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your schedule', inputs: ['workDaysPerWeek', 'wfhDaysPerWeek'] },
+        { title: 'Your commute cost (same model as the commute cost calculator)', inputs: ['roundTripMiles', 'mpg', 'gasPricePerGallon', 'dailyParking', 'dailyTolls', 'wearCostPerMile'] },
+        { title: 'Your commute time', inputs: ['roundTripCommuteMinutes'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'fullTimeMonthlyCost', label: 'Commuting every day' },
+          { from: 'partialMonthlyCost', label: 'With your WFH days' }
+        ],
+        title: 'Monthly commuting cost: every day vs. with work-from-home days'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What working from home actually saves',
+        paragraphs: [
+          'This calculator reuses the exact per-day commuting cost model from the Commute Cost Calculator on this site: fuel plus parking plus tolls plus a per-mile wear allowance. Every day you work from home instead of driving in, that whole daily cost disappears — so the savings from going remote some days a week are just the days you skip, multiplied by what each of those days was costing.',
+          'It adds one thing the commute cost calculator deliberately leaves out: time. A round trip has a cost in minutes as well as dollars, and the US Census Bureau\'s American Community Survey found the average one-way commute in the United States reached 27.6 minutes in 2019 — meaning a round trip close to an hour is typical. Skipping that commute on a work-from-home day gives back real time, not just money, which this calculator totals separately alongside the dollar savings.',
+          'The result works for any mix: a fully remote switch (all days become work-from-home days), a hybrid schedule (some days in, some at home), or testing how much one more remote day a week would be worth before asking for it.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your work schedule, then the same commute inputs as the commute cost calculator, then your round-trip commute time.',
+        steps: [
+          { name: 'Enter your work schedule', text: 'Total work days a week, and how many of those are now (or would be) worked from home.' },
+          { name: 'Enter your commute cost inputs', text: 'Round-trip distance, fuel economy and price, daily parking and tolls, and a per-mile wear allowance — the same fields as the Commute Cost Calculator.' },
+          { name: 'Enter your round-trip commute time', text: 'How long the drive takes there and back, in minutes.' },
+          { name: 'Read the savings', text: 'Monthly and yearly money saved are the headline figures, with hours saved and the before/after monthly cost shown below.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'One day of commuting costs the same as in the Commute Cost Calculator; savings come from the days you no longer drive.',
+        expression:
+          'dailyCost = (roundTripMiles ÷ mpg × gasPrice) + dailyParking + dailyTolls + (roundTripMiles × wearCostPerMile)\nmonthlySavings = dailyCost × wfhDaysPerWeek × (52 ÷ 12)\nannualSavings = dailyCost × wfhDaysPerWeek × 52\nhoursSaved = roundTripCommuteMinutes × wfhDaysPerWeek × weeks ÷ 60',
+        terms: [
+          { symbol: 'dailyCost', meaning: 'The same fuel + parking + tolls + wear cost as one day in the Commute Cost Calculator.' },
+          { symbol: 'wfhDaysPerWeek', meaning: 'Days per week you work from home instead of commuting.' },
+          { symbol: 'roundTripCommuteMinutes', meaning: 'Total door-to-door commute time, there and back, on a day you do drive in.' }
+        ],
+        note: 'An estimate, inheriting the same caveats as the commute cost calculator: fuel prices and parking rates change, and the wear rate is a chosen allowance, not a measured cost.'
+      },
+      workedExample: {
+        intro: 'A 25-mile round trip at 30 mpg, gas at $3.75/gal, $15/day parking, $3/day tolls, 21 cents/mile wear — the same scenario as the Commute Cost Calculator\'s example, costing $26.38 a day. You work 5 days a week and now work from home 2 of them, with a 55-minute round-trip commute.',
+        rows: [
+          { label: 'Daily commute cost (fuel + parking + tolls + wear)', value: '$26.38' },
+          { label: 'Full-time monthly cost (26.38 × 5 × 52 ÷ 12)', value: '$571.46' },
+          { label: 'With 2 WFH days a week (26.38 × 3 × 52 ÷ 12)', value: '$342.88' },
+          { label: 'Monthly savings (571.46 − 342.88)', value: '$228.58' },
+          { label: 'Annual savings (228.58 × 12)', value: '$2,743.00' },
+          { label: 'Monthly hours saved (55 × 2 × 52 ÷ 12 ÷ 60)', value: '7.94 hours' },
+          { label: 'Annual hours saved (55 × 2 × 52 ÷ 60)', value: '95.33 hours' }
+        ],
+        result: '$228.58 saved a month ($2,743 a year), plus about 95 hours a year',
+        explanation: 'Dropping from 5 commute days to 3 cuts the monthly cost by exactly the 2 skipped days\' worth — $228.58 — and 95.33 hours a year is close to twelve 8-hour workdays of time (11.92) given back by not driving.'
+      },
+      watchOut: [
+        { title: 'Uses the same model as the Commute Cost Calculator', body: 'This is not a different cost formula — it is the Commute Cost Calculator\'s per-day cost applied to the days you skip. Use that calculator directly if you just want today\'s full commuting cost without a work-from-home comparison.' },
+        { title: 'Time saved is not automatically money', body: 'The hours saved figure is a time total, not a dollar value — this calculator does not convert it to income. What that time is worth depends on what you do with it.' },
+        { title: 'Working from home has its own costs', body: 'Higher home electricity and internet use, a dedicated workspace, and potentially more home-cooked meals can offset some of the commuting savings — this calculator only prices the commute side.' },
+        { title: 'Averages hide real variation', body: 'The 27.6-minute national average one-way commute (US Census Bureau, 2019) varies enormously by metro area and route; use your own actual commute time, not the national figure, for an accurate result.' },
+        { title: 'Weeks-per-month uses an average', body: 'Monthly figures use 52 ÷ 12 ≈ 4.33 weeks per month, an average that does not exactly match every calendar month.' }
+      ],
+      references: [
+        { label: 'U.S. Census Bureau, "One-Way Travel Time to Work Rises"', url: 'https://www.census.gov/newsroom/press-releases/2021/one-way-travel-time-to-work-rises.html' },
+        { label: 'Internal Revenue Service, Publication 463: Travel, Gift, and Car Expenses (commuting expenses)', url: 'https://www.irs.gov/publications/p463' }
+      ]
+    },
+    inputs: [
+      { id: 'workDaysPerWeek', label: 'Work days per week', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 1 },
+      { id: 'wfhDaysPerWeek', label: 'Work-from-home days per week', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0 },
+      { id: 'roundTripMiles', label: 'Round-trip commute distance', type: 'number', placeholder: '25', defaultValue: 25, step: 1, min: 0, dimension: 'length', unit: 'mi' },
+      { id: 'mpg', label: 'Vehicle fuel economy', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1, dimension: 'fuelEconomy', unit: 'mpg' },
+      { id: 'gasPricePerGallon', label: 'Fuel price', type: 'currency', placeholder: '3.75', defaultValue: 3.75, step: 0.05, min: 0, dimension: 'fuelPrice', unit: 'cur/gal' },
+      { id: 'dailyParking', label: 'Daily parking cost', type: 'currency', placeholder: '15', defaultValue: 15, step: 1, min: 0 },
+      { id: 'dailyTolls', label: 'Daily tolls', type: 'currency', placeholder: '3', defaultValue: 3, step: 0.25, min: 0 },
+      { id: 'wearCostPerMile', label: 'Vehicle wear per mile', type: 'currency', placeholder: '0.21', defaultValue: 0.21, step: 0.01, min: 0 },
+      { id: 'roundTripCommuteMinutes', label: 'Round-trip commute time (minutes)', type: 'number', placeholder: '55', defaultValue: 55, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Remote Work Savings Calculator – Money & Time Saved',
+      description: 'Calculate the money and time you save working from home some days a week, using the same cost model as the commute cost calculator.',
+      faq: [
+        { question: 'How much money does working from home save?', answer: 'Multiply your daily commute cost by the work-from-home days you add each week, then by about 4.33 weeks a month. Skipping a $26.38 day 2 days a week saves about $228.58 a month, $2,743 a year.' },
+        { question: 'How much time does working from home save?', answer: 'Multiply your round-trip commute time by your work-from-home days per week and the weeks in the period. A 55-minute round trip, 2 days a week, saves about 95 hours a year — close to twelve 8-hour workdays.' },
+        { question: 'How is this different from the commute cost calculator?', answer: 'It uses the exact same per-day cost model, but applies it to the days you skip by working from home, and adds a time-saved figure the commute cost calculator does not include.' },
+        { question: 'What is the average US commute?', answer: 'The US Census Bureau\'s American Community Survey found the average one-way commute reached 27.6 minutes in 2019 — close to an hour round trip, which is why this calculator defaults to 55 minutes.' },
+        { question: 'Does this account for the cost of working from home?', answer: 'No. It only prices the commuting side. Extra home electricity, internet and workspace costs would offset some of the savings, but are not modeled here.' },
+        { question: 'Can I use this for a fully remote job?', answer: 'Yes. Set work-from-home days per week equal to your total work days per week to see the full value of not commuting at all.' }
+      ]
+    },
+    compute(values) {
+      const weeksPerMonth = 52 / 12;
+      const dailyFuelCost = (values.roundTripMiles / values.mpg) * values.gasPricePerGallon;
+      const dailyWear = values.roundTripMiles * values.wearCostPerMile;
+      const dailyCost = dailyFuelCost + values.dailyParking + values.dailyTolls + dailyWear;
+      const commuteDaysPerWeek = Math.max(0, values.workDaysPerWeek - values.wfhDaysPerWeek);
+      const fullTimeMonthlyCost = dailyCost * values.workDaysPerWeek * weeksPerMonth;
+      const partialMonthlyCost = dailyCost * commuteDaysPerWeek * weeksPerMonth;
+      const monthlySavings = fullTimeMonthlyCost - partialMonthlyCost;
+      const annualSavings = monthlySavings * 12;
+      const monthlyHoursSaved = (values.roundTripCommuteMinutes * values.wfhDaysPerWeek * weeksPerMonth) / 60;
+      const annualHoursSaved = (values.roundTripCommuteMinutes * values.wfhDaysPerWeek * 52) / 60;
+      return { fullTimeMonthlyCost, partialMonthlyCost, monthlySavings, annualSavings, monthlyHoursSaved, annualHoursSaved };
+    }
+  },
+  {
+    id: 'job-offer-comparison-calculator',
+    group: 'Offers & Comparisons',
+    category: 'work',
+    glyph: 'A/B',
+    updatedAt: '2026-11-16',
+    aliases: ['compare two job offers calculator', 'total compensation comparison calculator', 'offer letter comparison calculator', 'which job offer is better calculator', 'salary offer comparison calculator'],
+    related: ['salary-raise-calculator', 'cost-of-living-comparison-calculator', 'pto-calculator', 'paycheck-calculator'],
+    title: 'Job Offer Comparison Calculator',
+    description: 'Compare two job offers side by side on total compensation: base salary, bonus and the dollar value of benefits, with the full dollar and percent difference between them.',
+    example: 'Offer A ($85,000 base + $5,000 bonus + $10,000 benefits = $100,000 total) vs. Offer B ($90,000 + $4,000 + $9,000 = $103,000) — Offer B is $3,000 (3%) higher in total compensation.',
+    breakdown: {
+      headline: 'difference',
+      headlineLabel: 'Difference in total compensation (B − A)',
+      outputs: [
+        { id: 'difference', label: 'Difference in total compensation (B − A)', format: 'currency' },
+        { id: 'totalCompA', label: 'Offer A total compensation', format: 'currency' },
+        { id: 'totalCompB', label: 'Offer B total compensation', format: 'currency' },
+        { id: 'percentDifference', label: 'Percent difference (vs. Offer A)', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Offer A', inputs: ['baseSalaryA', 'bonusA', 'benefitsValueA'] },
+        { title: 'Offer B', inputs: ['baseSalaryB', 'bonusB', 'benefitsValueB'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'totalCompA', label: 'Offer A' },
+          { from: 'totalCompB', label: 'Offer B' }
+        ],
+        title: 'Total compensation: Offer A vs. Offer B'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'Comparing offers on total compensation, not just salary',
+        paragraphs: [
+          'Base salary is the easiest number to compare between two job offers, but it is rarely the whole picture. A bonus (signing, target annual, or both) and the dollar value of benefits — health insurance, retirement matching, extra PTO, and anything else your employer prices in dollars — all add to what an offer is actually worth. This calculator adds the three together for each offer and compares the totals directly.',
+          'The US Bureau of Labor Statistics\' Employer Costs for Employee Compensation survey found that benefits made up 30.0% of total compensation for private-industry workers in June 2026, with wages and salaries making up the rest — a useful reminder that benefits are not a rounding error on top of salary, but a substantial share of what a job actually pays. If an offer letter does not state a dollar value for benefits, ask your recruiter or HR contact for one rather than leaving it at zero.',
+          'This calculator does not try to value your benefits for you — it takes whatever figure you enter, so the comparison is only as accurate as the benefits values you supply. Use the same estimation approach for both offers so the comparison is apples to apples.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter base salary, bonus and benefits value for each offer. Everything is annual.',
+        steps: [
+          { name: 'Enter Offer A\'s numbers', text: 'Base salary, expected annual bonus (0 if none or unknown), and the dollar value of benefits (health insurance, retirement match, extra PTO, and so on).' },
+          { name: 'Enter Offer B\'s numbers', text: 'The same three figures for the offer you are comparing it to.' },
+          { name: 'Read the comparison', text: 'The headline is the dollar difference between the two totals, with each offer\'s total compensation and the percent difference shown below, and a bar chart comparing them.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Each offer\'s total is just its three parts added together; the comparison is the difference and percent difference between the two totals.',
+        expression: 'totalCompA = baseSalaryA + bonusA + benefitsValueA\ntotalCompB = baseSalaryB + bonusB + benefitsValueB\ndifference = totalCompB − totalCompA\npercentDifference = (difference ÷ totalCompA) × 100',
+        terms: [
+          { symbol: 'benefitsValueA / benefitsValueB', meaning: 'Your own estimate of the annual dollar value of each offer\'s benefits — this calculator does not estimate it for you.' }
+        ],
+        note: 'A straightforward total, not a full financial comparison. It does not account for differing tax treatment of bonus versus salary, vesting schedules on equity, or cost-of-living differences if the two offers are in different cities — use the Cost of Living Comparison Calculator alongside this one if that applies.'
+      },
+      workedExample: {
+        intro: 'Offer A: $85,000 base, $5,000 expected bonus, $10,000 of benefits value. Offer B: $90,000 base, $4,000 expected bonus, $9,000 of benefits value.',
+        rows: [
+          { label: 'Offer A total (85,000 + 5,000 + 10,000)', value: '$100,000.00' },
+          { label: 'Offer B total (90,000 + 4,000 + 9,000)', value: '$103,000.00' },
+          { label: 'Difference (103,000 − 100,000)', value: '$3,000.00' },
+          { label: 'Percent difference (3,000 ÷ 100,000 × 100)', value: '3.00%' }
+        ],
+        result: 'Offer B is $3,000.00 higher in total compensation (3.00% more)',
+        explanation: 'Offer B\'s higher base salary ($5,000 more) more than makes up for its smaller bonus and benefits value (a combined $2,000 less), leaving it $3,000 ahead in total compensation even though neither of its individual components is the largest on its own.'
+      },
+      watchOut: [
+        { title: 'Benefits value is only as good as your estimate', body: 'This calculator does not price benefits for you. Nationally, benefits make up roughly 30% of total compensation for private-industry workers according to the BLS — a useful sanity check if an offer\'s benefits figure looks unusually small or large relative to its base salary.' },
+        { title: 'Bonuses are often not guaranteed', body: 'A "target" annual bonus is typically contingent on company or individual performance, unlike base salary. Treat a bonus figure as an expected value, not a certainty, when comparing offers.' },
+        { title: 'Equity is not modeled here', body: 'Stock options or RSUs have their own vesting schedules and uncertain future value, which this calculator does not attempt to price into the comparison — add your own estimate into benefits value if you want to include it.' },
+        { title: 'Different cities need a cost-of-living adjustment', body: 'A higher total compensation number is not automatically a better offer if it comes with a much higher cost of living. Use the Cost of Living Comparison Calculator to adjust for that before comparing.' },
+        { title: 'Taxes are not applied here', body: 'This compares gross (pre-tax) totals. Bonus income is often withheld at a different supplemental-wage rate than salary, which this calculator does not model.' }
+      ],
+      references: [
+        { label: 'U.S. Bureau of Labor Statistics, Employer Costs for Employee Compensation – June 2026', url: 'https://www.bls.gov/news.release/pdf/ecec.pdf' }
+      ]
+    },
+    inputs: [
+      { id: 'baseSalaryA', label: 'Offer A: base salary', type: 'currency', placeholder: '85000', defaultValue: 85000, step: 1000, min: 0 },
+      { id: 'bonusA', label: 'Offer A: annual bonus', type: 'currency', placeholder: '5000', defaultValue: 5000, step: 500, min: 0 },
+      { id: 'benefitsValueA', label: 'Offer A: annual benefits value', type: 'currency', placeholder: '10000', defaultValue: 10000, step: 500, min: 0 },
+      { id: 'baseSalaryB', label: 'Offer B: base salary', type: 'currency', placeholder: '90000', defaultValue: 90000, step: 1000, min: 0 },
+      { id: 'bonusB', label: 'Offer B: annual bonus', type: 'currency', placeholder: '4000', defaultValue: 4000, step: 500, min: 0 },
+      { id: 'benefitsValueB', label: 'Offer B: annual benefits value', type: 'currency', placeholder: '9000', defaultValue: 9000, step: 500, min: 0 }
+    ],
+    seo: {
+      title: 'Job Offer Comparison Calculator – Total Compensation',
+      description: 'Compare two job offers on total compensation: base salary, bonus and benefits value, with the full dollar and percent difference between them.',
+      faq: [
+        { question: 'How do I compare two job offers fairly?', answer: 'Add base salary, expected bonus and the dollar value of benefits for each offer, then compare the totals. Offer A at $100,000 total vs. Offer B at $103,000 total means B is $3,000 (3%) ahead.' },
+        { question: 'What counts as benefits value?', answer: 'Anything your employer prices in dollars beyond salary and bonus: health insurance, retirement plan matching, extra PTO, and similar. Ask your recruiter or HR contact for a figure if the offer letter does not state one.' },
+        { question: 'How much are benefits usually worth compared to salary?', answer: 'The BLS Employer Costs for Employee Compensation survey found benefits made up 30.0% of total compensation for private-industry workers in June 2026 — a general benchmark, not a figure specific to any one offer.' },
+        { question: 'Should I include a bonus that is not guaranteed?', answer: 'You can, but treat it as an expected value rather than certain income — an offer with a large "target" bonus and a small guaranteed base carries more risk than one weighted toward base salary.' },
+        { question: 'Does this account for cost of living if the offers are in different cities?', answer: 'No. Use the Cost of Living Comparison Calculator alongside this one to adjust either offer for a different city\'s cost of living before comparing totals.' },
+        { question: 'Does this calculator value stock options or RSUs for me?', answer: 'No. Equity has its own vesting schedule and uncertain value. Add your own estimate into the benefits value field if you want to fold it into the comparison.' }
+      ]
+    },
+    compute(values) {
+      const totalCompA = values.baseSalaryA + values.bonusA + values.benefitsValueA;
+      const totalCompB = values.baseSalaryB + values.bonusB + values.benefitsValueB;
+      const difference = totalCompB - totalCompA;
+      const percentDifference = totalCompA > 0 ? (difference / totalCompA) * 100 : 0;
+      return { totalCompA, totalCompB, difference, percentDifference };
+    }
+  },
+  {
+    id: 'paid-sick-leave-accrual-calculator',
+    group: 'Time & Benefits',
+    category: 'work',
+    glyph: 'SL',
+    updatedAt: '2026-11-16',
+    aliases: ['sick leave accrual calculator', 'sick time balance calculator', 'paid sick time calculator', 'sick leave balance calculator', 'accrued sick leave calculator'],
+    related: ['pto-calculator', 'work-hours-calculator', 'paycheck-calculator', 'overtime-pay-calculator'],
+    title: 'Paid Sick Leave Accrual Calculator',
+    description: 'Calculate your accrued paid sick leave balance from hours worked and an accrual rate such as the common "1 hour per 30 hours worked" standard, with an optional annual cap and cash value.',
+    example: 'At 1 hour earned per 30 hours worked, 900 hours worked year-to-date accrues 30 hours; after using 6, 24 hours remain, worth $480.00 at $20/hr.',
+    breakdown: {
+      headline: 'balance',
+      headlineLabel: 'Sick leave balance remaining',
+      outputs: [
+        { id: 'balance', label: 'Sick leave balance remaining', format: 'number' },
+        { id: 'accruedHours', label: 'Total hours accrued', format: 'number' },
+        { id: 'cashValue', label: 'Cash value of remaining balance', format: 'currency' },
+        { id: 'usedCashValue', label: 'Cash value of hours used', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Hours worked & accrual rate', inputs: ['hoursWorkedYTD', 'hoursEarnedPerIncrement', 'hoursWorkedPerIncrement'] },
+        { title: 'Usage & cap', inputs: ['hoursUsedYTD', 'annualAccrualCap'] },
+        { title: 'Pay', inputs: ['hourlyRate'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'balance', label: 'Remaining' },
+          { from: 'usedCashValue', label: 'Used (cash value)' }
+        ],
+        title: 'Sick leave accrued vs. used'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'How paid sick leave accrual works, as distinct from PTO',
+        paragraphs: [
+          'Unlike a PTO policy that often grants a fixed number of days up front for the year (see the PTO / Vacation Calculator on this site), many paid sick leave laws require balances to accrue gradually as you work — a rate of hours earned per hours worked, rather than a lump sum. The most common rate seen across state and local paid sick leave laws is 1 hour earned for every 30 hours worked, sometimes called the "1:30" schedule.',
+          'California\'s paid sick leave law uses exactly that rate — "at least one hour of paid sick leave for each 30 hours of work" — and caps total accrual at 80 hours (10 days), with a separate 40-hour (5-day) annual usage cap employers may set. Virginia and Arizona\'s home health worker and broader paid sick leave statutes use the same 1:30 rate with their own caps, and the federal rule for covered federal contractors under Executive Order 13706 also sets 1 hour per 30 hours worked, with a 56-hour annual accrual cap.',
+          'Because the exact cap varies so much by jurisdiction — 40, 56 or 80 hours depending on the law — this calculator leaves the cap at 0 (uncapped) by default and lets you enter your own employer\'s or state\'s actual cap, rather than assuming one.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter hours worked so far this year, your accrual rate, hours already used, and an optional cap.',
+        steps: [
+          { name: 'Enter hours worked year-to-date', text: 'Total hours worked so far in the accrual year — from pay stubs, or hours per week times weeks worked.' },
+          { name: 'Check the accrual rate', text: 'Defaults to 1 hour earned per 30 hours worked, the most common rate in state and local laws. Change it if your employer or jurisdiction uses a different one.' },
+          { name: 'Enter hours already used', text: 'Sick time you have already taken this year.' },
+          { name: 'Enter a cap, if any', text: 'Many jurisdictions cap total accrual (80 hours in California, 56 for federal contractors). Enter your own cap, or leave at 0 for none.' },
+          { name: 'Read your balance', text: 'The headline is your remaining balance, with total accrued and the cash value of both remaining and used hours shown below.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Accrued hours scale with hours worked at the chosen rate, capped if a cap applies; the balance is what is left after use.',
+        expression: 'accruedHours = min(hoursWorkedYTD × (hoursEarnedPerIncrement ÷ hoursWorkedPerIncrement), annualAccrualCap)\nbalance = accruedHours − hoursUsedYTD\ncashValue = balance × hourlyRate',
+        terms: [
+          { symbol: 'hoursEarnedPerIncrement ÷ hoursWorkedPerIncrement', meaning: 'The accrual rate — 1 ÷ 30 is the most common standard seen in state and local paid sick leave laws.' },
+          { symbol: 'annualAccrualCap', meaning: 'The maximum total hours that can accrue in a year under your jurisdiction or employer\'s policy. Varies by law — 0 means uncapped.' }
+        ],
+        note: 'Estimates only. Your actual balance depends on your employer\'s specific policy and the paid sick leave law that applies to you, if any — check your employee handbook, pay stub accrual statement, or your state\'s labor department.'
+      },
+      workedExample: {
+        intro: 'You have worked 900 hours so far this year, accrue at the standard 1 hour per 30 hours worked, have used 6 hours, have no cap, and earn $20/hr.',
+        rows: [
+          { label: 'Accrued hours (900 × (1 ÷ 30))', value: '30 hours' },
+          { label: 'Balance (30 − 6)', value: '24 hours' },
+          { label: 'Cash value of balance (24 × $20)', value: '$480.00' },
+          { label: 'Cash value of hours used (6 × $20)', value: '$120.00' }
+        ],
+        result: '24 hours remaining, worth about $480.00',
+        explanation: 'Every 30 hours worked earns exactly 1 hour of sick leave, so 900 hours worked accrues 30 hours; after using 6, 24 remain — worth $480.00 at the $20/hr rate, on top of the $120.00 already used.'
+      },
+      watchOut: [
+        { title: 'No federal law requires paid sick leave generally', body: 'Outside of the federal-contractor rule under Executive Order 13706, there is no general federal paid sick leave law. Roughly 19 states plus Washington, DC had their own paid sick leave laws as of 2026 — whether you are covered depends entirely on your state and locality.' },
+        { title: 'Accrual caps vary sharply by jurisdiction', body: 'California caps total accrual at 80 hours; federal contractors under EO 13706 are capped at 56 hours; other states set their own figures. This calculator does not assume one for you — enter your actual cap.' },
+        { title: 'Usage caps are a separate limit from accrual caps', body: 'California also lets employers cap annual usage at 40 hours even if more has accrued — you can accrue above what you are allowed to use in a single year.' },
+        { title: 'This is a simplified hours-based model', body: 'Some employers front-load a full-year grant instead of accruing gradually, or use a different increment than 1:30. Check your own policy\'s actual accrual schedule.' },
+        { title: 'Not the same as PTO', body: 'If your employer grants a fixed annual PTO allotment instead of an accrual-based sick leave balance, use the PTO / Vacation Calculator instead — its model is a fixed yearly grant, not a per-hour accrual rate.' }
+      ],
+      references: [
+        { label: 'California Department of Industrial Relations, Paid Sick Leave FAQs', url: 'https://www.dir.ca.gov/dlse/paid_sick_leave.htm' },
+        { label: 'U.S. Department of Labor, Wage and Hour Division, Paid Sick Leave for Federal Contractors FAQ (Executive Order 13706)', url: 'https://www.dol.gov/agencies/whd/government-contracts/sick-leave/faq' }
+      ]
+    },
+    inputs: [
+      { id: 'hoursWorkedYTD', label: 'Hours worked year-to-date', type: 'number', placeholder: '900', defaultValue: 900, step: 10, min: 0 },
+      { id: 'hoursEarnedPerIncrement', label: 'Hours earned', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0 },
+      { id: 'hoursWorkedPerIncrement', label: 'Per hours worked', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1 },
+      { id: 'hoursUsedYTD', label: 'Hours used so far this year', type: 'number', placeholder: '6', defaultValue: 6, step: 1, min: 0 },
+      { id: 'annualAccrualCap', label: 'Annual accrual cap (0 = no cap)', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0 },
+      { id: 'hourlyRate', label: 'Hourly rate', type: 'currency', placeholder: '20', defaultValue: 20, step: 0.5, min: 0 }
+    ],
+    seo: {
+      title: 'Paid Sick Leave Accrual Calculator – 1:30 Standard',
+      description: 'Calculate your accrued paid sick leave balance from hours worked and an accrual rate such as "1 hour per 30 hours worked," with an optional cap and cash value.',
+      faq: [
+        { question: 'What is the standard sick leave accrual rate?', answer: 'The most common rate in state and local paid sick leave laws, including California\'s, is 1 hour earned for every 30 hours worked, often called the "1:30" schedule.' },
+        { question: 'How do I calculate my accrued sick leave balance?', answer: 'Multiply hours worked by the accrual rate (earned ÷ worked), cap it if your jurisdiction sets one, then subtract hours already used. 900 hours worked at 1:30 accrues 30 hours; minus 6 used leaves 24.' },
+        { question: 'Is paid sick leave required by federal law?', answer: 'Only for covered federal contractors, under Executive Order 13706, which sets a 1-hour-per-30-hours-worked rate with a 56-hour annual accrual cap. There is no general federal paid sick leave law otherwise — coverage depends on your state and locality.' },
+        { question: 'What is California\'s sick leave accrual cap?', answer: 'California caps total accrual at 80 hours (10 days) under the standard accrual method, with employers allowed to separately cap annual usage at 40 hours (5 days).' },
+        { question: 'Is this the same as PTO?', answer: 'No. PTO is often a fixed annual allotment granted up front (see the PTO / Vacation Calculator), while sick leave accrual under these laws builds up gradually as you work, at a fixed rate per hours worked.' },
+        { question: 'What is the cash value of my sick leave balance?', answer: 'Multiply your remaining hours by your hourly rate. 24 remaining hours at $20/hr is worth $480.00.' }
+      ]
+    },
+    compute(values) {
+      const rawAccrued = values.hoursWorkedYTD * (values.hoursEarnedPerIncrement / values.hoursWorkedPerIncrement);
+      const accruedHours = values.annualAccrualCap > 0 ? Math.min(rawAccrued, values.annualAccrualCap) : rawAccrued;
+      const balance = Math.max(0, accruedHours - values.hoursUsedYTD);
+      const cashValue = balance * values.hourlyRate;
+      const usedCashValue = values.hoursUsedYTD * values.hourlyRate;
+      return { accruedHours, balance, cashValue, usedCashValue };
+    }
   }
 ];

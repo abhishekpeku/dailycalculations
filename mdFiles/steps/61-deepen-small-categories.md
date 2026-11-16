@@ -188,12 +188,12 @@ whole site before writing any id.
 ## Progress
 
 - [x] Step file written
-- [ ] Batch 1 — `auto` (5 new)
-  - [ ] `lease-vs-buy-calculator`
-  - [ ] `car-depreciation-calculator`
-  - [ ] `tire-size-calculator`
-  - [ ] `parking-cost-calculator`
-  - [ ] `gas-mileage-comparison-calculator` — **skip, see note below**
+- [x] Batch 1 — `auto` (4 new + 1 honest skip; done 2026-11-16, PR #94)
+  - [x] `lease-vs-buy-calculator`
+  - [x] `car-depreciation-calculator`
+  - [x] `tire-size-calculator`
+  - [x] `parking-cost-calculator`
+  - [x] `gas-mileage-comparison-calculator` — **skipped, see note below**
 - [ ] Batch 2 — `work` (6 new)
 - [ ] Batch 3 — `health` (5 new)
 - [ ] Batch 4 — `shopping` (5 new)

@@ -107,7 +107,10 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'acceleration-calculator': ['acceleration'], // velocityChange (no min, 0) and time 0 (its min) -> 0/0
   'centripetal-force-calculator': ['force'], // mass, speed and radius all 0 (their min) -> 0/0
   'gravitational-force-calculator': ['force'], // mass1, mass2 and distance all 0 (their min) -> 0/0
-  'pendulum-period-calculator': ['period'] // length 0 (its min) and gravity 0 (no min, 0) -> 0/0 under the sqrt
+  'pendulum-period-calculator': ['period'], // length 0 (its min) and gravity 0 (no min, 0) -> 0/0 under the sqrt
+  'gear-ratio-calculator': ['gearRatio'], // driveTeeth 0 (its min) -> divide by zero
+  'efficiency-calculator': ['efficiency'], // inputPower 0 (its min) -> divide by zero
+  'angular-velocity-calculator': ['angularVelocity'] // time 0 (its min) -> divide by zero
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

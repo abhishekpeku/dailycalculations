@@ -6712,6 +6712,47 @@ exports[`compute() snapshots > latent-heat-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > lattice-energy-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "deltaHsub": 76.5,
+      "ionizationEnergy": 375.7,
+      "bondDissociationEnergy": 158.8,
+      "electronAffinity": -328.2,
+      "deltaHf": -553.5
+    },
+    "outputs": {
+      "latticeEnergy": 756.9
+    }
+  },
+  "typical": {
+    "inputs": {
+      "deltaHsub": 114.8,
+      "ionizationEnergy": 563.5,
+      "bondDissociationEnergy": 238.2,
+      "electronAffinity": -492.3,
+      "deltaHf": -830.2
+    },
+    "outputs": {
+      "latticeEnergy": 1135.3
+    }
+  },
+  "edge": {
+    "inputs": {
+      "deltaHsub": 0,
+      "ionizationEnergy": 0,
+      "bondDissociationEnergy": 0,
+      "electronAffinity": 0,
+      "deltaHf": 0
+    },
+    "outputs": {
+      "latticeEnergy": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > layaway-payment-calculator 1`] = `
 {
   "default": {

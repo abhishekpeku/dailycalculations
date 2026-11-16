@@ -404,7 +404,8 @@ export const calculatorOrder: string[] = [
   'tipping-abroad-calculator',
   'ksp-from-solubility-calculator',
   'weak-base-ionization-calculator',
-  'buffer-ph-after-addition-calculator'
+  'buffer-ph-after-addition-calculator',
+  'lattice-energy-calculator'
 ];
 
 const rank = (id: string) => {

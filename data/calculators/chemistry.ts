@@ -6727,6 +6727,145 @@ export const chemistryCalculators: CalculatorConfig[] = [
     }
   },
   {
+    id: 'lattice-energy-calculator',
+    category: 'chemistry',
+    group: 'Atomic & Molecular Structure',
+    glyph: 'U',
+    updatedAt: '2026-11-17',
+    aliases: ['lattice energy calculator', 'born-haber cycle calculator', 'born haber cycle calculator', 'lattice energy from born-haber cycle calculator'],
+    related: ['hess-law-enthalpy-calculator', 'nuclear-binding-energy-calculator', 'formal-charge-calculator', 'calorimetry-enthalpy-calculator'],
+    title: 'Lattice Energy Calculator (Born-Haber Cycle)',
+    description: 'Find an ionic solid’s lattice energy from a Born-Haber cycle — or solve for any other step instead, given the rest — for a metal forming a 1:1 salt with a diatomic nonmetal.',
+    example: 'Cesium fluoride’s Born-Haber cycle (sublimation 76.5, ionization 375.7, half of F₂’s bond dissociation 79.4, electron affinity −328.2, all kJ/mol, against an enthalpy of formation of −553.5 kJ/mol) gives a lattice energy of 756.9 kJ/mol.',
+    solver: {
+      defaultTarget: 'latticeEnergy',
+      variables: [
+        { id: 'latticeEnergy', label: 'Lattice energy, ΔHlattice', symbol: 'U', dimension: 'count', defaultValue: 756.9, defaultUnit: 'count' },
+        { id: 'deltaHsub', label: 'Enthalpy of sublimation of the metal (kJ/mol)', symbol: 'ΔHsub', dimension: 'count', defaultValue: 76.5, defaultUnit: 'count' },
+        { id: 'ionizationEnergy', label: 'Ionization energy of the metal (kJ/mol)', symbol: 'IE', dimension: 'count', defaultValue: 375.7, defaultUnit: 'count' },
+        { id: 'bondDissociationEnergy', label: 'Bond dissociation energy of X₂ (kJ/mol)', symbol: 'D', dimension: 'count', defaultValue: 158.8, defaultUnit: 'count' },
+        { id: 'electronAffinity', label: 'Electron affinity of the nonmetal (kJ/mol)', symbol: 'EA', dimension: 'count', defaultValue: -328.2, defaultUnit: 'count' },
+        { id: 'deltaHf', label: 'Standard enthalpy of formation of the salt (kJ/mol)', symbol: 'ΔHf°', dimension: 'count', defaultValue: -553.5, defaultUnit: 'count' }
+      ],
+      solve: {
+        latticeEnergy: ({ deltaHsub, ionizationEnergy, bondDissociationEnergy, electronAffinity, deltaHf }) =>
+          deltaHsub + ionizationEnergy + bondDissociationEnergy / 2 + electronAffinity - deltaHf,
+        deltaHf: ({ deltaHsub, ionizationEnergy, bondDissociationEnergy, electronAffinity, latticeEnergy }) =>
+          deltaHsub + ionizationEnergy + bondDissociationEnergy / 2 + electronAffinity - latticeEnergy,
+        deltaHsub: ({ deltaHf, latticeEnergy, ionizationEnergy, bondDissociationEnergy, electronAffinity }) =>
+          deltaHf + latticeEnergy - ionizationEnergy - bondDissociationEnergy / 2 - electronAffinity,
+        ionizationEnergy: ({ deltaHf, latticeEnergy, deltaHsub, bondDissociationEnergy, electronAffinity }) =>
+          deltaHf + latticeEnergy - deltaHsub - bondDissociationEnergy / 2 - electronAffinity,
+        bondDissociationEnergy: ({ deltaHf, latticeEnergy, deltaHsub, ionizationEnergy, electronAffinity }) =>
+          2 * (deltaHf + latticeEnergy - deltaHsub - ionizationEnergy - electronAffinity),
+        electronAffinity: ({ deltaHf, latticeEnergy, deltaHsub, ionizationEnergy, bondDissociationEnergy }) =>
+          deltaHf + latticeEnergy - deltaHsub - ionizationEnergy - bondDissociationEnergy / 2
+      },
+      outputs: [
+        { id: 'halfBondDissociationEnergy', label: 'Half the bond dissociation energy, ½D', dimension: 'count', compute: (si) => si.bondDissociationEnergy / 2 }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is the Born-Haber cycle?',
+        paragraphs: [
+          'Lattice energy — the energy needed to separate one mole of an ionic solid into its gaseous ions — cannot be measured directly. OpenStax Chemistry 2e’s §7.5 "Strengths of Ionic and Covalent Bonds" explains the workaround: since enthalpy is path-independent (Hess’s law), the lattice energy can instead be calculated by building the same overall formation reaction out of steps that can each be measured, and solving for whichever one is unknown.',
+          'The Born-Haber cycle breaks forming an ionic solid like CsF from its elements into five steps: subliming the solid metal into a gas (ΔHsub), ionizing the gaseous metal atom (IE), breaking the nonmetal’s diatomic bond into free atoms (½D, since only half a mole of X₂ is needed per mole of metal), giving the nonmetal atom an extra electron (EA), and finally letting the gaseous ions condense into the solid lattice, which releases the lattice energy. Added together, those steps equal the overall enthalpy of formation measured directly: ΔHf° = ΔHsub + IE + ½D + EA + (−ΔHlattice).',
+          'Because every term in that sum except the lattice energy can usually be looked up or measured independently, rearranging the equation for ΔHlattice gives the one quantity that cannot be measured any other way. OpenStax notes the same cycle can equally be used to solve for any other single unknown step instead, given the rest — this calculator solves for whichever one you leave as the target.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the four known Born-Haber steps plus the salt’s own enthalpy of formation; the lattice energy fills in automatically.',
+        steps: [
+          { name: 'Look up the metal’s sublimation energy and ionization energy', text: 'Both for the free gaseous atom, in kJ/mol.' },
+          { name: 'Look up the nonmetal’s bond dissociation energy', text: 'For the full diatomic molecule, X₂ — this calculator halves it internally, since only half a mole of X₂ supplies one mole of X atoms.' },
+          { name: 'Look up the nonmetal’s electron affinity', text: 'Usually a negative number, since adding an electron to a neutral nonmetal atom typically releases energy.' },
+          { name: 'Enter the salt’s standard enthalpy of formation', text: 'The measured, directly-observable overall energy change forming the solid from its elements.' },
+          { name: 'Read the lattice energy', text: 'Or switch which field is calculated to solve for any other single step instead, given the rest.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Hess’s law lets the five-step cycle be added directly, then rearranged for whichever single step is unknown.',
+        expression: 'ΔHf° = ΔHsub + IE + ½D + EA − ΔHlattice\nΔHlattice = ΔHsub + IE + ½D + EA − ΔHf°',
+        terms: [
+          { symbol: 'ΔHsub', meaning: 'Enthalpy of sublimation: turning the solid metal directly into a gas.' },
+          { symbol: 'IE', meaning: 'Ionization energy: removing an electron from the gaseous metal atom.' },
+          { symbol: 'D', meaning: 'Bond dissociation energy of the nonmetal’s diatomic molecule, X₂ — only half of it is needed per mole of metal.' },
+          { symbol: 'EA', meaning: 'Electron affinity: the energy change when the gaseous nonmetal atom gains an electron.' },
+          { symbol: 'ΔHf°', meaning: 'The ionic solid’s own standard enthalpy of formation, measured directly.' },
+          { symbol: 'ΔHlattice', meaning: 'Lattice energy — the energy required to separate one mole of the solid into gaseous ions.' }
+        ],
+        note: 'This calculator is scoped to the simplest, most commonly taught Born-Haber cycle: a metal that loses a single electron (one ionization energy) combining with a diatomic nonmetal that gains a single electron (one electron affinity) to form a 1:1 ionic salt — the same scope OpenStax’s own CsF example uses. A metal or nonmetal needing more than one ionization energy, electron affinity, or a different stoichiometry (like MgO or CaF₂) needs extra terms this simplified cycle does not include.'
+      },
+      workedExample: {
+        intro: 'What is the lattice energy of cesium fluoride, CsF? (OpenStax Chemistry 2e, §7.5, the Born-Haber cycle example.)',
+        rows: [
+          { label: 'Enthalpy of sublimation of Cs, ΔHsub', value: '+76.5 kJ/mol' },
+          { label: 'Ionization energy of Cs, IE', value: '+375.7 kJ/mol' },
+          { label: 'Bond dissociation energy of F₂, D (so ½D = 79.4)', value: '+158.8 kJ/mol' },
+          { label: 'Electron affinity of F, EA', value: '−328.2 kJ/mol' },
+          { label: 'Standard enthalpy of formation of CsF, ΔHf°', value: '−553.5 kJ/mol' },
+          { label: 'ΔHlattice = 76.5 + 375.7 + 79.4 + (−328.2) − (−553.5)', value: '756.9 kJ/mol' }
+        ],
+        result: 'ΔHlattice ≈ 756.9 kJ/mol',
+        explanation: 'This matches OpenStax’s own stated lattice energy exactly, confirmed independently in a scratch script, including a round-trip check that solving the same cycle back for the enthalpy of formation (given the lattice energy) recovers the original −553.5 kJ/mol.'
+      },
+      watchOut: [
+        {
+          title: 'Enter the full X₂ bond dissociation energy, not already halved',
+          body: 'This calculator halves the bond dissociation energy internally, since only half a mole of the diatomic nonmetal is needed per mole of the metal — entering an already-halved value would halve it again.'
+        },
+        {
+          title: 'Electron affinity is usually negative, ionization energy is usually positive',
+          body: 'Removing an electron from a neutral atom (ionization) almost always costs energy; adding one to a neutral nonmetal atom (electron affinity) usually releases it. Mixing up the signs is the most common error in this calculation.'
+        },
+        {
+          title: 'Scoped to a simple 1:1 metal-halide-style salt',
+          body: 'A compound needing a second ionization energy (like Mg²⁺) or a second electron affinity (like O²⁻), or a different cation:anion ratio, needs a longer cycle with more terms than this calculator covers.'
+        },
+        {
+          title: 'This is a different kind of mass/energy bookkeeping than the Hess’s law calculator',
+          body: 'The Hess’s law calculator on this site sums reactants’ and products’ standard enthalpies of formation directly. This calculator instead builds up a single compound’s own enthalpy of formation from five physically distinct steps, one of which (lattice energy) cannot be measured on its own at all — Born-Haber is a specific, well-known application of the same underlying law.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §7.5 "Strengths of Ionic and Covalent Bonds" (the Born-Haber cycle and its CsF example)', url: 'https://openstax.org/books/chemistry-2e/pages/7-5-strengths-of-ionic-and-covalent-bonds' }
+      ]
+    },
+    inputs: [
+      { id: 'deltaHsub', label: 'Enthalpy of sublimation (kJ/mol)', type: 'number', placeholder: '76.5', defaultValue: 76.5, step: 0.1 },
+      { id: 'ionizationEnergy', label: 'Ionization energy (kJ/mol)', type: 'number', placeholder: '375.7', defaultValue: 375.7, step: 0.1 },
+      { id: 'bondDissociationEnergy', label: 'Bond dissociation energy of X₂ (kJ/mol)', type: 'number', placeholder: '158.8', defaultValue: 158.8, step: 0.1 },
+      { id: 'electronAffinity', label: 'Electron affinity (kJ/mol)', type: 'number', placeholder: '-328.2', defaultValue: -328.2, step: 0.1 },
+      { id: 'deltaHf', label: 'Standard enthalpy of formation (kJ/mol)', type: 'number', placeholder: '-553.5', defaultValue: -553.5, step: 0.1 }
+    ],
+    breakdown: {
+      headline: 'latticeEnergy',
+      headlineLabel: 'Lattice energy, ΔHlattice',
+      outputs: [{ id: 'latticeEnergy', label: 'Lattice energy (kJ/mol)', format: 'number' }],
+      groups: [{ inputs: ['deltaHsub', 'ionizationEnergy', 'bondDissociationEnergy', 'electronAffinity', 'deltaHf'] }]
+    },
+    seo: {
+      title: 'Lattice Energy Calculator (Born-Haber Cycle)',
+      description: 'Free lattice energy calculator. Solve a Born-Haber cycle for lattice energy — or any other step — with a worked cesium fluoride example.',
+      faq: [
+        { question: 'How do I calculate lattice energy with the Born-Haber cycle?', answer: 'Add the enthalpy of sublimation, ionization energy, half the bond dissociation energy, and electron affinity, then subtract the compound’s standard enthalpy of formation: ΔHlattice = ΔHsub + IE + ½D + EA − ΔHf°.' },
+        { question: 'What is the lattice energy of cesium fluoride, CsF?', answer: 'About 756.9 kJ/mol, from a Born-Haber cycle using Cs’s sublimation energy (76.5), ionization energy (375.7), half of F₂’s bond dissociation energy (79.4), F’s electron affinity (−328.2), and CsF’s own enthalpy of formation (−553.5), all in kJ/mol.' },
+        { question: 'Why is only half the bond dissociation energy used?', answer: 'Because the diatomic nonmetal, X₂, supplies two atoms of X per bond broken, and only one of those atoms is needed to form one formula unit of a 1:1 salt — so only half a mole of X₂ needs to dissociate per mole of product.' },
+        { question: 'Can this calculator solve for something other than lattice energy?', answer: 'Yes — switch which field is calculated (for example, electron affinity), and the same cycle solves for it instead, given the other four known steps.' },
+        { question: 'Does this work for a salt like MgO or CaF₂?', answer: 'Not directly — this calculator is scoped to a 1:1 salt with one ionization energy and one electron affinity, matching OpenStax’s own CsF-style example. A compound needing a second ionization energy or electron affinity needs extra terms this simplified cycle does not include.' },
+        { question: 'Why can’t lattice energy be measured directly?', answer: 'There is no practical experiment that directly separates an ionic solid into gaseous ions and measures the energy involved — it has to be inferred from a cycle of steps that can each be measured, which is exactly what the Born-Haber cycle provides.' }
+      ]
+    },
+    compute(values) {
+      return {
+        latticeEnergy: values.deltaHsub + values.ionizationEnergy + values.bondDissociationEnergy / 2 + values.electronAffinity - values.deltaHf
+      };
+    }
+  },
+  {
     id: 'latent-heat-calculator',
     category: 'chemistry',
     group: 'Thermochemistry',

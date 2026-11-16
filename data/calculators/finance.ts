@@ -3722,10 +3722,6 @@ export const financeCalculators: CalculatorConfig[] = [
       // no initial lump sum — unlike compound-interest-calculator, which compounds a lump sum.
       solve: {
         futureValue: ({ payment, years, annualRate }) => (years >= 0 ? payment * annuityFactor(annualRate, 12, years) : NaN),
-        payment: ({ futureValue, years, annualRate }) => {
-          const af = annuityFactor(annualRate, 12, years);
-          return years > 0 && af > 0 ? futureValue / af : NaN;
-        },
         years: ({ futureValue, payment, annualRate }) => {
           if (!(payment > 0)) return NaN;
           const i = annualRate / 100 / 12;

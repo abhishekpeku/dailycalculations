@@ -2912,4 +2912,124 @@ export const financeCalculators: CalculatorConfig[] = [
       return { futureValue, totalContributed, totalGrowth, estimatedAnnualWithdrawal, estimatedMonthlyWithdrawal };
     }
   },
+  {
+    id: '401k-employer-match-calculator',
+    group: 'Retirement',
+    category: 'finance',
+    glyph: '401k',
+    updatedAt: '2026-11-16',
+    aliases: ['401k match calculator', '401(k) employer match calculator', '401k contribution calculator', 'employer match calculator', '401k free money calculator'],
+    related: ['retirement-savings-calculator', 'roth-ira-growth-calculator', 'traditional-ira-calculator', 'paycheck-calculator'],
+    title: '401(k) Employer Match Calculator',
+    description: "Calculate your 401(k) employee contribution, your employer's match, and the free employer money you leave on the table if you contribute less than your plan's match cap.",
+    example: 'A $70,000 salary contributing 3%, with a 50%-up-to-6% employer match, gets a $1,050 match and leaves $1,050 of free employer money unclaimed; contributing the full 6% claims the entire $2,100 match.',
+    breakdown: {
+      headline: 'employerMatch',
+      headlineLabel: 'Employer match this year',
+      outputs: [
+        { id: 'employerMatch', label: 'Employer match', format: 'currency' },
+        { id: 'employeeContribution', label: 'Your contribution', format: 'currency' },
+        { id: 'totalContribution', label: 'Total annual contribution', format: 'currency' },
+        { id: 'freeMoneyLeftOnTable', label: 'Free employer money left on the table', format: 'currency' },
+        { id: 'maxPossibleMatch', label: 'Maximum possible match, at the cap', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your pay and contribution', inputs: ['annualSalary', 'employeeContributionPercent'] },
+        { title: "Your plan's match formula", inputs: ['matchRatePercent', 'matchCapPercent'] }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'employeeContribution', label: 'Your contribution' },
+          { from: 'employerMatch', label: 'Employer match' }
+        ],
+        center: 'totalContribution',
+        centerSub: 'total annual contribution'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'How an employer 401(k) match works',
+        paragraphs: [
+          'Many employers add money to a 401(k) on top of what an employee contributes, using a formula such as "50% up to 6%": for every dollar an employee contributes, up to 6% of pay, the employer adds 50 cents. Contribute less than the 6% cap and part of that match goes unclaimed; contribute more than the cap and the extra is not matched at all. Formulas vary widely by employer, and employer contributions can also vest over a number of years rather than belonging to the employee immediately, per the U.S. Department of Labor\'s guide to 401(k) plans.',
+          'The "free money left on the table" figure is the gap between the match you would get at the full cap and the match you are actually getting at your current contribution rate. It is a common way to frame the cost of under-contributing, though how much to prioritize it against other goals (high-rate debt, an emergency fund) is a personal decision this calculator does not make for you.',
+          "The employee's own contribution here is capped at the IRS 2026 elective deferral limit of $24,500. Employer matching contributions do not count against that limit, but employee and employer contributions together are capped by a separate, higher limit — $72,000 for 2026 under Internal Revenue Code section 415(c) — which this calculator does not enforce since most plans are far below it. For how that saved money then grows, see retirement-savings-calculator, roth-ira-growth-calculator or traditional-ira-calculator, depending on the account."
+        ]
+      },
+      howTo: {
+        intro: "Enter your salary and the percentage of it you contribute, then your plan's match rate and match cap exactly as its summary plan description states them.",
+        steps: [
+          { name: 'Enter your salary', text: 'Your annual salary before taxes and deductions.' },
+          { name: 'Enter your contribution', text: 'The percentage of salary you put into the 401(k) each year.' },
+          { name: "Enter the match rate", text: 'What percentage of your contribution the employer adds — 50 for "50 cents per dollar," 100 for a full dollar-for-dollar match.' },
+          { name: 'Enter the match cap', text: 'The percentage of salary up to which the employer matches — the "6%" in "50% up to 6%."' },
+          { name: 'Read the result', text: 'The headline is the dollar employer match this year. The rows below show your contribution, the total, and any free match money you are not claiming.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "The employer match applies only up to the match cap, even if the employee contributes more. The employee's own contribution is capped separately at the IRS annual elective-deferral limit.",
+        expression: 'employeeContribution = min(salary × employeePercent ÷ 100, $24,500)\nmatchablePercent = min(employeePercent, matchCapPercent)\nemployerMatch = salary × matchablePercent ÷ 100 × matchRate ÷ 100\nmaxPossibleMatch = salary × matchCapPercent ÷ 100 × matchRate ÷ 100\nfreeMoneyLeftOnTable = max(0, maxPossibleMatch − employerMatch)',
+        terms: [
+          { symbol: 'employeePercent', meaning: 'Percentage of salary the employee contributes.' },
+          { symbol: 'matchRate', meaning: 'Percentage of each matched dollar the employer adds (50 for 50 cents on the dollar).' },
+          { symbol: 'matchCapPercent', meaning: 'Percentage of salary up to which contributions are matched.' },
+          { symbol: '$24,500', meaning: "The IRS 2026 401(k) elective deferral limit (catch-up contributions for ages 50 and over are not modeled)." }
+        ],
+        note: "Estimates only. Actual plan formulas, tiers and vesting schedules vary by employer — check your plan's summary plan description. Not financial or tax advice."
+      },
+      workedExample: {
+        intro: "A $70,000 salary, contributing 3%, with a '50% up to 6%' employer match. What is the match, and how much free money is left on the table?",
+        rows: [
+          { label: 'Employee contribution (70,000 × 3%)', value: '$2,100' },
+          { label: 'Matchable percent (min(3%, 6%))', value: '3%' },
+          { label: 'Employer match (70,000 × 3% × 50%)', value: '$1,050' },
+          { label: 'Maximum possible match (70,000 × 6% × 50%)', value: '$2,100' },
+          { label: 'Free money left on the table (2,100 − 1,050)', value: '$1,050' },
+          { label: 'Total annual contribution (2,100 + 1,050)', value: '$3,150' }
+        ],
+        result: '$1,050 employer match this year, with another $1,050 of free match money unclaimed',
+        explanation: "Raising the contribution from 3% to the full 6% cap doubles the employee contribution to $4,200 and the employer match to $2,100, leaving $0 of free money on the table. Contributing above 6% adds no further match at all under this formula."
+      },
+      watchOut: [
+        { title: 'Match formulas vary by employer', body: 'Some plans match a flat percentage, some use tiers (e.g. 100% up to 3%, then 50% of the next 2%), and this calculator models only the common single-tier case. Check your plan document for the exact formula.' },
+        { title: 'Employer contributions may vest over time', body: "Per the U.S. Department of Labor, some plans let employer contributions vest gradually, meaning you only fully own them after a set number of years of service." },
+        { title: 'A separate, higher overall limit applies', body: 'Employee and employer contributions together cannot exceed $72,000 for 2026 (Internal Revenue Code section 415(c)), on top of the employee-only $24,500 elective-deferral limit.' },
+        { title: 'Not financial or tax advice', body: 'Whether to prioritize matching contributions over other financial goals depends on your own debts, emergency savings and plan terms.' }
+      ],
+      references: [
+        { label: 'Internal Revenue Service, Notice 2025-67: 2026 Amounts Relating to Retirement Plans and IRAs', url: 'https://www.irs.gov/pub/irs-drop/n-25-67.pdf' },
+        { label: 'Internal Revenue Service, Retirement Topics – 401(k) and Profit-Sharing Plan Contribution Limits', url: 'https://www.irs.gov/retirement-plans/plan-participant-employee/retirement-topics-401k-and-profit-sharing-plan-contribution-limits' },
+        { label: 'U.S. Department of Labor, 401(k) Plans for Small Businesses', url: 'https://www.dol.gov/agencies/ebsa/about-ebsa/our-activities/resource-center/publications/401k-plans-for-small-businesses' }
+      ]
+    },
+    inputs: [
+      { id: 'annualSalary', label: 'Annual salary', type: 'currency', placeholder: '70000', defaultValue: 70000, step: 1000, min: 0 },
+      { id: 'employeeContributionPercent', label: 'Your contribution (% of salary)', type: 'percent', placeholder: '3', defaultValue: 3, step: 0.5, min: 0 },
+      { id: 'matchRatePercent', label: 'Employer match rate (%)', type: 'percent', placeholder: '50', defaultValue: 50, step: 5, min: 0 },
+      { id: 'matchCapPercent', label: 'Match cap (% of salary)', type: 'percent', placeholder: '6', defaultValue: 6, step: 0.5, min: 0 }
+    ],
+    seo: {
+      title: '401(k) Employer Match Calculator – Free Money Check',
+      description: "Free 401(k) employer match calculator: see your contribution, your employer's match, and the free match money you lose by contributing below the cap.",
+      faq: [
+        { question: 'How is a 401(k) employer match calculated?', answer: "The employer matches a percentage of your contribution, up to a cap expressed as a percent of salary. On a $70,000 salary contributing 3% with a 50%-up-to-6% match, that's 70,000 × 3% × 50% = $1,050." },
+        { question: 'What does "free money left on the table" mean?', answer: 'The match you are missing by contributing below the cap. In the example, the maximum possible match at 6% is $2,100; contributing only 3% claims $1,050 of it, leaving $1,050 unclaimed.' },
+        { question: 'Does the employer match count toward my own contribution limit?', answer: 'No. The $24,500 2026 IRS limit applies to your own elective deferrals only. Employer matching contributions count toward a separate, higher combined limit of $72,000 for 2026.' },
+        { question: 'How does this differ from retirement-savings-calculator?', answer: 'This calculator finds this year\'s employee contribution and employer match from a salary and a match formula. Retirement-savings-calculator takes a monthly contribution (which could include this one) and projects its growth over many years.' },
+        { question: 'Do all employers match 401(k) contributions the same way?', answer: 'No. Formulas vary, some plans use multiple tiers, and employer contributions can vest gradually rather than belong to you immediately. Check your plan\'s summary plan description.' },
+        { question: 'Should I contribute at least up to the match?', answer: 'Many people treat a full employer match as a priority, since turning it down forfeits money the employer would otherwise contribute, but this depends on your own debts, emergency savings and goals. This is not personalized financial advice.' }
+      ]
+    },
+    compute(values) {
+      const employeeContribution = Math.min(values.annualSalary * (values.employeeContributionPercent / 100), PAYROLL_2026.max401k);
+      const matchableSalaryPercent = Math.min(values.employeeContributionPercent, values.matchCapPercent);
+      const employerMatch = values.annualSalary * (matchableSalaryPercent / 100) * (values.matchRatePercent / 100);
+      const maxPossibleMatch = values.annualSalary * (values.matchCapPercent / 100) * (values.matchRatePercent / 100);
+      const freeMoneyLeftOnTable = Math.max(0, maxPossibleMatch - employerMatch);
+      const totalContribution = employeeContribution + employerMatch;
+      return { employerMatch, employeeContribution, totalContribution, freeMoneyLeftOnTable, maxPossibleMatch };
+    }
+  },
 ];

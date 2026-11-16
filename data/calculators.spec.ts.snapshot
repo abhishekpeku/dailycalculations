@@ -373,6 +373,62 @@ exports[`compute() snapshots > bakers-percentage-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > balance-transfer-savings-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "balance": 6000,
+      "currentAPR": 22,
+      "promoAPR": 0,
+      "promoMonths": 15,
+      "transferFeePercent": 3
+    },
+    "outputs": {
+      "netSavings": 737.2572372,
+      "transferFee": 180,
+      "costIfStay": 917.2572372,
+      "costIfTransfer": 180,
+      "stayMonthlyPayment": 461.1504825,
+      "transferMonthlyPayment": 412
+    }
+  },
+  "typical": {
+    "inputs": {
+      "balance": 9000,
+      "currentAPR": 33,
+      "promoAPR": 0,
+      "promoMonths": 23,
+      "transferFeePercent": 4.5
+    },
+    "outputs": {
+      "netSavings": 2858.528215,
+      "transferFee": 405,
+      "costIfStay": 3263.528215,
+      "costIfTransfer": 405,
+      "stayMonthlyPayment": 533.1968789,
+      "transferMonthlyPayment": 408.9130435
+    }
+  },
+  "edge": {
+    "inputs": {
+      "balance": 0,
+      "currentAPR": 0,
+      "promoAPR": 0,
+      "promoMonths": 1,
+      "transferFeePercent": 0
+    },
+    "outputs": {
+      "netSavings": 0,
+      "transferFee": 0,
+      "costIfStay": 0,
+      "costIfTransfer": 0,
+      "stayMonthlyPayment": 0,
+      "transferMonthlyPayment": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > bar-to-psi-converter 1`] = `
 {
   "default": {
@@ -1886,6 +1942,59 @@ exports[`compute() snapshots > correlation-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > credit-card-minimum-payment-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "balance": 5000,
+      "apr": 22,
+      "fixedPayment": 200
+    },
+    "outputs": {
+      "interestCostOfMinimumOnly": 6349.893227,
+      "monthsCostOfMinimumOnly": 196,
+      "firstMinPayment": 141.6666667,
+      "minMonths": 230,
+      "minTotalInterest": 8099.772679,
+      "fixedMonths": 34,
+      "fixedTotalInterest": 1749.879452
+    }
+  },
+  "typical": {
+    "inputs": {
+      "balance": 7500,
+      "apr": 33,
+      "fixedPayment": 300
+    },
+    "outputs": {
+      "interestCostOfMinimumOnly": 13980.03384,
+      "monthsCostOfMinimumOnly": 247,
+      "firstMinPayment": 281.25,
+      "minMonths": 290,
+      "minTotalInterest": 19343.07807,
+      "fixedMonths": 43,
+      "fixedTotalInterest": 5363.044223
+    }
+  },
+  "edge": {
+    "inputs": {
+      "balance": 0,
+      "apr": 0,
+      "fixedPayment": 0
+    },
+    "outputs": {
+      "interestCostOfMinimumOnly": "NaN",
+      "monthsCostOfMinimumOnly": "NaN",
+      "firstMinPayment": "NaN",
+      "minMonths": 0,
+      "minTotalInterest": 0,
+      "fixedMonths": "NaN",
+      "fixedTotalInterest": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > cricket-bowling-figures-calculator 1`] = `
 {
   "default": {
@@ -2237,6 +2346,145 @@ exports[`compute() snapshots > date-difference-calculator 1`] = `
       "days": 0,
       "weeks": 0,
       "months": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > debt-payoff-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "extraPayment": 200,
+      "lists": {
+        "balances": [
+          5000,
+          3000,
+          2000
+        ],
+        "rates": [
+          22,
+          18,
+          9
+        ],
+        "minPayments": [
+          150,
+          90,
+          60
+        ]
+      }
+    },
+    "outputs": {
+      "snowballMonths": 26,
+      "snowballTotalInterest": 2326.075684,
+      "avalancheMonths": 25,
+      "avalancheTotalInterest": 1880.108596,
+      "interestSavedWithAvalanche": 445.9670887,
+      "monthsSavedWithAvalanche": 1
+    }
+  },
+  "typical": {
+    "inputs": {
+      "extraPayment": 300,
+      "lists": {
+        "balances": [
+          7500,
+          4500,
+          3000
+        ],
+        "rates": [
+          33,
+          27,
+          14
+        ],
+        "minPayments": [
+          225,
+          135,
+          90
+        ]
+      }
+    },
+    "outputs": {
+      "snowballMonths": 30,
+      "snowballTotalInterest": 6367.185314,
+      "avalancheMonths": 28,
+      "avalancheTotalInterest": 4938.960144,
+      "interestSavedWithAvalanche": 1428.22517,
+      "monthsSavedWithAvalanche": 2
+    }
+  },
+  "edge": {
+    "inputs": {
+      "extraPayment": 0,
+      "lists": {
+        "balances": [
+          0
+        ],
+        "rates": [
+          0
+        ],
+        "minPayments": [
+          0
+        ]
+      }
+    },
+    "outputs": {
+      "snowballMonths": 0,
+      "snowballTotalInterest": 0,
+      "avalancheMonths": 0,
+      "avalancheTotalInterest": 0,
+      "interestSavedWithAvalanche": 0,
+      "monthsSavedWithAvalanche": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > debt-to-income-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "grossMonthlyIncome": 8000,
+      "housingPayment": 1940,
+      "otherMonthlyDebt": 1500
+    },
+    "outputs": {
+      "backEndRatio": 43,
+      "frontEndRatio": 24.25,
+      "totalMonthlyDebt": 3440,
+      "maxHousingAt28": 2240,
+      "maxTotalAt36": 2880,
+      "roomUnder36": -560
+    }
+  },
+  "typical": {
+    "inputs": {
+      "grossMonthlyIncome": 12000,
+      "housingPayment": 2900,
+      "otherMonthlyDebt": 2250
+    },
+    "outputs": {
+      "backEndRatio": 42.91666667,
+      "frontEndRatio": 24.16666667,
+      "totalMonthlyDebt": 5150,
+      "maxHousingAt28": 3360,
+      "maxTotalAt36": 4320,
+      "roomUnder36": -830
+    }
+  },
+  "edge": {
+    "inputs": {
+      "grossMonthlyIncome": 0,
+      "housingPayment": 0,
+      "otherMonthlyDebt": 0
+    },
+    "outputs": {
+      "backEndRatio": "NaN",
+      "frontEndRatio": "NaN",
+      "totalMonthlyDebt": 0,
+      "maxHousingAt28": 0,
+      "maxTotalAt36": 0,
+      "roomUnder36": 0
     }
   }
 }
@@ -9756,6 +10004,62 @@ exports[`compute() snapshots > stoichiometry-calculator 1`] = `
     },
     "outputs": {
       "speciesBMoles": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > student-loan-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "loanAmount": 35000,
+      "apr": 6
+    },
+    "outputs": {
+      "standardPayment": 388.5717568,
+      "standardTotalInterest": 11628.61082,
+      "graduatedInitialPayment": 175,
+      "graduatedFinalPayment": 781.4045174,
+      "graduatedTotalInterest": 15835.15844,
+      "extendedPayment": 225.5054905,
+      "extendedTotalInterest": 32651.64716,
+      "extraInterestGraduatedVsStandard": 4206.547622,
+      "extraInterestExtendedVsStandard": 21023.03634
+    }
+  },
+  "typical": {
+    "inputs": {
+      "loanAmount": 52500,
+      "apr": 9
+    },
+    "outputs": {
+      "standardPayment": 665.0478122,
+      "standardTotalInterest": 27305.73746,
+      "graduatedInitialPayment": 393.75,
+      "graduatedFinalPayment": 1176.306343,
+      "graduatedTotalInterest": 35412.50395,
+      "extendedPayment": 440.5780909,
+      "extendedTotalInterest": 79673.42727,
+      "extraInterestGraduatedVsStandard": 8106.766488,
+      "extraInterestExtendedVsStandard": 52367.68981
+    }
+  },
+  "edge": {
+    "inputs": {
+      "loanAmount": 0,
+      "apr": 0
+    },
+    "outputs": {
+      "standardPayment": 0,
+      "standardTotalInterest": 0,
+      "graduatedInitialPayment": 0,
+      "graduatedFinalPayment": 0,
+      "graduatedTotalInterest": 0,
+      "extendedPayment": 0,
+      "extendedTotalInterest": 0,
+      "extraInterestGraduatedVsStandard": 0,
+      "extraInterestExtendedVsStandard": 0
     }
   }
 }

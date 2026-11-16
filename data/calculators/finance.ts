@@ -90,6 +90,46 @@ const affordableHomePrice = (
   };
 };
 
+// Illustrative graduated repayment: starts at the interest-only payment and steps up by a fixed
+// growth factor every `stepMonths`, solved by bisection so the balance reaches exactly 0 at
+// `totalMonths` (student-loan-calculator). This is a simplified model of the *shape* studentaid.gov
+// describes ("payments are lower at first and then increase, usually every two years") — it does not
+// reproduce a loan servicer's exact cent-by-cent amounts or any regulatory cap on the size of each step.
+const graduatedSchedule = (principal: number, apr: number, totalMonths: number, stepMonths: number) => {
+  const r = apr / 100 / 12;
+  const steps = totalMonths / stepMonths;
+  if (r === 0) {
+    const level = principal / totalMonths;
+    return { initialPayment: level, finalPayment: level, totalInterest: 0 };
+  }
+  const initialPayment = principal * r; // interest-only first step
+
+  const simulate = (g: number) => {
+    let balance = principal;
+    let payment = initialPayment;
+    let totalPaid = 0;
+    for (let step = 0; step < steps; step++) {
+      for (let m = 0; m < stepMonths; m++) {
+        balance = balance + balance * r - payment;
+        totalPaid += payment;
+      }
+      payment *= g;
+    }
+    return { finalBalance: balance, totalPaid, lastPayment: payment / g };
+  };
+
+  let lo = 1;
+  let hi = 10;
+  while (simulate(hi).finalBalance > 0 && hi < 1e5) hi *= 2;
+  for (let i = 0; i < 100; i++) {
+    const mid = (lo + hi) / 2;
+    if (simulate(mid).finalBalance > 0) lo = mid;
+    else hi = mid;
+  }
+  const final = simulate((lo + hi) / 2);
+  return { initialPayment, finalPayment: final.lastPayment, totalInterest: final.totalPaid - principal };
+};
+
 export const financeCalculators: CalculatorConfig[] = [
   {
     id: 'mortgage-calculator',
@@ -1972,6 +2012,752 @@ export const financeCalculators: CalculatorConfig[] = [
         investmentGrowth,
         netSaleProceeds,
         monthlyPI
+      };
+    }
+  },
+  {
+    id: 'debt-to-income-calculator',
+    category: 'finance',
+    group: 'Debt',
+    glyph: 'DTI',
+    updatedAt: '2026-11-15',
+    aliases: ['dti calculator', 'debt to income ratio calculator', 'front end back end ratio calculator', 'dti ratio calculator'],
+    related: ['home-affordability-calculator', 'debt-payoff-calculator', 'credit-card-minimum-payment-calculator', 'loan-calculator'],
+    title: 'Debt-to-Income (DTI) Ratio Calculator',
+    description: 'Calculate your front-end and back-end debt-to-income ratio from gross income and monthly debt payments, checked against the classic 28% / 36% lending guideline.',
+    example: 'A household earning $8,000 a month with a $1,940 housing payment and $1,500 of other debt has a 24.25% front-end ratio and a 43.00% back-end ratio — $560 a month over the classic 36% guideline, though within the wider range lenders actually use.',
+    breakdown: {
+      headline: 'backEndRatio',
+      headlineLabel: 'Back-end debt-to-income ratio',
+      outputs: [
+        { id: 'backEndRatio', label: 'Back-end ratio (housing + other debt ÷ income)', format: 'percent' },
+        { id: 'frontEndRatio', label: 'Front-end ratio (housing ÷ income)', format: 'percent' },
+        { id: 'totalMonthlyDebt', label: 'Total monthly debt payments', format: 'currency' },
+        { id: 'maxHousingAt28', label: 'Max housing payment at the 28% guideline', format: 'currency' },
+        { id: 'maxTotalAt36', label: 'Max total debt at the 36% guideline', format: 'currency' },
+        { id: 'roomUnder36', label: 'Room left under the 36% guideline (negative = over)', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Income', inputs: ['grossMonthlyIncome'] },
+        { title: 'Monthly debt payments', inputs: ['housingPayment', 'otherMonthlyDebt'] }
+      ],
+      visual: {
+        type: 'rangeBar',
+        value: 'backEndRatio',
+        title: 'Back-end ratio against lender guidelines',
+        bands: [
+          { label: 'Within the classic 36% guideline', min: 0, max: 36 },
+          { label: 'Within the 43% Qualified Mortgage cap', min: 36, max: 43 },
+          { label: 'Within the 50% automated-underwriting ceiling', min: 43, max: 50 },
+          { label: 'Above typical lending limits', min: 50, max: 150 }
+        ]
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-15',
+      concept: {
+        title: 'Front-end vs. back-end: the two DTI ratios lenders check',
+        paragraphs: [
+          'Your debt-to-income (DTI) ratio is the share of your gross (pre-tax) monthly income that goes to debt payments. Lenders check it two ways: the front-end (or housing) ratio is your housing payment alone divided by gross monthly income; the back-end (or total) ratio adds every other debt payment — car loans, student loans, credit card minimums, personal loans — on top of housing, divided by the same income.',
+          'The long-standing 28/36 guideline caps the front-end ratio at 28% and the back-end ratio at 36%. Real underwriting is looser: the Consumer Financial Protection Bureau\'s Qualified Mortgage rule generally allows up to a 43% back-end ratio, and Fannie Mae\'s automated underwriting can approve up to 50%. home-affordability-calculator uses this exact same range (36% / 43% / 50%) to build its conservative, balanced and maximum home-price tiers — this calculator checks the ratios directly from payments you already have, rather than solving for a home price.',
+          'DTI matters beyond mortgages. Lenders use it for auto loans, personal loans and credit line increases, and it is one of the clearest single numbers for your own sense of how stretched your income is — unlike a credit score, it is something you can calculate yourself from your own pay stub and statements at any time.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your gross monthly income, then your housing payment and every other monthly debt payment separately.',
+        steps: [
+          { name: 'Enter your gross monthly income', text: 'Income before tax and other deductions. If you only know your annual salary, divide it by 12.' },
+          { name: 'Enter your housing payment', text: 'Rent, or the full mortgage payment (principal, interest, tax, insurance, PMI and HOA if it applies) — not just principal and interest.' },
+          { name: 'Enter your other monthly debt', text: 'Every other required debt payment: car loans, student loans, personal loans and minimum credit card payments. Leave out groceries, utilities, insurance premiums and subscriptions — DTI only counts debt.' },
+          { name: 'Read both ratios', text: 'The headline is your back-end ratio; the front-end ratio sits just below it. The bar shows where your back-end ratio falls against the lending guidelines.' },
+          { name: 'Check the dollar room', text: 'The last two rows show the maximum housing payment and total debt the classic 28/36 guideline allows at your income, and how much room (or overage) you have under the 36% line.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Both ratios divide a sum of monthly payments by the same gross monthly income.',
+        expression: 'Front-end ratio = housing payment ÷ gross monthly income × 100\nBack-end ratio = (housing payment + other monthly debt) ÷ gross monthly income × 100',
+        terms: [
+          { symbol: 'housing payment', meaning: 'Rent, or the full mortgage payment including tax, insurance, PMI and HOA.' },
+          { symbol: 'other monthly debt', meaning: 'Every other required debt payment, excluding housing.' },
+          { symbol: 'gross monthly income', meaning: 'Income before tax and other deductions, for every borrower on the loan.' }
+        ],
+        note: 'Estimates only, not a lending decision or pre-qualification. Lenders can define "income" and "debt" slightly differently (for example, some count a lease but not a phone installment plan), so your lender\'s own figure may differ a little from this one.'
+      },
+      workedExample: {
+        intro: 'A household has $8,000 of gross monthly income, a $1,940 monthly housing payment, and $1,500 of other monthly debt. What are its DTI ratios?',
+        rows: [
+          { label: 'Front-end ratio (1,940 ÷ 8,000 × 100)', value: '24.25%' },
+          { label: 'Total monthly debt (1,940 + 1,500)', value: '$3,440' },
+          { label: 'Back-end ratio (3,440 ÷ 8,000 × 100)', value: '43.00%' },
+          { label: 'Max housing at the 28% guideline (0.28 × 8,000)', value: '$2,240 — current payment is $300 under' },
+          { label: 'Max total debt at the 36% guideline (0.36 × 8,000)', value: '$2,880 — current debt is $560 over' }
+        ],
+        result: 'Front-end 24.25% · back-end 43.00%',
+        explanation: 'The front-end ratio is comfortably under the classic 28% cap. The back-end ratio, at 43.00%, is $560 a month over the classic 36% guideline, but it lands exactly at the edge of the CFPB\'s 43% Qualified Mortgage cap and well inside Fannie Mae\'s 50% automated-underwriting ceiling — the same housing payment home-affordability-calculator\'s own balanced-tier example produces from the same income and other debt.'
+      },
+      watchOut: [
+        { title: 'Lenders don\'t all count debt the same way', body: 'Most count every required loan and minimum credit card payment, but treatment of things like a 0%-interest buy-now-pay-later plan or a co-signed loan can vary. Ask your specific lender what they include.' },
+        { title: 'Gross income, not take-home pay', body: 'DTI always uses gross (pre-tax) income, which is higher than what actually lands in your bank account — don\'t substitute your net paycheck.' },
+        { title: 'DTI is one factor, not the whole decision', body: 'Credit score, down payment, cash reserves and employment history all matter too. A borrower with a high DTI but strong credit and reserves can still qualify; a low-DTI borrower with poor credit may not.' },
+        { title: 'Self-employment income needs more care', body: 'Lenders typically average two years of net (after-expenses) self-employment income, which is usually lower than gross revenue — plug in that averaged, after-expenses figure, not top-line sales.' },
+        { title: 'Paying down a small balance can help more than it looks', body: 'Because back-end DTI is a ratio, paying off or paying down a loan with a disproportionately large minimum payment relative to its balance can lower your ratio faster than its dollar size suggests.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, What is a debt-to-income ratio?', url: 'https://www.consumerfinance.gov/ask-cfpb/what-is-a-debt-to-income-ratio-en-1791/' },
+        { label: 'Consumer Financial Protection Bureau, Regulation Z §1026.43, Minimum standards for transactions secured by a dwelling (Qualified Mortgage, 43% DTI)', url: 'https://www.consumerfinance.gov/rules-policy/regulations/1026/43/' },
+        { label: 'Fannie Mae Selling Guide, B3-6-02, Debt-to-Income Ratios', url: 'https://selling-guide.fanniemae.com/sel/b3-6-02/debt-income-ratios' },
+        { label: 'Bankrate, What is the 28/36 rule?', url: 'https://www.bankrate.com/real-estate/what-is-the-28-36-rule/' }
+      ]
+    },
+    inputs: [
+      { id: 'grossMonthlyIncome', label: 'Gross monthly income', type: 'currency', placeholder: '8000', defaultValue: 8000, step: 100, min: 0 },
+      { id: 'housingPayment', label: 'Housing payment (rent or full mortgage PITI)', type: 'currency', placeholder: '1940', defaultValue: 1940, step: 25, min: 0 },
+      { id: 'otherMonthlyDebt', label: 'Other monthly debt payments', type: 'currency', placeholder: '1500', defaultValue: 1500, step: 25, min: 0 }
+    ],
+    seo: {
+      title: 'DTI Calculator – Front-End & Back-End Ratio',
+      description: 'Calculate your front-end and back-end debt-to-income (DTI) ratio from income and monthly debt, checked against the classic 28% / 36% lending guideline.',
+      faq: [
+        { question: 'What is a good DTI ratio?', answer: 'Under the classic guideline, 28% or less front-end and 36% or less back-end is considered comfortable. Many lenders approve higher: up to 43% back-end under the CFPB\'s Qualified Mortgage rule, and up to 50% through Fannie Mae\'s automated underwriting.' },
+        { question: 'What is the difference between front-end and back-end DTI?', answer: 'Front-end counts only your housing payment against your income. Back-end adds every other monthly debt payment (car, student loans, credit cards) on top of housing. Lenders check both; back-end is usually the stricter limit.' },
+        { question: 'Does DTI include property tax and insurance for a mortgage?', answer: 'Yes. The housing payment used in DTI is the full PITI figure — principal, interest, property tax, homeowners insurance, PMI if it applies, and HOA dues — not just principal and interest.' },
+        { question: 'What is not counted as debt in a DTI calculation?', answer: 'Groceries, utilities, insurance premiums, subscriptions and other living expenses are not debt and are left out, even though they are real monthly costs. Only required loan and credit payments count.' },
+        { question: 'How can I lower my DTI ratio?', answer: 'Pay down or pay off a loan (even a small one with a disproportionately large minimum payment), increase income, or refinance a high-payment debt into a lower monthly payment. Avoiding new debt before a big loan application also helps.' },
+        { question: 'Is DTI the same as credit utilization?', answer: 'No. Credit utilization is the share of your available credit limit you are using on revolving accounts. DTI compares your required monthly debt payments to your income and does not look at credit limits at all.' },
+        { question: 'How does this differ from home-affordability-calculator?', answer: 'This calculator checks the DTI ratios from a housing payment and other debt you already have. Home-affordability-calculator works the other way: it starts from your income and debt and solves for the home price those same 28/36-based limits would support.' }
+      ]
+    },
+    compute(values) {
+      const totalMonthlyDebt = values.housingPayment + values.otherMonthlyDebt;
+      const frontEndRatio = (values.housingPayment / values.grossMonthlyIncome) * 100;
+      const backEndRatio = (totalMonthlyDebt / values.grossMonthlyIncome) * 100;
+      const maxHousingAt28 = 0.28 * values.grossMonthlyIncome;
+      const maxTotalAt36 = 0.36 * values.grossMonthlyIncome;
+      const roomUnder36 = maxTotalAt36 - totalMonthlyDebt;
+      return { backEndRatio, frontEndRatio, totalMonthlyDebt, maxHousingAt28, maxTotalAt36, roomUnder36 };
+    }
+  },
+  {
+    id: 'debt-payoff-calculator',
+    category: 'finance',
+    group: 'Debt',
+    glyph: 'D↓',
+    updatedAt: '2026-11-15',
+    aliases: ['debt snowball calculator', 'debt avalanche calculator', 'snowball vs avalanche calculator', 'multiple debt payoff calculator'],
+    related: ['debt-to-income-calculator', 'credit-card-minimum-payment-calculator', 'balance-transfer-savings-calculator', 'loan-prepayment-calculator'],
+    title: 'Debt Payoff Calculator (Snowball vs. Avalanche)',
+    description: 'Compare the debt snowball (smallest balance first) and debt avalanche (highest rate first) methods side by side for a list of debts and an extra monthly payment.',
+    example: 'Three debts of $5,000 at 22%, $3,000 at 18% and $2,000 at 9%, paid with their minimums plus an extra $200 a month, take 26 months and $2,326.08 of interest by snowball versus 25 months and $1,880.11 by avalanche — avalanche saves $445.97.',
+    breakdown: {
+      headline: 'interestSavedWithAvalanche',
+      headlineLabel: 'Interest avalanche saves vs. snowball',
+      outputs: [
+        { id: 'interestSavedWithAvalanche', label: 'Interest avalanche saves vs. snowball', format: 'currency' },
+        { id: 'monthsSavedWithAvalanche', label: 'Months avalanche saves vs. snowball', format: 'integer' },
+        { id: 'snowballMonths', label: 'Snowball: months to debt-free', format: 'integer' },
+        { id: 'snowballTotalInterest', label: 'Snowball: total interest paid', format: 'currency' },
+        { id: 'avalancheMonths', label: 'Avalanche: months to debt-free', format: 'integer' },
+        { id: 'avalancheTotalInterest', label: 'Avalanche: total interest paid', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your debts', inputs: ['balances', 'rates', 'minPayments'] },
+        { title: 'Extra payment', inputs: ['extraPayment'] }
+      ],
+      pairedLists: ['balances', 'rates'],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'snowballTotalInterest', label: 'Snowball' },
+          { from: 'avalancheTotalInterest', label: 'Avalanche' }
+        ],
+        title: 'Total interest paid by method',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-15',
+      concept: {
+        title: 'Snowball and avalanche: same budget, different order',
+        paragraphs: [
+          'Both methods pay the minimum on every debt except one "target" debt, which gets every extra dollar in your budget. When the target is paid off, its old minimum payment joins the extra amount and rolls onto the next target — the total you pay every month never changes, only which debt it attacks first.',
+          'The debt snowball orders debts smallest balance to largest, regardless of rate. The debt avalanche orders them highest interest rate to lowest. The Consumer Financial Protection Bureau describes the trade-off plainly: with the snowball method "you may see progress quickly — but you may pay more in the long run," while with the highest-rate (avalanche) method "you may not feel like you\'re making progress quickly" despite it generally costing less overall.',
+          'The math nearly always favors avalanche, because it shrinks the balance accruing the most interest first. But a 2012 Journal of Marketing Research study of over 5,900 debt-settlement clients found that closing out individual accounts — the small, fast wins the snowball method is built around — predicted actually getting out of debt, regardless of the dollar size of the account closed. Which method you will actually stick with matters as much as which one is cheaper on paper.'
+        ]
+      },
+      howTo: {
+        intro: 'List every debt\'s balance, interest rate and minimum payment, in the same order, then add the extra amount you can put toward debt each month.',
+        steps: [
+          { name: 'List your balances', text: 'Paste or type each debt\'s current balance, one per line or separated by commas.' },
+          { name: 'List the matching rates', text: 'Each debt\'s own APR, in the same order as the balances.' },
+          { name: 'List the matching minimum payments', text: 'Each debt\'s required minimum payment, in the same order again. All three lists must have the same number of entries.' },
+          { name: 'Enter your extra payment', text: 'Any amount beyond the minimums you can put toward debt every month. It goes entirely to whichever debt is the current target.' },
+          { name: 'Compare the two methods', text: 'The result shows months to debt-free and total interest paid for snowball and avalanche side by side, and how much avalanche saves.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Each month, every active debt accrues interest on its balance. The minimum is paid on every debt except the current target, and the rest of the fixed monthly budget — every freed-up minimum payment from an already-paid-off debt, plus your extra amount — goes to the target.',
+        expression: 'Monthly budget = Σ(minimum payments) + extra payment, held fixed every month\nSnowball target order: smallest balance → largest\nAvalanche target order: highest APR → lowest\nEach debt\'s interest: balance × (APR ÷ 12)',
+        terms: [
+          { symbol: 'target', meaning: 'The one debt (per the method\'s order) that receives every dollar of the budget beyond the other debts\' minimums.' },
+          { symbol: 'Σ(minimum payments)', meaning: 'The sum of every debt\'s own minimum payment, using the original list even after some debts are paid off — this is what keeps the monthly budget constant.' },
+          { symbol: 'APR', meaning: 'Each debt\'s own annual percentage rate, applied monthly as APR ÷ 12.' }
+        ],
+        note: 'Estimates only. Assumes every rate stays fixed, the monthly budget never changes, and no new charges are added. A surplus payment that fully pays off the target debt mid-month rolls onto the next target starting the following month, not within the same month.'
+      },
+      workedExample: {
+        intro: 'Three debts: $5,000 at 22% APR (min $150), $3,000 at 18% APR (min $90) and $2,000 at 9% APR (min $60). You can add $200 a month beyond the minimums — a $500 total monthly budget. How do the two methods compare?',
+        rows: [
+          { label: 'Total monthly budget (150 + 90 + 60 + 200)', value: '$500' },
+          { label: 'Snowball order (smallest balance first)', value: '$2,000 debt → $3,000 debt → $5,000 debt' },
+          { label: 'Avalanche order (highest rate first)', value: '22% debt → 18% debt → 9% debt' },
+          { label: 'Snowball result', value: '26 months, $2,326.08 total interest' },
+          { label: 'Avalanche result', value: '25 months, $1,880.11 total interest' },
+          { label: 'Interest avalanche saves (2,326.08 − 1,880.11)', value: '$445.97' }
+        ],
+        result: 'Avalanche saves about $445.97 and finishes 1 month sooner',
+        explanation: 'Avalanche attacks the 22% debt first, so the largest balance stops accruing the most expensive interest as early as possible. Snowball attacks the smallest ($2,000, at only 9%) first instead, so that 22% debt keeps accruing interest on a large balance for longer — which is exactly why avalanche comes out ahead here.'
+      },
+      watchOut: [
+        { title: 'All three lists must line up', body: 'The balance, rate and minimum-payment lists must have the same number of entries, listed in the same debt order — entry 2 in each list must describe the same debt.' },
+        { title: 'The extra rolls over, it does not vanish', body: 'Once the current target is paid off, its old minimum payment permanently joins the extra amount for the next target. The total monthly budget never shrinks.' },
+        { title: 'Promotional and variable rates are not modeled', body: 'If a card\'s rate is a temporary promotional APR or your rates can change, use your current rate and recheck the numbers after it changes.' },
+        { title: 'New charges reset the clock', body: 'This assumes no new purchases on any account. Continuing to charge a credit card you are paying down will extend every result shown here.' },
+        { title: 'Cheaper on paper is not always cheaper in practice', body: 'Avalanche almost always costs less interest, but research on real debt-settlement clients found that closing individual accounts — snowball\'s strength — predicted actually finishing. Pick the one you will stick with.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, Resolve to take control of your debt in the new year', url: 'https://www.consumerfinance.gov/archive/blog/resolve-take-control-your-debt-new-year/' },
+        { label: 'Gal, D. & McShane, B., "Can Small Victories Help Win the War? Evidence from Consumer Debt Management," Journal of Marketing Research, 2012', url: 'https://www.semanticscholar.org/paper/Can-Small-Victories-Help-Win-the-War-Evidence-from-Gal-McShane/591f5dfc53b372dd5e76a8d563f2b05a64f99353' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'balances',
+        label: 'Balances',
+        type: 'list',
+        placeholder: 'Paste or type each debt\'s balance — commas, spaces or new lines between them.',
+        defaultValue: 0,
+        listDefault: [5000, 3000, 2000],
+        listMin: 1
+      },
+      {
+        id: 'rates',
+        label: 'Interest rates (APR, %)',
+        type: 'list',
+        placeholder: 'Each debt\'s own APR, in the same order as the balances above.',
+        defaultValue: 0,
+        listDefault: [22, 18, 9],
+        listMin: 1
+      },
+      {
+        id: 'minPayments',
+        label: 'Minimum payments',
+        type: 'list',
+        placeholder: 'Each debt\'s required minimum payment, in the same order again.',
+        defaultValue: 0,
+        listDefault: [150, 90, 60],
+        listMin: 1
+      },
+      { id: 'extraPayment', label: 'Extra monthly payment (beyond the minimums)', type: 'currency', placeholder: '200', defaultValue: 200, step: 25, min: 0 }
+    ],
+    seo: {
+      title: 'Debt Payoff Calculator – Snowball vs. Avalanche',
+      description: 'Compare the debt snowball and debt avalanche methods side by side: months to debt-free and total interest for a list of debts plus an extra payment.',
+      faq: [
+        { question: 'Which saves more money, snowball or avalanche?', answer: 'Avalanche (highest rate first) almost always costs less total interest, because it shrinks the most expensive balance first. In this calculator\'s example, avalanche saves $445.97 and finishes a month sooner than snowball on the same debts and budget.' },
+        { question: 'Why would anyone use snowball if avalanche saves more?', answer: 'A widely-cited 2012 study of real debt-settlement clients found that closing individual accounts — snowball\'s focus on small, fast wins — predicted actually getting out of debt. The cheapest method on paper is not useful if you do not stick with it.' },
+        { question: 'Do I still pay the minimum on every debt?', answer: 'Yes, on every debt except the current target. The target gets its own minimum plus your whole extra payment, plus the old minimum payments of any debts already paid off.' },
+        { question: 'What happens to a paid-off debt\'s minimum payment?', answer: 'It rolls permanently into the budget for the next target debt. Your total monthly debt payment amount never goes down until every debt is paid off.' },
+        { question: 'Does the order matter if two debts have the same balance or rate?', answer: 'Only in a tie. If two balances (for snowball) or two rates (for avalanche) are equal, either order produces the same total months and interest.' },
+        { question: 'Can I use this for any kind of debt?', answer: 'Yes — credit cards, personal loans, car loans and private student loans all work, as long as you know each one\'s balance, rate and minimum payment. It assumes a fixed rate throughout.' },
+        { question: 'How is this different from the credit card minimum payment calculator?', answer: 'That calculator looks at one card paid at the minimum only, with no extra payment. This one compares two strategies for paying off several debts at once with minimums plus a shared extra amount.' }
+      ]
+    },
+    compute(values, lists) {
+      const balances = lists.balances ?? [];
+      const rates = lists.rates ?? [];
+      const minPayments = lists.minPayments ?? [];
+      const n = balances.length;
+      const bad = { snowballMonths: NaN, snowballTotalInterest: NaN, avalancheMonths: NaN, avalancheTotalInterest: NaN, interestSavedWithAvalanche: NaN, monthsSavedWithAvalanche: NaN };
+      if (n === 0 || rates.length !== n || minPayments.length !== n) return bad;
+
+      const simulate = (orderIndices: number[]) => {
+        const bals = balances.slice();
+        const totalBudget = minPayments.reduce((sum, m) => sum + m, 0) + values.extraPayment;
+        let totalInterest = 0;
+        let months = 0;
+        while (bals.some((b) => b > 1e-6) && months < 600) {
+          months++;
+          for (let i = 0; i < n; i++) {
+            if (bals[i] > 1e-6) {
+              const interest = bals[i] * (rates[i] / 100 / 12);
+              totalInterest += interest;
+              bals[i] += interest;
+            }
+          }
+          const targetIdx = orderIndices.find((i) => bals[i] > 1e-6);
+          let budgetUsed = 0;
+          for (let i = 0; i < n; i++) {
+            if (i === targetIdx || !(bals[i] > 1e-6)) continue;
+            const pay = Math.min(bals[i], minPayments[i]);
+            bals[i] -= pay;
+            budgetUsed += pay;
+            if (bals[i] < 1e-6) bals[i] = 0;
+          }
+          if (targetIdx !== undefined) {
+            const forTarget = Math.max(0, totalBudget - budgetUsed);
+            const pay = Math.min(bals[targetIdx], forTarget);
+            bals[targetIdx] -= pay;
+            if (bals[targetIdx] < 1e-6) bals[targetIdx] = 0;
+          }
+        }
+        return { months, totalInterest };
+      };
+
+      const byValue = (arr: number[]) => arr.map((value, index) => ({ value, index }));
+      const snowballOrder = byValue(balances).sort((a, b) => a.value - b.value).map((p) => p.index);
+      const avalancheOrder = byValue(rates).sort((a, b) => b.value - a.value).map((p) => p.index);
+
+      const snowball = simulate(snowballOrder);
+      const avalanche = simulate(avalancheOrder);
+
+      return {
+        snowballMonths: snowball.months,
+        snowballTotalInterest: snowball.totalInterest,
+        avalancheMonths: avalanche.months,
+        avalancheTotalInterest: avalanche.totalInterest,
+        interestSavedWithAvalanche: snowball.totalInterest - avalanche.totalInterest,
+        monthsSavedWithAvalanche: snowball.months - avalanche.months
+      };
+    }
+  },
+  {
+    id: 'credit-card-minimum-payment-calculator',
+    category: 'finance',
+    group: 'Debt',
+    glyph: 'Min',
+    updatedAt: '2026-11-15',
+    aliases: ['minimum payment calculator', 'credit card payoff calculator', 'minimum payment interest calculator', 'how long to pay off credit card calculator'],
+    related: ['debt-payoff-calculator', 'balance-transfer-savings-calculator', 'debt-to-income-calculator', 'loan-calculator'],
+    title: 'Credit Card Minimum Payment Calculator',
+    description: 'See how long it takes and how much interest a minimum-only credit card payment costs, versus a fixed payment amount, using the common 1%-of-balance-plus-interest formula.',
+    example: 'A $5,000 balance at 22% APR paid at the minimum only (1% of balance plus that month\'s interest, $25 floor) takes about 230 months (19 years 2 months) and $8,099.77 of interest — a fixed $200 a month instead pays it off in 34 months for $1,749.88, a $6,349.89 difference.',
+    breakdown: {
+      headline: 'interestCostOfMinimumOnly',
+      headlineLabel: 'Extra interest from paying only the minimum',
+      outputs: [
+        { id: 'interestCostOfMinimumOnly', label: 'Extra interest from paying only the minimum', format: 'currency' },
+        { id: 'monthsCostOfMinimumOnly', label: 'Extra months from paying only the minimum', format: 'integer' },
+        { id: 'firstMinPayment', label: 'First month\'s minimum payment', format: 'currency' },
+        { id: 'minMonths', label: 'Minimum-only: months to pay off', format: 'integer' },
+        { id: 'minTotalInterest', label: 'Minimum-only: total interest paid', format: 'currency' },
+        { id: 'fixedMonths', label: 'Fixed payment: months to pay off', format: 'integer' },
+        { id: 'fixedTotalInterest', label: 'Fixed payment: total interest paid', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your card', inputs: ['balance', 'apr'] },
+        { title: 'Compare to a fixed payment', inputs: ['fixedPayment'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'minTotalInterest', label: 'Minimum only' },
+          { from: 'fixedTotalInterest', label: 'Fixed payment' }
+        ],
+        title: 'Total interest paid',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-15',
+      concept: {
+        title: 'Why "just the minimum" can take decades',
+        paragraphs: [
+          'A credit card minimum payment is not a fixed dollar amount — for most large issuers it is recalculated every month as a percentage of your current balance plus that month\'s interest charge, with a fixed dollar floor. This calculator uses the formula the Consumer Financial Protection Bureau\'s 2015 Consumer Credit Card Market Report found "almost all" large issuers use for this style of calculation: 1% of the balance (excluding finance charges), plus the finance charge itself, with a $25 floor — the floor the same report found was the most common among large card issuers.',
+          'Because the minimum is a percentage of a shrinking balance, it shrinks right along with it. Early on, most of a 1%-plus-interest minimum payment is just covering that month\'s interest, so the balance barely moves; as the balance slowly falls, the required minimum falls too, which is what stretches payoff out for years rather than months.',
+          'Paying a fixed amount above the minimum breaks this cycle: a level payment keeps shrinking the balance at a steady, accelerating rate (the interest portion keeps falling while the payment does not), the same mechanics behind any amortized loan.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your card balance and APR, then a fixed monthly amount you want to compare against paying only the minimum.',
+        steps: [
+          { name: 'Enter your balance', text: 'Your current credit card balance.' },
+          { name: 'Enter your APR', text: 'Your card\'s annual percentage rate on purchases or on this balance, as shown on your statement.' },
+          { name: 'Enter a fixed comparison payment', text: 'An amount you could pay every month instead of letting the minimum shrink over time.' },
+          { name: 'Read both payoff paths', text: 'The headline shows the extra interest the minimum-only path costs versus your fixed amount, with months and total interest for each shown below.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The minimum payment is recalculated every month from the balance that remains after the previous payment.',
+        expression: 'Monthly interest = balance × (APR ÷ 12)\nMinimum payment = max(1% × balance + monthly interest, $25)\nNew balance = balance + monthly interest − payment',
+        terms: [
+          { symbol: 'balance', meaning: 'The balance owed at the start of that month.' },
+          { symbol: 'APR', meaning: 'Annual percentage rate, applied monthly as APR ÷ 12.' },
+          { symbol: '$25 floor', meaning: 'The fixed minimum dollar payment, which the CFPB\'s 2015 report found was the most common floor among large card issuers, used once 1% of the balance plus interest drops below it.' }
+        ],
+        note: 'Estimates only. Formulas vary by issuer — some use 2% or more of the balance including finance charges (common among credit unions and subprime issuers), and floors above $25 are common at subprime issuers. Check your card\'s cardholder agreement for its exact formula.'
+      },
+      workedExample: {
+        intro: 'A $5,000 balance at 22% APR. How does paying only the minimum (1% of balance plus interest, $25 floor) compare with paying a fixed $200 a month?',
+        rows: [
+          { label: 'First month\'s minimum (1% × 5,000 + 5,000 × 22% ÷ 12)', value: '$141.67' },
+          { label: 'Paying only the minimum', value: '230 months (about 19 years, 2 months), $8,099.77 total interest' },
+          { label: 'Paying a fixed $200 a month', value: '34 months (about 2 years, 10 months), $1,749.88 total interest' },
+          { label: 'Extra interest from the minimum path (8,099.77 − 1,749.88)', value: '$6,349.89' },
+          { label: 'Extra time (230 − 34 months)', value: '196 months' }
+        ],
+        result: 'Paying only the minimum costs about $6,349.89 more and takes 196 months longer than a fixed $200 a month',
+        explanation: 'Because the minimum shrinks along with the balance, the payment keeps getting smaller and the interest keeps compounding on a balance that barely moves for a long stretch. A fixed $200 payment never shrinks, so it eats into principal faster every single month.'
+      },
+      watchOut: [
+        { title: 'Your card\'s formula may differ', body: 'Check your cardholder agreement. Some issuers use 2% or more of the balance (including finance charges), use a different floor, or exclude fees from the formula differently than assumed here.' },
+        { title: 'New charges extend everything', body: 'This assumes no new purchases on the card. Continuing to charge it while paying it down will push out the months and interest shown here.' },
+        { title: 'Your statement has your real minimum payment warning', body: 'The CARD Act requires every statement to show how long payoff would take and the total cost at the minimum payment, using your card\'s actual formula — treat that figure as more authoritative than this estimate.' },
+        { title: 'A high utilization hurts your credit regardless', body: 'Carrying a large balance relative to your credit limit can lower your credit score even while you are current on payments, separate from the interest cost shown here.' },
+        { title: 'This is not the same question as a payoff strategy', body: 'If you are juggling several cards or loans, see debt-payoff-calculator, which compares snowball and avalanche strategies across multiple debts at once.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, The Consumer Credit Card Market (2015 report), §5.2.5 Minimum payments', url: 'https://files.consumerfinance.gov/f/201512_cfpb_report-the-consumer-credit-card-market.pdf' },
+        { label: 'Consumer Financial Protection Bureau, Regulation Z Appendix M1, Repayment Disclosures', url: 'https://www.consumerfinance.gov/rules-policy/regulations/1026/m1/' }
+      ]
+    },
+    inputs: [
+      { id: 'balance', label: 'Credit card balance', type: 'currency', placeholder: '5000', defaultValue: 5000, step: 100, min: 0 },
+      { id: 'apr', label: 'Annual percentage rate (APR)', type: 'percent', placeholder: '22', defaultValue: 22, step: 0.1, min: 0 },
+      { id: 'fixedPayment', label: 'Fixed monthly payment to compare', type: 'currency', placeholder: '200', defaultValue: 200, step: 10, min: 0 }
+    ],
+    seo: {
+      title: 'Credit Card Minimum Payment Calculator',
+      description: 'See how long a minimum-only credit card payment takes and how much interest it costs, versus a fixed payment, using the common 1%-plus-interest formula.',
+      faq: [
+        { question: 'How is a credit card minimum payment calculated?', answer: 'Most large issuers use 1% of the current balance plus that month\'s interest charge, with a $25 floor, per the CFPB\'s 2015 Consumer Credit Card Market Report. Some issuers use 2% or more instead, so check your own cardholder agreement.' },
+        { question: 'Why does the minimum payment keep shrinking?', answer: 'Because it is a percentage of the balance. As the balance falls, 1% of it falls too, so later minimum payments are smaller in dollar terms than earlier ones — which is exactly why minimum-only payoff stretches out for years.' },
+        { question: 'How much does paying only the minimum really cost?', answer: 'On a $5,000 balance at 22% APR, this calculator finds paying only the minimum takes about 230 months (19 years, 2 months) and $8,099.77 of interest, versus 34 months and $1,749.88 at a fixed $200 a month — $6,349.89 more and 196 months longer.' },
+        { question: 'Is the $25 minimum floor the same at every card issuer?', answer: 'No. $25 is the most common floor among large issuers per the CFPB\'s own 2015 study, but subprime issuers often set a higher floor and credit unions often use a different percentage-based formula entirely.' },
+        { question: 'How can I pay off my card faster than the minimum?', answer: 'Pay a fixed amount above the minimum every month instead of letting the required payment shrink with the balance — even a modest fixed amount cuts years and a large share of the interest, as shown in the example above.' },
+        { question: 'How is this different from debt-payoff-calculator?', answer: 'This calculator looks at one card and compares minimum-only payments with a fixed amount you choose. Debt-payoff-calculator compares two payoff strategies (snowball and avalanche) across several debts at once with a shared extra payment.' },
+        { question: 'How is this different from balance-transfer-savings-calculator?', answer: 'This calculator keeps the same card and rate throughout. Balance-transfer-savings-calculator looks at moving the balance to a different card with a promotional rate and a transfer fee instead.' }
+      ]
+    },
+    compute(values) {
+      const capMonths = 1200;
+      const r = values.apr / 100 / 12;
+
+      let bal = values.balance;
+      let minTotalInterest = 0;
+      let minMonths = 0;
+      let firstMinPayment = NaN;
+      while (bal > 1e-6 && minMonths < capMonths) {
+        minMonths++;
+        const interest = bal * r;
+        minTotalInterest += interest;
+        bal += interest;
+        const payment = Math.min(bal, Math.max(0.01 * (bal - interest) + interest, 25));
+        if (minMonths === 1) firstMinPayment = payment;
+        bal -= payment;
+        if (bal < 1e-6) bal = 0;
+      }
+      const minPaidOff = bal <= 1e-6;
+
+      let fixedMonths = NaN;
+      let fixedTotalInterest = NaN;
+      if (values.fixedPayment > values.balance * r) {
+        let fixedBal = values.balance;
+        fixedTotalInterest = 0;
+        fixedMonths = 0;
+        while (fixedBal > 1e-6 && fixedMonths < capMonths) {
+          fixedMonths++;
+          const interest = fixedBal * r;
+          fixedTotalInterest += interest;
+          const principal = Math.min(fixedBal, values.fixedPayment - interest);
+          fixedBal -= principal;
+          if (fixedBal < 1e-6) fixedBal = 0;
+        }
+      }
+
+      if (!minPaidOff || !Number.isFinite(fixedTotalInterest)) {
+        return {
+          interestCostOfMinimumOnly: NaN,
+          monthsCostOfMinimumOnly: NaN,
+          firstMinPayment,
+          minMonths: minPaidOff ? minMonths : NaN,
+          minTotalInterest: minPaidOff ? minTotalInterest : NaN,
+          fixedMonths,
+          fixedTotalInterest
+        };
+      }
+
+      return {
+        interestCostOfMinimumOnly: minTotalInterest - fixedTotalInterest,
+        monthsCostOfMinimumOnly: minMonths - fixedMonths,
+        firstMinPayment,
+        minMonths,
+        minTotalInterest,
+        fixedMonths,
+        fixedTotalInterest
+      };
+    }
+  },
+  {
+    id: 'balance-transfer-savings-calculator',
+    category: 'finance',
+    group: 'Debt',
+    glyph: '⇄',
+    updatedAt: '2026-11-15',
+    aliases: ['balance transfer calculator', '0% apr balance transfer calculator', 'credit card balance transfer savings calculator', 'balance transfer fee calculator'],
+    related: ['credit-card-minimum-payment-calculator', 'debt-payoff-calculator', 'loan-calculator', 'compound-interest-calculator'],
+    title: 'Balance Transfer Savings Calculator',
+    description: 'See the net interest saved by transferring a credit card balance to a promotional-APR card, after the balance transfer fee, assuming you pay it off within the promo period.',
+    example: 'A $6,000 balance at 22% APR, paid off over a 15-month 0% APR balance transfer offer with a 3% ($180) transfer fee, saves about $737.26 in net interest versus paying it off on the original card.',
+    breakdown: {
+      headline: 'netSavings',
+      headlineLabel: 'Net savings from transferring',
+      outputs: [
+        { id: 'netSavings', label: 'Net savings from transferring', format: 'currency' },
+        { id: 'transferFee', label: 'Balance transfer fee', format: 'currency' },
+        { id: 'costIfStay', label: 'Interest if you stay and pay it off in the same time', format: 'currency' },
+        { id: 'costIfTransfer', label: 'Interest + fee if you transfer', format: 'currency' },
+        { id: 'stayMonthlyPayment', label: 'Payment needed to clear it by staying', format: 'currency' },
+        { id: 'transferMonthlyPayment', label: 'Payment needed to clear it after transferring', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Current balance', inputs: ['balance', 'currentAPR'] },
+        { title: 'The transfer offer', inputs: ['promoAPR', 'promoMonths', 'transferFeePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'costIfStay', label: 'Stay on current card' },
+          { from: 'costIfTransfer', label: 'Transfer (interest + fee)' }
+        ],
+        title: 'Total cost to pay off the balance',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-15',
+      concept: {
+        title: 'A transfer only helps once the fee is netted out',
+        paragraphs: [
+          'A balance transfer moves what you owe from one card to another, usually one offering a promotional APR — often 0% — for a limited introductory period. The Consumer Financial Protection Bureau is explicit that this is not free: "a credit card company is permitted to charge you a balance transfer fee on a zero percent rate offer," and that fee is typically "a certain percentage of the amount you transfer or a fixed amount, whichever is more."',
+          'The fee is usually added to the new card\'s balance, so you are financing a slightly larger amount at the new, lower rate. Whether the move is worth it comes down to one comparison: the interest the promotional rate avoids, minus that upfront fee. This calculator assumes you pay the balance off in full within the promotional period, with the same level monthly payment either way, since that is the only way to compare the two cleanly — and the only way a transfer is reliably worth it.',
+          'If the promotional APR is not 0%, the same math still applies; it just saves less, since the transferred balance keeps accruing some interest at the lower promotional rate instead of none.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your current balance and APR, then the terms of the balance transfer offer you are considering.',
+        steps: [
+          { name: 'Enter your balance and current APR', text: 'The amount you currently owe and the APR it is charged at today.' },
+          { name: 'Enter the promotional APR and its length', text: 'The rate the new card charges on the transferred balance, and how many months that rate lasts.' },
+          { name: 'Enter the transfer fee', text: 'As a percentage of the balance transferred — check your specific offer, as this varies by issuer and promotion.' },
+          { name: 'Read the net savings', text: 'The headline is the net savings after the fee. Below it are the interest cost and required monthly payment on each path, assuming full payoff within the promotional period.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Both paths assume the balance is paid off in full, with a level monthly payment, within the promotional number of months.',
+        expression: 'Transfer fee = balance × fee %\nStay: payment to clear the balance in N months at the current APR; interest = payment × N − balance\nTransfer: payment to clear (balance + fee) in N months at the promo APR; interest = payment × N − (balance + fee)\nNet savings = interest(stay) − interest(transfer) − fee',
+        terms: [
+          { symbol: 'N', meaning: 'The number of months in the promotional period.' },
+          { symbol: 'fee', meaning: 'The balance transfer fee, charged once, usually added to the new card\'s balance.' },
+          { symbol: 'interest(transfer)', meaning: 'Zero when the promotional APR is 0%, since a level payment to a 0% balance is pure principal.' }
+        ],
+        note: 'Estimates only. Assumes the full balance (plus the fee) is paid off within the promotional period at a level monthly payment, with no new charges. Any balance left over when the promo ends reverts to the new card\'s regular APR, which can be higher than your original rate — only transfer an amount you can realistically clear in time.'
+      },
+      workedExample: {
+        intro: 'A $6,000 balance at 22% APR, and a balance transfer offer: 0% APR for 15 months, with a 3% transfer fee. Is it worth it if you pay it off within the 15 months?',
+        rows: [
+          { label: 'Transfer fee (3% × 6,000)', value: '$180' },
+          { label: 'Payment to clear $6,000 in 15 months at 22% APR', value: '$461.15/month, $917.26 total interest' },
+          { label: 'Payment to clear $6,180 in 15 months at 0% APR', value: '$412.00/month, $0 interest' },
+          { label: 'Net savings (917.26 − 0 − 180)', value: '$737.26' }
+        ],
+        result: 'Transferring saves about $737.26 over the 15-month promotional period',
+        explanation: 'Staying on the original card costs $917.26 in interest to clear the balance in 15 months. Transferring costs only the $180 fee, since the 0% rate means no interest accrues on the (slightly larger, fee-inclusive) new balance — a net saving of $737.26.'
+      },
+      watchOut: [
+        { title: 'The fee applies even to a 0% offer', body: 'Per the CFPB, issuers are allowed to charge a balance transfer fee on a zero-percent promotional offer. A "free" 0% rate is not necessarily a free transfer.' },
+        { title: 'You have to actually clear it in time', body: 'This calculator assumes full payoff within the promotional period. A balance left over when the promo ends is charged the card\'s regular ongoing APR, which is often higher than your original rate.' },
+        { title: 'New purchases usually do not get the promo rate', body: 'Many balance transfer offers apply the promotional rate only to the transferred balance, not to new purchases on the same card, which can accrue interest from day one.' },
+        { title: 'A transfer does not reduce what you owe', body: 'It moves the same debt to a different lender. Combine it with a real payoff plan — see debt-payoff-calculator — rather than treating the lower rate alone as progress.' },
+        { title: 'Check for a maximum transfer amount', body: 'Card issuers typically cap how much can be transferred, often to a percentage of your new credit limit, which may be less than your full existing balance.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, What is a balance transfer fee? Can a balance transfer fee be charged on a zero percent interest rate offer?', url: 'https://www.consumerfinance.gov/ask-cfpb/what-is-a-balance-transfer-fee-can-a-balance-transfer-fee-be-charged-on-a-zero-percent-interest-rate-offer-en-53/' },
+        { label: 'Consumer Financial Protection Bureau, Credit cards key terms', url: 'https://www.consumerfinance.gov/consumer-tools/credit-cards/answers/key-terms/' }
+      ]
+    },
+    inputs: [
+      { id: 'balance', label: 'Current balance', type: 'currency', placeholder: '6000', defaultValue: 6000, step: 100, min: 0 },
+      { id: 'currentAPR', label: 'Current card APR', type: 'percent', placeholder: '22', defaultValue: 22, step: 0.1, min: 0 },
+      { id: 'promoAPR', label: 'Promotional APR on the new card', type: 'percent', placeholder: '0', defaultValue: 0, step: 0.1, min: 0 },
+      { id: 'promoMonths', label: 'Promotional period', type: 'number', placeholder: '15', defaultValue: 15, step: 1, min: 1, dimension: 'term', unit: 'mo' },
+      { id: 'transferFeePercent', label: 'Balance transfer fee', type: 'percent', placeholder: '3', defaultValue: 3, step: 0.5, min: 0 }
+    ],
+    seo: {
+      title: 'Balance Transfer Savings Calculator',
+      description: 'See the net interest saved by a credit card balance transfer to a promotional-APR card after the transfer fee, assuming payoff within the promo period.',
+      faq: [
+        { question: 'Is a balance transfer worth the fee?', answer: 'It depends on the numbers. A $6,000 balance at 22% APR moved to a 0% offer for 15 months with a 3% fee saves about $737.26 net in this calculator\'s example. A shorter promo period, a higher fee, or a lower current APR can shrink or erase the savings.' },
+        { question: 'Can a card charge a transfer fee on a 0% APR offer?', answer: 'Yes. The CFPB confirms issuers are permitted to charge a balance transfer fee even when the promotional APR is 0%, so the fee has to be weighed against the interest the 0% rate avoids.' },
+        { question: 'What happens if I do not pay off the balance before the promo ends?', answer: 'Whatever is left is charged the card\'s regular ongoing APR from that point, which is often higher than your original card\'s rate — this calculator assumes full payoff within the promotional period and does not model a leftover balance.' },
+        { question: 'How is the transfer fee usually charged?', answer: 'It is typically a percentage of the amount transferred (commonly in the 3%-5% range on many offers) and is usually added to the new card\'s balance rather than billed separately, so check your specific offer\'s terms.' },
+        { question: 'Does a 0% APR mean zero interest during the promo?', answer: 'Yes, on the transferred balance, for the length of the promotional period only. This calculator reflects that by showing $0 of interest on the transfer side when the promotional APR is 0%.' },
+        { question: 'Do new purchases get the same promotional rate?', answer: 'Often not. Many issuers apply the promotional rate only to the transferred balance, while new purchases on the same card accrue interest at the regular purchase APR from the start — check your card\'s terms.' },
+        { question: 'How is this different from the credit card minimum payment calculator?', answer: 'That calculator looks at one card\'s minimum-only payments versus a fixed payment, with no transfer involved. This one compares staying on your current card with moving the balance to a different card and rate.' }
+      ]
+    },
+    compute(values) {
+      const transferFee = values.balance * (values.transferFeePercent / 100);
+      const stayMonthlyPayment = loanPayment(values.balance, values.promoMonths, values.currentAPR);
+      const costIfStay = stayMonthlyPayment * values.promoMonths - values.balance;
+      const transferPrincipal = values.balance + transferFee;
+      const transferMonthlyPayment = loanPayment(transferPrincipal, values.promoMonths, values.promoAPR);
+      const transferInterest = transferMonthlyPayment * values.promoMonths - transferPrincipal;
+      const costIfTransfer = transferInterest + transferFee;
+      return {
+        netSavings: costIfStay - costIfTransfer,
+        transferFee,
+        costIfStay,
+        costIfTransfer,
+        stayMonthlyPayment,
+        transferMonthlyPayment
+      };
+    }
+  },
+  {
+    id: 'student-loan-calculator',
+    category: 'finance',
+    group: 'Debt',
+    glyph: 'SL',
+    updatedAt: '2026-11-15',
+    aliases: ['student loan payment calculator', 'student loan repayment calculator', 'federal student loan calculator', 'student loan amortization calculator'],
+    related: ['loan-calculator', 'debt-payoff-calculator', 'loan-prepayment-calculator', 'debt-to-income-calculator'],
+    title: 'Student Loan Repayment Calculator',
+    description: 'Compare the federal Standard, Graduated and Extended student loan repayment plans side by side: monthly payment and total interest on each.',
+    example: 'A $35,000 federal student loan at 6% APR costs $388.57/month and $11,628.61 total interest on the 10-year Standard plan, versus a graduated plan starting at $175 and ending at $781.40 ($15,835.16 total interest), or $225.51/month over 25 years on Extended ($32,651.65 total interest).',
+    breakdown: {
+      headline: 'standardPayment',
+      headlineLabel: 'Standard plan (10 years): monthly payment',
+      outputs: [
+        { id: 'standardPayment', label: 'Standard plan: monthly payment', format: 'currency' },
+        { id: 'standardTotalInterest', label: 'Standard plan: total interest', format: 'currency' },
+        { id: 'graduatedInitialPayment', label: 'Graduated plan: starting payment', format: 'currency' },
+        { id: 'graduatedFinalPayment', label: 'Graduated plan: final payment', format: 'currency' },
+        { id: 'graduatedTotalInterest', label: 'Graduated plan: total interest', format: 'currency' },
+        { id: 'extendedPayment', label: 'Extended plan (25 years): monthly payment', format: 'currency' },
+        { id: 'extendedTotalInterest', label: 'Extended plan: total interest', format: 'currency' },
+        { id: 'extraInterestGraduatedVsStandard', label: 'Extra interest, Graduated vs. Standard', format: 'currency' },
+        { id: 'extraInterestExtendedVsStandard', label: 'Extra interest, Extended vs. Standard', format: 'currency' }
+      ],
+      groups: [{ title: 'Your loan', inputs: ['loanAmount', 'apr'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'standardTotalInterest', label: 'Standard (10 yr)' },
+          { from: 'graduatedTotalInterest', label: 'Graduated (10 yr)' },
+          { from: 'extendedTotalInterest', label: 'Extended (25 yr)' }
+        ],
+        title: 'Total interest paid by plan',
+        highlight: 0
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-15',
+      concept: {
+        title: 'Three plan shapes, the same loan',
+        paragraphs: [
+          'Federal Direct Loan borrowers can repay the same balance on plans with very different payment shapes. The Standard plan is a fixed payment over 10 years — the shortest term and the least total interest. The Graduated plan keeps the same 10-year term but starts with a lower payment that increases, usually every two years, to a larger final payment that still fully repays the loan by year 10. The Extended plan stretches the term to 25 years with a fixed (or, if chosen, graduated) payment, which lowers the monthly payment but adds years of extra interest.',
+          'The Extended plan has a real eligibility rule: a borrower needs more than $30,000 in outstanding Direct Loans to use it. Both Graduated and Extended are also time-limited by when the loan was first disbursed — per the Department of Education\'s own loan servicers, they are available only for loans first disbursed before July 1, 2026. Loans disbursed on or after that date instead use a new Tiered Standard plan (a 10-to-25-year term set by balance), which is not modeled on this page.',
+          'None of this changes the interest rate itself. A lower monthly payment on Graduated or Extended simply means the balance takes longer to fall, so more total interest accrues over the life of the loan — the trade-off this calculator is built to show side by side.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the loan balance and its interest rate. All three plans are calculated from the same two numbers.',
+        steps: [
+          { name: 'Enter your loan balance', text: 'The total amount owed on the loan (or loans, if consolidated) you are comparing plans for.' },
+          { name: 'Enter the interest rate', text: 'Your loan\'s own fixed APR, from your loan documents or studentaid.gov account — federal loan rates are fixed for the life of the loan but vary by loan type and year.' },
+          { name: 'Compare the three plans', text: 'The headline shows the Standard plan\'s payment. The rows below show the Graduated plan\'s starting and final payment and the Extended plan\'s payment, each with its own total interest.' },
+          { name: 'Check the extra interest rows', text: 'These show exactly how much more interest Graduated and Extended cost compared with Standard, for the lower payment each provides.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Standard and Extended are both level-payment amortized loans, just over different terms. Graduated starts at the interest-only payment and steps up by a fixed growth factor every two years, solved so the balance reaches exactly zero at year 10.',
+        expression: 'Standard payment = amortized payment over 120 months\nExtended payment = amortized payment over 300 months\nGraduated: payment₀ = balance × (APR ÷ 12); paymentₖ = payment₀ × gᵏ every 24 months, g solved so balance = 0 at month 120',
+        terms: [
+          { symbol: 'payment₀', meaning: 'The Graduated plan\'s starting payment, equal to interest-only on the original balance.' },
+          { symbol: 'g', meaning: 'The fixed growth factor applied to the payment every 24 months, solved numerically for each loan.' },
+          { symbol: 'APR', meaning: 'The loan\'s fixed annual percentage rate.' }
+        ],
+        note: 'Estimates only, and a simplified illustration of the Graduated plan\'s shape — your loan servicer\'s real calculation follows additional federal rules and rounding this model does not reproduce, so your actual year-by-year amounts will differ somewhat. Extended requires more than $30,000 in outstanding Direct Loans and, per the Department of Education\'s loan servicers, is available only for loans first disbursed before July 1, 2026.'
+      },
+      workedExample: {
+        intro: 'A $35,000 federal student loan balance at 6% APR. How do the three plans compare?',
+        rows: [
+          { label: 'Standard (10 years): payment', value: '$388.57/month' },
+          { label: 'Standard: total interest', value: '$11,628.61' },
+          { label: 'Graduated (10 years): starting payment', value: '$175.00/month' },
+          { label: 'Graduated: final payment', value: '$781.40/month' },
+          { label: 'Graduated: total interest', value: '$15,835.16' },
+          { label: 'Extended (25 years): payment', value: '$225.51/month' },
+          { label: 'Extended: total interest', value: '$32,651.65' },
+          { label: 'Extra interest, Graduated vs. Standard (15,835.16 − 11,628.61)', value: '$4,206.55' },
+          { label: 'Extra interest, Extended vs. Standard (32,651.65 − 11,628.61)', value: '$21,023.04' }
+        ],
+        result: 'Standard $388.57/mo · Graduated $175→$781.40/mo · Extended $225.51/mo',
+        explanation: 'Extended\'s payment is little more than half of Standard\'s, but spreading the same balance over 25 instead of 10 years nearly triples the total interest. Graduated costs much less extra ($4,206.55) because it still fully repays by year 10 — it only delays when the money is paid, not how long the loan runs.'
+      },
+      watchOut: [
+        { title: 'This is a simplified Graduated model', body: 'It shows the plan\'s real shape — low start, step up every two years, done in 10 years — but not your servicer\'s exact cent-by-cent amounts or any regulatory cap on how large each step can be.' },
+        { title: 'Extended has a real eligibility floor', body: 'You need more than $30,000 in outstanding Direct Loans to choose Extended. Below that, Standard and Graduated are your only options on this page\'s three plans.' },
+        { title: 'Graduated and Extended are not available to every borrower', body: 'Per the Department of Education\'s loan servicers, both are limited to loans first disbursed before July 1, 2026. Newer loans use a Tiered Standard plan instead, which is not modeled here.' },
+        { title: 'A lower payment is not a lower rate', body: 'The APR is identical across all three plans in this comparison. A smaller payment only means a smaller share of each month goes to principal, which is why total interest rises as the term lengthens.' },
+        { title: 'Most borrowers have more than one loan', body: 'Federal borrowers often hold several loans serviced together, which can change the real minimum payment math slightly from a single-loan estimate like this one.' }
+      ],
+      references: [
+        { label: 'Edfinancial (U.S. Department of Education federal loan servicer), Lower Payment Options', url: 'https://edfinancial.studentaid.gov/lower-payment-options' },
+        { label: 'MOHELA (U.S. Department of Education federal loan servicer), Repayment Plans', url: 'https://mohela.studentaid.gov/DL/ResourceCenter/RepaymentPlans.aspx' }
+      ]
+    },
+    inputs: [
+      { id: 'loanAmount', label: 'Student loan balance', type: 'currency', placeholder: '35000', defaultValue: 35000, step: 500, min: 0 },
+      { id: 'apr', label: 'Interest rate (APR)', type: 'percent', placeholder: '6', defaultValue: 6, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Student Loan Repayment Calculator',
+      description: 'Compare the federal Standard, Graduated and Extended student loan repayment plans: monthly payment and total interest on each, side by side.',
+      faq: [
+        { question: 'What is the difference between Standard, Graduated and Extended repayment?', answer: 'Standard is a fixed payment over 10 years with the least total interest. Graduated keeps the 10-year term but starts lower and increases roughly every two years. Extended stretches the term to 25 years for a lower fixed payment but more total interest.' },
+        { question: 'How much extra does Extended repayment cost?', answer: 'On a $35,000 loan at 6% APR, this calculator finds Extended costs $21,023.04 more in total interest than Standard, in exchange for a payment that is a little more than half as large.' },
+        { question: 'Am I eligible for the Extended plan?', answer: 'You need more than $30,000 in outstanding Direct Loan balances, and per the Department of Education\'s loan servicers, your loans must have been first disbursed before July 1, 2026.' },
+        { question: 'Are Graduated and Extended repayment still available?', answer: 'Only for loans first disbursed before July 1, 2026, per the Department of Education\'s loan servicers. Loans disbursed on or after that date use a new Tiered Standard plan instead, which is not modeled on this page.' },
+        { question: 'Does a lower monthly payment mean a lower interest rate?', answer: 'No. All three plans in this calculator use the same APR. A lower payment just means a longer repayment term, so more total interest accrues before the loan is paid off.' },
+        { question: 'How does this differ from the general loan calculator?', answer: 'Loan-calculator finds the payment for one fixed-term loan. This calculator is built specifically to compare three named federal student loan repayment plans — including Graduated\'s increasing-payment shape — on the same balance side by side.' },
+        { question: 'Can I use this for a private student loan?', answer: 'Only loosely. Standard and Extended are ordinary fixed-term amortized loans and will work for any fixed-rate loan, but Graduated and Extended as named plans, and the $30,000 eligibility rule, are specific to federal Direct Loans.' }
+      ]
+    },
+    compute(values) {
+      const standardPayment = loanPayment(values.loanAmount, 120, values.apr);
+      const standardTotalInterest = standardPayment * 120 - values.loanAmount;
+
+      const extendedPayment = loanPayment(values.loanAmount, 300, values.apr);
+      const extendedTotalInterest = extendedPayment * 300 - values.loanAmount;
+
+      const graduated = graduatedSchedule(values.loanAmount, values.apr, 120, 24);
+
+      return {
+        standardPayment,
+        standardTotalInterest,
+        graduatedInitialPayment: graduated.initialPayment,
+        graduatedFinalPayment: graduated.finalPayment,
+        graduatedTotalInterest: graduated.totalInterest,
+        extendedPayment,
+        extendedTotalInterest,
+        extraInterestGraduatedVsStandard: graduated.totalInterest - standardTotalInterest,
+        extraInterestExtendedVsStandard: extendedTotalInterest - standardTotalInterest
       };
     }
   }

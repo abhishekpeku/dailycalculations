@@ -7165,6 +7165,56 @@ exports[`compute() snapshots > mortar-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > mortgage-amortization-schedule-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "loanAmount": 280000,
+      "interestRate": 5,
+      "years": 30
+    },
+    "outputs": {
+      "interestSavedBiweekly": 47506.73766,
+      "monthsSavedBiweekly": 56,
+      "monthlyPayment": 1503.100544,
+      "biweeklyHalfPayment": 751.5502722,
+      "totalInterestMonthly": 261116.196,
+      "totalInterestBiweekly": 213609.4583
+    }
+  },
+  "typical": {
+    "inputs": {
+      "loanAmount": 420000,
+      "interestRate": 7.5,
+      "years": 45
+    },
+    "outputs": {
+      "interestSavedBiweekly": 419740.6844,
+      "monthsSavedBiweekly": 184,
+      "monthlyPayment": 2719.022182,
+      "biweeklyHalfPayment": 1359.511091,
+      "totalInterestMonthly": 1048271.979,
+      "totalInterestBiweekly": 628531.2941
+    }
+  },
+  "edge": {
+    "inputs": {
+      "loanAmount": 0,
+      "interestRate": 0,
+      "years": 1
+    },
+    "outputs": {
+      "interestSavedBiweekly": 0,
+      "monthsSavedBiweekly": 12,
+      "monthlyPayment": 0,
+      "biweeklyHalfPayment": 0,
+      "totalInterestMonthly": 0,
+      "totalInterestBiweekly": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > mortgage-calculator 1`] = `
 {
   "default": {

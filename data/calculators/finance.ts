@@ -4886,5 +4886,142 @@ export const financeCalculators: CalculatorConfig[] = [
       const monthsCovered = values.monthlyExpenses > 0 ? values.currentSavings / values.monthlyExpenses : NaN;
       return { recommendedFundHigh, recommendedFundLow, amountStillNeeded, monthsToReachGoal, monthsCovered };
     }
+  },
+  {
+    id: 'mortgage-amortization-schedule-calculator',
+    group: 'Mortgages & Loans',
+    category: 'finance',
+    glyph: 'AS',
+    updatedAt: '2026-11-16',
+    aliases: ['biweekly mortgage calculator', 'biweekly vs monthly mortgage calculator', 'accelerated biweekly payment calculator', 'mortgage schedule comparison calculator', 'biweekly payment savings calculator'],
+    related: ['mortgage-calculator', 'loan-prepayment-calculator', 'loan-calculator', 'mortgage-refinance-calculator'],
+    title: 'Mortgage Amortization Schedule Calculator',
+    description: 'See the standard monthly amortization schedule next to an accelerated biweekly schedule for the same loan, with the interest and time an accelerated biweekly plan saves.',
+    example: 'A $280,000, 30-year loan at 5% APR saves about $47,506.74 in interest and pays off about 56 months (4.7 years) sooner on an accelerated biweekly schedule than on the standard monthly one.',
+    breakdown: {
+      headline: 'interestSavedBiweekly',
+      headlineLabel: 'Interest saved on an accelerated biweekly schedule',
+      outputs: [
+        { id: 'interestSavedBiweekly', label: 'Interest saved on an accelerated biweekly schedule', format: 'currency' },
+        { id: 'monthsSavedBiweekly', label: 'Paid off sooner by', format: 'integer', dimension: 'term', unit: 'mo' },
+        { id: 'monthlyPayment', label: 'Regular monthly payment', format: 'currency' },
+        { id: 'biweeklyHalfPayment', label: 'Biweekly half-payment', format: 'currency' },
+        { id: 'totalInterestMonthly', label: 'Total interest, standard monthly schedule', format: 'currency' },
+        { id: 'totalInterestBiweekly', label: 'Total interest, accelerated biweekly schedule', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your loan', inputs: ['loanAmount', 'interestRate', 'years'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'totalInterestMonthly', label: 'Standard monthly schedule' },
+          { from: 'totalInterestBiweekly', label: 'Accelerated biweekly schedule' }
+        ],
+        title: 'Total interest: monthly vs. accelerated biweekly',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'The same loan, run on two schedules',
+        paragraphs: [
+          'mortgage-calculator already builds the full, standard amortization schedule for a loan: one payment a month, 12 a year, for the whole term. This page runs the identical loan a second way: an accelerated biweekly schedule, where half the monthly payment is paid every two weeks instead of the full payment once a month, and sets the two schedules side by side.',
+          'The trick is in the arithmetic, not a special loan product. A year has 52 weeks, so paying half a payment every two weeks works out to 26 half-payments a year — the equivalent of 13 full monthly payments, one more than the 12 a standard monthly schedule makes. That extra payment goes straight to principal, which is mathematically the same thing loan-prepayment-calculator models as a flat extra amount added to every monthly payment, here fixed at exactly one-twelfth of the regular payment to reproduce the accelerated-biweekly effect.',
+          'Because every extra dollar of principal stops accruing interest for the rest of the loan, and interest is largest on the biggest, earliest balances, this one extra payment a year compounds into a meaningfully shorter payoff and a real interest saving — without the rate, the payment, or the loan terms changing at all.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the loan exactly as it is today: the amount, the rate and the term.',
+        steps: [
+          { name: 'Enter your loan', text: 'Type the loan amount (or remaining balance), the annual interest rate and the original term in years.' },
+          { name: 'Read the regular schedule', text: 'The rows show the standard monthly payment and the total interest it costs over the full term — the same figures mortgage-calculator would show for this loan.' },
+          { name: 'Compare the biweekly schedule', text: 'Beside it are the biweekly half-payment and the total interest on the accelerated biweekly schedule for the identical loan.' },
+          { name: 'Read the savings', text: 'The headline is the interest saved; the row below it is how many months sooner the loan is paid off on the biweekly schedule.' },
+          { name: 'Decide how to actually do it', text: 'The watch-outs below cover how to get this result without paying a third party for it.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The standard schedule uses the usual annuity payment. The biweekly schedule is modeled as that same payment plus one-twelfth of it extra every month — the monthly-equivalent of paying half the payment every two weeks — run month by month until the balance reaches zero, the same simulation loan-prepayment-calculator uses for any extra payment.',
+        expression: 'M = P × r ÷ (1 − (1 + r)^−n)\nBiweekly half-payment = M ÷ 2\nModeled monthly-equivalent extra = M ÷ 12\nEach month: interest = balance × r; balance −= (M + extra − interest)',
+        terms: [
+          { symbol: 'M', meaning: 'Standard monthly principal-and-interest payment.' },
+          { symbol: 'P', meaning: 'Loan amount (or current balance).' },
+          { symbol: 'r', meaning: 'Monthly interest rate: the APR ÷ 12, as a decimal.' },
+          { symbol: 'n', meaning: 'Original number of monthly payments.' }
+        ],
+        note: 'Estimates only, not financial advice. This models an accelerated biweekly plan as a monthly-equivalent extra payment, not true every-14-days billing with its own day-count interest accrual, so a servicer\'s own biweekly figures can differ slightly from this page\'s.'
+      },
+      workedExample: {
+        intro: 'A $280,000, 30-year loan at 5% APR — the same loan mortgage-calculator\'s own example uses — run on both schedules. How much does switching to accelerated biweekly save?',
+        rows: [
+          { label: 'Standard monthly payment', value: '$1,503.10' },
+          { label: 'Total interest, monthly schedule', value: '≈ $261,116.20' },
+          { label: 'Biweekly half-payment (1,503.10 ÷ 2)', value: '$751.55' },
+          { label: 'Modeled monthly-equivalent extra (1,503.10 ÷ 12)', value: '≈ $125.26' },
+          { label: 'Payoff time, biweekly schedule', value: '304 months (≈ 25.3 years)' },
+          { label: 'Total interest, biweekly schedule', value: '≈ $213,609.46' },
+          { label: 'Interest saved (261,116.20 − 213,609.46)', value: '≈ $47,506.74' },
+          { label: 'Months saved (360 − 304)', value: '56 months (≈ 4.7 years)' }
+        ],
+        result: '≈ $47,506.74 saved · paid off about 56 months (4.7 years) sooner',
+        explanation: 'Nothing about the loan itself changes — same rate, same original term, same payment amount per payment. The entire saving comes from making the equivalent of one extra monthly payment every year, which compounds over three decades into a payoff nearly five years earlier and close to $47,507 less interest.'
+      },
+      watchOut: [
+        { title: 'This is "accelerated" biweekly, not every-14-days billing', body: 'True biweekly billing charges interest on a 14-day cycle and makes 26 separate payments a year. This page models the simpler, widely used equivalent: the regular monthly payment plus one extra month\'s worth spread across the year. The end result — one extra payment a year — is the same; the exact month-by-month numbers can differ slightly from a servicer\'s own true-biweekly figures.' },
+        { title: 'Watch out for paid, third-party biweekly programs', body: 'The CFPB sued one such program, Nationwide Biweekly Administration, saying a typical enrolled consumer "would have to stay in the program for nine years" and pay over $1,200 in fees before the program\'s own savings caught up with its cost — and that for the early years, "consumers will pay more in fees than they save in interest." A civil penalty of $7,930,000 followed.' },
+        { title: 'The same result is available for free', body: 'Ask your loan servicer to accept one extra principal-only payment a year, or spread it monthly by adding one-twelfth of your payment to each regular payment (loan-prepayment-calculator models exactly this, with any extra amount you choose) — with no enrollment fee and no per-payment charge.' },
+        { title: 'Confirm how your servicer applies partial payments', body: 'Some servicers hold biweekly half-payments in a non-interest-bearing suspense account until a full payment has accumulated, rather than applying each half-payment to the balance right away. Ask your servicer directly, since this can change the exact savings versus this page\'s simulation.' },
+        { title: 'Check for a prepayment penalty first', body: 'A small number of mortgages, usually within the first three to five years, charge a fee for paying down the balance faster than scheduled. Check your loan documents before committing to any accelerated schedule.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, CFPB Files Suit Against Nationwide Biweekly for Luring Consumers with False Promises of Mortgage Savings', url: 'https://www.consumerfinance.gov/archive/newsroom/cfpb-files-suit-against-nationwide-biweekly-for-luring-consumers-with-false-promises-of-mortgage-savings/' },
+        { label: 'Consumer Financial Protection Bureau, What is a prepayment penalty?', url: 'https://www.consumerfinance.gov/ask-cfpb/what-is-a-prepayment-penalty-en-1957/' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.8 The Basics of Loans', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-8-the-basics-of-loans' }
+      ]
+    },
+    inputs: [
+      { id: 'loanAmount', label: 'Loan amount (or current balance)', type: 'currency', placeholder: '280000', defaultValue: 280000, step: 1000, min: 0 },
+      { id: 'interestRate', label: 'Annual interest rate (APR)', type: 'percent', placeholder: '5', defaultValue: 5, step: 0.01, min: 0 },
+      { id: 'years', label: 'Loan term (years)', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Mortgage Amortization Schedule Calculator – Biweekly Payoff',
+      description: 'Free amortization schedule calculator: compare a standard monthly mortgage schedule to an accelerated biweekly one, with the interest and time it saves.',
+      faq: [
+        { question: 'How much does paying a mortgage biweekly actually save?', answer: 'It depends on the loan, but on a $280,000, 30-year loan at 5% APR, an accelerated biweekly schedule saves about $47,506.74 in interest and pays off about 56 months (4.7 years) sooner than the standard monthly schedule.' },
+        { question: 'How is biweekly different from paying twice a month?', answer: 'Paying half the payment every two weeks is 26 half-payments a year, which equals 13 full monthly payments. Paying half twice a month is only 24 half-payments a year, equal to 12 full payments — no extra payment at all, and no extra savings.' },
+        { question: 'Does my mortgage automatically become biweekly if I pay every two weeks?', answer: 'Not unless your servicer sets it up that way. Confirm with your servicer that extra money is applied to principal and that partial payments are not held until a full payment accumulates.' },
+        { question: 'Should I pay a company to set up biweekly payments for me?', answer: 'Usually not. The CFPB took action against one such paid program after finding a typical enrolled consumer would need nine years and over $1,200 in fees to catch up with the program\'s own promised savings. The same result — one extra payment a year — is normally available for free directly from your servicer.' },
+        { question: 'How does this differ from the mortgage calculator?', answer: 'mortgage-calculator builds the full standard monthly amortization schedule for a loan. This page runs the same loan a second way — an accelerated biweekly schedule — and compares the two side by side, which is the piece mortgage-calculator does not show.' },
+        { question: 'Can I model a different extra payment amount instead of biweekly?', answer: 'Yes — use loan-prepayment-calculator, which takes any extra monthly amount you choose rather than the fixed one-twelfth-of-a-payment this page uses to model accelerated biweekly.' }
+      ]
+    },
+    compute(values) {
+      const monthlyRate = values.interestRate / 100 / 12;
+      const months = Math.max(1, values.years * 12);
+      const monthlyPayment = monthlyRate === 0
+        ? values.loanAmount / months
+        : (values.loanAmount * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -months));
+      const totalInterestMonthly = monthlyPayment * months - values.loanAmount;
+      const biweeklyHalfPayment = monthlyPayment / 2;
+      const extra = monthlyPayment / 12;
+      const payment = monthlyPayment + extra;
+      let balance = values.loanAmount;
+      let totalInterestBiweekly = 0;
+      let monthsWithExtra = 0;
+      while (balance > 0.01 && monthsWithExtra < 1200) {
+        const interest = balance * monthlyRate;
+        totalInterestBiweekly += interest;
+        const principal = Math.min(balance, payment - interest);
+        balance -= principal;
+        monthsWithExtra++;
+      }
+      const interestSavedBiweekly = Math.max(0, totalInterestMonthly - totalInterestBiweekly);
+      const monthsSavedBiweekly = months - monthsWithExtra;
+      return { interestSavedBiweekly, monthsSavedBiweekly, monthlyPayment, biweeklyHalfPayment, totalInterestMonthly, totalInterestBiweekly };
+    }
   }
 ];

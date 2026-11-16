@@ -7,13 +7,24 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-11-16 · **Step 46 run 5 (physics mechanics-remainder run A) DONE** — PR #104
+Last updated: 2026-11-16 · **Step 46 run 7 (physics waves/other-remainder) DONE** — branch
+`step/46-wave-3-physics-run-7` added `doppler-effect-calculator`, `snells-law-calculator`,
+`mass-energy-equivalence-calculator`, `thermal-expansion-calculator`, `escape-velocity-calculator`.
+This closes out every named item in this step's "Physics — proposed additions" seed lists. New
+`lib/units.ts` dimension: `thermalExpansionCoeff`; new unit: `km/s` on the existing `speed`
+dimension. **Ran in parallel with "Physics mechanics-remainder run B"** (a separate agent, separate
+worktree, branch `step/46-wave-3-physics-run-6`, adding centripetal-force/gravitational-force/
+torque/buoyancy/pendulum-period) — this run never saw run B's work, so its own counts (`physics` 26
+→ 31, site-wide 321 → 326, on this branch alone) will need reconciling against run B's PR by the
+main session at merge time; the two branches both edit `data/calculators/physics.ts` and
+`data/calculators/index.ts` and will conflict, which is expected. `npm test` (1,258), lint and
+`npm run build` (357 routes) all pass on this branch. Full detail in the Session log and
+`mdFiles/steps/46-47-wave-3-physics-chemistry.md`.
+
+Previous: **Step 46 run 5 (physics mechanics-remainder run A) DONE** — PR #104
 added `acceleration-calculator`, `free-fall-calculator`, `projectile-motion-calculator`,
 `friction-calculator`, `spring-hookes-law-calculator` on branch `step/46-wave-3-physics-run-5`;
-`physics` 21 → 26, site-wide 316 → 321. New `lib/units.ts` dimension: `springConstant`. Per D22,
-physics/chemistry remainder continues next (run B: centripetal force, gravitational force, torque,
-buoyancy, pendulum period). Full detail in the Session log and
-`mdFiles/steps/46-47-wave-3-physics-chemistry.md`.
+`physics` 21 → 26, site-wide 316 → 321. New `lib/units.ts` dimension: `springConstant`.
 **Step 60 (Wave 5a: finance/money-hub expansion) is now FULLY DONE across
 all 7 batches** — batch 7 (`income-tax-calculator`, PR #103) added on branch
 `step/60-wave-5a-finance-run-7`; `finance` 38 → 39, site-wide 315 → 316. Only the wave's visual-QA

@@ -5,8 +5,13 @@ import { DIGIT_COLORS, MULTIPLIER_COLORS, TOLERANCE_COLORS, resistanceFromColorB
 // Brochure. Shared by weight-calculator and potential-energy-calculator's forward compute() below
 // (the solver pages use lib/units.ts's 'g0' acceleration unit, which carries the same value).
 const STANDARD_GRAVITY = 9.80665;
-// Newtonian constant of gravitation, CODATA 2022 recommended value (NIST, "CODATA Value: Newtonian
-// constant of gravitation"), 6.674 30(15)×10⁻¹¹ m³ kg⁻¹ s⁻². Used only by gravitational-force-calculator.
+// Speed of light in vacuum: exact by definition since the 1983 SI redefinition of the meter (BIPM SI
+// Brochure; NIST, physics.nist.gov/cgi-bin/cuu/Value?c). Shared by mass-energy-equivalence-calculator's
+// E = mc² and its bonus speed-of-light output below.
+const SPEED_OF_LIGHT = 299792458;
+// Newtonian constant of gravitation, CODATA 2022 recommended value (physics.nist.gov/cgi-bin/cuu/Value?bg):
+// 6.674 30(15) x 10^-11 m3 kg^-1 s^-2 — unlike the speed of light, this is measured, not exact.
+// Used by escape-velocity-calculator's v = sqrt(2GM/r).
 const GRAVITATIONAL_CONSTANT = 6.6743e-11;
 
 export const physicsCalculators: CalculatorConfig[] = [
@@ -273,7 +278,7 @@ export const physicsCalculators: CalculatorConfig[] = [
     glyph: 'W',
     updatedAt: '2026-11-06',
     aliases: ['mass to weight calculator', 'w = mg calculator', 'weight in newtons calculator', 'gravity weight calculator', 'weight on other planets calculator'],
-    related: ['force-calculator', 'gravitational-force-calculator', 'pounds-to-kilograms-converter', 'weight-converter'],
+    related: ['force-calculator', 'pounds-to-kilograms-converter', 'kilograms-to-stone-converter', 'weight-converter'],
     title: 'Weight Calculator (W = mg)',
     description: 'Calculate weight from mass and gravity — W = m × g — or work backward to mass or local gravity, in newtons, pounds-force, kilograms, or pounds.',
     example: 'A 70 kg person weighs about 686.5 N on Earth (154.3 lbf) but only about 113.4 N on the Moon, where gravity is weaker.',
@@ -370,10 +375,6 @@ export const physicsCalculators: CalculatorConfig[] = [
         {
           title: "Don't confuse this g with a rollercoaster's g-force",
           body: 'The g in W = mg is gravitational acceleration. The "g-force" used to describe a rollercoaster drop or a fighter jet turn is a ratio of total acceleration to standard gravity, a different (though related) use of the same symbol.'
-        },
-        {
-          title: 'This is not the gravitational force calculator',
-          body: "This page uses a single, fixed local gravity value — convenient for everyday weight questions. For the actual attraction between two specific masses (Newton's law, F = Gm₁m₂ ÷ r²), including at distances other than a planet's surface, see the gravitational force calculator — it is where the g used here ultimately comes from."
         }
       ],
       references: [
@@ -3280,6 +3281,588 @@ export const physicsCalculators: CalculatorConfig[] = [
     },
     compute(values) {
       return { force: values.springConstant * values.displacement };
+    }
+  },
+  {
+    id: 'doppler-effect-calculator',
+    category: 'physics',
+    group: 'Waves & Light',
+    glyph: 'Δf',
+    updatedAt: '2026-11-16',
+    aliases: ['doppler shift calculator', 'doppler frequency calculator', 'ambulance siren pitch calculator', 'moving source frequency calculator', 'sound frequency shift calculator'],
+    related: ['wavelength-frequency-calculator', 'speed-distance-time-calculator', 'decibel-calculator'],
+    title: 'Doppler Effect Calculator',
+    description: 'Find the frequency a moving source or listener actually hears, from the sound Doppler effect formula — solve for observed frequency, source frequency, either speed, or the speed of sound.',
+    example: 'A 150 Hz train horn approaching at 35 m/s, with sound traveling at 343 m/s, is heard at about 167.05 Hz — roughly 11.4% higher than its true pitch.',
+    solver: {
+      defaultTarget: 'observedFrequency',
+      variables: [
+        { id: 'observedFrequency', label: 'Observed frequency', symbol: 'f₀', dimension: 'frequency', defaultValue: 167.05, defaultUnit: 'Hz' },
+        { id: 'sourceFrequency', label: 'Source frequency', symbol: 'fₛ', dimension: 'frequency', defaultValue: 150, defaultUnit: 'Hz' },
+        { id: 'soundSpeed', label: 'Speed of sound', symbol: 'v', dimension: 'speed', defaultValue: 343, defaultUnit: 'm/s' },
+        { id: 'observerSpeed', label: 'Observer speed (+ toward source)', symbol: 'v₀', dimension: 'speed', defaultValue: 0, defaultUnit: 'm/s' },
+        { id: 'sourceSpeed', label: 'Source speed (+ toward observer)', symbol: 'vₛ', dimension: 'speed', defaultValue: 35, defaultUnit: 'm/s' }
+      ],
+      solve: {
+        observedFrequency: ({ sourceFrequency, soundSpeed, observerSpeed, sourceSpeed }) =>
+          soundSpeed - sourceSpeed === 0 ? NaN : (sourceFrequency * (soundSpeed + observerSpeed)) / (soundSpeed - sourceSpeed),
+        sourceFrequency: ({ observedFrequency, soundSpeed, observerSpeed, sourceSpeed }) =>
+          soundSpeed + observerSpeed === 0 ? NaN : (observedFrequency * (soundSpeed - sourceSpeed)) / (soundSpeed + observerSpeed),
+        soundSpeed: ({ sourceFrequency, observedFrequency, observerSpeed, sourceSpeed }) =>
+          observedFrequency - sourceFrequency === 0 ? NaN : (sourceFrequency * observerSpeed + observedFrequency * sourceSpeed) / (observedFrequency - sourceFrequency),
+        observerSpeed: ({ sourceFrequency, observedFrequency, soundSpeed, sourceSpeed }) =>
+          sourceFrequency === 0 ? NaN : (observedFrequency * (soundSpeed - sourceSpeed)) / sourceFrequency - soundSpeed,
+        sourceSpeed: ({ sourceFrequency, observedFrequency, soundSpeed, observerSpeed }) =>
+          observedFrequency === 0 ? NaN : soundSpeed - (sourceFrequency * (soundSpeed + observerSpeed)) / observedFrequency
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is the Doppler effect?',
+        paragraphs: [
+          "The Doppler effect is why an ambulance siren sounds higher pitched as it races toward you and lower pitched as it passes and pulls away, even though the siren itself never changes pitch. Moving the source or the listener changes how often sound wave crests arrive, which is exactly what a listener hears as frequency: a source closing the distance bunches its wave crests closer together ahead of it, so they arrive more often (a higher pitch); a source pulling away spreads them out, so they arrive less often (a lower pitch).",
+          "The same effect works the other way too — a stationary siren sounds higher to a listener running toward it and lower to one running away, because the listener's own motion changes how quickly they run into each wave crest. Either way, what changes is the observed frequency, f₀; the source's own true frequency, fₛ, never changes.",
+          'This calculator uses one signed convention for both moving parts: a positive speed means motion along the line connecting source and listener, toward the other one; a negative speed means motion away. That single sign flips smoothly between all four textbook cases — source approaching or receding, observer approaching or receding — without needing a separate formula or a toggle for each one.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any four of the five quantities — source frequency, observed frequency, speed of sound, observer speed, and source speed — and the fifth fills in automatically.',
+        steps: [
+          { name: 'Enter the source frequency', text: "Type the sound's true frequency at the source — a siren's rated pitch, an instrument's note, a horn's frequency — and pick its unit." },
+          { name: 'Enter the speed of sound', text: 'Defaults to 343 m/s, the speed of sound in air at 20°C (68°F). Change it for a different temperature or medium.' },
+          { name: 'Enter the two speeds', text: "Positive means moving toward the other party along the line between them; negative means moving away. A stationary source or listener is 0." },
+          { name: 'Read the observed frequency', text: 'The remaining field, marked auto, shows the frequency actually heard.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one — useful for working out, say, how fast a source must be moving to produce a given pitch shift.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The same relationship rearranges to solve for any of the five quantities.',
+        expression: 'f₀ = fₛ(v + v₀) ÷ (v − vₛ)\nfₛ = f₀(v − vₛ) ÷ (v + v₀)\nv = (fₛv₀ + f₀vₛ) ÷ (f₀ − fₛ)\nv₀ = f₀(v − vₛ) ÷ fₛ − v\nvₛ = v − fₛ(v + v₀) ÷ f₀',
+        terms: [
+          { symbol: 'f₀', meaning: 'Observed frequency — what the listener actually hears, in hertz (Hz).' },
+          { symbol: 'fₛ', meaning: "Source frequency — the sound's true, unshifted frequency at the source." },
+          { symbol: 'v', meaning: 'Speed of sound in the medium (air), in meters per second. 343 m/s at 20°C (68°F); 331 m/s at 0°C.' },
+          { symbol: 'v₀, vₛ', meaning: "Observer speed and source speed, each measured along the line connecting them. Positive means moving toward the other party; negative means moving away." }
+        ],
+        note: "OpenStax's own statement of this formula uses a ± / ∓ sign pair with a separate case for each direction of motion; this calculator folds all four cases into one expression by treating v₀ and vₛ as signed quantities (positive toward, negative away), which gives the identical results."
+      },
+      workedExample: {
+        intro: 'A train sounds a 150 Hz horn while approaching a crossing at 35 m/s. The air gives a speed of sound of 343 m/s, and the listener at the crossing is standing still. What frequency do they actually hear — and what would they hear once the train has passed and is moving away at the same speed?',
+        rows: [
+          { label: 'Source frequency (fₛ)', value: '150 Hz' },
+          { label: 'Speed of sound (v)', value: '343 m/s' },
+          { label: 'Source speed, approaching (vₛ = +35 m/s)', value: '+35 m/s' },
+          { label: 'Observed frequency (f₀ = 150 × 343 ÷ (343 − 35))', value: '≈ 167.05 Hz' },
+          { label: 'After passing, receding (vₛ = −35 m/s)', value: '150 × 343 ÷ (343 + 35) ≈ 136.11 Hz' }
+        ],
+        result: 'Approaching: f₀ ≈ 167.05 Hz (+11.4%) · Receding: f₀ ≈ 136.11 Hz (−9.3%)',
+        explanation: "Approaching, the denominator shrinks (343 − 35 = 308), raising the frequency to about 167.05 Hz — an 11.4% rise. Receding, the denominator grows instead (343 + 35 = 378), lowering it to about 136.11 Hz — a 9.3% drop. The rise is proportionally bigger than the drop for the same source speed, because shrinking a denominator by 35 changes the result by more than growing it by 35 does — which is exactly why a passing siren's upward whoop on approach sounds more dramatic than its downward fade on the way out."
+      },
+      watchOut: [
+        {
+          title: "This calculator's sign convention may differ from your textbook's",
+          body: "Some textbooks write the formula as f₀ = fₛ(v ± v₀) ÷ (v ∓ vₛ), with a separate ± sign to pick for each of four cases (source/observer, approaching/receding). This page instead treats v₀ and vₛ as signed numbers — positive toward the other party, negative away — which gives the same answer without picking a case by hand."
+        },
+        {
+          title: 'No answer when a source reaches the speed of sound',
+          body: "The formula divides by (v − vₛ), which hits zero once a source moves at exactly the speed of sound and goes negative beyond it. This calculator reports no answer there, rather than a wrong number — a source at or above the speed of sound creates a sonic boom, a genuinely different phenomenon this page does not model."
+        },
+        {
+          title: 'This is the classical Doppler effect for sound, not light',
+          body: 'Sound needs a medium (air, water, a solid) to travel through, and this formula assumes that medium is otherwise still. The Doppler effect for light works differently — it depends only on the relative velocity between source and observer, using relativistic formulas from special relativity, not this one.'
+        },
+        {
+          title: 'Only motion along the line between source and listener counts',
+          body: 'A source moving directly across your field of view, at the instant it is closest to you, produces no frequency shift at all — only the component of velocity directly toward or away from the listener matters.'
+        },
+        {
+          title: 'Wind is not accounted for',
+          body: 'This formula assumes the air itself is not moving. A strong wind blowing along the same line as the sound changes the effective speeds relative to the ground, which this simple form does not include.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §17.7 The Doppler Effect', url: 'https://openstax.org/books/university-physics-volume-1/pages/17-7-the-doppler-effect' },
+        { label: 'OpenStax, University Physics Volume 1, §17.2 Speed of Sound', url: 'https://openstax.org/books/university-physics-volume-1/pages/17-2-speed-of-sound' }
+      ]
+    },
+    inputs: [
+      { id: 'sourceFrequency', label: 'Source frequency (Hz)', type: 'number', placeholder: '150', defaultValue: 150, step: 1, min: 0 },
+      { id: 'soundSpeed', label: 'Speed of sound (m/s)', type: 'number', placeholder: '343', defaultValue: 343, step: 1, min: 0 },
+      { id: 'observerSpeed', label: 'Observer speed toward source (m/s)', type: 'number', placeholder: '0', defaultValue: 0, step: 0.1 },
+      { id: 'sourceSpeed', label: 'Source speed toward observer (m/s)', type: 'number', placeholder: '35', defaultValue: 35, step: 0.1 }
+    ],
+    seo: {
+      title: 'Doppler Effect Calculator – Observed Frequency Shift',
+      description: 'Free Doppler effect calculator for sound. Solve for observed frequency, source frequency, sound speed, or either speed, with a worked train-horn example.',
+      faq: [
+        { question: 'What is the Doppler effect?', answer: 'The change in observed frequency caused by relative motion between a sound source and a listener: moving the two closer together raises the pitch heard, and moving them apart lowers it, even though the source itself never changes.' },
+        { question: 'How do I calculate the Doppler-shifted frequency?', answer: 'f₀ = fₛ(v + v₀) ÷ (v − vₛ), with v₀ and vₛ positive when moving toward the other party and negative when moving away. A 150 Hz source approaching at 35 m/s, with sound at 343 m/s, is heard at 150 × 343 ÷ (343 − 35) ≈ 167.05 Hz.' },
+        { question: 'Why does an ambulance siren sound higher as it approaches?', answer: "Because the source is closing the distance, each new wave crest has less far to travel than the last one, bunching the crests closer together in the direction of travel. That raises the frequency the listener receives — the pitch drops back down the moment it passes and starts moving away instead." },
+        { question: 'What happens if a source moves faster than the speed of sound?', answer: "The standard formula no longer applies once a source reaches or exceeds the speed of sound — it produces a sonic boom, a shock wave rather than a simple Doppler shift, which this calculator does not model. It reports no answer at or past that point instead of a misleading number." },
+        { question: 'Does the Doppler effect apply to light as well as sound?', answer: "Light shows an analogous effect (used in astronomy to measure galaxies' velocities from their red- or blue-shifted spectra), but the formula is different: it depends only on relative velocity and uses relativistic time dilation, not the medium-based formula sound uses here." },
+        { question: 'What value should I use for the speed of sound?', answer: "343 m/s is standard for dry air at 20°C (68°F). It drops to about 331 m/s at 0°C, and it is different again in water or in a solid — use the speed of sound for whatever medium the problem actually involves." }
+      ]
+    },
+    compute(values) {
+      return {
+        observedFrequency:
+          values.soundSpeed - values.sourceSpeed === 0
+            ? NaN
+            : (values.sourceFrequency * (values.soundSpeed + values.observerSpeed)) / (values.soundSpeed - values.sourceSpeed)
+      };
+    }
+  },
+  {
+    id: 'snells-law-calculator',
+    category: 'physics',
+    group: 'Waves & Light',
+    glyph: 'nθ',
+    updatedAt: '2026-11-16',
+    aliases: ["snell's law calculator", 'refraction calculator', 'index of refraction calculator', 'angle of refraction calculator', 'critical angle calculator'],
+    related: ['lens-mirror-equation-calculator', 'wavelength-frequency-calculator', 'doppler-effect-calculator'],
+    title: "Snell's Law Calculator (Refraction)",
+    description: "Solve Snell's law, n₁sinθ₁ = n₂sinθ₂, for either refractive index or either angle — find how much a light ray bends crossing into a new transparent medium.",
+    example: 'Light traveling from air (n = 1.00) into water (n = 1.33) at a 30° angle of incidence bends to about 22.08° from the normal.',
+    solver: {
+      defaultTarget: 'theta2',
+      variables: [
+        { id: 'n1', label: 'Refractive index 1', symbol: 'n₁', dimension: 'count', defaultValue: 1.0, defaultUnit: 'count' },
+        { id: 'theta1', label: 'Angle of incidence', symbol: 'θ₁', dimension: 'angle', defaultValue: 30, defaultUnit: 'deg' },
+        { id: 'n2', label: 'Refractive index 2', symbol: 'n₂', dimension: 'count', defaultValue: 1.33, defaultUnit: 'count' },
+        { id: 'theta2', label: 'Angle of refraction', symbol: 'θ₂', dimension: 'angle', defaultValue: 22.08, defaultUnit: 'deg' }
+      ],
+      solve: {
+        theta2: ({ n1, theta1, n2 }) => (n2 === 0 ? NaN : Math.asin((n1 * Math.sin(theta1)) / n2)),
+        theta1: ({ n1, n2, theta2 }) => (n1 === 0 ? NaN : Math.asin((n2 * Math.sin(theta2)) / n1)),
+        n1: ({ theta1, n2, theta2 }) => (Math.sin(theta1) === 0 ? NaN : (n2 * Math.sin(theta2)) / Math.sin(theta1)),
+        n2: ({ n1, theta1, theta2 }) => (Math.sin(theta2) === 0 ? NaN : (n1 * Math.sin(theta1)) / Math.sin(theta2))
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: "What is Snell's law?",
+        paragraphs: [
+          "Light bends when it crosses from one transparent medium into another at an angle — from air into water, from water into glass — because light travels at a different speed in each one. Snell's law, n₁sinθ₁ = n₂sinθ₂, ties the two angles (measured from the normal, the imaginary line perpendicular to the surface) to the two media's refractive indices.",
+          "The refractive index, n, is a dimensionless number describing how much a medium slows light down: n = c ÷ v, the speed of light in a vacuum divided by its speed in that medium. A vacuum has n = 1 exactly; air is close enough to use n = 1.00 for most purposes; water is about 1.33; typical glass is around 1.5; diamond is a striking 2.417, part of why it sparkles so strongly.",
+          "The law is named for the Dutch astronomer Willebrord Snell, who described it in 1621, though the Arab physicist Ibn Sahl had already worked out the same relationship more than six centuries earlier, in 984 CE, in a treatise on lenses and burning mirrors. Both arrived at the same rule: a ray entering a denser medium (higher n) bends toward the normal, and one leaving into a less dense medium bends away from it."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of the two refractive indices and the two angles; the fourth fills in automatically.',
+        steps: [
+          { name: 'Enter the two refractive indices', text: 'Look up or enter n₁ (the medium the light starts in) and n₂ (the medium it enters). Air is 1.00, water is 1.33, typical glass is about 1.5.' },
+          { name: 'Enter the known angle', text: 'Type the angle of incidence or refraction, measured from the normal (perpendicular to the surface), not from the surface itself.' },
+          { name: 'Read the calculated angle', text: 'The remaining field, marked auto, shows the angle on the other side of the interface.' },
+          { name: 'Find a critical angle', text: 'To find the critical angle for total internal reflection, enter the angle of refraction as exactly 90° and solve for the angle of incidence instead.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: "Snell's law rearranges four ways, one for each quantity you might be solving for.",
+        expression: 'n₁ sin θ₁ = n₂ sin θ₂\nθ₂ = sin⁻¹(n₁ sin θ₁ ÷ n₂)\nθ₁ = sin⁻¹(n₂ sin θ₂ ÷ n₁)\nn₁ = n₂ sin θ₂ ÷ sin θ₁\nn₂ = n₁ sin θ₁ ÷ sin θ₂',
+        terms: [
+          { symbol: 'n₁, n₂', meaning: 'Refractive indices of the first and second medium — dimensionless, always 1 or greater for ordinary transparent materials.' },
+          { symbol: 'θ₁', meaning: 'Angle of incidence, measured from the normal, in the first medium.' },
+          { symbol: 'θ₂', meaning: 'Angle of refraction, measured from the normal, in the second medium.' }
+        ],
+        note: 'When the calculated sine term works out above 1, there is no real angle that solves the equation — light cannot refract into the second medium at all, and instead reflects entirely back into the first (total internal reflection). This calculator shows no answer in that case rather than a wrong one.'
+      },
+      workedExample: {
+        intro: 'A beam of light in air (n₁ = 1.00) strikes the surface of water (n₂ = 1.33) at a 30° angle of incidence. At what angle does it continue into the water? And going the other way, at what angle would light inside the water undergo total internal reflection at the surface?',
+        rows: [
+          { label: 'Refractive index of air (n₁)', value: '1.00' },
+          { label: 'Angle of incidence (θ₁)', value: '30°' },
+          { label: 'Refractive index of water (n₂)', value: '1.33' },
+          { label: 'Angle of refraction (θ₂ = sin⁻¹(1.00 × sin 30° ÷ 1.33))', value: '≈ 22.08°' },
+          { label: 'Critical angle, water to air (θc = sin⁻¹(1.00 ÷ 1.33))', value: '≈ 48.75°' }
+        ],
+        result: 'θ₂ ≈ 22.08° · critical angle (water → air) ≈ 48.75°',
+        explanation: "Going from air into the denser water, the ray bends toward the normal: 30° becomes about 22.08°. Going the other way — from water back out into air — there is a critical angle beyond which no refraction is possible at all: set θ₂ to exactly 90° (light grazing along the surface) and solve for θ₁, giving sin⁻¹(1.00 ÷ 1.33) ≈ 48.75°. Any angle of incidence inside the water steeper than that reflects entirely back in, which is total internal reflection — the principle fiber optic cables rely on to keep light trapped inside."
+      },
+      watchOut: [
+        {
+          title: 'Angles are measured from the normal, not the surface',
+          body: "The normal is the imaginary line perpendicular to the interface. A ray striking the surface nearly edge-on has a large angle from the normal (close to 90°), and one striking it nearly straight on has a small angle (close to 0°) — the opposite of how it would be measured from the surface itself."
+        },
+        {
+          title: 'Beyond the critical angle, there is no refracted ray at all',
+          body: 'Going from a denser medium into a less dense one (water into air, glass into water) beyond the critical angle, Snell\'s law has no real solution — all the light reflects back into the first medium instead (total internal reflection). This calculator returns no answer in that case, which is the physically correct result, not an error.'
+        },
+        {
+          title: 'Refractive index depends on the color of light',
+          body: "A material's refractive index is slightly different for each wavelength (color) of light — this is dispersion, the effect that splits white light into a rainbow through a prism. Tabulated values like water's 1.33 are typically quoted for a standard reference wavelength (yellow-green light, near 589 nm) and shift slightly at the red or blue ends of the spectrum."
+        },
+        {
+          title: 'Assumes a flat interface between uniform media',
+          body: 'This formula describes a flat boundary between two optically uniform, non-absorbing materials. A curved surface (a lens), a material whose properties vary with direction, or a rough/scattering surface needs more than this single equation.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 3, §1.3 Refraction', url: 'https://openstax.org/books/university-physics-volume-3/pages/1-3-refraction' },
+        { label: 'OpenStax, University Physics Volume 3, §1.4 Total Internal Reflection', url: 'https://openstax.org/books/university-physics-volume-3/pages/1-4-total-internal-reflection' }
+      ]
+    },
+    inputs: [
+      { id: 'n1', label: 'Refractive index 1 (n₁)', type: 'number', placeholder: '1.00', defaultValue: 1.0, step: 0.01, min: 0 },
+      { id: 'theta1', label: 'Angle of incidence (rad)', type: 'number', placeholder: '0.5236', defaultValue: Math.PI / 6, step: 0.01, min: 0 },
+      { id: 'n2', label: 'Refractive index 2 (n₂)', type: 'number', placeholder: '1.33', defaultValue: 1.33, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: "Snell's Law Calculator – Refraction Angle & Index",
+      description: "Free Snell's law calculator. Solve n₁sinθ₁ = n₂sinθ₂ for either refractive index or either angle, with a worked air-to-water example and critical angle.",
+      faq: [
+        { question: "What is Snell's law?", answer: "n₁sinθ₁ = n₂sinθ₂, relating the angles of incidence and refraction (measured from the normal) to the refractive indices of the two media a light ray crosses." },
+        { question: 'How do I find the angle of refraction?', answer: 'θ₂ = sin⁻¹(n₁ sin θ₁ ÷ n₂). Light from air (n = 1.00) hitting water (n = 1.33) at 30° refracts to sin⁻¹(1.00 × sin 30° ÷ 1.33) ≈ 22.08°.' },
+        { question: 'What is the refractive index of common materials?', answer: 'Air is about 1.00, water is about 1.33, typical window glass is about 1.5, and diamond is 2.417 — a higher index means light travels slower in that material and bends more sharply entering it.' },
+        { question: 'What is the critical angle, and how do I find it?', answer: "The angle of incidence, in the denser medium, beyond which light cannot refract out at all and instead totally internally reflects. Find it by setting the angle of refraction to 90° and solving for the angle of incidence: for light inside water meeting air, θc = sin⁻¹(1.00 ÷ 1.33) ≈ 48.75°." },
+        { question: "Why does Snell's law sometimes give no answer?", answer: 'When light tries to leave a denser medium beyond the critical angle, the equation has no real solution — that is total internal reflection, a genuine physical outcome, not a calculation error.' },
+        { question: "Does Snell's law apply to all colors of light the same way?", answer: 'Not exactly — refractive index varies slightly with wavelength (dispersion), which is why a prism splits white light into a spectrum. Standard tabulated values are usually for a reference wavelength near the middle of the visible spectrum.' }
+      ]
+    },
+    compute(values) {
+      return { theta2: values.n2 === 0 ? NaN : Math.asin((values.n1 * Math.sin(values.theta1)) / values.n2) };
+    }
+  },
+  {
+    id: 'mass-energy-equivalence-calculator',
+    category: 'physics',
+    group: 'Thermal & Nuclear',
+    glyph: 'mc²',
+    updatedAt: '2026-11-16',
+    aliases: ['e=mc2 calculator', 'einstein mass energy calculator', 'rest energy calculator', 'mass to energy calculator', 'energy mass conversion calculator'],
+    related: ['kinetic-energy-calculator', 'radioactive-half-life-calculator', 'work-calculator'],
+    title: 'Mass-Energy Equivalence Calculator (E = mc²)',
+    description: "Solve Einstein's mass-energy equivalence, E = mc², for the rest energy in a mass or the mass equivalent to an energy, using the exact speed of light.",
+    example: 'Converting just 1 gram of mass entirely into energy releases about 8.99 × 10¹³ joules of rest energy.',
+    solver: {
+      defaultTarget: 'energy',
+      variables: [
+        { id: 'energy', label: 'Rest energy', symbol: 'E', dimension: 'energy', defaultValue: 89875517873.68176, defaultUnit: 'kJ' },
+        { id: 'mass', label: 'Mass', symbol: 'm', dimension: 'mass', defaultValue: 1, defaultUnit: 'g' }
+      ],
+      solve: {
+        energy: ({ mass }) => mass * SPEED_OF_LIGHT * SPEED_OF_LIGHT,
+        mass: ({ energy }) => energy / (SPEED_OF_LIGHT * SPEED_OF_LIGHT)
+      },
+      outputs: [{ id: 'speedOfLightUsed', label: 'Speed of light used (c)', dimension: 'speed', unit: 'km/s', compute: () => SPEED_OF_LIGHT }]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is mass-energy equivalence?',
+        paragraphs: [
+          "Albert Einstein's 1905 result E = mc² says that mass and energy are the same physical quantity, measured in different units — any mass m, just by existing, carries an amount of energy E equal to that mass times the speed of light squared. This is the object's rest energy: the energy locked into it even sitting perfectly still, with no motion, heat, or other energy added.",
+          "The speed of light, c, is enormous (about 300,000 km/s) and squaring it makes the conversion factor between mass and energy almost incomprehensibly large — which is why even a tiny mass corresponds to a huge amount of energy. One gram of matter, converted completely, releases about 8.99 × 10¹³ joules: enough to power a typical home for roughly 2,500 years.",
+          'In everyday life almost none of an object\'s rest energy is ever released — a burning log releases only the chemical energy in its molecular bonds, a vanishingly small sliver of its total mc². Nuclear fission and fusion release a far larger (though still small) fraction of the nuclei involved, through measurable mass loss; only matter meeting its antimatter counterpart converts essentially all of the mass into energy.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter either mass or rest energy; the calculator fills in the other using E = mc².',
+        steps: [
+          { name: 'Enter a mass or an energy', text: 'Type whichever one you know, and pick its unit. The other field, marked auto, calculates from it.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it the input instead; the calculator solves back for mass or energy as needed.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 1 g becomes 0.001 kg instead of silently turning into 1 kg.' },
+          { name: 'Read the result', text: 'The answer appears in your chosen unit, with the speed of light used for the conversion shown underneath.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The relationship rearranges both ways, depending on which quantity you are solving for.',
+        expression: 'E = m × c²\nm = E ÷ c²',
+        terms: [
+          { symbol: 'E', meaning: "The object's rest energy, in joules (J) — the energy equivalent of its mass alone, at rest." },
+          { symbol: 'm', meaning: 'Mass, in kilograms (kg).' },
+          { symbol: 'c', meaning: 'The speed of light in a vacuum, exactly 299,792,458 m/s — exact by definition since the 1983 redefinition of the meter, not a measured figure with any uncertainty.' }
+        ],
+        note: 'This calculator computes rest energy only — the mc² term for an object at rest. A moving object\'s total relativistic energy is larger still, E = γmc² (γ = 1 ÷ √(1 − v²/c²)), adding its kinetic energy on top of the rest energy computed here.'
+      },
+      workedExample: {
+        intro: 'How much energy is locked into just 1 gram of mass, if every bit of it were converted?',
+        rows: [
+          { label: 'Mass (m)', value: '1.00 g = 0.001 kg' },
+          { label: 'Speed of light squared (c²)', value: '299,792,458² ≈ 8.98755 × 10¹⁶ m²/s²' },
+          { label: 'Rest energy (E = m × c²)', value: '0.001 × 8.98755 × 10¹⁶ ≈ 8.98755 × 10¹³ J' }
+        ],
+        result: 'E ≈ 8.99 × 10¹³ J (≈ 89.9 TJ)',
+        explanation: "OpenStax's own worked example for exactly this case (1.00 g) rounds the same result to 9.00 × 10¹³ J and notes it is \"about twice the energy released by the Hiroshima atomic bomb and about 10,000 times the kinetic energy of a large aircraft carrier\" — a sense of just how much energy ordinary mass represents, even in a gram too light to feel in your hand."
+      },
+      watchOut: [
+        {
+          title: 'This is rest energy, not total energy for a moving object',
+          body: 'A moving mass carries more total energy than mc² alone — its full relativistic energy is E = γmc², which exceeds mc² by an amount that grows with speed (and becomes enormous as speed approaches c). This calculator finds the rest-energy term only, the same quantity for an object whether it is sitting still or hurtling through space.'
+        },
+        {
+          title: 'Almost no real process releases the full mc²',
+          body: 'Chemical reactions (burning fuel) convert an immeasurably small fraction of mass to energy. Nuclear fission and fusion release a small but measurable fraction, through a real, detectable mass loss (the mass defect) between the starting and ending particles. Only matter-antimatter annihilation converts essentially 100% of the rest mass into energy.'
+        },
+        {
+          title: 'The huge numbers are correct, not a sign of an error',
+          body: "Because c² is about 9 × 10¹⁶ m²/s², multiplying even a small mass by it produces an energy figure with many more digits than the mass started with. That is simply what the formula gives — a gram-scale mass genuinely is equivalent to a city-scale amount of energy."
+        },
+        {
+          title: 'Mass loss in a nuclear reaction is real and measurable',
+          body: "When a nucleus undergoes fission or fusion, the resulting particles weigh very slightly less than the particles that formed them — that missing mass (the mass defect) is exactly the energy released, via this same equation. It is a tiny fraction of the total mass, but a directly measured one, not just a theoretical bookkeeping trick."
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 3, §5.9 Relativistic Energy', url: 'https://openstax.org/books/university-physics-volume-3/pages/5-9-relativistic-energy' },
+        { label: 'NIST, speed of light in vacuum (exact)', url: 'https://physics.nist.gov/cgi-bin/cuu/Value?c' }
+      ]
+    },
+    inputs: [{ id: 'mass', label: 'Mass (kg)', type: 'number', placeholder: '0.001', defaultValue: 0.001, step: 0.0001, min: 0 }],
+    seo: {
+      title: 'Mass-Energy Equivalence Calculator (E = mc²)',
+      description: "Free E = mc² calculator. Solve Einstein's mass-energy equivalence for rest energy or mass using the exact speed of light, with a worked example.",
+      faq: [
+        { question: 'What does E = mc² mean?', answer: "That mass and energy are the same quantity in different units: any mass m has a rest energy E equal to m times the speed of light squared, c². It is the energy an object has just by existing, not counting any motion." },
+        { question: 'How do I calculate rest energy from mass?', answer: 'Multiply the mass by the speed of light squared: E = m × c². One gram (0.001 kg) gives E = 0.001 × 299,792,458² ≈ 8.99 × 10¹³ J.' },
+        { question: 'How do I find mass from an amount of energy?', answer: 'Divide the energy by c²: m = E ÷ c². An energy of 9 × 10¹³ J corresponds to a mass of about 9 × 10¹³ ÷ (299,792,458²) ≈ 1.002 g.' },
+        { question: 'What is the exact value of the speed of light?', answer: '299,792,458 meters per second, exactly — not a measured value with any uncertainty, because the meter itself has been defined in terms of the speed of light since 1983.' },
+        { question: 'Is rest energy the same as kinetic energy?', answer: 'No. Rest energy (mc²) is what an object has just from its mass, even standing still. A moving object has additional kinetic energy on top of that, and in relativity its total energy becomes E = γmc², which is always more than the rest energy alone.' },
+        { question: 'Can mc² actually be released as usable energy?', answer: 'Only a little of it, in practice. Chemical reactions release a negligible sliver of it; nuclear fission and fusion release a small but real fraction, measurable as the mass lost between the starting and ending particles; only matter-antimatter annihilation releases essentially all of it.' }
+      ]
+    },
+    compute(values) {
+      return { energy: values.mass * SPEED_OF_LIGHT * SPEED_OF_LIGHT };
+    }
+  },
+  {
+    id: 'thermal-expansion-calculator',
+    category: 'physics',
+    group: 'Thermal & Nuclear',
+    glyph: 'ΔL',
+    updatedAt: '2026-11-16',
+    aliases: ['linear expansion calculator', 'coefficient of thermal expansion calculator', 'expansion joint calculator', 'thermal expansion coefficient calculator', 'bridge expansion calculator'],
+    related: ['heat-calculator', 'density-calculator', 'length-converter'],
+    title: 'Thermal Expansion Calculator (ΔL = αL₀ΔT)',
+    description: 'Solve the linear thermal expansion formula for the change in length, the expansion coefficient, original length, or temperature change — see how much a heated material actually grows.',
+    example: 'A 50 m steel beam (α = 12 × 10⁻⁶/°C) warming by 30°C grows by about 18 mm.',
+    solver: {
+      defaultTarget: 'deltaL',
+      variables: [
+        { id: 'deltaL', label: 'Change in length', symbol: 'ΔL', dimension: 'length', defaultValue: 0.018, defaultUnit: 'mm' },
+        { id: 'alpha', label: 'Expansion coefficient', symbol: 'α', dimension: 'thermalExpansionCoeff', defaultValue: 12, defaultUnit: 'u/C' },
+        { id: 'length0', label: 'Original length', symbol: 'L₀', dimension: 'length', defaultValue: 50, defaultUnit: 'm' },
+        { id: 'deltaT', label: 'Temperature change', symbol: 'ΔT', dimension: 'temperatureDelta', defaultValue: 30, defaultUnit: 'C' }
+      ],
+      solve: {
+        deltaL: ({ alpha, length0, deltaT }) => alpha * length0 * deltaT,
+        alpha: ({ deltaL, length0, deltaT }) => (length0 * deltaT === 0 ? NaN : deltaL / (length0 * deltaT)),
+        length0: ({ deltaL, alpha, deltaT }) => (alpha * deltaT === 0 ? NaN : deltaL / (alpha * deltaT)),
+        deltaT: ({ deltaL, alpha, length0 }) => (alpha * length0 === 0 ? NaN : deltaL / (alpha * length0))
+      },
+      outputs: [{ id: 'volumetricCoefficient', label: 'Equivalent volumetric coefficient (β ≈ 3α)', dimension: 'thermalExpansionCoeff', unit: 'u/C', compute: (si) => 3 * si.alpha }]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is thermal expansion?',
+        paragraphs: [
+          "Almost everything expands when it gets hotter and shrinks when it cools, because heating a material makes its atoms vibrate more and settle, on average, a little farther apart. For a long, thin object (a rail, a beam, a rod), that shows up as a change in length, given by ΔL = α × L₀ × ΔT: the change depends on the material's own expansion coefficient (α), how long it started out (L₀), and how big the temperature swing is (ΔT).",
+          'The coefficient of linear expansion, α, is a property of the specific material, usually reported in millionths per degree. OpenStax lists steel and brick at about 12 × 10⁻⁶/°C, copper at about 17 × 10⁻⁶/°C, aluminum at about 25 × 10⁻⁶/°C, ordinary glass at about 9 × 10⁻⁶/°C, and specialty Pyrex® glass at a much lower 3 × 10⁻⁶/°C — part of why Pyrex resists cracking under sudden temperature changes far better than ordinary glass.',
+          'This is specifically linear (one-dimensional) expansion, for a length. The same physics extends to area (expanding at roughly 2α for a given temperature change) and volume (roughly 3α), since an object expands a little in every direction at once — a point this page\'s bonus output applies automatically, but the main formula here only tracks a single length.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of the change in length, the expansion coefficient, the original length, and the temperature change; the fourth fills in automatically.',
+        steps: [
+          { name: "Look up the material's expansion coefficient", text: 'α varies by material — common values include steel (12 × 10⁻⁶/°C), aluminum (25 × 10⁻⁶/°C), and copper (17 × 10⁻⁶/°C).' },
+          { name: 'Enter the three values you know', text: 'Type each value and pick its unit. The field left over, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 0.018 m becomes 18 mm instead of silently turning into 0.018 mm.' },
+          { name: 'Read the result and the volumetric figure', text: 'The length change appears in your chosen unit. The bonus output underneath shows the equivalent volumetric coefficient, β ≈ 3α, for the same material.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The linear expansion formula rearranges three ways, one for each quantity you might be solving for.',
+        expression: 'ΔL = α × L₀ × ΔT\nα = ΔL ÷ (L₀ × ΔT)\nL₀ = ΔL ÷ (α × ΔT)\nΔT = ΔL ÷ (α × L₀)',
+        terms: [
+          { symbol: 'ΔL', meaning: 'Change in length, in meters (or any length unit) — positive for heating, negative for cooling.' },
+          { symbol: 'α', meaning: "The material's coefficient of linear expansion, per kelvin or per degree Celsius (the two are the same size, since this is an interval)." },
+          { symbol: 'L₀', meaning: 'The original length, before the temperature change.' },
+          { symbol: 'ΔT', meaning: 'The temperature CHANGE, not a temperature reading — positive for warming, negative for cooling.' },
+          { symbol: 'β ≈ 3α', meaning: "The equivalent volumetric expansion coefficient, shown as a bonus output: for the same temperature change, a solid's volume grows at about three times its linear rate." }
+        ],
+        note: 'This linear form is accurate for modest temperature changes using one representative α. Over very large temperature ranges, α itself drifts somewhat with temperature, and an averaged value is used instead.'
+      },
+      workedExample: {
+        intro: 'A steel beam is 50 m long at installation. How much longer does it get on a day that is 30°C warmer?',
+        rows: [
+          { label: 'Original length (L₀)', value: '50 m' },
+          { label: 'Expansion coefficient, steel (α)', value: '12 × 10⁻⁶ / °C' },
+          { label: 'Temperature change (ΔT)', value: '30°C' },
+          { label: 'Change in length (ΔL = 12 × 10⁻⁶ × 50 × 30)', value: '0.018 m = 18 mm' }
+        ],
+        result: 'ΔL = 18 mm',
+        explanation: "12 × 10⁻⁶ × 50 × 30 = 0.018 m, or 18 mm — small for a single beam, but exactly the kind of movement that adds up across an entire bridge or a mile of rail track, which is why both are built with expansion joints or small gaps rather than as one unbroken rigid length. An identical aluminum beam, with its higher α of 25 × 10⁻⁶/°C, would grow more than twice as far under the same temperature swing: 25 × 10⁻⁶ × 50 × 30 = 0.0375 m, or 37.5 mm."
+      },
+      watchOut: [
+        {
+          title: 'ΔT is a change, not a reading',
+          body: 'A beam warming from 10°C to 40°C has ΔT = 30, not 40. Entering a final temperature instead of the actual swing overstates the expansion.'
+        },
+        {
+          title: 'This is linear expansion — area and volume expand faster',
+          body: "ΔL = αL₀ΔT only tracks a single length. The same material's area expands at roughly double the rate (2α) and its volume at roughly triple the rate (3α) for the same temperature change, which this page's bonus output (β ≈ 3α) accounts for, but the main ΔL formula does not — don't apply it directly to an area or volume problem."
+        },
+        {
+          title: 'α is only constant over a modest temperature range',
+          body: 'The expansion coefficient itself drifts somewhat with temperature and can change sharply near a phase transition. This formula uses one fixed, representative α and is most accurate for everyday temperature swings, not extreme ranges.'
+        },
+        {
+          title: 'Real materials are built with room to expand',
+          body: 'Railroad tracks, bridges, and pipelines include expansion joints or small gaps specifically because of this effect — a rigid structure built with no allowance for it can buckle, crack, or fail as temperatures swing between seasons.'
+        },
+        {
+          title: 'Assumes an isotropic material',
+          body: 'This formula assumes the material expands the same amount in every direction. Wood, many crystals, and some composites expand at different rates along different axes (grain direction, crystal axis), which a single α cannot fully capture.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 2, §1.3 Thermal Expansion', url: 'https://openstax.org/books/university-physics-volume-2/pages/1-3-thermal-expansion' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'alpha', label: 'Expansion coefficient (1/K)', type: 'number', placeholder: '0.000012', defaultValue: 0.000012, step: 0.000001, min: 0 },
+      { id: 'length0', label: 'Original length (m)', type: 'number', placeholder: '50', defaultValue: 50, step: 0.1, min: 0 },
+      { id: 'deltaT', label: 'Temperature change (K)', type: 'number', placeholder: '30', defaultValue: 30, step: 0.1 }
+    ],
+    seo: {
+      title: 'Thermal Expansion Calculator (ΔL = αL₀ΔT)',
+      description: 'Free linear thermal expansion calculator. Solve for change in length, expansion coefficient, original length, or temperature change, with a steel-beam example.',
+      faq: [
+        { question: 'What is the formula for linear thermal expansion?', answer: 'ΔL = α × L₀ × ΔT, where α is the material\'s coefficient of linear expansion, L₀ is the original length, and ΔT is the temperature change.' },
+        { question: 'How much does a steel beam expand when heated?', answer: 'Using steel\'s α of about 12 × 10⁻⁶/°C: a 50 m beam warming by 30°C grows by 12 × 10⁻⁶ × 50 × 30 = 0.018 m, or 18 mm.' },
+        { question: 'What are typical thermal expansion coefficients?', answer: 'OpenStax lists, among others: steel and brick at about 12 × 10⁻⁶/°C, copper at about 17 × 10⁻⁶/°C, aluminum at about 25 × 10⁻⁶/°C, ordinary glass at about 9 × 10⁻⁶/°C, and Pyrex® glass at a low 3 × 10⁻⁶/°C.' },
+        { question: 'How is volumetric expansion related to linear expansion?', answer: 'The volumetric expansion coefficient β is approximately 3 times the linear coefficient α, since a solid expands in all three dimensions at once. This calculator shows β as a bonus output alongside the linear result.' },
+        { question: 'Why do bridges and railroad tracks have expansion joints?', answer: 'To accommodate exactly this effect. A rigid structure with no allowance for thermal expansion can buckle or crack as temperatures swing between a hot summer day and a cold winter one.' },
+        { question: 'Does thermal expansion coefficient change with temperature?', answer: 'Slightly, yes — α is not perfectly constant across all temperatures, especially near a material\'s phase transitions. This formula uses one representative value, accurate for everyday temperature ranges.' }
+      ]
+    },
+    compute(values) {
+      return { deltaL: values.alpha * values.length0 * values.deltaT };
+    }
+  },
+  {
+    id: 'escape-velocity-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'vₑ',
+    updatedAt: '2026-11-16',
+    aliases: ['planetary escape velocity calculator', 'escape speed calculator', 'orbital escape velocity calculator', 'rocket escape velocity calculator', 'how fast to escape gravity calculator'],
+    related: ['weight-calculator', 'kinetic-energy-calculator', 'speed-distance-time-calculator'],
+    title: 'Escape Velocity Calculator',
+    description: 'Solve v = √(2GM ÷ r) for the escape velocity, mass, or radius of a planet, moon, or star — the minimum speed needed to break free of its gravity for good.',
+    example: "Earth's escape velocity, with a mass of 5.9722 × 10²⁴ kg and a radius of 6,371 km, works out to about 11.19 km/s — roughly 40,270 km/h or 25,023 mph.",
+    solver: {
+      defaultTarget: 'escapeVelocity',
+      variables: [
+        { id: 'escapeVelocity', label: 'Escape velocity', symbol: 'v', dimension: 'speed', defaultValue: 11.19, defaultUnit: 'km/s' },
+        { id: 'mass', label: 'Mass of the body', symbol: 'M', dimension: 'mass', defaultValue: 5.9722e24, defaultUnit: 'kg' },
+        { id: 'radius', label: 'Radius', symbol: 'r', dimension: 'length', defaultValue: 6371, defaultUnit: 'km' }
+      ],
+      solve: {
+        escapeVelocity: ({ mass, radius }) => (radius <= 0 ? NaN : Math.sqrt((2 * GRAVITATIONAL_CONSTANT * mass) / radius)),
+        mass: ({ escapeVelocity, radius }) => (escapeVelocity * escapeVelocity * radius) / (2 * GRAVITATIONAL_CONSTANT),
+        radius: ({ escapeVelocity, mass }) => (escapeVelocity === 0 ? NaN : (2 * GRAVITATIONAL_CONSTANT * mass) / (escapeVelocity * escapeVelocity))
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is escape velocity?',
+        paragraphs: [
+          "Escape velocity is the minimum speed an object needs, fired straight up with no further propulsion, to break free of a body's gravity completely rather than falling back or settling into orbit. It comes from setting an object's kinetic energy equal to the gravitational potential energy binding it to the surface: give it exactly enough kinetic energy and it coasts outward forever, arriving at an infinite distance with zero speed left over.",
+          'The formula, v = √(2GM ÷ r), depends only on the body being escaped — its mass M and radius r — and the universal gravitational constant G, not on the mass of the thing escaping. A pebble and a rocket launched from the same point at the same speed either both escape or both fall back; a more massive rocket just needs proportionally more energy (and fuel) to reach the same speed.',
+          "Earth's escape velocity works out to about 11.2 km/s (roughly 40,000 km/h or 25,000 mph) — far faster than orbital speed near the surface (about 7.9 km/s), which is why reaching orbit and leaving Earth's gravity entirely for deep space are different problems with different speed requirements."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of escape velocity, mass, and radius; the third fills in automatically.',
+        steps: [
+          { name: 'Enter the mass and radius', text: "Type the body's mass and radius, picking sensible units — kilograms for mass, and kilometers or meters for radius work well for planets and moons." },
+          { name: 'Read the escape velocity', text: 'The remaining field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field (for example, to find the radius a body of a given mass would need for a target escape velocity) to make it an input instead.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 6,371 km becomes 6,371,000 m instead of silently turning into 6,371 m.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The escape velocity formula rearranges three ways, one for each quantity you might be solving for.',
+        expression: 'v = √(2GM ÷ r)\nM = v² × r ÷ (2G)\nr = 2GM ÷ v²',
+        terms: [
+          { symbol: 'v', meaning: 'Escape velocity, in meters per second (commonly shown in km/s for planetary bodies).' },
+          { symbol: 'G', meaning: 'The Newtonian gravitational constant, 6.6743 × 10⁻¹¹ m³ kg⁻¹ s⁻² (CODATA 2022) — measured, unlike the exact speed of light, with a small uncertainty.' },
+          { symbol: 'M', meaning: 'The mass of the body being escaped (a planet, moon, or star), in kilograms.' },
+          { symbol: 'r', meaning: "The distance from the body's center — its radius, for launching from the surface." }
+        ],
+        note: "This formula ignores atmospheric drag and the gravity of any other nearby body (the Sun, a moon). It also assumes launching from the surface outward in a straight line; direction doesn't actually matter for the minimum-energy case, as long as the path avoids hitting the ground or atmosphere on the way out."
+      },
+      workedExample: {
+        intro: "What is Earth's escape velocity, given its mass and radius?",
+        rows: [
+          { label: 'Mass of Earth (M)', value: '5.9722 × 10²⁴ kg' },
+          { label: 'Radius of Earth (r)', value: '6,371 km = 6,371,000 m' },
+          { label: 'Gravitational constant (G)', value: '6.6743 × 10⁻¹¹ m³ kg⁻¹ s⁻²' },
+          { label: 'Escape velocity (v = √(2 × 6.6743×10⁻¹¹ × 5.9722×10²⁴ ÷ 6,371,000))', value: '≈ 11,186 m/s' }
+        ],
+        result: 'v ≈ 11.19 km/s ≈ 40,270 km/h ≈ 25,023 mph',
+        explanation: "Working through the formula gives about 11,186 m/s, or 11.19 km/s. NASA's own published figure for Earth is 11.186 km/s, and OpenStax's own worked example (using slightly rounder inputs, M = 5.96 × 10²⁴ kg and r = 6.37 × 10⁶ m) arrives at the same \"about 11 km/s, or about 25,000 mph.\" For comparison: the Moon's escape velocity is a much gentler 2.38 km/s, Mars sits at 5.03 km/s, Jupiter requires 59.5 km/s, and the Sun's is a dramatic 617.6 km/s (all NASA-published figures) — a direct reflection of how much more massive, and how much more tightly packed, each of those bodies is."
+      },
+      watchOut: [
+        {
+          title: 'Escape velocity does not depend on the direction of launch',
+          body: 'In this idealized, no-atmosphere model, the formula gives the same minimum speed regardless of which direction an object leaves in. In reality, atmospheric drag means real rockets lose some energy to air resistance, so an actual launch needs more than this theoretical minimum.'
+        },
+        {
+          title: "It is unrelated to a rocket's mass",
+          body: "A heavier spacecraft needs the same escape velocity as a light one — it just takes far more energy (and fuel) to accelerate the heavier one to that same speed. The formula itself has no mass-of-the-escaping-object term at all."
+        },
+        {
+          title: 'Escape velocity is not the same as orbital velocity',
+          body: "The speed needed to stay in a stable low orbit just above a body's surface is lower — about 7.9 km/s for Earth — than the speed needed to leave its gravity for good (11.2 km/s). Reaching orbit and escaping a body entirely are different goals with different speed requirements."
+        },
+        {
+          title: "G is measured, not exact — unlike the speed of light",
+          body: 'The gravitational constant carries a small measurement uncertainty (CODATA 2022: about 22 parts per million), the largest relative uncertainty of any fundamental constant in regular use, because gravity is so much weaker than the other forces and correspondingly harder to measure precisely in a lab.'
+        },
+        {
+          title: "Real planets and stars aren't perfectly uniform spheres",
+          body: "This formula treats a body as spherically symmetric with all its mass acting as if concentrated at the center — an excellent approximation for Earth, but a rotating gas giant like Jupiter bulges noticeably at its equator, so its real escape velocity (measured from a defined reference level) can differ slightly from a simple radius-and-mass calculation."
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §13.3 Gravitational Potential Energy and Total Energy', url: 'https://openstax.org/books/university-physics-volume-1/pages/13-3-gravitational-potential-energy-and-total-energy' },
+        { label: 'NIST, Newtonian constant of gravitation G (CODATA 2022)', url: 'https://physics.nist.gov/cgi-bin/cuu/Value?bg' },
+        { label: 'NASA Goddard Space Flight Center, Planetary Fact Sheets', url: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/' }
+      ]
+    },
+    inputs: [
+      { id: 'mass', label: 'Mass of the body (kg)', type: 'number', placeholder: '5.9722e24', defaultValue: 5.9722e24, step: 1e20, min: 0 },
+      { id: 'radius', label: 'Radius (m)', type: 'number', placeholder: '6371000', defaultValue: 6371000, step: 1000, min: 0 }
+    ],
+    seo: {
+      title: 'Escape Velocity Calculator – v = √(2GM/r)',
+      description: 'Free escape velocity calculator. Solve v = √(2GM/r) for escape velocity, mass, or radius of a planet, moon, or star, with an Earth worked example.',
+      faq: [
+        { question: 'What is the formula for escape velocity?', answer: 'v = √(2GM ÷ r), where G is the gravitational constant, M is the mass of the body, and r is the distance from its center (its radius, for a surface launch).' },
+        { question: "What is Earth's escape velocity?", answer: 'About 11.19 km/s (roughly 40,270 km/h or 25,023 mph), using Earth\'s mass of 5.9722 × 10²⁴ kg and radius of 6,371 km.' },
+        { question: 'Does escape velocity depend on the mass of the rocket or object?', answer: "No. The formula only involves the mass and radius of the body being escaped, not the escaping object's own mass — a pebble and a spacecraft need the identical speed, though the spacecraft needs far more energy and fuel to reach it." },
+        { question: 'Is escape velocity the same as orbital velocity?', answer: 'No, orbital velocity is lower. A stable low orbit around Earth needs about 7.9 km/s, while fully escaping Earth\'s gravity needs about 11.2 km/s — roughly 1.41 times as much, since escape velocity is always √2 times the circular orbital velocity at the same radius.' },
+        { question: 'How does escape velocity compare across the solar system?', answer: "It rises sharply with mass and tighter packing: the Moon's is 2.38 km/s, Mars is 5.03 km/s, Earth is 11.19 km/s, Jupiter is 59.5 km/s, and the Sun's is 617.6 km/s (NASA figures)." },
+        { question: 'What value of the gravitational constant does this calculator use?', answer: 'G = 6.6743 × 10⁻¹¹ m³ kg⁻¹ s⁻², the CODATA 2022 recommended value — a measured constant with a small uncertainty, unlike the exactly defined speed of light.' }
+      ]
+    },
+    compute(values) {
+      return { escapeVelocity: values.radius <= 0 ? NaN : Math.sqrt((2 * GRAVITATIONAL_CONSTANT * values.mass) / values.radius) };
     }
   },
   {

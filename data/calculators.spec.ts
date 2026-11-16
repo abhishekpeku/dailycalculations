@@ -73,6 +73,9 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'lens-mirror-equation-calculator': ['imageDistance'], // focalLength and objectDistance both 0 (their min) -> 0/0
   'molarity-calculator': ['molarity'], // moles and volume both 0 (their min) -> 0/0
   'dilution-calculator': ['concentration2'], // concentration1, volume1 and volume2 all 0 (their min) -> 0/0
+  'doppler-effect-calculator': ['observedFrequency'], // sourceFrequency and soundSpeed both 0 (their min) -> 0/0
+  'snells-law-calculator': ['theta2'], // n1, theta1 and n2 all 0 (their min) -> asin(0/0), NaN
+  'escape-velocity-calculator': ['escapeVelocity'], // radius 0 (its min) -> compute()'s own radius <= 0 guard
   'mass-percent-calculator': ['massPercent'], // soluteMass and solutionMass both 0 (their min) -> 0/0
   'moles-to-grams-calculator': ['moles'], // mass and molarMass both 0 (their min) -> 0/0
   'ideal-gas-law-calculator': ['volume'], // moles and temperature both 0 (their min), pressure 0 -> 0/0

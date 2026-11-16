@@ -468,9 +468,105 @@ build agent's judgment**, same as every run so far.
     port 3000 (not started by this run), so it was left running and the static HTML was inspected
     instead, same precedent as runs 4/5/A in this file.
   - 326 calculators total after this run (321 + 5). `physics` is now 31.
-- [ ] Physics waves/other-remainder run (5): Doppler effect, Snell's law (refraction), E = mc²
-  (mass-energy equivalence), thermal expansion, escape velocity — closes out every named seed-list
-  item from "Physics — proposed additions" above
+- [x] Physics waves/other-remainder run (5), branch `step/46-wave-3-physics-run-7`, PR #106 —
+  **DONE** 2026-11-16 — ran in parallel with "Physics mechanics-remainder run B" above (a separate
+  agent, separate worktree). This run never saw that agent's work; the counts below are from this
+  run's own branch point. **Reconciled by the main session at merge time**: both PRs (#105, #106)
+  independently added 5 physics calculators to `data/calculators/physics.ts` from the same base —
+  resolved as a manual merge-conflict splice (both calculator blocks concatenated, `GRAVITATIONAL_CONSTANT`
+  declared once, `thermalExpansionCoeff`/`torque` dimensions both kept) rather than a PR rebase.
+  Final counts after both land: `physics` 36, site-wide 331.
+  - [x] doppler-effect-calculator
+  - [x] snells-law-calculator
+  - [x] mass-energy-equivalence-calculator
+  - [x] thermal-expansion-calculator
+  - [x] escape-velocity-calculator
+  - `doppler-effect-calculator` (f₀ = fₛ(v + v₀) ÷ (v − vₛ)) is a 5-variable closed-form solver
+    (observed frequency, source frequency, speed of sound, observer speed, source speed). Folds
+    OpenStax's own ± / ∓ four-case sign convention into one expression by treating observer/source
+    speed as signed (positive toward the other party, negative away) — documented explicitly in a
+    `formula.note` and a `watchOut` item since other textbooks present it as four separate cases.
+    Speed of sound defaults to 343 m/s (OpenStax University Physics Volume 1 §17.2, air at 20°C).
+    Reuses `frequency`/`speed`, no new dimension.
+  - `snells-law-calculator` (n₁sinθ₁ = n₂sinθ₂) is a 4-variable closed-form solver reusing `angle`
+    (physics run 1) and the dimensionless `count` dimension for the two refractive indices, same
+    precedent as `friction-calculator`'s μ. `Math.asin` naturally returns `NaN` past total internal
+    reflection (sine argument > 1), which the page explains as the physically correct "no answer"
+    rather than an error — the critical angle itself is an emergent use of the same solver (enter
+    90° for θ₂ and solve for θ₁), called out in How To Use and a FAQ rather than built as a separate
+    field.
+  - `mass-energy-equivalence-calculator` (E = mc²) is a 2-variable closed-form solver (mass, rest
+    energy), with the speed of light hardcoded as a hidden constant (`SPEED_OF_LIGHT = 299792458`,
+    exact per the 1983 SI meter redefinition — confirmed directly against NIST's
+    physics.nist.gov/cgi-bin/cuu/Value?c) rather than an editable solver variable, since c is a true
+    universal constant with no "what if it were different" use case (unlike `free-fall-calculator`'s
+    editable gravity). A bonus `outputs` entry shows the speed of light itself as a `speed`-dimension
+    figure (in the newly added km/s unit) rather than leaving the reused-dimension hint unused. Its
+    1 g worked example (≈8.99 × 10¹³ J) is cross-checked directly against OpenStax's own Example
+    5.13 for the identical case (1.00 g → 9.00 × 10¹³ J, rounded to 3 sig figs) and quotes that
+    section's own Hiroshima/aircraft-carrier comparison rather than inventing a bomb-yield figure.
+  - `thermal-expansion-calculator` (ΔL = αL₀ΔT) is linear (1-D) expansion, explicitly stated as the
+    choice over volumetric — a bonus `outputs` entry (β ≈ 3α) surfaces the volumetric relationship
+    without needing a second volume-based formula or a second calculator. Needed a genuinely new
+    `lib/units.ts` dimension, `thermalExpansionCoeff` (base 1/K; 1/°C identical, no offset, same
+    no-offset reasoning as `temperatureDelta`; a practical ×10⁻⁶/°C unit matching how material tables
+    report it). Round-trip + anchor test in `lib/units.spec.ts` (steel's 12×10⁻⁶/°C over 50 m and
+    30°C = 18 mm, OpenStax University Physics Volume 2 §1.3 Table 1.2). Reuses `length` (for both L₀
+    and ΔL, same reused-dimension-for-different-roles precedent as `momentum`/`impulse`) and
+    `temperatureDelta` (physics run 4).
+  - `escape-velocity-calculator` (v = √(2GM ÷ r)) is a 3-variable closed-form solver. G is hardcoded
+    as `GRAVITATIONAL_CONSTANT = 6.6743e-11` (CODATA 2022 recommended value, confirmed directly
+    against physics.nist.gov/cgi-bin/cuu/Value?bg) rather than a solver variable, same reasoning as
+    the speed of light above, with a `watchOut` item explicitly contrasting G's small measurement
+    uncertainty against c's exactness. Needed one new unit (not a new dimension): `km/s` added to
+    the existing `speed` dimension (factor 1000, an exact SI multiple) so results print at a sane
+    magnitude — shared with `mass-energy-equivalence-calculator`'s speed-of-light output above.
+    Earth's worked example (M = 5.9722 × 10²⁴ kg, r = 6,371 km, both NASA Earth Fact Sheet) computes
+    to 11.186 km/s, matching NASA's own published 11.186 km/s to within 0.0015%, and OpenStax's own
+    §13.3 worked example (different rounding of M/r) to "about 11 km/s, about 25,000 mph." Benchmark
+    comparisons (Moon 2.38, Mars 5.03, Jupiter 59.5, Sun 617.6 km/s) are NASA's own published figures
+    per this wave's "headline figures must match the published chart" discipline, not recomputed
+    from G/M/r for those bodies — the content separately notes that a naive volumetric-mean-radius
+    calculation comes out about 1.2% high for Jupiter specifically, because gas giants are oblate and
+    their escape velocity is conventionally quoted from a defined reference level, not simple
+    geometry.
+  - Closes out every named item from this file's "Physics — proposed additions" seed lists above
+    (mechanics, electricity, waves/optics/thermal/nuclear) across all seven physics runs so far.
+    Remaining physics runs (drivetrain/efficiency, runs 9+) have no seed list left, as already noted
+    below, and are the build agent's own formula choices.
+  - Every formula fetched directly from a primary source (not recalled from memory): OpenStax
+    University Physics Volume 1 §17.7 "The Doppler Effect" and §17.2 "Speed of Sound"; OpenStax
+    University Physics Volume 3 §1.3 "Refraction" and §1.4 "Total Internal Reflection"; OpenStax
+    University Physics Volume 3 §5.9 "Relativistic Energy"; OpenStax University Physics Volume 2
+    §1.3 "Thermal Expansion"; OpenStax University Physics Volume 1 §13.3 "Gravitational Potential
+    Energy and Total Energy"; NIST's CODATA pages for c (exact) and G (CODATA 2022); NASA Goddard's
+    Planetary Fact Sheets for Earth/Moon/Mars/Jupiter/Sun mass, radius and escape velocity.
+  - Independent scratch script (`verify_run7.mjs`, scratchpad, no app imports) recomputed every
+    number before the copy was written: both Doppler directions (167.05 Hz / +11.36% approaching,
+    136.11 Hz / −9.26% receding, plus all 5 solver round-trips); Snell's law's air→water example
+    (22.08°) and the water→air critical angle (48.75°, plus confirming 60° from water gives a
+    sin-argument above 1, i.e. `NaN`, i.e. total internal reflection); the 1 g mass-energy example
+    (8.9875517873681764 × 10¹³ J) and c in km/h and mph; the steel-beam thermal expansion example
+    (18 mm) and its aluminum comparison (37.5 mm) and the β = 3α relation; and the escape-velocity
+    cross-checks against all five NASA bodies (Earth 11.186 vs NASA's 11.186 km/s; Moon, Mars, Sun
+    all within ~0.2%; Jupiter about 1.2% high, explained in content).
+  - New `KNOWN_NON_FINITE` entries in `data/calculators.spec.ts`: `doppler-effect-calculator`
+    (`observedFrequency`, sourceFrequency/soundSpeed at their own 0 min → 0/0),
+    `snells-law-calculator` (`theta2`, n1/theta1/n2 all at their own 0 min → `asin(0/0)` → `NaN`) and
+    `escape-velocity-calculator` (`escapeVelocity`, radius at its own 0 min → `compute()`'s own
+    `radius <= 0` guard). `mass-energy-equivalence-calculator` and `thermal-expansion-calculator`
+    needed no new entry (both resolve to an honest finite 0 at every input's own 0 min). Snapshot
+    diff is additive-only (169 new lines, 0 removed, confirmed with `git diff --stat`).
+  - `npm test` (1,258 tests), `npm run lint` and `npm run build` all pass (357 routes). Verified the
+    5 new pages from the static HTML `next build` produced
+    (`.next/server/app/en/calculators/<id>.html`): H1, exactly 2 JSON-LD scripts, no "application
+    error" text, and all eight section ids (concept/how-to-use/formula/worked-example/watch-out/faq/
+    references/related) present on every page, all 5 linked correctly from `/en/categories/physics`.
+    A pre-existing process (likely the parallel run B agent's) was already listening on port 3000 —
+    left running rather than killed, per this run's own instructions.
+  - From this run's own branch point (does not include run B's 5): 326 calculators total (321 + 5).
+    `physics` is 31 on this branch; the true post-merge total needs reconciling with run B's PR by
+    the main session, since both runs added 5 physics calculators independently to the same file.
 - [ ] Physics drivetrain/efficiency run (5): horsepower (deferred from run 4 — check it isn't a
   straight unit conversion already covered by `power-converter` before building; frame from
   torque+RPM if so), RPM-to-speed (wheel RPM → linear speed given wheel diameter), gear ratio

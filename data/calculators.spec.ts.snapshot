@@ -3422,6 +3422,44 @@ exports[`compute() snapshots > distance-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > doppler-effect-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "sourceFrequency": 150,
+      "soundSpeed": 343,
+      "observerSpeed": 0,
+      "sourceSpeed": 35
+    },
+    "outputs": {
+      "observedFrequency": 167.0454545
+    }
+  },
+  "typical": {
+    "inputs": {
+      "sourceFrequency": 225,
+      "soundSpeed": 515,
+      "observerSpeed": 0,
+      "sourceSpeed": 52.5
+    },
+    "outputs": {
+      "observedFrequency": 250.5405405
+    }
+  },
+  "edge": {
+    "inputs": {
+      "sourceFrequency": 0,
+      "soundSpeed": 0,
+      "observerSpeed": 0,
+      "sourceSpeed": 0
+    },
+    "outputs": {
+      "observedFrequency": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > down-payment-savings-calculator 1`] = `
 {
   "default": {
@@ -3940,6 +3978,38 @@ exports[`compute() snapshots > equilibrium-constant-calculator 1`] = `
       "keq": 1,
       "numerator": 1,
       "denominator": 1
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > escape-velocity-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass": 5.9722e+24,
+      "radius": 6371000
+    },
+    "outputs": {
+      "escapeVelocity": 11186.1652
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass": 8.9583e+24,
+      "radius": 9557000
+    },
+    "outputs": {
+      "escapeVelocity": 11185.87258
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass": 0,
+      "radius": 0
+    },
+    "outputs": {
+      "escapeVelocity": "NaN"
     }
   }
 }
@@ -6827,6 +6897,35 @@ exports[`compute() snapshots > margin-of-error-calculator 1`] = `
       "upperBound": 0,
       "criticalValue": 0.01253346951,
       "standardErrorPercent": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > mass-energy-equivalence-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass": 0.001
+    },
+    "outputs": {
+      "energy": 89875517870000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass": 0.0015
+    },
+    "outputs": {
+      "energy": 134813276800000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass": 0
+    },
+    "outputs": {
+      "energy": 0
     }
   }
 }
@@ -11726,6 +11825,41 @@ exports[`compute() snapshots > slope-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > snells-law-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "n1": 1,
+      "theta1": 0.5235987755982988,
+      "n2": 1.33
+    },
+    "outputs": {
+      "theta2": 0.385410817
+    }
+  },
+  "typical": {
+    "inputs": {
+      "n1": 1.5,
+      "theta1": 0.79,
+      "n2": 2
+    },
+    "outputs": {
+      "theta2": 0.5618644686
+    }
+  },
+  "edge": {
+    "inputs": {
+      "n1": 0,
+      "theta1": 0,
+      "n2": 0
+    },
+    "outputs": {
+      "theta2": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > social-security-calculator 1`] = `
 {
   "default": {
@@ -12552,6 +12686,41 @@ exports[`compute() snapshots > theoretical-yield-calculator 1`] = `
     },
     "outputs": {
       "theoreticalYield": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > thermal-expansion-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "alpha": 0.000012,
+      "length0": 50,
+      "deltaT": 30
+    },
+    "outputs": {
+      "deltaL": 0.018
+    }
+  },
+  "typical": {
+    "inputs": {
+      "alpha": 0.000018,
+      "length0": 75,
+      "deltaT": 45
+    },
+    "outputs": {
+      "deltaL": 0.06075
+    }
+  },
+  "edge": {
+    "inputs": {
+      "alpha": 0,
+      "length0": 0,
+      "deltaT": 0
+    },
+    "outputs": {
+      "deltaL": 0
     }
   }
 }

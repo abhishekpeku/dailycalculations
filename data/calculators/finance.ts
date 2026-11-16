@@ -4606,4 +4606,168 @@ export const financeCalculators: CalculatorConfig[] = [
       return { interest, totalValue: values.principal + interest };
     }
   },
+  {
+    id: 'mutual-fund-calculator',
+    group: 'Savings & Growth',
+    category: 'finance',
+    glyph: 'MF',
+    updatedAt: '2026-11-16',
+    aliases: ['mutual fund growth calculator', 'mutual fund return calculator', 'mutual fund sip calculator', 'mutual fund expense ratio calculator', 'fund fee impact calculator'],
+    related: ['investment-calculator', 'compound-interest-calculator', 'retirement-savings-calculator', 'goal-based-investment-calculator'],
+    title: 'Mutual Fund Calculator',
+    description: 'Project mutual fund growth from a lump sum plus monthly contributions, with the expense ratio modeled as a direct drag on your return — the one thing investment-calculator leaves out.',
+    example: '$10,000 plus $200 a month for 20 years at an assumed 8% gross annual return and a 0.5% expense ratio grows to about $155,354.32 — about $11,717.80 less than the same plan with no fund fees at all.',
+    solver: {
+      defaultTarget: 'futureValue',
+      variables: [
+        { id: 'futureValue', label: 'Future value', symbol: 'FV', dimension: 'currency', defaultValue: 155354.32, defaultUnit: 'currency' },
+        { id: 'initialInvestment', label: 'Initial investment', symbol: 'P', dimension: 'currency', defaultValue: 10000, defaultUnit: 'currency' },
+        { id: 'monthlyContribution', label: 'Monthly contribution', symbol: 'C', dimension: 'currency', defaultValue: 200, defaultUnit: 'currency', fixed: true },
+        { id: 'years', label: 'Time invested', symbol: 't', dimension: 'term', defaultValue: 20, defaultUnit: 'yr', bounds: [0, 1200] },
+        { id: 'grossAnnualReturn', label: "Fund's gross annual return", symbol: 'g', dimension: 'percent', defaultValue: 8, defaultUnit: '%', bounds: [-50, 100] },
+        { id: 'expenseRatio', label: 'Expense ratio', symbol: 'e', dimension: 'percent', defaultValue: 0.5, defaultUnit: '%', fixed: true }
+      ],
+      // `years` arrives in months (the term dimension's base); growth compounds monthly, net of the
+      // expense ratio, which comes straight off the gross return every year the SEC's own way.
+      solve: {
+        futureValue: ({ initialInvestment, monthlyContribution, years, grossAnnualReturn, expenseRatio }) => {
+          const netRate = grossAnnualReturn - expenseRatio;
+          return years >= 0 ? initialInvestment * growthFactor(netRate, 12, years) + monthlyContribution * annuityFactor(netRate, 12, years) : NaN;
+        },
+        initialInvestment: ({ futureValue, monthlyContribution, years, grossAnnualReturn, expenseRatio }) => {
+          const netRate = grossAnnualReturn - expenseRatio;
+          const start = (futureValue - monthlyContribution * annuityFactor(netRate, 12, years)) / growthFactor(netRate, 12, years);
+          return years >= 0 && start >= 0 ? start : NaN;
+        },
+        years: ({ futureValue, initialInvestment, monthlyContribution, grossAnnualReturn, expenseRatio }) => {
+          const netRate = grossAnnualReturn - expenseRatio;
+          const i = netRate / 100 / 12;
+          if (i === 0) return monthlyContribution > 0 ? (futureValue - initialInvestment) / monthlyContribution : NaN;
+          const months = Math.log((futureValue * i + monthlyContribution) / (initialInvestment * i + monthlyContribution)) / Math.log(1 + i);
+          return months >= 0 ? months : NaN;
+        }
+      },
+      // The gross return has no closed form when there are contributions: the widget finds it numerically.
+      equation: (si) => {
+        const netRate = si.grossAnnualReturn - si.expenseRatio;
+        return si.futureValue - (si.initialInvestment * growthFactor(netRate, 12, si.years) + si.monthlyContribution * annuityFactor(netRate, 12, si.years));
+      },
+      outputs: [
+        { id: 'totalContributions', label: 'Total contributions', dimension: 'currency', compute: (si) => si.monthlyContribution * si.years },
+        { id: 'totalGrowth', label: 'Growth after fees', dimension: 'currency', compute: (si) => si.futureValue - si.initialInvestment - si.monthlyContribution * si.years },
+        {
+          id: 'feeDrag',
+          label: 'Cost of the expense ratio (vs. 0% fees)',
+          dimension: 'currency',
+          compute: (si) => {
+            const grossFV = si.initialInvestment * growthFactor(si.grossAnnualReturn, 12, si.years) + si.monthlyContribution * annuityFactor(si.grossAnnualReturn, 12, si.years);
+            return grossFV - si.futureValue;
+          }
+        }
+      ],
+      derive: (si) => ({ contributions: si.monthlyContribution * si.years }),
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'initialInvestment', label: 'Initial investment' },
+            { from: 'contributions', label: 'Monthly contributions' },
+            { from: 'totalGrowth', label: 'Growth after fees' }
+          ],
+          center: 'futureValue',
+          centerSub: 'future value'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What investment-calculator leaves out: the expense ratio',
+        paragraphs: [
+          "A mutual fund charges an ongoing fee to cover its own operating costs — management fees, 12b-1 distribution fees and other expenses — expressed as the expense ratio, a percentage of the fund's assets charged every year. The SEC's Investor Bulletin on fund fees describes it plainly: these are annual fund operating expenses, charged as a percentage of your assets in the fund, year after year, whether or not you ever see a separate bill for them.",
+          "investment-calculator projects growth from a return you assume, with no fee deducted from it at all. This calculator models the one thing that page doesn't: it takes the fund's gross return (what the underlying investments actually earn) and subtracts the expense ratio before compounding, the same treatment compound-interest-calculator's own content already uses for fees — \"a 1% fee on a 7% return leaves 6%.\" The difference between the fee-adjusted result and a hypothetical 0%-fee version is shown directly as a dollar cost, not left as an abstract percentage.",
+          'Unlike investment-calculator\'s yearly contribution and compound-interest-calculator\'s plain savings framing, this calculator compounds monthly with a monthly contribution — matching a systematic monthly mutual fund purchase (sometimes called an SIP, for systematic investment plan, outside the US). For a yearly-contribution model with no fee, use investment-calculator; for the identical monthly model with no fee at all, use compound-interest-calculator.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the monthly contribution and the expense ratio (both always inputs), then any three of the other four fields. The fourth, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter the monthly contribution', text: 'Always an input. Use 0 for a single lump-sum investment with no ongoing contributions.' },
+          { name: 'Enter the expense ratio', text: "Always an input — the fund's annual operating expense percentage, found in its prospectus fee table or fact sheet. Use 0 to see the no-fee comparison directly as the future value." },
+          { name: 'Project the future value', text: "Type the initial investment, the time and the fund's assumed gross annual return (before fees). The future value appears net of the expense ratio, with contributions, growth and the fee's dollar cost broken out." },
+          { name: 'Plan backward from a goal', text: 'Type a target future value. Leave the time alone to see how long it takes, or the initial investment to see how much to start with, net of the same fee.' },
+          { name: 'Find the gross return you need', text: 'Fill in the goal, start, contribution, time and expense ratio so the gross return is the field left alone longest, and the calculator searches for the return required before fees.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "The expense ratio is subtracted from the fund's gross return before the usual monthly-compounding future-value formula is applied.",
+        expression: 'Net rate = Gross return − Expense ratio\nFV = P × (1 + i)^n + C × ((1 + i)^n − 1) ÷ i,  i = Net rate ÷ 100 ÷ 12,  n = 12 × t\nFee cost = FV at 0% expense ratio − FV at the actual expense ratio',
+        terms: [
+          { symbol: 'FV', meaning: 'Future value, net of the expense ratio.' },
+          { symbol: 'P', meaning: 'Initial lump-sum investment.' },
+          { symbol: 'C', meaning: 'Contribution added at the end of each month.' },
+          { symbol: 'Gross return', meaning: "The fund's underlying assumed annual return, before fees." },
+          { symbol: 'Expense ratio', meaning: "The fund's annual operating expense, as a percentage of assets — subtracted directly from the gross return." },
+          { symbol: 'i, n', meaning: 'The net monthly rate as a decimal, and the number of months (n = 12t).' }
+        ],
+        note: 'Estimates only, and not investment advice. Subtracting the expense ratio from the return is a standard simplification; it ignores sales loads, brokerage commissions, taxes and the fact that returns vary year to year rather than staying constant.'
+      },
+      workedExample: {
+        intro: 'You invest $10,000 and add $200 at the end of every month for 20 years, in a fund assumed to return 8% a year gross, with a 0.5% expense ratio. What will it grow to, and what does the fee cost?',
+        rows: [
+          { label: 'Net rate (8% − 0.5%)', value: '7.5%' },
+          { label: 'Monthly net rate (7.5% ÷ 12)', value: '0.625%' },
+          { label: 'Months (20 × 12)', value: '240' },
+          { label: 'Future value at the net rate', value: '$155,354.32' },
+          { label: 'Total contributions (200 × 240)', value: '$48,000' },
+          { label: 'Growth after fees (155,354.32 − 10,000 − 48,000)', value: '$97,354.32' },
+          { label: 'Future value at 0% expense ratio (gross 8% the whole way)', value: '$167,072.11' },
+          { label: 'Cost of the expense ratio (167,072.11 − 155,354.32)', value: '$11,717.80, about 7.54% of the fee-adjusted result' }
+        ],
+        result: 'FV ≈ $155,354.32 after 20 years · the 0.5% expense ratio costs about $11,717.80',
+        explanation: 'Half a percentage point sounds small next to an 8% return, but compounded monthly over 20 years on a growing balance it costs about $11,717.80 — roughly a quarter of the entire $48,000 contributed beyond the initial $10,000. A lower-cost fund with the same gross return and a 0.1% expense ratio instead would grow to about $164,649.64, roughly $9,295.32 more than this 0.5%-ratio example.'
+      },
+      watchOut: [
+        { title: 'Gross return is what you assume, not what you are promised', body: "Fund returns vary year to year and can be negative; a constant assumed gross return is a planning simplification, the same assumption investment-calculator and compound-interest-calculator both make." },
+        { title: 'Fees compound too', body: "An expense ratio taken out every year compounds against you the same way a return compounds for you — the longer the time horizon, the larger its dollar cost, even though the percentage itself never changes." },
+        { title: 'Not every fund cost is in the expense ratio', body: "Sales loads (a one-time purchase or redemption charge) and brokerage commissions are separate from the ongoing expense ratio and are not modeled here. Check a fund's full fee table, not just its expense ratio, before comparing costs." },
+        { title: 'Taxes and inflation are not modeled', body: 'Gains in a taxable account are taxed; the future value shown here is also in future dollars, not adjusted for inflation. See inflation-calculator for what a future amount is worth today.' }
+      ],
+      references: [
+        { label: 'U.S. Securities and Exchange Commission, Investor.gov: Mutual Fund and ETF Fees and Expenses (Investor Bulletin)', url: 'https://www.investor.gov/introduction-investing/general-resources/news-alerts/alerts-bulletins/investor-bulletins/mutual-fund-and-etf-fees-and-expenses-investor-bulletin' },
+        { label: 'U.S. Securities and Exchange Commission, Investor.gov glossary: Total Annual Fund Operating Expenses', url: 'https://www.investor.gov/introduction-investing/investing-basics/glossary/total-annual-fund-operating-expense' }
+      ]
+    },
+    inputs: [
+      { id: 'initialInvestment', label: 'Initial investment', type: 'currency', placeholder: '10000', defaultValue: 10000, step: 500, min: 0 },
+      { id: 'grossAnnualReturn', label: "Fund's gross annual return", type: 'percent', placeholder: '8', defaultValue: 8, step: 0.1, min: 0 },
+      { id: 'expenseRatio', label: 'Expense ratio', type: 'percent', placeholder: '0.5', defaultValue: 0.5, step: 0.01, min: 0 },
+      { id: 'years', label: 'Years invested', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 0 },
+      { id: 'monthlyContribution', label: 'Monthly contribution', type: 'currency', placeholder: '200', defaultValue: 200, step: 10, min: 0 }
+    ],
+    seo: {
+      title: 'Mutual Fund Calculator – Growth Net of Expense Ratio',
+      description: 'Free mutual fund calculator: project growth from a lump sum plus monthly contributions, with the expense ratio modeled as a direct drag on returns.',
+      faq: [
+        { question: 'How does an expense ratio affect mutual fund returns?', answer: "It comes directly off the gross return every year before compounding. A fund assumed to return 8% gross with a 0.5% expense ratio compounds at a 7.5% net rate — on $10,000 plus $200 a month for 20 years, that 0.5% costs about $11,717.80 compared with a 0%-fee version." },
+        { question: 'How is this different from the investment calculator?', answer: "investment-calculator assumes a return with no fee subtracted from it at all, and compounds yearly with a yearly contribution. This calculator subtracts a stated expense ratio from the gross return before compounding, monthly, with a monthly contribution." },
+        { question: 'What is a good expense ratio?', answer: 'There is no single answer, but lower is generally better, all else equal, because it is a guaranteed, permanent drag on the gross return every single year. Compare the same investment plan at a few different expense ratios in this calculator to see the real dollar impact of the difference.' },
+        { question: 'Does the expense ratio include sales loads or trading commissions?', answer: 'No. The expense ratio is the fund\'s ongoing annual operating expense; a one-time sales load or a brokerage commission is separate and is not modeled by this calculator.' },
+        { question: 'Can I model a fund with no fees?', answer: 'Yes — set the expense ratio to 0. The future value then matches investment-calculator\'s or compound-interest-calculator\'s own fee-free result for the same inputs and contribution schedule.' },
+        { question: 'Why does a small expense ratio cost so much over time?', answer: "Because it is taken every single year and compounds against you the same way a return compounds for you. On the $10,000-plus-$200-a-month, 20-year example, a 0.5% expense ratio costs about $11,717.80 — roughly a quarter of the $48,000 contributed beyond the initial deposit." }
+      ]
+    },
+    compute(values) {
+      const netRate = values.grossAnnualReturn - values.expenseRatio;
+      const months = Math.max(0, values.years * 12);
+      const futureValue = values.initialInvestment * growthFactor(netRate, 12, months) + values.monthlyContribution * annuityFactor(netRate, 12, months);
+      const totalContributions = values.monthlyContribution * months;
+      const totalGrowth = futureValue - values.initialInvestment - totalContributions;
+      const grossFutureValue =
+        values.initialInvestment * growthFactor(values.grossAnnualReturn, 12, months) + values.monthlyContribution * annuityFactor(values.grossAnnualReturn, 12, months);
+      const feeDrag = grossFutureValue - futureValue;
+      return { futureValue, totalContributions, totalGrowth, feeDrag };
+    }
+  },
 ];

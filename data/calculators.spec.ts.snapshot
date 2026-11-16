@@ -7341,6 +7341,56 @@ exports[`compute() snapshots > mulch-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > mutual-fund-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "initialInvestment": 10000,
+      "grossAnnualReturn": 8,
+      "expenseRatio": 0.5,
+      "years": 20,
+      "monthlyContribution": 200
+    },
+    "outputs": {
+      "futureValue": 155354.3153,
+      "totalContributions": 48000,
+      "totalGrowth": 97354.31532,
+      "feeDrag": 11717.79551
+    }
+  },
+  "typical": {
+    "inputs": {
+      "initialInvestment": 15000,
+      "grossAnnualReturn": 12,
+      "expenseRatio": 0.75,
+      "years": 30,
+      "monthlyContribution": 300
+    },
+    "outputs": {
+      "futureValue": 1320115.222,
+      "totalContributions": 108000,
+      "totalGrowth": 1197115.222,
+      "feeDrag": 267618.6381
+    }
+  },
+  "edge": {
+    "inputs": {
+      "initialInvestment": 0,
+      "grossAnnualReturn": 0,
+      "expenseRatio": 0,
+      "years": 0,
+      "monthlyContribution": 0
+    },
+    "outputs": {
+      "futureValue": 0,
+      "totalContributions": 0,
+      "totalGrowth": 0,
+      "feeDrag": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > nfl-passer-rating-calculator 1`] = `
 {
   "default": {

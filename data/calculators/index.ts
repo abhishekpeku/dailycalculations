@@ -345,6 +345,7 @@ export const calculatorOrder: string[] = [
   'isotope-notation-calculator',
   'molecular-geometry-calculator',
   'specific-heat-by-mixing-calculator',
+  'grahams-law-effusion-calculator',
   'home-affordability-calculator',
   'mortgage-refinance-calculator',
   'down-payment-savings-calculator',

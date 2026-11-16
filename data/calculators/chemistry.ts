@@ -5629,5 +5629,115 @@ export const chemistryCalculators: CalculatorConfig[] = [
       const specificHeatUnknown = denominator === 0 ? NaN : -(values.massKnown * values.specificHeatKnown * (values.finalTemp - values.initialTempKnown)) / denominator;
       return { specificHeatUnknown };
     }
+  },
+  {
+    id: 'grahams-law-effusion-calculator',
+    category: 'chemistry',
+    group: 'Gas Laws',
+    glyph: 'eff',
+    updatedAt: '2026-11-16',
+    aliases: ['graham’s law calculator', 'graham’s law of effusion calculator', 'rate of effusion calculator', 'effusion rate ratio calculator', 'gas effusion calculator'],
+    related: ['ideal-gas-law-calculator', 'combined-gas-law-calculator', 'molar-mass-calculator', 'vapor-pressure-calculator'],
+    title: 'Graham’s Law of Effusion Calculator (r₁ ÷ r₂ = √(M₂ ÷ M₁))',
+    description: 'Compare how much faster one gas effuses than another from their molar masses alone, or solve for an unknown gas’s molar mass from a measured rate ratio.',
+    example: 'Hydrogen (2.016 g/mol) effuses about 3.98 times as fast as oxygen (31.998 g/mol) at the same temperature and pressure.',
+    solver: {
+      defaultTarget: 'rate1',
+      variables: [
+        { id: 'rate1', label: 'Effusion rate of gas 1', symbol: 'r₁', dimension: 'count', defaultValue: 3.984, defaultUnit: 'count' },
+        { id: 'rate2', label: 'Effusion rate of gas 2', symbol: 'r₂', dimension: 'count', defaultValue: 1, defaultUnit: 'count' },
+        { id: 'molarMass1', label: 'Molar mass of gas 1', symbol: 'M₁', dimension: 'molarMass', defaultValue: 2.016, defaultUnit: 'g/mol' },
+        { id: 'molarMass2', label: 'Molar mass of gas 2', symbol: 'M₂', dimension: 'molarMass', defaultValue: 31.998, defaultUnit: 'g/mol' }
+      ],
+      solve: {
+        rate1: ({ rate2, molarMass1, molarMass2 }) => (molarMass1 === 0 ? NaN : rate2 * Math.sqrt(molarMass2 / molarMass1)),
+        rate2: ({ rate1, molarMass1, molarMass2 }) => (molarMass2 === 0 ? NaN : rate1 * Math.sqrt(molarMass1 / molarMass2)),
+        molarMass1: ({ rate1, rate2, molarMass2 }) => (rate1 === 0 ? NaN : molarMass2 * (rate2 / rate1) ** 2),
+        molarMass2: ({ rate1, rate2, molarMass1 }) => (rate2 === 0 ? NaN : molarMass1 * (rate1 / rate2) ** 2)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is Graham’s law of effusion?',
+        paragraphs: [
+          'Effusion is what happens when gas molecules escape one at a time through a tiny opening into a vacuum or a much larger empty space, without colliding with each other on the way out — a different process from diffusion, which is one gas spreading out through another. OpenStax Chemistry 2e’s §9.4 states Graham’s law directly: "the rate of effusion of a gas is inversely proportional to the square root of its molar mass," so a lighter gas always escapes faster than a heavier one at the same temperature and pressure.',
+          'Comparing two gases side by side turns that proportionality into a ratio where everything except the two molar masses cancels out: r₁ ÷ r₂ = √(M₂ ÷ M₁). A gas with a quarter of another gas’s molar mass effuses exactly twice as fast (√4 = 2), not four times as fast — the relationship is a square root, not a direct one.',
+          'The square root comes from kinetic molecular theory: both gases share the same average kinetic energy at the same temperature, so the lighter molecules must be moving faster on average to make up for their smaller mass. This calculator reuses the exact same molar-mass dimension already used on this site’s molar mass and ideal gas law calculators, since no new unit of measurement is involved — only a ratio of two molar masses.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter any three of the two gases’ effusion rates and molar masses; the fourth fills in automatically.',
+        steps: [
+          { name: 'Identify the two gases being compared', text: 'Graham’s law compares exactly two gases at the same temperature and pressure — keep track of which one is "gas 1" and which is "gas 2."' },
+          { name: 'Enter each gas’s molar mass', text: 'From the molar mass calculator or a periodic table, in g/mol.' },
+          { name: 'Enter one gas’s effusion rate', text: 'A relative number is enough — 1 is a convenient reference rate for whichever gas is being compared against.' },
+          { name: 'Read the other gas’s rate', text: 'It fills in automatically, showing how many times faster (or slower) that gas effuses.' },
+          { name: 'Or solve for a molar mass instead', text: 'Enter both measured rates and one known molar mass, and the calculator solves for the other gas’s molar mass — a classic way to identify an unknown gas.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'r₁ ÷ r₂ = √(M₂ ÷ M₁) rearranges to solve for either rate or either molar mass, given the other three.',
+        expression: 'r₁ ÷ r₂ = √(M₂ ÷ M₁)\nr₁ = r₂ × √(M₂ ÷ M₁)\nM₁ = M₂ × (r₂ ÷ r₁)²',
+        terms: [
+          { symbol: 'r₁, r₂', meaning: 'The effusion rate of gas 1 and gas 2 — any consistent relative unit works, since only their ratio matters.' },
+          { symbol: 'M₁, M₂', meaning: 'The molar mass of gas 1 and gas 2, compared at the same temperature and pressure.' }
+        ],
+        note: 'Because only the ratio of rates and the ratio of molar masses appear in the formula, the actual unit used for rate — moles per second, molecules per second, or just a relative number — cancels out completely.'
+      },
+      workedExample: {
+        intro: 'How much faster does hydrogen gas effuse than oxygen gas at the same temperature and pressure? (OpenStax Chemistry 2e, Example 9.20, reworked here with each gas’s precise standard atomic weight rather than the rounded whole numbers OpenStax uses for the demonstration.)',
+        rows: [
+          { label: 'Molar mass of H₂ (2 × 1.008 g/mol)', value: '2.016 g/mol' },
+          { label: 'Molar mass of O₂ (2 × 15.999 g/mol)', value: '31.998 g/mol' },
+          { label: 'r(H₂) ÷ r(O₂) = √(31.998 ÷ 2.016)', value: '√15.872 ≈ 3.984' }
+        ],
+        result: 'Hydrogen effuses about 3.98 times as fast as oxygen',
+        explanation: 'OpenStax’s own version of this example rounds each molar mass to a whole number (2 g/mol and 32 g/mol) and gets exactly 4 — a clean, memorable number that is nonetheless about 0.4% higher than the precise answer. Using each element’s actual standard atomic weight (1.008 g/mol for hydrogen, 15.999 for oxygen) instead gives 3.984, not 4 — close enough that "about four times as fast" is still a fair summary, but not exactly four.'
+      },
+      watchOut: [
+        {
+          title: 'This compares two gases at the same temperature and pressure',
+          body: 'Graham’s law isolates the effect of molar mass by holding temperature and pressure fixed for both gases being compared. A gas’s effusion rate at one temperature cannot be compared directly against another gas’s rate at a different temperature with this formula alone.'
+        },
+        {
+          title: 'Effusion is through a tiny opening into a vacuum, not ordinary mixing',
+          body: 'Diffusion — one gas gradually spreading through another, like a scent crossing a room — follows a related relationship but is slowed further by collisions with the other gas’s own molecules. Graham’s law describes the idealized effusion case most general-chemistry problems actually use, even when they describe it with diffusion-style wording.'
+        },
+        {
+          title: 'This is a rate ratio, not an absolute molecular speed',
+          body: 'This calculator finds how many times faster one gas effuses than another, not either gas’s actual average molecular speed in meters per second — that comes from a separate calculation based on kinetic molecular theory.'
+        },
+        {
+          title: 'Identifying an unknown gas needs a clean, same-condition comparison',
+          body: 'Solving for an unknown molar mass from two measured rates (or effusion times) assumes both gases were compared under the same temperature and pressure, and that what was measured is effusion rate, not some other quantity like total gas volume escaped.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §9.4 "Effusion and Diffusion of Gases" (Graham’s law and Example 9.20)', url: 'https://openstax.org/books/chemistry-2e/pages/9-4-effusion-and-diffusion-of-gases' },
+        { label: 'CIAAW (IUPAC Commission on Isotopic Abundances and Atomic Weights), Standard Atomic Weights', url: 'https://ciaaw.org/atomic-weights.htm' }
+      ]
+    },
+    inputs: [
+      { id: 'rate2', label: 'Effusion rate of gas 2', type: 'number', placeholder: '1', defaultValue: 1, step: 0.01, min: 0 },
+      { id: 'molarMass1', label: 'Molar mass of gas 1 (kg/mol)', type: 'number', placeholder: '0.002016', defaultValue: 0.002016, step: 0.0001, min: 0 },
+      { id: 'molarMass2', label: 'Molar mass of gas 2 (kg/mol)', type: 'number', placeholder: '0.031998', defaultValue: 0.031998, step: 0.0001, min: 0 }
+    ],
+    seo: {
+      title: 'Graham’s Law of Effusion Calculator',
+      description: 'Free Graham’s law calculator. Solve r1/r2 = √(M2/M1) for either effusion rate or either molar mass, with a worked hydrogen vs. oxygen example.',
+      faq: [
+        { question: 'What is Graham’s law of effusion?', answer: 'r₁ ÷ r₂ = √(M₂ ÷ M₁): the ratio of two gases’ effusion rates equals the square root of the inverse ratio of their molar masses — a lighter gas always effuses faster at the same temperature and pressure.' },
+        { question: 'How much faster does hydrogen effuse than oxygen?', answer: 'About 3.98 times as fast, using hydrogen’s 2.016 g/mol and oxygen’s 31.998 g/mol molar masses. A common textbook shortcut rounds both masses to whole numbers and gets exactly 4.' },
+        { question: 'What is the difference between effusion and diffusion?', answer: 'Effusion is gas escaping one molecule at a time through a tiny opening into an empty space. Diffusion is one gas spreading out through another gas it is mixed with, which is slowed further by molecular collisions. Graham’s law strictly describes effusion, though many textbook problems apply it to diffusion-style setups as well.' },
+        { question: 'Can Graham’s law find an unknown gas’s molar mass?', answer: 'Yes — measure how much faster or slower the unknown gas effuses compared with a known gas under the same conditions, enter both rates and the known molar mass, and the calculator solves for the unknown molar mass.' },
+        { question: 'Why is the relationship a square root instead of a direct ratio?', answer: 'Because both gases have the same average kinetic energy at a given temperature (½mv² is the same for both), and solving that equality for speed introduces a square root of the mass ratio.' },
+        { question: 'Does Graham’s law require the same temperature and pressure for both gases?', answer: 'Yes — the formula only isolates the effect of molar mass by holding temperature and pressure fixed for both gases being compared.' }
+      ]
+    },
+    compute(values) {
+      return { rate1: values.molarMass1 === 0 ? NaN : values.rate2 * Math.sqrt(values.molarMass2 / values.molarMass1) };
+    }
   }
 ];

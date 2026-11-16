@@ -5195,6 +5195,41 @@ exports[`compute() snapshots > gpa-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > grahams-law-effusion-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "rate2": 1,
+      "molarMass1": 0.002016,
+      "molarMass2": 0.031998
+    },
+    "outputs": {
+      "rate1": 3.98397086
+    }
+  },
+  "typical": {
+    "inputs": {
+      "rate2": 1.5,
+      "molarMass1": 0.003,
+      "molarMass2": 0.048
+    },
+    "outputs": {
+      "rate1": 6
+    }
+  },
+  "edge": {
+    "inputs": {
+      "rate2": 0,
+      "molarMass1": 0,
+      "molarMass2": 0
+    },
+    "outputs": {
+      "rate1": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > grams-to-ounces-converter 1`] = `
 {
   "default": {

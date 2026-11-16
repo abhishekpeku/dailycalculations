@@ -7,7 +7,27 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-11-17 · **Step 46 runs 9 + 10 BOTH DONE** (built in parallel, different category
+Last updated: 2026-11-17 · **Step 46 physics run 10 DONE** — PR #111, branch
+`step/46-wave-3-physics-run-10`. Built the rotational-dynamics trio run 9 explicitly deferred
+(`moment-of-inertia-calculator`, `rotational-kinetic-energy-calculator`,
+`angular-momentum-calculator`) plus two electricity/circuits calculators
+(`rc-time-constant-calculator`, `lc-resonant-frequency-calculator`).
+`moment-of-inertia-calculator` is a type-B breakdown/lookup widget (shape selector + mass +
+radius/length) covering 7 shapes (point mass, rod about center/end, solid disk, solid sphere,
+hollow sphere, thin hoop/ring) straight from OpenStax University Physics Volume 1 §10.4's own
+Figure 10.20 (fetched as the source image directly, since the page text references the figure
+without transcribing it). New `lib/units.ts` dimensions: `momentOfInertia` (kg·m², alt lb·ft²),
+`angularMomentum` (kg·m²/s, alt lb·ft²/s, shares `momentOfInertia`'s factor) and `inductance`
+(H, alts mH/µH, for the LC calculator). Coulomb's law (two point charges) was reconsidered for a
+4th/5th slot and dropped again as too thin a variant of `gravitational-force-calculator`'s
+identical inverse-square shape, per run 9's own note; picked RC/LC instead, both standard
+intro-circuits topics with no existing coverage. `npm test` (1,366), lint and `npm run build` all
+pass. One new `KNOWN_NON_FINITE` entry: `lc-resonant-frequency-calculator` (`resonantFrequency`;
+inductance and capacitance both 0 at their own min → compute()'s own guard, no resonance at zero
+L or C). Snapshot diff is additive-only (169 new lines, 0 removed). **`physics` 46 → 51, site-wide
+351.** Full detail in `mdFiles/steps/46-47-wave-3-physics-chemistry.md`.
+
+Previous: **Step 46 runs 9 + 10 BOTH DONE** (built in parallel, different category
 files, no merge conflict in the data — only this STATUS.md summary needed reconciling). **Run 9
 (physics SHM/orbital/modulus/E&M run, PR #108)** added `simple-harmonic-motion-calculator`
 (T = 2π√(m/k), mass-spring period), `orbital-velocity-calculator` (v = √(GM/r), cross-linked both

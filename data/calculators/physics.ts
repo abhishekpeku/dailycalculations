@@ -20,6 +20,49 @@ const GRAVITATIONAL_CONSTANT = 6.6743e-11;
 const VACUUM_PERMITTIVITY = 8.8541878188e-12;
 const COULOMB_CONSTANT = 1 / (4 * Math.PI * VACUUM_PERMITTIVITY);
 
+// Moment-of-inertia shape lookup (moment-of-inertia-calculator). Formulas are OpenStax University
+// Physics Volume 1 §10.4 Figure 10.20 ("Values of rotational inertia for common shapes of
+// objects") and §10.4's own point-mass definition, I = sum(m_i * r_i^2). The option value is the
+// code compute() switches on; option order matches the input's own shape menu.
+const SHAPE_OPTIONS = [
+  { value: 0, label: 'Point mass (distance r from the axis)' },
+  { value: 1, label: 'Thin rod about its center' },
+  { value: 2, label: 'Thin rod about one end' },
+  { value: 3, label: 'Solid disk or cylinder' },
+  { value: 4, label: 'Solid sphere' },
+  { value: 5, label: 'Hollow sphere (thin shell)' },
+  { value: 6, label: 'Thin hoop or ring' }
+];
+const FORMULA_LABELS = [
+  { value: 0, label: 'Point mass: I = mr²' },
+  { value: 1, label: 'Thin rod about center: I = (1/12)mL²' },
+  { value: 2, label: 'Thin rod about one end: I = (1/3)mL²' },
+  { value: 3, label: 'Solid disk or cylinder: I = ½mr²' },
+  { value: 4, label: 'Solid sphere: I = (2/5)mr²' },
+  { value: 5, label: 'Hollow sphere (thin shell): I = (2/3)mr²' },
+  { value: 6, label: 'Thin hoop or ring: I = mr²' }
+];
+function momentOfInertiaFor(shape: number, mass: number, radius: number, length: number) {
+  switch (Math.round(shape)) {
+    case 0:
+      return mass * radius * radius;
+    case 1:
+      return (1 / 12) * mass * length * length;
+    case 2:
+      return (1 / 3) * mass * length * length;
+    case 3:
+      return 0.5 * mass * radius * radius;
+    case 4:
+      return 0.4 * mass * radius * radius;
+    case 5:
+      return (2 / 3) * mass * radius * radius;
+    case 6:
+      return mass * radius * radius;
+    default:
+      return NaN;
+  }
+}
+
 export const physicsCalculators: CalculatorConfig[] = [
   {
     id: 'force-calculator',
@@ -5613,6 +5656,623 @@ export const physicsCalculators: CalculatorConfig[] = [
     },
     compute(values) {
       return { force: values.fluxDensity * values.current * values.length * Math.sin(values.angle) };
+    }
+  },
+  {
+    id: 'moment-of-inertia-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'I',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'moment of inertia calculator',
+      'rotational inertia calculator',
+      'moment of inertia of a disk calculator',
+      'moment of inertia formula calculator',
+      'i = mr^2 calculator',
+      'moment of inertia of a sphere calculator'
+    ],
+    related: ['rotational-kinetic-energy-calculator', 'angular-momentum-calculator', 'torque-calculator', 'angular-velocity-calculator'],
+    title: 'Moment of Inertia Calculator',
+    description: 'Find the moment of inertia (rotational inertia) of a point mass, rod, disk, sphere or hoop from its mass and size — pick the shape, the formula follows automatically.',
+    example: 'A 2 kg solid disk with a 0.3 m radius has a moment of inertia of ½ × 2 × 0.3² = 0.09 kg·m² about its central axis.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is moment of inertia?',
+        paragraphs: [
+          "Moment of inertia (also called rotational inertia) is mass's rotational counterpart: it measures how hard an object is to spin up or slow down about a given axis, the same way ordinary mass measures how hard an object is to speed up or slow down in a straight line. OpenStax University Physics Volume 1 §10.4 defines it from first principles as I = Σmᵢrᵢ² — add up every bit of mass in the object, each weighted by the square of its own distance from the axis.",
+          "That squared distance is what makes moment of inertia depend on shape, not just total mass. Spreading the same mass farther from the axis increases I a great deal, because every bit of mass contributes the square of its distance — moving a piece of mass twice as far from the axis makes its own contribution four times larger. That is why a hoop (all its mass at the rim) has twice the moment of inertia of a solid disk of the same mass and radius (all its mass spread from the center out to the rim), even though the two look similar.",
+          'Because r is measured from a specific axis, the same object has a different moment of inertia about a different axis — a fact this calculator\'s own rod formulas make concrete: a thin rod spun about its center has I = (1/12)ML², but the same rod spun about one end has I = (1/3)ML², four times as much, because swinging the far half of the rod out to a bigger average distance from the axis costs far more than the near half saves.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick the shape that matches your object, enter its mass and the one dimension that formula needs (a radius or a length), and the moment of inertia fills in automatically.',
+        steps: [
+          { name: 'Choose the shape', text: 'Point mass, rod (about its center or one end), solid disk/cylinder, solid sphere, hollow sphere, or thin hoop/ring — each uses its own formula.' },
+          { name: 'Enter the mass', text: 'The total mass of the object, in kilograms by default (or pounds, if you switch units).' },
+          { name: 'Enter the radius or the length', text: 'Rod shapes use the length field; every other shape uses the radius field. The field your shape does not need is simply ignored.' },
+          { name: 'Read the result', text: 'The moment of inertia appears in kg·m² (or lb·ft²), along with which formula was used.' },
+          { name: 'Compare shapes', text: 'The chart below shows what a hoop, a disk, a solid sphere and a hollow sphere would each come out to for the same mass and radius you entered, so you can see how much shape alone changes the answer.' }
+        ],
+        outro: 'Everything here is a lookup, calculated in your browser. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'There is no single formula to rearrange — each shape has its own moment of inertia formula, all sourced from OpenStax University Physics Volume 1 §10.4\'s Figure 10.20 and its surrounding derivations.',
+        expression:
+          'Point mass: I = mr²\nThin rod about center: I = (1/12)ML²\nThin rod about one end: I = (1/3)ML²\nSolid disk or cylinder: I = ½mr²\nSolid sphere: I = (2/5)mr²\nHollow sphere (thin shell): I = (2/3)mr²\nThin hoop or ring: I = mr²',
+        terms: [
+          { symbol: 'm, M', meaning: 'The object\'s total mass, in kilograms (kg).' },
+          { symbol: 'r', meaning: 'Radius, in meters (m) — distance from the axis to the mass (point mass) or to the rim (disk, sphere, hoop).' },
+          { symbol: 'L', meaning: 'Length of the rod, in meters (m), used only by the two rod formulas.' },
+          { symbol: 'I', meaning: 'Moment of inertia, in kg·m² — the rotational analog of mass.' }
+        ],
+        note: 'These are the standard uniform-density, idealized-shape results. A real object made of several parts (a wheel with spokes, a rod with a disk on the end) needs its parts\' moments of inertia added together about a common axis — see the watch-out item below.'
+      },
+      workedExample: {
+        intro: 'A solid disk-shaped flywheel has a mass of 2 kg and a radius of 0.3 m. What is its moment of inertia about its central axis?',
+        rows: [
+          { label: 'Shape', value: 'Solid disk or cylinder' },
+          { label: 'Mass (m)', value: '2 kg' },
+          { label: 'Radius (r)', value: '0.3 m' },
+          { label: 'I = ½ × m × r² = ½ × 2 × 0.3²', value: '0.09 kg·m²' }
+        ],
+        result: 'I = 0.09 kg·m²',
+        explanation:
+          'Squaring the radius (0.3² = 0.09) and multiplying by half the mass (½ × 2 = 1) gives 0.09 kg·m². A hoop of the same mass and radius would come out to 0.18 kg·m² — exactly double — because all of a hoop\'s mass sits at the rim instead of being spread from the center outward, which is exactly the shape comparison the chart below shows.'
+      },
+      watchOut: [
+        {
+          title: 'The axis matters as much as the shape',
+          body: 'The same rod has I = (1/12)ML² about its center but I = (1/3)ML² about one end — four times larger — because the formula is specific to a stated axis. Always match the formula to where the object is actually spinning, not just what shape it is.'
+        },
+        {
+          title: 'This calculator ignores the field your shape does not use',
+          body: 'Rod shapes use only the length field; every other shape uses only the radius field. Leaving the unused field at its default has no effect on the result — there is nothing to toggle off.'
+        },
+        {
+          title: 'Compound objects need their parts added together',
+          body: 'A real wheel-and-axle, or a rod with a ball on the end, is not a single shape from the list above. OpenStax §10.5\'s parallel-axis theorem and Itotal = ΣIi cover combining several simple shapes about one common axis — this calculator covers each simple shape on its own, not that extra addition step.'
+        },
+        {
+          title: 'A point mass is an idealization',
+          body: 'Treating an object as a single point (I = mr²) is only accurate when its own size is small compared to its distance from the axis — a child on a merry-go-round, not the merry-go-round\'s own disk.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §10.4 Moment of Inertia and Rotational Kinetic Energy (Figure 10.20)', url: 'https://openstax.org/books/university-physics-volume-1/pages/10-4-moment-of-inertia-and-rotational-kinetic-energy' },
+        { label: 'OpenStax, University Physics Volume 1, §10.5 Calculating Moments of Inertia (derivations and the parallel-axis theorem)', url: 'https://openstax.org/books/university-physics-volume-1/pages/10-5-calculating-moments-of-inertia' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'shape', label: 'Shape', type: 'number', placeholder: '3', defaultValue: 3, step: 1, min: 0, options: SHAPE_OPTIONS },
+      { id: 'mass', label: 'Mass (kg)', type: 'number', dimension: 'mass', unit: 'kg', placeholder: '2', defaultValue: 2, step: 0.1, min: 0 },
+      { id: 'radius', label: 'Radius (m)', type: 'number', dimension: 'length', unit: 'm', placeholder: '0.3', defaultValue: 0.3, step: 0.01, min: 0 },
+      { id: 'length', label: 'Rod length (m)', type: 'number', dimension: 'length', unit: 'm', placeholder: '0.5', defaultValue: 0.5, step: 0.01, min: 0 }
+    ],
+    breakdown: {
+      headline: 'momentOfInertia',
+      headlineLabel: 'Moment of inertia',
+      outputs: [
+        { id: 'momentOfInertia', label: 'Moment of inertia', dimension: 'momentOfInertia', unit: 'kgm2', format: 'significant' },
+        { id: 'formulaIndex', label: 'Formula used', labels: FORMULA_LABELS }
+      ],
+      derive(values) {
+        const m = values.mass, r = values.radius;
+        return {
+          hoopI: m * r * r,
+          diskI: 0.5 * m * r * r,
+          solidSphereI: 0.4 * m * r * r,
+          hollowSphereI: (2 / 3) * m * r * r
+        };
+      },
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'hoopI', label: 'Hoop/ring' },
+          { from: 'diskI', label: 'Disk/cylinder' },
+          { from: 'solidSphereI', label: 'Solid sphere' },
+          { from: 'hollowSphereI', label: 'Hollow sphere' }
+        ],
+        title: 'Same mass and radius, by shape'
+      }
+    },
+    seo: {
+      title: 'Moment of Inertia Calculator – 7 Common Shapes',
+      description: 'Free moment of inertia calculator. Pick point mass, rod, disk, sphere or hoop and find I from mass and radius or length, with a worked example.',
+      faq: [
+        { question: 'What is the formula for moment of inertia?', answer: 'It depends on the shape: I = mr² for a point mass or thin hoop, ½mr² for a solid disk, (2/5)mr² for a solid sphere, (2/3)mr² for a hollow sphere, (1/12)ML² for a rod about its center, and (1/3)ML² for a rod about one end.' },
+        { question: 'What is the moment of inertia of a solid disk?', answer: 'I = ½mr². A 2 kg disk with a 0.3 m radius has I = 0.5 × 2 × 0.3² = 0.09 kg·m².' },
+        { question: 'Why does a hoop have a higher moment of inertia than a disk of the same mass and radius?', answer: 'Every bit of a hoop\'s mass sits right at the rim (I = mr²), while a disk spreads its mass from the center out to the rim, so more of a disk\'s mass sits closer to the axis. That gives the hoop exactly twice the disk\'s moment of inertia, mr² versus ½mr².' },
+        { question: 'Why is the moment of inertia of a rod about its end four times larger than about its center?', answer: 'About its center, I = (1/12)ML²; about one end, I = (1/3)ML², which is 4 times as much. Moving the axis to the end puts the far half of the rod at a much larger average distance, and since distance is squared in the formula, that extra distance costs more than the near half saves.' },
+        { question: 'What is the unit of moment of inertia?', answer: 'The SI unit is kg·m² (kilogram-meter squared). US customary engineering tables sometimes use lb·ft² instead.' },
+        { question: 'Is moment of inertia the same as mass?', answer: 'No. Mass measures resistance to a straight-line push; moment of inertia measures resistance to a spin, and depends on both the mass and how far it sits from the axis — the same mass arranged differently has a different moment of inertia.' },
+        { question: 'How do I find the moment of inertia of a compound object, like a wheel with spokes?', answer: 'Add the moments of inertia of each simple part about the same axis (Itotal = ΣIi), using the parallel-axis theorem for any part whose own center is offset from that axis. This calculator handles each simple shape on its own; combining several parts is a separate addition step.' }
+      ]
+    },
+    compute(values) {
+      const momentOfInertia = momentOfInertiaFor(values.shape, values.mass, values.radius, values.length);
+      return { momentOfInertia, formulaIndex: values.shape };
+    }
+  },
+  {
+    id: 'rotational-kinetic-energy-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'Iω²',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'rotational kinetic energy calculator',
+      'rotational ke calculator',
+      'spinning kinetic energy calculator',
+      'angular kinetic energy calculator',
+      'ke = 1/2 i omega^2 calculator'
+    ],
+    related: ['moment-of-inertia-calculator', 'angular-momentum-calculator', 'kinetic-energy-calculator', 'angular-velocity-calculator'],
+    title: 'Rotational Kinetic Energy Calculator (KE = ½Iω²)',
+    description: 'Calculate the kinetic energy of a spinning object from its moment of inertia and angular velocity — KE = ½ × I × ω² — or solve backward for I or ω.',
+    example: 'A flywheel with a moment of inertia of 0.5 kg·m², spinning at 100 rad/s, carries 2,500 J of rotational kinetic energy.',
+    solver: {
+      defaultTarget: 'rotationalKE',
+      variables: [
+        { id: 'rotationalKE', label: 'Rotational kinetic energy', symbol: 'KE', dimension: 'energy', defaultValue: 2500, defaultUnit: 'J' },
+        { id: 'momentOfInertia', label: 'Moment of inertia', symbol: 'I', dimension: 'momentOfInertia', defaultValue: 0.5, defaultUnit: 'kgm2' },
+        { id: 'angularVelocity', label: 'Angular velocity', symbol: 'ω', dimension: 'angularVelocity', defaultValue: 100, defaultUnit: 'rad/s' }
+      ],
+      solve: {
+        rotationalKE: ({ momentOfInertia, angularVelocity }) => 0.5 * momentOfInertia * angularVelocity * angularVelocity,
+        momentOfInertia: ({ rotationalKE, angularVelocity }) => (angularVelocity === 0 ? NaN : (2 * rotationalKE) / (angularVelocity * angularVelocity)),
+        angularVelocity: ({ rotationalKE, momentOfInertia }) => {
+          if (momentOfInertia <= 0) return NaN;
+          const omegaSquared = (2 * rotationalKE) / momentOfInertia;
+          return omegaSquared < 0 ? NaN : Math.sqrt(omegaSquared);
+        }
+      },
+      benchmarks: [
+        { label: 'Bicycle wheel (0.1 kg·m²) at about 48 rpm', value: 1.25 },
+        { label: 'Four helicopter rotor blades at cruise rpm (OpenStax Example 10.9)', value: 526379 }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is rotational kinetic energy?',
+        paragraphs: [
+          'A spinning object carries energy because of its rotation, in exactly the same sense that a moving object carries energy because of its straight-line motion. OpenStax University Physics Volume 1 §10.4 gives the rotational form as KE = ½Iω², the direct rotational counterpart of the familiar ½mv² — moment of inertia I stands in for mass, and angular velocity ω (in radians per second) stands in for speed.',
+          'Because ω is squared, doubling how fast something spins quadruples its rotational kinetic energy, exactly the way doubling a car\'s speed quadruples its ordinary kinetic energy. A flywheel built to store energy, or a turbine spinning up to speed, gains kinetic energy very quickly as its rotation rate climbs.',
+          "Many real objects carry both kinds of energy at once. A rolling bicycle wheel has translational kinetic energy from the bike moving forward and rotational kinetic energy from the wheel spinning — OpenStax's own helicopter-blade example (Example 10.9) finds the four rotor blades alone carry about 2.6 times as much kinetic energy as the whole helicopter's forward flight, simply because the blades spin so much faster than the aircraft moves."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of rotational kinetic energy, moment of inertia and angular velocity; the third fills in automatically.',
+        steps: [
+          { name: 'Find the moment of inertia', text: 'Use the moment of inertia calculator if you do not already know I for your object\'s shape and axis.' },
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there — rpm converts to rad/s correctly, not just by swapping the label.' },
+          { name: 'Read the result and the scale', text: 'The answer shows in your chosen energy unit, with the scale below placing it among a bicycle wheel and a helicopter\'s own spinning rotor blades.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The rotational kinetic energy formula rearranges to solve for moment of inertia or angular velocity as well as energy.',
+        expression: 'KE = ½ × I × ω²\nI = 2 × KE ÷ ω²\nω = √(2 × KE ÷ I)',
+        terms: [
+          { symbol: 'KE', meaning: 'Rotational kinetic energy, in joules (J).' },
+          { symbol: 'I', meaning: 'Moment of inertia, in kilogram-meters squared (kg·m²) — see the moment of inertia calculator.' },
+          { symbol: 'ω', meaning: 'Angular velocity, in radians per second (rad/s). Since the radian is dimensionless, kg·m²·(rad/s)² still works out to joules.' }
+        ],
+        note: 'This is only the rotational part of an object\'s kinetic energy. A rolling or orbiting object also has translational kinetic energy, ½mv², from its center of mass moving through space — the two add together for the total.'
+      },
+      workedExample: {
+        intro: 'A small flywheel has a moment of inertia of 0.5 kg·m² and spins at 100 rad/s. How much rotational kinetic energy does it store?',
+        rows: [
+          { label: 'Moment of inertia (I)', value: '0.5 kg·m²' },
+          { label: 'Angular velocity (ω)', value: '100 rad/s' },
+          { label: 'KE = ½ × 0.5 × 100²', value: '2,500 J' }
+        ],
+        result: 'KE = 2,500 J',
+        explanation:
+          'Squaring 100 gives 10,000, and ½ × 0.5 × 10,000 = 2,500 J. For comparison, OpenStax\'s own helicopter-blade example (four 50 kg, 4 m blades at 300 rpm, I ≈ 1,067 kg·m², ω ≈ 31.4 rad/s) works out to about 5.26 × 10⁵ J of rotational kinetic energy — roughly 2.63 times the 2.00 × 10⁵ J of translational kinetic energy the same 1,000 kg helicopter has flying forward at 20 m/s.'
+      },
+      watchOut: [
+        {
+          title: 'This is only the rotational share of the kinetic energy',
+          body: 'A rolling wheel or an orbiting planet also has translational kinetic energy from its center of mass moving — use the kinetic energy calculator for that part, then add the two together for the total.'
+        },
+        {
+          title: 'Doubling angular velocity quadruples rotational kinetic energy',
+          body: 'Because ω is squared, spinning something twice as fast takes four times the kinetic energy, not twice — the same squared relationship that makes ½mv² grow so fast with speed.'
+        },
+        {
+          title: 'The moment of inertia has to match the real axis of spin',
+          body: 'The same object has a different I about a different axis (see the moment of inertia calculator\'s own watch-out item on this). Using the wrong I gives a wrong energy even if ω is correct.'
+        },
+        {
+          title: 'Angular velocity must be in radians per second to compute by hand',
+          body: 'Plugging rpm or degrees per second directly into ½Iω² without converting to rad/s first gives the wrong number of joules. This calculator converts automatically.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §10.4 Moment of Inertia and Rotational Kinetic Energy (Equation 10.17, Example 10.9)', url: 'https://openstax.org/books/university-physics-volume-1/pages/10-4-moment-of-inertia-and-rotational-kinetic-energy' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' },
+        { label: 'BIPM, The International System of Units (SI Brochure)', url: 'https://www.bipm.org/en/publications/si-brochure' }
+      ]
+    },
+    inputs: [
+      { id: 'momentOfInertia', label: 'Moment of inertia (kg·m²)', type: 'number', placeholder: '0.5', defaultValue: 0.5, step: 0.01, min: 0 },
+      { id: 'angularVelocity', label: 'Angular velocity (rad/s)', type: 'number', placeholder: '100', defaultValue: 100, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Rotational Kinetic Energy Calculator (KE = ½Iω²)',
+      description: 'Free rotational kinetic energy calculator. Solve KE = ½Iω² for energy, moment of inertia or angular velocity, with a worked flywheel example.',
+      faq: [
+        { question: 'What is the formula for rotational kinetic energy?', answer: 'KE = ½ × I × ω², where I is the moment of inertia in kg·m² and ω is angular velocity in radians per second. The result is in joules.' },
+        { question: 'How much rotational kinetic energy does a 0.5 kg·m² flywheel at 100 rad/s have?', answer: 'KE = 0.5 × 0.5 × 100² = 2,500 J.' },
+        { question: 'Does doubling angular velocity double rotational kinetic energy?', answer: 'No — it quadruples it, because ω is squared in the formula, the same way doubling speed quadruples ordinary (translational) kinetic energy.' },
+        { question: 'How is rotational kinetic energy different from regular kinetic energy?', answer: 'Both use the same ½ × (something) × (speed)² shape, but rotational kinetic energy uses moment of inertia and angular velocity (spinning), while translational kinetic energy uses mass and linear speed (moving in a straight line). A rolling object has both at once.' },
+        { question: 'What units does rotational kinetic energy use?', answer: 'Joules (J), same as any other energy. Moment of inertia is in kg·m² and angular velocity in rad/s; since the radian has no units, kg·m²·(rad/s)² reduces to kg·m²/s², which is the joule.' },
+        { question: 'How do I find the moment of inertia to use in this formula?', answer: 'Use the moment of inertia calculator, which looks it up from an object\'s shape, mass and size (a point mass, rod, disk, sphere or hoop).' },
+        { question: 'Can rotational kinetic energy be negative?', answer: 'No. Moment of inertia is never negative and angular velocity is squared, so ½Iω² is always zero or positive.' }
+      ]
+    },
+    compute(values) {
+      return { rotationalKE: 0.5 * values.momentOfInertia * values.angularVelocity * values.angularVelocity };
+    }
+  },
+  {
+    id: 'angular-momentum-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'L',
+    updatedAt: '2026-11-17',
+    aliases: ['angular momentum calculator', 'l = i omega calculator', 'rotational momentum calculator', 'spin angular momentum calculator'],
+    related: ['moment-of-inertia-calculator', 'rotational-kinetic-energy-calculator', 'momentum-calculator', 'angular-velocity-calculator'],
+    title: 'Angular Momentum Calculator (L = Iω)',
+    description: 'Calculate angular momentum from moment of inertia and angular velocity — L = I × ω — or solve backward for I or ω, the rotational analog of momentum.',
+    example: 'A spinning figure skater with a moment of inertia of 2.0 kg·m² rotating at 4.0 rad/s has an angular momentum of 8.0 kg·m²/s.',
+    solver: {
+      defaultTarget: 'angularMomentum',
+      variables: [
+        { id: 'angularMomentum', label: 'Angular momentum', symbol: 'L', dimension: 'angularMomentum', defaultValue: 8, defaultUnit: 'kgm2/s' },
+        { id: 'momentOfInertia', label: 'Moment of inertia', symbol: 'I', dimension: 'momentOfInertia', defaultValue: 2, defaultUnit: 'kgm2' },
+        { id: 'angularVelocity', label: 'Angular velocity', symbol: 'ω', dimension: 'angularVelocity', defaultValue: 4, defaultUnit: 'rad/s' }
+      ],
+      solve: {
+        angularMomentum: ({ momentOfInertia, angularVelocity }) => momentOfInertia * angularVelocity,
+        momentOfInertia: ({ angularMomentum, angularVelocity }) => (angularVelocity === 0 ? NaN : angularMomentum / angularVelocity),
+        angularVelocity: ({ angularMomentum, momentOfInertia }) => (momentOfInertia === 0 ? NaN : angularMomentum / momentOfInertia)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is angular momentum?',
+        paragraphs: [
+          "Angular momentum is the rotational counterpart of ordinary (linear) momentum. OpenStax University Physics Volume 1 §11.2 gives its rotational form as L = Iω — moment of inertia I standing in for mass, and angular velocity ω standing in for linear velocity, the same substitution rotational kinetic energy makes for ½mv².",
+          'Angular momentum matters most because of what it does when nothing interferes: OpenStax §11.3 states that in the absence of any outside torque, a system\'s total angular momentum stays constant. Since L = Iω, if I changes, ω has to change to compensate — exactly what lets a figure skater speed up their own spin just by pulling their arms in, with no outside push at all.',
+          'That skater example is concrete: pulling the arms in lowers the body\'s moment of inertia (mass moves closer to the spin axis), and because L = Iω cannot change without a torque, the angular velocity has to rise by the same factor I fell by. A skater who halves their own moment of inertia this way doubles their own spin rate.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of angular momentum, moment of inertia and angular velocity; the third fills in automatically.',
+        steps: [
+          { name: 'Find the moment of inertia', text: 'Use the moment of inertia calculator if you do not already know I for the spinning object.' },
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there — rpm converts to rad/s correctly, not just by swapping the label.' },
+          { name: 'Read the result', text: 'The answer shows in your chosen angular momentum unit, kg·m²/s by default.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The angular momentum formula rearranges to solve for moment of inertia or angular velocity as well as angular momentum.',
+        expression: 'L = I × ω\nI = L ÷ ω\nω = L ÷ I',
+        terms: [
+          { symbol: 'L', meaning: 'Angular momentum, in kilogram-meters squared per second (kg·m²/s).' },
+          { symbol: 'I', meaning: 'Moment of inertia, in kilogram-meters squared (kg·m²) — see the moment of inertia calculator.' },
+          { symbol: 'ω', meaning: 'Angular velocity, in radians per second (rad/s).' }
+        ],
+        note: 'With no external torque, L stays constant (OpenStax §11.3, conservation of angular momentum) even as I and ω each change — that is what the figure-skater example below works through.'
+      },
+      workedExample: {
+        intro: 'A figure skater spinning with arms out has a moment of inertia of 2.0 kg·m² and spins at 4.0 rad/s. She then pulls her arms in, dropping her moment of inertia to 1.2 kg·m². How fast does she spin now?',
+        rows: [
+          { label: 'Starting angular momentum: L = I × ω = 2.0 × 4.0', value: '8.0 kg·m²/s' },
+          { label: 'With arms in, I drops to', value: '1.2 kg·m²' },
+          { label: 'L stays 8.0 kg·m²/s (no outside torque), so ω = L ÷ I = 8.0 ÷ 1.2', value: '≈6.67 rad/s' }
+        ],
+        result: 'L = 8.0 kg·m²/s throughout · new ω ≈ 6.67 rad/s',
+        explanation:
+          'This is a simplified version of the figure-skater example OpenStax §11.3 describes qualitatively (I′ω′ = Iω). With no outside torque acting on the skater, angular momentum cannot change, so when moment of inertia falls by a factor of 2.0 ÷ 1.2 ≈ 1.67, angular velocity has to rise by that exact same factor — from 4.0 to about 6.67 rad/s, roughly 67% faster.'
+      },
+      watchOut: [
+        {
+          title: 'Angular momentum is conserved only without an external torque',
+          body: 'A skater on frictionless ice conserves L almost perfectly over a few seconds, but friction, air resistance or any outside push will slowly change it in a real system, the same way friction slowly bleeds off ordinary momentum.'
+        },
+        {
+          title: 'Not interchangeable with linear momentum',
+          body: 'Angular momentum (L = Iω) and linear momentum (p = mv, see the momentum calculator) are separate quantities with separate units — a spinning object can have a large L while its center of mass sits still, with zero linear momentum.'
+        },
+        {
+          title: 'The moment of inertia has to match the real axis of spin',
+          body: 'The same object has a different I about a different axis (see the moment of inertia calculator\'s own watch-out item on this). Using the wrong I gives a wrong angular momentum even if ω is correct.'
+        },
+        {
+          title: 'This handles magnitudes along one fixed axis',
+          body: 'Angular momentum is really a vector, and a tumbling object rotating about more than one axis at once needs the full vector treatment. This calculator, like the torque and force calculators elsewhere on this site, covers the common case of rotation about a single fixed axis.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §11.2 Angular Momentum (Equation 11.9)', url: 'https://openstax.org/books/university-physics-volume-1/pages/11-2-angular-momentum' },
+        { label: 'OpenStax, University Physics Volume 1, §11.3 Conservation of Angular Momentum', url: 'https://openstax.org/books/university-physics-volume-1/pages/11-3-conservation-of-angular-momentum' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'momentOfInertia', label: 'Moment of inertia (kg·m²)', type: 'number', placeholder: '2', defaultValue: 2, step: 0.01, min: 0 },
+      { id: 'angularVelocity', label: 'Angular velocity (rad/s)', type: 'number', placeholder: '4', defaultValue: 4, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Angular Momentum Calculator (L = Iω)',
+      description: 'Free angular momentum calculator. Solve L = I × ω for angular momentum, moment of inertia or angular velocity, with a figure-skater example.',
+      faq: [
+        { question: 'What is the formula for angular momentum?', answer: 'L = I × ω, where I is moment of inertia in kg·m² and ω is angular velocity in radians per second. The result is in kg·m²/s.' },
+        { question: 'How much angular momentum does a 2.0 kg·m² object spinning at 4.0 rad/s have?', answer: 'L = 2.0 × 4.0 = 8.0 kg·m²/s.' },
+        { question: 'How does a figure skater spin faster by pulling in their arms?', answer: 'Pulling the arms in lowers the skater\'s moment of inertia. With no outside torque, angular momentum (L = Iω) stays constant, so angular velocity has to rise by the same factor I fell by.' },
+        { question: 'Is angular momentum the same as momentum?', answer: 'No. Angular momentum (L = Iω) is the rotational analog of linear momentum (p = mv), but the two are separate quantities with separate units — an object spinning in place has angular momentum but zero linear momentum.' },
+        { question: 'What is the difference between angular momentum and torque?', answer: 'Torque is what changes angular momentum over time, the same way force changes linear momentum — the rotational version of Newton\'s second law is torque = ΔL ÷ Δt, mirroring force = Δp ÷ Δt.' },
+        { question: 'Is angular momentum always conserved?', answer: 'Only when there is no net external torque acting on the system. A spinning top conserves its angular momentum closely over a short time, but friction at its tip and air resistance eventually change it.' }
+      ]
+    },
+    compute(values) {
+      return { angularMomentum: values.momentOfInertia * values.angularVelocity };
+    }
+  },
+  {
+    id: 'rc-time-constant-calculator',
+    category: 'physics',
+    group: 'Electricity & Circuits',
+    glyph: 'RC',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'rc time constant calculator',
+      'rc circuit calculator',
+      'resistor capacitor time constant calculator',
+      'capacitor charging time calculator',
+      'tau = rc calculator'
+    ],
+    related: ['capacitor-charge-calculator', 'ohms-law-calculator', 'series-parallel-resistor-calculator', 'lc-resonant-frequency-calculator'],
+    title: 'RC Time Constant Calculator (τ = RC)',
+    description: 'Find how fast a resistor-capacitor circuit charges or discharges — τ = R × C — or solve backward for resistance or capacitance, with charging percentages shown.',
+    example: 'A 10 kΩ resistor in series with a 100 µF capacitor has a time constant of 1.0 second — about 63.2% charged after that first second.',
+    solver: {
+      defaultTarget: 'timeConstant',
+      variables: [
+        { id: 'timeConstant', label: 'Time constant', symbol: 'τ', dimension: 'time', defaultValue: 1, defaultUnit: 's' },
+        { id: 'resistance', label: 'Resistance', symbol: 'R', dimension: 'resistance', defaultValue: 10, defaultUnit: 'kohm' },
+        { id: 'capacitance', label: 'Capacitance', symbol: 'C', dimension: 'capacitance', defaultValue: 100, defaultUnit: 'uF' }
+      ],
+      solve: {
+        timeConstant: ({ resistance, capacitance }) => resistance * capacitance,
+        resistance: ({ timeConstant, capacitance }) => (capacitance === 0 ? NaN : timeConstant / capacitance),
+        capacitance: ({ timeConstant, resistance }) => (resistance === 0 ? NaN : timeConstant / resistance)
+      },
+      outputs: [
+        { id: 'percentAt1Tau', label: 'Charged after 1 time constant', dimension: 'percent', compute: () => (1 - Math.exp(-1)) * 100 },
+        { id: 'percentAt5Tau', label: 'Charged after 5 time constants', dimension: 'percent', compute: () => (1 - Math.exp(-5)) * 100 }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is the RC time constant?',
+        paragraphs: [
+          'When a resistor and a capacitor are wired together, charge cannot jump onto (or off) the capacitor instantly — the resistor limits how fast current can flow, so the capacitor charges or discharges gradually instead of all at once. OpenStax University Physics Volume 2 §10.5 calls the characteristic timescale of that process the time constant, τ = R × C, in seconds when R is in ohms and C is in farads.',
+          'τ is not the total charging time; it is a single step in an exponential curve that never mathematically reaches 100%. After one time constant, a charging capacitor reaches 1 − e⁻¹ ≈ 63.2% of its final charge. After five time constants it reaches 1 − e⁻⁵ ≈ 99.3%, which is close enough to full that circuits are usually considered "charged" by then.',
+          'The exact same τ = RC governs discharging too — a capacitor discharging through a resistor loses 63.2% of its remaining charge (not its original charge) in each time constant, following the mirror-image exponential decay curve.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of time constant, resistance and capacitance; the third fills in automatically.',
+        steps: [
+          { name: 'Find the equivalent resistance', text: 'If more than one resistor is involved, use the series/parallel resistor calculator first to get a single equivalent R.' },
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type — ohms, kilohms, microfarads and picofarads can all be mixed freely.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Read the time constant and the charging percentages', text: 'The two figures underneath show how far charged the capacitor is after exactly 1 and 5 time constants — the same two numbers for any R and C, since they depend only on the exponential shape of the curve.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The time constant formula rearranges to solve for resistance or capacitance as well as τ itself.',
+        expression: 'τ = R × C\nR = τ ÷ C\nC = τ ÷ R',
+        terms: [
+          { symbol: 'τ', meaning: 'Time constant, in seconds (s).' },
+          { symbol: 'R', meaning: 'Resistance, in ohms (Ω).' },
+          { symbol: 'C', meaning: 'Capacitance, in farads (F).' }
+        ],
+        note: 'τ depends only on R and C, not on the voltage involved — a circuit charges or discharges at the same relative rate whether it starts from 0 V or any other voltage.'
+      },
+      workedExample: {
+        intro: 'A 10 kΩ resistor is wired in series with a 100 µF capacitor and a voltage source. What is the time constant, and how charged is the capacitor after 1 and after 5 time constants?',
+        rows: [
+          { label: 'Resistance (R)', value: '10,000 Ω' },
+          { label: 'Capacitance (C)', value: '0.0001 F' },
+          { label: 'τ = R × C = 10,000 × 0.0001', value: '1.0 s' },
+          { label: 'Charged after 1τ = 1 − e⁻¹', value: '≈63.21%' },
+          { label: 'Charged after 5τ = 1 − e⁻⁵', value: '≈99.33%' }
+        ],
+        result: 'τ = 1.0 s',
+        explanation:
+          '10,000 Ω × 0.0001 F multiplies out to exactly 1.0 s. As an independent cross-check: OpenStax\'s own relaxation-oscillator example (Example 10.8) uses R = 101 Ω and C = 50 mF for τ = 5.05 s, then finds the capacitor takes 8.13 s to reach 80 V from a 100 V source — a useful check that the same τ = RC and the same exponential-charging formula both give the textbook\'s own published numbers.'
+      },
+      watchOut: [
+        {
+          title: 'τ is a timescale, not a percentage',
+          body: 'A capacitor is only about 63.2% charged after exactly one time constant, not fully charged — it takes about 5 time constants (99.3%) before a circuit is usually treated as "done" charging.'
+        },
+        {
+          title: 'The same τ applies to charging and discharging',
+          body: 'A capacitor discharging through a resistor loses 63.2% of whatever charge remains in each time constant — the same formula and the same percentages, just running the exponential curve the other way.'
+        },
+        {
+          title: 'This assumes one equivalent resistance and capacitance',
+          body: 'Several resistors or capacitors wired together need to be combined into one equivalent value first (the series/parallel resistor calculator handles resistors) — τ = RC uses the single combined values, not each individual component.'
+        },
+        {
+          title: 'Mixing up R and C\'s units is the most common by-hand mistake',
+          body: 'τ = RC only comes out in seconds when R is in ohms and C is in farads. Microfarads and kilohms have to be converted to farads and ohms first if computing by hand; this calculator converts automatically.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 2, §10.5 RC Circuits (Example 10.8)', url: 'https://openstax.org/books/university-physics-volume-2/pages/10-5-rc-circuits' },
+        { label: "OpenStax, University Physics Volume 2, §8.1 Capacitors and Capacitance", url: 'https://openstax.org/books/university-physics-volume-2/pages/8-1-capacitors-and-capacitance' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'resistance', label: 'Resistance (Ω)', type: 'number', placeholder: '10000', defaultValue: 10000, step: 1, min: 0 },
+      { id: 'capacitance', label: 'Capacitance (F)', type: 'number', placeholder: '0.0001', defaultValue: 0.0001, step: 0.000001, min: 0 }
+    ],
+    seo: {
+      title: 'RC Time Constant Calculator (τ = RC)',
+      description: 'Free RC time constant calculator. Solve τ = R × C for time constant, resistance or capacitance, with charging percentages and a worked example.',
+      faq: [
+        { question: 'What is the formula for the RC time constant?', answer: 'τ = R × C, where R is resistance in ohms and C is capacitance in farads. The result, τ, is in seconds.' },
+        { question: 'What is the time constant of a 10 kΩ resistor and a 100 µF capacitor?', answer: 'τ = 10,000 Ω × 0.0001 F = 1.0 second.' },
+        { question: 'How charged is a capacitor after one time constant?', answer: 'About 63.2% of its final charge (1 − e⁻¹). It is not fully charged after one τ — that takes roughly 5 time constants, reaching about 99.3%.' },
+        { question: 'Does the RC time constant apply to discharging as well as charging?', answer: 'Yes. A discharging capacitor loses 63.2% of whatever charge remains after each time constant, following the same τ = RC and the mirror-image exponential curve.' },
+        { question: 'How is this different from the capacitor charge calculator?', answer: 'The capacitor charge calculator finds how much charge and energy a capacitor holds (Q = CV) at a given voltage. This calculator finds how fast that charge builds up or drains away through a resistor (τ = RC) — a different question about the same capacitor.' },
+        { question: 'Does the RC time constant depend on voltage?', answer: 'No. τ = RC depends only on the resistance and capacitance values, not on the voltage applied — the circuit charges or discharges at the same relative (percentage) rate regardless of voltage.' },
+        { question: 'What is a typical RC time constant in a real circuit?', answer: 'It varies enormously by design. A relaxation-oscillator example in OpenStax uses R = 101 Ω and C = 50 mF for τ = 5.05 s; a small signal-filtering circuit might use kilohms and nanofarads for a τ measured in microseconds.' }
+      ]
+    },
+    compute(values) {
+      return { timeConstant: values.resistance * values.capacitance };
+    }
+  },
+  {
+    id: 'lc-resonant-frequency-calculator',
+    category: 'physics',
+    group: 'Electricity & Circuits',
+    glyph: 'f₀',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'lc circuit calculator',
+      'lc resonant frequency calculator',
+      'resonant frequency calculator',
+      'tank circuit calculator',
+      'inductor capacitor frequency calculator'
+    ],
+    related: ['rc-time-constant-calculator', 'capacitor-charge-calculator', 'wavelength-frequency-calculator', 'series-parallel-resistor-calculator'],
+    title: 'LC Resonant Frequency Calculator',
+    description: 'Find the natural resonant frequency of an inductor-capacitor (LC) circuit — f = 1 ÷ (2π√(LC)) — or solve backward for inductance or capacitance.',
+    example: 'A 100 µH inductor paired with a 100 pF capacitor forms a tank circuit that resonates at about 1,591.5 kHz (1.59 MHz), within the AM radio broadcast band.',
+    solver: {
+      defaultTarget: 'resonantFrequency',
+      variables: [
+        { id: 'resonantFrequency', label: 'Resonant frequency', symbol: 'f', dimension: 'frequency', defaultValue: 1591.5494, defaultUnit: 'kHz' },
+        { id: 'inductance', label: 'Inductance', symbol: 'L', dimension: 'inductance', defaultValue: 100, defaultUnit: 'uH' },
+        { id: 'capacitance', label: 'Capacitance', symbol: 'C', dimension: 'capacitance', defaultValue: 100, defaultUnit: 'pF' }
+      ],
+      solve: {
+        resonantFrequency: ({ inductance, capacitance }) =>
+          inductance <= 0 || capacitance <= 0 ? NaN : 1 / (2 * Math.PI * Math.sqrt(inductance * capacitance)),
+        inductance: ({ resonantFrequency, capacitance }) =>
+          capacitance <= 0 || resonantFrequency <= 0 ? NaN : 1 / ((2 * Math.PI * resonantFrequency) ** 2 * capacitance),
+        capacitance: ({ resonantFrequency, inductance }) =>
+          inductance <= 0 || resonantFrequency <= 0 ? NaN : 1 / ((2 * Math.PI * resonantFrequency) ** 2 * inductance)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is LC resonant frequency?',
+        paragraphs: [
+          'An inductor and a capacitor wired together form a circuit that naturally oscillates, trading energy back and forth between the capacitor\'s electric field and the inductor\'s magnetic field — OpenStax University Physics Volume 2 §14.5 works through this exchange directly. Left to itself with no resistance, the charge and current both oscillate sinusoidally forever, at one specific frequency set entirely by L and C.',
+          'That natural oscillation frequency is ω = 1 ÷ √(LC) in angular form (radians per second), or f = ω ÷ (2π) in ordinary frequency (cycles per second, hertz). A bigger inductor or a bigger capacitor both slow the oscillation down — more energy has to shuttle back and forth each cycle, which takes longer.',
+          'This same LC resonance is what tunes a radio: the variable capacitor in an old analog radio dial is wired with a fixed inductor so that turning the dial changes C, which changes f, letting that one circuit pick out and amplify whichever broadcast frequency the listener wants while ignoring the rest.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of resonant frequency, inductance and capacitance; the third fills in automatically.',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type — henries, microhenries, farads and picofarads can all be mixed freely.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Read the result', text: 'The resonant frequency appears in your chosen unit — hertz, kilohertz, megahertz or gigahertz.' },
+          { name: 'Try tuning it', text: 'Lower the capacitance (as a variable tuning capacitor does) to see the resonant frequency rise, or raise either L or C to see it fall.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The resonant frequency formula rearranges to solve for inductance or capacitance as well as frequency.',
+        expression: 'f = 1 ÷ (2π√(LC))\nL = 1 ÷ ((2πf)² × C)\nC = 1 ÷ ((2πf)² × L)',
+        terms: [
+          { symbol: 'f', meaning: 'Resonant frequency, in hertz (Hz).' },
+          { symbol: 'L', meaning: 'Inductance, in henries (H).' },
+          { symbol: 'C', meaning: 'Capacitance, in farads (F).' },
+          { symbol: 'ω = 1/√(LC)', meaning: 'The same relationship in angular frequency (radians per second); f = ω ÷ (2π).' }
+        ],
+        note: 'This is the ideal, resistance-free case OpenStax derives (an "LC circuit"). A real circuit always has some resistance, which damps the oscillation over time and shifts its peak response slightly — the subject of the separate RLC circuit case.'
+      },
+      workedExample: {
+        intro: 'An inductor of 2.0 × 10⁻² H is connected to a capacitor of 8.0 × 10⁻⁶ F — the values in OpenStax\'s own Example 14.6. What is the resonant angular frequency?',
+        rows: [
+          { label: 'Inductance (L)', value: '2.0 × 10⁻² H' },
+          { label: 'Capacitance (C)', value: '8.0 × 10⁻⁶ F' },
+          { label: 'ω = 1 ÷ √(LC) = 1 ÷ √(2.0×10⁻² × 8.0×10⁻⁶)', value: '2,500 rad/s' },
+          { label: 'f = ω ÷ (2π)', value: '≈397.9 Hz' }
+        ],
+        result: 'ω = 2,500 rad/s · f ≈ 397.9 Hz',
+        explanation:
+          'Multiplying L and C gives 1.6 × 10⁻⁷, whose square root is 4.0 × 10⁻⁴; the reciprocal of that is exactly 2,500 rad/s, matching OpenStax\'s own published answer for this example. Dividing by 2π converts that to the equivalent ordinary frequency, about 397.9 Hz. For a more typical radio-frequency circuit, this page\'s own default — 100 µH and 100 pF — resonates at about 1,591.5 kHz, inside the AM broadcast band (530–1,700 kHz).'
+      },
+      watchOut: [
+        {
+          title: 'This is the ideal, resistance-free case',
+          body: 'A real LC circuit always has some resistance in its wires and components, which gradually damps the oscillation instead of letting it continue forever, and technically makes it an RLC circuit. The resonant frequency formula here is still the right starting point, but a heavily damped circuit\'s peak response can shift slightly from this value.'
+        },
+        {
+          title: 'Frequency and angular frequency are not the same number',
+          body: 'ω (rad/s) and f (Hz) differ by a factor of 2π. OpenStax\'s own worked example reports ω = 2,500 rad/s, not a frequency of 2,500 Hz — mixing the two up gives an answer about 6.3 times too large.'
+        },
+        {
+          title: 'Smaller L or C means a higher resonant frequency',
+          body: 'Because both sit under a square root in the denominator, shrinking either one raises f — this is exactly backward from how resistance and capacitance work in the RC time constant, where a smaller value means a shorter (not longer) time constant, so do not assume the relationships are the same shape.'
+        },
+        {
+          title: 'This is a two-component circuit, not a full radio receiver',
+          body: 'A real radio tuner also needs an antenna, an amplifier and a demodulator stage; the LC tank circuit here is only the resonant element that selects one frequency out of everything the antenna picks up.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 2, §14.5 Oscillations in an LC Circuit (Equation 14.41, Example 14.6)', url: 'https://openstax.org/books/university-physics-volume-2/pages/14-5-oscillations-in-an-lc-circuit' },
+        { label: 'BIPM, The International System of Units (SI Brochure) — the henry and the hertz', url: 'https://www.bipm.org/en/publications/si-brochure' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'inductance', label: 'Inductance (H)', type: 'number', placeholder: '0.0001', defaultValue: 0.0001, step: 0.000001, min: 0 },
+      { id: 'capacitance', label: 'Capacitance (F)', type: 'number', placeholder: '0.0000000001', defaultValue: 1e-10, step: 1e-12, min: 0 }
+    ],
+    seo: {
+      title: 'LC Resonant Frequency Calculator',
+      description: 'Free LC circuit calculator. Solve f = 1/(2π√(LC)) for resonant frequency, inductance or capacitance, with a worked tank-circuit example.',
+      faq: [
+        { question: 'What is the formula for LC resonant frequency?', answer: 'f = 1 ÷ (2π√(LC)), where L is inductance in henries and C is capacitance in farads. The result, f, is in hertz.' },
+        { question: 'What is the resonant frequency of a 100 µH inductor and a 100 pF capacitor?', answer: 'f = 1 ÷ (2π√(100×10⁻⁶ × 100×10⁻¹²)) ≈ 1,591,549 Hz, about 1.59 MHz — inside the AM broadcast band.' },
+        { question: 'What is the difference between resonant frequency and angular frequency?', answer: 'Angular frequency ω = 1/√(LC) is in radians per second; ordinary frequency f = ω ÷ (2π) is in hertz (cycles per second). They describe the same oscillation but differ by a factor of about 6.28.' },
+        { question: 'Does a bigger inductor raise or lower the resonant frequency?', answer: 'It lowers it. Both L and C sit under a square root in the denominator of f = 1/(2π√(LC)), so increasing either one makes the resonant frequency smaller.' },
+        { question: 'How does a radio tuner use LC resonance?', answer: 'A variable capacitor is wired with a fixed inductor so that turning the tuning dial changes C, which changes the resonant frequency, letting the circuit pick out one broadcast frequency while filtering out the rest.' },
+        { question: 'What happens to resonance if the circuit has resistance?', answer: 'A real LC circuit always has some resistance (making it an RLC circuit), which damps the oscillation over time. The resonant frequency formula here still applies as the ideal starting point, but a heavily damped circuit\'s peak response shifts slightly from it.' },
+        { question: 'How is this related to the RC time constant calculator?', answer: 'Both describe a capacitor paired with another component, but they answer different questions: the RC time constant describes how fast a resistor-capacitor pair charges or discharges (an exponential, non-oscillating process), while this LC calculator finds the frequency an inductor-capacitor pair naturally oscillates at.' }
+      ]
+    },
+    compute(values) {
+      const { inductance, capacitance } = values;
+      return { resonantFrequency: inductance <= 0 || capacitance <= 0 ? NaN : 1 / (2 * Math.PI * Math.sqrt(inductance * capacitance)) };
     }
   }
 ];

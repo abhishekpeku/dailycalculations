@@ -42,7 +42,7 @@ describe('unit tables', () => {
     assert.deepEqual([...dimensions].sort(), [
       'absorbance', 'acceleration', 'amountOfSubstance', 'angle', 'area', 'capacitance', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
       'decibel', 'density', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'length', 'mass', 'massConcentration', 'molalConstant', 'molality', 'molarAbsorptivity', 'molarEnergy', 'molarEntropy', 'molarMass', 'momentum',
-      'normality', 'osmolarity', 'pH', 'pace', 'percent', 'power', 'pressure', 'rateConstant', 'resistance', 'specificHeat', 'speed', 'temperature', 'temperatureDelta', 'term', 'time',
+      'normality', 'osmolarity', 'pH', 'pace', 'percent', 'power', 'pressure', 'rateConstant', 'resistance', 'specificHeat', 'speed', 'springConstant', 'temperature', 'temperatureDelta', 'term', 'time',
       'voltage', 'volume'
     ]);
   });
@@ -200,6 +200,13 @@ describe('anchor values', () => {
     close(toBase(1, 'density', 'g/cm3'), 1000);
     close(toBase(1, 'density', 'lb/ft3'), 16.018463373960138, 1e-9);
     close(convert(19.3, 'density', 'g/cm3', 'kg/m3'), 19300);
+  });
+  test('spring constant: 1 N/mm = 1000 N/m, 1 lbf/in ≈ 175.1268 N/m; Hooke\'s law stays a plain multiplication', () => {
+    assert.equal(UNITS.springConstant[0].id, 'N/m');
+    close(toBase(1, 'springConstant', 'N/mm'), 1000);
+    close(toBase(1, 'springConstant', 'lbf/in'), 175.12683525, 1e-9);
+    // F = k × x: 250 N/m stretched 0.12 m gives 30 N, with no stray conversion factor.
+    close(toBase(250, 'springConstant', 'N/m') * toBase(0.12, 'length', 'm'), toBase(30, 'force', 'N'));
   });
   test('voltage: 1 kV = 1000 V = 1,000,000 mV', () => {
     assert.equal(UNITS.voltage[0].id, 'V');

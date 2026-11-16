@@ -322,8 +322,69 @@ unscoped (per the "Final cut" note: exact formula selection per run is the build
 Runs below are grouped logically but **the exact 5-calculator split within a run is still the
 build agent's judgment**, same as every run so far.
 
-- [ ] Physics mechanics-remainder run A (5): acceleration (a = Δv ÷ t), free-fall (h = ½gt²),
-  projectile motion (range/height/time of flight), friction (f = μN), spring/Hooke's law (F = kx)
+- [x] Physics mechanics-remainder run A (5), branch `step/46-wave-3-physics-run-5`, PR #104 —
+  **DONE** 2026-11-16:
+  - [x] acceleration-calculator
+  - [x] free-fall-calculator
+  - [x] projectile-motion-calculator
+  - [x] friction-calculator
+  - [x] spring-hookes-law-calculator
+  - `acceleration-calculator` (a = Δv ÷ t) is a clean 3-variable solver reusing `speed`
+    (for the velocity-change field)/`acceleration`/`time`, no new dimension.
+  - `free-fall-calculator` (h = ½gt²) left gravity itself as an editable solver variable
+    (defaulting to `STANDARD_GRAVITY`) rather than a fixed constant, following
+    `weight-calculator`'s precedent — lets the same page answer "how far/fast on the Moon"
+    too. Bonus output: final velocity (v = gt), the same `outputs` pattern
+    `kinetic-energy-calculator` set for its momentum bonus. Reuses `length`/`acceleration`/`time`.
+  - `projectile-motion-calculator` (range/max height/time of flight) shipped as a type-B
+    breakdown widget, not a solver — two inputs (launch speed, launch angle) drive three
+    outputs with no single invertible equation connecting all of them, the same reasoning
+    that made `series-parallel-resistor-calculator` a breakdown page. Inputs carry `dimension`/
+    `unit` (speed in m/s, angle in degrees) the same way `commute-cost-calculator` does, and
+    `compute()` converts degrees to radians internally since the breakdown widget hands
+    `compute()` the value in the input's own declared `unit`, not SI. Reuses `speed`/`angle`/
+    `length`/`time`, no new dimension. Explicitly scoped to level ground (same launch/landing
+    height) with no air resistance, stated in `formula.note` and a `watchOut` item; cross-checked
+    the formulas against OpenStax's own golf-shot example (R = 90 m at 30° needs v₀ ≈ 31.9 m/s).
+  - `friction-calculator` (f = μN) is a 3-variable solver with μ on the dimensionless `count`
+    dimension, the same precedent `lens-mirror-equation-calculator`'s magnification output set.
+    Worked example uses OpenStax Table 6.1's wood-on-wood coefficients (μs = 0.5, μk = 0.3) with
+    the normal force derived from a 50 kg crate's weight on flat ground (N = mg), and a `watchOut`
+    item explains static friction is `f ≤ μsN`, not an exact equality, distinct from the kinetic
+    case this calculator solves. Reuses `force`/`count`, no new dimension.
+  - `spring-hookes-law-calculator` (F = kx) needed a genuinely new dimension: `springConstant`
+    (base N/m, alts N/mm, N/cm, lbf/in — NIST SP 811 Appendix B factors), since no existing
+    dimension fit a spring's N/m stiffness. Round-trip + anchor test (250 N/m × 0.12 m = 30 N, no
+    stray factor) added to `lib/units.spec.ts`, and the dimension inserted into the sorted-
+    dimensions list test. 3-variable solver, reusing `force`/`length` otherwise.
+  - Every formula fetched directly from OpenStax University Physics Volume 1 (not recalled from
+    memory): §3.3 "Average and Instantaneous Acceleration" (a = Δv/Δt), §3.5 "Free Fall" (v = v₀ −
+    gt, y = y₀ + v₀t − ½gt², g ≈ 9.81 m/s²), §4.3 "Projectile Motion" (the exact range/max-height/
+    time-of-flight equations plus its own "Comparing Golf Shots" worked example), §6.2 "Friction"
+    (fs ≤ μsN, fk = μkN, and Table 6.1's coefficients), §15.1 "Simple Harmonic Motion" (Hooke's law,
+    Fs = −kx, with its own k = 32.00 N/m example referenced for context).
+  - Independent scratch script (`verify_run_mechA.mjs`, scratchpad, no app imports) recomputed
+    every number before the copy was written: the acceleration worked example (Δv = 20 m/s over
+    5 s → 4 m/s², both directions); the free-fall worked example (t = 3 s → h ≈ 44.13 m, v ≈
+    29.42 m/s, plus the Moon-gravity variant, 1.62 m/s² → 7.29 m / 4.86 m/s); the projectile-motion
+    worked example (v₀ = 20 m/s, θ = 30° → R ≈ 35.33 m, h ≈ 5.10 m, T ≈ 2.04 s) cross-checked
+    against OpenStax's own golf-shot example and a 45°-range sanity check; the friction worked
+    example (50 kg → N ≈ 490.33 N, f_k ≈ 147.10 N, max static ≈ 245.17 N) in both directions; and
+    the spring worked example (k = 250 N/m, x = 0.12 m → F = 30 N) in both reverse directions, plus
+    the new lbf/in and N/mm unit factors.
+  - One new `KNOWN_NON_FINITE` entry: `acceleration-calculator` (`acceleration`; velocityChange
+    has no explicit `min` so defaults to 0, and `time`'s own min is 0 → 0/0 at the edge case, an
+    honest no-answer). Snapshot diff additive-only (166 new lines, 0 removed, confirmed with
+    `git diff --stat`).
+  - `npm test` (1,236 tests), `npm run lint` and `npm run build` all pass (352 routes). Verified
+    the 5 new pages from the static HTML `next build` produced
+    (`.next/server/app/en/calculators/<id>.html`): H1, exactly one JSON-LD script, and all eight
+    section ids (concept/how-to-use/formula/worked-example/watch-out/faq/references/related)
+    present on every page, all 5 ids linked correctly from `/en/categories/physics`, and no
+    "application error" text in any of the 5 files — a pre-existing `next dev` process was already
+    listening on port 3000 (not started by this run), same precedent runs 4/5 in this file set, so
+    it was left running rather than curled or killed.
+  - 321 calculators total after this run (316 + 5). `physics` is now 26.
 - [ ] Physics mechanics-remainder run B (5): centripetal force (F = mv²/r), gravitational force
   (Newton's law, F = Gm₁m₂/r² — distinct from weight-calculator's local gravity), torque (τ = F·r),
   buoyancy (Archimedes), pendulum period (T = 2π√(L/g))

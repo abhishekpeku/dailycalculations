@@ -350,6 +350,7 @@ export const calculatorOrder: string[] = [
   'cd-calculator',
   'simple-interest-calculator',
   'mutual-fund-calculator',
+  'emergency-fund-calculator',
   'jet-lag-calculator',
   'luggage-fee-calculator',
   'daylight-hours-calculator',

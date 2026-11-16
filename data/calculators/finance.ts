@@ -4770,4 +4770,121 @@ export const financeCalculators: CalculatorConfig[] = [
       return { futureValue, totalContributions, totalGrowth, feeDrag };
     }
   },
+  {
+    id: 'emergency-fund-calculator',
+    group: 'Savings & Growth',
+    category: 'finance',
+    glyph: 'EF',
+    updatedAt: '2026-11-16',
+    aliases: ['emergency savings calculator', 'rainy day fund calculator', 'how much emergency fund do i need calculator', '3 to 6 months expenses calculator', 'emergency fund savings goal calculator'],
+    related: ['down-payment-savings-calculator', 'debt-payoff-calculator', 'compound-interest-calculator', 'goal-based-investment-calculator'],
+    title: 'Emergency Fund Calculator',
+    description: 'Find the emergency fund size financial planners recommend, three to six months of expenses, and how long reaching it takes at your own savings rate.',
+    example: 'On $4,000 of monthly expenses, $1,000 already saved and $300 set aside a month, the 6-month target is $24,000 and reaching it takes about 77 months.',
+    breakdown: {
+      headline: 'recommendedFundHigh',
+      headlineLabel: 'Recommended emergency fund (6 months)',
+      outputs: [
+        { id: 'recommendedFundHigh', label: 'Recommended emergency fund (6 months)', format: 'currency' },
+        { id: 'recommendedFundLow', label: '3-month minimum', format: 'currency' },
+        { id: 'amountStillNeeded', label: 'Still needed to reach 6 months', format: 'currency' },
+        { id: 'monthsToReachGoal', label: 'Time to reach the 6-month goal', format: 'integer', dimension: 'term', unit: 'mo' }
+      ],
+      groups: [
+        { title: 'Your expenses and savings', inputs: ['monthlyExpenses', 'currentSavings'] },
+        { title: 'Your savings plan', inputs: ['monthlySavingsRate'] }
+      ],
+      visual: {
+        type: 'rangeBar',
+        value: 'monthsCovered',
+        title: 'Months of expenses covered today',
+        valueLabel: 'Months covered',
+        bands: [
+          { label: 'Below the recommended range', min: 0, max: 3 },
+          { label: 'Within the recommended 3–6 months', min: 3, max: 6 },
+          { label: 'Above 6 months', min: 6, max: 24 }
+        ]
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'Why 3 to 6 months, and why it is a range, not a rule',
+        paragraphs: [
+          'An emergency fund is cash set aside for the expenses that are not part of routine monthly spending: a job loss, a medical bill, a major car or home repair. FINRA\'s own investor-education guidance puts it directly: financial planners typically recommend "the equivalent of three to six months of living expenses," with the note that someone with unstable income or a specialized career might need a larger reserve, while someone with steady employment might need less.',
+          'The Consumer Financial Protection Bureau\'s own saving guidance for young adults sets a similar floor but leaves more room above it: it advises having "at least three months\' worth of living expenses saved up," then adds that "if possible, it\'s better to have more savings — like six to nine months\' worth of living expenses, instead of only three." Both sources agree on the same starting point, three months, and treat six as a reasonable middle target rather than a hard ceiling.',
+          'This calculator uses 3 months as the minimum and 6 months as the recommended target, the range both sources share, and shows how much more that still takes to save and how long it takes at your own savings rate. Expenses means what you would actually have to keep paying if your income stopped: rent or mortgage, utilities, groceries, insurance, minimum debt payments and transportation — not discretionary spending you could cut immediately.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your monthly essential expenses, what you already have saved specifically for emergencies, and how much you can add to it each month.',
+        steps: [
+          { name: 'Enter your monthly expenses', text: 'Essential costs only: housing, utilities, food, insurance, transportation and minimum debt payments — the bills that continue even if your income stops.' },
+          { name: 'Enter your current emergency savings', text: 'Money already set aside specifically for this purpose, separate from retirement or other savings goals.' },
+          { name: 'Enter your monthly savings rate', text: 'How much you can add to the fund each month from here.' },
+          { name: 'Read the recommended range', text: 'The headline is the 6-month target; the 3-month minimum sits just below it, along with how much more you still need to save.' },
+          { name: 'Check the timeline', text: 'The bar shows how many months of expenses your current savings already cover, against the 3-to-6-month recommended range. The last row shows how many months it takes to close the gap to 6 months at your current savings rate.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Both targets are a simple multiple of monthly expenses; the time to reach the 6-month target divides the remaining gap by the monthly savings rate.',
+        expression: '3-month minimum = monthly expenses × 3\n6-month target = monthly expenses × 6\nAmount still needed = 6-month target − current savings\nMonths to goal = amount still needed ÷ monthly savings rate',
+        terms: [
+          { symbol: 'monthly expenses', meaning: 'Essential monthly costs that continue regardless of income.' },
+          { symbol: 'current savings', meaning: 'Money already set aside for emergencies today.' },
+          { symbol: 'monthly savings rate', meaning: 'The amount added to the fund every month from here on.' }
+        ],
+        note: 'Estimates only, not financial advice. The 3-to-6-month range is a widely used planning guideline, not a figure tailored to your own job stability, dependents or health coverage.'
+      },
+      workedExample: {
+        intro: 'Your essential monthly expenses are $4,000. You already have $1,000 set aside and can add $300 a month. What should you aim for, and how long does it take?',
+        rows: [
+          { label: '3-month minimum (4,000 × 3)', value: '$12,000' },
+          { label: '6-month target (4,000 × 6)', value: '$24,000' },
+          { label: 'Amount still needed (24,000 − 1,000)', value: '$23,000' },
+          { label: 'Months to the 6-month goal (23,000 ÷ 300)', value: '≈ 77 months' },
+          { label: 'Months of expenses covered today (1,000 ÷ 4,000)', value: '0.25 months' }
+        ],
+        result: 'Target range $12,000–$24,000 · about 77 months to reach $24,000 at $300 a month',
+        explanation: 'At $300 a month, reaching the 6-month target from scratch (no current savings) would take 80 months, about 6.7 years — the $1,000 already saved only shaves a little over 3 months off that. Doubling the savings rate to $600 a month cuts the time to the 6-month goal to about 38 months, a reminder that the savings rate, not the starting balance, usually drives how fast the gap closes.'
+      },
+      watchOut: [
+        { title: '3 to 6 months is a guideline, not a personal plan', body: 'FINRA and the CFPB both frame this as a general rule of thumb. Someone with unstable income, a single income in the household, or a specialized career that takes longer to replace may reasonably target more than 6 months; someone with very stable employment and a second income may reasonably accept less.' },
+        { title: 'Even partial progress counts', body: 'FINRA\'s own guidance is explicit that falling short of the full target is fine as long as the saving habit continues — a smaller fund still covers smaller emergencies and reduces the chance of reaching for high-interest debt.' },
+        { title: 'Expenses means essentials, not your whole budget', body: 'Use what you would have to keep paying if your income stopped — rent, utilities, food, insurance, minimum debt payments and transportation — not subscriptions, dining out or other discretionary spending you could pause.' },
+        { title: 'Keep it separate and easy to reach', body: 'An emergency fund works best in its own account, separate from everyday spending money, so it is not accidentally spent, but still accessible without a penalty or a delay when a real emergency happens.' },
+        { title: 'This does not model investment growth', body: 'The time-to-goal figure assumes plain monthly saving with no return. Emergency funds are usually kept in a low-risk, liquid account rather than invested for growth, since they need to be available without risk of loss right when they are needed.' }
+      ],
+      references: [
+        { label: 'FINRA, Financial Foundations: How to Start an Emergency Fund', url: 'https://www.finra.org/investors/personal-finance/start-emergency-fund' },
+        { label: 'Consumer Financial Protection Bureau, Money as You Grow: Explore saving (teens and young adults)', url: 'https://www.consumerfinance.gov/consumer-tools/money-as-you-grow/teen-young-adult/explore-saving/' }
+      ]
+    },
+    inputs: [
+      { id: 'monthlyExpenses', label: 'Essential monthly expenses', type: 'currency', placeholder: '4000', defaultValue: 4000, step: 100, min: 0 },
+      { id: 'currentSavings', label: 'Current emergency savings', type: 'currency', placeholder: '1000', defaultValue: 1000, step: 100, min: 0 },
+      { id: 'monthlySavingsRate', label: 'Monthly savings rate', type: 'currency', placeholder: '300', defaultValue: 300, step: 25, min: 0 }
+    ],
+    seo: {
+      title: 'Emergency Fund Calculator – 3–6 Month Target',
+      description: 'Free emergency fund calculator: find the recommended 3-to-6-month savings target from your expenses and see how long reaching it takes at your own rate.',
+      faq: [
+        { question: 'How much should I have in an emergency fund?', answer: 'FINRA\'s investor-education guidance says financial planners typically recommend three to six months of living expenses. The CFPB similarly recommends at least three months, and more — six to nine months — if possible. This calculator uses 3 and 6 months as the minimum and recommended target.' },
+        { question: 'How long does it take to build an emergency fund?', answer: 'It depends entirely on the savings rate. On $4,000 of monthly expenses with $1,000 already saved, reaching the $24,000 (6-month) target takes about 77 months at $300 a month, but only about 38 months at $600 a month.' },
+        { question: 'What counts as a monthly expense for this calculator?', answer: 'Essential costs that continue even if income stops: rent or mortgage, utilities, groceries, insurance, minimum debt payments and transportation. Leave out discretionary spending like subscriptions or dining out.' },
+        { question: 'Is 3 months enough, or do I need 6?', answer: 'Both are reasonable targets, used as a floor and a ceiling by the two sources this page cites. Unstable income or a single-income household generally points toward the higher end; very stable, dual-income employment can reasonably accept the lower end.' },
+        { question: 'Should I invest my emergency fund to grow it faster?', answer: 'Generally not. Emergency funds are typically kept in a low-risk, easily accessible account, since the money needs to be there without risk of loss exactly when an emergency happens. This calculator assumes plain saving with no investment return.' },
+        { question: 'What if I have not saved anything yet?', answer: 'Starting at $0 with $4,000 of monthly expenses and $300 a month saved, reaching the $24,000 target takes about 80 months. Any current savings, even a small amount, shortens that time.' }
+      ]
+    },
+    compute(values) {
+      const recommendedFundLow = values.monthlyExpenses * 3;
+      const recommendedFundHigh = values.monthlyExpenses * 6;
+      const amountStillNeeded = Math.max(0, recommendedFundHigh - values.currentSavings);
+      const monthsToReachGoal = values.monthlySavingsRate > 0 ? amountStillNeeded / values.monthlySavingsRate : NaN;
+      const monthsCovered = values.monthlyExpenses > 0 ? values.currentSavings / values.monthlyExpenses : NaN;
+      return { recommendedFundHigh, recommendedFundLow, amountStillNeeded, monthsToReachGoal, monthsCovered };
+    }
+  }
 ];

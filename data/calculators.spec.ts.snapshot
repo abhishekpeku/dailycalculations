@@ -3452,6 +3452,53 @@ exports[`compute() snapshots > elo-rating-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > emergency-fund-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "monthlyExpenses": 4000,
+      "currentSavings": 1000,
+      "monthlySavingsRate": 300
+    },
+    "outputs": {
+      "recommendedFundHigh": 24000,
+      "recommendedFundLow": 12000,
+      "amountStillNeeded": 23000,
+      "monthsToReachGoal": 76.66666667,
+      "monthsCovered": 0.25
+    }
+  },
+  "typical": {
+    "inputs": {
+      "monthlyExpenses": 6000,
+      "currentSavings": 1500,
+      "monthlySavingsRate": 450
+    },
+    "outputs": {
+      "recommendedFundHigh": 36000,
+      "recommendedFundLow": 18000,
+      "amountStillNeeded": 34500,
+      "monthsToReachGoal": 76.66666667,
+      "monthsCovered": 0.25
+    }
+  },
+  "edge": {
+    "inputs": {
+      "monthlyExpenses": 0,
+      "currentSavings": 0,
+      "monthlySavingsRate": 0
+    },
+    "outputs": {
+      "recommendedFundHigh": 0,
+      "recommendedFundLow": 0,
+      "amountStillNeeded": 0,
+      "monthsToReachGoal": "NaN",
+      "monthsCovered": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > emi-calculator 1`] = `
 {
   "default": {

@@ -329,7 +329,13 @@ export const calculatorOrder: string[] = [
   'debt-payoff-calculator',
   'credit-card-minimum-payment-calculator',
   'balance-transfer-savings-calculator',
-  'student-loan-calculator'
+  'student-loan-calculator',
+  'jet-lag-calculator',
+  'luggage-fee-calculator',
+  'daylight-hours-calculator',
+  'travel-points-value-calculator',
+  'points-vs-cash-flight-calculator',
+  'tipping-abroad-calculator'
 ];
 
 const rank = (id: string) => {

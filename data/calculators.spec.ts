@@ -104,7 +104,10 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'closing-cost-estimator-calculator': ['midPercentOfPrice'], // homePrice 0 (its min) -> midEstimate 0 -> 0/0
   'emergency-fund-calculator': ['monthsToReachGoal', 'monthsCovered'], // monthlyExpenses and monthlySavingsRate both 0 (their min) -> 0/0 and no savings rate to divide by
   'commission-calculator': ['effectiveTieredRate'], // saleAmount 0 (its min) -> 0/0
-  'acceleration-calculator': ['acceleration'] // velocityChange (no min, 0) and time 0 (its min) -> 0/0
+  'acceleration-calculator': ['acceleration'], // velocityChange (no min, 0) and time 0 (its min) -> 0/0
+  'centripetal-force-calculator': ['force'], // mass, speed and radius all 0 (their min) -> 0/0
+  'gravitational-force-calculator': ['force'], // mass1, mass2 and distance all 0 (their min) -> 0/0
+  'pendulum-period-calculator': ['period'] // length 0 (its min) and gravity 0 (no min, 0) -> 0/0 under the sqrt
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

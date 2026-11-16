@@ -1123,6 +1123,38 @@ exports[`compute() snapshots > buffer-capacity-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > buoyancy-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "fluidDensity": 1000,
+      "volume": 0.027
+    },
+    "outputs": {
+      "buoyantForce": 264.77955
+    }
+  },
+  "typical": {
+    "inputs": {
+      "fluidDensity": 1500,
+      "volume": 0.041
+    },
+    "outputs": {
+      "buoyantForce": 603.108975
+    }
+  },
+  "edge": {
+    "inputs": {
+      "fluidDensity": 0,
+      "volume": 0
+    },
+    "outputs": {
+      "buoyantForce": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > business-loan-calculator 1`] = `
 {
   "default": {
@@ -1575,6 +1607,41 @@ exports[`compute() snapshots > centimeters-to-inches-converter 1`] = `
     },
     "outputs": {
       "inches": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > centripetal-force-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass": 1200,
+      "speed": 15,
+      "radius": 50
+    },
+    "outputs": {
+      "force": 5400
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass": 1800,
+      "speed": 22.5,
+      "radius": 75
+    },
+    "outputs": {
+      "force": 12150
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass": 0,
+      "speed": 0,
+      "radius": 0
+    },
+    "outputs": {
+      "force": "NaN"
     }
   }
 }
@@ -5109,6 +5176,41 @@ exports[`compute() snapshots > gravel-calculator 1`] = `
       "tonsExact": 0.0001929012346,
       "cubicYardsWithWaste": 0.0003858024691,
       "tonsWithWaste": 0.0001929012346
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > gravitational-force-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mass1": 5.9722e+24,
+      "mass2": 70,
+      "distance": 6371000
+    },
+    "outputs": {
+      "force": 687.4211605
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mass1": 8.9583e+24,
+      "mass2": 105,
+      "distance": 9556500
+    },
+    "outputs": {
+      "force": 687.4211605
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mass1": 0,
+      "mass2": 0,
+      "distance": 0
+    },
+    "outputs": {
+      "force": "NaN"
     }
   }
 }
@@ -8896,6 +8998,38 @@ exports[`compute() snapshots > paycheck-calculator 1`] = `
       "preTaxDeductions": 0,
       "postTaxDeductions": 0,
       "annualNetPay": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > pendulum-period-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "length": 1,
+      "gravity": 9.80665
+    },
+    "outputs": {
+      "period": 2.006409293
+    }
+  },
+  "typical": {
+    "inputs": {
+      "length": 1.5,
+      "gravity": 14.71
+    },
+    "outputs": {
+      "period": 2.006407588
+    }
+  },
+  "edge": {
+    "inputs": {
+      "length": 0,
+      "gravity": 0
+    },
+    "outputs": {
+      "period": "NaN"
     }
   }
 }
@@ -12960,6 +13094,41 @@ exports[`compute() snapshots > topsoil-calculator 1`] = `
       "tonsExact": 0.0001929012346,
       "cubicYardsWithWaste": 0.0003858024691,
       "tonsWithWaste": 0.0001929012346
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > torque-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "force": 100,
+      "radius": 0.3,
+      "angle": 1.5707963267948966
+    },
+    "outputs": {
+      "torque": 30
+    }
+  },
+  "typical": {
+    "inputs": {
+      "force": 150,
+      "radius": 0.45,
+      "angle": 2.36
+    },
+    "outputs": {
+      "torque": 47.54772669
+    }
+  },
+  "edge": {
+    "inputs": {
+      "force": 0,
+      "radius": 0,
+      "angle": 0
+    },
+    "outputs": {
+      "torque": 0
     }
   }
 }

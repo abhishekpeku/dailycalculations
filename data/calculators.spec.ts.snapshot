@@ -1091,6 +1091,47 @@ exports[`compute() snapshots > buffer-capacity-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > business-loan-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "loanAmount": 75000,
+      "interestRate": 9,
+      "years": 5
+    },
+    "outputs": {
+      "monthlyPayment": 1556.876642,
+      "totalCost": 93412.59852,
+      "totalInterest": 18412.59852
+    }
+  },
+  "typical": {
+    "inputs": {
+      "loanAmount": 113000,
+      "interestRate": 13.5,
+      "years": 8
+    },
+    "outputs": {
+      "monthlyPayment": 1930.962046,
+      "totalCost": 185372.3564,
+      "totalInterest": 72372.35639
+    }
+  },
+  "edge": {
+    "inputs": {
+      "loanAmount": 0,
+      "interestRate": 0,
+      "years": 1
+    },
+    "outputs": {
+      "monthlyPayment": 0,
+      "totalCost": 0,
+      "totalInterest": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > cake-servings-calculator 1`] = `
 {
   "default": {
@@ -1834,6 +1875,62 @@ exports[`compute() snapshots > cold-brew-ratio-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > college-savings-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "annualTuitionToday": 11950,
+      "yearsUntilCollege": 10,
+      "yearsInCollege": 4,
+      "tuitionInflationRate": 4,
+      "currentSavings": 5000,
+      "expectedReturn": 6
+    },
+    "outputs": {
+      "monthlyContribution": 402.8474376,
+      "firstYearCost": 17688.9192,
+      "totalFutureCost": 75115.3586,
+      "totalContributed": 53341.69251,
+      "totalGrowth": 21773.66609
+    }
+  },
+  "typical": {
+    "inputs": {
+      "annualTuitionToday": 18000,
+      "yearsUntilCollege": 15,
+      "yearsInCollege": 6,
+      "tuitionInflationRate": 6,
+      "currentSavings": 7500,
+      "expectedReturn": 9
+    },
+    "outputs": {
+      "monthlyContribution": 719.112445,
+      "firstYearCost": 43138.04748,
+      "totalFutureCost": 300901.6222,
+      "totalContributed": 136940.2401,
+      "totalGrowth": 163961.3821
+    }
+  },
+  "edge": {
+    "inputs": {
+      "annualTuitionToday": 0,
+      "yearsUntilCollege": 0,
+      "yearsInCollege": 1,
+      "tuitionInflationRate": 0,
+      "currentSavings": 0,
+      "expectedReturn": 0
+    },
+    "outputs": {
+      "monthlyContribution": 0,
+      "firstYearCost": 0,
+      "totalFutureCost": 0,
+      "totalContributed": 0,
+      "totalGrowth": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > combination-calculator 1`] = `
 {
   "default": {
@@ -1911,6 +2008,62 @@ exports[`compute() snapshots > combined-gas-law-calculator 1`] = `
     },
     "outputs": {
       "volume2": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > commission-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "saleAmount": 50000,
+      "flatCommissionRate": 5,
+      "tier1Limit": 10000,
+      "tier1Rate": 3,
+      "tier2Limit": 25000,
+      "tier2Rate": 5,
+      "tier3Rate": 7
+    },
+    "outputs": {
+      "flatCommission": 2500,
+      "tieredCommission": 2800,
+      "difference": 300,
+      "effectiveTieredRate": 5.6
+    }
+  },
+  "typical": {
+    "inputs": {
+      "saleAmount": 75000,
+      "flatCommissionRate": 7.5,
+      "tier1Limit": 15000,
+      "tier1Rate": 4.5,
+      "tier2Limit": 37500,
+      "tier2Rate": 7.5,
+      "tier3Rate": 10.5
+    },
+    "outputs": {
+      "flatCommission": 5625,
+      "tieredCommission": 6300,
+      "difference": 675,
+      "effectiveTieredRate": 8.4
+    }
+  },
+  "edge": {
+    "inputs": {
+      "saleAmount": 0,
+      "flatCommissionRate": 0,
+      "tier1Limit": 0,
+      "tier1Rate": 0,
+      "tier2Limit": 0,
+      "tier2Rate": 0,
+      "tier3Rate": 0
+    },
+    "outputs": {
+      "flatCommission": 0,
+      "tieredCommission": 0,
+      "difference": 0,
+      "effectiveTieredRate": "NaN"
     }
   }
 }
@@ -3447,6 +3600,53 @@ exports[`compute() snapshots > elo-rating-calculator 1`] = `
       "ratingChange": -0.5,
       "expectedScore": 0.5,
       "newRating": 99.5
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > emergency-fund-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "monthlyExpenses": 4000,
+      "currentSavings": 1000,
+      "monthlySavingsRate": 300
+    },
+    "outputs": {
+      "recommendedFundHigh": 24000,
+      "recommendedFundLow": 12000,
+      "amountStillNeeded": 23000,
+      "monthsToReachGoal": 76.66666667,
+      "monthsCovered": 0.25
+    }
+  },
+  "typical": {
+    "inputs": {
+      "monthlyExpenses": 6000,
+      "currentSavings": 1500,
+      "monthlySavingsRate": 450
+    },
+    "outputs": {
+      "recommendedFundHigh": 36000,
+      "recommendedFundLow": 18000,
+      "amountStillNeeded": 34500,
+      "monthsToReachGoal": 76.66666667,
+      "monthsCovered": 0.25
+    }
+  },
+  "edge": {
+    "inputs": {
+      "monthlyExpenses": 0,
+      "currentSavings": 0,
+      "monthlySavingsRate": 0
+    },
+    "outputs": {
+      "recommendedFundHigh": 0,
+      "recommendedFundLow": 0,
+      "amountStillNeeded": 0,
+      "monthsToReachGoal": "NaN",
+      "monthsCovered": "NaN"
     }
   }
 }
@@ -7113,6 +7313,56 @@ exports[`compute() snapshots > mortar-calculator 1`] = `
       "bagsExact": 0.1,
       "bagsWithWaste": 0.1,
       "bagsToBuy": 1
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > mortgage-amortization-schedule-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "loanAmount": 280000,
+      "interestRate": 5,
+      "years": 30
+    },
+    "outputs": {
+      "interestSavedBiweekly": 47506.73766,
+      "monthsSavedBiweekly": 56,
+      "monthlyPayment": 1503.100544,
+      "biweeklyHalfPayment": 751.5502722,
+      "totalInterestMonthly": 261116.196,
+      "totalInterestBiweekly": 213609.4583
+    }
+  },
+  "typical": {
+    "inputs": {
+      "loanAmount": 420000,
+      "interestRate": 7.5,
+      "years": 45
+    },
+    "outputs": {
+      "interestSavedBiweekly": 419740.6844,
+      "monthsSavedBiweekly": 184,
+      "monthlyPayment": 2719.022182,
+      "biweeklyHalfPayment": 1359.511091,
+      "totalInterestMonthly": 1048271.979,
+      "totalInterestBiweekly": 628531.2941
+    }
+  },
+  "edge": {
+    "inputs": {
+      "loanAmount": 0,
+      "interestRate": 0,
+      "years": 1
+    },
+    "outputs": {
+      "interestSavedBiweekly": 0,
+      "monthsSavedBiweekly": 12,
+      "monthlyPayment": 0,
+      "biweeklyHalfPayment": 0,
+      "totalInterestMonthly": 0,
+      "totalInterestBiweekly": 0
     }
   }
 }

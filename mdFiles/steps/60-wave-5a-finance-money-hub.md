@@ -209,7 +209,24 @@ prior wave's convention.
   - [x] `cd-calculator`
   - [x] `simple-interest-calculator`
   - [x] `mutual-fund-calculator`
-- [ ] Batch 6 (remaining money-hub items, 5-6)
+- [x] Batch 6 (remaining money-hub items, 5) — branch `step/60-wave-5a-finance-run-6`, PR #102, DONE 2026-11-16
+  - [x] `emergency-fund-calculator` — 3-6 month range cited to FINRA + CFPB (both directly fetched)
+  - [x] `mortgage-amortization-schedule-calculator` — built, not skipped: redundancy check against
+        `mortgage-calculator` (which already shows a full monthly amortization table per UX-07)
+        found a genuine differentiator, the step file's own suggested angle — an accelerated
+        biweekly vs. standard monthly schedule comparison for the same loan, including a real CFPB
+        enforcement citation (Nationwide Biweekly) warning against paid third-party biweekly
+        programs.
+  - [x] `business-loan-calculator` — same math as `loan-calculator`, SBA 7(a)/504/working-capital
+        content fetched directly from sba.gov
+  - [x] `commission-calculator` — flat vs. tiered (marginal-bracket) structures; IRS Pub 15 (2026)
+        22%/37% supplemental-wage withholding and DOL Fact Sheet #20 cited directly
+  - [x] `college-savings-calculator` — goal built from College Board's directly-fetched 2025-26
+        tuition figures ($11,950 public in-state, $45,000 private) and nominal increase rates,
+        rather than a typed-in goal; cross-linked to `goal-based-investment-calculator`
+  - `down-payment-savings-calculator` skipped as instructed (already shipped in batch 1)
+  - `finance` 33 → 38 calculators (315 calculators site-wide after this batch)
+  - `npm test` 1216/1216, lint clean, `npm run build` 315 pages — all green
 - [ ] Batch 7 (income-tax-calculator, 1)
 - [ ] Visual-QA spot-check (desktop/dark-mode at minimum) on `home-affordability-calculator`,
       `income-tax-calculator`, and one retirement-cluster page

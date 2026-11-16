@@ -4770,4 +4770,641 @@ export const financeCalculators: CalculatorConfig[] = [
       return { futureValue, totalContributions, totalGrowth, feeDrag };
     }
   },
+  {
+    id: 'emergency-fund-calculator',
+    group: 'Savings & Growth',
+    category: 'finance',
+    glyph: 'EF',
+    updatedAt: '2026-11-16',
+    aliases: ['emergency savings calculator', 'rainy day fund calculator', 'how much emergency fund do i need calculator', '3 to 6 months expenses calculator', 'emergency fund savings goal calculator'],
+    related: ['down-payment-savings-calculator', 'debt-payoff-calculator', 'compound-interest-calculator', 'goal-based-investment-calculator'],
+    title: 'Emergency Fund Calculator',
+    description: 'Find the emergency fund size financial planners recommend, three to six months of expenses, and how long reaching it takes at your own savings rate.',
+    example: 'On $4,000 of monthly expenses, $1,000 already saved and $300 set aside a month, the 6-month target is $24,000 and reaching it takes about 77 months.',
+    breakdown: {
+      headline: 'recommendedFundHigh',
+      headlineLabel: 'Recommended emergency fund (6 months)',
+      outputs: [
+        { id: 'recommendedFundHigh', label: 'Recommended emergency fund (6 months)', format: 'currency' },
+        { id: 'recommendedFundLow', label: '3-month minimum', format: 'currency' },
+        { id: 'amountStillNeeded', label: 'Still needed to reach 6 months', format: 'currency' },
+        { id: 'monthsToReachGoal', label: 'Time to reach the 6-month goal', format: 'integer', dimension: 'term', unit: 'mo' }
+      ],
+      groups: [
+        { title: 'Your expenses and savings', inputs: ['monthlyExpenses', 'currentSavings'] },
+        { title: 'Your savings plan', inputs: ['monthlySavingsRate'] }
+      ],
+      visual: {
+        type: 'rangeBar',
+        value: 'monthsCovered',
+        title: 'Months of expenses covered today',
+        valueLabel: 'Months covered',
+        bands: [
+          { label: 'Below the recommended range', min: 0, max: 3 },
+          { label: 'Within the recommended 3–6 months', min: 3, max: 6 },
+          { label: 'Above 6 months', min: 6, max: 24 }
+        ]
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'Why 3 to 6 months, and why it is a range, not a rule',
+        paragraphs: [
+          'An emergency fund is cash set aside for the expenses that are not part of routine monthly spending: a job loss, a medical bill, a major car or home repair. FINRA\'s own investor-education guidance puts it directly: financial planners typically recommend "the equivalent of three to six months of living expenses," with the note that someone with unstable income or a specialized career might need a larger reserve, while someone with steady employment might need less.',
+          'The Consumer Financial Protection Bureau\'s own saving guidance for young adults sets a similar floor but leaves more room above it: it advises having "at least three months\' worth of living expenses saved up," then adds that "if possible, it\'s better to have more savings — like six to nine months\' worth of living expenses, instead of only three." Both sources agree on the same starting point, three months, and treat six as a reasonable middle target rather than a hard ceiling.',
+          'This calculator uses 3 months as the minimum and 6 months as the recommended target, the range both sources share, and shows how much more that still takes to save and how long it takes at your own savings rate. Expenses means what you would actually have to keep paying if your income stopped: rent or mortgage, utilities, groceries, insurance, minimum debt payments and transportation — not discretionary spending you could cut immediately.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your monthly essential expenses, what you already have saved specifically for emergencies, and how much you can add to it each month.',
+        steps: [
+          { name: 'Enter your monthly expenses', text: 'Essential costs only: housing, utilities, food, insurance, transportation and minimum debt payments — the bills that continue even if your income stops.' },
+          { name: 'Enter your current emergency savings', text: 'Money already set aside specifically for this purpose, separate from retirement or other savings goals.' },
+          { name: 'Enter your monthly savings rate', text: 'How much you can add to the fund each month from here.' },
+          { name: 'Read the recommended range', text: 'The headline is the 6-month target; the 3-month minimum sits just below it, along with how much more you still need to save.' },
+          { name: 'Check the timeline', text: 'The bar shows how many months of expenses your current savings already cover, against the 3-to-6-month recommended range. The last row shows how many months it takes to close the gap to 6 months at your current savings rate.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Both targets are a simple multiple of monthly expenses; the time to reach the 6-month target divides the remaining gap by the monthly savings rate.',
+        expression: '3-month minimum = monthly expenses × 3\n6-month target = monthly expenses × 6\nAmount still needed = 6-month target − current savings\nMonths to goal = amount still needed ÷ monthly savings rate',
+        terms: [
+          { symbol: 'monthly expenses', meaning: 'Essential monthly costs that continue regardless of income.' },
+          { symbol: 'current savings', meaning: 'Money already set aside for emergencies today.' },
+          { symbol: 'monthly savings rate', meaning: 'The amount added to the fund every month from here on.' }
+        ],
+        note: 'Estimates only, not financial advice. The 3-to-6-month range is a widely used planning guideline, not a figure tailored to your own job stability, dependents or health coverage.'
+      },
+      workedExample: {
+        intro: 'Your essential monthly expenses are $4,000. You already have $1,000 set aside and can add $300 a month. What should you aim for, and how long does it take?',
+        rows: [
+          { label: '3-month minimum (4,000 × 3)', value: '$12,000' },
+          { label: '6-month target (4,000 × 6)', value: '$24,000' },
+          { label: 'Amount still needed (24,000 − 1,000)', value: '$23,000' },
+          { label: 'Months to the 6-month goal (23,000 ÷ 300)', value: '≈ 77 months' },
+          { label: 'Months of expenses covered today (1,000 ÷ 4,000)', value: '0.25 months' }
+        ],
+        result: 'Target range $12,000–$24,000 · about 77 months to reach $24,000 at $300 a month',
+        explanation: 'At $300 a month, reaching the 6-month target from scratch (no current savings) would take 80 months, about 6.7 years — the $1,000 already saved only shaves a little over 3 months off that. Doubling the savings rate to $600 a month cuts the time to the 6-month goal to about 38 months, a reminder that the savings rate, not the starting balance, usually drives how fast the gap closes.'
+      },
+      watchOut: [
+        { title: '3 to 6 months is a guideline, not a personal plan', body: 'FINRA and the CFPB both frame this as a general rule of thumb. Someone with unstable income, a single income in the household, or a specialized career that takes longer to replace may reasonably target more than 6 months; someone with very stable employment and a second income may reasonably accept less.' },
+        { title: 'Even partial progress counts', body: 'FINRA\'s own guidance is explicit that falling short of the full target is fine as long as the saving habit continues — a smaller fund still covers smaller emergencies and reduces the chance of reaching for high-interest debt.' },
+        { title: 'Expenses means essentials, not your whole budget', body: 'Use what you would have to keep paying if your income stopped — rent, utilities, food, insurance, minimum debt payments and transportation — not subscriptions, dining out or other discretionary spending you could pause.' },
+        { title: 'Keep it separate and easy to reach', body: 'An emergency fund works best in its own account, separate from everyday spending money, so it is not accidentally spent, but still accessible without a penalty or a delay when a real emergency happens.' },
+        { title: 'This does not model investment growth', body: 'The time-to-goal figure assumes plain monthly saving with no return. Emergency funds are usually kept in a low-risk, liquid account rather than invested for growth, since they need to be available without risk of loss right when they are needed.' }
+      ],
+      references: [
+        { label: 'FINRA, Financial Foundations: How to Start an Emergency Fund', url: 'https://www.finra.org/investors/personal-finance/start-emergency-fund' },
+        { label: 'Consumer Financial Protection Bureau, Money as You Grow: Explore saving (teens and young adults)', url: 'https://www.consumerfinance.gov/consumer-tools/money-as-you-grow/teen-young-adult/explore-saving/' }
+      ]
+    },
+    inputs: [
+      { id: 'monthlyExpenses', label: 'Essential monthly expenses', type: 'currency', placeholder: '4000', defaultValue: 4000, step: 100, min: 0 },
+      { id: 'currentSavings', label: 'Current emergency savings', type: 'currency', placeholder: '1000', defaultValue: 1000, step: 100, min: 0 },
+      { id: 'monthlySavingsRate', label: 'Monthly savings rate', type: 'currency', placeholder: '300', defaultValue: 300, step: 25, min: 0 }
+    ],
+    seo: {
+      title: 'Emergency Fund Calculator – 3–6 Month Target',
+      description: 'Free emergency fund calculator: find the recommended 3-to-6-month savings target from your expenses and see how long reaching it takes at your own rate.',
+      faq: [
+        { question: 'How much should I have in an emergency fund?', answer: 'FINRA\'s investor-education guidance says financial planners typically recommend three to six months of living expenses. The CFPB similarly recommends at least three months, and more — six to nine months — if possible. This calculator uses 3 and 6 months as the minimum and recommended target.' },
+        { question: 'How long does it take to build an emergency fund?', answer: 'It depends entirely on the savings rate. On $4,000 of monthly expenses with $1,000 already saved, reaching the $24,000 (6-month) target takes about 77 months at $300 a month, but only about 38 months at $600 a month.' },
+        { question: 'What counts as a monthly expense for this calculator?', answer: 'Essential costs that continue even if income stops: rent or mortgage, utilities, groceries, insurance, minimum debt payments and transportation. Leave out discretionary spending like subscriptions or dining out.' },
+        { question: 'Is 3 months enough, or do I need 6?', answer: 'Both are reasonable targets, used as a floor and a ceiling by the two sources this page cites. Unstable income or a single-income household generally points toward the higher end; very stable, dual-income employment can reasonably accept the lower end.' },
+        { question: 'Should I invest my emergency fund to grow it faster?', answer: 'Generally not. Emergency funds are typically kept in a low-risk, easily accessible account, since the money needs to be there without risk of loss exactly when an emergency happens. This calculator assumes plain saving with no investment return.' },
+        { question: 'What if I have not saved anything yet?', answer: 'Starting at $0 with $4,000 of monthly expenses and $300 a month saved, reaching the $24,000 target takes about 80 months. Any current savings, even a small amount, shortens that time.' }
+      ]
+    },
+    compute(values) {
+      const recommendedFundLow = values.monthlyExpenses * 3;
+      const recommendedFundHigh = values.monthlyExpenses * 6;
+      const amountStillNeeded = Math.max(0, recommendedFundHigh - values.currentSavings);
+      const monthsToReachGoal = values.monthlySavingsRate > 0 ? amountStillNeeded / values.monthlySavingsRate : NaN;
+      const monthsCovered = values.monthlyExpenses > 0 ? values.currentSavings / values.monthlyExpenses : NaN;
+      return { recommendedFundHigh, recommendedFundLow, amountStillNeeded, monthsToReachGoal, monthsCovered };
+    }
+  },
+  {
+    id: 'mortgage-amortization-schedule-calculator',
+    group: 'Mortgages & Loans',
+    category: 'finance',
+    glyph: 'AS',
+    updatedAt: '2026-11-16',
+    aliases: ['biweekly mortgage calculator', 'biweekly vs monthly mortgage calculator', 'accelerated biweekly payment calculator', 'mortgage schedule comparison calculator', 'biweekly payment savings calculator'],
+    related: ['mortgage-calculator', 'loan-prepayment-calculator', 'loan-calculator', 'mortgage-refinance-calculator'],
+    title: 'Mortgage Amortization Schedule Calculator',
+    description: 'See the standard monthly amortization schedule next to an accelerated biweekly schedule for the same loan, with the interest and time an accelerated biweekly plan saves.',
+    example: 'A $280,000, 30-year loan at 5% APR saves about $47,506.74 in interest and pays off about 56 months (4.7 years) sooner on an accelerated biweekly schedule than on the standard monthly one.',
+    breakdown: {
+      headline: 'interestSavedBiweekly',
+      headlineLabel: 'Interest saved on an accelerated biweekly schedule',
+      outputs: [
+        { id: 'interestSavedBiweekly', label: 'Interest saved on an accelerated biweekly schedule', format: 'currency' },
+        { id: 'monthsSavedBiweekly', label: 'Paid off sooner by', format: 'integer', dimension: 'term', unit: 'mo' },
+        { id: 'monthlyPayment', label: 'Regular monthly payment', format: 'currency' },
+        { id: 'biweeklyHalfPayment', label: 'Biweekly half-payment', format: 'currency' },
+        { id: 'totalInterestMonthly', label: 'Total interest, standard monthly schedule', format: 'currency' },
+        { id: 'totalInterestBiweekly', label: 'Total interest, accelerated biweekly schedule', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your loan', inputs: ['loanAmount', 'interestRate', 'years'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'totalInterestMonthly', label: 'Standard monthly schedule' },
+          { from: 'totalInterestBiweekly', label: 'Accelerated biweekly schedule' }
+        ],
+        title: 'Total interest: monthly vs. accelerated biweekly',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'The same loan, run on two schedules',
+        paragraphs: [
+          'mortgage-calculator already builds the full, standard amortization schedule for a loan: one payment a month, 12 a year, for the whole term. This page runs the identical loan a second way: an accelerated biweekly schedule, where half the monthly payment is paid every two weeks instead of the full payment once a month, and sets the two schedules side by side.',
+          'The trick is in the arithmetic, not a special loan product. A year has 52 weeks, so paying half a payment every two weeks works out to 26 half-payments a year — the equivalent of 13 full monthly payments, one more than the 12 a standard monthly schedule makes. That extra payment goes straight to principal, which is mathematically the same thing loan-prepayment-calculator models as a flat extra amount added to every monthly payment, here fixed at exactly one-twelfth of the regular payment to reproduce the accelerated-biweekly effect.',
+          'Because every extra dollar of principal stops accruing interest for the rest of the loan, and interest is largest on the biggest, earliest balances, this one extra payment a year compounds into a meaningfully shorter payoff and a real interest saving — without the rate, the payment, or the loan terms changing at all.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the loan exactly as it is today: the amount, the rate and the term.',
+        steps: [
+          { name: 'Enter your loan', text: 'Type the loan amount (or remaining balance), the annual interest rate and the original term in years.' },
+          { name: 'Read the regular schedule', text: 'The rows show the standard monthly payment and the total interest it costs over the full term — the same figures mortgage-calculator would show for this loan.' },
+          { name: 'Compare the biweekly schedule', text: 'Beside it are the biweekly half-payment and the total interest on the accelerated biweekly schedule for the identical loan.' },
+          { name: 'Read the savings', text: 'The headline is the interest saved; the row below it is how many months sooner the loan is paid off on the biweekly schedule.' },
+          { name: 'Decide how to actually do it', text: 'The watch-outs below cover how to get this result without paying a third party for it.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The standard schedule uses the usual annuity payment. The biweekly schedule is modeled as that same payment plus one-twelfth of it extra every month — the monthly-equivalent of paying half the payment every two weeks — run month by month until the balance reaches zero, the same simulation loan-prepayment-calculator uses for any extra payment.',
+        expression: 'M = P × r ÷ (1 − (1 + r)^−n)\nBiweekly half-payment = M ÷ 2\nModeled monthly-equivalent extra = M ÷ 12\nEach month: interest = balance × r; balance −= (M + extra − interest)',
+        terms: [
+          { symbol: 'M', meaning: 'Standard monthly principal-and-interest payment.' },
+          { symbol: 'P', meaning: 'Loan amount (or current balance).' },
+          { symbol: 'r', meaning: 'Monthly interest rate: the APR ÷ 12, as a decimal.' },
+          { symbol: 'n', meaning: 'Original number of monthly payments.' }
+        ],
+        note: 'Estimates only, not financial advice. This models an accelerated biweekly plan as a monthly-equivalent extra payment, not true every-14-days billing with its own day-count interest accrual, so a servicer\'s own biweekly figures can differ slightly from this page\'s.'
+      },
+      workedExample: {
+        intro: 'A $280,000, 30-year loan at 5% APR — the same loan mortgage-calculator\'s own example uses — run on both schedules. How much does switching to accelerated biweekly save?',
+        rows: [
+          { label: 'Standard monthly payment', value: '$1,503.10' },
+          { label: 'Total interest, monthly schedule', value: '≈ $261,116.20' },
+          { label: 'Biweekly half-payment (1,503.10 ÷ 2)', value: '$751.55' },
+          { label: 'Modeled monthly-equivalent extra (1,503.10 ÷ 12)', value: '≈ $125.26' },
+          { label: 'Payoff time, biweekly schedule', value: '304 months (≈ 25.3 years)' },
+          { label: 'Total interest, biweekly schedule', value: '≈ $213,609.46' },
+          { label: 'Interest saved (261,116.20 − 213,609.46)', value: '≈ $47,506.74' },
+          { label: 'Months saved (360 − 304)', value: '56 months (≈ 4.7 years)' }
+        ],
+        result: '≈ $47,506.74 saved · paid off about 56 months (4.7 years) sooner',
+        explanation: 'Nothing about the loan itself changes — same rate, same original term, same payment amount per payment. The entire saving comes from making the equivalent of one extra monthly payment every year, which compounds over three decades into a payoff nearly five years earlier and close to $47,507 less interest.'
+      },
+      watchOut: [
+        { title: 'This is "accelerated" biweekly, not every-14-days billing', body: 'True biweekly billing charges interest on a 14-day cycle and makes 26 separate payments a year. This page models the simpler, widely used equivalent: the regular monthly payment plus one extra month\'s worth spread across the year. The end result — one extra payment a year — is the same; the exact month-by-month numbers can differ slightly from a servicer\'s own true-biweekly figures.' },
+        { title: 'Watch out for paid, third-party biweekly programs', body: 'The CFPB sued one such program, Nationwide Biweekly Administration, saying a typical enrolled consumer "would have to stay in the program for nine years" and pay over $1,200 in fees before the program\'s own savings caught up with its cost — and that for the early years, "consumers will pay more in fees than they save in interest." A civil penalty of $7,930,000 followed.' },
+        { title: 'The same result is available for free', body: 'Ask your loan servicer to accept one extra principal-only payment a year, or spread it monthly by adding one-twelfth of your payment to each regular payment (loan-prepayment-calculator models exactly this, with any extra amount you choose) — with no enrollment fee and no per-payment charge.' },
+        { title: 'Confirm how your servicer applies partial payments', body: 'Some servicers hold biweekly half-payments in a non-interest-bearing suspense account until a full payment has accumulated, rather than applying each half-payment to the balance right away. Ask your servicer directly, since this can change the exact savings versus this page\'s simulation.' },
+        { title: 'Check for a prepayment penalty first', body: 'A small number of mortgages, usually within the first three to five years, charge a fee for paying down the balance faster than scheduled. Check your loan documents before committing to any accelerated schedule.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, CFPB Files Suit Against Nationwide Biweekly for Luring Consumers with False Promises of Mortgage Savings', url: 'https://www.consumerfinance.gov/archive/newsroom/cfpb-files-suit-against-nationwide-biweekly-for-luring-consumers-with-false-promises-of-mortgage-savings/' },
+        { label: 'Consumer Financial Protection Bureau, What is a prepayment penalty?', url: 'https://www.consumerfinance.gov/ask-cfpb/what-is-a-prepayment-penalty-en-1957/' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.8 The Basics of Loans', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-8-the-basics-of-loans' }
+      ]
+    },
+    inputs: [
+      { id: 'loanAmount', label: 'Loan amount (or current balance)', type: 'currency', placeholder: '280000', defaultValue: 280000, step: 1000, min: 0 },
+      { id: 'interestRate', label: 'Annual interest rate (APR)', type: 'percent', placeholder: '5', defaultValue: 5, step: 0.01, min: 0 },
+      { id: 'years', label: 'Loan term (years)', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Mortgage Amortization Schedule Calculator – Biweekly Payoff',
+      description: 'Free amortization schedule calculator: compare a standard monthly mortgage schedule to an accelerated biweekly one, with the interest and time it saves.',
+      faq: [
+        { question: 'How much does paying a mortgage biweekly actually save?', answer: 'It depends on the loan, but on a $280,000, 30-year loan at 5% APR, an accelerated biweekly schedule saves about $47,506.74 in interest and pays off about 56 months (4.7 years) sooner than the standard monthly schedule.' },
+        { question: 'How is biweekly different from paying twice a month?', answer: 'Paying half the payment every two weeks is 26 half-payments a year, which equals 13 full monthly payments. Paying half twice a month is only 24 half-payments a year, equal to 12 full payments — no extra payment at all, and no extra savings.' },
+        { question: 'Does my mortgage automatically become biweekly if I pay every two weeks?', answer: 'Not unless your servicer sets it up that way. Confirm with your servicer that extra money is applied to principal and that partial payments are not held until a full payment accumulates.' },
+        { question: 'Should I pay a company to set up biweekly payments for me?', answer: 'Usually not. The CFPB took action against one such paid program after finding a typical enrolled consumer would need nine years and over $1,200 in fees to catch up with the program\'s own promised savings. The same result — one extra payment a year — is normally available for free directly from your servicer.' },
+        { question: 'How does this differ from the mortgage calculator?', answer: 'mortgage-calculator builds the full standard monthly amortization schedule for a loan. This page runs the same loan a second way — an accelerated biweekly schedule — and compares the two side by side, which is the piece mortgage-calculator does not show.' },
+        { question: 'Can I model a different extra payment amount instead of biweekly?', answer: 'Yes — use loan-prepayment-calculator, which takes any extra monthly amount you choose rather than the fixed one-twelfth-of-a-payment this page uses to model accelerated biweekly.' }
+      ]
+    },
+    compute(values) {
+      const monthlyRate = values.interestRate / 100 / 12;
+      const months = Math.max(1, values.years * 12);
+      const monthlyPayment = monthlyRate === 0
+        ? values.loanAmount / months
+        : (values.loanAmount * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -months));
+      const totalInterestMonthly = monthlyPayment * months - values.loanAmount;
+      const biweeklyHalfPayment = monthlyPayment / 2;
+      const extra = monthlyPayment / 12;
+      const payment = monthlyPayment + extra;
+      let balance = values.loanAmount;
+      let totalInterestBiweekly = 0;
+      let monthsWithExtra = 0;
+      while (balance > 0.01 && monthsWithExtra < 1200) {
+        const interest = balance * monthlyRate;
+        totalInterestBiweekly += interest;
+        const principal = Math.min(balance, payment - interest);
+        balance -= principal;
+        monthsWithExtra++;
+      }
+      const interestSavedBiweekly = Math.max(0, totalInterestMonthly - totalInterestBiweekly);
+      const monthsSavedBiweekly = months - monthsWithExtra;
+      return { interestSavedBiweekly, monthsSavedBiweekly, monthlyPayment, biweeklyHalfPayment, totalInterestMonthly, totalInterestBiweekly };
+    }
+  },
+  {
+    id: 'business-loan-calculator',
+    group: 'Mortgages & Loans',
+    category: 'finance',
+    glyph: 'BL',
+    updatedAt: '2026-11-16',
+    aliases: ['small business loan calculator', 'working capital loan calculator', 'equipment financing calculator', 'commercial loan calculator', 'sba loan payment calculator'],
+    related: ['loan-calculator', 'loan-prepayment-calculator', 'npv-calculator', 'irr-calculator'],
+    title: 'Business Loan Calculator',
+    description: 'Find the monthly payment, loan amount, term or rate on a working-capital or equipment business loan. Fill in any three and the fourth is calculated, with total interest.',
+    example: 'A $75,000 working-capital loan at 9% APR over 5 years costs about $1,556.88 a month, or about $18,412.60 in interest over the life of the loan.',
+    solver: {
+      defaultTarget: 'monthlyPayment',
+      variables: [
+        { id: 'monthlyPayment', label: 'Monthly payment', symbol: 'M', dimension: 'currency', defaultValue: 1556.88, defaultUnit: 'currency' },
+        { id: 'loanAmount', label: 'Loan amount', symbol: 'P', dimension: 'currency', defaultValue: 75000, defaultUnit: 'currency' },
+        { id: 'term', label: 'Loan term', symbol: 'n', dimension: 'term', defaultValue: 5, defaultUnit: 'yr' },
+        { id: 'interestRate', label: 'Interest rate (APR)', symbol: 'APR', dimension: 'percent', defaultValue: 9, defaultUnit: '%', bounds: [0, 100] }
+      ],
+      solve: {
+        monthlyPayment: ({ loanAmount, term, interestRate }) => loanPayment(loanAmount, term, interestRate),
+        loanAmount: ({ monthlyPayment: payment, term, interestRate }) => loanPrincipal(payment, term, interestRate),
+        term: ({ loanAmount, monthlyPayment: payment, interestRate }) => loanMonths(loanAmount, payment, interestRate)
+      },
+      // The rate has no closed form: the widget finds it numerically.
+      equation: (si) => si.monthlyPayment - loanPayment(si.loanAmount, si.term, si.interestRate),
+      outputs: [
+        { id: 'totalInterest', label: 'Total interest', dimension: 'currency', compute: (si) => si.monthlyPayment * si.term - si.loanAmount },
+        { id: 'totalPaid', label: 'Total of all payments', dimension: 'currency', compute: (si) => si.monthlyPayment * si.term }
+      ],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [{ from: 'loanAmount', label: 'Principal' }, { from: 'totalInterest', label: 'Interest' }],
+          center: 'totalPaid',
+          centerSub: 'total paid'
+        },
+        { type: 'amortization', principal: 'loanAmount', annualRate: 'interestRate', months: 'term', payment: 'monthlyPayment' }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'The same amortized-loan math, for working capital or equipment',
+        paragraphs: [
+          'A business loan is repaid the same way a personal loan is: equal monthly payments, each covering that month\'s interest first and the rest paying down the principal. loan-calculator already covers that math in general; this page uses the identical formula with the two framings a business owner actually searches for — working capital and equipment financing — and the content that goes with each.',
+          'Working capital covers the day-to-day gaps between paying expenses and collecting revenue: payroll, inventory, rent, a seasonal slow stretch. The U.S. Small Business Administration\'s own 7(a) loan program describes this directly: its Working Capital Pilot and CAPLines programs exist specifically "to help small businesses access the working capital they need to support and grow their business," including against cyclical or seasonal needs.',
+          'Equipment financing instead funds a specific asset — machinery, vehicles, fixtures — and is often secured by the equipment itself. The SBA\'s own materials describe its 504 program as "ideal for financing equipment purchases," while explicitly noting those loans "cannot be used for working capital or inventory" — a real, citable distinction between the two financing purposes this page\'s title covers.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of the four fields. The fourth, marked auto, is calculated as you type.',
+        steps: [
+          { name: 'Enter what you know', text: 'Type the loan amount, the interest rate and the term, and the monthly payment is calculated. Switch the term between years and months with the menu beside it.' },
+          { name: 'Solve for an affordable payment', text: 'Type into the auto field to make it an input. Enter a monthly payment your cash flow can support to see how much you can borrow at a given rate and term.' },
+          { name: 'Find the rate you were quoted', text: 'Type the amount, the term and the payment from a lender\'s quote so the rate is the field left alone longest. The calculator searches for the rate that produces that payment.' },
+          { name: 'Read the breakdown', text: 'Under the result you get the total interest and the total of all payments, a chart of principal against interest, and a year-by-year schedule.' },
+          { name: 'Compare working-capital and equipment terms', text: 'Try a shorter term (common for working capital) and a longer one (common for equipment or real estate) at the same amount and rate to see the payment-versus-interest trade-off.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The level payment that repays a principal P over n months at a monthly rate r is the standard annuity formula, the same one loan-calculator uses. Rearranging it gives the loan amount and the term; the rate has no closed form, so it is found numerically.',
+        expression: 'M = P × r ÷ (1 − (1 + r)^−n)\nP = M × (1 − (1 + r)^−n) ÷ r\nn = −ln(1 − P × r ÷ M) ÷ ln(1 + r)\nr = APR ÷ 100 ÷ 12',
+        terms: [
+          { symbol: 'M', meaning: 'Monthly payment of principal and interest.' },
+          { symbol: 'P', meaning: 'Principal: the amount borrowed.' },
+          { symbol: 'n', meaning: 'Term in months.' },
+          { symbol: 'r', meaning: 'Monthly interest rate: the annual rate divided by 12, as a decimal.' },
+          { symbol: 'APR', meaning: 'Annual percentage rate quoted by the lender.' }
+        ],
+        note: 'Estimates only, not a loan offer or financial advice. Real business loans can add origination fees, guarantee fees (common on SBA-backed loans) or a different day-count convention, and your lender\'s and, if applicable, the SBA\'s own disclosures are the binding figures.'
+      },
+      workedExample: {
+        intro: 'You borrow $75,000 for working capital at 9% APR over 5 years. What is the monthly payment, and how much interest do you pay in total?',
+        rows: [
+          { label: 'Monthly rate (r = 9% ÷ 12)', value: '0.0075' },
+          { label: 'Number of payments (n = 5 × 12)', value: '60' },
+          { label: 'M = 75,000 × 0.0075 ÷ (1 − 1.0075^−60)', value: '$1,556.88' },
+          { label: 'Total paid (1,556.88 × 60)', value: '≈ $93,412.60' },
+          { label: 'Total interest (93,412.60 − 75,000)', value: '≈ $18,412.60' }
+        ],
+        result: 'M ≈ $1,556.88 a month · about $18,412.60 in interest',
+        explanation: 'The same $75,000 at 9% stretched to a 10-year term, more typical of equipment or real estate financing, drops the payment to about $950.07 a month but raises total interest to about $39,008.20 — more than double the 5-year term\'s interest, for a payment about 39% lower.'
+      },
+      watchOut: [
+        { title: 'Estimates only', body: 'The result assumes a fixed rate, equal monthly payments and no fees. Origination fees, SBA guarantee fees and closing costs are common on business loans and are not included here.' },
+        { title: 'An SBA guarantee is not an SBA loan', body: 'SBA-backed loans are made by banks and other approved lenders, not the government directly. The SBA guarantees a portion of the loan if the borrower defaults — up to 85% on 7(a) Small loans of $150,000 or less, and up to 75% above that threshold on standard 7(a) loans over $150,000 — which is why lenders are often willing to approve businesses a conventional loan would turn down.' },
+        { title: 'Working capital and equipment financing are not interchangeable', body: 'Some programs are purpose-restricted: the SBA 504 program, for instance, finances equipment and real estate but explicitly cannot be used for working capital or inventory. Confirm a program covers your actual purpose before applying.' },
+        { title: 'A longer term costs more in total', body: 'Stretching the same $75,000 at 9% from 5 to 10 years cuts the payment from about $1,556.88 to $950.07, a 39% drop, but more than doubles the total interest, from about $18,412.60 to about $39,008.20.' },
+        { title: 'Variable rates change the answer', body: 'Many business lines of credit and some term loans carry a variable rate. This shows the payment only while the current rate holds — rerun it with the new rate after a change.' }
+      ],
+      references: [
+        { label: 'U.S. Small Business Administration, Types of 7(a) loans', url: 'https://www.sba.gov/partners/lenders/7a-loan-program/types-7a-loans' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.8 The Basics of Loans', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-8-the-basics-of-loans' },
+        { label: 'Consumer Financial Protection Bureau, Regulation Z (Truth in Lending), Appendix J: Annual Percentage Rate Computations for Closed-End Credit Transactions', url: 'https://www.consumerfinance.gov/rules-policy/regulations/1026/j/' }
+      ]
+    },
+    inputs: [
+      { id: 'loanAmount', label: 'Loan amount', type: 'currency', placeholder: '75000', defaultValue: 75000, step: 1000, min: 0 },
+      { id: 'interestRate', label: 'Annual interest rate (APR)', type: 'percent', placeholder: '9', defaultValue: 9, step: 0.01, min: 0 },
+      { id: 'years', label: 'Loan term (years)', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Business Loan Calculator – Payment, Amount, Term or Rate',
+      description: 'Free business loan calculator for working capital or equipment financing: find the monthly payment, loan amount, term or rate, with total interest.',
+      faq: [
+        { question: 'How is a business loan payment calculated?', answer: 'With the same annuity formula as any amortized loan: M = P × r ÷ (1 − (1 + r)^−n). A $75,000 working-capital loan at 9% APR over 5 years comes to about $1,556.88 a month.' },
+        { question: 'What is the difference between working capital and equipment financing?', answer: 'Working capital covers day-to-day operating needs like payroll, inventory and seasonal gaps. Equipment financing funds a specific asset and is often secured by that equipment. The SBA\'s own 504 program, for example, finances equipment but explicitly cannot be used for working capital.' },
+        { question: 'Is an SBA loan money from the government?', answer: 'No. SBA loans are originated and funded by banks and other approved lenders; the SBA guarantees a portion of the loan (up to 85% on smaller 7(a) loans, up to 75% on larger ones) rather than lending the money itself.' },
+        { question: 'How much can my business borrow for a given monthly payment?', answer: 'Enter the payment, the rate and the term, and the loan amount is calculated: P = M × (1 − (1 + r)^−n) ÷ r. At 9% over 5 years, a $1,800 monthly payment supports a loan of about $86,712.07.' },
+        { question: 'Is a shorter or longer term better for a business loan?', answer: 'A shorter term costs less in total interest but raises the monthly payment. The same $75,000 at 9% costs about $1,556.88 a month with about $18,412.60 in interest over 5 years, versus about $950.07 a month with about $39,008.20 in interest over 10 years.' },
+        { question: 'Can I use this for an SBA, bank or online business loan?', answer: 'Yes, for any fixed-rate loan repaid in equal monthly installments. It is an estimate: origination fees, guarantee fees and closing costs in your specific loan offer are not included.' }
+      ]
+    },
+    compute(values) {
+      const monthlyRate = values.interestRate / 100 / 12;
+      const months = Math.max(1, values.years * 12);
+      const payment = monthlyRate === 0
+        ? values.loanAmount / months
+        : (values.loanAmount * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -months));
+      const total = payment * months;
+      const interest = total - values.loanAmount;
+      return { monthlyPayment: payment, totalCost: total, totalInterest: interest };
+    }
+  },
+  {
+    id: 'commission-calculator',
+    group: 'Income & Pay',
+    category: 'finance',
+    glyph: '%',
+    updatedAt: '2026-11-16',
+    aliases: ['sales commission calculator', 'tiered commission calculator', 'commission rate calculator', 'how much commission did i earn calculator'],
+    related: ['paycheck-calculator', 'loan-calculator', 'debt-to-income-calculator', 'investment-calculator'],
+    title: 'Commission Calculator',
+    description: 'Find commission from a sale amount two ways: a flat rate, or a tiered structure with a different marginal rate in each bracket, compared side by side.',
+    example: 'On a $50,000 sale, a flat 5% rate pays $2,500, while a 3% / 5% / 7% tiered structure pays $2,800 — $300 more.',
+    breakdown: {
+      headline: 'flatCommission',
+      headlineLabel: 'Flat-rate commission',
+      outputs: [
+        { id: 'flatCommission', label: 'Flat-rate commission', format: 'currency' },
+        { id: 'tieredCommission', label: 'Tiered commission (marginal rate by bracket)', format: 'currency' },
+        { id: 'difference', label: 'Tiered minus flat', format: 'currency' },
+        { id: 'effectiveTieredRate', label: 'Effective tiered rate', format: 'percent' }
+      ],
+      groups: [
+        { title: 'The sale', inputs: ['saleAmount'] },
+        { title: 'Flat-rate plan', inputs: ['flatCommissionRate'] },
+        { title: 'Tiered plan', inputs: ['tier1Limit', 'tier1Rate', 'tier2Limit', 'tier2Rate', 'tier3Rate'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'flatCommission', label: 'Flat rate' },
+          { from: 'tieredCommission', label: 'Tiered' }
+        ],
+        title: 'Flat-rate vs. tiered commission on this sale',
+        highlight: 0
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'Flat-rate vs. tiered: two common commission structures',
+        paragraphs: [
+          'A flat-rate commission pays the same percentage on every dollar of a sale: easy to calculate and easy to understand. A tiered (or "bracket") structure instead pays a different rate on different slices of the sale, usually rising as the sale gets bigger, to reward larger deals more than proportionally.',
+          'This calculator models tiered commission the marginal way, the same way income tax brackets work: a higher rate only applies to the slice of the sale above that bracket\'s threshold, not to the whole sale once it is crossed. That is a deliberate, named modeling choice — some real-world "cliff" style plans instead apply the new, higher rate to the entire sale once a threshold is passed, which pays very differently right at the edge of a bracket. Check your own plan document for which design it actually uses before assuming this page matches it exactly.',
+          'Commission structures and the thresholds in them vary enormously by company, industry and role — there is no single standard rate or bracket set, which is why every rate and limit here is an input you set yourself rather than a figure this calculator assumes for you.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the sale amount once, then set up each plan you want to compare.',
+        steps: [
+          { name: 'Enter the sale amount', text: 'The total dollar value of the sale the commission is based on.' },
+          { name: 'Set the flat rate', text: 'The single percentage that would apply to the entire sale under a flat-rate plan.' },
+          { name: 'Set up the tiered brackets', text: 'Enter each bracket\'s upper limit and its own rate. The third rate applies to everything above the second bracket\'s limit, with no upper bound.' },
+          { name: 'Compare the two', text: 'The headline is the flat-rate result; the tiered result and the dollar difference between them sit just below it.' },
+          { name: 'Try different sale sizes', text: 'Because the tiered structure is marginal, the gap between flat and tiered usually grows as the sale gets larger — try a few sale amounts to see how the two plans compare at different deal sizes.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The flat-rate commission is one multiplication. The tiered commission sums each bracket\'s own rate applied only to the portion of the sale that falls inside it.',
+        expression: 'Flat commission = sale × flat rate\nBracket 1 amount = min(sale, tier 1 limit)\nBracket 2 amount = max(0, min(sale, tier 2 limit) − tier 1 limit)\nBracket 3 amount = max(0, sale − tier 2 limit)\nTiered commission = Σ (bracket amount × that bracket\'s rate)',
+        terms: [
+          { symbol: 'sale', meaning: 'The total dollar amount of the sale.' },
+          { symbol: 'tier 1 limit, tier 2 limit', meaning: 'The upper boundary of the first and second brackets.' },
+          { symbol: 'tier 1/2/3 rate', meaning: 'The commission rate that applies only to the portion of the sale inside each bracket.' }
+        ],
+        note: 'Estimates only, not a statement of your actual pay or a tax calculation. Your employer\'s or client\'s written commission plan is the binding document; this calculator is for comparing structures, not for disputing a paycheck.'
+      },
+      workedExample: {
+        intro: 'A $50,000 sale, under a flat 5% rate and a tiered plan paying 3% up to $10,000, 5% from $10,000 to $25,000, and 7% above $25,000. How much does each pay?',
+        rows: [
+          { label: 'Flat commission (50,000 × 5%)', value: '$2,500' },
+          { label: 'Bracket 1 (10,000 × 3%)', value: '$300' },
+          { label: 'Bracket 2 (15,000 × 5%)', value: '$750' },
+          { label: 'Bracket 3 (25,000 × 7%)', value: '$1,750' },
+          { label: 'Tiered commission (300 + 750 + 1,750)', value: '$2,800' },
+          { label: 'Difference (2,800 − 2,500)', value: '$300' }
+        ],
+        result: 'Flat $2,500 · tiered $2,800 — tiered pays $300 more on this sale',
+        explanation: 'The tiered plan\'s effective rate on this sale is 5.6% (2,800 ÷ 50,000), above the flat 5% rate, because $25,000 of the $50,000 sale falls in the 7% bracket. On a smaller, $8,000 sale that never leaves the first bracket, the flat plan pays $400 but the tiered plan pays only $240 (8,000 × 3%) — the tiered plan is not always the larger number, since it depends entirely on how the sale size lines up with the brackets.'
+      },
+      watchOut: [
+        { title: 'Marginal brackets, not a cliff', body: 'This calculator applies each bracket\'s rate only to the slice of the sale inside it, the same way tax brackets work. Confirm your own plan uses this design — a "cliff" structure that applies one new rate to the whole sale once a threshold is crossed pays very differently right at the boundary.' },
+        { title: 'No standard rates or brackets', body: 'Unlike a tax bracket or a lending guideline, there is no government-set or industry-standard commission schedule. Every rate and limit on this page is an assumption you enter, not a fact this calculator knows about your job.' },
+        { title: 'Commissions are withheld differently than regular wages', body: 'The IRS treats commissions as a "supplemental wage." Publication 15 sets the flat withholding rate on supplemental wages at 22% (37% on the portion of a year\'s supplemental wages above $1 million) when identified separately from regular pay — your actual take-home commission is lower than the gross figures this calculator computes.' },
+        { title: 'Draws, chargebacks and caps are not modeled', body: 'Many real plans add a guaranteed draw against future commission, a chargeback if a sale is later canceled or refunded, or a cap on total commission. None of those are modeled here — this calculator compares the two structures\' gross math only.' },
+        { title: 'Commission-based pay has its own overtime rules', body: 'The U.S. Department of Labor\'s Fact Sheet #20 describes a specific overtime exemption (FLSA Section 7(i)) for commissioned employees of retail or service establishments who meet set conditions — a separate legal question from how the commission itself is calculated.' }
+      ],
+      references: [
+        { label: 'Internal Revenue Service, Publication 15 (2026), Circular E, Employer\'s Tax Guide — supplemental wages', url: 'https://www.irs.gov/publications/p15' },
+        { label: 'U.S. Department of Labor, Fact Sheet #20: Employees Paid Commissions By Retail Establishments Under Section 7(i)', url: 'https://www.dol.gov/agencies/whd/fact-sheets/20-flsa-commissions-retail' }
+      ]
+    },
+    inputs: [
+      { id: 'saleAmount', label: 'Sale amount', type: 'currency', placeholder: '50000', defaultValue: 50000, step: 500, min: 0 },
+      { id: 'flatCommissionRate', label: 'Flat commission rate', type: 'percent', placeholder: '5', defaultValue: 5, step: 0.1, min: 0 },
+      { id: 'tier1Limit', label: 'Bracket 1 upper limit', type: 'currency', placeholder: '10000', defaultValue: 10000, step: 500, min: 0 },
+      { id: 'tier1Rate', label: 'Bracket 1 rate', type: 'percent', placeholder: '3', defaultValue: 3, step: 0.1, min: 0 },
+      { id: 'tier2Limit', label: 'Bracket 2 upper limit', type: 'currency', placeholder: '25000', defaultValue: 25000, step: 500, min: 0 },
+      { id: 'tier2Rate', label: 'Bracket 2 rate', type: 'percent', placeholder: '5', defaultValue: 5, step: 0.1, min: 0 },
+      { id: 'tier3Rate', label: 'Bracket 3 rate (above bracket 2)', type: 'percent', placeholder: '7', defaultValue: 7, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Commission Calculator – Flat Rate vs. Tiered',
+      description: 'Free commission calculator: compare a flat-rate commission to a tiered, marginal-bracket structure on the same sale, with the dollar difference.',
+      faq: [
+        { question: 'How is sales commission calculated?', answer: 'A flat-rate commission multiplies the sale by a single percentage. A tiered commission instead applies a different rate to each bracket of the sale, the way this calculator models it, by default rising for larger slices.' },
+        { question: 'What is a tiered commission structure?', answer: 'A plan that pays a different, usually higher, rate on each successive slice of a sale once it crosses a bracket threshold — marginal, the same way income tax brackets work, as modeled here. Some real plans instead apply the new rate to the whole sale (a "cliff" design); check your own plan.' },
+        { question: 'Is tiered commission always better than flat-rate?', answer: 'No — it depends on the sale size relative to the brackets. On a $50,000 sale with the example brackets, tiered pays $300 more than a flat 5%. On an $8,000 sale that stays in the lowest bracket, the flat plan pays more.' },
+        { question: 'How much tax is taken out of a commission check?', answer: 'The IRS treats commissions as supplemental wages. Publication 15 sets a flat federal withholding rate of 22% on supplemental wages up to $1 million in a year (37% above that), when paid separately from regular wages — on a $2,800 commission, that is $616 withheld.' },
+        { question: 'Does this calculator account for draws or chargebacks?', answer: 'No. It compares the gross commission math of a flat-rate plan against a tiered plan on one sale. A guaranteed draw, a chargeback on a later-canceled sale, or a plan-wide cap are not modeled.' },
+        { question: 'What is the difference between this and the paycheck calculator?', answer: 'paycheck-calculator works out take-home pay from a salary or hourly wage after taxes and deductions. This calculator compares two commission structures on a single sale and does not calculate take-home pay.' }
+      ]
+    },
+    compute(values) {
+      const flatCommission = values.saleAmount * values.flatCommissionRate / 100;
+      const tier1Amount = Math.min(values.saleAmount, values.tier1Limit);
+      const tier2Amount = Math.max(0, Math.min(values.saleAmount, values.tier2Limit) - values.tier1Limit);
+      const tier3Amount = Math.max(0, values.saleAmount - values.tier2Limit);
+      const tieredCommission = tier1Amount * values.tier1Rate / 100 + tier2Amount * values.tier2Rate / 100 + tier3Amount * values.tier3Rate / 100;
+      const difference = tieredCommission - flatCommission;
+      const effectiveTieredRate = values.saleAmount > 0 ? (tieredCommission / values.saleAmount) * 100 : NaN;
+      return { flatCommission, tieredCommission, difference, effectiveTieredRate };
+    }
+  },
+  {
+    id: 'college-savings-calculator',
+    group: 'Savings & Growth',
+    category: 'finance',
+    glyph: '529',
+    updatedAt: '2026-11-16',
+    aliases: ['529 calculator', 'college savings plan calculator', 'how much to save for college calculator', 'tuition savings calculator', 'future college cost calculator'],
+    related: ['goal-based-investment-calculator', 'compound-interest-calculator', 'down-payment-savings-calculator', 'investment-calculator'],
+    title: 'College Savings Calculator',
+    description: "Find the monthly 529-style savings needed for a future tuition cost, projected from today's tuition with its own inflation rate — not a goal amount you have to guess yourself.",
+    example: "Starting from today's $11,950 average public in-state tuition, 10 years out, 4 years of school, 4% tuition inflation and a 6% return, you need about $402.85 a month, after $5,000 already saved.",
+    breakdown: {
+      headline: 'monthlyContribution',
+      headlineLabel: 'Required monthly contribution',
+      outputs: [
+        { id: 'monthlyContribution', label: 'Required monthly contribution', format: 'currency' },
+        { id: 'firstYearCost', label: "Year 1's tuition cost, inflated to that year", format: 'currency' },
+        { id: 'totalFutureCost', label: 'Total cost for every year of college (future dollars)', format: 'currency' },
+        { id: 'totalContributed', label: "Your total contributions (today's savings + monthly deposits)", format: 'currency' },
+        { id: 'totalGrowth', label: 'Investment growth', format: 'currency' }
+      ],
+      groups: [
+        { title: 'The college goal', inputs: ['annualTuitionToday', 'yearsUntilCollege', 'yearsInCollege', 'tuitionInflationRate'] },
+        { title: 'Your savings plan', inputs: ['currentSavings', 'expectedReturn'] }
+      ],
+      derive: (values) => ({ contributions: values.monthlyContribution * Math.max(1, values.yearsUntilCollege * 12) }),
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'currentSavings', label: "Today's savings" },
+          { from: 'contributions', label: 'Future contributions' },
+          { from: 'totalGrowth', label: 'Growth' }
+        ],
+        center: 'totalFutureCost',
+        centerSub: 'total cost needed'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: "A college goal built from today's tuition, not a number you have to guess",
+        paragraphs: [
+          "goal-based-investment-calculator answers \"I need $X — how much do I save a month?\" for any goal you can already put a dollar figure on. This calculator answers the same question for one specific goal, college, but builds the dollar figure itself: starting from today's annual tuition, it grows that figure at its own assumed tuition inflation rate out to the year college starts, then adds up every year of school at that inflated, still-rising cost.",
+          "The College Board's own Trends in College Pricing and Student Aid report put average published tuition and fees for 2025-26 at $11,950 a year for in-state students at public four-year colleges, and $45,000 a year at private nonprofit four-year colleges — real, directly cited figures this calculator defaults to rather than an invented round number, with room to type your own school's actual cost instead.",
+          'The same report shows tuition does not sit still: average published tuition and fees rose 2.9% at public four-year colleges and 4.0% at private nonprofit four-year colleges from 2024-25 to 2025-26. This calculator takes that rate as an input you set, rather than assuming today\'s cost holds for the years before your student enrolls.'
+        ]
+      },
+      howTo: {
+        intro: "Enter today's tuition cost and the college timeline, then your current savings and an assumed return.",
+        steps: [
+          { name: "Enter today's annual tuition", text: "The current annual published tuition and fees for the school (or type of school) you're planning around. Defaults to the College Board's 2025-26 public in-state average." },
+          { name: 'Set the timeline', text: 'Years until college starts, and how many years of school to plan for (4 for a typical bachelor\'s degree).' },
+          { name: 'Set the tuition inflation rate', text: 'How fast you expect tuition to keep rising. The College Board\'s most recent year-over-year figures (2.9% public, 4.0% private) are a reasonable starting range.' },
+          { name: 'Enter your savings plan', text: "Today's savings set aside for this goal, and the average annual return you expect on it." },
+          { name: 'Read the required contribution', text: "The headline is the monthly amount needed; the rows below show the inflated year-1 cost, the total cost across every year of school, and how much of the goal comes from contributions versus growth." }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "Each year of college is today's tuition compounded by the inflation rate out to that year; the total is the goal, and the required monthly contribution is goal-based-investment-calculator's own formula, with monthly compounding.",
+        expression:
+          "Year k's cost = today's tuition × (1 + inflation)^(years until college + k), for k = 0 … years in college − 1\nTotal future cost = year-1 cost × ((1 + inflation)^years in college − 1) ÷ inflation\nRequired monthly contribution = (total future cost − today's savings × (1 + i)^n) ÷ (((1 + i)^n − 1) ÷ i), i = return ÷ 12, n = months until college",
+        terms: [
+          { symbol: "today's tuition", meaning: "Current annual tuition and fees." },
+          { symbol: 'inflation', meaning: 'Assumed annual tuition growth rate.' },
+          { symbol: 'years in college', meaning: 'Number of years of tuition to fund, usually 4.' },
+          { symbol: 'i, n', meaning: 'Monthly investment return as a decimal, and the number of months until college starts.' }
+        ],
+        note: 'Estimates only, not financial advice. This assumes the full, four-year cost is saved by the time college starts and does not model continued investment growth or further tuition inflation during the college years themselves — a simplification that could move the real figure in either direction.'
+      },
+      workedExample: {
+        intro: "Today's tuition is $11,950 a year, college starts in 10 years, lasts 4 years, tuition inflation is assumed at 4% and you expect a 6% return on $5,000 already saved. What monthly contribution closes the gap?",
+        rows: [
+          { label: 'Year-1 cost (11,950 × 1.04^10)', value: '$17,688.92' },
+          { label: 'Years 2–4 costs (each 4% higher)', value: '$18,396.48 · $19,132.34 · $19,897.63' },
+          { label: 'Total future cost (sum of all 4 years)', value: '$75,115.36' },
+          { label: "Today's $5,000 grown at 6% for 10 years", value: '$9,096.98' },
+          { label: 'Required monthly contribution', value: '$402.85' },
+          { label: 'Total contributed over 10 years (5,000 + 402.85 × 120)', value: '$53,341.69' },
+          { label: 'Growth (75,115.36 − 53,341.69)', value: '$21,773.67' }
+        ],
+        result: 'Total future cost ≈ $75,115.36 · required monthly contribution ≈ $402.85',
+        explanation: 'The same plan aimed at the College Board\'s $45,000 private-college average instead needs about $1,670.52 a month — the total future cost there is about $282,861.18, almost four times the public in-state figure, because the higher starting tuition compounds at the same 4% rate. Starting only 5 years out instead of 10 raises the requirement to about $788.23 a month, since there is far less time for both the tuition-timing gap and the investment growth to work in your favor.'
+      },
+      watchOut: [
+        { title: "Built from today's tuition, not a figure you choose", body: 'Unlike goal-based-investment-calculator, you do not type the goal directly — it is computed from the tuition, timeline and inflation rate you enter. Change the tuition figure to your actual target school\'s published cost for a more specific result.' },
+        { title: 'Tuition inflation is an assumption, not a forecast', body: 'The College Board\'s most recent year was 2.9% (public) and 4.0% (private) before adjusting for general inflation; over the past decade, published public tuition actually rose less than general inflation. Run the calculator with a couple of different rates to see how sensitive the goal is to this assumption.' },
+        { title: 'Does not model growth or further inflation during college itself', body: 'The total future cost assumes all four years are funded by the time college starts. It does not grow savings further, or inflate tuition further, once withdrawals begin — a simplification, not a precise multi-year drawdown model.' },
+        { title: 'Published (sticker) price, not what families actually pay', body: 'The College Board is explicit that these are published prices before financial aid and scholarships. Many students pay a lower "net price" — this calculator is a planning tool against the full sticker price, a reasonable cushion rather than a prediction of your actual bill.' },
+        { title: 'Returns and taxes are simplified', body: 'A constant assumed return is a planning simplification; real investment returns vary and can be negative. 529 plans grow tax-free for qualified education expenses in the US, which this calculator does not model as a separate tax effect.' }
+      ],
+      references: [
+        { label: 'College Board, Trends in College Pricing and Student Aid Report (2025)', url: 'https://newsroom.collegeboard.org/trends-college-pricing-and-student-aid-report-published-tuition-prices-public-institutions-and' },
+        { label: 'U.S. Securities and Exchange Commission, Investor.gov: An Introduction to 529 Plans', url: 'https://www.investor.gov/introduction-investing/investing-basics/save-and-invest/saving-education/529-plans' }
+      ]
+    },
+    inputs: [
+      { id: 'annualTuitionToday', label: "Today's annual tuition & fees", type: 'currency', placeholder: '11950', defaultValue: 11950, step: 500, min: 0 },
+      { id: 'yearsUntilCollege', label: 'Years until college starts', type: 'number', placeholder: '10', defaultValue: 10, step: 1, min: 0 },
+      { id: 'yearsInCollege', label: 'Years of college to fund', type: 'number', placeholder: '4', defaultValue: 4, step: 1, min: 1 },
+      { id: 'tuitionInflationRate', label: 'Assumed tuition inflation rate', type: 'percent', placeholder: '4', defaultValue: 4, step: 0.1, min: 0 },
+      { id: 'currentSavings', label: "Today's college savings", type: 'currency', placeholder: '5000', defaultValue: 5000, step: 500, min: 0 },
+      { id: 'expectedReturn', label: 'Expected average annual return', type: 'percent', placeholder: '6', defaultValue: 6, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'College Savings Calculator – 529-Style Monthly Goal',
+      description: "Free college savings calculator: builds a 529-style future tuition goal from today's cost and an inflation rate, then finds the required monthly contribution.",
+      faq: [
+        { question: 'How much should I save monthly for college?', answer: "It depends on tuition, timeline and returns. Starting from $11,950 of today's tuition, 10 years out, 4 years of school, 4% tuition inflation and a 6% return on $5,000 already saved, the required contribution is about $402.85 a month." },
+        { question: 'How is this different from the goal-based investment calculator?', answer: "goal-based-investment-calculator takes the dollar goal as something you already know. This calculator builds that goal itself, from today's tuition compounded by an assumed inflation rate across every year of school — useful specifically for a college target." },
+        { question: 'What tuition figure does this default to?', answer: "The College Board's Trends in College Pricing and Student Aid report put 2025-26 average published tuition and fees at $11,950 a year for public four-year, in-state students, and $45,000 a year for private nonprofit four-year colleges. Replace the default with your actual target school's cost for a more specific result." },
+        { question: 'How much does tuition inflation change the answer?', answer: 'A great deal, because it compounds for years before college even starts and then again across every year of school. The same example at 0% tuition inflation instead of 4% needs a total future cost of only $47,800 (4 × $11,950) instead of $75,115.36.' },
+        { question: 'Does this calculator account for financial aid or scholarships?', answer: 'No. The College Board\'s own figures are published ("sticker") prices before aid. This calculator plans against that full price as a cushion; many families end up paying a lower net price after aid and scholarships.' },
+        { question: 'What if I start saving later, with less time before college?', answer: 'The required monthly contribution rises, since there is less time for both tuition timing and investment growth to help. Starting 5 years out instead of 10, with the same other assumptions, raises the requirement from about $402.85 to about $788.23 a month.' }
+      ]
+    },
+    compute(values) {
+      const inflation = values.tuitionInflationRate / 100;
+      const yearsInCollege = Math.max(1, values.yearsInCollege);
+      const firstYearCost = values.annualTuitionToday * Math.pow(1 + inflation, values.yearsUntilCollege);
+      const totalFutureCost = inflation === 0
+        ? firstYearCost * yearsInCollege
+        : (firstYearCost * (Math.pow(1 + inflation, yearsInCollege) - 1)) / inflation;
+      const monthsUntil = Math.max(1, values.yearsUntilCollege * 12);
+      const monthlyReturn = values.expectedReturn / 100 / 12;
+      const growthFactorVal = Math.pow(1 + monthlyReturn, monthsUntil);
+      const annuityFactorVal = monthlyReturn === 0 ? monthsUntil : (Math.pow(1 + monthlyReturn, monthsUntil) - 1) / monthlyReturn;
+      const grown = values.currentSavings * growthFactorVal;
+      const monthlyContribution = annuityFactorVal > 0 ? (totalFutureCost - grown) / annuityFactorVal : NaN;
+      const totalContributed = values.currentSavings + monthlyContribution * monthsUntil;
+      const totalGrowth = totalFutureCost - totalContributed;
+      return { monthlyContribution, firstYearCost, totalFutureCost, totalContributed, totalGrowth };
+    }
+  }
 ];

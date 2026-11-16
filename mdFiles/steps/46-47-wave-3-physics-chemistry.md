@@ -648,11 +648,17 @@ build agent's judgment**, same as every run so far.
     listening on port 3000 — left running, verified via the static HTML output instead, per this
     run's own instructions.
   - 336 calculators total after this run (331 + 5). `physics` is now 41.
-- [ ] Physics runs 9+ (as many 5-calculator runs as needed to close the gap toward ~61 total — no
-  seed list left at this point; build agent picks standard-physics formulas not yet covered,
-  e.g. angular momentum, moment of inertia (simple shapes), rotational kinetic energy, electric
-  field strength, magnetic force on a current, simple harmonic motion period, Young's modulus /
-  stress-strain, orbital velocity — verify each against a primary source same as every prior run)
+- [ ] Physics run 9 (5), branch `step/46-wave-3-physics-run-9` — **IN PROGRESS**:
+  ## Progress
+  - [ ] simple-harmonic-motion-calculator (T = 2π√(m/k), mass-spring period)
+  - [ ] orbital-velocity-calculator (v = √(GM/r), circular orbit)
+  - [ ] youngs-modulus-calculator (Y = stress/strain = F·L0/(A·ΔL))
+  - [ ] electric-field-calculator (E = kq/r², point charge)
+  - [ ] magnetic-force-calculator (F = BIL sin θ, current-carrying wire)
+- [ ] Physics runs 10+ (as many 5-calculator runs as needed to close the gap toward ~61 total —
+  no seed list left after run 9; build agent picks standard-physics formulas not yet covered,
+  e.g. angular momentum, moment of inertia (simple shapes, lookup/breakdown), rotational kinetic
+  energy — verify each against a primary source same as every prior run)
 - [x] Chemistry run 3 (5), branch `step/46-wave-3-chemistry-run-3`, PR #67 — **DONE** 2026-11-08:
   - [x] limiting-reagent-calculator
   - [x] theoretical-yield-calculator

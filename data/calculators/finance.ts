@@ -5149,5 +5149,128 @@ export const financeCalculators: CalculatorConfig[] = [
       const interest = total - values.loanAmount;
       return { monthlyPayment: payment, totalCost: total, totalInterest: interest };
     }
+  },
+  {
+    id: 'commission-calculator',
+    group: 'Income & Pay',
+    category: 'finance',
+    glyph: '%',
+    updatedAt: '2026-11-16',
+    aliases: ['sales commission calculator', 'tiered commission calculator', 'commission rate calculator', 'how much commission did i earn calculator'],
+    related: ['paycheck-calculator', 'loan-calculator', 'debt-to-income-calculator', 'investment-calculator'],
+    title: 'Commission Calculator',
+    description: 'Find commission from a sale amount two ways: a flat rate, or a tiered structure with a different marginal rate in each bracket, compared side by side.',
+    example: 'On a $50,000 sale, a flat 5% rate pays $2,500, while a 3% / 5% / 7% tiered structure pays $2,800 — $300 more.',
+    breakdown: {
+      headline: 'flatCommission',
+      headlineLabel: 'Flat-rate commission',
+      outputs: [
+        { id: 'flatCommission', label: 'Flat-rate commission', format: 'currency' },
+        { id: 'tieredCommission', label: 'Tiered commission (marginal rate by bracket)', format: 'currency' },
+        { id: 'difference', label: 'Tiered minus flat', format: 'currency' },
+        { id: 'effectiveTieredRate', label: 'Effective tiered rate', format: 'percent' }
+      ],
+      groups: [
+        { title: 'The sale', inputs: ['saleAmount'] },
+        { title: 'Flat-rate plan', inputs: ['flatCommissionRate'] },
+        { title: 'Tiered plan', inputs: ['tier1Limit', 'tier1Rate', 'tier2Limit', 'tier2Rate', 'tier3Rate'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'flatCommission', label: 'Flat rate' },
+          { from: 'tieredCommission', label: 'Tiered' }
+        ],
+        title: 'Flat-rate vs. tiered commission on this sale',
+        highlight: 0
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'Flat-rate vs. tiered: two common commission structures',
+        paragraphs: [
+          'A flat-rate commission pays the same percentage on every dollar of a sale: easy to calculate and easy to understand. A tiered (or "bracket") structure instead pays a different rate on different slices of the sale, usually rising as the sale gets bigger, to reward larger deals more than proportionally.',
+          'This calculator models tiered commission the marginal way, the same way income tax brackets work: a higher rate only applies to the slice of the sale above that bracket\'s threshold, not to the whole sale once it is crossed. That is a deliberate, named modeling choice — some real-world "cliff" style plans instead apply the new, higher rate to the entire sale once a threshold is passed, which pays very differently right at the edge of a bracket. Check your own plan document for which design it actually uses before assuming this page matches it exactly.',
+          'Commission structures and the thresholds in them vary enormously by company, industry and role — there is no single standard rate or bracket set, which is why every rate and limit here is an input you set yourself rather than a figure this calculator assumes for you.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the sale amount once, then set up each plan you want to compare.',
+        steps: [
+          { name: 'Enter the sale amount', text: 'The total dollar value of the sale the commission is based on.' },
+          { name: 'Set the flat rate', text: 'The single percentage that would apply to the entire sale under a flat-rate plan.' },
+          { name: 'Set up the tiered brackets', text: 'Enter each bracket\'s upper limit and its own rate. The third rate applies to everything above the second bracket\'s limit, with no upper bound.' },
+          { name: 'Compare the two', text: 'The headline is the flat-rate result; the tiered result and the dollar difference between them sit just below it.' },
+          { name: 'Try different sale sizes', text: 'Because the tiered structure is marginal, the gap between flat and tiered usually grows as the sale gets larger — try a few sale amounts to see how the two plans compare at different deal sizes.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The flat-rate commission is one multiplication. The tiered commission sums each bracket\'s own rate applied only to the portion of the sale that falls inside it.',
+        expression: 'Flat commission = sale × flat rate\nBracket 1 amount = min(sale, tier 1 limit)\nBracket 2 amount = max(0, min(sale, tier 2 limit) − tier 1 limit)\nBracket 3 amount = max(0, sale − tier 2 limit)\nTiered commission = Σ (bracket amount × that bracket\'s rate)',
+        terms: [
+          { symbol: 'sale', meaning: 'The total dollar amount of the sale.' },
+          { symbol: 'tier 1 limit, tier 2 limit', meaning: 'The upper boundary of the first and second brackets.' },
+          { symbol: 'tier 1/2/3 rate', meaning: 'The commission rate that applies only to the portion of the sale inside each bracket.' }
+        ],
+        note: 'Estimates only, not a statement of your actual pay or a tax calculation. Your employer\'s or client\'s written commission plan is the binding document; this calculator is for comparing structures, not for disputing a paycheck.'
+      },
+      workedExample: {
+        intro: 'A $50,000 sale, under a flat 5% rate and a tiered plan paying 3% up to $10,000, 5% from $10,000 to $25,000, and 7% above $25,000. How much does each pay?',
+        rows: [
+          { label: 'Flat commission (50,000 × 5%)', value: '$2,500' },
+          { label: 'Bracket 1 (10,000 × 3%)', value: '$300' },
+          { label: 'Bracket 2 (15,000 × 5%)', value: '$750' },
+          { label: 'Bracket 3 (25,000 × 7%)', value: '$1,750' },
+          { label: 'Tiered commission (300 + 750 + 1,750)', value: '$2,800' },
+          { label: 'Difference (2,800 − 2,500)', value: '$300' }
+        ],
+        result: 'Flat $2,500 · tiered $2,800 — tiered pays $300 more on this sale',
+        explanation: 'The tiered plan\'s effective rate on this sale is 5.6% (2,800 ÷ 50,000), above the flat 5% rate, because $25,000 of the $50,000 sale falls in the 7% bracket. On a smaller, $8,000 sale that never leaves the first bracket, the flat plan pays $400 but the tiered plan pays only $240 (8,000 × 3%) — the tiered plan is not always the larger number, since it depends entirely on how the sale size lines up with the brackets.'
+      },
+      watchOut: [
+        { title: 'Marginal brackets, not a cliff', body: 'This calculator applies each bracket\'s rate only to the slice of the sale inside it, the same way tax brackets work. Confirm your own plan uses this design — a "cliff" structure that applies one new rate to the whole sale once a threshold is crossed pays very differently right at the boundary.' },
+        { title: 'No standard rates or brackets', body: 'Unlike a tax bracket or a lending guideline, there is no government-set or industry-standard commission schedule. Every rate and limit on this page is an assumption you enter, not a fact this calculator knows about your job.' },
+        { title: 'Commissions are withheld differently than regular wages', body: 'The IRS treats commissions as a "supplemental wage." Publication 15 sets the flat withholding rate on supplemental wages at 22% (37% on the portion of a year\'s supplemental wages above $1 million) when identified separately from regular pay — your actual take-home commission is lower than the gross figures this calculator computes.' },
+        { title: 'Draws, chargebacks and caps are not modeled', body: 'Many real plans add a guaranteed draw against future commission, a chargeback if a sale is later canceled or refunded, or a cap on total commission. None of those are modeled here — this calculator compares the two structures\' gross math only.' },
+        { title: 'Commission-based pay has its own overtime rules', body: 'The U.S. Department of Labor\'s Fact Sheet #20 describes a specific overtime exemption (FLSA Section 7(i)) for commissioned employees of retail or service establishments who meet set conditions — a separate legal question from how the commission itself is calculated.' }
+      ],
+      references: [
+        { label: 'Internal Revenue Service, Publication 15 (2026), Circular E, Employer\'s Tax Guide — supplemental wages', url: 'https://www.irs.gov/publications/p15' },
+        { label: 'U.S. Department of Labor, Fact Sheet #20: Employees Paid Commissions By Retail Establishments Under Section 7(i)', url: 'https://www.dol.gov/agencies/whd/fact-sheets/20-flsa-commissions-retail' }
+      ]
+    },
+    inputs: [
+      { id: 'saleAmount', label: 'Sale amount', type: 'currency', placeholder: '50000', defaultValue: 50000, step: 500, min: 0 },
+      { id: 'flatCommissionRate', label: 'Flat commission rate', type: 'percent', placeholder: '5', defaultValue: 5, step: 0.1, min: 0 },
+      { id: 'tier1Limit', label: 'Bracket 1 upper limit', type: 'currency', placeholder: '10000', defaultValue: 10000, step: 500, min: 0 },
+      { id: 'tier1Rate', label: 'Bracket 1 rate', type: 'percent', placeholder: '3', defaultValue: 3, step: 0.1, min: 0 },
+      { id: 'tier2Limit', label: 'Bracket 2 upper limit', type: 'currency', placeholder: '25000', defaultValue: 25000, step: 500, min: 0 },
+      { id: 'tier2Rate', label: 'Bracket 2 rate', type: 'percent', placeholder: '5', defaultValue: 5, step: 0.1, min: 0 },
+      { id: 'tier3Rate', label: 'Bracket 3 rate (above bracket 2)', type: 'percent', placeholder: '7', defaultValue: 7, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Commission Calculator – Flat Rate vs. Tiered',
+      description: 'Free commission calculator: compare a flat-rate commission to a tiered, marginal-bracket structure on the same sale, with the dollar difference.',
+      faq: [
+        { question: 'How is sales commission calculated?', answer: 'A flat-rate commission multiplies the sale by a single percentage. A tiered commission instead applies a different rate to each bracket of the sale, the way this calculator models it, by default rising for larger slices.' },
+        { question: 'What is a tiered commission structure?', answer: 'A plan that pays a different, usually higher, rate on each successive slice of a sale once it crosses a bracket threshold — marginal, the same way income tax brackets work, as modeled here. Some real plans instead apply the new rate to the whole sale (a "cliff" design); check your own plan.' },
+        { question: 'Is tiered commission always better than flat-rate?', answer: 'No — it depends on the sale size relative to the brackets. On a $50,000 sale with the example brackets, tiered pays $300 more than a flat 5%. On an $8,000 sale that stays in the lowest bracket, the flat plan pays more.' },
+        { question: 'How much tax is taken out of a commission check?', answer: 'The IRS treats commissions as supplemental wages. Publication 15 sets a flat federal withholding rate of 22% on supplemental wages up to $1 million in a year (37% above that), when paid separately from regular wages — on a $2,800 commission, that is $616 withheld.' },
+        { question: 'Does this calculator account for draws or chargebacks?', answer: 'No. It compares the gross commission math of a flat-rate plan against a tiered plan on one sale. A guaranteed draw, a chargeback on a later-canceled sale, or a plan-wide cap are not modeled.' },
+        { question: 'What is the difference between this and the paycheck calculator?', answer: 'paycheck-calculator works out take-home pay from a salary or hourly wage after taxes and deductions. This calculator compares two commission structures on a single sale and does not calculate take-home pay.' }
+      ]
+    },
+    compute(values) {
+      const flatCommission = values.saleAmount * values.flatCommissionRate / 100;
+      const tier1Amount = Math.min(values.saleAmount, values.tier1Limit);
+      const tier2Amount = Math.max(0, Math.min(values.saleAmount, values.tier2Limit) - values.tier1Limit);
+      const tier3Amount = Math.max(0, values.saleAmount - values.tier2Limit);
+      const tieredCommission = tier1Amount * values.tier1Rate / 100 + tier2Amount * values.tier2Rate / 100 + tier3Amount * values.tier3Rate / 100;
+      const difference = tieredCommission - flatCommission;
+      const effectiveTieredRate = values.saleAmount > 0 ? (tieredCommission / values.saleAmount) * 100 : NaN;
+      return { flatCommission, tieredCommission, difference, effectiveTieredRate };
+    }
   }
 ];

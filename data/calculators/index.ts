@@ -353,6 +353,7 @@ export const calculatorOrder: string[] = [
   'emergency-fund-calculator',
   'mortgage-amortization-schedule-calculator',
   'business-loan-calculator',
+  'commission-calculator',
   'jet-lag-calculator',
   'luggage-fee-calculator',
   'daylight-hours-calculator',

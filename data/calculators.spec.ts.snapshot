@@ -1957,6 +1957,62 @@ exports[`compute() snapshots > combined-gas-law-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > commission-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "saleAmount": 50000,
+      "flatCommissionRate": 5,
+      "tier1Limit": 10000,
+      "tier1Rate": 3,
+      "tier2Limit": 25000,
+      "tier2Rate": 5,
+      "tier3Rate": 7
+    },
+    "outputs": {
+      "flatCommission": 2500,
+      "tieredCommission": 2800,
+      "difference": 300,
+      "effectiveTieredRate": 5.6
+    }
+  },
+  "typical": {
+    "inputs": {
+      "saleAmount": 75000,
+      "flatCommissionRate": 7.5,
+      "tier1Limit": 15000,
+      "tier1Rate": 4.5,
+      "tier2Limit": 37500,
+      "tier2Rate": 7.5,
+      "tier3Rate": 10.5
+    },
+    "outputs": {
+      "flatCommission": 5625,
+      "tieredCommission": 6300,
+      "difference": 675,
+      "effectiveTieredRate": 8.4
+    }
+  },
+  "edge": {
+    "inputs": {
+      "saleAmount": 0,
+      "flatCommissionRate": 0,
+      "tier1Limit": 0,
+      "tier1Rate": 0,
+      "tier2Limit": 0,
+      "tier2Rate": 0,
+      "tier3Rate": 0
+    },
+    "outputs": {
+      "flatCommission": 0,
+      "tieredCommission": 0,
+      "difference": 0,
+      "effectiveTieredRate": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > common-ion-effect-calculator 1`] = `
 {
   "default": {

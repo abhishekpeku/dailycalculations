@@ -1875,6 +1875,62 @@ exports[`compute() snapshots > cold-brew-ratio-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > college-savings-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "annualTuitionToday": 11950,
+      "yearsUntilCollege": 10,
+      "yearsInCollege": 4,
+      "tuitionInflationRate": 4,
+      "currentSavings": 5000,
+      "expectedReturn": 6
+    },
+    "outputs": {
+      "monthlyContribution": 402.8474376,
+      "firstYearCost": 17688.9192,
+      "totalFutureCost": 75115.3586,
+      "totalContributed": 53341.69251,
+      "totalGrowth": 21773.66609
+    }
+  },
+  "typical": {
+    "inputs": {
+      "annualTuitionToday": 18000,
+      "yearsUntilCollege": 15,
+      "yearsInCollege": 6,
+      "tuitionInflationRate": 6,
+      "currentSavings": 7500,
+      "expectedReturn": 9
+    },
+    "outputs": {
+      "monthlyContribution": 719.112445,
+      "firstYearCost": 43138.04748,
+      "totalFutureCost": 300901.6222,
+      "totalContributed": 136940.2401,
+      "totalGrowth": 163961.3821
+    }
+  },
+  "edge": {
+    "inputs": {
+      "annualTuitionToday": 0,
+      "yearsUntilCollege": 0,
+      "yearsInCollege": 1,
+      "tuitionInflationRate": 0,
+      "currentSavings": 0,
+      "expectedReturn": 0
+    },
+    "outputs": {
+      "monthlyContribution": 0,
+      "firstYearCost": 0,
+      "totalFutureCost": 0,
+      "totalContributed": 0,
+      "totalGrowth": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > combination-calculator 1`] = `
 {
   "default": {

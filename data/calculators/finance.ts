@@ -5272,5 +5272,139 @@ export const financeCalculators: CalculatorConfig[] = [
       const effectiveTieredRate = values.saleAmount > 0 ? (tieredCommission / values.saleAmount) * 100 : NaN;
       return { flatCommission, tieredCommission, difference, effectiveTieredRate };
     }
+  },
+  {
+    id: 'college-savings-calculator',
+    group: 'Savings & Growth',
+    category: 'finance',
+    glyph: '529',
+    updatedAt: '2026-11-16',
+    aliases: ['529 calculator', 'college savings plan calculator', 'how much to save for college calculator', 'tuition savings calculator', 'future college cost calculator'],
+    related: ['goal-based-investment-calculator', 'compound-interest-calculator', 'down-payment-savings-calculator', 'investment-calculator'],
+    title: 'College Savings Calculator',
+    description: "Find the monthly 529-style savings needed for a future tuition cost, projected from today's tuition with its own inflation rate — not a goal amount you have to guess yourself.",
+    example: "Starting from today's $11,950 average public in-state tuition, 10 years out, 4 years of school, 4% tuition inflation and a 6% return, you need about $402.85 a month, after $5,000 already saved.",
+    breakdown: {
+      headline: 'monthlyContribution',
+      headlineLabel: 'Required monthly contribution',
+      outputs: [
+        { id: 'monthlyContribution', label: 'Required monthly contribution', format: 'currency' },
+        { id: 'firstYearCost', label: "Year 1's tuition cost, inflated to that year", format: 'currency' },
+        { id: 'totalFutureCost', label: 'Total cost for every year of college (future dollars)', format: 'currency' },
+        { id: 'totalContributed', label: "Your total contributions (today's savings + monthly deposits)", format: 'currency' },
+        { id: 'totalGrowth', label: 'Investment growth', format: 'currency' }
+      ],
+      groups: [
+        { title: 'The college goal', inputs: ['annualTuitionToday', 'yearsUntilCollege', 'yearsInCollege', 'tuitionInflationRate'] },
+        { title: 'Your savings plan', inputs: ['currentSavings', 'expectedReturn'] }
+      ],
+      derive: (values) => ({ contributions: values.monthlyContribution * Math.max(1, values.yearsUntilCollege * 12) }),
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'currentSavings', label: "Today's savings" },
+          { from: 'contributions', label: 'Future contributions' },
+          { from: 'totalGrowth', label: 'Growth' }
+        ],
+        center: 'totalFutureCost',
+        centerSub: 'total cost needed'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: "A college goal built from today's tuition, not a number you have to guess",
+        paragraphs: [
+          "goal-based-investment-calculator answers \"I need $X — how much do I save a month?\" for any goal you can already put a dollar figure on. This calculator answers the same question for one specific goal, college, but builds the dollar figure itself: starting from today's annual tuition, it grows that figure at its own assumed tuition inflation rate out to the year college starts, then adds up every year of school at that inflated, still-rising cost.",
+          "The College Board's own Trends in College Pricing and Student Aid report put average published tuition and fees for 2025-26 at $11,950 a year for in-state students at public four-year colleges, and $45,000 a year at private nonprofit four-year colleges — real, directly cited figures this calculator defaults to rather than an invented round number, with room to type your own school's actual cost instead.",
+          'The same report shows tuition does not sit still: average published tuition and fees rose 2.9% at public four-year colleges and 4.0% at private nonprofit four-year colleges from 2024-25 to 2025-26. This calculator takes that rate as an input you set, rather than assuming today\'s cost holds for the years before your student enrolls.'
+        ]
+      },
+      howTo: {
+        intro: "Enter today's tuition cost and the college timeline, then your current savings and an assumed return.",
+        steps: [
+          { name: "Enter today's annual tuition", text: "The current annual published tuition and fees for the school (or type of school) you're planning around. Defaults to the College Board's 2025-26 public in-state average." },
+          { name: 'Set the timeline', text: 'Years until college starts, and how many years of school to plan for (4 for a typical bachelor\'s degree).' },
+          { name: 'Set the tuition inflation rate', text: 'How fast you expect tuition to keep rising. The College Board\'s most recent year-over-year figures (2.9% public, 4.0% private) are a reasonable starting range.' },
+          { name: 'Enter your savings plan', text: "Today's savings set aside for this goal, and the average annual return you expect on it." },
+          { name: 'Read the required contribution', text: "The headline is the monthly amount needed; the rows below show the inflated year-1 cost, the total cost across every year of school, and how much of the goal comes from contributions versus growth." }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "Each year of college is today's tuition compounded by the inflation rate out to that year; the total is the goal, and the required monthly contribution is goal-based-investment-calculator's own formula, with monthly compounding.",
+        expression:
+          "Year k's cost = today's tuition × (1 + inflation)^(years until college + k), for k = 0 … years in college − 1\nTotal future cost = year-1 cost × ((1 + inflation)^years in college − 1) ÷ inflation\nRequired monthly contribution = (total future cost − today's savings × (1 + i)^n) ÷ (((1 + i)^n − 1) ÷ i), i = return ÷ 12, n = months until college",
+        terms: [
+          { symbol: "today's tuition", meaning: "Current annual tuition and fees." },
+          { symbol: 'inflation', meaning: 'Assumed annual tuition growth rate.' },
+          { symbol: 'years in college', meaning: 'Number of years of tuition to fund, usually 4.' },
+          { symbol: 'i, n', meaning: 'Monthly investment return as a decimal, and the number of months until college starts.' }
+        ],
+        note: 'Estimates only, not financial advice. This assumes the full, four-year cost is saved by the time college starts and does not model continued investment growth or further tuition inflation during the college years themselves — a simplification that could move the real figure in either direction.'
+      },
+      workedExample: {
+        intro: "Today's tuition is $11,950 a year, college starts in 10 years, lasts 4 years, tuition inflation is assumed at 4% and you expect a 6% return on $5,000 already saved. What monthly contribution closes the gap?",
+        rows: [
+          { label: 'Year-1 cost (11,950 × 1.04^10)', value: '$17,688.92' },
+          { label: 'Years 2–4 costs (each 4% higher)', value: '$18,396.48 · $19,132.34 · $19,897.63' },
+          { label: 'Total future cost (sum of all 4 years)', value: '$75,115.36' },
+          { label: "Today's $5,000 grown at 6% for 10 years", value: '$9,096.98' },
+          { label: 'Required monthly contribution', value: '$402.85' },
+          { label: 'Total contributed over 10 years (5,000 + 402.85 × 120)', value: '$53,341.69' },
+          { label: 'Growth (75,115.36 − 53,341.69)', value: '$21,773.67' }
+        ],
+        result: 'Total future cost ≈ $75,115.36 · required monthly contribution ≈ $402.85',
+        explanation: 'The same plan aimed at the College Board\'s $45,000 private-college average instead needs about $1,670.52 a month — the total future cost there is about $282,861.18, almost four times the public in-state figure, because the higher starting tuition compounds at the same 4% rate. Starting only 5 years out instead of 10 raises the requirement to about $788.23 a month, since there is far less time for both the tuition-timing gap and the investment growth to work in your favor.'
+      },
+      watchOut: [
+        { title: "Built from today's tuition, not a figure you choose", body: 'Unlike goal-based-investment-calculator, you do not type the goal directly — it is computed from the tuition, timeline and inflation rate you enter. Change the tuition figure to your actual target school\'s published cost for a more specific result.' },
+        { title: 'Tuition inflation is an assumption, not a forecast', body: 'The College Board\'s most recent year was 2.9% (public) and 4.0% (private) before adjusting for general inflation; over the past decade, published public tuition actually rose less than general inflation. Run the calculator with a couple of different rates to see how sensitive the goal is to this assumption.' },
+        { title: 'Does not model growth or further inflation during college itself', body: 'The total future cost assumes all four years are funded by the time college starts. It does not grow savings further, or inflate tuition further, once withdrawals begin — a simplification, not a precise multi-year drawdown model.' },
+        { title: 'Published (sticker) price, not what families actually pay', body: 'The College Board is explicit that these are published prices before financial aid and scholarships. Many students pay a lower "net price" — this calculator is a planning tool against the full sticker price, a reasonable cushion rather than a prediction of your actual bill.' },
+        { title: 'Returns and taxes are simplified', body: 'A constant assumed return is a planning simplification; real investment returns vary and can be negative. 529 plans grow tax-free for qualified education expenses in the US, which this calculator does not model as a separate tax effect.' }
+      ],
+      references: [
+        { label: 'College Board, Trends in College Pricing and Student Aid Report (2025)', url: 'https://newsroom.collegeboard.org/trends-college-pricing-and-student-aid-report-published-tuition-prices-public-institutions-and' },
+        { label: 'U.S. Securities and Exchange Commission, Investor.gov: An Introduction to 529 Plans', url: 'https://www.investor.gov/introduction-investing/investing-basics/save-and-invest/saving-education/529-plans' }
+      ]
+    },
+    inputs: [
+      { id: 'annualTuitionToday', label: "Today's annual tuition & fees", type: 'currency', placeholder: '11950', defaultValue: 11950, step: 500, min: 0 },
+      { id: 'yearsUntilCollege', label: 'Years until college starts', type: 'number', placeholder: '10', defaultValue: 10, step: 1, min: 0 },
+      { id: 'yearsInCollege', label: 'Years of college to fund', type: 'number', placeholder: '4', defaultValue: 4, step: 1, min: 1 },
+      { id: 'tuitionInflationRate', label: 'Assumed tuition inflation rate', type: 'percent', placeholder: '4', defaultValue: 4, step: 0.1, min: 0 },
+      { id: 'currentSavings', label: "Today's college savings", type: 'currency', placeholder: '5000', defaultValue: 5000, step: 500, min: 0 },
+      { id: 'expectedReturn', label: 'Expected average annual return', type: 'percent', placeholder: '6', defaultValue: 6, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'College Savings Calculator – 529-Style Monthly Goal',
+      description: "Free college savings calculator: builds a 529-style future tuition goal from today's cost and an inflation rate, then finds the required monthly contribution.",
+      faq: [
+        { question: 'How much should I save monthly for college?', answer: "It depends on tuition, timeline and returns. Starting from $11,950 of today's tuition, 10 years out, 4 years of school, 4% tuition inflation and a 6% return on $5,000 already saved, the required contribution is about $402.85 a month." },
+        { question: 'How is this different from the goal-based investment calculator?', answer: "goal-based-investment-calculator takes the dollar goal as something you already know. This calculator builds that goal itself, from today's tuition compounded by an assumed inflation rate across every year of school — useful specifically for a college target." },
+        { question: 'What tuition figure does this default to?', answer: "The College Board's Trends in College Pricing and Student Aid report put 2025-26 average published tuition and fees at $11,950 a year for public four-year, in-state students, and $45,000 a year for private nonprofit four-year colleges. Replace the default with your actual target school's cost for a more specific result." },
+        { question: 'How much does tuition inflation change the answer?', answer: 'A great deal, because it compounds for years before college even starts and then again across every year of school. The same example at 0% tuition inflation instead of 4% needs a total future cost of only $47,800 (4 × $11,950) instead of $75,115.36.' },
+        { question: 'Does this calculator account for financial aid or scholarships?', answer: 'No. The College Board\'s own figures are published ("sticker") prices before aid. This calculator plans against that full price as a cushion; many families end up paying a lower net price after aid and scholarships.' },
+        { question: 'What if I start saving later, with less time before college?', answer: 'The required monthly contribution rises, since there is less time for both tuition timing and investment growth to help. Starting 5 years out instead of 10, with the same other assumptions, raises the requirement from about $402.85 to about $788.23 a month.' }
+      ]
+    },
+    compute(values) {
+      const inflation = values.tuitionInflationRate / 100;
+      const yearsInCollege = Math.max(1, values.yearsInCollege);
+      const firstYearCost = values.annualTuitionToday * Math.pow(1 + inflation, values.yearsUntilCollege);
+      const totalFutureCost = inflation === 0
+        ? firstYearCost * yearsInCollege
+        : (firstYearCost * (Math.pow(1 + inflation, yearsInCollege) - 1)) / inflation;
+      const monthsUntil = Math.max(1, values.yearsUntilCollege * 12);
+      const monthlyReturn = values.expectedReturn / 100 / 12;
+      const growthFactorVal = Math.pow(1 + monthlyReturn, monthsUntil);
+      const annuityFactorVal = monthlyReturn === 0 ? monthsUntil : (Math.pow(1 + monthlyReturn, monthsUntil) - 1) / monthlyReturn;
+      const grown = values.currentSavings * growthFactorVal;
+      const monthlyContribution = annuityFactorVal > 0 ? (totalFutureCost - grown) / annuityFactorVal : NaN;
+      const totalContributed = values.currentSavings + monthlyContribution * monthsUntil;
+      const totalGrowth = totalFutureCost - totalContributed;
+      return { monthlyContribution, firstYearCost, totalFutureCost, totalContributed, totalGrowth };
+    }
   }
 ];

@@ -1762,6 +1762,120 @@ build agent's judgment**, same as every run so far.
     true post-merge site-wide total needs reconciling with physics run 10's PR by the main
     session, same "built in parallel, different files" pattern as physics runs 9/10 vs chemistry
     run 10.
+- [x] Chemistry run 12 (bug fix + 5), branch `step/46-wave-3-chemistry-run-12`, PR #112 — **DONE**
+  2026-11-17:
+  - [x] Fix pre-existing `common-ion-effect-calculator` unit-dimension bug (flagged run 10, parked
+    through run 11)
+  - [x] ksp-from-solubility-calculator
+  - [x] weak-base-ionization-calculator
+  - [x] buffer-ph-after-addition-calculator
+  - [x] lattice-energy-calculator
+  - [x] ionic-strength-calculator
+  - **Bug fix**: `common-ion-effect-calculator`'s solver mixed a `dimension: 'count'` variable
+    (`ksp`, passed to `solve` unconverted) with two `dimension: 'concentration'` variables
+    (`commonIonConcentration`, `molarSolubility`, converted ×1000 to SI mol/m³ by
+    `lib/solverState.ts`'s `toBase` before `solve` ran). Fixed by moving both concentration
+    variables, plus the `plainWaterSolubility` bonus output, onto `dimension: 'count'` — matching
+    `ksp`'s own dimension and the exact pattern `weak-acid-ionization-calculator` (run 10) already
+    used to avoid this bug. A standalone scratch script (`verify_bugfix.mjs`, scratchpad, no app
+    imports) reproduced the bug numerically before the fix (the live widget's default-input answer
+    was off by a factor of ~1,000,000 from the correct, static-content value) and confirmed the fix
+    recovers the correct value, plus the reverse-direction solve and the `plainWaterSolubility`
+    output. The static content/worked example/FAQ numbers were never affected (they don't go
+    through `toBase`), so no copy changes were needed.
+  - Candidates considered and rejected before picking the final 5 (per the task's own hints):
+    percent ionization of a weak acid/base as a *separate* page — already covered as a bonus
+    output on `weak-acid-ionization-calculator` (run 10) and now also on this run's own
+    `weak-base-ionization-calculator`, so a standalone page would be a thin near-duplicate; vapor
+    pressure lowering — judged too close to `raoults-law-calculator`'s own P = X·P° (lowering is
+    just (1−X)×P°, the identical formula restated); activity series/displacement reactions —
+    qualitative/lookup-only, no real formula to solve; electrolyte concentration from conductivity —
+    judged too advanced for a first cut, per the task's own hedge.
+  - `ksp-from-solubility-calculator` is the reverse direction of `ksp-molar-solubility-calculator`
+    (confirmed that page is one-directional only, Ksp → s, despite its own FAQ describing the
+    reverse relationship in words): starts from a measured solubility in g/L and a molar mass,
+    converts to molar solubility, then applies the identical Ksp = (p×s)ᵖ(q×s)ᵠ relationship — the
+    direction actually used to determine a new Ksp value experimentally. Type-B breakdown (no
+    solver), sidestepping any unit-dimension mixing risk entirely. Worked example (PbCrO₄) from
+    OpenStax Chemistry 2e Example 15.5. Also cross-checked by running `ksp-molar-solubility-
+    calculator`'s own Ca(OH)₂ example (Ksp = 1.3 × 10⁻⁶) forward to a solubility in g/L and back
+    through this new calculator, recovering the same Ksp.
+  - `weak-base-ionization-calculator` is the base-side mirror of `weak-acid-ionization-calculator`:
+    Kb = x² ÷ (C₀ − x) solved exactly for [OH⁻], then pOH, pH (via pH = 14 − pOH at 25°C), and
+    percent ionization. Every solver variable stays on `dimension: 'count'`, the same safe pattern
+    the acid page established, specifically to avoid the bug class just fixed above. Reuses the
+    `pH` dimension for the pOH output too — its own `lib/units.ts` comment already anticipated
+    exactly this ("pH = −log₁₀[H⁺], pOH = −log₁₀[OH⁻]"). Worked example (trimethylamine) from
+    OpenStax Chemistry 2e Example 14.13.
+  - `buffer-ph-after-addition-calculator` extends `pka-henderson-hasselbalch-calculator`: given a
+    buffer's initial moles of weak acid and conjugate base, finds the new pH after a small amount
+    of strong acid or strong base is added (one signed field: positive = strong base added,
+    negative = strong acid added). Deliberately works in moles rather than concentrations so the
+    buffer's volume never needs to be entered — it cancels out of the Henderson-Hasselbalch ratio.
+    5-variable closed-form solver (pKa, initial moles HA, initial moles A⁻, moles added, new pH).
+    Worked example (acetic acid/acetate buffer + NaOH) from OpenStax Chemistry 2e Example 14.20;
+    also computed the symmetric strong-acid-addition case independently (not an OpenStax figure,
+    stated as such) for the watch-out/FAQ content.
+  - `lattice-energy-calculator` is a Born-Haber cycle solver: ΔHf° = ΔHsub + IE + ½D + EA −
+    ΔHlattice, 6 variables, all on `dimension: 'count'` (plain kJ/mol numbers, no cross-dimension
+    mixing). Explicitly scoped in both the formula note and a watch-out item to the simplest case —
+    a metal with one ionization energy, a diatomic nonmetal with one electron affinity, a 1:1 salt —
+    matching OpenStax's own CsF example and explicitly excluding compounds like MgO or CaF₂ that
+    would need extra terms. Worked example (CsF) from OpenStax Chemistry 2e §7.5.
+  - `ionic-strength-calculator` (I = ½Σcᵢzᵢ²) is a type-B breakdown with up to 4 ion
+    concentration+charge slots, plain-number inputs (no unit dimension), the same precedent
+    `hess-law-enthalpy-calculator`'s up-to-4-slot sum uses. Sourced from IUPAC's 1993 "Quantities,
+    Units and Symbols in Physical Chemistry" definition — the Gold Book's own page 403'd to a direct
+    fetch (same recurring issue as runs 5/6/8/10), confirmed instead via a direct fetch of
+    EPA.gov's "Ionic Strength" CADDIS reference page, which quotes and cites the same IUPAC source;
+    flagged explicitly in the reference entry per this wave's transparency precedent. Worked example
+    (0.1 M MgCl₂ → I = 0.3 mol/L) is self-computed (basic arithmetic from a directly-sourced
+    formula, not an external claimed figure), cross-checked against the general fact that any 1:1
+    electrolyte's ionic strength equals its molar concentration exactly (0.1 M NaCl → I = 0.1 mol/L).
+  - Every formula/constant fetched directly from a primary source, not recalled from memory:
+    OpenStax Chemistry 2e §15.1 "Precipitation and Dissolution" (Example 15.5, PbCrO₄), §14.3
+    "Relative Strengths of Acids and Bases" (Example 14.13, trimethylamine), §14.6 "Buffers"
+    (Example 14.20, acetic acid/acetate + NaOH), §7.5 "Strengths of Ionic and Covalent Bonds" (the
+    Born-Haber cycle and its CsF example); IUPAC's 1993 ionic-strength definition, via EPA.gov's
+    CADDIS page since the Gold Book itself 403'd.
+  - Independent scratch script (`verify_run12.mjs`, scratchpad, no app imports) recomputed every
+    number before the copy was written: the PbCrO₄ Ksp-from-solubility example and the Ca(OH)₂
+    cross-check round-trip; the trimethylamine [OH⁻]/pOH/pH/percent-ionization figures and the
+    reverse Kb solve; both buffer-addition directions (NaOH and the symmetric HCl comparison) and
+    the reverse mole-solve; the CsF lattice-energy figure and three round-trip solves (ΔHf°,
+    electron affinity, bond dissociation energy); and both ionic-strength examples (MgCl₂, NaCl).
+  - Manual alias-collision sweep (same discipline as every prior run in this file): grepped every
+    one of this run's 24 new aliases against every alias already shipped site-wide — zero new
+    collisions (confirmed both aliases lines in `chemistry.ts` matched, and no other file matched
+    any of the new phrases). The two pre-existing, untouched collisions from runs 6-9
+    (`emi-calculator`/`mortgage-calculator`'s "house loan emi calculator" and `solution-concentration-
+    calculator`/`molarity-calculator`'s "solution concentration calculator") remain unresolved and
+    still on STATUS.md's Parked list — not touched by this run. Also confirmed programmatically: no
+    duplicate calculator ids among the new 5, every `related` id exists and is not a self-reference,
+    every `seo.title` ≤ 60 and `seo.description` ≤ 160 characters (30-46 and 118-152 respectively),
+    every new calculator has 4-6 aliases and exactly 6 FAQs.
+  - `npm test` (1,396, up from 1,382), `npm run lint` clean, `npm run build` passes (392 routes,
+    358+ calculator pages). New `KNOWN_NON_FINITE` entries: `ksp-from-solubility-calculator` (all 4
+    outputs; solubilityGramsPerLiter and molarMass both 0 at their own min → 0/0),
+    `weak-base-ionization-calculator` (`hydroxideIon`; kb and initialConcentration both 0 →
+    compute()'s own guard), `buffer-ph-after-addition-calculator` (`newPH`; initialMolesAcid and
+    initialMolesBase both 0 → compute()'s own guard). `lattice-energy-calculator` and
+    `ionic-strength-calculator` needed none — both are pure sums/differences with no division, so
+    every edge case resolves to an honest finite number. Every snapshot diff was additive-only,
+    confirmed with `git diff --stat` after each calculator.
+  - Verified all 5 new pages plus the fixed `common-ion-effect-calculator` page from the static
+    HTML `next build` produced (`.next/server/app/en/calculators/<id>.html`): H1, exactly one
+    JSON-LD script, no "application error" text, and all eight section ids (concept/how-to-use/
+    formula/worked-example/watch-out/faq/references/related) present on every page, all 5 new ids
+    linked from `/en/categories/chemistry`. A pre-existing process (not started by this run) was
+    already listening on port 3000 throughout — left running, verified via the static HTML output
+    instead, same precedent as every prior run in this file.
+  - `chemistry` is now **60** — at the wave's ~60 target from the rollout plan. This is likely the
+    last chemistry run in this wave; the main session should decide whether to close chemistry out
+    or add a further run if a genuinely new batch of 5 distinct candidates turns up later. **361
+    total site-wide** (356 before this run’s branch point + 5 — this run branched from the already-
+    merged, reconciled base of physics run 10 + chemistry run 11, so no further reconciliation is
+    needed).
 - [ ] Visual-QA checkpoint: due again once ~50 more calculators land after this wave (last pass was
   at 194 calculators, 2026-11-05 — see STATUS.md header; chemistry crossed the 244-calculator
   threshold after run 6, flagged for the main session to schedule — still not run as of this run)

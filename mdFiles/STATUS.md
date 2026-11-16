@@ -7,26 +7,36 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-11-17 · **Step 46 physics run 11 DONE** — PR #113, branch
-`step/46-wave-3-physics-run-11`. Added `elastic-collision-calculator` (1D two-mass elastic
-collision, breakdown widget solving both final velocities at once — not a solver, since two inputs
-can't invert to four), `inelastic-collision-calculator` (perfectly inelastic 1D collision,
-5-variable closed-form solver), `center-of-mass-calculator` (two-body center of mass, 5-variable
-closed-form solver), `kinetic-friction-incline-calculator` (f = μmg×cosθ, distinct from the flat-
-ground `friction-calculator`, with acceleration-down-slope and normal-force bonus outputs), and
-`molar-heat-capacity-calculator` (Cp = Cv + R, Mayer's relation for an ideal gas, with heat-capacity-
-ratio bonus output and a Table-3.3-sourced reference table). New `lib/units.ts` dimension:
-`molarHeatCapacity` (same J/(mol·K) unit as `molarEntropy`, kept separate per the "one real unit,
-two conventional names" precedent). Coulomb's law (two point charges) was reconsidered a third time
-and dropped again as too thin a variant of `gravitational-force-calculator`'s identical inverse-
-square shape — no genuinely distinct framing was found. Every formula fetched directly from OpenStax
-(University Physics Volume 1 §9.3/§9.4/§9.6 for collisions and center of mass, §6.2 for incline
-friction; University Physics Volume 2 §3.5 for molar heat capacities), confirmed by directly fetching
-and reading each page's own text, not an AI summary. Found and explained (not a bug, documented in
+Last updated: 2026-11-17 · **Step 46 runs 11 (physics) + 12 (chemistry) BOTH DONE** (built in
+parallel, different category files; only this STATUS.md summary and `data/calculators.spec.ts.snapshot`
+needed reconciling at merge time — the Cloudflare "Workers Builds" check also stopped reporting on
+this repo partway through this session, confirmed down even on master's own latest commit, so these
+two merges were verified by local `npm test`/`lint`/`npm run build` only, per the user's own
+go-ahead to proceed that way while it's down). **Run 11 (physics, PR #113)** added
+`elastic-collision-calculator` (1D two-mass elastic collision, breakdown widget solving both final
+velocities at once — not a solver, since two inputs can't invert to four), `inelastic-collision-
+calculator` (perfectly inelastic 1D collision, 5-variable closed-form solver), `center-of-mass-
+calculator` (two-body center of mass, 5-variable closed-form solver), `kinetic-friction-incline-
+calculator` (f = μmg×cosθ, distinct from the flat-ground `friction-calculator`, with acceleration-
+down-slope and normal-force bonus outputs), and `molar-heat-capacity-calculator` (Cp = Cv + R,
+Mayer's relation for an ideal gas, with heat-capacity-ratio bonus output and a Table-3.3-sourced
+reference table). New `lib/units.ts` dimension: `molarHeatCapacity`. Coulomb's law (two point
+charges) was reconsidered a third time and dropped again as too thin a variant of `gravitational-
+force-calculator`'s identical inverse-square shape. Found and explained (not a bug, documented in
 the calculator copy itself): OpenStax's own Example 9.16 (Earth-Moon center of mass) states
 4.64×10⁶ m, but recomputing its own stated inputs exactly gives 4.65×10⁶ m — attributed to OpenStax's
-own intermediate rounding, both figures shown with that explanation. `npm test` (1,401), lint and
-`npm run build` all pass (392 routes). **`physics` 51 → 56, site-wide 356 → 361.** Full detail in
+own intermediate rounding, both figures shown with that explanation. **`physics` 51 → 56.** **Run 12
+(chemistry, PR #112)** **fixed the pre-existing `common-ion-effect-calculator` unit-dimension bug**
+(flagged run 10, parked through run 11): `commonIonConcentration`/`molarSolubility`/the
+`plainWaterSolubility` output moved from `dimension: 'concentration'` to `dimension: 'count'`,
+matching `ksp`'s own dimension and the same all-`count` pattern `weak-acid-ionization-calculator`
+already used to avoid this bug — verified with a standalone scratch script reproducing both the bug
+(a ~1,000,000× live-widget error) and the fix. Then added 5 new calculators:
+`ksp-from-solubility-calculator`, `weak-base-ionization-calculator`,
+`buffer-ph-after-addition-calculator`, `lattice-energy-calculator` (a Born-Haber cycle solver — no
+new `lib/units.ts` dimension needed), `ionic-strength-calculator`. **`chemistry` 55 → 60 — at the
+wave's ~60 target, closed out.** Both runs: `npm test`/lint/`npm run build` all pass independently
+and after merging. **Site-wide total after both: 366.** Full detail in
 `mdFiles/steps/46-47-wave-3-physics-chemistry.md`.
 
 Previous: **Step 46 chemistry run 11 DONE** — PR #110, branch
@@ -709,22 +719,6 @@ before writing copy. `npm test` 1,319/1,319, lint clean, `npm run build` green (
 
 Things noticed but deliberately out of scope. Add here instead of fixing mid-step.
 
-- **`common-ion-effect-calculator` (chemistry run 9) likely gives a wrong live-widget answer for any
-  non-default input** (found building chemistry run 10, 2026-11-16, while designing a similar
-  Ka/concentration solver and tracing through exactly how `lib/solverState.ts`'s `solveState`
-  converts solver variables to SI before calling `solve`): its solver mixes a `dimension: 'count'`
-  variable (`ksp`, passed to `solve` unconverted, factor 1) with two `dimension: 'concentration'`
-  variables (`commonIonConcentration`, `molarSolubility`, both converted to SI mol/m³ — a ×1000
-  factor from the default mol/L unit — before `solve` runs) inside one formula that was derived
-  assuming all values are in mol/L. The page's own content, worked example, and `compute()` (used
-  only for the static snapshot/JSON-LD path) all correctly use raw mol/L numbers and match OpenStax's
-  published figures exactly — only the interactive `SolverCalculator` widget itself is affected,
-  since that is the only code path that runs values through `toBase` first. Not fixed here — out of
-  scope for a run-10 calculator batch on a different run's already-shipped page; flagged with the
-  exact mechanism so whoever fixes it doesn't have to re-derive it. The likely fix is switching
-  `commonIonConcentration`/`molarSolubility` to `dimension: 'count'` as well (matching `ksp`), the
-  same all-`count` pattern this run's own `weak-acid-ionization-calculator` uses specifically to avoid
-  this bug.
 - **Two pre-existing duplicate aliases across categories** (found building chemistry run 6,
   2026-11-09, by a manual duplicate-alias sweep across every calculator — there is no automated
   test for this, it is a skill-step manual check): `emi-calculator` and `mortgage-calculator` both

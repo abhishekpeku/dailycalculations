@@ -1187,6 +1187,44 @@ exports[`compute() snapshots > buffer-capacity-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > buffer-ph-after-addition-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "pKa": 4.74,
+      "initialMolesAcid": 0.01,
+      "initialMolesBase": 0.01,
+      "molesAdded": 0.0001
+    },
+    "outputs": {
+      "newPH": 4.748686179
+    }
+  },
+  "typical": {
+    "inputs": {
+      "pKa": 7.11,
+      "initialMolesAcid": 0.015,
+      "initialMolesBase": 0.015,
+      "molesAdded": 0.00015
+    },
+    "outputs": {
+      "newPH": 7.118686179
+    }
+  },
+  "edge": {
+    "inputs": {
+      "pKa": 0,
+      "initialMolesAcid": 0,
+      "initialMolesBase": 0,
+      "molesAdded": 0
+    },
+    "outputs": {
+      "newPH": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > buoyancy-calculator 1`] = `
 {
   "default": {
@@ -6343,6 +6381,56 @@ exports[`compute() snapshots > investment-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > ionic-strength-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "concentration1": 0.1,
+      "charge1": 2,
+      "concentration2": 0.2,
+      "charge2": -1,
+      "concentration3": 0,
+      "charge3": 0,
+      "concentration4": 0,
+      "charge4": 0
+    },
+    "outputs": {
+      "ionicStrength": 0.3
+    }
+  },
+  "typical": {
+    "inputs": {
+      "concentration1": 0.15,
+      "charge1": 3,
+      "concentration2": 0.3,
+      "charge2": -1,
+      "concentration3": 0,
+      "charge3": 0,
+      "concentration4": 0,
+      "charge4": 0
+    },
+    "outputs": {
+      "ionicStrength": 0.825
+    }
+  },
+  "edge": {
+    "inputs": {
+      "concentration1": 0,
+      "charge1": 0,
+      "concentration2": 0,
+      "charge2": 0,
+      "concentration3": 0,
+      "charge3": 0,
+      "concentration4": 0,
+      "charge4": 0
+    },
+    "outputs": {
+      "ionicStrength": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > irr-calculator 1`] = `
 {
   "default": {
@@ -6712,6 +6800,53 @@ exports[`compute() snapshots > kinetic-friction-incline-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > ksp-from-solubility-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "solubilityGramsPerLiter": 0.0000046,
+      "molarMass": 323.2,
+      "coefficientCation": 1,
+      "coefficientAnion": 1
+    },
+    "outputs": {
+      "ksp": 2.025689883e-16,
+      "molarSolubility": 1.423267327e-8,
+      "cationConcentration": 1.423267327e-8,
+      "anionConcentration": 1.423267327e-8
+    }
+  },
+  "typical": {
+    "inputs": {
+      "solubilityGramsPerLiter": 0.0000069,
+      "molarMass": 484.8,
+      "coefficientCation": 2,
+      "coefficientAnion": 2
+    },
+    "outputs": {
+      "ksp": 6.565471206e-31,
+      "molarSolubility": 1.423267327e-8,
+      "cationConcentration": 2.846534653e-8,
+      "anionConcentration": 2.846534653e-8
+    }
+  },
+  "edge": {
+    "inputs": {
+      "solubilityGramsPerLiter": 0,
+      "molarMass": 0,
+      "coefficientCation": 1,
+      "coefficientAnion": 1
+    },
+    "outputs": {
+      "ksp": "NaN",
+      "molarSolubility": "NaN",
+      "cationConcentration": "NaN",
+      "anionConcentration": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > ksp-molar-solubility-calculator 1`] = `
 {
   "default": {
@@ -6780,6 +6915,47 @@ exports[`compute() snapshots > latent-heat-calculator 1`] = `
     },
     "outputs": {
       "heat": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > lattice-energy-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "deltaHsub": 76.5,
+      "ionizationEnergy": 375.7,
+      "bondDissociationEnergy": 158.8,
+      "electronAffinity": -328.2,
+      "deltaHf": -553.5
+    },
+    "outputs": {
+      "latticeEnergy": 756.9
+    }
+  },
+  "typical": {
+    "inputs": {
+      "deltaHsub": 114.8,
+      "ionizationEnergy": 563.5,
+      "bondDissociationEnergy": 238.2,
+      "electronAffinity": -492.3,
+      "deltaHf": -830.2
+    },
+    "outputs": {
+      "latticeEnergy": 1135.3
+    }
+  },
+  "edge": {
+    "inputs": {
+      "deltaHsub": 0,
+      "ionizationEnergy": 0,
+      "bondDissociationEnergy": 0,
+      "electronAffinity": 0,
+      "deltaHf": 0
+    },
+    "outputs": {
+      "latticeEnergy": 0
     }
   }
 }
@@ -15020,6 +15196,38 @@ exports[`compute() snapshots > weak-acid-ionization-calculator 1`] = `
     },
     "outputs": {
       "hydrogenIon": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > weak-base-ionization-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "kb": 0.000063,
+      "initialConcentration": 0.25
+    },
+    "outputs": {
+      "hydroxideIon": 0.003937251976
+    }
+  },
+  "typical": {
+    "inputs": {
+      "kb": 0.000095,
+      "initialConcentration": 0.375
+    },
+    "outputs": {
+      "hydroxideIon": 0.005921357198
+    }
+  },
+  "edge": {
+    "inputs": {
+      "kb": 0,
+      "initialConcentration": 0
+    },
+    "outputs": {
+      "hydroxideIon": "NaN"
     }
   }
 }

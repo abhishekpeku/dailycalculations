@@ -406,7 +406,12 @@ export const calculatorOrder: string[] = [
   'daylight-hours-calculator',
   'travel-points-value-calculator',
   'points-vs-cash-flight-calculator',
-  'tipping-abroad-calculator'
+  'tipping-abroad-calculator',
+  'ksp-from-solubility-calculator',
+  'weak-base-ionization-calculator',
+  'buffer-ph-after-addition-calculator',
+  'lattice-energy-calculator',
+  'ionic-strength-calculator'
 ];
 
 const rank = (id: string) => {

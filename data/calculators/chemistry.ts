@@ -1149,6 +1149,154 @@ export const chemistryCalculators: CalculatorConfig[] = [
     }
   },
   {
+    id: 'buffer-ph-after-addition-calculator',
+    category: 'chemistry',
+    group: 'Acid-Base Chemistry',
+    glyph: 'ΔpH',
+    updatedAt: '2026-11-17',
+    aliases: ['buffer ph after adding acid calculator', 'buffer ph after adding base calculator', 'buffer ph change calculator', 'ph after adding strong acid or base calculator', 'buffer reaction calculator'],
+    related: ['pka-henderson-hasselbalch-calculator', 'buffer-capacity-calculator', 'weak-acid-ionization-calculator', 'molarity-calculator'],
+    title: 'Buffer pH After Adding Acid or Base Calculator',
+    description: 'Find a buffer’s new pH after a small amount of strong acid or strong base is added, from the moles of weak acid and conjugate base before the addition.',
+    example: 'A buffer with 0.0100 mol acetic acid and 0.0100 mol acetate (pKa 4.74) shifts to pH ≈ 4.75 after 1.0 × 10⁻⁴ mol of NaOH is added — far less change than an unbuffered solution would show.',
+    solver: {
+      defaultTarget: 'newPH',
+      variables: [
+        { id: 'pKa', label: 'Weak acid’s pKa', symbol: 'pKₐ', dimension: 'pH', defaultValue: 4.74, defaultUnit: 'pH' },
+        { id: 'initialMolesAcid', label: 'Initial moles of weak acid, HA', symbol: 'nₐ', dimension: 'amountOfSubstance', defaultValue: 0.01, defaultUnit: 'mol' },
+        { id: 'initialMolesBase', label: 'Initial moles of conjugate base, A⁻', symbol: 'n_B', dimension: 'amountOfSubstance', defaultValue: 0.01, defaultUnit: 'mol' },
+        { id: 'molesAdded', label: 'Moles of strong base added (negative for a strong acid)', symbol: 'x', dimension: 'amountOfSubstance', defaultValue: 0.0001, defaultUnit: 'mol' },
+        { id: 'newPH', label: 'New pH after the addition', symbol: 'pH', dimension: 'pH', defaultValue: 4.7534, defaultUnit: 'pH' }
+      ],
+      solve: {
+        newPH: ({ pKa, initialMolesAcid, initialMolesBase, molesAdded }) => {
+          const newAcid = initialMolesAcid - molesAdded;
+          const newBase = initialMolesBase + molesAdded;
+          return newAcid <= 0 || newBase <= 0 ? NaN : pKa + Math.log10(newBase / newAcid);
+        },
+        pKa: ({ newPH, initialMolesAcid, initialMolesBase, molesAdded }) => {
+          const newAcid = initialMolesAcid - molesAdded;
+          const newBase = initialMolesBase + molesAdded;
+          return newAcid <= 0 || newBase <= 0 ? NaN : newPH - Math.log10(newBase / newAcid);
+        },
+        molesAdded: ({ newPH, pKa, initialMolesAcid, initialMolesBase }) => {
+          const r = 10 ** (newPH - pKa);
+          return (r * initialMolesAcid - initialMolesBase) / (1 + r);
+        },
+        initialMolesAcid: ({ newPH, pKa, initialMolesBase, molesAdded }) => {
+          const r = 10 ** (newPH - pKa);
+          const newBase = initialMolesBase + molesAdded;
+          return newBase / r + molesAdded;
+        },
+        initialMolesBase: ({ newPH, pKa, initialMolesAcid, molesAdded }) => {
+          const r = 10 ** (newPH - pKa);
+          const newAcid = initialMolesAcid - molesAdded;
+          return r * newAcid - molesAdded;
+        }
+      },
+      outputs: [
+        { id: 'newMolesAcid', label: 'New moles of HA', dimension: 'amountOfSubstance', unit: 'mol', compute: (si) => si.initialMolesAcid - si.molesAdded },
+        { id: 'newMolesBase', label: 'New moles of A⁻', dimension: 'amountOfSubstance', unit: 'mol', compute: (si) => si.initialMolesBase + si.molesAdded },
+        {
+          id: 'initialPH',
+          label: 'pH before the addition',
+          dimension: 'pH',
+          unit: 'pH',
+          compute: (si) => (si.initialMolesAcid <= 0 || si.initialMolesBase <= 0 ? NaN : si.pKa + Math.log10(si.initialMolesBase / si.initialMolesAcid))
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'Why does a buffer’s pH barely move when acid or base is added?',
+        paragraphs: [
+          'OpenStax Chemistry 2e’s §14.6 "Buffers" states the key property directly: a buffer "resists" a change in pH when a small amount of strong acid or strong base is added, because the weak acid and its conjugate base absorb the addition through their own equilibrium instead of the strong acid/base reacting unopposed. Adding strong base converts some of the weak acid (HA) into more conjugate base (A⁻); adding strong acid converts some conjugate base back into weak acid — in both cases, the strong reagent is consumed by a mole-for-mole reaction rather than directly changing the solution’s pH.',
+          'Because that reaction is essentially complete (a strong acid or base reacts fully with the buffer components), the new moles of HA and A⁻ are simple arithmetic: subtract the added moles from one side and add them to the other. Plugging those new amounts into the Henderson-Hasselbalch equation — pH = pKa + log₁₀([A⁻] ÷ [HA]) — gives the new pH directly, using mole ratios rather than concentrations, since both HA and A⁻ sit in the same volume and that volume cancels out of the ratio.',
+          'This calculator automates exactly that two-step process: first the mole bookkeeping, then Henderson-Hasselbalch on the result — the same calculation OpenStax’s own Example 14.20 (an acetic acid/acetate buffer with a small addition of NaOH) works through by hand.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the buffer’s pKa and its initial moles of weak acid and conjugate base, then the moles of strong base added (or a negative value for strong acid); the new pH fills in automatically.',
+        steps: [
+          { name: 'Look up the weak acid’s pKa', text: 'A fixed property of the acid — 4.74 for acetic acid, for example.' },
+          { name: 'Enter the initial moles of HA and A⁻', text: 'From how the buffer was originally prepared — moles, not concentration, since the addition’s effect is calculated before dividing by volume.' },
+          { name: 'Enter the moles of strong base added', text: 'A positive number converts HA into A⁻. For a strong acid instead, enter the same amount as a negative number, which converts A⁻ back into HA.' },
+          { name: 'Read the new pH', text: 'Shown alongside the pH the buffer had before the addition, and the new mole amounts of HA and A⁻, for direct comparison.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The added strong acid or base first changes the mole amounts, then Henderson-Hasselbalch converts the new ratio into a new pH.',
+        expression: 'new mol HA = (initial mol HA) − x\nnew mol A⁻ = (initial mol A⁻) + x\nnew pH = pKa + log₁₀(new mol A⁻ ÷ new mol HA)',
+        terms: [
+          { symbol: 'x', meaning: 'Moles of strong base added (use a negative value for the same amount of strong acid instead).' },
+          { symbol: 'pKa', meaning: 'The weak acid’s own dissociation constant, expressed as −log₁₀Ka — unaffected by the addition.' },
+          { symbol: 'new pH', meaning: 'The buffer’s pH after the strong acid or base has fully reacted with the buffer components.' }
+        ],
+        note: 'Working in moles instead of concentrations is a deliberate simplification: both HA and A⁻ occupy the same solution volume, so that volume cancels out of the [A⁻] ÷ [HA] ratio and never needs to be entered. This assumes the strong acid or base added is small enough not to meaningfully dilute the buffer’s total volume — true for the small additions this calculator is meant for, but not for adding an amount comparable to the buffer’s own volume.'
+      },
+      workedExample: {
+        intro: 'An acetic acid/sodium acetate buffer starts with 1.00 × 10⁻² mol of each (pKa 4.74, from Ka = 1.8 × 10⁻⁵). What is the new pH after adding 1.0 × 10⁻⁴ mol of NaOH? (OpenStax Chemistry 2e, Example 14.20.)',
+        rows: [
+          { label: 'Initial moles HA, A⁻', value: '1.00 × 10⁻² mol each' },
+          { label: 'pKa', value: '4.74' },
+          { label: 'NaOH added, x', value: '1.0 × 10⁻⁴ mol' },
+          { label: 'New mol HA = 0.0100 − 0.0001', value: '0.0099 mol' },
+          { label: 'New mol A⁻ = 0.0100 + 0.0001', value: '0.0101 mol' },
+          { label: 'New pH = 4.74 + log₁₀(0.0101 ÷ 0.0099)', value: '≈ 4.75' }
+        ],
+        result: 'New pH ≈ 4.75 (up from an initial pH of 4.74)',
+        explanation: 'This matches OpenStax’s own worked example, which reports the same shift from pH 4.74 to pH 4.75. For comparison, adding the identical 1.0 × 10⁻⁴ mol as a strong acid instead (HCl) shifts the buffer the other way, to pH ≈ 4.74 (more precisely 4.736) — both directions confirmed independently in a scratch script, and both far smaller shifts than adding the same strong acid or base to unbuffered water would cause.'
+      },
+      watchOut: [
+        {
+          title: 'Enter moles, not molarity',
+          body: 'This calculator works in moles throughout, specifically so the buffer’s total volume never has to be entered — using concentrations instead (without a matching, consistent volume for every term) will give the wrong ratio.'
+        },
+        {
+          title: 'A strong acid or base is entered with a sign, not as a separate field',
+          body: 'Adding strong base is a positive amount; adding the same amount of strong acid is the negative of that number. Flipping the sign by mistake swaps which direction the pH moves.'
+        },
+        {
+          title: 'This assumes the strong acid or base fully reacts and does not run out the buffer',
+          body: 'If the amount added exceeds the smaller of the two initial mole amounts, one component would be driven below zero — past the point where this buffer can still resist the change, and this calculator’s own closed-form formula no longer describes a real buffer.'
+        },
+        {
+          title: 'Different from the plain Henderson-Hasselbalch calculator',
+          body: 'The Henderson-Hasselbalch calculator on this site finds a buffer’s pH from a given [A⁻] and [HA] directly. This calculator instead starts one step earlier — from the moles before an addition — and does the mole bookkeeping for you.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §14.6 "Buffers" (buffer response to added strong acid or base, Example 14.20, acetic acid/acetate)', url: 'https://openstax.org/books/chemistry-2e/pages/14-6-buffers' }
+      ]
+    },
+    inputs: [
+      { id: 'pKa', label: 'Weak acid’s pKa', type: 'number', placeholder: '4.74', defaultValue: 4.74, step: 0.01 },
+      { id: 'initialMolesAcid', label: 'Initial moles of weak acid, HA (mol)', type: 'number', placeholder: '0.01', defaultValue: 0.01, step: 0.0001, min: 0 },
+      { id: 'initialMolesBase', label: 'Initial moles of conjugate base, A⁻ (mol)', type: 'number', placeholder: '0.01', defaultValue: 0.01, step: 0.0001, min: 0 },
+      { id: 'molesAdded', label: 'Moles of strong base added (negative for a strong acid, mol)', type: 'number', placeholder: '0.0001', defaultValue: 0.0001, step: 0.00001 }
+    ],
+    seo: {
+      title: 'Buffer pH After Adding Acid or Base Calculator',
+      description: 'Free buffer pH calculator. Find a buffer’s new pH after a small amount of strong acid or base is added, from the moles of HA and A⁻ before the addition.',
+      faq: [
+        { question: 'How do I find a buffer’s pH after adding a strong acid or base?', answer: 'First find the new moles of weak acid and conjugate base (subtract the added amount from one, add it to the other), then apply Henderson-Hasselbalch: pH = pKa + log₁₀(new mol A⁻ ÷ new mol HA).' },
+        { question: 'What is the new pH after adding NaOH to an acetic acid buffer?', answer: 'For a buffer with 0.0100 mol each of acetic acid and acetate (pKa 4.74), adding 1.0 × 10⁻⁴ mol of NaOH raises the pH only to about 4.75 — a tiny shift compared with adding the same amount to unbuffered water.' },
+        { question: 'How do I enter adding a strong acid instead of a strong base?', answer: 'Enter the same amount as a negative number in the "moles added" field — a strong acid converts conjugate base back into weak acid, the opposite direction from a strong base.' },
+        { question: 'Why does this calculator use moles instead of concentrations?', answer: 'Because HA and A⁻ share the same solution volume, that volume cancels out of their ratio entirely — working in moles sidesteps needing to know or re-enter the total volume at all.' },
+        { question: 'Is this the same as the Henderson-Hasselbalch calculator?', answer: 'It uses the same underlying equation, but starts one step earlier: from the buffer’s moles before an addition, rather than already-known concentrations after.' },
+        { question: 'What happens if too much strong acid or base is added?', answer: 'If the amount added exceeds the smaller of the two initial mole amounts, that component would be used up entirely — past that point, the buffer can no longer resist the pH change the way this formula describes.' }
+      ]
+    },
+    compute(values) {
+      const newMolesAcid = values.initialMolesAcid - values.molesAdded;
+      const newMolesBase = values.initialMolesBase + values.molesAdded;
+      const newPH = newMolesAcid <= 0 || newMolesBase <= 0 ? NaN : values.pKa + Math.log10(newMolesBase / newMolesAcid);
+      return { newPH };
+    }
+  },
+  {
     id: 'percent-yield-calculator',
     category: 'chemistry',
     group: 'Reaction Stoichiometry & Yield',
@@ -2732,6 +2880,146 @@ export const chemistryCalculators: CalculatorConfig[] = [
     },
     compute(values) {
       return { normality: values.molarity * values.equivalenceFactor };
+    }
+  },
+  {
+    id: 'ionic-strength-calculator',
+    category: 'chemistry',
+    group: 'Concentration Units',
+    glyph: 'μᵢ',
+    updatedAt: '2026-11-17',
+    aliases: ['ionic strength calculator', 'ionic strength formula calculator', 'debye-huckel ionic strength calculator', 'solution ionic strength calculator'],
+    related: ['molarity-calculator', 'normality-calculator', 'common-ion-effect-calculator', 'dilution-calculator'],
+    title: 'Ionic Strength Calculator',
+    description: 'Find a solution’s ionic strength from up to four ions’ concentrations and charges — I = ½ Σ(cᵢ × zᵢ²).',
+    example: 'A 0.1 M MgCl₂ solution (0.1 M Mg²⁺, 0.2 M Cl⁻) has an ionic strength of 0.3 mol/L — three times higher than an equally concentrated 1:1 salt like NaCl.',
+    inputs: [
+      { id: 'concentration1', label: 'Ion 1 concentration (mol/L)', type: 'number', placeholder: '0.1', defaultValue: 0.1, step: 0.001, min: 0 },
+      { id: 'charge1', label: 'Ion 1 charge', type: 'number', placeholder: '2', defaultValue: 2, step: 1 },
+      { id: 'concentration2', label: 'Ion 2 concentration (mol/L)', type: 'number', placeholder: '0.2', defaultValue: 0.2, step: 0.001, min: 0 },
+      { id: 'charge2', label: 'Ion 2 charge', type: 'number', placeholder: '-1', defaultValue: -1, step: 1 },
+      { id: 'concentration3', label: 'Ion 3 concentration (mol/L)', type: 'number', placeholder: '0', defaultValue: 0, step: 0.001, min: 0 },
+      { id: 'charge3', label: 'Ion 3 charge', type: 'number', placeholder: '0', defaultValue: 0, step: 1 },
+      { id: 'concentration4', label: 'Ion 4 concentration (mol/L)', type: 'number', placeholder: '0', defaultValue: 0, step: 0.001, min: 0 },
+      { id: 'charge4', label: 'Ion 4 charge', type: 'number', placeholder: '0', defaultValue: 0, step: 1 }
+    ],
+    breakdown: {
+      headline: 'ionicStrength',
+      headlineLabel: 'Ionic strength, I (mol/L)',
+      outputs: [{ id: 'ionicStrength', label: 'Ionic strength, I (mol/L)', format: 'significant' }],
+      groups: [
+        { title: 'Ion 1', inputs: ['concentration1', 'charge1'] },
+        { title: 'Ion 2', inputs: ['concentration2', 'charge2'] },
+        { title: 'Ion 3 (optional)', inputs: ['concentration3', 'charge3'], optional: true },
+        { title: 'Ion 4 (optional)', inputs: ['concentration4', 'charge4'], optional: true }
+      ],
+      derive(values) {
+        return {
+          term1: 0.5 * values.concentration1 * values.charge1 ** 2,
+          term2: 0.5 * values.concentration2 * values.charge2 ** 2,
+          term3: 0.5 * values.concentration3 * values.charge3 ** 2,
+          term4: 0.5 * values.concentration4 * values.charge4 ** 2
+        };
+      },
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'term1', label: 'Ion 1' },
+          { from: 'term2', label: 'Ion 2' },
+          { from: 'term3', label: 'Ion 3' },
+          { from: 'term4', label: 'Ion 4' }
+        ],
+        title: 'Each ion’s contribution to ionic strength'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is ionic strength?',
+        paragraphs: [
+          'Ionic strength describes how much "ionic traffic" is in a solution, taking into account that a more highly charged ion disrupts a solution’s behavior more than a singly charged one at the same concentration. The formal definition, from IUPAC’s "Quantities, Units and Symbols in Physical Chemistry" (1993), is a half-sum over every ion present: I = ½ Σ(cᵢ × zᵢ²), where cᵢ is each ion’s concentration and zᵢ is its charge number.',
+          'Squaring the charge is what makes ionic strength rise so quickly with charge: a 2+ or 2− ion contributes four times as much as a 1+ or 1− ion at the same concentration, and a 3+ ion contributes nine times as much. That is why 0.1 M MgCl₂ (one Mg²⁺ plus two Cl⁻ per formula unit) has a noticeably higher ionic strength than 0.1 M NaCl, even though both salts supply the identical total 0.1 M of "formula units."',
+          'Ionic strength matters because it governs how strongly ions in solution interact with each other electrostatically — it is the key input to the Debye-Hückel equation, which corrects an ion’s effective (active) concentration for those interactions, and it also shows up directly in the common-ion effect and solubility calculations wherever a solution is not infinitely dilute.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter each distinct ion’s concentration and charge (up to four); the solution’s overall ionic strength fills in automatically.',
+        steps: [
+          { name: 'List every ion in solution', text: 'Including ions from more than one dissolved salt, if there is more than one.' },
+          { name: 'Enter each ion’s concentration', text: 'In mol/L, accounting for how many of that ion each formula unit supplies — 0.1 M MgCl₂ gives 0.1 M Mg²⁺ but 0.2 M Cl⁻, not 0.1 M of each.' },
+          { name: 'Enter each ion’s charge', text: 'As a signed number — +2 for Mg²⁺, −1 for Cl⁻. The formula squares it, so the sign itself does not affect the final result, but keeping it signed avoids confusion when checking the numbers.' },
+          { name: 'Leave unused ion slots at 0', text: 'A concentration of 0 drops that slot out of the sum entirely.' },
+          { name: 'Read the ionic strength', text: 'Along with each ion’s own share of the total, shown on the bar chart underneath.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Each ion contributes its concentration times the square of its charge; the half-sum of all of them is the ionic strength.',
+        expression: 'I = ½ × Σ(cᵢ × zᵢ²)',
+        terms: [
+          { symbol: 'I', meaning: 'Ionic strength, in mol/L (the same units as concentration).' },
+          { symbol: 'cᵢ', meaning: 'The molar concentration of ion i.' },
+          { symbol: 'zᵢ', meaning: 'The charge number of ion i (the sign does not matter, since it is squared).' }
+        ],
+        note: 'This calculator covers up to four distinct ions, computed on a molar-concentration basis (Iᴄ), which is the form most general and analytical chemistry problems use. A small further distinction exists between concentration-based ionic strength and molality-based ionic strength (Iₘ, used in more precise physical-chemistry work), which are numerically close but not identical in anything but a dilute aqueous solution.'
+      },
+      workedExample: {
+        intro: 'What is the ionic strength of a 0.1 M solution of magnesium chloride, MgCl₂, which fully dissociates into Mg²⁺ and Cl⁻?',
+        rows: [
+          { label: 'Mg²⁺ concentration and charge', value: '0.1 mol/L, z = +2' },
+          { label: 'Cl⁻ concentration and charge', value: '0.2 mol/L, z = −1 (twice the Mg²⁺ concentration, from the formula MgCl₂)' },
+          { label: 'Mg²⁺ term: 0.1 × (2)²', value: '0.4' },
+          { label: 'Cl⁻ term: 0.2 × (−1)²', value: '0.2' },
+          { label: 'I = ½ × (0.4 + 0.2)', value: '0.3 mol/L' }
+        ],
+        result: 'I = 0.3 mol/L',
+        explanation: 'For comparison, an equally concentrated 1:1 salt like 0.1 M NaCl has I = ½ × (0.1×1² + 0.1×1²) = 0.1 mol/L — exactly equal to its molar concentration, a general fact for any 1:1 electrolyte. MgCl₂’s ionic strength comes out three times higher, driven mostly by magnesium’s squared 2+ charge. Both figures were confirmed independently in a scratch script.'
+      },
+      watchOut: [
+        {
+          title: 'The charge is squared, so a higher-charge ion dominates the total',
+          body: 'Doubling an ion’s charge quadruples its own contribution to ionic strength at the same concentration — a solution with even a small amount of a 3+ or 3− ion can have most of its ionic strength coming from that one ion alone.'
+        },
+        {
+          title: 'Account for every ion a formula unit actually produces',
+          body: 'A salt like MgCl₂ does not contribute equal concentrations of its cation and anion — one mole of MgCl₂ gives one mole of Mg²⁺ but two moles of Cl⁻, and both need their own, separately entered concentration.'
+        },
+        {
+          title: 'Ionic strength is not the same as total ion concentration',
+          body: 'Simply adding up every ion’s concentration (without squaring the charge) undercounts the effect of multiply charged ions — ionic strength is specifically designed to weight them more heavily, not just tally how many ions are present.'
+        },
+        {
+          title: 'This is a different quantity from molarity or normality',
+          body: 'The molarity and normality calculators on this site describe how much of a substance is dissolved. Ionic strength instead describes how electrostatically "crowded" the resulting ions are — a solution can have a given molarity at many different ionic strengths, depending on how many ions, and of what charge, that molarity actually produces.'
+        }
+      ],
+      references: [
+        {
+          label: 'IUPAC, "Quantities, Units and Symbols in Physical Chemistry" (1993), ionic strength definition, I = ½Σcᵢzᵢ² — the IUPAC Gold Book’s own page for this term returned an HTTP 403 to a direct fetch; independently confirmed via the EPA’s "Ionic Strength" CADDIS reference page, which quotes and cites the same 1993 IUPAC source',
+          url: 'https://www.epa.gov/caddis/ionic-strength'
+        }
+      ]
+    },
+    seo: {
+      title: 'Ionic Strength Calculator (I = ½Σcᵢzᵢ²)',
+      description: 'Free ionic strength calculator. Find a solution’s ionic strength from up to four ions’ concentrations and charges, with a worked MgCl₂ example.',
+      faq: [
+        { question: 'How do I calculate ionic strength?', answer: 'Sum each ion’s concentration times the square of its charge, then take half of the total: I = ½ × Σ(cᵢ × zᵢ²).' },
+        { question: 'What is the ionic strength of 0.1 M MgCl₂?', answer: '0.3 mol/L — from 0.1 M Mg²⁺ (charge +2) and 0.2 M Cl⁻ (charge −1, since each formula unit releases two chloride ions).' },
+        { question: 'Why does ionic strength use the square of the charge?', answer: 'Because a more highly charged ion has a stronger electrostatic effect on its surroundings than its concentration alone would suggest — squaring the charge is how the formula weights that extra influence.' },
+        { question: 'Is ionic strength the same as molarity for a 1:1 salt?', answer: 'Yes — for any fully dissociated 1:1 electrolyte (like NaCl), ionic strength exactly equals the molar concentration, since both ions carry charge 1 and the ½ and the two equal terms cancel out.' },
+        { question: 'What is ionic strength used for?', answer: 'It is the key input to the Debye-Hückel equation, which corrects an ion’s effective concentration for electrostatic interactions with its neighbors — relevant anywhere a solution is not extremely dilute, including some solubility and common-ion-effect calculations.' },
+        { question: 'Does the sign of the charge matter?', answer: 'No — the formula squares every charge, so a +2 and a −2 ion contribute identically. Entering charges with their correct sign is still good practice, just not something the final answer depends on.' }
+      ]
+    },
+    compute(values) {
+      const ionicStrength =
+        0.5 *
+        (values.concentration1 * values.charge1 ** 2 +
+          values.concentration2 * values.charge2 ** 2 +
+          values.concentration3 * values.charge3 ** 2 +
+          values.concentration4 * values.charge4 ** 2);
+      return { ionicStrength };
     }
   },
   {
@@ -5125,6 +5413,130 @@ export const chemistryCalculators: CalculatorConfig[] = [
     }
   },
   {
+    id: 'ksp-from-solubility-calculator',
+    category: 'chemistry',
+    group: 'Equilibrium & Thermodynamics',
+    glyph: 'sKsp',
+    updatedAt: '2026-11-17',
+    aliases: ['ksp from solubility calculator', 'solubility to ksp calculator', 'find ksp from solubility calculator', 'solubility product from solubility calculator', 'calculate ksp from grams per liter calculator'],
+    related: ['ksp-molar-solubility-calculator', 'common-ion-effect-calculator', 'molar-mass-calculator', 'molarity-calculator'],
+    title: 'Ksp From Solubility Calculator',
+    description: 'Find a salt’s solubility product constant (Ksp) from its measured solubility in grams per liter and molar mass — the reverse direction of the Ksp-to-solubility calculator.',
+    example: 'Chrome yellow, PbCrO₄, has a measured solubility of 4.6 × 10⁻⁶ g/L. With a molar mass of 323.2 g/mol, that is a molar solubility of about 1.4 × 10⁻⁸ mol/L, and a Ksp of about 2.0 × 10⁻¹⁶.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'How is Ksp found from a measured solubility?',
+        paragraphs: [
+          'The Ksp (solubility product) calculator on this site goes one direction: given a salt’s Ksp and its dissociation ratio, find how much of it dissolves per liter. In practice, Ksp itself usually comes from the opposite direction first — a chemist measures how much of a slightly soluble salt actually dissolves, often reported as a mass per liter rather than a molarity, and works backward to Ksp. OpenStax Chemistry 2e’s §15.1 "Precipitation and Dissolution" walks through exactly that calculation in its own Example 15.5.',
+          'The only extra step compared with the forward calculator is a unit conversion: a measured solubility in grams per liter has to become a molar solubility (mol/L) by dividing by the salt’s molar mass, before the usual Ksp = (p×s)ᵖ(q×s)ᵠ relationship applies, where p and q are the cation’s and anion’s coefficients in the dissociation equation MₚXᵧ(s) ⇌ p Mⁿ⁺(aq) + q Xᵏ⁻(aq).',
+          'This calculator does that conversion and the Ksp calculation in one step: enter the measured solubility in g/L, the salt’s molar mass, and its two dissociation coefficients, and it returns the molar solubility along with Ksp itself.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the measured solubility in grams per liter, the salt’s molar mass, and its dissociation coefficients; the molar solubility and Ksp fill in automatically.',
+        steps: [
+          { name: 'Find the measured solubility', text: 'From a lab measurement or a reference table, in grams of the salt per liter of saturated solution — not milligrams or a percentage.' },
+          { name: 'Look up or calculate the molar mass', text: 'In grams per mole — use the molar mass calculator on this site if needed.' },
+          { name: 'Write the dissociation equation', text: 'MₚXᵧ(s) ⇌ p Mⁿ⁺(aq) + q Xᵏ⁻(aq), and read off p and q. Most general-chemistry salts use 1, 2, or 3.' },
+          { name: 'Enter both coefficients', text: 'A 1:1 salt like PbCrO₄ uses p = 1, q = 1.' },
+          { name: 'Read the molar solubility and Ksp', text: 'The molar solubility is the grams-per-liter value divided by the molar mass; Ksp follows directly from it and the coefficients.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Converting the measured solubility to molarity first lets the same Ksp relationship as the forward calculator apply directly.',
+        expression: 's = solubility (g/L) ÷ molar mass (g/mol)\nKsp = (p × s)ᵖ × (q × s)ᵠ',
+        terms: [
+          { symbol: 'solubility', meaning: 'The measured mass of the salt that dissolves per liter of saturated solution.' },
+          { symbol: 'molar mass', meaning: 'The salt’s molar mass, in grams per mole.' },
+          { symbol: 's', meaning: 'The molar solubility: moles of the salt dissolved per liter.' },
+          { symbol: 'p, q', meaning: 'The cation’s and anion’s coefficients in the balanced dissociation equation.' }
+        ],
+        note: 'This is the exact reverse of the Ksp-to-solubility calculator on this site, which starts from a known Ksp instead and solves for s. Both pages use the identical relationship between Ksp, s, p, and q — only which value is given and which is found differ.'
+      },
+      workedExample: {
+        intro: 'Chrome yellow, lead(II) chromate (PbCrO₄), has a measured solubility of 4.6 × 10⁻⁶ g/L. What is its Ksp? (OpenStax Chemistry 2e, Example 15.5.)',
+        rows: [
+          { label: 'Measured solubility', value: '4.6 × 10⁻⁶ g/L' },
+          { label: 'Molar mass of PbCrO₄', value: '323.2 g/mol' },
+          { label: 's = 4.6 × 10⁻⁶ ÷ 323.2', value: '≈ 1.4 × 10⁻⁸ mol/L' },
+          { label: 'Dissociation: PbCrO₄(s) ⇌ Pb²⁺(aq) + CrO₄²⁻(aq)', value: 'p = 1, q = 1' },
+          { label: 'Ksp = (1×s)¹ × (1×s)¹ = s²', value: '≈ 2.0 × 10⁻¹⁶' }
+        ],
+        result: 'Ksp ≈ 2.0 × 10⁻¹⁶',
+        explanation: 'This matches OpenStax’s own stated result exactly. Carrying full precision gives s ≈ 1.4233 × 10⁻⁸ mol/L and Ksp ≈ 2.026 × 10⁻¹⁶, both of which round to the textbook’s own 1.4 × 10⁻⁸ and 2.0 × 10⁻¹⁶ — confirmed independently in a scratch script.'
+        },
+      watchOut: [
+        {
+          title: 'Solubility must be in grams per liter, not milligrams or a percentage',
+          body: 'A solubility quoted as "1.9 mg/100 mL" has to first become grams per liter (0.019 g/L) before dividing by the molar mass — skipping that conversion gives a molar solubility, and therefore a Ksp, that is off by orders of magnitude.'
+        },
+        {
+          title: 'A coefficient of 2 or more squares (or cubes) that ion’s contribution',
+          body: 'Just like the forward Ksp-to-solubility calculator, a coefficient of 2 means that ion’s concentration is 2×s, but it enters Ksp as (2×s)² — a factor of 4, not 2.'
+        },
+        {
+          title: 'This gives Ksp only at the temperature the solubility was measured at',
+          body: 'Ksp changes with temperature like any equilibrium constant. Most published solubility data is measured at or near 25°C, but always check if a different temperature is specified.'
+        },
+        {
+          title: 'This assumes pure water, with no common ion already present',
+          body: 'If the measured solubility was taken in a solution that already contained one of the salt’s own ions from another source, the resulting Ksp calculation needs the common-ion effect calculator’s own reverse relationship instead, not this plain-water formula.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §15.1 "Precipitation and Dissolution" (Ksp from a measured solubility, Example 15.5, PbCrO₄)', url: 'https://openstax.org/books/chemistry-2e/pages/15-1-precipitation-and-dissolution' }
+      ]
+    },
+    inputs: [
+      { id: 'solubilityGramsPerLiter', label: 'Measured solubility (g/L)', type: 'number', placeholder: '4.6e-6', defaultValue: 4.6e-6, step: 1e-7, min: 0 },
+      { id: 'molarMass', label: 'Molar mass (g/mol)', type: 'number', placeholder: '323.2', defaultValue: 323.2, step: 0.01, min: 0 },
+      { id: 'coefficientCation', label: 'Cation coefficient (p)', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 1 },
+      { id: 'coefficientAnion', label: 'Anion coefficient (q)', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 1 }
+    ],
+    breakdown: {
+      headline: 'ksp',
+      headlineLabel: 'Solubility product, Ksp',
+      outputs: [
+        { id: 'ksp', label: 'Ksp', format: 'significant' },
+        { id: 'molarSolubility', label: 'Molar solubility, s (mol/L)', format: 'significant' },
+        { id: 'cationConcentration', label: 'Cation concentration at equilibrium (mol/L)', format: 'significant' },
+        { id: 'anionConcentration', label: 'Anion concentration at equilibrium (mol/L)', format: 'significant' }
+      ],
+      groups: [{ inputs: ['solubilityGramsPerLiter', 'molarMass', 'coefficientCation', 'coefficientAnion'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'cationConcentration', label: 'Cation' },
+          { from: 'anionConcentration', label: 'Anion' }
+        ],
+        title: 'Ion concentrations at equilibrium'
+      }
+    },
+    seo: {
+      title: 'Ksp From Solubility Calculator',
+      description: 'Free Ksp calculator. Find a salt’s solubility product constant from its measured solubility in g/L and its molar mass.',
+      faq: [
+        { question: 'How do I find Ksp from solubility?', answer: 'Convert the measured solubility from g/L to molarity by dividing by the molar mass, then apply Ksp = (p×s)ᵖ × (q×s)ᵠ using the salt’s dissociation coefficients p and q.' },
+        { question: 'What is PbCrO₄’s Ksp from its measured solubility?', answer: 'About 2.0 × 10⁻¹⁶, from a measured solubility of 4.6 × 10⁻⁶ g/L and a molar mass of 323.2 g/mol, giving a molar solubility of about 1.4 × 10⁻⁸ mol/L.' },
+        { question: 'What if I already have the molar solubility in mol/L, not g/L?', answer: 'Enter it directly as the "solubility" field with molar mass set to 1 g/mol — dividing by 1 leaves it unchanged — or apply Ksp = (p×s)ᵖ × (q×s)ᵠ to that value by hand.' },
+        { question: 'How is this different from the Ksp (solubility product) calculator?', answer: 'That calculator goes forward: known Ksp to predicted solubility. This one goes backward: a measured solubility to the Ksp it implies — the direction actually used to determine a new Ksp value experimentally.' },
+        { question: 'Does the order of the coefficients matter?', answer: 'No — just make sure the cation’s coefficient goes in the cation (p) field and the anion’s in the anion (q) field, matching the salt’s own dissociation equation.' },
+        { question: 'Does a common ion already in the test solution affect this?', answer: 'Yes — if the solubility was measured in a solution that already contained one of the salt’s own ions, use the common-ion effect calculator’s relationship instead, since this formula assumes pure water.' }
+      ]
+    },
+    compute(values) {
+      const molarSolubility = values.solubilityGramsPerLiter / values.molarMass;
+      return {
+        ksp: (values.coefficientCation * molarSolubility) ** values.coefficientCation * (values.coefficientAnion * molarSolubility) ** values.coefficientAnion,
+        molarSolubility,
+        cationConcentration: molarSolubility * values.coefficientCation,
+        anionConcentration: molarSolubility * values.coefficientAnion
+      };
+    }
+  },
+  {
     id: 'common-ion-effect-calculator',
     category: 'chemistry',
     group: 'Acid-Base Chemistry',
@@ -5139,15 +5551,15 @@ export const chemistryCalculators: CalculatorConfig[] = [
       defaultTarget: 'molarSolubility',
       variables: [
         { id: 'ksp', label: 'Solubility product, Ksp', symbol: 'Ksp', dimension: 'count', defaultValue: 1e-28, defaultUnit: 'count', fixed: true },
-        { id: 'commonIonConcentration', label: 'Common-ion concentration already present', symbol: '[X]', dimension: 'concentration', defaultValue: 0.01, defaultUnit: 'mol/L' },
-        { id: 'molarSolubility', label: 'Molar solubility in that solution', symbol: 's', dimension: 'concentration', defaultValue: 1e-26, defaultUnit: 'mol/L' }
+        { id: 'commonIonConcentration', label: 'Common-ion concentration already present (mol/L)', symbol: '[X]', dimension: 'count', defaultValue: 0.01, defaultUnit: 'count' },
+        { id: 'molarSolubility', label: 'Molar solubility in that solution (mol/L)', symbol: 's', dimension: 'count', defaultValue: 1e-26, defaultUnit: 'count' }
       ],
       solve: {
         molarSolubility: ({ ksp, commonIonConcentration }) => (2 * ksp) / (commonIonConcentration + Math.sqrt(commonIonConcentration ** 2 + 4 * ksp)),
         commonIonConcentration: ({ ksp, molarSolubility }) => (molarSolubility === 0 ? NaN : ksp / molarSolubility - molarSolubility)
       },
       outputs: [
-        { id: 'plainWaterSolubility', label: 'Solubility in plain water (√Ksp)', dimension: 'concentration', unit: 'mol/L', compute: (si) => Math.sqrt(si.ksp) }
+        { id: 'plainWaterSolubility', label: 'Solubility in plain water (√Ksp, mol/L)', dimension: 'count', unit: 'count', compute: (si) => Math.sqrt(si.ksp) }
       ]
     },
     content: {
@@ -5861,6 +6273,127 @@ export const chemistryCalculators: CalculatorConfig[] = [
     }
   },
   {
+    id: 'weak-base-ionization-calculator',
+    category: 'chemistry',
+    group: 'Acid-Base Chemistry',
+    glyph: 'Kb',
+    updatedAt: '2026-11-17',
+    aliases: ['weak base calculator', 'kb calculator', 'weak base ionization calculator', 'poh from kb calculator', 'base ionization constant calculator', 'base dissociation constant calculator'],
+    related: ['weak-acid-ionization-calculator', 'ph-poh-calculator', 'pka-henderson-hasselbalch-calculator', 'molarity-calculator'],
+    title: 'Weak Base Ionization Calculator (Kb, pOH, Percent Ionization)',
+    description: 'Find the pOH, pH, and percent ionization of a weak base solution from its Kb and starting concentration — the base-side mirror of the weak acid ionization calculator.',
+    example: 'A 0.25 M solution of trimethylamine ((CH₃)₃N, Kb = 6.3 × 10⁻⁵) ionizes to [OH⁻] ≈ 0.0039 mol/L, a pOH of about 2.40, and a pH of about 11.60.',
+    solver: {
+      defaultTarget: 'hydroxideIon',
+      variables: [
+        { id: 'kb', label: 'Base dissociation constant, Kb', symbol: 'Kb', dimension: 'count', defaultValue: 6.3e-5, defaultUnit: 'count' },
+        { id: 'initialConcentration', label: 'Initial base concentration (mol/L)', symbol: 'C₀', dimension: 'count', defaultValue: 0.25, defaultUnit: 'count' },
+        { id: 'hydroxideIon', label: 'Hydroxide-ion concentration at equilibrium (mol/L)', symbol: '[OH⁻]', dimension: 'count', defaultValue: 0.003937, defaultUnit: 'count' }
+      ],
+      solve: {
+        hydroxideIon: ({ kb, initialConcentration }) =>
+          kb <= 0 || initialConcentration <= 0 ? NaN : (2 * kb * initialConcentration) / (kb + Math.sqrt(kb ** 2 + 4 * kb * initialConcentration)),
+        kb: ({ initialConcentration, hydroxideIon }) =>
+          initialConcentration === hydroxideIon ? NaN : hydroxideIon ** 2 / (initialConcentration - hydroxideIon),
+        initialConcentration: ({ kb, hydroxideIon }) => (kb === 0 ? NaN : hydroxideIon ** 2 / kb + hydroxideIon)
+      },
+      outputs: [
+        { id: 'pOH', label: 'pOH', dimension: 'pH', unit: 'pH', compute: (si) => -Math.log10(si.hydroxideIon) },
+        { id: 'pH', label: 'pH', dimension: 'pH', unit: 'pH', compute: (si) => 14 + Math.log10(si.hydroxideIon) },
+        { id: 'percentIonization', label: 'Percent ionization', dimension: 'percent', unit: '%', compute: (si) => (si.hydroxideIon / si.initialConcentration) * 100 }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is a weak base’s percent ionization?',
+        paragraphs: [
+          'A weak base (B) only partly reacts with water: B + H₂O ⇌ BH⁺ + OH⁻. OpenStax Chemistry 2e’s §14.3 "Relative Strengths of Acids and Bases" treats weak bases as the direct mirror of weak acids — the same section that works through formic acid’s weak-acid equilibrium also works through a weak base’s own ionization constant, Kb = [BH⁺][OH⁻] ÷ [B], a fixed property of that specific base.',
+          'Starting from an initial concentration C₀ and letting x be how much reacts, [BH⁺] = [OH⁻] = x and [B] = C₀ − x at equilibrium, turning the Kb expression into a quadratic in x: Kb = x² ÷ (C₀ − x) — the identical algebraic shape as the weak-acid ionization calculator on this site, just relabeled for a base instead of an acid.',
+          'Once x — the equilibrium hydroxide-ion concentration — is known, pOH = −log₁₀[OH⁻] follows directly, and pH = 14 − pOH at 25°C (since [H⁺][OH⁻] = Kw = 1.0 × 10⁻¹⁴ there). Percent ionization (x ÷ C₀ × 100) describes what fraction of the original base actually reacted.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the base’s Kb (fixed, since it does not change with concentration) and its starting concentration; the equilibrium hydroxide-ion concentration, pOH, pH, and percent ionization fill in automatically.',
+        steps: [
+          { name: 'Look up or identify the base’s Kb', text: 'From a reference table — for example, 6.3 × 10⁻⁵ for trimethylamine, or 1.8 × 10⁻⁵ for ammonia.' },
+          { name: 'Enter the initial concentration', text: 'The concentration before any ionization happens, in mol/L.' },
+          { name: 'Read the equilibrium hydroxide-ion concentration', text: 'It fills in automatically, solved exactly from the quadratic rather than an approximation.' },
+          { name: 'Read pOH, pH, and percent ionization', text: 'All three appear underneath as bonus figures computed from the same result.' },
+          { name: 'Or work backward', text: 'Enter a measured [OH⁻] (or pOH, converted first) and the concentration, and solve for the base’s own Kb instead.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Kb = x² ÷ (C₀ − x) rearranges into a quadratic solved exactly for x, the equilibrium [OH⁻].',
+        expression: 'Kb = x² ÷ (C₀ − x)\nx = 2Kb·C₀ ÷ (Kb + √(Kb² + 4·Kb·C₀))\npOH = −log₁₀(x)\npH = 14 − pOH\n% ionization = (x ÷ C₀) × 100',
+        terms: [
+          { symbol: 'Kb', meaning: 'The weak base’s own base dissociation constant — a fixed property of that base, not of the solution’s concentration.' },
+          { symbol: 'C₀', meaning: 'The base’s initial (pre-ionization) concentration, in mol/L.' },
+          { symbol: 'x', meaning: 'The equilibrium hydroxide-ion concentration, [OH⁻] — the amount of base that actually reacted with water.' }
+        ],
+        note: 'The rearranged form above avoids subtracting two nearly equal numbers, the same numerically stable technique the weak-acid ionization calculator uses for the parallel acid equilibrium. A base’s Kb and its conjugate acid’s Ka are also related by Ka × Kb = Kw (1.0 × 10⁻¹⁴ at 25°C) — a separate relationship this calculator does not use directly, since it only needs the base’s own Kb.'
+      },
+      workedExample: {
+        intro: 'What is the hydroxide-ion concentration, pOH, and pH of a 0.25 M solution of trimethylamine, (CH₃)₃N (Kb = 6.3 × 10⁻⁵)? (OpenStax Chemistry 2e, Example 14.13.)',
+        rows: [
+          { label: 'Kb', value: '6.3 × 10⁻⁵' },
+          { label: 'C₀', value: '0.25 mol/L' },
+          { label: 'x = 2Kb·C₀ ÷ (Kb + √(Kb² + 4·Kb·C₀))', value: '≈ 0.003937 mol/L' },
+          { label: 'pOH = −log₁₀(0.003937)', value: '≈ 2.405' },
+          { label: 'pH = 14 − 2.405', value: '≈ 11.60' },
+          { label: '% ionization = (0.003937 ÷ 0.25) × 100', value: '≈ 1.57%' }
+        ],
+        result: '[OH⁻] ≈ 0.0039 mol/L, pOH ≈ 2.40, pH ≈ 11.60',
+        explanation: 'This matches OpenStax’s own stated values ([OH⁻] = 4.0 × 10⁻³ M, pOH = 2.40, pH = 11.60) to the precision the textbook reports, confirmed independently in a scratch script. OpenStax does not separately state a percent-ionization figure for this example; the ≈1.57% shown here follows directly from the same exact x.'
+      },
+      watchOut: [
+        {
+          title: 'This finds pOH and pH, not just pOH',
+          body: 'A common mistake is stopping at pOH and forgetting the final pH = 14 − pOH conversion (at 25°C) — this calculator shows both so neither step is skipped.'
+        },
+        {
+          title: 'The "x is negligible" shortcut is an approximation, not a rule',
+          body: 'Many textbooks approximate Kb ≈ x² ÷ C₀ when x is expected to be small compared with C₀. This calculator solves the exact quadratic instead, so it stays accurate even where that shortcut starts to drift.'
+        },
+        {
+          title: 'Percent ionization increases as a solution gets more dilute',
+          body: 'Just like a weak acid, a weak base becomes a larger percentage ionized at lower concentrations, even though [OH⁻] itself goes down.'
+        },
+        {
+          title: 'This is not the same as the weak-acid ionization calculator',
+          body: 'The weak-acid ionization calculator on this site solves the analogous HA ⇌ H⁺ + A⁻ equilibrium for pH directly. This calculator solves the base equilibrium B + H₂O ⇌ BH⁺ + OH⁻ instead, which needs the pOH-to-pH conversion the acid version does not.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §14.3 "Relative Strengths of Acids and Bases" (weak-base equilibrium and Example 14.13, trimethylamine)', url: 'https://openstax.org/books/chemistry-2e/pages/14-3-relative-strengths-of-acids-and-bases' }
+      ]
+    },
+    inputs: [
+      { id: 'kb', label: 'Base dissociation constant, Kb', type: 'number', placeholder: '0.000063', defaultValue: 0.000063, step: 0.000001, min: 0 },
+      { id: 'initialConcentration', label: 'Initial concentration (mol/L)', type: 'number', placeholder: '0.25', defaultValue: 0.25, step: 0.001, min: 0 }
+    ],
+    seo: {
+      title: 'Weak Base Ionization Calculator (Kb, pOH, pH)',
+      description: 'Free weak base calculator. Find pOH, pH, and percent ionization from Kb and concentration, solved exactly with the quadratic equilibrium formula.',
+      faq: [
+        { question: 'How do I find the pOH of a weak base?', answer: 'Solve Kb = x² ÷ (C₀ − x) for x (the equilibrium [OH⁻]), then take pOH = −log₁₀(x). This calculator solves the exact quadratic rather than assuming x is negligible next to C₀.' },
+        { question: 'What is the pH of 0.25 M trimethylamine?', answer: 'About 11.60, using Kb = 6.3 × 10⁻⁵ — found by first solving for [OH⁻] (≈0.0039 M), then pOH (≈2.40), then pH = 14 − pOH.' },
+        { question: 'How do I convert pOH to pH?', answer: 'pH = 14 − pOH at 25°C, since pH + pOH = pKw = 14.00 at that temperature. This calculator applies that conversion automatically.' },
+        { question: 'How is this different from the weak acid ionization calculator?', answer: 'That calculator solves HA ⇌ H⁺ + A⁻ for pH directly. This one solves the base equilibrium B + H₂O ⇌ BH⁺ + OH⁻ for [OH⁻], then converts to pH through pOH, since a base’s equilibrium is naturally expressed in terms of hydroxide, not hydrogen ion.' },
+        { question: 'Can this calculator find a base’s Kb instead?', answer: 'Yes — enter a measured equilibrium [OH⁻] (found from a measured pH or pOH, if that is what you have) along with the known initial concentration, and the calculator solves for Kb.' },
+        { question: 'How are a base’s Kb and its conjugate acid’s Ka related?', answer: 'Ka × Kb = Kw = 1.0 × 10⁻¹⁴ at 25°C, for any conjugate acid-base pair. A stronger base (larger Kb) always has a weaker conjugate acid (smaller Ka), and vice versa.' }
+      ]
+    },
+    compute(values) {
+      const hydroxideIon =
+        values.kb <= 0 || values.initialConcentration <= 0
+          ? NaN
+          : (2 * values.kb * values.initialConcentration) / (values.kb + Math.sqrt(values.kb ** 2 + 4 * values.kb * values.initialConcentration));
+      return { hydroxideIon };
+    }
+  },
+  {
     id: 'current-efficiency-calculator',
     category: 'chemistry',
     group: 'Redox & Electrochemistry',
@@ -6331,6 +6864,145 @@ export const chemistryCalculators: CalculatorConfig[] = [
     },
     compute(values) {
       return { formalCharge: values.valenceElectrons - values.lonePairElectrons - values.bondingElectrons / 2 };
+    }
+  },
+  {
+    id: 'lattice-energy-calculator',
+    category: 'chemistry',
+    group: 'Atomic & Molecular Structure',
+    glyph: 'U',
+    updatedAt: '2026-11-17',
+    aliases: ['lattice energy calculator', 'born-haber cycle calculator', 'born haber cycle calculator', 'lattice energy from born-haber cycle calculator'],
+    related: ['hess-law-enthalpy-calculator', 'nuclear-binding-energy-calculator', 'formal-charge-calculator', 'calorimetry-enthalpy-calculator'],
+    title: 'Lattice Energy Calculator (Born-Haber Cycle)',
+    description: 'Find an ionic solid’s lattice energy from a Born-Haber cycle — or solve for any other step instead, given the rest — for a metal forming a 1:1 salt with a diatomic nonmetal.',
+    example: 'Cesium fluoride’s Born-Haber cycle (sublimation 76.5, ionization 375.7, half of F₂’s bond dissociation 79.4, electron affinity −328.2, all kJ/mol, against an enthalpy of formation of −553.5 kJ/mol) gives a lattice energy of 756.9 kJ/mol.',
+    solver: {
+      defaultTarget: 'latticeEnergy',
+      variables: [
+        { id: 'latticeEnergy', label: 'Lattice energy, ΔHlattice', symbol: 'U', dimension: 'count', defaultValue: 756.9, defaultUnit: 'count' },
+        { id: 'deltaHsub', label: 'Enthalpy of sublimation of the metal (kJ/mol)', symbol: 'ΔHsub', dimension: 'count', defaultValue: 76.5, defaultUnit: 'count' },
+        { id: 'ionizationEnergy', label: 'Ionization energy of the metal (kJ/mol)', symbol: 'IE', dimension: 'count', defaultValue: 375.7, defaultUnit: 'count' },
+        { id: 'bondDissociationEnergy', label: 'Bond dissociation energy of X₂ (kJ/mol)', symbol: 'D', dimension: 'count', defaultValue: 158.8, defaultUnit: 'count' },
+        { id: 'electronAffinity', label: 'Electron affinity of the nonmetal (kJ/mol)', symbol: 'EA', dimension: 'count', defaultValue: -328.2, defaultUnit: 'count' },
+        { id: 'deltaHf', label: 'Standard enthalpy of formation of the salt (kJ/mol)', symbol: 'ΔHf°', dimension: 'count', defaultValue: -553.5, defaultUnit: 'count' }
+      ],
+      solve: {
+        latticeEnergy: ({ deltaHsub, ionizationEnergy, bondDissociationEnergy, electronAffinity, deltaHf }) =>
+          deltaHsub + ionizationEnergy + bondDissociationEnergy / 2 + electronAffinity - deltaHf,
+        deltaHf: ({ deltaHsub, ionizationEnergy, bondDissociationEnergy, electronAffinity, latticeEnergy }) =>
+          deltaHsub + ionizationEnergy + bondDissociationEnergy / 2 + electronAffinity - latticeEnergy,
+        deltaHsub: ({ deltaHf, latticeEnergy, ionizationEnergy, bondDissociationEnergy, electronAffinity }) =>
+          deltaHf + latticeEnergy - ionizationEnergy - bondDissociationEnergy / 2 - electronAffinity,
+        ionizationEnergy: ({ deltaHf, latticeEnergy, deltaHsub, bondDissociationEnergy, electronAffinity }) =>
+          deltaHf + latticeEnergy - deltaHsub - bondDissociationEnergy / 2 - electronAffinity,
+        bondDissociationEnergy: ({ deltaHf, latticeEnergy, deltaHsub, ionizationEnergy, electronAffinity }) =>
+          2 * (deltaHf + latticeEnergy - deltaHsub - ionizationEnergy - electronAffinity),
+        electronAffinity: ({ deltaHf, latticeEnergy, deltaHsub, ionizationEnergy, bondDissociationEnergy }) =>
+          deltaHf + latticeEnergy - deltaHsub - ionizationEnergy - bondDissociationEnergy / 2
+      },
+      outputs: [
+        { id: 'halfBondDissociationEnergy', label: 'Half the bond dissociation energy, ½D', dimension: 'count', compute: (si) => si.bondDissociationEnergy / 2 }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is the Born-Haber cycle?',
+        paragraphs: [
+          'Lattice energy — the energy needed to separate one mole of an ionic solid into its gaseous ions — cannot be measured directly. OpenStax Chemistry 2e’s §7.5 "Strengths of Ionic and Covalent Bonds" explains the workaround: since enthalpy is path-independent (Hess’s law), the lattice energy can instead be calculated by building the same overall formation reaction out of steps that can each be measured, and solving for whichever one is unknown.',
+          'The Born-Haber cycle breaks forming an ionic solid like CsF from its elements into five steps: subliming the solid metal into a gas (ΔHsub), ionizing the gaseous metal atom (IE), breaking the nonmetal’s diatomic bond into free atoms (½D, since only half a mole of X₂ is needed per mole of metal), giving the nonmetal atom an extra electron (EA), and finally letting the gaseous ions condense into the solid lattice, which releases the lattice energy. Added together, those steps equal the overall enthalpy of formation measured directly: ΔHf° = ΔHsub + IE + ½D + EA + (−ΔHlattice).',
+          'Because every term in that sum except the lattice energy can usually be looked up or measured independently, rearranging the equation for ΔHlattice gives the one quantity that cannot be measured any other way. OpenStax notes the same cycle can equally be used to solve for any other single unknown step instead, given the rest — this calculator solves for whichever one you leave as the target.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the four known Born-Haber steps plus the salt’s own enthalpy of formation; the lattice energy fills in automatically.',
+        steps: [
+          { name: 'Look up the metal’s sublimation energy and ionization energy', text: 'Both for the free gaseous atom, in kJ/mol.' },
+          { name: 'Look up the nonmetal’s bond dissociation energy', text: 'For the full diatomic molecule, X₂ — this calculator halves it internally, since only half a mole of X₂ supplies one mole of X atoms.' },
+          { name: 'Look up the nonmetal’s electron affinity', text: 'Usually a negative number, since adding an electron to a neutral nonmetal atom typically releases energy.' },
+          { name: 'Enter the salt’s standard enthalpy of formation', text: 'The measured, directly-observable overall energy change forming the solid from its elements.' },
+          { name: 'Read the lattice energy', text: 'Or switch which field is calculated to solve for any other single step instead, given the rest.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Hess’s law lets the five-step cycle be added directly, then rearranged for whichever single step is unknown.',
+        expression: 'ΔHf° = ΔHsub + IE + ½D + EA − ΔHlattice\nΔHlattice = ΔHsub + IE + ½D + EA − ΔHf°',
+        terms: [
+          { symbol: 'ΔHsub', meaning: 'Enthalpy of sublimation: turning the solid metal directly into a gas.' },
+          { symbol: 'IE', meaning: 'Ionization energy: removing an electron from the gaseous metal atom.' },
+          { symbol: 'D', meaning: 'Bond dissociation energy of the nonmetal’s diatomic molecule, X₂ — only half of it is needed per mole of metal.' },
+          { symbol: 'EA', meaning: 'Electron affinity: the energy change when the gaseous nonmetal atom gains an electron.' },
+          { symbol: 'ΔHf°', meaning: 'The ionic solid’s own standard enthalpy of formation, measured directly.' },
+          { symbol: 'ΔHlattice', meaning: 'Lattice energy — the energy required to separate one mole of the solid into gaseous ions.' }
+        ],
+        note: 'This calculator is scoped to the simplest, most commonly taught Born-Haber cycle: a metal that loses a single electron (one ionization energy) combining with a diatomic nonmetal that gains a single electron (one electron affinity) to form a 1:1 ionic salt — the same scope OpenStax’s own CsF example uses. A metal or nonmetal needing more than one ionization energy, electron affinity, or a different stoichiometry (like MgO or CaF₂) needs extra terms this simplified cycle does not include.'
+      },
+      workedExample: {
+        intro: 'What is the lattice energy of cesium fluoride, CsF? (OpenStax Chemistry 2e, §7.5, the Born-Haber cycle example.)',
+        rows: [
+          { label: 'Enthalpy of sublimation of Cs, ΔHsub', value: '+76.5 kJ/mol' },
+          { label: 'Ionization energy of Cs, IE', value: '+375.7 kJ/mol' },
+          { label: 'Bond dissociation energy of F₂, D (so ½D = 79.4)', value: '+158.8 kJ/mol' },
+          { label: 'Electron affinity of F, EA', value: '−328.2 kJ/mol' },
+          { label: 'Standard enthalpy of formation of CsF, ΔHf°', value: '−553.5 kJ/mol' },
+          { label: 'ΔHlattice = 76.5 + 375.7 + 79.4 + (−328.2) − (−553.5)', value: '756.9 kJ/mol' }
+        ],
+        result: 'ΔHlattice ≈ 756.9 kJ/mol',
+        explanation: 'This matches OpenStax’s own stated lattice energy exactly, confirmed independently in a scratch script, including a round-trip check that solving the same cycle back for the enthalpy of formation (given the lattice energy) recovers the original −553.5 kJ/mol.'
+      },
+      watchOut: [
+        {
+          title: 'Enter the full X₂ bond dissociation energy, not already halved',
+          body: 'This calculator halves the bond dissociation energy internally, since only half a mole of the diatomic nonmetal is needed per mole of the metal — entering an already-halved value would halve it again.'
+        },
+        {
+          title: 'Electron affinity is usually negative, ionization energy is usually positive',
+          body: 'Removing an electron from a neutral atom (ionization) almost always costs energy; adding one to a neutral nonmetal atom (electron affinity) usually releases it. Mixing up the signs is the most common error in this calculation.'
+        },
+        {
+          title: 'Scoped to a simple 1:1 metal-halide-style salt',
+          body: 'A compound needing a second ionization energy (like Mg²⁺) or a second electron affinity (like O²⁻), or a different cation:anion ratio, needs a longer cycle with more terms than this calculator covers.'
+        },
+        {
+          title: 'This is a different kind of mass/energy bookkeeping than the Hess’s law calculator',
+          body: 'The Hess’s law calculator on this site sums reactants’ and products’ standard enthalpies of formation directly. This calculator instead builds up a single compound’s own enthalpy of formation from five physically distinct steps, one of which (lattice energy) cannot be measured on its own at all — Born-Haber is a specific, well-known application of the same underlying law.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §7.5 "Strengths of Ionic and Covalent Bonds" (the Born-Haber cycle and its CsF example)', url: 'https://openstax.org/books/chemistry-2e/pages/7-5-strengths-of-ionic-and-covalent-bonds' }
+      ]
+    },
+    inputs: [
+      { id: 'deltaHsub', label: 'Enthalpy of sublimation (kJ/mol)', type: 'number', placeholder: '76.5', defaultValue: 76.5, step: 0.1 },
+      { id: 'ionizationEnergy', label: 'Ionization energy (kJ/mol)', type: 'number', placeholder: '375.7', defaultValue: 375.7, step: 0.1 },
+      { id: 'bondDissociationEnergy', label: 'Bond dissociation energy of X₂ (kJ/mol)', type: 'number', placeholder: '158.8', defaultValue: 158.8, step: 0.1 },
+      { id: 'electronAffinity', label: 'Electron affinity (kJ/mol)', type: 'number', placeholder: '-328.2', defaultValue: -328.2, step: 0.1 },
+      { id: 'deltaHf', label: 'Standard enthalpy of formation (kJ/mol)', type: 'number', placeholder: '-553.5', defaultValue: -553.5, step: 0.1 }
+    ],
+    breakdown: {
+      headline: 'latticeEnergy',
+      headlineLabel: 'Lattice energy, ΔHlattice',
+      outputs: [{ id: 'latticeEnergy', label: 'Lattice energy (kJ/mol)', format: 'number' }],
+      groups: [{ inputs: ['deltaHsub', 'ionizationEnergy', 'bondDissociationEnergy', 'electronAffinity', 'deltaHf'] }]
+    },
+    seo: {
+      title: 'Lattice Energy Calculator (Born-Haber Cycle)',
+      description: 'Free lattice energy calculator. Solve a Born-Haber cycle for lattice energy — or any other step — with a worked cesium fluoride example.',
+      faq: [
+        { question: 'How do I calculate lattice energy with the Born-Haber cycle?', answer: 'Add the enthalpy of sublimation, ionization energy, half the bond dissociation energy, and electron affinity, then subtract the compound’s standard enthalpy of formation: ΔHlattice = ΔHsub + IE + ½D + EA − ΔHf°.' },
+        { question: 'What is the lattice energy of cesium fluoride, CsF?', answer: 'About 756.9 kJ/mol, from a Born-Haber cycle using Cs’s sublimation energy (76.5), ionization energy (375.7), half of F₂’s bond dissociation energy (79.4), F’s electron affinity (−328.2), and CsF’s own enthalpy of formation (−553.5), all in kJ/mol.' },
+        { question: 'Why is only half the bond dissociation energy used?', answer: 'Because the diatomic nonmetal, X₂, supplies two atoms of X per bond broken, and only one of those atoms is needed to form one formula unit of a 1:1 salt — so only half a mole of X₂ needs to dissociate per mole of product.' },
+        { question: 'Can this calculator solve for something other than lattice energy?', answer: 'Yes — switch which field is calculated (for example, electron affinity), and the same cycle solves for it instead, given the other four known steps.' },
+        { question: 'Does this work for a salt like MgO or CaF₂?', answer: 'Not directly — this calculator is scoped to a 1:1 salt with one ionization energy and one electron affinity, matching OpenStax’s own CsF-style example. A compound needing a second ionization energy or electron affinity needs extra terms this simplified cycle does not include.' },
+        { question: 'Why can’t lattice energy be measured directly?', answer: 'There is no practical experiment that directly separates an ionic solid into gaseous ions and measures the energy involved — it has to be inferred from a cycle of steps that can each be measured, which is exactly what the Born-Haber cycle provides.' }
+      ]
+    },
+    compute(values) {
+      return {
+        latticeEnergy: values.deltaHsub + values.ionizationEnergy + values.bondDissociationEnergy / 2 + values.electronAffinity - values.deltaHf
+      };
     }
   },
   {

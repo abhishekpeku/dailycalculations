@@ -40,8 +40,8 @@ describe('unit tables', () => {
 
   test('covers the dimensions the v2 rollout needs', () => {
     assert.deepEqual([...dimensions].sort(), [
-      'absorbance', 'acceleration', 'amountOfSubstance', 'angle', 'angularVelocity', 'area', 'capacitance', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
-      'decibel', 'density', 'electricField', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'length', 'magneticFluxDensity', 'mass', 'massConcentration', 'molalConstant', 'molality', 'molarAbsorptivity', 'molarEnergy', 'molarEntropy', 'molarMass', 'momentum',
+      'absorbance', 'acceleration', 'amountOfSubstance', 'angle', 'angularMomentum', 'angularVelocity', 'area', 'capacitance', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
+      'decibel', 'density', 'electricField', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'inductance', 'length', 'magneticFluxDensity', 'mass', 'massConcentration', 'molalConstant', 'molality', 'molarAbsorptivity', 'molarEnergy', 'molarEntropy', 'molarMass', 'momentOfInertia', 'momentum',
       'normality', 'osmolarity', 'pH', 'pace', 'percent', 'power', 'pressure', 'rateConstant', 'resistance', 'specificHeat', 'specificLatentHeat', 'speed', 'springConstant', 'temperature', 'temperatureDelta', 'term', 'thermalExpansionCoeff', 'time',
       'torque', 'voltage', 'volume'
     ]);
@@ -240,6 +240,28 @@ describe('anchor values', () => {
     // tau = F x r x sin(theta): 40 N at 4 m, perpendicular (90deg), gives 160 N*m, no stray factor
     // (OpenStax University Physics Volume 1, Example 10.14).
     close(toBase(40, 'force', 'N') * toBase(4, 'length', 'm') * Math.sin(Math.PI / 2), toBase(160, 'torque', 'Nm'));
+  });
+  test('moment of inertia: 1 lb·ft² ≈ 0.04214011 kg·m²; I = mr² stays a plain multiplication', () => {
+    assert.equal(UNITS.momentOfInertia[0].id, 'kgm2');
+    close(toBase(1, 'momentOfInertia', 'lbft2'), 0.042140110093804806, 1e-9);
+    // I = m x r^2: a 2 kg point mass at 1 m from the axis gives 2 kg*m^2, no stray factor
+    // (OpenStax University Physics Volume 1 §10.4, I = sum m_i r_i^2).
+    close(toBase(2, 'mass', 'kg') * toBase(1, 'length', 'm') ** 2, toBase(2, 'momentOfInertia', 'kgm2'));
+  });
+  test('angular momentum: L = Iω stays a plain multiplication; lb·ft²/s shares momentOfInertia’s factor', () => {
+    assert.equal(UNITS.angularMomentum[0].id, 'kgm2/s');
+    close(toBase(1, 'angularMomentum', 'lbft2/s'), 0.042140110093804806, 1e-9);
+    // L = I x omega: a 2 kg*m^2 moment of inertia spinning at 3 rad/s gives 6 kg*m^2/s, no stray
+    // factor (OpenStax University Physics Volume 1 §11.2, Equation 11.9, L = Iω).
+    close(toBase(2, 'momentOfInertia', 'kgm2') * toBase(3, 'angularVelocity', 'rad/s'), toBase(6, 'angularMomentum', 'kgm2/s'));
+  });
+  test('inductance: 1 mH = 1e-3 H, 1 µH = 1e-6 H; LC resonant frequency stays a plain expression', () => {
+    assert.equal(UNITS.inductance[0].id, 'H');
+    close(toBase(1, 'inductance', 'mH'), 1e-3);
+    close(toBase(1, 'inductance', 'uH'), 1e-6);
+    // omega = 1/sqrt(LC): L = 2.0e-2 H, C = 8.0e-6 F gives omega = 2.5e3 rad/s (OpenStax
+    // University Physics Volume 2 §14.5, Example 14.6).
+    close(1 / Math.sqrt(toBase(2.0e-2, 'inductance', 'H') * toBase(8.0e-6, 'capacitance', 'F')), 2500, 1e-3);
   });
   test('electric field: N/C and V/m are numerically identical (1 V/m = 1 N/C); E = kq/r² stays a plain expression', () => {
     assert.equal(UNITS.electricField[0].id, 'N/C');

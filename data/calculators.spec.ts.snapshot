@@ -241,6 +241,38 @@ exports[`compute() snapshots > age-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > angular-momentum-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "momentOfInertia": 2,
+      "angularVelocity": 4
+    },
+    "outputs": {
+      "angularMomentum": 8
+    }
+  },
+  "typical": {
+    "inputs": {
+      "momentOfInertia": 3,
+      "angularVelocity": 6
+    },
+    "outputs": {
+      "angularMomentum": 18
+    }
+  },
+  "edge": {
+    "inputs": {
+      "momentOfInertia": 0,
+      "angularVelocity": 0
+    },
+    "outputs": {
+      "angularMomentum": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > angular-velocity-calculator 1`] = `
 {
   "default": {
@@ -6645,6 +6677,38 @@ exports[`compute() snapshots > layaway-payment-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > lc-resonant-frequency-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "inductance": 0.0001,
+      "capacitance": 1e-10
+    },
+    "outputs": {
+      "resonantFrequency": 1591549.431
+    }
+  },
+  "typical": {
+    "inputs": {
+      "inductance": 0.00015,
+      "capacitance": 1.5e-10
+    },
+    "outputs": {
+      "resonantFrequency": 1061032.954
+    }
+  },
+  "edge": {
+    "inputs": {
+      "inductance": 0,
+      "capacitance": 0
+    },
+    "outputs": {
+      "resonantFrequency": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > lcm-calculator 1`] = `
 {
   "default": {
@@ -8039,6 +8103,47 @@ exports[`compute() snapshots > moles-to-grams-calculator 1`] = `
     },
     "outputs": {
       "moles": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > moment-of-inertia-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "shape": 3,
+      "mass": 2,
+      "radius": 0.3,
+      "length": 0.5
+    },
+    "outputs": {
+      "momentOfInertia": 0.09,
+      "formulaIndex": 3
+    }
+  },
+  "typical": {
+    "inputs": {
+      "shape": 5,
+      "mass": 3,
+      "radius": 0.45,
+      "length": 0.75
+    },
+    "outputs": {
+      "momentOfInertia": 0.405,
+      "formulaIndex": 5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "shape": 0,
+      "mass": 0,
+      "radius": 0,
+      "length": 0
+    },
+    "outputs": {
+      "momentOfInertia": 0,
+      "formulaIndex": 0
     }
   }
 }
@@ -10970,6 +11075,38 @@ exports[`compute() snapshots > ratio-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > rc-time-constant-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "resistance": 10000,
+      "capacitance": 0.0001
+    },
+    "outputs": {
+      "timeConstant": 1
+    }
+  },
+  "typical": {
+    "inputs": {
+      "resistance": 15000,
+      "capacitance": 0.00015
+    },
+    "outputs": {
+      "timeConstant": 2.25
+    }
+  },
+  "edge": {
+    "inputs": {
+      "resistance": 0,
+      "capacitance": 0
+    },
+    "outputs": {
+      "timeConstant": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > reaction-half-life-calculator 1`] = `
 {
   "default": {
@@ -11659,6 +11796,38 @@ exports[`compute() snapshots > roofing-calculator 1`] = `
       "roofAreaWithWaste": 1,
       "squaresNeeded": 0.01,
       "bundlesNeeded": 1
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > rotational-kinetic-energy-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "momentOfInertia": 0.5,
+      "angularVelocity": 100
+    },
+    "outputs": {
+      "rotationalKE": 2500
+    }
+  },
+  "typical": {
+    "inputs": {
+      "momentOfInertia": 0.75,
+      "angularVelocity": 150
+    },
+    "outputs": {
+      "rotationalKE": 8437.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "momentOfInertia": 0,
+      "angularVelocity": 0
+    },
+    "outputs": {
+      "rotationalKE": 0
     }
   }
 }

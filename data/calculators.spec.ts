@@ -119,7 +119,8 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'simple-harmonic-motion-calculator': ['period'], // springConstant 0 (its min) -> explicit guard, no sqrt(m/0)
   'orbital-velocity-calculator': ['orbitalVelocity'], // radius 0 (its min) -> explicit guard, no orbit at zero radius
   'youngs-modulus-calculator': ['modulus'], // area and deltaLength both 0 (their min) -> 0/0 guard
-  'electric-field-calculator': ['fieldStrength'] // radius 0 (its min) -> explicit guard, field undefined at zero distance
+  'electric-field-calculator': ['fieldStrength'], // radius 0 (its min) -> explicit guard, field undefined at zero distance
+  'lc-resonant-frequency-calculator': ['resonantFrequency'] // inductance and capacitance both 0 (their min) -> compute()'s own guard, no resonance at zero L or C
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

@@ -1029,6 +1029,53 @@ exports[`compute() snapshots > capacitor-charge-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > car-depreciation-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "purchasePrice": 35000,
+      "years": 3,
+      "year1Rate": 20,
+      "afterYear1Rate": 15
+    },
+    "outputs": {
+      "currentValue": 20230,
+      "purchasePrice": 35000,
+      "totalDepreciation": 14770,
+      "totalDepreciationPercent": 42.2
+    }
+  },
+  "typical": {
+    "inputs": {
+      "purchasePrice": 52500,
+      "years": 4.5,
+      "year1Rate": 30,
+      "afterYear1Rate": 23
+    },
+    "outputs": {
+      "currentValue": 14722.2735,
+      "purchasePrice": 52500,
+      "totalDepreciation": 37777.7265,
+      "totalDepreciationPercent": 71.95757428
+    }
+  },
+  "edge": {
+    "inputs": {
+      "purchasePrice": 0,
+      "years": 0,
+      "year1Rate": 0,
+      "afterYear1Rate": 0
+    },
+    "outputs": {
+      "currentValue": 0,
+      "purchasePrice": 0,
+      "totalDepreciation": 0,
+      "totalDepreciationPercent": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > car-payment-calculator 1`] = `
 {
   "default": {

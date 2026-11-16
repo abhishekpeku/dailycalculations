@@ -2,6 +2,26 @@ import type { CalculatorConfig } from './types.ts';
 import { loanMonths, loanPayment, loanPrincipal } from './finance.ts';
 import { toBase } from '../../lib/units.ts';
 
+// car-depreciation-calculator: a declining-balance estimate (20% year 1, then a constant rate per
+// year after) — the rule of thumb cited by Experian/Carfax and Progressive/Kelley Blue Book. `t`
+// may be fractional. Shared by compute() and the reference table so every number comes from one
+// formula.
+const carValueAtYears = (price: number, year1RatePercent: number, afterRatePercent: number, t: number) => {
+  if (t <= 1) return price * (1 - (year1RatePercent / 100) * t);
+  return price * (1 - year1RatePercent / 100) * Math.pow(1 - afterRatePercent / 100, t - 1);
+};
+
+// Reference table rows (years 0-10) on a 100-unit basis, using the default 20%/15% rates, so the
+// table is independent of whatever price/years the reader has typed into the calculator itself.
+const depreciationScheduleRows = () => {
+  const rows: { label: string; values: number[] }[] = [];
+  for (let year = 0; year <= 10; year++) {
+    const retained = carValueAtYears(100, 20, 15, year);
+    rows.push({ label: String(year), values: [Math.round(retained * 100) / 100, Math.round((100 - retained) * 100) / 100] });
+  }
+  return rows;
+};
+
 export const autoCalculators: CalculatorConfig[] = [
   {
     id: 'car-payment-calculator',
@@ -1038,6 +1058,126 @@ export const autoCalculators: CalculatorConfig[] = [
         revsPerMile2: replacement.revsPerMile,
         speedometerErrorPercent
       };
+    }
+  },
+  {
+    id: 'car-depreciation-calculator',
+    group: 'Ownership Costs',
+    category: 'auto',
+    glyph: '%',
+    updatedAt: '2026-11-16',
+    aliases: ['car value depreciation calculator', 'vehicle depreciation calculator', 'car resale value estimator', 'how much has my car depreciated calculator', 'car value by year calculator'],
+    related: ['car-payment-calculator', 'fuel-cost-calculator', 'commute-cost-calculator'],
+    title: 'Car Depreciation Calculator',
+    description: 'Estimate what a car is worth today from its original price and age, using a cited year-1 and per-year depreciation rate. An estimate, not an appraisal.',
+    example: 'A $35,000 car depreciated at the common 20% year-1 / 15%-a-year rate is worth about $20,230.00 after 3 years, a loss of about 42.2%.',
+    breakdown: {
+      headline: 'currentValue',
+      headlineLabel: 'Estimated value today',
+      outputs: [
+        { id: 'currentValue', label: 'Estimated value today', format: 'currency' },
+        { id: 'purchasePrice', label: 'Original price', format: 'currency' },
+        { id: 'totalDepreciation', label: 'Total depreciation', format: 'currency' },
+        { id: 'totalDepreciationPercent', label: 'Percent of value lost', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Vehicle', inputs: ['purchasePrice', 'years'] },
+        { title: 'Depreciation rates', inputs: ['year1Rate', 'afterYear1Rate'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'purchasePrice', label: 'Original price' },
+          { from: 'currentValue', label: 'Estimated value today' }
+        ],
+        title: 'Price vs. estimated value'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'How fast do cars lose value?',
+        paragraphs: [
+          'A new car loses value the moment it is driven off the lot, and keeps losing it every year after, just more slowly. The most widely cited rule of thumb, reported by Experian and Progressive among others, is that a new car loses about 20% of its value in the first year and then roughly 15% of whatever it is still worth in each year after that, through about year five.',
+          'Because that second rate applies to a shrinking balance each year, not to the original price, the dollar loss gets smaller even while the vehicle keeps getting a little cheaper every year: a car that drops 20% in year one and 15% a year after loses about 58% of its original value by year five under this model, and keeps approaching, but never quite reaching, zero.',
+          'This is only a rule of thumb, not your specific car\'s curve. Actual five-year depreciation varies a lot by vehicle type: an iSeeCars.com analysis of over 950,000 used vehicles found 2026 five-year depreciation averaging 41.8% overall, from about 34.2% for trucks to 57.2% for electric vehicles. Use this calculator for a quick estimate, not a substitute for an appraisal or a trade-in quote on your specific vehicle.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the price when new and how many years old the car is (or how long you have owned it).',
+        steps: [
+          { name: 'Enter the original price', text: 'Use the price when new, or what you paid for it, including any taxes and fees you consider part of the cost.' },
+          { name: 'Enter the age in years', text: 'Decimals are fine, for example 2.5 for two and a half years.' },
+          { name: 'Check the depreciation rates', text: 'The defaults, 20% in year one and 15% a year after, are the commonly cited rule of thumb. Adjust them if you have a better estimate for your make and model.' },
+          { name: 'Read the result', text: 'The headline is the estimated value today, with the total dollar and percent depreciation below it, and a chart comparing the original price with today\'s estimate.' },
+          { name: 'Check the schedule', text: 'The reference table below shows the same rates applied year by year, so you can see the shape of the curve, not just one point on it.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Year one applies its own rate to the original price; every year after compounds the second rate onto whatever is left.',
+        expression: 'Year 1: V = P × (1 − r₁)\nYear t > 1: V = P × (1 − r₁) × (1 − r₂)^(t − 1)',
+        terms: [
+          { symbol: 'P', meaning: 'Original price (or price when new).' },
+          { symbol: 'r₁', meaning: 'First-year depreciation rate, as a percent (default 20%).' },
+          { symbol: 'r₂', meaning: 'Depreciation rate for every year after the first, as a percent (default 15%).' },
+          { symbol: 'V', meaning: 'Estimated value at age t years.' }
+        ],
+        note: 'An estimate built on a commonly cited rule of thumb, not an appraisal. Mileage, condition, accident history, local demand and the specific model all move the real number, sometimes by a lot.'
+      },
+      workedExample: {
+        intro: 'You bought a car for $35,000. Using the 20% year-1 / 15%-a-year rule of thumb, what is it worth after 3 years?',
+        rows: [
+          { label: 'Value after year 1 (35,000 × (1 − 20%))', value: '$28,000.00' },
+          { label: 'Value after year 2 (28,000 × (1 − 15%))', value: '$23,800.00' },
+          { label: 'Value after year 3 (23,800 × (1 − 15%))', value: '$20,230.00' },
+          { label: 'Total depreciation (35,000 − 20,230)', value: '$14,770.00' },
+          { label: 'Percent of original value lost (14,770 ÷ 35,000)', value: '42.2%' }
+        ],
+        result: 'About $20,230.00 after 3 years — roughly 42.2% of the original price gone.',
+        explanation: 'The first year alone accounts for $7,000.00 of that loss (20% of $35,000). Each year after applies 15% to whatever the car was worth at the start of that year, not to the original price, so the dollar loss shrinks a little every year even as the percent lost keeps climbing.'
+      },
+      watchOut: [
+        { title: 'A rule of thumb, not your car\'s real curve', body: 'Sources disagree on the exact number: Experian cites Carfax data putting five-year depreciation around 60%, while iSeeCars\' 2026 study of actual used-car sales found an average of 41.8%, ranging from 34.2% for trucks to 57.2% for EVs. This calculator\'s default rates land near the higher end of that range; treat the result as a starting estimate, not a precise figure.' },
+        { title: 'Mileage and condition matter more than age alone', body: 'A low-mileage, well-maintained car typically holds value better than this age-only model assumes, and a high-mileage or damaged one holds it worse.' },
+        { title: 'This is not tax depreciation', body: 'Businesses depreciate vehicles for tax purposes using IRS schedules (such as MACRS), which follow fixed accounting rules and have nothing to do with what the vehicle would actually sell for. Do not use this calculator for a tax return.' },
+        { title: 'The curve does not have a floor', body: 'Compounding a percentage loss forever approaches zero but never reaches it, and real cars eventually level off near a scrap or parts value instead. Treat results past about 10-12 years with extra caution.' }
+      ],
+      references: [
+        { label: 'Experian, What Is Depreciation on a Car?', url: 'https://www.experian.com/blogs/ask-experian/what-is-depreciation-on-a-car/' },
+        { label: 'iSeeCars.com, The Top 25 Cars That Hold Their Value Best — and the 25 Worst (2026 study)', url: 'https://www.iseecars.com/cars-that-hold-their-value-study' }
+      ],
+      referenceTable: {
+        title: 'Estimated value retained by year (default 20% year-1, 15%-a-year rates)',
+        columns: ['Year', 'Value retained', 'Cumulative depreciation'],
+        rows: depreciationScheduleRows(),
+        decimals: 2,
+        note: 'Computed from the default 20%/15% rates on a $100 basis, not from your own inputs above — change the rates in the calculator to see your own schedule.'
+      }
+    },
+    inputs: [
+      { id: 'purchasePrice', label: 'Price when new', type: 'currency', placeholder: '35000', defaultValue: 35000, step: 500, min: 0 },
+      { id: 'years', label: 'Age (years)', type: 'number', placeholder: '3', defaultValue: 3, step: 0.5, min: 0 },
+      { id: 'year1Rate', label: 'First-year depreciation rate', type: 'percent', placeholder: '20', defaultValue: 20, step: 1, min: 0 },
+      { id: 'afterYear1Rate', label: 'Rate per year after year 1', type: 'percent', placeholder: '15', defaultValue: 15, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Car Depreciation Calculator – Estimated Value by Year',
+      description: 'Free car depreciation calculator: estimate what your car is worth today from its price, age and a cited year-1 and per-year depreciation rate.',
+      faq: [
+        { question: 'How much does a car depreciate in the first year?', answer: 'The commonly cited rule of thumb, reported by Experian and Progressive, is about 20%. On a $35,000 car that is about $7,000.00 in the first year alone.' },
+        { question: 'How is car depreciation calculated by year?', answer: 'Year 1 applies the first-year rate to the price; every later year applies the after-year-1 rate to whatever is left. At 20%/15% on $35,000, the car is worth $28,000.00 after year 1, $23,800.00 after year 2 and $20,230.00 after year 3.' },
+        { question: 'How much does a car depreciate over 5 years?', answer: 'At the default 20%/15% rates, a car retains about 41.76% of its value after 5 years, a loss of about 58.24%. Real-world studies vary: iSeeCars found a 41.8% average loss in 2026, while Experian cites Carfax data around 60%.' },
+        { question: 'Is the depreciation rate the same for every car?', answer: 'No. iSeeCars\' 2026 study found 5-year depreciation averaging 34.2% for trucks, 44.9% for SUVs and 57.2% for electric vehicles, against an overall average of 41.8%. Adjust the rates here if you have a better estimate for your vehicle type.' },
+        { question: 'Is this the same as tax depreciation?', answer: 'No. This estimates resale value. Tax depreciation for a business vehicle follows IRS accounting rules (such as MACRS) and does not reflect what the car would actually sell for.' },
+        { question: 'Does low mileage slow depreciation?', answer: 'Generally yes, along with good condition and service history, but this calculator only models age, so it will overstate the loss on an unusually low-mileage, well-kept car and understate it on a high-mileage one.' }
+      ]
+    },
+    compute(values) {
+      const currentValue = Math.max(0, carValueAtYears(values.purchasePrice, values.year1Rate, values.afterYear1Rate, values.years));
+      const totalDepreciation = values.purchasePrice - currentValue;
+      const totalDepreciationPercent = values.purchasePrice > 0 ? (totalDepreciation / values.purchasePrice) * 100 : NaN;
+      return { currentValue, purchasePrice: values.purchasePrice, totalDepreciation, totalDepreciationPercent };
     }
   }
 ];

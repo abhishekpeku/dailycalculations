@@ -190,7 +190,13 @@ prior wave's convention.
   - [x] `credit-card-minimum-payment-calculator`
   - [x] `balance-transfer-savings-calculator`
   - [x] `student-loan-calculator`
-- [ ] Batch 3 (retirement pt.1, 5)
+- [x] Batch 3 (retirement pt.1, 5) — branch `step/60-wave-5a-finance-run-3`, PR #99, DONE 2026-11-16
+      (resumed after a rate-limit interruption that had committed 3/5)
+  - [x] `retirement-savings-calculator`
+  - [x] `401k-employer-match-calculator`
+  - [x] `roth-ira-growth-calculator`
+  - [x] `traditional-ira-calculator`
+  - [x] `rmd-calculator`
 - [ ] Batch 4 (retirement pt.2 + goal investing, 5)
 - [ ] Batch 5 (investment analysis + simple-interest cluster, 5)
 - [ ] Batch 6 (remaining money-hub items, 5-6)

@@ -21,6 +21,7 @@ export type UnitDimension =
   | 'pressure'
   | 'momentum'
   | 'density'
+  | 'springConstant'
   | 'voltage'
   | 'current'
   | 'resistance'
@@ -246,6 +247,15 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
     { id: 'kg/m3', label: 'kg/m³', factor: 1 },
     { id: 'g/cm3', label: 'g/cm³', factor: 1000 },
     { id: 'lb/ft3', label: 'lb/ft³', factor: POUND / FOOT ** 3 }
+  ],
+  // Hooke's law (OpenStax University Physics Volume 1 §15.1 "Simple Harmonic Motion", Fs = −kx):
+  // the spring/force constant, SI derived unit N/m. 1 N/mm = 1000 N/m exactly (mm is 1e-3 m); 1
+  // lbf/in from the exact pound-force and inch above (NIST SP 811 Appendix B).
+  springConstant: [
+    { id: 'N/m', label: 'N/m', factor: 1 },
+    { id: 'N/mm', label: 'N/mm', factor: 1000 },
+    { id: 'N/cm', label: 'N/cm', factor: 100 },
+    { id: 'lbf/in', label: 'lbf/in', factor: POUND_FORCE / INCH }
   ],
   // SI derived unit (BIPM SI Brochure): 1 V = 1 W/A. Decimal multiples per NIST SP 811 §4.
   voltage: [

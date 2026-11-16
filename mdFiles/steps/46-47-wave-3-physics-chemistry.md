@@ -322,8 +322,13 @@ unscoped (per the "Final cut" note: exact formula selection per run is the build
 Runs below are grouped logically but **the exact 5-calculator split within a run is still the
 build agent's judgment**, same as every run so far.
 
-- [ ] Physics mechanics-remainder run A (5): acceleration (a = Δv ÷ t), free-fall (h = ½gt²),
-  projectile motion (range/height/time of flight), friction (f = μN), spring/Hooke's law (F = kx)
+- [ ] Physics mechanics-remainder run A (5), branch `step/46-wave-3-physics-run-5`, PR TBD —
+  **IN PROGRESS** 2026-11-16:
+  - [x] acceleration-calculator
+  - [ ] free-fall-calculator
+  - [ ] projectile-motion-calculator
+  - [ ] friction-calculator
+  - [ ] spring-hookes-law-calculator
 - [ ] Physics mechanics-remainder run B (5): centripetal force (F = mv²/r), gravitational force
   (Newton's law, F = Gm₁m₂/r² — distinct from weight-calculator's local gravity), torque (τ = F·r),
   buoyancy (Archimedes), pendulum period (T = 2π√(L/g))

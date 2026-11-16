@@ -2707,5 +2707,119 @@ export const physicsCalculators: CalculatorConfig[] = [
     compute(values) {
       return { imageDistance: values.objectDistance - values.focalLength === 0 ? NaN : (values.focalLength * values.objectDistance) / (values.objectDistance - values.focalLength) };
     }
+  },
+  {
+    id: 'acceleration-calculator',
+    category: 'physics',
+    group: 'Motion & Forces',
+    glyph: 'a',
+    updatedAt: '2026-11-16',
+    aliases: ['a = delta v over t calculator', 'rate of change of velocity calculator', 'how to calculate acceleration', 'average acceleration calculator', 'change in velocity calculator'],
+    related: ['force-calculator', 'speed-distance-time-calculator', 'free-fall-calculator'],
+    title: 'Acceleration Calculator (a = Δv ÷ t)',
+    description: 'Calculate acceleration from a change in velocity and the time it took — a = Δv ÷ t — or solve backward for the velocity change or the time, in any speed and time unit.',
+    example: 'A car speeds up by 20 m/s (72 km/h) in 5 seconds, so its average acceleration is 4 m/s².',
+    solver: {
+      defaultTarget: 'acceleration',
+      variables: [
+        { id: 'acceleration', label: 'Acceleration', symbol: 'a', dimension: 'acceleration', defaultValue: 4, defaultUnit: 'm/s2' },
+        { id: 'velocityChange', label: 'Change in velocity (Δv)', symbol: 'Δv', dimension: 'speed', defaultValue: 20, defaultUnit: 'm/s' },
+        { id: 'time', label: 'Time', symbol: 't', dimension: 'time', defaultValue: 5, defaultUnit: 's' }
+      ],
+      solve: {
+        acceleration: ({ velocityChange, time }) => (time === 0 ? NaN : velocityChange / time),
+        velocityChange: ({ acceleration, time }) => acceleration * time,
+        time: ({ acceleration, velocityChange }) => (acceleration === 0 ? NaN : velocityChange / acceleration)
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is acceleration?',
+        paragraphs: [
+          'Acceleration is how quickly velocity changes. It does not measure speed itself — it measures how fast that speed is rising or falling. A car cruising at a steady 100 km/h has zero acceleration no matter how fast it is going, while the same car speeding up from a stoplight has a large acceleration even though its speed at any one instant might be small.',
+          "The average acceleration over an interval is the change in velocity divided by the time that change took: a = Δv ÷ t, where Δv = v_f − v_i is the final velocity minus the initial velocity. A positive Δv over a positive time gives a positive acceleration (speeding up in the direction of motion); a negative Δv gives a negative acceleration, commonly called deceleration when it slows something down.",
+          "The SI unit of acceleration is meters per second squared (m/s²), read as 'meters per second, per second' — each second, the velocity itself changes by that many meters per second. Standard gravity, 9.80665 m/s², is one familiar reference point: a falling object speeds up by about 9.8 m/s every second it falls."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of acceleration, the change in velocity, and time; the third fills in automatically — the same page finds how fast something sped up, how much its speed changed, or how long a change in speed took.',
+        steps: [
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit. The third field, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field you have left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 20 m/s becomes 72 km/h instead of silently turning into 20 km/h.' },
+          { name: 'Finding Δv from two speeds', text: 'If you know an initial and a final speed instead of the change directly, subtract them first (final minus initial) and enter that as Δv.' },
+          { name: 'Share or copy', text: 'Share result copies a link with your exact values and units. Copy result copies the answer as text.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Average acceleration rearranges three ways, one for each quantity you might be solving for.',
+        expression: 'a = Δv ÷ t\nΔv = a × t\nt = Δv ÷ a',
+        terms: [
+          { symbol: 'a', meaning: 'Average acceleration, in meters per second squared (m/s²).' },
+          { symbol: 'Δv', meaning: 'Change in velocity, v_f − v_i, in meters per second (m/s). Final velocity minus initial velocity.' },
+          { symbol: 't', meaning: 'The time over which that change happened, in seconds (s).' }
+        ],
+        note: 'Every input is converted to SI units (m/s², m/s, s) before solving and converted back afterward, so mixing km/h with seconds or minutes cannot produce a wrong result.'
+      },
+      workedExample: {
+        intro: 'A car speeds up from 5 m/s to 25 m/s over 5 seconds. What is its average acceleration?',
+        rows: [
+          { label: 'Initial velocity (v_i)', value: '5 m/s' },
+          { label: 'Final velocity (v_f)', value: '25 m/s' },
+          { label: 'Change in velocity (Δv = 25 − 5)', value: '20 m/s' },
+          { label: 'Time (t)', value: '5 s' },
+          { label: 'Acceleration (a = 20 ÷ 5)', value: '4 m/s²' }
+        ],
+        result: 'a = 4 m/s²',
+        explanation: '20 m/s of velocity change (72 km/h) over 5 seconds gives 20 ÷ 5 = 4 m/s². Each second, the car gains another 4 m/s of speed — so after 1 more second it would be at 29 m/s, assuming the acceleration stays constant.'
+      },
+      watchOut: [
+        {
+          title: 'Acceleration needs a change in velocity, not a velocity itself',
+          body: 'A speed reading alone, like "60 mph," tells you nothing about acceleration. You need two velocities (or the difference between them) and the time the change took.'
+        },
+        {
+          title: 'A negative result means slowing down, not an error',
+          body: 'If the final velocity is lower than the initial one, Δv is negative and so is the acceleration — this is a legitimate deceleration, not a mistake to flip to positive.'
+        },
+        {
+          title: 'This is an average over the interval',
+          body: "Real acceleration can vary moment to moment — harder off the line, gentler near top speed. a = Δv ÷ t gives the average over the whole interval, not the acceleration at any one instant."
+        },
+        {
+          title: 'Acceleration is a vector; this calculator works with magnitudes along one line',
+          body: 'Speeding up, slowing down, and turning are all acceleration. This page handles straight-line (one-dimensional) changes in speed; a turn at constant speed still accelerates, but needs a different (centripetal) calculation.'
+        },
+        {
+          title: 'Not the same as force',
+          body: 'Acceleration only needs velocity and time. Finding the force behind it needs the mass too — see the force calculator for F = m × a.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, University Physics Volume 1, §3.3 Average and Instantaneous Acceleration', url: 'https://openstax.org/books/university-physics-volume-1/pages/3-3-average-and-instantaneous-acceleration' },
+        { label: 'NIST Special Publication 811, Guide for the Use of the International System of Units (Appendix B, conversion factors)', url: 'https://www.nist.gov/pml/special-publication-811' }
+      ]
+    },
+    inputs: [
+      { id: 'velocityChange', label: 'Change in velocity (m/s)', type: 'number', placeholder: '20', defaultValue: 20, step: 0.1 },
+      { id: 'time', label: 'Time (s)', type: 'number', placeholder: '5', defaultValue: 5, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Acceleration Calculator (a = Δv ÷ t)',
+      description: 'Free acceleration calculator. Solve a = Δv ÷ t for acceleration, change in velocity, or time, in m/s², km/h, mph, and more, with a worked example.',
+      faq: [
+        { question: 'What is the formula for acceleration?', answer: 'a = Δv ÷ t, where Δv is the change in velocity (final minus initial) and t is the time that change took. The result is in meters per second squared when Δv is in m/s and t is in seconds.' },
+        { question: 'How do I find the change in velocity (Δv)?', answer: 'Subtract the initial velocity from the final velocity: Δv = v_f − v_i. A car going from 5 m/s to 25 m/s has Δv = 25 − 5 = 20 m/s.' },
+        { question: 'How do I calculate acceleration from two speeds and a time?', answer: 'Find Δv first (final speed minus initial speed), then divide by the time. 5 m/s to 25 m/s in 5 seconds gives Δv = 20 m/s, so a = 20 ÷ 5 = 4 m/s².' },
+        { question: 'What does a negative acceleration mean?', answer: 'The velocity is decreasing — the object is slowing down (or speeding up in the opposite direction). It is a normal result, not an error.' },
+        { question: 'What are the units of acceleration?', answer: 'The SI unit is meters per second squared (m/s²). Other common units include feet per second squared (ft/s²) and "g" (multiples of standard gravity, 9.80665 m/s²).' },
+        { question: 'How is acceleration different from velocity?', answer: 'Velocity measures how fast something is moving; acceleration measures how fast that velocity itself is changing. A car at a steady 100 km/h has a velocity but zero acceleration.' }
+      ]
+    },
+    compute(values) {
+      return { acceleration: values.time === 0 ? NaN : values.velocityChange / values.time };
+    }
   }
 ];

@@ -5020,6 +5020,80 @@ exports[`compute() snapshots > lcm-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > lease-vs-buy-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "vehiclePrice": 35000,
+      "buyDownPayment": 3500,
+      "buyApr": 6,
+      "buyTermYears": 5,
+      "leaseCapReduction": 2000,
+      "residualPercent": 55,
+      "moneyFactor": 0.00125,
+      "leaseTermMonths": 36,
+      "estimatedResaleValue": 20230
+    },
+    "outputs": {
+      "totalBuyCost": 18933.80449,
+      "totalLeaseCost": 18101.25,
+      "leaseAdvantage": 832.5544943,
+      "monthlyLoanPayment": 608.9832482,
+      "monthlyLeasePayment": 447.2569444,
+      "equivalentApr": 3,
+      "remainingBalance": 13740.40756,
+      "equity": 6489.59244
+    }
+  },
+  "typical": {
+    "inputs": {
+      "vehiclePrice": 52500,
+      "buyDownPayment": 5300,
+      "buyApr": 9,
+      "buyTermYears": 8,
+      "leaseCapReduction": 3000,
+      "residualPercent": 83,
+      "moneyFactor": 0.0019,
+      "leaseTermMonths": 54,
+      "estimatedResaleValue": 30500
+    },
+    "outputs": {
+      "totalBuyCost": 36974.39667,
+      "totalLeaseCost": 18474.495,
+      "leaseAdvantage": 18499.90167,
+      "monthlyLoanPayment": 691.4895945,
+      "monthlyLeasePayment": 286.5647222,
+      "equivalentApr": 4.56,
+      "remainingBalance": 24833.95857,
+      "equity": 5666.041433
+    }
+  },
+  "edge": {
+    "inputs": {
+      "vehiclePrice": 0,
+      "buyDownPayment": 0,
+      "buyApr": 0,
+      "buyTermYears": 1,
+      "leaseCapReduction": 0,
+      "residualPercent": 1,
+      "moneyFactor": 0,
+      "leaseTermMonths": 1,
+      "estimatedResaleValue": 0
+    },
+    "outputs": {
+      "totalBuyCost": 0,
+      "totalLeaseCost": 0,
+      "leaseAdvantage": 0,
+      "monthlyLoanPayment": 0,
+      "monthlyLeasePayment": 0,
+      "equivalentApr": 0,
+      "remainingBalance": 0,
+      "equity": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > length-converter 1`] = `
 {
   "default": {

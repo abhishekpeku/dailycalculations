@@ -1179,5 +1179,160 @@ export const autoCalculators: CalculatorConfig[] = [
       const totalDepreciationPercent = values.purchasePrice > 0 ? (totalDepreciation / values.purchasePrice) * 100 : NaN;
       return { currentValue, purchasePrice: values.purchasePrice, totalDepreciation, totalDepreciationPercent };
     }
+  },
+  {
+    id: 'lease-vs-buy-calculator',
+    group: 'Financing',
+    category: 'auto',
+    glyph: 'L',
+    updatedAt: '2026-11-16',
+    aliases: ['lease vs finance calculator', 'car lease vs buy calculator', 'should i lease or buy a car calculator', 'lease payment calculator', 'money factor calculator'],
+    related: ['car-payment-calculator', 'loan-calculator', 'car-depreciation-calculator'],
+    title: 'Lease vs. Buy Calculator',
+    description: 'Compare the total cost of leasing and financing the same car over the lease term, using the real money-factor and residual-value lease math, not a rule of thumb.',
+    example: 'Leasing a $35,000 car for 36 months costs about $18,101.25 in total, versus about $18,933.80 to finance and then keep it — leasing comes out about $832.55 cheaper over that span.',
+    breakdown: {
+      headline: 'totalBuyCost',
+      headlineLabel: 'Total cost of buying, over the lease term',
+      outputs: [
+        { id: 'totalBuyCost', label: 'Total cost of buying', format: 'currency' },
+        { id: 'totalLeaseCost', label: 'Total cost of leasing', format: 'currency' },
+        { id: 'leaseAdvantage', label: 'Leasing saves this much (negative = buying saves)', format: 'currency' },
+        { id: 'monthlyLoanPayment', label: 'Monthly loan payment', format: 'currency' },
+        { id: 'monthlyLeasePayment', label: 'Monthly lease payment', format: 'currency' },
+        { id: 'equivalentApr', label: 'Lease money factor as an APR', format: 'percent' },
+        { id: 'remainingBalance', label: 'Loan balance left at lease-end', format: 'currency' },
+        { id: 'equity', label: 'Equity if you bought (resale value − loan balance)', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Vehicle', inputs: ['vehiclePrice'] },
+        { title: 'Financing, if you buy', inputs: ['buyDownPayment', 'buyApr', 'buyTermYears'] },
+        { title: 'Leasing', inputs: ['leaseCapReduction', 'residualPercent', 'moneyFactor', 'leaseTermMonths'] },
+        { title: 'Assumptions', inputs: ['estimatedResaleValue'], optional: true }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'totalBuyCost', label: 'Buying' },
+          { from: 'totalLeaseCost', label: 'Leasing' }
+        ],
+        title: 'Total cost over the lease term'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'Comparing a lease with a loan, on the same terms',
+        paragraphs: [
+          'Leasing and financing price the same car very differently. A lease payment only charges you for the car\'s expected depreciation over the lease, plus a finance charge, because you hand the car back at the end. A loan payment repays the entire price (minus your down payment) with interest, because you keep the car. Comparing the monthly payments alone is misleading: the lease driver has nothing at the end, while the buyer owns a car that is still worth something.',
+          'This calculator prices both honestly over the same span, the length of the lease. For leasing, it uses the real formula lenders use: the depreciation fee (the car\'s agreed value minus its residual value, spread over the term) plus a rent charge (a money factor times the sum of the adjusted capitalized cost and the residual value) — the same terms the Federal Reserve\'s consumer leasing guide defines. For buying, it uses the standard loan payment, then credits the buyer with their equity at the end of the comparison period: the car\'s estimated resale value minus whatever loan balance is still outstanding.',
+          'A lease\'s money factor is usually quoted as a small decimal, like 0.00125, instead of an annual rate. Multiplying it by 2,400 converts it to the roughly equivalent APR, which is easier to compare against a loan\'s quoted rate — a shortcut cited by lenders including Capital One. It is only a rough equivalent: leases are governed by the Consumer Leasing Act and Regulation M, which require the total rent charge to be disclosed but not an APR.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the vehicle price once, then the buy and lease terms you are comparing.',
+        steps: [
+          { name: 'Enter the vehicle price', text: 'Use the same negotiated price for both the loan and the lease, so the comparison is on the same car.' },
+          { name: 'Fill in the buy side', text: 'Enter your down payment, APR and loan term in years from a loan quote.' },
+          { name: 'Fill in the lease side', text: 'Enter the cap cost reduction (lease down payment), the residual value as a percent of the price, the money factor and the lease term in months, all from the lease worksheet.' },
+          { name: 'Estimate the resale value', text: 'Under "Assumptions," enter what you think the car would be worth, if you bought it, after the same number of months as the lease. The car-depreciation-calculator can help with a starting estimate.' },
+          { name: 'Read the result', text: 'The headline is the total cost of buying over the lease term; below it is the total cost of leasing and the difference between them. A positive difference means leasing came out cheaper over that span.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Lease payment follows the Federal Reserve\'s consumer leasing formula. Loan payment is the standard annuity formula, and the buyer is credited with equity at lease-end.',
+        expression: 'Adjusted cap cost = Price − Cap reduction\nResidual value = Price × residual %\nDepreciation fee = (Adjusted cap cost − Residual value) ÷ term\nRent charge = Money factor × (Adjusted cap cost + Residual value)\nLease payment = Depreciation fee + Rent charge\nTotal lease cost = Cap reduction + Lease payment × term\n\nLoan payment = standard amortized payment on (Price − Down payment)\nEquity = max(0, Resale value − remaining loan balance at term)\nTotal buy cost = Down payment + (Loan payment × months paid) − Equity',
+        terms: [
+          { symbol: 'Residual value', meaning: 'The leasing company\'s projected value of the car at lease-end, usually a percent of its price (MSRP).' },
+          { symbol: 'Money factor', meaning: 'The lease\'s financing charge, expressed as a small decimal. × 2,400 gives the roughly equivalent APR.' },
+          { symbol: 'Cap reduction', meaning: 'A lease down payment: cash or trade-in applied to reduce the capitalized cost.' },
+          { symbol: 'Remaining loan balance', meaning: 'What is still owed on the loan at the end of the comparison period; 0 once the loan is fully paid off.' },
+          { symbol: 'Equity', meaning: 'What owning (rather than leasing) would be worth to you at that point: the car\'s resale value minus what you still owe on it.' }
+        ],
+        note: 'Estimates only. Taxes, registration, lease-end fees, excess-mileage charges and maintenance are not included, and the loan assumes simple interest with no early payoff.'
+      },
+      workedExample: {
+        intro: 'A $35,000 car. Leasing: $2,000 cap reduction, a 55% residual, a 0.00125 money factor, 36 months. Buying: $3,500 down, 6% APR, a 5-year (60-month) loan. You estimate the car would be worth $20,230.00 after 3 years if you bought it.',
+        rows: [
+          { label: 'Adjusted cap cost (35,000 − 2,000)', value: '$33,000.00' },
+          { label: 'Residual value (35,000 × 55%)', value: '$19,250.00' },
+          { label: 'Depreciation fee ((33,000 − 19,250) ÷ 36)', value: '$381.94' },
+          { label: 'Rent charge (0.00125 × (33,000 + 19,250))', value: '$65.31' },
+          { label: 'Monthly lease payment (381.94 + 65.31)', value: '$447.26' },
+          { label: 'Total lease cost (2,000 + 447.26 × 36)', value: '$18,101.25' },
+          { label: 'Equivalent APR (0.00125 × 2,400)', value: '3.00%' },
+          { label: 'Monthly loan payment ($31,500 at 6% over 60 months)', value: '$608.98' },
+          { label: 'Loan balance remaining after 36 of 60 months', value: '$13,740.41' },
+          { label: 'Equity if bought (20,230.00 − 13,740.41)', value: '$6,489.59' },
+          { label: 'Total buy cost (3,500 + 608.98 × 36 − 6,489.59)', value: '$18,933.80' }
+        ],
+        result: 'Leasing costs about $18,101.25 over 36 months; buying costs about $18,933.80 net of equity — leasing is about $832.55 cheaper over that span.',
+        explanation: 'The buyer\'s 5-year loan still has 24 months left when the comparison ends, so most of their equity is the car\'s resale value minus a large remaining balance, not a paid-off asset. Compared out to the full 60-month loan term instead (with a lower resale value by then), buying can come out ahead — the result depends heavily on how long you actually keep the car.'
+      },
+      watchOut: [
+        { title: 'The resale value is your own estimate', body: 'This calculator cannot know what your specific car will be worth. A bad guess changes the answer more than almost any other input — use the car-depreciation-calculator or a real pricing guide for a better one.' },
+        { title: 'A lease has mileage and wear limits', body: 'Most leases cap annual mileage and charge a per-mile fee over it, plus "excess wear" charges at turn-in. Buying has no such limits. Neither is included here.' },
+        { title: 'Comparing over the wrong period misleads', body: 'Buying usually looks worse than leasing early in a loan (most of the payment is still interest, and little equity has built up) and better later, once the loan is paid off and you simply own the car. Run the comparison over how long you actually plan to keep the vehicle.' },
+        { title: 'Dealers can mark up the money factor', body: 'Ask for the "buy rate" money factor and compare it with the one you are quoted; some lessors add a markup similar to a dealer reserve on a loan.' },
+        { title: 'Early termination is expensive on both sides', body: 'Ending a lease early usually means paying the remaining depreciation in a lump sum; selling a financed car early means paying off the loan balance, which can exceed the car\'s value. Neither is modeled here.' }
+      ],
+      references: [
+        { label: 'Federal Reserve, A Consumer\'s Guide to Vehicle Leasing — the rent charge formula', url: 'https://www.federalreserve.gov/pubs/leasing/resource/consider/ongoing_info6.htm' },
+        { label: 'Federal Trade Commission, Financing or Leasing a Car', url: 'https://consumer.ftc.gov/articles/financing-or-leasing-car' },
+        { label: 'Capital One, What is the Lease Money Factor?', url: 'https://www.capitalone.com/cars/learn/managing-your-money-wisely/what-is-the-lease-money-factor/1700' }
+      ]
+    },
+    inputs: [
+      { id: 'vehiclePrice', label: 'Vehicle price', type: 'currency', placeholder: '35000', defaultValue: 35000, step: 500, min: 0 },
+      { id: 'buyDownPayment', label: 'Down payment (if buying)', type: 'currency', placeholder: '3500', defaultValue: 3500, step: 100, min: 0 },
+      { id: 'buyApr', label: 'Loan APR', type: 'percent', placeholder: '6', defaultValue: 6, step: 0.1, min: 0 },
+      { id: 'buyTermYears', label: 'Loan term (years)', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 1 },
+      { id: 'leaseCapReduction', label: 'Cap cost reduction (lease down payment)', type: 'currency', placeholder: '2000', defaultValue: 2000, step: 100, min: 0 },
+      { id: 'residualPercent', label: 'Residual value (% of price)', type: 'percent', placeholder: '55', defaultValue: 55, step: 1, min: 1 },
+      { id: 'moneyFactor', label: 'Money factor', type: 'number', placeholder: '0.00125', defaultValue: 0.00125, step: 0.00005, min: 0 },
+      { id: 'leaseTermMonths', label: 'Lease term (months)', type: 'number', placeholder: '36', defaultValue: 36, step: 1, min: 1 },
+      { id: 'estimatedResaleValue', label: 'Estimated resale value at lease-end, if you bought', type: 'currency', placeholder: '20230', defaultValue: 20230, step: 500, min: 0 }
+    ],
+    seo: {
+      title: 'Lease vs. Buy Calculator – Total Cost Comparison',
+      description: 'Free lease vs. buy calculator: compare the total cost of leasing and financing the same car, using the real money-factor and residual-value lease math.',
+      faq: [
+        { question: 'How is a lease payment calculated?', answer: 'Lease payment = depreciation fee + rent charge. Depreciation fee is (adjusted cap cost − residual value) ÷ term; rent charge is the money factor × (adjusted cap cost + residual value). On a $35,000 car with a $2,000 cap reduction, a 55% residual, 0.00125 money factor and 36 months, that is $381.94 + $65.31 = $447.26 a month.' },
+        { question: 'How do I convert a money factor to an APR?', answer: 'Multiply it by 2,400. A 0.00125 money factor is roughly a 3% APR. It is a rough equivalent, since leases disclose a total rent charge, not an APR.' },
+        { question: 'Is leasing or buying cheaper?', answer: 'It depends on how long you keep the car and what it would be worth. In the example here, leasing a $35,000 car for 36 months costs about $18,101.25 total, versus about $18,933.80 to finance over 5 years and own it for the same 36 months, net of the buyer\'s equity — leasing comes out about $832.55 cheaper over that specific span.' },
+        { question: 'Why does buying look worse over just 3 years of a 5-year loan?', answer: 'Because most of the loan is still unpaid. In the example, 24 of the 60 monthly payments are still owed after 3 years, so the buyer\'s equity is the car\'s resale value minus a large remaining balance, not the full value of the car.' },
+        { question: 'What is a residual value?', answer: 'The leasing company\'s projection of what the car will be worth at the end of the lease, usually set as a percent of its price (MSRP). A higher residual means a lower depreciation fee and a lower lease payment.' },
+        { question: 'Does this include taxes, fees or mileage charges?', answer: 'No. Sales tax, registration, acquisition and disposition fees, and any excess-mileage or excess-wear charges at lease-end are not included. Add them separately for a full comparison.' }
+      ]
+    },
+    compute(values) {
+      const adjustedCapCost = values.vehiclePrice - values.leaseCapReduction;
+      const residualValue = values.vehiclePrice * (values.residualPercent / 100);
+      const depreciationFee = values.leaseTermMonths > 0 ? (adjustedCapCost - residualValue) / values.leaseTermMonths : NaN;
+      const rentCharge = values.moneyFactor * (adjustedCapCost + residualValue);
+      const monthlyLeasePayment = depreciationFee + rentCharge;
+      const totalLeaseCost = values.leaseCapReduction + monthlyLeasePayment * values.leaseTermMonths;
+      const equivalentApr = values.moneyFactor * 2400;
+
+      const principal = Math.max(0, values.vehiclePrice - values.buyDownPayment);
+      const months = Math.max(1, values.buyTermYears * 12);
+      const r = values.buyApr / 100 / 12;
+      const monthlyLoanPayment = r === 0 ? principal / months : (principal * r) / (1 - Math.pow(1 + r, -months));
+      const comparisonMonths = values.leaseTermMonths;
+      const paidMonths = Math.min(comparisonMonths, months);
+      const totalBuyPaid = monthlyLoanPayment * paidMonths;
+      const remainingBalance =
+        comparisonMonths >= months
+          ? 0
+          : r === 0
+            ? Math.max(0, principal - monthlyLoanPayment * comparisonMonths)
+            : principal * Math.pow(1 + r, comparisonMonths) - (monthlyLoanPayment * (Math.pow(1 + r, comparisonMonths) - 1)) / r;
+      const equity = Math.max(0, values.estimatedResaleValue - remainingBalance);
+      const totalBuyCost = values.buyDownPayment + totalBuyPaid - equity;
+      const leaseAdvantage = totalBuyCost - totalLeaseCost;
+
+      return { totalBuyCost, totalLeaseCost, leaseAdvantage, monthlyLoanPayment, monthlyLeasePayment, equivalentApr, remainingBalance, equity };
+    }
   }
 ];

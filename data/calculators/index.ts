@@ -97,6 +97,7 @@ export const calculatorOrder: string[] = [
   'parking-cost-calculator',
   'tire-size-calculator',
   'car-depreciation-calculator',
+  'lease-vs-buy-calculator',
   'currency-converter',
   'character-counter',
   'hashtag-counter',

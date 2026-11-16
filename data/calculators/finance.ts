@@ -54,6 +54,19 @@ const federalIncomeTax = (taxable: number, status: number) => {
   return tax;
 };
 
+// IRS Publication 590-B (2025), Appendix B, Table III (Uniform Lifetime) — the table almost every
+// IRA owner uses to figure a required minimum distribution. Transcribed directly from the published
+// table (rmd-calculator); unchanged since the IRS's 2022 life-expectancy-table update.
+const RMD_UNIFORM_LIFETIME_TABLE: Record<number, number> = {
+  72: 27.4, 73: 26.5, 74: 25.5, 75: 24.6, 76: 23.7, 77: 22.9, 78: 22.0, 79: 21.1, 80: 20.2,
+  81: 19.4, 82: 18.5, 83: 17.7, 84: 16.8, 85: 16.0, 86: 15.2, 87: 14.4, 88: 13.7, 89: 12.9,
+  90: 12.2, 91: 11.5, 92: 10.8, 93: 10.1, 94: 9.5, 95: 8.9, 96: 8.4, 97: 7.8, 98: 7.3, 99: 6.8,
+  100: 6.4, 101: 6.0, 102: 5.6, 103: 5.2, 104: 4.9, 105: 4.6, 106: 4.3, 107: 4.1, 108: 3.9,
+  109: 3.7, 110: 3.5, 111: 3.4, 112: 3.3, 113: 3.1, 114: 3.0, 115: 2.9, 116: 2.8, 117: 2.7,
+  118: 2.5, 119: 2.3, 120: 2.0
+};
+const rmdDenominator = (age: number) => RMD_UNIFORM_LIFETIME_TABLE[Math.min(120, Math.max(72, Math.round(age)))];
+
 // Freddie Mac, "Breaking down PMI": about $30-$70 a month per $100,000 borrowed. The midpoint, $50
 // a month per $100,000, is 0.6% of the loan a year — used as the assumed PMI rate below 20% down.
 const PMI_RATE_ANNUAL_PERCENT = 0.6;
@@ -743,8 +756,8 @@ export const financeCalculators: CalculatorConfig[] = [
     category: 'finance',
     glyph: 'Inv',
     updatedAt: '2026-10-19',
-    aliases: ['sip calculator', 'return on investment calculator', 'roi calculator', 'portfolio growth calculator', 'retirement savings calculator'],
-    related: ['compound-interest-calculator', 'inflation-calculator', 'paycheck-calculator', 'currency-converter'],
+    aliases: ['sip calculator', 'return on investment calculator', 'roi calculator', 'portfolio growth calculator'],
+    related: ['compound-interest-calculator', 'retirement-savings-calculator', 'inflation-calculator', 'paycheck-calculator', 'currency-converter'],
     title: 'Investment Calculator',
     description: 'Project what an investment could grow to with yearly contributions, or work back to the starting amount, years or average annual return a goal requires.',
     example: '$10,000 invested at an average 7% a year, plus $1,200 added at the end of each year, grows to about $87,891 in 20 years.',
@@ -801,7 +814,7 @@ export const financeCalculators: CalculatorConfig[] = [
         paragraphs: [
           'An investment grows in two ways: the money you put in, and the returns that money earns. When returns are reinvested they start earning returns of their own, the same compounding that makes a savings account grow, which is why time in the market matters so much.',
           'Unlike a savings account, an investment such as a stock or bond fund has no fixed rate. Prices rise and fall, sometimes sharply, from year to year. The rate you enter here is an assumed average annual return, applied as if every year earned exactly that. Real portfolios never grow in a straight line, and the order of good and bad years affects the result, especially when you are adding or withdrawing money.',
-          'Regular contributions often matter as much as the starting amount. Adding a fixed amount every year, whatever the market is doing, is a simple discipline, and those deposits compound too. This calculator adds your yearly contribution at the end of each year.'
+          'Regular contributions often matter as much as the starting amount. Adding a fixed amount every year, whatever the market is doing, is a simple discipline, and those deposits compound too. This calculator adds your yearly contribution at the end of each year. For a version built specifically around saving for retirement — monthly contributions, monthly compounding to match a payroll deduction, and a clearly caveated estimate of what you could withdraw each year — see retirement-savings-calculator instead.'
         ]
       },
       howTo: {
@@ -2760,5 +2773,705 @@ export const financeCalculators: CalculatorConfig[] = [
         extraInterestExtendedVsStandard: extendedTotalInterest - standardTotalInterest
       };
     }
-  }
+  },
+  {
+    id: 'retirement-savings-calculator',
+    group: 'Retirement',
+    category: 'finance',
+    glyph: 'Ret',
+    updatedAt: '2026-11-16',
+    aliases: ['retirement savings calculator', 'how much do i need to retire calculator', 'retirement nest egg calculator', 'retirement fund calculator', 'years to retirement calculator'],
+    related: ['investment-calculator', 'compound-interest-calculator', '401k-employer-match-calculator', 'roth-ira-growth-calculator'],
+    title: 'Retirement Savings Calculator',
+    description: "Project how your retirement savings could grow from today's balance, years until retirement and a monthly contribution, plus a clearly caveated estimated sustainable withdrawal.",
+    example: '$50,000 saved today plus $500 added every month for 25 years at an average 7% return grows to about $691,307, which a 4% withdrawal guideline would put at roughly $27,652 a year — an illustrative estimate, not a plan.',
+    solver: {
+      defaultTarget: 'futureValue',
+      variables: [
+        { id: 'futureValue', label: 'Projected balance at retirement', symbol: 'FV', dimension: 'currency', defaultValue: 691306.76, defaultUnit: 'currency' },
+        { id: 'currentSavings', label: 'Current retirement savings', symbol: 'P', dimension: 'currency', defaultValue: 50000, defaultUnit: 'currency' },
+        { id: 'monthlyContribution', label: 'Monthly contribution', symbol: 'C', dimension: 'currency', defaultValue: 500, defaultUnit: 'currency', fixed: true },
+        { id: 'yearsToRetirement', label: 'Years until retirement', symbol: 't', dimension: 'term', defaultValue: 25, defaultUnit: 'yr', bounds: [0, 1200] },
+        { id: 'annualReturn', label: 'Average annual return', symbol: 'r', dimension: 'percent', defaultValue: 7, defaultUnit: '%', bounds: [-50, 100] }
+      ],
+      // `yearsToRetirement` arrives already in months (the term dimension's base), and growth and
+      // contributions compound monthly here — a payroll-style deposit, unlike investment-calculator's
+      // yearly contribution and yearly compounding.
+      solve: {
+        futureValue: ({ currentSavings, monthlyContribution, yearsToRetirement, annualReturn }) =>
+          yearsToRetirement >= 0
+            ? currentSavings * growthFactor(annualReturn, 12, yearsToRetirement) + monthlyContribution * annuityFactor(annualReturn, 12, yearsToRetirement)
+            : NaN,
+        currentSavings: ({ futureValue, monthlyContribution, yearsToRetirement, annualReturn }) => {
+          const start = (futureValue - monthlyContribution * annuityFactor(annualReturn, 12, yearsToRetirement)) / growthFactor(annualReturn, 12, yearsToRetirement);
+          return yearsToRetirement >= 0 && start >= 0 ? start : NaN;
+        },
+        yearsToRetirement: ({ futureValue, currentSavings, monthlyContribution, annualReturn }) => {
+          const i = annualReturn / 100 / 12;
+          if (i === 0) return monthlyContribution > 0 ? (futureValue - currentSavings) / monthlyContribution : NaN;
+          const x = (futureValue * i + monthlyContribution) / (currentSavings * i + monthlyContribution);
+          const n = Math.log(x) / Math.log(1 + i);
+          return n >= 0 ? n : NaN;
+        }
+      },
+      // The return has no closed form when there are contributions: the widget finds it numerically.
+      equation: (si) =>
+        si.futureValue - (si.currentSavings * growthFactor(si.annualReturn, 12, si.yearsToRetirement) + si.monthlyContribution * annuityFactor(si.annualReturn, 12, si.yearsToRetirement)),
+      outputs: [
+        { id: 'totalContributed', label: 'Total you contribute', dimension: 'currency', compute: (si) => si.currentSavings + si.monthlyContribution * si.yearsToRetirement },
+        { id: 'totalGrowth', label: 'Investment growth', dimension: 'currency', compute: (si) => si.futureValue - si.currentSavings - si.monthlyContribution * si.yearsToRetirement },
+        { id: 'estimatedAnnualWithdrawal', label: 'Estimated sustainable withdrawal (4% guideline), per year', dimension: 'currency', compute: (si) => si.futureValue * 0.04 },
+        { id: 'estimatedMonthlyWithdrawal', label: 'Estimated sustainable withdrawal (4% guideline), per month', dimension: 'currency', compute: (si) => (si.futureValue * 0.04) / 12 }
+      ],
+      derive: (si) => ({ contributions: si.monthlyContribution * si.yearsToRetirement }),
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'currentSavings', label: "Today's savings" },
+            { from: 'contributions', label: 'Future contributions' },
+            { from: 'totalGrowth', label: 'Growth' }
+          ],
+          center: 'futureValue',
+          centerSub: 'projected balance'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'A retirement-shaped version of compound growth',
+        paragraphs: [
+          "This calculator answers one specific question: if you keep saving a fixed amount every month until retirement, what might the balance be, and what could it support once you stop working? It grows today's balance and every future monthly deposit with monthly compounding, which matches how a 401(k) or IRA actually grows through a payroll or bank deduction — unlike investment-calculator's general model, which adds one lump contribution at the end of each year.",
+          'The second part — the estimated sustainable withdrawal — comes from the "4% rule," a guideline from financial planner William Bengen\'s 1994 study of how different withdrawal rates held up against historical U.S. market returns over 30-year retirements. It is a widely cited starting point, not a guarantee: it was built on a particular slice of market history, assumes a particular mix of stocks and bonds, and many planners today recommend checking it against your own time horizon, spending flexibility and market conditions rather than following it mechanically.',
+          "This is a different question from 401k-employer-match-calculator (how much of your contribution an employer matches) and from roth-ira-growth-calculator or traditional-ira-calculator (growth inside a specific tax-advantaged account, with that account's own contribution limit and tax treatment). This page ignores account type, taxes and contribution limits entirely — it is a plain savings-and-withdrawal model for whichever accounts you're using."
+        ]
+      },
+      howTo: {
+        intro: 'Enter your monthly contribution (always an input), then any three of the other four fields. The fourth, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter your monthly contribution', text: 'This is always an input. Include every retirement account you contribute to regularly.' },
+          { name: 'Project your balance', text: "Type your current savings, the years until retirement and an average annual return. The projected balance appears, split into today's savings, future contributions and growth." },
+          { name: 'Read the estimated withdrawal', text: 'Below the balance, the calculator shows what a 4% annual withdrawal of that balance would be, in both yearly and monthly terms — a rough guideline, not a plan.' },
+          { name: 'Work backward from a target', text: 'Type a target balance as the projected balance. Leave the years alone to see how long it takes, or your current savings to see how much you would need to start with.' },
+          { name: 'Try a range of returns', text: 'Run a cautious, a middle and an optimistic return. The spread matters more than any single number.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'With monthly compounding and a contribution at the end of each month, the projected balance is today\'s savings grown for n months plus an ordinary annuity of the monthly contributions. The estimated withdrawal applies the 4% guideline to that balance.',
+        expression: 'FV = P × (1 + i)^n + C × ((1 + i)^n − 1) ÷ i, where i = r ÷ 12\nEstimated annual withdrawal ≈ FV × 4%',
+        terms: [
+          { symbol: 'FV', meaning: 'Projected balance at retirement.' },
+          { symbol: 'P', meaning: "Today's retirement savings." },
+          { symbol: 'C', meaning: 'Contribution added at the end of each month.' },
+          { symbol: 'i', meaning: 'Monthly rate: the average annual return ÷ 12, as a decimal.' },
+          { symbol: 'n', meaning: 'Number of months until retirement.' }
+        ],
+        note: 'Estimates only, not a retirement plan or financial advice. Returns are assumed constant and are never guaranteed; the 4% guideline is one rule of thumb among several and does not account for your actual spending, other income, taxes or how long you will need the money to last.'
+      },
+      workedExample: {
+        intro: 'You have $50,000 saved, add $500 every month, have 25 years until retirement, and assume an average 7% annual return. What might you have, and what could a 4% withdrawal provide?',
+        rows: [
+          { label: 'Months until retirement (25 × 12)', value: '300' },
+          { label: 'Monthly rate (7% ÷ 12)', value: '0.5833%' },
+          { label: "Today's savings grown (50,000 × 1.005833^300)", value: '$286,270.91' },
+          { label: 'Contributions grown (500 × annuity factor 810.0717)', value: '$405,035.85' },
+          { label: 'Projected balance', value: '$691,306.76' },
+          { label: 'Total contributed (50,000 + 500 × 300)', value: '$200,000' },
+          { label: 'Growth (691,306.76 − 200,000)', value: '$491,306.76' },
+          { label: 'Estimated withdrawal at 4% a year', value: '$27,652.27, or about $2,304.36 a month' }
+        ],
+        result: 'Projected balance ≈ $691,307, suggesting a 4% withdrawal of about $27,652 a year',
+        explanation: 'Time matters enormously here: the same $50,000 plus $500 a month at 7% is worth only about $187,025 after 10 years but about $1,015,810 after 30. The assumed return matters too — at 5% a year the 25-year balance would be about $471,819, and at 9% about $1,030,982, so running a cautious and an optimistic return side by side is worth doing.'
+      },
+      watchOut: [
+        { title: 'Estimates only: returns are not guaranteed', body: 'A constant average return is a planning assumption, not a forecast. Real portfolios rise and fall, and the order of good and bad years matters, especially near retirement.' },
+        { title: 'The 4% guideline is a rule of thumb, not a rule', body: "It comes from one historical study of 30-year U.S. retirement periods (Bengen, 1994) and is debated. It says nothing about your own spending needs, other income (Social Security, a pension), health costs or how long your retirement will actually last." },
+        { title: 'Taxes and required withdrawals are not modeled', body: 'Traditional retirement accounts are taxed on withdrawal and eventually require minimum distributions; this calculator ignores both. See roth-ira-growth-calculator, traditional-ira-calculator and rmd-calculator for that detail.' },
+        { title: 'Fees and inflation reduce real returns', body: 'An expense ratio or advisory fee comes off the return every year, and the projected balance is in future dollars, not today\'s purchasing power.' }
+      ],
+      references: [
+        { label: "William P. Bengen, \"Determining Withdrawal Rates Using Historical Data,\" Journal of Financial Planning (1994)", url: 'https://www.financialplanningassociation.org/sites/default/files/2021-04/MAR04%20Determining%20Withdrawal%20Rates%20Using%20Historical%20Data.pdf' },
+        { label: 'U.S. Securities and Exchange Commission, Investor.gov: Save and Invest', url: 'https://www.investor.gov/introduction-investing/investing-basics/save-and-invest' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.7 Investments', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-7-investments' }
+      ]
+    },
+    inputs: [
+      { id: 'currentSavings', label: 'Current retirement savings', type: 'currency', placeholder: '50000', defaultValue: 50000, step: 1000, min: 0 },
+      { id: 'annualReturn', label: 'Average annual return', type: 'percent', placeholder: '7', defaultValue: 7, step: 0.1, min: 0 },
+      { id: 'yearsToRetirement', label: 'Years until retirement', type: 'number', placeholder: '25', defaultValue: 25, step: 1, min: 0 },
+      { id: 'monthlyContribution', label: 'Monthly contribution', type: 'currency', placeholder: '500', defaultValue: 500, step: 25, min: 0 }
+    ],
+    seo: {
+      title: 'Retirement Savings Calculator – Growth & Withdrawal',
+      description: "Project retirement savings growth from today's balance, years to retirement and a monthly contribution, plus a caveated estimated sustainable withdrawal.",
+      faq: [
+        { question: 'How do I calculate retirement savings growth?', answer: 'Grow your current savings by (1 + i)^n and add the future value of your monthly contributions, where i is the monthly rate and n the number of months. $50,000 plus $500 a month at 7% for 25 years comes to about $691,307.' },
+        { question: 'How much can I safely withdraw in retirement?', answer: 'There is no guaranteed figure. A common guideline, the "4% rule," suggests withdrawing about 4% of the balance in the first year. On a $691,307 balance that is about $27,652 a year, or $2,304 a month — an illustrative estimate, not a plan, and many planners suggest adjusting it to your own situation.' },
+        { question: 'How is this different from the investment calculator?', answer: 'Investment-calculator compounds a single yearly contribution annually. This calculator compounds a monthly contribution monthly, to match a payroll or bank deduction, and adds the estimated withdrawal step that investment-calculator does not include.' },
+        { question: 'How is this different from a 401(k) or Roth IRA calculator?', answer: "401k-employer-match-calculator models an employer's matching formula, and roth-ira-growth-calculator and traditional-ira-calculator model growth inside a specific account's own contribution limit and tax treatment. This calculator ignores account type, taxes and limits entirely." },
+        { question: 'Does this account for taxes or Social Security?', answer: 'No. It is a pre-tax savings and withdrawal model only, and does not include Social Security, a pension, or any other retirement income.' },
+        { question: 'How much does starting earlier help?', answer: 'A great deal. The same $50,000 plus $500 a month at 7% is worth about $187,025 after 10 years, about $691,307 after 25 years and about $1,015,810 after 30 years — most of the growth happens in the final years because the balance it compounds on is so much larger.' }
+      ]
+    },
+    compute(values) {
+      const months = Math.max(1, values.yearsToRetirement * 12);
+      const futureValue = values.currentSavings * growthFactor(values.annualReturn, 12, months) + values.monthlyContribution * annuityFactor(values.annualReturn, 12, months);
+      const totalContributed = values.currentSavings + values.monthlyContribution * months;
+      const totalGrowth = futureValue - totalContributed;
+      const estimatedAnnualWithdrawal = futureValue * 0.04;
+      const estimatedMonthlyWithdrawal = estimatedAnnualWithdrawal / 12;
+      return { futureValue, totalContributed, totalGrowth, estimatedAnnualWithdrawal, estimatedMonthlyWithdrawal };
+    }
+  },
+  {
+    id: '401k-employer-match-calculator',
+    group: 'Retirement',
+    category: 'finance',
+    glyph: '401k',
+    updatedAt: '2026-11-16',
+    aliases: ['401k match calculator', '401(k) employer match calculator', '401k contribution calculator', 'employer match calculator', '401k free money calculator'],
+    related: ['retirement-savings-calculator', 'roth-ira-growth-calculator', 'traditional-ira-calculator', 'paycheck-calculator'],
+    title: '401(k) Employer Match Calculator',
+    description: "Calculate your 401(k) employee contribution, your employer's match, and the free employer money you leave on the table if you contribute less than your plan's match cap.",
+    example: 'A $70,000 salary contributing 3%, with a 50%-up-to-6% employer match, gets a $1,050 match and leaves $1,050 of free employer money unclaimed; contributing the full 6% claims the entire $2,100 match.',
+    breakdown: {
+      headline: 'employerMatch',
+      headlineLabel: 'Employer match this year',
+      outputs: [
+        { id: 'employerMatch', label: 'Employer match', format: 'currency' },
+        { id: 'employeeContribution', label: 'Your contribution', format: 'currency' },
+        { id: 'totalContribution', label: 'Total annual contribution', format: 'currency' },
+        { id: 'freeMoneyLeftOnTable', label: 'Free employer money left on the table', format: 'currency' },
+        { id: 'maxPossibleMatch', label: 'Maximum possible match, at the cap', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your pay and contribution', inputs: ['annualSalary', 'employeeContributionPercent'] },
+        { title: "Your plan's match formula", inputs: ['matchRatePercent', 'matchCapPercent'] }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'employeeContribution', label: 'Your contribution' },
+          { from: 'employerMatch', label: 'Employer match' }
+        ],
+        center: 'totalContribution',
+        centerSub: 'total annual contribution'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'How an employer 401(k) match works',
+        paragraphs: [
+          'Many employers add money to a 401(k) on top of what an employee contributes, using a formula such as "50% up to 6%": for every dollar an employee contributes, up to 6% of pay, the employer adds 50 cents. Contribute less than the 6% cap and part of that match goes unclaimed; contribute more than the cap and the extra is not matched at all. Formulas vary widely by employer, and employer contributions can also vest over a number of years rather than belonging to the employee immediately, per the U.S. Department of Labor\'s guide to 401(k) plans.',
+          'The "free money left on the table" figure is the gap between the match you would get at the full cap and the match you are actually getting at your current contribution rate. It is a common way to frame the cost of under-contributing, though how much to prioritize it against other goals (high-rate debt, an emergency fund) is a personal decision this calculator does not make for you.',
+          "The employee's own contribution here is capped at the IRS 2026 elective deferral limit of $24,500. Employer matching contributions do not count against that limit, but employee and employer contributions together are capped by a separate, higher limit — $72,000 for 2026 under Internal Revenue Code section 415(c) — which this calculator does not enforce since most plans are far below it. For how that saved money then grows, see retirement-savings-calculator, roth-ira-growth-calculator or traditional-ira-calculator, depending on the account."
+        ]
+      },
+      howTo: {
+        intro: "Enter your salary and the percentage of it you contribute, then your plan's match rate and match cap exactly as its summary plan description states them.",
+        steps: [
+          { name: 'Enter your salary', text: 'Your annual salary before taxes and deductions.' },
+          { name: 'Enter your contribution', text: 'The percentage of salary you put into the 401(k) each year.' },
+          { name: "Enter the match rate", text: 'What percentage of your contribution the employer adds — 50 for "50 cents per dollar," 100 for a full dollar-for-dollar match.' },
+          { name: 'Enter the match cap', text: 'The percentage of salary up to which the employer matches — the "6%" in "50% up to 6%."' },
+          { name: 'Read the result', text: 'The headline is the dollar employer match this year. The rows below show your contribution, the total, and any free match money you are not claiming.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "The employer match applies only up to the match cap, even if the employee contributes more. The employee's own contribution is capped separately at the IRS annual elective-deferral limit.",
+        expression: 'employeeContribution = min(salary × employeePercent ÷ 100, $24,500)\nmatchablePercent = min(employeePercent, matchCapPercent)\nemployerMatch = salary × matchablePercent ÷ 100 × matchRate ÷ 100\nmaxPossibleMatch = salary × matchCapPercent ÷ 100 × matchRate ÷ 100\nfreeMoneyLeftOnTable = max(0, maxPossibleMatch − employerMatch)',
+        terms: [
+          { symbol: 'employeePercent', meaning: 'Percentage of salary the employee contributes.' },
+          { symbol: 'matchRate', meaning: 'Percentage of each matched dollar the employer adds (50 for 50 cents on the dollar).' },
+          { symbol: 'matchCapPercent', meaning: 'Percentage of salary up to which contributions are matched.' },
+          { symbol: '$24,500', meaning: "The IRS 2026 401(k) elective deferral limit (catch-up contributions for ages 50 and over are not modeled)." }
+        ],
+        note: "Estimates only. Actual plan formulas, tiers and vesting schedules vary by employer — check your plan's summary plan description. Not financial or tax advice."
+      },
+      workedExample: {
+        intro: "A $70,000 salary, contributing 3%, with a '50% up to 6%' employer match. What is the match, and how much free money is left on the table?",
+        rows: [
+          { label: 'Employee contribution (70,000 × 3%)', value: '$2,100' },
+          { label: 'Matchable percent (min(3%, 6%))', value: '3%' },
+          { label: 'Employer match (70,000 × 3% × 50%)', value: '$1,050' },
+          { label: 'Maximum possible match (70,000 × 6% × 50%)', value: '$2,100' },
+          { label: 'Free money left on the table (2,100 − 1,050)', value: '$1,050' },
+          { label: 'Total annual contribution (2,100 + 1,050)', value: '$3,150' }
+        ],
+        result: '$1,050 employer match this year, with another $1,050 of free match money unclaimed',
+        explanation: "Raising the contribution from 3% to the full 6% cap doubles the employee contribution to $4,200 and the employer match to $2,100, leaving $0 of free money on the table. Contributing above 6% adds no further match at all under this formula."
+      },
+      watchOut: [
+        { title: 'Match formulas vary by employer', body: 'Some plans match a flat percentage, some use tiers (e.g. 100% up to 3%, then 50% of the next 2%), and this calculator models only the common single-tier case. Check your plan document for the exact formula.' },
+        { title: 'Employer contributions may vest over time', body: "Per the U.S. Department of Labor, some plans let employer contributions vest gradually, meaning you only fully own them after a set number of years of service." },
+        { title: 'A separate, higher overall limit applies', body: 'Employee and employer contributions together cannot exceed $72,000 for 2026 (Internal Revenue Code section 415(c)), on top of the employee-only $24,500 elective-deferral limit.' },
+        { title: 'Not financial or tax advice', body: 'Whether to prioritize matching contributions over other financial goals depends on your own debts, emergency savings and plan terms.' }
+      ],
+      references: [
+        { label: 'Internal Revenue Service, Notice 2025-67: 2026 Amounts Relating to Retirement Plans and IRAs', url: 'https://www.irs.gov/pub/irs-drop/n-25-67.pdf' },
+        { label: 'Internal Revenue Service, Retirement Topics – 401(k) and Profit-Sharing Plan Contribution Limits', url: 'https://www.irs.gov/retirement-plans/plan-participant-employee/retirement-topics-401k-and-profit-sharing-plan-contribution-limits' },
+        { label: 'U.S. Department of Labor, 401(k) Plans for Small Businesses', url: 'https://www.dol.gov/agencies/ebsa/about-ebsa/our-activities/resource-center/publications/401k-plans-for-small-businesses' }
+      ]
+    },
+    inputs: [
+      { id: 'annualSalary', label: 'Annual salary', type: 'currency', placeholder: '70000', defaultValue: 70000, step: 1000, min: 0 },
+      { id: 'employeeContributionPercent', label: 'Your contribution (% of salary)', type: 'percent', placeholder: '3', defaultValue: 3, step: 0.5, min: 0 },
+      { id: 'matchRatePercent', label: 'Employer match rate (%)', type: 'percent', placeholder: '50', defaultValue: 50, step: 5, min: 0 },
+      { id: 'matchCapPercent', label: 'Match cap (% of salary)', type: 'percent', placeholder: '6', defaultValue: 6, step: 0.5, min: 0 }
+    ],
+    seo: {
+      title: '401(k) Employer Match Calculator – Free Money Check',
+      description: "Free 401(k) employer match calculator: see your contribution, your employer's match, and the free match money you lose by contributing below the cap.",
+      faq: [
+        { question: 'How is a 401(k) employer match calculated?', answer: "The employer matches a percentage of your contribution, up to a cap expressed as a percent of salary. On a $70,000 salary contributing 3% with a 50%-up-to-6% match, that's 70,000 × 3% × 50% = $1,050." },
+        { question: 'What does "free money left on the table" mean?', answer: 'The match you are missing by contributing below the cap. In the example, the maximum possible match at 6% is $2,100; contributing only 3% claims $1,050 of it, leaving $1,050 unclaimed.' },
+        { question: 'Does the employer match count toward my own contribution limit?', answer: 'No. The $24,500 2026 IRS limit applies to your own elective deferrals only. Employer matching contributions count toward a separate, higher combined limit of $72,000 for 2026.' },
+        { question: 'How does this differ from retirement-savings-calculator?', answer: 'This calculator finds this year\'s employee contribution and employer match from a salary and a match formula. Retirement-savings-calculator takes a monthly contribution (which could include this one) and projects its growth over many years.' },
+        { question: 'Do all employers match 401(k) contributions the same way?', answer: 'No. Formulas vary, some plans use multiple tiers, and employer contributions can vest gradually rather than belong to you immediately. Check your plan\'s summary plan description.' },
+        { question: 'Should I contribute at least up to the match?', answer: 'Many people treat a full employer match as a priority, since turning it down forfeits money the employer would otherwise contribute, but this depends on your own debts, emergency savings and goals. This is not personalized financial advice.' }
+      ]
+    },
+    compute(values) {
+      const employeeContribution = Math.min(values.annualSalary * (values.employeeContributionPercent / 100), PAYROLL_2026.max401k);
+      const matchableSalaryPercent = Math.min(values.employeeContributionPercent, values.matchCapPercent);
+      const employerMatch = values.annualSalary * (matchableSalaryPercent / 100) * (values.matchRatePercent / 100);
+      const maxPossibleMatch = values.annualSalary * (values.matchCapPercent / 100) * (values.matchRatePercent / 100);
+      const freeMoneyLeftOnTable = Math.max(0, maxPossibleMatch - employerMatch);
+      const totalContribution = employeeContribution + employerMatch;
+      return { employerMatch, employeeContribution, totalContribution, freeMoneyLeftOnTable, maxPossibleMatch };
+    }
+  },
+  {
+    id: 'roth-ira-growth-calculator',
+    group: 'Retirement',
+    category: 'finance',
+    glyph: 'Roth',
+    updatedAt: '2026-11-16',
+    aliases: ['roth ira calculator', 'roth ira growth calculator', 'roth ira contribution calculator', 'roth ira return calculator', 'tax-free retirement calculator'],
+    related: ['traditional-ira-calculator', 'retirement-savings-calculator', 'investment-calculator', '401k-employer-match-calculator'],
+    title: 'Roth IRA Growth Calculator',
+    description: "Project how a Roth IRA could grow from an after-tax contribution each year, with the current IRS annual contribution limit cited, and tax-free qualified withdrawals.",
+    example: "A $20,000 Roth IRA balance plus $7,000 contributed every year for 20 years at an average 7% return grows to about $364,362 — and because it's a Roth, a qualified withdrawal of the entire amount would be tax-free.",
+    solver: {
+      defaultTarget: 'futureValue',
+      variables: [
+        { id: 'futureValue', label: 'Future value', symbol: 'FV', dimension: 'currency', defaultValue: 364362.14, defaultUnit: 'currency' },
+        { id: 'currentBalance', label: 'Current Roth IRA balance', symbol: 'P', dimension: 'currency', defaultValue: 20000, defaultUnit: 'currency' },
+        { id: 'annualContribution', label: 'Annual contribution', symbol: 'C', dimension: 'currency', defaultValue: 7000, defaultUnit: 'currency', fixed: true },
+        { id: 'years', label: 'Years invested', symbol: 't', dimension: 'term', defaultValue: 20, defaultUnit: 'yr', bounds: [0, 1200] },
+        { id: 'annualReturn', label: 'Average annual return', symbol: 'r', dimension: 'percent', defaultValue: 7, defaultUnit: '%', bounds: [-50, 100] }
+      ],
+      // Same yearly-compounding, yearly-contribution model as investment-calculator; `years` arrives
+      // in months (the term dimension's base), so growth and the annuity factor use years / 12.
+      solve: {
+        futureValue: ({ currentBalance, annualContribution, years, annualReturn }) =>
+          years >= 0 ? currentBalance * growthFactor(annualReturn, 1, years / 12) + annualContribution * annuityFactor(annualReturn, 1, years / 12) : NaN,
+        currentBalance: ({ futureValue, annualContribution, years, annualReturn }) => {
+          const start = (futureValue - annualContribution * annuityFactor(annualReturn, 1, years / 12)) / growthFactor(annualReturn, 1, years / 12);
+          return years >= 0 && start >= 0 ? start : NaN;
+        },
+        years: ({ futureValue, currentBalance, annualContribution, annualReturn }) => {
+          const i = annualReturn / 100;
+          if (i === 0) return annualContribution > 0 ? ((futureValue - currentBalance) / annualContribution) * 12 : NaN;
+          const t = Math.log((futureValue * i + annualContribution) / (currentBalance * i + annualContribution)) / Math.log(1 + i);
+          return t >= 0 ? t * 12 : NaN;
+        }
+      },
+      equation: (si) =>
+        si.futureValue - (si.currentBalance * growthFactor(si.annualReturn, 1, si.years / 12) + si.annualContribution * annuityFactor(si.annualReturn, 1, si.years / 12)),
+      outputs: [
+        { id: 'totalContributed', label: 'Total contributed', dimension: 'currency', compute: (si) => si.currentBalance + (si.annualContribution * si.years) / 12 },
+        { id: 'totalGrowth', label: 'Tax-free growth', dimension: 'currency', compute: (si) => si.futureValue - si.currentBalance - (si.annualContribution * si.years) / 12 }
+      ],
+      derive: (si) => ({ contributions: (si.annualContribution * si.years) / 12 }),
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'currentBalance', label: 'Current balance' },
+            { from: 'contributions', label: 'Contributions' },
+            { from: 'totalGrowth', label: 'Growth' }
+          ],
+          center: 'futureValue',
+          centerSub: 'projected balance'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'A Roth IRA: after-tax money in, tax-free growth out',
+        paragraphs: [
+          'A Roth IRA is funded with money you have already paid income tax on — you cannot deduct a Roth contribution. In exchange, the IRS does not tax a "qualified distribution" at all: no tax on the contributions (naturally, since they were already taxed) and none on the growth either, as long as the account has been open at least five years and the withdrawal is made at age 59½ or later (or another qualifying reason). A Roth IRA also has no required minimum distributions during the original owner\'s lifetime, unlike a traditional IRA or most 401(k)s — see rmd-calculator and traditional-ira-calculator.',
+          'The growth math itself is the same yearly-contribution, yearly-compounding model as investment-calculator. What is specific to this page is the Roth IRA\'s own IRS contribution limit: $7,500 for 2026 (or $8,600 including the $1,100 catch-up contribution for those 50 and older), and an income cap — for 2026, the amount you can contribute phases out between $153,000 and $168,000 of modified adjusted gross income for single filers and heads of household, and between $242,000 and $252,000 for married couples filing jointly. This calculator does not enforce those limits; keep your own contribution at or under whatever you are actually eligible for.',
+          'For the same growth model with pre-tax contributions instead — taxed later rather than now — see traditional-ira-calculator. For a monthly, account-agnostic version without a contribution limit, see retirement-savings-calculator.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your annual contribution (0 for a single lump sum), then any three of the other four fields. The fourth, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter your annual contribution', text: 'This is always an input. Keep it at or under your actual 2026 Roth IRA limit: $7,500, or $8,600 if you are 50 or older.' },
+          { name: 'Project the future value', text: 'Type the current balance, the years invested and an average annual return to see the projected balance, with contributions and growth broken out.' },
+          { name: 'Plan backward from a goal', text: 'Type a target future value. Leave the years alone to see how long it takes, or the current balance to see how much you would need to start with.' },
+          { name: 'Find the return you need', text: 'Fill in the goal, start, contribution and years so the return is the field left alone longest, and the calculator searches for the average return required.' },
+          { name: 'Remember the tax treatment', text: 'Whatever the future value turns out to be, a qualified withdrawal of the whole amount is tax-free — unlike a taxable brokerage account or a traditional IRA.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'With yearly compounding and a contribution at the end of each year, the future value is the current balance grown for t years plus an ordinary annuity of the contributions — identical math to investment-calculator, applied to a Roth IRA\'s own contribution limit.',
+        expression: 'FV = P × (1 + r)^t + C × ((1 + r)^t − 1) ÷ r\nTotal contributed = P + C × t',
+        terms: [
+          { symbol: 'FV', meaning: 'Projected balance at the end.' },
+          { symbol: 'P', meaning: 'Current Roth IRA balance.' },
+          { symbol: 'C', meaning: 'Contribution added at the end of each year, capped at your actual IRS limit.' },
+          { symbol: 'r', meaning: 'Average annual return as a decimal (7% = 0.07).' },
+          { symbol: 't', meaning: 'Years invested.' }
+        ],
+        note: 'Estimates only. Returns are assumed constant and are never guaranteed. Contribution eligibility depends on your income and the current IRS limit, which this calculator does not enforce. Not tax advice.'
+      },
+      workedExample: {
+        intro: 'You have $20,000 in a Roth IRA and contribute $7,000 at the end of every year (under the 2026 limit of $7,500) for 20 years, assuming an average 7% annual return. What could it grow to, and how is it taxed?',
+        rows: [
+          { label: 'Growth factor 1.07^20', value: '3.869684' },
+          { label: 'Current balance grown (20,000 × 3.869684)', value: '$77,393.69' },
+          { label: 'Annuity factor (3.869684 − 1) ÷ 0.07', value: '40.995492' },
+          { label: 'Contributions grown (7,000 × 40.995492)', value: '$286,968.45' },
+          { label: 'Future value', value: '$364,362.14' },
+          { label: 'Total contributed (20,000 + 7,000 × 20)', value: '$160,000' },
+          { label: 'Tax-free growth (364,362.14 − 160,000)', value: '$204,362.14' }
+        ],
+        result: 'FV ≈ $364,362 after 20 years, of which about $204,362 is growth',
+        explanation: 'If this account is qualified, the full $364,362 — including the $204,362 that was never taxed — can be withdrawn tax-free. In a taxable account, that $204,362 of growth would ordinarily be taxed when realized; that tax-free treatment is the entire value of using a Roth IRA over a plain brokerage account for the same growth.'
+      },
+      watchOut: [
+        { title: 'Contribution limit and income cap', body: 'The 2026 limit is $7,500 ($8,600 at age 50+), and the amount you can contribute phases out between $153,000–$168,000 of MAGI (single/head of household) or $242,000–$252,000 (married filing jointly). This calculator does not check your eligibility.' },
+        { title: '"Qualified" has specific rules', body: 'Tax-free treatment of earnings requires the account to be open five years and the withdrawal to be made at 59½ or later (or another qualifying reason). Earlier non-qualified withdrawals of earnings can be taxed and penalized.' },
+        { title: 'Estimates only: returns are not guaranteed', body: 'A constant average return is a planning assumption, not a forecast. Fees also reduce the real return.' },
+        { title: 'Not tax advice', body: 'Confirm your own eligibility and contribution limit with the IRS or a tax professional before contributing.' }
+      ],
+      references: [
+        { label: 'Internal Revenue Service, Notice 2025-67: 2026 Amounts Relating to Retirement Plans and IRAs', url: 'https://www.irs.gov/pub/irs-drop/n-25-67.pdf' },
+        { label: 'Internal Revenue Service, Roth IRAs', url: 'https://www.irs.gov/retirement-plans/roth-iras' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.7 Investments', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-7-investments' }
+      ]
+    },
+    inputs: [
+      { id: 'currentBalance', label: 'Current Roth IRA balance', type: 'currency', placeholder: '20000', defaultValue: 20000, step: 1000, min: 0 },
+      { id: 'annualReturn', label: 'Annual return rate', type: 'percent', placeholder: '7', defaultValue: 7, step: 0.1, min: 0 },
+      { id: 'years', label: 'Years invested', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 1 },
+      { id: 'annualContribution', label: 'Annual contribution', type: 'currency', placeholder: '7000', defaultValue: 7000, step: 500, min: 0 }
+    ],
+    seo: {
+      title: 'Roth IRA Growth Calculator – Tax-Free Projection',
+      description: 'Project Roth IRA growth from an after-tax contribution each year, using the current IRS contribution limit, with tax-free qualified withdrawals explained.',
+      faq: [
+        { question: 'How much can I contribute to a Roth IRA in 2026?', answer: 'The IRS limit is $7,500, or $8,600 including the $1,100 catch-up contribution if you are 50 or older, per Notice 2025-67. Contribution room is also reduced or eliminated at higher incomes.' },
+        { question: 'Are Roth IRA withdrawals really tax-free?', answer: 'Yes, if the distribution is "qualified": the account has been open at least five years and you are 59½ or older (or meet another qualifying reason). Both the contributions and all the growth come out tax-free.' },
+        { question: 'What income makes me ineligible for a Roth IRA?', answer: 'For 2026, the amount you can contribute phases out between $153,000 and $168,000 of modified adjusted gross income for single filers and heads of household, and between $242,000 and $252,000 for married couples filing jointly.' },
+        { question: 'How does this differ from traditional-ira-calculator?', answer: 'The growth math is identical. A Roth IRA is funded with after-tax money and comes out tax-free; a traditional IRA is funded with pre-tax money and is taxed on withdrawal. Traditional-ira-calculator models that trade-off directly with the same example numbers.' },
+        { question: 'How does this differ from investment-calculator or retirement-savings-calculator?', answer: 'Investment-calculator is a generic, non-tax-specific version of the same growth math. Retirement-savings-calculator uses monthly contributions and monthly compounding and adds an estimated withdrawal. Neither models the Roth IRA\'s own contribution limit or tax-free treatment.' },
+        { question: 'How much of my Roth IRA balance would be growth versus contributions?', answer: 'In the worked example, $204,362 of the $364,362 projected balance is growth and $160,000 is contributions — and in a qualified Roth IRA, both come out tax-free.' }
+      ]
+    },
+    compute(values) {
+      const r = values.annualReturn / 100;
+      const n = Math.max(1, values.years);
+      const futureValuePrincipal = values.currentBalance * Math.pow(1 + r, n);
+      const futureValueContributions = r === 0
+        ? values.annualContribution * n
+        : values.annualContribution * ((Math.pow(1 + r, n) - 1) / r);
+      const futureValue = futureValuePrincipal + futureValueContributions;
+      const totalContributed = values.currentBalance + values.annualContribution * n;
+      const totalGrowth = futureValue - totalContributed;
+      return { futureValue, totalContributed, totalGrowth };
+    }
+  },
+  {
+    id: 'traditional-ira-calculator',
+    group: 'Retirement',
+    category: 'finance',
+    glyph: 'TIRA',
+    updatedAt: '2026-11-16',
+    aliases: ['traditional ira calculator', 'traditional ira growth calculator', 'traditional ira contribution calculator', 'pre-tax ira calculator', 'deductible ira calculator'],
+    related: ['roth-ira-growth-calculator', 'rmd-calculator', 'retirement-savings-calculator', '401k-employer-match-calculator'],
+    title: 'Traditional IRA Calculator',
+    description: 'Project traditional IRA growth from a pre-tax contribution each year, using the current IRS contribution limit, with the deferred tax on withdrawal shown directly.',
+    example: "A $20,000 traditional IRA balance plus $7,000 contributed every year for 20 years at an average 7% return grows to about $364,362 before tax — the same pretax total as the Roth IRA example — but withdrawing it at a 22% tax rate would owe about $80,160, leaving about $284,202 after tax.",
+    solver: {
+      defaultTarget: 'futureValue',
+      variables: [
+        { id: 'futureValue', label: 'Future value (before tax)', symbol: 'FV', dimension: 'currency', defaultValue: 364362.14, defaultUnit: 'currency' },
+        { id: 'currentBalance', label: 'Current traditional IRA balance', symbol: 'P', dimension: 'currency', defaultValue: 20000, defaultUnit: 'currency' },
+        { id: 'annualContribution', label: 'Annual contribution', symbol: 'C', dimension: 'currency', defaultValue: 7000, defaultUnit: 'currency', fixed: true },
+        { id: 'years', label: 'Years invested', symbol: 't', dimension: 'term', defaultValue: 20, defaultUnit: 'yr', bounds: [0, 1200] },
+        { id: 'annualReturn', label: 'Average annual return', symbol: 'r', dimension: 'percent', defaultValue: 7, defaultUnit: '%', bounds: [-50, 100] },
+        { id: 'taxRateAtWithdrawal', label: 'Assumed tax rate (now and at withdrawal)', symbol: 'τ', dimension: 'percent', defaultValue: 22, defaultUnit: '%', fixed: true }
+      ],
+      // Identical growth math to roth-ira-growth-calculator (yearly contribution, yearly compounding);
+      // `years` arrives in months (the term dimension's base), so growth and the annuity factor use
+      // years / 12. `taxRateAtWithdrawal` never participates in the growth equation — it only feeds
+      // the tax-now/tax-later outputs below, so it stays fixed and out of the auto-field rotation.
+      solve: {
+        futureValue: ({ currentBalance, annualContribution, years, annualReturn }) =>
+          years >= 0 ? currentBalance * growthFactor(annualReturn, 1, years / 12) + annualContribution * annuityFactor(annualReturn, 1, years / 12) : NaN,
+        currentBalance: ({ futureValue, annualContribution, years, annualReturn }) => {
+          const start = (futureValue - annualContribution * annuityFactor(annualReturn, 1, years / 12)) / growthFactor(annualReturn, 1, years / 12);
+          return years >= 0 && start >= 0 ? start : NaN;
+        },
+        years: ({ futureValue, currentBalance, annualContribution, annualReturn }) => {
+          const i = annualReturn / 100;
+          if (i === 0) return annualContribution > 0 ? ((futureValue - currentBalance) / annualContribution) * 12 : NaN;
+          const t = Math.log((futureValue * i + annualContribution) / (currentBalance * i + annualContribution)) / Math.log(1 + i);
+          return t >= 0 ? t * 12 : NaN;
+        }
+      },
+      equation: (si) =>
+        si.futureValue - (si.currentBalance * growthFactor(si.annualReturn, 1, si.years / 12) + si.annualContribution * annuityFactor(si.annualReturn, 1, si.years / 12)),
+      outputs: [
+        { id: 'totalContributed', label: 'Total contributed', dimension: 'currency', compute: (si) => si.currentBalance + (si.annualContribution * si.years) / 12 },
+        { id: 'totalGrowth', label: 'Tax-deferred growth', dimension: 'currency', compute: (si) => si.futureValue - si.currentBalance - (si.annualContribution * si.years) / 12 },
+        { id: 'taxSavingsThisYear', label: "This year's estimated tax savings from the contribution", dimension: 'currency', compute: (si) => si.annualContribution * (si.taxRateAtWithdrawal / 100) },
+        { id: 'taxOwedAtWithdrawal', label: 'Estimated tax owed if withdrawn at the assumed rate', dimension: 'currency', compute: (si) => si.futureValue * (si.taxRateAtWithdrawal / 100) },
+        { id: 'afterTaxValue', label: 'Estimated after-tax value', dimension: 'currency', compute: (si) => si.futureValue - si.futureValue * (si.taxRateAtWithdrawal / 100) }
+      ],
+      derive: (si) => ({ contributions: (si.annualContribution * si.years) / 12 }),
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'currentBalance', label: 'Current balance' },
+            { from: 'contributions', label: 'Contributions' },
+            { from: 'totalGrowth', label: 'Growth' }
+          ],
+          center: 'futureValue',
+          centerSub: 'projected balance, before tax'
+        },
+        {
+          type: 'compareBars',
+          bars: [{ from: 'futureValue', label: 'Before tax' }, { from: 'afterTaxValue', label: 'After tax' }],
+          title: 'What withdrawal tax takes off the top',
+          highlight: 1
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'A traditional IRA: pre-tax money in, taxed on the way out',
+        paragraphs: [
+          'A traditional IRA is funded with money that may be deductible on this year\'s tax return, which is why it is often called "pre-tax." The growth inside the account is tax-deferred — no tax is owed year to year as it compounds — but every dollar of a deductible contribution and its growth is taxed as ordinary income when withdrawn, at whatever tax rate applies then. This is the direct opposite of roth-ira-growth-calculator, which taxes the contribution now and lets qualified growth come out completely tax-free.',
+          "Whether the contribution is fully deductible depends on income and whether you (or your spouse) are also covered by a workplace retirement plan. For 2026, per IRS Notice 2025-67, a single filer or head of household who is an active participant in a workplace plan sees the deduction phase out between $81,000 and $91,000 of modified adjusted gross income; for a married couple filing jointly where the contributor is the active participant, the range is $129,000 to $149,000; and for a contributor who isn't an active participant but whose spouse is, it's $242,000 to $252,000. Below those ranges the full contribution is deductible; above them, none of it is. This calculator assumes full deductibility and does not check your eligibility.",
+          "The growth math itself is identical to roth-ira-growth-calculator and investment-calculator — the same yearly-contribution, yearly-compounding model, applied to the same shared IRS contribution limit. What's specific to this page is the tax layer: an assumed tax rate is used both for this year's estimated deduction savings and for the tax owed on the full pretax balance at withdrawal, so the real trade-off (tax now vs. tax later) shows up as actual dollars instead of a description. Eventually the IRS also requires withdrawals on a schedule — see rmd-calculator — which a Roth IRA does not require during the original owner's lifetime."
+        ]
+      },
+      howTo: {
+        intro: 'Enter your annual contribution (0 for a single lump sum) and an assumed tax rate, then any three of the other four growth fields. The fourth, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter your annual contribution', text: 'This is always an input. Keep it, combined with any Roth IRA contributions in the same year, at or under your actual 2026 limit: $7,500, or $8,600 if you are 50 or older — the limit is shared across both account types.' },
+          { name: 'Project the future value', text: 'Type the current balance, the years invested and an average annual return to see the pretax projected balance, with contributions and growth broken out.' },
+          { name: 'Set the assumed tax rate', text: "Enter the tax rate you expect to pay — both on this year's deduction and on withdrawals later. Using the same rate for both keeps the comparison simple; try a lower retirement-year rate if you expect to be in a lower bracket then." },
+          { name: 'Read the tax-now and tax-later figures', text: "Below the balance, see this year's estimated tax savings from the deduction, the estimated tax owed at withdrawal, and the after-tax value that leaves you with." },
+          { name: 'Compare with the Roth IRA calculator', text: 'Run the same current balance, contribution, years and return through roth-ira-growth-calculator to see the identical pretax balance come out completely tax-free instead.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "The future value uses the same yearly-compounding, yearly-contribution formula as roth-ira-growth-calculator. The tax figures apply one assumed rate to the current year's contribution and to the full pretax future value.",
+        expression: 'FV = P × (1 + r)^t + C × ((1 + r)^t − 1) ÷ r\nTax savings this year ≈ C × τ\nTax owed at withdrawal ≈ FV × τ\nAfter-tax value = FV − (FV × τ)',
+        terms: [
+          { symbol: 'FV', meaning: 'Projected pretax balance at the end.' },
+          { symbol: 'P', meaning: 'Current traditional IRA balance.' },
+          { symbol: 'C', meaning: 'Pre-tax contribution added at the end of each year, capped at your actual IRS limit.' },
+          { symbol: 'r', meaning: 'Average annual return as a decimal (7% = 0.07).' },
+          { symbol: 't', meaning: 'Years invested.' },
+          { symbol: 'τ', meaning: 'Assumed tax rate (as a decimal), used both now and at withdrawal.' }
+        ],
+        note: "Estimates only. Returns are assumed constant and are never guaranteed. Whether a contribution is actually deductible depends on your income and workplace-plan coverage, which this calculator does not check, and your real future tax rate is unknowable today. Not tax advice."
+      },
+      workedExample: {
+        intro: 'You have $20,000 in a traditional IRA and contribute $7,000 at the end of every year for 20 years, assuming an average 7% annual return and a 22% tax rate now and at withdrawal — the same growth inputs as the roth-ira-growth-calculator example.',
+        rows: [
+          { label: 'Growth factor 1.07^20', value: '3.869684' },
+          { label: 'Current balance grown (20,000 × 3.869684)', value: '$77,393.69' },
+          { label: 'Annuity factor (3.869684 − 1) ÷ 0.07', value: '40.995492' },
+          { label: 'Contributions grown (7,000 × 40.995492)', value: '$286,968.45' },
+          { label: 'Future value, before tax', value: '$364,362.14' },
+          { label: "This year's tax savings (7,000 × 22%)", value: '$1,540.00' },
+          { label: 'Tax owed at withdrawal (364,362.14 × 22%)', value: '$80,159.67' },
+          { label: 'After-tax value (364,362.14 − 80,159.67)', value: '$284,202.47' }
+        ],
+        result: 'FV ≈ $364,362 before tax — identical to the Roth IRA example — but about $284,202 after a 22% withdrawal tax',
+        explanation: "That $364,362 is exactly what roth-ira-growth-calculator projects for the same inputs, because the growth math never looks at tax treatment. The difference only shows up at the ends: this $7,000 contribution saves an estimated $1,540 in tax this year, but the entire $364,362 is taxable later, unlike a Roth IRA's tax-free qualified withdrawal. At a higher 32% withdrawal rate instead of 22%, the tax owed would be about $116,595.88 and the after-tax value about $247,766.26 — the assumed rate matters as much as the growth rate."
+      },
+      watchOut: [
+        { title: 'The contribution limit is shared with Roth IRAs', body: 'The 2026 limit is $7,500 ($8,600 at age 50+) across all of your traditional and Roth IRA contributions combined, not $7,500 for each account separately.' },
+        { title: 'The deduction can be reduced or eliminated', body: "If you or your spouse are covered by a workplace retirement plan, the deduction phases out at the income ranges in this page's concept section (Notice 2025-67). This calculator assumes full deductibility." },
+        { title: 'Required minimum distributions apply', body: 'Unlike a Roth IRA, a traditional IRA requires withdrawals on a schedule starting at age 73 — see rmd-calculator. This calculator does not model RMDs.' },
+        { title: 'Early withdrawals are taxed and penalized', body: 'A withdrawal before age 59½ is generally taxed as ordinary income plus a 10% additional tax, with limited exceptions.' },
+        { title: 'The future tax rate is a guess', body: "Nobody knows their tax bracket decades from now. Try both a lower and a higher assumed rate to see how much it changes the after-tax value." }
+      ],
+      references: [
+        { label: 'Internal Revenue Service, Notice 2025-67: 2026 Amounts Relating to Retirement Plans and IRAs', url: 'https://www.irs.gov/pub/irs-drop/n-25-67.pdf' },
+        { label: 'Internal Revenue Service, Traditional IRAs', url: 'https://www.irs.gov/retirement-plans/traditional-iras' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.7 Investments', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-7-investments' }
+      ]
+    },
+    inputs: [
+      { id: 'currentBalance', label: 'Current traditional IRA balance', type: 'currency', placeholder: '20000', defaultValue: 20000, step: 1000, min: 0 },
+      { id: 'annualReturn', label: 'Annual return rate', type: 'percent', placeholder: '7', defaultValue: 7, step: 0.1, min: 0 },
+      { id: 'years', label: 'Years invested', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 1 },
+      { id: 'annualContribution', label: 'Annual contribution', type: 'currency', placeholder: '7000', defaultValue: 7000, step: 500, min: 0 },
+      { id: 'taxRateAtWithdrawal', label: 'Assumed tax rate (now and at withdrawal)', type: 'percent', placeholder: '22', defaultValue: 22, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Traditional IRA Calculator – Growth & Deferred Tax',
+      description: 'Project traditional IRA growth from a pre-tax contribution, using the current IRS limit, with this year\'s tax savings and withdrawal tax shown directly.',
+      faq: [
+        { question: 'How much can I contribute to a traditional IRA in 2026?', answer: 'The IRS limit is $7,500, or $8,600 including the $1,100 catch-up contribution if you are 50 or older, per Notice 2025-67 — the same limit shared with any Roth IRA contributions you make in the same year.' },
+        { question: 'Is my traditional IRA contribution tax-deductible?', answer: "It depends on your income and whether you or your spouse are covered by a workplace retirement plan. For 2026, the deduction phases out between $81,000-$91,000 of MAGI for a single active participant, $129,000-$149,000 for a married active participant filing jointly, and $242,000-$252,000 for a non-active-participant spouse of an active participant." },
+        { question: 'How does this differ from roth-ira-growth-calculator?', answer: 'The growth math is identical — both grow $20,000 plus $7,000 a year at 7% to the same $364,362 over 20 years. A traditional IRA is funded pre-tax and is taxed as ordinary income on withdrawal; a Roth IRA is funded after-tax and comes out tax-free when qualified.' },
+        { question: 'What happens when I withdraw the money?', answer: 'The withdrawal is taxed as ordinary income at whatever rate applies then. In the worked example, a 22% rate turns the $364,362 pretax balance into about $284,202 after tax, and the IRS also requires withdrawals on a schedule starting at age 73 — see rmd-calculator.' },
+        { question: 'What if I withdraw before age 59½?', answer: "Early withdrawals are generally taxed as ordinary income plus a 10% additional tax, with limited exceptions such as disability or a first-time home purchase." },
+        { question: 'How much does the assumed tax rate change the outcome?', answer: 'A lot. On the same $364,362 pretax balance, a 22% withdrawal tax rate leaves about $284,202 after tax, while a 32% rate leaves about $247,766 — the tax-rate assumption matters almost as much as the return assumption.' }
+      ]
+    },
+    compute(values) {
+      const r = values.annualReturn / 100;
+      const n = Math.max(1, values.years);
+      const futureValuePrincipal = values.currentBalance * Math.pow(1 + r, n);
+      const futureValueContributions = r === 0
+        ? values.annualContribution * n
+        : values.annualContribution * ((Math.pow(1 + r, n) - 1) / r);
+      const futureValue = futureValuePrincipal + futureValueContributions;
+      const totalContributed = values.currentBalance + values.annualContribution * n;
+      const totalGrowth = futureValue - totalContributed;
+      const taxRate = values.taxRateAtWithdrawal / 100;
+      const taxSavingsThisYear = values.annualContribution * taxRate;
+      const taxOwedAtWithdrawal = futureValue * taxRate;
+      const afterTaxValue = futureValue - taxOwedAtWithdrawal;
+      return { futureValue, totalContributed, totalGrowth, taxSavingsThisYear, taxOwedAtWithdrawal, afterTaxValue };
+    }
+  },
+  {
+    id: 'rmd-calculator',
+    group: 'Retirement',
+    category: 'finance',
+    glyph: 'RMD',
+    updatedAt: '2026-11-16',
+    aliases: ['rmd calculator', 'required minimum distribution calculator', 'ira rmd calculator', 'ira required minimum distribution calculator', 'ira withdrawal calculator'],
+    related: ['traditional-ira-calculator', 'roth-ira-growth-calculator', 'retirement-savings-calculator', '401k-employer-match-calculator'],
+    title: 'RMD Calculator',
+    description: "Calculate this year's required minimum distribution from a traditional IRA, using the IRS's current Uniform Lifetime Table and your prior year-end balance.",
+    example: 'A $500,000 IRA balance at the end of last year, for someone turning 75 this year, requires a minimum distribution of about $20,325 — about 4.07% of the balance, using the IRS Uniform Lifetime Table denominator of 24.6.',
+    breakdown: {
+      headline: 'requiredMinimumDistribution',
+      headlineLabel: 'Required minimum distribution this year',
+      outputs: [
+        { id: 'requiredMinimumDistribution', label: 'Required minimum distribution', format: 'currency' },
+        { id: 'monthlyEquivalent', label: 'Monthly equivalent', format: 'currency' },
+        { id: 'percentOfBalance', label: 'Percent of the balance withdrawn', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Your IRA', inputs: ['priorYearEndBalance', 'ownerAge'] }
+      ],
+      derive: (values) => ({ remainingBalance: values.priorYearEndBalance - values.requiredMinimumDistribution }),
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'requiredMinimumDistribution', label: 'Required withdrawal this year' },
+          { from: 'remainingBalance', label: 'Remaining balance' }
+        ],
+        center: 'priorYearEndBalance',
+        centerSub: "balance at last year's end"
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'Required Minimum Distributions: what the IRS makes you withdraw',
+        paragraphs: [
+          "A traditional IRA (and most employer retirement plans) can't hold money tax-deferred forever. Starting at the IRS's required beginning date — age 73 for anyone who reached age 72 after December 31, 2022 — the owner must withdraw at least a minimum amount every year, called the required minimum distribution (RMD). The RMD is simple division: the account's balance at the end of the prior year, divided by an \"applicable denominator\" the IRS publishes by age, in Publication 590-B's Uniform Lifetime Table (Table III) — reproduced in full below.",
+          "That one table covers the great majority of IRA owners: anyone unmarried, and anyone married whose spouse either isn't the sole beneficiary or isn't more than 10 years younger. A married owner whose spouse is both the sole beneficiary and more than 10 years younger uses a different, more generous table (Table II) instead, which this calculator does not model — the real RMD is lower in that specific case.",
+          'This is the requirement roth-ira-growth-calculator keeps mentioning: a Roth IRA has no RMDs during the original owner\'s lifetime, while traditional-ira-calculator\'s pretax balance is exactly the kind of balance this table eventually applies to. retirement-savings-calculator and 401k-employer-match-calculator build the balance; this page is about what the IRS requires you to take back out of it.'
+        ]
+      },
+      howTo: {
+        intro: "Enter your IRA's balance at the end of last year and the age you'll turn this year.",
+        steps: [
+          { name: "Enter last year's ending balance", text: "The IRA's value at the close of business on December 31 of the prior year — not today's balance." },
+          { name: "Enter the age you'll turn this year", text: 'This picks your row in the Uniform Lifetime Table below. The required beginning date is 73 for anyone reaching 72 after 2022.' },
+          { name: 'Read the required distribution', text: 'The headline is the dollar amount you must withdraw this year, with the monthly equivalent and the percent of the balance it represents below it.' },
+          { name: 'Check the full table', text: 'Scroll to the reference table to see every age from 72 to 120 and over, and how much the required percentage grows with age.' },
+          { name: 'Confirm which table applies to you', text: "If your sole beneficiary is a spouse more than 10 years younger, your real RMD uses a different, larger denominator than this calculator shows — see Publication 590-B's Table II." }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "The RMD divides last year's ending balance by the IRS's applicable denominator for your age this year, from the Uniform Lifetime Table.",
+        expression: 'RMD = Balance at prior year-end ÷ Denominator(age)\nPercent of balance = 100 ÷ Denominator(age)',
+        terms: [
+          { symbol: 'Balance', meaning: "The IRA's value at the close of business on December 31 of the prior year." },
+          { symbol: 'Denominator(age)', meaning: "The IRS's Uniform Lifetime Table (Table III) factor for the age you turn this year — shown in full below." }
+        ],
+        note: 'Estimates only. This models only the common Uniform Lifetime Table case; a spouse more than 10 years younger as sole beneficiary uses a different table and a different, smaller RMD. Not tax advice — confirm your own figure with your IRA custodian or a tax professional.'
+      },
+      workedExample: {
+        intro: 'An IRA was worth $500,000 at the end of last year. Its owner turns 75 this year. What is the required minimum distribution?',
+        rows: [
+          { label: 'Applicable denominator for age 75 (Table III)', value: '24.6' },
+          { label: 'RMD (500,000 ÷ 24.6)', value: '$20,325.20' },
+          { label: 'Monthly equivalent (20,325.20 ÷ 12)', value: '$1,693.77' },
+          { label: 'Percent of balance withdrawn (100 ÷ 24.6)', value: '4.065%' }
+        ],
+        result: 'RMD ≈ $20,325 this year, about $1,694 a month, about 4.07% of the balance',
+        explanation: "Age alone changes the answer a great deal on the same $500,000 balance: at 73 the denominator is 26.5, for an RMD of about $18,868; at 90 it's 12.2, for an RMD of about $40,984 — a required withdrawal 101.6% higher at 90 than at 75, even though the balance in this example never changed. The required percentage keeps climbing every year because the IRS's denominator keeps shrinking."
+      },
+      watchOut: [
+        { title: 'This models only the common Table III case', body: "If your sole beneficiary is your spouse and they're more than 10 years younger than you, the IRS requires the Joint and Last Survivor Table (Table II) instead, which produces a larger denominator and a smaller RMD than this calculator shows." },
+        { title: 'Missing an RMD is costly', body: 'Per Publication 590-B, an amount not distributed as required is subject to a 25% excise tax, reduced to 10% if you correct the shortfall and file during the IRS\'s correction window.' },
+        { title: 'The required beginning date is age 73', body: 'For anyone reaching age 72 after December 31, 2022. The very first RMD can be delayed to April 1 of the following year, but doing so means taking two RMDs in that second year.' },
+        { title: "Roth IRAs don't have this requirement", body: "A Roth IRA has no required minimum distributions during the original owner's lifetime — see roth-ira-growth-calculator." },
+        { title: 'This is a current-year figure only', body: "The RMD is recalculated every year from that year's own prior-year-end balance and that year's age; this calculator does not project several years of RMDs forward." }
+      ],
+      referenceTable: {
+        title: 'IRS Uniform Lifetime Table (Table III), applicable denominator by age',
+        columns: ['Age', 'Applicable denominator'],
+        rows: Object.entries(RMD_UNIFORM_LIFETIME_TABLE).map(([age, denominator]) => ({ label: age, values: [denominator] })),
+        decimals: 1,
+        note: 'Internal Revenue Service, Publication 590-B (2025), Appendix B, Table III — for unmarried owners, and married owners whose spouse isn\'t the sole beneficiary or isn\'t more than 10 years younger.'
+      },
+      references: [
+        { label: 'Internal Revenue Service, Publication 590-B (2025), Distributions from Individual Retirement Arrangements (IRAs), Appendix B', url: 'https://www.irs.gov/pub/irs-pdf/p590b.pdf' },
+        { label: 'Internal Revenue Service, Retirement Topics – Required Minimum Distributions (RMDs)', url: 'https://www.irs.gov/retirement-plans/plan-participant-employee/retirement-topics-required-minimum-distributions-rmds' }
+      ]
+    },
+    inputs: [
+      { id: 'priorYearEndBalance', label: "IRA balance at last year's end", type: 'currency', placeholder: '500000', defaultValue: 500000, step: 10000, min: 0 },
+      { id: 'ownerAge', label: "Age you'll turn this year", type: 'number', placeholder: '75', defaultValue: 75, step: 1, min: 72 }
+    ],
+    seo: {
+      title: 'RMD Calculator – IRS Required Minimum Distribution',
+      description: "Calculate this year's IRA required minimum distribution from your prior year-end balance using the IRS's current Uniform Lifetime Table.",
+      faq: [
+        { question: 'What is a required minimum distribution (RMD)?', answer: "The minimum amount the IRS requires you to withdraw each year from a traditional IRA (and most employer retirement plans) once you reach the required beginning date, currently age 73 for anyone who turned 72 after 2022." },
+        { question: 'How is my RMD calculated?', answer: "Divide your IRA's balance at the end of last year by the IRS's applicable denominator for your age this year, from the Uniform Lifetime Table. A $500,000 balance at age 75 uses a denominator of 24.6, for an RMD of about $20,325." },
+        { question: 'When do RMDs start?', answer: 'At the required beginning date, age 73 for anyone reaching age 72 after December 31, 2022. The first one can be delayed to April 1 of the following year, but that means taking two RMDs in that second year.' },
+        { question: 'What happens if I miss an RMD?', answer: "The IRS can charge a 25% excise tax on the amount not distributed as required, reduced to 10% if you correct it and file during the correction window described in Publication 590-B." },
+        { question: 'Do Roth IRAs have RMDs?', answer: "No. A Roth IRA has no required minimum distributions during the original owner's lifetime, unlike the traditional IRA balance this calculator models — see roth-ira-growth-calculator and traditional-ira-calculator." },
+        { question: 'Does the required percentage change with age?', answer: 'Yes, every year. On the same balance, the required percentage is about 4.07% at age 75 and about 8.20% at age 90 — the RMD at 90 is about 101.6% higher than at 75 for an identical balance, because the IRS denominator keeps shrinking.' }
+      ]
+    },
+    compute(values) {
+      const denominator = rmdDenominator(values.ownerAge);
+      const requiredMinimumDistribution = values.priorYearEndBalance / denominator;
+      const monthlyEquivalent = requiredMinimumDistribution / 12;
+      const percentOfBalance = 100 / denominator;
+      return { requiredMinimumDistribution, monthlyEquivalent, percentOfBalance };
+    }
+  },
 ];

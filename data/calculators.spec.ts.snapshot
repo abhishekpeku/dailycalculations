@@ -1,3 +1,53 @@
+exports[`compute() snapshots > 401k-employer-match-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "annualSalary": 70000,
+      "employeeContributionPercent": 3,
+      "matchRatePercent": 50,
+      "matchCapPercent": 6
+    },
+    "outputs": {
+      "employerMatch": 1050,
+      "employeeContribution": 2100,
+      "totalContribution": 3150,
+      "freeMoneyLeftOnTable": 1050,
+      "maxPossibleMatch": 2100
+    }
+  },
+  "typical": {
+    "inputs": {
+      "annualSalary": 105000,
+      "employeeContributionPercent": 4.5,
+      "matchRatePercent": 75,
+      "matchCapPercent": 9
+    },
+    "outputs": {
+      "employerMatch": 3543.75,
+      "employeeContribution": 4725,
+      "totalContribution": 8268.75,
+      "freeMoneyLeftOnTable": 3543.75,
+      "maxPossibleMatch": 7087.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "annualSalary": 0,
+      "employeeContributionPercent": 0,
+      "matchRatePercent": 0,
+      "matchCapPercent": 0
+    },
+    "outputs": {
+      "employerMatch": 0,
+      "employeeContribution": 0,
+      "totalContribution": 0,
+      "freeMoneyLeftOnTable": 0,
+      "maxPossibleMatch": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > abv-calculator 1`] = `
 {
   "default": {
@@ -9741,6 +9791,56 @@ exports[`compute() snapshots > retaining-wall-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > retirement-savings-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "currentSavings": 50000,
+      "annualReturn": 7,
+      "yearsToRetirement": 25,
+      "monthlyContribution": 500
+    },
+    "outputs": {
+      "futureValue": 691306.757,
+      "totalContributed": 200000,
+      "totalGrowth": 491306.757,
+      "estimatedAnnualWithdrawal": 27652.27028,
+      "estimatedMonthlyWithdrawal": 2304.355857
+    }
+  },
+  "typical": {
+    "inputs": {
+      "currentSavings": 75000,
+      "annualReturn": 10.5,
+      "yearsToRetirement": 38,
+      "monthlyContribution": 750
+    },
+    "outputs": {
+      "futureValue": 8452208.982,
+      "totalContributed": 417000,
+      "totalGrowth": 8035208.982,
+      "estimatedAnnualWithdrawal": 338088.3593,
+      "estimatedMonthlyWithdrawal": 28174.02994
+    }
+  },
+  "edge": {
+    "inputs": {
+      "currentSavings": 0,
+      "annualReturn": 0,
+      "yearsToRetirement": 0,
+      "monthlyContribution": 0
+    },
+    "outputs": {
+      "futureValue": 0,
+      "totalContributed": 0,
+      "totalGrowth": 0,
+      "estimatedAnnualWithdrawal": 0,
+      "estimatedMonthlyWithdrawal": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > rice-to-water-ratio-calculator 1`] = `
 {
   "default": {
@@ -9815,6 +9915,44 @@ exports[`compute() snapshots > ring-size-converter 1`] = `
       "euSize": "NaN",
       "diameterMm": 0,
       "circumferenceMm": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > rmd-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "priorYearEndBalance": 500000,
+      "ownerAge": 75
+    },
+    "outputs": {
+      "requiredMinimumDistribution": 20325.20325,
+      "monthlyEquivalent": 1693.766938,
+      "percentOfBalance": 4.06504065
+    }
+  },
+  "typical": {
+    "inputs": {
+      "priorYearEndBalance": 750000,
+      "ownerAge": 113
+    },
+    "outputs": {
+      "requiredMinimumDistribution": 241935.4839,
+      "monthlyEquivalent": 20161.29032,
+      "percentOfBalance": 32.25806452
+    }
+  },
+  "edge": {
+    "inputs": {
+      "priorYearEndBalance": 0,
+      "ownerAge": 72
+    },
+    "outputs": {
+      "requiredMinimumDistribution": 0,
+      "monthlyEquivalent": 0,
+      "percentOfBalance": 3.649635036
     }
   }
 }
@@ -9906,6 +10044,50 @@ exports[`compute() snapshots > roofing-calculator 1`] = `
       "roofAreaWithWaste": 1,
       "squaresNeeded": 0.01,
       "bundlesNeeded": 1
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > roth-ira-growth-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "currentBalance": 20000,
+      "annualReturn": 7,
+      "years": 20,
+      "annualContribution": 7000
+    },
+    "outputs": {
+      "futureValue": 364362.1355,
+      "totalContributed": 160000,
+      "totalGrowth": 204362.1355
+    }
+  },
+  "typical": {
+    "inputs": {
+      "currentBalance": 30000,
+      "annualReturn": 10.5,
+      "years": 30,
+      "annualContribution": 10500
+    },
+    "outputs": {
+      "futureValue": 2499032.396,
+      "totalContributed": 345000,
+      "totalGrowth": 2154032.396
+    }
+  },
+  "edge": {
+    "inputs": {
+      "currentBalance": 0,
+      "annualReturn": 0,
+      "years": 1,
+      "annualContribution": 0
+    },
+    "outputs": {
+      "futureValue": 0,
+      "totalContributed": 0,
+      "totalGrowth": 0
     }
   }
 }
@@ -11694,6 +11876,62 @@ exports[`compute() snapshots > topsoil-calculator 1`] = `
       "tonsExact": 0.0001929012346,
       "cubicYardsWithWaste": 0.0003858024691,
       "tonsWithWaste": 0.0001929012346
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > traditional-ira-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "currentBalance": 20000,
+      "annualReturn": 7,
+      "years": 20,
+      "annualContribution": 7000,
+      "taxRateAtWithdrawal": 22
+    },
+    "outputs": {
+      "futureValue": 364362.1355,
+      "totalContributed": 160000,
+      "totalGrowth": 204362.1355,
+      "taxSavingsThisYear": 1540,
+      "taxOwedAtWithdrawal": 80159.66981,
+      "afterTaxValue": 284202.4657
+    }
+  },
+  "typical": {
+    "inputs": {
+      "currentBalance": 30000,
+      "annualReturn": 10.5,
+      "years": 30,
+      "annualContribution": 10500,
+      "taxRateAtWithdrawal": 33
+    },
+    "outputs": {
+      "futureValue": 2499032.396,
+      "totalContributed": 345000,
+      "totalGrowth": 2154032.396,
+      "taxSavingsThisYear": 3465,
+      "taxOwedAtWithdrawal": 824680.6908,
+      "afterTaxValue": 1674351.706
+    }
+  },
+  "edge": {
+    "inputs": {
+      "currentBalance": 0,
+      "annualReturn": 0,
+      "years": 1,
+      "annualContribution": 0,
+      "taxRateAtWithdrawal": 0
+    },
+    "outputs": {
+      "futureValue": 0,
+      "totalContributed": 0,
+      "totalGrowth": 0,
+      "taxSavingsThisYear": 0,
+      "taxOwedAtWithdrawal": 0,
+      "afterTaxValue": 0
     }
   }
 }

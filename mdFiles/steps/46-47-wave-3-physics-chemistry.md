@@ -385,9 +385,14 @@ build agent's judgment**, same as every run so far.
     listening on port 3000 (not started by this run), same precedent runs 4/5 in this file set, so
     it was left running rather than curled or killed.
   - 321 calculators total after this run (316 + 5). `physics` is now 26.
-- [ ] Physics mechanics-remainder run B (5): centripetal force (F = mv²/r), gravitational force
-  (Newton's law, F = Gm₁m₂/r² — distinct from weight-calculator's local gravity), torque (τ = F·r),
-  buoyancy (Archimedes), pendulum period (T = 2π√(L/g))
+- [ ] Physics mechanics-remainder run B (5), branch `step/46-wave-3-physics-run-6`, PR TBD —
+  **IN PROGRESS**:
+  ## Progress
+  - [ ] centripetal-force-calculator
+  - [ ] gravitational-force-calculator
+  - [ ] torque-calculator
+  - [ ] buoyancy-calculator
+  - [ ] pendulum-period-calculator
 - [ ] Physics waves/other-remainder run (5): Doppler effect, Snell's law (refraction), E = mc²
   (mass-energy equivalence), thermal expansion, escape velocity — closes out every named seed-list
   item from "Physics — proposed additions" above

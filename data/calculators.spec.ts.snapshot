@@ -14196,6 +14196,38 @@ exports[`compute() snapshots > wavelength-frequency-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > weak-acid-ionization-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "ka": 0.00018,
+      "initialConcentration": 0.534
+    },
+    "outputs": {
+      "hydrogenIon": 0.009714493868
+    }
+  },
+  "typical": {
+    "inputs": {
+      "ka": 0.00027,
+      "initialConcentration": 0.801
+    },
+    "outputs": {
+      "hydrogenIon": 0.0145717408
+    }
+  },
+  "edge": {
+    "inputs": {
+      "ka": 0,
+      "initialConcentration": 0
+    },
+    "outputs": {
+      "hydrogenIon": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > weight-calculator 1`] = `
 {
   "default": {

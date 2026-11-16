@@ -5739,5 +5739,125 @@ export const chemistryCalculators: CalculatorConfig[] = [
     compute(values) {
       return { rate1: values.molarMass1 === 0 ? NaN : values.rate2 * Math.sqrt(values.molarMass2 / values.molarMass1) };
     }
+  },
+  {
+    id: 'weak-acid-ionization-calculator',
+    category: 'chemistry',
+    group: 'Acid-Base Chemistry',
+    glyph: 'Ka',
+    updatedAt: '2026-11-16',
+    aliases: ['weak acid ph calculator', 'percent ionization calculator', 'weak acid dissociation calculator', 'ka to ph calculator', 'degree of ionization calculator'],
+    related: ['ph-poh-calculator', 'pka-henderson-hasselbalch-calculator', 'molarity-calculator', 'buffer-capacity-calculator'],
+    title: 'Weak Acid pH & Percent Ionization Calculator',
+    description: 'Find the pH and percent ionization of a weak acid solution from its Ka and starting concentration — solved exactly, not with the common “x is negligible” shortcut.',
+    example: 'A 0.534 M solution of formic acid (Ka = 1.8 × 10⁻⁴) ionizes to [H⁺] ≈ 0.0097 mol/L, a pH of about 2.01 — only about 1.8% of the acid actually ionizes.',
+    solver: {
+      defaultTarget: 'hydrogenIon',
+      variables: [
+        { id: 'ka', label: 'Acid dissociation constant, Ka', symbol: 'Ka', dimension: 'count', defaultValue: 1.8e-4, defaultUnit: 'count' },
+        { id: 'initialConcentration', label: 'Initial acid concentration (mol/L)', symbol: 'C₀', dimension: 'count', defaultValue: 0.534, defaultUnit: 'count' },
+        { id: 'hydrogenIon', label: 'Hydrogen-ion concentration at equilibrium (mol/L)', symbol: '[H⁺]', dimension: 'count', defaultValue: 0.009714, defaultUnit: 'count' }
+      ],
+      solve: {
+        hydrogenIon: ({ ka, initialConcentration }) =>
+          ka <= 0 || initialConcentration <= 0 ? NaN : (2 * ka * initialConcentration) / (ka + Math.sqrt(ka ** 2 + 4 * ka * initialConcentration)),
+        ka: ({ initialConcentration, hydrogenIon }) =>
+          initialConcentration === hydrogenIon ? NaN : hydrogenIon ** 2 / (initialConcentration - hydrogenIon),
+        initialConcentration: ({ ka, hydrogenIon }) => (ka === 0 ? NaN : hydrogenIon ** 2 / ka + hydrogenIon)
+      },
+      outputs: [
+        { id: 'pH', label: 'pH', dimension: 'pH', unit: 'pH', compute: (si) => -Math.log10(si.hydrogenIon) },
+        { id: 'percentIonization', label: 'Percent ionization', dimension: 'percent', unit: '%', compute: (si) => (si.hydrogenIon / si.initialConcentration) * 100 }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-16',
+      concept: {
+        title: 'What is percent ionization?',
+        paragraphs: [
+          'Unlike a strong acid, which is treated as 100% ionized, a weak acid (HA) only partly ionizes in water: HA + H₂O ⇌ H₃O⁺ + A⁻. How far that equilibrium sits is described by the acid’s own dissociation constant, Ka = [H⁺][A⁻] ÷ [HA] — a fixed property of that specific acid, unrelated to how concentrated the solution is.',
+          'Starting from an initial concentration C₀ and letting x be how much ionizes, [H⁺] = [A⁻] = x and [HA] = C₀ − x at equilibrium, turning the Ka expression into a quadratic in x: Ka = x² ÷ (C₀ − x). Many textbooks simplify this by assuming x is negligible next to C₀ (so Ka ≈ x² ÷ C₀), which is usually close enough when Ka is very small, but this calculator solves the exact quadratic instead — OpenStax Chemistry 2e’s own Example 14.12 checks that very assumption after the fact, exactly because it is only an approximation.',
+          'Once x — the equilibrium hydrogen-ion concentration — is known, pH = −log₁₀[H⁺] follows directly, and percent ionization (x ÷ C₀ × 100) describes what fraction of the original acid actually ionized. Both numbers describe the same equilibrium from two different angles: pH says how acidic the solution is, percent ionization says how "weak" the acid is behaving at that particular concentration.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the acid’s Ka (fixed, since it does not change with concentration) and its starting concentration; the equilibrium hydrogen-ion concentration, pH, and percent ionization fill in automatically.',
+        steps: [
+          { name: 'Look up or identify the acid’s Ka', text: 'From a reference table — for example, 1.8 × 10⁻⁴ for formic acid, or 1.8 × 10⁻⁵ for acetic acid.' },
+          { name: 'Enter the initial concentration', text: 'The concentration before any ionization happens, in mol/L.' },
+          { name: 'Read the equilibrium hydrogen-ion concentration', text: 'It fills in automatically, solved exactly from the quadratic rather than an approximation.' },
+          { name: 'Read pH and percent ionization', text: 'Both appear underneath as bonus figures computed from the same result.' },
+          { name: 'Or work backward', text: 'Enter a measured [H⁺] (or pH, converted first) and the concentration, and solve for the acid’s own Ka instead — a common way to determine Ka experimentally.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Ka = x² ÷ (C₀ − x) rearranges into a quadratic solved exactly for x, the equilibrium [H⁺].',
+        expression: 'Ka = x² ÷ (C₀ − x)\nx = 2Ka·C₀ ÷ (Ka + √(Ka² + 4·Ka·C₀))\npH = −log₁₀(x)\n% ionization = (x ÷ C₀) × 100',
+        terms: [
+          { symbol: 'Ka', meaning: 'The weak acid’s own acid dissociation constant — a fixed property of that acid, not of the solution’s concentration.' },
+          { symbol: 'C₀', meaning: 'The acid’s initial (pre-ionization) concentration, in mol/L.' },
+          { symbol: 'x', meaning: 'The equilibrium hydrogen-ion concentration, [H⁺] — the amount of acid that actually ionized.' }
+        ],
+        note: 'The rearranged form above is algebraically identical to the ordinary quadratic formula applied to x² + Ka·x − Ka·C₀ = 0, but avoids subtracting two nearly equal numbers, which keeps the answer accurate even for a very small Ka — the same numerically stable rearrangement this site’s common-ion effect calculator uses for a related equilibrium.'
+      },
+      workedExample: {
+        intro: 'What is the hydrogen-ion concentration and pH of a 0.534 M solution of formic acid, HCO₂H (Ka = 1.8 × 10⁻⁴)? (OpenStax Chemistry 2e, Example 14.12.)',
+        rows: [
+          { label: 'Ka', value: '1.8 × 10⁻⁴' },
+          { label: 'C₀', value: '0.534 mol/L' },
+          { label: 'x = 2Ka·C₀ ÷ (Ka + √(Ka² + 4·Ka·C₀))', value: '≈ 0.009714 mol/L' },
+          { label: 'pH = −log₁₀(0.009714)', value: '≈ 2.013' },
+          { label: '% ionization = (0.009714 ÷ 0.534) × 100', value: '≈ 1.82%' }
+        ],
+        result: '[H⁺] ≈ 0.0097 mol/L, pH ≈ 2.01, about 1.8% ionized',
+        explanation: 'OpenStax’s own solution uses the simplifying assumption that x is negligible next to 0.534, getting x ≈ 9.8 × 10⁻³ and pH 2.01 — and then separately checks that the assumption was valid (x is only 1.8% of C₀, small enough to trust). Solving the exact quadratic directly, without that assumption, gives the same answer to the precision OpenStax reports (0.009714 rounds to 0.0097), which is exactly what the check was confirming.'
+      },
+      watchOut: [
+        {
+          title: 'This is an unbuffered weak acid, not a buffer',
+          body: 'The pKa / Henderson-Hasselbalch calculator on this site answers a related but different question: the pH of a mixture that already contains both the weak acid and its conjugate base (a buffer). This calculator instead starts from only the weak acid dissolved in water, before any conjugate base is added.'
+        },
+        {
+          title: 'The "x is negligible" shortcut is an approximation, not a rule',
+          body: 'Many textbooks approximate Ka ≈ x² ÷ C₀ when x is expected to be small compared with C₀. It usually works well for a small Ka and a reasonably concentrated solution, but gets noticeably less accurate as the percent ionization rises — a dilute solution of even a fairly weak acid can ionize more than 5%, where the shortcut starts to matter.'
+        },
+        {
+          title: 'Percent ionization increases as a solution gets more dilute',
+          body: 'A weak acid becomes a larger percentage ionized at lower concentrations, even though [H⁺] itself goes down — diluting a weak acid moves it closer to fully ionized, not further away, which can be counterintuitive next to a strong acid’s simple proportional dilution.'
+        },
+        {
+          title: 'This formula assumes water’s own ionization is negligible by comparison',
+          body: 'Pure water supplies its own small [H⁺] (about 1.0 × 10⁻⁷ mol/L at 25°C). For anything but an extremely dilute or extremely weak acid, that contribution is negligible next to the acid’s own ionization — this calculator, like most general-chemistry problems, assumes that is the case.'
+        }
+      ],
+      references: [
+        { label: 'OpenStax, Chemistry 2e, §14.3 "Relative Strengths of Acids and Bases" (the weak-acid equilibrium and Example 14.12, formic acid)', url: 'https://openstax.org/books/chemistry-2e/pages/14-3-relative-strengths-of-acids-and-bases' }
+      ]
+    },
+    inputs: [
+      { id: 'ka', label: 'Acid dissociation constant, Ka', type: 'number', placeholder: '0.00018', defaultValue: 0.00018, step: 0.00001, min: 0 },
+      { id: 'initialConcentration', label: 'Initial concentration (mol/L)', type: 'number', placeholder: '0.534', defaultValue: 0.534, step: 0.001, min: 0 }
+    ],
+    seo: {
+      title: 'Weak Acid pH & Percent Ionization Calculator',
+      description: 'Free weak acid calculator. Find pH and percent ionization from Ka and concentration, solved exactly — not with the “x is negligible” shortcut.',
+      faq: [
+        { question: 'How do I find the pH of a weak acid?', answer: 'Solve Ka = x² ÷ (C₀ − x) for x (the equilibrium [H⁺]), then take pH = −log₁₀(x). This calculator solves the exact quadratic rather than assuming x is negligible next to C₀.' },
+        { question: 'What is the pH of 0.534 M formic acid?', answer: 'About 2.01, using Ka = 1.8 × 10⁻⁴ — close to, but not exactly, the pH of a strong acid at the same concentration, which would be −log₁₀(0.534) ≈ 0.27.' },
+        { question: 'What is percent ionization?', answer: 'The fraction of a weak acid that actually ionizes, as a percentage: (equilibrium [H⁺] ÷ initial concentration) × 100. Formic acid at 0.534 M is only about 1.8% ionized.' },
+        { question: 'How is this different from the Henderson-Hasselbalch calculator?', answer: 'This calculator finds the pH of a weak acid dissolved alone in water. The Henderson-Hasselbalch calculator finds the pH of a buffer — a mixture that already contains both the weak acid and its conjugate base together.' },
+        { question: 'Does percent ionization change with concentration?', answer: 'Yes — a weak acid becomes a larger percentage ionized as the solution gets more dilute, even though the actual hydrogen-ion concentration decreases. Ka itself stays fixed; only how it distributes between [HA] and [H⁺]/[A⁻] shifts.' },
+        { question: 'Can this calculator find an acid’s Ka instead?', answer: 'Yes — enter a measured equilibrium [H⁺] (found from a measured pH, if that is what you have) along with the known initial concentration, and the calculator solves for Ka.' },
+        { question: 'Is the “x is negligible” shortcut ever wrong enough to matter?', answer: 'For formic acid at 0.534 M, the shortcut and the exact quadratic agree to four significant figures — but for a more dilute solution or a larger Ka, percent ionization rises and the shortcut’s error grows, which is exactly why OpenStax’s own worked example checks it afterward rather than assuming it.' }
+      ]
+    },
+    compute(values) {
+      const hydrogenIon =
+        values.ka <= 0 || values.initialConcentration <= 0
+          ? NaN
+          : (2 * values.ka * values.initialConcentration) / (values.ka + Math.sqrt(values.ka ** 2 + 4 * values.ka * values.initialConcentration));
+      return { hydrogenIon };
+    }
   }
 ];

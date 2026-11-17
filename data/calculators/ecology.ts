@@ -3125,5 +3125,155 @@ export const ecologyCalculators: CalculatorConfig[] = [
       const recapturePct = (values.markedSecondCatch / values.totalSecondCatch) * 100;
       return { populationEstimate, recapturePct };
     }
+  },
+  {
+    id: 'noise-exposure-calculator',
+    category: 'ecology',
+    glyph: 'dB',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'noise exposure calculator',
+      'osha noise dose calculator',
+      'sound level twa calculator',
+      'permissible noise exposure calculator',
+      'occupational noise exposure calculator',
+      'noise dose calculator'
+    ],
+    related: ['decibel-calculator', 'air-quality-index-calculator', 'co2-breathing-emission-calculator', 'carbon-footprint-calculator'],
+    title: 'Noise Exposure Calculator (OSHA)',
+    description: 'Calculate OSHA permissible noise exposure duration, dose, and 8-hour time-weighted average (TWA) from a sound level and exposure time, per 29 CFR 1910.95.',
+    example:
+      'A measured sound level of 97 dBA for 3 hours uses about 99% of the OSHA-permissible dose for that level (the limit is roughly 3.03 hours), equivalent to a TWA of about 89.9 dB.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is noise exposure dose?',
+        paragraphs: [
+          'The U.S. Occupational Safety and Health Administration (OSHA) sets limits on how long a worker can be exposed to a given sound level before hearing damage risk becomes unacceptable, codified in 29 CFR 1910.95, Appendix A. The standard’s reference point is 90 decibels (dBA) for a full 8-hour workday; every 5 dB increase in sound level cuts the permissible exposure time in half, an approach OSHA calls a 5 dB "exchange rate."',
+          'Rather than just checking "is the level under 90 dB," OSHA’s own method expresses any single exposure as a percentage of its permissible duration, called the dose. A worker exposed to 95 dB (permissible duration: 4 hours) for 2 hours has used exactly 50% of their allowable dose at that level — the same 50% a worker at a different level would use by filling half of their own permissible duration.',
+          'When a dose is known (whether from one exposure or several different levels combined), OSHA converts it back into a single number everyone recognizes: an equivalent 8-hour time-weighted average (TWA), the sound level that, sustained for a full 8-hour shift, would produce that same dose. A dose of exactly 100% always converts back to a TWA of 90 dB, since that is the reference level the whole system is built around.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the measured sound level and how long the exposure lasted; the permissible duration, dose, and TWA fill in instantly.',
+        steps: [
+          { name: 'Enter the sound level', text: 'The measured A-weighted sound level, in dBA, from a sound level meter or dosimeter.' },
+          { name: 'Enter the exposure duration', text: 'How long the exposure actually lasted, in hours.' },
+          { name: 'Read the permissible duration', text: 'The maximum time OSHA permits at that sound level before it must be reduced or hearing protection required.' },
+          { name: 'Read the dose and TWA', text: 'The dose shows what percentage of the permissible exposure was used; the TWA converts that dose into an equivalent 8-hour average sound level.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'OSHA’s 5 dB exchange rate gives a permissible duration for any sound level; actual exposure time divided by that duration gives the dose; the dose converts back into an equivalent 8-hour average.',
+        expression: 'T = 8 ÷ 2^((L − 90) ÷ 5)\nD = 100 × (C ÷ T)\nTWA = 16.61 × log₁₀(D ÷ 100) + 90',
+        terms: [
+          { symbol: 'L', meaning: 'The measured A-weighted sound level, in dBA.' },
+          { symbol: 'T', meaning: 'The permissible exposure duration at level L, in hours, from OSHA’s 5 dB exchange rate.' },
+          { symbol: 'C', meaning: 'The actual exposure duration, in hours.' },
+          { symbol: 'D', meaning: 'Dose, as a percentage of the permissible exposure at that level.' },
+          { symbol: 'TWA', meaning: 'The equivalent 8-hour time-weighted average sound level that would produce the same dose D.' }
+        ],
+        note: 'This calculator handles one constant sound level over one period. OSHA’s own regulation sums dose across multiple periods at different levels in a single shift: D = 100 × (C₁/T₁ + C₂/T₂ + ... + Cₙ/Tₙ).'
+      },
+      workedExample: {
+        intro: 'A sound level meter reads 97 dBA for 3 hours of a shift.',
+        rows: [
+          { label: 'Permissible duration (T = 8 ÷ 2^((97−90)/5))', value: '≈3.031 hours' },
+          { label: 'Dose (D = 100 × (3 ÷ 3.031))', value: '≈98.96%' },
+          { label: 'TWA (16.61 × log₁₀(0.9896) + 90)', value: '≈89.92 dB' }
+        ],
+        result: '≈99% of the permissible dose, equivalent to a TWA of ≈89.9 dB',
+        explanation:
+          'At exactly 100% dose, this formula always returns a TWA of 90 dB, OSHA’s own reference level — this example’s 98.96% dose lands just under that, at 89.92 dB, since the actual 3-hour exposure fell just short of the full 3.031-hour permissible duration at 97 dBA.'
+      },
+      watchOut: [
+        {
+          title: 'This covers one sound level, not a whole shift',
+          body: 'A real workday often mixes several sound levels. OSHA’s regulation adds each period’s own C ÷ T together before converting to a single dose and TWA — for a multi-level day, compute each period separately and sum the dose fractions.'
+        },
+        {
+          title: 'The published table runs from about 80 to 130 dB',
+          body: 'OSHA’s own permissible-exposure table is defined across that range. The same formula extrapolates outside it (predicting very long permissible durations at low sound levels), but those extrapolated figures are not an OSHA-defined limit — OSHA does not regulate exposure durations below the table’s range the same way.'
+        },
+        {
+          title: 'No TWA at zero dose',
+          body: 'A dose of 0% (no exposure at all) has no equivalent TWA, since the conversion formula takes the logarithm of the dose — mathematically undefined at zero, which is also the sensible answer, since there is nothing to average.'
+        },
+        {
+          title: 'This is OSHA’s standard specifically, not every noise-exposure rule',
+          body: 'Other organizations and some other countries use different reference levels and exchange rates for their own occupational noise standards; this calculator implements OSHA’s 90 dB / 5 dB exchange-rate method from 29 CFR 1910.95 Appendix A specifically.'
+        },
+        {
+          title: 'A sound-level reading, not a hearing-damage diagnosis',
+          body: 'This is a regulatory exposure calculation based on a measured sound level and duration, not a medical assessment of hearing loss risk for a specific person, which depends on individual susceptibility as well as exposure history.'
+        }
+      ],
+      references: [
+        {
+          label: 'U.S. Dept. of Labor, OSHA, 29 CFR 1910.95 Appendix A, "Noise Exposure Computation"',
+          url: 'https://www.osha.gov/laws-regs/regulations/standardnumber/1910/1910.95AppA'
+        }
+      ]
+    },
+    inputs: [
+      { id: 'soundLevelDb', label: 'Sound level', type: 'number', placeholder: '97', defaultValue: 97, step: 1, dimension: 'decibel', unit: 'dB' },
+      { id: 'exposureHours', label: 'Exposure duration', type: 'number', placeholder: '3', defaultValue: 3, step: 0.1, min: 0, dimension: 'time', unit: 'h' }
+    ],
+    breakdown: {
+      headline: 'dosePct',
+      headlineLabel: 'Noise dose (% of permissible exposure)',
+      outputs: [
+        { id: 'dosePct', label: 'Dose', format: 'percent' },
+        { id: 'permissibleHours', label: 'Permissible duration at this level', dimension: 'time', unit: 'h' },
+        { id: 'twaDb', label: '8-hour time-weighted average (dB)', format: 'number' }
+      ],
+      groups: [{ title: 'Exposure', inputs: ['soundLevelDb', 'exposureHours'] }],
+      visual: {
+        type: 'rangeBar',
+        value: 'dosePct',
+        bands: [
+          { label: 'Within the permissible dose', min: 0, max: 100 },
+          { label: 'Exceeds the permissible dose', min: 100, max: 1000 }
+        ],
+        title: 'Dose vs. OSHA permissible limit (100%)'
+      }
+    },
+    seo: {
+      title: 'Noise Exposure Calculator – OSHA Dose & TWA',
+      description: 'Free noise exposure calculator. Compute OSHA permissible duration, dose, and 8-hour TWA from a sound level and exposure time per 29 CFR 1910.95.',
+      faq: [
+        {
+          question: 'How is OSHA permissible noise exposure calculated?',
+          answer: 'T = 8 ÷ 2^((L − 90) ÷ 5), where L is the sound level in dBA and T is the permissible duration in hours. At 97 dBA, T ≈ 3.031 hours.'
+        },
+        {
+          question: 'What is noise dose?',
+          answer: 'Dose is actual exposure time divided by permissible exposure time at that level, as a percentage: D = 100 × (C ÷ T). A 3-hour exposure at 97 dBA (T ≈ 3.031 h) is a dose of about 98.96%.'
+        },
+        {
+          question: 'What does TWA mean?',
+          answer: 'The time-weighted average — the single, equivalent 8-hour sound level that would produce the same dose. A dose of exactly 100% always converts to a TWA of 90 dB, OSHA’s own 8-hour reference level.'
+        },
+        {
+          question: 'What is OSHA’s "5 dB exchange rate"?',
+          answer: 'Every 5 dB increase in sound level halves the permissible exposure duration: 8 hours at 90 dB, 4 hours at 95 dB, 2 hours at 100 dB, and so on, per OSHA’s published table in 29 CFR 1910.95 Appendix A.'
+        },
+        {
+          question: 'What if my shift has more than one noise level?',
+          answer: 'OSHA’s formula sums the dose fraction (C ÷ T) from each period at its own level, then multiplies the total by 100. This calculator handles one period at a time; add each period’s dose for a full-shift total.'
+        },
+        {
+          question: 'Is this the same as the Decibel Calculator?',
+          answer: 'No. Decibel Calculator solves the physics of sound intensity ratios (dB = 10 × log₁₀(P₂ ÷ P₁)); this calculator applies OSHA’s specific occupational exposure-limit formulas to a measured sound level and duration.'
+        }
+      ]
+    },
+    compute(values) {
+      const permissibleHours = oshaPermissibleHours(values.soundLevelDb);
+      const dosePct = 100 * (values.exposureHours / permissibleHours);
+      const twaDb = dosePct > 0 ? oshaTwaFromDose(dosePct) : NaN;
+      return { permissibleHours, dosePct, twaDb };
+    }
   }
 ];

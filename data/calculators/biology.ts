@@ -11,6 +11,51 @@ import {
 import { LAB_REAGENTS } from '../../lib/labReagents.ts';
 import { AMINO_ACIDS, proteinMolecularWeight } from '../../lib/aminoAcids.ts';
 
+// --- Step 48 batch 6 (simple, non-medical animal biology) constants — self-contained block ---
+
+// dog-age-calculator / cat-age-calculator: both solver variables use the 'time' dimension (SI base
+// seconds), but the published formulas are stated in years — same Julian-year convention as
+// lib/units.ts's own private YEAR constant, redefined locally for self-containment (same precedent
+// as centrifuge-rcf-rpm-calculator's local STANDARD_GRAVITY above).
+const YEAR_SECONDS = 365.25 * 86400;
+
+// animal-gestation-calculator / egg-incubation-calculator: species picked via a numeric options
+// code, same mechanism as dna-to-mrna-calculator's DNA_BASE_OPTIONS — normalizeOptionCode guards
+// against the snapshot harness's 1.5x "typical" input scaling landing on a non-integer/out-of-range
+// code (template §2, "only 0 survives that unchanged").
+function normalizeOptionCode(raw: number, count: number) {
+  const rounded = Math.round(raw);
+  return ((rounded % count) + count) % count;
+}
+
+// Gestation length (days) by species. Source: Wikipedia, "List of mammalian gestation durations"
+// (fetched directly), itself sourced per species to Doherty/Wildlife Conservation Society (dog,
+// cat — no species-specific override reference given beyond that general column source), Sacher &
+// Staffeldt (1974) (horse, goat, and sheep's single average), University of Nebraska–Lincoln Beef
+// Extension (cattle), and Rijnberk & van Sluijs (2005) (rabbit). Sheep's source publishes only an
+// average with no separate min/max — min and max are both set to that same average rather than
+// inventing a range (stated explicitly in the page's own content).
+const GESTATION_SPECIES = [
+  { value: 0, label: 'Dog', min: 58, max: 65, avg: 61 },
+  { value: 1, label: 'Cat', min: 58, max: 67, avg: 64 },
+  { value: 2, label: 'Cow (cattle)', min: 279, max: 287, avg: 283 },
+  { value: 3, label: 'Horse', min: 330, max: 342, avg: 336 },
+  { value: 4, label: 'Goat', min: 145, max: 155, avg: 150 },
+  { value: 5, label: 'Sheep', min: 150, max: 150, avg: 150 },
+  { value: 6, label: 'Rabbit', min: 28, max: 35, avg: 31 }
+];
+
+// Egg incubation period (days) by species. Source: Wikipedia, "Egg incubation" (fetched directly).
+const EGG_INCUBATION_SPECIES = [
+  { value: 0, label: 'Chicken', min: 21, max: 21, avg: 21 },
+  { value: 1, label: 'Duck', min: 28, max: 28, avg: 28 },
+  { value: 2, label: 'Muscovy duck', min: 35, max: 35, avg: 35 },
+  { value: 3, label: 'Goose', min: 28, max: 33, avg: 30.5 },
+  { value: 4, label: 'Turkey', min: 28, max: 28, avg: 28 },
+  { value: 5, label: 'Coturnix quail', min: 16, max: 18, avg: 17 },
+  { value: 6, label: 'Bobwhite quail', min: 23, max: 24, avg: 23.5 }
+];
+
 // Standard gravity (BIPM SI Brochure), used by centrifuge-rcf-rpm-calculator's RCF = omega^2 r / g0 —
 // same value and source as physics.ts's own STANDARD_GRAVITY constant.
 const STANDARD_GRAVITY = 9.80665;
@@ -2736,6 +2781,462 @@ export const biologyCalculators: CalculatorConfig[] = [
       const volume = isSphere ? (4 / 3) * Math.PI * s ** 3 : s ** 3;
       const ratio = volume === 0 ? NaN : surfaceArea / volume;
       return { ratio, surfaceArea, volume };
+    }
+  },
+  {
+    id: 'dog-age-calculator',
+    category: 'biology',
+    glyph: '16ln',
+    updatedAt: '2026-11-17',
+    aliases: ['dog age calculator', 'dog years to human years calculator', 'dog age in human years calculator', 'how old is my dog in human years', 'dog to human age converter', 'dog years calculator'],
+    related: ['cat-age-calculator', 'animal-gestation-calculator', 'age-calculator', 'population-growth-calculator'],
+    title: 'Dog Age Calculator (Dog Years to Human Years)',
+    description: 'Convert a dog’s age to a human-year equivalent with the epigenetic-clock formula human age = 16 × ln(dog age) + 31 — not the flat “× 7” myth.',
+    example: 'A 5-year-old dog is about 56.8 in human years (16 × ln(5) + 31) — nowhere near the “× 7” myth’s 35.',
+    solver: {
+      defaultTarget: 'humanAge',
+      variables: [
+        { id: 'dogAge', label: 'Dog’s age', symbol: 'd', dimension: 'time', defaultValue: 5, defaultUnit: 'yr' },
+        { id: 'humanAge', label: 'Human-equivalent age', symbol: 'h', dimension: 'time', defaultValue: 56.75100659894561, defaultUnit: 'yr' }
+      ],
+      solve: {
+        humanAge: ({ dogAge }) => {
+          const years = dogAge / YEAR_SECONDS;
+          return years > 0 ? (16 * Math.log(years) + 31) * YEAR_SECONDS : NaN;
+        },
+        dogAge: ({ humanAge }) => Math.exp((humanAge / YEAR_SECONDS - 31) / 16) * YEAR_SECONDS
+      },
+      visuals: [
+        {
+          type: 'compareBars',
+          bars: [
+            { from: 'dogAge', label: 'Dog’s age' },
+            { from: 'humanAge', label: 'Human-equivalent age' }
+          ],
+          title: 'Dog age vs. human-equivalent age',
+          highlight: 1
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'Why “1 dog year = 7 human years” is a myth',
+        paragraphs: [
+          'The flat “multiply by 7” rule has no real biological basis — it survives mostly because it’s easy to repeat, not because it tracks how dogs actually age. Dogs reach puberty and most of their adult size within their first one to two years, far faster than a human does over seven, and then age much more slowly for the rest of a typical lifespan — a constant multiplier can’t fit both halves of that curve at once.',
+          'Wang et al. (2020), writing in Cell Systems, built a more accurate translation by comparing DNA methylation ("epigenetic clock") patterns across the lifespan in dogs (mostly Labrador retrievers) and humans. Matching each dog’s methylome to the nearest-aged human methylomes, and the reciprocal comparison, revealed "a monotonic, time-resolved, nonlinear relationship between dog and human age" that a logarithmic curve fits well, not a straight line.',
+          'Combining both directions of that comparison, the study reports a single function: human_age = 16 × ln(dog_age) + 31. The authors note it lines up with real physiological milestones — roughly 8 weeks in a puppy (deciduous-tooth eruption) translates to roughly 9 months in a human infant, and the Labrador retrievers’ own expected lifespan of about 12 years translates to the human lifespan figure the study cites, about 70 years.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter either age — the dog’s age in years, or a human-equivalent age — and the other fills in from the formula.',
+        steps: [
+          { name: 'Enter the dog’s age', text: 'In years. The formula is undefined at exactly 0, so use a small positive number for a very young puppy rather than 0.' },
+          { name: 'Read the human-equivalent age', text: 'Calculated from human_age = 16 × ln(dog_age) + 31.' },
+          { name: 'Or work backward', text: 'Type a human-equivalent age instead, and the dog’s age fills in from the inverse formula.' },
+          { name: 'Switch which field is “auto”', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Check the chart', text: 'The bar chart shows both ages side by side on the same (years) axis, which is what makes the nonlinearity visible.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Wang et al. (2020) fit this logarithmic curve directly to cross-species DNA methylation data; it rearranges cleanly for the inverse direction.',
+        expression: 'human_age = 16 × ln(dog_age) + 31\ndog_age = e^((human_age − 31) ÷ 16)',
+        terms: [
+          { symbol: 'dog_age', meaning: 'The dog’s age, in years, greater than 0.' },
+          { symbol: 'human_age', meaning: 'The equivalent human age, in years.' },
+          { symbol: '16, 31', meaning: 'The fitted constants from the study’s combined dog↔human methylome comparison (Figure 3D).' }
+        ],
+        note: 'This is a population-level statistical curve, fit mainly on Labrador retrievers — see Watch out for below on what it does and doesn’t capture for an individual dog.'
+      },
+      workedExample: {
+        intro: 'How old is a 5-year-old dog in human years?',
+        rows: [
+          { label: 'Dog’s age (dog_age)', value: '5 years' },
+          { label: 'ln(5)', value: '≈ 1.609438' },
+          { label: '16 × ln(5)', value: '≈ 25.751' },
+          { label: '+ 31', value: '≈ 56.751' }
+        ],
+        result: '≈ 56.8 years old in human terms',
+        explanation: 'ln(5) ≈ 1.609438; multiplying by 16 gives about 25.751, and adding 31 gives about 56.751 — roughly 56.8, a world away from the “× 7” myth’s answer of 35.'
+      },
+      watchOut: [
+        { title: 'A 1-year-old dog isn’t 7 — it’s about 31', body: 'Plugging dog_age = 1 into the formula gives ln(1) = 0, so human_age = 31 exactly — reflecting how fast dogs reach physical and sexual maturity, nothing like the “× 7” myth’s answer of 7.' },
+        { title: 'Built mainly on Labrador retrievers', body: 'The underlying study’s dog methylome data came predominantly from Labrador retrievers. Dog breeds vary hugely in size and lifespan — small breeds often live notably longer than giant ones — and this single curve doesn’t adjust for breed.' },
+        { title: 'Undefined at exactly age 0', body: 'The natural log of 0 doesn’t exist, so a newborn puppy has no defined value on this curve — it’s meant for a dog whose age is greater than zero.' },
+        { title: 'A population-level curve, not an individual medical test', body: 'This translates where an average dog of a given age tends to sit relative to an average human, based on methylation patterns — it says nothing about any one dog’s individual health or how it’s aging.' }
+      ],
+      references: [
+        { label: 'Wang, T. et al. (2020), "Quantitative Translation of Dog-to-Human Aging by Conserved Remodeling of the DNA Methylome," Cell Systems 11(2):176–185', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7484147/' }
+      ]
+    },
+    inputs: [
+      { id: 'dogAge', label: 'Dog’s age (years)', type: 'number', placeholder: '5', defaultValue: 5, step: 0.5, min: 0 }
+    ],
+    seo: {
+      title: 'Dog Age Calculator – Dog Years to Human Years',
+      description: 'Free dog age calculator. Converts dog years to human years using Wang et al.’s (2020) epigenetic-clock formula — not the flat “× 7” myth.',
+      faq: [
+        { question: 'What is the dog years to human years formula?', answer: 'human_age = 16 × ln(dog_age) + 31, from Wang et al. (2020), Cell Systems — fit to DNA methylation data compared across dogs and humans, not the flat “× 7” rule.' },
+        { question: 'Why isn’t 1 dog year equal to 7 human years?', answer: 'Dogs reach puberty and most of their adult size in their first year or two, then age much more slowly — a constant multiplier can’t fit both the fast early years and the slower later ones.' },
+        { question: 'How old is a 1-year-old dog in human years?', answer: 'About 31 — plugging dog_age = 1 into the formula gives ln(1) = 0, so human_age = 31 exactly.' },
+        { question: 'How old is a 10-year-old dog in human years?', answer: 'About 67.8 (16 × ln(10) + 31 ≈ 67.84).' },
+        { question: 'What breed was this formula based on?', answer: 'The underlying 2020 Cell Systems study’s dog methylation data came mainly from Labrador retrievers, so it may fit very small or very large breeds less precisely.' },
+        { question: 'Does this work for puppies under a year old?', answer: 'Mathematically yes, for any age greater than zero, but the formula is undefined at exactly 0 and the study’s own milestone comparisons for very young ages are approximate.' }
+      ]
+    },
+    compute(values) {
+      return { humanAge: values.dogAge > 0 ? 16 * Math.log(values.dogAge) + 31 : NaN };
+    }
+  },
+  {
+    id: 'cat-age-calculator',
+    category: 'biology',
+    glyph: '+4/y',
+    updatedAt: '2026-11-17',
+    aliases: ['cat age calculator', 'cat years to human years calculator', 'cat age in human years calculator', 'how old is my cat in human years', 'cat to human age converter', 'cat years calculator'],
+    related: ['dog-age-calculator', 'animal-gestation-calculator', 'age-calculator'],
+    title: 'Cat Age Calculator (Cat Years to Human Years)',
+    description: 'Convert a cat’s age to a human-year equivalent from International Cat Care’s published chart: 1 year ≈ 15, 2 years ≈ 24, then about +4 a year after.',
+    example: 'A 5-year-old cat is about 36 in human years (16 + 4 × 5) — matching International Cat Care’s own published chart exactly.',
+    solver: {
+      defaultTarget: 'humanAge',
+      variables: [
+        { id: 'catAge', label: 'Cat’s age', symbol: 'c', dimension: 'time', defaultValue: 5, defaultUnit: 'yr' },
+        { id: 'humanAge', label: 'Human-equivalent age', symbol: 'h', dimension: 'time', defaultValue: 36, defaultUnit: 'yr' }
+      ],
+      solve: {
+        humanAge: ({ catAge }) => {
+          const years = catAge / YEAR_SECONDS;
+          if (!(years > 0)) return years === 0 ? 0 : NaN;
+          const human = years <= 1 ? 15 * years : years <= 2 ? 15 + 9 * (years - 1) : 16 + 4 * years;
+          return human * YEAR_SECONDS;
+        },
+        catAge: ({ humanAge }) => {
+          const years = humanAge / YEAR_SECONDS;
+          if (!(years > 0)) return years === 0 ? 0 : NaN;
+          const cat = years <= 15 ? years / 15 : years <= 24 ? 1 + (years - 15) / 9 : (years - 16) / 4;
+          return cat * YEAR_SECONDS;
+        }
+      },
+      visuals: [
+        {
+          type: 'compareBars',
+          bars: [
+            { from: 'catAge', label: 'Cat’s age' },
+            { from: 'humanAge', label: 'Human-equivalent age' }
+          ],
+          title: 'Cat age vs. human-equivalent age',
+          highlight: 1
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'Why “1 cat year = 7 human years” is a myth, too',
+        paragraphs: [
+          'The same flat-multiplier myth gets applied to cats, and it’s wrong for the same basic reason: cats pack an enormous amount of growing up into their first two years, then age much more gradually afterward — a fixed ratio can’t represent both.',
+          'International Cat Care, a veterinary charity focused on feline health, publishes a chart built around that pattern instead: a cat reaches the human equivalent of 15 by its first birthday, 24 by its second, and then gains roughly 4 more human-equivalent years for every year after that. Its own wording: "the first two years of a cat’s life equate to 24 human years and every year thereafter is equivalent to 4 human years."',
+          'This calculator turns that published chart into a continuous formula so any age — not just whole years — gets an answer, and flags where its own straight-line interpolation differs from the chart’s officially published whole-year checkpoints (see Watch out for below).'
+        ]
+      },
+      howTo: {
+        intro: 'Enter either age — the cat’s age in years, or a human-equivalent age — and the other fills in automatically.',
+        steps: [
+          { name: 'Enter the cat’s age', text: 'In years, including fractions for a kitten under 1 (e.g. 0.5 for 6 months).' },
+          { name: 'Read the human-equivalent age', text: 'Calculated from International Cat Care’s published checkpoints.' },
+          { name: 'Or work backward', text: 'Type a human-equivalent age instead to see roughly what cat age it corresponds to.' },
+          { name: 'Switch which field is “auto”', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Check the chart', text: 'The bar chart shows both ages side by side, making the first-two-years jump visible.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'International Cat Care publishes whole-year checkpoints (1 year = 15, 2 years = 24, then +4 each additional year). This calculator straight-line interpolates between them so a fractional age also gets an answer.',
+        expression: 'human_age = 15 × cat_age,  for 0 ≤ cat_age ≤ 1\nhuman_age = 15 + 9 × (cat_age − 1),  for 1 < cat_age ≤ 2\nhuman_age = 16 + 4 × cat_age,  for cat_age > 2',
+        terms: [
+          { symbol: 'cat_age', meaning: 'The cat’s age, in years.' },
+          { symbol: 'human_age', meaning: 'The equivalent human age, in years.' },
+          { symbol: '15, 24', meaning: 'International Cat Care’s own published checkpoints at exactly 1 and 2 years.' },
+          { symbol: '+4 per year', meaning: 'The published rate of change after age 2 — equivalent to human_age = 16 + 4 × cat_age for every whole year from 2 onward.' }
+        ],
+        note: 'The sub-year and 1-to-2-year segments are this calculator’s own interpolation between the published checkpoints, not an officially published month-by-month chart — see Watch out for below.'
+      },
+      workedExample: {
+        intro: 'How old is a 5-year-old cat in human years?',
+        rows: [
+          { label: 'Cat’s age (cat_age)', value: '5 years (past the age-2 checkpoint)' },
+          { label: '4 × 5', value: '20' },
+          { label: '16 + 20', value: '36' }
+        ],
+        result: '36 years old in human terms',
+        explanation: 'Because 5 is past the age-2 checkpoint, human_age = 16 + 4 × cat_age applies: 16 + 4 × 5 = 36 — matching International Cat Care’s own published chart entry for a 5-year-old cat exactly.'
+      },
+      watchOut: [
+        { title: 'A kitten’s first year alone is already about 15 human years', body: 'At cat_age = 1, this calculator gives human_age = 15 exactly, matching the published chart — most of a cat’s rapid early-life development happens well before its first birthday, nothing like the “× 7” myth’s answer of 7.' },
+        { title: 'The sub-year and 1–2-year figures are this calculator’s own interpolation', body: 'International Cat Care publishes whole-year checkpoints only (1 year = 15, 2 years = 24, then +4 a year); the straight lines connecting those points here are a reasonable estimate for a fractional age, not an officially published month-by-month figure.' },
+        { title: 'Individual cats vary', body: 'Breed, indoor-vs-outdoor lifestyle, and overall health all affect how an individual cat actually ages — this chart is a population average, not a prediction for one specific cat.' },
+        { title: 'Not a substitute for veterinary assessment', body: 'A cat’s real physical condition — teeth, mobility, weight, bloodwork — tells a vet far more about its health status than a human-equivalent age figure does.' }
+      ],
+      references: [
+        { label: 'International Cat Care, "How to Tell Your Cat’s Age in Human Years"', url: 'https://icatcare.org/advice/how-to-tell-your-cats-age-in-human-years/' }
+      ]
+    },
+    inputs: [
+      { id: 'catAge', label: 'Cat’s age (years)', type: 'number', placeholder: '5', defaultValue: 5, step: 0.5, min: 0 }
+    ],
+    seo: {
+      title: 'Cat Age Calculator – Cat Years to Human Years',
+      description: 'Free cat age calculator using International Cat Care’s published chart: 1 year ≈ 15 human years, 2 years ≈ 24, then about +4 a year after.',
+      faq: [
+        { question: 'What is the cat years to human years formula?', answer: 'International Cat Care’s published chart: 15 by age 1, 24 by age 2, then about +4 human years for every year after — this calculator interpolates it into a continuous formula.' },
+        { question: 'Why isn’t 1 cat year equal to 7 human years?', answer: 'A kitten’s first year alone is already worth about 15 human years on the published chart — cats mature far faster than a flat 7-per-year rule assumes.' },
+        { question: 'How old is a 1-year-old cat in human years?', answer: '15 — one of International Cat Care’s own published checkpoints.' },
+        { question: 'How old is a 10-year-old cat in human years?', answer: '56 (16 + 4 × 10), matching the published chart’s own 10-year entry.' },
+        { question: 'What about kittens under a year old?', answer: 'This calculator’s sub-year figures are a straight-line interpolation toward the published 1-year checkpoint (15) — International Cat Care itself only publishes whole-year values.' },
+        { question: 'Is this exact for every cat?', answer: 'No — it is a population-average chart. Breed, lifestyle, and health all affect how an individual cat actually ages.' }
+      ]
+    },
+    compute(values) {
+      const age = values.catAge;
+      const humanAge = age <= 1 ? 15 * age : age <= 2 ? 15 + 9 * (age - 1) : 16 + 4 * age;
+      return { humanAge };
+    }
+  },
+  {
+    id: 'animal-gestation-calculator',
+    category: 'biology',
+    glyph: 'gest',
+    updatedAt: '2026-11-17',
+    aliases: ['animal gestation calculator', 'dog gestation calculator', 'cow gestation period calculator', 'horse gestation calculator', 'how long are animals pregnant', 'gestation length by species calculator'],
+    related: ['dog-age-calculator', 'cat-age-calculator', 'egg-incubation-calculator', 'pregnancy-due-date-calculator'],
+    title: 'Animal Gestation Calculator (Dog, Cat, Cow, Horse & More)',
+    description: 'Look up average gestation length, with the typical range, for dogs, cats, cows, horses, goats, sheep, and rabbits from a single species-selector widget.',
+    example: 'A cow’s pregnancy averages 283 days (about 40.4 weeks) — more than 9 times longer than a rabbit’s 31-day average.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is gestation length, and why does it vary so much?',
+        paragraphs: [
+          'Gestation length is the time from conception to birth. Across the seven species on this page it spans more than a tenfold range: a rabbit averages about 31 days, while a horse averages about 336 days.',
+          'Body size is part of the story, but not the whole one. A newborn’s level of development at birth matters too: species born relatively helpless (altricial — like a kitten or puppy, eyes still closed) tend toward shorter pregnancies than species born relatively mobile and well-developed (precocial — like a foal, standing and walking within hours), even accounting for size.',
+          'Every figure below is a published average with a typical range, not a guarantee for any individual pregnancy — breed, litter size, and individual variation all shift where a real pregnancy falls within (or occasionally outside) that range.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick a species; its average gestation length, typical range, and the same figure in weeks fill in instantly.',
+        steps: [
+          { name: 'Select a species', text: 'Dog, cat, cow, horse, goat, sheep, or rabbit.' },
+          { name: 'Read the average', text: 'The typical gestation length for that species, in days.' },
+          { name: 'Check the range', text: 'The shortest and longest typical lengths reported for that species.' },
+          { name: 'Compare in weeks', text: 'The same average converted to weeks, useful for comparing against a human pregnancy’s roughly 40 weeks.' },
+          { name: 'Scan the full table', text: 'The reference table below lists all seven species side by side.' }
+        ],
+        outro: 'Every figure is looked up instantly in your browser. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'These are published average and range figures, not something computed from an equation — the “formula” here is simply which published number applies to which species.',
+        expression: 'Average, shortest, and longest gestation length = published figures for the selected species',
+        terms: [
+          { symbol: 'Average', meaning: 'The typical, most commonly cited gestation length for the species.' },
+          { symbol: 'Shortest / longest', meaning: 'The typical range reported for the species — not an absolute floor or ceiling.' }
+        ],
+        note: 'Sheep’s source publishes only an average (150 days), with no separate shortest/longest figure — see Watch out for below.'
+      },
+      workedExample: {
+        intro: 'How much longer is a cow’s pregnancy than a rabbit’s?',
+        rows: [
+          { label: 'Cow, average', value: '283 days' },
+          { label: 'Rabbit, average', value: '31 days' },
+          { label: 'Ratio (283 ÷ 31)', value: '≈ 9.13' }
+        ],
+        result: 'A cow’s pregnancy averages about 9.1 times longer than a rabbit’s',
+        explanation: '283 days divided by 31 days is about 9.13 — a cow (283 days, about 40.4 weeks) carries a pregnancy for roughly nine times as long as a rabbit (31 days, about 4.4 weeks).'
+      },
+      watchOut: [
+        { title: 'These are averages, not due-date guarantees', body: 'Every species shows real variation around its average — breed size, litter size, and the individual animal all shift where any one pregnancy actually falls, same as a human pregnancy’s own “about 40 weeks” being an average, not a guarantee.' },
+        { title: 'Sheep has no separately published range in this source', body: 'Unlike the other six species, the source used here gives sheep only a single average figure (150 days) with no separate shortest/longest — the range shown here repeats that same average rather than inventing one.' },
+        { title: 'A larger litter can mean a shorter pregnancy', body: 'In dogs specifically, research has found a measurable link between litter size and gestation length: more puppies in the litter is associated with a shorter pregnancy, within the normal range.' },
+        { title: 'This isn’t a due-date calculator for a specific pregnant animal', body: 'Estimating an individual animal’s actual due date needs a known breeding date and, ideally, a veterinary exam (ultrasound or palpation) — this page gives the typical length for the species, not a prediction for one pregnancy.' }
+      ],
+      referenceTable: {
+        title: 'Average gestation length by species',
+        columns: ['Species', 'Shortest (days)', 'Longest (days)', 'Average (days)'],
+        rows: GESTATION_SPECIES.map((s) => ({ label: s.label, values: [s.min, s.max, s.avg] })),
+        decimals: 0,
+        note: 'Sheep’s source publishes only an average — shortest and longest both show that same 150-day figure rather than a separately reported range.'
+      },
+      references: [
+        { label: 'Wikipedia, "List of mammalian gestation durations" (dog, cat, horse, goat, sheep)', url: 'https://en.wikipedia.org/wiki/List_of_mammalian_gestation_durations' },
+        { label: 'University of Nebraska–Lincoln Extension, "Pregnant Cows, Timing of Pregnancy, Open Cows, Pregnancy Rate" (cattle)', url: 'https://beef.unl.edu/faq/pregnant-cows' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'species',
+        label: 'Species',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: GESTATION_SPECIES.map((s) => ({ value: s.value, label: s.label }))
+      }
+    ],
+    breakdown: {
+      headline: 'avgDays',
+      headlineLabel: 'Average gestation length (days)',
+      outputs: [
+        { id: 'avgDays', label: 'Average gestation length (days)', format: 'number' },
+        { id: 'minDays', label: 'Shortest typical (days)', format: 'number' },
+        { id: 'maxDays', label: 'Longest typical (days)', format: 'number' },
+        { id: 'avgWeeks', label: 'Average, in weeks', format: 'number' }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'minDays', label: 'Shortest' },
+          { from: 'avgDays', label: 'Average' },
+          { from: 'maxDays', label: 'Longest' }
+        ],
+        title: 'Typical gestation range (days)',
+        highlight: 1
+      }
+    },
+    seo: {
+      title: 'Animal Gestation Calculator – Dog, Cat, Cow, Horse & More',
+      description: 'Free animal gestation calculator. Look up average pregnancy length and typical range for dogs, cats, cows, horses, goats, sheep, and rabbits.',
+      faq: [
+        { question: 'How long is a dog’s pregnancy?', answer: 'About 61 days on average, typically ranging from 58 to 65 days.' },
+        { question: 'How long is a cat’s pregnancy?', answer: 'About 64 days on average, typically ranging from 58 to 67 days.' },
+        { question: 'How long is a horse’s pregnancy?', answer: 'About 336 days on average (roughly 48 weeks) — the longest of the seven species on this page.' },
+        { question: 'Which of these animals has the shortest pregnancy?', answer: 'The rabbit, averaging about 31 days — roughly a tenth of a horse’s average.' },
+        { question: 'How many weeks is a cow’s pregnancy?', answer: 'About 40.4 weeks (283 days ÷ 7) — close to a human pregnancy’s roughly 40 weeks.' },
+        { question: 'Does sheep have a published shortest/longest range?', answer: 'Not in the source used here — it publishes only a single average (150 days), so this page shows that same figure for shortest and longest rather than inventing a range.' }
+      ]
+    },
+    compute(values) {
+      const code = normalizeOptionCode(values.species, GESTATION_SPECIES.length);
+      const s = GESTATION_SPECIES[code];
+      return { avgDays: s.avg, minDays: s.min, maxDays: s.max, avgWeeks: s.avg / 7 };
+    }
+  },
+  {
+    id: 'egg-incubation-calculator',
+    category: 'biology',
+    glyph: 'egg',
+    updatedAt: '2026-11-17',
+    aliases: ['egg incubation calculator', 'chicken egg incubation period calculator', 'duck egg hatching time calculator', 'how long does it take for eggs to hatch', 'quail egg incubation calculator', 'poultry incubation period calculator'],
+    related: ['animal-gestation-calculator', 'dog-age-calculator', 'cat-age-calculator', 'date-difference-calculator'],
+    title: 'Egg Incubation Calculator (Chicken, Duck, Quail & More)',
+    description: 'Look up the typical incubation period, with its range, for chicken, duck, goose, turkey, and quail eggs from a single species-selector widget.',
+    example: 'A chicken egg hatches in about 21 days — exactly 3 weeks — while a goose egg takes 28–33 days, about 30.5 on average.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is egg incubation, and why does it vary by species?',
+        paragraphs: [
+          'Incubation period is the time from the start of continuous warming (whether by a brooding bird or an artificial incubator) to hatching. Among the common poultry species on this page it ranges from about 16 days (coturnix quail) to about 35 days (Muscovy duck) — more than double.',
+          'As with mammal gestation, egg size and the chick’s development needs both play a role: larger eggs generally take longer to incubate, and the figures below are the published averages and typical ranges for each species, not a guarantee for any individual clutch.',
+          'A consistent incubation temperature (commonly cited around human body temperature, roughly 37.5°C / 99.5°F for most poultry) and the right humidity both matter for hatching on schedule — eggs incubated at the wrong temperature can hatch later, earlier, or not at all.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick a species; its average incubation period, typical range, and the same figure in weeks fill in instantly.',
+        steps: [
+          { name: 'Select a species', text: 'Chicken, duck, Muscovy duck, goose, turkey, coturnix quail, or bobwhite quail.' },
+          { name: 'Read the average', text: 'The typical incubation period for that species, in days.' },
+          { name: 'Check the range', text: 'The shortest and longest typical incubation periods reported for that species.' },
+          { name: 'Compare in weeks', text: 'The same average converted to weeks.' },
+          { name: 'Scan the full table', text: 'The reference table below lists all seven species side by side.' }
+        ],
+        outro: 'Every figure is looked up instantly in your browser. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'These are published average and range figures, not something computed from an equation — the “formula” here is simply which published number applies to which species.',
+        expression: 'Average, shortest, and longest incubation period = published figures for the selected species',
+        terms: [
+          { symbol: 'Average', meaning: 'The typical, most commonly cited incubation period for the species.' },
+          { symbol: 'Shortest / longest', meaning: 'The typical range reported for the species, where one is published.' }
+        ],
+        note: 'Chicken, duck, Muscovy duck, and turkey are each commonly cited as a single figure rather than a range in this source — shortest and longest both show that same number for those four.'
+      },
+      workedExample: {
+        intro: 'How much longer does a Muscovy duck egg take to hatch than a chicken egg?',
+        rows: [
+          { label: 'Muscovy duck, average', value: '35 days' },
+          { label: 'Chicken, average', value: '21 days' },
+          { label: 'Difference (35 − 21)', value: '14 days' }
+        ],
+        result: 'A Muscovy duck egg takes 14 days longer than a chicken egg',
+        explanation: '35 days minus 21 days is 14 days — a chicken egg hatches in exactly 3 weeks (21 ÷ 7), while a Muscovy duck egg takes 2 full weeks longer.'
+      },
+      watchOut: [
+        { title: 'These are averages, not guarantees for one specific clutch', body: 'Incubation temperature, humidity, and egg turning all affect hatch timing in practice — a real clutch can hatch a day or two outside the published typical range even when healthy.' },
+        { title: '“Duck” usually means a standard breed, not Muscovy', body: 'Common duck breeds (Pekin, Mallard-derived breeds) incubate in about 28 days; the Muscovy duck is a different species entirely and takes notably longer, about 35 days — check which one applies before comparing figures.' },
+        { title: 'Quail figures vary by which quail', body: 'Coturnix (Japanese) quail and bobwhite quail are different species with different incubation periods (about 16–18 days versus 23–24 days) — this page lists both separately rather than one generic “quail” figure.' },
+        { title: 'This isn’t a hatch-date predictor for eggs already set', body: 'For a specific clutch already under a hen or in an incubator, candling partway through and tracking the actual set date gives a far more reliable hatch estimate than this page’s species averages alone.' }
+      ],
+      referenceTable: {
+        title: 'Average incubation period by species',
+        columns: ['Species', 'Shortest (days)', 'Longest (days)', 'Average (days)'],
+        rows: EGG_INCUBATION_SPECIES.map((s) => ({ label: s.label, values: [s.min, s.max, s.avg] })),
+        decimals: 1,
+        note: 'Chicken, duck, Muscovy duck, and turkey are each published as a single figure rather than a range in the source used here.'
+      },
+      references: [
+        { label: 'Wikipedia, "Egg incubation"', url: 'https://en.wikipedia.org/wiki/Egg_incubation' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'species',
+        label: 'Species',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: EGG_INCUBATION_SPECIES.map((s) => ({ value: s.value, label: s.label }))
+      }
+    ],
+    breakdown: {
+      headline: 'avgDays',
+      headlineLabel: 'Average incubation period (days)',
+      outputs: [
+        { id: 'avgDays', label: 'Average incubation period (days)', format: 'number' },
+        { id: 'minDays', label: 'Shortest typical (days)', format: 'number' },
+        { id: 'maxDays', label: 'Longest typical (days)', format: 'number' },
+        { id: 'avgWeeks', label: 'Average, in weeks', format: 'number' }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'minDays', label: 'Shortest' },
+          { from: 'avgDays', label: 'Average' },
+          { from: 'maxDays', label: 'Longest' }
+        ],
+        title: 'Typical incubation range (days)',
+        highlight: 1
+      }
+    },
+    seo: {
+      title: 'Egg Incubation Calculator – Chicken, Duck, Quail & More',
+      description: 'Free egg incubation calculator. Look up the average and typical range for chicken, duck, goose, turkey, and quail egg incubation periods.',
+      faq: [
+        { question: 'How long does a chicken egg take to hatch?', answer: 'About 21 days — exactly 3 weeks.' },
+        { question: 'How long does a duck egg take to hatch?', answer: 'About 28 days for most duck breeds; a Muscovy duck egg takes longer, about 35 days.' },
+        { question: 'How long does a goose egg take to hatch?', answer: 'About 28 to 33 days, roughly 30.5 days on average.' },
+        { question: 'How long does a quail egg take to hatch?', answer: 'It depends on the species: about 16 to 18 days for coturnix (Japanese) quail, versus about 23 to 24 days for bobwhite quail.' },
+        { question: 'Which of these eggs takes the longest to hatch?', answer: 'The Muscovy duck, at about 35 days — roughly double the shortest on this page, coturnix quail at about 16 to 18 days.' },
+        { question: 'Does incubation temperature affect hatch timing?', answer: 'Yes — keeping the egg at a consistent, species-appropriate temperature and humidity (commonly cited at around 37.5°C / 99.5°F for most poultry) matters for hatching on schedule; inconsistent conditions can delay hatching or prevent it.' }
+      ]
+    },
+    compute(values) {
+      const code = normalizeOptionCode(values.species, EGG_INCUBATION_SPECIES.length);
+      const s = EGG_INCUBATION_SPECIES[code];
+      return { avgDays: s.avg, minDays: s.min, maxDays: s.max, avgWeeks: s.avg / 7 };
     }
   }
 ];

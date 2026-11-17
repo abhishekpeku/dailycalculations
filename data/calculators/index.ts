@@ -442,7 +442,11 @@ export const calculatorOrder: string[] = [
   'protein-molecular-weight-calculator',
   'molarity-for-buffers-calculator',
   'inheritance-probability-calculator',
-  'surface-area-to-volume-ratio-calculator'
+  'surface-area-to-volume-ratio-calculator',
+  'dog-age-calculator',
+  'cat-age-calculator',
+  'animal-gestation-calculator',
+  'egg-incubation-calculator'
 ];
 
 const rank = (id: string) => {

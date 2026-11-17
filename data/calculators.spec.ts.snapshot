@@ -241,6 +241,74 @@ exports[`compute() snapshots > age-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > air-quality-index-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "pm25": 42.5,
+      "pm10": 60,
+      "co": 3,
+      "so2": 20,
+      "no2": 45,
+      "o3": 65
+    },
+    "outputs": {
+      "aqi": 118,
+      "categoryCode": 2,
+      "dominantCode": 0,
+      "pm25Aqi": 118,
+      "pm10Aqi": 53,
+      "coAqi": 34,
+      "so2Aqi": 29,
+      "no2Aqi": 42,
+      "o3Aqi": 84
+    }
+  },
+  "typical": {
+    "inputs": {
+      "pm25": 63.8,
+      "pm10": 90,
+      "co": 4.5,
+      "so2": 30,
+      "no2": 68,
+      "o3": 98
+    },
+    "outputs": {
+      "aqi": 182,
+      "categoryCode": 3,
+      "dominantCode": 5,
+      "pm25Aqi": 157,
+      "pm10Aqi": 68,
+      "coAqi": 51,
+      "so2Aqi": 43,
+      "no2Aqi": 66,
+      "o3Aqi": 182
+    }
+  },
+  "edge": {
+    "inputs": {
+      "pm25": 0,
+      "pm10": 0,
+      "co": 0,
+      "so2": 0,
+      "no2": 0,
+      "o3": 0
+    },
+    "outputs": {
+      "aqi": 0,
+      "categoryCode": 0,
+      "dominantCode": 0,
+      "pm25Aqi": 0,
+      "pm10Aqi": 0,
+      "coAqi": 0,
+      "so2Aqi": 0,
+      "no2Aqi": 0,
+      "o3Aqi": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > allele-frequency-calculator 1`] = `
 {
   "default": {
@@ -2396,6 +2464,53 @@ exports[`compute() snapshots > closing-cost-estimator-calculator 1`] = `
       "otherLow": 0,
       "otherHigh": 0,
       "midPercentOfPrice": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > co2-breathing-emission-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "sex": 0,
+      "ageYears": 35,
+      "bodyMassKg": 70,
+      "activityCode": 2
+    },
+    "outputs": {
+      "bmrMjPerDay": 7.013,
+      "vco2LPerS": 0.005091438,
+      "co2KgPerDay": 0.8644039779,
+      "co2KgPerYear": 315.5074519
+    }
+  },
+  "typical": {
+    "inputs": {
+      "sex": 0,
+      "ageYears": 53,
+      "bodyMassKg": 105,
+      "activityCode": 3
+    },
+    "outputs": {
+      "bmrMjPerDay": 8.693,
+      "vco2LPerS": 0.012622236,
+      "co2KgPerDay": 2.142952739,
+      "co2KgPerYear": 782.1777498
+    }
+  },
+  "edge": {
+    "inputs": {
+      "sex": 0,
+      "ageYears": 0,
+      "bodyMassKg": 1,
+      "activityCode": 0
+    },
+    "outputs": {
+      "bmrMjPerDay": 0.122,
+      "vco2LPerS": 0.0000560956,
+      "co2KgPerDay": 0.009523686586,
+      "co2KgPerYear": 3.476145604
     }
   }
 }
@@ -8914,6 +9029,44 @@ exports[`compute() snapshots > margin-of-error-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > mark-recapture-population-estimate-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "markedFirstCatch": 80,
+      "totalSecondCatch": 100,
+      "markedSecondCatch": 20
+    },
+    "outputs": {
+      "populationEstimate": 400,
+      "recapturePct": 20
+    }
+  },
+  "typical": {
+    "inputs": {
+      "markedFirstCatch": 120,
+      "totalSecondCatch": 150,
+      "markedSecondCatch": 30
+    },
+    "outputs": {
+      "populationEstimate": 600,
+      "recapturePct": 20
+    }
+  },
+  "edge": {
+    "inputs": {
+      "markedFirstCatch": 0,
+      "totalSecondCatch": 0,
+      "markedSecondCatch": 0
+    },
+    "outputs": {
+      "populationEstimate": "NaN",
+      "recapturePct": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > mass-energy-equivalence-calculator 1`] = `
 {
   "default": {
@@ -10244,6 +10397,44 @@ exports[`compute() snapshots > nfl-passer-rating-calculator 1`] = `
       "yardsPerAttempt": 0,
       "touchdownPercentage": 0,
       "interceptionPercentage": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > noise-exposure-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "soundLevelDb": 97,
+      "exposureHours": 3
+    },
+    "outputs": {
+      "permissibleHours": 3.031433133,
+      "dosePct": 98.96309331,
+      "twaDb": 89.92481088
+    }
+  },
+  "typical": {
+    "inputs": {
+      "soundLevelDb": 146,
+      "exposureHours": 4.5
+    },
+    "outputs": {
+      "permissibleHours": 0.003400588138,
+      "dosePct": 132330.0505,
+      "twaDb": 141.8507473
+    }
+  },
+  "edge": {
+    "inputs": {
+      "soundLevelDb": 0,
+      "exposureHours": 0
+    },
+    "outputs": {
+      "permissibleHours": 2097152,
+      "dosePct": 0,
+      "twaDb": "NaN"
     }
   }
 }
@@ -16404,6 +16595,41 @@ exports[`compute() snapshots > triangle-calculator 1`] = `
       "angleC": "NaN",
       "perimeter": "NaN",
       "area": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > trophic-level-energy-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "energyThis": 20819,
+      "efficiencyPercent": 10,
+      "energyNext": 2081.9
+    },
+    "outputs": {
+      "energyNext": 2081.9
+    }
+  },
+  "typical": {
+    "inputs": {
+      "energyThis": 31229,
+      "efficiencyPercent": 15,
+      "energyNext": 3123
+    },
+    "outputs": {
+      "energyNext": 4684.35
+    }
+  },
+  "edge": {
+    "inputs": {
+      "energyThis": 0,
+      "efficiencyPercent": 0,
+      "energyNext": 0
+    },
+    "outputs": {
+      "energyNext": 0
     }
   }
 }

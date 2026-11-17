@@ -117,6 +117,143 @@ const RECYCLING_NATIONAL_RATE_PCT_2018 = 32.1; // "32.1 percent recycling and co
 // individuals, 100 total) so the two pages' results are directly comparable.
 const DEFAULT_SPECIES_COUNTS = [40, 30, 20, 8, 2];
 
+// --- Step 49 batch 4 (environmental health + remaining population ecology) constants ---
+
+// air-quality-index-calculator: U.S. EPA breakpoint table, fetched directly from EPA's Air
+// Quality System (aqs.epa.gov/aqsweb/documents/codetables/aqi_breakpoints.html) and
+// cross-checked against the same published breakpoints as reproduced on Wikipedia's "Air
+// quality index" page. PM2.5 breakpoints reflect EPA's February 2024 NAAQS revision (Good
+// 0.0-9.0 ug/m3, not the pre-2024 0.0-12.0). Each row is [concentrationLow, concentrationHigh,
+// aqiLow, aqiHigh]. Ozone's 8-hour table has no defined "Very Unhealthy"/"Hazardous" breakpoints
+// (EPA uses a separate 1-hour table for those very high levels, out of scope here).
+const AQI_BREAKPOINTS = {
+  pm25: [
+    [0.0, 9.0, 0, 50],
+    [9.1, 35.4, 51, 100],
+    [35.5, 55.4, 101, 150],
+    [55.5, 125.4, 151, 200],
+    [125.5, 225.4, 201, 300],
+    [225.5, 325.4, 301, 500]
+  ],
+  pm10: [
+    [0, 54, 0, 50],
+    [55, 154, 51, 100],
+    [155, 254, 101, 150],
+    [255, 354, 151, 200],
+    [355, 424, 201, 300],
+    [425, 604, 301, 500]
+  ],
+  co: [
+    [0.0, 4.4, 0, 50],
+    [4.5, 9.4, 51, 100],
+    [9.5, 12.4, 101, 150],
+    [12.5, 15.4, 151, 200],
+    [15.5, 30.4, 201, 300],
+    [30.5, 50.4, 301, 500]
+  ],
+  so2: [
+    [0, 35, 0, 50],
+    [36, 75, 51, 100],
+    [76, 185, 101, 150],
+    [186, 304, 151, 200],
+    [305, 604, 201, 300],
+    [605, 1004, 301, 500]
+  ],
+  no2: [
+    [0, 53, 0, 50],
+    [54, 100, 51, 100],
+    [101, 360, 101, 150],
+    [361, 649, 151, 200],
+    [650, 1249, 201, 300],
+    [1250, 2049, 301, 500]
+  ],
+  o3: [
+    [0, 54, 0, 50],
+    [55, 70, 51, 100],
+    [71, 85, 101, 150],
+    [86, 105, 151, 200],
+    [106, 200, 201, 300]
+  ]
+} as const;
+const AQI_POLLUTANT_LABELS = ['PM2.5 (24-hr)', 'PM10 (24-hr)', 'CO (8-hr)', 'SO2 (1-hr)', 'NO2 (1-hr)', 'Ozone (8-hr)'];
+
+function concentrationToAqi(conc: number, breakpoints: readonly (readonly number[])[]) {
+  if (conc < 0) return NaN;
+  const top = breakpoints[breakpoints.length - 1];
+  if (conc > top[1]) return 500; // off the published scale; EPA switches to a different pollutant/table above this
+  for (const [cLo, cHi, iLo, iHi] of breakpoints) {
+    if (conc >= cLo && conc <= cHi) {
+      return Math.round(((iHi - iLo) / (cHi - cLo)) * (conc - cLo) + iLo);
+    }
+  }
+  return NaN;
+}
+
+function aqiCategoryCode(aqi: number) {
+  if (aqi <= 50) return 0;
+  if (aqi <= 100) return 1;
+  if (aqi <= 150) return 2;
+  if (aqi <= 200) return 3;
+  if (aqi <= 300) return 4;
+  return 5;
+}
+
+// co2-breathing-emission-calculator: Persily, A.K. & de Jonge, L. (2017), "Carbon dioxide
+// generation rates for building occupants," Indoor Air 27(5), 868-879, fetched directly as the
+// published open-access PDF (DOI 10.1111/ina.12383). Schofield BMR equations (the paper's own
+// Table 1, citing Schofield 1985); m is body mass in kg, output in MJ/day.
+function schofieldBmrMjPerDay(sex: number, ageYears: number, massKg: number) {
+  const male = sex === 0;
+  if (ageYears < 3) return male ? 0.249 * massKg - 0.127 : 0.244 * massKg - 0.13;
+  if (ageYears < 10) return male ? 0.095 * massKg + 2.11 : 0.085 * massKg + 2.033;
+  if (ageYears < 18) return male ? 0.074 * massKg + 2.754 : 0.056 * massKg + 2.898;
+  if (ageYears < 30) return male ? 0.063 * massKg + 2.896 : 0.062 * massKg + 2.036;
+  if (ageYears < 60) return male ? 0.048 * massKg + 3.653 : 0.034 * massKg + 3.538;
+  return male ? 0.049 * massKg + 2.459 : 0.038 * massKg + 2.755;
+}
+// Paper's Table 3 (web-based compendium of physical activities), physical activity level M in
+// met. Six real activities spanning the paper's own range.
+const ACTIVITY_MET = [0.95, 1.3, 1.5, 3.0, 2.0, 3.5];
+const ACTIVITY_LABELS = [
+  'Sleeping (0.95 met)',
+  'Sitting quietly, reading (1.3 met)',
+  'Office work, sitting (1.5 met)',
+  'Standing tasks, light effort (3.0 met)',
+  'Walking, slow, under 2 mph (2.0 met)',
+  'Walking, moderate pace, 2.8-3.2 mph (3.5 met)'
+];
+// Paper's Equation 9: VCO2 (L/s) = BMR (MJ/day) x M (met) x 0.000484, at 101 kPa and 273 K,
+// assuming a respiratory quotient (RQ) of 0.85, the single value the paper uses throughout.
+const VCO2_PER_BMR_MET = 0.000484;
+// Paper, Section 4: "a CO2 generation rate of 1 L/s equals 0.0446 moles/s or 1.965 g/s" at the
+// same 101 kPa/273 K conditions. Converted here to kg of CO2 per day per (L/s).
+const KG_CO2_PER_DAY_PER_LPS = 1.965 * 86400 /* s/day */ / 1000; /* g -> kg */
+
+// mark-recapture-population-estimate-calculator: the Lincoln-Petersen index, N = (M x C) / R.
+// OpenStax, Biology 2e, SS45.1 "Population Demography," fetched directly; its own worked example
+// (80 marked and released, 100 later captured with 20 already marked) gives N = 400, reproduced
+// in this file's own verification script.
+
+// noise-exposure-calculator: U.S. Dept. of Labor, OSHA 29 CFR 1910.95 Appendix A ("Noise
+// Exposure Computation"), fetched directly. T is the permissible exposure duration in hours at
+// sound level L (dBA); D is accumulated dose as a percent; TWA is the equivalent 8-hour
+// time-weighted average.
+function oshaPermissibleHours(soundLevelDb: number) {
+  return 8 / 2 ** ((soundLevelDb - 90) / 5);
+}
+function oshaTwaFromDose(dosePct: number) {
+  return 16.61 * Math.log10(dosePct / 100) + 90;
+}
+
+// trophic-level-energy-calculator: OpenStax, Biology 2e, SS46.2 "Energy Flow through
+// Ecosystems," fetched directly. Defines trophic level transfer efficiency (TLTE) as
+// "production at the present trophic level / production at the previous trophic level x 100"
+// and gives Howard T. Odum's Silver Springs, Florida data: primary consumers produced 1,103
+// kcal/m2/yr from the primary producers, secondary consumers 383 kcal/m2/yr, tertiary consumers
+// 21 kcal/m2/yr (TLTE of roughly 34.7% and 5.5% for those two steps, computed directly from
+// those published figures) -- OpenStax states the producer-to-primary-consumer TLTE itself as
+// "approximately 14.48 percent."
+
 export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'carbon-footprint-calculator',
@@ -2452,6 +2589,829 @@ export const ecologyCalculators: CalculatorConfig[] = [
       const preyEquilibrium = values.gamma / values.delta;
       const predatorEquilibrium = values.alpha / values.beta;
       return { preyEquilibrium, predatorEquilibrium };
+    }
+  },
+  {
+    id: 'air-quality-index-calculator',
+    category: 'ecology',
+    glyph: 'AQI',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'air quality index calculator',
+      'aqi calculator',
+      'smog calculator',
+      'pollution index calculator',
+      'air pollution calculator',
+      'how to calculate aqi'
+    ],
+    related: ['carbon-footprint-calculator', 'co2-breathing-emission-calculator', 'noise-exposure-calculator', 'recycling-rate-calculator'],
+    title: 'Air Quality Index (AQI) Calculator',
+    description:
+      'Calculate the U.S. EPA Air Quality Index from PM2.5, PM10, ozone, CO, SO2, and NO2 concentrations, using EPA’s own published breakpoint tables and linear interpolation formula.',
+    example:
+      'A day with PM2.5 at 42.5 µg/m³, PM10 at 60 µg/m³, CO at 3.0 ppm, SO2 at 20 ppb, NO2 at 45 ppb, and ozone at 65 ppb has an overall AQI of 118 ("Unhealthy for Sensitive Groups"), driven by PM2.5.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is the Air Quality Index?',
+        paragraphs: [
+          'The Air Quality Index (AQI) is the U.S. Environmental Protection Agency’s standard 0-500 scale for reporting how polluted the air is on a given day. Rather than publishing a raw concentration number for every pollutant in different units, the EPA converts each pollutant’s measured concentration into a single AQI value on the same scale, split into six color-coded categories from "Good" (0-50) to "Hazardous" (301-500).',
+          'Six pollutants feed into the AQI: fine particulate matter (PM2.5), coarse particulate matter (PM10), ground-level ozone, carbon monoxide (CO), sulfur dioxide (SO2), and nitrogen dioxide (NO2), each with its own published breakpoint table — a set of concentration ranges that map onto each AQI category. The breakpoints are not evenly spaced in concentration terms; PM2.5’s "Good" range, for example, spans 0.0-9.0 µg/m³ while its "Unhealthy" range spans 55.5-125.4 µg/m³, reflecting how each pollutant actually affects health at different exposure levels, not a simple proportional scale.',
+          'When more than one pollutant is measured at once, the reported AQI for that day or location is simply the highest of the individual pollutant AQI values — the single most harmful pollutant drives the headline number, which EPA calls the "dominant" pollutant. This calculator reproduces that exact method: convert each pollutant’s concentration with its own breakpoint table, then report the maximum.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the measured concentration for any pollutants you have readings for; the overall AQI and dominant pollutant appear instantly.',
+        steps: [
+          { name: 'Enter PM2.5 and PM10', text: 'Fine and coarse particulate matter, both as a 24-hour average in micrograms per cubic meter (µg/m³).' },
+          { name: 'Enter CO', text: 'Carbon monoxide, as an 8-hour average in parts per million (ppm).' },
+          { name: 'Enter SO2 and NO2', text: 'Sulfur dioxide and nitrogen dioxide, both as a 1-hour average in parts per billion (ppb).' },
+          { name: 'Enter ozone', text: 'Ground-level ozone, as an 8-hour average in parts per billion (ppb).' },
+          { name: 'Leave unmeasured pollutants at 0', text: 'A pollutant left at 0 contributes an AQI of 0 and will not affect the overall maximum unless it is genuinely the highest reading.' },
+          { name: 'Read the result', text: 'The headline is the overall AQI (the highest of the six sub-indices), with its category and the dominant pollutant shown below.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Each pollutant’s AQI comes from linear interpolation between the two published breakpoints its concentration falls between; the overall AQI is the maximum across pollutants.',
+        expression: 'I_p = [(I_Hi − I_Lo) ÷ (BP_Hi − BP_Lo)] × (C_p − BP_Lo) + I_Lo\nAQI = max(I_PM2.5, I_PM10, I_CO, I_SO2, I_NO2, I_O3)',
+        terms: [
+          { symbol: 'C_p', meaning: 'The measured concentration of pollutant p, in that pollutant’s own published units and averaging time.' },
+          { symbol: 'BP_Lo, BP_Hi', meaning: 'The concentration breakpoints (low and high) of the AQI category that C_p falls within, from EPA’s published table.' },
+          { symbol: 'I_Lo, I_Hi', meaning: 'The AQI values (low and high) at those same two breakpoints — always 0, 51, 101, 151, 201, or 301 at the low end of each of the six categories.' }
+        ],
+        note: 'A planning and public-health estimate based on the concentrations you enter, not a substitute for your local air-quality monitoring network’s own official reading.'
+      },
+      workedExample: {
+        intro: 'A day with PM2.5 at 42.5 µg/m³, PM10 at 60 µg/m³, CO at 3.0 ppm, SO2 at 20 ppb, NO2 at 45 ppb, and ozone at 65 ppb.',
+        rows: [
+          { label: 'PM2.5 (42.5, falls in the 35.5-55.4 "Unhealthy for Sensitive Groups" range)', value: 'AQI 118' },
+          { label: 'PM10 (60, falls in the 55-154 "Moderate" range)', value: 'AQI 53' },
+          { label: 'CO (3.0, falls in the 0.0-4.4 "Good" range)', value: 'AQI 34' },
+          { label: 'SO2 (20, falls in the 0-35 "Good" range)', value: 'AQI 29' },
+          { label: 'NO2 (45, falls in the 0-53 "Good" range)', value: 'AQI 42' },
+          { label: 'Ozone (65, falls in the 55-70 "Moderate" range)', value: 'AQI 84' }
+        ],
+        result: 'Overall AQI 118 ("Unhealthy for Sensitive Groups"), driven by PM2.5',
+        explanation:
+          'PM2.5 produces the highest of the six sub-index values (118), so it is this day’s dominant pollutant and sets the overall reported AQI, even though every other pollutant that day is in the "Good" or "Moderate" range.'
+      },
+      watchOut: [
+        {
+          title: 'Each pollutant has its own units and averaging time',
+          body: 'Entering a PM2.5 reading into the ozone field, or a 1-hour ozone spike into the 8-hour field, produces a meaningless result — the published breakpoints only apply to the exact pollutant, unit, and averaging time EPA defines them for.'
+        },
+        {
+          title: 'The overall AQI is a maximum, not a sum or an average',
+          body: 'Six moderate pollutants do not add up to a worse day than one severe pollutant. The official AQI always reports the single highest sub-index, which is why this calculator ignores the other five once the highest is found.'
+        },
+        {
+          title: 'This uses the current (2024) PM2.5 breakpoints',
+          body: 'EPA revised the PM2.5 breakpoints in February 2024, lowering the "Good" ceiling from 12.0 to 9.0 µg/m³ as part of a tightened national air-quality standard. A calculation made against the pre-2024 table will read a somewhat lower AQI for the same PM2.5 concentration.'
+        },
+        {
+          title: 'Ozone’s highest categories use a separate 1-hour table',
+          body: 'EPA’s 8-hour ozone breakpoints, used here, have no defined "Very Unhealthy" or "Hazardous" range; very high short-term ozone spikes are instead reported against a separate 1-hour table not included in this calculator.'
+        },
+        {
+          title: 'A concentration above the published scale is capped at 500',
+          body: 'Every pollutant’s breakpoint table ends at AQI 500. A concentration higher than the top breakpoint is reported as AQI 500 ("Hazardous") rather than extrapolated further, matching EPA’s own practice of not defining an AQI above that point.'
+        }
+      ],
+      references: [
+        { label: 'U.S. EPA, Air Quality System (AQS), AQI Breakpoints table', url: 'https://aqs.epa.gov/aqsweb/documents/codetables/aqi_breakpoints.html' },
+        { label: 'U.S. EPA, Technical Assistance Document for the Reporting of Daily Air Quality — the Air Quality Index (AQI)', url: 'https://www.airnow.gov/aqi/aqi-basics/' }
+      ]
+    },
+    inputs: [
+      { id: 'pm25', label: 'PM2.5, 24-hr avg (µg/m³)', type: 'number', placeholder: '42.5', defaultValue: 42.5, step: 0.1, min: 0 },
+      { id: 'pm10', label: 'PM10, 24-hr avg (µg/m³)', type: 'number', placeholder: '60', defaultValue: 60, step: 1, min: 0 },
+      { id: 'co', label: 'CO, 8-hr avg (ppm)', type: 'number', placeholder: '3.0', defaultValue: 3.0, step: 0.1, min: 0 },
+      { id: 'so2', label: 'SO2, 1-hr avg (ppb)', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 0 },
+      { id: 'no2', label: 'NO2, 1-hr avg (ppb)', type: 'number', placeholder: '45', defaultValue: 45, step: 1, min: 0 },
+      { id: 'o3', label: 'Ozone, 8-hr avg (ppb)', type: 'number', placeholder: '65', defaultValue: 65, step: 1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'aqi',
+      headlineLabel: 'Overall Air Quality Index',
+      outputs: [
+        { id: 'aqi', label: 'Overall AQI', format: 'integer' },
+        {
+          id: 'categoryCode',
+          label: 'Category',
+          labels: [
+            { value: 0, label: 'Good' },
+            { value: 1, label: 'Moderate' },
+            { value: 2, label: 'Unhealthy for Sensitive Groups' },
+            { value: 3, label: 'Unhealthy' },
+            { value: 4, label: 'Very Unhealthy' },
+            { value: 5, label: 'Hazardous' }
+          ]
+        },
+        {
+          id: 'dominantCode',
+          label: 'Dominant pollutant',
+          labels: AQI_POLLUTANT_LABELS.map((label, value) => ({ value, label }))
+        },
+        { id: 'pm25Aqi', label: 'PM2.5 sub-index', format: 'integer' },
+        { id: 'pm10Aqi', label: 'PM10 sub-index', format: 'integer' },
+        { id: 'coAqi', label: 'CO sub-index', format: 'integer' },
+        { id: 'so2Aqi', label: 'SO2 sub-index', format: 'integer' },
+        { id: 'no2Aqi', label: 'NO2 sub-index', format: 'integer' },
+        { id: 'o3Aqi', label: 'Ozone sub-index', format: 'integer' }
+      ],
+      groups: [
+        { title: 'Particulates', inputs: ['pm25', 'pm10'] },
+        { title: 'Gases', inputs: ['co', 'so2', 'no2', 'o3'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'pm25Aqi', label: 'PM2.5' },
+          { from: 'pm10Aqi', label: 'PM10' },
+          { from: 'coAqi', label: 'CO' },
+          { from: 'so2Aqi', label: 'SO2' },
+          { from: 'no2Aqi', label: 'NO2' },
+          { from: 'o3Aqi', label: 'Ozone' }
+        ],
+        title: 'AQI by pollutant'
+      }
+    },
+    seo: {
+      title: 'AQI Calculator – EPA Air Quality Index Breakpoints',
+      description: 'Free AQI calculator. Convert PM2.5, PM10, ozone, CO, SO2, and NO2 concentrations into the EPA Air Quality Index using the official breakpoint tables.',
+      faq: [
+        {
+          question: 'How do you calculate the AQI from a concentration?',
+          answer:
+            'Find the two published breakpoints (BP_Lo, BP_Hi) the concentration falls between, and the matching AQI breakpoints (I_Lo, I_Hi), then compute I_p = [(I_Hi − I_Lo) ÷ (BP_Hi − BP_Lo)] × (C − BP_Lo) + I_Lo. A PM2.5 reading of 42.5 µg/m³ falls in the 35.5-55.4 range (AQI 101-150), giving an AQI of 118.'
+        },
+        {
+          question: 'What is a good AQI number?',
+          answer: '0-50 is "Good" and 51-100 is "Moderate" — air quality that poses little or no risk to the general public. Above 100, sensitive groups (and eventually everyone) may start to experience health effects.'
+        },
+        {
+          question: 'What does "dominant pollutant" mean?',
+          answer:
+            'The overall AQI reported for a day or location is the highest of the individual pollutant sub-indices, and the pollutant that produced that highest value is the "dominant" one. In the worked example, PM2.5 is dominant at AQI 118 even though every other pollutant that day is far lower.'
+        },
+        {
+          question: 'Why does a moderate PM2.5 reading push the AQI into "Unhealthy for Sensitive Groups"?',
+          answer:
+            'Because PM2.5’s breakpoints are tightly spaced at the low end — the entire "Good" category spans only 0.0-9.0 µg/m³, and "Moderate" only 9.1-35.4 µg/m³ — so a reading that still looks like a modest number in µg/m³ terms can already sit in a higher AQI category than the same-looking number for a less tightly-scaled pollutant like PM10.'
+        },
+        {
+          question: 'Are these the current EPA breakpoints?',
+          answer: 'Yes, including EPA’s February 2024 revision to the PM2.5 breakpoints (lowering the "Good" ceiling from 12.0 to 9.0 µg/m³). Using an older table would understate the AQI for the same PM2.5 reading.'
+        },
+        {
+          question: 'Can I enter just one pollutant?',
+          answer: 'Yes — leave the others at 0. Since the overall AQI is the maximum across all six, an unmeasured pollutant left at 0 never affects the result unless it genuinely turns out to be the highest.'
+        }
+      ]
+    },
+    compute(values) {
+      const pm25Aqi = concentrationToAqi(values.pm25, AQI_BREAKPOINTS.pm25);
+      const pm10Aqi = concentrationToAqi(values.pm10, AQI_BREAKPOINTS.pm10);
+      const coAqi = concentrationToAqi(values.co, AQI_BREAKPOINTS.co);
+      const so2Aqi = concentrationToAqi(values.so2, AQI_BREAKPOINTS.so2);
+      const no2Aqi = concentrationToAqi(values.no2, AQI_BREAKPOINTS.no2);
+      const o3Aqi = concentrationToAqi(values.o3, AQI_BREAKPOINTS.o3);
+      const sub = [pm25Aqi, pm10Aqi, coAqi, so2Aqi, no2Aqi, o3Aqi];
+      const aqi = Math.max(...sub);
+      const dominantCode = sub.indexOf(aqi);
+      const categoryCode = aqiCategoryCode(aqi);
+      return { aqi, categoryCode, dominantCode, pm25Aqi, pm10Aqi, coAqi, so2Aqi, no2Aqi, o3Aqi };
+    }
+  },
+  {
+    id: 'co2-breathing-emission-calculator',
+    category: 'ecology',
+    glyph: 'VCO2',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'co2 breathing calculator',
+      'how much co2 does a person exhale',
+      'human co2 production calculator',
+      'co2 exhalation calculator',
+      'co2 generation rate calculator',
+      'carbon dioxide breathing calculator'
+    ],
+    related: ['carbon-footprint-calculator', 'air-quality-index-calculator', 'calorie-calculator', 'carrying-capacity-calculator'],
+    title: 'CO2 Breathing Emission Calculator',
+    description: 'Estimate how much CO2 a person exhales per day, from body mass, age, sex, and activity level, using a peer-reviewed building-science metabolic model.',
+    example:
+      'A 70 kg, 35-year-old man doing light office work (1.5 met) exhales about 0.864 kg of CO2 a day — about 315.5 kg a year.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'How much CO2 does a person breathe out?',
+        paragraphs: [
+          'Every breath a person exhales carries carbon dioxide, produced as the body burns food for energy. Persily and de Jonge (2017), writing in the journal Indoor Air, derived a method for estimating this rate from established human-metabolism science: the same relationship ventilation engineers use to size fresh-air requirements for offices, classrooms, and homes, since indoor CO2 buildup depends directly on how much occupants generate.',
+          'The method starts from basal metabolic rate (BMR) — the energy a body uses at complete rest, which depends mainly on body mass, age, and sex. The paper uses the widely cited Schofield equations to estimate BMR from those three inputs. It then scales BMR by a physical activity level, M, in "met" units (1 met is the BMR itself; sitting office work is about 1.5 met, brisk walking noticeably more), to get the person’s actual energy use at that activity.',
+          'Converting that energy use into a rate of CO2 production uses the respiratory quotient (RQ) — the ratio of CO2 produced to oxygen consumed, which depends on diet. The paper settles on 0.85 as a reasonable single value based on typical U.S. macronutrient intake, noting that activity level affects the result far more than RQ does. The result is a volumetric CO2 generation rate in liters per second, which this calculator converts into a daily and yearly mass of CO2 using the paper’s own stated density figure.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter a person’s sex, age, body mass, and activity level; their estimated CO2 output per day and year appear instantly.',
+        steps: [
+          { name: 'Choose sex', text: 'Male or female — the Schofield BMR equations use slightly different coefficients for each.' },
+          { name: 'Enter age', text: 'In years. The BMR equation used depends on which age bracket this falls into.' },
+          { name: 'Enter body mass', text: 'In kilograms (or pounds, from the unit menu) — the strongest single driver of BMR.' },
+          { name: 'Choose an activity level', text: 'Pick the option closest to how the person spends most of their time, from sleeping to a brisk walk.' },
+          { name: 'Read the result', text: 'The headline is estimated CO2 output per day, in kilograms, with the yearly total and the underlying metabolic numbers below it.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Body mass, age, and sex give a basal metabolic rate; scaling it by activity level and a fixed respiratory quotient gives the CO2 generation rate.',
+        expression:
+          'BMR (MJ/day) = Schofield equation for sex and age bracket, from body mass m\nVCO2 (L/s) = BMR × M × 0.000484  (at RQ = 0.85, 101 kPa, 273 K)\nCO2 (kg/day) = VCO2 × 1.965 g/s per L/s × 86,400 s/day ÷ 1,000',
+        terms: [
+          { symbol: 'BMR', meaning: 'Basal metabolic rate, from Persily & de Jonge’s Table 1 (Schofield equations), in megajoules per day.' },
+          { symbol: 'M', meaning: 'Physical activity level, in "met" units — the ratio of actual energy use to BMR for the chosen activity.' },
+          { symbol: 'RQ', meaning: 'Respiratory quotient — the ratio of CO2 produced to O2 consumed. The paper uses a fixed 0.85, a U.S.-average-diet value.' },
+          { symbol: '1.965 g/s per L/s', meaning: 'The density the paper uses to convert a volumetric CO2 generation rate into mass, at 101 kPa and 273 K.' }
+        ],
+        note: 'This models a population average, not a specific individual — Persily and de Jonge note their method "will not generally be accurate for a single individual," whose actual rate depends on body composition, diet, and genetics as well.'
+      },
+      workedExample: {
+        intro: 'A 70 kg man, age 35, doing light office work (1.5 met).',
+        rows: [
+          { label: 'BMR (0.048 × 70 + 3.653, age 30-60 male)', value: '7.013 MJ/day' },
+          { label: 'VCO2 (7.013 × 1.5 × 0.000484)', value: '≈0.005091 L/s' },
+          { label: 'CO2 per day (0.005091 × 1.965 × 86,400 ÷ 1,000)', value: '≈0.864 kg/day' },
+          { label: 'CO2 per year (× 365)', value: '≈315.5 kg/yr' }
+        ],
+        result: '≈0.864 kg of CO2 a day, about 315.5 kg a year',
+        explanation:
+          'The paper’s own stated example — an 85 kg man in the same age bracket at the same office-work activity level — gives a BMR of 7.73 MJ/day and a VCO2 of 0.0056 L/s, both reproduced exactly by these same equations, confirming the formulas are applied the same way the paper itself does.'
+      },
+      watchOut: [
+        {
+          title: 'This estimates a group average, not your own exact output',
+          body: 'Persily and de Jonge built this method, and its underlying body-mass and activity data, to characterize groups of occupants for ventilation design, not individuals. A specific person’s real CO2 output can differ with body composition, fitness, diet, and genetics.'
+        },
+        {
+          title: 'Activity level is held constant for the whole period',
+          body: 'A real day mixes sleeping, sitting, walking, and more. This calculator applies one activity level throughout; for a more accurate daily total, estimate each activity’s hours separately and weight the results.'
+        },
+        {
+          title: 'The respiratory quotient (0.85) assumes a typical U.S. diet',
+          body: 'RQ ranges roughly from 0.7 (mostly fat oxidation) to 1.0 (mostly carbohydrate oxidation) depending on what someone eats; the paper’s single value of 0.85 is a reasonable population average, not a measurement of any one person’s actual diet.'
+        },
+        {
+          title: 'Not the same thing as a carbon footprint',
+          body: 'This is the CO2 a body produces through ordinary metabolism, the same CO2 that photosynthesis and the carbon cycle already account for — it is not comparable to Carbon Footprint Calculator’s estimate of fossil-fuel emissions from energy and travel.'
+        },
+        {
+          title: 'Based on standard conditions (101 kPa, 273 K)',
+          body: 'The paper’s own mass-conversion figure applies at sea-level pressure and 0°C; real indoor air temperature and altitude shift the gas density slightly, an adjustment this calculator does not make.'
+        }
+      ],
+      references: [
+        {
+          label: 'Persily, A. & de Jonge, L. (2017), "Carbon dioxide generation rates for building occupants," Indoor Air, 27(5), 868-879',
+          url: 'https://doi.org/10.1111/ina.12383'
+        }
+      ]
+    },
+    inputs: [
+      {
+        id: 'sex',
+        label: 'Sex',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Male' },
+          { value: 1, label: 'Female' }
+        ]
+      },
+      { id: 'ageYears', label: 'Age (years)', type: 'number', placeholder: '35', defaultValue: 35, step: 1, min: 0 },
+      { id: 'bodyMassKg', label: 'Body mass', type: 'number', placeholder: '70', defaultValue: 70, step: 1, min: 1, dimension: 'mass', unit: 'kg' },
+      {
+        id: 'activityCode',
+        label: 'Activity level',
+        type: 'number',
+        placeholder: '2',
+        defaultValue: 2,
+        step: 1,
+        min: 0,
+        options: ACTIVITY_LABELS.map((label, value) => ({ value, label }))
+      }
+    ],
+    breakdown: {
+      headline: 'co2KgPerDay',
+      headlineLabel: 'Estimated CO2 output (per day)',
+      outputs: [
+        { id: 'co2KgPerDay', label: 'CO2 per day', format: 'number' },
+        { id: 'co2KgPerYear', label: 'CO2 per year', format: 'number' },
+        { id: 'bmrMjPerDay', label: 'Basal metabolic rate (MJ/day)', format: 'significant' },
+        { id: 'vco2LPerS', label: 'CO2 generation rate (L/s)', format: 'significant' }
+      ],
+      groups: [{ title: 'Person', inputs: ['sex', 'ageYears', 'bodyMassKg', 'activityCode'] }]
+    },
+    seo: {
+      title: 'CO2 Breathing Emission Calculator – Per Person, Per Day',
+      description: 'Free CO2 breathing calculator. Estimate how much CO2 a person exhales per day and year from body mass, age, sex, and activity, using a peer-reviewed metabolic model.',
+      faq: [
+        {
+          question: 'How much CO2 does a person exhale in a day?',
+          answer:
+            'It depends on body mass, age, sex, and activity level. A 70 kg, 35-year-old man doing light office work exhales about 0.864 kg of CO2 a day (roughly 315.5 kg a year), per the Persily & de Jonge (2017) model.'
+        },
+        {
+          question: 'What formula does this use?',
+          answer:
+            'Basal metabolic rate (BMR) from the Schofield equations, scaled by an activity level (met) and a fixed respiratory quotient of 0.85, following Persily & de Jonge (2017): VCO2 (L/s) = BMR × M × 0.000484, then converted to a daily mass using the paper’s own density figure.'
+        },
+        {
+          question: 'Why does activity level matter so much?',
+          answer:
+            'Activity level (met) directly multiplies the CO2 generation rate — someone walking briskly (3.5 met) produces roughly 2.3 times the CO2 of the same person doing light office work (1.5 met), since all else in the formula stays the same.'
+        },
+        {
+          question: 'Is this the same as a carbon footprint?',
+          answer:
+            'No. This is ordinary metabolic CO2 from breathing, part of the natural carbon cycle. A carbon footprint (see Carbon Footprint Calculator) measures fossil-fuel CO2 from electricity, heating, and transportation, which is the figure that actually affects long-term atmospheric CO2.'
+        },
+        {
+          question: 'Is this accurate for one specific person?',
+          answer:
+            'Not precisely — the paper’s authors state their method is intended for groups of occupants and "will not generally be accurate for a single individual," whose body composition, diet, and genetics all shift the real number somewhat.'
+        },
+        {
+          question: 'Where is this formula actually used?',
+          answer: 'In building ventilation design and indoor air quality standards (such as ASHRAE 62.1), where the CO2 generation rate per occupant is needed to size fresh-air requirements and set demand-controlled ventilation targets.'
+        }
+      ]
+    },
+    compute(values) {
+      const sexCode = normalizeOptionCode(values.sex, 2);
+      const activityCode = normalizeOptionCode(values.activityCode, ACTIVITY_MET.length);
+      const bmrMjPerDay = schofieldBmrMjPerDay(sexCode, values.ageYears, values.bodyMassKg);
+      const met = ACTIVITY_MET[activityCode];
+      const vco2LPerS = bmrMjPerDay * met * VCO2_PER_BMR_MET;
+      const co2KgPerDay = vco2LPerS * KG_CO2_PER_DAY_PER_LPS;
+      const co2KgPerYear = co2KgPerDay * 365;
+      return { bmrMjPerDay, vco2LPerS, co2KgPerDay, co2KgPerYear };
+    }
+  },
+  {
+    id: 'mark-recapture-population-estimate-calculator',
+    category: 'ecology',
+    glyph: 'N',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'mark and recapture calculator',
+      'lincoln-petersen index calculator',
+      'capture-recapture calculator',
+      'tag and recapture calculator',
+      'mark-release-recapture calculator',
+      'population estimate from recapture data'
+    ],
+    related: ['carrying-capacity-calculator', 'population-density-calculator', 'population-growth-calculator', 'shannon-diversity-index-calculator'],
+    title: 'Mark-Recapture Population Estimate Calculator',
+    description: 'Estimate a wild population’s size from mark-recapture data using the Lincoln-Petersen index, N = (M × C) ÷ R, with a worked example.',
+    example:
+      '80 deer tagged and released, then a second catch of 100 deer with 20 already tagged, gives an estimated population of 400 deer.',
+    solver: {
+      defaultTarget: 'populationEstimate',
+      variables: [
+        { id: 'markedFirstCatch', label: 'Marked in first catch', symbol: 'M', dimension: 'count', defaultValue: 80, defaultUnit: 'count' },
+        { id: 'totalSecondCatch', label: 'Total in second catch', symbol: 'C', dimension: 'count', defaultValue: 100, defaultUnit: 'count' },
+        { id: 'markedSecondCatch', label: 'Marked in second catch (recaptured)', symbol: 'R', dimension: 'count', defaultValue: 20, defaultUnit: 'count' },
+        { id: 'populationEstimate', label: 'Estimated population size', symbol: 'N', dimension: 'count', defaultValue: 400, defaultUnit: 'count' }
+      ],
+      solve: {
+        populationEstimate: ({ markedFirstCatch, totalSecondCatch, markedSecondCatch }) => (markedFirstCatch * totalSecondCatch) / markedSecondCatch,
+        markedSecondCatch: ({ markedFirstCatch, totalSecondCatch, populationEstimate }) => (markedFirstCatch * totalSecondCatch) / populationEstimate,
+        totalSecondCatch: ({ markedFirstCatch, markedSecondCatch, populationEstimate }) => (populationEstimate * markedSecondCatch) / markedFirstCatch,
+        markedFirstCatch: ({ totalSecondCatch, markedSecondCatch, populationEstimate }) => (populationEstimate * markedSecondCatch) / totalSecondCatch
+      },
+      outputs: [
+        {
+          id: 'recapturePct',
+          label: 'Share of second catch already marked',
+          dimension: 'percent',
+          compute: (si) => (si.markedSecondCatch / si.totalSecondCatch) * 100
+        }
+      ],
+      visuals: [
+        {
+          type: 'compareBars',
+          bars: [
+            { from: 'markedFirstCatch', label: 'Marked, 1st catch' },
+            { from: 'totalSecondCatch', label: 'Total, 2nd catch' },
+            { from: 'markedSecondCatch', label: 'Marked, 2nd catch' }
+          ],
+          title: 'Mark-recapture sample sizes'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is mark-recapture?',
+        paragraphs: [
+          'Mark-recapture is a standard field-ecology method for estimating the size of a population too large or too mobile to count directly — fish in a lake, insects in a field, or deer in a forest. OpenStax’s Biology 2e covers it in its population-ecology chapter as one of the practical ways ecologists actually measure population size in the wild, rather than just modeling its growth.',
+          'The method works in two stages. First, researchers capture a sample of individuals, mark them in some harmless way (a tag, a dye spot, a clipped fin), and release them back into the population to mix with the rest. Later, they take a second, independent sample and record how many individuals in it are already marked. The core idea, known as the Lincoln-Petersen index, is that the proportion of marked individuals in that second sample should estimate the proportion marked in the whole population — because if marked individuals mixed randomly, a representative second sample should contain roughly the same marked share as the entire population does.',
+          'Setting those two proportions equal (recaptured marked ÷ total second catch = marked first catch ÷ total population) and solving for the one unknown, the whole population’s size, gives the Lincoln-Petersen formula: N = (M × C) ÷ R. It is a single estimate, not an exact count, and it depends on a handful of real-world assumptions about how the population and the marks themselves behave between the two catches.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter any three of the four quantities; the fourth is solved for automatically.',
+        steps: [
+          { name: 'Enter the first catch (M)', text: 'How many individuals were captured, marked, and released in the first round.' },
+          { name: 'Enter the second catch (C)', text: 'How many individuals, in total, were captured in the second, independent round.' },
+          { name: 'Enter the recaptures (R)', text: 'How many of that second catch were already marked from the first round.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto-filled field to make it an input instead; the field left alone longest becomes the new calculated one.' },
+          { name: 'Read the estimate', text: 'The population estimate (N) appears, along with the recaptured share of the second catch.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The share of marked individuals in the second catch is assumed to equal the share marked across the whole population; solving that equality for N gives the Lincoln-Petersen index.',
+        expression: 'R ÷ C = M ÷ N\nN = (M × C) ÷ R\nR = (M × C) ÷ N\nC = (N × R) ÷ M\nM = (N × R) ÷ C',
+        terms: [
+          { symbol: 'M', meaning: 'The number of individuals captured, marked, and released in the first catch.' },
+          { symbol: 'C', meaning: 'The total number of individuals captured in the second, independent catch.' },
+          { symbol: 'R', meaning: 'The number of individuals in the second catch that were already marked (recaptured).' },
+          { symbol: 'N', meaning: 'The Lincoln-Petersen estimate of the total population size.' }
+        ],
+        note: 'A single point estimate from one pair of catches. Real studies typically repeat the method or use a correction for small samples to gauge how much the estimate could be off.'
+      },
+      workedExample: {
+        intro: '80 deer are captured, tagged, and released into a forest. Later, a second catch of 100 deer includes 20 that are already tagged.',
+        rows: [
+          { label: 'Marked, first catch (M)', value: '80' },
+          { label: 'Total, second catch (C)', value: '100' },
+          { label: 'Marked, second catch (R)', value: '20' },
+          { label: 'Recaptured share of 2nd catch (R ÷ C)', value: '20%' },
+          { label: 'N = (80 × 100) ÷ 20', value: '400' }
+        ],
+        result: 'Estimated population: 400 deer',
+        explanation: 'One in five deer (20%) in the second catch was already tagged, so the model infers that the 80 originally tagged deer also represent about one in five of the whole population — 80 ÷ 0.20 = 400.'
+      },
+      watchOut: [
+        {
+          title: 'Assumes a closed population between the two catches',
+          body: 'The method assumes no births, deaths, immigration, or emigration happened between the first and second catch. A population that changed meaningfully in that window will bias the estimate.'
+        },
+        {
+          title: 'Assumes marked individuals mix back in randomly',
+          body: 'If marked individuals cluster together, avoid the second trap site, or become easier or harder to catch because of the mark itself, the second catch’s marked share will not reflect the true population share, and the estimate will be off.'
+        },
+        {
+          title: 'Marks must last and not harm the animal',
+          body: 'A mark that falls off, fades, or changes behavior (making a marked individual more visible to predators, for instance) breaks the method’s core assumption that marked and unmarked individuals are equivalent in every way except the mark.'
+        },
+        {
+          title: 'Small recapture counts make the estimate unreliable',
+          body: 'With only a handful of recaptures, a difference of one or two individuals in R swings the estimate dramatically — ecologists generally want a reasonably large second catch and recapture count before trusting a single Lincoln-Petersen estimate.'
+        },
+        {
+          title: 'No estimate when nothing is recaptured',
+          body: 'If R is 0 (no marked individuals turn up in the second catch), the formula divides by zero and gives no finite answer — which also makes practical sense, since a sample with zero recaptures gives no information about what share of the population was marked.'
+        }
+      ],
+      references: [
+        {
+          label: 'OpenStax, Biology 2e, §45.1 "Population Demography" (mark and recapture method, Lincoln-Petersen index)',
+          url: 'https://openstax.org/books/biology-2e/pages/45-1-population-demography'
+        }
+      ]
+    },
+    inputs: [
+      { id: 'markedFirstCatch', label: 'Marked in first catch (M)', type: 'number', placeholder: '80', defaultValue: 80, step: 1, min: 0 },
+      { id: 'totalSecondCatch', label: 'Total in second catch (C)', type: 'number', placeholder: '100', defaultValue: 100, step: 1, min: 0 },
+      { id: 'markedSecondCatch', label: 'Marked in second catch (R)', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Mark-Recapture Calculator – Lincoln-Petersen Index',
+      description: 'Free mark-recapture calculator. Estimate a wild population’s size from capture data using the Lincoln-Petersen index, N = (M × C) ÷ R.',
+      faq: [
+        {
+          question: 'What is the mark-recapture formula?',
+          answer: 'N = (M × C) ÷ R, the Lincoln-Petersen index, where M is the number marked in the first catch, C is the total second catch, and R is how many of the second catch were already marked. 80 marked, 100 recaptured, 20 already marked gives N = 400.'
+        },
+        {
+          question: 'Why does this formula work?',
+          answer: 'It assumes the marked share of the second catch (R ÷ C) estimates the marked share of the whole population (M ÷ N). Setting those equal and solving for N gives the Lincoln-Petersen index.'
+        },
+        {
+          question: 'What assumptions does mark-recapture rely on?',
+          answer: 'A closed population between catches (no births, deaths, or migration), random mixing of marked individuals back into the population, and marks that neither fall off nor change an individual’s behavior or survival.'
+        },
+        {
+          question: 'What happens with a very small recapture count?',
+          answer: 'The estimate becomes unreliable — with only a few recaptures, a difference of one individual in R changes N substantially, so ecologists generally want a reasonably large second catch before trusting a single estimate.'
+        },
+        {
+          question: 'Can this calculator solve for a different variable, like the first catch size?',
+          answer: 'Yes — enter any three of the four quantities (M, C, R, N) and this calculator solves for whichever one is left, using the same rearranged Lincoln-Petersen formula.'
+        },
+        {
+          question: 'Is this the same thing as carrying capacity?',
+          answer: 'No. Carrying Capacity Calculator models the maximum population an environment can sustain over time; this calculator estimates how large a population actually is right now, from one pair of field samples.'
+        }
+      ]
+    },
+    compute(values) {
+      const populationEstimate = (values.markedFirstCatch * values.totalSecondCatch) / values.markedSecondCatch;
+      const recapturePct = (values.markedSecondCatch / values.totalSecondCatch) * 100;
+      return { populationEstimate, recapturePct };
+    }
+  },
+  {
+    id: 'noise-exposure-calculator',
+    category: 'ecology',
+    glyph: 'dB',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'noise exposure calculator',
+      'osha noise dose calculator',
+      'sound level twa calculator',
+      'permissible noise exposure calculator',
+      'occupational noise exposure calculator',
+      'noise dose calculator'
+    ],
+    related: ['decibel-calculator', 'air-quality-index-calculator', 'co2-breathing-emission-calculator', 'carbon-footprint-calculator'],
+    title: 'Noise Exposure Calculator (OSHA)',
+    description: 'Calculate OSHA permissible noise exposure duration, dose, and 8-hour time-weighted average (TWA) from a sound level and exposure time, per 29 CFR 1910.95.',
+    example:
+      'A measured sound level of 97 dBA for 3 hours uses about 99% of the OSHA-permissible dose for that level (the limit is roughly 3.03 hours), equivalent to a TWA of about 89.9 dB.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is noise exposure dose?',
+        paragraphs: [
+          'The U.S. Occupational Safety and Health Administration (OSHA) sets limits on how long a worker can be exposed to a given sound level before hearing damage risk becomes unacceptable, codified in 29 CFR 1910.95, Appendix A. The standard’s reference point is 90 decibels (dBA) for a full 8-hour workday; every 5 dB increase in sound level cuts the permissible exposure time in half, an approach OSHA calls a 5 dB "exchange rate."',
+          'Rather than just checking "is the level under 90 dB," OSHA’s own method expresses any single exposure as a percentage of its permissible duration, called the dose. A worker exposed to 95 dB (permissible duration: 4 hours) for 2 hours has used exactly 50% of their allowable dose at that level — the same 50% a worker at a different level would use by filling half of their own permissible duration.',
+          'When a dose is known (whether from one exposure or several different levels combined), OSHA converts it back into a single number everyone recognizes: an equivalent 8-hour time-weighted average (TWA), the sound level that, sustained for a full 8-hour shift, would produce that same dose. A dose of exactly 100% always converts back to a TWA of 90 dB, since that is the reference level the whole system is built around.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the measured sound level and how long the exposure lasted; the permissible duration, dose, and TWA fill in instantly.',
+        steps: [
+          { name: 'Enter the sound level', text: 'The measured A-weighted sound level, in dBA, from a sound level meter or dosimeter.' },
+          { name: 'Enter the exposure duration', text: 'How long the exposure actually lasted, in hours.' },
+          { name: 'Read the permissible duration', text: 'The maximum time OSHA permits at that sound level before it must be reduced or hearing protection required.' },
+          { name: 'Read the dose and TWA', text: 'The dose shows what percentage of the permissible exposure was used; the TWA converts that dose into an equivalent 8-hour average sound level.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'OSHA’s 5 dB exchange rate gives a permissible duration for any sound level; actual exposure time divided by that duration gives the dose; the dose converts back into an equivalent 8-hour average.',
+        expression: 'T = 8 ÷ 2^((L − 90) ÷ 5)\nD = 100 × (C ÷ T)\nTWA = 16.61 × log₁₀(D ÷ 100) + 90',
+        terms: [
+          { symbol: 'L', meaning: 'The measured A-weighted sound level, in dBA.' },
+          { symbol: 'T', meaning: 'The permissible exposure duration at level L, in hours, from OSHA’s 5 dB exchange rate.' },
+          { symbol: 'C', meaning: 'The actual exposure duration, in hours.' },
+          { symbol: 'D', meaning: 'Dose, as a percentage of the permissible exposure at that level.' },
+          { symbol: 'TWA', meaning: 'The equivalent 8-hour time-weighted average sound level that would produce the same dose D.' }
+        ],
+        note: 'This calculator handles one constant sound level over one period. OSHA’s own regulation sums dose across multiple periods at different levels in a single shift: D = 100 × (C₁/T₁ + C₂/T₂ + ... + Cₙ/Tₙ).'
+      },
+      workedExample: {
+        intro: 'A sound level meter reads 97 dBA for 3 hours of a shift.',
+        rows: [
+          { label: 'Permissible duration (T = 8 ÷ 2^((97−90)/5))', value: '≈3.031 hours' },
+          { label: 'Dose (D = 100 × (3 ÷ 3.031))', value: '≈98.96%' },
+          { label: 'TWA (16.61 × log₁₀(0.9896) + 90)', value: '≈89.92 dB' }
+        ],
+        result: '≈99% of the permissible dose, equivalent to a TWA of ≈89.9 dB',
+        explanation:
+          'At exactly 100% dose, this formula always returns a TWA of 90 dB, OSHA’s own reference level — this example’s 98.96% dose lands just under that, at 89.92 dB, since the actual 3-hour exposure fell just short of the full 3.031-hour permissible duration at 97 dBA.'
+      },
+      watchOut: [
+        {
+          title: 'This covers one sound level, not a whole shift',
+          body: 'A real workday often mixes several sound levels. OSHA’s regulation adds each period’s own C ÷ T together before converting to a single dose and TWA — for a multi-level day, compute each period separately and sum the dose fractions.'
+        },
+        {
+          title: 'The published table runs from about 80 to 130 dB',
+          body: 'OSHA’s own permissible-exposure table is defined across that range. The same formula extrapolates outside it (predicting very long permissible durations at low sound levels), but those extrapolated figures are not an OSHA-defined limit — OSHA does not regulate exposure durations below the table’s range the same way.'
+        },
+        {
+          title: 'No TWA at zero dose',
+          body: 'A dose of 0% (no exposure at all) has no equivalent TWA, since the conversion formula takes the logarithm of the dose — mathematically undefined at zero, which is also the sensible answer, since there is nothing to average.'
+        },
+        {
+          title: 'This is OSHA’s standard specifically, not every noise-exposure rule',
+          body: 'Other organizations and some other countries use different reference levels and exchange rates for their own occupational noise standards; this calculator implements OSHA’s 90 dB / 5 dB exchange-rate method from 29 CFR 1910.95 Appendix A specifically.'
+        },
+        {
+          title: 'A sound-level reading, not a hearing-damage diagnosis',
+          body: 'This is a regulatory exposure calculation based on a measured sound level and duration, not a medical assessment of hearing loss risk for a specific person, which depends on individual susceptibility as well as exposure history.'
+        }
+      ],
+      references: [
+        {
+          label: 'U.S. Dept. of Labor, OSHA, 29 CFR 1910.95 Appendix A, "Noise Exposure Computation"',
+          url: 'https://www.osha.gov/laws-regs/regulations/standardnumber/1910/1910.95AppA'
+        }
+      ]
+    },
+    inputs: [
+      { id: 'soundLevelDb', label: 'Sound level', type: 'number', placeholder: '97', defaultValue: 97, step: 1, dimension: 'decibel', unit: 'dB' },
+      { id: 'exposureHours', label: 'Exposure duration', type: 'number', placeholder: '3', defaultValue: 3, step: 0.1, min: 0, dimension: 'time', unit: 'h' }
+    ],
+    breakdown: {
+      headline: 'dosePct',
+      headlineLabel: 'Noise dose (% of permissible exposure)',
+      outputs: [
+        { id: 'dosePct', label: 'Dose', format: 'percent' },
+        { id: 'permissibleHours', label: 'Permissible duration at this level', dimension: 'time', unit: 'h' },
+        { id: 'twaDb', label: '8-hour time-weighted average (dB)', format: 'number' }
+      ],
+      groups: [{ title: 'Exposure', inputs: ['soundLevelDb', 'exposureHours'] }],
+      visual: {
+        type: 'rangeBar',
+        value: 'dosePct',
+        bands: [
+          { label: 'Within the permissible dose', min: 0, max: 100 },
+          { label: 'Exceeds the permissible dose', min: 100, max: 1000 }
+        ],
+        title: 'Dose vs. OSHA permissible limit (100%)'
+      }
+    },
+    seo: {
+      title: 'Noise Exposure Calculator – OSHA Dose & TWA',
+      description: 'Free noise exposure calculator. Compute OSHA permissible duration, dose, and 8-hour TWA from a sound level and exposure time per 29 CFR 1910.95.',
+      faq: [
+        {
+          question: 'How is OSHA permissible noise exposure calculated?',
+          answer: 'T = 8 ÷ 2^((L − 90) ÷ 5), where L is the sound level in dBA and T is the permissible duration in hours. At 97 dBA, T ≈ 3.031 hours.'
+        },
+        {
+          question: 'What is noise dose?',
+          answer: 'Dose is actual exposure time divided by permissible exposure time at that level, as a percentage: D = 100 × (C ÷ T). A 3-hour exposure at 97 dBA (T ≈ 3.031 h) is a dose of about 98.96%.'
+        },
+        {
+          question: 'What does TWA mean?',
+          answer: 'The time-weighted average — the single, equivalent 8-hour sound level that would produce the same dose. A dose of exactly 100% always converts to a TWA of 90 dB, OSHA’s own 8-hour reference level.'
+        },
+        {
+          question: 'What is OSHA’s "5 dB exchange rate"?',
+          answer: 'Every 5 dB increase in sound level halves the permissible exposure duration: 8 hours at 90 dB, 4 hours at 95 dB, 2 hours at 100 dB, and so on, per OSHA’s published table in 29 CFR 1910.95 Appendix A.'
+        },
+        {
+          question: 'What if my shift has more than one noise level?',
+          answer: 'OSHA’s formula sums the dose fraction (C ÷ T) from each period at its own level, then multiplies the total by 100. This calculator handles one period at a time; add each period’s dose for a full-shift total.'
+        },
+        {
+          question: 'Is this the same as the Decibel Calculator?',
+          answer: 'No. Decibel Calculator solves the physics of sound intensity ratios (dB = 10 × log₁₀(P₂ ÷ P₁)); this calculator applies OSHA’s specific occupational exposure-limit formulas to a measured sound level and duration.'
+        }
+      ]
+    },
+    compute(values) {
+      const permissibleHours = oshaPermissibleHours(values.soundLevelDb);
+      const dosePct = 100 * (values.exposureHours / permissibleHours);
+      const twaDb = dosePct > 0 ? oshaTwaFromDose(dosePct) : NaN;
+      return { permissibleHours, dosePct, twaDb };
+    }
+  },
+  {
+    id: 'trophic-level-energy-calculator',
+    category: 'ecology',
+    glyph: 'η',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'trophic level energy calculator',
+      'energy transfer efficiency calculator',
+      'ecological efficiency calculator',
+      'food chain energy loss calculator',
+      'ten percent rule calculator',
+      'trophic pyramid energy calculator'
+    ],
+    related: ['carrying-capacity-calculator', 'shannon-diversity-index-calculator', 'lotka-volterra-calculator', 'carbon-footprint-calculator'],
+    title: 'Trophic Level Energy Calculator',
+    description: 'Estimate how much energy passes from one trophic level to the next (or the ecological efficiency between two levels) in a food chain, with real ecosystem data as a benchmark.',
+    example:
+      'If primary producers hold 20,819 kcal/m²/yr, a 16.2% transfer efficiency (the real, measured rate at Silver Springs, Florida) puts about 3,368 kcal/m²/yr into primary consumers.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'Why does energy shrink at each trophic level?',
+        paragraphs: [
+          'A food chain is organized into trophic levels: producers (plants, algae) at the base, then the consumers that eat them, and so on up to top predators. OpenStax Biology 2e explains the pattern directly: "energy is lost as heat between each trophic level due to the second law of thermodynamics," so "after a limited number of trophic energy transfers, the amount of energy remaining in the food chain may not be great enough to support viable populations at yet a higher trophic level" — which is exactly why food chains rarely run past four or five levels.',
+          'How much energy actually survives the jump to the next level — the ecological efficiency — varies by ecosystem, but it is always a small fraction, because most of the energy an organism takes in is used for its own respiration, movement, and heat loss rather than stored as new biomass something else can eat. OpenStax’s own cited example, Howard Odum’s classic Silver Springs, Florida study, measured real energy values at each level: 20,819 kcal/m²/yr at the producer level, falling to 3,368 at primary consumers, 383 at secondary consumers, and just 21 at tertiary consumers — transfer efficiencies of about 16%, 11%, and 5% at each successive step.',
+          'This calculator runs that same relationship (energy at one level × efficiency = energy at the next level) in any direction: given the energy at one level and the transfer efficiency, find the energy one level up; or given the energy at two adjacent levels, find the efficiency between them. A commonly taught shorthand rounds real-world efficiencies like these to "about 10%" for simplicity — this calculator defaults to that round figure but makes it an editable input, not a fixed rule, since the Silver Springs data above shows the real number moving between roughly 5% and 16% depending on which levels are involved.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter energy at one trophic level and a transfer efficiency to project the next level, or enter two levels’ energy to find the efficiency between them.',
+        steps: [
+          { name: 'Enter energy at the lower trophic level', text: 'In kcal per square meter per year (or another energy unit from the menu) — e.g. how much energy producers capture.' },
+          { name: 'Enter the transfer (ecological) efficiency', text: 'As a percentage. 10% is a commonly taught round figure; real measured values (see the Silver Springs example) range roughly 5-20%.' },
+          { name: 'Read the energy at the next trophic level', text: 'The amount of energy available to build biomass at the level above.' },
+          { name: 'Or solve in reverse', text: 'Enter both levels’ energy values and solve for the efficiency field instead, to find out what percentage one real level actually passed to the next.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Energy at the next trophic level is the energy at this level times the transfer efficiency.',
+        expression: 'EnergyNext = EnergyThis × (Efficiency ÷ 100)',
+        terms: [
+          { symbol: 'EnergyThis', meaning: 'Energy available at the lower (source) trophic level.' },
+          { symbol: 'Efficiency', meaning: 'Ecological (transfer) efficiency between the two levels, as a percentage.' },
+          { symbol: 'EnergyNext', meaning: 'Energy available at the next (consumer) trophic level.' }
+        ],
+        note: 'This models one step of energy transfer at a time — chaining it across more than two levels (as in the Silver Springs worked example) means applying it once per step, since each real step has its own efficiency.'
+      },
+      workedExample: {
+        intro: 'OpenStax Biology 2e’s cited Silver Springs, Florida ecosystem data (Odum’s classic study), producers to primary consumers.',
+        rows: [
+          { label: 'Energy at producers', value: '20,819 kcal/m²/yr' },
+          { label: 'Energy at primary consumers', value: '3,368 kcal/m²/yr' },
+          { label: 'Transfer efficiency (3,368 ÷ 20,819 × 100)', value: '≈16.18%' }
+        ],
+        result: '≈16.18% of producer energy reached primary consumers',
+        explanation:
+          'Running the same formula for the next two steps (primary→secondary and secondary→tertiary consumers) using OpenStax’s own cited figures gives efficiencies of about 11.4% and 5.5% — real measured values, not the commonly taught round "10%" figure, though all three sit in the same rough range.'
+      },
+      watchOut: [
+        {
+          title: '"10%" is a teaching shorthand, not a universal law',
+          body: 'OpenStax’s own cited Silver Springs data shows real efficiencies of about 16%, 11%, and 5% at three different steps in the same ecosystem — all in the same rough range as "10%," but none exactly 10%. Treat any single efficiency figure as an estimate for that specific transfer, not a fixed constant of nature.'
+        },
+        {
+          title: 'Each step needs its own efficiency',
+          body: 'Energy loss compounds — you cannot jump from producers straight to tertiary consumers with one efficiency percentage; each trophic-level transition has its own rate, as the worked example’s three different percentages show.'
+        },
+        {
+          title: 'This is an energy-flow model, not a population or biomass count',
+          body: 'It describes energy (e.g. kcal/m²/yr), not the number of organisms or their total mass directly — a trophic level can hold a given amount of energy in very different numbers of individuals depending on their size.'
+        }
+      ],
+      references: [
+        {
+          label: 'OpenStax, Biology 2e, §46.1 "Ecology of Ecosystems" (trophic levels, energy loss, and the Silver Springs, Florida case study)',
+          url: 'https://openstax.org/books/biology-2e/pages/46-1-ecology-of-ecosystems'
+        }
+      ]
+    },
+    inputs: [
+      { id: 'energyThis', label: 'Energy at this level', type: 'number', placeholder: '20819', defaultValue: 20819, step: 1, min: 0, dimension: 'energy', unit: 'kcal' },
+      { id: 'efficiencyPercent', label: 'Transfer efficiency (%)', type: 'number', placeholder: '10', defaultValue: 10, step: 0.1, min: 0 },
+      { id: 'energyNext', label: 'Energy at next level', type: 'number', placeholder: '2081.9', defaultValue: 2081.9, step: 1, min: 0, dimension: 'energy', unit: 'kcal' }
+    ],
+    solver: {
+      defaultTarget: 'energyNext',
+      variables: [
+        { id: 'energyThis', label: 'Energy at this level', symbol: 'E₁', dimension: 'energy', defaultValue: 20819, defaultUnit: 'kcal' },
+        { id: 'efficiencyPercent', label: 'Transfer efficiency', symbol: 'η', dimension: 'count', defaultValue: 10, defaultUnit: 'count' },
+        { id: 'energyNext', label: 'Energy at next level', symbol: 'E₂', dimension: 'energy', defaultValue: 2081.9, defaultUnit: 'kcal' }
+      ],
+      solve: {
+        energyNext: ({ energyThis, efficiencyPercent }) => energyThis * (efficiencyPercent / 100),
+        efficiencyPercent: ({ energyThis, energyNext }) => (energyThis === 0 ? NaN : (energyNext / energyThis) * 100),
+        energyThis: ({ energyNext, efficiencyPercent }) => (efficiencyPercent === 0 ? NaN : energyNext / (efficiencyPercent / 100))
+      }
+    },
+    seo: {
+      title: 'Trophic Level Energy Calculator – Food Chain Efficiency',
+      description: 'Free trophic level energy calculator. Find energy transfer between food-chain levels or the ecological efficiency between them, with real Silver Springs data.',
+      faq: [
+        {
+          question: 'What is the "ten percent rule" in ecology?',
+          answer:
+            'A commonly taught shorthand that roughly 10% of the energy at one trophic level transfers to the next, with the rest lost as heat through respiration and other life processes. It is a rounded teaching approximation — real measured values, like those from the Silver Springs, Florida study, range from about 5% to 16% depending on which levels are involved.'
+        },
+        {
+          question: 'Why is so much energy lost between trophic levels?',
+          answer:
+            'Per OpenStax Biology 2e, "energy is lost as heat between each trophic level due to the second law of thermodynamics" — organisms use most of the energy they consume for their own metabolism, movement, and heat production, not for building new biomass that something else could eat.'
+        },
+        {
+          question: 'What is a real example of trophic energy transfer?',
+          answer:
+            'Howard Odum’s Silver Springs, Florida ecosystem study (cited in OpenStax Biology 2e) measured 20,819 kcal/m²/yr at the producer level, falling to 3,368 at primary consumers (≈16.2% efficiency), 383 at secondary consumers (≈11.4%), and 21 at tertiary consumers (≈5.5%).'
+        },
+        {
+          question: 'Why do food chains rarely have more than 4-5 levels?',
+          answer:
+            'Because so much energy is lost at each transfer, the amount remaining after several steps often becomes too small to support a viable population at yet another level above it — a direct consequence of the same energy loss this calculator models.'
+        },
+        {
+          question: 'Can I use this to find the efficiency between two real measurements?',
+          answer:
+            'Yes — enter the energy values at two adjacent trophic levels and solve for the efficiency field to find the actual transfer rate between them, rather than assuming a flat 10%.'
+        },
+        {
+          question: 'Does this account for more than one trophic transfer at once?',
+          answer:
+            'No — it models one single transfer at a time. To project across multiple levels (as in the Silver Springs example above), apply the formula once per step, since each real transfer has its own efficiency.'
+        }
+      ]
+    },
+    compute(values) {
+      return { energyNext: values.energyThis * (values.efficiencyPercent / 100) };
     }
   }
 ];

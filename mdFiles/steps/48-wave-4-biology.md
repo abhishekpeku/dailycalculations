@@ -331,10 +331,14 @@ used" discipline as Wave 3's NIST/IUPAC citations for lab-adjacent chemistry top
       - `biology` 5 → 10 on this branch (merged first; reconciled to 15 total against batch 2
         above).
       - No seed-list candidate skipped this batch — all 5 scoped items built as specified.
-- [ ] Batch 4 (population biology + genetics extensions, 5) — **IN PROGRESS**, branch
-      `step/48-wave-4-biology-run-4`.
+- [x] Batch 4 (population biology + genetics extensions, 5) — **DONE 2026-11-17**, branch
+      `step/48-wave-4-biology-run-4` (resumed from a rate-limit interruption partway through; the
+      branch's first 2 commits/calculators were already built and verified by the prior agent on
+      this same run before it died — documented in full below alongside the 3 finished by the
+      resuming agent).
       - [x] `population-growth-calculator` — continuous exponential growth N = N0 e^(rt) (new
         `rateConstant` unit `yr-1`, reciprocal of `time`'s own year, round-trip + anchor tested).
+        Worked example: 500 animals at r=5%/yr → ≈824 after 10 years.
       - [x] `generation-time-calculator` — **SKIPPED, confirmed duplicate**: read
         `bacterial-growth-calculator` directly and its existing 4-variable solver already solves
         exactly this direction (N0, N, t -> g = t ÷ log2(N/N0), algebraically identical to
@@ -343,16 +347,89 @@ used" discipline as Wave 3's NIST/IUPAC citations for lab-adjacent chemistry top
         distinct-search-intent variant (the "honest skip" case, D17). Replaced with
         `hemocytometer-calculator` (raw hemocytometer count -> cells/mL, the real missing seed-list
         item "cell density" — a genuinely different question: how the density going INTO
-        cell-dilution-calculator is actually measured, not a repeat of any existing page).
-      - [ ] `mutation-rate-calculator`
-      - [ ] `codon-to-amino-acid-calculator` (+ `lib/geneticCode.ts` + spec)
-      - [ ] `surface-area-to-volume-ratio-calculator` (5th, build agent's choice) — picked over
-        other remaining seed items because it's a classic, high-search intro-cell-biology concept
-        directly tied to OpenStax's own cube-cell figure (§4.2 "Prokaryotic Cells"), distinct from
-        every other biology calculator built so far, and because `generation-time-calculator`'s
-        skip left room for exactly one more item without overshooting the batch size.
+        cell-dilution-calculator is actually measured, not a repeat of any existing page). Worked
+        example: 200 cells / 4 squares / 2x dilution → 1,000,000 cells/mL.
+      - [x] `mutation-rate-calculator` — µ = mutant frequency (mutant count ÷ total individuals) ÷
+        number of generations, an explicitly-flagged simplified estimate (valid for small µ×g),
+        distinct from `allele-frequency-calculator` (which counts existing Mendelian alleles with
+        no time dimension; this page asks how fast a *new* mutation must arise per generation to
+        explain an observed frequency after a known number of generations). Cites OpenStax
+        Microbiology §11.5 "Mutations" (fetched directly: mutation/mutant definitions, the "one
+        incorrect base per billion base pairs" DNA polymerase error rate, the "1000-fold" mutagen
+        fact) for the concept, and Wikipedia's "Luria–Delbrück experiment" (fetched directly) for
+        the explicit, quoted caveat that "frequency is not a sufficiently accurate measure of
+        mutation and the mutation rate...should always be calculated" and that early-arising
+        mutants are over-represented in a clonally growing culture — used as this page's main
+        watch-out content, honestly scoping what the simple division does and doesn't capture
+        versus the real fluctuation-test estimators (Lea–Coulson median, Ma–Sandri–Sarkar MLE,
+        named but not implemented). Worked example: 4 mutants / 2,000,000 individuals / 20
+        generations → frequency 1 in 500,000 (2×10⁻⁶), rate ≈ 1×10⁻⁷ per generation.
+      - [x] `codon-to-amino-acid-calculator` — mRNA codon → amino acid lookup via 3 codon-position
+        dropdowns (type-B breakdown/lookup widget, same `options`-keyed-by-code mechanism
+        `dna-to-mrna-calculator` already established for base-by-base lookups, read directly before
+        building this). New `lib/geneticCode.ts`: the full standard genetic code (NCBI genetic code
+        table 1, "the Standard Code," fetched directly from
+        ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi) rebuilt as a direct 64-row table (not by
+        re-typing NCBI's packed strings) and independently verified base-by-base against NCBI's own
+        Base1/Base2/Base3/AAs strings in the build's scratch script before committing. New
+        `lib/geneticCode.spec.ts` self-checks the table the same way `molecularGeometry.spec.ts`/
+        `electronConfigurations.spec.ts` do: 64 distinct codons, exactly 3 stop codons (UAA/UAG/
+        UGA), exactly 1 start codon (AUG → Met), and the full known degeneracy table (3 amino acids
+        with 6 codons, 5 with 4, 1 with 3, 9 with 2, 2 with 1, summing to 64) — all pass. Concept
+        content cites OpenStax Biology 2e §15.5 "Ribosomes and Protein Synthesis" directly (fetched:
+        "64 possible mRNA codons," "three specify...termination," "61 specify the addition of amino
+        acids," AUG "also encodes the initiation of translation," UAA/UAG/UGA as the stop codons,
+        and the tRNA-matching explanation for the code's degeneracy). Worked example: AUG → Met
+        (start codon); cross-checked against OpenStax's own example codon CUA → Leu (one of
+        leucine's 6 codons).
+      - [x] `surface-area-to-volume-ratio-calculator` (5th, build agent's choice) — picked over
+        other remaining seed items as a classic, high-search intro-cell-biology concept distinct
+        from every other biology calculator built so far. **Correction to the prior agent's own
+        scoping note above**: OpenStax Biology 2e §4.1 "Studying Cells" and §4.2's neighboring
+        sections were fetched directly and do **not** actually contain a surface-area-to-volume
+        worked example or cube figure (checked explicitly, including a targeted re-fetch for the
+        phrase "surface area" — not present) — that citation plan didn't pan out, so this page cites
+        Wikipedia's "Surface-area-to-volume ratio" article directly instead (fetched: the SA:V
+        definition, the sphere formula "SA:V equals 3/r," the cube formula "SA:V ratio = 6a²/a³ =
+        6/a," and the biological framing "small size implies a large ratio of surface area to
+        volume, thereby helping to maximize the uptake of nutrients," plus the trade-off note about
+        water loss and temperature regulation). Sphere-or-cube shape picker (type-B breakdown),
+        output includes a bonus "ratio if size doubles" figure to make the core lesson (doubling the
+        linear size always exactly halves the ratio) checkable at a glance. Worked example: sphere,
+        r=10 µm → SA≈1,256.6 µm², V≈4,188.8 µm³, ratio=0.3/µm; r=20 µm → ratio=0.15/µm.
+      - Every worked-example number (all 3 of this agent's own calculators, plus the genetic code
+        table's full 64-codon reconstruction) independently re-verified in a standalone Node
+        scratch script (no app imports) before committing; script output matched the copy exactly.
+      - `npm test` 1509/1509 (snapshot additions additive-only — only the 3 new ids' entries were
+        added, confirmed via `git diff --stat`/grep on the snapshot file; 2 new `KNOWN_NON_FINITE`
+        entries added, `mutation-rate-calculator` for its 0/0 edge case and
+        `surface-area-to-volume-ratio-calculator` for its size=0 divide-by-zero edge case, both
+        genuinely undefined the same way `log-reduction-calculator`'s was), lint clean (both before
+        and after a post-hoc `seo.description` trim on `surface-area-to-volume-ratio-calculator`,
+        caught at 161 chars by the required programmatic length check and fixed to 149), `npm run
+        build` exit 0 (391 calculator pages). Static HTML of all 3 new pages checked directly:
+        correct H1, every template section id present (concept/how-to-use/formula/worked-example/
+        watch-out/faq/references/related), and a valid `FAQPage`/`mainEntity` JSON-LD block on each
+        (a pre-existing process already listening on port 3000 was left untouched, per this batch's
+        own instructions — no dev server was started by this agent).
+      - `biology` 17 → 20 on this branch's own head. **Needs reconciling at merge time** against a
+        separately-relaunched, parallel batch 5 PR (plant/cell biology + biochemistry, 5 more) if
+        it also branched from the same pre-batch-4 point — same hand-splice merge precedent used
+        for batches 2+3's shared-file conflict.
+      - Site-wide alias check (grepped every new id/alias against all `data/calculators/*.ts`
+        before writing, as required) found zero collisions involving this batch's own 3 new ids.
+        It did surface two **pre-existing, unrelated** alias collisions already on `master` before
+        this batch started (`"house loan emi calculator"` shared by `mortgage-calculator` and
+        `emi-calculator`; `"solution concentration calculator"` shared by `molarity-calculator` and
+        `solution-concentration-calculator`) — out of scope for this step per its own instructions
+        (build only what was asked, park anything else noticed), recorded in STATUS.md's Parked
+        list instead of fixed here.
+      - No seed-list candidate skipped this batch beyond the already-documented
+        `generation-time-calculator` duplicate above — all 5 scoped slots filled.
 - [ ] Batch 5 (plant/cell biology + biochemistry, 5)
 - [ ] Batch 6 (simple non-medical animal biology, 5)
-- [ ] Visual-QA spot-check (once this wave crosses ~420 calculators)
+- [ ] Visual-QA spot-check (once the site crosses ~420 calculators total — site is at 391 as batch 4
+      finishes, so not yet due; batch 5 (5 more) would cross 420, so the next agent should run the
+      spot-check at the end of batch 5 or the start of batch 6)
 - [ ] STATUS.md updated, `biology` category count recorded, Wave 4 handed off to ecology next
       (ecology still needs its own go-ahead per D13/D22 — do not start it without one)

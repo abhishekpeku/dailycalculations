@@ -2164,6 +2164,56 @@ exports[`compute() snapshots > closing-cost-estimator-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > codon-to-amino-acid-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "base1": 2,
+      "base2": 0,
+      "base3": 3
+    },
+    "outputs": {
+      "aminoAcidCode": 35,
+      "abbreviationCode": 35,
+      "letterCode": 35,
+      "roleCode": 35,
+      "degeneracyCount": 1,
+      "otherCodonsCount": 63
+    }
+  },
+  "typical": {
+    "inputs": {
+      "base1": 3,
+      "base2": 0,
+      "base3": 5
+    },
+    "outputs": {
+      "aminoAcidCode": 49,
+      "abbreviationCode": 49,
+      "letterCode": 49,
+      "roleCode": 49,
+      "degeneracyCount": 4,
+      "otherCodonsCount": 60
+    }
+  },
+  "edge": {
+    "inputs": {
+      "base1": 0,
+      "base2": 0,
+      "base3": 0
+    },
+    "outputs": {
+      "aminoAcidCode": 0,
+      "abbreviationCode": 0,
+      "letterCode": 0,
+      "roleCode": 0,
+      "degeneracyCount": 2,
+      "otherCodonsCount": 62
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > coefficient-of-variation-calculator 1`] = `
 {
   "default": {
@@ -9505,6 +9555,50 @@ exports[`compute() snapshots > mulch-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > mutation-rate-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mutantCount": 4,
+      "totalIndividuals": 2000000,
+      "generations": 20
+    },
+    "outputs": {
+      "mutantFrequency": 0.000002,
+      "mutationRate": 1e-7,
+      "nonMutantCount": 1999996,
+      "oneInN": 500000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mutantCount": 6,
+      "totalIndividuals": 3000000,
+      "generations": 30
+    },
+    "outputs": {
+      "mutantFrequency": 0.000002,
+      "mutationRate": 6.666666667e-8,
+      "nonMutantCount": 2999994,
+      "oneInN": 500000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mutantCount": 0,
+      "totalIndividuals": 0,
+      "generations": 0
+    },
+    "outputs": {
+      "mutantFrequency": "NaN",
+      "mutationRate": "NaN",
+      "nonMutantCount": 0,
+      "oneInN": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > mutual-fund-calculator 1`] = `
 {
   "default": {
@@ -14476,6 +14570,47 @@ exports[`compute() snapshots > surface-area-calculator 1`] = `
     },
     "outputs": {
       "surfaceArea": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > surface-area-to-volume-ratio-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "shape": 0,
+      "size": 10
+    },
+    "outputs": {
+      "surfaceArea": 1256.637061,
+      "volume": 4188.790205,
+      "ratio": 0.3,
+      "doubledSizeRatio": 0.15
+    }
+  },
+  "typical": {
+    "inputs": {
+      "shape": 0,
+      "size": 15
+    },
+    "outputs": {
+      "surfaceArea": 2827.433388,
+      "volume": 14137.16694,
+      "ratio": 0.2,
+      "doubledSizeRatio": 0.1
+    }
+  },
+  "edge": {
+    "inputs": {
+      "shape": 0,
+      "size": 0
+    },
+    "outputs": {
+      "surfaceArea": 0,
+      "volume": 0,
+      "ratio": "NaN",
+      "doubledSizeRatio": "NaN"
     }
   }
 }

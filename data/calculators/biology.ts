@@ -1,8 +1,25 @@
 import type { CalculatorConfig } from './types.ts';
+import {
+  RNA_BASE_OPTIONS,
+  findCodon,
+  degeneracy,
+  AMINO_ACID_NAME_LABELS,
+  AMINO_ACID_ABBREVIATION_LABELS,
+  AMINO_ACID_LETTER_LABELS,
+  CODON_ROLE_LABELS
+} from '../../lib/geneticCode.ts';
 
 // Standard gravity (BIPM SI Brochure), used by centrifuge-rcf-rpm-calculator's RCF = omega^2 r / g0 —
 // same value and source as physics.ts's own STANDARD_GRAVITY constant.
 const STANDARD_GRAVITY = 9.80665;
+
+// surface-area-to-volume-ratio-calculator: shape picker. 0 is the default so it survives the
+// compute() snapshot test's typical-input ×1.5 scaling unchanged (template v2 §2, "Select options
+// are keyed by id or code... only 0 survives that unchanged").
+const SHAPE_OPTIONS = [
+  { value: 0, label: 'Sphere (enter the radius)' },
+  { value: 1, label: 'Cube (enter the side length)' }
+];
 
 // Genotype for a single gene, encoded as how many dominant alleles (0, 1 or 2) that parent carries:
 // AA = 2, Aa = 1, aa = 0 — the input punnett-square-calculator and dihybrid-cross-calculator both
@@ -1944,6 +1961,342 @@ export const biologyCalculators: CalculatorConfig[] = [
       // cellDensity is in cells/mL; cultureVolume is in mL, so the product is already a plain cell count.
       const totalCellsInVolume = cellDensity * values.cultureVolume;
       return { cellDensity, averagePerSquare, totalCellsInVolume };
+    }
+  },
+  {
+    id: 'mutation-rate-calculator',
+    category: 'biology',
+    glyph: 'µ/g',
+    updatedAt: '2026-11-17',
+    aliases: ['mutation rate calculator', 'mutation rate from mutant frequency calculator', 'per generation mutation rate calculator', 'spontaneous mutation rate calculator', 'mutant frequency to mutation rate calculator', 'bacterial mutation rate estimate'],
+    related: ['allele-frequency-calculator', 'hardy-weinberg-calculator', 'bacterial-growth-calculator', 'doubling-time-calculator'],
+    title: 'Mutation Rate Calculator (From Mutant Frequency)',
+    description: 'Estimate a per-generation mutation rate from a mutant count, total population, and number of generations — and see why mutant frequency alone is not the same thing as mutation rate.',
+    example: '4 mutants found among 2,000,000 individuals after 20 generations gives a mutant frequency of 1 in 500,000 and an estimated mutation rate of about 1 × 10⁻⁷ per generation.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is mutation rate, and how is it different from mutant frequency?',
+        paragraphs: [
+          'OpenStax’s Microbiology defines the basics directly: "a mutation is a heritable change in the DNA sequence of an organism," and "the resulting organism, called a mutant, may have a recognizable change in phenotype compared to the wild type." Mutations mostly arise from ordinary replication mistakes — "the error rate of DNA polymerase is one incorrect base per billion base pairs replicated" — though OpenStax also notes "exposure to a mutagen can increase the rate of mutation more than 1000-fold."',
+          'Mutant frequency and mutation rate sound interchangeable but answer different questions. Frequency is a snapshot: what fraction of a sampled population carries a given mutation right now. Rate is a pace: how often a new mutation event arises per individual (or cell) per generation. A frequency only becomes a rate once it is normalized by how much time — measured in generations — the population had to accumulate that mutation in the first place, which is exactly what dividing by the number of generations does.',
+          'Wikipedia’s account of the classic Luria–Delbrück fluctuation test spells out why this distinction matters in practice: "the number of mutants that appear in the saturated culture is a measure of both the mutation rate and when the mutants arise during the growth of the culture: mutants appearing early in the growth of the culture will propagate many more mutants than those that arise later during growth," so "frequency is not a sufficiently accurate measure of mutation and the mutation rate...should always be calculated." This calculator performs that normalization — dividing an observed frequency by the number of generations — rather than treating frequency itself as the answer.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter how many mutants were found, the total number of individuals sampled, and how many generations separate the sample from its mutation-free ancestor.',
+        steps: [
+          { name: 'Enter the mutant count', text: 'The number of individuals (or colonies) observed carrying the mutation.' },
+          { name: 'Enter the total individuals sampled', text: 'The total population counted, mutants included.' },
+          { name: 'Enter the number of generations', text: 'How many generations have passed since the ancestral population carried no copies of this mutation.' },
+          { name: 'Read the mutant frequency', text: 'The fraction of the sampled population currently carrying the mutation.' },
+          { name: 'Read the estimated mutation rate', text: 'The mutant frequency spread evenly across the generations it took to arise — the estimated rate per individual per generation.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'When a population has grown for a known number of generations from an ancestor that carried none of this mutation, and the mutation neither reverts nor is selected for or against, spreading the observed frequency evenly across those generations gives a simple estimate of the per-generation mutation rate.',
+        expression: 'Mutant frequency (f) = mutant count ÷ total individuals\nMutation rate (µ) = f ÷ number of generations',
+        terms: [
+          { symbol: 'Mutant count', meaning: 'The number of individuals or colonies observed carrying the mutation.' },
+          { symbol: 'Total individuals', meaning: 'The total sampled population, mutants included.' },
+          { symbol: 'f', meaning: 'Mutant frequency — the fraction of the sampled population carrying the mutation.' },
+          { symbol: 'Number of generations', meaning: 'How many generations have elapsed since the mutation-free ancestral population.' },
+          { symbol: 'µ', meaning: 'The estimated mutation rate, in new mutations per individual per generation.' }
+        ],
+        note: 'This is a simplified estimate, valid when the mutation rate times the number of generations stays small. It is not the rigorous fluctuation-test estimator (the Lea–Coulson median method or the Ma–Sandri–Sarkar maximum-likelihood estimator) that real labs use for a clonally expanding bacterial culture — see Watch out for below.'
+      },
+      workedExample: {
+        intro: 'A population descended from a single mutation-free ancestor is sampled after 20 generations of growth: 4 out of 2,000,000 individuals now carry a particular mutation. What is the mutant frequency, and the estimated mutation rate?',
+        rows: [
+          { label: 'Mutant count', value: '4' },
+          { label: 'Total individuals', value: '2,000,000' },
+          { label: 'Mutant frequency (4 ÷ 2,000,000)', value: '0.000002 (1 in 500,000, or 0.0002%)' },
+          { label: 'Number of generations', value: '20' },
+          { label: 'Mutation rate (0.000002 ÷ 20)', value: '1 × 10⁻⁷ per generation' }
+        ],
+        result: 'µ ≈ 1 × 10⁻⁷ per generation',
+        explanation: '4 mutants out of 2,000,000 individuals gives a mutant frequency of 4 ÷ 2,000,000 = 0.000002, or 1 mutant in every 500,000 individuals. Spreading that frequency evenly across the 20 generations it took to accumulate gives an estimated mutation rate of 0.000002 ÷ 20 = 0.0000001, or 1 × 10⁻⁷ new mutations per individual per generation.'
+      },
+      watchOut: [
+        { title: 'Frequency and rate are not the same measurement', body: 'Wikipedia’s account of the fluctuation test is explicit: "frequency is not a sufficiently accurate measure of mutation and the mutation rate...should always be calculated." A frequency alone says nothing about how long the population took to reach it — only dividing by generations turns it into a rate.' },
+        { title: 'In a growing clonal culture, early mutants are over-represented', body: 'A mutation that happens to arise in an early cell division gets copied into every one of its descendants, inflating the final mutant count far beyond what the same mutation rate would produce if it arose later — "mutants appearing early in the growth of the culture will propagate many more mutants than those that arise later" (Wikipedia). Real bacterial fluctuation-test data needs a statistical estimator built around this, not a simple average.' },
+        { title: 'This assumes no back-mutation and no selection', body: 'The formula treats every counted mutant as a surviving, undiluted record of a past mutation event. A mutation that reverts, or that gives its carrier a survival advantage or disadvantage, breaks that assumption.' },
+        { title: 'The approximation needs µ × generations to stay small', body: 'This division is a first-order approximation. If the mutation rate were high enough, or the number of generations large enough, that a large share of the population could plausibly have mutated more than once, the simple frequency-over-generations estimate would understate the true rate.' }
+      ],
+      references: [
+        { label: 'OpenStax, Microbiology, §11.5 "Mutations"', url: 'https://openstax.org/books/microbiology/pages/11-5-mutations' },
+        { label: 'Wikipedia, "Luria–Delbrück experiment"', url: 'https://en.wikipedia.org/wiki/Luria%E2%80%93Delbr%C3%BCck_experiment' }
+      ]
+    },
+    inputs: [
+      { id: 'mutantCount', label: 'Mutant count', type: 'number', placeholder: '4', defaultValue: 4, step: 1, min: 0 },
+      { id: 'totalIndividuals', label: 'Total individuals sampled', type: 'number', placeholder: '2000000', defaultValue: 2000000, step: 1, min: 0 },
+      { id: 'generations', label: 'Number of generations', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'mutationRate',
+      headlineLabel: 'Estimated mutation rate (per generation)',
+      outputs: [
+        { id: 'mutationRate', label: 'Estimated mutation rate (per generation)', format: 'significant' },
+        { id: 'mutantFrequency', label: 'Mutant frequency', format: 'significant' },
+        { id: 'oneInN', label: 'One mutant in every (individuals)', format: 'significant' }
+      ],
+      groups: [{ inputs: ['mutantCount', 'totalIndividuals', 'generations'] }],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'mutantCount', label: 'Mutants' },
+          { from: 'nonMutantCount', label: 'Non-mutants' }
+        ],
+        center: 'mutantFrequency',
+        centerSub: 'mutant frequency'
+      }
+    },
+    seo: {
+      title: 'Mutation Rate Calculator (From Mutant Frequency)',
+      description: 'Free mutation rate calculator. Estimate a per-generation mutation rate from a mutant count, total population, and number of generations.',
+      faq: [
+        { question: 'How do you calculate mutation rate from mutant frequency?', answer: 'Divide the mutant frequency (mutant count ÷ total individuals) by the number of generations the population has had to accumulate that mutation. 4 mutants out of 2,000,000 individuals after 20 generations gives a frequency of 0.000002 and a rate of about 1 × 10⁻⁷ per generation.' },
+        { question: 'What is the difference between mutation rate and mutant frequency?', answer: 'Mutant frequency is a snapshot — the fraction of a sampled population carrying a mutation right now. Mutation rate is a pace — how often a new mutation arises per individual per generation. Dividing frequency by the number of generations converts one into the other.' },
+        { question: 'What causes spontaneous mutations?', answer: 'Mostly ordinary replication errors: OpenStax’s Microbiology states "the error rate of DNA polymerase is one incorrect base per billion base pairs replicated." Exposure to a mutagen, OpenStax notes, "can increase the rate of mutation more than 1000-fold."' },
+        { question: 'Why isn’t mutant frequency alone an accurate measure of mutation?', answer: 'Because when a population grows clonally, a mutation that happens to arise early gets copied into far more descendants than one arising late — "mutants appearing early in the growth of the culture will propagate many more mutants than those that arise later" (Wikipedia, on the Luria–Delbrück fluctuation test), which inflates frequency without reflecting a higher rate.' },
+        { question: 'How is this different from the allele frequency calculator?', answer: 'Allele-frequency-calculator counts existing Mendelian alleles already segregating in a population, with no time dimension. This calculator instead asks how fast a brand-new mutation must be arising, per generation, to explain an observed frequency after a known number of generations.' },
+        { question: 'Is this the rigorous way labs measure bacterial mutation rate?', answer: 'No — it is a simplified estimate. Real fluctuation-test data (where mutants are counted after clonal growth rather than tracked generation by generation) needs a dedicated estimator, such as the Lea–Coulson median method or the Ma–Sandri–Sarkar maximum-likelihood estimator, to correct for early mutants being over-represented.' }
+      ]
+    },
+    compute(values) {
+      const mutantFrequency = values.mutantCount / values.totalIndividuals;
+      const mutationRate = mutantFrequency / values.generations;
+      const nonMutantCount = values.totalIndividuals - values.mutantCount;
+      const oneInN = values.totalIndividuals / values.mutantCount;
+      return { mutantFrequency, mutationRate, nonMutantCount, oneInN };
+    }
+  },
+  {
+    id: 'codon-to-amino-acid-calculator',
+    category: 'biology',
+    glyph: 'AUG',
+    updatedAt: '2026-11-17',
+    aliases: ['codon to amino acid calculator', 'genetic code calculator', 'mrna codon table calculator', 'codon table lookup calculator', 'translation codon calculator', 'amino acid from codon calculator'],
+    related: ['dna-to-mrna-calculator', 'protein-concentration-calculator', 'punnett-square-calculator', 'dihybrid-cross-calculator'],
+    title: 'Codon to Amino Acid Calculator (Genetic Code Table)',
+    description: 'Pick each position of an mRNA codon and look up the amino acid it specifies directly from the standard genetic code table, including start and stop codons.',
+    example: 'The mRNA codon AUG codes for methionine and also serves as the universal start codon; OpenStax’s own example codon CUA codes for leucine, one of six different codons that specify it.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is the genetic code, and how does a codon specify an amino acid?',
+        paragraphs: [
+          'OpenStax’s Biology 2e lays out the genetic code’s basic bookkeeping directly: "of the 64 possible mRNA codons — or triplet combinations of A, U, G, and C — three specify the termination of protein synthesis and 61 specify the addition of amino acids to the polypeptide chain." Of those 61 sense codons, OpenStax notes "one codon (AUG) also encodes the initiation of translation," and "termination of translation occurs when a nonsense codon (UAA, UAG, or UGA) is encountered" — the three stop codons this calculator also marks.',
+          'Sixty-one sense codons specifying only 20 amino acids means most amino acids are specified by more than one codon — a property called degeneracy or redundancy. OpenStax attributes this to the matching machinery itself: "the ability of some tRNAs to match more than one codon is what gives the genetic code its blocky structure." The degeneracy is uneven: methionine and tryptophan each have only one codon, while leucine, serine, and arginine each have six (the self-checked full breakdown is in this calculator’s own lookup table).',
+          'Translation reads an mRNA strand three bases (one codon) at a time, in the same 5′-to-3′ direction it was transcribed — this calculator demonstrates that lookup for one codon at a time, the step that follows dna-to-mrna-calculator’s transcription once an mRNA strand already exists.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick the three bases of a single mRNA codon, in order; the amino acid, its start/stop role, and how many codons share that amino acid fill in instantly.',
+        steps: [
+          { name: 'Enter the first codon position', text: 'The base at the 5′ end of the codon — U, C, A, or G.' },
+          { name: 'Enter the second codon position', text: 'The middle base of the codon.' },
+          { name: 'Enter the third codon position', text: 'The base at the 3′ end of the codon.' },
+          { name: 'Read the amino acid', text: 'Its full name, three-letter code, and one-letter code, looked up directly from the standard genetic code table.' },
+          { name: 'Check the role and degeneracy', text: 'Whether this codon starts or stops translation, and how many of the 64 codons encode the same amino acid.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'There is no equation to solve — this is a direct lookup from the standard genetic code table (NCBI’s genetic code table 1), the same 64-codon mapping used by the vast majority of known genomes.',
+        expression: 'Amino acid = lookup(base 1, base 2, base 3) in the standard genetic code table',
+        terms: [
+          { symbol: 'Base 1, 2, 3', meaning: 'The three mRNA bases of the codon, read 5′ to 3′, each U, C, A, or G.' },
+          { symbol: 'Sense codon', meaning: 'One of the 61 codons (all but the 3 stop codons) that specifies an amino acid.' },
+          { symbol: 'Degeneracy', meaning: 'How many of the 64 codons encode this same amino acid — from 1 (methionine, tryptophan) to 6 (leucine, serine, arginine).' }
+        ],
+        note: 'This is "the Standard Code" (NCBI table 1) — see Watch out for below on the handful of organisms and organelles that use a different numbered genetic code table.'
+      },
+      workedExample: {
+        intro: 'What amino acid does the mRNA codon A-U-G specify, and what role does it play in translation?',
+        rows: [
+          { label: 'Codon', value: 'A U G' },
+          { label: 'Amino acid', value: 'Methionine (Met, M)' },
+          { label: 'Role', value: 'Start codon — initiates translation' },
+          { label: 'Degeneracy', value: '1 of 1 — the only codon for methionine' }
+        ],
+        result: 'AUG → Methionine (start codon)',
+        explanation: 'Looking up A, U, G in the standard genetic code table gives methionine. OpenStax notes AUG is the one sense codon that "also encodes the initiation of translation," so besides specifying methionine wherever it appears mid-sequence, an AUG at the start of a reading frame is where the ribosome begins. As a cross-check, OpenStax’s own example codon, C-U-A, looks up to leucine — one of six codons (CUU, CUC, CUA, CUG, UUA, UUG) that all specify leucine, the genetic code’s maximum degeneracy.'
+      },
+      watchOut: [
+        { title: 'This looks up one codon, not a full reading frame', body: 'A real mRNA transcript is read three bases at a time from a fixed starting point; this calculator demonstrates a single codon’s lookup, not scanning a full sequence for its reading frame.' },
+        { title: 'The reading frame changes everything', body: 'The same stretch of bases encodes a completely different amino acid sequence depending on which base it starts being read from — shifting the frame by even one base changes every codon downstream.' },
+        { title: 'AUG is the standard start codon, but not the only one ever used', body: 'NCBI’s own genetic code table marks a small number of alternative initiator codons (such as UUG and CUG) that some organisms use rarely; this calculator, like most teaching contexts, treats AUG as the start codon.' },
+        { title: 'A few organisms and organelles use a different genetic code table', body: 'This is "the Standard Code" used by the vast majority of nuclear genomes — but NCBI publishes multiple numbered alternative genetic code tables for cases such as vertebrate mitochondrial DNA, where a few codon assignments differ from the standard table used here.' }
+      ],
+      references: [
+        { label: 'NCBI, "The Genetic Codes" (table 1, the Standard Code)', url: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi?mode=c' },
+        { label: 'OpenStax, Biology 2e, §15.5 "Ribosomes and Protein Synthesis"', url: 'https://openstax.org/books/biology-2e/pages/15-5-ribosomes-and-protein-synthesis' }
+      ]
+    },
+    inputs: [
+      { id: 'base1', label: 'Codon position 1 (5′)', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0, options: RNA_BASE_OPTIONS },
+      { id: 'base2', label: 'Codon position 2', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0, options: RNA_BASE_OPTIONS },
+      { id: 'base3', label: 'Codon position 3 (3′)', type: 'number', placeholder: '3', defaultValue: 3, step: 1, min: 0, options: RNA_BASE_OPTIONS }
+    ],
+    breakdown: {
+      headline: 'aminoAcidCode',
+      headlineLabel: 'Amino acid',
+      outputs: [
+        { id: 'aminoAcidCode', label: 'Amino acid', labels: AMINO_ACID_NAME_LABELS },
+        { id: 'abbreviationCode', label: 'Three-letter code', labels: AMINO_ACID_ABBREVIATION_LABELS },
+        { id: 'letterCode', label: 'One-letter code', labels: AMINO_ACID_LETTER_LABELS },
+        { id: 'roleCode', label: 'Role in translation', labels: CODON_ROLE_LABELS },
+        { id: 'degeneracyCount', label: 'Codons for this amino acid (degeneracy)', format: 'integer' }
+      ],
+      groups: [{ title: 'mRNA codon (5′ to 3′)', inputs: ['base1', 'base2', 'base3'] }],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'degeneracyCount', label: 'Codons for this amino acid' },
+          { from: 'otherCodonsCount', label: 'All other codons' }
+        ],
+        center: 'degeneracyCount',
+        centerSub: 'codons for this amino acid'
+      }
+    },
+    seo: {
+      title: 'Codon to Amino Acid Calculator (Genetic Code Table)',
+      description: 'Free codon to amino acid calculator. Pick each mRNA codon position and look up its amino acid, start/stop role, and degeneracy from the genetic code table.',
+      faq: [
+        { question: 'How do you translate a codon into an amino acid?', answer: 'Look up the codon’s three mRNA bases, in order, in the standard genetic code table. AUG, for example, looks up to methionine.' },
+        { question: 'How many codons are there, and how many specify amino acids?', answer: 'OpenStax’s Biology 2e states there are "64 possible mRNA codons," of which "three specify the termination of protein synthesis and 61 specify the addition of amino acids."' },
+        { question: 'What is the start codon?', answer: 'AUG is the standard start codon: besides coding for methionine, OpenStax notes it "also encodes the initiation of translation" wherever a ribosome begins reading a reading frame.' },
+        { question: 'What are the stop codons?', answer: 'UAA, UAG, and UGA. OpenStax states "termination of translation occurs when a nonsense codon (UAA, UAG, or UGA) is encountered" — none of the three codes for an amino acid.' },
+        { question: 'Why do some amino acids have more than one codon?', answer: 'The genetic code is degenerate: 61 sense codons specify only 20 amino acids. OpenStax attributes this to "the ability of some tRNAs to match more than one codon," which gives some amino acids up to six different codons (leucine, serine, and arginine) while methionine and tryptophan have only one each.' },
+        { question: 'Is the genetic code the same in every organism?', answer: 'Nearly, but not quite. This calculator uses NCBI’s "Standard Code" (table 1), used by the vast majority of nuclear genomes — but NCBI also publishes alternative numbered tables for exceptions such as vertebrate mitochondrial DNA, where a few codons are reassigned.' }
+      ]
+    },
+    compute(values) {
+      const entry = findCodon(values.base1, values.base2, values.base3);
+      if (!entry) return { aminoAcidCode: NaN, abbreviationCode: NaN, letterCode: NaN, roleCode: NaN, degeneracyCount: NaN, otherCodonsCount: NaN };
+      const degeneracyCount = degeneracy(entry.letter);
+      return {
+        aminoAcidCode: entry.code,
+        abbreviationCode: entry.code,
+        letterCode: entry.code,
+        roleCode: entry.code,
+        degeneracyCount,
+        otherCodonsCount: 64 - degeneracyCount
+      };
+    }
+  },
+  {
+    id: 'surface-area-to-volume-ratio-calculator',
+    category: 'biology',
+    glyph: 'SA:V',
+    updatedAt: '2026-11-17',
+    aliases: ['surface area to volume ratio calculator', 'sa:v ratio calculator', 'surface to volume ratio calculator', 'cell surface area to volume calculator', 'sphere and cube surface area to volume calculator', 'why are cells small calculator'],
+    related: ['cell-dilution-calculator', 'hemocytometer-calculator', 'bacterial-growth-calculator', 'doubling-time-calculator'],
+    title: 'Surface Area to Volume Ratio Calculator (Sphere/Cube)',
+    description: 'Calculate the surface-area-to-volume ratio of a sphere or cube and see why a larger size always leaves a cell with proportionally less membrane to service its interior.',
+    example: 'A spherical cell with a 10 µm radius has a surface area of about 1,257 µm², a volume of about 4,189 µm³, and a surface-area-to-volume ratio of 0.3 per µm — doubling the radius to 20 µm cuts the ratio in half, to 0.15 per µm.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'Why does the surface-area-to-volume ratio matter for cell size?',
+        paragraphs: [
+          'The surface-area-to-volume ratio (SA:V) is, as Wikipedia defines it, simply "the ratio between surface area and volume of an object" — but for a living cell, that single number carries real biological weight. Wikipedia states plainly that "the ratio between the surface area and volume of cells and organisms has an enormous impact on their biology, including their physiology and behavior," because the surface (the plasma membrane) is where nutrients, gases, and waste cross in and out, while the volume is the interior that membrane has to keep supplied.',
+          'The trouble is that the two don’t scale together. A cell’s surface area grows with the square of its linear size, but its volume grows with the cube — so as any shape gets bigger, volume races ahead of surface area, and the SA:V ratio falls. Wikipedia’s own framing of the benefit runs the logic in reverse: "small size implies a large ratio of surface area to volume, thereby helping to maximize the uptake of nutrients across the plasma membrane." A cell that grows too large eventually has too little membrane, relative to its own interior, to keep up with its metabolic needs.',
+          'The exact numbers come straight from each shape’s own geometry: Wikipedia gives a sphere’s ratio as "SA:V equals 3/r, in an inverse relationship with the radius," and a cube’s as "SA:V ratio = 6a²/a³ = 6/a." Both reduce to the same shape-independent lesson — the ratio falls in direct inverse proportion to the linear size, whatever the shape.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick a shape and enter its one defining length; surface area, volume, and the SA:V ratio fill in instantly.',
+        steps: [
+          { name: 'Choose a shape', text: 'Sphere (a radius) or cube (a side length) — the two simplest shapes to compute exactly.' },
+          { name: 'Enter the radius or side length', text: 'In micrometers (µm), the usual scale for cells.' },
+          { name: 'Read the surface area and volume', text: 'Computed directly from the chosen shape’s own formulas.' },
+          { name: 'Read the surface-area-to-volume ratio', text: 'Surface area divided by volume — higher means proportionally more membrane per unit of interior.' },
+          { name: 'Compare against double the size', text: 'See how much the ratio falls if the same shape’s linear size simply doubled.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Each shape’s own surface area and volume formulas combine into a surface-area-to-volume ratio that depends only on the linear size.',
+        expression: 'Sphere: SA = 4πr², V = (4⁄3)πr³, SA∶V = 3 ÷ r\nCube: SA = 6a², V = a³, SA∶V = 6 ÷ a',
+        terms: [
+          { symbol: 'r', meaning: 'A sphere’s radius.' },
+          { symbol: 'a', meaning: 'A cube’s side length.' },
+          { symbol: 'SA', meaning: 'Surface area — the total exposed area, where exchange with the surroundings happens.' },
+          { symbol: 'V', meaning: 'Volume — the interior that the surface has to keep supplied.' },
+          { symbol: 'SA∶V', meaning: 'Surface area divided by volume. Both shapes’ formulas reduce to a constant divided by the linear size.' }
+        ],
+        note: 'Real cells are rarely perfect spheres or cubes, but every realistic shape shows the same pattern: surface area scales with the square of linear size, volume with the cube, so SA:V always falls as a uniform shape gets bigger.'
+      },
+      workedExample: {
+        intro: 'A roughly spherical cell has a radius of 10 µm. What are its surface area, volume, and surface-area-to-volume ratio — and how does that ratio change if the radius doubles?',
+        rows: [
+          { label: 'Radius (r)', value: '10 µm' },
+          { label: 'Surface area (4π × 10²)', value: '≈ 1,256.6 µm²' },
+          { label: 'Volume ((4⁄3)π × 10³)', value: '≈ 4,188.8 µm³' },
+          { label: 'SA:V ratio (3 ÷ 10)', value: '0.3 per µm' },
+          { label: 'SA:V ratio if radius doubles to 20 µm (3 ÷ 20)', value: '0.15 per µm' }
+        ],
+        result: '0.3 per µm at 10 µm radius; 0.15 per µm at 20 µm radius',
+        explanation: 'A 10 µm sphere has a surface area of 4π(10)² ≈ 1,256.6 µm² and a volume of (4⁄3)π(10)³ ≈ 4,188.8 µm², giving a ratio of 1,256.6 ÷ 4,188.8 = 0.3 per µm — matching the shortcut formula 3 ÷ 10 exactly. Doubling the radius to 20 µm gives 3 ÷ 20 = 0.15 per µm: exactly half the original ratio, confirming that doubling the linear size always halves this ratio, regardless of the starting size.'
+      },
+      watchOut: [
+        { title: 'Real cells are not perfect spheres or cubes', body: 'The exact SA:V number depends on the precise shape, but every realistic cell shape shows the same underlying pattern: volume grows faster than surface area as the shape scales up uniformly, so SA:V falls as the cell gets larger regardless of its exact geometry.' },
+        { title: 'A higher SA:V ratio is not free', body: 'Wikipedia notes the same large relative surface area that helps nutrient uptake also increases "loss of water and dissolved substances" and creates "problems of temperature control in unfavorable environments" — the ratio is a trade-off, not a one-directional advantage.' },
+        { title: 'The ratio’s numeric value depends on the length unit', body: 'A ratio of "0.3" means something different depending on whether it is 0.3 per µm or 0.3 per mm — always keep the same length unit in mind when comparing two SA:V figures.' },
+        { title: 'Doubling the size always exactly halves the ratio', body: 'Because both formulas are a constant divided by the linear size, doubling that size — the radius or the side length — always cuts the SA:V ratio exactly in half, whatever the starting size was.' }
+      ],
+      references: [
+        { label: 'Wikipedia, "Surface-area-to-volume ratio"', url: 'https://en.wikipedia.org/wiki/Surface-area-to-volume_ratio' }
+      ]
+    },
+    inputs: [
+      { id: 'shape', label: 'Shape', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0, options: SHAPE_OPTIONS },
+      { id: 'size', label: 'Radius (sphere) or side length (cube), in µm', type: 'number', placeholder: '10', defaultValue: 10, step: 0.1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'ratio',
+      headlineLabel: 'Surface-area-to-volume ratio (per µm)',
+      outputs: [
+        { id: 'ratio', label: 'Surface-area-to-volume ratio (per µm)', format: 'significant' },
+        { id: 'surfaceArea', label: 'Surface area (µm²)', format: 'significant' },
+        { id: 'volume', label: 'Volume (µm³)', format: 'significant' },
+        { id: 'doubledSizeRatio', label: 'Ratio if the size doubles (per µm)', format: 'significant' }
+      ],
+      groups: [{ inputs: ['shape', 'size'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'ratio', label: 'At current size' },
+          { from: 'doubledSizeRatio', label: 'At double the size' }
+        ],
+        title: 'Surface-area-to-volume ratio: now vs. double the size',
+        highlight: 0
+      }
+    },
+    seo: {
+      title: 'Surface Area to Volume Ratio Calculator (Sphere/Cube)',
+      description: 'Free surface-area-to-volume ratio calculator for a sphere or cube: surface area, volume, SA:V ratio, and why smaller cells exchange nutrients better.',
+      faq: [
+        { question: 'What is the surface-area-to-volume ratio formula?', answer: 'For a sphere, SA:V = 3 ÷ r. For a cube, SA:V = 6 ÷ a. Both reduce to a constant divided by the shape’s own linear size (radius or side length).' },
+        { question: 'Why do smaller cells have a higher surface-area-to-volume ratio?', answer: 'Surface area scales with the square of linear size while volume scales with the cube, so as a shape shrinks, its surface area shrinks more slowly than its volume — leaving proportionally more membrane per unit of interior.' },
+        { question: 'Why does surface-area-to-volume ratio limit cell size?', answer: 'Wikipedia notes "small size implies a large ratio of surface area to volume, thereby helping to maximize the uptake of nutrients across the plasma membrane." As a cell grows, that ratio falls, eventually leaving too little membrane to service the growing interior fast enough.' },
+        { question: 'What happens to the ratio if I double the radius or side length?', answer: 'It is always cut exactly in half. Since SA:V = 3 ÷ r (sphere) or 6 ÷ a (cube), doubling r or a halves the result regardless of the starting size.' },
+        { question: 'Is a higher surface-area-to-volume ratio always better?', answer: 'No. Wikipedia notes the same large relative surface area also increases water and solute loss and makes temperature regulation harder in unfavorable environments — it is a trade-off, not a pure advantage.' },
+        { question: 'Does the shape matter, or only the size?', answer: 'The shape sets the exact constant (3 for a sphere, 6 for a cube), but every realistic shape shows the same underlying pattern: the ratio falls as the shape’s linear size grows, since volume always scales faster than surface area.' }
+      ]
+    },
+    compute(values) {
+      const isCube = Math.round(values.shape) === 1;
+      const s = values.size;
+      const surfaceArea = isCube ? 6 * s * s : 4 * Math.PI * s * s;
+      const volume = isCube ? s ** 3 : (4 / 3) * Math.PI * s ** 3;
+      const ratio = s === 0 ? NaN : (isCube ? 6 : 3) / s;
+      const doubledSizeRatio = s === 0 ? NaN : (isCube ? 6 : 3) / (2 * s);
+      return { surfaceArea, volume, ratio, doubledSizeRatio };
     }
   }
 ];

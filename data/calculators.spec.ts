@@ -136,7 +136,9 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'doubling-time-calculator': ['doublingTime'], // growth rate constant 0 (its min) -> divide by zero
   'protein-concentration-calculator': ['concentration'], // all inputs 0 -> 0/0
   'allele-frequency-calculator': ['p', 'q'], // all three genotype counts 0 (their min) -> totalAlleles 0 -> 0/0
-  'log-reduction-calculator': ['logReduction'] // initialCount and finalCount both 0 (their min) -> log10(0/0), undefined
+  'log-reduction-calculator': ['logReduction'], // initialCount and finalCount both 0 (their min) -> log10(0/0), undefined
+  'mutation-rate-calculator': ['mutantFrequency', 'mutationRate', 'oneInN'], // mutantCount and totalIndividuals both 0 (their min) -> 0/0
+  'surface-area-to-volume-ratio-calculator': ['ratio', 'doubledSizeRatio'] // size 0 (its min) -> divide by zero, no answer
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

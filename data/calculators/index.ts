@@ -435,7 +435,10 @@ export const calculatorOrder: string[] = [
   'centrifuge-rcf-rpm-calculator',
   'log-reduction-calculator',
   'population-growth-calculator',
-  'hemocytometer-calculator'
+  'hemocytometer-calculator',
+  'mutation-rate-calculator',
+  'codon-to-amino-acid-calculator',
+  'surface-area-to-volume-ratio-calculator'
 ];
 
 const rank = (id: string) => {

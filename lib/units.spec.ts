@@ -40,9 +40,9 @@ describe('unit tables', () => {
 
   test('covers the dimensions the v2 rollout needs', () => {
     assert.deepEqual([...dimensions].sort(), [
-      'absorbance', 'acceleration', 'amountOfSubstance', 'angle', 'angularMomentum', 'angularVelocity', 'area', 'capacitance', 'cellDensity', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
+      'absorbance', 'acceleration', 'amountOfSubstance', 'angle', 'angularMomentum', 'angularVelocity', 'area', 'basePairs', 'capacitance', 'cellDensity', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
       'decibel', 'density', 'electricField', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'inductance', 'length', 'magneticFlux', 'magneticFluxDensity', 'mass', 'massConcentration', 'molalConstant', 'molality', 'molarAbsorptivity', 'molarEnergy', 'molarEntropy', 'molarHeatCapacity', 'molarMass', 'momentOfInertia', 'momentum',
-      'normality', 'osmolarity', 'pH', 'pace', 'percent', 'power', 'pressure', 'rateConstant', 'resistance', 'specificHeat', 'specificLatentHeat', 'speed', 'springConstant', 'temperature', 'temperatureDelta', 'term', 'thermalExpansionCoeff', 'time',
+      'normality', 'osmolarity', 'pH', 'pace', 'percent', 'power', 'pressure', 'rateConstant', 'relativeCentrifugalForce', 'resistance', 'specificHeat', 'specificLatentHeat', 'speed', 'springConstant', 'temperature', 'temperatureDelta', 'term', 'thermalExpansionCoeff', 'time',
       'torque', 'voltage', 'volume'
     ]);
   });
@@ -83,6 +83,19 @@ describe('anchor values', () => {
   test('mass: 1 st = 14 lb = 6.35029318 kg', () => {
     close(toBase(1, 'mass', 'st'), 6.35029318);
     close(convert(1, 'mass', 'st', 'lb'), 14);
+  });
+  test('mass: 1 µg = 1000 ng = 1e-9 kg', () => {
+    close(toBase(1, 'mass', 'ug'), 1e-9);
+    close(toBase(1, 'mass', 'ng'), 1e-12);
+    close(convert(1, 'mass', 'ug', 'ng'), 1000);
+  });
+  test('basePairs: 1 kb = 1000 bp', () => {
+    assert.equal(UNITS.basePairs[0].id, 'bp');
+    close(convert(1, 'basePairs', 'kb', 'bp'), 1000);
+  });
+  test('relativeCentrifugalForce: single unit ×g, factor 1', () => {
+    assert.equal(UNITS.relativeCentrifugalForce[0].id, 'xg');
+    close(toBase(5000, 'relativeCentrifugalForce', 'xg'), 5000);
   });
   test('length: 1 mi = 1.609344 km, 1 ft = 12 in, 1 nmi = 1852 m', () => {
     close(convert(1, 'length', 'mi', 'km'), 1.609344);

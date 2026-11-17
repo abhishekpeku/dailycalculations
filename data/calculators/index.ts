@@ -458,7 +458,12 @@ export const calculatorOrder: string[] = [
   'tree-benefits-calculator',
   'books-vs-ebooks-calculator',
   'drip-faucet-waste-calculator',
-  'recycling-rate-calculator'
+  'recycling-rate-calculator',
+  'carrying-capacity-calculator',
+  'shannon-diversity-index-calculator',
+  'population-density-calculator',
+  'simpson-diversity-index-calculator',
+  'lotka-volterra-calculator'
 ];
 
 const rank = (id: string) => {

@@ -166,11 +166,25 @@ discipline as every prior wave — ship fewer than 5 rather than pad, if good ca
 ## Progress
 
 - [x] Step file written
-- [ ] Batch 1 (open category + carbon/footprint basics, 5)
+- [x] Batch 1 (open category + carbon/footprint basics, 5) — **DONE 2026-11-17**, branch
+      `step/49-wave-4-ecology-run-1`, PR #121. Opened the `ecology` category (`data/calculators/ecology.ts`,
+      `emerald`/`leaf` theme pair, registered in `data/calculators/index.ts`) and added:
+      `carbon-footprint-calculator`, `flight-carbon-footprint-calculator`, `water-footprint-calculator`,
+      `plastic-footprint-calculator`, `meat-footprint-calculator`. All 5 numbers independently
+      re-verified in a standalone Node scratch script. Sources fetched directly: EPA Greenhouse Gas
+      Equivalencies Calculator (electricity/gasoline/natural gas factors), EPA 2018 National Overview
+      (plastics), UK Government 2024 GHG Conversion Factors (flight emissions — fetched as the published
+      xlsx and parsed byte-for-byte after the ICAO/DEFRA methodology PDFs 403'd or came back unreadable
+      as PDF text), Water Footprint Network's own national-average page, and Our World in Data's CSV
+      export of its Poore & Nemecek (2018) food-emissions chart. No new `lib/units.ts` dimensions
+      needed. `npm test` 1534/1534, lint clean, `npm run build` 404/404 pages, 20 categories — matches
+      this file's own expected totals exactly. `ecology` is now 5/~25 — batches 2-5 may now run in
+      parallel with each other (category-opening work, which had to be sequential, is complete).
 - [ ] Batch 2 (population + biodiversity ecology, 5)
 - [ ] Batch 3 (sustainable living / resource use, 5)
 - [ ] Batch 4 (environmental health + remaining population ecology, 5)
 - [ ] Batch 5 (round out to ~25, 5)
-- [ ] Visual-QA spot-check (once the site crosses ~420 calculators)
+- [ ] Visual-QA spot-check (once the site crosses ~420 calculators) — site is at 404 after batch 1,
+      so this is likely due during batch 3 or 4.
 - [ ] STATUS.md updated, `ecology` category count recorded, Wave 4 fully closed out (biology +
       ecology both done) — fun/other is next per D13/D22/D23 (already has its go-ahead, per D23)

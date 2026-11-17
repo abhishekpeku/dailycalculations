@@ -1380,5 +1380,166 @@ export const ecologyCalculators: CalculatorConfig[] = [
       const densityPerM2 = densityPerKm2 / 1e6;
       return { densityPerKm2, densityPerHectare, densityPerM2 };
     }
+  },
+  {
+    id: 'simpson-diversity-index-calculator',
+    category: 'ecology',
+    glyph: 'D',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'simpson diversity index calculator',
+      "simpson's diversity index calculator",
+      'simpson index calculator',
+      'gini-simpson index calculator',
+      'species dominance index calculator'
+    ],
+    related: ['shannon-diversity-index-calculator', 'population-density-calculator', 'carrying-capacity-calculator', 'standard-deviation-calculator'],
+    title: "Simpson's Diversity Index Calculator",
+    description: "Calculate Simpson's Diversity Index (1 − λ) from species counts — a biodiversity measure weighted toward the most abundant species, as a check on the Shannon index.",
+    example:
+      "A sample of 100 individuals across 5 species (40, 30, 20, 8, and 2 of each) has a Simpson's Diversity Index of about 0.7103 — a 71.0% chance that two randomly chosen individuals belong to different species.",
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: "What is Simpson's diversity index?",
+        paragraphs: [
+          'OpenStax’s Biology 2e frames biodiversity as "the number of different species (species richness)... and their relative abundance (species evenness)." Simpson’s index is a second standard way to turn those two ideas into one number, built around a different question than Shannon’s: not "how much uncertainty is there about a random individual’s species," but "how likely are two randomly drawn individuals to be the same species?"',
+          'The index comes from E. H. Simpson’s 1949 paper "Measurement of Diversity" in Nature. For a finite sample of nᵢ individuals of each species out of N total, the probability that two individuals drawn without replacement are the same species is λ = Σ[nᵢ(nᵢ−1)] ÷ [N(N−1)], summed over every species. A community dominated by one or two common species has a high λ (two random picks are likely to match); a community with many equally common species has a low λ.',
+          'Because a high λ means low diversity, most reported figures use 1 − λ instead (sometimes called the Gini-Simpson index), so that a larger number means more diversity, matching the intuition Shannon’s H′ already gives. This calculator reports both: λ itself (the probability of picking two of the same species) and 1 − λ (the diversity index, this page’s headline).'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the number of individuals counted for each species in the sample; the index fills in instantly.',
+        steps: [
+          { name: 'Count individuals by species', text: 'From a field survey or quadrat count, tally how many individuals of each species were observed.' },
+          { name: 'Enter each species’ count', text: 'Fill in the count for each species present. Leave any unused slot at 0 if the sample has fewer than 5 species.' },
+          { name: 'Read Simpson’s Diversity Index', text: 'The headline, 1 − λ, is higher when a random pair of individuals is less likely to be the same species — more species, more evenly represented, or both.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Simpson’s index sums, over every species, the chance that both of two individuals drawn without replacement come from that species.',
+        expression: 'λ = Σ[nᵢ(nᵢ − 1)] ÷ [N(N − 1)], summed over every species with nᵢ > 0\nSimpson’s Diversity Index = 1 − λ',
+        terms: [
+          { symbol: 'nᵢ', meaning: 'The number of individuals counted of species i.' },
+          { symbol: 'N', meaning: 'The total number of individuals counted, across all species.' },
+          { symbol: 'λ', meaning: 'Simpson’s index — the probability two individuals drawn at random, without replacement, are the same species.' }
+        ],
+        note: 'This is the count-based (finite-sample) form of Simpson’s index, the correct form for an actual species count rather than a theoretical proportion. Shannon Diversity Index Calculator computes a differently weighted diversity measure from the same kind of species-count data.'
+      },
+      workedExample: {
+        intro: 'The same sample used on Shannon Diversity Index Calculator: 100 individuals across 5 species — 40, 30, 20, 8, and 2.',
+        rows: [
+          { label: 'Σ nᵢ(nᵢ − 1) (40×39 + 30×29 + 20×19 + 8×7 + 2×1)', value: '2,868' },
+          { label: 'N(N − 1) (100 × 99)', value: '9,900' },
+          { label: 'λ (2,868 ÷ 9,900)', value: '≈0.2897' },
+          { label: "Simpson's Diversity Index (1 − 0.2897)", value: '≈0.7103' }
+        ],
+        result: "Simpson's Diversity Index ≈ 0.7103",
+        explanation:
+          'A λ of about 0.2897 means roughly a 29.0% chance that two individuals picked at random from this sample are the same species — mostly driven by species A and B together making up 70 of the 100 individuals. Subtracting from 1 gives the diversity reading, 0.7103: about a 71.0% chance a random pair is from two different species.'
+      },
+      watchOut: [
+        {
+          title: 'Dominated by the most common species, unlike Shannon’s index',
+          body: 'Because λ squares (effectively) each species’ share of the sample, abundant species contribute disproportionately more than rare ones. Shannon Diversity Index Calculator’s log-weighted formula gives rare species comparatively more influence — the two indices can disagree about which of two communities is "more diverse."'
+        },
+        {
+          title: '1 − λ and 1 ÷ λ are both called "Simpson’s diversity index"',
+          body: 'Different sources report Simpson’s measure as λ itself, as 1 − λ (the Gini-Simpson index, used here), or as 1 ÷ λ (the inverse Simpson index, read as an "effective number of species"). Always check which version a figure you are comparing against used before treating two numbers as directly comparable.'
+        },
+        {
+          title: 'Needs at least 2 individuals total',
+          body: 'With N(N − 1) in the denominator, a sample of 0 or 1 individuals has no defined index — there is no pair to compare.'
+        },
+        {
+          title: 'Small samples still carry sampling noise',
+          body: 'As with any index built from a count, a small sample can over- or under-represent rare species just by chance, shifting λ even if the true community composition did not change.'
+        }
+      ],
+      references: [
+        {
+          label: 'Simpson, E.H. (1949), "Measurement of Diversity," Nature 163(4148): 688 (the original λ = Σpᵢ² / count-based formula)',
+          url: 'https://en.wikipedia.org/wiki/Diversity_index'
+        },
+        {
+          label: 'OpenStax, Biology 2e, §45.6 "Community Ecology" (species richness and species evenness framing)',
+          url: 'https://openstax.org/books/biology-2e/pages/45-6-community-ecology'
+        }
+      ]
+    },
+    inputs: [
+      { id: 'speciesACount', label: 'Species A', type: 'number', placeholder: '40', defaultValue: DEFAULT_SPECIES_COUNTS[0], step: 1, min: 0 },
+      { id: 'speciesBCount', label: 'Species B', type: 'number', placeholder: '30', defaultValue: DEFAULT_SPECIES_COUNTS[1], step: 1, min: 0 },
+      { id: 'speciesCCount', label: 'Species C', type: 'number', placeholder: '20', defaultValue: DEFAULT_SPECIES_COUNTS[2], step: 1, min: 0 },
+      { id: 'speciesDCount', label: 'Species D', type: 'number', placeholder: '8', defaultValue: DEFAULT_SPECIES_COUNTS[3], step: 1, min: 0 },
+      { id: 'speciesECount', label: 'Species E', type: 'number', placeholder: '2', defaultValue: DEFAULT_SPECIES_COUNTS[4], step: 1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'simpsonDiversity',
+      headlineLabel: "Simpson's Diversity Index (1 − λ)",
+      outputs: [
+        { id: 'simpsonDiversity', label: "Simpson's Diversity Index (1 − λ)", format: 'significant' },
+        { id: 'lambda', label: 'λ (probability of a matching pair)', format: 'significant' },
+        { id: 'richness', label: 'Species richness (S)', format: 'integer' },
+        { id: 'totalIndividuals', label: 'Total individuals counted', format: 'integer' }
+      ],
+      groups: [{ title: 'Species counts', inputs: ['speciesACount', 'speciesBCount', 'speciesCCount', 'speciesDCount', 'speciesECount'] }],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'speciesACount', label: 'Species A' },
+          { from: 'speciesBCount', label: 'Species B' },
+          { from: 'speciesCCount', label: 'Species C' },
+          { from: 'speciesDCount', label: 'Species D' },
+          { from: 'speciesECount', label: 'Species E' }
+        ],
+        center: 'totalIndividuals',
+        centerSub: 'individuals counted'
+      }
+    },
+    seo: {
+      title: "Simpson's Diversity Index Calculator (1 − λ)",
+      description: "Free Simpson's diversity index calculator. Compute λ and 1 − λ from species-count data, and compare against the Shannon index.",
+      faq: [
+        {
+          question: "What is Simpson's diversity index formula?",
+          answer:
+            'λ = Σ[nᵢ(nᵢ − 1)] ÷ [N(N − 1)], summed over every species, and the diversity index is 1 − λ. A sample of 100 individuals across 5 species (40, 30, 20, 8, 2) gives λ ≈ 0.2897 and a diversity index of about 0.7103.'
+        },
+        {
+          question: 'What does Simpson’s index actually measure?',
+          answer:
+            'λ is the probability that two individuals drawn at random from the sample, without replacement, belong to the same species. Subtracting from 1 flips it into a diversity reading, where a higher number means two random individuals are less likely to match.'
+        },
+        {
+          question: "How is this different from the Shannon diversity index?",
+          answer:
+            'Both use the same species-count data, but weight it differently. Simpson’s index is dominated by the most abundant species (it is essentially built from each species’ squared share of the sample), while Shannon’s log-based H′ gives rare species comparatively more influence. The two can rank the same two communities differently.'
+        },
+        {
+          question: 'Why are there three different versions of "Simpson\'s index"?',
+          answer:
+            'Sources report λ itself, 1 − λ (the Gini-Simpson index, used on this page), or 1 ÷ λ (the inverse Simpson index). All three come from the same underlying λ, just presented differently — check which one a figure you are comparing against uses.'
+        },
+        {
+          question: 'What is the minimum sample size this works for?',
+          answer: 'At least 2 individuals total, since the formula’s denominator is N(N − 1) — with 0 or 1 individuals there is no pair to compare, so the index is undefined.'
+        },
+        {
+          question: 'Who introduced Simpson’s diversity index?',
+          answer: 'The statistician E. H. Simpson, in his 1949 paper "Measurement of Diversity" published in Nature — one of the two most widely used diversity indices in ecology, alongside Shannon’s.'
+        }
+      ]
+    },
+    compute(values) {
+      const counts = [values.speciesACount, values.speciesBCount, values.speciesCCount, values.speciesDCount, values.speciesECount];
+      const totalIndividuals = counts.reduce((sum, n) => sum + n, 0);
+      const richness = counts.filter((n) => n > 0).length;
+      const sumNiNi1 = counts.reduce((sum, n) => sum + n * (n - 1), 0);
+      const lambda = sumNiNi1 / (totalIndividuals * (totalIndividuals - 1));
+      const simpsonDiversity = 1 - lambda;
+      return { simpsonDiversity, lambda, richness, totalIndividuals };
+    }
   }
 ];

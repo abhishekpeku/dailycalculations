@@ -14407,6 +14407,56 @@ exports[`compute() snapshots > simple-interest-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > simpson-diversity-index-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "speciesACount": 40,
+      "speciesBCount": 30,
+      "speciesCCount": 20,
+      "speciesDCount": 8,
+      "speciesECount": 2
+    },
+    "outputs": {
+      "simpsonDiversity": 0.7103030303,
+      "lambda": 0.2896969697,
+      "richness": 5,
+      "totalIndividuals": 100
+    }
+  },
+  "typical": {
+    "inputs": {
+      "speciesACount": 60,
+      "speciesBCount": 45,
+      "speciesCCount": 30,
+      "speciesDCount": 12,
+      "speciesECount": 3
+    },
+    "outputs": {
+      "simpsonDiversity": 0.7079194631,
+      "lambda": 0.2920805369,
+      "richness": 5,
+      "totalIndividuals": 150
+    }
+  },
+  "edge": {
+    "inputs": {
+      "speciesACount": 0,
+      "speciesBCount": 0,
+      "speciesCCount": 0,
+      "speciesDCount": 0,
+      "speciesECount": 0
+    },
+    "outputs": {
+      "simpsonDiversity": "NaN",
+      "lambda": "NaN",
+      "richness": 0,
+      "totalIndividuals": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > sleep-time-calculator 1`] = `
 {
   "default": {

@@ -961,6 +961,25 @@ view — batch 2 (population/biodiversity) is running in parallel on another bra
 reconciling at merge time, same as biology batches 2/3 and 4/5 were. Batches 4 (environmental
 health) and 5 (round-out) remain TODO. Full writeup: `mdFiles/steps/49-wave-4-ecology.md`.
 
+**2026-11-17 — Step 61 batch 6, `time` (branch `step/61-deepen-time`, PR #127)**: added
+`business-days-calculator` (inclusive weekday count between two dates minus an optional holiday
+count, explicitly distinct from `date-difference-calculator`'s exclusive calendar-day gap),
+`day-of-week-calculator` (Zeller's congruence, fetched from Wikipedia including its own Jan 1, 2000
+worked example, cross-checked against native `Date` for 1,255 dates with 0 mismatches; also reports
+the ISO 8601 weekday number), `leap-year-calculator` (Gregorian ÷4/÷100/÷400 rule plus an
+inclusion-exclusion leap-year count over a range, cross-checked against a brute-force loop across 6
+ranges), `unix-timestamp-converter` (epoch seconds ↔ UTC date/time both directions, citing POSIX
+§4.16's "seconds since the Epoch" definition and its "every day is exactly 86400 seconds" leap-second
+note), and `timesheet-calculator` (weekly day-by-day hours rolled up with an overtime threshold,
+explicitly distinct in content from both `work-hours-calculator` and the newer
+`overtime-pay-calculator`, whose own FAQ already anticipated this page). All five are plain
+date/count/currency values — no new `lib/units.ts` dimension needed, and no `KNOWN_NON_FINITE`
+entries needed (checked each one's edge-case snapshot; none have a division-by-input path). Business
+days worked example uses MLK Day 2026 (third Monday in January, confirmed via OPM's federal holidays
+page) as the holiday. `npm test` 1,552/1,552 (snapshot diff purely additive), lint clean, `npm run
+build` 452 static pages. `time` now **10 calculators**, **419 total** on the site. PR opened ready
+for review (not draft) since build/lint/test were all green before pushing.
+
 ## Pending on the user — not code
 
 - ~~**Cloudflare apex → www 301 (from step 01).**~~ **DONE 2026-10-19** — Redirect Rule added by the user; verified `http://` and `https://dailycalculations.com/<path>?<query>` → 301 to `https://www.dailycalculations.com/<path>?<query>`, www serves 200.

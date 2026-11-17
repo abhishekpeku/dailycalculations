@@ -224,10 +224,10 @@ used" discipline as Wave 3's NIST/IUPAC citations for lab-adjacent chemistry top
       - `biology` 0 → 5, site-wide 371 → 376.
       - No seed-list candidate skipped this batch — all 5 scoped items built as specified.
 - [x] Batch 2 (genetics, 5) — **DONE 2026-11-17**, branch `step/48-wave-4-biology-run-2`,
-      PR #116 (ready for review). Note: batch 3 ran in parallel on the same `biology.ts` file per
-      this step's own go-ahead for batches 2+ — expect a merge conflict against PR #116 at merge
-      time (both branches append to the end of the `biologyCalculators` array and to
-      `calculatorOrder`); this is expected, not a bug.
+      PR #116 (merged, after the expected conflict against batch 3 below was resolved by the main
+      session using the same hand-splice technique the physics wave used for its own same-file
+      conflicts). Ran in parallel with batch 3 on the same `biology.ts` file per this step's own
+      go-ahead for batches 2+.
       - [x] `punnett-square-calculator`: monohybrid cross, genotype/phenotype ratios from two
         parent genotypes, encoded as each parent's dominant-allele count (0/1/2) via `options`
         (breakdown widget). Worked example: Mendel's PP x pp -> 100% Pp (OpenStax's own "100
@@ -270,10 +270,67 @@ used" discipline as Wave 3's NIST/IUPAC citations for lab-adjacent chemistry top
       - `npm test` 1467/1467 (snapshot diff confirmed additive-only, touching exactly the 5 new
         ids), lint clean, `npm run build` 413 pages (381 calculators incl. biology's 10, same
         category/page count as physics/chemistry's structure).
-      - `biology` 5 → 10 from this branch's point of view (10 → 15 once reconciled with batch 3's
-        parallel PR at merge time). Site-wide 376 → 381 from this branch alone.
+      - `biology` 5 → 10 from this branch's point of view; reconciled to 10 → 15 once merged
+        against batch 3 below. Site-wide 376 → 386 after both land.
       - No seed-list candidate skipped this batch — all 5 scoped items built as specified.
-- [ ] Batch 3 (molecular biology lab techniques, 5)
+- [x] Batch 3 (molecular biology lab techniques, 5) — **DONE 2026-11-17**, branch
+      `step/48-wave-4-biology-run-3`, PR #117 (merged first, cleanly — batch 2's PR #116 then
+      conflicted against it as expected and was resolved by the main session).
+      Built in parallel with batch 2 on the same `data/calculators/biology.ts` file.
+      New `lib/units.ts` additions ahead of this batch: `mass` gains `ug`/`ng` (ligation's
+      insert/vector DNA mass), plus two new dimensions, `basePairs` (bp/kb) and
+      `relativeCentrifugalForce` (single-unit `×g`, same precedent as `absorbance`/`pH`/`decibel`)
+      — all with round-trip + anchor tests in `lib/units.spec.ts`; the pre-existing "force-calculator
+      dimensions unchanged" pin test for `mass` was updated to include `ug`/`ng` (same precedent as
+      `st`'s own addition in step 36).
+      - `pcr-annealing-temperature-calculator`: Wallace rule, Tm = 2°C×(A+T) + 4°C×(G+C), rewritten
+        as a continuous function of primer length (N) and GC% so the widget solves for any of the
+        three: Tm = 2N(1 + GC%÷100). Cites Wallace, Shaffer, Murphy, Bonner, Hirose & Itakura (1979),
+        *Nucleic Acids Research* — NEB's/Promega's/IDT's own Tm-calculator pages either 403'd or
+        didn't surface the formula text on a direct fetch, so this one citation is a search-snippet
+        fallback, flagged in the page's own references. Explicit watch-out items on the rule's
+        short-primer-only accuracy and that real tools use nearest-neighbor thermodynamics instead.
+        Worked example: 20-base primer, 60% GC (12 G/C, 8 A/T) → Tm = 2×8 + 4×12 = 64°C.
+      - `qpcr-efficiency-calculator`: E = 10^(−1/slope) − 1, %efficiency = E×100 — confirmed by a
+        direct fetch of QIAGEN's own PCR bench guide ("Determining Amplification Efficiencies").
+        Notes the MIQE 90-110% acceptable range (slopes ≈ −3.58 to −3.10) and that a slope near zero
+        signals a failed standard curve, not a calculation error. Worked example: slope = −3.5 →
+        E ≈ 93.07%.
+      - `ligation-calculator`: insert:vector molar ratio = (mass_insert ÷ mass_vector) ×
+        (length_vector ÷ length_insert) — derived from Thermo Fisher Scientific's own dsDNA
+        molecular-weight formula (MW ≈ bp × 607.4 + 157.9 Da, fetched directly), showing the shared
+        per-bp mass constant cancels out of a molar RATIO regardless of its exact value (confirmed
+        numerically in the verification script: the ratio formula is exact under a uniform
+        Da/bp assumption, and differs from the precise Thermo formula by well under 1% even for a
+        1 kb fragment, due only to that formula's small, length-independent end-correction term).
+        NEB's own ligation-calculator page 403'd on direct fetch; its formula is confirmed via a
+        search-snippet fallback instead, flagged in the references. New `basePairs`/`ng` units.
+        Worked example: 50 ng of a 3 kb vector + 50 ng of a 1 kb insert → 3:1 molar ratio.
+      - `centrifuge-rcf-rpm-calculator`: solves the exact SI physics form, RCF = ω²r ÷ g₀ (OpenStax
+        University Physics Vol. 1 §6.3's centripetal acceleration formula, divided by standard
+        gravity), which is algebraically the same relationship as the conventional lab formula RCF ≈
+        1.118×10⁻⁵ × r(cm) × RPM² — confirmed against Wikipedia's "Centrifuge" article (which states
+        the equivalent mm/RPM constant, 1.118×10⁻⁶). The two forms agree to within about 0.02%,
+        which is the rounding of the published constant, not a bug — stated explicitly as a
+        watch-out item. New `relativeCentrifugalForce` (×g) dimension; reused `length` (cm) and
+        `angularVelocity` (rpm, added in physics Wave 3) per the step file's own hint. Worked
+        example: 8 cm radius, 10,000 RPM → RCF ≈ 8,946×g (physics form) vs. ≈8,944×g (conventional
+        constant).
+      - `log-reduction-calculator`: LR = log₁₀(N₀÷N), with percent reduction = 100×(1 − N÷N₀) as a
+        bonus output — confirmed by a direct fetch of Wikipedia's "Log reduction" article. Worked
+        example: 1,000,000 → 10 CFU/mL is a 5-log (99.999%) reduction.
+      - Every worked-example number (including the RCF cross-check between its two formula forms)
+        independently re-verified in a standalone Node scratch script (no app imports) before
+        committing; script output matched the copy exactly.
+      - `npm test` 1484/1484 (snapshot additions additive-only, 163 lines; one new
+        `KNOWN_NON_FINITE` entry added for `log-reduction-calculator`'s initialCount=finalCount=0
+        edge case, log₁₀(0/0) being genuinely undefined), lint clean, `npm run build` exit 0 (381
+        calculator pages). Static HTML of all 5 new pages checked directly for H1/JSON-LD/FAQ
+        presence (a pre-existing process on port 3000 was left untouched, per this batch's own
+        instructions).
+      - `biology` 5 → 10 on this branch (merged first; reconciled to 15 total against batch 2
+        above).
+      - No seed-list candidate skipped this batch — all 5 scoped items built as specified.
 - [ ] Batch 4 (population biology + genetics extensions, 5)
 - [ ] Batch 5 (plant/cell biology + biochemistry, 5)
 - [ ] Batch 6 (simple non-medical animal biology, 5)

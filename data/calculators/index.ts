@@ -428,7 +428,12 @@ export const calculatorOrder: string[] = [
   'dihybrid-cross-calculator',
   'hardy-weinberg-calculator',
   'allele-frequency-calculator',
-  'dna-to-mrna-calculator'
+  'dna-to-mrna-calculator',
+  'pcr-annealing-temperature-calculator',
+  'qpcr-efficiency-calculator',
+  'ligation-calculator',
+  'centrifuge-rcf-rpm-calculator',
+  'log-reduction-calculator'
 ];
 
 const rank = (id: string) => {

@@ -1916,6 +1916,38 @@ exports[`compute() snapshots > centimeters-to-inches-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > centrifuge-rcf-rpm-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "radius": 0.08,
+      "rpm": 1047.1975511965977
+    },
+    "outputs": {
+      "rcf": 8945.951665
+    }
+  },
+  "typical": {
+    "inputs": {
+      "radius": 0.12,
+      "rpm": 1570.8
+    },
+    "outputs": {
+      "rcf": 30192.72808
+    }
+  },
+  "edge": {
+    "inputs": {
+      "radius": 0,
+      "rpm": 0
+    },
+    "outputs": {
+      "rcf": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > centripetal-force-calculator 1`] = `
 {
   "default": {
@@ -7676,6 +7708,44 @@ exports[`compute() snapshots > lens-mirror-equation-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > ligation-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "massVector": 5e-11,
+      "lengthInsert": 1000,
+      "lengthVector": 3000,
+      "molarRatio": 3
+    },
+    "outputs": {
+      "massInsert": 5e-11
+    }
+  },
+  "typical": {
+    "inputs": {
+      "massVector": 7.5e-11,
+      "lengthInsert": 1500,
+      "lengthVector": 4500,
+      "molarRatio": 4.5
+    },
+    "outputs": {
+      "massInsert": 1.125e-10
+    }
+  },
+  "edge": {
+    "inputs": {
+      "massVector": 0,
+      "lengthInsert": 1,
+      "lengthVector": 1,
+      "molarRatio": 0
+    },
+    "outputs": {
+      "massInsert": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > limiting-reagent-calculator 1`] = `
 {
   "default": {
@@ -7908,6 +7978,38 @@ exports[`compute() snapshots > loan-prepayment-calculator 1`] = `
       "monthsSaved": 12,
       "interestSaved": 0,
       "newPayoffMonths": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > log-reduction-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "initialCount": 1000000,
+      "finalCount": 10
+    },
+    "outputs": {
+      "logReduction": 5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "initialCount": 1500000,
+      "finalCount": 15
+    },
+    "outputs": {
+      "logReduction": 5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "initialCount": 0,
+      "finalCount": 0
+    },
+    "outputs": {
+      "logReduction": "NaN"
     }
   }
 }
@@ -10500,6 +10602,38 @@ exports[`compute() snapshots > paycheck-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > pcr-annealing-temperature-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "primerLength": 20,
+      "gcContent": 60
+    },
+    "outputs": {
+      "meltingTemp": 337.15
+    }
+  },
+  "typical": {
+    "inputs": {
+      "primerLength": 30,
+      "gcContent": 90
+    },
+    "outputs": {
+      "meltingTemp": 387.15
+    }
+  },
+  "edge": {
+    "inputs": {
+      "primerLength": 1,
+      "gcContent": 0
+    },
+    "outputs": {
+      "meltingTemp": 275.15
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > pendulum-period-calculator 1`] = `
 {
   "default": {
@@ -11653,6 +11787,35 @@ exports[`compute() snapshots > pythagorean-theorem-calculator 1`] = `
       "hypotenuse": 0,
       "area": 0,
       "perimeter": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > qpcr-efficiency-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "slope": -3.5
+    },
+    "outputs": {
+      "efficiencyPercent": 93.06977289
+    }
+  },
+  "typical": {
+    "inputs": {
+      "slope": -5.25
+    },
+    "outputs": {
+      "efficiencyPercent": 55.05157798
+    }
+  },
+  "edge": {
+    "inputs": {
+      "slope": 0
+    },
+    "outputs": {
+      "efficiencyPercent": -100
     }
   }
 }

@@ -54,6 +54,8 @@ export type UnitDimension =
   | 'molality'
   | 'massConcentration'
   | 'cellDensity'
+  | 'basePairs'
+  | 'relativeCentrifugalForce'
   | 'pH'
   | 'data'
   | 'fuelEconomy'
@@ -112,7 +114,12 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
     { id: 'lb', label: 'lb', factor: POUND },
     { id: 'oz', label: 'oz', factor: 0.028349523125 },
     // Stone (UK body weight) = 14 lb, exact. Appended last so the earlier menu order is unchanged.
-    { id: 'st', label: 'st', factor: 14 * POUND }
+    { id: 'st', label: 'st', factor: 14 * POUND },
+    // Milligram-scale masses a molecular-biology bench actually weighs out or pipettes (a ligation's
+    // insert/vector DNA mass, typically 10s-100s of ng) — exact SI sub-multiples of the gram above,
+    // appended last so the earlier menu order is unchanged.
+    { id: 'ug', label: 'µg', factor: 1e-9 },
+    { id: 'ng', label: 'ng', factor: 1e-12 }
   ],
   acceleration: [
     { id: 'm/s2', label: 'm/s²', factor: 1 },
@@ -587,6 +594,20 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
     { id: 'Mcells/mL', label: '×10⁶ cells/mL', factor: 1e6 },
     { id: 'cells/L', label: 'cells/L', factor: 0.001 }
   ],
+  // DNA/RNA fragment length counted in base pairs (ligation-calculator's insert/vector sizes) — a
+  // plain count, like `count` above, but kept as its own dimension so its unit menu offers the
+  // conventional "kb" multiple (1 kb = 1000 bp, exact, the molecular-biology size convention) rather
+  // than showing a bare, unlabeled number. Base bp, factor 1.
+  basePairs: [
+    { id: 'bp', label: 'bp', factor: 1 },
+    { id: 'kb', label: 'kb', factor: 1000 }
+  ],
+  // Relative centrifugal force (RCF): a centrifuge's g-force relative to standard gravity, the
+  // unitless ×g figure every rotor manual and protocol reports speed in alongside RPM
+  // (centrifuge-rcf-rpm-calculator). Unitless like `absorbance`/`pH`/`decibel` above — kept as its
+  // own single-unit dimension purely so the figure prints with a "×g" label instead of a bare
+  // number. Base ×g, factor 1.
+  relativeCentrifugalForce: [{ id: 'xg', label: '×g', factor: 1 }],
   // Unitless logarithmic scale (IUPAC Gold Book, "pH"): pH = −log₁₀[H⁺], pOH = −log₁₀[OH⁻]. The base
   // value is the pH/pOH number itself, same single-unit precedent as `decibel` and `percent`.
   pH: [{ id: 'pH', label: 'pH', factor: 1 }],

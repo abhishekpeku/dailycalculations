@@ -117,6 +117,143 @@ const RECYCLING_NATIONAL_RATE_PCT_2018 = 32.1; // "32.1 percent recycling and co
 // individuals, 100 total) so the two pages' results are directly comparable.
 const DEFAULT_SPECIES_COUNTS = [40, 30, 20, 8, 2];
 
+// --- Step 49 batch 4 (environmental health + remaining population ecology) constants ---
+
+// air-quality-index-calculator: U.S. EPA breakpoint table, fetched directly from EPA's Air
+// Quality System (aqs.epa.gov/aqsweb/documents/codetables/aqi_breakpoints.html) and
+// cross-checked against the same published breakpoints as reproduced on Wikipedia's "Air
+// quality index" page. PM2.5 breakpoints reflect EPA's February 2024 NAAQS revision (Good
+// 0.0-9.0 ug/m3, not the pre-2024 0.0-12.0). Each row is [concentrationLow, concentrationHigh,
+// aqiLow, aqiHigh]. Ozone's 8-hour table has no defined "Very Unhealthy"/"Hazardous" breakpoints
+// (EPA uses a separate 1-hour table for those very high levels, out of scope here).
+const AQI_BREAKPOINTS = {
+  pm25: [
+    [0.0, 9.0, 0, 50],
+    [9.1, 35.4, 51, 100],
+    [35.5, 55.4, 101, 150],
+    [55.5, 125.4, 151, 200],
+    [125.5, 225.4, 201, 300],
+    [225.5, 325.4, 301, 500]
+  ],
+  pm10: [
+    [0, 54, 0, 50],
+    [55, 154, 51, 100],
+    [155, 254, 101, 150],
+    [255, 354, 151, 200],
+    [355, 424, 201, 300],
+    [425, 604, 301, 500]
+  ],
+  co: [
+    [0.0, 4.4, 0, 50],
+    [4.5, 9.4, 51, 100],
+    [9.5, 12.4, 101, 150],
+    [12.5, 15.4, 151, 200],
+    [15.5, 30.4, 201, 300],
+    [30.5, 50.4, 301, 500]
+  ],
+  so2: [
+    [0, 35, 0, 50],
+    [36, 75, 51, 100],
+    [76, 185, 101, 150],
+    [186, 304, 151, 200],
+    [305, 604, 201, 300],
+    [605, 1004, 301, 500]
+  ],
+  no2: [
+    [0, 53, 0, 50],
+    [54, 100, 51, 100],
+    [101, 360, 101, 150],
+    [361, 649, 151, 200],
+    [650, 1249, 201, 300],
+    [1250, 2049, 301, 500]
+  ],
+  o3: [
+    [0, 54, 0, 50],
+    [55, 70, 51, 100],
+    [71, 85, 101, 150],
+    [86, 105, 151, 200],
+    [106, 200, 201, 300]
+  ]
+} as const;
+const AQI_POLLUTANT_LABELS = ['PM2.5 (24-hr)', 'PM10 (24-hr)', 'CO (8-hr)', 'SO2 (1-hr)', 'NO2 (1-hr)', 'Ozone (8-hr)'];
+
+function concentrationToAqi(conc: number, breakpoints: readonly (readonly number[])[]) {
+  if (conc < 0) return NaN;
+  const top = breakpoints[breakpoints.length - 1];
+  if (conc > top[1]) return 500; // off the published scale; EPA switches to a different pollutant/table above this
+  for (const [cLo, cHi, iLo, iHi] of breakpoints) {
+    if (conc >= cLo && conc <= cHi) {
+      return Math.round(((iHi - iLo) / (cHi - cLo)) * (conc - cLo) + iLo);
+    }
+  }
+  return NaN;
+}
+
+function aqiCategoryCode(aqi: number) {
+  if (aqi <= 50) return 0;
+  if (aqi <= 100) return 1;
+  if (aqi <= 150) return 2;
+  if (aqi <= 200) return 3;
+  if (aqi <= 300) return 4;
+  return 5;
+}
+
+// co2-breathing-emission-calculator: Persily, A.K. & de Jonge, L. (2017), "Carbon dioxide
+// generation rates for building occupants," Indoor Air 27(5), 868-879, fetched directly as the
+// published open-access PDF (DOI 10.1111/ina.12383). Schofield BMR equations (the paper's own
+// Table 1, citing Schofield 1985); m is body mass in kg, output in MJ/day.
+function schofieldBmrMjPerDay(sex: number, ageYears: number, massKg: number) {
+  const male = sex === 0;
+  if (ageYears < 3) return male ? 0.249 * massKg - 0.127 : 0.244 * massKg - 0.13;
+  if (ageYears < 10) return male ? 0.095 * massKg + 2.11 : 0.085 * massKg + 2.033;
+  if (ageYears < 18) return male ? 0.074 * massKg + 2.754 : 0.056 * massKg + 2.898;
+  if (ageYears < 30) return male ? 0.063 * massKg + 2.896 : 0.062 * massKg + 2.036;
+  if (ageYears < 60) return male ? 0.048 * massKg + 3.653 : 0.034 * massKg + 3.538;
+  return male ? 0.049 * massKg + 2.459 : 0.038 * massKg + 2.755;
+}
+// Paper's Table 3 (web-based compendium of physical activities), physical activity level M in
+// met. Six real activities spanning the paper's own range.
+const ACTIVITY_MET = [0.95, 1.3, 1.5, 3.0, 2.0, 3.5];
+const ACTIVITY_LABELS = [
+  'Sleeping (0.95 met)',
+  'Sitting quietly, reading (1.3 met)',
+  'Office work, sitting (1.5 met)',
+  'Standing tasks, light effort (3.0 met)',
+  'Walking, slow, under 2 mph (2.0 met)',
+  'Walking, moderate pace, 2.8-3.2 mph (3.5 met)'
+];
+// Paper's Equation 9: VCO2 (L/s) = BMR (MJ/day) x M (met) x 0.000484, at 101 kPa and 273 K,
+// assuming a respiratory quotient (RQ) of 0.85, the single value the paper uses throughout.
+const VCO2_PER_BMR_MET = 0.000484;
+// Paper, Section 4: "a CO2 generation rate of 1 L/s equals 0.0446 moles/s or 1.965 g/s" at the
+// same 101 kPa/273 K conditions. Converted here to kg of CO2 per day per (L/s).
+const KG_CO2_PER_DAY_PER_LPS = 1.965 * 86400 /* s/day */ / 1000; /* g -> kg */
+
+// mark-recapture-population-estimate-calculator: the Lincoln-Petersen index, N = (M x C) / R.
+// OpenStax, Biology 2e, SS45.1 "Population Demography," fetched directly; its own worked example
+// (80 marked and released, 100 later captured with 20 already marked) gives N = 400, reproduced
+// in this file's own verification script.
+
+// noise-exposure-calculator: U.S. Dept. of Labor, OSHA 29 CFR 1910.95 Appendix A ("Noise
+// Exposure Computation"), fetched directly. T is the permissible exposure duration in hours at
+// sound level L (dBA); D is accumulated dose as a percent; TWA is the equivalent 8-hour
+// time-weighted average.
+function oshaPermissibleHours(soundLevelDb: number) {
+  return 8 / 2 ** ((soundLevelDb - 90) / 5);
+}
+function oshaTwaFromDose(dosePct: number) {
+  return 16.61 * Math.log10(dosePct / 100) + 90;
+}
+
+// trophic-level-energy-calculator: OpenStax, Biology 2e, SS46.2 "Energy Flow through
+// Ecosystems," fetched directly. Defines trophic level transfer efficiency (TLTE) as
+// "production at the present trophic level / production at the previous trophic level x 100"
+// and gives Howard T. Odum's Silver Springs, Florida data: primary consumers produced 1,103
+// kcal/m2/yr from the primary producers, secondary consumers 383 kcal/m2/yr, tertiary consumers
+// 21 kcal/m2/yr (TLTE of roughly 34.7% and 5.5% for those two steps, computed directly from
+// those published figures) -- OpenStax states the producer-to-primary-consumer TLTE itself as
+// "approximately 14.48 percent."
+
 export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'carbon-footprint-calculator',
@@ -2452,6 +2589,199 @@ export const ecologyCalculators: CalculatorConfig[] = [
       const preyEquilibrium = values.gamma / values.delta;
       const predatorEquilibrium = values.alpha / values.beta;
       return { preyEquilibrium, predatorEquilibrium };
+    }
+  },
+  {
+    id: 'air-quality-index-calculator',
+    category: 'ecology',
+    glyph: 'AQI',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'air quality index calculator',
+      'aqi calculator',
+      'smog calculator',
+      'pollution index calculator',
+      'air pollution calculator',
+      'how to calculate aqi'
+    ],
+    related: ['carbon-footprint-calculator', 'co2-breathing-emission-calculator', 'noise-exposure-calculator', 'recycling-rate-calculator'],
+    title: 'Air Quality Index (AQI) Calculator',
+    description:
+      'Calculate the U.S. EPA Air Quality Index from PM2.5, PM10, ozone, CO, SO2, and NO2 concentrations, using EPA’s own published breakpoint tables and linear interpolation formula.',
+    example:
+      'A day with PM2.5 at 42.5 µg/m³, PM10 at 60 µg/m³, CO at 3.0 ppm, SO2 at 20 ppb, NO2 at 45 ppb, and ozone at 65 ppb has an overall AQI of 118 ("Unhealthy for Sensitive Groups"), driven by PM2.5.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is the Air Quality Index?',
+        paragraphs: [
+          'The Air Quality Index (AQI) is the U.S. Environmental Protection Agency’s standard 0-500 scale for reporting how polluted the air is on a given day. Rather than publishing a raw concentration number for every pollutant in different units, the EPA converts each pollutant’s measured concentration into a single AQI value on the same scale, split into six color-coded categories from "Good" (0-50) to "Hazardous" (301-500).',
+          'Six pollutants feed into the AQI: fine particulate matter (PM2.5), coarse particulate matter (PM10), ground-level ozone, carbon monoxide (CO), sulfur dioxide (SO2), and nitrogen dioxide (NO2), each with its own published breakpoint table — a set of concentration ranges that map onto each AQI category. The breakpoints are not evenly spaced in concentration terms; PM2.5’s "Good" range, for example, spans 0.0-9.0 µg/m³ while its "Unhealthy" range spans 55.5-125.4 µg/m³, reflecting how each pollutant actually affects health at different exposure levels, not a simple proportional scale.',
+          'When more than one pollutant is measured at once, the reported AQI for that day or location is simply the highest of the individual pollutant AQI values — the single most harmful pollutant drives the headline number, which EPA calls the "dominant" pollutant. This calculator reproduces that exact method: convert each pollutant’s concentration with its own breakpoint table, then report the maximum.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the measured concentration for any pollutants you have readings for; the overall AQI and dominant pollutant appear instantly.',
+        steps: [
+          { name: 'Enter PM2.5 and PM10', text: 'Fine and coarse particulate matter, both as a 24-hour average in micrograms per cubic meter (µg/m³).' },
+          { name: 'Enter CO', text: 'Carbon monoxide, as an 8-hour average in parts per million (ppm).' },
+          { name: 'Enter SO2 and NO2', text: 'Sulfur dioxide and nitrogen dioxide, both as a 1-hour average in parts per billion (ppb).' },
+          { name: 'Enter ozone', text: 'Ground-level ozone, as an 8-hour average in parts per billion (ppb).' },
+          { name: 'Leave unmeasured pollutants at 0', text: 'A pollutant left at 0 contributes an AQI of 0 and will not affect the overall maximum unless it is genuinely the highest reading.' },
+          { name: 'Read the result', text: 'The headline is the overall AQI (the highest of the six sub-indices), with its category and the dominant pollutant shown below.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Each pollutant’s AQI comes from linear interpolation between the two published breakpoints its concentration falls between; the overall AQI is the maximum across pollutants.',
+        expression: 'I_p = [(I_Hi − I_Lo) ÷ (BP_Hi − BP_Lo)] × (C_p − BP_Lo) + I_Lo\nAQI = max(I_PM2.5, I_PM10, I_CO, I_SO2, I_NO2, I_O3)',
+        terms: [
+          { symbol: 'C_p', meaning: 'The measured concentration of pollutant p, in that pollutant’s own published units and averaging time.' },
+          { symbol: 'BP_Lo, BP_Hi', meaning: 'The concentration breakpoints (low and high) of the AQI category that C_p falls within, from EPA’s published table.' },
+          { symbol: 'I_Lo, I_Hi', meaning: 'The AQI values (low and high) at those same two breakpoints — always 0, 51, 101, 151, 201, or 301 at the low end of each of the six categories.' }
+        ],
+        note: 'A planning and public-health estimate based on the concentrations you enter, not a substitute for your local air-quality monitoring network’s own official reading.'
+      },
+      workedExample: {
+        intro: 'A day with PM2.5 at 42.5 µg/m³, PM10 at 60 µg/m³, CO at 3.0 ppm, SO2 at 20 ppb, NO2 at 45 ppb, and ozone at 65 ppb.',
+        rows: [
+          { label: 'PM2.5 (42.5, falls in the 35.5-55.4 "Unhealthy for Sensitive Groups" range)', value: 'AQI 118' },
+          { label: 'PM10 (60, falls in the 55-154 "Moderate" range)', value: 'AQI 53' },
+          { label: 'CO (3.0, falls in the 0.0-4.4 "Good" range)', value: 'AQI 34' },
+          { label: 'SO2 (20, falls in the 0-35 "Good" range)', value: 'AQI 29' },
+          { label: 'NO2 (45, falls in the 0-53 "Good" range)', value: 'AQI 42' },
+          { label: 'Ozone (65, falls in the 55-70 "Moderate" range)', value: 'AQI 84' }
+        ],
+        result: 'Overall AQI 118 ("Unhealthy for Sensitive Groups"), driven by PM2.5',
+        explanation:
+          'PM2.5 produces the highest of the six sub-index values (118), so it is this day’s dominant pollutant and sets the overall reported AQI, even though every other pollutant that day is in the "Good" or "Moderate" range.'
+      },
+      watchOut: [
+        {
+          title: 'Each pollutant has its own units and averaging time',
+          body: 'Entering a PM2.5 reading into the ozone field, or a 1-hour ozone spike into the 8-hour field, produces a meaningless result — the published breakpoints only apply to the exact pollutant, unit, and averaging time EPA defines them for.'
+        },
+        {
+          title: 'The overall AQI is a maximum, not a sum or an average',
+          body: 'Six moderate pollutants do not add up to a worse day than one severe pollutant. The official AQI always reports the single highest sub-index, which is why this calculator ignores the other five once the highest is found.'
+        },
+        {
+          title: 'This uses the current (2024) PM2.5 breakpoints',
+          body: 'EPA revised the PM2.5 breakpoints in February 2024, lowering the "Good" ceiling from 12.0 to 9.0 µg/m³ as part of a tightened national air-quality standard. A calculation made against the pre-2024 table will read a somewhat lower AQI for the same PM2.5 concentration.'
+        },
+        {
+          title: 'Ozone’s highest categories use a separate 1-hour table',
+          body: 'EPA’s 8-hour ozone breakpoints, used here, have no defined "Very Unhealthy" or "Hazardous" range; very high short-term ozone spikes are instead reported against a separate 1-hour table not included in this calculator.'
+        },
+        {
+          title: 'A concentration above the published scale is capped at 500',
+          body: 'Every pollutant’s breakpoint table ends at AQI 500. A concentration higher than the top breakpoint is reported as AQI 500 ("Hazardous") rather than extrapolated further, matching EPA’s own practice of not defining an AQI above that point.'
+        }
+      ],
+      references: [
+        { label: 'U.S. EPA, Air Quality System (AQS), AQI Breakpoints table', url: 'https://aqs.epa.gov/aqsweb/documents/codetables/aqi_breakpoints.html' },
+        { label: 'U.S. EPA, Technical Assistance Document for the Reporting of Daily Air Quality — the Air Quality Index (AQI)', url: 'https://www.airnow.gov/aqi/aqi-basics/' }
+      ]
+    },
+    inputs: [
+      { id: 'pm25', label: 'PM2.5, 24-hr avg (µg/m³)', type: 'number', placeholder: '42.5', defaultValue: 42.5, step: 0.1, min: 0 },
+      { id: 'pm10', label: 'PM10, 24-hr avg (µg/m³)', type: 'number', placeholder: '60', defaultValue: 60, step: 1, min: 0 },
+      { id: 'co', label: 'CO, 8-hr avg (ppm)', type: 'number', placeholder: '3.0', defaultValue: 3.0, step: 0.1, min: 0 },
+      { id: 'so2', label: 'SO2, 1-hr avg (ppb)', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 0 },
+      { id: 'no2', label: 'NO2, 1-hr avg (ppb)', type: 'number', placeholder: '45', defaultValue: 45, step: 1, min: 0 },
+      { id: 'o3', label: 'Ozone, 8-hr avg (ppb)', type: 'number', placeholder: '65', defaultValue: 65, step: 1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'aqi',
+      headlineLabel: 'Overall Air Quality Index',
+      outputs: [
+        { id: 'aqi', label: 'Overall AQI', format: 'integer' },
+        {
+          id: 'categoryCode',
+          label: 'Category',
+          labels: [
+            { value: 0, label: 'Good' },
+            { value: 1, label: 'Moderate' },
+            { value: 2, label: 'Unhealthy for Sensitive Groups' },
+            { value: 3, label: 'Unhealthy' },
+            { value: 4, label: 'Very Unhealthy' },
+            { value: 5, label: 'Hazardous' }
+          ]
+        },
+        {
+          id: 'dominantCode',
+          label: 'Dominant pollutant',
+          labels: AQI_POLLUTANT_LABELS.map((label, value) => ({ value, label }))
+        },
+        { id: 'pm25Aqi', label: 'PM2.5 sub-index', format: 'integer' },
+        { id: 'pm10Aqi', label: 'PM10 sub-index', format: 'integer' },
+        { id: 'coAqi', label: 'CO sub-index', format: 'integer' },
+        { id: 'so2Aqi', label: 'SO2 sub-index', format: 'integer' },
+        { id: 'no2Aqi', label: 'NO2 sub-index', format: 'integer' },
+        { id: 'o3Aqi', label: 'Ozone sub-index', format: 'integer' }
+      ],
+      groups: [
+        { title: 'Particulates', inputs: ['pm25', 'pm10'] },
+        { title: 'Gases', inputs: ['co', 'so2', 'no2', 'o3'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'pm25Aqi', label: 'PM2.5' },
+          { from: 'pm10Aqi', label: 'PM10' },
+          { from: 'coAqi', label: 'CO' },
+          { from: 'so2Aqi', label: 'SO2' },
+          { from: 'no2Aqi', label: 'NO2' },
+          { from: 'o3Aqi', label: 'Ozone' }
+        ],
+        title: 'AQI by pollutant'
+      }
+    },
+    seo: {
+      title: 'AQI Calculator – EPA Air Quality Index Breakpoints',
+      description: 'Free AQI calculator. Convert PM2.5, PM10, ozone, CO, SO2, and NO2 concentrations into the EPA Air Quality Index using the official breakpoint tables.',
+      faq: [
+        {
+          question: 'How do you calculate the AQI from a concentration?',
+          answer:
+            'Find the two published breakpoints (BP_Lo, BP_Hi) the concentration falls between, and the matching AQI breakpoints (I_Lo, I_Hi), then compute I_p = [(I_Hi − I_Lo) ÷ (BP_Hi − BP_Lo)] × (C − BP_Lo) + I_Lo. A PM2.5 reading of 42.5 µg/m³ falls in the 35.5-55.4 range (AQI 101-150), giving an AQI of 118.'
+        },
+        {
+          question: 'What is a good AQI number?',
+          answer: '0-50 is "Good" and 51-100 is "Moderate" — air quality that poses little or no risk to the general public. Above 100, sensitive groups (and eventually everyone) may start to experience health effects.'
+        },
+        {
+          question: 'What does "dominant pollutant" mean?',
+          answer:
+            'The overall AQI reported for a day or location is the highest of the individual pollutant sub-indices, and the pollutant that produced that highest value is the "dominant" one. In the worked example, PM2.5 is dominant at AQI 118 even though every other pollutant that day is far lower.'
+        },
+        {
+          question: 'Why does a moderate PM2.5 reading push the AQI into "Unhealthy for Sensitive Groups"?',
+          answer:
+            'Because PM2.5’s breakpoints are tightly spaced at the low end — the entire "Good" category spans only 0.0-9.0 µg/m³, and "Moderate" only 9.1-35.4 µg/m³ — so a reading that still looks like a modest number in µg/m³ terms can already sit in a higher AQI category than the same-looking number for a less tightly-scaled pollutant like PM10.'
+        },
+        {
+          question: 'Are these the current EPA breakpoints?',
+          answer: 'Yes, including EPA’s February 2024 revision to the PM2.5 breakpoints (lowering the "Good" ceiling from 12.0 to 9.0 µg/m³). Using an older table would understate the AQI for the same PM2.5 reading.'
+        },
+        {
+          question: 'Can I enter just one pollutant?',
+          answer: 'Yes — leave the others at 0. Since the overall AQI is the maximum across all six, an unmeasured pollutant left at 0 never affects the result unless it genuinely turns out to be the highest.'
+        }
+      ]
+    },
+    compute(values) {
+      const pm25Aqi = concentrationToAqi(values.pm25, AQI_BREAKPOINTS.pm25);
+      const pm10Aqi = concentrationToAqi(values.pm10, AQI_BREAKPOINTS.pm10);
+      const coAqi = concentrationToAqi(values.co, AQI_BREAKPOINTS.co);
+      const so2Aqi = concentrationToAqi(values.so2, AQI_BREAKPOINTS.so2);
+      const no2Aqi = concentrationToAqi(values.no2, AQI_BREAKPOINTS.no2);
+      const o3Aqi = concentrationToAqi(values.o3, AQI_BREAKPOINTS.o3);
+      const sub = [pm25Aqi, pm10Aqi, coAqi, so2Aqi, no2Aqi, o3Aqi];
+      const aqi = Math.max(...sub);
+      const dominantCode = sub.indexOf(aqi);
+      const categoryCode = aqiCategoryCode(aqi);
+      return { aqi, categoryCode, dominantCode, pm25Aqi, pm10Aqi, coAqi, so2Aqi, no2Aqi, o3Aqi };
     }
   }
 ];

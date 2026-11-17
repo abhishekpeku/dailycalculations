@@ -463,7 +463,12 @@ export const calculatorOrder: string[] = [
   'shannon-diversity-index-calculator',
   'population-density-calculator',
   'simpson-diversity-index-calculator',
-  'lotka-volterra-calculator'
+  'lotka-volterra-calculator',
+  'air-quality-index-calculator',
+  'co2-breathing-emission-calculator',
+  'mark-recapture-population-estimate-calculator',
+  'noise-exposure-calculator',
+  'trophic-level-energy-calculator'
 ];
 
 const rank = (id: string) => {

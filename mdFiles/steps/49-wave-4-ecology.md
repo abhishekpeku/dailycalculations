@@ -180,7 +180,14 @@ discipline as every prior wave — ship fewer than 5 rather than pad, if good ca
       needed. `npm test` 1534/1534, lint clean, `npm run build` 404/404 pages, 20 categories — matches
       this file's own expected totals exactly. `ecology` is now 5/~25 — batches 2-5 may now run in
       parallel with each other (category-opening work, which had to be sequential, is complete).
-- [ ] Batch 2 (population + biodiversity ecology, 5)
+- [ ] Batch 2 (population + biodiversity ecology, 5) — **IN PROGRESS**, branch
+      `step/49-wave-4-ecology-run-2`, PR TBD (opening draft now). Progress checklist for this batch:
+      - [x] `carrying-capacity-calculator` — committed
+      - [x] `shannon-diversity-index-calculator` — committed
+      - [ ] `population-density-calculator`
+      - [ ] `simpson-diversity-index-calculator`
+      - [ ] `lotka-volterra-calculator` (equilibrium point only, γ/δ and α/β — scoped down from the
+            full time-series simulation per D17; see this batch's own notes once done)
 - [ ] Batch 3 (sustainable living / resource use, 5)
 - [ ] Batch 4 (environmental health + remaining population ecology, 5)
 - [ ] Batch 5 (round out to ~25, 5)

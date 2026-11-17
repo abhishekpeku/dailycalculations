@@ -453,7 +453,12 @@ export const calculatorOrder: string[] = [
   'flight-carbon-footprint-calculator',
   'water-footprint-calculator',
   'plastic-footprint-calculator',
-  'meat-footprint-calculator'
+  'meat-footprint-calculator',
+  'car-vs-bike-calculator',
+  'tree-benefits-calculator',
+  'books-vs-ebooks-calculator',
+  'drip-faucet-waste-calculator',
+  'recycling-rate-calculator'
 ];
 
 const rank = (id: string) => {

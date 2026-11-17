@@ -1228,6 +1228,44 @@ exports[`compute() snapshots > boiling-point-elevation-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > books-vs-ebooks-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "books": 10
+    },
+    "outputs": {
+      "printedTotalKg": 54.48,
+      "ereaderTotalKg": 31.88,
+      "savingsKg": 22.6,
+      "breakEvenBooks": 4.980008885
+    }
+  },
+  "typical": {
+    "inputs": {
+      "books": 15
+    },
+    "outputs": {
+      "printedTotalKg": 81.72,
+      "ereaderTotalKg": 36.61,
+      "savingsKg": 45.11,
+      "breakEvenBooks": 4.980008885
+    }
+  },
+  "edge": {
+    "inputs": {
+      "books": 0
+    },
+    "outputs": {
+      "printedTotalKg": 0,
+      "ereaderTotalKg": 22.42,
+      "savingsKg": -22.42,
+      "breakEvenBooks": 4.980008885
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > brick-calculator 1`] = `
 {
   "default": {
@@ -1709,6 +1747,53 @@ exports[`compute() snapshots > car-payment-calculator 1`] = `
       "totalCost": 0,
       "totalInterest": 0,
       "loanPrincipal": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > car-vs-bike-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "roundTripMiles": 10,
+      "daysPerWeek": 5,
+      "mpg": 25,
+      "gasPricePerGallon": 3.75
+    },
+    "outputs": {
+      "carCostAnnual": 390,
+      "carCO2AnnualKg": 924.248,
+      "bikeCostAnnual": 0,
+      "bikeCO2AnnualKg": 0
+    }
+  },
+  "typical": {
+    "inputs": {
+      "roundTripMiles": 15,
+      "daysPerWeek": 8,
+      "mpg": 38,
+      "gasPricePerGallon": 5.65
+    },
+    "outputs": {
+      "carCostAnnual": 927.7894737,
+      "carCO2AnnualKg": 1459.338947,
+      "bikeCostAnnual": 0,
+      "bikeCO2AnnualKg": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "roundTripMiles": 0,
+      "daysPerWeek": 0,
+      "mpg": 1,
+      "gasPricePerGallon": 0
+    },
+    "outputs": {
+      "carCostAnnual": 0,
+      "carCO2AnnualKg": 0,
+      "bikeCostAnnual": 0,
+      "bikeCO2AnnualKg": 0
     }
   }
 }
@@ -4301,6 +4386,44 @@ exports[`compute() snapshots > down-payment-savings-calculator 1`] = `
       "years": "NaN",
       "totalContributions": "NaN",
       "totalInterest": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > drip-faucet-waste-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "dripsPerMinute": 90
+    },
+    "outputs": {
+      "gallonsPerYear": 4500,
+      "gallonsPerMonth": 375,
+      "gallonsPerDay": 12.32876712,
+      "shareOfAvgHouseholdLeaksPct": 48.38709677
+    }
+  },
+  "typical": {
+    "inputs": {
+      "dripsPerMinute": 45
+    },
+    "outputs": {
+      "gallonsPerYear": 2250,
+      "gallonsPerMonth": 187.5,
+      "gallonsPerDay": 6.164383562,
+      "shareOfAvgHouseholdLeaksPct": 24.19354839
+    }
+  },
+  "edge": {
+    "inputs": {
+      "dripsPerMinute": 0
+    },
+    "outputs": {
+      "gallonsPerYear": 0,
+      "gallonsPerMonth": 0,
+      "gallonsPerDay": 0,
+      "shareOfAvgHouseholdLeaksPct": 0
     }
   }
 }
@@ -12969,6 +13092,44 @@ exports[`compute() snapshots > recipe-scaling-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > recycling-rate-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "householdSize": 4,
+      "recyclingRatePct": 32.1
+    },
+    "outputs": {
+      "annualLb": 7154,
+      "divertedLb": 2296.434,
+      "notDivertedLb": 4857.566
+    }
+  },
+  "typical": {
+    "inputs": {
+      "householdSize": 6,
+      "recyclingRatePct": 48.2
+    },
+    "outputs": {
+      "annualLb": 10731,
+      "divertedLb": 5172.342,
+      "notDivertedLb": 5558.658
+    }
+  },
+  "edge": {
+    "inputs": {
+      "householdSize": 1,
+      "recyclingRatePct": 0
+    },
+    "outputs": {
+      "annualLb": 1788.5,
+      "divertedLb": 0,
+      "notDivertedLb": 1788.5
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > relative-risk-calculator 1`] = `
 {
   "default": {
@@ -15926,6 +16087,41 @@ exports[`compute() snapshots > travel-points-value-calculator 1`] = `
       "netCashValue": 0,
       "realizedCentsPerPoint": 0,
       "vsBenchmarkDiffPercent": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > tree-benefits-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "trees": 10,
+      "years": 10
+    },
+    "outputs": {
+      "totalCO2Kg": 6000,
+      "gasolineEquivalentGal": 675.143468
+    }
+  },
+  "typical": {
+    "inputs": {
+      "trees": 15,
+      "years": 15
+    },
+    "outputs": {
+      "totalCO2Kg": 13500,
+      "gasolineEquivalentGal": 1519.072803
+    }
+  },
+  "edge": {
+    "inputs": {
+      "trees": 1,
+      "years": 1
+    },
+    "outputs": {
+      "totalCO2Kg": 60,
+      "gasolineEquivalentGal": 6.75143468
     }
   }
 }

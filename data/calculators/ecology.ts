@@ -66,6 +66,50 @@ const FOOD_CO2E_PER_KG = {
   tofu: 3.16
 };
 
+// --- Step 49 batch 3 (sustainable living / resource use) constants ---
+
+// car-vs-bike-calculator: EPA, "Greenhouse Gas Equivalencies Calculator - Calculations and
+// References" (epa.gov/energy/ghg-equivalencies-calculator-calculations-and-references), the same
+// source already fetched for carbon-footprint-calculator in batch 1. Reused here as its own
+// constant since data/calculators files don't share helpers with each other.
+const CAR_VS_BIKE_GASOLINE_KG_PER_GALLON = 8.887e-3 * 1000; // "8.887 x 10^-3 metric tons CO2/gallon of gasoline"
+
+// tree-benefits-calculator: same EPA GHG Equivalencies Calculator page, "Carbon Sequestered by
+// a Tree Seedling" section, citing McPherson et al. (2016), "Urban tree database and allometric
+// equations," USDA Forest Service, Pacific Southwest Research Station. Fetched directly.
+const TREE_CO2_KG_PER_YEAR = 0.060 * 1000; // "0.060 metric ton CO2 per urban tree planted per year"
+
+// books-vs-ebooks-calculator: Kozak, G. (2003), "Printed Scholarly Books and E-book Reading
+// Devices: A Comparative Life Cycle Assessment of Two Book Options," University of Michigan
+// Center for Sustainable Systems, Report No. CSS03-04 (css.umich.edu), fetched directly as the
+// published PDF. Global-warming-potential results by life-cycle stage, for the study's own
+// functional unit of 40 scholarly books read once by a single owner over 4 years.
+// Table 6-6 (printed book system): material 97.58 + manufacturing 66.42 + distribution 0.79 +
+// use 53.13 + end-of-life 0.00 kg CO2e, for 40 books -> per book.
+const BOOK_PRINT_CO2_KG_PER_BOOK = (97.58 + 66.42 + 0.79 + 53.13 + 0.0) / 40;
+// Table 6-7 (e-reader system): material 2.47 + manufacturing 17.38 + distribution 0.99 +
+// end-of-life 1.58 kg CO2e = the device's own one-time footprint, amortized over the 40-book
+// functional unit (assumes the student's single e-reader is used for exactly this many books
+// over its working life).
+const EREADER_FIXED_CO2_KG = 2.47 + 17.38 + 0.99 + 1.58;
+// Use-stage 37.84 kg CO2e for 40 books (downloading + on-screen reading electricity) -> per book,
+// scaling roughly with reading time, which the study itself finds to scale with book length.
+const EREADER_USE_CO2_KG_PER_BOOK = 37.84 / 40;
+
+// drip-faucet-waste-calculator: U.S. EPA WaterSense, "Fix a Leak Week" (epa.gov/watersense/fix-leak-week),
+// fetched directly. "A leaky faucet that drips at the rate of one drip per second can waste more
+// than 3,000 gallons per year" -> gallons per year per drip-per-minute, since 1 drip/second is
+// 60 drips/minute. Cross-checked against the same page's independent showerhead figure ("a
+// showerhead leaking at 10 drips per minute wastes more than 500 gallons per year"): 10 x 50 = 500,
+// confirming the two EPA-published anchors imply the same linear rate.
+const DRIP_GAL_PER_YEAR_PER_DRIP_PER_MINUTE = 3000 / 60;
+const AVG_HOUSEHOLD_LEAKS_GAL_PER_YEAR = 9300; // EPA WaterSense, same page: "more than 9,300 gallons of water wasted every year"
+
+// recycling-rate-calculator: U.S. EPA, "National Overview: Facts and Figures on Materials, Waste
+// and Recycling" (same page already fetched for plastic-footprint-calculator in batch 1), 2018 data.
+const RECYCLING_TOTAL_MSW_LB_PER_PERSON_DAY_2018 = 4.9; // "4.9 pounds per person per day" in 2018
+const RECYCLING_NATIONAL_RATE_PCT_2018 = 32.1; // "32.1 percent recycling and composting rate"
+
 export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'carbon-footprint-calculator',
@@ -899,6 +943,723 @@ export const ecologyCalculators: CalculatorConfig[] = [
         values.tofuKg * FOOD_CO2E_PER_KG.tofu;
       const annualKgCO2e = weeklyKgCO2e * 52;
       return { weeklyKgCO2e, annualKgCO2e };
+    }
+  },
+  {
+    id: 'car-vs-bike-calculator',
+    category: 'ecology',
+    glyph: 'vs',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'car vs bike calculator',
+      'bike to work savings calculator',
+      'cycling vs driving calculator',
+      'commute by bike savings calculator',
+      'biking vs driving carbon calculator'
+    ],
+    related: ['commute-cost-calculator', 'fuel-cost-calculator', 'ev-charging-calculator', 'carbon-footprint-calculator'],
+    title: 'Car vs Bike Calculator',
+    description:
+      'Compare the fuel cost and CO2 emissions of driving a commute against biking it instead, using your own round-trip distance, car fuel economy, and gas price, with EPA’s published gasoline emissions factor.',
+    example:
+      'A 10-mile round-trip commute, driven 5 days a week in a 25 mpg car at $3.75 a gallon, burns 104 gallons and emits about 924.2 kg (0.92 metric tons) of CO2e a year — biking the same commute instead avoids all of it and the $390 in fuel.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What does biking instead of driving actually save?',
+        paragraphs: [
+          'Every gallon of gasoline a car burns releases a fixed, well-measured amount of carbon dioxide when it combusts — the U.S. Environmental Protection Agency puts it at 8.887 kilograms of CO2 per gallon. A bicycle burns no fuel at all, so riding one instead of driving avoids that tailpipe emission entirely, along with the fuel cost itself, for whatever portion of a commute gets ridden instead of driven.',
+          'This calculator multiplies your round-trip commute distance by how many days a week you make the trip to get an annual mileage total, then compares two ways of covering it: driving, which costs fuel and emits CO2 according to your car’s own fuel economy, and biking, which costs nothing in fuel and emits nothing from combustion. The gap between the two is what switching commute days from car to bike is actually worth, in dollars and in kilograms of CO2e avoided.',
+          'This is a direct, tailpipe-and-fuel-cost comparison only. It does not count the embodied emissions of manufacturing either the car or the bicycle, or a car’s non-fuel running costs like maintenance, insurance, and depreciation — the Commute Cost Calculator covers those separately.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your round-trip commute distance, how many days a week you make it, and your car’s fuel economy and gas price.',
+        steps: [
+          { name: 'Enter the round-trip distance', text: 'Type the distance there and back, in miles or km.' },
+          { name: 'Enter commute days per week', text: 'How many days a week you make this trip, by either mode.' },
+          { name: 'Enter your car’s fuel economy', text: 'Your car’s mpg (US or UK), L/100 km, or km/L.' },
+          { name: 'Enter the gas price', text: 'The price per gallon or per liter you actually pay.' },
+          { name: 'Read the comparison', text: 'The headline is the yearly fuel cost and CO2e you’d avoid by biking those days instead of driving them.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Annual mileage comes from the commute and its frequency; the car’s cost and emissions follow from its own fuel economy, while the bike’s are both zero.',
+        expression: 'annualMiles = roundTripMiles × daysPerWeek × 52\ngallons = annualMiles ÷ mpg\ncarCost = gallons × gasPrice\ncarCO2 = gallons × 8.887 kg/gallon\nbikeCost = 0\nbikeCO2 = 0',
+        terms: [
+          { symbol: '8.887 kg/gallon', meaning: 'EPA’s published emissions factor for burning a gallon of gasoline.' },
+          { symbol: 'mpg', meaning: 'Your car’s own fuel economy, which determines how many gallons the commute actually burns.' }
+        ],
+        note: 'A fuel-and-tailpipe-only comparison. It leaves out vehicle manufacturing, maintenance, and the practical limits of biking a given distance or weather.'
+      },
+      workedExample: {
+        intro: 'A 10-mile round-trip commute, driven or biked 5 days a week, in a 25 mpg car with gas at $3.75 a gallon.',
+        rows: [
+          { label: 'Annual miles (10 × 5 × 52)', value: '2,600 mi' },
+          { label: 'Gallons burned (2,600 ÷ 25)', value: '104 gal' },
+          { label: 'Car fuel cost (104 × $3.75)', value: '$390.00' },
+          { label: 'Car CO2e (104 × 8.887 kg)', value: '924.2 kg (0.92 t)' },
+          { label: 'Bike fuel cost and CO2e', value: '$0.00, 0 kg' }
+        ],
+        result: 'Biking instead saves $390.00 a year and avoids about 924.2 kg (0.92 metric tons) of CO2e',
+        explanation:
+          'Doubling the round trip to 20 miles (e.g. a longer commute) doubles both figures: $650.00 a year and about 1,540.4 kg (1.54 metric tons) of CO2e avoided, since both scale directly with distance.'
+      },
+      watchOut: [
+        {
+          title: 'Zero tailpipe emissions, not zero footprint',
+          body: 'A bicycle burns no fuel and emits nothing from combustion while riding, but manufacturing any vehicle, car or bike, carries its own embodied emissions that this calculator does not count. The comparison here is specifically fuel burned and CO2 emitted per mile of commuting, not a full life-cycle comparison.'
+        },
+        {
+          title: 'This excludes the car’s non-fuel costs',
+          body: 'Maintenance, insurance, depreciation, and parking all add to driving’s real cost beyond fuel. The Commute Cost Calculator adds a per-mile wear allowance and parking and tolls on top of fuel for a fuller picture.'
+        },
+        {
+          title: 'Not every commute is bikeable every day',
+          body: 'Distance, weather, road safety, and carrying cargo all limit how many days a commute can realistically switch from car to bike. Enter the number of days you’d actually ride, not an idealized maximum.'
+        },
+        {
+          title: 'The gasoline factor is a national average',
+          body: 'EPA’s 8.887 kg CO2 per gallon reflects gasoline’s own combustion chemistry and barely varies by region, unlike electricity’s emissions factor, which depends heavily on the local grid.'
+        }
+      ],
+      references: [
+        { label: 'U.S. EPA, Greenhouse Gas Equivalencies Calculator – Calculations and References', url: 'https://www.epa.gov/energy/ghg-equivalencies-calculator-calculations-and-references' }
+      ]
+    },
+    inputs: [
+      { id: 'roundTripMiles', label: 'Round-trip commute distance', type: 'number', placeholder: '10', defaultValue: 10, step: 1, min: 0, dimension: 'length', unit: 'mi' },
+      { id: 'daysPerWeek', label: 'Commute days per week', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 0 },
+      { id: 'mpg', label: 'Car fuel economy', type: 'number', placeholder: '25', defaultValue: 25, step: 1, min: 1, dimension: 'fuelEconomy', unit: 'mpg' },
+      { id: 'gasPricePerGallon', label: 'Gas price', type: 'currency', placeholder: '3.75', defaultValue: 3.75, step: 0.05, min: 0, dimension: 'fuelPrice', unit: 'cur/gal' }
+    ],
+    breakdown: {
+      headline: 'carCostAnnual',
+      headlineLabel: 'Car’s yearly fuel cost (what biking saves)',
+      outputs: [
+        { id: 'carCostAnnual', label: 'Car fuel cost (per year)', format: 'currency' },
+        { id: 'carCO2AnnualKg', label: 'Car CO2e (per year)', dimension: 'mass', alsoIn: ['t'] },
+        { id: 'bikeCostAnnual', label: 'Bike fuel cost (per year)', format: 'currency' },
+        { id: 'bikeCO2AnnualKg', label: 'Bike CO2e (per year)', dimension: 'mass' }
+      ],
+      groups: [{ title: 'Commute', inputs: ['roundTripMiles', 'daysPerWeek', 'mpg', 'gasPricePerGallon'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'carCO2AnnualKg', label: 'Car' },
+          { from: 'bikeCO2AnnualKg', label: 'Bike' }
+        ],
+        title: 'Yearly CO2e: car vs. bike',
+        highlight: 0
+      }
+    },
+    seo: {
+      title: 'Car vs Bike Calculator – Commute Cost & CO2',
+      description: 'Free car vs bike calculator. Compare the fuel cost and CO2 emissions of driving your commute against biking it, using EPA’s gasoline emissions factor.',
+      faq: [
+        {
+          question: 'How much CO2 does driving to work produce compared to biking?',
+          answer:
+            'Multiply the gallons burned (annual miles ÷ mpg) by EPA’s factor of 8.887 kg CO2 per gallon; biking produces zero. A 10-mile round trip, 5 days a week in a 25 mpg car, burns 104 gallons and emits about 924.2 kg (0.92 metric tons) of CO2e a year, all of which biking avoids.'
+        },
+        {
+          question: 'How much money would I save biking to work instead of driving?',
+          answer: 'The fuel cost of the drive (gallons × gas price), since a bike burns no fuel. In the worked example, 104 gallons at $3.75 comes to $390.00 a year.'
+        },
+        {
+          question: 'Does this count the cost of buying or maintaining a bike?',
+          answer: 'No — this is a fuel-and-emissions comparison for the trip itself, not a full cost-of-ownership comparison for either vehicle.'
+        },
+        {
+          question: 'Does biking really produce zero emissions?',
+          answer: 'A bicycle burns no fuel, so it has no tailpipe emissions while riding. This calculator compares combustion emissions only; it does not count the embodied emissions of manufacturing either vehicle.'
+        },
+        {
+          question: 'What if I only bike some days and drive the rest?',
+          answer: 'Set "commute days per week" to the number of days you’d actually bike, and compare that result to the all-driving total — the difference is what switching those specific days is worth.'
+        },
+        {
+          question: 'Why does the car’s fuel economy matter so much?',
+          answer: 'A more efficient car burns fewer gallons for the same distance, which lowers both its cost and its CO2e proportionally — doubling mpg roughly halves both figures for the same commute.'
+        }
+      ]
+    },
+    compute(values) {
+      const annualMiles = values.roundTripMiles * values.daysPerWeek * 52;
+      const gallons = annualMiles / values.mpg;
+      const carCostAnnual = gallons * values.gasPricePerGallon;
+      const carCO2AnnualKg = gallons * CAR_VS_BIKE_GASOLINE_KG_PER_GALLON;
+      const bikeCostAnnual = 0;
+      const bikeCO2AnnualKg = 0;
+      return { carCostAnnual, carCO2AnnualKg, bikeCostAnnual, bikeCO2AnnualKg };
+    }
+  },
+  {
+    id: 'tree-benefits-calculator',
+    category: 'ecology',
+    glyph: 'tree',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'tree benefits calculator',
+      'how much co2 does a tree absorb',
+      'tree carbon sequestration calculator',
+      'trees planted carbon offset calculator',
+      'tree co2 offset calculator'
+    ],
+    related: ['carbon-footprint-calculator', 'flight-carbon-footprint-calculator', 'meat-footprint-calculator', 'commute-cost-calculator'],
+    title: 'Tree Benefits Calculator',
+    description:
+      'Estimate how much CO2 a given number of urban trees absorb over time, using the EPA’s published per-tree annual carbon sequestration factor, with the equivalent in gallons of gasoline not burned.',
+    example:
+      '10 urban trees planted and grown for 10 years sequester about 6,000 kg (6 metric tons) of CO2 — roughly the same as not burning 675.1 gallons of gasoline.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'How much carbon does a tree actually absorb?',
+        paragraphs: [
+          'As a tree grows, it builds its wood, roots, bark, and leaves largely out of carbon pulled from the air as CO2, through photosynthesis. The U.S. Environmental Protection Agency publishes a standard estimate for this in its Greenhouse Gas Equivalencies Calculator: an average urban tree sequesters about 0.060 metric tons (60 kilograms) of CO2 a year, a figure weighted across the mix of species — mostly deciduous, with some coniferous — typically planted and grown in U.S. urban environments. The underlying data come from the U.S. Forest Service’s own urban tree database and allometric equations (McPherson et al., 2016).',
+          'This calculator multiplies that per-tree, per-year rate by how many trees you enter and how many years they are assumed to grow, to give a simple cumulative CO2 estimate. It also converts the total into an equivalent number of gallons of gasoline not burned, using the same EPA emissions-factor reference, so the figure is easier to picture alongside a everyday fuel use.',
+          'A single urban tree’s own absorption is modest compared to a household’s yearly footprint — it takes dozens of trees, grown for years, to offset even a fraction of an average car’s annual emissions. This calculator is meant to size that comparison honestly, not to suggest tree planting alone can offset a large footprint quickly.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter how many trees and how many years of growth; the cumulative CO2 estimate appears instantly.',
+        steps: [
+          { name: 'Enter the number of trees', text: 'How many urban trees you’re estimating for — one, or a whole planting project.' },
+          { name: 'Enter the number of years', text: 'How many years of growth to count. EPA’s own figure is an annual average rate, so this scales linearly.' },
+          { name: 'Read the total', text: 'The headline is the cumulative CO2 sequestered over that time, in kilograms and metric tons, plus the equivalent gallons of gasoline not burned.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Total CO2 sequestered is trees times years times the EPA’s own per-tree annual rate; the gasoline equivalent follows from the same EPA page’s gasoline factor.',
+        expression: 'totalCO2 (kg) = trees × years × 60 kg/tree/year\ngasolineEquivalent (gal) = totalCO2 ÷ 8.887 kg/gal',
+        terms: [
+          { symbol: '60 kg/tree/year', meaning: 'EPA’s published average annual CO2 sequestration rate for an urban tree, citing McPherson et al. (2016), USDA Forest Service.' },
+          { symbol: '8.887 kg/gal', meaning: 'EPA’s published emissions factor for burning a gallon of gasoline, used here only to convert the total into an equivalent amount of avoided fuel combustion.' }
+        ],
+        note: 'An average across common urban tree species; an individual tree’s real sequestration varies with species, size, climate, and health.'
+      },
+      workedExample: {
+        intro: '10 urban trees, grown for 10 years.',
+        rows: [
+          { label: 'Per tree per year', value: '60 kg' },
+          { label: 'Total (10 trees × 10 years × 60 kg)', value: '6,000 kg' },
+          { label: 'In metric tons', value: '6.0 t' },
+          { label: 'Gasoline equivalent (6,000 ÷ 8.887)', value: '≈675.1 gallons' }
+        ],
+        result: 'About 6,000 kg (6 metric tons) of CO2 sequestered over 10 years',
+        explanation:
+          'One of those same 10 trees, on its own, sequesters about 600 kg over the same 10 years — a tenth of the group’s total, as expected since the rate is a flat per-tree average.'
+      },
+      watchOut: [
+        {
+          title: 'A national-average rate, not a measurement of your specific tree',
+          body: 'EPA’s 60 kg/tree/year figure is a weighted average across common U.S. urban tree species and ages. A young sapling sequesters far less than this average in its early years, and a large, mature, fast-growing species can sequester considerably more.'
+        },
+        {
+          title: 'Trees take years to add up to much',
+          body: 'A single tree’s one-year sequestration (60 kg) is small next to typical yearly footprints — the worked example’s 6,000 kg over 10 years for 10 trees is still less than half the worked example in the Carbon Footprint Calculator’s own household total of about 13,140 kg a year.'
+        },
+        {
+          title: 'The gasoline comparison is illustrative, not interchangeable',
+          body: 'Converting sequestered CO2 into "gallons not burned" is a unit comparison, not a claim that planting trees literally cancels out specific tailpipe emissions in real time — a tree absorbs CO2 gradually over years, while a tank of gas burns in days.'
+        },
+        {
+          title: 'This counts sequestration only',
+          body: 'It does not count any other benefit a tree provides (shade, stormwater absorption, property value) or costs (planting, water, maintenance) — only the EPA’s own published carbon-sequestration figure.'
+        }
+      ],
+      references: [
+        { label: 'U.S. EPA, Greenhouse Gas Equivalencies Calculator – Calculations and References', url: 'https://www.epa.gov/energy/ghg-equivalencies-calculator-calculations-and-references' },
+        { label: 'McPherson, E.G. et al. (2016), "Urban tree database and allometric equations," USDA Forest Service, Pacific Southwest Research Station', url: 'https://www.fs.usda.gov/psw/' }
+      ]
+    },
+    inputs: [
+      { id: 'trees', label: 'Number of trees', type: 'number', placeholder: '10', defaultValue: 10, step: 1, min: 1 },
+      { id: 'years', label: 'Years of growth', type: 'number', placeholder: '10', defaultValue: 10, step: 1, min: 1 }
+    ],
+    breakdown: {
+      headline: 'totalCO2Kg',
+      headlineLabel: 'CO2 sequestered (cumulative)',
+      outputs: [
+        { id: 'totalCO2Kg', label: 'Total CO2 sequestered', dimension: 'mass', alsoIn: ['t'] },
+        { id: 'gasolineEquivalentGal', label: 'Equivalent gasoline not burned', dimension: 'volume', unit: 'gal' }
+      ],
+      groups: [{ title: 'Trees', inputs: ['trees', 'years'] }],
+      derive: (v) => ({ perTreeTotalKg: v.years * TREE_CO2_KG_PER_YEAR }),
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'perTreeTotalKg', label: 'One tree' },
+          { from: 'totalCO2Kg', label: 'All your trees' }
+        ],
+        title: 'CO2 sequestered over the period',
+        highlight: 1
+      }
+    },
+    seo: {
+      title: 'Tree Benefits Calculator – CO2 Sequestered',
+      description: 'Free tree benefits calculator. Estimate how much CO2 your trees absorb over time using the EPA’s published per-tree annual carbon sequestration rate.',
+      faq: [
+        {
+          question: 'How much CO2 does one tree absorb per year?',
+          answer: 'About 60 kilograms (0.060 metric tons) a year on average for an urban tree, per the EPA’s Greenhouse Gas Equivalencies Calculator, citing McPherson et al. (2016).'
+        },
+        {
+          question: 'How much CO2 do 10 trees absorb in 10 years?',
+          answer: 'About 6,000 kg (6 metric tons), using the EPA’s flat 60 kg-per-tree-per-year average rate (10 trees × 10 years × 60 kg).'
+        },
+        {
+          question: 'How many trees would it take to offset a car’s emissions?',
+          answer: 'A typical passenger vehicle’s gasoline alone, per the EPA’s own factor, far outpaces what a handful of trees sequester in a year — it would take dozens of mature trees, grown for years, to offset even one year of average driving.'
+        },
+        {
+          question: 'Does tree species or size matter?',
+          answer: 'Yes. The 60 kg/tree/year figure is a weighted U.S. average; a young sapling sequesters far less in its early years, while a large, fast-growing species can sequester more. Use it as a planning estimate, not a measurement of a specific tree.'
+        },
+        {
+          question: 'What does the "gallons of gasoline" comparison mean?',
+          answer: 'It restates the sequestered CO2 total in terms of the same mass of CO2 that burning that many gallons of gasoline would release, using the EPA’s own 8.887 kg/gallon factor — a unit comparison, not a real-time offset.'
+        },
+        {
+          question: 'Does this include other tree benefits like shade or stormwater?',
+          answer: 'No — only the EPA’s published carbon-sequestration rate. Other benefits are real but are not quantified here.'
+        }
+      ]
+    },
+    compute(values) {
+      const totalCO2Kg = values.trees * values.years * TREE_CO2_KG_PER_YEAR;
+      const gasolineEquivalentGal = totalCO2Kg / CAR_VS_BIKE_GASOLINE_KG_PER_GALLON;
+      return { totalCO2Kg, gasolineEquivalentGal };
+    }
+  },
+  {
+    id: 'books-vs-ebooks-calculator',
+    category: 'ecology',
+    glyph: 'book',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'books vs ebooks calculator',
+      'e-reader carbon footprint calculator',
+      'kindle vs books carbon footprint',
+      'print book vs ebook environmental impact',
+      'how many books to break even ereader'
+    ],
+    related: ['carbon-footprint-calculator', 'plastic-footprint-calculator', 'water-footprint-calculator', 'meat-footprint-calculator'],
+    title: 'Books vs. E-books Carbon Footprint Calculator',
+    description:
+      'Compare the lifecycle CO2e of reading printed books against reading the same number of books on a dedicated e-reader, using a published life-cycle assessment’s own per-book and device figures, with the break-even number of books.',
+    example:
+      'Reading 10 books costs about 54.48 kg of CO2e as printed books, versus about 31.88 kg on an e-reader (a 22.42 kg fixed device footprint plus 9.46 kg of reading electricity) — a saving of about 22.6 kg. The break-even point is about 5 books.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'When does an e-reader actually beat printed books?',
+        paragraphs: [
+          'A 2003 life-cycle assessment by Greg Kozak at the University of Michigan’s Center for Sustainable Systems compared forty scholarly books, read once by one college student over four years, against the same forty books read on a dedicated e-book reading device. It tracked every stage of each system — raw materials, manufacturing, distribution, use, and end of life — and converted the results into kilograms of CO2-equivalent (CO2e) global-warming impact.',
+          'The e-reader has a real, fixed carbon cost before a single page is read: manufacturing the device, its materials, shipping it, and eventually disposing of it, which the study put at about 22.42 kg of CO2e in total. On top of that comes a smaller, per-book cost for the electricity used to download and read on its screen. A printed book, by contrast, has no large one-time device cost, but each individual copy carries its own paper, printing, and delivery footprint, plus a share of the personal transportation it took to buy it — about 5.45 kg of CO2e per book in the study’s own figures.',
+          'This calculator multiplies those two published per-book rates (and the e-reader’s one-time device footprint) by how many books you enter, so you can see where the lines cross: below a certain number of books, the printed copies are better; above it, the e-reader is.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter how many books you expect to read; the printed-book and e-reader totals, and which one wins, appear instantly.',
+        steps: [
+          { name: 'Enter the number of books', text: 'How many books you’re comparing — a single title, or your expected lifetime reading on one device.' },
+          { name: 'Read the two totals', text: 'The headline compares the printed-book total against the e-reader total (device footprint plus reading electricity) for that many books.' },
+          { name: 'Check the break-even point', text: 'The e-reader only comes out ahead once your book count passes about 5 — below that, its own device manufacturing outweighs what it saves.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Printed books scale directly per book; the e-reader has a fixed device cost plus a smaller per-book reading cost.',
+        expression: 'printedTotal = books × 5.448 kg CO2e/book\nereaderTotal = 22.42 kg + books × 0.946 kg CO2e/book\nbreakEvenBooks = 22.42 ÷ (5.448 − 0.946)',
+        terms: [
+          { symbol: '5.448 kg/book', meaning: 'Kozak (2003)’s printed-book-system total (material, manufacturing, distribution, use, end-of-life), 217.92 kg CO2e ÷ 40 books.' },
+          { symbol: '22.42 kg', meaning: 'The e-reader device’s own one-time footprint (material, manufacturing, distribution, end-of-life): 2.47 + 17.38 + 0.99 + 1.58 kg CO2e.' },
+          { symbol: '0.946 kg/book', meaning: 'The e-reader’s per-book reading-electricity cost: the study’s Use-stage total, 37.84 kg CO2e ÷ 40 books.' }
+        ],
+        note: 'Figures are the study’s own published baseline scenario: one owner, no resale, a shared university data server, and four years of use. Real results vary with how long you keep the device and how many other people share a physical book or a server.'
+      },
+      workedExample: {
+        intro: 'Reading 10 books, either as printed copies or on a single e-reader.',
+        rows: [
+          { label: 'Printed total (10 × 5.448)', value: '54.48 kg' },
+          { label: 'E-reader device footprint (fixed)', value: '22.42 kg' },
+          { label: 'E-reader reading electricity (10 × 0.946)', value: '9.46 kg' },
+          { label: 'E-reader total (22.42 + 9.46)', value: '31.88 kg' },
+          { label: 'Savings (54.48 − 31.88)', value: '22.60 kg' }
+        ],
+        result: 'The e-reader saves about 22.6 kg of CO2e over 10 books',
+        explanation:
+          'For just 1 book, the comparison flips: printed is 5.45 kg against the e-reader’s 23.37 kg (22.42 kg of device footprint plus 0.946 kg of reading electricity) — about 4.3 times worse, since the device’s own manufacturing footprint dominates until more books are read on it. The break-even point works out to about 5 books (22.42 ÷ (5.448 − 0.946) ≈ 4.98).'
+        },
+      watchOut: [
+        {
+          title: 'The device footprint has to be earned back first',
+          body: 'An e-reader is worse than print for a small number of books, because its own manufacturing footprint (22.42 kg CO2e) outweighs the saving per book (about 4.5 kg) until roughly 5 books have been read on it. Buying an e-reader to read just one or two books is not the lower-carbon choice by this study’s own figures.'
+        },
+        {
+          title: 'This assumes one owner, not a shared or resold book',
+          body: 'The study’s printed-book figure assumes a single reader who keeps the book rather than reselling or sharing it. Its own sensitivity analysis found that two readers sharing one physical book cut the book’s footprint by about 59%, and three readers by about 70% — which would raise the break-even book count well above 5.'
+        },
+        {
+          title: 'The e-reader figure assumes a shared library server',
+          body: 'The study’s baseline splits the server and network cost of storing a downloadable e-book across 30 students accessing the same files, not one person alone. A solo reader downloading books from a dedicated personal server would see a somewhat higher e-reader figure than used here.'
+        },
+        {
+          title: 'A 2003 device, not a modern e-reader',
+          body: 'The study modeled an early 2000s dedicated e-book reader (the RCA REB 1100). Screen technology, manufacturing processes, and grid electricity mixes have all changed since, so the exact figures are illustrative of the trade-off’s shape, not a current product’s measured footprint.'
+        }
+      ],
+      references: [
+        {
+          label: 'Kozak, G. (2003), "Printed Scholarly Books and E-book Reading Devices: A Comparative Life Cycle Assessment of Two Book Options," University of Michigan Center for Sustainable Systems, Report No. CSS03-04',
+          url: 'https://css.umich.edu/sites/default/files/css_doc/CSS03-04.pdf'
+        }
+      ]
+    },
+    inputs: [{ id: 'books', label: 'Number of books', type: 'number', placeholder: '10', defaultValue: 10, step: 1, min: 0 }],
+    breakdown: {
+      headline: 'ereaderTotalKg',
+      headlineLabel: 'E-reader total CO2e',
+      outputs: [
+        { id: 'ereaderTotalKg', label: 'E-reader total', dimension: 'mass' },
+        { id: 'printedTotalKg', label: 'Printed books total', dimension: 'mass' },
+        { id: 'savingsKg', label: 'E-reader savings (negative = e-reader is worse)', dimension: 'mass' },
+        { id: 'breakEvenBooks', label: 'Break-even number of books', format: 'number' }
+      ],
+      groups: [{ title: 'Reading', inputs: ['books'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'printedTotalKg', label: 'Printed books' },
+          { from: 'ereaderTotalKg', label: 'E-reader' }
+        ],
+        title: 'Total CO2e for this many books',
+        highlight: 1
+      }
+    },
+    seo: {
+      title: 'Books vs. E-books Carbon Footprint Calculator',
+      description: 'Free books vs e-books calculator. Compare printed book and e-reader CO2e using a published life-cycle assessment, with the break-even number of books.',
+      faq: [
+        {
+          question: 'How many books until an e-reader is better for the environment?',
+          answer: 'About 5 books, per Kozak (2003)’s University of Michigan life-cycle assessment: the e-reader’s own 22.42 kg CO2e device footprint takes roughly 22.42 ÷ (5.448 − 0.946) ≈ 4.98 books’ worth of savings to pay back.'
+        },
+        {
+          question: 'Is reading one book on an e-reader worse than buying the printed copy?',
+          answer: 'Yes, by this study’s figures — one book comes to 5.45 kg CO2e printed versus 23.37 kg on a brand-new e-reader (almost entirely the device’s own manufacturing footprint), about 4.3 times worse.'
+        },
+        {
+          question: 'What does a printed book’s 5.448 kg CO2e include?',
+          answer: 'Paper and cover material production, printing operations, delivery to the bookstore, the student’s own trip to buy it, and the bookstore’s facility energy — the full life-cycle total from Kozak (2003)’s Table 6-6, divided by the study’s 40-book functional unit.'
+        },
+        {
+          question: 'Does sharing a physical book change the answer?',
+          answer: 'Yes. The study’s own sensitivity analysis found two readers of one physical book cut its footprint by about 59% and three readers by about 70%, which raises the e-reader’s break-even point well above 5 books for a book that gets resold or passed along.'
+        },
+        {
+          question: 'Is this based on a current e-reader model?',
+          answer: 'No — the 2003 study modeled an RCA REB 1100 e-book reader. The comparison’s overall shape (a fixed device cost paid back over many books) still applies, but a modern device’s exact numbers would differ.'
+        },
+        {
+          question: 'Does this include the electricity to download and read each book?',
+          answer: 'Yes — the e-reader’s 0.946 kg CO2e per book covers both downloading over its modem and the electricity used reading on-screen, based on the study’s own Use-stage figures.'
+        }
+      ]
+    },
+    compute(values) {
+      const printedTotalKg = values.books * BOOK_PRINT_CO2_KG_PER_BOOK;
+      const ereaderTotalKg = EREADER_FIXED_CO2_KG + values.books * EREADER_USE_CO2_KG_PER_BOOK;
+      const savingsKg = printedTotalKg - ereaderTotalKg;
+      const breakEvenBooks = EREADER_FIXED_CO2_KG / (BOOK_PRINT_CO2_KG_PER_BOOK - EREADER_USE_CO2_KG_PER_BOOK);
+      return { printedTotalKg, ereaderTotalKg, savingsKg, breakEvenBooks };
+    }
+  },
+  {
+    id: 'drip-faucet-waste-calculator',
+    category: 'ecology',
+    glyph: 'gal',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'drip faucet waste calculator',
+      'leaky faucet water waste calculator',
+      'dripping tap water waste calculator',
+      'how much water does a dripping faucet waste',
+      'faucet leak gallons calculator'
+    ],
+    related: ['water-footprint-calculator', 'water-intake-calculator', 'electricity-bill-calculator', 'recycling-rate-calculator'],
+    title: 'Drip Faucet Waste Calculator',
+    description:
+      'Estimate how much water a dripping faucet wastes per day, month, and year, from how often it drips, using the EPA WaterSense Fix a Leak Week published drip-rate figures.',
+    example:
+      'A faucet dripping 90 times a minute (about 1.5 drops a second) wastes about 4,500 gallons a year — nearly half of what the EPA says the average U.S. household loses to leaks altogether.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'How much water does a dripping faucet really waste?',
+        paragraphs: [
+          'A dripping faucet looks like a small problem, but each drop adds up over a year of constant leaking. The U.S. Environmental Protection Agency’s WaterSense program publishes a concrete benchmark for this during its annual Fix a Leak Week campaign: "a leaky faucet that drips at the rate of one drip per second can waste more than 3,000 gallons per year." Since one drip per second is 60 drips a minute, that works out to about 50 gallons wasted per year for every drip-per-minute the faucet runs at.',
+          'The same EPA page independently publishes a second drip-rate figure for a different fixture: a showerhead leaking at 10 drips a minute wastes more than 500 gallons a year — which, scaled the same way, is also 50 gallons per year per drip per minute. The two independently stated EPA figures agree with each other, which is a useful check that the underlying rate (about 50 gallons wasted per year for each additional drip per minute) is a reasonably stable approximation across different kinds of leaks.',
+          'This calculator takes the number of drips per minute you estimate (or count) from a leaking faucet and scales the EPA’s own benchmark rate to give a yearly, monthly, and daily waste estimate, plus how that compares to the EPA’s own figure for the average household’s total leak losses.'
+        ]
+      },
+      howTo: {
+        intro: 'Count or estimate how many times the faucet drips in a minute, and the waste estimate appears instantly.',
+        steps: [
+          { name: 'Count the drips', text: 'Watch the faucet for 10 seconds and count the drips, then multiply by 6 — or just estimate (one drip per second is a common, steady leak).' },
+          { name: 'Enter drips per minute', text: 'Type that number in.' },
+          { name: 'Read the waste estimate', text: 'The headline is the estimated gallons wasted per year, with the monthly and daily figures below it.' },
+          { name: 'Check it against the EPA’s own household average', text: 'The chart compares your estimate to the EPA’s published figure for the average household’s total yearly leak losses.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Gallons wasted scale directly with how often the faucet drips, using the EPA’s own published benchmark rate.',
+        expression: 'gallonsPerYear = dripsPerMinute × 50 gal/year per drip/min\ngallonsPerMonth = gallonsPerYear ÷ 12\ngallonsPerDay = gallonsPerYear ÷ 365',
+        terms: [
+          {
+            symbol: '50 gal/year per drip/min',
+            meaning: 'Derived from EPA WaterSense’s own published figure: a faucet dripping once per second (60 drips/minute) wastes more than 3,000 gallons a year, so 3,000 ÷ 60 = 50 gallons per year per drip per minute.'
+          }
+        ],
+        note: 'EPA’s own figure is stated as "more than" 3,000 gallons a year for a one-drip-per-second leak, so this is a conservative, round-number estimate, not an exact lab measurement of your specific faucet.'
+      },
+      workedExample: {
+        intro: 'A faucet dripping 90 times a minute (about one and a half drops every second).',
+        rows: [
+          { label: 'Gallons per year (90 × 50)', value: '4,500 gal' },
+          { label: 'Gallons per month (4,500 ÷ 12)', value: '375.0 gal' },
+          { label: 'Gallons per day (4,500 ÷ 365)', value: '12.33 gal' },
+          { label: 'Share of EPA’s average household leak total (4,500 ÷ 9,300)', value: '≈48.4%' }
+        ],
+        result: 'About 4,500 gallons wasted a year',
+        explanation:
+          'At exactly one drip per second (60 drips/minute), the same formula gives 3,000 gallons a year — matching EPA’s own published figure for that rate exactly, and at the showerhead’s stated 10 drips/minute it gives 500 gallons a year, also matching EPA’s own independently published showerhead figure.'
+      },
+      watchOut: [
+        {
+          title: 'EPA’s figure is a rounded "more than" estimate',
+          body: 'The published benchmark is stated as "more than 3,000 gallons per year" for a one-drip-per-second leak, so treat this calculator’s results as a reasonable planning estimate, not a precise laboratory measurement of your specific faucet or washer.'
+        },
+        {
+          title: 'Counting drips accurately matters',
+          body: 'A faster leak (a thin, steady stream rather than distinct drops) wastes water far faster than this drip-rate model can capture — if the leak has become a trickle, it is already well past what counting drips per minute can usefully estimate.'
+        },
+        {
+          title: 'Most of a household’s leaks aren’t a single dripping faucet',
+          body: 'EPA’s own figure for the average household’s total yearly leak loss (more than 9,300 gallons) usually comes from several sources at once — running toilets, worn valves, and irrigation leaks, not just a single faucet. Fixing one dripping tap addresses only part of a typical household’s leak total.'
+        },
+        {
+          title: 'Fixing leaks is usually simple and saves on the water bill',
+          body: 'EPA’s own guidance notes that fixing easily corrected household water leaks can save homeowners approximately 10 percent on their water bills — a worn washer or O-ring, the most common cause of a dripping faucet, is typically an inexpensive repair.'
+        }
+      ],
+      references: [{ label: 'U.S. EPA WaterSense, "Fix a Leak Week"', url: 'https://www.epa.gov/watersense/fix-leak-week' }]
+    },
+    inputs: [{ id: 'dripsPerMinute', label: 'Drips per minute', type: 'number', placeholder: '90', defaultValue: 90, step: 1, min: 0 }],
+    breakdown: {
+      headline: 'gallonsPerYear',
+      headlineLabel: 'Estimated water wasted (per year)',
+      outputs: [
+        { id: 'gallonsPerYear', label: 'Per year', dimension: 'volume', unit: 'gal' },
+        { id: 'gallonsPerMonth', label: 'Per month', dimension: 'volume', unit: 'gal' },
+        { id: 'gallonsPerDay', label: 'Per day', dimension: 'volume', unit: 'gal' },
+        { id: 'shareOfAvgHouseholdLeaksPct', label: 'Share of the average household’s total leak loss', format: 'percent' }
+      ],
+      groups: [{ title: 'Faucet', inputs: ['dripsPerMinute'] }],
+      derive: () => ({ avgHouseholdLeaksGal: AVG_HOUSEHOLD_LEAKS_GAL_PER_YEAR }),
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'gallonsPerYear', label: 'This faucet' },
+          { from: 'avgHouseholdLeaksGal', label: 'Average household (all leaks)' }
+        ],
+        title: 'Gallons wasted per year',
+        highlight: 0
+      }
+    },
+    seo: {
+      title: 'Drip Faucet Waste Calculator – Water Wasted',
+      description: 'Free drip faucet calculator. Estimate how much water a dripping faucet wastes per year using the EPA WaterSense Fix a Leak Week published drip-rate figures.',
+      faq: [
+        {
+          question: 'How much water does a dripping faucet waste per year?',
+          answer:
+            'About 50 gallons a year for every drip per minute, based on the EPA WaterSense figure that a faucet dripping once per second (60 drips/minute) wastes more than 3,000 gallons a year. A faucet dripping 90 times a minute wastes about 4,500 gallons a year.'
+        },
+        {
+          question: 'How many drips per minute is "one drip per second"?',
+          answer: '60 drips per minute — the EPA’s own published benchmark rate, which it says wastes more than 3,000 gallons of water a year.'
+        },
+        {
+          question: 'How much water does a leaking showerhead waste?',
+          answer: 'EPA WaterSense separately publishes that a showerhead leaking at 10 drips a minute wastes more than 500 gallons a year — the same 50-gallons-per-drip-per-minute rate as the faucet figure, confirming the two independent EPA statistics agree.'
+        },
+        {
+          question: 'How much does the average household lose to leaks?',
+          answer: 'More than 9,300 gallons a year, per EPA WaterSense — often from several sources (running toilets, worn valves, irrigation) rather than one dripping faucet alone.'
+        },
+        {
+          question: 'Will fixing a dripping faucet save money?',
+          answer: 'Likely yes — EPA notes that fixing easily corrected household leaks can save about 10 percent on a typical water bill, and a worn washer or O-ring (the usual cause of a dripping faucet) is a cheap repair.'
+        },
+        {
+          question: 'Is this an exact measurement of my faucet’s waste?',
+          answer: 'No — EPA’s own benchmark is stated as "more than" 3,000 gallons a year for a one-drip-per-second leak, so this is a reasonable planning estimate, not a precise lab reading.'
+        }
+      ]
+    },
+    compute(values) {
+      const gallonsPerYear = values.dripsPerMinute * DRIP_GAL_PER_YEAR_PER_DRIP_PER_MINUTE;
+      const gallonsPerMonth = gallonsPerYear / 12;
+      const gallonsPerDay = gallonsPerYear / 365;
+      const shareOfAvgHouseholdLeaksPct = (gallonsPerYear / AVG_HOUSEHOLD_LEAKS_GAL_PER_YEAR) * 100;
+      return { gallonsPerYear, gallonsPerMonth, gallonsPerDay, shareOfAvgHouseholdLeaksPct };
+    }
+  },
+  {
+    id: 'recycling-rate-calculator',
+    category: 'ecology',
+    glyph: '%',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'recycling rate calculator',
+      'household recycling rate calculator',
+      'waste diversion rate calculator',
+      'how much of my trash is recycled',
+      'municipal solid waste recycling calculator'
+    ],
+    related: ['plastic-footprint-calculator', 'carbon-footprint-calculator', 'water-footprint-calculator', 'drip-faucet-waste-calculator'],
+    title: 'Recycling Rate Calculator',
+    description:
+      'Estimate your household’s yearly waste and how much is diverted through recycling and composting versus landfilled or combusted, using the EPA’s published 2018 national municipal solid waste statistics.',
+    example:
+      'A household of 4 generates about 7,154 lb of waste a year; at the EPA’s 2018 national recycling-and-composting rate of 32.1%, about 2,296.4 lb is diverted and 4,857.6 lb is landfilled or combusted.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'How much of a household’s waste actually gets diverted?',
+        paragraphs: [
+          'The U.S. Environmental Protection Agency tracks municipal solid waste (MSW) nationally every year. In 2018, the most recent year with a complete published breakdown, the country generated 292.4 million tons of MSW in total — an average of 4.9 pounds per person per day. Of that total, the EPA reports that about 69 million tons (23.6%) were recycled and about 25 million tons (8.5%) were composted, for a combined "recycling and composting rate" of 32.1%. The rest was either combusted with energy recovery (nearly 35 million tons, 11.8%) or landfilled (more than 146 million tons, 50%).',
+          'This calculator scales the EPA’s own national per-person generation rate by your household size to estimate your household’s total yearly waste, then applies a recycling-and-composting rate — defaulting to the national 32.1% average, or your own estimate if you know it — to split that total into a diverted share and a landfilled-or-combusted share.',
+          'It is a genuinely different question from how much plastic specifically you throw away: this covers the whole waste stream — paper, food scraps, yard trimmings, metal, glass, and plastic together — at whatever combined diversion rate you enter, rather than one material’s own recycling rate.'
+        ]
+      },
+      howTo: {
+        intro: 'Set your household size and, if you know it, your own recycling-and-composting rate; the yearly totals fill in instantly.',
+        steps: [
+          { name: 'Enter household size', text: 'The number of people the estimate should cover.' },
+          { name: 'Set a recycling-and-composting rate', text: 'Leave it at the EPA’s 2018 national average, 32.1%, or enter your own municipality’s published rate if you know it.' },
+          { name: 'Read the total', text: 'The headline is your household’s estimated yearly waste, in pounds.' },
+          { name: 'Check the diverted vs. not-diverted split', text: 'The chart shows how much is likely recycled or composted versus landfilled or combusted, based on the rate you set.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'A household’s total waste is the EPA’s national per-person rate times household size; the diversion split follows from the recycling-and-composting rate.',
+        expression: 'annual (lb/year) = 4.9 lb/person/day × 365 × household size\ndiverted = annual × rate\nnotDiverted = annual − diverted',
+        terms: [
+          { symbol: '4.9 lb/person/day', meaning: 'The EPA’s published 2018 national total municipal solid waste generation rate.' },
+          { symbol: 'rate', meaning: 'The share recycled plus composted; the EPA’s own 2018 national average is 32.1%, adjustable to your own municipality’s rate.' }
+        ],
+        note: 'A national-average estimate, not a measurement of your own household’s actual waste or your specific municipality’s real diversion rate, which can be well above or below the national figure.'
+      },
+      workedExample: {
+        intro: 'A household of 4 people, at the EPA’s 2018 national averages.',
+        rows: [
+          { label: 'Per person per year (4.9 × 365)', value: '1,788.5 lb' },
+          { label: 'Household of 4 per year (× 4)', value: '7,154.0 lb' },
+          { label: 'Diverted (7,154 × 32.1%)', value: '2,296.4 lb' },
+          { label: 'Not diverted (7,154 − 2,296.4)', value: '4,857.6 lb' }
+        ],
+        result: 'About 7,154 lb of waste a year, 2,296.4 lb of it diverted',
+        explanation:
+          'Raising the rate to a more ambitious 50% (common for well-run curbside programs) would divert 3,577.0 lb instead — 1,280.6 lb more than at the national 32.1% average, with the same 7,154 lb household total.'
+      },
+      watchOut: [
+        {
+          title: 'This is total waste, not just recyclables',
+          body: 'The 4.9 lb/person/day figure is the EPA’s total municipal solid waste rate — food scraps, yard trimmings, paper, metal, glass, and plastic combined — not a figure for recyclable material alone.'
+        },
+        {
+          title: '32.1% is a national blend of two different processes',
+          body: 'The EPA’s combined rate covers recycling (23.6% in 2018) and composting (8.5%) together. A municipality without curbside composting will usually divert less than 32.1% even with strong recycling participation.'
+        },
+        {
+          title: 'Local rates vary widely from the national average',
+          body: 'Some cities and states report diversion rates well above 32.1%, often due to mandatory composting or strong curbside recycling programs; others fall well below it. Use your own municipality’s published figure if you know it.'
+        },
+        {
+          title: 'Based on the most recent complete EPA dataset (2018)',
+          body: 'The EPA’s national MSW statistics are published with a lag; 2018 is the most recent year with a complete, detailed breakdown available at the time this calculator was built.'
+        }
+      ],
+      references: [
+        { label: 'U.S. EPA, "National Overview: Facts and Figures on Materials, Waste and Recycling"', url: 'https://www.epa.gov/facts-and-figures-about-materials-waste-and-recycling/national-overview-facts-and-figures-materials' }
+      ]
+    },
+    inputs: [
+      { id: 'householdSize', label: 'Household size', type: 'number', placeholder: '4', defaultValue: 4, step: 1, min: 1 },
+      { id: 'recyclingRatePct', label: 'Recycling & composting rate', type: 'percent', placeholder: '32.1', defaultValue: RECYCLING_NATIONAL_RATE_PCT_2018, step: 0.1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'annualLb',
+      headlineLabel: 'Household’s waste (per year)',
+      outputs: [
+        { id: 'annualLb', label: 'Household total (per year)', dimension: 'mass', unit: 'lb', alsoIn: ['kg'] },
+        { id: 'divertedLb', label: 'Recycled or composted', dimension: 'mass', unit: 'lb' },
+        { id: 'notDivertedLb', label: 'Landfilled or combusted', dimension: 'mass', unit: 'lb' }
+      ],
+      groups: [{ title: 'Household', inputs: ['householdSize', 'recyclingRatePct'] }],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'divertedLb', label: 'Recycled/composted' },
+          { from: 'notDivertedLb', label: 'Landfilled/combusted' }
+        ],
+        center: 'annualLb',
+        centerSub: 'lb/year'
+      }
+    },
+    seo: {
+      title: 'Recycling Rate Calculator – Household Waste Diverted',
+      description: 'Free recycling rate calculator. Estimate your household’s yearly waste and how much is recycled or composted using EPA’s 2018 national MSW statistics.',
+      faq: [
+        {
+          question: 'What is the US national recycling rate?',
+          answer: 'The EPA’s combined recycling-and-composting rate for 2018 was 32.1% — 23.6% recycled and 8.5% composted — of the 292.4 million tons of municipal solid waste generated that year.'
+        },
+        {
+          question: 'How much waste does a household of 4 generate per year?',
+          answer: 'About 7,154 lb a year at the EPA’s 2018 national average of 4.9 lb per person per day (4.9 × 365 × 4).'
+        },
+        {
+          question: 'How much of my waste actually gets recycled or composted?',
+          answer: 'At the national 32.1% average, a household of 4 generating 7,154 lb a year would see about 2,296.4 lb diverted and 4,857.6 lb landfilled or combusted — adjust the rate to your own municipality’s published figure for a more accurate estimate.'
+        },
+        {
+          question: 'How much difference does a higher recycling rate make?',
+          answer: 'Raising the rate from the 32.1% national average to 50% for the same household of 4 would divert 3,577.0 lb instead of 2,296.4 lb — 1,280.6 lb more diverted from landfills or combustion each year.'
+        },
+        {
+          question: 'Is this just about plastic?',
+          answer: 'No — this covers the whole municipal solid waste stream (paper, food scraps, yard trimmings, metal, glass, and plastic together). Use the Plastic Footprint Calculator for a plastic-specific estimate.'
+        },
+        {
+          question: 'Why 2018 data specifically?',
+          answer: 'It is the most recent year with the EPA’s full, detailed municipal solid waste breakdown available at the time this calculator was built.'
+        }
+      ]
+    },
+    compute(values) {
+      const annualLb = RECYCLING_TOTAL_MSW_LB_PER_PERSON_DAY_2018 * values.householdSize * 365;
+      const divertedLb = annualLb * (values.recyclingRatePct / 100);
+      const notDivertedLb = annualLb - divertedLb;
+      return { annualLb, divertedLb, notDivertedLb };
     }
   }
 ];

@@ -53,6 +53,7 @@ export type UnitDimension =
   | 'molarEntropy'
   | 'molality'
   | 'massConcentration'
+  | 'cellDensity'
   | 'pH'
   | 'data'
   | 'fuelEconomy'
@@ -550,12 +551,41 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
   // as 1 mg per liter of solution — so ppm and mg/L share a factor here, the same way `momentum`'s
   // kg·m/s and N·s share one (two conventional names for one identical number), not an independent
   // unit conversion. See content.watchOut on solution-concentration-calculator for the condition.
+  // 'ng/uL' and 'ug/mL' are both numerically identical to the mg/L base (1 ng/µL = 1e-9 g / 1e-6 L =
+  // 1e-3 g/L = 1 mg/L, and likewise 1 µg/mL = 1e-3 g/L = 1 mg/L) — the conventional molecular-biology
+  // units for spectrophotometric nucleic-acid/protein concentration (dna-concentration-calculator,
+  // protein-concentration-calculator), appended as their own labels rather than reusing mg/L's text
+  // so the unit menu reads naturally for that lab context. 'mg/mL' = 1 g/L exactly, the practical
+  // typing unit for whole-protein concentrations (roughly 0.1-10 mg/mL for a purified sample).
   massConcentration: [
     { id: 'mg/L', label: 'mg/L', factor: 1 },
     { id: 'ppm', label: 'ppm (≈ mg/L, dilute aqueous)', factor: 1 },
     { id: 'g/L', label: 'g/L', factor: 1000 },
     { id: 'ug/L', label: 'µg/L', factor: 0.001 },
-    { id: 'ppb', label: 'ppb (≈ µg/L, dilute aqueous)', factor: 0.001 }
+    { id: 'ppb', label: 'ppb (≈ µg/L, dilute aqueous)', factor: 0.001 },
+    { id: 'ng/uL', label: 'ng/µL', factor: 1 },
+    { id: 'ug/mL', label: 'µg/mL', factor: 1 },
+    { id: 'mg/mL', label: 'mg/mL', factor: 1000 }
+  ],
+  // Cell (or colony) density: cell count per volume, the microbiology-lab convention for a cell
+  // suspension's concentration (cell-dilution-calculator) — a different physical quantity from
+  // `concentration` (moles per volume) even though C1V1=C2V2 has the same shape for both, which is
+  // why it is its own dimension rather than folded into `concentration`'s unit menu. Base cells/mL,
+  // factor 1, chosen (instead of an SI-coherent cells/m³) because cells/mL is how every cell-culture
+  // protocol and hemocytometer count is actually reported — C1V1=C2V2's own ratio math still works
+  // out with no stray factor as long as both volumes share one unit (same reasoning dilution-
+  // calculator's own note gives), but an actual cell-count OUTPUT (concentration × volume) needs an
+  // explicit ×1,000,000 (mL per m³) since volume's own SI base is m³, not mL — see
+  // bacterial-growth-calculator/cell-dilution-calculator's compute() for that conversion, commented
+  // there. 'CFU/mL' (colony-forming units per mL, the standard microbiology plate-count unit) is
+  // numerically the same convention as cells/mL, just a different counting method, so it shares the
+  // factor-1 base rather than getting its own factor.
+  cellDensity: [
+    { id: 'cells/mL', label: 'cells/mL', factor: 1 },
+    { id: 'CFU/mL', label: 'CFU/mL', factor: 1 },
+    { id: 'cells/uL', label: 'cells/µL', factor: 1000 },
+    { id: 'Mcells/mL', label: '×10⁶ cells/mL', factor: 1e6 },
+    { id: 'cells/L', label: 'cells/L', factor: 0.001 }
   ],
   // Unitless logarithmic scale (IUPAC Gold Book, "pH"): pH = −log₁₀[H⁺], pOH = −log₁₀[OH⁻]. The base
   // value is the pH/pOH number itself, same single-unit precedent as `decibel` and `percent`.

@@ -2783,5 +2783,181 @@ export const ecologyCalculators: CalculatorConfig[] = [
       const categoryCode = aqiCategoryCode(aqi);
       return { aqi, categoryCode, dominantCode, pm25Aqi, pm10Aqi, coAqi, so2Aqi, no2Aqi, o3Aqi };
     }
+  },
+  {
+    id: 'co2-breathing-emission-calculator',
+    category: 'ecology',
+    glyph: 'VCO2',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'co2 breathing calculator',
+      'how much co2 does a person exhale',
+      'human co2 production calculator',
+      'co2 exhalation calculator',
+      'co2 generation rate calculator',
+      'carbon dioxide breathing calculator'
+    ],
+    related: ['carbon-footprint-calculator', 'air-quality-index-calculator', 'calorie-calculator', 'carrying-capacity-calculator'],
+    title: 'CO2 Breathing Emission Calculator',
+    description: 'Estimate how much CO2 a person exhales per day, from body mass, age, sex, and activity level, using a peer-reviewed building-science metabolic model.',
+    example:
+      'A 70 kg, 35-year-old man doing light office work (1.5 met) exhales about 0.864 kg of CO2 a day — about 315.5 kg a year.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'How much CO2 does a person breathe out?',
+        paragraphs: [
+          'Every breath a person exhales carries carbon dioxide, produced as the body burns food for energy. Persily and de Jonge (2017), writing in the journal Indoor Air, derived a method for estimating this rate from established human-metabolism science: the same relationship ventilation engineers use to size fresh-air requirements for offices, classrooms, and homes, since indoor CO2 buildup depends directly on how much occupants generate.',
+          'The method starts from basal metabolic rate (BMR) — the energy a body uses at complete rest, which depends mainly on body mass, age, and sex. The paper uses the widely cited Schofield equations to estimate BMR from those three inputs. It then scales BMR by a physical activity level, M, in "met" units (1 met is the BMR itself; sitting office work is about 1.5 met, brisk walking noticeably more), to get the person’s actual energy use at that activity.',
+          'Converting that energy use into a rate of CO2 production uses the respiratory quotient (RQ) — the ratio of CO2 produced to oxygen consumed, which depends on diet. The paper settles on 0.85 as a reasonable single value based on typical U.S. macronutrient intake, noting that activity level affects the result far more than RQ does. The result is a volumetric CO2 generation rate in liters per second, which this calculator converts into a daily and yearly mass of CO2 using the paper’s own stated density figure.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter a person’s sex, age, body mass, and activity level; their estimated CO2 output per day and year appear instantly.',
+        steps: [
+          { name: 'Choose sex', text: 'Male or female — the Schofield BMR equations use slightly different coefficients for each.' },
+          { name: 'Enter age', text: 'In years. The BMR equation used depends on which age bracket this falls into.' },
+          { name: 'Enter body mass', text: 'In kilograms (or pounds, from the unit menu) — the strongest single driver of BMR.' },
+          { name: 'Choose an activity level', text: 'Pick the option closest to how the person spends most of their time, from sleeping to a brisk walk.' },
+          { name: 'Read the result', text: 'The headline is estimated CO2 output per day, in kilograms, with the yearly total and the underlying metabolic numbers below it.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Body mass, age, and sex give a basal metabolic rate; scaling it by activity level and a fixed respiratory quotient gives the CO2 generation rate.',
+        expression:
+          'BMR (MJ/day) = Schofield equation for sex and age bracket, from body mass m\nVCO2 (L/s) = BMR × M × 0.000484  (at RQ = 0.85, 101 kPa, 273 K)\nCO2 (kg/day) = VCO2 × 1.965 g/s per L/s × 86,400 s/day ÷ 1,000',
+        terms: [
+          { symbol: 'BMR', meaning: 'Basal metabolic rate, from Persily & de Jonge’s Table 1 (Schofield equations), in megajoules per day.' },
+          { symbol: 'M', meaning: 'Physical activity level, in "met" units — the ratio of actual energy use to BMR for the chosen activity.' },
+          { symbol: 'RQ', meaning: 'Respiratory quotient — the ratio of CO2 produced to O2 consumed. The paper uses a fixed 0.85, a U.S.-average-diet value.' },
+          { symbol: '1.965 g/s per L/s', meaning: 'The density the paper uses to convert a volumetric CO2 generation rate into mass, at 101 kPa and 273 K.' }
+        ],
+        note: 'This models a population average, not a specific individual — Persily and de Jonge note their method "will not generally be accurate for a single individual," whose actual rate depends on body composition, diet, and genetics as well.'
+      },
+      workedExample: {
+        intro: 'A 70 kg man, age 35, doing light office work (1.5 met).',
+        rows: [
+          { label: 'BMR (0.048 × 70 + 3.653, age 30-60 male)', value: '7.013 MJ/day' },
+          { label: 'VCO2 (7.013 × 1.5 × 0.000484)', value: '≈0.005091 L/s' },
+          { label: 'CO2 per day (0.005091 × 1.965 × 86,400 ÷ 1,000)', value: '≈0.864 kg/day' },
+          { label: 'CO2 per year (× 365)', value: '≈315.5 kg/yr' }
+        ],
+        result: '≈0.864 kg of CO2 a day, about 315.5 kg a year',
+        explanation:
+          'The paper’s own stated example — an 85 kg man in the same age bracket at the same office-work activity level — gives a BMR of 7.73 MJ/day and a VCO2 of 0.0056 L/s, both reproduced exactly by these same equations, confirming the formulas are applied the same way the paper itself does.'
+      },
+      watchOut: [
+        {
+          title: 'This estimates a group average, not your own exact output',
+          body: 'Persily and de Jonge built this method, and its underlying body-mass and activity data, to characterize groups of occupants for ventilation design, not individuals. A specific person’s real CO2 output can differ with body composition, fitness, diet, and genetics.'
+        },
+        {
+          title: 'Activity level is held constant for the whole period',
+          body: 'A real day mixes sleeping, sitting, walking, and more. This calculator applies one activity level throughout; for a more accurate daily total, estimate each activity’s hours separately and weight the results.'
+        },
+        {
+          title: 'The respiratory quotient (0.85) assumes a typical U.S. diet',
+          body: 'RQ ranges roughly from 0.7 (mostly fat oxidation) to 1.0 (mostly carbohydrate oxidation) depending on what someone eats; the paper’s single value of 0.85 is a reasonable population average, not a measurement of any one person’s actual diet.'
+        },
+        {
+          title: 'Not the same thing as a carbon footprint',
+          body: 'This is the CO2 a body produces through ordinary metabolism, the same CO2 that photosynthesis and the carbon cycle already account for — it is not comparable to Carbon Footprint Calculator’s estimate of fossil-fuel emissions from energy and travel.'
+        },
+        {
+          title: 'Based on standard conditions (101 kPa, 273 K)',
+          body: 'The paper’s own mass-conversion figure applies at sea-level pressure and 0°C; real indoor air temperature and altitude shift the gas density slightly, an adjustment this calculator does not make.'
+        }
+      ],
+      references: [
+        {
+          label: 'Persily, A. & de Jonge, L. (2017), "Carbon dioxide generation rates for building occupants," Indoor Air, 27(5), 868-879',
+          url: 'https://doi.org/10.1111/ina.12383'
+        }
+      ]
+    },
+    inputs: [
+      {
+        id: 'sex',
+        label: 'Sex',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Male' },
+          { value: 1, label: 'Female' }
+        ]
+      },
+      { id: 'ageYears', label: 'Age (years)', type: 'number', placeholder: '35', defaultValue: 35, step: 1, min: 0 },
+      { id: 'bodyMassKg', label: 'Body mass', type: 'number', placeholder: '70', defaultValue: 70, step: 1, min: 1, dimension: 'mass', unit: 'kg' },
+      {
+        id: 'activityCode',
+        label: 'Activity level',
+        type: 'number',
+        placeholder: '2',
+        defaultValue: 2,
+        step: 1,
+        min: 0,
+        options: ACTIVITY_LABELS.map((label, value) => ({ value, label }))
+      }
+    ],
+    breakdown: {
+      headline: 'co2KgPerDay',
+      headlineLabel: 'Estimated CO2 output (per day)',
+      outputs: [
+        { id: 'co2KgPerDay', label: 'CO2 per day', format: 'number' },
+        { id: 'co2KgPerYear', label: 'CO2 per year', format: 'number' },
+        { id: 'bmrMjPerDay', label: 'Basal metabolic rate (MJ/day)', format: 'significant' },
+        { id: 'vco2LPerS', label: 'CO2 generation rate (L/s)', format: 'significant' }
+      ],
+      groups: [{ title: 'Person', inputs: ['sex', 'ageYears', 'bodyMassKg', 'activityCode'] }]
+    },
+    seo: {
+      title: 'CO2 Breathing Emission Calculator – Per Person, Per Day',
+      description: 'Free CO2 breathing calculator. Estimate how much CO2 a person exhales per day and year from body mass, age, sex, and activity, using a peer-reviewed metabolic model.',
+      faq: [
+        {
+          question: 'How much CO2 does a person exhale in a day?',
+          answer:
+            'It depends on body mass, age, sex, and activity level. A 70 kg, 35-year-old man doing light office work exhales about 0.864 kg of CO2 a day (roughly 315.5 kg a year), per the Persily & de Jonge (2017) model.'
+        },
+        {
+          question: 'What formula does this use?',
+          answer:
+            'Basal metabolic rate (BMR) from the Schofield equations, scaled by an activity level (met) and a fixed respiratory quotient of 0.85, following Persily & de Jonge (2017): VCO2 (L/s) = BMR × M × 0.000484, then converted to a daily mass using the paper’s own density figure.'
+        },
+        {
+          question: 'Why does activity level matter so much?',
+          answer:
+            'Activity level (met) directly multiplies the CO2 generation rate — someone walking briskly (3.5 met) produces roughly 2.3 times the CO2 of the same person doing light office work (1.5 met), since all else in the formula stays the same.'
+        },
+        {
+          question: 'Is this the same as a carbon footprint?',
+          answer:
+            'No. This is ordinary metabolic CO2 from breathing, part of the natural carbon cycle. A carbon footprint (see Carbon Footprint Calculator) measures fossil-fuel CO2 from electricity, heating, and transportation, which is the figure that actually affects long-term atmospheric CO2.'
+        },
+        {
+          question: 'Is this accurate for one specific person?',
+          answer:
+            'Not precisely — the paper’s authors state their method is intended for groups of occupants and "will not generally be accurate for a single individual," whose body composition, diet, and genetics all shift the real number somewhat.'
+        },
+        {
+          question: 'Where is this formula actually used?',
+          answer: 'In building ventilation design and indoor air quality standards (such as ASHRAE 62.1), where the CO2 generation rate per occupant is needed to size fresh-air requirements and set demand-controlled ventilation targets.'
+        }
+      ]
+    },
+    compute(values) {
+      const sexCode = normalizeOptionCode(values.sex, 2);
+      const activityCode = normalizeOptionCode(values.activityCode, ACTIVITY_MET.length);
+      const bmrMjPerDay = schofieldBmrMjPerDay(sexCode, values.ageYears, values.bodyMassKg);
+      const met = ACTIVITY_MET[activityCode];
+      const vco2LPerS = bmrMjPerDay * met * VCO2_PER_BMR_MET;
+      const co2KgPerDay = vco2LPerS * KG_CO2_PER_DAY_PER_LPS;
+      const co2KgPerYear = co2KgPerDay * 365;
+      return { bmrMjPerDay, vco2LPerS, co2KgPerDay, co2KgPerYear };
+    }
   }
 ];

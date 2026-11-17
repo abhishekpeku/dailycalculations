@@ -264,6 +264,15 @@ whole site before writing any id.
   - All 8 numbers independently re-verified in a standalone Node scratch script (no app
     imports) before committing; `npm test` (1569 passing), lint, and `npm run build` all
     green with all 10 `creator` calculators present.
-- [ ] Batch 8 — `text` (8 new)
-- [ ] Batch 9 — `education` (9 new)
+- [ ] Batch 8 — `text` (8 new) — being built concurrently by a separate agent/worktree.
+- [ ] Batch 9 — `education` (9 new; in progress, branch `step/61-deepen-education`)
+  - [ ] `grade-calculator`
+  - [ ] `final-grade-calculator`
+  - [ ] `study-time-calculator`
+  - [ ] `test-score-to-letter-grade-calculator`
+  - [ ] `reading-speed-calculator`
+  - [ ] `class-attendance-calculator`
+  - [ ] `cumulative-gpa-calculator`
+  - [ ] `semester-credit-hours-calculator`
+  - [ ] `gpa-scale-converter`
 - [ ] STATUS.md updated with a final per-category summary

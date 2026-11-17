@@ -223,8 +223,12 @@ used" discipline as Wave 3's NIST/IUPAC citations for lab-adjacent chemistry top
         408 pages (376 calculators incl. biology's 5, 19 categories), exit code 0.
       - `biology` 0 → 5, site-wide 371 → 376.
       - No seed-list candidate skipped this batch — all 5 scoped items built as specified.
-- [ ] Batch 2 (genetics, 5)
-- [ ] Batch 2 (genetics, 5)
+- [ ] Batch 2 (genetics, 5) — **IN PROGRESS**, branch `step/48-wave-4-biology-run-2`, PR draft.
+      - [ ] `punnett-square-calculator`
+      - [ ] `dihybrid-cross-calculator`
+      - [ ] `hardy-weinberg-calculator`
+      - [ ] `allele-frequency-calculator`
+      - [ ] `dna-to-mrna-calculator`
 - [ ] Batch 3 (molecular biology lab techniques, 5)
 - [ ] Batch 4 (population biology + genetics extensions, 5)
 - [ ] Batch 5 (plant/cell biology + biochemistry, 5)

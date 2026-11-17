@@ -234,4 +234,182 @@ export const ecologyCalculators: CalculatorConfig[] = [
       return { electricityKg, naturalGasKg, gasolineKg, flightKg, totalKg };
     }
   },
+  {
+    id: 'flight-carbon-footprint-calculator',
+    category: 'ecology',
+    glyph: 'km',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'flight emissions calculator',
+      'airplane carbon footprint calculator',
+      'flying carbon footprint calculator',
+      'plane co2 calculator',
+      'air travel emissions calculator'
+    ],
+    related: ['carbon-footprint-calculator', 'travel-budget-calculator', 'jet-lag-calculator', 'meat-footprint-calculator'],
+    title: 'Flight Carbon Footprint Calculator',
+    description:
+      'Estimate the CO2e emissions of a flight from its distance, haul length (domestic, short-haul, long-haul, or international), and cabin class, using the UK government’s published 2024 aviation emissions factors.',
+    example:
+      'A 3,400-mile long-haul round trip in economy class emits about 2,189.9 kg (2.19 metric tons) of CO2e, including the added climate effect of non-CO2 emissions — about 2.9 times less than the same trip in business class.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is a flight’s carbon footprint?',
+        paragraphs: [
+          'Flying is one of the most carbon-intensive things an individual does, mile for mile, because burning jet fuel at altitude releases both CO2 and a mix of other emissions — water vapor, contrails, and nitrogen oxides — that add to its climate impact beyond CO2 alone. This calculator uses the UK Government’s published 2024 Greenhouse Gas Reporting Conversion Factors, the same figures UK organizations use to report business travel emissions, to estimate a single flight’s footprint from its distance, haul length, and cabin class.',
+          'The government publishes two versions of each factor: one that includes only the direct CO2 (plus a small amount of methane and nitrous oxide), and one that adds roughly 70% to the CO2 portion to approximate the extra warming effect of flying at altitude. It recommends organizations use the higher, "with non-CO2 effects" figure to capture the fuller climate impact, which is this calculator’s default.',
+          'Haul length matters because a flight’s total fuel burn is weighted toward takeoff and climb, which a short flight cannot spread over many miles — a domestic UK flight actually emits more CO2e per passenger-kilometer than a long-haul one, even though the long-haul flight’s total footprint is far larger simply because it covers so much more distance. Cabin class matters for a different reason: a business or first-class seat takes up more of the plane’s floor space, so it carries a proportionally larger share of the same flight’s total emissions.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your flight distance, pick the closest haul length and class, and choose whether to include non-CO2 effects.',
+        steps: [
+          { name: 'Enter the distance', text: 'Type the one-way distance, in miles or kilometers. Switch the unit from the menu if your source gives kilometers.' },
+          { name: 'Choose one-way or round trip', text: 'Pick "Round trip" to double the one-way distance, or "One-way" to leave it as entered.' },
+          { name: 'Pick the haul length and class', text: 'Choose the option closest to your flight: domestic, short-haul, or long-haul (each with an economy/business breakdown where published), or international for flights between two non-UK countries.' },
+          { name: 'Choose whether to include non-CO2 effects', text: 'Leave "Including non-CO2 effects" selected for the fuller climate-impact estimate, or switch to CO2-only to match a simpler reporting standard.' },
+          { name: 'Read the result', text: 'The headline is the total CO2e for the trip, in kilograms and metric tons.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Emissions are distance multiplied by a published factor for the chosen haul, class, and effect scope.',
+        expression: 'distance_km = distance × 1.609344 (if entered in miles)\ntrip_km = distance_km × (2 if round trip else 1)\nemissions = trip_km × factor(haul, class, effects)',
+        terms: [
+          { symbol: 'factor', meaning: 'The UK Government’s published kg CO2e per passenger-kilometer for the chosen haul length, class, and effect scope (with or without non-CO2 effects).' },
+          { symbol: 'haul', meaning: 'Domestic (within the UK), short-haul (within Europe), long-haul (outside Europe), or international (between two non-UK countries).' }
+        ],
+        note: 'Published factors are UK Government averages for reporting purposes, not a measurement of any specific airline, aircraft, or flight’s actual fuel burn.'
+      },
+      workedExample: {
+        intro: 'A round-trip long-haul flight, 3,400 miles each way, flown in economy class, including non-CO2 effects.',
+        rows: [
+          { label: 'One-way distance in km (3,400 × 1.609344)', value: '5,471.77 km' },
+          { label: 'Round-trip distance', value: '10,943.53 km' },
+          { label: 'Economy, long-haul, with non-CO2 effects factor', value: '0.20011 kg CO2e/km' },
+          { label: 'Total (10,943.53 × 0.20011)', value: '≈2,189.91 kg' }
+        ],
+        result: 'About 2,189.9 kg (2.19 metric tons) of CO2e',
+        explanation:
+          'The same round trip in business class comes to about 6,350.3 kg — 2.9 times more — because a business-class seat is weighted with a larger share of the plane’s total emissions. Using the CO2-only factor instead of the non-CO2-inclusive one gives about 1,292.7 kg, roughly 69% less, which shows how much the choice of factor can change the result.'
+      },
+      watchOut: [
+        {
+          title: 'Non-CO2 effects add roughly 70% to the CO2 figure',
+          body: 'The UK Government applies that uplift to the CO2 portion only, which is why the overall "with non-CO2 effects" total in the worked example above comes out about 69% higher than the CO2-only total, not exactly 70% — the small methane and nitrous oxide amounts in both versions don’t get the same uplift. The government’s own guidance flags real scientific uncertainty in exactly how large this effect is, even though it recommends including it.'
+        },
+        {
+          title: 'Business and first class cost far more per passenger',
+          body: 'A long-haul business-class seat carries about 2.9 times the emissions of the same flight in economy, because the factors are weighted by the floor space each seat takes up, not by the passenger’s own weight.'
+        },
+        {
+          title: 'These are UK Government averages, not your airline’s number',
+          body: 'An individual airline or aircraft’s real fuel efficiency can be better or worse than the published average. Some airlines publish their own route-specific CO2 figures at booking, which will differ from this estimate.'
+        },
+        {
+          title: 'Domestic does not mean low-emission',
+          body: 'A domestic UK flight’s factor (0.273 kg CO2e/km, with non-CO2 effects) is actually higher per kilometer than long-haul’s average (0.261 kg CO2e/km), because so much of a short flight’s fuel burn goes to takeoff and climb rather than efficient cruising.'
+        },
+        {
+          title: 'This is one leg, not a whole trip',
+          body: 'Add each leg of a multi-stop trip separately — a layover adds an extra takeoff and landing, which this single-distance calculation does not capture.'
+        }
+      ],
+      references: [
+        { label: 'UK Government, Greenhouse Gas Reporting: Conversion Factors 2024 ("Business travel – air" and "Haul definition" worksheets)', url: 'https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2024' },
+        { label: 'UK Government, 2024 Greenhouse Gas Conversion Factors: Methodology Paper', url: 'https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2024' }
+      ]
+    },
+    inputs: [
+      { id: 'distance', label: 'Flight distance (one-way)', type: 'number', placeholder: '3400', defaultValue: 3400, step: 50, min: 0, dimension: 'length', unit: 'mi' },
+      {
+        id: 'roundTrip',
+        label: 'Trip type',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'One-way' },
+          { value: 1, label: 'Round trip' }
+        ]
+      },
+      {
+        id: 'flightType',
+        label: 'Haul length & class',
+        type: 'number',
+        placeholder: '5',
+        defaultValue: 5,
+        step: 1,
+        min: 0,
+        options: FLIGHT_FACTORS.map((f, i) => ({ value: i, label: f.label }))
+      },
+      {
+        id: 'includeRF',
+        label: 'Non-CO2 effects',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'CO2 only (direct effects)' },
+          { value: 1, label: 'Including non-CO2 effects (recommended)' }
+        ]
+      }
+    ],
+    breakdown: {
+      headline: 'totalKg',
+      headlineLabel: 'Estimated flight footprint',
+      outputs: [{ id: 'totalKg', label: 'Total CO2e', dimension: 'mass', alsoIn: ['t'] }],
+      groups: [{ title: 'Flight details', inputs: ['distance', 'roundTrip', 'flightType', 'includeRF'] }]
+    },
+    seo: {
+      title: 'Flight Carbon Footprint Calculator – CO2 by Flight',
+      description: 'Free flight carbon footprint calculator. Estimate CO2e emissions from flight distance, haul length, and cabin class using UK government aviation emissions factors.',
+      faq: [
+        {
+          question: 'How much CO2 does a flight produce?',
+          answer:
+            'Multiply the round-trip distance in kilometers by a published factor for the haul length and class. A 3,400-mile long-haul round trip in economy, including non-CO2 effects, comes to about 2,189.9 kg (2.19 metric tons) of CO2e.'
+        },
+        {
+          question: 'Why does business class produce more emissions?',
+          answer:
+            'The published factors split a flight’s total emissions by the floor space each cabin class takes up, not by passenger weight. A business-class seat occupies more of the plane, so in this example it carries about 2.9 times the economy figure for the same flight.'
+        },
+        {
+          question: 'What does "including non-CO2 effects" mean?',
+          answer:
+            'Burning jet fuel at altitude releases more than CO2 — water vapor, contrails, and nitrogen oxides also affect the climate. The UK Government’s factors add roughly 70% to the CO2 figure to approximate that extra effect, and recommend reporting with it included.'
+        },
+        {
+          question: 'Is a short domestic flight actually more efficient than a long-haul one?',
+          answer:
+            'No — per kilometer, it is less efficient. The UK domestic average is about 0.273 kg CO2e/km, higher than long-haul’s 0.261 kg CO2e/km, because takeoff and climb burn a fixed amount of fuel that a short flight cannot spread over many miles. Its total footprint is smaller only because the trip itself is much shorter.'
+        },
+        {
+          question: 'What counts as "short-haul" versus "long-haul"?',
+          answer:
+            'The UK Government’s own Haul Definition table classifies flights by territory: domestic is within the UK, short-haul is within Europe, long-haul is everywhere else, and international covers flights between two non-UK countries.'
+        },
+        {
+          question: 'Does this include a connecting flight or layover?',
+          answer: 'No — each leg of a multi-stop trip has its own takeoff and landing, so add them separately rather than entering the combined distance as a single flight.'
+        }
+      ]
+    },
+    compute(values) {
+      const code = normalizeOptionCode(values.flightType, FLIGHT_FACTORS.length);
+      const includeRF = normalizeOptionCode(values.includeRF, 2) === 1;
+      const factorSet = FLIGHT_FACTORS[code];
+      const factor = includeRF ? factorSet.withRF : factorSet.withoutRF;
+      const tripMultiplier = normalizeOptionCode(values.roundTrip, 2) === 1 ? 2 : 1;
+      const tripKm = values.distance * MILE_KM * tripMultiplier;
+      const totalKg = tripKm * factor;
+      return { totalKg };
+    }
+  },
 ];

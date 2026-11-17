@@ -181,23 +181,31 @@ discipline as every prior wave — ship fewer than 5 rather than pad, if good ca
       this file's own expected totals exactly. `ecology` is now 5/~25 — batches 2-5 may now run in
       parallel with each other (category-opening work, which had to be sequential, is complete).
 - [ ] Batch 2 (population + biodiversity ecology, 5) — running in parallel on another branch.
-- [ ] Batch 3 (sustainable living / resource use, 5) — **IN PROGRESS**, branch
-      `step/49-wave-4-ecology-run-3`, draft PR opening now. Picks: `car-vs-bike-calculator`,
-      `tree-benefits-calculator`, `books-vs-ebooks-calculator`, `drip-faucet-waste-calculator` (chosen
-      over `water-demand-calculator` — direct-tap-leak framing is genuinely distinct from
-      `water-footprint-calculator`'s direct+virtual national-average framing), `recycling-rate-calculator`
-      (chosen over `composting-impact-calculator` — a whole-waste-stream diversion-rate calculator,
-      genuinely distinct from `plastic-footprint-calculator`'s plastic-only framing). Sources fetched
+- [x] Batch 3 (sustainable living / resource use, 5) — **DONE 2026-11-17**, branch
+      `step/49-wave-4-ecology-run-3`, PR #123 (marked ready for review). Added:
+      `car-vs-bike-calculator`, `tree-benefits-calculator`, `books-vs-ebooks-calculator`,
+      `drip-faucet-waste-calculator` (chosen over `water-demand-calculator` — a direct-tap-leak
+      framing, genuinely distinct from `water-footprint-calculator`'s direct+virtual
+      national-average framing), `recycling-rate-calculator` (chosen over
+      `composting-impact-calculator` — a whole-waste-stream diversion-rate calculator, genuinely
+      distinct from `plastic-footprint-calculator`'s plastic-only framing). Sources fetched
       directly: EPA GHG Equivalencies Calculator (gasoline factor, reused from batch 1; urban-tree
-      annual CO2 sequestration factor, McPherson et al. 2016 USDA Forest Service); Kozak (2003),
-      "Printed Scholarly Books and E-book Reading Devices" (University of Michigan Center for
-      Sustainable Systems, Report CSS03-04) — read in full via its PDF, global-warming-potential
-      results by life-cycle stage (Tables 6-6/6-7); EPA WaterSense "Fix a Leak Week" page (drip-rate
-      and average-household-leak statistics); EPA National Overview: Facts and Figures on Materials,
-      Waste and Recycling (2018 national MSW recycling+composting rate, reused total-MSW-per-person
-      figure from batch 1). All numbers independently re-verified in a standalone Node scratch script.
-      No new `lib/units.ts` dimensions needed (mass/volume/length/currency/count/percent/fuelEconomy
-      all reused).
+      annual CO2 sequestration factor, citing McPherson et al. 2016 USDA Forest Service); Kozak
+      (2003), "Printed Scholarly Books and E-book Reading Devices" (University of Michigan Center
+      for Sustainable Systems, Report CSS03-04) — fetched and read in full as the published PDF,
+      global-warming-potential results by life-cycle stage (Tables 6-6/6-7); EPA WaterSense "Fix a
+      Leak Week" page (drip-rate and average-household-leak statistics — the faucet and showerhead
+      figures independently imply the same 50-gal/year-per-drip-per-minute rate, used as a
+      cross-check); EPA National Overview: Facts and Figures on Materials, Waste and Recycling
+      (2018 national MSW recycling+composting rate, 32.1%, reusing batch 1's total-MSW-per-person
+      figure). The books-vs-ebooks model reproduces Kozak's own published 40-book totals exactly
+      when plugged back in, confirming the per-book/per-device figures were transcribed correctly;
+      its break-even point works out to about 5 books. All numbers independently re-verified in a
+      standalone Node scratch script (no app imports). No new `lib/units.ts` dimensions needed
+      (mass/volume/length/currency/count/percent/fuelEconomy all reused). `npm test` 1539/1539
+      (snapshots added for the 5 new ids, additive-only diff), lint clean, `npm run build` 442
+      routes. `ecology` is now 10/~25 from this branch's own point of view — batch 2's parallel
+      additions on another branch will need reconciling at merge time.
 - [ ] Batch 4 (environmental health + remaining population ecology, 5)
 - [ ] Batch 5 (round out to ~25, 5)
 - [ ] Visual-QA spot-check (once the site crosses ~420 calculators) — site is at 404 after batch 1,

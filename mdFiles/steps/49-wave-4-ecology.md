@@ -180,7 +180,47 @@ discipline as every prior wave — ship fewer than 5 rather than pad, if good ca
       needed. `npm test` 1534/1534, lint clean, `npm run build` 404/404 pages, 20 categories — matches
       this file's own expected totals exactly. `ecology` is now 5/~25 — batches 2-5 may now run in
       parallel with each other (category-opening work, which had to be sequential, is complete).
-- [ ] Batch 2 (population + biodiversity ecology, 5)
+- [x] Batch 2 (population + biodiversity ecology, 5) — **DONE 2026-11-17**, branch
+      `step/49-wave-4-ecology-run-2`, PR #124 (ready for review). This was a re-run — a prior
+      attempt died from a weekly API rate limit before making any commits, so it restarted fresh
+      with no partial state to resume from. Added:
+      - [x] `carrying-capacity-calculator` — logistic growth model. OpenStax Biology 2e §45.3 gives
+            dN/dT = r_max × N × (K − N)/K directly (fetched and quoted); dividing by N turns it into
+            a 4-variable per-capita-rate solver (population, carrying capacity, max growth rate,
+            realized growth rate), all four solvable in closed form with no quadratic ambiguity.
+            Cross-linked to and explicitly distinguished from biology's `population-growth-calculator`
+            in content (unconstrained exponential vs. capped logistic growth).
+      - [x] `shannon-diversity-index-calculator` — H′ = −Σ(pᵢ ln pᵢ). **Correction to this step
+            file's own assumption**: OpenStax Biology 2e's community-ecology section (§45.6,
+            directly fetched) does *not* actually contain the Shannon or Simpson formulas — only the
+            richness/relative-abundance/evenness framing. Cited OpenStax for that framing and
+            Shannon (1948, Bell System Technical Journal) directly for the formula itself.
+      - [x] `population-density-calculator` — individuals per km²/hectare/m², citing OpenStax §45.1's
+            population size/density definitions. Grepped site-wide first; not already covered under
+            a different framing in `measurements` or `math`.
+      - [x] `simpson-diversity-index-calculator` — chose Simpson's index over species-richness (per
+            the step's own "build agent's call"), since richness alone is too thin for its own page
+            and is already surfaced as a secondary output on the Shannon page. Cited Simpson (1949,
+            Nature) directly for the count-based λ = Σnᵢ(nᵢ−1)/[N(N−1)] formula, reporting 1 − λ as
+            the headline. Content explicitly states how it differs from Shannon's (dominance-weighted
+            vs. log-weighted).
+      - [x] `lotka-volterra-calculator` — scoped to the model's closed-form, non-trivial equilibrium
+            only (x* = γ/δ, y* = α/β), per this step's own scope warning and D17's honest-skip
+            discipline; the full coupled-ODE time series has no closed form and was not attempted.
+            Cited Lotka (1925) and Volterra (1926) directly (via their Wikipedia-documented original
+            titles/years, since the century-old originals have no stable modern URL). Content
+            explicitly flags that this equilibrium is a neutrally-stable center, not an attractor —
+            real populations away from it cycle rather than converge — so the result isn't
+            mis-read as a forecast.
+
+      Zero new `lib/units.ts` dimensions (reused `count`, `percent`, `rateConstant`, `area`). Every
+      number independently re-verified in a standalone Node scratch script, including an exact
+      mirror of each `compute()`/`solve` function, before writing any content. `npm test` 1542/1542
+      (additive snapshot diff; 2 new `KNOWN_NON_FINITE` entries for `carrying-capacity-calculator`
+      and `simpson-diversity-index-calculator`, both genuine 0/0 edge cases at their inputs' own
+      mins), lint clean, `npm run build` succeeded (442 paths generated). **`ecology` 5 → 10 from
+      this branch's own point of view** — a parallel batch 3 agent is also appending to the same
+      `ecology.ts`/`calculatorOrder`, so this count needs reconciling with that PR at merge time.
 - [ ] Batch 3 (sustainable living / resource use, 5)
 - [ ] Batch 4 (environmental health + remaining population ecology, 5)
 - [ ] Batch 5 (round out to ~25, 5)

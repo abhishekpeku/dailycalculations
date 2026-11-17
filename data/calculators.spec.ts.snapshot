@@ -1814,6 +1814,41 @@ exports[`compute() snapshots > carpet-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > carrying-capacity-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "population": 600,
+      "carryingCapacity": 1000,
+      "maxGrowthRate": 0.08
+    },
+    "outputs": {
+      "realizedGrowthRate": 0.032
+    }
+  },
+  "typical": {
+    "inputs": {
+      "population": 900,
+      "carryingCapacity": 1500,
+      "maxGrowthRate": 0.12
+    },
+    "outputs": {
+      "realizedGrowthRate": 0.048
+    }
+  },
+  "edge": {
+    "inputs": {
+      "population": 0,
+      "carryingCapacity": 0,
+      "maxGrowthRate": 0
+    },
+    "outputs": {
+      "realizedGrowthRate": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > cashback-calculator 1`] = `
 {
   "default": {
@@ -8451,6 +8486,47 @@ exports[`compute() snapshots > long-division-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > lotka-volterra-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "alpha": 0.6,
+      "beta": 0.02,
+      "gamma": 0.4,
+      "delta": 0.01
+    },
+    "outputs": {
+      "preyEquilibrium": 40,
+      "predatorEquilibrium": 30
+    }
+  },
+  "typical": {
+    "inputs": {
+      "alpha": 0.9,
+      "beta": 0.03,
+      "gamma": 0.6,
+      "delta": 0.015
+    },
+    "outputs": {
+      "preyEquilibrium": 40,
+      "predatorEquilibrium": 30
+    }
+  },
+  "edge": {
+    "inputs": {
+      "alpha": 0.0001,
+      "beta": 0.0001,
+      "gamma": 0.0001,
+      "delta": 0.0001
+    },
+    "outputs": {
+      "preyEquilibrium": 1,
+      "predatorEquilibrium": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > loyalty-points-value-calculator 1`] = `
 {
   "default": {
@@ -11751,6 +11827,44 @@ exports[`compute() snapshots > pool-volume-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > population-density-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "population": 600,
+      "area": 50
+    },
+    "outputs": {
+      "densityPerKm2": 12,
+      "densityPerHectare": 0.12,
+      "densityPerM2": 0.000012
+    }
+  },
+  "typical": {
+    "inputs": {
+      "population": 900,
+      "area": 75
+    },
+    "outputs": {
+      "densityPerKm2": 12,
+      "densityPerHectare": 0.12,
+      "densityPerM2": 0.000012
+    }
+  },
+  "edge": {
+    "inputs": {
+      "population": 0,
+      "area": 0.000001
+    },
+    "outputs": {
+      "densityPerKm2": 0,
+      "densityPerHectare": 0,
+      "densityPerM2": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > population-growth-calculator 1`] = `
 {
   "default": {
@@ -14167,6 +14281,56 @@ exports[`compute() snapshots > severance-pay-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > shannon-diversity-index-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "speciesACount": 40,
+      "speciesBCount": 30,
+      "speciesCCount": 20,
+      "speciesDCount": 8,
+      "speciesECount": 2
+    },
+    "outputs": {
+      "shannonIndex": 1.329894468,
+      "richness": 5,
+      "totalIndividuals": 100,
+      "evennessPct": 82.63098924
+    }
+  },
+  "typical": {
+    "inputs": {
+      "speciesACount": 60,
+      "speciesBCount": 45,
+      "speciesCCount": 30,
+      "speciesDCount": 12,
+      "speciesECount": 3
+    },
+    "outputs": {
+      "shannonIndex": 1.329894468,
+      "richness": 5,
+      "totalIndividuals": 150,
+      "evennessPct": 82.63098924
+    }
+  },
+  "edge": {
+    "inputs": {
+      "speciesACount": 0,
+      "speciesBCount": 0,
+      "speciesCCount": 0,
+      "speciesDCount": 0,
+      "speciesECount": 0
+    },
+    "outputs": {
+      "shannonIndex": 0,
+      "richness": 0,
+      "totalIndividuals": 0,
+      "evennessPct": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > shoe-size-converter 1`] = `
 {
   "default": {
@@ -14279,6 +14443,56 @@ exports[`compute() snapshots > simple-interest-calculator 1`] = `
     "outputs": {
       "interest": 0,
       "totalValue": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > simpson-diversity-index-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "speciesACount": 40,
+      "speciesBCount": 30,
+      "speciesCCount": 20,
+      "speciesDCount": 8,
+      "speciesECount": 2
+    },
+    "outputs": {
+      "simpsonDiversity": 0.7103030303,
+      "lambda": 0.2896969697,
+      "richness": 5,
+      "totalIndividuals": 100
+    }
+  },
+  "typical": {
+    "inputs": {
+      "speciesACount": 60,
+      "speciesBCount": 45,
+      "speciesCCount": 30,
+      "speciesDCount": 12,
+      "speciesECount": 3
+    },
+    "outputs": {
+      "simpsonDiversity": 0.7079194631,
+      "lambda": 0.2920805369,
+      "richness": 5,
+      "totalIndividuals": 150
+    }
+  },
+  "edge": {
+    "inputs": {
+      "speciesACount": 0,
+      "speciesBCount": 0,
+      "speciesCCount": 0,
+      "speciesDCount": 0,
+      "speciesECount": 0
+    },
+    "outputs": {
+      "simpsonDiversity": "NaN",
+      "lambda": "NaN",
+      "richness": 0,
+      "totalIndividuals": 0
     }
   }
 }

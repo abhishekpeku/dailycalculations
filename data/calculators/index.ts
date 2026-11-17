@@ -453,7 +453,12 @@ export const calculatorOrder: string[] = [
   'flight-carbon-footprint-calculator',
   'water-footprint-calculator',
   'plastic-footprint-calculator',
-  'meat-footprint-calculator'
+  'meat-footprint-calculator',
+  'carrying-capacity-calculator',
+  'shannon-diversity-index-calculator',
+  'population-density-calculator',
+  'simpson-diversity-index-calculator',
+  'lotka-volterra-calculator'
 ];
 
 const rank = (id: string) => {

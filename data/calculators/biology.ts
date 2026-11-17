@@ -1,4 +1,13 @@
 import type { CalculatorConfig } from './types.ts';
+import {
+  RNA_BASE_OPTIONS,
+  findCodon,
+  degeneracy,
+  AMINO_ACID_NAME_LABELS,
+  AMINO_ACID_ABBREVIATION_LABELS,
+  AMINO_ACID_LETTER_LABELS,
+  CODON_ROLE_LABELS
+} from '../../lib/geneticCode.ts';
 import { LAB_REAGENTS } from '../../lib/labReagents.ts';
 import { AMINO_ACIDS, proteinMolecularWeight } from '../../lib/aminoAcids.ts';
 
@@ -1750,6 +1759,460 @@ export const biologyCalculators: CalculatorConfig[] = [
     },
     compute(values) {
       return { logReduction: Math.log10(values.initialCount / values.finalCount) };
+    }
+  },
+  {
+    id: 'population-growth-calculator',
+    category: 'biology',
+    glyph: 'ert',
+    updatedAt: '2026-11-17',
+    aliases: ['population growth calculator', 'exponential population growth calculator', 'population growth rate calculator', 'intrinsic rate of increase calculator', 'continuous population growth calculator', 'n = n0 e^rt calculator'],
+    related: ['bacterial-growth-calculator', 'doubling-time-calculator', 'exponent-calculator', 'logarithm-calculator'],
+    title: 'Population Growth Calculator (N = N₀ × e^(rt))',
+    description: 'Solve the continuous exponential population growth equation, N = N₀ × e^(rt), for the population, starting size, growth rate, or elapsed time.',
+    example: 'A population of 500 animals growing at an intrinsic rate of 5% per year reaches about 824 after 10 years (N = 500 × e^(0.05 × 10)).',
+    solver: {
+      defaultTarget: 'finalPopulation',
+      variables: [
+        { id: 'initialPopulation', label: 'Starting population', symbol: 'N₀', dimension: 'count', defaultValue: 500, defaultUnit: 'count' },
+        { id: 'growthRate', label: 'Growth rate', symbol: 'r', dimension: 'rateConstant', defaultValue: 0.05, defaultUnit: 'yr-1' },
+        { id: 'elapsedTime', label: 'Elapsed time', symbol: 't', dimension: 'time', defaultValue: 10, defaultUnit: 'yr' },
+        { id: 'finalPopulation', label: 'Population', symbol: 'N', dimension: 'count', defaultValue: 824.3606353500641, defaultUnit: 'count' }
+      ],
+      solve: {
+        finalPopulation: ({ initialPopulation, growthRate, elapsedTime }) => initialPopulation * Math.exp(growthRate * elapsedTime),
+        initialPopulation: ({ finalPopulation, growthRate, elapsedTime }) => finalPopulation / Math.exp(growthRate * elapsedTime),
+        growthRate: ({ initialPopulation, finalPopulation, elapsedTime }) =>
+          initialPopulation <= 0 || finalPopulation <= 0 || elapsedTime === 0 ? NaN : Math.log(finalPopulation / initialPopulation) / elapsedTime,
+        elapsedTime: ({ initialPopulation, finalPopulation, growthRate }) =>
+          initialPopulation <= 0 || finalPopulation <= 0 || growthRate === 0 ? NaN : Math.log(finalPopulation / initialPopulation) / growthRate
+      },
+      outputs: [
+        { id: 'netChange', label: 'Net change (N − N₀)', dimension: 'count', compute: (si) => si.finalPopulation - si.initialPopulation },
+        { id: 'growthMultiple', label: 'Growth multiple (N ÷ N₀)', dimension: 'count', compute: (si) => (si.initialPopulation === 0 ? NaN : si.finalPopulation / si.initialPopulation) }
+      ],
+      visuals: [
+        {
+          type: 'compareBars',
+          bars: [
+            { from: 'initialPopulation', label: 'Starting population' },
+            { from: 'finalPopulation', label: 'Population now' }
+          ],
+          title: 'Population before and after growth',
+          highlight: 1
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is exponential population growth?',
+        paragraphs: [
+          'OpenStax’s Biology 2e introduces population growth from a simple starting point: "the formula we use to calculate population growth is... dN/dT = r_max N" — the change in population size over time (dN/dT) is proportional to the population size itself (N), scaled by a growth-rate term. OpenStax substitutes r (or r_max) for "the difference between birth and death rates," calling it "the intrinsic rate of increase signifying the maximum per capita growth rate under ideal conditions." The larger the population already is, the faster it adds new individuals in absolute terms, even though the per-individual rate stays constant — OpenStax’s own bacterial illustration shows this directly: a population doubling every generation adds 1,000 individuals in the first hour but "more than 16 billion" after 24 cycles.',
+          'Solving that differential equation for N as an explicit function of time gives the exponential growth equation this calculator uses: N = N₀ × e^(rt), where N₀ is the starting population, r is the (constant) growth rate, and t is elapsed time. This is the same mathematical family as `bacterial-growth-calculator`’s binary-fission formula and `doubling-time-calculator`’s growth-rate-constant conversion — in fact r here plays exactly the role µ plays on those two pages, related to a doubling (generation) time g by r = ln(2) ÷ g. What is different is the framing and the typical audience: this page is written for the general continuous-growth question biology and ecology courses ask about any population — animals, plants, or microbes — growing smoothly at a constant per-capita rate, in whatever time unit (commonly years) the question is phrased in, rather than for a microbiologist working from a measured generation time in minutes or hours.',
+          'OpenStax calls the resulting curve "a J-shaped growth curve" and notes its defining feature is "the accelerating population growth rate" — the absolute number of new individuals added keeps climbing even though the proportional rate r never changes, because that fixed proportion is being applied to an ever-larger base population.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of the starting population, the growth rate, the elapsed time, and the population; the fourth fills in automatically.',
+        steps: [
+          { name: 'Enter the starting population', text: 'N₀ — the population size at the beginning of the period being modeled.' },
+          { name: 'Enter the growth rate', text: 'r — the intrinsic (per-capita) growth rate, typically given as a percentage per year for most ecological examples.' },
+          { name: 'Enter the elapsed time', text: 't — how long the population has been (or will be) growing at that rate.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Read the result', text: 'The population appears alongside the net change and the growth multiple — how many times larger the population became over that period.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The exponential growth equation rearranges to solve for any of its four quantities.',
+        expression: 'N = N₀ × e^(rt)\nN₀ = N ÷ e^(rt)\nr = ln(N ÷ N₀) ÷ t\nt = ln(N ÷ N₀) ÷ r',
+        terms: [
+          { symbol: 'N₀', meaning: 'The starting population size.' },
+          { symbol: 'N', meaning: 'The population size after elapsed time t.' },
+          { symbol: 'r', meaning: 'The intrinsic (per-capita) growth rate — OpenStax’s "maximum per capita growth rate under ideal conditions," the proportionality constant in dN/dT = rN.' },
+          { symbol: 't', meaning: 'Elapsed time, in whatever unit r is expressed per (years, for most ecological examples).' }
+        ],
+        note: 'This models unrestricted ("ideal conditions") growth, with r held constant — see Watch out for below on why that cannot continue indefinitely in a real population.'
+      },
+      workedExample: {
+        intro: 'A population of 500 animals grows at an intrinsic rate of 5% per year. How large is the population after 10 years, assuming that rate stays constant?',
+        rows: [
+          { label: 'Starting population (N₀)', value: '500' },
+          { label: 'Growth rate (r)', value: '0.05 per year (5%)' },
+          { label: 'Elapsed time (t)', value: '10 years' },
+          { label: 'rt (0.05 × 10)', value: '0.5' },
+          { label: 'e^(rt) (e^0.5)', value: '≈ 1.648721' },
+          { label: 'Population (N = 500 × 1.648721)', value: '≈ 824.36' }
+        ],
+        result: 'N ≈ 824 after 10 years',
+        explanation: '0.05 per year times 10 years gives an exponent of 0.5. e^0.5 ≈ 1.648721, and multiplying the starting population of 500 by that factor gives about 824.36 — in practice, a whole-number population of about 824, a net increase of roughly 324 individuals, or about 1.65 times the starting size.'
+      },
+      watchOut: [
+        { title: 'No real population grows exponentially forever', body: 'OpenStax is explicit that this models growth "under ideal conditions" only. A real population eventually runs into limited food, space, or other resources, and growth slows and levels off near a carrying capacity — the logistic growth model, not the pure exponential one this calculator solves.' },
+        { title: 'r and µ are the same kind of quantity, in different conventional units', body: 'This page’s growth rate r is mathematically identical to doubling-time-calculator’s growth rate constant µ — both are the proportionality constant in dN/dt = (rate) × N. Ecology conventionally reports r per year; microbiology conventionally reports µ per second, minute, or hour. Converting the unit, not the formula, is what moves between them.' },
+        { title: 'A negative growth rate models decline, not growth', body: 'If r is negative, e^(rt) is less than 1, and the formula correctly predicts a shrinking population — the same equation works for population decline, not only growth.' },
+        { title: 'Check what time unit a published growth rate is already in', body: 'An intrinsic rate reported "per year" used as if it were "per day" (or vice versa) changes the answer by a factor of over 300 — always match r’s time unit to how t is being measured.' }
+      ],
+      references: [
+        { label: 'OpenStax, Biology 2e, §45.3 "Environmental Limits to Population Growth"', url: 'https://openstax.org/books/biology-2e/pages/45-3-environmental-limits-to-population-growth' }
+      ]
+    },
+    inputs: [
+      { id: 'initialPopulation', label: 'Starting population', type: 'number', placeholder: '500', defaultValue: 500, step: 1, min: 0 },
+      { id: 'growthRate', label: 'Growth rate r (per year)', type: 'number', placeholder: '0.05', defaultValue: 0.05, step: 0.001 },
+      { id: 'elapsedTime', label: 'Elapsed time (years)', type: 'number', placeholder: '10', defaultValue: 10, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Population Growth Calculator (N = N0 × e^rt)',
+      description: 'Free population growth calculator. Solve N = N0 × e^(rt) for population, starting size, growth rate, or time, with a worked example.',
+      faq: [
+        { question: 'What is the population growth formula?', answer: 'N = N₀ × e^(rt), where N₀ is the starting population, r is the intrinsic growth rate, and t is elapsed time. A population of 500 growing at 5% per year reaches about 824 after 10 years.' },
+        { question: 'What is the intrinsic rate of increase (r)?', answer: 'OpenStax’s Biology 2e defines it as the term substituted for "the difference between birth and death rates," representing "the maximum per capita growth rate under ideal conditions" — the proportionality constant in dN/dT = rN.' },
+        { question: 'How is this different from the bacterial growth calculator?', answer: 'They are the same underlying exponential growth, in two different conventional forms: this page uses a continuous growth rate r (e^(rt)), the form ecology typically uses for any population, while bacterial-growth-calculator uses a generation time g (2^(t/g)), the form microbiology typically uses for binary fission. They convert into each other with r = ln(2) ÷ g.' },
+        { question: 'Why does exponential growth produce a J-shaped curve?', answer: 'Because the absolute number of individuals added keeps increasing even though the proportional rate r stays fixed — a constant percentage of an ever-larger population is an ever-larger number, which is what gives the curve its accelerating, J shape.' },
+        { question: 'Can a population shrink using this same formula?', answer: 'Yes — entering a negative growth rate makes e^(rt) less than 1, correctly modeling a declining population with the same equation.' },
+        { question: 'Does exponential growth ever stop in the real world?', answer: 'Yes. OpenStax notes this model only holds "under ideal conditions" — in practice, limited resources slow growth as a population approaches its environment’s carrying capacity, which is what the separate logistic growth model accounts for.' }
+      ]
+    },
+    compute(values) {
+      return { finalPopulation: values.initialPopulation * Math.exp(values.growthRate * values.elapsedTime) };
+    }
+  },
+  {
+    id: 'hemocytometer-calculator',
+    category: 'biology',
+    glyph: '×10⁴',
+    updatedAt: '2026-11-17',
+    aliases: ['hemocytometer calculator', 'hemocytometer cell count calculator', 'cell counting chamber calculator', 'cells per ml from hemocytometer', 'neubauer chamber calculator', 'cell density from cell count calculator'],
+    related: ['cell-dilution-calculator', 'bacterial-growth-calculator', 'dna-concentration-calculator', 'dilution-calculator'],
+    title: 'Hemocytometer Calculator (Cell Count to Cells/mL)',
+    description: 'Turn a raw hemocytometer cell count into a cell density: cells/mL = average count per square × dilution factor × 10,000.',
+    example: '200 cells counted across 4 large squares, with a 2× dilution (1:1 trypan blue), gives an average of 50 cells per square and a density of 1,000,000 cells/mL.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is a hemocytometer count, and how does it become a cells/mL figure?',
+        paragraphs: [
+          'A hemocytometer (or Neubauer chamber) is a thick glass slide etched with a precise grid and a known, fixed chamber depth, used to count cells directly under a microscope. Because the volume above each grid square is known exactly, counting how many cells sit inside a given number of squares converts directly into a concentration — the whole point of the device is that a cell count automatically comes with a volume attached.',
+          'The standard large squares on a Neubauer-style hemocytometer each hold a volume of 100 nanoliters (0.1 µL). Wikipedia’s own description of the device gives the resulting formula directly: cell concentration (cells/mL) equals the number of cells counted, divided by the number of large squares counted, times the dilution factor, times 10,000. That 10,000 figure is not arbitrary — 100 nL times 10,000 equals 1,000,000 nL, which is exactly 1 mL, so the constant simply rescales a small, known chamber volume up to the standard reporting unit.',
+          'This is the step before cell-dilution-calculator, not a repeat of it: that page starts from an already-known cell density and works out how to dilute it to a target; this page is how that starting density is actually measured in the first place, straight from a raw count under the microscope.'
+        ]
+      },
+      howTo: {
+        intro: 'Count cells in several large squares of a loaded hemocytometer, note the dilution used to prepare the sample, and enter both totals.',
+        steps: [
+          { name: 'Load the hemocytometer', text: 'Mix a small volume of the cell suspension with a diluent (often trypan blue, which also distinguishes dead cells) and load it into the chamber.' },
+          { name: 'Count cells in several large squares', text: 'Count every cell in each square you examine (following a consistent rule for cells touching a boundary line), and add up the total across all the squares counted.' },
+          { name: 'Enter the total cells counted and the number of squares', text: 'The calculator divides these to get the average count per square.' },
+          { name: 'Enter the dilution factor', text: 'How many-fold the original sample was diluted before loading — 2 for a 1:1 mix with trypan blue, 1 for an undiluted sample.' },
+          { name: 'Read the cell density', text: 'The result is the concentration of the original (undiluted) sample, in cells/mL — ready to use as the input to cell-dilution-calculator if you next need to dilute it to a target density.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The hemocytometer’s fixed chamber volume turns a raw count directly into a concentration.',
+        expression: 'Average count per square = total cells counted ÷ squares counted\nCell density (cells/mL) = average count per square × dilution factor × 10,000',
+        terms: [
+          { symbol: 'Total cells counted', meaning: 'The sum of every cell counted across all the large squares examined.' },
+          { symbol: 'Squares counted', meaning: 'How many large squares the total above was counted across.' },
+          { symbol: 'Dilution factor', meaning: 'How many-fold the original sample was diluted before loading (2 for a 1:1 dilution, 1 if loaded neat).' },
+          { symbol: '10,000', meaning: 'The hemocytometer’s standard large-square volume (100 nL) rescaled to cells per mL: 100 nL × 10,000 = 1,000,000 nL = 1 mL.' }
+        ],
+        note: 'This uses the standard Neubauer large-square depth and volume. A different counting chamber with a different etched volume would need its own constant in place of 10,000.'
+      },
+      workedExample: {
+        intro: '200 cells are counted across 4 large squares of a hemocytometer, loaded with a sample diluted 1:1 with trypan blue (a dilution factor of 2). What is the cell density of the original sample?',
+        rows: [
+          { label: 'Total cells counted', value: '200' },
+          { label: 'Squares counted', value: '4' },
+          { label: 'Average count per square (200 ÷ 4)', value: '50' },
+          { label: 'Dilution factor', value: '2' },
+          { label: 'Cell density (50 × 2 × 10,000)', value: '1,000,000 cells/mL' }
+        ],
+        result: '1,000,000 cells/mL (1 × 10⁶ cells/mL)',
+        explanation: '200 cells spread across 4 squares averages 50 cells per square. Multiplying by the dilution factor (2, since the sample was diluted 1:1 before loading) and then by 10,000 (to convert the 100 nL square volume up to 1 mL) gives 50 × 2 × 10,000 = 1,000,000 cells/mL in the original, undiluted sample.'
+      },
+      watchOut: [
+        { title: 'Count more squares for a more reliable average', body: 'A single square’s count is noisy — counting 4 (the usual corner squares of a Neubauer grid) and averaging reduces the effect of cells that happened to land unevenly across the chamber.' },
+        { title: 'Decide a boundary rule before counting, and stick to it', body: 'Cells sitting exactly on a grid line need a consistent counting rule (a common one: count cells touching the top and left boundary lines, but not the bottom or right) — switching rules partway through a count biases the total.' },
+        { title: 'This is a count of everything that looks like a cell, not necessarily a living one', body: 'A plain hemocytometer count includes dead cells and debris unless a viability stain (like trypan blue, which only dead cells take up) is used and scored separately — this calculator reports total counted cells, not a viable-cell-only figure.' },
+        { title: 'Don’t confuse this with cell-dilution-calculator', body: 'This page turns a raw microscope count into a density. cell-dilution-calculator starts from a density you already know (whether measured this way or some other way) and works out a dilution — use this one first if you only have a raw count.' }
+      ],
+      references: [
+        { label: 'Wikipedia, "Hemocytometer"', url: 'https://en.wikipedia.org/wiki/Hemocytometer' }
+      ]
+    },
+    inputs: [
+      { id: 'totalCellsCounted', label: 'Total cells counted', type: 'number', placeholder: '200', defaultValue: 200, step: 1, min: 0 },
+      { id: 'squaresCounted', label: 'Number of squares counted', type: 'number', placeholder: '4', defaultValue: 4, step: 1, min: 1 },
+      { id: 'dilutionFactor', label: 'Dilution factor', type: 'number', placeholder: '2', defaultValue: 2, step: 0.1, min: 0 },
+      { id: 'cultureVolume', label: 'Total culture volume (mL)', type: 'number', placeholder: '10', defaultValue: 10, step: 0.1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'cellDensity',
+      headlineLabel: 'Cell density',
+      outputs: [
+        { id: 'cellDensity', label: 'Cell density', dimension: 'cellDensity', unit: 'cells/mL' },
+        { id: 'averagePerSquare', label: 'Average count per square', format: 'number' },
+        { id: 'totalCellsInVolume', label: 'Total cells in culture volume', format: 'significant' }
+      ],
+      groups: [
+        { title: 'Hemocytometer count', inputs: ['totalCellsCounted', 'squaresCounted', 'dilutionFactor'] },
+        { title: 'Culture volume', inputs: ['cultureVolume'], optional: true }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'averagePerSquare', label: 'Average count per square' }
+        ],
+        center: 'cellDensity',
+        centerSub: 'cells/mL'
+      }
+    },
+    seo: {
+      title: 'Hemocytometer Calculator (Cell Count to Cells/mL)',
+      description: 'Free hemocytometer calculator. Convert a raw cell count into cell density: cells/mL = average count per square × dilution factor × 10,000.',
+      faq: [
+        { question: 'What is the hemocytometer cell count formula?', answer: 'Cells/mL = (total cells counted ÷ squares counted) × dilution factor × 10,000. 200 cells across 4 squares with a 2× dilution gives 50 × 2 × 10,000 = 1,000,000 cells/mL.' },
+        { question: 'Why multiply by 10,000?', answer: 'A standard hemocytometer large square holds a volume of 100 nanoliters. 100 nL × 10,000 = 1,000,000 nL, which is exactly 1 mL — so multiplying by 10,000 rescales the tiny, known chamber volume up to cells per milliliter.' },
+        { question: 'How many squares should I count?', answer: 'Counting more squares (commonly the 4 corner large squares of a Neubauer grid) and averaging reduces the effect of cells landing unevenly across the chamber, giving a more reliable density than counting just one square.' },
+        { question: 'What does the dilution factor account for?', answer: 'Samples are often diluted before loading — commonly 1:1 with trypan blue, a dilution factor of 2 — so the true density of the original sample needs that factor multiplied back in. A neat, undiluted sample has a dilution factor of 1.' },
+        { question: 'Does this calculator distinguish live and dead cells?', answer: 'No — it reports the total count of everything counted. Distinguishing live from dead cells needs a viability stain (such as trypan blue, which only dead cells take up) scored and counted separately.' },
+        { question: 'What do I do with the cell density once I have it?', answer: 'Use it as the starting density in cell-dilution-calculator if you need to dilute the sample down to a specific target concentration for a next step.' }
+      ]
+    },
+    compute(values) {
+      const averagePerSquare = values.totalCellsCounted / values.squaresCounted;
+      const cellDensity = averagePerSquare * values.dilutionFactor * 10000;
+      // cellDensity is in cells/mL; cultureVolume is in mL, so the product is already a plain cell count.
+      const totalCellsInVolume = cellDensity * values.cultureVolume;
+      return { cellDensity, averagePerSquare, totalCellsInVolume };
+    }
+  },
+  {
+    id: 'mutation-rate-calculator',
+    category: 'biology',
+    glyph: 'µ/g',
+    updatedAt: '2026-11-17',
+    aliases: ['mutation rate calculator', 'mutation rate from mutant frequency calculator', 'per generation mutation rate calculator', 'spontaneous mutation rate calculator', 'mutant frequency to mutation rate calculator', 'bacterial mutation rate estimate'],
+    related: ['allele-frequency-calculator', 'hardy-weinberg-calculator', 'bacterial-growth-calculator', 'doubling-time-calculator'],
+    title: 'Mutation Rate Calculator (From Mutant Frequency)',
+    description: 'Estimate a per-generation mutation rate from a mutant count, total population, and number of generations — and see why mutant frequency alone is not the same thing as mutation rate.',
+    example: '4 mutants found among 2,000,000 individuals after 20 generations gives a mutant frequency of 1 in 500,000 and an estimated mutation rate of about 1 × 10⁻⁷ per generation.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is mutation rate, and how is it different from mutant frequency?',
+        paragraphs: [
+          'OpenStax’s Microbiology defines the basics directly: "a mutation is a heritable change in the DNA sequence of an organism," and "the resulting organism, called a mutant, may have a recognizable change in phenotype compared to the wild type." Mutations mostly arise from ordinary replication mistakes — "the error rate of DNA polymerase is one incorrect base per billion base pairs replicated" — though OpenStax also notes "exposure to a mutagen can increase the rate of mutation more than 1000-fold."',
+          'Mutant frequency and mutation rate sound interchangeable but answer different questions. Frequency is a snapshot: what fraction of a sampled population carries a given mutation right now. Rate is a pace: how often a new mutation event arises per individual (or cell) per generation. A frequency only becomes a rate once it is normalized by how much time — measured in generations — the population had to accumulate that mutation in the first place, which is exactly what dividing by the number of generations does.',
+          'Wikipedia’s account of the classic Luria–Delbrück fluctuation test spells out why this distinction matters in practice: "the number of mutants that appear in the saturated culture is a measure of both the mutation rate and when the mutants arise during the growth of the culture: mutants appearing early in the growth of the culture will propagate many more mutants than those that arise later during growth," so "frequency is not a sufficiently accurate measure of mutation and the mutation rate...should always be calculated." This calculator performs that normalization — dividing an observed frequency by the number of generations — rather than treating frequency itself as the answer.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter how many mutants were found, the total number of individuals sampled, and how many generations separate the sample from its mutation-free ancestor.',
+        steps: [
+          { name: 'Enter the mutant count', text: 'The number of individuals (or colonies) observed carrying the mutation.' },
+          { name: 'Enter the total individuals sampled', text: 'The total population counted, mutants included.' },
+          { name: 'Enter the number of generations', text: 'How many generations have passed since the ancestral population carried no copies of this mutation.' },
+          { name: 'Read the mutant frequency', text: 'The fraction of the sampled population currently carrying the mutation.' },
+          { name: 'Read the estimated mutation rate', text: 'The mutant frequency spread evenly across the generations it took to arise — the estimated rate per individual per generation.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'When a population has grown for a known number of generations from an ancestor that carried none of this mutation, and the mutation neither reverts nor is selected for or against, spreading the observed frequency evenly across those generations gives a simple estimate of the per-generation mutation rate.',
+        expression: 'Mutant frequency (f) = mutant count ÷ total individuals\nMutation rate (µ) = f ÷ number of generations',
+        terms: [
+          { symbol: 'Mutant count', meaning: 'The number of individuals or colonies observed carrying the mutation.' },
+          { symbol: 'Total individuals', meaning: 'The total sampled population, mutants included.' },
+          { symbol: 'f', meaning: 'Mutant frequency — the fraction of the sampled population carrying the mutation.' },
+          { symbol: 'Number of generations', meaning: 'How many generations have elapsed since the mutation-free ancestral population.' },
+          { symbol: 'µ', meaning: 'The estimated mutation rate, in new mutations per individual per generation.' }
+        ],
+        note: 'This is a simplified estimate, valid when the mutation rate times the number of generations stays small. It is not the rigorous fluctuation-test estimator (the Lea–Coulson median method or the Ma–Sandri–Sarkar maximum-likelihood estimator) that real labs use for a clonally expanding bacterial culture — see Watch out for below.'
+      },
+      workedExample: {
+        intro: 'A population descended from a single mutation-free ancestor is sampled after 20 generations of growth: 4 out of 2,000,000 individuals now carry a particular mutation. What is the mutant frequency, and the estimated mutation rate?',
+        rows: [
+          { label: 'Mutant count', value: '4' },
+          { label: 'Total individuals', value: '2,000,000' },
+          { label: 'Mutant frequency (4 ÷ 2,000,000)', value: '0.000002 (1 in 500,000, or 0.0002%)' },
+          { label: 'Number of generations', value: '20' },
+          { label: 'Mutation rate (0.000002 ÷ 20)', value: '1 × 10⁻⁷ per generation' }
+        ],
+        result: 'µ ≈ 1 × 10⁻⁷ per generation',
+        explanation: '4 mutants out of 2,000,000 individuals gives a mutant frequency of 4 ÷ 2,000,000 = 0.000002, or 1 mutant in every 500,000 individuals. Spreading that frequency evenly across the 20 generations it took to accumulate gives an estimated mutation rate of 0.000002 ÷ 20 = 0.0000001, or 1 × 10⁻⁷ new mutations per individual per generation.'
+      },
+      watchOut: [
+        { title: 'Frequency and rate are not the same measurement', body: 'Wikipedia’s account of the fluctuation test is explicit: "frequency is not a sufficiently accurate measure of mutation and the mutation rate...should always be calculated." A frequency alone says nothing about how long the population took to reach it — only dividing by generations turns it into a rate.' },
+        { title: 'In a growing clonal culture, early mutants are over-represented', body: 'A mutation that happens to arise in an early cell division gets copied into every one of its descendants, inflating the final mutant count far beyond what the same mutation rate would produce if it arose later — "mutants appearing early in the growth of the culture will propagate many more mutants than those that arise later" (Wikipedia). Real bacterial fluctuation-test data needs a statistical estimator built around this, not a simple average.' },
+        { title: 'This assumes no back-mutation and no selection', body: 'The formula treats every counted mutant as a surviving, undiluted record of a past mutation event. A mutation that reverts, or that gives its carrier a survival advantage or disadvantage, breaks that assumption.' },
+        { title: 'The approximation needs µ × generations to stay small', body: 'This division is a first-order approximation. If the mutation rate were high enough, or the number of generations large enough, that a large share of the population could plausibly have mutated more than once, the simple frequency-over-generations estimate would understate the true rate.' }
+      ],
+      references: [
+        { label: 'OpenStax, Microbiology, §11.5 "Mutations"', url: 'https://openstax.org/books/microbiology/pages/11-5-mutations' },
+        { label: 'Wikipedia, "Luria–Delbrück experiment"', url: 'https://en.wikipedia.org/wiki/Luria%E2%80%93Delbr%C3%BCck_experiment' }
+      ]
+    },
+    inputs: [
+      { id: 'mutantCount', label: 'Mutant count', type: 'number', placeholder: '4', defaultValue: 4, step: 1, min: 0 },
+      { id: 'totalIndividuals', label: 'Total individuals sampled', type: 'number', placeholder: '2000000', defaultValue: 2000000, step: 1, min: 0 },
+      { id: 'generations', label: 'Number of generations', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'mutationRate',
+      headlineLabel: 'Estimated mutation rate (per generation)',
+      outputs: [
+        { id: 'mutationRate', label: 'Estimated mutation rate (per generation)', format: 'significant' },
+        { id: 'mutantFrequency', label: 'Mutant frequency', format: 'significant' },
+        { id: 'oneInN', label: 'One mutant in every (individuals)', format: 'significant' }
+      ],
+      groups: [{ inputs: ['mutantCount', 'totalIndividuals', 'generations'] }],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'mutantCount', label: 'Mutants' },
+          { from: 'nonMutantCount', label: 'Non-mutants' }
+        ],
+        center: 'mutantFrequency',
+        centerSub: 'mutant frequency'
+      }
+    },
+    seo: {
+      title: 'Mutation Rate Calculator (From Mutant Frequency)',
+      description: 'Free mutation rate calculator. Estimate a per-generation mutation rate from a mutant count, total population, and number of generations.',
+      faq: [
+        { question: 'How do you calculate mutation rate from mutant frequency?', answer: 'Divide the mutant frequency (mutant count ÷ total individuals) by the number of generations the population has had to accumulate that mutation. 4 mutants out of 2,000,000 individuals after 20 generations gives a frequency of 0.000002 and a rate of about 1 × 10⁻⁷ per generation.' },
+        { question: 'What is the difference between mutation rate and mutant frequency?', answer: 'Mutant frequency is a snapshot — the fraction of a sampled population carrying a mutation right now. Mutation rate is a pace — how often a new mutation arises per individual per generation. Dividing frequency by the number of generations converts one into the other.' },
+        { question: 'What causes spontaneous mutations?', answer: 'Mostly ordinary replication errors: OpenStax’s Microbiology states "the error rate of DNA polymerase is one incorrect base per billion base pairs replicated." Exposure to a mutagen, OpenStax notes, "can increase the rate of mutation more than 1000-fold."' },
+        { question: 'Why isn’t mutant frequency alone an accurate measure of mutation?', answer: 'Because when a population grows clonally, a mutation that happens to arise early gets copied into far more descendants than one arising late — "mutants appearing early in the growth of the culture will propagate many more mutants than those that arise later" (Wikipedia, on the Luria–Delbrück fluctuation test), which inflates frequency without reflecting a higher rate.' },
+        { question: 'How is this different from the allele frequency calculator?', answer: 'Allele-frequency-calculator counts existing Mendelian alleles already segregating in a population, with no time dimension. This calculator instead asks how fast a brand-new mutation must be arising, per generation, to explain an observed frequency after a known number of generations.' },
+        { question: 'Is this the rigorous way labs measure bacterial mutation rate?', answer: 'No — it is a simplified estimate. Real fluctuation-test data (where mutants are counted after clonal growth rather than tracked generation by generation) needs a dedicated estimator, such as the Lea–Coulson median method or the Ma–Sandri–Sarkar maximum-likelihood estimator, to correct for early mutants being over-represented.' }
+      ]
+    },
+    compute(values) {
+      const mutantFrequency = values.mutantCount / values.totalIndividuals;
+      const mutationRate = mutantFrequency / values.generations;
+      const nonMutantCount = values.totalIndividuals - values.mutantCount;
+      const oneInN = values.totalIndividuals / values.mutantCount;
+      return { mutantFrequency, mutationRate, nonMutantCount, oneInN };
+    }
+  },
+  {
+    id: 'codon-to-amino-acid-calculator',
+    category: 'biology',
+    glyph: 'AUG',
+    updatedAt: '2026-11-17',
+    aliases: ['codon to amino acid calculator', 'genetic code calculator', 'mrna codon table calculator', 'codon table lookup calculator', 'translation codon calculator', 'amino acid from codon calculator'],
+    related: ['dna-to-mrna-calculator', 'protein-concentration-calculator', 'punnett-square-calculator', 'dihybrid-cross-calculator'],
+    title: 'Codon to Amino Acid Calculator (Genetic Code Table)',
+    description: 'Pick each position of an mRNA codon and look up the amino acid it specifies directly from the standard genetic code table, including start and stop codons.',
+    example: 'The mRNA codon AUG codes for methionine and also serves as the universal start codon; OpenStax’s own example codon CUA codes for leucine, one of six different codons that specify it.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is the genetic code, and how does a codon specify an amino acid?',
+        paragraphs: [
+          'OpenStax’s Biology 2e lays out the genetic code’s basic bookkeeping directly: "of the 64 possible mRNA codons — or triplet combinations of A, U, G, and C — three specify the termination of protein synthesis and 61 specify the addition of amino acids to the polypeptide chain." Of those 61 sense codons, OpenStax notes "one codon (AUG) also encodes the initiation of translation," and "termination of translation occurs when a nonsense codon (UAA, UAG, or UGA) is encountered" — the three stop codons this calculator also marks.',
+          'Sixty-one sense codons specifying only 20 amino acids means most amino acids are specified by more than one codon — a property called degeneracy or redundancy. OpenStax attributes this to the matching machinery itself: "the ability of some tRNAs to match more than one codon is what gives the genetic code its blocky structure." The degeneracy is uneven: methionine and tryptophan each have only one codon, while leucine, serine, and arginine each have six (the self-checked full breakdown is in this calculator’s own lookup table).',
+          'Translation reads an mRNA strand three bases (one codon) at a time, in the same 5′-to-3′ direction it was transcribed — this calculator demonstrates that lookup for one codon at a time, the step that follows dna-to-mrna-calculator’s transcription once an mRNA strand already exists.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick the three bases of a single mRNA codon, in order; the amino acid, its start/stop role, and how many codons share that amino acid fill in instantly.',
+        steps: [
+          { name: 'Enter the first codon position', text: 'The base at the 5′ end of the codon — U, C, A, or G.' },
+          { name: 'Enter the second codon position', text: 'The middle base of the codon.' },
+          { name: 'Enter the third codon position', text: 'The base at the 3′ end of the codon.' },
+          { name: 'Read the amino acid', text: 'Its full name, three-letter code, and one-letter code, looked up directly from the standard genetic code table.' },
+          { name: 'Check the role and degeneracy', text: 'Whether this codon starts or stops translation, and how many of the 64 codons encode the same amino acid.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'There is no equation to solve — this is a direct lookup from the standard genetic code table (NCBI’s genetic code table 1), the same 64-codon mapping used by the vast majority of known genomes.',
+        expression: 'Amino acid = lookup(base 1, base 2, base 3) in the standard genetic code table',
+        terms: [
+          { symbol: 'Base 1, 2, 3', meaning: 'The three mRNA bases of the codon, read 5′ to 3′, each U, C, A, or G.' },
+          { symbol: 'Sense codon', meaning: 'One of the 61 codons (all but the 3 stop codons) that specifies an amino acid.' },
+          { symbol: 'Degeneracy', meaning: 'How many of the 64 codons encode this same amino acid — from 1 (methionine, tryptophan) to 6 (leucine, serine, arginine).' }
+        ],
+        note: 'This is "the Standard Code" (NCBI table 1) — see Watch out for below on the handful of organisms and organelles that use a different numbered genetic code table.'
+      },
+      workedExample: {
+        intro: 'What amino acid does the mRNA codon A-U-G specify, and what role does it play in translation?',
+        rows: [
+          { label: 'Codon', value: 'A U G' },
+          { label: 'Amino acid', value: 'Methionine (Met, M)' },
+          { label: 'Role', value: 'Start codon — initiates translation' },
+          { label: 'Degeneracy', value: '1 of 1 — the only codon for methionine' }
+        ],
+        result: 'AUG → Methionine (start codon)',
+        explanation: 'Looking up A, U, G in the standard genetic code table gives methionine. OpenStax notes AUG is the one sense codon that "also encodes the initiation of translation," so besides specifying methionine wherever it appears mid-sequence, an AUG at the start of a reading frame is where the ribosome begins. As a cross-check, OpenStax’s own example codon, C-U-A, looks up to leucine — one of six codons (CUU, CUC, CUA, CUG, UUA, UUG) that all specify leucine, the genetic code’s maximum degeneracy.'
+      },
+      watchOut: [
+        { title: 'This looks up one codon, not a full reading frame', body: 'A real mRNA transcript is read three bases at a time from a fixed starting point; this calculator demonstrates a single codon’s lookup, not scanning a full sequence for its reading frame.' },
+        { title: 'The reading frame changes everything', body: 'The same stretch of bases encodes a completely different amino acid sequence depending on which base it starts being read from — shifting the frame by even one base changes every codon downstream.' },
+        { title: 'AUG is the standard start codon, but not the only one ever used', body: 'NCBI’s own genetic code table marks a small number of alternative initiator codons (such as UUG and CUG) that some organisms use rarely; this calculator, like most teaching contexts, treats AUG as the start codon.' },
+        { title: 'A few organisms and organelles use a different genetic code table', body: 'This is "the Standard Code" used by the vast majority of nuclear genomes — but NCBI publishes multiple numbered alternative genetic code tables for cases such as vertebrate mitochondrial DNA, where a few codon assignments differ from the standard table used here.' }
+      ],
+      references: [
+        { label: 'NCBI, "The Genetic Codes" (table 1, the Standard Code)', url: 'https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi?mode=c' },
+        { label: 'OpenStax, Biology 2e, §15.5 "Ribosomes and Protein Synthesis"', url: 'https://openstax.org/books/biology-2e/pages/15-5-ribosomes-and-protein-synthesis' }
+      ]
+    },
+    inputs: [
+      { id: 'base1', label: 'Codon position 1 (5′)', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0, options: RNA_BASE_OPTIONS },
+      { id: 'base2', label: 'Codon position 2', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0, options: RNA_BASE_OPTIONS },
+      { id: 'base3', label: 'Codon position 3 (3′)', type: 'number', placeholder: '3', defaultValue: 3, step: 1, min: 0, options: RNA_BASE_OPTIONS }
+    ],
+    breakdown: {
+      headline: 'aminoAcidCode',
+      headlineLabel: 'Amino acid',
+      outputs: [
+        { id: 'aminoAcidCode', label: 'Amino acid', labels: AMINO_ACID_NAME_LABELS },
+        { id: 'abbreviationCode', label: 'Three-letter code', labels: AMINO_ACID_ABBREVIATION_LABELS },
+        { id: 'letterCode', label: 'One-letter code', labels: AMINO_ACID_LETTER_LABELS },
+        { id: 'roleCode', label: 'Role in translation', labels: CODON_ROLE_LABELS },
+        { id: 'degeneracyCount', label: 'Codons for this amino acid (degeneracy)', format: 'integer' }
+      ],
+      groups: [{ title: 'mRNA codon (5′ to 3′)', inputs: ['base1', 'base2', 'base3'] }],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'degeneracyCount', label: 'Codons for this amino acid' },
+          { from: 'otherCodonsCount', label: 'All other codons' }
+        ],
+        center: 'degeneracyCount',
+        centerSub: 'codons for this amino acid'
+      }
+    },
+    seo: {
+      title: 'Codon to Amino Acid Calculator (Genetic Code Table)',
+      description: 'Free codon to amino acid calculator. Pick each mRNA codon position and look up its amino acid, start/stop role, and degeneracy from the genetic code table.',
+      faq: [
+        { question: 'How do you translate a codon into an amino acid?', answer: 'Look up the codon’s three mRNA bases, in order, in the standard genetic code table. AUG, for example, looks up to methionine.' },
+        { question: 'How many codons are there, and how many specify amino acids?', answer: 'OpenStax’s Biology 2e states there are "64 possible mRNA codons," of which "three specify the termination of protein synthesis and 61 specify the addition of amino acids."' },
+        { question: 'What is the start codon?', answer: 'AUG is the standard start codon: besides coding for methionine, OpenStax notes it "also encodes the initiation of translation" wherever a ribosome begins reading a reading frame.' },
+        { question: 'What are the stop codons?', answer: 'UAA, UAG, and UGA. OpenStax states "termination of translation occurs when a nonsense codon (UAA, UAG, or UGA) is encountered" — none of the three codes for an amino acid.' },
+        { question: 'Why do some amino acids have more than one codon?', answer: 'The genetic code is degenerate: 61 sense codons specify only 20 amino acids. OpenStax attributes this to "the ability of some tRNAs to match more than one codon," which gives some amino acids up to six different codons (leucine, serine, and arginine) while methionine and tryptophan have only one each.' },
+        { question: 'Is the genetic code the same in every organism?', answer: 'Nearly, but not quite. This calculator uses NCBI’s "Standard Code" (table 1), used by the vast majority of nuclear genomes — but NCBI also publishes alternative numbered tables for exceptions such as vertebrate mitochondrial DNA, where a few codons are reassigned.' }
+      ]
+    },
+    compute(values) {
+      const entry = findCodon(values.base1, values.base2, values.base3);
+      if (!entry) return { aminoAcidCode: NaN, abbreviationCode: NaN, letterCode: NaN, roleCode: NaN, degeneracyCount: NaN, otherCodonsCount: NaN };
+      const degeneracyCount = degeneracy(entry.letter);
+      return {
+        aminoAcidCode: entry.code,
+        abbreviationCode: entry.code,
+        letterCode: entry.code,
+        roleCode: entry.code,
+        degeneracyCount,
+        otherCodonsCount: 64 - degeneracyCount
+      };
     }
   },
   {

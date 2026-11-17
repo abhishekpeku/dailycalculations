@@ -2164,6 +2164,56 @@ exports[`compute() snapshots > closing-cost-estimator-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > codon-to-amino-acid-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "base1": 2,
+      "base2": 0,
+      "base3": 3
+    },
+    "outputs": {
+      "aminoAcidCode": 35,
+      "abbreviationCode": 35,
+      "letterCode": 35,
+      "roleCode": 35,
+      "degeneracyCount": 1,
+      "otherCodonsCount": 63
+    }
+  },
+  "typical": {
+    "inputs": {
+      "base1": 3,
+      "base2": 0,
+      "base3": 5
+    },
+    "outputs": {
+      "aminoAcidCode": 49,
+      "abbreviationCode": 49,
+      "letterCode": 49,
+      "roleCode": 49,
+      "degeneracyCount": 4,
+      "otherCodonsCount": 60
+    }
+  },
+  "edge": {
+    "inputs": {
+      "base1": 0,
+      "base2": 0,
+      "base3": 0
+    },
+    "outputs": {
+      "aminoAcidCode": 0,
+      "abbreviationCode": 0,
+      "letterCode": 0,
+      "roleCode": 0,
+      "degeneracyCount": 2,
+      "otherCodonsCount": 62
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > coefficient-of-variation-calculator 1`] = `
 {
   "default": {
@@ -6295,6 +6345,50 @@ exports[`compute() snapshots > heat-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > hemocytometer-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "totalCellsCounted": 200,
+      "squaresCounted": 4,
+      "dilutionFactor": 2,
+      "cultureVolume": 10
+    },
+    "outputs": {
+      "cellDensity": 1000000,
+      "averagePerSquare": 50,
+      "totalCellsInVolume": 10000000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "totalCellsCounted": 300,
+      "squaresCounted": 6,
+      "dilutionFactor": 3,
+      "cultureVolume": 15
+    },
+    "outputs": {
+      "cellDensity": 1500000,
+      "averagePerSquare": 50,
+      "totalCellsInVolume": 22500000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "totalCellsCounted": 0,
+      "squaresCounted": 1,
+      "dilutionFactor": 0,
+      "cultureVolume": 0
+    },
+    "outputs": {
+      "cellDensity": 0,
+      "averagePerSquare": 0,
+      "totalCellsInVolume": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > hess-law-enthalpy-calculator 1`] = `
 {
   "default": {
@@ -9537,6 +9631,50 @@ exports[`compute() snapshots > mulch-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > mutation-rate-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "mutantCount": 4,
+      "totalIndividuals": 2000000,
+      "generations": 20
+    },
+    "outputs": {
+      "mutantFrequency": 0.000002,
+      "mutationRate": 1e-7,
+      "nonMutantCount": 1999996,
+      "oneInN": 500000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "mutantCount": 6,
+      "totalIndividuals": 3000000,
+      "generations": 30
+    },
+    "outputs": {
+      "mutantFrequency": 0.000002,
+      "mutationRate": 6.666666667e-8,
+      "nonMutantCount": 2999994,
+      "oneInN": 500000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "mutantCount": 0,
+      "totalIndividuals": 0,
+      "generations": 0
+    },
+    "outputs": {
+      "mutantFrequency": "NaN",
+      "mutationRate": "NaN",
+      "nonMutantCount": 0,
+      "oneInN": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > mutual-fund-calculator 1`] = `
 {
   "default": {
@@ -11298,6 +11436,41 @@ exports[`compute() snapshots > pool-volume-calculator 1`] = `
     "outputs": {
       "gallons": 3.75,
       "cubicFeet": 0.5
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > population-growth-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "initialPopulation": 500,
+      "growthRate": 0.05,
+      "elapsedTime": 10
+    },
+    "outputs": {
+      "finalPopulation": 824.3606354
+    }
+  },
+  "typical": {
+    "inputs": {
+      "initialPopulation": 750,
+      "growthRate": 0.075,
+      "elapsedTime": 15
+    },
+    "outputs": {
+      "finalPopulation": 2310.162637
+    }
+  },
+  "edge": {
+    "inputs": {
+      "initialPopulation": 0,
+      "growthRate": 0,
+      "elapsedTime": 0
+    },
+    "outputs": {
+      "finalPopulation": 0
     }
   }
 }

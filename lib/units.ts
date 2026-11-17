@@ -506,11 +506,15 @@ export const UNITS: Record<UnitDimension, Unit[]> = {
   // physical unit as `frequency` above) — kept as its own dimension because chemists report rate
   // constants in s⁻¹, min⁻¹ or h⁻¹, never Hz/kHz/MHz. The min⁻¹/h⁻¹ factors are the reciprocals of
   // `time`'s own minute (60 s) and hour (3600 s) factors. Also used for the Arrhenius equation's
-  // pre-exponential factor A, which shares k's units for a first-order reaction.
+  // pre-exponential factor A, which shares k's units for a first-order reaction. `yr-1` is the
+  // reciprocal of `time`'s own year (YEAR, defined above) — the intrinsic growth rate r in
+  // population-growth-calculator's N = N0 e^(rt) (OpenStax Biology 2e §45.3 "Environmental Limits
+  // to Population Growth") is conventionally reported per year, not per second.
   rateConstant: [
     { id: 's-1', label: 's⁻¹', factor: 1 },
     { id: 'min-1', label: 'min⁻¹', factor: 1 / 60 },
-    { id: 'h-1', label: 'h⁻¹', factor: 1 / 3600 }
+    { id: 'h-1', label: 'h⁻¹', factor: 1 / 3600 },
+    { id: 'yr-1', label: 'yr⁻¹', factor: 1 / YEAR }
   ],
   // SI-coherent derived unit J/mol (energy / amountOfSubstance, both SI base above) — the unit
   // molar quantities like the Arrhenius equation's activation energy are reported in. kJ/mol is

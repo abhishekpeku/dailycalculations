@@ -221,7 +221,15 @@ whole site before writing any id.
   - [x] `points-vs-cash-flight-calculator`
   - [x] `tipping-abroad-calculator`
 - [ ] Batch 6 — `time` (5 new)
-- [ ] Batch 7 — `creator` (8 new)
+- [ ] Batch 7 — `creator` (8 new; branch `step/61-deepen-creator`)
+  - [ ] `tiktok-earnings-calculator`
+  - [ ] `twitch-earnings-calculator`
+  - [ ] `podcast-ad-revenue-calculator`
+  - [ ] `blog-ad-revenue-calculator`
+  - [ ] `patreon-earnings-calculator`
+  - [ ] `affiliate-commission-calculator`
+  - [ ] `follower-growth-rate-calculator`
+  - [ ] `video-engagement-rate-calculator`
 - [ ] Batch 8 — `text` (8 new)
 - [ ] Batch 9 — `education` (9 new)
 - [ ] STATUS.md updated with a final per-category summary

@@ -138,7 +138,8 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'allele-frequency-calculator': ['p', 'q'], // all three genotype counts 0 (their min) -> totalAlleles 0 -> 0/0
   'log-reduction-calculator': ['logReduction'], // initialCount and finalCount both 0 (their min) -> log10(0/0), undefined
   'mutation-rate-calculator': ['mutantFrequency', 'mutationRate', 'oneInN'], // mutantCount and totalIndividuals both 0 (their min) -> 0/0
-  'surface-area-to-volume-ratio-calculator': ['ratio', 'doubledSizeRatio'] // size 0 (its min) -> divide by zero, no answer
+  'protein-molecular-weight-calculator': ['molecularWeight', 'kiloDaltons'], // every amino acid count 0 (their min) -> 0 residues, undefined molecular weight
+  'surface-area-to-volume-ratio-calculator': ['ratio'] // size 0 (its min) -> volume 0 -> divide by zero
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

@@ -438,6 +438,10 @@ export const calculatorOrder: string[] = [
   'hemocytometer-calculator',
   'mutation-rate-calculator',
   'codon-to-amino-acid-calculator',
+  'water-potential-calculator',
+  'protein-molecular-weight-calculator',
+  'molarity-for-buffers-calculator',
+  'inheritance-probability-calculator',
   'surface-area-to-volume-ratio-calculator'
 ];
 

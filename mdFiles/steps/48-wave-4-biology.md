@@ -332,7 +332,15 @@ used" discipline as Wave 3's NIST/IUPAC citations for lab-adjacent chemistry top
         above).
       - No seed-list candidate skipped this batch — all 5 scoped items built as specified.
 - [ ] Batch 4 (population biology + genetics extensions, 5)
-- [ ] Batch 5 (plant/cell biology + biochemistry, 5)
+- [ ] Batch 5 (plant/cell biology + biochemistry, 5) — **IN PROGRESS**, branch
+      `step/48-wave-4-biology-run-5`, running in parallel with batch 4 on the same
+      `data/calculators/biology.ts` file (expected merge conflict, resolved at merge time).
+      ## Progress (run 5)
+      - [ ] `water-potential-calculator`
+      - [ ] `protein-molecular-weight-calculator`
+      - [ ] `molarity-for-buffers-calculator`
+      - [ ] `inheritance-probability-calculator`
+      - [ ] `surface-area-to-volume-ratio-calculator`
 - [ ] Batch 6 (simple non-medical animal biology, 5)
 - [ ] Visual-QA spot-check (once this wave crosses ~420 calculators)
 - [ ] STATUS.md updated, `biology` category count recorded, Wave 4 handed off to ecology next

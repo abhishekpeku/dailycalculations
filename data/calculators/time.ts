@@ -579,6 +579,679 @@ export const timeCalculators: CalculatorConfig[] = [
       return { totalSleepHours, wakeTimeDecimal, wakeHour, wakeMinute: wakeMin };
     }
   },
+  {
+    id: 'business-days-calculator',
+    category: 'time',
+    group: 'Ages & Dates',
+    glyph: 'bd',
+    updatedAt: '2026-11-17',
+    aliases: ['working days calculator', 'weekdays between dates calculator', 'work days between two dates', 'business day countdown calculator'],
+    related: ['date-difference-calculator', 'visa-stay-days-calculator', 'pto-calculator', 'work-hours-calculator'],
+    title: 'Business Days Calculator',
+    description: 'Count the business days (weekdays, minus weekends) between two dates, with an optional number of holidays to subtract.',
+    example: 'Monday, January 5, 2026 to Friday, January 30, 2026 is 26 calendar days but only 20 business days — 19 once Martin Luther King Jr. Day is subtracted.',
+    breakdown: {
+      headline: 'businessDays',
+      headlineLabel: 'Business days',
+      outputs: [
+        { id: 'businessDays', label: 'Business days (weekdays, minus holidays)', format: 'integer' },
+        { id: 'weekendDays', label: 'Weekend days in range', format: 'integer' },
+        { id: 'holidaysExcluded', label: 'Holidays subtracted', format: 'integer' },
+        { id: 'totalDaysInclusive', label: 'Total calendar days (both dates included)', format: 'integer' }
+      ],
+      groups: [
+        { title: 'Start date', inputs: ['startYear', 'startMonth', 'startDay'] },
+        { title: 'End date', inputs: ['endYear', 'endMonth', 'endDay'] },
+        { title: 'Holidays', inputs: ['holidaysToExclude'], optional: true }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'businessDays', label: 'Business days' },
+          { from: 'weekendDays', label: 'Weekend days' },
+          { from: 'holidaysExcluded', label: 'Holidays' }
+        ],
+        center: 'totalDaysInclusive',
+        centerSub: 'total days'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What counts as a business day here',
+        paragraphs: [
+          'A business day is a weekday — Monday through Friday — so counting business days means counting the days in a range and then removing every Saturday and Sunday. This calculator also counts both the start date and the end date themselves, since that is how most real deadlines work: a task due "5 business days from today" includes today and the fifth day, not just the gap between them.',
+          'That is a deliberate difference from the Date Difference Calculator on this site, which measures the calendar-day gap between two dates and does not count either endpoint — 1 January to 2 January is "1 day" there, because it is measuring the distance between the dates, not the number of days touched. Use the date difference calculator for a pure day-count gap; use this one when you want to know how many working days a date range actually covers, inclusive of both ends.',
+          'Public holidays are not built in, since they vary by country, state and employer. Instead, enter the number of holidays that fall on a weekday inside your range and the calculator subtracts them from the business-day count. A holiday that already falls on a Saturday or Sunday is excluded by the weekend rule already — don\'t count it twice.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter a start date and an end date. Both dates are counted as part of the range.',
+        steps: [
+          { name: 'Enter the start date', text: 'The first day of the range, included in the count if it is a weekday.' },
+          { name: 'Enter the end date', text: 'The last day of the range, also included if it is a weekday.' },
+          { name: 'Read the business-day count', text: 'The headline is the number of weekdays in the range, before any holidays are subtracted.' },
+          { name: 'Subtract holidays, if any', text: 'Open the Holidays section and enter how many public holidays that fall on a weekday sit inside your date range.' },
+          { name: 'Check the breakdown', text: 'The chart below splits the full range into business days, weekend days and subtracted holidays.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The range is split into whole 7-day weeks (5 business days each) plus a short remainder, so no day-by-day loop is needed for the bulk of a long range.',
+        expression:
+          'totalDays = days from start to end, counting both ends\nfullWeeks = floor(totalDays ÷ 7), each worth 5 business days\nremainder = totalDays − fullWeeks × 7\nbusinessDays = fullWeeks × 5 + (weekdays among the first "remainder" days from the start date) − holidaysToExclude',
+        terms: [
+          { symbol: 'totalDays', meaning: 'Every calendar day from the start date to the end date, with both dates included.' },
+          { symbol: 'fullWeeks', meaning: 'How many complete 7-day weeks fit in the range. Every complete week has exactly 5 weekdays and 2 weekend days, regardless of which day it starts on.' },
+          { symbol: 'remainder', meaning: 'The leftover days after removing the full weeks — at most 6 of them — checked one by one against the day of the week they fall on.' },
+          { symbol: 'holidaysToExclude', meaning: 'A count of holidays you supply, not specific dates, subtracted from the weekday total.' }
+        ],
+        note: 'Dates are compared at local midnight, the same convention the date difference and age calculators use. This counts calendar weekends (Saturday and Sunday); it does not know about countries where the weekend falls on different days.'
+      },
+      workedExample: {
+        intro: 'How many business days are there from Monday, January 5, 2026 to Friday, January 30, 2026, a range that includes Martin Luther King Jr. Day (the third Monday in January, January 19, 2026)?',
+        rows: [
+          { label: 'Total days, both ends included', value: '26 days' },
+          { label: 'Full weeks (26 ÷ 7, rounded down)', value: '3 weeks = 15 business days' },
+          { label: 'Remaining 5 days (Jan 26–30, Mon–Fri)', value: '5 business days' },
+          { label: 'Business days before holidays (15 + 5)', value: '20 days' },
+          { label: 'Holidays to subtract (MLK Day, Jan 19)', value: '1 day' },
+          { label: 'Business days after holidays (20 − 1)', value: '19 days' }
+        ],
+        result: '19 business days (20 before subtracting the one holiday), out of 26 calendar days',
+        explanation: 'The range runs Monday to Friday, so every one of the 6 weekend days (three Saturdays, three Sundays) is removed automatically, leaving 20 weekdays. January 19 is a Monday that falls inside the range and is a federal holiday, so it is subtracted by hand to reach the final 19.'
+      },
+      watchOut: [
+        { title: 'Both dates are included, unlike the date difference calculator', body: 'This calculator counts the start and end date themselves. The date difference calculator on this site instead measures the gap between two dates and counts neither endpoint — the two are not interchangeable.' },
+        { title: 'Holidays are a count, not specific dates', body: 'Enter how many weekday holidays fall inside your range. If a holiday falls on a Saturday or Sunday in a given year, it is already excluded by the weekend rule — do not also count it as a holiday.' },
+        { title: 'Only Saturday and Sunday are treated as the weekend', body: 'Some countries use a different weekend (Friday–Saturday, for example). This calculator always removes Saturday and Sunday, which is the US and most-common international convention.' },
+        { title: 'Impossible dates roll forward silently', body: 'Entering day 31 for a 30-day month is read as the 1st of the next month rather than rejected, the same behavior as the date difference calculator.' },
+        { title: 'This is not a legal deadline calculator', body: 'Court rules, contracts and government agencies sometimes define "business day" with their own exceptions. Check the specific rule for anything with legal or financial consequences.' }
+      ],
+      references: [
+        { label: 'U.S. Office of Personnel Management, Federal Holidays', url: 'https://www.opm.gov/policy-data-oversight/pay-leave/federal-holidays/' },
+        { label: 'Royal Museums Greenwich, Which years are leap years, and can you have leap seconds?', url: 'https://www.rmg.co.uk/stories/time/which-years-are-leap-years-can-you-have-leap-seconds' }
+      ]
+    },
+    inputs: [
+      { id: 'startYear', label: 'Start year', type: 'number', placeholder: '2026', defaultValue: 2026, step: 1, min: 1900 },
+      { id: 'startMonth', label: 'Start month (1–12)', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 1 },
+      { id: 'startDay', label: 'Start day (1–31)', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 1 },
+      { id: 'endYear', label: 'End year', type: 'number', placeholder: '2026', defaultValue: 2026, step: 1, min: 1900 },
+      { id: 'endMonth', label: 'End month (1–12)', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 1 },
+      { id: 'endDay', label: 'End day (1–31)', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1 },
+      { id: 'holidaysToExclude', label: 'Holidays to subtract (weekdays only)', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Business Days Calculator – Weekdays Between Dates',
+      description: 'Count the business days between two dates, excluding Saturdays and Sundays, with an optional number of holidays to subtract.',
+      faq: [
+        { question: 'How do I calculate business days between two dates?', answer: 'Enter a start and end date. The calculator counts every day in the range, removes Saturdays and Sundays, and subtracts any holiday count you enter. Monday, January 5, 2026 to Friday, January 30, 2026 is 20 business days before holidays, 19 after subtracting Martin Luther King Jr. Day.' },
+        { question: 'Is this the same as the date difference calculator?', answer: 'No. The date difference calculator measures the gap between two dates and does not count either endpoint. This calculator counts both the start and end date and removes weekends, which is the convention most "X business days from now" deadlines use.' },
+        { question: 'Does this calculator know my country\'s public holidays?', answer: 'No. Enter the number of weekday holidays that fall inside your date range yourself, and the calculator subtracts that count from the business-day total.' },
+        { question: 'What if a holiday falls on a weekend?', answer: 'Don\'t count it. Weekend days are already removed by the weekday rule, so including a weekend holiday in the holiday count would subtract it twice.' },
+        { question: 'Does it handle a weekend that isn\'t Saturday and Sunday?', answer: 'No. This calculator always treats Saturday and Sunday as the weekend, the convention used in the US and most countries. It cannot be changed to a different weekend pattern.' },
+        { question: 'Can I use this to count business days until a deadline?', answer: 'Yes. Put today\'s date as the start date and the deadline as the end date. Because both dates are included, the result matches how deadlines like "5 business days" are usually counted.' }
+      ]
+    },
+    compute(values) {
+      const start = new Date(values.startYear, values.startMonth - 1, values.startDay).getTime();
+      const end = new Date(values.endYear, values.endMonth - 1, values.endDay).getTime();
+      const lo = Math.min(start, end);
+      const hi = Math.max(start, end);
+      const totalDaysInclusive = Math.round((hi - lo) / 86400000) + 1;
+      const startDow = new Date(lo).getDay();
+      const fullWeeks = Math.floor(totalDaysInclusive / 7);
+      const remainder = totalDaysInclusive - fullWeeks * 7;
+      let remainderBusinessDays = 0;
+      for (let i = 0; i < remainder; i++) {
+        const dow = (startDow + i) % 7;
+        if (dow !== 0 && dow !== 6) remainderBusinessDays++;
+      }
+      const rawBusinessDays = fullWeeks * 5 + remainderBusinessDays;
+      const weekendDays = totalDaysInclusive - rawBusinessDays;
+      const holidaysExcluded = Math.min(Math.max(0, Math.round(values.holidaysToExclude)), rawBusinessDays);
+      const businessDays = rawBusinessDays - holidaysExcluded;
+      return { businessDays, weekendDays, holidaysExcluded, totalDaysInclusive };
+    }
+  },
+  {
+    id: 'day-of-week-calculator',
+    category: 'time',
+    group: 'Ages & Dates',
+    glyph: 'dow',
+    updatedAt: '2026-11-17',
+    aliases: ['what day of the week calculator', 'day of week finder', 'weekday calculator', 'day name from date calculator'],
+    related: ['date-difference-calculator', 'age-calculator', 'leap-year-calculator', 'business-days-calculator'],
+    title: 'Day of the Week Calculator',
+    description: "Find what day of the week any date falls on, past or future, using Zeller's congruence, a real calendar algorithm.",
+    example: 'January 1, 2000 falls on a Saturday.',
+    breakdown: {
+      headline: 'dayOfWeekCode',
+      headlineLabel: 'Day of the week',
+      outputs: [
+        {
+          id: 'dayOfWeekCode',
+          label: 'Day of the week',
+          labels: [
+            { value: 0, label: 'Sunday' },
+            { value: 1, label: 'Monday' },
+            { value: 2, label: 'Tuesday' },
+            { value: 3, label: 'Wednesday' },
+            { value: 4, label: 'Thursday' },
+            { value: 5, label: 'Friday' },
+            { value: 6, label: 'Saturday' }
+          ]
+        },
+        { id: 'isoWeekday', label: 'ISO 8601 weekday number (1 = Monday)', format: 'integer' },
+        {
+          id: 'isWeekend',
+          label: 'Falls on a weekend?',
+          labels: [
+            { value: 0, label: 'No' },
+            { value: 1, label: 'Yes' }
+          ]
+        }
+      ],
+      groups: [{ title: 'Date to check', inputs: ['dateYear', 'dateMonth', 'dateDay'] }]
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: "How a date's weekday is calculated without a calendar",
+        paragraphs: [
+          'Any date can be reduced to its weekday with pure arithmetic, no calendar lookup table required. The best-known method is Zeller\'s congruence, which takes the day, month and year and combines them into a single formula whose remainder after dividing by 7 is the weekday. This calculator implements that formula directly rather than reading a day-of-week value out of a pre-built table.',
+          'The formula has one quirk worth knowing: it treats January and February as months 13 and 14 of the previous year, so a date like February 2, 2026 is handled internally as month 14 of 2025. That shift exists because the Gregorian leap-day adjustment (the extra February 29) falls most naturally at the end of the "formula year" this way, which keeps the rest of the arithmetic simple.',
+          'Because the whole calculation is just floor division and multiplication on the day, month and year you enter, it works identically for any date, past or future, without depending on a device\'s clock or calendar library.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter any date. The result is the day of the week it falls on, calculated directly rather than looked up.',
+        steps: [
+          { name: 'Enter the year, month and day', text: 'Use the full four-digit year for the date you want to check.' },
+          { name: 'Read the weekday', text: 'The headline names the day of the week — Sunday through Saturday.' },
+          { name: 'Check the ISO weekday number', text: 'A second numbering some countries and the ISO 8601 date standard use, where Monday is 1 and Sunday is 7, instead of the Sunday-first convention shown as the headline.' },
+          { name: 'See whether it is a weekend', text: 'A quick yes/no for whether the date falls on a Saturday or Sunday.' }
+        ],
+        outro: 'Everything is calculated in your browser using the formula below. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "Zeller's congruence for the Gregorian calendar, exactly as the formula is defined, with January and February counted as months 13 and 14 of the previous year.",
+        expression:
+          'h = ( q + ⌊13(m+1)/5⌋ + K + ⌊K/4⌋ + ⌊J/4⌋ − 2J ) mod 7\nK = (adjusted year) mod 100\nJ = ⌊(adjusted year) ÷ 100⌋\nh: 0 = Saturday, 1 = Sunday, 2 = Monday, … 6 = Friday',
+        terms: [
+          { symbol: 'q', meaning: 'The day of the month, 1–31.' },
+          { symbol: 'm', meaning: 'The month number, but counted 3 (March) through 14 (February of the following calendar year) — January and February are shifted into the previous year\'s count.' },
+          { symbol: 'K, J', meaning: 'The last two digits of the adjusted year, and the century, found by splitting the adjusted year at the hundreds place.' },
+          { symbol: '⌊ ⌋', meaning: 'Floor: round down to the nearest whole number, discarding any remainder.' }
+        ],
+        note: 'The headline reorders Zeller\'s own 0=Saturday result into the more familiar 0=Sunday numbering. The ISO 8601 weekday figure is a third numbering again, 1=Monday through 7=Sunday, shown separately to avoid mixing the three conventions.'
+      },
+      workedExample: {
+        intro: 'What day of the week is January 1, 2000?',
+        rows: [
+          { label: 'Adjusted month (January → month 13 of 1999)', value: 'm = 13, adjusted year = 1999' },
+          { label: 'K (1999 mod 100)', value: '99' },
+          { label: 'J (⌊1999 ÷ 100⌋)', value: '19' },
+          { label: 'q + ⌊13(m+1)/5⌋ + K + ⌊K/4⌋ + ⌊J/4⌋ − 2J', value: '1 + 36 + 99 + 24 + 4 − 38 = 126' },
+          { label: 'h (126 mod 7)', value: '0 → Saturday' }
+        ],
+        result: 'January 1, 2000 was a Saturday (ISO weekday 6)',
+        explanation: 'A result of h = 0 in Zeller\'s own numbering is Saturday. This calculator reorders that into the more familiar Sunday-first numbering for the headline, and separately reports the ISO 8601 numbering (Monday = 1), which places a Saturday at 6.'
+      },
+      watchOut: [
+        { title: 'This is a formula, not a lookup table', body: 'The result comes from Zeller\'s congruence applied to the year, month and day you enter, the same arithmetic shown above — not a pre-built list of dates.' },
+        { title: 'January and February shift into "last year" internally', body: 'The formula treats them as months 13 and 14 of the previous year purely as a calculation device. The date you entered and the result shown are still the real calendar date.' },
+        { title: 'Three different weekday numbering systems exist', body: 'Zeller\'s own output (0=Saturday), the common Sunday-first numbering (0=Sunday) used for this calculator\'s headline, and the ISO 8601 numbering (1=Monday, shown separately) all number the same seven days differently.' },
+        { title: 'Assumes the proleptic Gregorian calendar throughout', body: 'The Gregorian calendar was adopted at different times in different countries, starting in 1582. A date entered from before a country\'s own adoption will not match the day that was actually observed there at the time.' },
+        { title: 'No time of day or time zone involved', body: 'This answers a calendar-date question, not a specific instant, so there is nothing to convert between time zones.' }
+      ],
+      references: [
+        { label: "Wikipedia, Zeller's congruence (Gregorian calendar formula and worked example)", url: "https://en.wikipedia.org/wiki/Zeller%27s_congruence" },
+        { label: 'Wikipedia, ISO 8601 (weekday numbering, Monday = 1 through Sunday = 7)', url: 'https://en.wikipedia.org/wiki/ISO_8601' }
+      ]
+    },
+    inputs: [
+      { id: 'dateYear', label: 'Year', type: 'number', placeholder: '2000', defaultValue: 2000, step: 1, min: 1 },
+      { id: 'dateMonth', label: 'Month (1–12)', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 1 },
+      { id: 'dateDay', label: 'Day (1–31)', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Day of the Week Calculator – Zeller\'s Congruence',
+      description: "Find the day of the week for any date, past or future, computed with Zeller's congruence, a real calendar formula, not a lookup table.",
+      faq: [
+        { question: 'What day of the week was January 1, 2000?', answer: "Saturday. Applying Zeller's congruence to January 1, 2000 (treated internally as month 13 of 1999) gives h = 0, which is Saturday in the formula's own numbering." },
+        { question: 'What algorithm finds the day of the week from a date?', answer: "This calculator uses Zeller's congruence, a formula that combines the day, month and an adjusted year into a single expression whose remainder after dividing by 7 gives the weekday." },
+        { question: 'Why does the formula treat January and February differently?', answer: "Zeller's congruence counts January and February as months 13 and 14 of the previous year, so the leap-day adjustment falls at the natural end of its internal year. The actual calendar date you enter is unaffected." },
+        { question: 'What is the ISO 8601 weekday number?', answer: 'ISO 8601 numbers the days 1 through 7 starting with Monday and ending with Sunday, unlike the Sunday-first numbering (0–6) used for this calculator\'s headline. Both describe the same seven days.' },
+        { question: 'Does this work for dates before 1900 or after 2100?', answer: "Yes, the formula itself has no date range limit, since it is pure arithmetic on the year, month and day. Dates before a country's own adoption of the Gregorian calendar (starting 1582) will not match the day actually observed there at the time, however." },
+        { question: 'Can I check whether a date falls on a weekend?', answer: 'Yes. The "Falls on a weekend?" row answers that directly for Saturdays and Sundays.' }
+      ]
+    },
+    compute(values) {
+      let year = values.dateYear;
+      let month = values.dateMonth;
+      const day = values.dateDay;
+      if (month < 3) {
+        month += 12;
+        year -= 1;
+      }
+      const K = ((year % 100) + 100) % 100;
+      const J = Math.floor(year / 100);
+      let h = (day + Math.floor((13 * (month + 1)) / 5) + K + Math.floor(K / 4) + Math.floor(J / 4) - 2 * J) % 7;
+      h = ((h % 7) + 7) % 7;
+      const dayOfWeekCode = (h + 6) % 7;
+      const isoWeekday = ((dayOfWeekCode + 6) % 7) + 1;
+      const isWeekend = dayOfWeekCode === 0 || dayOfWeekCode === 6 ? 1 : 0;
+      return { dayOfWeekCode, isoWeekday, isWeekend };
+    }
+  },
+  {
+    id: 'leap-year-calculator',
+    category: 'time',
+    group: 'Ages & Dates',
+    glyph: 'leap',
+    updatedAt: '2026-11-17',
+    aliases: ['is this year a leap year calculator', 'leap year checker', 'how many leap years between two years', 'leap day calculator'],
+    related: ['date-difference-calculator', 'age-calculator', 'day-of-week-calculator', 'business-days-calculator'],
+    title: 'Leap Year Calculator',
+    description: 'Check whether a year is a leap year under the Gregorian rule, and count how many leap years fall between two years.',
+    example: '1900 is not a leap year (divisible by 100, not 400), but 2000 is. 1900–2024 inclusive contains 31 leap years out of 125 total years.',
+    breakdown: {
+      headline: 'isLeapYear',
+      headlineLabel: 'Is the checked year a leap year?',
+      outputs: [
+        {
+          id: 'isLeapYear',
+          label: 'Is it a leap year?',
+          labels: [
+            { value: 0, label: 'No' },
+            { value: 1, label: 'Yes' }
+          ]
+        },
+        { id: 'leapYearCount', label: 'Leap years in the range', format: 'integer' },
+        { id: 'totalYearsInRange', label: 'Total years in the range', format: 'integer' },
+        { id: 'leapYearSharePercent', label: 'Share of the range that is a leap year', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Check a single year', inputs: ['checkYear'] },
+        { title: 'Count leap years in a range', inputs: ['rangeStartYear', 'rangeEndYear'] }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'leapYearCount', label: 'Leap years' },
+          { from: 'commonYearCount', label: 'Common years' }
+        ],
+        center: 'totalYearsInRange',
+        centerSub: 'years in range'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'Why the calendar needs leap years, and the exact rule',
+        paragraphs: [
+          'A year on the calendar is 365 days, but the time Earth actually takes to orbit the Sun — a solar year — is about 365.2422 days, according to Royal Museums Greenwich. Ignoring that extra roughly quarter-day would slowly shift the calendar out of step with the seasons, so an extra day is added to February in most years divisible by 4 to make up the difference.',
+          'The Julian calendar did exactly that — a leap year every 4 years, no exceptions — which overcorrects slightly, since 365.25 days a year is a bit more than the real 365.2422. The Gregorian calendar fixes the overcorrection with one additional rule: "the year number must be divisible by four – except for end-of-century years, which must be divisible by 400" (Royal Museums Greenwich). That is why 1900 and 2100 are not leap years despite being divisible by 4, while 2000 and 2400 are, because they also divide evenly by 400.',
+          'Counting how many leap years fall in a range of years uses the same rule, just applied to every year in the range at once rather than one at a time: the number of leap years from year 1 up to any year y is ⌊y÷4⌋ − ⌊y÷100⌋ + ⌊y÷400⌋, counting every year divisible by 4, then removing the century years, then adding the divisible-by-400 years back in. Subtracting that count at the start of a range from the count at the end gives the leap years in between.'
+        ]
+      },
+      howTo: {
+        intro: 'Check a single year, or set a range to count how many leap years it contains.',
+        steps: [
+          { name: 'Enter a year to check', text: 'The headline answers whether that one year is a leap year.' },
+          { name: 'Enter a start and end year for the range', text: 'Both years are included in the count, in either order.' },
+          { name: 'Read the leap year count', text: 'The number of leap years in the range, alongside the total number of years it spans.' },
+          { name: 'Check the share', text: 'Roughly 1 year in 4 is a leap year on average; the percentage shows how close your specific range comes to that.' }
+        ],
+        outro: 'Everything is calculated in your browser using the rule above. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'A single year is tested directly against the Gregorian rule. A range is counted using the same rule applied as a running total.',
+        expression:
+          'isLeapYear(y) = (y mod 4 = 0) AND (y mod 100 ≠ 0 OR y mod 400 = 0)\nleapYearsUpTo(y) = ⌊y ÷ 4⌋ − ⌊y ÷ 100⌋ + ⌊y ÷ 400⌋\nleapYearCount = leapYearsUpTo(endYear) − leapYearsUpTo(startYear − 1)',
+        terms: [
+          { symbol: 'y mod 4 = 0', meaning: 'Divisible by 4 — the base rule, true for 3 out of every 4 years.' },
+          { symbol: 'y mod 100 ≠ 0', meaning: 'Not an end-of-century year — the exception that removes 1900, 2100 and similar years.' },
+          { symbol: 'y mod 400 = 0', meaning: 'Divisible by 400 — the exception to the exception, which puts 2000 and 2400 back in.' },
+          { symbol: 'leapYearsUpTo(y)', meaning: 'Counts every leap year from year 1 through year y using the same three tests, without checking each year one by one.' }
+        ],
+        note: 'Over any 400-year span the Gregorian rule gives exactly 100 − 4 + 1 = 97 leap years, for an average year length of 365 + 97⁄400 = 365.2425 days — closer to the real 365.2422-day solar year than the Julian calendar\'s 365.25.'
+      },
+      workedExample: {
+        intro: 'Is 1900 a leap year, and how many leap years fall between 1900 and 2024 inclusive?',
+        rows: [
+          { label: '1900 ÷ 4', value: 'divides evenly' },
+          { label: '1900 ÷ 100', value: 'also divides evenly — century year' },
+          { label: '1900 ÷ 400', value: 'does not divide evenly — the century exception stands' },
+          { label: '1900 leap year?', value: 'No' },
+          { label: 'Leap years from year 1 through 2024 (⌊2024÷4⌋ − ⌊2024÷100⌋ + ⌊2024÷400⌋)', value: '506 − 20 + 5 = 491' },
+          { label: 'Leap years from year 1 through 1899', value: '460' },
+          { label: 'Leap years, 1900 through 2024 (491 − 460)', value: '31' },
+          { label: 'Total years, 1900 through 2024 inclusive', value: '125' }
+        ],
+        result: '1900 is not a leap year; 1900–2024 inclusive contains 31 leap years out of 125 total years (about 24.8%)',
+        explanation: '1900 fails the leap test because it is a century year not divisible by 400. Counting 31 leap years in 125 years (24.8%) comes out a little under the simple "1 in 4" (25%) estimate, which is exactly what the century exception is supposed to do over a long enough span.'
+      },
+      watchOut: [
+        { title: 'Century years are the exception, not the rule', body: 'Most years divisible by 4 are leap years, but a year divisible by 100 is only a leap year if it is also divisible by 400. 1900, 2100 and 2200 are not leap years; 2000 and 2400 are.' },
+        { title: 'The rule is a correction, not a perfect match', body: 'The Gregorian average of 365.2425 days a year is extremely close to the real solar year of about 365.2422 days, but not exact — it will still drift over many thousands of years, just far more slowly than the Julian calendar it replaced.' },
+        { title: 'Assumes the proleptic Gregorian calendar throughout', body: 'The Gregorian calendar was adopted at different times in different countries, starting in 1582. Applying this rule to years before a given country\'s own adoption does not match what was actually observed there at the time.' },
+        { title: 'February 29 birthdays roll forward in other years', body: 'A birth date or anniversary of February 29 is read as March 1 in a year without a leap day, since the date simply does not exist that year — the same behavior the age calculator uses.' },
+        { title: 'The range count includes both years you enter', body: 'Entering 1900 and 2024 counts leap years in every year from 1900 through 2024, not up to but excluding one end.' }
+      ],
+      references: [
+        { label: 'Royal Museums Greenwich, Which years are leap years, and can you have leap seconds?', url: 'https://www.rmg.co.uk/stories/time/which-years-are-leap-years-can-you-have-leap-seconds' }
+      ]
+    },
+    inputs: [
+      { id: 'checkYear', label: 'Year to check', type: 'number', placeholder: '1900', defaultValue: 1900, step: 1, min: 1 },
+      { id: 'rangeStartYear', label: 'Range start year', type: 'number', placeholder: '1900', defaultValue: 1900, step: 1, min: 1 },
+      { id: 'rangeEndYear', label: 'Range end year', type: 'number', placeholder: '2024', defaultValue: 2024, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Leap Year Calculator – Check a Year & Count a Range',
+      description: 'Check whether a year is a leap year under the Gregorian rule, and count how many leap years fall between two years.',
+      faq: [
+        { question: 'Is 1900 a leap year?', answer: 'No. 1900 is divisible by 4 and by 100, but not by 400, so the century exception to the Gregorian rule applies and 1900 is a common (non-leap) year.' },
+        { question: 'Is 2000 a leap year?', answer: 'Yes. 2000 is divisible by 4, 100 and 400, so it passes the century exception\'s own exception and is a leap year, unlike 1900 or 2100.' },
+        { question: 'What is the exact rule for a leap year?', answer: 'A year is a leap year if it is divisible by 4, unless it is also divisible by 100 — in which case it must be divisible by 400 as well. 2024 is a leap year; 2026 is not.' },
+        { question: 'How many leap years are there between two given years?', answer: 'The calculator counts leap years from year 1 up to each endpoint using the same rule, then subtracts. Between 1900 and 2024 inclusive there are 31 leap years out of 125 total years.' },
+        { question: 'Why do leap years exist at all?', answer: 'Earth takes about 365.2422 days to orbit the Sun, not a flat 365. Adding a day roughly every 4 years keeps the calendar from slowly drifting out of step with the seasons.' },
+        { question: 'How accurate is the Gregorian rule?', answer: 'Its 400-year cycle averages 365.2425 days a year, very close to the real 365.2422-day solar year — far closer than the Julian calendar\'s flat 365.25, though still not a perfect match over very long timescales.' }
+      ]
+    },
+    compute(values) {
+      const isLeapYear = (values.checkYear % 4 === 0 && (values.checkYear % 100 !== 0 || values.checkYear % 400 === 0)) ? 1 : 0;
+
+      const lo = Math.min(values.rangeStartYear, values.rangeEndYear);
+      const hi = Math.max(values.rangeStartYear, values.rangeEndYear);
+      const totalYearsInRange = hi - lo + 1;
+      const leapYearsUpTo = (y: number) => (y < 1 ? 0 : Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400));
+      const leapYearCount = leapYearsUpTo(hi) - leapYearsUpTo(lo - 1);
+      const commonYearCount = totalYearsInRange - leapYearCount;
+      const leapYearSharePercent = (leapYearCount / totalYearsInRange) * 100;
+
+      return { isLeapYear, leapYearCount, commonYearCount, totalYearsInRange, leapYearSharePercent };
+    }
+  },
+  {
+    id: 'unix-timestamp-converter',
+    category: 'time',
+    group: 'Ages & Dates',
+    glyph: 'unix',
+    updatedAt: '2026-11-17',
+    aliases: ['epoch converter', 'unix time converter', 'timestamp to date calculator', 'epoch to date converter'],
+    related: ['date-difference-calculator', 'day-of-week-calculator', 'age-calculator', 'business-days-calculator'],
+    title: 'Unix Timestamp Converter',
+    description: 'Convert a Unix timestamp (seconds since January 1, 1970 UTC) to a calendar date and time, or a date and time back to its epoch seconds.',
+    example: 'Epoch second 1,000,000,000 is September 9, 2001, 01:46:40 UTC.',
+    breakdown: {
+      headline: 'epochSecondsResult',
+      headlineLabel: 'Unix timestamp (seconds since the epoch, UTC)',
+      outputs: [
+        { id: 'epochSecondsResult', label: 'Unix timestamp (seconds, UTC)', format: 'integer' },
+        { id: 'year', label: 'Year (UTC)', format: 'integer' },
+        { id: 'month', label: 'Month (UTC)', format: 'integer' },
+        { id: 'day', label: 'Day (UTC)', format: 'integer' },
+        { id: 'hour', label: 'Hour (UTC, 24-hr)', format: 'integer' },
+        { id: 'minute', label: 'Minute (UTC)', format: 'integer' },
+        { id: 'second', label: 'Second (UTC)', format: 'integer' }
+      ],
+      groups: [
+        { title: 'Conversion direction', inputs: ['direction'] },
+        { title: 'From a Unix timestamp', inputs: ['epochSeconds'] },
+        { title: 'From a calendar date & time (UTC)', inputs: ['dateYear', 'dateMonth', 'dateDay', 'dateHour', 'dateMinute', 'dateSecond'], optional: true }
+      ],
+      derive: (values) => ({ resultEpochMs: values.epochSecondsResult * 1000, epoch0Ms: 0, limit2038Ms: 2147483647000 }),
+      visual: {
+        type: 'timeline',
+        start: 'epoch0Ms',
+        end: 'limit2038Ms',
+        today: 'resultEpochMs',
+        startLabel: 'Unix epoch (1970)',
+        endLabel: '32-bit limit (2038)',
+        title: 'Where this timestamp falls between the Unix epoch and the 2038 problem'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What a Unix timestamp actually counts',
+        paragraphs: [
+          'A Unix timestamp, formally "seconds since the Epoch" in the POSIX standard, is the number of seconds that have elapsed since 00:00:00 Coordinated Universal Time (UTC) on January 1, 1970 — second 0. Every later moment is a positive number counting up from there; moments before 1970 are negative. Storing time as one incrementing number rather than separate year, month, day and time-of-day fields makes comparing two moments, or measuring the gap between them, ordinary subtraction instead of calendar arithmetic.',
+          'The standard defines the relationship precisely with a formula for converting a broken-down UTC date and time into seconds, and it is explicit that the model is simplified: POSIX states that "each and every day shall be accounted for by exactly 86400 seconds," meaning a Unix timestamp does not count leap seconds — the occasional extra second added to UTC to keep it aligned with Earth\'s actual rotation. That makes Unix time extremely convenient for arithmetic, at the cost of not being a perfectly precise astronomical clock.',
+          'This calculator converts in both directions: give it a timestamp and it reports the matching UTC calendar date and time, or give it a calendar date and time (also in UTC) and it reports the matching timestamp. Everything is shown in UTC specifically, not your device\'s local time zone, so the number is the same no matter where in the world you are.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick a direction, then fill in either the timestamp or the calendar fields.',
+        steps: [
+          { name: 'Choose a direction', text: 'Convert a Unix timestamp to a date, or a date back to a Unix timestamp.' },
+          { name: 'Enter the timestamp, or the date and time', text: 'Fill in whichever group matches the direction you picked. All date and time fields are UTC.' },
+          { name: 'Read the result', text: 'The headline is the Unix timestamp in seconds; the rows below show the matching year, month, day, hour, minute and second in UTC.' },
+          { name: 'Check the timeline', text: 'The bar places your timestamp between the Unix epoch (1970) and the 32-bit signed-integer limit in 2038, for scale.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Converting a UTC calendar date to a timestamp, or back, is the same relationship read in either direction.',
+        expression:
+          'epochSeconds = (UTC milliseconds for the entered date and time − 0) ÷ 1000\ndate & time = the UTC calendar reading of (epochSeconds × 1000) milliseconds since January 1, 1970, 00:00:00 UTC',
+        terms: [
+          { symbol: 'the Epoch', meaning: '00:00:00 UTC, January 1, 1970 — second 0 by definition. Timestamps before this moment are negative.' },
+          { symbol: 'UTC', meaning: 'Every field on this page, in both directions, is Coordinated Universal Time, not a local time zone.' }
+        ],
+        note: 'POSIX defines every day as exactly 86,400 seconds and does not count leap seconds, so a Unix timestamp is a simplified, arithmetic-friendly clock rather than an astronomically exact one.'
+      },
+      workedExample: {
+        intro: 'What calendar date and time, in UTC, is Unix timestamp 1,000,000,000?',
+        rows: [
+          { label: 'Timestamp', value: '1,000,000,000 seconds since the epoch' },
+          { label: 'In milliseconds (× 1,000)', value: '1,000,000,000,000 ms since 00:00:00 UTC, Jan 1, 1970' },
+          { label: 'UTC calendar reading', value: 'September 9, 2001' },
+          { label: 'UTC time of day', value: '01:46:40' }
+        ],
+        result: 'Unix timestamp 1,000,000,000 is September 9, 2001, 01:46:40 UTC',
+        explanation: 'Dividing by the 86,400 seconds POSIX assigns to every day (times 1,000 for milliseconds) walks forward from the 1970 epoch to the matching UTC calendar date and time, the reverse of what the "date and time → timestamp" direction does to a date you enter.'
+      },
+      watchOut: [
+        { title: 'Every field is UTC, not your local time', body: 'Convert to your own time zone separately if you need local time — this calculator does not read your device\'s time zone, so the same timestamp always produces the same UTC fields regardless of where you are.' },
+        { title: 'Leap seconds are not counted', body: 'POSIX defines "seconds since the Epoch" so that every day is exactly 86,400 seconds, ignoring the leap seconds occasionally added to UTC. A Unix timestamp is not a perfectly precise astronomical measurement.' },
+        { title: 'The "Year 2038 problem" is a storage limit, not a math limit', body: 'Some older 32-bit systems store a Unix timestamp as a signed 32-bit integer, which overflows at 2,147,483,647 seconds — January 19, 2038, 03:14:07 UTC. This calculator does ordinary arithmetic and has no such ceiling.' },
+        { title: 'Negative timestamps are valid, but not universally supported', body: 'A negative value represents a date before 1970. The math here handles it correctly, but not every system or tool accepts a negative Unix timestamp.' },
+        { title: 'Only the active direction\'s fields are used', body: 'Switching direction uses whichever group of fields matches; the other group\'s values are read only once you switch to that direction.' }
+      ],
+      references: [
+        { label: 'The Open Group, IEEE Std 1003.1-2017 (POSIX.1), Base Definitions §4.16, Seconds Since the Epoch', url: 'https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap04.html' },
+        { label: 'Royal Museums Greenwich, Which years are leap years, and can you have leap seconds?', url: 'https://www.rmg.co.uk/stories/time/which-years-are-leap-years-can-you-have-leap-seconds' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'direction',
+        label: 'Conversion direction',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Unix timestamp → date & time' },
+          { value: 1, label: 'Date & time → Unix timestamp' }
+        ]
+      },
+      { id: 'epochSeconds', label: 'Unix timestamp (seconds since the epoch, UTC)', type: 'number', placeholder: '1000000000', defaultValue: 1000000000, step: 1 },
+      { id: 'dateYear', label: 'Year (UTC)', type: 'number', placeholder: '2026', defaultValue: 2026, step: 1, min: 1900 },
+      { id: 'dateMonth', label: 'Month (UTC, 1–12)', type: 'number', placeholder: '7', defaultValue: 7, step: 1, min: 1 },
+      { id: 'dateDay', label: 'Day (UTC, 1–31)', type: 'number', placeholder: '4', defaultValue: 4, step: 1, min: 1 },
+      { id: 'dateHour', label: 'Hour (UTC, 0–23)', type: 'number', placeholder: '12', defaultValue: 12, step: 1, min: 0 },
+      { id: 'dateMinute', label: 'Minute (UTC, 0–59)', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0 },
+      { id: 'dateSecond', label: 'Second (UTC, 0–59)', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Unix Timestamp Converter – Epoch Seconds ↔ Date',
+      description: 'Convert a Unix timestamp (seconds since Jan 1, 1970 UTC) to a date and time, or a UTC date and time back to its epoch seconds.',
+      faq: [
+        { question: 'What is a Unix timestamp?', answer: 'The number of seconds elapsed since 00:00:00 UTC on January 1, 1970, the "epoch" defined by the POSIX standard. Timestamp 1,000,000,000 is September 9, 2001, 01:46:40 UTC.' },
+        { question: 'Does a Unix timestamp use my local time zone?', answer: 'No. This calculator always converts to and from UTC. Convert the result to your own time zone separately if you need local time.' },
+        { question: 'Can a Unix timestamp be negative?', answer: 'Yes, a negative value represents a date before January 1, 1970. The arithmetic here handles negative timestamps correctly, though not every system or tool does.' },
+        { question: 'Do Unix timestamps count leap seconds?', answer: 'No. POSIX defines every day as exactly 86,400 seconds, so Unix time does not account for the leap seconds occasionally inserted into UTC.' },
+        { question: 'What is the Year 2038 problem?', answer: 'Some older 32-bit systems store a Unix timestamp as a signed 32-bit integer, which overflows at 2,147,483,647 seconds — January 19, 2038, 03:14:07 UTC. This calculator performs ordinary arithmetic and is not affected.' },
+        { question: 'How do I convert a date to a Unix timestamp?', answer: 'Switch the direction to "Date & time → Unix timestamp," enter the date and time in UTC, and the headline shows the matching epoch seconds.' }
+      ]
+    },
+    compute(values) {
+      const dateToEpoch = values.direction >= 0.5;
+      let epochSecondsResult: number, year: number, month: number, day: number, hour: number, minute: number, second: number;
+      if (dateToEpoch) {
+        epochSecondsResult = Math.round(Date.UTC(values.dateYear, values.dateMonth - 1, values.dateDay, values.dateHour, values.dateMinute, values.dateSecond) / 1000);
+        year = values.dateYear;
+        month = values.dateMonth;
+        day = values.dateDay;
+        hour = values.dateHour;
+        minute = values.dateMinute;
+        second = values.dateSecond;
+      } else {
+        epochSecondsResult = values.epochSeconds;
+        const d = new Date(values.epochSeconds * 1000);
+        year = d.getUTCFullYear();
+        month = d.getUTCMonth() + 1;
+        day = d.getUTCDate();
+        hour = d.getUTCHours();
+        minute = d.getUTCMinutes();
+        second = d.getUTCSeconds();
+      }
+      return { epochSecondsResult, year, month, day, hour, minute, second };
+    }
+  },
+  {
+    id: 'timesheet-calculator',
+    category: 'time',
+    group: 'Work & Focus',
+    glyph: 'ts',
+    updatedAt: '2026-11-17',
+    aliases: ['weekly timesheet calculator', 'biweekly timesheet calculator', 'employee timesheet calculator', 'weekly hours and overtime rollup calculator'],
+    related: ['work-hours-calculator', 'overtime-pay-calculator', 'pto-calculator', 'paycheck-calculator'],
+    title: 'Timesheet Calculator',
+    description: 'Add up hours worked across a full week, day by day, and split the weekly total into regular and overtime pay at a threshold you set.',
+    example: 'Working 9 hours Monday through Friday and 2 hours Saturday (47 hours total) at $20/hr with a 40-hour threshold pays $1,010.00 — $800.00 regular plus $210.00 overtime.',
+    breakdown: {
+      headline: 'grossPay',
+      headlineLabel: 'Gross pay for the week',
+      outputs: [
+        { id: 'grossPay', label: 'Gross pay', format: 'currency' },
+        { id: 'totalHours', label: 'Total hours this week', format: 'number' },
+        { id: 'regularHours', label: 'Regular hours', format: 'number' },
+        { id: 'overtimeHours', label: 'Overtime hours', format: 'number' },
+        { id: 'regularPay', label: 'Regular pay', format: 'currency' },
+        { id: 'overtimePay', label: 'Overtime pay', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Hours by day', inputs: ['monHours', 'tueHours', 'wedHours', 'thuHours', 'friHours', 'satHours', 'sunHours'] },
+        { title: 'Pay & overtime rule', inputs: ['hourlyRate', 'overtimeThreshold', 'overtimeMultiplier'] }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'regularPay', label: 'Regular pay' },
+          { from: 'overtimePay', label: 'Overtime pay' }
+        ],
+        center: 'grossPay',
+        centerSub: 'gross pay'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'How a weekly timesheet rolls up into pay',
+        paragraphs: [
+          'A timesheet records hours day by day across a pay period, rather than a single pre-totaled number. This calculator mirrors that: enter the hours worked each day of the week, and it adds them into a weekly total before splitting that total into regular and overtime pay at a threshold you set, 40 hours by default under the federal Fair Labor Standards Act (FLSA).',
+          'That is a different starting point from the two other hours-and-pay calculators on this site. The Work Hours Calculator computes pay for a single shift from hours you have already pre-split into regular and overtime. The Overtime Pay Calculator takes one already-combined weekly total and adds a separate double-time tier for hours already identified as subject to a daily double-time rule. This calculator is the one that builds the weekly total itself from a day-by-day entry — closer to how an actual paper or digital timesheet is filled in — but, unlike the Overtime Pay Calculator, it has no separate double-time tier.',
+          'Only the weekly total and the threshold decide the split: every hour up to the threshold is regular, and everything past it is overtime at the multiplier you set. The day-by-day entries exist to make adding up the week easier, not to change how the overtime rule is applied.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the hours worked each day of the week, then your hourly rate and overtime rule.',
+        steps: [
+          { name: 'Enter hours for each day', text: 'Monday through Sunday. Leave a day at 0 if you did not work it.' },
+          { name: 'Enter your hourly rate', text: 'Your base pay before any overtime premium.' },
+          { name: 'Check the overtime threshold', text: 'Defaults to 40 hours a week, the federal FLSA standard. Change it only if your situation differs.' },
+          { name: 'Check the overtime multiplier', text: 'Defaults to 1.5 for standard "time and a half." Adjust it for a different rule.' },
+          { name: 'Read the breakdown', text: 'Gross pay is the headline, with the weekly total, regular and overtime hours, and a chart of where the money comes from.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The seven daily entries are summed first; everything else follows the same regular/overtime split the other pay calculators on this site use.',
+        expression:
+          'totalHours = monHours + tueHours + wedHours + thuHours + friHours + satHours + sunHours\nregularHours = min(totalHours, overtimeThreshold)\novertimeHours = max(0, totalHours − overtimeThreshold)\nregularPay = regularHours × hourlyRate\novertimePay = overtimeHours × hourlyRate × overtimeMultiplier\ngrossPay = regularPay + overtimePay',
+        terms: [
+          { symbol: 'overtimeThreshold', meaning: 'Hours per week before overtime starts — 40 is the federal FLSA default.' },
+          { symbol: 'overtimeMultiplier', meaning: 'How much overtime pays versus regular time — 1.5 ("time and a half") is the federal standard.' }
+        ],
+        note: 'Estimates only, based on the FLSA federal floor. This calculator does not apply any state daily-overtime rule automatically, and has no double-time tier — use the Overtime Pay Calculator if you need one.'
+      },
+      workedExample: {
+        intro: 'You work 9 hours Monday through Friday and 2 hours Saturday, nothing Sunday, at $20/hr with the standard 40-hour threshold and 1.5× multiplier.',
+        rows: [
+          { label: 'Daily hours (Mon–Fri 9, Sat 2, Sun 0)', value: '9 + 9 + 9 + 9 + 9 + 2 + 0 = 47 hours' },
+          { label: 'Regular hours (min(47, 40))', value: '40' },
+          { label: 'Overtime hours (47 − 40)', value: '7' },
+          { label: 'Regular pay (40 × $20)', value: '$800.00' },
+          { label: 'Overtime pay (7 × $20 × 1.5)', value: '$210.00' },
+          { label: 'Gross pay (800 + 210)', value: '$1,010.00' }
+        ],
+        result: 'Gross pay $1,010.00 for 47 hours worked',
+        explanation: 'The daily entries only decide the weekly total of 47 hours — once summed, the overtime split works exactly as it would if 47 had been entered as a single number: 40 hours regular, 7 hours at the 1.5× overtime rate.'
+      },
+      watchOut: [
+        { title: 'Distinct from the Work Hours Calculator', body: 'That calculator computes pay for one shift from hours already split into regular and overtime. This one adds up a full week day by day and splits the total for you.' },
+        { title: 'Distinct from the Overtime Pay Calculator', body: 'That calculator takes one already-combined weekly total and adds a separate double-time tier. This one builds the weekly total from daily entries, but has no double-time tier of its own.' },
+        { title: 'Federal overtime is weekly, not daily', body: 'The FLSA threshold of 40 hours applies to the week as a whole, not to any single day — working 10 hours in one day is not automatically overtime under federal rules alone.' },
+        { title: 'Assumes an hourly, non-exempt worker', body: 'Many salaried employees are exempt from FLSA overtime rules entirely, depending on their duties and pay level. This calculator does not determine exempt status.' },
+        { title: 'One week at a time', body: 'For a biweekly or semi-monthly pay period, run this once per week and add the results, rather than entering two weeks of hours at once against a single 40-hour threshold.' }
+      ],
+      references: [
+        { label: 'U.S. Department of Labor, Wage and Hour Division, Overtime Pay', url: 'https://www.dol.gov/agencies/whd/overtime' },
+        { label: 'U.S. Department of Labor, Wage and Hour Division, Fair Labor Standards Act (FLSA)', url: 'https://www.dol.gov/agencies/whd/flsa' }
+      ]
+    },
+    inputs: [
+      { id: 'monHours', label: 'Monday hours', type: 'number', placeholder: '9', defaultValue: 9, step: 0.25, min: 0 },
+      { id: 'tueHours', label: 'Tuesday hours', type: 'number', placeholder: '9', defaultValue: 9, step: 0.25, min: 0 },
+      { id: 'wedHours', label: 'Wednesday hours', type: 'number', placeholder: '9', defaultValue: 9, step: 0.25, min: 0 },
+      { id: 'thuHours', label: 'Thursday hours', type: 'number', placeholder: '9', defaultValue: 9, step: 0.25, min: 0 },
+      { id: 'friHours', label: 'Friday hours', type: 'number', placeholder: '9', defaultValue: 9, step: 0.25, min: 0 },
+      { id: 'satHours', label: 'Saturday hours', type: 'number', placeholder: '2', defaultValue: 2, step: 0.25, min: 0 },
+      { id: 'sunHours', label: 'Sunday hours', type: 'number', placeholder: '0', defaultValue: 0, step: 0.25, min: 0 },
+      { id: 'hourlyRate', label: 'Hourly rate', type: 'currency', placeholder: '20', defaultValue: 20, step: 0.25, min: 0 },
+      { id: 'overtimeThreshold', label: 'Weekly overtime threshold (hours)', type: 'number', placeholder: '40', defaultValue: 40, step: 1, min: 0 },
+      { id: 'overtimeMultiplier', label: 'Overtime multiplier', type: 'number', placeholder: '1.5', defaultValue: 1.5, step: 0.25, min: 1 }
+    ],
+    seo: {
+      title: 'Timesheet Calculator – Weekly Hours & Overtime',
+      description: 'Add up hours worked each day of the week and split the weekly total into regular and overtime pay at a threshold you choose.',
+      faq: [
+        { question: 'How do I calculate pay from a weekly timesheet?', answer: 'Enter the hours worked each day of the week; the calculator sums them, then splits the weekly total into regular and overtime pay at your threshold. 47 hours at $20/hr with a 40-hour threshold and 1.5× multiplier comes to $800.00 regular plus $210.00 overtime, $1,010.00 total.' },
+        { question: 'How is this different from the Work Hours Calculator?', answer: 'The Work Hours Calculator takes hours you have already split into regular and overtime for a single shift. This calculator adds up a full week day by day and does the splitting for you.' },
+        { question: 'How is this different from the Overtime Pay Calculator?', answer: 'The Overtime Pay Calculator takes one already-combined weekly total and adds a separate double-time tier. This calculator builds the weekly total from daily entries but has no double-time tier.' },
+        { question: 'Does this calculator handle daily overtime rules like California\'s?', answer: 'No, it applies the federal weekly 40-hour rule only. For a state with its own daily overtime rule, adjust your entered hours by hand or use the Overtime Pay Calculator\'s double-time field.' },
+        { question: 'What if I work a biweekly pay period?', answer: 'Run the calculator once for each week and add the two results, rather than entering two weeks of hours against a single 40-hour threshold.' },
+        { question: 'Are salaried employees covered by this calculator?', answer: 'This assumes an hourly, non-exempt worker. Many salaried employees are exempt from FLSA overtime rules entirely, depending on their duties and pay level.' }
+      ]
+    },
+    compute(values) {
+      const totalHours = values.monHours + values.tueHours + values.wedHours + values.thuHours + values.friHours + values.satHours + values.sunHours;
+      const regularHours = Math.min(totalHours, values.overtimeThreshold);
+      const overtimeHours = Math.max(0, totalHours - values.overtimeThreshold);
+      const regularPay = regularHours * values.hourlyRate;
+      const overtimePay = overtimeHours * values.hourlyRate * values.overtimeMultiplier;
+      const grossPay = regularPay + overtimePay;
+      return { totalHours, regularHours, overtimeHours, regularPay, overtimePay, grossPay };
+    }
+  },
   // Custom-component stub: rendered by a special component in page.tsx. v2 content + WidgetCard restyle in step 39.
   {
     id: 'pomodoro-timer',

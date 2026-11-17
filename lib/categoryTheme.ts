@@ -20,7 +20,8 @@ export const CATEGORY_THEME: Record<string, { color: TileColor; icon: IconName }
   food: { color: 'red', icon: 'bowl' },
   sports: { color: 'green', icon: 'trophy' },
   chemistry: { color: 'teal', icon: 'flask' },
-  biology: { color: 'lime', icon: 'dna' }
+  biology: { color: 'lime', icon: 'dna' },
+  ecology: { color: 'emerald', icon: 'leaf' }
 };
 
 export function categoryTheme(categoryId: string) {
@@ -40,7 +41,8 @@ export const GLYPH_TINT: Record<TileColor, { tint: string; ink: string; darkTint
   teal: { tint: '#E6F6FA', ink: '#14718A', darkTint: 'rgba(90,200,224,0.16)', darkInk: '#5AC8E0' },
   gray: { tint: '#F2F2F7', ink: '#48484A', darkTint: 'rgba(161,161,166,0.16)', darkInk: '#C7C7CC' },
   purple: { tint: '#F4EAFB', ink: '#7A2BAE', darkTint: 'rgba(201,105,245,0.16)', darkInk: '#C969F5' },
-  lime: { tint: '#F1F8E3', ink: '#4D7C0F', darkTint: 'rgba(163,230,53,0.16)', darkInk: '#A3E635' }
+  lime: { tint: '#F1F8E3', ink: '#4D7C0F', darkTint: 'rgba(163,230,53,0.16)', darkInk: '#A3E635' },
+  emerald: { tint: '#E6F7F0', ink: '#047857', darkTint: 'rgba(52,211,153,0.16)', darkInk: '#34D399' }
 };
 
 // Which tile each long-form section wears, in both its heading and the table of contents.

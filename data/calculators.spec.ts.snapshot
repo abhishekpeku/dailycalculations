@@ -1714,6 +1714,56 @@ exports[`compute() snapshots > car-payment-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > carbon-footprint-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "kwhPerMonth": 900,
+      "thermsPerMonth": 50,
+      "gallonsPerYear": 500,
+      "flightMiles": 3000
+    },
+    "outputs": {
+      "electricityKg": 4255.2,
+      "naturalGasKg": 3180,
+      "gasolineKg": 4443.5,
+      "flightKg": 1261.468201,
+      "totalKg": 13140.1682
+    }
+  },
+  "typical": {
+    "inputs": {
+      "kwhPerMonth": 1350,
+      "thermsPerMonth": 75,
+      "gallonsPerYear": 750,
+      "flightMiles": 4500
+    },
+    "outputs": {
+      "electricityKg": 6382.8,
+      "naturalGasKg": 4770,
+      "gasolineKg": 6665.25,
+      "flightKg": 1892.202301,
+      "totalKg": 19710.2523
+    }
+  },
+  "edge": {
+    "inputs": {
+      "kwhPerMonth": 0,
+      "thermsPerMonth": 0,
+      "gallonsPerYear": 0,
+      "flightMiles": 0
+    },
+    "outputs": {
+      "electricityKg": 0,
+      "naturalGasKg": 0,
+      "gasolineKg": 0,
+      "flightKg": 0,
+      "totalKg": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > carpet-calculator 1`] = `
 {
   "default": {
@@ -5319,6 +5369,44 @@ exports[`compute() snapshots > fence-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > flight-carbon-footprint-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "distance": 3400,
+      "roundTrip": 1,
+      "flightType": 5,
+      "includeRF": 1
+    },
+    "outputs": {
+      "totalKg": 2189.911629
+    }
+  },
+  "typical": {
+    "inputs": {
+      "distance": 5100,
+      "roundTrip": 2,
+      "flightType": 8,
+      "includeRF": 2
+    },
+    "outputs": {
+      "totalKg": 3877.788398
+    }
+  },
+  "edge": {
+    "inputs": {
+      "distance": 0,
+      "roundTrip": 0,
+      "flightType": 0,
+      "includeRF": 0
+    },
+    "outputs": {
+      "totalKg": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > flooring-calculator 1`] = `
 {
   "default": {
@@ -8761,6 +8849,56 @@ exports[`compute() snapshots > mean-median-mode-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > meat-footprint-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "beefKg": 0.5,
+      "porkKg": 0.3,
+      "poultryKg": 0.7,
+      "fishKg": 0.2,
+      "eggsKg": 0.3,
+      "milkKg": 2,
+      "tofuKg": 0.2
+    },
+    "outputs": {
+      "weeklyKgCO2e": 71.401,
+      "annualKgCO2e": 3712.852
+    }
+  },
+  "typical": {
+    "inputs": {
+      "beefKg": 0.8,
+      "porkKg": 0.4,
+      "poultryKg": 1,
+      "fishKg": 0.3,
+      "eggsKg": 0.4,
+      "milkKg": 3,
+      "tofuKg": 0.3
+    },
+    "outputs": {
+      "weeklyKgCO2e": 110.733,
+      "annualKgCO2e": 5758.116
+    }
+  },
+  "edge": {
+    "inputs": {
+      "beefKg": 0,
+      "porkKg": 0,
+      "poultryKg": 0,
+      "fishKg": 0,
+      "eggsKg": 0,
+      "milkKg": 0,
+      "tofuKg": 0
+    },
+    "outputs": {
+      "weeklyKgCO2e": 0,
+      "annualKgCO2e": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > meeting-cost-calculator 1`] = `
 {
   "default": {
@@ -11482,6 +11620,44 @@ exports[`compute() snapshots > pka-henderson-hasselbalch-calculator 1`] = `
     },
     "outputs": {
       "pH": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > plastic-footprint-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "householdSize": 4,
+      "recyclingRatePct": 8.7
+    },
+    "outputs": {
+      "householdAnnualLb": 872.788,
+      "recycledLb": 75.932556,
+      "notRecycledLb": 796.855444
+    }
+  },
+  "typical": {
+    "inputs": {
+      "householdSize": 6,
+      "recyclingRatePct": 13
+    },
+    "outputs": {
+      "householdAnnualLb": 1309.182,
+      "recycledLb": 170.19366,
+      "notRecycledLb": 1138.98834
+    }
+  },
+  "edge": {
+    "inputs": {
+      "householdSize": 1,
+      "recyclingRatePct": 0
+    },
+    "outputs": {
+      "householdAnnualLb": 218.197,
+      "recycledLb": 0,
+      "notRecycledLb": 218.197
     }
   }
 }
@@ -16382,6 +16558,50 @@ exports[`compute() snapshots > warehouse-club-membership-breakeven-calculator 1`
     },
     "outputs": {
       "breakEvenTrips": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > water-footprint-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "country": 0,
+      "householdSize": 4,
+      "beefKgPerWeek": 1
+    },
+    "outputs": {
+      "householdLitersPerYear": 11360000,
+      "perPersonLitersPerDay": 7780.821918,
+      "beefLitersPerYear": 780000,
+      "beefShareOfPersonalFootprintPct": 27.46478873
+    }
+  },
+  "typical": {
+    "inputs": {
+      "country": 0,
+      "householdSize": 6,
+      "beefKgPerWeek": 1.5
+    },
+    "outputs": {
+      "householdLitersPerYear": 17040000,
+      "perPersonLitersPerDay": 7780.821918,
+      "beefLitersPerYear": 1170000,
+      "beefShareOfPersonalFootprintPct": 41.1971831
+    }
+  },
+  "edge": {
+    "inputs": {
+      "country": 0,
+      "householdSize": 1,
+      "beefKgPerWeek": 0
+    },
+    "outputs": {
+      "householdLitersPerYear": 2840000,
+      "perPersonLitersPerDay": 7780.821918,
+      "beefLitersPerYear": 0,
+      "beefShareOfPersonalFootprintPct": 0
     }
   }
 }

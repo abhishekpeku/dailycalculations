@@ -221,15 +221,42 @@ whole site before writing any id.
   - [x] `points-vs-cash-flight-calculator`
   - [x] `tipping-abroad-calculator`
 - [ ] Batch 6 — `time` (5 new)
-- [ ] Batch 7 — `creator` (8 new; branch `step/61-deepen-creator`)
-  - [ ] `tiktok-earnings-calculator`
-  - [ ] `twitch-earnings-calculator`
-  - [ ] `podcast-ad-revenue-calculator`
-  - [ ] `blog-ad-revenue-calculator`
-  - [ ] `patreon-earnings-calculator`
-  - [ ] `affiliate-commission-calculator`
-  - [ ] `follower-growth-rate-calculator`
-  - [ ] `video-engagement-rate-calculator`
+- [x] Batch 7 — `creator` (8 new; done 2026-11-17, branch `step/61-deepen-creator`, PR #126)
+  - [x] `tiktok-earnings-calculator`
+  - [x] `twitch-earnings-calculator`
+  - [x] `podcast-ad-revenue-calculator`
+  - [x] `blog-ad-revenue-calculator`
+  - [x] `patreon-earnings-calculator`
+  - [x] `affiliate-commission-calculator`
+  - [x] `follower-growth-rate-calculator`
+  - [x] `video-engagement-rate-calculator`
+  - Re-grouped the 2 existing calculators into "Monetization & Earnings" (7: youtube,
+    tiktok, twitch, podcast-ad, blog-ad, patreon, affiliate-commission) and "Engagement &
+    Growth" (3: instagram, follower-growth-rate, video-engagement-rate) — `creator` is in
+    `categories.spec.ts`'s `GROUPED_CATEGORIES`, so every calculator needed a `group`.
+  - TikTok: TikTok's own domain (tiktok.com, support.tiktok.com, newsroom.tiktok.com) was
+    unreachable from this environment (connection refused on every attempt) and web search
+    was unavailable (session budget exhausted), so the rate range is sourced from Hootsuite
+    (confirms TikTok publishes no fixed rate for Creator Rewards) and Influencer Marketing
+    Hub (creator-reported ~$0.02-$0.04/1,000 views for the retired Creator Fund) — both
+    fetched directly, content clearly labeled as anecdotal/non-official in the copy.
+  - Twitch: Twitch's help center (help.twitch.tv) is JS-rendered and returned no usable
+    content; subscription-split figures ($2.49/$4.99 base, up to 70/30 premium tiers) are
+    cited from Wikipedia's Twitch (service) article, which itself cites Twitch's own
+    announcements. No official per-Bit dollar value could be found via direct fetch, so
+    the calculator asks for Bits revenue as a dollar figure from the streamer's own
+    dashboard rather than asserting an unconfirmed conversion rate.
+  - Patreon: fetched directly from patreon.com/pricing — flat 10% platform fee, confirmed
+    live (no more Lite/Pro/Premium tiers; that structure is retired).
+  - Podcast CPM ranges, the view-based engagement-rate convention (TikTok/YouTube/
+    Instagram Reels), and the FTC's affiliate-disclosure guidance were all fetched directly
+    (Influencer Marketing Hub, Hootsuite, ftc.gov).
+  - No `KNOWN_NON_FINITE` entries needed: divisor fields (`startFollowers`, `periodDays`,
+    `views`) were given sensible non-zero `min` values that avoid 0/0 at the test harness's
+    edge case, rather than adding guard entries after the fact.
+  - All 8 numbers independently re-verified in a standalone Node scratch script (no app
+    imports) before committing; `npm test` (1569 passing), lint, and `npm run build` all
+    green with all 10 `creator` calculators present.
 - [ ] Batch 8 — `text` (8 new)
 - [ ] Batch 9 — `education` (9 new)
 - [ ] STATUS.md updated with a final per-category summary

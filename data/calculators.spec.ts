@@ -139,7 +139,8 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'log-reduction-calculator': ['logReduction'], // initialCount and finalCount both 0 (their min) -> log10(0/0), undefined
   'mutation-rate-calculator': ['mutantFrequency', 'mutationRate', 'oneInN'], // mutantCount and totalIndividuals both 0 (their min) -> 0/0
   'protein-molecular-weight-calculator': ['molecularWeight', 'kiloDaltons'], // every amino acid count 0 (their min) -> 0 residues, undefined molecular weight
-  'surface-area-to-volume-ratio-calculator': ['ratio'] // size 0 (its min) -> volume 0 -> divide by zero
+  'surface-area-to-volume-ratio-calculator': ['ratio'], // size 0 (its min) -> volume 0 -> divide by zero
+  'dog-age-calculator': ['humanAge'] // dog age 0 (its min) -> ln(0), undefined (compute()'s own guard)
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

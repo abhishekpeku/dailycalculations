@@ -180,8 +180,24 @@ discipline as every prior wave — ship fewer than 5 rather than pad, if good ca
       needed. `npm test` 1534/1534, lint clean, `npm run build` 404/404 pages, 20 categories — matches
       this file's own expected totals exactly. `ecology` is now 5/~25 — batches 2-5 may now run in
       parallel with each other (category-opening work, which had to be sequential, is complete).
-- [ ] Batch 2 (population + biodiversity ecology, 5)
-- [ ] Batch 3 (sustainable living / resource use, 5)
+- [ ] Batch 2 (population + biodiversity ecology, 5) — running in parallel on another branch.
+- [ ] Batch 3 (sustainable living / resource use, 5) — **IN PROGRESS**, branch
+      `step/49-wave-4-ecology-run-3`, draft PR opening now. Picks: `car-vs-bike-calculator`,
+      `tree-benefits-calculator`, `books-vs-ebooks-calculator`, `drip-faucet-waste-calculator` (chosen
+      over `water-demand-calculator` — direct-tap-leak framing is genuinely distinct from
+      `water-footprint-calculator`'s direct+virtual national-average framing), `recycling-rate-calculator`
+      (chosen over `composting-impact-calculator` — a whole-waste-stream diversion-rate calculator,
+      genuinely distinct from `plastic-footprint-calculator`'s plastic-only framing). Sources fetched
+      directly: EPA GHG Equivalencies Calculator (gasoline factor, reused from batch 1; urban-tree
+      annual CO2 sequestration factor, McPherson et al. 2016 USDA Forest Service); Kozak (2003),
+      "Printed Scholarly Books and E-book Reading Devices" (University of Michigan Center for
+      Sustainable Systems, Report CSS03-04) — read in full via its PDF, global-warming-potential
+      results by life-cycle stage (Tables 6-6/6-7); EPA WaterSense "Fix a Leak Week" page (drip-rate
+      and average-household-leak statistics); EPA National Overview: Facts and Figures on Materials,
+      Waste and Recycling (2018 national MSW recycling+composting rate, reused total-MSW-per-person
+      figure from batch 1). All numbers independently re-verified in a standalone Node scratch script.
+      No new `lib/units.ts` dimensions needed (mass/volume/length/currency/count/percent/fuelEconomy
+      all reused).
 - [ ] Batch 4 (environmental health + remaining population ecology, 5)
 - [ ] Batch 5 (round out to ~25, 5)
 - [ ] Visual-QA spot-check (once the site crosses ~420 calculators) — site is at 404 after batch 1,

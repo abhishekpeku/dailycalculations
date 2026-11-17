@@ -518,9 +518,85 @@ used" discipline as Wave 3's NIST/IUPAC citations for lab-adjacent chemistry top
         untouched, per this batch's own instructions).
       - `biology` 15 → 20 from this branch's point of view (merged first; reconciled against batch
         4 above — final combined count after both: `biology` 24, site-wide 395).
-- [ ] Batch 6 (simple non-medical animal biology, 5)
-- [ ] Visual-QA spot-check (once the site crosses ~420 calculators total — site is at 395 after
-      batches 4+5 both landed, so not yet due; batch 6 (~5 more, though one duplicate pick already
-      cost this wave a calculator) should get it close — run the spot-check at the end of batch 6)
-- [ ] STATUS.md updated, `biology` category count recorded, Wave 4 handed off to ecology next
-      (ecology still needs its own go-ahead per D13/D22 — do not start it without one)
+- [x] Batch 6 (simple non-medical animal biology, 4 of 5 planned) — **DONE 2026-11-17**, branch
+      `step/48-wave-4-biology-run-6`, PR #120 (ready for review). This is the final batch of
+      Wave 4 — biology is now fully closed out.
+      - [x] `dog-age-calculator` — dog-to-human age conversion via Wang et al. (2020), *Cell
+        Systems*, "Quantitative Translation of Dog-to-Human Aging by Conserved Remodeling of the
+        DNA Methylome" (fetched directly from PMC7484147, after the AVMA page itself returned
+        blank/JS-rendered content on direct fetch): `human_age = 16 × ln(dog_age) + 31`. Built as
+        a `solver` (both variables share the `time` dimension; a local `YEAR_SECONDS` constant
+        converts SI seconds to years, same self-containment precedent as
+        `centrifuge-rcf-rpm-calculator`'s local `STANDARD_GRAVITY`) — the formula has a genuine
+        closed-form inverse (`dog_age = e^((human_age − 31) ÷ 16)`), confirmed before choosing
+        `solver` over a one-way `breakdown`. Content explicitly explains why the flat "× 7" myth
+        is wrong (dog_age = 1 → human_age = 31 exactly, ln(1) = 0 — nothing like 7) and flags the
+        formula's real limits: fit mainly on Labrador retrievers, undefined at dog_age = 0.
+        Worked example: a 5-year-old dog → ≈56.8 human years (16 × ln(5) + 31 ≈ 56.751).
+      - [x] `cat-age-calculator` — same shape, International Cat Care's published chart (fetched
+        directly: 1 year = 15, 2 years = 24, then +4 human years per year after, with the full
+        whole-year table through 25 years also fetched and cross-checked). Implemented as a
+        3-piece linear interpolation (`15 × age` for age ≤ 1; `15 + 9 × (age − 1)` for 1 < age ≤
+        2; `16 + 4 × age` for age > 2) so a fractional age also resolves — explicitly flagged in
+        `content.formula.note` and a `watchOut` item as this calculator's own interpolation
+        between the chart's published whole-year checkpoints, not an official month-by-month
+        figure. Worked example: a 5-year-old cat → 36 human years (16 + 4 × 5), matching
+        iCatCare's own published 5-year entry exactly.
+      - [x] `animal-gestation-calculator` — one page, species-selector lookup (dog/cat/cow/horse/
+        goat/sheep/rabbit), same "one page, options-keyed lookup" precedent as
+        `resistor-color-code-calculator`/`codon-to-amino-acid-calculator`. Merck Veterinary
+        Manual's own pages 404'd on every direct-fetch attempt this session (multiple guessed URL
+        slugs tried), so sourced instead from Wikipedia's "List of mammalian gestation durations"
+        (fetched directly via raw wikitext), itself citing Doherty/Wildlife Conservation Society,
+        Sacher & Staffeldt (1974), and Rijnberk & van Sluijs (2005) per species, plus the
+        University of Nebraska–Lincoln Beef Extension directly for cattle. Sheep's source
+        publishes only a single average (150 days) with no separate min/max — stated explicitly
+        in both `content.watchOut` and the reference table's note rather than inventing a range.
+        New shared `normalizeOptionCode(raw, count)` helper (generalizing the existing
+        `normalizeBaseCode` to any species count) guards the species dropdown against the
+        snapshot harness's 1.5× scaling. Worked example: cow (283 days avg) vs. rabbit (31 days
+        avg) — about 9.1× longer.
+      - [x] `egg-incubation-calculator` — same lookup pattern for chicken/duck/Muscovy duck/goose/
+        turkey/coturnix quail/bobwhite quail, sourced from Wikipedia's "Egg incubation" article
+        (fetched directly). Chicken, duck, Muscovy duck, and turkey are each a single published
+        figure rather than a range in this source — stated explicitly. Worked example: a chicken
+        egg (21 days, exactly 3 weeks) vs. a Muscovy duck egg (35 days) — 14 days longer.
+      - **Honest skip (5th of 5 planned slots):** a dog/cat body-condition-score calculator was
+        considered and skipped — BCS is a subjective 1–9 visual/palpation exam scale, not a
+        computable formula, so it doesn't fit this site's calculator format. A pet-food/calorie
+        (RER/MER) calculator was also attempted and would have been a strong, genuinely useful
+        5th candidate, but every direct-fetch attempt at a citable primary source failed this
+        session: AVMA's pet-age page (blank/JS), Tufts/Ohio State/Colorado State veterinary-
+        nutrition pages (404), WSAVA's and the NRC's own PDFs (404), VetFolio (JS-rendered, no
+        text), ScienceDirect (403), and NCBI Bookshelf (reCAPTCHA wall) — none ever returned
+        readable formula text to the fetch tool. Rather than ship an uncited or memory-recalled
+        RER formula, this batch ships 4 well-sourced calculators instead of padding to 5, per
+        this project's D17 "honest skip over padding" discipline — explicitly permitted by this
+        batch's own task brief.
+      - No pet medication/dosage calculator was built, per this step's own gap-check (real
+        veterinary YMYL risk, no licensed-vet-review process on this site).
+      - Every number (both age formulas' round-trip checks including `ln(1)=0`/`ln(5)` precision,
+        all 7 gestation-species min/max/avg/weeks figures, all 7 incubation-species figures, and
+        every "about Nx longer/shorter" comparison in the copy) independently re-verified in a
+        standalone Node scratch script with no app imports; script output matched the copy
+        exactly. Grepped every new id/alias against all `data/calculators/*.ts` site-wide before
+        writing — zero collisions. `seo.title` 45–57 chars, `seo.description` 137–141 chars
+        (both programmatically checked, not eyeballed), 6 FAQs and 6 aliases per new page.
+      - `npm test` 1529/1529 (snapshot diff additive-only, 134 lines, touching exactly the 4 new
+        ids — confirmed via `git diff --stat` and a grep for new `exports[...]` lines; one new
+        `KNOWN_NON_FINITE` entry, `dog-age-calculator`: `humanAge`, for dog age 0 — its own min —
+        giving `ln(0)`, undefined, guarded explicitly in `compute()`, same precedent as this
+        wave's other log/divide-by-zero guards), lint clean, `npm run build` exit 0 (399
+        calculator pages). Static HTML of all 4 new pages checked directly (via the build's own
+        `.next/server/app` output, not a dev-server fetch) for H1, `FAQPage` JSON-LD, and every
+        template section id (concept/how-to-use/formula/worked-example/watch-out/faq/references/
+        related, plus `reference-table` on the two lookup pages) — all present. A pre-existing
+        process already listening on port 3000 (PID confirmed via `netstat`) was left untouched;
+        no dev server was started by this batch.
+      - `biology` 24 → 28, site-wide 395 → 399.
+- [x] Visual-QA spot-check — **not yet due.** The site reached 399 calculators after this batch
+      (short of the ~420 threshold the batch-4/5 note anticipated), so the main session should
+      run the spot-check once whichever category/step after this one crosses ~420, not now.
+- [x] STATUS.md updated, `biology` category count recorded (24 → 28, site-wide 395 → 399), Wave 4
+      (biology) marked fully DONE, and handed off to ecology next — **ecology still needs its own
+      go-ahead per D13/D22; this batch did not start, scope, or write a step file for it.**

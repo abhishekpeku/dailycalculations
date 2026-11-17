@@ -1814,6 +1814,41 @@ exports[`compute() snapshots > carpet-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > carrying-capacity-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "population": 600,
+      "carryingCapacity": 1000,
+      "maxGrowthRate": 0.08
+    },
+    "outputs": {
+      "realizedGrowthRate": 0.032
+    }
+  },
+  "typical": {
+    "inputs": {
+      "population": 900,
+      "carryingCapacity": 1500,
+      "maxGrowthRate": 0.12
+    },
+    "outputs": {
+      "realizedGrowthRate": 0.048
+    }
+  },
+  "edge": {
+    "inputs": {
+      "population": 0,
+      "carryingCapacity": 0,
+      "maxGrowthRate": 0
+    },
+    "outputs": {
+      "realizedGrowthRate": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > cashback-calculator 1`] = `
 {
   "default": {
@@ -14162,6 +14197,56 @@ exports[`compute() snapshots > severance-pay-calculator 1`] = `
       "weeklyPay": 0,
       "severanceWeeks": 0,
       "severancePay": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > shannon-diversity-index-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "speciesACount": 40,
+      "speciesBCount": 30,
+      "speciesCCount": 20,
+      "speciesDCount": 8,
+      "speciesECount": 2
+    },
+    "outputs": {
+      "shannonIndex": 1.329894468,
+      "richness": 5,
+      "totalIndividuals": 100,
+      "evennessPct": 82.63098924
+    }
+  },
+  "typical": {
+    "inputs": {
+      "speciesACount": 60,
+      "speciesBCount": 45,
+      "speciesCCount": 30,
+      "speciesDCount": 12,
+      "speciesECount": 3
+    },
+    "outputs": {
+      "shannonIndex": 1.329894468,
+      "richness": 5,
+      "totalIndividuals": 150,
+      "evennessPct": 82.63098924
+    }
+  },
+  "edge": {
+    "inputs": {
+      "speciesACount": 0,
+      "speciesBCount": 0,
+      "speciesCCount": 0,
+      "speciesDCount": 0,
+      "speciesECount": 0
+    },
+    "outputs": {
+      "shannonIndex": 0,
+      "richness": 0,
+      "totalIndividuals": 0,
+      "evennessPct": 0
     }
   }
 }

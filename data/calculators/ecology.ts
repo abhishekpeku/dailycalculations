@@ -66,6 +66,13 @@ const FOOD_CO2E_PER_KG = {
   tofu: 3.16
 };
 
+// --- Step 49 batch 2 (population & biodiversity ecology) constants ---
+
+// shannon-diversity-index-calculator and simpson-diversity-index-calculator share the same
+// 5-slot species-count input pattern and the same default worked example (40/30/20/8/2
+// individuals, 100 total) so the two pages' results are directly comparable.
+const DEFAULT_SPECIES_COUNTS = [40, 30, 20, 8, 2];
+
 export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'carbon-footprint-calculator',
@@ -899,6 +906,348 @@ export const ecologyCalculators: CalculatorConfig[] = [
         values.tofuKg * FOOD_CO2E_PER_KG.tofu;
       const annualKgCO2e = weeklyKgCO2e * 52;
       return { weeklyKgCO2e, annualKgCO2e };
+    }
+  },
+  {
+    id: 'carrying-capacity-calculator',
+    category: 'ecology',
+    glyph: 'K',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'carrying capacity calculator',
+      'logistic growth calculator',
+      'logistic population growth calculator',
+      'environmental limits to population growth calculator',
+      'carrying capacity of population calculator'
+    ],
+    related: ['population-growth-calculator', 'population-density-calculator', 'lotka-volterra-calculator', 'bacterial-growth-calculator'],
+    title: 'Carrying Capacity Calculator (Logistic Growth)',
+    description:
+      'Solve the logistic growth model for carrying capacity, population size, or growth rate — the per-capita growth rate that slows as a population approaches its environment’s limit.',
+    example:
+      'A population of 600 in a habitat with a carrying capacity of 1,000, growing at a maximum rate of 8% a year, has its realized growth rate throttled to 3.2% a year (40% of the maximum) by the shrinking resource margin.',
+    solver: {
+      defaultTarget: 'realizedGrowthRate',
+      variables: [
+        { id: 'population', label: 'Current population', symbol: 'N', dimension: 'count', defaultValue: 600, defaultUnit: 'count' },
+        { id: 'carryingCapacity', label: 'Carrying capacity', symbol: 'K', dimension: 'count', defaultValue: 1000, defaultUnit: 'count' },
+        { id: 'maxGrowthRate', label: 'Maximum growth rate', symbol: 'r_max', dimension: 'rateConstant', defaultValue: 0.08, defaultUnit: 'yr-1' },
+        { id: 'realizedGrowthRate', label: 'Realized growth rate at N', symbol: 'r', dimension: 'rateConstant', defaultValue: 0.032, defaultUnit: 'yr-1' }
+      ],
+      solve: {
+        realizedGrowthRate: ({ population, carryingCapacity, maxGrowthRate }) => maxGrowthRate * (1 - population / carryingCapacity),
+        maxGrowthRate: ({ population, carryingCapacity, realizedGrowthRate }) =>
+          (realizedGrowthRate * carryingCapacity) / (carryingCapacity - population),
+        population: ({ carryingCapacity, maxGrowthRate, realizedGrowthRate }) => carryingCapacity * (1 - realizedGrowthRate / maxGrowthRate),
+        carryingCapacity: ({ population, maxGrowthRate, realizedGrowthRate }) => (maxGrowthRate * population) / (maxGrowthRate - realizedGrowthRate)
+      },
+      outputs: [
+        { id: 'percentOfK', label: '% of carrying capacity', dimension: 'percent', compute: (si) => (si.population / si.carryingCapacity) * 100 },
+        { id: 'remainingCapacity', label: 'Remaining capacity (K − N)', dimension: 'count', compute: (si) => si.carryingCapacity - si.population }
+      ],
+      visuals: [
+        {
+          type: 'compareBars',
+          bars: [
+            { from: 'population', label: 'Current population' },
+            { from: 'carryingCapacity', label: 'Carrying capacity' }
+          ],
+          title: 'Population vs. carrying capacity',
+          highlight: 0
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is carrying capacity?',
+        paragraphs: [
+          'OpenStax’s Biology 2e introduces carrying capacity while explaining why no real population can keep growing exponentially forever: "This population size, which represents the maximum population size that a particular environment can support, is called the carrying capacity, or K." To model that limit, it gives the logistic growth equation: dN/dT = r_max × N × (K − N)/K — the same per-capita growth-rate term, r_max, used in the unrestricted exponential model, now multiplied by (K − N)/K, a "braking" factor that shrinks toward zero as the population N approaches K.',
+          'Dividing both sides of that equation by N turns it into a statement about the realized, per-capita growth rate itself: r = r_max × (1 − N/K). Near N = 0, almost none of the environment’s capacity is used, (1 − N/K) is close to 1, and growth proceeds at close to the maximum rate. As N climbs toward K, (1 − N/K) shrinks toward 0, and the realized rate shrinks right along with it — the population keeps adding individuals, just more and more slowly, until growth stops entirely at N = K.',
+          'This calculator solves that rearranged equation for any one of its four quantities: the current population, the carrying capacity, the maximum growth rate, or the realized growth rate those first three produce. OpenStax describes the resulting curve as S-shaped, with "three different phases: an initial establishment phase in which population size changes slowly, a rapid-growth phase ... and a plateau phase" once the population nears K — the carrying capacity is the ceiling that plateau levels off at.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of the current population, the carrying capacity, and the maximum growth rate; the realized growth rate fills in automatically.',
+        steps: [
+          { name: 'Enter the current population', text: 'N — how large the population is right now.' },
+          { name: 'Enter the carrying capacity', text: 'K — the maximum population size the environment can sustain, from a published estimate or a course problem.' },
+          { name: 'Enter the maximum growth rate', text: 'r_max — the intrinsic per-capita growth rate the population would have with unlimited resources (N near 0).' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Read the result', text: 'The realized growth rate appears alongside how much of the carrying capacity is already used and how much room remains.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'OpenStax’s logistic growth equation, divided by N, gives the realized per-capita rate; that rearranges into the other three quantities.',
+        expression:
+          'dN/dT = r_max × N × (K − N) / K\nr = r_max × (1 − N/K)\nN = K × (1 − r/r_max)\nK = r_max × N / (r_max − r)\nr_max = r × K / (K − N)',
+        terms: [
+          { symbol: 'r_max', meaning: 'The maximum (intrinsic) per-capita growth rate — the rate at N near 0, when resources are effectively unlimited.' },
+          { symbol: 'N', meaning: 'The current population size.' },
+          { symbol: 'K', meaning: 'The carrying capacity — OpenStax’s "maximum population size that a particular environment can support."' },
+          { symbol: 'r', meaning: 'The realized per-capita growth rate at population N, after the (K − N)/K braking term from OpenStax’s logistic equation is applied — this calculator’s own division of that equation by N.' }
+        ],
+        note: 'Every rate here is per capita (per individual already present). The absolute number of new individuals added per year is r × N, not r by itself.'
+      },
+      workedExample: {
+        intro: 'A population of 600 lives in a habitat with a carrying capacity of 1,000, and would grow at a maximum rate of 8% a year with unlimited resources.',
+        rows: [
+          { label: 'Carrying capacity (K)', value: '1,000' },
+          { label: 'Current population (N)', value: '600' },
+          { label: 'Maximum growth rate (r_max)', value: '0.08/yr (8%)' },
+          { label: 'Braking term (1 − N/K = 1 − 600/1,000)', value: '0.4' },
+          { label: 'Realized growth rate (r = 0.08 × 0.4)', value: '0.032/yr (3.2%)' }
+        ],
+        result: 'r ≈ 0.032 per year (3.2%)',
+        explanation:
+          'At 600 of the habitat’s 1,000-individual capacity, the population is using 60% of the available room, so its realized growth rate is throttled to 40% of the maximum (1 − 0.6 = 0.4) — 0.032 a year instead of 0.08. That works out to about 19.2 new individuals added that year (0.032 × 600), versus the 48 that unconstrained exponential growth would add at this same population size (0.08 × 600).'
+      },
+      watchOut: [
+        {
+          title: 'This is the logistic model, not the exponential one',
+          body: 'Population Growth Calculator solves the unrestricted exponential equation, N = N₀ × e^(rt), where the growth rate r never changes and the population never stops climbing. This page’s logistic model adds the environmental ceiling K and lets the realized rate decline to zero as N approaches it — the right model whenever resources, space, or food genuinely limit a population.'
+        },
+        {
+          title: 'r is a per-capita rate, not a headcount',
+          body: 'The realized growth rate this calculator solves for is a proportion (per individual, per year), not the number of new individuals added. Multiply it by the current population to get that absolute figure — 0.032 × 600 ≈ 19.2 individuals in the worked example above.'
+        },
+        {
+          title: 'A real carrying capacity rarely stays fixed',
+          body: 'This model treats K as a constant, but a real environment’s capacity shifts with rainfall, food availability, disease, and season. A published K is usually an average or a snapshot, not a permanent ceiling.'
+        },
+        {
+          title: 'A population above K shrinks back toward it',
+          body: 'If N is entered larger than K, (1 − N/K) is negative, and the formula correctly predicts a negative realized growth rate — a population that overshot its environment’s capacity and is declining back toward K, the same equation handling growth and die-off alike.'
+        },
+        {
+          title: 'No answer when N equals K, or when r equals r_max',
+          body: 'At N = K the realized growth rate is exactly 0, which has no unique carrying capacity or maximum rate to solve back to from that single data point — and solving for N when r equals r_max divides by zero, since that combination is only possible at N = 0.'
+        }
+      ],
+      references: [
+        {
+          label: 'OpenStax, Biology 2e, §45.3 "Environmental Limits to Population Growth" (logistic growth equation and carrying capacity definition)',
+          url: 'https://openstax.org/books/biology-2e/pages/45-3-environmental-limits-to-population-growth'
+        }
+      ]
+    },
+    inputs: [
+      { id: 'population', label: 'Current population (N)', type: 'number', placeholder: '600', defaultValue: 600, step: 10, min: 0 },
+      { id: 'carryingCapacity', label: 'Carrying capacity (K)', type: 'number', placeholder: '1000', defaultValue: 1000, step: 10, min: 0 },
+      { id: 'maxGrowthRate', label: 'Maximum growth rate r_max (per year)', type: 'number', placeholder: '0.08', defaultValue: 0.08, step: 0.001 }
+    ],
+    seo: {
+      title: 'Carrying Capacity Calculator – Logistic Growth (K)',
+      description: 'Free carrying capacity calculator. Solve the logistic growth model for carrying capacity, population, or growth rate, with a worked example.',
+      faq: [
+        {
+          question: 'What is carrying capacity?',
+          answer:
+            'OpenStax’s Biology 2e defines it directly: "the maximum population size that a particular environment can support," denoted K — the ceiling a population’s growth levels off at once resources, space, or food become limiting.'
+        },
+        {
+          question: 'How do I calculate the realized growth rate from carrying capacity?',
+          answer:
+            'Multiply the maximum growth rate (r_max) by (1 − N/K), where N is the current population. A population of 600 in a habitat with K = 1,000 and r_max = 0.08/yr has a realized rate of 0.08 × (1 − 600/1,000) = 0.032/yr (3.2%).'
+        },
+        {
+          question: 'What is the difference between this and exponential population growth?',
+          answer:
+            'Exponential growth (Population Growth Calculator’s N = N₀ × e^(rt)) has no ceiling — the rate r stays constant forever. Logistic growth adds the carrying capacity K and lets the realized rate decline toward zero as the population approaches it, producing an S-shaped curve instead of an ever-steepening one.'
+        },
+        {
+          question: 'What happens if a population exceeds its carrying capacity?',
+          answer:
+            'The same formula still applies: with N greater than K, (1 − N/K) is negative, so the realized growth rate comes out negative, correctly modeling a population that overshot its environment’s limit and is now declining back toward K.'
+        },
+        {
+          question: 'Is carrying capacity always a fixed number?',
+          answer:
+            'No. The logistic model treats K as constant for simplicity, but a real environment’s actual capacity shifts with rainfall, food supply, disease, and season — a published K is typically an average, not a permanent limit.'
+        },
+        {
+          question: 'What is the difference between r_max and r?',
+          answer:
+            'r_max is the maximum per-capita growth rate, reached only when the population is small relative to K. r is the realized rate at the current population N, after OpenStax’s (K − N)/K braking term has been applied — r always equals or is less than r_max (and can go negative above K).'
+        }
+      ]
+    },
+    compute(values) {
+      return { realizedGrowthRate: values.maxGrowthRate * (1 - values.population / values.carryingCapacity) };
+    }
+  },
+  {
+    id: 'shannon-diversity-index-calculator',
+    category: 'ecology',
+    glyph: "H'",
+    updatedAt: '2026-11-17',
+    aliases: [
+      'shannon diversity index calculator',
+      'shannon-wiener index calculator',
+      'shannon entropy calculator biology',
+      'biodiversity index calculator',
+      'species evenness calculator'
+    ],
+    related: ['simpson-diversity-index-calculator', 'population-density-calculator', 'carrying-capacity-calculator', 'standard-deviation-calculator'],
+    title: 'Shannon Diversity Index Calculator (H′)',
+    description:
+      'Calculate the Shannon diversity index, H′ = −Σ(pᵢ × ln pᵢ), from species counts — a single number combining species richness and evenness into one measure of biodiversity.',
+    example:
+      'A sample of 100 individuals across 5 species (40, 30, 20, 8, and 2 of each) has a Shannon diversity index of about 1.330, or 82.6% of the maximum possible evenness for 5 species.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is the Shannon diversity index?',
+        paragraphs: [
+          'OpenStax’s Biology 2e frames biodiversity as two separate ideas combined: "species richness," the number of different species in a habitat, and "species evenness," how evenly individuals are spread across those species. It defines species diversity itself as "the number of species occupying the same habitat and their relative abundance." A habitat with 5 species can still look very different depending on evenness — one dominated almost entirely by a single species "feels" far less diverse than one where all 5 are equally common, even though the richness (5) is identical.',
+          'The Shannon diversity index, H′, is the standard way ecologists fold both ideas into one number. It comes from Claude Shannon’s 1948 paper "A Mathematical Theory of Communication," which defined the same formula as a measure of uncertainty (entropy) in a string of symbols; ecologists later adopted it to measure uncertainty in which species a randomly chosen individual belongs to. The formula is H′ = −Σ(pᵢ × ln pᵢ), summed over every species i, where pᵢ is that species’ relative abundance (its count divided by the total count of every individual sampled).',
+          'H′ is 0 only when a sample has a single species (no uncertainty at all about which species the next individual belongs to), and it rises with both richness and evenness, reaching its maximum, ln(S) for S species, exactly when every species is equally abundant. Comparing a sample’s H′ to that maximum — its evenness, J′ = H′ ÷ ln(S) — shows how close a community comes to that perfectly even ideal, independent of how many species it has.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the number of individuals counted for each species in the sample; the index, richness, and evenness fill in instantly.',
+        steps: [
+          { name: 'Count individuals by species', text: 'From a field survey or quadrat count, tally how many individuals of each species were observed.' },
+          { name: 'Enter each species’ count', text: 'Fill in the count for each species present. Leave any unused slot at 0 if the sample has fewer than 5 species.' },
+          { name: 'Read the Shannon index', text: 'The headline, H′, is higher when the sample has more species, more evenly represented.' },
+          { name: 'Check richness and evenness', text: 'The breakdown shows the total individuals counted, the species richness (S), and the evenness (H′ as a percentage of the maximum possible for that many species).' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Each species’ relative abundance is weighted by its own natural log, and the (negative) sum is the index.',
+        expression: 'pᵢ = nᵢ ÷ N\nH′ = −Σ(pᵢ × ln pᵢ), summed over every species with nᵢ > 0\nJ′ = H′ ÷ ln(S)',
+        terms: [
+          { symbol: 'nᵢ', meaning: 'The number of individuals counted of species i.' },
+          { symbol: 'N', meaning: 'The total number of individuals counted, across all species.' },
+          { symbol: 'S', meaning: 'Species richness — the number of species with at least one individual counted.' },
+          { symbol: 'J′', meaning: 'Pielou’s evenness: how close H′ comes to its maximum possible value, ln(S), for that many species.' }
+        ],
+        note: 'This is one of two standard diversity indices; Simpson Diversity Index Calculator computes a second, differently weighted measure from the same kind of species-count data.'
+      },
+      workedExample: {
+        intro: 'A sample of 100 individuals across 5 species: 40, 30, 20, 8, and 2 individuals of species A through E.',
+        rows: [
+          { label: 'Total individuals (N)', value: '100' },
+          { label: 'Richness (S)', value: '5' },
+          { label: 'Proportions (pᵢ)', value: '0.40, 0.30, 0.20, 0.08, 0.02' },
+          { label: '−Σ(pᵢ × ln pᵢ)', value: '≈1.3299' },
+          { label: 'Maximum possible, ln(5)', value: '≈1.6094' },
+          { label: 'Evenness (J′ = H′ ÷ ln 5)', value: '≈82.63%' }
+        ],
+        result: 'H′ ≈ 1.330',
+        explanation:
+          'This sample’s diversity, 1.330, sits at about 82.6% of the maximum possible for 5 species (1.6094, reached only if all 5 were equally abundant at 20 each). The gap comes almost entirely from species A’s dominance at 40% of the sample, not from low richness — all 5 species are still present and counted.'
+      },
+      watchOut: [
+        {
+          title: 'H′ measures richness and evenness together, not either alone',
+          body: 'Two samples can share the same H′ for different reasons — one with more species unevenly distributed, another with fewer species evenly distributed. Check richness (S) and evenness (J′) separately if the distinction matters for your comparison.'
+        },
+        {
+          title: 'Natural log, not log base 10 or base 2',
+          body: 'This calculator uses ln (base e), the convention OpenStax and most ecology textbooks follow for H′. A small number of sources report it in log base 2 or log base 10, which gives a different numeric value for the same data — check which base a published H′ you are comparing against used.'
+        },
+        {
+          title: 'Very small samples inflate apparent diversity',
+          body: 'With only a handful of individuals counted, rare species are easy to miss entirely, and small random differences in who you happened to count can swing H′ noticeably. A larger, more representative sample gives a more reliable estimate.'
+        },
+        {
+          title: 'This is not the same as Simpson’s index',
+          body: 'Simpson Diversity Index Calculator weights abundant species far more heavily (it is dominated by the few most common species), while Shannon’s log-weighting gives rare species more relative influence. The two can rank the same two communities differently.'
+        }
+      ],
+      references: [
+        {
+          label: 'OpenStax, Biology 2e, §45.6 "Community Ecology" (species richness, relative abundance, and species evenness)',
+          url: 'https://openstax.org/books/biology-2e/pages/45-6-community-ecology'
+        },
+        {
+          label: 'Shannon, C.E. (1948), "A Mathematical Theory of Communication," The Bell System Technical Journal 27 (the origin of the H′ = −Σ(pᵢ ln pᵢ) formula)',
+          url: 'https://en.wikipedia.org/wiki/Diversity_index'
+        }
+      ]
+    },
+    inputs: [
+      { id: 'speciesACount', label: 'Species A', type: 'number', placeholder: '40', defaultValue: DEFAULT_SPECIES_COUNTS[0], step: 1, min: 0 },
+      { id: 'speciesBCount', label: 'Species B', type: 'number', placeholder: '30', defaultValue: DEFAULT_SPECIES_COUNTS[1], step: 1, min: 0 },
+      { id: 'speciesCCount', label: 'Species C', type: 'number', placeholder: '20', defaultValue: DEFAULT_SPECIES_COUNTS[2], step: 1, min: 0 },
+      { id: 'speciesDCount', label: 'Species D', type: 'number', placeholder: '8', defaultValue: DEFAULT_SPECIES_COUNTS[3], step: 1, min: 0 },
+      { id: 'speciesECount', label: 'Species E', type: 'number', placeholder: '2', defaultValue: DEFAULT_SPECIES_COUNTS[4], step: 1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'shannonIndex',
+      headlineLabel: 'Shannon diversity index (H′)',
+      outputs: [
+        { id: 'shannonIndex', label: 'Shannon diversity index (H′)', format: 'significant' },
+        { id: 'richness', label: 'Species richness (S)', format: 'integer' },
+        { id: 'totalIndividuals', label: 'Total individuals counted', format: 'integer' },
+        { id: 'evennessPct', label: 'Evenness (J′, % of maximum)', format: 'percent' }
+      ],
+      groups: [{ title: 'Species counts', inputs: ['speciesACount', 'speciesBCount', 'speciesCCount', 'speciesDCount', 'speciesECount'] }],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'speciesACount', label: 'Species A' },
+          { from: 'speciesBCount', label: 'Species B' },
+          { from: 'speciesCCount', label: 'Species C' },
+          { from: 'speciesDCount', label: 'Species D' },
+          { from: 'speciesECount', label: 'Species E' }
+        ],
+        center: 'totalIndividuals',
+        centerSub: 'individuals counted'
+      }
+    },
+    seo: {
+      title: 'Shannon Diversity Index Calculator (H′)',
+      description: 'Free Shannon diversity index calculator. Compute H′ = −Σ(pᵢ ln pᵢ), species richness, and evenness from species-count data.',
+      faq: [
+        {
+          question: 'What is the Shannon diversity index formula?',
+          answer:
+            'H′ = −Σ(pᵢ × ln pᵢ), summed over every species, where pᵢ is a species’ share of the total individuals counted. A sample of 100 individuals across 5 species (40, 30, 20, 8, 2) gives H′ ≈ 1.330.'
+        },
+        {
+          question: 'What does a higher Shannon index mean?',
+          answer:
+            'More biodiversity: more species, more evenly represented, or both. It ranges from 0 (a single species) up to ln(S) for S species, reached only when every species is equally abundant.'
+        },
+        {
+          question: 'What is species evenness (J′)?',
+          answer:
+            'H′ expressed as a percentage of the maximum possible value for the observed number of species, ln(S). In the worked example, J′ ≈ 82.6% (1.330 ÷ 1.6094), reflecting that species A makes up 40% of the sample rather than an even 20% share.'
+        },
+        {
+          question: 'Why natural log (ln) instead of log base 10?',
+          answer:
+            'It is the convention most ecology textbooks and courses use for the Shannon index. The same species-count data gives a different numeric H′ under log base 2 or log base 10, so always match the base a comparison figure was computed with.'
+        },
+        {
+          question: 'How is this different from species richness alone?',
+          answer:
+            'Richness (S) just counts how many species are present — 5 in the worked example — with no regard for how evenly individuals are spread across them. H′ combines that count with evenness into a single number, which is why two samples with the same richness can have different H′ values.'
+        },
+        {
+          question: 'How is this different from Simpson’s diversity index?',
+          answer:
+            'Both use the same species-count data, but weight it differently: Shannon’s log-based formula gives rare species more relative influence, while Simpson’s index is dominated by the most abundant species. Simpson Diversity Index Calculator computes the second measure from the same counts.'
+        }
+      ]
+    },
+    compute(values) {
+      const counts = [values.speciesACount, values.speciesBCount, values.speciesCCount, values.speciesDCount, values.speciesECount];
+      const totalIndividuals = counts.reduce((sum, n) => sum + n, 0);
+      const richness = counts.filter((n) => n > 0).length;
+      let shannonIndex = 0;
+      for (const n of counts) {
+        if (n > 0) {
+          const p = n / totalIndividuals;
+          shannonIndex -= p * Math.log(p);
+        }
+      }
+      const evennessPct = (shannonIndex / Math.log(richness)) * 100;
+      return { shannonIndex, richness, totalIndividuals, evennessPct };
     }
   }
 ];

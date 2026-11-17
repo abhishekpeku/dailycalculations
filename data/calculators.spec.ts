@@ -30,6 +30,7 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'lcm-calculator': ['lcm'], // both numbers 0 -> LCM(0, 0) is undefined by convention, not 0
   'pension-calculator': ['incomeReplacementPercent'], // final average salary 0 -> 0/0
   'social-security-calculator': ['replacementPercent'], // AIME 0 -> 0/0
+  'carrying-capacity-calculator': ['realizedGrowthRate'], // population=0, carryingCapacity=0 (both min 0) -> 0/0
   'triangle-calculator': ['sideA', 'sideB', 'sideC', 'angleA', 'angleB', 'angleC', 'perimeter', 'area'], // mode 1 (SSS), all three sides 0 -> fails the triangle inequality
   'slope-calculator': ['slope', 'angle', 'yIntercept'], // both points identical (0,0)-(0,0) -> no line at all, distance is still a legitimate 0
   'standard-deviation-calculator': ['sampleVariance', 'sampleStdDev'], // howMany=1 (its min) -> sample divides by n-1=0

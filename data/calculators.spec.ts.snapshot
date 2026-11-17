@@ -194,6 +194,50 @@ exports[`compute() snapshots > acres-to-hectares-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > affiliate-commission-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "clicks": 10000,
+      "conversionRatePercent": 2,
+      "averageOrderValue": 50,
+      "commissionRatePercent": 5
+    },
+    "outputs": {
+      "conversions": 200,
+      "totalSalesGenerated": 10000,
+      "commissionEarned": 500
+    }
+  },
+  "typical": {
+    "inputs": {
+      "clicks": 15000,
+      "conversionRatePercent": 3,
+      "averageOrderValue": 75,
+      "commissionRatePercent": 7.5
+    },
+    "outputs": {
+      "conversions": 450,
+      "totalSalesGenerated": 33750,
+      "commissionEarned": 2531.25
+    }
+  },
+  "edge": {
+    "inputs": {
+      "clicks": 0,
+      "conversionRatePercent": 0,
+      "averageOrderValue": 0,
+      "commissionRatePercent": 0
+    },
+    "outputs": {
+      "conversions": 0,
+      "totalSalesGenerated": 0,
+      "commissionEarned": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > age-calculator 1`] = `
 {
   "default": {
@@ -1057,6 +1101,41 @@ exports[`compute() snapshots > binomial-distribution-calculator 1`] = `
       "sfAtK": 1,
       "mean": 0,
       "standardDeviation": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > blog-ad-revenue-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "monthlyPageviews": 100000,
+      "rpm": 10
+    },
+    "outputs": {
+      "monthlyEarnings": 1000,
+      "annualEarnings": 12000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "monthlyPageviews": 150000,
+      "rpm": 15
+    },
+    "outputs": {
+      "monthlyEarnings": 2250,
+      "annualEarnings": 27000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "monthlyPageviews": 0,
+      "rpm": 0
+    },
+    "outputs": {
+      "monthlyEarnings": 0,
+      "annualEarnings": 0
     }
   }
 }
@@ -5722,6 +5801,50 @@ exports[`compute() snapshots > flooring-calculator 1`] = `
       "boxesExact": 1,
       "coverageBought": 1,
       "roomAreaSqFt": 1
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > follower-growth-rate-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "startFollowers": 1000,
+      "endFollowers": 1200,
+      "periodDays": 30
+    },
+    "outputs": {
+      "followersGained": 200,
+      "growthRatePercent": 20,
+      "dailyGrowthRate": 6.666666667,
+      "projectedFollowersIn30Days": 1400
+    }
+  },
+  "typical": {
+    "inputs": {
+      "startFollowers": 1500,
+      "endFollowers": 1800,
+      "periodDays": 45
+    },
+    "outputs": {
+      "followersGained": 300,
+      "growthRatePercent": 20,
+      "dailyGrowthRate": 6.666666667,
+      "projectedFollowersIn30Days": 2000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "startFollowers": 1,
+      "endFollowers": 0,
+      "periodDays": 1
+    },
+    "outputs": {
+      "followersGained": -1,
+      "growthRatePercent": -100,
+      "dailyGrowthRate": -1,
+      "projectedFollowersIn30Days": -30
     }
   }
 }
@@ -11339,6 +11462,68 @@ exports[`compute() snapshots > party-food-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > patreon-earnings-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "tier1Price": 5,
+      "tier1Patrons": 100,
+      "tier2Price": 15,
+      "tier2Patrons": 30,
+      "tier3Price": 50,
+      "tier3Patrons": 5,
+      "feePercent": 10
+    },
+    "outputs": {
+      "tier1Revenue": 500,
+      "tier2Revenue": 450,
+      "tier3Revenue": 250,
+      "grossRevenue": 1200,
+      "platformFee": 120,
+      "netEarnings": 1080
+    }
+  },
+  "typical": {
+    "inputs": {
+      "tier1Price": 8,
+      "tier1Patrons": 150,
+      "tier2Price": 23,
+      "tier2Patrons": 45,
+      "tier3Price": 75,
+      "tier3Patrons": 8,
+      "feePercent": 15
+    },
+    "outputs": {
+      "tier1Revenue": 1200,
+      "tier2Revenue": 1035,
+      "tier3Revenue": 600,
+      "grossRevenue": 2835,
+      "platformFee": 425.25,
+      "netEarnings": 2409.75
+    }
+  },
+  "edge": {
+    "inputs": {
+      "tier1Price": 0,
+      "tier1Patrons": 0,
+      "tier2Price": 0,
+      "tier2Patrons": 0,
+      "tier3Price": 0,
+      "tier3Patrons": 0,
+      "feePercent": 0
+    },
+    "outputs": {
+      "tier1Revenue": 0,
+      "tier2Revenue": 0,
+      "tier3Revenue": 0,
+      "grossRevenue": 0,
+      "platformFee": 0,
+      "netEarnings": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > paver-calculator 1`] = `
 {
   "default": {
@@ -12048,6 +12233,47 @@ exports[`compute() snapshots > plastic-footprint-calculator 1`] = `
       "householdAnnualLb": 218.197,
       "recycledLb": 0,
       "notRecycledLb": 218.197
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > podcast-ad-revenue-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "downloadsPerEpisode": 5000,
+      "episodesPerMonth": 4,
+      "cpm": 25,
+      "adSpotsPerEpisode": 2
+    },
+    "outputs": {
+      "revenuePerEpisode": 250,
+      "monthlyRevenue": 1000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "downloadsPerEpisode": 7500,
+      "episodesPerMonth": 6,
+      "cpm": 38,
+      "adSpotsPerEpisode": 3
+    },
+    "outputs": {
+      "revenuePerEpisode": 855,
+      "monthlyRevenue": 5130
+    }
+  },
+  "edge": {
+    "inputs": {
+      "downloadsPerEpisode": 0,
+      "episodesPerMonth": 0,
+      "cpm": 0,
+      "adSpotsPerEpisode": 0
+    },
+    "outputs": {
+      "revenuePerEpisode": 0,
+      "monthlyRevenue": 0
     }
   }
 }
@@ -15921,6 +16147,41 @@ exports[`compute() snapshots > thermal-expansion-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > tiktok-earnings-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "monthlyViews": 1000000,
+      "ratePerThousandViews": 0.03
+    },
+    "outputs": {
+      "monthlyEarnings": 30,
+      "annualEarnings": 360
+    }
+  },
+  "typical": {
+    "inputs": {
+      "monthlyViews": 1500000,
+      "ratePerThousandViews": 0.05
+    },
+    "outputs": {
+      "monthlyEarnings": 75,
+      "annualEarnings": 900
+    }
+  },
+  "edge": {
+    "inputs": {
+      "monthlyViews": 0,
+      "ratePerThousandViews": 0
+    },
+    "outputs": {
+      "monthlyEarnings": 0,
+      "annualEarnings": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > tile-calculator 1`] = `
 {
   "default": {
@@ -16723,6 +16984,50 @@ exports[`compute() snapshots > turkey-thaw-time-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > twitch-earnings-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "subscribers": 500,
+      "subTierPrice": 4.99,
+      "subRevenueSharePercent": 50,
+      "bitsRevenue": 150,
+      "adRevenue": 100
+    },
+    "outputs": {
+      "subRevenue": 1247.5,
+      "totalEarnings": 1497.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "subscribers": 750,
+      "subTierPrice": 7.49,
+      "subRevenueSharePercent": 75,
+      "bitsRevenue": 230,
+      "adRevenue": 150
+    },
+    "outputs": {
+      "subRevenue": 4213.125,
+      "totalEarnings": 4593.125
+    }
+  },
+  "edge": {
+    "inputs": {
+      "subscribers": 0,
+      "subTierPrice": 0,
+      "subRevenueSharePercent": 0,
+      "bitsRevenue": 0,
+      "adRevenue": 0
+    },
+    "outputs": {
+      "subRevenue": 0,
+      "totalEarnings": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > unit-price-calculator 1`] = `
 {
   "default": {
@@ -16928,6 +17233,47 @@ exports[`compute() snapshots > variance-calculator 1`] = `
       "sampleVariance": "NaN",
       "populationStdDev": 0,
       "sampleStdDev": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > video-engagement-rate-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "views": 100000,
+      "likes": 4000,
+      "comments": 300,
+      "shares": 200
+    },
+    "outputs": {
+      "totalEngagement": 4500,
+      "engagementRate": 4.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "views": 150000,
+      "likes": 6000,
+      "comments": 450,
+      "shares": 300
+    },
+    "outputs": {
+      "totalEngagement": 6750,
+      "engagementRate": 4.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "views": 100,
+      "likes": 0,
+      "comments": 0,
+      "shares": 0
+    },
+    "outputs": {
+      "totalEngagement": 0,
+      "engagementRate": 0
     }
   }
 }

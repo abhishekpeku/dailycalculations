@@ -733,4 +733,172 @@ export const ecologyCalculators: CalculatorConfig[] = [
       return { householdAnnualLb, recycledLb, notRecycledLb };
     }
   },
+  {
+    id: 'meat-footprint-calculator',
+    category: 'ecology',
+    glyph: 'diet',
+    updatedAt: '2026-11-17',
+    aliases: ['meat footprint calculator', 'diet carbon footprint calculator', 'food carbon footprint calculator', 'vegan footprint calculator', 'vegetarian footprint calculator'],
+    related: ['carbon-footprint-calculator', 'water-footprint-calculator', 'plastic-footprint-calculator', 'calorie-calculator'],
+    title: 'Meat & Diet Carbon Footprint Calculator',
+    description:
+      'Estimate your diet’s yearly greenhouse gas footprint from how much beef, pork, poultry, fish, eggs, dairy, and plant protein you eat, using Poore & Nemecek’s (2018, Science) global food-emissions data.',
+    example:
+      'A diet with 0.5 kg of beef, 0.3 kg of pork, 0.7 kg of poultry, 0.2 kg of fish, 0.3 kg of eggs, and 2 kg of milk a week, plus 0.2 kg of tofu, emits about 3,712.9 kg of CO2e a year — beef alone is about 69.7% of it.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is a diet’s carbon footprint?',
+        paragraphs: [
+          'Every food carries a greenhouse gas cost from producing it — raising or growing it, processing it, and getting it to a store — measured in kilograms of CO2-equivalent (CO2e) per kilogram of food. The most widely cited figures come from Poore and Nemecek’s 2018 analysis in Science, a meta-study of roughly 38,700 farms in 119 countries, which found enormous differences between food types: a kilogram of beef from a dedicated beef herd carries a global-average footprint of about 99.48 kg CO2e, while a kilogram of tofu carries about 3.16 kg — beef is roughly 31 times more carbon-intensive, kilogram for kilogram.',
+          'The gap is largest for ruminant meats (beef and lamb) because cattle and sheep produce methane as they digest grass and feed, a far more potent greenhouse gas than CO2 pound for pound, on top of the land and feed used to raise them. Poultry, pork, fish, and eggs sit in the middle; plant proteins like tofu sit far below all of them.',
+          'This calculator multiplies how much of each food you eat in a typical week by its own published factor, adds the results, and shows which food is driving your total — useful for seeing which single change (eating less beef, for instance) would actually move the number, rather than guessing.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter how much of each food you eat in a typical week; the yearly total and its breakdown appear instantly.',
+        steps: [
+          { name: 'Enter animal products', text: 'Type your typical weekly amount, in kilograms, of beef, pork, poultry, fish, eggs, and milk or dairy. Leave any at 0 if you do not eat it.' },
+          { name: 'Enter plant protein', text: 'Type your typical weekly amount of tofu or a similar plant-protein food, if any.' },
+          { name: 'Read the total', text: 'The headline is your estimated yearly footprint from these foods, in kilograms and metric tons of CO2e.' },
+          { name: 'Check the breakdown', text: 'The chart shows which food contributes the most — usually beef, if you eat any, because its per-kilogram factor is so much higher than everything else.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Each food’s weekly weight is multiplied by its own global-average emissions factor; the yearly total is the weekly sum times 52.',
+        expression: 'weekly = Σ (weight_i × factor_i), for each food i\nyearly = weekly × 52',
+        terms: [
+          { symbol: 'factor_i', meaning: 'Poore & Nemecek’s (2018) global-average kg CO2e per kg of that food: beef 99.48, pork 12.31, poultry 9.87, farmed fish 13.63, eggs 4.67, milk 3.15, tofu 3.16.' }
+        ],
+        note: 'Global averages. A specific product’s real footprint varies with how and where it was produced — grass-fed versus feedlot beef, for instance.'
+      },
+      workedExample: {
+        intro: 'A week of 0.5 kg beef, 0.3 kg pork, 0.7 kg poultry, 0.2 kg fish, 0.3 kg eggs, 2 kg milk, and 0.2 kg tofu.',
+        rows: [
+          { label: 'Beef (0.5 × 99.48)', value: '49.74 kg' },
+          { label: 'Pork (0.3 × 12.31)', value: '3.69 kg' },
+          { label: 'Poultry (0.7 × 9.87)', value: '6.91 kg' },
+          { label: 'Fish (0.2 × 13.63)', value: '2.73 kg' },
+          { label: 'Eggs (0.3 × 4.67)', value: '1.40 kg' },
+          { label: 'Milk (2 × 3.15)', value: '6.30 kg' },
+          { label: 'Tofu (0.2 × 3.16)', value: '0.63 kg' },
+          { label: 'Weekly total', value: '71.40 kg' },
+          { label: 'Yearly total (× 52)', value: '3,712.85 kg (3.71 t)' }
+        ],
+        result: 'About 3,712.9 kg (3.71 metric tons) of CO2e a year',
+        explanation:
+          'Beef is 69.7% of the weekly total by itself, despite being less than a third of the animal-product weight eaten. Replacing every animal product in this example (4 kg a week total) with the same weight of tofu would cut the weekly footprint from 71.4 kg to about 13.27 kg of CO2e — an 81.4% reduction.'
+      },
+      watchOut: [
+        {
+          title: 'Beef and lamb dominate for a biological reason',
+          body: 'Cattle and sheep are ruminants: they produce methane during digestion, a greenhouse gas many times more potent than CO2 over a short time span. That is layered on top of the land and feed every animal needs, which is why beef’s own factor here is about 10 times poultry’s, even though both are meat.'
+        },
+        {
+          title: 'These are global averages, not your specific grocery item',
+          body: 'Poore and Nemecek’s figures average across thousands of farms worldwide. A grass-fed, local, or small-farm product can have a meaningfully different footprint than the global average for its food category, in either direction.'
+        },
+        {
+          title: 'It is food production only',
+          body: 'These factors cover production through to a regional distribution point; they do not add your own cooking energy, food waste, or the distance it traveled to your specific store.'
+        },
+        {
+          title: 'Dairy here means milk, not cheese',
+          body: 'Cheese has a notably higher footprint than milk per kilogram, because it takes several liters of milk to make one kilogram of cheese. If cheese is a bigger part of your diet than milk, this estimate will run low for that category.'
+        }
+      ],
+      references: [
+        { label: 'Poore, J. & Nemecek, T. (2018), "Reducing food’s environmental impacts through producers and consumers," Science 360(6392)', url: 'https://www.science.org/doi/10.1126/science.aaq0216' },
+        { label: 'Our World in Data, "Environmental Impacts of Food Production" (republishing Poore & Nemecek’s per-kilogram emissions data)', url: 'https://ourworldindata.org/environmental-impacts-of-food' }
+      ]
+    },
+    inputs: [
+      { id: 'beefKg', label: 'Beef', type: 'number', placeholder: '0.5', defaultValue: 0.5, step: 0.1, min: 0, dimension: 'mass', unit: 'kg' },
+      { id: 'porkKg', label: 'Pork', type: 'number', placeholder: '0.3', defaultValue: 0.3, step: 0.1, min: 0, dimension: 'mass', unit: 'kg' },
+      { id: 'poultryKg', label: 'Poultry', type: 'number', placeholder: '0.7', defaultValue: 0.7, step: 0.1, min: 0, dimension: 'mass', unit: 'kg' },
+      { id: 'fishKg', label: 'Fish (farmed)', type: 'number', placeholder: '0.2', defaultValue: 0.2, step: 0.1, min: 0, dimension: 'mass', unit: 'kg' },
+      { id: 'eggsKg', label: 'Eggs', type: 'number', placeholder: '0.3', defaultValue: 0.3, step: 0.1, min: 0, dimension: 'mass', unit: 'kg' },
+      { id: 'milkKg', label: 'Milk / dairy', type: 'number', placeholder: '2', defaultValue: 2, step: 0.25, min: 0, dimension: 'mass', unit: 'kg' },
+      { id: 'tofuKg', label: 'Tofu / plant protein', type: 'number', placeholder: '0.2', defaultValue: 0.2, step: 0.1, min: 0, dimension: 'mass', unit: 'kg' }
+    ],
+    breakdown: {
+      headline: 'annualKgCO2e',
+      headlineLabel: 'Diet’s carbon footprint (per year)',
+      outputs: [
+        { id: 'annualKgCO2e', label: 'Yearly total', dimension: 'mass', alsoIn: ['t'] },
+        { id: 'weeklyKgCO2e', label: 'Weekly total', dimension: 'mass' }
+      ],
+      groups: [
+        { title: 'Animal products (per week)', inputs: ['beefKg', 'porkKg', 'poultryKg', 'fishKg', 'eggsKg', 'milkKg'] },
+        { title: 'Plant protein (per week)', inputs: ['tofuKg'] }
+      ],
+      derive: (v) => ({
+        beefWeekly: v.beefKg * FOOD_CO2E_PER_KG.beef,
+        porkWeekly: v.porkKg * FOOD_CO2E_PER_KG.pork,
+        poultryWeekly: v.poultryKg * FOOD_CO2E_PER_KG.poultry,
+        fishWeekly: v.fishKg * FOOD_CO2E_PER_KG.fish,
+        dairyEggsWeekly: v.eggsKg * FOOD_CO2E_PER_KG.eggs + v.milkKg * FOOD_CO2E_PER_KG.milk,
+        tofuWeekly: v.tofuKg * FOOD_CO2E_PER_KG.tofu
+      }),
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'beefWeekly', label: 'Beef' },
+          { from: 'porkWeekly', label: 'Pork' },
+          { from: 'poultryWeekly', label: 'Poultry' },
+          { from: 'fishWeekly', label: 'Fish' },
+          { from: 'dairyEggsWeekly', label: 'Dairy & eggs' },
+          { from: 'tofuWeekly', label: 'Tofu' }
+        ],
+        center: 'weeklyKgCO2e',
+        centerSub: 'kg CO2e/week'
+      }
+    },
+    seo: {
+      title: 'Meat & Diet Carbon Footprint Calculator',
+      description: 'Free diet carbon footprint calculator. Estimate your yearly food emissions from beef, pork, poultry, fish, eggs, dairy, and plant protein using Poore & Nemecek (2018).',
+      faq: [
+        {
+          question: 'How much CO2 does my diet produce?',
+          answer:
+            'Multiply how much you eat each week of beef, pork, poultry, fish, eggs, milk, and tofu by their own factor (99.48, 12.31, 9.87, 13.63, 4.67, 3.15, and 3.16 kg CO2e per kg), add them, then multiply by 52. The worked example above comes to about 3,712.9 kg (3.71 metric tons) a year.'
+        },
+        {
+          question: 'Why is beef so much worse than other meats?',
+          answer:
+            'Cattle are ruminants: digesting grass and feed produces methane, a much more potent greenhouse gas than CO2, on top of the land and feed every animal needs. Poore and Nemecek’s global-average figures put beef at 99.48 kg CO2e per kg, versus 9.87 for poultry — about 10 times higher.'
+        },
+        {
+          question: 'How much would going vegetarian or vegan save?',
+          answer:
+            'In the worked example, swapping every animal product (4 kg a week of beef, pork, poultry, fish, eggs, and milk combined) for the same weight of tofu cuts the weekly footprint from 71.4 kg to about 13.27 kg of CO2e — an 81.4% reduction.'
+        },
+        {
+          question: 'Is chicken really that much better than beef?',
+          answer: 'Per kilogram, yes: poultry’s global-average factor (9.87 kg CO2e/kg) is about 10 times lower than beef’s (99.48 kg CO2e/kg) — switching a given weight of beef to poultry cuts that portion’s footprint by about 90%.'
+        },
+        {
+          question: 'What source are these numbers from?',
+          answer: 'Poore and Nemecek’s 2018 study in Science, a meta-analysis of about 38,700 farms across 119 countries — one of the most widely cited sources for comparing food-related greenhouse gas emissions, as republished by Our World in Data.'
+        },
+        {
+          question: 'Does this include how the food was transported or cooked?',
+          answer: 'No — these are production-stage figures (farm through regional distribution), not your own cooking energy, food waste, or the specific distance your groceries traveled.'
+        }
+      ]
+    },
+    compute(values) {
+      const weeklyKgCO2e =
+        values.beefKg * FOOD_CO2E_PER_KG.beef +
+        values.porkKg * FOOD_CO2E_PER_KG.pork +
+        values.poultryKg * FOOD_CO2E_PER_KG.poultry +
+        values.fishKg * FOOD_CO2E_PER_KG.fish +
+        values.eggsKg * FOOD_CO2E_PER_KG.eggs +
+        values.milkKg * FOOD_CO2E_PER_KG.milk +
+        values.tofuKg * FOOD_CO2E_PER_KG.tofu;
+      const annualKgCO2e = weeklyKgCO2e * 52;
+      return { weeklyKgCO2e, annualKgCO2e };
+    }
+  }
 ];

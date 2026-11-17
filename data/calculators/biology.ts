@@ -1,5 +1,52 @@
 import type { CalculatorConfig } from './types.ts';
 
+// Genotype for a single gene, encoded as how many dominant alleles (0, 1 or 2) that parent carries:
+// AA = 2, Aa = 1, aa = 0 — the input punnett-square-calculator and dihybrid-cross-calculator both
+// use (OpenStax Biology 2e Section 12.2: homozygous "two identical alleles," heterozygous "different
+// alleles"). Each parent passes on a random allele, so a parent's own probability of passing on the
+// dominant allele to a given offspring is simply this count / 2.
+const GENOTYPE_OPTIONS = [
+  { value: 2, label: 'AA (homozygous dominant)' },
+  { value: 1, label: 'Aa (heterozygous)' },
+  { value: 0, label: 'aa (homozygous recessive)' }
+];
+// dihybrid-cross-calculator's two traits, using the same seed-shape/seed-color symbols OpenStax
+// Biology 2e Section 12.3 uses for its own dihybrid-cross illustration (round R / wrinkled r,
+// yellow Y / green y).
+const SEED_SHAPE_OPTIONS = [
+  { value: 2, label: 'RR (round, homozygous dominant)' },
+  { value: 1, label: 'Rr (round, heterozygous)' },
+  { value: 0, label: 'rr (wrinkled, homozygous recessive)' }
+];
+const SEED_COLOR_OPTIONS = [
+  { value: 2, label: 'YY (yellow, homozygous dominant)' },
+  { value: 1, label: 'Yy (yellow, heterozygous)' },
+  { value: 0, label: 'yy (green, homozygous recessive)' }
+];
+
+// dna-to-mrna-calculator: each DNA base typed in as one of 4 codes. The complementary strand and the
+// mRNA strand share the same pairing (Watson-Crick: A(0)<->T(1), G(2)<->C(3)) — only the alphabet
+// used to display code 1 differs (T for DNA, U for RNA), since "the only nucleotide difference is
+// that in mRNA, all of the T nucleotides are replaced with U nucleotides" (OpenStax Biology 2e
+// Section 15.2, "Prokaryotic Transcription").
+const DNA_BASE_OPTIONS = [
+  { value: 0, label: 'A' },
+  { value: 1, label: 'T' },
+  { value: 2, label: 'G' },
+  { value: 3, label: 'C' }
+];
+const DNA_STRAND_LABELS = [{ value: 0, label: 'A' }, { value: 1, label: 'T' }, { value: 2, label: 'G' }, { value: 3, label: 'C' }];
+const MRNA_STRAND_LABELS = [{ value: 0, label: 'A' }, { value: 1, label: 'U' }, { value: 2, label: 'G' }, { value: 3, label: 'C' }];
+const DNA_COMPLEMENT: Record<number, number> = { 0: 1, 1: 0, 2: 3, 3: 2 };
+// Defensive against the compute() snapshot test's "typical" input set, which scales every scalar
+// input by 1.5 (mdFiles/calculator-template-v2.md Section 2, "Select options are keyed by id or
+// code... only 0 survives that unchanged") — wraps any raw value back into a valid 0-3 base code
+// instead of an undefined lookup.
+function normalizeBaseCode(raw: number) {
+  const rounded = Math.round(raw);
+  return ((rounded % 4) + 4) % 4;
+}
+
 export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'cell-dilution-calculator',
@@ -539,6 +586,595 @@ export const biologyCalculators: CalculatorConfig[] = [
     },
     compute(values) {
       return { concentration: (1000 * values.molarMass * values.absorbance) / (values.molarAbsorptivity * values.pathLength) };
+    }
+  },
+  {
+    id: 'punnett-square-calculator',
+    category: 'biology',
+    glyph: 'Aa',
+    updatedAt: '2026-11-17',
+    aliases: ['punnett square calculator', 'monohybrid cross calculator', 'genotype ratio calculator', 'punnett square genetics calculator', 'dominant recessive cross calculator', 'mendelian cross calculator'],
+    related: ['dihybrid-cross-calculator', 'hardy-weinberg-calculator', 'allele-frequency-calculator', 'probability-calculator'],
+    title: 'Punnett Square Calculator (Monohybrid Cross)',
+    description: 'Cross two parent genotypes for a single gene and get the offspring genotype ratio (AA:Aa:aa) and phenotype ratio — a monohybrid Punnett square, solved instantly.',
+    example: 'Crossing two heterozygous (Aa) parents gives offspring in a 1:2:1 genotype ratio — 25% AA, 50% Aa, 25% aa — a 3:1 phenotype ratio, 75% showing the dominant trait.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is a Punnett square?',
+        paragraphs: [
+          'A Punnett square, OpenStax’s Biology 2e explains, is "a grid that applies the rules of probability to predict the possible outcomes of a genetic cross or mating and their expected frequencies." Each parent contributes one allele of a gene to each offspring; lining up one parent’s possible alleles across the top of the grid and the other’s down the side, and filling in every combination, gives every possible genotype a future offspring could inherit, each with its own probability.',
+          'A gene’s two alleles can combine three ways in a diploid organism. OpenStax defines homozygous individuals as having "two identical alleles for that gene" (AA or aa) and heterozygous individuals as having "different alleles for the gene being examined" (Aa). Genotype is "an organism’s underlying genetic makeup," while phenotype is "the observable traits expressed by an organism" — and because a dominant allele (one "inherited unchanged in a hybridization," per OpenStax) masks a recessive one (one that "become[s] latent, or disappear[s]") whenever at least one copy is present, both AA and Aa individuals show the identical dominant phenotype, while only aa shows the recessive one.',
+          'This calculator covers a monohybrid cross — OpenStax’s own term for fertilization "between two true-breeding parents that differ in only one characteristic" — the simplest case, tracking a single gene. Pick each parent’s genotype and the calculator works out the full genotype and phenotype ratios of their offspring, the same arithmetic a hand-drawn Punnett square grid gives, without drawing the grid.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick each parent’s genotype for the gene in question; the offspring ratios calculate instantly.',
+        steps: [
+          { name: 'Pick parent 1’s genotype', text: 'AA (homozygous dominant), Aa (heterozygous) or aa (homozygous recessive) — whichever this parent actually carries for the gene being crossed.' },
+          { name: 'Pick parent 2’s genotype', text: 'The same three choices, for the other parent.' },
+          { name: 'Read the genotype ratio', text: 'The share of offspring expected to be AA, Aa and aa.' },
+          { name: 'Read the phenotype ratio', text: 'AA and Aa offspring both show the dominant phenotype, since one dominant allele is enough; only aa shows the recessive phenotype.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Each parent passes on one of its two alleles at random; an offspring’s genotype probability is the product of each parent’s chance of passing on a dominant allele (or its complement, for a recessive one).',
+        expression: 'P(dominant allele from a parent) = (that parent’s dominant allele count) ÷ 2\nP(AA) = P₁ × P₂\nP(aa) = (1 − P₁) × (1 − P₂)\nP(Aa) = 1 − P(AA) − P(aa)',
+        terms: [
+          { symbol: 'P₁, P₂', meaning: 'Each parent’s probability of passing on the dominant allele to a given offspring: 1 if that parent is AA, ½ if Aa, 0 if aa.' },
+          { symbol: 'P(AA), P(Aa), P(aa)', meaning: 'The probability — equivalently, the expected fraction — of offspring with each genotype.' },
+          { symbol: 'Dominant phenotype', meaning: 'P(AA) + P(Aa) — every offspring with at least one dominant allele shows the dominant trait.' }
+        ],
+        note: 'This is the same probability math a hand-drawn Punnett square grid works out cell by cell — multiplying each parent’s allele probabilities and adding up the matching outcomes — just without drawing the grid.'
+      },
+      workedExample: {
+        intro: 'OpenStax’s own example: Mendel crossed a true-breeding violet-flowered pea plant (PP) with a true-breeding white-flowered one (pp). What genotype and phenotype does the F1 generation have?',
+        rows: [
+          { label: 'Parent 1 genotype', value: 'PP (homozygous dominant, violet)' },
+          { label: 'Parent 2 genotype', value: 'pp (homozygous recessive, white)' },
+          { label: 'P₁(dominant allele)', value: '1' },
+          { label: 'P₂(dominant allele)', value: '0' },
+          { label: 'Offspring genotype', value: '100% Pp' },
+          { label: 'Offspring phenotype', value: '100% violet (dominant)' }
+        ],
+        result: 'Every F1 offspring is Pp and violet-flowered — exactly what OpenStax reports: "100 percent of the F1 hybrid generation had violet flowers."',
+        explanation: 'With P₁ = 1 and P₂ = 0, P(AA) = 1 × 0 = 0 and P(aa) = 0 × 1 = 0, so every offspring falls into the one remaining case, Pp — a heterozygote. Because violet is dominant, one copy is enough to make every F1 plant violet, even though none of them are genetically identical to either true-breeding parent. Mendel then let the F1 self-pollinate: entering Aa for both parents above (a Pp × Pp cross) predicts a 1:2:1 genotype ratio and a 3:1 phenotype ratio, close to what Mendel actually counted in the F2 generation — 705 violet to 224 white, about 75.9% violet and 24.1% white (a ratio of roughly 3.15:1) against a theoretical 75%:25% (3:1) — the small gap being ordinary sampling variation in a finite number of real pea plants.'
+      },
+      watchOut: [
+        { title: 'A Punnett square gives probabilities, not guarantees', body: 'A predicted 3:1 ratio describes the expected long-run proportion across many offspring, not a promise about any one litter or seed pod. Mendel’s own F2 count, 705:224, is close to 3:1 but not exact — real, finite samples deviate from a theoretical ratio by chance.' },
+        { title: 'AA and Aa look identical in phenotype', body: 'Both genotypes show the dominant trait, so phenotype alone cannot tell them apart — only a cross with a known homozygous recessive (a "testcross") or a direct genetic test can distinguish AA from Aa.' },
+        { title: 'This assumes simple dominant/recessive inheritance', body: 'Not every gene works this way. Incomplete dominance, codominance, and traits influenced by more than one gene all produce different offspring ratios than the dominant-masks-recessive case this calculator models.' },
+        { title: 'One gene only', body: 'This page tracks a single gene (a monohybrid cross). For two genes at once, assorting independently, see dihybrid-cross-calculator instead.' }
+      ],
+      references: [
+        { label: 'OpenStax, Biology 2e, §12.1 "Mendel’s Experiments and the Laws of Probability"', url: 'https://openstax.org/books/biology-2e/pages/12-1-mendels-experiments-and-the-laws-of-probability' },
+        { label: 'OpenStax, Biology 2e, §12.2 "Characteristics and Traits"', url: 'https://openstax.org/books/biology-2e/pages/12-2-characteristics-and-traits' }
+      ]
+    },
+    inputs: [
+      { id: 'parent1Genotype', label: 'Parent 1 genotype', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0, options: GENOTYPE_OPTIONS },
+      { id: 'parent2Genotype', label: 'Parent 2 genotype', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0, options: GENOTYPE_OPTIONS }
+    ],
+    breakdown: {
+      headline: 'dominantPhenotype',
+      headlineLabel: 'Offspring with the dominant phenotype',
+      outputs: [
+        { id: 'dominantPhenotype', label: 'Dominant phenotype', format: 'percent' },
+        { id: 'recessivePhenotype', label: 'Recessive phenotype', format: 'percent' },
+        { id: 'AA', label: 'Genotype AA (homozygous dominant)', format: 'percent' },
+        { id: 'Aa', label: 'Genotype Aa (heterozygous)', format: 'percent' },
+        { id: 'aa', label: 'Genotype aa (homozygous recessive)', format: 'percent' }
+      ],
+      groups: [{ title: 'Parent genotypes', inputs: ['parent1Genotype', 'parent2Genotype'] }],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'AA', label: 'AA' },
+          { from: 'Aa', label: 'Aa' },
+          { from: 'aa', label: 'aa' }
+        ],
+        center: 'dominantPhenotype',
+        centerSub: 'dominant phenotype'
+      }
+    },
+    seo: {
+      title: 'Punnett Square Calculator (Monohybrid Cross)',
+      description: 'Free Punnett square calculator. Cross two parent genotypes for one gene and get the offspring genotype ratio (AA:Aa:aa) and phenotype ratio instantly.',
+      faq: [
+        { question: 'What is a Punnett square?', answer: 'A grid that applies the rules of probability to predict the possible genotypes and phenotypes of offspring from a genetic cross, by lining up each parent’s possible alleles and filling in every combination.' },
+        { question: 'What genotype ratio does a heterozygous (Aa) x heterozygous (Aa) cross give?', answer: '1:2:1 — 25% AA, 50% Aa, 25% aa — the classic cross Mendel used to work out the rules of inheritance.' },
+        { question: 'What phenotype ratio does Aa x Aa give?', answer: '3:1 — 75% show the dominant trait (AA or Aa), 25% show the recessive trait (aa only), since one dominant allele is enough to mask the recessive one.' },
+        { question: 'What happens if a homozygous dominant parent (AA) is crossed with a homozygous recessive parent (aa)?', answer: 'Every offspring is Aa (heterozygous), so 100% show the dominant phenotype, even though none of them share a genotype with either parent.' },
+        { question: 'What is the difference between genotype and phenotype?', answer: 'Genotype is the underlying genetic makeup (which alleles an organism carries); phenotype is the observable trait that genotype produces. AA and Aa have different genotypes but the identical dominant phenotype.' },
+        { question: 'Can two individuals with the same phenotype have different genotypes?', answer: 'Yes — AA and Aa both show the dominant phenotype. Only a testcross (crossing with a known aa individual) or a direct genetic test can tell them apart.' }
+      ]
+    },
+    compute(values) {
+      const p1 = values.parent1Genotype / 2;
+      const p2 = values.parent2Genotype / 2;
+      const AA = p1 * p2 * 100;
+      const aa = (1 - p1) * (1 - p2) * 100;
+      const Aa = 100 - AA - aa;
+      return { dominantPhenotype: AA + Aa, recessivePhenotype: aa, AA, Aa, aa };
+    }
+  },
+  {
+    id: 'dihybrid-cross-calculator',
+    category: 'biology',
+    glyph: 'AaBb',
+    updatedAt: '2026-11-17',
+    aliases: ['dihybrid cross calculator', 'two trait punnett square calculator', '9:3:3:1 ratio calculator', 'independent assortment calculator', 'dihybrid punnett square', 'two gene cross calculator'],
+    related: ['punnett-square-calculator', 'hardy-weinberg-calculator', 'probability-calculator', 'combination-calculator'],
+    title: 'Dihybrid Cross Calculator (9:3:3:1 Ratio)',
+    description: 'Cross two parents across two independently assorting genes and get all four offspring phenotype proportions — the classic 9:3:3:1 dihybrid-cross ratio, solved for any pair of genotypes.',
+    example: 'Crossing two parents heterozygous for both traits (RrYy x RrYy) gives the classic 9:3:3:1 ratio: 56.25% show both dominant traits, 18.75% each show one dominant and one recessive trait, and 6.25% show both recessive traits.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is a dihybrid cross?',
+        paragraphs: [
+          'A dihybrid cross tracks two genes for two different traits at once — OpenStax’s Biology 2e defines it as a cross "between two true-breeding parents that express different traits for two characteristics." Its own worked illustration uses pea seed shape (round R, dominant, versus wrinkled r, recessive) and seed color (yellow Y, dominant, versus green y, recessive) — the same two genes this calculator uses.',
+          'What makes a dihybrid cross solvable without a 16-cell grid is Mendel’s law of independent assortment, which OpenStax states as: "genes do not influence each other with regard to the sorting of alleles into gametes, and every possible combination of alleles for every gene is equally likely to occur." Because the two genes sort independently, each trait’s outcome can be worked out on its own as a monohybrid cross, and the combined probability of any two-trait outcome is simply the product of each trait’s own probability.',
+          'For the most famous case — both parents heterozygous for both genes (RrYy x RrYy) — that multiplication gives OpenStax’s own cited result: "a phenotypic ratio of 9 round/yellow:3 round/green:3 wrinkled/yellow:1 wrinkled/green" in the offspring, the signature 9:3:3:1 ratio. This calculator generalizes that same multiplication to any pair of genotypes for the two traits, not just the heterozygous-by-heterozygous case.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick each parent’s genotype for both genes; all four offspring phenotype proportions calculate instantly.',
+        steps: [
+          { name: 'Pick each parent’s seed-shape genotype', text: 'RR (round, homozygous dominant), Rr (round, heterozygous) or rr (wrinkled, homozygous recessive), for both parents.' },
+          { name: 'Pick each parent’s seed-color genotype', text: 'YY (yellow, homozygous dominant), Yy (yellow, heterozygous) or yy (green, homozygous recessive), for both parents.' },
+          { name: 'Read the four phenotype classes', text: 'Round & yellow, round & green, wrinkled & yellow, wrinkled & green — the proportion of offspring expected to show each combination.' },
+          { name: 'Try the classic cross', text: 'Set both parents to Rr and Yy for the textbook 9:3:3:1 ratio.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Each trait’s own dominant/recessive probability is worked out exactly as in a monohybrid cross; independent assortment means the two traits’ probabilities simply multiply together for any combined outcome.',
+        expression: 'P(dominant, one trait) = 1 − (1 − P₁) × (1 − P₂)\nP(round & yellow) = P(dominant shape) × P(dominant color)\nP(round & green) = P(dominant shape) × P(recessive color)\nP(wrinkled & yellow) = P(recessive shape) × P(dominant color)\nP(wrinkled & green) = P(recessive shape) × P(recessive color)',
+        terms: [
+          { symbol: 'P₁, P₂', meaning: 'Each parent’s probability of passing on the dominant allele for one gene: 1 if homozygous dominant, ½ if heterozygous, 0 if homozygous recessive.' },
+          { symbol: 'P(dominant), P(recessive)', meaning: 'The chance an offspring shows the dominant or recessive phenotype for one trait, from the monohybrid-cross formula applied to that trait alone.' },
+          { symbol: 'Independent assortment', meaning: 'Mendel’s rule that the two genes sort into gametes independently of each other, which is exactly what allows the two traits’ probabilities to be multiplied rather than tracked jointly.' }
+        ],
+        note: 'This is the "forked-line" or "product rule" method OpenStax describes as an alternative to drawing a full 16-cell Punnett square — multiplying each trait’s own probability gives the identical answer with far less bookkeeping.'
+      },
+      workedExample: {
+        intro: 'Both parents are heterozygous for both genes: RrYy x RrYy — the cross OpenStax illustrates with pea seed shape and color. What fraction of offspring fall into each of the four phenotype classes?',
+        rows: [
+          { label: 'Seed shape: P(dominant, round)', value: '¾ (75%), from Rr × Rr' },
+          { label: 'Seed shape: P(recessive, wrinkled)', value: '¼ (25%)' },
+          { label: 'Seed color: P(dominant, yellow)', value: '¾ (75%), from Yy × Yy' },
+          { label: 'Seed color: P(recessive, green)', value: '¼ (25%)' },
+          { label: 'Round & yellow (¾ × ¾)', value: '9/16 = 56.25%' },
+          { label: 'Round & green (¾ × ¼)', value: '3/16 = 18.75%' },
+          { label: 'Wrinkled & yellow (¼ × ¾)', value: '3/16 = 18.75%' },
+          { label: 'Wrinkled & green (¼ × ¼)', value: '1/16 = 6.25%' }
+        ],
+        result: '9:3:3:1 — 56.25% round/yellow, 18.75% round/green, 18.75% wrinkled/yellow, 6.25% wrinkled/green',
+        explanation: 'Each gene alone gives a standard 3:1 monohybrid ratio (75% dominant, 25% recessive). Independent assortment means the two traits combine by straight multiplication: 0.75 × 0.75 = 0.5625 (9/16), 0.75 × 0.25 = 0.1875 (3/16) twice, and 0.25 × 0.25 = 0.0625 (1/16) — the four proportions add back up to exactly 1 (16/16), and dividing each by the smallest, 6.25%, recovers the familiar whole-number ratio 9:3:3:1.'
+      },
+      watchOut: [
+        { title: 'Independent assortment assumes the two genes are not linked', body: 'OpenStax’s law of independent assortment holds for genes on different chromosomes, or far enough apart on the same chromosome to recombine freely. Genes physically close together on the same chromosome (linked genes) are inherited together more often than this multiplication predicts.' },
+        { title: 'This is a probability, not a guarantee for any one offspring', body: 'A 9:3:3:1 ratio describes the expected proportions across many offspring, not what any single seed pod or litter must contain — small real samples deviate from the theoretical ratio by chance.' },
+        { title: 'Two genes only', body: 'This page multiplies exactly two traits’ probabilities together. A trihybrid cross (three genes) needs a third multiplication this calculator does not perform.' },
+        { title: 'Don’t confuse this with the single-gene Punnett square', body: 'If only one trait actually matters for the question being asked, use punnett-square-calculator instead — mixing in a second, irrelevant gene here will only dilute each phenotype class’s proportion for no reason.' }
+      ],
+      references: [
+        { label: 'OpenStax, Biology 2e, §12.3 "Laws of Inheritance"', url: 'https://openstax.org/books/biology-2e/pages/12-3-laws-of-inheritance' },
+        { label: 'OpenStax, Biology 2e, §12.2 "Characteristics and Traits"', url: 'https://openstax.org/books/biology-2e/pages/12-2-characteristics-and-traits' }
+      ]
+    },
+    inputs: [
+      { id: 'parent1Shape', label: 'Parent 1 seed-shape genotype', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0, options: SEED_SHAPE_OPTIONS },
+      { id: 'parent2Shape', label: 'Parent 2 seed-shape genotype', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0, options: SEED_SHAPE_OPTIONS },
+      { id: 'parent1Color', label: 'Parent 1 seed-color genotype', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0, options: SEED_COLOR_OPTIONS },
+      { id: 'parent2Color', label: 'Parent 2 seed-color genotype', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0, options: SEED_COLOR_OPTIONS }
+    ],
+    breakdown: {
+      headline: 'dominantDominant',
+      headlineLabel: 'Round & yellow (both dominant traits)',
+      outputs: [
+        { id: 'dominantDominant', label: 'Round & yellow', format: 'percent' },
+        { id: 'dominantRecessive', label: 'Round & green', format: 'percent' },
+        { id: 'recessiveDominant', label: 'Wrinkled & yellow', format: 'percent' },
+        { id: 'recessiveRecessive', label: 'Wrinkled & green', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Seed shape genotypes', inputs: ['parent1Shape', 'parent2Shape'] },
+        { title: 'Seed color genotypes', inputs: ['parent1Color', 'parent2Color'] }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'dominantDominant', label: 'Round, yellow' },
+          { from: 'dominantRecessive', label: 'Round, green' },
+          { from: 'recessiveDominant', label: 'Wrinkled, yellow' },
+          { from: 'recessiveRecessive', label: 'Wrinkled, green' }
+        ],
+        center: 'dominantDominant',
+        centerSub: 'round & yellow'
+      }
+    },
+    seo: {
+      title: 'Dihybrid Cross Calculator (9:3:3:1 Ratio)',
+      description: 'Free dihybrid cross calculator. Cross two genes across two parents and get all four phenotype proportions — the classic 9:3:3:1 ratio, for any genotype pair.',
+      faq: [
+        { question: 'What is a dihybrid cross?', answer: 'A genetic cross that tracks two genes for two different traits at once, between parents that differ in both — OpenStax’s own example crosses pea seed shape (round/wrinkled) with seed color (yellow/green).' },
+        { question: 'What is the 9:3:3:1 ratio?', answer: 'The phenotype ratio produced when both parents are heterozygous for both genes (RrYy x RrYy): 9/16 show both dominant traits, 3/16 show each single dominant-recessive combination, and 1/16 shows both recessive traits.' },
+        { question: 'What is the law of independent assortment?', answer: 'Mendel’s principle that "genes do not influence each other with regard to the sorting of alleles into gametes, and every possible combination of alleles for every gene is equally likely to occur" — it is what allows each trait’s probability to be multiplied rather than tracked jointly.' },
+        { question: 'Does this work for genes that are linked on the same chromosome?', answer: 'No. Independent assortment assumes the two genes sort independently, which breaks down for genes physically close together on the same chromosome (linked genes) — they get inherited together more often than straight multiplication predicts.' },
+        { question: 'What if both parents are homozygous for both traits?', answer: 'The cross becomes fully predictable — every offspring gets exactly one outcome rather than a spread of probabilities (for example, RRYY x rryy gives 100% RrYy offspring, all round and yellow).' },
+        { question: 'How is this different from the Punnett square (monohybrid) calculator?', answer: 'Punnett-square-calculator tracks one gene; this page tracks two genes at once and multiplies their independent probabilities together — use whichever matches how many traits the question actually involves.' }
+      ]
+    },
+    compute(values) {
+      const recessiveFraction = (k1: number, k2: number) => (1 - k1 / 2) * (1 - k2 / 2);
+      const recShape = recessiveFraction(values.parent1Shape, values.parent2Shape);
+      const recColor = recessiveFraction(values.parent1Color, values.parent2Color);
+      const domShape = 1 - recShape;
+      const domColor = 1 - recColor;
+      return {
+        dominantDominant: domShape * domColor * 100,
+        dominantRecessive: domShape * recColor * 100,
+        recessiveDominant: recShape * domColor * 100,
+        recessiveRecessive: recShape * recColor * 100
+      };
+    }
+  },
+  {
+    id: 'hardy-weinberg-calculator',
+    category: 'biology',
+    glyph: 'p²q²',
+    updatedAt: '2026-11-17',
+    aliases: ['hardy-weinberg calculator', 'hardy weinberg equilibrium calculator', 'p2+2pq+q2 calculator', 'allele frequency equilibrium calculator', 'population genetics calculator', 'genotype frequency calculator'],
+    related: ['allele-frequency-calculator', 'punnett-square-calculator', 'dihybrid-cross-calculator', 'probability-calculator'],
+    title: 'Hardy-Weinberg Calculator (p² + 2pq + q² = 1)',
+    description: 'Enter a dominant allele frequency and predict the equilibrium genotype frequencies — homozygous dominant, heterozygous and homozygous recessive — under the Hardy-Weinberg principle.',
+    example: 'A dominant allele frequency of p = 70% predicts an equilibrium population that is 49% homozygous dominant, 42% heterozygous and 9% homozygous recessive.',
+    solver: {
+      defaultTarget: 'q',
+      variables: [
+        { id: 'p', label: 'Dominant allele frequency', symbol: 'p', dimension: 'percent', defaultValue: 70, defaultUnit: '%' },
+        { id: 'q', label: 'Recessive allele frequency', symbol: 'q', dimension: 'percent', defaultValue: 30, defaultUnit: '%' }
+      ],
+      solve: {
+        q: ({ p }) => 100 - p,
+        p: ({ q }) => 100 - q
+      },
+      outputs: [
+        { id: 'homozygousDominant', label: 'Homozygous dominant (p²)', dimension: 'percent', compute: (si) => (si.p / 100) ** 2 * 100 },
+        { id: 'heterozygous', label: 'Heterozygous (2pq)', dimension: 'percent', compute: (si) => 2 * (si.p / 100) * (si.q / 100) * 100 },
+        { id: 'homozygousRecessive', label: 'Homozygous recessive (q²)', dimension: 'percent', compute: (si) => (si.q / 100) ** 2 * 100 }
+      ],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'homozygousDominant', label: 'AA' },
+            { from: 'heterozygous', label: 'Aa' },
+            { from: 'homozygousRecessive', label: 'aa' }
+          ],
+          center: 'p',
+          centerSub: 'dominant allele frequency'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is the Hardy-Weinberg principle?',
+        paragraphs: [
+          'OpenStax’s Biology 2e states the Hardy-Weinberg principle’s two equations directly: "p + q = 1" and "p² + 2pq + q² = 1" — where, as OpenStax puts it, "p...often represents the frequency of a particular allele...while the variable q represents the frequency of" the other allele at the same gene. Because every individual carries exactly two alleles for a gene, those two frequencies must add to 100% of the gene pool, and squaring and cross-multiplying them (as if alleles paired up entirely at random) predicts exactly what fraction of the population should be each genotype: AA, Aa, or aa.',
+          'This prediction only holds under a specific set of conditions. OpenStax is explicit: "the Hardy-Weinberg principle assumes an infinitely large population and conditions with no mutations, migration, emigration, or selective pressure for or against genotype." Under those conditions, OpenStax notes, "a population\'s allele and genotype frequencies are inherently stable" — they do not drift from one generation to the next.',
+          'That makes the Hardy-Weinberg principle less a description of real populations (which always experience at least some mutation, migration, drift or selection) and more a null hypothesis: a baseline of "no evolution happening at this gene" to compare an actual, measured population against. A real population’s genotype frequencies matching the Hardy-Weinberg prediction closely is itself informative — it suggests this particular gene is not currently under strong selection, migration or drift.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter either allele frequency, p or q; the other and all three genotype frequencies fill in automatically.',
+        steps: [
+          { name: 'Find or estimate the allele frequency', text: 'p (or q) usually comes from directly counting genotypes in a real sample — see allele-frequency-calculator for that calculation — or from a value already reported in a study.' },
+          { name: 'Enter p or q', text: 'Typing one fills in the other automatically, since p + q always equals 100%.' },
+          { name: 'Read the predicted genotype frequencies', text: 'Homozygous dominant (p²), heterozygous (2pq) and homozygous recessive (q²) — what the population should look like at equilibrium.' },
+          { name: 'Compare against a real, counted population', text: 'If the actual genotype counts differ noticeably from this prediction, something (selection, migration, non-random mating, a small population) may be acting on this gene.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The two Hardy-Weinberg equations link allele frequencies to the genotype frequencies they predict at equilibrium.',
+        expression: 'p + q = 1\np² + 2pq + q² = 1\nAA frequency = p²\nAa frequency = 2pq\naa frequency = q²',
+        terms: [
+          { symbol: 'p', meaning: 'The frequency of the dominant allele in the gene pool — OpenStax’s own example uses it for the "Y" allele (yellow) in Mendel’s peas.' },
+          { symbol: 'q', meaning: 'The frequency of the recessive allele — OpenStax’s "y" allele (green). Always 1 − p.' },
+          { symbol: 'p², 2pq, q²', meaning: 'The predicted frequencies of the three genotypes, from treating the two alleles as pairing up at random — the same binomial expansion as (p + q)².' }
+        ],
+        note: 'This predicts genotype frequencies from an allele frequency, assuming the population meets the Hardy-Weinberg conditions. For the reverse direction — calculating an allele frequency directly from counted genotypes, without that assumption — see allele-frequency-calculator.'
+      },
+      workedExample: {
+        intro: 'OpenStax’s own population genetics figure describes 500 pea plants: 245 homozygous dominant (YY), 210 heterozygous (Yy) and 45 homozygous recessive (yy) — giving allele frequencies p = 0.7 (Y) and q = 0.3 (y) (see allele-frequency-calculator for that count-based calculation). Does this population sit at Hardy-Weinberg equilibrium for this gene?',
+        rows: [
+          { label: 'Dominant allele frequency (p)', value: '70%' },
+          { label: 'Recessive allele frequency (q = 100% − 70%)', value: '30%' },
+          { label: 'Predicted homozygous dominant (p² = 0.7²)', value: '49%' },
+          { label: 'Predicted heterozygous (2pq = 2 × 0.7 × 0.3)', value: '42%' },
+          { label: 'Predicted homozygous recessive (q² = 0.3²)', value: '9%' },
+          { label: 'Actual observed proportions (245, 210, 45 of 500)', value: '49%, 42%, 9%' }
+        ],
+        result: 'Predicted 49% / 42% / 9% matches the population’s actual observed proportions exactly',
+        explanation: 'Squaring p = 0.7 gives 0.49 (49%); squaring q = 0.3 gives 0.09 (9%); doubling the cross product, 2 × 0.7 × 0.3, gives 0.42 (42%) — and the three add to exactly 100%. Dividing OpenStax’s own counts by the 500-plant total (245 ÷ 500, 210 ÷ 500, 45 ÷ 500) gives the identical 49%, 42%, 9% — so, for this particular gene, this population is exactly at Hardy-Weinberg equilibrium.'
+      },
+      watchOut: [
+        { title: 'The equilibrium conditions rarely hold exactly', body: 'OpenStax’s own conditions — "an infinitely large population and...no mutations, migration, emigration, or selective pressure" — describe an idealization. Every real population experiences at least some of these, so this calculator’s prediction is a baseline to compare against, not a guarantee of what a real population looks like.' },
+        { title: 'This predicts; it does not measure', body: 'This page starts from an allele frequency (already known or assumed) and predicts genotype frequencies. It does not calculate an allele frequency from actual counted individuals — that is the opposite direction, covered by allele-frequency-calculator.' },
+        { title: 'p and q must describe the same gene', body: 'Entering an allele frequency for one gene and expecting a genotype prediction for an unrelated gene gives a meaningless answer — p and q have to be the two alleles of one specific locus.' },
+        { title: 'Only two alleles per gene', body: 'The classic p + q = 1 equation assumes a gene with exactly two alleles. A gene with three or more alleles in the population needs a generalized multi-allele version of the same idea, which this calculator does not compute.' }
+      ],
+      references: [
+        { label: 'OpenStax, Biology 2e, §19.1 "Population Evolution"', url: 'https://openstax.org/books/biology-2e/pages/19-1-population-evolution' }
+      ]
+    },
+    inputs: [{ id: 'p', label: 'Dominant allele frequency p (%)', type: 'number', placeholder: '70', defaultValue: 70, step: 0.1, min: 0 }],
+    seo: {
+      title: 'Hardy-Weinberg Calculator (p² + 2pq + q² = 1)',
+      description: 'Free Hardy-Weinberg calculator. Enter an allele frequency and get predicted genotype frequencies: homozygous dominant, heterozygous and homozygous recessive.',
+      faq: [
+        { question: 'What is the Hardy-Weinberg equation?', answer: 'p + q = 1 and p² + 2pq + q² = 1, where p and q are the frequencies of a gene’s two alleles, and p², 2pq and q² are the predicted frequencies of the homozygous dominant, heterozygous and homozygous recessive genotypes at equilibrium.' },
+        { question: 'What do p and q represent?', answer: 'p is the frequency of one allele (conventionally the dominant one) in a population’s gene pool; q is the frequency of the other allele at the same gene. They always add to 1 (100%).' },
+        { question: 'What are the assumptions behind the Hardy-Weinberg principle?', answer: 'OpenStax states them directly: "an infinitely large population and conditions with no mutations, migration, emigration, or selective pressure for or against genotype." Real populations rarely meet all of these exactly.' },
+        { question: 'How do I find genotype frequencies if I know the allele frequency p?', answer: 'Homozygous dominant frequency is p², heterozygous frequency is 2pq, and homozygous recessive frequency is q² (where q = 1 − p) — enter p and this calculator computes all three.' },
+        { question: 'What does it mean if a real population does not match the predicted frequencies?', answer: 'It suggests the gene may be under selection, affected by migration or non-random mating, or that the population is small enough for random genetic drift — one or more of the Hardy-Weinberg assumptions is likely being violated for that gene.' },
+        { question: 'How is this different from the allele frequency calculator?', answer: 'This page starts from an allele frequency and predicts equilibrium genotype frequencies. allele-frequency-calculator goes the other way: it calculates the allele frequency directly from actual genotype counts in a sample, with no equilibrium assumption.' }
+      ]
+    },
+    compute(values) {
+      return { q: 100 - values.p };
+    }
+  },
+  {
+    id: 'allele-frequency-calculator',
+    category: 'biology',
+    glyph: 'f(A)',
+    updatedAt: '2026-11-17',
+    aliases: ['allele frequency calculator', 'gene frequency calculator', 'allele frequency from genotype counts', 'population allele frequency calculator', 'p and q allele calculator', 'gene pool frequency calculator'],
+    related: ['hardy-weinberg-calculator', 'punnett-square-calculator', 'dihybrid-cross-calculator', 'probability-calculator'],
+    title: 'Allele Frequency Calculator (From Genotype Counts)',
+    description: 'Count homozygous dominant, heterozygous and homozygous recessive individuals in a real population and calculate each allele’s observed frequency directly — no equilibrium assumption.',
+    example: 'A population of 500 pea plants with 245 homozygous dominant, 210 heterozygous and 45 homozygous recessive individuals has a dominant allele frequency of 70% and a recessive allele frequency of 30%.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is allele frequency, and how is it counted?',
+        paragraphs: [
+          'OpenStax’s Biology 2e defines the gene pool as "the sum of all the alleles in a population," and allele frequency (or gene frequency) as "the rate at which a specific allele appears within a population." Counting it directly just means counting every copy of an allele actually present in a sample of individuals, then dividing by the total number of allele copies in that sample.',
+          'Because each diploid individual carries two alleles per gene, a homozygous individual (AA or aa) contributes two copies of the same allele, while a heterozygous individual (Aa) contributes one copy of each. OpenStax’s own worked example makes this concrete: a population of 500 pea plants with 245 homozygous dominant (YY), 210 heterozygous (Yy) and 45 homozygous recessive (yy) individuals has "the number of capital Y alleles...490 from homozygous dominant individuals plus 210 from heterozygous individuals, or 700 total," out of 1,000 total allele copies (2 per plant × 500 plants) — giving an allele frequency, OpenStax states, of "700 divided by 1000, or 0.7."',
+          'This is a direct count from real, observed individuals — it makes no assumption about the population being at any kind of genetic equilibrium. That is the key difference from hardy-weinberg-calculator, which starts from an allele frequency (observed this way, or simply assumed) and predicts what the genotype frequencies should be if the population is at equilibrium. This page answers "what is the allele frequency, given what was actually counted?"; that one answers "given an allele frequency, what genotype frequencies should a population at equilibrium show?"'
+        ]
+      },
+      howTo: {
+        intro: 'Count (or look up) how many individuals in a sample have each genotype, enter the three counts, and both allele frequencies calculate automatically.',
+        steps: [
+          { name: 'Count homozygous dominant individuals', text: 'Individuals carrying two copies of the dominant allele (AA).' },
+          { name: 'Count heterozygous individuals', text: 'Individuals carrying one copy of each allele (Aa).' },
+          { name: 'Count homozygous recessive individuals', text: 'Individuals carrying two copies of the recessive allele (aa).' },
+          { name: 'Read the allele frequencies', text: 'p (dominant allele frequency) and q (recessive allele frequency), computed directly from the total allele copies in the sample, along with the total individuals and total alleles counted.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Each genotype contributes a known number of allele copies; summing them and dividing by the total allele count gives each allele’s observed frequency directly.',
+        expression: 'Total individuals = countAA + countAa + countaa\nTotal alleles = 2 × total individuals\np = (2 × countAA + countAa) ÷ total alleles\nq = (2 × countaa + countAa) ÷ total alleles',
+        terms: [
+          { symbol: 'countAA, countAa, countaa', meaning: 'The number of individuals actually counted with each genotype.' },
+          { symbol: 'p', meaning: 'The observed frequency of the dominant allele — every homozygous dominant individual contributes two copies, every heterozygous individual contributes one.' },
+          { symbol: 'q', meaning: 'The observed frequency of the recessive allele, counted the same way. Always 1 − p, since every allele copy in the sample is one or the other.' }
+        ],
+        note: 'This counts alleles directly from a real sample — it carries no Hardy-Weinberg equilibrium assumption. See hardy-weinberg-calculator for the reverse, predictive calculation.'
+      },
+      workedExample: {
+        intro: 'OpenStax’s own figure: a population of 500 pea plants has 245 homozygous dominant (YY), 210 heterozygous (Yy) and 45 homozygous recessive (yy) individuals. What are the Y and y allele frequencies?',
+        rows: [
+          { label: 'Homozygous dominant count (YY)', value: '245' },
+          { label: 'Heterozygous count (Yy)', value: '210' },
+          { label: 'Homozygous recessive count (yy)', value: '45' },
+          { label: 'Total individuals (245 + 210 + 45)', value: '500' },
+          { label: 'Total alleles (2 × 500)', value: '1,000' },
+          { label: 'Y allele count (2 × 245 + 210)', value: '700' },
+          { label: 'y allele count (2 × 45 + 210)', value: '300' },
+          { label: 'p, frequency of Y (700 ÷ 1,000)', value: '0.7 (70%)' },
+          { label: 'q, frequency of y (300 ÷ 1,000)', value: '0.3 (30%)' }
+        ],
+        result: 'p = 70%, q = 30%',
+        explanation: 'Each of the 245 YY plants carries two Y alleles (490 total) and each of the 210 Yy plants carries one more (210), for 700 Y alleles. Each of the 45 yy plants carries two y alleles (90 total) and the same 210 Yy plants each carry one y allele, for 300 y alleles. Out of 1,000 total allele copies (2 per plant × 500 plants), 700 ÷ 1,000 = 0.7 and 300 ÷ 1,000 = 0.3 — matching OpenStax’s own stated result exactly.'
+      },
+      watchOut: [
+        { title: 'This counts alleles directly — it assumes nothing about equilibrium', body: 'Unlike hardy-weinberg-calculator, this page makes no assumption that the population is free of selection, migration or drift. It simply reports what the sample’s genotype counts actually add up to.' },
+        { title: 'A small sample gives a noisy estimate', body: 'Counting only a handful of individuals can give an allele frequency far from the gene pool’s true value purely by chance — a larger, representative sample gives a more reliable estimate.' },
+        { title: 'This assumes every individual was correctly genotyped', body: 'If the dominant and heterozygous phenotypes look identical (as they usually do), telling AA apart from Aa by eye is impossible — these counts need an actual genetic test, a pedigree, or (for self-pollinating organisms like Mendel’s peas) a cross with known parents, not a guess from appearance.' },
+        { title: 'p and q must sum to 1', body: 'Since every allele copy counted is either the dominant or the recessive one, p + q always equals exactly 100% for a correctly counted sample — if a hand calculation gives something else, recheck the counts.' }
+      ],
+      references: [
+        { label: 'OpenStax, Biology 2e, §19.1 "Population Evolution"', url: 'https://openstax.org/books/biology-2e/pages/19-1-population-evolution' }
+      ]
+    },
+    inputs: [
+      { id: 'countAA', label: 'Homozygous dominant count (AA)', type: 'number', placeholder: '245', defaultValue: 245, step: 1, min: 0 },
+      { id: 'countAa', label: 'Heterozygous count (Aa)', type: 'number', placeholder: '210', defaultValue: 210, step: 1, min: 0 },
+      { id: 'countaa', label: 'Homozygous recessive count (aa)', type: 'number', placeholder: '45', defaultValue: 45, step: 1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'p',
+      headlineLabel: 'Dominant allele frequency (p)',
+      outputs: [
+        { id: 'p', label: 'Dominant allele frequency (p)', format: 'percent' },
+        { id: 'q', label: 'Recessive allele frequency (q)', format: 'percent' },
+        { id: 'totalIndividuals', label: 'Total individuals counted', format: 'integer' },
+        { id: 'totalAlleles', label: 'Total alleles counted', format: 'integer' },
+        { id: 'pAlleleCount', label: 'Dominant allele copies', format: 'integer' },
+        { id: 'qAlleleCount', label: 'Recessive allele copies', format: 'integer' }
+      ],
+      groups: [{ title: 'Genotype counts', inputs: ['countAA', 'countAa', 'countaa'] }],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'pAlleleCount', label: 'Dominant allele' },
+          { from: 'qAlleleCount', label: 'Recessive allele' }
+        ],
+        center: 'p',
+        centerSub: 'dominant allele frequency'
+      }
+    },
+    seo: {
+      title: 'Allele Frequency Calculator (From Genotype Counts)',
+      description: 'Free allele frequency calculator. Enter homozygous dominant, heterozygous and homozygous recessive counts and get each allele’s observed frequency directly.',
+      faq: [
+        { question: 'How do you calculate allele frequency from genotype counts?', answer: 'Count each allele copy directly: a homozygous individual contributes two copies of its allele, a heterozygous individual contributes one of each. Divide each allele’s total copies by the total number of alleles counted (2 × the number of individuals).' },
+        { question: 'What is allele frequency?', answer: 'OpenStax defines it as "the rate at which a specific allele appears within a population" — the fraction of all allele copies at a gene, across every individual sampled, that are one particular allele.' },
+        { question: 'What is a gene pool?', answer: '"The sum of all the alleles in a population" (OpenStax) — every copy of every allele, at every gene, carried by every individual in the population.' },
+        { question: 'Do p and q always add up to 1?', answer: 'Yes, for a gene with exactly two alleles — every allele copy counted is one or the other, so their frequencies must sum to exactly 100%.' },
+        { question: 'Is this the same as the Hardy-Weinberg calculator?', answer: 'No. This page calculates an allele frequency directly from counted individuals, with no assumptions. hardy-weinberg-calculator goes the other direction: starting from an allele frequency, it predicts what genotype frequencies a population at equilibrium should show.' },
+        { question: 'Why does a heterozygous individual only count once toward each allele?', answer: 'A heterozygous (Aa) individual carries exactly one copy of each allele, so it contributes one count toward the dominant allele’s total and one toward the recessive allele’s total — never two of the same.' }
+      ]
+    },
+    compute(values) {
+      const totalIndividuals = values.countAA + values.countAa + values.countaa;
+      const totalAlleles = 2 * totalIndividuals;
+      const pAlleleCount = 2 * values.countAA + values.countAa;
+      const qAlleleCount = 2 * values.countaa + values.countAa;
+      return {
+        p: (pAlleleCount / totalAlleles) * 100,
+        q: (qAlleleCount / totalAlleles) * 100,
+        totalIndividuals,
+        totalAlleles,
+        pAlleleCount,
+        qAlleleCount
+      };
+    }
+  },
+  {
+    id: 'dna-to-mrna-calculator',
+    category: 'biology',
+    glyph: 'mRNA',
+    updatedAt: '2026-11-17',
+    aliases: ['dna to mrna calculator', 'transcription calculator', 'dna to rna converter', 'mrna sequence calculator', 'complementary dna strand calculator', 'dna transcription tool'],
+    related: ['dna-concentration-calculator', 'protein-concentration-calculator', 'punnett-square-calculator', 'bacterial-growth-calculator'],
+    title: 'DNA to mRNA Calculator (Transcription)',
+    description: 'Enter a short DNA template strand, base by base, and get its complementary DNA strand and the mRNA transcript — the T-to-U substitution of transcription, shown one base at a time.',
+    example: 'A DNA template strand of A-T-G-C-G-T transcribes to the mRNA strand U-A-C-G-C-A — each base paired by Watson-Crick rules, with U standing in for T.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What happens when DNA is transcribed into mRNA?',
+        paragraphs: [
+          'Transcription copies one strand of DNA into a matching strand of messenger RNA (mRNA). OpenStax’s Biology 2e is specific about which DNA strand gets copied: "transcription always proceeds from the same DNA strand for each gene, which is called the template strand." RNA polymerase reads the template strand and builds an mRNA strand base by base, pairing each DNA base with its RNA partner the same way DNA’s own two strands pair with each other.',
+          'The pairing rule is almost the same as DNA-to-DNA base pairing, with one change. OpenStax states it directly: "the only nucleotide difference is that in mRNA, all of the T nucleotides are replaced with U nucleotides," and "in an RNA double helix, A can bind U via two hydrogen bonds, just as in A–T pairing in a DNA double helix." So a template A still pairs with what would be a T in DNA — but since the product is RNA, it comes out as U instead. G and C pair with each other exactly as in DNA, unchanged.',
+          'OpenStax also notes that "the mRNA product is complementary to the template strand and is almost identical to the other DNA strand, called the nontemplate strand, or the coding strand" — identical, that is, except that every T in the coding strand becomes a U in the mRNA. This calculator demonstrates the template-strand-to-mRNA direction, one base at a time, on a short six-base sequence.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick each base of a short DNA template strand, in order; the complementary DNA strand and the mRNA transcript fill in instantly, base by base.',
+        steps: [
+          { name: 'Enter the DNA template strand', text: 'Pick A, T, G or C for each of the six positions, in the order they appear in the template strand being transcribed.' },
+          { name: 'Read the complementary DNA strand', text: 'Each position pairs by the usual DNA rule: A with T, G with C.' },
+          { name: 'Read the mRNA strand', text: 'The same pairing, except every position that would be a T in DNA appears as U instead, since mRNA has no thymine.' },
+          { name: 'Check the GC content', text: 'The share of the transcript that is G or C, a simple bonus figure summarizing the sequence.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Each DNA base pairs with exactly one partner; the mRNA strand uses that same pairing, substituting U wherever DNA would use T.',
+        expression: 'DNA pairing: A ↔ T, G ↔ C\nmRNA pairing: A → U, T → A, G → C, C → G',
+        terms: [
+          { symbol: 'Template strand', meaning: 'The DNA strand actually read and copied — "transcription always proceeds from the same DNA strand for each gene" (OpenStax).' },
+          { symbol: 'Complementary (coding) DNA strand', meaning: 'The template strand’s normal DNA complement — identical to the mRNA transcript except that it still uses T where the mRNA uses U.' },
+          { symbol: 'mRNA strand', meaning: 'Complementary to the template strand, using RNA’s base U everywhere the DNA complement would use T.' },
+          { symbol: 'GC content', meaning: 'The share of bases that are G or C rather than A or T/U — a simple descriptive figure, shown here as a bonus output.' }
+        ],
+        note: 'This pairs bases position by position, the way an introductory textbook exercise typically presents a "write the complementary strand" problem — it does not make any claim about which physical end (5′ or 3′) of the molecule either sequence starts from.'
+      },
+      workedExample: {
+        intro: 'A short DNA template strand reads A-T-G-C-G-T. What is its complementary DNA strand, and what mRNA does it transcribe to?',
+        rows: [
+          { label: 'Template strand', value: 'A  T  G  C  G  T' },
+          { label: 'Complementary DNA strand (A↔T, G↔C)', value: 'T  A  C  G  C  A' },
+          { label: 'mRNA strand (same pairing, U for T)', value: 'U  A  C  G  C  A' },
+          { label: 'GC content (3 of 6 bases are G or C)', value: '50%' }
+        ],
+        result: 'mRNA strand: U-A-C-G-C-A',
+        explanation: 'Each template base pairs by the Watson-Crick rule: A pairs with T, T with A, G with C, and C with G, giving the complementary DNA strand T-A-C-G-C-A. The mRNA strand uses the identical pairing, except any position that would be a T becomes a U instead — only the first position changes (T becomes U), since T only appears once in this complementary strand. As a cross-check, the mRNA strand should also equal the DNA coding strand (the complementary strand above) with every T swapped for U directly: T-A-C-G-C-A becomes U-A-C-G-C-A — the same answer both ways. Three of the six bases (G, C, C) are G or C, for a GC content of 3 ÷ 6 = 50%.'
+      },
+      watchOut: [
+        { title: 'This expects the template strand, not the coding strand', body: 'Gene databases and textbooks usually give a sequence as the coding (sense) strand, not the template strand — and a coding strand only needs a direct T→U swap, no complementing at all. Entering a coding-strand sequence into this calculator as if it were the template strand will give the wrong mRNA (effectively the reverse of the correct pairing partner), not just a different label.' },
+        { title: 'RNA pairs A with U, not A with T', body: 'It is tempting to treat U as "a T that behaves normally," but the molecule is genuinely different — OpenStax notes RNA’s A-U pairing uses "two hydrogen bonds, just as in A–T pairing in a DNA double helix," the same bond count, but a different, lighter base.' },
+        { title: 'This models only the base-pairing step, not all of transcription', body: 'Real transcription involves RNA polymerase binding a promoter, elongating the strand, and terminating at a specific signal — and in eukaryotes, further processing (splicing, capping, polyadenylation) before the mRNA is mature. This calculator performs only the base-level pairing and substitution, not the full biological process.' },
+        { title: 'Six bases is a worked demonstration, not a full-gene tool', body: 'This page is sized for learning the pairing rule on a short sequence. A full gene is hundreds to thousands of bases long; the identical per-base rule (complement, then substitute T for U) applies to a sequence of any length, just not inside this particular widget.' }
+      ],
+      references: [
+        { label: 'OpenStax, Biology 2e, §15.2 "Prokaryotic Transcription"', url: 'https://openstax.org/books/biology-2e/pages/15-2-prokaryotic-transcription' }
+      ]
+    },
+    inputs: [
+      { id: 'base1', label: 'Base 1', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0, options: DNA_BASE_OPTIONS },
+      { id: 'base2', label: 'Base 2', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0, options: DNA_BASE_OPTIONS },
+      { id: 'base3', label: 'Base 3', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0, options: DNA_BASE_OPTIONS },
+      { id: 'base4', label: 'Base 4', type: 'number', placeholder: '3', defaultValue: 3, step: 1, min: 0, options: DNA_BASE_OPTIONS },
+      { id: 'base5', label: 'Base 5', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0, options: DNA_BASE_OPTIONS },
+      { id: 'base6', label: 'Base 6', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0, options: DNA_BASE_OPTIONS }
+    ],
+    breakdown: {
+      headline: 'gcPercent',
+      headlineLabel: 'GC content of the mRNA transcript',
+      outputs: [
+        { id: 'gcPercent', label: 'GC content', format: 'percent' },
+        { id: 'complementBase1', label: 'Base 1 — complementary DNA strand', labels: DNA_STRAND_LABELS },
+        { id: 'mrnaBase1', label: 'Base 1 — mRNA strand', labels: MRNA_STRAND_LABELS },
+        { id: 'complementBase2', label: 'Base 2 — complementary DNA strand', labels: DNA_STRAND_LABELS },
+        { id: 'mrnaBase2', label: 'Base 2 — mRNA strand', labels: MRNA_STRAND_LABELS },
+        { id: 'complementBase3', label: 'Base 3 — complementary DNA strand', labels: DNA_STRAND_LABELS },
+        { id: 'mrnaBase3', label: 'Base 3 — mRNA strand', labels: MRNA_STRAND_LABELS },
+        { id: 'complementBase4', label: 'Base 4 — complementary DNA strand', labels: DNA_STRAND_LABELS },
+        { id: 'mrnaBase4', label: 'Base 4 — mRNA strand', labels: MRNA_STRAND_LABELS },
+        { id: 'complementBase5', label: 'Base 5 — complementary DNA strand', labels: DNA_STRAND_LABELS },
+        { id: 'mrnaBase5', label: 'Base 5 — mRNA strand', labels: MRNA_STRAND_LABELS },
+        { id: 'complementBase6', label: 'Base 6 — complementary DNA strand', labels: DNA_STRAND_LABELS },
+        { id: 'mrnaBase6', label: 'Base 6 — mRNA strand', labels: MRNA_STRAND_LABELS }
+      ],
+      groups: [{ title: 'DNA template strand (enter each base in order)', inputs: ['base1', 'base2', 'base3', 'base4', 'base5', 'base6'] }],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'gcCount', label: 'G + C' },
+          { from: 'atCount', label: 'A + T/U' }
+        ],
+        center: 'gcPercent',
+        centerSub: 'GC content'
+      }
+    },
+    seo: {
+      title: 'DNA to mRNA Calculator (Transcription)',
+      description: 'Free DNA to mRNA calculator. Enter a short DNA template strand and get the complementary DNA strand and mRNA transcript, base by base, with T replaced by U.',
+      faq: [
+        { question: 'How do you transcribe DNA into mRNA?', answer: 'Pair each base of the DNA template strand with its RNA partner — A with U, T with A, G with C, C with G — the same Watson-Crick pairing as DNA, except every position that would normally be a T comes out as U instead.' },
+        { question: 'What is the DNA template strand?', answer: 'The one DNA strand RNA polymerase actually reads and copies to build mRNA. OpenStax’s Biology 2e states that "transcription always proceeds from the same DNA strand for each gene, which is called the template strand."' },
+        { question: 'Why does mRNA have U instead of T?', answer: 'RNA uses uracil (U) in place of DNA’s thymine (T) as one of its four bases. OpenStax notes "the only nucleotide difference is that in mRNA, all of the T nucleotides are replaced with U nucleotides" — every other base pairs exactly as in DNA.' },
+        { question: 'What is the difference between the template strand and the coding strand?', answer: 'The template strand is the one actually read during transcription. The coding (nontemplate) strand is the other DNA strand — OpenStax notes the mRNA product "is almost identical to the...coding strand," differing only by T becoming U.' },
+        { question: 'Do I enter the template strand or the coding strand into this calculator?', answer: 'Enter the template strand. If you have the coding (sense) strand instead — the form most gene databases show — you don’t need this calculator’s complement step at all: just replace every T with U directly.' },
+        { question: 'What is GC content and why does it matter?', answer: 'The percentage of bases that are G or C rather than A or T/U. It is a simple descriptive statistic; G-C base pairs form three hydrogen bonds versus two for A-T/A-U, which is part of why GC-rich DNA tends to be more thermally stable.' }
+      ]
+    },
+    compute(values) {
+      const result: Record<string, number> = {};
+      let gcCount = 0;
+      for (let i = 1; i <= 6; i += 1) {
+        const templateCode = normalizeBaseCode(values[`base${i}`]);
+        const pairCode = DNA_COMPLEMENT[templateCode];
+        result[`complementBase${i}`] = pairCode;
+        result[`mrnaBase${i}`] = pairCode;
+        if (pairCode === 2 || pairCode === 3) gcCount += 1;
+      }
+      result.gcCount = gcCount;
+      result.atCount = 6 - gcCount;
+      result.gcPercent = (gcCount / 6) * 100;
+      return result;
     }
   }
 ];

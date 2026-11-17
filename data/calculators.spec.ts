@@ -134,7 +134,8 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'cell-dilution-calculator': ['concentration2'], // all inputs 0 -> 0/0
   'bacterial-growth-calculator': ['finalPopulation'], // elapsed time 0 and generation time 0 -> 2^(0/0), NaN
   'doubling-time-calculator': ['doublingTime'], // growth rate constant 0 (its min) -> divide by zero
-  'protein-concentration-calculator': ['concentration'] // all inputs 0 -> 0/0
+  'protein-concentration-calculator': ['concentration'], // all inputs 0 -> 0/0
+  'allele-frequency-calculator': ['p', 'q'] // all three genotype counts 0 (their min) -> totalAlleles 0 -> 0/0
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

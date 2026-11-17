@@ -423,7 +423,12 @@ export const calculatorOrder: string[] = [
   'bacterial-growth-calculator',
   'doubling-time-calculator',
   'dna-concentration-calculator',
-  'protein-concentration-calculator'
+  'protein-concentration-calculator',
+  'punnett-square-calculator',
+  'dihybrid-cross-calculator',
+  'hardy-weinberg-calculator',
+  'allele-frequency-calculator',
+  'dna-to-mrna-calculator'
 ];
 
 const rank = (id: string) => {

@@ -144,6 +144,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'cell-dilution-calculator',
     category: 'biology',
+    group: 'Lab Basics & Sample Prep',
     glyph: 'CV',
     updatedAt: '2026-11-17',
     aliases: ['cell dilution calculator', 'cell density dilution calculator', 'cfu/ml dilution calculator', 'cell suspension dilution calculator', 'c1v1 calculator for cells', 'how to dilute a cell suspension'],
@@ -263,6 +264,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'bacterial-growth-calculator',
     category: 'biology',
+    group: 'Microbiology & Growth',
     glyph: '2ⁿ',
     updatedAt: '2026-11-17',
     aliases: ['bacterial growth calculator', 'exponential bacterial growth calculator', 'binary fission calculator', 'bacteria population growth calculator', 'colony growth calculator', 'generation time population calculator'],
@@ -372,6 +374,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'doubling-time-calculator',
     category: 'biology',
+    group: 'Microbiology & Growth',
     glyph: 'td',
     updatedAt: '2026-11-17',
     aliases: ['doubling time calculator', 'population doubling time calculator', 'growth rate to doubling time calculator', 'specific growth rate calculator', 'exponential growth doubling time calculator', 'td = ln2/mu calculator'],
@@ -466,6 +469,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'dna-concentration-calculator',
     category: 'biology',
+    group: 'Lab Basics & Sample Prep',
     glyph: 'A260',
     updatedAt: '2026-11-17',
     aliases: ['dna concentration calculator', 'a260 dna calculator', 'nanodrop dna concentration calculator', 'ng/ul dna calculator', 'dsdna concentration calculator', 'nucleic acid concentration calculator'],
@@ -568,6 +572,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'protein-concentration-calculator',
     category: 'biology',
+    group: 'Lab Basics & Sample Prep',
     glyph: 'A280',
     updatedAt: '2026-11-17',
     aliases: ['protein concentration calculator', 'a280 protein calculator', 'molar extinction coefficient protein calculator', 'protein absorbance calculator', 'beer-lambert protein concentration calculator', 'uv protein quantification calculator'],
@@ -684,6 +689,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'punnett-square-calculator',
     category: 'biology',
+    group: 'Genetics',
     glyph: 'Aa',
     updatedAt: '2026-11-17',
     aliases: ['punnett square calculator', 'monohybrid cross calculator', 'genotype ratio calculator', 'punnett square genetics calculator', 'dominant recessive cross calculator', 'mendelian cross calculator'],
@@ -795,6 +801,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'dihybrid-cross-calculator',
     category: 'biology',
+    group: 'Genetics',
     glyph: 'AaBb',
     updatedAt: '2026-11-17',
     aliases: ['dihybrid cross calculator', 'two trait punnett square calculator', '9:3:3:1 ratio calculator', 'independent assortment calculator', 'dihybrid punnett square', 'two gene cross calculator'],
@@ -918,6 +925,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'hardy-weinberg-calculator',
     category: 'biology',
+    group: 'Genetics',
     glyph: 'p²q²',
     updatedAt: '2026-11-17',
     aliases: ['hardy-weinberg calculator', 'hardy weinberg equilibrium calculator', 'p2+2pq+q2 calculator', 'allele frequency equilibrium calculator', 'population genetics calculator', 'genotype frequency calculator'],
@@ -1026,6 +1034,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'allele-frequency-calculator',
     category: 'biology',
+    group: 'Genetics',
     glyph: 'f(A)',
     updatedAt: '2026-11-17',
     aliases: ['allele frequency calculator', 'gene frequency calculator', 'allele frequency from genotype counts', 'population allele frequency calculator', 'p and q allele calculator', 'gene pool frequency calculator'],
@@ -1146,6 +1155,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'dna-to-mrna-calculator',
     category: 'biology',
+    group: 'Molecular Biology',
     glyph: 'mRNA',
     updatedAt: '2026-11-17',
     aliases: ['dna to mrna calculator', 'transcription calculator', 'dna to rna converter', 'mrna sequence calculator', 'complementary dna strand calculator', 'dna transcription tool'],
@@ -1273,6 +1283,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'pcr-annealing-temperature-calculator',
     category: 'biology',
+    group: 'Molecular Biology',
     glyph: 'Tm',
     updatedAt: '2026-11-17',
     aliases: ['pcr annealing temperature calculator', 'primer melting temperature calculator', 'wallace rule tm calculator', 'primer tm calculator', 'gc content primer calculator', 'oligo melting temperature calculator'],
@@ -1380,6 +1391,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'qpcr-efficiency-calculator',
     category: 'biology',
+    group: 'Molecular Biology',
     glyph: 'qE',
     updatedAt: '2026-11-17',
     aliases: ['qpcr efficiency calculator', 'standard curve slope efficiency calculator', 'real-time pcr efficiency calculator', 'pcr amplification efficiency calculator', 'ct slope efficiency calculator', 'qpcr standard curve calculator'],
@@ -1485,6 +1497,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'ligation-calculator',
     category: 'biology',
+    group: 'Molecular Biology',
     glyph: 'I:V',
     updatedAt: '2026-11-17',
     aliases: ['ligation calculator', 'insert vector molar ratio calculator', 'dna ligation ratio calculator', 'cloning ligation calculator', 'insert to vector ratio calculator', 'ligation mass calculator'],
@@ -1602,6 +1615,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'centrifuge-rcf-rpm-calculator',
     category: 'biology',
+    group: 'Molecular Biology',
     glyph: 'RCF',
     updatedAt: '2026-11-17',
     aliases: ['centrifuge rcf rpm calculator', 'rcf to rpm calculator', 'rpm to rcf calculator', 'relative centrifugal force calculator', 'g-force centrifuge calculator', 'centrifuge speed calculator'],
@@ -1707,6 +1721,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'log-reduction-calculator',
     category: 'biology',
+    group: 'Microbiology & Growth',
     glyph: 'LR',
     updatedAt: '2026-11-17',
     aliases: ['log reduction calculator', 'microbial log reduction calculator', 'disinfectant log reduction calculator', 'log10 reduction calculator', 'kill rate calculator', 'percent reduction microbial calculator'],
@@ -1809,6 +1824,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'population-growth-calculator',
     category: 'biology',
+    group: 'Microbiology & Growth',
     glyph: 'ert',
     updatedAt: '2026-11-17',
     aliases: ['population growth calculator', 'exponential population growth calculator', 'population growth rate calculator', 'intrinsic rate of increase calculator', 'continuous population growth calculator', 'n = n0 e^rt calculator'],
@@ -1927,6 +1943,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'hemocytometer-calculator',
     category: 'biology',
+    group: 'Lab Basics & Sample Prep',
     glyph: '×10⁴',
     updatedAt: '2026-11-17',
     aliases: ['hemocytometer calculator', 'hemocytometer cell count calculator', 'cell counting chamber calculator', 'cells per ml from hemocytometer', 'neubauer chamber calculator', 'cell density from cell count calculator'],
@@ -2038,6 +2055,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'mutation-rate-calculator',
     category: 'biology',
+    group: 'Genetics',
     glyph: 'µ/g',
     updatedAt: '2026-11-17',
     aliases: ['mutation rate calculator', 'mutation rate from mutant frequency calculator', 'per generation mutation rate calculator', 'spontaneous mutation rate calculator', 'mutant frequency to mutation rate calculator', 'bacterial mutation rate estimate'],
@@ -2148,6 +2166,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'codon-to-amino-acid-calculator',
     category: 'biology',
+    group: 'Molecular Biology',
     glyph: 'AUG',
     updatedAt: '2026-11-17',
     aliases: ['codon to amino acid calculator', 'genetic code calculator', 'mrna codon table calculator', 'codon table lookup calculator', 'translation codon calculator', 'amino acid from codon calculator'],
@@ -2263,6 +2282,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'water-potential-calculator',
     category: 'biology',
+    group: 'Cell & Plant Biology',
     glyph: 'Ψ',
     updatedAt: '2026-11-17',
     aliases: ['water potential calculator', 'plant water potential calculator', 'pressure potential and solute potential calculator', 'psi = psi p + psi s calculator', 'turgor and osmotic potential calculator', 'water potential formula calculator'],
@@ -2357,6 +2377,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'protein-molecular-weight-calculator',
     category: 'biology',
+    group: 'Molecular Biology',
     glyph: 'MW',
     updatedAt: '2026-11-17',
     aliases: ['protein molecular weight calculator', 'protein mw calculator', 'peptide molecular weight calculator', 'amino acid composition molecular weight calculator', 'protein kda calculator', 'calculate protein molecular weight from sequence'],
@@ -2452,6 +2473,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'molarity-for-buffers-calculator',
     category: 'biology',
+    group: 'Lab Basics & Sample Prep',
     glyph: 'g/M',
     updatedAt: '2026-11-17',
     aliases: ['molarity for buffers calculator', 'grams to make a molar solution calculator', 'buffer preparation calculator', 'how many grams for a molar solution calculator', 'reagent weigh out calculator', 'buffer molarity calculator'],
@@ -2558,6 +2580,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'inheritance-probability-calculator',
     category: 'biology',
+    group: 'Genetics',
     glyph: 'A/a',
     updatedAt: '2026-11-17',
     aliases: ['inheritance probability calculator', 'autosomal recessive inheritance calculator', 'autosomal dominant inheritance calculator', 'carrier probability calculator', 'chance of inheriting a genetic condition calculator', 'genetic disorder risk calculator'],
@@ -2674,6 +2697,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'surface-area-to-volume-ratio-calculator',
     category: 'biology',
+    group: 'Cell & Plant Biology',
     glyph: 'SA:V',
     updatedAt: '2026-11-17',
     aliases: ['surface area to volume ratio calculator', 'sa:v ratio calculator', 'cell size surface area volume calculator', 'surface to volume ratio cell calculator', 'why cells are small calculator', 'sphere surface area to volume ratio calculator'],
@@ -2786,6 +2810,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'dog-age-calculator',
     category: 'biology',
+    group: 'Animal Biology',
     glyph: '16ln',
     updatedAt: '2026-11-17',
     aliases: ['dog age calculator', 'dog years to human years calculator', 'dog age in human years calculator', 'how old is my dog in human years', 'dog to human age converter', 'dog years calculator'],
@@ -2892,6 +2917,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'cat-age-calculator',
     category: 'biology',
+    group: 'Animal Biology',
     glyph: '+4/y',
     updatedAt: '2026-11-17',
     aliases: ['cat age calculator', 'cat years to human years calculator', 'cat age in human years calculator', 'how old is my cat in human years', 'cat to human age converter', 'cat years calculator'],
@@ -3007,6 +3033,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'animal-gestation-calculator',
     category: 'biology',
+    group: 'Animal Biology',
     glyph: 'gest',
     updatedAt: '2026-11-17',
     aliases: ['animal gestation calculator', 'dog gestation calculator', 'cow gestation period calculator', 'horse gestation calculator', 'how long are animals pregnant', 'gestation length by species calculator'],
@@ -3125,6 +3152,7 @@ export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'egg-incubation-calculator',
     category: 'biology',
+    group: 'Animal Biology',
     glyph: 'egg',
     updatedAt: '2026-11-17',
     aliases: ['egg incubation calculator', 'chicken egg incubation period calculator', 'duck egg hatching time calculator', 'how long does it take for eggs to hatch', 'quail egg incubation calculator', 'poultry incubation period calculator'],

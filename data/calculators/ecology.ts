@@ -412,4 +412,177 @@ export const ecologyCalculators: CalculatorConfig[] = [
       return { totalKg };
     }
   },
+  {
+    id: 'water-footprint-calculator',
+    category: 'ecology',
+    glyph: 'H2O',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'water footprint calculator',
+      'virtual water calculator',
+      'personal water footprint calculator',
+      'water usage footprint calculator',
+      'how much water do i use calculator'
+    ],
+    related: ['carbon-footprint-calculator', 'meat-footprint-calculator', 'plastic-footprint-calculator', 'water-intake-calculator'],
+    title: 'Water Footprint Calculator',
+    description:
+      'Estimate your household’s total water footprint — direct use plus the indirect "virtual water" embedded in food — using the Water Footprint Network’s published national averages.',
+    example:
+      'A household of 4 people in the United States has a water footprint of about 11,360,000 liters a year; eating just 1 kg of beef a week alone accounts for about 27.5% of one person’s share of that.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is a water footprint?',
+        paragraphs: [
+          'A water footprint is the total volume of fresh water used to produce everything a person consumes, not just the water that comes out of a tap. The Water Footprint Network, the research group that coined the term, splits it into direct water use (drinking, bathing, watering a lawn) and indirect, or "virtual," water: the water embedded in growing food, making clothes, and manufacturing goods, almost all of it invisible to the person who eventually uses the product.',
+          'The indirect share dominates for most people. A single kilogram of beef, for example, represents about 15,000 liters of water once you count what the animal drank, the water used to grow its feed, and the water needed to process it — far more than anyone would drink directly in a year. That is why a country’s total water footprint varies so much with diet and consumption patterns, not just its climate or household plumbing.',
+          'This calculator starts from the Water Footprint Network’s own published national averages — the United States, Japan, and China differ by nearly threefold — and lets you add a specific comparison: how much of that footprint a given amount of beef consumption represents on its own.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick a country average, set your household size, and optionally compare your beef consumption against it.',
+        steps: [
+          { name: 'Choose a country average', text: 'Pick the closest published national average: United States, Japan, or China. These differ mainly by diet and industrial consumption patterns.' },
+          { name: 'Enter your household size', text: 'The number of people the total should cover.' },
+          { name: 'Enter beef eaten per week (optional)', text: 'Type an amount in kilograms to see how much of one person’s footprint that beef alone represents, using the Water Footprint Network’s own ~15,000-liters-per-kilogram figure.' },
+          { name: 'Read the totals', text: 'The headline is your household’s total water footprint per year, with the per-person daily figure and the beef comparison below it.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'A household’s footprint is the per-person national average multiplied by household size; the beef comparison is a separate, illustrative figure.',
+        expression: 'perPersonPerYear = countryAverage (m³/year) × 1,000 L/m³\nhouseholdPerYear = perPersonPerYear × householdSize\nbeefWater = beefKgPerWeek × 52 × 15,000 L/kg',
+        terms: [
+          { symbol: 'countryAverage', meaning: 'The Water Footprint Network’s published national average total water footprint per person, in cubic meters a year.' },
+          { symbol: '15,000 L/kg', meaning: 'The Water Footprint Network’s published water footprint of beef, per kilogram.' }
+        ],
+        note: 'The beef figure is a comparison, not an addition — it is already part of a country’s average diet-driven footprint, so it is shown separately rather than added on top of the total.'
+      },
+      workedExample: {
+        intro: 'A household of 4 people in the United States, where one person eats about 1 kg of beef a week.',
+        rows: [
+          { label: 'US average per person (2,840 m³/year × 1,000)', value: '2,840,000 L/year' },
+          { label: 'Per person per day (÷ 365)', value: '≈7,781 L/day' },
+          { label: 'Household of 4 per year (× 4)', value: '11,360,000 L/year' },
+          { label: 'Beef alone, per year (1 × 52 × 15,000)', value: '780,000 L/year' },
+          { label: 'Beef share of one person’s footprint (780,000 ÷ 2,840,000)', value: '≈27.5%' }
+        ],
+        result: 'About 11,360,000 liters a year for the household',
+        explanation: 'One person’s 1 kg-a-week beef habit alone accounts for about 27.5% of that same person’s average US water footprint — more than a quarter of it from a single food.'
+      },
+      watchOut: [
+        {
+          title: 'Most of this is invisible, not tap water',
+          body: 'The Water Footprint Network’s own figures show the indirect, "virtual" water in food and goods is generally far larger than the water that comes out of a tap — a national average like 2,840 m³ a year for the US is overwhelmingly diet- and consumption-driven, not showers and dishwashing.'
+        },
+        {
+          title: 'The beef figure is not added on top of the total',
+          body: 'The country average already reflects an average diet, beef included. The beef comparison figure shows how much of that average one food represents, not an extra amount to add to the household total.'
+        },
+        {
+          title: 'National averages, not personal measurements',
+          body: 'These are country-wide averages published by the Water Footprint Network. An individual household’s actual footprint varies with diet, income, and consumption habits, sometimes substantially.'
+        },
+        {
+          title: 'Blue, green, and grey water are all counted together',
+          body: 'The Water Footprint Network’s totals combine three different kinds of water: "blue" (surface and groundwater), "green" (rainwater used by crops), and "grey" (water needed to dilute pollution to safe levels). This calculator does not separate them.'
+        }
+      ],
+      references: [
+        { label: 'Water Footprint Network, "What is a water footprint?"', url: 'https://www.waterfootprint.org/water-footprint-2/what-is-a-water-footprint/' },
+        { label: 'Water Footprint Network, "Frequently Asked Questions"', url: 'https://www.waterfootprint.org/water-footprint-2/frequently-asked-questions/' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'country',
+        label: 'Country average',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'United States (2,840 m³/year)' },
+          { value: 1, label: 'Japan (1,380 m³/year)' },
+          { value: 2, label: 'China (1,070 m³/year)' }
+        ]
+      },
+      { id: 'householdSize', label: 'Household size', type: 'number', placeholder: '4', defaultValue: 4, step: 1, min: 1 },
+      { id: 'beefKgPerWeek', label: 'Beef eaten per week', type: 'number', placeholder: '1', defaultValue: 1, step: 0.25, min: 0, dimension: 'mass', unit: 'kg' }
+    ],
+    breakdown: {
+      headline: 'householdLitersPerYear',
+      headlineLabel: 'Household’s water footprint (per year)',
+      outputs: [
+        { id: 'householdLitersPerYear', label: 'Household total (per year)', dimension: 'volume', unit: 'L', alsoIn: ['gal'] },
+        { id: 'perPersonLitersPerDay', label: 'Per person (per day)', dimension: 'volume', unit: 'L', alsoIn: ['gal'] },
+        { id: 'beefLitersPerYear', label: 'Beef alone (per year)', dimension: 'volume', unit: 'L' },
+        { id: 'beefShareOfPersonalFootprintPct', label: 'Beef’s share of one person’s footprint', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Household', inputs: ['country', 'householdSize'] },
+        { title: 'Diet comparison (optional)', inputs: ['beefKgPerWeek'], optional: true }
+      ],
+      derive: () => ({
+        usYearly: COUNTRY_WATER_FOOTPRINT_M3_PER_YEAR[0] * 1000,
+        japanYearly: COUNTRY_WATER_FOOTPRINT_M3_PER_YEAR[1] * 1000,
+        chinaYearly: COUNTRY_WATER_FOOTPRINT_M3_PER_YEAR[2] * 1000
+      }),
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'usYearly', label: 'United States' },
+          { from: 'japanYearly', label: 'Japan' },
+          { from: 'chinaYearly', label: 'China' }
+        ],
+        title: 'National average per person, per year',
+        highlight: 0
+      }
+    },
+    seo: {
+      title: 'Water Footprint Calculator – Direct & Virtual Water Use',
+      description: 'Free water footprint calculator. Estimate your household’s direct and virtual (embedded) water use from national averages published by the Water Footprint Network.',
+      faq: [
+        {
+          question: 'What is a water footprint?',
+          answer:
+            'The total fresh water used to produce everything you consume — not just tap water, but the "virtual water" embedded in food and goods. A US household of 4, at the national average, comes to about 11,360,000 liters a year.'
+        },
+        {
+          question: 'Why is beef’s water footprint so high?',
+          answer:
+            'The Water Footprint Network puts it at about 15,000 liters per kilogram, counting what the animal drank, the water used to grow its feed, and processing. In the worked example, 1 kg a week of beef alone accounts for about 27.5% of one person’s average US footprint.'
+        },
+        {
+          question: 'How much water does the average American use?',
+          answer:
+            'About 2,840 cubic meters (2,840,000 liters) a year per person, or roughly 7,781 liters a day, per the Water Footprint Network’s published national average — nearly twice Japan’s average and more than 2.6 times China’s.'
+        },
+        {
+          question: 'Is most of my water footprint tap water?',
+          answer: 'No. The Water Footprint Network’s own analysis finds the indirect, "virtual" water embedded in food and other goods generally dwarfs direct household use — most of a typical footprint never comes out of your own tap.'
+        },
+        {
+          question: 'Why do countries’ averages differ so much?',
+          answer:
+            'Mainly diet and industrial consumption, not climate. The US figure (2,840 m³/year) is roughly twice Japan’s (1,380 m³/year) and nearly 2.7 times China’s (1,070 m³/year), largely reflecting how much water-intensive food, like beef, each country eats on average.'
+        },
+        {
+          question: 'Does the beef figure get added to my household total?',
+          answer: 'No — it is shown as a comparison, not an addition. The country average already includes an average diet, beef included, so adding the beef figure on top would double-count it.'
+        }
+      ]
+    },
+    compute(values) {
+      const code = normalizeOptionCode(values.country, COUNTRY_WATER_FOOTPRINT_M3_PER_YEAR.length);
+      const perPersonLitersPerYear = COUNTRY_WATER_FOOTPRINT_M3_PER_YEAR[code] * 1000;
+      const perPersonLitersPerDay = perPersonLitersPerYear / 365;
+      const householdLitersPerYear = perPersonLitersPerYear * values.householdSize;
+      const beefLitersPerYear = values.beefKgPerWeek * 52 * BEEF_LITERS_PER_KG;
+      const beefShareOfPersonalFootprintPct = (beefLitersPerYear / perPersonLitersPerYear) * 100;
+      return { householdLitersPerYear, perPersonLitersPerDay, beefLitersPerYear, beefShareOfPersonalFootprintPct };
+    }
+  },
 ];

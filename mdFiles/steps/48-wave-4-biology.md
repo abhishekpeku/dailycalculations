@@ -223,12 +223,60 @@ used" discipline as Wave 3's NIST/IUPAC citations for lab-adjacent chemistry top
         408 pages (376 calculators incl. biology's 5, 19 categories), exit code 0.
       - `biology` 0 → 5, site-wide 371 → 376.
       - No seed-list candidate skipped this batch — all 5 scoped items built as specified.
-- [ ] Batch 2 (genetics, 5) — a separate agent's run, PR #116 open as of this writing; not this
-      agent's own work, status not independently confirmed here.
+- [x] Batch 2 (genetics, 5) — **DONE 2026-11-17**, branch `step/48-wave-4-biology-run-2`,
+      PR #116 (merged, after the expected conflict against batch 3 below was resolved by the main
+      session using the same hand-splice technique the physics wave used for its own same-file
+      conflicts). Ran in parallel with batch 3 on the same `biology.ts` file per this step's own
+      go-ahead for batches 2+.
+      - [x] `punnett-square-calculator`: monohybrid cross, genotype/phenotype ratios from two
+        parent genotypes, encoded as each parent's dominant-allele count (0/1/2) via `options`
+        (breakdown widget). Worked example: Mendel's PP x pp -> 100% Pp (OpenStax's own "100
+        percent of the F1 hybrid generation had violet flowers"), plus the F1 self-cross's F2
+        count (705 violet : 224 white, ≈75.9%/24.1%, ratio ≈3.15:1) against the theoretical 3:1.
+      - [x] `dihybrid-cross-calculator`: two independently-assorting genes (seed shape R/r, seed
+        color Y/y, OpenStax's own illustration), all four phenotype proportions generalized from
+        the classic 9:3:3:1 ratio (multiplying each trait's own monohybrid dominant/recessive
+        probability, per the law of independent assortment). Worked example: RrYy x RrYy ->
+        56.25/18.75/18.75/6.25%, which is exactly 9:3:3:1.
+      - [x] `hardy-weinberg-calculator`: p + q = 1, p² + 2pq + q² = 1 — a 2-variable solver (enter
+        p or q, get the other plus all three genotype frequencies as solver outputs). Worked
+        example reuses OpenStax §19.1's own 500-pea-plant population (245/210/45 YY/Yy/yy) to show
+        the p=0.7/q=0.3 Hardy-Weinberg prediction (49%/42%/9%) matches that population's actual
+        observed proportions exactly — a genuine, directly-fetched equilibrium demonstration, not
+        a contrived one.
+      - [x] `allele-frequency-calculator`: allele frequency computed directly from observed
+        genotype counts (no equilibrium assumption) — explicitly stated as the opposite direction
+        from hardy-weinberg-calculator's predictive calculation, in both pages' content. Reuses the
+        same OpenStax §19.2 figure (245/210/45 of 500) as its default/worked example, since it's
+        the exact source of the p=0.7/q=0.3 numbers hardy-weinberg-calculator's own example builds
+        on.
+      - [x] `dna-to-mrna-calculator`: transcription (complementary DNA strand + T->U substitution)
+        as a 6-base lookup/breakdown widget. **Engineering note:** `CalculatorInput`/`compute()`
+        have no `text`/sequence input type (checked `data/calculators/types.ts` first, per this
+        step's own instruction) — rather than add one (a cross-cutting change touching
+        `BreakdownCalculator.tsx`, share-link parsing, and the snapshot harness), this uses the
+        existing `options` mechanism (resistor-color-code-calculator's precedent: each of 6 fixed
+        positions is a dropdown, A/T/G/C encoded 0-3) plus `BreakdownOutput.labels` (the
+        ring-size-letter precedent) to display each position's paired base in either DNA (T) or
+        RNA (U) alphabet from one shared computation. `compute()` wraps every raw value through
+        `normalizeBaseCode` (round, mod 4) so the snapshot test's *1.5-scaled "typical" input set
+        can't produce an undefined lookup. Worked example: template A-T-G-C-G-T ->
+        complementary DNA strand T-A-C-G-C-A -> mRNA U-A-C-G-C-A (50% GC), cross-checked two
+        independent ways (direct template complement+substitution, and coding-strand-then-T→U) in
+        the verification script, both giving the same answer.
+      - Every worked-example number (Mendel's counts, the 9:3:3:1 ratio, the Hardy-Weinberg
+        prediction, the allele-count arithmetic, and the transcription example) re-verified in a
+        standalone Node scratch script with no app imports; script output matched the copy exactly.
+      - `npm test` 1467/1467 (snapshot diff confirmed additive-only, touching exactly the 5 new
+        ids), lint clean, `npm run build` 413 pages (381 calculators incl. biology's 10, same
+        category/page count as physics/chemistry's structure).
+      - `biology` 5 → 10 from this branch's point of view; reconciled to 10 → 15 once merged
+        against batch 3 below. Site-wide 376 → 386 after both land.
+      - No seed-list candidate skipped this batch — all 5 scoped items built as specified.
 - [x] Batch 3 (molecular biology lab techniques, 5) — **DONE 2026-11-17**, branch
-      `step/48-wave-4-biology-run-3`, PR #117 (ready for review once build/tests confirmed green).
-      Built in parallel with batch 2 on the same `data/calculators/biology.ts` file — the two PRs
-      will conflict with each other on merge, expected and handled by the main session.
+      `step/48-wave-4-biology-run-3`, PR #117 (merged first, cleanly — batch 2's PR #116 then
+      conflicted against it as expected and was resolved by the main session).
+      Built in parallel with batch 2 on the same `data/calculators/biology.ts` file.
       New `lib/units.ts` additions ahead of this batch: `mass` gains `ug`/`ng` (ligation's
       insert/vector DNA mass), plus two new dimensions, `basePairs` (bp/kb) and
       `relativeCentrifugalForce` (single-unit `×g`, same precedent as `absorbance`/`pH`/`decibel`)
@@ -280,8 +328,8 @@ used" discipline as Wave 3's NIST/IUPAC citations for lab-adjacent chemistry top
         calculator pages). Static HTML of all 5 new pages checked directly for H1/JSON-LD/FAQ
         presence (a pre-existing process on port 3000 was left untouched, per this batch's own
         instructions).
-      - `biology` 5 → 10 on this branch (pending reconciliation with batch 2's parallel PR #116 at
-        merge time — the two branches both append to the end of the same array).
+      - `biology` 5 → 10 on this branch (merged first; reconciled to 15 total against batch 2
+        above).
       - No seed-list candidate skipped this batch — all 5 scoped items built as specified.
 - [ ] Batch 4 (population biology + genetics extensions, 5)
 - [ ] Batch 5 (plant/cell biology + biochemistry, 5)

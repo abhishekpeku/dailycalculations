@@ -241,6 +241,56 @@ exports[`compute() snapshots > age-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > allele-frequency-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "countAA": 245,
+      "countAa": 210,
+      "countaa": 45
+    },
+    "outputs": {
+      "p": 70,
+      "q": 30,
+      "totalIndividuals": 500,
+      "totalAlleles": 1000,
+      "pAlleleCount": 700,
+      "qAlleleCount": 300
+    }
+  },
+  "typical": {
+    "inputs": {
+      "countAA": 368,
+      "countAa": 315,
+      "countaa": 68
+    },
+    "outputs": {
+      "p": 69.97336884,
+      "q": 30.02663116,
+      "totalIndividuals": 751,
+      "totalAlleles": 1502,
+      "pAlleleCount": 1051,
+      "qAlleleCount": 451
+    }
+  },
+  "edge": {
+    "inputs": {
+      "countAA": 0,
+      "countAa": 0,
+      "countaa": 0
+    },
+    "outputs": {
+      "p": "NaN",
+      "q": "NaN",
+      "totalIndividuals": 0,
+      "totalAlleles": 0,
+      "pAlleleCount": 0,
+      "qAlleleCount": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > angular-momentum-calculator 1`] = `
 {
   "default": {
@@ -3652,6 +3702,53 @@ exports[`compute() snapshots > density-of-solutions-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > dihybrid-cross-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "parent1Shape": 1,
+      "parent2Shape": 1,
+      "parent1Color": 1,
+      "parent2Color": 1
+    },
+    "outputs": {
+      "dominantDominant": 56.25,
+      "dominantRecessive": 18.75,
+      "recessiveDominant": 18.75,
+      "recessiveRecessive": 6.25
+    }
+  },
+  "typical": {
+    "inputs": {
+      "parent1Shape": 2,
+      "parent2Shape": 2,
+      "parent1Color": 2,
+      "parent2Color": 2
+    },
+    "outputs": {
+      "dominantDominant": 100,
+      "dominantRecessive": 0,
+      "recessiveDominant": 0,
+      "recessiveRecessive": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "parent1Shape": 0,
+      "parent2Shape": 0,
+      "parent1Color": 0,
+      "parent2Color": 0
+    },
+    "outputs": {
+      "dominantDominant": 0,
+      "dominantRecessive": 0,
+      "recessiveDominant": 0,
+      "recessiveRecessive": 100
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > dilution-calculator 1`] = `
 {
   "default": {
@@ -3811,6 +3908,92 @@ exports[`compute() snapshots > dna-concentration-calculator 1`] = `
     },
     "outputs": {
       "concentration": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > dna-to-mrna-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "base1": 0,
+      "base2": 1,
+      "base3": 2,
+      "base4": 3,
+      "base5": 2,
+      "base6": 1
+    },
+    "outputs": {
+      "complementBase1": 1,
+      "mrnaBase1": 1,
+      "complementBase2": 0,
+      "mrnaBase2": 0,
+      "complementBase3": 3,
+      "mrnaBase3": 3,
+      "complementBase4": 2,
+      "mrnaBase4": 2,
+      "complementBase5": 3,
+      "mrnaBase5": 3,
+      "complementBase6": 0,
+      "mrnaBase6": 0,
+      "gcCount": 3,
+      "atCount": 3,
+      "gcPercent": 50
+    }
+  },
+  "typical": {
+    "inputs": {
+      "base1": 0,
+      "base2": 2,
+      "base3": 3,
+      "base4": 5,
+      "base5": 3,
+      "base6": 2
+    },
+    "outputs": {
+      "complementBase1": 1,
+      "mrnaBase1": 1,
+      "complementBase2": 3,
+      "mrnaBase2": 3,
+      "complementBase3": 2,
+      "mrnaBase3": 2,
+      "complementBase4": 0,
+      "mrnaBase4": 0,
+      "complementBase5": 2,
+      "mrnaBase5": 2,
+      "complementBase6": 3,
+      "mrnaBase6": 3,
+      "gcCount": 4,
+      "atCount": 2,
+      "gcPercent": 66.66666667
+    }
+  },
+  "edge": {
+    "inputs": {
+      "base1": 0,
+      "base2": 0,
+      "base3": 0,
+      "base4": 0,
+      "base5": 0,
+      "base6": 0
+    },
+    "outputs": {
+      "complementBase1": 1,
+      "mrnaBase1": 1,
+      "complementBase2": 1,
+      "mrnaBase2": 1,
+      "complementBase3": 1,
+      "mrnaBase3": 1,
+      "complementBase4": 1,
+      "mrnaBase4": 1,
+      "complementBase5": 1,
+      "mrnaBase5": 1,
+      "complementBase6": 1,
+      "mrnaBase6": 1,
+      "gcCount": 0,
+      "atCount": 6,
+      "gcPercent": 0
     }
   }
 }
@@ -5987,6 +6170,35 @@ exports[`compute() snapshots > grocery-budget-calculator 1`] = `
       "monthlyBudget": 307.45,
       "weeklyBudget": 70.95,
       "perPersonWeekly": 59.125
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > hardy-weinberg-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "p": 70
+    },
+    "outputs": {
+      "q": 30
+    }
+  },
+  "typical": {
+    "inputs": {
+      "p": 105
+    },
+    "outputs": {
+      "q": -5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "p": 0
+    },
+    "outputs": {
+      "q": 100
     }
   }
 }
@@ -11493,6 +11705,50 @@ exports[`compute() snapshots > pto-calculator 1`] = `
       "cashValue": 0,
       "usedCashValue": 0,
       "usagePercent": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > punnett-square-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "parent1Genotype": 1,
+      "parent2Genotype": 1
+    },
+    "outputs": {
+      "dominantPhenotype": 75,
+      "recessivePhenotype": 25,
+      "AA": 25,
+      "Aa": 50,
+      "aa": 25
+    }
+  },
+  "typical": {
+    "inputs": {
+      "parent1Genotype": 2,
+      "parent2Genotype": 2
+    },
+    "outputs": {
+      "dominantPhenotype": 100,
+      "recessivePhenotype": 0,
+      "AA": 100,
+      "Aa": 0,
+      "aa": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "parent1Genotype": 0,
+      "parent2Genotype": 0
+    },
+    "outputs": {
+      "dominantPhenotype": 0,
+      "recessivePhenotype": 100,
+      "AA": 0,
+      "Aa": 0,
+      "aa": 100
     }
   }
 }

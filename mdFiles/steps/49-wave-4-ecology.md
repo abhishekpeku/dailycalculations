@@ -247,15 +247,50 @@ discipline as every prior wave — ship fewer than 5 rather than pad, if good ca
       (snapshots added for the 5 new ids, additive-only diff), lint clean, `npm run build` 442
       routes. `ecology` is now 10/~25 from this branch's own point of view; reconciled with batch 2
       above — final combined count after both: `ecology` 15, site-wide 414.
-- [ ] Batch 4 (environmental health + remaining population ecology, 5) — **IN PROGRESS**, branch
-      `step/49-wave-4-ecology-run-4`.
-      - [ ] `air-quality-index-calculator`
-      - [ ] `co2-breathing-emission-calculator`
-      - [ ] `mark-recapture-population-estimate-calculator`
-      - [ ] `noise-exposure-calculator`
-      - [ ] `trophic-level-energy-calculator`
+- [x] Batch 4 (environmental health + remaining population ecology, 5) — **DONE 2026-11-17**,
+      branch `step/49-wave-4-ecology-run-4` (the build agent hit a session rate limit right after
+      committing its 4th calculator, with the 5th's id already registered in `calculatorOrder` but
+      no matching calculator object written — the main session finished `trophic-level-energy-
+      calculator` directly from the step file's own scope, following the exact same pattern used
+      elsewhere in this project whenever an agent dies at the very end of a batch).
+      - [x] `air-quality-index-calculator` — EPA's published AQI breakpoint table (piecewise-linear
+        concentration-to-0-500-scale conversion), fetched directly, not approximated.
+      - [x] `co2-breathing-emission-calculator` — Persily & de Jonge (2017), *Indoor Air*, the
+        Schofield BMR equations scaled by activity level (met) and a fixed respiratory quotient
+        (0.85) to estimate a person's daily CO2 output; cross-checked against the paper's own
+        85 kg worked example.
+      - [x] `mark-recapture-population-estimate-calculator` — the Lincoln-Petersen index,
+        N̂ = (M × C) ÷ R, a closed-form population-size estimate from a two-catch mark-recapture
+        study.
+      - [x] `noise-exposure-calculator` — OSHA's permissible-exposure-time formula and dose/
+        time-weighted-average calculations for occupational noise, explicitly distinguished from
+        the physics wave's `decibel-calculator` (that page is the pure physics of sound-intensity
+        ratios; this page applies OSHA's specific regulatory exposure-limit formulas).
+      - [x] `trophic-level-energy-calculator` (finished by the main session) — EnergyNext =
+        EnergyThis × (Efficiency ÷ 100), a 3-variable solver for energy transfer between trophic
+        levels. OpenStax Biology 2e §46.1 (fetched directly) states the general second-law energy-
+        loss principle and cites Howard Odum's real Silver Springs, Florida ecosystem data
+        (20,819 → 3,368 → 383 → 21 kcal/m²/yr across producer/primary/secondary/tertiary levels) —
+        but does **not** actually name a "ten percent rule," confirmed by two separate direct
+        fetches that found no such term or percentage on that page. Rather than invent or assume
+        that commonly-taught figure's source, the calculator computes the real efficiencies
+        directly from OpenStax's own cited Silver Springs numbers (≈16.2%, ≈11.4%, ≈5.5% across
+        the three transitions) as its worked example, defaults the editable efficiency input to
+        10% as a labeled "commonly taught round figure" (not asserted as the real value), and its
+        `watchOut` section states explicitly that the real measured numbers range 5-16% in this
+        one real ecosystem, not a fixed 10%. Every number independently re-verified in a
+        standalone Node scratch calculation before writing.
+      - Two `KNOWN_NON_FINITE` entries were missing from `data/calculators.spec.ts` when the main
+        session picked this batch back up (the died agent's last two calculators,
+        `mark-recapture-population-estimate-calculator` and `noise-exposure-calculator`, both hit
+        a genuine divide-by-zero/explicit-NaN edge at their own inputs' mins) — added both,
+        confirmed both are honest "no answer" cases (not bugs) by reading each `compute()`
+        directly, then regenerated the snapshot fresh via `npm run test:update`.
+      - `npm test` 1558/1558, lint clean, `npm run build` all green. All 5 pages verified via the
+        build's own static HTML output (H1, FAQPage JSON-LD present).
+      - `ecology` 15 → 20, site-wide 414 → 419.
 - [ ] Batch 5 (round out to ~25, 5)
-- [ ] Visual-QA spot-check (once the site crosses ~420 calculators) — site is at 414 after batches
-      1-3, so this is likely due during batch 4 or 5.
+- [ ] Visual-QA spot-check (once the site crosses ~420 calculators) — site is at 419 after batch 4,
+      so this is now due during batch 5.
 - [ ] STATUS.md updated, `ecology` category count recorded, Wave 4 fully closed out (biology +
       ecology both done) — fun/other is next per D13/D22/D23 (already has its go-ahead, per D23)

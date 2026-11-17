@@ -3275,5 +3275,143 @@ export const ecologyCalculators: CalculatorConfig[] = [
       const twaDb = dosePct > 0 ? oshaTwaFromDose(dosePct) : NaN;
       return { permissibleHours, dosePct, twaDb };
     }
+  },
+  {
+    id: 'trophic-level-energy-calculator',
+    category: 'ecology',
+    glyph: 'η',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'trophic level energy calculator',
+      'energy transfer efficiency calculator',
+      'ecological efficiency calculator',
+      'food chain energy loss calculator',
+      'ten percent rule calculator',
+      'trophic pyramid energy calculator'
+    ],
+    related: ['carrying-capacity-calculator', 'shannon-diversity-index-calculator', 'lotka-volterra-calculator', 'carbon-footprint-calculator'],
+    title: 'Trophic Level Energy Calculator',
+    description: 'Estimate how much energy passes from one trophic level to the next (or the ecological efficiency between two levels) in a food chain, with real ecosystem data as a benchmark.',
+    example:
+      'If primary producers hold 20,819 kcal/m²/yr, a 16.2% transfer efficiency (the real, measured rate at Silver Springs, Florida) puts about 3,368 kcal/m²/yr into primary consumers.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'Why does energy shrink at each trophic level?',
+        paragraphs: [
+          'A food chain is organized into trophic levels: producers (plants, algae) at the base, then the consumers that eat them, and so on up to top predators. OpenStax Biology 2e explains the pattern directly: "energy is lost as heat between each trophic level due to the second law of thermodynamics," so "after a limited number of trophic energy transfers, the amount of energy remaining in the food chain may not be great enough to support viable populations at yet a higher trophic level" — which is exactly why food chains rarely run past four or five levels.',
+          'How much energy actually survives the jump to the next level — the ecological efficiency — varies by ecosystem, but it is always a small fraction, because most of the energy an organism takes in is used for its own respiration, movement, and heat loss rather than stored as new biomass something else can eat. OpenStax’s own cited example, Howard Odum’s classic Silver Springs, Florida study, measured real energy values at each level: 20,819 kcal/m²/yr at the producer level, falling to 3,368 at primary consumers, 383 at secondary consumers, and just 21 at tertiary consumers — transfer efficiencies of about 16%, 11%, and 5% at each successive step.',
+          'This calculator runs that same relationship (energy at one level × efficiency = energy at the next level) in any direction: given the energy at one level and the transfer efficiency, find the energy one level up; or given the energy at two adjacent levels, find the efficiency between them. A commonly taught shorthand rounds real-world efficiencies like these to "about 10%" for simplicity — this calculator defaults to that round figure but makes it an editable input, not a fixed rule, since the Silver Springs data above shows the real number moving between roughly 5% and 16% depending on which levels are involved.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter energy at one trophic level and a transfer efficiency to project the next level, or enter two levels’ energy to find the efficiency between them.',
+        steps: [
+          { name: 'Enter energy at the lower trophic level', text: 'In kcal per square meter per year (or another energy unit from the menu) — e.g. how much energy producers capture.' },
+          { name: 'Enter the transfer (ecological) efficiency', text: 'As a percentage. 10% is a commonly taught round figure; real measured values (see the Silver Springs example) range roughly 5-20%.' },
+          { name: 'Read the energy at the next trophic level', text: 'The amount of energy available to build biomass at the level above.' },
+          { name: 'Or solve in reverse', text: 'Enter both levels’ energy values and solve for the efficiency field instead, to find out what percentage one real level actually passed to the next.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Energy at the next trophic level is the energy at this level times the transfer efficiency.',
+        expression: 'EnergyNext = EnergyThis × (Efficiency ÷ 100)',
+        terms: [
+          { symbol: 'EnergyThis', meaning: 'Energy available at the lower (source) trophic level.' },
+          { symbol: 'Efficiency', meaning: 'Ecological (transfer) efficiency between the two levels, as a percentage.' },
+          { symbol: 'EnergyNext', meaning: 'Energy available at the next (consumer) trophic level.' }
+        ],
+        note: 'This models one step of energy transfer at a time — chaining it across more than two levels (as in the Silver Springs worked example) means applying it once per step, since each real step has its own efficiency.'
+      },
+      workedExample: {
+        intro: 'OpenStax Biology 2e’s cited Silver Springs, Florida ecosystem data (Odum’s classic study), producers to primary consumers.',
+        rows: [
+          { label: 'Energy at producers', value: '20,819 kcal/m²/yr' },
+          { label: 'Energy at primary consumers', value: '3,368 kcal/m²/yr' },
+          { label: 'Transfer efficiency (3,368 ÷ 20,819 × 100)', value: '≈16.18%' }
+        ],
+        result: '≈16.18% of producer energy reached primary consumers',
+        explanation:
+          'Running the same formula for the next two steps (primary→secondary and secondary→tertiary consumers) using OpenStax’s own cited figures gives efficiencies of about 11.4% and 5.5% — real measured values, not the commonly taught round "10%" figure, though all three sit in the same rough range.'
+      },
+      watchOut: [
+        {
+          title: '"10%" is a teaching shorthand, not a universal law',
+          body: 'OpenStax’s own cited Silver Springs data shows real efficiencies of about 16%, 11%, and 5% at three different steps in the same ecosystem — all in the same rough range as "10%," but none exactly 10%. Treat any single efficiency figure as an estimate for that specific transfer, not a fixed constant of nature.'
+        },
+        {
+          title: 'Each step needs its own efficiency',
+          body: 'Energy loss compounds — you cannot jump from producers straight to tertiary consumers with one efficiency percentage; each trophic-level transition has its own rate, as the worked example’s three different percentages show.'
+        },
+        {
+          title: 'This is an energy-flow model, not a population or biomass count',
+          body: 'It describes energy (e.g. kcal/m²/yr), not the number of organisms or their total mass directly — a trophic level can hold a given amount of energy in very different numbers of individuals depending on their size.'
+        }
+      ],
+      references: [
+        {
+          label: 'OpenStax, Biology 2e, §46.1 "Ecology of Ecosystems" (trophic levels, energy loss, and the Silver Springs, Florida case study)',
+          url: 'https://openstax.org/books/biology-2e/pages/46-1-ecology-of-ecosystems'
+        }
+      ]
+    },
+    inputs: [
+      { id: 'energyThis', label: 'Energy at this level', type: 'number', placeholder: '20819', defaultValue: 20819, step: 1, min: 0, dimension: 'energy', unit: 'kcal' },
+      { id: 'efficiencyPercent', label: 'Transfer efficiency (%)', type: 'number', placeholder: '10', defaultValue: 10, step: 0.1, min: 0 },
+      { id: 'energyNext', label: 'Energy at next level', type: 'number', placeholder: '2081.9', defaultValue: 2081.9, step: 1, min: 0, dimension: 'energy', unit: 'kcal' }
+    ],
+    solver: {
+      defaultTarget: 'energyNext',
+      variables: [
+        { id: 'energyThis', label: 'Energy at this level', symbol: 'E₁', dimension: 'energy', defaultValue: 20819, defaultUnit: 'kcal' },
+        { id: 'efficiencyPercent', label: 'Transfer efficiency', symbol: 'η', dimension: 'count', defaultValue: 10, defaultUnit: 'count' },
+        { id: 'energyNext', label: 'Energy at next level', symbol: 'E₂', dimension: 'energy', defaultValue: 2081.9, defaultUnit: 'kcal' }
+      ],
+      solve: {
+        energyNext: ({ energyThis, efficiencyPercent }) => energyThis * (efficiencyPercent / 100),
+        efficiencyPercent: ({ energyThis, energyNext }) => (energyThis === 0 ? NaN : (energyNext / energyThis) * 100),
+        energyThis: ({ energyNext, efficiencyPercent }) => (efficiencyPercent === 0 ? NaN : energyNext / (efficiencyPercent / 100))
+      }
+    },
+    seo: {
+      title: 'Trophic Level Energy Calculator – Food Chain Efficiency',
+      description: 'Free trophic level energy calculator. Find energy transfer between food-chain levels or the ecological efficiency between them, with real Silver Springs data.',
+      faq: [
+        {
+          question: 'What is the "ten percent rule" in ecology?',
+          answer:
+            'A commonly taught shorthand that roughly 10% of the energy at one trophic level transfers to the next, with the rest lost as heat through respiration and other life processes. It is a rounded teaching approximation — real measured values, like those from the Silver Springs, Florida study, range from about 5% to 16% depending on which levels are involved.'
+        },
+        {
+          question: 'Why is so much energy lost between trophic levels?',
+          answer:
+            'Per OpenStax Biology 2e, "energy is lost as heat between each trophic level due to the second law of thermodynamics" — organisms use most of the energy they consume for their own metabolism, movement, and heat production, not for building new biomass that something else could eat.'
+        },
+        {
+          question: 'What is a real example of trophic energy transfer?',
+          answer:
+            'Howard Odum’s Silver Springs, Florida ecosystem study (cited in OpenStax Biology 2e) measured 20,819 kcal/m²/yr at the producer level, falling to 3,368 at primary consumers (≈16.2% efficiency), 383 at secondary consumers (≈11.4%), and 21 at tertiary consumers (≈5.5%).'
+        },
+        {
+          question: 'Why do food chains rarely have more than 4-5 levels?',
+          answer:
+            'Because so much energy is lost at each transfer, the amount remaining after several steps often becomes too small to support a viable population at yet another level above it — a direct consequence of the same energy loss this calculator models.'
+        },
+        {
+          question: 'Can I use this to find the efficiency between two real measurements?',
+          answer:
+            'Yes — enter the energy values at two adjacent trophic levels and solve for the efficiency field to find the actual transfer rate between them, rather than assuming a flat 10%.'
+        },
+        {
+          question: 'Does this account for more than one trophic transfer at once?',
+          answer:
+            'No — it models one single transfer at a time. To project across multiple levels (as in the Silver Springs example above), apply the formula once per step, since each real transfer has its own efficiency.'
+        }
+      ]
+    },
+    compute(values) {
+      return { energyNext: values.energyThis * (values.efficiencyPercent / 100) };
+    }
   }
 ];

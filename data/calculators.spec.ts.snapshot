@@ -9029,6 +9029,44 @@ exports[`compute() snapshots > margin-of-error-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > mark-recapture-population-estimate-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "markedFirstCatch": 80,
+      "totalSecondCatch": 100,
+      "markedSecondCatch": 20
+    },
+    "outputs": {
+      "populationEstimate": 400,
+      "recapturePct": 20
+    }
+  },
+  "typical": {
+    "inputs": {
+      "markedFirstCatch": 120,
+      "totalSecondCatch": 150,
+      "markedSecondCatch": 30
+    },
+    "outputs": {
+      "populationEstimate": 600,
+      "recapturePct": 20
+    }
+  },
+  "edge": {
+    "inputs": {
+      "markedFirstCatch": 0,
+      "totalSecondCatch": 0,
+      "markedSecondCatch": 0
+    },
+    "outputs": {
+      "populationEstimate": "NaN",
+      "recapturePct": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > mass-energy-equivalence-calculator 1`] = `
 {
   "default": {
@@ -10359,6 +10397,44 @@ exports[`compute() snapshots > nfl-passer-rating-calculator 1`] = `
       "yardsPerAttempt": 0,
       "touchdownPercentage": 0,
       "interceptionPercentage": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > noise-exposure-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "soundLevelDb": 97,
+      "exposureHours": 3
+    },
+    "outputs": {
+      "permissibleHours": 3.031433133,
+      "dosePct": 98.96309331,
+      "twaDb": 89.92481088
+    }
+  },
+  "typical": {
+    "inputs": {
+      "soundLevelDb": 146,
+      "exposureHours": 4.5
+    },
+    "outputs": {
+      "permissibleHours": 0.003400588138,
+      "dosePct": 132330.0505,
+      "twaDb": 141.8507473
+    }
+  },
+  "edge": {
+    "inputs": {
+      "soundLevelDb": 0,
+      "exposureHours": 0
+    },
+    "outputs": {
+      "permissibleHours": 2097152,
+      "dosePct": 0,
+      "twaDb": "NaN"
     }
   }
 }
@@ -16519,6 +16595,41 @@ exports[`compute() snapshots > triangle-calculator 1`] = `
       "angleC": "NaN",
       "perimeter": "NaN",
       "area": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > trophic-level-energy-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "energyThis": 20819,
+      "efficiencyPercent": 10,
+      "energyNext": 2081.9
+    },
+    "outputs": {
+      "energyNext": 2081.9
+    }
+  },
+  "typical": {
+    "inputs": {
+      "energyThis": 31229,
+      "efficiencyPercent": 15,
+      "energyNext": 3123
+    },
+    "outputs": {
+      "energyNext": 4684.35
+    }
+  },
+  "edge": {
+    "inputs": {
+      "energyThis": 0,
+      "efficiencyPercent": 0,
+      "energyNext": 0
+    },
+    "outputs": {
+      "energyNext": 0
     }
   }
 }

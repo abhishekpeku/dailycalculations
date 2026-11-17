@@ -40,9 +40,9 @@ describe('unit tables', () => {
 
   test('covers the dimensions the v2 rollout needs', () => {
     assert.deepEqual([...dimensions].sort(), [
-      'absorbance', 'acceleration', 'amountOfSubstance', 'angle', 'angularMomentum', 'angularVelocity', 'area', 'capacitance', 'cellDensity', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
+      'absorbance', 'acceleration', 'amountOfSubstance', 'angle', 'angularMomentum', 'angularVelocity', 'area', 'basePairs', 'capacitance', 'cellDensity', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
       'decibel', 'density', 'electricField', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'inductance', 'length', 'magneticFlux', 'magneticFluxDensity', 'mass', 'massConcentration', 'molalConstant', 'molality', 'molarAbsorptivity', 'molarEnergy', 'molarEntropy', 'molarHeatCapacity', 'molarMass', 'momentOfInertia', 'momentum',
-      'normality', 'osmolarity', 'pH', 'pace', 'percent', 'power', 'pressure', 'rateConstant', 'resistance', 'specificHeat', 'specificLatentHeat', 'speed', 'springConstant', 'temperature', 'temperatureDelta', 'term', 'thermalExpansionCoeff', 'time',
+      'normality', 'osmolarity', 'pH', 'pace', 'percent', 'power', 'pressure', 'rateConstant', 'relativeCentrifugalForce', 'resistance', 'specificHeat', 'specificLatentHeat', 'speed', 'springConstant', 'temperature', 'temperatureDelta', 'term', 'thermalExpansionCoeff', 'time',
       'torque', 'voltage', 'volume'
     ]);
   });
@@ -83,6 +83,19 @@ describe('anchor values', () => {
   test('mass: 1 st = 14 lb = 6.35029318 kg', () => {
     close(toBase(1, 'mass', 'st'), 6.35029318);
     close(convert(1, 'mass', 'st', 'lb'), 14);
+  });
+  test('mass: 1 µg = 1000 ng = 1e-9 kg', () => {
+    close(toBase(1, 'mass', 'ug'), 1e-9);
+    close(toBase(1, 'mass', 'ng'), 1e-12);
+    close(convert(1, 'mass', 'ug', 'ng'), 1000);
+  });
+  test('basePairs: 1 kb = 1000 bp', () => {
+    assert.equal(UNITS.basePairs[0].id, 'bp');
+    close(convert(1, 'basePairs', 'kb', 'bp'), 1000);
+  });
+  test('relativeCentrifugalForce: single unit ×g, factor 1', () => {
+    assert.equal(UNITS.relativeCentrifugalForce[0].id, 'xg');
+    close(toBase(5000, 'relativeCentrifugalForce', 'xg'), 5000);
   });
   test('length: 1 mi = 1.609344 km, 1 ft = 12 in, 1 nmi = 1852 m', () => {
     close(convert(1, 'length', 'mi', 'km'), 1.609344);
@@ -458,8 +471,10 @@ describe('anchor values', () => {
 // values and check the conversion is still exactly value × factor.
 describe('force-calculator dimensions unchanged', () => {
   const PINNED: Record<'mass' | 'acceleration' | 'force', Record<string, number>> = {
-    // Stone appended in step 36: force-calculator's mass menu gains "st"; the other factors are untouched.
-    mass: { kg: 1, g: 0.001, t: 1000, lb: 0.45359237, oz: 0.028349523125, st: 14 * 0.45359237 },
+    // Stone appended in step 36: force-calculator's mass menu gains "st"; the other factors are
+    // untouched. µg/ng appended in step 48 batch 3 (ligation-calculator's insert/vector DNA mass);
+    // same "append only" discipline.
+    mass: { kg: 1, g: 0.001, t: 1000, lb: 0.45359237, oz: 0.028349523125, st: 14 * 0.45359237, ug: 1e-9, ng: 1e-12 },
     acceleration: { 'm/s2': 1, 'ft/s2': 0.3048, g0: 9.80665, 'kmh/s': 1000 / 3600 },
     force: { N: 1, kN: 1000, MN: 1e6, lbf: 0.45359237 * 9.80665, kgf: 9.80665, dyn: 1e-5 }
   };

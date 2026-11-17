@@ -1,5 +1,9 @@
 import type { CalculatorConfig } from './types.ts';
 
+// Standard gravity (BIPM SI Brochure), used by centrifuge-rcf-rpm-calculator's RCF = omega^2 r / g0 —
+// same value and source as physics.ts's own STANDARD_GRAVITY constant.
+const STANDARD_GRAVITY = 9.80665;
+
 export const biologyCalculators: CalculatorConfig[] = [
   {
     id: 'cell-dilution-calculator',
@@ -539,6 +543,542 @@ export const biologyCalculators: CalculatorConfig[] = [
     },
     compute(values) {
       return { concentration: (1000 * values.molarMass * values.absorbance) / (values.molarAbsorptivity * values.pathLength) };
+    }
+  },
+  {
+    id: 'pcr-annealing-temperature-calculator',
+    category: 'biology',
+    glyph: 'Tm',
+    updatedAt: '2026-11-17',
+    aliases: ['pcr annealing temperature calculator', 'primer melting temperature calculator', 'wallace rule tm calculator', 'primer tm calculator', 'gc content primer calculator', 'oligo melting temperature calculator'],
+    related: ['qpcr-efficiency-calculator', 'dna-concentration-calculator', 'molar-mass-calculator', 'percentage-calculator'],
+    title: 'PCR Primer Annealing Temperature Calculator (Wallace Rule)',
+    description: 'Estimate a PCR primer’s melting temperature from its length and GC content using the Wallace rule, Tm = 2°C×(A+T) + 4°C×(G+C) — a quick approximation, not an exact thermodynamic calculation.',
+    example: 'A 20-base primer that is 60% GC (12 G/C bases, 8 A/T bases) has an estimated Tm of 2×8 + 4×12 = 64°C by the Wallace rule.',
+    solver: {
+      defaultTarget: 'meltingTemp',
+      variables: [
+        { id: 'primerLength', label: 'Primer length', symbol: 'N', dimension: 'count', defaultValue: 20, defaultUnit: 'count' },
+        { id: 'gcContent', label: 'GC content', symbol: 'GC%', dimension: 'percent', defaultValue: 60, defaultUnit: '%' },
+        { id: 'meltingTemp', label: 'Estimated melting temperature', symbol: 'Tm', dimension: 'temperature', defaultValue: 64, defaultUnit: 'C' }
+      ],
+      solve: {
+        // Wallace rule, Td = 2(A+T) + 4(G+C) °C (Wallace, Shaffer, Murphy, Bonner, Hirose & Itakura,
+        // 1979, Nucleic Acids Research). Writing the GC/AT base counts as fractions of the total
+        // length N turns the original whole-base-count rule into a continuous function of N and GC%:
+        // GC count = N x GC%/100, AT count = N - GC count, so
+        // Tm = 2(N - N·GC%/100) + 4(N·GC%/100) = 2N + 2N·GC%/100 = 2N(1 + GC%/100). The result is a
+        // Celsius reading, so +273.15 converts it to this dimension's SI base, kelvin.
+        meltingTemp: ({ primerLength, gcContent }) => 2 * primerLength * (1 + gcContent / 100) + 273.15,
+        primerLength: ({ meltingTemp, gcContent }) => (2 * (1 + gcContent / 100) === 0 ? NaN : (meltingTemp - 273.15) / (2 * (1 + gcContent / 100))),
+        gcContent: ({ meltingTemp, primerLength }) => (primerLength === 0 ? NaN : 100 * ((meltingTemp - 273.15) / (2 * primerLength) - 1))
+      },
+      outputs: [
+        { id: 'gcBaseCount', label: 'G+C bases (GC% × N)', dimension: 'count', compute: (si) => (si.primerLength * si.gcContent) / 100 },
+        { id: 'atBaseCount', label: 'A+T bases (N − G+C)', dimension: 'count', compute: (si) => si.primerLength - (si.primerLength * si.gcContent) / 100 }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is a primer annealing (melting) temperature?',
+        paragraphs: [
+          'A PCR primer is a short, single strand of DNA designed to bind ("anneal") to a specific matching sequence on the template before DNA polymerase extends it. Whether a primer stays bound at a given temperature depends on how strongly its bases pair with the template — and that strength depends on the primer’s base composition, because a G pairs with a C through three hydrogen bonds while an A pairs with a T through only two. A primer’s melting temperature, Tm, is the temperature at which half of the primer-template duplexes have come apart; PCR protocols typically anneal a few degrees below Tm so primers bind reliably without binding to the wrong, partially matching sequence.',
+          'The Wallace rule is a quick way to estimate Tm directly from a primer’s base composition, without any thermodynamic calculation: Tm = 2°C × (number of A and T bases) + 4°C × (number of G and C bases). It comes from Wallace, Shaffer, Murphy, Bonner, Hirose and Itakura’s 1979 study in Nucleic Acids Research on how synthetic oligonucleotides hybridize to phiX174 DNA, and it is still the fastest rule-of-thumb check for short primers (conventionally cited as accurate only up to about 20–25 bases).',
+          'This calculator rewrites the same rule in terms of the two numbers a primer-design tool usually reports directly — length and GC percentage — rather than requiring you to count A, T, G and C bases by hand. Because GC percentage is continuous rather than whole bases, the result is the same number the discrete, base-by-base version of the rule would give whenever GC% × length works out to a whole number of G/C bases, and a smooth interpolation otherwise.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of the primer length, the GC content, and the estimated melting temperature; the third fills in automatically.',
+        steps: [
+          { name: 'Count the primer’s length', text: 'N — the total number of bases in the primer sequence.' },
+          { name: 'Work out its GC content', text: 'The percentage of those bases that are G or C, from the primer sequence or a primer-design tool’s own report.' },
+          { name: 'Enter the two values you know', text: 'The field left over, marked auto, calculates as you type.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Check the bonus G+C/A+T base counts', text: 'These show the whole-number base counts the continuous GC% implies, useful for sanity-checking against the actual sequence.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The Wallace rule, rewritten in terms of length and GC percentage, rearranges to solve for any of the three quantities.',
+        expression: 'Tm = 2N(1 + GC% ÷ 100)\nN = Tm ÷ (2(1 + GC% ÷ 100))\nGC% = 100 × (Tm ÷ 2N − 1)',
+        terms: [
+          { symbol: 'N', meaning: 'Primer length, in bases.' },
+          { symbol: 'GC%', meaning: 'The percentage of the primer’s bases that are G or C.' },
+          { symbol: 'Tm', meaning: 'Estimated melting (annealing) temperature, in °C, by the Wallace rule.' },
+          { symbol: '2°C, 4°C', meaning: 'The original rule’s per-base weights: 2°C for each A or T base (two hydrogen bonds), 4°C for each G or C base (three hydrogen bonds) — stronger base pairing raises the temperature needed to melt the duplex.' }
+        ],
+        note: 'This is a rough approximation, not a thermodynamic calculation — see "Things to watch out for" below before relying on it for primer design near the edges of its accuracy.'
+      },
+      workedExample: {
+        intro: 'A 20-base primer is 60% GC. What is its estimated annealing temperature by the Wallace rule?',
+        rows: [
+          { label: 'Primer length (N)', value: '20 bases' },
+          { label: 'GC content (GC%)', value: '60%' },
+          { label: 'G+C bases (20 × 0.60)', value: '12' },
+          { label: 'A+T bases (20 − 12)', value: '8' },
+          { label: 'Tm = 2×8 + 4×12', value: '16 + 48 = 64°C' }
+        ],
+        result: 'Tm ≈ 64°C',
+        explanation: '60% of 20 bases is 12 G/C bases, leaving 8 A/T bases. The Wallace rule weights each A/T base by 2°C and each G/C base by 4°C: 2×8 + 4×12 = 16 + 48 = 64°C. The length-and-GC%-based formula gives the identical number: 2×20×(1 + 0.60) = 40×1.60 = 64°C.'
+      },
+      watchOut: [
+        { title: 'The Wallace rule is a rough approximation', body: 'It was developed for short oligonucleotides and is conventionally cited as reasonably accurate only up to about 20–25 bases. It ignores salt concentration, primer concentration, and the specific neighbor-to-neighbor base-pair interactions that real DNA thermodynamics depends on.' },
+        { title: 'Real PCR design tools use more detailed models', body: 'Nearest-neighbor thermodynamic models (which account for which specific bases are next to each other, not just the overall A/T/G/C tally, plus salt and primer concentration) give a more accurate Tm for longer or more unusual primers. Treat this calculator’s output as a fast first estimate, not a replacement for a dedicated primer-design tool before ordering primers.' },
+        { title: 'GC% alone does not capture base order', body: 'Two primers with the same length and GC% but a different arrangement of bases can have somewhat different real-world melting behavior (for example, a long run of G/C bases at one end behaves differently from the same bases spread evenly through the sequence) — this the rule cannot see.' },
+        { title: 'Annealing temperature is not the same as Tm', body: 'A PCR protocol’s actual annealing temperature is normally set a few degrees below the estimated Tm (often 3–5°C), not equal to it, to give primers a reliable margin for binding.' }
+      ],
+      references: [
+        { label: 'Wallace, R.B., Shaffer, J., Murphy, R.F., Bonner, J., Hirose, T. & Itakura, K. (1979), "Hybridization of synthetic oligodeoxyribonucleotides to phi X174 DNA: the effect of single base pair mismatch," Nucleic Acids Research, 6(11), 3543–3557 — the Wallace rule’s original source; confirmed via a search-engine-indexed summary rather than a direct fetch of the paper itself, flagged here for transparency', url: 'https://doi.org/10.1093/nar/6.11.3543' }
+      ]
+    },
+    inputs: [
+      { id: 'primerLength', label: 'Primer length (bases)', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 1 },
+      { id: 'gcContent', label: 'GC content (%)', type: 'number', placeholder: '60', defaultValue: 60, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'PCR Annealing Temperature Calculator (Wallace Rule)',
+      description: 'Free PCR primer Tm calculator using the Wallace rule. Estimate melting temperature from primer length and GC content, with a worked example.',
+      faq: [
+        { question: 'What is the Wallace rule for primer Tm?', answer: 'Tm = 2°C × (number of A/T bases) + 4°C × (number of G/C bases). A 20-base primer with 12 G/C bases and 8 A/T bases gives Tm = 2×8 + 4×12 = 64°C.' },
+        { question: 'How accurate is the Wallace rule?', answer: 'It is a quick approximation, conventionally cited as reasonably reliable only for short primers (roughly up to 20–25 bases). It ignores salt concentration, primer concentration, and neighbor-to-neighbor base-pairing effects that more detailed nearest-neighbor thermodynamic models account for.' },
+        { question: 'How do I calculate Tm from primer length and GC%, not individual base counts?', answer: 'Tm = 2 × N × (1 + GC% ÷ 100), where N is the primer length. This is an algebraic rewrite of the same Wallace rule: GC% × N gives the G/C base count, and the rest are A/T bases.' },
+        { question: 'Why do G/C bases raise the melting temperature more than A/T bases?', answer: 'A G-C base pair forms three hydrogen bonds, while an A-T base pair forms only two — the extra hydrogen bond makes a G-C pair harder to separate, which the Wallace rule reflects by weighting G/C bases twice as heavily (4°C versus 2°C) as A/T bases.' },
+        { question: 'Should I set my PCR annealing temperature equal to the calculated Tm?', answer: 'No — a PCR protocol’s annealing temperature is normally set a few degrees (often 3–5°C) below the estimated Tm, giving primers a reliable margin to bind specifically rather than melting away.' },
+        { question: 'What is a better method than the Wallace rule for long or unusual primers?', answer: 'Nearest-neighbor thermodynamic calculations, which account for which specific bases sit next to each other (not just the overall A/T/G/C tally) along with salt and primer concentration, give a more accurate estimate — most dedicated primer-design software uses one of these instead of the Wallace rule.' }
+      ]
+    },
+    compute(values) {
+      return { meltingTemp: 2 * values.primerLength * (1 + values.gcContent / 100) + 273.15 };
+    }
+  },
+  {
+    id: 'qpcr-efficiency-calculator',
+    category: 'biology',
+    glyph: 'qE',
+    updatedAt: '2026-11-17',
+    aliases: ['qpcr efficiency calculator', 'standard curve slope efficiency calculator', 'real-time pcr efficiency calculator', 'pcr amplification efficiency calculator', 'ct slope efficiency calculator', 'qpcr standard curve calculator'],
+    related: ['pcr-annealing-temperature-calculator', 'dna-concentration-calculator', 'logarithm-calculator', 'exponent-calculator'],
+    title: 'qPCR Efficiency Calculator (E = 10^(−1/Slope) − 1)',
+    description: 'Find a qPCR assay’s amplification efficiency from its standard curve’s slope, E = 10^(−1/slope) − 1 — or go the other way, from a target efficiency to the slope that would produce it.',
+    example: 'A standard curve with a slope of −3.5 gives an amplification efficiency of about 93.1%, within the generally accepted 90–110% range.',
+    solver: {
+      defaultTarget: 'efficiencyPercent',
+      variables: [
+        { id: 'slope', label: 'Standard curve slope', symbol: 'S', dimension: 'count', defaultValue: -3.5, defaultUnit: 'count' },
+        { id: 'efficiencyPercent', label: 'Amplification efficiency', symbol: 'E%', dimension: 'percent', defaultValue: 93.069772888325, defaultUnit: '%' }
+      ],
+      solve: {
+        // E = 10^(-1/S) - 1, the standard formula for amplification efficiency from a qPCR standard
+        // curve's slope S (Ct plotted against log10 starting quantity) — confirmed directly from
+        // QIAGEN's own qPCR bench guide, "Determining Amplification Efficiencies." A slope of
+        // exactly -log10(2) ≈ -3.3219 corresponds to E = 1 (100% efficiency, the template doubling
+        // every cycle); the widely used MIQE guideline range of 90-110% efficiency corresponds to
+        // slopes between about -3.58 and -3.10.
+        efficiencyPercent: ({ slope }) => (slope === 0 ? NaN : (Math.pow(10, -1 / slope) - 1) * 100),
+        slope: ({ efficiencyPercent }) => {
+          const fraction = efficiencyPercent / 100;
+          return fraction <= -1 ? NaN : -1 / Math.log10(1 + fraction);
+        }
+      },
+      outputs: [
+        // How many-fold the amplicon increases each cycle (1 + E) — the more intuitive "doubling"
+        // framing most readers expect from a PCR efficiency figure.
+        { id: 'foldPerCycle', label: 'Amplicon increase per cycle (1 + E)', dimension: 'count', compute: (si) => 1 + si.efficiencyPercent / 100 }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is qPCR amplification efficiency?',
+        paragraphs: [
+          'Quantitative PCR (qPCR) tracks how much amplified DNA ("amplicon") has built up after each PCR cycle, reported as a cycle threshold, Ct — the cycle number at which the fluorescence signal crosses a fixed detection threshold. A standard curve is built by running several known dilutions of a template and plotting Ct against the log₁₀ of each dilution’s starting quantity; a perfectly efficient reaction, where the amplicon exactly doubles every cycle, produces a straight line with a slope of −log₁₀(2) ≈ −3.32.',
+          'Amplification efficiency, E, measures how close a real reaction gets to that ideal doubling. QIAGEN’s own qPCR bench guide gives the standard formula for converting a standard curve’s measured slope directly into efficiency: E = 10^(−1/slope) − 1, with percent efficiency simply E × 100. An efficiency of exactly 1.0 (100%) means the amplicon doubles every cycle; the widely used MIQE guidelines for reporting qPCR consider an efficiency between about 90% and 110% (slopes between roughly −3.58 and −3.10) acceptable for a reliable assay.',
+          'In practice, efficiency comes out somewhere below (or occasionally slightly above) 100% because of primer design, inhibitors in the sample, or pipetting and dilution error in building the standard curve itself — which is exactly why running a standard curve and checking its efficiency is a standard quality-control step before trusting a qPCR assay’s quantitative results.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter either the standard curve slope or the target efficiency; the other fills in automatically.',
+        steps: [
+          { name: 'Build a standard curve', text: 'Run qPCR on a series of known dilutions of template and plot the resulting Ct values against log₁₀(starting quantity).' },
+          { name: 'Find the slope', text: 'Fit a straight line through the points (most qPCR software does this automatically); its slope is the input S.' },
+          { name: 'Enter the slope, or a target efficiency instead', text: 'If you are instead checking what slope a specific target efficiency (say, exactly 100%) would require, enter the efficiency and solve for the slope.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the other field becomes the new calculated one.' },
+          { name: 'Check the result against the acceptable range', text: 'An efficiency between about 90% and 110% is the commonly used threshold for a reliable assay (see the watch-out notes below).' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Amplification efficiency and the standard curve’s slope convert directly into each other.',
+        expression: 'E = 10^(−1 ÷ S) − 1\nS = −1 ÷ log₁₀(1 + E)\n%efficiency = E × 100',
+        terms: [
+          { symbol: 'S', meaning: 'The standard curve’s slope — Ct plotted against log₁₀(starting template quantity), a negative number for a normal qPCR assay.' },
+          { symbol: 'E', meaning: 'Amplification efficiency as a fraction: 1.0 means the amplicon exactly doubles every cycle.' },
+          { symbol: '%efficiency', meaning: 'E expressed as a percentage, the figure most qPCR software and papers actually report.' }
+        ],
+        note: 'A slope of exactly −log₁₀(2) ≈ −3.3219 gives E = 1 exactly (100% efficiency) — the theoretical best case for a reaction that perfectly doubles its amplicon every cycle.'
+      },
+      workedExample: {
+        intro: 'A standard curve fit gives a slope of −3.5. What is the amplification efficiency?',
+        rows: [
+          { label: 'Slope (S)', value: '−3.5' },
+          { label: '−1 ÷ S', value: '0.285714' },
+          { label: '10^0.285714', value: '1.930698' },
+          { label: 'E = 1.930698 − 1', value: '0.930698' },
+          { label: 'Efficiency (E × 100)', value: '93.0698%' }
+        ],
+        result: 'Efficiency ≈ 93.07%',
+        explanation: '−1 ÷ −3.5 = 0.285714…, and 10 raised to that power is 1.930698…, so E = 0.930698, or 93.07%. That falls inside the commonly cited 90–110% acceptable range, and corresponds to the amplicon increasing by a factor of 1.930698 (not quite doubling) every cycle.'
+      },
+      watchOut: [
+        { title: 'This checks the standard curve, not the unknown samples', body: 'Efficiency describes how well the reaction amplifies across the standard curve’s dilution series. It does not, by itself, confirm that an unknown sample behaves the same way — inhibitors present only in the unknown sample can still distort its own Ct.' },
+        { title: 'A slope close to zero is not "high efficiency," it is a failed curve', body: 'The formula blows up as the slope approaches 0 (division by a near-zero number), which corresponds to Ct barely changing across the dilution series — a sign the standard curve itself did not work, not an unusually efficient reaction.' },
+        { title: 'Efficiency above 100% usually points to a problem, not a bonus', body: 'In principle E > 1 is mathematically possible from this formula (a slope flatter than −3.32), but in practice it almost always signals a pipetting or dilution error in the standard curve rather than an assay literally more than doubling each cycle.' },
+        { title: 'The MIQE 90-110% range is a common guideline, not a universal pass/fail line', body: 'Different labs and applications set their own acceptance criteria; treat the widely cited 90-110% window as a reasonable default check, not a rule enforced by this calculator.' }
+      ],
+      references: [
+        { label: 'QIAGEN, "Determining Amplification Efficiencies," PCR Technology Bench Guide', url: 'https://www.qiagen.com/us/knowledge-and-support/knowledge-hub/bench-guide/pcr/pcr-quantification/determining-amplification-efficiencies' }
+      ]
+    },
+    inputs: [{ id: 'slope', label: 'Standard curve slope', type: 'number', placeholder: '-3.5', defaultValue: -3.5, step: 0.01 }],
+    seo: {
+      title: 'qPCR Efficiency Calculator (E = 10^(-1/Slope) − 1)',
+      description: 'Free qPCR amplification efficiency calculator from a standard curve slope. E = 10^(-1/slope) − 1, with a worked example and the MIQE acceptable range.',
+      faq: [
+        { question: 'What is the qPCR efficiency formula?', answer: 'E = 10^(−1 ÷ slope) − 1, where slope is the standard curve’s Ct-versus-log₁₀(quantity) slope. Percent efficiency is E × 100. A slope of −3.5 gives an efficiency of about 93.07%.' },
+        { question: 'What slope corresponds to 100% efficiency?', answer: 'A slope of exactly −log₁₀(2) ≈ −3.3219 gives E = 1 exactly — the amplicon doubling every cycle, the theoretical ideal for PCR.' },
+        { question: 'What is a good qPCR efficiency value?', answer: 'The MIQE guidelines for reporting quantitative PCR experiments generally consider an efficiency between about 90% and 110% (slope between roughly −3.58 and −3.10) acceptable for a reliable assay.' },
+        { question: 'What does a standard curve slope near zero mean?', answer: 'It means Ct barely changed across the dilution series — a sign the standard curve failed (poor primers, degraded template, or a dilution error), not an efficiency calculation problem. The efficiency formula is undefined at a slope of exactly 0.' },
+        { question: 'Can qPCR efficiency be over 100%?', answer: 'The formula can mathematically return a value above 100% for a slope flatter than about −3.32, but this almost always indicates a pipetting or dilution error in the standard curve rather than a reaction that genuinely more than doubles each cycle.' },
+        { question: 'Does this calculator check my actual unknown samples?', answer: 'No — it only converts a standard curve’s slope into an efficiency figure for that curve. A good standard curve efficiency does not by itself rule out inhibitors or other problems specific to an unknown sample.' }
+      ]
+    },
+    compute(values) {
+      return { efficiencyPercent: (Math.pow(10, -1 / values.slope) - 1) * 100 };
+    }
+  },
+  {
+    id: 'ligation-calculator',
+    category: 'biology',
+    glyph: 'I:V',
+    updatedAt: '2026-11-17',
+    aliases: ['ligation calculator', 'insert vector molar ratio calculator', 'dna ligation ratio calculator', 'cloning ligation calculator', 'insert to vector ratio calculator', 'ligation mass calculator'],
+    related: ['dna-concentration-calculator', 'cell-dilution-calculator', 'molar-mass-calculator', 'ratio-calculator'],
+    title: 'Ligation Calculator (Insert:Vector Molar Ratio)',
+    description: 'Find the insert:vector molar ratio for a DNA ligation (or the insert mass needed for a target ratio) from the mass and length of your insert and vector DNA.',
+    example: '50 ng of a 3 kb vector ligated with 50 ng of a 1 kb insert gives an insert:vector molar ratio of 3:1.',
+    solver: {
+      defaultTarget: 'massInsert',
+      variables: [
+        { id: 'massInsert', label: 'Insert mass', symbol: 'mᵢ', dimension: 'mass', defaultValue: 50, defaultUnit: 'ng' },
+        { id: 'massVector', label: 'Vector mass', symbol: 'mᵥ', dimension: 'mass', defaultValue: 50, defaultUnit: 'ng' },
+        { id: 'lengthInsert', label: 'Insert length', symbol: 'Lᵢ', dimension: 'basePairs', defaultValue: 1000, defaultUnit: 'bp' },
+        { id: 'lengthVector', label: 'Vector length', symbol: 'Lᵥ', dimension: 'basePairs', defaultValue: 3000, defaultUnit: 'bp' },
+        { id: 'molarRatio', label: 'Insert:vector molar ratio', symbol: 'R', dimension: 'count', defaultValue: 3, defaultUnit: 'count' }
+      ],
+      solve: {
+        // Moles of a DNA fragment = mass / molecular weight, and a dsDNA fragment's molecular weight
+        // is closely proportional to its length in base pairs (Thermo Fisher Scientific, "DNA and
+        // RNA Molecular Weights and Conversions": M.W. of dsDNA (Da) = bp x 607.4 + 157.9 — so for a
+        // shared, roughly constant average mass per base pair, MW cancels out of a molar RATIO
+        // entirely: moles_insert / moles_vector = (mass_insert / MW_insert) / (mass_vector /
+        // MW_vector) = (mass_insert / mass_vector) x (length_vector / length_insert). This is the
+        // same formula NEB's own ligation calculator uses to convert a target molar ratio into an
+        // insert mass (NEB's page returned 403 on a direct fetch; confirmed via a search-engine-
+        // indexed summary of its stated formula instead, flagged here for transparency).
+        molarRatio: ({ massInsert, massVector, lengthInsert, lengthVector }) =>
+          massVector * lengthInsert === 0 ? NaN : (massInsert * lengthVector) / (massVector * lengthInsert),
+        massInsert: ({ molarRatio, massVector, lengthInsert, lengthVector }) =>
+          lengthVector === 0 ? NaN : (molarRatio * massVector * lengthInsert) / lengthVector,
+        massVector: ({ molarRatio, massInsert, lengthInsert, lengthVector }) =>
+          molarRatio * lengthInsert === 0 ? NaN : (massInsert * lengthVector) / (molarRatio * lengthInsert),
+        lengthInsert: ({ molarRatio, massInsert, massVector, lengthVector }) =>
+          molarRatio * massVector === 0 ? NaN : (massInsert * lengthVector) / (molarRatio * massVector),
+        lengthVector: ({ molarRatio, massInsert, massVector, lengthInsert }) =>
+          massInsert === 0 ? NaN : (molarRatio * massVector * lengthInsert) / massInsert
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is an insert:vector molar ratio, and why does it matter for ligation?',
+        paragraphs: [
+          'Cloning a gene or fragment ("the insert") into a plasmid ("the vector") usually ends with a ligation reaction, where DNA ligase joins the cut ends of insert and vector back together. Ligase works on individual DNA molecules, so what actually matters for a successful ligation is the molar ratio of insert molecules to vector molecules in the reaction — not the mass ratio, since a short insert and a long vector contain very different numbers of molecules per nanogram of DNA.',
+          'A longer DNA molecule weighs proportionally more: Thermo Fisher Scientific’s own reference conversion gives the molecular weight of double-stranded DNA as approximately 607.4 Da per base pair (plus a small, fixed end correction). Because that per-base-pair weight is shared by both the insert and the vector, it cancels out when computing their molar RATIO, leaving a formula built entirely from numbers you can read directly off a gel or a NanoDrop reading and a vector map: molar ratio = (insert mass ÷ vector mass) × (vector length ÷ insert length).',
+          'Most cloning protocols recommend an insert:vector molar ratio somewhere between about 1:1 and 10:1, with roughly 3:1 commonly used as a practical starting point — enough excess insert to favor insert ligation over the vector re-closing on itself, without using so much insert DNA that the reaction becomes crowded with insert-to-insert concatemers.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any four of the five values — insert mass, vector mass, insert length, vector length, and the molar ratio; the fifth fills in automatically.',
+        steps: [
+          { name: 'Measure or look up your vector’s mass and length', text: 'Vector mass from a NanoDrop or gel-based estimate, and length in base pairs from its known sequence or map.' },
+          { name: 'Measure or look up your insert’s length', text: 'The insert fragment’s length in base pairs — from a restriction digest, PCR product size, or sequence.' },
+          { name: 'Pick a target molar ratio, or enter a known insert mass instead', text: 'A commonly used starting ratio is 3:1 (insert:vector); solve for the insert mass that ratio requires, or go the other way from a mass you already have.' },
+          { name: 'Enter the four values you know', text: 'The field left over, marked auto, calculates as you type.' },
+          { name: 'Read the result', text: 'The missing value — most often the insert mass to add to the ligation reaction — appears immediately in your chosen unit.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The molar-ratio formula rearranges to solve for any of the five quantities.',
+        expression: 'R = (mᵢ ÷ mᵥ) × (Lᵥ ÷ Lᵢ)\nmᵢ = R × mᵥ × Lᵢ ÷ Lᵥ\nmᵥ = mᵢ × Lᵥ ÷ (R × Lᵢ)\nLᵢ = mᵢ × Lᵥ ÷ (R × mᵥ)\nLᵥ = R × mᵥ × Lᵢ ÷ mᵢ',
+        terms: [
+          { symbol: 'mᵢ, mᵥ', meaning: 'Mass of the insert and vector DNA actually used in the ligation reaction (commonly in ng).' },
+          { symbol: 'Lᵢ, Lᵥ', meaning: 'Length of the insert and vector, in base pairs (bp) or kilobases (kb).' },
+          { symbol: 'R', meaning: 'The insert:vector molar ratio — how many insert molecules there are for every vector molecule.' }
+        ],
+        note: 'This treats both fragments as having the same average molecular weight per base pair, which is an excellent approximation for typical cloning-sized fragments (hundreds of bp and up) — see "Things to watch out for" below for when it matters less well.'
+      },
+      workedExample: {
+        intro: 'A ligation uses 50 ng of a 3 kb vector and 50 ng of a 1 kb insert. What is the insert:vector molar ratio?',
+        rows: [
+          { label: 'Insert mass (mᵢ)', value: '50 ng' },
+          { label: 'Vector mass (mᵥ)', value: '50 ng' },
+          { label: 'Insert length (Lᵢ)', value: '1 kb (1,000 bp)' },
+          { label: 'Vector length (Lᵥ)', value: '3 kb (3,000 bp)' },
+          { label: 'R = (50 ÷ 50) × (3,000 ÷ 1,000)', value: '1 × 3 = 3' }
+        ],
+        result: 'Insert:vector molar ratio = 3:1',
+        explanation: 'Equal masses of insert and vector (50 ng each) do not mean equal numbers of molecules: the 3 kb vector is three times heavier per molecule than the 1 kb insert, so 50 ng of vector contains only a third as many molecules. The mass ratio of 1:1 therefore becomes a molar ratio of 3:1 once the length difference is accounted for.'
+      },
+      watchOut: [
+        { title: 'Mass ratio and molar ratio are not the same thing', body: 'Equal masses of insert and vector only give an equal molar ratio when the two fragments are the same length. A 3 kb vector and a 1 kb insert at equal mass are a 3:1 molar ratio, not 1:1 — the whole reason this calculator exists.' },
+        { title: 'This assumes a uniform average molecular weight per base pair', body: 'A fragment’s exact molecular weight depends slightly on its specific base composition and on a small, fixed end-correction term that does not scale with length — both are usually negligible for typical insert/vector sizes (hundreds of bp or more), but can introduce a small error for very short fragments (well under 100 bp).' },
+        { title: 'Mass readings carry their own measurement error', body: 'A NanoDrop or gel-based DNA mass estimate has its own uncertainty, which carries straight through to the calculated molar ratio — this calculator cannot correct for an inaccurate input mass.' },
+        { title: 'There is no single "correct" ratio for every ligation', body: 'Typical cloning protocols use somewhere between about 1:1 and 10:1 insert:vector, with 3:1 a common default — the right choice depends on the specific cloning strategy, insert availability, and whether background (vector self-ligation) is a concern.' }
+      ],
+      references: [
+        { label: 'Thermo Fisher Scientific, "DNA and RNA Molecular Weights and Conversions"', url: 'https://www.thermofisher.com/us/en/home/references/ambion-tech-support/rna-tools-and-calculators/dna-and-rna-molecular-weights-and-conversions.html' },
+        { label: 'New England Biolabs, Ligation Calculator — formula for converting a target insert:vector molar ratio into an insert mass (NEB’s page returned HTTP 403 on a direct fetch; its formula is confirmed here via a search-engine-indexed summary instead, flagged for transparency)', url: 'https://www.neb.com/en-us/tools-and-resources/interactive-tools/ligation-calculator' }
+      ]
+    },
+    inputs: [
+      { id: 'massVector', label: 'Vector mass (kg)', type: 'number', placeholder: '5e-11', defaultValue: 5e-11, step: 1e-12, min: 0 },
+      { id: 'lengthInsert', label: 'Insert length (bp)', type: 'number', placeholder: '1000', defaultValue: 1000, step: 1, min: 1 },
+      { id: 'lengthVector', label: 'Vector length (bp)', type: 'number', placeholder: '3000', defaultValue: 3000, step: 1, min: 1 },
+      { id: 'molarRatio', label: 'Insert:vector molar ratio', type: 'number', placeholder: '3', defaultValue: 3, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Ligation Calculator (Insert:Vector Molar Ratio)',
+      description: 'Free DNA ligation calculator. Find the insert:vector molar ratio, or the insert mass needed for a target ratio, from mass and length in bp or kb.',
+      faq: [
+        { question: 'What is the ligation insert:vector molar ratio formula?', answer: 'Molar ratio = (insert mass ÷ vector mass) × (vector length ÷ insert length). 50 ng of a 1 kb insert and 50 ng of a 3 kb vector gives a molar ratio of 3:1.' },
+        { question: 'Why isn’t a 1:1 mass ratio the same as a 1:1 molar ratio?', answer: 'Because longer DNA fragments weigh more per molecule. Equal masses of a long vector and a short insert contain different numbers of molecules, so the molar ratio (what actually matters to DNA ligase) differs from the mass ratio unless insert and vector happen to be the same length.' },
+        { question: 'What is a good insert:vector molar ratio for cloning?', answer: 'Most protocols use somewhere between 1:1 and 10:1 (insert:vector), with about 3:1 a commonly used practical default — enough excess insert to favor insert ligation without flooding the reaction with insert DNA.' },
+        { question: 'How do I calculate how much insert DNA to add?', answer: 'Solve for insert mass: mᵢ = R × mᵥ × Lᵢ ÷ Lᵥ, where R is your target molar ratio, mᵥ is the vector mass you are using, and Lᵢ/Lᵥ are the insert and vector lengths.' },
+        { question: 'Does the exact molecular weight per base pair matter?', answer: 'Only slightly. The ratio formula assumes a shared average molecular weight per base pair for both fragments, which is an excellent approximation for typical insert/vector sizes — a fixed, length-independent end correction term in the exact molecular weight formula introduces a small error only for very short fragments.' },
+        { question: 'Can I use kb instead of bp for the lengths?', answer: 'Yes — the ratio only depends on the length RATIO between insert and vector, so switching both lengths to kb (or any other consistent unit) gives the identical molar ratio.' }
+      ]
+    },
+    compute(values) {
+      return { massInsert: (values.molarRatio * values.massVector * values.lengthInsert) / values.lengthVector };
+    }
+  },
+  {
+    id: 'centrifuge-rcf-rpm-calculator',
+    category: 'biology',
+    glyph: 'RCF',
+    updatedAt: '2026-11-17',
+    aliases: ['centrifuge rcf rpm calculator', 'rcf to rpm calculator', 'rpm to rcf calculator', 'relative centrifugal force calculator', 'g-force centrifuge calculator', 'centrifuge speed calculator'],
+    related: ['cell-dilution-calculator', 'centripetal-force-calculator', 'rpm-to-speed-calculator', 'bacterial-growth-calculator'],
+    title: 'Centrifuge RCF ↔ RPM Calculator',
+    description: 'Convert between a centrifuge’s rotational speed (RPM) and relative centrifugal force (RCF, ×g) for a given rotor radius — the real, radius-dependent physics, not a plain unit conversion.',
+    example: 'A rotor with an 8 cm radius spinning at 10,000 RPM produces a relative centrifugal force of about 8,946×g.',
+    solver: {
+      defaultTarget: 'rcf',
+      variables: [
+        { id: 'radius', label: 'Rotor radius', symbol: 'r', dimension: 'length', defaultValue: 8, defaultUnit: 'cm' },
+        { id: 'rpm', label: 'Rotational speed', symbol: 'N', dimension: 'angularVelocity', defaultValue: 10000, defaultUnit: 'rpm' },
+        { id: 'rcf', label: 'Relative centrifugal force', symbol: 'RCF', dimension: 'relativeCentrifugalForce', defaultValue: 8945.951665305896, defaultUnit: 'xg' }
+      ],
+      solve: {
+        // RCF (xg) = centripetal acceleration / standard gravity = omega^2 * r / g0 (omega in rad/s,
+        // r in meters) — the same physics as any circular motion (OpenStax University Physics Volume
+        // 1 SS6.3, "Centripetal Acceleration": a_c = omega^2 r). This is the exact SI form of the
+        // conventional lab formula, RCF = 1.118 x 10^-5 x r(cm) x RPM^2, which is itself a rounding of
+        // (2*pi/60)^2/g0 ~ 1.11824 x 10^-5 (confirmed against Wikipedia's "Centrifuge" article, which
+        // states the formula as RCF = 1.118 x 10^-6 x r(mm) x RPM^2, i.e. 10x that for r in cm) — the
+        // two forms agree to within the rounding of that published constant (about 0.02%).
+        rcf: ({ radius, rpm }) => (rpm * rpm * radius) / STANDARD_GRAVITY,
+        radius: ({ rpm, rcf }) => (rpm === 0 ? NaN : (rcf * STANDARD_GRAVITY) / (rpm * rpm)),
+        rpm: ({ radius, rcf }) => (radius <= 0 || rcf < 0 ? NaN : Math.sqrt((rcf * STANDARD_GRAVITY) / radius))
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is relative centrifugal force (RCF)?',
+        paragraphs: [
+          'A centrifuge spins samples in a circle, and anything moving in a circle needs a centripetal (center-seeking) acceleration to keep it on that curved path rather than flying off in a straight line. OpenStax’s University Physics gives this acceleration as a_c = ω²r, where ω is the angular velocity (how fast the rotor spins, in radians per second) and r is the radius of the circular path — in a centrifuge, the distance from the spin axis out to the sample.',
+          'Relative centrifugal force (RCF) reports that acceleration as a multiple of standard gravity, g, the same way a roller coaster’s "3g" turn or an astronaut’s "4g" launch does — RCF = a_c ÷ g. Because a_c depends on both the rotational speed and the radius, the same RPM produces very different RCF values on different rotors: a larger rotor radius means samples farther from the spin axis, which experience more centripetal acceleration at the same RPM. This is exactly why a protocol that specifies "spin at 10,000×g" cannot simply be read off a dial that shows RPM — the rotor’s own radius has to be known.',
+          'Because RCF depends on the square of the rotational speed, doubling the RPM quadruples the RCF, while doubling the radius only doubles it — a detail that matters when swapping between rotors of different sizes on the same protocol.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of the rotor radius, the rotational speed, and the RCF; the third fills in automatically.',
+        steps: [
+          { name: 'Find your rotor’s radius', text: 'Check the rotor’s manual or spec sheet for its radius — the distance from the spin axis to the sample, not the radius of the rotor housing itself.' },
+          { name: 'Enter the radius and either the RPM or the target RCF', text: 'If your protocol specifies a target ×g value, enter that and solve for the RPM to set; if you know the RPM, solve for the resulting RCF.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Change units at any time', text: 'Switching the radius unit (cm, mm, in) converts the number already there automatically.' },
+          { name: 'Read the result', text: 'The missing value appears immediately — RCF in ×g, or RPM, or the radius.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The conventional lab formula (radius in centimeters, speed in RPM) and the equivalent SI physics form both describe the same relationship.',
+        expression: 'RCF ≈ 1.118×10⁻⁵ × r(cm) × RPM²\nRCF = ω²r ÷ g (SI form: ω in rad/s, r in meters, g = 9.80665 m/s²)',
+        terms: [
+          { symbol: 'r', meaning: 'Rotor radius — the distance from the spin axis to the sample.' },
+          { symbol: 'RPM, ω', meaning: 'Rotational speed, in revolutions per minute (RPM) or the equivalent angular velocity in radians per second, ω = RPM × 2π ÷ 60.' },
+          { symbol: 'RCF', meaning: 'Relative centrifugal force, the centripetal acceleration expressed as a multiple of standard gravity (×g).' },
+          { symbol: 'g = 9.80665 m/s²', meaning: 'Standard gravity (BIPM SI Brochure), the reference acceleration RCF is measured against.' }
+        ],
+        note: 'This calculator solves the exact SI physics form internally (ω²r ÷ g), which is equivalent to the commonly published 1.118×10⁻⁵ constant to within that constant’s own rounding (about 0.02%) — see the worked example.'
+      },
+      workedExample: {
+        intro: 'A microcentrifuge rotor has an 8 cm radius and spins at 10,000 RPM. What RCF does that produce?',
+        rows: [
+          { label: 'Radius (r)', value: '8 cm = 0.08 m' },
+          { label: 'Rotational speed (RPM)', value: '10,000' },
+          { label: 'Angular velocity (ω = 10,000 × 2π ÷ 60)', value: '1,047.1976 rad/s' },
+          { label: 'RCF = ω²r ÷ g = 1,047.1976² × 0.08 ÷ 9.80665', value: '≈ 8,945.95×g' },
+          { label: 'Conventional formula check: 1.118×10⁻⁵ × 8 × 10,000²', value: '≈ 8,944×g (within 0.02%)' }
+        ],
+        result: 'RCF ≈ 8,946×g',
+        explanation: 'Converting 10,000 RPM to radians per second gives ω ≈ 1,047.20 rad/s. Squaring that and multiplying by the 0.08 m radius gives the centripetal acceleration, which divided by standard gravity (9.80665 m/s²) gives an RCF of about 8,946×g — matching the conventional cm/RPM formula’s 8,944×g to within the rounding of its published constant.'
+      },
+      watchOut: [
+        { title: 'Use the correct radius for your rotor', body: 'Protocols and spec sheets sometimes give a minimum, maximum, and average radius for a rotor, since samples at the bottom of a tube sit farther from the spin axis than samples at the top. Using the wrong one gives a systematically wrong RCF.' },
+        { title: 'RCF scales with the SQUARE of RPM', body: 'Doubling the rotational speed quadruples the RCF, not doubles it — a common source of error when adjusting a protocol’s speed by "a bit more."' },
+        { title: 'The same RPM means a different RCF on a different rotor', body: 'A protocol written as "13,000 RPM" assumes a specific rotor’s radius. Moving to a rotor with a different radius at the same RPM changes the actual force on the sample — matching the RCF (×g), not the RPM, is what carries a protocol correctly between different centrifuges.' },
+        { title: 'The published 1.118×10⁻⁵ constant is itself rounded', body: 'The exact value, derived from ω²r/g, is closer to 1.1182×10⁻⁵ — a difference of about 0.02% from the commonly quoted figure, immaterial for lab work but the reason this calculator’s own internal math uses the exact physics form rather than the rounded constant.' }
+      ],
+      references: [
+        { label: 'Wikipedia, "Centrifuge" (RCF formula and its mm/RPM constant, 1.118×10⁻⁶)', url: 'https://en.wikipedia.org/wiki/Centrifuge' },
+        { label: 'OpenStax, University Physics Volume 1, §6.3 "Centripetal Acceleration"', url: 'https://openstax.org/books/university-physics-volume-1/pages/6-3-centripetal-acceleration' }
+      ]
+    },
+    inputs: [
+      { id: 'radius', label: 'Rotor radius (m)', type: 'number', placeholder: '0.08', defaultValue: 0.08, step: 0.001, min: 0 },
+      { id: 'rpm', label: 'Rotational speed (rad/s)', type: 'number', placeholder: '1047.1976', defaultValue: 10000 * ((2 * Math.PI) / 60), step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Centrifuge RCF ↔ RPM Calculator',
+      description: 'Free centrifuge RCF to RPM calculator (and back). Convert relative centrifugal force and rotational speed for a given rotor radius, with a worked example.',
+      faq: [
+        { question: 'What is the formula for RCF from RPM?', answer: 'RCF ≈ 1.118×10⁻⁵ × r(cm) × RPM², or exactly RCF = ω²r ÷ g in SI units (ω in rad/s, r in meters, g = 9.80665 m/s²). An 8 cm rotor at 10,000 RPM gives about 8,946×g.' },
+        { question: 'Why does RCF depend on rotor radius, not just RPM?', answer: 'RCF is the centripetal acceleration (ω²r) expressed as a multiple of gravity — the same RPM produces more acceleration, and so more RCF, on a rotor where samples sit farther from the spin axis.' },
+        { question: 'How do I convert a protocol’s ×g value to RPM for my centrifuge?', answer: 'Solve ω = √(RCF × g ÷ r) for your rotor’s radius, then convert ω to RPM (RPM = ω × 60 ÷ 2π). This calculator does both steps for you.' },
+        { question: 'Does doubling the RPM double the RCF?', answer: 'No — RCF scales with the square of RPM, so doubling the rotational speed quadruples the RCF, holding the radius fixed.' },
+        { question: 'Can I use the same RPM on a different rotor and get the same force?', answer: 'Not unless the two rotors have the same radius. The same RPM on a larger-radius rotor produces a higher RCF, since samples are farther from the spin axis — match the ×g figure, not the RPM, when moving a protocol between centrifuges.' },
+        { question: 'Is the 1.118×10⁻⁵ constant exact?', answer: 'It is a commonly published rounding of the exact value, about 1.1182×10⁻⁵ (derived from ω²r ÷ g) — the two agree to within about 0.02%, which is immaterial for lab use.' }
+      ]
+    },
+    compute(values) {
+      return { rcf: (values.rpm * values.rpm * values.radius) / STANDARD_GRAVITY };
+    }
+  },
+  {
+    id: 'log-reduction-calculator',
+    category: 'biology',
+    glyph: 'LR',
+    updatedAt: '2026-11-17',
+    aliases: ['log reduction calculator', 'microbial log reduction calculator', 'disinfectant log reduction calculator', 'log10 reduction calculator', 'kill rate calculator', 'percent reduction microbial calculator'],
+    related: ['bacterial-growth-calculator', 'doubling-time-calculator', 'percentage-calculator', 'logarithm-calculator'],
+    title: 'Log Reduction Calculator (Microbial Kill Rate)',
+    description: 'Find the log reduction (and percent reduction) in a microbial count from a before-and-after measurement, log reduction = log₁₀(N₀ ÷ N) — the standard way disinfection and sterilization claims are reported.',
+    example: 'A treatment that drops a microbial count from 1,000,000 CFU/mL to 10 CFU/mL achieves a 5-log reduction — 99.999% of the organisms killed or removed.',
+    solver: {
+      defaultTarget: 'logReduction',
+      variables: [
+        { id: 'initialCount', label: 'Count before treatment', symbol: 'N₀', dimension: 'count', defaultValue: 1000000, defaultUnit: 'count' },
+        { id: 'finalCount', label: 'Count after treatment', symbol: 'N', dimension: 'count', defaultValue: 10, defaultUnit: 'count' },
+        { id: 'logReduction', label: 'Log reduction', symbol: 'LR', dimension: 'count', defaultValue: 5, defaultUnit: 'count' }
+      ],
+      solve: {
+        // Log reduction LR = log10(N0/N) (Wikipedia, "Log reduction," citing the standard
+        // disinfection-efficacy definition: R = log10(c_before) - log10(c_after)). An n-log
+        // reduction means the surviving count is 10^-n of the original.
+        logReduction: ({ initialCount, finalCount }) => (initialCount <= 0 || finalCount <= 0 ? NaN : Math.log10(initialCount / finalCount)),
+        finalCount: ({ initialCount, logReduction }) => (initialCount <= 0 ? NaN : initialCount / Math.pow(10, logReduction)),
+        initialCount: ({ finalCount, logReduction }) => (finalCount <= 0 ? NaN : finalCount * Math.pow(10, logReduction))
+      },
+      outputs: [
+        { id: 'percentReduction', label: 'Percent reduction', dimension: 'percent', compute: (si) => (si.initialCount <= 0 ? NaN : 100 * (1 - si.finalCount / si.initialCount)) }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is log reduction?',
+        paragraphs: [
+          'Log reduction is the standard way disinfectants, sterilization processes, and water- or food-safety treatments report how effectively they reduce a microbial population. Rather than quoting a percentage — which quickly becomes an unwieldy string of 9s once a treatment gets very effective — log reduction counts how many powers of ten the population dropped by: LR = log₁₀(N₀ ÷ N), where N₀ is the count before treatment and N is the count after.',
+          'Each whole log is a 10-fold drop in surviving organisms: a 1-log reduction removes 90% of the population, a 2-log reduction removes 99%, a 3-log reduction removes 99.9%, and so on — every extra log adds one more "9" to the percentage. A 5-log reduction, often used as a benchmark for water disinfection, means only 1 organism in 100,000 survives.',
+          'Because it is a logarithmic scale, log reduction also makes it easy to add up a multi-step process: a treatment with a 2-log reduction followed by a second, independent 3-log reduction step gives a combined 5-log reduction overall — simply by adding the two numbers, something percentages do not do (90% followed by another 99.9% reduction is not 90.999% removed).'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of the count before treatment, the count after treatment, and the log reduction; the third fills in automatically.',
+        steps: [
+          { name: 'Measure (or look up) the count before treatment', text: 'N₀ — the microbial count (CFU, cells, or any consistent count) before the disinfection or sterilization step.' },
+          { name: 'Measure the count after treatment', text: 'N — the same kind of count, taken after treatment under the same conditions.' },
+          { name: 'Enter the two values you know', text: 'The field left over, marked auto, calculates as you type. If you instead know a claimed log reduction and one count, solve for the other count.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Read the result and the percent figure', text: 'The log reduction and its equivalent percent reduction both appear — useful since many audiences read percentages more easily than a log scale.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Log reduction rearranges to solve for any of the three quantities.',
+        expression: 'LR = log₁₀(N₀ ÷ N)\nN = N₀ ÷ 10^LR\nN₀ = N × 10^LR\n%reduction = 100 × (1 − N ÷ N₀)',
+        terms: [
+          { symbol: 'N₀', meaning: 'The microbial count before treatment.' },
+          { symbol: 'N', meaning: 'The microbial count after treatment, measured the same way as N₀.' },
+          { symbol: 'LR', meaning: 'Log reduction — how many powers of ten the count dropped by.' }
+        ],
+        note: 'This describes a single, already-completed before/after measurement. It does not itself model a kill curve over time (see doubling-time-calculator and bacterial-growth-calculator for the growth side of that same exponential math).'
+      },
+      workedExample: {
+        intro: 'A disinfection treatment drops a microbial count from 1,000,000 CFU/mL to 10 CFU/mL. What is the log reduction?',
+        rows: [
+          { label: 'Count before (N₀)', value: '1,000,000 CFU/mL' },
+          { label: 'Count after (N)', value: '10 CFU/mL' },
+          { label: 'N₀ ÷ N', value: '100,000' },
+          { label: 'LR = log₁₀(100,000)', value: '5' },
+          { label: 'Percent reduction = 100 × (1 − 10 ÷ 1,000,000)', value: '99.999%' }
+        ],
+        result: 'LR = 5 (a 5-log reduction, 99.999% reduction)',
+        explanation: '1,000,000 divided by 10 is 100,000, and log₁₀(100,000) is exactly 5, since 10⁵ = 100,000. Each log corresponds to one more "9" in the percentage: a 5-log reduction leaves 1 part in 100,000, which is 100 × (1 − 10/1,000,000) = 99.999% removed.'
+      },
+      watchOut: [
+        { title: 'N and N₀ must be the same kind of count, measured the same way', body: 'Mixing a direct microscope count with a CFU plate count (which only counts viable, culturable organisms) gives a log reduction that does not mean what it appears to — see cell-dilution-calculator’s own note on the same distinction.' },
+        { title: 'A detection limit is not the same as zero', body: 'If the "after" count is reported as "below the detection limit" rather than an actual measured number, the true log reduction could be higher than what plugging in the detection limit itself suggests — the real count may be lower still, just unmeasurable with that method.' },
+        { title: 'Log reductions from separate steps add, percentages do not', body: 'A 2-log step followed by a 3-log step gives a combined 5-log reduction (add the logs). The equivalent percentages, 99% and 99.9%, do not add to give the right combined percentage — convert through log reduction instead of trying to combine percent figures directly.' },
+        { title: 'This is a single measured ratio, not a guaranteed future performance claim', body: 'A log reduction value describes what one before/after measurement showed under its own specific conditions (organism, temperature, contact time, and so on) — it does not by itself guarantee the same reduction under different conditions.' }
+      ],
+      references: [
+        { label: 'Wikipedia, "Log reduction"', url: 'https://en.wikipedia.org/wiki/Log_reduction' }
+      ]
+    },
+    inputs: [
+      { id: 'initialCount', label: 'Count before treatment', type: 'number', placeholder: '1000000', defaultValue: 1000000, step: 1, min: 0 },
+      { id: 'finalCount', label: 'Count after treatment', type: 'number', placeholder: '10', defaultValue: 10, step: 0.001, min: 0 }
+    ],
+    seo: {
+      title: 'Log Reduction Calculator (Microbial Kill Rate)',
+      description: 'Free log reduction calculator for disinfection and sterilization. Solve log10(N0/N) for log reduction, before count, or after count, with percent reduction.',
+      faq: [
+        { question: 'What is the log reduction formula?', answer: 'LR = log₁₀(N₀ ÷ N), where N₀ is the microbial count before treatment and N is the count after. Dropping from 1,000,000 to 10 CFU/mL is a 5-log reduction.' },
+        { question: 'How does log reduction relate to percent reduction?', answer: 'A 1-log reduction is 90% removed, 2-log is 99%, 3-log is 99.9%, 4-log is 99.99%, and 5-log is 99.999% — each additional log adds one more "9" to the percentage.' },
+        { question: 'How do I calculate the surviving count from a log reduction?', answer: 'N = N₀ ÷ 10^LR. A 1,000,000 CFU/mL starting count with a claimed 5-log reduction leaves 1,000,000 ÷ 10⁵ = 10 CFU/mL surviving.' },
+        { question: 'Do log reductions from two treatment steps add together?', answer: 'Yes — log reductions are additive: a 2-log step followed by a 3-log step gives a combined 5-log reduction. Percentages do not add the same way, so converting through log reduction is the correct way to combine multiple steps.' },
+        { question: 'What does a 6-log reduction mean?', answer: 'A 6-log reduction means the surviving count is 10⁻⁶ (one-millionth) of the starting count — 99.9999% of the organisms killed or removed, often used as a sterilization benchmark.' },
+        { question: 'Can log reduction be negative?', answer: 'Yes, mathematically — a negative log reduction means the count after is higher than before (the population grew rather than shrank), the reverse of what a disinfection claim is meant to show.' }
+      ]
+    },
+    compute(values) {
+      return { logReduction: Math.log10(values.initialCount / values.finalCount) };
     }
   }
 ];

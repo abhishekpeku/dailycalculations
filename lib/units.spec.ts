@@ -471,8 +471,10 @@ describe('anchor values', () => {
 // values and check the conversion is still exactly value × factor.
 describe('force-calculator dimensions unchanged', () => {
   const PINNED: Record<'mass' | 'acceleration' | 'force', Record<string, number>> = {
-    // Stone appended in step 36: force-calculator's mass menu gains "st"; the other factors are untouched.
-    mass: { kg: 1, g: 0.001, t: 1000, lb: 0.45359237, oz: 0.028349523125, st: 14 * 0.45359237 },
+    // Stone appended in step 36: force-calculator's mass menu gains "st"; the other factors are
+    // untouched. µg/ng appended in step 48 batch 3 (ligation-calculator's insert/vector DNA mass);
+    // same "append only" discipline.
+    mass: { kg: 1, g: 0.001, t: 1000, lb: 0.45359237, oz: 0.028349523125, st: 14 * 0.45359237, ug: 1e-9, ng: 1e-12 },
     acceleration: { 'm/s2': 1, 'ft/s2': 0.3048, g0: 9.80665, 'kmh/s': 1000 / 3600 },
     force: { N: 1, kN: 1000, MN: 1e6, lbf: 0.45359237 * 9.80665, kgf: 9.80665, dyn: 1e-5 }
   };

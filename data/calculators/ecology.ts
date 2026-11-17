@@ -2959,5 +2959,171 @@ export const ecologyCalculators: CalculatorConfig[] = [
       const co2KgPerYear = co2KgPerDay * 365;
       return { bmrMjPerDay, vco2LPerS, co2KgPerDay, co2KgPerYear };
     }
+  },
+  {
+    id: 'mark-recapture-population-estimate-calculator',
+    category: 'ecology',
+    glyph: 'N',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'mark and recapture calculator',
+      'lincoln-petersen index calculator',
+      'capture-recapture calculator',
+      'tag and recapture calculator',
+      'mark-release-recapture calculator',
+      'population estimate from recapture data'
+    ],
+    related: ['carrying-capacity-calculator', 'population-density-calculator', 'population-growth-calculator', 'shannon-diversity-index-calculator'],
+    title: 'Mark-Recapture Population Estimate Calculator',
+    description: 'Estimate a wild population’s size from mark-recapture data using the Lincoln-Petersen index, N = (M × C) ÷ R, with a worked example.',
+    example:
+      '80 deer tagged and released, then a second catch of 100 deer with 20 already tagged, gives an estimated population of 400 deer.',
+    solver: {
+      defaultTarget: 'populationEstimate',
+      variables: [
+        { id: 'markedFirstCatch', label: 'Marked in first catch', symbol: 'M', dimension: 'count', defaultValue: 80, defaultUnit: 'count' },
+        { id: 'totalSecondCatch', label: 'Total in second catch', symbol: 'C', dimension: 'count', defaultValue: 100, defaultUnit: 'count' },
+        { id: 'markedSecondCatch', label: 'Marked in second catch (recaptured)', symbol: 'R', dimension: 'count', defaultValue: 20, defaultUnit: 'count' },
+        { id: 'populationEstimate', label: 'Estimated population size', symbol: 'N', dimension: 'count', defaultValue: 400, defaultUnit: 'count' }
+      ],
+      solve: {
+        populationEstimate: ({ markedFirstCatch, totalSecondCatch, markedSecondCatch }) => (markedFirstCatch * totalSecondCatch) / markedSecondCatch,
+        markedSecondCatch: ({ markedFirstCatch, totalSecondCatch, populationEstimate }) => (markedFirstCatch * totalSecondCatch) / populationEstimate,
+        totalSecondCatch: ({ markedFirstCatch, markedSecondCatch, populationEstimate }) => (populationEstimate * markedSecondCatch) / markedFirstCatch,
+        markedFirstCatch: ({ totalSecondCatch, markedSecondCatch, populationEstimate }) => (populationEstimate * markedSecondCatch) / totalSecondCatch
+      },
+      outputs: [
+        {
+          id: 'recapturePct',
+          label: 'Share of second catch already marked',
+          dimension: 'percent',
+          compute: (si) => (si.markedSecondCatch / si.totalSecondCatch) * 100
+        }
+      ],
+      visuals: [
+        {
+          type: 'compareBars',
+          bars: [
+            { from: 'markedFirstCatch', label: 'Marked, 1st catch' },
+            { from: 'totalSecondCatch', label: 'Total, 2nd catch' },
+            { from: 'markedSecondCatch', label: 'Marked, 2nd catch' }
+          ],
+          title: 'Mark-recapture sample sizes'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is mark-recapture?',
+        paragraphs: [
+          'Mark-recapture is a standard field-ecology method for estimating the size of a population too large or too mobile to count directly — fish in a lake, insects in a field, or deer in a forest. OpenStax’s Biology 2e covers it in its population-ecology chapter as one of the practical ways ecologists actually measure population size in the wild, rather than just modeling its growth.',
+          'The method works in two stages. First, researchers capture a sample of individuals, mark them in some harmless way (a tag, a dye spot, a clipped fin), and release them back into the population to mix with the rest. Later, they take a second, independent sample and record how many individuals in it are already marked. The core idea, known as the Lincoln-Petersen index, is that the proportion of marked individuals in that second sample should estimate the proportion marked in the whole population — because if marked individuals mixed randomly, a representative second sample should contain roughly the same marked share as the entire population does.',
+          'Setting those two proportions equal (recaptured marked ÷ total second catch = marked first catch ÷ total population) and solving for the one unknown, the whole population’s size, gives the Lincoln-Petersen formula: N = (M × C) ÷ R. It is a single estimate, not an exact count, and it depends on a handful of real-world assumptions about how the population and the marks themselves behave between the two catches.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter any three of the four quantities; the fourth is solved for automatically.',
+        steps: [
+          { name: 'Enter the first catch (M)', text: 'How many individuals were captured, marked, and released in the first round.' },
+          { name: 'Enter the second catch (C)', text: 'How many individuals, in total, were captured in the second, independent round.' },
+          { name: 'Enter the recaptures (R)', text: 'How many of that second catch were already marked from the first round.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto-filled field to make it an input instead; the field left alone longest becomes the new calculated one.' },
+          { name: 'Read the estimate', text: 'The population estimate (N) appears, along with the recaptured share of the second catch.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The share of marked individuals in the second catch is assumed to equal the share marked across the whole population; solving that equality for N gives the Lincoln-Petersen index.',
+        expression: 'R ÷ C = M ÷ N\nN = (M × C) ÷ R\nR = (M × C) ÷ N\nC = (N × R) ÷ M\nM = (N × R) ÷ C',
+        terms: [
+          { symbol: 'M', meaning: 'The number of individuals captured, marked, and released in the first catch.' },
+          { symbol: 'C', meaning: 'The total number of individuals captured in the second, independent catch.' },
+          { symbol: 'R', meaning: 'The number of individuals in the second catch that were already marked (recaptured).' },
+          { symbol: 'N', meaning: 'The Lincoln-Petersen estimate of the total population size.' }
+        ],
+        note: 'A single point estimate from one pair of catches. Real studies typically repeat the method or use a correction for small samples to gauge how much the estimate could be off.'
+      },
+      workedExample: {
+        intro: '80 deer are captured, tagged, and released into a forest. Later, a second catch of 100 deer includes 20 that are already tagged.',
+        rows: [
+          { label: 'Marked, first catch (M)', value: '80' },
+          { label: 'Total, second catch (C)', value: '100' },
+          { label: 'Marked, second catch (R)', value: '20' },
+          { label: 'Recaptured share of 2nd catch (R ÷ C)', value: '20%' },
+          { label: 'N = (80 × 100) ÷ 20', value: '400' }
+        ],
+        result: 'Estimated population: 400 deer',
+        explanation: 'One in five deer (20%) in the second catch was already tagged, so the model infers that the 80 originally tagged deer also represent about one in five of the whole population — 80 ÷ 0.20 = 400.'
+      },
+      watchOut: [
+        {
+          title: 'Assumes a closed population between the two catches',
+          body: 'The method assumes no births, deaths, immigration, or emigration happened between the first and second catch. A population that changed meaningfully in that window will bias the estimate.'
+        },
+        {
+          title: 'Assumes marked individuals mix back in randomly',
+          body: 'If marked individuals cluster together, avoid the second trap site, or become easier or harder to catch because of the mark itself, the second catch’s marked share will not reflect the true population share, and the estimate will be off.'
+        },
+        {
+          title: 'Marks must last and not harm the animal',
+          body: 'A mark that falls off, fades, or changes behavior (making a marked individual more visible to predators, for instance) breaks the method’s core assumption that marked and unmarked individuals are equivalent in every way except the mark.'
+        },
+        {
+          title: 'Small recapture counts make the estimate unreliable',
+          body: 'With only a handful of recaptures, a difference of one or two individuals in R swings the estimate dramatically — ecologists generally want a reasonably large second catch and recapture count before trusting a single Lincoln-Petersen estimate.'
+        },
+        {
+          title: 'No estimate when nothing is recaptured',
+          body: 'If R is 0 (no marked individuals turn up in the second catch), the formula divides by zero and gives no finite answer — which also makes practical sense, since a sample with zero recaptures gives no information about what share of the population was marked.'
+        }
+      ],
+      references: [
+        {
+          label: 'OpenStax, Biology 2e, §45.1 "Population Demography" (mark and recapture method, Lincoln-Petersen index)',
+          url: 'https://openstax.org/books/biology-2e/pages/45-1-population-demography'
+        }
+      ]
+    },
+    inputs: [
+      { id: 'markedFirstCatch', label: 'Marked in first catch (M)', type: 'number', placeholder: '80', defaultValue: 80, step: 1, min: 0 },
+      { id: 'totalSecondCatch', label: 'Total in second catch (C)', type: 'number', placeholder: '100', defaultValue: 100, step: 1, min: 0 },
+      { id: 'markedSecondCatch', label: 'Marked in second catch (R)', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Mark-Recapture Calculator – Lincoln-Petersen Index',
+      description: 'Free mark-recapture calculator. Estimate a wild population’s size from capture data using the Lincoln-Petersen index, N = (M × C) ÷ R.',
+      faq: [
+        {
+          question: 'What is the mark-recapture formula?',
+          answer: 'N = (M × C) ÷ R, the Lincoln-Petersen index, where M is the number marked in the first catch, C is the total second catch, and R is how many of the second catch were already marked. 80 marked, 100 recaptured, 20 already marked gives N = 400.'
+        },
+        {
+          question: 'Why does this formula work?',
+          answer: 'It assumes the marked share of the second catch (R ÷ C) estimates the marked share of the whole population (M ÷ N). Setting those equal and solving for N gives the Lincoln-Petersen index.'
+        },
+        {
+          question: 'What assumptions does mark-recapture rely on?',
+          answer: 'A closed population between catches (no births, deaths, or migration), random mixing of marked individuals back into the population, and marks that neither fall off nor change an individual’s behavior or survival.'
+        },
+        {
+          question: 'What happens with a very small recapture count?',
+          answer: 'The estimate becomes unreliable — with only a few recaptures, a difference of one individual in R changes N substantially, so ecologists generally want a reasonably large second catch before trusting a single estimate.'
+        },
+        {
+          question: 'Can this calculator solve for a different variable, like the first catch size?',
+          answer: 'Yes — enter any three of the four quantities (M, C, R, N) and this calculator solves for whichever one is left, using the same rearranged Lincoln-Petersen formula.'
+        },
+        {
+          question: 'Is this the same thing as carrying capacity?',
+          answer: 'No. Carrying Capacity Calculator models the maximum population an environment can sustain over time; this calculator estimates how large a population actually is right now, from one pair of field samples.'
+        }
+      ]
+    },
+    compute(values) {
+      const populationEstimate = (values.markedFirstCatch * values.totalSecondCatch) / values.markedSecondCatch;
+      const recapturePct = (values.markedSecondCatch / values.totalSecondCatch) * 100;
+      return { populationEstimate, recapturePct };
+    }
   }
 ];

@@ -585,4 +585,152 @@ export const ecologyCalculators: CalculatorConfig[] = [
       return { householdLitersPerYear, perPersonLitersPerDay, beefLitersPerYear, beefShareOfPersonalFootprintPct };
     }
   },
+  {
+    id: 'plastic-footprint-calculator',
+    category: 'ecology',
+    glyph: 'kg',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'plastic footprint calculator',
+      'plastic waste calculator',
+      'how much plastic waste do i produce',
+      'personal plastic waste calculator',
+      'household plastic waste calculator'
+    ],
+    related: ['carbon-footprint-calculator', 'water-footprint-calculator', 'meat-footprint-calculator', 'electricity-bill-calculator'],
+    title: 'Plastic Footprint Calculator',
+    description: 'Estimate your household’s yearly plastic waste and how much of it is likely to be recycled, from the EPA’s published 2018 national municipal solid waste statistics.',
+    example:
+      'A household of 4 people generates about 872.8 lb of plastic waste a year at the US average rate, of which about 75.9 lb (8.7%) gets recycled and the remaining 796.9 lb is landfilled, incinerated, or littered.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is a plastic footprint?',
+        paragraphs: [
+          'A plastic footprint is an estimate of how much plastic waste a person or household generates in a year — packaging, containers, bags, and other single-use and durable plastic items thrown away once their useful life ends. The U.S. Environmental Protection Agency tracks this at a national scale as part of its municipal solid waste (MSW) statistics: in 2018, the most recent year with a complete published breakdown, plastics made up 12.2% of the roughly 292 million tons of MSW the country generated, or 35.7 million tons.',
+          'This calculator starts from two of the EPA’s own published national figures — total MSW generated per person per day, and the share of it that is plastic — to estimate an average person’s plastic waste, then scales it by household size. It also applies the EPA’s reported national plastics recycling rate, 8.7% in 2018, to split that total into a recycled share and a landfilled, incinerated, or littered share, which you can adjust if your own household recycles at a different rate.',
+          'The 8.7% figure is lower than many people expect. Plastic packaging comes in many different resin types, some far easier to recycle profitably than others — PET bottles and jars recycled at 29.1% in 2018, for example, and HDPE natural bottles at 29.3%, both well above the all-plastics average.'
+        ]
+      },
+      howTo: {
+        intro: 'Set your household size and, if you know it, your own recycling rate; the yearly totals fill in instantly.',
+        steps: [
+          { name: 'Enter household size', text: 'The number of people the estimate should cover.' },
+          { name: 'Set a recycling rate', text: 'Leave it at the EPA’s 2018 national average, 8.7%, or raise it if your household or municipality recycles plastic more thoroughly.' },
+          { name: 'Read the total', text: 'The headline is your household’s estimated yearly plastic waste, in pounds and kilograms.' },
+          { name: 'Check the recycled vs. non-recycled split', text: 'The breakdown shows how much of that total is likely recycled versus landfilled, incinerated, or littered, based on the recycling rate you set.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'A person’s plastic waste is the EPA’s total MSW rate times the share that is plastic; the household and recycling splits follow from it.',
+        expression: 'plastic (lb/person/day) = 4.9 × 0.122\nplastic (lb/person/year) = plastic (lb/day) × 365\nhousehold (lb/year) = plastic (lb/person/year) × household size\nrecycled = household × recycling rate\nnot recycled = household − recycled',
+        terms: [
+          { symbol: '4.9', meaning: 'The EPA’s published total municipal solid waste generation rate for 2018, in pounds per person per day.' },
+          { symbol: '0.122', meaning: 'The EPA’s published share of 2018 MSW generation that was plastic (12.2%, or 35.7 million of roughly 292 million tons).' },
+          { symbol: 'recycling rate', meaning: 'The EPA’s published 2018 national plastics recycling rate, 8.7%, adjustable to your own.' }
+        ],
+        note: 'A national-average estimate, not a measurement of your own trash. Your actual plastic waste depends on your household’s specific habits and packaging choices.'
+      },
+      workedExample: {
+        intro: 'A household of 4 people, at the EPA’s 2018 national averages, with the default 8.7% recycling rate.',
+        rows: [
+          { label: 'Plastic per person per day (4.9 × 0.122)', value: '0.5978 lb' },
+          { label: 'Plastic per person per year (× 365)', value: '218.2 lb' },
+          { label: 'Household of 4 per year (× 4)', value: '872.8 lb' },
+          { label: 'Recycled (872.8 × 8.7%)', value: '75.9 lb' },
+          { label: 'Not recycled (872.8 − 75.9)', value: '796.9 lb' }
+        ],
+        result: 'About 872.8 lb (395.9 kg) of plastic waste a year',
+        explanation:
+          'At double the national recycling rate (17.4%), the same household’s non-recycled amount would drop from 796.9 lb to about 720.9 lb — a 9.5% reduction, which shows how much of this total simply is not collected for recycling in the first place.'
+      },
+      watchOut: [
+        {
+          title: 'This is a national average, not your household’s actual waste',
+          body: 'The EPA’s 4.9 lb and 12.2% figures are nationwide 2018 averages across all types of households and products. A household that buys more packaged goods, or fewer, will generate more or less than this estimate.'
+        },
+        {
+          title: '8.7% is the average across all plastics',
+          body: 'Some plastic types recycle at a much higher rate than the 8.7% national average — PET bottles and jars reached 29.1% in 2018, and HDPE natural bottles 29.3% — while many other plastic products, especially flexible film and mixed-resin packaging, recycle far below the average.'
+        },
+        {
+          title: 'Landfilling and recycling are not the whole story',
+          body: 'Plastic that is not recycled is not necessarily landfilled either — some is incinerated for energy recovery, and some becomes litter. This calculator groups all three into a single "not recycled" figure.'
+        },
+        {
+          title: 'Based on the most recent full EPA dataset (2018)',
+          body: 'The EPA’s national MSW statistics are published with a lag; 2018 is the most recent year with a complete, detailed breakdown available at the time this calculator was built. More recent waste generation may differ.'
+        }
+      ],
+      references: [
+        { label: 'U.S. EPA, "National Overview: Facts and Figures on Materials, Waste and Recycling"', url: 'https://www.epa.gov/facts-and-figures-about-materials-waste-and-recycling/national-overview-facts-and-figures-materials' },
+        { label: 'U.S. EPA, "Plastics: Material-Specific Data"', url: 'https://www.epa.gov/facts-and-figures-about-materials-waste-and-recycling/plastics-material-specific-data' }
+      ]
+    },
+    inputs: [
+      { id: 'householdSize', label: 'Household size', type: 'number', placeholder: '4', defaultValue: 4, step: 1, min: 1 },
+      { id: 'recyclingRatePct', label: 'Recycling rate', type: 'percent', placeholder: '8.7', defaultValue: DEFAULT_PLASTIC_RECYCLING_RATE_PCT_2018, step: 0.1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'householdAnnualLb',
+      headlineLabel: 'Household’s plastic waste (per year)',
+      outputs: [
+        { id: 'householdAnnualLb', label: 'Household total (per year)', dimension: 'mass', unit: 'lb', alsoIn: ['kg'] },
+        { id: 'recycledLb', label: 'Recycled', dimension: 'mass', unit: 'lb' },
+        { id: 'notRecycledLb', label: 'Landfilled, incinerated, or littered', dimension: 'mass', unit: 'lb' }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'recycledLb', label: 'Recycled' },
+          { from: 'notRecycledLb', label: 'Not recycled' }
+        ],
+        center: 'householdAnnualLb',
+        centerSub: 'lb/year'
+      }
+    },
+    seo: {
+      title: 'Plastic Footprint Calculator – Household Plastic Waste',
+      description: 'Free plastic footprint calculator. Estimate your household’s yearly plastic waste and recycling using the EPA’s published 2018 national waste statistics.',
+      faq: [
+        {
+          question: 'How much plastic waste does the average person generate?',
+          answer:
+            'About 0.598 lb a day (4.9 lb of total trash × 12.2% plastic share), or roughly 218.2 lb a year, based on the EPA’s 2018 national data — enough that a household of 4 generates about 872.8 lb (395.9 kg) a year.'
+        },
+        {
+          question: 'What percentage of plastic actually gets recycled?',
+          answer:
+            'About 8.7% nationally in 2018, per the EPA — lower than many people assume, and far lower than some specific plastic types: PET bottles and jars recycled at 29.1% and HDPE natural bottles at 29.3% that same year.'
+        },
+        {
+          question: 'If I recycle more, how much difference does it make?',
+          answer:
+            'Doubling the national recycling rate from 8.7% to 17.4% cuts a household of 4’s non-recycled plastic from about 796.9 lb to about 720.9 lb a year — a 9.5% reduction, because recycling only redirects part of the total; it does not reduce how much plastic is generated in the first place.'
+        },
+        {
+          question: 'What happens to the plastic that is not recycled?',
+          answer:
+            'It is landfilled, incinerated for energy recovery, or becomes litter. In 2018, plastics made up over 18% of the 146.1 million tons of MSW landfilled in the US that year — a larger share of landfill than of total waste generated.'
+        },
+        {
+          question: 'Is this based on actual measured household waste?',
+          answer: 'No — it scales the EPA’s national per-person average by your household size. Individual households vary; this gives a reasonable planning estimate, not a measurement of your own trash.'
+        },
+        {
+          question: 'Why 2018 data specifically?',
+          answer: 'It is the most recent year with the EPA’s full, detailed municipal solid waste breakdown available at the time this calculator was built.'
+        }
+      ]
+    },
+    compute(values) {
+      const plasticLbPerPersonPerDay = TOTAL_MSW_LB_PER_PERSON_DAY_2018 * PLASTIC_SHARE_OF_MSW_2018;
+      const plasticLbPerPersonPerYear = plasticLbPerPersonPerDay * 365;
+      const householdAnnualLb = plasticLbPerPersonPerYear * values.householdSize;
+      const recycledLb = householdAnnualLb * (values.recyclingRatePct / 100);
+      const notRecycledLb = householdAnnualLb - recycledLb;
+      return { householdAnnualLb, recycledLb, notRecycledLb };
+    }
+  },
 ];

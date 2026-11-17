@@ -433,7 +433,9 @@ export const calculatorOrder: string[] = [
   'qpcr-efficiency-calculator',
   'ligation-calculator',
   'centrifuge-rcf-rpm-calculator',
-  'log-reduction-calculator'
+  'log-reduction-calculator',
+  'population-growth-calculator',
+  'hemocytometer-calculator'
 ];
 
 const rank = (id: string) => {

@@ -6295,6 +6295,50 @@ exports[`compute() snapshots > heat-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > hemocytometer-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "totalCellsCounted": 200,
+      "squaresCounted": 4,
+      "dilutionFactor": 2,
+      "cultureVolume": 10
+    },
+    "outputs": {
+      "cellDensity": 1000000,
+      "averagePerSquare": 50,
+      "totalCellsInVolume": 10000000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "totalCellsCounted": 300,
+      "squaresCounted": 6,
+      "dilutionFactor": 3,
+      "cultureVolume": 15
+    },
+    "outputs": {
+      "cellDensity": 1500000,
+      "averagePerSquare": 50,
+      "totalCellsInVolume": 22500000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "totalCellsCounted": 0,
+      "squaresCounted": 1,
+      "dilutionFactor": 0,
+      "cultureVolume": 0
+    },
+    "outputs": {
+      "cellDensity": 0,
+      "averagePerSquare": 0,
+      "totalCellsInVolume": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > hess-law-enthalpy-calculator 1`] = `
 {
   "default": {
@@ -11222,6 +11266,41 @@ exports[`compute() snapshots > pool-volume-calculator 1`] = `
     "outputs": {
       "gallons": 3.75,
       "cubicFeet": 0.5
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > population-growth-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "initialPopulation": 500,
+      "growthRate": 0.05,
+      "elapsedTime": 10
+    },
+    "outputs": {
+      "finalPopulation": 824.3606354
+    }
+  },
+  "typical": {
+    "inputs": {
+      "initialPopulation": 750,
+      "growthRate": 0.075,
+      "elapsedTime": 15
+    },
+    "outputs": {
+      "finalPopulation": 2310.162637
+    }
+  },
+  "edge": {
+    "inputs": {
+      "initialPopulation": 0,
+      "growthRate": 0,
+      "elapsedTime": 0
+    },
+    "outputs": {
+      "finalPopulation": 0
     }
   }
 }

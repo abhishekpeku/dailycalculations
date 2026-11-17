@@ -1716,5 +1716,234 @@ export const biologyCalculators: CalculatorConfig[] = [
     compute(values) {
       return { logReduction: Math.log10(values.initialCount / values.finalCount) };
     }
+  },
+  {
+    id: 'population-growth-calculator',
+    category: 'biology',
+    glyph: 'ert',
+    updatedAt: '2026-11-17',
+    aliases: ['population growth calculator', 'exponential population growth calculator', 'population growth rate calculator', 'intrinsic rate of increase calculator', 'continuous population growth calculator', 'n = n0 e^rt calculator'],
+    related: ['bacterial-growth-calculator', 'doubling-time-calculator', 'exponent-calculator', 'logarithm-calculator'],
+    title: 'Population Growth Calculator (N = N₀ × e^(rt))',
+    description: 'Solve the continuous exponential population growth equation, N = N₀ × e^(rt), for the population, starting size, growth rate, or elapsed time.',
+    example: 'A population of 500 animals growing at an intrinsic rate of 5% per year reaches about 824 after 10 years (N = 500 × e^(0.05 × 10)).',
+    solver: {
+      defaultTarget: 'finalPopulation',
+      variables: [
+        { id: 'initialPopulation', label: 'Starting population', symbol: 'N₀', dimension: 'count', defaultValue: 500, defaultUnit: 'count' },
+        { id: 'growthRate', label: 'Growth rate', symbol: 'r', dimension: 'rateConstant', defaultValue: 0.05, defaultUnit: 'yr-1' },
+        { id: 'elapsedTime', label: 'Elapsed time', symbol: 't', dimension: 'time', defaultValue: 10, defaultUnit: 'yr' },
+        { id: 'finalPopulation', label: 'Population', symbol: 'N', dimension: 'count', defaultValue: 824.3606353500641, defaultUnit: 'count' }
+      ],
+      solve: {
+        finalPopulation: ({ initialPopulation, growthRate, elapsedTime }) => initialPopulation * Math.exp(growthRate * elapsedTime),
+        initialPopulation: ({ finalPopulation, growthRate, elapsedTime }) => finalPopulation / Math.exp(growthRate * elapsedTime),
+        growthRate: ({ initialPopulation, finalPopulation, elapsedTime }) =>
+          initialPopulation <= 0 || finalPopulation <= 0 || elapsedTime === 0 ? NaN : Math.log(finalPopulation / initialPopulation) / elapsedTime,
+        elapsedTime: ({ initialPopulation, finalPopulation, growthRate }) =>
+          initialPopulation <= 0 || finalPopulation <= 0 || growthRate === 0 ? NaN : Math.log(finalPopulation / initialPopulation) / growthRate
+      },
+      outputs: [
+        { id: 'netChange', label: 'Net change (N − N₀)', dimension: 'count', compute: (si) => si.finalPopulation - si.initialPopulation },
+        { id: 'growthMultiple', label: 'Growth multiple (N ÷ N₀)', dimension: 'count', compute: (si) => (si.initialPopulation === 0 ? NaN : si.finalPopulation / si.initialPopulation) }
+      ],
+      visuals: [
+        {
+          type: 'compareBars',
+          bars: [
+            { from: 'initialPopulation', label: 'Starting population' },
+            { from: 'finalPopulation', label: 'Population now' }
+          ],
+          title: 'Population before and after growth',
+          highlight: 1
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is exponential population growth?',
+        paragraphs: [
+          'OpenStax’s Biology 2e introduces population growth from a simple starting point: "the formula we use to calculate population growth is... dN/dT = r_max N" — the change in population size over time (dN/dT) is proportional to the population size itself (N), scaled by a growth-rate term. OpenStax substitutes r (or r_max) for "the difference between birth and death rates," calling it "the intrinsic rate of increase signifying the maximum per capita growth rate under ideal conditions." The larger the population already is, the faster it adds new individuals in absolute terms, even though the per-individual rate stays constant — OpenStax’s own bacterial illustration shows this directly: a population doubling every generation adds 1,000 individuals in the first hour but "more than 16 billion" after 24 cycles.',
+          'Solving that differential equation for N as an explicit function of time gives the exponential growth equation this calculator uses: N = N₀ × e^(rt), where N₀ is the starting population, r is the (constant) growth rate, and t is elapsed time. This is the same mathematical family as `bacterial-growth-calculator`’s binary-fission formula and `doubling-time-calculator`’s growth-rate-constant conversion — in fact r here plays exactly the role µ plays on those two pages, related to a doubling (generation) time g by r = ln(2) ÷ g. What is different is the framing and the typical audience: this page is written for the general continuous-growth question biology and ecology courses ask about any population — animals, plants, or microbes — growing smoothly at a constant per-capita rate, in whatever time unit (commonly years) the question is phrased in, rather than for a microbiologist working from a measured generation time in minutes or hours.',
+          'OpenStax calls the resulting curve "a J-shaped growth curve" and notes its defining feature is "the accelerating population growth rate" — the absolute number of new individuals added keeps climbing even though the proportional rate r never changes, because that fixed proportion is being applied to an ever-larger base population.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of the starting population, the growth rate, the elapsed time, and the population; the fourth fills in automatically.',
+        steps: [
+          { name: 'Enter the starting population', text: 'N₀ — the population size at the beginning of the period being modeled.' },
+          { name: 'Enter the growth rate', text: 'r — the intrinsic (per-capita) growth rate, typically given as a percentage per year for most ecological examples.' },
+          { name: 'Enter the elapsed time', text: 't — how long the population has been (or will be) growing at that rate.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Read the result', text: 'The population appears alongside the net change and the growth multiple — how many times larger the population became over that period.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The exponential growth equation rearranges to solve for any of its four quantities.',
+        expression: 'N = N₀ × e^(rt)\nN₀ = N ÷ e^(rt)\nr = ln(N ÷ N₀) ÷ t\nt = ln(N ÷ N₀) ÷ r',
+        terms: [
+          { symbol: 'N₀', meaning: 'The starting population size.' },
+          { symbol: 'N', meaning: 'The population size after elapsed time t.' },
+          { symbol: 'r', meaning: 'The intrinsic (per-capita) growth rate — OpenStax’s "maximum per capita growth rate under ideal conditions," the proportionality constant in dN/dT = rN.' },
+          { symbol: 't', meaning: 'Elapsed time, in whatever unit r is expressed per (years, for most ecological examples).' }
+        ],
+        note: 'This models unrestricted ("ideal conditions") growth, with r held constant — see Watch out for below on why that cannot continue indefinitely in a real population.'
+      },
+      workedExample: {
+        intro: 'A population of 500 animals grows at an intrinsic rate of 5% per year. How large is the population after 10 years, assuming that rate stays constant?',
+        rows: [
+          { label: 'Starting population (N₀)', value: '500' },
+          { label: 'Growth rate (r)', value: '0.05 per year (5%)' },
+          { label: 'Elapsed time (t)', value: '10 years' },
+          { label: 'rt (0.05 × 10)', value: '0.5' },
+          { label: 'e^(rt) (e^0.5)', value: '≈ 1.648721' },
+          { label: 'Population (N = 500 × 1.648721)', value: '≈ 824.36' }
+        ],
+        result: 'N ≈ 824 after 10 years',
+        explanation: '0.05 per year times 10 years gives an exponent of 0.5. e^0.5 ≈ 1.648721, and multiplying the starting population of 500 by that factor gives about 824.36 — in practice, a whole-number population of about 824, a net increase of roughly 324 individuals, or about 1.65 times the starting size.'
+      },
+      watchOut: [
+        { title: 'No real population grows exponentially forever', body: 'OpenStax is explicit that this models growth "under ideal conditions" only. A real population eventually runs into limited food, space, or other resources, and growth slows and levels off near a carrying capacity — the logistic growth model, not the pure exponential one this calculator solves.' },
+        { title: 'r and µ are the same kind of quantity, in different conventional units', body: 'This page’s growth rate r is mathematically identical to doubling-time-calculator’s growth rate constant µ — both are the proportionality constant in dN/dt = (rate) × N. Ecology conventionally reports r per year; microbiology conventionally reports µ per second, minute, or hour. Converting the unit, not the formula, is what moves between them.' },
+        { title: 'A negative growth rate models decline, not growth', body: 'If r is negative, e^(rt) is less than 1, and the formula correctly predicts a shrinking population — the same equation works for population decline, not only growth.' },
+        { title: 'Check what time unit a published growth rate is already in', body: 'An intrinsic rate reported "per year" used as if it were "per day" (or vice versa) changes the answer by a factor of over 300 — always match r’s time unit to how t is being measured.' }
+      ],
+      references: [
+        { label: 'OpenStax, Biology 2e, §45.3 "Environmental Limits to Population Growth"', url: 'https://openstax.org/books/biology-2e/pages/45-3-environmental-limits-to-population-growth' }
+      ]
+    },
+    inputs: [
+      { id: 'initialPopulation', label: 'Starting population', type: 'number', placeholder: '500', defaultValue: 500, step: 1, min: 0 },
+      { id: 'growthRate', label: 'Growth rate r (per year)', type: 'number', placeholder: '0.05', defaultValue: 0.05, step: 0.001 },
+      { id: 'elapsedTime', label: 'Elapsed time (years)', type: 'number', placeholder: '10', defaultValue: 10, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Population Growth Calculator (N = N0 × e^rt)',
+      description: 'Free population growth calculator. Solve N = N0 × e^(rt) for population, starting size, growth rate, or time, with a worked example.',
+      faq: [
+        { question: 'What is the population growth formula?', answer: 'N = N₀ × e^(rt), where N₀ is the starting population, r is the intrinsic growth rate, and t is elapsed time. A population of 500 growing at 5% per year reaches about 824 after 10 years.' },
+        { question: 'What is the intrinsic rate of increase (r)?', answer: 'OpenStax’s Biology 2e defines it as the term substituted for "the difference between birth and death rates," representing "the maximum per capita growth rate under ideal conditions" — the proportionality constant in dN/dT = rN.' },
+        { question: 'How is this different from the bacterial growth calculator?', answer: 'They are the same underlying exponential growth, in two different conventional forms: this page uses a continuous growth rate r (e^(rt)), the form ecology typically uses for any population, while bacterial-growth-calculator uses a generation time g (2^(t/g)), the form microbiology typically uses for binary fission. They convert into each other with r = ln(2) ÷ g.' },
+        { question: 'Why does exponential growth produce a J-shaped curve?', answer: 'Because the absolute number of individuals added keeps increasing even though the proportional rate r stays fixed — a constant percentage of an ever-larger population is an ever-larger number, which is what gives the curve its accelerating, J shape.' },
+        { question: 'Can a population shrink using this same formula?', answer: 'Yes — entering a negative growth rate makes e^(rt) less than 1, correctly modeling a declining population with the same equation.' },
+        { question: 'Does exponential growth ever stop in the real world?', answer: 'Yes. OpenStax notes this model only holds "under ideal conditions" — in practice, limited resources slow growth as a population approaches its environment’s carrying capacity, which is what the separate logistic growth model accounts for.' }
+      ]
+    },
+    compute(values) {
+      return { finalPopulation: values.initialPopulation * Math.exp(values.growthRate * values.elapsedTime) };
+    }
+  },
+  {
+    id: 'hemocytometer-calculator',
+    category: 'biology',
+    glyph: '×10⁴',
+    updatedAt: '2026-11-17',
+    aliases: ['hemocytometer calculator', 'hemocytometer cell count calculator', 'cell counting chamber calculator', 'cells per ml from hemocytometer', 'neubauer chamber calculator', 'cell density from cell count calculator'],
+    related: ['cell-dilution-calculator', 'bacterial-growth-calculator', 'dna-concentration-calculator', 'dilution-calculator'],
+    title: 'Hemocytometer Calculator (Cell Count to Cells/mL)',
+    description: 'Turn a raw hemocytometer cell count into a cell density: cells/mL = average count per square × dilution factor × 10,000.',
+    example: '200 cells counted across 4 large squares, with a 2× dilution (1:1 trypan blue), gives an average of 50 cells per square and a density of 1,000,000 cells/mL.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is a hemocytometer count, and how does it become a cells/mL figure?',
+        paragraphs: [
+          'A hemocytometer (or Neubauer chamber) is a thick glass slide etched with a precise grid and a known, fixed chamber depth, used to count cells directly under a microscope. Because the volume above each grid square is known exactly, counting how many cells sit inside a given number of squares converts directly into a concentration — the whole point of the device is that a cell count automatically comes with a volume attached.',
+          'The standard large squares on a Neubauer-style hemocytometer each hold a volume of 100 nanoliters (0.1 µL). Wikipedia’s own description of the device gives the resulting formula directly: cell concentration (cells/mL) equals the number of cells counted, divided by the number of large squares counted, times the dilution factor, times 10,000. That 10,000 figure is not arbitrary — 100 nL times 10,000 equals 1,000,000 nL, which is exactly 1 mL, so the constant simply rescales a small, known chamber volume up to the standard reporting unit.',
+          'This is the step before cell-dilution-calculator, not a repeat of it: that page starts from an already-known cell density and works out how to dilute it to a target; this page is how that starting density is actually measured in the first place, straight from a raw count under the microscope.'
+        ]
+      },
+      howTo: {
+        intro: 'Count cells in several large squares of a loaded hemocytometer, note the dilution used to prepare the sample, and enter both totals.',
+        steps: [
+          { name: 'Load the hemocytometer', text: 'Mix a small volume of the cell suspension with a diluent (often trypan blue, which also distinguishes dead cells) and load it into the chamber.' },
+          { name: 'Count cells in several large squares', text: 'Count every cell in each square you examine (following a consistent rule for cells touching a boundary line), and add up the total across all the squares counted.' },
+          { name: 'Enter the total cells counted and the number of squares', text: 'The calculator divides these to get the average count per square.' },
+          { name: 'Enter the dilution factor', text: 'How many-fold the original sample was diluted before loading — 2 for a 1:1 mix with trypan blue, 1 for an undiluted sample.' },
+          { name: 'Read the cell density', text: 'The result is the concentration of the original (undiluted) sample, in cells/mL — ready to use as the input to cell-dilution-calculator if you next need to dilute it to a target density.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The hemocytometer’s fixed chamber volume turns a raw count directly into a concentration.',
+        expression: 'Average count per square = total cells counted ÷ squares counted\nCell density (cells/mL) = average count per square × dilution factor × 10,000',
+        terms: [
+          { symbol: 'Total cells counted', meaning: 'The sum of every cell counted across all the large squares examined.' },
+          { symbol: 'Squares counted', meaning: 'How many large squares the total above was counted across.' },
+          { symbol: 'Dilution factor', meaning: 'How many-fold the original sample was diluted before loading (2 for a 1:1 dilution, 1 if loaded neat).' },
+          { symbol: '10,000', meaning: 'The hemocytometer’s standard large-square volume (100 nL) rescaled to cells per mL: 100 nL × 10,000 = 1,000,000 nL = 1 mL.' }
+        ],
+        note: 'This uses the standard Neubauer large-square depth and volume. A different counting chamber with a different etched volume would need its own constant in place of 10,000.'
+      },
+      workedExample: {
+        intro: '200 cells are counted across 4 large squares of a hemocytometer, loaded with a sample diluted 1:1 with trypan blue (a dilution factor of 2). What is the cell density of the original sample?',
+        rows: [
+          { label: 'Total cells counted', value: '200' },
+          { label: 'Squares counted', value: '4' },
+          { label: 'Average count per square (200 ÷ 4)', value: '50' },
+          { label: 'Dilution factor', value: '2' },
+          { label: 'Cell density (50 × 2 × 10,000)', value: '1,000,000 cells/mL' }
+        ],
+        result: '1,000,000 cells/mL (1 × 10⁶ cells/mL)',
+        explanation: '200 cells spread across 4 squares averages 50 cells per square. Multiplying by the dilution factor (2, since the sample was diluted 1:1 before loading) and then by 10,000 (to convert the 100 nL square volume up to 1 mL) gives 50 × 2 × 10,000 = 1,000,000 cells/mL in the original, undiluted sample.'
+      },
+      watchOut: [
+        { title: 'Count more squares for a more reliable average', body: 'A single square’s count is noisy — counting 4 (the usual corner squares of a Neubauer grid) and averaging reduces the effect of cells that happened to land unevenly across the chamber.' },
+        { title: 'Decide a boundary rule before counting, and stick to it', body: 'Cells sitting exactly on a grid line need a consistent counting rule (a common one: count cells touching the top and left boundary lines, but not the bottom or right) — switching rules partway through a count biases the total.' },
+        { title: 'This is a count of everything that looks like a cell, not necessarily a living one', body: 'A plain hemocytometer count includes dead cells and debris unless a viability stain (like trypan blue, which only dead cells take up) is used and scored separately — this calculator reports total counted cells, not a viable-cell-only figure.' },
+        { title: 'Don’t confuse this with cell-dilution-calculator', body: 'This page turns a raw microscope count into a density. cell-dilution-calculator starts from a density you already know (whether measured this way or some other way) and works out a dilution — use this one first if you only have a raw count.' }
+      ],
+      references: [
+        { label: 'Wikipedia, "Hemocytometer"', url: 'https://en.wikipedia.org/wiki/Hemocytometer' }
+      ]
+    },
+    inputs: [
+      { id: 'totalCellsCounted', label: 'Total cells counted', type: 'number', placeholder: '200', defaultValue: 200, step: 1, min: 0 },
+      { id: 'squaresCounted', label: 'Number of squares counted', type: 'number', placeholder: '4', defaultValue: 4, step: 1, min: 1 },
+      { id: 'dilutionFactor', label: 'Dilution factor', type: 'number', placeholder: '2', defaultValue: 2, step: 0.1, min: 0 },
+      { id: 'cultureVolume', label: 'Total culture volume (mL)', type: 'number', placeholder: '10', defaultValue: 10, step: 0.1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'cellDensity',
+      headlineLabel: 'Cell density',
+      outputs: [
+        { id: 'cellDensity', label: 'Cell density', dimension: 'cellDensity', unit: 'cells/mL' },
+        { id: 'averagePerSquare', label: 'Average count per square', format: 'number' },
+        { id: 'totalCellsInVolume', label: 'Total cells in culture volume', format: 'significant' }
+      ],
+      groups: [
+        { title: 'Hemocytometer count', inputs: ['totalCellsCounted', 'squaresCounted', 'dilutionFactor'] },
+        { title: 'Culture volume', inputs: ['cultureVolume'], optional: true }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'averagePerSquare', label: 'Average count per square' }
+        ],
+        center: 'cellDensity',
+        centerSub: 'cells/mL'
+      }
+    },
+    seo: {
+      title: 'Hemocytometer Calculator (Cell Count to Cells/mL)',
+      description: 'Free hemocytometer calculator. Convert a raw cell count into cell density: cells/mL = average count per square × dilution factor × 10,000.',
+      faq: [
+        { question: 'What is the hemocytometer cell count formula?', answer: 'Cells/mL = (total cells counted ÷ squares counted) × dilution factor × 10,000. 200 cells across 4 squares with a 2× dilution gives 50 × 2 × 10,000 = 1,000,000 cells/mL.' },
+        { question: 'Why multiply by 10,000?', answer: 'A standard hemocytometer large square holds a volume of 100 nanoliters. 100 nL × 10,000 = 1,000,000 nL, which is exactly 1 mL — so multiplying by 10,000 rescales the tiny, known chamber volume up to cells per milliliter.' },
+        { question: 'How many squares should I count?', answer: 'Counting more squares (commonly the 4 corner large squares of a Neubauer grid) and averaging reduces the effect of cells landing unevenly across the chamber, giving a more reliable density than counting just one square.' },
+        { question: 'What does the dilution factor account for?', answer: 'Samples are often diluted before loading — commonly 1:1 with trypan blue, a dilution factor of 2 — so the true density of the original sample needs that factor multiplied back in. A neat, undiluted sample has a dilution factor of 1.' },
+        { question: 'Does this calculator distinguish live and dead cells?', answer: 'No — it reports the total count of everything counted. Distinguishing live from dead cells needs a viability stain (such as trypan blue, which only dead cells take up) scored and counted separately.' },
+        { question: 'What do I do with the cell density once I have it?', answer: 'Use it as the starting density in cell-dilution-calculator if you need to dilute the sample down to a specific target concentration for a next step.' }
+      ]
+    },
+    compute(values) {
+      const averagePerSquare = values.totalCellsCounted / values.squaresCounted;
+      const cellDensity = averagePerSquare * values.dilutionFactor * 10000;
+      // cellDensity is in cells/mL; cultureVolume is in mL, so the product is already a plain cell count.
+      const totalCellsInVolume = cellDensity * values.cultureVolume;
+      return { cellDensity, averagePerSquare, totalCellsInVolume };
+    }
   }
 ];

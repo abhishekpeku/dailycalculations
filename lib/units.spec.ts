@@ -395,6 +395,10 @@ describe('anchor values', () => {
     close(toBase(60, 'rateConstant', 'min-1'), 1);
     close(convert(60, 'rateConstant', 'min-1', 'h-1'), 3600);
   });
+  test('rate constant: 1 yr⁻¹ is the reciprocal of time’s own year factor (365.25 days)', () => {
+    close(toBase(365.25 * 86400, 'rateConstant', 'yr-1'), 1);
+    close(convert(1, 'rateConstant', 'yr-1', 'h-1'), 1 / (365.25 * 24));
+  });
   test('molar absorptivity: 1 L/(mol·cm) = 0.1 m²/mol (IUPAC Gold Book)', () => {
     assert.equal(UNITS.molarAbsorptivity[0].id, 'm2/mol');
     close(toBase(1, 'molarAbsorptivity', 'L/molcm'), 0.1);

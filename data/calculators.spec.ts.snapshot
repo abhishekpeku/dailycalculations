@@ -8486,6 +8486,47 @@ exports[`compute() snapshots > long-division-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > lotka-volterra-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "alpha": 0.6,
+      "beta": 0.02,
+      "gamma": 0.4,
+      "delta": 0.01
+    },
+    "outputs": {
+      "preyEquilibrium": 40,
+      "predatorEquilibrium": 30
+    }
+  },
+  "typical": {
+    "inputs": {
+      "alpha": 0.9,
+      "beta": 0.03,
+      "gamma": 0.6,
+      "delta": 0.015
+    },
+    "outputs": {
+      "preyEquilibrium": 40,
+      "predatorEquilibrium": 30
+    }
+  },
+  "edge": {
+    "inputs": {
+      "alpha": 0.0001,
+      "beta": 0.0001,
+      "gamma": 0.0001,
+      "delta": 0.0001
+    },
+    "outputs": {
+      "preyEquilibrium": 1,
+      "predatorEquilibrium": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > loyalty-points-value-calculator 1`] = `
 {
   "default": {

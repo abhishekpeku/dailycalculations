@@ -1541,5 +1541,156 @@ export const ecologyCalculators: CalculatorConfig[] = [
       const simpsonDiversity = 1 - lambda;
       return { simpsonDiversity, lambda, richness, totalIndividuals };
     }
+  },
+  {
+    id: 'lotka-volterra-calculator',
+    category: 'ecology',
+    glyph: 'x·y',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'lotka-volterra calculator',
+      'lotka volterra equilibrium calculator',
+      'predator-prey equilibrium calculator',
+      'predator prey model calculator',
+      'lotka-volterra equations calculator'
+    ],
+    related: ['carrying-capacity-calculator', 'population-growth-calculator', 'population-density-calculator', 'quadratic-formula-calculator'],
+    title: 'Lotka-Volterra Calculator (Predator-Prey Equilibrium)',
+    description:
+      'Calculate the non-trivial equilibrium populations of the Lotka-Volterra predator-prey model, x* = γ/δ and y* = α/β, from the model’s four rate constants.',
+    example:
+      'With a prey growth rate α = 0.6, predation rate β = 0.02, predator death rate γ = 0.4, and predator efficiency δ = 0.01, the equilibrium is 40 prey and 30 predators.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is the Lotka-Volterra equilibrium?',
+        paragraphs: [
+          'The Lotka-Volterra model, proposed independently by Alfred J. Lotka (in his 1925 book Elements of Physical Biology) and Vito Volterra (in 1926), is the classic pair of coupled equations describing how a predator and prey population affect each other over time: dx/dt = αx − βxy for the prey, and dy/dt = −γy + δxy for the predators. Here x and y are the prey and predator population sizes; α is the prey’s own growth rate with no predators; β is how much predation reduces the prey’s growth; γ is the predators’ own death rate with no prey to eat; and δ is how efficiently predators convert eaten prey into their own population growth.',
+          'This calculator is deliberately scoped to one specific, closed-form question the full model answers exactly: the non-trivial equilibrium — the one pair of populations at which both dx/dt and dy/dt are exactly zero, so neither population is changing. Setting both equations to zero and solving gives x* = γ/δ for the prey and y* = α/β for the predators — note that each population’s equilibrium size is set entirely by the other species’ own rate constants, not its own.',
+          'The full Lotka-Volterra model beyond this single equilibrium point is a coupled differential-equation system with no simple closed-form solution for population over time — predicting how x and y move at any other starting point requires numerically simulating the two equations together, which this calculator does not attempt. See Watch out for below on what the equilibrium point does and does not tell you about real predator-prey populations.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the model’s four rate constants; the two equilibrium population sizes fill in automatically.',
+        steps: [
+          { name: 'Enter the prey growth rate (α)', text: 'How fast the prey population would grow with no predators at all.' },
+          { name: 'Enter the predation rate (β)', text: 'How much predator-prey encounters reduce the prey growth rate.' },
+          { name: 'Enter the predator death rate (γ)', text: 'How fast the predator population would decline with no prey to eat.' },
+          { name: 'Enter the predator efficiency (δ)', text: 'How efficiently predators convert eaten prey into their own population growth.' },
+          { name: 'Read the equilibrium', text: 'The result is the prey and predator population sizes at which both stay exactly constant.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Setting both Lotka-Volterra equations to zero and solving gives the equilibrium directly.',
+        expression: 'dx/dt = αx − βxy = 0\ndy/dt = −γy + δxy = 0\nx* = γ ÷ δ (equilibrium prey population)\ny* = α ÷ β (equilibrium predator population)',
+        terms: [
+          { symbol: 'α', meaning: 'The prey’s own per-capita growth rate, with no predators present.' },
+          { symbol: 'β', meaning: 'How much each predator-prey encounter reduces the prey’s growth rate.' },
+          { symbol: 'γ', meaning: 'The predators’ own per-capita death rate, with no prey to eat.' },
+          { symbol: 'δ', meaning: 'How efficiently predators convert eaten prey into their own population growth.' }
+        ],
+        note: 'All four rate constants need a consistent time unit (all per day, or all per year, for example) for the equilibrium populations to be meaningful — the formula itself does not care which unit, as long as it is the same one throughout.'
+      },
+      workedExample: {
+        intro: 'A prey growth rate α = 0.6, predation rate β = 0.02, predator death rate γ = 0.4, and predator efficiency δ = 0.01 (consistent per-day units).',
+        rows: [
+          { label: 'Equilibrium prey (x* = γ ÷ δ = 0.4 ÷ 0.01)', value: '40' },
+          { label: 'Equilibrium predators (y* = α ÷ β = 0.6 ÷ 0.02)', value: '30' }
+        ],
+        result: '40 prey, 30 predators at equilibrium',
+        explanation:
+          'At exactly 40 prey and 30 predators, the prey’s growth (αx) is exactly balanced by predation losses (βxy), and the predators’ deaths (γy) are exactly balanced by growth from eating prey (δxy) — both populations hold steady at these two numbers, in this simplified model.'
+      },
+      watchOut: [
+        {
+          title: 'Only the equilibrium point — not a time-series simulation',
+          body: 'The full Lotka-Volterra model is a coupled differential-equation system; predicting the populations at any time other than this one equilibrium point requires numerically simulating the two equations together. This calculator deliberately does not attempt that simulation — it reports only the closed-form fixed point, x* = γ/δ and y* = α/β.'
+        },
+        {
+          title: 'This equilibrium is not a stable attractor',
+          body: 'In the classic Lotka-Volterra model, this fixed point is a center, not a stable equilibrium: starting exactly at x* and y* keeps both populations constant forever, but starting anywhere else sends both populations into a perpetual, closed cycle around that point — they never settle back down to it. Real predator-prey populations (famously, Canadian lynx and snowshoe hare) are often observed cycling for exactly this reason.'
+        },
+        {
+          title: 'All four rate constants need matching time units',
+          body: 'α, β, γ, and δ must all be expressed per the same time unit — all per day, or all per year — for the equilibrium to mean anything. Mixing units (α per year with γ per day, for instance) silently produces a meaningless result.'
+        },
+        {
+          title: 'A simplified model of real ecosystems',
+          body: 'The model assumes one predator species eating one prey species, with no other food sources, competitors, disease, or environmental limits (no carrying capacity for the prey, unlike Carrying Capacity Calculator’s logistic model). Real predator-prey systems are rarely this clean, and the model is best treated as an illustrative starting point, not a precise forecast.'
+        }
+      ],
+      references: [
+        {
+          label: 'Lotka, A.J. (1925), Elements of Physical Biology, and Volterra, V. (1926), "Variazioni e fluttuazioni del numero d\'individui in specie animali conviventi," Memorie della R. Accademia Nazionale dei Lincei (the two independent original sources of the predator-prey equations and their equilibrium)',
+          url: 'https://en.wikipedia.org/wiki/Lotka%E2%80%93Volterra_equations'
+        }
+      ]
+    },
+    inputs: [
+      { id: 'alpha', label: 'Prey growth rate (α)', type: 'number', placeholder: '0.6', defaultValue: 0.6, step: 0.01, min: 0.0001 },
+      { id: 'beta', label: 'Predation rate (β)', type: 'number', placeholder: '0.02', defaultValue: 0.02, step: 0.001, min: 0.0001 },
+      { id: 'gamma', label: 'Predator death rate (γ)', type: 'number', placeholder: '0.4', defaultValue: 0.4, step: 0.01, min: 0.0001 },
+      { id: 'delta', label: 'Predator efficiency (δ)', type: 'number', placeholder: '0.01', defaultValue: 0.01, step: 0.001, min: 0.0001 }
+    ],
+    breakdown: {
+      headline: 'preyEquilibrium',
+      headlineLabel: 'Equilibrium prey population (x*)',
+      outputs: [
+        { id: 'preyEquilibrium', label: 'Equilibrium prey (x* = γ ÷ δ)', format: 'significant' },
+        { id: 'predatorEquilibrium', label: 'Equilibrium predators (y* = α ÷ β)', format: 'significant' }
+      ],
+      groups: [{ title: 'Rate constants', inputs: ['alpha', 'beta', 'gamma', 'delta'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'preyEquilibrium', label: 'Prey (x*)' },
+          { from: 'predatorEquilibrium', label: 'Predators (y*)' }
+        ],
+        title: 'Equilibrium population sizes',
+        highlight: 0
+      }
+    },
+    seo: {
+      title: 'Lotka-Volterra Calculator – Predator-Prey Equilibrium',
+      description: 'Free Lotka-Volterra calculator. Compute the predator-prey model’s equilibrium populations, x* = γ/δ and y* = α/β, from its four rate constants.',
+      faq: [
+        {
+          question: 'What is the Lotka-Volterra equilibrium formula?',
+          answer:
+            'x* = γ ÷ δ for the equilibrium prey population and y* = α ÷ β for the equilibrium predator population, found by setting both of the model’s differential equations to zero. With α=0.6, β=0.02, γ=0.4, δ=0.01, that gives 40 prey and 30 predators.'
+        },
+        {
+          question: 'Does this calculator simulate the full predator-prey cycle over time?',
+          answer:
+            'No. The full Lotka-Volterra model is a coupled differential-equation system with no simple closed-form solution for population at an arbitrary time — that requires numerical simulation. This calculator reports only the one closed-form answer the model does have: the equilibrium point.'
+        },
+        {
+          question: 'Does reaching the equilibrium mean the populations stay there?',
+          answer:
+            'Only if they start exactly there. In the classic model, the equilibrium is a center, not a stable attractor — any other starting point sends both populations into a continuous cycle around it rather than settling down, which is part of why real predator-prey populations (like lynx and snowshoe hare) are often observed cycling.'
+        },
+        {
+          question: 'What do α, β, γ, and δ represent?',
+          answer:
+            'α is the prey’s growth rate with no predators; β is how much predation slows that growth; γ is the predators’ death rate with no prey; and δ is how efficiently predators convert eaten prey into their own population growth.'
+        },
+        {
+          question: 'Who first proposed the Lotka-Volterra model?',
+          answer:
+            'Alfred J. Lotka, in his 1925 book Elements of Physical Biology, and independently Vito Volterra in a 1926 paper — the same pair of equations, discovered separately.'
+        },
+        {
+          question: 'Why does the prey equilibrium depend on the predator’s own rates, and not the prey’s?',
+          answer:
+            'Because x* = γ/δ comes from setting the predator equation (dy/dt) to zero, which only involves γ and δ — the prey population size that keeps the predators exactly stable depends on the predators’ own death rate and efficiency, not on the prey’s own growth rate α.'
+        }
+      ]
+    },
+    compute(values) {
+      const preyEquilibrium = values.gamma / values.delta;
+      const predatorEquilibrium = values.alpha / values.beta;
+      return { preyEquilibrium, predatorEquilibrium };
+    }
   }
 ];

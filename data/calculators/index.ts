@@ -457,7 +457,8 @@ export const calculatorOrder: string[] = [
   'carrying-capacity-calculator',
   'shannon-diversity-index-calculator',
   'population-density-calculator',
-  'simpson-diversity-index-calculator'
+  'simpson-diversity-index-calculator',
+  'lotka-volterra-calculator'
 ];
 
 const rank = (id: string) => {

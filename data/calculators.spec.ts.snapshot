@@ -548,6 +548,41 @@ exports[`compute() snapshots > average-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > bacterial-growth-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "initialPopulation": 1000,
+      "elapsedTime": 3600,
+      "generationTime": 1200
+    },
+    "outputs": {
+      "finalPopulation": 8000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "initialPopulation": 1500,
+      "elapsedTime": 5400,
+      "generationTime": 1800
+    },
+    "outputs": {
+      "finalPopulation": 12000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "initialPopulation": 0,
+      "elapsedTime": 0,
+      "generationTime": 0
+    },
+    "outputs": {
+      "finalPopulation": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > bakers-percentage-calculator 1`] = `
 {
   "default": {
@@ -1724,6 +1759,41 @@ exports[`compute() snapshots > cd-calculator 1`] = `
     "outputs": {
       "maturityValue": 0,
       "totalInterest": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > cell-dilution-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "concentration1": 5000000,
+      "volume1": 0.000002,
+      "volume2": 0.00001
+    },
+    "outputs": {
+      "concentration2": 1000000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "concentration1": 7500000,
+      "volume1": 0.000003,
+      "volume2": 0.000015
+    },
+    "outputs": {
+      "concentration2": 1500000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "concentration1": 0,
+      "volume1": 0,
+      "volume2": 0
+    },
+    "outputs": {
+      "concentration2": "NaN"
     }
   }
 }
@@ -3682,6 +3752,38 @@ exports[`compute() snapshots > distance-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > dna-concentration-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "absorbance": 0.5,
+      "dilutionFactor": 20
+    },
+    "outputs": {
+      "concentration": 500
+    }
+  },
+  "typical": {
+    "inputs": {
+      "absorbance": 0.75,
+      "dilutionFactor": 30
+    },
+    "outputs": {
+      "concentration": 1125
+    }
+  },
+  "edge": {
+    "inputs": {
+      "absorbance": 0,
+      "dilutionFactor": 0
+    },
+    "outputs": {
+      "concentration": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > doppler-effect-calculator 1`] = `
 {
   "default": {
@@ -3715,6 +3817,35 @@ exports[`compute() snapshots > doppler-effect-calculator 1`] = `
     },
     "outputs": {
       "observedFrequency": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > doubling-time-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "growthRateConstant": 0.0005555555555555556
+    },
+    "outputs": {
+      "doublingTime": 1247.664925
+    }
+  },
+  "typical": {
+    "inputs": {
+      "growthRateConstant": 0.00083
+    },
+    "outputs": {
+      "doublingTime": 835.117085
+    }
+  },
+  "edge": {
+    "inputs": {
+      "growthRateConstant": 0
+    },
+    "outputs": {
+      "doublingTime": "Infinity"
     }
   }
 }
@@ -11140,6 +11271,44 @@ exports[`compute() snapshots > projectile-motion-calculator 1`] = `
       "range": 0,
       "maxHeight": 0,
       "timeOfFlight": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > protein-concentration-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "absorbance": 0.66,
+      "molarAbsorptivity": 4382.4,
+      "pathLength": 0.01,
+      "molarMass": 66.463
+    },
+    "outputs": {
+      "concentration": 1000.948795
+    }
+  },
+  "typical": {
+    "inputs": {
+      "absorbance": 0.99,
+      "molarAbsorptivity": 6573.6,
+      "pathLength": 0.015,
+      "molarMass": 99.694
+    },
+    "outputs": {
+      "concentration": 1000.943775
+    }
+  },
+  "edge": {
+    "inputs": {
+      "absorbance": 0,
+      "molarAbsorptivity": 0,
+      "pathLength": 0,
+      "molarMass": 0
+    },
+    "outputs": {
+      "concentration": "NaN"
     }
   }
 }

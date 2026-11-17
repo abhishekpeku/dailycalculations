@@ -331,7 +331,15 @@ used" discipline as Wave 3's NIST/IUPAC citations for lab-adjacent chemistry top
       - `biology` 5 → 10 on this branch (merged first; reconciled to 15 total against batch 2
         above).
       - No seed-list candidate skipped this batch — all 5 scoped items built as specified.
-- [ ] Batch 4 (population biology + genetics extensions, 5)
+- [ ] Batch 4 (population biology + genetics extensions, 5) — **IN PROGRESS**, branch
+      `step/48-wave-4-biology-run-4`.
+      - [ ] `population-growth-calculator`
+      - [ ] `generation-time-calculator` — **under review**: checking whether this duplicates a
+        solve direction `bacterial-growth-calculator`'s own 4-variable solver already exposes
+        (N0, N, t -> g) before building a separate page for it.
+      - [ ] `mutation-rate-calculator`
+      - [ ] `codon-to-amino-acid-calculator` (+ `lib/geneticCode.ts` + spec)
+      - [ ] 5th calculator (build agent's choice)
 - [ ] Batch 5 (plant/cell biology + biochemistry, 5)
 - [ ] Batch 6 (simple non-medical animal biology, 5)
 - [ ] Visual-QA spot-check (once this wave crosses ~420 calculators)

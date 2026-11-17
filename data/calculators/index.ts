@@ -19,6 +19,7 @@ import { statisticsCalculators } from './statistics.ts';
 import { foodCalculators } from './food.ts';
 import { sportsCalculators } from './sports.ts';
 import { chemistryCalculators } from './chemistry.ts';
+import { biologyCalculators } from './biology.ts';
 
 export type * from './types.ts';
 
@@ -40,7 +41,8 @@ export const categories: CalculatorCategory[] = [
   { id: 'statistics', title: 'Statistics', description: 'Mean, median, mode, standard deviation, variance, z-scores, and percentiles.' },
   { id: 'food', title: 'Food', description: 'Recipe scaling, baking ratios, cook times, and other recipe calculators.' },
   { id: 'sports', title: 'Sports', description: 'One-rep max, heart rate zones, VO2 max, race prediction, and swim pace calculators for athletes.' },
-  { id: 'chemistry', title: 'Chemistry', description: 'Molar mass, molarity, dilution, and other solution-chemistry calculators.' }
+  { id: 'chemistry', title: 'Chemistry', description: 'Molar mass, molarity, dilution, and other solution-chemistry calculators.' },
+  { id: 'biology', title: 'Biology', description: 'Cell dilution, genetics, and molecular-biology lab calculators.' }
 ];
 
 // Display order for listings, the sitemap and search; the old single array's order, kept exactly.
@@ -416,7 +418,12 @@ export const calculatorOrder: string[] = [
   'weak-base-ionization-calculator',
   'buffer-ph-after-addition-calculator',
   'lattice-energy-calculator',
-  'ionic-strength-calculator'
+  'ionic-strength-calculator',
+  'cell-dilution-calculator',
+  'bacterial-growth-calculator',
+  'doubling-time-calculator',
+  'dna-concentration-calculator',
+  'protein-concentration-calculator'
 ];
 
 const rank = (id: string) => {
@@ -442,7 +449,8 @@ export const calculators: CalculatorConfig[] = [
   ...statisticsCalculators,
   ...foodCalculators,
   ...sportsCalculators,
-  ...chemistryCalculators
+  ...chemistryCalculators,
+  ...biologyCalculators
 ].sort((a, b) => rank(a.id) - rank(b.id));
 
 export function findCalculator(slug: string) {

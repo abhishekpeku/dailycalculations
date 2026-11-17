@@ -130,7 +130,11 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'terminal-velocity-calculator': ['velocity'], // fluidDensity, area and dragCoefficient all 0 (their min) -> 0/0 guard
   'electric-potential-calculator': ['voltage'], // radius 0 (its min) -> explicit guard, potential undefined at zero distance
   'electromagnetic-induction-calculator': ['emf'], // time 0 (its min) -> compute()'s own guard, no rate of change over zero time
-  'bernoullis-equation-calculator': ['speed2'] // density 0 (its min) -> compute()'s own guard, division by zero density
+  'bernoullis-equation-calculator': ['speed2'], // density 0 (its min) -> compute()'s own guard, division by zero density
+  'cell-dilution-calculator': ['concentration2'], // all inputs 0 -> 0/0
+  'bacterial-growth-calculator': ['finalPopulation'], // elapsed time 0 and generation time 0 -> 2^(0/0), NaN
+  'doubling-time-calculator': ['doublingTime'], // growth rate constant 0 (its min) -> divide by zero
+  'protein-concentration-calculator': ['concentration'] // all inputs 0 -> 0/0
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

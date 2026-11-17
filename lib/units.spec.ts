@@ -40,7 +40,7 @@ describe('unit tables', () => {
 
   test('covers the dimensions the v2 rollout needs', () => {
     assert.deepEqual([...dimensions].sort(), [
-      'absorbance', 'acceleration', 'amountOfSubstance', 'angle', 'angularMomentum', 'angularVelocity', 'area', 'capacitance', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
+      'absorbance', 'acceleration', 'amountOfSubstance', 'angle', 'angularMomentum', 'angularVelocity', 'area', 'capacitance', 'cellDensity', 'charge', 'concentration', 'count', 'currency', 'current', 'data',
       'decibel', 'density', 'electricField', 'energy', 'evEfficiency', 'force', 'frequency', 'fuelEconomy', 'fuelPrice', 'inductance', 'length', 'magneticFlux', 'magneticFluxDensity', 'mass', 'massConcentration', 'molalConstant', 'molality', 'molarAbsorptivity', 'molarEnergy', 'molarEntropy', 'molarHeatCapacity', 'molarMass', 'momentOfInertia', 'momentum',
       'normality', 'osmolarity', 'pH', 'pace', 'percent', 'power', 'pressure', 'rateConstant', 'resistance', 'specificHeat', 'specificLatentHeat', 'speed', 'springConstant', 'temperature', 'temperatureDelta', 'term', 'thermalExpansionCoeff', 'time',
       'torque', 'voltage', 'volume'
@@ -432,6 +432,25 @@ describe('anchor values', () => {
     close(toBase(1, 'massConcentration', 'g/L'), 1000);
     close(convert(1, 'massConcentration', 'ppb', 'ug/L'), 1);
     close(convert(1000, 'massConcentration', 'ppb', 'ppm'), 1);
+    // ng/µL, µg/mL and mg/L are all numerically identical (dna-concentration-calculator,
+    // protein-concentration-calculator); mg/mL = 1 g/L exactly.
+    close(toBase(1, 'massConcentration', 'ng/uL'), 1);
+    close(toBase(1, 'massConcentration', 'ug/mL'), 1);
+    close(toBase(1, 'massConcentration', 'mg/mL'), 1000);
+    close(convert(50, 'massConcentration', 'ng/uL', 'mg/L'), 50);
+  });
+  test('cell density: 1 ×10⁶ cells/mL = 1,000,000 cells/mL, 1 cell/µL = 1000 cells/mL, CFU/mL shares the base factor', () => {
+    assert.equal(UNITS.cellDensity[0].id, 'cells/mL');
+    close(toBase(1, 'cellDensity', 'Mcells/mL'), 1e6);
+    close(toBase(1, 'cellDensity', 'cells/uL'), 1000);
+    close(toBase(1, 'cellDensity', 'CFU/mL'), 1);
+    close(toBase(1, 'cellDensity', 'cells/L'), 0.001);
+    // C1V1 = C2V2 for a cell suspension: diluting 2 mL of a 5x10^6 cells/mL stock to 10 mL gives
+    // 1x10^6 cells/mL, with the volume ratio alone (no stray factor) since both volumes share a unit.
+    close(
+      (toBase(5, 'cellDensity', 'Mcells/mL') * toBase(2, 'volume', 'mL')) / toBase(10, 'volume', 'mL'),
+      toBase(1, 'cellDensity', 'Mcells/mL')
+    );
   });
 });
 

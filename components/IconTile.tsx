@@ -10,7 +10,9 @@ export const TILE_COLORS = {
   teal: ['#5AC8E0', '#1E9BB8'],
   indigo: ['#7D7AFF', '#4B48E0'],
   pink: ['#FF6B8B', '#E0335A'],
-  gray: ['#A1A1A6', '#6E6E73']
+  gray: ['#A1A1A6', '#6E6E73'],
+  // Biology (step 48): a yellow-green distinct from finance/sports' pure `green` above.
+  lime: ['#A3E635', '#65A30D']
 } as const;
 
 export type TileColor = keyof typeof TILE_COLORS;
@@ -43,7 +45,10 @@ const ICONS = {
   // A trophy cup: the sports category (strength, heart rate, pace and race calculators).
   trophy: 'M7 3h10v4a5 5 0 0 1-10 0V3zM7 5H4.5a2.5 2.5 0 0 0 2.5 3M17 5h2.5a2.5 2.5 0 0 1-2.5 3M12 12v3M9 20h6M9.5 20v-1a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1',
   // An Erlenmeyer flask with a liquid line: the chemistry category (molarity, dilution, molar mass).
-  flask: 'M9 3h6M9 3v5.5L4.8 17a2.5 2.5 0 0 0 2.2 3.7h10a2.5 2.5 0 0 0 2.2-3.7L15 8.5V3M6 15h12'
+  flask: 'M9 3h6M9 3v5.5L4.8 17a2.5 2.5 0 0 0 2.2 3.7h10a2.5 2.5 0 0 0 2.2-3.7L15 8.5V3M6 15h12',
+  // A DNA double helix (two crossing strands plus base-pair rungs): the biology category (cell
+  // dilution, genetics, molecular-biology lab calculators).
+  dna: 'M7 2c0 3 10 3 10 6s-10 3-10 6 10 3 10 6M7.5 5h9M7.5 11h9M7.5 17h9'
 } as const;
 
 export type IconName = keyof typeof ICONS;

@@ -178,7 +178,52 @@ used" discipline as Wave 3's NIST/IUPAC citations for lab-adjacent chemistry top
 ## Progress
 
 - [x] Step file written
-- [ ] Batch 1 (open category + core bio-lab, 5)
+- [x] Batch 1 (open category + core bio-lab, 5) — **DONE 2026-11-17**, branch
+      `step/48-wave-4-biology-run-1`, PR #115 (draft, ready for review once pushed). Opened the
+      `biology` category: `data/calculators/biology.ts` (new file), registered in
+      `data/calculators/index.ts` (`categories`, `calculatorOrder`, the spread list), `lime`/`dna`
+      theme pair in `lib/categoryTheme.ts` + `components/IconTile.tsx`. New `lib/units.ts`
+      dimension `cellDensity` (cells/mL, CFU/mL, cells/µL, cells/L — cell-suspension density,
+      distinct from `concentration`'s molarity) plus three new `massConcentration` labels
+      (`ng/µL`, `µg/mL`, `mg/mL` — numerically identical to the existing `mg/L` base, so no stray
+      conversion factor), both with round-trip + anchor tests in `lib/units.spec.ts`.
+      - `cell-dilution-calculator`: C₁V₁ = C₂V₂ for a cell/CFU suspension (`cellDensity`
+        dimension). Cross-linked to and explicitly distinguished from chemistry's
+        `dilution-calculator`/`serial-dilution-calculator` (same algebra, cells/CFU counted
+        instead of moles) per the Dedupe section. Worked example: 2 mL of a 5×10⁶ cells/mL stock
+        diluted to 10 mL gives 1×10⁶ cells/mL (5× dilution, 1×10⁷ cells transferred).
+      - `bacterial-growth-calculator`: N = N₀ × 2^(t ÷ g), binary fission. Cites OpenStax
+        Microbiology §9.1 directly (fetched) for the Nₙ = N₀2ⁿ definition and its E. coli (20 min),
+        M. tuberculosis (15–20 h), M. leprae (14 d) generation-time examples. Worked example:
+        1,000 cells, 20-min generation time, 60 min elapsed → 8,000 cells (3 generations).
+      - `doubling-time-calculator`: t_d = ln2 ÷ µ from a measured growth rate constant — the
+        inverse/different question from `bacterial-growth-calculator` (that page starts from a
+        known generation time and predicts a population; this one starts from a growth curve's
+        fitted µ and predicts doubling time). Worked example: µ = 2.0 h⁻¹ → t_d ≈ 20.79 min.
+      - `dna-concentration-calculator`: ng/µL = A260 × dilution factor × 50 (the dsDNA mass
+        extinction constant). Cited Desjardins & Conklin (2010), J Vis Exp, "NanoDrop Microvolume
+        Quantitation of Nucleic Acids" (PMC3346308, fetched directly) for the 50/33/40
+        dsDNA/ssDNA/RNA constants. Cross-linked to `beer-lambert-law-calculator`. Worked example:
+        A260 = 0.5, dilution factor 20 → 500 ng/µL.
+      - `protein-concentration-calculator`: A280 Beer-Lambert method — c (mg/mL) =
+        (MW × A) ÷ (ε₂₈₀ × l), reusing the existing `molarAbsorptivity`/`molarMass`/`length`/
+        `massConcentration` dimensions rather than adding a new one. Distinguished from DNA's A260
+        method (no universal constant; ε₂₈₀ depends on each protein's Trp/Tyr/cystine content —
+        cited Pace et al. 1995's prediction formula, flagged below as a search-snippet fallback).
+        Worked example: BSA (MW 66,463 g/mol, ε₂₈₀ 43,824 L/(mol·cm), both fetched directly from
+        Wikipedia + AAT Bioquest), A280 = 0.660 → ≈1.00 mg/mL.
+      - **Citation note:** every formula above was fetched directly except Pace et al. (1995)'s
+        ε₂₈₀ prediction formula — a direct PDF fetch of two different hosted copies both returned
+        corrupted/unreadable text, so that one formula is confirmed via a search-engine-indexed
+        snippet of the paper instead (flagged in the page's own references), the same transparency
+        precedent the chemistry wave used for a few 403'd Gold Book pages.
+      - Every worked-example number re-verified in a standalone Node scratch script (no app
+        imports) before committing; script output matched the copy exactly.
+      - `npm test` 1459/1459 (snapshot additions are additive-only), lint clean, `npm run build`
+        408 pages (376 calculators incl. biology's 5, 19 categories), exit code 0.
+      - `biology` 0 → 5, site-wide 371 → 376.
+      - No seed-list candidate skipped this batch — all 5 scoped items built as specified.
+- [ ] Batch 2 (genetics, 5)
 - [ ] Batch 2 (genetics, 5)
 - [ ] Batch 3 (molecular biology lab techniques, 5)
 - [ ] Batch 4 (population biology + genetics extensions, 5)

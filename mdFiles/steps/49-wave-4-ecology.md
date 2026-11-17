@@ -247,7 +247,13 @@ discipline as every prior wave — ship fewer than 5 rather than pad, if good ca
       (snapshots added for the 5 new ids, additive-only diff), lint clean, `npm run build` 442
       routes. `ecology` is now 10/~25 from this branch's own point of view; reconciled with batch 2
       above — final combined count after both: `ecology` 15, site-wide 414.
-- [ ] Batch 4 (environmental health + remaining population ecology, 5)
+- [ ] Batch 4 (environmental health + remaining population ecology, 5) — **IN PROGRESS**, branch
+      `step/49-wave-4-ecology-run-4`.
+      - [ ] `air-quality-index-calculator`
+      - [ ] `co2-breathing-emission-calculator`
+      - [ ] `mark-recapture-population-estimate-calculator`
+      - [ ] `noise-exposure-calculator`
+      - [ ] `trophic-level-energy-calculator`
 - [ ] Batch 5 (round out to ~25, 5)
 - [ ] Visual-QA spot-check (once the site crosses ~420 calculators) — site is at 414 after batches
       1-3, so this is likely due during batch 4 or 5.

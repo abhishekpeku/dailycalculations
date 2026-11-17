@@ -961,6 +961,24 @@ view — batch 2 (population/biodiversity) is running in parallel on another bra
 reconciling at merge time, same as biology batches 2/3 and 4/5 were. Batches 4 (environmental
 health) and 5 (round-out) remain TODO. Full writeup: `mdFiles/steps/49-wave-4-ecology.md`.
 
+**2026-11-17 — Step 61 batch 6, `time` (branch `step/61-deepen-time`, PR #127, merged)**: added
+`business-days-calculator` (inclusive weekday count between two dates minus an optional holiday
+count, explicitly distinct from `date-difference-calculator`'s exclusive calendar-day gap),
+`day-of-week-calculator` (Zeller's congruence, fetched from Wikipedia including its own Jan 1, 2000
+worked example, cross-checked against native `Date` for 1,255 dates with 0 mismatches; also reports
+the ISO 8601 weekday number), `leap-year-calculator` (Gregorian ÷4/÷100/÷400 rule plus an
+inclusion-exclusion leap-year count over a range, cross-checked against a brute-force loop across 6
+ranges), `unix-timestamp-converter` (epoch seconds ↔ UTC date/time both directions, citing POSIX
+§4.16's "seconds since the Epoch" definition and its "every day is exactly 86400 seconds" leap-second
+note), and `timesheet-calculator` (weekly day-by-day hours rolled up with an overtime threshold,
+explicitly distinct in content from both `work-hours-calculator` and the newer
+`overtime-pay-calculator`, whose own FAQ already anticipated this page). All five are plain
+date/count/currency values — no new `lib/units.ts` dimension needed, and no `KNOWN_NON_FINITE`
+entries needed (checked each one's edge-case snapshot; none have a division-by-input path). Business
+days worked example uses MLK Day 2026 (third Monday in January, confirmed via OPM's federal holidays
+page) as the holiday. `npm test` 1,552/1,552 (snapshot diff purely additive), lint clean, `npm run
+build` 452 static pages. `time` now **10 calculators**, **419 total** on the site.
+
 **2026-11-17 — Step 61 batch 7, `creator` (branch `step/61-deepen-creator`, PR #126)**: added
 `tiktok-earnings-calculator`, `twitch-earnings-calculator`, `podcast-ad-revenue-calculator`,
 `blog-ad-revenue-calculator`, `patreon-earnings-calculator`, `affiliate-commission-calculator`,
@@ -989,8 +1007,11 @@ No `KNOWN_NON_FINITE` entries needed — divisor fields (`startFollowers`, `peri
 were given non-zero `min` values that avoid the test harness's 0/0 edge case by construction,
 rather than adding guard entries after the fact. Every number re-verified in a standalone Node
 scratch script before committing. `npm test` 1569/1569, lint clean, `npm run build` green with
-all 10 `creator` pages present. `creator` is now 10/10. Batches 8-9 (`text`, `education`) remain
-TODO; batch 6 (`time`) is tracked by its own parallel agent.
+all 10 `creator` pages present. `creator` is now 10/10. Ran concurrently with batch 6 (`time`,
+above) in a separate worktree, different category file — resolved as a pure docs-only conflict
+(both appended to this same session log) at merge time, no code conflict. **Batches 6+7 both
+closed out their categories: `time` and `creator` both 10/10.** Batches 8-9 (`text`, `education`)
+remain TODO.
 
 ## Pending on the user — not code
 

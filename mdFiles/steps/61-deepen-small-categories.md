@@ -220,8 +220,15 @@ whole site before writing any id.
   - [x] `travel-points-value-calculator`
   - [x] `points-vs-cash-flight-calculator`
   - [x] `tipping-abroad-calculator`
-- [ ] Batch 6 — `time` (5 new)
-- [x] Batch 7 — `creator` (8 new; done 2026-11-17, branch `step/61-deepen-creator`, PR #126)
+- [x] Batch 6 — `time` (5 new; done 2026-11-17, branch `step/61-deepen-time`, PR #127)
+  - [x] `business-days-calculator`
+  - [x] `day-of-week-calculator`
+  - [x] `leap-year-calculator`
+  - [x] `unix-timestamp-converter`
+  - [x] `timesheet-calculator`
+- [x] Batch 7 — `creator` (8 new; done 2026-11-17, branch `step/61-deepen-creator`, PR #126 —
+      ran concurrently with batch 6 in a separate worktree, different category file, no code
+      conflict)
   - [x] `tiktok-earnings-calculator`
   - [x] `twitch-earnings-calculator`
   - [x] `podcast-ad-revenue-calculator`

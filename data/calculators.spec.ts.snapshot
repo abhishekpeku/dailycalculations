@@ -1609,6 +1609,62 @@ exports[`compute() snapshots > buoyancy-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > business-days-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "startYear": 2026,
+      "startMonth": 1,
+      "startDay": 5,
+      "endYear": 2026,
+      "endMonth": 1,
+      "endDay": 30,
+      "holidaysToExclude": 1
+    },
+    "outputs": {
+      "businessDays": 19,
+      "weekendDays": 6,
+      "holidaysExcluded": 1,
+      "totalDaysInclusive": 26
+    }
+  },
+  "typical": {
+    "inputs": {
+      "startYear": 2027,
+      "startMonth": 2,
+      "startDay": 14,
+      "endYear": 2027,
+      "endMonth": 2,
+      "endDay": 28,
+      "holidaysToExclude": 2
+    },
+    "outputs": {
+      "businessDays": 8,
+      "weekendDays": 5,
+      "holidaysExcluded": 2,
+      "totalDaysInclusive": 15
+    }
+  },
+  "edge": {
+    "inputs": {
+      "startYear": 1900,
+      "startMonth": 1,
+      "startDay": 1,
+      "endYear": 1900,
+      "endMonth": 1,
+      "endDay": 1,
+      "holidaysToExclude": 0
+    },
+    "outputs": {
+      "businessDays": 1,
+      "weekendDays": 0,
+      "holidaysExcluded": 0,
+      "totalDaysInclusive": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > business-loan-calculator 1`] = `
 {
   "default": {
@@ -3834,6 +3890,47 @@ exports[`compute() snapshots > date-difference-calculator 1`] = `
       "days": 0,
       "weeks": 0,
       "months": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > day-of-week-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "dateYear": 2000,
+      "dateMonth": 1,
+      "dateDay": 1
+    },
+    "outputs": {
+      "dayOfWeekCode": 6,
+      "isoWeekday": 6,
+      "isWeekend": 1
+    }
+  },
+  "typical": {
+    "inputs": {
+      "dateYear": 2001,
+      "dateMonth": 2,
+      "dateDay": 10
+    },
+    "outputs": {
+      "dayOfWeekCode": 6,
+      "isoWeekday": 6,
+      "isWeekend": 1
+    }
+  },
+  "edge": {
+    "inputs": {
+      "dateYear": 1,
+      "dateMonth": 1,
+      "dateDay": 1
+    },
+    "outputs": {
+      "dayOfWeekCode": 1,
+      "isoWeekday": 1,
+      "isWeekend": 0
     }
   }
 }
@@ -8321,6 +8418,53 @@ exports[`compute() snapshots > lcm-calculator 1`] = `
     "outputs": {
       "lcm": "NaN",
       "numbersUsed": 2
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > leap-year-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "checkYear": 1900,
+      "rangeStartYear": 1900,
+      "rangeEndYear": 2024
+    },
+    "outputs": {
+      "isLeapYear": 0,
+      "leapYearCount": 31,
+      "commonYearCount": 94,
+      "totalYearsInRange": 125,
+      "leapYearSharePercent": 24.8
+    }
+  },
+  "typical": {
+    "inputs": {
+      "checkYear": 1901,
+      "rangeStartYear": 1901,
+      "rangeEndYear": 2025
+    },
+    "outputs": {
+      "isLeapYear": 0,
+      "leapYearCount": 31,
+      "commonYearCount": 94,
+      "totalYearsInRange": 125,
+      "leapYearSharePercent": 24.8
+    }
+  },
+  "edge": {
+    "inputs": {
+      "checkYear": 1,
+      "rangeStartYear": 1,
+      "rangeEndYear": 1
+    },
+    "outputs": {
+      "isLeapYear": 0,
+      "leapYearCount": 0,
+      "commonYearCount": 1,
+      "totalYearsInRange": 1,
+      "leapYearSharePercent": 0
     }
   }
 }
@@ -16264,6 +16408,77 @@ exports[`compute() snapshots > time-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > timesheet-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "monHours": 9,
+      "tueHours": 9,
+      "wedHours": 9,
+      "thuHours": 9,
+      "friHours": 9,
+      "satHours": 2,
+      "sunHours": 0,
+      "hourlyRate": 20,
+      "overtimeThreshold": 40,
+      "overtimeMultiplier": 1.5
+    },
+    "outputs": {
+      "totalHours": 47,
+      "regularHours": 40,
+      "overtimeHours": 7,
+      "regularPay": 800,
+      "overtimePay": 210,
+      "grossPay": 1010
+    }
+  },
+  "typical": {
+    "inputs": {
+      "monHours": 13.5,
+      "tueHours": 13.5,
+      "wedHours": 13.5,
+      "thuHours": 13.5,
+      "friHours": 13.5,
+      "satHours": 3,
+      "sunHours": 0,
+      "hourlyRate": 30,
+      "overtimeThreshold": 60,
+      "overtimeMultiplier": 2.25
+    },
+    "outputs": {
+      "totalHours": 70.5,
+      "regularHours": 60,
+      "overtimeHours": 10.5,
+      "regularPay": 1800,
+      "overtimePay": 708.75,
+      "grossPay": 2508.75
+    }
+  },
+  "edge": {
+    "inputs": {
+      "monHours": 0,
+      "tueHours": 0,
+      "wedHours": 0,
+      "thuHours": 0,
+      "friHours": 0,
+      "satHours": 0,
+      "sunHours": 0,
+      "hourlyRate": 0,
+      "overtimeThreshold": 0,
+      "overtimeMultiplier": 1
+    },
+    "outputs": {
+      "totalHours": 0,
+      "regularHours": 0,
+      "overtimeHours": 0,
+      "regularPay": 0,
+      "overtimePay": 0,
+      "grossPay": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > tip-calculator 1`] = `
 {
   "default": {
@@ -17055,6 +17270,74 @@ exports[`compute() snapshots > unit-price-calculator 1`] = `
     },
     "outputs": {
       "unitPrice": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > unix-timestamp-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "direction": 0,
+      "epochSeconds": 1000000000,
+      "dateYear": 2026,
+      "dateMonth": 7,
+      "dateDay": 4,
+      "dateHour": 12,
+      "dateMinute": 0,
+      "dateSecond": 0
+    },
+    "outputs": {
+      "epochSecondsResult": 1000000000,
+      "year": 2001,
+      "month": 9,
+      "day": 9,
+      "hour": 1,
+      "minute": 46,
+      "second": 40
+    }
+  },
+  "typical": {
+    "inputs": {
+      "direction": 0,
+      "epochSeconds": 1500000000,
+      "dateYear": 2027,
+      "dateMonth": 8,
+      "dateDay": 13,
+      "dateHour": 15,
+      "dateMinute": 15,
+      "dateSecond": 0
+    },
+    "outputs": {
+      "epochSecondsResult": 1500000000,
+      "year": 2017,
+      "month": 7,
+      "day": 14,
+      "hour": 2,
+      "minute": 40,
+      "second": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "direction": 0,
+      "epochSeconds": 0,
+      "dateYear": 1900,
+      "dateMonth": 1,
+      "dateDay": 1,
+      "dateHour": 0,
+      "dateMinute": 0,
+      "dateSecond": 0
+    },
+    "outputs": {
+      "epochSecondsResult": 0,
+      "year": 1970,
+      "month": 1,
+      "day": 1,
+      "hour": 0,
+      "minute": 0,
+      "second": 0
     }
   }
 }

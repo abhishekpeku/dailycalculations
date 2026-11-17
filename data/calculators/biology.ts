@@ -1,8 +1,43 @@
 import type { CalculatorConfig } from './types.ts';
+import { LAB_REAGENTS } from '../../lib/labReagents.ts';
+import { AMINO_ACIDS, proteinMolecularWeight } from '../../lib/aminoAcids.ts';
 
 // Standard gravity (BIPM SI Brochure), used by centrifuge-rcf-rpm-calculator's RCF = omega^2 r / g0 —
 // same value and source as physics.ts's own STANDARD_GRAVITY constant.
 const STANDARD_GRAVITY = 9.80665;
+
+// --- Step 48 batch 5 (plant/cell biology + biochemistry) constants — self-contained block, added
+// after batches 1-3; may need hand-splicing against a parallel batch 4 PR's own top-of-file
+// additions at merge time. ---
+
+// inheritance-probability-calculator: which allele causes the condition — reuses the same
+// dominant-allele-count genotype encoding as GENOTYPE_OPTIONS above, just relabeled for a health/
+// family-planning framing (carrier risk) instead of punnett-square-calculator's teaching framing.
+const INHERITANCE_PATTERN_OPTIONS = [
+  { value: 0, label: 'Autosomal recessive (needs two copies — e.g. cystic fibrosis)' },
+  { value: 1, label: 'Autosomal dominant (one copy is enough — e.g. Huntington’s disease)' }
+];
+
+// surface-area-to-volume-ratio-calculator: which geometric model to apply to the entered size.
+const CELL_SHAPE_OPTIONS = [
+  { value: 0, label: 'Sphere (radius)' },
+  { value: 1, label: 'Cube (side length)' }
+];
+
+// protein-molecular-weight-calculator: one numeric input per standard amino acid, built from the
+// shared lib/aminoAcids.ts table so the input list and the compute() lookup can never drift apart.
+// Defaults reproduce the page's own worked example, met-enkephalin (Tyr-Gly-Gly-Phe-Met): 1 Tyr,
+// 2 Gly, 1 Phe, 1 Met, zero everywhere else.
+const MET_ENKEPHALIN_COUNTS: Record<string, number> = { tyr: 1, gly: 2, phe: 1, met: 1 };
+const AMINO_ACID_INPUTS = AMINO_ACIDS.map((aa) => ({
+  id: aa.id,
+  label: `${aa.name} (${aa.code1}) residues`,
+  type: 'number' as const,
+  placeholder: '0',
+  defaultValue: MET_ENKEPHALIN_COUNTS[aa.id] ?? 0,
+  step: 1,
+  min: 0
+}));
 
 // Genotype for a single gene, encoded as how many dominant alleles (0, 1 or 2) that parent carries:
 // AA = 2, Aa = 1, aa = 0 — the input punnett-square-calculator and dihybrid-cross-calculator both
@@ -1715,6 +1750,529 @@ export const biologyCalculators: CalculatorConfig[] = [
     },
     compute(values) {
       return { logReduction: Math.log10(values.initialCount / values.finalCount) };
+    }
+  },
+  {
+    id: 'water-potential-calculator',
+    category: 'biology',
+    glyph: 'Ψ',
+    updatedAt: '2026-11-17',
+    aliases: ['water potential calculator', 'plant water potential calculator', 'pressure potential and solute potential calculator', 'psi = psi p + psi s calculator', 'turgor and osmotic potential calculator', 'water potential formula calculator'],
+    related: ['osmolarity-calculator', 'vant-hoff-osmotic-pressure-calculator', 'cell-dilution-calculator', 'pressure-calculator'],
+    title: 'Water Potential Calculator (Ψ = Ψp + Ψs)',
+    description: 'Find a plant cell’s total water potential from its pressure potential and solute potential — Ψ = Ψp + Ψs — solved for any of the three, in MPa, bar, or kPa.',
+    example: 'A plant cell with a pressure (turgor) potential of 0.7 MPa and a solute (osmotic) potential of −0.8 MPa has a total water potential of −0.1 MPa.',
+    solver: {
+      defaultTarget: 'total',
+      variables: [
+        { id: 'total', label: 'Total water potential', symbol: 'Ψ', dimension: 'pressure', defaultValue: -0.1, defaultUnit: 'MPa' },
+        { id: 'pressurePotential', label: 'Pressure (turgor) potential', symbol: 'Ψp', dimension: 'pressure', defaultValue: 0.7, defaultUnit: 'MPa' },
+        { id: 'solutePotential', label: 'Solute (osmotic) potential', symbol: 'Ψs', dimension: 'pressure', defaultValue: -0.8, defaultUnit: 'MPa' }
+      ],
+      solve: {
+        total: ({ pressurePotential, solutePotential }) => pressurePotential + solutePotential,
+        pressurePotential: ({ total, solutePotential }) => total - solutePotential,
+        solutePotential: ({ total, pressurePotential }) => total - pressurePotential
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is water potential?',
+        paragraphs: [
+          'Water potential, OpenStax’s Biology 2e explains, "is a measure of the potential energy in water" — specifically, "the difference in potential energy between a given water sample and pure water," given the symbol Ψ (psi) and measured in megapascals (MPa). By convention, pure free water at atmospheric pressure is assigned a water potential of exactly zero, so every other value describes how much more, or less, that water "wants" to move relative to pure water. Water always moves from a region of higher (less negative) water potential to one of lower (more negative) water potential, which is what drives water into roots, up a stem, and into or out of individual plant cells.',
+          'OpenStax’s full equation adds up four components: Ψ = Ψs + Ψp + Ψg + Ψm — solute potential, pressure potential, gravity potential, and matric potential. At the scale of a single plant cell, or a short plant, two of those four drop out: OpenStax states that gravity potential "is always negative to zero in a plant with no height" and "on a cellular scale and in short plants, this effect is negligible and easily ignored," while matric potential (the pull water-absorbing surfaces like cell walls and soil particles exert) "is typically ignored in well-watered roots, stems, and leaves." That leaves the two-term version this calculator solves: Ψ = Ψp + Ψs.',
+          'Solute potential (Ψs), OpenStax notes, "also called osmotic potential, is related to the solute concentration" — dissolving anything in water lowers its potential energy, so Ψs "is negative in a plant cell and zero in distilled water," with "typical values for cell cytoplasm" around −0.5 to −1.0 MPa. Pressure potential (Ψp), "also called turgor potential, may be positive or negative": the physical push of the cell’s contents against its rigid wall, "typically around 0.6–0.8 MPa, but can reach as high as 1.5 MPa in a well-watered plant." A healthy, turgid cell has a positive Ψp that partly offsets its negative Ψs, exactly the balance this calculator adds together.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of the total water potential, the pressure potential, and the solute potential; the third fills in automatically.',
+        steps: [
+          { name: 'Find or estimate the solute potential (Ψs)', text: 'A more concentrated cell interior has a more negative Ψs — OpenStax cites typical cytoplasm values around −0.5 to −1.0 MPa.' },
+          { name: 'Find or estimate the pressure potential (Ψp)', text: 'The turgor pressure pushing outward against the cell wall — typically 0.6 to 0.8 MPa in a well-watered cell, and zero in a flaccid or plasmolyzed one.' },
+          { name: 'Enter the two values you know', text: 'Type each value and pick its unit — MPa, bar, or kPa all work.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' },
+          { name: 'Read the result', text: 'The total water potential appears immediately — negative values are normal and expected for a plant cell.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Ψ = Ψp + Ψs rearranges to solve for either component as well.',
+        expression: 'Ψ = Ψp + Ψs\nΨp = Ψ − Ψs\nΨs = Ψ − Ψp',
+        terms: [
+          { symbol: 'Ψ', meaning: 'Total water potential — the overall tendency of water to move into or out of a cell, relative to pure water (Ψ = 0).' },
+          { symbol: 'Ψp', meaning: 'Pressure (turgor) potential — the physical pressure of the cell’s contents against its wall. Positive in a turgid cell, zero in a flaccid one.' },
+          { symbol: 'Ψs', meaning: 'Solute (osmotic) potential — always zero or negative, more negative the more concentrated the solution.' }
+        ],
+        note: 'This drops OpenStax’s gravity potential (Ψg) and matric potential (Ψm) terms, which OpenStax itself describes as negligible at the cellular scale and in well-watered tissue — see "Things to watch out for" below for when that stops being a safe simplification. Water potential is conventionally reported in pressure units (MPa, bar, kPa), so this calculator reuses the site’s pressure unit menu even though, unlike a gas or fluid’s own pressure, water potential is commonly negative.'
+      },
+      workedExample: {
+        intro: 'A well-watered plant cell has a pressure potential of 0.7 MPa and a solute potential of −0.8 MPa, both within OpenStax’s own cited typical ranges. What is its total water potential?',
+        rows: [
+          { label: 'Pressure potential (Ψp)', value: '0.7 MPa' },
+          { label: 'Solute potential (Ψs)', value: '−0.8 MPa' },
+          { label: 'Total water potential (Ψ = 0.7 + (−0.8))', value: '−0.1 MPa' }
+        ],
+        result: 'Ψ = −0.1 MPa',
+        explanation: 'Adding the positive pressure potential to the more negative solute potential gives a small negative total, −0.1 MPa — still less than pure water’s zero, so this cell would gain water (and Ψp would rise) if placed next to purer water, but it would lose water to any neighboring compartment with a more negative water potential still.'
+      },
+      watchOut: [
+        { title: 'Dropping gravity and matric potential only holds at a small scale', body: 'OpenStax’s own figures show why: gravity potential over the height of a tall tree is "equivalent to an extra 10 MPa" compared with being negligible in a short plant or single cell, and matric potential "can be as low as −2 MPa in a dry seed" even though it is ignored in well-watered tissue. Whole-plant or dry-soil/seed calculations need the full four-term equation.' },
+        { title: 'Water potential is not the same as osmotic pressure', body: 'Solute potential (Ψs) and the van’t Hoff osmotic pressure calculator’s Π describe the same underlying physics — in fact Ψs = −Π for the same solution — but osmotic pressure is reported as a positive magnitude in general chemistry, while solute potential keeps its negative sign here. See vant-hoff-osmotic-pressure-calculator and osmolarity-calculator for the chemistry-lab framing of the same particle-concentration effect.' },
+        { title: 'Sign conventions are easy to get backwards', body: 'More negative always means a stronger pull on water, not a weaker one. A cell with Ψ = −1.2 MPa draws water more strongly than one at −0.3 MPa, the opposite of what the plain numbers might suggest at a glance.' },
+        { title: 'Pure water is the zero reference, not the only zero', body: 'A fully flaccid cell (no turgor) can still have a nonzero total water potential — Ψp = 0 simply removes the pressure term, leaving Ψ = Ψs, which is usually still negative.' }
+      ],
+      references: [
+        { label: 'OpenStax, Biology 2e, §30.5 "Transport of Water and Solutes in Plants"', url: 'https://openstax.org/books/biology-2e/pages/30-5-transport-of-water-and-solutes-in-plants' }
+      ]
+    },
+    inputs: [
+      { id: 'pressurePotential', label: 'Pressure potential (Pa)', type: 'number', placeholder: '700000', defaultValue: 700000, step: 1000, min: -10000000 },
+      { id: 'solutePotential', label: 'Solute potential (Pa)', type: 'number', placeholder: '-800000', defaultValue: -800000, step: 1000, min: -10000000 }
+    ],
+    seo: {
+      title: 'Water Potential Calculator (Ψ = Ψp + Ψs)',
+      description: 'Free water potential calculator for plant physiology. Solve Ψ = Ψp + Ψs for total, pressure, or solute potential in MPa, bar, or kPa, with a worked example.',
+      faq: [
+        { question: 'What is the formula for water potential?', answer: 'Ψ = Ψp + Ψs, where Ψp is pressure (turgor) potential and Ψs is solute (osmotic) potential — the simplified two-term version of OpenStax’s full equation, valid at the cellular scale where gravity and matric potential are negligible.' },
+        { question: 'What is a typical solute potential for a plant cell?', answer: 'OpenStax cites typical cell cytoplasm values of about −0.5 to −1.0 MPa — always zero or negative, since dissolving solutes always lowers water potential relative to pure water.' },
+        { question: 'What is a typical pressure (turgor) potential?', answer: 'Around 0.6 to 0.8 MPa in a well-watered cell, OpenStax notes, and as high as 1.5 MPa — positive because the cell wall physically resists the cell’s contents pushing outward.' },
+        { question: 'Which way does water move?', answer: 'From higher (less negative) water potential to lower (more negative) water potential — the same direction rule that drives water from soil into roots and up through a plant’s xylem.' },
+        { question: 'What is the water potential of pure water?', answer: 'Exactly zero, by definition — OpenStax states "the potential of pure water is, by convenience of definition, designated a value of zero," which is what every other water potential value is measured relative to.' },
+        { question: 'How is water potential different from osmotic pressure?', answer: 'They describe the same particle-concentration effect, but with opposite sign conventions and different fields: a solution’s solute potential (Ψs) equals the negative of its osmotic pressure (Π) from the van’t Hoff equation. See vant-hoff-osmotic-pressure-calculator for the chemistry-lab version.' }
+      ]
+    },
+    compute(values) {
+      return { total: values.pressurePotential + values.solutePotential };
+    }
+  },
+  {
+    id: 'protein-molecular-weight-calculator',
+    category: 'biology',
+    glyph: 'MW',
+    updatedAt: '2026-11-17',
+    aliases: ['protein molecular weight calculator', 'protein mw calculator', 'peptide molecular weight calculator', 'amino acid composition molecular weight calculator', 'protein kda calculator', 'calculate protein molecular weight from sequence'],
+    related: ['protein-concentration-calculator', 'molar-mass-calculator', 'moles-to-grams-calculator', 'dna-concentration-calculator'],
+    title: 'Protein Molecular Weight Calculator (Amino Acid Composition)',
+    description: 'Find a protein or peptide’s molecular weight from its amino acid composition — enter how many of each of the 20 standard amino acids it contains, and get the molecular weight in Da (g/mol).',
+    example: 'Met-enkephalin (Tyr-Gly-Gly-Phe-Met), a 5-residue peptide, has a molecular weight of about 573.67 Da.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'How is a protein’s molecular weight calculated from its composition?',
+        paragraphs: [
+          'A protein is a chain of amino acids linked end to end by peptide bonds. OpenStax’s Biology 2e describes how that chain forms: "two amino acids...combine with the removal of a water molecule" in "a dehydration synthesis reaction" — the same condensation chemistry that links sugars into starch or nucleotides into DNA. Because each new link in the chain releases one water molecule, a protein’s total molecular weight is not simply the sum of its free amino acids’ own weights; it is that sum minus one water (about 18.02 Da) for every peptide bond formed.',
+          'A chain of N amino acid residues has exactly N − 1 peptide bonds linking them (there is one fewer bond than there are links in any chain), so the full calculation sums each residue’s free amino acid molecular weight and then subtracts (N − 1) waters. Equivalently, that is the same as adding up each residue’s "residue mass" (its free mass minus one water) and then adding a single water back at the end, to account for the free amino and carboxyl groups left over at the two ends of the finished chain — this calculator uses that second, equivalent form.',
+          'This calculator computes each of the 20 standard amino acids’ free molecular weight directly from its chemical formula and the IUPAC/CIAAW standard atomic weights (the same element table this site’s molar mass calculator uses), rather than looking up a published average. That makes it exact for any composition you enter, the same way a lab’s amino acid analysis (which reports exactly this kind of residue count) would let you compute a protein’s composition-based molecular weight by hand.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter how many of each amino acid the protein or peptide contains; the molecular weight calculates instantly.',
+        steps: [
+          { name: 'Get the amino acid composition', text: 'From a known sequence (count each letter), an amino acid analysis report, or a reference protein’s published composition.' },
+          { name: 'Enter each amino acid’s residue count', text: 'Leave any amino acid the protein does not contain at zero — only the counts you enter contribute to the total.' },
+          { name: 'Read the molecular weight', text: 'The total appears in daltons (Da), numerically identical to g/mol — divide by 1,000 for the conventional "kDa" figure larger proteins are usually quoted in.' },
+          { name: 'Check the residue count', text: 'The total number of residues entered is shown alongside the molecular weight, as a sanity check against the sequence length you started from.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Molecular weight sums each residue’s free amino acid mass and subtracts one water per peptide bond.',
+        expression: 'MW = Σ(free amino acid masses) − (N − 1) × 18.015 Da\nN = total number of residues',
+        terms: [
+          { symbol: 'Σ(free amino acid masses)', meaning: 'The sum of each amino acid’s own molecular weight as a free, unlinked molecule, over every residue in the chain.' },
+          { symbol: 'N', meaning: 'The total number of amino acid residues in the chain.' },
+          { symbol: '18.015 Da', meaning: 'The molecular weight of one water molecule, released at each of the N − 1 peptide bonds formed when the chain is assembled.' }
+        ],
+        note: 'This computes an exact molecular weight for the composition entered — it does not depend on residue order, since molecular weight (unlike the protein’s actual 3D structure or function) does not care which position each residue sits in.'
+      },
+      workedExample: {
+        intro: 'Met-enkephalin is a well-studied 5-residue peptide with the sequence Tyr-Gly-Gly-Phe-Met. What is its molecular weight?',
+        rows: [
+          { label: 'Free masses: Tyr + 2×Gly + Phe + Met', value: '181.19 + 2×75.07 + 165.19 + 149.21 = 645.73 Da' },
+          { label: 'Peptide bonds formed (N − 1 = 5 − 1)', value: '4 bonds, releasing 4 waters' },
+          { label: 'Water removed (4 × 18.015)', value: '72.06 Da' },
+          { label: 'Molecular weight (645.73 − 72.06)', value: '≈ 573.67 Da' }
+        ],
+        result: 'MW ≈ 573.67 Da',
+        explanation: 'Summing the five free amino acid masses and removing one water for each of the four peptide bonds gives about 573.67 Da — matching PubChem’s own listed molecular weight for met-enkephalin (573.7 Da, from its formula C₂₇H₃₅N₅O₇S) to the precision of each source’s own rounding of standard atomic weights.'
+      },
+      watchOut: [
+        { title: 'This is a composition-based estimate, not a mass-spectrometry measurement', body: 'It gives the exact average molecular weight for the amino acid composition entered, built from average (not monoisotopic) atomic weights — a mass spectrometer measuring a specific isotope combination can report a slightly different, more precise monoisotopic mass.' },
+        { title: 'Order does not matter here, but it matters for the real protein', body: 'This calculator cannot distinguish a chain from its own scrambled reordering, since both have an identical molecular weight — only the actual sequence determines the protein’s structure and function.' },
+        { title: 'Modifications add or remove mass', body: 'Disulfide bonds (which remove 2 hydrogens each), glycosylation, phosphorylation, or a cleaved signal peptide all change a mature protein’s real molecular weight away from what its raw amino acid composition alone predicts.' },
+        { title: 'Not the same question as protein concentration', body: 'This page finds what a protein’s molecular weight IS, from its composition — see protein-concentration-calculator for a different question, how much of a protein (by mass or molarity) is in a solution, from an A280 absorbance reading.' }
+      ],
+      references: [
+        { label: 'OpenStax, Biology 2e, §3.4 "Proteins" (peptide bond formation by dehydration synthesis)', url: 'https://openstax.org/books/biology-2e/pages/3-4-proteins' },
+        { label: 'CIAAW (IUPAC Commission on Isotopic Abundances and Atomic Weights), Standard Atomic Weights', url: 'https://ciaaw.org/atomic-weights.htm' },
+        { label: 'PubChem, Met-enkephalin (CID 42785) — molecular formula C₂₇H₃₅N₅O₇S, molecular weight 573.7 g/mol, used as this page’s worked-example cross-check', url: 'https://pubchem.ncbi.nlm.nih.gov/compound/42785' }
+      ]
+    },
+    inputs: AMINO_ACID_INPUTS,
+    breakdown: {
+      headline: 'molecularWeight',
+      headlineLabel: 'Molecular weight',
+      outputs: [
+        { id: 'molecularWeight', label: 'Molecular weight (Da)', format: 'number' },
+        { id: 'kiloDaltons', label: 'Molecular weight (kDa)', format: 'number' },
+        { id: 'residueCount', label: 'Total residues (N)', format: 'integer' }
+      ],
+      groups: [
+        { title: 'Common amino acids', inputs: ['gly', 'ala', 'ser', 'leu', 'lys', 'glu', 'asp', 'val', 'pro', 'thr'] },
+        { title: 'Other amino acids', inputs: ['arg', 'asn', 'gln', 'ile', 'his', 'phe', 'tyr', 'trp', 'cys', 'met'], optional: true }
+      ]
+    },
+    seo: {
+      title: 'Protein Molecular Weight Calculator (Amino Acid Composition)',
+      description: 'Free protein molecular weight calculator. Enter an amino acid composition and get molecular weight in Da and kDa, computed from exact atomic weights.',
+      faq: [
+        { question: 'How do you calculate a protein’s molecular weight from its amino acid composition?', answer: 'Sum each amino acid’s free molecular weight across every residue, then subtract one water (18.015 Da) for each of the N − 1 peptide bonds in an N-residue chain.' },
+        { question: 'Why subtract water for each peptide bond?', answer: 'Forming a peptide bond is a dehydration (condensation) reaction — OpenStax’s Biology 2e notes amino acids "combine with the removal of a water molecule" — so a linked chain weighs less than the sum of its separate, free amino acids.' },
+        { question: 'What is the molecular weight of met-enkephalin?', answer: 'About 573.67 Da for its 5-residue sequence Tyr-Gly-Gly-Phe-Met, matching PubChem’s listed 573.7 g/mol for the same compound (CID 42785).' },
+        { question: 'What is the difference between Da and kDa for proteins?', answer: 'A dalton (Da) is numerically the same unit as g/mol. A kilodalton (kDa) is 1,000 Da — the conventional unit for whole proteins, most of which run from about 10 to 200 kDa.' },
+        { question: 'Does the order of amino acids change the molecular weight?', answer: 'No — molecular weight only depends on which amino acids and how many of each are present, not their order. A protein and any scrambled reordering of its own sequence have an identical molecular weight.' },
+        { question: 'How is this different from the protein concentration calculator?', answer: 'This page finds a protein’s molecular weight from its composition. The protein concentration calculator instead finds how much of a known protein (by mass or molar concentration) is present in a solution, from an A280 absorbance reading.' }
+      ]
+    },
+    compute(values) {
+      const molecularWeight = proteinMolecularWeight(values);
+      const residueCount = AMINO_ACIDS.reduce((sum, aa) => sum + (values[aa.id] ?? 0), 0);
+      return { molecularWeight, kiloDaltons: molecularWeight / 1000, residueCount };
+    }
+  },
+  {
+    id: 'molarity-for-buffers-calculator',
+    category: 'biology',
+    glyph: 'g/M',
+    updatedAt: '2026-11-17',
+    aliases: ['molarity for buffers calculator', 'grams to make a molar solution calculator', 'buffer preparation calculator', 'how many grams for a molar solution calculator', 'reagent weigh out calculator', 'buffer molarity calculator'],
+    related: ['molarity-calculator', 'moles-to-grams-calculator', 'molar-mass-calculator', 'dilution-calculator'],
+    title: 'Molarity for Buffers Calculator (Grams to Weigh Out)',
+    description: 'Find how many grams of a reagent to weigh out for a target buffer molarity and volume — mass = molarity × volume × molar mass — with a reference table of common lab reagent molar masses.',
+    example: 'Making 1 L of a 0.05 mol/L (50 mM) Tris base buffer (molar mass 121.14 g/mol) takes about 6.06 g of Tris base.',
+    solver: {
+      defaultTarget: 'mass',
+      variables: [
+        { id: 'mass', label: 'Mass to weigh out', symbol: 'm', dimension: 'mass', defaultValue: 6.0568, defaultUnit: 'g' },
+        { id: 'molarity', label: 'Target molarity', symbol: 'M', dimension: 'concentration', defaultValue: 0.05, defaultUnit: 'mol/L' },
+        { id: 'volume', label: 'Target volume', symbol: 'V', dimension: 'volume', defaultValue: 1, defaultUnit: 'L' },
+        { id: 'molarMass', label: 'Reagent molar mass', symbol: 'MM', dimension: 'molarMass', defaultValue: 121.136, defaultUnit: 'g/mol' }
+      ],
+      solve: {
+        mass: ({ molarity, volume, molarMass }) => molarity * volume * molarMass,
+        molarity: ({ mass, volume, molarMass }) => (volume * molarMass === 0 ? NaN : mass / (volume * molarMass)),
+        volume: ({ mass, molarity, molarMass }) => (molarity * molarMass === 0 ? NaN : mass / (molarity * molarMass)),
+        molarMass: ({ mass, molarity, volume }) => (molarity * volume === 0 ? NaN : mass / (molarity * volume))
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'How many grams does a target buffer molarity take?',
+        paragraphs: [
+          'Preparing a buffer or stock solution at the bench almost always starts with the same question: given a target concentration and volume, how many grams of the solid reagent actually need to go on the balance? That question combines two relationships this site already covers separately — molarity, M = n ÷ V (see molarity-calculator), and the mass-to-moles relationship, n = m ÷ M (see moles-to-grams-calculator) — into the one equation a lab actually uses directly: mass = molarity × volume × molar mass.',
+          'This page is the same two formulas chained together into a single step, built specifically for the "how many grams do I weigh out" direction, plus a reference table of common molecular-biology buffer reagents’ molar masses so a separate lookup is not needed for the most frequently used ones. If a reagent is not in the table, the molarity and moles-to-grams calculators above still work for the same math with your own reagent’s known molar mass.',
+          'The molar masses in the reference table below are computed directly from each reagent’s chemical formula using standard atomic weights — the same approach the molar mass calculator uses for any formula — not copied from a manufacturer datasheet, since a hydrate’s exact water content is one of the few things that can genuinely vary between suppliers (see "Things to watch out for" below).'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of the mass, molarity, volume, and molar mass; the fourth fills in automatically.',
+        steps: [
+          { name: 'Find the reagent’s molar mass', text: 'Use the reference table below for a common buffer reagent, or the molar mass calculator for any other formula.' },
+          { name: 'Enter the target molarity', text: 'The final concentration the buffer should be — often given in mol/L (M) or millimolar (mmol/L, mM).' },
+          { name: 'Enter the target volume', text: 'How much total buffer volume you are making.' },
+          { name: 'Read the mass to weigh out', text: 'The missing value — usually the mass — appears immediately in your chosen unit.' },
+          { name: 'Switch which one is calculated', text: 'Type into the auto field to make it an input; the field left alone longest becomes the new calculated one.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'mass = molarity × volume × molar mass rearranges to solve for any of the four quantities.',
+        expression: 'm = M × V × MM\nM = m ÷ (V × MM)\nV = m ÷ (M × MM)\nMM = m ÷ (M × V)',
+        terms: [
+          { symbol: 'm', meaning: 'Mass of solid reagent to weigh out.' },
+          { symbol: 'M', meaning: 'Target molarity of the final solution, in moles of solute per liter.' },
+          { symbol: 'V', meaning: 'Target total volume of the final solution.' },
+          { symbol: 'MM', meaning: 'The reagent’s molar mass, in grams per mole — see the reference table below for common lab reagents.' }
+        ],
+        note: 'This is exactly molarity-calculator’s M = n ÷ V and moles-to-grams-calculator’s n = m ÷ M combined algebraically (substituting n = M × V into m = n × MM) — see those two pages if you only need the two-variable version of either relationship on its own.'
+      },
+      workedExample: {
+        intro: 'How many grams of Tris base (molar mass 121.14 g/mol) are needed to make 1 L of a 0.05 mol/L (50 mM) solution?',
+        rows: [
+          { label: 'Target molarity (M)', value: '0.05 mol/L' },
+          { label: 'Target volume (V)', value: '1 L' },
+          { label: 'Tris base molar mass (MM)', value: '121.14 g/mol' },
+          { label: 'Mass (m = 0.05 × 1 × 121.14)', value: '≈ 6.06 g' }
+        ],
+        result: 'm ≈ 6.06 g',
+        explanation: 'Multiplying the target molarity by the volume gives 0.05 mol of Tris needed; multiplying that by Tris base’s molar mass converts moles to the roughly 6.06 g that actually goes on the balance.'
+      },
+      watchOut: [
+        { title: 'Hydrates change the molar mass', body: 'Many reagents are sold as a hydrate (for example EDTA disodium dihydrate, with two bound water molecules) rather than the anhydrous form — using the wrong one’s molar mass under- or overestimates the mass needed. Check your reagent bottle’s exact name and formula.' },
+        { title: 'This finds the solute’s mass, not the solvent volume to add', body: 'In practice, a buffer is usually made by dissolving the weighed reagent in less than the target volume of solvent, then topping up to the final volume — the same "dissolve, then dilute to volume" method molarity-calculator’s own concept section describes.' },
+        { title: 'pH-adjusting buffers (like Tris) still need titration', body: 'Weighing out the base form of a buffering reagent sets its concentration, but most buffers (Tris included) also need acid or base titrated in afterward to reach a specific target pH — this calculator does not perform that titration step.' },
+        { title: 'Double-check units before weighing', body: 'Millimolar (mM) targets are 1,000× more dilute than molar (M) ones, and micrograms are easy to misread as milligrams on a small balance — the unit menus here convert automatically, but the number on your balance’s display will not.' }
+      ],
+      referenceTable: {
+        title: 'Molar mass of common lab/buffer reagents',
+        columns: ['Reagent', 'Molar mass (g/mol)'],
+        rows: LAB_REAGENTS.map((reagent) => ({ label: `${reagent.name} — ${reagent.formula}`, values: [reagent.molarMass] })),
+        decimals: 2,
+        note: 'Molar masses are computed from each reagent’s standard formula using IUPAC/CIAAW standard atomic weights (the same element table the molar mass calculator uses) rather than copied from a datasheet. A hydrate’s exact water content can vary by supplier and grade — check your own reagent label if it differs from the formula shown.'
+      },
+      references: [
+        { label: 'CIAAW (IUPAC Commission on Isotopic Abundances and Atomic Weights), Standard Atomic Weights', url: 'https://ciaaw.org/atomic-weights.htm' }
+      ]
+    },
+    inputs: [
+      { id: 'molarity', label: 'Target molarity (mol/m³)', type: 'number', placeholder: '50', defaultValue: 50, step: 0.001, min: 0 },
+      { id: 'volume', label: 'Target volume (m³)', type: 'number', placeholder: '0.001', defaultValue: 0.001, step: 0.0001, min: 0 },
+      { id: 'molarMass', label: 'Reagent molar mass (kg/mol)', type: 'number', placeholder: '0.121136', defaultValue: 0.121136, step: 0.000001, min: 0 }
+    ],
+    seo: {
+      title: 'Molarity for Buffers Calculator (Grams to Weigh Out)',
+      description: 'Free buffer prep calculator. Find how many grams of a reagent to weigh out for a target molarity and volume, with a common lab reagent molar mass table.',
+      faq: [
+        { question: 'How do I calculate how many grams to weigh out for a buffer?', answer: 'mass = molarity × volume × molar mass. A 0.05 mol/L (50 mM) Tris base buffer in 1 L needs 0.05 × 1 × 121.14 ≈ 6.06 g.' },
+        { question: 'How much NaCl is needed for 500 mL of a 1 M solution?', answer: '1 mol/L × 0.5 L × 58.44 g/mol (NaCl’s molar mass) = 29.22 g.' },
+        { question: 'What is the difference between this and the molarity calculator?', answer: 'The molarity calculator solves M = n ÷ V for three variables (molarity, moles, volume). This page adds a fourth, the molar mass, so it solves directly for mass — the question a bench prep actually asks — without a separate moles-to-grams step.' },
+        { question: 'Why does the reference table show a hydrate’s formula, like EDTA disodium dihydrate?', answer: 'Because many common reagents are sold, weighed, and labeled as a specific hydrate, which has a different (usually larger) molar mass than the anhydrous form — using the formula that matches your actual reagent bottle matters.' },
+        { question: 'Can I use millimolar (mM) instead of molar (M)?', answer: 'Yes — switch the molarity unit menu to mmol/L; the calculator converts automatically so the same formula applies.' },
+        { question: 'Does this calculator account for a buffer’s pH?', answer: 'No — it only finds the mass needed for a target molar concentration. Most buffering reagents (Tris included) still need acid or base titrated in afterward to reach a specific pH.' }
+      ]
+    },
+    compute(values) {
+      return { mass: values.molarity * values.volume * values.molarMass };
+    }
+  },
+  {
+    id: 'inheritance-probability-calculator',
+    category: 'biology',
+    glyph: 'A/a',
+    updatedAt: '2026-11-17',
+    aliases: ['inheritance probability calculator', 'autosomal recessive inheritance calculator', 'autosomal dominant inheritance calculator', 'carrier probability calculator', 'chance of inheriting a genetic condition calculator', 'genetic disorder risk calculator'],
+    related: ['punnett-square-calculator', 'hardy-weinberg-calculator', 'allele-frequency-calculator', 'probability-calculator'],
+    title: 'Inheritance Probability Calculator (Autosomal Dominant/Recessive)',
+    description: 'Find the chance a child inherits, carries, or is unaffected by a single-gene genetic condition, given both parents’ genotypes and whether the condition is autosomal dominant or recessive.',
+    example: 'Two carrier (Aa) parents of an autosomal recessive condition like cystic fibrosis have a 25% chance per pregnancy of an affected (aa) child, 50% a carrier (Aa), and 25% unaffected (AA).',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'How is inheritance risk calculated for a single-gene condition?',
+        paragraphs: [
+          'Many inherited conditions are caused by a single gene with a dominant or recessive pattern — the exact same Mendelian genetics a Punnett square tracks for pea plant traits, just applied to a clinically relevant question: what is the chance a particular child inherits, carries, or is entirely free of a condition, given what is known about both parents? The underlying probability math is identical to punnett-square-calculator; this page simply relabels the AA/Aa/aa outcomes as "affected," "carrier," or "unaffected," since which label applies to which genotype depends on whether the condition is dominant or recessive.',
+          'Cystic fibrosis is a well-documented example of an autosomal recessive condition: MedlinePlus Genetics (part of the U.S. National Library of Medicine) states it "is inherited in an autosomal recessive pattern, which means both copies of the gene in each cell have mutations," and that "the parents of an individual with an autosomal recessive condition each carry one copy of the mutated gene, but they typically do not show signs and symptoms of the condition." That is exactly the aa/Aa/AA split this calculator works out: two unaffected carrier parents can still have an affected child.',
+          'Huntington’s disease is the reverse pattern, autosomal dominant: MedlinePlus states it "is inherited in an autosomal dominant pattern, which means one copy of the altered gene in each cell is sufficient to cause the disorder," and that "an affected person usually inherits the altered gene from one affected parent" — for a heterozygous affected parent, that works out to roughly a 50% chance per child, the same math a monohybrid cross gives for a heterozygous-by-homozygous-recessive cross.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick the inheritance pattern and each parent’s genotype; the affected, carrier, and unaffected probabilities calculate instantly.',
+        steps: [
+          { name: 'Pick the inheritance pattern', text: 'Autosomal recessive (two copies needed, e.g. cystic fibrosis) or autosomal dominant (one copy is enough, e.g. Huntington’s disease).' },
+          { name: 'Pick parent 1’s genotype', text: 'AA (two normal alleles), Aa (one of each, a carrier if recessive or affected if dominant), or aa (two altered alleles).' },
+          { name: 'Pick parent 2’s genotype', text: 'The same three choices, for the other parent.' },
+          { name: 'Read the result', text: 'The percentage of children expected to be affected, a carrier, or unaffected, based on the pattern chosen.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored. This tool is for general education, not a substitute for genetic counseling.'
+      },
+      formula: {
+        intro: 'The genotype probabilities are the identical monohybrid-cross math as punnett-square-calculator; which genotype counts as "affected" just depends on the pattern chosen.',
+        expression: 'P(AA) = P₁ × P₂\nP(aa) = (1 − P₁) × (1 − P₂)\nP(Aa) = 1 − P(AA) − P(aa)\nRecessive condition: affected = P(aa), carrier = P(Aa), unaffected = P(AA)\nDominant condition: affected = P(AA) + P(Aa), unaffected = P(aa)',
+        terms: [
+          { symbol: 'P₁, P₂', meaning: 'Each parent’s probability of passing on the altered allele to a given child: 1 if that parent is aa, ½ if Aa, 0 if AA.' },
+          { symbol: 'Affected', meaning: 'A child with the genotype that produces the condition — aa for a recessive condition, or AA/Aa for a dominant one.' },
+          { symbol: 'Carrier', meaning: 'A heterozygous (Aa) child who, for a recessive condition only, carries one altered allele without being affected.' }
+        ],
+        note: 'This assumes the condition follows simple, complete dominant/recessive inheritance from a single gene — see "Things to watch out for" below for conditions that do not.'
+      },
+      workedExample: {
+        intro: 'Both parents are known carriers (Aa) of an autosomal recessive condition. What is the chance for each pregnancy?',
+        rows: [
+          { label: 'Parent 1 genotype', value: 'Aa (carrier)' },
+          { label: 'Parent 2 genotype', value: 'Aa (carrier)' },
+          { label: 'P₁(altered allele), P₂(altered allele)', value: '½ each' },
+          { label: 'P(aa) = ½ × ½', value: '25% (affected)' },
+          { label: 'P(Aa) = 1 − 25% − 25%', value: '50% (carrier)' },
+          { label: 'P(AA) = ½ × ½', value: '25% (unaffected)' }
+        ],
+        result: '25% affected, 50% carrier, 25% unaffected',
+        explanation: 'This is the same 1:2:1 genotype split a heterozygous-by-heterozygous Punnett square always gives; for a recessive condition those three genotypes map directly onto affected (aa), carrier (Aa), and unaffected (AA). For an autosomal dominant condition, switching the pattern with one Aa (affected) parent and one aa (unaffected) parent instead gives 50% affected (Aa) and 50% unaffected (aa) — the roughly-50%-per-child figure MedlinePlus describes for Huntington’s disease.'
+      },
+      watchOut: [
+        { title: 'This is a per-pregnancy probability, not a guaranteed outcome', body: 'A 25% recurrence risk means each pregnancy independently has about a 1-in-4 chance — it does not mean exactly 1 of every 4 children in a particular family will be affected, the same "probability, not a promise" point punnett-square-calculator makes.' },
+        { title: 'This assumes the parents’ genotypes are already known with certainty', body: 'In practice, carrier status usually comes from genetic testing or a known family history, not a guess — an incorrect genotype input gives a confidently wrong answer.' },
+        { title: 'Not every condition is simple dominant/recessive', body: 'Many genetic conditions involve more than one gene, X-linked inheritance, incomplete penetrance, or new (de novo) mutations not inherited from either parent — this calculator only models the single-gene, fully penetrant, autosomal case.' },
+        { title: 'This is educational, not a substitute for genetic counseling', body: 'A licensed genetic counselor interprets an individual family’s actual test results, family history, and the specific condition’s own inheritance nuances — this tool only works out the general Mendelian math once a pattern and genotypes are assumed.' }
+      ],
+      references: [
+        { label: 'MedlinePlus Genetics (U.S. National Library of Medicine), "Cystic fibrosis"', url: 'https://medlineplus.gov/genetics/condition/cystic-fibrosis/' },
+        { label: 'MedlinePlus Genetics (U.S. National Library of Medicine), "Huntington disease"', url: 'https://medlineplus.gov/genetics/condition/huntington-disease/' },
+        { label: 'OpenStax, Biology 2e, §12.1 "Mendel’s Experiments and the Laws of Probability"', url: 'https://openstax.org/books/biology-2e/pages/12-1-mendels-experiments-and-the-laws-of-probability' }
+      ]
+    },
+    inputs: [
+      { id: 'inheritancePattern', label: 'Inheritance pattern', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0, options: INHERITANCE_PATTERN_OPTIONS },
+      { id: 'parent1Genotype', label: 'Parent 1 genotype', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0, options: GENOTYPE_OPTIONS },
+      { id: 'parent2Genotype', label: 'Parent 2 genotype', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0, options: GENOTYPE_OPTIONS }
+    ],
+    breakdown: {
+      headline: 'affected',
+      headlineLabel: 'Chance a child is affected',
+      outputs: [
+        { id: 'affected', label: 'Affected', format: 'percent' },
+        { id: 'carrier', label: 'Carrier (unaffected)', format: 'percent' },
+        { id: 'unaffected', label: 'Unaffected, non-carrier', format: 'percent' }
+      ],
+      groups: [{ title: 'Pattern and parent genotypes', inputs: ['inheritancePattern', 'parent1Genotype', 'parent2Genotype'] }],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'affected', label: 'Affected' },
+          { from: 'carrier', label: 'Carrier' },
+          { from: 'unaffected', label: 'Unaffected' }
+        ],
+        center: 'affected',
+        centerSub: 'chance affected'
+      }
+    },
+    seo: {
+      title: 'Inheritance Probability Calculator (Dominant/Recessive)',
+      description: 'Free inheritance probability calculator. Find the chance a child is affected, a carrier, or unaffected by an autosomal dominant or recessive condition.',
+      faq: [
+        { question: 'If both parents are carriers of a recessive condition, what is the risk to each child?', answer: '25% chance of being affected (two copies of the altered allele), 50% chance of being an unaffected carrier (one copy), and 25% chance of inheriting neither copy — the standard recurrence risk cited in genetic counseling for conditions like cystic fibrosis.' },
+        { question: 'What is the risk if one parent has an autosomal dominant condition?', answer: 'For a heterozygous affected parent paired with an unaffected partner, each child has about a 50% chance of inheriting the condition — MedlinePlus describes this pattern for Huntington’s disease, where "an affected person usually inherits the altered gene from one affected parent."' },
+        { question: 'What does "carrier" mean?', answer: 'A carrier has one copy of the altered allele (genotype Aa) but, for a recessive condition, does not show symptoms — MedlinePlus notes carrier parents "typically do not show signs and symptoms of the condition."' },
+        { question: 'Is this the same as the Punnett square calculator?', answer: 'The underlying probability math is identical — this page relabels the AA/Aa/aa genotype outcomes as affected/carrier/unaffected for a health-risk question, rather than a general genetics-teaching genotype ratio.' },
+        { question: 'Can two unaffected parents have an affected child?', answer: 'Yes, for a recessive condition — two carrier (Aa) parents show no symptoms themselves but can each pass on the altered allele, giving a 25% chance of an affected (aa) child.' },
+        { question: 'Does this calculator replace genetic counseling?', answer: 'No — it only works out the general Mendelian probability once a pattern and genotypes are assumed. A genetic counselor interprets actual test results and family history for a specific condition and family.' }
+      ]
+    },
+    compute(values) {
+      const p1 = values.parent1Genotype / 2;
+      const p2 = values.parent2Genotype / 2;
+      const AA = p1 * p2 * 100;
+      const aa = (1 - p1) * (1 - p2) * 100;
+      const Aa = 100 - AA - aa;
+      const recessive = values.inheritancePattern === 0;
+      return {
+        affected: recessive ? aa : AA + Aa,
+        carrier: recessive ? Aa : 0,
+        unaffected: recessive ? AA : aa
+      };
+    }
+  },
+  {
+    id: 'surface-area-to-volume-ratio-calculator',
+    category: 'biology',
+    glyph: 'SA:V',
+    updatedAt: '2026-11-17',
+    aliases: ['surface area to volume ratio calculator', 'sa:v ratio calculator', 'cell size surface area volume calculator', 'surface to volume ratio cell calculator', 'why cells are small calculator', 'sphere surface area to volume ratio calculator'],
+    related: ['cell-dilution-calculator', 'bacterial-growth-calculator', 'surface-area-calculator', 'volume-calculator'],
+    title: 'Surface-Area-to-Volume Ratio Calculator (Sphere/Cube)',
+    description: 'Find a cell’s surface-area-to-volume ratio, modeled as a sphere or cube, from its radius or side length — the geometric constraint behind why cells are small.',
+    example: 'A spherical cell with a 1 µm radius (roughly bacterium-sized) has a surface-area-to-volume ratio of 3 per µm; a 50 µm radius cell (roughly egg-cell-sized) has only 0.06 per µm.',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'Why does surface-area-to-volume ratio matter for cells?',
+        paragraphs: [
+          'A cell exchanges everything it needs — oxygen, nutrients, waste — across its surface (the plasma membrane), while everything it needs to support (its own volume of cytoplasm and organelles) grows with its size. Surface area and volume do not grow at the same rate as an object gets bigger: for a sphere, surface area scales with the square of the radius while volume scales with the cube of it, so the ratio between them, surface area ÷ volume, actually shrinks as the sphere grows larger. OpenStax’s Biology 2e makes exactly this point about cell size, using real figures: a typical human red blood cell is "about eight millionths of a meter, or eight micrometers (8 µm), in diameter" — small enough that "about 250 red blood cells could fit on a pinhead" — and small cells like this keep a comparatively large surface relative to their volume.',
+          'A cell with a small surface-area-to-volume ratio struggles to bring in enough nutrients and expel enough waste to support all of the volume behind that limited surface — a basic physical constraint on how large a single cell (without specialized transport adaptations) can practically grow before diffusion alone becomes too slow to keep up. It is the same reason a large organism is not simply one giant cell: multicellularity packs a large total volume into many small cells, each of which keeps its own high surface-area-to-volume ratio.',
+          'This calculator models a cell as one of the two simplest solid shapes with an exact formula, a sphere or a cube, since most real cells approximate one of the two reasonably well for this purpose. A sphere’s ratio works out to exactly 3 ÷ radius, and a cube’s to exactly 6 ÷ side length — both falling as the object’s size increases, and both derived directly from the ordinary geometric formulas for a sphere’s and a cube’s surface area and volume.'
+        ]
+      },
+      howTo: {
+        intro: 'Pick a shape and enter its size; the surface area, volume, and their ratio calculate instantly.',
+        steps: [
+          { name: 'Pick the shape that best approximates the cell', text: 'Sphere for most rounded cells (many bacteria, egg cells, red blood cells as a rough approximation); cube for a simplified block-shaped model cell, as many textbook diagrams use.' },
+          { name: 'Enter the size', text: 'The radius for a sphere, or the side length for a cube, in micrometers (µm) — the typical scale for a single cell.' },
+          { name: 'Read the surface area and volume', text: 'Shown in µm² and µm³ respectively, from the standard geometric formulas for that shape.' },
+          { name: 'Read the ratio', text: 'Surface area divided by volume, in units of "per µm" — a smaller number means a larger cell with comparatively less surface available per unit of volume to support.' }
+        ],
+        outro: 'Every figure is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Surface area and volume follow the standard formulas for a sphere or a cube; dividing one by the other gives the ratio.',
+        expression: 'Sphere: SA = 4πr², V = (4/3)πr³, ratio = SA ÷ V = 3 ÷ r\nCube: SA = 6s², V = s³, ratio = SA ÷ V = 6 ÷ s',
+        terms: [
+          { symbol: 'r', meaning: 'Radius of the sphere.' },
+          { symbol: 's', meaning: 'Side length of the cube.' },
+          { symbol: 'SA, V', meaning: 'Surface area and volume of the chosen shape, in consistent length units (here µm² and µm³).' }
+        ],
+        note: 'The ratio simplifying to exactly 3 ÷ r (sphere) or 6 ÷ s (cube) is why surface-area-to-volume ratio always falls as size increases: it scales as the inverse of a single length, regardless of the specific radius or side length chosen.'
+      },
+      workedExample: {
+        intro: 'Compare a small, roughly bacterium-sized spherical cell (1 µm radius) with a much larger, roughly egg-cell-sized one (50 µm radius, close to OpenStax’s ~100 µm human egg cell diameter).',
+        rows: [
+          { label: 'Small cell: radius', value: '1 µm' },
+          { label: 'Small cell: surface area (4π × 1²)', value: '≈ 12.57 µm²' },
+          { label: 'Small cell: volume ((4/3)π × 1³)', value: '≈ 4.19 µm³' },
+          { label: 'Small cell: ratio (3 ÷ 1)', value: '3 per µm' },
+          { label: 'Large cell: radius', value: '50 µm' },
+          { label: 'Large cell: ratio (3 ÷ 50)', value: '0.06 per µm' }
+        ],
+        result: 'The small cell’s ratio (3 per µm) is 50 times the large cell’s (0.06 per µm)',
+        explanation: 'Even though both are spheres governed by the identical formula, multiplying the radius by 50 divides the surface-area-to-volume ratio by that same factor of 50 — exactly what 3 ÷ r predicts, and the geometric reason a much larger cell has proportionally far less surface available to support each unit of its own volume.'
+      },
+      watchOut: [
+        { title: 'Real cells are rarely a perfect sphere or cube', body: 'Many cells adapt their actual shape specifically to increase surface area beyond what a sphere or cube of the same volume would have — intestinal cells’ microvilli and a neuron’s long, thin axon are both real examples of shape adaptations that raise surface-area-to-volume ratio well above this calculator’s idealized-shape estimate.' },
+        { title: 'Ratio falling does not mean a cell cannot grow at all', body: 'It means a cell needs other adaptations (increased transport proteins, a less-rounded shape, or specialized organelles) to keep functioning efficiently once it grows large — not that growth beyond some fixed size is physically impossible.' },
+        { title: 'Units must stay consistent', body: 'Surface area is reported in squared units and volume in cubed units of the same base length — mixing, for example, a radius in µm with an expected answer in mm² will give a nonsensical ratio.' },
+        { title: 'This is a single-cell geometric model, not a population or organism-level statement', body: 'It describes one idealized solid shape’s own surface-area-to-volume ratio — it says nothing by itself about an organism’s total surface area or metabolic rate, which depend on many cells and their collective arrangement.' }
+      ],
+      references: [
+        { label: 'OpenStax, Biology 2e, §4.1 "Studying Cells" (red blood cell size example)', url: 'https://openstax.org/books/biology-2e/pages/4-1-studying-cells' }
+      ]
+    },
+    inputs: [
+      { id: 'shape', label: 'Shape', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0, options: CELL_SHAPE_OPTIONS },
+      { id: 'size', label: 'Radius (sphere) or side length (cube), in µm', type: 'number', placeholder: '10', defaultValue: 10, step: 0.1, min: 0 }
+    ],
+    breakdown: {
+      headline: 'ratio',
+      headlineLabel: 'Surface-area-to-volume ratio',
+      outputs: [
+        { id: 'ratio', label: 'Surface area ÷ volume (per µm)', format: 'significant' },
+        { id: 'surfaceArea', label: 'Surface area (µm²)', format: 'significant' },
+        { id: 'volume', label: 'Volume (µm³)', format: 'significant' }
+      ],
+      groups: [{ title: 'Cell geometry', inputs: ['shape', 'size'] }],
+      visual: {
+        type: 'logScale',
+        value: 'ratio',
+        min: -2,
+        max: 1,
+        ticks: ['0.01/µm', '0.1/µm', '1/µm', '10/µm'],
+        benchmarks: [
+          { label: 'Bacterium-scale sphere (1 µm radius)', value: 3 },
+          { label: 'Red blood cell (≈8 µm diameter, modeled as a sphere, per OpenStax)', value: 0.75 },
+          { label: 'Human egg cell (≈100 µm diameter, modeled as a sphere)', value: 0.06 }
+        ],
+        title: 'How does that compare?',
+        valueLabel: 'Your ratio'
+      }
+    },
+    seo: {
+      title: 'Surface-Area-to-Volume Ratio Calculator (Sphere/Cube)',
+      description: 'Free surface-area-to-volume ratio calculator for cells, modeled as a sphere or cube. Enter a radius or side length and get SA, V, and the ratio instantly.',
+      faq: [
+        { question: 'What is the formula for surface-area-to-volume ratio?', answer: 'For a sphere, SA ÷ V simplifies to exactly 3 ÷ radius. For a cube, it simplifies to exactly 6 ÷ side length — both fall as the object grows larger.' },
+        { question: 'Why do small cells have a higher surface-area-to-volume ratio?', answer: 'Surface area scales with the square of a cell’s size while volume scales with the cube of it, so the ratio between them (which equals 3 ÷ radius for a sphere) shrinks as size increases — a small cell always has proportionally more surface for its volume than a large one of the same shape.' },
+        { question: 'Why does surface-area-to-volume ratio limit cell size?', answer: 'A cell exchanges nutrients and waste across its surface but needs to support its whole volume — once a cell gets large enough, its surface cannot keep up with its own volume’s needs through simple diffusion alone.' },
+        { question: 'How do real cells get around this limit?', answer: 'By adapting their shape to increase surface area beyond a plain sphere or cube of the same volume — intestinal cells’ microvilli and a neuron’s long, thin axon are both real examples.' },
+        { question: 'What is the surface-area-to-volume ratio of a typical red blood cell?', answer: 'Modeled as a sphere with OpenStax’s cited ≈8 µm diameter (4 µm radius), the ratio is 3 ÷ 4 = 0.75 per µm.' },
+        { question: 'Does a cube or sphere model a real cell better?', answer: 'Neither is exact — most cells are closer to a sphere, while a cube is a simplified textbook model — but both follow the same general pattern: ratio falls as size increases, just by a different constant (3 for a sphere, 6 for a cube).' }
+      ]
+    },
+    compute(values) {
+      const s = values.size;
+      const isSphere = values.shape === 0;
+      const surfaceArea = isSphere ? 4 * Math.PI * s * s : 6 * s * s;
+      const volume = isSphere ? (4 / 3) * Math.PI * s ** 3 : s ** 3;
+      const ratio = volume === 0 ? NaN : surfaceArea / volume;
+      return { ratio, surfaceArea, volume };
     }
   }
 ];

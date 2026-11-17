@@ -433,7 +433,12 @@ export const calculatorOrder: string[] = [
   'qpcr-efficiency-calculator',
   'ligation-calculator',
   'centrifuge-rcf-rpm-calculator',
-  'log-reduction-calculator'
+  'log-reduction-calculator',
+  'water-potential-calculator',
+  'protein-molecular-weight-calculator',
+  'molarity-for-buffers-calculator',
+  'inheritance-probability-calculator',
+  'surface-area-to-volume-ratio-calculator'
 ];
 
 const rank = (id: string) => {

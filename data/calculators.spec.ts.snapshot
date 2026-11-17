@@ -6729,6 +6729,47 @@ exports[`compute() snapshots > inflation-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > inheritance-probability-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "inheritancePattern": 0,
+      "parent1Genotype": 1,
+      "parent2Genotype": 1
+    },
+    "outputs": {
+      "affected": 25,
+      "carrier": 50,
+      "unaffected": 25
+    }
+  },
+  "typical": {
+    "inputs": {
+      "inheritancePattern": 0,
+      "parent1Genotype": 2,
+      "parent2Genotype": 2
+    },
+    "outputs": {
+      "affected": 0,
+      "carrier": 0,
+      "unaffected": 100
+    }
+  },
+  "edge": {
+    "inputs": {
+      "inheritancePattern": 0,
+      "parent1Genotype": 0,
+      "parent2Genotype": 0
+    },
+    "outputs": {
+      "affected": 100,
+      "carrier": 0,
+      "unaffected": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > instagram-engagement-calculator 1`] = `
 {
   "default": {
@@ -8899,6 +8940,41 @@ exports[`compute() snapshots > molarity-calculator 1`] = `
     },
     "outputs": {
       "molarity": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > molarity-for-buffers-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "molarity": 50,
+      "volume": 0.001,
+      "molarMass": 0.121136
+    },
+    "outputs": {
+      "mass": 0.0060568
+    }
+  },
+  "typical": {
+    "inputs": {
+      "molarity": 75,
+      "volume": 0.0015,
+      "molarMass": 0.181704
+    },
+    "outputs": {
+      "mass": 0.0204417
+    }
+  },
+  "edge": {
+    "inputs": {
+      "molarity": 0,
+      "volume": 0,
+      "molarMass": 0
+    },
+    "outputs": {
+      "mass": 0
     }
   }
 }
@@ -11660,6 +11736,98 @@ exports[`compute() snapshots > protein-concentration-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > protein-molecular-weight-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "gly": 2,
+      "ala": 0,
+      "ser": 0,
+      "pro": 0,
+      "val": 0,
+      "thr": 0,
+      "cys": 0,
+      "leu": 0,
+      "ile": 0,
+      "asn": 0,
+      "asp": 0,
+      "gln": 0,
+      "lys": 0,
+      "glu": 0,
+      "met": 1,
+      "his": 0,
+      "phe": 1,
+      "arg": 0,
+      "tyr": 1,
+      "trp": 0
+    },
+    "outputs": {
+      "molecularWeight": 573.665,
+      "kiloDaltons": 0.573665,
+      "residueCount": 5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "gly": 3,
+      "ala": 0,
+      "ser": 0,
+      "pro": 0,
+      "val": 0,
+      "thr": 0,
+      "cys": 0,
+      "leu": 0,
+      "ile": 0,
+      "asn": 0,
+      "asp": 0,
+      "gln": 0,
+      "lys": 0,
+      "glu": 0,
+      "met": 2,
+      "his": 0,
+      "phe": 2,
+      "arg": 0,
+      "tyr": 2,
+      "trp": 0
+    },
+    "outputs": {
+      "molecularWeight": 1072.263,
+      "kiloDaltons": 1.072263,
+      "residueCount": 9
+    }
+  },
+  "edge": {
+    "inputs": {
+      "gly": 0,
+      "ala": 0,
+      "ser": 0,
+      "pro": 0,
+      "val": 0,
+      "thr": 0,
+      "cys": 0,
+      "leu": 0,
+      "ile": 0,
+      "asn": 0,
+      "asp": 0,
+      "gln": 0,
+      "lys": 0,
+      "glu": 0,
+      "met": 0,
+      "his": 0,
+      "phe": 0,
+      "arg": 0,
+      "tyr": 0,
+      "trp": 0
+    },
+    "outputs": {
+      "molecularWeight": "NaN",
+      "kiloDaltons": "NaN",
+      "residueCount": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > pto-calculator 1`] = `
 {
   "default": {
@@ -14402,6 +14570,44 @@ exports[`compute() snapshots > surface-area-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > surface-area-to-volume-ratio-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "shape": 0,
+      "size": 10
+    },
+    "outputs": {
+      "ratio": 0.3,
+      "surfaceArea": 1256.637061,
+      "volume": 4188.790205
+    }
+  },
+  "typical": {
+    "inputs": {
+      "shape": 0,
+      "size": 15
+    },
+    "outputs": {
+      "ratio": 0.2,
+      "surfaceArea": 2827.433388,
+      "volume": 14137.16694
+    }
+  },
+  "edge": {
+    "inputs": {
+      "shape": 0,
+      "size": 0
+    },
+    "outputs": {
+      "ratio": "NaN",
+      "surfaceArea": 0,
+      "volume": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > swim-pace-calculator 1`] = `
 {
   "default": {
@@ -15904,6 +16110,38 @@ exports[`compute() snapshots > water-intake-calculator 1`] = `
     "outputs": {
       "dailyOunces": 0,
       "dailyLiters": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > water-potential-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "pressurePotential": 700000,
+      "solutePotential": -800000
+    },
+    "outputs": {
+      "total": -100000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "pressurePotential": 1050000,
+      "solutePotential": -1200000
+    },
+    "outputs": {
+      "total": -150000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "pressurePotential": -10000000,
+      "solutePotential": -10000000
+    },
+    "outputs": {
+      "total": -20000000
     }
   }
 }

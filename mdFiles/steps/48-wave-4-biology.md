@@ -332,15 +332,95 @@ used" discipline as Wave 3's NIST/IUPAC citations for lab-adjacent chemistry top
         above).
       - No seed-list candidate skipped this batch — all 5 scoped items built as specified.
 - [ ] Batch 4 (population biology + genetics extensions, 5)
-- [ ] Batch 5 (plant/cell biology + biochemistry, 5) — **IN PROGRESS**, branch
-      `step/48-wave-4-biology-run-5`, running in parallel with batch 4 on the same
-      `data/calculators/biology.ts` file (expected merge conflict, resolved at merge time).
+- [x] Batch 5 (plant/cell biology + biochemistry, 5) — **DONE 2026-11-17**, branch
+      `step/48-wave-4-biology-run-5`, PR #119. Ran in parallel with a separate batch-4 agent
+      appending to the same `data/calculators/biology.ts` file — a merge conflict against that PR
+      is expected and will be resolved by the main session (same hand-splice precedent as batches
+      2/3 above).
       ## Progress (run 5)
-      - [ ] `water-potential-calculator`
-      - [ ] `protein-molecular-weight-calculator`
-      - [ ] `molarity-for-buffers-calculator`
-      - [ ] `inheritance-probability-calculator`
-      - [ ] `surface-area-to-volume-ratio-calculator`
+      - [x] `water-potential-calculator`
+      - [x] `protein-molecular-weight-calculator`
+      - [x] `molarity-for-buffers-calculator`
+      - [x] `inheritance-probability-calculator`
+      - [x] `surface-area-to-volume-ratio-calculator`
+      - `water-potential-calculator`: Ψ = Ψp + Ψs (pressure potential + solute potential), reusing
+        the `pressure` dimension (MPa/bar/kPa all already present — water potential is
+        conventionally reported in pressure units even though it is commonly negative, noted
+        explicitly in `formula.note`). Cites OpenStax Biology 2e §30.5 (fetched directly) for the
+        full 4-term equation (Ψ = Ψs + Ψp + Ψg + Ψm) and its own statements that gravity and matric
+        potential are "negligible and easily ignored" at the cellular scale — justifying the
+        simplified 2-term formula this calculator solves. Cross-linked to and explicitly
+        distinguished from chemistry's `osmolarity-calculator`/`vant-hoff-osmotic-pressure-
+        calculator` per the Dedupe section (Ψs = −Π for the same solution, stated in watchOut).
+        Worked example: Ψp = 0.7 MPa, Ψs = −0.8 MPa (both within OpenStax's own cited typical
+        ranges) → Ψ = −0.1 MPa.
+      - `protein-molecular-weight-calculator`: built as a full 20-amino-acid composition calculator
+        (the step file's "your call" precision option), not an average-residue-mass approximation —
+        a citable "~110 Da average residue" source could not be found via direct fetch, so this
+        instead computes each amino acid's exact free molecular weight from its chemical formula via
+        the same `molarMassOf`/`ELEMENTS` table (`lib/atomicMasses.ts`, IUPAC/CIAAW) the existing
+        `molar-mass-calculator` uses, then subtracts one water per peptide bond (OpenStax Biology 2e
+        §3.4: a peptide bond forms "via a dehydration synthesis reaction"). New `lib/aminoAcids.ts`
+        (20 standard amino acids + `proteinMolecularWeight()`). Worked example: met-enkephalin
+        (Tyr-Gly-Gly-Phe-Met) → 573.665 Da, cross-checked two independent ways (residue-sum formula,
+        and directly from its known molecular formula C₂₇H₃₅N₅O₇S) giving an exact match; PubChem
+        CID 42785 lists 573.7 g/mol for the same compound (confirmed via direct PubChem PUG REST
+        fetch after the HTML page itself returned a CAPTCHA wall). Distinguished from
+        `protein-concentration-calculator`'s A280-absorbance framing (what a protein's concentration
+        IS in a sample, vs. what its molecular weight IS from composition).
+      - `molarity-for-buffers-calculator`: judged genuinely distinct from `molarity-calculator`/
+        `moles-to-grams-calculator` (per the Dedupe section's own "build agent's judgment" rule) —
+        it chains both formulas into the one direct question a bench prep actually asks (mass =
+        molarity × volume × molar mass, solved for any of the four), plus a `referenceTable` of 10
+        common lab/buffer reagents' molar masses (new `lib/labReagents.ts`, computed from each
+        reagent's formula via the same shared atomic-mass table, not copied from a datasheet — the
+        template's "every cell is an expression over a shared module" rule). Explicitly states the
+        overlap with the two existing pages in its own concept/formula sections rather than hiding
+        it. Worked example: 0.05 mol/L (50 mM) Tris base, 1 L → 6.06 g; cross-checked a second
+        example (1 M NaCl, 500 mL → 29.22 g) against moles-to-grams-calculator's own existing
+        worked-example figure for the same numbers.
+      - `inheritance-probability-calculator`: picked over the Fick's-law osmosis/diffusion-rate
+        alternative — reuses `punnett-square-calculator`'s exact genotype-probability math (same
+        `GENOTYPE_OPTIONS` 0/1/2 dominant-allele-count encoding) but relabels the AA/Aa/aa outcomes
+        as affected/carrier/unaffected for a health/family-planning framing, with a new
+        `INHERITANCE_PATTERN_OPTIONS` toggle (autosomal recessive vs. dominant) controlling which
+        genotypes count as "affected." Explicitly states the math is identical to
+        `punnett-square-calculator` in its own concept section rather than hiding the overlap — the
+        same "same algebra, different real search intent" precedent as `cell-dilution-calculator`
+        vs. `dilution-calculator`. Cites MedlinePlus Genetics (NIH), fetched directly, for cystic
+        fibrosis (autosomal recessive) and Huntington's disease (autosomal dominant) as real,
+        non-invented example conditions — no pet/human drug-dosage content, no invented risk
+        statistics beyond the Mendelian math itself. Worked examples: two Aa carrier parents of a
+        recessive condition → 25% affected / 50% carrier / 25% unaffected; one Aa-affected parent of
+        a dominant condition × one aa parent → 50% affected / 50% unaffected (matching MedlinePlus's
+        own "usually inherits...from one affected parent," roughly 50%, for Huntington's).
+      - `surface-area-to-volume-ratio-calculator`: built despite the batch-4 duplicate-pick risk
+        noted in this task's brief, since no equally-good alternative was found (a potometer-based
+        transpiration-rate formula could not be confirmed via direct fetch this session). Sphere
+        (SA:V = 3/r) and cube (SA:V = 6/s) models, a classic intro cell-biology topic. Cites OpenStax
+        Biology 2e §4.1 (fetched directly) for its real red-blood-cell size figure (~8 µm diameter),
+        used as one of three real worked benchmarks (bacterium-scale 1 µm radius sphere → 3/µm; RBC
+        modeled as a 4 µm radius sphere → 0.75/µm; human egg cell modeled as a 50 µm radius sphere →
+        0.06/µm) plotted on a `logScale` visual. No new unit dimension added — inputs/outputs use
+        plain µm/µm²/µm³ numbers directly (same precedent as `ligation-calculator`'s plain-number
+        inputs), since a unit menu wasn't needed for a single implied display unit.
+      - **Skipped:** none from this batch's own 5 slots — all were built. (The one real judgment
+        call, `molarity-for-buffers-calculator`, was built rather than skipped; see above for why.)
+      - Every worked-example number (water potential's addition, met-enkephalin's residue-sum vs.
+        direct-formula cross-check, the Tris/NaCl buffer-mass figures, both inheritance-probability
+        crosses, and all five SA:V ratios including the three visual benchmarks) independently
+        re-verified in a standalone Node scratch script (no app imports) before committing; script
+        output matched the copy exactly.
+      - `npm test` 1503/1503 (snapshot diff is additive-only, 238 lines, touching exactly the 5 new
+        ids; two new `KNOWN_NON_FINITE` entries added for `protein-molecular-weight-calculator`
+        (all-zero amino acid counts → undefined molecular weight) and
+        `surface-area-to-volume-ratio-calculator` (zero size → divide by zero), same precedent as
+        batch 3's `log-reduction-calculator` entry), lint clean, `npm run build` exit 0 (391
+        calculator pages). Static HTML of all 5 new pages checked directly for H1/FAQPage JSON-LD
+        presence (a pre-existing dev-server process on port 3000 from another session was left
+        untouched, per this batch's own instructions).
+      - `biology` 15 → 20 from this branch's point of view; will need reconciling with a parallel
+        batch-4 PR at merge time, same as batches 2/3 above.
 - [ ] Batch 6 (simple non-medical animal biology, 5)
 - [ ] Visual-QA spot-check (once this wave crosses ~420 calculators)
 - [ ] STATUS.md updated, `biology` category count recorded, Wave 4 handed off to ecology next

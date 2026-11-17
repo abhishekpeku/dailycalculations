@@ -20,6 +20,7 @@ import { foodCalculators } from './food.ts';
 import { sportsCalculators } from './sports.ts';
 import { chemistryCalculators } from './chemistry.ts';
 import { biologyCalculators } from './biology.ts';
+import { ecologyCalculators } from './ecology.ts';
 
 export type * from './types.ts';
 
@@ -42,7 +43,8 @@ export const categories: CalculatorCategory[] = [
   { id: 'food', title: 'Food', description: 'Recipe scaling, baking ratios, cook times, and other recipe calculators.' },
   { id: 'sports', title: 'Sports', description: 'One-rep max, heart rate zones, VO2 max, race prediction, and swim pace calculators for athletes.' },
   { id: 'chemistry', title: 'Chemistry', description: 'Molar mass, molarity, dilution, and other solution-chemistry calculators.' },
-  { id: 'biology', title: 'Biology', description: 'Cell dilution, genetics, and molecular-biology lab calculators.' }
+  { id: 'biology', title: 'Biology', description: 'Cell dilution, genetics, and molecular-biology lab calculators.' },
+  { id: 'ecology', title: 'Ecology', description: 'Carbon footprint, biodiversity, and sustainability calculators.' }
 ];
 
 // Display order for listings, the sitemap and search; the old single array's order, kept exactly.
@@ -446,7 +448,12 @@ export const calculatorOrder: string[] = [
   'dog-age-calculator',
   'cat-age-calculator',
   'animal-gestation-calculator',
-  'egg-incubation-calculator'
+  'egg-incubation-calculator',
+  'carbon-footprint-calculator',
+  'flight-carbon-footprint-calculator',
+  'water-footprint-calculator',
+  'plastic-footprint-calculator',
+  'meat-footprint-calculator'
 ];
 
 const rank = (id: string) => {
@@ -473,7 +480,8 @@ export const calculators: CalculatorConfig[] = [
   ...foodCalculators,
   ...sportsCalculators,
   ...chemistryCalculators,
-  ...biologyCalculators
+  ...biologyCalculators,
+  ...ecologyCalculators
 ].sort((a, b) => rank(a.id) - rank(b.id));
 
 export function findCalculator(slug: string) {

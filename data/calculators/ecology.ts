@@ -1249,5 +1249,136 @@ export const ecologyCalculators: CalculatorConfig[] = [
       const evennessPct = (shannonIndex / Math.log(richness)) * 100;
       return { shannonIndex, richness, totalIndividuals, evennessPct };
     }
+  },
+  {
+    id: 'population-density-calculator',
+    category: 'ecology',
+    glyph: '/km²',
+    updatedAt: '2026-11-17',
+    aliases: [
+      'population density calculator',
+      'ecological population density calculator',
+      'animal density calculator',
+      'individuals per square kilometer calculator',
+      'wildlife population density calculator'
+    ],
+    related: ['carrying-capacity-calculator', 'population-growth-calculator', 'shannon-diversity-index-calculator', 'area-converter'],
+    title: 'Population Density Calculator',
+    description: 'Calculate population density — the number of individuals per unit area — from a population count and the area it occupies, in km², hectares, or m².',
+    example: 'A survey counts 600 individuals across a 50 km² habitat, for a population density of 12 individuals per km² (0.12 per hectare, or 0.000012 per m²).',
+    content: {
+      lastReviewed: '2026-11-17',
+      concept: {
+        title: 'What is population density?',
+        paragraphs: [
+          'OpenStax’s Biology 2e defines population size as simply "the total number of individuals" and population density as "the number of individuals within a specific area or volume" — the same headcount, but expressed relative to the space it occupies. Two populations can have the same size and very different densities, or the same density on very different areas; density is what lets ecologists compare a count that is actually meaningful across habitats of different sizes.',
+          'OpenStax also notes that smaller organisms tend to be more densely distributed than larger ones — a hectare can hold vastly more insects than elephants, simply because each individual needs far less space and far fewer resources. That is why population density is almost always reported per species, not as a single number for "how crowded" a habitat is overall.',
+          'This calculator divides a population count by the area it was counted in, converting automatically between the common area units ecologists and wildlife surveys use: individuals per square kilometer for larger, wide-ranging animals, and per hectare or per square meter for smaller organisms or plot-based plant surveys.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the population count and the area it was counted over; the density fills in automatically in three common area units.',
+        steps: [
+          { name: 'Enter the population count', text: 'The total number of individuals counted or estimated.' },
+          { name: 'Enter the area', text: 'The area that count covers. Switch the unit (km², hectares, acres, mi², m²) from the menu to match your source.' },
+          { name: 'Read the density', text: 'The headline is density per square kilometer; the breakdown also shows it per hectare and per square meter.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Population density is simply a count divided by the area that count covers.',
+        expression: 'density = population ÷ area\ndensity (per hectare) = density (per km²) ÷ 100\ndensity (per m²) = density (per km²) ÷ 1,000,000',
+        terms: [
+          { symbol: 'population', meaning: 'The total number of individuals counted or estimated (OpenStax’s "population size").' },
+          { symbol: 'area', meaning: 'The area that count was taken over, in whatever unit is most natural for the organism being counted.' }
+        ],
+        note: 'This treats the count and area as already known. A real field count (such as mark-and-recapture, covered in OpenStax’s own population demography section) carries its own estimation error on top of this simple division.'
+      },
+      workedExample: {
+        intro: 'A wildlife survey counts 600 individuals across a 50 km² habitat.',
+        rows: [
+          { label: 'Population', value: '600' },
+          { label: 'Area', value: '50 km²' },
+          { label: 'Density per km² (600 ÷ 50)', value: '12' },
+          { label: 'Density per hectare (12 ÷ 100)', value: '0.12' },
+          { label: 'Density per m² (12 ÷ 1,000,000)', value: '0.000012' }
+        ],
+        result: '12 individuals per km²',
+        explanation:
+          'The same density reads very differently depending on the unit: 12 per km² sounds sparse, but it is the same crowding as 0.12 per hectare or roughly 1 individual per 83,333 m² — all three describe the identical population spread over the identical area.'
+      },
+      watchOut: [
+        {
+          title: 'Density depends entirely on how the area is defined',
+          body: 'Counting the same population over a smaller area (just the core habitat it actually uses, say) rather than a larger one (the whole survey boundary) gives a higher density for the identical population — always check what area a published density figure is measured against.'
+        },
+        {
+          title: 'This is not a population estimate',
+          body: 'This calculator assumes the population count is already known or already estimated by another method. OpenStax notes that field techniques like mark-and-recapture carry their own bias (animals that learn to avoid a second capture inflate the estimate; animals drawn back by a food reward deflate it) — errors in the count carry straight through to the density.'
+        },
+        {
+          title: 'Density alone does not say whether a population is thriving',
+          body: 'A high density can mean a population is nearing its environment’s carrying capacity (see Carrying Capacity Calculator) just as easily as it can mean a healthy, well-supported population — density on its own does not distinguish the two.'
+        }
+      ],
+      references: [
+        {
+          label: 'OpenStax, Biology 2e, §45.1 "Population Demography" (population size and density definitions, mark-and-recapture bias)',
+          url: 'https://openstax.org/books/biology-2e/pages/45-1-population-demography'
+        }
+      ]
+    },
+    inputs: [
+      { id: 'population', label: 'Population', type: 'number', placeholder: '600', defaultValue: 600, step: 1, min: 0 },
+      { id: 'area', label: 'Area', type: 'number', placeholder: '50', defaultValue: 50, step: 1, min: 0.000001, dimension: 'area', unit: 'km2' }
+    ],
+    breakdown: {
+      headline: 'densityPerKm2',
+      headlineLabel: 'Population density',
+      outputs: [
+        { id: 'densityPerKm2', label: 'Density (individuals/km²)', format: 'significant' },
+        { id: 'densityPerHectare', label: 'Density (individuals/hectare)', format: 'significant' },
+        { id: 'densityPerM2', label: 'Density (individuals/m²)', format: 'significant' }
+      ],
+      groups: [{ title: 'Population and area', inputs: ['population', 'area'] }]
+    },
+    seo: {
+      title: 'Population Density Calculator – Individuals per Area',
+      description: 'Free population density calculator. Calculate individuals per km², hectare, or m² from a population count and the area it occupies.',
+      faq: [
+        {
+          question: 'How do I calculate population density?',
+          answer: 'Divide the population count by the area it occupies. 600 individuals across 50 km² gives a density of 600 ÷ 50 = 12 individuals per km².'
+        },
+        {
+          question: 'What is the difference between population size and population density?',
+          answer:
+            'OpenStax’s Biology 2e defines population size as "the total number of individuals" and population density as "the number of individuals within a specific area or volume" — size is a headcount, density is that headcount relative to the space it occupies.'
+        },
+        {
+          question: 'How do I convert density between km² and hectares or m²?',
+          answer: 'Divide by 100 to go from per km² to per hectare (1 km² = 100 ha, exact), or by 1,000,000 to go from per km² to per m² (1 km² = 1,000,000 m², exact). 12 per km² is 0.12 per hectare and 0.000012 per m².'
+        },
+        {
+          question: 'Why do small organisms have higher population densities than large ones?',
+          answer: 'OpenStax notes that smaller organisms tend to be more densely distributed than larger ones, since each individual needs less space and fewer resources — a given area can support far more insects than elephants.'
+        },
+        {
+          question: 'Does population density tell you if a population is overcrowded?',
+          answer: 'Not by itself. A high density can reflect a population nearing its environment’s carrying capacity, or simply a species that naturally lives at high density — density alone does not distinguish the two without more context.'
+        },
+        {
+          question: 'Is this calculator accurate if my population count is just an estimate?',
+          answer: 'The division itself is exact, but the result is only as accurate as the population count you enter. Field methods like mark-and-recapture carry their own estimation bias, which carries straight through into the density figure.'
+        }
+      ]
+    },
+    compute(values) {
+      // 1 km² = 100 ha = 1,000,000 m², exact SI area relationships (NIST SP 811).
+      const densityPerKm2 = values.population / values.area;
+      const densityPerHectare = densityPerKm2 / 100;
+      const densityPerM2 = densityPerKm2 / 1e6;
+      return { densityPerKm2, densityPerHectare, densityPerM2 };
+    }
   }
 ];

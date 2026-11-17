@@ -11786,6 +11786,44 @@ exports[`compute() snapshots > pool-volume-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > population-density-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "population": 600,
+      "area": 50
+    },
+    "outputs": {
+      "densityPerKm2": 12,
+      "densityPerHectare": 0.12,
+      "densityPerM2": 0.000012
+    }
+  },
+  "typical": {
+    "inputs": {
+      "population": 900,
+      "area": 75
+    },
+    "outputs": {
+      "densityPerKm2": 12,
+      "densityPerHectare": 0.12,
+      "densityPerM2": 0.000012
+    }
+  },
+  "edge": {
+    "inputs": {
+      "population": 0,
+      "area": 0.000001
+    },
+    "outputs": {
+      "densityPerKm2": 0,
+      "densityPerHectare": 0,
+      "densityPerM2": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > population-growth-calculator 1`] = `
 {
   "default": {

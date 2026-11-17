@@ -181,9 +181,10 @@ discipline as every prior wave — ship fewer than 5 rather than pad, if good ca
       this file's own expected totals exactly. `ecology` is now 5/~25 — batches 2-5 may now run in
       parallel with each other (category-opening work, which had to be sequential, is complete).
 - [x] Batch 2 (population + biodiversity ecology, 5) — **DONE 2026-11-17**, branch
-      `step/49-wave-4-ecology-run-2`, PR #124 (ready for review). This was a re-run — a prior
-      attempt died from a weekly API rate limit before making any commits, so it restarted fresh
-      with no partial state to resume from. Added:
+      `step/49-wave-4-ecology-run-2`, PR #124 (merged, after batch 3's PR below merged first and
+      this one conflicted against it as expected). This was a re-run — a prior attempt died from a
+      weekly API rate limit before making any commits, so it restarted fresh with no partial state
+      to resume from. Added:
       - [x] `carrying-capacity-calculator` — logistic growth model. OpenStax Biology 2e §45.3 gives
             dN/dT = r_max × N × (K − N)/K directly (fetched and quoted); dividing by N turns it into
             a 4-variable per-capita-rate solver (population, carrying capacity, max growth rate,
@@ -221,10 +222,34 @@ discipline as every prior wave — ship fewer than 5 rather than pad, if good ca
       mins), lint clean, `npm run build` succeeded (442 paths generated). **`ecology` 5 → 10 from
       this branch's own point of view** — a parallel batch 3 agent is also appending to the same
       `ecology.ts`/`calculatorOrder`, so this count needs reconciling with that PR at merge time.
-- [ ] Batch 3 (sustainable living / resource use, 5)
+- [x] Batch 3 (sustainable living / resource use, 5) — **DONE 2026-11-17**, branch
+      `step/49-wave-4-ecology-run-3`, PR #123 (merged first, cleanly). Added:
+      `car-vs-bike-calculator`, `tree-benefits-calculator`, `books-vs-ebooks-calculator`,
+      `drip-faucet-waste-calculator` (chosen over `water-demand-calculator` — a direct-tap-leak
+      framing, genuinely distinct from `water-footprint-calculator`'s direct+virtual
+      national-average framing), `recycling-rate-calculator` (chosen over
+      `composting-impact-calculator` — a whole-waste-stream diversion-rate calculator, genuinely
+      distinct from `plastic-footprint-calculator`'s plastic-only framing). Sources fetched
+      directly: EPA GHG Equivalencies Calculator (gasoline factor, reused from batch 1; urban-tree
+      annual CO2 sequestration factor, citing McPherson et al. 2016 USDA Forest Service); Kozak
+      (2003), "Printed Scholarly Books and E-book Reading Devices" (University of Michigan Center
+      for Sustainable Systems, Report CSS03-04) — fetched and read in full as the published PDF,
+      global-warming-potential results by life-cycle stage (Tables 6-6/6-7); EPA WaterSense "Fix a
+      Leak Week" page (drip-rate and average-household-leak statistics — the faucet and showerhead
+      figures independently imply the same 50-gal/year-per-drip-per-minute rate, used as a
+      cross-check); EPA National Overview: Facts and Figures on Materials, Waste and Recycling
+      (2018 national MSW recycling+composting rate, 32.1%, reusing batch 1's total-MSW-per-person
+      figure). The books-vs-ebooks model reproduces Kozak's own published 40-book totals exactly
+      when plugged back in, confirming the per-book/per-device figures were transcribed correctly;
+      its break-even point works out to about 5 books. All numbers independently re-verified in a
+      standalone Node scratch script (no app imports). No new `lib/units.ts` dimensions needed
+      (mass/volume/length/currency/count/percent/fuelEconomy all reused). `npm test` 1539/1539
+      (snapshots added for the 5 new ids, additive-only diff), lint clean, `npm run build` 442
+      routes. `ecology` is now 10/~25 from this branch's own point of view; reconciled with batch 2
+      above — final combined count after both: `ecology` 15, site-wide 414.
 - [ ] Batch 4 (environmental health + remaining population ecology, 5)
 - [ ] Batch 5 (round out to ~25, 5)
-- [ ] Visual-QA spot-check (once the site crosses ~420 calculators) — site is at 404 after batch 1,
-      so this is likely due during batch 3 or 4.
+- [ ] Visual-QA spot-check (once the site crosses ~420 calculators) — site is at 414 after batches
+      1-3, so this is likely due during batch 4 or 5.
 - [ ] STATUS.md updated, `ecology` category count recorded, Wave 4 fully closed out (biology +
       ecology both done) — fun/other is next per D13/D22/D23 (already has its go-ahead, per D23)

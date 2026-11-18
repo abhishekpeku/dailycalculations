@@ -122,5 +122,127 @@ export const businessCalculators: CalculatorConfig[] = [
       const markupPercent = values.cost > 0 ? (profit / values.cost) * 100 : NaN;
       return { marginPercent, profit, markupPercent };
     }
+  },
+  {
+    id: 'markup-calculator',
+    category: 'business',
+    glyph: 'MU%',
+    updatedAt: '2026-11-18',
+    aliases: ['markup percentage calculator', 'cost plus pricing calculator', 'markup on cost calculator', 'how much to mark up calculator'],
+    related: ['profit-margin-calculator', 'break-even-calculator', 'contribution-margin-calculator', 'commission-calculator'],
+    title: 'Markup Calculator',
+    description: 'Find markup, selling price, or cost from the other two — markup is profit as a percentage of cost, the cost-plus-pricing companion to the margin calculator.',
+    example: 'A product that costs $70 and sells for $100 has a markup of 42.86% — $30 of profit on top of a $70 cost.',
+    solver: {
+      defaultTarget: 'markupPercent',
+      variables: [
+        { id: 'cost', label: 'Cost', symbol: 'C', dimension: 'currency', defaultValue: 70, defaultUnit: 'currency' },
+        { id: 'sellingPrice', label: 'Selling price', symbol: 'P', dimension: 'currency', defaultValue: 100, defaultUnit: 'currency' },
+        { id: 'markupPercent', label: 'Markup', symbol: 'U', dimension: 'percent', defaultValue: 42.857142857142854, defaultUnit: '%', bounds: [-100, 10000] }
+      ],
+      // Every variable has a closed form: markup is profit over the smaller cost, not selling price.
+      solve: {
+        markupPercent: ({ sellingPrice, cost }) => (cost > 0 ? ((sellingPrice - cost) / cost) * 100 : NaN),
+        sellingPrice: ({ cost, markupPercent }) => cost * (1 + markupPercent / 100),
+        cost: ({ sellingPrice, markupPercent }) => (markupPercent > -100 ? sellingPrice / (1 + markupPercent / 100) : NaN)
+      },
+      outputs: [
+        { id: 'profit', label: 'Profit', dimension: 'currency', compute: (si) => si.sellingPrice - si.cost },
+        {
+          id: 'marginPercent',
+          label: 'Margin on the same sale (profit ÷ price)',
+          dimension: 'percent',
+          compute: (si) => (si.sellingPrice > 0 ? ((si.sellingPrice - si.cost) / si.sellingPrice) * 100 : NaN)
+        }
+      ],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'cost', label: 'Cost' },
+            { from: 'profit', label: 'Profit' }
+          ],
+          center: 'sellingPrice',
+          centerSub: 'selling price'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What is markup?',
+        paragraphs: [
+          'Markup is profit expressed as a percentage of cost, not of selling price — the "cost-plus" number behind pricing rules like "mark everything up 50% over wholesale." A 50% markup on a $70 cost adds $35 of profit, for a $105 selling price.',
+          'This is the companion calculator to profit margin, and the two are easy to mix up because they describe the same sale but divide the same profit by a different number. Omni Calculator\'s margin calculator states the distinction directly: margin is "the ratio of profit to the sale price," while markup is "the ratio of profit to the purchase price (cost of goods sold)." Because cost is always smaller than selling price whenever a sale is profitable, markup on a profitable sale is always a larger percentage than margin on that same sale — 42.86% markup versus 30% margin on the $70-cost, $100-price example below.',
+          'The relationship runs in any of three directions: given a cost and a selling price, markup is calculable directly; given a cost and a target markup, the resulting selling price follows; and given a selling price and a target markup, the cost that was marked up to reach it follows too.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of cost, selling price and markup. The third, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter the cost', text: 'What it costs to produce, buy, or deliver — the base the markup is added on top of.' },
+          { name: 'Enter the selling price', text: 'What it actually sells for.' },
+          { name: 'Read the markup', text: 'Markup is profit divided by cost, shown as a percentage.' },
+          { name: 'Or solve backward', text: 'Leave selling price alone to price a known cost at a target markup, or leave cost alone to see what cost a known price and markup imply.' },
+          { name: 'Compare to margin', text: 'The results also show the margin percentage on the same numbers, so you can see how a cost-plus rule translates into a margin figure.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Profit is the gap between selling price and cost, same as margin. Markup divides that profit by cost instead of selling price.',
+        expression:
+          'profit = sellingPrice − cost\nmarkupPercent = profit ÷ cost × 100\nsellingPrice = cost × (1 + markupPercent ÷ 100)\ncost = sellingPrice ÷ (1 + markupPercent ÷ 100)',
+        terms: [
+          { symbol: 'profit', meaning: 'Selling price minus cost — the dollar amount kept from the sale.' },
+          { symbol: 'markupPercent', meaning: 'Profit as a percentage of cost, not of selling price.' }
+        ],
+        note: 'Estimates only. See the companion profit margin calculator for the selling-price-based version of this same relationship — the two will not match unless profit is exactly zero.'
+      },
+      workedExample: {
+        intro: 'A product costs $70 to make and sells for $100. What is the markup, and what would a 50% markup on the same cost sell for instead?',
+        rows: [
+          { label: 'Profit (100 − 70)', value: '$30' },
+          { label: 'Markup (30 ÷ 70 × 100)', value: '42.86%' },
+          { label: 'Margin on the same sale (30 ÷ 100 × 100)', value: '30%' },
+          { label: 'Price at a 50% markup on the same $70 cost (70 × 1.50)', value: '$105.00' }
+        ],
+        result: 'At a $100 price, markup is 42.86% (and margin is 30%); a 50% markup on the same $70 cost prices at $105.00.',
+        explanation: 'A simple "mark it up 50%" rule is a markup, not a margin — multiplying cost by 1.50 is a one-step calculation, while hitting a 50% margin on the same $70 cost would instead require dividing by (1 − 0.50), pricing at $140.00. The two rules sound similar but produce very different prices.'
+      },
+      watchOut: [
+        { title: 'Markup and margin are never the same number once there is profit', body: 'Markup divides profit by the smaller cost; margin divides it by the larger selling price. On the $70-cost, $100-price example above, markup is 42.86% but margin is 30% — the same $30 of profit, two different percentages.' },
+        { title: 'A "50% markup" and a "50% margin" price very differently', body: 'A 50% markup on a $70 cost multiplies by 1.50, pricing at $105. A 50% margin target on the same cost instead divides by 0.50, pricing at $140 — nearly 33% higher. Confirm which one a pricing rule actually means before applying it.' },
+        { title: 'Markup has no ceiling; margin is capped below 100%', body: 'A 100% markup just means doubling the cost — there is no mathematical limit beyond that. Margin, by contrast, can only approach 100% as cost shrinks toward zero.' },
+        { title: 'What counts as "cost" changes the answer', body: 'Marking up only direct product or unit cost gives a different, usually smaller, selling price than marking up a fuller cost that includes overhead and labor. Keep the cost definition consistent when comparing markups.' },
+        { title: 'A negative markup means a loss, not a small profit', body: 'If the selling price is below cost, markup comes out negative — the sale loses money rather than making a thin profit.' }
+      ],
+      references: [
+        { label: 'Omni Calculator, Margin Calculator', url: 'https://www.omnicalculator.com/finance/margin' },
+        { label: 'OpenStax, Principles of Managerial Accounting §3.1, Contribution margin per unit and ratio', url: 'https://openstax.org/books/principles-managerial-accounting/pages/3-1-explain-contribution-margin-and-calculate-contribution-margin-per-unit-contribution-margin-ratio-and-total-contribution-margin' }
+      ]
+    },
+    inputs: [
+      { id: 'cost', label: 'Cost', type: 'currency', placeholder: '70', defaultValue: 70, step: 1, min: 0 },
+      { id: 'sellingPrice', label: 'Selling price', type: 'currency', placeholder: '100', defaultValue: 100, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Markup Calculator – Markup, Price, or Cost',
+      description: 'Calculate markup from cost and selling price, or solve backward for the price or cost that hits a target markup. Free, with a margin comparison.',
+      faq: [
+        { question: 'How do I calculate markup?', answer: 'Subtract cost from selling price to get profit, then divide profit by the cost and multiply by 100. A $70 cost sold for $100 has $30 profit and a 42.86% markup.' },
+        { question: 'What is the difference between markup and margin?', answer: 'Markup divides profit by cost; margin divides the same profit by selling price. On a $70-cost, $100-price sale, markup is 42.86% but margin is 30% — always a different number once there is any profit.' },
+        { question: 'Is a 50% markup the same as a 50% margin?', answer: 'No. A 50% markup on a $70 cost prices at $105 (cost × 1.50). A 50% margin target on the same cost prices at $140 (cost ÷ 0.50) — a markup rule and a margin rule with the same percentage number produce different prices.' },
+        { question: 'How do I price something to hit a target markup?', answer: 'Multiply cost by (1 + target markup as a decimal). A $70 cost at a 50% markup prices at 70 × 1.50 = $105.' },
+        { question: 'Can markup be over 100%?', answer: 'Yes, with no mathematical ceiling — a 100% markup doubles the cost, a 200% markup triples it, and so on. This is unlike margin, which is capped just below 100%.' },
+        { question: 'Which should I use, markup or margin?', answer: 'Markup is simpler for cost-plus pricing rules ("add 50% to cost"). Margin is usually what matters for profitability targets, since it says what share of revenue is actually profit. Many businesses track both.' },
+        { question: 'What is the markup on the profit-margin-calculator\'s example?', answer: 'That page\'s $70-cost, $100-price example (30% margin) is 42.86% markup here — the same sale, read as profit over cost instead of profit over price.' }
+      ]
+    },
+    compute(values) {
+      const profit = values.sellingPrice - values.cost;
+      const markupPercent = values.cost > 0 ? (profit / values.cost) * 100 : NaN;
+      const marginPercent = values.sellingPrice > 0 ? (profit / values.sellingPrice) * 100 : NaN;
+      return { markupPercent, profit, marginPercent };
+    }
   }
 ];

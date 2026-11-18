@@ -175,15 +175,62 @@ Countdowns, Weather & Geography, Everyday Novelties), add `fun` to `categories.s
   - [x] `friday-the-13th-calculator` (weekday-recurrence groupings brute-force verified 1583-3000; matches Wikipedia's 1-3/year and 688-vs-684-687 figures exactly)
   - [x] `christmas-countdown-calculator` (live days/hours/minutes + shopping-weekday/weekend split, ISO 8601-cited methodology, closed-form weekday count)
   - [x] `new-years-countdown-calculator` (live countdown + hours-behind-Kiribati/UTC+14 figure; timezone offset is an explicit input, not browser-detected, so compute() stays deterministic)
-- [ ] Batch 4 — Weather & geography novelties (5)
+- [x] Batch 4 — Weather & geography novelties (5) — DONE 2026-11-18, branch `step/50-fun-other-batch4`, PR #137 (merged)
+  - [x] `wind-chill-calculator`
+  - [x] `heat-index-calculator`
+  - [x] `antipode-calculator`
+  - [x] `moon-phase-calculator`
+  - [x] `relationship-anniversary-calculator`
 - [x] Batch 5 — Everyday gadget/misc novelties — DONE 2026-11-18, branch `step/50-fun-other-batch5`, PR #136
   - [x] `screen-size-calculator` (diagonal + aspect ratio + resolution -> width/height/area/PPI, Pythagorean derivation, cited to Wikipedia's Pixel density and Aspect ratio (image) articles)
   - [x] `aspect-ratio-calculator` (solver: width<->height for any ratio, companion to screen-size-calculator)
   - [x] `uptime-percentage-calculator` (uptime % -> downtime per day/month/year, standard nines reference table, cited to Wikipedia's High availability article)
   - Built exactly 3, not 4: per the step file's own header-count-mismatch note, no 4th idea was added just to round out the batch. Considered and rejected as thin/out of scope for this bucket: a generic "pixel-to-inch/cm converter" (duplicates `length-converter`'s role once combined with screen-size-calculator), a "frame rate / shutter speed" calculator (hobbyist photography math, same exclusion logic as the step's already-excluded Photo & Video niche), and a "file size / download time" calculator (closer to the separately-scoped `tech` category than "everyday novelty"). None were built.
-- [ ] Batch 6 — Sub-grouping retrofit (`group` field + `GROUPED_CATEGORIES`)
-- [ ] STATUS.md updated with a final per-category summary
+- [x] Batch 6 — Sub-grouping retrofit (`group` field + `GROUPED_CATEGORIES`) — DONE 2026-11-18, branch `step/50-fun-other-batch6`
+- [x] STATUS.md updated with a final per-category summary
 
 **Visual-QA note:** per CLAUDE.md, the Chrome spot-check runs once per ~50 new calculators, not per
 batch. The site crossed that threshold a while ago (currently 454+) without one happening yet — flag
 this as still overdue regardless of this step's own progress, not a new finding specific to `fun`.
+
+## Closing summary — step 50 fully done, `fun` closed out at 23/23
+
+Batch 6 was a pure mechanical retrofit — no new calculators, no content changes, no citations
+re-verified (nothing numeric changed). It added a `group` field to every one of the 23 `fun`
+calculators already shipped by batches 1-5, and added `'fun'` to
+`data/calculators/categories.spec.ts`'s `GROUPED_CATEGORIES`, the same precedent used to close out
+`biology` (PR #122) and `ecology` (PR #131).
+
+Final group breakdown (23 calculators, all-or-nothing per the invariant tests — no stragglers):
+
+- **Astrology & Relationships** (6): `zodiac-sign-calculator`, `chinese-zodiac-calculator`,
+  `zodiac-compatibility-calculator`, `love-calculator`, `name-numerology-calculator`,
+  `relationship-anniversary-calculator`
+- **Probability & Odds** (5): `dice-probability-calculator`, `coin-flip-probability-calculator`,
+  `birthday-paradox-calculator`, `lottery-odds-calculator`, `card-draw-probability-calculator`
+- **Calendar & Countdowns** (5): `easter-date-calculator`, `mayan-calendar-converter`,
+  `friday-the-13th-calculator`, `christmas-countdown-calculator`, `new-years-countdown-calculator`
+- **Weather & Geography** (4): `wind-chill-calculator`, `heat-index-calculator`,
+  `antipode-calculator`, `moon-phase-calculator`
+- **Everyday Novelties** (3): `screen-size-calculator`, `aspect-ratio-calculator`,
+  `uptime-percentage-calculator`
+
+`relationship-anniversary-calculator` was grouped under Astrology & Relationships rather than
+Weather & Geography (where batch 4 built it) — it's a relationship-milestone calculator, not a
+weather/geography one; grouping follows subject matter, not build-batch history.
+
+`fun` is now **fully closed out at 23/23** — the step file's original "~24/25" seed-list framing
+was never a hard target; batch 5 built 3 calculators instead of a nominal 4th because no fourth
+idea cleared the real-citable-and-non-duplicate bar (documented at the time as an honest count, not
+a shortfall), so 23 is the category's real, final total. No further `fun` batches are planned.
+
+`npm test` 1630/1630 (no snapshot changes — `group` isn't part of the snapshot's tracked shape),
+lint clean, `npm run build` all green (515 total static pages, 480 of them calculator pages — both
+figures unchanged from batch 5, since batch 6 added no calculators). Both `categories.spec.ts`
+grouping-invariant tests pass for `fun`. `origin/master` had not moved ahead of this branch's branch
+point by the time of the final push, so no merge/rebase was needed.
+
+Site-wide: **480 calculators**, 22 categories. Wave 4 (biology, ecology) and the
+`fun`/`other` and `tech` categories are now all fully done. Next per D13/D22/D23's locked category
+order: **step 62, Wave 5 Solar & Home Energy** (already scoped in
+`mdFiles/steps/62-wave-5-solar-home-energy.md`, not yet started).

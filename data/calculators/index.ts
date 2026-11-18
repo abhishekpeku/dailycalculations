@@ -141,6 +141,7 @@ export const calculatorOrder: string[] = [
   'readability-score-calculator',
   'word-to-page-count-calculator',
   'word-counter-calculator',
+  'syllable-counter-calculator',
   'pomodoro-timer',
   'timezone-meeting-planner',
   'force-calculator',

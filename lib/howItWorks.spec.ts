@@ -25,6 +25,7 @@ describe('buildFlow', () => {
       'character-counter',
       'hashtag-counter',
       'word-counter-calculator',
+      'syllable-counter-calculator',
       'pomodoro-timer',
       'timezone-meeting-planner',
       'scientific-calculator'

@@ -100,7 +100,7 @@ export default async function CalculatorPage({
   // The hand-built (type C) widgets render as one box, not the inputs/result split — "How it
   // works"/contents go in a plain row below them (see the tocItems render below), not into the
   // belowInputs/belowResult slots SolverCalculator/BreakdownCalculator accept.
-  const isCustomWidget = ['currency-converter', 'character-counter', 'hashtag-counter', 'word-counter-calculator', 'pomodoro-timer', 'timezone-meeting-planner', 'scientific-calculator'].includes(slug);
+  const isCustomWidget = ['currency-converter', 'character-counter', 'hashtag-counter', 'word-counter-calculator', 'syllable-counter-calculator', 'pomodoro-timer', 'timezone-meeting-planner', 'scientific-calculator'].includes(slug);
 
   const howItWorksCard = (
     <HowItWorksCard
@@ -127,6 +127,7 @@ export default async function CalculatorPage({
     slug === 'character-counter' ? <TextToolsCalculator mode="character" /> :
     slug === 'hashtag-counter' ? <TextToolsCalculator mode="hashtag" /> :
     slug === 'word-counter-calculator' ? <TextToolsCalculator mode="word" /> :
+    slug === 'syllable-counter-calculator' ? <TextToolsCalculator mode="syllable" /> :
     slug === 'pomodoro-timer' ? <PomodoroTimer /> :
     slug === 'timezone-meeting-planner' ? <TimeZonePlanner /> :
     slug === 'scientific-calculator' ? <ScientificCalculator /> :

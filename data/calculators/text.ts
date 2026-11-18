@@ -875,4 +875,90 @@ export const textCalculators: CalculatorConfig[] = [
     },
     compute() { return {}; }
   },
+  // Custom-component stub: rendered by a special component in page.tsx (TextToolsCalculator, mode="syllable").
+  {
+    id: 'syllable-counter-calculator',
+    category: 'text',
+    group: 'Word Count & Readability',
+    glyph: 'Sy',
+    updatedAt: '2026-11-18',
+    aliases: ['syllable counter', 'how many syllables calculator', 'syllable count tool', 'word syllable counter', 'syllable estimator'],
+    related: ['readability-score-calculator', 'word-counter-calculator', 'character-counter'],
+    title: 'Syllable Counter',
+    description: 'Estimate the syllable count of any text using a vowel-group heuristic, plus average syllables per word and a complex-word (3+ syllable) count — the building block for a Flesch-Kincaid readability score.',
+    example: '"Daily Calculations helps you estimate syllables, plan budgets, and track fitness instantly." has 12 words and an estimated 24 syllables — a 2.00 average, with 4 complex (3+ syllable) words.',
+    inputs: [],
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'How this estimates syllables, and why it is an estimate',
+        paragraphs: [
+          'A fully accurate syllable count needs a pronunciation dictionary — a lookup table of how every word actually sounds. Without one, this page uses a vowel-group heuristic instead: it counts runs of consecutive vowels (a, e, i, o, u, y) in a word, treats each run as one syllable, then applies two common corrections — dropping a silent trailing "e" ("care" is 1 syllable, not 2) and adding a syllable back for a consonant plus "-le" ending such as "table" or "little", which the silent-e rule would otherwise undercount. Every word gets a minimum of 1 syllable.',
+          'This simplified version follows the same basic approach as a well-known chain of open-source syllable estimators: the Perl module Lingua::EN::Syllable (written by Greg Fast), later ported with more exception rules into Dave Child\'s PHP Text-Statistics library, and again into the syllable npm package maintained by Titus Wormer. Those libraries add dozens of additional regular-expression corrections for edge cases; this page uses only the two most common ones (silent "e" and "-le"), which is why it is described here as a reduced, simplified heuristic rather than a full reproduction of any one of them.',
+          'Lingua::EN::Syllable\'s own documentation reports that it "fails (by one syllable) for about 10-15%" of the words in a standard English word list — a useful benchmark for what to expect from this family of heuristic, non-dictionary approaches generally, including the simplified version here. The total syllable count, average syllables per word, and complex-word count (3 or more syllables) feed directly into this site\'s Readability Score Calculator, which turns those counts into a Flesch-Kincaid grade level.'
+        ]
+      },
+      howTo: {
+        intro: 'Type or paste your text into the box.',
+        steps: [
+          { name: 'Enter your text', text: 'Type directly or paste from anywhere — a paragraph, an article, an essay.' },
+          { name: 'Read the syllable count', text: 'The estimated total syllable count across every word is shown first and largest.' },
+          { name: 'Check the average', text: 'Average syllables per word is a quick sense of how "dense" the vocabulary is — short common words pull it toward 1, longer or technical words push it higher.' },
+          { name: 'Check complex words', text: 'The count of words with 3 or more estimated syllables, a rough proxy for vocabulary difficulty.' },
+          { name: 'Feed it into a readability score', text: 'Take this word count, your own sentence count, and this syllable count into the Readability Score Calculator for a Flesch-Kincaid grade level and reading-ease score.' }
+        ],
+        outro: 'Everything runs in your browser as you type. Nothing is uploaded, sent, or stored.'
+      },
+      formula: {
+        intro: 'Each word is reduced to a syllable estimate by the same small set of rules.',
+        expression:
+          'groups = runs of consecutive vowels (a, e, i, o, u, y) in the word\nsyllables = groups, after dropping a silent trailing "e" and adding back 1 for a consonant + "-le" ending\nevery word has a minimum of 1 syllable',
+        terms: [
+          { symbol: 'groups', meaning: 'A run of one or more consecutive vowel letters counts as a single syllable candidate — "beau" in "beautiful" is one group, not three, because the vowels are consecutive.' },
+          { symbol: 'silent "e"', meaning: 'A trailing "e" is dropped before counting groups, so "care" (c-a-r-e) becomes "car" and counts as 1 group, not 2.' },
+          { symbol: '"-le" correction', meaning: 'If the original word ends in a consonant followed by "le" (table, little, people), 1 syllable is added back, since the silent-e rule alone would otherwise undercount these.' }
+        ],
+        note: 'Words of 3 letters or fewer always return exactly 1 syllable, skipping the rules above — a practical shortcut that holds for virtually all short English words ("the", "cat", "a").'
+      },
+      workedExample: {
+        intro: 'The sentence "Daily Calculations helps you estimate syllables, plan budgets, and track fitness instantly." — 12 words.',
+        rows: [
+          { label: '"Daily" / "Calculations"', value: '2 / 4 syllables' },
+          { label: '"estimate" / "syllables" / "instantly"', value: '3 / 3 / 3 syllables' },
+          { label: '"budgets" / "fitness"', value: '2 / 2 syllables' },
+          { label: '"helps" / "you" / "plan" / "and" / "track"', value: '1 syllable each' },
+          { label: 'Total syllables (sum of all 12 words)', value: '24' },
+          { label: 'Average syllables per word (24 ÷ 12)', value: '2.00' },
+          { label: 'Complex words (3+ syllables)', value: '4 — Calculations, estimate, syllables, instantly' }
+        ],
+        result: '24 syllables across 12 words — a 2.00 average, with 4 complex (3+ syllable) words',
+        explanation: '"Calculations" is estimated at 4 syllables from its 4 vowel groups (a / u / a / io — the "io" counts once since the letters are consecutive), matching its dictionary pronunciation of cal-cu-la-tions. "budgets" has no trailing "e" to drop, and its own 2 vowel groups (u, e) match its dictionary count of bud-gets.'
+      },
+      watchOut: [
+        { title: 'This is a heuristic estimate, not a dictionary lookup', body: 'It will occasionally be off by one syllable on irregular words, the same class of error Lingua::EN::Syllable\'s own documentation reports for about 10-15% of common English words — treat the result as a close estimate, not a guaranteed-exact count.' },
+        { title: 'Numbers and symbols count as words but add 0 syllables', body: 'A token like "2026" or "$5" is still counted toward the word total (it is separated by whitespace), but contributes 0 syllables since digits and symbols are stripped before counting — this can pull the average syllables-per-word figure down slightly on text with many numbers.' },
+        { title: '"Complex word" here just means 3+ estimated syllables', body: 'This is a simpler rule than the exact "complex word" definition used in some published readability formulas (such as Gunning Fog), which exclude proper nouns, common suffixes, and familiar compound words from the complex-word count. This page applies no such exceptions.' },
+        { title: 'English only', body: 'The vowel-group rule and its "-le"/silent-"e" corrections are tuned to English spelling conventions and will not give meaningful results on other languages.' },
+        { title: 'Hyphenated and compound words are treated as one token', body: 'Splitting on whitespace means "well-known" is counted and estimated as a single word, the same word-splitting convention this site\'s word counter and character counter use.' }
+      ],
+      references: [
+        { label: 'MetaCPAN, Lingua::EN::Syllable (Greg Fast) — accuracy and algorithm overview', url: 'https://metacpan.org/pod/Lingua::EN::Syllable' },
+        { label: 'Dave Child, Text-Statistics (PHP port with extended syllable rules)', url: 'https://github.com/DaveChild/Text-Statistics' },
+        { label: 'Titus Wormer (wooorm), syllable (JavaScript port)', url: 'https://github.com/wooorm/syllable' }
+      ]
+    },
+    seo: {
+      title: 'Syllable Counter – Free Vowel-Group Syllable Estimator',
+      description: 'Count syllables in any text with a vowel-group heuristic. Get total syllables, average per word, and a complex-word count for readability scoring. Instant.',
+      faq: [
+        { question: 'How does this syllable counter work?', answer: 'It counts runs of consecutive vowels in each word as syllable candidates, drops a silent trailing "e", and adds back a syllable for a consonant + "-le" ending (as in "table"), with a minimum of 1 syllable per word — a simplified version of the vowel-group heuristic used by several open-source syllable estimators.' },
+        { question: 'Is this 100% accurate?', answer: 'No — only a dictionary lookup can be fully accurate. This heuristic family is documented (by the Perl module it is simplified from) to miss by one syllable on roughly 10-15% of common English words, so treat the result as a close estimate.' },
+        { question: 'What counts as a "complex word" here?', answer: 'Any word estimated at 3 or more syllables. This is simpler than some published readability formulas, which exclude proper nouns and common suffixes from their own complex-word count — this page applies no such exceptions.' },
+        { question: 'Why do I need a syllable count for a readability score?', answer: 'The Flesch-Kincaid Grade Level and Flesch Reading Ease formulas are both built from average sentence length and average syllables per word — this page\'s word, average-syllable and complex-word figures are exactly what the Readability Score Calculator on this site needs.' },
+        { question: 'Do numbers or punctuation affect the syllable count?', answer: 'Numbers and symbols are stripped before counting and contribute 0 syllables, but a number like "2026" still counts as one "word" if it is separated by whitespace, which can slightly lower the average syllables-per-word figure on number-heavy text.' },
+        { question: 'Does this work for languages other than English?', answer: 'No. The vowel-group rule and its silent-"e"/"-le" corrections are based on English spelling patterns and will not give meaningful results for other languages.' }
+      ]
+    },
+    compute() { return {}; }
+  },
 ];

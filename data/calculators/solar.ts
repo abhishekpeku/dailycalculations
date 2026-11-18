@@ -797,5 +797,111 @@ export const solarCalculators: CalculatorConfig[] = [
       const batteryBankKwh = values.depthOfDischargePercent > 0 ? (values.dailyEnergyNeedKwh * values.daysOfAutonomy) / (values.depthOfDischargePercent / 100) : NaN;
       return { requiredArrayKw, batteryBankKwh };
     }
+  },
+  {
+    id: 'home-electricity-consumption-calculator',
+    category: 'solar',
+    glyph: 'ΣkWh',
+    updatedAt: '2026-11-18',
+    aliases: ['appliance electricity usage calculator', 'how much electricity does my appliance use', 'appliance kwh calculator', 'household power consumption calculator', 'appliance wattage to kwh calculator'],
+    related: ['solar-panel-system-size-calculator', 'electricity-bill-calculator', 'appliance-energy-cost-calculator', 'off-grid-solar-calculator'],
+    title: 'Home Electricity Consumption Calculator',
+    description: 'Estimate the kWh a group of identical appliances uses per day, month and year, from wattage, hours used per day and how many you have — a building block for sizing solar or an off-grid system.',
+    example: 'One 1,200 W window air conditioner running 8 hours a day uses 9.6 kWh a day — 288 kWh a month, 3,504 kWh a year, about 32.5% of the EIA\'s average U.S. household\'s annual usage on its own.',
+    breakdown: {
+      headline: 'monthlyKwh',
+      headlineLabel: 'Estimated monthly usage',
+      outputs: [
+        { id: 'monthlyKwh', label: 'Estimated monthly usage', format: 'number', dimension: 'energy', unit: 'kWh' },
+        { id: 'dailyKwh', label: 'Estimated daily usage', format: 'number', dimension: 'energy', unit: 'kWh' },
+        { id: 'annualKwh', label: 'Estimated annual usage', format: 'number', dimension: 'energy', unit: 'kWh' }
+      ],
+      groups: [{ title: 'Appliance', inputs: ['wattage', 'hoursPerDay', 'count'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'dailyKwh', label: 'Per day' },
+          { from: 'monthlyKwh', label: 'Per month' }
+        ],
+        title: 'Daily vs. monthly usage'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Turning wattage into kilowatt-hours',
+        paragraphs: [
+          'Every appliance has a power rating in watts — the rate it draws electricity at while running. Multiplying that rate by the hours it actually runs gives energy, measured in watt-hours; divide by 1,000 and you have kilowatt-hours, the unit every electricity bill is priced in. A 1,000 W appliance run for one hour uses exactly 1 kWh, the same as a 500 W appliance run for two hours — rate and time trade off directly, as the U.S. Energy Information Administration\'s own unit conversions make explicit (1 kilowatt-hour = 3,412 Btu, a fixed physical conversion, not an approximation).',
+          'This calculator multiplies one appliance\'s wattage by its daily hours of use and, if you have more than one of the same appliance, by the count — a string of 10 LED bulbs at 10 W each running 5 hours a day uses the same energy as a single 100 W bulb running 5 hours a day. Running the same math for every appliance type in a home and adding the results together builds up a full household estimate, piece by piece, which is exactly what feeds the solar panel system size calculator\'s "annual usage" field and the off-grid solar calculator\'s "daily energy need" field above.',
+          'Appliance wattage varies enormously by type and size. EnergySage, in its guide to sizing a home battery, lists a representative spread: a 1,500 W dishwasher, a 3,000 W air conditioner, an 800 W refrigerator, and lights, WiFi and miscellaneous electronics together drawing around 1,000 W — a useful illustration of just how much more some loads draw than others, even before accounting for how many hours each one actually runs.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter one appliance\'s wattage, how many hours a day it runs, and how many identical units you have.',
+        steps: [
+          { name: 'Enter the wattage', text: 'Check the appliance\'s nameplate, spec sheet or manual for its rated power draw in watts.' },
+          { name: 'Enter hours used per day', text: 'Estimate how many hours a day it actually runs — not how many hours it is merely plugged in or on standby.' },
+          { name: 'Enter the count', text: 'How many identical units you have running on that same schedule — leave it at 1 for a single appliance.' },
+          { name: 'Read the result', text: 'The headline is the estimated monthly usage; the rows below show the daily and annual figures.' },
+          { name: 'Repeat for each appliance type', text: 'Add the monthly figures from every appliance type together to build a full household estimate.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Energy is simply power times time, scaled by how many identical units there are.',
+        expression: 'daily kWh = (wattage × hours per day × count) ÷ 1,000\nmonthly kWh = daily kWh × 30\nannual kWh = daily kWh × 365',
+        terms: [
+          { symbol: 'wattage', meaning: 'One appliance\'s rated power draw while running, in watts.' },
+          { symbol: 'hours per day', meaning: 'How many hours a day it actually runs, not how long it is plugged in.' },
+          { symbol: 'count', meaning: 'How many identical units are running on that same schedule.' }
+        ],
+        note: 'This estimates consumption (kWh), not cost — see the appliance energy cost calculator for a single device\'s running cost, or the electricity bill calculator for a whole bill including fixed charges. Many appliances (refrigerators, thermostats, anything with a compressor or a standby mode) do not draw their full rated wattage continuously, so "hours used per day" is really "hours of equivalent full-power use," which is usually lower than the hours the appliance is simply switched on.'
+      },
+      workedExample: {
+        intro: 'One 1,200 W window air conditioner runs 8 hours a day.',
+        rows: [
+          { label: 'Daily usage (1,200 × 8 × 1 ÷ 1,000)', value: '9.6 kWh' },
+          { label: 'Monthly usage (9.6 × 30)', value: '288 kWh' },
+          { label: 'Annual usage (9.6 × 365)', value: '3,504 kWh' },
+          { label: 'Share of EIA\'s average household\'s annual usage (3,504 ÷ 10,791)', value: '32.5%' }
+        ],
+        result: '9.6 kWh/day · 288 kWh/month · 3,504 kWh/year',
+        explanation: 'Against the EIA\'s average U.S. household usage of 10,791 kWh a year, this one air conditioner alone accounts for about 32.5% of it — a reminder that a handful of high-wattage, long-running appliances usually dominate a home\'s electricity use far more than many small ones.'
+      },
+      watchOut: [
+        { title: 'This is usage, not cost', body: 'Multiply the resulting kWh by your electricity rate yourself, or use the appliance energy cost calculator (single device) or the electricity bill calculator (whole bill, with fixed charges) instead.' },
+        { title: 'Real appliances rarely draw full wattage the whole time', body: 'A refrigerator\'s compressor cycles on and off; a thermostat-controlled appliance only draws power while actively heating or cooling. "Hours per day" here means hours of equivalent full-power draw, which is often less than the hours the appliance is simply on.' },
+        { title: 'Nameplate wattage is a maximum, not always the running draw', body: 'Some appliances list a nameplate or startup wattage well above what they draw during normal, steady running. Where you have one, use a measured or manufacturer-stated typical running wattage instead.' },
+        { title: 'Add every appliance type for a full household estimate', body: 'This calculator covers one appliance type (and its count) at a time. A full home estimate means repeating this for every major appliance and adding the monthly figures together.' }
+      ],
+      references: [
+        { label: 'U.S. Energy Information Administration, Energy Explained — Units and Calculators (kWh/Btu conversion)', url: 'https://www.eia.gov/energyexplained/units-and-calculators/' },
+        { label: 'U.S. Energy Information Administration, FAQ — How much electricity does an American home use?', url: 'https://www.eia.gov/tools/faqs/faq.php?id=97&t=3' },
+        { label: 'EnergySage, "How Many Solar Batteries Do You Need for Backup Power?" (representative appliance wattages)', url: 'https://www.energysage.com/energy-storage/how-many-solar-batteries-needed/' }
+      ]
+    },
+    inputs: [
+      { id: 'wattage', label: 'Appliance wattage', type: 'number', placeholder: '1200', defaultValue: 1200, step: 10, min: 0, dimension: 'power', unit: 'W' },
+      { id: 'hoursPerDay', label: 'Hours used per day', type: 'number', placeholder: '8', defaultValue: 8, step: 0.5, min: 0 },
+      { id: 'count', label: 'Number of identical units', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Home Electricity Consumption Calculator – kWh/Month',
+      description: 'Estimate the kWh a group of identical appliances uses per day, month and year, from wattage, hours used per day and how many you have.',
+      faq: [
+        { question: 'How do I calculate an appliance\'s electricity usage?', answer: 'Multiply its wattage by the hours it runs per day, then divide by 1,000 for kWh. A 1,200 W appliance running 8 hours a day uses 9.6 kWh that day — 288 kWh over a 30-day month.' },
+        { question: 'How much of a home\'s electricity use can one appliance account for?', answer: 'It depends entirely on the appliance and how long it runs. In this calculator\'s worked example, one 1,200 W air conditioner running 8 hours a day uses about 3,504 kWh a year — roughly 32.5% of the EIA\'s average U.S. household\'s total annual usage, 10,791 kWh.' },
+        { question: 'Is this the same as my electricity bill\'s cost?', answer: 'No — this estimates energy used (kWh) only. Multiply the result by your electricity rate for a rough cost, or use the appliance energy cost calculator (one device) or the electricity bill calculator (a whole bill, with fixed charges) instead.' },
+        { question: 'What wattage should I use for an appliance I own?', answer: 'Check its nameplate, spec sheet or manual. If it lists a range or a startup wattage well above its steady running draw, use the typical running figure where one is given.' },
+        { question: 'Why might my result overestimate real usage?', answer: 'Many appliances cycle on and off (a refrigerator\'s compressor) or only draw full power part of the time (anything thermostat-controlled). "Hours used per day" should reflect hours of equivalent full-power draw, which is often less than hours simply switched on.' },
+        { question: 'How do I estimate my whole home\'s electricity use?', answer: 'Run this calculator once per major appliance type (with its own wattage, daily hours and count), then add the monthly kWh figures together.' }
+      ]
+    },
+    compute(values) {
+      const dailyKwh = (values.wattage * values.hoursPerDay * values.count) / 1000;
+      const monthlyKwh = dailyKwh * 30;
+      const annualKwh = dailyKwh * 365;
+      return { dailyKwh, monthlyKwh, annualKwh };
+    }
   }
 ];

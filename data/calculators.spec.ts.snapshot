@@ -8505,6 +8505,47 @@ exports[`compute() snapshots > home-affordability-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > home-electricity-consumption-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "wattage": 1200,
+      "hoursPerDay": 8,
+      "count": 1
+    },
+    "outputs": {
+      "dailyKwh": 9.6,
+      "monthlyKwh": 288,
+      "annualKwh": 3504
+    }
+  },
+  "typical": {
+    "inputs": {
+      "wattage": 1800,
+      "hoursPerDay": 12,
+      "count": 2
+    },
+    "outputs": {
+      "dailyKwh": 43.2,
+      "monthlyKwh": 1296,
+      "annualKwh": 15768
+    }
+  },
+  "edge": {
+    "inputs": {
+      "wattage": 0,
+      "hoursPerDay": 0,
+      "count": 1
+    },
+    "outputs": {
+      "dailyKwh": 0,
+      "monthlyKwh": 0,
+      "annualKwh": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > horsepower-calculator 1`] = `
 {
   "default": {

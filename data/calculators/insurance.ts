@@ -487,5 +487,487 @@ export const insuranceCalculators: CalculatorConfig[] = [
       const investedDifferenceValue = i === 0 ? monthlyDifference * n : monthlyDifference * ((Math.pow(1 + i, n) - 1) / i);
       return { investedDifferenceValue, termTotalCost, wholeLifeTotalCost, monthlyDifference };
     }
+  },
+  {
+    id: 'out-of-pocket-maximum-calculator',
+    category: 'insurance',
+    glyph: 'OOP',
+    updatedAt: '2026-11-18',
+    aliases: ['out of pocket max calculator', 'health insurance out of pocket maximum calculator', 'how much have i paid toward my deductible calculator', 'deductible and coinsurance tracker'],
+    related: ['cobra-cost-calculator', 'disability-insurance-needs-calculator', 'emergency-fund-calculator'],
+    title: 'Out-of-Pocket Maximum Calculator',
+    description: 'Track your deductible, copay and coinsurance spending so far against your health plan\'s stated out-of-pocket maximum, and see how much is left before your plan starts paying 100% of covered costs.',
+    example: "With a $10,600 out-of-pocket max and $2,500 paid toward the deductible, $450 in copays and $1,850 in coinsurance so far, you've reached 45.3% of the max, with $5,800 left.",
+    breakdown: {
+      headline: 'remainingToMax',
+      headlineLabel: 'Left until your plan pays 100%',
+      outputs: [
+        { id: 'remainingToMax', format: 'currency' },
+        { id: 'totalSpentSoFar', label: 'Total paid toward the max so far', format: 'currency' },
+        { id: 'percentOfMaxReached', label: 'Percent of the max reached', format: 'percent' },
+        { id: 'outOfPocketMax', label: "Your plan's stated out-of-pocket max", format: 'currency' }
+      ],
+      groups: [
+        { title: 'What you have paid so far', inputs: ['deductiblePaid', 'copaysPaid', 'coinsurancePaid'] },
+        { title: "Your plan's limit", inputs: ['outOfPocketMax'] }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'deductiblePaid', label: 'Deductible paid' },
+          { from: 'copaysPaid', label: 'Copays paid' },
+          { from: 'coinsurancePaid', label: 'Coinsurance paid' },
+          { from: 'remainingToMax', label: 'Left until the max' }
+        ],
+        center: 'outOfPocketMax',
+        centerSub: 'Out-of-pocket max'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What is an out-of-pocket maximum?',
+        paragraphs: [
+          'HealthCare.gov defines the out-of-pocket maximum as "the most you have to pay for covered services in a plan year," after which "your health plan pays 100% of the costs of covered benefits." It is a single running total for the plan year, and it is made up of three things added together: your deductible, your copayments, and your coinsurance for in-network, covered care.',
+          "Two categories of spending do not count toward it, and both matter: your monthly premium never counts (the max is about care you receive, not the cost of carrying the plan at all), and neither does spending on services your plan doesn't cover or on out-of-network care, which HealthCare.gov lists as explicitly excluded. A big out-of-network bill can leave you having paid far more than the stated max without ever actually reaching it, because none of that spending was counted.",
+          'Every ACA marketplace plan is required to cap this figure, and the cap itself rises most years. For 2026, HealthCare.gov lists the marketplace limit at $10,600 for self-only coverage and $21,200 for family coverage; for 2027 those limits rise to $12,000 and $24,000. Employer plans set their own out-of-pocket max, which must be at or below the same federal limit for ACA-compliant plans, so check your own plan documents rather than assuming the marketplace figure applies to you.'
+        ]
+      },
+      howTo: {
+        intro: "Enter what you've already paid this plan year toward your deductible, copays and coinsurance, and your plan's stated out-of-pocket max; the calculator adds up your running total and shows what's left.",
+        steps: [
+          { name: 'Enter your deductible paid so far', text: 'The amount you have paid this plan year specifically toward your deductible, found on your insurer\'s member portal or your explanation of benefits (EOB) statements.' },
+          { name: 'Enter copays paid so far', text: 'Flat-fee payments for visits or prescriptions, added up for the plan year to date.' },
+          { name: 'Enter coinsurance paid so far', text: 'Your percentage share of covered costs after the deductible, also added up for the plan year to date.' },
+          { name: 'Enter your plan\'s out-of-pocket max', text: 'Found in your plan\'s Summary of Benefits and Coverage, not the marketplace-wide limit — your own plan\'s figure may be lower.' },
+          { name: 'Read the result', text: "The headline is how much more you'd need to pay before your plan covers 100% of further in-network, covered costs for the rest of the plan year. The donut shows your running total as a share of the max." }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The three spending categories are added together and compared against the stated max.',
+        expression: 'Spent = Deductible + Copays + Coinsurance\nRemaining = max(0, Max − Spent)\nPercentReached = min(100%, Spent ÷ Max)',
+        terms: [
+          { symbol: 'Deductible', meaning: 'What you have paid this plan year toward your deductible.' },
+          { symbol: 'Copays', meaning: 'Flat-fee payments for covered visits or prescriptions, year to date.' },
+          { symbol: 'Coinsurance', meaning: 'Your percentage share of covered costs after the deductible, year to date.' },
+          { symbol: 'Max', meaning: "Your plan's stated out-of-pocket maximum for the plan year." },
+          { symbol: 'Remaining', meaning: "How much more in-network, covered spending it would take to reach the max." }
+        ],
+        note: 'Premiums, out-of-network care, and non-covered services never count toward this total, even though you pay for them. This is an estimate based on what you enter, not a replacement for your insurer\'s own running total.'
+      },
+      workedExample: {
+        intro: 'A plan with a $10,600 out-of-pocket max. So far this year: $2,500 paid toward the deductible, $450 in copays, and $1,850 in coinsurance.',
+        rows: [
+          { label: 'Total spent so far ($2,500 + $450 + $1,850)', value: '$4,800' },
+          { label: 'Percent of the max reached ($4,800 ÷ $10,600)', value: '45.3%' },
+          { label: 'Remaining to the max ($10,600 − $4,800)', value: '$5,800' }
+        ],
+        result: '$5,800 left before the plan pays 100%',
+        explanation: "At 45.3% of the max reached, this household is less than halfway there. Once total in-network, covered spending reaches $10,600 for the year, the plan picks up 100% of further covered costs — it does not reset until the next plan year starts."
+      },
+      watchOut: [
+        { title: 'This is an educational estimate, not insurance advice or a claim adjudication', body: "This calculator helps you track your own running total for planning purposes. It does not access your insurer's actual claims data and is not a substitute for your insurer's own account summary or an insurance professional's advice." },
+        { title: 'Out-of-network care usually does not count', body: "Spending at an out-of-network provider often does not count toward the max at all, and may have no cap on it whatsoever — HealthCare.gov lists it among the costs the limit excludes. A single large out-of-network bill can cost far more than the gap this calculator shows." },
+        { title: 'Your premium is never part of this number', body: 'What you pay each month just to carry the plan is separate from the out-of-pocket max, no matter how high it is. The max is about the cost of care you actually use, not the cost of coverage itself.' },
+        { title: "Use your plan's own max, not the marketplace-wide limit", body: "The $10,600 (self-only) / $21,200 (family) figures for 2026 are the federal ceiling ACA-compliant plans cannot exceed — many employer plans set their own max below that ceiling. Check your plan's Summary of Benefits and Coverage for the real number." },
+        { title: 'The total resets with a new plan year', body: "Everything you enter here applies to one plan year. A deductible or coinsurance payment made under last year's plan does not carry over and should not be included." }
+      ],
+      references: [
+        { label: 'HealthCare.gov, "Out-of-pocket maximum/limit" glossary entry', url: 'https://www.healthcare.gov/glossary/out-of-pocket-maximum-limit/' },
+        { label: 'HealthCare.gov, "Out-of-pocket maximum/limit" (2026 and 2027 marketplace limits)', url: 'https://www.healthcare.gov/glossary/out-of-pocket-maximum-limit/' }
+      ]
+    },
+    inputs: [
+      { id: 'deductiblePaid', label: 'Deductible paid so far', type: 'currency', placeholder: '2500', defaultValue: 2500, step: 50, min: 0 },
+      { id: 'copaysPaid', label: 'Copays paid so far', type: 'currency', placeholder: '450', defaultValue: 450, step: 25, min: 0 },
+      { id: 'coinsurancePaid', label: 'Coinsurance paid so far', type: 'currency', placeholder: '1850', defaultValue: 1850, step: 50, min: 0 },
+      { id: 'outOfPocketMax', label: "Plan's out-of-pocket max", type: 'currency', placeholder: '10600', defaultValue: 10600, step: 100, min: 0 }
+    ],
+    seo: {
+      title: 'Out-of-Pocket Maximum Calculator – Deductible Tracker',
+      description: "Track deductible, copay and coinsurance spending against your health plan's out-of-pocket maximum, and see how much is left before it pays 100%.",
+      faq: [
+        { question: 'What counts toward my out-of-pocket maximum?', answer: 'Your deductible, copayments and coinsurance for in-network, covered care all count. Premiums, out-of-network care, and non-covered services do not, even though you pay for them.' },
+        { question: 'What happens once I reach my out-of-pocket max?', answer: 'HealthCare.gov states that once you hit it, "your health plan pays 100% of the costs of covered benefits" for the rest of the plan year — for in-network, covered services.' },
+        { question: 'What is the out-of-pocket maximum for 2026?', answer: 'HealthCare.gov lists the ACA marketplace limit at $10,600 for self-only coverage and $21,200 for family coverage in 2026, rising to $12,000 and $24,000 in 2027. Many employer plans set their own max below that federal ceiling.' },
+        { question: 'Does my monthly premium count toward my out-of-pocket max?', answer: 'No. HealthCare.gov explicitly excludes "your monthly premiums" from the out-of-pocket maximum — the max is only about the cost of care you use, not the cost of carrying the plan.' },
+        { question: 'Does out-of-network care count toward my out-of-pocket max?', answer: 'Generally no. Out-of-network care is one of the costs HealthCare.gov lists as excluded from the limit, which is why a large out-of-network bill can cost much more than reaching the stated max would suggest.' },
+        { question: 'How do I find my own out-of-pocket max?', answer: "Check your plan's Summary of Benefits and Coverage or your insurer's member portal — it is specific to your plan and may be lower than the federal marketplace ceiling." },
+        { question: 'Does the out-of-pocket max reset every year?', answer: "Yes, it resets at the start of each new plan year. Spending from a previous plan year never carries over into the new year's total." }
+      ]
+    },
+    compute(values) {
+      const totalSpentSoFar = values.deductiblePaid + values.copaysPaid + values.coinsurancePaid;
+      const remainingToMax = Math.max(0, values.outOfPocketMax - totalSpentSoFar);
+      const percentOfMaxReached = values.outOfPocketMax === 0 ? 0 : Math.min(100, (totalSpentSoFar / values.outOfPocketMax) * 100);
+      return {
+        remainingToMax,
+        totalSpentSoFar,
+        percentOfMaxReached,
+        outOfPocketMax: values.outOfPocketMax,
+        deductiblePaid: values.deductiblePaid,
+        copaysPaid: values.copaysPaid,
+        coinsurancePaid: values.coinsurancePaid
+      };
+    }
+  },
+  {
+    id: 'cobra-cost-calculator',
+    category: 'insurance',
+    glyph: 'CBRA',
+    updatedAt: '2026-11-18',
+    aliases: ['cobra insurance cost calculator', 'how much does cobra cost calculator', 'cobra premium calculator', 'continuation of health coverage cost calculator'],
+    related: ['out-of-pocket-maximum-calculator', 'disability-insurance-needs-calculator', 'emergency-fund-calculator', 'paycheck-calculator'],
+    title: 'COBRA Cost Calculator',
+    description: 'Estimate what COBRA continuation health coverage will cost after leaving a job: up to 102% of the combined employee-and-employer premium, under the federal rule the Department of Labor documents.',
+    example: 'With a $150 employee premium and $550 employer premium while working, COBRA at 102% of the combined $700 costs $714 a month — $12,852 total over an 18-month continuation period.',
+    breakdown: {
+      headline: 'totalCobraCost',
+      headlineLabel: 'Total COBRA premiums over the coverage period',
+      outputs: [
+        { id: 'totalCobraCost', format: 'currency' },
+        { id: 'cobraMonthlyPremium', label: 'COBRA premium per month (102% of the combined premium)', format: 'currency' },
+        { id: 'extraMonthlyCost', label: 'Extra per month vs. what you paid as an employee', format: 'currency' },
+        { id: 'extraTotalCost', label: 'Extra total vs. your old employee share', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your premium while employed', inputs: ['employeePremiumShare', 'employerPremiumShare'] },
+        { title: 'Coverage period', inputs: ['monthsOfCoverage'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'employeePremiumShare', label: 'Paid while employed (monthly)' },
+          { from: 'cobraMonthlyPremium', label: 'COBRA premium (monthly)' }
+        ],
+        title: 'Monthly cost before and after COBRA',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What is COBRA, and why does it cost so much more?',
+        paragraphs: [
+          'COBRA (the Consolidated Omnibus Budget Reconciliation Act) lets someone who loses job-based group health coverage — through job loss, reduced hours, or certain other qualifying events — keep the same plan temporarily by paying for it directly. The U.S. Department of Labor states that COBRA "provides temporary coverage to you and your dependents — usually up to 18 months," and that certain qualifying events can extend that to 36 months.',
+          'The sticker shock is structural, not a penalty: while employed, an employer typically pays most of the premium directly to the insurer, and the paycheck deduction only covers the employee\'s share. Leaving the job removes the employer\'s contribution entirely, and COBRA requires the person continuing coverage to pay for the whole thing themselves. The Department of Labor states that a qualified individual "may be required to pay the entire premium for coverage up to 102% of the cost to the plan" — the full combined premium the employer used to help cover, plus up to a 2% administrative fee.',
+          "That combination — losing the employer's share and absorbing a 2% fee on top of the full premium — is why a COBRA bill often looks several times larger than what came out of a paycheck. It is the same coverage, continued at the plan's real, un-subsidized cost."
+        ]
+      },
+      howTo: {
+        intro: 'Enter what you and your employer were each paying monthly toward the premium, and how many months of COBRA coverage you are estimating; the calculator applies the 102% rule.',
+        steps: [
+          { name: 'Enter your employee premium share', text: 'The amount that came out of your paycheck each month for this coverage — check a recent pay stub or your plan enrollment summary.' },
+          { name: 'Enter your employer\'s premium share', text: "The amount your employer paid directly to the insurer on your behalf each month. Your HR or benefits department can provide this if it isn't on your pay stub." },
+          { name: 'Enter the number of months', text: 'How many months of COBRA coverage you are estimating — up to 18 months for most qualifying events, or up to 36 months for certain other events, per the Department of Labor.' },
+          { name: 'Read the result', text: "The headline is the total COBRA premium cost over that period. The bars compare what you used to pay monthly as an employee against the full COBRA premium you'd pay monthly now." }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'COBRA premium is the combined former premium, grossed up by the 2% administrative fee the Department of Labor documents.',
+        expression: 'Combined = EmployeeShare + EmployerShare\nCOBRA premium = Combined × 1.02\nTotal cost = COBRA premium × Months',
+        terms: [
+          { symbol: 'EmployeeShare', meaning: 'What came out of your paycheck monthly for the premium while employed.' },
+          { symbol: 'EmployerShare', meaning: 'What your employer paid monthly on your behalf while employed.' },
+          { symbol: 'Combined', meaning: 'The full premium the plan actually costs, employee and employer shares added together.' },
+          { symbol: '1.02', meaning: 'The 102% figure the Department of Labor documents — full premium plus up to a 2% administrative fee.' },
+          { symbol: 'Months', meaning: 'The number of months of COBRA coverage being estimated.' }
+        ],
+        note: "This assumes the maximum permitted 2% administrative fee and a premium that doesn't change over the period. Confirm your plan's actual COBRA premium notice, which is the authoritative figure."
+      },
+      workedExample: {
+        intro: 'While employed, a worker paid $150 a month toward the premium and the employer paid $550 a month. They estimate 18 months of COBRA coverage.',
+        rows: [
+          { label: 'Combined monthly premium ($150 + $550)', value: '$700.00' },
+          { label: 'COBRA monthly premium ($700 × 1.02)', value: '$714.00' },
+          { label: 'Extra cost per month vs. employee share ($714 − $150)', value: '$564.00' },
+          { label: 'Total COBRA cost over 18 months ($714 × 18)', value: '$12,852.00' }
+        ],
+        result: 'COBRA costs $714.00 a month, $12,852.00 over 18 months',
+        explanation: "The monthly premium rises 376% ($564 ÷ $150) once the employer's $550 contribution disappears and the 2% fee is added — the same coverage, now billed at its full, un-subsidized cost plus the administrative fee."
+      },
+      watchOut: [
+        { title: 'This is an educational estimate, not a quote or an offer to sell insurance', body: 'This calculator estimates a COBRA premium for planning purposes. It does not sell, recommend or bind any coverage, and is not a substitute for the actual COBRA election notice your plan administrator sends you.' },
+        { title: 'Your actual notice has the real number', body: 'Your plan administrator is required to send a COBRA election notice stating the exact premium. Use this calculator to plan ahead, then confirm against that notice before budgeting around it.' },
+        { title: 'Coverage length depends on the qualifying event', body: 'The Department of Labor states COBRA usually runs "up to 18 months," with certain qualifying events extending it to 36 months. Confirm which applies to your situation rather than assuming 18 months.' },
+        { title: 'The marketplace may cost less for some households', body: "Because COBRA premiums are not subsidized, a comparable ACA marketplace plan — especially with a premium tax credit — is sometimes cheaper. It's worth comparing both before electing COBRA." },
+        { title: 'Missing the election deadline ends the option', body: 'COBRA must be elected within a strict window after the qualifying event and the notice. Once that window closes, continuing the same employer plan under COBRA is no longer available.' }
+      ],
+      references: [
+        { label: 'U.S. Department of Labor, "COBRA Continuation Coverage" overview (premium cost, up to 102% rule)', url: 'https://www.dol.gov/general/topic/health-plans/cobra' },
+        { label: 'U.S. Department of Labor, Employee Benefits Security Administration, COBRA continuation coverage laws and regulations (coverage duration)', url: 'https://www.dol.gov/agencies/ebsa/laws-and-regulations/laws/cobra' }
+      ]
+    },
+    inputs: [
+      { id: 'employeePremiumShare', label: 'Your premium share (monthly, while employed)', type: 'currency', placeholder: '150', defaultValue: 150, step: 10, min: 0 },
+      { id: 'employerPremiumShare', label: "Employer's premium share (monthly)", type: 'currency', placeholder: '550', defaultValue: 550, step: 10, min: 0 },
+      { id: 'monthsOfCoverage', label: 'Months of COBRA coverage', type: 'number', placeholder: '18', defaultValue: 18, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'COBRA Cost Calculator – Continuation Health Coverage Premium',
+      description: 'Estimate your COBRA premium: up to 102% of your combined employee-and-employer premium, per the Department of Labor rule, over your coverage period.',
+      faq: [
+        { question: 'How much does COBRA cost?', answer: 'The Department of Labor states a qualified individual "may be required to pay the entire premium for coverage up to 102% of the cost to the plan" — the full employee-plus-employer premium, plus up to a 2% administrative fee.' },
+        { question: 'Why is COBRA so much more expensive than my paycheck deduction?', answer: "While employed, your employer typically pays most of the premium directly and your paycheck deduction only covers your own share. COBRA removes the employer's contribution entirely, so you pay the full combined premium plus the administrative fee." },
+        { question: 'How long does COBRA coverage last?', answer: 'The Department of Labor states COBRA "provides temporary coverage to you and your dependents — usually up to 18 months," with certain qualifying events extending it to 36 months.' },
+        { question: 'What is a worked example of COBRA cost?', answer: 'An employee paying $100 a month with a $400 employer contribution faces a COBRA premium of $510 a month (102% of the combined $500) — $6,120 total over 12 months.' },
+        { question: 'Does the 2% COBRA administrative fee apply every month?', answer: 'Up to 2% is the maximum the Department of Labor permits on top of the full combined premium each month; it is not a one-time fee.' },
+        { question: 'Is COBRA cheaper than an ACA marketplace plan?', answer: "It depends on the specific premiums and whether you qualify for a marketplace premium tax credit, which COBRA premiums are not eligible for. Comparing both is worthwhile before electing COBRA." },
+        { question: 'What happens if I miss the COBRA election deadline?', answer: 'The election window is strict and defined by law. Once it closes without an election, continuing that specific employer plan under COBRA is no longer available.' }
+      ]
+    },
+    compute(values) {
+      const combinedMonthlyPremium = values.employeePremiumShare + values.employerPremiumShare;
+      const cobraMonthlyPremium = combinedMonthlyPremium * 1.02;
+      const totalCobraCost = cobraMonthlyPremium * values.monthsOfCoverage;
+      const extraMonthlyCost = cobraMonthlyPremium - values.employeePremiumShare;
+      const extraTotalCost = totalCobraCost - values.employeePremiumShare * values.monthsOfCoverage;
+      return {
+        totalCobraCost,
+        cobraMonthlyPremium,
+        extraMonthlyCost,
+        extraTotalCost,
+        employeePremiumShare: values.employeePremiumShare,
+        employerPremiumShare: values.employerPremiumShare
+      };
+    }
+  },
+  {
+    id: 'disability-insurance-needs-calculator',
+    category: 'insurance',
+    glyph: 'DI',
+    updatedAt: '2026-11-18',
+    aliases: ['how much disability insurance do i need calculator', 'long term disability income replacement calculator', 'disability insurance coverage gap calculator', 'income protection insurance calculator'],
+    related: ['long-term-care-insurance-needs-calculator', 'human-life-value-calculator', 'emergency-fund-calculator', 'retirement-savings-calculator'],
+    title: 'Disability Insurance Needs Calculator',
+    description: 'Find the gap between a target income-replacement percentage and any disability coverage you already have — long-term disability policies typically replace 60-80% of income, per the Council for Disability Insurance Awareness.',
+    example: 'On a $72,000 salary with a 60% income-replacement target and $1,200 a month of existing disability coverage, the gap is $2,400 a month — the existing coverage only replaces 20% of income, 40 percentage points short of the target.',
+    breakdown: {
+      headline: 'monthlyBenefitGap',
+      headlineLabel: 'Additional monthly benefit to consider',
+      outputs: [
+        { id: 'monthlyBenefitGap', format: 'currency' },
+        { id: 'desiredMonthlyBenefit', label: 'Target monthly benefit', format: 'currency' },
+        { id: 'existingReplacementPercent', label: 'What your existing coverage actually replaces', format: 'percent' },
+        { id: 'annualBenefitGap', label: 'Gap, annualized', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Income and target', inputs: ['annualIncome', 'desiredReplacementPercent'] },
+        { title: 'Coverage you already have', inputs: ['existingMonthlyBenefit'] }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'existingMonthlyBenefit', label: 'Covered by existing disability benefit' },
+          { from: 'monthlyBenefitGap', label: 'Gap to the target' }
+        ],
+        center: 'desiredMonthlyBenefit',
+        centerSub: 'Target monthly benefit'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why disability insurance never replaces 100% of income',
+        paragraphs: [
+          "Losing the ability to work is a far more common risk than most people budget for. The Council for Disability Insurance Awareness states that \"just under one in four of today's 20-year-olds can expect to be out of work for at least a year because of a disabling condition before they reach the normal retirement age.\" Disability insurance exists to replace part of an income lost to exactly that kind of illness or injury.",
+          'It is deliberately never a full replacement. The Council for Disability Insurance Awareness states that long-term disability insurance "covers between 60-80 percent of your income" — insurers cap the benefit below 100% on purpose, so that returning to work always pays more than staying on a disability claim. Group employer coverage, individual policies, or some combination of the two can add up to a figure inside or outside that typical range depending on what is actually in force.',
+          "Social Security Disability Insurance (SSDI) is a separate, much smaller safety net, not a substitute for this kind of coverage: the Council for Disability Insurance Awareness states the average SSDI benefit for a disabled worker was about $1,630 a month as of February 2026 — $19,560 a year, below the federal poverty guideline for a two-person household. Most households need private or employer disability coverage to come anywhere close to a 60-80% replacement rate."
+        ]
+      },
+      howTo: {
+        intro: 'Enter your income, a target income-replacement percentage within the commonly cited 60-80% range, and any monthly disability benefit you already have through an employer or individual policy.',
+        steps: [
+          { name: 'Enter your annual income', text: 'Your gross income from work — the amount a disability would actually interrupt.' },
+          { name: 'Set a target replacement percentage', text: 'The Council for Disability Insurance Awareness cites a typical long-term disability range of 60-80%. Pick a figure in that range, or your own, based on your fixed expenses.' },
+          { name: 'Enter your existing monthly disability benefit', text: 'Add up any employer-provided long-term disability benefit and any individual policy benefit you already have. Enter 0 if you have none.' },
+          { name: 'Read the result', text: "The headline is the additional monthly benefit to consider on top of what you already have. The donut shows how much of your target is already covered versus how much is still a gap." }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "The target monthly benefit is a percentage of monthly income; the gap is what's left after subtracting existing coverage.",
+        expression: 'TargetMonthly = (AnnualIncome ÷ 12) × ReplacementPercent\nGap = max(0, TargetMonthly − ExistingMonthly)',
+        terms: [
+          { symbol: 'AnnualIncome', meaning: 'Gross annual income from work.' },
+          { symbol: 'ReplacementPercent', meaning: "The target share of income to replace, as a percent — commonly 60-80% for long-term disability." },
+          { symbol: 'TargetMonthly', meaning: 'The target monthly disability benefit.' },
+          { symbol: 'ExistingMonthly', meaning: 'Any disability benefit already in force, from an employer plan, an individual policy, or both.' },
+          { symbol: 'Gap', meaning: 'The additional monthly benefit it would take to reach the target.' }
+        ],
+        note: 'This is a planning estimate, not an underwriting calculation. Actual available coverage amounts depend on an insurer\'s own rules and your insurability.'
+      },
+      workedExample: {
+        intro: 'A $72,000 salary, a 60% replacement target, and $1,200 a month of existing employer-provided disability coverage.',
+        rows: [
+          { label: 'Target monthly benefit ($72,000 ÷ 12 × 60%)', value: '$3,600' },
+          { label: 'Existing coverage actually replaces ($1,200 × 12 ÷ $72,000)', value: '20%' },
+          { label: 'Monthly gap ($3,600 − $1,200)', value: '$2,400' },
+          { label: 'Gap, annualized ($2,400 × 12)', value: '$28,800' }
+        ],
+        result: '$2,400 a month short of the 60% target',
+        explanation: 'The existing $1,200 benefit replaces only 20% of this income, 40 percentage points short of the 60% target (60% − 20%), which is the kind of gap an added individual disability policy or a supplemental employer option is meant to close.'
+      },
+      watchOut: [
+        { title: 'This is an educational estimate, not a quote or an offer to sell insurance', body: 'This calculator estimates a coverage gap for planning purposes. It does not sell, recommend or bind any policy, and is not a substitute for a licensed insurance agent who can quote actual available coverage.' },
+        { title: 'Group and individual benefits can be taxed differently', body: 'An employer-paid group disability benefit is often taxable income if a claim is paid, while a benefit from a policy you paid for with after-tax dollars is often not. A target set on gross income without accounting for this can overshoot or undershoot the real after-tax need.' },
+        { title: 'SSDI is not a substitute for private coverage', body: 'The average SSDI benefit is a few hundred to a couple thousand dollars a month and is hard to qualify for quickly — it should not be counted as meaningful income replacement in this calculation.' },
+        { title: 'Insurers cap how much you can buy', body: 'Because benefits are capped at 60-80% of income by design, you generally cannot insure 100% of your income even if you want to — this is meant to preserve the incentive to return to work, not to limit what you need.' },
+        { title: 'This does not check your insurability', body: 'Actually obtaining a policy depends on underwriting — health, occupation and existing coverage all affect what an insurer will offer. This calculator only estimates the target number, not what you can buy.' }
+      ],
+      references: [
+        { label: 'Council for Disability Insurance Awareness, "The Risk Is Very Real" (60-80% income-replacement figure, cost)', url: 'https://thecdia.org/the-risk-is-very-real/' },
+        { label: 'Council for Disability Insurance Awareness, "Disability Statistics" (1 in 4 statistic, SSDI average benefit)', url: 'https://thecdia.org/disability-statistics/' }
+      ]
+    },
+    inputs: [
+      { id: 'annualIncome', label: 'Annual income', type: 'currency', placeholder: '72000', defaultValue: 72000, step: 1000, min: 0 },
+      { id: 'desiredReplacementPercent', label: 'Target income-replacement percent', type: 'percent', placeholder: '60', defaultValue: 60, step: 5, min: 0 },
+      { id: 'existingMonthlyBenefit', label: 'Existing monthly disability benefit', type: 'currency', placeholder: '1200', defaultValue: 1200, step: 50, min: 0 }
+    ],
+    seo: {
+      title: 'Disability Insurance Needs Calculator – Coverage Gap',
+      description: 'Find the gap between a target income-replacement percent and your existing disability coverage, using the 60-80% range insurers typically cite.',
+      faq: [
+        { question: 'How much disability insurance do I need?', answer: 'The Council for Disability Insurance Awareness states long-term disability coverage typically "covers between 60-80 percent of your income." Multiply your monthly income by a percentage in that range to get a target, then subtract any coverage you already have.' },
+        { question: 'Why can\'t I buy disability insurance that replaces 100% of my income?', answer: 'Insurers cap benefits below 100% of income by design, so returning to work still pays more than staying on a disability claim. A 60-80% range is the commonly cited typical benefit level.' },
+        { question: 'What is a worked example with no existing coverage?', answer: 'A $60,000 salary with a 65% target and no existing coverage needs a target monthly benefit of $3,250 ($60,000 ÷ 12 × 65%), all of it a gap since there is no existing benefit to subtract.' },
+        { question: 'How likely am I to become disabled during my career?', answer: 'The Council for Disability Insurance Awareness states "just under one in four of today\'s 20-year-olds can expect to be out of work for at least a year because of a disabling condition before they reach the normal retirement age."' },
+        { question: 'Is Social Security Disability Insurance enough on its own?', answer: 'Usually not. The Council for Disability Insurance Awareness states the average SSDI benefit was about $1,630 a month ($19,560 a year) as of February 2026 — below the federal poverty guideline for a two-person household, and far short of a 60-80% replacement rate for most incomes.' },
+        { question: 'What if my existing coverage already exceeds my target?', answer: 'The gap shows as $0 — the calculator does not show a negative number, since there is no shortfall to close. A $50,000 salary with a 60% target ($2,500) and $3,000 of existing monthly coverage already exceeds the target.' },
+        { question: 'Does this calculator check whether I can actually buy more coverage?', answer: 'No. It only estimates a target gap. Whether an insurer will offer that amount depends on underwriting factors like health, occupation and existing coverage.' }
+      ]
+    },
+    compute(values) {
+      const desiredMonthlyBenefit = (values.annualIncome / 12) * (values.desiredReplacementPercent / 100);
+      const monthlyBenefitGap = Math.max(0, desiredMonthlyBenefit - values.existingMonthlyBenefit);
+      const annualBenefitGap = monthlyBenefitGap * 12;
+      const existingReplacementPercent = values.annualIncome === 0 ? 0 : ((values.existingMonthlyBenefit * 12) / values.annualIncome) * 100;
+      return {
+        monthlyBenefitGap,
+        desiredMonthlyBenefit,
+        existingReplacementPercent,
+        annualBenefitGap,
+        existingMonthlyBenefit: values.existingMonthlyBenefit
+      };
+    }
+  },
+  {
+    id: 'long-term-care-insurance-needs-calculator',
+    category: 'insurance',
+    glyph: 'LTC',
+    updatedAt: '2026-11-18',
+    aliases: ['long term care cost calculator', 'ltc insurance needs calculator', 'nursing home cost gap calculator', 'how much long term care insurance do i need'],
+    related: ['disability-insurance-needs-calculator', 'human-life-value-calculator', 'retirement-savings-calculator', 'whole-life-vs-term-life-cost-calculator'],
+    title: 'Long-Term Care Insurance Needs Calculator',
+    description: "Estimate the gap between a realistic cost of long-term care and the savings or insurance you already have set aside for it, using CareScout's (formerly Genworth's) annual Cost of Care Survey figures as a starting point.",
+    example: 'At $74,400 a year (the 2025 median assisted living cost) for 3 years of care, with $50,000 of savings and a $12,000-a-year long-term care policy already in place, the estimated gap is $137,200 — current resources cover about 38.5% of the total.',
+    breakdown: {
+      headline: 'careCostGap',
+      headlineLabel: 'Estimated care-cost gap',
+      outputs: [
+        { id: 'careCostGap', format: 'currency' },
+        { id: 'totalCareCost', label: 'Total estimated cost of care', format: 'currency' },
+        { id: 'totalExistingResources', label: 'Total existing resources for care', format: 'currency' },
+        { id: 'percentCovered', label: 'Percent of the total already covered', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Cost of care', inputs: ['annualCareCost', 'careDurationYears'] },
+        { title: 'What you already have', inputs: ['existingSavingsForCare', 'existingLtcAnnualBenefit'] }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'coveredAmount', label: 'Covered by savings & existing LTC coverage' },
+          { from: 'careCostGap', label: 'Gap to plan for' }
+        ],
+        center: 'totalCareCost',
+        centerSub: 'Total estimated cost'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What long-term care actually costs',
+        paragraphs: [
+          'Long-term care — help with daily activities like bathing, dressing or managing medication, usually needed later in life — is expensive, ongoing, and not covered by standard health insurance or, in most cases, by Medicare. CareScout (the successor to Genworth\'s long-running Cost of Care Survey) publishes national median costs each year from tens of thousands of care providers: its 2025 survey put a private nursing home room at $129,575 a year ($355 a day), an assisted living community at $74,400 a year ($6,200 a month), and a non-medical home health aide at $80,080 a year, based on 44 hours a week at $35 an hour.',
+          "This calculator does not pick a care type for you — costs vary enormously by location, the level of care needed, and whether care happens at home or in a facility. Instead, enter your own estimate of the annual cost (CareScout's published figures above are a reasonable starting point) and how many years of care you are planning for, then compare that total against the savings and any long-term care insurance benefit you already have.",
+          'Long-term care insurance exists specifically to close this kind of gap: a policy that pays a defined daily or monthly benefit toward care costs, so that savings and other assets are not the only resource standing between a household and the full cost CareScout\'s survey documents.'
+        ]
+      },
+      howTo: {
+        intro: "Enter a realistic annual cost of care and how many years you're planning for, then any savings set aside for care and any long-term care insurance benefit you already have.",
+        steps: [
+          { name: 'Enter an annual cost of care', text: "Use a current figure for your area and the type of care you're planning for — CareScout's national medians (nursing home, assisted living, or home health aide) are a starting point if you don't have a local figure." },
+          { name: 'Enter a number of years', text: 'How many years of care you want to plan for. There is no single "average" duration that applies to everyone — needs range from under a year to many years, so pick a planning horizon that fits your own situation.' },
+          { name: 'Enter savings set aside for care', text: 'Any savings or investments specifically earmarked, or that you would be willing to use, for long-term care costs.' },
+          { name: 'Enter your existing LTC insurance benefit', text: "The annual benefit amount from a long-term care policy already in force, if any. Enter 0 if you don't have one." },
+          { name: 'Read the result', text: 'The headline is the gap between the total estimated cost and what you already have. The donut shows how much of the total is already covered.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Total cost is the annual cost times years of care. Total resources are savings plus the insurance benefit times the same years. The gap is whatever cost is left uncovered.',
+        expression: 'TotalCost = AnnualCost × Years\nTotalResources = Savings + (AnnualLTCBenefit × Years)\nGap = max(0, TotalCost − TotalResources)',
+        terms: [
+          { symbol: 'AnnualCost', meaning: 'Your estimated annual cost of the type of care you are planning for.' },
+          { symbol: 'Years', meaning: 'The number of years of care you are planning for.' },
+          { symbol: 'Savings', meaning: 'Savings or investments set aside, or available, for long-term care.' },
+          { symbol: 'AnnualLTCBenefit', meaning: 'The annual benefit amount from a long-term care insurance policy already in force, 0 if none.' },
+          { symbol: 'Gap', meaning: 'The portion of the total estimated cost not covered by existing savings and insurance.' }
+        ],
+        note: 'This is a simplified planning estimate. It does not model benefit periods, elimination periods, inflation riders, or benefit caps found in actual long-term care policies.'
+      },
+      workedExample: {
+        intro: "Planning around CareScout's 2025 assisted-living median of $74,400 a year, for 3 years, with $50,000 in savings earmarked for care and a long-term care policy paying $12,000 a year.",
+        rows: [
+          { label: 'Total estimated cost ($74,400 × 3)', value: '$223,200' },
+          { label: 'Total existing resources ($50,000 + $12,000 × 3)', value: '$86,000' },
+          { label: 'Percent of total already covered ($86,000 ÷ $223,200)', value: '38.5%' },
+          { label: 'Care-cost gap ($223,200 − $86,000)', value: '$137,200' }
+        ],
+        result: '$137,200 gap, with 38.5% already covered',
+        explanation: 'Even with both savings and an active long-term care policy, this household\'s current resources cover well under half of the 3-year estimated cost — the kind of shortfall that additional savings, a larger policy benefit, or a shorter expected care duration would each help close.'
+      },
+      watchOut: [
+        { title: 'This is an educational estimate, not a quote or an offer to sell insurance', body: 'This calculator estimates a planning gap. It does not sell, recommend or bind any policy, and is not a substitute for a licensed insurance agent or elder-law professional.' },
+        { title: 'There is no single "average" duration of care', body: "How long someone needs long-term care varies enormously by individual health and circumstances. Don't anchor on one number as if it were a guarantee — consider a range of durations, not just one." },
+        { title: 'Costs vary enormously by location and care type', body: "CareScout's national medians are a starting point, not a local quote — the same type of care can cost dramatically more or less depending on your region. Use a local figure if you have one." },
+        { title: 'Medicare does not cover most long-term care', body: 'Standard Medicare covers only limited, short-term skilled nursing care after a hospital stay, not the extended custodial care this calculator is about. Medicaid can cover long-term care but generally only after a household has spent down most of its assets.' },
+        { title: 'This does not model a real policy\'s actual terms', body: 'An actual long-term care policy has its own daily or monthly benefit cap, benefit period, elimination period, and often an inflation rider — all of which affect what it really pays out. This calculator only takes the annual benefit amount you enter at face value.' }
+      ],
+      references: [
+        { label: 'CareScout, 2025 Cost of Care Survey (national median costs by care type)', url: 'https://www.carescout.com/cost-of-care' }
+      ]
+    },
+    inputs: [
+      { id: 'annualCareCost', label: 'Annual cost of care', type: 'currency', placeholder: '74400', defaultValue: 74400, step: 1000, min: 0 },
+      { id: 'careDurationYears', label: 'Years of care planned for', type: 'number', placeholder: '3', defaultValue: 3, step: 1, min: 0 },
+      { id: 'existingSavingsForCare', label: 'Savings set aside for care', type: 'currency', placeholder: '50000', defaultValue: 50000, step: 5000, min: 0 },
+      { id: 'existingLtcAnnualBenefit', label: 'Existing LTC insurance benefit (per year)', type: 'currency', placeholder: '12000', defaultValue: 12000, step: 1000, min: 0 }
+    ],
+    seo: {
+      title: 'Long-Term Care Insurance Needs Calculator',
+      description: "Estimate the gap between a realistic long-term care cost and the savings or insurance you already have, using CareScout's Cost of Care Survey figures.",
+      faq: [
+        { question: 'How much does long-term care cost?', answer: "CareScout's 2025 Cost of Care Survey reports a national median of $129,575 a year for a private nursing home room, $74,400 a year for assisted living, and $80,080 a year for a non-medical home health aide (44 hours a week)." },
+        { question: 'How do I estimate my long-term care insurance need?', answer: 'Multiply your estimated annual cost of care by the number of years you are planning for, then subtract any savings earmarked for care and any annual benefit from a long-term care policy already in force.' },
+        { question: 'What is a worked example using a nursing home cost?', answer: "Using CareScout's $129,575 private-room median for 2 years with $20,000 in savings and no existing LTC insurance: total cost is $259,150, resources cover $20,000 (7.7%), leaving a $239,150 gap." },
+        { question: 'Does Medicare pay for long-term care?', answer: 'Only in limited circumstances — standard Medicare covers short-term skilled nursing care after a hospital stay, not the extended custodial care this calculator is about.' },
+        { question: 'What is the "average" number of years someone needs long-term care?', answer: "There is no single figure that applies broadly — care duration varies by individual health and circumstances. This calculator asks you to set your own planning horizon rather than assuming one." },
+        { question: 'What if my savings and insurance already exceed the estimated cost?', answer: 'The gap shows as $0. Using the assisted-living median of $74,400 for 2 years with $200,000 in savings and no LTC policy, the full $148,800 cost is already covered.' },
+        { question: 'Does this calculator model my specific long-term care policy?', answer: "No. It treats the annual benefit you enter as a flat figure. A real policy's benefit period, elimination period, benefit cap and any inflation rider all affect what it actually pays — check your policy's own terms for those details." }
+      ]
+    },
+    compute(values) {
+      const totalCareCost = values.annualCareCost * values.careDurationYears;
+      const totalExistingResources = values.existingSavingsForCare + values.existingLtcAnnualBenefit * values.careDurationYears;
+      const coveredAmount = Math.min(totalExistingResources, totalCareCost);
+      const careCostGap = Math.max(0, totalCareCost - totalExistingResources);
+      const percentCovered = totalCareCost === 0 ? 0 : Math.min(100, (totalExistingResources / totalCareCost) * 100);
+      return { careCostGap, totalCareCost, totalExistingResources, coveredAmount, percentCovered };
+    }
   }
 ];

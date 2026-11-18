@@ -2982,6 +2982,56 @@ exports[`compute() snapshots > co2-breathing-emission-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > cobra-cost-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "employeePremiumShare": 150,
+      "employerPremiumShare": 550,
+      "monthsOfCoverage": 18
+    },
+    "outputs": {
+      "totalCobraCost": 12852,
+      "cobraMonthlyPremium": 714,
+      "extraMonthlyCost": 564,
+      "extraTotalCost": 10152,
+      "employeePremiumShare": 150,
+      "employerPremiumShare": 550
+    }
+  },
+  "typical": {
+    "inputs": {
+      "employeePremiumShare": 230,
+      "employerPremiumShare": 830,
+      "monthsOfCoverage": 27
+    },
+    "outputs": {
+      "totalCobraCost": 29192.4,
+      "cobraMonthlyPremium": 1081.2,
+      "extraMonthlyCost": 851.2,
+      "extraTotalCost": 22982.4,
+      "employeePremiumShare": 230,
+      "employerPremiumShare": 830
+    }
+  },
+  "edge": {
+    "inputs": {
+      "employeePremiumShare": 0,
+      "employerPremiumShare": 0,
+      "monthsOfCoverage": 0
+    },
+    "outputs": {
+      "totalCobraCost": 0,
+      "cobraMonthlyPremium": 0,
+      "extraMonthlyCost": 0,
+      "extraTotalCost": 0,
+      "employeePremiumShare": 0,
+      "employerPremiumShare": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > codon-to-amino-acid-calculator 1`] = `
 {
   "default": {
@@ -5326,6 +5376,53 @@ exports[`compute() snapshots > dime-method-life-insurance-calculator 1`] = `
       "incomeReplacement": 0,
       "mortgageBalance": 0,
       "educationTotal": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > disability-insurance-needs-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "annualIncome": 72000,
+      "desiredReplacementPercent": 60,
+      "existingMonthlyBenefit": 1200
+    },
+    "outputs": {
+      "monthlyBenefitGap": 2400,
+      "desiredMonthlyBenefit": 3600,
+      "existingReplacementPercent": 20,
+      "annualBenefitGap": 28800,
+      "existingMonthlyBenefit": 1200
+    }
+  },
+  "typical": {
+    "inputs": {
+      "annualIncome": 108000,
+      "desiredReplacementPercent": 90,
+      "existingMonthlyBenefit": 1800
+    },
+    "outputs": {
+      "monthlyBenefitGap": 6300,
+      "desiredMonthlyBenefit": 8100,
+      "existingReplacementPercent": 20,
+      "annualBenefitGap": 75600,
+      "existingMonthlyBenefit": 1800
+    }
+  },
+  "edge": {
+    "inputs": {
+      "annualIncome": 0,
+      "desiredReplacementPercent": 0,
+      "existingMonthlyBenefit": 0
+    },
+    "outputs": {
+      "monthlyBenefitGap": 0,
+      "desiredMonthlyBenefit": 0,
+      "existingReplacementPercent": 0,
+      "annualBenefitGap": 0,
+      "existingMonthlyBenefit": 0
     }
   }
 }
@@ -10473,6 +10570,56 @@ exports[`compute() snapshots > long-division-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > long-term-care-insurance-needs-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "annualCareCost": 74400,
+      "careDurationYears": 3,
+      "existingSavingsForCare": 50000,
+      "existingLtcAnnualBenefit": 12000
+    },
+    "outputs": {
+      "careCostGap": 137200,
+      "totalCareCost": 223200,
+      "totalExistingResources": 86000,
+      "coveredAmount": 86000,
+      "percentCovered": 38.53046595
+    }
+  },
+  "typical": {
+    "inputs": {
+      "annualCareCost": 112000,
+      "careDurationYears": 5,
+      "existingSavingsForCare": 75000,
+      "existingLtcAnnualBenefit": 18000
+    },
+    "outputs": {
+      "careCostGap": 395000,
+      "totalCareCost": 560000,
+      "totalExistingResources": 165000,
+      "coveredAmount": 165000,
+      "percentCovered": 29.46428571
+    }
+  },
+  "edge": {
+    "inputs": {
+      "annualCareCost": 0,
+      "careDurationYears": 0,
+      "existingSavingsForCare": 0,
+      "existingLtcAnnualBenefit": 0
+    },
+    "outputs": {
+      "careCostGap": 0,
+      "totalCareCost": 0,
+      "totalExistingResources": 0,
+      "coveredAmount": 0,
+      "percentCovered": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > lotka-volterra-calculator 1`] = `
 {
   "default": {
@@ -12899,6 +13046,62 @@ exports[`compute() snapshots > ounces-to-milliliters-converter 1`] = `
     },
     "outputs": {
       "milliliters": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > out-of-pocket-maximum-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "deductiblePaid": 2500,
+      "copaysPaid": 450,
+      "coinsurancePaid": 1850,
+      "outOfPocketMax": 10600
+    },
+    "outputs": {
+      "remainingToMax": 5800,
+      "totalSpentSoFar": 4800,
+      "percentOfMaxReached": 45.28301887,
+      "outOfPocketMax": 10600,
+      "deductiblePaid": 2500,
+      "copaysPaid": 450,
+      "coinsurancePaid": 1850
+    }
+  },
+  "typical": {
+    "inputs": {
+      "deductiblePaid": 3750,
+      "copaysPaid": 675,
+      "coinsurancePaid": 2800,
+      "outOfPocketMax": 15900
+    },
+    "outputs": {
+      "remainingToMax": 8675,
+      "totalSpentSoFar": 7225,
+      "percentOfMaxReached": 45.44025157,
+      "outOfPocketMax": 15900,
+      "deductiblePaid": 3750,
+      "copaysPaid": 675,
+      "coinsurancePaid": 2800
+    }
+  },
+  "edge": {
+    "inputs": {
+      "deductiblePaid": 0,
+      "copaysPaid": 0,
+      "coinsurancePaid": 0,
+      "outOfPocketMax": 0
+    },
+    "outputs": {
+      "remainingToMax": 0,
+      "totalSpentSoFar": 0,
+      "percentOfMaxReached": 0,
+      "outOfPocketMax": 0,
+      "deductiblePaid": 0,
+      "copaysPaid": 0,
+      "coinsurancePaid": 0
     }
   }
 }

@@ -1436,5 +1436,355 @@ export const insuranceCalculators: CalculatorConfig[] = [
       const structureValueOfMarketPrice = values.estimatedMarketValue - values.landValue;
       return { rebuildCost, estimatedMarketValue: values.estimatedMarketValue, rebuildCostPercentOfMarketValue, structureValueOfMarketPrice };
     }
+  },
+  {
+    id: 'umbrella-insurance-coverage-calculator',
+    category: 'insurance',
+    glyph: 'UMB',
+    updatedAt: '2026-11-19',
+    aliases: ['umbrella insurance calculator', 'how much umbrella insurance do i need', 'personal liability umbrella coverage calculator', 'excess liability insurance calculator', 'umbrella policy coverage amount calculator'],
+    related: ['home-insurance-rebuild-cost-calculator', 'car-insurance-coverage-calculator', 'renters-insurance-contents-value-calculator', 'human-life-value-calculator'],
+    title: 'Umbrella Insurance Coverage Calculator',
+    description: 'Estimate how much personal umbrella liability coverage to consider by comparing your assets against your current auto and home liability limits, the same asset-gap method insurers like Progressive publish.',
+    example: 'With $1,600,000 in assets and $300,000 auto and home liability limits, $1,300,000 of assets would be exposed to a large judgment — rounded up to the next $1,000,000 increment, that suggests a $2,000,000 umbrella policy.',
+    breakdown: {
+      headline: 'recommendedUmbrellaCoverage',
+      headlineLabel: 'Suggested umbrella coverage',
+      outputs: [
+        { id: 'recommendedUmbrellaCoverage', format: 'currency' },
+        { id: 'assetGap', label: 'Assets exposed without an umbrella policy', format: 'currency' },
+        { id: 'totalAssets', label: 'Total assets entered', format: 'currency' },
+        { id: 'totalProtectionAfterUmbrella', label: 'Total liability protection after adding the umbrella', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Assets to protect', inputs: ['homeEquityValue', 'savingsInvestments', 'otherAssetsValue'] },
+        { title: 'Current liability limits', inputs: ['autoLiabilityLimit', 'homeLiabilityLimit'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'totalAssets', label: 'Assets to protect' },
+          { from: 'weakestUnderlyingLimit', label: 'Liability limit without umbrella' },
+          { from: 'totalProtectionAfterUmbrella', label: 'Protection with umbrella added' }
+        ],
+        title: 'Liability protection before and after an umbrella policy',
+        highlight: 2
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-19',
+      concept: {
+        title: 'What is personal umbrella insurance?',
+        paragraphs: [
+          'A personal umbrella policy adds extra liability coverage on top of what an auto or homeowners policy already provides, once that underlying policy\'s own liability limit is used up. The Insurance Information Institute describes it as "an extra layer of protection for your assets" against a lawsuit or judgment larger than your regular policies can pay.',
+          'Progressive, an auto and home insurer, describes a practical way to size the policy: add up the assets a judgment could reach — bank accounts, investments, retirement accounts, home equity, vehicle equity, valuables and more — then compare that total against the liability limits already in force. Progressive states the umbrella "policy limits should at least cover the amount of your assets left exposed once your underlying auto or home policy liability limits are exhausted," and walks through an example of $700,000 in assets against $500,000 of existing liability coverage leaving a $200,000 gap.',
+          "Umbrella policies also aren't sold in arbitrary dollar amounts the way that gap might come out. The Insurance Information Institute and insurers such as Travelers describe umbrella coverage as sold in increments starting at $1 million — Travelers specifically advertises $1 million to $5 million of added liability coverage. This calculator applies that real-world minimum: it rounds any computed asset gap up to the next $1 million, so the result matches a policy size an insurer would actually sell rather than a number nobody offers.",
+          'Before an insurer will sell an umbrella policy at all, it typically requires minimum liability limits on the policies underneath it. The Insurance Information Institute states that "most insurers will want you to have about $250,000 of liability insurance on your auto policy and $300,000 of liability insurance on your homeowners policy" before adding a $1 million umbrella on top — a common starting point, not a universal rule every insurer follows exactly.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the assets a lawsuit could reach, plus the liability limits already on your auto and homeowners (or renters) policies; the calculator finds the exposed gap and rounds it to a sellable umbrella policy size.',
+        steps: [
+          { name: 'Add up your assets to protect', text: 'Home equity, savings, investments, retirement accounts and other valuable property (vehicles, jewelry, collectibles) — anything a court judgment could realistically reach.' },
+          { name: 'Enter your current liability limits', text: "Your auto policy's bodily injury/property damage liability limit and your home (or renters) policy's personal liability limit, both from your current policy declarations page." },
+          { name: 'Read the asset gap', text: 'The calculator takes the lower of your two liability limits — a liability claim can come from either a car accident or something that happens at home, so the weaker of the two is what matters.' },
+          { name: 'Read the suggested umbrella size', text: 'The gap is rounded up to the next $1 million, since umbrella policies are typically sold starting at $1 million in $1 million increments, not in the exact dollar amount of your gap.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The asset gap is total assets minus the weaker of your two underlying liability limits; the suggested policy size rounds that gap up to the next $1 million.',
+        expression: 'Gap = max(0, Assets − min(AutoLimit, HomeLimit))\nUmbrella = max($1M, ceil(Gap ÷ $1M) × $1M)',
+        terms: [
+          { symbol: 'Assets', meaning: 'Home equity, savings & investments, and other valuable assets added together.' },
+          { symbol: 'AutoLimit', meaning: "Your auto policy's current liability limit." },
+          { symbol: 'HomeLimit', meaning: "Your homeowners or renters policy's current liability limit." },
+          { symbol: 'Gap', meaning: 'Assets left exposed if a judgment exceeded your weaker underlying limit.' },
+          { symbol: 'Umbrella', meaning: 'Suggested umbrella policy size, rounded up to the next $1 million sold increment.' }
+        ],
+        note: 'This is a planning estimate, not a quote. It does not include future income a judgment could pursue through wage garnishment, and insurer underlying-limit requirements vary — treat $250,000/$300,000 as a common starting point, not a universal rule.'
+      },
+      workedExample: {
+        intro: 'A household has $400,000 of home equity, $1,100,000 in savings and investments, and $100,000 of other valuable assets, with $300,000 of liability coverage on both their auto and home policies.',
+        rows: [
+          { label: 'Total assets ($400,000 + $1,100,000 + $100,000)', value: '$1,600,000' },
+          { label: 'Weaker of the two liability limits (min($300,000, $300,000))', value: '$300,000' },
+          { label: 'Assets exposed without an umbrella ($1,600,000 − $300,000)', value: '$1,300,000' },
+          { label: 'Rounded up to the next $1,000,000 (ceil($1,300,000 ÷ $1,000,000) × $1,000,000)', value: '$2,000,000' },
+          { label: 'Total protection after adding the umbrella ($300,000 + $2,000,000)', value: '$2,300,000' }
+        ],
+        result: 'A $2,000,000 umbrella policy suggested',
+        explanation: 'With $1.6 million in assets and only $300,000 of underlying liability coverage, $1.3 million would be exposed to a large judgment. A $2 million umbrella — the next $1 million increment above that $1.3 million gap — brings total liability protection to $2.3 million, comfortably above the $1.6 million at risk.'
+      },
+      watchOut: [
+        { title: 'This is an educational estimate, not a quote or an offer to sell insurance', body: 'This calculator estimates a coverage starting point for your own planning. It does not sell, recommend or bind any policy, and is not a substitute for a licensed insurance agent who can quote actual available coverage.' },
+        { title: 'The $1 million rounding reflects how policies are sold, not your exact exposure', body: 'A $150,000 gap and a $950,000 gap both round up to the same $1 million suggested policy, because that is typically the smallest umbrella size insurers sell — not because the two situations are financially identical.' },
+        { title: 'Underlying liability-limit requirements vary by insurer', body: 'The $250,000 auto / $300,000 home figures cited above are what the Insurance Information Institute describes as a common requirement, not a number every insurer uses. Check your own insurer\'s specific minimum before assuming you already qualify.' },
+        { title: 'This does not include future income a judgment could pursue', body: 'A large liability judgment can sometimes be collected from future wages as well as current assets, depending on the state and the size of the judgment. This calculator only totals assets you already have, so it is a floor on the exposure, not a ceiling.' },
+        { title: 'Umbrella insurance covers liability, not your own damage', body: 'It extends coverage for injuries or damage you are found responsible for causing to other people. It does not pay to repair your own car or home — that is what collision, comprehensive and dwelling coverage are for.' }
+      ],
+      references: [
+        { label: 'Insurance Information Institute, "Should I purchase an umbrella liability policy?"', url: 'https://www.iii.org/article/should-i-purchase-an-umbrella-liability-policy' },
+        { label: 'Insurance Information Institute, "What is an umbrella liability policy?"', url: 'https://www.iii.org/article/what-is-an-umbrella-liability-policy' },
+        { label: 'Progressive, "How Much Umbrella Insurance Do I Need?"', url: 'https://www.progressive.com/answers/how-much-umbrella-insurance-do-i-need/' }
+      ]
+    },
+    inputs: [
+      { id: 'homeEquityValue', label: 'Home equity', type: 'currency', placeholder: '400000', defaultValue: 400000, step: 10000, min: 0 },
+      { id: 'savingsInvestments', label: 'Savings, investments & retirement accounts', type: 'currency', placeholder: '1100000', defaultValue: 1100000, step: 10000, min: 0 },
+      { id: 'otherAssetsValue', label: 'Other valuable assets (vehicles, jewelry, etc.)', type: 'currency', placeholder: '100000', defaultValue: 100000, step: 5000, min: 0 },
+      { id: 'autoLiabilityLimit', label: 'Current auto liability limit', type: 'currency', placeholder: '300000', defaultValue: 300000, step: 25000, min: 0 },
+      { id: 'homeLiabilityLimit', label: 'Current home/renters liability limit', type: 'currency', placeholder: '300000', defaultValue: 300000, step: 25000, min: 0 }
+    ],
+    seo: {
+      title: 'Umbrella Insurance Coverage Calculator – How Much Do I Need?',
+      description: 'Estimate umbrella liability coverage using the asset-gap method: assets minus your weaker auto or home liability limit, rounded to a sellable policy size.',
+      faq: [
+        { question: 'How much umbrella insurance coverage do I need?', answer: 'Progressive describes comparing your total assets against your existing auto and home liability limits — the gap left exposed is the amount an umbrella policy should at least cover. This calculator rounds that gap up to the next $1 million, since that is typically how umbrella policies are sold.' },
+        { question: 'Why does the result round up to $1 million increments?', answer: 'Insurers generally sell personal umbrella policies starting at $1 million, in $1 million increments — Travelers, for example, advertises $1 million to $5 million of coverage. There is usually no smaller policy to buy even if your calculated gap is less than $1 million.' },
+        { question: 'What liability limits do I need before I can buy an umbrella policy?', answer: 'The Insurance Information Institute states that most insurers want at least $250,000 of auto liability coverage and $300,000 of homeowners liability coverage in place before adding a $1 million umbrella on top — a common starting point, though it varies by insurer.' },
+        { question: 'What counts as an "asset" for this calculation?', answer: "Progressive's own list includes bank accounts, investments, retirement accounts, home equity, vehicle equity, jewelry, art, collectibles, other personal property and cash-value life insurance — essentially anything a court judgment could reach." },
+        { question: 'Does umbrella insurance cover damage to my own car or home?', answer: 'No. It extends liability coverage for harm you are found responsible for causing to other people or their property. Your own vehicle and home damage are covered by collision/comprehensive and dwelling coverage instead.' },
+        { question: "What if my asset gap comes out to less than $1 million?", answer: 'The calculator still suggests a $1 million policy, the typical minimum size sold, rather than a smaller custom amount — in Progressive\'s own $700,000-assets, $500,000-limits example, the exposed gap is $200,000, well under $1 million.' },
+        { question: 'Does this calculator account for a judgment that could garnish future wages?', answer: 'No — it only totals assets you already have, such as savings, investments and home equity. A judgment can sometimes reach future income too, so this result is a floor on your exposure, not a complete picture.' }
+      ]
+    },
+    compute(values) {
+      const totalAssets = values.homeEquityValue + values.savingsInvestments + values.otherAssetsValue;
+      const weakestUnderlyingLimit = Math.min(values.autoLiabilityLimit, values.homeLiabilityLimit);
+      const assetGap = Math.max(0, totalAssets - weakestUnderlyingLimit);
+      const recommendedUmbrellaCoverage = Math.max(1_000_000, Math.ceil(assetGap / 1_000_000) * 1_000_000);
+      const totalProtectionAfterUmbrella = weakestUnderlyingLimit + recommendedUmbrellaCoverage;
+      return { recommendedUmbrellaCoverage, totalAssets, weakestUnderlyingLimit, assetGap, totalProtectionAfterUmbrella };
+    }
+  },
+  {
+    id: 'pet-insurance-breakeven-calculator',
+    category: 'insurance',
+    glyph: 'PET',
+    updatedAt: '2026-11-19',
+    aliases: ['pet insurance worth it calculator', 'pet insurance breakeven point calculator', 'is pet insurance worth it calculator', 'pet insurance vs paying out of pocket calculator'],
+    related: ['deductible-vs-premium-breakeven-calculator', 'out-of-pocket-maximum-calculator', 'emergency-fund-calculator', 'cobra-cost-calculator'],
+    title: 'Pet Insurance Breakeven Calculator',
+    description: 'Find how much a year in vet bills has to add up to before a pet insurance policy pays for itself compared with paying every vet bill out of pocket, based on your premium, deductible and reimbursement rate.',
+    example: 'At a $35-a-month premium, a $250 annual deductible and 80% reimbursement, about $775 of vet bills in a year — roughly 1.3 claims at $600 each — is the breakeven point against paying out of pocket.',
+    breakdown: {
+      headline: 'breakevenAnnualVetBills',
+      headlineLabel: 'Vet bills needed to break even',
+      outputs: [
+        { id: 'breakevenAnnualVetBills', format: 'currency' },
+        { id: 'breakevenNumberOfClaims', label: 'That\'s about this many average-sized claims', format: 'number' },
+        { id: 'annualPremiumCost', label: 'Annual premium paid either way', format: 'currency' },
+        { id: 'annualDeductible', label: 'Deductible entered', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your policy', inputs: ['monthlyPremium', 'annualDeductible', 'reimbursementPercent'] },
+        { title: 'A typical claim', inputs: ['averageVetBillPerClaim'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'annualPremiumCost', label: 'Annual premium (paid regardless)' },
+          { from: 'annualDeductible', label: 'Deductible' },
+          { from: 'breakevenAnnualVetBills', label: 'Vet bills needed to break even' }
+        ],
+        title: 'What it takes to break even',
+        highlight: 2
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-19',
+      concept: {
+        title: 'How pet insurance reimbursement actually works',
+        paragraphs: [
+          'Pet insurance does not simply hand back a fixed amount per vet visit. The Insurance Information Institute describes basic coverage as including "an annual deductible, caps on reimbursements per accident or illness, as well as caps on total reimbursements per policy term" — a deductible you pay first, then a reimbursement percentage on the eligible amount above it, up to a cap.',
+          "Cost varies by pet, not by a single national average. The Insurance Information Institute states that pricing is \"based typically on the animal's age, health profile and the level of care you choose,\" and that, generally, older animals cost more to cover. There is also a hard exclusion to know about: the same article notes \"there may be exclusions for pre-existing conditions,\" and some insurers won't cover certain breeds prone to hereditary conditions.",
+          "Because the premium is a fixed, recurring cost and the payout only arrives if and when you file a claim, pet insurance only \"pays for itself\" in a given year once your vet bills cross a specific dollar threshold. Below that threshold, paying vet bills out of pocket directly would have cost less than the premium plus the deductible plus the reimbursement you'd still owe. This calculator finds that threshold."
+        ]
+      },
+      howTo: {
+        intro: 'Enter your monthly premium, annual deductible and reimbursement rate, plus a typical vet bill size, to see the exact point where insurance starts beating paying out of pocket.',
+        steps: [
+          { name: 'Enter your monthly premium', text: 'The amount billed each month for the policy, regardless of whether you ever file a claim.' },
+          { name: 'Enter your annual deductible', text: 'The amount of eligible vet bills you pay yourself each year before reimbursement starts.' },
+          { name: 'Enter your reimbursement percentage', text: "The share of eligible costs above the deductible the insurer pays back — commonly 70-90%, set by your specific policy." },
+          { name: 'Enter a typical vet bill per claim', text: 'A realistic estimate for one illness or accident visit, used only to translate the breakeven dollar figure into a number of claims.' },
+          { name: 'Read the result', text: 'The headline is the total vet bills in a year it takes for insurance to match what paying out of pocket would have cost — below that line, skipping insurance would have been cheaper.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "Set the cost of carrying insurance equal to the cost of paying out of pocket, then solve for the year's vet bills.",
+        expression: 'AnnualPremium = MonthlyPremium × 12\nBreakeven = Deductible + AnnualPremium ÷ ReimbursementRate',
+        terms: [
+          { symbol: 'AnnualPremium', meaning: 'The monthly premium times 12 — paid whether or not you file a claim.' },
+          { symbol: 'Deductible', meaning: 'Eligible vet bills you pay yourself each year before reimbursement starts.' },
+          { symbol: 'ReimbursementRate', meaning: 'The reimbursement percentage, as a decimal (80% is 0.80).' },
+          { symbol: 'Breakeven', meaning: "The year's total eligible vet bills at which insurance costs exactly the same as paying out of pocket." }
+        ],
+        note: 'This comes from setting [Premium + Deductible + (1 − Rate) × (Bills − Deductible)] equal to Bills and solving for Bills. It assumes one blended annual deductible and ignores per-incident/per-term reimbursement caps — see "Watch out" below.'
+      },
+      workedExample: {
+        intro: 'A policy costs $35 a month, with a $250 annual deductible and 80% reimbursement; a typical claim runs about $600.',
+        rows: [
+          { label: 'Annual premium ($35 × 12)', value: '$420.00' },
+          { label: 'Breakeven vet bills ($250 + $420.00 ÷ 0.80)', value: '$775.00' },
+          { label: 'At $600 per claim, that\'s about', value: '1.29 claims' }
+        ],
+        result: '≈ $775.00 of vet bills a year to break even (about 1.3 average-sized claims)',
+        explanation: 'Because the policy reimburses 80% of eligible costs above the $250 deductible, every dollar of vet bills above the deductible effectively costs only 20 cents out of pocket once insurance pays. It only takes about $775 in a single year\'s vet bills — a bit more than one average-sized claim — for the $420 paid in premiums to be worth it compared with paying everything out of pocket.'
+      },
+      watchOut: [
+        { title: 'This is an educational estimate, not a quote or an offer to sell insurance', body: 'This calculator estimates a breakeven point for planning purposes. It does not sell, recommend or bind any policy, and is not a substitute for reading your own policy\'s actual terms.' },
+        { title: 'Real policies cap reimbursement per incident and per policy term', body: 'The Insurance Information Institute notes caps "per accident or illness" as well as caps on "total reimbursements per policy term." A single very large claim, or several claims in one year, can hit a cap this simple model does not apply, lowering your real reimbursement below this estimate.' },
+        { title: 'Pre-existing conditions are typically excluded entirely', body: "The Insurance Information Institute states there \"may be exclusions for pre-existing conditions.\" Vet bills for a condition diagnosed before the policy started generally don't count toward reimbursement at all, no matter how large they are." },
+        { title: 'Premiums usually rise as a pet ages', body: 'The Insurance Information Institute notes that older animals generally cost more to cover. A breakeven calculated today with this year\'s premium will shift as the premium rises in later years.' },
+        { title: 'This assumes one annual deductible, not a per-incident one', body: 'Some policies apply the deductible separately to each new condition rather than once a year in total. A pet with several unrelated issues in one year could face a higher real deductible total than this model assumes.' }
+      ],
+      references: [
+        { label: 'Insurance Information Institute, "Facts about pet insurance"', url: 'https://www.iii.org/article/facts-about-pet-insurance' }
+      ]
+    },
+    inputs: [
+      { id: 'monthlyPremium', label: 'Monthly premium', type: 'currency', placeholder: '35', defaultValue: 35, step: 1, min: 0 },
+      { id: 'annualDeductible', label: 'Annual deductible', type: 'currency', placeholder: '250', defaultValue: 250, step: 25, min: 0 },
+      { id: 'reimbursementPercent', label: 'Reimbursement percentage', type: 'percent', placeholder: '80', defaultValue: 80, step: 5, min: 1 },
+      { id: 'averageVetBillPerClaim', label: 'Typical vet bill per claim', type: 'currency', placeholder: '600', defaultValue: 600, step: 50, min: 1 }
+    ],
+    seo: {
+      title: 'Pet Insurance Breakeven Calculator – Is It Worth It?',
+      description: 'Find the exact amount of yearly vet bills where pet insurance starts beating paying out of pocket, based on your premium, deductible and reimbursement rate.',
+      faq: [
+        { question: 'How do I know if pet insurance is worth it?', answer: 'Compare your expected annual vet bills against the breakeven figure this calculator produces — the year\'s eligible bills needed before the premium plus reimbursement math beats paying entirely out of pocket. Above that line, insurance comes out ahead; below it, paying out of pocket would have been cheaper.' },
+        { question: 'How is the pet insurance breakeven point calculated?', answer: 'Add the annual deductible to the annual premium divided by the reimbursement rate: Deductible + AnnualPremium ÷ ReimbursementRate. At $35/month, a $250 deductible and 80% reimbursement, that is $250 + $420 ÷ 0.80 = $775.' },
+        { question: 'How many vet visits does it take for pet insurance to pay off?', answer: 'Divide the breakeven dollar figure by a typical claim size. At a $775 breakeven and $600 per claim, that is about 1.29 claims — roughly one larger visit, or slightly more than one average-sized claim, in a single year.' },
+        { question: 'Does a higher reimbursement rate lower the breakeven point?', answer: 'Yes. At the same $35/month premium and $250 deductible, raising reimbursement from 80% to 90% lowers the breakeven from $775.00 to about $716.67 — about 1.19 claims at $600 each instead of 1.29.' },
+        { question: 'Does pet insurance cover pre-existing conditions?', answer: 'Generally no. The Insurance Information Institute states there "may be exclusions for pre-existing conditions" — a condition diagnosed before the policy started typically is not reimbursed at all, regardless of the breakeven math.' },
+        { question: 'Why does my real reimbursement sometimes come out lower than this calculator suggests?', answer: 'Real policies cap reimbursement per accident or illness and again per policy term. A single very expensive claim, or several large claims in one year, can hit those caps — something this simplified percentage-based model does not apply.' },
+        { question: 'Does pet insurance cost the same at every age?', answer: 'No. The Insurance Information Institute notes that cost is based on the animal\'s age and health profile, and that older animals generally cost more to cover — so the premium (and the breakeven point) typically rises over a pet\'s life.' }
+      ]
+    },
+    compute(values) {
+      const annualPremiumCost = values.monthlyPremium * 12;
+      const reimbursementRate = values.reimbursementPercent / 100;
+      const breakevenAnnualVetBills = reimbursementRate > 0 ? values.annualDeductible + annualPremiumCost / reimbursementRate : NaN;
+      const breakevenNumberOfClaims = values.averageVetBillPerClaim > 0 ? breakevenAnnualVetBills / values.averageVetBillPerClaim : NaN;
+      return { breakevenAnnualVetBills, breakevenNumberOfClaims, annualPremiumCost, annualDeductible: values.annualDeductible };
+    }
+  },
+  {
+    id: 'deductible-vs-premium-breakeven-calculator',
+    category: 'insurance',
+    glyph: 'D/P',
+    updatedAt: '2026-11-19',
+    aliases: ['deductible breakeven calculator', 'high deductible vs low deductible calculator', 'insurance deductible premium tradeoff calculator', 'should i raise my deductible calculator'],
+    related: ['pet-insurance-breakeven-calculator', 'car-insurance-coverage-calculator', 'home-insurance-rebuild-cost-calculator', 'out-of-pocket-maximum-calculator'],
+    title: 'Deductible vs. Premium Breakeven Calculator',
+    description: "Work out how often you'd have to file a claim for a lower deductible to beat a higher deductible's premium savings — a generic comparison that works for auto, home, health or any other policy with a deductible.",
+    example: "Raising a deductible from $500 to $1,000 to save $150 a year breaks even at one claim every 3.33 years; filing a claim only once every 5 years on average nets about $50 a year in favor of the higher deductible.",
+    breakdown: {
+      headline: 'annualNetBenefitOfHigherDeductible',
+      headlineLabel: 'Average yearly benefit of the higher deductible',
+      outputs: [
+        { id: 'annualNetBenefitOfHigherDeductible', format: 'currency' },
+        { id: 'breakevenYears', label: 'Years without a claim needed to break even', format: 'number' },
+        { id: 'breakevenClaimFrequency', label: 'Claim frequency where the two options tie (claims/year)', format: 'number' },
+        { id: 'extraCostPerClaim', label: "Extra you'd pay out of pocket on a claim", format: 'currency' }
+      ],
+      groups: [
+        { title: 'The two deductibles', inputs: ['lowerDeductible', 'higherDeductible', 'annualPremiumSavings'] },
+        { title: 'How often you expect to claim', inputs: ['expectedClaimsPerYear'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'breakevenClaimFrequency', label: 'Breakeven claim frequency (claims/year)' },
+          { from: 'expectedClaimsPerYear', label: 'Your expected claim frequency (claims/year)' }
+        ],
+        title: 'Your expected claims vs. the breakeven point',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-19',
+      concept: {
+        title: 'The deductible/premium tradeoff, for any type of policy',
+        paragraphs: [
+          "Every insurance policy with a deductible offers the same basic trade: agree to pay more out of pocket before coverage starts, and the insurer charges a lower premium in exchange. The National Association of Insurance Commissioners states plainly, in the context of homeowners insurance, that \"your choice of a higher deductible will reduce the price for homeowners insurance\" — the same mechanic applies to auto, health, pet and most other deductible-based policies.",
+          'That trade only pays off if you avoid filing a claim often enough. Picking a higher deductible banks a guaranteed, recurring premium saving every year, in exchange for owing more out of pocket on any claim that does come in. This calculator is deliberately generic — enter the two deductible amounts and the premium difference from any policy, and it finds the claim frequency where the two options cost exactly the same on average.',
+          'One assumption matters for reading the result correctly: the math below assumes a claim large enough to exceed the higher deductible. Once a claim clears that amount, the insurer pays the same way under either deductible — the only difference is the extra amount you personally cover, which is always exactly the gap between the two deductibles, no matter how much bigger the claim gets beyond that.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the lower and higher deductible amounts, the annual premium savings the higher deductible gives you, and roughly how often you expect to file a claim.',
+        steps: [
+          { name: 'Enter both deductible amounts', text: 'The deductible you currently have (or the lower option) and the higher deductible you are considering instead.' },
+          { name: 'Enter the annual premium savings', text: 'How much less the policy costs per year at the higher deductible — from an actual quote, not a guess, if possible.' },
+          { name: 'Enter your expected claim frequency', text: 'Roughly how many claims per year you expect on average — for example, 0.2 for "about one claim every 5 years." Your own claims history on this policy is a reasonable starting point.' },
+          { name: 'Read the result', text: 'The headline shows the average yearly benefit (or cost) of the higher deductible given your expected claim frequency. The breakeven figures below it show the exact tipping point, so you can judge the result even if your own frequency estimate is rough.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The extra cost per claim is the gap between the two deductibles; the breakeven claim frequency is the premium savings divided by that gap.',
+        expression: 'ExtraPerClaim = HigherDeductible − LowerDeductible\nBreakevenFrequency = AnnualSavings ÷ ExtraPerClaim\nNetBenefit = AnnualSavings − ExpectedFrequency × ExtraPerClaim',
+        terms: [
+          { symbol: 'ExtraPerClaim', meaning: 'The additional amount you pay out of pocket on a qualifying claim at the higher deductible.' },
+          { symbol: 'AnnualSavings', meaning: 'How much less the higher-deductible policy costs per year.' },
+          { symbol: 'BreakevenFrequency', meaning: 'The claims-per-year rate at which the two deductible choices cost the same on average.' },
+          { symbol: 'ExpectedFrequency', meaning: 'Your own estimate of how many claims per year you expect, on average.' },
+          { symbol: 'NetBenefit', meaning: 'The average yearly dollar advantage of the higher deductible at your expected claim frequency; negative means the lower deductible wins on average.' }
+        ],
+        note: 'This models claims that exceed the higher deductible. A claim smaller than the higher deductible changes the comparison differently — see "Watch out" below.'
+      },
+      workedExample: {
+        intro: 'Raising a deductible from $500 to $1,000 saves $150 a year in premium, and you expect a qualifying claim about once every 5 years (0.2 claims a year, on average).',
+        rows: [
+          { label: 'Extra cost per claim ($1,000 − $500)', value: '$500.00' },
+          { label: 'Years without a claim to break even ($500.00 ÷ $150)', value: '3.33 years' },
+          { label: 'Breakeven claim frequency ($150 ÷ $500.00)', value: '0.30 claims/year' },
+          { label: 'Your expected claim frequency', value: '0.20 claims/year' },
+          { label: 'Net benefit of the higher deductible ($150 − 0.20 × $500.00)', value: '$50.00/year' }
+        ],
+        result: '≈ $50.00 a year better off, on average, with the higher deductible',
+        explanation: 'Filing a claim only about once every 5 years (0.20 claims/year) is less often than the 0.30-claims-a-year breakeven point (about once every 3.33 years), so the $150 in annual premium savings outweighs the extra $500 paid out of pocket on the rarer claim — by about $50 a year on average.'
+      },
+      watchOut: [
+        { title: 'This is an educational estimate, not a quote or an offer to sell insurance', body: 'This calculator compares two deductible levels for planning purposes. It does not sell, recommend or bind any policy — check actual quoted premiums at each deductible level before deciding.' },
+        { title: 'The math assumes a claim large enough to exceed the higher deductible', body: "If a claim would come in below the higher deductible, you'd pay the entire claim yourself either way under that option, which is a different (and usually worse) comparison than the one this calculator models — it is built for claims that clear both deductibles." },
+        { title: 'Expected claim frequency is your own estimate, not a published probability', body: "This calculator does not know your actual risk. NAIC's own general advice is to make sure you're comfortable paying the deductible out of pocket if you do have to file a claim, regardless of what the average math says." },
+        { title: "A single very bad year doesn't mean the higher deductible was the wrong call", body: 'The "net benefit" figure is an average over many years at your estimated claim frequency, not a guarantee for any one year. A claim in year one of a higher deductible can still cost more upfront even when the higher deductible is the better choice on average.' },
+        { title: 'This only compares deductible levels, not whether to carry the policy at all', body: 'It assumes you are keeping the same type and amount of coverage either way and only changing the deductible — it says nothing about whether the coverage itself is worth carrying.' }
+      ],
+      references: [
+        { label: 'National Association of Insurance Commissioners, homeowners insurance consumer guide (deductibles and premiums)', url: 'https://content.naic.org/consumer/homeowners-insurance.htm' }
+      ]
+    },
+    inputs: [
+      { id: 'lowerDeductible', label: 'Lower deductible', type: 'currency', placeholder: '500', defaultValue: 500, step: 50, min: 0 },
+      { id: 'higherDeductible', label: 'Higher deductible', type: 'currency', placeholder: '1000', defaultValue: 1000, step: 50, min: 0 },
+      { id: 'annualPremiumSavings', label: 'Annual premium savings at the higher deductible', type: 'currency', placeholder: '150', defaultValue: 150, step: 10, min: 0 },
+      { id: 'expectedClaimsPerYear', label: 'Expected claims per year', type: 'number', placeholder: '0.2', defaultValue: 0.2, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Deductible vs. Premium Breakeven Calculator',
+      description: "Find the claim frequency where a higher deductible's premium savings breaks even — a generic comparison for auto, home, health or any deductible-based policy.",
+      faq: [
+        { question: 'How do I know if a higher deductible is worth it?', answer: 'Compare your expected claim frequency against the breakeven frequency this calculator produces. If you expect claims less often than the breakeven rate, the higher deductible saves money on average; more often, and the lower deductible wins.' },
+        { question: 'How is the deductible breakeven point calculated?', answer: 'Divide the annual premium savings by the extra amount you would pay out of pocket per claim (the gap between the two deductibles). Saving $150 a year with a $500 deductible gap gives a breakeven frequency of 0.30 claims a year, or about one claim every 3.33 years.' },
+        { question: 'Does the size of the claim matter?', answer: 'Only up to a point. As long as a claim is large enough to exceed the higher deductible, the extra out-of-pocket cost is always exactly the gap between the two deductibles — a bigger claim beyond that doesn\'t change the math, because the insurer covers the rest either way.' },
+        { question: "What if I'm not sure how often I'll file a claim?", answer: 'Your own claims history on similar coverage over the last several years is a reasonable starting estimate. The breakeven frequency this calculator shows lets you judge the result even with a rough guess, since you only need to know whether you claim more or less often than that rate.' },
+        { question: 'Does a higher deductible always save money?', answer: 'No — only on average, and only if your actual claim frequency stays below the breakeven rate. Filing claims more often than the breakeven frequency means the higher deductible costs more overall, even though each individual premium payment is lower.' },
+        { question: 'Can I use this for health insurance or pet insurance too?', answer: 'Yes, as long as the comparison is apples to apples — the same coverage and the same insurer, with only the deductible and premium changing. For pet insurance specifically, the reimbursement-percentage pet-insurance-breakeven-calculator models that policy type\'s percentage-based payout more precisely.' },
+        { question: 'Why does NAIC say to make sure I can afford my deductible?', answer: 'Separately from the financial breakeven math, NAIC\'s consumer guidance is to pick a deductible you are "comfortable paying... if you make a claim" — a deductible that saves money on average but that you could not actually afford to pay when a claim happens is a real financial risk this calculator does not measure.' }
+      ]
+    },
+    compute(values) {
+      const extraCostPerClaim = values.higherDeductible - values.lowerDeductible;
+      const breakevenYears = extraCostPerClaim > 0 ? extraCostPerClaim / values.annualPremiumSavings : NaN;
+      const breakevenClaimFrequency = extraCostPerClaim > 0 ? values.annualPremiumSavings / extraCostPerClaim : NaN;
+      const annualNetBenefitOfHigherDeductible = values.annualPremiumSavings - values.expectedClaimsPerYear * extraCostPerClaim;
+      return { annualNetBenefitOfHigherDeductible, breakevenYears, breakevenClaimFrequency, extraCostPerClaim, expectedClaimsPerYear: values.expectedClaimsPerYear };
+    }
   }
 ];

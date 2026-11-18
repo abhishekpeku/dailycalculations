@@ -214,6 +214,8 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   // percentage with a zero market value to divide by; rebuildCost and structureValueOfMarketPrice
   // stay finite either way.
   'home-insurance-rebuild-cost-calculator': ['rebuildCostPercentOfMarketValue'],
+  // both deductibles at their min (0) -> extraCostPerClaim 0 -> breakeven years/frequency are 0/0
+  'deductible-vs-premium-breakeven-calculator': ['breakevenYears', 'breakevenClaimFrequency'],
   // cashBalance and monthlyBurnRate both 0 (their min) -> runwayMonths divides by zero burn rate;
   // annualBurnRate (monthlyBurnRate x 12) stays a finite 0 either way.
   'burn-rate-calculator': ['runwayMonths'],

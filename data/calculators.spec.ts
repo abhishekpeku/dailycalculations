@@ -202,7 +202,10 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'contribution-margin-calculator': ['contributionMarginRatio'],
   // beginningInventory, purchases, endingInventory and revenue all 0 (their min) -> cogs and
   // grossProfit are both a finite 0, but grossMarginPercent (divides by revenue) has no answer.
-  'cost-of-goods-sold-calculator': ['grossMarginPercent']
+  'cost-of-goods-sold-calculator': ['grossMarginPercent'],
+  // vehicleActualCashValue 0 (its min) -> compute()'s own guard, no premium-to-value ratio with a
+  // zero-value car to divide by; recommendedLiabilityCoverage stays finite either way.
+  'car-insurance-coverage-calculator': ['comprehensiveCollisionPremiumToValuePercent']
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

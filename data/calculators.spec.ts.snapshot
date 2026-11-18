@@ -2151,6 +2151,53 @@ exports[`compute() snapshots > car-depreciation-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > car-insurance-coverage-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "totalAssets": 150000,
+      "annualIncome": 65000,
+      "vehicleActualCashValue": 12000,
+      "comprehensiveCollisionAnnualPremium": 900
+    },
+    "outputs": {
+      "recommendedLiabilityCoverage": 215000,
+      "totalAssets": 150000,
+      "annualIncome": 65000,
+      "comprehensiveCollisionPremiumToValuePercent": 7.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "totalAssets": 225000,
+      "annualIncome": 98000,
+      "vehicleActualCashValue": 18000,
+      "comprehensiveCollisionAnnualPremium": 1350
+    },
+    "outputs": {
+      "recommendedLiabilityCoverage": 323000,
+      "totalAssets": 225000,
+      "annualIncome": 98000,
+      "comprehensiveCollisionPremiumToValuePercent": 7.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "totalAssets": 0,
+      "annualIncome": 0,
+      "vehicleActualCashValue": 0,
+      "comprehensiveCollisionAnnualPremium": 0
+    },
+    "outputs": {
+      "recommendedLiabilityCoverage": 0,
+      "totalAssets": 0,
+      "annualIncome": 0,
+      "comprehensiveCollisionPremiumToValuePercent": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > car-payment-calculator 1`] = `
 {
   "default": {

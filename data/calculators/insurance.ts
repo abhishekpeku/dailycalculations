@@ -969,5 +969,121 @@ export const insuranceCalculators: CalculatorConfig[] = [
       const percentCovered = totalCareCost === 0 ? 0 : Math.min(100, (totalExistingResources / totalCareCost) * 100);
       return { careCostGap, totalCareCost, totalExistingResources, coveredAmount, percentCovered };
     }
+  },
+  {
+    id: 'car-insurance-coverage-calculator',
+    category: 'insurance',
+    glyph: 'CAR',
+    updatedAt: '2026-11-18',
+    aliases: ['car insurance coverage calculator', 'how much car insurance do i need', 'auto liability coverage calculator', 'how much liability insurance should i carry', 'comprehensive and collision coverage calculator'],
+    related: ['car-payment-calculator', 'car-depreciation-calculator', 'loan-calculator', 'human-life-value-calculator'],
+    title: 'Car Insurance Coverage Calculator',
+    description: 'Turn your own assets, income and vehicle value into a starting-point liability-coverage amount and a comprehensive/collision cost check — not a quote or a state-specific minimum.',
+    example: 'With $150,000 in assets to protect and $65,000 in annual income, the suggested liability floor is $215,000; paying $900 a year for comprehensive and collision on a $12,000 car works out to about 7.5% of the car\'s value every year.',
+    breakdown: {
+      headline: 'recommendedLiabilityCoverage',
+      headlineLabel: 'Suggested liability-coverage floor',
+      outputs: [
+        { id: 'recommendedLiabilityCoverage', format: 'currency' },
+        { id: 'totalAssets', label: 'Assets entered', format: 'currency' },
+        { id: 'annualIncome', label: 'Annual income entered', format: 'currency' },
+        { id: 'comprehensiveCollisionPremiumToValuePercent', label: 'Comp + collision premium, as % of car value per year', format: 'percent' }
+      ],
+      groups: [
+        { title: 'What you have to protect', inputs: ['totalAssets', 'annualIncome'] },
+        { title: 'Your vehicle', inputs: ['vehicleActualCashValue', 'comprehensiveCollisionAnnualPremium'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'totalAssets', label: 'Assets to protect' },
+          { from: 'recommendedLiabilityCoverage', label: 'Suggested liability floor' }
+        ],
+        title: 'Assets vs. suggested liability-coverage floor',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What does liability coverage actually protect?',
+        paragraphs: [
+          'Auto liability coverage pays for injuries or property damage you cause someone else while driving — it does not pay to repair or replace your own car. Every state sets a minimum amount drivers must carry, but the Insurance Information Institute (III) states plainly that "state-required minimums may not cover the costs of a serious accident," and that drivers can buy higher limits specifically "to protect personal assets such as homes and savings." The National Association of Insurance Commissioners (NAIC) spells out why that matters: if a court judgment or settlement is more than your policy limits, "you will have to pay the difference" yourself.',
+          'That is the logic this calculator uses: it adds the assets you already have (savings, investments, home equity) to a year of income, and suggests that total as a liability-coverage floor. It is a simplified planning assumption, not an official formula from III, NAIC or any insurer — state minimums, your own risk tolerance and how much of your income a judgment could realistically reach all vary, so treat the result as a starting point to discuss with a licensed agent, not a number to act on by itself.',
+          'Comprehensive and collision coverage are a separate decision: they protect your own car, are usually optional once a car loan is paid off, and NAIC notes that after an accident "insurers will \'total\' the car and pay you what the car was worth" rather than the repair cost — so the payout is capped at the vehicle\'s actual cash value no matter how large the premium or the repair bill. Comparing the annual premium for both coverages against that cash value is one simple, informational way to see how much you are paying relative to what the coverage could ever pay out.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter what you are protecting (assets and income) and your vehicle\'s value and comprehensive/collision premium.',
+        steps: [
+          { name: 'Enter assets to protect', text: 'Add up savings, investments and home equity — anything a lawsuit could realistically reach.' },
+          { name: 'Enter your annual income', text: 'Use your gross income; some liability judgments can also reach future wages through garnishment.' },
+          { name: 'Enter your vehicle\'s actual cash value', text: 'What the car is worth today, not what you paid for it — the car-depreciation-calculator on this site can help estimate it.' },
+          { name: 'Enter your comprehensive + collision premium', text: 'The combined annual cost for both coverages, from your policy or a quote.' },
+          { name: 'Read the result', text: 'The headline is a suggested liability-coverage floor. The percent row shows the comp + collision premium as a share of the car\'s value each year — context, not a cutoff rule.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Two unrelated calculations share this page: a liability-coverage floor, and a comp/collision cost check.',
+        expression: 'Suggested liability floor = Assets to protect + Annual income\nComp + collision cost check = (Annual premium ÷ Vehicle value) × 100',
+        terms: [
+          { symbol: 'Assets to protect', meaning: 'Savings, investments and home equity, in current dollars.' },
+          { symbol: 'Annual income', meaning: 'Gross annual income from work or self-employment.' },
+          { symbol: 'Vehicle value', meaning: 'The car\'s current actual cash value, not its original price.' },
+          { symbol: 'Annual premium', meaning: 'What you pay per year for comprehensive and collision combined.' }
+        ],
+        note: 'An educational estimate, not a quote, a state-specific minimum, or insurance advice. State minimum liability limits vary and are not calculated here — check your own state\'s requirements before buying a policy.'
+      },
+      workedExample: {
+        intro: 'A driver has $150,000 in assets to protect and a $65,000 annual income. Their car has a $12,000 actual cash value, and comprehensive + collision together cost $900 a year.',
+        rows: [
+          { label: 'Suggested liability floor (150,000 + 65,000)', value: '$215,000.00' },
+          { label: 'Comp + collision premium as % of car value (900 ÷ 12,000)', value: '7.50%' }
+        ],
+        result: 'A $215,000.00 suggested liability floor, with comp + collision costing about 7.5% of the car\'s value per year.',
+        explanation: 'That 7.5% figure is informational, not a threshold this calculator is claiming is "too high" or "too low" — there is no universal cutoff for when comprehensive/collision stops being worth it, since that depends on the driver\'s own finances and risk tolerance, not just one ratio.'
+      },
+      watchOut: [
+        { title: 'This is an educational estimate, not a quote or an offer to sell insurance', body: 'This calculator suggests a planning starting point. It does not sell, recommend or bind any policy, and is not a substitute for a licensed insurance agent who can quote your state\'s actual minimums and available coverage.' },
+        { title: 'State minimums are not calculated here', body: 'Required liability limits vary by state and this calculator does not look any of them up. Always confirm your own state\'s minimum before buying a policy, and treat the suggested floor here as separate from that legal requirement.' },
+        { title: 'The liability-coverage floor is one heuristic, not THE answer', body: 'Adding assets and income is a simple, transparent planning assumption used on this page — it is not a formula published by III, NAIC or any specific insurer, and a financial advisor or agent may reasonably recommend a different amount for your situation.' },
+        { title: 'Comprehensive and collision payouts are capped at the car\'s value', body: 'Per NAIC, if repairing the car would cost more than it is worth, the insurer totals it and pays its actual cash value instead — these coverages can never pay out more than that, regardless of the premium paid or the size of the repair bill.' },
+        { title: 'A loan or lease can require these coverages regardless of this ratio', body: 'If you are still financing or leasing the car, your lender or lessor almost always requires comprehensive and collision coverage, whatever the premium-to-value percentage shown here comes out to.' }
+      ],
+      references: [
+        { label: 'Insurance Information Institute, Auto insurance basics — understanding your coverage', url: 'https://www.iii.org/article/auto-insurance-basics-understanding-your-coverage' },
+        { label: 'NAIC, Auto Insurance', url: 'https://content.naic.org/consumer/auto-insurance.htm' }
+      ]
+    },
+    inputs: [
+      { id: 'totalAssets', label: 'Assets to protect', type: 'currency', placeholder: '150000', defaultValue: 150000, step: 5000, min: 0 },
+      { id: 'annualIncome', label: 'Annual income', type: 'currency', placeholder: '65000', defaultValue: 65000, step: 1000, min: 0 },
+      { id: 'vehicleActualCashValue', label: 'Vehicle\'s actual cash value', type: 'currency', placeholder: '12000', defaultValue: 12000, step: 500, min: 0 },
+      { id: 'comprehensiveCollisionAnnualPremium', label: 'Comprehensive + collision premium (per year)', type: 'currency', placeholder: '900', defaultValue: 900, step: 50, min: 0 }
+    ],
+    seo: {
+      title: 'Car Insurance Coverage Calculator – Liability Guidance',
+      description: 'Free car insurance coverage calculator: a liability-coverage starting point from your assets and income, plus a comprehensive/collision cost-vs-value check.',
+      faq: [
+        { question: 'How much car insurance liability coverage do I need?', answer: 'There is no single right answer — state minimums vary and may not cover a serious accident, per the Insurance Information Institute. This calculator suggests a floor of your assets to protect plus your annual income as one simplified planning starting point, not an official figure.' },
+        { question: 'What happens if a judgment is more than my policy limit?', answer: 'Per the NAIC, if a court judgment or settlement is more than your policy limit, you have to pay the difference yourself — which is the basic reason to consider coverage above your state\'s legal minimum.' },
+        { question: 'How is the suggested liability floor calculated?', answer: 'It adds the assets you enter (savings, investments, home equity) to your annual income. For $150,000 in assets and $65,000 in income, that is $215,000.00. For $300,000 in assets and $90,000 in income, it would be $390,000.00.' },
+        { question: 'Do I need comprehensive and collision coverage?', answer: 'They are usually optional unless a lender requires them while you are still financing the car. The NAIC notes that if repairing the car costs more than it is worth, the insurer pays the car\'s actual cash value instead of the repair bill — the coverage can never pay out more than that value.' },
+        { question: 'What does the comprehensive + collision percentage mean?', answer: 'It is the annual premium divided by the car\'s current value, as a percent. Paying $900 a year on a $12,000 car is 7.5%; paying $1,200 a year on a $6,000 car is 20%. There is no universal cutoff — it is context for your own decision, not a rule.' },
+        { question: 'Does this calculator know my state\'s minimum coverage requirement?', answer: 'No. State minimums are set individually by each state and are not looked up or calculated here. Check your own state insurance department for the actual legal minimum.' },
+        { question: 'Is this the same as getting an insurance quote?', answer: 'No. This is an educational planning estimate only. It does not sell, recommend or bind any policy — an actual quote comes from a licensed agent or insurer based on your full driving and financial history.' }
+      ]
+    },
+    compute(values) {
+      const recommendedLiabilityCoverage = values.totalAssets + values.annualIncome;
+      const comprehensiveCollisionPremiumToValuePercent = values.vehicleActualCashValue > 0 ? (values.comprehensiveCollisionAnnualPremium / values.vehicleActualCashValue) * 100 : NaN;
+      return {
+        recommendedLiabilityCoverage,
+        totalAssets: values.totalAssets,
+        annualIncome: values.annualIncome,
+        comprehensiveCollisionPremiumToValuePercent
+      };
+    }
   }
 ];

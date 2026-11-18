@@ -567,6 +567,7 @@ export const calculatorOrder: string[] = [
   'cobra-cost-calculator',
   'disability-insurance-needs-calculator',
   'long-term-care-insurance-needs-calculator',
+  'car-insurance-coverage-calculator',
   'profit-margin-calculator',
   'markup-calculator',
   'break-even-calculator',

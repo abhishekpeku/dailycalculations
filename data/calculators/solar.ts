@@ -1013,5 +1013,142 @@ export const solarCalculators: CalculatorConfig[] = [
       const annualCost = dailyCost * 365;
       return { dailyCost, monthlyCost, annualCost, dailyKwh };
     }
+  },
+  {
+    id: 'heat-pump-savings-calculator',
+    category: 'solar',
+    glyph: 'COP',
+    updatedAt: '2026-11-18',
+    aliases: ['heat pump vs furnace savings calculator', 'switching to a heat pump savings calculator', 'heat pump cost savings estimator', 'heat pump vs gas furnace calculator', 'how much does a heat pump save'],
+    related: ['ac-tonnage-btu-calculator', 'electricity-bill-calculator', 'solar-savings-calculator', 'appliance-energy-cost-calculator'],
+    title: 'Heat Pump Savings Calculator',
+    description: 'Estimate the annual savings from switching a home\'s heating from a furnace or electric resistance heat to a heat pump, from your current fuel use, efficiency and price, and the heat pump\'s COP.',
+    example: 'A home burning 600 therms a year in an 80%-efficient gas furnace at $2.61/therm, switching to a heat pump with a COP of 3 and $0.1831/kWh electricity, saves about $707.38 a year — 45.2% less than its current $1,566.00 heating cost.',
+    breakdown: {
+      headline: 'annualSavings',
+      headlineLabel: 'Estimated annual savings',
+      outputs: [
+        { id: 'annualSavings', label: 'Estimated annual savings', format: 'currency' },
+        { id: 'currentAnnualCost', label: 'Current annual heating cost', format: 'currency' },
+        { id: 'heatPumpAnnualCost', label: 'Estimated heat pump annual cost', format: 'currency' },
+        { id: 'percentSavings', label: 'Percent savings vs. current system', format: 'percent' },
+        { id: 'heatPumpKwhNeeded', label: 'Electricity the heat pump would use', format: 'number', dimension: 'energy', unit: 'kWh' }
+      ],
+      groups: [
+        { title: 'Your current heating system', inputs: ['fuelType', 'annualFuelUsed', 'currentEfficiencyPercent', 'currentFuelPricePerUnit'] },
+        { title: 'The heat pump', inputs: ['heatPumpCop', 'electricityRate'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'currentAnnualCost', label: 'Current system' },
+          { from: 'heatPumpAnnualCost', label: 'Heat pump' }
+        ],
+        title: 'Current annual heating cost vs. estimated heat pump cost'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why a heat pump can cost less to run than a furnace',
+        paragraphs: [
+          'A furnace burns fuel to make heat directly, so its efficiency (AFUE) can never exceed 100% — some energy is always lost up the flue. ENERGY STAR describes a heat pump completely differently: rather than generating heat, it moves existing heat from outside air into the home, which is why ENERGY STAR states "an ASHP is so efficient that it can deliver up to three times more heat energy to a home than the electrical energy it consumes." That ratio — heat delivered divided by electricity consumed — is a heat pump\'s coefficient of performance (COP). A COP of 3 means every unit of electricity moves three units of heat; a COP of 2 in a colder climate still beats the COP of 1 that a plain electric-resistance heater is stuck with, since resistance heat simply converts electricity straight to heat with none of the "borrowing" a heat pump does.',
+          'Comparing a heat pump against a furnace means converting both into the same units. A furnace\'s useful heat output is fuel used × the fuel\'s heat content × its AFUE efficiency; a heat pump\'s electricity use is that same useful heat divided by (COP × 3,412, the Btu in one kWh, from the U.S. Energy Information Administration\'s own unit conversions). This calculator runs exactly that comparison for natural gas, heating oil, propane or electric resistance heat, using EIA\'s published heat-content figures for each: 100,000 Btu/therm for natural gas, 138,500 Btu/gallon for heating oil, 91,452 Btu/gallon for propane, and 3,412 Btu/kWh for electricity.',
+          'Real seasonal COP varies a great deal with outdoor temperature — ENERGY STAR\'s "up to three times" is an upper bound, not a guarantee, and colder climates generally see lower average COP across a full heating season than mild ones. The federal 30% (up to $2,000) tax credit for ENERGY STAR certified heat pumps that ENERGY STAR itself cites also only ran "through December 31, 2025," so don\'t add it to a 2026 installation without checking for a current state or utility incentive instead.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your current heating fuel, usage, efficiency and price, then the heat pump\'s COP and your electricity rate.',
+        steps: [
+          { name: 'Choose your current fuel type', text: 'Natural gas, heating oil, propane, or electric resistance heat — this sets the heat-content conversion used.' },
+          { name: 'Enter your annual fuel used', text: 'In the fuel\'s own billing unit: therms for gas, gallons for oil or propane, kWh for electric resistance.' },
+          { name: 'Enter your system\'s efficiency', text: 'Your furnace\'s AFUE from its nameplate or the ENERGY STAR product directory; electric resistance heat is effectively 100%.' },
+          { name: 'Enter your current fuel price', text: 'Per therm, gallon or kWh, matching the unit you used for annual fuel used.' },
+          { name: 'Enter the heat pump\'s COP and your electricity rate', text: 'Use the equipment\'s rated or seasonal-average COP if you have one; otherwise 2–3.5 is a realistic range to test.' },
+          { name: 'Read the result', text: 'The headline is the estimated annual savings; the rows below show both systems\' annual cost, the percent savings and the electricity the heat pump would use.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Both systems are converted to the same useful heat output (Btu), then priced at each system\'s own energy cost.',
+        expression: 'useful heat (Btu) = fuel used × heat content × (current efficiency% ÷ 100)\ncurrent annual cost = fuel used × fuel price\nheat pump kWh = useful heat ÷ (COP × 3,412)\nheat pump annual cost = heat pump kWh × electricity rate\nannual savings = current annual cost − heat pump annual cost',
+        terms: [
+          { symbol: 'heat content', meaning: 'Btu per unit of fuel: 100,000/therm (gas), 138,500/gallon (oil), 91,452/gallon (propane), 3,412/kWh (electric resistance) — EIA\'s published figures.' },
+          { symbol: 'current efficiency%', meaning: 'Your current system\'s AFUE (furnace) or effective efficiency (100% for electric resistance).' },
+          { symbol: 'COP', meaning: 'The heat pump\'s coefficient of performance: heat delivered per unit of electricity consumed. ENERGY STAR states certified heat pumps can reach "up to three times" (COP ≈ 3).' },
+          { symbol: '3,412', meaning: 'Btu in one kWh — the U.S. Energy Information Administration\'s own conversion factor.' }
+        ],
+        note: 'Estimates only. Real seasonal COP varies with outdoor temperature and falls in very cold weather; use a seasonal-average figure, not a single best-case rating, for a realistic comparison. This does not model cooling-season costs, equipment or installation costs, or any incentive — the federal heat pump tax credit ENERGY STAR cites ended for property placed in service after December 31, 2025.'
+      },
+      workedExample: {
+        intro: 'A home burns 600 therms of natural gas a year in an 80%-AFUE furnace, at $2.61 per therm. Switching to a heat pump with a COP of 3, on $0.1831/kWh electricity.',
+        rows: [
+          { label: 'Useful heat (600 × 100,000 × 0.80)', value: '48,000,000 Btu' },
+          { label: 'Current annual cost (600 × $2.61)', value: '$1,566.00' },
+          { label: 'Heat pump electricity (48,000,000 ÷ (3 × 3,412))', value: '4,689.33 kWh' },
+          { label: 'Heat pump annual cost (4,689.33 × $0.1831)', value: '$858.62' },
+          { label: 'Annual savings (1,566.00 − 858.62)', value: '$707.38' },
+          { label: 'Percent savings (707.38 ÷ 1,566.00)', value: '45.2%' }
+        ],
+        result: '≈ $707.38 a year saved (45.2% less than the current $1,566.00)',
+        explanation: 'At a more conservative, cold-climate COP of 2 instead of 3, the same furnace comparison saves only about $278.08 a year (17.8%) — COP has a bigger effect on the result than almost any other input, which is exactly why ENERGY STAR\'s "up to three times" should be treated as a ceiling, not a seasonal average.'
+      },
+      watchOut: [
+        { title: 'COP drives the result more than anything else', body: 'Dropping from a COP of 3 to a more conservative, cold-climate COP of 2 in the worked example above cuts estimated savings from $707.38 to $278.08 a year — more than half. Use a seasonal-average COP for your climate, not a best-case nameplate figure.' },
+        { title: 'The federal tax credit ENERGY STAR mentions has expired for new installs', body: 'ENERGY STAR itself states the credit was "a tax credit of 30% up to $2000" available only "through December 31, 2025." Don\'t add it to a 2026 cost comparison — check instead for a current state or utility incentive.' },
+        { title: 'This compares heating costs only', body: 'A heat pump also cools in summer, replacing a separate air conditioner — this calculator does not model cooling-season costs or compare against a combined furnace-plus-AC setup. Use the AC tonnage/BTU calculator separately for cooling-capacity sizing.' },
+        { title: 'Equipment and installation costs aren\'t included', body: 'This is a running-cost comparison only. The heat pump\'s purchase and installation price, any electrical panel upgrade it needs, and your furnace\'s own remaining useful life all affect whether switching makes sense beyond the operating-cost savings shown here.' }
+      ],
+      references: [
+        { label: 'ENERGY STAR, Air-Source Heat Pumps product page ("up to three times more heat energy," federal tax credit window)', url: 'https://www.energystar.gov/products/air_source_heat_pumps' },
+        { label: 'U.S. Energy Information Administration, Energy Explained — Units and Calculators (Btu content of natural gas, heating oil, propane and electricity)', url: 'https://www.eia.gov/energyexplained/units-and-calculators/' },
+        { label: 'U.S. Energy Information Administration, Natural Gas — Residential Price (Mcf), used to derive the default $/therm price', url: 'https://www.eia.gov/dnav/ng/ng_pri_sum_a_EPG0_PRS_DMcf_m.htm' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'fuelType',
+        label: 'Current heating fuel',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 1,
+        min: 1,
+        options: [
+          { value: 1, label: 'Natural gas (therms)' },
+          { value: 2, label: 'Heating oil (gallons)' },
+          { value: 3, label: 'Propane (gallons)' },
+          { value: 4, label: 'Electric resistance heat (kWh)' }
+        ]
+      },
+      { id: 'annualFuelUsed', label: 'Annual fuel used (unit matches fuel above)', type: 'number', placeholder: '600', defaultValue: 600, step: 10, min: 0 },
+      { id: 'currentEfficiencyPercent', label: 'Current system efficiency (AFUE)', type: 'percent', placeholder: '80', defaultValue: 80, step: 1, min: 0 },
+      { id: 'currentFuelPricePerUnit', label: 'Current fuel price (per unit above)', type: 'currency', placeholder: '2.61', defaultValue: 2.61, step: 0.01, min: 0 },
+      { id: 'heatPumpCop', label: 'Heat pump coefficient of performance (COP)', type: 'number', placeholder: '3', defaultValue: 3, step: 0.1, min: 0.1 },
+      { id: 'electricityRate', label: 'Electricity rate', type: 'currency', placeholder: '0.1831', defaultValue: 0.1831, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Heat Pump Savings Calculator – vs. Furnace or Resistance',
+      description: 'Estimate the annual savings from switching a home\'s heating to a heat pump, from your current fuel use, efficiency and price, and the heat pump\'s COP.',
+      faq: [
+        { question: 'How much can a heat pump save compared to a gas furnace?', answer: 'It depends heavily on fuel price, furnace efficiency and the heat pump\'s COP. In this calculator\'s worked example — 600 therms a year at 80% AFUE and $2.61/therm, switching to a COP-3 heat pump — about $707.38 a year, 45.2% less than the current $1,566.00 cost.' },
+        { question: 'What is a heat pump\'s COP?', answer: 'Coefficient of performance: the ratio of heat delivered to electricity consumed. ENERGY STAR states a heat pump "can deliver up to three times more heat energy to a home than the electrical energy it consumes" — a COP of up to 3.' },
+        { question: 'Why does COP matter so much to the savings estimate?', answer: 'Because it is the main driver of the comparison. Dropping from a COP of 3 to a more conservative COP of 2 in this calculator\'s worked example cuts the estimated savings from $707.38 to $278.08 a year — more than half.' },
+        { question: 'Is the federal heat pump tax credit still available in 2026?', answer: 'No. ENERGY STAR itself describes it as "a tax credit of 30% up to $2000" available only "through December 31, 2025." Check for a current state or utility incentive instead of assuming a federal credit applies to a 2026 installation.' },
+        { question: 'Does this calculator include air conditioning costs?', answer: 'No — it compares heating costs only. A heat pump also provides cooling, replacing a separate air conditioner, but this calculator does not model cooling-season costs or sizing; see the AC tonnage/BTU calculator for cooling-capacity sizing.' },
+        { question: 'How are different heating fuels compared on the same basis?', answer: 'By converting each to Btu using EIA\'s published heat-content figures (100,000 Btu/therm for gas, 138,500 Btu/gallon for oil, 91,452 Btu/gallon for propane, 3,412 Btu/kWh for electricity), then applying each system\'s own efficiency or COP.' }
+      ]
+    },
+    compute(values) {
+      const HEAT_CONTENT_BTU: Record<number, number> = { 1: 100000, 2: 138500, 3: 91452, 4: 3412 };
+      const heatContent = HEAT_CONTENT_BTU[values.fuelType] ?? HEAT_CONTENT_BTU[1];
+      const usefulHeatBtu = values.annualFuelUsed * heatContent * (values.currentEfficiencyPercent / 100);
+      const currentAnnualCost = values.annualFuelUsed * values.currentFuelPricePerUnit;
+      const heatPumpKwhNeeded = values.heatPumpCop > 0 ? usefulHeatBtu / (values.heatPumpCop * 3412) : NaN;
+      const heatPumpAnnualCost = heatPumpKwhNeeded * values.electricityRate;
+      const annualSavings = currentAnnualCost - heatPumpAnnualCost;
+      const percentSavings = currentAnnualCost > 0 ? (annualSavings / currentAnnualCost) * 100 : NaN;
+      return { annualSavings, currentAnnualCost, heatPumpAnnualCost, percentSavings, heatPumpKwhNeeded };
+    }
   }
 ];

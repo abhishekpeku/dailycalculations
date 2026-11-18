@@ -8366,6 +8366,62 @@ exports[`compute() snapshots > heat-index-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > heat-pump-savings-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "fuelType": 1,
+      "annualFuelUsed": 600,
+      "currentEfficiencyPercent": 80,
+      "currentFuelPricePerUnit": 2.61,
+      "heatPumpCop": 3,
+      "electricityRate": 0.1831
+    },
+    "outputs": {
+      "annualSavings": 707.3833529,
+      "currentAnnualCost": 1566,
+      "heatPumpAnnualCost": 858.6166471,
+      "percentSavings": 45.17135076,
+      "heatPumpKwhNeeded": 4689.33177
+    }
+  },
+  "typical": {
+    "inputs": {
+      "fuelType": 2,
+      "annualFuelUsed": 900,
+      "currentEfficiencyPercent": 120,
+      "currentFuelPricePerUnit": 3.92,
+      "heatPumpCop": 4.5,
+      "electricityRate": 0.27
+    },
+    "outputs": {
+      "annualSavings": 897.6365768,
+      "currentAnnualCost": 3528,
+      "heatPumpAnnualCost": 2630.363423,
+      "percentSavings": 25.44321363,
+      "heatPumpKwhNeeded": 9742.086753
+    }
+  },
+  "edge": {
+    "inputs": {
+      "fuelType": 1,
+      "annualFuelUsed": 0,
+      "currentEfficiencyPercent": 0,
+      "currentFuelPricePerUnit": 0,
+      "heatPumpCop": 0.1,
+      "electricityRate": 0
+    },
+    "outputs": {
+      "annualSavings": 0,
+      "currentAnnualCost": 0,
+      "heatPumpAnnualCost": 0,
+      "percentSavings": "NaN",
+      "heatPumpKwhNeeded": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > hemocytometer-calculator 1`] = `
 {
   "default": {

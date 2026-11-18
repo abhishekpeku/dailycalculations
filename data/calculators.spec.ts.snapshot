@@ -6818,6 +6818,53 @@ exports[`compute() snapshots > ev-charging-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > ev-solar-charging-offset-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "dailyChargingKwh": 10,
+      "daylightChargingPercent": 20,
+      "dailySolarProductionKwh": 29.78
+    },
+    "outputs": {
+      "offsetPercentDirect": 20,
+      "offsetPercentNetMetered": 100,
+      "directOffsetKwh": 2,
+      "gridChargingKwh": 8,
+      "gapPercentagePoints": 80
+    }
+  },
+  "typical": {
+    "inputs": {
+      "dailyChargingKwh": 15,
+      "daylightChargingPercent": 30,
+      "dailySolarProductionKwh": 45
+    },
+    "outputs": {
+      "offsetPercentDirect": 30,
+      "offsetPercentNetMetered": 100,
+      "directOffsetKwh": 4.5,
+      "gridChargingKwh": 10.5,
+      "gapPercentagePoints": 70
+    }
+  },
+  "edge": {
+    "inputs": {
+      "dailyChargingKwh": 0.1,
+      "daylightChargingPercent": 0,
+      "dailySolarProductionKwh": 0.1
+    },
+    "outputs": {
+      "offsetPercentDirect": 0,
+      "offsetPercentNetMetered": 100,
+      "directOffsetKwh": 0,
+      "gridChargingKwh": 0.1,
+      "gapPercentagePoints": 100
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > expected-value-calculator 1`] = `
 {
   "default": {
@@ -10450,6 +10497,59 @@ exports[`compute() snapshots > lease-vs-buy-calculator 1`] = `
       "equivalentApr": 0,
       "remainingBalance": 0,
       "equity": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > led-lighting-savings-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "oldWattage": 60,
+      "newWattage": 9,
+      "bulbCount": 5,
+      "hoursPerDay": 3,
+      "electricityRate": 0.1831
+    },
+    "outputs": {
+      "annualSavings": 51.1260975,
+      "oldAnnualCost": 60.14835,
+      "newAnnualCost": 9.0222525,
+      "percentReduction": 85,
+      "totalKwhSaved": 279.225
+    }
+  },
+  "typical": {
+    "inputs": {
+      "oldWattage": 90,
+      "newWattage": 13.5,
+      "bulbCount": 8,
+      "hoursPerDay": 4.5,
+      "electricityRate": 0.27
+    },
+    "outputs": {
+      "annualSavings": 271.4067,
+      "oldAnnualCost": 319.302,
+      "newAnnualCost": 47.8953,
+      "percentReduction": 85,
+      "totalKwhSaved": 1005.21
+    }
+  },
+  "edge": {
+    "inputs": {
+      "oldWattage": 1,
+      "newWattage": 0.1,
+      "bulbCount": 1,
+      "hoursPerDay": 0.1,
+      "electricityRate": 0
+    },
+    "outputs": {
+      "annualSavings": 0,
+      "oldAnnualCost": 0,
+      "newAnnualCost": 0,
+      "percentReduction": 90,
+      "totalKwhSaved": 0.03285
     }
   }
 }
@@ -18040,6 +18140,44 @@ exports[`compute() snapshots > slope-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > smart-thermostat-savings-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "annualHeatingCoolingCost": 900,
+      "savingsPercent": 8
+    },
+    "outputs": {
+      "annualSavings": 72,
+      "newAnnualCost": 828,
+      "monthlySavings": 6
+    }
+  },
+  "typical": {
+    "inputs": {
+      "annualHeatingCoolingCost": 1350,
+      "savingsPercent": 12
+    },
+    "outputs": {
+      "annualSavings": 162,
+      "newAnnualCost": 1188,
+      "monthlySavings": 13.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "annualHeatingCoolingCost": 1,
+      "savingsPercent": 0
+    },
+    "outputs": {
+      "annualSavings": 0,
+      "newAnnualCost": 1,
+      "monthlySavings": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > snells-law-calculator 1`] = `
 {
   "default": {
@@ -21144,6 +21282,59 @@ exports[`compute() snapshots > water-footprint-calculator 1`] = `
       "perPersonLitersPerDay": 7780.821918,
       "beefLitersPerYear": 0,
       "beefShareOfPersonalFootprintPct": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > water-heater-energy-cost-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "gallonsPerDay": 60,
+      "incomingTempF": 50,
+      "setpointTempF": 122,
+      "electricityRate": 0.1831,
+      "gasPricePerTherm": 2.61
+    },
+    "outputs": {
+      "electricStorageCost": 739.2824903,
+      "gasStorageCost": 569.30364,
+      "gasTanklessCost": 379.53576,
+      "heatPumpCost": 356.5067847,
+      "heatPumpVsElectricSavings": 382.7757056
+    }
+  },
+  "typical": {
+    "inputs": {
+      "gallonsPerDay": 90,
+      "incomingTempF": 75,
+      "setpointTempF": 183,
+      "electricityRate": 0.27,
+      "gasPricePerTherm": 3.92
+    },
+    "outputs": {
+      "electricStorageCost": 2452.835133,
+      "gasStorageCost": 1923.85368,
+      "gasTanklessCost": 1282.56912,
+      "heatPumpCost": 1182.839277,
+      "heatPumpVsElectricSavings": 1269.995856
+    }
+  },
+  "edge": {
+    "inputs": {
+      "gallonsPerDay": 1,
+      "incomingTempF": 0,
+      "setpointTempF": 1,
+      "electricityRate": 0,
+      "gasPricePerTherm": 0
+    },
+    "outputs": {
+      "electricStorageCost": 0,
+      "gasStorageCost": 0,
+      "gasTanklessCost": 0,
+      "heatPumpCost": 0,
+      "heatPumpVsElectricSavings": 0
     }
   }
 }

@@ -925,5 +925,102 @@ export const funCalculators: CalculatorConfig[] = [
         streakProbabilityPercent: streakProbability * 100
       };
     }
+  },
+  {
+    id: 'birthday-paradox-calculator',
+    category: 'fun',
+    glyph: 'BP',
+    updatedAt: '2026-11-18',
+    aliases: ['birthday problem calculator', 'shared birthday probability calculator', 'chance two people share a birthday', 'same birthday odds calculator'],
+    related: ['probability-calculator', 'coin-flip-probability-calculator', 'dice-probability-calculator', 'age-calculator'],
+    title: 'Birthday Paradox Calculator',
+    description: 'Find the real probability that at least two people in a group share a birthday, using the exact complement-probability formula -- not the common but wrong intuition that it takes close to 365 people.',
+    example: 'In a group of just 23 people, the probability that at least two share a birthday is already over 50% -- higher than most people guess.',
+    breakdown: {
+      headline: 'sharedPercent',
+      headlineLabel: 'P(at least two share a birthday)',
+      outputs: [
+        { id: 'sharedPercent', label: 'P(at least two share a birthday)', format: 'percent' },
+        { id: 'noSharePercent', label: 'P(everyone has a different birthday)', format: 'percent' },
+        { id: 'minPeopleFor50Percent', label: 'Smallest group that passes 50% (computed)', format: 'integer' },
+        { id: 'minPeopleFor99Percent', label: 'Smallest group that passes 99% (computed)', format: 'integer' }
+      ],
+      groups: [{ title: 'Group size', inputs: ['numPeople'] }]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why the birthday paradox feels wrong but is not',
+        paragraphs: [
+          'The "birthday paradox" (more precisely, the birthday problem) is not a logical paradox at all -- it is just a result that strongly conflicts with most people\'s intuition. The common guess is that you need a group close to 365 people before a shared birthday becomes likely, by analogy with the 1-in-365 chance that any two specific people share a birthday. That intuition answers a different, much narrower question.',
+          'The real question is not whether two particular people match, but whether any pair among everyone in the room matches. A group of just 23 people contains 253 different pairs (23 choose 2), and it only takes one of those 253 pairs to match for the group to have "a shared birthday." That is why the real crossover point is so much smaller than 365: there are far more chances for a match than the simple 1-in-365 intuition accounts for.',
+          'This calculator computes the exact probability using the complement: it is far easier to compute the probability that every birthday is different, then subtract that from 1, than to count every possible way a match could occur directly.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the number of people in the group.',
+        steps: [
+          { name: 'Enter the group size', text: 'How many people are in the room, from 2 up.' },
+          { name: 'Read the probability', text: 'The headline is the chance at least two of them share a birthday (same month and day, any year).' },
+          { name: 'Check the computed crossover sizes', text: 'The two extra rows show the smallest group size at which the real formula first passes 50% and 99%, computed directly rather than quoted from memory.' }
+        ],
+        outro: 'Everything is calculated in your browser using the exact formula below. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The complement formula: find the probability every birthday is different, then subtract from 1.',
+        expression:
+          'P(no shared birthday) = (365/365) x (364/365) x (363/365) x ... x ((365-n+1)/365)\nP(at least one shared birthday) = 1 - P(no shared birthday)',
+        terms: [
+          { symbol: 'n', meaning: 'Number of people in the group.' },
+          { symbol: '365', meaning: 'Assumed number of equally likely birthdays -- see "Watch out" for what this leaves out.' }
+        ],
+        note: 'Each additional person after the first multiplies the "still all different" probability by one fewer day out of 365, because they must avoid every birthday already taken.'
+      },
+      workedExample: {
+        intro: 'What is the probability that at least two people share a birthday in a group of 23?',
+        rows: [
+          { label: 'P(2nd person differs from 1st)', value: '364/365' },
+          { label: 'P(3rd person differs from both)', value: '363/365' },
+          { label: '... continuing down to the 23rd person', value: '343/365' },
+          { label: 'P(all 23 birthdays different)', value: 'Product of all 22 fractions above, about 0.4927' },
+          { label: 'P(at least two share a birthday)', value: '1 - 0.4927' }
+        ],
+        result: 'About 50.73%',
+        explanation: '23 people contain 253 distinct pairs who could potentially match, which is enough chances for a match that the probability of at least one tips just past 50%, even though any two specific people still only have a 1-in-365 chance of matching each other.'
+      },
+      watchOut: [
+        { title: 'Assumes 365 equally likely, independent birthdays', body: 'This calculator ignores leap years (February 29), and real birthdays are not perfectly evenly spread across the calendar (some months have measurably more births than others) -- both effects are small and tend to make a shared birthday very slightly more likely than this idealized formula, not less.' },
+        { title: 'This is about any two people, not a specific person', body: 'The probability that at least two people in the group share a birthday is much higher than the probability that someone else shares your specific birthday -- those are different questions with very different answers.' },
+        { title: 'The computed crossover numbers use fixed thresholds', body: 'The "50%" and "99%" rows always use those two thresholds, not your entered group size -- they are shown for comparison, not as a function of the number you typed above.' },
+        { title: 'Twins and selection bias are not modeled', body: 'A group that deliberately includes twins, or was selected in a way connected to birthdays, would not follow this formula\'s independence assumption.' }
+      ],
+      references: [
+        { label: 'Wikipedia, Birthday problem (complement formula and real-world caveats)', url: 'https://en.wikipedia.org/wiki/Birthday_problem' }
+      ]
+    },
+    inputs: [{ id: 'numPeople', label: 'Number of people', type: 'number', placeholder: '23', defaultValue: 23, step: 1, min: 2 }],
+    seo: {
+      title: 'Birthday Paradox Calculator – Shared Birthday Odds',
+      description: 'Find the real probability that two people in a group share a birthday, using the exact complement formula. Just 23 people already passes a 50% chance.',
+      faq: [
+        { question: 'How many people are needed for a 50% chance two share a birthday?', answer: '23 -- the probability at that group size is about 50.73%, computed from the exact complement formula.' },
+        { question: 'Why does the birthday paradox feel wrong?', answer: 'Because it is easy to mistake "the chance any two specific people match" (1 in 365) for "the chance any pair among everyone in the room matches." A group of 23 contains 253 different pairs, which is enough chances for the real probability to pass 50%.' },
+        { question: 'What is the probability in a group of 50 people?', answer: 'About 97.04% -- by 50 people, a shared birthday is close to certain.' },
+        { question: 'How many people are needed to be 99% certain of a shared birthday?', answer: '57 people, computed directly from the same formula rather than quoted from memory.' },
+        { question: 'Does this account for leap years?', answer: 'No -- it assumes exactly 365 equally likely birthdays. Leap years and the real, slightly uneven distribution of birthdays across the calendar are both small effects that this idealized formula leaves out.' },
+        { question: 'Is this the same as the chance someone shares MY birthday?', answer: 'No -- that is a much narrower question (would need close to 253 other people for a 50% chance against one specific date). This calculator answers the "any pair in the group" question, which needs far fewer people.' }
+      ]
+    },
+    compute(values) {
+      const n = Math.round(values.numPeople);
+      if (!Number.isFinite(n) || n < 2 || n > 100000) return { sharedPercent: NaN, noSharePercent: NaN, minPeopleFor50Percent: NaN, minPeopleFor99Percent: NaN };
+      const noShare = noSharedBirthdayProbability(n);
+      return {
+        sharedPercent: (1 - noShare) * 100,
+        noSharePercent: noShare * 100,
+        minPeopleFor50Percent: MIN_PEOPLE_FOR_50_PERCENT,
+        minPeopleFor99Percent: MIN_PEOPLE_FOR_99_PERCENT
+      };
+    }
   }
 ];

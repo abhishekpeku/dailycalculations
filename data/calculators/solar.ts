@@ -240,5 +240,105 @@ export const solarCalculators: CalculatorConfig[] = [
       const averageAnnualSavings = n > 0 ? lifetimeSavings / n : NaN;
       return { annualSavings, annualProductionKwh, lifetimeSavings, finalYearSavings, averageAnnualSavings };
     }
+  },
+  {
+    id: 'solar-payback-period-calculator',
+    category: 'solar',
+    glyph: 'yr',
+    updatedAt: '2026-11-18',
+    aliases: ['solar payback calculator', 'solar break even calculator', 'how long to pay off solar panels', 'solar payback period estimator', 'solar break-even point calculator'],
+    related: ['solar-savings-calculator', 'solar-loan-payment-calculator', 'solar-panel-system-size-calculator', 'loan-calculator'],
+    title: 'Solar Payback Period Calculator',
+    description: 'Find how many years it takes a solar system to pay for itself: system cost minus any incentive, divided by estimated annual savings. Solve for cost, incentive, savings or payback period.',
+    example: 'A $31,135 system with a $1,000 incentive and $2,856.36 in estimated annual savings pays for itself in about 10.55 years; with no incentive at all, about 10.90 years.',
+    solver: {
+      defaultTarget: 'paybackPeriod',
+      variables: [
+        { id: 'systemCost', label: 'System cost (before any incentive)', symbol: 'C', dimension: 'currency', defaultValue: 31135, defaultUnit: 'currency' },
+        { id: 'incentiveAmount', label: 'Incentive, rebate or credit applied', symbol: 'I', dimension: 'currency', defaultValue: 1000, defaultUnit: 'currency', fixed: true },
+        { id: 'annualSavings', label: 'Estimated annual savings', symbol: 'S', dimension: 'currency', defaultValue: 2856.36, defaultUnit: 'currency' },
+        { id: 'paybackPeriod', label: 'Payback period', symbol: 'P', dimension: 'term', defaultValue: 10.55, defaultUnit: 'yr' }
+      ],
+      solve: {
+        paybackPeriod: ({ systemCost, incentiveAmount, annualSavings }) => (annualSavings > 0 ? ((systemCost - incentiveAmount) / annualSavings) * 12 : NaN),
+        systemCost: ({ incentiveAmount, annualSavings, paybackPeriod }) => incentiveAmount + annualSavings * (paybackPeriod / 12),
+        annualSavings: ({ systemCost, incentiveAmount, paybackPeriod }) => (paybackPeriod > 0 ? (systemCost - incentiveAmount) / (paybackPeriod / 12) : NaN)
+      },
+      outputs: [{ id: 'netSystemCost', label: 'Net system cost after incentive', dimension: 'currency', compute: (si) => si.systemCost - si.incentiveAmount }]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What is a solar payback period?',
+        paragraphs: [
+          'A payback period is the point where cumulative savings catch up to what the system cost — the break-even point, not the total value the system delivers. That makes it a different question from the one the solar savings calculator above answers: savings tells you how much a system is worth over its life, while payback tells you how long before it has simply paid for itself. A system with a shorter payback isn\'t necessarily the better investment overall; it depends on how much it keeps saving after that point.',
+          'System cost varies a great deal by size, equipment and location. EnergySage\'s 2026 marketplace data puts the average cost at about $2.60 per watt before any incentive, with a typical ~12 kW home system running about $31,135 — the default here. Treat that as a rough starting point, not your own quote: your installer\'s actual bid, after any incentive, is the number that matters.',
+          'On incentives specifically: the federal residential solar tax credit does not apply to systems installed in 2026. The IRS states plainly that the credit "is not available for any property placed in service after December 31, 2025." Whatever incentive you enter here needs to be something you\'ve actually confirmed — a state rebate, a utility program or a local incentive still in effect — rather than an assumed federal percentage.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of the four fields; the fourth, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter your system cost', text: 'Use an installer\'s quote, or the roughly $2.60/watt, ~$31,135-for-12kW averages EnergySage reports for 2026 as a rough starting point.' },
+          { name: 'Enter any incentive you\'ve actually confirmed', text: 'The federal 30% credit ended for systems placed in service after 2025 — check for a current state, utility or local program instead of assuming one applies.' },
+          { name: 'Enter your estimated annual savings', text: 'Use the figure from the solar savings calculator above, or your installer\'s own production-and-savings estimate.' },
+          { name: 'Read the payback period', text: 'The result is in years. To find how much savings a given payback period requires, type into the payback field and let savings become the calculated one instead.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Payback period is simply net cost divided by the annual savings rate.',
+        expression: 'net cost = system cost − incentive\npayback period (years) = net cost ÷ annual savings',
+        terms: [
+          { symbol: 'system cost', meaning: 'The full installed cost, before any incentive is applied.' },
+          { symbol: 'incentive', meaning: 'Any rebate, credit or program payment you have actually confirmed applies to your own installation — not assumed.' },
+          { symbol: 'annual savings', meaning: 'Estimated savings in the first year, held flat for this simple break-even calculation.' }
+        ],
+        note: 'This is a simple break-even estimate. It does not account for financing costs if the system is loan-financed (see the solar loan payment calculator), for electricity-rate changes, or for the slow decline in panel output over time (see the solar savings calculator for the lifetime, degradation-aware view).'
+      },
+      workedExample: {
+        intro: 'A $31,135 system (EnergySage\'s 2026 average for a ~12 kW install) with a $1,000 incentive, and $2,856.36 in estimated annual savings (a 12 kW system at a 1.3 production ratio and $0.1831/kWh).',
+        rows: [
+          { label: 'Net system cost (31,135 − 1,000)', value: '$30,135' },
+          { label: 'Payback period (30,135 ÷ 2,856.36)', value: '10.55 years' },
+          { label: 'Payback period with no incentive at all (31,135 ÷ 2,856.36)', value: '10.90 years' }
+        ],
+        result: '≈ 10.55 years to break even (10.90 years with no incentive)',
+        explanation: 'The $1,000 incentive shortens the payback by about 0.35 years — a little over four months — compared with paying the full $31,135 out of pocket. A larger incentive, a cheaper system, or higher annual savings would each shorten it further; the formula treats all three the same way.'
+      },
+      watchOut: [
+        { title: 'The federal tax credit no longer applies to new systems', body: 'The IRS states the residential clean energy credit "is not available for any property placed in service after December 31, 2025." Don\'t enter a 30% federal credit as if it still applies in 2026 — check for a current state, utility or local incentive instead.' },
+        { title: 'Ignores financing costs', body: 'This assumes you pay the net cost up front. If you finance the system with a loan, the loan\'s interest changes your actual cash flow — use the solar loan payment calculator for that.' },
+        { title: 'A simple break-even, not a full return', body: 'Payback tells you when the system has paid for itself, not how much it\'s worth afterward. A system that keeps producing for 15 more years after a 10-year payback has a very different lifetime value than one that pays back in 5 years and fails soon after — see the solar savings calculator for the lifetime estimate.' },
+        { title: 'System cost varies a lot', body: 'EnergySage\'s ~$2.60/watt, ~$31,135-for-12kW figures are 2026 marketplace averages, not a quote. Your own roof, equipment choice, local labor costs and permitting fees can move the real number well above or below that.' }
+      ],
+      references: [
+        { label: 'Internal Revenue Service, Residential Clean Energy Credit (eligibility window, ends for property placed in service after Dec. 31, 2025)', url: 'https://www.irs.gov/credits-deductions/residential-clean-energy-credit' },
+        { label: 'EnergySage, "How Much Does It Cost to Go Solar in the US?" (2026 average cost per watt and system cost)', url: 'https://www.energysage.com/solar/how-much-does-it-cost-to-go-solar-in-the-us/' },
+        { label: 'U.S. Department of Energy, Homeowner\'s Guide to Going Solar (financing options)', url: 'https://www.energy.gov/eere/solar/homeowners-guide-going-solar' }
+      ]
+    },
+    inputs: [
+      { id: 'systemCost', label: 'System cost (before any incentive)', type: 'currency', placeholder: '31135', defaultValue: 31135, step: 100, min: 0 },
+      { id: 'incentiveAmount', label: 'Incentive, rebate or credit applied', type: 'currency', placeholder: '1000', defaultValue: 1000, step: 100, min: 0 },
+      { id: 'annualSavings', label: 'Estimated annual savings', type: 'currency', placeholder: '2856.36', defaultValue: 2856.36, step: 10, min: 0 }
+    ],
+    seo: {
+      title: 'Solar Payback Period Calculator – Break-Even Years',
+      description: 'Find how many years a solar system takes to pay for itself: net cost (after any incentive) divided by estimated annual savings. Solve for cost, incentive, savings or years.',
+      faq: [
+        { question: 'What is a solar payback period?', answer: 'The number of years of savings it takes to recover a solar system\'s net cost — the break-even point, found by dividing net cost by estimated annual savings. It\'s different from total lifetime savings, which is what the system is worth after that point.' },
+        { question: 'How long does it typically take solar to pay for itself?', answer: 'In this calculator\'s worked example — a $31,135 system, a $1,000 incentive and $2,856.36 in annual savings — about 10.55 years, or 10.90 years with no incentive at all. Your own payback depends on your system\'s cost, any incentive and your estimated savings.' },
+        { question: 'Is the federal solar tax credit still available in 2026?', answer: 'No. The IRS states the residential clean energy credit "is not available for any property placed in service after December 31, 2025." Check for a current state, utility or local incentive instead of assuming a federal credit applies.' },
+        { question: 'How much does a home solar system cost?', answer: 'EnergySage\'s 2026 marketplace data puts the average at about $2.60 per watt before incentives, with a typical ~12 kW home system costing around $31,135 — a starting point, not a quote for your own roof and equipment.' },
+        { question: 'Does payback period account for loan financing?', answer: 'No — it assumes you pay the net cost up front. If you\'re financing with a loan, use the solar loan payment calculator to see the actual monthly payment against your estimated savings.' },
+        { question: 'What is the difference between payback period and solar savings?', answer: 'Payback period is when the system breaks even; solar savings is how much it\'s worth to you in total, including the years after it has already paid for itself. The two answer different questions about the same system.' }
+      ]
+    },
+    compute(values) {
+      const netSystemCost = values.systemCost - values.incentiveAmount;
+      const paybackPeriod = values.annualSavings > 0 ? netSystemCost / values.annualSavings : NaN;
+      return { paybackPeriod, netSystemCost };
+    }
   }
 ];

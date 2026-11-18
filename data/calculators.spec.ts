@@ -177,7 +177,10 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   // productionRatio 0 (its min) -> rawWatts is a divide-by-zero guard (NaN), which cascades through
   // panelCount, systemSizeKw and estimatedAnnualProductionKwh; annualUsageKwh 0 (its min) also zeros
   // percentOfUsageCovered's own guard independently.
-  'solar-panel-system-size-calculator': ['systemSizeKw', 'panelCount', 'estimatedAnnualProductionKwh', 'percentOfUsageCovered']
+  'solar-panel-system-size-calculator': ['systemSizeKw', 'panelCount', 'estimatedAnnualProductionKwh', 'percentOfUsageCovered'],
+  // annualSavings 0 (its min) -> compute()'s own guard, no payback period with zero savings;
+  // netSystemCost (systemCost - incentiveAmount) stays finite 0 either way.
+  'solar-payback-period-calculator': ['paybackPeriod']
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

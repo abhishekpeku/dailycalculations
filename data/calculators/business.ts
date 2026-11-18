@@ -375,5 +375,122 @@ export const businessCalculators: CalculatorConfig[] = [
       const breakEvenRevenue = breakEvenUnits * values.pricePerUnit;
       return { breakEvenUnits, contributionMarginPerUnit, contributionMarginRatio, breakEvenRevenue };
     }
+  },
+  {
+    id: 'contribution-margin-calculator',
+    category: 'business',
+    glyph: 'CM',
+    updatedAt: '2026-11-18',
+    aliases: ['contribution margin ratio calculator', 'unit contribution margin calculator', 'contribution margin per unit calculator', 'CM ratio calculator'],
+    related: ['break-even-calculator', 'profit-margin-calculator', 'markup-calculator', 'cost-of-goods-sold-calculator'],
+    title: 'Contribution Margin Calculator',
+    description: 'Find the contribution margin per unit or its ratio to price — what each sale leaves over after variable cost, before fixed costs are even considered, and the denominator of the break-even formula.',
+    example: 'A product priced at $60 with $35 of variable cost per unit has a $25 contribution margin, a 41.67% contribution margin ratio.',
+    solver: {
+      defaultTarget: 'contributionMarginRatio',
+      variables: [
+        { id: 'pricePerUnit', label: 'Price per unit', symbol: 'P', dimension: 'currency', defaultValue: 60, defaultUnit: 'currency' },
+        { id: 'variableCostPerUnit', label: 'Variable cost per unit', symbol: 'V', dimension: 'currency', defaultValue: 35, defaultUnit: 'currency' },
+        { id: 'contributionMarginRatio', label: 'Contribution margin ratio', symbol: 'R', dimension: 'percent', defaultValue: 41.666666666666664, defaultUnit: '%', bounds: [-500, 99.999] }
+      ],
+      // Same shape as profit-margin-calculator, but framed per unit of variable cost (the
+      // break-even calculator's own denominator) rather than total cost.
+      solve: {
+        contributionMarginRatio: ({ pricePerUnit, variableCostPerUnit }) =>
+          pricePerUnit > 0 ? ((pricePerUnit - variableCostPerUnit) / pricePerUnit) * 100 : NaN,
+        pricePerUnit: ({ variableCostPerUnit, contributionMarginRatio }) =>
+          contributionMarginRatio < 100 ? variableCostPerUnit / (1 - contributionMarginRatio / 100) : NaN,
+        variableCostPerUnit: ({ pricePerUnit, contributionMarginRatio }) => pricePerUnit * (1 - contributionMarginRatio / 100)
+      },
+      outputs: [
+        { id: 'contributionMarginPerUnit', label: 'Contribution margin per unit', dimension: 'currency', compute: (si) => si.pricePerUnit - si.variableCostPerUnit }
+      ],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'variableCostPerUnit', label: 'Variable cost' },
+            { from: 'contributionMarginPerUnit', label: 'Contribution margin' }
+          ],
+          center: 'pricePerUnit',
+          centerSub: 'price per unit'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What is contribution margin?',
+        paragraphs: [
+          'OpenStax\'s Principles of Managerial Accounting defines contribution margin per unit simply: "Per Unit Sales Price minus Variable Cost per Unit equals Contribution Margin per Unit." It is what one more sale actually contributes toward covering fixed costs — rent, salaries, insurance — before anything is left over as profit. The contribution margin ratio is the same figure divided by price, expressed as a percentage.',
+          'This is deliberately not the same question as overall profitability: contribution margin only nets out variable costs (the ones that rise and fall with each unit), never fixed costs. A business can have a healthy per-unit contribution margin and still lose money overall if it does not sell enough units to cover its fixed costs — which is exactly the question the companion break-even calculator answers, using this figure as its denominator.',
+          "Selling price minus variable cost per unit is also, by a different name, the same formula behind the profit margin and markup calculators here — this page frames it specifically around variable cost per unit (the piece that matters for break-even and volume decisions) rather than a general notion of cost, so the two pages answer related but distinct questions."
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of price per unit, variable cost per unit and contribution margin ratio. The third, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter the price per unit', text: 'What one unit sells for.' },
+          { name: 'Enter the variable cost per unit', text: 'What it costs to produce or deliver one more unit — materials, direct labor, shipping, payment-processing fees per sale.' },
+          { name: 'Read the contribution margin ratio', text: 'Contribution margin per unit divided by price, as a percentage — the share of each sale left after variable costs.' },
+          { name: 'Or solve backward', text: 'Leave price alone to find the price needed for a target ratio at a known variable cost, or leave variable cost alone to see what cost a known price and ratio imply.' },
+          { name: 'Feed it into break-even', text: 'The dollar contribution margin per unit shown here is the same figure the break-even calculator divides fixed costs by.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Contribution margin per unit is price minus variable cost. The ratio divides that figure by price.',
+        expression:
+          'contributionMarginPerUnit = pricePerUnit − variableCostPerUnit\ncontributionMarginRatio = contributionMarginPerUnit ÷ pricePerUnit × 100\npricePerUnit = variableCostPerUnit ÷ (1 − contributionMarginRatio ÷ 100)',
+        terms: [
+          { symbol: 'variableCostPerUnit', meaning: 'Costs that scale directly with each unit sold — not fixed costs like rent or salaries.' },
+          { symbol: 'contributionMarginRatio', meaning: 'The share of each sales dollar left after variable costs, before fixed costs are considered at all.' }
+        ],
+        note: 'Estimates only. This figure nets out variable costs only — it is not a statement of overall profitability, which also depends on fixed costs and sales volume (see the break-even calculator).'
+      },
+      workedExample: {
+        intro: 'A product is priced at $60 per unit, with $35 of variable cost per unit. What is the contribution margin, and what price would be needed for a 50% ratio on the same variable cost?',
+        rows: [
+          { label: 'Contribution margin per unit (60 − 35)', value: '$25' },
+          { label: 'Contribution margin ratio (25 ÷ 60 × 100)', value: '41.67%' },
+          { label: 'Price for a 50% ratio at the same $35 variable cost (35 ÷ (1 − 0.50))', value: '$70.00' }
+        ],
+        result: 'At $60, the contribution margin is $25 per unit (a 41.67% ratio); a 50% ratio on the same $35 variable cost needs a $70 price.',
+        explanation: 'This $25 contribution margin per unit is exactly the figure the break-even calculator\'s worked example divides $24,000 of fixed costs by, to get 960 break-even units — the two pages share the same underlying number.'
+      },
+      watchOut: [
+        { title: 'Contribution margin is not overall profit', body: 'It only subtracts variable costs. Fixed costs still have to be covered out of the total contribution margin earned across every unit sold — a positive per-unit contribution margin does not by itself mean the business is profitable.' },
+        { title: 'Classifying a cost as fixed or variable changes the answer', body: 'A cost that scales with volume (materials, piece-rate labor, per-transaction fees) belongs in variable cost per unit; a cost that does not (rent, salaried wages, insurance) does not. Misclassifying a cost shifts both this ratio and the break-even point built on it.' },
+        { title: 'The ratio and the per-unit dollar figure answer different questions', body: 'Contribution margin per unit (a dollar amount) is what break-even-calculator divides fixed costs by to get units. The ratio (a percentage) is what it divides fixed costs by to get break-even sales dollars instead — both describe the same relationship, in different units.' },
+        { title: 'A higher price is not the only way to raise contribution margin', body: 'Lowering variable cost per unit (a cheaper supplier, a more efficient process) raises contribution margin exactly as much as raising price does, without needing customers to accept a higher price.' },
+        { title: 'A negative contribution margin means every sale loses money before fixed costs', body: 'If variable cost per unit exceeds price, contribution margin is negative — selling more units makes the loss worse, not better, regardless of fixed costs.' }
+      ],
+      references: [
+        { label: 'OpenStax, Principles of Managerial Accounting §3.1, Contribution margin per unit and ratio', url: 'https://openstax.org/books/principles-managerial-accounting/pages/3-1-explain-contribution-margin-and-calculate-contribution-margin-per-unit-contribution-margin-ratio-and-total-contribution-margin' },
+        { label: 'U.S. Small Business Administration, Calculate your startup costs (break-even analysis)', url: 'https://www.sba.gov/business-guide/plan-your-business/calculate-your-startup-costs' }
+      ]
+    },
+    inputs: [
+      { id: 'pricePerUnit', label: 'Price per unit', type: 'currency', placeholder: '60', defaultValue: 60, step: 1, min: 0 },
+      { id: 'variableCostPerUnit', label: 'Variable cost per unit', type: 'currency', placeholder: '35', defaultValue: 35, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Contribution Margin Calculator – Per Unit and Ratio',
+      description: 'Calculate contribution margin per unit and its ratio to price from variable cost, or solve backward. Free, and the same figure break-even analysis uses.',
+      faq: [
+        { question: 'How do I calculate contribution margin?', answer: 'Subtract variable cost per unit from price per unit. A $60 price with $35 of variable cost has a $25 contribution margin per unit.' },
+        { question: 'What is the contribution margin ratio?', answer: 'Contribution margin per unit divided by price, as a percentage. A $25 contribution margin on a $60 price is a 41.67% ratio.' },
+        { question: 'Is contribution margin the same as profit?', answer: 'No. It only removes variable costs. Fixed costs (rent, salaries) still have to be covered from the total contribution margin earned across all units before there is any actual profit.' },
+        { question: 'How is contribution margin used in break-even analysis?', answer: 'Break-even units equal fixed costs divided by contribution margin per unit; break-even sales dollars equal fixed costs divided by the contribution margin ratio. It is the denominator in both versions of the break-even formula.' },
+        { question: 'What counts as a variable cost?', answer: 'Costs that scale directly with each unit sold — materials, direct labor paid per unit, shipping, and per-transaction fees. Costs that stay the same regardless of volume, like rent or salaried wages, are fixed costs instead.' },
+        { question: 'How do I raise my contribution margin?', answer: 'Either raise price or lower variable cost per unit — both increase contribution margin by the same dollar amount. A $70 price on the $35-variable-cost example raises the ratio to 50%, the same result a lower variable cost would give at the original $60 price.' },
+        { question: 'What does a negative contribution margin mean?', answer: 'Variable cost per unit exceeds price, so every unit sold loses money even before fixed costs are considered — selling more units makes the total loss larger, not smaller.' }
+      ]
+    },
+    compute(values) {
+      const contributionMarginPerUnit = values.pricePerUnit - values.variableCostPerUnit;
+      const contributionMarginRatio = values.pricePerUnit > 0 ? (contributionMarginPerUnit / values.pricePerUnit) * 100 : NaN;
+      return { contributionMarginRatio, contributionMarginPerUnit };
+    }
   }
 ];

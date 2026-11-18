@@ -163,7 +163,9 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   // numDice=1 (its min), targetLow=targetHigh=0 (their min), exact-match mode -> target sum 0 is
   // below the lowest possible sum (1 die showing at least 1), so probability is a legitimate 0,
   // and the "odds (1 in)" figure (1/probability) has no answer.
-  'dice-probability-calculator': ['oddsOneIn']
+  'dice-probability-calculator': ['oddsOneIn'],
+  // ratioW 0 (its min) -> compute()'s own guard, no ratio with a zero width part
+  'aspect-ratio-calculator': ['height']
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

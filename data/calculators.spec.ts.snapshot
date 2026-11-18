@@ -689,6 +689,41 @@ exports[`compute() snapshots > arrhenius-equation-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > aspect-ratio-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "width": 0.6096,
+      "ratioW": 3,
+      "ratioH": 2
+    },
+    "outputs": {
+      "height": 0.4064
+    }
+  },
+  "typical": {
+    "inputs": {
+      "width": 0.914,
+      "ratioW": 4.5,
+      "ratioH": 3
+    },
+    "outputs": {
+      "height": 0.6093333333
+    }
+  },
+  "edge": {
+    "inputs": {
+      "width": 0,
+      "ratioW": 0,
+      "ratioH": 0
+    },
+    "outputs": {
+      "height": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > average-calculator 1`] = `
 {
   "default": {
@@ -15908,6 +15943,53 @@ exports[`compute() snapshots > scientific-notation-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > screen-size-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "diagonalIn": 55,
+      "aspectRatio": 0,
+      "resWidth": 3840,
+      "resHeight": 2160
+    },
+    "outputs": {
+      "widthIn": 47.93665454,
+      "heightIn": 26.96436818,
+      "areaSqIn": 1292.581602,
+      "ppi": 80.10571528
+    }
+  },
+  "typical": {
+    "inputs": {
+      "diagonalIn": 82.5,
+      "aspectRatio": 0,
+      "resWidth": 5760,
+      "resHeight": 3240
+    },
+    "outputs": {
+      "widthIn": 71.90498181,
+      "heightIn": 40.44655227,
+      "areaSqIn": 2908.308605,
+      "ppi": 80.10571528
+    }
+  },
+  "edge": {
+    "inputs": {
+      "diagonalIn": 1,
+      "aspectRatio": 0,
+      "resWidth": 1,
+      "resHeight": 1
+    },
+    "outputs": {
+      "widthIn": 0.8715755371,
+      "heightIn": 0.4902612396,
+      "areaSqIn": 0.4272997033,
+      "ppi": 1.414213562
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > script-reading-time-calculator 1`] = `
 {
   "default": {
@@ -18701,6 +18783,41 @@ exports[`compute() snapshots > unix-timestamp-converter 1`] = `
       "hour": 0,
       "minute": 0,
       "second": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > uptime-percentage-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "uptimePercent": 99.9
+    },
+    "outputs": {
+      "perYearHours": 8.766,
+      "perMonthMinutes": 43.83,
+      "perDaySeconds": 86.4
+    }
+  },
+  "typical": {
+    "inputs": {
+      "uptimePercent": 149.85
+    },
+    "outputs": {
+      "perYearHours": 0,
+      "perMonthMinutes": 0,
+      "perDaySeconds": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "uptimePercent": 0
+    },
+    "outputs": {
+      "perYearHours": 8766,
+      "perMonthMinutes": 43830,
+      "perDaySeconds": 86400
     }
   }
 }

@@ -2202,7 +2202,7 @@ export const funCalculators: CalculatorConfig[] = [
       { id: 'ratioH', label: 'Ratio height part', type: 'number', placeholder: '2', defaultValue: 2, step: 0.01, min: 0 }
     ],
     seo: {
-      title: 'Aspect Ratio Calculator – Solve Width or Height for Any Ratio',
+      title: 'Aspect Ratio Calculator – Solve Width or Height',
       description: 'Enter one dimension and a ratio like 16:9, 4:3, 21:9 or 3:2, and solve for the other -- for screens, photo crops, or video, with any custom ratio too.',
       faq: [
         { question: 'How do I calculate height from width and an aspect ratio?', answer: 'Multiply the width by (ratioH ÷ ratioW). At a 16:9 ratio, a 1920-wide image needs a height of 1920 × (9 ÷ 16) = 1,080.' },
@@ -2318,8 +2318,8 @@ export const funCalculators: CalculatorConfig[] = [
     },
     inputs: [{ id: 'uptimePercent', label: 'Uptime percentage (%)', type: 'percent', placeholder: '99.9', defaultValue: 99.9, step: 0.001, min: 0 }],
     seo: {
-      title: 'Uptime Percentage Calculator – Downtime per Day, Month & Year',
-      description: 'Convert any uptime percentage into the actual allowed downtime per day, month, and year, checked against the standard "nines" table (99%, 99.9%, 99.99%, 99.999%).',
+      title: 'Uptime Percentage Calculator – Downtime per Year',
+      description: 'Convert any uptime percentage into the allowed downtime per day, month, and year, checked against the standard nines table (99%, 99.9%, 99.99%, 99.999%).',
       faq: [
         { question: 'What does "five nines" uptime mean?', answer: '99.999% uptime -- allowing only about 5.26 minutes of downtime across a full calendar-average year.' },
         { question: 'How much downtime does 99% uptime allow per year?', answer: 'About 87.66 hours, or roughly 3.65 days, across a calendar-average year.' },
@@ -2331,10 +2331,11 @@ export const funCalculators: CalculatorConfig[] = [
       ]
     },
     compute(values) {
-      const uptimePercent = values.uptimePercent;
-      if (!Number.isFinite(uptimePercent) || uptimePercent < 0 || uptimePercent > 100) {
-        return { perYearHours: NaN, perMonthMinutes: NaN, perDaySeconds: NaN };
-      }
+      if (!Number.isFinite(values.uptimePercent)) return { perYearHours: NaN, perMonthMinutes: NaN, perDaySeconds: NaN };
+      // Clamped to a valid percentage rather than returning "no answer" -- a value typed above 100
+      // (or below 0) is treated as its nearest valid endpoint, same leniency as this site's other
+      // percent inputs.
+      const uptimePercent = Math.min(100, Math.max(0, values.uptimePercent));
       const d = uptimeDowntime(uptimePercent);
       return { perYearHours: d.perYearHours, perMonthMinutes: d.perMonthMinutes, perDaySeconds: d.perDaySeconds };
     }

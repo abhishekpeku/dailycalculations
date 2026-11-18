@@ -1153,5 +1153,145 @@ export const funCalculators: CalculatorConfig[] = [
         totalCombinations: Number(total)
       };
     }
+  },
+  {
+    id: 'card-draw-probability-calculator',
+    category: 'fun',
+    glyph: '♠',
+    updatedAt: '2026-11-18',
+    aliases: ['probability of drawing a card calculator', 'poker hand odds calculator', 'deck of cards probability calculator', 'chance of drawing an ace'],
+    related: ['combination-calculator', 'lottery-odds-calculator', 'dice-probability-calculator', 'probability-calculator'],
+    title: 'Card Draw Probability Calculator',
+    description: 'Find the exact probability of drawing a specific number of a target card type (aces, hearts, face cards, or any group you define) in a hand from a standard deck, using the real hypergeometric distribution.',
+    example: 'Dealt a 5-card hand from a standard 52-card deck, the probability of getting exactly 1 ace is about 29.95%.',
+    breakdown: {
+      headline: 'probabilityPercent',
+      headlineLabel: 'Probability',
+      outputs: [
+        { id: 'probabilityPercent', label: 'Probability', format: 'percent' },
+        { id: 'oddsOneIn', label: 'Odds (1 in)', format: 'significant' },
+        { id: 'totalHands', label: 'Total possible hands', format: 'significant' },
+        { id: 'favorableHands', label: 'Favorable hands (for the target count alone)', format: 'significant' }
+      ],
+      groups: [
+        { title: 'Deck', inputs: ['deckSize', 'successCount'] },
+        { title: 'Draw', inputs: ['drawCount', 'comparisonCode', 'targetLow', 'targetHigh'] }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'The hypergeometric distribution: drawing without replacement',
+        paragraphs: [
+          'Dealing a hand of cards is sampling without replacement: once a card is dealt, it cannot be dealt again in the same hand, so each card you draw changes the odds for the next one. That is different from a coin flip or a fresh dice roll, where every trial starts over with the same odds (sampling with replacement). The distribution that describes drawing without replacement is called the hypergeometric distribution.',
+          'This calculator splits a standard 52-card deck into a "target" group (however many cards count as a success -- 4 if you are tracking aces, 13 if you are tracking a single suit, and so on) and everything else, then finds the exact probability of ending up with a given number of target cards in your hand. The same formula works for any deck size and any target-group size, not just a standard 52-card deck with 4 aces.',
+          'Because every card removes a card from the deck for the next draw, these probabilities cannot be found by simply multiplying the same fraction together the way an independent-trials calculation would -- the combinations formula below accounts for that directly.'
+        ]
+      },
+      howTo: {
+        intro: 'Describe the deck and the target, then the hand size and comparison.',
+        steps: [
+          { name: 'Enter the deck size', text: 'How many cards are in the deck -- 52 for a standard deck.' },
+          { name: 'Enter the target group size', text: 'How many cards in the deck count as a "success" -- 4 for aces, 13 for a single suit, 12 for face cards, and so on.' },
+          { name: 'Enter the hand size', text: 'How many cards are dealt into the hand.' },
+          { name: 'Choose a comparison and target count', text: 'Exactly this many, at least, at most, or between two counts, of the target group in the hand.' },
+          { name: 'Read the probability and odds', text: 'The headline is the exact hypergeometric probability for your chosen comparison.' }
+        ],
+        outro: 'Everything is calculated in your browser with the exact combinations formula. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The exact probability of drawing exactly k target cards in a hand of n, from a deck of N cards containing K target cards.',
+        expression:
+          'P(X = k) = [ C(K, k) * C(N-K, n-k) ] / C(N, n)\nP(X >= k) = sum from j=k to min(n,K) of P(X = j); P(X <= k) = sum from j=max(0,n-(N-K)) to k of P(X = j)',
+        terms: [
+          { symbol: 'N', meaning: 'Total deck size.' },
+          { symbol: 'K', meaning: 'How many cards in the deck count as the target group (the "successes").' },
+          { symbol: 'n', meaning: 'Hand size: how many cards are drawn.' },
+          { symbol: 'k', meaning: 'The target number of target-group cards in the hand.' },
+          { symbol: 'C(a, b)', meaning: 'Combinations ("a choose b"); 0 whenever b is negative or greater than a.' }
+        ],
+        note: 'C(K, k) counts which k of the target cards are in the hand; C(N-K, n-k) counts the ways the rest of the hand could be filled from the non-target cards.'
+      },
+      workedExample: {
+        intro: 'Dealt a 5-card hand from a standard 52-card deck (4 aces), what is the probability of exactly 1 ace, and separately, all 4 aces?',
+        rows: [
+          { label: 'Total possible 5-card hands, C(52, 5)', value: '2,598,960' },
+          { label: 'Ways to get exactly 1 ace: C(4,1) x C(48,4)', value: '4 x 194,580 = 778,320' },
+          { label: 'P(exactly 1 ace)', value: '778,320 / 2,598,960' },
+          { label: 'Ways to get all 4 aces: C(4,4) x C(48,1)', value: '1 x 48 = 48' },
+          { label: 'P(all 4 aces)', value: '48 / 2,598,960' }
+        ],
+        result: 'P(exactly 1 ace) ≈ 29.95%; P(all 4 aces) ≈ 0.0018%, about 1 in 54,145',
+        explanation: 'Exactly 1 ace is the single most common outcome for ace count in a 5-card hand, while all 4 aces is one of the rarest possible hands, since it requires every one of the deck\'s 4 aces to land in your 5 cards.'
+      },
+      watchOut: [
+        { title: 'This is drawing without replacement', body: 'Every card dealt reduces the deck for the next card, which is why this uses the hypergeometric formula rather than simply raising a single-draw probability to a power (that would be the different, with-replacement case).' },
+        { title: 'Define the target group to match your real question', body: 'Set the target-group size to match what you are actually asking about: 4 for a specific rank like aces, 13 for a single suit, 12 for face cards (jack, queen, king across all suits), or any other count that fits a standard deck or a custom one.' },
+        { title: '"At least" and "at most" are capped by what is physically possible', body: 'You cannot draw more target cards than either the hand size or the target group itself contains, so this calculator automatically limits the summed range to what is actually reachable.' },
+        { title: 'This models one standard deck, not multiple decks shuffled together', body: 'Some card games (certain casino games, for example) shuffle several decks together, which changes the deck size and target-group size but not the formula itself -- adjust both fields to match.' }
+      ],
+      references: [
+        { label: 'Wikipedia, Hypergeometric distribution (formula and a worked without-replacement example)', url: 'https://en.wikipedia.org/wiki/Hypergeometric_distribution' }
+      ]
+    },
+    inputs: [
+      { id: 'deckSize', label: 'Deck size (N)', type: 'number', placeholder: '52', defaultValue: 52, step: 1, min: 1 },
+      { id: 'successCount', label: 'Target cards in the deck (K)', type: 'number', placeholder: '4', defaultValue: 4, step: 1, min: 0 },
+      { id: 'drawCount', label: 'Hand size (n)', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 1 },
+      {
+        id: 'comparisonCode',
+        label: 'Comparison',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Exactly this many target cards' },
+          { value: 1, label: 'At least this many' },
+          { value: 2, label: 'At most this many' },
+          { value: 3, label: 'Between two counts' }
+        ]
+      },
+      { id: 'targetLow', label: 'Target count', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0 },
+      { id: 'targetHigh', label: 'Upper count (for "between" only)', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Card Draw Probability Calculator – Hypergeometric Odds',
+      description: 'Find the exact probability of drawing a target number of cards (aces, a suit, face cards) in a hand from a standard deck, using the real hypergeometric distribution.',
+      faq: [
+        { question: 'What is the probability of drawing exactly 1 ace in a 5-card hand?', answer: 'About 29.95% -- there are C(4,1) x C(48,4) = 778,320 ways to get exactly 1 ace out of C(52,5) = 2,598,960 total possible 5-card hands.' },
+        { question: 'What is the probability of being dealt all 4 aces in a 5-card hand?', answer: 'About 0.0018%, roughly 1 in 54,145 -- there is only C(4,4) x C(48,1) = 48 ways to do it, out of 2,598,960 total hands.' },
+        { question: 'What is the probability of getting no aces in a 5-card hand?', answer: 'About 65.88% -- the most common outcome for ace count, since most 5-card hands do not contain any of the 4 aces in a 52-card deck.' },
+        { question: 'How is this different from a dice or coin probability calculation?', answer: 'Cards are drawn without replacement, so each card dealt changes the odds for the rest of the hand. Dice and coin flips are independent trials where the odds reset every time, which uses a different formula (binomial, not hypergeometric).' },
+        { question: 'Can I use this for a suit or face cards instead of aces?', answer: 'Yes -- set the target-group size to however many cards in the deck count as your target: 13 for a single suit, 12 for face cards (jack, queen, king across all 4 suits), or any custom count.' },
+        { question: 'Does this work for decks other than 52 cards?', answer: 'Yes -- both the deck size and the target-group size are adjustable, so the same formula applies to any custom deck.' }
+      ]
+    },
+    compute(values) {
+      const N = Math.round(values.deckSize);
+      const K = Math.round(values.successCount);
+      const n = Math.round(values.drawCount);
+      const mode = Math.round(values.comparisonCode);
+      const noAnswer = { probabilityPercent: NaN, oddsOneIn: NaN, totalHands: NaN, favorableHands: NaN };
+      if (!Number.isFinite(N) || !Number.isFinite(K) || !Number.isFinite(n) || N < 1 || N > PROBABILITY_MAX_N || K < 0 || K > N || n < 1 || n > N) {
+        return noAnswer;
+      }
+      let low = Math.round(values.targetLow);
+      let high = Math.round(values.targetHigh);
+      if (mode === 0) high = low;
+      else if (mode === 1) high = Math.min(n, K);
+      else if (mode === 2) { high = low; low = 0; }
+      else { const a = Math.min(low, high), b = Math.max(low, high); low = a; high = b; }
+      const probability = hypergeometricRangeProbability(N, K, n, low, high);
+      const total = nCrBig(N, n);
+      const favorable = nCrBig(K, Math.round(values.targetLow)) * nCrBig(N - K, n - Math.round(values.targetLow));
+      return {
+        probabilityPercent: probability * 100,
+        oddsOneIn: probability > 0 ? 1 / probability : NaN,
+        totalHands: Number(total),
+        favorableHands: Number(favorable)
+      };
+    }
   }
 ];

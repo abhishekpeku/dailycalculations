@@ -163,7 +163,12 @@ Countdowns, Weather & Geography, Everyday Novelties), add `fun` to `categories.s
   - [x] `zodiac-compatibility-calculator`
   - [x] `love-calculator` (FLAMES, custom type-C widget — `components/FlamesCalculator.tsx`, needed real name text input which the generic numeric `inputs`/`compute` schema can't express)
   - [x] `name-numerology-calculator` (birth-date-only Life Path number — the cited method has no letter/name component, so no custom widget was needed despite the id)
-- [ ] Batch 2 — Probability & odds novelties (5)
+- [ ] Batch 2 — Probability & odds novelties (5) — IN PROGRESS, branch `step/50-fun-other-batch2`, draft PR #133
+  - [x] `dice-probability-calculator`
+  - [ ] `coin-flip-probability-calculator`
+  - [ ] `birthday-paradox-calculator`
+  - [ ] `lottery-odds-calculator`
+  - [ ] `card-draw-probability-calculator`
 - [ ] Batch 3 — Calendar & countdown novelties (5)
 - [ ] Batch 4 — Weather & geography novelties (5)
 - [ ] Batch 5 — Everyday gadget/misc novelties (4)

@@ -786,5 +786,144 @@ export const funCalculators: CalculatorConfig[] = [
         maxSum
       };
     }
+  },
+  {
+    id: 'coin-flip-probability-calculator',
+    category: 'fun',
+    glyph: 'H/T',
+    updatedAt: '2026-11-18',
+    aliases: ['coin toss probability calculator', 'probability of heads in a row', 'binomial coin flip calculator', 'probability of exact number of heads'],
+    related: ['probability-calculator', 'dice-probability-calculator', 'birthday-paradox-calculator', 'card-draw-probability-calculator'],
+    title: 'Coin Flip Probability Calculator',
+    description: 'Find the probability of getting an exact (or at-least/at-most) number of heads across any number of coin flips, using the exact binomial formula, plus the separate chance of a specific run of heads in a row.',
+    example: 'Flipping a fair coin 10 times, the probability of exactly 6 heads is about 20.51%, and the probability of flipping 5 heads in a row is 1/32, about 3.13%.',
+    breakdown: {
+      headline: 'probabilityPercent',
+      headlineLabel: 'Probability',
+      outputs: [
+        { id: 'probabilityPercent', label: 'Probability', format: 'percent' },
+        { id: 'oddsOneIn', label: 'Odds (1 in)', format: 'significant' },
+        { id: 'meanHeads', label: 'Expected (average) heads', format: 'number' },
+        { id: 'stdDevHeads', label: 'Standard deviation', format: 'number' },
+        { id: 'streakProbabilityPercent', label: 'Separate: probability of a streak', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Flips', inputs: ['numFlips', 'headsProbabilityPercent'] },
+        { title: 'Target heads count', inputs: ['comparisonCode', 'targetLow', 'targetHigh'] },
+        { title: 'Separate streak check', inputs: ['streakLength'] }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'The binomial distribution, applied to coin flips',
+        paragraphs: [
+          'Each coin flip is an independent trial with two outcomes, so the number of heads across many flips follows a binomial distribution: the same distribution that describes any fixed number of independent yes/no trials with the same success chance each time. This calculator finds the probability of landing on an exact number of heads, or a number of heads in a range, out of any number of flips -- not just for a fair 50/50 coin, but for any fixed per-flip probability you enter.',
+          'It also answers a related but different question: the probability that the very next several flips are all heads in a row. That is a much simpler calculation (just multiply the per-flip probability by itself), and it is worth keeping separate from the main binomial answer because the two are easy to confuse. "6 heads out of 10 flips, in any order" and "6 heads in a row" are very different events with very different probabilities.',
+          'A streak probability is also the basis of the gambler\'s fallacy: after flipping heads several times in a row, the next flip is still exactly as likely to be heads as it was on the first flip, because each flip is independent of the ones before it. A long streak is unlikely to start, but once you are partway through one, finishing it is no harder than any other single flip.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the flips and the target, then optionally check a streak separately.',
+        steps: [
+          { name: 'Enter the number of flips', text: 'How many times the coin is flipped in total.' },
+          { name: 'Enter the per-flip heads probability', text: 'Leave at 50% for a fair coin, or change it for a biased one.' },
+          { name: 'Choose a comparison and target heads count', text: 'Exactly this many heads, at least, at most, or between two counts.' },
+          { name: 'Read the probability and odds', text: 'The headline is the exact binomial probability for your chosen comparison.' },
+          { name: 'Optionally check a streak', text: 'The separate "probability of a streak" row answers a different question: the chance the next streak-length flips are all heads, independent of the main target above.' }
+        ],
+        outro: 'Everything is calculated in your browser with the exact binomial formula. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The exact probability of k heads in n flips (the binomial probability mass function), and the separate, simpler formula for a run of the same result in a row.',
+        expression:
+          'P(X = k) = C(n, k) * p^k * (1-p)^(n-k)\nP(X >= k) = sum from j=k to n of P(X = j); P(X <= k) = sum from j=0 to k of P(X = j)\nP(streak of m heads in a row) = p^m',
+        terms: [
+          { symbol: 'n', meaning: 'Number of flips.' },
+          { symbol: 'p', meaning: 'Probability of heads on a single flip (0.5 for a fair coin).' },
+          { symbol: 'k', meaning: 'The target number of heads.' },
+          { symbol: 'C(n, k)', meaning: 'The number of ways to choose which k of the n flips are heads, "n choose k."' },
+          { symbol: 'm', meaning: 'Streak length: how many flips in a row, for the separate streak check.' }
+        ],
+        note: 'This calculator computes P(X=k) with a stable ratio recurrence rather than evaluating n! directly, so it stays accurate for large numbers of flips.'
+      },
+      workedExample: {
+        intro: 'Flip a fair coin 10 times. What is the probability of exactly 6 heads, and separately, of flipping 5 heads in a row?',
+        rows: [
+          { label: 'Ways to choose which 6 of 10 flips are heads', value: 'C(10, 6) = 210' },
+          { label: 'Probability of any one specific sequence with 6 heads and 4 tails', value: '0.5^10 = 1/1024' },
+          { label: 'P(exactly 6 heads)', value: '210 / 1024' },
+          { label: 'Separately: P(5 heads in a row)', value: '0.5^5 = 1/32' }
+        ],
+        result: 'P(exactly 6 heads) ≈ 20.51%; P(5 heads in a row) ≈ 3.13%',
+        explanation: 'The two answers are not related by a simple ratio -- "6 heads somewhere in 10 flips" can happen in 210 different orders, while "5 heads in a row" describes one specific, much more restrictive pattern.'
+      },
+      watchOut: [
+        { title: 'Flips are assumed independent', body: 'Each flip is assumed to have no effect on any other, the standard assumption for an ordinary coin -- this is also what makes the gambler\'s fallacy a fallacy: a past streak does not change the next flip\'s probability.' },
+        { title: 'Exact count vs. streak are different questions', body: 'This calculator answers both, but keeps them in separate rows because "k heads out of n flips in any order" and "k heads in a row" have very different probabilities for the same k.' },
+        { title: 'Unfair coins are supported', body: 'The per-flip heads probability defaults to 50% but can be changed; every formula above still applies exactly, just with p not equal to 0.5.' },
+        { title: 'This calculator is capped at 100,000 flips', body: 'Comfortably beyond any real coin-flipping session, and far enough that the probability for an exact extreme count underflows to a number too small to be meaningfully different from zero.' }
+      ],
+      references: [
+        { label: 'NIST/SEMATECH e-Handbook of Statistical Methods, §1.3.6.6.18 Binomial Distribution', url: 'https://www.itl.nist.gov/div898/handbook/eda/section3/eda366i.htm' }
+      ]
+    },
+    inputs: [
+      { id: 'numFlips', label: 'Number of flips', type: 'number', placeholder: '10', defaultValue: 10, step: 1, min: 1 },
+      { id: 'headsProbabilityPercent', label: 'Heads probability per flip', type: 'percent', placeholder: '50', defaultValue: 50, step: 1, min: 0 },
+      {
+        id: 'comparisonCode',
+        label: 'Comparison',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Exactly this many heads' },
+          { value: 1, label: 'At least this many heads' },
+          { value: 2, label: 'At most this many heads' },
+          { value: 3, label: 'Between two counts' }
+        ]
+      },
+      { id: 'targetLow', label: 'Target heads count', type: 'number', placeholder: '6', defaultValue: 6, step: 1, min: 0 },
+      { id: 'targetHigh', label: 'Upper heads count (for "between" only)', type: 'number', placeholder: '8', defaultValue: 8, step: 1, min: 0 },
+      { id: 'streakLength', label: 'Streak length (heads in a row)', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Coin Flip Probability Calculator – Exact Heads Count',
+      description: 'Find the exact probability of an exact, at-least or at-most number of heads in N coin flips (binomial), plus the separate odds of a specific heads-in-a-row streak.',
+      faq: [
+        { question: 'What is the probability of flipping exactly 6 heads in 10 tries?', answer: 'About 20.51% -- there are C(10,6) = 210 ways to choose which 6 of the 10 flips are heads, each with probability 0.5^10 = 1/1024, giving 210/1024.' },
+        { question: 'What is the probability of flipping 5 heads in a row?', answer: '1/32, about 3.13% -- each flip independently has a 50% chance of heads, so 5 in a row is 0.5^5.' },
+        { question: 'After flipping heads several times in a row, is tails "due"?', answer: 'No -- this is the gambler\'s fallacy. Coin flips are independent, so the next flip is still exactly 50/50 (for a fair coin) no matter what came before it.' },
+        { question: 'Can this calculator handle an unfair coin?', answer: 'Yes -- change the "heads probability per flip" field away from 50%, and every result (exact count, at-least/at-most, and the streak probability) uses that value instead.' },
+        { question: 'What is the difference between "exactly 6 heads" and "6 heads in a row"?', answer: 'They are very different events. "Exactly 6 heads" counts every order those 6 heads and 4 tails could appear in (210 orders out of 1024 possible sequences). "6 heads in a row" is one specific, far more restrictive pattern, with probability 0.5^6, about 1.56%.' },
+        { question: 'What is the expected number of heads in 10 flips?', answer: '5 -- the expected (mean) count is always n times p, here 10 x 0.5. The standard deviation is the square root of n x p x (1-p), here about 1.58.' }
+      ]
+    },
+    compute(values) {
+      const n = Math.round(values.numFlips);
+      const p = Math.min(100, Math.max(0, values.headsProbabilityPercent)) / 100;
+      const mode = Math.round(values.comparisonCode);
+      const streak = Math.round(values.streakLength);
+      const noAnswer = { probabilityPercent: NaN, oddsOneIn: NaN, meanHeads: NaN, stdDevHeads: NaN, streakProbabilityPercent: NaN };
+      if (!Number.isFinite(n) || n < 1 || n > 100000) return noAnswer;
+      let low = Math.round(values.targetLow);
+      let high = Math.round(values.targetHigh);
+      if (mode === 0) high = low;
+      else if (mode === 1) high = n;
+      else if (mode === 2) { high = low; low = 0; }
+      else { const a = Math.min(low, high), b = Math.max(low, high); low = a; high = b; }
+      const probability = binomialRangeProbability(n, p, low, high);
+      const streakProbability = streak >= 0 ? Math.pow(p, streak) : NaN;
+      return {
+        probabilityPercent: probability * 100,
+        oddsOneIn: probability > 0 ? 1 / probability : NaN,
+        meanHeads: n * p,
+        stdDevHeads: Math.sqrt(n * p * (1 - p)),
+        streakProbabilityPercent: streakProbability * 100
+      };
+    }
   }
 ];

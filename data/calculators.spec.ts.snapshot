@@ -1527,6 +1527,50 @@ exports[`compute() snapshots > books-vs-ebooks-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > break-even-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "fixedCosts": 24000,
+      "pricePerUnit": 60,
+      "variableCostPerUnit": 35
+    },
+    "outputs": {
+      "breakEvenUnits": 960,
+      "contributionMarginPerUnit": 25,
+      "contributionMarginRatio": 41.66666667,
+      "breakEvenRevenue": 57600
+    }
+  },
+  "typical": {
+    "inputs": {
+      "fixedCosts": 36000,
+      "pricePerUnit": 90,
+      "variableCostPerUnit": 53
+    },
+    "outputs": {
+      "breakEvenUnits": 972.972973,
+      "contributionMarginPerUnit": 37,
+      "contributionMarginRatio": 41.11111111,
+      "breakEvenRevenue": 87567.56757
+    }
+  },
+  "edge": {
+    "inputs": {
+      "fixedCosts": 0,
+      "pricePerUnit": 0,
+      "variableCostPerUnit": 0
+    },
+    "outputs": {
+      "breakEvenUnits": "NaN",
+      "contributionMarginPerUnit": 0,
+      "contributionMarginRatio": "NaN",
+      "breakEvenRevenue": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > brick-calculator 1`] = `
 {
   "default": {
@@ -3710,6 +3754,41 @@ exports[`compute() snapshots > conservation-of-mass-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > contribution-margin-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "pricePerUnit": 60,
+      "variableCostPerUnit": 35
+    },
+    "outputs": {
+      "contributionMarginRatio": 41.66666667,
+      "contributionMarginPerUnit": 25
+    }
+  },
+  "typical": {
+    "inputs": {
+      "pricePerUnit": 90,
+      "variableCostPerUnit": 53
+    },
+    "outputs": {
+      "contributionMarginRatio": 41.11111111,
+      "contributionMarginPerUnit": 37
+    }
+  },
+  "edge": {
+    "inputs": {
+      "pricePerUnit": 0,
+      "variableCostPerUnit": 0
+    },
+    "outputs": {
+      "contributionMarginRatio": "NaN",
+      "contributionMarginPerUnit": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > correlation-calculator 1`] = `
 {
   "default": {
@@ -3792,6 +3871,50 @@ exports[`compute() snapshots > correlation-calculator 1`] = `
       "degreesOfFreedom": 0,
       "pValue": "NaN",
       "count": 2
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > cost-of-goods-sold-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "beginningInventory": 40000,
+      "purchases": 150000,
+      "endingInventory": 35000,
+      "revenue": 220000
+    },
+    "outputs": {
+      "cogs": 155000,
+      "grossProfit": 65000,
+      "grossMarginPercent": 29.54545455
+    }
+  },
+  "typical": {
+    "inputs": {
+      "beginningInventory": 60000,
+      "purchases": 225000,
+      "endingInventory": 52500,
+      "revenue": 330000
+    },
+    "outputs": {
+      "cogs": 232500,
+      "grossProfit": 97500,
+      "grossMarginPercent": 29.54545455
+    }
+  },
+  "edge": {
+    "inputs": {
+      "beginningInventory": 0,
+      "purchases": 0,
+      "endingInventory": 0,
+      "revenue": 0
+    },
+    "outputs": {
+      "cogs": 0,
+      "grossProfit": 0,
+      "grossMarginPercent": "NaN"
     }
   }
 }
@@ -10884,6 +11007,44 @@ exports[`compute() snapshots > mark-recapture-population-estimate-calculator 1`]
 }
 `;
 
+exports[`compute() snapshots > markup-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "cost": 70,
+      "sellingPrice": 100
+    },
+    "outputs": {
+      "markupPercent": 42.85714286,
+      "profit": 30,
+      "marginPercent": 30
+    }
+  },
+  "typical": {
+    "inputs": {
+      "cost": 105,
+      "sellingPrice": 150
+    },
+    "outputs": {
+      "markupPercent": 42.85714286,
+      "profit": 45,
+      "marginPercent": 30
+    }
+  },
+  "edge": {
+    "inputs": {
+      "cost": 0,
+      "sellingPrice": 0
+    },
+    "outputs": {
+      "markupPercent": "NaN",
+      "profit": 0,
+      "marginPercent": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > mass-energy-equivalence-calculator 1`] = `
 {
   "default": {
@@ -14771,6 +14932,44 @@ exports[`compute() snapshots > probability-calculator 1`] = `
       "neitherPercent": 100,
       "notAPercent": 100,
       "notBPercent": 100
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > profit-margin-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "sellingPrice": 100,
+      "cost": 70
+    },
+    "outputs": {
+      "marginPercent": 30,
+      "profit": 30,
+      "markupPercent": 42.85714286
+    }
+  },
+  "typical": {
+    "inputs": {
+      "sellingPrice": 150,
+      "cost": 105
+    },
+    "outputs": {
+      "marginPercent": 30,
+      "profit": 45,
+      "markupPercent": 42.85714286
+    }
+  },
+  "edge": {
+    "inputs": {
+      "sellingPrice": 0,
+      "cost": 0
+    },
+    "outputs": {
+      "marginPercent": "NaN",
+      "profit": 0,
+      "markupPercent": "NaN"
     }
   }
 }

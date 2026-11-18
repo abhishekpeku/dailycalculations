@@ -26,6 +26,7 @@ import { techCalculators } from './tech.ts';
 import { cryptoCalculators } from './crypto.ts';
 import { solarCalculators } from './solar.ts';
 import { insuranceCalculators } from './insurance.ts';
+import { businessCalculators } from './business.ts';
 
 export type * from './types.ts';
 
@@ -54,7 +55,8 @@ export const categories: CalculatorCategory[] = [
   { id: 'tech', title: 'Tech', description: 'Subnetting, IBAN checksums, and password strength tools.' },
   { id: 'crypto', title: 'Crypto', description: 'DCA, staking rewards, portfolio rebalancing, and crypto profit/loss and tax-estimate calculators.' },
   { id: 'solar', title: 'Solar & Home Energy', description: 'Solar system sizing, savings, payback and financing, plus net metering and home-energy efficiency calculators.' },
-  { id: 'insurance', title: 'Insurance', description: 'Life, health, auto, and property insurance coverage and cost-estimate calculators.' }
+  { id: 'insurance', title: 'Insurance', description: 'Life, health, auto, and property insurance coverage and cost-estimate calculators.' },
+  { id: 'business', title: 'Business & Tax', description: 'Margin, break-even, depreciation, valuation, GST/VAT, and other small-business and freelance tax calculators.' }
 ];
 
 // Display order for listings, the sitemap and search; the old single array's order, kept exactly.
@@ -559,7 +561,12 @@ export const calculatorOrder: string[] = [
   'out-of-pocket-maximum-calculator',
   'cobra-cost-calculator',
   'disability-insurance-needs-calculator',
-  'long-term-care-insurance-needs-calculator'
+  'long-term-care-insurance-needs-calculator',
+  'profit-margin-calculator',
+  'markup-calculator',
+  'break-even-calculator',
+  'contribution-margin-calculator',
+  'cost-of-goods-sold-calculator'
 ];
 
 const rank = (id: string) => {
@@ -592,7 +599,8 @@ export const calculators: CalculatorConfig[] = [
   ...techCalculators,
   ...cryptoCalculators,
   ...solarCalculators,
-  ...insuranceCalculators
+  ...insuranceCalculators,
+  ...businessCalculators
 ].sort((a, b) => rank(a.id) - rank(b.id));
 
 export function findCalculator(slug: string) {

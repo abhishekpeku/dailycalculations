@@ -37,7 +37,11 @@ export const CATEGORY_THEME: Record<string, { color: TileColor; icon: IconName }
   // Insurance (step 63): a new color, a protective blue-violet — distinct from finance's green
   // (loans/savings/investing) even though both are money categories; the shield icon reads as
   // coverage/protection rather than growth.
-  insurance: { color: 'violet', icon: 'shield' }
+  insurance: { color: 'violet', icon: 'shield' },
+  // Business & Tax (step 64): a new color, a cool slate blue-gray — reads as professional/ledger
+  // rather than finance's growth-green or work's neutral gray; the invoice icon (not work's
+  // briefcase) distinguishes business-operations math from personal career tools.
+  business: { color: 'slate', icon: 'invoice' }
 };
 
 export function categoryTheme(categoryId: string) {
@@ -62,7 +66,8 @@ export const GLYPH_TINT: Record<TileColor, { tint: string; ink: string; darkTint
   cyan: { tint: '#E0F7FC', ink: '#0E7490', darkTint: 'rgba(34,211,238,0.16)', darkInk: '#22D3EE' },
   amber: { tint: '#FFF6E0', ink: '#8A5A00', darkTint: 'rgba(255,196,0,0.16)', darkInk: '#FFC400' },
   yellow: { tint: '#FFFBE0', ink: '#8A6D00', darkTint: 'rgba(255,224,102,0.16)', darkInk: '#FFE066' },
-  violet: { tint: '#F0EAFE', ink: '#6425C9', darkTint: 'rgba(139,92,246,0.16)', darkInk: '#A78BFA' }
+  violet: { tint: '#F0EAFE', ink: '#6425C9', darkTint: 'rgba(139,92,246,0.16)', darkInk: '#A78BFA' },
+  slate: { tint: '#EEF1F5', ink: '#39465A', darkTint: 'rgba(148,163,184,0.16)', darkInk: '#94A3B8' }
 };
 
 // Which tile each long-form section wears, in both its heading and the table of contents.

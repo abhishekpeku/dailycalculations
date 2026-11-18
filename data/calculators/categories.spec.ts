@@ -6,7 +6,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { calculators } from './index.ts';
 
-const GROUPED_CATEGORIES = new Set(['measurements', 'math', 'statistics', 'chemistry', 'physics', 'biology', 'ecology', 'home', 'food', 'sports', 'finance', 'work', 'shopping', 'health', 'auto', 'time', 'travel', 'text', 'creator', 'education', 'fun', 'insurance', 'business']);
+const GROUPED_CATEGORIES = new Set(['measurements', 'math', 'statistics', 'chemistry', 'physics', 'biology', 'ecology', 'home', 'food', 'sports', 'finance', 'work', 'shopping', 'health', 'auto', 'time', 'travel', 'text', 'creator', 'education', 'fun', 'insurance', 'business', 'tech', 'crypto', 'solar']);
 
 test('every calculator in a grouped category has a non-empty group', () => {
   for (const calculator of calculators) {

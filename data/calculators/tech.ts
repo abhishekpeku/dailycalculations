@@ -65,6 +65,7 @@ export const techCalculators: CalculatorConfig[] = [
   {
     id: 'ip-subnet-calculator',
     category: 'tech',
+    group: 'Everyday Tech Tools',
     glyph: 'CIDR',
     updatedAt: '2026-11-18',
     aliases: ['subnet mask calculator', 'cidr calculator', 'network address calculator', 'ip range calculator', 'broadcast address calculator'],
@@ -198,6 +199,7 @@ export const techCalculators: CalculatorConfig[] = [
   {
     id: 'iban-calculator',
     category: 'tech',
+    group: 'Everyday Tech Tools',
     glyph: 'IBAN',
     updatedAt: '2026-11-18',
     aliases: ['iban validator', 'iban check digit calculator', 'iban checksum calculator', 'validate iban number', 'generate iban check digits'],
@@ -281,6 +283,7 @@ export const techCalculators: CalculatorConfig[] = [
   {
     id: 'password-strength-checker',
     category: 'tech',
+    group: 'Everyday Tech Tools',
     glyph: '***',
     updatedAt: '2026-11-18',
     aliases: ['password entropy calculator', 'how strong is my password', 'password strength estimator', 'password entropy checker'],

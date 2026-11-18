@@ -8,6 +8,7 @@ export const solarCalculators: CalculatorConfig[] = [
   {
     id: 'solar-panel-system-size-calculator',
     category: 'solar',
+    group: 'Sizing & Payback',
     glyph: 'kW',
     updatedAt: '2026-11-18',
     aliases: ['how many solar panels do i need calculator', 'solar system size calculator', 'solar panel sizing calculator', 'kw solar system calculator', 'how big a solar system do i need'],
@@ -122,6 +123,7 @@ export const solarCalculators: CalculatorConfig[] = [
   {
     id: 'solar-savings-calculator',
     category: 'solar',
+    group: 'Sizing & Payback',
     glyph: '$/yr',
     updatedAt: '2026-11-18',
     aliases: ['how much will solar save me calculator', 'solar panel savings calculator', 'solar energy savings calculator', 'annual solar savings estimator', 'solar savings over time calculator'],
@@ -244,6 +246,7 @@ export const solarCalculators: CalculatorConfig[] = [
   {
     id: 'solar-payback-period-calculator',
     category: 'solar',
+    group: 'Sizing & Payback',
     glyph: 'yr',
     updatedAt: '2026-11-18',
     aliases: ['solar payback calculator', 'solar break even calculator', 'how long to pay off solar panels', 'solar payback period estimator', 'solar break-even point calculator'],
@@ -344,6 +347,7 @@ export const solarCalculators: CalculatorConfig[] = [
   {
     id: 'solar-loan-payment-calculator',
     category: 'solar',
+    group: 'Sizing & Payback',
     glyph: '$/mo',
     updatedAt: '2026-11-18',
     aliases: ['solar loan calculator', 'solar financing calculator', 'solar panel loan payment calculator', 'solar loan payment estimator', 'solar loan vs savings calculator'],
@@ -472,6 +476,7 @@ export const solarCalculators: CalculatorConfig[] = [
   {
     id: 'net-metering-savings-calculator',
     category: 'solar',
+    group: 'Sizing & Payback',
     glyph: 'NEM',
     updatedAt: '2026-11-18',
     aliases: ['net metering calculator', 'solar net metering credit calculator', 'excess solar generation credit calculator', 'net metering bill credit estimator', 'solar export credit calculator'],
@@ -583,6 +588,7 @@ export const solarCalculators: CalculatorConfig[] = [
   {
     id: 'battery-backup-sizing-calculator',
     category: 'solar',
+    group: 'Storage & Consumption',
     glyph: 'kWh',
     updatedAt: '2026-11-18',
     aliases: ['home battery backup sizing calculator', 'how big a solar battery do i need', 'solar battery capacity calculator', 'backup battery kwh calculator', 'how many solar batteries do i need'],
@@ -689,6 +695,7 @@ export const solarCalculators: CalculatorConfig[] = [
   {
     id: 'off-grid-solar-calculator',
     category: 'solar',
+    group: 'Storage & Consumption',
     glyph: 'OG',
     updatedAt: '2026-11-18',
     aliases: ['off grid solar system sizing calculator', 'stand alone solar system calculator', 'off grid solar panel and battery calculator', 'how big an off grid solar system do i need', 'off grid solar battery bank calculator'],
@@ -801,6 +808,7 @@ export const solarCalculators: CalculatorConfig[] = [
   {
     id: 'home-electricity-consumption-calculator',
     category: 'solar',
+    group: 'Storage & Consumption',
     glyph: 'ΣkWh',
     updatedAt: '2026-11-18',
     aliases: ['appliance electricity usage calculator', 'how much electricity does my appliance use', 'appliance kwh calculator', 'household power consumption calculator', 'appliance wattage to kwh calculator'],
@@ -907,6 +915,7 @@ export const solarCalculators: CalculatorConfig[] = [
   {
     id: 'appliance-energy-cost-calculator',
     category: 'solar',
+    group: 'Storage & Consumption',
     glyph: '$/d',
     updatedAt: '2026-11-18',
     aliases: ['single appliance cost calculator', 'how much does it cost to run this appliance', 'cost to run an appliance calculator', 'electricity cost per appliance calculator', 'appliance operating cost calculator'],
@@ -1017,6 +1026,7 @@ export const solarCalculators: CalculatorConfig[] = [
   {
     id: 'heat-pump-savings-calculator',
     category: 'solar',
+    group: 'Storage & Consumption',
     glyph: 'COP',
     updatedAt: '2026-11-18',
     aliases: ['heat pump vs furnace savings calculator', 'switching to a heat pump savings calculator', 'heat pump cost savings estimator', 'heat pump vs gas furnace calculator', 'how much does a heat pump save'],
@@ -1154,6 +1164,7 @@ export const solarCalculators: CalculatorConfig[] = [
   {
     id: 'led-lighting-savings-calculator',
     category: 'solar',
+    group: 'Everyday Efficiency',
     glyph: 'LED',
     updatedAt: '2026-11-18',
     aliases: ['led bulb savings calculator', 'led light bulb savings calculator', 'how much does led lighting save', 'incandescent to led savings calculator', 'light bulb energy savings calculator'],
@@ -1273,6 +1284,7 @@ export const solarCalculators: CalculatorConfig[] = [
   {
     id: 'smart-thermostat-savings-calculator',
     category: 'solar',
+    group: 'Everyday Efficiency',
     glyph: '8%',
     updatedAt: '2026-11-18',
     aliases: ['smart thermostat savings calculator', 'nest thermostat savings calculator', 'how much does a smart thermostat save', 'programmable thermostat savings estimator', 'smart thermostat payback calculator'],
@@ -1375,6 +1387,7 @@ export const solarCalculators: CalculatorConfig[] = [
   {
     id: 'water-heater-energy-cost-calculator',
     category: 'solar',
+    group: 'Everyday Efficiency',
     glyph: 'H2O',
     updatedAt: '2026-11-18',
     aliases: ['water heater running cost calculator', 'gas vs electric water heater cost calculator', 'tankless water heater cost calculator', 'heat pump water heater savings calculator', 'hot water heating cost estimator'],
@@ -1505,6 +1518,7 @@ export const solarCalculators: CalculatorConfig[] = [
   {
     id: 'ev-solar-charging-offset-calculator',
     category: 'solar',
+    group: 'Everyday Efficiency',
     glyph: 'EV',
     updatedAt: '2026-11-18',
     aliases: ['ev charging solar offset calculator', 'how much solar can power my ev', 'solar ev charging calculator', 'electric car solar charging offset calculator', 'can solar panels charge my ev'],

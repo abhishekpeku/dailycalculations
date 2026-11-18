@@ -63,6 +63,7 @@ export const cryptoCalculators: CalculatorConfig[] = [
   {
     id: 'crypto-dca-calculator',
     category: 'crypto',
+    group: 'Growth & Staking',
     glyph: 'DCA',
     updatedAt: '2026-11-18',
     aliases: ['dollar cost averaging calculator', 'crypto dca calculator', 'bitcoin dca calculator', 'average cost basis calculator', 'recurring crypto investment calculator'],
@@ -195,6 +196,7 @@ export const cryptoCalculators: CalculatorConfig[] = [
   {
     id: 'crypto-compound-growth-calculator',
     category: 'crypto',
+    group: 'Growth & Staking',
     glyph: 'APY',
     updatedAt: '2026-11-18',
     aliases: ['crypto growth calculator', 'crypto apy calculator', 'projected crypto value calculator', 'crypto future value calculator', 'bitcoin growth projection calculator'],
@@ -323,6 +325,7 @@ export const cryptoCalculators: CalculatorConfig[] = [
   {
     id: 'staking-rewards-calculator',
     category: 'crypto',
+    group: 'Growth & Staking',
     glyph: 'STK',
     updatedAt: '2026-11-18',
     aliases: ['staking rewards calculator', 'crypto staking calculator', 'staking apy calculator', 'staking yield calculator'],
@@ -457,6 +460,7 @@ export const cryptoCalculators: CalculatorConfig[] = [
   {
     id: 'crypto-portfolio-rebalancing-calculator',
     category: 'crypto',
+    group: 'Trading & Tax',
     glyph: 'RBL',
     updatedAt: '2026-11-18',
     aliases: ['crypto portfolio rebalancing calculator', 'crypto rebalancing calculator', 'target allocation calculator', 'portfolio rebalance calculator'],
@@ -598,6 +602,7 @@ export const cryptoCalculators: CalculatorConfig[] = [
   {
     id: 'crypto-profit-loss-calculator',
     category: 'crypto',
+    group: 'Trading & Tax',
     glyph: 'P/L',
     updatedAt: '2026-11-18',
     aliases: ['crypto profit loss calculator', 'crypto gain loss calculator', 'crypto trade pnl calculator', 'realized profit calculator'],
@@ -712,6 +717,7 @@ export const cryptoCalculators: CalculatorConfig[] = [
   {
     id: 'crypto-breakeven-price-calculator',
     category: 'crypto',
+    group: 'Trading & Tax',
     glyph: 'BE',
     updatedAt: '2026-11-18',
     aliases: ['crypto breakeven price calculator', 'breakeven calculator crypto', 'breakeven sell price calculator', 'crypto breakeven calculator'],
@@ -826,6 +832,7 @@ export const cryptoCalculators: CalculatorConfig[] = [
   {
     id: 'crypto-tax-estimate-calculator',
     category: 'crypto',
+    group: 'Trading & Tax',
     glyph: 'TAX',
     updatedAt: '2026-11-18',
     aliases: ['crypto tax calculator', 'crypto capital gains tax calculator', 'bitcoin tax calculator', 'crypto tax estimator', 'short term vs long term crypto tax calculator'],

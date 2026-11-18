@@ -1,3 +1,14 @@
+## Progress (batch 1, branch `step/62-solar-home-energy-batch1`)
+
+- [ ] Category-opening work: `data/calculators/solar.ts`, `data/calculators/index.ts` entry, `lib/categoryTheme.ts` + `components/IconTile.tsx` color/icon pair
+- [ ] `solar-panel-system-size-calculator`
+- [ ] `solar-savings-calculator`
+- [ ] `solar-payback-period-calculator`
+- [ ] `solar-loan-payment-calculator`
+- [ ] `net-metering-savings-calculator`
+- [ ] `npm test` / lint / build pass, snapshot regenerated
+- [ ] PR opened
+
 # Step 62 — Wave 5: Solar & Home Energy (new category)
 
 Per `mdFiles/omni-strategy.md` §4.5 ("Solar & home energy — new category"). Go-ahead per D23

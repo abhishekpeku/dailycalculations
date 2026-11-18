@@ -30,7 +30,10 @@ export const CATEGORY_THEME: Record<string, { color: TileColor; icon: IconName }
   tech: { color: 'cyan', icon: 'chip' },
   // Crypto (step 65): a new color, gold/coin-like — distinct from finance's green so these
   // hypothetical-projection tools don't read as the same trustworthy-bank-math category.
-  crypto: { color: 'amber', icon: 'coin' }
+  crypto: { color: 'amber', icon: 'coin' },
+  // Solar & Home Energy (step 62): a new color, sun-yellow — distinct from crypto's amber and
+  // home's orange so solar/home-energy sizing, savings and financing tools read as their own thing.
+  solar: { color: 'yellow', icon: 'sun' }
 };
 
 export function categoryTheme(categoryId: string) {
@@ -53,7 +56,8 @@ export const GLYPH_TINT: Record<TileColor, { tint: string; ink: string; darkTint
   lime: { tint: '#F1F8E3', ink: '#4D7C0F', darkTint: 'rgba(163,230,53,0.16)', darkInk: '#A3E635' },
   emerald: { tint: '#E6F7F0', ink: '#047857', darkTint: 'rgba(52,211,153,0.16)', darkInk: '#34D399' },
   cyan: { tint: '#E0F7FC', ink: '#0E7490', darkTint: 'rgba(34,211,238,0.16)', darkInk: '#22D3EE' },
-  amber: { tint: '#FFF6E0', ink: '#8A5A00', darkTint: 'rgba(255,196,0,0.16)', darkInk: '#FFC400' }
+  amber: { tint: '#FFF6E0', ink: '#8A5A00', darkTint: 'rgba(255,196,0,0.16)', darkInk: '#FFC400' },
+  yellow: { tint: '#FFFBE0', ink: '#8A6D00', darkTint: 'rgba(255,224,102,0.16)', darkInk: '#FFE066' }
 };
 
 // Which tile each long-form section wears, in both its heading and the table of contents.

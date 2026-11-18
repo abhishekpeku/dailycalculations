@@ -173,7 +173,11 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   // buyPrice/quantity/buyFees/sellPrice/sellFees all 0 (min) -> costBasis=0 -> profitLossPercent is 0/0
   'crypto-profit-loss-calculator': ['profitLossPercent'],
   // quantity 0 (its min) -> compute()'s own guard, no breakeven price with zero units
-  'crypto-breakeven-price-calculator': ['breakevenPrice', 'breakevenTotalValue', 'requiredGainPercent']
+  'crypto-breakeven-price-calculator': ['breakevenPrice', 'breakevenTotalValue', 'requiredGainPercent'],
+  // productionRatio 0 (its min) -> rawWatts is a divide-by-zero guard (NaN), which cascades through
+  // panelCount, systemSizeKw and estimatedAnnualProductionKwh; annualUsageKwh 0 (its min) also zeros
+  // percentOfUsageCovered's own guard independently.
+  'solar-panel-system-size-calculator': ['systemSizeKw', 'panelCount', 'estimatedAnnualProductionKwh', 'percentOfUsageCovered']
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

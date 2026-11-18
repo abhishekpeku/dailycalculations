@@ -66,5 +66,14 @@ category is small enough not to split**, same precedent as `tech`'s 3-calculator
 
 ## Progress checklist
 
-- [ ] Category scaffold + all ~7 calculators (one batch)
-- [ ] STATUS.md updated with the final per-category summary
+- [x] Category scaffold (lib/categoryTheme.ts amber/coin, components/IconTile.tsx, index.ts) — commit 70ca7e7
+- [x] All 7 calculators built in data/calculators/crypto.ts (crypto-dca, crypto-compound-growth,
+      staking-rewards, crypto-portfolio-rebalancing, crypto-profit-loss, crypto-breakeven-price,
+      crypto-tax-estimate) — commit c98ff1c
+- [x] Every number re-verified in a standalone Node scratch script before writing copy
+- [x] `npm test` (1640/1640), `npm run lint`, `npm run build` all pass; snapshot regenerated
+- [x] Merged latest `origin/master` (Wave 4 sub-grouping retrofit) — no conflicts, re-verified
+- [x] Branch pushed, PR opened: https://github.com/abhishekpeku/dailycalculations/pull/139
+- [x] STATUS.md updated with the final per-category summary
+
+Done — one batch, as scoped (same precedent as `tech`'s single batch).

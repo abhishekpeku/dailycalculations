@@ -555,7 +555,8 @@ export const calculatorOrder: string[] = [
   'human-life-value-calculator',
   'dime-method-life-insurance-calculator',
   'term-life-coverage-calculator',
-  'whole-life-vs-term-life-cost-calculator'
+  'whole-life-vs-term-life-cost-calculator',
+  'out-of-pocket-maximum-calculator'
 ];
 
 const rank = (id: string) => {

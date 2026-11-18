@@ -487,5 +487,129 @@ export const insuranceCalculators: CalculatorConfig[] = [
       const investedDifferenceValue = i === 0 ? monthlyDifference * n : monthlyDifference * ((Math.pow(1 + i, n) - 1) / i);
       return { investedDifferenceValue, termTotalCost, wholeLifeTotalCost, monthlyDifference };
     }
+  },
+  {
+    id: 'out-of-pocket-maximum-calculator',
+    category: 'insurance',
+    glyph: 'OOP',
+    updatedAt: '2026-11-18',
+    aliases: ['out of pocket max calculator', 'health insurance out of pocket maximum calculator', 'how much have i paid toward my deductible calculator', 'deductible and coinsurance tracker'],
+    related: ['cobra-cost-calculator', 'disability-insurance-needs-calculator', 'emergency-fund-calculator'],
+    title: 'Out-of-Pocket Maximum Calculator',
+    description: 'Track your deductible, copay and coinsurance spending so far against your health plan\'s stated out-of-pocket maximum, and see how much is left before your plan starts paying 100% of covered costs.',
+    example: "With a $10,600 out-of-pocket max and $2,500 paid toward the deductible, $450 in copays and $1,850 in coinsurance so far, you've reached 45.3% of the max, with $5,800 left.",
+    breakdown: {
+      headline: 'remainingToMax',
+      headlineLabel: 'Left until your plan pays 100%',
+      outputs: [
+        { id: 'remainingToMax', format: 'currency' },
+        { id: 'totalSpentSoFar', label: 'Total paid toward the max so far', format: 'currency' },
+        { id: 'percentOfMaxReached', label: 'Percent of the max reached', format: 'percent' },
+        { id: 'outOfPocketMax', label: "Your plan's stated out-of-pocket max", format: 'currency' }
+      ],
+      groups: [
+        { title: 'What you have paid so far', inputs: ['deductiblePaid', 'copaysPaid', 'coinsurancePaid'] },
+        { title: "Your plan's limit", inputs: ['outOfPocketMax'] }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'deductiblePaid', label: 'Deductible paid' },
+          { from: 'copaysPaid', label: 'Copays paid' },
+          { from: 'coinsurancePaid', label: 'Coinsurance paid' },
+          { from: 'remainingToMax', label: 'Left until the max' }
+        ],
+        center: 'outOfPocketMax',
+        centerSub: 'Out-of-pocket max'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What is an out-of-pocket maximum?',
+        paragraphs: [
+          'HealthCare.gov defines the out-of-pocket maximum as "the most you have to pay for covered services in a plan year," after which "your health plan pays 100% of the costs of covered benefits." It is a single running total for the plan year, and it is made up of three things added together: your deductible, your copayments, and your coinsurance for in-network, covered care.',
+          "Two categories of spending do not count toward it, and both matter: your monthly premium never counts (the max is about care you receive, not the cost of carrying the plan at all), and neither does spending on services your plan doesn't cover or on out-of-network care, which HealthCare.gov lists as explicitly excluded. A big out-of-network bill can leave you having paid far more than the stated max without ever actually reaching it, because none of that spending was counted.",
+          'Every ACA marketplace plan is required to cap this figure, and the cap itself rises most years. For 2026, HealthCare.gov lists the marketplace limit at $10,600 for self-only coverage and $21,200 for family coverage; for 2027 those limits rise to $12,000 and $24,000. Employer plans set their own out-of-pocket max, which must be at or below the same federal limit for ACA-compliant plans, so check your own plan documents rather than assuming the marketplace figure applies to you.'
+        ]
+      },
+      howTo: {
+        intro: "Enter what you've already paid this plan year toward your deductible, copays and coinsurance, and your plan's stated out-of-pocket max; the calculator adds up your running total and shows what's left.",
+        steps: [
+          { name: 'Enter your deductible paid so far', text: 'The amount you have paid this plan year specifically toward your deductible, found on your insurer\'s member portal or your explanation of benefits (EOB) statements.' },
+          { name: 'Enter copays paid so far', text: 'Flat-fee payments for visits or prescriptions, added up for the plan year to date.' },
+          { name: 'Enter coinsurance paid so far', text: 'Your percentage share of covered costs after the deductible, also added up for the plan year to date.' },
+          { name: 'Enter your plan\'s out-of-pocket max', text: 'Found in your plan\'s Summary of Benefits and Coverage, not the marketplace-wide limit — your own plan\'s figure may be lower.' },
+          { name: 'Read the result', text: "The headline is how much more you'd need to pay before your plan covers 100% of further in-network, covered costs for the rest of the plan year. The donut shows your running total as a share of the max." }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The three spending categories are added together and compared against the stated max.',
+        expression: 'Spent = Deductible + Copays + Coinsurance\nRemaining = max(0, Max − Spent)\nPercentReached = min(100%, Spent ÷ Max)',
+        terms: [
+          { symbol: 'Deductible', meaning: 'What you have paid this plan year toward your deductible.' },
+          { symbol: 'Copays', meaning: 'Flat-fee payments for covered visits or prescriptions, year to date.' },
+          { symbol: 'Coinsurance', meaning: 'Your percentage share of covered costs after the deductible, year to date.' },
+          { symbol: 'Max', meaning: "Your plan's stated out-of-pocket maximum for the plan year." },
+          { symbol: 'Remaining', meaning: "How much more in-network, covered spending it would take to reach the max." }
+        ],
+        note: 'Premiums, out-of-network care, and non-covered services never count toward this total, even though you pay for them. This is an estimate based on what you enter, not a replacement for your insurer\'s own running total.'
+      },
+      workedExample: {
+        intro: 'A plan with a $10,600 out-of-pocket max. So far this year: $2,500 paid toward the deductible, $450 in copays, and $1,850 in coinsurance.',
+        rows: [
+          { label: 'Total spent so far ($2,500 + $450 + $1,850)', value: '$4,800' },
+          { label: 'Percent of the max reached ($4,800 ÷ $10,600)', value: '45.3%' },
+          { label: 'Remaining to the max ($10,600 − $4,800)', value: '$5,800' }
+        ],
+        result: '$5,800 left before the plan pays 100%',
+        explanation: "At 45.3% of the max reached, this household is less than halfway there. Once total in-network, covered spending reaches $10,600 for the year, the plan picks up 100% of further covered costs — it does not reset until the next plan year starts."
+      },
+      watchOut: [
+        { title: 'This is an educational estimate, not insurance advice or a claim adjudication', body: "This calculator helps you track your own running total for planning purposes. It does not access your insurer's actual claims data and is not a substitute for your insurer's own account summary or an insurance professional's advice." },
+        { title: 'Out-of-network care usually does not count', body: "Spending at an out-of-network provider often does not count toward the max at all, and may have no cap on it whatsoever — HealthCare.gov lists it among the costs the limit excludes. A single large out-of-network bill can cost far more than the gap this calculator shows." },
+        { title: 'Your premium is never part of this number', body: 'What you pay each month just to carry the plan is separate from the out-of-pocket max, no matter how high it is. The max is about the cost of care you actually use, not the cost of coverage itself.' },
+        { title: "Use your plan's own max, not the marketplace-wide limit", body: "The $10,600 (self-only) / $21,200 (family) figures for 2026 are the federal ceiling ACA-compliant plans cannot exceed — many employer plans set their own max below that ceiling. Check your plan's Summary of Benefits and Coverage for the real number." },
+        { title: 'The total resets with a new plan year', body: "Everything you enter here applies to one plan year. A deductible or coinsurance payment made under last year's plan does not carry over and should not be included." }
+      ],
+      references: [
+        { label: 'HealthCare.gov, "Out-of-pocket maximum/limit" glossary entry', url: 'https://www.healthcare.gov/glossary/out-of-pocket-maximum-limit/' },
+        { label: 'HealthCare.gov, "Out-of-pocket maximum/limit" (2026 and 2027 marketplace limits)', url: 'https://www.healthcare.gov/glossary/out-of-pocket-maximum-limit/' }
+      ]
+    },
+    inputs: [
+      { id: 'deductiblePaid', label: 'Deductible paid so far', type: 'currency', placeholder: '2500', defaultValue: 2500, step: 50, min: 0 },
+      { id: 'copaysPaid', label: 'Copays paid so far', type: 'currency', placeholder: '450', defaultValue: 450, step: 25, min: 0 },
+      { id: 'coinsurancePaid', label: 'Coinsurance paid so far', type: 'currency', placeholder: '1850', defaultValue: 1850, step: 50, min: 0 },
+      { id: 'outOfPocketMax', label: "Plan's out-of-pocket max", type: 'currency', placeholder: '10600', defaultValue: 10600, step: 100, min: 0 }
+    ],
+    seo: {
+      title: 'Out-of-Pocket Maximum Calculator – Track Deductible & Coinsurance',
+      description: "Track deductible, copay and coinsurance spending against your health plan's out-of-pocket maximum, and see how much is left before it pays 100%.",
+      faq: [
+        { question: 'What counts toward my out-of-pocket maximum?', answer: 'Your deductible, copayments and coinsurance for in-network, covered care all count. Premiums, out-of-network care, and non-covered services do not, even though you pay for them.' },
+        { question: 'What happens once I reach my out-of-pocket max?', answer: 'HealthCare.gov states that once you hit it, "your health plan pays 100% of the costs of covered benefits" for the rest of the plan year — for in-network, covered services.' },
+        { question: 'What is the out-of-pocket maximum for 2026?', answer: 'HealthCare.gov lists the ACA marketplace limit at $10,600 for self-only coverage and $21,200 for family coverage in 2026, rising to $12,000 and $24,000 in 2027. Many employer plans set their own max below that federal ceiling.' },
+        { question: 'Does my monthly premium count toward my out-of-pocket max?', answer: 'No. HealthCare.gov explicitly excludes "your monthly premiums" from the out-of-pocket maximum — the max is only about the cost of care you use, not the cost of carrying the plan.' },
+        { question: 'Does out-of-network care count toward my out-of-pocket max?', answer: 'Generally no. Out-of-network care is one of the costs HealthCare.gov lists as excluded from the limit, which is why a large out-of-network bill can cost much more than reaching the stated max would suggest.' },
+        { question: 'How do I find my own out-of-pocket max?', answer: "Check your plan's Summary of Benefits and Coverage or your insurer's member portal — it is specific to your plan and may be lower than the federal marketplace ceiling." },
+        { question: 'Does the out-of-pocket max reset every year?', answer: "Yes, it resets at the start of each new plan year. Spending from a previous plan year never carries over into the new year's total." }
+      ]
+    },
+    compute(values) {
+      const totalSpentSoFar = values.deductiblePaid + values.copaysPaid + values.coinsurancePaid;
+      const remainingToMax = Math.max(0, values.outOfPocketMax - totalSpentSoFar);
+      const percentOfMaxReached = values.outOfPocketMax === 0 ? 0 : Math.min(100, (totalSpentSoFar / values.outOfPocketMax) * 100);
+      return {
+        remainingToMax,
+        totalSpentSoFar,
+        percentOfMaxReached,
+        outOfPocketMax: values.outOfPocketMax,
+        deductiblePaid: values.deductiblePaid,
+        copaysPaid: values.copaysPaid,
+        coinsurancePaid: values.coinsurancePaid
+      };
+    }
   }
 ];

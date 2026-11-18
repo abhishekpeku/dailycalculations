@@ -12743,6 +12743,62 @@ exports[`compute() snapshots > ounces-to-milliliters-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > out-of-pocket-maximum-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "deductiblePaid": 2500,
+      "copaysPaid": 450,
+      "coinsurancePaid": 1850,
+      "outOfPocketMax": 10600
+    },
+    "outputs": {
+      "remainingToMax": 5800,
+      "totalSpentSoFar": 4800,
+      "percentOfMaxReached": 45.28301887,
+      "outOfPocketMax": 10600,
+      "deductiblePaid": 2500,
+      "copaysPaid": 450,
+      "coinsurancePaid": 1850
+    }
+  },
+  "typical": {
+    "inputs": {
+      "deductiblePaid": 3750,
+      "copaysPaid": 675,
+      "coinsurancePaid": 2800,
+      "outOfPocketMax": 15900
+    },
+    "outputs": {
+      "remainingToMax": 8675,
+      "totalSpentSoFar": 7225,
+      "percentOfMaxReached": 45.44025157,
+      "outOfPocketMax": 15900,
+      "deductiblePaid": 3750,
+      "copaysPaid": 675,
+      "coinsurancePaid": 2800
+    }
+  },
+  "edge": {
+    "inputs": {
+      "deductiblePaid": 0,
+      "copaysPaid": 0,
+      "coinsurancePaid": 0,
+      "outOfPocketMax": 0
+    },
+    "outputs": {
+      "remainingToMax": 0,
+      "totalSpentSoFar": 0,
+      "percentOfMaxReached": 0,
+      "outOfPocketMax": 0,
+      "deductiblePaid": 0,
+      "copaysPaid": 0,
+      "coinsurancePaid": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > outlier-calculator 1`] = `
 {
   "default": {

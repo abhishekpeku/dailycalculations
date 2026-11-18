@@ -7857,6 +7857,62 @@ exports[`compute() snapshots > gallons-to-liters-converter 1`] = `
 }
 `;
 
+exports[`compute() snapshots > gap-insurance-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "vehiclePurchasePrice": 35000,
+      "downPayment": 0,
+      "loanAnnualRate": 7,
+      "loanTermMonths": 72,
+      "monthsElapsed": 12,
+      "year1Rate": 20,
+      "afterYear1Rate": 15
+    },
+    "outputs": {
+      "gapAmount": 2135.308492,
+      "remainingLoanBalance": 30135.30849,
+      "vehicleValueToday": 28000,
+      "loanToValuePercent": 107.6261018
+    }
+  },
+  "typical": {
+    "inputs": {
+      "vehiclePurchasePrice": 52500,
+      "downPayment": 0,
+      "loanAnnualRate": 10.5,
+      "loanTermMonths": 108,
+      "monthsElapsed": 18,
+      "year1Rate": 30,
+      "afterYear1Rate": 23
+    },
+    "outputs": {
+      "gapAmount": 14546.55073,
+      "remainingLoanBalance": 46794.54485,
+      "vehicleValueToday": 32247.99412,
+      "loanToValuePercent": 145.1083893
+    }
+  },
+  "edge": {
+    "inputs": {
+      "vehiclePurchasePrice": 0,
+      "downPayment": 0,
+      "loanAnnualRate": 0,
+      "loanTermMonths": 1,
+      "monthsElapsed": 0,
+      "year1Rate": 0,
+      "afterYear1Rate": 0
+    },
+    "outputs": {
+      "gapAmount": 0,
+      "remainingLoanBalance": 0,
+      "vehicleValueToday": 0,
+      "loanToValuePercent": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > gas-cost-calculator 1`] = `
 {
   "default": {

@@ -1,4 +1,6 @@
 import type { CalculatorConfig } from './types.ts';
+import { carValueAtYears } from './auto.ts';
+import { monthlyPayment, amortizationMonthlySchedule } from '../../lib/amortization.ts';
 
 export const insuranceCalculators: CalculatorConfig[] = [
   {
@@ -1084,6 +1086,128 @@ export const insuranceCalculators: CalculatorConfig[] = [
         annualIncome: values.annualIncome,
         comprehensiveCollisionPremiumToValuePercent
       };
+    }
+  },
+  {
+    id: 'gap-insurance-calculator',
+    category: 'insurance',
+    glyph: 'GAP',
+    updatedAt: '2026-11-18',
+    aliases: ['gap insurance calculator', 'negative equity car loan calculator', 'loan balance vs car value calculator', 'do i need gap insurance', 'upside down car loan calculator'],
+    related: ['car-depreciation-calculator', 'car-payment-calculator', 'loan-calculator', 'car-insurance-coverage-calculator'],
+    title: 'Gap Insurance Calculator',
+    description: 'Estimate the negative-equity gap between your car loan balance and your car\'s depreciated value — the shortfall gap insurance is designed to cover if the car is totaled or stolen.',
+    example: 'A $35,000 car financed with no down payment at 7% APR over 72 months still owes $30,135.31 after 12 months, while the car (at the common 20%/15% depreciation rule of thumb) is worth about $28,000.00 — a $2,135.31 gap.',
+    breakdown: {
+      headline: 'gapAmount',
+      headlineLabel: 'Negative-equity gap',
+      outputs: [
+        { id: 'gapAmount', format: 'currency' },
+        { id: 'remainingLoanBalance', label: 'Remaining loan balance', format: 'currency' },
+        { id: 'vehicleValueToday', label: 'Estimated vehicle value today', format: 'currency' },
+        { id: 'loanToValuePercent', label: 'Loan balance as % of vehicle value', format: 'percent' }
+      ],
+      groups: [
+        { title: 'The loan', inputs: ['vehiclePurchasePrice', 'downPayment', 'loanAnnualRate', 'loanTermMonths', 'monthsElapsed'] },
+        { title: 'Depreciation assumption', inputs: ['year1Rate', 'afterYear1Rate'], optional: true }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'remainingLoanBalance', label: 'Remaining loan balance' },
+          { from: 'vehicleValueToday', label: 'Estimated vehicle value' }
+        ],
+        title: 'Loan balance vs. estimated vehicle value',
+        highlight: 0
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What is the "gap" that gap insurance covers?',
+        paragraphs: [
+          'The Consumer Financial Protection Bureau (CFPB) defines gap insurance plainly: it covers "the difference between the amount you owe on your auto loan and the amount the insurance company pays" when a financed or leased car is totaled or stolen. Standard auto insurance only pays out the car\'s actual cash value — what it is worth today, not what is still owed on it — so if the loan balance is higher than that value, the owner would otherwise have to keep paying off a loan for a car they no longer have.',
+          'That gap exists because a car loan and a car\'s value shrink at different rates. A loan balance falls slowly at first, since early payments go mostly toward interest rather than principal. A new car\'s value, by contrast, tends to fall fastest in exactly that same first year or two — commonly cited at around 20% in year one alone. Combine a slow-shrinking loan with a fast-shrinking asset, especially with a small or no down payment and a longer loan term, and the loan balance can run ahead of the car\'s value for a while.',
+          'This calculator reuses this site\'s own car-depreciation-calculator method (a 20% first-year / 15%-a-year rule of thumb) for the value side, and a standard amortization schedule for the loan side, to estimate that gap at any point during the loan. The CFPB also notes gap insurance is commonly sold by dealers as an add-on whose cost gets rolled into the loan itself, increasing total interest paid — so it is worth comparison shopping, including through your own auto insurer, rather than assuming the dealer\'s price is the only one available.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the loan\'s original terms and how many months have passed; adjust the depreciation assumption if you have a better estimate for your vehicle.',
+        steps: [
+          { name: 'Enter the purchase price and down payment', text: 'The loan is financed on the price minus the down payment.' },
+          { name: 'Enter the loan\'s APR and term', text: 'The annual percentage rate and the original number of months to pay it off.' },
+          { name: 'Enter how many months have passed', text: 'Since the loan started — this drives both the remaining balance and the estimated depreciation.' },
+          { name: 'Check the depreciation rates', text: 'The defaults (20% year one, 15% a year after) are the same rule of thumb used by this site\'s car-depreciation-calculator. Adjust them if you have a better estimate.' },
+          { name: 'Read the result', text: 'The headline is the estimated gap. The chart compares the remaining loan balance with the estimated vehicle value directly.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The loan balance comes from a standard fixed-rate amortization schedule; the vehicle value from this site\'s depreciation rule of thumb.',
+        expression: 'Remaining balance = standard amortization schedule, evaluated at the elapsed month\nVehicle value = Price × (1 − r₁) × (1 − r₂)^(years − 1), for years > 1\nGap = max(0, Remaining balance − Vehicle value)',
+        terms: [
+          { symbol: 'r₁', meaning: 'First-year depreciation rate (default 20%).' },
+          { symbol: 'r₂', meaning: 'Depreciation rate for every year after the first (default 15%).' },
+          { symbol: 'Gap', meaning: 'The shortfall gap insurance would otherwise leave you to pay out of pocket.' }
+        ],
+        note: 'An educational estimate, not a quote. It uses a rule-of-thumb depreciation curve, not your specific car\'s actual market value, and does not account for any early payments, refinancing, or a non-standard loan.'
+      },
+      workedExample: {
+        intro: 'A $35,000 car is financed with no down payment at 7% APR over 72 months. Twelve months in, what is the estimated gap?',
+        rows: [
+          { label: 'Loan principal (35,000 − 0 down payment)', value: '$35,000.00' },
+          { label: 'Monthly payment', value: '$596.72' },
+          { label: 'Remaining loan balance after 12 months', value: '$30,135.31' },
+          { label: 'Estimated vehicle value after 1 year (35,000 × (1 − 20%))', value: '$28,000.00' },
+          { label: 'Gap (30,135.31 − 28,000.00)', value: '$2,135.31' }
+        ],
+        result: 'An estimated $2,135.31 gap after the first year.',
+        explanation: 'The loan balance fell by only about $4,864.69 in that year (mostly interest in the early payments), while the car\'s estimated value fell by $7,000.00 — the rule of thumb\'s full 20% first-year rate. The faster-falling asset outran the slower-falling loan, producing the gap.'
+      },
+      watchOut: [
+        { title: 'This is an educational estimate, not a quote or an offer to sell insurance', body: 'This calculator estimates a loan-vs-value gap for planning purposes. It does not sell, recommend or bind any coverage, and is not a substitute for your own insurer\'s or lender\'s actual figures.' },
+        { title: 'The vehicle value is a rule of thumb, not an appraisal', body: 'Real depreciation varies a lot by make, model, mileage and condition — this site\'s car-depreciation-calculator and its own watch-out notes cover that in more depth. A different depreciation assumption changes the gap, sometimes a lot.' },
+        { title: 'The gap shrinks, and usually disappears, over the loan', body: 'Because the loan balance keeps falling and the value-loss rate slows after year one, the gap this calculator estimates is largest early in a loan with a small down payment, and typically closes within a few years — check the number again periodically rather than assuming it stays the same.' },
+        { title: 'A larger down payment or shorter loan term shrinks the gap directly', body: 'Both reduce how far the loan balance can get ahead of the car\'s value at any given month, which is also why lenders and dealers often recommend gap insurance specifically for low-down-payment, long-term loans.' },
+        { title: 'Pricing and terms vary a lot — compare before buying', body: 'The CFPB notes that gap insurance cost varies significantly and can be bought through your own auto insurer or a lender, not only the dealer, and that its cost should be disclosed separately if rolled into your loan\'s APR.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, What is gap insurance?', url: 'https://www.consumerfinance.gov/ask-cfpb/what-is-gap-insurance-en-2090/' },
+        { label: 'Experian, What Is Depreciation on a Car?', url: 'https://www.experian.com/blogs/ask-experian/what-is-depreciation-on-a-car/' }
+      ]
+    },
+    inputs: [
+      { id: 'vehiclePurchasePrice', label: 'Purchase price', type: 'currency', placeholder: '35000', defaultValue: 35000, step: 500, min: 0 },
+      { id: 'downPayment', label: 'Down payment', type: 'currency', placeholder: '0', defaultValue: 0, step: 500, min: 0 },
+      { id: 'loanAnnualRate', label: 'Loan APR', type: 'percent', placeholder: '7', defaultValue: 7, step: 0.1, min: 0 },
+      { id: 'loanTermMonths', label: 'Loan term (months)', type: 'number', placeholder: '72', defaultValue: 72, step: 1, min: 1 },
+      { id: 'monthsElapsed', label: 'Months since the loan started', type: 'number', placeholder: '12', defaultValue: 12, step: 1, min: 0 },
+      { id: 'year1Rate', label: 'First-year depreciation rate', type: 'percent', placeholder: '20', defaultValue: 20, step: 1, min: 0 },
+      { id: 'afterYear1Rate', label: 'Rate per year after year 1', type: 'percent', placeholder: '15', defaultValue: 15, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Gap Insurance Calculator – Loan vs. Car Value Gap',
+      description: 'Free gap insurance calculator: estimate the gap between your car loan balance and its depreciated value, the shortfall gap insurance covers if the car is totaled.',
+      faq: [
+        { question: 'What does gap insurance actually cover?', answer: 'Per the CFPB, it covers "the difference between the amount you owe on your auto loan and the amount the insurance company pays" if the car is totaled or stolen, since standard auto insurance only pays the car\'s actual cash value, not the loan balance.' },
+        { question: 'How is the gap calculated?', answer: 'Remaining loan balance minus estimated vehicle value, floored at $0. On a $35,000 car with no down payment at 7% APR over 72 months, the balance after 12 months is $30,135.31 against an estimated value of $28,000.00 — a $2,135.31 gap.' },
+        { question: 'When is the gap the biggest?', answer: 'Typically early in a loan with a small or no down payment and a long term, because the loan balance falls slowly (early payments are mostly interest) while a new car\'s value falls fastest in its first year or two.' },
+        { question: 'Does the gap ever close?', answer: 'Usually, yes. As the loan balance keeps falling and the depreciation rate slows after year one, the gap in this example narrows to about $228.50 by month 30 and typically reaches $0 within a few years, depending on the loan terms and depreciation.' },
+        { question: 'Do I need gap insurance?', answer: 'It is most often suggested for low- or no-down-payment, longer-term loans on cars that depreciate quickly — exactly the conditions that produce a larger gap in this calculator. If your gap estimate is $0 or small, it may not be worth the added cost.' },
+        { question: 'Can I buy gap insurance anywhere besides the dealer?', answer: 'Yes. The CFPB notes you can buy it through your own auto insurer or some lenders, not just the dealer, and pricing varies enough that it is worth comparing.' },
+        { question: 'Does this use my car\'s actual value?', answer: 'No. It uses this site\'s car-depreciation-calculator rule of thumb (20% year one, 15% a year after) as an estimate. Adjust those two rates if you have a better estimate for your specific vehicle.' }
+      ]
+    },
+    compute(values) {
+      const loanPrincipal0 = Math.max(0, values.vehiclePurchasePrice - values.downPayment);
+      const payment = monthlyPayment(loanPrincipal0, values.loanAnnualRate, values.loanTermMonths);
+      const schedule = amortizationMonthlySchedule(loanPrincipal0, values.loanAnnualRate, values.loanTermMonths, payment);
+      const monthIndex = Math.min(Math.max(Math.round(values.monthsElapsed), 0), values.loanTermMonths);
+      const remainingLoanBalance = monthIndex <= 0 ? loanPrincipal0 : (schedule[monthIndex - 1]?.balance ?? 0);
+      const vehicleValueToday = Math.max(0, carValueAtYears(values.vehiclePurchasePrice, values.year1Rate, values.afterYear1Rate, values.monthsElapsed / 12));
+      const gapAmount = Math.max(0, remainingLoanBalance - vehicleValueToday);
+      const loanToValuePercent = vehicleValueToday > 0 ? (remainingLoanBalance / vehicleValueToday) * 100 : NaN;
+      return { gapAmount, remainingLoanBalance, vehicleValueToday, loanToValuePercent };
     }
   }
 ];

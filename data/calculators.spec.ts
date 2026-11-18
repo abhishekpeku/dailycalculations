@@ -205,7 +205,11 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'cost-of-goods-sold-calculator': ['grossMarginPercent'],
   // vehicleActualCashValue 0 (its min) -> compute()'s own guard, no premium-to-value ratio with a
   // zero-value car to divide by; recommendedLiabilityCoverage stays finite either way.
-  'car-insurance-coverage-calculator': ['comprehensiveCollisionPremiumToValuePercent']
+  'car-insurance-coverage-calculator': ['comprehensiveCollisionPremiumToValuePercent'],
+  // vehiclePurchasePrice 0 (its min) -> vehicleValueToday is a finite 0, so compute()'s own guard
+  // gives loanToValuePercent no answer (divides by a zero vehicle value); gapAmount and
+  // remainingLoanBalance stay finite either way.
+  'gap-insurance-calculator': ['loanToValuePercent']
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

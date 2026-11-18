@@ -209,7 +209,11 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   // vehiclePurchasePrice 0 (its min) -> vehicleValueToday is a finite 0, so compute()'s own guard
   // gives loanToValuePercent no answer (divides by a zero vehicle value); gapAmount and
   // remainingLoanBalance stay finite either way.
-  'gap-insurance-calculator': ['loanToValuePercent']
+  'gap-insurance-calculator': ['loanToValuePercent'],
+  // estimatedMarketValue 0 (its min) -> compute()'s own guard, no rebuild-cost-vs-market-value
+  // percentage with a zero market value to divide by; rebuildCost and structureValueOfMarketPrice
+  // stay finite either way.
+  'home-insurance-rebuild-cost-calculator': ['rebuildCostPercentOfMarketValue']
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

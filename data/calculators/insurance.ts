@@ -1326,5 +1326,115 @@ export const insuranceCalculators: CalculatorConfig[] = [
       const suggestedPolicyLimit = Math.ceil(totalContentsValue / 1000) * 1000;
       return { totalContentsValue, suggestedPolicyLimit };
     }
+  },
+  {
+    id: 'home-insurance-rebuild-cost-calculator',
+    category: 'insurance',
+    glyph: 'RBLD',
+    updatedAt: '2026-11-18',
+    aliases: ['home rebuild cost calculator', 'dwelling coverage calculator', 'replacement cost estimator house', 'how much homeowners insurance do i need', 'reconstruction cost calculator'],
+    related: ['renters-insurance-contents-value-calculator', 'human-life-value-calculator', 'emergency-fund-calculator', 'car-insurance-coverage-calculator'],
+    title: 'Home Insurance Rebuild Cost Calculator',
+    description: 'Estimate a home\'s rebuild (dwelling) cost from its square footage and a local per-square-foot building cost — explicitly separate from market or resale value, per the Insurance Information Institute.',
+    example: 'A 2,200 sq ft home at $150 per square foot has an estimated $330,000.00 rebuild cost — 103.1% of its $320,000.00 estimated market value, since rebuild cost and market value measure two different things.',
+    breakdown: {
+      headline: 'rebuildCost',
+      headlineLabel: 'Estimated rebuild cost',
+      outputs: [
+        { id: 'rebuildCost', format: 'currency' },
+        { id: 'estimatedMarketValue', label: 'Estimated market value (for comparison)', format: 'currency' },
+        { id: 'rebuildCostPercentOfMarketValue', label: 'Rebuild cost as % of market value', format: 'percent' },
+        { id: 'structureValueOfMarketPrice', label: 'Market value minus land (structure\'s share)', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your home', inputs: ['squareFootage', 'costPerSquareFoot'] },
+        { title: 'For comparison only', inputs: ['estimatedMarketValue', 'landValue'], optional: true }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'rebuildCost', label: 'Estimated rebuild cost' },
+          { from: 'estimatedMarketValue', label: 'Estimated market value' }
+        ],
+        title: 'Rebuild cost vs. market value',
+        highlight: 0
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Rebuild cost is not the same number as market value',
+        paragraphs: [
+          'Homeowners insurance\'s dwelling coverage is meant to pay for rebuilding the structure itself if it is destroyed — not to pay you the price you could sell the house for. The Insurance Information Institute (III) is direct about the difference: "the price you paid for your home—or the current market price—may be more or less than the cost to rebuild." A home\'s market price reflects its land, its location, and what buyers in that market will pay; rebuild cost reflects only what it would cost today to reconstruct the structure, on that same lot, from the ground up.',
+          'III\'s own recommended method for estimating rebuild cost is straightforward: "multiply the total square footage of your home by local, per-square-foot building costs," explicitly noting that land value is not part of that calculation. Local building costs vary enormously by region, by labor and material costs, and by the home\'s own features, which is exactly why III recommends getting that per-square-foot figure from a local real estate agent, a builders association, or your own insurance agent rather than relying on a single nationwide number.',
+          'This calculator does the multiplication for you once you have a local cost figure, and shows it next to an estimated market value (and that market value minus the land, i.e. an estimate of what the structure itself contributes to the sale price) purely so the two concepts are visible side by side — not to suggest one is more "correct" than the other. They can land close together or far apart, and either direction is normal: rebuild cost can exceed market value where construction costs have risen faster than local home prices, or fall short of it where land and location drive most of the price.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your home\'s square footage and a local cost-per-square-foot figure; add an estimated market value and land value only if you want the comparison.',
+        steps: [
+          { name: 'Enter your home\'s square footage', text: 'The finished, livable area of the structure, as used in your home\'s own listing or appraisal.' },
+          { name: 'Enter a local cost per square foot', text: 'Get this from a local builder, real estate agent or your insurance agent — III specifically recommends a local figure, not a national average, since construction costs vary enormously by region.' },
+          { name: 'Read the rebuild cost', text: 'The headline is square footage × cost per square foot — the estimated cost to reconstruct the home, excluding the land.' },
+          { name: 'Optionally add a market value and land value', text: 'These are for comparison only — they show how rebuild cost relates to what the home might sell for, and are not part of the rebuild-cost calculation itself.' },
+          { name: 'Check the chart', text: 'It compares the two figures directly, so you can see whether rebuild cost runs above or below the estimated market value for your home.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'III\'s own stated method: multiply area by a local, per-square-foot building cost. Land is never part of it.',
+        expression: 'Rebuild cost = Square footage × Cost per square foot\nRebuild cost as % of market value = (Rebuild cost ÷ Market value) × 100',
+        terms: [
+          { symbol: 'Cost per square foot', meaning: 'A local construction cost figure — from a builder, agent or insurance agent, not a national average.' },
+          { symbol: 'Market value', meaning: 'What the home might sell for today, including its land — entered only for comparison.' }
+        ],
+        note: 'An educational estimate, not a quote, an appraisal, or a substitute for your insurer\'s own dwelling-coverage calculation. Per III, get your per-square-foot figure locally — construction costs vary too much by region for one default number to be meaningful everywhere.'
+      },
+      workedExample: {
+        intro: 'A 2,200 sq ft home has a local building cost of $150 per square foot, an estimated market value of $320,000, and an estimated land value of $80,000.',
+        rows: [
+          { label: 'Rebuild cost (2,200 × $150)', value: '$330,000.00' },
+          { label: 'Rebuild cost as % of market value (330,000 ÷ 320,000)', value: '103.13%' },
+          { label: 'Market value minus land (320,000 − 80,000)', value: '$240,000.00' }
+        ],
+        result: 'An estimated $330,000.00 rebuild cost — slightly above the $320,000.00 market value.',
+        explanation: 'The rebuild cost here comes out about $90,000.00 (37.5%) above the structure\'s $240,000.00 share of the market price. That gap is a real, well-documented possibility — construction costs have outpaced home prices in some markets — and is exactly why III recommends insuring to the rebuild figure, not the market price.'
+      },
+      watchOut: [
+        { title: 'This is an educational estimate, not a quote or an offer to sell insurance', body: 'This calculator estimates a dwelling-coverage starting point. It does not sell, recommend or bind any policy, and is not a substitute for a licensed insurance agent or a professional replacement-cost appraisal.' },
+        { title: 'There is no single national cost-per-square-foot figure', body: 'Local building costs vary enormously by region, labor market and materials. III recommends getting this figure locally — from a builder, real estate agent or insurance agent — rather than using one default number for every home.' },
+        { title: 'Market value and rebuild cost can diverge in either direction', body: 'Rebuild cost can run above or below market value depending on local land prices versus local construction costs. Neither is "wrong" — they measure different things, as III states directly.' },
+        { title: 'Square footage definitions can differ', body: 'A home\'s listed square footage, tax-assessed square footage and the actual footprint a builder would rebuild can differ slightly depending on what is included (finished basements, garages). Use a consistent, accurate figure.' },
+        { title: 'Unique features change the real cost', body: 'Custom finishes, difficult lot access, or an unusually complex layout can raise real rebuild costs well above a generic per-square-foot estimate — this calculator cannot see any of that.' }
+      ],
+      references: [
+        { label: 'Insurance Information Institute, How much homeowners insurance do I need?', url: 'https://www.iii.org/article/how-much-homeowners-insurance-do-i-need' }
+      ]
+    },
+    inputs: [
+      { id: 'squareFootage', label: 'Square footage', type: 'number', placeholder: '2200', defaultValue: 2200, step: 50, min: 0 },
+      { id: 'costPerSquareFoot', label: 'Local cost per square foot', type: 'currency', placeholder: '150', defaultValue: 150, step: 5, min: 0 },
+      { id: 'estimatedMarketValue', label: 'Estimated market value', type: 'currency', placeholder: '320000', defaultValue: 320000, step: 5000, min: 0 },
+      { id: 'landValue', label: 'Estimated land value', type: 'currency', placeholder: '80000', defaultValue: 80000, step: 5000, min: 0 }
+    ],
+    seo: {
+      title: 'Home Insurance Rebuild Cost Calculator',
+      description: 'Free home rebuild cost calculator: estimate dwelling coverage from square footage and a local per-square-foot cost, kept separate from market value, per III.org.',
+      faq: [
+        { question: 'How do I calculate my home\'s rebuild cost?', answer: 'Per the Insurance Information Institute, multiply total square footage by a local, per-square-foot building cost — land value is not included. A 2,200 sq ft home at $150 per square foot comes to $330,000.00.' },
+        { question: 'Is rebuild cost the same as market value?', answer: 'No. III states plainly that the price you paid or the current market price "may be more or less than the cost to rebuild." Market value includes land and location; rebuild cost only covers reconstructing the structure.' },
+        { question: 'Where do I get a per-square-foot building cost?', answer: 'III recommends asking a local real estate agent, a builders association, or your own insurance agent — construction costs vary too much by region for a single national figure to be meaningful.' },
+        { question: 'Can rebuild cost be higher than market value?', answer: 'Yes. In the worked example, a $330,000.00 rebuild cost is about 103.1% of a $320,000.00 market value — construction costs can outpace home prices in some areas, which is a real, documented possibility, not an error.' },
+        { question: 'Should I insure my home for its market value?', answer: 'No — insure it for the rebuild cost, since that is what a dwelling-coverage payout is meant to cover. Insuring to market value could leave you under- or over-insured relative to what reconstruction would actually cost.' },
+        { question: 'Does land value affect my home insurance coverage amount?', answer: 'No. Land generally is not destroyed by a covered loss and does not need to be rebuilt, so III\'s rebuild-cost method excludes it — this calculator includes a land-value input only so you can see the market-value comparison, not to adjust the rebuild cost itself.' },
+        { question: 'Is this calculator the same as a professional appraisal?', answer: 'No. It is an educational planning estimate only, using one average cost-per-square-foot figure you provide. A professional replacement-cost appraisal accounts for your home\'s specific features, finishes and layout.' }
+      ]
+    },
+    compute(values) {
+      const rebuildCost = values.squareFootage * values.costPerSquareFoot;
+      const rebuildCostPercentOfMarketValue = values.estimatedMarketValue > 0 ? (rebuildCost / values.estimatedMarketValue) * 100 : NaN;
+      const structureValueOfMarketPrice = values.estimatedMarketValue - values.landValue;
+      return { rebuildCost, estimatedMarketValue: values.estimatedMarketValue, rebuildCostPercentOfMarketValue, structureValueOfMarketPrice };
+    }
   }
 ];

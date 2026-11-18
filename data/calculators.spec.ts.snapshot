@@ -8969,6 +8969,53 @@ exports[`compute() snapshots > home-electricity-consumption-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > home-insurance-rebuild-cost-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "squareFootage": 2200,
+      "costPerSquareFoot": 150,
+      "estimatedMarketValue": 320000,
+      "landValue": 80000
+    },
+    "outputs": {
+      "rebuildCost": 330000,
+      "estimatedMarketValue": 320000,
+      "rebuildCostPercentOfMarketValue": 103.125,
+      "structureValueOfMarketPrice": 240000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "squareFootage": 3300,
+      "costPerSquareFoot": 225,
+      "estimatedMarketValue": 480000,
+      "landValue": 120000
+    },
+    "outputs": {
+      "rebuildCost": 742500,
+      "estimatedMarketValue": 480000,
+      "rebuildCostPercentOfMarketValue": 154.6875,
+      "structureValueOfMarketPrice": 360000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "squareFootage": 0,
+      "costPerSquareFoot": 0,
+      "estimatedMarketValue": 0,
+      "landValue": 0
+    },
+    "outputs": {
+      "rebuildCost": 0,
+      "estimatedMarketValue": 0,
+      "rebuildCostPercentOfMarketValue": "NaN",
+      "structureValueOfMarketPrice": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > horsepower-calculator 1`] = `
 {
   "default": {

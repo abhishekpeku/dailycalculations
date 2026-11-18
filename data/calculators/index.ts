@@ -570,6 +570,7 @@ export const calculatorOrder: string[] = [
   'car-insurance-coverage-calculator',
   'gap-insurance-calculator',
   'renters-insurance-contents-value-calculator',
+  'home-insurance-rebuild-cost-calculator',
   'profit-margin-calculator',
   'markup-calculator',
   'break-even-calculator',

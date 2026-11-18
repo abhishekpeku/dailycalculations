@@ -118,5 +118,127 @@ export const solarCalculators: CalculatorConfig[] = [
       const percentOfUsageCovered = values.annualUsageKwh > 0 && Number.isFinite(estimatedAnnualProductionKwh) ? (estimatedAnnualProductionKwh / values.annualUsageKwh) * 100 : NaN;
       return { systemSizeKw, panelCount, estimatedAnnualProductionKwh, percentOfUsageCovered };
     }
+  },
+  {
+    id: 'solar-savings-calculator',
+    category: 'solar',
+    glyph: '$/yr',
+    updatedAt: '2026-11-18',
+    aliases: ['how much will solar save me calculator', 'solar panel savings calculator', 'solar energy savings calculator', 'annual solar savings estimator', 'solar savings over time calculator'],
+    related: ['solar-panel-system-size-calculator', 'solar-payback-period-calculator', 'net-metering-savings-calculator', 'electricity-bill-calculator'],
+    title: 'Solar Savings Calculator',
+    description: 'Estimate a solar system\'s first-year and lifetime electricity savings from its size, a production ratio and your electricity rate, accounting for gradual panel output degradation.',
+    example: 'An 8.36 kW system at a 1.3 production ratio and $0.1831/kWh saves about $1,989.93 the first year and about $46,325.86 over 25 years once panel degradation is factored in.',
+    breakdown: {
+      headline: 'annualSavings',
+      headlineLabel: 'Estimated savings this year',
+      outputs: [
+        { id: 'annualSavings', label: 'Estimated savings this year', format: 'currency' },
+        { id: 'annualProductionKwh', label: 'Estimated annual production', format: 'number', dimension: 'energy', unit: 'kWh' },
+        { id: 'lifetimeSavings', label: 'Estimated lifetime savings', format: 'currency' },
+        { id: 'finalYearSavings', label: 'Estimated savings in the final year', format: 'currency' },
+        { id: 'averageAnnualSavings', label: 'Average savings per year over the lifetime', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your system', inputs: ['systemSizeKw', 'productionRatio'] },
+        { title: 'Rate and projection', inputs: ['electricityRate', 'lifetimeYears'] },
+        { title: 'Panel output degradation', inputs: ['degradationRatePercent'], optional: true }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'annualSavings', label: 'Year 1' },
+          { from: 'finalYearSavings', label: 'Final year' }
+        ],
+        title: 'Year 1 vs. final-year savings (panel degradation)'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What "solar savings" actually means',
+        paragraphs: [
+          'Solar savings is the electricity you no longer buy from your utility because your own panels made it instead. This calculator multiplies estimated annual production (system size × a production ratio, the same figure used by the system-size calculator above) by your electricity rate, which assumes every kWh you generate offsets a kWh you would otherwise have bought at full retail price. That assumption holds well for a system sized to your own usage with a generous net-metering arrangement; it holds less well once your system exports more than you use in a given month and your utility credits that excess at a lower rate — see the net-metering savings calculator for that specific case.',
+          'Panels don\'t produce quite as much every year. EnergySage reports that the vast majority of panel warranties guarantee output won\'t fall by more than 0.5–0.7% a year after an initial first-year dip, backed by a 25-year power-performance warranty on nine out of ten panels sold. That slow decline is small year to year but adds up: this calculator applies it to the "final year" and "lifetime savings" figures so they aren\'t simply year-one savings multiplied by the number of years.',
+          'The electricity rate itself is held flat across the whole projection, which is a simplification in the other direction — residential electricity rates have historically moved over time rather than staying constant, and the U.S. Energy Information Administration\'s own state-by-state data shows rates ranging from the low teens to the high forties of cents per kWh depending on where you live. A higher future rate would make real savings better than this estimate; a lower one, worse. Re-run the numbers with a different rate to see how sensitive the result is.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your system size and production ratio, your electricity rate, and how many years to project; degradation is already factored in.',
+        steps: [
+          { name: 'Enter your system size and production ratio', text: 'Use the kW figure and ratio from the system-size calculator above, or your own installer\'s quote.' },
+          { name: 'Enter your electricity rate', text: 'Use the per-kWh rate from a recent utility bill.' },
+          { name: 'Set the years to project', text: 'The default, 25 years, matches the power-performance warranty most panels carry.' },
+          { name: 'Adjust the degradation rate, if you want', text: 'The default, 0.6% a year, is the midpoint of the 0.5–0.7% range most warranties guarantee after the first year.' },
+          { name: 'Read the result', text: 'The headline is this year\'s estimated savings; the rows below show estimated annual production, lifetime savings, final-year savings and the average per year across the whole projection.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Annual savings is production times rate; lifetime savings sums that figure across every year while shrinking it slightly for degradation.',
+        expression:
+          'production (kWh/yr) = system size (kW) × 1,000 × production ratio\nsavings, year 1 = production × rate\nlifetime savings = savings₁ × (1 − (1 − d)ᴺ) ÷ d        (d > 0)\nlifetime savings = savings₁ × N                            (d = 0)\nsavings, final year = savings₁ × (1 − d)ᴺ⁻¹',
+        terms: [
+          { symbol: 'production ratio', meaning: 'kWh produced per year for every kW installed — the same figure the system-size calculator uses.' },
+          { symbol: 'rate', meaning: 'Your electricity price per kWh, held flat across the projection.' },
+          { symbol: 'd', meaning: 'Annual output degradation as a decimal; 0.6% is entered as 0.006.' },
+          { symbol: 'N', meaning: 'Years projected — the sum above is the geometric series for N years of a quantity shrinking by factor (1 − d) each year.' }
+        ],
+        note: 'Assumes production offsets usage at a flat, full retail rate — a simplification. It does not model rising or falling future rates, and it does not model a utility crediting exported excess at less than retail (see net-metering-savings-calculator).'
+      },
+      workedExample: {
+        intro: 'An 8.36 kW system (from the system-size calculator\'s worked example) with a 1.3 production ratio, a $0.1831/kWh rate, 0.6% annual degradation, projected over 25 years.',
+        rows: [
+          { label: 'Annual production (8.36 × 1,000 × 1.3)', value: '10,868 kWh' },
+          { label: 'Year 1 savings (10,868 × $0.1831)', value: '$1,989.93' },
+          { label: 'Final-year (year 25) savings', value: '$1,722.31' },
+          { label: 'Lifetime savings (25 years, with degradation)', value: '$46,325.86' },
+          { label: 'Average savings per year', value: '$1,853.03' }
+        ],
+        result: '≈ $1,989.93 this year · ≈ $46,325.86 over 25 years',
+        explanation: 'By year 25, estimated savings have dropped 13.4% from the first year\'s $1,989.93 to $1,722.31, purely from the compounding 0.6%-a-year output decline. Multiplying year-one savings straight through 25 years with no degradation at all would show $49,748.27 — about 6.9% higher than the $46,325.86 this calculator gives, which is the cost of ignoring that slow decline.'
+      },
+      watchOut: [
+        { title: 'Assumes full-retail-rate offset', body: 'This treats every kWh produced as worth your full electricity rate. If your utility\'s net-metering program credits exported excess at less than retail, your real savings on that exported portion will be lower — use the net-metering savings calculator for that case.' },
+        { title: 'Degradation compounds slowly but adds up', body: 'A 0.6%-a-year decline looks negligible in any single year, but by year 25 it has reduced output — and savings — by about 13.4% relative to year one in the worked example above.' },
+        { title: 'The electricity rate is held flat', body: 'Real residential electricity rates move over time and vary enormously by location — EIA\'s own data shows state averages spanning roughly the low teens to the high forties of cents per kWh. This estimate does not project future rate changes either way.' },
+        { title: 'The production ratio still drives the headline number', body: 'As with the system-size calculator, the production ratio you enter (1.1 to 1.6 is EnergySage\'s typical U.S. range) has a bigger effect on the result than almost anything else here — get it right for your own location before trusting the savings figure.' }
+      ],
+      references: [
+        { label: 'EnergySage, "Solar Panel Warranties: What You Need to Know" (25-year warranty, 0.5–0.7%/yr degradation)', url: 'https://www.energysage.com/solar/solar-panel-warranties/' },
+        { label: 'EnergySage, "How Many Solar Panels Do I Need?" (production ratio range)', url: 'https://www.energysage.com/solar/how-many-solar-panels-do-i-need/' },
+        { label: 'U.S. Department of Energy, Homeowner\'s Guide to Going Solar (net metering)', url: 'https://www.energy.gov/eere/solar/homeowners-guide-going-solar' },
+        { label: 'U.S. Energy Information Administration, Electric Power Monthly, Table 5.6.A (residential rates by state)', url: 'https://www.eia.gov/electricity/monthly/epm_table_grapher.php?t=table_5_06_a' }
+      ]
+    },
+    inputs: [
+      { id: 'systemSizeKw', label: 'System size (kW)', type: 'number', placeholder: '8.36', defaultValue: 8.36, step: 0.1, min: 0 },
+      { id: 'productionRatio', label: 'Annual output per kW installed (production ratio)', type: 'number', placeholder: '1.3', defaultValue: 1.3, step: 0.1, min: 0 },
+      { id: 'electricityRate', label: 'Electricity rate', type: 'currency', placeholder: '0.1831', defaultValue: 0.1831, step: 0.01, min: 0 },
+      { id: 'lifetimeYears', label: 'Years to project (system lifetime)', type: 'number', placeholder: '25', defaultValue: 25, step: 1, min: 1 },
+      { id: 'degradationRatePercent', label: 'Annual panel output degradation', type: 'percent', placeholder: '0.6', defaultValue: 0.6, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Solar Savings Calculator – Annual & Lifetime Savings',
+      description: 'Estimate a solar system\'s first-year and lifetime electricity savings from its size, production ratio and electricity rate, factoring in gradual panel output degradation.',
+      faq: [
+        { question: 'How much could solar save me per year?', answer: 'It depends on your system size, your location\'s production ratio and your electricity rate. An 8.36 kW system at a 1.3 production ratio and $0.1831/kWh saves about $1,989.93 in its first year, in this calculator\'s worked example.' },
+        { question: 'Does this assume net metering?', answer: 'It assumes every kWh you produce offsets a kWh at your full electricity rate, which is a simplification of how net metering actually works. If your utility credits exported excess at less than full retail, use the net-metering savings calculator for that part of your production.' },
+        { question: 'How much do solar panels lose output over time?', answer: 'EnergySage reports that most manufacturer warranties guarantee output won\'t fall more than 0.5–0.7% a year after the first year. At the 0.6% midpoint used here, output — and savings — are about 13.4% lower in year 25 than in year one.' },
+        { question: 'Why does this project over 25 years?', answer: 'Because EnergySage reports that nine out of ten solar panels sold carry a 25-year power-performance warranty, making it the standard horizon for estimating a system\'s lifetime value.' },
+        { question: 'Does this account for electricity rates rising in the future?', answer: 'No — the rate you enter is held flat for the whole projection. Real rates vary a lot by location and move over time, so try a higher or lower rate to see how much that assumption matters to your own estimate.' },
+        { question: 'Why is lifetime savings less than annual savings times the number of years?', answer: 'Because panel output declines slightly every year. In the worked example, annual savings times 25 years with no decline at all would be $49,748.27 — about 6.9% more than the $46,325.86 this calculator gives once the 0.6%-a-year degradation is included.' }
+      ]
+    },
+    compute(values) {
+      const annualProductionKwh = values.systemSizeKw * 1000 * values.productionRatio;
+      const annualSavings = annualProductionKwh * values.electricityRate;
+      const d = values.degradationRatePercent / 100;
+      const n = values.lifetimeYears;
+      const lifetimeSavings = d === 0 ? annualSavings * n : (annualSavings * (1 - (1 - d) ** n)) / d;
+      const finalYearSavings = annualSavings * (1 - d) ** (n - 1);
+      const averageAnnualSavings = n > 0 ? lifetimeSavings / n : NaN;
+      return { annualSavings, annualProductionKwh, lifetimeSavings, finalYearSavings, averageAnnualSavings };
+    }
   }
 ];

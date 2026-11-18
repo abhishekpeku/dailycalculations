@@ -178,6 +178,16 @@ Target ~18 calculators across 4 batches. Sub-grouping deferred to a final retrof
   - `npm test` 1713/1713, lint clean, `npm run build` 527 calculator pages (523 + 4) / 566 total
     routes. Dev-server smoke check: all 4 new pages return 200 with the correct H1 and one JSON-LD
     script each. `business` now 14/~18, site-wide **527**.
-- [ ] Batch 4 — Everyday business novelties (4)
+- [ ] Batch 4 — Everyday business novelties (3 built + 1 documented skip), branch
+      `step64-batch4-business-novelties`
+  - [x] `accounts-receivable-days-calculator` — accountsReceivable ÷ netCreditSales × daysInPeriod,
+        formula confirmed via a direct fetch of Omni's own `/finance/ar-days` page, cross-linked to
+        SBA's "Manage Your Finances" page's accrual-vs-cash distinction. Default example (60,000 /
+        730,000 / 365 → 30 A/R days) and the 45-vs-30-day net-terms comparison (50% over) verified
+        in a standalone Node scratch script. `KNOWN_NON_FINITE` entry added (`arDays`, zero credit
+        sales). Snapshot regenerated, diff additions-only.
+  - [ ] `invoice-late-payment-interest-calculator`
+  - [ ] `project-profitability-calculator`
+  - [ ] LLC formation cost — decision pending (leaning documented skip, see notes below)
 - [ ] Sub-grouping retrofit
 - [ ] STATUS.md updated with the final per-category summary

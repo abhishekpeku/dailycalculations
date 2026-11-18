@@ -1698,5 +1698,106 @@ export const businessCalculators: CalculatorConfig[] = [
       const hourlyRate1099 = billableHours > 0 ? totalPackageValue / billableHours : NaN;
       return { hourlyRate1099, employerFicaMatch, ptoValue, totalPackageValue };
     }
+  },
+  {
+    id: 'accounts-receivable-days-calculator',
+    category: 'business',
+    glyph: 'A/R',
+    updatedAt: '2026-11-19',
+    aliases: ['A/R days calculator', 'days sales outstanding calculator', 'accounts receivable collection period calculator', 'average collection period calculator'],
+    related: ['invoice-late-payment-interest-calculator', 'cost-of-goods-sold-calculator', 'burn-rate-calculator', 'break-even-calculator'],
+    title: 'Accounts Receivable (A/R) Days Calculator',
+    description: 'Find how many days, on average, it takes to collect payment from credit customers — accounts receivable divided by net credit sales, times the days in the period.',
+    example: '$60,000 in accounts receivable against $730,000 of net credit sales over a 365-day year works out to 30 A/R days.',
+    breakdown: {
+      headline: 'arDays',
+      headlineLabel: 'A/R days',
+      outputs: [
+        { id: 'arDays', label: 'A/R days', format: 'number' },
+        { id: 'averageDailyCreditSales', label: 'Average daily credit sales', format: 'currency' }
+      ],
+      groups: [{ title: 'Receivables', inputs: ['accountsReceivable', 'netCreditSales', 'daysInPeriod'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'netCreditSales', label: 'Net credit sales for the period' },
+          { from: 'accountsReceivable', label: 'Accounts receivable' }
+        ],
+        title: 'Receivables against the period’s credit sales',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-19',
+      concept: {
+        title: 'What are A/R days?',
+        paragraphs: [
+          'Accounts receivable (A/R) days — also called days sales outstanding, or the average collection period — measures how long, on average, a business waits to collect the money its credit customers owe it. Lower is generally faster collection; higher means cash is tied up in unpaid invoices for longer.',
+          'The idea only applies to credit sales, not every sale a business makes. The U.S. Small Business Administration’s own guide to managing a business’s finances draws exactly this distinction when it explains accrual accounting: "the accrual method puts transactions on the books immediately upon completing the sale," while the cash method waits "until payment has been received." A/R days measures the gap between that accrual-based sale and the cash actually landing — it lists accounts receivable itself as one of the figures a business’s books need to track for this reason.',
+          'The standard formula divides the accounts receivable balance by net credit sales for the period, then scales that fraction up to however many days are in the period: a year (365 days), a quarter (about 90), or any other stretch of time a business wants to check. The result reads directly as a number of days of credit sales currently sitting uncollected.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the current accounts receivable balance, net credit sales for the period, and the number of days in that period.',
+        steps: [
+          { name: 'Enter accounts receivable', text: 'The total unpaid invoice balance owed by credit customers right now (or at period end).' },
+          { name: 'Enter net credit sales', text: 'Total sales made on credit during the period, excluding cash sales — and ideally net of returns and allowances.' },
+          { name: 'Enter days in the period', text: '365 for a full year, about 90 for a quarter, or any period length that matches the sales figure entered.' },
+          { name: 'Read A/R days', text: 'How many days of credit sales the current receivables balance represents — roughly how long collection is taking on average.' },
+          { name: 'Compare to your credit terms', text: 'If customers are offered, say, net-30 terms, A/R days noticeably above 30 signals collection is running behind the terms actually offered.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Accounts receivable is divided by net credit sales to get the fraction of the period’s sales still uncollected, then that fraction is scaled to the number of days in the period.',
+        expression: 'averageDailyCreditSales = netCreditSales ÷ daysInPeriod\narDays = (accountsReceivable ÷ netCreditSales) × daysInPeriod',
+        terms: [
+          { symbol: 'accountsReceivable', meaning: 'Total unpaid credit-customer invoices outstanding.' },
+          { symbol: 'netCreditSales', meaning: 'Sales made on credit (not cash) during the same period, net of returns and allowances where that figure is available.' }
+        ],
+        note: 'Estimates only, and a single-balance snapshot. A business whose receivables swing a lot month to month may prefer averaging the beginning and ending receivables balance for the period instead of a single point-in-time figure.'
+      },
+      workedExample: {
+        intro: 'A business ends the year with $60,000 in accounts receivable, after $730,000 of net credit sales over the 365-day year. What are its A/R days?',
+        rows: [
+          { label: 'Average daily credit sales (730,000 ÷ 365)', value: '$2,000.00' },
+          { label: 'A/R days (60,000 ÷ 730,000 × 365)', value: '30 days' }
+        ],
+        result: 'A/R days is 30 — the $60,000 receivables balance equals about 30 days of this business’s credit sales.',
+        explanation: 'If this business offers customers net-30 payment terms, 30 A/R days means collection is landing right on schedule. A business with the same sales but $90,000 in receivables would show 45 A/R days — 50% longer than the 30-day terms it offered, a sign collections are slipping behind the stated terms.'
+      },
+      watchOut: [
+        { title: 'A/R days needs credit sales, not total sales', body: 'Mixing in cash sales (which carry no collection delay at all) understates A/R days relative to the credit-only portion of the business — use net credit sales specifically, not total revenue, whenever the two differ.' },
+        { title: 'A single point-in-time balance can be misleading', body: 'A business with sharp seasonal swings may show very different A/R days depending on exactly which day’s receivables balance is used. Averaging the beginning and ending balance for the period smooths this out.' },
+        { title: 'There is no universal "good" number', body: 'What counts as a healthy A/R days figure depends entirely on the credit terms a business actually offers its customers (net-15, net-30, net-60 and so on) — compare the result to your own stated terms, not to a generic benchmark.' },
+        { title: 'A rising trend matters more than one figure', body: 'A/R days creeping upward period over period — even while staying under the stated credit terms — can be an early signal that customers are starting to pay more slowly, before it shows up anywhere else in the books.' }
+      ],
+      references: [
+        { label: 'U.S. Small Business Administration, Manage Your Finances', url: 'https://www.sba.gov/business-guide/manage-your-business/manage-your-finances' },
+        { label: 'Omni Calculator, A/R Days Calculator', url: 'https://www.omnicalculator.com/finance/ar-days' }
+      ]
+    },
+    inputs: [
+      { id: 'accountsReceivable', label: 'Accounts receivable', type: 'currency', placeholder: '60000', defaultValue: 60000, step: 1000, min: 0 },
+      { id: 'netCreditSales', label: 'Net credit sales for the period', type: 'currency', placeholder: '730000', defaultValue: 730000, step: 10000, min: 0 },
+      { id: 'daysInPeriod', label: 'Days in the period', type: 'number', placeholder: '365', defaultValue: 365, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Accounts Receivable (A/R) Days Calculator',
+      description: 'Calculate A/R days (days sales outstanding) from accounts receivable, net credit sales, and the period length. Free, with the average daily credit sales shown too.',
+      faq: [
+        { question: 'How do I calculate A/R days?', answer: 'Divide accounts receivable by net credit sales, then multiply by the number of days in the period. $60,000 in receivables against $730,000 of annual net credit sales gives 60,000 ÷ 730,000 × 365 = 30 A/R days.' },
+        { question: 'What is a good A/R days number?', answer: 'There is no universal target — it depends on the credit terms you offer. If you bill net-30, an A/R days figure close to 30 means customers are paying on schedule; a figure well above it means collection is running behind your own stated terms.' },
+        { question: 'What is the difference between A/R days and days sales outstanding (DSO)?', answer: 'They are the same metric under two common names, plus a third — "average collection period." All three use the same formula: accounts receivable ÷ net credit sales × days in the period.' },
+        { question: 'Should I use total sales or credit sales in this formula?', answer: 'Credit sales only. Cash sales are collected immediately and have no place in a collection-speed metric; including them dilutes the result and understates how long credit collection is actually taking.' },
+        { question: 'Why does the calculator ask for days in the period?', answer: 'So it can be used for any period, not just a full year — use 365 for an annual figure, about 90 for a quarter, or match it to whatever period the sales figure covers.' },
+        { question: 'What if A/R days is rising over time?', answer: 'A steady increase, even while still under your stated credit terms, can be an early warning that customers are starting to pay more slowly — worth watching before it becomes a cash-flow problem.' }
+      ]
+    },
+    compute(values) {
+      const averageDailyCreditSales = values.daysInPeriod > 0 ? values.netCreditSales / values.daysInPeriod : NaN;
+      const arDays = values.netCreditSales > 0 ? (values.accountsReceivable / values.netCreditSales) * values.daysInPeriod : NaN;
+      return { arDays, averageDailyCreditSales };
+    }
   }
 ];

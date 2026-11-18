@@ -221,7 +221,10 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'burn-rate-calculator': ['runwayMonths'],
   // initialInvestment and annualCashInflow both 0 (their min) -> paybackPeriod (divides by cash
   // inflow) and simpleReturnPercent (divides by investment) both have no answer from the same 0/0.
-  'payback-period-calculator': ['paybackPeriod', 'simpleReturnPercent']
+  'payback-period-calculator': ['paybackPeriod', 'simpleReturnPercent'],
+  // netCreditSales 0 (its min) -> arDays divides by zero credit sales, no answer; averageDailyCreditSales
+  // (netCreditSales / daysInPeriod) stays a finite 0 either way.
+  'accounts-receivable-days-calculator': ['arDays']
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

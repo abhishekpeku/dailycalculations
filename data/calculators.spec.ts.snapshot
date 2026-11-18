@@ -215,6 +215,44 @@ exports[`compute() snapshots > acceleration-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > accounts-receivable-days-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "accountsReceivable": 60000,
+      "netCreditSales": 730000,
+      "daysInPeriod": 365
+    },
+    "outputs": {
+      "arDays": 30,
+      "averageDailyCreditSales": 2000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "accountsReceivable": 90000,
+      "netCreditSales": 1100000,
+      "daysInPeriod": 548
+    },
+    "outputs": {
+      "arDays": 44.83636364,
+      "averageDailyCreditSales": 2007.29927
+    }
+  },
+  "edge": {
+    "inputs": {
+      "accountsReceivable": 0,
+      "netCreditSales": 0,
+      "daysInPeriod": 1
+    },
+    "outputs": {
+      "arDays": "NaN",
+      "averageDailyCreditSales": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > acres-to-hectares-converter 1`] = `
 {
   "default": {

@@ -6750,6 +6750,68 @@ exports[`compute() snapshots > gpa-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > grade-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "category1Weight": 15,
+      "category1Score": 92,
+      "category2Weight": 20,
+      "category2Score": 85,
+      "category3Weight": 35,
+      "category3Score": 78,
+      "category4Weight": 30,
+      "category4Score": 88,
+      "category5Weight": 0,
+      "category5Score": 0
+    },
+    "outputs": {
+      "overallGrade": 84.5,
+      "totalWeight": 100,
+      "weightedPoints": 8450
+    }
+  },
+  "typical": {
+    "inputs": {
+      "category1Weight": 23,
+      "category1Score": 138,
+      "category2Weight": 30,
+      "category2Score": 127.5,
+      "category3Weight": 53,
+      "category3Score": 117,
+      "category4Weight": 45,
+      "category4Score": 132,
+      "category5Weight": 0,
+      "category5Score": 0
+    },
+    "outputs": {
+      "overallGrade": 126.7549669,
+      "totalWeight": 151,
+      "weightedPoints": 19140
+    }
+  },
+  "edge": {
+    "inputs": {
+      "category1Weight": 0,
+      "category1Score": 0,
+      "category2Weight": 0,
+      "category2Score": 0,
+      "category3Weight": 0,
+      "category3Score": 0,
+      "category4Weight": 0,
+      "category4Score": 0,
+      "category5Weight": 0,
+      "category5Score": 0
+    },
+    "outputs": {
+      "overallGrade": 0,
+      "totalWeight": 0,
+      "weightedPoints": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > grahams-law-effusion-calculator 1`] = `
 {
   "default": {

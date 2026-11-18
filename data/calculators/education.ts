@@ -158,5 +158,135 @@ export const educationCalculators: CalculatorConfig[] = [
       const gpa = totalCredits === 0 ? 0 : totalPoints / totalCredits;
       return { gpa, totalCredits, totalPoints };
     }
+  },
+  {
+    id: 'grade-calculator',
+    category: 'education',
+    group: 'Grades & GPA',
+    glyph: 'GR',
+    updatedAt: '2026-11-18',
+    aliases: ['weighted grade calculator', 'class grade calculator', 'course grade calculator', 'category weighted grade calculator', 'test and quiz grade calculator'],
+    related: ['gpa-calculator', 'weighted-average-calculator', 'percentage-calculator', 'percent-change-calculator'],
+    title: 'Grade Calculator',
+    description: "Calculate your overall course grade from up to 5 weighted categories — homework, quizzes, tests, a final exam, or whatever your syllabus lists. Enter each category's weight and your score in it.",
+    example: "Homework (15% weight, 92% score), quizzes (20%, 85%), tests (35%, 78%) and a final exam (30%, 88%) combine to an overall grade of 84.5%.",
+    breakdown: {
+      headline: 'overallGrade',
+      headlineLabel: 'Overall grade',
+      outputs: [
+        { id: 'overallGrade', label: 'Overall grade', format: 'percent' },
+        { id: 'totalWeight', label: 'Total weight entered', format: 'percent' },
+        { id: 'weightedPoints', label: 'Weighted points', format: 'number' }
+      ],
+      groups: [
+        { title: 'Category 1', inputs: ['category1Weight', 'category1Score'] },
+        { title: 'Category 2', inputs: ['category2Weight', 'category2Score'] },
+        { title: 'Category 3', inputs: ['category3Weight', 'category3Score'] },
+        { title: 'Category 4', inputs: ['category4Weight', 'category4Score'], optional: true },
+        { title: 'Category 5', inputs: ['category5Weight', 'category5Score'], optional: true }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'category1Weight', label: 'Category 1' },
+          { from: 'category2Weight', label: 'Category 2' },
+          { from: 'category3Weight', label: 'Category 3' },
+          { from: 'category4Weight', label: 'Category 4' },
+          { from: 'category5Weight', label: 'Category 5' }
+        ],
+        center: 'overallGrade',
+        centerSub: 'overall grade'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What a weighted-category grade is, and how it differs from GPA',
+        paragraphs: [
+          "Most course syllabi don't average every assignment equally — they group assignments into categories (homework, quizzes, tests, a final exam) and assign each category a weight, the share of the final grade it controls. Your score in each category is multiplied by that category's weight, those products are added up, and the total is divided by the sum of the weights. A category worth 35% of the grade affects the outcome far more than one worth 5%, no matter how many individual assignments sit inside it.",
+          "This is a different calculation from GPA, even though both average weighted numbers. GPA combines whole courses that are already finished and graded — it takes each course's final letter grade (converted to points) and weights it by credit hours. This calculator works one level down, inside a single course that hasn't finished yet: it combines category scores, before any letter grade exists, to estimate where that one course's percentage grade currently stands.",
+          'The underlying arithmetic — multiply each number by its weight, sum, divide by the total weight — is exactly the general weighted mean described by Wolfram MathWorld and used by the site\'s own weighted average calculator. This page is that same formula specialized for the specific labels and 0-100% scale a course syllabus uses, the way the GPA calculator specializes it for letter grades and credit hours.'
+        ]
+      },
+      howTo: {
+        intro: "Enter the weight and your score for each grading category on your syllabus. Categories 4 and 5 are optional extra slots.",
+        steps: [
+          { name: "Enter each category's weight", text: "The percent of the final grade your syllabus assigns to that category — for example, homework 15%, quizzes 20%, tests 35%, final exam 30%." },
+          { name: "Enter your score in each category", text: 'Your percentage earned within that category, not your letter grade — for example, 92% on homework.' },
+          { name: 'Add more categories if needed', text: 'Open categories 4 and 5 for a longer syllabus; leave any category\'s weight at 0 to exclude it entirely.' },
+          { name: 'Read your overall grade', text: 'The headline is your weighted overall grade, with total weight entered and weighted points below it.' },
+          { name: 'Check the weight distribution', text: "The donut shows how much of your grade each category controls, which categories carry the most risk if a score there drops." }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The overall grade is total weighted points divided by total weight, where each category\'s weighted points are its weight times your score in it.',
+        expression: 'categoryPoints = weight × score\ntotalPoints = sum of categoryPoints across all categories\ntotalWeight = sum of weight across all categories\nGrade = totalPoints ÷ totalWeight',
+        terms: [
+          { symbol: 'weight', meaning: "The percent of your final grade this category is worth, per your syllabus." },
+          { symbol: 'score', meaning: 'Your percentage score earned within that category.' }
+        ],
+        note: "If your weights don't add up to exactly 100%, the grade is still correct — the formula divides by whatever total weight you entered, not a fixed 100 — but double-check your syllabus for the exact category list and weights first."
+      },
+      workedExample: {
+        intro: 'Four categories: homework (15% weight, 92% score), quizzes (20%, 85%), tests (35%, 78%) and a final exam (30%, 88%).',
+        rows: [
+          { label: 'Category points (weight × score)', value: '1,380, 1,700, 2,730, 2,640' },
+          { label: 'Total points (sum)', value: '8,450' },
+          { label: 'Total weight (15+20+35+30)', value: '100' },
+          { label: 'Grade (8,450 ÷ 100)', value: '84.5%' }
+        ],
+        result: 'Overall grade = 84.5%',
+        explanation: "The heavily weighted test category (35%) and a middling 78% score there pull the average down more than the strong homework score pulls it up, because tests carry more than twice homework's weight."
+      },
+      watchOut: [
+        { title: "The categories and weights are your syllabus's, not a fixed rule", body: 'Every class sets its own categories and weights; there is no standard breakdown. Check your syllabus before entering numbers here.' },
+        { title: "Weights don't need to total 100", body: "The formula divides by the total weight you actually entered, so 15/20/35/30 and 1.5/2/3.5/3 give the same grade — there's no need to rescale first." },
+        { title: 'This is not your GPA', body: "GPA averages finished courses by credit hours, using letter-grade points. This calculator averages categories inside one unfinished course, using raw percentage scores — see the GPA calculator for the course-level calculation." },
+        { title: "A category weight of 0 excludes it entirely", body: 'Leave any unused category slot\'s weight at 0 and it adds nothing to the total weight or the weighted points — identical to leaving it out.' },
+        { title: 'Only 5 category slots', body: 'A syllabus with more than 5 categories needs its extra categories combined by hand into one of the five rows first (sum their weights, and weight-average their scores) before entering a single combined row.' }
+      ],
+      references: [
+        { label: 'Wolfram MathWorld, Weighted Mean', url: 'https://mathworld.wolfram.com/WeightedMean.html' },
+        { label: 'OpenStax, Prealgebra 2e, §6.2 Solve General Applications of Percent', url: 'https://openstax.org/books/prealgebra-2e/pages/6-2-solve-general-applications-of-percent' }
+      ]
+    },
+    inputs: [
+      { id: 'category1Weight', label: 'Category 1 weight', type: 'percent', placeholder: '15', defaultValue: 15, step: 1, min: 0 },
+      { id: 'category1Score', label: 'Category 1 score', type: 'percent', placeholder: '92', defaultValue: 92, step: 0.1, min: 0 },
+      { id: 'category2Weight', label: 'Category 2 weight', type: 'percent', placeholder: '20', defaultValue: 20, step: 1, min: 0 },
+      { id: 'category2Score', label: 'Category 2 score', type: 'percent', placeholder: '85', defaultValue: 85, step: 0.1, min: 0 },
+      { id: 'category3Weight', label: 'Category 3 weight', type: 'percent', placeholder: '35', defaultValue: 35, step: 1, min: 0 },
+      { id: 'category3Score', label: 'Category 3 score', type: 'percent', placeholder: '78', defaultValue: 78, step: 0.1, min: 0 },
+      { id: 'category4Weight', label: 'Category 4 weight (optional)', type: 'percent', placeholder: '30', defaultValue: 30, step: 1, min: 0 },
+      { id: 'category4Score', label: 'Category 4 score', type: 'percent', placeholder: '88', defaultValue: 88, step: 0.1, min: 0 },
+      { id: 'category5Weight', label: 'Category 5 weight (optional, leave 0 to exclude)', type: 'percent', placeholder: '0', defaultValue: 0, step: 1, min: 0 },
+      { id: 'category5Score', label: 'Category 5 score', type: 'percent', placeholder: '0', defaultValue: 0, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Grade Calculator – Weighted Category Average',
+      description: "Calculate your overall grade from weighted categories like homework, quizzes, tests and a final exam. Enter each category's weight and score.",
+      faq: [
+        { question: 'How is a weighted grade calculated?', answer: "Multiply each category's weight by your score in it, add those across all categories, then divide by total weight. Homework (15%, 92), quizzes (20%, 85), tests (35%, 78) and a final (30%, 88) give 8,450 ÷ 100 = 84.5%." },
+        { question: 'How is this different from the GPA calculator?', answer: "GPA averages whole, finished courses by credit hours using letter-grade points. This calculator averages the categories inside one still-in-progress course using raw percentage scores — it answers a different, earlier question." },
+        { question: 'How is this different from the weighted average calculator?', answer: "Same underlying formula — weight × value, summed, divided by total weight — just labeled and scaled for a course grade (percent categories and percent scores). Use the weighted average calculator for any other value/weight scenario." },
+        { question: 'Do my category weights need to add up to 100%?', answer: "No. The formula divides by whatever total weight you enter, so 15/20/35/30 and a rescaled 1.5/2/3.5/3 produce the identical grade." },
+        { question: 'What if my class only has 3 grading categories?', answer: 'Leave categories 4 and 5 at a weight of 0 — they will be excluded from both the total weight and the weighted points automatically.' },
+        { question: 'Can I combine several small assignments into one category?', answer: "Yes — if your syllabus has more than 5 categories, combine the extra ones by hand (sum their weights, weight-average their scores) into a single row before entering it here." }
+      ]
+    },
+    compute(values) {
+      const categories: [number, number][] = [
+        [values.category1Weight, values.category1Score],
+        [values.category2Weight, values.category2Score],
+        [values.category3Weight, values.category3Score],
+        [values.category4Weight, values.category4Score],
+        [values.category5Weight, values.category5Score]
+      ];
+      const weightedPoints = categories.reduce((sum, [weight, score]) => sum + weight * score, 0);
+      const totalWeight = categories.reduce((sum, [weight]) => sum + weight, 0);
+      const overallGrade = totalWeight === 0 ? 0 : weightedPoints / totalWeight;
+      return { overallGrade, totalWeight, weightedPoints };
+    }
   }
 ];

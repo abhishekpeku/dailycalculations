@@ -14,18 +14,25 @@ novelties, 4) in separate sessions, per the "one batch at a time" rule.
 
 ## Progress (batch 2, branch `step/62-solar-home-energy-batch2`)
 
-- [ ] `battery-backup-sizing-calculator`
-- [ ] `off-grid-solar-calculator`
-- [ ] `home-electricity-consumption-calculator`
-- [ ] `appliance-energy-cost-calculator`
-- [ ] `heat-pump-savings-calculator`
-- [ ] `npm test` / lint / build pass, snapshot regenerated
-- [ ] PR opened
+- [x] `battery-backup-sizing-calculator`
+- [x] `off-grid-solar-calculator`
+- [x] `home-electricity-consumption-calculator`
+- [x] `appliance-energy-cost-calculator`
+- [x] `heat-pump-savings-calculator`
+- [x] `npm test` (1664/1664) / lint / build pass, snapshot regenerated (pure additions, 5 new entries)
+- [x] Merged `origin/master` mid-batch (step 63 batch 2, Insurance, landed first) — clean
+      auto-merge, no conflicts, re-verified test/lint/build after
+- [x] PR opened and marked ready: #144 (https://github.com/abhishekpeku/dailycalculations/pull/144)
+
+Batch 2 done 2026-11-18. Category now at 10/~14. Next: batch 3 (everyday efficiency novelties, 4)
+in a separate session, per the "one batch at a time" rule.
 
 Sourcing note: `nrel.gov`/`pvwatts.nrel.gov` still unreachable (DNS failure) from this sandbox, same
 as batch 1. Most of `energy.gov`'s old `/energysaver/*` consumer-tips paths now 404 (site
 restructure) — `/eere/solar/*` and `energystar.gov` pages still work. Substituted EnergySage +
 EIA + ENERGY STAR + DOE `/eere/solar/*` pages throughout, same substitution precedent as batch 1.
+WebSearch quota was exhausted immediately (0 of 200 remaining at session start) — all research this
+batch used WebFetch directly against known/guessed URLs instead.
 
 # Step 62 — Wave 5: Solar & Home Energy (new category)
 

@@ -5378,6 +5378,56 @@ exports[`compute() snapshots > decking-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > deductible-vs-premium-breakeven-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "lowerDeductible": 500,
+      "higherDeductible": 1000,
+      "annualPremiumSavings": 150,
+      "expectedClaimsPerYear": 0.2
+    },
+    "outputs": {
+      "annualNetBenefitOfHigherDeductible": 50,
+      "breakevenYears": 3.333333333,
+      "breakevenClaimFrequency": 0.3,
+      "extraCostPerClaim": 500,
+      "expectedClaimsPerYear": 0.2
+    }
+  },
+  "typical": {
+    "inputs": {
+      "lowerDeductible": 750,
+      "higherDeductible": 1500,
+      "annualPremiumSavings": 230,
+      "expectedClaimsPerYear": 0.3
+    },
+    "outputs": {
+      "annualNetBenefitOfHigherDeductible": 5,
+      "breakevenYears": 3.260869565,
+      "breakevenClaimFrequency": 0.3066666667,
+      "extraCostPerClaim": 750,
+      "expectedClaimsPerYear": 0.3
+    }
+  },
+  "edge": {
+    "inputs": {
+      "lowerDeductible": 0,
+      "higherDeductible": 0,
+      "annualPremiumSavings": 0,
+      "expectedClaimsPerYear": 0
+    },
+    "outputs": {
+      "annualNetBenefitOfHigherDeductible": 0,
+      "breakevenYears": "NaN",
+      "breakevenClaimFrequency": "NaN",
+      "extraCostPerClaim": 0,
+      "expectedClaimsPerYear": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > density-calculator 1`] = `
 {
   "default": {
@@ -14986,6 +15036,53 @@ exports[`compute() snapshots > permutation-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > pet-insurance-breakeven-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "monthlyPremium": 35,
+      "annualDeductible": 250,
+      "reimbursementPercent": 80,
+      "averageVetBillPerClaim": 600
+    },
+    "outputs": {
+      "breakevenAnnualVetBills": 775,
+      "breakevenNumberOfClaims": 1.291666667,
+      "annualPremiumCost": 420,
+      "annualDeductible": 250
+    }
+  },
+  "typical": {
+    "inputs": {
+      "monthlyPremium": 53,
+      "annualDeductible": 375,
+      "reimbursementPercent": 120,
+      "averageVetBillPerClaim": 900
+    },
+    "outputs": {
+      "breakevenAnnualVetBills": 905,
+      "breakevenNumberOfClaims": 1.005555556,
+      "annualPremiumCost": 636,
+      "annualDeductible": 375
+    }
+  },
+  "edge": {
+    "inputs": {
+      "monthlyPremium": 0,
+      "annualDeductible": 0,
+      "reimbursementPercent": 1,
+      "averageVetBillPerClaim": 1
+    },
+    "outputs": {
+      "breakevenAnnualVetBills": 0,
+      "breakevenNumberOfClaims": 0,
+      "annualPremiumCost": 0,
+      "annualDeductible": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > ph-poh-calculator 1`] = `
 {
   "default": {
@@ -20905,6 +21002,59 @@ exports[`compute() snapshots > typing-speed-calculator 1`] = `
     },
     "outputs": {
       "typingSpeedWpm": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > umbrella-insurance-coverage-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "homeEquityValue": 400000,
+      "savingsInvestments": 1100000,
+      "otherAssetsValue": 100000,
+      "autoLiabilityLimit": 300000,
+      "homeLiabilityLimit": 300000
+    },
+    "outputs": {
+      "recommendedUmbrellaCoverage": 2000000,
+      "totalAssets": 1600000,
+      "weakestUnderlyingLimit": 300000,
+      "assetGap": 1300000,
+      "totalProtectionAfterUmbrella": 2300000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "homeEquityValue": 600000,
+      "savingsInvestments": 1650000,
+      "otherAssetsValue": 150000,
+      "autoLiabilityLimit": 450000,
+      "homeLiabilityLimit": 450000
+    },
+    "outputs": {
+      "recommendedUmbrellaCoverage": 2000000,
+      "totalAssets": 2400000,
+      "weakestUnderlyingLimit": 450000,
+      "assetGap": 1950000,
+      "totalProtectionAfterUmbrella": 2450000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "homeEquityValue": 0,
+      "savingsInvestments": 0,
+      "otherAssetsValue": 0,
+      "autoLiabilityLimit": 0,
+      "homeLiabilityLimit": 0
+    },
+    "outputs": {
+      "recommendedUmbrellaCoverage": 1000000,
+      "totalAssets": 0,
+      "weakestUnderlyingLimit": 0,
+      "assetGap": 0,
+      "totalProtectionAfterUmbrella": 1000000
     }
   }
 }

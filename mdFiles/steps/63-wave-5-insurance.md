@@ -1,5 +1,38 @@
 # Step 63 — Wave 5: Insurance (new category)
 
+## Progress — batch 4 (this branch: `step/63-insurance-batch4`, PR #149)
+
+- [x] `umbrella-insurance-coverage-calculator` — asset-gap method cited to Progressive's own
+      published "How Much Umbrella Insurance Do I Need?" article, rounded up to the $1 million
+      increments the Insurance Information Institute and Travelers describe umbrella policies as
+      actually sold in (there is generally no smaller policy to buy even for a sub-$1M gap).
+- [x] `pet-insurance-breakeven-calculator` — deductible + reimbursement-rate breakeven vet-bill
+      total, derived algebraically (cost-with-insurance = cost-without-insurance, solved for the
+      year's vet bills) and cited to the Insurance Information Institute's "Facts about pet
+      insurance" for how deductibles/reimbursement caps/pre-existing exclusions actually work.
+- [x] `deductible-vs-premium-breakeven-calculator` — generic, policy-type-agnostic claim-frequency
+      breakeven (works for auto, home, health, pet, or any other deductible-based policy), cited to
+      NAIC's homeowners insurance consumer guide for the core "higher deductible lowers the
+      premium" mechanic.
+- [x] `flood-insurance-cost-estimator` — re-confirmed as a skip, not re-researched from scratch;
+      batch 3's own direct fetch of FEMA's Risk Rating 2.0 page already established there is no
+      public formula to build from.
+- [x] Sub-grouping retrofit (see the "Closing summary" section above)
+- [x] npm test / lint / build all green, snapshot regenerated (additive only) — one new
+      `KNOWN_NON_FINITE` entry for `deductible-vs-premium-breakeven-calculator`'s
+      `breakevenYears`/`breakevenClaimFrequency` at the both-deductibles-$0 edge case
+- [x] Draft PR opened early (#149) and kept current
+
+**Research note:** WebSearch's quota was exhausted again this session (same shared daily budget
+as every prior batch). Google/Bing/DuckDuckGo were all tried as scrape-friendly fallbacks and all
+failed (Bing returned irrelevant results, DuckDuckGo's HTML endpoint served a CAPTCHA) — the
+working fallback was fetching `iii.org`'s own `/insurance-types/other` page directly, reading its
+live nav links to find the real article URLs (`/article/should-i-purchase-an-umbrella-liability-
+policy`, `/article/facts-about-pet-insurance`), then WebFetch-ing each one directly. Several
+guessed insurer URLs (Allstate, USAA, content.naic.org's umbrella/pet pages) 404'd or timed out
+and were dropped in favor of ones that resolved. No citation in the shipped copy is unverified —
+every fetch quoted in the calculators' `content.references` was read directly.
+
 ## Progress — batch 2 (this branch: `step/63-insurance-batch2`)
 
 - [x] `out-of-pocket-maximum-calculator` — cites HealthCare.gov's glossary definition and the
@@ -149,9 +182,48 @@ precedent as biology/ecology/fun), once the real final count is known.
 - [x] Batch 1 — Life insurance need (4), opens the category
 - [x] Batch 2 — Health & disability insurance (4)
 - [x] Batch 3 — Auto & property insurance (4), DONE 2026-11-18, branch `step/63-insurance-batch3`, PR #145
-- [ ] Batch 4 — Everyday insurance novelties (4-6)
-- [ ] Sub-grouping retrofit
-- [ ] STATUS.md updated with the final per-category summary
+- [x] Batch 4 — Everyday insurance novelties (3 of 4; flood skipped), DONE 2026-11-19, branch `step/63-insurance-batch4`, PR #149
+- [x] Sub-grouping retrofit, DONE 2026-11-19, same branch/PR
+- [x] STATUS.md updated with the final per-category summary
+
+## Closing summary (2026-11-19) — step 63 is DONE
+
+**Final count: 15 calculators**, across 4 batches:
+
+1. **Life Insurance** (4): `human-life-value-calculator`, `dime-method-life-insurance-calculator`,
+   `term-life-coverage-calculator`, `whole-life-vs-term-life-cost-calculator`
+2. **Health & Disability** (4): `out-of-pocket-maximum-calculator`, `cobra-cost-calculator`,
+   `disability-insurance-needs-calculator`, `long-term-care-insurance-needs-calculator`
+3. **Auto & Property** (5): `car-insurance-coverage-calculator`, `gap-insurance-calculator`,
+   `renters-insurance-contents-value-calculator`, `home-insurance-rebuild-cost-calculator`,
+   `umbrella-insurance-coverage-calculator`
+4. **Everyday & Planning** (2): `pet-insurance-breakeven-calculator`,
+   `deductible-vs-premium-breakeven-calculator`
+
+That is just under the ~16-18 target stated at the top of this file. The gap is entirely
+`flood-insurance-cost-estimator`, evaluated twice (batch 3's own research, and re-confirmed rather
+than re-run in batch 4) and skipped both times for the same documented reason: FEMA's own Risk
+Rating 2.0 methodology page states flood-insurance pricing uses individualized per-property rating
+factors (location, elevation, structure dimensions, replacement cost, flood history) with no
+published public formula — there is nothing generalizable to build a static-formula calculator
+from, and policyholders are told to get a quote from their own insurer/agent instead. This is an
+honest, evaluated skip, not a shortfall from running out of time or ideas.
+
+**Sub-grouping decision: yes, grouped.** 15 calculators across what would otherwise be one flat
+list clears the same bar every other grouped category (biology, ecology, fun, …) used before its
+own retrofit. `'insurance'` was added to `data/calculators/categories.spec.ts`'s
+`GROUPED_CATEGORIES`, and every one of the 15 calculators got a `group` field matching the batch
+themes above (Auto & Property absorbed `umbrella-insurance-coverage-calculator` from batch 4,
+since its inputs are the auto/home liability limits rather than anything life/health-specific;
+the other two batch-4 calculators formed their own small "Everyday & Planning" group rather than
+being forced into one of the batch 1-3 groups they don't thematically fit).
+
+**Category is closed.** No further insurance batches are planned under step 63 — any future
+insurance calculator (if one comes up) would be a standalone addition against this now-settled
+15-calculator, 4-group baseline, not a continuation of this step.
+
+Final numbers: `npm test` 1703/1703 (snapshot regenerated, additive-only diff), lint clean,
+`npm run build` green (526 calculator pages site-wide). Branch `step/63-insurance-batch4`, PR #149.
 
 ## Progress — batch 3 (this branch: `step/63-insurance-batch3`, draft PR #145)
 

@@ -34,6 +34,88 @@ EIA + ENERGY STAR + DOE `/eere/solar/*` pages throughout, same substitution prec
 WebSearch quota was exhausted immediately (0 of 200 remaining at session start) — all research this
 batch used WebFetch directly against known/guessed URLs instead.
 
+## Progress (batch 3, branch `step/62-solar-home-energy-batch3`) — final batch, closes step 62
+
+- [x] `led-lighting-savings-calculator` — incandescent/CFL→LED wattage swap and annual savings,
+      cited to ENERGY STAR's lumens-equivalence table and Wikipedia's "LED lamp" article for the
+      real LED-wattage range (no single official incandescent-to-LED wattage ratio exists, so the
+      calculator takes both wattages as direct user inputs rather than assuming one).
+- [x] `smart-thermostat-savings-calculator` — ENERGY STAR's published "more than 8%" average
+      heating/cooling savings rate applied to the user's own entered cost. Found and disclosed
+      (rather than papered over) that ENERGY STAR's own "$50/yr average" example and its separate
+      "more than $900/yr" heating-and-cooling-cost average imply two different baselines ($50÷8% =
+      $625, not $900) — the calculator defaults to the $900 figure and states the discrepancy
+      explicitly in `workedExample.explanation` and a `watchOut` item.
+- [x] `water-heater-energy-cost-calculator` — electric storage vs. gas storage vs. gas tankless vs.
+      heat pump running-cost comparison. `energy.gov/energysaver/water-heating` and
+      `energystar.gov`'s own water-heater benefit pages don't publish a usable efficiency-factor
+      table, so the 4 typical EFs (0.95 / 0.60 / 0.90 / 1.97) are sourced from Wikipedia's "Water
+      heating" article, which itself cites the real 2015 U.S. federal minimum-efficiency standards.
+      The calculator's own heat-energy formula was cross-checked against that same article's own
+      worked example (60 gal, 50°F→122°F) and reproduced its $0.40 gas / $1.68 electric figures
+      exactly before building the rest of the page.
+- [x] `ev-solar-charging-offset-calculator` — the real day/night timing-mismatch nuance the step
+      file asked for: reports the real-time (physically simultaneous) solar-to-EV offset alongside
+      the larger best-case net-metered offset, cited to DOE's Alternative Fuels Data Center ("most
+      drivers ... charge ... overnight at home") and cross-linked to `net-metering-savings-
+      calculator` and `battery-backup-sizing-calculator`. Read `auto`'s `ev-charging-calculator`
+      first per the step file's instruction — confirmed genuinely distinct (that calculator is a
+      flat-rate cost-per-charge/mile tool with no solar timing dimension at all), so this was kept,
+      not dropped.
+- [x] Every worked-example/FAQ number re-verified in a standalone Node scratch script (no app
+      imports) before writing copy, including the Wikipedia cross-check above.
+- [x] Grepped every new id/alias against all `data/calculators/*.ts` site-wide — no collisions.
+      Glyphs (`LED`, `8%`, `H2O`, `EV`) checked unique within `solar` per `glyph.spec.ts`.
+- [x] `npm test` 1685/1685 (snapshot regenerated via `npm run test:update`, additive-only: 191
+      insertions, 0 deletions), lint clean, `npm run build` green (553 static pages). One
+      programmatic check caught a 62-character `seo.title` (over the 60 limit) on
+      `water-heater-energy-cost-calculator`, fixed before opening the PR.
+- [x] `origin/master` had not moved ahead at push time — no merge needed.
+- [x] 4 pages spot-checked on a local dev server (H1, JSON-LD, FAQ and References sections present
+      on all 4); dev server killed afterward, port 3000 confirmed clear.
+- [x] PR opened: #147 (https://github.com/abhishekpeku/dailycalculations/pull/147)
+
+Batch 3 done 2026-11-18. **This closes step 62: `solar` is now 14/14**, matching the step's own
+honestly-documented ~14 target (below the ~25 "more is fine" bar by deliberate, non-padded design
+— see the gap-check section above).
+
+## Closing summary — step 62 is DONE
+
+- **Final count: 14 calculators** across 3 batches (5 + 5 + 4), exactly matching the batch plan's
+  own seed list — nothing skipped, nothing padded.
+  - Batch 1 (sizing & payback, PR #141): `solar-panel-system-size-calculator`,
+    `solar-savings-calculator`, `solar-payback-period-calculator`, `solar-loan-payment-calculator`,
+    `net-metering-savings-calculator`.
+  - Batch 2 (storage & consumption, PR #144): `battery-backup-sizing-calculator`,
+    `off-grid-solar-calculator`, `home-electricity-consumption-calculator`,
+    `appliance-energy-cost-calculator`, `heat-pump-savings-calculator`.
+  - Batch 3 (everyday efficiency novelties, PR #147): `led-lighting-savings-calculator`,
+    `smart-thermostat-savings-calculator`, `water-heater-energy-cost-calculator`,
+    `ev-solar-charging-offset-calculator`.
+- **Sub-grouping decision: none added.** At 14 calculators, `solar` stays out of
+  `categories.spec.ts`'s `GROUPED_CATEGORIES` set — the same exemption already applied to `tech`
+  (3 calculators) and, by the same small-category logic, to the other Wave 5 categories built
+  around the same time (`crypto` at 7, `business` mid-build, `insurance` mid-build). The step
+  file's own guidance was to re-evaluate once the real count was known and only group if the count
+  reached a scale where the `/categories/solar` page's grouped view would meaningfully help
+  navigation; 14 calculators across 3 clearly-related topic clusters (sizing/payback,
+  storage/consumption, efficiency novelties) reads fine as one flat list, same as `tech`'s page
+  does at 3. No code or test changes needed for this decision — it's a non-action, not a deferred
+  task.
+- **Sourcing throughout the category**: `nrel.gov`/`pvwatts.nrel.gov` were unreachable (DNS
+  failure) in this sandbox across all 3 batches — EnergySage, EIA, ENERGY STAR and DOE's
+  `/eere/solar/*` and AFDC pages were the substitute primary-ish sources throughout, with Wikipedia
+  used as a background source for the two cases (LED-wattage range, water-heater efficiency
+  factors) where no U.S. government or ENERGY STAR page published a usable table directly. Every
+  citation across all 3 batches was fetched directly (WebFetch, since WebSearch's quota was
+  exhausted in both batch 2 and batch 3), never taken from memory.
+- **Nothing was skipped or parked** from the original seed list — every one of the 14 originally
+  scoped ideas shipped as its own distinct page, with every potential duplicate (vs. `home`'s
+  `electricity-bill-calculator`/`ac-tonnage-btu-calculator`/`insulation-calculator`, `auto`'s
+  `ev-charging-calculator`) checked and confirmed genuinely distinct rather than assumed.
+- Step 62 is now **DONE**. Next per the Wave 5 order: whichever of insurance (step 63) or
+  business/tax (step 64) the main session picks up next, per `STATUS.md`'s own sequencing.
+
 # Step 62 — Wave 5: Solar & Home Energy (new category)
 
 Per `mdFiles/omni-strategy.md` §4.5 ("Solar & home energy — new category"). Go-ahead per D23

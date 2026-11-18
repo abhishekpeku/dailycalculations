@@ -203,6 +203,17 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   // beginningInventory, purchases, endingInventory and revenue all 0 (their min) -> cogs and
   // grossProfit are both a finite 0, but grossMarginPercent (divides by revenue) has no answer.
   'cost-of-goods-sold-calculator': ['grossMarginPercent'],
+  // vehicleActualCashValue 0 (its min) -> compute()'s own guard, no premium-to-value ratio with a
+  // zero-value car to divide by; recommendedLiabilityCoverage stays finite either way.
+  'car-insurance-coverage-calculator': ['comprehensiveCollisionPremiumToValuePercent'],
+  // vehiclePurchasePrice 0 (its min) -> vehicleValueToday is a finite 0, so compute()'s own guard
+  // gives loanToValuePercent no answer (divides by a zero vehicle value); gapAmount and
+  // remainingLoanBalance stay finite either way.
+  'gap-insurance-calculator': ['loanToValuePercent'],
+  // estimatedMarketValue 0 (its min) -> compute()'s own guard, no rebuild-cost-vs-market-value
+  // percentage with a zero market value to divide by; rebuildCost and structureValueOfMarketPrice
+  // stay finite either way.
+  'home-insurance-rebuild-cost-calculator': ['rebuildCostPercentOfMarketValue'],
   // cashBalance and monthlyBurnRate both 0 (their min) -> runwayMonths divides by zero burn rate;
   // annualBurnRate (monthlyBurnRate x 12) stays a finite 0 either way.
   'burn-rate-calculator': ['runwayMonths'],

@@ -1,4 +1,6 @@
 import type { CalculatorConfig } from './types.ts';
+import { carValueAtYears } from './auto.ts';
+import { monthlyPayment, amortizationMonthlySchedule } from '../../lib/amortization.ts';
 
 export const insuranceCalculators: CalculatorConfig[] = [
   {
@@ -968,6 +970,471 @@ export const insuranceCalculators: CalculatorConfig[] = [
       const careCostGap = Math.max(0, totalCareCost - totalExistingResources);
       const percentCovered = totalCareCost === 0 ? 0 : Math.min(100, (totalExistingResources / totalCareCost) * 100);
       return { careCostGap, totalCareCost, totalExistingResources, coveredAmount, percentCovered };
+    }
+  },
+  {
+    id: 'car-insurance-coverage-calculator',
+    category: 'insurance',
+    glyph: 'CAR',
+    updatedAt: '2026-11-18',
+    aliases: ['car insurance coverage calculator', 'how much car insurance do i need', 'auto liability coverage calculator', 'how much liability insurance should i carry', 'comprehensive and collision coverage calculator'],
+    related: ['car-payment-calculator', 'car-depreciation-calculator', 'loan-calculator', 'human-life-value-calculator'],
+    title: 'Car Insurance Coverage Calculator',
+    description: 'Turn your own assets, income and vehicle value into a starting-point liability-coverage amount and a comprehensive/collision cost check — not a quote or a state-specific minimum.',
+    example: 'With $150,000 in assets to protect and $65,000 in annual income, the suggested liability floor is $215,000; paying $900 a year for comprehensive and collision on a $12,000 car works out to about 7.5% of the car\'s value every year.',
+    breakdown: {
+      headline: 'recommendedLiabilityCoverage',
+      headlineLabel: 'Suggested liability-coverage floor',
+      outputs: [
+        { id: 'recommendedLiabilityCoverage', format: 'currency' },
+        { id: 'totalAssets', label: 'Assets entered', format: 'currency' },
+        { id: 'annualIncome', label: 'Annual income entered', format: 'currency' },
+        { id: 'comprehensiveCollisionPremiumToValuePercent', label: 'Comp + collision premium, as % of car value per year', format: 'percent' }
+      ],
+      groups: [
+        { title: 'What you have to protect', inputs: ['totalAssets', 'annualIncome'] },
+        { title: 'Your vehicle', inputs: ['vehicleActualCashValue', 'comprehensiveCollisionAnnualPremium'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'totalAssets', label: 'Assets to protect' },
+          { from: 'recommendedLiabilityCoverage', label: 'Suggested liability floor' }
+        ],
+        title: 'Assets vs. suggested liability-coverage floor',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What does liability coverage actually protect?',
+        paragraphs: [
+          'Auto liability coverage pays for injuries or property damage you cause someone else while driving — it does not pay to repair or replace your own car. Every state sets a minimum amount drivers must carry, but the Insurance Information Institute (III) states plainly that "state-required minimums may not cover the costs of a serious accident," and that drivers can buy higher limits specifically "to protect personal assets such as homes and savings." The National Association of Insurance Commissioners (NAIC) spells out why that matters: if a court judgment or settlement is more than your policy limits, "you will have to pay the difference" yourself.',
+          'That is the logic this calculator uses: it adds the assets you already have (savings, investments, home equity) to a year of income, and suggests that total as a liability-coverage floor. It is a simplified planning assumption, not an official formula from III, NAIC or any insurer — state minimums, your own risk tolerance and how much of your income a judgment could realistically reach all vary, so treat the result as a starting point to discuss with a licensed agent, not a number to act on by itself.',
+          'Comprehensive and collision coverage are a separate decision: they protect your own car, are usually optional once a car loan is paid off, and NAIC notes that after an accident "insurers will \'total\' the car and pay you what the car was worth" rather than the repair cost — so the payout is capped at the vehicle\'s actual cash value no matter how large the premium or the repair bill. Comparing the annual premium for both coverages against that cash value is one simple, informational way to see how much you are paying relative to what the coverage could ever pay out.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter what you are protecting (assets and income) and your vehicle\'s value and comprehensive/collision premium.',
+        steps: [
+          { name: 'Enter assets to protect', text: 'Add up savings, investments and home equity — anything a lawsuit could realistically reach.' },
+          { name: 'Enter your annual income', text: 'Use your gross income; some liability judgments can also reach future wages through garnishment.' },
+          { name: 'Enter your vehicle\'s actual cash value', text: 'What the car is worth today, not what you paid for it — the car-depreciation-calculator on this site can help estimate it.' },
+          { name: 'Enter your comprehensive + collision premium', text: 'The combined annual cost for both coverages, from your policy or a quote.' },
+          { name: 'Read the result', text: 'The headline is a suggested liability-coverage floor. The percent row shows the comp + collision premium as a share of the car\'s value each year — context, not a cutoff rule.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Two unrelated calculations share this page: a liability-coverage floor, and a comp/collision cost check.',
+        expression: 'Suggested liability floor = Assets to protect + Annual income\nComp + collision cost check = (Annual premium ÷ Vehicle value) × 100',
+        terms: [
+          { symbol: 'Assets to protect', meaning: 'Savings, investments and home equity, in current dollars.' },
+          { symbol: 'Annual income', meaning: 'Gross annual income from work or self-employment.' },
+          { symbol: 'Vehicle value', meaning: 'The car\'s current actual cash value, not its original price.' },
+          { symbol: 'Annual premium', meaning: 'What you pay per year for comprehensive and collision combined.' }
+        ],
+        note: 'An educational estimate, not a quote, a state-specific minimum, or insurance advice. State minimum liability limits vary and are not calculated here — check your own state\'s requirements before buying a policy.'
+      },
+      workedExample: {
+        intro: 'A driver has $150,000 in assets to protect and a $65,000 annual income. Their car has a $12,000 actual cash value, and comprehensive + collision together cost $900 a year.',
+        rows: [
+          { label: 'Suggested liability floor (150,000 + 65,000)', value: '$215,000.00' },
+          { label: 'Comp + collision premium as % of car value (900 ÷ 12,000)', value: '7.50%' }
+        ],
+        result: 'A $215,000.00 suggested liability floor, with comp + collision costing about 7.5% of the car\'s value per year.',
+        explanation: 'That 7.5% figure is informational, not a threshold this calculator is claiming is "too high" or "too low" — there is no universal cutoff for when comprehensive/collision stops being worth it, since that depends on the driver\'s own finances and risk tolerance, not just one ratio.'
+      },
+      watchOut: [
+        { title: 'This is an educational estimate, not a quote or an offer to sell insurance', body: 'This calculator suggests a planning starting point. It does not sell, recommend or bind any policy, and is not a substitute for a licensed insurance agent who can quote your state\'s actual minimums and available coverage.' },
+        { title: 'State minimums are not calculated here', body: 'Required liability limits vary by state and this calculator does not look any of them up. Always confirm your own state\'s minimum before buying a policy, and treat the suggested floor here as separate from that legal requirement.' },
+        { title: 'The liability-coverage floor is one heuristic, not THE answer', body: 'Adding assets and income is a simple, transparent planning assumption used on this page — it is not a formula published by III, NAIC or any specific insurer, and a financial advisor or agent may reasonably recommend a different amount for your situation.' },
+        { title: 'Comprehensive and collision payouts are capped at the car\'s value', body: 'Per NAIC, if repairing the car would cost more than it is worth, the insurer totals it and pays its actual cash value instead — these coverages can never pay out more than that, regardless of the premium paid or the size of the repair bill.' },
+        { title: 'A loan or lease can require these coverages regardless of this ratio', body: 'If you are still financing or leasing the car, your lender or lessor almost always requires comprehensive and collision coverage, whatever the premium-to-value percentage shown here comes out to.' }
+      ],
+      references: [
+        { label: 'Insurance Information Institute, Auto insurance basics — understanding your coverage', url: 'https://www.iii.org/article/auto-insurance-basics-understanding-your-coverage' },
+        { label: 'NAIC, Auto Insurance', url: 'https://content.naic.org/consumer/auto-insurance.htm' }
+      ]
+    },
+    inputs: [
+      { id: 'totalAssets', label: 'Assets to protect', type: 'currency', placeholder: '150000', defaultValue: 150000, step: 5000, min: 0 },
+      { id: 'annualIncome', label: 'Annual income', type: 'currency', placeholder: '65000', defaultValue: 65000, step: 1000, min: 0 },
+      { id: 'vehicleActualCashValue', label: 'Vehicle\'s actual cash value', type: 'currency', placeholder: '12000', defaultValue: 12000, step: 500, min: 0 },
+      { id: 'comprehensiveCollisionAnnualPremium', label: 'Comprehensive + collision premium (per year)', type: 'currency', placeholder: '900', defaultValue: 900, step: 50, min: 0 }
+    ],
+    seo: {
+      title: 'Car Insurance Coverage Calculator – Liability Guidance',
+      description: 'Free car insurance coverage calculator: a liability-coverage starting point from your assets and income, plus a comprehensive/collision cost-vs-value check.',
+      faq: [
+        { question: 'How much car insurance liability coverage do I need?', answer: 'There is no single right answer — state minimums vary and may not cover a serious accident, per the Insurance Information Institute. This calculator suggests a floor of your assets to protect plus your annual income as one simplified planning starting point, not an official figure.' },
+        { question: 'What happens if a judgment is more than my policy limit?', answer: 'Per the NAIC, if a court judgment or settlement is more than your policy limit, you have to pay the difference yourself — which is the basic reason to consider coverage above your state\'s legal minimum.' },
+        { question: 'How is the suggested liability floor calculated?', answer: 'It adds the assets you enter (savings, investments, home equity) to your annual income. For $150,000 in assets and $65,000 in income, that is $215,000.00. For $300,000 in assets and $90,000 in income, it would be $390,000.00.' },
+        { question: 'Do I need comprehensive and collision coverage?', answer: 'They are usually optional unless a lender requires them while you are still financing the car. The NAIC notes that if repairing the car costs more than it is worth, the insurer pays the car\'s actual cash value instead of the repair bill — the coverage can never pay out more than that value.' },
+        { question: 'What does the comprehensive + collision percentage mean?', answer: 'It is the annual premium divided by the car\'s current value, as a percent. Paying $900 a year on a $12,000 car is 7.5%; paying $1,200 a year on a $6,000 car is 20%. There is no universal cutoff — it is context for your own decision, not a rule.' },
+        { question: 'Does this calculator know my state\'s minimum coverage requirement?', answer: 'No. State minimums are set individually by each state and are not looked up or calculated here. Check your own state insurance department for the actual legal minimum.' },
+        { question: 'Is this the same as getting an insurance quote?', answer: 'No. This is an educational planning estimate only. It does not sell, recommend or bind any policy — an actual quote comes from a licensed agent or insurer based on your full driving and financial history.' }
+      ]
+    },
+    compute(values) {
+      const recommendedLiabilityCoverage = values.totalAssets + values.annualIncome;
+      const comprehensiveCollisionPremiumToValuePercent = values.vehicleActualCashValue > 0 ? (values.comprehensiveCollisionAnnualPremium / values.vehicleActualCashValue) * 100 : NaN;
+      return {
+        recommendedLiabilityCoverage,
+        totalAssets: values.totalAssets,
+        annualIncome: values.annualIncome,
+        comprehensiveCollisionPremiumToValuePercent
+      };
+    }
+  },
+  {
+    id: 'gap-insurance-calculator',
+    category: 'insurance',
+    glyph: 'GAP',
+    updatedAt: '2026-11-18',
+    aliases: ['gap insurance calculator', 'negative equity car loan calculator', 'loan balance vs car value calculator', 'do i need gap insurance', 'upside down car loan calculator'],
+    related: ['car-depreciation-calculator', 'car-payment-calculator', 'loan-calculator', 'car-insurance-coverage-calculator'],
+    title: 'Gap Insurance Calculator',
+    description: 'Estimate the negative-equity gap between your car loan balance and your car\'s depreciated value — the shortfall gap insurance is designed to cover if the car is totaled or stolen.',
+    example: 'A $35,000 car financed with no down payment at 7% APR over 72 months still owes $30,135.31 after 12 months, while the car (at the common 20%/15% depreciation rule of thumb) is worth about $28,000.00 — a $2,135.31 gap.',
+    breakdown: {
+      headline: 'gapAmount',
+      headlineLabel: 'Negative-equity gap',
+      outputs: [
+        { id: 'gapAmount', format: 'currency' },
+        { id: 'remainingLoanBalance', label: 'Remaining loan balance', format: 'currency' },
+        { id: 'vehicleValueToday', label: 'Estimated vehicle value today', format: 'currency' },
+        { id: 'loanToValuePercent', label: 'Loan balance as % of vehicle value', format: 'percent' }
+      ],
+      groups: [
+        { title: 'The loan', inputs: ['vehiclePurchasePrice', 'downPayment', 'loanAnnualRate', 'loanTermMonths', 'monthsElapsed'] },
+        { title: 'Depreciation assumption', inputs: ['year1Rate', 'afterYear1Rate'], optional: true }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'remainingLoanBalance', label: 'Remaining loan balance' },
+          { from: 'vehicleValueToday', label: 'Estimated vehicle value' }
+        ],
+        title: 'Loan balance vs. estimated vehicle value',
+        highlight: 0
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What is the "gap" that gap insurance covers?',
+        paragraphs: [
+          'The Consumer Financial Protection Bureau (CFPB) defines gap insurance plainly: it covers "the difference between the amount you owe on your auto loan and the amount the insurance company pays" when a financed or leased car is totaled or stolen. Standard auto insurance only pays out the car\'s actual cash value — what it is worth today, not what is still owed on it — so if the loan balance is higher than that value, the owner would otherwise have to keep paying off a loan for a car they no longer have.',
+          'That gap exists because a car loan and a car\'s value shrink at different rates. A loan balance falls slowly at first, since early payments go mostly toward interest rather than principal. A new car\'s value, by contrast, tends to fall fastest in exactly that same first year or two — commonly cited at around 20% in year one alone. Combine a slow-shrinking loan with a fast-shrinking asset, especially with a small or no down payment and a longer loan term, and the loan balance can run ahead of the car\'s value for a while.',
+          'This calculator reuses this site\'s own car-depreciation-calculator method (a 20% first-year / 15%-a-year rule of thumb) for the value side, and a standard amortization schedule for the loan side, to estimate that gap at any point during the loan. The CFPB also notes gap insurance is commonly sold by dealers as an add-on whose cost gets rolled into the loan itself, increasing total interest paid — so it is worth comparison shopping, including through your own auto insurer, rather than assuming the dealer\'s price is the only one available.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the loan\'s original terms and how many months have passed; adjust the depreciation assumption if you have a better estimate for your vehicle.',
+        steps: [
+          { name: 'Enter the purchase price and down payment', text: 'The loan is financed on the price minus the down payment.' },
+          { name: 'Enter the loan\'s APR and term', text: 'The annual percentage rate and the original number of months to pay it off.' },
+          { name: 'Enter how many months have passed', text: 'Since the loan started — this drives both the remaining balance and the estimated depreciation.' },
+          { name: 'Check the depreciation rates', text: 'The defaults (20% year one, 15% a year after) are the same rule of thumb used by this site\'s car-depreciation-calculator. Adjust them if you have a better estimate.' },
+          { name: 'Read the result', text: 'The headline is the estimated gap. The chart compares the remaining loan balance with the estimated vehicle value directly.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The loan balance comes from a standard fixed-rate amortization schedule; the vehicle value from this site\'s depreciation rule of thumb.',
+        expression: 'Remaining balance = standard amortization schedule, evaluated at the elapsed month\nVehicle value = Price × (1 − r₁) × (1 − r₂)^(years − 1), for years > 1\nGap = max(0, Remaining balance − Vehicle value)',
+        terms: [
+          { symbol: 'r₁', meaning: 'First-year depreciation rate (default 20%).' },
+          { symbol: 'r₂', meaning: 'Depreciation rate for every year after the first (default 15%).' },
+          { symbol: 'Gap', meaning: 'The shortfall gap insurance would otherwise leave you to pay out of pocket.' }
+        ],
+        note: 'An educational estimate, not a quote. It uses a rule-of-thumb depreciation curve, not your specific car\'s actual market value, and does not account for any early payments, refinancing, or a non-standard loan.'
+      },
+      workedExample: {
+        intro: 'A $35,000 car is financed with no down payment at 7% APR over 72 months. Twelve months in, what is the estimated gap?',
+        rows: [
+          { label: 'Loan principal (35,000 − 0 down payment)', value: '$35,000.00' },
+          { label: 'Monthly payment', value: '$596.72' },
+          { label: 'Remaining loan balance after 12 months', value: '$30,135.31' },
+          { label: 'Estimated vehicle value after 1 year (35,000 × (1 − 20%))', value: '$28,000.00' },
+          { label: 'Gap (30,135.31 − 28,000.00)', value: '$2,135.31' }
+        ],
+        result: 'An estimated $2,135.31 gap after the first year.',
+        explanation: 'The loan balance fell by only about $4,864.69 in that year (mostly interest in the early payments), while the car\'s estimated value fell by $7,000.00 — the rule of thumb\'s full 20% first-year rate. The faster-falling asset outran the slower-falling loan, producing the gap.'
+      },
+      watchOut: [
+        { title: 'This is an educational estimate, not a quote or an offer to sell insurance', body: 'This calculator estimates a loan-vs-value gap for planning purposes. It does not sell, recommend or bind any coverage, and is not a substitute for your own insurer\'s or lender\'s actual figures.' },
+        { title: 'The vehicle value is a rule of thumb, not an appraisal', body: 'Real depreciation varies a lot by make, model, mileage and condition — this site\'s car-depreciation-calculator and its own watch-out notes cover that in more depth. A different depreciation assumption changes the gap, sometimes a lot.' },
+        { title: 'The gap shrinks, and usually disappears, over the loan', body: 'Because the loan balance keeps falling and the value-loss rate slows after year one, the gap this calculator estimates is largest early in a loan with a small down payment, and typically closes within a few years — check the number again periodically rather than assuming it stays the same.' },
+        { title: 'A larger down payment or shorter loan term shrinks the gap directly', body: 'Both reduce how far the loan balance can get ahead of the car\'s value at any given month, which is also why lenders and dealers often recommend gap insurance specifically for low-down-payment, long-term loans.' },
+        { title: 'Pricing and terms vary a lot — compare before buying', body: 'The CFPB notes that gap insurance cost varies significantly and can be bought through your own auto insurer or a lender, not only the dealer, and that its cost should be disclosed separately if rolled into your loan\'s APR.' }
+      ],
+      references: [
+        { label: 'Consumer Financial Protection Bureau, What is gap insurance?', url: 'https://www.consumerfinance.gov/ask-cfpb/what-is-gap-insurance-en-2090/' },
+        { label: 'Experian, What Is Depreciation on a Car?', url: 'https://www.experian.com/blogs/ask-experian/what-is-depreciation-on-a-car/' }
+      ]
+    },
+    inputs: [
+      { id: 'vehiclePurchasePrice', label: 'Purchase price', type: 'currency', placeholder: '35000', defaultValue: 35000, step: 500, min: 0 },
+      { id: 'downPayment', label: 'Down payment', type: 'currency', placeholder: '0', defaultValue: 0, step: 500, min: 0 },
+      { id: 'loanAnnualRate', label: 'Loan APR', type: 'percent', placeholder: '7', defaultValue: 7, step: 0.1, min: 0 },
+      { id: 'loanTermMonths', label: 'Loan term (months)', type: 'number', placeholder: '72', defaultValue: 72, step: 1, min: 1 },
+      { id: 'monthsElapsed', label: 'Months since the loan started', type: 'number', placeholder: '12', defaultValue: 12, step: 1, min: 0 },
+      { id: 'year1Rate', label: 'First-year depreciation rate', type: 'percent', placeholder: '20', defaultValue: 20, step: 1, min: 0 },
+      { id: 'afterYear1Rate', label: 'Rate per year after year 1', type: 'percent', placeholder: '15', defaultValue: 15, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Gap Insurance Calculator – Loan vs. Car Value Gap',
+      description: 'Free gap insurance calculator: estimate the gap between your car loan balance and its depreciated value, the shortfall gap insurance covers if the car is totaled.',
+      faq: [
+        { question: 'What does gap insurance actually cover?', answer: 'Per the CFPB, it covers "the difference between the amount you owe on your auto loan and the amount the insurance company pays" if the car is totaled or stolen, since standard auto insurance only pays the car\'s actual cash value, not the loan balance.' },
+        { question: 'How is the gap calculated?', answer: 'Remaining loan balance minus estimated vehicle value, floored at $0. On a $35,000 car with no down payment at 7% APR over 72 months, the balance after 12 months is $30,135.31 against an estimated value of $28,000.00 — a $2,135.31 gap.' },
+        { question: 'When is the gap the biggest?', answer: 'Typically early in a loan with a small or no down payment and a long term, because the loan balance falls slowly (early payments are mostly interest) while a new car\'s value falls fastest in its first year or two.' },
+        { question: 'Does the gap ever close?', answer: 'Usually, yes. As the loan balance keeps falling and the depreciation rate slows after year one, the gap in this example narrows to about $228.50 by month 30 and typically reaches $0 within a few years, depending on the loan terms and depreciation.' },
+        { question: 'Do I need gap insurance?', answer: 'It is most often suggested for low- or no-down-payment, longer-term loans on cars that depreciate quickly — exactly the conditions that produce a larger gap in this calculator. If your gap estimate is $0 or small, it may not be worth the added cost.' },
+        { question: 'Can I buy gap insurance anywhere besides the dealer?', answer: 'Yes. The CFPB notes you can buy it through your own auto insurer or some lenders, not just the dealer, and pricing varies enough that it is worth comparing.' },
+        { question: 'Does this use my car\'s actual value?', answer: 'No. It uses this site\'s car-depreciation-calculator rule of thumb (20% year one, 15% a year after) as an estimate. Adjust those two rates if you have a better estimate for your specific vehicle.' }
+      ]
+    },
+    compute(values) {
+      const loanPrincipal0 = Math.max(0, values.vehiclePurchasePrice - values.downPayment);
+      const payment = monthlyPayment(loanPrincipal0, values.loanAnnualRate, values.loanTermMonths);
+      const schedule = amortizationMonthlySchedule(loanPrincipal0, values.loanAnnualRate, values.loanTermMonths, payment);
+      const monthIndex = Math.min(Math.max(Math.round(values.monthsElapsed), 0), values.loanTermMonths);
+      const remainingLoanBalance = monthIndex <= 0 ? loanPrincipal0 : (schedule[monthIndex - 1]?.balance ?? 0);
+      const vehicleValueToday = Math.max(0, carValueAtYears(values.vehiclePurchasePrice, values.year1Rate, values.afterYear1Rate, values.monthsElapsed / 12));
+      const gapAmount = Math.max(0, remainingLoanBalance - vehicleValueToday);
+      const loanToValuePercent = vehicleValueToday > 0 ? (remainingLoanBalance / vehicleValueToday) * 100 : NaN;
+      return { gapAmount, remainingLoanBalance, vehicleValueToday, loanToValuePercent };
+    }
+  },
+  {
+    id: 'renters-insurance-contents-value-calculator',
+    category: 'insurance',
+    glyph: 'INV',
+    updatedAt: '2026-11-18',
+    aliases: ['renters insurance contents calculator', 'personal property coverage calculator', 'home inventory value calculator', 'how much renters insurance do i need', 'belongings value estimator'],
+    related: ['emergency-fund-calculator', 'human-life-value-calculator', 'long-term-care-insurance-needs-calculator', 'gap-insurance-calculator'],
+    title: 'Renters Insurance Contents Value Calculator',
+    description: 'Add up a room-by-room home inventory to estimate the personal-property coverage amount a renters policy should carry — the same approach the Insurance Information Institute recommends.',
+    example: 'Belongings valued at $4,000 (living room), $6,000 (bedroom), $3,000 (kitchen/dining), $2,500 (electronics), $1,500 (clothing/jewelry) and $850 (other) total $17,850.00, a suggested policy limit of $18,000.00.',
+    breakdown: {
+      headline: 'totalContentsValue',
+      headlineLabel: 'Total estimated contents value',
+      outputs: [
+        { id: 'totalContentsValue', format: 'currency' },
+        { id: 'suggestedPolicyLimit', label: 'Suggested policy limit (rounded up to the nearest $1,000)', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Belongings by room or category', inputs: ['livingRoomValue', 'bedroomValue', 'kitchenDiningValue', 'electronicsValue', 'clothingJewelryValue', 'otherBelongingsValue'] }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'livingRoomValue', label: 'Living room' },
+          { from: 'bedroomValue', label: 'Bedroom(s)' },
+          { from: 'kitchenDiningValue', label: 'Kitchen & dining' },
+          { from: 'electronicsValue', label: 'Electronics' },
+          { from: 'clothingJewelryValue', label: 'Clothing & jewelry' },
+          { from: 'otherBelongingsValue', label: 'Other' }
+        ],
+        center: 'totalContentsValue',
+        centerSub: 'total contents value'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why a home inventory, not a guess?',
+        paragraphs: [
+          'Renters insurance\'s personal-property (contents) coverage pays to repair or replace your belongings after a covered loss like fire, theft or certain water damage — but a policy can only pay up to its own coverage limit. The Insurance Information Institute (III) recommends building a home inventory as the practical way to set that limit correctly: "documenting all of your belongings along with their estimated value," room by room, rather than guessing at a round number.',
+          'Most renters underestimate what they own, because belongings accumulate gradually and are rarely tallied all at once. Going room by room — living areas, bedrooms, kitchen, electronics, clothing and everything else — surfaces a more complete, and usually larger, total than a single off-the-cuff guess. III\'s guidance is direct about the goal: "have enough insurance to replace all of your personal possessions in the event of a burglary, fire or other covered disaster," which means matching the coverage limit to the actual inventory total, not a generic industry-wide default.',
+          'This calculator totals six broad categories and rounds the result up to the nearest $1,000 as a practical policy-limit suggestion, since insurers typically sell coverage in round-number tiers rather than exact dollar amounts. III also notes that a standard policy caps the value of individual high-value items like jewelry, furs or collectibles, and that a separate "floater" can be added for those specifically — this calculator\'s totals do not know whether any single item in your inventory exceeds that kind of per-item sublimit.'
+        ]
+      },
+      howTo: {
+        intro: 'Walk through your home and add up what you own in each category — closets and storage count too.',
+        steps: [
+          { name: 'Estimate your living room\'s contents', text: 'Furniture, rugs, décor, a TV if it is not counted under electronics.' },
+          { name: 'Estimate your bedroom(s)\' contents', text: 'Furniture, bedding and anything stored in them, combined across all bedrooms.' },
+          { name: 'Estimate your kitchen & dining contents', text: 'Appliances you own (not ones built into the rental), cookware, dishes and dining furniture.' },
+          { name: 'Estimate your electronics', text: 'Computers, phones, game consoles, TVs and similar — these depreciate fast, so use what they would cost to replace today, not what you paid.' },
+          { name: 'Estimate clothing & jewelry, then everything else', text: 'Clothing and jewelry together, then a catch-all for anything not covered above.' },
+          { name: 'Read the result', text: 'The headline is your inventory total; the suggested policy limit rounds that up to a practical coverage amount to ask for.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Pure addition across the six categories, then a round-up for a practical coverage ask.',
+        expression: 'Total contents value = sum of all six category values\nSuggested policy limit = ⌈Total contents value ÷ 1,000⌉ × 1,000',
+        terms: [
+          { symbol: '⌈ ⌉', meaning: 'Round up to the next whole number — here, the next $1,000.' }
+        ],
+        note: 'An educational estimate, not a quote or a policy recommendation. It does not know about any single item that might exceed your policy\'s own per-item sublimit for jewelry, collectibles or similar valuables.'
+      },
+      workedExample: {
+        intro: 'A renter totals their belongings by category.',
+        rows: [
+          { label: 'Living room', value: '$4,000.00' },
+          { label: 'Bedroom(s)', value: '$6,000.00' },
+          { label: 'Kitchen & dining', value: '$3,000.00' },
+          { label: 'Electronics', value: '$2,500.00' },
+          { label: 'Clothing & jewelry', value: '$1,500.00' },
+          { label: 'Other', value: '$850.00' },
+          { label: 'Total (sum of all six)', value: '$17,850.00' },
+          { label: 'Suggested policy limit (rounded up to the nearest $1,000)', value: '$18,000.00' }
+        ],
+        result: 'A $17,850.00 inventory total, suggesting an $18,000.00 policy limit.',
+        explanation: 'The $150.00 difference between the exact total and the suggested limit is the round-up, since policies are typically sold in whole-dollar tiers rather than an exact figure like $17,850.'
+      },
+      watchOut: [
+        { title: 'This is an educational estimate, not a quote or an offer to sell insurance', body: 'This calculator totals a home inventory for your own planning. It does not sell, recommend or bind any policy, and is not a substitute for an actual room-by-room inventory with receipts, photos or serial numbers for a real claim.' },
+        { title: 'High-value items often need separate coverage', body: 'Per III, a standard policy caps how much it pays for categories like jewelry, furs or collectibles. If any single item in your inventory is worth a lot, ask about a "floater" or rider specifically for it rather than assuming this total covers it in full.' },
+        { title: 'Floods and earthquakes are excluded', body: 'III states that a standard renters policy does not cover flood or earthquake damage — those require separate coverage, regardless of the total estimated here.' },
+        { title: 'Use replacement cost, not what you originally paid', body: 'Electronics and furniture usually cost less to replace than their original price due to depreciation, while some items (certain collectibles, for example) can cost more. Estimate what buying each category again today would actually cost.' },
+        { title: 'This total is not proof of ownership', body: 'A real claim typically needs receipts, photos or serial numbers for individual items — keep that documentation separately. This calculator only adds up the numbers you type in.' }
+      ],
+      references: [
+        { label: 'Insurance Information Institute, Your renters insurance guide', url: 'https://www.iii.org/article/your-renters-insurance-guide' }
+      ]
+    },
+    inputs: [
+      { id: 'livingRoomValue', label: 'Living room', type: 'currency', placeholder: '4000', defaultValue: 4000, step: 250, min: 0 },
+      { id: 'bedroomValue', label: 'Bedroom(s)', type: 'currency', placeholder: '6000', defaultValue: 6000, step: 250, min: 0 },
+      { id: 'kitchenDiningValue', label: 'Kitchen & dining', type: 'currency', placeholder: '3000', defaultValue: 3000, step: 250, min: 0 },
+      { id: 'electronicsValue', label: 'Electronics', type: 'currency', placeholder: '2500', defaultValue: 2500, step: 250, min: 0 },
+      { id: 'clothingJewelryValue', label: 'Clothing & jewelry', type: 'currency', placeholder: '1500', defaultValue: 1500, step: 250, min: 0 },
+      { id: 'otherBelongingsValue', label: 'Other belongings', type: 'currency', placeholder: '850', defaultValue: 850, step: 250, min: 0 }
+    ],
+    seo: {
+      title: 'Renters Insurance Contents Value Calculator',
+      description: 'Free renters insurance calculator: add up a room-by-room home inventory to estimate the personal-property coverage limit to ask for, per III.org\'s own guidance.',
+      faq: [
+        { question: 'How much renters insurance coverage do I need for my belongings?', answer: 'Enough to replace everything you own, per the Insurance Information Institute\'s guidance — which means building an actual home inventory rather than guessing. This calculator totals six broad categories to estimate that figure.' },
+        { question: 'How is the suggested policy limit calculated?', answer: 'It is the inventory total rounded up to the nearest $1,000, since coverage is typically sold in round tiers. A $17,850.00 inventory total suggests an $18,000.00 limit.' },
+        { question: 'Should I use the original price or the replacement cost?', answer: 'Replacement cost — what it would cost to buy each category again today. Electronics and furniture often cost less to replace than their original price due to depreciation.' },
+        { question: 'Does renters insurance cover jewelry and collectibles at full value?', answer: 'Not always. III notes that standard policies cap payouts for categories like jewelry, furs and collectibles, and that a separate "floater" can be added for a specific high-value item.' },
+        { question: 'Does renters insurance cover flood damage?', answer: 'No. III states that a standard renters policy excludes flood and earthquake damage; those need separate coverage regardless of your contents total.' },
+        { question: 'What if I don\'t know the exact value of everything I own?', answer: 'Estimate as closely as you can category by category — a reasonable room-by-room estimate is far more accurate than a single guess at a round total, which is the whole point of doing the inventory this way.' },
+        { question: 'Is this calculator the same as filing a claim or getting a quote?', answer: 'No. It is an educational planning estimate only. An actual claim needs documentation like receipts, photos or serial numbers, and an actual quote comes from a licensed agent or insurer.' }
+      ]
+    },
+    compute(values) {
+      const totalContentsValue = values.livingRoomValue + values.bedroomValue + values.kitchenDiningValue + values.electronicsValue + values.clothingJewelryValue + values.otherBelongingsValue;
+      const suggestedPolicyLimit = Math.ceil(totalContentsValue / 1000) * 1000;
+      return { totalContentsValue, suggestedPolicyLimit };
+    }
+  },
+  {
+    id: 'home-insurance-rebuild-cost-calculator',
+    category: 'insurance',
+    glyph: 'RBLD',
+    updatedAt: '2026-11-18',
+    aliases: ['home rebuild cost calculator', 'dwelling coverage calculator', 'replacement cost estimator house', 'how much homeowners insurance do i need', 'reconstruction cost calculator'],
+    related: ['renters-insurance-contents-value-calculator', 'human-life-value-calculator', 'emergency-fund-calculator', 'car-insurance-coverage-calculator'],
+    title: 'Home Insurance Rebuild Cost Calculator',
+    description: 'Estimate a home\'s rebuild (dwelling) cost from its square footage and a local per-square-foot building cost — explicitly separate from market or resale value, per the Insurance Information Institute.',
+    example: 'A 2,200 sq ft home at $150 per square foot has an estimated $330,000.00 rebuild cost — 103.1% of its $320,000.00 estimated market value, since rebuild cost and market value measure two different things.',
+    breakdown: {
+      headline: 'rebuildCost',
+      headlineLabel: 'Estimated rebuild cost',
+      outputs: [
+        { id: 'rebuildCost', format: 'currency' },
+        { id: 'estimatedMarketValue', label: 'Estimated market value (for comparison)', format: 'currency' },
+        { id: 'rebuildCostPercentOfMarketValue', label: 'Rebuild cost as % of market value', format: 'percent' },
+        { id: 'structureValueOfMarketPrice', label: 'Market value minus land (structure\'s share)', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your home', inputs: ['squareFootage', 'costPerSquareFoot'] },
+        { title: 'For comparison only', inputs: ['estimatedMarketValue', 'landValue'], optional: true }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'rebuildCost', label: 'Estimated rebuild cost' },
+          { from: 'estimatedMarketValue', label: 'Estimated market value' }
+        ],
+        title: 'Rebuild cost vs. market value',
+        highlight: 0
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Rebuild cost is not the same number as market value',
+        paragraphs: [
+          'Homeowners insurance\'s dwelling coverage is meant to pay for rebuilding the structure itself if it is destroyed — not to pay you the price you could sell the house for. The Insurance Information Institute (III) is direct about the difference: "the price you paid for your home—or the current market price—may be more or less than the cost to rebuild." A home\'s market price reflects its land, its location, and what buyers in that market will pay; rebuild cost reflects only what it would cost today to reconstruct the structure, on that same lot, from the ground up.',
+          'III\'s own recommended method for estimating rebuild cost is straightforward: "multiply the total square footage of your home by local, per-square-foot building costs," explicitly noting that land value is not part of that calculation. Local building costs vary enormously by region, by labor and material costs, and by the home\'s own features, which is exactly why III recommends getting that per-square-foot figure from a local real estate agent, a builders association, or your own insurance agent rather than relying on a single nationwide number.',
+          'This calculator does the multiplication for you once you have a local cost figure, and shows it next to an estimated market value (and that market value minus the land, i.e. an estimate of what the structure itself contributes to the sale price) purely so the two concepts are visible side by side — not to suggest one is more "correct" than the other. They can land close together or far apart, and either direction is normal: rebuild cost can exceed market value where construction costs have risen faster than local home prices, or fall short of it where land and location drive most of the price.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your home\'s square footage and a local cost-per-square-foot figure; add an estimated market value and land value only if you want the comparison.',
+        steps: [
+          { name: 'Enter your home\'s square footage', text: 'The finished, livable area of the structure, as used in your home\'s own listing or appraisal.' },
+          { name: 'Enter a local cost per square foot', text: 'Get this from a local builder, real estate agent or your insurance agent — III specifically recommends a local figure, not a national average, since construction costs vary enormously by region.' },
+          { name: 'Read the rebuild cost', text: 'The headline is square footage × cost per square foot — the estimated cost to reconstruct the home, excluding the land.' },
+          { name: 'Optionally add a market value and land value', text: 'These are for comparison only — they show how rebuild cost relates to what the home might sell for, and are not part of the rebuild-cost calculation itself.' },
+          { name: 'Check the chart', text: 'It compares the two figures directly, so you can see whether rebuild cost runs above or below the estimated market value for your home.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'III\'s own stated method: multiply area by a local, per-square-foot building cost. Land is never part of it.',
+        expression: 'Rebuild cost = Square footage × Cost per square foot\nRebuild cost as % of market value = (Rebuild cost ÷ Market value) × 100',
+        terms: [
+          { symbol: 'Cost per square foot', meaning: 'A local construction cost figure — from a builder, agent or insurance agent, not a national average.' },
+          { symbol: 'Market value', meaning: 'What the home might sell for today, including its land — entered only for comparison.' }
+        ],
+        note: 'An educational estimate, not a quote, an appraisal, or a substitute for your insurer\'s own dwelling-coverage calculation. Per III, get your per-square-foot figure locally — construction costs vary too much by region for one default number to be meaningful everywhere.'
+      },
+      workedExample: {
+        intro: 'A 2,200 sq ft home has a local building cost of $150 per square foot, an estimated market value of $320,000, and an estimated land value of $80,000.',
+        rows: [
+          { label: 'Rebuild cost (2,200 × $150)', value: '$330,000.00' },
+          { label: 'Rebuild cost as % of market value (330,000 ÷ 320,000)', value: '103.13%' },
+          { label: 'Market value minus land (320,000 − 80,000)', value: '$240,000.00' }
+        ],
+        result: 'An estimated $330,000.00 rebuild cost — slightly above the $320,000.00 market value.',
+        explanation: 'The rebuild cost here comes out about $90,000.00 (37.5%) above the structure\'s $240,000.00 share of the market price. That gap is a real, well-documented possibility — construction costs have outpaced home prices in some markets — and is exactly why III recommends insuring to the rebuild figure, not the market price.'
+      },
+      watchOut: [
+        { title: 'This is an educational estimate, not a quote or an offer to sell insurance', body: 'This calculator estimates a dwelling-coverage starting point. It does not sell, recommend or bind any policy, and is not a substitute for a licensed insurance agent or a professional replacement-cost appraisal.' },
+        { title: 'There is no single national cost-per-square-foot figure', body: 'Local building costs vary enormously by region, labor market and materials. III recommends getting this figure locally — from a builder, real estate agent or insurance agent — rather than using one default number for every home.' },
+        { title: 'Market value and rebuild cost can diverge in either direction', body: 'Rebuild cost can run above or below market value depending on local land prices versus local construction costs. Neither is "wrong" — they measure different things, as III states directly.' },
+        { title: 'Square footage definitions can differ', body: 'A home\'s listed square footage, tax-assessed square footage and the actual footprint a builder would rebuild can differ slightly depending on what is included (finished basements, garages). Use a consistent, accurate figure.' },
+        { title: 'Unique features change the real cost', body: 'Custom finishes, difficult lot access, or an unusually complex layout can raise real rebuild costs well above a generic per-square-foot estimate — this calculator cannot see any of that.' }
+      ],
+      references: [
+        { label: 'Insurance Information Institute, How much homeowners insurance do I need?', url: 'https://www.iii.org/article/how-much-homeowners-insurance-do-i-need' }
+      ]
+    },
+    inputs: [
+      { id: 'squareFootage', label: 'Square footage', type: 'number', placeholder: '2200', defaultValue: 2200, step: 50, min: 0 },
+      { id: 'costPerSquareFoot', label: 'Local cost per square foot', type: 'currency', placeholder: '150', defaultValue: 150, step: 5, min: 0 },
+      { id: 'estimatedMarketValue', label: 'Estimated market value', type: 'currency', placeholder: '320000', defaultValue: 320000, step: 5000, min: 0 },
+      { id: 'landValue', label: 'Estimated land value', type: 'currency', placeholder: '80000', defaultValue: 80000, step: 5000, min: 0 }
+    ],
+    seo: {
+      title: 'Home Insurance Rebuild Cost Calculator',
+      description: 'Free home rebuild cost calculator: estimate dwelling coverage from square footage and a local per-square-foot cost, kept separate from market value, per III.org.',
+      faq: [
+        { question: 'How do I calculate my home\'s rebuild cost?', answer: 'Per the Insurance Information Institute, multiply total square footage by a local, per-square-foot building cost — land value is not included. A 2,200 sq ft home at $150 per square foot comes to $330,000.00.' },
+        { question: 'Is rebuild cost the same as market value?', answer: 'No. III states plainly that the price you paid or the current market price "may be more or less than the cost to rebuild." Market value includes land and location; rebuild cost only covers reconstructing the structure.' },
+        { question: 'Where do I get a per-square-foot building cost?', answer: 'III recommends asking a local real estate agent, a builders association, or your own insurance agent — construction costs vary too much by region for a single national figure to be meaningful.' },
+        { question: 'Can rebuild cost be higher than market value?', answer: 'Yes. In the worked example, a $330,000.00 rebuild cost is about 103.1% of a $320,000.00 market value — construction costs can outpace home prices in some areas, which is a real, documented possibility, not an error.' },
+        { question: 'Should I insure my home for its market value?', answer: 'No — insure it for the rebuild cost, since that is what a dwelling-coverage payout is meant to cover. Insuring to market value could leave you under- or over-insured relative to what reconstruction would actually cost.' },
+        { question: 'Does land value affect my home insurance coverage amount?', answer: 'No. Land generally is not destroyed by a covered loss and does not need to be rebuilt, so III\'s rebuild-cost method excludes it — this calculator includes a land-value input only so you can see the market-value comparison, not to adjust the rebuild cost itself.' },
+        { question: 'Is this calculator the same as a professional appraisal?', answer: 'No. It is an educational planning estimate only, using one average cost-per-square-foot figure you provide. A professional replacement-cost appraisal accounts for your home\'s specific features, finishes and layout.' }
+      ]
+    },
+    compute(values) {
+      const rebuildCost = values.squareFootage * values.costPerSquareFoot;
+      const rebuildCostPercentOfMarketValue = values.estimatedMarketValue > 0 ? (rebuildCost / values.estimatedMarketValue) * 100 : NaN;
+      const structureValueOfMarketPrice = values.estimatedMarketValue - values.landValue;
+      return { rebuildCost, estimatedMarketValue: values.estimatedMarketValue, rebuildCostPercentOfMarketValue, structureValueOfMarketPrice };
     }
   }
 ];

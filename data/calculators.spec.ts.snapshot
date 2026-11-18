@@ -5152,6 +5152,62 @@ exports[`compute() snapshots > dilution-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > dime-method-life-insurance-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "otherDebt": 15000,
+      "annualIncome": 80000,
+      "incomeReplacementYears": 10,
+      "mortgageBalance": 250000,
+      "numberOfChildren": 2,
+      "educationCostPerChild": 100000
+    },
+    "outputs": {
+      "dimeTotal": 1265000,
+      "otherDebt": 15000,
+      "incomeReplacement": 800000,
+      "mortgageBalance": 250000,
+      "educationTotal": 200000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "otherDebt": 22500,
+      "annualIncome": 120000,
+      "incomeReplacementYears": 15,
+      "mortgageBalance": 375000,
+      "numberOfChildren": 3,
+      "educationCostPerChild": 150000
+    },
+    "outputs": {
+      "dimeTotal": 2647500,
+      "otherDebt": 22500,
+      "incomeReplacement": 1800000,
+      "mortgageBalance": 375000,
+      "educationTotal": 450000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "otherDebt": 0,
+      "annualIncome": 0,
+      "incomeReplacementYears": 0,
+      "mortgageBalance": 0,
+      "numberOfChildren": 0,
+      "educationCostPerChild": 0
+    },
+    "outputs": {
+      "dimeTotal": 0,
+      "otherDebt": 0,
+      "incomeReplacement": 0,
+      "mortgageBalance": 0,
+      "educationTotal": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > discount-calculator 1`] = `
 {
   "default": {
@@ -8464,6 +8520,53 @@ exports[`compute() snapshots > horsepower-to-kilowatts-converter 1`] = `
     },
     "outputs": {
       "kilowatts": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > human-life-value-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "annualIncome": 80000,
+      "personalConsumptionPercent": 20,
+      "yearsToRetirement": 25,
+      "discountRate": 4
+    },
+    "outputs": {
+      "humanLifeValue": 999813.1164,
+      "netAnnualIncome": 64000,
+      "undiscountedTotal": 1600000,
+      "discountSavingsPercent": 37.51168023
+    }
+  },
+  "typical": {
+    "inputs": {
+      "annualIncome": 120000,
+      "personalConsumptionPercent": 30,
+      "yearsToRetirement": 38,
+      "discountRate": 6
+    },
+    "outputs": {
+      "humanLifeValue": 1247065.61,
+      "netAnnualIncome": 84000,
+      "undiscountedTotal": 3192000,
+      "discountSavingsPercent": 60.93152851
+    }
+  },
+  "edge": {
+    "inputs": {
+      "annualIncome": 0,
+      "personalConsumptionPercent": 0,
+      "yearsToRetirement": 0,
+      "discountRate": 0
+    },
+    "outputs": {
+      "humanLifeValue": 0,
+      "netAnnualIncome": 0,
+      "undiscountedTotal": 0,
+      "discountSavingsPercent": 0
     }
   }
 }

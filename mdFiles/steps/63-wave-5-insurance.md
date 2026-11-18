@@ -1,5 +1,16 @@
 # Step 63 — Wave 5: Insurance (new category)
 
+## Progress — batch 1 (this branch: `step/63-insurance-batch1`)
+
+- [ ] Category scaffold: `data/calculators/insurance.ts`, `categories` entry, `calculatorOrder`,
+      `lib/categoryTheme.ts` + `components/IconTile.tsx` color/icon pair
+- [ ] `human-life-value-calculator`
+- [ ] `dime-method-life-insurance-calculator`
+- [ ] `term-life-coverage-calculator` (distinctness judgment call — see decision note below)
+- [ ] `whole-life-vs-term-life-cost-calculator`
+- [ ] npm test / lint / build all green, snapshot regenerated
+- [ ] Draft PR opened and kept current
+
 Per `mdFiles/omni-strategy.md` §4.5 ("Insurance — new category, zero overlap with anything
 existing"). Go-ahead per D23. One of the 4 remaining Wave 5 sub-categories.
 

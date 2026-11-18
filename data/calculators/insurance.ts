@@ -733,5 +733,125 @@ export const insuranceCalculators: CalculatorConfig[] = [
         employerPremiumShare: values.employerPremiumShare
       };
     }
+  },
+  {
+    id: 'disability-insurance-needs-calculator',
+    category: 'insurance',
+    glyph: 'DI',
+    updatedAt: '2026-11-18',
+    aliases: ['how much disability insurance do i need calculator', 'long term disability income replacement calculator', 'disability insurance coverage gap calculator', 'income protection insurance calculator'],
+    related: ['long-term-care-insurance-needs-calculator', 'human-life-value-calculator', 'emergency-fund-calculator', 'retirement-savings-calculator'],
+    title: 'Disability Insurance Needs Calculator',
+    description: 'Find the gap between a target income-replacement percentage and any disability coverage you already have — long-term disability policies typically replace 60-80% of income, per the Council for Disability Insurance Awareness.',
+    example: 'On a $72,000 salary with a 60% income-replacement target and $1,200 a month of existing disability coverage, the gap is $2,400 a month — the existing coverage only replaces 20% of income, 40 percentage points short of the target.',
+    breakdown: {
+      headline: 'monthlyBenefitGap',
+      headlineLabel: 'Additional monthly benefit to consider',
+      outputs: [
+        { id: 'monthlyBenefitGap', format: 'currency' },
+        { id: 'desiredMonthlyBenefit', label: 'Target monthly benefit', format: 'currency' },
+        { id: 'existingReplacementPercent', label: 'What your existing coverage actually replaces', format: 'percent' },
+        { id: 'annualBenefitGap', label: 'Gap, annualized', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Income and target', inputs: ['annualIncome', 'desiredReplacementPercent'] },
+        { title: 'Coverage you already have', inputs: ['existingMonthlyBenefit'] }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'existingMonthlyBenefit', label: 'Covered by existing disability benefit' },
+          { from: 'monthlyBenefitGap', label: 'Gap to the target' }
+        ],
+        center: 'desiredMonthlyBenefit',
+        centerSub: 'Target monthly benefit'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why disability insurance never replaces 100% of income',
+        paragraphs: [
+          "Losing the ability to work is a far more common risk than most people budget for. The Council for Disability Insurance Awareness states that \"just under one in four of today's 20-year-olds can expect to be out of work for at least a year because of a disabling condition before they reach the normal retirement age.\" Disability insurance exists to replace part of an income lost to exactly that kind of illness or injury.",
+          'It is deliberately never a full replacement. The Council for Disability Insurance Awareness states that long-term disability insurance "covers between 60-80 percent of your income" — insurers cap the benefit below 100% on purpose, so that returning to work always pays more than staying on a disability claim. Group employer coverage, individual policies, or some combination of the two can add up to a figure inside or outside that typical range depending on what is actually in force.',
+          "Social Security Disability Insurance (SSDI) is a separate, much smaller safety net, not a substitute for this kind of coverage: the Council for Disability Insurance Awareness states the average SSDI benefit for a disabled worker was about $1,630 a month as of February 2026 — $19,560 a year, below the federal poverty guideline for a two-person household. Most households need private or employer disability coverage to come anywhere close to a 60-80% replacement rate."
+        ]
+      },
+      howTo: {
+        intro: 'Enter your income, a target income-replacement percentage within the commonly cited 60-80% range, and any monthly disability benefit you already have through an employer or individual policy.',
+        steps: [
+          { name: 'Enter your annual income', text: 'Your gross income from work — the amount a disability would actually interrupt.' },
+          { name: 'Set a target replacement percentage', text: 'The Council for Disability Insurance Awareness cites a typical long-term disability range of 60-80%. Pick a figure in that range, or your own, based on your fixed expenses.' },
+          { name: 'Enter your existing monthly disability benefit', text: 'Add up any employer-provided long-term disability benefit and any individual policy benefit you already have. Enter 0 if you have none.' },
+          { name: 'Read the result', text: "The headline is the additional monthly benefit to consider on top of what you already have. The donut shows how much of your target is already covered versus how much is still a gap." }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "The target monthly benefit is a percentage of monthly income; the gap is what's left after subtracting existing coverage.",
+        expression: 'TargetMonthly = (AnnualIncome ÷ 12) × ReplacementPercent\nGap = max(0, TargetMonthly − ExistingMonthly)',
+        terms: [
+          { symbol: 'AnnualIncome', meaning: 'Gross annual income from work.' },
+          { symbol: 'ReplacementPercent', meaning: "The target share of income to replace, as a percent — commonly 60-80% for long-term disability." },
+          { symbol: 'TargetMonthly', meaning: 'The target monthly disability benefit.' },
+          { symbol: 'ExistingMonthly', meaning: 'Any disability benefit already in force, from an employer plan, an individual policy, or both.' },
+          { symbol: 'Gap', meaning: 'The additional monthly benefit it would take to reach the target.' }
+        ],
+        note: 'This is a planning estimate, not an underwriting calculation. Actual available coverage amounts depend on an insurer\'s own rules and your insurability.'
+      },
+      workedExample: {
+        intro: 'A $72,000 salary, a 60% replacement target, and $1,200 a month of existing employer-provided disability coverage.',
+        rows: [
+          { label: 'Target monthly benefit ($72,000 ÷ 12 × 60%)', value: '$3,600' },
+          { label: 'Existing coverage actually replaces ($1,200 × 12 ÷ $72,000)', value: '20%' },
+          { label: 'Monthly gap ($3,600 − $1,200)', value: '$2,400' },
+          { label: 'Gap, annualized ($2,400 × 12)', value: '$28,800' }
+        ],
+        result: '$2,400 a month short of the 60% target',
+        explanation: 'The existing $1,200 benefit replaces only 20% of this income, 40 percentage points short of the 60% target (60% − 20%), which is the kind of gap an added individual disability policy or a supplemental employer option is meant to close.'
+      },
+      watchOut: [
+        { title: 'This is an educational estimate, not a quote or an offer to sell insurance', body: 'This calculator estimates a coverage gap for planning purposes. It does not sell, recommend or bind any policy, and is not a substitute for a licensed insurance agent who can quote actual available coverage.' },
+        { title: 'Group and individual benefits can be taxed differently', body: 'An employer-paid group disability benefit is often taxable income if a claim is paid, while a benefit from a policy you paid for with after-tax dollars is often not. A target set on gross income without accounting for this can overshoot or undershoot the real after-tax need.' },
+        { title: 'SSDI is not a substitute for private coverage', body: 'The average SSDI benefit is a few hundred to a couple thousand dollars a month and is hard to qualify for quickly — it should not be counted as meaningful income replacement in this calculation.' },
+        { title: 'Insurers cap how much you can buy', body: 'Because benefits are capped at 60-80% of income by design, you generally cannot insure 100% of your income even if you want to — this is meant to preserve the incentive to return to work, not to limit what you need.' },
+        { title: 'This does not check your insurability', body: 'Actually obtaining a policy depends on underwriting — health, occupation and existing coverage all affect what an insurer will offer. This calculator only estimates the target number, not what you can buy.' }
+      ],
+      references: [
+        { label: 'Council for Disability Insurance Awareness, "The Risk Is Very Real" (60-80% income-replacement figure, cost)', url: 'https://thecdia.org/the-risk-is-very-real/' },
+        { label: 'Council for Disability Insurance Awareness, "Disability Statistics" (1 in 4 statistic, SSDI average benefit)', url: 'https://thecdia.org/disability-statistics/' }
+      ]
+    },
+    inputs: [
+      { id: 'annualIncome', label: 'Annual income', type: 'currency', placeholder: '72000', defaultValue: 72000, step: 1000, min: 0 },
+      { id: 'desiredReplacementPercent', label: 'Target income-replacement percent', type: 'percent', placeholder: '60', defaultValue: 60, step: 5, min: 0 },
+      { id: 'existingMonthlyBenefit', label: 'Existing monthly disability benefit', type: 'currency', placeholder: '1200', defaultValue: 1200, step: 50, min: 0 }
+    ],
+    seo: {
+      title: 'Disability Insurance Needs Calculator – Income Replacement Gap',
+      description: 'Find the gap between a target income-replacement percentage and your existing disability coverage, using the 60-80% range cited by the Council for Disability Insurance Awareness.',
+      faq: [
+        { question: 'How much disability insurance do I need?', answer: 'The Council for Disability Insurance Awareness states long-term disability coverage typically "covers between 60-80 percent of your income." Multiply your monthly income by a percentage in that range to get a target, then subtract any coverage you already have.' },
+        { question: 'Why can\'t I buy disability insurance that replaces 100% of my income?', answer: 'Insurers cap benefits below 100% of income by design, so returning to work still pays more than staying on a disability claim. A 60-80% range is the commonly cited typical benefit level.' },
+        { question: 'What is a worked example with no existing coverage?', answer: 'A $60,000 salary with a 65% target and no existing coverage needs a target monthly benefit of $3,250 ($60,000 ÷ 12 × 65%), all of it a gap since there is no existing benefit to subtract.' },
+        { question: 'How likely am I to become disabled during my career?', answer: 'The Council for Disability Insurance Awareness states "just under one in four of today\'s 20-year-olds can expect to be out of work for at least a year because of a disabling condition before they reach the normal retirement age."' },
+        { question: 'Is Social Security Disability Insurance enough on its own?', answer: 'Usually not. The Council for Disability Insurance Awareness states the average SSDI benefit was about $1,630 a month ($19,560 a year) as of February 2026 — below the federal poverty guideline for a two-person household, and far short of a 60-80% replacement rate for most incomes.' },
+        { question: 'What if my existing coverage already exceeds my target?', answer: 'The gap shows as $0 — the calculator does not show a negative number, since there is no shortfall to close. A $50,000 salary with a 60% target ($2,500) and $3,000 of existing monthly coverage already exceeds the target.' },
+        { question: 'Does this calculator check whether I can actually buy more coverage?', answer: 'No. It only estimates a target gap. Whether an insurer will offer that amount depends on underwriting factors like health, occupation and existing coverage.' }
+      ]
+    },
+    compute(values) {
+      const desiredMonthlyBenefit = (values.annualIncome / 12) * (values.desiredReplacementPercent / 100);
+      const monthlyBenefitGap = Math.max(0, desiredMonthlyBenefit - values.existingMonthlyBenefit);
+      const annualBenefitGap = monthlyBenefitGap * 12;
+      const existingReplacementPercent = values.annualIncome === 0 ? 0 : ((values.existingMonthlyBenefit * 12) / values.annualIncome) * 100;
+      return {
+        monthlyBenefitGap,
+        desiredMonthlyBenefit,
+        existingReplacementPercent,
+        annualBenefitGap,
+        existingMonthlyBenefit: values.existingMonthlyBenefit
+      };
+    }
   }
 ];

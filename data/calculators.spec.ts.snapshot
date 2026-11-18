@@ -5258,6 +5258,53 @@ exports[`compute() snapshots > dime-method-life-insurance-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > disability-insurance-needs-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "annualIncome": 72000,
+      "desiredReplacementPercent": 60,
+      "existingMonthlyBenefit": 1200
+    },
+    "outputs": {
+      "monthlyBenefitGap": 2400,
+      "desiredMonthlyBenefit": 3600,
+      "existingReplacementPercent": 20,
+      "annualBenefitGap": 28800,
+      "existingMonthlyBenefit": 1200
+    }
+  },
+  "typical": {
+    "inputs": {
+      "annualIncome": 108000,
+      "desiredReplacementPercent": 90,
+      "existingMonthlyBenefit": 1800
+    },
+    "outputs": {
+      "monthlyBenefitGap": 6300,
+      "desiredMonthlyBenefit": 8100,
+      "existingReplacementPercent": 20,
+      "annualBenefitGap": 75600,
+      "existingMonthlyBenefit": 1800
+    }
+  },
+  "edge": {
+    "inputs": {
+      "annualIncome": 0,
+      "desiredReplacementPercent": 0,
+      "existingMonthlyBenefit": 0
+    },
+    "outputs": {
+      "monthlyBenefitGap": 0,
+      "desiredMonthlyBenefit": 0,
+      "existingReplacementPercent": 0,
+      "annualBenefitGap": 0,
+      "existingMonthlyBenefit": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > discount-calculator 1`] = `
 {
   "default": {

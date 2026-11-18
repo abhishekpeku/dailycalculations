@@ -557,7 +557,8 @@ export const calculatorOrder: string[] = [
   'term-life-coverage-calculator',
   'whole-life-vs-term-life-cost-calculator',
   'out-of-pocket-maximum-calculator',
-  'cobra-cost-calculator'
+  'cobra-cost-calculator',
+  'disability-insurance-needs-calculator'
 ];
 
 const rank = (id: string) => {

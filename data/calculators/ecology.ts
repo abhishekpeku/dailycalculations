@@ -341,6 +341,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'carbon-footprint-calculator',
     category: 'ecology',
+    group: 'Carbon & Footprint Tracking',
     glyph: 'CO2',
     updatedAt: '2026-11-17',
     aliases: [
@@ -508,6 +509,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'flight-carbon-footprint-calculator',
     category: 'ecology',
+    group: 'Carbon & Footprint Tracking',
     glyph: 'km',
     updatedAt: '2026-11-17',
     aliases: [
@@ -686,6 +688,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'water-footprint-calculator',
     category: 'ecology',
+    group: 'Carbon & Footprint Tracking',
     glyph: 'H2O',
     updatedAt: '2026-11-17',
     aliases: [
@@ -859,6 +862,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'plastic-footprint-calculator',
     category: 'ecology',
+    group: 'Carbon & Footprint Tracking',
     glyph: 'kg',
     updatedAt: '2026-11-17',
     aliases: [
@@ -1007,6 +1011,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'meat-footprint-calculator',
     category: 'ecology',
+    group: 'Carbon & Footprint Tracking',
     glyph: 'diet',
     updatedAt: '2026-11-17',
     aliases: ['meat footprint calculator', 'diet carbon footprint calculator', 'food carbon footprint calculator', 'vegan footprint calculator', 'vegetarian footprint calculator'],
@@ -1175,6 +1180,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'car-vs-bike-calculator',
     category: 'ecology',
+    group: 'Sustainable Living',
     glyph: 'vs',
     updatedAt: '2026-11-17',
     aliases: [
@@ -1325,6 +1331,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'tree-benefits-calculator',
     category: 'ecology',
+    group: 'Sustainable Living',
     glyph: 'tree',
     updatedAt: '2026-11-17',
     aliases: [
@@ -1465,6 +1472,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'books-vs-ebooks-calculator',
     category: 'ecology',
+    group: 'Sustainable Living',
     glyph: 'book',
     updatedAt: '2026-11-17',
     aliases: [
@@ -1609,6 +1617,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'drip-faucet-waste-calculator',
     category: 'ecology',
+    group: 'Sustainable Living',
     glyph: 'gal',
     updatedAt: '2026-11-17',
     aliases: [
@@ -1751,6 +1760,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'recycling-rate-calculator',
     category: 'ecology',
+    group: 'Sustainable Living',
     glyph: '%',
     updatedAt: '2026-11-17',
     aliases: [
@@ -1892,6 +1902,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'carrying-capacity-calculator',
     category: 'ecology',
+    group: 'Population & Biodiversity',
     glyph: 'K',
     updatedAt: '2026-11-17',
     aliases: [
@@ -2061,6 +2072,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'shannon-diversity-index-calculator',
     category: 'ecology',
+    group: 'Population & Biodiversity',
     glyph: "H'",
     updatedAt: '2026-11-17',
     aliases: [
@@ -2234,6 +2246,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'population-density-calculator',
     category: 'ecology',
+    group: 'Population & Biodiversity',
     glyph: '/km²',
     updatedAt: '2026-11-17',
     aliases: [
@@ -2365,6 +2378,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'simpson-diversity-index-calculator',
     category: 'ecology',
+    group: 'Population & Biodiversity',
     glyph: 'D',
     updatedAt: '2026-11-17',
     aliases: [
@@ -2526,6 +2540,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'lotka-volterra-calculator',
     category: 'ecology',
+    group: 'Population & Biodiversity',
     glyph: 'x·y',
     updatedAt: '2026-11-17',
     aliases: [
@@ -2677,6 +2692,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'air-quality-index-calculator',
     category: 'ecology',
+    group: 'Environmental Health',
     glyph: 'AQI',
     updatedAt: '2026-11-17',
     aliases: [
@@ -2870,6 +2886,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'co2-breathing-emission-calculator',
     category: 'ecology',
+    group: 'Environmental Health',
     glyph: 'VCO2',
     updatedAt: '2026-11-17',
     aliases: [
@@ -3046,6 +3063,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'mark-recapture-population-estimate-calculator',
     category: 'ecology',
+    group: 'Population & Biodiversity',
     glyph: 'N',
     updatedAt: '2026-11-17',
     aliases: [
@@ -3212,6 +3230,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'noise-exposure-calculator',
     category: 'ecology',
+    group: 'Environmental Health',
     glyph: 'dB',
     updatedAt: '2026-11-17',
     aliases: [
@@ -3362,6 +3381,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'trophic-level-energy-calculator',
     category: 'ecology',
+    group: 'Population & Biodiversity',
     glyph: 'η',
     updatedAt: '2026-11-17',
     aliases: [
@@ -3500,6 +3520,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'fish-mercury-calculator',
     category: 'ecology',
+    group: 'Environmental Health',
     glyph: 'Hg',
     updatedAt: '2026-11-18',
     aliases: [
@@ -3659,6 +3680,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'earth-overshoot-day-calculator',
     category: 'ecology',
+    group: 'Carbon & Footprint Tracking',
     glyph: 'gha',
     updatedAt: '2026-11-18',
     aliases: [
@@ -3799,6 +3821,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'water-fixture-calculator',
     category: 'ecology',
+    group: 'Sustainable Living',
     glyph: 'gpm',
     updatedAt: '2026-11-18',
     aliases: [
@@ -3950,6 +3973,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'species-extinction-rate-calculator',
     category: 'ecology',
+    group: 'Population & Biodiversity',
     glyph: 'ext',
     updatedAt: '2026-11-18',
     aliases: [
@@ -4096,6 +4120,7 @@ export const ecologyCalculators: CalculatorConfig[] = [
   {
     id: 'food-waste-composting-calculator',
     category: 'ecology',
+    group: 'Sustainable Living',
     glyph: 'lb',
     updatedAt: '2026-11-18',
     aliases: [

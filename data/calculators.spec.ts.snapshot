@@ -628,6 +628,50 @@ exports[`compute() snapshots > antipode-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > appliance-energy-cost-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "wattage": 1500,
+      "hoursPerDay": 1,
+      "ratePerKwh": 0.1831
+    },
+    "outputs": {
+      "dailyCost": 0.27465,
+      "monthlyCost": 8.2395,
+      "annualCost": 100.24725,
+      "dailyKwh": 1.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "wattage": 2250,
+      "hoursPerDay": 1.5,
+      "ratePerKwh": 0.27
+    },
+    "outputs": {
+      "dailyCost": 0.91125,
+      "monthlyCost": 27.3375,
+      "annualCost": 332.60625,
+      "dailyKwh": 3.375
+    }
+  },
+  "edge": {
+    "inputs": {
+      "wattage": 0,
+      "hoursPerDay": 0,
+      "ratePerKwh": 0
+    },
+    "outputs": {
+      "dailyCost": 0,
+      "monthlyCost": 0,
+      "annualCost": 0,
+      "dailyKwh": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > area-calculator 1`] = `
 {
   "default": {
@@ -1051,6 +1095,47 @@ exports[`compute() snapshots > baseball-batting-average-calculator 1`] = `
       "onBasePercentage": 0,
       "sluggingPercentage": 0,
       "onBasePlusSlugging": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > battery-backup-sizing-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "criticalLoadWatts": 6300,
+      "backupHours": 8,
+      "reserveMarginPercent": 10
+    },
+    "outputs": {
+      "requiredKwh": 55.44,
+      "requiredKwhBare": 50.4,
+      "batteriesNeeded": 5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "criticalLoadWatts": 9500,
+      "backupHours": 12,
+      "reserveMarginPercent": 15
+    },
+    "outputs": {
+      "requiredKwh": 131.1,
+      "requiredKwhBare": 114,
+      "batteriesNeeded": 10
+    }
+  },
+  "edge": {
+    "inputs": {
+      "criticalLoadWatts": 0,
+      "backupHours": 1,
+      "reserveMarginPercent": 0
+    },
+    "outputs": {
+      "requiredKwh": 0,
+      "requiredKwhBare": 0,
+      "batteriesNeeded": 0
     }
   }
 }
@@ -8501,6 +8586,62 @@ exports[`compute() snapshots > heat-index-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > heat-pump-savings-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "fuelType": 1,
+      "annualFuelUsed": 600,
+      "currentEfficiencyPercent": 80,
+      "currentFuelPricePerUnit": 2.61,
+      "heatPumpCop": 3,
+      "electricityRate": 0.1831
+    },
+    "outputs": {
+      "annualSavings": 707.3833529,
+      "currentAnnualCost": 1566,
+      "heatPumpAnnualCost": 858.6166471,
+      "percentSavings": 45.17135076,
+      "heatPumpKwhNeeded": 4689.33177
+    }
+  },
+  "typical": {
+    "inputs": {
+      "fuelType": 2,
+      "annualFuelUsed": 900,
+      "currentEfficiencyPercent": 120,
+      "currentFuelPricePerUnit": 3.92,
+      "heatPumpCop": 4.5,
+      "electricityRate": 0.27
+    },
+    "outputs": {
+      "annualSavings": 897.6365768,
+      "currentAnnualCost": 3528,
+      "heatPumpAnnualCost": 2630.363423,
+      "percentSavings": 25.44321363,
+      "heatPumpKwhNeeded": 9742.086753
+    }
+  },
+  "edge": {
+    "inputs": {
+      "fuelType": 1,
+      "annualFuelUsed": 0,
+      "currentEfficiencyPercent": 0,
+      "currentFuelPricePerUnit": 0,
+      "heatPumpCop": 0.1,
+      "electricityRate": 0
+    },
+    "outputs": {
+      "annualSavings": 0,
+      "currentAnnualCost": 0,
+      "heatPumpAnnualCost": 0,
+      "percentSavings": "NaN",
+      "heatPumpKwhNeeded": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > hemocytometer-calculator 1`] = `
 {
   "default": {
@@ -8679,6 +8820,47 @@ exports[`compute() snapshots > home-affordability-calculator 1`] = `
       "totalMonthlyPayment": 0,
       "frontEndRatio": "NaN",
       "backEndRatio": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > home-electricity-consumption-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "wattage": 1200,
+      "hoursPerDay": 8,
+      "count": 1
+    },
+    "outputs": {
+      "dailyKwh": 9.6,
+      "monthlyKwh": 288,
+      "annualKwh": 3504
+    }
+  },
+  "typical": {
+    "inputs": {
+      "wattage": 1800,
+      "hoursPerDay": 12,
+      "count": 2
+    },
+    "outputs": {
+      "dailyKwh": 43.2,
+      "monthlyKwh": 1296,
+      "annualKwh": 15768
+    }
+  },
+  "edge": {
+    "inputs": {
+      "wattage": 0,
+      "hoursPerDay": 0,
+      "count": 1
+    },
+    "outputs": {
+      "dailyKwh": 0,
+      "monthlyKwh": 0,
+      "annualKwh": 0
     }
   }
 }
@@ -12889,6 +13071,50 @@ exports[`compute() snapshots > odds-ratio-calculator 1`] = `
       "riskExposedPercent": "NaN",
       "riskUnexposedPercent": "NaN",
       "correctionApplied": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > off-grid-solar-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "dailyEnergyNeedKwh": 5,
+      "sunHours": 5,
+      "systemLossesPercent": 20,
+      "daysOfAutonomy": 2,
+      "depthOfDischargePercent": 90
+    },
+    "outputs": {
+      "requiredArrayKw": 1.25,
+      "batteryBankKwh": 11.11111111
+    }
+  },
+  "typical": {
+    "inputs": {
+      "dailyEnergyNeedKwh": 7.5,
+      "sunHours": 7.5,
+      "systemLossesPercent": 30,
+      "daysOfAutonomy": 3,
+      "depthOfDischargePercent": 135
+    },
+    "outputs": {
+      "requiredArrayKw": 1.428571429,
+      "batteryBankKwh": 16.66666667
+    }
+  },
+  "edge": {
+    "inputs": {
+      "dailyEnergyNeedKwh": 0,
+      "sunHours": 0.5,
+      "systemLossesPercent": 0,
+      "daysOfAutonomy": 1,
+      "depthOfDischargePercent": 10
+    },
+    "outputs": {
+      "requiredArrayKw": 0,
+      "batteryBankKwh": 0
     }
   }
 }

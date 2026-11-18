@@ -579,5 +579,576 @@ export const solarCalculators: CalculatorConfig[] = [
       const creditShortfallPercent = values.retailRatePerKwh > 0 ? (1 - values.netMeteringRatePerKwh / values.retailRatePerKwh) * 100 : NaN;
       return { monthlyCredit, annualCredit, monthlyValueAtRetail, annualValueAtRetail, creditShortfallPercent };
     }
+  },
+  {
+    id: 'battery-backup-sizing-calculator',
+    category: 'solar',
+    glyph: 'kWh',
+    updatedAt: '2026-11-18',
+    aliases: ['home battery backup sizing calculator', 'how big a solar battery do i need', 'solar battery capacity calculator', 'backup battery kwh calculator', 'how many solar batteries do i need'],
+    related: ['solar-panel-system-size-calculator', 'off-grid-solar-calculator', 'home-electricity-consumption-calculator', 'solar-savings-calculator'],
+    title: 'Battery Backup Sizing Calculator',
+    description: 'Find the battery capacity (kWh) needed to back up a set of loads for a chosen number of hours, plus how many average-sized home batteries that takes.',
+    example: '6,300 W of load (a dishwasher, an AC unit, a fridge and some lights and electronics running together) for 8 hours, with a 10% margin, needs 55.44 kWh — about 5 batteries at a common 13.5 kWh size.',
+    breakdown: {
+      headline: 'requiredKwh',
+      headlineLabel: 'Battery capacity needed',
+      outputs: [
+        { id: 'requiredKwh', label: 'Battery capacity needed', format: 'number', dimension: 'energy', unit: 'kWh' },
+        { id: 'requiredKwhBare', label: 'Bare minimum, before any margin', format: 'number', dimension: 'energy', unit: 'kWh' },
+        { id: 'batteriesNeeded', label: 'Batteries needed (at 13.5 kWh each)', format: 'integer' }
+      ],
+      groups: [
+        { title: 'Loads to back up', inputs: ['criticalLoadWatts', 'backupHours'] },
+        { title: 'Safety margin', inputs: ['reserveMarginPercent'], optional: true }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'requiredKwhBare', label: 'Bare minimum' },
+          { from: 'requiredKwh', label: 'With margin' }
+        ],
+        title: 'Battery capacity needed, before and after the margin'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Sizing a home battery for backup power',
+        paragraphs: [
+          'EnergySage, a solar-quote marketplace, lays out the core calculation for home battery backup directly: "multiply the appliances\' electricity demand by the number of hours they\'ll need to run. That\'ll tell you the kilowatt-hour (kWh) capacity you require for storage." Demand is measured in kilowatts (the rate of draw) and the result is in kilowatt-hours (demand × time) — the same relationship that makes a 1 kW load running for 3 hours use exactly as much energy as a 3 kW load running for 1 hour.',
+          'EnergySage\'s own worked example totals a household\'s loads this way: "a 1,500-watt (W) dishwasher, a 3,000-W air conditioner, an 800-W refrigerator, plus lights, WiFi and miscellaneous appliances that consume 1,000 W of electricity" — 6,300 W running together. Whether you want everything running at once, or only a smaller set of true essentials (the refrigerator and some lights, say), is a choice only you can make; this calculator just does the multiplication once you\'ve decided what "backed up" means for your home.',
+          'For scale, EnergySage also notes that "the average solar battery is roughly 10 to 13.5 kilowatt-hours (kWh) in size" — this calculator uses the top of that range, 13.5 kWh, to estimate how many battery units a given capacity requirement takes, since whole-home backup commonly needs more than one.'
+        ]
+      },
+      howTo: {
+        intro: 'Add up the wattage of what you want backed up, decide how many hours to cover, and optionally add a margin.',
+        steps: [
+          { name: 'Add up your critical-load wattage', text: 'Sum the wattage of everything you want running during an outage — check appliance nameplates or use the appliance energy cost calculator for one device at a time.' },
+          { name: 'Enter the hours you want covered', text: 'This is how long you want those loads able to run without the grid or solar recharging the battery.' },
+          { name: 'Add a margin, if you want one', text: 'A percentage above the bare-minimum figure, to leave room for battery aging, inverter losses, or loads you forgot to count.' },
+          { name: 'Read the result', text: 'The headline is the battery capacity needed in kWh; the rows below show the bare-minimum figure and roughly how many average-sized batteries that takes.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Capacity needed is simply load times time, scaled up by any margin you add.',
+        expression: 'bare kWh = (load in watts ÷ 1,000) × hours\nkWh needed = bare kWh × (1 + margin%)\nbatteries needed = ceil(kWh needed ÷ 13.5)',
+        terms: [
+          { symbol: 'load', meaning: 'Combined wattage of everything you want backed up, running at the same time.' },
+          { symbol: 'hours', meaning: 'How long you want that load able to run on battery alone.' },
+          { symbol: 'margin%', meaning: 'An optional buffer above the bare-minimum figure; 0% uses the bare minimum exactly.' },
+          { symbol: 'ceil(x)', meaning: 'Round up to the next whole battery — you can only install whole units.' }
+        ],
+        note: 'This sizes stored energy only. It does not check whether your inverter\'s power rating (kW, not kWh) can actually deliver your combined load at once — a battery can hold enough energy but still trip if asked to output more power than its inverter supports. Check your battery\'s continuous power rating against your peak combined load separately.'
+      },
+      workedExample: {
+        intro: 'EnergySage\'s own example load — a 1,500 W dishwasher, a 3,000 W air conditioner, an 800 W refrigerator, and 1,000 W of lights, WiFi and miscellaneous electronics, 6,300 W in total — backed up for 8 hours, with a 10% margin.',
+        rows: [
+          { label: 'Bare minimum (6.3 kW × 8 h)', value: '50.4 kWh' },
+          { label: 'With a 10% margin (50.4 × 1.10)', value: '55.44 kWh' },
+          { label: 'Batteries needed (ceil(55.44 ÷ 13.5))', value: '5 batteries' }
+        ],
+        result: '55.44 kWh needed — about 5 batteries at 13.5 kWh each',
+        explanation: 'Dropping the 10% margin brings the figure back to the bare 50.4 kWh, which still needs 4 batteries at 13.5 kWh each (50.4 ÷ 13.5 = 3.73, rounded up) — one fewer than the margin-adjusted total. Backing up only the refrigerator and the lights/WiFi/misc load (1,800 W) for a longer 12-hour outage, with no margin, needs just 21.6 kWh — 2 batteries.'
+      },
+      watchOut: [
+        { title: 'This is energy (kWh), not power (kW)', body: 'A battery\'s kWh rating is how much it can store, not how much it can output at once. Check its continuous power rating (kW) against your actual combined load — a battery sized correctly on energy alone can still be unable to run everything simultaneously.' },
+        { title: 'Decide what "backed up" really means first', body: 'EnergySage\'s own example includes a 3,000 W air conditioner and a 1,500 W dishwasher — comfort and convenience loads, not strict essentials. Backing up only a refrigerator and some lights needs dramatically less capacity than backing up everything in the house.' },
+        { title: 'The 13.5 kWh reference is EnergySage\'s own upper bound, not every battery', body: 'EnergySage describes the average home battery as "roughly 10 to 13.5 kilowatt-hours" — actual products vary, and some systems stack smaller or larger units. Check your own battery\'s nameplate capacity for an exact unit count.' },
+        { title: 'No margin means no room for error', body: 'A 0% margin assumes your load estimate is exactly right and the battery discharges every kWh of its rated capacity. Real batteries, loads you forgot to count, and battery aging over time are all reasons to size a little above the bare minimum.' }
+      ],
+      references: [
+        { label: 'EnergySage, "How Many Solar Batteries Do You Need for Backup Power?" (sizing formula, example load, average battery size)', url: 'https://www.energysage.com/energy-storage/how-many-solar-batteries-needed/' }
+      ]
+    },
+    inputs: [
+      { id: 'criticalLoadWatts', label: 'Combined load to back up', type: 'number', placeholder: '6300', defaultValue: 6300, step: 100, min: 0, dimension: 'power', unit: 'W' },
+      { id: 'backupHours', label: 'Hours to cover', type: 'number', placeholder: '8', defaultValue: 8, step: 1, min: 1 },
+      { id: 'reserveMarginPercent', label: 'Safety margin above the bare minimum', type: 'percent', placeholder: '10', defaultValue: 10, step: 5, min: 0 }
+    ],
+    seo: {
+      title: 'Battery Backup Sizing Calculator – kWh Needed',
+      description: 'Find the battery capacity (kWh) needed to back up a set of loads for a chosen number of hours, and how many average-sized home batteries that takes.',
+      faq: [
+        { question: 'How do I size a home battery for backup power?', answer: 'EnergySage\'s own method: multiply the combined wattage of what you want backed up by the number of hours you want it running, then convert to kWh. A 6,300 W load for 8 hours needs 50.4 kWh before any safety margin.' },
+        { question: 'How many batteries do I need for whole-home backup?', answer: 'It depends on your load and how long you want it covered. In this calculator\'s worked example — 6,300 W for 8 hours with a 10% margin — about 5 batteries at a common 13.5 kWh size. Backing up only a refrigerator and some lights needs far fewer.' },
+        { question: 'How big is an average home solar battery?', answer: 'EnergySage puts it at "roughly 10 to 13.5 kilowatt-hours (kWh)." This calculator uses 13.5 kWh, the top of that range, to estimate a battery count.' },
+        { question: 'Should I back up my air conditioner and dishwasher too?', answer: 'That is a personal choice, not a technical requirement. EnergySage\'s own example includes both, but many homeowners choose to back up only true essentials — a refrigerator, lights, WiFi and medical equipment — which needs much less capacity.' },
+        { question: 'Why add a safety margin to the bare-minimum calculation?', answer: 'The bare-minimum figure assumes your load estimate is exact and the battery can discharge every kWh of its rating. A margin — 10% in the worked example — leaves room for battery aging, inverter losses, or a load you forgot to count.' },
+        { question: 'Does a bigger battery kWh rating guarantee it can run my appliances at once?', answer: 'No. kWh is stored energy; the battery\'s separate power rating (in kW) determines how much it can output at any one instant. A battery with plenty of stored energy can still be unable to start a large appliance if its power rating is too low.' }
+      ]
+    },
+    compute(values) {
+      const requiredKwhBare = (values.criticalLoadWatts / 1000) * values.backupHours;
+      const requiredKwh = requiredKwhBare * (1 + values.reserveMarginPercent / 100);
+      const batteriesNeeded = Math.ceil(requiredKwh / 13.5);
+      return { requiredKwh, requiredKwhBare, batteriesNeeded };
+    }
+  },
+  {
+    id: 'off-grid-solar-calculator',
+    category: 'solar',
+    glyph: 'OG',
+    updatedAt: '2026-11-18',
+    aliases: ['off grid solar system sizing calculator', 'stand alone solar system calculator', 'off grid solar panel and battery calculator', 'how big an off grid solar system do i need', 'off grid solar battery bank calculator'],
+    related: ['solar-panel-system-size-calculator', 'battery-backup-sizing-calculator', 'home-electricity-consumption-calculator', 'net-metering-savings-calculator'],
+    title: 'Off-Grid Solar System Calculator',
+    description: 'Size a fully off-grid (stand-alone) solar system\'s array and battery bank from daily energy need, sun-hours, system losses, days of autonomy and battery depth of discharge — no grid to fall back on.',
+    example: '5 kWh/day of off-grid use, 5 sun-hours, 20% system losses, 2 days of autonomy and a 90% depth of discharge calls for a 1.25 kW array and an 11.11 kWh battery bank.',
+    breakdown: {
+      headline: 'requiredArrayKw',
+      headlineLabel: 'Solar array size needed',
+      outputs: [
+        { id: 'requiredArrayKw', label: 'Solar array size needed', format: 'number' },
+        { id: 'batteryBankKwh', label: 'Battery bank size needed', format: 'number', dimension: 'energy', unit: 'kWh' }
+      ],
+      groups: [
+        { title: 'Daily use and sun', inputs: ['dailyEnergyNeedKwh', 'sunHours', 'systemLossesPercent'] },
+        { title: 'Battery bank', inputs: ['daysOfAutonomy', 'depthOfDischargePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'dailyEnergyNeedKwh', label: 'Daily use' },
+          { from: 'batteryBankKwh', label: 'Battery bank' }
+        ],
+        title: 'Daily energy use vs. battery bank size'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why off-grid sizing is different from grid-tied sizing',
+        paragraphs: [
+          'The solar panel system size calculator above sizes a grid-tied system to roughly match a home\'s usage over a whole year, because the grid absorbs every day-to-day mismatch — a cloudy week is simply bought from the utility, and a sunny one is exported. An off-grid (stand-alone) system has no such backstop: the U.S. Department of Energy\'s overview of PV system design notes that "batteries allow for the storage of solar photovoltaic energy, so we can use it to power our homes at night or when weather elements keep sunlight from reaching PV panels" — for an off-grid system, that battery bank is the only backstop there is, so both the array and the battery bank have to be sized for the worst realistic day, not the average one.',
+          'The array side of the sizing works the same way as the grid-tied calculator\'s production ratio, just expressed in "peak sun hours" instead: the number of hours a location\'s panels would need to receive maximum (1,000 W/m²) sunlight to deliver the day\'s actual solar energy. A location-specific figure — from a tool like PVWatts, or a local installer\'s own data — is far more reliable than a national default; this calculator\'s illustrative figure, 5 sun-hours, sits in the middle of the range most of the mainland U.S. sees.',
+          'The battery side borrows the same demand-times-time logic EnergySage uses for backup-battery sizing — "multiply the appliances\' electricity demand by the number of hours they\'ll need to run" — extended across more than one day. "Days of autonomy" is how many days the battery bank needs to cover with no solar input at all (a stretch of heavy cloud cover, say), and "depth of discharge" is how much of a battery\'s rated capacity can actually be used before recharging — check your own battery\'s spec sheet for its real figure rather than assuming a default, since it varies by battery chemistry and manufacturer.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your daily energy need and local sun-hours, then set how many cloudy days the battery bank needs to cover on its own.',
+        steps: [
+          { name: 'Enter your daily energy need', text: 'Use the kWh/day figure from the home electricity consumption calculator above, summed across everything you\'ll run off-grid.' },
+          { name: 'Enter your location\'s sun-hours', text: 'Use a location-specific peak-sun-hours figure if you have one (from PVWatts or an installer); the default is a rough mid-range U.S. illustrative figure.' },
+          { name: 'Enter system losses', text: 'A combined derate for wiring, inverter conversion and panel soiling — the default, 20%, is a reasonable starting point to adjust from.' },
+          { name: 'Set days of autonomy', text: 'How many consecutive no-sun days you want the battery bank to cover by itself. More days means a larger, more expensive bank.' },
+          { name: 'Enter your battery\'s depth of discharge', text: 'Check the manufacturer spec sheet — it varies by battery chemistry. The default, 90%, is illustrative, not a specific product\'s number.' },
+          { name: 'Read the result', text: 'The headline is the array size needed; the row below is the battery bank size.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored. This is a planning estimate — a system this important to get right deserves a professional off-grid design review.'
+      },
+      formula: {
+        intro: 'The array is sized to replace a day\'s energy use within the available sun-hours, after losses; the battery bank is sized to cover several sunless days at a usable fraction of its rated capacity.',
+        expression: 'array size (W) = daily energy need (Wh) ÷ (sun-hours × (1 − losses%))\nbattery bank (kWh) = daily energy need (kWh) × days of autonomy ÷ (depth of discharge%)',
+        terms: [
+          { symbol: 'daily energy need', meaning: 'Total energy used per day by everything the system powers, in kWh.' },
+          { symbol: 'sun-hours', meaning: 'Peak sun hours per day for the location — hours of 1,000 W/m² sunlight equivalent to the day\'s actual solar energy.' },
+          { symbol: 'losses%', meaning: 'Combined derate for wiring, inverter conversion and soiling.' },
+          { symbol: 'days of autonomy', meaning: 'Consecutive no-sun days the battery bank must cover without any solar input.' },
+          { symbol: 'depth of discharge%', meaning: 'The usable fraction of a battery\'s rated capacity before it needs recharging — check your own battery\'s spec sheet.' }
+        ],
+        note: 'This sizes the array and battery bank independently against the inputs you give it; it does not model a specific location\'s seasonal sun-hours swing or run a multi-day simulation. A location-specific tool or an off-grid installer\'s own design process accounts for far more — including worst-month sun-hours, not an annual or illustrative figure.'
+      },
+      workedExample: {
+        intro: 'An off-grid cabin uses 5 kWh a day, its location gets about 5 peak sun-hours, system losses are estimated at 20%, the battery bank should cover 2 days of autonomy, and the battery\'s depth of discharge is 90%.',
+        rows: [
+          { label: 'Array size (5,000 ÷ (5 × 0.80))', value: '1,250 W = 1.25 kW' },
+          { label: 'Battery bank (5 × 2 ÷ 0.90)', value: '11.11 kWh' }
+        ],
+        result: '1.25 kW array · 11.11 kWh battery bank',
+        explanation: 'Dropping to 4 sun-hours (a cloudier location, same 5 kWh/day need) raises the array size to 1,562.5 W — 25% bigger — because the same daily energy now has to be captured in fewer hours of sun. The battery bank is unaffected by sun-hours; at a lower 100% depth of discharge it would need only 10 kWh instead of 11.11 kWh, about 10% less, because more of each battery\'s capacity is considered usable.'
+      },
+      watchOut: [
+        { title: 'Size for the worst realistic day, not the average one', body: 'Unlike a grid-tied system, there is no utility to buy from during a stretch of bad weather. Use a conservative, location-specific sun-hours figure and enough days of autonomy for the cloudy spells your location actually gets.' },
+        { title: 'Depth of discharge varies a lot by battery', body: 'This calculator\'s 90% default is illustrative only — different battery chemistries and products specify very different usable fractions of their rated capacity. Check your own battery\'s spec sheet rather than trusting a default.' },
+        { title: 'This does not model seasonal swings', body: 'Sun-hours change through the year, often substantially — winter can be far worse than the annual average in many locations. Size against the worst month you actually need to get through, not a single annual figure.' },
+        { title: 'A professional design review matters more here than for grid-tied systems', body: 'An undersized grid-tied system just exports and imports a little differently than expected. An undersized off-grid system can mean no power at all during a bad stretch of weather — treat this as a planning estimate, not a final design.' }
+      ],
+      references: [
+        { label: 'U.S. Department of Energy, Solar Photovoltaic System Design Basics (role of batteries in a PV system)', url: 'https://www.energy.gov/eere/solar/solar-photovoltaic-system-design-basics' },
+        { label: 'EnergySage, "How Many Solar Batteries Do You Need for Backup Power?" (demand × time sizing formula)', url: 'https://www.energysage.com/energy-storage/how-many-solar-batteries-needed/' },
+        { label: 'U.S. Department of Energy, Homeowner\'s Guide to Going Solar (PVWatts, for location-specific sun-hours)', url: 'https://www.energy.gov/eere/solar/homeowners-guide-going-solar' }
+      ]
+    },
+    inputs: [
+      { id: 'dailyEnergyNeedKwh', label: 'Daily energy need', type: 'number', placeholder: '5', defaultValue: 5, step: 0.5, min: 0, dimension: 'energy', unit: 'kWh' },
+      { id: 'sunHours', label: 'Peak sun-hours per day (location)', type: 'number', placeholder: '5', defaultValue: 5, step: 0.5, min: 0.5 },
+      { id: 'systemLossesPercent', label: 'System losses (wiring, inverter, soiling)', type: 'percent', placeholder: '20', defaultValue: 20, step: 5, min: 0 },
+      { id: 'daysOfAutonomy', label: 'Days of autonomy (no-sun days to cover)', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 1 },
+      { id: 'depthOfDischargePercent', label: 'Battery depth of discharge', type: 'percent', placeholder: '90', defaultValue: 90, step: 5, min: 10 }
+    ],
+    seo: {
+      title: 'Off-Grid Solar System Calculator – Array & Battery Bank',
+      description: 'Size a stand-alone solar system\'s array (kW) and battery bank (kWh) from daily energy need, sun-hours, system losses, days of autonomy and depth of discharge.',
+      faq: [
+        { question: 'How is off-grid solar sizing different from grid-tied sizing?', answer: 'A grid-tied system is sized to roughly match annual usage because the grid absorbs day-to-day mismatches. An off-grid system has no such backstop, so both the array and the battery bank must be sized for the worst realistic stretch of weather, not an average day.' },
+        { question: 'What is a "peak sun hour"?', answer: 'The number of hours a location\'s panels would need full, 1,000 W/m² sunlight to deliver the day\'s actual total solar energy. It is a location-specific figure — this calculator\'s 5-hour default is an illustrative mid-range U.S. estimate.' },
+        { question: 'What does "days of autonomy" mean for a battery bank?', answer: 'How many consecutive days with no solar input the battery bank needs to cover entirely on its own — a stretch of heavy cloud cover, for example. More days of autonomy means a larger, more expensive battery bank.' },
+        { question: 'What is battery depth of discharge?', answer: 'The usable fraction of a battery\'s rated capacity before it needs recharging. It varies by battery chemistry and product, so this calculator\'s 90% default is illustrative — check your own battery\'s spec sheet for its real figure.' },
+        { question: 'How big a system does a 5 kWh/day off-grid home need?', answer: 'In this calculator\'s worked example — 5 sun-hours, 20% system losses, 2 days of autonomy, 90% depth of discharge — about a 1.25 kW array and an 11.11 kWh battery bank. A cloudier location (fewer sun-hours) needs a larger array for the same usage.' },
+        { question: 'Does this account for seasonal changes in sunlight?', answer: 'No — it uses a single sun-hours figure you provide. Real locations see sun-hours swing substantially through the year, so sizing against the worst month, not an annual average, gives a more reliable system.' }
+      ]
+    },
+    compute(values) {
+      const lossFactor = 1 - values.systemLossesPercent / 100;
+      const requiredArrayWatts = values.sunHours > 0 && lossFactor > 0 ? (values.dailyEnergyNeedKwh * 1000) / (values.sunHours * lossFactor) : NaN;
+      const requiredArrayKw = requiredArrayWatts / 1000;
+      const batteryBankKwh = values.depthOfDischargePercent > 0 ? (values.dailyEnergyNeedKwh * values.daysOfAutonomy) / (values.depthOfDischargePercent / 100) : NaN;
+      return { requiredArrayKw, batteryBankKwh };
+    }
+  },
+  {
+    id: 'home-electricity-consumption-calculator',
+    category: 'solar',
+    glyph: 'ΣkWh',
+    updatedAt: '2026-11-18',
+    aliases: ['appliance electricity usage calculator', 'how much electricity does my appliance use', 'appliance kwh calculator', 'household power consumption calculator', 'appliance wattage to kwh calculator'],
+    related: ['solar-panel-system-size-calculator', 'electricity-bill-calculator', 'appliance-energy-cost-calculator', 'off-grid-solar-calculator'],
+    title: 'Home Electricity Consumption Calculator',
+    description: 'Estimate the kWh a group of identical appliances uses per day, month and year, from wattage, hours used per day and how many you have — a building block for sizing solar or an off-grid system.',
+    example: 'One 1,200 W window air conditioner running 8 hours a day uses 9.6 kWh a day — 288 kWh a month, 3,504 kWh a year, about 32.5% of the EIA\'s average U.S. household\'s annual usage on its own.',
+    breakdown: {
+      headline: 'monthlyKwh',
+      headlineLabel: 'Estimated monthly usage',
+      outputs: [
+        { id: 'monthlyKwh', label: 'Estimated monthly usage', format: 'number', dimension: 'energy', unit: 'kWh' },
+        { id: 'dailyKwh', label: 'Estimated daily usage', format: 'number', dimension: 'energy', unit: 'kWh' },
+        { id: 'annualKwh', label: 'Estimated annual usage', format: 'number', dimension: 'energy', unit: 'kWh' }
+      ],
+      groups: [{ title: 'Appliance', inputs: ['wattage', 'hoursPerDay', 'count'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'dailyKwh', label: 'Per day' },
+          { from: 'monthlyKwh', label: 'Per month' }
+        ],
+        title: 'Daily vs. monthly usage'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Turning wattage into kilowatt-hours',
+        paragraphs: [
+          'Every appliance has a power rating in watts — the rate it draws electricity at while running. Multiplying that rate by the hours it actually runs gives energy, measured in watt-hours; divide by 1,000 and you have kilowatt-hours, the unit every electricity bill is priced in. A 1,000 W appliance run for one hour uses exactly 1 kWh, the same as a 500 W appliance run for two hours — rate and time trade off directly, as the U.S. Energy Information Administration\'s own unit conversions make explicit (1 kilowatt-hour = 3,412 Btu, a fixed physical conversion, not an approximation).',
+          'This calculator multiplies one appliance\'s wattage by its daily hours of use and, if you have more than one of the same appliance, by the count — a string of 10 LED bulbs at 10 W each running 5 hours a day uses the same energy as a single 100 W bulb running 5 hours a day. Running the same math for every appliance type in a home and adding the results together builds up a full household estimate, piece by piece, which is exactly what feeds the solar panel system size calculator\'s "annual usage" field and the off-grid solar calculator\'s "daily energy need" field above.',
+          'Appliance wattage varies enormously by type and size. EnergySage, in its guide to sizing a home battery, lists a representative spread: a 1,500 W dishwasher, a 3,000 W air conditioner, an 800 W refrigerator, and lights, WiFi and miscellaneous electronics together drawing around 1,000 W — a useful illustration of just how much more some loads draw than others, even before accounting for how many hours each one actually runs.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter one appliance\'s wattage, how many hours a day it runs, and how many identical units you have.',
+        steps: [
+          { name: 'Enter the wattage', text: 'Check the appliance\'s nameplate, spec sheet or manual for its rated power draw in watts.' },
+          { name: 'Enter hours used per day', text: 'Estimate how many hours a day it actually runs — not how many hours it is merely plugged in or on standby.' },
+          { name: 'Enter the count', text: 'How many identical units you have running on that same schedule — leave it at 1 for a single appliance.' },
+          { name: 'Read the result', text: 'The headline is the estimated monthly usage; the rows below show the daily and annual figures.' },
+          { name: 'Repeat for each appliance type', text: 'Add the monthly figures from every appliance type together to build a full household estimate.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Energy is simply power times time, scaled by how many identical units there are.',
+        expression: 'daily kWh = (wattage × hours per day × count) ÷ 1,000\nmonthly kWh = daily kWh × 30\nannual kWh = daily kWh × 365',
+        terms: [
+          { symbol: 'wattage', meaning: 'One appliance\'s rated power draw while running, in watts.' },
+          { symbol: 'hours per day', meaning: 'How many hours a day it actually runs, not how long it is plugged in.' },
+          { symbol: 'count', meaning: 'How many identical units are running on that same schedule.' }
+        ],
+        note: 'This estimates consumption (kWh), not cost — see the appliance energy cost calculator for a single device\'s running cost, or the electricity bill calculator for a whole bill including fixed charges. Many appliances (refrigerators, thermostats, anything with a compressor or a standby mode) do not draw their full rated wattage continuously, so "hours used per day" is really "hours of equivalent full-power use," which is usually lower than the hours the appliance is simply switched on.'
+      },
+      workedExample: {
+        intro: 'One 1,200 W window air conditioner runs 8 hours a day.',
+        rows: [
+          { label: 'Daily usage (1,200 × 8 × 1 ÷ 1,000)', value: '9.6 kWh' },
+          { label: 'Monthly usage (9.6 × 30)', value: '288 kWh' },
+          { label: 'Annual usage (9.6 × 365)', value: '3,504 kWh' },
+          { label: 'Share of EIA\'s average household\'s annual usage (3,504 ÷ 10,791)', value: '32.5%' }
+        ],
+        result: '9.6 kWh/day · 288 kWh/month · 3,504 kWh/year',
+        explanation: 'Against the EIA\'s average U.S. household usage of 10,791 kWh a year, this one air conditioner alone accounts for about 32.5% of it — a reminder that a handful of high-wattage, long-running appliances usually dominate a home\'s electricity use far more than many small ones.'
+      },
+      watchOut: [
+        { title: 'This is usage, not cost', body: 'Multiply the resulting kWh by your electricity rate yourself, or use the appliance energy cost calculator (single device) or the electricity bill calculator (whole bill, with fixed charges) instead.' },
+        { title: 'Real appliances rarely draw full wattage the whole time', body: 'A refrigerator\'s compressor cycles on and off; a thermostat-controlled appliance only draws power while actively heating or cooling. "Hours per day" here means hours of equivalent full-power draw, which is often less than the hours the appliance is simply on.' },
+        { title: 'Nameplate wattage is a maximum, not always the running draw', body: 'Some appliances list a nameplate or startup wattage well above what they draw during normal, steady running. Where you have one, use a measured or manufacturer-stated typical running wattage instead.' },
+        { title: 'Add every appliance type for a full household estimate', body: 'This calculator covers one appliance type (and its count) at a time. A full home estimate means repeating this for every major appliance and adding the monthly figures together.' }
+      ],
+      references: [
+        { label: 'U.S. Energy Information Administration, Energy Explained — Units and Calculators (kWh/Btu conversion)', url: 'https://www.eia.gov/energyexplained/units-and-calculators/' },
+        { label: 'U.S. Energy Information Administration, FAQ — How much electricity does an American home use?', url: 'https://www.eia.gov/tools/faqs/faq.php?id=97&t=3' },
+        { label: 'EnergySage, "How Many Solar Batteries Do You Need for Backup Power?" (representative appliance wattages)', url: 'https://www.energysage.com/energy-storage/how-many-solar-batteries-needed/' }
+      ]
+    },
+    inputs: [
+      { id: 'wattage', label: 'Appliance wattage', type: 'number', placeholder: '1200', defaultValue: 1200, step: 10, min: 0, dimension: 'power', unit: 'W' },
+      { id: 'hoursPerDay', label: 'Hours used per day', type: 'number', placeholder: '8', defaultValue: 8, step: 0.5, min: 0 },
+      { id: 'count', label: 'Number of identical units', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Home Electricity Consumption Calculator – kWh/Month',
+      description: 'Estimate the kWh a group of identical appliances uses per day, month and year, from wattage, hours used per day and how many you have.',
+      faq: [
+        { question: 'How do I calculate an appliance\'s electricity usage?', answer: 'Multiply its wattage by the hours it runs per day, then divide by 1,000 for kWh. A 1,200 W appliance running 8 hours a day uses 9.6 kWh that day — 288 kWh over a 30-day month.' },
+        { question: 'How much of a home\'s electricity use can one appliance account for?', answer: 'It depends entirely on the appliance and how long it runs. In this calculator\'s worked example, one 1,200 W air conditioner running 8 hours a day uses about 3,504 kWh a year — roughly 32.5% of the EIA\'s average U.S. household\'s total annual usage, 10,791 kWh.' },
+        { question: 'Is this the same as my electricity bill\'s cost?', answer: 'No — this estimates energy used (kWh) only. Multiply the result by your electricity rate for a rough cost, or use the appliance energy cost calculator (one device) or the electricity bill calculator (a whole bill, with fixed charges) instead.' },
+        { question: 'What wattage should I use for an appliance I own?', answer: 'Check its nameplate, spec sheet or manual. If it lists a range or a startup wattage well above its steady running draw, use the typical running figure where one is given.' },
+        { question: 'Why might my result overestimate real usage?', answer: 'Many appliances cycle on and off (a refrigerator\'s compressor) or only draw full power part of the time (anything thermostat-controlled). "Hours used per day" should reflect hours of equivalent full-power draw, which is often less than hours simply switched on.' },
+        { question: 'How do I estimate my whole home\'s electricity use?', answer: 'Run this calculator once per major appliance type (with its own wattage, daily hours and count), then add the monthly kWh figures together.' }
+      ]
+    },
+    compute(values) {
+      const dailyKwh = (values.wattage * values.hoursPerDay * values.count) / 1000;
+      const monthlyKwh = dailyKwh * 30;
+      const annualKwh = dailyKwh * 365;
+      return { dailyKwh, monthlyKwh, annualKwh };
+    }
+  },
+  {
+    id: 'appliance-energy-cost-calculator',
+    category: 'solar',
+    glyph: '$/d',
+    updatedAt: '2026-11-18',
+    aliases: ['single appliance cost calculator', 'how much does it cost to run this appliance', 'cost to run an appliance calculator', 'electricity cost per appliance calculator', 'appliance operating cost calculator'],
+    related: ['home-electricity-consumption-calculator', 'electricity-bill-calculator', 'solar-savings-calculator', 'solar-panel-system-size-calculator'],
+    title: 'Appliance Energy Cost Calculator',
+    description: 'Find what a single appliance costs to run per day, month and year, from its wattage, hours used per day and your electricity rate.',
+    example: 'A 1,500 W dishwasher run 1 hour a day at $0.1831/kWh costs about $0.27 that day, $8.24 a month and $100.25 a year — 30 times as much as a 10 W LED bulb run 5 hours a day on the same rate.',
+    breakdown: {
+      headline: 'monthlyCost',
+      headlineLabel: 'Estimated monthly cost',
+      outputs: [
+        { id: 'monthlyCost', label: 'Estimated monthly cost', format: 'currency' },
+        { id: 'dailyCost', label: 'Estimated daily cost', format: 'currency' },
+        { id: 'annualCost', label: 'Estimated annual cost', format: 'currency' },
+        { id: 'dailyKwh', label: 'Energy used per day', format: 'number', dimension: 'energy', unit: 'kWh' }
+      ],
+      groups: [
+        { title: 'Appliance', inputs: ['wattage', 'hoursPerDay'] },
+        { title: 'Your rate', inputs: ['ratePerKwh'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'dailyCost', label: 'Per day' },
+          { from: 'monthlyCost', label: 'Per month' }
+        ],
+        title: 'Daily vs. monthly running cost'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What one appliance actually costs to run',
+        paragraphs: [
+          'Running cost is energy used times price: wattage times hours used per day gives watt-hours, divided by 1,000 for kWh, times your electricity rate for a dollar figure. This is the same wattage-times-time relationship the home electricity consumption calculator above uses for a group of identical appliances, applied here to a single device and carried all the way through to a cost instead of stopping at kWh — the two calculators are complementary, not duplicates: one is about how much energy something uses, this one is about what that energy costs at your own rate.',
+          'The gap between a high- and low-wattage appliance compounds through cost exactly as it does through energy. EnergySage\'s own example loads give a sense of the range: a 1,500 W dishwasher versus a 10 W LED bulb are 150 times apart in wattage alone. Run the dishwasher 1 hour a day and the bulb 5 hours a day, and the dishwasher still costs 30 times as much to run per year — long hours on a very low-wattage device rarely catches up to even brief use of a high-wattage one.',
+          'Electricity rates vary enormously by location, which this calculator\'s rate field accounts for directly. The U.S. Energy Information Administration\'s Electric Power Monthly put the national residential average at 18.31 cents per kWh in July 2026 — this calculator\'s default — while state averages that same month ranged from 13.41 cents in North Dakota to 48.00 cents in Hawaii, more than a 3.5x spread for running the exact same appliance.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the appliance\'s wattage, how many hours a day it runs, and your electricity rate.',
+        steps: [
+          { name: 'Enter the wattage', text: 'Check the appliance\'s nameplate, spec sheet or manual for its rated power draw in watts.' },
+          { name: 'Enter hours used per day', text: 'Estimate how many hours a day it actually runs at that draw, not how many hours it is simply plugged in.' },
+          { name: 'Enter your electricity rate', text: 'Use the per-kWh rate from a recent utility bill, not a national average, for an accurate figure.' },
+          { name: 'Read the result', text: 'The headline is the estimated monthly cost; the rows below show the daily and annual figures and the energy used per day.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Cost is energy used times rate; energy used is simply power times time.',
+        expression: 'daily kWh = (wattage × hours per day) ÷ 1,000\ndaily cost = daily kWh × rate\nmonthly cost = daily cost × 30\nannual cost = daily cost × 365',
+        terms: [
+          { symbol: 'wattage', meaning: 'The appliance\'s rated power draw while running, in watts.' },
+          { symbol: 'hours per day', meaning: 'How many hours a day it actually runs at that draw.' },
+          { symbol: 'rate', meaning: 'Your electricity price per kWh.' }
+        ],
+        note: 'This estimates one appliance\'s own running cost only — it does not include a utility\'s fixed monthly charges, which the electricity bill calculator accounts for. Many appliances don\'t draw their full rated wattage the whole time they are switched on, so "hours used per day" should reflect hours of equivalent full-power draw.'
+      },
+      workedExample: {
+        intro: 'A 1,500 W dishwasher runs 1 hour a day, at a $0.1831/kWh electricity rate.',
+        rows: [
+          { label: 'Daily energy (1,500 × 1 ÷ 1,000)', value: '1.5 kWh' },
+          { label: 'Daily cost (1.5 × $0.1831)', value: '$0.27' },
+          { label: 'Monthly cost (0.27465 × 30)', value: '$8.24' },
+          { label: 'Annual cost (0.27465 × 365)', value: '$100.25' }
+        ],
+        result: '$0.27/day · $8.24/month · $100.25/year',
+        explanation: 'A 10 W LED bulb run 5 hours a day on the same $0.1831/kWh rate costs only about $3.34 a year — the dishwasher, despite running just 1 hour a day against the bulb\'s 5, still costs exactly 30 times as much annually, because its wattage is 150 times higher and only a third of that gap is clawed back by the bulb\'s longer daily runtime.'
+      },
+      watchOut: [
+        { title: 'This is one device, not a whole bill', body: 'Real bills add fixed monthly charges (customer, meter, delivery) that don\'t scale with any one appliance\'s usage — see the electricity bill calculator for that fuller picture.' },
+        { title: 'Nameplate wattage can overstate actual running draw', body: 'Some appliances list a maximum or startup wattage above what they draw during steady, normal running. Use a measured or manufacturer-stated typical running wattage where you have one.' },
+        { title: 'Cycling appliances need an "equivalent full-power" hours estimate', body: 'A refrigerator or anything thermostat-controlled doesn\'t draw its full wattage continuously. "Hours used per day" should reflect hours of equivalent full-power draw, which is usually less than hours simply switched on.' },
+        { title: 'Electricity rates vary a lot by location', body: 'EIA\'s July 2026 data put the national residential average at 18.31 cents per kWh, ranging from 13.41 cents in North Dakota to 48.00 cents in Hawaii. Use your own bill\'s rate, not a national figure, for an accurate cost.' }
+      ],
+      references: [
+        { label: 'U.S. Energy Information Administration, Electric Power Monthly, Table 5.6.A (residential rates by state)', url: 'https://www.eia.gov/electricity/monthly/epm_table_grapher.php?t=table_5_06_a' },
+        { label: 'U.S. Energy Information Administration, Energy Explained — Units and Calculators (kWh conversion)', url: 'https://www.eia.gov/energyexplained/units-and-calculators/' },
+        { label: 'EnergySage, "How Many Solar Batteries Do You Need for Backup Power?" (representative appliance wattages)', url: 'https://www.energysage.com/energy-storage/how-many-solar-batteries-needed/' }
+      ]
+    },
+    inputs: [
+      { id: 'wattage', label: 'Appliance wattage', type: 'number', placeholder: '1500', defaultValue: 1500, step: 10, min: 0, dimension: 'power', unit: 'W' },
+      { id: 'hoursPerDay', label: 'Hours used per day', type: 'number', placeholder: '1', defaultValue: 1, step: 0.5, min: 0 },
+      { id: 'ratePerKwh', label: 'Electricity rate', type: 'currency', placeholder: '0.1831', defaultValue: 0.1831, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Appliance Energy Cost Calculator – Daily & Monthly',
+      description: 'Find what a single appliance costs to run per day, month and year, from its wattage, hours used per day and your electricity rate.',
+      faq: [
+        { question: 'How do I calculate what an appliance costs to run?', answer: 'Multiply its wattage by hours used per day, divide by 1,000 for kWh, then multiply by your electricity rate. A 1,500 W dishwasher run 1 hour a day at $0.1831/kWh costs about $0.27 a day.' },
+        { question: 'How much more does a high-wattage appliance cost than a low-wattage one?', answer: 'In this calculator\'s worked example, a 1,500 W dishwasher run 1 hour a day costs 30 times as much per year as a 10 W LED bulb run 5 hours a day — wattage usually dominates cost far more than how many hours a low-power device runs.' },
+        { question: 'Does this include my utility\'s fixed charges?', answer: 'No — this is one appliance\'s running cost only. Use the electricity bill calculator for a full bill estimate that includes fixed monthly charges.' },
+        { question: 'What electricity rate should I use?', answer: 'The per-kWh rate from your own utility bill. This calculator defaults to 18.31 cents per kWh, the EIA\'s July 2026 U.S. residential average, but EIA\'s own data shows state averages ranging from 13.41 cents to 48.00 cents — use your own bill\'s rate for an accurate figure.' },
+        { question: 'How do I find an appliance\'s wattage?', answer: 'Check its nameplate, spec sheet or manual. If it lists a maximum or startup wattage well above its steady running draw, use a typical running figure instead where one is given.' },
+        { question: 'How is this different from the home electricity consumption calculator?', answer: 'That calculator estimates kWh used by one or more identical appliances, without a cost attached. This one takes a single appliance all the way through to a dollar cost at your own electricity rate.' }
+      ]
+    },
+    compute(values) {
+      const dailyKwh = (values.wattage * values.hoursPerDay) / 1000;
+      const dailyCost = dailyKwh * values.ratePerKwh;
+      const monthlyCost = dailyCost * 30;
+      const annualCost = dailyCost * 365;
+      return { dailyCost, monthlyCost, annualCost, dailyKwh };
+    }
+  },
+  {
+    id: 'heat-pump-savings-calculator',
+    category: 'solar',
+    glyph: 'COP',
+    updatedAt: '2026-11-18',
+    aliases: ['heat pump vs furnace savings calculator', 'switching to a heat pump savings calculator', 'heat pump cost savings estimator', 'heat pump vs gas furnace calculator', 'how much does a heat pump save'],
+    related: ['ac-tonnage-btu-calculator', 'electricity-bill-calculator', 'solar-savings-calculator', 'appliance-energy-cost-calculator'],
+    title: 'Heat Pump Savings Calculator',
+    description: 'Estimate the annual savings from switching a home\'s heating from a furnace or electric resistance heat to a heat pump, from your current fuel use, efficiency and price, and the heat pump\'s COP.',
+    example: 'A home burning 600 therms a year in an 80%-efficient gas furnace at $2.61/therm, switching to a heat pump with a COP of 3 and $0.1831/kWh electricity, saves about $707.38 a year — 45.2% less than its current $1,566.00 heating cost.',
+    breakdown: {
+      headline: 'annualSavings',
+      headlineLabel: 'Estimated annual savings',
+      outputs: [
+        { id: 'annualSavings', label: 'Estimated annual savings', format: 'currency' },
+        { id: 'currentAnnualCost', label: 'Current annual heating cost', format: 'currency' },
+        { id: 'heatPumpAnnualCost', label: 'Estimated heat pump annual cost', format: 'currency' },
+        { id: 'percentSavings', label: 'Percent savings vs. current system', format: 'percent' },
+        { id: 'heatPumpKwhNeeded', label: 'Electricity the heat pump would use', format: 'number', dimension: 'energy', unit: 'kWh' }
+      ],
+      groups: [
+        { title: 'Your current heating system', inputs: ['fuelType', 'annualFuelUsed', 'currentEfficiencyPercent', 'currentFuelPricePerUnit'] },
+        { title: 'The heat pump', inputs: ['heatPumpCop', 'electricityRate'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'currentAnnualCost', label: 'Current system' },
+          { from: 'heatPumpAnnualCost', label: 'Heat pump' }
+        ],
+        title: 'Current annual heating cost vs. estimated heat pump cost'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why a heat pump can cost less to run than a furnace',
+        paragraphs: [
+          'A furnace burns fuel to make heat directly, so its efficiency (AFUE) can never exceed 100% — some energy is always lost up the flue. ENERGY STAR describes a heat pump completely differently: rather than generating heat, it moves existing heat from outside air into the home, which is why ENERGY STAR states "an ASHP is so efficient that it can deliver up to three times more heat energy to a home than the electrical energy it consumes." That ratio — heat delivered divided by electricity consumed — is a heat pump\'s coefficient of performance (COP). A COP of 3 means every unit of electricity moves three units of heat; a COP of 2 in a colder climate still beats the COP of 1 that a plain electric-resistance heater is stuck with, since resistance heat simply converts electricity straight to heat with none of the "borrowing" a heat pump does.',
+          'Comparing a heat pump against a furnace means converting both into the same units. A furnace\'s useful heat output is fuel used × the fuel\'s heat content × its AFUE efficiency; a heat pump\'s electricity use is that same useful heat divided by (COP × 3,412, the Btu in one kWh, from the U.S. Energy Information Administration\'s own unit conversions). This calculator runs exactly that comparison for natural gas, heating oil, propane or electric resistance heat, using EIA\'s published heat-content figures for each: 100,000 Btu/therm for natural gas, 138,500 Btu/gallon for heating oil, 91,452 Btu/gallon for propane, and 3,412 Btu/kWh for electricity.',
+          'Real seasonal COP varies a great deal with outdoor temperature — ENERGY STAR\'s "up to three times" is an upper bound, not a guarantee, and colder climates generally see lower average COP across a full heating season than mild ones. The federal 30% (up to $2,000) tax credit for ENERGY STAR certified heat pumps that ENERGY STAR itself cites also only ran "through December 31, 2025," so don\'t add it to a 2026 installation without checking for a current state or utility incentive instead.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your current heating fuel, usage, efficiency and price, then the heat pump\'s COP and your electricity rate.',
+        steps: [
+          { name: 'Choose your current fuel type', text: 'Natural gas, heating oil, propane, or electric resistance heat — this sets the heat-content conversion used.' },
+          { name: 'Enter your annual fuel used', text: 'In the fuel\'s own billing unit: therms for gas, gallons for oil or propane, kWh for electric resistance.' },
+          { name: 'Enter your system\'s efficiency', text: 'Your furnace\'s AFUE from its nameplate or the ENERGY STAR product directory; electric resistance heat is effectively 100%.' },
+          { name: 'Enter your current fuel price', text: 'Per therm, gallon or kWh, matching the unit you used for annual fuel used.' },
+          { name: 'Enter the heat pump\'s COP and your electricity rate', text: 'Use the equipment\'s rated or seasonal-average COP if you have one; otherwise 2–3.5 is a realistic range to test.' },
+          { name: 'Read the result', text: 'The headline is the estimated annual savings; the rows below show both systems\' annual cost, the percent savings and the electricity the heat pump would use.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Both systems are converted to the same useful heat output (Btu), then priced at each system\'s own energy cost.',
+        expression: 'useful heat (Btu) = fuel used × heat content × (current efficiency% ÷ 100)\ncurrent annual cost = fuel used × fuel price\nheat pump kWh = useful heat ÷ (COP × 3,412)\nheat pump annual cost = heat pump kWh × electricity rate\nannual savings = current annual cost − heat pump annual cost',
+        terms: [
+          { symbol: 'heat content', meaning: 'Btu per unit of fuel: 100,000/therm (gas), 138,500/gallon (oil), 91,452/gallon (propane), 3,412/kWh (electric resistance) — EIA\'s published figures.' },
+          { symbol: 'current efficiency%', meaning: 'Your current system\'s AFUE (furnace) or effective efficiency (100% for electric resistance).' },
+          { symbol: 'COP', meaning: 'The heat pump\'s coefficient of performance: heat delivered per unit of electricity consumed. ENERGY STAR states certified heat pumps can reach "up to three times" (COP ≈ 3).' },
+          { symbol: '3,412', meaning: 'Btu in one kWh — the U.S. Energy Information Administration\'s own conversion factor.' }
+        ],
+        note: 'Estimates only. Real seasonal COP varies with outdoor temperature and falls in very cold weather; use a seasonal-average figure, not a single best-case rating, for a realistic comparison. This does not model cooling-season costs, equipment or installation costs, or any incentive — the federal heat pump tax credit ENERGY STAR cites ended for property placed in service after December 31, 2025.'
+      },
+      workedExample: {
+        intro: 'A home burns 600 therms of natural gas a year in an 80%-AFUE furnace, at $2.61 per therm. Switching to a heat pump with a COP of 3, on $0.1831/kWh electricity.',
+        rows: [
+          { label: 'Useful heat (600 × 100,000 × 0.80)', value: '48,000,000 Btu' },
+          { label: 'Current annual cost (600 × $2.61)', value: '$1,566.00' },
+          { label: 'Heat pump electricity (48,000,000 ÷ (3 × 3,412))', value: '4,689.33 kWh' },
+          { label: 'Heat pump annual cost (4,689.33 × $0.1831)', value: '$858.62' },
+          { label: 'Annual savings (1,566.00 − 858.62)', value: '$707.38' },
+          { label: 'Percent savings (707.38 ÷ 1,566.00)', value: '45.2%' }
+        ],
+        result: '≈ $707.38 a year saved (45.2% less than the current $1,566.00)',
+        explanation: 'At a more conservative, cold-climate COP of 2 instead of 3, the same furnace comparison saves only about $278.08 a year (17.8%) — COP has a bigger effect on the result than almost any other input, which is exactly why ENERGY STAR\'s "up to three times" should be treated as a ceiling, not a seasonal average.'
+      },
+      watchOut: [
+        { title: 'COP drives the result more than anything else', body: 'Dropping from a COP of 3 to a more conservative, cold-climate COP of 2 in the worked example above cuts estimated savings from $707.38 to $278.08 a year — more than half. Use a seasonal-average COP for your climate, not a best-case nameplate figure.' },
+        { title: 'The federal tax credit ENERGY STAR mentions has expired for new installs', body: 'ENERGY STAR itself states the credit was "a tax credit of 30% up to $2000" available only "through December 31, 2025." Don\'t add it to a 2026 cost comparison — check instead for a current state or utility incentive.' },
+        { title: 'This compares heating costs only', body: 'A heat pump also cools in summer, replacing a separate air conditioner — this calculator does not model cooling-season costs or compare against a combined furnace-plus-AC setup. Use the AC tonnage/BTU calculator separately for cooling-capacity sizing.' },
+        { title: 'Equipment and installation costs aren\'t included', body: 'This is a running-cost comparison only. The heat pump\'s purchase and installation price, any electrical panel upgrade it needs, and your furnace\'s own remaining useful life all affect whether switching makes sense beyond the operating-cost savings shown here.' }
+      ],
+      references: [
+        { label: 'ENERGY STAR, Air-Source Heat Pumps product page ("up to three times more heat energy," federal tax credit window)', url: 'https://www.energystar.gov/products/air_source_heat_pumps' },
+        { label: 'U.S. Energy Information Administration, Energy Explained — Units and Calculators (Btu content of natural gas, heating oil, propane and electricity)', url: 'https://www.eia.gov/energyexplained/units-and-calculators/' },
+        { label: 'U.S. Energy Information Administration, Natural Gas — Residential Price (Mcf), used to derive the default $/therm price', url: 'https://www.eia.gov/dnav/ng/ng_pri_sum_a_EPG0_PRS_DMcf_m.htm' }
+      ]
+    },
+    inputs: [
+      {
+        id: 'fuelType',
+        label: 'Current heating fuel',
+        type: 'number',
+        placeholder: '1',
+        defaultValue: 1,
+        step: 1,
+        min: 1,
+        options: [
+          { value: 1, label: 'Natural gas (therms)' },
+          { value: 2, label: 'Heating oil (gallons)' },
+          { value: 3, label: 'Propane (gallons)' },
+          { value: 4, label: 'Electric resistance heat (kWh)' }
+        ]
+      },
+      { id: 'annualFuelUsed', label: 'Annual fuel used (unit matches fuel above)', type: 'number', placeholder: '600', defaultValue: 600, step: 10, min: 0 },
+      { id: 'currentEfficiencyPercent', label: 'Current system efficiency (AFUE)', type: 'percent', placeholder: '80', defaultValue: 80, step: 1, min: 0 },
+      { id: 'currentFuelPricePerUnit', label: 'Current fuel price (per unit above)', type: 'currency', placeholder: '2.61', defaultValue: 2.61, step: 0.01, min: 0 },
+      { id: 'heatPumpCop', label: 'Heat pump coefficient of performance (COP)', type: 'number', placeholder: '3', defaultValue: 3, step: 0.1, min: 0.1 },
+      { id: 'electricityRate', label: 'Electricity rate', type: 'currency', placeholder: '0.1831', defaultValue: 0.1831, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Heat Pump Savings Calculator – vs. Furnace or Resistance',
+      description: 'Estimate the annual savings from switching a home\'s heating to a heat pump, from your current fuel use, efficiency and price, and the heat pump\'s COP.',
+      faq: [
+        { question: 'How much can a heat pump save compared to a gas furnace?', answer: 'It depends heavily on fuel price, furnace efficiency and the heat pump\'s COP. In this calculator\'s worked example — 600 therms a year at 80% AFUE and $2.61/therm, switching to a COP-3 heat pump — about $707.38 a year, 45.2% less than the current $1,566.00 cost.' },
+        { question: 'What is a heat pump\'s COP?', answer: 'Coefficient of performance: the ratio of heat delivered to electricity consumed. ENERGY STAR states a heat pump "can deliver up to three times more heat energy to a home than the electrical energy it consumes" — a COP of up to 3.' },
+        { question: 'Why does COP matter so much to the savings estimate?', answer: 'Because it is the main driver of the comparison. Dropping from a COP of 3 to a more conservative COP of 2 in this calculator\'s worked example cuts the estimated savings from $707.38 to $278.08 a year — more than half.' },
+        { question: 'Is the federal heat pump tax credit still available in 2026?', answer: 'No. ENERGY STAR itself describes it as "a tax credit of 30% up to $2000" available only "through December 31, 2025." Check for a current state or utility incentive instead of assuming a federal credit applies to a 2026 installation.' },
+        { question: 'Does this calculator include air conditioning costs?', answer: 'No — it compares heating costs only. A heat pump also provides cooling, replacing a separate air conditioner, but this calculator does not model cooling-season costs or sizing; see the AC tonnage/BTU calculator for cooling-capacity sizing.' },
+        { question: 'How are different heating fuels compared on the same basis?', answer: 'By converting each to Btu using EIA\'s published heat-content figures (100,000 Btu/therm for gas, 138,500 Btu/gallon for oil, 91,452 Btu/gallon for propane, 3,412 Btu/kWh for electricity), then applying each system\'s own efficiency or COP.' }
+      ]
+    },
+    compute(values) {
+      const HEAT_CONTENT_BTU: Record<number, number> = { 1: 100000, 2: 138500, 3: 91452, 4: 3412 };
+      const heatContent = HEAT_CONTENT_BTU[values.fuelType] ?? HEAT_CONTENT_BTU[1];
+      const usefulHeatBtu = values.annualFuelUsed * heatContent * (values.currentEfficiencyPercent / 100);
+      const currentAnnualCost = values.annualFuelUsed * values.currentFuelPricePerUnit;
+      const heatPumpKwhNeeded = values.heatPumpCop > 0 ? usefulHeatBtu / (values.heatPumpCop * 3412) : NaN;
+      const heatPumpAnnualCost = heatPumpKwhNeeded * values.electricityRate;
+      const annualSavings = currentAnnualCost - heatPumpAnnualCost;
+      const percentSavings = currentAnnualCost > 0 ? (annualSavings / currentAnnualCost) * 100 : NaN;
+      return { annualSavings, currentAnnualCost, heatPumpAnnualCost, percentSavings, heatPumpKwhNeeded };
+    }
   }
 ];

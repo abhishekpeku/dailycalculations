@@ -340,6 +340,17 @@ Append one line per completed step: `NN · YYYY-MM-DD · what changed · anythin
 
 _Entries older than ~1 day's work moved to `mdFiles/STATUS-archive.md` (steps 01–42, UX-01–03, 2026-09-10 through 2026-10-31; all 4 Wave 2 Construction batches; all 3 Food batches; Sports run 1). Check there for anything not covered below._
 
+**2026-11-18 — Bug fix: `/calculators` missing sub-category sections (user-reported).** User noticed
+`https://www.dailycalculations.com/calculators` showed a flat grid per category instead of the
+labeled sub-groups every `/categories/<id>` page and the header's Categories dropdown already
+render. Root cause: `CalculatorBrowser.tsx` (the component behind `/calculators`) never adopted
+UX-06/UX-08's shared `buildGroups()` helper — `CategoryCalculatorFilter.tsx` and `CategoriesMenu.tsx`
+did, this third surface was missed. Fixed by threading `group` through `app/[locale]/calculators/
+page.tsx`'s `browseItems` map and calling `buildGroups()` per category section in
+`CalculatorBrowser.tsx`, same fallback-to-flat-grid behavior for any still-ungrouped category.
+`npm test` 1603/1603, build 454/454 pages. Committed directly to master (small, already-verified
+fix, same precedent as the `next-env.d.ts` restores).
+
 **2026-11-05 — Step 59, Wave 2 Sports run 2 (PR #60, merged) — Sports closed out, Wave 2 fully DONE**:
 added `steps-to-miles-calculator`, `baseball-batting-average-calculator` (AVG/OBP/SLG/OPS combined,
 MLB glossary formulas), `cricket-bowling-figures-calculator` (average/economy/strike-rate combined),

@@ -525,6 +525,7 @@ export const calculatorOrder: string[] = [
   'new-years-countdown-calculator',
   'screen-size-calculator',
   'aspect-ratio-calculator',
+  'uptime-percentage-calculator',
   'ip-subnet-calculator',
   'iban-calculator',
   'password-strength-checker'

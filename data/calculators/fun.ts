@@ -2218,4 +2218,125 @@ export const funCalculators: CalculatorConfig[] = [
       return { height: (values.width * values.ratioH) / values.ratioW };
     }
   },
+  {
+    id: 'uptime-percentage-calculator',
+    category: 'fun',
+    glyph: '9s',
+    updatedAt: '2026-11-18',
+    aliases: ['uptime percentage calculator', 'uptime calculator', 'nines uptime calculator', 'sla uptime calculator', 'downtime calculator', 'allowed downtime calculator'],
+    related: ['percentage-calculator', 'percent-change-calculator', 'date-difference-calculator', 'ip-subnet-calculator'],
+    title: 'Uptime Percentage Calculator',
+    description: 'Convert an uptime percentage -- the "number of nines" in an SLA -- into the actual allowed downtime per day, month, and year, against the standard nines table.',
+    example: 'A service with 99.9% uptime ("three nines") can be down for about 8.77 hours a year, or roughly 43.83 minutes in an average month.',
+    breakdown: {
+      headline: 'perYearHours',
+      headlineLabel: 'Allowed downtime per year',
+      outputs: [
+        { id: 'perYearHours', label: 'Per year', dimension: 'time', unit: 'h' },
+        { id: 'perMonthMinutes', label: 'Per month (30.44-day average)', dimension: 'time', unit: 'min' },
+        { id: 'perDaySeconds', label: 'Per day', dimension: 'time', unit: 's' }
+      ],
+      groups: [{ title: 'Uptime target', inputs: ['uptimePercent'] }],
+      visual: {
+        type: 'logScale',
+        value: 'perYearHours',
+        min: -4,
+        max: 3,
+        ticks: ['10⁻⁴', '10⁻³', '10⁻²', '10⁻¹', '10⁰', '10¹', '10²', '10³'],
+        benchmarks: [
+          { label: '99% ("two nines")', value: 87.66 },
+          { label: '99.9% ("three nines")', value: 8.766 },
+          { label: '99.99% ("four nines")', value: 0.8766 },
+          { label: '99.999% ("five nines")', value: 0.08766 }
+        ],
+        title: 'Where your target sits on the standard nines table',
+        valueLabel: 'Your allowed downtime per year'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What an uptime percentage, and "the nines", mean',
+        paragraphs: [
+          'Uptime is the share of a time period a system is working rather than down, usually quoted as a percentage close to 100% -- and the number of consecutive 9s in that percentage is shorthand for how strict the target is: 99% is "two nines", 99.9% is "three nines", 99.999% is "five nines". Cloud providers and other online services commonly write their service-level agreements (SLAs) this way.',
+          'Because 100% minus the uptime percentage is the allowed downtime as a fraction of the period, each extra nine divides the allowed downtime by about ten. Moving from 99% to 99.9% does not just sound stricter -- it cuts the allowed downtime by a full order of magnitude, from roughly 3.65 days a year down to about 8.77 hours.',
+          'This calculator takes an uptime percentage and converts it into the actual downtime it allows per day, per (average) month, and per year, the same arithmetic behind the standard "nines" table used across the industry.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the uptime percentage from an SLA or target, and read the allowed downtime in three different timeframes.',
+        steps: [
+          { name: 'Enter the uptime percentage', text: 'The target or promised uptime, e.g. 99.9 for "three nines". Any value from 0 to 100 works, not just a round number of nines.' },
+          { name: 'Read the per-year figure', text: 'The headline number: how much downtime that percentage allows across a full calendar-average year.' },
+          { name: 'Read the per-month and per-day figures', text: 'The same allowance, scaled down to an average month and a single day, for comparing against a shorter outage.' },
+          { name: 'Compare against the standard nines', text: 'The scale below plots your figure against the four standard nines (99%, 99.9%, 99.99%, 99.999%) so you can see how it compares.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The allowed downtime is simply the "missing" percentage applied to the length of the period.',
+        expression:
+          'downFraction = 1 − uptimePercent ÷ 100\nperYear = downFraction × 365.25 days\nperMonth = downFraction × (365.25 ÷ 12) days\nperDay = downFraction × 24 hours',
+        terms: [
+          { symbol: 'uptimePercent', meaning: 'The promised or target uptime, e.g. 99.9 for 99.9%.' },
+          { symbol: 'downFraction', meaning: 'The fraction of the period the system is allowed to be down -- 0.001 for 99.9% uptime.' },
+          { symbol: '365.25 days', meaning: 'A calendar-average year, accounting for leap years (the same average used elsewhere on this site) -- not a specific 365- or 366-day calendar year.' }
+        ],
+        note: 'This is a mathematical allowance, not a guarantee about how outages are actually distributed -- see the watch-out notes below. Real SLAs sometimes define the measurement period or exclude scheduled maintenance differently; check the actual contract for anything that matters financially.'
+      },
+      workedExample: {
+        intro: 'What does a 99.9% ("three nines") uptime target allow?',
+        rows: [
+          { label: 'Uptime', value: '99.9%' },
+          { label: 'downFraction = 1 − 0.999', value: '0.001' },
+          { label: 'Per year = 0.001 × 365.25 × 24 h', value: '≈ 8.77 hours' },
+          { label: 'Per month = 0.001 × 30.4375 × 24 × 60 min', value: '≈ 43.83 minutes' },
+          { label: 'Per day = 0.001 × 24 × 3,600 s', value: '≈ 86.4 seconds' }
+        ],
+        result: '≈ 8.77 hours a year, ≈ 43.83 minutes a month, ≈ 86.4 seconds a day',
+        explanation: 'Each figure is the same 0.1% downtime allowance applied to a different period length. The year figure is the one most SLAs are really judged against, since a single short outage can look large against a day but is usually small against a full year.'
+      },
+      watchOut: [
+        { title: 'This is an average allowance, not a guarantee about outage length', body: 'Meeting a 99.9% target over a full year does not mean outages are short and frequent -- a single 8.77-hour outage uses up the entire year\'s allowance just as much as many small ones would.' },
+        { title: 'Real SLAs often define "downtime" more narrowly', body: 'Many service agreements exclude scheduled maintenance windows, or measure uptime over a billing month rather than a calendar month, which changes the real figure. Check the specific contract rather than assuming this generic calculation matches it exactly.' },
+        { title: 'This uses a calendar-average year and month', body: 'The year is 365.25 days and the month is that divided by 12 (≈30.4375 days) -- averages that account for leap years, not a specific calendar year (365 or 366 days) or a specific calendar month (28-31 days).' },
+        { title: 'No real system is guaranteed to be at 100% forever', body: 'A literal 100% uptime figure is a theoretical ceiling, not a real-world promise -- every system has some nonzero chance of an outage, which is exactly why uptime is quoted as a percentage rather than claimed outright.' }
+      ],
+      referenceTable: {
+        title: 'The standard nines table',
+        columns: ['Downtime per year (hours)', 'Downtime per month (minutes)', 'Downtime per day (seconds)'],
+        rows: STANDARD_NINES.map((pct) => {
+          const d = uptimeDowntime(pct);
+          return { label: `${pct}%`, values: [d.perYearHours, d.perMonthMinutes, d.perDaySeconds] };
+        }),
+        decimals: 2,
+        note: 'Computed directly from the formula above for each percentage -- a calendar-average year (365.25 days) and month (365.25 ÷ 12 days), matching the standard "nines" table used across the hosting and cloud industry.'
+      },
+      references: [
+        { label: 'Wikipedia, High availability ("Percentage calculation" -- the standard nines/downtime table)', url: 'https://en.wikipedia.org/wiki/High_availability' }
+      ]
+    },
+    inputs: [{ id: 'uptimePercent', label: 'Uptime percentage (%)', type: 'percent', placeholder: '99.9', defaultValue: 99.9, step: 0.001, min: 0 }],
+    seo: {
+      title: 'Uptime Percentage Calculator – Downtime per Day, Month & Year',
+      description: 'Convert any uptime percentage into the actual allowed downtime per day, month, and year, checked against the standard "nines" table (99%, 99.9%, 99.99%, 99.999%).',
+      faq: [
+        { question: 'What does "five nines" uptime mean?', answer: '99.999% uptime -- allowing only about 5.26 minutes of downtime across a full calendar-average year.' },
+        { question: 'How much downtime does 99% uptime allow per year?', answer: 'About 87.66 hours, or roughly 3.65 days, across a calendar-average year.' },
+        { question: 'How much downtime does 99.9% uptime allow per month?', answer: 'About 43.83 minutes, using a calendar-average month of 30.4375 days.' },
+        { question: 'How is an uptime percentage converted into downtime?', answer: 'Subtract the uptime percentage from 100% to get the allowed-downtime fraction, then multiply that fraction by the length of the period -- a year, a month, or a day.' },
+        { question: 'Does this calculation account for leap years?', answer: 'Yes -- it uses 365.25 days as a calendar-average year, the same leap-year-adjusted average used elsewhere on this site, rather than a flat 365.' },
+        { question: 'Is 100% uptime realistic?', answer: 'Not as a literal, permanent guarantee -- every real system has some nonzero chance of an outage. A "100%" figure in marketing or an SLA usually describes a target or a service-credit policy, not a mathematical certainty.' },
+        { question: 'Do real SLAs calculate downtime exactly this way?', answer: 'Often not precisely -- many exclude scheduled maintenance windows or measure over a billing period rather than a calendar month. This calculator shows the generic calendar-based figure; check a specific contract for how it actually defines downtime.' }
+      ]
+    },
+    compute(values) {
+      const uptimePercent = values.uptimePercent;
+      if (!Number.isFinite(uptimePercent) || uptimePercent < 0 || uptimePercent > 100) {
+        return { perYearHours: NaN, perMonthMinutes: NaN, perDaySeconds: NaN };
+      }
+      const d = uptimeDowntime(uptimePercent);
+      return { perYearHours: d.perYearHours, perMonthMinutes: d.perMonthMinutes, perDaySeconds: d.perDaySeconds };
+    }
+  }
 ];

@@ -16054,6 +16054,47 @@ exports[`compute() snapshots > student-loan-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > study-time-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "creditHours": 15,
+      "hoursPerCreditGuideline": 2,
+      "difficultyAdjustmentPercent": 25
+    },
+    "outputs": {
+      "recommendedWeeklyHours": 37.5,
+      "dailyAverage": 5.357142857,
+      "totalWeeklyCommitment": 52.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "creditHours": 23,
+      "hoursPerCreditGuideline": 3,
+      "difficultyAdjustmentPercent": 40
+    },
+    "outputs": {
+      "recommendedWeeklyHours": 96.6,
+      "dailyAverage": 13.8,
+      "totalWeeklyCommitment": 119.6
+    }
+  },
+  "edge": {
+    "inputs": {
+      "creditHours": 1,
+      "hoursPerCreditGuideline": 0,
+      "difficultyAdjustmentPercent": 0
+    },
+    "outputs": {
+      "recommendedWeeklyHours": 0,
+      "dailyAverage": 0,
+      "totalWeeklyCommitment": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > surface-area-calculator 1`] = `
 {
   "default": {

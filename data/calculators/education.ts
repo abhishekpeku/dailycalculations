@@ -399,5 +399,116 @@ export const educationCalculators: CalculatorConfig[] = [
       const maxPossibleGrade = currentContribution + 100 * w;
       return { neededScore, maxPossibleGrade, currentContribution };
     }
+  },
+  {
+    id: 'study-time-calculator',
+    category: 'education',
+    group: 'Study & Time',
+    glyph: 'ST',
+    updatedAt: '2026-11-18',
+    aliases: ['how many hours should i study calculator', 'study hours per credit hour calculator', 'recommended study time calculator', 'credit hour study time calculator'],
+    related: ['final-grade-calculator', 'grade-calculator', 'pomodoro-timer', 'sleep-time-calculator'],
+    title: 'Study Time Calculator',
+    description: 'Estimate recommended weekly study hours from your credit hours, using the federal credit-hour guideline of at least 2 out-of-class hours per credit per week, adjustable for a heavier course load.',
+    example: 'Fifteen credit hours at the federal 2-hours-per-credit minimum, with a 25% heavier-than-typical adjustment, recommend about 37.5 study hours a week — 5.36 hours a day.',
+    breakdown: {
+      headline: 'recommendedWeeklyHours',
+      headlineLabel: 'Recommended weekly study hours',
+      outputs: [
+        { id: 'recommendedWeeklyHours', label: 'Recommended weekly study hours', format: 'number' },
+        { id: 'dailyAverage', label: 'Average per day (÷7)', format: 'number' },
+        { id: 'totalWeeklyCommitment', label: 'Total weekly commitment (study + estimated class time)', format: 'number' }
+      ],
+      groups: [
+        { title: 'Your course load', inputs: ['creditHours', 'hoursPerCreditGuideline', 'difficultyAdjustmentPercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'classroomHours', label: 'Estimated class time' },
+          { from: 'recommendedWeeklyHours', label: 'Recommended study time' }
+        ],
+        title: 'Weekly hours: class vs. recommended study time',
+        highlight: 1
+      },
+      derive: (values) => ({ classroomHours: values.creditHours })
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Where the "2 hours of study per credit hour" guideline comes from',
+        paragraphs: [
+          'U.S. federal regulation defines a credit hour, for accreditation purposes, as "one hour of classroom or direct faculty instruction and a minimum of two hours of out of class student work each week for approximately fifteen weeks" (34 CFR 600) — a definition the University of Cincinnati\'s own registrar publishes verbatim on its credit-hour policy page. In plain terms: a 15-credit course load implies roughly 15 hours a week of class time and a minimum of about 30 hours a week of outside study, before any adjustment for how demanding the material is.',
+          "That federal figure is explicitly a floor, not a target. It exists so accreditors can confirm a credit hour represents a consistent minimum workload across institutions — it is not a claim that 2 hours per credit is enough for every student in every course. A heavier reading load, a lab-heavy science course, or a class you personally find difficult can reasonably need more; this calculator's difficulty adjustment scales the baseline upward to model that, rather than presenting the federal minimum as if it were a universal recommendation.",
+          "The result is still only a planning estimate. How much study time you actually need depends on your own background, the specific course, and how efficiently you study — not just the number of credits on your schedule."
+        ]
+      },
+      howTo: {
+        intro: 'Enter your total credit hours, the study-hours-per-credit guideline you want to use, and any adjustment for a heavier-than-typical course load.',
+        steps: [
+          { name: 'Enter your total credit hours', text: 'The combined credit hours across all your courses this term.' },
+          { name: 'Enter the study-hours-per-credit guideline', text: 'The federal minimum is 2 hours of out-of-class work per credit hour per week; raise it if you want a more conservative planning figure.' },
+          { name: 'Enter a difficulty adjustment, if any', text: "A percentage to scale the baseline up for a demanding course load — 25% for somewhat heavier than typical, more for a notably difficult term. Leave at 0% for the federal minimum as-is." },
+          { name: 'Read your recommended weekly hours', text: 'The headline is your estimated weekly study-time target, with a daily average and a combined class-plus-study total below it.' },
+          { name: 'Compare against class time', text: 'The chart shows estimated weekly class time next to recommended study time, assuming roughly 1 contact hour per credit — the same ratio the federal definition itself uses.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Recommended weekly study hours scale the credit-hour guideline by your total credits and any difficulty adjustment.',
+        expression: 'recommendedWeeklyHours = creditHours × hoursPerCreditGuideline × (1 + difficultyAdjustmentPercent ÷ 100)\ndailyAverage = recommendedWeeklyHours ÷ 7\ntotalWeeklyCommitment = recommendedWeeklyHours + creditHours',
+        terms: [
+          { symbol: 'creditHours', meaning: 'Your total credit hours this term.' },
+          { symbol: 'hoursPerCreditGuideline', meaning: 'Out-of-class study hours per credit hour per week — 2 is the cited federal minimum.' },
+          { symbol: 'difficultyAdjustmentPercent', meaning: 'An upward adjustment, as a percent, for a heavier-than-typical course load.' }
+        ],
+        note: "This is a planning estimate built from a regulatory minimum, not a personalized study plan — your own course difficulty and study efficiency matter more than this formula can capture."
+      },
+      workedExample: {
+        intro: '15 credit hours, the 2-hour-per-credit federal minimum, and a 25% adjustment for a heavier-than-typical term.',
+        rows: [
+          { label: 'Baseline (15 × 2)', value: '30 hours/week' },
+          { label: 'With 25% adjustment (30 × 1.25)', value: '37.5 hours/week' },
+          { label: 'Daily average (37.5 ÷ 7)', value: '≈ 5.36 hours/day' },
+          { label: 'Estimated class time (15 credits × 1 hour)', value: '15 hours/week' },
+          { label: 'Total weekly commitment (37.5 + 15)', value: '52.5 hours/week' }
+        ],
+        result: 'Recommended study time ≈ 37.5 hours/week (about 5.36 hours/day)',
+        explanation: "The 25% adjustment adds 7.5 hours on top of the 30-hour federal-minimum baseline, reflecting a course load this student considers heavier than typical — pushing the full weekly commitment, class time included, past 50 hours."
+      },
+      watchOut: [
+        { title: 'The 2-hours-per-credit figure is a legal minimum, not a target', body: "It exists to define a consistent floor for accreditation, not to describe how much any specific student should study. Treat the unadjusted result as a lower bound." },
+        { title: 'Course difficulty varies far more than credit hours do', body: 'Two 3-credit courses can demand very different weekly effort. The difficulty adjustment is a rough dial, not a substitute for judging your own specific courses.' },
+        { title: 'Class time is estimated, not entered', body: 'The chart assumes roughly 1 contact hour per credit, the same ratio the federal definition pairs with its 2-hour study minimum — your actual scheduled class time may differ slightly (labs, seminars).' },
+        { title: 'This does not account for exam weeks or project deadlines', body: 'Study time is rarely level across a term — expect real weeks to run well above and below this weekly average.' }
+      ],
+      references: [
+        { label: 'University of Cincinnati, Office of the Registrar: Credit Hour Definition (citing 34 CFR 600)', url: 'https://www.uc.edu/about/registrar/registration/policies/credit-hour-definition.html' }
+      ]
+    },
+    inputs: [
+      { id: 'creditHours', label: 'Total credit hours this term', type: 'number', placeholder: '15', defaultValue: 15, step: 1, min: 1 },
+      { id: 'hoursPerCreditGuideline', label: 'Study hours per credit per week (2 = federal minimum)', type: 'number', placeholder: '2', defaultValue: 2, step: 0.5, min: 0 },
+      { id: 'difficultyAdjustmentPercent', label: 'Difficulty adjustment (% above the baseline)', type: 'percent', placeholder: '25', defaultValue: 25, step: 5, min: 0 }
+    ],
+    seo: {
+      title: 'Study Time Calculator – Recommended Hours per Week',
+      description: 'Estimate recommended weekly study hours from your credit hours, using the cited federal 2-hours-per-credit minimum, adjustable for a heavier course load.',
+      faq: [
+        { question: 'How many hours should I study per credit hour?', answer: 'Federal regulation (34 CFR 600) defines a credit hour as requiring a minimum of 2 hours of out-of-class work per week, as published on the University of Cincinnati registrar\'s credit-hour policy page. For 15 credits, that minimum is 30 hours a week.' },
+        { question: 'Is 2 hours per credit hour enough?', answer: "It's a legal minimum for accreditation purposes, not a personalized recommendation. Harder courses, unfamiliar material, or a heavier course load can reasonably need more — use the difficulty adjustment to model that." },
+        { question: 'How is the daily average calculated?', answer: 'The recommended weekly hours are simply divided by 7. For 37.5 hours/week, that is 37.5 ÷ 7 ≈ 5.36 hours a day.' },
+        { question: 'How is class time estimated?', answer: 'The chart assumes about 1 contact hour of class per credit hour, the same pairing the federal credit-hour definition itself uses alongside its 2-hour study minimum.' },
+        { question: 'Does this account for exam weeks?', answer: 'No — it produces a flat weekly average across the whole term. Real study time is uneven, typically rising sharply around exams and major deadlines.' },
+        { question: 'What if my school uses a different study-hours guideline?', answer: "Change the study-hours-per-credit field — some academic success centers recommend 2 to 3 hours per credit instead of the bare federal minimum of 2." }
+      ]
+    },
+    compute(values) {
+      const classroomHours = values.creditHours;
+      const recommendedWeeklyHours = values.creditHours * values.hoursPerCreditGuideline * (1 + values.difficultyAdjustmentPercent / 100);
+      const dailyAverage = recommendedWeeklyHours / 7;
+      const totalWeeklyCommitment = recommendedWeeklyHours + classroomHours;
+      return { recommendedWeeklyHours, dailyAverage, totalWeeklyCommitment };
+    }
   }
 ];

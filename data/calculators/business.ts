@@ -28,6 +28,7 @@ const depreciationScheduleRows = () => {
 export const businessCalculators: CalculatorConfig[] = [
   {
     id: 'profit-margin-calculator',
+    group: 'Pricing & Margin',
     category: 'business',
     glyph: 'M%',
     updatedAt: '2026-11-18',
@@ -150,6 +151,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'markup-calculator',
+    group: 'Pricing & Margin',
     category: 'business',
     glyph: 'MU%',
     updatedAt: '2026-11-18',
@@ -272,6 +274,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'break-even-calculator',
+    group: 'Pricing & Margin',
     category: 'business',
     glyph: 'BE',
     updatedAt: '2026-11-18',
@@ -403,6 +406,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'contribution-margin-calculator',
+    group: 'Pricing & Margin',
     category: 'business',
     glyph: 'CM',
     updatedAt: '2026-11-18',
@@ -520,6 +524,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'cost-of-goods-sold-calculator',
+    group: 'Pricing & Margin',
     category: 'business',
     glyph: 'COGS',
     updatedAt: '2026-11-18',
@@ -633,6 +638,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'depreciation-calculator',
+    group: 'Business Finance',
     category: 'business',
     glyph: 'DEP',
     updatedAt: '2026-11-18',
@@ -763,6 +769,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'burn-rate-calculator',
+    group: 'Business Finance',
     category: 'business',
     glyph: 'BURN',
     updatedAt: '2026-11-18',
@@ -872,6 +879,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'business-valuation-calculator',
+    group: 'Business Finance',
     category: 'business',
     glyph: 'VAL',
     updatedAt: '2026-11-18',
@@ -979,6 +987,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'payback-period-calculator',
+    group: 'Business Finance',
     category: 'business',
     glyph: 'PBP',
     updatedAt: '2026-11-18',
@@ -1096,6 +1105,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'fte-calculator',
+    group: 'Business Finance',
     category: 'business',
     glyph: 'FTE',
     updatedAt: '2026-11-18',
@@ -1201,6 +1211,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'gst-calculator',
+    group: 'Tax',
     category: 'business',
     glyph: 'GST',
     updatedAt: '2026-11-19',
@@ -1313,6 +1324,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'vat-calculator',
+    group: 'Tax',
     category: 'business',
     glyph: 'VAT',
     updatedAt: '2026-11-19',
@@ -1425,6 +1437,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: 'self-employment-tax-estimator',
+    group: 'Tax',
     category: 'business',
     glyph: 'SE%',
     updatedAt: '2026-11-19',
@@ -1545,6 +1558,7 @@ export const businessCalculators: CalculatorConfig[] = [
   },
   {
     id: '1099-contractor-rate-calculator',
+    group: 'Tax',
     category: 'business',
     glyph: '1099',
     updatedAt: '2026-11-19',
@@ -1697,6 +1711,327 @@ export const businessCalculators: CalculatorConfig[] = [
       const billableHours = values.billableDaysPerYear * values.hoursPerDay;
       const hourlyRate1099 = billableHours > 0 ? totalPackageValue / billableHours : NaN;
       return { hourlyRate1099, employerFicaMatch, ptoValue, totalPackageValue };
+    }
+  },
+  {
+    id: 'accounts-receivable-days-calculator',
+    group: 'Everyday & Operations',
+    category: 'business',
+    glyph: 'A/R',
+    updatedAt: '2026-11-19',
+    aliases: ['A/R days calculator', 'days sales outstanding calculator', 'accounts receivable collection period calculator', 'average collection period calculator'],
+    related: ['invoice-late-payment-interest-calculator', 'cost-of-goods-sold-calculator', 'burn-rate-calculator', 'break-even-calculator'],
+    title: 'Accounts Receivable (A/R) Days Calculator',
+    description: 'Find how many days, on average, it takes to collect payment from credit customers — accounts receivable divided by net credit sales, times the days in the period.',
+    example: '$60,000 in accounts receivable against $730,000 of net credit sales over a 365-day year works out to 30 A/R days.',
+    breakdown: {
+      headline: 'arDays',
+      headlineLabel: 'A/R days',
+      outputs: [
+        { id: 'arDays', label: 'A/R days', format: 'number' },
+        { id: 'averageDailyCreditSales', label: 'Average daily credit sales', format: 'currency' }
+      ],
+      groups: [{ title: 'Receivables', inputs: ['accountsReceivable', 'netCreditSales', 'daysInPeriod'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'netCreditSales', label: 'Net credit sales for the period' },
+          { from: 'accountsReceivable', label: 'Accounts receivable' }
+        ],
+        title: 'Receivables against the period’s credit sales',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-19',
+      concept: {
+        title: 'What are A/R days?',
+        paragraphs: [
+          'Accounts receivable (A/R) days — also called days sales outstanding, or the average collection period — measures how long, on average, a business waits to collect the money its credit customers owe it. Lower is generally faster collection; higher means cash is tied up in unpaid invoices for longer.',
+          'The idea only applies to credit sales, not every sale a business makes. The U.S. Small Business Administration’s own guide to managing a business’s finances draws exactly this distinction when it explains accrual accounting: "the accrual method puts transactions on the books immediately upon completing the sale," while the cash method waits "until payment has been received." A/R days measures the gap between that accrual-based sale and the cash actually landing — it lists accounts receivable itself as one of the figures a business’s books need to track for this reason.',
+          'The standard formula divides the accounts receivable balance by net credit sales for the period, then scales that fraction up to however many days are in the period: a year (365 days), a quarter (about 90), or any other stretch of time a business wants to check. The result reads directly as a number of days of credit sales currently sitting uncollected.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the current accounts receivable balance, net credit sales for the period, and the number of days in that period.',
+        steps: [
+          { name: 'Enter accounts receivable', text: 'The total unpaid invoice balance owed by credit customers right now (or at period end).' },
+          { name: 'Enter net credit sales', text: 'Total sales made on credit during the period, excluding cash sales — and ideally net of returns and allowances.' },
+          { name: 'Enter days in the period', text: '365 for a full year, about 90 for a quarter, or any period length that matches the sales figure entered.' },
+          { name: 'Read A/R days', text: 'How many days of credit sales the current receivables balance represents — roughly how long collection is taking on average.' },
+          { name: 'Compare to your credit terms', text: 'If customers are offered, say, net-30 terms, A/R days noticeably above 30 signals collection is running behind the terms actually offered.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Accounts receivable is divided by net credit sales to get the fraction of the period’s sales still uncollected, then that fraction is scaled to the number of days in the period.',
+        expression: 'averageDailyCreditSales = netCreditSales ÷ daysInPeriod\narDays = (accountsReceivable ÷ netCreditSales) × daysInPeriod',
+        terms: [
+          { symbol: 'accountsReceivable', meaning: 'Total unpaid credit-customer invoices outstanding.' },
+          { symbol: 'netCreditSales', meaning: 'Sales made on credit (not cash) during the same period, net of returns and allowances where that figure is available.' }
+        ],
+        note: 'Estimates only, and a single-balance snapshot. A business whose receivables swing a lot month to month may prefer averaging the beginning and ending receivables balance for the period instead of a single point-in-time figure.'
+      },
+      workedExample: {
+        intro: 'A business ends the year with $60,000 in accounts receivable, after $730,000 of net credit sales over the 365-day year. What are its A/R days?',
+        rows: [
+          { label: 'Average daily credit sales (730,000 ÷ 365)', value: '$2,000.00' },
+          { label: 'A/R days (60,000 ÷ 730,000 × 365)', value: '30 days' }
+        ],
+        result: 'A/R days is 30 — the $60,000 receivables balance equals about 30 days of this business’s credit sales.',
+        explanation: 'If this business offers customers net-30 payment terms, 30 A/R days means collection is landing right on schedule. A business with the same sales but $90,000 in receivables would show 45 A/R days — 50% longer than the 30-day terms it offered, a sign collections are slipping behind the stated terms.'
+      },
+      watchOut: [
+        { title: 'A/R days needs credit sales, not total sales', body: 'Mixing in cash sales (which carry no collection delay at all) understates A/R days relative to the credit-only portion of the business — use net credit sales specifically, not total revenue, whenever the two differ.' },
+        { title: 'A single point-in-time balance can be misleading', body: 'A business with sharp seasonal swings may show very different A/R days depending on exactly which day’s receivables balance is used. Averaging the beginning and ending balance for the period smooths this out.' },
+        { title: 'There is no universal "good" number', body: 'What counts as a healthy A/R days figure depends entirely on the credit terms a business actually offers its customers (net-15, net-30, net-60 and so on) — compare the result to your own stated terms, not to a generic benchmark.' },
+        { title: 'A rising trend matters more than one figure', body: 'A/R days creeping upward period over period — even while staying under the stated credit terms — can be an early signal that customers are starting to pay more slowly, before it shows up anywhere else in the books.' }
+      ],
+      references: [
+        { label: 'U.S. Small Business Administration, Manage Your Finances', url: 'https://www.sba.gov/business-guide/manage-your-business/manage-your-finances' },
+        { label: 'Omni Calculator, A/R Days Calculator', url: 'https://www.omnicalculator.com/finance/ar-days' }
+      ]
+    },
+    inputs: [
+      { id: 'accountsReceivable', label: 'Accounts receivable', type: 'currency', placeholder: '60000', defaultValue: 60000, step: 1000, min: 0 },
+      { id: 'netCreditSales', label: 'Net credit sales for the period', type: 'currency', placeholder: '730000', defaultValue: 730000, step: 10000, min: 0 },
+      { id: 'daysInPeriod', label: 'Days in the period', type: 'number', placeholder: '365', defaultValue: 365, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Accounts Receivable (A/R) Days Calculator',
+      description: 'Calculate A/R days (days sales outstanding) from accounts receivable, net credit sales, and the period length. Free, with the average daily credit sales shown too.',
+      faq: [
+        { question: 'How do I calculate A/R days?', answer: 'Divide accounts receivable by net credit sales, then multiply by the number of days in the period. $60,000 in receivables against $730,000 of annual net credit sales gives 60,000 ÷ 730,000 × 365 = 30 A/R days.' },
+        { question: 'What is a good A/R days number?', answer: 'There is no universal target — it depends on the credit terms you offer. If you bill net-30, an A/R days figure close to 30 means customers are paying on schedule; a figure well above it means collection is running behind your own stated terms.' },
+        { question: 'What is the difference between A/R days and days sales outstanding (DSO)?', answer: 'They are the same metric under two common names, plus a third — "average collection period." All three use the same formula: accounts receivable ÷ net credit sales × days in the period.' },
+        { question: 'Should I use total sales or credit sales in this formula?', answer: 'Credit sales only. Cash sales are collected immediately and have no place in a collection-speed metric; including them dilutes the result and understates how long credit collection is actually taking.' },
+        { question: 'Why does the calculator ask for days in the period?', answer: 'So it can be used for any period, not just a full year — use 365 for an annual figure, about 90 for a quarter, or match it to whatever period the sales figure covers.' },
+        { question: 'What if A/R days is rising over time?', answer: 'A steady increase, even while still under your stated credit terms, can be an early warning that customers are starting to pay more slowly — worth watching before it becomes a cash-flow problem.' }
+      ]
+    },
+    compute(values) {
+      const averageDailyCreditSales = values.daysInPeriod > 0 ? values.netCreditSales / values.daysInPeriod : NaN;
+      const arDays = values.netCreditSales > 0 ? (values.accountsReceivable / values.netCreditSales) * values.daysInPeriod : NaN;
+      return { arDays, averageDailyCreditSales };
+    }
+  },
+  {
+    id: 'invoice-late-payment-interest-calculator',
+    group: 'Everyday & Operations',
+    category: 'business',
+    glyph: 'LPI',
+    updatedAt: '2026-11-19',
+    aliases: ['late payment interest calculator', 'overdue invoice interest calculator', 'statutory interest calculator', 'late fee on invoice calculator'],
+    related: ['accounts-receivable-days-calculator', 'simple-interest-calculator', 'vat-calculator', 'business-valuation-calculator'],
+    title: 'Invoice Late-Payment Interest Calculator',
+    description: 'Find the interest owed on an overdue invoice from the amount, your own annual interest rate, and how many days late it is — enter the rate your contract or jurisdiction actually uses, since there is no single universal late-payment rate.',
+    example: 'A $10,000 invoice paid 45 days late at a 12% annual rate accrues about $147.95 in interest, for a total of $10,147.95 due.',
+    breakdown: {
+      headline: 'interest',
+      headlineLabel: 'Interest owed',
+      outputs: [
+        { id: 'interest', label: 'Interest owed', format: 'currency' },
+        { id: 'totalAmountDue', label: 'Total amount now due', format: 'currency' }
+      ],
+      groups: [{ title: 'Overdue invoice', inputs: ['overdueAmount', 'annualRatePercent', 'daysLate'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'overdueAmount', label: 'Original invoice amount' },
+          { from: 'totalAmountDue', label: 'Total now due, with interest' }
+        ],
+        title: 'Original amount vs. total now due',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-19',
+      concept: {
+        title: 'How late-payment interest is calculated',
+        paragraphs: [
+          'When a customer pays an invoice after its due date, many contracts and some laws allow the seller to charge interest on the overdue amount for every day it stays unpaid. The calculation itself is simple daily-rate interest: an annual interest rate is divided down to a daily rate, then multiplied by how many days the payment ran late and by the amount still owed.',
+          'There is no single rate this calculator can default to, because late-payment interest rates are set very differently depending on the contract and the jurisdiction. The European Union’s Late Payment Directive, for example, gives businesses a statutory right to charge "statutory interest of at least 8% above the European Central Bank’s reference rate" on business-to-business invoices paid late, a rate that moves with the ECB’s own benchmark. In the United States, the federal Prompt Payment Act instead requires late-paying federal agencies to pay a specific published rate — 4.75% for the second half of 2026 — that is set by the Treasury and changes periodically. Neither of those is a stand-in for whatever rate a private commercial contract specifies, which is why this calculator asks for the rate directly rather than assuming one.',
+          'This page defaults to an illustrative 12% annual rate — equivalent to a common 1%-a-month contract late fee — purely as a round placeholder to show how the math works. Replace it with whatever rate your own contract, invoice terms, or local law actually specifies before relying on the result.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the overdue invoice amount, the annual interest rate that applies, and how many days late the payment is.',
+        steps: [
+          { name: 'Enter the overdue amount', text: 'The unpaid invoice total the interest will be calculated on.' },
+          { name: 'Enter your annual interest rate', text: 'Whatever rate your contract, invoice terms, or local statute actually specifies — not a figure this calculator assumes for you.' },
+          { name: 'Enter days late', text: 'How many days have passed since the due date.' },
+          { name: 'Read the interest owed', text: 'The daily-equivalent of the annual rate, applied to the amount for each day it has been late.' },
+          { name: 'Check the total now due', text: 'The original amount plus the interest, side by side in the comparison bars.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The annual rate is converted to a daily rate by dividing by 365, then applied to the overdue amount for the number of days late.',
+        expression: 'interest = overdueAmount × (annualRatePercent ÷ 100) × (daysLate ÷ 365)\ntotalAmountDue = overdueAmount + interest',
+        terms: [
+          { symbol: 'annualRatePercent', meaning: 'The annual interest rate that applies — set by your own contract terms or the relevant law, not by this calculator.' },
+          { symbol: 'daysLate', meaning: 'Days elapsed since the invoice’s due date.' }
+        ],
+        note: 'Estimates only. This uses a flat 365-day year to convert the annual rate to a daily one; some contracts and jurisdictions use a 360-day banking-year convention instead, which gives a slightly larger daily rate for the same annual figure — see the watch-out below for exactly how much that changes the result. This is simple interest: it does not compound as more days pass.'
+      },
+      workedExample: {
+        intro: 'A $10,000 invoice is paid 45 days after its due date. The applicable annual interest rate is 12%. How much interest is owed?',
+        rows: [
+          { label: 'Daily-equivalent rate applied (12% ÷ 365 × 45 days)', value: '1.4795%' },
+          { label: 'Interest owed (10,000 × 0.12 × 45 ÷ 365)', value: '$147.95' },
+          { label: 'Total amount now due (10,000 + 147.95)', value: '$10,147.95' }
+        ],
+        result: 'Interest comes to $147.95, for a total of $10,147.95 due.',
+        explanation: 'Interest scales exactly in proportion to days late at a fixed rate and amount: paying 90 days late instead of 45 — exactly double the delay — exactly doubles the interest, to $295.89. Using a 360-day-year convention instead of 365 for the same 45 days would give $150.00 — about 1.4% more than the 365-day figure, since the same annual rate is being spread over fewer days.'
+      },
+      watchOut: [
+        { title: 'There is no universal late-payment rate', body: 'Contract terms, state law, and the EU’s own statutory mechanism (the European Central Bank’s reference rate plus at least 8 percentage points) all set late-payment rates differently. Enter the specific rate that actually applies to your invoice, not a borrowed figure from a different contract or country.' },
+        { title: '365-day vs. 360-day year conventions give slightly different answers', body: 'Some commercial and banking contracts spread an annual rate over a 360-day year instead of 365, which produces a slightly higher daily rate and therefore slightly more interest for the same days late — about 1.4% more in the worked example above. Check which convention your own contract specifies.' },
+        { title: 'This is simple interest, not compounding', body: 'The interest here is calculated once on the original overdue amount for the full number of days late. It does not add the first period’s interest back into the balance and then charge interest on that larger total, the way a compounding penalty clause would.' },
+        { title: 'Some contracts also add a flat late fee on top', body: 'Beyond interest, many invoice terms also charge a separate one-time late fee. This calculator only computes the interest component — add any flat fee your own terms specify separately.' },
+        { title: 'Government contracts may follow a different published rate entirely', body: 'The US federal Prompt Payment Act sets its own Treasury-published rate for late federal payments (4.75% for the second half of 2026) rather than leaving it to a private contract — look that figure up directly if the overdue invoice is to a federal agency.' }
+      ],
+      references: [
+        { label: 'U.S. Department of the Treasury, Bureau of the Fiscal Service, Prompt Payment', url: 'https://www.fiscal.treasury.gov/prompt-payment/' },
+        { label: 'European Commission, Late Payment — SME Strategy', url: 'https://single-market-economy.ec.europa.eu/smes/sme-strategy/late-payment_en' }
+      ]
+    },
+    inputs: [
+      { id: 'overdueAmount', label: 'Overdue invoice amount', type: 'currency', placeholder: '10000', defaultValue: 10000, step: 500, min: 0 },
+      { id: 'annualRatePercent', label: 'Annual interest rate', type: 'percent', placeholder: '12', defaultValue: 12, step: 0.5, min: 0 },
+      { id: 'daysLate', label: 'Days late', type: 'number', placeholder: '45', defaultValue: 45, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Invoice Late-Payment Interest Calculator',
+      description: 'Calculate interest owed on a late invoice from the amount, your own annual rate, and days late. Free — you enter the rate, since there is no universal one.',
+      faq: [
+        { question: 'How do I calculate interest on a late invoice?', answer: 'Multiply the overdue amount by the annual interest rate (as a decimal), then by the number of days late divided by 365. A $10,000 invoice 45 days late at 12% owes 10,000 × 0.12 × 45 ÷ 365 = $147.95.' },
+        { question: 'What interest rate should I use?', answer: 'Whatever rate your own contract or invoice terms specify, or the rate set by the law that applies to your situation. There is no single universal late-payment rate — the EU’s statutory mechanism (ECB reference rate plus at least 8 points) and the US federal Prompt Payment Act’s published rate (4.75% for the second half of 2026) are two real but very different examples.' },
+        { question: 'Does this use a 360-day or 365-day year?', answer: 'This calculator uses 365 days. Some commercial contracts use a 360-day banking-year convention instead, which gives a slightly higher daily rate — about 1.4% more interest for the same annual rate and days late in the worked example here. Check your own contract’s stated convention.' },
+        { question: 'Is this simple or compound interest?', answer: 'Simple interest — calculated once on the original overdue amount for the full number of days late, not compounded period over period.' },
+        { question: 'Does doubling the days late double the interest?', answer: 'Yes, at a fixed rate and amount, interest is directly proportional to days late: 90 days late accrues exactly twice the interest of 45 days late.' },
+        { question: 'What if my contract also charges a flat late fee?', answer: 'Add it separately. This calculator only computes the interest component of a late payment, not any additional flat fee your terms may specify.' }
+      ]
+    },
+    compute(values) {
+      const interest = values.overdueAmount * (values.annualRatePercent / 100) * (values.daysLate / 365);
+      const totalAmountDue = values.overdueAmount + interest;
+      return { interest, totalAmountDue };
+    }
+  },
+  {
+    id: 'project-profitability-calculator',
+    group: 'Everyday & Operations',
+    category: 'business',
+    glyph: 'PP',
+    updatedAt: '2026-11-19',
+    aliases: ['project profit calculator', 'budgeted vs actual cost calculator', 'project margin calculator', 'job profitability calculator'],
+    related: ['profit-margin-calculator', 'contribution-margin-calculator', 'break-even-calculator', 'business-valuation-calculator'],
+    title: 'Project Profitability Calculator',
+    description: 'Compare a single project’s budgeted revenue and cost against what it actually brought in and cost, to see its realized profit, margin, and variance from plan.',
+    example: 'A project budgeted at $50,000 revenue and $35,000 cost (a 30% margin) that actually brings in $48,000 for $37,000 nets $11,000 — a 22.92% margin, $4,000 under the budgeted profit.',
+    breakdown: {
+      headline: 'actualProfit',
+      headlineLabel: 'Actual profit',
+      outputs: [
+        { id: 'budgetedProfit', label: 'Budgeted profit', format: 'currency' },
+        { id: 'budgetedMarginPercent', label: 'Budgeted margin', format: 'percent' },
+        { id: 'actualMarginPercent', label: 'Actual margin', format: 'percent' },
+        { id: 'profitVariance', label: 'Profit variance (actual − budgeted)', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Budgeted', inputs: ['budgetedRevenue', 'budgetedCost'] },
+        { title: 'Actual', inputs: ['actualRevenue', 'actualCost'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'budgetedProfit', label: 'Budgeted profit' },
+          { from: 'actualProfit', label: 'Actual profit' }
+        ],
+        title: 'Budgeted vs. actual profit',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-19',
+      concept: {
+        title: 'What is project profitability?',
+        paragraphs: [
+          'Project profitability compares what a specific project was expected to earn against what it actually earned, once both its revenue and its cost are known. The same profit-and-margin math used for a whole business (see profit-margin-calculator) applies equally well to one project at a time — the difference here is scope, not formula: one job, one client engagement, or one internal initiative, tracked on its own books.',
+          'Tracking this per project rather than only at the whole-business level matters because a company can be profitable overall while individual projects quietly lose money, or vice versa — a business’s own guide to managing its finances has to roll up many individual jobs into one picture, and a single underperforming project can be invisible in that aggregate until it is checked directly.',
+          'Comparing budgeted figures to actual ones adds a second layer: not just whether the project was profitable, but whether it went to plan. A project can land at a healthy margin and still represent a meaningful miss against what was budgeted, if costs ran higher or revenue came in lower than expected — the variance figures here make that gap explicit instead of letting a merely-positive result hide it.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the project’s budgeted revenue and cost, then its actual revenue and cost once the project is complete (or at any checkpoint).',
+        steps: [
+          { name: 'Enter budgeted revenue and cost', text: 'What the project was expected to bring in and cost, from the original plan or quote.' },
+          { name: 'Enter actual revenue and cost', text: 'What the project actually brought in and cost, once finished or at the current checkpoint.' },
+          { name: 'Read actual profit and margin', text: 'What the project really earned, and that profit as a percentage of actual revenue.' },
+          { name: 'Check the variance', text: 'Budgeted profit and the profit variance show exactly how far the project landed from plan, and in which direction.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Profit is revenue minus cost, calculated separately for the budgeted and actual figures; margin divides each profit by its own revenue.',
+        expression:
+          'budgetedProfit = budgetedRevenue − budgetedCost\nactualProfit = actualRevenue − actualCost\nbudgetedMarginPercent = budgetedProfit ÷ budgetedRevenue × 100\nactualMarginPercent = actualProfit ÷ actualRevenue × 100\nprofitVariance = actualProfit − budgetedProfit',
+        terms: [
+          { symbol: 'budgetedProfit, actualProfit', meaning: 'Revenue minus cost, for the plan and for reality respectively — the same subtraction, two different sets of numbers.' },
+          { symbol: 'profitVariance', meaning: 'How far actual profit came from the budgeted figure. Negative means the project underperformed its plan; positive means it beat it.' }
+        ],
+        note: 'Estimates only, and a single-period snapshot — a multi-phase project may be worth checking at several checkpoints rather than only at completion, so cost overruns surface while there is still time to react.'
+      },
+      workedExample: {
+        intro: 'A project is budgeted at $50,000 revenue and $35,000 cost. It actually brings in $48,000 for $37,000 of cost. How did it do against plan?',
+        rows: [
+          { label: 'Budgeted profit (50,000 − 35,000)', value: '$15,000' },
+          { label: 'Budgeted margin (15,000 ÷ 50,000 × 100)', value: '30%' },
+          { label: 'Actual profit (48,000 − 37,000)', value: '$11,000' },
+          { label: 'Actual margin (11,000 ÷ 48,000 × 100)', value: '22.92%' },
+          { label: 'Profit variance (11,000 − 15,000)', value: '−$4,000' }
+        ],
+        result: 'The project still made money — $11,000 — but that is $4,000 under the $15,000 budgeted, with margin down from 30% to 22.92%.',
+        explanation: 'The $4,000 profit shortfall breaks down into two pieces: $2,000 less revenue than budgeted (48,000 vs. 50,000) and $2,000 more cost than budgeted (37,000 vs. 35,000), together pushing margin down about 7.08 percentage points — a $4,000 miss that is roughly 26.7% below the budgeted $15,000 profit, even though the project was never actually unprofitable.'
+      },
+      watchOut: [
+        { title: 'A positive profit can still be a budget miss', body: 'The worked example above nets a real $11,000 profit — clearly not a loss — yet it is still 26.7% below the $15,000 that was budgeted. Profitable and on-plan are two different questions; check both.' },
+        { title: 'Revenue and cost variances can offset or compound', body: 'A revenue shortfall and a cost overrun on the same project add together into a larger profit miss, the way they did here. The same project could instead have a cost overrun partly offset by extra revenue, landing closer to budget despite both individual numbers moving the "wrong" way.' },
+        { title: 'This is one project, not the whole business', body: 'A healthy overall business margin (see profit-margin-calculator) can still contain individual underperforming projects, and vice versa. Checking project-level profitability is how those get found instead of staying hidden in an aggregate.' },
+        { title: 'A single checkpoint can miss a trend', body: 'Running this calculation only at project completion means cost overruns are discovered after it is too late to act on them. Checking at interim milestones on longer projects surfaces the same variance while there is still time to respond.' },
+        { title: 'Not the same question as the category-level margin calculator', body: 'profit-margin-calculator is built for a single sale or a whole business’s pricing; this page compares one project’s plan against its reality, with both a budgeted and an actual side.' }
+      ],
+      references: [
+        { label: 'U.S. Small Business Administration, Manage Your Finances', url: 'https://www.sba.gov/business-guide/manage-your-business/manage-your-finances' },
+        { label: 'OpenStax, Principles of Managerial Accounting §3.1, Contribution Margin', url: 'https://openstax.org/books/principles-managerial-accounting/pages/3-1-explain-contribution-margin-and-calculate-contribution-margin-per-unit-contribution-margin-ratio-and-total-contribution-margin' }
+      ]
+    },
+    inputs: [
+      { id: 'budgetedRevenue', label: 'Budgeted revenue', type: 'currency', placeholder: '50000', defaultValue: 50000, step: 1000, min: 0 },
+      { id: 'budgetedCost', label: 'Budgeted cost', type: 'currency', placeholder: '35000', defaultValue: 35000, step: 1000, min: 0 },
+      { id: 'actualRevenue', label: 'Actual revenue', type: 'currency', placeholder: '48000', defaultValue: 48000, step: 1000, min: 0 },
+      { id: 'actualCost', label: 'Actual cost', type: 'currency', placeholder: '37000', defaultValue: 37000, step: 1000, min: 0 }
+    ],
+    seo: {
+      title: 'Project Profitability Calculator – Budget vs. Actual',
+      description: 'Compare a project’s budgeted revenue and cost against actual results to see realized profit, margin, and variance from plan. Free.',
+      faq: [
+        { question: 'How do I calculate project profitability?', answer: 'Subtract cost from revenue to get profit, for both the budgeted and actual figures, then divide each profit by its own revenue for margin. Comparing the two profits gives the variance from plan.' },
+        { question: 'What does a negative profit variance mean?', answer: 'The project earned less than budgeted. A $4,000 negative variance (as in the worked example, $11,000 actual vs. $15,000 budgeted) means the project underperformed its plan by that amount, even if it was still profitable overall.' },
+        { question: 'Can a project be profitable but still a budget miss?', answer: 'Yes — that is exactly what happened in the worked example: a real $11,000 profit that is still 26.7% below the $15,000 that was budgeted. Profitability and hitting plan are separate questions.' },
+        { question: 'How is this different from the profit margin calculator?', answer: 'profit-margin-calculator is built for one sale or a whole business’s pricing. This calculator is specifically for comparing one project’s budgeted plan against its actual results, with both sides shown together.' },
+        { question: 'Should I check this once, at project completion?', answer: 'For longer projects, checking at interim milestones rather than only at the end surfaces cost overruns or revenue shortfalls while there is still time to respond, instead of only after the project is done.' },
+        { question: 'What caused the $4,000 shortfall in the worked example?', answer: 'Two things, in equal halves: $2,000 less revenue than budgeted and $2,000 more cost than budgeted. Either one alone would have been a $2,000 miss; together they combined into the full $4,000 gap.' }
+      ]
+    },
+    compute(values) {
+      const budgetedProfit = values.budgetedRevenue - values.budgetedCost;
+      const actualProfit = values.actualRevenue - values.actualCost;
+      const budgetedMarginPercent = values.budgetedRevenue > 0 ? (budgetedProfit / values.budgetedRevenue) * 100 : NaN;
+      const actualMarginPercent = values.actualRevenue > 0 ? (actualProfit / values.actualRevenue) * 100 : NaN;
+      const profitVariance = actualProfit - budgetedProfit;
+      return { actualProfit, budgetedProfit, budgetedMarginPercent, actualMarginPercent, profitVariance };
     }
   }
 ];

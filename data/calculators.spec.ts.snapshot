@@ -215,6 +215,44 @@ exports[`compute() snapshots > acceleration-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > accounts-receivable-days-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "accountsReceivable": 60000,
+      "netCreditSales": 730000,
+      "daysInPeriod": 365
+    },
+    "outputs": {
+      "arDays": 30,
+      "averageDailyCreditSales": 2000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "accountsReceivable": 90000,
+      "netCreditSales": 1100000,
+      "daysInPeriod": 548
+    },
+    "outputs": {
+      "arDays": 44.83636364,
+      "averageDailyCreditSales": 2007.29927
+    }
+  },
+  "edge": {
+    "inputs": {
+      "accountsReceivable": 0,
+      "netCreditSales": 0,
+      "daysInPeriod": 1
+    },
+    "outputs": {
+      "arDays": "NaN",
+      "averageDailyCreditSales": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > acres-to-hectares-converter 1`] = `
 {
   "default": {
@@ -9886,6 +9924,44 @@ exports[`compute() snapshots > investment-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > invoice-late-payment-interest-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "overdueAmount": 10000,
+      "annualRatePercent": 12,
+      "daysLate": 45
+    },
+    "outputs": {
+      "interest": 147.9452055,
+      "totalAmountDue": 10147.94521
+    }
+  },
+  "typical": {
+    "inputs": {
+      "overdueAmount": 15000,
+      "annualRatePercent": 18,
+      "daysLate": 68
+    },
+    "outputs": {
+      "interest": 503.0136986,
+      "totalAmountDue": 15503.0137
+    }
+  },
+  "edge": {
+    "inputs": {
+      "overdueAmount": 0,
+      "annualRatePercent": 0,
+      "daysLate": 0
+    },
+    "outputs": {
+      "interest": 0,
+      "totalAmountDue": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > ionic-strength-calculator 1`] = `
 {
   "default": {
@@ -15830,6 +15906,56 @@ exports[`compute() snapshots > profit-margin-calculator 1`] = `
       "marginPercent": "NaN",
       "profit": 0,
       "markupPercent": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > project-profitability-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "budgetedRevenue": 50000,
+      "budgetedCost": 35000,
+      "actualRevenue": 48000,
+      "actualCost": 37000
+    },
+    "outputs": {
+      "actualProfit": 11000,
+      "budgetedProfit": 15000,
+      "budgetedMarginPercent": 30,
+      "actualMarginPercent": 22.91666667,
+      "profitVariance": -4000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "budgetedRevenue": 75000,
+      "budgetedCost": 53000,
+      "actualRevenue": 72000,
+      "actualCost": 56000
+    },
+    "outputs": {
+      "actualProfit": 16000,
+      "budgetedProfit": 22000,
+      "budgetedMarginPercent": 29.33333333,
+      "actualMarginPercent": 22.22222222,
+      "profitVariance": -6000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "budgetedRevenue": 0,
+      "budgetedCost": 0,
+      "actualRevenue": 0,
+      "actualCost": 0
+    },
+    "outputs": {
+      "actualProfit": 0,
+      "budgetedProfit": 0,
+      "budgetedMarginPercent": "NaN",
+      "actualMarginPercent": "NaN",
+      "profitVariance": 0
     }
   }
 }

@@ -220,7 +220,7 @@ export const solarCalculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Solar Savings Calculator – Annual & Lifetime Savings',
-      description: 'Estimate a solar system\'s first-year and lifetime electricity savings from its size, production ratio and electricity rate, factoring in gradual panel output degradation.',
+      description: 'Estimate a solar system\'s first-year and lifetime savings from its size, production ratio and rate, factoring in gradual panel output degradation.',
       faq: [
         { question: 'How much could solar save me per year?', answer: 'It depends on your system size, your location\'s production ratio and your electricity rate. An 8.36 kW system at a 1.3 production ratio and $0.1831/kWh saves about $1,989.93 in its first year, in this calculator\'s worked example.' },
         { question: 'Does this assume net metering?', answer: 'It assumes every kWh you produce offsets a kWh at your full electricity rate, which is a simplification of how net metering actually works. If your utility credits exported excess at less than full retail, use the net-metering savings calculator for that part of your production.' },
@@ -325,7 +325,7 @@ export const solarCalculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Solar Payback Period Calculator – Break-Even Years',
-      description: 'Find how many years a solar system takes to pay for itself: net cost (after any incentive) divided by estimated annual savings. Solve for cost, incentive, savings or years.',
+      description: 'How many years until a solar system pays for itself: net cost after any incentive, divided by annual savings. Solve for cost, incentive, savings or years.',
       faq: [
         { question: 'What is a solar payback period?', answer: 'The number of years of savings it takes to recover a solar system\'s net cost — the break-even point, found by dividing net cost by estimated annual savings. It\'s different from total lifetime savings, which is what the system is worth after that point.' },
         { question: 'How long does it typically take solar to pay for itself?', answer: 'In this calculator\'s worked example — a $31,135 system, a $1,000 incentive and $2,856.36 in annual savings — about 10.55 years, or 10.90 years with no incentive at all. Your own payback depends on your system\'s cost, any incentive and your estimated savings.' },
@@ -449,7 +449,7 @@ export const solarCalculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Solar Loan Payment Calculator – Payment vs. Savings',
-      description: 'Find the monthly payment on a solar loan from the amount, rate and term, and compare it against your estimated monthly solar savings. Solve for amount, payment, term or rate.',
+      description: 'Find the monthly payment on a solar loan from the amount, rate and term, compared against estimated monthly savings. Solve for amount, payment, term or rate.',
       faq: [
         { question: 'How is a solar loan payment calculated?', answer: 'The same way as any amortized loan: M = P × r ÷ (1 − (1 + r)^−n), where P is the amount financed, r is the monthly rate (APR ÷ 12) and n is the number of months. A $30,135 loan at 6% APR over 20 years comes to about $215.90 a month.' },
         { question: 'Will a solar loan payment be lower than my current electricity bill?', answer: 'It depends on the loan\'s rate and term versus your estimated savings. In this calculator\'s worked example, a 20-year loan at 6% APR costs $215.90 a month against $238.03 in estimated savings — a net $22.13 a month better off. A shorter, higher-payment loan on the same amount can cost more per month than it saves.' },
@@ -467,6 +467,117 @@ export const solarCalculators: CalculatorConfig[] = [
       const totalInterest = totalPaid - values.loanAmount;
       const netMonthlyCashFlow = values.monthlySolarSavings - payment;
       return { monthlyPayment: payment, totalPaid, totalInterest, netMonthlyCashFlow };
+    }
+  },
+  {
+    id: 'net-metering-savings-calculator',
+    category: 'solar',
+    glyph: 'NEM',
+    updatedAt: '2026-11-18',
+    aliases: ['net metering calculator', 'solar net metering credit calculator', 'excess solar generation credit calculator', 'net metering bill credit estimator', 'solar export credit calculator'],
+    related: ['solar-savings-calculator', 'electricity-bill-calculator', 'solar-panel-system-size-calculator', 'solar-payback-period-calculator'],
+    title: 'Net Metering Savings Calculator',
+    description: 'Estimate the monthly and annual bill credit for excess solar generation exported to the grid, at your utility\'s net-metering rate, compared with what that energy would be worth at full retail.',
+    example: '150 kWh of excess generation exported in a month, credited at $0.08/kWh, is worth $12.00 that month ($144.00 a year) — 56.3% less than the $27.47 it would be worth at a $0.1831/kWh full retail rate.',
+    breakdown: {
+      headline: 'annualCredit',
+      headlineLabel: 'Estimated annual bill credit',
+      outputs: [
+        { id: 'annualCredit', label: 'Estimated annual bill credit', format: 'currency' },
+        { id: 'monthlyCredit', label: 'Estimated monthly bill credit', format: 'currency' },
+        { id: 'annualValueAtRetail', label: 'What that energy would be worth at full retail (annual)', format: 'currency' },
+        { id: 'creditShortfallPercent', label: 'How much less than full retail your credit rate pays', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Excess generation exported', inputs: ['excessKwhPerMonth'] },
+        { title: 'Rates', inputs: ['netMeteringRatePerKwh', 'retailRatePerKwh'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'annualCredit', label: 'At net-metering rate' },
+          { from: 'annualValueAtRetail', label: 'At full retail rate' }
+        ],
+        title: 'Net-metering credit vs. full-retail value, exported energy only'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What net metering actually pays for',
+        paragraphs: [
+          'The U.S. Department of Energy defines net metering as "an arrangement between solar energy system owners and utilities in which the system owners are compensated for any solar power generation that is exported to the electricity grid." The key word is exported: this is about the surplus your panels send out to the grid in a sunny hour or a low-usage month, not the power you generate and use yourself in the same moment, which simply reduces how much you buy. The solar savings calculator values your whole production at your full retail rate; this calculator is specifically for the exported portion, which may be credited at a different rate entirely.',
+          'How much that exported energy is actually worth depends entirely on your own utility and state. DOE is direct about it: "whether or not your solar system qualifies for net metering payments depends on policies and practices in your state and electric utility." Some programs credit exports dollar-for-dollar at the full retail rate; others pay an "avoided cost" or wholesale-style rate that can be well below retail, reflecting what the utility would otherwise have paid to generate or buy that power itself. There is no single national net-metering rate — the figure that matters is the one on your own utility\'s tariff.',
+          'Retail electricity rates themselves vary just as widely. The U.S. Energy Information Administration\'s own state-level data puts residential rates anywhere from the low teens to the high forties of cents per kWh depending on where you live, which is why this calculator asks for your own retail rate rather than assuming a national average for the comparison.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the excess generation you expect to export in a typical month, your utility\'s net-metering credit rate, and your retail rate for comparison.',
+        steps: [
+          { name: 'Enter your excess generation', text: 'This is the surplus beyond what your home used in the month — from a solar monitoring app, or your utility\'s own net-metering statement.' },
+          { name: 'Enter your net-metering credit rate', text: 'Check your utility\'s net-metering tariff; it may equal your retail rate (full retail) or sit below it (avoided-cost or wholesale-style crediting).' },
+          { name: 'Enter your retail rate', text: 'Use the per-kWh rate from your own bill, for the full-retail comparison.' },
+          { name: 'Read the result', text: 'The headline is the estimated annual credit; the rows below show the monthly figure and how it compares with what that same energy would be worth at full retail.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The credit is simply exported energy times your utility\'s net-metering rate; the comparison swaps in the retail rate for the same energy.',
+        expression: 'monthly credit = excess kWh × net-metering rate\nannual credit = monthly credit × 12\nvalue at full retail = excess kWh × retail rate\ncredit shortfall = 1 − (net-metering rate ÷ retail rate)',
+        terms: [
+          { symbol: 'excess kWh', meaning: 'Solar generation exported to the grid in a month — beyond what the home used at the time.' },
+          { symbol: 'net-metering rate', meaning: 'Whatever your utility\'s tariff actually credits for exported energy — full retail, avoided cost, wholesale, or something else entirely.' },
+          { symbol: 'retail rate', meaning: 'Your normal per-kWh electricity price, used only for the comparison.' }
+        ],
+        note: 'Illustrative only — net-metering rates and rules vary enormously by state and utility, and some programs roll unused credits forward to a later bill rather than paying out monthly. Check your own utility\'s net-metering tariff for the figure that actually applies to you.'
+      },
+      workedExample: {
+        intro: 'A home exports 150 kWh of excess solar generation in a month. Its utility credits net-metered exports at $0.08/kWh; its normal retail rate is $0.1831/kWh.',
+        rows: [
+          { label: 'Monthly credit (150 × $0.08)', value: '$12.00' },
+          { label: 'Annual credit (12.00 × 12)', value: '$144.00' },
+          { label: 'Value at full retail (150 × $0.1831)', value: '$27.47' },
+          { label: 'Annual value at full retail (27.47 × 12)', value: '$329.58' },
+          { label: 'Credit shortfall (1 − 0.08 ÷ 0.1831)', value: '56.3%' }
+        ],
+        result: '$12.00/month · $144.00/year — 56.3% less than full retail',
+        explanation: 'At a net-metering rate a little under half of retail, this home\'s exported energy is worth $144.00 a year instead of the $329.58 it would be worth if every exported kWh were credited at the full $0.1831 retail rate. A utility that credits exports at full retail would show 0% shortfall and the two bars in the comparison above would match exactly.'
+      },
+      watchOut: [
+        { title: 'Net-metering rates vary enormously', body: 'DOE is explicit that whether and how much you\'re paid for exported solar "depends on policies and practices in your state and electric utility." Some pay full retail; others pay a lower avoided-cost or wholesale-style rate. There is no national figure to default to — use your own utility\'s tariff.' },
+        { title: 'This only covers exported excess, not your whole production', body: 'Power you generate and use in the same moment isn\'t exported — it just reduces the electricity you buy, valued at your full retail rate. Use the solar savings calculator for that larger, whole-production estimate.' },
+        { title: 'Some programs roll credits forward instead of paying monthly', body: 'Not every utility pays out a net-metering credit as cash each month — some carry it forward against future bills, with its own rules for what happens to any credit left at year\'s end. Check your own utility\'s tariff for how credits are actually applied.' },
+        { title: 'Retail rates vary by state too', body: 'EIA\'s own data shows state residential rates ranging from the low teens to the high forties of cents per kWh. Use your own bill\'s rate for the full-retail comparison, not a national average.' }
+      ],
+      references: [
+        { label: 'U.S. Department of Energy, Homeowner\'s Guide to Going Solar (net metering definition)', url: 'https://www.energy.gov/eere/solar/homeowners-guide-going-solar' },
+        { label: 'U.S. Energy Information Administration, Electric Power Monthly, Table 5.6.A (residential rates by state)', url: 'https://www.eia.gov/electricity/monthly/epm_table_grapher.php?t=table_5_06_a' }
+      ]
+    },
+    inputs: [
+      { id: 'excessKwhPerMonth', label: 'Excess generation exported', type: 'number', placeholder: '150', defaultValue: 150, step: 10, min: 0, dimension: 'energy', unit: 'kWh' },
+      { id: 'netMeteringRatePerKwh', label: 'Net-metering credit rate', type: 'currency', placeholder: '0.08', defaultValue: 0.08, step: 0.01, min: 0 },
+      { id: 'retailRatePerKwh', label: 'Your retail electricity rate', type: 'currency', placeholder: '0.1831', defaultValue: 0.1831, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Net Metering Savings Calculator – Solar Export Credit',
+      description: 'Estimate the monthly and annual bill credit for excess solar generation exported to the grid, compared with what that energy is worth at your full retail rate.',
+      faq: [
+        { question: 'What is net metering?', answer: 'The U.S. Department of Energy defines it as "an arrangement between solar energy system owners and utilities in which the system owners are compensated for any solar power generation that is exported to the electricity grid."' },
+        { question: 'How much is my excess solar generation worth?', answer: 'Exported kWh times your utility\'s net-metering rate. In this calculator\'s worked example, 150 kWh exported at $0.08/kWh is worth $12.00 that month, or $144.00 over a year.' },
+        { question: 'Does every utility pay full retail for exported solar?', answer: 'No. DOE states this "depends on policies and practices in your state and electric utility" — some programs credit exports at full retail, others at a lower avoided-cost or wholesale-style rate. Check your own utility\'s net-metering tariff.' },
+        { question: 'How is this different from the solar savings calculator?', answer: 'The savings calculator values your whole production at full retail, assuming you use or export every kWh at that rate. This calculator is specifically for the exported excess, valued at whatever your utility\'s actual net-metering rate is — which can be lower than retail.' },
+        { question: 'Why might my net-metering credit rate be lower than my retail rate?', answer: 'Some utilities credit exported solar at an "avoided cost" or wholesale-style rate — roughly what generating or buying that power would have cost the utility itself — rather than the retail price a residential customer pays, which also covers delivery and other charges.' },
+        { question: 'Are net-metering credits paid out in cash or rolled over?', answer: 'It depends on the utility. Some pay out or apply the credit each billing cycle; others carry unused credits forward to future bills, with their own rules for any balance left at year\'s end. Your utility\'s net-metering tariff spells out which applies to you.' }
+      ]
+    },
+    compute(values) {
+      const monthlyCredit = values.excessKwhPerMonth * values.netMeteringRatePerKwh;
+      const annualCredit = monthlyCredit * 12;
+      const monthlyValueAtRetail = values.excessKwhPerMonth * values.retailRatePerKwh;
+      const annualValueAtRetail = monthlyValueAtRetail * 12;
+      const creditShortfallPercent = values.retailRatePerKwh > 0 ? (1 - values.netMeteringRatePerKwh / values.retailRatePerKwh) * 100 : NaN;
+      return { monthlyCredit, annualCredit, monthlyValueAtRetail, annualValueAtRetail, creditShortfallPercent };
     }
   }
 ];

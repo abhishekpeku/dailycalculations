@@ -12057,6 +12057,53 @@ exports[`compute() snapshots > name-numerology-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > net-metering-savings-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "excessKwhPerMonth": 150,
+      "netMeteringRatePerKwh": 0.08,
+      "retailRatePerKwh": 0.1831
+    },
+    "outputs": {
+      "monthlyCredit": 12,
+      "annualCredit": 144,
+      "monthlyValueAtRetail": 27.465,
+      "annualValueAtRetail": 329.58,
+      "creditShortfallPercent": 56.3080284
+    }
+  },
+  "typical": {
+    "inputs": {
+      "excessKwhPerMonth": 230,
+      "netMeteringRatePerKwh": 0.12,
+      "retailRatePerKwh": 0.27
+    },
+    "outputs": {
+      "monthlyCredit": 27.6,
+      "annualCredit": 331.2,
+      "monthlyValueAtRetail": 62.1,
+      "annualValueAtRetail": 745.2,
+      "creditShortfallPercent": 55.55555556
+    }
+  },
+  "edge": {
+    "inputs": {
+      "excessKwhPerMonth": 0,
+      "netMeteringRatePerKwh": 0,
+      "retailRatePerKwh": 0
+    },
+    "outputs": {
+      "monthlyCredit": 0,
+      "annualCredit": 0,
+      "monthlyValueAtRetail": 0,
+      "annualValueAtRetail": 0,
+      "creditShortfallPercent": "NaN"
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > new-years-countdown-calculator 1`] = `
 {
   "default": {
@@ -17130,6 +17177,188 @@ exports[`compute() snapshots > social-security-calculator 1`] = `
       "pia": 0,
       "annualBenefit": 0,
       "replacementPercent": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > solar-loan-payment-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "loanAmount": 30135,
+      "interestRate": 6,
+      "years": 20,
+      "monthlySolarSavings": 238.03
+    },
+    "outputs": {
+      "monthlyPayment": 215.8964995,
+      "totalPaid": 51815.15987,
+      "totalInterest": 21680.15987,
+      "netMonthlyCashFlow": 22.13350053
+    }
+  },
+  "typical": {
+    "inputs": {
+      "loanAmount": 45200,
+      "interestRate": 9,
+      "years": 30,
+      "monthlySolarSavings": 357
+    },
+    "outputs": {
+      "monthlyPayment": 363.6894229,
+      "totalPaid": 130928.1922,
+      "totalInterest": 85728.19223,
+      "netMonthlyCashFlow": -6.689422859
+    }
+  },
+  "edge": {
+    "inputs": {
+      "loanAmount": 0,
+      "interestRate": 0,
+      "years": 1,
+      "monthlySolarSavings": 0
+    },
+    "outputs": {
+      "monthlyPayment": 0,
+      "totalPaid": 0,
+      "totalInterest": 0,
+      "netMonthlyCashFlow": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > solar-panel-system-size-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "annualUsageKwh": 10791,
+      "productionRatio": 1.3,
+      "panelWattage": 440
+    },
+    "outputs": {
+      "systemSizeKw": 8.36,
+      "panelCount": 19,
+      "estimatedAnnualProductionKwh": 10868,
+      "percentOfUsageCovered": 100.7135576
+    }
+  },
+  "typical": {
+    "inputs": {
+      "annualUsageKwh": 16200,
+      "productionRatio": 2,
+      "panelWattage": 660
+    },
+    "outputs": {
+      "systemSizeKw": 8.58,
+      "panelCount": 13,
+      "estimatedAnnualProductionKwh": 17160,
+      "percentOfUsageCovered": 105.9259259
+    }
+  },
+  "edge": {
+    "inputs": {
+      "annualUsageKwh": 0,
+      "productionRatio": 0,
+      "panelWattage": 1
+    },
+    "outputs": {
+      "systemSizeKw": "NaN",
+      "panelCount": "NaN",
+      "estimatedAnnualProductionKwh": "NaN",
+      "percentOfUsageCovered": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > solar-payback-period-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "systemCost": 31135,
+      "incentiveAmount": 1000,
+      "annualSavings": 2856.36
+    },
+    "outputs": {
+      "paybackPeriod": 10.55014074,
+      "netSystemCost": 30135
+    }
+  },
+  "typical": {
+    "inputs": {
+      "systemCost": 46700,
+      "incentiveAmount": 1500,
+      "annualSavings": 4280
+    },
+    "outputs": {
+      "paybackPeriod": 10.56074766,
+      "netSystemCost": 45200
+    }
+  },
+  "edge": {
+    "inputs": {
+      "systemCost": 0,
+      "incentiveAmount": 0,
+      "annualSavings": 0
+    },
+    "outputs": {
+      "paybackPeriod": "NaN",
+      "netSystemCost": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > solar-savings-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "systemSizeKw": 8.36,
+      "productionRatio": 1.3,
+      "electricityRate": 0.1831,
+      "lifetimeYears": 25,
+      "degradationRatePercent": 0.6
+    },
+    "outputs": {
+      "annualSavings": 1989.9308,
+      "annualProductionKwh": 10868,
+      "lifetimeSavings": 46325.85787,
+      "finalYearSavings": 1722.30951,
+      "averageAnnualSavings": 1853.034315
+    }
+  },
+  "typical": {
+    "inputs": {
+      "systemSizeKw": 12.5,
+      "productionRatio": 2,
+      "electricityRate": 0.27,
+      "lifetimeYears": 38,
+      "degradationRatePercent": 0.9
+    },
+    "outputs": {
+      "annualSavings": 6750,
+      "annualProductionKwh": 25000,
+      "lifetimeSavings": 218063.0806,
+      "finalYearSavings": 4830.910469,
+      "averageAnnualSavings": 5738.502121
+    }
+  },
+  "edge": {
+    "inputs": {
+      "systemSizeKw": 0,
+      "productionRatio": 0,
+      "electricityRate": 0,
+      "lifetimeYears": 1,
+      "degradationRatePercent": 0
+    },
+    "outputs": {
+      "annualSavings": 0,
+      "annualProductionKwh": 0,
+      "lifetimeSavings": 0,
+      "finalYearSavings": 0,
+      "averageAnnualSavings": 0
     }
   }
 }

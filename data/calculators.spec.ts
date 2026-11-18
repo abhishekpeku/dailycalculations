@@ -180,7 +180,10 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'solar-panel-system-size-calculator': ['systemSizeKw', 'panelCount', 'estimatedAnnualProductionKwh', 'percentOfUsageCovered'],
   // annualSavings 0 (its min) -> compute()'s own guard, no payback period with zero savings;
   // netSystemCost (systemCost - incentiveAmount) stays finite 0 either way.
-  'solar-payback-period-calculator': ['paybackPeriod']
+  'solar-payback-period-calculator': ['paybackPeriod'],
+  // retailRatePerKwh 0 (its min) -> compute()'s own guard, no "% less than retail" with a zero
+  // retail rate to divide by; the two credit/value figures stay finite 0 either way.
+  'net-metering-savings-calculator': ['creditShortfallPercent']
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

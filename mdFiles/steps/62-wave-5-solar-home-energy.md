@@ -1,13 +1,16 @@
 ## Progress (batch 1, branch `step/62-solar-home-energy-batch1`)
 
-- [ ] Category-opening work: `data/calculators/solar.ts`, `data/calculators/index.ts` entry, `lib/categoryTheme.ts` + `components/IconTile.tsx` color/icon pair
-- [ ] `solar-panel-system-size-calculator`
-- [ ] `solar-savings-calculator`
-- [ ] `solar-payback-period-calculator`
-- [ ] `solar-loan-payment-calculator`
-- [ ] `net-metering-savings-calculator`
-- [ ] `npm test` / lint / build pass, snapshot regenerated
-- [ ] PR opened
+- [x] Category-opening work: `data/calculators/solar.ts`, `data/calculators/index.ts` entry, `lib/categoryTheme.ts` + `components/IconTile.tsx` color/icon pair (sun-yellow + sun glyph)
+- [x] `solar-panel-system-size-calculator`
+- [x] `solar-savings-calculator`
+- [x] `solar-payback-period-calculator`
+- [x] `solar-loan-payment-calculator`
+- [x] `net-metering-savings-calculator`
+- [x] `npm test` / lint / build pass (1651/1651), snapshot regenerated (pure additions, 5 new entries)
+- [x] PR opened: #141 (https://github.com/abhishekpeku/dailycalculations/pull/141)
+
+Batch 1 done 2026-11-18. Next: batch 2 (storage & consumption, 5) and batch 3 (everyday efficiency
+novelties, 4) in separate sessions, per the "one batch at a time" rule.
 
 # Step 62 — Wave 5: Solar & Home Energy (new category)
 

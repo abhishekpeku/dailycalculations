@@ -224,7 +224,10 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'payback-period-calculator': ['paybackPeriod', 'simpleReturnPercent'],
   // netCreditSales 0 (its min) -> arDays divides by zero credit sales, no answer; averageDailyCreditSales
   // (netCreditSales / daysInPeriod) stays a finite 0 either way.
-  'accounts-receivable-days-calculator': ['arDays']
+  'accounts-receivable-days-calculator': ['arDays'],
+  // budgetedRevenue and actualRevenue both 0 (their min) -> both margin percents divide by a zero
+  // revenue, 0/0; the profit figures (revenue - cost) and their variance stay finite 0 either way.
+  'project-profitability-calculator': ['budgetedMarginPercent', 'actualMarginPercent']
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

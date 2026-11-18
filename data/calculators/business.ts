@@ -1902,5 +1902,119 @@ export const businessCalculators: CalculatorConfig[] = [
       const totalAmountDue = values.overdueAmount + interest;
       return { interest, totalAmountDue };
     }
+  },
+  {
+    id: 'project-profitability-calculator',
+    category: 'business',
+    glyph: 'PP',
+    updatedAt: '2026-11-19',
+    aliases: ['project profit calculator', 'budgeted vs actual cost calculator', 'project margin calculator', 'job profitability calculator'],
+    related: ['profit-margin-calculator', 'contribution-margin-calculator', 'break-even-calculator', 'business-valuation-calculator'],
+    title: 'Project Profitability Calculator',
+    description: 'Compare a single project’s budgeted revenue and cost against what it actually brought in and cost, to see its realized profit, margin, and variance from plan.',
+    example: 'A project budgeted at $50,000 revenue and $35,000 cost (a 30% margin) that actually brings in $48,000 for $37,000 nets $11,000 — a 22.92% margin, $4,000 under the budgeted profit.',
+    breakdown: {
+      headline: 'actualProfit',
+      headlineLabel: 'Actual profit',
+      outputs: [
+        { id: 'budgetedProfit', label: 'Budgeted profit', format: 'currency' },
+        { id: 'budgetedMarginPercent', label: 'Budgeted margin', format: 'percent' },
+        { id: 'actualMarginPercent', label: 'Actual margin', format: 'percent' },
+        { id: 'profitVariance', label: 'Profit variance (actual − budgeted)', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Budgeted', inputs: ['budgetedRevenue', 'budgetedCost'] },
+        { title: 'Actual', inputs: ['actualRevenue', 'actualCost'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'budgetedProfit', label: 'Budgeted profit' },
+          { from: 'actualProfit', label: 'Actual profit' }
+        ],
+        title: 'Budgeted vs. actual profit',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-19',
+      concept: {
+        title: 'What is project profitability?',
+        paragraphs: [
+          'Project profitability compares what a specific project was expected to earn against what it actually earned, once both its revenue and its cost are known. The same profit-and-margin math used for a whole business (see profit-margin-calculator) applies equally well to one project at a time — the difference here is scope, not formula: one job, one client engagement, or one internal initiative, tracked on its own books.',
+          'Tracking this per project rather than only at the whole-business level matters because a company can be profitable overall while individual projects quietly lose money, or vice versa — a business’s own guide to managing its finances has to roll up many individual jobs into one picture, and a single underperforming project can be invisible in that aggregate until it is checked directly.',
+          'Comparing budgeted figures to actual ones adds a second layer: not just whether the project was profitable, but whether it went to plan. A project can land at a healthy margin and still represent a meaningful miss against what was budgeted, if costs ran higher or revenue came in lower than expected — the variance figures here make that gap explicit instead of letting a merely-positive result hide it.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the project’s budgeted revenue and cost, then its actual revenue and cost once the project is complete (or at any checkpoint).',
+        steps: [
+          { name: 'Enter budgeted revenue and cost', text: 'What the project was expected to bring in and cost, from the original plan or quote.' },
+          { name: 'Enter actual revenue and cost', text: 'What the project actually brought in and cost, once finished or at the current checkpoint.' },
+          { name: 'Read actual profit and margin', text: 'What the project really earned, and that profit as a percentage of actual revenue.' },
+          { name: 'Check the variance', text: 'Budgeted profit and the profit variance show exactly how far the project landed from plan, and in which direction.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Profit is revenue minus cost, calculated separately for the budgeted and actual figures; margin divides each profit by its own revenue.',
+        expression:
+          'budgetedProfit = budgetedRevenue − budgetedCost\nactualProfit = actualRevenue − actualCost\nbudgetedMarginPercent = budgetedProfit ÷ budgetedRevenue × 100\nactualMarginPercent = actualProfit ÷ actualRevenue × 100\nprofitVariance = actualProfit − budgetedProfit',
+        terms: [
+          { symbol: 'budgetedProfit, actualProfit', meaning: 'Revenue minus cost, for the plan and for reality respectively — the same subtraction, two different sets of numbers.' },
+          { symbol: 'profitVariance', meaning: 'How far actual profit came from the budgeted figure. Negative means the project underperformed its plan; positive means it beat it.' }
+        ],
+        note: 'Estimates only, and a single-period snapshot — a multi-phase project may be worth checking at several checkpoints rather than only at completion, so cost overruns surface while there is still time to react.'
+      },
+      workedExample: {
+        intro: 'A project is budgeted at $50,000 revenue and $35,000 cost. It actually brings in $48,000 for $37,000 of cost. How did it do against plan?',
+        rows: [
+          { label: 'Budgeted profit (50,000 − 35,000)', value: '$15,000' },
+          { label: 'Budgeted margin (15,000 ÷ 50,000 × 100)', value: '30%' },
+          { label: 'Actual profit (48,000 − 37,000)', value: '$11,000' },
+          { label: 'Actual margin (11,000 ÷ 48,000 × 100)', value: '22.92%' },
+          { label: 'Profit variance (11,000 − 15,000)', value: '−$4,000' }
+        ],
+        result: 'The project still made money — $11,000 — but that is $4,000 under the $15,000 budgeted, with margin down from 30% to 22.92%.',
+        explanation: 'The $4,000 profit shortfall breaks down into two pieces: $2,000 less revenue than budgeted (48,000 vs. 50,000) and $2,000 more cost than budgeted (37,000 vs. 35,000), together pushing margin down about 7.08 percentage points — a $4,000 miss that is roughly 26.7% below the budgeted $15,000 profit, even though the project was never actually unprofitable.'
+      },
+      watchOut: [
+        { title: 'A positive profit can still be a budget miss', body: 'The worked example above nets a real $11,000 profit — clearly not a loss — yet it is still 26.7% below the $15,000 that was budgeted. Profitable and on-plan are two different questions; check both.' },
+        { title: 'Revenue and cost variances can offset or compound', body: 'A revenue shortfall and a cost overrun on the same project add together into a larger profit miss, the way they did here. The same project could instead have a cost overrun partly offset by extra revenue, landing closer to budget despite both individual numbers moving the "wrong" way.' },
+        { title: 'This is one project, not the whole business', body: 'A healthy overall business margin (see profit-margin-calculator) can still contain individual underperforming projects, and vice versa. Checking project-level profitability is how those get found instead of staying hidden in an aggregate.' },
+        { title: 'A single checkpoint can miss a trend', body: 'Running this calculation only at project completion means cost overruns are discovered after it is too late to act on them. Checking at interim milestones on longer projects surfaces the same variance while there is still time to respond.' },
+        { title: 'Not the same question as the category-level margin calculator', body: 'profit-margin-calculator is built for a single sale or a whole business’s pricing; this page compares one project’s plan against its reality, with both a budgeted and an actual side.' }
+      ],
+      references: [
+        { label: 'U.S. Small Business Administration, Manage Your Finances', url: 'https://www.sba.gov/business-guide/manage-your-business/manage-your-finances' },
+        { label: 'OpenStax, Principles of Managerial Accounting §3.1, Contribution Margin', url: 'https://openstax.org/books/principles-managerial-accounting/pages/3-1-explain-contribution-margin-and-calculate-contribution-margin-per-unit-contribution-margin-ratio-and-total-contribution-margin' }
+      ]
+    },
+    inputs: [
+      { id: 'budgetedRevenue', label: 'Budgeted revenue', type: 'currency', placeholder: '50000', defaultValue: 50000, step: 1000, min: 0 },
+      { id: 'budgetedCost', label: 'Budgeted cost', type: 'currency', placeholder: '35000', defaultValue: 35000, step: 1000, min: 0 },
+      { id: 'actualRevenue', label: 'Actual revenue', type: 'currency', placeholder: '48000', defaultValue: 48000, step: 1000, min: 0 },
+      { id: 'actualCost', label: 'Actual cost', type: 'currency', placeholder: '37000', defaultValue: 37000, step: 1000, min: 0 }
+    ],
+    seo: {
+      title: 'Project Profitability Calculator – Budget vs. Actual',
+      description: 'Compare a project’s budgeted revenue and cost against actual results to see realized profit, margin, and variance from plan. Free.',
+      faq: [
+        { question: 'How do I calculate project profitability?', answer: 'Subtract cost from revenue to get profit, for both the budgeted and actual figures, then divide each profit by its own revenue for margin. Comparing the two profits gives the variance from plan.' },
+        { question: 'What does a negative profit variance mean?', answer: 'The project earned less than budgeted. A $4,000 negative variance (as in the worked example, $11,000 actual vs. $15,000 budgeted) means the project underperformed its plan by that amount, even if it was still profitable overall.' },
+        { question: 'Can a project be profitable but still a budget miss?', answer: 'Yes — that is exactly what happened in the worked example: a real $11,000 profit that is still 26.7% below the $15,000 that was budgeted. Profitability and hitting plan are separate questions.' },
+        { question: 'How is this different from the profit margin calculator?', answer: 'profit-margin-calculator is built for one sale or a whole business’s pricing. This calculator is specifically for comparing one project’s budgeted plan against its actual results, with both sides shown together.' },
+        { question: 'Should I check this once, at project completion?', answer: 'For longer projects, checking at interim milestones rather than only at the end surfaces cost overruns or revenue shortfalls while there is still time to respond, instead of only after the project is done.' },
+        { question: 'What caused the $4,000 shortfall in the worked example?', answer: 'Two things, in equal halves: $2,000 less revenue than budgeted and $2,000 more cost than budgeted. Either one alone would have been a $2,000 miss; together they combined into the full $4,000 gap.' }
+      ]
+    },
+    compute(values) {
+      const budgetedProfit = values.budgetedRevenue - values.budgetedCost;
+      const actualProfit = values.actualRevenue - values.actualCost;
+      const budgetedMarginPercent = values.budgetedRevenue > 0 ? (budgetedProfit / values.budgetedRevenue) * 100 : NaN;
+      const actualMarginPercent = values.actualRevenue > 0 ? (actualProfit / values.actualRevenue) * 100 : NaN;
+      const profitVariance = actualProfit - budgetedProfit;
+      return { actualProfit, budgetedProfit, budgetedMarginPercent, actualMarginPercent, profitVariance };
+    }
   }
 ];

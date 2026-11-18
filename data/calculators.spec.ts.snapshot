@@ -15911,6 +15911,56 @@ exports[`compute() snapshots > profit-margin-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > project-profitability-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "budgetedRevenue": 50000,
+      "budgetedCost": 35000,
+      "actualRevenue": 48000,
+      "actualCost": 37000
+    },
+    "outputs": {
+      "actualProfit": 11000,
+      "budgetedProfit": 15000,
+      "budgetedMarginPercent": 30,
+      "actualMarginPercent": 22.91666667,
+      "profitVariance": -4000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "budgetedRevenue": 75000,
+      "budgetedCost": 53000,
+      "actualRevenue": 72000,
+      "actualCost": 56000
+    },
+    "outputs": {
+      "actualProfit": 16000,
+      "budgetedProfit": 22000,
+      "budgetedMarginPercent": 29.33333333,
+      "actualMarginPercent": 22.22222222,
+      "profitVariance": -6000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "budgetedRevenue": 0,
+      "budgetedCost": 0,
+      "actualRevenue": 0,
+      "actualCost": 0
+    },
+    "outputs": {
+      "actualProfit": 0,
+      "budgetedProfit": 0,
+      "budgetedMarginPercent": "NaN",
+      "actualMarginPercent": "NaN",
+      "profitVariance": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > projectile-motion-calculator 1`] = `
 {
   "default": {

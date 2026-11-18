@@ -2,14 +2,23 @@
 
 ## Progress — batch 1 (this branch: `step/63-insurance-batch1`)
 
-- [ ] Category scaffold: `data/calculators/insurance.ts`, `categories` entry, `calculatorOrder`,
-      `lib/categoryTheme.ts` + `components/IconTile.tsx` color/icon pair
-- [ ] `human-life-value-calculator`
-- [ ] `dime-method-life-insurance-calculator`
-- [ ] `term-life-coverage-calculator` (distinctness judgment call — see decision note below)
-- [ ] `whole-life-vs-term-life-cost-calculator`
-- [ ] npm test / lint / build all green, snapshot regenerated
-- [ ] Draft PR opened and kept current
+- [x] Category scaffold: `data/calculators/insurance.ts`, `categories` entry, `calculatorOrder`,
+      `lib/categoryTheme.ts` + `components/IconTile.tsx` color/icon pair (violet + shield)
+- [x] `human-life-value-calculator`
+- [x] `dime-method-life-insurance-calculator`
+- [x] `term-life-coverage-calculator` — kept distinct (decision below)
+- [x] `whole-life-vs-term-life-cost-calculator`
+- [x] npm test / lint / build all green, snapshot regenerated (additive only)
+- [x] Draft PR opened early (#140) and kept current
+
+**Decision on `term-life-coverage-calculator`:** built as its own page. It answers "how many
+years of term" (longest of mortgage payoff / child-independence span / years-to-retirement,
+rounded up to a 5-year increment), which is a distinct question from "how much coverage"
+(human-life-value and DIME). No overlap found after reading both other calculators' content.
+
+**Decision on flood insurance:** not in batch 1's scope (it is listed under batch 4 in this step
+file) — no action taken on it yet; left for whoever picks up batch 4 to evaluate per the step
+file's own skip-candidate note.
 
 Per `mdFiles/omni-strategy.md` §4.5 ("Insurance — new category, zero overlap with anything
 existing"). Go-ahead per D23. One of the 4 remaining Wave 5 sub-categories.

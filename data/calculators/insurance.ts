@@ -232,7 +232,7 @@ export const insuranceCalculators: CalculatorConfig[] = [
       { id: 'educationCostPerChild', label: 'Education cost per child', type: 'currency', placeholder: '100000', defaultValue: 100000, step: 5000, min: 0 }
     ],
     seo: {
-      title: 'DIME Method Life Insurance Calculator – Debt, Income, Mortgage, Education',
+      title: 'DIME Method Life Insurance Calculator',
       description: 'Estimate life insurance coverage with the DIME method: debt plus income replacement plus mortgage balance plus education costs, added together.',
       faq: [
         { question: 'What does DIME stand for in life insurance?', answer: 'Debt, Income replacement, Mortgage and Education. It is a needs-based method that adds up these four obligations to produce a life insurance coverage estimate.' },
@@ -249,6 +249,243 @@ export const insuranceCalculators: CalculatorConfig[] = [
       const educationTotal = values.numberOfChildren * values.educationCostPerChild;
       const dimeTotal = values.otherDebt + incomeReplacement + values.mortgageBalance + educationTotal;
       return { dimeTotal, otherDebt: values.otherDebt, incomeReplacement, mortgageBalance: values.mortgageBalance, educationTotal };
+    }
+  },
+  {
+    id: 'term-life-coverage-calculator',
+    category: 'insurance',
+    glyph: 'term',
+    updatedAt: '2026-11-18',
+    aliases: ['how long a term life insurance policy calculator', 'term length calculator life insurance', '10 20 30 year term calculator', 'term life insurance length calculator'],
+    related: ['human-life-value-calculator', 'dime-method-life-insurance-calculator', 'mortgage-calculator', 'retirement-savings-calculator'],
+    title: 'Term Life Insurance Length Calculator',
+    description: 'Work out how many years of term life insurance to buy, not how much: the term that covers your mortgage, your children until they are grown, and the years left until retirement, rounded up to a standard term length.',
+    example: "With 22 years left on the mortgage, a 5-year-old whose independence age is 22, and 28 years until retirement, retirement is the longest obligation at 28 years, so the calculator rounds up to a 30-year term.",
+    breakdown: {
+      headline: 'recommendedTermYears',
+      headlineLabel: 'Recommended term length',
+      outputs: [
+        { id: 'recommendedTermYears', format: 'integer' },
+        { id: 'longestObligationYears', label: 'Longest obligation, before rounding', format: 'integer' },
+        { id: 'yearsUntilChildIndependent', label: 'Years until youngest child is independent', format: 'integer' },
+        { id: 'yearsLeftOnMortgage', label: 'Years left on mortgage', format: 'integer' },
+        { id: 'yearsToRetirement', label: 'Years to retirement', format: 'integer' }
+      ],
+      groups: [
+        { title: 'Your obligations', inputs: ['yearsLeftOnMortgage', 'youngestChildAge', 'childIndependenceAge', 'yearsToRetirement'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'yearsLeftOnMortgage', label: 'Mortgage payoff' },
+          { from: 'yearsUntilChildIndependent', label: "Youngest child's independence" },
+          { from: 'yearsToRetirement', label: 'Retirement' }
+        ],
+        title: 'Which obligation drives the term',
+        highlight: 0
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'How long a term, not how much coverage',
+        paragraphs: [
+          'Human life value and the DIME method both answer "how much coverage?" This calculator answers a different, equally practical question: "how long a term?" Term life insurance is sold in fixed lengths — the Insurance Information Institute describes policies "purchased to last for a specified period, such as 1, 5, 10, or sometimes as much as 30 years" — and the right length is the one that lasts at least as long as your biggest financial obligation to the people the policy protects.',
+          'Most households have three obligations with a natural end date: the mortgage gets paid off, children grow up and become financially independent, and the earner eventually retires. Whichever of those three is furthest away sets the minimum term you need — buying a shorter term that expires while any of them is still outstanding defeats the purpose of having bought it.',
+          'This calculator takes the longest of those three spans and rounds it up to the nearest 5 years, which is how most insurers price and sell term policies. It deliberately does not round down: a term that is a little longer than strictly necessary still covers the obligation; a term that is a little shorter does not.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the three obligations; the calculator finds the longest one and rounds it up to a standard term length.',
+        steps: [
+          { name: 'Enter years left on your mortgage', text: 'How many years remain until it is paid off, from your amortization schedule or loan statement.' },
+          { name: "Enter your youngest child's age and independence age", text: 'Independence age is whatever you consider "grown and financially on their own" — 18 for entering the workforce directly, or into the early 20s to cover a four-year degree. The default is 22.' },
+          { name: 'Enter years to retirement', text: 'Roughly how many years you plan to keep working and earning the income the policy would replace.' },
+          { name: 'Read the result', text: 'The headline is the recommended term length, rounded up to the nearest 5 years. The bars show which of the three obligations is driving that number.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Take the longest of the three obligation spans, then round up to the nearest 5 years (minimum 5).',
+        expression: 'childSpan = max(0, independenceAge − youngestChildAge)\nlongest = max(mortgageYears, childSpan, retirementYears)\nterm = max(5, ceil(longest ÷ 5) × 5)',
+        terms: [
+          { symbol: 'mortgageYears', meaning: 'Years left until the mortgage is paid off.' },
+          { symbol: 'childSpan', meaning: "Years until the youngest child reaches your chosen independence age. 0 if there are no children still under that age." },
+          { symbol: 'retirementYears', meaning: 'Years left until retirement.' },
+          { symbol: 'term', meaning: 'The recommended term length, rounded up to a 5-year increment most insurers actually sell.' }
+        ],
+        note: "If your own longest obligation is beyond 30 years, most insurers' maximum term, treat the result as a sign to consider permanent coverage, a second policy later, or a longer initial term quote directly from an insurer rather than assuming one will be offered automatically."
+      },
+      workedExample: {
+        intro: 'A homeowner has 22 years left on the mortgage, a 5-year-old child (independence age set at 22, so 17 years until independence), and plans to retire in 28 years.',
+        rows: [
+          { label: "Child's years to independence (22 − 5)", value: '17 years' },
+          { label: 'Longest obligation (max of 22, 17, 28)', value: '28 years (retirement)' },
+          { label: 'Rounded up to the nearest 5 years', value: '30 years' }
+        ],
+        result: 'Recommended term ≈ 30 years',
+        explanation: 'Retirement, not the mortgage or the child, is the longest-dated obligation here, so it sets the term. A 30-year term is the longest commonly sold, which this household needs in full — a 25-year term would expire 3 years before retirement.'
+      },
+      watchOut: [
+        { title: 'This is an educational estimate, not a quote or an offer to sell insurance', body: 'This calculator suggests a term length for your own planning. It does not sell, recommend or bind any policy, and is not a substitute for a licensed insurance agent who can quote actual available terms.' },
+        { title: 'It recommends a length, not an amount', body: 'Pair this result with a coverage amount from the human life value or DIME calculator — a term length with no coverage amount, or a coverage amount with no term length, is only half the decision.' },
+        { title: 'Independence age is a judgment call', body: 'Raising it from 18 to 22 to cover a four-year degree can add years to the result for a young child. Pick the age that matches what you actually intend to fund.' },
+        { title: 'Longer terms cost more per year of coverage', body: "A 30-year term is quoted at a higher premium than a 20-year term for the same coverage amount, because the insurer is on the hook longer. Don't round up further than your actual longest obligation requires." },
+        { title: 'Rounding up, never down', body: 'A 27-year obligation rounds up to a 30-year term here, not down to 25 — a term that expires before the obligation does leaves a gap at exactly the time it would matter most.' }
+      ],
+      references: [
+        { label: 'Insurance Information Institute, "What are the principal types of life insurance?" (term lengths)', url: 'https://www.iii.org/article/what-are-the-principal-types-of-life-insurance' },
+        { label: 'Northwestern Mutual, "How Much Life Insurance Do I Need?"', url: 'https://www.northwesternmutual.com/life-and-money/how-much-life-insurance-do-i-need/' }
+      ]
+    },
+    inputs: [
+      { id: 'yearsLeftOnMortgage', label: 'Years left on mortgage', type: 'number', placeholder: '22', defaultValue: 22, step: 1, min: 0 },
+      { id: 'youngestChildAge', label: "Youngest child's current age", type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 0 },
+      { id: 'childIndependenceAge', label: 'Age you consider "independent"', type: 'number', placeholder: '22', defaultValue: 22, step: 1, min: 0 },
+      { id: 'yearsToRetirement', label: 'Years to retirement', type: 'number', placeholder: '28', defaultValue: 28, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Term Life Insurance Length Calculator – 10/20/30-Year Term',
+      description: 'Find how long a term life insurance policy you need from your mortgage payoff, your children\'s ages, and years to retirement, rounded to a standard term length.',
+      faq: [
+        { question: 'How do I know how many years of term life insurance to buy?', answer: 'Find your longest financial obligation with an end date — usually the mortgage payoff, your youngest child reaching financial independence, or your own retirement — and round it up to the nearest standard term length, commonly sold in 5-year increments up to 30 years.' },
+        { question: 'Should I buy a 20-year or 30-year term policy?', answer: 'Compare both to your longest obligation. If your mortgage, your children\'s independence, and your retirement are all within 20 years, a 20-year term covers them for a lower premium than a 30-year term; if any one of them is further out than 20 years, that obligation needs the longer term.' },
+        { question: 'What is a worked example of choosing a term length?', answer: 'With 10 years left on the mortgage, a 10-year-old child becoming independent at 22 (12 years), and 15 years to retirement, retirement is the longest at 15 years, rounding up to a 15-year term.' },
+        { question: "What if I don't have children at home anymore?", answer: 'Set the child-independence span to 0 by entering a current age at or above your chosen independence age — the mortgage and retirement obligations still apply on their own. An 18-year mortgage payoff with no dependent children and 10 years to retirement rounds up to a 20-year term, driven by the mortgage.' },
+        { question: 'What are standard term life insurance lengths?', answer: 'The Insurance Information Institute describes policies lasting "1, 5, 10, or sometimes as much as 30 years." Insurers commonly sell terms in 5- or 10-year increments within that range.' },
+        { question: 'Does a longer term cost more?', answer: "Yes. A longer term means the insurer is committed to a fixed premium for more years, so a 30-year term's premium is higher than a 20-year term's for the same coverage amount and the same person." },
+        { question: 'What happens if my obligation is longer than 30 years?', answer: "30 years is the longest term most insurers commonly offer. If your result exceeds that, consider permanent coverage, laddering a second term policy later, or asking an insurer directly about longer-term options." }
+      ]
+    },
+    compute(values) {
+      const yearsUntilChildIndependent = Math.max(0, values.childIndependenceAge - values.youngestChildAge);
+      const longestObligationYears = Math.max(values.yearsLeftOnMortgage, yearsUntilChildIndependent, values.yearsToRetirement);
+      const recommendedTermYears = Math.max(5, Math.ceil(longestObligationYears / 5) * 5);
+      return {
+        recommendedTermYears,
+        longestObligationYears,
+        yearsUntilChildIndependent,
+        yearsLeftOnMortgage: values.yearsLeftOnMortgage,
+        yearsToRetirement: values.yearsToRetirement
+      };
+    }
+  },
+  {
+    id: 'whole-life-vs-term-life-cost-calculator',
+    category: 'insurance',
+    glyph: 'W/T',
+    updatedAt: '2026-11-18',
+    aliases: ['term vs whole life insurance calculator', 'buy term invest the difference calculator', 'whole life insurance cost comparison', 'permanent vs term life insurance calculator'],
+    related: ['human-life-value-calculator', 'dime-method-life-insurance-calculator', 'term-life-coverage-calculator', 'investment-calculator'],
+    title: 'Whole Life vs. Term Life Cost Calculator',
+    description: "Compare what term and whole life insurance actually cost over a chosen number of years, and what investing the premium difference between them could grow to — a cost-structure comparison, not a recommendation of which to buy.",
+    example: 'A $25/month term policy against a $150/month whole life policy over 20 years costs $6,000 in total premiums for term and $36,000 for whole life; investing the $125/month difference at an assumed 7% return could grow to about $65,116.',
+    breakdown: {
+      headline: 'investedDifferenceValue',
+      headlineLabel: 'Invested premium difference, after N years',
+      outputs: [
+        { id: 'investedDifferenceValue', format: 'currency' },
+        { id: 'termTotalCost', label: 'Total term premiums paid', format: 'currency' },
+        { id: 'wholeLifeTotalCost', label: 'Total whole life premiums paid', format: 'currency' },
+        { id: 'monthlyDifference', label: 'Extra monthly cost of whole life', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Premiums', inputs: ['termMonthlyPremium', 'wholeLifeMonthlyPremium'] },
+        { title: 'Time and return assumption', inputs: ['comparisonYears', 'assumedInvestmentReturn'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'termTotalCost', label: 'Term, total premiums' },
+          { from: 'wholeLifeTotalCost', label: 'Whole life, total premiums' },
+          { from: 'investedDifferenceValue', label: 'Difference, invested' }
+        ],
+        title: 'Three ways to look at the same years'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why term and whole life cost so differently',
+        paragraphs: [
+          'Term and whole life insurance are priced around a real structural difference, not just a marketing choice. The Insurance Information Institute explains that term premiums "go towards your payout, making costs for policyholders comparatively lower," while whole life premiums go toward three things at once: the cost of insuring you, policy fees, and building cash value — which is why a whole life premium for the same death benefit is routinely several times a term premium for someone the same age.',
+          "That cash value is real, not an accounting fiction: insurers charge more than needed for claims in the early years, and by law, once those \"overpayments\" reach a certain level they must become available to the policyholder as cash value, usable by withdrawal or loan (loans reduce the death benefit). The classic comparison — \"buy term and invest the difference\" — asks whether putting that same extra monthly amount into your own investment account would outperform what the insurer's cash value builds. This calculator runs that side of the comparison for you; it does not model the insurer's actual cash-value schedule, which varies by policy and is disclosed in the policy's own illustration.",
+          "Neither side of this comparison is a recommendation. A level premium that never rises again, a guaranteed death benefit that doesn't depend on investment performance, and a disciplined investor who might not actually invest the difference every month are all real considerations this calculator does not weigh for you — it only does the arithmetic once you supply the numbers."
+        ]
+      },
+      howTo: {
+        intro: 'Enter a term quote and a whole life quote for comparable coverage, a number of years to compare over, and an assumed investment return for the "invest the difference" side.',
+        steps: [
+          { name: 'Enter the term monthly premium', text: 'Use an actual quote if you have one, for the coverage amount and term length you are considering.' },
+          { name: 'Enter the whole life monthly premium', text: 'A quote for a similar death benefit. Whole life premiums are typically several times the term premium for the same amount of coverage and the same person.' },
+          { name: 'Set the comparison period', text: 'How many years you want to compare the two over — often the term length you are also considering.' },
+          { name: 'Set an assumed investment return', text: "A long-run rate you'd expect from investing the premium difference yourself, net of fees and taxes. This is your own assumption, not a guarantee from either policy." },
+          { name: 'Read the result', text: 'The bars compare total premiums paid under each policy and what investing the monthly difference could grow to over the same years.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Total cost is just the monthly premium times 12 times the years. The invested difference is a standard future-value-of-an-annuity calculation on the monthly gap between the two premiums.',
+        expression: 'Total costₓ = premiumₓ × 12 × years\nDifference = wholePremium − termPremium\nFV = Difference × [(1 + i)ⁿ − 1] ÷ i,  i = return ÷ 12, n = years × 12',
+        terms: [
+          { symbol: 'premiumₓ', meaning: 'The monthly premium for term or whole life.' },
+          { symbol: 'Difference', meaning: 'How much more the whole life premium costs per month than the term premium.' },
+          { symbol: 'i', meaning: 'Monthly investment return (the annual assumed return divided by 12).' },
+          { symbol: 'n', meaning: 'Number of months in the comparison period.' },
+          { symbol: 'FV', meaning: 'Future value of investing the monthly difference every month for the comparison period, compounded monthly.' }
+        ],
+        note: 'This models only the "invest the difference" side with a chosen return assumption. It does not model a specific whole life policy\'s actual cash-value growth, which is guaranteed by the insurer and disclosed in that policy\'s own illustration.'
+      },
+      workedExample: {
+        intro: 'Comparable coverage quotes $25 a month for term and $150 a month for whole life, compared over 20 years, with an assumed 7% annual investment return on the difference.',
+        rows: [
+          { label: 'Term total premiums ($25 × 12 × 20)', value: '$6,000.00' },
+          { label: 'Whole life total premiums ($150 × 12 × 20)', value: '$36,000.00' },
+          { label: 'Monthly difference ($150 − $25)', value: '$125.00' },
+          { label: 'Invested difference after 20 years (7% annual, compounded monthly)', value: '$65,115.83' }
+        ],
+        result: 'Term costs $6,000.00; whole life costs $36,000.00; investing the $125/month difference could reach about $65,115.83',
+        explanation: "The invested-difference figure, $65,115.83, is more than the $30,000 saved in premiums ($36,000 − $6,000) because it assumes the saved money grows at 7% a year for 20 years rather than sitting idle. That gap only appears if the difference is actually invested every month — spending it instead removes the comparison entirely."
+      },
+      watchOut: [
+        { title: 'This is an educational estimate, not a quote or an offer to sell insurance', body: 'This calculator compares cost structures for planning purposes. It does not sell, recommend or bind any policy, and is not a substitute for a licensed insurance agent or financial advisor.' },
+        { title: 'The investment return is an assumption, not a guarantee', body: "Unlike a whole life policy's guaranteed cash-value schedule, the \"invest the difference\" side depends entirely on actually earning the assumed return, after any fees and taxes on the investment account — which a real brokerage or retirement account may or may not match in a given 20-year period." },
+        { title: 'It does not model the real cash-value schedule of any specific policy', body: "A whole life policy's actual cash value depends on its own guarantees and any dividends the insurer pays, disclosed in that policy's illustration. This calculator only estimates the alternative of self-investing the premium difference, not the policy's own cash value." },
+        { title: 'Term insurance ends; investing requires discipline', body: 'A term policy with no renewal leaves no coverage after the term ends. "Investing the difference" only works if the difference is actually set aside every single month rather than spent — a real behavioral risk this calculator cannot measure.' },
+        { title: "Comparable coverage means comparable coverage", body: "Only compare premiums for the same death benefit and a similar underwriting class. A larger whole life death benefit against a smaller term quote isn't a fair cost comparison." }
+      ],
+      references: [
+        { label: 'Insurance Information Institute, "What are the principal types of life insurance?" (premium cost and cash-value structure)', url: 'https://www.iii.org/article/what-are-the-principal-types-of-life-insurance' },
+        { label: 'Insurance Information Institute, "How much life insurance do I need?"', url: 'https://www.iii.org/article/how-much-life-insurance-do-i-need' }
+      ]
+    },
+    inputs: [
+      { id: 'termMonthlyPremium', label: 'Term monthly premium', type: 'currency', placeholder: '25', defaultValue: 25, step: 1, min: 0 },
+      { id: 'wholeLifeMonthlyPremium', label: 'Whole life monthly premium', type: 'currency', placeholder: '150', defaultValue: 150, step: 1, min: 0 },
+      { id: 'comparisonYears', label: 'Comparison period', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 0 },
+      { id: 'assumedInvestmentReturn', label: 'Assumed investment return', type: 'percent', placeholder: '7', defaultValue: 7, step: 0.5, min: 0 }
+    ],
+    seo: {
+      title: 'Whole Life vs. Term Life Cost Calculator',
+      description: 'Compare total premiums for term vs. whole life insurance, and what investing the premium difference could grow to at your own assumed return.',
+      faq: [
+        { question: 'Why is whole life insurance more expensive than term?', answer: "Term premiums fund only the death benefit for a fixed period. Whole life premiums fund the death benefit, policy fees, and a cash-value component that accumulates for the life of the policy, which is why whole life premiums are routinely several times a term premium for the same coverage." },
+        { question: 'What does "buy term and invest the difference" mean?', answer: 'It is the strategy of buying the cheaper term policy and separately investing the monthly premium you saved versus a whole life policy, on the view that a disciplined investor could out-earn the insurer\'s cash-value growth. This calculator estimates that invested side using your own return assumption.' },
+        { question: 'What is a worked example of term vs. whole life cost?', answer: 'A $20/month term policy against a $120/month whole life policy over 30 years at a 6% assumed return: term costs $7,200 total, whole life costs $43,200 total, and investing the $100/month difference could reach about $100,451.50.' },
+        { question: 'Does whole life insurance ever become "free"?', answer: "No single premium structure makes a permanent policy cost nothing — it means the level premium you pay was set, from the start, high enough to cover the policy for life rather than rising as you age the way a renewed term premium would." },
+        { question: 'Can I access the cash value in a whole life policy?', answer: 'Yes, typically by withdrawal or by taking a loan against it, though a loan against the cash value reduces the death benefit until it is repaid.' },
+        { question: 'Is investing the difference guaranteed to beat whole life?', answer: "No. It depends entirely on actually earning the assumed return every year and actually investing the difference every month, net of fees and taxes — neither of which is guaranteed the way a whole life policy's cash-value schedule is." },
+        { question: 'Should I compare a 10-year term to a whole life policy?', answer: 'Only if you plan to need coverage for just those 10 years. For a longer-term comparison, match the comparison period to how long you would otherwise keep renewing or re-buying term coverage, not to one short initial term.' }
+      ]
+    },
+    compute(values) {
+      const termTotalCost = values.termMonthlyPremium * 12 * values.comparisonYears;
+      const wholeLifeTotalCost = values.wholeLifeMonthlyPremium * 12 * values.comparisonYears;
+      const monthlyDifference = values.wholeLifeMonthlyPremium - values.termMonthlyPremium;
+      const i = values.assumedInvestmentReturn / 100 / 12;
+      const n = values.comparisonYears * 12;
+      const investedDifferenceValue = i === 0 ? monthlyDifference * n : monthlyDifference * ((Math.pow(1 + i, n) - 1) / i);
+      return { investedDifferenceValue, termTotalCost, wholeLifeTotalCost, monthlyDifference };
     }
   }
 ];

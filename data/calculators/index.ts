@@ -546,7 +546,9 @@ export const calculatorOrder: string[] = [
   'crypto-breakeven-price-calculator',
   'crypto-tax-estimate-calculator',
   'human-life-value-calculator',
-  'dime-method-life-insurance-calculator'
+  'dime-method-life-insurance-calculator',
+  'term-life-coverage-calculator',
+  'whole-life-vs-term-life-cost-calculator'
 ];
 
 const rank = (id: string) => {

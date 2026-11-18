@@ -121,12 +121,25 @@ Target ~18 calculators across 4 batches. Sub-grouping deferred to a final retrof
   - [x] `cost-of-goods-sold-calculator`
   - `npm test` (1672 pass), `npm run lint` (clean), `npm run build` (540 pages) all green; every
     worked-example/FAQ number re-verified in standalone Node scratch scripts per calculator.
-- [ ] Batch 2 — Business finance (5) — branch `step64-batch2-business-finance`
-  - [ ] `depreciation-calculator`
-  - [ ] `burn-rate-calculator`
-  - [ ] `business-valuation-calculator`
-  - [ ] `payback-period-calculator`
-  - [ ] `fte-calculator`
+- [x] Batch 2 — Business finance (5), DONE 2026-11-18, branch `step64-batch2-business-finance`
+  - [x] `depreciation-calculator` — straight-line and 200% declining balance side by side; both
+        methods cross-verified in a scratch script ($50,000 asset/$5,000 salvage/5-year life →
+        $23,000 after 3 years straight-line, $10,800 under 200% declining balance).
+  - [x] `burn-rate-calculator` — cash balance ÷ monthly net burn → runway months.
+  - [x] `business-valuation-calculator` — revenue-multiple and earnings-multiple estimates side by
+        side, explicitly caveated as a rough estimate, not a professional valuation.
+  - [x] `payback-period-calculator` — initial investment ÷ annual cash inflow, explicitly
+        distinguished from `finance`'s existing `irr-calculator`/`npv-calculator` (simpler,
+        non-discounted metric).
+  - [x] `fte-calculator` — full-time + part-time hours → FTE headcount, using the standard
+        ACA/IRS 120-hours-per-month full-time threshold (8 full-time + 5 part-time at 80 hrs/month
+        each → 11.33 FTEs, verified independently).
+  - A prior attempt at this batch died to a session rate limit with all 5 calculators already
+    written and the snapshot regenerated, but only a placeholder commit made — resumed cleanly:
+    committed the real work, merged `origin/master` in (picked up insurance batch 3 + solar batch
+    3), resolved one `KNOWN_NON_FINITE`-table append conflict, regenerated the snapshot fresh.
+  - `npm test` 1700/1700, lint clean, `npm run build` green. `business` now 10/~18, site-wide
+    **523**.
 - [ ] Batch 3 — Tax (4)
 - [ ] Batch 4 — Everyday business novelties (4)
 - [ ] Sub-grouping retrofit

@@ -112,7 +112,15 @@ Target ~18 calculators across 4 batches. Sub-grouping deferred to a final retrof
 
 ## Progress checklist
 
-- [ ] Batch 1 — Pricing & margin (5), opens the category
+- [x] Batch 1 — Pricing & margin (5), opens the category — PR #142
+  - [x] Category scaffolding: `data/calculators/business.ts`, `index.ts` entry, `categoryTheme.ts`/`IconTile.tsx` color (`slate`) + icon (`invoice`)
+  - [x] `profit-margin-calculator`
+  - [x] `markup-calculator`
+  - [x] `break-even-calculator`
+  - [x] `contribution-margin-calculator`
+  - [x] `cost-of-goods-sold-calculator`
+  - `npm test` (1672 pass), `npm run lint` (clean), `npm run build` (540 pages) all green; every
+    worked-example/FAQ number re-verified in standalone Node scratch scripts per calculator.
 - [ ] Batch 2 — Business finance (5)
 - [ ] Batch 3 — Tax (4)
 - [ ] Batch 4 — Everyday business novelties (4)

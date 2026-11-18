@@ -6,8 +6,9 @@ import IconTile from '@/components/IconTile';
 import GlyphCalculatorCard from '@/components/GlyphCalculatorCard';
 import { categoryTheme, CARD } from '@/lib/categoryTheme';
 import { buildListingSearch, matchesQuery, parseListingParams, type SearchableCalculator } from '@/lib/search';
+import { buildGroups } from '@/lib/groupCalculators';
 
-type BrowseCalculator = SearchableCalculator & { category: string; glyph: string };
+type BrowseCalculator = SearchableCalculator & { category: string; glyph: string; group?: string };
 type BrowseCategory = { id: string; title: string; description: string; count: number };
 
 type Props = {
@@ -96,6 +97,7 @@ export default function CalculatorBrowser({ calculators, categories }: Props) {
             const theme = categoryTheme(category.id);
             const categoryCalculators = calculators.filter((calculator) => calculator.category === category.id);
             if (categoryCalculators.length === 0) return null;
+            const groups = buildGroups(categoryCalculators);
             return (
               <section key={category.id} id={category.id} className={CARD}>
                 <div className="flex items-start gap-4">
@@ -106,11 +108,28 @@ export default function CalculatorBrowser({ calculators, categories }: Props) {
                     <p className="mt-1 text-xs font-medium text-[#6E6E73] dark:text-slate-400">{tCommon('calculators', { count: category.count })}</p>
                   </div>
                 </div>
-                <div className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2.5">
-                  {categoryCalculators.map((calculator) => (
-                    <GlyphCalculatorCard key={calculator.id} calculator={calculator} />
-                  ))}
-                </div>
+                {groups ? (
+                  <div className="mt-5 space-y-5">
+                    {groups.map((section) => (
+                      <div key={section.label} className="space-y-3">
+                        <p className="text-[12px] font-semibold uppercase tracking-wide text-[#6E6E73] dark:text-slate-400">
+                          {section.label} ({section.items.length})
+                        </p>
+                        <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2.5">
+                          {section.items.map((calculator) => (
+                            <GlyphCalculatorCard key={calculator.id} calculator={calculator} />
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mt-5 grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2.5">
+                    {categoryCalculators.map((calculator) => (
+                      <GlyphCalculatorCard key={calculator.id} calculator={calculator} />
+                    ))}
+                  </div>
+                )}
               </section>
             );
           })}

@@ -28,13 +28,14 @@ export async function generateMetadata({
 }
 
 // Trimmed for the client boundary — `compute` and the FAQ strings stay on the server.
-const browseItems = calculators.map(({ id, category, title, description, aliases, glyph }) => ({
+const browseItems = calculators.map(({ id, category, title, description, aliases, glyph, group }) => ({
   id,
   category,
   title,
   description,
   aliases,
-  glyph
+  glyph,
+  group
 }));
 
 // One section per category, count derived (never hardcoded) so a future calculator addition

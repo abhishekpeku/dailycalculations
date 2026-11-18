@@ -2645,6 +2645,47 @@ exports[`compute() snapshots > chinese-zodiac-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > christmas-countdown-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "targetYear": 2026
+    },
+    "outputs": {
+      "daysLeft": 191,
+      "hoursLeft": 0,
+      "minutesLeft": 0,
+      "shoppingWeekdaysLeft": 137,
+      "shoppingWeekendDaysLeft": 54
+    }
+  },
+  "typical": {
+    "inputs": {
+      "targetYear": 2027
+    },
+    "outputs": {
+      "daysLeft": 556,
+      "hoursLeft": 0,
+      "minutesLeft": 0,
+      "shoppingWeekdaysLeft": 398,
+      "shoppingWeekendDaysLeft": 158
+    }
+  },
+  "edge": {
+    "inputs": {
+      "targetYear": 1900
+    },
+    "outputs": {
+      "daysLeft": 0,
+      "hoursLeft": 0,
+      "minutesLeft": 0,
+      "shoppingWeekdaysLeft": 0,
+      "shoppingWeekendDaysLeft": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > circle-calculator 1`] = `
 {
   "default": {

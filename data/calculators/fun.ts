@@ -286,6 +286,25 @@ function friday13Months(year: number): number[] {
   return months;
 }
 
+// Weekdays (Mon-Fri) vs weekend days (Sat/Sun) in [startMs, endMs], both whole local-midnight
+// calendar days, inclusive. Closed-form over full 7-day weeks plus a remainder of under 7 days,
+// so it stays instant and exact no matter how far apart the two dates are -- never an
+// unbounded day-by-day loop. Used by the Christmas countdown's "shopping days" split.
+function weekdayWeekendCount(startMs: number, endMs: number): { weekdays: number; weekendDays: number } {
+  if (endMs < startMs) return { weekdays: 0, weekendDays: 0 };
+  const totalDays = Math.round((endMs - startMs) / 86400000) + 1;
+  const startWeekday = new Date(startMs).getDay(); // 0=Sun..6=Sat
+  const fullWeeks = Math.floor(totalDays / 7);
+  const remainder = totalDays % 7;
+  let weekdays = fullWeeks * 5;
+  let weekendDays = fullWeeks * 2;
+  for (let i = 0; i < remainder; i++) {
+    const day = (startWeekday + i) % 7;
+    if (day === 0 || day === 6) weekendDays++; else weekdays++;
+  }
+  return { weekdays, weekendDays };
+}
+
 export const funCalculators: CalculatorConfig[] = [
   {
     id: 'zodiac-sign-calculator',
@@ -1732,6 +1751,108 @@ export const funCalculators: CalculatorConfig[] = [
         yearStartsOnCode: new Date(year, 0, 1).getDay(),
         isLeapYear
       };
+    }
+  },
+  {
+    id: 'christmas-countdown-calculator',
+    category: 'fun',
+    glyph: 'Dec',
+    updatedAt: '2026-11-18',
+    timeDependent: true,
+    aliases: ['christmas countdown calculator', 'days until christmas calculator', 'shopping days until christmas calculator', 'how many days until christmas', 'xmas countdown calculator'],
+    related: ['easter-date-calculator', 'friday-the-13th-calculator', 'date-difference-calculator', 'age-calculator'],
+    title: 'Christmas Countdown Calculator',
+    description: 'Count the days, hours and minutes until December 25, plus a separate "shopping days left" split into remaining weekdays and weekend days.',
+    example: 'From November 18, 2026, Christmas is 36 days, 14 hours away -- 27 of the remaining weekdays and 10 weekend days before December 25.',
+    breakdown: {
+      headline: 'daysLeft',
+      headlineLabel: 'Days until Christmas',
+      outputs: [
+        { id: 'daysLeft', label: 'Days until Christmas', format: 'integer' },
+        { id: 'hoursLeft', label: 'Plus hours', format: 'integer' },
+        { id: 'minutesLeft', label: 'Plus minutes', format: 'integer' },
+        { id: 'shoppingWeekdaysLeft', label: 'Shopping weekdays left (Mon-Fri)', format: 'integer' },
+        { id: 'shoppingWeekendDaysLeft', label: 'Weekend days left (Sat-Sun)', format: 'integer' }
+      ],
+      groups: [{ title: 'Which Christmas', inputs: ['targetYear'] }]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Two different countdowns in one',
+        paragraphs: [
+          'A plain "days until Christmas" figure is just the gap between today and December 25, the same subtraction the date difference calculator already does for any two dates. This calculator adds a second, genuinely different figure: how many of the remaining days are weekdays versus weekend days, because those two kinds of days are not equally useful for shopping, wrapping or planning a trip home.',
+          'The precise top-line figure -- days, hours and minutes -- is measured from right now, not from midnight, so it keeps counting down through the day rather than only changing once every 24 hours. December 25 itself is treated as the finish line: the countdown reaches zero at the very start of Christmas Day, local time.',
+          'The weekday/weekend split uses the ordinary Monday-through-Friday work-week convention: ISO 8601, the international date and time standard, numbers the days Monday (1) through Sunday (7) and, in its own worked example for how a calendar week is assigned a number, explicitly treats Saturdays and Sundays as non-working days. This calculator uses that same Monday-Friday/Saturday-Sunday split, counting from today through December 24 -- the last calendar day before Christmas itself.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter which year\'s Christmas you want to count down to -- it defaults to the current one.',
+        steps: [
+          { name: 'Enter the year', text: 'The calendar year of the Christmas you are counting down to.' },
+          { name: 'Read the countdown', text: 'Days, plus hours, plus minutes, measured from right now to December 25 at midnight, local time.' },
+          { name: 'Read the shopping split', text: 'How many of the remaining days (today through December 24) are weekdays versus weekend days.' }
+        ],
+        outro: 'Everything is calculated in your browser from your device\'s clock. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The countdown is a timestamp subtraction; the shopping split counts weekdays and weekend days across the same remaining window.',
+        expression:
+          'christmas = December 25, target year, 00:00 local time\ndiff = christmas - now\ndaysLeft = floor(diff / 86,400,000)\nhoursLeft = floor((diff mod 86,400,000) / 3,600,000)\nminutesLeft = floor((diff mod 3,600,000) / 60,000)\nshopping window = today through December 24, target year (inclusive)\nshoppingWeekdaysLeft, shoppingWeekendDaysLeft = count of Mon-Fri vs Sat-Sun days in that window',
+        terms: [
+          { symbol: 'diff', meaning: 'Milliseconds between the exact current moment and the target Christmas midnight.' },
+          { symbol: '86,400,000 / 3,600,000 / 60,000', meaning: 'Milliseconds in a day, an hour and a minute, used to split the remaining time into a readable days/hours/minutes figure.' },
+          { symbol: 'shopping window', meaning: 'Every calendar day from today up to and including December 24 -- Christmas Day itself is excluded, since it is the day gifts are given, not a day to still be shopping for them.' }
+        ],
+        note: 'If the target Christmas has already passed this year, every figure shows 0 rather than a negative number -- change the year field to count down to next year\'s instead.'
+      },
+      workedExample: {
+        intro: 'From November 18, 2026, at 10:00 a.m., how far away is Christmas 2026?',
+        rows: [
+          { label: 'Christmas 2026 midnight minus now', value: '36 days, 14 hours' },
+          { label: 'Shopping window (Nov 18 through Dec 24, inclusive)', value: '37 calendar days' },
+          { label: 'Weekdays in that window (Mon-Fri)', value: '27' },
+          { label: 'Weekend days in that window (Sat-Sun)', value: '10' }
+        ],
+        result: '36 days, 14 hours until Christmas -- 27 shopping weekdays and 10 weekend days remaining',
+        explanation: 'The 37-day window splits into 5 full weeks (35 days, 25 weekdays + 10 weekend days) plus a 2-day remainder that happens to land on two more weekdays, for 27 weekdays and 10 weekend days in total.'
+      },
+      watchOut: [
+        { title: 'The countdown uses your device\'s clock and time zone', body: 'Both the top-line countdown and the shopping-day split are measured against the date and time set on the device you are using, the same convention as every other live countdown on this site.' },
+        { title: 'December 24 is the last day counted as a "shopping day"', body: 'This calculator\'s shopping window stops at December 24. If you consider December 25 itself a shopping day too (last-minute purchases after gifts are opened), add one more day by hand.' },
+        { title: 'A year far from today gives an unusually long window', body: 'If you pick a target year more than a few months away, the shopping-day split will count weekdays and weekends across that entire gap, not just a typical few weeks of holiday shopping -- it is still an accurate count, just not the window most people mean by "shopping days."' },
+        { title: 'This is a plain Monday-Friday/Saturday-Sunday split, not a store-hours guide', body: 'It does not know which days any particular store is actually open, or when a specific sale ends -- it only counts calendar weekdays versus weekend days.' }
+      ],
+      references: [
+        { label: 'Wikipedia, ISO 8601 (Monday-Sunday weekday numbering and its non-working-day worked example)', url: 'https://en.wikipedia.org/wiki/ISO_8601' }
+      ]
+    },
+    inputs: [{ id: 'targetYear', label: 'Christmas year', type: 'number', placeholder: '2026', defaultValue: 2026, step: 1, min: 1900 }],
+    seo: {
+      title: 'Christmas Countdown Calculator – Days & Shopping Days Left',
+      description: 'Count the days, hours and minutes until December 25, plus a separate shopping-days-left split into remaining weekdays and weekend days.',
+      faq: [
+        { question: 'How many days until Christmas?', answer: 'This calculator measures the exact gap from right now to December 25 at midnight, local time, and shows it as days, hours and minutes -- for example 36 days and 14 hours as of 10 a.m. on November 18, 2026.' },
+        { question: 'What counts as a "shopping day" here?', answer: 'Any weekday (Monday through Friday) from today through December 24, the last calendar day before Christmas. Weekend days (Saturday and Sunday) in that same window are counted separately.' },
+        { question: 'Why split weekdays and weekends at all?', answer: 'Most people have less free time to shop on a weekday than a weekend, so knowing how many of each kind of day remain is more useful for planning than a single combined day count.' },
+        { question: 'Does the countdown update automatically?', answer: 'It recalculates from your device\'s clock every time you load the page, down to the minute, rather than only changing once a day.' },
+        { question: 'What happens if I enter a year whose Christmas already passed?', answer: 'Every figure shows 0. Change the year field to the next Christmas you want to count down to.' },
+        { question: 'Is December 25 itself counted as a shopping day?', answer: 'No -- the shopping window stops at December 24, since Christmas Day itself is when gifts are given, not a day to still be shopping for them.' }
+      ]
+    },
+    compute(values) {
+      const targetYear = Math.round(values.targetYear);
+      if (!Number.isFinite(targetYear)) return { daysLeft: NaN, hoursLeft: NaN, minutesLeft: NaN, shoppingWeekdaysLeft: NaN, shoppingWeekendDaysLeft: NaN };
+      const now = values.todayMs !== undefined ? new Date(values.todayMs) : new Date();
+      const christmasMs = new Date(targetYear, 11, 25, 0, 0, 0).getTime();
+      const diffMs = Math.max(0, christmasMs - now.getTime());
+      const daysLeft = Math.floor(diffMs / 86400000);
+      const hoursLeft = Math.floor((diffMs % 86400000) / 3600000);
+      const minutesLeft = Math.floor((diffMs % 3600000) / 60000);
+      const todayMid = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      const shopEndMs = new Date(targetYear, 11, 24).getTime();
+      const { weekdays, weekendDays } = weekdayWeekendCount(todayMid, shopEndMs);
+      return { daysLeft, hoursLeft, minutesLeft, shoppingWeekdaysLeft: weekdays, shoppingWeekendDaysLeft: weekendDays };
     }
   }
 ];

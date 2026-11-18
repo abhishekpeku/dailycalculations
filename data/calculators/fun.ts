@@ -94,6 +94,93 @@ function reduceNumerology(n: number): number {
   return n;
 }
 
+// Exact integer combinations (nCr) via BigInt, using the same step-wise-exact-division trick as
+// the statistics category's own nCrBig: C(n, i+1) = C(n, i) * (n-i) / (i+1) is always an integer
+// at every step. Used by the lottery-odds and card-draw probability calculators (batch 2).
+const PROBABILITY_MAX_N = 1000;
+function nCrBig(n: number, r: number): bigint {
+  if (r < 0 || r > n || n < 0) return 0n;
+  r = Math.min(r, n - r);
+  let result = 1n;
+  for (let i = 0; i < r; i++) result = (result * BigInt(n - i)) / BigInt(i + 1);
+  return result;
+}
+
+// Exact probability distribution of the sum of `dice` dice with `sides` faces each, found by
+// convolving one die's uniform distribution with itself `dice` times -- the dice-sum generating
+// function x(1 + x + ... + x^(sides-1)) raised to the `dice` power (MathWorld, "Dice", cited below).
+// dist[j] = P(sum = dice + j), for j = 0 .. dice * (sides - 1).
+function diceSumDistribution(dice: number, sides: number): number[] {
+  let dist = [1];
+  for (let d = 0; d < dice; d++) {
+    const next = new Array(dist.length + sides - 1).fill(0);
+    for (let i = 0; i < dist.length; i++) {
+      for (let face = 1; face <= sides; face++) next[i + face - 1] += dist[i] / sides;
+    }
+    dist = next;
+  }
+  return dist;
+}
+
+// Exact binomial probability P(low <= X <= high) for n trials with per-trial success chance p,
+// via the ratio recurrence pmf(k) = pmf(k-1) * (n-k+1)/k * p/(1-p) -- algebraically identical to
+// the nCr(n,k) p^k (1-p)^(n-k) formula (NIST/SEMATECH Engineering Statistics Handbook, cited below)
+// but computed without ever forming n! directly, so it stays stable for large n.
+function binomialRangeProbability(n: number, p: number, low: number, high: number): number {
+  low = Math.max(0, Math.round(low));
+  high = Math.min(n, Math.round(high));
+  if (low > high) return 0;
+  if (p <= 0) return low <= 0 && high >= 0 ? 1 : 0;
+  if (p >= 1) return n >= low && n <= high ? 1 : 0;
+  let pmf = Math.pow(1 - p, n);
+  let sum = low <= 0 && 0 <= high ? pmf : 0;
+  const ratio = p / (1 - p);
+  for (let k = 1; k <= n; k++) {
+    pmf *= ((n - k + 1) / k) * ratio;
+    if (k >= low && k <= high) sum += pmf;
+  }
+  return sum;
+}
+
+// P(no two of `people` people share a birthday), assuming 365 equally likely, independent
+// birthdays (Wikipedia, "Birthday problem", cited below). The complement is the shared-birthday
+// probability.
+function noSharedBirthdayProbability(people: number, days = 365): number {
+  let prob = 1;
+  for (let i = 0; i < people; i++) {
+    prob *= (days - i) / days;
+    if (prob <= 0) return 0;
+  }
+  return Math.max(prob, 0);
+}
+
+// Computed once at module load, not typed in: the smallest group size at which the real formula
+// above first reaches each threshold, for the 365-equally-likely-birthdays assumption.
+function smallestGroupFor(thresholdPercent: number): number {
+  let n = 1;
+  while (1 - noSharedBirthdayProbability(n) < thresholdPercent / 100) n++;
+  return n;
+}
+const MIN_PEOPLE_FOR_50_PERCENT = smallestGroupFor(50);
+const MIN_PEOPLE_FOR_99_PERCENT = smallestGroupFor(99);
+
+// Hypergeometric probability mass: P(exactly k successes in n draws, without replacement, from a
+// population of size N containing K successes) -- Wikipedia, "Hypergeometric distribution", cited
+// below. Used directly by the card-draw calculator, and the same shape as a lottery's odds.
+function hypergeometricPmf(N: number, K: number, n: number, k: number): number {
+  const total = nCrBig(N, n);
+  if (total === 0n) return NaN;
+  const ways = nCrBig(K, k) * nCrBig(N - K, n - k);
+  return Number(ways) / Number(total);
+}
+function hypergeometricRangeProbability(N: number, K: number, n: number, low: number, high: number): number {
+  low = Math.max(0, Math.round(low));
+  high = Math.min(n, K, Math.round(high));
+  let sum = 0;
+  for (let k = low; k <= high; k++) sum += hypergeometricPmf(N, K, n, k);
+  return sum;
+}
+
 export const funCalculators: CalculatorConfig[] = [
   {
     id: 'zodiac-sign-calculator',
@@ -560,5 +647,144 @@ export const funCalculators: CalculatorConfig[] = [
       ]
     },
     compute() { return {}; }
+  },
+  {
+    id: 'dice-probability-calculator',
+    category: 'fun',
+    glyph: 'd6',
+    updatedAt: '2026-11-18',
+    aliases: ['dice roll probability calculator', 'probability of rolling a sum calculator', 'two dice sum probability', 'chance of rolling a number with dice'],
+    related: ['probability-calculator', 'combination-calculator', 'coin-flip-probability-calculator', 'card-draw-probability-calculator'],
+    title: 'Dice Probability Calculator',
+    description: 'Find the exact probability of rolling a target sum (or a range of sums) with any number of dice and any number of sides, using the real combinatorics of a dice sum, not a shortcut.',
+    example: 'Rolling two standard six-sided dice, the probability the sum is exactly 7 is 6/36, about 16.67% -- the most common single sum two dice can make.',
+    breakdown: {
+      headline: 'probabilityPercent',
+      headlineLabel: 'Probability',
+      outputs: [
+        { id: 'probabilityPercent', label: 'Probability', format: 'percent' },
+        { id: 'oddsOneIn', label: 'Odds (1 in)', format: 'significant' },
+        { id: 'expectedSum', label: 'Expected (average) sum', format: 'number' },
+        { id: 'minSum', label: 'Lowest possible sum', format: 'integer' },
+        { id: 'maxSum', label: 'Highest possible sum', format: 'integer' }
+      ],
+      groups: [
+        { title: 'Dice', inputs: ['numDice', 'numSides'] },
+        { title: 'Target', inputs: ['comparisonCode', 'targetLow', 'targetHigh'] }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why dice sums are not evenly likely',
+        paragraphs: [
+          'A single fair die lands on each of its faces with equal probability, but the sum of two or more dice is not evenly distributed. With two six-sided dice, for example, there is only one way to roll a 2 (1+1) but six different ways to roll a 7 (1+6, 2+5, 3+4, 4+3, 5+2, 6+1), so a 7 is six times more likely than a 2. This calculator counts those ways exactly for any number of dice and any number of sides, rather than assuming every total is equally likely.',
+          'The exact count comes from a combinatorial identity: the number of ways `n` dice with `s` sides can sum to a target `p` is the coefficient of x^p in the expansion of (x + x^2 + ... + x^s)^n, which works out to a finite inclusion-exclusion sum (see the formula below). This calculator applies the same idea by convolving one die\'s distribution with itself `n` times, which produces the identical exact probabilities without needing the summation formula\'s cancelling terms spelled out by hand.',
+          'You can ask for an exact sum, a sum at or above a value, a sum at or below a value, or a sum in a between range -- all computed from the same underlying distribution.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the dice, then the target.',
+        steps: [
+          { name: 'Enter the number of dice', text: 'How many dice are rolled together, from 1 to 20.' },
+          { name: 'Enter the number of sides per die', text: 'All dice are assumed identical, from 2 to 100 sides.' },
+          { name: 'Choose a comparison', text: 'Exactly this sum, at least, at most, or between two sums.' },
+          { name: 'Enter the target sum (and a second one for "between")', text: 'The sum (or range of sums) you want the probability of.' },
+          { name: 'Read the probability and odds', text: 'The headline is the exact probability; "odds (1 in)" is the same figure written the way odds are usually quoted.' }
+        ],
+        outro: 'Everything is calculated in your browser by building the real sum distribution. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The exact number of ways to roll a sum p with n dice of s sides each (MathWorld\'s closed form), from which the probability follows by dividing by the total number of equally likely outcomes, s^n.',
+        expression:
+          'ways(p, n, s) = sum over k = 0 to floor((p-n)/s) of (-1)^k * C(n, k) * C(p - sk - 1, n - 1)\nP(sum = p) = ways(p, n, s) / s^n\nThis calculator computes the identical distribution by convolving one die\'s uniform distribution with itself n times, rather than evaluating the alternating sum term by term.',
+        terms: [
+          { symbol: 'n', meaning: 'Number of dice.' },
+          { symbol: 's', meaning: 'Number of sides on each die.' },
+          { symbol: 'p', meaning: 'The target sum, valid from n (all 1s) to n*s (all maximum faces).' },
+          { symbol: 'C(a, b)', meaning: 'The combinations ("n choose r") function; by convention it is 0 whenever b is negative or greater than a.' }
+        ],
+        note: 'A sum outside the possible range [n, n*s] has probability exactly 0, not an error -- for example, you cannot roll a 1 with two dice.'
+      },
+      workedExample: {
+        intro: 'What is the probability that two standard six-sided dice sum to exactly 7?',
+        rows: [
+          { label: 'Dice', value: '2 dice, 6 sides each' },
+          { label: 'Total equally likely outcomes', value: '6^2 = 36' },
+          { label: 'Ways to make 7', value: '1+6, 2+5, 3+4, 4+3, 5+2, 6+1 = 6 ways' },
+          { label: 'Probability', value: '6 / 36' }
+        ],
+        result: 'About 16.67% (6/36), or odds of 1 in 6',
+        explanation: '7 is the single most likely sum with two six-sided dice precisely because more pairs of faces add up to it than to any other total -- the same reason the sums near the middle of the possible range are always more common than the sums at the extremes.'
+      },
+      watchOut: [
+        { title: 'This assumes fair, independent dice', body: 'Every face of every die is assumed equally likely and the dice do not influence each other, the standard assumption for ordinary dice -- a loaded die or a physically unusual one would not follow this distribution.' },
+        { title: 'Extreme sums are always the rarest', body: 'The lowest possible sum (all dice showing 1) and the highest possible sum (all dice showing the maximum face) each have only one way to happen, no matter how many dice you use, while sums near the middle of the range have many more combinations and are far more likely.' },
+        { title: '"Between" uses whichever order you type the two sums', body: 'If the second target sum is smaller than the first, this calculator still treats them as a low/high pair rather than returning no answer.' },
+        { title: 'This calculator is capped at 20 dice and 100 sides', body: 'Both are generous beyond any dice actually sold, and keep the underlying distribution calculation fast.' }
+      ],
+      references: [
+        { label: 'Wolfram MathWorld, Dice (exact combinatorial formula for a dice-sum count)', url: 'https://mathworld.wolfram.com/Dice.html' }
+      ]
+    },
+    inputs: [
+      { id: 'numDice', label: 'Number of dice', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 1 },
+      { id: 'numSides', label: 'Sides per die', type: 'number', placeholder: '6', defaultValue: 6, step: 1, min: 2 },
+      {
+        id: 'comparisonCode',
+        label: 'Comparison',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Exactly this sum' },
+          { value: 1, label: 'At least this sum' },
+          { value: 2, label: 'At most this sum' },
+          { value: 3, label: 'Between two sums' }
+        ]
+      },
+      { id: 'targetLow', label: 'Target sum', type: 'number', placeholder: '7', defaultValue: 7, step: 1, min: 0 },
+      { id: 'targetHigh', label: 'Upper sum (for "between" only)', type: 'number', placeholder: '9', defaultValue: 9, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Dice Probability Calculator – Exact Sum Odds',
+      description: 'Find the exact probability of rolling a target sum, or a sum in a range, with any number of dice and sides, from the real dice-sum combinatorics.',
+      faq: [
+        { question: 'What is the probability of rolling a 7 with two dice?', answer: 'About 16.67% (6/36, or odds of 1 in 6) -- there are 6 ways to make 7 from two six-sided dice (1+6, 2+5, 3+4, 4+3, 5+2, 6+1), more than any other sum.' },
+        { question: 'What is the probability of rolling a sum of 10 or higher with two dice?', answer: 'Also 16.67% (6/36) -- the sums 10, 11 and 12 can be made in 3, 2 and 1 ways respectively, which also total 6 out of 36 outcomes.' },
+        { question: 'Why is 7 the most common sum with two six-sided dice?', answer: 'Because more pairs of faces add up to 7 (six pairs) than to any other total between 2 and 12 -- sums near the middle of the possible range always have the most combinations.' },
+        { question: 'What is the lowest and highest possible sum?', answer: 'The lowest is the number of dice (every die showing 1); the highest is the number of dice times the number of sides (every die showing its maximum face). Each has only one way to happen.' },
+        { question: 'Does this work for dice with more than 6 sides?', answer: 'Yes -- enter any number of sides from 2 to 100 and any number of dice from 1 to 20, and the calculator rebuilds the exact sum distribution for that combination.' },
+        { question: 'How is this different from the probability calculator?', answer: 'The probability calculator combines the probabilities of two separate named events (like "passing math" and "passing science"). This calculator is specific to dice sums, counting the real combinatorics of how many dice-face combinations produce each total.' }
+      ]
+    },
+    compute(values) {
+      const dice = Math.round(values.numDice);
+      const sides = Math.round(values.numSides);
+      const mode = Math.round(values.comparisonCode);
+      const noAnswer = { probabilityPercent: NaN, oddsOneIn: NaN, expectedSum: NaN, minSum: NaN, maxSum: NaN };
+      if (!Number.isFinite(dice) || !Number.isFinite(sides) || dice < 1 || dice > 20 || sides < 2 || sides > 100) return noAnswer;
+      const dist = diceSumDistribution(dice, sides);
+      const minSum = dice;
+      const maxSum = dice * sides;
+      let low = Math.round(values.targetLow);
+      let high = Math.round(values.targetHigh);
+      if (mode === 0) high = low;
+      else if (mode === 1) high = maxSum;
+      else if (mode === 2) { high = low; low = minSum; }
+      else { const a = Math.min(low, high), b = Math.max(low, high); low = a; high = b; }
+      let probability = 0;
+      for (let sum = Math.max(low, minSum); sum <= Math.min(high, maxSum); sum++) probability += dist[sum - minSum];
+      const expectedSum = (dice * (sides + 1)) / 2;
+      return {
+        probabilityPercent: probability * 100,
+        oddsOneIn: probability > 0 ? 1 / probability : NaN,
+        expectedSum,
+        minSum,
+        maxSum
+      };
+    }
   }
 ];

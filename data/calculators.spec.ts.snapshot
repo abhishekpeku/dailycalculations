@@ -5208,6 +5208,44 @@ exports[`compute() snapshots > earth-overshoot-day-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > easter-date-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "year": 2027
+    },
+    "outputs": {
+      "easterDateMs": 1806172200000,
+      "goldenNumber": 14,
+      "daysAfterMarch21": 7,
+      "isLeapYear": 0
+    }
+  },
+  "typical": {
+    "inputs": {
+      "year": 3041
+    },
+    "outputs": {
+      "easterDateMs": 33806140200000,
+      "goldenNumber": 2,
+      "daysAfterMarch21": 21,
+      "isLeapYear": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "year": 1583
+    },
+    "outputs": {
+      "easterDateMs": -12204021210000,
+      "goldenNumber": 7,
+      "daysAfterMarch21": 20,
+      "isLeapYear": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > efficiency-calculator 1`] = `
 {
   "default": {
@@ -10068,6 +10106,68 @@ exports[`compute() snapshots > mass-percent-calculator 1`] = `
     },
     "outputs": {
       "massPercent": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > mayan-calendar-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "year": 2026,
+      "month": 6,
+      "day": 17
+    },
+    "outputs": {
+      "totalDaysSinceCreation": 1876926,
+      "baktun": 13,
+      "katun": 0,
+      "tun": 13,
+      "uinal": 12,
+      "kin": 6,
+      "tzolkinNumber": 3,
+      "tzolkinDayNameCode": 5,
+      "haabDayNumber": 19,
+      "haabMonthCode": 3
+    }
+  },
+  "typical": {
+    "inputs": {
+      "year": 3039,
+      "month": 9,
+      "day": 26
+    },
+    "outputs": {
+      "totalDaysSinceCreation": 2247017,
+      "baktun": 15,
+      "katun": 12,
+      "tun": 1,
+      "uinal": 12,
+      "kin": 17,
+      "tzolkinNumber": 10,
+      "tzolkinDayNameCode": 16,
+      "haabDayNumber": 0,
+      "haabMonthCode": 3
+    }
+  },
+  "edge": {
+    "inputs": {
+      "year": 1,
+      "month": 1,
+      "day": 1
+    },
+    "outputs": {
+      "totalDaysSinceCreation": 1137143,
+      "baktun": 7,
+      "katun": 17,
+      "tun": 18,
+      "uinal": 13,
+      "kin": 3,
+      "tzolkinNumber": 11,
+      "tzolkinDayNameCode": 2,
+      "haabDayNumber": 11,
+      "haabMonthCode": 7
     }
   }
 }

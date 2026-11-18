@@ -515,7 +515,9 @@ export const calculatorOrder: string[] = [
   'coin-flip-probability-calculator',
   'birthday-paradox-calculator',
   'lottery-odds-calculator',
-  'card-draw-probability-calculator'
+  'card-draw-probability-calculator',
+  'easter-date-calculator',
+  'mayan-calendar-converter'
 ];
 
 const rank = (id: string) => {

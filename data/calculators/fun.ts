@@ -194,6 +194,87 @@ const LOTTERY_EXAMPLE_ROWS = Array.from({ length: LOTTERY_EXAMPLE_PICKS + 1 }, (
   return { matches, oddsOneIn: probability > 0 ? 1 / probability : NaN };
 });
 
+// Generic positive-remainder modulus (JS's own % can return a negative result).
+function mod(n: number, m: number): number {
+  return ((n % m) + m) % m;
+}
+
+// Gauss's Easter algorithm (1800), Gregorian-calendar form, per Wikipedia's "Date of Easter" --
+// cited directly below. Finds the Sunday following the ecclesiastical "Paschal full moon" (the
+// first calculated full moon on or after March 21) using only modular arithmetic -- no lookup
+// table of real moon phases. The two `if` lines patch the two documented rare exceptions to the
+// raw d/e formula.
+function easterSunday(year: number): { month: number; day: number; goldenNumber: number } {
+  const a = year % 19;
+  const b = year % 4;
+  const c = year % 7;
+  const k = Math.floor(year / 100);
+  const p = Math.floor((13 + 8 * k) / 25);
+  const q = Math.floor(k / 4);
+  const M = mod(15 - p + k - q, 30);
+  const N = mod(4 + k - q, 7);
+  const d = mod(19 * a + M, 30);
+  const e = mod(2 * b + 4 * c + 6 * d + N, 7);
+  let day = 22 + d + e;
+  let month = 3; // March
+  if (day > 31) { day = d + e - 9; month = 4; } // April
+  if (month === 4 && day === 26) day = 19;
+  if (month === 4 && day === 25 && d === 28 && e === 6 && a > 10) day = 18;
+  return { month, day, goldenNumber: a + 1 }; // golden number: 1-indexed position in the 19-year Metonic cycle
+}
+
+// Julian Day Number of a proleptic-Gregorian calendar date (Fliegel & Van Flandern, 1968) --
+// the standard integer-arithmetic way to turn any Gregorian date into a single running day count.
+function gregorianToJDN(year: number, month: number, day: number): number {
+  const a = Math.floor((14 - month) / 12);
+  const y = year + 4800 - a;
+  const m = month + 12 * a - 3;
+  return day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+}
+
+// GMT (Goodman-Martinez-Thompson) correlation constant: the Julian Day Number of the Maya
+// creation date, Long Count 0.0.0.0.0 -- the correlation most Mayanist scholars use today
+// (Wikipedia, "Mesoamerican Long Count calendar", cited below). See this calculator's watchOut
+// for the less-used Spinden correlation (489,384) this calculator does NOT use.
+const MAYA_GMT_CORRELATION = 584283;
+
+// A Long Count is five place values, base 20/18/20/20/20 from the top: baktun (144,000 days),
+// katun (7,200), tun (360), uinal (20), kin (1). baktun is NOT taken mod 20 -- in real-world use
+// it keeps counting past 13 (we are in the 14th baktun today), unlike the lower four places.
+function mayanLongCount(JDN: number) {
+  const n = JDN - MAYA_GMT_CORRELATION;
+  return {
+    n,
+    baktun: Math.floor(n / 144000),
+    katun: mod(Math.floor(n / 7200), 20),
+    tun: mod(Math.floor(n / 360), 20),
+    uinal: mod(Math.floor(n / 20), 18),
+    kin: mod(n, 20)
+  };
+}
+
+// 20 Tzolk'in day names in their fixed cycle order (Wikipedia, "Tzolk'in", cited below).
+const TZOLKIN_DAY_NAMES = ["Imix", "Ik'", "Ak'b'al", "K'an", "Chikchan", "Kimi", "Manik'", "Lamat", "Muluk", "Ok",
+  "Chuwen", "Eb'", "B'en", "Ix", "Men", "K'ib'", "Kab'an", "Etz'nab'", "Kawak", "Ajaw"] as const;
+// 18 named Haab' months, in order, plus Wayeb' (the 5-day 19th "month") (Wikipedia, "Haab'", cited below).
+const HAAB_MONTH_NAMES = ["Pop", "Wo'", "Sip", "Sotz'", "Sek", "Xul", "Yaxk'in", "Mol", "Ch'en", "Yax",
+  "Sak'", "Keh", "Mak", "K'ank'in", "Muwan", "Pax", "K'ayab'", "Kumk'u", "Wayeb'"] as const;
+
+// Both 260-day (Tzolk'in) and 365-day (Haab') cycles are anchored to the mythical creation date
+// (n = 0), recorded as "4 Ajaw 8 Kumk'u" (Wikipedia, "Maya calendar", cited below) -- a fixed
+// correspondence independent of which correlation constant maps it to a Gregorian date.
+function tzolkinOf(n: number) {
+  return {
+    number: mod(n + 3, 13) + 1, // n=0 -> 4
+    dayIndex: mod(n + 19, 20) // n=0 -> 19 (Ajaw)
+  };
+}
+function haabOf(n: number) {
+  const dayOfYear = mod(n + 348, 365); // n=0 -> 348 = day 8 of month index 17 (Kumk'u) -> "8 Kumk'u"
+  if (dayOfYear < 360) return { monthIndex: Math.floor(dayOfYear / 20), dayNumber: mod(dayOfYear, 20) };
+  return { monthIndex: 18, dayNumber: dayOfYear - 360 }; // Wayeb', days 0-4
+}
+
 export const funCalculators: CalculatorConfig[] = [
   {
     id: 'zodiac-sign-calculator',
@@ -1291,6 +1372,250 @@ export const funCalculators: CalculatorConfig[] = [
         oddsOneIn: probability > 0 ? 1 / probability : NaN,
         totalHands: Number(total),
         favorableHands: Number(favorable)
+      };
+    }
+  },
+  {
+    id: 'easter-date-calculator',
+    category: 'fun',
+    glyph: 'Sun',
+    updatedAt: '2026-11-18',
+    aliases: ['when is easter calculator', 'easter sunday date calculator', 'computus calculator', 'gauss easter algorithm calculator', 'date of easter calculator'],
+    related: ['date-difference-calculator', 'age-calculator', 'chinese-zodiac-calculator', 'zodiac-sign-calculator'],
+    title: 'Easter Date Calculator',
+    description: 'Find the exact date of Easter Sunday in any year using the real Gaussian Easter algorithm -- the same modular-arithmetic method used to compute Easter without a calendar of moon phases.',
+    example: 'In 2025, Easter Sunday falls on April 20 -- found from the year alone, with no lookup table of moon phases.',
+    breakdown: {
+      headline: 'easterDateMs',
+      headlineLabel: 'Easter Sunday',
+      outputs: [
+        { id: 'easterDateMs', label: 'Easter Sunday', format: 'date' },
+        { id: 'goldenNumber', label: 'Golden number (position in the 19-year lunar cycle)', format: 'integer' },
+        { id: 'daysAfterMarch21', label: 'Days after March 21', format: 'integer' },
+        { id: 'isLeapYear', label: 'Leap year?', labels: [{ value: 0, label: 'No' }, { value: 1, label: 'Yes' }] }
+      ],
+      groups: [{ title: 'Year', inputs: ['year'] }]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What the Gaussian Easter algorithm actually computes',
+        paragraphs: [
+          'Easter Sunday is defined, since the Council of Nicaea in 325 CE, as the first Sunday after the first ecclesiastical full moon falling on or after March 21 -- a fixed calendar date standing in for the vernal equinox. The "full moon" used is a calculated, agreed-upon calendar approximation, not whatever the real moon is actually doing that year, which is why Easter can be computed centuries in advance without any astronomical observation at all.',
+          'Carl Friedrich Gauss published a way to find that Sunday directly from the year number in 1800, using nothing but modular arithmetic -- no table of moon phases or calendar lookup required. It works by tracking two independent cycles at once: the year\'s position in a 19-year lunar repeating pattern (the "golden number," built on the Metonic cycle, where 19 solar years is very close to a whole number of lunar months) and the year\'s position in the 7-day week. Combining the two pins down the one Sunday the rule describes.',
+          'The version below is the Gregorian-calendar form of the algorithm: it adds two century-based correction terms, M and N, to account for the Gregorian calendar\'s own leap-year exceptions (which Gauss\'s original Julian-calendar version did not need), plus two rare, documented exceptions that patch two specific combinations the raw formula would otherwise place one day too late.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter any year from 1583 onward -- the first full year the Gregorian calendar was in effect.',
+        steps: [
+          { name: 'Enter a year', text: 'Any Gregorian-calendar year, 1583 or later.' },
+          { name: 'Read the date', text: 'The headline is the exact date of Easter Sunday that year.' },
+          { name: 'Check the golden number', text: 'This is the year\'s position (1-19) in the 19-year lunar cycle the algorithm uses -- not a date, but one of the two raw ingredients the formula combines.' },
+          { name: 'Check days after March 21', text: 'How far Easter falls past the fixed ecclesiastical equinox date -- always between 1 and 35 days, which is the same as saying Easter always falls between March 22 and April 25.' }
+        ],
+        outro: 'Everything is calculated in your browser using the exact algorithm below. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Gauss\'s algorithm reduces the whole ecclesiastical rule to nine small modular calculations, in order.',
+        expression:
+          'a = year mod 19\nb = year mod 4\nc = year mod 7\nk = floor(year / 100)\np = floor((13 + 8k) / 25)\nq = floor(k / 4)\nM = (15 - p + k - q) mod 30\nN = (4 + k - q) mod 7\nd = (19a + M) mod 30\ne = (2b + 4c + 6d + N) mod 7\nEaster = March (22 + d + e), or April (d + e - 9) if 22 + d + e > 31\nException 1: April 26 -> April 19\nException 2: April 25 with d=28, e=6, a>10 -> April 18',
+        terms: [
+          { symbol: 'a', meaning: 'Position in the 19-year Metonic lunar cycle (a+1 is the "golden number"). Rooted in the fact that 19 solar years is very close to a whole number of lunar months.' },
+          { symbol: 'b, c', meaning: 'The year\'s position in the 4-year leap-year cycle and the 7-day week.' },
+          { symbol: 'k, p, q', meaning: 'Century-based terms used only to build the two Gregorian correction values M and N below.' },
+          { symbol: 'M, N', meaning: 'Gregorian-calendar corrections that account for the Gregorian leap-year rule\'s own century exceptions (centuries not divisible by 400 skip a leap day) -- not needed in Gauss\'s original Julian-calendar version.' },
+          { symbol: 'd', meaning: 'How many days after March 21 the ecclesiastical full moon falls, by the lunar cycle alone.' },
+          { symbol: 'e', meaning: 'An additional weekday correction that moves the full-moon date forward to the following Sunday.' }
+        ],
+        note: 'Every division above is integer division -- the remainder is dropped, never rounded -- and every variable stays a small two-digit number. This calculator restricts input to 1583 onward because the Gregorian calendar did not exist before October 1582.'
+      },
+      workedExample: {
+        intro: 'What date is Easter Sunday in 2025?',
+        rows: [
+          { label: 'a = 2025 mod 19', value: '11' },
+          { label: 'b = 2025 mod 4, c = 2025 mod 7', value: '1, 2' },
+          { label: 'k = floor(2025/100), p = floor((13+8x20)/25), q = floor(20/4)', value: '20, 6, 5' },
+          { label: 'M = (15-6+20-5) mod 30', value: '24' },
+          { label: 'N = (4+20-5) mod 7', value: '5' },
+          { label: 'd = (19x11+24) mod 30 = 233 mod 30', value: '23' },
+          { label: 'e = (2x1+4x2+6x23+5) mod 7 = 153 mod 7', value: '6' },
+          { label: '22 + d + e = 22+23+6 = 51, over 31 -> April; day = d+e-9 = 23+6-9', value: '20' }
+        ],
+        result: 'April 20, 2025',
+        explanation: 'Because 22 + d + e (51) is greater than 31, the date rolls into April and is recomputed as d + e - 9 = 20. Neither exception applies (the result is not April 25 or 26), so April 20, 2025 is the final answer -- 30 days after the fixed March 21 equinox date.'
+      },
+      watchOut: [
+        { title: 'This is Western (Gregorian) Easter only', body: 'Orthodox churches that use the Julian calendar apply the same ecclesiastical rule against a different calendar, which usually (though not always) gives a later date. This calculator does not compute the Orthodox date.' },
+        { title: 'The "full moon" is ecclesiastical, not astronomical', body: 'It is a calculated calendar approximation agreed on centuries ago, and occasionally falls a day or two from the real, observable full moon. Easter\'s date has never depended on anyone actually looking at the sky.' },
+        { title: 'Easter always falls between March 22 and April 25', body: 'That range comes directly out of the algorithm\'s own bounds on d and e, not from an assumption added on top -- this calculator will never produce a date outside it.' },
+        { title: 'Two rare exceptions exist for a reason', body: 'Without them, the raw formula would occasionally compute April 26 (always patched to April 19) or, for specific years, April 25 (patched to April 18). These combinations are uncommon -- most years need neither exception.' },
+        { title: 'Valid for the Gregorian calendar era', body: 'The calculator accepts years from 1583 onward. It assumes the Gregorian leap-year rule continues unchanged indefinitely into the future, which is the standard assumption every Easter-date calculation makes.' }
+      ],
+      references: [
+        { label: 'Wikipedia, Date of Easter (Gauss\'s algorithm)', url: 'https://en.wikipedia.org/wiki/Date_of_Easter' },
+        { label: 'US Naval Observatory, Computing the Date of Easter', url: 'https://aa.usno.navy.mil/faq/easter' }
+      ]
+    },
+    inputs: [{ id: 'year', label: 'Year', type: 'number', placeholder: '2027', defaultValue: 2027, step: 1, min: 1583 }],
+    seo: {
+      title: 'Easter Date Calculator – Gaussian Easter Algorithm',
+      description: 'Find the exact date of Easter Sunday in any year using the real Gaussian Easter algorithm, the modular-arithmetic method used to compute Easter with no table of moon phases.',
+      faq: [
+        { question: 'What date is Easter in 2025?', answer: 'April 20, 2025, computed directly from Gauss\'s algorithm: the golden number is 12, and the formula\'s d and e values (23 and 6) push the result into April.' },
+        { question: 'How is the date of Easter actually calculated?', answer: 'Easter Sunday is the first Sunday after the first ecclesiastical full moon on or after March 21. Gauss\'s 1800 algorithm finds that Sunday from the year number alone, using modular arithmetic on the year\'s position in a 19-year lunar cycle and the 7-day week -- no table of real moon phases needed.' },
+        { question: 'Why does the formula have two exceptions?', answer: 'Without them, the raw d/e formula would occasionally land on April 26, or on April 25 for a specific combination of years, both one day later than the ecclesiastical rule actually intends. The exceptions patch those two cases to April 19 and April 18.' },
+        { question: 'What is the "golden number"?', answer: 'The year\'s position (1 through 19) in a repeating 19-year lunar cycle, one of the two raw cycles -- lunar and weekday -- that the algorithm combines to find Easter. It is not a date by itself.' },
+        { question: 'What is the earliest and latest Easter can fall?', answer: 'March 22 at the earliest and April 25 at the latest -- both bounds come directly from the algorithm\'s own formula, not a separate rule layered on top.' },
+        { question: 'Is this the same date Orthodox churches use?', answer: 'Not usually. Orthodox churches apply the same ecclesiastical rule but against the Julian calendar, which this calculator does not compute, and which typically lands on a later date.' },
+        { question: 'Why does Easter move every year, unlike Christmas?', answer: 'Christmas is fixed to a calendar date (December 25). Easter is fixed to a lunar-cycle event (the ecclesiastical full moon) and then rounded to the following Sunday, so its calendar date shifts from year to year the way a lunar event does.' }
+      ]
+    },
+    compute(values) {
+      const year = Math.round(values.year);
+      if (!Number.isFinite(year) || year < 1583) return { easterDateMs: NaN, goldenNumber: NaN, daysAfterMarch21: NaN, isLeapYear: NaN };
+      const { month, day, goldenNumber } = easterSunday(year);
+      const easterDateMs = new Date(year, month - 1, day).getTime();
+      const march21Ms = new Date(year, 2, 21).getTime();
+      const daysAfterMarch21 = Math.round((easterDateMs - march21Ms) / 86400000);
+      const isLeapYear = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 1 : 0;
+      return { easterDateMs, goldenNumber, daysAfterMarch21, isLeapYear };
+    }
+  },
+  {
+    id: 'mayan-calendar-converter',
+    category: 'fun',
+    glyph: 'LC',
+    updatedAt: '2026-11-18',
+    aliases: ['mayan long count converter', 'maya calendar converter', 'gregorian to mayan calendar calculator', "tzolk'in haab calculator", 'mayan date converter'],
+    related: ['easter-date-calculator', 'date-difference-calculator', 'age-calculator', 'chinese-zodiac-calculator'],
+    title: 'Mayan Calendar Converter',
+    description: "Convert any Gregorian date to its Maya Long Count, Tzolk'in and Haab' date, using the GMT correlation constant most Mayanist scholars use today.",
+    example: "June 17, 2026 converts to Long Count 13.0.13.12.6 -- Tzolk'in 3 Kimi, Haab' 19 Sotz'.",
+    breakdown: {
+      headline: 'totalDaysSinceCreation',
+      headlineLabel: 'Days since the Maya creation date (0.0.0.0.0)',
+      outputs: [
+        { id: 'totalDaysSinceCreation', label: 'Days since the Maya creation date (0.0.0.0.0)', format: 'integer' },
+        { id: 'baktun', label: "Baktun (Long Count 1st place)", format: 'integer' },
+        { id: 'katun', label: "Katun (2nd place)", format: 'integer' },
+        { id: 'tun', label: "Tun (3rd place)", format: 'integer' },
+        { id: 'uinal', label: "Uinal (4th place)", format: 'integer' },
+        { id: 'kin', label: "Kin (5th place)", format: 'integer' },
+        { id: 'tzolkinNumber', label: "Tzolk'in number (1-13)", format: 'integer' },
+        { id: 'tzolkinDayNameCode', label: "Tzolk'in day name", labels: TZOLKIN_DAY_NAMES.map((name, i) => ({ value: i, label: name })) },
+        { id: 'haabDayNumber', label: "Haab' day number (0-19)", format: 'integer' },
+        { id: 'haabMonthCode', label: "Haab' month", labels: HAAB_MONTH_NAMES.map((name, i) => ({ value: i, label: name })) }
+      ],
+      groups: [{ title: 'Gregorian date', inputs: ['year', 'month', 'day'] }]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Three calendars running at once',
+        paragraphs: [
+          "The Maya did not use one calendar -- they ran at least three at the same time, for different purposes. The Tzolk'in is a 260-day cycle (13 numbers x 20 named days) used for ritual and divination. The Haab' is a 365-day solar-approximation calendar (18 named 20-day months plus a short 5-day 19th month, Wayeb') used for the farming and civic year. Neither one tracks the actual year count, so the same Tzolk'in/Haab' combination recurs every 52 years (the \"Calendar Round\").",
+          'The Long Count is the one built to count unambiguously across centuries: a place-value system, much like decimal digits, counting days since a fixed mythical creation date deep in the past. Its five places are the kin (1 day), uinal (20 days), tun (360 days), katun (7,200 days) and baktun (144,000 days) -- written baktun.katun.tun.uinal.kin, for example 13.0.0.0.0.',
+          "Converting a modern Gregorian date into all three requires fixing exactly how many days separate the Gregorian calendar from the Maya creation date -- a single number called a correlation constant. This calculator uses the GMT (Goodman-Martinez-Thompson) correlation, 584,283, the value most Mayanist scholars and historical/astronomical cross-checks agree on today. See Watch Out for why that number is not universally used."
+        ]
+      },
+      howTo: {
+        intro: 'Enter any Gregorian calendar date.',
+        steps: [
+          { name: 'Enter a date', text: 'Any year, month and day on the Gregorian calendar (the one in everyday use).' },
+          { name: 'Read the day count', text: 'The headline is the number of days since the Maya creation date, 0.0.0.0.0 -- the single number every other figure below is built from.' },
+          { name: 'Read the Long Count', text: 'The five rows (baktun through kin) are that day count split into Maya place values, written together as baktun.katun.tun.uinal.kin.' },
+          { name: "Read the Tzolk'in", text: "A number 1-13 plus one of 20 day names -- together a position in the repeating 260-day ritual cycle." },
+          { name: "Read the Haab'", text: "A day number 0-19 plus one of 18 month names (or Wayeb', the short 19th month) -- a position in the 365-day civic year." }
+        ],
+        outro: 'Everything is calculated in your browser using the formulas below. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The conversion runs in three stages: a Gregorian date becomes a single day number, that number becomes a Long Count, and the same number also gives the Tzolk\'in and Haab\'.',
+        expression:
+          'JDN = Julian Day Number of the Gregorian date (Fliegel & Van Flandern, 1968)\nn = JDN - 584283   (584,283 = the GMT correlation)\nbaktun = floor(n / 144000)\nkatun = floor(n / 7200) mod 20\ntun = floor(n / 360) mod 20\nuinal = floor(n / 20) mod 18\nkin = n mod 20\ntzolkinNumber = ((n + 3) mod 13) + 1\ntzolkinDayIndex = (n + 19) mod 20\nhaabDayOfYear = (n + 348) mod 365',
+        terms: [
+          { symbol: 'JDN', meaning: 'A running count of days used by astronomers and calendar converters generally, computed from the Gregorian year/month/day with integer arithmetic alone.' },
+          { symbol: 'n', meaning: 'Days since the Maya creation date -- zero exactly on that date, under the GMT correlation.' },
+          { symbol: '584283', meaning: "The GMT correlation constant: the JDN of the Maya creation date, which corresponds to August 11, 3114 BCE on the proleptic Gregorian calendar." },
+          { symbol: '+3, +19, +13, +20', meaning: "Offsets anchoring the Tzolk'in/Haab' formulas to the creation date's own recorded position, \"4 Ajaw 8 Kumk'u.\"" }
+        ],
+        note: "All divisions are integer division. baktun is never taken mod 20 -- real-world Long Count dates keep counting upward past 13 (we are in the 14th baktun today), they do not reset."
+      },
+      workedExample: {
+        intro: 'Convert June 17, 2026.',
+        rows: [
+          { label: 'JDN of June 17, 2026', value: '2,461,209' },
+          { label: 'n = JDN - 584283', value: '1,876,926' },
+          { label: 'baktun = floor(1876926 / 144000)', value: '13' },
+          { label: 'katun = floor(1876926 / 7200) mod 20', value: '0' },
+          { label: 'tun = floor(1876926 / 360) mod 20', value: '13' },
+          { label: 'uinal = floor(1876926 / 20) mod 18', value: '12' },
+          { label: 'kin = 1876926 mod 20', value: '6' },
+          { label: "Tzolk'in: ((n+3) mod 13)+1 = 4, dayIndex (n+19) mod 20 = 5 -> Kimi", value: '3 Kimi' },
+          { label: "Haab': dayOfYear (n+348) mod 365 = 79 -> month index 3 (Sotz'), day 19", value: "19 Sotz'" }
+        ],
+        result: "Long Count 13.0.13.12.6 -- Tzolk'in 3 Kimi, Haab' 19 Sotz'",
+        explanation: "Every figure comes from the one number n = 1,876,926: split into place values for the Long Count, and read two different ways (mod 13/20, and mod 365) for the Tzolk'in and Haab'."
+      },
+      watchOut: [
+        { title: 'This uses the GMT correlation, not the only one ever proposed', body: "The GMT (Goodman-Martinez-Thompson) correlation, 584,283, is the value most Mayanist scholars use because it is independently supported by historical records, astronomical cross-checks and archaeological (radiocarbon) dating together. An older alternative, the Spinden correlation (489,384), shifts every date about 260 years earlier. This calculator always uses GMT." },
+        { title: "The creation date is proleptic, not a real historical observation", body: 'August 11, 3114 BCE (the date this correlation assigns to Long Count 0.0.0.0.0) is a mythical Maya reference point, projected backward through the modern calendar -- not a claim that the Gregorian calendar, or anyone\'s calendar, existed then.' },
+        { title: 'Baktun keeps counting past 13', body: "The famous December 21, 2012 date was Long Count 13.0.0.0.0 -- the baktun reaching 13 did not restart the calendar at 0, contrary to a popular misconception at the time; it simply continued to 13.0.0.0.1 the next day, and we are now in the 14th baktun." },
+        { title: "Haab' days are numbered 0-19, not 1-20", body: 'Each Haab\' month\'s first day is day 0 (the "seating" of the month), so "8 Kumk\'u" is the 9th day of that month counting normally, written as the digit 8.' },
+        { title: 'This is a date conversion, not a historical record', body: 'Real inscribed Long Count dates on Maya monuments are the actual historical record; this calculator only converts a modern calendar date in the other direction, for any date you choose.' }
+      ],
+      references: [
+        { label: 'Wikipedia, Mesoamerican Long Count calendar (GMT correlation, 584,283)', url: 'https://en.wikipedia.org/wiki/Mesoamerican_Long_Count_calendar' },
+        { label: 'Wikipedia, Maya calendar (creation date "4 Ahau 8 Kumkʼu")', url: 'https://en.wikipedia.org/wiki/Maya_calendar' },
+        { label: "Wikipedia, Tzolk'in (20 day names, cycle order)", url: 'https://en.wikipedia.org/wiki/Tzolk%27in' },
+        { label: "Wikipedia, Haab' (18 months, day-0 numbering)", url: 'https://en.wikipedia.org/wiki/Haab%27' }
+      ]
+    },
+    inputs: [
+      { id: 'year', label: 'Year', type: 'number', placeholder: '2026', defaultValue: 2026, step: 1, min: 1 },
+      { id: 'month', label: 'Month (1-12)', type: 'number', placeholder: '6', defaultValue: 6, step: 1, min: 1 },
+      { id: 'day', label: 'Day (1-31)', type: 'number', placeholder: '17', defaultValue: 17, step: 1, min: 1 }
+    ],
+    seo: {
+      title: "Mayan Calendar Converter – Long Count, Tzolk'in & Haab'",
+      description: "Convert any Gregorian date to the Maya Long Count, Tzolk'in and Haab' date, using the GMT correlation constant most Mayanist scholars use today.",
+      faq: [
+        { question: 'What Mayan date is June 17, 2026?', answer: "Long Count 13.0.13.12.6 -- Tzolk'in 3 Kimi, Haab' 19 Sotz' -- using the GMT correlation." },
+        { question: 'What correlation constant does this calculator use?', answer: 'The GMT (Goodman-Martinez-Thompson) correlation, 584,283 -- the value most Mayanist scholars use because historical, astronomical and archaeological evidence all support it together.' },
+        { question: 'Is there another correlation in use?', answer: 'Yes -- the older Spinden correlation (489,384) shifts every converted date about 260 years earlier. It lacks the same cross-checked support as GMT, which is why this calculator uses GMT.' },
+        { question: 'Did the Maya calendar really end in 2012?', answer: 'No. December 21, 2012 was Long Count 13.0.0.0.0 -- the baktun place reaching 13, which simply continued counting (to 13.0.0.0.1, and so on), not a reset or an end.' },
+        { question: "What is the difference between the Long Count, Tzolk'in and Haab'?", answer: "The Long Count is a place-value day count since a fixed creation date, used to track long spans unambiguously. The Tzolk'in is a 260-day ritual cycle. The Haab' is a 365-day civic/solar-approximation calendar. The Maya used all three together." },
+        { question: "Why is a Haab' day written as '8 Kumk'u' instead of '9 Kumk'u'?", answer: "Haab' days are numbered starting at 0 (the month's \"seating\" day), so the digit shown is one less than the day's position counting from 1." },
+        { question: 'Does this work for dates before the Gregorian calendar existed?', answer: 'It computes a proleptic Gregorian date -- the Gregorian calendar\'s rules projected backward -- the same convention used for the Maya creation date itself (August 11, 3114 BCE), not a claim that the Gregorian calendar was in use at that time.' }
+      ]
+    },
+    compute(values) {
+      const year = Math.round(values.year);
+      const month = Math.round(values.month);
+      const day = Math.round(values.day);
+      const noAnswer = {
+        totalDaysSinceCreation: NaN, baktun: NaN, katun: NaN, tun: NaN, uinal: NaN, kin: NaN,
+        tzolkinNumber: NaN, tzolkinDayNameCode: NaN, haabDayNumber: NaN, haabMonthCode: NaN
+      };
+      if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day) || month < 1 || month > 12 || day < 1) return noAnswer;
+      const daysInMonth = new Date(year, month, 0).getDate();
+      if (day > daysInMonth) return noAnswer;
+      const JDN = gregorianToJDN(year, month, day);
+      const lc = mayanLongCount(JDN);
+      const tz = tzolkinOf(lc.n);
+      const hb = haabOf(lc.n);
+      return {
+        totalDaysSinceCreation: lc.n,
+        baktun: lc.baktun,
+        katun: lc.katun,
+        tun: lc.tun,
+        uinal: lc.uinal,
+        kin: lc.kin,
+        tzolkinNumber: tz.number,
+        tzolkinDayNameCode: tz.dayIndex,
+        haabDayNumber: hb.dayNumber,
+        haabMonthCode: hb.monthIndex
       };
     }
   }

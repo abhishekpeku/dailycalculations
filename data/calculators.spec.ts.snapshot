@@ -2551,6 +2551,47 @@ exports[`compute() snapshots > circle-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > class-attendance-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "totalClasses": 30,
+      "classesMissed": 3,
+      "minAttendancePercent": 80
+    },
+    "outputs": {
+      "currentAttendanceRate": 90,
+      "remainingMissable": 3,
+      "maxMissableTotal": 6
+    }
+  },
+  "typical": {
+    "inputs": {
+      "totalClasses": 45,
+      "classesMissed": 5,
+      "minAttendancePercent": 120
+    },
+    "outputs": {
+      "currentAttendanceRate": 88.88888889,
+      "remainingMissable": -14,
+      "maxMissableTotal": -9
+    }
+  },
+  "edge": {
+    "inputs": {
+      "totalClasses": 1,
+      "classesMissed": 0,
+      "minAttendancePercent": 0
+    },
+    "outputs": {
+      "currentAttendanceRate": 100,
+      "remainingMissable": 1,
+      "maxMissableTotal": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > closing-cost-estimator-calculator 1`] = `
 {
   "default": {
@@ -3616,6 +3657,71 @@ exports[`compute() snapshots > cube-root-calculator 1`] = `
     },
     "outputs": {
       "cubeRoot": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > cumulative-gpa-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "priorGpa": 3.5,
+      "priorCredits": 60,
+      "course1Grade": 4,
+      "course1Credits": 3,
+      "course2Grade": 3,
+      "course2Credits": 3,
+      "course3Grade": 3.7,
+      "course3Credits": 4,
+      "course4Grade": 0,
+      "course4Credits": 0
+    },
+    "outputs": {
+      "newCumulativeGpa": 3.511428571,
+      "newTotalCredits": 70,
+      "termGpa": 3.58,
+      "termCredits": 10
+    }
+  },
+  "typical": {
+    "inputs": {
+      "priorGpa": 5.25,
+      "priorCredits": 90,
+      "course1Grade": 6,
+      "course1Credits": 4.5,
+      "course2Grade": 4.5,
+      "course2Credits": 4.5,
+      "course3Grade": 5.6,
+      "course3Credits": 6,
+      "course4Grade": 0,
+      "course4Credits": 0
+    },
+    "outputs": {
+      "newCumulativeGpa": 5.27,
+      "newTotalCredits": 105,
+      "termGpa": 5.39,
+      "termCredits": 15
+    }
+  },
+  "edge": {
+    "inputs": {
+      "priorGpa": 0,
+      "priorCredits": 0,
+      "course1Grade": 0,
+      "course1Credits": 0,
+      "course2Grade": 0,
+      "course2Credits": 0,
+      "course3Grade": 0,
+      "course3Credits": 0,
+      "course4Grade": 0,
+      "course4Credits": 0
+    },
+    "outputs": {
+      "newCumulativeGpa": 0,
+      "newTotalCredits": 0,
+      "termGpa": 0,
+      "termCredits": 0
     }
   }
 }
@@ -13780,6 +13886,44 @@ exports[`compute() snapshots > reaction-half-life-calculator 1`] = `
     },
     "outputs": {
       "halfLife": "Infinity"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > reading-speed-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "wordCount": 500,
+      "minutesElapsed": 2,
+      "secondsElapsed": 30
+    },
+    "outputs": {
+      "wpm": 200,
+      "totalSeconds": 150
+    }
+  },
+  "typical": {
+    "inputs": {
+      "wordCount": 750,
+      "minutesElapsed": 3,
+      "secondsElapsed": 45
+    },
+    "outputs": {
+      "wpm": 200,
+      "totalSeconds": 225
+    }
+  },
+  "edge": {
+    "inputs": {
+      "wordCount": 1,
+      "minutesElapsed": 0,
+      "secondsElapsed": 0
+    },
+    "outputs": {
+      "wpm": "Infinity",
+      "totalSeconds": 0
     }
   }
 }

@@ -633,5 +633,338 @@ export const educationCalculators: CalculatorConfig[] = [
       const pointsToNextGrade = letterGradeCode === 4 ? 0 : nextCutoff - score;
       return { letterGradeCode, pointsToNextGrade };
     }
+  },
+  {
+    id: 'reading-speed-calculator',
+    category: 'education',
+    group: 'Study & Time',
+    glyph: 'WPM',
+    updatedAt: '2026-11-18',
+    aliases: ['words per minute calculator', 'reading rate calculator', 'how fast do i read calculator', 'wpm calculator'],
+    related: ['character-counter', 'study-time-calculator', 'pomodoro-timer', 'final-grade-calculator'],
+    title: 'Reading Speed Calculator',
+    description: 'Find your reading speed in words per minute from a timed passage: enter the word count and how long it took to read, in minutes and seconds.',
+    example: 'Reading a 500-word passage in 2 minutes 30 seconds works out to 200 words per minute.',
+    breakdown: {
+      headline: 'wpm',
+      headlineLabel: 'Reading speed',
+      outputs: [
+        { id: 'wpm', label: 'Words per minute', format: 'number' },
+        { id: 'totalSeconds', label: 'Total time', format: 'integer' }
+      ],
+      groups: [
+        { title: 'Your timed passage', inputs: ['wordCount', 'minutesElapsed', 'secondsElapsed'] }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Words per minute: a rate, not a fixed trait',
+        paragraphs: [
+          "Words per minute is simply the number of words in a passage divided by how long it took to read it, converted to a per-minute rate. It is a measurement of one specific reading of one specific passage — not a fixed personal statistic. The same person's reading speed changes with the text's difficulty, how familiar they already are with the subject, how carefully they are reading (skimming versus reading for full comprehension), and even how tired they are.",
+          "Because of that, a single words-per-minute number is most useful compared against your own past results on similarly difficult material — timing yourself on comparable passages before and after practicing a reading strategy, for instance — rather than against someone else's number from a different kind of text.",
+          "This calculator reports the rate exactly as entered, with no adjustment for comprehension. Reading faster without understanding what you read is not the same thing as reading faster."
+        ]
+      },
+      howTo: {
+        intro: 'Time yourself reading a passage, then enter the word count and the time it took.',
+        steps: [
+          { name: 'Count (or look up) the word count', text: "Many documents show a word count directly; otherwise count or estimate the words in the passage you timed." },
+          { name: 'Time yourself reading it', text: 'Start a timer when you begin reading and stop it the moment you finish.' },
+          { name: 'Enter the minutes and seconds', text: 'Split the elapsed time into whole minutes and the remaining seconds.' },
+          { name: 'Read your words-per-minute rate', text: 'The headline is your reading speed for that specific passage, at that specific time.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Words per minute is the word count divided by the total elapsed time, with the time converted entirely to minutes first.',
+        expression: 'totalMinutes = minutesElapsed + secondsElapsed ÷ 60\nwordsPerMinute = wordCount ÷ totalMinutes',
+        terms: [
+          { symbol: 'wordCount', meaning: 'The number of words in the passage you read.' },
+          { symbol: 'minutesElapsed, secondsElapsed', meaning: 'The time it took to read the passage, split into whole minutes and remaining seconds.' }
+        ]
+      },
+      workedExample: {
+        intro: 'A 500-word passage, read in 2 minutes 30 seconds.',
+        rows: [
+          { label: 'Total time in minutes (2 + 30÷60)', value: '2.5 minutes' },
+          { label: 'Words per minute (500 ÷ 2.5)', value: '200' }
+        ],
+        result: 'Reading speed = 200 words per minute',
+        explanation: 'The 30 extra seconds add a quarter-minute to the 2 full minutes, so the word count is divided by 2.5 minutes rather than a flat 2.'
+      },
+      watchOut: [
+        { title: "One timed passage isn't a fixed reading speed", body: "The same reader moves at different speeds on an easy novel versus a dense technical manual. Compare results across similarly difficult passages, not against a single universal number." },
+        { title: 'This does not check comprehension', body: "The calculator only measures speed. Reading quickly through material you don't absorb isn't a meaningful improvement over reading it more slowly and understanding it." },
+        { title: 'Word count accuracy matters', body: "If you estimate rather than count the words, your words-per-minute figure is only as accurate as that estimate." },
+        { title: 'Very short passages are noisy', body: 'Timing a 20-word sentence introduces a lot of relative error from reaction time starting and stopping the timer; longer passages give a more stable rate.' }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §6.2 Solve General Applications of Percent', url: 'https://openstax.org/books/prealgebra-2e/pages/6-2-solve-general-applications-of-percent' }
+      ]
+    },
+    inputs: [
+      { id: 'wordCount', label: 'Word count', type: 'number', placeholder: '500', defaultValue: 500, step: 1, min: 1 },
+      { id: 'minutesElapsed', label: 'Minutes', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0 },
+      { id: 'secondsElapsed', label: 'Seconds', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Reading Speed Calculator – Words per Minute',
+      description: 'Find your reading speed in words per minute from a timed passage. Enter the word count and how long it took, in minutes and seconds.',
+      faq: [
+        { question: 'How do I calculate words per minute?', answer: 'Divide the word count by the total time in minutes. A 500-word passage read in 2 minutes 30 seconds (2.5 minutes) is 500 ÷ 2.5 = 200 words per minute.' },
+        { question: 'What is a good reading speed?', answer: "Reading speed varies widely by person, text difficulty, and familiarity with the subject, so there is no single target. It is most useful to compare your own results across similarly difficult passages over time." },
+        { question: 'Does a higher words-per-minute number mean better reading?', answer: 'Not by itself — this calculator measures speed only, not comprehension. Reading quickly through text you do not absorb is not a meaningful improvement.' },
+        { question: 'How should I count the words in a passage?', answer: 'Use an exact count from a word processor or document viewer when possible; a rough estimate works but makes your words-per-minute figure only as accurate as that estimate.' },
+        { question: 'Why does this ask for minutes and seconds separately?', answer: "Splitting the time avoids decimal-minute entry errors — 2 minutes 30 seconds becomes 2.5 minutes internally, converted automatically before dividing." },
+        { question: 'Is this the same as the character counter\'s reading time estimate?', answer: "No — the character counter runs the calculation the other way, estimating reading time from a word count at a fixed assumed rate. This calculator measures your actual rate from a passage you timed yourself." }
+      ]
+    },
+    compute(values) {
+      const totalMinutes = values.minutesElapsed + values.secondsElapsed / 60;
+      const wpm = values.wordCount / totalMinutes;
+      const totalSeconds = values.minutesElapsed * 60 + values.secondsElapsed;
+      return { wpm, totalSeconds };
+    }
+  },
+  {
+    id: 'class-attendance-calculator',
+    category: 'education',
+    group: 'Study & Time',
+    glyph: '%',
+    updatedAt: '2026-11-18',
+    aliases: ['attendance percentage calculator', 'how many classes can i miss calculator', 'minimum attendance calculator', 'class absence calculator'],
+    related: ['grade-calculator', 'final-grade-calculator', 'percentage-calculator', 'study-time-calculator'],
+    title: 'Class Attendance Calculator',
+    description: 'Check your current attendance percentage against a minimum requirement, and see exactly how many more classes you can miss (or already missed too many) to stay above it.',
+    example: 'Out of 30 classes with 3 missed, attendance is 90% — with an 80% minimum, 3 more absences are still allowed before dropping below it.',
+    breakdown: {
+      headline: 'currentAttendanceRate',
+      headlineLabel: 'Current attendance',
+      outputs: [
+        { id: 'currentAttendanceRate', label: 'Current attendance', format: 'percent' },
+        { id: 'remainingMissable', label: 'More classes you can still miss', format: 'integer' },
+        { id: 'maxMissableTotal', label: 'Total classes you can ever miss', format: 'integer' }
+      ],
+      groups: [
+        { title: 'Your attendance', inputs: ['totalClasses', 'classesMissed', 'minAttendancePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'classesMissed', label: 'Missed so far' },
+          { from: 'remainingMissable', label: 'Still missable' }
+        ],
+        title: 'Classes missed vs. how many more you can miss',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Attendance percentage, and the "classes you can still miss" it implies',
+        paragraphs: [
+          "Attendance percentage is simply classes attended divided by total classes, times 100. A minimum attendance requirement — common in many courses, though the exact threshold and consequences are set by each school or instructor, not by any universal rule — turns that percentage into a hard cap on absences: once your missed-class count would push your attendance below the minimum, any further absence breaks the requirement.",
+          "This calculator works that cap out directly. It finds the smallest number of classes you must attend to keep your percentage at or above the minimum (rounding up, since attending a fractional class isn't possible), subtracts that from the total to get the most classes you could ever miss in the term, and then subtracts what you've already missed to show how much room is left.",
+          "If that remaining figure is negative, it means your current attendance has already fallen below the minimum — not a projection, but where you already stand."
+        ]
+      },
+      howTo: {
+        intro: 'Enter the total number of class sessions, how many you have missed, and the minimum attendance percentage your course requires.',
+        steps: [
+          { name: 'Enter total classes', text: 'The total number of class sessions in the term (or up to the point you want to check).' },
+          { name: 'Enter classes missed', text: 'How many of those sessions you have missed so far.' },
+          { name: 'Enter the minimum attendance requirement', text: "Your syllabus's required attendance percentage — commonly somewhere around 75-90%, but set by your own course." },
+          { name: 'Read your current attendance', text: 'The headline is your attendance percentage so far.' },
+          { name: 'Check how much room is left', text: "The second figure is how many more classes you can miss and still meet the requirement — negative means you've already fallen short." }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The minimum requirement sets a maximum number of total absences; subtracting what you have already missed gives the remaining allowance.',
+        expression: 'requiredAttended = ⌈totalClasses × minAttendancePercent ÷ 100⌉\nmaxMissableTotal = totalClasses − requiredAttended\nremainingMissable = maxMissableTotal − classesMissed\ncurrentAttendanceRate = (totalClasses − classesMissed) ÷ totalClasses × 100',
+        terms: [
+          { symbol: 'totalClasses', meaning: 'The total number of class sessions being tracked.' },
+          { symbol: 'classesMissed', meaning: 'How many of those sessions have been missed so far.' },
+          { symbol: 'minAttendancePercent', meaning: 'The minimum attendance percentage the course requires.' }
+        ],
+        note: 'The required-attended figure is rounded up (a fractional class still counts as a class you must attend), which is why the allowed-absence count is a whole number.'
+      },
+      workedExample: {
+        intro: '30 total classes, 3 already missed, an 80% minimum attendance requirement.',
+        rows: [
+          { label: 'Required attended (⌈30 × 0.80⌉)', value: '24' },
+          { label: 'Max missable total (30 − 24)', value: '6' },
+          { label: 'Remaining missable (6 − 3)', value: '3' },
+          { label: 'Current attendance ((30 − 3) ÷ 30 × 100)', value: '90%' }
+        ],
+        result: 'Current attendance = 90%, 3 more absences still allowed',
+        explanation: 'At 80% minimum, up to 6 absences out of 30 classes are allowed in total; having already used 3 of those, exactly 3 remain before attendance would drop below the 80% line.'
+      },
+      watchOut: [
+        { title: 'The minimum percentage is your course\'s own policy, not a universal rule', body: 'Attendance requirements and what counts as an "absence" (excused absences, late arrivals, partial credit) vary by school and instructor — check your own syllabus.' },
+        { title: 'A negative remaining count means you are already below the minimum', body: "It isn't a warning about the future — it means your attendance percentage right now is already under the requirement you entered." },
+        { title: 'Rounding can make the allowance feel stricter than expected', body: 'Because required attendance rounds up to a whole class, two courses with very similar percentages and class counts can allow a different maximum number of absences.' },
+        { title: 'Future classes are not accounted for', body: "This checks your standing as of the classes entered. If more classes remain in the term, your attendance percentage (and remaining allowance) will keep changing as they happen." }
+      ],
+      references: [
+        { label: 'OpenStax, Prealgebra 2e, §6.2 Solve General Applications of Percent', url: 'https://openstax.org/books/prealgebra-2e/pages/6-2-solve-general-applications-of-percent' }
+      ]
+    },
+    inputs: [
+      { id: 'totalClasses', label: 'Total classes', type: 'number', placeholder: '30', defaultValue: 30, step: 1, min: 1 },
+      { id: 'classesMissed', label: 'Classes missed so far', type: 'number', placeholder: '3', defaultValue: 3, step: 1, min: 0 },
+      { id: 'minAttendancePercent', label: 'Minimum attendance required', type: 'percent', placeholder: '80', defaultValue: 80, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Class Attendance Calculator – Absences Allowed',
+      description: 'Check your attendance percentage against a minimum requirement and see how many more classes you can miss before falling below it.',
+      faq: [
+        { question: 'How do I calculate my attendance percentage?', answer: 'Divide classes attended by total classes and multiply by 100. Attending 27 of 30 classes (3 missed) is (30 − 3) ÷ 30 × 100 = 90%.' },
+        { question: 'How many classes can I still miss?', answer: 'Find the maximum total absences the minimum allows (total classes minus the rounded-up number you must attend), then subtract what you have already missed. At 30 classes, an 80% minimum, and 3 already missed, that is 6 − 3 = 3 more.' },
+        { question: 'What does a negative "remaining missable" number mean?', answer: 'It means your current attendance has already dropped below the minimum you entered — it is not a projection, it is where you already stand.' },
+        { question: 'Why is the required-attended number rounded up?', answer: "You can't attend a fractional class, so the minimum number of classes needed to clear the percentage requirement always rounds up to a whole number." },
+        { question: 'Is 80% a standard attendance requirement?', answer: 'No — it is just this example\'s number. Attendance minimums are set by each school or instructor and commonly range anywhere from about 75% to 90%, so use your own syllabus\'s figure.' },
+        { question: 'Does this account for excused absences?', answer: 'No — enter whatever your course counts as a missed class under its own policy; this calculator does not distinguish excused from unexcused absences.' }
+      ]
+    },
+    compute(values) {
+      const requiredAttended = Math.ceil(values.totalClasses * values.minAttendancePercent / 100);
+      const maxMissableTotal = values.totalClasses - requiredAttended;
+      const remainingMissable = maxMissableTotal - values.classesMissed;
+      const currentAttendanceRate = (values.totalClasses - values.classesMissed) / values.totalClasses * 100;
+      return { currentAttendanceRate, remainingMissable, maxMissableTotal };
+    }
+  },
+  {
+    id: 'cumulative-gpa-calculator',
+    category: 'education',
+    group: 'Grades & GPA',
+    glyph: 'ΣGPA',
+    updatedAt: '2026-11-18',
+    aliases: ['overall gpa calculator', 'combined gpa calculator', 'new cumulative gpa calculator', 'gpa after this semester calculator'],
+    related: ['gpa-calculator', 'grade-calculator', 'final-grade-calculator', 'weighted-average-calculator'],
+    title: 'Cumulative GPA Calculator',
+    description: "Combine your prior cumulative GPA and credits with a new term's grades to find your new overall cumulative GPA. Distinct from the single-term GPA calculator.",
+    example: 'A 3.5 cumulative GPA on 60 prior credits, plus a new term of 10 credits averaging 3.58, combines to a new cumulative GPA of about 3.51.',
+    breakdown: {
+      headline: 'newCumulativeGpa',
+      headlineLabel: 'New cumulative GPA',
+      outputs: [
+        { id: 'newCumulativeGpa', label: 'New cumulative GPA', format: 'number' },
+        { id: 'newTotalCredits', label: 'New total credits', format: 'number' },
+        { id: 'termGpa', label: "This term's own GPA", format: 'number' },
+        { id: 'termCredits', label: 'This term\'s credits', format: 'number' }
+      ],
+      groups: [
+        { title: 'Your prior record', inputs: ['priorGpa', 'priorCredits'] },
+        { title: 'New term, course 1', inputs: ['course1Grade', 'course1Credits'] },
+        { title: 'New term, course 2', inputs: ['course2Grade', 'course2Credits'] },
+        { title: 'New term, course 3', inputs: ['course3Grade', 'course3Credits'], optional: true },
+        { title: 'New term, course 4', inputs: ['course4Grade', 'course4Credits'], optional: true }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'priorCredits', label: 'Prior credits' },
+          { from: 'termCredits', label: 'New term credits' }
+        ],
+        center: 'newCumulativeGpa',
+        centerSub: 'new cumulative GPA'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Rolling a new term into an existing cumulative GPA',
+        paragraphs: [
+          "A cumulative GPA is the same credit-weighted average the GPA calculator computes for a single term, just carried forward across every term so far. The trick to updating it without re-entering every course you have ever taken is to treat your entire prior record as one combined figure: your prior cumulative GPA, multiplied by your prior total credits, gives your prior total grade points — exactly as if your whole academic history were a single very large \"course.\"",
+          "From there, this calculator adds the new term's own grade points and credits to that prior total, and divides the combined total points by the combined total credits. The result folds in the new term correctly, weighted by its own credits, without disturbing the actual GPA calculation of any course you took before.",
+          "This is different from the single-term GPA calculator, which starts from zero and computes a GPA for one term's courses alone. This calculator always starts from a prior cumulative figure you already have and updates it — the right tool once you have more than one term of history to carry forward."
+        ]
+      },
+      howTo: {
+        intro: "Enter your prior cumulative GPA and total credits, then this new term's courses.",
+        steps: [
+          { name: 'Enter your prior cumulative GPA', text: 'Your official GPA as of right before this new term, from your transcript.' },
+          { name: 'Enter your prior total credits', text: 'The total credit hours that GPA is based on.' },
+          { name: "Enter this term's courses", text: 'Grade points and credit hours for each course this term. Courses 3 and 4 are optional extra slots.' },
+          { name: 'Read your new cumulative GPA', text: 'The headline is your updated overall GPA, combining your prior record with this term.' },
+          { name: "Compare against this term alone", text: "This term's own GPA and credits are shown separately, so you can see how much this one term is pulling your overall average up or down." }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Prior GPA and credits are converted back into total grade points, combined with the new term\'s own points and credits, and divided out again.',
+        expression: 'priorPoints = priorGpa × priorCredits\ntermPoints = sum of (grade × credits) for the new term\'s courses\ntermCredits = sum of credits for the new term\'s courses\nnewCumulativeGpa = (priorPoints + termPoints) ÷ (priorCredits + termCredits)',
+        terms: [
+          { symbol: 'priorGpa, priorCredits', meaning: 'Your cumulative GPA and total credits before this term.' },
+          { symbol: 'grade, credits', meaning: "Each new-term course's grade points and credit hours." }
+        ],
+        note: "This assumes your prior cumulative GPA was itself already credit-weighted correctly — the same assumption any transcript's own cumulative GPA line makes."
+      },
+      workedExample: {
+        intro: '3.5 cumulative GPA on 60 prior credits; a new term with a 4.0 (3 credits), a 3.0 (3 credits), and a 3.7 (4 credits).',
+        rows: [
+          { label: 'Prior points (3.5 × 60)', value: '210' },
+          { label: "Term points (4.0×3 + 3.0×3 + 3.7×4)", value: '12 + 9 + 14.8 = 35.8' },
+          { label: 'Term credits (3+3+4)', value: '10' },
+          { label: 'New total points (210 + 35.8)', value: '245.8' },
+          { label: 'New total credits (60 + 10)', value: '70' },
+          { label: 'New cumulative GPA (245.8 ÷ 70)', value: '3.5114' }
+        ],
+        result: 'New cumulative GPA ≈ 3.51',
+        explanation: "This term's own 3.58 GPA (35.8 ÷ 10) is slightly above the prior 3.5 cumulative figure, so folding it in nudges the cumulative GPA up slightly, from 3.5 to about 3.51 — a small move because the new term's 10 credits are much smaller than the 60 credits already on record."
+      },
+      watchOut: [
+        { title: 'A small term moves a large prior record only a little', body: "The more prior credits you have, the less a single new term — even a very different one — shifts your cumulative GPA. This is a direct consequence of credit-weighting, not a rounding artifact." },
+        { title: "Your prior GPA's own scale matters", body: "This assumes your prior cumulative GPA and this term's grade points use the same scale (commonly 4.0). Mixing a weighted high school scale with an unweighted college scale, for example, will give a misleading combined figure." },
+        { title: 'Only 4 new-term course slots', body: 'A term with more than 4 courses needs the extras combined by hand (sum grade points and credits) into one of the four rows before entering it.' },
+        { title: "This isn't the same question as the GPA calculator", body: "The GPA calculator computes a single term from scratch, starting at zero. This calculator always starts from an existing prior cumulative GPA and credits you already have." }
+      ],
+      references: [
+        { label: 'University of North Carolina at Chapel Hill, Office of the University Registrar: Explanation of Grading System', url: 'https://registrar.unc.edu/explanation-of-grading-system/' },
+        { label: 'Wolfram MathWorld, Weighted Mean', url: 'https://mathworld.wolfram.com/WeightedMean.html' }
+      ]
+    },
+    inputs: [
+      { id: 'priorGpa', label: 'Prior cumulative GPA', type: 'number', placeholder: '3.5', defaultValue: 3.5, step: 0.01, min: 0 },
+      { id: 'priorCredits', label: 'Prior total credits', type: 'number', placeholder: '60', defaultValue: 60, step: 1, min: 0 },
+      { id: 'course1Grade', label: 'Course 1 grade points', type: 'number', placeholder: '4', defaultValue: 4, step: 0.1, min: 0 },
+      { id: 'course1Credits', label: 'Course 1 credits', type: 'number', placeholder: '3', defaultValue: 3, step: 0.5, min: 0 },
+      { id: 'course2Grade', label: 'Course 2 grade points', type: 'number', placeholder: '3', defaultValue: 3, step: 0.1, min: 0 },
+      { id: 'course2Credits', label: 'Course 2 credits', type: 'number', placeholder: '3', defaultValue: 3, step: 0.5, min: 0 },
+      { id: 'course3Grade', label: 'Course 3 grade points', type: 'number', placeholder: '3.7', defaultValue: 3.7, step: 0.1, min: 0 },
+      { id: 'course3Credits', label: 'Course 3 credits', type: 'number', placeholder: '4', defaultValue: 4, step: 0.5, min: 0 },
+      { id: 'course4Grade', label: 'Course 4 grade points', type: 'number', placeholder: '0', defaultValue: 0, step: 0.1, min: 0 },
+      { id: 'course4Credits', label: 'Course 4 credits', type: 'number', placeholder: '0', defaultValue: 0, step: 0.5, min: 0 }
+    ],
+    seo: {
+      title: 'Cumulative GPA Calculator – New Term + Prior GPA',
+      description: "Combine your prior cumulative GPA and credits with a new term's grades to find your updated overall GPA. Distinct from the single-term GPA calculator.",
+      faq: [
+        { question: 'How do I calculate my new cumulative GPA?', answer: 'Convert your prior GPA and credits into prior total points (GPA × credits), add this term\'s own points and credits, then divide the combined points by the combined credits. 210 prior points + 35.8 term points, over 60 + 10 credits, is 245.8 ÷ 70 ≈ 3.51.' },
+        { question: 'How is this different from the GPA calculator?', answer: "The GPA calculator computes one term from scratch. This calculator starts from a prior cumulative GPA and credits you already have, and rolls a new term into that existing total." },
+        { question: 'Why does a new term move my GPA so little?', answer: "Credit-weighting means a term with far fewer credits than your prior total has proportionally less influence on the combined average — the more credits already on record, the smaller the shift." },
+        { question: 'What if my prior GPA used a different scale than this term?', answer: "This calculator assumes both use the same scale (commonly 4.0). Mixing scales — a weighted high school GPA with an unweighted college one, for instance — produces a misleading combined figure." },
+        { question: 'Can I combine more than 4 new courses?', answer: 'Not directly — combine any extra courses by hand (sum their grade points and credits together) into one of the four course rows first.' },
+        { question: "What does \"this term's own GPA\" show?", answer: 'It is the GPA for only the new courses you entered, calculated the same way the single-term GPA calculator would, shown separately so you can see this term\'s own performance alongside the combined result.' }
+      ]
+    },
+    compute(values) {
+      const priorPoints = values.priorGpa * values.priorCredits;
+      const termCourses: [number, number][] = [
+        [values.course1Grade, values.course1Credits],
+        [values.course2Grade, values.course2Credits],
+        [values.course3Grade, values.course3Credits],
+        [values.course4Grade, values.course4Credits]
+      ];
+      const termPoints = termCourses.reduce((sum, [grade, credits]) => sum + grade * credits, 0);
+      const termCredits = termCourses.reduce((sum, [, credits]) => sum + credits, 0);
+      const newTotalCredits = values.priorCredits + termCredits;
+      const newCumulativeGpa = newTotalCredits === 0 ? 0 : (priorPoints + termPoints) / newTotalCredits;
+      const termGpa = termCredits === 0 ? 0 : termPoints / termCredits;
+      return { newCumulativeGpa, newTotalCredits, termGpa, termCredits };
+    }
   }
 ];

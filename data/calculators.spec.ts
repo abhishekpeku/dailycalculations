@@ -165,7 +165,15 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   // and the "odds (1 in)" figure (1/probability) has no answer.
   'dice-probability-calculator': ['oddsOneIn'],
   // ratioW 0 (its min) -> compute()'s own guard, no ratio with a zero width part
-  'aspect-ratio-calculator': ['height']
+  'aspect-ratio-calculator': ['height'],
+  // periodInvestment 0 (its min) -> compute()'s own guard, no answer with $0 invested per period
+  'crypto-dca-calculator': ['averageCostBasis', 'totalInvested', 'totalUnitsAcquired', 'currentValue', 'unrealizedGainLoss', 'unrealizedGainLossPercent'],
+  // every holding's value and target at their min (0) -> totalPortfolioValue=0 and totalTargetWeight=0, no proportional split exists
+  'crypto-portfolio-rebalancing-calculator': ['asset1Trade', 'asset2Trade', 'asset3Trade', 'asset4Trade', 'totalToBuy', 'totalToSell'],
+  // buyPrice/quantity/buyFees/sellPrice/sellFees all 0 (min) -> costBasis=0 -> profitLossPercent is 0/0
+  'crypto-profit-loss-calculator': ['profitLossPercent'],
+  // quantity 0 (its min) -> compute()'s own guard, no breakeven price with zero units
+  'crypto-breakeven-price-calculator': ['breakevenPrice', 'breakevenTotalValue', 'requiredGainPercent']
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

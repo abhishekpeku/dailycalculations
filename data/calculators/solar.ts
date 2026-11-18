@@ -1150,5 +1150,470 @@ export const solarCalculators: CalculatorConfig[] = [
       const percentSavings = currentAnnualCost > 0 ? (annualSavings / currentAnnualCost) * 100 : NaN;
       return { annualSavings, currentAnnualCost, heatPumpAnnualCost, percentSavings, heatPumpKwhNeeded };
     }
+  },
+  {
+    id: 'led-lighting-savings-calculator',
+    category: 'solar',
+    glyph: 'LED',
+    updatedAt: '2026-11-18',
+    aliases: ['led bulb savings calculator', 'led light bulb savings calculator', 'how much does led lighting save', 'incandescent to led savings calculator', 'light bulb energy savings calculator'],
+    related: ['electricity-bill-calculator', 'home-electricity-consumption-calculator', 'appliance-energy-cost-calculator', 'smart-thermostat-savings-calculator'],
+    title: 'LED Lighting Savings Calculator',
+    description: 'Estimate the annual energy savings from swapping incandescent or CFL bulbs for LEDs, from the wattage difference, bulb count, daily hours of use and your electricity rate.',
+    example: 'Replacing 5 bulbs — a 60 W incandescent swapped for a 9 W LED — run 3 hours a day at $0.1831/kWh saves about $51.13 a year, an 85% cut in lighting wattage.',
+    breakdown: {
+      headline: 'annualSavings',
+      headlineLabel: 'Estimated annual savings',
+      outputs: [
+        { id: 'annualSavings', label: 'Estimated annual savings', format: 'currency' },
+        { id: 'oldAnnualCost', label: 'Annual cost — old bulbs', format: 'currency' },
+        { id: 'newAnnualCost', label: 'Annual cost — LED bulbs', format: 'currency' },
+        { id: 'percentReduction', label: 'Wattage reduction', format: 'percent' },
+        { id: 'totalKwhSaved', label: 'Energy saved per year', format: 'number', dimension: 'energy', unit: 'kWh' }
+      ],
+      groups: [
+        { title: 'Bulbs being replaced', inputs: ['oldWattage', 'newWattage', 'bulbCount'] },
+        { title: 'Usage & rate', inputs: ['hoursPerDay', 'electricityRate'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'oldAnnualCost', label: 'Old bulbs' },
+          { from: 'newAnnualCost', label: 'LED bulbs' }
+        ],
+        title: 'Annual lighting cost, old bulbs vs. LED'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'How much LED bulbs actually save',
+        paragraphs: [
+          'A bulb\'s wattage is how much power it draws, not how bright it is — lumens measure brightness, and ENERGY STAR\'s own brightness guide publishes the old incandescent-wattage-to-lumens pairing most shoppers still think in: a 40 W bulb puts out a minimum of 450 lumens, 60 W puts out 800, 75 W puts out 1,100, 100 W puts out 1,600, and 150 W puts out 2,600. LEDs reach the same lumen output using a fraction of the wattage because, per ENERGY STAR, "LED lighting products produce light up to 90% more efficiently than incandescent light bulbs" — almost all of an incandescent bulb\'s energy escapes as heat, not light.',
+          'There is no single official LED-wattage-equivalence table the way there is for lumens, because the exact wattage an LED needs to match a given incandescent depends on the manufacturer. Wikipedia\'s own cost-comparison table for a 60 W incandescent bulb (860 lumens) lists real LED replacements ranging from about 4 W to 14 W depending on the product, with roughly 6–9 W models landing closest to the original 860-lumen output — this calculator asks for the actual wattage printed on both the old bulb and its LED replacement rather than assuming one fixed ratio.',
+          'The savings scale directly with how many bulbs are swapped and how long they run: ENERGY STAR estimates that switching just "your home\'s five most frequently used light fixtures or the bulbs in them" to ENERGY STAR certified LEDs saves "about $40 a year," a figure in the same range this calculator reaches at typical household lighting hours. Running the same bulbs more hours a day, or swapping more of them, raises the total; see the electricity bill estimator for how this fits into a whole month\'s usage.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the old and new bulb wattages, how many bulbs and how long they run each day, and your electricity rate.',
+        steps: [
+          { name: 'Enter the old bulb\'s wattage', text: 'Read it off the bulb or its packaging — common incandescent sizes are 40, 60, 75 and 100 W.' },
+          { name: 'Enter the LED replacement\'s wattage', text: 'Read it off the LED\'s packaging, which lists both its own wattage and the incandescent wattage it replaces.' },
+          { name: 'Enter how many bulbs you are replacing', text: 'Count every fixture getting the same swap — ENERGY STAR\'s own example uses a home\'s five most-used fixtures.' },
+          { name: 'Enter hours of use and your electricity rate', text: 'Use your own typical daily hours per bulb and the per-kWh rate from a recent bill.' },
+          { name: 'Read the result', text: 'The headline is the estimated annual savings; the rows below show the before/after cost, the wattage cut and the total energy saved.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The wattage difference, multiplied by bulb count and hours of use, gives the energy saved; multiplying that by the electricity rate gives the dollar savings.',
+        expression: 'watts saved per bulb = old wattage − new wattage\nkWh saved per year = watts saved × bulb count × hours/day × 365 ÷ 1,000\nannual savings = kWh saved × electricity rate\n% wattage reduction = watts saved ÷ old wattage × 100',
+        terms: [
+          { symbol: 'old wattage, new wattage', meaning: 'The wattage printed on the bulb being replaced and on its LED replacement.' },
+          { symbol: 'bulb count', meaning: 'How many fixtures are getting this same swap.' },
+          { symbol: 'hours/day', meaning: 'How long those bulbs typically run in a day.' }
+        ],
+        note: 'An estimate. It compares the two wattages you enter directly rather than assuming a single universal incandescent-to-LED ratio, since real LED replacements for the same brightness vary by manufacturer.'
+      },
+      workedExample: {
+        intro: 'Five fixtures, each swapped from a 60 W incandescent to a 9 W LED, running 3 hours a day at $0.1831 per kWh.',
+        rows: [
+          { label: 'Watts saved per bulb (60 − 9)', value: '51 W' },
+          { label: 'Annual hours per bulb (3 × 365)', value: '1,095 hours' },
+          { label: 'kWh saved per year (51 × 5 × 1,095 ÷ 1,000)', value: '279.225 kWh' },
+          { label: 'Old annual cost (60 × 5 × 1,095 ÷ 1,000 × $0.1831)', value: '$60.15' },
+          { label: 'New (LED) annual cost (9 × 5 × 1,095 ÷ 1,000 × $0.1831)', value: '$9.02' },
+          { label: 'Annual savings (60.15 − 9.02)', value: '$51.13' }
+        ],
+        result: '$51.13 a year · 85% less lighting wattage',
+        explanation: 'The 85% wattage cut (51 ÷ 60) is close to ENERGY STAR\'s own "up to 90% less energy" figure for LEDs generally; the small gap is because 9 W is one specific real LED wattage for a 60 W-equivalent bulb, not the absolute minimum any manufacturer sells. The $51.13 result sits a bit above ENERGY STAR\'s own "about $40 a year" example for five fixtures, which assumes different hours of use and electricity rate than this worked example\'s own inputs.'
+      },
+      watchOut: [
+        { title: 'There is no single LED-wattage ratio', body: 'Wikipedia\'s own comparison for one common 60 W/860-lumen incandescent bulb lists real LED replacements from about 4 W to 14 W depending on manufacturer — read the actual wattage off the packaging rather than assuming a fixed percentage cut.' },
+        { title: 'Hours of use drive the dollar figure as much as wattage does', body: 'A bulb that is rarely on saves little no matter how big the wattage gap is; a hallway or porch light left on for hours every day saves far more than the same swap on a closet bulb.' },
+        { title: 'This models one wattage swap at a time', body: 'A home usually has several different bulb types. Run this calculator once per wattage pairing (or set the bulb count to all the fixtures sharing that exact pairing) rather than averaging different swaps together.' },
+        { title: 'LEDs also cut replacement-bulb spending', body: 'ENERGY STAR states LEDs "last 15 times longer than standard bulbs" — a real additional saving on bulb purchases this calculator does not add in, since it estimates energy cost only.' }
+      ],
+      references: [
+        { label: 'ENERGY STAR, Low- to No-Cost Tips for Saving Energy at Home (90% less energy, ~$40/yr for 5 fixtures, 15× lifespan)', url: 'https://www.energystar.gov/products/recent_program_updates/low-no-cost-tips' },
+        { label: 'ENERGY STAR, Light Bulbs — Learn About Brightness (incandescent-wattage-to-lumens table)', url: 'https://www.energystar.gov/products/light_bulbs/learn-about-brightness' },
+        { label: 'Wikipedia, "LED lamp" (60 W-equivalent LED wattage range, cost comparison)', url: 'https://en.wikipedia.org/wiki/LED_lamp' }
+      ]
+    },
+    inputs: [
+      { id: 'oldWattage', label: 'Old bulb wattage', type: 'number', placeholder: '60', defaultValue: 60, step: 1, min: 1 },
+      { id: 'newWattage', label: 'LED replacement wattage', type: 'number', placeholder: '9', defaultValue: 9, step: 0.5, min: 0.1 },
+      { id: 'bulbCount', label: 'Number of bulbs replaced', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 1 },
+      { id: 'hoursPerDay', label: 'Hours used per day', type: 'number', placeholder: '3', defaultValue: 3, step: 0.5, min: 0.1 },
+      { id: 'electricityRate', label: 'Electricity rate', type: 'currency', placeholder: '0.1831', defaultValue: 0.1831, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'LED Lighting Savings Calculator – Annual Energy Savings',
+      description: 'Estimate the annual savings from switching bulbs to LED, from the wattage difference, bulb count, daily hours of use and your electricity rate.',
+      faq: [
+        { question: 'How much does switching to LED bulbs actually save?', answer: 'It depends on the wattage gap, how many bulbs, how long they run and your electricity rate. Replacing five 60 W incandescent bulbs with 9 W LEDs, run 3 hours a day at $0.1831/kWh, saves about $51.13 a year in this calculator\'s worked example.' },
+        { question: 'Is there a standard incandescent-to-LED wattage conversion?', answer: 'No single official ratio exists — it varies by manufacturer. Wikipedia\'s own comparison for a 60 W/860-lumen incandescent bulb lists real LED replacements from about 4 W to 14 W. Use the wattage printed on your own bulbs rather than a fixed percentage.' },
+        { question: 'How much more efficient is an LED than an incandescent bulb?', answer: 'ENERGY STAR states LEDs "produce light up to 90% more efficiently than incandescent light bulbs." This calculator\'s own 60 W-to-9 W worked example comes out to an 85% wattage cut, close to but not exactly that upper-bound figure.' },
+        { question: 'How much does ENERGY STAR say LED bulbs save per year?', answer: 'ENERGY STAR estimates "about $40 a year" from switching a home\'s five most frequently used fixtures to certified LEDs — in the same range as, though not identical to, this calculator\'s own worked example, which uses different hours and a different rate.' },
+        { question: 'Do LEDs save money beyond the electricity bill?', answer: 'Yes — ENERGY STAR states LEDs "last 15 times longer than standard bulbs," cutting how often bulbs need replacing. This calculator estimates energy cost savings only, not avoided bulb-purchase spending.' },
+        { question: 'Does hotter or cooler light output change the savings?', answer: 'No — color temperature (warm vs. cool white) does not affect wattage or energy cost. Only the wattage printed on the bulb and how long it runs affect the result.' }
+      ]
+    },
+    compute(values) {
+      const annualHours = values.hoursPerDay * 365;
+      const wattsSavedPerBulb = values.oldWattage - values.newWattage;
+      const totalKwhSaved = (wattsSavedPerBulb * annualHours * values.bulbCount) / 1000;
+      const annualSavings = totalKwhSaved * values.electricityRate;
+      const percentReduction = values.oldWattage > 0 ? (wattsSavedPerBulb / values.oldWattage) * 100 : NaN;
+      const oldAnnualCost = (values.oldWattage * values.bulbCount * annualHours * values.electricityRate) / 1000;
+      const newAnnualCost = (values.newWattage * values.bulbCount * annualHours * values.electricityRate) / 1000;
+      return { annualSavings, oldAnnualCost, newAnnualCost, percentReduction, totalKwhSaved };
+    }
+  },
+  {
+    id: 'smart-thermostat-savings-calculator',
+    category: 'solar',
+    glyph: '8%',
+    updatedAt: '2026-11-18',
+    aliases: ['smart thermostat savings calculator', 'nest thermostat savings calculator', 'how much does a smart thermostat save', 'programmable thermostat savings estimator', 'smart thermostat payback calculator'],
+    related: ['heat-pump-savings-calculator', 'electricity-bill-calculator', 'home-electricity-consumption-calculator', 'ac-tonnage-btu-calculator'],
+    title: 'Smart Thermostat Savings Calculator',
+    description: 'Estimate the annual savings from a smart thermostat, using ENERGY STAR\'s published average heating-and-cooling savings percentage applied to your own heating and cooling cost.',
+    example: 'A home spending $900 a year on heating and cooling saves about $72.00 a year — $6.00 a month — at ENERGY STAR\'s published 8% average smart-thermostat savings rate.',
+    breakdown: {
+      headline: 'annualSavings',
+      headlineLabel: 'Estimated annual savings',
+      outputs: [
+        { id: 'annualSavings', label: 'Estimated annual savings', format: 'currency' },
+        { id: 'newAnnualCost', label: 'Estimated new annual cost', format: 'currency' },
+        { id: 'monthlySavings', label: 'Average savings per month', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Your heating & cooling cost', inputs: ['annualHeatingCoolingCost'] },
+        { title: 'Savings rate', inputs: ['savingsPercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'annualHeatingCoolingCost', label: 'Before' },
+          { from: 'newAnnualCost', label: 'After' }
+        ],
+        title: 'Heating & cooling cost, before vs. after'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What a smart thermostat actually saves',
+        paragraphs: [
+          'Heating and cooling is the single biggest piece of most home energy bills. ENERGY STAR states that "almost half of the annual energy bill goes to heating and cooling – that\'s more than $900 a year" for the average American household, which is why even a modest percentage improvement there is worth more than the same percentage saved elsewhere on the bill.',
+          'ENERGY STAR\'s own published figure for its certified smart thermostats is specific: they "can reduce your heating and cooling bill by more than 8% and save you about $50 a year, on average," rising to "approximately $100 a year" in homes that are "unoccupied much of the day," since an empty house has the most room for an automated schedule to improve on a thermostat left at one setting around the clock. This calculator applies a savings percentage you choose to your own entered heating-and-cooling cost — at the default 8% and ENERGY STAR\'s own $900 baseline, that comes to $72.00, a bit above the "$50 a year" figure, because that example appears to assume a smaller heating-and-cooling bill than the full $900 average; the two ENERGY STAR figures describe different baselines, not a mismatch in this calculator\'s math.',
+          'Most of a smart thermostat\'s saving comes from automatically setting back the temperature while a home is asleep or empty, something a basic non-programmable thermostat never does and a programmable one only does if someone keeps the schedule current. A household that was already diligent about manually adjusting its old thermostat will see less benefit than this average implies; one that never adjusted it at all may see more.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your heating-and-cooling cost and a savings percentage; the default matches ENERGY STAR\'s own published average.',
+        steps: [
+          { name: 'Enter your annual heating & cooling cost', text: 'Use your own figure if you know it, or ENERGY STAR\'s own cited average, "more than $900 a year," for a typical U.S. home.' },
+          { name: 'Adjust the savings percentage, if you want', text: 'The default, 8%, is ENERGY STAR\'s own published average for its certified smart thermostats; try up to the "~11%" implied by its separate "$100 a year" figure for homes often empty during the day.' },
+          { name: 'Read the result', text: 'The headline is the estimated annual savings; the rows below show the new estimated annual cost and the average monthly savings.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Annual savings is simply your heating-and-cooling cost multiplied by the savings percentage.',
+        expression: 'annual savings = annual heating & cooling cost × savings % ÷ 100\nnew annual cost = annual heating & cooling cost − annual savings\nmonthly savings = annual savings ÷ 12',
+        terms: [
+          { symbol: 'savings %', meaning: 'ENERGY STAR\'s published average reduction from using a certified smart thermostat — "more than 8%" generally, published separately as up to "approximately $100 a year" for homes often empty during the day.' }
+        ],
+        note: 'An estimate using a published average percentage, not a measurement of your own home. Actual savings depend on your prior thermostat habits, climate, home insulation and how closely the smart thermostat\'s automated schedule matches when the home is actually occupied.'
+      },
+      workedExample: {
+        intro: 'A home spends $900 a year on heating and cooling — ENERGY STAR\'s own cited average — and applies its published 8% average smart-thermostat savings rate.',
+        rows: [
+          { label: 'Annual savings ($900 × 8%)', value: '$72.00' },
+          { label: 'New estimated annual cost ($900 − $72.00)', value: '$828.00' },
+          { label: 'Average monthly savings ($72.00 ÷ 12)', value: '$6.00' }
+        ],
+        result: '$72.00 a year · $6.00 a month',
+        explanation: 'ENERGY STAR\'s own separately published "about $50 a year" example implies a smaller baseline heating-and-cooling bill ($50 ÷ 8% = $625) than the $900 average it cites elsewhere — this worked example uses the $900 figure directly rather than reverse-engineering ENERGY STAR\'s unstated example baseline, which is why the two numbers do not match exactly.'
+      },
+      watchOut: [
+        { title: 'ENERGY STAR cites two different baselines', body: 'Its "about $50 a year" savings example and its "more than $900 a year" average heating-and-cooling cost are not from the same stated baseline bill — applying 8% to $900 gives $72.00, not $50.00. Use your own actual heating-and-cooling cost for the most relevant result.' },
+        { title: '8% is an average, not a guarantee', body: 'A household that already adjusted its old thermostat diligently by hand will typically see less than 8%; one that left a single setting running around the clock may see more.' },
+        { title: 'Empty-home savings can run higher', body: 'ENERGY STAR cites "approximately $100 a year" for homes "unoccupied much of the day" — if that describes your household, the default 8% likely understates your real savings.' },
+        { title: 'This is a cost-side estimate only', body: 'It does not size equipment or fuel-switch heating — see the AC tonnage/BTU calculator for cooling-capacity sizing and the heat pump savings calculator for a furnace-to-heat-pump comparison.' }
+      ],
+      references: [
+        { label: 'ENERGY STAR, Smart Thermostats (8% / ~$50/yr average, ~$100/yr for often-empty homes)', url: 'https://www.energystar.gov/products/recent_program_updates/low-no-cost-tips' },
+        { label: 'ENERGY STAR, Smart Thermostats product page ("almost half" of the energy bill, "more than $900 a year")', url: 'https://www.energystar.gov/products/smart_thermostats' }
+      ]
+    },
+    inputs: [
+      { id: 'annualHeatingCoolingCost', label: 'Annual heating & cooling cost', type: 'currency', placeholder: '900', defaultValue: 900, step: 25, min: 1 },
+      { id: 'savingsPercent', label: 'Savings percentage', type: 'percent', placeholder: '8', defaultValue: 8, step: 0.5, min: 0 }
+    ],
+    seo: {
+      title: 'Smart Thermostat Savings Calculator – ENERGY STAR Rate',
+      description: 'Estimate annual smart-thermostat savings from your heating and cooling cost and ENERGY STAR\'s published average savings percentage.',
+      faq: [
+        { question: 'How much does a smart thermostat really save?', answer: 'ENERGY STAR\'s own published average is "more than 8%" of a heating-and-cooling bill, about $50 a year on average, up to about $100 a year in homes often empty during the day. This calculator applies that percentage to your own entered cost.' },
+        { question: 'Why doesn\'t 8% of $900 equal ENERGY STAR\'s own $50 example?', answer: 'Because ENERGY STAR\'s "$50 a year" example and its "more than $900 a year" average heating-and-cooling cost are not the same stated baseline — 8% of $900 is $72.00, not $50.00. This calculator uses the $900 figure directly as its default, not a baseline reverse-engineered from the $50 example.' },
+        { question: 'Is 8% a guaranteed savings rate?', answer: 'No — it is ENERGY STAR\'s own published average across many homes. A household that already carefully managed its old thermostat may see less; one that never adjusted it, or one that is often empty, may see more.' },
+        { question: 'What is the highest savings ENERGY STAR publishes?', answer: 'About $100 a year, for homes that are "unoccupied much of the day" — a separate figure from the general 8%/$50-average claim, reflecting how much more an automated schedule helps when nobody is home to adjust the thermostat manually.' },
+        { question: 'Does this calculator size the thermostat or the HVAC system?', answer: 'No — it only estimates cost savings from a published percentage. See the AC tonnage/BTU calculator for cooling-capacity sizing.' },
+        { question: 'Does a smart thermostat replace a heat pump or furnace upgrade?', answer: 'No — it is a scheduling and control upgrade to existing heating/cooling equipment. See the heat pump savings calculator for a comparison of switching the equipment itself.' }
+      ]
+    },
+    compute(values) {
+      const annualSavings = values.annualHeatingCoolingCost * (values.savingsPercent / 100);
+      const newAnnualCost = values.annualHeatingCoolingCost - annualSavings;
+      const monthlySavings = annualSavings / 12;
+      return { annualSavings, newAnnualCost, monthlySavings };
+    }
+  },
+  {
+    id: 'water-heater-energy-cost-calculator',
+    category: 'solar',
+    glyph: 'H2O',
+    updatedAt: '2026-11-18',
+    aliases: ['water heater running cost calculator', 'gas vs electric water heater cost calculator', 'tankless water heater cost calculator', 'heat pump water heater savings calculator', 'hot water heating cost estimator'],
+    related: ['heat-pump-savings-calculator', 'electricity-bill-calculator', 'home-electricity-consumption-calculator', 'appliance-energy-cost-calculator'],
+    title: 'Water Heater Energy Cost Calculator',
+    description: 'Compare the annual running cost of standard electric, standard gas, gas tankless and heat pump water heaters, from your hot water use and today\'s electricity and gas prices.',
+    example: 'Heating 60 gallons a day from 50°F to 122°F costs about $739.28 a year with standard electric storage, $569.30 with standard gas storage, $379.54 with gas tankless, and $356.51 with a heat pump water heater — at $0.1831/kWh and $2.61/therm.',
+    breakdown: {
+      headline: 'electricStorageCost',
+      headlineLabel: 'Annual cost — standard electric storage',
+      outputs: [
+        { id: 'electricStorageCost', label: 'Annual cost — standard electric storage', format: 'currency' },
+        { id: 'gasStorageCost', label: 'Annual cost — standard gas storage', format: 'currency' },
+        { id: 'gasTanklessCost', label: 'Annual cost — gas tankless', format: 'currency' },
+        { id: 'heatPumpCost', label: 'Annual cost — heat pump water heater', format: 'currency' },
+        { id: 'heatPumpVsElectricSavings', label: 'Heat pump savings vs. electric storage', format: 'currency' }
+      ],
+      groups: [
+        { title: 'Hot water use', inputs: ['gallonsPerDay', 'incomingTempF', 'setpointTempF'] },
+        { title: 'Fuel prices', inputs: ['electricityRate', 'gasPricePerTherm'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'electricStorageCost', label: 'Electric storage' },
+          { from: 'gasStorageCost', label: 'Gas storage' },
+          { from: 'gasTanklessCost', label: 'Gas tankless' },
+          { from: 'heatPumpCost', label: 'Heat pump' }
+        ],
+        title: 'Annual water-heating cost by type'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Comparing water heaters on running cost',
+        paragraphs: [
+          'A water heater\'s efficiency factor (EF, or uniform energy factor, UEF, on today\'s labels) is the share of the fuel\'s heat that actually ends up in the water you use, versus lost to standby heat loss or combustion exhaust. Wikipedia\'s "Water heating" article, citing U.S. federal minimum-efficiency standards, reports a 2015 minimum of at least 95% for electric storage units, at least 60% for 50-gallon gas storage units, an energy factor of 90% or higher for tankless gas units, and — because a heat pump water heater moves existing heat from the air rather than generating it, the same idea behind the heat pump savings calculator\'s COP — electric heat pump units "with energy factors of 200% or higher" (at least 197% for an 80-gallon model). This calculator uses those four figures (0.95, 0.60, 0.90 and 1.97) as representative efficiencies for a new unit of each type sold today.',
+          'The energy a water heater actually uses is the useful heat needed divided by its efficiency factor. Useful heat follows directly from water\'s own physical properties — about 8.3 pounds per gallon, each pound needing roughly one Btu per degree Fahrenheit of temperature rise. Wikipedia\'s own worked example puts this together directly: raising 60 gallons from 50°F to 122°F takes about 35,856 Btu of useful heat; at 90% efficiency that becomes about 39,840 Btu of gas input, which it prices at about 40 cents at $1 per therm, while the same 60 gallons heated by a 100%-efficient electric element costs about $1.68 at 16 cents per kWh. This calculator\'s formula reproduces both of those figures exactly before applying today\'s electricity and gas prices and all four real efficiency factors above.',
+          'At typical current U.S. fuel prices, the ranking usually runs heat pump cheapest, then gas tankless, then standard gas storage, then standard electric storage most expensive — driven mainly by the heat pump\'s efficiency factor being roughly double the others\' and electric resistance heat having no efficiency advantage at all. That ranking can shift wherever electricity is unusually cheap relative to gas, or vice versa; it also says nothing about installation cost, which is typically higher for heat pump and tankless units than for standard storage tanks.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your daily hot water use and the incoming and target water temperatures, then today\'s electricity and gas prices.',
+        steps: [
+          { name: 'Enter gallons of hot water used per day', text: 'Use your own estimate, or Wikipedia\'s own worked-example volume, 60 gallons, as a starting point.' },
+          { name: 'Enter the incoming and setpoint water temperatures', text: 'The defaults, 50°F incoming and 122°F setpoint, match Wikipedia\'s own worked example and a common water heater thermostat setting.' },
+          { name: 'Enter your electricity rate and gas price', text: 'Use the per-kWh rate and per-therm price from recent utility bills.' },
+          { name: 'Read the four costs', text: 'The rows show the estimated annual running cost for standard electric storage, standard gas storage, gas tankless and heat pump water heaters side by side.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Useful heat needed depends only on volume and temperature rise; dividing by each type\'s efficiency factor and converting to its fuel\'s price gives the running cost.',
+        expression: 'useful heat (Btu/yr) = gallons/day × 8.3 × (setpoint °F − incoming °F) × 365\ninput energy (Btu/yr) = useful heat ÷ efficiency factor (EF)\nelectric-type cost = input energy ÷ 3,412 Btu/kWh × electricity rate\ngas-type cost = input energy ÷ 100,000 Btu/therm × gas price',
+        terms: [
+          { symbol: 'EF, electric storage', meaning: '0.95 — U.S. 2015 federal minimum for electric storage water heaters.' },
+          { symbol: 'EF, gas storage', meaning: '0.60 — U.S. 2015 federal minimum for a 50-gallon gas storage water heater.' },
+          { symbol: 'EF, gas tankless', meaning: '0.90 — the 2015 U.S. standard for tankless gas water heaters.' },
+          { symbol: 'EF, heat pump', meaning: '1.97 — U.S. 2015 federal minimum for an 80-gallon heat pump water heater; above 1.0 because it moves heat rather than generating it.' }
+        ],
+        note: 'An estimate using federal minimum efficiency standards for each type, not a specific product\'s own spec sheet — a specific ENERGY STAR certified model can exceed these figures. It also excludes installation cost, which is typically higher for heat pump and tankless units.'
+      },
+      workedExample: {
+        intro: '60 gallons a day, 50°F incoming water heated to a 122°F setpoint, at $0.1831/kWh electricity and $2.61/therm gas.',
+        rows: [
+          { label: 'Useful heat per day (60 × 8.3 × 72)', value: '35,856 Btu' },
+          { label: 'Useful heat per year (× 365)', value: '13,087,440 Btu' },
+          { label: 'Electric storage (÷0.95 EF, ÷3,412 Btu/kWh, × $0.1831)', value: '4,037.59 kWh · $739.28' },
+          { label: 'Gas storage (÷0.60 EF, ÷100,000 Btu/therm, × $2.61)', value: '218.12 therms · $569.30' },
+          { label: 'Gas tankless (÷0.90 EF, ÷100,000 Btu/therm, × $2.61)', value: '145.42 therms · $379.54' },
+          { label: 'Heat pump (÷1.97 EF, ÷3,412 Btu/kWh, × $0.1831)', value: '1,947.06 kWh · $356.51' }
+        ],
+        result: 'Heat pump cheapest at $356.51/yr · electric storage most expensive at $739.28/yr',
+        explanation: 'Switching from standard electric storage to a heat pump water heater saves about $382.78 a year here, a 51.8% cut — in the same direction as, though not identical to, ENERGY STAR\'s own separately published real-world savings of $270–$550 a year (for households of 2–4 people) for that same upgrade, which uses its own household-size-based usage assumptions rather than this calculator\'s gallons-per-day input.'
+      },
+      watchOut: [
+        { title: 'These are federal minimum efficiencies, not a specific product', body: 'A particular ENERGY STAR certified model, especially a heat pump water heater, can run meaningfully more efficient than the 1.97 minimum used here — treat this as a baseline comparison, not a specific unit\'s spec sheet.' },
+        { title: 'Installation cost is not included', body: 'Heat pump and tankless units typically cost more to buy and install than a standard storage tank. ENERGY STAR\'s own published payback period for a heat pump water heater is about 2.7 to 5.5 years depending on household size — a real cost this running-cost comparison does not add in.' },
+        { title: 'Fuel prices vary a lot by region and month', body: 'Both the electricity rate and the gas price used here can differ substantially from your own bill — use your own rates for the most relevant comparison.' },
+        { title: 'This assumes one flat temperature rise all year', body: 'Incoming water temperature actually varies by season and region; a single entered value is an approximation of the yearly average, not a month-by-month model.' }
+      ],
+      references: [
+        { label: 'Wikipedia, "Water heating" (federal minimum efficiency factors by type, worked heat-energy example)', url: 'https://en.wikipedia.org/wiki/Water_heating' },
+        { label: 'U.S. Energy Information Administration, Energy Explained — Units and Calculators (3,412 Btu/kWh, 100,000 Btu/therm)', url: 'https://www.eia.gov/energyexplained/units-and-calculators/' },
+        { label: 'U.S. Energy Information Administration, Natural Gas — Residential Price (Mcf), used to derive the default $/therm price', url: 'https://www.eia.gov/dnav/ng/ng_pri_sum_a_EPG0_PRS_DMcf_m.htm' },
+        { label: 'ENERGY STAR, Heat Pump Water Heaters — Benefits & Savings (real-world savings and payback by household size)', url: 'https://www.energystar.gov/products/heat_pump_water_heaters/benefits-savings' }
+      ]
+    },
+    inputs: [
+      { id: 'gallonsPerDay', label: 'Hot water used per day', type: 'number', placeholder: '60', defaultValue: 60, step: 5, min: 1 },
+      { id: 'incomingTempF', label: 'Incoming water temperature (°F)', type: 'number', placeholder: '50', defaultValue: 50, step: 1, min: 0 },
+      { id: 'setpointTempF', label: 'Water heater setpoint (°F)', type: 'number', placeholder: '122', defaultValue: 122, step: 1, min: 1 },
+      { id: 'electricityRate', label: 'Electricity rate', type: 'currency', placeholder: '0.1831', defaultValue: 0.1831, step: 0.01, min: 0 },
+      { id: 'gasPricePerTherm', label: 'Gas price per therm', type: 'currency', placeholder: '2.61', defaultValue: 2.61, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Water Heater Energy Cost Calculator – Electric vs Gas',
+      description: 'Compare annual running costs for standard electric, standard gas, gas tankless and heat pump water heaters from your hot water use and fuel prices.',
+      faq: [
+        { question: 'Which water heater type is cheapest to run?', answer: 'In this calculator\'s worked example (60 gal/day, 50°F to 122°F, $0.1831/kWh, $2.61/therm), a heat pump water heater is cheapest at $356.51 a year, followed by gas tankless ($379.54), standard gas storage ($569.30) and standard electric storage, most expensive at $739.28.' },
+        { question: 'How much does a heat pump water heater really save vs. a standard electric one?', answer: 'About $382.78 a year (51.8% less) in this calculator\'s worked example. ENERGY STAR\'s own separately published real-world figures put that same upgrade\'s savings at $270 to $550 a year depending on household size (2 to 4 people) — a different method, but the same direction and a similar range.' },
+        { question: 'What efficiency factors does this calculator use?', answer: '0.95 for standard electric storage, 0.60 for standard gas storage, 0.90 for gas tankless, and 1.97 for a heat pump water heater — U.S. federal minimum efficiency standards reported by Wikipedia\'s "Water heating" article, used here as representative figures for a new unit of each type.' },
+        { question: 'Why can a heat pump water heater have an efficiency factor above 1.0 (100%)?', answer: 'Because it moves existing heat from the surrounding air into the water rather than generating new heat from fuel or resistance — the same reason a heat pump\'s coefficient of performance (COP) can exceed 1, covered on this site\'s heat pump savings calculator.' },
+        { question: 'Does this account for the cost of buying and installing a new water heater?', answer: 'No — it compares running cost only. Heat pump and tankless units typically cost more upfront; ENERGY STAR cites a payback period of about 2.7 to 5.5 years for a heat pump water heater, depending on household size.' },
+        { question: 'How was the Wikipedia worked example checked?', answer: 'Its own numbers — 60 gallons, 50°F to 122°F, 90% gas efficiency costing about 40 cents at $1/therm, and 100% electric efficiency costing about $1.68 at $0.16/kWh — were directly recomputed with this calculator\'s own formula before building the rest of this page, and matched exactly.' }
+      ]
+    },
+    compute(values) {
+      const deltaT = values.setpointTempF - values.incomingTempF;
+      const usefulHeatBtuPerYear = values.gallonsPerDay * 8.3 * deltaT * 365;
+      const EF_ELECTRIC_STORAGE = 0.95;
+      const EF_GAS_STORAGE = 0.60;
+      const EF_GAS_TANKLESS = 0.90;
+      const EF_HEAT_PUMP = 1.97;
+      const electricStorageKwh = usefulHeatBtuPerYear / EF_ELECTRIC_STORAGE / 3412;
+      const electricStorageCost = electricStorageKwh * values.electricityRate;
+      const gasStorageTherms = usefulHeatBtuPerYear / EF_GAS_STORAGE / 100000;
+      const gasStorageCost = gasStorageTherms * values.gasPricePerTherm;
+      const gasTanklessTherms = usefulHeatBtuPerYear / EF_GAS_TANKLESS / 100000;
+      const gasTanklessCost = gasTanklessTherms * values.gasPricePerTherm;
+      const heatPumpKwh = usefulHeatBtuPerYear / EF_HEAT_PUMP / 3412;
+      const heatPumpCost = heatPumpKwh * values.electricityRate;
+      const heatPumpVsElectricSavings = electricStorageCost - heatPumpCost;
+      return { electricStorageCost, gasStorageCost, gasTanklessCost, heatPumpCost, heatPumpVsElectricSavings };
+    }
+  },
+  {
+    id: 'ev-solar-charging-offset-calculator',
+    category: 'solar',
+    glyph: 'EV',
+    updatedAt: '2026-11-18',
+    aliases: ['ev charging solar offset calculator', 'how much solar can power my ev', 'solar ev charging calculator', 'electric car solar charging offset calculator', 'can solar panels charge my ev'],
+    related: ['solar-panel-system-size-calculator', 'net-metering-savings-calculator', 'ev-charging-calculator', 'battery-backup-sizing-calculator'],
+    title: 'EV Solar Charging Offset Calculator',
+    description: 'Estimate how much of a home EV-charging load a solar system really offsets in real time, versus the larger share net metering can credit — the daytime-production/overnight-charging timing mismatch, made explicit.',
+    example: 'Charging an EV 10 kWh a day with only 20% of that charging happening in daylight, a system producing about 29.78 kWh a day directly offsets just 20% of the charging in real time — though full-retail net metering can credit all of it.',
+    breakdown: {
+      headline: 'offsetPercentDirect',
+      headlineLabel: 'Share of charging truly solar-powered in real time',
+      outputs: [
+        { id: 'offsetPercentDirect', label: 'Share of charging truly solar-powered in real time', format: 'percent' },
+        { id: 'offsetPercentNetMetered', label: 'Share covered if net metering credits every exported kWh at full retail', format: 'percent' },
+        { id: 'directOffsetKwh', label: 'Charging directly solar-powered', format: 'number', dimension: 'energy', unit: 'kWh' },
+        { id: 'gridChargingKwh', label: 'Charging drawing from the grid in real time', format: 'number', dimension: 'energy', unit: 'kWh' },
+        { id: 'gapPercentagePoints', label: 'Gap between the two offset figures', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Your EV charging', inputs: ['dailyChargingKwh', 'daylightChargingPercent'] },
+        { title: 'Your solar system', inputs: ['dailySolarProductionKwh'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'offsetPercentDirect', label: 'Real-time offset' },
+          { from: 'offsetPercentNetMetered', label: 'Net-metered offset' }
+        ],
+        title: 'Real-time solar offset vs. net-metered offset'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why "my solar makes more than my EV needs" doesn\'t mean what it sounds like',
+        paragraphs: [
+          'Solar panels only produce electricity while the sun is up, and the U.S. Department of Energy\'s Alternative Fuels Data Center states plainly that "most drivers of electric vehicles (EVs) ... charge their vehicles overnight at home." Those two facts collide: a charging session that starts after sunset draws from the grid in real time no matter how large the home\'s solar system is, unless the home also has a battery or the driver deliberately shifts charging to daylight hours.',
+          'Net metering is how most solar-powered homes bridge that mismatch economically rather than physically. As this site\'s net metering savings calculator explains, a utility\'s export-crediting arrangement can let daytime solar sent to the grid offset nighttime grid draw on the bill, even though the actual electrons involved are never the same ones — but exactly how that works, including whether exports are credited at full retail or something less, "depends on policies and practices in your state and electric utility," per the Department of Energy\'s own homeowner\'s guide. This calculator reports both numbers side by side: the share of charging that is genuinely simultaneous with solar production, and the larger share a best-case, full-retail net-metering arrangement could still credit.',
+          'The "daylight charging percent" input is what actually closes the gap between those two numbers. Charging that happens to fall during daylight hours — because the car is plugged in at a workplace charger, parked at home during the day, or deliberately scheduled for midday — is the only portion that can be truly solar-powered without a battery in the picture; shifting more charging into daylight hours, or adding home battery storage (see the battery backup sizing calculator), is what actually closes this gap in the real world, not a bigger solar system alone.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your typical daily EV charging energy, how much of it happens during daylight hours, and your system\'s typical daily solar production.',
+        steps: [
+          { name: 'Enter daily charging energy', text: 'The kWh your EV typically adds in a day — see the EV charging cost calculator to work this out from your battery size and driving.' },
+          { name: 'Enter the share of charging that happens in daylight', text: 'Most home charging happens overnight, per the Department of Energy — use a low figure unless you specifically charge at a workplace or midday.' },
+          { name: 'Enter your system\'s typical daily solar production', text: 'Use the annual production from the solar panel system size calculator, divided by 365, or your own installer\'s estimate.' },
+          { name: 'Read both offset figures', text: 'The headline is the real-time, physically-simultaneous offset; the second figure is the larger share a full-retail net-metering arrangement could still credit.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The real-time offset is capped by how much charging actually overlaps daylight hours; the net-metered offset ignores timing and simply compares daily totals.',
+        expression: 'daylight charging (kWh/day) = daily charging × daylight charging %\nreal-time offset (kWh/day) = min(daylight charging, daily solar production)\nreal-time offset % = real-time offset ÷ daily charging × 100\nnet-metered offset (kWh/day) = min(daily charging, daily solar production)\nnet-metered offset % = net-metered offset ÷ daily charging × 100',
+        terms: [
+          { symbol: 'daylight charging %', meaning: 'The share of a day\'s charging that happens while the sun is up — the only portion that can overlap solar production without a battery.' },
+          { symbol: 'min(a, b)', meaning: 'The smaller of the two values — offsetting charging can never exceed either the charging itself or the solar actually available.' }
+        ],
+        note: 'A simplified two-number-per-day model of a real timing mismatch, not an hour-by-hour simulation of your actual solar production curve and charging schedule.'
+      },
+      workedExample: {
+        intro: 'An EV needs 10 kWh a day, only 20% of that charging happens in daylight, and the home\'s solar system produces about 29.78 kWh a day on average (the annual production from the solar panel system size calculator\'s own worked example, divided by 365).',
+        rows: [
+          { label: 'Daylight charging (10 × 20%)', value: '2 kWh' },
+          { label: 'Real-time offset (min(2, 29.78))', value: '2 kWh' },
+          { label: 'Real-time offset % (2 ÷ 10 × 100)', value: '20%' },
+          { label: 'Net-metered offset (min(10, 29.78))', value: '10 kWh' },
+          { label: 'Net-metered offset % (10 ÷ 10 × 100)', value: '100%' },
+          { label: 'Gap between the two figures', value: '80 percentage points' }
+        ],
+        result: '20% truly simultaneous · up to 100% if net metering credits every kWh',
+        explanation: 'The system produces nearly three times the EV\'s daily charging need, which is why the net-metered figure reaches a full 100% — but because only 20% of charging actually happens while the sun is up, just 2 of the 10 kWh charged are physically simultaneous with solar production. The other 8 kWh draws from the grid in real time regardless of how much the system produces earlier that day.'
+      },
+      watchOut: [
+        { title: 'Most home EV charging happens overnight', body: 'The Department of Energy states plainly that most EV drivers "charge their vehicles overnight at home" — if that describes you, keep the daylight charging percent low; a high real-time offset normally requires deliberately charging during the day.' },
+        { title: 'A home battery changes this calculation entirely', body: 'With a home battery, solar produced during the day can be stored and discharged to the EV overnight, closing most or all of the gap this calculator exposes — see the battery backup sizing calculator for sizing one.' },
+        { title: 'Net metering is not universal or always full retail', body: 'The net-metered figure here assumes every exported kWh is credited at full retail price — the net metering savings calculator\'s own guidance is that this "depends on policies and practices in your state and electric utility," so treat it as a best case, not a guarantee.' },
+        { title: 'This uses two flat daily totals, not an hourly simulation', body: 'Real solar production rises and falls through the day and real charging sessions start and stop at specific times; this calculator captures the size of the mismatch, not its exact hour-by-hour shape.' }
+      ],
+      references: [
+        { label: 'U.S. Department of Energy, Alternative Fuels Data Center — Charging Electric Vehicles at Home ("most drivers ... charge ... overnight at home")', url: 'https://afdc.energy.gov/fuels/electricity-charging-home' },
+        { label: 'U.S. Department of Energy, Homeowner\'s Guide to Going Solar (net metering depends on state/utility policy)', url: 'https://www.energy.gov/eere/solar/homeowners-guide-going-solar' }
+      ]
+    },
+    inputs: [
+      { id: 'dailyChargingKwh', label: 'Daily EV charging energy', type: 'number', placeholder: '10', defaultValue: 10, step: 1, min: 0.1, dimension: 'energy', unit: 'kWh' },
+      { id: 'daylightChargingPercent', label: 'Share of charging that happens in daylight', type: 'percent', placeholder: '20', defaultValue: 20, step: 5, min: 0 },
+      { id: 'dailySolarProductionKwh', label: 'Average daily solar production', type: 'number', placeholder: '29.78', defaultValue: 29.78, step: 1, min: 0.1, dimension: 'energy', unit: 'kWh' }
+    ],
+    seo: {
+      title: 'EV Solar Charging Offset Calculator – Real vs. Net-Metered',
+      description: 'Estimate how much home EV charging a solar system really offsets in real time versus the larger share net metering can credit.',
+      faq: [
+        { question: 'Can solar panels really charge my EV overnight?', answer: 'Not directly in real time — solar panels only produce while the sun is up, and the Department of Energy states that most EV drivers charge overnight at home. Without a battery, overnight charging draws from the grid regardless of system size.' },
+        { question: 'If my solar system produces more than my EV needs, am I fully offset?', answer: 'Only in the net-metering sense, and only if your utility credits exports at full retail. In this calculator\'s worked example, a system producing nearly 3× the EV\'s daily need still only directly offsets 20% of charging in real time, because just 20% of that charging happens in daylight.' },
+        { question: 'How do I close the gap between the two offset figures?', answer: 'Either shift more charging into daylight hours (a workplace charger, or scheduling a midday charge) or add home battery storage so daytime solar can be discharged to the EV overnight — see the battery backup sizing calculator for sizing a battery.' },
+        { question: 'Does net metering guarantee the higher offset figure?', answer: 'No — it assumes your utility credits every exported kWh at full retail price, which this site\'s net metering savings calculator notes depends on your state and utility\'s own policy. Some utilities credit exports at less than retail.' },
+        { question: 'How is this different from the EV charging cost calculator?', answer: 'The EV charging cost calculator estimates cost per charge and per mile at a flat electricity rate — it does not model solar at all. This calculator is specifically about how much of that charging a home solar system can realistically offset, given when charging actually happens.' },
+        { question: 'Where does the default 29.78 kWh/day solar production figure come from?', answer: 'It is the annual production (10,868 kWh) from the solar panel system size calculator\'s own worked example, divided by 365 days — adjust it to your own system\'s actual or estimated daily output.' }
+      ]
+    },
+    compute(values) {
+      const daylightChargingKwh = values.dailyChargingKwh * (values.daylightChargingPercent / 100);
+      const directOffsetKwh = Math.min(daylightChargingKwh, values.dailySolarProductionKwh);
+      const offsetPercentDirect = values.dailyChargingKwh > 0 ? (directOffsetKwh / values.dailyChargingKwh) * 100 : NaN;
+      const netMeteredOffsetKwh = Math.min(values.dailyChargingKwh, values.dailySolarProductionKwh);
+      const offsetPercentNetMetered = values.dailyChargingKwh > 0 ? (netMeteredOffsetKwh / values.dailyChargingKwh) * 100 : NaN;
+      const gapPercentagePoints = offsetPercentNetMetered - offsetPercentDirect;
+      const gridChargingKwh = values.dailyChargingKwh - directOffsetKwh;
+      return { offsetPercentDirect, offsetPercentNetMetered, directOffsetKwh, gridChargingKwh, gapPercentagePoints };
+    }
   }
 ];

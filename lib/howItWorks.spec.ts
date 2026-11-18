@@ -29,7 +29,9 @@ describe('buildFlow', () => {
       'pomodoro-timer',
       'timezone-meeting-planner',
       'scientific-calculator',
-      'love-calculator'
+      'love-calculator',
+      'iban-calculator',
+      'password-strength-checker'
     ]);
     let flows = 0;
     for (const calculator of calculators) {
@@ -86,7 +88,7 @@ describe('buildFlow', () => {
   });
 
   test('currency-converter and the other special widgets: null', () => {
-    for (const id of ['currency-converter', 'character-counter', 'hashtag-counter', 'pomodoro-timer', 'timezone-meeting-planner', 'scientific-calculator', 'love-calculator']) {
+    for (const id of ['currency-converter', 'character-counter', 'hashtag-counter', 'pomodoro-timer', 'timezone-meeting-planner', 'scientific-calculator', 'love-calculator', 'iban-calculator', 'password-strength-checker']) {
       assert.equal(buildFlow(byId(id)), null, id);
     }
   });

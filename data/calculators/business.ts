@@ -1198,5 +1198,229 @@ export const businessCalculators: CalculatorConfig[] = [
       const totalFTE = values.fullTimeEmployeeCount + partTimeFTE;
       return { totalFTE, partTimeFTE };
     }
+  },
+  {
+    id: 'gst-calculator',
+    category: 'business',
+    glyph: 'GST',
+    updatedAt: '2026-11-19',
+    aliases: ['gst calculator', 'goods and services tax calculator', 'gst inclusive price calculator', 'add gst to price calculator'],
+    related: ['vat-calculator', 'sales-tax-calculator', 'profit-margin-calculator', 'markup-calculator'],
+    title: 'GST Calculator',
+    description: 'Add goods and services tax (GST) to a price, pull it back out of a GST-inclusive total, or find the rate that was charged. Fill in any two of net price, rate and GST-inclusive price.',
+    example: "Canada's federal GST is 5%: a $100 net price carries $5.00 of GST, for a $105.00 GST-inclusive price.",
+    solver: {
+      defaultTarget: 'grossPrice',
+      variables: [
+        { id: 'grossPrice', label: 'GST-inclusive price', symbol: 'G', dimension: 'currency', defaultValue: 105, defaultUnit: 'currency' },
+        { id: 'netPrice', label: 'Net price (before GST)', symbol: 'N', dimension: 'currency', defaultValue: 100, defaultUnit: 'currency' },
+        { id: 'taxRate', label: 'GST rate', symbol: 'r', dimension: 'percent', defaultValue: 5, defaultUnit: '%' }
+      ],
+      solve: {
+        grossPrice: ({ netPrice, taxRate }) => netPrice * (1 + taxRate / 100),
+        netPrice: ({ grossPrice, taxRate }) => (1 + taxRate / 100 > 0 ? grossPrice / (1 + taxRate / 100) : NaN),
+        taxRate: ({ grossPrice, netPrice }) => (netPrice > 0 ? (grossPrice / netPrice - 1) * 100 : NaN)
+      },
+      outputs: [{ id: 'gstAmount', label: 'GST amount', dimension: 'currency', compute: (si) => si.grossPrice - si.netPrice }],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'netPrice', label: 'Net price' },
+            { from: 'gstAmount', label: 'GST' }
+          ],
+          center: 'grossPrice',
+          centerSub: 'GST-inclusive price'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-19',
+      concept: {
+        title: 'What is GST?',
+        paragraphs: [
+          'Goods and services tax (GST) is a consumption tax charged on most sales of goods and services, named "GST" in Canada, Australia, India, New Zealand and Singapore, among others. Canada\'s federal GST rate is 5% — the Canada Revenue Agency\'s own GST/HST rate page confirms it, and also shows how several provinces blend it into a single Harmonized Sales Tax (HST): Ontario charges 13% HST and, as of April 1, 2025, Nova Scotia charges 14% HST, each replacing the separate federal GST and provincial sales tax with one combined rate.',
+          'GST is the same kind of tax as a value-added tax (VAT), just under a different regional name — both are collected in stages across the supply chain rather than once at the final sale. The European Commission\'s explanation of the mechanism applies to both: the tax is charged "as a percentage of the sales price" and collected "fractionally at every stage of production and distribution," with registered businesses able to reclaim the GST or VAT they themselves paid on business inputs, so only the final consumer actually bears the cost. That is a real, structural difference from a US-style sales tax, which this site\'s sales-tax-calculator covers separately, charged once at the point of final retail sale with no stage-by-stage reclaiming.',
+          'Not every GST system uses one flat rate. Several countries that use the GST name, including India, apply different rates to different categories of goods and services rather than a single nationwide percentage — this calculator works the same way regardless of which rate applies; just enter the one that does.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of net price, GST rate and GST-inclusive price. The third, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter the net price', text: 'The price before GST is added — what a business invoice before tax, or a GST-exclusive price tag, shows.' },
+          { name: 'Enter the GST rate', text: 'The percentage that applies in your country and category — 5% is Canada\'s federal rate, used as the default here, but your own rate may differ.' },
+          { name: 'Read the GST-inclusive price', text: 'The net price plus GST, and the GST amount itself, both appear at once.' },
+          { name: 'Or pull GST out of a receipt', text: 'Leave net price alone, enter the GST-inclusive total and the rate, to find what the price was before GST.' },
+          { name: 'Or find the rate that was charged', text: 'Leave GST rate alone, enter both prices, to work out what rate produced them.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'GST is added as a percentage of the net price. Removing it from a GST-inclusive price means dividing, not subtracting the percentage.',
+        expression:
+          'gstAmount = netPrice × (taxRate ÷ 100)\ngrossPrice = netPrice × (1 + taxRate ÷ 100)\nnetPrice = grossPrice ÷ (1 + taxRate ÷ 100)\ntaxRate = (grossPrice ÷ netPrice − 1) × 100',
+        terms: [
+          { symbol: 'netPrice', meaning: 'The price before GST — the figure a registered business actually keeps.' },
+          { symbol: 'grossPrice', meaning: 'The GST-inclusive price — what a consumer actually pays.' }
+        ],
+        note: 'Estimates only. This calculator does arithmetic on the rate you enter — it does not look up a country\'s or category\'s actual GST rate, registration thresholds, or filing rules.'
+      },
+      workedExample: {
+        intro: 'A $100 net price, at Canada\'s 5% federal GST rate. What is the GST, and what would the same net price carry under an 18% rate used in some other GST systems\' higher slabs?',
+        rows: [
+          { label: 'GST amount (100 × 0.05)', value: '$5.00' },
+          { label: 'GST-inclusive price (100 × 1.05)', value: '$105.00' },
+          { label: 'Reversed: net price from a $105.00 GST-inclusive total (105 ÷ 1.05)', value: '$100.00' },
+          { label: 'Same $100 net price at an 18% rate instead (100 × 0.18)', value: '$18.00 GST, $118.00 total' }
+        ],
+        result: 'At 5%, $100 carries $5.00 of GST for a $105.00 total; at 18%, the same $100 carries $18.00 of GST for a $118.00 total.',
+        explanation: 'The rate alone changes the GST amount by more than 3.6 times (18 ÷ 5) between the two examples, even though the net price never changed — which is why confirming the actual rate for your country and category matters more than the arithmetic itself.'
+      },
+      watchOut: [
+        { title: 'GST and VAT are the same mechanism, different names', body: 'Both are collected in stages across the supply chain, with registered businesses reclaiming what they paid on their own inputs. See the vat-calculator for the EU/UK-style version — the math on both pages is identical once you know the rate.' },
+        { title: 'This is not US sales tax', body: 'US-style sales tax (see the sales-tax-calculator) is collected once, at the final retail sale, with no stage-by-stage reclaiming by businesses. GST and VAT work differently even though the consumer-facing arithmetic — add a percentage, or divide it back out — looks the same.' },
+        { title: 'GST can be blended into a combined rate', body: 'Some Canadian provinces replace the separate 5% federal GST and their own provincial sales tax with one Harmonized Sales Tax (HST) — 13% in Ontario, 14% in Nova Scotia as of April 2025. Enter the combined rate that actually applies, not the federal GST rate alone, if your province uses HST.' },
+        { title: 'Rates vary by category, not just by country', body: 'Several GST systems, including India\'s, apply more than one rate depending on what is being sold. Confirm the rate for the specific good or service, not just the country.' },
+        { title: 'Removing GST is a division, not a subtraction', body: 'To find the net price from a GST-inclusive total, divide by (1 + rate ÷ 100). Subtracting the rate directly from the total always understates the true net price.' }
+      ],
+      references: [
+        { label: 'Canada Revenue Agency, Charge and collect the tax – Which rate to charge', url: 'https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate.html' },
+        { label: 'European Commission, VAT (value-added tax) – how it is collected across the supply chain', url: 'https://taxation-customs.ec.europa.eu/taxation/vat_en' }
+      ]
+    },
+    inputs: [
+      { id: 'netPrice', label: 'Net price (before GST)', type: 'currency', placeholder: '100', defaultValue: 100, step: 1, min: 0 },
+      { id: 'taxRate', label: 'GST rate', type: 'percent', placeholder: '5', defaultValue: 5, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'GST Calculator – Add or Remove Goods and Services Tax',
+      description: 'Add GST to a net price, remove it from a GST-inclusive total, or find the rate from a receipt. Works with any country\'s GST or HST rate.',
+      faq: [
+        { question: 'How do I calculate GST?', answer: 'Multiply the net price by the GST rate as a decimal. A $100 price at 5% GST carries 100 × 0.05 = $5.00 of GST, for a $105.00 GST-inclusive price.' },
+        { question: 'How do I remove GST from a GST-inclusive price?', answer: 'Divide the GST-inclusive price by (1 + rate ÷ 100). At 5%, a $105.00 total was 105 ÷ 1.05 = $100.00 before GST, with $5.00 of GST.' },
+        { question: 'What is the difference between GST and VAT?', answer: 'They are the same kind of tax, collected fractionally at each stage of production and distribution with input tax credits for registered businesses, just named differently by region — GST in Canada, Australia, India and similar countries, VAT in the EU, UK and most of the rest of the world.' },
+        { question: 'Is GST the same as US sales tax?', answer: 'No. US sales tax is charged once, at the final retail sale, with no reclaiming by businesses along the way. GST and VAT are collected at every stage, with businesses reclaiming what they paid on their own purchases — see the sales-tax-calculator for the US-style version.' },
+        { question: 'What is Canada\'s GST rate?', answer: 'The federal GST rate is 5%. Some provinces blend it with their own sales tax into a single Harmonized Sales Tax (HST) instead — 13% in Ontario, 14% in Nova Scotia as of April 2025 — so the rate you actually pay depends on the province.' },
+        { question: 'Is GST always one flat rate?', answer: 'No. Several GST systems, including India\'s, charge different rates for different categories of goods and services rather than one nationwide percentage. Enter whichever rate applies to your purchase.' },
+        { question: 'Can I use this for a GST refund or input tax credit?', answer: 'This calculator does the net/GST/gross arithmetic only. It does not handle registration, filing, or which purchases a business can reclaim GST on — check your tax authority\'s own guidance for that.' }
+      ]
+    },
+    compute(values) {
+      const gstAmount = values.netPrice * (values.taxRate / 100);
+      const grossPrice = values.netPrice + gstAmount;
+      return { grossPrice, gstAmount };
+    }
+  },
+  {
+    id: 'vat-calculator',
+    category: 'business',
+    glyph: 'VAT',
+    updatedAt: '2026-11-19',
+    aliases: ['vat calculator', 'value added tax calculator', 'vat inclusive price calculator', 'add vat to price calculator'],
+    related: ['gst-calculator', 'sales-tax-calculator', 'profit-margin-calculator', 'markup-calculator'],
+    title: 'VAT Calculator',
+    description: 'Add value-added tax (VAT) to a price, pull it back out of a VAT-inclusive total, or find the rate that was charged. Fill in any two of net price, rate and VAT-inclusive price.',
+    example: "The UK's standard VAT rate is 20%: a £100 net price carries £20.00 of VAT, for a £120.00 VAT-inclusive price.",
+    solver: {
+      defaultTarget: 'grossPrice',
+      variables: [
+        { id: 'grossPrice', label: 'VAT-inclusive price', symbol: 'G', dimension: 'currency', defaultValue: 120, defaultUnit: 'currency' },
+        { id: 'netPrice', label: 'Net price (before VAT)', symbol: 'N', dimension: 'currency', defaultValue: 100, defaultUnit: 'currency' },
+        { id: 'taxRate', label: 'VAT rate', symbol: 'r', dimension: 'percent', defaultValue: 20, defaultUnit: '%' }
+      ],
+      solve: {
+        grossPrice: ({ netPrice, taxRate }) => netPrice * (1 + taxRate / 100),
+        netPrice: ({ grossPrice, taxRate }) => (1 + taxRate / 100 > 0 ? grossPrice / (1 + taxRate / 100) : NaN),
+        taxRate: ({ grossPrice, netPrice }) => (netPrice > 0 ? (grossPrice / netPrice - 1) * 100 : NaN)
+      },
+      outputs: [{ id: 'vatAmount', label: 'VAT amount', dimension: 'currency', compute: (si) => si.grossPrice - si.netPrice }],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'netPrice', label: 'Net price' },
+            { from: 'vatAmount', label: 'VAT' }
+          ],
+          center: 'grossPrice',
+          centerSub: 'VAT-inclusive price'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-19',
+      concept: {
+        title: 'What is VAT?',
+        paragraphs: [
+          'Value-added tax (VAT) is a consumption tax used across the EU, the UK and most of the rest of the world. The UK\'s own gov.uk guidance sets the standard rate at 20%, with a 5% reduced rate on items such as home energy and children\'s car seats, and a 0% zero rate on most food and children\'s clothing — one country, three different rates depending on what is being sold.',
+          'The European Commission describes how VAT is actually collected: it is a tax "on the value added to nearly all goods and services," charged "as a percentage of the sales price" and collected "fractionally at every stage of production and distribution," so that "the tax borne by the final consumer is the same regardless of the length of the supply chain." Registered businesses reclaim the VAT they paid on their own purchases, so VAT only lands, in full, on the final consumer — a structurally different design from a single-point-of-sale sales tax.',
+          'GST (goods and services tax), used by that name in Canada, Australia, India and elsewhere, is the same mechanism under a different regional name — see the gst-calculator for that version. A US-style sales tax, covered separately by this site\'s sales-tax-calculator, is mechanically different: it is charged once, at the final retail sale, with no stage-by-stage reclaiming by businesses along the way.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of net price, VAT rate and VAT-inclusive price. The third, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter the net price', text: 'The price before VAT is added — an invoice subtotal, or a VAT-exclusive trade price.' },
+          { name: 'Enter the VAT rate', text: 'The UK\'s standard rate, 20%, is the default here, but use the reduced (5%), zero (0%), or your own country\'s rate as it applies.' },
+          { name: 'Read the VAT-inclusive price', text: 'The net price plus VAT, and the VAT amount itself, both appear at once.' },
+          { name: 'Or pull VAT out of a shelf price', text: 'Leave net price alone, enter the VAT-inclusive total and the rate, to find the price before VAT — most consumer shelf prices already include VAT.' },
+          { name: 'Or find the rate that was charged', text: 'Leave VAT rate alone, enter both prices, to work out what rate produced them.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'VAT is added as a percentage of the net price. Removing it from a VAT-inclusive price means dividing, not subtracting the percentage.',
+        expression:
+          'vatAmount = netPrice × (taxRate ÷ 100)\ngrossPrice = netPrice × (1 + taxRate ÷ 100)\nnetPrice = grossPrice ÷ (1 + taxRate ÷ 100)\ntaxRate = (grossPrice ÷ netPrice − 1) × 100',
+        terms: [
+          { symbol: 'netPrice', meaning: 'The price before VAT — the figure a VAT-registered business actually keeps.' },
+          { symbol: 'grossPrice', meaning: 'The VAT-inclusive price — what a consumer actually pays.' }
+        ],
+        note: 'Estimates only. This calculator does arithmetic on the rate you enter — it does not look up which goods or services qualify for a reduced or zero rate in any particular country.'
+      },
+      workedExample: {
+        intro: 'A £100 net price, at the UK\'s 20% standard VAT rate. What is the VAT, and what would the same net price carry at the UK\'s 5% reduced rate instead?',
+        rows: [
+          { label: 'VAT amount (100 × 0.20)', value: '£20.00' },
+          { label: 'VAT-inclusive price (100 × 1.20)', value: '£120.00' },
+          { label: 'Reversed: net price from a £120.00 VAT-inclusive total (120 ÷ 1.20)', value: '£100.00' },
+          { label: 'Same £100 net price at the 5% reduced rate instead (100 × 0.05)', value: '£5.00 VAT, £105.00 total' }
+        ],
+        result: 'At the 20% standard rate, £100 carries £20.00 of VAT for a £120.00 total; at the 5% reduced rate, the same £100 carries only £5.00 of VAT for a £105.00 total.',
+        explanation: 'Which rate applies changes the VAT amount by 4 times (20 ÷ 5) between the two examples on the exact same £100 net price, which is why UK VAT guidance spends so much attention on which goods and services qualify for the reduced or zero rate.'
+      },
+      watchOut: [
+        { title: 'VAT and GST are the same mechanism, different names', body: 'Both are collected in stages across the supply chain, with registered businesses reclaiming what they paid on their own inputs. See the gst-calculator for the Canada/Australia/India-style version — the math on both pages is identical once you know the rate.' },
+        { title: 'This is not US sales tax', body: 'US-style sales tax (see the sales-tax-calculator) is collected once, at the final retail sale, with no stage-by-stage reclaiming by businesses. VAT and GST work differently even though the consumer-facing arithmetic — add a percentage, or divide it back out — looks the same.' },
+        { title: 'The rate depends on what is being sold, not just the country', body: 'The UK alone has three VAT rates — 20% standard, 5% reduced, 0% zero — depending on the category of goods or services. Confirm the rate for the specific item, not just the country.' },
+        { title: 'Consumer prices usually already include VAT', body: 'Shelf prices in VAT countries are typically VAT-inclusive, so reversing (entering the shelf price as the VAT-inclusive total) is usually the direction a consumer actually needs, not adding VAT to a price that already includes it.' },
+        { title: 'Removing VAT is a division, not a subtraction', body: 'To find the net price from a VAT-inclusive total, divide by (1 + rate ÷ 100). Subtracting the rate directly from the total always understates the true net price.' }
+      ],
+      references: [
+        { label: 'GOV.UK, VAT rates on different goods and services', url: 'https://www.gov.uk/vat-rates' },
+        { label: 'European Commission, VAT (value-added tax) – how it is collected across the supply chain', url: 'https://taxation-customs.ec.europa.eu/taxation/vat_en' }
+      ]
+    },
+    inputs: [
+      { id: 'netPrice', label: 'Net price (before VAT)', type: 'currency', placeholder: '100', defaultValue: 100, step: 1, min: 0 },
+      { id: 'taxRate', label: 'VAT rate', type: 'percent', placeholder: '20', defaultValue: 20, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'VAT Calculator – Add or Remove Value-Added Tax',
+      description: 'Add VAT to a net price, remove it from a VAT-inclusive total, or find the rate from a receipt. Works with the UK, EU, or any country\'s VAT rate.',
+      faq: [
+        { question: 'How do I calculate VAT?', answer: 'Multiply the net price by the VAT rate as a decimal. A £100 price at 20% VAT carries 100 × 0.20 = £20.00 of VAT, for a £120.00 VAT-inclusive price.' },
+        { question: 'How do I remove VAT from a VAT-inclusive price?', answer: 'Divide the VAT-inclusive price by (1 + rate ÷ 100). At 20%, a £120.00 total was 120 ÷ 1.20 = £100.00 before VAT, with £20.00 of VAT.' },
+        { question: 'What is the UK VAT rate?', answer: 'The standard rate is 20%. A 5% reduced rate applies to items such as home energy and children\'s car seats, and a 0% zero rate applies to most food and children\'s clothing, per GOV.UK.' },
+        { question: 'What is the difference between VAT and GST?', answer: 'They are the same kind of tax, collected fractionally at each stage of production and distribution with input tax credits for registered businesses, just named differently by region — VAT in the EU, UK and most of the rest of the world, GST in Canada, Australia, India and similar countries.' },
+        { question: 'Is VAT the same as US sales tax?', answer: 'No. US sales tax is charged once, at the final retail sale, with no reclaiming by businesses along the way. VAT and GST are collected at every stage, with businesses reclaiming what they paid on their own purchases — see the sales-tax-calculator for the US-style version.' },
+        { question: 'Why do shelf prices already include VAT?', answer: 'Consumer-facing prices in VAT countries are typically required to be VAT-inclusive, unlike US sales tax, which is usually added at checkout. Use the reverse direction here to see the pre-VAT price behind a shelf price.' },
+        { question: 'Does every country use the same VAT rate?', answer: 'No. Rates vary by country and, within many countries, by category of goods or services. Enter the specific rate that applies to your purchase and country.' }
+      ]
+    },
+    compute(values) {
+      const vatAmount = values.netPrice * (values.taxRate / 100);
+      const grossPrice = values.netPrice + vatAmount;
+      return { grossPrice, vatAmount };
+    }
   }
 ];

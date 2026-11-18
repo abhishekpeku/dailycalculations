@@ -8748,6 +8748,41 @@ exports[`compute() snapshots > grocery-budget-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > gst-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "netPrice": 100,
+      "taxRate": 5
+    },
+    "outputs": {
+      "grossPrice": 105,
+      "gstAmount": 5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "netPrice": 150,
+      "taxRate": 7.5
+    },
+    "outputs": {
+      "grossPrice": 161.25,
+      "gstAmount": 11.25
+    }
+  },
+  "edge": {
+    "inputs": {
+      "netPrice": 0,
+      "taxRate": 0
+    },
+    "outputs": {
+      "grossPrice": 0,
+      "gstAmount": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > hardy-weinberg-calculator 1`] = `
 {
   "default": {
@@ -21089,6 +21124,41 @@ exports[`compute() snapshots > variance-calculator 1`] = `
       "sampleVariance": "NaN",
       "populationStdDev": 0,
       "sampleStdDev": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > vat-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "netPrice": 100,
+      "taxRate": 20
+    },
+    "outputs": {
+      "grossPrice": 120,
+      "vatAmount": 20
+    }
+  },
+  "typical": {
+    "inputs": {
+      "netPrice": 150,
+      "taxRate": 30
+    },
+    "outputs": {
+      "grossPrice": 195,
+      "vatAmount": 45
+    }
+  },
+  "edge": {
+    "inputs": {
+      "netPrice": 0,
+      "taxRate": 0
+    },
+    "outputs": {
+      "grossPrice": 0,
+      "vatAmount": 0
     }
   }
 }

@@ -1490,7 +1490,7 @@ export const funCalculators: CalculatorConfig[] = [
     inputs: [{ id: 'year', label: 'Year', type: 'number', placeholder: '2027', defaultValue: 2027, step: 1, min: 1583 }],
     seo: {
       title: 'Easter Date Calculator – Gaussian Easter Algorithm',
-      description: 'Find the exact date of Easter Sunday in any year using the real Gaussian Easter algorithm, the modular-arithmetic method used to compute Easter with no table of moon phases.',
+      description: 'Find the exact date of Easter Sunday in any year using the real Gaussian Easter algorithm -- the modular-arithmetic method with no moon-phase table.',
       faq: [
         { question: 'What date is Easter in 2025?', answer: 'April 20, 2025, computed directly from Gauss\'s algorithm: the golden number is 12, and the formula\'s d and e values (23 and 6) push the result into April.' },
         { question: 'How is the date of Easter actually calculated?', answer: 'Easter Sunday is the first Sunday after the first ecclesiastical full moon on or after March 21. Gauss\'s 1800 algorithm finds that Sunday from the year number alone, using modular arithmetic on the year\'s position in a 19-year lunar cycle and the 7-day week -- no table of real moon phases needed.' },
@@ -1938,7 +1938,7 @@ export const funCalculators: CalculatorConfig[] = [
     ],
     seo: {
       title: "New Year's Countdown Calculator – Days & Time Zones",
-      description: "Count the days, hours and minutes until January 1, plus how many hours after Kiribati -- the first place on Earth to reach midnight -- your own New Year arrives.",
+      description: 'Count the days, hours and minutes until January 1, plus how many hours after Kiribati -- the first place on Earth to reach New Year.',
       faq: [
         { question: "How many days until New Year's?", answer: "This calculator measures the exact gap from right now to your own local midnight on January 1, shown as days, hours and minutes." },
         { question: 'What is the first place on Earth to reach the New Year?', answer: "The Line Islands of Kiribati, which use UTC+14:00 -- the largest standard time zone offset in use anywhere, making them the first inhabited place to reach any new calendar date, New Year's included." },

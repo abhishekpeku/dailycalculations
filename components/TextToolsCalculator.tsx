@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { WidgetCard, widgetAccent, DownloadMenu } from '@/components/CalculatorWidget';
 import { findCalculator } from '@/data/calculators';
 import type { ExportPayload } from '@/lib/export';
+import { PLATFORM_LIMITS } from '@/lib/platformLimits';
 
 type Mode = 'character' | 'hashtag';
 
@@ -29,21 +30,6 @@ function readingTime(words: number) {
   if (minutes < 1) return `${Math.round(minutes * 60)}s`;
   return `${Math.ceil(minutes)} min`;
 }
-
-// Every limit here is confirmed from an official platform doc or telecom standard (see the
-// calculator's references) as of 2026-10-21. A platform's limit that could not be confirmed from
-// an official source (e.g. Facebook's often-quoted 63,206, and a single fixed number for a Google
-// meta description, which Google's own docs say has no character limit) is left out rather than
-// guessed.
-const PLATFORM_LIMITS: { name: string; limit: number; color: string }[] = [
-  { name: 'X (Twitter) post', limit: 280, color: 'bg-sky-500' },
-  { name: 'Instagram caption', limit: 2200, color: 'bg-pink-500' },
-  { name: 'LinkedIn post', limit: 3000, color: 'bg-blue-600' },
-  { name: 'YouTube title', limit: 100, color: 'bg-red-500' },
-  { name: 'YouTube description', limit: 5000, color: 'bg-red-400' },
-  { name: 'SMS (GSM-7 standard text)', limit: 160, color: 'bg-purple-500' },
-  { name: 'SMS (emoji / non-Latin script)', limit: 70, color: 'bg-purple-400' },
-];
 
 export default function TextToolsCalculator({ mode }: { mode?: Mode }) {
   const [text, setText] = useState('');

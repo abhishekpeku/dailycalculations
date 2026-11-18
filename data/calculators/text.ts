@@ -1,4 +1,9 @@
 import type { CalculatorConfig } from './types.ts';
+import { PLATFORM_LIMITS } from '../../lib/platformLimits.ts';
+
+// Options for tweet-thread-length-calculator's platform selector: code -> PLATFORM_LIMITS index,
+// never the limit value itself (see template §2, "Select options are keyed by id or code").
+const PLATFORM_OPTIONS = PLATFORM_LIMITS.map((p, i) => ({ value: i, label: `${p.name} (${p.limit.toLocaleString('en-US')} characters)` }));
 
 export const textCalculators: CalculatorConfig[] = [
   // Custom-component stub: rendered by a special component in page.tsx.
@@ -466,6 +471,112 @@ export const textCalculators: CalculatorConfig[] = [
     compute(values) {
       const minutes = values.speakingRateWpm > 0 ? values.scriptWordCount / values.speakingRateWpm : NaN;
       return { estimatedMinutes: minutes };
+    }
+  },
+  {
+    id: 'tweet-thread-length-calculator',
+    group: 'Social Media Text Tools',
+    category: 'text',
+    glyph: '#n',
+    updatedAt: '2026-11-18',
+    aliases: ['twitter thread calculator', 'thread length calculator', 'how many tweets calculator', 'tweetstorm calculator', 'sms segment calculator'],
+    related: ['character-counter', 'hashtag-counter', 'keyword-density-calculator'],
+    title: 'Tweet Thread Length Calculator',
+    description: 'Work out how many posts or message segments a piece of text needs once it is split to fit a platform\'s character limit, with an optional reserve for "1/12"-style numbering.',
+    example: 'An 840-character caption split for X (280-character limit) needs 3 posts with no numbering reserved, or 4 once 6 characters per post are reserved for a "(n/total)" label.',
+    breakdown: {
+      headline: 'postsNeeded',
+      headlineLabel: 'Posts needed',
+      outputs: [
+        { id: 'postsNeeded', format: 'integer' },
+        { id: 'usablePerPost', label: 'Usable characters per post', format: 'integer' },
+        { id: 'lastPostCharacters', label: 'Characters in the last post', format: 'integer' }
+      ],
+      groups: [
+        { title: 'Your text', inputs: ['totalCharacters', 'platform'] },
+        { title: 'Thread numbering', inputs: ['reservedPerPost'], optional: true }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Splitting text to fit a character limit',
+        paragraphs: [
+          'Once a piece of text is longer than a platform\'s character limit, it has to be split into multiple posts or message segments. This calculator divides your total character count by the usable space in each post — the platform\'s limit, minus any characters you reserve for a numbering label like " (3/12)" — and rounds up, since a partly-filled final post still counts as one more post.',
+          'The platform figures below are the same confirmed limits used elsewhere on this site\'s character counter: each one is documented in that platform\'s own developer or help documentation, or (for SMS) the mobile messaging standard, not a universal web rule. SMS is included because the same arithmetic answers a related, very common question — how many 160-character segments a long text message will be billed or split as.',
+          'Reserving characters for numbering only matters if you plan to add it yourself: a thread posted natively on X or Instagram does not require it, but many writers add a "(1/12)" style label so readers can follow a thread that gets separated or reordered. Leave the reserve at 0 if you are not adding one.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your total character count, pick a platform, and optionally reserve space for numbering.',
+        steps: [
+          { name: 'Count your characters', text: 'Use the character counter on this site to get an exact count of the text you want to split, then enter it here.' },
+          { name: 'Pick a platform', text: 'Choose the platform or message type whose character limit you are splitting against.' },
+          { name: 'Reserve space for numbering, if you want it', text: 'If you plan to label each post "(n/total)", enter roughly how many characters that label takes — 6 covers up to "(12/12)".' },
+          { name: 'Read the result', text: 'The headline is how many posts you need. Below it, the usable characters per post and the length of the final, partly-filled post.' },
+          { name: 'Leave the reserve at 0 for SMS', text: 'Phones number multi-part text messages automatically outside the character limit, so there is usually nothing to reserve space for there.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Each post holds the platform limit minus any reserved numbering space. The number of posts is the total divided by that, rounded up.',
+        expression: 'usable = limit − reserved\nposts = ⌈total ÷ usable⌉\nlastPost = total − (posts − 1) × usable',
+        terms: [
+          { symbol: 'total', meaning: 'Total character count of the text being split.' },
+          { symbol: 'limit', meaning: 'The platform\'s character limit per post or segment.' },
+          { symbol: 'reserved', meaning: 'Characters set aside per post for your own numbering label, if any.' },
+          { symbol: 'posts', meaning: 'Number of posts or segments needed, always rounded up to a whole number.' }
+        ],
+        note: 'This only does the character arithmetic — it does not split your actual text or decide where to break paragraphs or sentences.'
+      },
+      workedExample: {
+        intro: 'An 840-character piece of text needs to be split for X, whose limit is 280 characters. How many posts, with and without a 6-character "(n/total)" numbering reserve?',
+        rows: [
+          { label: 'No reserve: usable per post (280 − 0)', value: '280' },
+          { label: 'No reserve: posts (⌈840 ÷ 280⌉)', value: '3' },
+          { label: 'With a 6-char reserve: usable per post (280 − 6)', value: '274' },
+          { label: 'With a 6-char reserve: posts (⌈840 ÷ 274⌉)', value: '4' }
+        ],
+        result: '3 posts with no numbering reserve · 4 posts once 6 characters per post are reserved',
+        explanation: 'Reserving space for numbering can push the post count up by one even though the underlying text did not change: 840 characters fits exactly into 3 posts of 280, but only 3 × 274 = 822 characters fit once 6 are reserved from each, leaving 18 characters that need a 4th post.'
+      },
+      watchOut: [
+        { title: 'Rounding up is not optional', body: 'A post that is even 1 character over the previous post\'s capacity needs its own, additional post — there is no such thing as a 0.1 of a post, so the count always rounds up to a whole number.' },
+        { title: 'A numbering reserve can add a whole extra post', body: 'As the worked example shows, reserving characters for a "(n/total)" label reduces the usable space in every post, which can tip the total post count up by one even for text that fit exactly before.' },
+        { title: 'This counts characters, not words or sentences', body: 'A platform limit is a character count. Splitting a thread also means choosing sensible break points — mid-sentence breaks are easy to produce by raw character counting but awkward to read.' },
+        { title: 'SMS segments are usually numbered for you', body: 'Phones and carriers typically add "(1/3)"-style labels to a multi-part text message outside the counted character limit, so a reserve is usually unnecessary for the SMS option — leave it at 0 unless you know otherwise.' },
+        { title: 'Emoji and non-Latin characters lower the SMS limit further', body: 'The SMS figures here follow the character counter\'s own GSM-7 (160) and UCS-2 (70) distinction: adding one emoji or non-Latin character to an SMS switches the whole message to the lower 70-character limit, which can significantly increase the segment count.' }
+      ],
+      references: [
+        { label: 'X (Twitter) Developer Platform, Counting characters', url: 'https://docs.x.com/fundamentals/counting-characters' },
+        { label: 'Meta for Developers, Instagram Platform — IG User Media (caption parameter)', url: 'https://developers.facebook.com/docs/instagram-platform/instagram-graph-api/reference/ig-user/media/' },
+        { label: 'LinkedIn Help, Post and Share Updates', url: 'https://www.linkedin.com/help/linkedin/answer/a528176' },
+        { label: 'Twilio, How Long Can a Text Message Be? (SMS character limits)', url: 'https://www.twilio.com/docs/glossary/what-sms-character-limit' }
+      ]
+    },
+    inputs: [
+      { id: 'totalCharacters', label: 'Total character count', type: 'number', placeholder: '840', defaultValue: 840, step: 1, min: 0 },
+      { id: 'platform', label: 'Platform', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0, options: PLATFORM_OPTIONS },
+      { id: 'reservedPerPost', label: 'Characters reserved per post for numbering', type: 'number', placeholder: '0', defaultValue: 0, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Tweet Thread Length Calculator – How Many Posts?',
+      description: 'Work out how many posts or SMS segments your text needs once split to fit X, Instagram, LinkedIn, YouTube or SMS character limits, with optional numbering space.',
+      faq: [
+        { question: 'How many tweets will my text take?', answer: 'Divide your total character count by X\'s 280-character limit (minus any characters you reserve for numbering) and round up. An 840-character caption with no numbering reserve needs ⌈840 ÷ 280⌉ = 3 posts.' },
+        { question: 'How do I count a multi-part text message?', answer: 'Pick the SMS option (160 characters for plain text, 70 if it includes an emoji or non-Latin character) and leave the numbering reserve at 0, since phones label message parts outside the counted limit.' },
+        { question: 'Why does reserving characters for numbering increase the post count?', answer: 'Reserving space shrinks how much usable text fits in every post. An 840-character text fits exactly into 3 posts of 280 characters, but only into 3 posts of 274 once 6 characters per post are reserved for a label, pushing the last 18 characters into a 4th post.' },
+        { question: 'Does this split my actual text into posts for me?', answer: 'No. It only calculates how many posts you will need and how long the final one is, from the character count and platform limit you provide — you still choose where each post breaks.' },
+        { question: 'What character limit does this use for each platform?', answer: 'The same confirmed limits as this site\'s character counter: X 280, Instagram caption 2,200, LinkedIn 3,000, YouTube title 100, YouTube description 5,000, and SMS 160 (GSM-7) or 70 (with an emoji or non-Latin character).' },
+        { question: 'How many characters should I reserve for a "(1/12)" label?', answer: 'Six characters covers any thread up to 99 posts, such as "(12/99)". Shorter threads could use less, but 6 is a safe default that will not under-reserve as the thread gets longer.' }
+      ]
+    },
+    compute(values) {
+      const limit = PLATFORM_LIMITS[values.platform]?.limit ?? PLATFORM_LIMITS[0].limit;
+      const usablePerPost = Math.max(1, limit - values.reservedPerPost);
+      const postsNeeded = Math.ceil(values.totalCharacters / usablePerPost);
+      const lastPostCharacters = values.totalCharacters - (postsNeeded - 1) * usablePerPost;
+      return { postsNeeded, usablePerPost, lastPostCharacters };
     }
   }
 ];

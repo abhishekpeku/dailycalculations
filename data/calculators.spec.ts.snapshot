@@ -17263,6 +17263,47 @@ exports[`compute() snapshots > turkey-thaw-time-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > tweet-thread-length-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "totalCharacters": 840,
+      "platform": 0,
+      "reservedPerPost": 0
+    },
+    "outputs": {
+      "postsNeeded": 3,
+      "usablePerPost": 280,
+      "lastPostCharacters": 280
+    }
+  },
+  "typical": {
+    "inputs": {
+      "totalCharacters": 1260,
+      "platform": 0,
+      "reservedPerPost": 0
+    },
+    "outputs": {
+      "postsNeeded": 5,
+      "usablePerPost": 280,
+      "lastPostCharacters": 140
+    }
+  },
+  "edge": {
+    "inputs": {
+      "totalCharacters": 0,
+      "platform": 0,
+      "reservedPerPost": 0
+    },
+    "outputs": {
+      "postsNeeded": 0,
+      "usablePerPost": 280,
+      "lastPostCharacters": 280
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > twitch-earnings-calculator 1`] = `
 {
   "default": {

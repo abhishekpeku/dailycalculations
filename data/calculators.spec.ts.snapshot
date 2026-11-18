@@ -10447,6 +10447,56 @@ exports[`compute() snapshots > long-division-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > long-term-care-insurance-needs-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "annualCareCost": 74400,
+      "careDurationYears": 3,
+      "existingSavingsForCare": 50000,
+      "existingLtcAnnualBenefit": 12000
+    },
+    "outputs": {
+      "careCostGap": 137200,
+      "totalCareCost": 223200,
+      "totalExistingResources": 86000,
+      "coveredAmount": 86000,
+      "percentCovered": 38.53046595
+    }
+  },
+  "typical": {
+    "inputs": {
+      "annualCareCost": 112000,
+      "careDurationYears": 5,
+      "existingSavingsForCare": 75000,
+      "existingLtcAnnualBenefit": 18000
+    },
+    "outputs": {
+      "careCostGap": 395000,
+      "totalCareCost": 560000,
+      "totalExistingResources": 165000,
+      "coveredAmount": 165000,
+      "percentCovered": 29.46428571
+    }
+  },
+  "edge": {
+    "inputs": {
+      "annualCareCost": 0,
+      "careDurationYears": 0,
+      "existingSavingsForCare": 0,
+      "existingLtcAnnualBenefit": 0
+    },
+    "outputs": {
+      "careCostGap": 0,
+      "totalCareCost": 0,
+      "totalExistingResources": 0,
+      "coveredAmount": 0,
+      "percentCovered": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > lotka-volterra-calculator 1`] = `
 {
   "default": {

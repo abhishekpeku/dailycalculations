@@ -853,5 +853,121 @@ export const insuranceCalculators: CalculatorConfig[] = [
         existingMonthlyBenefit: values.existingMonthlyBenefit
       };
     }
+  },
+  {
+    id: 'long-term-care-insurance-needs-calculator',
+    category: 'insurance',
+    glyph: 'LTC',
+    updatedAt: '2026-11-18',
+    aliases: ['long term care cost calculator', 'ltc insurance needs calculator', 'nursing home cost gap calculator', 'how much long term care insurance do i need'],
+    related: ['disability-insurance-needs-calculator', 'human-life-value-calculator', 'retirement-savings-calculator', 'whole-life-vs-term-life-cost-calculator'],
+    title: 'Long-Term Care Insurance Needs Calculator',
+    description: "Estimate the gap between a realistic cost of long-term care and the savings or insurance you already have set aside for it, using CareScout's (formerly Genworth's) annual Cost of Care Survey figures as a starting point.",
+    example: 'At $74,400 a year (the 2025 median assisted living cost) for 3 years of care, with $50,000 of savings and a $12,000-a-year long-term care policy already in place, the estimated gap is $137,200 — current resources cover about 38.5% of the total.',
+    breakdown: {
+      headline: 'careCostGap',
+      headlineLabel: 'Estimated care-cost gap',
+      outputs: [
+        { id: 'careCostGap', format: 'currency' },
+        { id: 'totalCareCost', label: 'Total estimated cost of care', format: 'currency' },
+        { id: 'totalExistingResources', label: 'Total existing resources for care', format: 'currency' },
+        { id: 'percentCovered', label: 'Percent of the total already covered', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Cost of care', inputs: ['annualCareCost', 'careDurationYears'] },
+        { title: 'What you already have', inputs: ['existingSavingsForCare', 'existingLtcAnnualBenefit'] }
+      ],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'coveredAmount', label: 'Covered by savings & existing LTC coverage' },
+          { from: 'careCostGap', label: 'Gap to plan for' }
+        ],
+        center: 'totalCareCost',
+        centerSub: 'Total estimated cost'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What long-term care actually costs',
+        paragraphs: [
+          'Long-term care — help with daily activities like bathing, dressing or managing medication, usually needed later in life — is expensive, ongoing, and not covered by standard health insurance or, in most cases, by Medicare. CareScout (the successor to Genworth\'s long-running Cost of Care Survey) publishes national median costs each year from tens of thousands of care providers: its 2025 survey put a private nursing home room at $129,575 a year ($355 a day), an assisted living community at $74,400 a year ($6,200 a month), and a non-medical home health aide at $80,080 a year, based on 44 hours a week at $35 an hour.',
+          "This calculator does not pick a care type for you — costs vary enormously by location, the level of care needed, and whether care happens at home or in a facility. Instead, enter your own estimate of the annual cost (CareScout's published figures above are a reasonable starting point) and how many years of care you are planning for, then compare that total against the savings and any long-term care insurance benefit you already have.",
+          'Long-term care insurance exists specifically to close this kind of gap: a policy that pays a defined daily or monthly benefit toward care costs, so that savings and other assets are not the only resource standing between a household and the full cost CareScout\'s survey documents.'
+        ]
+      },
+      howTo: {
+        intro: "Enter a realistic annual cost of care and how many years you're planning for, then any savings set aside for care and any long-term care insurance benefit you already have.",
+        steps: [
+          { name: 'Enter an annual cost of care', text: "Use a current figure for your area and the type of care you're planning for — CareScout's national medians (nursing home, assisted living, or home health aide) are a starting point if you don't have a local figure." },
+          { name: 'Enter a number of years', text: 'How many years of care you want to plan for. There is no single "average" duration that applies to everyone — needs range from under a year to many years, so pick a planning horizon that fits your own situation.' },
+          { name: 'Enter savings set aside for care', text: 'Any savings or investments specifically earmarked, or that you would be willing to use, for long-term care costs.' },
+          { name: 'Enter your existing LTC insurance benefit', text: "The annual benefit amount from a long-term care policy already in force, if any. Enter 0 if you don't have one." },
+          { name: 'Read the result', text: 'The headline is the gap between the total estimated cost and what you already have. The donut shows how much of the total is already covered.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Total cost is the annual cost times years of care. Total resources are savings plus the insurance benefit times the same years. The gap is whatever cost is left uncovered.',
+        expression: 'TotalCost = AnnualCost × Years\nTotalResources = Savings + (AnnualLTCBenefit × Years)\nGap = max(0, TotalCost − TotalResources)',
+        terms: [
+          { symbol: 'AnnualCost', meaning: 'Your estimated annual cost of the type of care you are planning for.' },
+          { symbol: 'Years', meaning: 'The number of years of care you are planning for.' },
+          { symbol: 'Savings', meaning: 'Savings or investments set aside, or available, for long-term care.' },
+          { symbol: 'AnnualLTCBenefit', meaning: 'The annual benefit amount from a long-term care insurance policy already in force, 0 if none.' },
+          { symbol: 'Gap', meaning: 'The portion of the total estimated cost not covered by existing savings and insurance.' }
+        ],
+        note: 'This is a simplified planning estimate. It does not model benefit periods, elimination periods, inflation riders, or benefit caps found in actual long-term care policies.'
+      },
+      workedExample: {
+        intro: "Planning around CareScout's 2025 assisted-living median of $74,400 a year, for 3 years, with $50,000 in savings earmarked for care and a long-term care policy paying $12,000 a year.",
+        rows: [
+          { label: 'Total estimated cost ($74,400 × 3)', value: '$223,200' },
+          { label: 'Total existing resources ($50,000 + $12,000 × 3)', value: '$86,000' },
+          { label: 'Percent of total already covered ($86,000 ÷ $223,200)', value: '38.5%' },
+          { label: 'Care-cost gap ($223,200 − $86,000)', value: '$137,200' }
+        ],
+        result: '$137,200 gap, with 38.5% already covered',
+        explanation: 'Even with both savings and an active long-term care policy, this household\'s current resources cover well under half of the 3-year estimated cost — the kind of shortfall that additional savings, a larger policy benefit, or a shorter expected care duration would each help close.'
+      },
+      watchOut: [
+        { title: 'This is an educational estimate, not a quote or an offer to sell insurance', body: 'This calculator estimates a planning gap. It does not sell, recommend or bind any policy, and is not a substitute for a licensed insurance agent or elder-law professional.' },
+        { title: 'There is no single "average" duration of care', body: "How long someone needs long-term care varies enormously by individual health and circumstances. Don't anchor on one number as if it were a guarantee — consider a range of durations, not just one." },
+        { title: 'Costs vary enormously by location and care type', body: "CareScout's national medians are a starting point, not a local quote — the same type of care can cost dramatically more or less depending on your region. Use a local figure if you have one." },
+        { title: 'Medicare does not cover most long-term care', body: 'Standard Medicare covers only limited, short-term skilled nursing care after a hospital stay, not the extended custodial care this calculator is about. Medicaid can cover long-term care but generally only after a household has spent down most of its assets.' },
+        { title: 'This does not model a real policy\'s actual terms', body: 'An actual long-term care policy has its own daily or monthly benefit cap, benefit period, elimination period, and often an inflation rider — all of which affect what it really pays out. This calculator only takes the annual benefit amount you enter at face value.' }
+      ],
+      references: [
+        { label: 'CareScout, 2025 Cost of Care Survey (national median costs by care type)', url: 'https://www.carescout.com/cost-of-care' }
+      ]
+    },
+    inputs: [
+      { id: 'annualCareCost', label: 'Annual cost of care', type: 'currency', placeholder: '74400', defaultValue: 74400, step: 1000, min: 0 },
+      { id: 'careDurationYears', label: 'Years of care planned for', type: 'number', placeholder: '3', defaultValue: 3, step: 1, min: 0 },
+      { id: 'existingSavingsForCare', label: 'Savings set aside for care', type: 'currency', placeholder: '50000', defaultValue: 50000, step: 5000, min: 0 },
+      { id: 'existingLtcAnnualBenefit', label: 'Existing LTC insurance benefit (per year)', type: 'currency', placeholder: '12000', defaultValue: 12000, step: 1000, min: 0 }
+    ],
+    seo: {
+      title: 'Long-Term Care Insurance Needs Calculator',
+      description: "Estimate the gap between a realistic long-term care cost and the savings or insurance you already have, using CareScout's Cost of Care Survey figures.",
+      faq: [
+        { question: 'How much does long-term care cost?', answer: "CareScout's 2025 Cost of Care Survey reports a national median of $129,575 a year for a private nursing home room, $74,400 a year for assisted living, and $80,080 a year for a non-medical home health aide (44 hours a week)." },
+        { question: 'How do I estimate my long-term care insurance need?', answer: 'Multiply your estimated annual cost of care by the number of years you are planning for, then subtract any savings earmarked for care and any annual benefit from a long-term care policy already in force.' },
+        { question: 'What is a worked example using a nursing home cost?', answer: "Using CareScout's $129,575 private-room median for 2 years with $20,000 in savings and no existing LTC insurance: total cost is $259,150, resources cover $20,000 (7.7%), leaving a $239,150 gap." },
+        { question: 'Does Medicare pay for long-term care?', answer: 'Only in limited circumstances — standard Medicare covers short-term skilled nursing care after a hospital stay, not the extended custodial care this calculator is about.' },
+        { question: 'What is the "average" number of years someone needs long-term care?', answer: "There is no single figure that applies broadly — care duration varies by individual health and circumstances. This calculator asks you to set your own planning horizon rather than assuming one." },
+        { question: 'What if my savings and insurance already exceed the estimated cost?', answer: 'The gap shows as $0. Using the assisted-living median of $74,400 for 2 years with $200,000 in savings and no LTC policy, the full $148,800 cost is already covered.' },
+        { question: 'Does this calculator model my specific long-term care policy?', answer: "No. It treats the annual benefit you enter as a flat figure. A real policy's benefit period, elimination period, benefit cap and any inflation rider all affect what it actually pays — check your policy's own terms for those details." }
+      ]
+    },
+    compute(values) {
+      const totalCareCost = values.annualCareCost * values.careDurationYears;
+      const totalExistingResources = values.existingSavingsForCare + values.existingLtcAnnualBenefit * values.careDurationYears;
+      const coveredAmount = Math.min(totalExistingResources, totalCareCost);
+      const careCostGap = Math.max(0, totalCareCost - totalExistingResources);
+      const percentCovered = totalCareCost === 0 ? 0 : Math.min(100, (totalExistingResources / totalCareCost) * 100);
+      return { careCostGap, totalCareCost, totalExistingResources, coveredAmount, percentCovered };
+    }
   }
 ];

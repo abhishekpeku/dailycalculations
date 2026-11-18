@@ -340,5 +340,133 @@ export const solarCalculators: CalculatorConfig[] = [
       const paybackPeriod = values.annualSavings > 0 ? netSystemCost / values.annualSavings : NaN;
       return { paybackPeriod, netSystemCost };
     }
+  },
+  {
+    id: 'solar-loan-payment-calculator',
+    category: 'solar',
+    glyph: '$/mo',
+    updatedAt: '2026-11-18',
+    aliases: ['solar loan calculator', 'solar financing calculator', 'solar panel loan payment calculator', 'solar loan payment estimator', 'solar loan vs savings calculator'],
+    related: ['loan-calculator', 'solar-payback-period-calculator', 'solar-savings-calculator', 'emi-calculator'],
+    title: 'Solar Loan Payment Calculator',
+    description: 'Find the monthly payment on a solar loan from the amount financed, rate and term, and compare it against your estimated monthly solar savings. Fill in any three of amount, payment, term or rate.',
+    example: 'A $30,135 solar loan at 6% APR over 20 years costs about $215.90 a month. Against an estimated $238.03 a month in solar savings, that leaves about $22.13 a month better off, even while the loan is still being paid down.',
+    solver: {
+      defaultTarget: 'monthlyPayment',
+      variables: [
+        { id: 'monthlyPayment', label: 'Monthly loan payment', symbol: 'M', dimension: 'currency', defaultValue: 215.9, defaultUnit: 'currency' },
+        { id: 'loanAmount', label: 'Amount financed', symbol: 'P', dimension: 'currency', defaultValue: 30135, defaultUnit: 'currency' },
+        { id: 'term', label: 'Loan term', symbol: 'n', dimension: 'term', defaultValue: 20, defaultUnit: 'yr' },
+        { id: 'interestRate', label: 'Interest rate (APR)', symbol: 'APR', dimension: 'percent', defaultValue: 6, defaultUnit: '%', bounds: [0, 100] },
+        { id: 'monthlySolarSavings', label: 'Estimated monthly solar savings', symbol: 'S', dimension: 'currency', defaultValue: 238.03, defaultUnit: 'currency', fixed: true }
+      ],
+      solve: {
+        monthlyPayment: ({ loanAmount, term, interestRate }) => loanPayment(loanAmount, term, interestRate),
+        loanAmount: ({ monthlyPayment: payment, term, interestRate }) => loanPrincipal(payment, term, interestRate),
+        term: ({ loanAmount, monthlyPayment: payment, interestRate }) => loanMonths(loanAmount, payment, interestRate)
+      },
+      // The rate has no closed form: the widget finds it numerically.
+      equation: (si) => si.monthlyPayment - loanPayment(si.loanAmount, si.term, si.interestRate),
+      outputs: [
+        { id: 'totalInterest', label: 'Total interest', dimension: 'currency', compute: (si) => si.monthlyPayment * si.term - si.loanAmount },
+        { id: 'totalPaid', label: 'Total of all payments', dimension: 'currency', compute: (si) => si.monthlyPayment * si.term },
+        { id: 'netMonthlyCashFlow', label: 'Net monthly cash flow (savings minus payment)', dimension: 'currency', compute: (si) => si.monthlySolarSavings - si.monthlyPayment }
+      ],
+      visuals: [
+        {
+          type: 'compareBars',
+          bars: [
+            { from: 'monthlyPayment', label: 'Loan payment' },
+            { from: 'monthlySolarSavings', label: 'Est. solar savings' }
+          ],
+          title: 'Loan payment vs. estimated monthly solar savings'
+        },
+        { type: 'amortization', principal: 'loanAmount', annualRate: 'interestRate', months: 'term', payment: 'monthlyPayment' }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Financing solar with a loan',
+        paragraphs: [
+          'A solar loan works exactly like any other amortized loan — the same formula this site\'s general loan calculator uses — applied to the amount you\'re financing after any cash down payment or incentive. The U.S. Department of Energy\'s homeowner\'s guide describes the appeal directly: with a loan, "monthly loan payments are smaller than a typical energy bill, which will help you save money from the start," at least when the loan\'s payment is smaller than what the system saves you each month.',
+          'That comparison — payment versus savings — is the point of this calculator. The same loan amount can cash-flow positive or negative depending on the term and rate: stretching a $30,135 loan to 20 years at 6% APR brings the payment to about $215.90 a month, below an estimated $238.03 in monthly solar savings. Shortening the same loan to 15 years at 6% raises the payment to about $254.30, which would cost about $16.27 a month more than it saves, even though the loan finishes four years sooner for less total interest.',
+          'There is no single "right" term or rate here — it depends on whether you\'d rather pay less in total interest (shorter term, higher payment) or stay cash-flow positive from day one (longer term, lower payment). Real solar loan rates and terms vary by lender, your credit and the loan product, so treat the APR here as illustrative and use the one from your own loan offer for an exact figure.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any three of the four loan fields; the fourth, marked auto, is calculated. Add your estimated monthly savings to see the cash-flow comparison.',
+        steps: [
+          { name: 'Enter the amount financed', text: 'Use the net system cost after any cash down payment or incentive — the solar payback calculator\'s "net system cost" output is a good source.' },
+          { name: 'Enter the rate and term', text: 'Use the APR and term from your actual loan offer; switch the term between years and months with the menu beside it.' },
+          { name: 'Solve for something else', text: 'Type into the auto field to make it an input instead — enter a payment you can afford to see how large a loan it supports.' },
+          { name: 'Enter your estimated monthly solar savings', text: 'Use the annual figure from the solar savings calculator divided by 12, or your installer\'s own monthly estimate.' },
+          { name: 'Read the comparison', text: 'The bars below compare the loan payment against your estimated savings; the net monthly cash-flow figure is the difference, and the schedule shows how the balance pays down over time.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The amount financed, rate and term determine the payment through the standard loan-amortization formula; comparing that payment with estimated savings is simple subtraction.',
+        expression: 'M = P × r ÷ (1 − (1 + r)^−n)\nr = APR ÷ 100 ÷ 12\nnet monthly cash flow = monthly solar savings − M',
+        terms: [
+          { symbol: 'M', meaning: 'Monthly loan payment.' },
+          { symbol: 'P', meaning: 'Amount financed — the system cost after any cash payment or incentive.' },
+          { symbol: 'n', meaning: 'Term in months.' },
+          { symbol: 'r', meaning: 'Monthly interest rate: APR divided by 12, as a decimal.' }
+        ],
+        note: 'Estimates only. Real loan products can add origination fees, and solar loan rates vary by lender, loan type and credit — use your own loan offer for an exact payment.'
+      },
+      workedExample: {
+        intro: 'You finance $30,135 at 6% APR over 20 years. Estimated monthly solar savings are $238.03 (the $2,856.36 annual figure from the savings calculator, divided by 12).',
+        rows: [
+          { label: 'Monthly rate (r = 6% ÷ 12)', value: '0.005' },
+          { label: 'Number of payments (n = 20 × 12)', value: '240' },
+          { label: 'Monthly payment', value: '$215.90' },
+          { label: 'Total paid over 20 years (215.90 × 240)', value: '≈ $51,815.16' },
+          { label: 'Total interest (51,815.16 − 30,135)', value: '≈ $21,680.16' },
+          { label: 'Net monthly cash flow (238.03 − 215.90)', value: '+$22.13' }
+        ],
+        result: 'M ≈ $215.90/month · about $21,680.16 in total interest · +$22.13/month net',
+        explanation: 'Because the loan payment comes out lower than the estimated savings, this loan is cash-flow positive from the first month — you\'re about $22.13 better off monthly even while still paying down the loan. The same $30,135 at 15 years instead of 20 raises the payment to about $254.30 — $16.27 a month more than the estimated savings — while cutting total interest by roughly $6,041.83.'
+      },
+      watchOut: [
+        { title: 'A shorter term can cost more per month than it saves', body: 'The 15-year version of the worked example above pays about $254.30 a month — more than the $238.03 in estimated savings — even though it costs about $6,041.83 less in total interest than the 20-year version. Whether that trade-off is worth it depends on your own monthly budget, not just the total cost.' },
+        { title: 'Real solar loan rates and terms vary', body: 'The 6% APR and 20-year term here are illustrative. Solar-specific loan products, home equity loans and personal loans all carry different rates depending on your lender, credit and the loan type — use your own offer\'s APR for an exact payment.' },
+        { title: 'This compares against an estimate, not a guarantee', body: 'The monthly savings figure you enter is only as reliable as the production estimate behind it. A system that underproduces its estimate narrows or erases the "net monthly cash flow" advantage shown here.' },
+        { title: 'Fees and origination costs aren\'t modeled', body: 'Some loan products add an origination fee or a dealer fee baked into the rate. Your loan\'s actual disclosure is the binding figure for the true cost of borrowing.' }
+      ],
+      references: [
+        { label: 'U.S. Department of Energy, Homeowner\'s Guide to Going Solar (loan financing)', url: 'https://www.energy.gov/eere/solar/homeowners-guide-going-solar' },
+        { label: 'OpenStax, Contemporary Mathematics, §6.8 The Basics of Loans', url: 'https://openstax.org/books/contemporary-mathematics/pages/6-8-the-basics-of-loans' },
+        { label: 'Consumer Financial Protection Bureau, Regulation Z (Truth in Lending), Appendix J: Annual Percentage Rate Computations', url: 'https://www.consumerfinance.gov/rules-policy/regulations/1026/j/' }
+      ]
+    },
+    inputs: [
+      { id: 'loanAmount', label: 'Amount financed', type: 'currency', placeholder: '30135', defaultValue: 30135, step: 100, min: 0 },
+      { id: 'interestRate', label: 'Interest rate (APR)', type: 'percent', placeholder: '6', defaultValue: 6, step: 0.01, min: 0 },
+      { id: 'years', label: 'Loan term (years)', type: 'number', placeholder: '20', defaultValue: 20, step: 1, min: 1 },
+      { id: 'monthlySolarSavings', label: 'Estimated monthly solar savings', type: 'currency', placeholder: '238.03', defaultValue: 238.03, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Solar Loan Payment Calculator – Payment vs. Savings',
+      description: 'Find the monthly payment on a solar loan from the amount, rate and term, and compare it against your estimated monthly solar savings. Solve for amount, payment, term or rate.',
+      faq: [
+        { question: 'How is a solar loan payment calculated?', answer: 'The same way as any amortized loan: M = P × r ÷ (1 − (1 + r)^−n), where P is the amount financed, r is the monthly rate (APR ÷ 12) and n is the number of months. A $30,135 loan at 6% APR over 20 years comes to about $215.90 a month.' },
+        { question: 'Will a solar loan payment be lower than my current electricity bill?', answer: 'It depends on the loan\'s rate and term versus your estimated savings. In this calculator\'s worked example, a 20-year loan at 6% APR costs $215.90 a month against $238.03 in estimated savings — a net $22.13 a month better off. A shorter, higher-payment loan on the same amount can cost more per month than it saves.' },
+        { question: 'Is a longer loan term better for solar financing?', answer: 'It usually means a lower, more easily cash-flow-positive monthly payment, at the cost of more total interest. The worked example\'s 15-year version pays about $254.30 a month (more than its $238.03 in estimated savings) but saves roughly $6,041.83 in total interest versus the 20-year version.' },
+        { question: 'What interest rate do solar loans typically carry?', answer: 'It varies by lender, loan type (solar-specific loan, home equity loan or personal loan) and your credit. This calculator uses 6% as an illustrative default — use the APR from your own loan offer for an exact payment.' },
+        { question: 'How much can I borrow for a given monthly payment?', answer: 'Enter the payment, rate and term, and the loan amount becomes the calculated field. At 6% over 20 years, a $220 monthly payment supports financing about $30,707.77.' },
+        { question: 'Does this calculator account for solar incentives?', answer: 'Not directly — enter the amount actually financed (after any cash payment or incentive already applied) as the loan amount. The solar payback period calculator\'s net system cost figure is a good source for that number.' }
+      ]
+    },
+    compute(values) {
+      const monthlyRate = values.interestRate / 100 / 12;
+      const months = Math.max(1, values.years * 12);
+      const payment = monthlyRate === 0 ? values.loanAmount / months : (values.loanAmount * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -months));
+      const totalPaid = payment * months;
+      const totalInterest = totalPaid - values.loanAmount;
+      const netMonthlyCashFlow = values.monthlySolarSavings - payment;
+      return { monthlyPayment: payment, totalPaid, totalInterest, netMonthlyCashFlow };
+    }
   }
 ];

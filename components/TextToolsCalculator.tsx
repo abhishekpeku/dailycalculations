@@ -4,11 +4,39 @@ import { useState, useMemo } from 'react';
 import { WidgetCard, widgetAccent, DownloadMenu } from '@/components/CalculatorWidget';
 import { findCalculator } from '@/data/calculators';
 import type { ExportPayload } from '@/lib/export';
+import { PLATFORM_LIMITS } from '@/lib/platformLimits';
 
-type Mode = 'character' | 'hashtag';
+type Mode = 'character' | 'hashtag' | 'word' | 'syllable';
 
 function countWords(text: string) {
   return text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+}
+
+// Vowel-group syllable estimate, simplified from the heuristic chain Lingua::EN::Syllable (Perl,
+// Greg Fast) -> Text-Statistics (PHP, Dave Child) -> syllable (JS, Titus Wormer/wooorm): count
+// runs of vowels, drop a silent trailing "e", add back a syllable for a consonant + "-le" ending
+// ("table", "little", "people"), minimum of 1 per word. See references for the full chain.
+function countWordSyllables(word: string) {
+  const w = word.toLowerCase().replace(/[^a-z]/g, '');
+  if (w.length === 0) return 0;
+  if (w.length <= 3) return 1;
+  const trimmed = w.replace(/e$/, '');
+  const groups = trimmed.match(/[aeiouy]+/g);
+  let count = groups ? groups.length : 0;
+  if (/[^aeiouy]le$/.test(w)) count += 1;
+  return count < 1 ? 1 : count;
+}
+
+function syllableBreakdown(text: string) {
+  const words = text.trim() === '' ? [] : text.trim().split(/\s+/);
+  let totalSyllables = 0;
+  let complexWords = 0;
+  for (const w of words) {
+    const n = countWordSyllables(w);
+    totalSyllables += n;
+    if (n >= 3) complexWords += 1;
+  }
+  return { totalSyllables, complexWords };
 }
 
 function countSentences(text: string) {
@@ -30,20 +58,19 @@ function readingTime(words: number) {
   return `${Math.ceil(minutes)} min`;
 }
 
-// Every limit here is confirmed from an official platform doc or telecom standard (see the
-// calculator's references) as of 2026-10-21. A platform's limit that could not be confirmed from
-// an official source (e.g. Facebook's often-quoted 63,206, and a single fixed number for a Google
-// meta description, which Google's own docs say has no character limit) is left out rather than
-// guessed.
-const PLATFORM_LIMITS: { name: string; limit: number; color: string }[] = [
-  { name: 'X (Twitter) post', limit: 280, color: 'bg-sky-500' },
-  { name: 'Instagram caption', limit: 2200, color: 'bg-pink-500' },
-  { name: 'LinkedIn post', limit: 3000, color: 'bg-blue-600' },
-  { name: 'YouTube title', limit: 100, color: 'bg-red-500' },
-  { name: 'YouTube description', limit: 5000, color: 'bg-red-400' },
-  { name: 'SMS (GSM-7 standard text)', limit: 160, color: 'bg-purple-500' },
-  { name: 'SMS (emoji / non-Latin script)', limit: 70, color: 'bg-purple-400' },
-];
+const MODE_LABELS: Record<Mode, string> = {
+  character: 'Character Counter',
+  hashtag: 'Hashtag Counter',
+  word: 'Word Counter',
+  syllable: 'Syllable Counter'
+};
+
+const MODE_CALCULATOR_IDS: Record<Mode, string> = {
+  character: 'character-counter',
+  hashtag: 'hashtag-counter',
+  word: 'word-counter-calculator',
+  syllable: 'syllable-counter-calculator'
+};
 
 export default function TextToolsCalculator({ mode }: { mode?: Mode }) {
   const [text, setText] = useState('');
@@ -59,56 +86,88 @@ export default function TextToolsCalculator({ mode }: { mode?: Mode }) {
     const hashtags = extractHashtags(text);
     const uniqueHashtags = hashtags.length;
     const instagramHashtagOk = uniqueHashtags <= 30;
-    return { chars, charsNoSpaces, words, sentences, paragraphs, lines, hashtags, uniqueHashtags, instagramHashtagOk };
+    const { totalSyllables, complexWords } = syllableBreakdown(text);
+    const avgSyllablesPerWord = words === 0 ? 0 : totalSyllables / words;
+    return {
+      chars, charsNoSpaces, words, sentences, paragraphs, lines, hashtags, uniqueHashtags, instagramHashtagOk,
+      totalSyllables, complexWords, avgSyllablesPerWord
+    };
   }, [text]);
 
   const accent = widgetAccent('text');
 
-  // Shared by two different calculator pages -- derive the id/title from the already-known mode
+  // Shared by three different calculator pages -- derive the id/title from the already-known mode
   // rather than hardcoding one slug or adding a prop page.tsx doesn't need to pass.
-  const calculatorId = activeMode === 'hashtag' ? 'hashtag-counter' : 'character-counter';
-  const calculatorTitle = findCalculator(calculatorId)?.title ?? (activeMode === 'hashtag' ? 'Hashtag Counter' : 'Character Counter');
+  const calculatorId = MODE_CALCULATOR_IDS[activeMode];
+  const calculatorTitle = findCalculator(calculatorId)?.title ?? MODE_LABELS[activeMode];
 
-  const exportData: ExportPayload | null = text.trim() === '' ? null : activeMode === 'character' ? {
-    title: calculatorTitle,
-    url: typeof window === 'undefined' ? '' : window.location.href,
-    inputs: [],
-    result: { label: 'Characters', value: stats.chars.toLocaleString('en-US'), raw: stats.chars, kind: 'integer' },
-    outputs: [
-      { label: 'Characters (no spaces)', value: stats.charsNoSpaces.toLocaleString('en-US'), raw: stats.charsNoSpaces, kind: 'integer' },
-      { label: 'Words', value: stats.words.toLocaleString('en-US'), raw: stats.words, kind: 'integer' },
-      { label: 'Sentences', value: stats.sentences.toLocaleString('en-US'), raw: stats.sentences, kind: 'integer' },
-      { label: 'Paragraphs', value: stats.paragraphs.toLocaleString('en-US'), raw: stats.paragraphs, kind: 'integer' },
-      { label: 'Lines', value: stats.lines.toLocaleString('en-US'), raw: stats.lines, kind: 'integer' },
-      { label: 'Reading time', value: readingTime(stats.words), kind: 'text' }
-    ]
-  } : {
-    title: calculatorTitle,
-    url: typeof window === 'undefined' ? '' : window.location.href,
-    inputs: [],
-    result: { label: 'Unique hashtags', value: stats.uniqueHashtags.toLocaleString('en-US'), raw: stats.uniqueHashtags, kind: 'integer' },
-    outputs: [
-      { label: 'Characters', value: stats.chars.toLocaleString('en-US'), raw: stats.chars, kind: 'integer' },
-      { label: 'Words', value: stats.words.toLocaleString('en-US'), raw: stats.words, kind: 'integer' },
-      {
-        label: 'Instagram limit (30)',
-        value: stats.instagramHashtagOk ? `OK — ${stats.uniqueHashtags}/30` : `Exceeded — ${stats.uniqueHashtags}/30`,
-        kind: 'text'
-      }
-    ]
+  const exportDataByMode: Record<Mode, ExportPayload> = {
+    character: {
+      title: calculatorTitle,
+      url: typeof window === 'undefined' ? '' : window.location.href,
+      inputs: [],
+      result: { label: 'Characters', value: stats.chars.toLocaleString('en-US'), raw: stats.chars, kind: 'integer' },
+      outputs: [
+        { label: 'Characters (no spaces)', value: stats.charsNoSpaces.toLocaleString('en-US'), raw: stats.charsNoSpaces, kind: 'integer' },
+        { label: 'Words', value: stats.words.toLocaleString('en-US'), raw: stats.words, kind: 'integer' },
+        { label: 'Sentences', value: stats.sentences.toLocaleString('en-US'), raw: stats.sentences, kind: 'integer' },
+        { label: 'Paragraphs', value: stats.paragraphs.toLocaleString('en-US'), raw: stats.paragraphs, kind: 'integer' },
+        { label: 'Lines', value: stats.lines.toLocaleString('en-US'), raw: stats.lines, kind: 'integer' },
+        { label: 'Reading time', value: readingTime(stats.words), kind: 'text' }
+      ]
+    },
+    hashtag: {
+      title: calculatorTitle,
+      url: typeof window === 'undefined' ? '' : window.location.href,
+      inputs: [],
+      result: { label: 'Unique hashtags', value: stats.uniqueHashtags.toLocaleString('en-US'), raw: stats.uniqueHashtags, kind: 'integer' },
+      outputs: [
+        { label: 'Characters', value: stats.chars.toLocaleString('en-US'), raw: stats.chars, kind: 'integer' },
+        { label: 'Words', value: stats.words.toLocaleString('en-US'), raw: stats.words, kind: 'integer' },
+        {
+          label: 'Instagram limit (30)',
+          value: stats.instagramHashtagOk ? `OK — ${stats.uniqueHashtags}/30` : `Exceeded — ${stats.uniqueHashtags}/30`,
+          kind: 'text'
+        }
+      ]
+    },
+    word: {
+      title: calculatorTitle,
+      url: typeof window === 'undefined' ? '' : window.location.href,
+      inputs: [],
+      result: { label: 'Words', value: stats.words.toLocaleString('en-US'), raw: stats.words, kind: 'integer' },
+      outputs: [
+        { label: 'Characters', value: stats.chars.toLocaleString('en-US'), raw: stats.chars, kind: 'integer' },
+        { label: 'Sentences', value: stats.sentences.toLocaleString('en-US'), raw: stats.sentences, kind: 'integer' },
+        { label: 'Paragraphs', value: stats.paragraphs.toLocaleString('en-US'), raw: stats.paragraphs, kind: 'integer' },
+        { label: 'Reading time', value: readingTime(stats.words), kind: 'text' }
+      ]
+    },
+    syllable: {
+      title: calculatorTitle,
+      url: typeof window === 'undefined' ? '' : window.location.href,
+      inputs: [],
+      result: { label: 'Syllables', value: stats.totalSyllables.toLocaleString('en-US'), raw: stats.totalSyllables, kind: 'integer' },
+      outputs: [
+        { label: 'Words', value: stats.words.toLocaleString('en-US'), raw: stats.words, kind: 'integer' },
+        { label: 'Avg syllables per word', value: stats.avgSyllablesPerWord.toFixed(2), raw: stats.avgSyllablesPerWord, kind: 'decimal' },
+        { label: 'Complex words (3+ syllables)', value: stats.complexWords.toLocaleString('en-US'), raw: stats.complexWords, kind: 'integer' }
+      ]
+    }
   };
+  const exportData: ExportPayload | null = text.trim() === '' ? null : exportDataByMode[activeMode];
 
   return (
     <WidgetCard>
-      <div className="flex gap-2">
-        {(['character', 'hashtag'] as Mode[]).map((m) => (
+      <div className="flex flex-wrap gap-2">
+        {(['character', 'hashtag', 'word', 'syllable'] as Mode[]).map((m) => (
           <button
             key={m}
             onClick={() => setActiveMode(m)}
             style={activeMode === m ? { borderColor: accent, backgroundColor: `${accent}1A`, color: accent } : undefined}
             className={`rounded-2xl border px-4 py-1.5 text-sm font-medium capitalize transition ${activeMode === m ? '' : 'border-slate-300 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400'}`}
           >
-            {m === 'character' ? 'Character Counter' : 'Hashtag Counter'}
+            {MODE_LABELS[m]}
           </button>
         ))}
       </div>
@@ -174,7 +233,7 @@ export default function TextToolsCalculator({ mode }: { mode?: Mode }) {
             </p>
           </div>
         </>
-      ) : (
+      ) : activeMode === 'hashtag' ? (
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[
@@ -206,6 +265,60 @@ export default function TextToolsCalculator({ mode }: { mode?: Mode }) {
             </div>
           )}
         </div>
+      ) : activeMode === 'word' ? (
+        <>
+          <div className="rounded-2xl border p-4 text-center" style={{ borderColor: `${accent}55`, backgroundColor: `${accent}0F` }}>
+            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: accent }}>Words</p>
+            <p className="mt-1 text-4xl font-bold" style={{ color: accent }}>{stats.words.toLocaleString('en-US')}</p>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: 'Characters', value: stats.chars },
+              { label: 'Sentences', value: stats.sentences },
+              { label: 'Paragraphs', value: stats.paragraphs },
+            ].map(({ label, value }) => (
+              <div key={label} className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-center dark:border-slate-700 dark:bg-slate-900">
+                <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
+                <p className="mt-1 text-2xl font-bold text-slate-800 dark:text-slate-200">{value}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Reading time: <strong style={{ color: accent }}>{readingTime(stats.words)}</strong>
+              {' '}at 200 words/min
+            </p>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="rounded-2xl border p-4 text-center" style={{ borderColor: `${accent}55`, backgroundColor: `${accent}0F` }}>
+            <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: accent }}>Syllables</p>
+            <p className="mt-1 text-4xl font-bold" style={{ color: accent }}>{stats.totalSyllables.toLocaleString('en-US')}</p>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: 'Words', value: stats.words },
+              { label: 'Avg/word', value: stats.avgSyllablesPerWord.toFixed(2) },
+              { label: 'Complex words (3+)', value: stats.complexWords },
+            ].map(({ label, value }) => (
+              <div key={label} className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-center dark:border-slate-700 dark:bg-slate-900">
+                <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
+                <p className="mt-1 text-2xl font-bold text-slate-800 dark:text-slate-200">{value}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              A vowel-group estimate, not a dictionary lookup — feed this word, sentence, and syllable count into the{' '}
+              <strong style={{ color: accent }}>Readability Score Calculator</strong> for a Flesch-Kincaid grade level.
+            </p>
+          </div>
+        </>
       )}
 
       <div className="flex justify-end">

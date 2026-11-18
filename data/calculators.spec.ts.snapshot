@@ -8331,6 +8331,38 @@ exports[`compute() snapshots > job-offer-comparison-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > keyword-density-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "occurrences": 18,
+      "totalWords": 1200
+    },
+    "outputs": {
+      "keywordDensity": 1.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "occurrences": 27,
+      "totalWords": 1800
+    },
+    "outputs": {
+      "keywordDensity": 1.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "occurrences": 0,
+      "totalWords": 1
+    },
+    "outputs": {
+      "keywordDensity": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > kids-shoe-size-chart 1`] = `
 {
   "default": {
@@ -14046,6 +14078,44 @@ exports[`compute() snapshots > reaction-half-life-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > readability-score-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "words": 150,
+      "sentences": 10,
+      "syllables": 225
+    },
+    "outputs": {
+      "gradeLevel": 7.96,
+      "readingEase": 64.71
+    }
+  },
+  "typical": {
+    "inputs": {
+      "words": 225,
+      "sentences": 15,
+      "syllables": 338
+    },
+    "outputs": {
+      "gradeLevel": 7.986222222,
+      "readingEase": 64.522
+    }
+  },
+  "edge": {
+    "inputs": {
+      "words": 1,
+      "sentences": 1,
+      "syllables": 1
+    },
+    "outputs": {
+      "gradeLevel": -3.4,
+      "readingEase": 121.22
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > reading-speed-calculator 1`] = `
 {
   "default": {
@@ -15228,6 +15298,38 @@ exports[`compute() snapshots > scientific-notation-calculator 1`] = `
       "resultCoefficient": 0,
       "resultExponent": 0,
       "resultPlain": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > script-reading-time-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "scriptWordCount": 700,
+      "speakingRateWpm": 140
+    },
+    "outputs": {
+      "estimatedMinutes": 5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "scriptWordCount": 1050,
+      "speakingRateWpm": 210
+    },
+    "outputs": {
+      "estimatedMinutes": 5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "scriptWordCount": 0,
+      "speakingRateWpm": 1
+    },
+    "outputs": {
+      "estimatedMinutes": 0
     }
   }
 }
@@ -17782,6 +17884,47 @@ exports[`compute() snapshots > turkey-thaw-time-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > tweet-thread-length-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "totalCharacters": 840,
+      "platform": 0,
+      "reservedPerPost": 0
+    },
+    "outputs": {
+      "postsNeeded": 3,
+      "usablePerPost": 280,
+      "lastPostCharacters": 280
+    }
+  },
+  "typical": {
+    "inputs": {
+      "totalCharacters": 1260,
+      "platform": 0,
+      "reservedPerPost": 0
+    },
+    "outputs": {
+      "postsNeeded": 5,
+      "usablePerPost": 280,
+      "lastPostCharacters": 140
+    }
+  },
+  "edge": {
+    "inputs": {
+      "totalCharacters": 0,
+      "platform": 0,
+      "reservedPerPost": 0
+    },
+    "outputs": {
+      "postsNeeded": 0,
+      "usablePerPost": 280,
+      "lastPostCharacters": 280
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > twitch-earnings-calculator 1`] = `
 {
   "default": {
@@ -17821,6 +17964,38 @@ exports[`compute() snapshots > twitch-earnings-calculator 1`] = `
     "outputs": {
       "subRevenue": 0,
       "totalEarnings": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > typing-speed-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "wordsTyped": 540,
+      "minutesTaken": 9
+    },
+    "outputs": {
+      "typingSpeedWpm": 60
+    }
+  },
+  "typical": {
+    "inputs": {
+      "wordsTyped": 810,
+      "minutesTaken": 13.5
+    },
+    "outputs": {
+      "typingSpeedWpm": 60
+    }
+  },
+  "edge": {
+    "inputs": {
+      "wordsTyped": 0,
+      "minutesTaken": 0.01
+    },
+    "outputs": {
+      "typingSpeedWpm": 0
     }
   }
 }
@@ -18830,6 +19005,41 @@ exports[`compute() snapshots > womens-shoe-size-chart 1`] = `
       "mondopoint": 0,
       "footCm": 0,
       "footIn": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > word-to-page-count-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "words": 1250,
+      "spacing": 0
+    },
+    "outputs": {
+      "pages": 5,
+      "otherSpacingPages": 2.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "words": 1875,
+      "spacing": 0
+    },
+    "outputs": {
+      "pages": 7.5,
+      "otherSpacingPages": 3.75
+    }
+  },
+  "edge": {
+    "inputs": {
+      "words": 0,
+      "spacing": 0
+    },
+    "outputs": {
+      "pages": 0,
+      "otherSpacingPages": 0
     }
   }
 }

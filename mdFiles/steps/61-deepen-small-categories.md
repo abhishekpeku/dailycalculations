@@ -264,8 +264,42 @@ whole site before writing any id.
   - All 8 numbers independently re-verified in a standalone Node scratch script (no app
     imports) before committing; `npm test` (1569 passing), lint, and `npm run build` all
     green with all 10 `creator` calculators present.
-- [ ] Batch 8 — `text` (8 new) — built by a separate agent/worktree, branch `step/61-deepen-text`,
-      PR #129, open and not yet merged as of this entry. Not this batch's agent to document.
+- [x] Batch 8 — `text` (8 new; done 2026-11-18, branch `step/61-deepen-text`, PR #129 — built
+      across two sessions after a rate-limit interruption; the second session resumed cleanly
+      from the branch's own commits plus this checklist)
+  - [x] `keyword-density-calculator` — keyword/phrase occurrences ÷ total words, solver (any two
+    of keyword count/total words/density).
+  - [x] `typing-speed-calculator` — WPM from a word count + elapsed time (or the reverse); not a
+    live typing test, matching the site's enter-numbers-get-a-result pattern.
+  - [x] `script-reading-time-calculator` — spoken-delivery time at a cited ~130-150 wpm speaking
+    rate, distinct from the character-counter's ~200 wpm silent-reading figure.
+  - [x] `tweet-thread-length-calculator` — posts/segments needed to split text to a platform's
+    character limit, optional per-post numbering reserve; reuses `character-counter`'s
+    `PLATFORM_LIMITS` table.
+  - [x] `readability-score-calculator` — Flesch-Kincaid Grade Level + Flesch Reading Ease from
+    word/sentence/syllable counts, citing Kincaid/Fishburne/Rogers/Chissom's 1975 US Navy report;
+    `rangeBar` visual across the 8 standard reading-ease bands.
+  - [x] `word-to-page-count-calculator` — words → estimated pages, citing Wikipedia's "Standard
+    manuscript format" 250-words-per-double-spaced-page convention (500 single-spaced).
+  - [x] `word-counter-calculator` — the long-planned step-26 idea; 3rd mode of the
+    `TextToolsCalculator` custom widget (alongside `character-counter`/`hashtag-counter`), same
+    counting rules as the character counter but leading with word count, platform-limit bars
+    dropped.
+  - [x] `syllable-counter-calculator` — 4th `TextToolsCalculator` mode: a vowel-group syllable
+    heuristic (vowel-run count, minus silent trailing "e", plus a "-le" ending correction,
+    minimum 1 per word), simplified from the real chain Lingua::EN::Syllable (Perl, Greg Fast) →
+    Text-Statistics (PHP, Dave Child) → `syllable` (JS, Titus Wormer/wooorm) — all three fetched
+    directly and cited, including the Perl module's own documented ~10-15% miss-by-one-syllable
+    rate, quoted honestly as the expected accuracy order for this heuristic family. Verified
+    28/28 against a hand-counted dictionary-truth word list in a standalone Node scratch script
+    before wiring into the widget. Outputs (total syllables, avg syllables/word, complex-word
+    count) feed `readability-score-calculator`, which already anticipated it by name.
+  - `TextToolsCalculator.tsx` now has 4 modes; all 4 custom-widget ids registered in `page.tsx`'s
+    widget switch, `data/calculators.spec.ts`'s `CUSTOM_TOOLS`, and
+    `lib/howItWorks.ts`/`lib/howItWorks.spec.ts`'s `SPECIAL_WIDGETS`. No new `lib/units.ts`
+    dimension or `KNOWN_NON_FINITE` entries needed (all plain counts/ratios).
+  - `npm test` 1589/1589 (additive snapshot diff), lint clean, `npm run build` 440/440 pages.
+  - `text` is now **10/10**, site-wide **440**.
 - [x] Batch 9 — `education` (9 new; DONE 2026-11-18, branch `step/61-deepen-education`, PR #128)
   - [x] `grade-calculator` — built alongside `weighted-average-calculator` (math) and `gpa-calculator`
     (education) rather than skipped as a dupe: same underlying weighted-sum formula, but this page
@@ -321,8 +355,8 @@ Every category that was under 10 calculators when this step started is now at 10
 | `travel` | 4 | 10 | 5 | merged |
 | `time` | 5 | 10 | 6 | #127 (merged) |
 | `creator` | 2 | 10 | 7 | #126 (merged) |
-| `text` | 2 | 10 | 8 | #129 (open, separate agent, pending merge) |
-| `education` | 1 | 10 | 9 | #128 (this batch, pending merge) |
+| `text` | 2 | 10 | 8 | #129 (merged) |
+| `education` | 1 | 10 | 9 | #128 (merged) |
 
 41 calculators became 101 across the 9 batches (57 planned; a few categories landed above 10 where
 the real seed list genuinely supported it, like `health` at 11, and a handful of ideas were
@@ -330,6 +364,6 @@ honestly skipped rather than padded in to hit a round number: `gas-mileage-compa
 in batch 1, and a 10-point GPA scale plus a direct US-to-UK GPA cross-conversion in batch 9). Every
 batch independently re-verified its own worked-example and FAQ numbers in a standalone Node scratch
 script, fetched every cited figure or formula directly rather than from memory, and kept
-`npm test`/`npm run lint`/`npm run build` green before every commit. Once PR #128 and #129 both
-merge, Step 61 — "deepen every category under 10 calculators to ≥10" — is fully closed, with no
+`npm test`/`npm run lint`/`npm run build` green before every commit. With PR #128 and #129 both
+merged, Step 61 — "deepen every category under 10 calculators to ≥10" — is fully closed, with no
 category below 10 anywhere on the site.

@@ -1056,6 +1056,47 @@ exports[`compute() snapshots > baseball-batting-average-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > battery-backup-sizing-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "criticalLoadWatts": 6300,
+      "backupHours": 8,
+      "reserveMarginPercent": 10
+    },
+    "outputs": {
+      "requiredKwh": 55.44,
+      "requiredKwhBare": 50.4,
+      "batteriesNeeded": 5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "criticalLoadWatts": 9500,
+      "backupHours": 12,
+      "reserveMarginPercent": 15
+    },
+    "outputs": {
+      "requiredKwh": 131.1,
+      "requiredKwhBare": 114,
+      "batteriesNeeded": 10
+    }
+  },
+  "edge": {
+    "inputs": {
+      "criticalLoadWatts": 0,
+      "backupHours": 1,
+      "reserveMarginPercent": 0
+    },
+    "outputs": {
+      "requiredKwh": 0,
+      "requiredKwhBare": 0,
+      "batteriesNeeded": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > beer-lambert-law-calculator 1`] = `
 {
   "default": {

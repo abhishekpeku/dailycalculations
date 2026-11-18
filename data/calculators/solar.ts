@@ -579,5 +579,111 @@ export const solarCalculators: CalculatorConfig[] = [
       const creditShortfallPercent = values.retailRatePerKwh > 0 ? (1 - values.netMeteringRatePerKwh / values.retailRatePerKwh) * 100 : NaN;
       return { monthlyCredit, annualCredit, monthlyValueAtRetail, annualValueAtRetail, creditShortfallPercent };
     }
+  },
+  {
+    id: 'battery-backup-sizing-calculator',
+    category: 'solar',
+    glyph: 'kWh',
+    updatedAt: '2026-11-18',
+    aliases: ['home battery backup sizing calculator', 'how big a solar battery do i need', 'solar battery capacity calculator', 'backup battery kwh calculator', 'how many solar batteries do i need'],
+    related: ['solar-panel-system-size-calculator', 'off-grid-solar-calculator', 'home-electricity-consumption-calculator', 'solar-savings-calculator'],
+    title: 'Battery Backup Sizing Calculator',
+    description: 'Find the battery capacity (kWh) needed to back up a set of loads for a chosen number of hours, plus how many average-sized home batteries that takes.',
+    example: '6,300 W of load (a dishwasher, an AC unit, a fridge and some lights and electronics running together) for 8 hours, with a 10% margin, needs 55.44 kWh — about 5 batteries at a common 13.5 kWh size.',
+    breakdown: {
+      headline: 'requiredKwh',
+      headlineLabel: 'Battery capacity needed',
+      outputs: [
+        { id: 'requiredKwh', label: 'Battery capacity needed', format: 'number', dimension: 'energy', unit: 'kWh' },
+        { id: 'requiredKwhBare', label: 'Bare minimum, before any margin', format: 'number', dimension: 'energy', unit: 'kWh' },
+        { id: 'batteriesNeeded', label: 'Batteries needed (at 13.5 kWh each)', format: 'integer' }
+      ],
+      groups: [
+        { title: 'Loads to back up', inputs: ['criticalLoadWatts', 'backupHours'] },
+        { title: 'Safety margin', inputs: ['reserveMarginPercent'], optional: true }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'requiredKwhBare', label: 'Bare minimum' },
+          { from: 'requiredKwh', label: 'With margin' }
+        ],
+        title: 'Battery capacity needed, before and after the margin'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Sizing a home battery for backup power',
+        paragraphs: [
+          'EnergySage, a solar-quote marketplace, lays out the core calculation for home battery backup directly: "multiply the appliances\' electricity demand by the number of hours they\'ll need to run. That\'ll tell you the kilowatt-hour (kWh) capacity you require for storage." Demand is measured in kilowatts (the rate of draw) and the result is in kilowatt-hours (demand × time) — the same relationship that makes a 1 kW load running for 3 hours use exactly as much energy as a 3 kW load running for 1 hour.',
+          'EnergySage\'s own worked example totals a household\'s loads this way: "a 1,500-watt (W) dishwasher, a 3,000-W air conditioner, an 800-W refrigerator, plus lights, WiFi and miscellaneous appliances that consume 1,000 W of electricity" — 6,300 W running together. Whether you want everything running at once, or only a smaller set of true essentials (the refrigerator and some lights, say), is a choice only you can make; this calculator just does the multiplication once you\'ve decided what "backed up" means for your home.',
+          'For scale, EnergySage also notes that "the average solar battery is roughly 10 to 13.5 kilowatt-hours (kWh) in size" — this calculator uses the top of that range, 13.5 kWh, to estimate how many battery units a given capacity requirement takes, since whole-home backup commonly needs more than one.'
+        ]
+      },
+      howTo: {
+        intro: 'Add up the wattage of what you want backed up, decide how many hours to cover, and optionally add a margin.',
+        steps: [
+          { name: 'Add up your critical-load wattage', text: 'Sum the wattage of everything you want running during an outage — check appliance nameplates or use the appliance energy cost calculator for one device at a time.' },
+          { name: 'Enter the hours you want covered', text: 'This is how long you want those loads able to run without the grid or solar recharging the battery.' },
+          { name: 'Add a margin, if you want one', text: 'A percentage above the bare-minimum figure, to leave room for battery aging, inverter losses, or loads you forgot to count.' },
+          { name: 'Read the result', text: 'The headline is the battery capacity needed in kWh; the rows below show the bare-minimum figure and roughly how many average-sized batteries that takes.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Capacity needed is simply load times time, scaled up by any margin you add.',
+        expression: 'bare kWh = (load in watts ÷ 1,000) × hours\nkWh needed = bare kWh × (1 + margin%)\nbatteries needed = ceil(kWh needed ÷ 13.5)',
+        terms: [
+          { symbol: 'load', meaning: 'Combined wattage of everything you want backed up, running at the same time.' },
+          { symbol: 'hours', meaning: 'How long you want that load able to run on battery alone.' },
+          { symbol: 'margin%', meaning: 'An optional buffer above the bare-minimum figure; 0% uses the bare minimum exactly.' },
+          { symbol: 'ceil(x)', meaning: 'Round up to the next whole battery — you can only install whole units.' }
+        ],
+        note: 'This sizes stored energy only. It does not check whether your inverter\'s power rating (kW, not kWh) can actually deliver your combined load at once — a battery can hold enough energy but still trip if asked to output more power than its inverter supports. Check your battery\'s continuous power rating against your peak combined load separately.'
+      },
+      workedExample: {
+        intro: 'EnergySage\'s own example load — a 1,500 W dishwasher, a 3,000 W air conditioner, an 800 W refrigerator, and 1,000 W of lights, WiFi and miscellaneous electronics, 6,300 W in total — backed up for 8 hours, with a 10% margin.',
+        rows: [
+          { label: 'Bare minimum (6.3 kW × 8 h)', value: '50.4 kWh' },
+          { label: 'With a 10% margin (50.4 × 1.10)', value: '55.44 kWh' },
+          { label: 'Batteries needed (ceil(55.44 ÷ 13.5))', value: '5 batteries' }
+        ],
+        result: '55.44 kWh needed — about 5 batteries at 13.5 kWh each',
+        explanation: 'Dropping the 10% margin brings the figure back to the bare 50.4 kWh, which still needs 4 batteries at 13.5 kWh each (50.4 ÷ 13.5 = 3.73, rounded up) — one fewer than the margin-adjusted total. Backing up only the refrigerator and the lights/WiFi/misc load (1,800 W) for a longer 12-hour outage, with no margin, needs just 21.6 kWh — 2 batteries.'
+      },
+      watchOut: [
+        { title: 'This is energy (kWh), not power (kW)', body: 'A battery\'s kWh rating is how much it can store, not how much it can output at once. Check its continuous power rating (kW) against your actual combined load — a battery sized correctly on energy alone can still be unable to run everything simultaneously.' },
+        { title: 'Decide what "backed up" really means first', body: 'EnergySage\'s own example includes a 3,000 W air conditioner and a 1,500 W dishwasher — comfort and convenience loads, not strict essentials. Backing up only a refrigerator and some lights needs dramatically less capacity than backing up everything in the house.' },
+        { title: 'The 13.5 kWh reference is EnergySage\'s own upper bound, not every battery', body: 'EnergySage describes the average home battery as "roughly 10 to 13.5 kilowatt-hours" — actual products vary, and some systems stack smaller or larger units. Check your own battery\'s nameplate capacity for an exact unit count.' },
+        { title: 'No margin means no room for error', body: 'A 0% margin assumes your load estimate is exactly right and the battery discharges every kWh of its rated capacity. Real batteries, loads you forgot to count, and battery aging over time are all reasons to size a little above the bare minimum.' }
+      ],
+      references: [
+        { label: 'EnergySage, "How Many Solar Batteries Do You Need for Backup Power?" (sizing formula, example load, average battery size)', url: 'https://www.energysage.com/energy-storage/how-many-solar-batteries-needed/' }
+      ]
+    },
+    inputs: [
+      { id: 'criticalLoadWatts', label: 'Combined load to back up', type: 'number', placeholder: '6300', defaultValue: 6300, step: 100, min: 0, dimension: 'power', unit: 'W' },
+      { id: 'backupHours', label: 'Hours to cover', type: 'number', placeholder: '8', defaultValue: 8, step: 1, min: 1 },
+      { id: 'reserveMarginPercent', label: 'Safety margin above the bare minimum', type: 'percent', placeholder: '10', defaultValue: 10, step: 5, min: 0 }
+    ],
+    seo: {
+      title: 'Battery Backup Sizing Calculator – kWh Needed',
+      description: 'Find the battery capacity (kWh) needed to back up a set of loads for a chosen number of hours, and how many average-sized home batteries that takes.',
+      faq: [
+        { question: 'How do I size a home battery for backup power?', answer: 'EnergySage\'s own method: multiply the combined wattage of what you want backed up by the number of hours you want it running, then convert to kWh. A 6,300 W load for 8 hours needs 50.4 kWh before any safety margin.' },
+        { question: 'How many batteries do I need for whole-home backup?', answer: 'It depends on your load and how long you want it covered. In this calculator\'s worked example — 6,300 W for 8 hours with a 10% margin — about 5 batteries at a common 13.5 kWh size. Backing up only a refrigerator and some lights needs far fewer.' },
+        { question: 'How big is an average home solar battery?', answer: 'EnergySage puts it at "roughly 10 to 13.5 kilowatt-hours (kWh)." This calculator uses 13.5 kWh, the top of that range, to estimate a battery count.' },
+        { question: 'Should I back up my air conditioner and dishwasher too?', answer: 'That is a personal choice, not a technical requirement. EnergySage\'s own example includes both, but many homeowners choose to back up only true essentials — a refrigerator, lights, WiFi and medical equipment — which needs much less capacity.' },
+        { question: 'Why add a safety margin to the bare-minimum calculation?', answer: 'The bare-minimum figure assumes your load estimate is exact and the battery can discharge every kWh of its rating. A margin — 10% in the worked example — leaves room for battery aging, inverter losses, or a load you forgot to count.' },
+        { question: 'Does a bigger battery kWh rating guarantee it can run my appliances at once?', answer: 'No. kWh is stored energy; the battery\'s separate power rating (in kW) determines how much it can output at any one instant. A battery with plenty of stored energy can still be unable to start a large appliance if its power rating is too low.' }
+      ]
+    },
+    compute(values) {
+      const requiredKwhBare = (values.criticalLoadWatts / 1000) * values.backupHours;
+      const requiredKwh = requiredKwhBare * (1 + values.reserveMarginPercent / 100);
+      const batteriesNeeded = Math.ceil(requiredKwh / 13.5);
+      return { requiredKwh, requiredKwhBare, batteriesNeeded };
+    }
   }
 ];

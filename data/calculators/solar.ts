@@ -903,5 +903,115 @@ export const solarCalculators: CalculatorConfig[] = [
       const annualKwh = dailyKwh * 365;
       return { dailyKwh, monthlyKwh, annualKwh };
     }
+  },
+  {
+    id: 'appliance-energy-cost-calculator',
+    category: 'solar',
+    glyph: '$/d',
+    updatedAt: '2026-11-18',
+    aliases: ['appliance running cost calculator', 'how much does it cost to run this appliance', 'cost to run an appliance calculator', 'electricity cost per appliance calculator', 'appliance operating cost calculator'],
+    related: ['home-electricity-consumption-calculator', 'electricity-bill-calculator', 'solar-savings-calculator', 'solar-panel-system-size-calculator'],
+    title: 'Appliance Energy Cost Calculator',
+    description: 'Find what a single appliance costs to run per day, month and year, from its wattage, hours used per day and your electricity rate.',
+    example: 'A 1,500 W dishwasher run 1 hour a day at $0.1831/kWh costs about $0.27 that day, $8.24 a month and $100.25 a year — 30 times as much as a 10 W LED bulb run 5 hours a day on the same rate.',
+    breakdown: {
+      headline: 'monthlyCost',
+      headlineLabel: 'Estimated monthly cost',
+      outputs: [
+        { id: 'monthlyCost', label: 'Estimated monthly cost', format: 'currency' },
+        { id: 'dailyCost', label: 'Estimated daily cost', format: 'currency' },
+        { id: 'annualCost', label: 'Estimated annual cost', format: 'currency' },
+        { id: 'dailyKwh', label: 'Energy used per day', format: 'number', dimension: 'energy', unit: 'kWh' }
+      ],
+      groups: [
+        { title: 'Appliance', inputs: ['wattage', 'hoursPerDay'] },
+        { title: 'Your rate', inputs: ['ratePerKwh'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'dailyCost', label: 'Per day' },
+          { from: 'monthlyCost', label: 'Per month' }
+        ],
+        title: 'Daily vs. monthly running cost'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What one appliance actually costs to run',
+        paragraphs: [
+          'Running cost is energy used times price: wattage times hours used per day gives watt-hours, divided by 1,000 for kWh, times your electricity rate for a dollar figure. This is the same wattage-times-time relationship the home electricity consumption calculator above uses for a group of identical appliances, applied here to a single device and carried all the way through to a cost instead of stopping at kWh — the two calculators are complementary, not duplicates: one is about how much energy something uses, this one is about what that energy costs at your own rate.',
+          'The gap between a high- and low-wattage appliance compounds through cost exactly as it does through energy. EnergySage\'s own example loads give a sense of the range: a 1,500 W dishwasher versus a 10 W LED bulb are 150 times apart in wattage alone. Run the dishwasher 1 hour a day and the bulb 5 hours a day, and the dishwasher still costs 30 times as much to run per year — long hours on a very low-wattage device rarely catches up to even brief use of a high-wattage one.',
+          'Electricity rates vary enormously by location, which this calculator\'s rate field accounts for directly. The U.S. Energy Information Administration\'s Electric Power Monthly put the national residential average at 18.31 cents per kWh in July 2026 — this calculator\'s default — while state averages that same month ranged from 13.41 cents in North Dakota to 48.00 cents in Hawaii, more than a 3.5x spread for running the exact same appliance.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the appliance\'s wattage, how many hours a day it runs, and your electricity rate.',
+        steps: [
+          { name: 'Enter the wattage', text: 'Check the appliance\'s nameplate, spec sheet or manual for its rated power draw in watts.' },
+          { name: 'Enter hours used per day', text: 'Estimate how many hours a day it actually runs at that draw, not how many hours it is simply plugged in.' },
+          { name: 'Enter your electricity rate', text: 'Use the per-kWh rate from a recent utility bill, not a national average, for an accurate figure.' },
+          { name: 'Read the result', text: 'The headline is the estimated monthly cost; the rows below show the daily and annual figures and the energy used per day.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Cost is energy used times rate; energy used is simply power times time.',
+        expression: 'daily kWh = (wattage × hours per day) ÷ 1,000\ndaily cost = daily kWh × rate\nmonthly cost = daily cost × 30\nannual cost = daily cost × 365',
+        terms: [
+          { symbol: 'wattage', meaning: 'The appliance\'s rated power draw while running, in watts.' },
+          { symbol: 'hours per day', meaning: 'How many hours a day it actually runs at that draw.' },
+          { symbol: 'rate', meaning: 'Your electricity price per kWh.' }
+        ],
+        note: 'This estimates one appliance\'s own running cost only — it does not include a utility\'s fixed monthly charges, which the electricity bill calculator accounts for. Many appliances don\'t draw their full rated wattage the whole time they are switched on, so "hours used per day" should reflect hours of equivalent full-power draw.'
+      },
+      workedExample: {
+        intro: 'A 1,500 W dishwasher runs 1 hour a day, at a $0.1831/kWh electricity rate.',
+        rows: [
+          { label: 'Daily energy (1,500 × 1 ÷ 1,000)', value: '1.5 kWh' },
+          { label: 'Daily cost (1.5 × $0.1831)', value: '$0.27' },
+          { label: 'Monthly cost (0.27465 × 30)', value: '$8.24' },
+          { label: 'Annual cost (0.27465 × 365)', value: '$100.25' }
+        ],
+        result: '$0.27/day · $8.24/month · $100.25/year',
+        explanation: 'A 10 W LED bulb run 5 hours a day on the same $0.1831/kWh rate costs only about $3.34 a year — the dishwasher, despite running just 1 hour a day against the bulb\'s 5, still costs exactly 30 times as much annually, because its wattage is 150 times higher and only a third of that gap is clawed back by the bulb\'s longer daily runtime.'
+      },
+      watchOut: [
+        { title: 'This is one device, not a whole bill', body: 'Real bills add fixed monthly charges (customer, meter, delivery) that don\'t scale with any one appliance\'s usage — see the electricity bill calculator for that fuller picture.' },
+        { title: 'Nameplate wattage can overstate actual running draw', body: 'Some appliances list a maximum or startup wattage above what they draw during steady, normal running. Use a measured or manufacturer-stated typical running wattage where you have one.' },
+        { title: 'Cycling appliances need an "equivalent full-power" hours estimate', body: 'A refrigerator or anything thermostat-controlled doesn\'t draw its full wattage continuously. "Hours used per day" should reflect hours of equivalent full-power draw, which is usually less than hours simply switched on.' },
+        { title: 'Electricity rates vary a lot by location', body: 'EIA\'s July 2026 data put the national residential average at 18.31 cents per kWh, ranging from 13.41 cents in North Dakota to 48.00 cents in Hawaii. Use your own bill\'s rate, not a national figure, for an accurate cost.' }
+      ],
+      references: [
+        { label: 'U.S. Energy Information Administration, Electric Power Monthly, Table 5.6.A (residential rates by state)', url: 'https://www.eia.gov/electricity/monthly/epm_table_grapher.php?t=table_5_06_a' },
+        { label: 'U.S. Energy Information Administration, Energy Explained — Units and Calculators (kWh conversion)', url: 'https://www.eia.gov/energyexplained/units-and-calculators/' },
+        { label: 'EnergySage, "How Many Solar Batteries Do You Need for Backup Power?" (representative appliance wattages)', url: 'https://www.energysage.com/energy-storage/how-many-solar-batteries-needed/' }
+      ]
+    },
+    inputs: [
+      { id: 'wattage', label: 'Appliance wattage', type: 'number', placeholder: '1500', defaultValue: 1500, step: 10, min: 0, dimension: 'power', unit: 'W' },
+      { id: 'hoursPerDay', label: 'Hours used per day', type: 'number', placeholder: '1', defaultValue: 1, step: 0.5, min: 0 },
+      { id: 'ratePerKwh', label: 'Electricity rate', type: 'currency', placeholder: '0.1831', defaultValue: 0.1831, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Appliance Energy Cost Calculator – Daily & Monthly',
+      description: 'Find what a single appliance costs to run per day, month and year, from its wattage, hours used per day and your electricity rate.',
+      faq: [
+        { question: 'How do I calculate what an appliance costs to run?', answer: 'Multiply its wattage by hours used per day, divide by 1,000 for kWh, then multiply by your electricity rate. A 1,500 W dishwasher run 1 hour a day at $0.1831/kWh costs about $0.27 a day.' },
+        { question: 'How much more does a high-wattage appliance cost than a low-wattage one?', answer: 'In this calculator\'s worked example, a 1,500 W dishwasher run 1 hour a day costs 30 times as much per year as a 10 W LED bulb run 5 hours a day — wattage usually dominates cost far more than how many hours a low-power device runs.' },
+        { question: 'Does this include my utility\'s fixed charges?', answer: 'No — this is one appliance\'s running cost only. Use the electricity bill calculator for a full bill estimate that includes fixed monthly charges.' },
+        { question: 'What electricity rate should I use?', answer: 'The per-kWh rate from your own utility bill. This calculator defaults to 18.31 cents per kWh, the EIA\'s July 2026 U.S. residential average, but EIA\'s own data shows state averages ranging from 13.41 cents to 48.00 cents — use your own bill\'s rate for an accurate figure.' },
+        { question: 'How do I find an appliance\'s wattage?', answer: 'Check its nameplate, spec sheet or manual. If it lists a maximum or startup wattage well above its steady running draw, use a typical running figure instead where one is given.' },
+        { question: 'How is this different from the home electricity consumption calculator?', answer: 'That calculator estimates kWh used by one or more identical appliances, without a cost attached. This one takes a single appliance all the way through to a dollar cost at your own electricity rate.' }
+      ]
+    },
+    compute(values) {
+      const dailyKwh = (values.wattage * values.hoursPerDay) / 1000;
+      const dailyCost = dailyKwh * values.ratePerKwh;
+      const monthlyCost = dailyCost * 30;
+      const annualCost = dailyCost * 365;
+      return { dailyCost, monthlyCost, annualCost, dailyKwh };
+    }
   }
 ];

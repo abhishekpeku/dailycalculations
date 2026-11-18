@@ -628,6 +628,50 @@ exports[`compute() snapshots > antipode-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > appliance-energy-cost-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "wattage": 1500,
+      "hoursPerDay": 1,
+      "ratePerKwh": 0.1831
+    },
+    "outputs": {
+      "dailyCost": 0.27465,
+      "monthlyCost": 8.2395,
+      "annualCost": 100.24725,
+      "dailyKwh": 1.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "wattage": 2250,
+      "hoursPerDay": 1.5,
+      "ratePerKwh": 0.27
+    },
+    "outputs": {
+      "dailyCost": 0.91125,
+      "monthlyCost": 27.3375,
+      "annualCost": 332.60625,
+      "dailyKwh": 3.375
+    }
+  },
+  "edge": {
+    "inputs": {
+      "wattage": 0,
+      "hoursPerDay": 0,
+      "ratePerKwh": 0
+    },
+    "outputs": {
+      "dailyCost": 0,
+      "monthlyCost": 0,
+      "annualCost": 0,
+      "dailyKwh": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > area-calculator 1`] = `
 {
   "default": {

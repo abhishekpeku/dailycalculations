@@ -17836,6 +17836,50 @@ exports[`compute() snapshots > script-reading-time-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > self-employment-tax-estimator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "netSelfEmploymentEarnings": 100000
+    },
+    "outputs": {
+      "totalSETax": 14129.55,
+      "socialSecurityTax": 11451.4,
+      "medicareTax": 2678.15,
+      "netEarningsSubjectToSE": 92350,
+      "deductibleHalf": 7064.775,
+      "effectiveRatePercent": 14.12955
+    }
+  },
+  "typical": {
+    "inputs": {
+      "netSelfEmploymentEarnings": 150000
+    },
+    "outputs": {
+      "totalSETax": 21194.325,
+      "socialSecurityTax": 17177.1,
+      "medicareTax": 4017.225,
+      "netEarningsSubjectToSE": 138525,
+      "deductibleHalf": 10597.1625,
+      "effectiveRatePercent": 14.12955
+    }
+  },
+  "edge": {
+    "inputs": {
+      "netSelfEmploymentEarnings": 0
+    },
+    "outputs": {
+      "totalSETax": 0,
+      "socialSecurityTax": 0,
+      "medicareTax": 0,
+      "netEarningsSubjectToSE": 0,
+      "deductibleHalf": 0,
+      "effectiveRatePercent": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > self-rising-flour-substitute-calculator 1`] = `
 {
   "default": {

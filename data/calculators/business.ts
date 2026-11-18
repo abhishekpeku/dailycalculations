@@ -1422,5 +1422,125 @@ export const businessCalculators: CalculatorConfig[] = [
       const grossPrice = values.netPrice + vatAmount;
       return { grossPrice, vatAmount };
     }
+  },
+  {
+    id: 'self-employment-tax-estimator',
+    category: 'business',
+    glyph: 'SE%',
+    updatedAt: '2026-11-19',
+    aliases: ['self employment tax calculator', 'schedule se calculator', '1099 tax calculator', 'self employed tax estimator'],
+    related: ['1099-contractor-rate-calculator', 'freelancer-rate-calculator', 'income-tax-calculator', 'paycheck-calculator'],
+    title: 'Self-Employment Tax Estimator',
+    description: "Estimate US self-employment tax (Social Security and Medicare) from your net self-employment earnings, following the IRS's own Schedule SE calculation, including the Social Security wage base cap.",
+    example: '$100,000 of net self-employment earnings owes about $14,129.55 in self-employment tax for 2026 — 14.13% of net earnings, not the full 15.3%.',
+    breakdown: {
+      headline: 'totalSETax',
+      headlineLabel: 'Self-employment tax owed',
+      outputs: [
+        { id: 'totalSETax', label: 'Self-employment tax owed', format: 'currency' },
+        { id: 'socialSecurityTax', label: 'Social Security portion (12.4%)', format: 'currency' },
+        { id: 'medicareTax', label: 'Medicare portion (2.9%)', format: 'currency' },
+        { id: 'netEarningsSubjectToSE', label: 'Net earnings subject to SE tax (92.35% of net earnings)', format: 'currency' },
+        { id: 'deductibleHalf', label: 'Deductible half (reduces income tax, not SE tax)', format: 'currency' },
+        { id: 'effectiveRatePercent', label: 'Effective rate on net earnings', format: 'percent' }
+      ],
+      groups: [{ title: 'Net self-employment earnings', inputs: ['netSelfEmploymentEarnings'] }],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'socialSecurityTax', label: 'Social Security' },
+          { from: 'medicareTax', label: 'Medicare' }
+        ],
+        center: 'totalSETax',
+        centerSub: 'self-employment tax'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-19',
+      concept: {
+        title: 'What is self-employment tax?',
+        paragraphs: [
+          'Self-employment tax is how self-employed people pay into Social Security and Medicare — the two programs a W-2 employee funds through FICA withholding, split with their employer. The IRS states the rate plainly: "the self-employment tax rate is 15.3%," made up of "12.4% for social security" and "2.9% for Medicare," filed on Schedule SE (Form 1040) whenever net earnings from self-employment are $400 or more.',
+          'The tax is not simply 15.3% of net profit, though. The IRS has you first multiply net earnings by 92.35% — "the amount subject to self-employment tax is 92.35% of your net earnings from self-employment" — before applying the 15.3% rate. That discount roughly mirrors the fact that a W-2 employee\'s FICA is only withheld from gross wages, while the employer\'s matching half is never itself treated as taxable income to the employee; the 92.35% factor brings a self-employed filer\'s math closer to that same shape, so the real effective rate on net earnings works out a little below 15.3% (14.13% in the worked example below).',
+          'The Social Security part of the tax only applies up to a yearly cap, the Social Security wage base — $184,500 for 2026, per the IRS\'s own self-employment tax page. Above that amount, Social Security tax stops, but "all of your wages and tips are subject to the 2.9% Medicare part of the SE tax on all your net earnings," with no cap at all — and single filers above $200,000 (other filing statuses have different thresholds) owe an extra 0.9% Additional Medicare Tax on top, which this estimator does not calculate.',
+          'Half of the self-employment tax is deductible when figuring adjusted gross income for ordinary income tax — the IRS calls it "the employer-equivalent portion of your SE tax." That deduction lowers income tax, not the self-employment tax itself, which is still owed in full.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your net self-employment earnings — net profit after business expenses, the figure from Schedule C, not gross revenue.',
+        steps: [
+          { name: 'Enter net self-employment earnings', text: 'Gross self-employment income minus ordinary business expenses — Schedule C\'s bottom line, not top-line revenue.' },
+          { name: 'Check the taxable amount', text: 'Only 92.35% of net earnings is actually subject to self-employment tax, shown as its own figure.' },
+          { name: 'See the Social Security portion', text: '12.4% of the taxable amount, capped at the Social Security wage base ($184,500 for 2026) — earnings above that are Medicare-only.' },
+          { name: 'See the Medicare portion', text: '2.9% of the taxable amount, with no cap at all.' },
+          { name: 'Read the total and the deductible half', text: 'The total is what is owed; half of it is also deductible against ordinary income tax on your return, shown separately.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Net earnings are reduced to 92.35% before the 15.3% combined rate applies, and the Social Security piece alone is capped at the wage base.',
+        expression:
+          'netEarningsSubjectToSE = netEarnings × 0.9235\nsocialSecurityTax = min(netEarningsSubjectToSE, wageBase) × 0.124\nmedicareTax = netEarningsSubjectToSE × 0.029\ntotalSETax = socialSecurityTax + medicareTax\ndeductibleHalf = totalSETax ÷ 2',
+        terms: [
+          { symbol: 'netEarningsSubjectToSE', meaning: '92.35% of net self-employment earnings — the amount the 15.3% rate actually applies to.' },
+          { symbol: 'wageBase', meaning: 'The yearly Social Security taxable maximum: $184,500 for 2026, per the IRS.' }
+        ],
+        note: 'Estimates only, for the current Social Security wage base. This is self-employment tax alone — it does not include federal or state income tax, the 0.9% Additional Medicare Tax above the filing-status threshold, or any wages from a separate job that would already use up part of the Social Security wage base.'
+      },
+      workedExample: {
+        intro: '$100,000 of net self-employment earnings for the year. What is owed, and how does a much higher amount, $250,000, interact with the Social Security wage base cap?',
+        rows: [
+          { label: 'Net earnings subject to SE tax (100,000 × 0.9235)', value: '$92,350.00' },
+          { label: 'Social Security tax (92,350 × 0.124, under the $184,500 cap)', value: '$11,451.40' },
+          { label: 'Medicare tax (92,350 × 0.029)', value: '$2,678.15' },
+          { label: 'Total self-employment tax (11,451.40 + 2,678.15)', value: '$14,129.55' },
+          { label: 'At $250,000 instead: net earnings subject to SE tax (250,000 × 0.9235)', value: '$230,875.00' },
+          { label: 'At $250,000: Social Security tax, capped (184,500 × 0.124)', value: '$22,878.00' },
+          { label: 'At $250,000: Medicare tax, uncapped (230,875 × 0.029)', value: '$6,695.38' },
+          { label: 'At $250,000: total self-employment tax (22,878.00 + 6,695.38)', value: '$29,573.38' }
+        ],
+        result: '$100,000 of net earnings owes $14,129.55 (14.13% effective rate); $250,000 owes $29,573.38 (11.83% effective rate).',
+        explanation: 'The effective rate drops from 14.13% to 11.83% as income rises past the wage base, because every dollar of net earnings above $184,500 ÷ 0.9235 ≈ $199,784 stops owing the 12.4% Social Security piece and only owes the uncapped 2.9% Medicare piece — the opposite of a progressive income-tax bracket, where the marginal rate rises with income.'
+      },
+      watchOut: [
+        { title: 'This is not a filed return', body: 'This estimates federal self-employment tax only. It does not include federal or state income tax, deductions, or credits — see income-tax-calculator for an income tax estimate on top of this.' },
+        { title: 'The Additional Medicare Tax is not included', body: 'Single filers with net earnings (combined with any wages) above $200,000 owe an extra 0.9% Medicare tax on the amount over that threshold — other filing statuses have different thresholds. This estimator does not add that surtax.' },
+        { title: 'A separate W-2 job changes the wage base math', body: 'The Social Security wage base is shared across all your earnings for the year. If you also have W-2 wages, those use up part of the cap first, so less of your self-employment earnings may be subject to the 12.4% Social Security portion than this estimator (which assumes self-employment is your only income) shows.' },
+        { title: 'Net earnings means net, not gross', body: 'Enter net profit after business expenses (Schedule C\'s bottom line), not gross self-employment revenue — the whole calculation is built on the net figure.' },
+        { title: 'Below $400, there is no self-employment tax', body: 'The IRS requires Schedule SE only when net earnings from self-employment are $400 or more; below that, no self-employment tax is owed at all.' }
+      ],
+      references: [
+        { label: 'Internal Revenue Service, Self-Employment Tax (Social Security and Medicare Taxes)', url: 'https://www.irs.gov/businesses/small-businesses-self-employed/self-employment-tax-social-security-and-medicare-taxes' },
+        { label: 'Internal Revenue Service, Topic no. 554, Self-employment tax', url: 'https://www.irs.gov/taxtopics/tc554' }
+      ]
+    },
+    inputs: [{ id: 'netSelfEmploymentEarnings', label: 'Net self-employment earnings', type: 'currency', placeholder: '100000', defaultValue: 100000, step: 1000, min: 0 }],
+    seo: {
+      title: 'Self-Employment Tax Estimator – Schedule SE',
+      description: "Estimate self-employment tax (Social Security + Medicare) from net self-employment earnings, following the IRS's Schedule SE method and the Social Security wage base cap.",
+      faq: [
+        { question: 'How do I calculate self-employment tax?', answer: 'Multiply net self-employment earnings by 92.35%, then apply 15.3% (12.4% Social Security, capped at the wage base, plus 2.9% Medicare, uncapped). $100,000 of net earnings owes $14,129.55.' },
+        { question: 'Why isn\'t self-employment tax exactly 15.3% of net profit?', answer: 'Because the 15.3% rate applies to 92.35% of net earnings, not the full amount — roughly mirroring how a W-2 employee\'s employer-paid half of FICA is never itself taxed as the employee\'s income. The effective rate works out to about 14.13% on net earnings below the Social Security wage base.' },
+        { question: 'What is the Social Security wage base for 2026?', answer: '$184,500, per the IRS. Net earnings subject to self-employment tax above that amount only owe the 2.9% Medicare portion, not the 12.4% Social Security portion.' },
+        { question: 'Is any of this deductible?', answer: 'Yes — half of the self-employment tax (the "employer-equivalent portion") is deductible when calculating adjusted gross income for ordinary income tax. It reduces income tax, not the self-employment tax itself, which is still owed in full.' },
+        { question: 'Does this include the Additional Medicare Tax?', answer: 'No. Single filers with net earnings above $200,000 owe an extra 0.9% Medicare tax on the excess, with different thresholds for other filing statuses — this estimator covers the base 15.3% self-employment tax only.' },
+        { question: 'What if I also have a W-2 job?', answer: 'The Social Security wage base is shared across all your earnings for the year, so W-2 wages use up part of the cap first. This estimator assumes self-employment is your only income; with a W-2 job too, less of your self-employment earnings may fall under the 12.4% Social Security portion.' },
+        { question: 'Do I owe self-employment tax on every amount of self-employment income?', answer: 'No. The IRS requires Schedule SE only when net earnings from self-employment reach $400 or more in the year.' }
+      ]
+    },
+    compute(values) {
+      const WAGE_BASE_2026 = 184500;
+      const netEarnings = values.netSelfEmploymentEarnings;
+      if (netEarnings < 400) {
+        return { totalSETax: 0, socialSecurityTax: 0, medicareTax: 0, netEarningsSubjectToSE: 0, deductibleHalf: 0, effectiveRatePercent: 0 };
+      }
+      const netEarningsSubjectToSE = netEarnings * 0.9235;
+      const socialSecurityTax = Math.min(netEarningsSubjectToSE, WAGE_BASE_2026) * 0.124;
+      const medicareTax = netEarningsSubjectToSE * 0.029;
+      const totalSETax = socialSecurityTax + medicareTax;
+      const deductibleHalf = totalSETax / 2;
+      const effectiveRatePercent = (totalSETax / netEarnings) * 100;
+      return { totalSETax, socialSecurityTax, medicareTax, netEarningsSubjectToSE, deductibleHalf, effectiveRatePercent };
+    }
   }
 ];

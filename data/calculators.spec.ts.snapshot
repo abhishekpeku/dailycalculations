@@ -17275,6 +17275,38 @@ exports[`compute() snapshots > twitch-earnings-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > typing-speed-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "wordsTyped": 540,
+      "minutesTaken": 9
+    },
+    "outputs": {
+      "typingSpeedWpm": 60
+    }
+  },
+  "typical": {
+    "inputs": {
+      "wordsTyped": 810,
+      "minutesTaken": 13.5
+    },
+    "outputs": {
+      "typingSpeedWpm": 60
+    }
+  },
+  "edge": {
+    "inputs": {
+      "wordsTyped": 0,
+      "minutesTaken": 0.01
+    },
+    "outputs": {
+      "typingSpeedWpm": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > unit-price-calculator 1`] = `
 {
   "default": {

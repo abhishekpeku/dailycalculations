@@ -267,5 +267,105 @@ export const textCalculators: CalculatorConfig[] = [
       const density = values.totalWords > 0 ? (values.occurrences / values.totalWords) * 100 : NaN;
       return { keywordDensity: density };
     }
+  },
+  {
+    id: 'typing-speed-calculator',
+    group: 'Writing & Productivity',
+    category: 'text',
+    glyph: 'wpm',
+    updatedAt: '2026-11-18',
+    aliases: ['wpm calculator', 'words per minute calculator', 'typing speed test calculator', 'typing wpm calculator', 'how fast do i type'],
+    related: ['keyword-density-calculator', 'character-counter', 'hashtag-counter'],
+    title: 'Typing Speed Calculator',
+    description: 'Work out your typing speed in words per minute from a word count and the time it took, or the reverse: how long a word count takes at a given speed. Not a live typing test.',
+    example: 'Typing 540 words in 9 minutes is 540 ÷ 9 = 60 words per minute.',
+    solver: {
+      defaultTarget: 'wpm',
+      variables: [
+        { id: 'wpm', label: 'Typing speed', symbol: 'WPM', dimension: 'count', defaultValue: 60, defaultUnit: 'count' },
+        { id: 'wordsTyped', label: 'Words typed', symbol: 'N', dimension: 'count', defaultValue: 540, defaultUnit: 'count' },
+        { id: 'minutesTaken', label: 'Time taken', symbol: 't', dimension: 'time', defaultValue: 9, defaultUnit: 'min' }
+      ],
+      solve: {
+        wpm: ({ wordsTyped, minutesTaken }) => (minutesTaken > 0 ? wordsTyped / (minutesTaken / 60) : NaN),
+        wordsTyped: ({ wpm, minutesTaken }) => wpm * (minutesTaken / 60),
+        minutesTaken: ({ wordsTyped, wpm }) => (wpm > 0 ? (wordsTyped / wpm) * 60 : NaN)
+      },
+      outputs: [
+        { id: 'charactersTyped', label: 'Characters typed (at 5 per word)', dimension: 'count', compute: (si) => si.wordsTyped * 5 }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'How typing speed (WPM) is measured, and what counts as a "word"',
+        paragraphs: [
+          'Words per minute is just a word count divided by the time it took, in minutes. This calculator is deliberately not a live typing test: it takes a word count and a duration you already have — from a typing test site, a transcription job, or timing yourself writing — and does the division (and its reverse) for you.',
+          'Typing tests that measure real keystrokes almost never count "words" the way a dictionary would. Wikipedia\'s words-per-minute article, summarizing the standard used across text-entry research, states that for measuring text entry, a "word" is generally standardized to five characters or keystrokes, including spaces and punctuation — so a WPM figure quoted from a typing test is really a character-count-per-minute figure in disguise, divided by 5.',
+          'That standardization is also why two people typing the same passage can report different WPM figures for the "same" speed: one tool might count actual space-separated words, while another counts every five keystrokes as a word regardless of where they fall. This calculator only needs the word count you already have; it does not need to know which convention produced it.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of the three fields below. The third, marked auto, is calculated as you type.',
+        steps: [
+          { name: 'Find your speed', text: 'Enter the words you typed and the time it took. Your words-per-minute speed is calculated.' },
+          { name: 'Plan how long something will take', text: 'Enter your typing speed and a word count to see the time needed.' },
+          { name: 'Plan how much you can type in a session', text: 'Enter your typing speed and the minutes you have available to see the word count.' },
+          { name: 'Time yourself first', text: 'Use a stopwatch or a typing-test site\'s own timer, then bring the word count and time here.' },
+          { name: 'Read the character estimate', text: 'The result also shows an estimated character count, using the standard 5-characters-per-word convention described above.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Typing speed is words divided by minutes. Each field has a direct rearrangement.',
+        expression: 'WPM = N ÷ t\nN = WPM × t\nt = N ÷ WPM',
+        terms: [
+          { symbol: 'WPM', meaning: 'Typing speed in words per minute.' },
+          { symbol: 'N', meaning: 'Number of words typed.' },
+          { symbol: 't', meaning: 'Time taken, in minutes.' }
+        ],
+        note: 'This is arithmetic on the word count and time you provide — it does not time you or check what you typed for accuracy.'
+      },
+      workedExample: {
+        intro: 'You type a 540-word passage in 9 minutes. What is your typing speed, and how long would a 1,000-word document take at 40 WPM?',
+        rows: [
+          { label: 'Typing speed (540 ÷ 9)', value: '60 WPM' },
+          { label: 'Characters typed (540 × 5)', value: '2,700' },
+          { label: '1,000 words at 40 WPM (1,000 ÷ 40)', value: '25 minutes' }
+        ],
+        result: '60 WPM for the 540-word passage · 25 minutes for 1,000 words at 40 WPM',
+        explanation: '60 WPM falls within the 43-to-80-WPM range Wikipedia\'s words-per-minute article cites for professional typists, well above the roughly 32.5 WPM a 1999 study found for average computer users transcribing text.'
+      },
+      watchOut: [
+        { title: 'This is not a live typing test', body: 'It does arithmetic on a word count and a time you already have. For an actual timed test with real-time accuracy tracking, use a dedicated typing-test tool, then bring the results here.' },
+        { title: '"Words" usually means 5 characters, not dictionary words', body: 'Most typing tests standardize a "word" to 5 characters or keystrokes, including spaces, rather than counting actual space-separated words — so comparing WPM figures across different tools or tests can be misleading unless you know they use the same convention.' },
+        { title: 'This does not account for accuracy', body: 'A raw word-count-over-time figure (sometimes called "gross" WPM) does not subtract errors. Many typing tests report a lower "net" WPM that penalizes mistakes — this calculator only computes the raw figure from the counts you enter.' },
+        { title: 'Typing speed varies by task', body: 'Copying familiar text, composing original writing, and transcribing from audio produce different speeds for the same person — a 1999 study found an average of 32.5 WPM for transcription versus 19.0 WPM for composition in the same group of computer users.' },
+        { title: 'Benchmarks are reference points, not targets', body: 'The professional-typist and average-user figures cited here come from specific studies cited in Wikipedia\'s words-per-minute article, not a universal standard everyone is measured against.' }
+      ],
+      references: [
+        { label: 'Wikipedia, Words per minute', url: 'https://en.wikipedia.org/wiki/Words_per_minute' }
+      ]
+    },
+    inputs: [
+      { id: 'wordsTyped', label: 'Words typed', type: 'number', placeholder: '540', defaultValue: 540, step: 1, min: 0 },
+      { id: 'minutesTaken', label: 'Time taken (minutes)', type: 'number', placeholder: '9', defaultValue: 9, step: 0.1, min: 0.01 }
+    ],
+    seo: {
+      title: 'Typing Speed Calculator – Words Per Minute (WPM)',
+      description: 'Calculate typing speed in words per minute from a word count and time, or find the time or word count for a target WPM. Not a live typing test.',
+      faq: [
+        { question: 'How do you calculate words per minute?', answer: 'Divide the number of words typed by the time in minutes. Typing 540 words in 9 minutes is 540 ÷ 9 = 60 WPM.' },
+        { question: 'What counts as a "word" in a WPM score?', answer: 'Most typing tests standardize a word to 5 characters or keystrokes, including spaces, rather than counting actual words — a convention described in Wikipedia\'s words-per-minute article summarizing text-entry research.' },
+        { question: 'What is a good typing speed?', answer: 'Wikipedia\'s words-per-minute article cites 43-80 WPM for professional typists (with some roles requiring 80-95 and advanced typists exceeding 120), versus around 32.5 WPM a 1999 study found for average computer users transcribing text.' },
+        { question: 'Is this a real typing test?', answer: 'No. It takes a word count and elapsed time you already have and divides one by the other. For a live, keystroke-by-keystroke test, use a dedicated typing-test tool.' },
+        { question: 'Does this calculate net WPM (with error penalties)?', answer: 'No, only gross WPM — words divided by time, with no deduction for mistakes. A typing test that reports "net WPM" is subtracting an error penalty this calculator does not have the data to apply.' },
+        { question: 'How long will a document take to type?', answer: 'Divide the word count by your typing speed. A 1,000-word document at 40 WPM takes 1,000 ÷ 40 = 25 minutes.' }
+      ]
+    },
+    compute(values) {
+      const wpm = values.minutesTaken > 0 ? values.wordsTyped / values.minutesTaken : NaN;
+      return { typingSpeedWpm: wpm };
+    }
   }
 ];

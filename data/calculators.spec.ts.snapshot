@@ -3935,6 +3935,335 @@ exports[`compute() snapshots > cricket-net-run-rate-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > crypto-breakeven-price-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "buyPrice": 20000,
+      "quantity": 0.5,
+      "buyFees": 10,
+      "sellFeePercent": 0.5
+    },
+    "outputs": {
+      "breakevenPrice": 20120.60302,
+      "breakevenTotalValue": 10060.30151,
+      "requiredGainPercent": 0.6030150754
+    }
+  },
+  "typical": {
+    "inputs": {
+      "buyPrice": 30000,
+      "quantity": 0.75,
+      "buyFees": 15,
+      "sellFeePercent": 0.8
+    },
+    "outputs": {
+      "breakevenPrice": 30262.09677,
+      "breakevenTotalValue": 22696.57258,
+      "requiredGainPercent": 0.873655914
+    }
+  },
+  "edge": {
+    "inputs": {
+      "buyPrice": 0,
+      "quantity": 0,
+      "buyFees": 0,
+      "sellFeePercent": 0
+    },
+    "outputs": {
+      "breakevenPrice": "NaN",
+      "breakevenTotalValue": "NaN",
+      "requiredGainPercent": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > crypto-compound-growth-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "principal": 5000,
+      "annualRate": 8,
+      "years": 5
+    },
+    "outputs": {
+      "futureValue": 7346.640384,
+      "totalGrowth": 2346.640384
+    }
+  },
+  "typical": {
+    "inputs": {
+      "principal": 7500,
+      "annualRate": 12,
+      "years": 8
+    },
+    "outputs": {
+      "futureValue": 18569.72382,
+      "totalGrowth": 11069.72382
+    }
+  },
+  "edge": {
+    "inputs": {
+      "principal": 0,
+      "annualRate": -99,
+      "years": 0
+    },
+    "outputs": {
+      "futureValue": 0,
+      "totalGrowth": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > crypto-dca-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "periodInvestment": 100,
+      "currentPrice": 24000,
+      "lists": {
+        "prices": [
+          20000,
+          25000,
+          16000,
+          22000,
+          28000,
+          19000
+        ]
+      }
+    },
+    "outputs": {
+      "averageCostBasis": 20957.00805,
+      "totalInvested": 600,
+      "totalUnitsAcquired": 0.02863004101,
+      "currentValue": 687.1209843,
+      "unrealizedGainLoss": 87.12098428,
+      "unrealizedGainLossPercent": 14.52016405
+    }
+  },
+  "typical": {
+    "inputs": {
+      "periodInvestment": 150,
+      "currentPrice": 36000,
+      "lists": {
+        "prices": [
+          30000,
+          37500,
+          24000,
+          33000,
+          42000,
+          28500
+        ]
+      }
+    },
+    "outputs": {
+      "averageCostBasis": 31435.51208,
+      "totalInvested": 900,
+      "totalUnitsAcquired": 0.02863004101,
+      "currentValue": 1030.681476,
+      "unrealizedGainLoss": 130.6814764,
+      "unrealizedGainLossPercent": 14.52016405
+    }
+  },
+  "edge": {
+    "inputs": {
+      "periodInvestment": 0,
+      "currentPrice": 0,
+      "lists": {
+        "prices": [
+          0,
+          0
+        ]
+      }
+    },
+    "outputs": {
+      "averageCostBasis": "NaN",
+      "totalInvested": "NaN",
+      "totalUnitsAcquired": "NaN",
+      "currentValue": "NaN",
+      "unrealizedGainLoss": "NaN",
+      "unrealizedGainLossPercent": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > crypto-portfolio-rebalancing-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "asset1Value": 6000,
+      "asset1Target": 50,
+      "asset2Value": 3000,
+      "asset2Target": 30,
+      "asset3Value": 1000,
+      "asset3Target": 20,
+      "asset4Value": 0,
+      "asset4Target": 0
+    },
+    "outputs": {
+      "totalPortfolioValue": 10000,
+      "targetPercentSum": 100,
+      "asset1Trade": -1000,
+      "asset2Trade": 0,
+      "asset3Trade": 1000,
+      "asset4Trade": 0,
+      "totalToBuy": 1000,
+      "totalToSell": 1000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "asset1Value": 9000,
+      "asset1Target": 75,
+      "asset2Value": 4500,
+      "asset2Target": 45,
+      "asset3Value": 1500,
+      "asset3Target": 30,
+      "asset4Value": 0,
+      "asset4Target": 0
+    },
+    "outputs": {
+      "totalPortfolioValue": 15000,
+      "targetPercentSum": 150,
+      "asset1Trade": -1500,
+      "asset2Trade": 0,
+      "asset3Trade": 1500,
+      "asset4Trade": 0,
+      "totalToBuy": 1500,
+      "totalToSell": 1500
+    }
+  },
+  "edge": {
+    "inputs": {
+      "asset1Value": 0,
+      "asset1Target": 0,
+      "asset2Value": 0,
+      "asset2Target": 0,
+      "asset3Value": 0,
+      "asset3Target": 0,
+      "asset4Value": 0,
+      "asset4Target": 0
+    },
+    "outputs": {
+      "totalPortfolioValue": 0,
+      "targetPercentSum": 0,
+      "asset1Trade": "NaN",
+      "asset2Trade": "NaN",
+      "asset3Trade": "NaN",
+      "asset4Trade": "NaN",
+      "totalToBuy": "NaN",
+      "totalToSell": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > crypto-profit-loss-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "buyPrice": 20000,
+      "quantity": 0.5,
+      "buyFees": 10,
+      "sellPrice": 28000,
+      "sellFees": 15
+    },
+    "outputs": {
+      "profitLoss": 3975,
+      "profitLossPercent": 39.71028971,
+      "costBasis": 10010,
+      "proceeds": 13985
+    }
+  },
+  "typical": {
+    "inputs": {
+      "buyPrice": 30000,
+      "quantity": 0.75,
+      "buyFees": 15,
+      "sellPrice": 42000,
+      "sellFees": 23
+    },
+    "outputs": {
+      "profitLoss": 8962,
+      "profitLossPercent": 39.80457473,
+      "costBasis": 22515,
+      "proceeds": 31477
+    }
+  },
+  "edge": {
+    "inputs": {
+      "buyPrice": 0,
+      "quantity": 0,
+      "buyFees": 0,
+      "sellPrice": 0,
+      "sellFees": 0
+    },
+    "outputs": {
+      "profitLoss": 0,
+      "profitLossPercent": "NaN",
+      "costBasis": 0,
+      "proceeds": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > crypto-tax-estimate-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "filingStatus": 0,
+      "otherTaxableIncome": 70000,
+      "costBasis": 8000,
+      "proceeds": 20000,
+      "holdingPeriod": 1
+    },
+    "outputs": {
+      "taxOwed": 1800,
+      "gain": 12000,
+      "effectiveRate": 15,
+      "marginalRate": 15,
+      "afterTaxGain": 10200
+    }
+  },
+  "typical": {
+    "inputs": {
+      "filingStatus": 0,
+      "otherTaxableIncome": 105000,
+      "costBasis": 12000,
+      "proceeds": 30000,
+      "holdingPeriod": 2
+    },
+    "outputs": {
+      "taxOwed": 4306,
+      "gain": 18000,
+      "effectiveRate": 23.92222222,
+      "marginalRate": 24,
+      "afterTaxGain": 13694
+    }
+  },
+  "edge": {
+    "inputs": {
+      "filingStatus": 0,
+      "otherTaxableIncome": 0,
+      "costBasis": 0,
+      "proceeds": 0,
+      "holdingPeriod": 0
+    },
+    "outputs": {
+      "taxOwed": 0,
+      "gain": 0,
+      "effectiveRate": 0,
+      "marginalRate": 0,
+      "afterTaxGain": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > cube-root-calculator 1`] = `
 {
   "default": {
@@ -17107,6 +17436,50 @@ exports[`compute() snapshots > stair-calculator 1`] = `
       "actualRiserIn": 5,
       "numTreads": 1,
       "totalRunFt": 0.8333333333
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > staking-rewards-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "principal": 10000,
+      "nominalApr": 6,
+      "years": 3,
+      "compoundingFrequency": 12
+    },
+    "outputs": {
+      "rewardsEarned": 1966.805248,
+      "endingBalance": 11966.80525,
+      "effectiveApy": 6.167781186
+    }
+  },
+  "typical": {
+    "inputs": {
+      "principal": 15000,
+      "nominalApr": 9,
+      "years": 4.5,
+      "compoundingFrequency": 18
+    },
+    "outputs": {
+      "rewardsEarned": 7466.85391,
+      "endingBalance": 22466.85391,
+      "effectiveApy": 9.392893957
+    }
+  },
+  "edge": {
+    "inputs": {
+      "principal": 0,
+      "nominalApr": 0,
+      "years": 0,
+      "compoundingFrequency": 0
+    },
+    "outputs": {
+      "rewardsEarned": 0,
+      "endingBalance": 0,
+      "effectiveApy": 0
     }
   }
 }

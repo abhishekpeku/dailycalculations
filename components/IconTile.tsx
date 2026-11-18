@@ -17,7 +17,10 @@ export const TILE_COLORS = {
   emerald: ['#34D399', '#059669'],
   // Tech (step 25): a brighter, more saturated blue than auto/education's `blue` or physics/
   // time's `indigo` — reads as a circuit-board/terminal glow for the new tech category.
-  cyan: ['#22D3EE', '#0891B2']
+  cyan: ['#22D3EE', '#0891B2'],
+  // Crypto (step 65): a gold/coin tone, distinct from finance's `green` — these are hypothetical
+  // projection and arithmetic tools, not the same trustworthy-bank-math category as finance.
+  amber: ['#FFD43B', '#D69E00']
 } as const;
 
 export type TileColor = keyof typeof TILE_COLORS;
@@ -61,7 +64,10 @@ const ICONS = {
   sparkle: 'M12 3l1.8 6.2L20 11l-6.2 1.8L12 19l-1.8-6.2L4 11l6.2-1.8L12 3zM19 3v3M17.5 4.5h3',
   // A microchip (outer package + 8 pins + die): the tech category (subnetting, IBAN checksums,
   // password strength).
-  chip: 'M7 7h10v10H7zM10 10h4v4h-4zM9 7V4M15 7V4M9 20v-3M15 20v-3M7 9H4M7 15H4M20 9h-3M20 15h-3'
+  chip: 'M7 7h10v10H7zM10 10h4v4h-4zM9 7V4M15 7V4M9 20v-3M15 20v-3M7 9H4M7 15H4M20 9h-3M20 15h-3',
+  // A coin (rim + an engraved currency curve): the crypto category (DCA, staking, rebalancing,
+  // profit/loss, tax-estimate tools).
+  coin: 'M12 3a9 9 0 1 0 0 18 9 9 0 1 0 0-18zM9.5 15.3c0 1 .9 1.7 2.1 1.7h.6c1.2 0 2.1-.6 2.1-1.6 0-.9-.8-1.3-2.1-1.6l-.8-.2c-1.3-.3-2.1-.7-2.1-1.6 0-1 .9-1.6 2.1-1.6h.6c1.2 0 2.1.6 2.1 1.6M12 7.3v1M12 16.9v1'
 } as const;
 
 export type IconName = keyof typeof ICONS;

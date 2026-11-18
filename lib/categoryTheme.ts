@@ -27,7 +27,10 @@ export const CATEGORY_THEME: Record<string, { color: TileColor; icon: IconName }
   fun: { color: 'pink', icon: 'sparkle' },
   // Tech (step 25): a new category, new color — subnetting/checksums/password tools read as
   // technical, not playful or scientific like any already-claimed hue.
-  tech: { color: 'cyan', icon: 'chip' }
+  tech: { color: 'cyan', icon: 'chip' },
+  // Crypto (step 65): a new color, gold/coin-like — distinct from finance's green so these
+  // hypothetical-projection tools don't read as the same trustworthy-bank-math category.
+  crypto: { color: 'amber', icon: 'coin' }
 };
 
 export function categoryTheme(categoryId: string) {
@@ -49,7 +52,8 @@ export const GLYPH_TINT: Record<TileColor, { tint: string; ink: string; darkTint
   purple: { tint: '#F4EAFB', ink: '#7A2BAE', darkTint: 'rgba(201,105,245,0.16)', darkInk: '#C969F5' },
   lime: { tint: '#F1F8E3', ink: '#4D7C0F', darkTint: 'rgba(163,230,53,0.16)', darkInk: '#A3E635' },
   emerald: { tint: '#E6F7F0', ink: '#047857', darkTint: 'rgba(52,211,153,0.16)', darkInk: '#34D399' },
-  cyan: { tint: '#E0F7FC', ink: '#0E7490', darkTint: 'rgba(34,211,238,0.16)', darkInk: '#22D3EE' }
+  cyan: { tint: '#E0F7FC', ink: '#0E7490', darkTint: 'rgba(34,211,238,0.16)', darkInk: '#22D3EE' },
+  amber: { tint: '#FFF6E0', ink: '#8A5A00', darkTint: 'rgba(255,196,0,0.16)', darkInk: '#FFC400' }
 };
 
 // Which tile each long-form section wears, in both its heading and the table of contents.

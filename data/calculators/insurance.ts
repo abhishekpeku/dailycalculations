@@ -5,6 +5,7 @@ import { monthlyPayment, amortizationMonthlySchedule } from '../../lib/amortizat
 export const insuranceCalculators: CalculatorConfig[] = [
   {
     id: 'human-life-value-calculator',
+    group: 'Life Insurance',
     category: 'insurance',
     glyph: 'HLV',
     updatedAt: '2026-11-18',
@@ -132,6 +133,7 @@ export const insuranceCalculators: CalculatorConfig[] = [
   },
   {
     id: 'dime-method-life-insurance-calculator',
+    group: 'Life Insurance',
     category: 'insurance',
     glyph: 'DIME',
     updatedAt: '2026-11-18',
@@ -255,6 +257,7 @@ export const insuranceCalculators: CalculatorConfig[] = [
   },
   {
     id: 'term-life-coverage-calculator',
+    group: 'Life Insurance',
     category: 'insurance',
     glyph: 'term',
     updatedAt: '2026-11-18',
@@ -374,6 +377,7 @@ export const insuranceCalculators: CalculatorConfig[] = [
   },
   {
     id: 'whole-life-vs-term-life-cost-calculator',
+    group: 'Life Insurance',
     category: 'insurance',
     glyph: 'W/T',
     updatedAt: '2026-11-18',
@@ -492,6 +496,7 @@ export const insuranceCalculators: CalculatorConfig[] = [
   },
   {
     id: 'out-of-pocket-maximum-calculator',
+    group: 'Health & Disability',
     category: 'insurance',
     glyph: 'OOP',
     updatedAt: '2026-11-18',
@@ -616,6 +621,7 @@ export const insuranceCalculators: CalculatorConfig[] = [
   },
   {
     id: 'cobra-cost-calculator',
+    group: 'Health & Disability',
     category: 'insurance',
     glyph: 'CBRA',
     updatedAt: '2026-11-18',
@@ -738,6 +744,7 @@ export const insuranceCalculators: CalculatorConfig[] = [
   },
   {
     id: 'disability-insurance-needs-calculator',
+    group: 'Health & Disability',
     category: 'insurance',
     glyph: 'DI',
     updatedAt: '2026-11-18',
@@ -858,6 +865,7 @@ export const insuranceCalculators: CalculatorConfig[] = [
   },
   {
     id: 'long-term-care-insurance-needs-calculator',
+    group: 'Health & Disability',
     category: 'insurance',
     glyph: 'LTC',
     updatedAt: '2026-11-18',
@@ -974,6 +982,7 @@ export const insuranceCalculators: CalculatorConfig[] = [
   },
   {
     id: 'car-insurance-coverage-calculator',
+    group: 'Auto & Property',
     category: 'insurance',
     glyph: 'CAR',
     updatedAt: '2026-11-18',
@@ -1090,6 +1099,7 @@ export const insuranceCalculators: CalculatorConfig[] = [
   },
   {
     id: 'gap-insurance-calculator',
+    group: 'Auto & Property',
     category: 'insurance',
     glyph: 'GAP',
     updatedAt: '2026-11-18',
@@ -1212,6 +1222,7 @@ export const insuranceCalculators: CalculatorConfig[] = [
   },
   {
     id: 'renters-insurance-contents-value-calculator',
+    group: 'Auto & Property',
     category: 'insurance',
     glyph: 'INV',
     updatedAt: '2026-11-18',
@@ -1329,6 +1340,7 @@ export const insuranceCalculators: CalculatorConfig[] = [
   },
   {
     id: 'home-insurance-rebuild-cost-calculator',
+    group: 'Auto & Property',
     category: 'insurance',
     glyph: 'RBLD',
     updatedAt: '2026-11-18',
@@ -1439,6 +1451,7 @@ export const insuranceCalculators: CalculatorConfig[] = [
   },
   {
     id: 'umbrella-insurance-coverage-calculator',
+    group: 'Auto & Property',
     category: 'insurance',
     glyph: 'UMB',
     updatedAt: '2026-11-19',
@@ -1560,6 +1573,7 @@ export const insuranceCalculators: CalculatorConfig[] = [
   },
   {
     id: 'pet-insurance-breakeven-calculator',
+    group: 'Everyday & Planning',
     category: 'insurance',
     glyph: 'PET',
     updatedAt: '2026-11-19',
@@ -1674,6 +1688,7 @@ export const insuranceCalculators: CalculatorConfig[] = [
   },
   {
     id: 'deductible-vs-premium-breakeven-calculator',
+    group: 'Everyday & Planning',
     category: 'insurance',
     glyph: 'D/P',
     updatedAt: '2026-11-19',

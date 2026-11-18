@@ -53,7 +53,15 @@ threshold logic before finalizing).
 
 ## Progress checklist
 
-- [ ] `ip-subnet-calculator`
-- [ ] `iban-calculator`
-- [ ] `password-strength-checker` (custom type-C widget)
-- [ ] STATUS.md updated with the final summary
+- [x] `ip-subnet-calculator` (breakdown widget; new `ipAddress` BreakdownFormat added to
+      lib/breakdown.ts for dotted-decimal display; verified against RFC 4632's own worked examples
+      and the classic /24, /25...,/30, /31 (RFC 3021), /32 and /0 edge cases)
+- [x] `iban-calculator` (custom type-C widget, components/IbanCalculator.tsx — free text, not
+      numeric fields, since a long IBAN's digit-substituted number exceeds JS-safe-integer
+      precision and numeric fields would drop a BBAN's significant leading zeros; verified against
+      Wikipedia's own GB82 WEST example plus several more real example IBANs)
+- [x] `password-strength-checker` (custom type-C widget, components/PasswordStrengthChecker.tsx;
+      entropy verified against a hand-computed log2(N)×L for several passwords, including the
+      length-vs-complexity worked example)
+- [x] STATUS.md updated with the final summary
+- [x] `npm test` (1614/1614), lint clean, `npm run build` passing — see closing summary below

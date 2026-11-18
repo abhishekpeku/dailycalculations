@@ -5152,6 +5152,62 @@ exports[`compute() snapshots > dilution-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > dime-method-life-insurance-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "otherDebt": 15000,
+      "annualIncome": 80000,
+      "incomeReplacementYears": 10,
+      "mortgageBalance": 250000,
+      "numberOfChildren": 2,
+      "educationCostPerChild": 100000
+    },
+    "outputs": {
+      "dimeTotal": 1265000,
+      "otherDebt": 15000,
+      "incomeReplacement": 800000,
+      "mortgageBalance": 250000,
+      "educationTotal": 200000
+    }
+  },
+  "typical": {
+    "inputs": {
+      "otherDebt": 22500,
+      "annualIncome": 120000,
+      "incomeReplacementYears": 15,
+      "mortgageBalance": 375000,
+      "numberOfChildren": 3,
+      "educationCostPerChild": 150000
+    },
+    "outputs": {
+      "dimeTotal": 2647500,
+      "otherDebt": 22500,
+      "incomeReplacement": 1800000,
+      "mortgageBalance": 375000,
+      "educationTotal": 450000
+    }
+  },
+  "edge": {
+    "inputs": {
+      "otherDebt": 0,
+      "annualIncome": 0,
+      "incomeReplacementYears": 0,
+      "mortgageBalance": 0,
+      "numberOfChildren": 0,
+      "educationCostPerChild": 0
+    },
+    "outputs": {
+      "dimeTotal": 0,
+      "otherDebt": 0,
+      "incomeReplacement": 0,
+      "mortgageBalance": 0,
+      "educationTotal": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > discount-calculator 1`] = `
 {
   "default": {
@@ -8464,6 +8520,53 @@ exports[`compute() snapshots > horsepower-to-kilowatts-converter 1`] = `
     },
     "outputs": {
       "kilowatts": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > human-life-value-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "annualIncome": 80000,
+      "personalConsumptionPercent": 20,
+      "yearsToRetirement": 25,
+      "discountRate": 4
+    },
+    "outputs": {
+      "humanLifeValue": 999813.1164,
+      "netAnnualIncome": 64000,
+      "undiscountedTotal": 1600000,
+      "discountSavingsPercent": 37.51168023
+    }
+  },
+  "typical": {
+    "inputs": {
+      "annualIncome": 120000,
+      "personalConsumptionPercent": 30,
+      "yearsToRetirement": 38,
+      "discountRate": 6
+    },
+    "outputs": {
+      "humanLifeValue": 1247065.61,
+      "netAnnualIncome": 84000,
+      "undiscountedTotal": 3192000,
+      "discountSavingsPercent": 60.93152851
+    }
+  },
+  "edge": {
+    "inputs": {
+      "annualIncome": 0,
+      "personalConsumptionPercent": 0,
+      "yearsToRetirement": 0,
+      "discountRate": 0
+    },
+    "outputs": {
+      "humanLifeValue": 0,
+      "netAnnualIncome": 0,
+      "undiscountedTotal": 0,
+      "discountSavingsPercent": 0
     }
   }
 }
@@ -18283,6 +18386,56 @@ exports[`compute() snapshots > tdee-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > term-life-coverage-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "yearsLeftOnMortgage": 22,
+      "youngestChildAge": 5,
+      "childIndependenceAge": 22,
+      "yearsToRetirement": 28
+    },
+    "outputs": {
+      "recommendedTermYears": 30,
+      "longestObligationYears": 28,
+      "yearsUntilChildIndependent": 17,
+      "yearsLeftOnMortgage": 22,
+      "yearsToRetirement": 28
+    }
+  },
+  "typical": {
+    "inputs": {
+      "yearsLeftOnMortgage": 33,
+      "youngestChildAge": 8,
+      "childIndependenceAge": 33,
+      "yearsToRetirement": 42
+    },
+    "outputs": {
+      "recommendedTermYears": 45,
+      "longestObligationYears": 42,
+      "yearsUntilChildIndependent": 25,
+      "yearsLeftOnMortgage": 33,
+      "yearsToRetirement": 42
+    }
+  },
+  "edge": {
+    "inputs": {
+      "yearsLeftOnMortgage": 0,
+      "youngestChildAge": 0,
+      "childIndependenceAge": 0,
+      "yearsToRetirement": 0
+    },
+    "outputs": {
+      "recommendedTermYears": 5,
+      "longestObligationYears": 0,
+      "yearsUntilChildIndependent": 0,
+      "yearsLeftOnMortgage": 0,
+      "yearsToRetirement": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > terminal-velocity-calculator 1`] = `
 {
   "default": {
@@ -20458,6 +20611,53 @@ exports[`compute() snapshots > weighted-average-calculator 1`] = `
       "weightedAverage": "NaN",
       "weightedSum": 0,
       "totalWeight": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > whole-life-vs-term-life-cost-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "termMonthlyPremium": 25,
+      "wholeLifeMonthlyPremium": 150,
+      "comparisonYears": 20,
+      "assumedInvestmentReturn": 7
+    },
+    "outputs": {
+      "investedDifferenceValue": 65115.83248,
+      "termTotalCost": 6000,
+      "wholeLifeTotalCost": 36000,
+      "monthlyDifference": 125
+    }
+  },
+  "typical": {
+    "inputs": {
+      "termMonthlyPremium": 38,
+      "wholeLifeMonthlyPremium": 225,
+      "comparisonYears": 30,
+      "assumedInvestmentReturn": 10.5
+    },
+    "outputs": {
+      "investedDifferenceValue": 470566.9851,
+      "termTotalCost": 13680,
+      "wholeLifeTotalCost": 81000,
+      "monthlyDifference": 187
+    }
+  },
+  "edge": {
+    "inputs": {
+      "termMonthlyPremium": 0,
+      "wholeLifeMonthlyPremium": 0,
+      "comparisonYears": 0,
+      "assumedInvestmentReturn": 0
+    },
+    "outputs": {
+      "investedDifferenceValue": 0,
+      "termTotalCost": 0,
+      "wholeLifeTotalCost": 0,
+      "monthlyDifference": 0
     }
   }
 }

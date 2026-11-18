@@ -33,7 +33,11 @@ export const CATEGORY_THEME: Record<string, { color: TileColor; icon: IconName }
   crypto: { color: 'amber', icon: 'coin' },
   // Solar & Home Energy (step 62): a new color, sun-yellow — distinct from crypto's amber and
   // home's orange so solar/home-energy sizing, savings and financing tools read as their own thing.
-  solar: { color: 'yellow', icon: 'sun' }
+  solar: { color: 'yellow', icon: 'sun' },
+  // Insurance (step 63): a new color, a protective blue-violet — distinct from finance's green
+  // (loans/savings/investing) even though both are money categories; the shield icon reads as
+  // coverage/protection rather than growth.
+  insurance: { color: 'violet', icon: 'shield' }
 };
 
 export function categoryTheme(categoryId: string) {
@@ -57,7 +61,8 @@ export const GLYPH_TINT: Record<TileColor, { tint: string; ink: string; darkTint
   emerald: { tint: '#E6F7F0', ink: '#047857', darkTint: 'rgba(52,211,153,0.16)', darkInk: '#34D399' },
   cyan: { tint: '#E0F7FC', ink: '#0E7490', darkTint: 'rgba(34,211,238,0.16)', darkInk: '#22D3EE' },
   amber: { tint: '#FFF6E0', ink: '#8A5A00', darkTint: 'rgba(255,196,0,0.16)', darkInk: '#FFC400' },
-  yellow: { tint: '#FFFBE0', ink: '#8A6D00', darkTint: 'rgba(255,224,102,0.16)', darkInk: '#FFE066' }
+  yellow: { tint: '#FFFBE0', ink: '#8A6D00', darkTint: 'rgba(255,224,102,0.16)', darkInk: '#FFE066' },
+  violet: { tint: '#F0EAFE', ink: '#6425C9', darkTint: 'rgba(139,92,246,0.16)', darkInk: '#A78BFA' }
 };
 
 // Which tile each long-form section wears, in both its heading and the table of contents.

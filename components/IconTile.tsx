@@ -23,7 +23,10 @@ export const TILE_COLORS = {
   amber: ['#FFD43B', '#D69E00'],
   // Solar & Home Energy (step 62): a clean sun-yellow, distinct from amber's deeper gold/coin tone
   // (crypto) and from home's orange — reads as sunlight, not currency or paint/trim.
-  yellow: ['#FFE066', '#F2B600']
+  yellow: ['#FFE066', '#F2B600'],
+  // Insurance (step 63): a protective blue-violet, distinct from finance's `green` (loans/savings/
+  // investing) and from `purple`/`indigo` (statistics/physics/time already claim those hues).
+  violet: ['#8B5CF6', '#6D28D9']
 } as const;
 
 export type TileColor = keyof typeof TILE_COLORS;
@@ -73,7 +76,9 @@ const ICONS = {
   coin: 'M12 3a9 9 0 1 0 0 18 9 9 0 1 0 0-18zM9.5 15.3c0 1 .9 1.7 2.1 1.7h.6c1.2 0 2.1-.6 2.1-1.6 0-.9-.8-1.3-2.1-1.6l-.8-.2c-1.3-.3-2.1-.7-2.1-1.6 0-1 .9-1.6 2.1-1.6h.6c1.2 0 2.1.6 2.1 1.6M12 7.3v1M12 16.9v1',
   // A sun (center disc + 8 rays): the solar & home energy category (system sizing, savings,
   // payback, financing and net-metering tools).
-  sun: 'M12 8a4 4 0 1 0 0 8 4 4 0 1 0 0-8zM12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4l1.4-1.4M17 7l1.4-1.4'
+  sun: 'M12 8a4 4 0 1 0 0 8 4 4 0 1 0 0-8zM12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4l1.4-1.4M17 7l1.4-1.4',
+  // A shield with a checkmark: the insurance category (coverage, protection, policy estimates).
+  shield: 'M12 3l7 3v5c0 5-3.5 8.6-7 10-3.5-1.4-7-5-7-10V6l7-3zM9 12l2 2 4-4.5'
 } as const;
 
 export type IconName = keyof typeof ICONS;

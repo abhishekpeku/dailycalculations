@@ -25,6 +25,7 @@ import { funCalculators } from './fun.ts';
 import { techCalculators } from './tech.ts';
 import { cryptoCalculators } from './crypto.ts';
 import { solarCalculators } from './solar.ts';
+import { insuranceCalculators } from './insurance.ts';
 
 export type * from './types.ts';
 
@@ -52,7 +53,8 @@ export const categories: CalculatorCategory[] = [
   { id: 'fun', title: 'Fun & Other', description: 'Zodiac, numerology, probability novelties, and other just-for-fun calculators.' },
   { id: 'tech', title: 'Tech', description: 'Subnetting, IBAN checksums, and password strength tools.' },
   { id: 'crypto', title: 'Crypto', description: 'DCA, staking rewards, portfolio rebalancing, and crypto profit/loss and tax-estimate calculators.' },
-  { id: 'solar', title: 'Solar & Home Energy', description: 'Solar system sizing, savings, payback and financing, plus net metering and home-energy efficiency calculators.' }
+  { id: 'solar', title: 'Solar & Home Energy', description: 'Solar system sizing, savings, payback and financing, plus net metering and home-energy efficiency calculators.' },
+  { id: 'insurance', title: 'Insurance', description: 'Life, health, auto, and property insurance coverage and cost-estimate calculators.' }
 ];
 
 // Display order for listings, the sitemap and search; the old single array's order, kept exactly.
@@ -549,7 +551,11 @@ export const calculatorOrder: string[] = [
   'solar-savings-calculator',
   'solar-payback-period-calculator',
   'solar-loan-payment-calculator',
-  'net-metering-savings-calculator'
+  'net-metering-savings-calculator',
+  'human-life-value-calculator',
+  'dime-method-life-insurance-calculator',
+  'term-life-coverage-calculator',
+  'whole-life-vs-term-life-cost-calculator'
 ];
 
 const rank = (id: string) => {
@@ -581,7 +587,8 @@ export const calculators: CalculatorConfig[] = [
   ...funCalculators,
   ...techCalculators,
   ...cryptoCalculators,
-  ...solarCalculators
+  ...solarCalculators,
+  ...insuranceCalculators
 ].sort((a, b) => rank(a.id) - rank(b.id));
 
 export function findCalculator(slug: string) {

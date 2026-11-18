@@ -510,7 +510,12 @@ export const calculatorOrder: string[] = [
   'chinese-zodiac-calculator',
   'zodiac-compatibility-calculator',
   'love-calculator',
-  'name-numerology-calculator'
+  'name-numerology-calculator',
+  'dice-probability-calculator',
+  'coin-flip-probability-calculator',
+  'birthday-paradox-calculator',
+  'lottery-odds-calculator',
+  'card-draw-probability-calculator'
 ];
 
 const rank = (id: string) => {

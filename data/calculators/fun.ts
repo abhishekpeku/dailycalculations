@@ -94,6 +94,106 @@ function reduceNumerology(n: number): number {
   return n;
 }
 
+// Exact integer combinations (nCr) via BigInt, using the same step-wise-exact-division trick as
+// the statistics category's own nCrBig: C(n, i+1) = C(n, i) * (n-i) / (i+1) is always an integer
+// at every step. Used by the lottery-odds and card-draw probability calculators (batch 2).
+const PROBABILITY_MAX_N = 1000;
+function nCrBig(n: number, r: number): bigint {
+  if (r < 0 || r > n || n < 0) return 0n;
+  r = Math.min(r, n - r);
+  let result = 1n;
+  for (let i = 0; i < r; i++) result = (result * BigInt(n - i)) / BigInt(i + 1);
+  return result;
+}
+
+// Exact probability distribution of the sum of `dice` dice with `sides` faces each, found by
+// convolving one die's uniform distribution with itself `dice` times -- the dice-sum generating
+// function x(1 + x + ... + x^(sides-1)) raised to the `dice` power (MathWorld, "Dice", cited below).
+// dist[j] = P(sum = dice + j), for j = 0 .. dice * (sides - 1).
+function diceSumDistribution(dice: number, sides: number): number[] {
+  let dist = [1];
+  for (let d = 0; d < dice; d++) {
+    const next = new Array(dist.length + sides - 1).fill(0);
+    for (let i = 0; i < dist.length; i++) {
+      for (let face = 1; face <= sides; face++) next[i + face - 1] += dist[i] / sides;
+    }
+    dist = next;
+  }
+  return dist;
+}
+
+// Exact binomial probability P(low <= X <= high) for n trials with per-trial success chance p,
+// via the ratio recurrence pmf(k) = pmf(k-1) * (n-k+1)/k * p/(1-p) -- algebraically identical to
+// the nCr(n,k) p^k (1-p)^(n-k) formula (NIST/SEMATECH Engineering Statistics Handbook, cited below)
+// but computed without ever forming n! directly, so it stays stable for large n.
+function binomialRangeProbability(n: number, p: number, low: number, high: number): number {
+  low = Math.max(0, Math.round(low));
+  high = Math.min(n, Math.round(high));
+  if (low > high) return 0;
+  if (p <= 0) return low <= 0 && high >= 0 ? 1 : 0;
+  if (p >= 1) return n >= low && n <= high ? 1 : 0;
+  let pmf = Math.pow(1 - p, n);
+  let sum = low <= 0 && 0 <= high ? pmf : 0;
+  const ratio = p / (1 - p);
+  for (let k = 1; k <= n; k++) {
+    pmf *= ((n - k + 1) / k) * ratio;
+    if (k >= low && k <= high) sum += pmf;
+  }
+  return sum;
+}
+
+// P(no two of `people` people share a birthday), assuming 365 equally likely, independent
+// birthdays (Wikipedia, "Birthday problem", cited below). The complement is the shared-birthday
+// probability.
+function noSharedBirthdayProbability(people: number, days = 365): number {
+  let prob = 1;
+  for (let i = 0; i < people; i++) {
+    prob *= (days - i) / days;
+    if (prob <= 0) return 0;
+  }
+  return Math.max(prob, 0);
+}
+
+// Computed once at module load, not typed in: the smallest group size at which the real formula
+// above first reaches each threshold, for the 365-equally-likely-birthdays assumption.
+function smallestGroupFor(thresholdPercent: number): number {
+  let n = 1;
+  while (1 - noSharedBirthdayProbability(n) < thresholdPercent / 100) n++;
+  return n;
+}
+const MIN_PEOPLE_FOR_50_PERCENT = smallestGroupFor(50);
+const MIN_PEOPLE_FOR_99_PERCENT = smallestGroupFor(99);
+
+// Hypergeometric probability mass: P(exactly k successes in n draws, without replacement, from a
+// population of size N containing K successes) -- Wikipedia, "Hypergeometric distribution", cited
+// below. Used directly by the card-draw calculator, and the same shape as a lottery's odds.
+function hypergeometricPmf(N: number, K: number, n: number, k: number): number {
+  const total = nCrBig(N, n);
+  if (total === 0n) return NaN;
+  const ways = nCrBig(K, k) * nCrBig(N - K, n - k);
+  return Number(ways) / Number(total);
+}
+function hypergeometricRangeProbability(N: number, K: number, n: number, low: number, high: number): number {
+  low = Math.max(0, Math.round(low));
+  high = Math.min(n, K, Math.round(high));
+  let sum = 0;
+  for (let k = low; k <= high; k++) sum += hypergeometricPmf(N, K, n, k);
+  return sum;
+}
+
+// Reference table for the lottery-odds calculator's content: a generic 6-from-49 pick structure
+// (used by multiple real lotteries worldwide, named by no single one) shown purely to illustrate
+// how fast the odds change with the match count. Every value is computed from nCrBig, not typed.
+const LOTTERY_EXAMPLE_POOL = 49;
+const LOTTERY_EXAMPLE_PICKS = 6;
+const LOTTERY_EXAMPLE_ROWS = Array.from({ length: LOTTERY_EXAMPLE_PICKS + 1 }, (_, m) => {
+  const matches = LOTTERY_EXAMPLE_PICKS - m; // build from jackpot (6) down to 0 matches
+  const ways = nCrBig(LOTTERY_EXAMPLE_PICKS, matches) * nCrBig(LOTTERY_EXAMPLE_POOL - LOTTERY_EXAMPLE_PICKS, LOTTERY_EXAMPLE_PICKS - matches);
+  const total = nCrBig(LOTTERY_EXAMPLE_POOL, LOTTERY_EXAMPLE_PICKS);
+  const probability = Number(ways) / Number(total);
+  return { matches, oddsOneIn: probability > 0 ? 1 / probability : NaN };
+});
+
 export const funCalculators: CalculatorConfig[] = [
   {
     id: 'zodiac-sign-calculator',
@@ -560,5 +660,638 @@ export const funCalculators: CalculatorConfig[] = [
       ]
     },
     compute() { return {}; }
+  },
+  {
+    id: 'dice-probability-calculator',
+    category: 'fun',
+    glyph: 'd6',
+    updatedAt: '2026-11-18',
+    aliases: ['dice roll probability calculator', 'probability of rolling a sum calculator', 'two dice sum probability', 'chance of rolling a number with dice'],
+    related: ['probability-calculator', 'combination-calculator', 'coin-flip-probability-calculator', 'card-draw-probability-calculator'],
+    title: 'Dice Probability Calculator',
+    description: 'Find the exact probability of rolling a target sum (or a range of sums) with any number of dice and any number of sides, using the real combinatorics of a dice sum, not a shortcut.',
+    example: 'Rolling two standard six-sided dice, the probability the sum is exactly 7 is 6/36, about 16.67% -- the most common single sum two dice can make.',
+    breakdown: {
+      headline: 'probabilityPercent',
+      headlineLabel: 'Probability',
+      outputs: [
+        { id: 'probabilityPercent', label: 'Probability', format: 'percent' },
+        { id: 'oddsOneIn', label: 'Odds (1 in)', format: 'significant' },
+        { id: 'expectedSum', label: 'Expected (average) sum', format: 'number' },
+        { id: 'minSum', label: 'Lowest possible sum', format: 'integer' },
+        { id: 'maxSum', label: 'Highest possible sum', format: 'integer' }
+      ],
+      groups: [
+        { title: 'Dice', inputs: ['numDice', 'numSides'] },
+        { title: 'Target', inputs: ['comparisonCode', 'targetLow', 'targetHigh'] }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why dice sums are not evenly likely',
+        paragraphs: [
+          'A single fair die lands on each of its faces with equal probability, but the sum of two or more dice is not evenly distributed. With two six-sided dice, for example, there is only one way to roll a 2 (1+1) but six different ways to roll a 7 (1+6, 2+5, 3+4, 4+3, 5+2, 6+1), so a 7 is six times more likely than a 2. This calculator counts those ways exactly for any number of dice and any number of sides, rather than assuming every total is equally likely.',
+          'The exact count comes from a combinatorial identity: the number of ways `n` dice with `s` sides can sum to a target `p` is the coefficient of x^p in the expansion of (x + x^2 + ... + x^s)^n, which works out to a finite inclusion-exclusion sum (see the formula below). This calculator applies the same idea by convolving one die\'s distribution with itself `n` times, which produces the identical exact probabilities without needing the summation formula\'s cancelling terms spelled out by hand.',
+          'You can ask for an exact sum, a sum at or above a value, a sum at or below a value, or a sum in a between range -- all computed from the same underlying distribution.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the dice, then the target.',
+        steps: [
+          { name: 'Enter the number of dice', text: 'How many dice are rolled together, from 1 to 20.' },
+          { name: 'Enter the number of sides per die', text: 'All dice are assumed identical, from 2 to 100 sides.' },
+          { name: 'Choose a comparison', text: 'Exactly this sum, at least, at most, or between two sums.' },
+          { name: 'Enter the target sum (and a second one for "between")', text: 'The sum (or range of sums) you want the probability of.' },
+          { name: 'Read the probability and odds', text: 'The headline is the exact probability; "odds (1 in)" is the same figure written the way odds are usually quoted.' }
+        ],
+        outro: 'Everything is calculated in your browser by building the real sum distribution. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The exact number of ways to roll a sum p with n dice of s sides each (MathWorld\'s closed form), from which the probability follows by dividing by the total number of equally likely outcomes, s^n.',
+        expression:
+          'ways(p, n, s) = sum over k = 0 to floor((p-n)/s) of (-1)^k * C(n, k) * C(p - sk - 1, n - 1)\nP(sum = p) = ways(p, n, s) / s^n\nThis calculator computes the identical distribution by convolving one die\'s uniform distribution with itself n times, rather than evaluating the alternating sum term by term.',
+        terms: [
+          { symbol: 'n', meaning: 'Number of dice.' },
+          { symbol: 's', meaning: 'Number of sides on each die.' },
+          { symbol: 'p', meaning: 'The target sum, valid from n (all 1s) to n*s (all maximum faces).' },
+          { symbol: 'C(a, b)', meaning: 'The combinations ("n choose r") function; by convention it is 0 whenever b is negative or greater than a.' }
+        ],
+        note: 'A sum outside the possible range [n, n*s] has probability exactly 0, not an error -- for example, you cannot roll a 1 with two dice.'
+      },
+      workedExample: {
+        intro: 'What is the probability that two standard six-sided dice sum to exactly 7?',
+        rows: [
+          { label: 'Dice', value: '2 dice, 6 sides each' },
+          { label: 'Total equally likely outcomes', value: '6^2 = 36' },
+          { label: 'Ways to make 7', value: '1+6, 2+5, 3+4, 4+3, 5+2, 6+1 = 6 ways' },
+          { label: 'Probability', value: '6 / 36' }
+        ],
+        result: 'About 16.67% (6/36), or odds of 1 in 6',
+        explanation: '7 is the single most likely sum with two six-sided dice precisely because more pairs of faces add up to it than to any other total -- the same reason the sums near the middle of the possible range are always more common than the sums at the extremes.'
+      },
+      watchOut: [
+        { title: 'This assumes fair, independent dice', body: 'Every face of every die is assumed equally likely and the dice do not influence each other, the standard assumption for ordinary dice -- a loaded die or a physically unusual one would not follow this distribution.' },
+        { title: 'Extreme sums are always the rarest', body: 'The lowest possible sum (all dice showing 1) and the highest possible sum (all dice showing the maximum face) each have only one way to happen, no matter how many dice you use, while sums near the middle of the range have many more combinations and are far more likely.' },
+        { title: '"Between" uses whichever order you type the two sums', body: 'If the second target sum is smaller than the first, this calculator still treats them as a low/high pair rather than returning no answer.' },
+        { title: 'This calculator is capped at 20 dice and 100 sides', body: 'Both are generous beyond any dice actually sold, and keep the underlying distribution calculation fast.' }
+      ],
+      references: [
+        { label: 'Wolfram MathWorld, Dice (exact combinatorial formula for a dice-sum count)', url: 'https://mathworld.wolfram.com/Dice.html' }
+      ]
+    },
+    inputs: [
+      { id: 'numDice', label: 'Number of dice', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 1 },
+      { id: 'numSides', label: 'Sides per die', type: 'number', placeholder: '6', defaultValue: 6, step: 1, min: 2 },
+      {
+        id: 'comparisonCode',
+        label: 'Comparison',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Exactly this sum' },
+          { value: 1, label: 'At least this sum' },
+          { value: 2, label: 'At most this sum' },
+          { value: 3, label: 'Between two sums' }
+        ]
+      },
+      { id: 'targetLow', label: 'Target sum', type: 'number', placeholder: '7', defaultValue: 7, step: 1, min: 0 },
+      { id: 'targetHigh', label: 'Upper sum (for "between" only)', type: 'number', placeholder: '9', defaultValue: 9, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Dice Probability Calculator – Exact Sum Odds',
+      description: 'Find the exact probability of rolling a target sum, or a sum in a range, with any number of dice and sides, from the real dice-sum combinatorics.',
+      faq: [
+        { question: 'What is the probability of rolling a 7 with two dice?', answer: 'About 16.67% (6/36, or odds of 1 in 6) -- there are 6 ways to make 7 from two six-sided dice (1+6, 2+5, 3+4, 4+3, 5+2, 6+1), more than any other sum.' },
+        { question: 'What is the probability of rolling a sum of 10 or higher with two dice?', answer: 'Also 16.67% (6/36) -- the sums 10, 11 and 12 can be made in 3, 2 and 1 ways respectively, which also total 6 out of 36 outcomes.' },
+        { question: 'Why is 7 the most common sum with two six-sided dice?', answer: 'Because more pairs of faces add up to 7 (six pairs) than to any other total between 2 and 12 -- sums near the middle of the possible range always have the most combinations.' },
+        { question: 'What is the lowest and highest possible sum?', answer: 'The lowest is the number of dice (every die showing 1); the highest is the number of dice times the number of sides (every die showing its maximum face). Each has only one way to happen.' },
+        { question: 'Does this work for dice with more than 6 sides?', answer: 'Yes -- enter any number of sides from 2 to 100 and any number of dice from 1 to 20, and the calculator rebuilds the exact sum distribution for that combination.' },
+        { question: 'How is this different from the probability calculator?', answer: 'The probability calculator combines the probabilities of two separate named events (like "passing math" and "passing science"). This calculator is specific to dice sums, counting the real combinatorics of how many dice-face combinations produce each total.' }
+      ]
+    },
+    compute(values) {
+      const dice = Math.round(values.numDice);
+      const sides = Math.round(values.numSides);
+      const mode = Math.round(values.comparisonCode);
+      const noAnswer = { probabilityPercent: NaN, oddsOneIn: NaN, expectedSum: NaN, minSum: NaN, maxSum: NaN };
+      if (!Number.isFinite(dice) || !Number.isFinite(sides) || dice < 1 || dice > 20 || sides < 2 || sides > 100) return noAnswer;
+      const dist = diceSumDistribution(dice, sides);
+      const minSum = dice;
+      const maxSum = dice * sides;
+      let low = Math.round(values.targetLow);
+      let high = Math.round(values.targetHigh);
+      if (mode === 0) high = low;
+      else if (mode === 1) high = maxSum;
+      else if (mode === 2) { high = low; low = minSum; }
+      else { const a = Math.min(low, high), b = Math.max(low, high); low = a; high = b; }
+      let probability = 0;
+      for (let sum = Math.max(low, minSum); sum <= Math.min(high, maxSum); sum++) probability += dist[sum - minSum];
+      const expectedSum = (dice * (sides + 1)) / 2;
+      return {
+        probabilityPercent: probability * 100,
+        oddsOneIn: probability > 0 ? 1 / probability : NaN,
+        expectedSum,
+        minSum,
+        maxSum
+      };
+    }
+  },
+  {
+    id: 'coin-flip-probability-calculator',
+    category: 'fun',
+    glyph: 'H/T',
+    updatedAt: '2026-11-18',
+    aliases: ['coin toss probability calculator', 'probability of heads in a row', 'binomial coin flip calculator', 'probability of exact number of heads'],
+    related: ['probability-calculator', 'dice-probability-calculator', 'birthday-paradox-calculator', 'card-draw-probability-calculator'],
+    title: 'Coin Flip Probability Calculator',
+    description: 'Find the probability of getting an exact (or at-least/at-most) number of heads across any number of coin flips, using the exact binomial formula, plus the separate chance of a specific run of heads in a row.',
+    example: 'Flipping a fair coin 10 times, the probability of exactly 6 heads is about 20.51%, and the probability of flipping 5 heads in a row is 1/32, about 3.13%.',
+    breakdown: {
+      headline: 'probabilityPercent',
+      headlineLabel: 'Probability',
+      outputs: [
+        { id: 'probabilityPercent', label: 'Probability', format: 'percent' },
+        { id: 'oddsOneIn', label: 'Odds (1 in)', format: 'significant' },
+        { id: 'meanHeads', label: 'Expected (average) heads', format: 'number' },
+        { id: 'stdDevHeads', label: 'Standard deviation', format: 'number' },
+        { id: 'streakProbabilityPercent', label: 'Separate: probability of a streak', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Flips', inputs: ['numFlips', 'headsProbabilityPercent'] },
+        { title: 'Target heads count', inputs: ['comparisonCode', 'targetLow', 'targetHigh'] },
+        { title: 'Separate streak check', inputs: ['streakLength'] }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'The binomial distribution, applied to coin flips',
+        paragraphs: [
+          'Each coin flip is an independent trial with two outcomes, so the number of heads across many flips follows a binomial distribution: the same distribution that describes any fixed number of independent yes/no trials with the same success chance each time. This calculator finds the probability of landing on an exact number of heads, or a number of heads in a range, out of any number of flips -- not just for a fair 50/50 coin, but for any fixed per-flip probability you enter.',
+          'It also answers a related but different question: the probability that the very next several flips are all heads in a row. That is a much simpler calculation (just multiply the per-flip probability by itself), and it is worth keeping separate from the main binomial answer because the two are easy to confuse. "6 heads out of 10 flips, in any order" and "6 heads in a row" are very different events with very different probabilities.',
+          'A streak probability is also the basis of the gambler\'s fallacy: after flipping heads several times in a row, the next flip is still exactly as likely to be heads as it was on the first flip, because each flip is independent of the ones before it. A long streak is unlikely to start, but once you are partway through one, finishing it is no harder than any other single flip.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the flips and the target, then optionally check a streak separately.',
+        steps: [
+          { name: 'Enter the number of flips', text: 'How many times the coin is flipped in total.' },
+          { name: 'Enter the per-flip heads probability', text: 'Leave at 50% for a fair coin, or change it for a biased one.' },
+          { name: 'Choose a comparison and target heads count', text: 'Exactly this many heads, at least, at most, or between two counts.' },
+          { name: 'Read the probability and odds', text: 'The headline is the exact binomial probability for your chosen comparison.' },
+          { name: 'Optionally check a streak', text: 'The separate "probability of a streak" row answers a different question: the chance the next streak-length flips are all heads, independent of the main target above.' }
+        ],
+        outro: 'Everything is calculated in your browser with the exact binomial formula. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The exact probability of k heads in n flips (the binomial probability mass function), and the separate, simpler formula for a run of the same result in a row.',
+        expression:
+          'P(X = k) = C(n, k) * p^k * (1-p)^(n-k)\nP(X >= k) = sum from j=k to n of P(X = j); P(X <= k) = sum from j=0 to k of P(X = j)\nP(streak of m heads in a row) = p^m',
+        terms: [
+          { symbol: 'n', meaning: 'Number of flips.' },
+          { symbol: 'p', meaning: 'Probability of heads on a single flip (0.5 for a fair coin).' },
+          { symbol: 'k', meaning: 'The target number of heads.' },
+          { symbol: 'C(n, k)', meaning: 'The number of ways to choose which k of the n flips are heads, "n choose k."' },
+          { symbol: 'm', meaning: 'Streak length: how many flips in a row, for the separate streak check.' }
+        ],
+        note: 'This calculator computes P(X=k) with a stable ratio recurrence rather than evaluating n! directly, so it stays accurate for large numbers of flips.'
+      },
+      workedExample: {
+        intro: 'Flip a fair coin 10 times. What is the probability of exactly 6 heads, and separately, of flipping 5 heads in a row?',
+        rows: [
+          { label: 'Ways to choose which 6 of 10 flips are heads', value: 'C(10, 6) = 210' },
+          { label: 'Probability of any one specific sequence with 6 heads and 4 tails', value: '0.5^10 = 1/1024' },
+          { label: 'P(exactly 6 heads)', value: '210 / 1024' },
+          { label: 'Separately: P(5 heads in a row)', value: '0.5^5 = 1/32' }
+        ],
+        result: 'P(exactly 6 heads) ≈ 20.51%; P(5 heads in a row) ≈ 3.13%',
+        explanation: 'The two answers are not related by a simple ratio -- "6 heads somewhere in 10 flips" can happen in 210 different orders, while "5 heads in a row" describes one specific, much more restrictive pattern.'
+      },
+      watchOut: [
+        { title: 'Flips are assumed independent', body: 'Each flip is assumed to have no effect on any other, the standard assumption for an ordinary coin -- this is also what makes the gambler\'s fallacy a fallacy: a past streak does not change the next flip\'s probability.' },
+        { title: 'Exact count vs. streak are different questions', body: 'This calculator answers both, but keeps them in separate rows because "k heads out of n flips in any order" and "k heads in a row" have very different probabilities for the same k.' },
+        { title: 'Unfair coins are supported', body: 'The per-flip heads probability defaults to 50% but can be changed; every formula above still applies exactly, just with p not equal to 0.5.' },
+        { title: 'This calculator is capped at 100,000 flips', body: 'Comfortably beyond any real coin-flipping session, and far enough that the probability for an exact extreme count underflows to a number too small to be meaningfully different from zero.' }
+      ],
+      references: [
+        { label: 'NIST/SEMATECH e-Handbook of Statistical Methods, §1.3.6.6.18 Binomial Distribution', url: 'https://www.itl.nist.gov/div898/handbook/eda/section3/eda366i.htm' }
+      ]
+    },
+    inputs: [
+      { id: 'numFlips', label: 'Number of flips', type: 'number', placeholder: '10', defaultValue: 10, step: 1, min: 1 },
+      { id: 'headsProbabilityPercent', label: 'Heads probability per flip', type: 'percent', placeholder: '50', defaultValue: 50, step: 1, min: 0 },
+      {
+        id: 'comparisonCode',
+        label: 'Comparison',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Exactly this many heads' },
+          { value: 1, label: 'At least this many heads' },
+          { value: 2, label: 'At most this many heads' },
+          { value: 3, label: 'Between two counts' }
+        ]
+      },
+      { id: 'targetLow', label: 'Target heads count', type: 'number', placeholder: '6', defaultValue: 6, step: 1, min: 0 },
+      { id: 'targetHigh', label: 'Upper heads count (for "between" only)', type: 'number', placeholder: '8', defaultValue: 8, step: 1, min: 0 },
+      { id: 'streakLength', label: 'Streak length (heads in a row)', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Coin Flip Probability Calculator – Exact Heads Count',
+      description: 'Find the exact probability of an exact, at-least or at-most heads count in N coin flips (binomial), plus the separate odds of a heads-in-a-row streak.',
+      faq: [
+        { question: 'What is the probability of flipping exactly 6 heads in 10 tries?', answer: 'About 20.51% -- there are C(10,6) = 210 ways to choose which 6 of the 10 flips are heads, each with probability 0.5^10 = 1/1024, giving 210/1024.' },
+        { question: 'What is the probability of flipping 5 heads in a row?', answer: '1/32, about 3.13% -- each flip independently has a 50% chance of heads, so 5 in a row is 0.5^5.' },
+        { question: 'After flipping heads several times in a row, is tails "due"?', answer: 'No -- this is the gambler\'s fallacy. Coin flips are independent, so the next flip is still exactly 50/50 (for a fair coin) no matter what came before it.' },
+        { question: 'Can this calculator handle an unfair coin?', answer: 'Yes -- change the "heads probability per flip" field away from 50%, and every result (exact count, at-least/at-most, and the streak probability) uses that value instead.' },
+        { question: 'What is the difference between "exactly 6 heads" and "6 heads in a row"?', answer: 'They are very different events. "Exactly 6 heads" counts every order those 6 heads and 4 tails could appear in (210 orders out of 1024 possible sequences). "6 heads in a row" is one specific, far more restrictive pattern, with probability 0.5^6, about 1.56%.' },
+        { question: 'What is the expected number of heads in 10 flips?', answer: '5 -- the expected (mean) count is always n times p, here 10 x 0.5. The standard deviation is the square root of n x p x (1-p), here about 1.58.' }
+      ]
+    },
+    compute(values) {
+      const n = Math.round(values.numFlips);
+      const p = Math.min(100, Math.max(0, values.headsProbabilityPercent)) / 100;
+      const mode = Math.round(values.comparisonCode);
+      const streak = Math.round(values.streakLength);
+      const noAnswer = { probabilityPercent: NaN, oddsOneIn: NaN, meanHeads: NaN, stdDevHeads: NaN, streakProbabilityPercent: NaN };
+      if (!Number.isFinite(n) || n < 1 || n > 100000) return noAnswer;
+      let low = Math.round(values.targetLow);
+      let high = Math.round(values.targetHigh);
+      if (mode === 0) high = low;
+      else if (mode === 1) high = n;
+      else if (mode === 2) { high = low; low = 0; }
+      else { const a = Math.min(low, high), b = Math.max(low, high); low = a; high = b; }
+      const probability = binomialRangeProbability(n, p, low, high);
+      const streakProbability = streak >= 0 ? Math.pow(p, streak) : NaN;
+      return {
+        probabilityPercent: probability * 100,
+        oddsOneIn: probability > 0 ? 1 / probability : NaN,
+        meanHeads: n * p,
+        stdDevHeads: Math.sqrt(n * p * (1 - p)),
+        streakProbabilityPercent: streakProbability * 100
+      };
+    }
+  },
+  {
+    id: 'birthday-paradox-calculator',
+    category: 'fun',
+    glyph: 'BP',
+    updatedAt: '2026-11-18',
+    aliases: ['birthday problem calculator', 'shared birthday probability calculator', 'chance two people share a birthday', 'same birthday odds calculator'],
+    related: ['probability-calculator', 'coin-flip-probability-calculator', 'dice-probability-calculator', 'age-calculator'],
+    title: 'Birthday Paradox Calculator',
+    description: 'Find the real probability that at least two people in a group share a birthday, using the exact complement-probability formula -- not the common but wrong intuition that it takes close to 365 people.',
+    example: 'In a group of just 23 people, the probability that at least two share a birthday is already over 50% -- higher than most people guess.',
+    breakdown: {
+      headline: 'sharedPercent',
+      headlineLabel: 'P(at least two share a birthday)',
+      outputs: [
+        { id: 'sharedPercent', label: 'P(at least two share a birthday)', format: 'percent' },
+        { id: 'noSharePercent', label: 'P(everyone has a different birthday)', format: 'percent' },
+        { id: 'minPeopleFor50Percent', label: 'Smallest group that passes 50% (computed)', format: 'integer' },
+        { id: 'minPeopleFor99Percent', label: 'Smallest group that passes 99% (computed)', format: 'integer' }
+      ],
+      groups: [{ title: 'Group size', inputs: ['numPeople'] }]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why the birthday paradox feels wrong but is not',
+        paragraphs: [
+          'The "birthday paradox" (more precisely, the birthday problem) is not a logical paradox at all -- it is just a result that strongly conflicts with most people\'s intuition. The common guess is that you need a group close to 365 people before a shared birthday becomes likely, by analogy with the 1-in-365 chance that any two specific people share a birthday. That intuition answers a different, much narrower question.',
+          'The real question is not whether two particular people match, but whether any pair among everyone in the room matches. A group of just 23 people contains 253 different pairs (23 choose 2), and it only takes one of those 253 pairs to match for the group to have "a shared birthday." That is why the real crossover point is so much smaller than 365: there are far more chances for a match than the simple 1-in-365 intuition accounts for.',
+          'This calculator computes the exact probability using the complement: it is far easier to compute the probability that every birthday is different, then subtract that from 1, than to count every possible way a match could occur directly.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the number of people in the group.',
+        steps: [
+          { name: 'Enter the group size', text: 'How many people are in the room, from 2 up.' },
+          { name: 'Read the probability', text: 'The headline is the chance at least two of them share a birthday (same month and day, any year).' },
+          { name: 'Check the computed crossover sizes', text: 'The two extra rows show the smallest group size at which the real formula first passes 50% and 99%, computed directly rather than quoted from memory.' }
+        ],
+        outro: 'Everything is calculated in your browser using the exact formula below. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The complement formula: find the probability every birthday is different, then subtract from 1.',
+        expression:
+          'P(no shared birthday) = (365/365) x (364/365) x (363/365) x ... x ((365-n+1)/365)\nP(at least one shared birthday) = 1 - P(no shared birthday)',
+        terms: [
+          { symbol: 'n', meaning: 'Number of people in the group.' },
+          { symbol: '365', meaning: 'Assumed number of equally likely birthdays -- see "Watch out" for what this leaves out.' }
+        ],
+        note: 'Each additional person after the first multiplies the "still all different" probability by one fewer day out of 365, because they must avoid every birthday already taken.'
+      },
+      workedExample: {
+        intro: 'What is the probability that at least two people share a birthday in a group of 23?',
+        rows: [
+          { label: 'P(2nd person differs from 1st)', value: '364/365' },
+          { label: 'P(3rd person differs from both)', value: '363/365' },
+          { label: '... continuing down to the 23rd person', value: '343/365' },
+          { label: 'P(all 23 birthdays different)', value: 'Product of all 22 fractions above, about 0.4927' },
+          { label: 'P(at least two share a birthday)', value: '1 - 0.4927' }
+        ],
+        result: 'About 50.73%',
+        explanation: '23 people contain 253 distinct pairs who could potentially match, which is enough chances for a match that the probability of at least one tips just past 50%, even though any two specific people still only have a 1-in-365 chance of matching each other.'
+      },
+      watchOut: [
+        { title: 'Assumes 365 equally likely, independent birthdays', body: 'This calculator ignores leap years (February 29), and real birthdays are not perfectly evenly spread across the calendar (some months have measurably more births than others) -- both effects are small and tend to make a shared birthday very slightly more likely than this idealized formula, not less.' },
+        { title: 'This is about any two people, not a specific person', body: 'The probability that at least two people in the group share a birthday is much higher than the probability that someone else shares your specific birthday -- those are different questions with very different answers.' },
+        { title: 'The computed crossover numbers use fixed thresholds', body: 'The "50%" and "99%" rows always use those two thresholds, not your entered group size -- they are shown for comparison, not as a function of the number you typed above.' },
+        { title: 'Twins and selection bias are not modeled', body: 'A group that deliberately includes twins, or was selected in a way connected to birthdays, would not follow this formula\'s independence assumption.' }
+      ],
+      references: [
+        { label: 'Wikipedia, Birthday problem (complement formula and real-world caveats)', url: 'https://en.wikipedia.org/wiki/Birthday_problem' }
+      ]
+    },
+    inputs: [{ id: 'numPeople', label: 'Number of people', type: 'number', placeholder: '23', defaultValue: 23, step: 1, min: 2 }],
+    seo: {
+      title: 'Birthday Paradox Calculator – Shared Birthday Odds',
+      description: 'Find the real probability that two people in a group share a birthday, using the exact complement formula. Just 23 people already passes a 50% chance.',
+      faq: [
+        { question: 'How many people are needed for a 50% chance two share a birthday?', answer: '23 -- the probability at that group size is about 50.73%, computed from the exact complement formula.' },
+        { question: 'Why does the birthday paradox feel wrong?', answer: 'Because it is easy to mistake "the chance any two specific people match" (1 in 365) for "the chance any pair among everyone in the room matches." A group of 23 contains 253 different pairs, which is enough chances for the real probability to pass 50%.' },
+        { question: 'What is the probability in a group of 50 people?', answer: 'About 97.04% -- by 50 people, a shared birthday is close to certain.' },
+        { question: 'How many people are needed to be 99% certain of a shared birthday?', answer: '57 people, computed directly from the same formula rather than quoted from memory.' },
+        { question: 'Does this account for leap years?', answer: 'No -- it assumes exactly 365 equally likely birthdays. Leap years and the real, slightly uneven distribution of birthdays across the calendar are both small effects that this idealized formula leaves out.' },
+        { question: 'Is this the same as the chance someone shares MY birthday?', answer: 'No -- that is a much narrower question (would need close to 253 other people for a 50% chance against one specific date). This calculator answers the "any pair in the group" question, which needs far fewer people.' }
+      ]
+    },
+    compute(values) {
+      const n = Math.round(values.numPeople);
+      if (!Number.isFinite(n) || n < 2 || n > 100000) return { sharedPercent: NaN, noSharePercent: NaN, minPeopleFor50Percent: NaN, minPeopleFor99Percent: NaN };
+      const noShare = noSharedBirthdayProbability(n);
+      return {
+        sharedPercent: (1 - noShare) * 100,
+        noSharePercent: noShare * 100,
+        minPeopleFor50Percent: MIN_PEOPLE_FOR_50_PERCENT,
+        minPeopleFor99Percent: MIN_PEOPLE_FOR_99_PERCENT
+      };
+    }
+  },
+  {
+    id: 'lottery-odds-calculator',
+    category: 'fun',
+    glyph: 'nCk',
+    updatedAt: '2026-11-18',
+    aliases: ['lottery odds calculator', 'probability of winning the lottery', 'pick 6 lottery odds', 'lottery combinations calculator'],
+    related: ['combination-calculator', 'card-draw-probability-calculator', 'probability-calculator', 'dice-probability-calculator'],
+    title: 'Lottery Odds Calculator',
+    description: 'Find the exact odds of matching some or all of your numbers in any pick-k-from-n lottery, using the real combinations (nCr) formula -- enter your own lottery\'s rules rather than one fixed, named game.',
+    example: 'In a 6-from-49 pick lottery, the odds of matching all 6 numbers are 1 in 13,983,816.',
+    breakdown: {
+      headline: 'matchProbabilityPercent',
+      headlineLabel: 'Probability of this exact match count',
+      outputs: [
+        { id: 'matchProbabilityPercent', label: 'Probability of this exact match count', format: 'percent' },
+        { id: 'oddsOneInForMatch', label: 'Odds (1 in)', format: 'significant' },
+        { id: 'jackpotOddsOneIn', label: 'Odds of matching every number (jackpot)', format: 'significant' },
+        { id: 'totalCombinations', label: 'Total possible combinations', format: 'significant' }
+      ],
+      groups: [{ title: 'Your lottery\'s rules', inputs: ['poolSize', 'picksCount', 'matches'] }]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why lottery odds are a combinations (nCr) problem',
+        paragraphs: [
+          'A typical lottery draws k numbers out of a pool of n, and a ticket also picks k numbers; you win based on how many of your k numbers match the k drawn. Because the order the numbers are drawn in does not matter, the total number of possible draws is the number of combinations of k numbers chosen from n, written nCk or "n choose k" -- the same combinations function used across this site\'s statistics calculators.',
+          'The odds of matching exactly m of your k numbers combine two separate combination counts: the number of ways to choose which m of your k numbers were drawn, times the number of ways the remaining k-m drawn numbers could be any of the n-k numbers you did not pick, all divided by the total number of possible draws. This calculator enters your own lottery\'s pool size and pick count, rather than assuming one specific real-world game, since the rule (how many numbers, drawn from how large a pool) varies by lottery and by jurisdiction, and jackpot sizes change constantly.',
+          'The result is exact: no approximation is involved, only the real combinatorics of how many ways a draw could go.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your own lottery\'s rules, then the match count you want the odds for.',
+        steps: [
+          { name: 'Enter the pool size', text: 'How many numbers the lottery draws from in total.' },
+          { name: 'Enter how many numbers are picked/drawn', text: 'How many numbers both your ticket and the draw itself choose.' },
+          { name: 'Enter the match count you want', text: 'How many of your numbers you want the odds of matching exactly -- set it equal to the pick count for the jackpot.' },
+          { name: 'Read the probability and odds', text: 'The headline is the exact probability of that match count; "odds (1 in)" is the same figure written the way lottery odds are usually quoted.' },
+          { name: 'Check the reference table', text: 'A worked 6-from-49 example below shows how fast the odds change across every possible match count, for comparison.' }
+        ],
+        outro: 'Everything is calculated in your browser from the combinations formula. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The probability of matching exactly m of k picked numbers, drawn from a pool of n.',
+        expression:
+          'P(match = m) = [ C(k, m) * C(n-k, k-m) ] / C(n, k)\nOdds of the jackpot (m = k) = 1 / C(n, k), since C(k, k) = 1 and C(n-k, 0) = 1',
+        terms: [
+          { symbol: 'n', meaning: 'Pool size: how many numbers the lottery draws from.' },
+          { symbol: 'k', meaning: 'Pick count: how many numbers are drawn, and how many your ticket picks.' },
+          { symbol: 'm', meaning: 'How many of your k numbers you want the odds of matching, from 0 to k.' },
+          { symbol: 'C(n, k)', meaning: 'Combinations ("n choose k"): the number of ways to choose k numbers from n without regard to order.' }
+        ],
+        note: 'C(k, m) counts which of your own numbers were among the drawn ones; C(n-k, k-m) counts the ways the rest of the draw could land among the numbers you did not pick.'
+      },
+      workedExample: {
+        intro: 'In a 6-from-49 pick lottery (n = 49, k = 6), what are the odds of matching exactly 3 numbers, and separately, all 6?',
+        rows: [
+          { label: 'Total combinations, C(49, 6)', value: '13,983,816' },
+          { label: 'Ways to match exactly 3: C(6,3) x C(43,3)', value: '20 x 12,341 = 246,820' },
+          { label: 'P(match = 3)', value: '246,820 / 13,983,816' },
+          { label: 'Ways to match all 6: C(6,6) x C(43,0)', value: '1 x 1 = 1' },
+          { label: 'P(match = 6), the jackpot', value: '1 / 13,983,816' }
+        ],
+        result: 'P(match 3) ≈ 1.77%, about 1 in 56.7; P(match all 6) ≈ 1 in 13,983,816',
+        explanation: 'Matching exactly 3 is far more likely than the jackpot because there are 246,820 different draws that would give you exactly 3 matches, against only one possible draw (all 6 of your numbers, in some order) that gives you the jackpot.'
+      },
+      watchOut: [
+        { title: 'Enter your own lottery\'s real rules', body: 'Pool size and pick count vary by lottery and change over time as games are redesigned -- this calculator does not assume or name any specific one; enter the numbers from your own game\'s official rules.' },
+        { title: 'Some real lotteries use a separate bonus-number pool', body: 'A game with an extra "bonus ball" drawn from its own separate pool (common in many real lotteries) is not the same structure as this calculator models; this page covers the single-pool pick-k-from-n case only.' },
+        { title: 'Odds do not depend on the jackpot size', body: 'The probability of any match count is fixed by the pool size and pick count alone -- it has nothing to do with how large the advertised jackpot is, how many tickets have been sold, or how long it has been since the last winner.' },
+        { title: 'Large combinations are shown as rounded approximations', body: 'Past about 9.007 quadrillion (2^53 - 1), the total-combinations figure is a correctly-rounded approximation rather than an exact integer, the same practical limit the site\'s combination calculator discloses.' }
+      ],
+      referenceTable: {
+        title: `Odds by match count, for a ${LOTTERY_EXAMPLE_PICKS}-from-${LOTTERY_EXAMPLE_POOL} pick lottery`,
+        columns: ['Matches', 'Odds (1 in, rounded)'],
+        rows: LOTTERY_EXAMPLE_ROWS.map((row) => ({ label: `Exactly ${row.matches} of ${LOTTERY_EXAMPLE_PICKS}`, values: [row.oddsOneIn] })),
+        decimals: 0,
+        note: `Computed directly from the combinations formula above for n = ${LOTTERY_EXAMPLE_POOL}, k = ${LOTTERY_EXAMPLE_PICKS} -- a generic pick-6-from-49 structure used as an illustration, not any one named lottery.`
+      },
+      references: [
+        { label: 'Wikipedia, Lottery mathematics (general matching-probability formula)', url: 'https://en.wikipedia.org/wiki/Lottery_mathematics' }
+      ]
+    },
+    inputs: [
+      { id: 'poolSize', label: 'Pool size (n)', type: 'number', placeholder: '49', defaultValue: 49, step: 1, min: 1 },
+      { id: 'picksCount', label: 'Numbers picked/drawn (k)', type: 'number', placeholder: '6', defaultValue: 6, step: 1, min: 1 },
+      { id: 'matches', label: 'Match count you want the odds of (m)', type: 'number', placeholder: '6', defaultValue: 6, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Lottery Odds Calculator – Pick-k-from-n Combinations',
+      description: 'Find the exact odds of matching some or all numbers in any pick-k-from-n lottery, using the real combinations (nCr) formula for your own lottery\'s rules.',
+      faq: [
+        { question: 'What are the odds of winning a 6-from-49 lottery jackpot?', answer: '1 in 13,983,816 -- there is exactly one way to match all 6 of your numbers, out of C(49,6) = 13,983,816 total possible draws.' },
+        { question: 'What are the odds of matching exactly 3 of 6 numbers in a 6-from-49 lottery?', answer: 'About 1 in 56.7 (roughly 1.77%) -- there are C(6,3) x C(43,3) = 246,820 ways to match exactly 3, out of 13,983,816 total draws.' },
+        { question: 'How do you calculate lottery odds?', answer: 'Divide the number of ways to get your target match count -- C(k, m) ways to pick which of your numbers matched, times C(n-k, k-m) ways for the rest of the draw to miss them -- by the total number of possible draws, C(n, k).' },
+        { question: 'Do the odds change based on the jackpot size?', answer: 'No -- the odds depend only on the pool size and pick count, which are fixed by the game\'s rules. The jackpot amount and how many tickets were sold do not affect the probability of any match count.' },
+        { question: 'Does this work for any lottery, not just 6-from-49?', answer: 'Yes -- enter your own lottery\'s pool size and pick count. This calculator does not assume or endorse any specific real-world game.' },
+        { question: 'What if my lottery has a separate bonus number?', answer: 'This calculator covers a single-pool pick-k-from-n game only. A bonus ball drawn from its own separate pool is a different structure this page does not model.' }
+      ]
+    },
+    compute(values) {
+      const n = Math.round(values.poolSize);
+      const k = Math.round(values.picksCount);
+      const m = Math.round(values.matches);
+      const noAnswer = { matchProbabilityPercent: NaN, oddsOneInForMatch: NaN, jackpotOddsOneIn: NaN, totalCombinations: NaN };
+      if (!Number.isFinite(n) || !Number.isFinite(k) || n < 1 || k < 1 || k > n || k > PROBABILITY_MAX_N || m < 0 || m > k) return noAnswer;
+      const total = nCrBig(n, k);
+      if (total === 0n) return noAnswer;
+      const ways = nCrBig(k, m) * nCrBig(n - k, k - m);
+      const probability = Number(ways) / Number(total);
+      return {
+        matchProbabilityPercent: probability * 100,
+        oddsOneInForMatch: probability > 0 ? 1 / probability : NaN,
+        jackpotOddsOneIn: Number(total),
+        totalCombinations: Number(total)
+      };
+    }
+  },
+  {
+    id: 'card-draw-probability-calculator',
+    category: 'fun',
+    glyph: '♠',
+    updatedAt: '2026-11-18',
+    aliases: ['probability of drawing a card calculator', 'poker hand odds calculator', 'deck of cards probability calculator', 'chance of drawing an ace'],
+    related: ['combination-calculator', 'lottery-odds-calculator', 'dice-probability-calculator', 'probability-calculator'],
+    title: 'Card Draw Probability Calculator',
+    description: 'Find the exact probability of drawing a specific number of a target card type (aces, hearts, face cards, or any group you define) in a hand from a standard deck, using the real hypergeometric distribution.',
+    example: 'Dealt a 5-card hand from a standard 52-card deck, the probability of getting exactly 1 ace is about 29.95%.',
+    breakdown: {
+      headline: 'probabilityPercent',
+      headlineLabel: 'Probability',
+      outputs: [
+        { id: 'probabilityPercent', label: 'Probability', format: 'percent' },
+        { id: 'oddsOneIn', label: 'Odds (1 in)', format: 'significant' },
+        { id: 'totalHands', label: 'Total possible hands', format: 'significant' },
+        { id: 'favorableHands', label: 'Favorable hands (for the target count alone)', format: 'significant' }
+      ],
+      groups: [
+        { title: 'Deck', inputs: ['deckSize', 'successCount'] },
+        { title: 'Draw', inputs: ['drawCount', 'comparisonCode', 'targetLow', 'targetHigh'] }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'The hypergeometric distribution: drawing without replacement',
+        paragraphs: [
+          'Dealing a hand of cards is sampling without replacement: once a card is dealt, it cannot be dealt again in the same hand, so each card you draw changes the odds for the next one. That is different from a coin flip or a fresh dice roll, where every trial starts over with the same odds (sampling with replacement). The distribution that describes drawing without replacement is called the hypergeometric distribution.',
+          'This calculator splits a standard 52-card deck into a "target" group (however many cards count as a success -- 4 if you are tracking aces, 13 if you are tracking a single suit, and so on) and everything else, then finds the exact probability of ending up with a given number of target cards in your hand. The same formula works for any deck size and any target-group size, not just a standard 52-card deck with 4 aces.',
+          'Because every card removes a card from the deck for the next draw, these probabilities cannot be found by simply multiplying the same fraction together the way an independent-trials calculation would -- the combinations formula below accounts for that directly.'
+        ]
+      },
+      howTo: {
+        intro: 'Describe the deck and the target, then the hand size and comparison.',
+        steps: [
+          { name: 'Enter the deck size', text: 'How many cards are in the deck -- 52 for a standard deck.' },
+          { name: 'Enter the target group size', text: 'How many cards in the deck count as a "success" -- 4 for aces, 13 for a single suit, 12 for face cards, and so on.' },
+          { name: 'Enter the hand size', text: 'How many cards are dealt into the hand.' },
+          { name: 'Choose a comparison and target count', text: 'Exactly this many, at least, at most, or between two counts, of the target group in the hand.' },
+          { name: 'Read the probability and odds', text: 'The headline is the exact hypergeometric probability for your chosen comparison.' }
+        ],
+        outro: 'Everything is calculated in your browser with the exact combinations formula. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The exact probability of drawing exactly k target cards in a hand of n, from a deck of N cards containing K target cards.',
+        expression:
+          'P(X = k) = [ C(K, k) * C(N-K, n-k) ] / C(N, n)\nP(X >= k) = sum from j=k to min(n,K) of P(X = j); P(X <= k) = sum from j=max(0,n-(N-K)) to k of P(X = j)',
+        terms: [
+          { symbol: 'N', meaning: 'Total deck size.' },
+          { symbol: 'K', meaning: 'How many cards in the deck count as the target group (the "successes").' },
+          { symbol: 'n', meaning: 'Hand size: how many cards are drawn.' },
+          { symbol: 'k', meaning: 'The target number of target-group cards in the hand.' },
+          { symbol: 'C(a, b)', meaning: 'Combinations ("a choose b"); 0 whenever b is negative or greater than a.' }
+        ],
+        note: 'C(K, k) counts which k of the target cards are in the hand; C(N-K, n-k) counts the ways the rest of the hand could be filled from the non-target cards.'
+      },
+      workedExample: {
+        intro: 'Dealt a 5-card hand from a standard 52-card deck (4 aces), what is the probability of exactly 1 ace, and separately, all 4 aces?',
+        rows: [
+          { label: 'Total possible 5-card hands, C(52, 5)', value: '2,598,960' },
+          { label: 'Ways to get exactly 1 ace: C(4,1) x C(48,4)', value: '4 x 194,580 = 778,320' },
+          { label: 'P(exactly 1 ace)', value: '778,320 / 2,598,960' },
+          { label: 'Ways to get all 4 aces: C(4,4) x C(48,1)', value: '1 x 48 = 48' },
+          { label: 'P(all 4 aces)', value: '48 / 2,598,960' }
+        ],
+        result: 'P(exactly 1 ace) ≈ 29.95%; P(all 4 aces) ≈ 0.0018%, about 1 in 54,145',
+        explanation: 'Exactly 1 ace is the single most common outcome for ace count in a 5-card hand, while all 4 aces is one of the rarest possible hands, since it requires every one of the deck\'s 4 aces to land in your 5 cards.'
+      },
+      watchOut: [
+        { title: 'This is drawing without replacement', body: 'Every card dealt reduces the deck for the next card, which is why this uses the hypergeometric formula rather than simply raising a single-draw probability to a power (that would be the different, with-replacement case).' },
+        { title: 'Define the target group to match your real question', body: 'Set the target-group size to match what you are actually asking about: 4 for a specific rank like aces, 13 for a single suit, 12 for face cards (jack, queen, king across all suits), or any other count that fits a standard deck or a custom one.' },
+        { title: '"At least" and "at most" are capped by what is physically possible', body: 'You cannot draw more target cards than either the hand size or the target group itself contains, so this calculator automatically limits the summed range to what is actually reachable.' },
+        { title: 'This models one standard deck, not multiple decks shuffled together', body: 'Some card games (certain casino games, for example) shuffle several decks together, which changes the deck size and target-group size but not the formula itself -- adjust both fields to match.' }
+      ],
+      references: [
+        { label: 'Wikipedia, Hypergeometric distribution (formula and a worked without-replacement example)', url: 'https://en.wikipedia.org/wiki/Hypergeometric_distribution' }
+      ]
+    },
+    inputs: [
+      { id: 'deckSize', label: 'Deck size (N)', type: 'number', placeholder: '52', defaultValue: 52, step: 1, min: 1 },
+      { id: 'successCount', label: 'Target cards in the deck (K)', type: 'number', placeholder: '4', defaultValue: 4, step: 1, min: 0 },
+      { id: 'drawCount', label: 'Hand size (n)', type: 'number', placeholder: '5', defaultValue: 5, step: 1, min: 1 },
+      {
+        id: 'comparisonCode',
+        label: 'Comparison',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: [
+          { value: 0, label: 'Exactly this many target cards' },
+          { value: 1, label: 'At least this many' },
+          { value: 2, label: 'At most this many' },
+          { value: 3, label: 'Between two counts' }
+        ]
+      },
+      { id: 'targetLow', label: 'Target count', type: 'number', placeholder: '1', defaultValue: 1, step: 1, min: 0 },
+      { id: 'targetHigh', label: 'Upper count (for "between" only)', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Card Draw Probability Calculator – Hypergeometric Odds',
+      description: 'Find the exact probability of drawing a target number of cards (aces, a suit, face cards) in a hand, using the real hypergeometric distribution.',
+      faq: [
+        { question: 'What is the probability of drawing exactly 1 ace in a 5-card hand?', answer: 'About 29.95% -- there are C(4,1) x C(48,4) = 778,320 ways to get exactly 1 ace out of C(52,5) = 2,598,960 total possible 5-card hands.' },
+        { question: 'What is the probability of being dealt all 4 aces in a 5-card hand?', answer: 'About 0.0018%, roughly 1 in 54,145 -- there is only C(4,4) x C(48,1) = 48 ways to do it, out of 2,598,960 total hands.' },
+        { question: 'What is the probability of getting no aces in a 5-card hand?', answer: 'About 65.88% -- the most common outcome for ace count, since most 5-card hands do not contain any of the 4 aces in a 52-card deck.' },
+        { question: 'How is this different from a dice or coin probability calculation?', answer: 'Cards are drawn without replacement, so each card dealt changes the odds for the rest of the hand. Dice and coin flips are independent trials where the odds reset every time, which uses a different formula (binomial, not hypergeometric).' },
+        { question: 'Can I use this for a suit or face cards instead of aces?', answer: 'Yes -- set the target-group size to however many cards in the deck count as your target: 13 for a single suit, 12 for face cards (jack, queen, king across all 4 suits), or any custom count.' },
+        { question: 'Does this work for decks other than 52 cards?', answer: 'Yes -- both the deck size and the target-group size are adjustable, so the same formula applies to any custom deck.' }
+      ]
+    },
+    compute(values) {
+      const N = Math.round(values.deckSize);
+      const K = Math.round(values.successCount);
+      const n = Math.round(values.drawCount);
+      const mode = Math.round(values.comparisonCode);
+      const noAnswer = { probabilityPercent: NaN, oddsOneIn: NaN, totalHands: NaN, favorableHands: NaN };
+      if (!Number.isFinite(N) || !Number.isFinite(K) || !Number.isFinite(n) || N < 1 || N > PROBABILITY_MAX_N || K < 0 || K > N || n < 1 || n > N) {
+        return noAnswer;
+      }
+      let low = Math.round(values.targetLow);
+      let high = Math.round(values.targetHigh);
+      if (mode === 0) high = low;
+      else if (mode === 1) high = Math.min(n, K);
+      else if (mode === 2) { high = low; low = 0; }
+      else { const a = Math.min(low, high), b = Math.max(low, high); low = a; high = b; }
+      const probability = hypergeometricRangeProbability(N, K, n, low, high);
+      const total = nCrBig(N, n);
+      const favorable = nCrBig(K, Math.round(values.targetLow)) * nCrBig(N - K, n - Math.round(values.targetLow));
+      return {
+        probabilityPercent: probability * 100,
+        oddsOneIn: probability > 0 ? 1 / probability : NaN,
+        totalHands: Number(total),
+        favorableHands: Number(favorable)
+      };
+    }
   }
 ];

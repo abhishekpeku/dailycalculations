@@ -152,7 +152,16 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'water-fixture-calculator': ['savingsPct'], // all three daily-usage inputs 0 (their min) -> standardGalPerYear 0 -> 0/0
   // birthYear's min (1924) is the lunar-new-year table's first entry date (Feb 5, 1924); edge's
   // birthMonth/birthDay mins (1, 1) land on Jan 1, 1924, which is before that -> no table match.
-  'chinese-zodiac-calculator': ['animalCode', 'zodiacYearStartCode']
+  'chinese-zodiac-calculator': ['animalCode', 'zodiacYearStartCode'],
+  // poolSize=1, picksCount=1 (both their min), matches=0 (its min) -> matching 0 of 1 needs
+  // C(0,1) ways from the non-picked pool, which is 0 by convention (can't choose 1 from an empty
+  // set) -> probability 0 -> oddsOneInForMatch (1/probability) has no answer, same convention as
+  // every other "1/probability" odds figure on the site.
+  'lottery-odds-calculator': ['oddsOneInForMatch'],
+  // numDice=1 (its min), targetLow=targetHigh=0 (their min), exact-match mode -> target sum 0 is
+  // below the lowest possible sum (1 die showing at least 1), so probability is a legitimate 0,
+  // and the "odds (1 in)" figure (1/probability) has no answer.
+  'dice-probability-calculator': ['oddsOneIn']
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

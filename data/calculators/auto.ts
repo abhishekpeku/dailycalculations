@@ -6,7 +6,7 @@ import { toBase } from '../../lib/units.ts';
 // year after) — the rule of thumb cited by Experian/Carfax and Progressive/Kelley Blue Book. `t`
 // may be fractional. Shared by compute() and the reference table so every number comes from one
 // formula.
-const carValueAtYears = (price: number, year1RatePercent: number, afterRatePercent: number, t: number) => {
+export const carValueAtYears = (price: number, year1RatePercent: number, afterRatePercent: number, t: number) => {
   if (t <= 1) return price * (1 - (year1RatePercent / 100) * t);
   return price * (1 - year1RatePercent / 100) * Math.pow(1 - afterRatePercent / 100, t - 1);
 };

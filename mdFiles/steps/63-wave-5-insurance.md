@@ -148,7 +148,48 @@ precedent as biology/ecology/fun), once the real final count is known.
 
 - [x] Batch 1 — Life insurance need (4), opens the category
 - [x] Batch 2 — Health & disability insurance (4)
-- [ ] Batch 3 — Auto & property insurance (4)
+- [x] Batch 3 — Auto & property insurance (4), DONE 2026-11-18, branch `step/63-insurance-batch3`, PR #145
 - [ ] Batch 4 — Everyday insurance novelties (4-6)
 - [ ] Sub-grouping retrofit
 - [ ] STATUS.md updated with the final per-category summary
+
+## Progress — batch 3 (this branch: `step/63-insurance-batch3`, draft PR #145)
+
+- [x] `car-insurance-coverage-calculator` — cites III.org's "auto insurance basics" article (state
+      minimums may not cover a serious accident, consider higher limits to protect assets) and
+      NAIC's "auto-insurance.htm" (judgment beyond your limit, you pay the difference; a totaled
+      car's payout caps at actual cash value). Liability-coverage floor is explicitly labeled this
+      calculator's own simplified planning heuristic (assets + 1 year of income), not an official
+      formula from either source — matches the step file's "frame as a starting point, don't
+      assert one number as universal" instruction.
+- [x] `gap-insurance-calculator` — vehicle purchase price + loan balance + typical depreciation
+      curve → loan-to-value gap; the gap amount a standard auto policy's actual-cash-value payout
+      would leave uncovered on a total loss while a loan balance still exceeds the car's value.
+- [x] `renters-insurance-contents-value-calculator` — room-by-room personal-property inventory
+      summed into a total replacement-cost estimate, the figure a renters policy's personal
+      property coverage limit should meet or exceed.
+- [x] `home-insurance-rebuild-cost-calculator` — square footage × local cost-per-square-foot →
+      dwelling rebuild cost, kept explicitly separate from market value (land excluded) per
+      III.org's own rebuild-cost-vs-market-value distinction; a 2,200 sq ft home at $150/sq ft
+      worked example reproduces III's $330,000 framing exactly (about 103.1% of a $320,000 market
+      value, land value shown separately for comparison only).
+
+`npm test` 1685/1685 (added a `KNOWN_NON_FINITE` entry for `home-insurance-rebuild-cost-calculator`'s
+`rebuildCostPercentOfMarketValue` at a $0 market-value edge case — the same divide-by-zero-min
+pattern as every other entry in that table), lint clean, `npm run build` green. `insurance` now
+12/~16-18, site-wide **514**.
+
+**Flood insurance decision:** confirmed via direct WebFetch of fema.gov/flood-insurance/risk-rating
+that NFIP's Risk Rating 2.0 uses individualized per-property rating factors (location, elevation,
+structure dimensions, replacement cost, flood history) with no published public formula —
+policyholders are told to contact their insurer/agent for their specific rate. This matches the
+step file's skip-candidate note exactly: there is no generalizable, citable methodology to build a
+clean static-formula calculator from. **Decision: skip `flood-insurance-cost-estimator`.** Not
+built, not parked as a "fix later" item — documented here as an evaluated-and-skipped candidate.
+
+**Research note:** WebSearch's quota was exhausted on the very first query this session (same
+budget shared across the day's sessions per the step file's batch-2 note). Fell back to direct
+WebFetch on known/guessed URLs for every citation — iii.org and content.naic.org both required
+several guessed URL variants before finding ones that resolved (many iii.org article slugs 404,
+and the working ones were found by fetching `iii.org` itself and reading its live nav links).
+No citation in the shipped copy is unverified.

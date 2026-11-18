@@ -905,7 +905,7 @@ export const funCalculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Coin Flip Probability Calculator – Exact Heads Count',
-      description: 'Find the exact probability of an exact, at-least or at-most number of heads in N coin flips (binomial), plus the separate odds of a specific heads-in-a-row streak.',
+      description: 'Find the exact probability of an exact, at-least or at-most heads count in N coin flips (binomial), plus the separate odds of a heads-in-a-row streak.',
       faq: [
         { question: 'What is the probability of flipping exactly 6 heads in 10 tries?', answer: 'About 20.51% -- there are C(10,6) = 210 ways to choose which 6 of the 10 flips are heads, each with probability 0.5^10 = 1/1024, giving 210/1024.' },
         { question: 'What is the probability of flipping 5 heads in a row?', answer: '1/32, about 3.13% -- each flip independently has a 50% chance of heads, so 5 in a row is 0.5^5.' },
@@ -1258,7 +1258,7 @@ export const funCalculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Card Draw Probability Calculator – Hypergeometric Odds',
-      description: 'Find the exact probability of drawing a target number of cards (aces, a suit, face cards) in a hand from a standard deck, using the real hypergeometric distribution.',
+      description: 'Find the exact probability of drawing a target number of cards (aces, a suit, face cards) in a hand, using the real hypergeometric distribution.',
       faq: [
         { question: 'What is the probability of drawing exactly 1 ace in a 5-card hand?', answer: 'About 29.95% -- there are C(4,1) x C(48,4) = 778,320 ways to get exactly 1 ace out of C(52,5) = 2,598,960 total possible 5-card hands.' },
         { question: 'What is the probability of being dealt all 4 aces in a 5-card hand?', answer: 'About 0.0018%, roughly 1 in 54,145 -- there is only C(4,4) x C(48,1) = 48 ways to do it, out of 2,598,960 total hands.' },

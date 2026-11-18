@@ -1106,6 +1106,44 @@ exports[`compute() snapshots > binomial-distribution-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > birthday-paradox-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "numPeople": 23
+    },
+    "outputs": {
+      "sharedPercent": 50.72972343,
+      "noSharePercent": 49.27027657,
+      "minPeopleFor50Percent": 23,
+      "minPeopleFor99Percent": 57
+    }
+  },
+  "typical": {
+    "inputs": {
+      "numPeople": 35
+    },
+    "outputs": {
+      "sharedPercent": 81.43832389,
+      "noSharePercent": 18.56167611,
+      "minPeopleFor50Percent": 23,
+      "minPeopleFor99Percent": 57
+    }
+  },
+  "edge": {
+    "inputs": {
+      "numPeople": 2
+    },
+    "outputs": {
+      "sharedPercent": 0.2739726027,
+      "noSharePercent": 99.7260274,
+      "minPeopleFor50Percent": 23,
+      "minPeopleFor99Percent": 57
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > blog-ad-revenue-calculator 1`] = `
 {
   "default": {
@@ -2052,6 +2090,59 @@ exports[`compute() snapshots > carbon-footprint-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > card-draw-probability-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "deckSize": 52,
+      "successCount": 4,
+      "drawCount": 5,
+      "comparisonCode": 0,
+      "targetLow": 1,
+      "targetHigh": 2
+    },
+    "outputs": {
+      "probabilityPercent": 29.94736356,
+      "oddsOneIn": 3.339192106,
+      "totalHands": 2598960,
+      "favorableHands": 778320
+    }
+  },
+  "typical": {
+    "inputs": {
+      "deckSize": 78,
+      "successCount": 6,
+      "drawCount": 8,
+      "comparisonCode": 0,
+      "targetLow": 2,
+      "targetHigh": 3
+    },
+    "outputs": {
+      "probabilityPercent": 9.995289303,
+      "oddsOneIn": 10.00471292,
+      "totalHands": 23446881320,
+      "favorableHands": 2343583620
+    }
+  },
+  "edge": {
+    "inputs": {
+      "deckSize": 1,
+      "successCount": 0,
+      "drawCount": 1,
+      "comparisonCode": 0,
+      "targetLow": 0,
+      "targetHigh": 0
+    },
+    "outputs": {
+      "probabilityPercent": 100,
+      "oddsOneIn": 1,
+      "totalHands": 1,
+      "favorableHands": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > carpet-calculator 1`] = `
 {
   "default": {
@@ -2889,6 +2980,62 @@ exports[`compute() snapshots > coffee-ratio-calculator 1`] = `
       "lightGrams": 0.495,
       "goldenGrams": 0.55,
       "strongGrams": 0.605
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > coin-flip-probability-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "numFlips": 10,
+      "headsProbabilityPercent": 50,
+      "comparisonCode": 0,
+      "targetLow": 6,
+      "targetHigh": 8,
+      "streakLength": 5
+    },
+    "outputs": {
+      "probabilityPercent": 20.5078125,
+      "oddsOneIn": 4.876190476,
+      "meanHeads": 5,
+      "stdDevHeads": 1.58113883,
+      "streakProbabilityPercent": 3.125
+    }
+  },
+  "typical": {
+    "inputs": {
+      "numFlips": 15,
+      "headsProbabilityPercent": 75,
+      "comparisonCode": 0,
+      "targetLow": 9,
+      "targetHigh": 12,
+      "streakLength": 8
+    },
+    "outputs": {
+      "probabilityPercent": 9.174776729,
+      "oddsOneIn": 10.8994478,
+      "meanHeads": 11.25,
+      "stdDevHeads": 1.677050983,
+      "streakProbabilityPercent": 10.0112915
+    }
+  },
+  "edge": {
+    "inputs": {
+      "numFlips": 1,
+      "headsProbabilityPercent": 0,
+      "comparisonCode": 0,
+      "targetLow": 0,
+      "targetHigh": 0,
+      "streakLength": 1
+    },
+    "outputs": {
+      "probabilityPercent": 100,
+      "oddsOneIn": 1,
+      "meanHeads": 0,
+      "stdDevHeads": 0,
+      "streakProbabilityPercent": 0
     }
   }
 }
@@ -4419,6 +4566,59 @@ exports[`compute() snapshots > density-of-solutions-calculator 1`] = `
       "density": 0,
       "massPercent": "NaN",
       "specificGravity": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > dice-probability-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "numDice": 2,
+      "numSides": 6,
+      "comparisonCode": 0,
+      "targetLow": 7,
+      "targetHigh": 9
+    },
+    "outputs": {
+      "probabilityPercent": 16.66666667,
+      "oddsOneIn": 6,
+      "expectedSum": 7,
+      "minSum": 2,
+      "maxSum": 12
+    }
+  },
+  "typical": {
+    "inputs": {
+      "numDice": 3,
+      "numSides": 9,
+      "comparisonCode": 0,
+      "targetLow": 11,
+      "targetHigh": 14
+    },
+    "outputs": {
+      "probabilityPercent": 6.172839506,
+      "oddsOneIn": 16.2,
+      "expectedSum": 15,
+      "minSum": 3,
+      "maxSum": 27
+    }
+  },
+  "edge": {
+    "inputs": {
+      "numDice": 1,
+      "numSides": 2,
+      "comparisonCode": 0,
+      "targetLow": 0,
+      "targetHigh": 0
+    },
+    "outputs": {
+      "probabilityPercent": 0,
+      "oddsOneIn": "NaN",
+      "expectedSum": 1.5,
+      "minSum": 1,
+      "maxSum": 2
     }
   }
 }
@@ -9461,6 +9661,50 @@ exports[`compute() snapshots > lotka-volterra-calculator 1`] = `
     "outputs": {
       "preyEquilibrium": 1,
       "predatorEquilibrium": 1
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > lottery-odds-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "poolSize": 49,
+      "picksCount": 6,
+      "matches": 6
+    },
+    "outputs": {
+      "matchProbabilityPercent": 0.000007151123842,
+      "oddsOneInForMatch": 13983816,
+      "jackpotOddsOneIn": 13983816,
+      "totalCombinations": 13983816
+    }
+  },
+  "typical": {
+    "inputs": {
+      "poolSize": 74,
+      "picksCount": 9,
+      "matches": 9
+    },
+    "outputs": {
+      "matchProbabilityPercent": 9.047796545e-10,
+      "oddsOneInForMatch": 110524147500,
+      "jackpotOddsOneIn": 110524147500,
+      "totalCombinations": 110524147500
+    }
+  },
+  "edge": {
+    "inputs": {
+      "poolSize": 1,
+      "picksCount": 1,
+      "matches": 0
+    },
+    "outputs": {
+      "matchProbabilityPercent": 0,
+      "oddsOneInForMatch": "NaN",
+      "jackpotOddsOneIn": 1,
+      "totalCombinations": 1
     }
   }
 }

@@ -169,7 +169,12 @@ Countdowns, Weather & Geography, Everyday Novelties), add `fun` to `categories.s
   - [x] `birthday-paradox-calculator`
   - [x] `lottery-odds-calculator`
   - [x] `card-draw-probability-calculator`
-- [ ] Batch 3 — Calendar & countdown novelties (5)
+- [x] Batch 3 — Calendar & countdown novelties (5) — DONE 2026-11-18, branch `step/50-fun-other-batch3`, PR #134
+  - [x] `easter-date-calculator` (Gauss's algorithm, cross-checked against 12 known Easter dates 1818-2027)
+  - [x] `mayan-calendar-converter` (GMT correlation 584283; cross-checked against the creation date and Dec 21 2012; Spinden correlation disclosed as the unused alternative)
+  - [x] `friday-the-13th-calculator` (weekday-recurrence groupings brute-force verified 1583-3000; matches Wikipedia's 1-3/year and 688-vs-684-687 figures exactly)
+  - [x] `christmas-countdown-calculator` (live days/hours/minutes + shopping-weekday/weekend split, ISO 8601-cited methodology, closed-form weekday count)
+  - [x] `new-years-countdown-calculator` (live countdown + hours-behind-Kiribati/UTC+14 figure; timezone offset is an explicit input, not browser-detected, so compute() stays deterministic)
 - [ ] Batch 4 — Weather & geography novelties (5)
 - [ ] Batch 5 — Everyday gadget/misc novelties (4)
 - [ ] Batch 6 — Sub-grouping retrofit (`group` field + `GROUPED_CATEGORIES`)

@@ -518,6 +518,11 @@ export const calculatorOrder: string[] = [
   'birthday-paradox-calculator',
   'lottery-odds-calculator',
   'card-draw-probability-calculator',
+  'easter-date-calculator',
+  'mayan-calendar-converter',
+  'friday-the-13th-calculator',
+  'christmas-countdown-calculator',
+  'new-years-countdown-calculator',
   'ip-subnet-calculator',
   'iban-calculator',
   'password-strength-checker'

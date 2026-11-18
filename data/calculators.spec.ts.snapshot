@@ -2645,6 +2645,47 @@ exports[`compute() snapshots > chinese-zodiac-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > christmas-countdown-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "targetYear": 2026
+    },
+    "outputs": {
+      "daysLeft": 191,
+      "hoursLeft": 0,
+      "minutesLeft": 0,
+      "shoppingWeekdaysLeft": 137,
+      "shoppingWeekendDaysLeft": 54
+    }
+  },
+  "typical": {
+    "inputs": {
+      "targetYear": 2027
+    },
+    "outputs": {
+      "daysLeft": 556,
+      "hoursLeft": 0,
+      "minutesLeft": 0,
+      "shoppingWeekdaysLeft": 398,
+      "shoppingWeekendDaysLeft": 158
+    }
+  },
+  "edge": {
+    "inputs": {
+      "targetYear": 1900
+    },
+    "outputs": {
+      "daysLeft": 0,
+      "hoursLeft": 0,
+      "minutesLeft": 0,
+      "shoppingWeekdaysLeft": 0,
+      "shoppingWeekendDaysLeft": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > circle-calculator 1`] = `
 {
   "default": {
@@ -5208,6 +5249,44 @@ exports[`compute() snapshots > earth-overshoot-day-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > easter-date-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "year": 2027
+    },
+    "outputs": {
+      "easterDateMs": 1806172200000,
+      "goldenNumber": 14,
+      "daysAfterMarch21": 7,
+      "isLeapYear": 0
+    }
+  },
+  "typical": {
+    "inputs": {
+      "year": 3041
+    },
+    "outputs": {
+      "easterDateMs": 33806140200000,
+      "goldenNumber": 2,
+      "daysAfterMarch21": 21,
+      "isLeapYear": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "year": 1583
+    },
+    "outputs": {
+      "easterDateMs": -12204021210000,
+      "goldenNumber": 7,
+      "daysAfterMarch21": 20,
+      "isLeapYear": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > efficiency-calculator 1`] = `
 {
   "default": {
@@ -6775,6 +6854,50 @@ exports[`compute() snapshots > friction-calculator 1`] = `
     },
     "outputs": {
       "frictionForce": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > friday-the-13th-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "year": 2026
+    },
+    "outputs": {
+      "count": 3,
+      "month1Code": 2,
+      "month2Code": 3,
+      "month3Code": 11,
+      "yearStartsOnCode": 4,
+      "isLeapYear": 0
+    }
+  },
+  "typical": {
+    "inputs": {
+      "year": 3039
+    },
+    "outputs": {
+      "count": 2,
+      "month1Code": 9,
+      "month2Code": 12,
+      "month3Code": 0,
+      "yearStartsOnCode": 2,
+      "isLeapYear": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "year": 1583
+    },
+    "outputs": {
+      "count": 1,
+      "month1Code": 5,
+      "month2Code": 0,
+      "month3Code": 0,
+      "yearStartsOnCode": 6,
+      "isLeapYear": 0
     }
   }
 }
@@ -10132,6 +10255,68 @@ exports[`compute() snapshots > mass-percent-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > mayan-calendar-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "year": 2026,
+      "month": 6,
+      "day": 17
+    },
+    "outputs": {
+      "totalDaysSinceCreation": 1876926,
+      "baktun": 13,
+      "katun": 0,
+      "tun": 13,
+      "uinal": 12,
+      "kin": 6,
+      "tzolkinNumber": 3,
+      "tzolkinDayNameCode": 5,
+      "haabDayNumber": 19,
+      "haabMonthCode": 3
+    }
+  },
+  "typical": {
+    "inputs": {
+      "year": 3039,
+      "month": 9,
+      "day": 26
+    },
+    "outputs": {
+      "totalDaysSinceCreation": 2247017,
+      "baktun": 15,
+      "katun": 12,
+      "tun": 1,
+      "uinal": 12,
+      "kin": 17,
+      "tzolkinNumber": 10,
+      "tzolkinDayNameCode": 16,
+      "haabDayNumber": 0,
+      "haabMonthCode": 3
+    }
+  },
+  "edge": {
+    "inputs": {
+      "year": 1,
+      "month": 1,
+      "day": 1
+    },
+    "outputs": {
+      "totalDaysSinceCreation": 1137143,
+      "baktun": 7,
+      "katun": 17,
+      "tun": 18,
+      "uinal": 13,
+      "kin": 3,
+      "tzolkinNumber": 11,
+      "tzolkinDayNameCode": 2,
+      "haabDayNumber": 11,
+      "haabMonthCode": 7
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > mean-median-mode-calculator 1`] = `
 {
   "default": {
@@ -11386,6 +11571,47 @@ exports[`compute() snapshots > name-numerology-calculator 1`] = `
     "outputs": {
       "lifePathNumber": 3,
       "isMasterNumber": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > new-years-countdown-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "targetYear": 2027,
+      "utcOffsetHours": -5
+    },
+    "outputs": {
+      "daysLeft": 198,
+      "hoursLeft": 0,
+      "minutesLeft": 0,
+      "hoursBehindKiribati": 19
+    }
+  },
+  "typical": {
+    "inputs": {
+      "targetYear": 2028,
+      "utcOffsetHours": -7.5
+    },
+    "outputs": {
+      "daysLeft": 563,
+      "hoursLeft": 0,
+      "minutesLeft": 0,
+      "hoursBehindKiribati": 21.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "targetYear": 1900,
+      "utcOffsetHours": -12
+    },
+    "outputs": {
+      "daysLeft": 0,
+      "hoursLeft": 0,
+      "minutesLeft": 0,
+      "hoursBehindKiribati": 26
     }
   }
 }

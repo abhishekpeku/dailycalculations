@@ -194,6 +194,117 @@ const LOTTERY_EXAMPLE_ROWS = Array.from({ length: LOTTERY_EXAMPLE_PICKS + 1 }, (
   return { matches, oddsOneIn: probability > 0 ? 1 / probability : NaN };
 });
 
+// Generic positive-remainder modulus (JS's own % can return a negative result).
+function mod(n: number, m: number): number {
+  return ((n % m) + m) % m;
+}
+
+// Gauss's Easter algorithm (1800), Gregorian-calendar form, per Wikipedia's "Date of Easter" --
+// cited directly below. Finds the Sunday following the ecclesiastical "Paschal full moon" (the
+// first calculated full moon on or after March 21) using only modular arithmetic -- no lookup
+// table of real moon phases. The two `if` lines patch the two documented rare exceptions to the
+// raw d/e formula.
+function easterSunday(year: number): { month: number; day: number; goldenNumber: number } {
+  const a = year % 19;
+  const b = year % 4;
+  const c = year % 7;
+  const k = Math.floor(year / 100);
+  const p = Math.floor((13 + 8 * k) / 25);
+  const q = Math.floor(k / 4);
+  const M = mod(15 - p + k - q, 30);
+  const N = mod(4 + k - q, 7);
+  const d = mod(19 * a + M, 30);
+  const e = mod(2 * b + 4 * c + 6 * d + N, 7);
+  let day = 22 + d + e;
+  let month = 3; // March
+  if (day > 31) { day = d + e - 9; month = 4; } // April
+  if (month === 4 && day === 26) day = 19;
+  if (month === 4 && day === 25 && d === 28 && e === 6 && a > 10) day = 18;
+  return { month, day, goldenNumber: a + 1 }; // golden number: 1-indexed position in the 19-year Metonic cycle
+}
+
+// Julian Day Number of a proleptic-Gregorian calendar date (Fliegel & Van Flandern, 1968) --
+// the standard integer-arithmetic way to turn any Gregorian date into a single running day count.
+function gregorianToJDN(year: number, month: number, day: number): number {
+  const a = Math.floor((14 - month) / 12);
+  const y = year + 4800 - a;
+  const m = month + 12 * a - 3;
+  return day + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+}
+
+// GMT (Goodman-Martinez-Thompson) correlation constant: the Julian Day Number of the Maya
+// creation date, Long Count 0.0.0.0.0 -- the correlation most Mayanist scholars use today
+// (Wikipedia, "Mesoamerican Long Count calendar", cited below). See this calculator's watchOut
+// for the less-used Spinden correlation (489,384) this calculator does NOT use.
+const MAYA_GMT_CORRELATION = 584283;
+
+// A Long Count is five place values, base 20/18/20/20/20 from the top: baktun (144,000 days),
+// katun (7,200), tun (360), uinal (20), kin (1). baktun is NOT taken mod 20 -- in real-world use
+// it keeps counting past 13 (we are in the 14th baktun today), unlike the lower four places.
+function mayanLongCount(JDN: number) {
+  const n = JDN - MAYA_GMT_CORRELATION;
+  return {
+    n,
+    baktun: Math.floor(n / 144000),
+    katun: mod(Math.floor(n / 7200), 20),
+    tun: mod(Math.floor(n / 360), 20),
+    uinal: mod(Math.floor(n / 20), 18),
+    kin: mod(n, 20)
+  };
+}
+
+// 20 Tzolk'in day names in their fixed cycle order (Wikipedia, "Tzolk'in", cited below).
+const TZOLKIN_DAY_NAMES = ["Imix", "Ik'", "Ak'b'al", "K'an", "Chikchan", "Kimi", "Manik'", "Lamat", "Muluk", "Ok",
+  "Chuwen", "Eb'", "B'en", "Ix", "Men", "K'ib'", "Kab'an", "Etz'nab'", "Kawak", "Ajaw"] as const;
+// 18 named Haab' months, in order, plus Wayeb' (the 5-day 19th "month") (Wikipedia, "Haab'", cited below).
+const HAAB_MONTH_NAMES = ["Pop", "Wo'", "Sip", "Sotz'", "Sek", "Xul", "Yaxk'in", "Mol", "Ch'en", "Yax",
+  "Sak'", "Keh", "Mak", "K'ank'in", "Muwan", "Pax", "K'ayab'", "Kumk'u", "Wayeb'"] as const;
+
+// Both 260-day (Tzolk'in) and 365-day (Haab') cycles are anchored to the mythical creation date
+// (n = 0), recorded as "4 Ajaw 8 Kumk'u" (Wikipedia, "Maya calendar", cited below) -- a fixed
+// correspondence independent of which correlation constant maps it to a Gregorian date.
+function tzolkinOf(n: number) {
+  return {
+    number: mod(n + 3, 13) + 1, // n=0 -> 4
+    dayIndex: mod(n + 19, 20) // n=0 -> 19 (Ajaw)
+  };
+}
+function haabOf(n: number) {
+  const dayOfYear = mod(n + 348, 365); // n=0 -> 348 = day 8 of month index 17 (Kumk'u) -> "8 Kumk'u"
+  if (dayOfYear < 360) return { monthIndex: Math.floor(dayOfYear / 20), dayNumber: mod(dayOfYear, 20) };
+  return { monthIndex: 18, dayNumber: dayOfYear - 360 }; // Wayeb', days 0-4
+}
+
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+// Which months (1-12) have a Friday the 13th in `year`. JS's own Date already implements the
+// Gregorian leap-year rule correctly, so no separate leap-year handling is needed here.
+function friday13Months(year: number): number[] {
+  const months: number[] = [];
+  for (let m = 0; m < 12; m++) if (new Date(year, m, 13).getDay() === 5) months.push(m + 1);
+  return months;
+}
+
+// Weekdays (Mon-Fri) vs weekend days (Sat/Sun) in [startMs, endMs], both whole local-midnight
+// calendar days, inclusive. Closed-form over full 7-day weeks plus a remainder of under 7 days,
+// so it stays instant and exact no matter how far apart the two dates are -- never an
+// unbounded day-by-day loop. Used by the Christmas countdown's "shopping days" split.
+function weekdayWeekendCount(startMs: number, endMs: number): { weekdays: number; weekendDays: number } {
+  if (endMs < startMs) return { weekdays: 0, weekendDays: 0 };
+  const totalDays = Math.round((endMs - startMs) / 86400000) + 1;
+  const startWeekday = new Date(startMs).getDay(); // 0=Sun..6=Sat
+  const fullWeeks = Math.floor(totalDays / 7);
+  const remainder = totalDays % 7;
+  let weekdays = fullWeeks * 5;
+  let weekendDays = fullWeeks * 2;
+  for (let i = 0; i < remainder; i++) {
+    const day = (startWeekday + i) % 7;
+    if (day === 0 || day === 6) weekendDays++; else weekdays++;
+  }
+  return { weekdays, weekendDays };
+}
+
 export const funCalculators: CalculatorConfig[] = [
   {
     id: 'zodiac-sign-calculator',
@@ -1292,6 +1403,565 @@ export const funCalculators: CalculatorConfig[] = [
         totalHands: Number(total),
         favorableHands: Number(favorable)
       };
+    }
+  },
+  {
+    id: 'easter-date-calculator',
+    category: 'fun',
+    glyph: 'Sun',
+    updatedAt: '2026-11-18',
+    aliases: ['when is easter calculator', 'easter sunday date calculator', 'computus calculator', 'gauss easter algorithm calculator', 'date of easter calculator'],
+    related: ['date-difference-calculator', 'age-calculator', 'chinese-zodiac-calculator', 'zodiac-sign-calculator'],
+    title: 'Easter Date Calculator',
+    description: 'Find the exact date of Easter Sunday in any year using the real Gaussian Easter algorithm -- the same modular-arithmetic method used to compute Easter without a calendar of moon phases.',
+    example: 'In 2025, Easter Sunday falls on April 20 -- found from the year alone, with no lookup table of moon phases.',
+    breakdown: {
+      headline: 'easterDateMs',
+      headlineLabel: 'Easter Sunday',
+      outputs: [
+        { id: 'easterDateMs', label: 'Easter Sunday', format: 'date' },
+        { id: 'goldenNumber', label: 'Golden number (position in the 19-year lunar cycle)', format: 'integer' },
+        { id: 'daysAfterMarch21', label: 'Days after March 21', format: 'integer' },
+        { id: 'isLeapYear', label: 'Leap year?', labels: [{ value: 0, label: 'No' }, { value: 1, label: 'Yes' }] }
+      ],
+      groups: [{ title: 'Year', inputs: ['year'] }]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What the Gaussian Easter algorithm actually computes',
+        paragraphs: [
+          'Easter Sunday is defined, since the Council of Nicaea in 325 CE, as the first Sunday after the first ecclesiastical full moon falling on or after March 21 -- a fixed calendar date standing in for the vernal equinox. The "full moon" used is a calculated, agreed-upon calendar approximation, not whatever the real moon is actually doing that year, which is why Easter can be computed centuries in advance without any astronomical observation at all.',
+          'Carl Friedrich Gauss published a way to find that Sunday directly from the year number in 1800, using nothing but modular arithmetic -- no table of moon phases or calendar lookup required. It works by tracking two independent cycles at once: the year\'s position in a 19-year lunar repeating pattern (the "golden number," built on the Metonic cycle, where 19 solar years is very close to a whole number of lunar months) and the year\'s position in the 7-day week. Combining the two pins down the one Sunday the rule describes.',
+          'The version below is the Gregorian-calendar form of the algorithm: it adds two century-based correction terms, M and N, to account for the Gregorian calendar\'s own leap-year exceptions (which Gauss\'s original Julian-calendar version did not need), plus two rare, documented exceptions that patch two specific combinations the raw formula would otherwise place one day too late.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter any year from 1583 onward -- the first full year the Gregorian calendar was in effect.',
+        steps: [
+          { name: 'Enter a year', text: 'Any Gregorian-calendar year, 1583 or later.' },
+          { name: 'Read the date', text: 'The headline is the exact date of Easter Sunday that year.' },
+          { name: 'Check the golden number', text: 'This is the year\'s position (1-19) in the 19-year lunar cycle the algorithm uses -- not a date, but one of the two raw ingredients the formula combines.' },
+          { name: 'Check days after March 21', text: 'How far Easter falls past the fixed ecclesiastical equinox date -- always between 1 and 35 days, which is the same as saying Easter always falls between March 22 and April 25.' }
+        ],
+        outro: 'Everything is calculated in your browser using the exact algorithm below. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Gauss\'s algorithm reduces the whole ecclesiastical rule to nine small modular calculations, in order.',
+        expression:
+          'a = year mod 19\nb = year mod 4\nc = year mod 7\nk = floor(year / 100)\np = floor((13 + 8k) / 25)\nq = floor(k / 4)\nM = (15 - p + k - q) mod 30\nN = (4 + k - q) mod 7\nd = (19a + M) mod 30\ne = (2b + 4c + 6d + N) mod 7\nEaster = March (22 + d + e), or April (d + e - 9) if 22 + d + e > 31\nException 1: April 26 -> April 19\nException 2: April 25 with d=28, e=6, a>10 -> April 18',
+        terms: [
+          { symbol: 'a', meaning: 'Position in the 19-year Metonic lunar cycle (a+1 is the "golden number"). Rooted in the fact that 19 solar years is very close to a whole number of lunar months.' },
+          { symbol: 'b, c', meaning: 'The year\'s position in the 4-year leap-year cycle and the 7-day week.' },
+          { symbol: 'k, p, q', meaning: 'Century-based terms used only to build the two Gregorian correction values M and N below.' },
+          { symbol: 'M, N', meaning: 'Gregorian-calendar corrections that account for the Gregorian leap-year rule\'s own century exceptions (centuries not divisible by 400 skip a leap day) -- not needed in Gauss\'s original Julian-calendar version.' },
+          { symbol: 'd', meaning: 'How many days after March 21 the ecclesiastical full moon falls, by the lunar cycle alone.' },
+          { symbol: 'e', meaning: 'An additional weekday correction that moves the full-moon date forward to the following Sunday.' }
+        ],
+        note: 'Every division above is integer division -- the remainder is dropped, never rounded -- and every variable stays a small two-digit number. This calculator restricts input to 1583 onward because the Gregorian calendar did not exist before October 1582.'
+      },
+      workedExample: {
+        intro: 'What date is Easter Sunday in 2025?',
+        rows: [
+          { label: 'a = 2025 mod 19', value: '11' },
+          { label: 'b = 2025 mod 4, c = 2025 mod 7', value: '1, 2' },
+          { label: 'k = floor(2025/100), p = floor((13+8x20)/25), q = floor(20/4)', value: '20, 6, 5' },
+          { label: 'M = (15-6+20-5) mod 30', value: '24' },
+          { label: 'N = (4+20-5) mod 7', value: '5' },
+          { label: 'd = (19x11+24) mod 30 = 233 mod 30', value: '23' },
+          { label: 'e = (2x1+4x2+6x23+5) mod 7 = 153 mod 7', value: '6' },
+          { label: '22 + d + e = 22+23+6 = 51, over 31 -> April; day = d+e-9 = 23+6-9', value: '20' }
+        ],
+        result: 'April 20, 2025',
+        explanation: 'Because 22 + d + e (51) is greater than 31, the date rolls into April and is recomputed as d + e - 9 = 20. Neither exception applies (the result is not April 25 or 26), so April 20, 2025 is the final answer -- 30 days after the fixed March 21 equinox date.'
+      },
+      watchOut: [
+        { title: 'This is Western (Gregorian) Easter only', body: 'Orthodox churches that use the Julian calendar apply the same ecclesiastical rule against a different calendar, which usually (though not always) gives a later date. This calculator does not compute the Orthodox date.' },
+        { title: 'The "full moon" is ecclesiastical, not astronomical', body: 'It is a calculated calendar approximation agreed on centuries ago, and occasionally falls a day or two from the real, observable full moon. Easter\'s date has never depended on anyone actually looking at the sky.' },
+        { title: 'Easter always falls between March 22 and April 25', body: 'That range comes directly out of the algorithm\'s own bounds on d and e, not from an assumption added on top -- this calculator will never produce a date outside it.' },
+        { title: 'Two rare exceptions exist for a reason', body: 'Without them, the raw formula would occasionally compute April 26 (always patched to April 19) or, for specific years, April 25 (patched to April 18). These combinations are uncommon -- most years need neither exception.' },
+        { title: 'Valid for the Gregorian calendar era', body: 'The calculator accepts years from 1583 onward. It assumes the Gregorian leap-year rule continues unchanged indefinitely into the future, which is the standard assumption every Easter-date calculation makes.' }
+      ],
+      references: [
+        { label: 'Wikipedia, Date of Easter (Gauss\'s algorithm)', url: 'https://en.wikipedia.org/wiki/Date_of_Easter' },
+        { label: 'US Naval Observatory, Computing the Date of Easter', url: 'https://aa.usno.navy.mil/faq/easter' }
+      ]
+    },
+    inputs: [{ id: 'year', label: 'Year', type: 'number', placeholder: '2027', defaultValue: 2027, step: 1, min: 1583 }],
+    seo: {
+      title: 'Easter Date Calculator – Gaussian Easter Algorithm',
+      description: 'Find the exact date of Easter Sunday in any year using the real Gaussian Easter algorithm -- the modular-arithmetic method with no moon-phase table.',
+      faq: [
+        { question: 'What date is Easter in 2025?', answer: 'April 20, 2025, computed directly from Gauss\'s algorithm: the golden number is 12, and the formula\'s d and e values (23 and 6) push the result into April.' },
+        { question: 'How is the date of Easter actually calculated?', answer: 'Easter Sunday is the first Sunday after the first ecclesiastical full moon on or after March 21. Gauss\'s 1800 algorithm finds that Sunday from the year number alone, using modular arithmetic on the year\'s position in a 19-year lunar cycle and the 7-day week -- no table of real moon phases needed.' },
+        { question: 'Why does the formula have two exceptions?', answer: 'Without them, the raw d/e formula would occasionally land on April 26, or on April 25 for a specific combination of years, both one day later than the ecclesiastical rule actually intends. The exceptions patch those two cases to April 19 and April 18.' },
+        { question: 'What is the "golden number"?', answer: 'The year\'s position (1 through 19) in a repeating 19-year lunar cycle, one of the two raw cycles -- lunar and weekday -- that the algorithm combines to find Easter. It is not a date by itself.' },
+        { question: 'What is the earliest and latest Easter can fall?', answer: 'March 22 at the earliest and April 25 at the latest -- both bounds come directly from the algorithm\'s own formula, not a separate rule layered on top.' },
+        { question: 'Is this the same date Orthodox churches use?', answer: 'Not usually. Orthodox churches apply the same ecclesiastical rule but against the Julian calendar, which this calculator does not compute, and which typically lands on a later date.' },
+        { question: 'Why does Easter move every year, unlike Christmas?', answer: 'Christmas is fixed to a calendar date (December 25). Easter is fixed to a lunar-cycle event (the ecclesiastical full moon) and then rounded to the following Sunday, so its calendar date shifts from year to year the way a lunar event does.' }
+      ]
+    },
+    compute(values) {
+      const year = Math.round(values.year);
+      if (!Number.isFinite(year) || year < 1583) return { easterDateMs: NaN, goldenNumber: NaN, daysAfterMarch21: NaN, isLeapYear: NaN };
+      const { month, day, goldenNumber } = easterSunday(year);
+      const easterDateMs = new Date(year, month - 1, day).getTime();
+      const march21Ms = new Date(year, 2, 21).getTime();
+      const daysAfterMarch21 = Math.round((easterDateMs - march21Ms) / 86400000);
+      const isLeapYear = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 1 : 0;
+      return { easterDateMs, goldenNumber, daysAfterMarch21, isLeapYear };
+    }
+  },
+  {
+    id: 'mayan-calendar-converter',
+    category: 'fun',
+    glyph: 'LC',
+    updatedAt: '2026-11-18',
+    aliases: ['mayan long count converter', 'maya calendar converter', 'gregorian to mayan calendar calculator', "tzolk'in haab calculator", 'mayan date converter'],
+    related: ['easter-date-calculator', 'date-difference-calculator', 'age-calculator', 'chinese-zodiac-calculator'],
+    title: 'Mayan Calendar Converter',
+    description: "Convert any Gregorian date to its Maya Long Count, Tzolk'in and Haab' date, using the GMT correlation constant most Mayanist scholars use today.",
+    example: "June 17, 2026 converts to Long Count 13.0.13.12.6 -- Tzolk'in 3 Kimi, Haab' 19 Sotz'.",
+    breakdown: {
+      headline: 'totalDaysSinceCreation',
+      headlineLabel: 'Days since the Maya creation date (0.0.0.0.0)',
+      outputs: [
+        { id: 'totalDaysSinceCreation', label: 'Days since the Maya creation date (0.0.0.0.0)', format: 'integer' },
+        { id: 'baktun', label: "Baktun (Long Count 1st place)", format: 'integer' },
+        { id: 'katun', label: "Katun (2nd place)", format: 'integer' },
+        { id: 'tun', label: "Tun (3rd place)", format: 'integer' },
+        { id: 'uinal', label: "Uinal (4th place)", format: 'integer' },
+        { id: 'kin', label: "Kin (5th place)", format: 'integer' },
+        { id: 'tzolkinNumber', label: "Tzolk'in number (1-13)", format: 'integer' },
+        { id: 'tzolkinDayNameCode', label: "Tzolk'in day name", labels: TZOLKIN_DAY_NAMES.map((name, i) => ({ value: i, label: name })) },
+        { id: 'haabDayNumber', label: "Haab' day number (0-19)", format: 'integer' },
+        { id: 'haabMonthCode', label: "Haab' month", labels: HAAB_MONTH_NAMES.map((name, i) => ({ value: i, label: name })) }
+      ],
+      groups: [{ title: 'Gregorian date', inputs: ['year', 'month', 'day'] }]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Three calendars running at once',
+        paragraphs: [
+          "The Maya did not use one calendar -- they ran at least three at the same time, for different purposes. The Tzolk'in is a 260-day cycle (13 numbers x 20 named days) used for ritual and divination. The Haab' is a 365-day solar-approximation calendar (18 named 20-day months plus a short 5-day 19th month, Wayeb') used for the farming and civic year. Neither one tracks the actual year count, so the same Tzolk'in/Haab' combination recurs every 52 years (the \"Calendar Round\").",
+          'The Long Count is the one built to count unambiguously across centuries: a place-value system, much like decimal digits, counting days since a fixed mythical creation date deep in the past. Its five places are the kin (1 day), uinal (20 days), tun (360 days), katun (7,200 days) and baktun (144,000 days) -- written baktun.katun.tun.uinal.kin, for example 13.0.0.0.0.',
+          "Converting a modern Gregorian date into all three requires fixing exactly how many days separate the Gregorian calendar from the Maya creation date -- a single number called a correlation constant. This calculator uses the GMT (Goodman-Martinez-Thompson) correlation, 584,283, the value most Mayanist scholars and historical/astronomical cross-checks agree on today. See Watch Out for why that number is not universally used."
+        ]
+      },
+      howTo: {
+        intro: 'Enter any Gregorian calendar date.',
+        steps: [
+          { name: 'Enter a date', text: 'Any year, month and day on the Gregorian calendar (the one in everyday use).' },
+          { name: 'Read the day count', text: 'The headline is the number of days since the Maya creation date, 0.0.0.0.0 -- the single number every other figure below is built from.' },
+          { name: 'Read the Long Count', text: 'The five rows (baktun through kin) are that day count split into Maya place values, written together as baktun.katun.tun.uinal.kin.' },
+          { name: "Read the Tzolk'in", text: "A number 1-13 plus one of 20 day names -- together a position in the repeating 260-day ritual cycle." },
+          { name: "Read the Haab'", text: "A day number 0-19 plus one of 18 month names (or Wayeb', the short 19th month) -- a position in the 365-day civic year." }
+        ],
+        outro: 'Everything is calculated in your browser using the formulas below. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The conversion runs in three stages: a Gregorian date becomes a single day number, that number becomes a Long Count, and the same number also gives the Tzolk\'in and Haab\'.',
+        expression:
+          'JDN = Julian Day Number of the Gregorian date (Fliegel & Van Flandern, 1968)\nn = JDN - 584283   (584,283 = the GMT correlation)\nbaktun = floor(n / 144000)\nkatun = floor(n / 7200) mod 20\ntun = floor(n / 360) mod 20\nuinal = floor(n / 20) mod 18\nkin = n mod 20\ntzolkinNumber = ((n + 3) mod 13) + 1\ntzolkinDayIndex = (n + 19) mod 20\nhaabDayOfYear = (n + 348) mod 365',
+        terms: [
+          { symbol: 'JDN', meaning: 'A running count of days used by astronomers and calendar converters generally, computed from the Gregorian year/month/day with integer arithmetic alone.' },
+          { symbol: 'n', meaning: 'Days since the Maya creation date -- zero exactly on that date, under the GMT correlation.' },
+          { symbol: '584283', meaning: "The GMT correlation constant: the JDN of the Maya creation date, which corresponds to August 11, 3114 BCE on the proleptic Gregorian calendar." },
+          { symbol: '+3, +19, +13, +20', meaning: "Offsets anchoring the Tzolk'in/Haab' formulas to the creation date's own recorded position, \"4 Ajaw 8 Kumk'u.\"" }
+        ],
+        note: "All divisions are integer division. baktun is never taken mod 20 -- real-world Long Count dates keep counting upward past 13 (we are in the 14th baktun today), they do not reset."
+      },
+      workedExample: {
+        intro: 'Convert June 17, 2026.',
+        rows: [
+          { label: 'JDN of June 17, 2026', value: '2,461,209' },
+          { label: 'n = JDN - 584283', value: '1,876,926' },
+          { label: 'baktun = floor(1876926 / 144000)', value: '13' },
+          { label: 'katun = floor(1876926 / 7200) mod 20', value: '0' },
+          { label: 'tun = floor(1876926 / 360) mod 20', value: '13' },
+          { label: 'uinal = floor(1876926 / 20) mod 18', value: '12' },
+          { label: 'kin = 1876926 mod 20', value: '6' },
+          { label: "Tzolk'in: ((n+3) mod 13)+1 = 4, dayIndex (n+19) mod 20 = 5 -> Kimi", value: '3 Kimi' },
+          { label: "Haab': dayOfYear (n+348) mod 365 = 79 -> month index 3 (Sotz'), day 19", value: "19 Sotz'" }
+        ],
+        result: "Long Count 13.0.13.12.6 -- Tzolk'in 3 Kimi, Haab' 19 Sotz'",
+        explanation: "Every figure comes from the one number n = 1,876,926: split into place values for the Long Count, and read two different ways (mod 13/20, and mod 365) for the Tzolk'in and Haab'."
+      },
+      watchOut: [
+        { title: 'This uses the GMT correlation, not the only one ever proposed', body: "The GMT (Goodman-Martinez-Thompson) correlation, 584,283, is the value most Mayanist scholars use because it is independently supported by historical records, astronomical cross-checks and archaeological (radiocarbon) dating together. An older alternative, the Spinden correlation (489,384), shifts every date about 260 years earlier. This calculator always uses GMT." },
+        { title: "The creation date is proleptic, not a real historical observation", body: 'August 11, 3114 BCE (the date this correlation assigns to Long Count 0.0.0.0.0) is a mythical Maya reference point, projected backward through the modern calendar -- not a claim that the Gregorian calendar, or anyone\'s calendar, existed then.' },
+        { title: 'Baktun keeps counting past 13', body: "The famous December 21, 2012 date was Long Count 13.0.0.0.0 -- the baktun reaching 13 did not restart the calendar at 0, contrary to a popular misconception at the time; it simply continued to 13.0.0.0.1 the next day, and we are now in the 14th baktun." },
+        { title: "Haab' days are numbered 0-19, not 1-20", body: 'Each Haab\' month\'s first day is day 0 (the "seating" of the month), so "8 Kumk\'u" is the 9th day of that month counting normally, written as the digit 8.' },
+        { title: 'This is a date conversion, not a historical record', body: 'Real inscribed Long Count dates on Maya monuments are the actual historical record; this calculator only converts a modern calendar date in the other direction, for any date you choose.' }
+      ],
+      references: [
+        { label: 'Wikipedia, Mesoamerican Long Count calendar (GMT correlation, 584,283)', url: 'https://en.wikipedia.org/wiki/Mesoamerican_Long_Count_calendar' },
+        { label: 'Wikipedia, Maya calendar (creation date "4 Ahau 8 Kumkʼu")', url: 'https://en.wikipedia.org/wiki/Maya_calendar' },
+        { label: "Wikipedia, Tzolk'in (20 day names, cycle order)", url: 'https://en.wikipedia.org/wiki/Tzolk%27in' },
+        { label: "Wikipedia, Haab' (18 months, day-0 numbering)", url: 'https://en.wikipedia.org/wiki/Haab%27' }
+      ]
+    },
+    inputs: [
+      { id: 'year', label: 'Year', type: 'number', placeholder: '2026', defaultValue: 2026, step: 1, min: 1 },
+      { id: 'month', label: 'Month (1-12)', type: 'number', placeholder: '6', defaultValue: 6, step: 1, min: 1 },
+      { id: 'day', label: 'Day (1-31)', type: 'number', placeholder: '17', defaultValue: 17, step: 1, min: 1 }
+    ],
+    seo: {
+      title: "Mayan Calendar Converter – Long Count, Tzolk'in & Haab'",
+      description: "Convert any Gregorian date to the Maya Long Count, Tzolk'in and Haab' date, using the GMT correlation constant most Mayanist scholars use today.",
+      faq: [
+        { question: 'What Mayan date is June 17, 2026?', answer: "Long Count 13.0.13.12.6 -- Tzolk'in 3 Kimi, Haab' 19 Sotz' -- using the GMT correlation." },
+        { question: 'What correlation constant does this calculator use?', answer: 'The GMT (Goodman-Martinez-Thompson) correlation, 584,283 -- the value most Mayanist scholars use because historical, astronomical and archaeological evidence all support it together.' },
+        { question: 'Is there another correlation in use?', answer: 'Yes -- the older Spinden correlation (489,384) shifts every converted date about 260 years earlier. It lacks the same cross-checked support as GMT, which is why this calculator uses GMT.' },
+        { question: 'Did the Maya calendar really end in 2012?', answer: 'No. December 21, 2012 was Long Count 13.0.0.0.0 -- the baktun place reaching 13, which simply continued counting (to 13.0.0.0.1, and so on), not a reset or an end.' },
+        { question: "What is the difference between the Long Count, Tzolk'in and Haab'?", answer: "The Long Count is a place-value day count since a fixed creation date, used to track long spans unambiguously. The Tzolk'in is a 260-day ritual cycle. The Haab' is a 365-day civic/solar-approximation calendar. The Maya used all three together." },
+        { question: "Why is a Haab' day written as '8 Kumk'u' instead of '9 Kumk'u'?", answer: "Haab' days are numbered starting at 0 (the month's \"seating\" day), so the digit shown is one less than the day's position counting from 1." },
+        { question: 'Does this work for dates before the Gregorian calendar existed?', answer: 'It computes a proleptic Gregorian date -- the Gregorian calendar\'s rules projected backward -- the same convention used for the Maya creation date itself (August 11, 3114 BCE), not a claim that the Gregorian calendar was in use at that time.' }
+      ]
+    },
+    compute(values) {
+      const year = Math.round(values.year);
+      const month = Math.round(values.month);
+      const day = Math.round(values.day);
+      const noAnswer = {
+        totalDaysSinceCreation: NaN, baktun: NaN, katun: NaN, tun: NaN, uinal: NaN, kin: NaN,
+        tzolkinNumber: NaN, tzolkinDayNameCode: NaN, haabDayNumber: NaN, haabMonthCode: NaN
+      };
+      if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day) || month < 1 || month > 12 || day < 1) return noAnswer;
+      const daysInMonth = new Date(year, month, 0).getDate();
+      if (day > daysInMonth) return noAnswer;
+      const JDN = gregorianToJDN(year, month, day);
+      const lc = mayanLongCount(JDN);
+      const tz = tzolkinOf(lc.n);
+      const hb = haabOf(lc.n);
+      return {
+        totalDaysSinceCreation: lc.n,
+        baktun: lc.baktun,
+        katun: lc.katun,
+        tun: lc.tun,
+        uinal: lc.uinal,
+        kin: lc.kin,
+        tzolkinNumber: tz.number,
+        tzolkinDayNameCode: tz.dayIndex,
+        haabDayNumber: hb.dayNumber,
+        haabMonthCode: hb.monthIndex
+      };
+    }
+  },
+  {
+    id: 'friday-the-13th-calculator',
+    category: 'fun',
+    glyph: '13',
+    updatedAt: '2026-11-18',
+    aliases: ['friday the 13th calculator', 'how many friday the 13ths this year', 'next friday the 13th calculator', 'unlucky friday calculator', 'is there a friday the 13th this year'],
+    related: ['easter-date-calculator', 'mayan-calendar-converter', 'date-difference-calculator', 'birthday-paradox-calculator'],
+    title: 'Friday the 13th Calculator',
+    description: 'Find every Friday the 13th in a given year, and the calendar reason certain months always get one together -- the same weekday-recurrence pattern behind the "doomsday rule."',
+    example: '2026 has three: February, March and November -- because all three months\' 1st falls on a Sunday that year.',
+    breakdown: {
+      headline: 'count',
+      headlineLabel: 'Friday the 13ths this year',
+      outputs: [
+        { id: 'count', label: 'Friday the 13ths this year', format: 'integer' },
+        { id: 'month1Code', label: 'First one', labels: [{ value: 0, label: '-' }, ...MONTH_NAMES.map((m, i) => ({ value: i + 1, label: m }))] },
+        { id: 'month2Code', label: 'Second one', labels: [{ value: 0, label: '-' }, ...MONTH_NAMES.map((m, i) => ({ value: i + 1, label: m }))] },
+        { id: 'month3Code', label: 'Third one', labels: [{ value: 0, label: '-' }, ...MONTH_NAMES.map((m, i) => ({ value: i + 1, label: m }))] },
+        { id: 'yearStartsOnCode', label: 'The year starts on a', labels: WEEKDAY_NAMES.map((w, i) => ({ value: i, label: w })) },
+        { id: 'isLeapYear', label: 'Leap year?', labels: [{ value: 0, label: 'No' }, { value: 1, label: 'Yes' }] }
+      ],
+      groups: [{ title: 'Year', inputs: ['year'] }]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why Friday the 13th recurs the way it does',
+        paragraphs: [
+          'The rule behind every Friday the 13th is simple: the 13th of a month falls on Friday exactly when that month\'s 1st falls on a Sunday (13 - 1 = 12 days later, and 12 mod 7 = 5, so Sunday + 5 days is Friday). Finding every Friday the 13th in a year is therefore the same as finding every month whose 1st is a Sunday that year.',
+          'Because every month is a fixed number of days long, the gap between any two months\' 1st-of-the-month, measured in days, is also fixed -- and what matters for the weekday is only that gap modulo 7. In a common (non-leap) year, four groups of months always share the same weekday on their 1st: January and October; April and July; September and December; and February, March and November together (because February is exactly 28 days -- four whole weeks -- so March 1 always repeats January\'s pattern one slot later, and the 31+30+31+30+31+31+30+31 = 245-day gap to November is also an exact multiple of 7). In a leap year, the extra day in February shifts the groups to January/April/July, February/August, March/November, and September/December.',
+          'Which of those groups happens to land on Sunday in a given year is decided only by what weekday January 1 falls on. That single fact is also the core of the "doomsday rule," a mental-math technique for finding any date\'s weekday from a short list of easy-to-remember reference dates that all share one year\'s weekday -- the same recurring-weekday structure this calculator uses, just aimed at one specific target (Friday the 13th) instead of a general-purpose lookup.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter a year.',
+        steps: [
+          { name: 'Enter a year', text: 'Any year, 1583 or later (the first full year of the Gregorian calendar).' },
+          { name: 'Read the count', text: 'The headline is how many Friday the 13ths fall in that year -- always 1, 2 or 3, never 0.' },
+          { name: 'Read the months', text: 'Up to three rows list which months, in order; unused rows show "-".' },
+          { name: 'Check what the year starts on', text: 'This is the one fact that decides everything else -- which weekday January 1 falls on.' }
+        ],
+        outro: 'Everything is calculated in your browser from the real Gregorian calendar. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'No special formula is needed beyond the calendar itself -- just a check, run for every month.',
+        expression: 'For each month m (1-12): if the weekday of (year, m, 13) is Friday, m is a Friday-the-13th month.\ncount = number of months where that is true',
+        terms: [
+          { symbol: 'weekday(year, m, 13)', meaning: 'Computed from the real Gregorian calendar, which already handles every leap-year exception correctly.' }
+        ],
+        note: 'Equivalently: month m has a Friday the 13th exactly when month m\'s 1st falls on a Sunday.'
+      },
+      workedExample: {
+        intro: 'How many Friday the 13ths does 2026 have?',
+        rows: [
+          { label: 'January 1, 2026', value: 'Thursday' },
+          { label: 'February 1, 2026 (31 days later, 31 mod 7 = 3)', value: 'Sunday -> February 13 is a Friday' },
+          { label: 'March 1, 2026 (28 days after Feb 1, an exact 4 weeks)', value: 'Sunday -> March 13 is a Friday' },
+          { label: 'November 1, 2026 (245 days after March 1, an exact 35 weeks)', value: 'Sunday -> November 13 is a Friday' },
+          { label: 'Every other month\'s 1st', value: 'Not a Sunday that year' }
+        ],
+        result: '3 -- February, March and November',
+        explanation: 'February, March and November always share the same weekday as each other in a common year; in 2026 that shared weekday happens to be Sunday, so all three get a Friday the 13th. (2012 is the equivalent leap-year case: January, April and July all share a weekday, and in 2012 that weekday was Sunday too, giving three Friday the 13ths that year as well.)'
+      },
+      watchOut: [
+        { title: 'Every year has at least one, and never more than three', body: 'Both bounds come from the same calendar arithmetic -- no year under the Gregorian calendar can have zero Friday the 13ths, and no year can have more than three.' },
+        { title: 'The leap-year groupings are different from the common-year ones', body: 'February\'s extra day in a leap year breaks its link to March, and creates a new one between January, April and July instead -- check the "leap year?" row before assuming last year\'s pattern repeats.' },
+        { title: 'Friday the 13th is very slightly more common than other weekday/day-13 combinations', body: 'Across a full 400-year Gregorian cycle, the 13th falls on a Friday 688 times, versus 684-687 times for the other six weekdays -- a tiny statistical quirk of how the 400-year cycle\'s days divide into weeks, not a meaningful difference in practice.' },
+        { title: 'This counts the calendar fact only, not the superstition\'s origin', body: 'The fear of Friday the 13th (paraskevidekatriaphobia) is a cultural and psychological phenomenon with its own separate history; this calculator only finds the dates, and makes no claim about luck.' }
+      ],
+      references: [
+        { label: 'Wikipedia, Friday the 13th (frequency, 1st-must-be-Sunday rule, 688-occurrence figure)', url: 'https://en.wikipedia.org/wiki/Friday_the_13th' },
+        { label: "Wikipedia, Doomsday rule (recurring same-weekday dates)", url: 'https://en.wikipedia.org/wiki/Doomsday_rule' }
+      ]
+    },
+    inputs: [{ id: 'year', label: 'Year', type: 'number', placeholder: '2026', defaultValue: 2026, step: 1, min: 1583 }],
+    seo: {
+      title: 'Friday the 13th Calculator – Every One in Any Year',
+      description: 'Find every Friday the 13th in a given year, and the calendar reason certain months always get one together -- the same pattern behind the doomsday rule.',
+      faq: [
+        { question: 'How many Friday the 13ths are there in 2026?', answer: 'Three: February, March and November. All three months\' 1st falls on a Sunday in 2026, and a month\'s 13th is a Friday exactly when its 1st is a Sunday.' },
+        { question: 'Can a year have no Friday the 13th at all?', answer: 'No. Under the Gregorian calendar, every year has at least one Friday the 13th -- the minimum is 1, the maximum is 3.' },
+        { question: 'What is the most Friday the 13ths a year can have?', answer: 'Three. It happens in a common year that starts on Thursday (giving February, March and November) or a leap year that starts on Sunday (giving January, April and July), as in 2012.' },
+        { question: 'Why do February, March and November share a pattern?', answer: 'In a common (non-leap) year, February is exactly 28 days -- four whole weeks -- so March 1 always falls on the same weekday as February 1. The 245-day gap from March 1 to November 1 is also an exact multiple of 7, linking all three.' },
+        { question: 'Does the pattern change in a leap year?', answer: 'Yes. The extra day in February breaks its link to March and instead links January, April and July into one group, which is why 2012 (a leap year) had its three Friday the 13ths in those months instead.' },
+        { question: 'Is Friday the 13th statistically unlucky?', answer: 'No evidence supports that. The only real statistical quirk is that across a full 400-year Gregorian cycle, the 13th of the month lands on a Friday 688 times versus 684-687 times for the other weekdays -- a negligible difference.' },
+        { question: 'What is the "doomsday rule"?', answer: 'A mental-math shortcut for finding any date\'s weekday from a short list of easy-to-remember dates that all share one year\'s weekday. It relies on the same recurring-weekday structure between months that this calculator uses to find Friday the 13ths.' }
+      ]
+    },
+    compute(values) {
+      const year = Math.round(values.year);
+      const noAnswer = { count: NaN, month1Code: NaN, month2Code: NaN, month3Code: NaN, yearStartsOnCode: NaN, isLeapYear: NaN };
+      if (!Number.isFinite(year) || year < 1583) return noAnswer;
+      const months = friday13Months(year);
+      const isLeapYear = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 1 : 0;
+      return {
+        count: months.length,
+        month1Code: months[0] ?? 0,
+        month2Code: months[1] ?? 0,
+        month3Code: months[2] ?? 0,
+        yearStartsOnCode: new Date(year, 0, 1).getDay(),
+        isLeapYear
+      };
+    }
+  },
+  {
+    id: 'christmas-countdown-calculator',
+    category: 'fun',
+    glyph: 'Dec',
+    updatedAt: '2026-11-18',
+    timeDependent: true,
+    aliases: ['christmas countdown calculator', 'days until christmas calculator', 'shopping days until christmas calculator', 'how many days until christmas', 'xmas countdown calculator'],
+    related: ['easter-date-calculator', 'friday-the-13th-calculator', 'date-difference-calculator', 'age-calculator'],
+    title: 'Christmas Countdown Calculator',
+    description: 'Count the days, hours and minutes until December 25, plus a separate "shopping days left" split into remaining weekdays and weekend days.',
+    example: 'From November 18, 2026, Christmas is 36 days, 14 hours away -- 27 of the remaining weekdays and 10 weekend days before December 25.',
+    breakdown: {
+      headline: 'daysLeft',
+      headlineLabel: 'Days until Christmas',
+      outputs: [
+        { id: 'daysLeft', label: 'Days until Christmas', format: 'integer' },
+        { id: 'hoursLeft', label: 'Plus hours', format: 'integer' },
+        { id: 'minutesLeft', label: 'Plus minutes', format: 'integer' },
+        { id: 'shoppingWeekdaysLeft', label: 'Shopping weekdays left (Mon-Fri)', format: 'integer' },
+        { id: 'shoppingWeekendDaysLeft', label: 'Weekend days left (Sat-Sun)', format: 'integer' }
+      ],
+      groups: [{ title: 'Which Christmas', inputs: ['targetYear'] }]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Two different countdowns in one',
+        paragraphs: [
+          'A plain "days until Christmas" figure is just the gap between today and December 25, the same subtraction the date difference calculator already does for any two dates. This calculator adds a second, genuinely different figure: how many of the remaining days are weekdays versus weekend days, because those two kinds of days are not equally useful for shopping, wrapping or planning a trip home.',
+          'The precise top-line figure -- days, hours and minutes -- is measured from right now, not from midnight, so it keeps counting down through the day rather than only changing once every 24 hours. December 25 itself is treated as the finish line: the countdown reaches zero at the very start of Christmas Day, local time.',
+          'The weekday/weekend split uses the ordinary Monday-through-Friday work-week convention: ISO 8601, the international date and time standard, numbers the days Monday (1) through Sunday (7) and, in its own worked example for how a calendar week is assigned a number, explicitly treats Saturdays and Sundays as non-working days. This calculator uses that same Monday-Friday/Saturday-Sunday split, counting from today through December 24 -- the last calendar day before Christmas itself.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter which year\'s Christmas you want to count down to -- it defaults to the current one.',
+        steps: [
+          { name: 'Enter the year', text: 'The calendar year of the Christmas you are counting down to.' },
+          { name: 'Read the countdown', text: 'Days, plus hours, plus minutes, measured from right now to December 25 at midnight, local time.' },
+          { name: 'Read the shopping split', text: 'How many of the remaining days (today through December 24) are weekdays versus weekend days.' }
+        ],
+        outro: 'Everything is calculated in your browser from your device\'s clock. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The countdown is a timestamp subtraction; the shopping split counts weekdays and weekend days across the same remaining window.',
+        expression:
+          'christmas = December 25, target year, 00:00 local time\ndiff = christmas - now\ndaysLeft = floor(diff / 86,400,000)\nhoursLeft = floor((diff mod 86,400,000) / 3,600,000)\nminutesLeft = floor((diff mod 3,600,000) / 60,000)\nshopping window = today through December 24, target year (inclusive)\nshoppingWeekdaysLeft, shoppingWeekendDaysLeft = count of Mon-Fri vs Sat-Sun days in that window',
+        terms: [
+          { symbol: 'diff', meaning: 'Milliseconds between the exact current moment and the target Christmas midnight.' },
+          { symbol: '86,400,000 / 3,600,000 / 60,000', meaning: 'Milliseconds in a day, an hour and a minute, used to split the remaining time into a readable days/hours/minutes figure.' },
+          { symbol: 'shopping window', meaning: 'Every calendar day from today up to and including December 24 -- Christmas Day itself is excluded, since it is the day gifts are given, not a day to still be shopping for them.' }
+        ],
+        note: 'If the target Christmas has already passed this year, every figure shows 0 rather than a negative number -- change the year field to count down to next year\'s instead.'
+      },
+      workedExample: {
+        intro: 'From November 18, 2026, at 10:00 a.m., how far away is Christmas 2026?',
+        rows: [
+          { label: 'Christmas 2026 midnight minus now', value: '36 days, 14 hours' },
+          { label: 'Shopping window (Nov 18 through Dec 24, inclusive)', value: '37 calendar days' },
+          { label: 'Weekdays in that window (Mon-Fri)', value: '27' },
+          { label: 'Weekend days in that window (Sat-Sun)', value: '10' }
+        ],
+        result: '36 days, 14 hours until Christmas -- 27 shopping weekdays and 10 weekend days remaining',
+        explanation: 'The 37-day window splits into 5 full weeks (35 days, 25 weekdays + 10 weekend days) plus a 2-day remainder that happens to land on two more weekdays, for 27 weekdays and 10 weekend days in total.'
+      },
+      watchOut: [
+        { title: 'The countdown uses your device\'s clock and time zone', body: 'Both the top-line countdown and the shopping-day split are measured against the date and time set on the device you are using, the same convention as every other live countdown on this site.' },
+        { title: 'December 24 is the last day counted as a "shopping day"', body: 'This calculator\'s shopping window stops at December 24. If you consider December 25 itself a shopping day too (last-minute purchases after gifts are opened), add one more day by hand.' },
+        { title: 'A year far from today gives an unusually long window', body: 'If you pick a target year more than a few months away, the shopping-day split will count weekdays and weekends across that entire gap, not just a typical few weeks of holiday shopping -- it is still an accurate count, just not the window most people mean by "shopping days."' },
+        { title: 'This is a plain Monday-Friday/Saturday-Sunday split, not a store-hours guide', body: 'It does not know which days any particular store is actually open, or when a specific sale ends -- it only counts calendar weekdays versus weekend days.' }
+      ],
+      references: [
+        { label: 'Wikipedia, ISO 8601 (Monday-Sunday weekday numbering and its non-working-day worked example)', url: 'https://en.wikipedia.org/wiki/ISO_8601' }
+      ]
+    },
+    inputs: [{ id: 'targetYear', label: 'Christmas year', type: 'number', placeholder: '2026', defaultValue: 2026, step: 1, min: 1900 }],
+    seo: {
+      title: 'Christmas Countdown Calculator – Days & Shopping Days Left',
+      description: 'Count the days, hours and minutes until December 25, plus a separate shopping-days-left split into remaining weekdays and weekend days.',
+      faq: [
+        { question: 'How many days until Christmas?', answer: 'This calculator measures the exact gap from right now to December 25 at midnight, local time, and shows it as days, hours and minutes -- for example 36 days and 14 hours as of 10 a.m. on November 18, 2026.' },
+        { question: 'What counts as a "shopping day" here?', answer: 'Any weekday (Monday through Friday) from today through December 24, the last calendar day before Christmas. Weekend days (Saturday and Sunday) in that same window are counted separately.' },
+        { question: 'Why split weekdays and weekends at all?', answer: 'Most people have less free time to shop on a weekday than a weekend, so knowing how many of each kind of day remain is more useful for planning than a single combined day count.' },
+        { question: 'Does the countdown update automatically?', answer: 'It recalculates from your device\'s clock every time you load the page, down to the minute, rather than only changing once a day.' },
+        { question: 'What happens if I enter a year whose Christmas already passed?', answer: 'Every figure shows 0. Change the year field to the next Christmas you want to count down to.' },
+        { question: 'Is December 25 itself counted as a shopping day?', answer: 'No -- the shopping window stops at December 24, since Christmas Day itself is when gifts are given, not a day to still be shopping for them.' }
+      ]
+    },
+    compute(values) {
+      const targetYear = Math.round(values.targetYear);
+      if (!Number.isFinite(targetYear)) return { daysLeft: NaN, hoursLeft: NaN, minutesLeft: NaN, shoppingWeekdaysLeft: NaN, shoppingWeekendDaysLeft: NaN };
+      const now = values.todayMs !== undefined ? new Date(values.todayMs) : new Date();
+      const christmasMs = new Date(targetYear, 11, 25, 0, 0, 0).getTime();
+      const diffMs = Math.max(0, christmasMs - now.getTime());
+      const daysLeft = Math.floor(diffMs / 86400000);
+      const hoursLeft = Math.floor((diffMs % 86400000) / 3600000);
+      const minutesLeft = Math.floor((diffMs % 3600000) / 60000);
+      const todayMid = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      const shopEndMs = new Date(targetYear, 11, 24).getTime();
+      const { weekdays, weekendDays } = weekdayWeekendCount(todayMid, shopEndMs);
+      return { daysLeft, hoursLeft, minutesLeft, shoppingWeekdaysLeft: weekdays, shoppingWeekendDaysLeft: weekendDays };
+    }
+  },
+  {
+    id: 'new-years-countdown-calculator',
+    category: 'fun',
+    glyph: 'Jan',
+    updatedAt: '2026-11-18',
+    timeDependent: true,
+    aliases: ['new years countdown calculator', 'days until new year calculator', 'countdown to midnight calculator', 'new year countdown timer', 'happy new year countdown'],
+    related: ['christmas-countdown-calculator', 'timezone-meeting-planner', 'date-difference-calculator', 'age-calculator'],
+    title: "New Year's Countdown Calculator",
+    description: "Count the days, hours and minutes until January 1, plus how many hours after Kiribati -- the first place on Earth to reach midnight -- your own New Year arrives.",
+    example: "Someone on US Eastern time (UTC-5) reaches New Year's midnight 19 hours after Kiribati's Line Islands, the first inhabited place on Earth to get there.",
+    breakdown: {
+      headline: 'daysLeft',
+      headlineLabel: "Days until New Year",
+      outputs: [
+        { id: 'daysLeft', label: "Days until New Year", format: 'integer' },
+        { id: 'hoursLeft', label: 'Plus hours', format: 'integer' },
+        { id: 'minutesLeft', label: 'Plus minutes', format: 'integer' },
+        { id: 'hoursBehindKiribati', label: "Hours after Kiribati's New Year", format: 'number' }
+      ],
+      groups: [
+        { title: 'Which New Year', inputs: ['targetYear'] },
+        { title: 'Your time zone', inputs: ['utcOffsetHours'] }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why "midnight" does not happen at the same moment everywhere',
+        paragraphs: [
+          'A time zone is just a fixed offset from UTC (Coordinated Universal Time), and "midnight on January 1" means a different real moment in every zone, because each zone reaches its own local midnight at a different point in UTC time. The zone with the largest offset reaches midnight first in absolute terms, and the zone with the smallest (most negative) offset reaches it last.',
+          "UTC+14:00 is the largest standard offset actually in use anywhere, and the Line Islands of Kiribati -- including the inhabited island of Kiritimati -- are the only populated place that uses it, which makes them the first inhabited place on Earth to reach any new calendar date, including January 1. Kiribati did not always sit at UTC+14: in 1995, the government unilaterally moved the international date line east to bring the Line Islands onto the same side as the rest of the country, partly so businesses across the country could share one business week, and partly so Kiribati would be the first country to see the dawn of the year 2000.",
+          'This calculator counts down to your own local January 1 midnight, the same way any countdown would, and separately works out how many hours after Kiribati\'s that moment is -- a genuinely different number for almost everyone else on Earth, since UTC+14 is the earliest zone there is.'
+        ]
+      },
+      howTo: {
+        intro: "Enter the year you're counting down to, and your own UTC offset.",
+        steps: [
+          { name: 'Enter the target year', text: 'The calendar year of the January 1 you are counting down to.' },
+          { name: 'Enter your UTC offset', text: 'How many hours your own time zone is from UTC -- for example -5 for US Eastern Standard Time, +5.5 for India, +9 for Japan.' },
+          { name: 'Read the countdown', text: 'Days, plus hours, plus minutes, until your own local midnight on January 1.' },
+          { name: "Read the Kiribati comparison", text: "How many hours after Kiribati's Line Islands (UTC+14, the earliest zone on Earth) your own New Year arrives." }
+        ],
+        outro: "Everything is calculated in your browser from your device's clock and the offset you type. Nothing you type is sent or stored."
+      },
+      formula: {
+        intro: 'The countdown is a timestamp subtraction against your own local midnight; the Kiribati comparison is a simple offset difference.',
+        expression:
+          'newYear = January 1, target year, 00:00 local time\ndiff = newYear - now\ndaysLeft = floor(diff / 86,400,000)\nhoursLeft = floor((diff mod 86,400,000) / 3,600,000)\nminutesLeft = floor((diff mod 3,600,000) / 60,000)\nhoursBehindKiribati = 14 - yourUtcOffsetHours',
+        terms: [
+          { symbol: '14', meaning: "Kiribati's Line Islands UTC offset, UTC+14:00 -- the largest standard offset in use anywhere, and so the earliest zone to reach any new date." },
+          { symbol: 'yourUtcOffsetHours', meaning: 'The UTC offset you entered for your own time zone -- negative for zones west of UTC (most of the Americas), positive for zones east of it.' }
+        ],
+        note: "hoursBehindKiribati assumes a whole-number or half-hour standard offset and does not itself account for daylight saving -- enter whichever offset actually applies to your location on January 1."
+      },
+      workedExample: {
+        intro: "Someone on US Eastern Standard Time (UTC-5, winter, no daylight saving) asks how far behind Kiribati they are.",
+        rows: [
+          { label: 'Your UTC offset', value: '-5' },
+          { label: "Kiribati's UTC offset", value: '+14' },
+          { label: 'hoursBehindKiribati = 14 - (-5)', value: '19' }
+        ],
+        result: "19 hours after Kiribati's New Year",
+        explanation: "Kiribati's Line Islands reach midnight 19 hours before US Eastern Standard Time does -- by the time an Eastern-time clock strikes midnight on January 1, Kiribati has already been in the new year for most of its first day."
+      },
+      watchOut: [
+        { title: 'This is standard-offset arithmetic, not a live world clock', body: "It compares fixed UTC offsets, not real-time clocks in both places at once. For a live comparison across specific cities, a dedicated time zone converter is the better tool." },
+        { title: 'Daylight saving is not applied automatically', body: 'Enter the UTC offset that actually applies to your location on January 1 itself (most places observing daylight saving are on standard time in winter) -- the calculator does not know your specific region\'s daylight-saving rules.' },
+        { title: "Kiribati's UTC+14 is a deliberate political choice, not a geographic accident", body: "The Line Islands moved to UTC+14 only in 1995, when Kiribati's government shifted the international date line east to unify the country's business week and -- deliberately -- to be first to the year 2000." },
+        { title: 'The countdown uses your device\'s clock and time zone', body: "The days/hours/minutes countdown itself (not the Kiribati comparison) is measured against your device's own clock, the same convention as every other live countdown on this site." },
+        { title: 'If the target year has already begun, every figure shows 0', body: 'Change the year field to the next January 1 you want to count down to.' }
+      ],
+      references: [
+        { label: 'Wikipedia, UTC+14:00 (Line Islands, earliest time zone on Earth)', url: 'https://en.wikipedia.org/wiki/UTC%2B14:00' },
+        { label: 'Wikipedia, Kiribati (1995 date line move)', url: 'https://en.wikipedia.org/wiki/Kiribati' }
+      ]
+    },
+    inputs: [
+      { id: 'targetYear', label: 'New Year (target year)', type: 'number', placeholder: '2027', defaultValue: 2027, step: 1, min: 1900 },
+      { id: 'utcOffsetHours', label: 'Your UTC offset (hours, e.g. -5 for US Eastern)', type: 'number', placeholder: '-5', defaultValue: -5, step: 0.5, min: -12 }
+    ],
+    seo: {
+      title: "New Year's Countdown Calculator – Days & Time Zones",
+      description: 'Count the days, hours and minutes until January 1, plus how many hours after Kiribati -- the first place on Earth to reach New Year.',
+      faq: [
+        { question: "How many days until New Year's?", answer: "This calculator measures the exact gap from right now to your own local midnight on January 1, shown as days, hours and minutes." },
+        { question: 'What is the first place on Earth to reach the New Year?', answer: "The Line Islands of Kiribati, which use UTC+14:00 -- the largest standard time zone offset in use anywhere, making them the first inhabited place to reach any new calendar date, New Year's included." },
+        { question: 'Why does Kiribati use UTC+14?', answer: "Kiribati's government moved the international date line east in 1995 so the whole country, including the Line Islands, would share one side of the date line and one business week -- and, deliberately, so Kiribati would be first to the year 2000." },
+        { question: 'How many hours after Kiribati does US Eastern time reach the New Year?', answer: '19 hours -- US Eastern Standard Time is UTC-5, and 14 - (-5) = 19.' },
+        { question: 'Does this calculator account for daylight saving time?', answer: 'No -- enter the UTC offset that actually applies to your location on January 1 itself. Most daylight-saving regions are back on standard time by then.' },
+        { question: "Is this the same as a live world clock?", answer: 'No. It compares fixed UTC offsets rather than two live clocks side by side. For comparing specific cities in real time, use a dedicated time zone converter instead.' }
+      ]
+    },
+    compute(values) {
+      const targetYear = Math.round(values.targetYear);
+      const utcOffsetHours = values.utcOffsetHours;
+      if (!Number.isFinite(targetYear) || !Number.isFinite(utcOffsetHours)) {
+        return { daysLeft: NaN, hoursLeft: NaN, minutesLeft: NaN, hoursBehindKiribati: NaN };
+      }
+      const now = values.todayMs !== undefined ? new Date(values.todayMs) : new Date();
+      const newYearMs = new Date(targetYear, 0, 1, 0, 0, 0).getTime();
+      const diffMs = Math.max(0, newYearMs - now.getTime());
+      const daysLeft = Math.floor(diffMs / 86400000);
+      const hoursLeft = Math.floor((diffMs % 86400000) / 3600000);
+      const minutesLeft = Math.floor((diffMs % 3600000) / 60000);
+      const hoursBehindKiribati = 14 - utcOffsetHours;
+      return { daysLeft, hoursLeft, minutesLeft, hoursBehindKiribati };
     }
   }
 ];

@@ -587,7 +587,11 @@ export const calculatorOrder: string[] = [
   'burn-rate-calculator',
   'business-valuation-calculator',
   'payback-period-calculator',
-  'fte-calculator'
+  'fte-calculator',
+  'gst-calculator',
+  'vat-calculator',
+  'self-employment-tax-estimator',
+  '1099-contractor-rate-calculator'
 ];
 
 const rank = (id: string) => {

@@ -29,7 +29,7 @@ export const shoppingCalculators: CalculatorConfig[] = [
     category: 'shopping',
     glyph: 'tax',
     updatedAt: '2026-10-19',
-    aliases: ['vat calculator', 'gst calculator', 'tax added calculator', 'purchase tax calculator', 'reverse sales tax calculator'],
+    aliases: ['tax added calculator', 'purchase tax calculator', 'reverse sales tax calculator', 'sales tax rate calculator', 'tax inclusive price calculator'],
     related: ['tip-calculator', 'discount-calculator', 'unit-price-calculator', 'cashback-calculator'],
     title: 'Sales Tax Calculator',
     description: 'Add sales tax to a price, take it back out of a tax-inclusive total, or find the tax rate from a receipt. Fill in any two of price, rate and total.',
@@ -64,7 +64,7 @@ export const shoppingCalculators: CalculatorConfig[] = [
           'Sales tax is a tax on retail purchases, charged as a percentage of the price and collected by the seller at checkout. In the US there is no national sales tax. States set their own rate, and counties, cities and special districts often add their own on top, so the rate you pay is the sum of several layers and can change from one town to the next.',
           'Because it is a percentage, the tax grows in step with the price. At 8.25%, every $100 you spend carries $8.25 of tax, and the total is the price multiplied by 1.0825. The same multiplier works in reverse: divide a tax-inclusive total by 1.0825 and you get the price before tax.',
           'Five states (Alaska, Delaware, Montana, New Hampshire and Oregon) have no statewide sales tax, although some Alaska towns charge a local one. Many states exempt or reduce the tax on groceries, prescription drugs or clothing, so the rate on a receipt can differ from item to item.',
-          'Outside the US, the same arithmetic applies to a value-added tax (VAT) or a goods and services tax (GST). The difference is that shelf prices there usually include the tax already, which is exactly the case the "remove tax" direction of this calculator handles.'
+          'Outside the US, the same arithmetic applies to a value-added tax (VAT) or a goods and services tax (GST). The difference is that shelf prices there usually include the tax already, which is exactly the case the "remove tax" direction of this calculator handles. VAT and GST also differ from US sales tax in mechanism, not just name: both are collected fractionally at every stage of production and distribution rather than once at the final sale — see the dedicated vat-calculator and gst-calculator for that distinction and their own typical rates.'
         ]
       },
       howTo: {

@@ -1,3 +1,53 @@
+exports[`compute() snapshots > 1099-contractor-rate-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "w2AnnualSalary": 80000,
+      "employerBenefitsValue": 8000,
+      "w2PtoDaysPerYear": 15,
+      "billableDaysPerYear": 230,
+      "hoursPerDay": 8
+    },
+    "outputs": {
+      "hourlyRate1099": 53.66053512,
+      "employerFicaMatch": 6120,
+      "ptoValue": 4615.384615,
+      "totalPackageValue": 98735.38462
+    }
+  },
+  "typical": {
+    "inputs": {
+      "w2AnnualSalary": 120000,
+      "employerBenefitsValue": 12000,
+      "w2PtoDaysPerYear": 23,
+      "billableDaysPerYear": 345,
+      "hoursPerDay": 12
+    },
+    "outputs": {
+      "hourlyRate1099": 36.66555184,
+      "employerFicaMatch": 9180,
+      "ptoValue": 10615.38462,
+      "totalPackageValue": 151795.3846
+    }
+  },
+  "edge": {
+    "inputs": {
+      "w2AnnualSalary": 0,
+      "employerBenefitsValue": 0,
+      "w2PtoDaysPerYear": 0,
+      "billableDaysPerYear": 1,
+      "hoursPerDay": 1
+    },
+    "outputs": {
+      "hourlyRate1099": 0,
+      "employerFicaMatch": 0,
+      "ptoValue": 0,
+      "totalPackageValue": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > 401k-employer-match-calculator 1`] = `
 {
   "default": {
@@ -8793,6 +8843,41 @@ exports[`compute() snapshots > grocery-budget-calculator 1`] = `
       "monthlyBudget": 307.45,
       "weeklyBudget": 70.95,
       "perPersonWeekly": 59.125
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > gst-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "netPrice": 100,
+      "taxRate": 5
+    },
+    "outputs": {
+      "grossPrice": 105,
+      "gstAmount": 5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "netPrice": 150,
+      "taxRate": 7.5
+    },
+    "outputs": {
+      "grossPrice": 161.25,
+      "gstAmount": 11.25
+    }
+  },
+  "edge": {
+    "inputs": {
+      "netPrice": 0,
+      "taxRate": 0
+    },
+    "outputs": {
+      "grossPrice": 0,
+      "gstAmount": 0
     }
   }
 }
@@ -17898,6 +17983,50 @@ exports[`compute() snapshots > script-reading-time-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > self-employment-tax-estimator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "netSelfEmploymentEarnings": 100000
+    },
+    "outputs": {
+      "totalSETax": 14129.55,
+      "socialSecurityTax": 11451.4,
+      "medicareTax": 2678.15,
+      "netEarningsSubjectToSE": 92350,
+      "deductibleHalf": 7064.775,
+      "effectiveRatePercent": 14.12955
+    }
+  },
+  "typical": {
+    "inputs": {
+      "netSelfEmploymentEarnings": 150000
+    },
+    "outputs": {
+      "totalSETax": 21194.325,
+      "socialSecurityTax": 17177.1,
+      "medicareTax": 4017.225,
+      "netEarningsSubjectToSE": 138525,
+      "deductibleHalf": 10597.1625,
+      "effectiveRatePercent": 14.12955
+    }
+  },
+  "edge": {
+    "inputs": {
+      "netSelfEmploymentEarnings": 0
+    },
+    "outputs": {
+      "totalSETax": 0,
+      "socialSecurityTax": 0,
+      "medicareTax": 0,
+      "netEarningsSubjectToSE": 0,
+      "deductibleHalf": 0,
+      "effectiveRatePercent": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > self-rising-flour-substitute-calculator 1`] = `
 {
   "default": {
@@ -21239,6 +21368,41 @@ exports[`compute() snapshots > variance-calculator 1`] = `
       "sampleVariance": "NaN",
       "populationStdDev": 0,
       "sampleStdDev": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > vat-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "netPrice": 100,
+      "taxRate": 20
+    },
+    "outputs": {
+      "grossPrice": 120,
+      "vatAmount": 20
+    }
+  },
+  "typical": {
+    "inputs": {
+      "netPrice": 150,
+      "taxRate": 30
+    },
+    "outputs": {
+      "grossPrice": 195,
+      "vatAmount": 45
+    }
+  },
+  "edge": {
+    "inputs": {
+      "netPrice": 0,
+      "taxRate": 0
+    },
+    "outputs": {
+      "grossPrice": 0,
+      "vatAmount": 0
     }
   }
 }

@@ -140,7 +140,44 @@ Target ~18 calculators across 4 batches. Sub-grouping deferred to a final retrof
     3), resolved one `KNOWN_NON_FINITE`-table append conflict, regenerated the snapshot fresh.
   - `npm test` 1700/1700, lint clean, `npm run build` green. `business` now 10/~18, site-wide
     **523**.
-- [ ] Batch 3 — Tax (4)
+- [x] Batch 3 — Tax (4), DONE 2026-11-19, branch `step64-batch3-business-tax`, PR #148
+  - [x] `gst-calculator` — net/GST-inclusive price solver, user-entered rate, defaulted to Canada's
+        federal 5% GST (verified via CRA fetch: "Manitoba: 5% GST + 7% PST"; Ontario 13% HST,
+        Nova Scotia 14% HST from April 2025, both confirmed).
+  - [x] `vat-calculator` — net/VAT-inclusive price solver, defaulted to the UK's 20% standard rate
+        (verified via gov.uk fetch, which also gave the 5% reduced and 0% zero rates used in copy).
+        Cross-links `gst-calculator` and `sales-tax-calculator`, explaining the real mechanism
+        difference (fractional multi-stage VAT/GST collection with input-tax credits, per a direct
+        European Commission fetch, vs. a single point-of-sale sales tax).
+  - [x] `self-employment-tax-estimator` — US Schedule SE: 15.3% (12.4% Social Security + 2.9%
+        Medicare) on 92.35% of net self-employment earnings, Social Security capped at the 2026
+        wage base. Both the 92.35% factor and the $184,500 2026 wage base were confirmed by two
+        direct irs.gov fetches (the self-employment-tax page and Topic no. 554) — WebSearch's
+        quota was exhausted this session, so every citation here came from WebFetch on known
+        irs.gov/gov.uk/canada.ca/ec.europa.eu/bls.gov URLs instead.
+  - [x] `1099-contractor-rate-calculator` — **built, not dropped**: read `freelancer-rate-calculator`
+        first (it converts a target take-home income + a user-chosen tax rate into a rate, with no
+        reference to any specific job). This new calculator instead converts one specific W-2
+        salary + its own benefits/PTO package directly into an equivalent 1099 rate (adding back the
+        employer's 7.65% FICA match, employer-paid benefits, and PTO value, then dividing by actual
+        billable hours, which are fewer than a W-2 schedule's). Different input shape, different
+        question, cross-linked both directions in copy — judged a genuine distinction, not an
+        overlap. Default benefits figure is a plain user input, not auto-filled from BLS's aggregate
+        benefits-cost figure (a June 2026 BLS ECEC fetch found private-industry benefits average
+        $14.07/hr, but that aggregate already includes employer payroll taxes, which this calculator
+        adds back separately as its own line — using the BLS total as the benefits default would
+        have double-counted the FICA match, so it is cited only as general context, not as the
+        default value).
+  - Necessary side-fix: removed `'vat calculator'` / `'gst calculator'` from shopping's
+    `sales-tax-calculator` aliases (duplicate-alias collision with the two new dedicated pages) and
+    added a cross-link sentence to its concept copy instead.
+  - Every worked-example/FAQ number re-verified in a standalone Node scratch script
+    (`verify-batch3.js`, scratchpad) before writing copy, including the GST/VAT reverse-direction
+    figures, the SE tax wage-base-cap case at $250,000, and the 1099-calculator's "about 39.5%
+    higher than salary ÷ 2,080" claim (computed exactly: 1.3951739... → 39.5%).
+  - `npm test` 1713/1713, lint clean, `npm run build` 527 calculator pages (523 + 4) / 566 total
+    routes. Dev-server smoke check: all 4 new pages return 200 with the correct H1 and one JSON-LD
+    script each. `business` now 14/~18, site-wide **527**.
 - [ ] Batch 4 — Everyday business novelties (4)
 - [ ] Sub-grouping retrofit
 - [ ] STATUS.md updated with the final per-category summary

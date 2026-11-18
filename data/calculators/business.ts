@@ -1198,5 +1198,505 @@ export const businessCalculators: CalculatorConfig[] = [
       const totalFTE = values.fullTimeEmployeeCount + partTimeFTE;
       return { totalFTE, partTimeFTE };
     }
+  },
+  {
+    id: 'gst-calculator',
+    category: 'business',
+    glyph: 'GST',
+    updatedAt: '2026-11-19',
+    aliases: ['gst calculator', 'goods and services tax calculator', 'gst inclusive price calculator', 'add gst to price calculator'],
+    related: ['vat-calculator', 'sales-tax-calculator', 'profit-margin-calculator', 'markup-calculator'],
+    title: 'GST Calculator',
+    description: 'Add goods and services tax (GST) to a price, pull it back out of a GST-inclusive total, or find the rate that was charged. Fill in any two of net price, rate and GST-inclusive price.',
+    example: "Canada's federal GST is 5%: a $100 net price carries $5.00 of GST, for a $105.00 GST-inclusive price.",
+    solver: {
+      defaultTarget: 'grossPrice',
+      variables: [
+        { id: 'grossPrice', label: 'GST-inclusive price', symbol: 'G', dimension: 'currency', defaultValue: 105, defaultUnit: 'currency' },
+        { id: 'netPrice', label: 'Net price (before GST)', symbol: 'N', dimension: 'currency', defaultValue: 100, defaultUnit: 'currency' },
+        { id: 'taxRate', label: 'GST rate', symbol: 'r', dimension: 'percent', defaultValue: 5, defaultUnit: '%' }
+      ],
+      solve: {
+        grossPrice: ({ netPrice, taxRate }) => netPrice * (1 + taxRate / 100),
+        netPrice: ({ grossPrice, taxRate }) => (1 + taxRate / 100 > 0 ? grossPrice / (1 + taxRate / 100) : NaN),
+        taxRate: ({ grossPrice, netPrice }) => (netPrice > 0 ? (grossPrice / netPrice - 1) * 100 : NaN)
+      },
+      outputs: [{ id: 'gstAmount', label: 'GST amount', dimension: 'currency', compute: (si) => si.grossPrice - si.netPrice }],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'netPrice', label: 'Net price' },
+            { from: 'gstAmount', label: 'GST' }
+          ],
+          center: 'grossPrice',
+          centerSub: 'GST-inclusive price'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-19',
+      concept: {
+        title: 'What is GST?',
+        paragraphs: [
+          'Goods and services tax (GST) is a consumption tax charged on most sales of goods and services, named "GST" in Canada, Australia, India, New Zealand and Singapore, among others. Canada\'s federal GST rate is 5% — the Canada Revenue Agency\'s own GST/HST rate page confirms it, and also shows how several provinces blend it into a single Harmonized Sales Tax (HST): Ontario charges 13% HST and, as of April 1, 2025, Nova Scotia charges 14% HST, each replacing the separate federal GST and provincial sales tax with one combined rate.',
+          'GST is the same kind of tax as a value-added tax (VAT), just under a different regional name — both are collected in stages across the supply chain rather than once at the final sale. The European Commission\'s explanation of the mechanism applies to both: the tax is charged "as a percentage of the sales price" and collected "fractionally at every stage of production and distribution," with registered businesses able to reclaim the GST or VAT they themselves paid on business inputs, so only the final consumer actually bears the cost. That is a real, structural difference from a US-style sales tax, which this site\'s sales-tax-calculator covers separately, charged once at the point of final retail sale with no stage-by-stage reclaiming.',
+          'Not every GST system uses one flat rate. Several countries that use the GST name, including India, apply different rates to different categories of goods and services rather than a single nationwide percentage — this calculator works the same way regardless of which rate applies; just enter the one that does.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of net price, GST rate and GST-inclusive price. The third, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter the net price', text: 'The price before GST is added — what a business invoice before tax, or a GST-exclusive price tag, shows.' },
+          { name: 'Enter the GST rate', text: 'The percentage that applies in your country and category — 5% is Canada\'s federal rate, used as the default here, but your own rate may differ.' },
+          { name: 'Read the GST-inclusive price', text: 'The net price plus GST, and the GST amount itself, both appear at once.' },
+          { name: 'Or pull GST out of a receipt', text: 'Leave net price alone, enter the GST-inclusive total and the rate, to find what the price was before GST.' },
+          { name: 'Or find the rate that was charged', text: 'Leave GST rate alone, enter both prices, to work out what rate produced them.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'GST is added as a percentage of the net price. Removing it from a GST-inclusive price means dividing, not subtracting the percentage.',
+        expression:
+          'gstAmount = netPrice × (taxRate ÷ 100)\ngrossPrice = netPrice × (1 + taxRate ÷ 100)\nnetPrice = grossPrice ÷ (1 + taxRate ÷ 100)\ntaxRate = (grossPrice ÷ netPrice − 1) × 100',
+        terms: [
+          { symbol: 'netPrice', meaning: 'The price before GST — the figure a registered business actually keeps.' },
+          { symbol: 'grossPrice', meaning: 'The GST-inclusive price — what a consumer actually pays.' }
+        ],
+        note: 'Estimates only. This calculator does arithmetic on the rate you enter — it does not look up a country\'s or category\'s actual GST rate, registration thresholds, or filing rules.'
+      },
+      workedExample: {
+        intro: 'A $100 net price, at Canada\'s 5% federal GST rate. What is the GST, and what would the same net price carry under an 18% rate used in some other GST systems\' higher slabs?',
+        rows: [
+          { label: 'GST amount (100 × 0.05)', value: '$5.00' },
+          { label: 'GST-inclusive price (100 × 1.05)', value: '$105.00' },
+          { label: 'Reversed: net price from a $105.00 GST-inclusive total (105 ÷ 1.05)', value: '$100.00' },
+          { label: 'Same $100 net price at an 18% rate instead (100 × 0.18)', value: '$18.00 GST, $118.00 total' }
+        ],
+        result: 'At 5%, $100 carries $5.00 of GST for a $105.00 total; at 18%, the same $100 carries $18.00 of GST for a $118.00 total.',
+        explanation: 'The rate alone changes the GST amount by more than 3.6 times (18 ÷ 5) between the two examples, even though the net price never changed — which is why confirming the actual rate for your country and category matters more than the arithmetic itself.'
+      },
+      watchOut: [
+        { title: 'GST and VAT are the same mechanism, different names', body: 'Both are collected in stages across the supply chain, with registered businesses reclaiming what they paid on their own inputs. See the vat-calculator for the EU/UK-style version — the math on both pages is identical once you know the rate.' },
+        { title: 'This is not US sales tax', body: 'US-style sales tax (see the sales-tax-calculator) is collected once, at the final retail sale, with no stage-by-stage reclaiming by businesses. GST and VAT work differently even though the consumer-facing arithmetic — add a percentage, or divide it back out — looks the same.' },
+        { title: 'GST can be blended into a combined rate', body: 'Some Canadian provinces replace the separate 5% federal GST and their own provincial sales tax with one Harmonized Sales Tax (HST) — 13% in Ontario, 14% in Nova Scotia as of April 2025. Enter the combined rate that actually applies, not the federal GST rate alone, if your province uses HST.' },
+        { title: 'Rates vary by category, not just by country', body: 'Several GST systems, including India\'s, apply more than one rate depending on what is being sold. Confirm the rate for the specific good or service, not just the country.' },
+        { title: 'Removing GST is a division, not a subtraction', body: 'To find the net price from a GST-inclusive total, divide by (1 + rate ÷ 100). Subtracting the rate directly from the total always understates the true net price.' }
+      ],
+      references: [
+        { label: 'Canada Revenue Agency, Charge and collect the tax – Which rate to charge', url: 'https://www.canada.ca/en/revenue-agency/services/tax/businesses/topics/gst-hst-businesses/charge-collect-which-rate.html' },
+        { label: 'European Commission, VAT (value-added tax) – how it is collected across the supply chain', url: 'https://taxation-customs.ec.europa.eu/taxation/vat_en' }
+      ]
+    },
+    inputs: [
+      { id: 'netPrice', label: 'Net price (before GST)', type: 'currency', placeholder: '100', defaultValue: 100, step: 1, min: 0 },
+      { id: 'taxRate', label: 'GST rate', type: 'percent', placeholder: '5', defaultValue: 5, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'GST Calculator – Add or Remove Goods and Services Tax',
+      description: 'Add GST to a net price, remove it from a GST-inclusive total, or find the rate from a receipt. Works with any country\'s GST or HST rate.',
+      faq: [
+        { question: 'How do I calculate GST?', answer: 'Multiply the net price by the GST rate as a decimal. A $100 price at 5% GST carries 100 × 0.05 = $5.00 of GST, for a $105.00 GST-inclusive price.' },
+        { question: 'How do I remove GST from a GST-inclusive price?', answer: 'Divide the GST-inclusive price by (1 + rate ÷ 100). At 5%, a $105.00 total was 105 ÷ 1.05 = $100.00 before GST, with $5.00 of GST.' },
+        { question: 'What is the difference between GST and VAT?', answer: 'They are the same kind of tax, collected fractionally at each stage of production and distribution with input tax credits for registered businesses, just named differently by region — GST in Canada, Australia, India and similar countries, VAT in the EU, UK and most of the rest of the world.' },
+        { question: 'Is GST the same as US sales tax?', answer: 'No. US sales tax is charged once, at the final retail sale, with no reclaiming by businesses along the way. GST and VAT are collected at every stage, with businesses reclaiming what they paid on their own purchases — see the sales-tax-calculator for the US-style version.' },
+        { question: 'What is Canada\'s GST rate?', answer: 'The federal GST rate is 5%. Some provinces blend it with their own sales tax into a single Harmonized Sales Tax (HST) instead — 13% in Ontario, 14% in Nova Scotia as of April 2025 — so the rate you actually pay depends on the province.' },
+        { question: 'Is GST always one flat rate?', answer: 'No. Several GST systems, including India\'s, charge different rates for different categories of goods and services rather than one nationwide percentage. Enter whichever rate applies to your purchase.' },
+        { question: 'Can I use this for a GST refund or input tax credit?', answer: 'This calculator does the net/GST/gross arithmetic only. It does not handle registration, filing, or which purchases a business can reclaim GST on — check your tax authority\'s own guidance for that.' }
+      ]
+    },
+    compute(values) {
+      const gstAmount = values.netPrice * (values.taxRate / 100);
+      const grossPrice = values.netPrice + gstAmount;
+      return { grossPrice, gstAmount };
+    }
+  },
+  {
+    id: 'vat-calculator',
+    category: 'business',
+    glyph: 'VAT',
+    updatedAt: '2026-11-19',
+    aliases: ['vat calculator', 'value added tax calculator', 'vat inclusive price calculator', 'add vat to price calculator'],
+    related: ['gst-calculator', 'sales-tax-calculator', 'profit-margin-calculator', 'markup-calculator'],
+    title: 'VAT Calculator',
+    description: 'Add value-added tax (VAT) to a price, pull it back out of a VAT-inclusive total, or find the rate that was charged. Fill in any two of net price, rate and VAT-inclusive price.',
+    example: "The UK's standard VAT rate is 20%: a £100 net price carries £20.00 of VAT, for a £120.00 VAT-inclusive price.",
+    solver: {
+      defaultTarget: 'grossPrice',
+      variables: [
+        { id: 'grossPrice', label: 'VAT-inclusive price', symbol: 'G', dimension: 'currency', defaultValue: 120, defaultUnit: 'currency' },
+        { id: 'netPrice', label: 'Net price (before VAT)', symbol: 'N', dimension: 'currency', defaultValue: 100, defaultUnit: 'currency' },
+        { id: 'taxRate', label: 'VAT rate', symbol: 'r', dimension: 'percent', defaultValue: 20, defaultUnit: '%' }
+      ],
+      solve: {
+        grossPrice: ({ netPrice, taxRate }) => netPrice * (1 + taxRate / 100),
+        netPrice: ({ grossPrice, taxRate }) => (1 + taxRate / 100 > 0 ? grossPrice / (1 + taxRate / 100) : NaN),
+        taxRate: ({ grossPrice, netPrice }) => (netPrice > 0 ? (grossPrice / netPrice - 1) * 100 : NaN)
+      },
+      outputs: [{ id: 'vatAmount', label: 'VAT amount', dimension: 'currency', compute: (si) => si.grossPrice - si.netPrice }],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'netPrice', label: 'Net price' },
+            { from: 'vatAmount', label: 'VAT' }
+          ],
+          center: 'grossPrice',
+          centerSub: 'VAT-inclusive price'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-19',
+      concept: {
+        title: 'What is VAT?',
+        paragraphs: [
+          'Value-added tax (VAT) is a consumption tax used across the EU, the UK and most of the rest of the world. The UK\'s own gov.uk guidance sets the standard rate at 20%, with a 5% reduced rate on items such as home energy and children\'s car seats, and a 0% zero rate on most food and children\'s clothing — one country, three different rates depending on what is being sold.',
+          'The European Commission describes how VAT is actually collected: it is a tax "on the value added to nearly all goods and services," charged "as a percentage of the sales price" and collected "fractionally at every stage of production and distribution," so that "the tax borne by the final consumer is the same regardless of the length of the supply chain." Registered businesses reclaim the VAT they paid on their own purchases, so VAT only lands, in full, on the final consumer — a structurally different design from a single-point-of-sale sales tax.',
+          'GST (goods and services tax), used by that name in Canada, Australia, India and elsewhere, is the same mechanism under a different regional name — see the gst-calculator for that version. A US-style sales tax, covered separately by this site\'s sales-tax-calculator, is mechanically different: it is charged once, at the final retail sale, with no stage-by-stage reclaiming by businesses along the way.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of net price, VAT rate and VAT-inclusive price. The third, marked auto, is calculated.',
+        steps: [
+          { name: 'Enter the net price', text: 'The price before VAT is added — an invoice subtotal, or a VAT-exclusive trade price.' },
+          { name: 'Enter the VAT rate', text: 'The UK\'s standard rate, 20%, is the default here, but use the reduced (5%), zero (0%), or your own country\'s rate as it applies.' },
+          { name: 'Read the VAT-inclusive price', text: 'The net price plus VAT, and the VAT amount itself, both appear at once.' },
+          { name: 'Or pull VAT out of a shelf price', text: 'Leave net price alone, enter the VAT-inclusive total and the rate, to find the price before VAT — most consumer shelf prices already include VAT.' },
+          { name: 'Or find the rate that was charged', text: 'Leave VAT rate alone, enter both prices, to work out what rate produced them.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'VAT is added as a percentage of the net price. Removing it from a VAT-inclusive price means dividing, not subtracting the percentage.',
+        expression:
+          'vatAmount = netPrice × (taxRate ÷ 100)\ngrossPrice = netPrice × (1 + taxRate ÷ 100)\nnetPrice = grossPrice ÷ (1 + taxRate ÷ 100)\ntaxRate = (grossPrice ÷ netPrice − 1) × 100',
+        terms: [
+          { symbol: 'netPrice', meaning: 'The price before VAT — the figure a VAT-registered business actually keeps.' },
+          { symbol: 'grossPrice', meaning: 'The VAT-inclusive price — what a consumer actually pays.' }
+        ],
+        note: 'Estimates only. This calculator does arithmetic on the rate you enter — it does not look up which goods or services qualify for a reduced or zero rate in any particular country.'
+      },
+      workedExample: {
+        intro: 'A £100 net price, at the UK\'s 20% standard VAT rate. What is the VAT, and what would the same net price carry at the UK\'s 5% reduced rate instead?',
+        rows: [
+          { label: 'VAT amount (100 × 0.20)', value: '£20.00' },
+          { label: 'VAT-inclusive price (100 × 1.20)', value: '£120.00' },
+          { label: 'Reversed: net price from a £120.00 VAT-inclusive total (120 ÷ 1.20)', value: '£100.00' },
+          { label: 'Same £100 net price at the 5% reduced rate instead (100 × 0.05)', value: '£5.00 VAT, £105.00 total' }
+        ],
+        result: 'At the 20% standard rate, £100 carries £20.00 of VAT for a £120.00 total; at the 5% reduced rate, the same £100 carries only £5.00 of VAT for a £105.00 total.',
+        explanation: 'Which rate applies changes the VAT amount by 4 times (20 ÷ 5) between the two examples on the exact same £100 net price, which is why UK VAT guidance spends so much attention on which goods and services qualify for the reduced or zero rate.'
+      },
+      watchOut: [
+        { title: 'VAT and GST are the same mechanism, different names', body: 'Both are collected in stages across the supply chain, with registered businesses reclaiming what they paid on their own inputs. See the gst-calculator for the Canada/Australia/India-style version — the math on both pages is identical once you know the rate.' },
+        { title: 'This is not US sales tax', body: 'US-style sales tax (see the sales-tax-calculator) is collected once, at the final retail sale, with no stage-by-stage reclaiming by businesses. VAT and GST work differently even though the consumer-facing arithmetic — add a percentage, or divide it back out — looks the same.' },
+        { title: 'The rate depends on what is being sold, not just the country', body: 'The UK alone has three VAT rates — 20% standard, 5% reduced, 0% zero — depending on the category of goods or services. Confirm the rate for the specific item, not just the country.' },
+        { title: 'Consumer prices usually already include VAT', body: 'Shelf prices in VAT countries are typically VAT-inclusive, so reversing (entering the shelf price as the VAT-inclusive total) is usually the direction a consumer actually needs, not adding VAT to a price that already includes it.' },
+        { title: 'Removing VAT is a division, not a subtraction', body: 'To find the net price from a VAT-inclusive total, divide by (1 + rate ÷ 100). Subtracting the rate directly from the total always understates the true net price.' }
+      ],
+      references: [
+        { label: 'GOV.UK, VAT rates on different goods and services', url: 'https://www.gov.uk/vat-rates' },
+        { label: 'European Commission, VAT (value-added tax) – how it is collected across the supply chain', url: 'https://taxation-customs.ec.europa.eu/taxation/vat_en' }
+      ]
+    },
+    inputs: [
+      { id: 'netPrice', label: 'Net price (before VAT)', type: 'currency', placeholder: '100', defaultValue: 100, step: 1, min: 0 },
+      { id: 'taxRate', label: 'VAT rate', type: 'percent', placeholder: '20', defaultValue: 20, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'VAT Calculator – Add or Remove Value-Added Tax',
+      description: 'Add VAT to a net price, remove it from a VAT-inclusive total, or find the rate from a receipt. Works with the UK, EU, or any country\'s VAT rate.',
+      faq: [
+        { question: 'How do I calculate VAT?', answer: 'Multiply the net price by the VAT rate as a decimal. A £100 price at 20% VAT carries 100 × 0.20 = £20.00 of VAT, for a £120.00 VAT-inclusive price.' },
+        { question: 'How do I remove VAT from a VAT-inclusive price?', answer: 'Divide the VAT-inclusive price by (1 + rate ÷ 100). At 20%, a £120.00 total was 120 ÷ 1.20 = £100.00 before VAT, with £20.00 of VAT.' },
+        { question: 'What is the UK VAT rate?', answer: 'The standard rate is 20%. A 5% reduced rate applies to items such as home energy and children\'s car seats, and a 0% zero rate applies to most food and children\'s clothing, per GOV.UK.' },
+        { question: 'What is the difference between VAT and GST?', answer: 'They are the same kind of tax, collected fractionally at each stage of production and distribution with input tax credits for registered businesses, just named differently by region — VAT in the EU, UK and most of the rest of the world, GST in Canada, Australia, India and similar countries.' },
+        { question: 'Is VAT the same as US sales tax?', answer: 'No. US sales tax is charged once, at the final retail sale, with no reclaiming by businesses along the way. VAT and GST are collected at every stage, with businesses reclaiming what they paid on their own purchases — see the sales-tax-calculator for the US-style version.' },
+        { question: 'Why do shelf prices already include VAT?', answer: 'Consumer-facing prices in VAT countries are typically required to be VAT-inclusive, unlike US sales tax, which is usually added at checkout. Use the reverse direction here to see the pre-VAT price behind a shelf price.' },
+        { question: 'Does every country use the same VAT rate?', answer: 'No. Rates vary by country and, within many countries, by category of goods or services. Enter the specific rate that applies to your purchase and country.' }
+      ]
+    },
+    compute(values) {
+      const vatAmount = values.netPrice * (values.taxRate / 100);
+      const grossPrice = values.netPrice + vatAmount;
+      return { grossPrice, vatAmount };
+    }
+  },
+  {
+    id: 'self-employment-tax-estimator',
+    category: 'business',
+    glyph: 'SE%',
+    updatedAt: '2026-11-19',
+    aliases: ['self employment tax calculator', 'schedule se calculator', '1099 tax calculator', 'self employed tax estimator'],
+    related: ['1099-contractor-rate-calculator', 'freelancer-rate-calculator', 'income-tax-calculator', 'paycheck-calculator'],
+    title: 'Self-Employment Tax Estimator',
+    description: "Estimate US self-employment tax (Social Security and Medicare) from your net self-employment earnings, following the IRS's own Schedule SE calculation, including the Social Security wage base cap.",
+    example: '$100,000 of net self-employment earnings owes about $14,129.55 in self-employment tax for 2026 — 14.13% of net earnings, not the full 15.3%.',
+    breakdown: {
+      headline: 'totalSETax',
+      headlineLabel: 'Self-employment tax owed',
+      outputs: [
+        { id: 'totalSETax', label: 'Self-employment tax owed', format: 'currency' },
+        { id: 'socialSecurityTax', label: 'Social Security portion (12.4%)', format: 'currency' },
+        { id: 'medicareTax', label: 'Medicare portion (2.9%)', format: 'currency' },
+        { id: 'netEarningsSubjectToSE', label: 'Net earnings subject to SE tax (92.35% of net earnings)', format: 'currency' },
+        { id: 'deductibleHalf', label: 'Deductible half (reduces income tax, not SE tax)', format: 'currency' },
+        { id: 'effectiveRatePercent', label: 'Effective rate on net earnings', format: 'percent' }
+      ],
+      groups: [{ title: 'Net self-employment earnings', inputs: ['netSelfEmploymentEarnings'] }],
+      visual: {
+        type: 'donut',
+        segments: [
+          { from: 'socialSecurityTax', label: 'Social Security' },
+          { from: 'medicareTax', label: 'Medicare' }
+        ],
+        center: 'totalSETax',
+        centerSub: 'self-employment tax'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-19',
+      concept: {
+        title: 'What is self-employment tax?',
+        paragraphs: [
+          'Self-employment tax is how self-employed people pay into Social Security and Medicare — the two programs a W-2 employee funds through FICA withholding, split with their employer. The IRS states the rate plainly: "the self-employment tax rate is 15.3%," made up of "12.4% for social security" and "2.9% for Medicare," filed on Schedule SE (Form 1040) whenever net earnings from self-employment are $400 or more.',
+          'The tax is not simply 15.3% of net profit, though. The IRS has you first multiply net earnings by 92.35% — "the amount subject to self-employment tax is 92.35% of your net earnings from self-employment" — before applying the 15.3% rate. That discount roughly mirrors the fact that a W-2 employee\'s FICA is only withheld from gross wages, while the employer\'s matching half is never itself treated as taxable income to the employee; the 92.35% factor brings a self-employed filer\'s math closer to that same shape, so the real effective rate on net earnings works out a little below 15.3% (14.13% in the worked example below).',
+          'The Social Security part of the tax only applies up to a yearly cap, the Social Security wage base — $184,500 for 2026, per the IRS\'s own self-employment tax page. Above that amount, Social Security tax stops, but "all of your wages and tips are subject to the 2.9% Medicare part of the SE tax on all your net earnings," with no cap at all — and single filers above $200,000 (other filing statuses have different thresholds) owe an extra 0.9% Additional Medicare Tax on top, which this estimator does not calculate.',
+          'Half of the self-employment tax is deductible when figuring adjusted gross income for ordinary income tax — the IRS calls it "the employer-equivalent portion of your SE tax." That deduction lowers income tax, not the self-employment tax itself, which is still owed in full.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your net self-employment earnings — net profit after business expenses, the figure from Schedule C, not gross revenue.',
+        steps: [
+          { name: 'Enter net self-employment earnings', text: 'Gross self-employment income minus ordinary business expenses — Schedule C\'s bottom line, not top-line revenue.' },
+          { name: 'Check the taxable amount', text: 'Only 92.35% of net earnings is actually subject to self-employment tax, shown as its own figure.' },
+          { name: 'See the Social Security portion', text: '12.4% of the taxable amount, capped at the Social Security wage base ($184,500 for 2026) — earnings above that are Medicare-only.' },
+          { name: 'See the Medicare portion', text: '2.9% of the taxable amount, with no cap at all.' },
+          { name: 'Read the total and the deductible half', text: 'The total is what is owed; half of it is also deductible against ordinary income tax on your return, shown separately.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Net earnings are reduced to 92.35% before the 15.3% combined rate applies, and the Social Security piece alone is capped at the wage base.',
+        expression:
+          'netEarningsSubjectToSE = netEarnings × 0.9235\nsocialSecurityTax = min(netEarningsSubjectToSE, wageBase) × 0.124\nmedicareTax = netEarningsSubjectToSE × 0.029\ntotalSETax = socialSecurityTax + medicareTax\ndeductibleHalf = totalSETax ÷ 2',
+        terms: [
+          { symbol: 'netEarningsSubjectToSE', meaning: '92.35% of net self-employment earnings — the amount the 15.3% rate actually applies to.' },
+          { symbol: 'wageBase', meaning: 'The yearly Social Security taxable maximum: $184,500 for 2026, per the IRS.' }
+        ],
+        note: 'Estimates only, for the current Social Security wage base. This is self-employment tax alone — it does not include federal or state income tax, the 0.9% Additional Medicare Tax above the filing-status threshold, or any wages from a separate job that would already use up part of the Social Security wage base.'
+      },
+      workedExample: {
+        intro: '$100,000 of net self-employment earnings for the year. What is owed, and how does a much higher amount, $250,000, interact with the Social Security wage base cap?',
+        rows: [
+          { label: 'Net earnings subject to SE tax (100,000 × 0.9235)', value: '$92,350.00' },
+          { label: 'Social Security tax (92,350 × 0.124, under the $184,500 cap)', value: '$11,451.40' },
+          { label: 'Medicare tax (92,350 × 0.029)', value: '$2,678.15' },
+          { label: 'Total self-employment tax (11,451.40 + 2,678.15)', value: '$14,129.55' },
+          { label: 'At $250,000 instead: net earnings subject to SE tax (250,000 × 0.9235)', value: '$230,875.00' },
+          { label: 'At $250,000: Social Security tax, capped (184,500 × 0.124)', value: '$22,878.00' },
+          { label: 'At $250,000: Medicare tax, uncapped (230,875 × 0.029)', value: '$6,695.38' },
+          { label: 'At $250,000: total self-employment tax (22,878.00 + 6,695.38)', value: '$29,573.38' }
+        ],
+        result: '$100,000 of net earnings owes $14,129.55 (14.13% effective rate); $250,000 owes $29,573.38 (11.83% effective rate).',
+        explanation: 'The effective rate drops from 14.13% to 11.83% as income rises past the wage base, because every dollar of net earnings above $184,500 ÷ 0.9235 ≈ $199,784 stops owing the 12.4% Social Security piece and only owes the uncapped 2.9% Medicare piece — the opposite of a progressive income-tax bracket, where the marginal rate rises with income.'
+      },
+      watchOut: [
+        { title: 'This is not a filed return', body: 'This estimates federal self-employment tax only. It does not include federal or state income tax, deductions, or credits — see income-tax-calculator for an income tax estimate on top of this.' },
+        { title: 'The Additional Medicare Tax is not included', body: 'Single filers with net earnings (combined with any wages) above $200,000 owe an extra 0.9% Medicare tax on the amount over that threshold — other filing statuses have different thresholds. This estimator does not add that surtax.' },
+        { title: 'A separate W-2 job changes the wage base math', body: 'The Social Security wage base is shared across all your earnings for the year. If you also have W-2 wages, those use up part of the cap first, so less of your self-employment earnings may be subject to the 12.4% Social Security portion than this estimator (which assumes self-employment is your only income) shows.' },
+        { title: 'Net earnings means net, not gross', body: 'Enter net profit after business expenses (Schedule C\'s bottom line), not gross self-employment revenue — the whole calculation is built on the net figure.' },
+        { title: 'Below $400, there is no self-employment tax', body: 'The IRS requires Schedule SE only when net earnings from self-employment are $400 or more; below that, no self-employment tax is owed at all.' }
+      ],
+      references: [
+        { label: 'Internal Revenue Service, Self-Employment Tax (Social Security and Medicare Taxes)', url: 'https://www.irs.gov/businesses/small-businesses-self-employed/self-employment-tax-social-security-and-medicare-taxes' },
+        { label: 'Internal Revenue Service, Topic no. 554, Self-employment tax', url: 'https://www.irs.gov/taxtopics/tc554' }
+      ]
+    },
+    inputs: [{ id: 'netSelfEmploymentEarnings', label: 'Net self-employment earnings', type: 'currency', placeholder: '100000', defaultValue: 100000, step: 1000, min: 0 }],
+    seo: {
+      title: 'Self-Employment Tax Estimator – Schedule SE',
+      description: "Estimate self-employment tax (Social Security + Medicare) from net self-employment earnings, using the IRS's Schedule SE method and wage base cap.",
+      faq: [
+        { question: 'How do I calculate self-employment tax?', answer: 'Multiply net self-employment earnings by 92.35%, then apply 15.3% (12.4% Social Security, capped at the wage base, plus 2.9% Medicare, uncapped). $100,000 of net earnings owes $14,129.55.' },
+        { question: 'Why isn\'t self-employment tax exactly 15.3% of net profit?', answer: 'Because the 15.3% rate applies to 92.35% of net earnings, not the full amount — roughly mirroring how a W-2 employee\'s employer-paid half of FICA is never itself taxed as the employee\'s income. The effective rate works out to about 14.13% on net earnings below the Social Security wage base.' },
+        { question: 'What is the Social Security wage base for 2026?', answer: '$184,500, per the IRS. Net earnings subject to self-employment tax above that amount only owe the 2.9% Medicare portion, not the 12.4% Social Security portion.' },
+        { question: 'Is any of this deductible?', answer: 'Yes — half of the self-employment tax (the "employer-equivalent portion") is deductible when calculating adjusted gross income for ordinary income tax. It reduces income tax, not the self-employment tax itself, which is still owed in full.' },
+        { question: 'Does this include the Additional Medicare Tax?', answer: 'No. Single filers with net earnings above $200,000 owe an extra 0.9% Medicare tax on the excess, with different thresholds for other filing statuses — this estimator covers the base 15.3% self-employment tax only.' },
+        { question: 'What if I also have a W-2 job?', answer: 'The Social Security wage base is shared across all your earnings for the year, so W-2 wages use up part of the cap first. This estimator assumes self-employment is your only income; with a W-2 job too, less of your self-employment earnings may fall under the 12.4% Social Security portion.' },
+        { question: 'Do I owe self-employment tax on every amount of self-employment income?', answer: 'No. The IRS requires Schedule SE only when net earnings from self-employment reach $400 or more in the year.' }
+      ]
+    },
+    compute(values) {
+      const WAGE_BASE_2026 = 184500;
+      const netEarnings = values.netSelfEmploymentEarnings;
+      if (netEarnings < 400) {
+        return { totalSETax: 0, socialSecurityTax: 0, medicareTax: 0, netEarningsSubjectToSE: 0, deductibleHalf: 0, effectiveRatePercent: 0 };
+      }
+      const netEarningsSubjectToSE = netEarnings * 0.9235;
+      const socialSecurityTax = Math.min(netEarningsSubjectToSE, WAGE_BASE_2026) * 0.124;
+      const medicareTax = netEarningsSubjectToSE * 0.029;
+      const totalSETax = socialSecurityTax + medicareTax;
+      const deductibleHalf = totalSETax / 2;
+      const effectiveRatePercent = (totalSETax / netEarnings) * 100;
+      return { totalSETax, socialSecurityTax, medicareTax, netEarningsSubjectToSE, deductibleHalf, effectiveRatePercent };
+    }
+  },
+  {
+    id: '1099-contractor-rate-calculator',
+    category: 'business',
+    glyph: '1099',
+    updatedAt: '2026-11-19',
+    aliases: ['1099 vs w2 calculator', '1099 contractor rate calculator', 'w2 to 1099 rate calculator', 'convert salary to 1099 rate calculator'],
+    related: ['self-employment-tax-estimator', 'freelancer-rate-calculator', 'income-tax-calculator', 'salary-raise-calculator'],
+    title: '1099 Contractor Rate Calculator',
+    description: 'Convert a specific W-2 salary into the equivalent 1099 contractor rate, by adding back the employer\'s payroll-tax match, employer-paid benefits, and paid time off the W-2 job covers but a 1099 contract does not.',
+    example: 'An $80,000 W-2 salary with $8,000 of employer benefits and 15 paid days off converts to about $53.66/hr as a 1099 contractor billing 230 days a year, 8 hours a day.',
+    solver: {
+      defaultTarget: 'hourlyRate1099',
+      variables: [
+        { id: 'hourlyRate1099', label: 'Equivalent 1099 hourly rate', symbol: 'R', dimension: 'currency', defaultValue: 53.66, defaultUnit: 'currency' },
+        { id: 'w2AnnualSalary', label: 'W-2 annual salary', symbol: 'S', dimension: 'currency', defaultValue: 80000, defaultUnit: 'currency' },
+        { id: 'employerBenefitsValue', label: 'Employer-paid health insurance + retirement match', symbol: 'B', dimension: 'currency', defaultValue: 8000, defaultUnit: 'currency', fixed: true },
+        { id: 'w2PtoDaysPerYear', label: 'Paid days off the W-2 job includes', symbol: 'D', dimension: 'count', defaultValue: 15, defaultUnit: 'count', fixed: true },
+        { id: 'billableDaysPerYear', label: 'Days per year you can actually bill as a contractor', symbol: 'd', dimension: 'count', defaultValue: 230, defaultUnit: 'count', fixed: true },
+        { id: 'hoursPerDay', label: 'Billable hours per day', symbol: 'h', dimension: 'count', defaultValue: 8, defaultUnit: 'count', fixed: true }
+      ],
+      // Every variable has a closed form. FICA_EMPLOYER_MATCH_RATE (7.65%) is the employer-equivalent
+      // half of the 15.3% self-employment tax rate (see self-employment-tax-estimator); STANDARD_WORK_DAYS_PER_YEAR
+      // (260 = 52 x 5) converts a count of paid days off into a fraction of the W-2 salary.
+      solve: {
+        hourlyRate1099: ({ w2AnnualSalary, employerBenefitsValue, w2PtoDaysPerYear, billableDaysPerYear, hoursPerDay }) => {
+          const employerFicaMatch = w2AnnualSalary * 0.0765;
+          const ptoValue = w2AnnualSalary * (w2PtoDaysPerYear / 260);
+          const totalPackageValue = w2AnnualSalary + employerFicaMatch + employerBenefitsValue + ptoValue;
+          return billableDaysPerYear * hoursPerDay > 0 ? totalPackageValue / (billableDaysPerYear * hoursPerDay) : NaN;
+        },
+        w2AnnualSalary: ({ hourlyRate1099, employerBenefitsValue, w2PtoDaysPerYear, billableDaysPerYear, hoursPerDay }) => {
+          const totalPackageValue = hourlyRate1099 * billableDaysPerYear * hoursPerDay;
+          const denominator = 1 + 0.0765 + w2PtoDaysPerYear / 260;
+          return denominator > 0 ? (totalPackageValue - employerBenefitsValue) / denominator : NaN;
+        }
+      },
+      outputs: [
+        {
+          id: 'employerFicaMatch',
+          label: 'Employer payroll-tax match replaced',
+          dimension: 'currency',
+          compute: (si) => si.w2AnnualSalary * 0.0765
+        },
+        {
+          id: 'ptoValue',
+          label: 'Paid time off replaced',
+          dimension: 'currency',
+          compute: (si) => si.w2AnnualSalary * (si.w2PtoDaysPerYear / 260)
+        },
+        {
+          id: 'totalPackageValue',
+          label: 'Total annual package value to replace',
+          dimension: 'currency',
+          compute: (si) => si.w2AnnualSalary + si.w2AnnualSalary * 0.0765 + si.employerBenefitsValue + si.w2AnnualSalary * (si.w2PtoDaysPerYear / 260)
+        }
+      ],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'w2AnnualSalary', label: 'W-2 salary' },
+            { from: 'employerFicaMatch', label: 'Payroll-tax match' },
+            { from: 'employerBenefitsValue', label: 'Benefits' },
+            { from: 'ptoValue', label: 'Paid time off' }
+          ],
+          center: 'totalPackageValue',
+          centerSub: 'total package value'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-19',
+      concept: {
+        title: 'Why a 1099 rate needs to be higher than the matching W-2 hourly wage',
+        paragraphs: [
+          'A W-2 salary looks simple, but an employer is quietly paying for more than the number on the offer letter: half of the payroll tax that funds Social Security and Medicare, often a share of health insurance and a retirement match, and salary that keeps being paid during holidays and vacation. A 1099 contractor has to self-fund all of that, so a 1099 rate that merely divides a comparable salary by the hours in a work year falls short — this calculator converts a specific W-2 salary into the 1099 rate that actually replaces its full value.',
+          'This is a different question from the freelancer-rate-calculator elsewhere on this site, which starts from a target take-home income and a tax rate you choose yourself, not tied to any particular job. This calculator instead starts from a specific W-2 salary (a real offer, or a job you are comparing a contract against) and converts it directly into the hourly rate a 1099 arrangement would need to match it, item by item — the self-employment-tax-estimator covers the actual tax bill on 1099 income in detail; this page is about setting the rate itself, not the return.',
+          'Three gaps get added back on top of the salary. The IRS describes self-employment tax as 15.3% split into a 12.4% Social Security and 2.9% Medicare share; an employer\'s FICA match is the "employer-equivalent" half of that, 7.65%, which a W-2 employee never sees deducted from pay but a 1099 contractor effectively pays alone. Employer-paid health insurance and retirement contributions are added as a figure you enter directly, since packages vary enormously by employer. And the days a W-2 salary keeps paying for — holidays, vacation — are converted into their dollar value and added too, since a 1099 contractor is typically paid only for days actually worked.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in either the W-2 salary or the equivalent 1099 rate; the other, marked auto, is calculated. The benefits value, paid days off, billable days and hours per day are always inputs.',
+        steps: [
+          { name: 'Enter the W-2 salary', text: 'The annual salary of the job you are comparing a 1099 contract against.' },
+          { name: 'Enter the employer benefits value', text: 'What the employer pays annually toward health insurance and any retirement match — not your own share, the employer\'s.' },
+          { name: 'Enter the W-2 job\'s paid days off', text: 'Holidays and vacation days the salary keeps paying for, typically 10–20 in the US.' },
+          { name: 'Enter your billable days and hours per day', text: 'How many days a year, and hours a day, you can realistically bill as a contractor — fewer than a W-2 employee\'s paid schedule, since unpaid admin time and gaps between contracts are real.' },
+          { name: 'Read the equivalent 1099 rate', text: 'The hourly rate that replaces the full value of the W-2 package — salary, payroll-tax match, benefits, and paid time off — across your actual billable hours.' },
+          { name: 'Check the breakdown', text: 'The donut shows how much of the total package value is the base salary versus the three added-back pieces.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The W-2 package\'s full value — salary, the employer\'s payroll-tax match, benefits, and paid time off — is divided by the hours a contractor can actually bill.',
+        expression:
+          'employerFicaMatch = w2Salary × 0.0765\nptoValue = w2Salary × (ptoDays ÷ 260)\ntotalPackageValue = w2Salary + employerFicaMatch + benefitsValue + ptoValue\nhourlyRate1099 = totalPackageValue ÷ (billableDays × hoursPerDay)',
+        terms: [
+          { symbol: '0.0765', meaning: 'The employer-equivalent half of the 15.3% self-employment tax rate — see the self-employment-tax-estimator.' },
+          { symbol: '260', meaning: 'A standard 52-week, 5-day work year, used to convert paid days off into a fraction of annual salary.' },
+          { symbol: 'totalPackageValue', meaning: 'The full annual value a 1099 rate needs to replace, before dividing by billable hours.' }
+        ],
+        note: 'Estimates only. This converts one specific W-2 package into an equivalent rate — it does not model self-employment tax itself (see the self-employment-tax-estimator for that), business expenses, or the value of job security, which a W-2 offer also provides and a 1099 contract usually does not.'
+      },
+      workedExample: {
+        intro: 'An $80,000 W-2 salary comes with $8,000 a year of employer-paid health insurance and retirement match, and 15 paid days off. As a contractor, you expect to bill 230 days a year at 8 hours a day. What 1099 rate matches it?',
+        rows: [
+          { label: 'Employer payroll-tax match (80,000 × 0.0765)', value: '$6,120.00' },
+          { label: 'Paid time off value (80,000 × 15 ÷ 260)', value: '$4,615.38' },
+          { label: 'Total package value (80,000 + 6,120 + 8,000 + 4,615.38)', value: '$98,735.38' },
+          { label: 'Billable hours per year (230 × 8)', value: '1,840' },
+          { label: 'Equivalent 1099 rate (98,735.38 ÷ 1,840)', value: '$53.66/hr' }
+        ],
+        result: 'An $80,000 W-2 salary with this benefits package converts to about $53.66/hr as a 1099 contractor.',
+        explanation: 'A naive conversion — $80,000 ÷ 2,080 standard hours — gives $38.46/hr, about 39.5% lower than the $53.66/hr this calculator finds. The gap is entirely the three added-back pieces (payroll-tax match, benefits, and paid time off) plus billing fewer hours (1,840) than the 2,080 a full-time W-2 schedule assumes.'
+      },
+      watchOut: [
+        { title: 'This is not the same question as the freelancer-rate-calculator', body: 'That calculator starts from a target take-home income and a tax rate you pick yourself, with no reference to any specific job. This one starts from an actual W-2 salary and converts it directly, item by item, into a matching 1099 rate.' },
+        { title: 'Self-employment tax itself is not modeled here', body: 'Adding back the employer\'s 7.65% payroll-tax match replaces what the employer would have paid — it does not calculate the self-employment tax a 1099 contractor actually owes on that income. See the self-employment-tax-estimator for the real tax bill.' },
+        { title: 'Billable days are not the same as paid days', body: 'A W-2 employee is paid for every working day, including slow ones. A 1099 contractor typically bills only for days with actual work — sales, admin and gaps between contracts are unpaid, which is why billable days per year is usually well under a W-2 schedule\'s working days.' },
+        { title: 'Benefits packages vary enormously', body: 'Employer-paid health insurance alone can range from a few thousand dollars to well over $10,000 a year depending on the plan and the employer\'s share. Use your own package\'s actual employer-paid amount, not a generic estimate.' },
+        { title: 'Job security has no dollar figure here', body: 'A W-2 job also typically offers unemployment insurance eligibility and more protection against sudden termination — real value a 1099 contract usually lacks, but one this calculator does not attempt to price.' }
+      ],
+      references: [
+        { label: 'Internal Revenue Service, Self-Employment Tax (Social Security and Medicare Taxes)', url: 'https://www.irs.gov/businesses/small-businesses-self-employed/self-employment-tax-social-security-and-medicare-taxes' },
+        { label: 'US Bureau of Labor Statistics, Employer Costs for Employee Compensation news release', url: 'https://www.bls.gov/news.release/ecec.nr0.htm' }
+      ]
+    },
+    inputs: [
+      { id: 'w2AnnualSalary', label: 'W-2 annual salary', type: 'currency', placeholder: '80000', defaultValue: 80000, step: 1000, min: 0 },
+      { id: 'employerBenefitsValue', label: 'Employer-paid health insurance + retirement match', type: 'currency', placeholder: '8000', defaultValue: 8000, step: 500, min: 0 },
+      { id: 'w2PtoDaysPerYear', label: 'Paid days off the W-2 job includes', type: 'number', placeholder: '15', defaultValue: 15, step: 1, min: 0 },
+      { id: 'billableDaysPerYear', label: 'Days per year you can actually bill', type: 'number', placeholder: '230', defaultValue: 230, step: 5, min: 1 },
+      { id: 'hoursPerDay', label: 'Billable hours per day', type: 'number', placeholder: '8', defaultValue: 8, step: 0.5, min: 1 }
+    ],
+    seo: {
+      title: '1099 Contractor Rate Calculator – Convert a W-2 Salary',
+      description: 'Convert a W-2 salary into an equivalent 1099 hourly rate, adding back the employer payroll-tax match, benefits, and paid time off a contract does not include.',
+      faq: [
+        { question: 'How do I convert a W-2 salary to a 1099 rate?', answer: 'Add the employer\'s payroll-tax match (7.65% of salary), employer-paid benefits, and the dollar value of paid days off to the salary, then divide by the hours you can actually bill as a contractor. An $80,000 salary with $8,000 of benefits and 15 paid days off, billing 230 days at 8 hours, converts to about $53.66/hr.' },
+        { question: 'Why is the 1099 rate so much higher than salary ÷ 2,080 hours?', answer: 'Because that naive calculation ($80,000 ÷ 2,080 = $38.46/hr in the example) ignores the employer\'s payroll-tax match, employer-paid benefits, paid time off, and the fact that a contractor typically bills fewer hours than a full-time W-2 schedule. Together those push the real equivalent rate about 39.5% higher, to $53.66/hr.' },
+        { question: 'What is the employer payroll-tax match?', answer: 'Self-employment tax is 15.3% (12.4% Social Security + 2.9% Medicare), per the IRS. An employer pays half of the equivalent FICA tax for a W-2 employee — 7.65% — which a 1099 contractor has to cover without an employer\'s match.' },
+        { question: 'Does this calculate the self-employment tax I would owe as a 1099 contractor?', answer: 'No. It only adds back the dollar value of what an employer would have paid toward payroll tax. For the actual self-employment tax bill on 1099 income, use the self-employment-tax-estimator.' },
+        { question: 'How is this different from the freelancer rate calculator?', answer: 'That calculator works from a target take-home income and a tax rate you choose, independent of any specific job. This one starts from an actual W-2 salary and benefits package and converts it directly into a matching 1099 rate.' },
+        { question: 'Why are billable days lower than a W-2 employee\'s working days?', answer: 'A W-2 employee is paid for every working day. A 1099 contractor is typically paid only for days with billable work, so sales, admin time and gaps between contracts reduce the realistic number of billable days well below a standard work year.' },
+        { question: 'Can I work backward from a 1099 rate to find the equivalent W-2 salary?', answer: 'Yes. Leave the W-2 salary field alone, and a given 1099 rate (with the same benefits, PTO, and billable-hours assumptions) converts back into the salary it is equivalent to.' }
+      ]
+    },
+    compute(values) {
+      const employerFicaMatch = values.w2AnnualSalary * 0.0765;
+      const ptoValue = values.w2AnnualSalary * (values.w2PtoDaysPerYear / 260);
+      const totalPackageValue = values.w2AnnualSalary + employerFicaMatch + values.employerBenefitsValue + ptoValue;
+      const billableHours = values.billableDaysPerYear * values.hoursPerDay;
+      const hourlyRate1099 = billableHours > 0 ? totalPackageValue / billableHours : NaN;
+      return { hourlyRate1099, employerFicaMatch, ptoValue, totalPackageValue };
+    }
   }
 ];

@@ -266,7 +266,10 @@ whole site before writing any id.
     green with all 10 `creator` calculators present.
 - [ ] Batch 8 — `text` (8 new) — being built concurrently by a separate agent/worktree.
 - [ ] Batch 9 — `education` (9 new; in progress, branch `step/61-deepen-education`)
-  - [ ] `grade-calculator`
+  - [x] `grade-calculator` — built alongside `weighted-average-calculator` (math) and `gpa-calculator`
+    (education) rather than skipped as a dupe: same underlying weighted-sum formula, but this page
+    is specialized in syllabus-category/percent-score terms, same precedent as GPA's own coexistence
+    with the general weighted-average calculator; cross-linked to both in `related`/copy.
   - [ ] `final-grade-calculator`
   - [ ] `study-time-calculator`
   - [ ] `test-score-to-letter-grade-calculator`

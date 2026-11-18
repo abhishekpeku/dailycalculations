@@ -5818,6 +5818,47 @@ exports[`compute() snapshots > fence-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > final-grade-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "currentGrade": 82,
+      "finalWeight": 25,
+      "desiredGrade": 85
+    },
+    "outputs": {
+      "neededScore": 94,
+      "maxPossibleGrade": 86.5,
+      "currentContribution": 61.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "currentGrade": 123,
+      "finalWeight": 38,
+      "desiredGrade": 127.5
+    },
+    "outputs": {
+      "neededScore": 134.8421053,
+      "maxPossibleGrade": 114.26,
+      "currentContribution": 76.26
+    }
+  },
+  "edge": {
+    "inputs": {
+      "currentGrade": 0,
+      "finalWeight": 1,
+      "desiredGrade": 0
+    },
+    "outputs": {
+      "neededScore": 0,
+      "maxPossibleGrade": 1,
+      "currentContribution": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > flight-carbon-footprint-calculator 1`] = `
 {
   "default": {

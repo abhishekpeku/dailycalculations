@@ -288,5 +288,116 @@ export const educationCalculators: CalculatorConfig[] = [
       const overallGrade = totalWeight === 0 ? 0 : weightedPoints / totalWeight;
       return { overallGrade, totalWeight, weightedPoints };
     }
+  },
+  {
+    id: 'final-grade-calculator',
+    category: 'education',
+    group: 'Grades & GPA',
+    glyph: 'FG',
+    updatedAt: '2026-11-18',
+    aliases: ['what grade do i need on my final', 'final exam grade calculator', 'exam score needed calculator', 'what do i need on my final calculator'],
+    related: ['grade-calculator', 'gpa-calculator', 'weighted-average-calculator', 'percentage-calculator'],
+    title: 'Final Grade Calculator',
+    description: "Find the score you need on your final exam to reach a target overall grade, given your current grade and the final's weight. Also shows the best grade you could still reach.",
+    example: "Currently at 82%, with a final exam worth 25% of the grade, reaching an 85% overall requires a 94% on the final.",
+    breakdown: {
+      headline: 'neededScore',
+      headlineLabel: 'Score needed on the final',
+      outputs: [
+        { id: 'neededScore', label: 'Score needed on the final', format: 'percent' },
+        { id: 'maxPossibleGrade', label: 'Best possible overall grade (100% on the final)', format: 'percent' },
+        { id: 'currentContribution', label: "Current grade's contribution so far", format: 'percent' }
+      ],
+      groups: [
+        { title: 'Your numbers', inputs: ['currentGrade', 'finalWeight', 'desiredGrade'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'desiredGrade', label: 'Target overall grade' },
+          { from: 'neededScore', label: 'Needed on the final' },
+          { from: 'maxPossibleGrade', label: 'Best possible overall' }
+        ],
+        title: 'Target vs. what the final needs to be',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: '"What do I need on my final?", worked backward from your target grade',
+        paragraphs: [
+          "Your overall grade is a weighted average of your current grade (everything before the final) and your final exam score, weighted by how much the final counts. If the final is worth 25% of the grade, your current grade effectively keeps a 75% share and the final gets the remaining 25% — so overall = current × 0.75 + final × 0.25. This calculator rearranges that same equation to solve for the final score instead of the overall grade: given a target overall grade, it isolates the one unknown.",
+          "It is the direct companion to the grade calculator: that page starts from category scores and computes where you stand right now; this page starts from where you stand right now and computes what one remaining category — the final — needs to be to land on a specific target.",
+          "The result can come out above 100% or below 0%. A number above 100% means the target is not reachable no matter how well you do on the final, given your current grade and the final's weight; a number at or below 0% means you have already secured that overall grade even with a zero on the final."
+        ]
+      },
+      howTo: {
+        intro: 'Enter your current grade, how much the final exam is worth, and the overall grade you want to reach.',
+        steps: [
+          { name: 'Enter your current grade', text: "Your overall percentage grade in the course before the final exam is factored in." },
+          { name: "Enter the final's weight", text: 'The percent of your overall grade the final exam controls, from your syllabus — commonly somewhere between 10% and 40%.' },
+          { name: 'Enter your target grade', text: 'The overall percentage grade you want to end the course with.' },
+          { name: 'Read the score you need', text: 'The headline is the percentage you need on the final exam itself to reach that target.' },
+          { name: 'Check what\'s actually possible', text: "The best-possible-grade figure shows your overall grade if you score a perfect 100% on the final — compare it to your target before you set expectations." }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: "The overall grade is current grade and final score blended by the final's weight. Solving that equation for the final score gives the needed-score formula below.",
+        expression: 'currentContribution = currentGrade × (1 − finalWeight)\noverall = currentContribution + neededScore × finalWeight\nneededScore = (desiredGrade − currentContribution) ÷ finalWeight',
+        terms: [
+          { symbol: 'currentGrade', meaning: 'Your overall percentage grade before the final exam.' },
+          { symbol: 'finalWeight', meaning: "The final exam's weight, as a fraction of the overall grade (25% is 0.25 in the formula; enter 25 in the calculator)." },
+          { symbol: 'desiredGrade', meaning: 'The overall percentage grade you want to reach.' }
+        ],
+        note: "A result above 100% means the target isn't reachable from your current grade at this final weight — no score on the final can produce it. This is arithmetic, not advice on whether to attend office hours or ask for extra credit."
+      },
+      workedExample: {
+        intro: "Currently at 82%, a final exam worth 25% of the grade, targeting an 85% overall.",
+        rows: [
+          { label: "Current grade's contribution (82 × 0.75)", value: '61.5' },
+          { label: 'Needed on the final ((85 − 61.5) ÷ 0.25)', value: '94' },
+          { label: 'Best possible overall (82 × 0.75 + 100 × 0.25)', value: '86.5' }
+        ],
+        result: 'Score needed on the final = 94%',
+        explanation: "Because the final only controls a quarter of the grade, the 3-point gap between 82% and 85% overall requires a disproportionately large 94% on the final itself — and the best this student could reach with a perfect final is 86.5%, so 85% is achievable but with little room to spare."
+      },
+      watchOut: [
+        { title: 'A result over 100% means the target is out of reach', body: "If the needed score is higher than 100%, no final exam score can produce your target grade — check the best-possible-grade figure, which is your ceiling." },
+        { title: 'A result at or below 0% means you have already clinched it', body: 'Your current grade and the remaining weight are already enough to guarantee the target, even with a zero on the final.' },
+        { title: "The final's weight is a fraction of the WHOLE grade, not of what's left", body: "Enter the percent your syllabus assigns to the final out of 100% total, the same way you'd enter it on the grade calculator — not a weight relative only to other exams." },
+        { title: 'This assumes nothing else changes', body: "If other assignments (extra credit, a dropped quiz, a curve) are still pending, your actual current grade may shift before the final — rerun this with an updated current grade." },
+        { title: 'Not the same question as the grade calculator', body: 'The grade calculator computes your current overall grade from category scores you already have. This calculator assumes you already know that current grade and solves for one still-unknown score instead.' }
+      ],
+      references: [
+        { label: 'Wolfram MathWorld, Weighted Mean', url: 'https://mathworld.wolfram.com/WeightedMean.html' },
+        { label: 'OpenStax, Prealgebra 2e, §6.2 Solve General Applications of Percent', url: 'https://openstax.org/books/prealgebra-2e/pages/6-2-solve-general-applications-of-percent' }
+      ]
+    },
+    inputs: [
+      { id: 'currentGrade', label: 'Current grade (before the final)', type: 'percent', placeholder: '82', defaultValue: 82, step: 0.1, min: 0 },
+      { id: 'finalWeight', label: "Final exam's weight", type: 'percent', placeholder: '25', defaultValue: 25, step: 1, min: 1 },
+      { id: 'desiredGrade', label: 'Target overall grade', type: 'percent', placeholder: '85', defaultValue: 85, step: 0.1, min: 0 }
+    ],
+    seo: {
+      title: 'Final Grade Calculator – What Score Do You Need?',
+      description: "Find the score you need on your final exam to hit a target overall grade, given your current grade and the final's weight. See your best-case grade too.",
+      faq: [
+        { question: 'What score do I need on my final exam?', answer: "Subtract your current grade's weighted contribution from your target, then divide by the final's weight. At 82% currently with a 25%-weighted final and an 85% target: (85 − 61.5) ÷ 0.25 = 94%." },
+        { question: 'What if I need more than 100% on the final?', answer: "That means your target isn't reachable this time — no score can produce it given your current grade and the final's weight. Compare against the best-possible-grade figure, which is your ceiling if you score 100%." },
+        { question: 'What if the calculator says I need 0% or less?', answer: "You've already secured that overall grade — even a zero on the final would leave you at or above your target." },
+        { question: 'Is the final\'s weight relative to the whole grade or just the other exams?', answer: "Enter it as a percent of the entire course grade (the same number your syllabus lists), not relative only to other exams." },
+        { question: 'How is this different from the grade calculator?', answer: "The grade calculator computes your current overall grade from category scores you already have. This one assumes that current grade is known and solves backward for a single missing score instead." },
+        { question: "Does this account for extra credit or a curve?", answer: 'No — it only uses the three numbers you enter. If extra credit, a dropped grade, or a curve changes your current grade, re-enter the updated current grade and recalculate.' }
+      ]
+    },
+    compute(values) {
+      const w = values.finalWeight / 100;
+      const currentContribution = values.currentGrade * (1 - w);
+      const neededScore = (values.desiredGrade - currentContribution) / w;
+      const maxPossibleGrade = currentContribution + 100 * w;
+      return { neededScore, maxPossibleGrade, currentContribution };
+    }
   }
 ];

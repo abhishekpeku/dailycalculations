@@ -67,6 +67,7 @@ export const calculatorOrder: string[] = [
   'age-calculator',
   'gpa-calculator',
   'grade-calculator',
+  'final-grade-calculator',
   'calorie-calculator',
   'paycheck-calculator',
   'investment-calculator',

@@ -1,3 +1,53 @@
+exports[`compute() snapshots > 1099-contractor-rate-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "w2AnnualSalary": 80000,
+      "employerBenefitsValue": 8000,
+      "w2PtoDaysPerYear": 15,
+      "billableDaysPerYear": 230,
+      "hoursPerDay": 8
+    },
+    "outputs": {
+      "hourlyRate1099": 53.66053512,
+      "employerFicaMatch": 6120,
+      "ptoValue": 4615.384615,
+      "totalPackageValue": 98735.38462
+    }
+  },
+  "typical": {
+    "inputs": {
+      "w2AnnualSalary": 120000,
+      "employerBenefitsValue": 12000,
+      "w2PtoDaysPerYear": 23,
+      "billableDaysPerYear": 345,
+      "hoursPerDay": 12
+    },
+    "outputs": {
+      "hourlyRate1099": 36.66555184,
+      "employerFicaMatch": 9180,
+      "ptoValue": 10615.38462,
+      "totalPackageValue": 151795.3846
+    }
+  },
+  "edge": {
+    "inputs": {
+      "w2AnnualSalary": 0,
+      "employerBenefitsValue": 0,
+      "w2PtoDaysPerYear": 0,
+      "billableDaysPerYear": 1,
+      "hoursPerDay": 1
+    },
+    "outputs": {
+      "hourlyRate1099": 0,
+      "employerFicaMatch": 0,
+      "ptoValue": 0,
+      "totalPackageValue": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > 401k-employer-match-calculator 1`] = `
 {
   "default": {

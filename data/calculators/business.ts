@@ -1542,5 +1542,161 @@ export const businessCalculators: CalculatorConfig[] = [
       const effectiveRatePercent = (totalSETax / netEarnings) * 100;
       return { totalSETax, socialSecurityTax, medicareTax, netEarningsSubjectToSE, deductibleHalf, effectiveRatePercent };
     }
+  },
+  {
+    id: '1099-contractor-rate-calculator',
+    category: 'business',
+    glyph: '1099',
+    updatedAt: '2026-11-19',
+    aliases: ['1099 vs w2 calculator', '1099 contractor rate calculator', 'w2 to 1099 rate calculator', 'convert salary to 1099 rate calculator'],
+    related: ['self-employment-tax-estimator', 'freelancer-rate-calculator', 'income-tax-calculator', 'salary-raise-calculator'],
+    title: '1099 Contractor Rate Calculator',
+    description: 'Convert a specific W-2 salary into the equivalent 1099 contractor rate, by adding back the employer\'s payroll-tax match, employer-paid benefits, and paid time off the W-2 job covers but a 1099 contract does not.',
+    example: 'An $80,000 W-2 salary with $8,000 of employer benefits and 15 paid days off converts to about $53.66/hr as a 1099 contractor billing 230 days a year, 8 hours a day.',
+    solver: {
+      defaultTarget: 'hourlyRate1099',
+      variables: [
+        { id: 'hourlyRate1099', label: 'Equivalent 1099 hourly rate', symbol: 'R', dimension: 'currency', defaultValue: 53.66, defaultUnit: 'currency' },
+        { id: 'w2AnnualSalary', label: 'W-2 annual salary', symbol: 'S', dimension: 'currency', defaultValue: 80000, defaultUnit: 'currency' },
+        { id: 'employerBenefitsValue', label: 'Employer-paid health insurance + retirement match', symbol: 'B', dimension: 'currency', defaultValue: 8000, defaultUnit: 'currency', fixed: true },
+        { id: 'w2PtoDaysPerYear', label: 'Paid days off the W-2 job includes', symbol: 'D', dimension: 'count', defaultValue: 15, defaultUnit: 'count', fixed: true },
+        { id: 'billableDaysPerYear', label: 'Days per year you can actually bill as a contractor', symbol: 'd', dimension: 'count', defaultValue: 230, defaultUnit: 'count', fixed: true },
+        { id: 'hoursPerDay', label: 'Billable hours per day', symbol: 'h', dimension: 'count', defaultValue: 8, defaultUnit: 'count', fixed: true }
+      ],
+      // Every variable has a closed form. FICA_EMPLOYER_MATCH_RATE (7.65%) is the employer-equivalent
+      // half of the 15.3% self-employment tax rate (see self-employment-tax-estimator); STANDARD_WORK_DAYS_PER_YEAR
+      // (260 = 52 x 5) converts a count of paid days off into a fraction of the W-2 salary.
+      solve: {
+        hourlyRate1099: ({ w2AnnualSalary, employerBenefitsValue, w2PtoDaysPerYear, billableDaysPerYear, hoursPerDay }) => {
+          const employerFicaMatch = w2AnnualSalary * 0.0765;
+          const ptoValue = w2AnnualSalary * (w2PtoDaysPerYear / 260);
+          const totalPackageValue = w2AnnualSalary + employerFicaMatch + employerBenefitsValue + ptoValue;
+          return billableDaysPerYear * hoursPerDay > 0 ? totalPackageValue / (billableDaysPerYear * hoursPerDay) : NaN;
+        },
+        w2AnnualSalary: ({ hourlyRate1099, employerBenefitsValue, w2PtoDaysPerYear, billableDaysPerYear, hoursPerDay }) => {
+          const totalPackageValue = hourlyRate1099 * billableDaysPerYear * hoursPerDay;
+          const denominator = 1 + 0.0765 + w2PtoDaysPerYear / 260;
+          return denominator > 0 ? (totalPackageValue - employerBenefitsValue) / denominator : NaN;
+        }
+      },
+      outputs: [
+        {
+          id: 'employerFicaMatch',
+          label: 'Employer payroll-tax match replaced',
+          dimension: 'currency',
+          compute: (si) => si.w2AnnualSalary * 0.0765
+        },
+        {
+          id: 'ptoValue',
+          label: 'Paid time off replaced',
+          dimension: 'currency',
+          compute: (si) => si.w2AnnualSalary * (si.w2PtoDaysPerYear / 260)
+        },
+        {
+          id: 'totalPackageValue',
+          label: 'Total annual package value to replace',
+          dimension: 'currency',
+          compute: (si) => si.w2AnnualSalary + si.w2AnnualSalary * 0.0765 + si.employerBenefitsValue + si.w2AnnualSalary * (si.w2PtoDaysPerYear / 260)
+        }
+      ],
+      visuals: [
+        {
+          type: 'donut',
+          segments: [
+            { from: 'w2AnnualSalary', label: 'W-2 salary' },
+            { from: 'employerFicaMatch', label: 'Payroll-tax match' },
+            { from: 'employerBenefitsValue', label: 'Benefits' },
+            { from: 'ptoValue', label: 'Paid time off' }
+          ],
+          center: 'totalPackageValue',
+          centerSub: 'total package value'
+        }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-19',
+      concept: {
+        title: 'Why a 1099 rate needs to be higher than the matching W-2 hourly wage',
+        paragraphs: [
+          'A W-2 salary looks simple, but an employer is quietly paying for more than the number on the offer letter: half of the payroll tax that funds Social Security and Medicare, often a share of health insurance and a retirement match, and salary that keeps being paid during holidays and vacation. A 1099 contractor has to self-fund all of that, so a 1099 rate that merely divides a comparable salary by the hours in a work year falls short — this calculator converts a specific W-2 salary into the 1099 rate that actually replaces its full value.',
+          'This is a different question from the freelancer-rate-calculator elsewhere on this site, which starts from a target take-home income and a tax rate you choose yourself, not tied to any particular job. This calculator instead starts from a specific W-2 salary (a real offer, or a job you are comparing a contract against) and converts it directly into the hourly rate a 1099 arrangement would need to match it, item by item — the self-employment-tax-estimator covers the actual tax bill on 1099 income in detail; this page is about setting the rate itself, not the return.',
+          'Three gaps get added back on top of the salary. The IRS describes self-employment tax as 15.3% split into a 12.4% Social Security and 2.9% Medicare share; an employer\'s FICA match is the "employer-equivalent" half of that, 7.65%, which a W-2 employee never sees deducted from pay but a 1099 contractor effectively pays alone. Employer-paid health insurance and retirement contributions are added as a figure you enter directly, since packages vary enormously by employer. And the days a W-2 salary keeps paying for — holidays, vacation — are converted into their dollar value and added too, since a 1099 contractor is typically paid only for days actually worked.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in either the W-2 salary or the equivalent 1099 rate; the other, marked auto, is calculated. The benefits value, paid days off, billable days and hours per day are always inputs.',
+        steps: [
+          { name: 'Enter the W-2 salary', text: 'The annual salary of the job you are comparing a 1099 contract against.' },
+          { name: 'Enter the employer benefits value', text: 'What the employer pays annually toward health insurance and any retirement match — not your own share, the employer\'s.' },
+          { name: 'Enter the W-2 job\'s paid days off', text: 'Holidays and vacation days the salary keeps paying for, typically 10–20 in the US.' },
+          { name: 'Enter your billable days and hours per day', text: 'How many days a year, and hours a day, you can realistically bill as a contractor — fewer than a W-2 employee\'s paid schedule, since unpaid admin time and gaps between contracts are real.' },
+          { name: 'Read the equivalent 1099 rate', text: 'The hourly rate that replaces the full value of the W-2 package — salary, payroll-tax match, benefits, and paid time off — across your actual billable hours.' },
+          { name: 'Check the breakdown', text: 'The donut shows how much of the total package value is the base salary versus the three added-back pieces.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The W-2 package\'s full value — salary, the employer\'s payroll-tax match, benefits, and paid time off — is divided by the hours a contractor can actually bill.',
+        expression:
+          'employerFicaMatch = w2Salary × 0.0765\nptoValue = w2Salary × (ptoDays ÷ 260)\ntotalPackageValue = w2Salary + employerFicaMatch + benefitsValue + ptoValue\nhourlyRate1099 = totalPackageValue ÷ (billableDays × hoursPerDay)',
+        terms: [
+          { symbol: '0.0765', meaning: 'The employer-equivalent half of the 15.3% self-employment tax rate — see the self-employment-tax-estimator.' },
+          { symbol: '260', meaning: 'A standard 52-week, 5-day work year, used to convert paid days off into a fraction of annual salary.' },
+          { symbol: 'totalPackageValue', meaning: 'The full annual value a 1099 rate needs to replace, before dividing by billable hours.' }
+        ],
+        note: 'Estimates only. This converts one specific W-2 package into an equivalent rate — it does not model self-employment tax itself (see the self-employment-tax-estimator for that), business expenses, or the value of job security, which a W-2 offer also provides and a 1099 contract usually does not.'
+      },
+      workedExample: {
+        intro: 'An $80,000 W-2 salary comes with $8,000 a year of employer-paid health insurance and retirement match, and 15 paid days off. As a contractor, you expect to bill 230 days a year at 8 hours a day. What 1099 rate matches it?',
+        rows: [
+          { label: 'Employer payroll-tax match (80,000 × 0.0765)', value: '$6,120.00' },
+          { label: 'Paid time off value (80,000 × 15 ÷ 260)', value: '$4,615.38' },
+          { label: 'Total package value (80,000 + 6,120 + 8,000 + 4,615.38)', value: '$98,735.38' },
+          { label: 'Billable hours per year (230 × 8)', value: '1,840' },
+          { label: 'Equivalent 1099 rate (98,735.38 ÷ 1,840)', value: '$53.66/hr' }
+        ],
+        result: 'An $80,000 W-2 salary with this benefits package converts to about $53.66/hr as a 1099 contractor.',
+        explanation: 'A naive conversion — $80,000 ÷ 2,080 standard hours — gives $38.46/hr, about 39.5% lower than the $53.66/hr this calculator finds. The gap is entirely the three added-back pieces (payroll-tax match, benefits, and paid time off) plus billing fewer hours (1,840) than the 2,080 a full-time W-2 schedule assumes.'
+      },
+      watchOut: [
+        { title: 'This is not the same question as the freelancer-rate-calculator', body: 'That calculator starts from a target take-home income and a tax rate you pick yourself, with no reference to any specific job. This one starts from an actual W-2 salary and converts it directly, item by item, into a matching 1099 rate.' },
+        { title: 'Self-employment tax itself is not modeled here', body: 'Adding back the employer\'s 7.65% payroll-tax match replaces what the employer would have paid — it does not calculate the self-employment tax a 1099 contractor actually owes on that income. See the self-employment-tax-estimator for the real tax bill.' },
+        { title: 'Billable days are not the same as paid days', body: 'A W-2 employee is paid for every working day, including slow ones. A 1099 contractor typically bills only for days with actual work — sales, admin and gaps between contracts are unpaid, which is why billable days per year is usually well under a W-2 schedule\'s working days.' },
+        { title: 'Benefits packages vary enormously', body: 'Employer-paid health insurance alone can range from a few thousand dollars to well over $10,000 a year depending on the plan and the employer\'s share. Use your own package\'s actual employer-paid amount, not a generic estimate.' },
+        { title: 'Job security has no dollar figure here', body: 'A W-2 job also typically offers unemployment insurance eligibility and more protection against sudden termination — real value a 1099 contract usually lacks, but one this calculator does not attempt to price.' }
+      ],
+      references: [
+        { label: 'Internal Revenue Service, Self-Employment Tax (Social Security and Medicare Taxes)', url: 'https://www.irs.gov/businesses/small-businesses-self-employed/self-employment-tax-social-security-and-medicare-taxes' },
+        { label: 'US Bureau of Labor Statistics, Employer Costs for Employee Compensation news release', url: 'https://www.bls.gov/news.release/ecec.nr0.htm' }
+      ]
+    },
+    inputs: [
+      { id: 'w2AnnualSalary', label: 'W-2 annual salary', type: 'currency', placeholder: '80000', defaultValue: 80000, step: 1000, min: 0 },
+      { id: 'employerBenefitsValue', label: 'Employer-paid health insurance + retirement match', type: 'currency', placeholder: '8000', defaultValue: 8000, step: 500, min: 0 },
+      { id: 'w2PtoDaysPerYear', label: 'Paid days off the W-2 job includes', type: 'number', placeholder: '15', defaultValue: 15, step: 1, min: 0 },
+      { id: 'billableDaysPerYear', label: 'Days per year you can actually bill', type: 'number', placeholder: '230', defaultValue: 230, step: 5, min: 1 },
+      { id: 'hoursPerDay', label: 'Billable hours per day', type: 'number', placeholder: '8', defaultValue: 8, step: 0.5, min: 1 }
+    ],
+    seo: {
+      title: '1099 Contractor Rate Calculator – Convert a W-2 Salary',
+      description: 'Convert a W-2 salary into an equivalent 1099 hourly rate, adding back the employer payroll-tax match, benefits, and paid time off a contract does not include.',
+      faq: [
+        { question: 'How do I convert a W-2 salary to a 1099 rate?', answer: 'Add the employer\'s payroll-tax match (7.65% of salary), employer-paid benefits, and the dollar value of paid days off to the salary, then divide by the hours you can actually bill as a contractor. An $80,000 salary with $8,000 of benefits and 15 paid days off, billing 230 days at 8 hours, converts to about $53.66/hr.' },
+        { question: 'Why is the 1099 rate so much higher than salary ÷ 2,080 hours?', answer: 'Because that naive calculation ($80,000 ÷ 2,080 = $38.46/hr in the example) ignores the employer\'s payroll-tax match, employer-paid benefits, paid time off, and the fact that a contractor typically bills fewer hours than a full-time W-2 schedule. Together those push the real equivalent rate about 39.5% higher, to $53.66/hr.' },
+        { question: 'What is the employer payroll-tax match?', answer: 'Self-employment tax is 15.3% (12.4% Social Security + 2.9% Medicare), per the IRS. An employer pays half of the equivalent FICA tax for a W-2 employee — 7.65% — which a 1099 contractor has to cover without an employer\'s match.' },
+        { question: 'Does this calculate the self-employment tax I would owe as a 1099 contractor?', answer: 'No. It only adds back the dollar value of what an employer would have paid toward payroll tax. For the actual self-employment tax bill on 1099 income, use the self-employment-tax-estimator.' },
+        { question: 'How is this different from the freelancer rate calculator?', answer: 'That calculator works from a target take-home income and a tax rate you choose, independent of any specific job. This one starts from an actual W-2 salary and benefits package and converts it directly into a matching 1099 rate.' },
+        { question: 'Why are billable days lower than a W-2 employee\'s working days?', answer: 'A W-2 employee is paid for every working day. A 1099 contractor is typically paid only for days with billable work, so sales, admin time and gaps between contracts reduce the realistic number of billable days well below a standard work year.' },
+        { question: 'Can I work backward from a 1099 rate to find the equivalent W-2 salary?', answer: 'Yes. Leave the W-2 salary field alone, and a given 1099 rate (with the same benefits, PTO, and billable-hours assumptions) converts back into the salary it is equivalent to.' }
+      ]
+    },
+    compute(values) {
+      const employerFicaMatch = values.w2AnnualSalary * 0.0765;
+      const ptoValue = values.w2AnnualSalary * (values.w2PtoDaysPerYear / 260);
+      const totalPackageValue = values.w2AnnualSalary + employerFicaMatch + values.employerBenefitsValue + ptoValue;
+      const billableHours = values.billableDaysPerYear * values.hoursPerDay;
+      const hourlyRate1099 = billableHours > 0 ? totalPackageValue / billableHours : NaN;
+      return { hourlyRate1099, employerFicaMatch, ptoValue, totalPackageValue };
+    }
   }
 ];

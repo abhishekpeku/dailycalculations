@@ -181,6 +181,19 @@ function hypergeometricRangeProbability(N: number, K: number, n: number, low: nu
   return sum;
 }
 
+// Reference table for the lottery-odds calculator's content: a generic 6-from-49 pick structure
+// (used by multiple real lotteries worldwide, named by no single one) shown purely to illustrate
+// how fast the odds change with the match count. Every value is computed from nCrBig, not typed.
+const LOTTERY_EXAMPLE_POOL = 49;
+const LOTTERY_EXAMPLE_PICKS = 6;
+const LOTTERY_EXAMPLE_ROWS = Array.from({ length: LOTTERY_EXAMPLE_PICKS + 1 }, (_, m) => {
+  const matches = LOTTERY_EXAMPLE_PICKS - m; // build from jackpot (6) down to 0 matches
+  const ways = nCrBig(LOTTERY_EXAMPLE_PICKS, matches) * nCrBig(LOTTERY_EXAMPLE_POOL - LOTTERY_EXAMPLE_PICKS, LOTTERY_EXAMPLE_PICKS - matches);
+  const total = nCrBig(LOTTERY_EXAMPLE_POOL, LOTTERY_EXAMPLE_PICKS);
+  const probability = Number(ways) / Number(total);
+  return { matches, oddsOneIn: probability > 0 ? 1 / probability : NaN };
+});
+
 export const funCalculators: CalculatorConfig[] = [
   {
     id: 'zodiac-sign-calculator',
@@ -1020,6 +1033,124 @@ export const funCalculators: CalculatorConfig[] = [
         noSharePercent: noShare * 100,
         minPeopleFor50Percent: MIN_PEOPLE_FOR_50_PERCENT,
         minPeopleFor99Percent: MIN_PEOPLE_FOR_99_PERCENT
+      };
+    }
+  },
+  {
+    id: 'lottery-odds-calculator',
+    category: 'fun',
+    glyph: 'nCk',
+    updatedAt: '2026-11-18',
+    aliases: ['lottery odds calculator', 'probability of winning the lottery', 'pick 6 lottery odds', 'lottery combinations calculator'],
+    related: ['combination-calculator', 'card-draw-probability-calculator', 'probability-calculator', 'dice-probability-calculator'],
+    title: 'Lottery Odds Calculator',
+    description: 'Find the exact odds of matching some or all of your numbers in any pick-k-from-n lottery, using the real combinations (nCr) formula -- enter your own lottery\'s rules rather than one fixed, named game.',
+    example: 'In a 6-from-49 pick lottery, the odds of matching all 6 numbers are 1 in 13,983,816.',
+    breakdown: {
+      headline: 'matchProbabilityPercent',
+      headlineLabel: 'Probability of this exact match count',
+      outputs: [
+        { id: 'matchProbabilityPercent', label: 'Probability of this exact match count', format: 'percent' },
+        { id: 'oddsOneInForMatch', label: 'Odds (1 in)', format: 'significant' },
+        { id: 'jackpotOddsOneIn', label: 'Odds of matching every number (jackpot)', format: 'significant' },
+        { id: 'totalCombinations', label: 'Total possible combinations', format: 'significant' }
+      ],
+      groups: [{ title: 'Your lottery\'s rules', inputs: ['poolSize', 'picksCount', 'matches'] }]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why lottery odds are a combinations (nCr) problem',
+        paragraphs: [
+          'A typical lottery draws k numbers out of a pool of n, and a ticket also picks k numbers; you win based on how many of your k numbers match the k drawn. Because the order the numbers are drawn in does not matter, the total number of possible draws is the number of combinations of k numbers chosen from n, written nCk or "n choose k" -- the same combinations function used across this site\'s statistics calculators.',
+          'The odds of matching exactly m of your k numbers combine two separate combination counts: the number of ways to choose which m of your k numbers were drawn, times the number of ways the remaining k-m drawn numbers could be any of the n-k numbers you did not pick, all divided by the total number of possible draws. This calculator enters your own lottery\'s pool size and pick count, rather than assuming one specific real-world game, since the rule (how many numbers, drawn from how large a pool) varies by lottery and by jurisdiction, and jackpot sizes change constantly.',
+          'The result is exact: no approximation is involved, only the real combinatorics of how many ways a draw could go.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your own lottery\'s rules, then the match count you want the odds for.',
+        steps: [
+          { name: 'Enter the pool size', text: 'How many numbers the lottery draws from in total.' },
+          { name: 'Enter how many numbers are picked/drawn', text: 'How many numbers both your ticket and the draw itself choose.' },
+          { name: 'Enter the match count you want', text: 'How many of your numbers you want the odds of matching exactly -- set it equal to the pick count for the jackpot.' },
+          { name: 'Read the probability and odds', text: 'The headline is the exact probability of that match count; "odds (1 in)" is the same figure written the way lottery odds are usually quoted.' },
+          { name: 'Check the reference table', text: 'A worked 6-from-49 example below shows how fast the odds change across every possible match count, for comparison.' }
+        ],
+        outro: 'Everything is calculated in your browser from the combinations formula. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The probability of matching exactly m of k picked numbers, drawn from a pool of n.',
+        expression:
+          'P(match = m) = [ C(k, m) * C(n-k, k-m) ] / C(n, k)\nOdds of the jackpot (m = k) = 1 / C(n, k), since C(k, k) = 1 and C(n-k, 0) = 1',
+        terms: [
+          { symbol: 'n', meaning: 'Pool size: how many numbers the lottery draws from.' },
+          { symbol: 'k', meaning: 'Pick count: how many numbers are drawn, and how many your ticket picks.' },
+          { symbol: 'm', meaning: 'How many of your k numbers you want the odds of matching, from 0 to k.' },
+          { symbol: 'C(n, k)', meaning: 'Combinations ("n choose k"): the number of ways to choose k numbers from n without regard to order.' }
+        ],
+        note: 'C(k, m) counts which of your own numbers were among the drawn ones; C(n-k, k-m) counts the ways the rest of the draw could land among the numbers you did not pick.'
+      },
+      workedExample: {
+        intro: 'In a 6-from-49 pick lottery (n = 49, k = 6), what are the odds of matching exactly 3 numbers, and separately, all 6?',
+        rows: [
+          { label: 'Total combinations, C(49, 6)', value: '13,983,816' },
+          { label: 'Ways to match exactly 3: C(6,3) x C(43,3)', value: '20 x 12,341 = 246,820' },
+          { label: 'P(match = 3)', value: '246,820 / 13,983,816' },
+          { label: 'Ways to match all 6: C(6,6) x C(43,0)', value: '1 x 1 = 1' },
+          { label: 'P(match = 6), the jackpot', value: '1 / 13,983,816' }
+        ],
+        result: 'P(match 3) ≈ 1.77%, about 1 in 56.7; P(match all 6) ≈ 1 in 13,983,816',
+        explanation: 'Matching exactly 3 is far more likely than the jackpot because there are 246,820 different draws that would give you exactly 3 matches, against only one possible draw (all 6 of your numbers, in some order) that gives you the jackpot.'
+      },
+      watchOut: [
+        { title: 'Enter your own lottery\'s real rules', body: 'Pool size and pick count vary by lottery and change over time as games are redesigned -- this calculator does not assume or name any specific one; enter the numbers from your own game\'s official rules.' },
+        { title: 'Some real lotteries use a separate bonus-number pool', body: 'A game with an extra "bonus ball" drawn from its own separate pool (common in many real lotteries) is not the same structure as this calculator models; this page covers the single-pool pick-k-from-n case only.' },
+        { title: 'Odds do not depend on the jackpot size', body: 'The probability of any match count is fixed by the pool size and pick count alone -- it has nothing to do with how large the advertised jackpot is, how many tickets have been sold, or how long it has been since the last winner.' },
+        { title: 'Large combinations are shown as rounded approximations', body: 'Past about 9.007 quadrillion (2^53 - 1), the total-combinations figure is a correctly-rounded approximation rather than an exact integer, the same practical limit the site\'s combination calculator discloses.' }
+      ],
+      referenceTable: {
+        title: `Odds by match count, for a ${LOTTERY_EXAMPLE_PICKS}-from-${LOTTERY_EXAMPLE_POOL} pick lottery`,
+        columns: ['Matches', 'Odds (1 in, rounded)'],
+        rows: LOTTERY_EXAMPLE_ROWS.map((row) => ({ label: `Exactly ${row.matches} of ${LOTTERY_EXAMPLE_PICKS}`, values: [row.oddsOneIn] })),
+        decimals: 0,
+        note: `Computed directly from the combinations formula above for n = ${LOTTERY_EXAMPLE_POOL}, k = ${LOTTERY_EXAMPLE_PICKS} -- a generic pick-6-from-49 structure used as an illustration, not any one named lottery.`
+      },
+      references: [
+        { label: 'Wikipedia, Lottery mathematics (general matching-probability formula)', url: 'https://en.wikipedia.org/wiki/Lottery_mathematics' }
+      ]
+    },
+    inputs: [
+      { id: 'poolSize', label: 'Pool size (n)', type: 'number', placeholder: '49', defaultValue: 49, step: 1, min: 1 },
+      { id: 'picksCount', label: 'Numbers picked/drawn (k)', type: 'number', placeholder: '6', defaultValue: 6, step: 1, min: 1 },
+      { id: 'matches', label: 'Match count you want the odds of (m)', type: 'number', placeholder: '6', defaultValue: 6, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Lottery Odds Calculator – Pick-k-from-n Combinations',
+      description: 'Find the exact odds of matching some or all numbers in any pick-k-from-n lottery, using the real combinations (nCr) formula for your own lottery\'s rules.',
+      faq: [
+        { question: 'What are the odds of winning a 6-from-49 lottery jackpot?', answer: '1 in 13,983,816 -- there is exactly one way to match all 6 of your numbers, out of C(49,6) = 13,983,816 total possible draws.' },
+        { question: 'What are the odds of matching exactly 3 of 6 numbers in a 6-from-49 lottery?', answer: 'About 1 in 56.7 (roughly 1.77%) -- there are C(6,3) x C(43,3) = 246,820 ways to match exactly 3, out of 13,983,816 total draws.' },
+        { question: 'How do you calculate lottery odds?', answer: 'Divide the number of ways to get your target match count -- C(k, m) ways to pick which of your numbers matched, times C(n-k, k-m) ways for the rest of the draw to miss them -- by the total number of possible draws, C(n, k).' },
+        { question: 'Do the odds change based on the jackpot size?', answer: 'No -- the odds depend only on the pool size and pick count, which are fixed by the game\'s rules. The jackpot amount and how many tickets were sold do not affect the probability of any match count.' },
+        { question: 'Does this work for any lottery, not just 6-from-49?', answer: 'Yes -- enter your own lottery\'s pool size and pick count. This calculator does not assume or endorse any specific real-world game.' },
+        { question: 'What if my lottery has a separate bonus number?', answer: 'This calculator covers a single-pool pick-k-from-n game only. A bonus ball drawn from its own separate pool is a different structure this page does not model.' }
+      ]
+    },
+    compute(values) {
+      const n = Math.round(values.poolSize);
+      const k = Math.round(values.picksCount);
+      const m = Math.round(values.matches);
+      const noAnswer = { matchProbabilityPercent: NaN, oddsOneInForMatch: NaN, jackpotOddsOneIn: NaN, totalCombinations: NaN };
+      if (!Number.isFinite(n) || !Number.isFinite(k) || n < 1 || k < 1 || k > n || k > PROBABILITY_MAX_N || m < 0 || m > k) return noAnswer;
+      const total = nCrBig(n, k);
+      if (total === 0n) return noAnswer;
+      const ways = nCrBig(k, m) * nCrBig(n - k, k - m);
+      const probability = Number(ways) / Number(total);
+      return {
+        matchProbabilityPercent: probability * 100,
+        oddsOneInForMatch: probability > 0 ? 1 / probability : NaN,
+        jackpotOddsOneIn: Number(total),
+        totalCombinations: Number(total)
       };
     }
   }

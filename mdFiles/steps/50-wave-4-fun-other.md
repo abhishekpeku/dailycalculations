@@ -156,7 +156,13 @@ Countdowns, Weather & Geography, Everyday Novelties), add `fun` to `categories.s
 
 ## Progress checklist
 
-- [ ] Batch 1 — Astrology & relationships (5), opens the category
+- [x] Batch 1 — Astrology & relationships (5), opens the category — DONE 2026-11-18, PR #132
+  - [x] Category scaffold: `data/calculators/fun.ts`, `index.ts` categories+order+spread, `lib/categoryTheme.ts`, `components/IconTile.tsx` sparkle icon
+  - [x] `zodiac-sign-calculator`
+  - [x] `chinese-zodiac-calculator`
+  - [x] `zodiac-compatibility-calculator`
+  - [x] `love-calculator` (FLAMES, custom type-C widget — `components/FlamesCalculator.tsx`, needed real name text input which the generic numeric `inputs`/`compute` schema can't express)
+  - [x] `name-numerology-calculator` (birth-date-only Life Path number — the cited method has no letter/name component, so no custom widget was needed despite the id)
 - [ ] Batch 2 — Probability & odds novelties (5)
 - [ ] Batch 3 — Calendar & countdown novelties (5)
 - [ ] Batch 4 — Weather & geography novelties (5)

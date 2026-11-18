@@ -1799,5 +1799,108 @@ export const businessCalculators: CalculatorConfig[] = [
       const arDays = values.netCreditSales > 0 ? (values.accountsReceivable / values.netCreditSales) * values.daysInPeriod : NaN;
       return { arDays, averageDailyCreditSales };
     }
+  },
+  {
+    id: 'invoice-late-payment-interest-calculator',
+    category: 'business',
+    glyph: 'LPI',
+    updatedAt: '2026-11-19',
+    aliases: ['late payment interest calculator', 'overdue invoice interest calculator', 'statutory interest calculator', 'late fee on invoice calculator'],
+    related: ['accounts-receivable-days-calculator', 'simple-interest-calculator', 'vat-calculator', 'business-valuation-calculator'],
+    title: 'Invoice Late-Payment Interest Calculator',
+    description: 'Find the interest owed on an overdue invoice from the amount, your own annual interest rate, and how many days late it is — enter the rate your contract or jurisdiction actually uses, since there is no single universal late-payment rate.',
+    example: 'A $10,000 invoice paid 45 days late at a 12% annual rate accrues about $147.95 in interest, for a total of $10,147.95 due.',
+    breakdown: {
+      headline: 'interest',
+      headlineLabel: 'Interest owed',
+      outputs: [
+        { id: 'interest', label: 'Interest owed', format: 'currency' },
+        { id: 'totalAmountDue', label: 'Total amount now due', format: 'currency' }
+      ],
+      groups: [{ title: 'Overdue invoice', inputs: ['overdueAmount', 'annualRatePercent', 'daysLate'] }],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'overdueAmount', label: 'Original invoice amount' },
+          { from: 'totalAmountDue', label: 'Total now due, with interest' }
+        ],
+        title: 'Original amount vs. total now due',
+        highlight: 1
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-19',
+      concept: {
+        title: 'How late-payment interest is calculated',
+        paragraphs: [
+          'When a customer pays an invoice after its due date, many contracts and some laws allow the seller to charge interest on the overdue amount for every day it stays unpaid. The calculation itself is simple daily-rate interest: an annual interest rate is divided down to a daily rate, then multiplied by how many days the payment ran late and by the amount still owed.',
+          'There is no single rate this calculator can default to, because late-payment interest rates are set very differently depending on the contract and the jurisdiction. The European Union’s Late Payment Directive, for example, gives businesses a statutory right to charge "statutory interest of at least 8% above the European Central Bank’s reference rate" on business-to-business invoices paid late, a rate that moves with the ECB’s own benchmark. In the United States, the federal Prompt Payment Act instead requires late-paying federal agencies to pay a specific published rate — 4.75% for the second half of 2026 — that is set by the Treasury and changes periodically. Neither of those is a stand-in for whatever rate a private commercial contract specifies, which is why this calculator asks for the rate directly rather than assuming one.',
+          'This page defaults to an illustrative 12% annual rate — equivalent to a common 1%-a-month contract late fee — purely as a round placeholder to show how the math works. Replace it with whatever rate your own contract, invoice terms, or local law actually specifies before relying on the result.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the overdue invoice amount, the annual interest rate that applies, and how many days late the payment is.',
+        steps: [
+          { name: 'Enter the overdue amount', text: 'The unpaid invoice total the interest will be calculated on.' },
+          { name: 'Enter your annual interest rate', text: 'Whatever rate your contract, invoice terms, or local statute actually specifies — not a figure this calculator assumes for you.' },
+          { name: 'Enter days late', text: 'How many days have passed since the due date.' },
+          { name: 'Read the interest owed', text: 'The daily-equivalent of the annual rate, applied to the amount for each day it has been late.' },
+          { name: 'Check the total now due', text: 'The original amount plus the interest, side by side in the comparison bars.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'The annual rate is converted to a daily rate by dividing by 365, then applied to the overdue amount for the number of days late.',
+        expression: 'interest = overdueAmount × (annualRatePercent ÷ 100) × (daysLate ÷ 365)\ntotalAmountDue = overdueAmount + interest',
+        terms: [
+          { symbol: 'annualRatePercent', meaning: 'The annual interest rate that applies — set by your own contract terms or the relevant law, not by this calculator.' },
+          { symbol: 'daysLate', meaning: 'Days elapsed since the invoice’s due date.' }
+        ],
+        note: 'Estimates only. This uses a flat 365-day year to convert the annual rate to a daily one; some contracts and jurisdictions use a 360-day banking-year convention instead, which gives a slightly larger daily rate for the same annual figure — see the watch-out below for exactly how much that changes the result. This is simple interest: it does not compound as more days pass.'
+      },
+      workedExample: {
+        intro: 'A $10,000 invoice is paid 45 days after its due date. The applicable annual interest rate is 12%. How much interest is owed?',
+        rows: [
+          { label: 'Daily-equivalent rate applied (12% ÷ 365 × 45 days)', value: '1.4795%' },
+          { label: 'Interest owed (10,000 × 0.12 × 45 ÷ 365)', value: '$147.95' },
+          { label: 'Total amount now due (10,000 + 147.95)', value: '$10,147.95' }
+        ],
+        result: 'Interest comes to $147.95, for a total of $10,147.95 due.',
+        explanation: 'Interest scales exactly in proportion to days late at a fixed rate and amount: paying 90 days late instead of 45 — exactly double the delay — exactly doubles the interest, to $295.89. Using a 360-day-year convention instead of 365 for the same 45 days would give $150.00 — about 1.4% more than the 365-day figure, since the same annual rate is being spread over fewer days.'
+      },
+      watchOut: [
+        { title: 'There is no universal late-payment rate', body: 'Contract terms, state law, and the EU’s own statutory mechanism (the European Central Bank’s reference rate plus at least 8 percentage points) all set late-payment rates differently. Enter the specific rate that actually applies to your invoice, not a borrowed figure from a different contract or country.' },
+        { title: '365-day vs. 360-day year conventions give slightly different answers', body: 'Some commercial and banking contracts spread an annual rate over a 360-day year instead of 365, which produces a slightly higher daily rate and therefore slightly more interest for the same days late — about 1.4% more in the worked example above. Check which convention your own contract specifies.' },
+        { title: 'This is simple interest, not compounding', body: 'The interest here is calculated once on the original overdue amount for the full number of days late. It does not add the first period’s interest back into the balance and then charge interest on that larger total, the way a compounding penalty clause would.' },
+        { title: 'Some contracts also add a flat late fee on top', body: 'Beyond interest, many invoice terms also charge a separate one-time late fee. This calculator only computes the interest component — add any flat fee your own terms specify separately.' },
+        { title: 'Government contracts may follow a different published rate entirely', body: 'The US federal Prompt Payment Act sets its own Treasury-published rate for late federal payments (4.75% for the second half of 2026) rather than leaving it to a private contract — look that figure up directly if the overdue invoice is to a federal agency.' }
+      ],
+      references: [
+        { label: 'U.S. Department of the Treasury, Bureau of the Fiscal Service, Prompt Payment', url: 'https://www.fiscal.treasury.gov/prompt-payment/' },
+        { label: 'European Commission, Late Payment — SME Strategy', url: 'https://single-market-economy.ec.europa.eu/smes/sme-strategy/late-payment_en' }
+      ]
+    },
+    inputs: [
+      { id: 'overdueAmount', label: 'Overdue invoice amount', type: 'currency', placeholder: '10000', defaultValue: 10000, step: 500, min: 0 },
+      { id: 'annualRatePercent', label: 'Annual interest rate', type: 'percent', placeholder: '12', defaultValue: 12, step: 0.5, min: 0 },
+      { id: 'daysLate', label: 'Days late', type: 'number', placeholder: '45', defaultValue: 45, step: 1, min: 0 }
+    ],
+    seo: {
+      title: 'Invoice Late-Payment Interest Calculator',
+      description: 'Calculate interest owed on a late invoice from the amount, your own annual rate, and days late. Free — you enter the rate, since there is no universal one.',
+      faq: [
+        { question: 'How do I calculate interest on a late invoice?', answer: 'Multiply the overdue amount by the annual interest rate (as a decimal), then by the number of days late divided by 365. A $10,000 invoice 45 days late at 12% owes 10,000 × 0.12 × 45 ÷ 365 = $147.95.' },
+        { question: 'What interest rate should I use?', answer: 'Whatever rate your own contract or invoice terms specify, or the rate set by the law that applies to your situation. There is no single universal late-payment rate — the EU’s statutory mechanism (ECB reference rate plus at least 8 points) and the US federal Prompt Payment Act’s published rate (4.75% for the second half of 2026) are two real but very different examples.' },
+        { question: 'Does this use a 360-day or 365-day year?', answer: 'This calculator uses 365 days. Some commercial contracts use a 360-day banking-year convention instead, which gives a slightly higher daily rate — about 1.4% more interest for the same annual rate and days late in the worked example here. Check your own contract’s stated convention.' },
+        { question: 'Is this simple or compound interest?', answer: 'Simple interest — calculated once on the original overdue amount for the full number of days late, not compounded period over period.' },
+        { question: 'Does doubling the days late double the interest?', answer: 'Yes, at a fixed rate and amount, interest is directly proportional to days late: 90 days late accrues exactly twice the interest of 45 days late.' },
+        { question: 'What if my contract also charges a flat late fee?', answer: 'Add it separately. This calculator only computes the interest component of a late payment, not any additional flat fee your terms may specify.' }
+      ]
+    },
+    compute(values) {
+      const interest = values.overdueAmount * (values.annualRatePercent / 100) * (values.daysLate / 365);
+      const totalAmountDue = values.overdueAmount + interest;
+      return { interest, totalAmountDue };
+    }
   }
 ];

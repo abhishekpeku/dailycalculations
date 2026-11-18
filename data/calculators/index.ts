@@ -592,7 +592,8 @@ export const calculatorOrder: string[] = [
   'vat-calculator',
   'self-employment-tax-estimator',
   '1099-contractor-rate-calculator',
-  'accounts-receivable-days-calculator'
+  'accounts-receivable-days-calculator',
+  'invoice-late-payment-interest-calculator'
 ];
 
 const rank = (id: string) => {

@@ -7,7 +7,26 @@ Spec: `mdFiles/instructions.md` (§ references below point into it).
 Protocol: `CLAUDE.md` → "Working protocol".
 Step files: `mdFiles/steps/NN-<name>.md`. All Markdown lives in `mdFiles/` — see CLAUDE.md.
 
-Last updated: 2026-11-18 · **Step 61 batch 9 (`education`, PR #128) DONE — Step 61 (deepen every
+Last updated: 2026-11-18 · **Step 25 (`tech` category, new) DONE** — opened the category (cyan/
+`chip` IconTile color+icon) with `ip-subnet-calculator`, `iban-calculator` and
+`password-strength-checker`. Built in parallel with step 50 batch 3 (different category file, no
+overlap); go-ahead per D23. `ip-subnet-calculator` is a breakdown widget; display needed a new
+`ipAddress` BreakdownFormat (`lib/breakdown.ts`) to render a computed 32-bit integer as
+dotted-decimal, since no existing format fit — verified against RFC 4632's own worked examples
+(including the /24 "legacy Class C" row) plus the /31 (RFC 3021) and /32 host-route exceptions.
+`iban-calculator` and `password-strength-checker` are both **custom type-C widgets** — the step
+file only flagged password as needing one, but IBAN needed free text too: a long IBAN's
+digit-substituted number exceeds JS-safe-integer precision, and splitting it into numeric fields
+would also drop a BBAN's significant leading zeros, so it validates/generates ISO 7064 MOD 97-10
+check digits via free text, verified against Wikipedia's own GB82 WEST worked example. Password
+strength scores Shannon entropy (log2(poolSize) × length) and quotes NIST SP 800-63B's current
+length-over-complexity guidance directly rather than implying more symbol types always wins — both
+widgets are entirely client-side, nothing typed is sent or stored. `data-storage-converter`
+confirmed already shipped under `measurements`, not rebuilt. `npm test` 1614/1614 (snapshot diff
+additive-only), lint clean, `npm run build` 502 pages. Branch `step/25-tech-category`. Full detail
+in the step-25 table row below and `mdFiles/steps/25-tech-category.md`'s Progress checklist.
+
+Previous: **Step 61 batch 9 (`education`, PR #128) DONE — Step 61 (deepen every
 category under 10 calculators to ≥10) is now fully complete**, pending only the final merge of
 PR #128 (`education`) and PR #129 (`text`, batch 8, built by a separate agent). A prior agent on
 batch 9 hit a session rate limit after committing 8 of its 9 planned calculators; a resuming agent
@@ -259,7 +278,7 @@ is why 12-15 run after it.
 |---|---|---|---|---|
 | 23 | `bmr-calculator` | TODO | Cheapest win — the formula already exists inside `tdee-calculator`. Mifflin-St Jeor + Harris-Benedict side by side. Cross-link with TDEE. | §5.1 |
 | 24 | `math` category | TODO | **Add the `math` entry to `categories` here** (step 16 deferred it — it would have shipped empty). `percentage-calculator` (highest volume of the lot, and the homepage already claims it with no page behind it), `scientific-calculator`, `fraction-calculator`, `average-calculator`, `ratio-calculator`. | §5.1, §1.5 N |
-| 25 | `tech` category | IN PROGRESS 2026-11-18 | **Add the `tech` entry to `categories` here** (step 16 deferred it — it would have shipped empty). Scoped in `mdFiles/steps/25-tech-category.md`. `data-storage-converter` already exists (shipped under `measurements`) — not rebuilt. New: `ip-subnet-calculator`, `iban-calculator`, `password-strength-checker` (custom type-C widget, runs client-side only, never transmits what's typed). Build for authority, not ad revenue — this audience blocks ads. Launched as a background agent in parallel with step 50 batch 3 (different category file, no overlap). Go-ahead per D23. | §5.1, §5.4, §1.5 O |
+| 25 | `tech` category | **DONE** 2026-11-18 | Opened the `tech` category (cyan/`chip` IconTile color+icon, new) with 3 calculators: `ip-subnet-calculator` (breakdown widget; new `ipAddress` BreakdownFormat added to `lib/breakdown.ts` to render a computed 32-bit integer as dotted-decimal; verified against RFC 4632's own worked examples plus the /31 (RFC 3021) and /32 host-route exceptions), `iban-calculator` and `password-strength-checker` (both **custom type-C widgets**, not originally called out as needing one beyond password — IBAN needed free text too, since a long IBAN's digit-substituted number exceeds JS-safe-integer precision and numeric fields would have dropped a BBAN's significant leading zeros; registered in `page.tsx`'s `isCustomWidget`, `lib/howItWorks.ts`'s `SPECIAL_WIDGETS`, and both spec files' custom-tool lists, same as `love-calculator`). `data-storage-converter` confirmed already existing under `measurements`, not rebuilt. `npm test` 1614/1614 (snapshot diff additive-only), lint clean, `npm run build` 502 pages. PR: branch `step/25-tech-category`. | §5.1, §5.4, §1.5 O |
 | 26 | `text` + `education` additions | TODO | `word-counter`; `grade-calculator`, `final-grade-calculator`, `weighted-average-calculator`, `study-time-calculator`. Takes `education` from 1 member to 5. | §1.2, §1.5 K/M |
 
 ### Phase G — Hygiene

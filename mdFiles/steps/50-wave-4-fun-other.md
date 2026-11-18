@@ -176,7 +176,11 @@ Countdowns, Weather & Geography, Everyday Novelties), add `fun` to `categories.s
   - [x] `christmas-countdown-calculator` (live days/hours/minutes + shopping-weekday/weekend split, ISO 8601-cited methodology, closed-form weekday count)
   - [x] `new-years-countdown-calculator` (live countdown + hours-behind-Kiribati/UTC+14 figure; timezone offset is an explicit input, not browser-detected, so compute() stays deterministic)
 - [ ] Batch 4 — Weather & geography novelties (5)
-- [ ] Batch 5 — Everyday gadget/misc novelties (4)
+- [x] Batch 5 — Everyday gadget/misc novelties — DONE 2026-11-18, branch `step/50-fun-other-batch5`, PR #136
+  - [x] `screen-size-calculator` (diagonal + aspect ratio + resolution -> width/height/area/PPI, Pythagorean derivation, cited to Wikipedia's Pixel density and Aspect ratio (image) articles)
+  - [x] `aspect-ratio-calculator` (solver: width<->height for any ratio, companion to screen-size-calculator)
+  - [x] `uptime-percentage-calculator` (uptime % -> downtime per day/month/year, standard nines reference table, cited to Wikipedia's High availability article)
+  - Built exactly 3, not 4: per the step file's own header-count-mismatch note, no 4th idea was added just to round out the batch. Considered and rejected as thin/out of scope for this bucket: a generic "pixel-to-inch/cm converter" (duplicates `length-converter`'s role once combined with screen-size-calculator), a "frame rate / shutter speed" calculator (hobbyist photography math, same exclusion logic as the step's already-excluded Photo & Video niche), and a "file size / download time" calculator (closer to the separately-scoped `tech` category than "everyday novelty"). None were built.
 - [ ] Batch 6 — Sub-grouping retrofit (`group` field + `GROUPED_CATEGORIES`)
 - [ ] STATUS.md updated with a final per-category summary
 

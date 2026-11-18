@@ -305,6 +305,37 @@ function weekdayWeekendCount(startMs: number, endMs: number): { weekdays: number
   return { weekdays, weekendDays };
 }
 
+// Common display/image aspect ratios, width:height (Wikipedia, "Aspect ratio (image)", cited
+// below). Shared by screen-size-calculator's diagonal -> width/height split (a preset menu) and
+// quoted as guidance in aspect-ratio-calculator's content (that one takes the two ratio numbers
+// as free entry, since a SolverVariable has no `options` menu field).
+const ASPECT_RATIOS: { value: number; label: string; w: number; h: number }[] = [
+  { value: 0, label: '16:9 (most TVs, laptops and monitors)', w: 16, h: 9 },
+  { value: 1, label: '16:10 (some laptops and monitors)', w: 16, h: 10 },
+  { value: 2, label: '4:3 (older TVs and monitors)', w: 4, h: 3 },
+  { value: 3, label: '21:9 (ultrawide monitors)', w: 21, h: 9 },
+  { value: 4, label: '3:2 (many tablets and some laptops)', w: 3, h: 2 },
+  { value: 5, label: '1:1 (square)', w: 1, h: 1 }
+];
+
+// Uptime "nines" table: downtime per year/month/day as a function of the uptime percentage, by
+// plain arithmetic over a calendar-average year (Wikipedia, "High availability", "Percentage
+// calculation", cited below) -- shared by the reference table and the live calculator so neither
+// one types a result by hand. 365.25 is the same Julian-year average measurements.ts and time.ts
+// already use elsewhere on this site.
+const UPTIME_YEAR_DAYS = 365.25;
+const UPTIME_MONTH_DAYS = UPTIME_YEAR_DAYS / 12;
+function uptimeDowntime(uptimePercent: number) {
+  const downFraction = 1 - uptimePercent / 100;
+  return {
+    perYearHours: downFraction * UPTIME_YEAR_DAYS * 24,
+    perMonthMinutes: downFraction * UPTIME_MONTH_DAYS * 24 * 60,
+    perDaySeconds: downFraction * 24 * 3600
+  };
+}
+// The four "nines" the step asked for, used to build the reference table below.
+const STANDARD_NINES = [99, 99.9, 99.99, 99.999];
+
 // Lunar phase approximation (Wikipedia, "Lunar phase": age mod the mean synodic month). Reference
 // instant is the verified new moon of the August 11, 1999 total solar eclipse, 11:04:09 UTC
 // (Wikipedia, "Solar eclipse of August 11, 1999") -- cross-checked in the scratch script against
@@ -2581,6 +2612,351 @@ export const funCalculators: CalculatorConfig[] = [
       const daysToNextAnniversary = Math.round((nextAnniversary.getTime() - today.getTime()) / 86400000);
 
       return { years, months, days, totalDays, nextMilestoneDays, nextMilestoneDateMs, daysToNextAnniversary, nextAnniversaryDateMs: nextAnniversary.getTime() };
+    }
+  },
+  {
+    id: 'screen-size-calculator',
+    category: 'fun',
+    glyph: 'TV',
+    updatedAt: '2026-11-18',
+    aliases: ['screen size calculator', 'tv size calculator', 'monitor size calculator', 'screen dimensions calculator', 'pixel density calculator', 'ppi calculator'],
+    related: ['aspect-ratio-calculator', 'length-converter', 'area-converter', 'centimeters-to-inches-converter'],
+    title: 'Screen Size Calculator',
+    description: 'Turn a TV or monitor\'s advertised diagonal size and aspect ratio into its actual width, height, screen area, and pixel density (PPI) for a given resolution.',
+    example: 'A 55-inch 16:9 TV at 3840×2160 (4K UHD) is about 47.9 in wide by 27.0 in tall, with a pixel density of roughly 80 PPI.',
+    breakdown: {
+      headline: 'widthIn',
+      headlineLabel: 'Screen width',
+      outputs: [
+        { id: 'widthIn', label: 'Width', dimension: 'length', unit: 'in' },
+        { id: 'heightIn', label: 'Height', dimension: 'length', unit: 'in' },
+        { id: 'areaSqIn', label: 'Screen area', dimension: 'area', unit: 'in2' },
+        { id: 'ppi', label: 'Pixel density (PPI)', format: 'number' }
+      ],
+      groups: [
+        { title: 'Screen size', inputs: ['diagonalIn', 'aspectRatio'] },
+        { title: 'Resolution', inputs: ['resWidth', 'resHeight'] }
+      ],
+      visual: { type: 'compareBars', bars: [{ from: 'widthIn', label: 'Width' }, { from: 'heightIn', label: 'Height' }], title: 'Width vs. height', highlight: 0 }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What a diagonal screen size actually measures',
+        paragraphs: [
+          'A TV or monitor\'s advertised size -- "55-inch", "27-inch" -- is always the diagonal of the viewable screen, corner to corner, never the width or the height on its own. Two screens with the same diagonal can still look different sizes side by side, because the diagonal alone does not fix the width and height individually -- that also depends on the aspect ratio, the proportion between width and height (expressed as two numbers, like 16:9).',
+          "Width and height come from the diagonal and the aspect ratio through the Pythagorean theorem: a rectangle's diagonal is the hypotenuse of a right triangle whose legs are its width and height, so diagonal² = width² + height². Knowing the ratio between width and height turns that one equation into two -- it fixes a single width and height, not just their relationship.",
+          "Pixel density -- pixels per inch, PPI -- is a separate figure: how tightly packed the screen's pixels are, found the same Pythagorean way but with pixels instead of inches. A phone screen with a modest diagonal but a huge resolution packs far more pixels into each inch than a TV with the same resolution stretched over a much bigger diagonal, which is why PPI, not resolution alone, is what determines how sharp text and images look up close."
+        ]
+      },
+      howTo: {
+        intro: 'Enter the diagonal size, pick the aspect ratio, and enter the resolution to get the actual width, height, area, and pixel density.',
+        steps: [
+          { name: 'Enter the diagonal size', text: 'The size printed on the box or spec sheet -- always the corner-to-corner diagonal, in inches.' },
+          { name: 'Pick the aspect ratio', text: 'Most TVs, laptops, and monitors today are 16:9. Pick the one that matches your screen, or the closest available option.' },
+          { name: 'Enter the resolution', text: 'The horizontal and vertical pixel counts from the spec sheet, e.g. 3840 × 2160 for 4K UHD.' },
+          { name: 'Read the results', text: 'Width, height, and screen area come from the diagonal and aspect ratio; pixel density (PPI) comes from the resolution and diagonal together.' }
+        ],
+        outro: 'Everything is calculated in your browser from the Pythagorean formulas below. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Width and height split a known diagonal using the aspect ratio; PPI applies the same Pythagorean idea to pixels instead of inches.',
+        expression:
+          'hyp = √(ratioW² + ratioH²)\nwidth = diagonal × ratioW ÷ hyp\nheight = diagonal × ratioH ÷ hyp\narea = width × height\nPPI = √(resW² + resH²) ÷ diagonal',
+        terms: [
+          { symbol: 'diagonal', meaning: "The screen's advertised corner-to-corner size, in inches." },
+          { symbol: 'ratioW : ratioH', meaning: 'The aspect ratio\'s two numbers, e.g. 16 and 9 for a 16:9 screen.' },
+          { symbol: 'resW, resH', meaning: 'The horizontal and vertical resolution, in pixels, from the spec sheet.' },
+          { symbol: 'PPI', meaning: "Pixels per inch -- the diagonal pixel count (found the same Pythagorean way, from the resolution) divided by the diagonal size in inches." }
+        ],
+        note: 'This gives the viewable screen\'s own dimensions. It does not include the bezel (frame) around the screen, so a monitor\'s total footprint is slightly larger on every side.'
+      },
+      workedExample: {
+        intro: 'A 55-inch TV with a 16:9 aspect ratio and a 3840×2160 (4K UHD) resolution.',
+        rows: [
+          { label: 'hyp = √(16² + 9²)', value: '√337 ≈ 18.3576' },
+          { label: 'width = 55 × 16 ÷ 18.3576', value: '≈ 47.94 in' },
+          { label: 'height = 55 × 9 ÷ 18.3576', value: '≈ 26.96 in' },
+          { label: 'area = 47.94 × 26.96', value: '≈ 1,293 in²' },
+          { label: 'diagonal pixels = √(3840² + 2160²)', value: '≈ 4,405.8 px' },
+          { label: 'PPI = 4,405.8 ÷ 55', value: '≈ 80.1' }
+        ],
+        result: '≈ 47.9 in × 27.0 in, 1,293 in² of screen, about 80.1 PPI',
+        explanation: 'The 16:9 ratio splits the 55-inch diagonal into a width and height whose ratio is exactly 16:9 and whose Pythagorean sum matches 55 inches. The resolution is fixed by the panel regardless of screen size, so dividing the (much larger) diagonal pixel count by the (much smaller) diagonal in inches gives a PPI far lower than, say, a phone\'s.'
+      },
+      watchOut: [
+        { title: 'The diagonal is the viewable screen only', body: 'It does not include the bezel around the panel, so the physical product -- and the wall space or desk space it needs -- is a little larger on every side than the width and height calculated here.' },
+        { title: 'The aspect ratio must match the real screen', body: 'Picking the wrong ratio (e.g. 16:9 for an older 4:3 monitor) gives a width and height that are both wrong, even though the diagonal you entered was correct -- the diagonal alone does not determine the ratio.' },
+        { title: 'PPI is not the same as DPI', body: 'PPI (pixels per inch) describes a display\'s pixel density. DPI (dots per inch) describes a printer\'s dot density. The two measure physically different things and are not interchangeable, even though both are sometimes used loosely in casual conversation.' },
+        { title: 'Advertised sizes are sometimes rounded', body: 'A screen advertised as "27-inch" is occasionally closer to 27.0 or 27.3 inches once actually measured, depending on the manufacturer\'s rounding convention -- small enough to rarely matter, but it means these results are only as accurate as the diagonal you enter.' }
+      ],
+      references: [
+        { label: 'Wikipedia, Pixel density (PPI formula: diagonal resolution via the Pythagorean theorem, divided by diagonal size)', url: 'https://en.wikipedia.org/wiki/Pixel_density' },
+        { label: 'Wikipedia, Aspect ratio (image) (common display and image aspect ratios)', url: 'https://en.wikipedia.org/wiki/Aspect_ratio_(image)' }
+      ]
+    },
+    inputs: [
+      { id: 'diagonalIn', label: 'Screen diagonal size (in)', type: 'number', placeholder: '55', defaultValue: 55, step: 0.1, min: 1 },
+      {
+        id: 'aspectRatio',
+        label: 'Aspect ratio',
+        type: 'number',
+        placeholder: '0',
+        defaultValue: 0,
+        step: 1,
+        min: 0,
+        options: ASPECT_RATIOS.map((r) => ({ value: r.value, label: r.label }))
+      },
+      { id: 'resWidth', label: 'Horizontal resolution (px)', type: 'number', placeholder: '3840', defaultValue: 3840, step: 1, min: 1 },
+      { id: 'resHeight', label: 'Vertical resolution (px)', type: 'number', placeholder: '2160', defaultValue: 2160, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Screen Size Calculator – TV/Monitor Width, Height & PPI',
+      description: 'Convert a TV or monitor\'s diagonal size and aspect ratio into its actual width, height, and screen area, plus pixel density (PPI) for any resolution.',
+      faq: [
+        { question: 'How do I calculate screen width and height from the diagonal?', answer: 'Split the diagonal using the aspect ratio and the Pythagorean theorem: width = diagonal × ratioW ÷ √(ratioW² + ratioH²), and height the same way with ratioH. A 55-inch 16:9 screen works out to about 47.9 in wide by 27.0 in tall.' },
+        { question: 'What does PPI mean?', answer: 'Pixels per inch -- how densely packed a screen\'s pixels are. It is the diagonal pixel count (√(horizontal² + vertical²)) divided by the diagonal size in inches. A 55-inch 4K (3840×2160) TV works out to about 80.1 PPI.' },
+        { question: 'Why do a 24-inch and a 27-inch monitor at the same resolution look different?', answer: 'Spreading the same pixel count over a larger diagonal lowers the pixel density. A 24-inch 1920×1080 monitor is about 91.8 PPI, while a 27-inch monitor at the sharper 2560×1440 resolution is about 108.8 PPI -- denser despite the larger screen, because the resolution increased more than the size did.' },
+        { question: 'Is the diagonal size the same as the screen\'s actual width or height?', answer: 'No. The diagonal is the corner-to-corner measurement, always longer than either the width or the height on its own. A 55-inch 16:9 screen is about 47.9 inches wide and 27.0 inches tall -- neither one is 55 inches.' },
+        { question: 'Does the diagonal measurement include the bezel?', answer: 'No -- it is the viewable screen only, not the frame (bezel) around it. The physical product is slightly larger on every side than the width and height this calculator gives.' },
+        { question: 'What aspect ratio do most TVs and monitors use?', answer: '16:9 is standard for the large majority of TVs, laptops, and monitors sold today. Older TVs and monitors used 4:3, and some ultrawide monitors use 21:9.' },
+        { question: 'Is PPI the same as DPI?', answer: 'No. PPI (pixels per inch) describes a screen\'s pixel density; DPI (dots per inch) describes a printer\'s dot density. They measure different things, even though the terms are sometimes used loosely as if interchangeable.' }
+      ]
+    },
+    compute(values) {
+      const diagonalIn = values.diagonalIn;
+      const resWidth = values.resWidth;
+      const resHeight = values.resHeight;
+      const ratio = ASPECT_RATIOS.find((r) => r.value === Math.round(values.aspectRatio)) ?? ASPECT_RATIOS[0];
+      if (!Number.isFinite(diagonalIn) || diagonalIn <= 0 || !Number.isFinite(resWidth) || !Number.isFinite(resHeight)) {
+        return { widthIn: NaN, heightIn: NaN, areaSqIn: NaN, ppi: NaN };
+      }
+      const hyp = Math.sqrt(ratio.w * ratio.w + ratio.h * ratio.h);
+      const widthIn = (diagonalIn * ratio.w) / hyp;
+      const heightIn = (diagonalIn * ratio.h) / hyp;
+      const areaSqIn = widthIn * heightIn;
+      const diagPx = Math.sqrt(resWidth * resWidth + resHeight * resHeight);
+      const ppi = diagPx / diagonalIn;
+      return { widthIn, heightIn, areaSqIn, ppi };
+    }
+  },
+  {
+    id: 'aspect-ratio-calculator',
+    category: 'fun',
+    glyph: 'w:h',
+    updatedAt: '2026-11-18',
+    aliases: ['aspect ratio calculator', 'ratio calculator for photos', '16:9 calculator', 'image crop ratio calculator', 'video aspect ratio calculator', 'width height ratio calculator'],
+    related: ['screen-size-calculator', 'length-converter', 'area-converter', 'centimeters-to-inches-converter'],
+    title: 'Aspect Ratio Calculator',
+    description: 'Enter one width or height and a target ratio -- 16:9, 4:3, 21:9, 3:2, or any custom ratio -- and solve for the other dimension, for screens, photos, or video crops.',
+    example: 'Cropping a photo to a 3:2 ratio at 24 inches wide needs a height of exactly 16 inches.',
+    solver: {
+      defaultTarget: 'height',
+      variables: [
+        { id: 'width', label: 'Width', symbol: 'w', dimension: 'length', defaultValue: 24, defaultUnit: 'in' },
+        { id: 'height', label: 'Height', symbol: 'h', dimension: 'length', defaultValue: 16, defaultUnit: 'in' },
+        { id: 'ratioW', label: 'Ratio width part', symbol: 'rW', dimension: 'count', defaultValue: 3, defaultUnit: 'count', fixed: true },
+        { id: 'ratioH', label: 'Ratio height part', symbol: 'rH', dimension: 'count', defaultValue: 2, defaultUnit: 'count', fixed: true }
+      ],
+      solve: {
+        height: ({ width, ratioW, ratioH }) => (ratioW === 0 ? NaN : (width * ratioH) / ratioW),
+        width: ({ height, ratioW, ratioH }) => (ratioH === 0 ? NaN : (height * ratioW) / ratioH)
+      },
+      outputs: [{ id: 'areaOutput', label: 'Area', dimension: 'area', unit: 'in2', compute: (si) => si.width * si.height }],
+      visuals: [{ type: 'compareBars', bars: [{ from: 'width', label: 'Width' }, { from: 'height', label: 'Height' }], title: 'Width vs. height' }]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What an aspect ratio is',
+        paragraphs: [
+          'An aspect ratio is the proportion between a rectangle\'s width and height, written as two numbers separated by a colon -- width first, height second. 16:9 means the width is 16 units for every 9 units of height, at any size: a 1920×1080 image and a 160×90 thumbnail are both exactly 16:9.',
+          'Screens, photos, and video all settle on a small set of common ratios -- 16:9 for most TVs and monitors, 4:3 for older screens, 3:2 for many camera sensors and tablets, 21:9 for ultrawide monitors, 1:1 for a square crop -- but any two positive numbers define a valid ratio, including ones a camera or display manufacturer never used.',
+          'Given one dimension and a ratio, the other dimension follows directly: multiply or divide by the ratio\'s two numbers. This calculator does that in either direction -- enter a width to get the matching height, or a height to get the matching width.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the ratio\'s two numbers, then the one dimension you know; the calculator fills in the other.',
+        steps: [
+          { name: 'Enter the ratio', text: 'The two numbers of your target ratio, e.g. 16 and 9 for 16:9, or 3 and 2 for 3:2. These two fields are always inputs, never calculated.' },
+          { name: 'Enter the dimension you know', text: 'Type your known width or height. The other one, marked auto, fills in as you type.' },
+          { name: 'Switch which one is calculated', text: 'To solve for the other dimension instead, type into the auto field -- it becomes an input, and the one you left alone longest becomes the new calculated field.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 24 in becomes 61.0 cm instead of silently turning into 24 cm.' },
+          { name: 'Read the area and share', text: 'The area of the resulting rectangle appears underneath. Share result copies a link with your exact values.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Rearranging "width is to height as ratioW is to ratioH" gives a formula for whichever dimension you need.',
+        expression: 'height = width × (ratioH ÷ ratioW)\nwidth = height × (ratioW ÷ ratioH)',
+        terms: [
+          { symbol: 'width, height', meaning: 'The rectangle\'s two dimensions, in whatever length unit you choose -- inches, centimeters, or pixels treated as a plain number.' },
+          { symbol: 'ratioW : ratioH', meaning: 'Your target ratio\'s two numbers -- the width part first, then the height part, e.g. 16 and 9 for 16:9.' }
+        ],
+        note: 'Common ratios: 16:9 and 16:10 (most screens), 4:3 (older screens), 3:2 (many camera sensors), 21:9 (ultrawide monitors), 1:1 (square). Any two positive numbers work as a custom ratio.'
+      },
+      workedExample: {
+        intro: 'Cropping a 24-inch-wide photo to a 3:2 ratio -- what height keeps that exact proportion?',
+        rows: [
+          { label: 'Width', value: '24 in' },
+          { label: 'Ratio', value: '3 : 2' },
+          { label: 'height = 24 × (2 ÷ 3)', value: '16 in' }
+        ],
+        result: 'height = 16 in (area = 384 in²)',
+        explanation: '24 ÷ 3 = 8, and 8 × 2 = 16 -- the height that keeps width:height exactly equal to 3:2. Going the other direction from a 16-inch height recovers the original 24-inch width exactly: 16 × (3 ÷ 2) = 24.'
+      },
+      watchOut: [
+        { title: 'Order matters: it is width:height, not height:width', body: 'Entering the ratio backwards (9 and 16 instead of 16 and 9) swaps which dimension comes out larger -- always enter the width number first, then the height number, matching how the ratio is written.' },
+        { title: '"21:9" ultrawide monitors are not always a mathematically exact 21:9', body: 'A common ultrawide resolution, 3440×1440, has an actual ratio of 3440 ÷ 1440 ≈ 2.389 -- not 21 ÷ 9 ≈ 2.333. "21:9" is the marketing name for this class of ultrawide screen; its real proportion is closer to the 2.39:1 cinema standard. Enter a screen\'s own resolution as the ratio for an exact result, rather than assuming the marketing name is exact.' },
+        { title: 'This calculator does not know the diagonal size', body: 'It only relates width and height to each other, not to a screen\'s advertised diagonal measurement -- for a TV or monitor, use the companion screen size calculator instead, which also takes a diagonal size.' },
+        { title: 'Real-world cuts are often rounded', body: 'A printed photo or cut material is usually trimmed to the nearest practical unit (e.g. the nearest 1/8 inch), so an exact mathematical result like 16.0000 in may come out very slightly different once physically cut.' }
+      ],
+      references: [
+        { label: 'Wikipedia, Aspect ratio (image) (definition and common display/image ratios)', url: 'https://en.wikipedia.org/wiki/Aspect_ratio_(image)' }
+      ]
+    },
+    inputs: [
+      { id: 'width', label: 'Width (m)', type: 'number', placeholder: '0.6096', defaultValue: 0.6096, step: 0.001, min: 0 },
+      { id: 'ratioW', label: 'Ratio width part', type: 'number', placeholder: '3', defaultValue: 3, step: 0.01, min: 0 },
+      { id: 'ratioH', label: 'Ratio height part', type: 'number', placeholder: '2', defaultValue: 2, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Aspect Ratio Calculator – Solve Width or Height',
+      description: 'Enter one dimension and a ratio like 16:9, 4:3, 21:9 or 3:2, and solve for the other -- for screens, photo crops, or video, with any custom ratio too.',
+      faq: [
+        { question: 'How do I calculate height from width and an aspect ratio?', answer: 'Multiply the width by (ratioH ÷ ratioW). At a 16:9 ratio, a 1920-wide image needs a height of 1920 × (9 ÷ 16) = 1,080.' },
+        { question: 'How do I calculate width from height and an aspect ratio?', answer: 'Multiply the height by (ratioW ÷ ratioH). At a 4:3 ratio, a 768-tall image needs a width of 768 × (4 ÷ 3) = 1,024.' },
+        { question: 'What is a 3:2 aspect ratio in inches?', answer: 'Any width and height whose ratio is exactly 3:2 -- for example 24 in × 16 in, or 6 in × 4 in. A 24-inch-wide photo cropped to 3:2 needs a height of 16 inches.' },
+        { question: 'Is a 3440×1440 ultrawide monitor exactly 21:9?', answer: 'Not quite. 3440 ÷ 1440 ≈ 2.389, while an exact 21:9 ratio is 21 ÷ 9 ≈ 2.333. "21:9" is the marketing name for this class of ultrawide monitor; its true proportion is closer to the 2.39:1 cinema standard.' },
+        { question: 'What is the difference between 16:9 and 16:10?', answer: 'Both share the same width number, but 16:10 is relatively taller -- at the same width, a 16:10 rectangle is 10% taller than a 16:9 one (height = width × 10/16 versus width × 9/16).' },
+        { question: 'Can I use a custom aspect ratio that isn\'t a standard screen size?', answer: 'Yes -- enter any two positive numbers as the ratio. The formula works the same way whether the ratio is a common one like 16:9 or a custom crop ratio you choose yourself.' }
+      ]
+    },
+    compute(values) {
+      if (values.ratioW === 0) return { height: NaN };
+      return { height: (values.width * values.ratioH) / values.ratioW };
+    }
+  },
+  {
+    id: 'uptime-percentage-calculator',
+    category: 'fun',
+    glyph: '9s',
+    updatedAt: '2026-11-18',
+    aliases: ['uptime percentage calculator', 'uptime calculator', 'nines uptime calculator', 'sla uptime calculator', 'downtime calculator', 'allowed downtime calculator'],
+    related: ['percentage-calculator', 'percent-change-calculator', 'date-difference-calculator', 'ip-subnet-calculator'],
+    title: 'Uptime Percentage Calculator',
+    description: 'Convert an uptime percentage -- the "number of nines" in an SLA -- into the actual allowed downtime per day, month, and year, against the standard nines table.',
+    example: 'A service with 99.9% uptime ("three nines") can be down for about 8.77 hours a year, or roughly 43.83 minutes in an average month.',
+    breakdown: {
+      headline: 'perYearHours',
+      headlineLabel: 'Allowed downtime per year',
+      outputs: [
+        { id: 'perYearHours', label: 'Per year', dimension: 'time', unit: 'h' },
+        { id: 'perMonthMinutes', label: 'Per month (30.44-day average)', dimension: 'time', unit: 'min' },
+        { id: 'perDaySeconds', label: 'Per day', dimension: 'time', unit: 's' }
+      ],
+      groups: [{ title: 'Uptime target', inputs: ['uptimePercent'] }],
+      visual: {
+        type: 'logScale',
+        value: 'perYearHours',
+        min: -4,
+        max: 3,
+        ticks: ['10⁻⁴', '10⁻³', '10⁻²', '10⁻¹', '10⁰', '10¹', '10²', '10³'],
+        benchmarks: [
+          { label: '99% ("two nines")', value: 87.66 },
+          { label: '99.9% ("three nines")', value: 8.766 },
+          { label: '99.99% ("four nines")', value: 0.8766 },
+          { label: '99.999% ("five nines")', value: 0.08766 }
+        ],
+        title: 'Where your target sits on the standard nines table',
+        valueLabel: 'Your allowed downtime per year'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What an uptime percentage, and "the nines", mean',
+        paragraphs: [
+          'Uptime is the share of a time period a system is working rather than down, usually quoted as a percentage close to 100% -- and the number of consecutive 9s in that percentage is shorthand for how strict the target is: 99% is "two nines", 99.9% is "three nines", 99.999% is "five nines". Cloud providers and other online services commonly write their service-level agreements (SLAs) this way.',
+          'Because 100% minus the uptime percentage is the allowed downtime as a fraction of the period, each extra nine divides the allowed downtime by about ten. Moving from 99% to 99.9% does not just sound stricter -- it cuts the allowed downtime by a full order of magnitude, from roughly 3.65 days a year down to about 8.77 hours.',
+          'This calculator takes an uptime percentage and converts it into the actual downtime it allows per day, per (average) month, and per year, the same arithmetic behind the standard "nines" table used across the industry.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the uptime percentage from an SLA or target, and read the allowed downtime in three different timeframes.',
+        steps: [
+          { name: 'Enter the uptime percentage', text: 'The target or promised uptime, e.g. 99.9 for "three nines". Any value from 0 to 100 works, not just a round number of nines.' },
+          { name: 'Read the per-year figure', text: 'The headline number: how much downtime that percentage allows across a full calendar-average year.' },
+          { name: 'Read the per-month and per-day figures', text: 'The same allowance, scaled down to an average month and a single day, for comparing against a shorter outage.' },
+          { name: 'Compare against the standard nines', text: 'The scale below plots your figure against the four standard nines (99%, 99.9%, 99.99%, 99.999%) so you can see how it compares.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'The allowed downtime is simply the "missing" percentage applied to the length of the period.',
+        expression:
+          'downFraction = 1 − uptimePercent ÷ 100\nperYear = downFraction × 365.25 days\nperMonth = downFraction × (365.25 ÷ 12) days\nperDay = downFraction × 24 hours',
+        terms: [
+          { symbol: 'uptimePercent', meaning: 'The promised or target uptime, e.g. 99.9 for 99.9%.' },
+          { symbol: 'downFraction', meaning: 'The fraction of the period the system is allowed to be down -- 0.001 for 99.9% uptime.' },
+          { symbol: '365.25 days', meaning: 'A calendar-average year, accounting for leap years (the same average used elsewhere on this site) -- not a specific 365- or 366-day calendar year.' }
+        ],
+        note: 'This is a mathematical allowance, not a guarantee about how outages are actually distributed -- see the watch-out notes below. Real SLAs sometimes define the measurement period or exclude scheduled maintenance differently; check the actual contract for anything that matters financially.'
+      },
+      workedExample: {
+        intro: 'What does a 99.9% ("three nines") uptime target allow?',
+        rows: [
+          { label: 'Uptime', value: '99.9%' },
+          { label: 'downFraction = 1 − 0.999', value: '0.001' },
+          { label: 'Per year = 0.001 × 365.25 × 24 h', value: '≈ 8.77 hours' },
+          { label: 'Per month = 0.001 × 30.4375 × 24 × 60 min', value: '≈ 43.83 minutes' },
+          { label: 'Per day = 0.001 × 24 × 3,600 s', value: '≈ 86.4 seconds' }
+        ],
+        result: '≈ 8.77 hours a year, ≈ 43.83 minutes a month, ≈ 86.4 seconds a day',
+        explanation: 'Each figure is the same 0.1% downtime allowance applied to a different period length. The year figure is the one most SLAs are really judged against, since a single short outage can look large against a day but is usually small against a full year.'
+      },
+      watchOut: [
+        { title: 'This is an average allowance, not a guarantee about outage length', body: 'Meeting a 99.9% target over a full year does not mean outages are short and frequent -- a single 8.77-hour outage uses up the entire year\'s allowance just as much as many small ones would.' },
+        { title: 'Real SLAs often define "downtime" more narrowly', body: 'Many service agreements exclude scheduled maintenance windows, or measure uptime over a billing month rather than a calendar month, which changes the real figure. Check the specific contract rather than assuming this generic calculation matches it exactly.' },
+        { title: 'This uses a calendar-average year and month', body: 'The year is 365.25 days and the month is that divided by 12 (≈30.4375 days) -- averages that account for leap years, not a specific calendar year (365 or 366 days) or a specific calendar month (28-31 days).' },
+        { title: 'No real system is guaranteed to be at 100% forever', body: 'A literal 100% uptime figure is a theoretical ceiling, not a real-world promise -- every system has some nonzero chance of an outage, which is exactly why uptime is quoted as a percentage rather than claimed outright.' }
+      ],
+      referenceTable: {
+        title: 'The standard nines table',
+        columns: ['Downtime per year (hours)', 'Downtime per month (minutes)', 'Downtime per day (seconds)'],
+        rows: STANDARD_NINES.map((pct) => {
+          const d = uptimeDowntime(pct);
+          return { label: `${pct}%`, values: [d.perYearHours, d.perMonthMinutes, d.perDaySeconds] };
+        }),
+        decimals: 2,
+        note: 'Computed directly from the formula above for each percentage -- a calendar-average year (365.25 days) and month (365.25 ÷ 12 days), matching the standard "nines" table used across the hosting and cloud industry.'
+      },
+      references: [
+        { label: 'Wikipedia, High availability ("Percentage calculation" -- the standard nines/downtime table)', url: 'https://en.wikipedia.org/wiki/High_availability' }
+      ]
+    },
+    inputs: [{ id: 'uptimePercent', label: 'Uptime percentage (%)', type: 'percent', placeholder: '99.9', defaultValue: 99.9, step: 0.001, min: 0 }],
+    seo: {
+      title: 'Uptime Percentage Calculator – Downtime per Year',
+      description: 'Convert any uptime percentage into the allowed downtime per day, month, and year, checked against the standard nines table (99%, 99.9%, 99.99%, 99.999%).',
+      faq: [
+        { question: 'What does "five nines" uptime mean?', answer: '99.999% uptime -- allowing only about 5.26 minutes of downtime across a full calendar-average year.' },
+        { question: 'How much downtime does 99% uptime allow per year?', answer: 'About 87.66 hours, or roughly 3.65 days, across a calendar-average year.' },
+        { question: 'How much downtime does 99.9% uptime allow per month?', answer: 'About 43.83 minutes, using a calendar-average month of 30.4375 days.' },
+        { question: 'How is an uptime percentage converted into downtime?', answer: 'Subtract the uptime percentage from 100% to get the allowed-downtime fraction, then multiply that fraction by the length of the period -- a year, a month, or a day.' },
+        { question: 'Does this calculation account for leap years?', answer: 'Yes -- it uses 365.25 days as a calendar-average year, the same leap-year-adjusted average used elsewhere on this site, rather than a flat 365.' },
+        { question: 'Is 100% uptime realistic?', answer: 'Not as a literal, permanent guarantee -- every real system has some nonzero chance of an outage. A "100%" figure in marketing or an SLA usually describes a target or a service-credit policy, not a mathematical certainty.' },
+        { question: 'Do real SLAs calculate downtime exactly this way?', answer: 'Often not precisely -- many exclude scheduled maintenance windows or measure over a billing period rather than a calendar month. This calculator shows the generic calendar-based figure; check a specific contract for how it actually defines downtime.' }
+      ]
+    },
+    compute(values) {
+      if (!Number.isFinite(values.uptimePercent)) return { perYearHours: NaN, perMonthMinutes: NaN, perDaySeconds: NaN };
+      // Clamped to a valid percentage rather than returning "no answer" -- a value typed above 100
+      // (or below 0) is treated as its nearest valid endpoint, same leniency as this site's other
+      // percent inputs.
+      const uptimePercent = Math.min(100, Math.max(0, values.uptimePercent));
+      const d = uptimeDowntime(uptimePercent);
+      return { perYearHours: d.perYearHours, perMonthMinutes: d.perMonthMinutes, perDaySeconds: d.perDaySeconds };
     }
   }
 ];

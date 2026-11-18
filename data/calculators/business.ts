@@ -492,5 +492,118 @@ export const businessCalculators: CalculatorConfig[] = [
       const contributionMarginRatio = values.pricePerUnit > 0 ? (contributionMarginPerUnit / values.pricePerUnit) * 100 : NaN;
       return { contributionMarginRatio, contributionMarginPerUnit };
     }
+  },
+  {
+    id: 'cost-of-goods-sold-calculator',
+    category: 'business',
+    glyph: 'COGS',
+    updatedAt: '2026-11-18',
+    aliases: ['COGS calculator', 'cost of sales calculator', 'beginning and ending inventory calculator', 'gross profit from inventory calculator'],
+    related: ['profit-margin-calculator', 'break-even-calculator', 'contribution-margin-calculator', 'depreciation-calculator'],
+    title: 'Cost of Goods Sold (COGS) Calculator',
+    description: 'Find cost of goods sold from beginning inventory, purchases, and ending inventory — the same inventory math behind IRS Form 1125-A — plus gross profit and gross margin if you add revenue.',
+    example: 'With $40,000 of beginning inventory, $150,000 of purchases, and $35,000 of ending inventory, cost of goods sold is $155,000.',
+    breakdown: {
+      headline: 'cogs',
+      headlineLabel: 'Cost of goods sold',
+      outputs: [
+        { id: 'cogs', label: 'Cost of goods sold', format: 'currency' },
+        { id: 'grossProfit', label: 'Gross profit (if revenue entered)', format: 'currency' },
+        { id: 'grossMarginPercent', label: 'Gross margin (if revenue entered)', format: 'percent' }
+      ],
+      groups: [
+        { title: 'Inventory', inputs: ['beginningInventory', 'purchases', 'endingInventory'] },
+        { title: 'Revenue (optional, for gross profit)', inputs: ['revenue'], optional: true }
+      ],
+      derive: (v) => ({ goodsAvailableForSale: v.beginningInventory + v.purchases }),
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'goodsAvailableForSale', label: 'Available for sale' },
+          { from: 'cogs', label: 'Cost of goods sold' }
+        ],
+        title: 'How much of the goods available for sale were actually sold'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What is cost of goods sold?',
+        paragraphs: [
+          'Cost of goods sold (COGS) is what a business spent on the inventory it actually sold in a period, as opposed to inventory still sitting on the shelf. The core logic is the inventory a business started the period with, plus what it bought or made during the period, minus whatever is left unsold at the end — what went in and did not come back out as remaining stock must have been sold.',
+          'This is the same logic the IRS uses on Form 1125-A, Cost of Goods Sold, which US corporations and partnerships attach to their tax return whenever they deduct a cost of goods sold figure: beginning inventory plus purchases (plus, on the full form, cost of labor and certain other capitalized costs) is totaled, and ending inventory is subtracted from that total to arrive at the deductible COGS figure on line 8.',
+          'This calculator models the simplified version — beginning inventory, purchases, and ending inventory only — which covers most small retail and resale businesses. A manufacturer with its own direct labor and overhead to capitalize into inventory (Form 1125-A\'s lines 3 through 5) needs a fuller accounting system than three numbers can represent; this page is a starting estimate for that case, not the complete calculation.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter beginning inventory, purchases during the period, and ending inventory. Add revenue to also see gross profit and gross margin.',
+        steps: [
+          { name: 'Enter beginning inventory', text: 'The value of inventory on hand at the start of the period, at cost.' },
+          { name: 'Enter purchases', text: 'What was bought or produced to add to inventory during the period.' },
+          { name: 'Enter ending inventory', text: 'The value of inventory still on hand, at cost, at the end of the period.' },
+          { name: 'Read cost of goods sold', text: 'Beginning inventory plus purchases minus ending inventory.' },
+          { name: 'Optionally add revenue', text: 'If you know total sales revenue for the same period, open the optional group to also see gross profit (revenue minus COGS) and gross margin.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Goods available for sale is beginning inventory plus purchases. Subtracting what is left unsold gives what was sold.',
+        expression:
+          'goodsAvailableForSale = beginningInventory + purchases\nCOGS = goodsAvailableForSale − endingInventory\ngrossProfit = revenue − COGS\ngrossMarginPercent = grossProfit ÷ revenue × 100',
+        terms: [
+          { symbol: 'beginningInventory, endingInventory', meaning: 'Inventory on hand at cost, at the start and end of the same period.' },
+          { symbol: 'purchases', meaning: 'Inventory bought or produced during the period, added to what was already on hand.' }
+        ],
+        note: 'Estimates only, and a simplified version of IRS Form 1125-A that omits cost of labor and additional capitalized costs (its lines 3 through 5) — appropriate for a basic resale business, not a full manufacturing cost accounting system. Consult a tax professional for an actual return.'
+      },
+      workedExample: {
+        intro: 'A retailer starts the year with $40,000 of inventory, purchases $150,000 more during the year, and ends the year with $35,000 of inventory on hand. Revenue for the year was $220,000.',
+        rows: [
+          { label: 'Goods available for sale (40,000 + 150,000)', value: '$190,000' },
+          { label: 'Cost of goods sold (190,000 − 35,000)', value: '$155,000' },
+          { label: 'Gross profit (220,000 − 155,000)', value: '$65,000' },
+          { label: 'Gross margin (65,000 ÷ 220,000 × 100)', value: '29.55%' }
+        ],
+        result: 'Cost of goods sold is $155,000, for a $65,000 gross profit and a 29.55% gross margin.',
+        explanation: 'Of the $190,000 in goods available to sell, $155,000 worth were sold (the rest, $35,000, is still sitting in ending inventory) — and that $155,000 is the cost figure that gets compared against the profit-margin-calculator\'s own revenue-minus-cost math to find gross margin.'
+      },
+      watchOut: [
+        { title: 'This is a simplified version of the real tax form', body: 'Form 1125-A also includes cost of labor and additional section 263A capitalized costs in the total before subtracting ending inventory — a manufacturer with direct labor or overhead to capitalize will owe a higher real COGS than this three-number version shows.' },
+        { title: 'Inventory valuation method changes the number', body: 'Beginning and ending inventory can be valued at cost, at the lower of cost or market, or under methods like FIFO or LIFO — the same physical inventory can produce a different COGS depending on which valuation method is used consistently.' },
+        { title: 'A negative result means a data entry error', body: 'Cost of goods sold cannot be negative in practice. If ending inventory is entered larger than beginning inventory plus purchases, double-check the three figures — it usually means a number was entered for the wrong period.' },
+        { title: 'Gross profit and gross margin need an accurate revenue figure for the same period', body: 'Mixing a revenue figure from a different period than the inventory numbers produces a gross profit and gross margin that do not actually describe the same stretch of business.' },
+        { title: 'COGS is a tax deduction, not a cash-flow measure', body: 'COGS reduces taxable income on the matching revenue, but the actual cash for purchases may have gone out in an earlier period than the matching sale — COGS and cash spent on inventory are not the same number in a given period.' }
+      ],
+      references: [
+        { label: 'Internal Revenue Service, Form 1125-A, Cost of Goods Sold', url: 'https://www.irs.gov/pub/irs-pdf/f1125a.pdf' },
+        { label: 'Internal Revenue Service, About Form 1125-A', url: 'https://www.irs.gov/forms-pubs/about-form-1125-a' }
+      ]
+    },
+    inputs: [
+      { id: 'beginningInventory', label: 'Beginning inventory', type: 'currency', placeholder: '40000', defaultValue: 40000, step: 500, min: 0 },
+      { id: 'purchases', label: 'Purchases during the period', type: 'currency', placeholder: '150000', defaultValue: 150000, step: 500, min: 0 },
+      { id: 'endingInventory', label: 'Ending inventory', type: 'currency', placeholder: '35000', defaultValue: 35000, step: 500, min: 0 },
+      { id: 'revenue', label: 'Revenue for the same period', type: 'currency', placeholder: '220000', defaultValue: 220000, step: 1000, min: 0 }
+    ],
+    seo: {
+      title: 'Cost of Goods Sold (COGS) Calculator',
+      description: 'Calculate cost of goods sold from beginning inventory, purchases and ending inventory, plus gross profit and gross margin if you add revenue. Free.',
+      faq: [
+        { question: 'How do I calculate cost of goods sold?', answer: 'Add beginning inventory and purchases, then subtract ending inventory. $40,000 beginning inventory plus $150,000 of purchases minus $35,000 ending inventory is $155,000 of COGS.' },
+        { question: 'What is the IRS formula for cost of goods sold?', answer: 'Form 1125-A totals beginning inventory, purchases, cost of labor, and certain other capitalized costs, then subtracts ending inventory. This calculator models the beginning inventory + purchases − ending inventory part, which covers most resale businesses without their own labor or overhead to capitalize.' },
+        { question: 'How do I calculate gross profit from COGS?', answer: 'Subtract COGS from revenue for the same period. $220,000 of revenue minus $155,000 of COGS is $65,000 of gross profit, a 29.55% gross margin.' },
+        { question: 'Why is my cost of goods sold negative?', answer: 'COGS cannot legitimately be negative. A negative result means ending inventory was entered larger than beginning inventory plus purchases — check that all three figures are for the same period and are not swapped.' },
+        { question: 'Does this account for FIFO or LIFO inventory valuation?', answer: 'No. This calculator takes beginning and ending inventory values as given, however they were valued. The valuation method (FIFO, LIFO, or weighted average) is decided before those two numbers are entered here, and changing it would change the inputs, not this formula.' },
+        { question: 'What is the difference between this and the profit margin calculator?', answer: 'This calculator finds the cost figure (COGS) from inventory movement. profit-margin-calculator takes a cost and a selling price (which could be this COGS figure, or a per-unit cost) and finds the margin percentage.' },
+        { question: 'Does COGS include labor costs?', answer: 'The full IRS Form 1125-A does, as a separate line. This simplified calculator only covers beginning inventory, purchases, and ending inventory — a manufacturer with its own direct labor to capitalize into inventory needs the fuller form, not this page, for an exact figure.' }
+      ]
+    },
+    compute(values) {
+      const goodsAvailableForSale = values.beginningInventory + values.purchases;
+      const cogs = goodsAvailableForSale - values.endingInventory;
+      const grossProfit = values.revenue - cogs;
+      const grossMarginPercent = values.revenue > 0 ? (grossProfit / values.revenue) * 100 : NaN;
+      return { cogs, grossProfit, grossMarginPercent };
+    }
   }
 ];

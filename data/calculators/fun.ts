@@ -354,6 +354,7 @@ export const funCalculators: CalculatorConfig[] = [
   {
     id: 'zodiac-sign-calculator',
     category: 'fun',
+    group: 'Astrology & Relationships',
     glyph: 'zod',
     updatedAt: '2026-11-18',
     aliases: ['what is my zodiac sign', 'star sign calculator', 'astrology sign by birthday', 'zodiac element finder', 'horoscope sign calculator'],
@@ -452,6 +453,7 @@ export const funCalculators: CalculatorConfig[] = [
   {
     id: 'chinese-zodiac-calculator',
     category: 'fun',
+    group: 'Astrology & Relationships',
     glyph: 'zh',
     updatedAt: '2026-11-18',
     aliases: ['chinese zodiac animal calculator', 'what chinese zodiac animal am i', 'lunar new year birth animal', 'chinese horoscope by birth year', 'year of the animal calculator'],
@@ -544,6 +546,7 @@ export const funCalculators: CalculatorConfig[] = [
   {
     id: 'zodiac-compatibility-calculator',
     category: 'fun',
+    group: 'Astrology & Relationships',
     glyph: 'cmp',
     updatedAt: '2026-11-18',
     aliases: ['zodiac sign compatibility calculator', 'astrology compatibility checker', 'star sign match calculator', 'element compatibility astrology'],
@@ -645,6 +648,7 @@ export const funCalculators: CalculatorConfig[] = [
   {
     id: 'name-numerology-calculator',
     category: 'fun',
+    group: 'Astrology & Relationships',
     glyph: '#',
     updatedAt: '2026-11-18',
     aliases: ['life path number calculator', 'numerology calculator by birthday', 'pythagorean numerology calculator', 'what is my life path number'],
@@ -743,6 +747,7 @@ export const funCalculators: CalculatorConfig[] = [
   {
     id: 'love-calculator',
     category: 'fun',
+    group: 'Astrology & Relationships',
     glyph: '♥',
     updatedAt: '2026-11-18',
     aliases: ['flames game calculator', 'name love compatibility calculator', 'love percentage by name', 'crush compatibility calculator'],
@@ -820,6 +825,7 @@ export const funCalculators: CalculatorConfig[] = [
   {
     id: 'dice-probability-calculator',
     category: 'fun',
+    group: 'Probability & Odds',
     glyph: 'd6',
     updatedAt: '2026-11-18',
     aliases: ['dice roll probability calculator', 'probability of rolling a sum calculator', 'two dice sum probability', 'chance of rolling a number with dice'],
@@ -959,6 +965,7 @@ export const funCalculators: CalculatorConfig[] = [
   {
     id: 'coin-flip-probability-calculator',
     category: 'fun',
+    group: 'Probability & Odds',
     glyph: 'H/T',
     updatedAt: '2026-11-18',
     aliases: ['coin toss probability calculator', 'probability of heads in a row', 'binomial coin flip calculator', 'probability of exact number of heads'],
@@ -1098,6 +1105,7 @@ export const funCalculators: CalculatorConfig[] = [
   {
     id: 'birthday-paradox-calculator',
     category: 'fun',
+    group: 'Probability & Odds',
     glyph: 'BP',
     updatedAt: '2026-11-18',
     aliases: ['birthday problem calculator', 'shared birthday probability calculator', 'chance two people share a birthday', 'same birthday odds calculator'],
@@ -1195,6 +1203,7 @@ export const funCalculators: CalculatorConfig[] = [
   {
     id: 'lottery-odds-calculator',
     category: 'fun',
+    group: 'Probability & Odds',
     glyph: 'nCk',
     updatedAt: '2026-11-18',
     aliases: ['lottery odds calculator', 'probability of winning the lottery', 'pick 6 lottery odds', 'lottery combinations calculator'],
@@ -1313,6 +1322,7 @@ export const funCalculators: CalculatorConfig[] = [
   {
     id: 'card-draw-probability-calculator',
     category: 'fun',
+    group: 'Probability & Odds',
     glyph: '♠',
     updatedAt: '2026-11-18',
     aliases: ['probability of drawing a card calculator', 'poker hand odds calculator', 'deck of cards probability calculator', 'chance of drawing an ace'],
@@ -1453,6 +1463,7 @@ export const funCalculators: CalculatorConfig[] = [
   {
     id: 'easter-date-calculator',
     category: 'fun',
+    group: 'Calendar & Countdowns',
     glyph: 'Sun',
     updatedAt: '2026-11-18',
     aliases: ['when is easter calculator', 'easter sunday date calculator', 'computus calculator', 'gauss easter algorithm calculator', 'date of easter calculator'],
@@ -1560,6 +1571,7 @@ export const funCalculators: CalculatorConfig[] = [
   {
     id: 'mayan-calendar-converter',
     category: 'fun',
+    group: 'Calendar & Countdowns',
     glyph: 'LC',
     updatedAt: '2026-11-18',
     aliases: ['mayan long count converter', 'maya calendar converter', 'gregorian to mayan calendar calculator', "tzolk'in haab calculator", 'mayan date converter'],
@@ -1697,6 +1709,7 @@ export const funCalculators: CalculatorConfig[] = [
   {
     id: 'friday-the-13th-calculator',
     category: 'fun',
+    group: 'Calendar & Countdowns',
     glyph: '13',
     updatedAt: '2026-11-18',
     aliases: ['friday the 13th calculator', 'how many friday the 13ths this year', 'next friday the 13th calculator', 'unlucky friday calculator', 'is there a friday the 13th this year'],
@@ -1801,6 +1814,7 @@ export const funCalculators: CalculatorConfig[] = [
   {
     id: 'christmas-countdown-calculator',
     category: 'fun',
+    group: 'Calendar & Countdowns',
     glyph: 'Dec',
     updatedAt: '2026-11-18',
     timeDependent: true,
@@ -1903,6 +1917,7 @@ export const funCalculators: CalculatorConfig[] = [
   {
     id: 'new-years-countdown-calculator',
     category: 'fun',
+    group: 'Calendar & Countdowns',
     glyph: 'Jan',
     updatedAt: '2026-11-18',
     timeDependent: true,
@@ -2012,6 +2027,7 @@ export const funCalculators: CalculatorConfig[] = [
   {
     id: 'wind-chill-calculator',
     category: 'fun',
+    group: 'Weather & Geography',
     glyph: 'WC',
     updatedAt: '2026-11-18',
     aliases: ['wind chill calculator', 'feels like temperature calculator cold', 'wind chill factor calculator', 'windchill chart calculator', 'NWS wind chill formula calculator'],
@@ -2117,6 +2133,7 @@ export const funCalculators: CalculatorConfig[] = [
   {
     id: 'heat-index-calculator',
     category: 'fun',
+    group: 'Weather & Geography',
     glyph: 'HI',
     updatedAt: '2026-11-18',
     aliases: ['heat index calculator', 'feels like temperature calculator hot', 'heat index chart calculator', 'NWS heat index formula calculator', 'real feel temperature calculator'],
@@ -2239,6 +2256,7 @@ export const funCalculators: CalculatorConfig[] = [
   {
     id: 'antipode-calculator',
     category: 'fun',
+    group: 'Weather & Geography',
     glyph: 'ANT',
     updatedAt: '2026-11-18',
     aliases: ['antipode calculator', 'opposite side of the earth calculator', 'antipodal point calculator', 'dig a hole to china calculator', 'what is on the other side of the world'],
@@ -2356,6 +2374,7 @@ export const funCalculators: CalculatorConfig[] = [
   {
     id: 'moon-phase-calculator',
     category: 'fun',
+    group: 'Weather & Geography',
     glyph: '☾',
     updatedAt: '2026-11-18',
     aliases: ['moon phase calculator', 'what phase is the moon today', 'lunar phase calculator', 'moon age calculator', 'moon illumination calculator'],
@@ -2468,6 +2487,7 @@ export const funCalculators: CalculatorConfig[] = [
   {
     id: 'relationship-anniversary-calculator',
     category: 'fun',
+    group: 'Astrology & Relationships',
     glyph: 'Ann',
     updatedAt: '2026-11-18',
     timeDependent: true,
@@ -2617,6 +2637,7 @@ export const funCalculators: CalculatorConfig[] = [
   {
     id: 'screen-size-calculator',
     category: 'fun',
+    group: 'Everyday Novelties',
     glyph: 'TV',
     updatedAt: '2026-11-18',
     aliases: ['screen size calculator', 'tv size calculator', 'monitor size calculator', 'screen dimensions calculator', 'pixel density calculator', 'ppi calculator'],
@@ -2743,6 +2764,7 @@ export const funCalculators: CalculatorConfig[] = [
   {
     id: 'aspect-ratio-calculator',
     category: 'fun',
+    group: 'Everyday Novelties',
     glyph: 'w:h',
     updatedAt: '2026-11-18',
     aliases: ['aspect ratio calculator', 'ratio calculator for photos', '16:9 calculator', 'image crop ratio calculator', 'video aspect ratio calculator', 'width height ratio calculator'],
@@ -2840,6 +2862,7 @@ export const funCalculators: CalculatorConfig[] = [
   {
     id: 'uptime-percentage-calculator',
     category: 'fun',
+    group: 'Everyday Novelties',
     glyph: '9s',
     updatedAt: '2026-11-18',
     aliases: ['uptime percentage calculator', 'uptime calculator', 'nines uptime calculator', 'sla uptime calculator', 'downtime calculator', 'allowed downtime calculator'],

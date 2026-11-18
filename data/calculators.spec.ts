@@ -213,7 +213,13 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   // estimatedMarketValue 0 (its min) -> compute()'s own guard, no rebuild-cost-vs-market-value
   // percentage with a zero market value to divide by; rebuildCost and structureValueOfMarketPrice
   // stay finite either way.
-  'home-insurance-rebuild-cost-calculator': ['rebuildCostPercentOfMarketValue']
+  'home-insurance-rebuild-cost-calculator': ['rebuildCostPercentOfMarketValue'],
+  // cashBalance and monthlyBurnRate both 0 (their min) -> runwayMonths divides by zero burn rate;
+  // annualBurnRate (monthlyBurnRate x 12) stays a finite 0 either way.
+  'burn-rate-calculator': ['runwayMonths'],
+  // initialInvestment and annualCashInflow both 0 (their min) -> paybackPeriod (divides by cash
+  // inflow) and simpleReturnPercent (divides by investment) both have no answer from the same 0/0.
+  'payback-period-calculator': ['paybackPeriod', 'simpleReturnPercent']
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

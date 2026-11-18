@@ -2121,4 +2121,101 @@ export const funCalculators: CalculatorConfig[] = [
       return { widthIn, heightIn, areaSqIn, ppi };
     }
   },
+  {
+    id: 'aspect-ratio-calculator',
+    category: 'fun',
+    glyph: 'w:h',
+    updatedAt: '2026-11-18',
+    aliases: ['aspect ratio calculator', 'ratio calculator for photos', '16:9 calculator', 'image crop ratio calculator', 'video aspect ratio calculator', 'width height ratio calculator'],
+    related: ['screen-size-calculator', 'length-converter', 'area-converter', 'centimeters-to-inches-converter'],
+    title: 'Aspect Ratio Calculator',
+    description: 'Enter one width or height and a target ratio -- 16:9, 4:3, 21:9, 3:2, or any custom ratio -- and solve for the other dimension, for screens, photos, or video crops.',
+    example: 'Cropping a photo to a 3:2 ratio at 24 inches wide needs a height of exactly 16 inches.',
+    solver: {
+      defaultTarget: 'height',
+      variables: [
+        { id: 'width', label: 'Width', symbol: 'w', dimension: 'length', defaultValue: 24, defaultUnit: 'in' },
+        { id: 'height', label: 'Height', symbol: 'h', dimension: 'length', defaultValue: 16, defaultUnit: 'in' },
+        { id: 'ratioW', label: 'Ratio width part', symbol: 'rW', dimension: 'count', defaultValue: 3, defaultUnit: 'count', fixed: true },
+        { id: 'ratioH', label: 'Ratio height part', symbol: 'rH', dimension: 'count', defaultValue: 2, defaultUnit: 'count', fixed: true }
+      ],
+      solve: {
+        height: ({ width, ratioW, ratioH }) => (ratioW === 0 ? NaN : (width * ratioH) / ratioW),
+        width: ({ height, ratioW, ratioH }) => (ratioH === 0 ? NaN : (height * ratioW) / ratioH)
+      },
+      outputs: [{ id: 'areaOutput', label: 'Area', dimension: 'area', unit: 'in2', compute: (si) => si.width * si.height }],
+      visuals: [{ type: 'compareBars', bars: [{ from: 'width', label: 'Width' }, { from: 'height', label: 'Height' }], title: 'Width vs. height' }]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What an aspect ratio is',
+        paragraphs: [
+          'An aspect ratio is the proportion between a rectangle\'s width and height, written as two numbers separated by a colon -- width first, height second. 16:9 means the width is 16 units for every 9 units of height, at any size: a 1920×1080 image and a 160×90 thumbnail are both exactly 16:9.',
+          'Screens, photos, and video all settle on a small set of common ratios -- 16:9 for most TVs and monitors, 4:3 for older screens, 3:2 for many camera sensors and tablets, 21:9 for ultrawide monitors, 1:1 for a square crop -- but any two positive numbers define a valid ratio, including ones a camera or display manufacturer never used.',
+          'Given one dimension and a ratio, the other dimension follows directly: multiply or divide by the ratio\'s two numbers. This calculator does that in either direction -- enter a width to get the matching height, or a height to get the matching width.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the ratio\'s two numbers, then the one dimension you know; the calculator fills in the other.',
+        steps: [
+          { name: 'Enter the ratio', text: 'The two numbers of your target ratio, e.g. 16 and 9 for 16:9, or 3 and 2 for 3:2. These two fields are always inputs, never calculated.' },
+          { name: 'Enter the dimension you know', text: 'Type your known width or height. The other one, marked auto, fills in as you type.' },
+          { name: 'Switch which one is calculated', text: 'To solve for the other dimension instead, type into the auto field -- it becomes an input, and the one you left alone longest becomes the new calculated field.' },
+          { name: 'Change units at any time', text: 'Switching a unit converts the number already there, so 24 in becomes 61.0 cm instead of silently turning into 24 cm.' },
+          { name: 'Read the area and share', text: 'The area of the resulting rectangle appears underneath. Share result copies a link with your exact values.' }
+        ],
+        outro: 'Everything is calculated in your browser as you type. Nothing is sent or stored.'
+      },
+      formula: {
+        intro: 'Rearranging "width is to height as ratioW is to ratioH" gives a formula for whichever dimension you need.',
+        expression: 'height = width × (ratioH ÷ ratioW)\nwidth = height × (ratioW ÷ ratioH)',
+        terms: [
+          { symbol: 'width, height', meaning: 'The rectangle\'s two dimensions, in whatever length unit you choose -- inches, centimeters, or pixels treated as a plain number.' },
+          { symbol: 'ratioW : ratioH', meaning: 'Your target ratio\'s two numbers -- the width part first, then the height part, e.g. 16 and 9 for 16:9.' }
+        ],
+        note: 'Common ratios: 16:9 and 16:10 (most screens), 4:3 (older screens), 3:2 (many camera sensors), 21:9 (ultrawide monitors), 1:1 (square). Any two positive numbers work as a custom ratio.'
+      },
+      workedExample: {
+        intro: 'Cropping a 24-inch-wide photo to a 3:2 ratio -- what height keeps that exact proportion?',
+        rows: [
+          { label: 'Width', value: '24 in' },
+          { label: 'Ratio', value: '3 : 2' },
+          { label: 'height = 24 × (2 ÷ 3)', value: '16 in' }
+        ],
+        result: 'height = 16 in (area = 384 in²)',
+        explanation: '24 ÷ 3 = 8, and 8 × 2 = 16 -- the height that keeps width:height exactly equal to 3:2. Going the other direction from a 16-inch height recovers the original 24-inch width exactly: 16 × (3 ÷ 2) = 24.'
+      },
+      watchOut: [
+        { title: 'Order matters: it is width:height, not height:width', body: 'Entering the ratio backwards (9 and 16 instead of 16 and 9) swaps which dimension comes out larger -- always enter the width number first, then the height number, matching how the ratio is written.' },
+        { title: '"21:9" ultrawide monitors are not always a mathematically exact 21:9', body: 'A common ultrawide resolution, 3440×1440, has an actual ratio of 3440 ÷ 1440 ≈ 2.389 -- not 21 ÷ 9 ≈ 2.333. "21:9" is the marketing name for this class of ultrawide screen; its real proportion is closer to the 2.39:1 cinema standard. Enter a screen\'s own resolution as the ratio for an exact result, rather than assuming the marketing name is exact.' },
+        { title: 'This calculator does not know the diagonal size', body: 'It only relates width and height to each other, not to a screen\'s advertised diagonal measurement -- for a TV or monitor, use the companion screen size calculator instead, which also takes a diagonal size.' },
+        { title: 'Real-world cuts are often rounded', body: 'A printed photo or cut material is usually trimmed to the nearest practical unit (e.g. the nearest 1/8 inch), so an exact mathematical result like 16.0000 in may come out very slightly different once physically cut.' }
+      ],
+      references: [
+        { label: 'Wikipedia, Aspect ratio (image) (definition and common display/image ratios)', url: 'https://en.wikipedia.org/wiki/Aspect_ratio_(image)' }
+      ]
+    },
+    inputs: [
+      { id: 'width', label: 'Width (m)', type: 'number', placeholder: '0.6096', defaultValue: 0.6096, step: 0.001, min: 0 },
+      { id: 'ratioW', label: 'Ratio width part', type: 'number', placeholder: '3', defaultValue: 3, step: 0.01, min: 0 },
+      { id: 'ratioH', label: 'Ratio height part', type: 'number', placeholder: '2', defaultValue: 2, step: 0.01, min: 0 }
+    ],
+    seo: {
+      title: 'Aspect Ratio Calculator – Solve Width or Height for Any Ratio',
+      description: 'Enter one dimension and a ratio like 16:9, 4:3, 21:9 or 3:2, and solve for the other -- for screens, photo crops, or video, with any custom ratio too.',
+      faq: [
+        { question: 'How do I calculate height from width and an aspect ratio?', answer: 'Multiply the width by (ratioH ÷ ratioW). At a 16:9 ratio, a 1920-wide image needs a height of 1920 × (9 ÷ 16) = 1,080.' },
+        { question: 'How do I calculate width from height and an aspect ratio?', answer: 'Multiply the height by (ratioW ÷ ratioH). At a 4:3 ratio, a 768-tall image needs a width of 768 × (4 ÷ 3) = 1,024.' },
+        { question: 'What is a 3:2 aspect ratio in inches?', answer: 'Any width and height whose ratio is exactly 3:2 -- for example 24 in × 16 in, or 6 in × 4 in. A 24-inch-wide photo cropped to 3:2 needs a height of 16 inches.' },
+        { question: 'Is a 3440×1440 ultrawide monitor exactly 21:9?', answer: 'Not quite. 3440 ÷ 1440 ≈ 2.389, while an exact 21:9 ratio is 21 ÷ 9 ≈ 2.333. "21:9" is the marketing name for this class of ultrawide monitor; its true proportion is closer to the 2.39:1 cinema standard.' },
+        { question: 'What is the difference between 16:9 and 16:10?', answer: 'Both share the same width number, but 16:10 is relatively taller -- at the same width, a 16:10 rectangle is 10% taller than a 16:9 one (height = width × 10/16 versus width × 9/16).' },
+        { question: 'Can I use a custom aspect ratio that isn\'t a standard screen size?', answer: 'Yes -- enter any two positive numbers as the ratio. The formula works the same way whether the ratio is a common one like 16:9 or a custom crop ratio you choose yourself.' }
+      ]
+    },
+    compute(values) {
+      if (values.ratioW === 0) return { height: NaN };
+      return { height: (values.width * values.ratioH) / values.ratioW };
+    }
+  },
 ];

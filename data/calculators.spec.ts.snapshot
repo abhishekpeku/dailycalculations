@@ -6818,6 +6818,50 @@ exports[`compute() snapshots > friction-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > friday-the-13th-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "year": 2026
+    },
+    "outputs": {
+      "count": 3,
+      "month1Code": 2,
+      "month2Code": 3,
+      "month3Code": 11,
+      "yearStartsOnCode": 4,
+      "isLeapYear": 0
+    }
+  },
+  "typical": {
+    "inputs": {
+      "year": 3039
+    },
+    "outputs": {
+      "count": 2,
+      "month1Code": 9,
+      "month2Code": 12,
+      "month3Code": 0,
+      "yearStartsOnCode": 2,
+      "isLeapYear": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "year": 1583
+    },
+    "outputs": {
+      "count": 1,
+      "month1Code": 5,
+      "month2Code": 0,
+      "month3Code": 0,
+      "yearStartsOnCode": 6,
+      "isLeapYear": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > fuel-cost-calculator 1`] = `
 {
   "default": {

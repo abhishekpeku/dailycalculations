@@ -275,6 +275,17 @@ function haabOf(n: number) {
   return { monthIndex: 18, dayNumber: dayOfYear - 360 }; // Wayeb', days 0-4
 }
 
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+// Which months (1-12) have a Friday the 13th in `year`. JS's own Date already implements the
+// Gregorian leap-year rule correctly, so no separate leap-year handling is needed here.
+function friday13Months(year: number): number[] {
+  const months: number[] = [];
+  for (let m = 0; m < 12; m++) if (new Date(year, m, 13).getDay() === 5) months.push(m + 1);
+  return months;
+}
+
 export const funCalculators: CalculatorConfig[] = [
   {
     id: 'zodiac-sign-calculator',
@@ -1616,6 +1627,110 @@ export const funCalculators: CalculatorConfig[] = [
         tzolkinDayNameCode: tz.dayIndex,
         haabDayNumber: hb.dayNumber,
         haabMonthCode: hb.monthIndex
+      };
+    }
+  },
+  {
+    id: 'friday-the-13th-calculator',
+    category: 'fun',
+    glyph: '13',
+    updatedAt: '2026-11-18',
+    aliases: ['friday the 13th calculator', 'how many friday the 13ths this year', 'next friday the 13th calculator', 'unlucky friday calculator', 'is there a friday the 13th this year'],
+    related: ['easter-date-calculator', 'mayan-calendar-converter', 'date-difference-calculator', 'birthday-paradox-calculator'],
+    title: 'Friday the 13th Calculator',
+    description: 'Find every Friday the 13th in a given year, and the calendar reason certain months always get one together -- the same weekday-recurrence pattern behind the "doomsday rule."',
+    example: '2026 has three: February, March and November -- because all three months\' 1st falls on a Sunday that year.',
+    breakdown: {
+      headline: 'count',
+      headlineLabel: 'Friday the 13ths this year',
+      outputs: [
+        { id: 'count', label: 'Friday the 13ths this year', format: 'integer' },
+        { id: 'month1Code', label: 'First one', labels: [{ value: 0, label: '-' }, ...MONTH_NAMES.map((m, i) => ({ value: i + 1, label: m }))] },
+        { id: 'month2Code', label: 'Second one', labels: [{ value: 0, label: '-' }, ...MONTH_NAMES.map((m, i) => ({ value: i + 1, label: m }))] },
+        { id: 'month3Code', label: 'Third one', labels: [{ value: 0, label: '-' }, ...MONTH_NAMES.map((m, i) => ({ value: i + 1, label: m }))] },
+        { id: 'yearStartsOnCode', label: 'The year starts on a', labels: WEEKDAY_NAMES.map((w, i) => ({ value: i, label: w })) },
+        { id: 'isLeapYear', label: 'Leap year?', labels: [{ value: 0, label: 'No' }, { value: 1, label: 'Yes' }] }
+      ],
+      groups: [{ title: 'Year', inputs: ['year'] }]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why Friday the 13th recurs the way it does',
+        paragraphs: [
+          'The rule behind every Friday the 13th is simple: the 13th of a month falls on Friday exactly when that month\'s 1st falls on a Sunday (13 - 1 = 12 days later, and 12 mod 7 = 5, so Sunday + 5 days is Friday). Finding every Friday the 13th in a year is therefore the same as finding every month whose 1st is a Sunday that year.',
+          'Because every month is a fixed number of days long, the gap between any two months\' 1st-of-the-month, measured in days, is also fixed -- and what matters for the weekday is only that gap modulo 7. In a common (non-leap) year, four groups of months always share the same weekday on their 1st: January and October; April and July; September and December; and February, March and November together (because February is exactly 28 days -- four whole weeks -- so March 1 always repeats January\'s pattern one slot later, and the 31+30+31+30+31+31+30+31 = 245-day gap to November is also an exact multiple of 7). In a leap year, the extra day in February shifts the groups to January/April/July, February/August, March/November, and September/December.',
+          'Which of those groups happens to land on Sunday in a given year is decided only by what weekday January 1 falls on. That single fact is also the core of the "doomsday rule," a mental-math technique for finding any date\'s weekday from a short list of easy-to-remember reference dates that all share one year\'s weekday -- the same recurring-weekday structure this calculator uses, just aimed at one specific target (Friday the 13th) instead of a general-purpose lookup.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter a year.',
+        steps: [
+          { name: 'Enter a year', text: 'Any year, 1583 or later (the first full year of the Gregorian calendar).' },
+          { name: 'Read the count', text: 'The headline is how many Friday the 13ths fall in that year -- always 1, 2 or 3, never 0.' },
+          { name: 'Read the months', text: 'Up to three rows list which months, in order; unused rows show "-".' },
+          { name: 'Check what the year starts on', text: 'This is the one fact that decides everything else -- which weekday January 1 falls on.' }
+        ],
+        outro: 'Everything is calculated in your browser from the real Gregorian calendar. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'No special formula is needed beyond the calendar itself -- just a check, run for every month.',
+        expression: 'For each month m (1-12): if the weekday of (year, m, 13) is Friday, m is a Friday-the-13th month.\ncount = number of months where that is true',
+        terms: [
+          { symbol: 'weekday(year, m, 13)', meaning: 'Computed from the real Gregorian calendar, which already handles every leap-year exception correctly.' }
+        ],
+        note: 'Equivalently: month m has a Friday the 13th exactly when month m\'s 1st falls on a Sunday.'
+      },
+      workedExample: {
+        intro: 'How many Friday the 13ths does 2026 have?',
+        rows: [
+          { label: 'January 1, 2026', value: 'Thursday' },
+          { label: 'February 1, 2026 (31 days later, 31 mod 7 = 3)', value: 'Sunday -> February 13 is a Friday' },
+          { label: 'March 1, 2026 (28 days after Feb 1, an exact 4 weeks)', value: 'Sunday -> March 13 is a Friday' },
+          { label: 'November 1, 2026 (245 days after March 1, an exact 35 weeks)', value: 'Sunday -> November 13 is a Friday' },
+          { label: 'Every other month\'s 1st', value: 'Not a Sunday that year' }
+        ],
+        result: '3 -- February, March and November',
+        explanation: 'February, March and November always share the same weekday as each other in a common year; in 2026 that shared weekday happens to be Sunday, so all three get a Friday the 13th. (2012 is the equivalent leap-year case: January, April and July all share a weekday, and in 2012 that weekday was Sunday too, giving three Friday the 13ths that year as well.)'
+      },
+      watchOut: [
+        { title: 'Every year has at least one, and never more than three', body: 'Both bounds come from the same calendar arithmetic -- no year under the Gregorian calendar can have zero Friday the 13ths, and no year can have more than three.' },
+        { title: 'The leap-year groupings are different from the common-year ones', body: 'February\'s extra day in a leap year breaks its link to March, and creates a new one between January, April and July instead -- check the "leap year?" row before assuming last year\'s pattern repeats.' },
+        { title: 'Friday the 13th is very slightly more common than other weekday/day-13 combinations', body: 'Across a full 400-year Gregorian cycle, the 13th falls on a Friday 688 times, versus 684-687 times for the other six weekdays -- a tiny statistical quirk of how the 400-year cycle\'s days divide into weeks, not a meaningful difference in practice.' },
+        { title: 'This counts the calendar fact only, not the superstition\'s origin', body: 'The fear of Friday the 13th (paraskevidekatriaphobia) is a cultural and psychological phenomenon with its own separate history; this calculator only finds the dates, and makes no claim about luck.' }
+      ],
+      references: [
+        { label: 'Wikipedia, Friday the 13th (frequency, 1st-must-be-Sunday rule, 688-occurrence figure)', url: 'https://en.wikipedia.org/wiki/Friday_the_13th' },
+        { label: "Wikipedia, Doomsday rule (recurring same-weekday dates)", url: 'https://en.wikipedia.org/wiki/Doomsday_rule' }
+      ]
+    },
+    inputs: [{ id: 'year', label: 'Year', type: 'number', placeholder: '2026', defaultValue: 2026, step: 1, min: 1583 }],
+    seo: {
+      title: 'Friday the 13th Calculator – Every One in Any Year',
+      description: 'Find every Friday the 13th in a given year, and the calendar reason certain months always get one together -- the same pattern behind the doomsday rule.',
+      faq: [
+        { question: 'How many Friday the 13ths are there in 2026?', answer: 'Three: February, March and November. All three months\' 1st falls on a Sunday in 2026, and a month\'s 13th is a Friday exactly when its 1st is a Sunday.' },
+        { question: 'Can a year have no Friday the 13th at all?', answer: 'No. Under the Gregorian calendar, every year has at least one Friday the 13th -- the minimum is 1, the maximum is 3.' },
+        { question: 'What is the most Friday the 13ths a year can have?', answer: 'Three. It happens in a common year that starts on Thursday (giving February, March and November) or a leap year that starts on Sunday (giving January, April and July), as in 2012.' },
+        { question: 'Why do February, March and November share a pattern?', answer: 'In a common (non-leap) year, February is exactly 28 days -- four whole weeks -- so March 1 always falls on the same weekday as February 1. The 245-day gap from March 1 to November 1 is also an exact multiple of 7, linking all three.' },
+        { question: 'Does the pattern change in a leap year?', answer: 'Yes. The extra day in February breaks its link to March and instead links January, April and July into one group, which is why 2012 (a leap year) had its three Friday the 13ths in those months instead.' },
+        { question: 'Is Friday the 13th statistically unlucky?', answer: 'No evidence supports that. The only real statistical quirk is that across a full 400-year Gregorian cycle, the 13th of the month lands on a Friday 688 times versus 684-687 times for the other weekdays -- a negligible difference.' },
+        { question: 'What is the "doomsday rule"?', answer: 'A mental-math shortcut for finding any date\'s weekday from a short list of easy-to-remember dates that all share one year\'s weekday. It relies on the same recurring-weekday structure between months that this calculator uses to find Friday the 13ths.' }
+      ]
+    },
+    compute(values) {
+      const year = Math.round(values.year);
+      const noAnswer = { count: NaN, month1Code: NaN, month2Code: NaN, month3Code: NaN, yearStartsOnCode: NaN, isLeapYear: NaN };
+      if (!Number.isFinite(year) || year < 1583) return noAnswer;
+      const months = friday13Months(year);
+      const isLeapYear = (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 1 : 0;
+      return {
+        count: months.length,
+        month1Code: months[0] ?? 0,
+        month2Code: months[1] ?? 0,
+        month3Code: months[2] ?? 0,
+        yearStartsOnCode: new Date(year, 0, 1).getDay(),
+        isLeapYear
       };
     }
   }

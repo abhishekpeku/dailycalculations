@@ -2551,6 +2551,47 @@ exports[`compute() snapshots > circle-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > class-attendance-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "totalClasses": 30,
+      "classesMissed": 3,
+      "minAttendancePercent": 80
+    },
+    "outputs": {
+      "currentAttendanceRate": 90,
+      "remainingMissable": 3,
+      "maxMissableTotal": 6
+    }
+  },
+  "typical": {
+    "inputs": {
+      "totalClasses": 45,
+      "classesMissed": 5,
+      "minAttendancePercent": 120
+    },
+    "outputs": {
+      "currentAttendanceRate": 88.88888889,
+      "remainingMissable": -14,
+      "maxMissableTotal": -9
+    }
+  },
+  "edge": {
+    "inputs": {
+      "totalClasses": 1,
+      "classesMissed": 0,
+      "minAttendancePercent": 0
+    },
+    "outputs": {
+      "currentAttendanceRate": 100,
+      "remainingMissable": 1,
+      "maxMissableTotal": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > closing-cost-estimator-calculator 1`] = `
 {
   "default": {
@@ -3616,6 +3657,71 @@ exports[`compute() snapshots > cube-root-calculator 1`] = `
     },
     "outputs": {
       "cubeRoot": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > cumulative-gpa-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "priorGpa": 3.5,
+      "priorCredits": 60,
+      "course1Grade": 4,
+      "course1Credits": 3,
+      "course2Grade": 3,
+      "course2Credits": 3,
+      "course3Grade": 3.7,
+      "course3Credits": 4,
+      "course4Grade": 0,
+      "course4Credits": 0
+    },
+    "outputs": {
+      "newCumulativeGpa": 3.511428571,
+      "newTotalCredits": 70,
+      "termGpa": 3.58,
+      "termCredits": 10
+    }
+  },
+  "typical": {
+    "inputs": {
+      "priorGpa": 5.25,
+      "priorCredits": 90,
+      "course1Grade": 6,
+      "course1Credits": 4.5,
+      "course2Grade": 4.5,
+      "course2Credits": 4.5,
+      "course3Grade": 5.6,
+      "course3Credits": 6,
+      "course4Grade": 0,
+      "course4Credits": 0
+    },
+    "outputs": {
+      "newCumulativeGpa": 5.27,
+      "newTotalCredits": 105,
+      "termGpa": 5.39,
+      "termCredits": 15
+    }
+  },
+  "edge": {
+    "inputs": {
+      "priorGpa": 0,
+      "priorCredits": 0,
+      "course1Grade": 0,
+      "course1Credits": 0,
+      "course2Grade": 0,
+      "course2Credits": 0,
+      "course3Grade": 0,
+      "course3Credits": 0,
+      "course4Grade": 0,
+      "course4Credits": 0
+    },
+    "outputs": {
+      "newCumulativeGpa": 0,
+      "newTotalCredits": 0,
+      "termGpa": 0,
+      "termCredits": 0
     }
   }
 }
@@ -4826,6 +4932,44 @@ exports[`compute() snapshots > drywall-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > earth-overshoot-day-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "footprintGha": 2.51,
+      "biocapacityGha": 1.48
+    },
+    "outputs": {
+      "earthsNeeded": 1.695945946,
+      "percentOverBudget": 69.59459459,
+      "dayOfYear": 215.2191235
+    }
+  },
+  "typical": {
+    "inputs": {
+      "footprintGha": 3.76,
+      "biocapacityGha": 2.22
+    },
+    "outputs": {
+      "earthsNeeded": 1.693693694,
+      "percentOverBudget": 69.36936937,
+      "dayOfYear": 215.5053191
+    }
+  },
+  "edge": {
+    "inputs": {
+      "footprintGha": 0.01,
+      "biocapacityGha": 0.01
+    },
+    "outputs": {
+      "earthsNeeded": 1,
+      "percentOverBudget": 0,
+      "dayOfYear": 365
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > efficiency-calculator 1`] = `
 {
   "default": {
@@ -5818,6 +5962,91 @@ exports[`compute() snapshots > fence-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > final-grade-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "currentGrade": 82,
+      "finalWeight": 25,
+      "desiredGrade": 85
+    },
+    "outputs": {
+      "neededScore": 94,
+      "maxPossibleGrade": 86.5,
+      "currentContribution": 61.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "currentGrade": 123,
+      "finalWeight": 38,
+      "desiredGrade": 127.5
+    },
+    "outputs": {
+      "neededScore": 134.8421053,
+      "maxPossibleGrade": 114.26,
+      "currentContribution": 76.26
+    }
+  },
+  "edge": {
+    "inputs": {
+      "currentGrade": 0,
+      "finalWeight": 1,
+      "desiredGrade": 0
+    },
+    "outputs": {
+      "neededScore": 0,
+      "maxPossibleGrade": 1,
+      "currentContribution": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > fish-mercury-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "species": 7,
+      "servingsPerWeek": 2,
+      "servingSizeG": 113.3980925,
+      "bodyWeightKg": 70
+    },
+    "outputs": {
+      "percentOfRfd": 58.319019,
+      "weeklyIntakeUg": 28.57631931,
+      "weeklyAllowedUg": 49
+    }
+  },
+  "typical": {
+    "inputs": {
+      "species": 11,
+      "servingsPerWeek": 3,
+      "servingSizeG": 170,
+      "bodyWeightKg": 105
+    },
+    "outputs": {
+      "percentOfRfd": 2.081632653,
+      "weeklyIntakeUg": 1.53,
+      "weeklyAllowedUg": 73.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "species": 0,
+      "servingsPerWeek": 0,
+      "servingSizeG": 0,
+      "bodyWeightKg": 1
+    },
+    "outputs": {
+      "percentOfRfd": 0,
+      "weeklyIntakeUg": 0,
+      "weeklyAllowedUg": 0.7
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > flight-carbon-footprint-calculator 1`] = `
 {
   "default": {
@@ -5942,6 +6171,47 @@ exports[`compute() snapshots > follower-growth-rate-calculator 1`] = `
       "growthRatePercent": -100,
       "dailyGrowthRate": -1,
       "projectedFollowersIn30Days": -30
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > food-waste-composting-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "annualFoodWasteLb": 300,
+      "landfillRatePct": 59.84,
+      "compostRatePct": 4.99
+    },
+    "outputs": {
+      "compostedLb": 14.97,
+      "landfilledLb": 179.52,
+      "otherLb": 105.51
+    }
+  },
+  "typical": {
+    "inputs": {
+      "annualFoodWasteLb": 450,
+      "landfillRatePct": 89.76,
+      "compostRatePct": 7.49
+    },
+    "outputs": {
+      "compostedLb": 33.705,
+      "landfilledLb": 403.92,
+      "otherLb": 12.375
+    }
+  },
+  "edge": {
+    "inputs": {
+      "annualFoodWasteLb": 0,
+      "landfillRatePct": 0,
+      "compostRatePct": 0
+    },
+    "outputs": {
+      "compostedLb": 0,
+      "landfilledLb": 0,
+      "otherLb": 0
     }
   }
 }
@@ -6745,6 +7015,100 @@ exports[`compute() snapshots > gpa-calculator 1`] = `
       "gpa": 0,
       "totalCredits": 0,
       "totalPoints": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > gpa-scale-converter 1`] = `
+{
+  "default": {
+    "inputs": {
+      "percentage": 76
+    },
+    "outputs": {
+      "gpa": 2,
+      "letterGradeCode": 2
+    }
+  },
+  "typical": {
+    "inputs": {
+      "percentage": 114
+    },
+    "outputs": {
+      "gpa": 4,
+      "letterGradeCode": 4
+    }
+  },
+  "edge": {
+    "inputs": {
+      "percentage": 0
+    },
+    "outputs": {
+      "gpa": 0,
+      "letterGradeCode": 0
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > grade-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "category1Weight": 15,
+      "category1Score": 92,
+      "category2Weight": 20,
+      "category2Score": 85,
+      "category3Weight": 35,
+      "category3Score": 78,
+      "category4Weight": 30,
+      "category4Score": 88,
+      "category5Weight": 0,
+      "category5Score": 0
+    },
+    "outputs": {
+      "overallGrade": 84.5,
+      "totalWeight": 100,
+      "weightedPoints": 8450
+    }
+  },
+  "typical": {
+    "inputs": {
+      "category1Weight": 23,
+      "category1Score": 138,
+      "category2Weight": 30,
+      "category2Score": 127.5,
+      "category3Weight": 53,
+      "category3Score": 117,
+      "category4Weight": 45,
+      "category4Score": 132,
+      "category5Weight": 0,
+      "category5Score": 0
+    },
+    "outputs": {
+      "overallGrade": 126.7549669,
+      "totalWeight": 151,
+      "weightedPoints": 19140
+    }
+  },
+  "edge": {
+    "inputs": {
+      "category1Weight": 0,
+      "category1Score": 0,
+      "category2Weight": 0,
+      "category2Score": 0,
+      "category3Weight": 0,
+      "category3Score": 0,
+      "category4Weight": 0,
+      "category4Score": 0,
+      "category5Weight": 0,
+      "category5Score": 0
+    },
+    "outputs": {
+      "overallGrade": 0,
+      "totalWeight": 0,
+      "weightedPoints": 0
     }
   }
 }
@@ -13752,6 +14116,44 @@ exports[`compute() snapshots > readability-score-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > reading-speed-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "wordCount": 500,
+      "minutesElapsed": 2,
+      "secondsElapsed": 30
+    },
+    "outputs": {
+      "wpm": 200,
+      "totalSeconds": 150
+    }
+  },
+  "typical": {
+    "inputs": {
+      "wordCount": 750,
+      "minutesElapsed": 3,
+      "secondsElapsed": 45
+    },
+    "outputs": {
+      "wpm": 200,
+      "totalSeconds": 225
+    }
+  },
+  "edge": {
+    "inputs": {
+      "wordCount": 1,
+      "minutesElapsed": 0,
+      "secondsElapsed": 0
+    },
+    "outputs": {
+      "wpm": "Infinity",
+      "totalSeconds": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > rebar-calculator 1`] = `
 {
   "default": {
@@ -14965,6 +15367,64 @@ exports[`compute() snapshots > self-rising-flour-substitute-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > semester-credit-hours-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "fullTimeThreshold": 12,
+      "lists": {
+        "courseCredits": [
+          3,
+          3,
+          4,
+          3,
+          3
+        ]
+      }
+    },
+    "outputs": {
+      "totalCredits": 16,
+      "isFullTimeCode": 1,
+      "creditsUntilFullTime": 0
+    }
+  },
+  "typical": {
+    "inputs": {
+      "fullTimeThreshold": 18,
+      "lists": {
+        "courseCredits": [
+          5,
+          5,
+          6,
+          5,
+          5
+        ]
+      }
+    },
+    "outputs": {
+      "totalCredits": 26,
+      "isFullTimeCode": 1,
+      "creditsUntilFullTime": 0
+    }
+  },
+  "edge": {
+    "inputs": {
+      "fullTimeThreshold": 1,
+      "lists": {
+        "courseCredits": [
+          0
+        ]
+      }
+    },
+    "outputs": {
+      "totalCredits": 0,
+      "isFullTimeCode": 0,
+      "creditsUntilFullTime": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > serial-dilution-calculator 1`] = `
 {
   "default": {
@@ -15518,6 +15978,44 @@ exports[`compute() snapshots > solution-concentration-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > species-extinction-rate-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "extinctions": 5,
+      "speciesCount": 10000,
+      "years": 100
+    },
+    "outputs": {
+      "emsy": 5,
+      "ratioToBackground": 2.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "extinctions": 8,
+      "speciesCount": 15000,
+      "years": 150
+    },
+    "outputs": {
+      "emsy": 3.555555556,
+      "ratioToBackground": 1.777777778
+    }
+  },
+  "edge": {
+    "inputs": {
+      "extinctions": 0,
+      "speciesCount": 1,
+      "years": 1
+    },
+    "outputs": {
+      "emsy": 0,
+      "ratioToBackground": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > specific-heat-by-mixing-calculator 1`] = `
 {
   "default": {
@@ -16053,6 +16551,47 @@ exports[`compute() snapshots > student-loan-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > study-time-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "creditHours": 15,
+      "hoursPerCreditGuideline": 2,
+      "difficultyAdjustmentPercent": 25
+    },
+    "outputs": {
+      "recommendedWeeklyHours": 37.5,
+      "dailyAverage": 5.357142857,
+      "totalWeeklyCommitment": 52.5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "creditHours": 23,
+      "hoursPerCreditGuideline": 3,
+      "difficultyAdjustmentPercent": 40
+    },
+    "outputs": {
+      "recommendedWeeklyHours": 96.6,
+      "dailyAverage": 13.8,
+      "totalWeeklyCommitment": 119.6
+    }
+  },
+  "edge": {
+    "inputs": {
+      "creditHours": 1,
+      "hoursPerCreditGuideline": 0,
+      "difficultyAdjustmentPercent": 0
+    },
+    "outputs": {
+      "recommendedWeeklyHours": 0,
+      "dailyAverage": 0,
+      "totalWeeklyCommitment": 1
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > surface-area-calculator 1`] = `
 {
   "default": {
@@ -16315,6 +16854,50 @@ exports[`compute() snapshots > terminal-velocity-calculator 1`] = `
     },
     "outputs": {
       "velocity": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > test-score-to-letter-grade-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "score": 85,
+      "aCutoff": 90,
+      "bCutoff": 80,
+      "cCutoff": 70,
+      "dCutoff": 60
+    },
+    "outputs": {
+      "letterGradeCode": 3,
+      "pointsToNextGrade": 5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "score": 127.5,
+      "aCutoff": 135,
+      "bCutoff": 120,
+      "cCutoff": 105,
+      "dCutoff": 90
+    },
+    "outputs": {
+      "letterGradeCode": 3,
+      "pointsToNextGrade": 7.5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "score": 0,
+      "aCutoff": 0,
+      "bCutoff": 0,
+      "cCutoff": 0,
+      "dCutoff": 0
+    },
+    "outputs": {
+      "letterGradeCode": 4,
+      "pointsToNextGrade": 0
     }
   }
 }
@@ -17998,6 +18581,50 @@ exports[`compute() snapshots > warehouse-club-membership-breakeven-calculator 1`
     },
     "outputs": {
       "breakEvenTrips": "NaN"
+    }
+  }
+}
+`;
+
+exports[`compute() snapshots > water-fixture-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "showerMinutesPerDay": 16,
+      "flushesPerDay": 20,
+      "faucetMinutesPerDay": 20
+    },
+    "outputs": {
+      "savingsGalPerYear": 10366,
+      "standardGalPerYear": 42340,
+      "waterSenseGalPerYear": 31974,
+      "savingsPct": 24.48275862
+    }
+  },
+  "typical": {
+    "inputs": {
+      "showerMinutesPerDay": 24,
+      "flushesPerDay": 30,
+      "faucetMinutesPerDay": 30
+    },
+    "outputs": {
+      "savingsGalPerYear": 15549,
+      "standardGalPerYear": 63510,
+      "waterSenseGalPerYear": 47961,
+      "savingsPct": 24.48275862
+    }
+  },
+  "edge": {
+    "inputs": {
+      "showerMinutesPerDay": 0,
+      "flushesPerDay": 0,
+      "faucetMinutesPerDay": 0
+    },
+    "outputs": {
+      "savingsGalPerYear": 0,
+      "standardGalPerYear": 0,
+      "waterSenseGalPerYear": 0,
+      "savingsPct": "NaN"
     }
   }
 }

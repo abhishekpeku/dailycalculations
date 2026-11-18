@@ -66,6 +66,15 @@ export const calculatorOrder: string[] = [
   'unit-price-calculator',
   'age-calculator',
   'gpa-calculator',
+  'grade-calculator',
+  'final-grade-calculator',
+  'study-time-calculator',
+  'test-score-to-letter-grade-calculator',
+  'reading-speed-calculator',
+  'class-attendance-calculator',
+  'cumulative-gpa-calculator',
+  'semester-credit-hours-calculator',
+  'gpa-scale-converter',
   'calorie-calculator',
   'paycheck-calculator',
   'investment-calculator',
@@ -489,7 +498,12 @@ export const calculatorOrder: string[] = [
   'co2-breathing-emission-calculator',
   'mark-recapture-population-estimate-calculator',
   'noise-exposure-calculator',
-  'trophic-level-energy-calculator'
+  'trophic-level-energy-calculator',
+  'fish-mercury-calculator',
+  'earth-overshoot-day-calculator',
+  'water-fixture-calculator',
+  'species-extinction-rate-calculator',
+  'food-waste-composting-calculator'
 ];
 
 const rank = (id: string) => {

@@ -1517,7 +1517,7 @@ export const businessCalculators: CalculatorConfig[] = [
     inputs: [{ id: 'netSelfEmploymentEarnings', label: 'Net self-employment earnings', type: 'currency', placeholder: '100000', defaultValue: 100000, step: 1000, min: 0 }],
     seo: {
       title: 'Self-Employment Tax Estimator – Schedule SE',
-      description: "Estimate self-employment tax (Social Security + Medicare) from net self-employment earnings, following the IRS's Schedule SE method and the Social Security wage base cap.",
+      description: "Estimate self-employment tax (Social Security + Medicare) from net self-employment earnings, using the IRS's Schedule SE method and wage base cap.",
       faq: [
         { question: 'How do I calculate self-employment tax?', answer: 'Multiply net self-employment earnings by 92.35%, then apply 15.3% (12.4% Social Security, capped at the wage base, plus 2.9% Medicare, uncapped). $100,000 of net earnings owes $14,129.55.' },
         { question: 'Why isn\'t self-employment tax exactly 15.3% of net profit?', answer: 'Because the 15.3% rate applies to 92.35% of net earnings, not the full amount — roughly mirroring how a W-2 employee\'s employer-paid half of FICA is never itself taxed as the employee\'s income. The effective rate works out to about 14.13% on net earnings below the Social Security wage base.' },

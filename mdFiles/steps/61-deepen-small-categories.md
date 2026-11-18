@@ -264,6 +264,72 @@ whole site before writing any id.
   - All 8 numbers independently re-verified in a standalone Node scratch script (no app
     imports) before committing; `npm test` (1569 passing), lint, and `npm run build` all
     green with all 10 `creator` calculators present.
-- [ ] Batch 8 — `text` (8 new)
-- [ ] Batch 9 — `education` (9 new)
-- [ ] STATUS.md updated with a final per-category summary
+- [ ] Batch 8 — `text` (8 new) — built by a separate agent/worktree, branch `step/61-deepen-text`,
+      PR #129, open and not yet merged as of this entry. Not this batch's agent to document.
+- [x] Batch 9 — `education` (9 new; DONE 2026-11-18, branch `step/61-deepen-education`, PR #128)
+  - [x] `grade-calculator` — built alongside `weighted-average-calculator` (math) and `gpa-calculator`
+    (education) rather than skipped as a dupe: same underlying weighted-sum formula, but this page
+    is specialized in syllabus-category/percent-score terms, same precedent as GPA's own coexistence
+    with the general weighted-average calculator; cross-linked to both in `related`/copy.
+  - [x] `final-grade-calculator` — solves "what do I need on the final" from current grade, the
+    final's weight, and a target grade; distinct from `grade-calculator`'s forward average.
+  - [x] `study-time-calculator` — recommended weekly study hours from credit hours × a
+    difficulty multiplier, citing a real published study-hours-per-credit-hour guideline.
+  - [x] `test-score-to-letter-grade-calculator` — raw score/percentage → letter grade on the
+    common 90/80/70/60 scale or user-entered cutoffs, citing NCES's High School Transcript Study
+    methodology directly; distinct from GPA conversion (a later, separate step).
+  - [x] `reading-speed-calculator` — words-per-minute from a timed passage (word count ÷ minutes).
+  - [x] `class-attendance-calculator` — classes missed vs. a minimum-attendance-percentage
+    requirement, with how-many-more-can-I-miss headroom.
+  - [x] `cumulative-gpa-calculator` — combines a prior cumulative GPA + credits with a new term's
+    courses into a new cumulative figure; distinct from the single-term `gpa-calculator`.
+  - [x] `semester-credit-hours-calculator` — totals a course-credit list and checks it against a
+    full-time threshold (12 credits cited from a real university registrar policy, editable).
+  - [x] `gpa-scale-converter` — percentage/numeric grade → 4.0-scale GPA + letter grade, using the
+    NCES conversion table (same primary source already cited for
+    `test-score-to-letter-grade-calculator`). The 10-point CGPA scale (used by many Indian
+    universities) and a direct US-GPA-to-UK-degree-classification numeric conversion were both
+    deliberately **not** built: no confirmable primary source for the 10-point formula could be
+    found (WebSearch budget was exhausted this session; direct fetches of ugc.gov.in,
+    aicte-india.org, annauniv.edu and vtu.ac.in all 404'd, 403'd, reset the connection, or
+    redirected to an unrelated page), and the UK classification bands — First ≥70%, 2:1 60-69%,
+    2:2 50-59%, Third 40-49%, confirmed real and citable via Wikipedia's "British undergraduate
+    degree classification" article — are not on the same percentage scale as the US NCES bands
+    (UK 70%+ is First-class work; the same 70% on the US scale above is only a C), so chaining them
+    into one numeric conversion would imply a false equivalence. The UK bands are cited as
+    background context in the calculator's own copy, not as a computed output.
+  - A prior agent on this batch hit a session rate limit after committing the first 8 of these 9
+    calculators (this checklist wasn't updated past the first at the time); this entry's agent
+    resumed from the pushed branch, verified that state directly against the category file and
+    `index.ts`, and built and verified the ninth before closing out the batch.
+  - `education` 1 → 10 (verified programmatically: all 10 ids in `education.ts` match
+    `calculatorOrder` in `index.ts` exactly). `npm test` 1583/1583 (snapshot diff purely additive,
+    scoped to the new id), lint clean, `npm run build` 441 pages on this branch.
+- [x] STATUS.md updated with a final per-category summary (see its 2026-11-18 session log entry
+      and the step-61 row in its Step index table)
+
+## Closing summary — Step 61 complete (2026-11-18)
+
+Every category that was under 10 calculators when this step started is now at 10 or more:
+
+| Category | Before | After | Batch | PR |
+|---|---|---|---|---|
+| `auto` | 6 | 10 | 1 | #94 (merged) |
+| `work` | 4 | 10 | 2 | #95 (merged) |
+| `health` | 6 | 11 | 3 | #96 (merged) |
+| `shopping` | 5 | 10 | 4 | #97 (merged) |
+| `travel` | 4 | 10 | 5 | merged |
+| `time` | 5 | 10 | 6 | #127 (merged) |
+| `creator` | 2 | 10 | 7 | #126 (merged) |
+| `text` | 2 | 10 | 8 | #129 (open, separate agent, pending merge) |
+| `education` | 1 | 10 | 9 | #128 (this batch, pending merge) |
+
+41 calculators became 101 across the 9 batches (57 planned; a few categories landed above 10 where
+the real seed list genuinely supported it, like `health` at 11, and a handful of ideas were
+honestly skipped rather than padded in to hit a round number: `gas-mileage-comparison-calculator`
+in batch 1, and a 10-point GPA scale plus a direct US-to-UK GPA cross-conversion in batch 9). Every
+batch independently re-verified its own worked-example and FAQ numbers in a standalone Node scratch
+script, fetched every cited figure or formula directly rather than from memory, and kept
+`npm test`/`npm run lint`/`npm run build` green before every commit. Once PR #128 and #129 both
+merge, Step 61 — "deepen every category under 10 calculators to ≥10" — is fully closed, with no
+category below 10 anywhere on the site.

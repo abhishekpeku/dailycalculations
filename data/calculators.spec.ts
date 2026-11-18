@@ -183,7 +183,23 @@ const KNOWN_NON_FINITE: Record<string, string[]> = {
   'solar-payback-period-calculator': ['paybackPeriod'],
   // retailRatePerKwh 0 (its min) -> compute()'s own guard, no "% less than retail" with a zero
   // retail rate to divide by; the two credit/value figures stay finite 0 either way.
-  'net-metering-savings-calculator': ['creditShortfallPercent']
+  'net-metering-savings-calculator': ['creditShortfallPercent'],
+  // sellingPrice and cost both 0 (their min) -> profit is a finite 0/0=0, but marginPercent
+  // (divides by sellingPrice) and markupPercent (divides by cost) both have no answer.
+  'profit-margin-calculator': ['marginPercent', 'markupPercent'],
+  // cost and sellingPrice both 0 (their min) -> profit is a finite 0, but markupPercent (divides
+  // by cost) and marginPercent (divides by sellingPrice) both have no answer.
+  'markup-calculator': ['markupPercent', 'marginPercent'],
+  // fixedCosts, pricePerUnit and variableCostPerUnit all 0 (their min) -> contributionMarginPerUnit
+  // is a finite 0, but breakEvenUnits (0 fixed costs / 0 margin), contributionMarginRatio (divides
+  // by price) and breakEvenRevenue (breakEvenUnits × price, both NaN/0) all have no answer.
+  'break-even-calculator': ['breakEvenUnits', 'contributionMarginRatio', 'breakEvenRevenue'],
+  // pricePerUnit and variableCostPerUnit both 0 (their min) -> contributionMarginPerUnit is a
+  // finite 0, but contributionMarginRatio (divides by price) has no answer.
+  'contribution-margin-calculator': ['contributionMarginRatio'],
+  // beginningInventory, purchases, endingInventory and revenue all 0 (their min) -> cogs and
+  // grossProfit are both a finite 0, but grossMarginPercent (divides by revenue) has no answer.
+  'cost-of-goods-sold-calculator': ['grossMarginPercent']
 };
 
 // Pinned "today" for timeDependent calculators; the date the snapshots were recorded against.

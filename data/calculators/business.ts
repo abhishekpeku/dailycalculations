@@ -251,7 +251,7 @@ export const businessCalculators: CalculatorConfig[] = [
     glyph: 'BE',
     updatedAt: '2026-11-18',
     aliases: ['break even point calculator', 'break even analysis calculator', 'break even units calculator', 'how many units to break even calculator'],
-    related: ['contribution-margin-calculator', 'profit-margin-calculator', 'payback-period-calculator', 'burn-rate-calculator'],
+    related: ['contribution-margin-calculator', 'profit-margin-calculator', 'business-loan-calculator', 'commission-calculator'],
     title: 'Break-Even Calculator',
     description: 'Find the break-even point — in units or in sales dollars — from fixed costs, price per unit, and variable cost per unit, or solve backward for the price or cost it takes to break even at a given volume.',
     example: 'With $24,000 of fixed costs, a $60 price, and $35 of variable cost per unit, break-even is 960 units, or $57,600 in sales.',
@@ -357,7 +357,7 @@ export const businessCalculators: CalculatorConfig[] = [
     ],
     seo: {
       title: 'Break-Even Calculator – Units and Sales Dollars',
-      description: 'Calculate the break-even point in units and sales dollars from fixed costs, price, and variable cost per unit, or solve backward. Free, with contribution margin.',
+      description: 'Calculate the break-even point in units and sales dollars from fixed costs, price and variable cost per unit, or solve backward, with contribution margin.',
       faq: [
         { question: 'How do I calculate the break-even point?', answer: 'Divide fixed costs by contribution margin per unit (price minus variable cost per unit). $24,000 of fixed costs with a $25 contribution margin ($60 price, $35 variable cost) breaks even at 960 units.' },
         { question: 'What is break-even in sales dollars, not units?', answer: 'Fixed costs divided by the contribution margin ratio (contribution margin per unit divided by price). In the example, $24,000 ÷ 41.67% ≈ $57,600, the same as 960 units × $60.' },
@@ -499,7 +499,7 @@ export const businessCalculators: CalculatorConfig[] = [
     glyph: 'COGS',
     updatedAt: '2026-11-18',
     aliases: ['COGS calculator', 'cost of sales calculator', 'beginning and ending inventory calculator', 'gross profit from inventory calculator'],
-    related: ['profit-margin-calculator', 'break-even-calculator', 'contribution-margin-calculator', 'depreciation-calculator'],
+    related: ['profit-margin-calculator', 'break-even-calculator', 'contribution-margin-calculator', 'commission-calculator'],
     title: 'Cost of Goods Sold (COGS) Calculator',
     description: 'Find cost of goods sold from beginning inventory, purchases, and ending inventory — the same inventory math behind IRS Form 1125-A — plus gross profit and gross margin if you add revenue.',
     example: 'With $40,000 of beginning inventory, $150,000 of purchases, and $35,000 of ending inventory, cost of goods sold is $155,000.',

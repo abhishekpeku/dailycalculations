@@ -169,7 +169,12 @@ Countdowns, Weather & Geography, Everyday Novelties), add `fun` to `categories.s
   - [x] `birthday-paradox-calculator`
   - [x] `lottery-odds-calculator`
   - [x] `card-draw-probability-calculator`
-- [ ] Batch 3 — Calendar & countdown novelties (5)
+- [ ] Batch 3 — Calendar & countdown novelties (5) — IN PROGRESS, branch `step/50-fun-other-batch3`
+  - [ ] `easter-date-calculator`
+  - [ ] `mayan-calendar-converter`
+  - [ ] `friday-the-13th-calculator`
+  - [ ] `christmas-countdown-calculator`
+  - [ ] `new-years-countdown-calculator`
 - [ ] Batch 4 — Weather & geography novelties (5)
 - [ ] Batch 5 — Everyday gadget/misc novelties (4)
 - [ ] Batch 6 — Sub-grouping retrofit (`group` field + `GROUPED_CATEGORIES`)

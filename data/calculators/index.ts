@@ -138,6 +138,7 @@ export const calculatorOrder: string[] = [
   'typing-speed-calculator',
   'script-reading-time-calculator',
   'tweet-thread-length-calculator',
+  'readability-score-calculator',
   'pomodoro-timer',
   'timezone-meeting-planner',
   'force-calculator',

@@ -13714,6 +13714,44 @@ exports[`compute() snapshots > reaction-half-life-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > readability-score-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "words": 150,
+      "sentences": 10,
+      "syllables": 225
+    },
+    "outputs": {
+      "gradeLevel": 7.96,
+      "readingEase": 64.71
+    }
+  },
+  "typical": {
+    "inputs": {
+      "words": 225,
+      "sentences": 15,
+      "syllables": 338
+    },
+    "outputs": {
+      "gradeLevel": 7.986222222,
+      "readingEase": 64.522
+    }
+  },
+  "edge": {
+    "inputs": {
+      "words": 1,
+      "sentences": 1,
+      "syllables": 1
+    },
+    "outputs": {
+      "gradeLevel": -3.4,
+      "readingEase": 121.22
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > rebar-calculator 1`] = `
 {
   "default": {

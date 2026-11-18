@@ -578,5 +578,119 @@ export const textCalculators: CalculatorConfig[] = [
       const lastPostCharacters = values.totalCharacters - (postsNeeded - 1) * usablePerPost;
       return { postsNeeded, usablePerPost, lastPostCharacters };
     }
+  },
+  {
+    id: 'readability-score-calculator',
+    group: 'Word Count & Readability',
+    category: 'text',
+    glyph: 'FK',
+    updatedAt: '2026-11-18',
+    aliases: ['flesch kincaid calculator', 'reading level calculator', 'grade level calculator', 'flesch reading ease calculator', 'text difficulty calculator'],
+    related: ['character-counter', 'typing-speed-calculator', 'keyword-density-calculator'],
+    title: 'Readability Score Calculator',
+    description: 'Calculate the Flesch-Kincaid Grade Level and Flesch Reading Ease score from a word, sentence and syllable count — the standard formulas behind most readability checks.',
+    example: 'A 150-word passage with 10 sentences and 225 syllables scores a 7.96 grade level and a 64.7 reading-ease score — "plain English," per the Flesch scale.',
+    breakdown: {
+      headline: 'gradeLevel',
+      headlineLabel: 'Flesch-Kincaid grade level',
+      outputs: [
+        { id: 'gradeLevel', format: 'number' },
+        { id: 'readingEase', label: 'Flesch Reading Ease score', format: 'number' }
+      ],
+      groups: [{ title: 'Text counts', inputs: ['words', 'sentences', 'syllables'] }],
+      visual: {
+        type: 'rangeBar',
+        value: 'readingEase',
+        title: 'Flesch Reading Ease',
+        bands: [
+          { label: 'Extremely difficult (professional)', min: -100, max: 10, color: '#dc2626' },
+          { label: 'Very difficult (college graduate)', min: 10, max: 30, color: '#ea580c' },
+          { label: 'Difficult (college)', min: 30, max: 50, color: '#f59e0b' },
+          { label: 'Fairly difficult (10th-12th grade)', min: 50, max: 60, color: '#eab308' },
+          { label: 'Plain English (8th & 9th grade)', min: 60, max: 70, color: '#84cc16' },
+          { label: 'Fairly easy (7th grade)', min: 70, max: 80, color: '#22c55e' },
+          { label: 'Easy (6th grade)', min: 80, max: 90, color: '#16a34a' },
+          { label: 'Very easy (5th grade)', min: 90, max: 150, color: '#15803d' }
+        ]
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'What the Flesch-Kincaid formulas measure, and where they come from',
+        paragraphs: [
+          'The Flesch-Kincaid Grade Level and Flesch Reading Ease are two readability formulas built from the same two ratios: average sentence length (words per sentence) and average word length (syllables per word). Longer sentences and longer, more multi-syllable words both push the grade level up and the reading-ease score down — the two scores move in opposite directions on purpose, one estimating a US school grade and the other a 0-100 "ease" score.',
+          'The grade-level formula comes from Kincaid, Fishburne, Rogers and Chissom\'s 1975 report for the US Navy, "Derivation of New Readability Formulas," which adapted Rudolf Flesch\'s earlier Reading Ease formula into a direct school-grade estimate for Navy training materials. Both formulas remain in wide use today, built into word processors and plain-language style guides.',
+          'Because both scores are built only from sentence length and syllable count, they measure text structure, not meaning. A sentence full of short, common words about a confusing topic can still score "easy," and a short sentence using one unfamiliar multi-syllable term can score "difficult." Treat the result as a structural proxy for reading difficulty, not a verified measure of whether a reader will understand the content.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter the word, sentence and syllable counts for the passage you want to score.',
+        steps: [
+          { name: 'Count the words', text: 'Use the word counter or character counter on this site, or your word processor\'s own count, for an exact figure.' },
+          { name: 'Count the sentences', text: 'Count runs of sentence-ending punctuation (. ! ?), the same convention the character counter on this site uses.' },
+          { name: 'Count the syllables', text: 'Use the syllable counter on this site for an estimate, or count them yourself for full accuracy.' },
+          { name: 'Read the grade level', text: 'The headline figure is the estimated US school grade needed to read the passage comfortably.' },
+          { name: 'Check the reading-ease band', text: 'The bar below shows where the Flesch Reading Ease score falls, from "extremely difficult" to "very easy."' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Both formulas are built from the same two ratios: average sentence length and average word length in syllables.',
+        expression: 'ASL = words ÷ sentences\nASW = syllables ÷ words\nGrade = 0.39 × ASL + 11.8 × ASW − 15.59\nEase = 206.835 − 1.015 × ASL − 84.6 × ASW',
+        terms: [
+          { symbol: 'ASL', meaning: 'Average sentence length: words per sentence.' },
+          { symbol: 'ASW', meaning: 'Average syllables per word.' },
+          { symbol: 'Grade', meaning: 'Flesch-Kincaid Grade Level: an estimated US school grade.' },
+          { symbol: 'Ease', meaning: 'Flesch Reading Ease: a 0-100 scale (higher is easier), though the formula can produce scores slightly outside that range.' }
+        ],
+        note: 'A structural estimate from sentence and syllable counts, not a measure of whether the content itself is understandable.'
+      },
+      workedExample: {
+        intro: 'A 150-word passage has 10 sentences and 225 syllables. What is its grade level and reading-ease score?',
+        rows: [
+          { label: 'ASL (150 ÷ 10)', value: '15 words/sentence' },
+          { label: 'ASW (225 ÷ 150)', value: '1.5 syllables/word' },
+          { label: 'Grade (0.39 × 15 + 11.8 × 1.5 − 15.59)', value: '7.96' },
+          { label: 'Ease (206.835 − 1.015 × 15 − 84.6 × 1.5)', value: '64.71' }
+        ],
+        result: 'Grade level 7.96 · Reading Ease 64.71 ("Plain English," 8th & 9th grade)',
+        explanation: 'The two scores agree: a 7.96 grade level and a 64.71 reading-ease score both land in the same "8th & 9th grade, Plain English" range, since both come from the same 15-words-per-sentence, 1.5-syllables-per-word structure.'
+      },
+      watchOut: [
+        { title: 'Two scales, opposite directions', body: 'A higher grade level means harder-to-read text, but a higher reading-ease score means easier-to-read text. Mixing up which direction is "better" on each scale is an easy mistake.' },
+        { title: 'The score can go below 0 or above 100', body: 'The Reading Ease formula has no built-in floor or ceiling: very short, simple sentences can score just over 100, and very long, syllable-heavy sentences can score below 0. Both are the formula working as designed, not a bug.' },
+        { title: 'This measures structure, not comprehension', body: 'A text about a difficult subject written in short, common words can still score "easy," and a short sentence containing one unfamiliar technical term can score "difficult." The formula cannot tell whether a reader actually understands the content.' },
+        { title: 'Garbage counts in, garbage score out', body: 'The result is only as accurate as the word, sentence and syllable counts you provide. Use a consistent counting method — this site\'s own word counter, character counter and syllable counter use the same conventions as the worked example above.' },
+        { title: 'Built for English', body: 'Both formulas were derived from English-language text and its typical syllable and sentence patterns. Applying them to another language\'s text will not give a meaningful score.' }
+      ],
+      references: [
+        { label: 'Wikipedia, Flesch-Kincaid readability tests', url: 'https://en.wikipedia.org/wiki/Flesch%E2%80%93Kincaid_readability_tests' }
+      ]
+    },
+    inputs: [
+      { id: 'words', label: 'Word count', type: 'number', placeholder: '150', defaultValue: 150, step: 1, min: 1 },
+      { id: 'sentences', label: 'Sentence count', type: 'number', placeholder: '10', defaultValue: 10, step: 1, min: 1 },
+      { id: 'syllables', label: 'Syllable count', type: 'number', placeholder: '225', defaultValue: 225, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Readability Score Calculator – Flesch-Kincaid Grade',
+      description: 'Calculate the Flesch-Kincaid Grade Level and Flesch Reading Ease score from word, sentence and syllable counts. Free, instant, cites the original formulas.',
+      faq: [
+        { question: 'How do you calculate the Flesch-Kincaid grade level?', answer: 'Grade = 0.39 × (words ÷ sentences) + 11.8 × (syllables ÷ words) − 15.59. A 150-word, 10-sentence, 225-syllable passage scores 0.39 × 15 + 11.8 × 1.5 − 15.59 = 7.96.' },
+        { question: 'What is a good Flesch Reading Ease score?', answer: 'Higher is easier to read: 90-100 is "very easy" (5th grade), 60-70 is "plain English" (8th & 9th grade), and below 30 is "very difficult" (college graduate level), per the scale in Wikipedia\'s Flesch-Kincaid readability tests article.' },
+        { question: 'Where do these formulas come from?', answer: 'The grade-level formula is from Kincaid, Fishburne, Rogers and Chissom\'s 1975 US Navy report, which adapted Rudolf Flesch\'s earlier Reading Ease formula into a direct school-grade estimate.' },
+        { question: 'How do I count syllables for this calculator?', answer: 'Use the syllable counter on this site for an estimate, or count them by hand. The result is only as accurate as the syllable count you provide.' },
+        { question: 'Can the reading-ease score go above 100 or below 0?', answer: 'Yes. The formula has no built-in limit — extremely short, simple sentences can score just over 100, and long, syllable-heavy sentences can score below 0.' },
+        { question: 'Does a high grade level mean the writing is bad?', answer: 'Not necessarily. These formulas measure sentence and word length, not quality or clarity. Technical or legal writing often scores a high grade level because the subject itself requires longer sentences and specific terminology.' }
+      ]
+    },
+    compute(values) {
+      const asl = values.sentences > 0 ? values.words / values.sentences : NaN;
+      const asw = values.words > 0 ? values.syllables / values.words : NaN;
+      const gradeLevel = 0.39 * asl + 11.8 * asw - 15.59;
+      const readingEase = 206.835 - 1.015 * asl - 84.6 * asw;
+      return { gradeLevel, readingEase };
+    }
   }
 ];

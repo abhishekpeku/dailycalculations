@@ -136,6 +136,7 @@ export const calculatorOrder: string[] = [
   'hashtag-counter',
   'keyword-density-calculator',
   'typing-speed-calculator',
+  'script-reading-time-calculator',
   'pomodoro-timer',
   'timezone-meeting-planner',
   'force-calculator',

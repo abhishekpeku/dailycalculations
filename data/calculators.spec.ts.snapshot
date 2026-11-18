@@ -14863,6 +14863,38 @@ exports[`compute() snapshots > scientific-notation-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > script-reading-time-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "scriptWordCount": 700,
+      "speakingRateWpm": 140
+    },
+    "outputs": {
+      "estimatedMinutes": 5
+    }
+  },
+  "typical": {
+    "inputs": {
+      "scriptWordCount": 1050,
+      "speakingRateWpm": 210
+    },
+    "outputs": {
+      "estimatedMinutes": 5
+    }
+  },
+  "edge": {
+    "inputs": {
+      "scriptWordCount": 0,
+      "speakingRateWpm": 1
+    },
+    "outputs": {
+      "estimatedMinutes": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > self-rising-flour-substitute-calculator 1`] = `
 {
   "default": {

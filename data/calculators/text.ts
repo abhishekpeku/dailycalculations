@@ -367,5 +367,105 @@ export const textCalculators: CalculatorConfig[] = [
       const wpm = values.minutesTaken > 0 ? values.wordsTyped / values.minutesTaken : NaN;
       return { typingSpeedWpm: wpm };
     }
+  },
+  {
+    id: 'script-reading-time-calculator',
+    group: 'Writing & Productivity',
+    category: 'text',
+    glyph: 'spk',
+    updatedAt: '2026-11-18',
+    aliases: ['video script timer', 'voiceover time calculator', 'speaking time calculator', 'how long is my script', 'words to minutes calculator'],
+    related: ['typing-speed-calculator', 'character-counter', 'keyword-density-calculator'],
+    title: 'Script Reading Time Calculator',
+    description: 'Estimate how long a script takes to read aloud for a video, podcast or presentation, using a speaking rate you choose — slower than silent reading. Fill in any two fields.',
+    example: 'A 700-word script at 140 words per minute, a typical narration pace, takes about 5 minutes to read aloud.',
+    solver: {
+      defaultTarget: 'minutes',
+      variables: [
+        { id: 'minutes', label: 'Spoken reading time', symbol: 't', dimension: 'time', defaultValue: 5, defaultUnit: 'min' },
+        { id: 'words', label: 'Script word count', symbol: 'N', dimension: 'count', defaultValue: 700, defaultUnit: 'count' },
+        { id: 'rate', label: 'Speaking rate', symbol: 'r', dimension: 'count', defaultValue: 140, defaultUnit: 'count' }
+      ],
+      solve: {
+        minutes: ({ words, rate }) => (rate > 0 ? (words / rate) * 60 : NaN),
+        words: ({ rate, minutes }) => rate * (minutes / 60),
+        rate: ({ words, minutes }) => (minutes > 0 ? words / (minutes / 60) : NaN)
+      },
+      outputs: [
+        { id: 'silentReadingTime', label: 'Silent reading time, for comparison (200 wpm)', dimension: 'time', unit: 'min', compute: (si) => (si.words / 200) * 60 }
+      ]
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why a script reads slower than silent reading, and what rate to use',
+        paragraphs: [
+          'Reading a script out loud takes longer per word than reading the same text silently, because speech adds pauses for breath, emphasis and pacing that silent reading skips entirely. This calculator defaults to 140 words per minute for spoken delivery, deliberately slower than the 200-words-per-minute silent-reading estimate used elsewhere on this site (on the character counter) — the two numbers measure different things and are not interchangeable.',
+          'Wikipedia\'s words-per-minute article, summarizing speech-rate research, states that slide presentations average closer to 100-125 wpm "for a comfortable pace," while audiobook narration runs 150-160 wpm, "the range that people comfortably hear." This calculator\'s 140 wpm default sits between those two cited figures — a reasonable starting point for a video or podcast script, which is usually paced somewhere between a slow, deliberate presentation and a smoothly narrated audiobook.',
+          'Every script and speaker is different, though, so the rate field is yours to change. A technical explainer with pauses for on-screen diagrams reads slower than a fast-cut highlight reel; a naturally quick talker will clear a script faster than a deliberate one reading the identical words. Time a short section of your own delivery and use that rate here for a far more accurate estimate than any default.'
+        ]
+      },
+      howTo: {
+        intro: 'Fill in any two of the three fields below. The third, marked auto, is calculated as you type.',
+        steps: [
+          { name: 'Estimate your runtime', text: 'Enter your script\'s word count and a speaking rate to see how long it takes to read aloud.' },
+          { name: 'Write to a target length', text: 'Enter your target runtime and a speaking rate to see how many words to write.' },
+          { name: 'Find your own speaking rate', text: 'Enter a word count and the time it actually took you to read it, to calculate your personal rate.' },
+          { name: 'Start from the default, then adjust', text: 'The 140 wpm default sits between typical presentation and audiobook-narration pace — time yourself for a more accurate figure.' },
+          { name: 'Compare to silent reading', text: 'The bonus figure below the result shows how much longer the same text takes spoken aloud than read silently at 200 wpm.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored.'
+      },
+      formula: {
+        intro: 'Spoken time is the word count divided by the speaking rate. Each field has a direct rearrangement.',
+        expression: 't = N ÷ r\nN = r × t\nr = N ÷ t',
+        terms: [
+          { symbol: 't', meaning: 'Spoken reading time, in minutes.' },
+          { symbol: 'N', meaning: 'Number of words in the script.' },
+          { symbol: 'r', meaning: 'Speaking rate, in words per minute.' }
+        ],
+        note: 'An estimate. Pauses for visuals, emphasis, or a slower-than-usual delivery will all push the real time above this figure.'
+      },
+      workedExample: {
+        intro: 'A 700-word video script is read aloud at the default 140 wpm narration pace. How long does it run, and how does that compare to reading the same 700 words silently?',
+        rows: [
+          { label: 'Spoken time (700 ÷ 140)', value: '5 minutes' },
+          { label: 'Silent reading time (700 ÷ 200)', value: '3.5 minutes' },
+          { label: 'Difference', value: '1.5 minutes longer spoken' }
+        ],
+        result: 'About 5 minutes spoken · 3.5 minutes silent for the same 700 words',
+        explanation: 'Spoken delivery at 140 wpm takes 42.9% longer than silent reading at 200 wpm for the same text — a fixed ratio (200 ÷ 140) that holds regardless of word count, not something specific to this 700-word example.'
+      },
+      watchOut: [
+        { title: 'Not the same figure as this site\'s reading-time estimate', body: 'The character counter\'s 200 wpm reading-time figure is for silent reading of on-screen text. This calculator\'s 130-150 wpm range is for reading aloud — using one rate for the other\'s purpose will give a noticeably wrong estimate.' },
+        { title: 'The default is a starting point, not your rate', body: 'The 140 wpm default sits between the 100-125 wpm Wikipedia cites for slide presentations and the 150-160 wpm it cites for audiobook narration. Timing your own delivery of a short passage and entering that rate will always beat any default.' },
+        { title: 'Pauses and visuals add time this does not count', body: 'A script with planned pauses, on-screen diagrams, or b-roll without narration runs longer than the word-count math alone predicts. Build in extra time for those sections separately.' },
+        { title: 'Faster is not automatically better for video', body: 'A rate that feels natural in conversation can feel rushed on camera, where pacing also serves the edit. Many creators deliberately slow down from their conversational rate when recording.' },
+        { title: 'Language and speaker both change the rate', body: 'Speaking rates vary by language and by individual speaker. Treat the cited figures as an English-language, general-audience reference point, not a universal constant.' }
+      ],
+      references: [
+        { label: 'Wikipedia, Words per minute', url: 'https://en.wikipedia.org/wiki/Words_per_minute' }
+      ]
+    },
+    inputs: [
+      { id: 'scriptWordCount', label: 'Script word count', type: 'number', placeholder: '700', defaultValue: 700, step: 1, min: 0 },
+      { id: 'speakingRateWpm', label: 'Speaking rate (words per minute)', type: 'number', placeholder: '140', defaultValue: 140, step: 1, min: 1 }
+    ],
+    seo: {
+      title: 'Script Reading Time Calculator – Video & Podcast Scripts',
+      description: 'Estimate how long a video, podcast or presentation script takes to read aloud at a speaking rate you choose (default 140 wpm), distinct from silent-reading time.',
+      faq: [
+        { question: 'How long does it take to read a script out loud?', answer: 'Divide the word count by your speaking rate in words per minute. A 700-word script at 140 wpm takes 700 ÷ 140 = 5 minutes.' },
+        { question: 'What speaking rate should I use for a video script?', answer: 'This calculator defaults to 140 wpm, between the 100-125 wpm Wikipedia\'s words-per-minute article cites for slide presentations and the 150-160 wpm it cites for audiobook narration. Timing your own delivery gives a more accurate figure than any default.' },
+        { question: 'Why is this different from the reading-time figure on the character counter?', answer: 'The character counter estimates silent reading of on-screen text at 200 wpm. This calculator estimates speaking a script aloud, which is slower — about 42.9% longer for the same word count at this calculator\'s 140 wpm default.' },
+        { question: 'How many words should my script be for a 2-minute video?', answer: 'Multiply the target minutes by your speaking rate. At 140 wpm, 2 minutes is 140 × 2 = 280 words.' },
+        { question: 'Does this account for pauses or visuals?', answer: 'No. It is a word-count-divided-by-rate estimate. Planned pauses, on-screen diagrams, or silent b-roll sections will make the real runtime longer than this figure.' },
+        { question: 'Is the speaking rate the same in every language?', answer: 'No. Speaking rates vary by language and by individual speaker. The figures cited here are for English-language narration and presentation speech.' }
+      ]
+    },
+    compute(values) {
+      const minutes = values.speakingRateWpm > 0 ? values.scriptWordCount / values.speakingRateWpm : NaN;
+      return { estimatedMinutes: minutes };
+    }
   }
 ];

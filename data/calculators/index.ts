@@ -553,6 +553,7 @@ export const calculatorOrder: string[] = [
   'solar-loan-payment-calculator',
   'net-metering-savings-calculator',
   'battery-backup-sizing-calculator',
+  'off-grid-solar-calculator',
   'human-life-value-calculator',
   'dime-method-life-insurance-calculator',
   'term-life-coverage-calculator',

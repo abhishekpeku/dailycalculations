@@ -685,5 +685,117 @@ export const solarCalculators: CalculatorConfig[] = [
       const batteriesNeeded = Math.ceil(requiredKwh / 13.5);
       return { requiredKwh, requiredKwhBare, batteriesNeeded };
     }
+  },
+  {
+    id: 'off-grid-solar-calculator',
+    category: 'solar',
+    glyph: 'OG',
+    updatedAt: '2026-11-18',
+    aliases: ['off grid solar system sizing calculator', 'stand alone solar system calculator', 'off grid solar panel and battery calculator', 'how big an off grid solar system do i need', 'off grid solar battery bank calculator'],
+    related: ['solar-panel-system-size-calculator', 'battery-backup-sizing-calculator', 'home-electricity-consumption-calculator', 'net-metering-savings-calculator'],
+    title: 'Off-Grid Solar System Calculator',
+    description: 'Size a fully off-grid (stand-alone) solar system\'s array and battery bank from daily energy need, sun-hours, system losses, days of autonomy and battery depth of discharge — no grid to fall back on.',
+    example: '5 kWh/day of off-grid use, 5 sun-hours, 20% system losses, 2 days of autonomy and a 90% depth of discharge calls for a 1.25 kW array and an 11.11 kWh battery bank.',
+    breakdown: {
+      headline: 'requiredArrayKw',
+      headlineLabel: 'Solar array size needed',
+      outputs: [
+        { id: 'requiredArrayKw', label: 'Solar array size needed', format: 'number' },
+        { id: 'batteryBankKwh', label: 'Battery bank size needed', format: 'number', dimension: 'energy', unit: 'kWh' }
+      ],
+      groups: [
+        { title: 'Daily use and sun', inputs: ['dailyEnergyNeedKwh', 'sunHours', 'systemLossesPercent'] },
+        { title: 'Battery bank', inputs: ['daysOfAutonomy', 'depthOfDischargePercent'] }
+      ],
+      visual: {
+        type: 'compareBars',
+        bars: [
+          { from: 'dailyEnergyNeedKwh', label: 'Daily use' },
+          { from: 'batteryBankKwh', label: 'Battery bank' }
+        ],
+        title: 'Daily energy use vs. battery bank size'
+      }
+    },
+    content: {
+      lastReviewed: '2026-11-18',
+      concept: {
+        title: 'Why off-grid sizing is different from grid-tied sizing',
+        paragraphs: [
+          'The solar panel system size calculator above sizes a grid-tied system to roughly match a home\'s usage over a whole year, because the grid absorbs every day-to-day mismatch — a cloudy week is simply bought from the utility, and a sunny one is exported. An off-grid (stand-alone) system has no such backstop: the U.S. Department of Energy\'s overview of PV system design notes that "batteries allow for the storage of solar photovoltaic energy, so we can use it to power our homes at night or when weather elements keep sunlight from reaching PV panels" — for an off-grid system, that battery bank is the only backstop there is, so both the array and the battery bank have to be sized for the worst realistic day, not the average one.',
+          'The array side of the sizing works the same way as the grid-tied calculator\'s production ratio, just expressed in "peak sun hours" instead: the number of hours a location\'s panels would need to receive maximum (1,000 W/m²) sunlight to deliver the day\'s actual solar energy. A location-specific figure — from a tool like PVWatts, or a local installer\'s own data — is far more reliable than a national default; this calculator\'s illustrative figure, 5 sun-hours, sits in the middle of the range most of the mainland U.S. sees.',
+          'The battery side borrows the same demand-times-time logic EnergySage uses for backup-battery sizing — "multiply the appliances\' electricity demand by the number of hours they\'ll need to run" — extended across more than one day. "Days of autonomy" is how many days the battery bank needs to cover with no solar input at all (a stretch of heavy cloud cover, say), and "depth of discharge" is how much of a battery\'s rated capacity can actually be used before recharging — check your own battery\'s spec sheet for its real figure rather than assuming a default, since it varies by battery chemistry and manufacturer.'
+        ]
+      },
+      howTo: {
+        intro: 'Enter your daily energy need and local sun-hours, then set how many cloudy days the battery bank needs to cover on its own.',
+        steps: [
+          { name: 'Enter your daily energy need', text: 'Use the kWh/day figure from the home electricity consumption calculator above, summed across everything you\'ll run off-grid.' },
+          { name: 'Enter your location\'s sun-hours', text: 'Use a location-specific peak-sun-hours figure if you have one (from PVWatts or an installer); the default is a rough mid-range U.S. illustrative figure.' },
+          { name: 'Enter system losses', text: 'A combined derate for wiring, inverter conversion and panel soiling — the default, 20%, is a reasonable starting point to adjust from.' },
+          { name: 'Set days of autonomy', text: 'How many consecutive no-sun days you want the battery bank to cover by itself. More days means a larger, more expensive bank.' },
+          { name: 'Enter your battery\'s depth of discharge', text: 'Check the manufacturer spec sheet — it varies by battery chemistry. The default, 90%, is illustrative, not a specific product\'s number.' },
+          { name: 'Read the result', text: 'The headline is the array size needed; the row below is the battery bank size.' }
+        ],
+        outro: 'Everything is calculated in your browser. Nothing you type is sent or stored. This is a planning estimate — a system this important to get right deserves a professional off-grid design review.'
+      },
+      formula: {
+        intro: 'The array is sized to replace a day\'s energy use within the available sun-hours, after losses; the battery bank is sized to cover several sunless days at a usable fraction of its rated capacity.',
+        expression: 'array size (W) = daily energy need (Wh) ÷ (sun-hours × (1 − losses%))\nbattery bank (kWh) = daily energy need (kWh) × days of autonomy ÷ (depth of discharge%)',
+        terms: [
+          { symbol: 'daily energy need', meaning: 'Total energy used per day by everything the system powers, in kWh.' },
+          { symbol: 'sun-hours', meaning: 'Peak sun hours per day for the location — hours of 1,000 W/m² sunlight equivalent to the day\'s actual solar energy.' },
+          { symbol: 'losses%', meaning: 'Combined derate for wiring, inverter conversion and soiling.' },
+          { symbol: 'days of autonomy', meaning: 'Consecutive no-sun days the battery bank must cover without any solar input.' },
+          { symbol: 'depth of discharge%', meaning: 'The usable fraction of a battery\'s rated capacity before it needs recharging — check your own battery\'s spec sheet.' }
+        ],
+        note: 'This sizes the array and battery bank independently against the inputs you give it; it does not model a specific location\'s seasonal sun-hours swing or run a multi-day simulation. A location-specific tool or an off-grid installer\'s own design process accounts for far more — including worst-month sun-hours, not an annual or illustrative figure.'
+      },
+      workedExample: {
+        intro: 'An off-grid cabin uses 5 kWh a day, its location gets about 5 peak sun-hours, system losses are estimated at 20%, the battery bank should cover 2 days of autonomy, and the battery\'s depth of discharge is 90%.',
+        rows: [
+          { label: 'Array size (5,000 ÷ (5 × 0.80))', value: '1,250 W = 1.25 kW' },
+          { label: 'Battery bank (5 × 2 ÷ 0.90)', value: '11.11 kWh' }
+        ],
+        result: '1.25 kW array · 11.11 kWh battery bank',
+        explanation: 'Dropping to 4 sun-hours (a cloudier location, same 5 kWh/day need) raises the array size to 1,562.5 W — 25% bigger — because the same daily energy now has to be captured in fewer hours of sun. The battery bank is unaffected by sun-hours; at a lower 100% depth of discharge it would need only 10 kWh instead of 11.11 kWh, about 10% less, because more of each battery\'s capacity is considered usable.'
+      },
+      watchOut: [
+        { title: 'Size for the worst realistic day, not the average one', body: 'Unlike a grid-tied system, there is no utility to buy from during a stretch of bad weather. Use a conservative, location-specific sun-hours figure and enough days of autonomy for the cloudy spells your location actually gets.' },
+        { title: 'Depth of discharge varies a lot by battery', body: 'This calculator\'s 90% default is illustrative only — different battery chemistries and products specify very different usable fractions of their rated capacity. Check your own battery\'s spec sheet rather than trusting a default.' },
+        { title: 'This does not model seasonal swings', body: 'Sun-hours change through the year, often substantially — winter can be far worse than the annual average in many locations. Size against the worst month you actually need to get through, not a single annual figure.' },
+        { title: 'A professional design review matters more here than for grid-tied systems', body: 'An undersized grid-tied system just exports and imports a little differently than expected. An undersized off-grid system can mean no power at all during a bad stretch of weather — treat this as a planning estimate, not a final design.' }
+      ],
+      references: [
+        { label: 'U.S. Department of Energy, Solar Photovoltaic System Design Basics (role of batteries in a PV system)', url: 'https://www.energy.gov/eere/solar/solar-photovoltaic-system-design-basics' },
+        { label: 'EnergySage, "How Many Solar Batteries Do You Need for Backup Power?" (demand × time sizing formula)', url: 'https://www.energysage.com/energy-storage/how-many-solar-batteries-needed/' },
+        { label: 'U.S. Department of Energy, Homeowner\'s Guide to Going Solar (PVWatts, for location-specific sun-hours)', url: 'https://www.energy.gov/eere/solar/homeowners-guide-going-solar' }
+      ]
+    },
+    inputs: [
+      { id: 'dailyEnergyNeedKwh', label: 'Daily energy need', type: 'number', placeholder: '5', defaultValue: 5, step: 0.5, min: 0, dimension: 'energy', unit: 'kWh' },
+      { id: 'sunHours', label: 'Peak sun-hours per day (location)', type: 'number', placeholder: '5', defaultValue: 5, step: 0.5, min: 0.5 },
+      { id: 'systemLossesPercent', label: 'System losses (wiring, inverter, soiling)', type: 'percent', placeholder: '20', defaultValue: 20, step: 5, min: 0 },
+      { id: 'daysOfAutonomy', label: 'Days of autonomy (no-sun days to cover)', type: 'number', placeholder: '2', defaultValue: 2, step: 1, min: 1 },
+      { id: 'depthOfDischargePercent', label: 'Battery depth of discharge', type: 'percent', placeholder: '90', defaultValue: 90, step: 5, min: 10 }
+    ],
+    seo: {
+      title: 'Off-Grid Solar System Calculator – Array & Battery Bank',
+      description: 'Size a stand-alone solar system\'s array (kW) and battery bank (kWh) from daily energy need, sun-hours, system losses, days of autonomy and depth of discharge.',
+      faq: [
+        { question: 'How is off-grid solar sizing different from grid-tied sizing?', answer: 'A grid-tied system is sized to roughly match annual usage because the grid absorbs day-to-day mismatches. An off-grid system has no such backstop, so both the array and the battery bank must be sized for the worst realistic stretch of weather, not an average day.' },
+        { question: 'What is a "peak sun hour"?', answer: 'The number of hours a location\'s panels would need full, 1,000 W/m² sunlight to deliver the day\'s actual total solar energy. It is a location-specific figure — this calculator\'s 5-hour default is an illustrative mid-range U.S. estimate.' },
+        { question: 'What does "days of autonomy" mean for a battery bank?', answer: 'How many consecutive days with no solar input the battery bank needs to cover entirely on its own — a stretch of heavy cloud cover, for example. More days of autonomy means a larger, more expensive battery bank.' },
+        { question: 'What is battery depth of discharge?', answer: 'The usable fraction of a battery\'s rated capacity before it needs recharging. It varies by battery chemistry and product, so this calculator\'s 90% default is illustrative — check your own battery\'s spec sheet for its real figure.' },
+        { question: 'How big a system does a 5 kWh/day off-grid home need?', answer: 'In this calculator\'s worked example — 5 sun-hours, 20% system losses, 2 days of autonomy, 90% depth of discharge — about a 1.25 kW array and an 11.11 kWh battery bank. A cloudier location (fewer sun-hours) needs a larger array for the same usage.' },
+        { question: 'Does this account for seasonal changes in sunlight?', answer: 'No — it uses a single sun-hours figure you provide. Real locations see sun-hours swing substantially through the year, so sizing against the worst month, not an annual average, gives a more reliable system.' }
+      ]
+    },
+    compute(values) {
+      const lossFactor = 1 - values.systemLossesPercent / 100;
+      const requiredArrayWatts = values.sunHours > 0 && lossFactor > 0 ? (values.dailyEnergyNeedKwh * 1000) / (values.sunHours * lossFactor) : NaN;
+      const requiredArrayKw = requiredArrayWatts / 1000;
+      const batteryBankKwh = values.depthOfDischargePercent > 0 ? (values.dailyEnergyNeedKwh * values.daysOfAutonomy) / (values.depthOfDischargePercent / 100) : NaN;
+      return { requiredArrayKw, batteryBankKwh };
+    }
   }
 ];

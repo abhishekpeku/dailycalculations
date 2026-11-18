@@ -12627,6 +12627,50 @@ exports[`compute() snapshots > odds-ratio-calculator 1`] = `
 }
 `;
 
+exports[`compute() snapshots > off-grid-solar-calculator 1`] = `
+{
+  "default": {
+    "inputs": {
+      "dailyEnergyNeedKwh": 5,
+      "sunHours": 5,
+      "systemLossesPercent": 20,
+      "daysOfAutonomy": 2,
+      "depthOfDischargePercent": 90
+    },
+    "outputs": {
+      "requiredArrayKw": 1.25,
+      "batteryBankKwh": 11.11111111
+    }
+  },
+  "typical": {
+    "inputs": {
+      "dailyEnergyNeedKwh": 7.5,
+      "sunHours": 7.5,
+      "systemLossesPercent": 30,
+      "daysOfAutonomy": 3,
+      "depthOfDischargePercent": 135
+    },
+    "outputs": {
+      "requiredArrayKw": 1.428571429,
+      "batteryBankKwh": 16.66666667
+    }
+  },
+  "edge": {
+    "inputs": {
+      "dailyEnergyNeedKwh": 0,
+      "sunHours": 0.5,
+      "systemLossesPercent": 0,
+      "daysOfAutonomy": 1,
+      "depthOfDischargePercent": 10
+    },
+    "outputs": {
+      "requiredArrayKw": 0,
+      "batteryBankKwh": 0
+    }
+  }
+}
+`;
+
 exports[`compute() snapshots > ohms-law-calculator 1`] = `
 {
   "default": {
